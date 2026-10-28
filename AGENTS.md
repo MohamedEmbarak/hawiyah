@@ -16,6 +16,8 @@ CONTRACT.md, EXPANSION.md, llms.txt, and the actual exports in packages/.
 - Calendar values remain ISO dates. Preserve the pinned Umm al-Qura provider,
   supported range and exhaustive conversion oracle; no silent Intl fallback.
 - Current logo is Arabic-only outlined Aref Ruqaa. No runtime logo-font download.
+- The NIC header logo keeps its original colors in light mode; in dark mode use
+  `filter: brightness(0) invert(1)` to make all artwork white, preserving transparency.
 - DGA-informed does not mean endorsed or certified. Document evidence and gaps.
 
 ## Development and verification

@@ -7,5 +7,8 @@
 @media(forced-colors:active){.sidebar-child.is-active,.home-frameworks button.selected,.home-color-choice input:checked+span{outline:2px solid Highlight}.home-stage-grid,.home-manifesto-pattern{display:none}}
 
 /* Institutional author credit remains readable in either language and theme. */
+/* Preserve the NIC asset's transparency; every visible color becomes white in dark mode. */
+.site-attribution img{filter:none}
+html[data-nq-mode="dark"] .site-attribution img{filter:brightness(0) invert(1)}
 html{scroll-padding-block-start:140px}.topbar{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:0;min-block-size:108px}.site-attribution{grid-column:1/-1;text-align:center;font-size:12px;line-height:1.8;color:var(--nq-color-text-muted);padding-block:8px;margin:0;border-block-end:1px solid var(--nq-color-border)}.topbar>.breadcrumb-top,.topbar>.topbar-actions{min-block-size:62px}.topbar>.topbar-actions{justify-self:end}
 @media(max-width:640px){.topbar{column-gap:5px;min-block-size:108px}.site-attribution{font-size:11px;line-height:1.9;padding-block:7px}.topbar>.breadcrumb-top,.topbar>.topbar-actions{min-block-size:56px}}
