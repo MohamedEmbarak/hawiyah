@@ -17,3 +17,10 @@ Brand source fonts are licensed separately under the SIL Open Font License
 Font software and third-party dependencies retain their own licenses.
 The Nasaq name and identity do not imply endorsement by Saudi Arabia's
 Digital Government Authority. Apache 2.0 does not grant trademark rights.
+
+The guide includes a user-supplied National Information Center (NIC) logo
+for header attribution. The original image is retained unchanged; dark
+mode uses a CSS filter. Rights to this artwork and the NIC trademark
+remain with their respective holders. No Apache 2.0 license for the
+artwork or trademark permission is inferred from its inclusion.
+See apps/playground/src/assets/README.md for provenance.
