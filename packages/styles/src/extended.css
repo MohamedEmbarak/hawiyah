@@ -58,7 +58,7 @@
 input.nq-pin-input, .nq-pin-input input:not([type='hidden']) { inline-size: min(100%, 23ch); min-block-size: var(--nq-control-height-lg); padding-inline: var(--nq-space-4); direction: ltr; font-family: var(--nq-font-mono); font-size: var(--nq-text-xl); font-variant-numeric: tabular-nums; letter-spacing: 0.6em; text-align: center; }
 .nq-pin-input[data-size='sm'] { min-block-size: var(--nq-control-height); font-size: var(--nq-text-md); }
 .nq-tag-input { display: flex; flex-wrap: wrap; align-items: center; gap: var(--nq-space-2); min-block-size: var(--nq-control-height); padding: var(--nq-space-2); border: 1px solid var(--nq-color-border-strong); border-radius: var(--nq-radius-md); background: var(--nq-color-surface); }
-.nq-tag-input:focus-within { outline: var(--nq-focus-width) solid var(--nq-color-focus); outline-offset: var(--nq-focus-offset); border-color: var(--nq-color-primary); }
+.nq-tag-input:focus-within { outline: 2px solid var(--nq-color-focus); outline-offset: -2px; border-color: var(--nq-color-primary); }
 .nq-tag-input:has([aria-invalid='true']) { border-color: var(--nq-color-danger); }
 .nq-tag-input > ul { display: contents; margin: 0; padding: 0; list-style: none; }
 .nq-tag-input > input:not([type='hidden']) { flex: 1 1 8rem; inline-size: auto; min-inline-size: min(100%, 8rem); min-block-size: 2rem; padding: var(--nq-space-1); border: 0; border-radius: var(--nq-radius-sm); background: transparent; }

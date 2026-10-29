@@ -70,6 +70,8 @@ retain their original notices.
 
 The package-consumer script packs files locally and performs no publication. Its Angular import check loads the compiler for the consumer smoke test; it is not a production Angular AOT application build.
 
+The subsequent input-focus refinement removed the duplicate outer ring from DGA fields. The Pages-base guide build and two focused theme browser tests passed. A production browser check covered 36 field/theme/mode combinations (text, select, textarea, read-only, filled and invalid fields across DGA/custom/Nasaq and light/dark), plus the forced-colors fallback, without field-size changes. Compound tag/search fields use a single inset indicator.
+
 ## Representative bundle checks
 
 The isolated tarball consumer builds two minimal ESM imports with Vite, minification, and gzip. Both passed their configured size budgets and output guards for unrelated widget markers:
