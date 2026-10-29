@@ -2,21 +2,19 @@ body { margin: 0; background: var(--nq-color-canvas); color: var(--nq-color-text
 .demo-skip { position: fixed; inset-inline-start: 1rem; inset-block-start: -5rem; z-index: 100; padding: 1rem; background: var(--nq-color-surface); color: var(--nq-color-primary-text); }
 .demo-skip:focus { inset-block-start: 1rem; }
 .demo-header { border-block-end: 1px solid var(--nq-color-border); background: var(--nq-color-surface); }
-.demo-header-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--nq-space-6); padding-block: var(--nq-space-4); }
+.demo-header-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--nq-space-6); padding-block: var(--nq-space-4); }
 .demo-brand { display: inline-flex; gap: var(--nq-space-3); align-items: center; color: var(--nq-color-primary-text); font-size: var(--nq-text-2xl); font-weight: 700; text-decoration: none; }
 .demo-brand small { display: block; color: var(--nq-color-text-muted); font-size: var(--nq-text-xs); font-weight: 400; }
 .demo-main { padding-block: var(--nq-space-6) var(--nq-space-12); }
 .demo-hero { display: flex; justify-content: space-between; align-items: center; gap: var(--nq-space-8); padding-block: var(--nq-space-10); }
-.demo-hero h1 { max-inline-size: 22ch; margin-block: var(--nq-space-4); font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.25; letter-spacing: -0.025em; font-weight: 600; }
+.demo-hero h1 { max-inline-size: 22ch; margin-block: var(--nq-space-4); font-size: clamp(var(--nq-text-3xl), 4vw, var(--nq-text-4xl)); line-height: var(--nq-leading-heading); letter-spacing: normal; font-weight: 600; }
 .demo-hero p { max-inline-size: 59ch; color: var(--nq-color-text-muted); font-size: var(--nq-text-lg); line-height: 1.8; }
 .demo-hero-stat { display: grid; justify-items: start; gap: var(--nq-space-3); flex: 0 0 auto; min-inline-size: 14rem; padding-inline-start: var(--nq-space-8); border-inline-start: 1px solid var(--nq-color-border); }
 .demo-hero-stat strong { color: var(--nq-color-primary-text); font-size: 3.5rem; line-height: 1; font-weight: 500; }
 .demo-hero-stat > span { color: var(--nq-color-text-muted); font-size: var(--nq-text-sm); }
 .demo-disclosure { margin-block-end: var(--nq-space-6); }
 .demo-main > .nq-alert { margin-block-end: var(--nq-space-6); }
-.demo-service-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem); gap: var(--nq-space-6); align-items: start; }
 .demo-eyebrow { display: block; margin-block-end: var(--nq-space-2); color: var(--nq-color-primary-text); font-size: var(--nq-text-xs); font-weight: 600; letter-spacing: 0.04em; }
-.demo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--nq-space-5); }
 .demo-fieldset { margin: 0; padding: 0; border: 0; }
 .demo-fieldset legend { margin-block-end: var(--nq-space-3); }
 .demo-form-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--nq-space-4); padding-block-start: var(--nq-space-4); }
@@ -31,7 +29,6 @@ body { margin: 0; background: var(--nq-color-canvas); color: var(--nq-color-text
 .demo-footer { display: flex; justify-content: space-between; gap: var(--nq-space-5); padding-block: var(--nq-space-6); border-block-start: 1px solid var(--nq-color-border); color: var(--nq-color-text-muted); font-size: var(--nq-text-sm); }
 .nq-tab-panel > .nq-card .nq-pagination { margin-block-start: var(--nq-space-6); }
 @media (max-width: 850px) {
-  .demo-service-layout { grid-template-columns: 1fr; }
   .demo-hero { align-items: start; }
   .demo-hero-stat { min-inline-size: 10rem; padding-inline-start: var(--nq-space-5); }
 }
@@ -42,6 +39,6 @@ body { margin: 0; background: var(--nq-color-canvas); color: var(--nq-color-text
   .demo-hero { display: block; padding-block: var(--nq-space-6); }
   .demo-hero-stat { margin-block-start: var(--nq-space-5); padding-inline-start: 0; border: 0; }
   .demo-hero-stat strong { font-size: 2rem; }
-  .demo-grid, .demo-filter { grid-template-columns: 1fr; }
+  .demo-filter { grid-template-columns: 1fr; }
   .demo-footer, .demo-form-footer { align-items: start; flex-direction: column; }
 }

@@ -1,16 +1,16 @@
 # @nasaq/tokens
 
-Semantic tokens for Nasaq. The selected **Woven Rhythm** identity combines
-teal `#006A64`, mint `#C8E7DD`, warm ivory `#F7F5EE`, and ink `#142D30`. White text
-on the primary teal has a 6.47:1 contrast ratio. IBM Plex Sans Arabic and IBM Plex
-Sans are preferred; this package does not fetch or bundle fonts.
+Semantic tokens for Nasaq. The default DGA profile maps to the supplied Platforms
+Code Foundations snapshot, with primary green `#1B8354`, explicit light/dark
+semantic colors, and IBM Plex Sans Arabic. This package does not fetch fonts.
+The original Woven Rhythm palette remains opt-in with `theme: 'nasaq'`.
 
 ```ts
 import { tokens, tokenNames, createThemeVariables } from '@nasaq/tokens';
 import type { TokenName, TokenPath, Theme, ColorMode, Density } from '@nasaq/tokens';
 import '@nasaq/tokens/tokens.css';
 
-tokens.color.primary;      // '#006a64'
+tokens.color.primary;      // '#1B8354'
 tokenNames.color.primary;  // '--nq-color-primary'
 
 const agencyVariables = createThemeVariables({
@@ -21,15 +21,15 @@ const agencyVariables = createThemeVariables({
 ```
 
 `createThemeVariables(overrides?, options?)` returns a complete plain object of
-all 87 public CSS variables. It has no DOM dependency and is safe during SSR.
-Unknown object keys are ignored. Options default to Nasaq, light, comfortable;
-`custom` starts from Nasaq. Consumers must provide accessible companion colors
+all public CSS variables listed by `cssVariableNames`. It has no DOM dependency and is safe during SSR.
+Unknown object keys are ignored. Options default to DGA, light, comfortable;
+`custom` starts from the DGA profile. Consumers must provide accessible companion colors
 when changing a brand. `themes`, `densities`, and `cssVariableNames` are also
 exported as immutable typed data. `TokenPath` uses dotted paths such as
 `color.primary`; `TokenName` uses complete CSS names.
 
 ```html
-<main data-nq-theme="nasaq" data-nq-mode="light" data-nq-density="comfortable"
+<main data-nq-theme="dga" data-nq-mode="light" data-nq-density="comfortable"
       lang="ar" dir="rtl">
   <!-- Components -->
 </main>
@@ -88,13 +88,22 @@ notes when names or meanings change.
 
 ## DGA reference boundary
 
-The `dga` theme is an **approximate, independently assembled green reference
-palette**. It is not the official Platforms Code token export, a verified mapping,
-or a compliance or endorsement claim. Current official numeric color tokens and
-permitted agency variations were not fully verified. Nasaq adopts broad principles
-of clear hierarchy, Arabic support, consistent spacing and accessibility, while
-its chosen identity and component recipes are its own. Government deployment needs
-a separate assessment against the current applicable DGA requirements.
+The mapping is recorded in [reference/dga-foundations.json](reference/dga-foundations.json),
+including snapshot hash, export date, source node IDs and explicit adaptations.
+An export date is not an official release number. The mapping is independently
+implemented and is not a certification or complete component-parity claim.
+
+`theme: 'nasaq'` preserves the original palette and foundation metrics. Shared
+control densities use the reference sizes in both profiles: comfortable defaults
+to 40px (`sm`:32px, `lg`:40px), compact to 32px (`sm`:24px, `lg`:40px). Existing
+`lg` is retained as an alias for the reference large size. Custom profiles inherit
+DGA; callers who need the old palette should explicitly select `nasaq`.
+
+The shared light subtle-text role uses Neutral/600 so text remains readable on
+muted surfaces. Field placeholders retain a separate reference role. Actual input
+boundaries use the stronger control-border for contrast; the original field-border
+value remains traceable. Review all application content and custom overrides
+against the applicable requirements before making a deployment compliance claim.
 
 This Apache-2.0 public 0.1 source preview is available through the workspace.
 Packages remain marked private to prevent accidental npm publication; no npm

@@ -1,4 +1,4 @@
-import { cssVariableNames, densities, themes, tokens } from './generated.js';
+import { cssVariableNames, densities, themeFoundations, themes, tokens } from './generated.js';
 
 export { cssVariableNames, densities, themes, tokenNames, tokens } from './generated.js';
 
@@ -12,7 +12,7 @@ export type ThemeVariables = Record<TokenName, string>;
 export type ThemeOverrides = Partial<Record<TokenName, string | number>>;
 
 export interface ThemeOptions {
-  /** Custom starts with Nasaq defaults; supply overrides for your brand. */
+  /** Custom starts with DGA reference defaults; supply overrides for your brand. */
   theme?: Theme;
   mode?: ColorMode;
   density?: Density;
@@ -29,10 +29,11 @@ function flatten(value: object, path: string[] = []): Record<string, string> {
 
 /** Plain CSS variables for SSR, style objects, documentation, and agency themes. */
 export function createThemeVariables(overrides: ThemeOverrides = {}, options: ThemeOptions = {}): ThemeVariables {
-  const { theme = 'nasaq', mode = 'light', density = 'comfortable' } = options;
+  const { theme = 'dga', mode = 'light', density = 'comfortable' } = options;
   const values = {
     ...flatten(tokens),
-    ...flatten(themes[theme === 'custom' ? 'nasaq' : theme][mode]),
+    ...flatten(themeFoundations[theme === 'custom' ? 'dga' : theme]),
+    ...flatten(themes[theme === 'custom' ? 'dga' : theme][mode]),
     ...flatten(densities[density]),
   } as ThemeVariables;
   for (const name of cssVariableNames) {

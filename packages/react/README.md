@@ -58,7 +58,7 @@ follow computed direction; vertical arrows stay vertical. Theme, mode and densit
 are CSS attributes on an ancestor:
 
 ```html
-<div dir="rtl" lang="ar" data-nq-theme="nasaq"
+<div dir="rtl" lang="ar" data-nq-theme="dga"
      data-nq-mode="dark" data-nq-density="comfortable">…</div>
 ```
 

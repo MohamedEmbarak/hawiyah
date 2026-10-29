@@ -78,6 +78,7 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
     if (next < 0) return;
     if (!manual) select(values[next]!); else render(next);
     tabs[next]!.focus();
+    tabs[next]!.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
   });
   render();
   return { get value() { return values[selected] ?? ''; }, select, destroy: () => scope.destroy() };

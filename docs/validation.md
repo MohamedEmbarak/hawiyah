@@ -1,6 +1,6 @@
 # Validation record
 
-This record covers the Nasaq `0.1.0` library development snapshot checked on **2026-10-28**. It distinguishes source coverage, targeted behavior tests, package-consumer checks, and browser evidence. A passing check applies to its stated scope; it is not a declaration of complete accessibility, DGA compliance, or production certification.
+This record covers the Nasaq `0.1.0` library development snapshot checked on **2026-10-29**. It distinguishes source coverage, targeted behavior tests, package-consumer checks, and browser evidence. A passing check applies to its stated scope; it is not a declaration of complete accessibility, DGA compliance, or production certification.
 
 ## Environment
 
@@ -23,16 +23,16 @@ These exact versions were exercised. Declared peer ranges are broader than a sin
 | `pnpm build:packages` | Passed | All seven packages, including Angular Package Format output |
 | `pnpm build` | Passed | Seven packages and four Vite application builds: vanilla playground, React, Vue, and Angular examples |
 | Playground TypeScript check | Passed | Run inside `pnpm build`; also available through `pnpm typecheck:playground` |
-| `pnpm test` | Passed | 8 token-contrast checks and 139 Vitest tests across 20 files, including calendar reference conversion and focused React/Vue hydration cases |
-| `pnpm test:browser` | Verified: 57 tests | 17 original, 10 expansion, 3 component-reference, 5 guide-experience, 5 editor, 3 RTL-icon, 2 hero-control and 12 mobile-navigation tests: vanilla journeys, selected component behavior, calendar switching, input/layout labs, responsive layout, wordmark-loader reduced motion, and scoped axe scans in Chromium |
+| `pnpm test` | Passed | 8 token-contrast checks and 142 Vitest tests across 21 files, including calendar reference conversion and focused React/Vue hydration cases |
+| `pnpm test:browser` | Passed: 67 tests | 17 original, 10 expansion, 3 component-reference, 5 guide-experience, 5 editor, 3 RTL-icon, 2 hero-control 12 mobile-navigation, 8 DGA-template and 2 DGA-theme tests: vanilla journeys, selected component behavior, calendar switching, input/layout labs, responsive layout, wordmark-loader reduced motion, and scoped axe scans in Chromium |
 | `pnpm check:packages` | Passed | Seven local tarballs installed in an isolated consumer; ESM imports, canonical calendar conversion, React/Vue Button and DatePicker/Grid SSR, Angular APF import, split CSS and bundled wordmark/GIF asset exports, TypeScript consumers, calendar-data license, and two minimal-import bundle budgets |
 | React example browser suite | Passed: 2 tests | Conditional service application, modal review/focus, local request state, independent preferences, narrow Arabic layout, and selected axe scans |
 | Angular example browser script | Passed | Native form/Angular forms integration, Arabic combobox, conditional application, modal/Escape/focus, local request state, RTL, theme change, and mobile layout |
-| Vue example session browser check | Passed | Full local service flow and selected axe checks; this was a session check, not an additional committed browser suite |
+| Vue example session browser check | Passed | Full local service flow, review/focus, request filtering/pagination/reset, mobile Arabic dark mode, 1280/832/416/32 desktop geometry and four selected axe scans; session check, not an additional committed browser suite |
 | Framework calendar browser script | Passed for React, Vue, and Angular | Calendar switching, canonical labels, keyboard selection, reopening, invalid-range submission, responsive RTL/dark layout, and scoped axe scans |
 | Browser-test TypeScript check | Passed | Root browser test source type checking |
 
-The refreshed guide's **57 root browser cases** have been verified. The
+The refreshed guide's **67 root browser cases** passed in one complete run. The
 [component-reference tests](../tests/browser/guide.spec.ts) cover setup navigation,
 all 77 references, reset/remount and narrow RTL accessibility. Five
 [guide-experience tests](../tests/browser/guide-experience.spec.ts) cover Arabic
@@ -43,7 +43,9 @@ editing, automatic/manual updates, error recovery, reset, real enhancement,
 iframe isolation, CSP blocking, Arabic editor search, keyboard navigation,
 mobile layout, draft preservation through shell redraws and custom themes. Three [directional-icon tests](../tests/browser/rtl-icons.spec.ts) cover forward/back arrows, nested RTL/LTR regions and working carousel navigation while non-directional symbols remain unchanged. Two [hero-control tests](../tests/browser/hero-controls.spec.ts) verify touch/keyboard changes, switch-thumb containment in both directions and modes, and preservation of unsaved input when opening the menu. Twelve [mobile-navigation cases](../tests/browser/mobile-navigation.spec.ts) verify full viewport bounds, real pointer targets, scrolling, focus, same-route close and navigation at 390px, 820px and 900px in both languages and themes.
 
-The latest 57-case check passed 55 cases in the full run and the remaining two editor cases on a focused rerun after the concurrent local build finished. Finish package builds before browser testing to avoid Vite reloads during an active scenario.
+Eight [DGA-template tests](../tests/browser/dga-templates.spec.ts) cover local application validation/review/confirmation, draft retention through language and mode changes, FAQ filtering, feedback, cookie preferences, mobile navigation/reflow and keyboard visibility of clipped tabs in both directions. Two [DGA-theme tests](../tests/browser/dga-theme.spec.ts) cover the fresh DGA default, nested legacy/custom themes and dark surfaces, explicit legacy preferences, stable input geometry on focus, and reduced motion. Finish package builds before browser testing to avoid Vite reloads during an active scenario.
+
+Production template checks covered service, form and gallery in four locale/mode/viewport combinations, plus 13 other templates in English/dark at 320px and Arabic/light at 1440px. Initial findings in accessible brand names, heading order and the preview toolbar landmark were corrected. The final 16-case audit covered service, form, gallery and support in English/light and Arabic/dark at 320px, plus English/dark and Arabic/light at 1440px: no axe violations, viewport overflow or runtime errors in those cases. Keyboard-selected tabs remained fully visible in both directions, and service/form sidebars matched the 416px desktop column without duplicate framing. Selected revealed and success states were also scanned. These are scoped automated checks, not exhaustive visual parity or a manual assistive-technology audit.
 
 The guide production build passed with the `/nasaq/` GitHub Pages base path.
 All 77 Arabic component examples initialized inside the production editor's
@@ -60,9 +62,9 @@ the published-library package manifests. Its complete runtime license notices
 are collected from the installed dependency graph and included in the deployed
 guide, together with the calendar-data and font notices.
 
-For the initial public-source snapshot, all four application builds, 139 unit
-tests, eight contrast checks and seven packed-consumer checks passed. Those
-library implementation files are unchanged by the guide refresh. Package
+For this DGA migration, all four application builds, 142 unit tests, eight
+contrast checks and seven packed-consumer checks passed. Tokens, shared styles,
+framework examples and the vanilla Tabs keyboard-reveal behavior were updated. Package
 archives include Apache-2.0 LICENSE and NOTICE files, and fonts/calendar data
 retain their original notices.
 
@@ -75,7 +77,7 @@ The isolated tarball consumer builds two minimal ESM imports with Vite, minifica
 | Import | Measured JavaScript gzip | Budget |
 |---|---:|---:|
 | React `Button` | 380 bytes | 4,096 bytes |
-| Vanilla `createTabs` | 2,054 bytes | 6,144 bytes |
+| Vanilla `createTabs` | 2,089 bytes | 6,144 bytes |
 
 The React build leaves React/React DOM external. These numbers exclude framework runtime, CSS, tokens, fonts, images, and application code; they are not complete download sizes or general performance guarantees. The output guards check the configured unrelated Dialog/Combobox/Tabs markers for the React import and Combobox/Tooltip markers for the vanilla import. Other components and combinations have not received individual budgets.
 
@@ -83,6 +85,7 @@ The React build leaves React/React DOM external. These numbers exclude framework
 
 | Area | Tests | Evidence |
 |---|---|---|
+| Tokens | 3 | Default/custom DGA values, explicit legacy theme foundation metrics, source mappings and caller overrides |
 | Core | 17 | Arabic search/digit normalization, navigation, explicit formatting, combobox transitions, cleanup, ordered ranges, stable sorting, calendar limits and labels, and the independent reference oracle |
 | Vanilla | 41 | Native forms and cleanup; tabs, combobox, modal, tooltip, pagination, expanded input controls, popover/menu/toasts, toggle groups, feedback/consent, tree, carousel, sorting, Calendar/DatePicker, and imports without browser globals |
 | React | 34 | Initial form/interaction cases and focused hydration; expanded form/reset behavior, calendars and unsupported-date validity, menu/popover/tree, sorting, notifications/consent/feedback, all 77 entries server-rendered, and layout variable assertions |
@@ -115,7 +118,7 @@ The [three-framework calendar script](../tests/browser/framework-calendars.mjs) 
 
 ## Token contrast scope
 
-The [eight token checks](../packages/tokens/test/contrast.test.mjs) evaluate selected foreground/background pairs in Nasaq and DGA reference themes, in light and dark modes. They assert 4.5:1 for the named text/status pairs and 3:1 for the named control/focus boundaries. This validates those solid-color pairings, not arbitrary custom overrides, all visual compositions, or the accuracy of official DGA token matching.
+The [eight token checks](../packages/tokens/test/contrast.test.mjs) evaluate selected foreground/background pairs in Nasaq and DGA reference themes, in light and dark modes. They assert 4.5:1 for the named text/status pairs and 3:1 for the named control/focus boundaries. Semi-transparent status backgrounds are composited over both canvas and surface. This validates the named pairings, not arbitrary custom overrides or all visual compositions. Source-token correspondence is documented separately in the [DGA reference](dga-reference.md).
 
 ## Component catalog interpretation
 
@@ -152,6 +155,6 @@ The calendar script accepts an optional `react`, `angular`, or `vue` argument. R
 
 ## Remaining evaluation
 
-Firefox and WebKit have not been covered by these runs. Manual screen-reader testing, a complete keyboard/accessibility audit, exhaustive mode/theme/density combinations, and a broader framework-version matrix remain open. Angular production AOT consumer integration and Angular SSR/hydration are not established. React/Vue hydration coverage is limited to the focused cases described above. The exact official DGA guideline/token mapping and redistribution permissions remain separate work in [alignment](alignment.md).
+Firefox and WebKit have not been covered by these runs. Manual screen-reader testing, a complete keyboard/accessibility audit, exhaustive mode/theme/density combinations, and a broader framework-version matrix remain open. Angular production AOT consumer integration and Angular SSR/hydration are not established. React/Vue hydration coverage is limited to the focused cases described above. The [DGA reference](dga-reference.md) records reviewed source mappings and accessibility adaptations. Six oversized Figma exports and the missing standalone web Components Library remain unverified; exhaustive template parity, live official-version checking and asset redistribution permissions remain separate work in [alignment](alignment.md).
 
 These checks describe this source and guide snapshot; later changes require relevant checks again. The GitHub Pages workflow builds and deploys the guide independently. npm packages are not yet published. Follow the [release gates](publication.md) before distributing registry packages.

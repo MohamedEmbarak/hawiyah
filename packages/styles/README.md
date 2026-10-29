@@ -16,7 +16,7 @@ self-hosted token stylesheet. CSS custom properties provide theming without a
 framework, utility-class compiler, or CSS-in-JS runtime.
 
 ```html
-<main lang="ar" dir="rtl" data-nq-theme="nasaq" data-nq-mode="light">
+<main lang="ar" dir="rtl" data-nq-theme="dga" data-nq-mode="light">
   <div class="nq-field">
     <label class="nq-label" for="request-name">اسم الطلب</label>
     <input class="nq-input" id="request-name" aria-describedby="name-hint">
@@ -45,7 +45,7 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 | Layout | `nq-stack`, `nq-cluster`, `nq-container`, `nq-sr-only` |
 
 Defaults are primary/medium buttons, comfortable density, light mode, and the
-Woven Rhythm Nasaq theme. Use `data-nq-density="compact"` to reduce control and
+DGA reference theme. Select `data-nq-theme="nasaq"` for the original palette. Use `data-nq-density="compact"` to reduce control and
 table spacing. Compact and small controls may require additional hit-area spacing
 for touch-heavy applications. Step states are `active`, `complete` (or `completed`),
 and `error`; current steps should also use `aria-current="step"`. Steps include a
@@ -100,3 +100,18 @@ with `media="(prefers-reduced-motion: reduce)"`, give the decorative image empty
 alt text, and provide separate localized `role="status"` loading text. 256px GIF
 variants use `nasaq-loader-256.gif` and `nasaq-loader-white-256.gif`. Font outlines
 are embedded in the SVG; Aref Ruqaa is not a runtime dependency or a font request.
+
+## DGA reference compositions
+
+The stylesheet includes the mapped DGA profile, input state transitions and portal
+compositions. `nq-service-container` provides the 1280px content region;
+`nq-service-layout` composes `nq-service-main` and `nq-service-aside` with a 32px gap.
+`nq-form-layout` supports a desktop progress column and a single-column mobile
+flow. `nq-stepper-responsive` groups the desktop list with a mobile summary;
+`nq-stepper-ring` uses `--nq-step-progress` for its decorative progress ring.
+Provide an accessible current/total label alongside that ring.
+
+Keep source order meaningful: progress summary, form, then contextual guidance.
+Portal headers/footers retain their public `nq-portal-*` classes. Template content,
+menu behavior, validation and integrations remain application responsibilities.
+The Figma-derived examples are available in the guide's template gallery.

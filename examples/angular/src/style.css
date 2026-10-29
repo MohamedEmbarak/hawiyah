@@ -6,16 +6,15 @@
 .example-mark { display: grid; place-content: center; inline-size: 2.8rem; block-size: 2.8rem; border: 2px solid currentColor; border-radius: 50% 50% 10% 50%; }
 .example-main { padding-block: 2rem 4rem; gap: 2rem; }
 .example-hero { display: grid; grid-template-columns: 1.6fr 1fr; gap: 3rem; padding-block: 2rem; }
-.example-hero h1 { max-inline-size: 12ch; font-size: clamp(2.5rem, 6vw, 4.8rem); line-height: 1.06; letter-spacing: -.045em; margin-block: .5rem 1.2rem; }
+.example-hero h1 { max-inline-size: 22ch; font-size: clamp(var(--nq-text-3xl), 4vw, var(--nq-text-4xl)); line-height: var(--nq-leading-heading); letter-spacing: normal; margin-block: .5rem 1.2rem; }
 .example-hero p { max-inline-size: 56ch; line-height: 1.8; }
 .example-eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .12em; }
 .example-hero-aside { align-self: stretch; border-inline-start: 1px solid var(--nq-color-border); padding-inline-start: 2.5rem; display: flex; flex-direction: column; justify-content: center; }
 .example-number { display: block; font-size: clamp(2rem, 5vw, 4rem); font-weight: 300; margin-block-end: 1rem; color: var(--nq-color-text-muted); }
 .example-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; max-inline-size: 48rem; }
-.example-columns { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(16rem, 1fr); gap: 3rem; align-items: start; }
 .example-facts { margin-block: 1.5rem 0; }
 .example-facts > div { display: flex; justify-content: space-between; gap: 1rem; padding-block: .7rem; border-block-end: 1px solid var(--nq-color-border); }
 .example-facts dd { margin: 0; font-weight: 600; }
 .example-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-block: 2rem; font-size: .8rem; border-block-start: 1px solid var(--nq-color-border); }
 [data-nq-theme="custom"] { --nq-radius-md: 1.25rem; --nq-radius-lg: 2rem; }
-@media (max-width: 48rem) { .example-hero, .example-columns { grid-template-columns: 1fr; gap: 2rem; } .example-hero-aside { border-inline-start: 0; border-block-start: 1px solid var(--nq-color-border); padding: 1.5rem 0 0; } .example-controls { grid-template-columns: 1fr; } }
+@media (max-width: 48rem) { .example-hero { grid-template-columns: 1fr; gap: 2rem; } .example-hero-aside { border-inline-start: 0; border-block-start: 1px solid var(--nq-color-border); padding: 1.5rem 0 0; } .example-controls { grid-template-columns: 1fr; } }

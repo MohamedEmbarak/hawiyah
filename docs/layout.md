@@ -4,6 +4,10 @@ Nasaq layouts use native HTML, ordinary CSS, and the same semantic tokens as the
 components. They do not measure the viewport in JavaScript. Server rendering and
 client rendering produce the same styles; CSS handles breakpoints and direction.
 
+The default appearance uses the mapped `dga` foundation. The `nasaq` theme remains
+an explicit option; choosing a visual theme does not change DOM order, layout
+semantics, or the shared responsive-prop contract.
+
 Import `@nasaq/styles/styles.css` once. This entry includes component, extended
 component, and layout styles. The reset remains separately opt-in.
 
@@ -11,7 +15,7 @@ component, and layout styles. The reset remains separately opt-in.
 
 | Primitive / CSS class | Use it for | Default |
 | --- | --- | --- |
-| `Container` / `nq-container` | Centered content with a readable maximum width | `78rem` maximum, `1.5rem` outer gutter on each side |
+| `Container` / `nq-container` | Centered content with a readable maximum width | Theme container maximum and responsive gutters; override `maxWidth` when needed |
 | `Stack` / `nq-stack` | A vertical sequence of fields, cards, or sections | Flex column, spacing token `4` |
 | `Inline` / `nq-inline` | Actions, metadata, and wrapping controls | Flex row, centered alignment, wrapping |
 | `Grid` / `nq-grid` | Responsive, equal-width cards | One column |
@@ -94,6 +98,34 @@ column counts, or ratios throw a `RangeError`; empty CSS strings throw a
 `layoutStyles({})` returns `{}`. It emits only specified presentation variables;
 it does not mutate input, touch the DOM, set roles, or emit `side` / `collapseAt`
 as CSS. Those two props become data attributes in adapters.
+
+## Supplied layout reference
+
+The supplied Platforms Code snapshot exported on **2026-10-29** contains these
+verified reference dimensions:
+
+| Source | Dimension | Evidence |
+| --- | --- | --- |
+| Foundations | Desktop container maximum: `1280px` | Local variable `50:3` |
+| Foundations | Desktop container padding: `32px` | Local variable `50:4` |
+| Foundations | Mobile container padding: `16px` | Local variable `50:5` |
+| Service template | Main/service-information columns: `832px` / `416px`, with a `32px` gap | Desktop reference frames `1:21371` and `1:22148` |
+
+The inspected desktop and mobile example frames are `1440px` and `430px` wide.
+Those frame sizes are **not CSS breakpoint definitions**. Keep the runtime
+breakpoint contract above, preserve readable reflow at intermediate widths and
+320 CSS pixels, and compare actual rendered templates before claiming a match.
+The reference dimensions do not mean every Sidebar composition should use the
+service template's column widths. See [the reference record](dga-reference.md)
+for snapshot scope and unmapped source areas.
+
+Container reads `--nq-content-max`, `--nq-content-gutter`, and
+`--nq-content-gutter-mobile` from the selected theme. Inspect the
+[token source](../packages/tokens/tokens.json) and
+[layout styles](../packages/styles/src/layout.css) for current runtime values
+and gutter thresholds. Container and service/form reflow thresholds are
+implementation choices, separate from the shared `sm`/`md`/`lg`/`xl` steps;
+they must not be inferred from the reference frame widths.
 
 ## A responsive service grid
 

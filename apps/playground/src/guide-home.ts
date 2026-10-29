@@ -5,8 +5,9 @@ type Framework = 'vanilla' | 'react' | 'vue' | 'angular';
 const frameworks: Framework[] = ['vanilla', 'react', 'vue', 'angular'];
 const labels = { vanilla: 'Vanilla JS', react: 'React', vue: 'Vue', angular: 'Angular' };
 const marks = { vanilla: 'JS', react: 'R', vue: 'V', angular: 'A' };
-const accents = { teal: ['#006a64', '#005750', '#e0f2ec'], emerald: ['#176b47', '#115135', '#e1f1e6'], iris: ['#5144b5', '#3e348c', '#ece8fc'] } as const;
-const studio = { accent: 'teal' as keyof typeof accents, compact: false, round: true };
+// DGA preview uses shared semantic tokens. The other palettes are isolated experiments.
+const accents = { dga: ['#1b8354', '#166a45', '#f3fcf6'], teal: ['#006a64', '#005750', '#e0f2ec'], emerald: ['#176b47', '#115135', '#e1f1e6'], iris: ['#5144b5', '#3e348c', '#ece8fc'] } as const;
+const studio = { accent: 'dga' as keyof typeof accents, compact: false, round: false };
 
 export function renderHome(locale: Locale, selected: string, sample: (id: ComponentId, prefix: string) => string): string {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
@@ -27,7 +28,7 @@ export function renderHome(locale: Locale, selected: string, sample: (id: Compon
       <div class="home-proof"><span>${icon('globe',16)}${t('Arabic, by default', 'العربية في الأساس')}</span><span>${icon('code',16)}${t('4 native adapters', '٤ أطر عمل')}</span><span>${icon('check',16)}${t('Apache 2.0', 'ترخيص Apache 2.0')}</span></div>
     </div>
     <div class="home-studio"><div class="home-studio-heading"><span class="studio-live"><i></i>${t('A LITTLE LIVE PREVIEW', 'مساحة صغيرة للتجربة')}</span><span class="studio-number" dir="ltr">01 / 03</span></div>
-      <div class="home-stage" data-home-stage data-nq-theme="nasaq" data-nq-mode="light" data-nq-density="${studio.compact ? 'compact' : 'comfortable'}">
+      <div class="home-stage" data-home-stage data-nq-theme="${studio.accent === 'dga' ? 'dga' : 'custom'}" data-nq-mode="light" data-nq-density="${studio.compact ? 'compact' : 'comfortable'}">
         <div class="home-stage-grid" aria-hidden="true"></div><div class="home-floating-label" aria-hidden="true">${t('Make it feel like you', 'غيّر التفاصيل. احتفظ بالاتساق.')}</div>
         <div class="home-request nq-card"><div class="home-request-top"><span class="home-request-icon">${icon('building',23)}</span><span class="nq-badge" data-tone="success">${t('Ready to begin', 'جاهز للبدء')}</span></div>
           <h2>${t('Your next service', 'خدمتك القادمة')}</h2><p>${t('A clear first step makes a difference.', 'الخطوة الأولى الواضحة تصنع الفرق.')}</p>
@@ -36,8 +37,8 @@ export function renderHome(locale: Locale, selected: string, sample: (id: Compon
           <button class="nq-button home-request-submit" type="button" data-home-continue>${t('Try the next step', 'جرّب الخطوة التالية')}${icon('arrow',17)}</button><span data-home-status class="nq-sr-only" role="status"></span>
         </div>
       </div>
-      <div class="home-studio-controls"><fieldset><legend>${t('Accent', 'اللون')}</legend>${(Object.keys(accents) as (keyof typeof accents)[]).map((name,index)=>`<label class="home-color-choice" title="${t(['Teal','Emerald','Iris'][index]!,['بترولي','زمردي','بنفسجي'][index]!)}"><input type="radio" name="home-accent" value="${name}" ${studio.accent===name?'checked':''} aria-label="${t(['Teal','Emerald','Iris'][index]!,['بترولي','زمردي','بنفسجي'][index]!)}"><span style="--swatch:${accents[name][0]}"></span></label>`).join('')}</fieldset><label class="home-toggle"><input type="checkbox" role="switch" class="nq-switch" data-home-compact ${studio.compact?'checked':''}>${t('Compact', 'مكثّف')}</label><label class="home-toggle"><input type="checkbox" role="switch" class="nq-switch" data-home-round ${studio.round?'checked':''}>${t('Soft corners', 'زوايا ناعمة')}</label></div>
-      <div class="home-studio-foot"><span>${icon('spark',14)}${t('Real components. Your design decisions.', 'مكوّنات حقيقية. والقرار لك.')}</span><a href="#docs/theming">${t('How it works', 'كيف أخصّصها؟')} ${icon('arrow',14)}</a></div>
+      <div class="home-studio-controls"><fieldset><legend>${t('Palette', 'الألوان')}</legend>${(Object.keys(accents) as (keyof typeof accents)[]).map((name,index)=>`<label class="home-color-choice" title="${t(['DGA-informed baseline','Teal experiment','Emerald experiment','Iris experiment'][index]!,['أساس مستلهم من الهيئة','تجربة بترولية','تجربة زمردية','تجربة بنفسجية'][index]!)}"><input type="radio" name="home-accent" value="${name}" ${studio.accent===name?'checked':''} aria-label="${t(['DGA-informed baseline','Teal experiment','Emerald experiment','Iris experiment'][index]!,['أساس مستلهم من الهيئة','تجربة بترولية','تجربة زمردية','تجربة بنفسجية'][index]!)}"><span style="--swatch:${accents[name][0]}"></span></label>`).join('')}</fieldset><label class="home-toggle"><input type="checkbox" role="switch" class="nq-switch" data-home-compact ${studio.compact?'checked':''}>${t('Compact', 'مكثّف')}</label><label class="home-toggle"><input type="checkbox" role="switch" class="nq-switch" data-home-round ${studio.round?'checked':''}>${t('Soft corners', 'زوايا ناعمة')}</label></div>
+      <div class="home-studio-foot"><span>${icon('spark',14)}${t('DGA-informed baseline. Other colors are experiments.', 'أساس مستلهم من الهيئة. الألوان الأخرى تجارب.')}</span><a href="#docs/theming">${t('How it works', 'كيف أخصّصها؟')} ${icon('arrow',14)}</a></div>
     </div>
   </section>
   <section class="home-quickstart" aria-labelledby="quickstart-title"><div><span class="home-section-label">${t('FROM IDEA TO INTERFACE', 'من الفكرة إلى الواجهة')}</span><h2 id="quickstart-title">${t('Your stack.<br>Your starting point.', 'إطارك المفضّل.<br>ونقطة بداية جاهزة.')}</h2><p>${t('One foundation, native components in every framework.', 'أساس واحد، ومكوّنات أصلية في كل إطار عمل.')}</p></div><div class="home-install"><div class="home-frameworks" role="group" aria-label="${t('Choose your framework', 'اختر إطار العمل')}">${frameworks.map(f=>`<button type="button" id="home-framework-${f}" data-framework="${f}" aria-pressed="${framework===f}" class="${framework===f?'selected':''}"><span aria-hidden="true">${marks[f]}</span>${labels[f]}</button>`).join('')}</div><div class="home-terminal" dir="ltr"><div><span class="terminal-prompt" aria-hidden="true">$</span><code>${e(command)}</code></div><button type="button" data-copy="${e(start)}" aria-label="${t('Copy complete setup commands', 'انسخ أوامر الإعداد كاملة')}">${icon('copy',17)}</button></div><div class="home-install-foot"><span>${t('From source · Node 24 · npm release pending', 'من المصدر · Node 24 · النشر على npm لاحقًا')}</span><a href="#docs/${framework}">${t('Setup guide', 'دليل الإعداد')} ${icon('arrow',14)}</a></div></div></section>
@@ -57,9 +58,13 @@ export function bindHome(root: HTMLElement, locale: Locale): () => void {
   const t = (en:string,ar:string) => locale==='ar'?ar:en;
   const apply = () => {
     const [primary,hover,subtle] = accents[studio.accent];
-    for (const [key,value] of Object.entries({primary,'primary-hover':hover,'primary-text':primary,'primary-subtle':subtle})) stage.style.setProperty('--nq-color-'+key,value);
-    stage.style.setProperty('--nq-radius-md',studio.round?'.8rem':'.15rem');
-    stage.style.setProperty('--nq-radius-lg',studio.round?'1.1rem':'.25rem');
+    stage.dataset.nqTheme=studio.accent==='dga'?'dga':'custom';
+    for (const [key,value] of Object.entries({primary,'primary-hover':hover,'primary-text':primary,'primary-subtle':subtle})) {
+      if (studio.accent==='dga') stage.style.removeProperty('--nq-color-'+key);
+      else stage.style.setProperty('--nq-color-'+key,value);
+    }
+    stage.style.setProperty('--nq-radius-md',studio.round?'1rem':'.5rem');
+    stage.style.setProperty('--nq-radius-lg',studio.round?'1rem':'.5rem');
     stage.dataset.nqDensity=studio.compact?'compact':'comfortable';
     stage.classList.toggle('is-compact',studio.compact);
   };

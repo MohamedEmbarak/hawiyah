@@ -1,10 +1,7 @@
 import { createApp } from 'vue';
-import '@fontsource/ibm-plex-sans-arabic/400.css';
-import '@fontsource/ibm-plex-sans-arabic/500.css';
-import '@fontsource/ibm-plex-sans-arabic/600.css';
-import '@fontsource-variable/inter';
 import '@nasaq/styles/reset.css';
 import '@nasaq/styles/styles.css';
+import '../../../brand/fonts.css';
 import './style.css';
 import App from './App.vue';
 createApp(App).mount('#app');

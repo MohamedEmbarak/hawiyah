@@ -1,6 +1,6 @@
 # Nasaq — نسق
 
-**An Arabic-first, extensible UI system for vanilla JavaScript, React, Vue, and Angular.** Nasaq gives products an independent visual identity, shared behavior, and editable patterns for complete service journeys.
+**An Arabic-first, extensible UI system for vanilla JavaScript, React, Vue, and Angular.** Nasaq combines a DGA-based default foundation with shared behavior, optional visual themes, and editable patterns for complete service journeys.
 
 Developed by the Development Team in the National Platforms Sector — National Information Center.
 
@@ -8,13 +8,15 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 [Guide & live examples](https://mohamedembarak.github.io/nasaq/) · [العربية](README.ar.md) · [Coverage](docs/coverage.md) · [Architecture](docs/architecture.md) · [Extension guide](docs/extension.md) · [Validation](docs/validation.md) · [AI guide](llms.txt)
 
-The **Woven Rhythm** identity uses teal and warm ivory with an Arabic-only **نسق** wordmark. Its **Aref Ruqaa Bold lettering is exported as SVG paths**, with no font dependency to display the logo. Interface typography remains IBM Plex Sans Arabic and IBM Plex Sans. The [brand guide](brand/index-en.html), [artwork guidance](brand/README.md), and [brand kit ZIP](brand/nasaq-brand-kit.zip) include the wordmark and transparent loaders that animate its lettering.
+The default interface uses the DGA foundation mapped from supplied Platforms Code source snapshots. The optional **Woven Rhythm** theme (`data-nq-theme="nasaq"`) retains teal and warm ivory. Nasaq keeps its Arabic-only **نسق** wordmark. Its **Aref Ruqaa Bold lettering is exported as SVG paths**, with no font dependency to display the logo. Interface typography remains IBM Plex Sans Arabic and IBM Plex Sans. The [brand guide](brand/index-en.html), [artwork guidance](brand/README.md), and [brand kit ZIP](brand/nasaq-brand-kit.zip) include the wordmark and transparent loaders that animate its lettering.
 
-![Nasaq playground in the Woven Rhythm identity](docs/previews/playground.png)
+![Nasaq playground preview](docs/previews/playground.png)
 
 Preview the [live editor in Arabic](docs/previews/component-editor-ar-dark.png), [layout studio](docs/previews/layouts.png) and [Gregorian/Umm al-Qura date picker](docs/previews/date-picker.png).
 
-Nasaq draws on **DGA Platforms Code**, the **Unified Design System** for the **Kingdom of Saudi Arabia (KSA)** — **كود المنصات، نظام التصميم الموحد، هيئة الحكومة الرقمية** — for relevant foundations and government service conventions. It adds its own design, components, and compositions. **DGA compliance is tracked as evidence and gaps; Nasaq is an independent implementation, with no claim of official endorsement or certification.** Read [DGA alignment](docs/alignment.md) before describing a product as compliant.
+Nasaq draws on **DGA Platforms Code**, the **Unified Design System** for the **Kingdom of Saudi Arabia (KSA)** — **كود المنصات، نظام التصميم الموحد، هيئة الحكومة الرقمية** — for relevant foundations and government service conventions. It adds its own design, components, and compositions. **DGA compliance is tracked as evidence and gaps; Nasaq is an independent implementation, with no claim of official endorsement or certification.** Read [DGA alignment](docs/alignment.md) before describing a product as compliant. The [DGA reference and migration guide](docs/dga-reference.md) records the supplied 2026-10-29 snapshots, semantic light/dark values, reference nodes, and remaining gaps. The export date is not an official release number; 17 files were decoded, six exceeded the 32 MiB transfer limit, and no standalone web Components Library was supplied.
+
+Explore the [template gallery](https://mohamedembarak.github.io/nasaq/#templates), [full-width service page](https://mohamedembarak.github.io/nasaq/?preview=template#templates/service), and [application form](https://mohamedembarak.github.io/nasaq/?preview=template#templates/form). These bilingual examples use local demonstration state; connect your own services for production.
 
 ## Development status
 
@@ -26,7 +28,7 @@ The guide opens in Arabic, with a persistent English switch and keyboard search 
 
 ## What the system is designed to provide
 
-- A coherent Nasaq theme, an optional DGA reference theme, and explicit custom-theme overrides.
+- A source-mapped DGA default foundation, an opt-in Nasaq theme, and explicit custom-theme overrides.
 - Arabic and English content, independent locale and text direction, and logical CSS for RTL/LTR layouts.
 - Native component APIs in each framework, built on shared tokens, styles, and behavior helpers.
 - Vanilla HTML/CSS that remains useful without JavaScript, with explicit enhancement for interactive controls.
@@ -77,7 +79,7 @@ Choose the example you need; each command starts a separate development server. 
 The shared styling contract uses ordinary HTML, `nq-` classes, and `--nq-` custom properties:
 
 ```html
-<section lang="ar" dir="rtl" data-nq-theme="nasaq"
+<section lang="ar" dir="rtl" data-nq-theme="dga"
          data-nq-mode="light" data-nq-density="comfortable">
   <div class="nq-card">
     <div class="nq-card-body">

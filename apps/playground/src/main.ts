@@ -11,6 +11,7 @@ import "./playground.css";
 import "./expansion.css";
 import { renderGuide, renderComponentGuide, guideTitle, guideTopics, bindGuide } from "./guide";
 import { renderHome, bindHome } from "./guide-home";
+import { renderDgaTemplates, bindDgaTemplates } from "./dga-templates";
 import { createGuideSearch } from "./guide-search";
 import "./experience.css";
 import nicLogo from "./assets/nic-logo.webp";
@@ -41,7 +42,7 @@ let dispose = () => {};
 const state = {
   locale: (localStorage.getItem("nasaq-locale") === "en" ? "en" : "ar") as Locale,
   mode: localStorage.getItem("nasaq-mode") || "light",
-  theme: localStorage.getItem("nasaq-theme") || "nasaq",
+  theme: localStorage.getItem("nasaq-theme") || "dga",
   density: "comfortable",
   view: location.hash.slice(1) || "overview",
   framework: localStorage.getItem("nasaq-framework") || "vanilla",
@@ -108,6 +109,9 @@ function categoryName(category: string) {
   return state.locale === 'en' ? category : ({ Actions: 'الإجراءات', Forms: 'المدخلات والنماذج', Navigation: 'التنقّل', Feedback: 'التغذية الراجعة', Content: 'المحتوى', Platforms: 'أنماط المنصات', Layout: 'التخطيط' } as Record<string,string>)[category] || category;
 }
 function shell() {
+  if (new URLSearchParams(location.search).get('preview') === 'template' && state.view.startsWith('templates')) {
+    return `<nav class="nq-inline" aria-label="${t('Template preview controls','أدوات معاينة القالب')}" style="padding:12px 16px;background:var(--nq-color-surface);border-block-end:1px solid var(--nq-color-border)"><a class="nq-button" data-variant="ghost" href="${base}#${e(state.view)}">${icon('arrow-back',16)}${t('Back to the guide','العودة إلى الدليل')}</a><button type="button" class="nq-button" data-variant="ghost" data-action="locale">${t('العربية','English')}</button><button type="button" class="nq-button" data-variant="ghost" data-action="mode">${t('Toggle color mode','تبديل المظهر')}</button></nav><main id="main" tabindex="-1" data-view="${e(state.view)}" style="padding:0">${renderDgaTemplates(state.view,state.locale)||''}</main><div id="toast" role="status" class="toast" hidden></div>`;
+  }
   const titles: Record<string, string> = {
     overview: t('Discover Nasaq', 'اكتشف نسق'), components: t('Components', 'المكوّنات'),
     foundations: t('Foundations', 'الأساسيات'), discover: t('Service discovery', 'اكتشاف الخدمات'),
@@ -130,6 +134,7 @@ function shell() {
         <details class="sidebar-group" ${isDocs || state.view==='overview'?'open':''}><summary>${icon('code',18)}<span>${t('Build with Nasaq','ابدأ مع نسق')}</span></summary><div>${docNav}</div></details>
         ${nav('components',t('Component library','مكتبة المكوّنات'),'layers',`<small>${catalog.length}</small>`)}
         <details class="sidebar-group component-navigation" ${isComponent?'open':''}><summary>${icon('grid',18)}<span>${t('Browse by category','تصفّح حسب الفئة')}</span></summary><div>${componentsNav}</div></details>
+        <details class="sidebar-group" ${state.view.startsWith('templates')?'open':''}><summary>${icon('building',18)}<span>${t('DGA reference templates','قوالب كود المنصات')}</span></summary><div>${nav('templates',t('Template gallery','معرض القوالب'),'grid')}${nav('templates/service',t('Service details','تفاصيل الخدمة'),'briefcase')}${nav('templates/form',t('Application form','نموذج الطلب'),'file')}</div></details>
         <p class="nav-label">${t('CREATE & EXPERIMENT','صمّم وجرّب')}</p>
         ${nav('layouts',t('Layout studio','مختبر التخطيط'),'grid')}${nav('inputs',t('Input laboratory','مختبر المدخلات'),'filter')}${nav('foundations',t('Design foundations','أسس التصميم'),'palette')}${nav('brand',t('Brand identity','الهوية البصرية'),'spark')}
         <details class="sidebar-group" ${['discover','apply','workspace'].includes(state.view)?'open':''}><summary>${icon('briefcase',18)}<span>${t('Complete journeys','تجارب متكاملة')}</span></summary><div>${nav('discover',t('Discover a service','اكتشف خدمة'),'search')}${nav('apply',t('Application flow','رحلة تقديم طلب'),'file')}${nav('workspace',t('Request workspace','مساحة الطلبات'),'briefcase')}</div></details>
@@ -137,11 +142,12 @@ function shell() {
       <div class="sidebar-bottom"><a class="sidebar-github" href="https://github.com/MohamedEmbarak/nasaq" target="_blank" rel="noopener">${icon('code',17)}<span>${t('Source on GitHub','المصدر على GitHub')}</span><span aria-hidden="true">↗</span></a><span class="version">${t('Open source · Apache 2.0','مفتوح المصدر · Apache 2.0')}</span></div>
     </aside>
     ${mobileOpen?`<button class="nav-backdrop" type="button" data-action="menu" aria-label="${t('Close navigation','أغلق التنقّل')}" tabindex="-1"></button>`:''}
-    <div class="main-shell" ${mobileOpen?'inert':''}><header class="topbar"><p class="site-attribution"><img src="${nicLogo}" width="136" height="150" alt="" decoding="async"><span>${t("Developed by the Development Team in the National Platforms Sector — National Information Center", "تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني ")}</span></p><div class="breadcrumb-top"><button type="button" class="icon-button mobile-menu" data-action="menu" aria-controls="site-navigation" aria-expanded="${mobileOpen}" aria-label="${t('Toggle navigation','تبديل التنقّل')}">${icon('menu')}</button><a href="#overview" class="topbar-home">${t('Nasaq','نسق')}</a><span class="breadcrumb-separator" aria-hidden="true">/</span><span>${guideTitle(state.view,state.locale)||titles[state.view]||titles.overview}</span></div><div class="topbar-actions"><button type="button" class="search-trigger" data-action="search-components" aria-label="${t('Search the guide…','ابحث في الدليل…')} ⌘ K" aria-keyshortcuts="Control+k Meta+k">${icon('search',17)}<span>${t('Search the guide…','ابحث في الدليل…')}</span><kbd dir="ltr" aria-hidden="true">⌘ K</kbd></button><button type="button" class="icon-button locale-button" data-action="locale" aria-label="${t('ع — Switch to Arabic','EN — Switch to English')}">${icon('globe',18)}<span>${t('ع','EN')}</span></button><button type="button" class="icon-button" data-action="mode" aria-label="${t('Toggle color mode','تبديل المظهر')}">${icon(state.mode==='light'?'moon':'sun',19)}</button><a class="topbar-github" href="https://github.com/MohamedEmbarak/nasaq" target="_blank" rel="noopener" aria-label="${t('Nasaq on GitHub','نسق على GitHub')}">GitHub <span aria-hidden="true">↗</span></a></div></header>
-    <main id="main" tabindex="-1" data-view="${e(state.view)}">${content()}</main><footer class="page-footer"><span>${t('Made for the way you build.','مصمّم للطريقة التي تبني بها.')}</span><a href="#docs/alignment">${t('DGA-informed. Independently designed.','مستقل في تصميمه. يستلهم كود المنصات.')}</a><span dir="ltr">Apache 2.0 · Nasaq</span></footer></div><div id="toast" role="status" class="toast" hidden></div>`;
+    <div class="main-shell" ${mobileOpen?'inert':''}><header class="topbar"><p class="site-attribution"><img src="${nicLogo}" width="136" height="150" alt="" decoding="async"><span>${t("Developed by the Development Team in the National Platforms Sector — National Information Center", "تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني ")}</span></p><div class="breadcrumb-top"><button type="button" class="icon-button mobile-menu" data-action="menu" aria-controls="site-navigation" aria-expanded="${mobileOpen}" aria-label="${t('Toggle navigation','تبديل التنقّل')}">${icon('menu')}</button><a href="#overview" class="topbar-home">${t('Nasaq','نسق')}</a><span class="breadcrumb-separator" aria-hidden="true">/</span><span>${guideTitle(state.view,state.locale)||titles[state.view]||(state.view.startsWith('templates')?t('DGA reference templates','قوالب كود المنصات'):titles.overview)}</span></div><div class="topbar-actions"><button type="button" class="search-trigger" data-action="search-components" aria-label="${t('Search the guide…','ابحث في الدليل…')} ⌘ K" aria-keyshortcuts="Control+k Meta+k">${icon('search',17)}<span>${t('Search the guide…','ابحث في الدليل…')}</span><kbd dir="ltr" aria-hidden="true">⌘ K</kbd></button><button type="button" class="icon-button locale-button" data-action="locale" aria-label="${t('ع — Switch to Arabic','EN — Switch to English')}">${icon('globe',18)}<span>${t('ع','EN')}</span></button><button type="button" class="icon-button" data-action="mode" aria-label="${t('Toggle color mode','تبديل المظهر')}">${icon(state.mode==='light'?'moon':'sun',19)}</button><a class="topbar-github" href="https://github.com/MohamedEmbarak/nasaq" target="_blank" rel="noopener" aria-label="${t('Nasaq on GitHub','نسق على GitHub')}">GitHub <span aria-hidden="true">↗</span></a></div></header>
+    <main id="main" tabindex="-1" data-view="${e(state.view)}">${content()}</main><footer class="page-footer"><span>${t('Made for the way you build.','مصمّم للطريقة التي تبني بها.')}</span><a href="#docs/alignment">${t('DGA reference · Independent implementation.','مرجع كود المنصات · تنفيذ مستقل.')}</a><span dir="ltr">Apache 2.0 · Nasaq</span></footer></div><div id="toast" role="status" class="toast" hidden></div>`;
 }
 
 function content() {
+  if (state.view === "templates" || state.view.startsWith("templates/")) return `<div class="nq-inline" style="margin-block-end:16px"><a class="nq-button" data-variant="secondary" href="${base}?preview=template#${e(state.view)}" target="_blank" rel="noopener">${t('Open full-width preview','افتح معاينة بعرض كامل')} <span aria-hidden="true">↗</span></a></div>` + (renderDgaTemplates(state.view, state.locale) || overview());
   if (state.view === "components") return componentPage();
   if (state.view === "foundations") return foundations();
   if (state.view === "discover") return discovery();
@@ -258,7 +264,7 @@ function foundations() {
     ["success", t("Success", "نجاح"), "Success"],
     ["warning", t("Warning", "تحذير"), "Warning"],
   ];
-  return `${heading(t("THE SHARED LANGUAGE", "اللغة المشتركة"), t("Flexible by nature.", "المرونة في الأساس."), t("Change the rhythm without losing the system. Themes, type, spacing, and density work together.", "غيّر الإيقاع مع الحفاظ على النظام. الألوان والخطوط والمسافات والكثافة تعمل معًا."))}<div class="theme-toolbar"><label class="nq-field"><span class="nq-label">${t("Theme", "السمة")}</span><select id="theme-select" class="nq-select"><option value="nasaq" ${state.theme === "nasaq" ? "selected" : ""}>${t("Nasaq · Woven Rhythm", "نسق · إيقاع منسوج")}</option><option value="dga" ${state.theme === "dga" ? "selected" : ""}>${t("DGA reference", "مرجع DGA")}</option><option value="custom" ${state.theme === "custom" ? "selected" : ""}>${t("Custom · Indigo", "مخصّص · نيلي")}</option></select></label><label class="nq-field"><span class="nq-label">${t("Density", "الكثافة")}</span><select id="density-select" class="nq-select"><option value="comfortable" ${state.density === "comfortable" ? "selected" : ""}>${t("Comfortable", "مريحة")}</option><option value="compact" ${state.density === "compact" ? "selected" : ""}>${t("Compact", "مكثّفة")}</option></select></label><label class="nq-field"><span class="nq-label">${t("Direction", "الاتجاه")}</span><select id="direction-select" class="nq-select"><option value="ltr" ${document.documentElement.dir === "ltr" ? "selected" : ""}>${t("Left to right", "من اليسار إلى اليمين")}</option><option value="rtl" ${document.documentElement.dir === "rtl" ? "selected" : ""}>${t("Right to left", "من اليمين إلى اليسار")}</option></select></label>${button(icon("download", 17) + t("Export theme CSS", "تصدير CSS للسمة"), 'data-action="export-theme"', "secondary")}</div><section class="section"><h2>${t("Color with a purpose", "ألوان ذات معنى")}</h2><div class="swatch-grid">${palette.map(([key, label]) => `<div class="swatch-card"><div class="swatch" style="background:var(--nq-color-${key})"></div><strong>${label}</strong><code>--nq-color-${key}</code></div>`).join("")}</div></section><section class="foundation-split"><div class="type-specimen"><div class="eyebrow">${t("TYPOGRAPHY", "الخطوط")}</div><p class="type-display" lang="ar" dir="rtl">وضوحٌ يربط التفاصيل</p><p class="type-display latin" lang="en" dir="ltr">Clarity, woven together.</p><p>${t("Readable rhythm in both languages. Type scales serve the content, from a public service page to a working dashboard.", "إيقاع مقروء في اللغتين. مقاييس خط تخدم المحتوى، من صفحة خدمة عامة إلى لوحة عمل.")}</p></div><div class="foundation-preview"><div class="eyebrow">${t("SAME COMPONENTS, YOUR EXPRESSION", "المكوّنات نفسها، بتعبيرك")}</div>${sample("text-field", "theme")}${sample("button", "theme")}${sample("alert", "theme")}</div></section><section class="section"><h2>${t("Space to make sense", "مساحة للوضوح")}</h2><div class="spacing-scale">${[1, 2, 3, 4, 5, 6, 8, 10, 12].map((n) => `<div><span style="width:var(--nq-space-${n})"></span><code>${n}</code></div>`).join("")}</div></section>${codeBlock(":root {\n  --nq-color-primary: #006a64;\n  --nq-color-primary-hover: #005750;\n  --nq-color-primary-subtle: #c8e7dd;\n  --nq-radius-md: 0.5rem;\n}\n/* Components keep the same behavior. */")}`;
+  return `${heading(t("THE SHARED LANGUAGE", "اللغة المشتركة"), t("Flexible by nature.", "المرونة في الأساس."), t("Change the rhythm without losing the system. Themes, type, spacing, and density work together.", "غيّر الإيقاع مع الحفاظ على النظام. الألوان والخطوط والمسافات والكثافة تعمل معًا."))}<div class="theme-toolbar"><label class="nq-field"><span class="nq-label">${t("Theme", "السمة")}</span><select id="theme-select" class="nq-select"><option value="nasaq" ${state.theme === "nasaq" ? "selected" : ""}>${t("Nasaq · Original identity", "نسق · الهوية الأصلية")}</option><option value="dga" ${state.theme === "dga" ? "selected" : ""}>${t("DGA · Default reference", "كود المنصات · المرجع الافتراضي")}</option><option value="custom" ${state.theme === "custom" ? "selected" : ""}>${t("Custom · Indigo", "مخصّص · نيلي")}</option></select></label><label class="nq-field"><span class="nq-label">${t("Density", "الكثافة")}</span><select id="density-select" class="nq-select"><option value="comfortable" ${state.density === "comfortable" ? "selected" : ""}>${t("Comfortable", "مريحة")}</option><option value="compact" ${state.density === "compact" ? "selected" : ""}>${t("Compact", "مكثّفة")}</option></select></label><label class="nq-field"><span class="nq-label">${t("Direction", "الاتجاه")}</span><select id="direction-select" class="nq-select"><option value="ltr" ${document.documentElement.dir === "ltr" ? "selected" : ""}>${t("Left to right", "من اليسار إلى اليمين")}</option><option value="rtl" ${document.documentElement.dir === "rtl" ? "selected" : ""}>${t("Right to left", "من اليمين إلى اليسار")}</option></select></label>${button(icon("download", 17) + t("Export theme CSS", "تصدير CSS للسمة"), 'data-action="export-theme"', "secondary")}</div><section class="section"><h2>${t("Color with a purpose", "ألوان ذات معنى")}</h2><div class="swatch-grid">${palette.map(([key, label]) => `<div class="swatch-card"><div class="swatch" style="background:var(--nq-color-${key})"></div><strong>${label}</strong><code>--nq-color-${key}</code></div>`).join("")}</div></section><section class="foundation-split"><div class="type-specimen"><div class="eyebrow">${t("TYPOGRAPHY", "الخطوط")}</div><p class="type-display" lang="ar" dir="rtl">وضوحٌ يربط التفاصيل</p><p class="type-display latin" lang="en" dir="ltr">Clarity, woven together.</p><p>${t("Readable rhythm in both languages. Type scales serve the content, from a public service page to a working dashboard.", "إيقاع مقروء في اللغتين. مقاييس خط تخدم المحتوى، من صفحة خدمة عامة إلى لوحة عمل.")}</p></div><div class="foundation-preview"><div class="eyebrow">${t("SAME COMPONENTS, YOUR EXPRESSION", "المكوّنات نفسها، بتعبيرك")}</div>${sample("text-field", "theme")}${sample("button", "theme")}${sample("alert", "theme")}</div></section><section class="section"><h2>${t("Space to make sense", "مساحة للوضوح")}</h2><div class="spacing-scale">${[1, 2, 3, 4, 5, 6, 8, 10, 12].map((n) => `<div><span style="width:var(--nq-space-${n})"></span><code>${n}</code></div>`).join("")}</div></section>${codeBlock(":root {\n  --nq-color-primary: #006a64;\n  --nq-color-primary-hover: #005750;\n  --nq-color-primary-subtle: #c8e7dd;\n  --nq-radius-md: 0.5rem;\n}\n/* Components keep the same behavior. */")}`;
 }
 function serviceCard(s: Service) {
   return `<article class="service-card"><div class="service-card-top"><span class="service-icon">${icon(s.icon, 23)}</span>${"popular" in s ? pill(t("Popular", "شائعة"), "success") : ""}</div><h2>${text(s.title)}</h2><p>${text(s.description)}</p><div class="service-meta"><span>${icon("clock", 15)}${s.days} ${t("working days", "أيام عمل")}</span><span>${s.fee ? t("SAR ", "ر.س ") + s.fee : t("Free", "مجانية")}</span></div><button class="service-link" data-service="${s.id}">${t("View service", "عرض الخدمة")}${icon("arrow", 18)}</button></article>`;
@@ -361,28 +367,13 @@ function applySettings() {
   document.documentElement.dataset.nqMode = state.mode;
   document.documentElement.dataset.nqDensity = state.density;
   document.documentElement.style.colorScheme = state.mode;
-  if (state.theme === "custom") {
-    document.documentElement.style.setProperty("--nq-color-primary", "#293B8F");
-    document.documentElement.style.setProperty(
-      "--nq-color-primary-hover",
-      "#1D2C70",
-    );
-    document.documentElement.style.setProperty(
-      "--nq-color-primary-subtle",
-      "#DADFF7",
-    );
-    document.documentElement.style.setProperty(
-      "--nq-color-primary-text",
-      "#293B8F",
-    );
-  } else
-    for (const key of [
-      "primary",
-      "primary-hover",
-      "primary-subtle",
-      "primary-text",
-    ])
-      document.documentElement.style.removeProperty("--nq-color-" + key);
+  const custom = state.mode === 'dark'
+    ? {primary:'#A4BCFD', 'primary-hover':'#B2CCFF', 'primary-active':'#C7D7FE', 'on-primary':'#101828', 'primary-subtle':'#1D2939', 'primary-text':'#B2CCFF'}
+    : {primary:'#293B8F', 'primary-hover':'#1D2C70', 'primary-active':'#18245C', 'on-primary':'#FFFFFF', 'primary-subtle':'#DADFF7', 'primary-text':'#293B8F'};
+  for (const [key, value] of Object.entries(custom)) {
+    if (state.theme === 'custom') document.documentElement.style.setProperty('--nq-color-' + key, value);
+    else document.documentElement.style.removeProperty('--nq-color-' + key);
+  }
 }
 function render() {
   const active = document.activeElement as HTMLInputElement | null;
@@ -397,12 +388,14 @@ function render() {
   document.documentElement.classList.toggle("navigation-open", state.mobileNav);
   const unguide = bindGuide(app);
   const unhome = bindHome(app, state.locale);
+  const untemplates = bindDgaTemplates(app, state.locale);
   const unenhance = enhance(app);
   const unlayout = bindLayoutStudio(app, state.locale);
   const uninput = bindInputLab(app);
   dispose = () => {
     unguide();
     unhome();
+    untemplates();
     uninput();
     unlayout();
     unenhance();

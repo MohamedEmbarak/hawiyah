@@ -1,6 +1,6 @@
 # نسق — Nasaq
 
-**نظام واجهات قابل للتوسعة، يدعم العربية من الأساس، ويستهدف JavaScript دون إطار عمل وReact وVue وAngular.** يمنح نسق المنتجات هوية بصرية مستقلة، وسلوكًا مشتركًا للمكونات، وأنماطًا قابلة للتعديل لبناء رحلات خدمات متكاملة.
+**نظام واجهات قابل للتوسعة، يدعم العربية من الأساس، ويستهدف JavaScript دون إطار عمل وReact وVue وAngular.** يجمع نسق أساسًا بصريًا افتراضيًا مستندًا إلى DGA، وسمات اختيارية، وسلوكًا مشتركًا للمكونات، وأنماطًا قابلة للتعديل لبناء رحلات خدمات متكاملة.
 
 تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني
 
@@ -8,11 +8,13 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 [الدليل التفاعلي](https://mohamedembarak.github.io/nasaq/) · [المستودع](https://github.com/MohamedEmbarak/nasaq) · [English](README.md) · [نطاق التغطية](docs/coverage.md) · [البنية](docs/architecture.md) · [دليل التوسعة](docs/extension.md) · [سجل التحقق](docs/validation.md) · [دليل المساعدات البرمجية](llms.txt)
 
-تجمع هوية **Woven Rhythm** الأخضر المزرق والعاجي الدافئ مع شعار كتابي عربي فقط هو **نسق**. تستخدم كتابة الشعار **Aref Ruqaa Bold محوّلًا إلى مسارات SVG**، فلا يحتاج عرضه إلى تحميل الخط. تبقى خطوط الواجهات IBM Plex Sans Arabic وIBM Plex Sans. يتضمن [دليل الهوية المحلي](brand/index.html) و[إرشادات الشعار](brand/README.md) و[حزمة الهوية ZIP](brand/nasaq-brand-kit.zip) الشعار ومؤشرات تحميل تحرّك حروفه بخلفية شفافة.
+تستخدم الواجهة افتراضيًا أساس DGA المربوط بلقطات المصدر المزوّدة من كود المنصات. وتحتفظ سمة **Woven Rhythm** الاختيارية (`data-nq-theme="nasaq"`) بالأخضر المزرق والعاجي الدافئ. يبقى شعار **نسق** كتابيًا وعربيًا فقط. تستخدم كتابة الشعار **Aref Ruqaa Bold محوّلًا إلى مسارات SVG**، فلا يحتاج عرضه إلى تحميل الخط. تبقى خطوط الواجهات IBM Plex Sans Arabic وIBM Plex Sans. يتضمن [دليل الهوية المحلي](brand/index.html) و[إرشادات الشعار](brand/README.md) و[حزمة الهوية ZIP](brand/nasaq-brand-kit.zip) الشعار ومؤشرات تحميل تحرّك حروفه بخلفية شفافة.
 
 معاينات: [المحرّر المباشر بالعربية](docs/previews/component-editor-ar-dark.png)، و[المعرض بالعربية على الهاتف](docs/previews/playground-ar-mobile.png)، و[استوديو التخطيط](docs/previews/layouts.png)، و[منتقي التاريخ الميلادي وأم القرى](docs/previews/date-picker.png).
 
-يستفيد نسق من إرشادات **هيئة الحكومة الرقمية — DGA** و**كود المنصات — Platforms Code**، وهو **نظام التصميم الموحد — Unified Design System** في **المملكة العربية السعودية — Kingdom of Saudi Arabia (KSA)**، في الأسس المناسبة وتجارب الخدمات الحكومية، مع تصميمه ومكوناته وتركيباته الخاصة. **تُوثَّق مواءمة DGA compliance بالأدلة والفجوات. نسق تنفيذ مستقل، ولا يدّعي اعتمادًا رسميًا أو تصديقًا من الهيئة.** راجع [توثيق المواءمة](docs/alignment.md) قبل وصف أي منتج بأنه متوافق.
+يستفيد نسق من إرشادات **هيئة الحكومة الرقمية — DGA** و**كود المنصات — Platforms Code**، وهو **نظام التصميم الموحد — Unified Design System** في **المملكة العربية السعودية — Kingdom of Saudi Arabia (KSA)**، في الأسس المناسبة وتجارب الخدمات الحكومية، مع تصميمه ومكوناته وتركيباته الخاصة. **تُوثَّق مواءمة DGA compliance بالأدلة والفجوات. نسق تنفيذ مستقل، ولا يدّعي اعتمادًا رسميًا أو تصديقًا من الهيئة.** راجع [توثيق المواءمة](docs/alignment.md) قبل وصف أي منتج بأنه متوافق. يسجل [مرجع DGA ودليل الانتقال](docs/dga-reference.md) لقطات المصدر المزوّدة بتاريخ 2026-10-29، والقيم الدلالية للوضعين الفاتح والداكن، ومعرّفات العناصر والفجوات. تاريخ التصدير ليس رقم إصدار رسميًا؛ فُكّ ترميز 17 ملفًا، وتعذّر نقل ستة ملفات تجاوزت 32 MiB، ولم تُزوَّد مكتبة مستقلة لمكونات الويب.
+
+استكشف [معرض القوالب](https://mohamedembarak.github.io/nasaq/#templates) و[صفحة الخدمة بعرض كامل](https://mohamedembarak.github.io/nasaq/?preview=template#templates/service) و[نموذج الطلب](https://mohamedembarak.github.io/nasaq/?preview=template#templates/form). الأمثلة ثنائية اللغة وتعمل ببيانات تجريبية محلية؛ اربطها بخدمات تطبيقك عند استخدامها فعليًا.
 
 ## حالة التطوير
 
@@ -24,7 +26,7 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 ## اتجاه النظام
 
-- هوية نسق الخاصة، وسمة مرجعية اختيارية مستندة إلى DGA، وإمكان إنشاء سمات مخصصة.
+- أساس DGA افتراضي موثق بالمصدر، وسمة نسق اختيارية، وإمكان إنشاء سمات مخصصة.
 - العربية والإنجليزية، مع استقلال اللغة عن اتجاه العرض، واستخدام خصائص CSS المنطقية لدعم RTL وLTR.
 - مكونات بواجهات برمجية طبيعية لكل إطار، تشترك في قيم التصميم والتنسيق ومنطق التفاعل.
 - HTML وCSS قابلان للاستخدام دون JavaScript حيث تسمح طبيعة المكون، مع تفعيل واضح للسلوك التفاعلي.
@@ -72,7 +74,7 @@ pnpm --filter @nasaq/example-angular dev
 ## مثال HTML
 
 ```html
-<section lang="ar" dir="rtl" data-nq-theme="nasaq"
+<section lang="ar" dir="rtl" data-nq-theme="dga"
          data-nq-mode="light" data-nq-density="comfortable">
   <div class="nq-card">
     <div class="nq-card-body">

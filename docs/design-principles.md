@@ -1,12 +1,12 @@
 # Design principles
 
-Nasaq — نسق is an independent design system for useful, coherent products. DGA Platforms Code is one reference for relevant foundations and government service conventions; Nasaq's visual design, extended components, and product compositions have their own rationale.
+Nasaq — نسق is an independent implementation for useful, coherent products. Its default appearance follows verified DGA Platforms Code foundation values from the supplied snapshot exported on **2026-10-29**. Extensions and application compositions remain separately documented; sharing a foundation does not establish full official component parity.
 
-The visual direction is **Woven Rhythm**: teal/ivory surfaces and an Arabic-only **نسق** wordmark. Its outlined **Aref Ruqaa Bold** lettering needs no runtime font; loader artwork animates the same lettering. Interface text uses **IBM Plex Sans Arabic and IBM Plex Sans**. The [brand decision](../brand/decision.json) and [brand guide](../brand/index.html) hold the artwork rules. Preserve the wordmark's orientation in RTL; mirror directional interface cues only when their meaning calls for it.
+The optional **Woven Rhythm** identity uses teal/ivory surfaces through `data-nq-theme="nasaq"`. The Arabic-only **نسق** wordmark remains the project's identity under either theme. Its outlined **Aref Ruqaa Bold** lettering needs no runtime font; loader artwork animates the same lettering. Interface text uses **IBM Plex Sans Arabic and IBM Plex Sans**. The [brand decision](../brand/decision.json) and [brand guide](../brand/index.html) hold the artwork rules. Preserve the wordmark's orientation in RTL; mirror directional interface cues only when their meaning calls for it.
 
 ## One visual language, several contexts
 
-The default Nasaq theme should feel deliberate across a small form, a dense workspace, and a public service page. Typography, spacing, surfaces, color, hierarchy, and motion should express the same language. A DGA reference theme is optional. Custom branding uses documented token overrides rather than edits scattered across components.
+The default `dga` theme should remain coherent across a small form, a dense workspace, and a public service page. Typography, spacing, surfaces, color and hierarchy should follow the mapped foundation evidence. Choose `nasaq` explicitly for the teal/ivory treatment. Custom branding uses documented token overrides rather than edits scattered across components, and records deviations from the reference when an alignment claim depends on them.
 
 ## Arabic belongs in the foundation
 
@@ -41,3 +41,5 @@ Prefer a small number of meaningful variants and semantic tokens over a large co
 ## Be precise about alignment
 
 Track a requirement's source, scope, and validation separately from a design preference. New layouts, components, and themes are welcome. Their inclusion does not imply DGA approval. See [alignment](alignment.md) for the evidence model.
+
+The [supplied-source record](dga-reference.md) covers 17 decoded files and identifies six transfer-blocked files, mixed imported component versions, and the missing standalone web component library. Export dates identify snapshots, not official release versions. A prototype action with a missing destination or unspecified timing is not a basis for claiming an official animation; retain keyboard and reduced-motion equivalents when implementing verified transitions.

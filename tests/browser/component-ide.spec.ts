@@ -175,7 +175,7 @@ test('theme and navigation rerenders preserve all three edited files and inherit
   await expect(preview.locator('html')).toHaveAttribute('data-nq-mode', 'dark');
   await expect(preview.locator('#draft')).toHaveAttribute('data-ready', 'yes');
   await expect(preview.locator('#draft')).toHaveCSS('border-top-color', 'rgb(176, 0, 32)');
-  await expect(preview.locator('#draft')).toHaveCSS('background-color', 'rgb(41, 59, 143)');
+  await expect(preview.locator('#draft')).toHaveCSS('background-color', 'rgb(164, 188, 253)');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('.mobile-menu[data-action="menu"]').click();

@@ -1,0 +1,405 @@
+{
+  "source": {
+    "file": "Foundations - Platforms Code (Community).fig",
+    "sha256": "bedf813b539f27a6c8f539fa02dfbd5dce05dca79ffa3d1fd6e06faea4c68917",
+    "exported_at": "2026-10-29T08:02:57.448Z",
+    "note": "User-supplied snapshot; export date is not the official release version. No raw assets redistributed."
+  },
+  "selectedVariables": [
+    {
+      "id": "122:19",
+      "name": "Background/background-body",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#F9FAFB",
+        "Dark": "#111927"
+      }
+    },
+    {
+      "id": "225:2",
+      "name": "Background/background-card",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#FFFFFF",
+        "Dark": "#1F2A37"
+      }
+    },
+    {
+      "id": "66:459",
+      "name": "Background/background-neutral-100",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#F3F4F6",
+        "Dark": "#1F2A37"
+      }
+    },
+    {
+      "id": "53:392",
+      "name": "Text/text-default",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#161616",
+        "Dark": "#FFFFFF"
+      }
+    },
+    {
+      "id": "53:348",
+      "name": "Text/text-primary-paragraph",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#384250",
+        "Dark": "#F3F4F6"
+      }
+    },
+    {
+      "id": "53:349",
+      "name": "Text/text-secondary-paragraph",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#6C737F",
+        "Dark": "#E5E7EB"
+      }
+    },
+    {
+      "id": "53:346",
+      "name": "Text/text-display",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#1F2A37",
+        "Dark": "#F9FAFB"
+      }
+    },
+    {
+      "id": "50:236",
+      "name": "Border/border-neutral-primary",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#D2D6DB",
+        "Dark": "#6C737F"
+      }
+    },
+    {
+      "id": "89:3",
+      "name": "Controls/control-border",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#6C737F",
+        "Dark": "#9DA4AE"
+      }
+    },
+    {
+      "id": "50:224",
+      "name": "Button/button-background-primary-default",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#1B8354",
+        "Dark": "#1B8354"
+      }
+    },
+    {
+      "id": "50:228",
+      "name": "Button/button-background-primary-hovered",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#166A45",
+        "Dark": "#166A45"
+      }
+    },
+    {
+      "id": "50:222",
+      "name": "Button/button-background-primary-pressed",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#104631",
+        "Dark": "#104631"
+      }
+    },
+    {
+      "id": "53:391",
+      "name": "Text/text-oncolor-primary",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#FFFFFF",
+        "Dark": "#FFFFFF"
+      }
+    },
+    {
+      "id": "53:336",
+      "name": "Background/background-primary-50",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#F3FCF6",
+        "Dark": "#1B83541A"
+      }
+    },
+    {
+      "id": "50:204",
+      "name": "Text/text-primary",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#1B8354",
+        "Dark": "#54C08A"
+      }
+    },
+    {
+      "id": "50:241",
+      "name": "Border/border-black",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#161616",
+        "Dark": "#FFFFFF"
+      }
+    },
+    {
+      "id": "53:350",
+      "name": "Text/text-success",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#067647",
+        "Dark": "#47CD89"
+      }
+    },
+    {
+      "id": "53:342",
+      "name": "Background/background-success-50",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#ECFDF3",
+        "Dark": "#06764733"
+      }
+    },
+    {
+      "id": "53:352",
+      "name": "Text/text-warning",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#B54708",
+        "Dark": "#FDB022"
+      }
+    },
+    {
+      "id": "53:344",
+      "name": "Background/background-warning-50",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#FFFAEB",
+        "Dark": "#B5470833"
+      }
+    },
+    {
+      "id": "53:353",
+      "name": "Text/text-error",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#B42318",
+        "Dark": "#F97066"
+      }
+    },
+    {
+      "id": "53:426",
+      "name": "Button/button-background-danger-primary-hovered",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#B42318",
+        "Dark": "#B42318"
+      }
+    },
+    {
+      "id": "53:345",
+      "name": "Background/background-error-50",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#FEF3F2",
+        "Dark": "#B4231833"
+      }
+    },
+    {
+      "id": "53:351",
+      "name": "Text/text-info",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#175CD3",
+        "Dark": "#53B1FD"
+      }
+    },
+    {
+      "id": "53:343",
+      "name": "Background/background-info-50",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#EFF8FF",
+        "Dark": "#175CD333"
+      }
+    },
+    {
+      "id": "110:5",
+      "name": "Global/background-disabled",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#E5E7EB",
+        "Dark": "#384250"
+      }
+    },
+    {
+      "id": "77:15",
+      "name": "Global/text-default-disabled",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#9DA4AE",
+        "Dark": "#9DA4AE"
+      }
+    },
+    {
+      "id": "53:381",
+      "name": "Background/background-black",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#161616",
+        "Dark": "#FFFFFF"
+      }
+    },
+    {
+      "id": "50:240",
+      "name": "Border/border-white",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#FFFFFF",
+        "Dark": "#161616"
+      }
+    },
+    {
+      "id": "114:11",
+      "name": "Form/field-border-default",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#9DA4AE",
+        "Dark": "#6C737F"
+      }
+    },
+    {
+      "id": "114:12",
+      "name": "Form/field-border-hovered",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#384250",
+        "Dark": "#E5E7EB"
+      }
+    },
+    {
+      "id": "114:13",
+      "name": "Form/field-border-pressed",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#0D121C",
+        "Dark": "#FCFCFD"
+      }
+    },
+    {
+      "id": "113:7",
+      "name": "Form/field-background-default",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#FFFFFF",
+        "Dark": "#1F2A37"
+      }
+    },
+    {
+      "id": "50:213",
+      "name": "Form/field-text-placeholder",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#6C737F",
+        "Dark": "#E5E7EB"
+      }
+    },
+    {
+      "id": "72:6",
+      "name": "Background/background-SA-Flag",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#074D31",
+        "Dark": "#1B8354"
+      }
+    },
+    {
+      "id": "53:425",
+      "name": "Button/button-background-danger-primary-default",
+      "collection": "Themes",
+      "modes": {
+        "Light": "#D92D20",
+        "Dark": "#D92D20"
+      }
+    },
+    {
+      "id": "50:3",
+      "name": "container-max-width-desktop",
+      "collection": "Containers",
+      "modes": {
+        "Value": 1280
+      }
+    },
+    {
+      "id": "50:4",
+      "name": "container-padding-desktop",
+      "collection": "Containers",
+      "modes": {
+        "Value": 32
+      }
+    },
+    {
+      "id": "50:5",
+      "name": "container-padding-mobile",
+      "collection": "Containers",
+      "modes": {
+        "Value": 16
+      }
+    },
+    {
+      "id": "425:95",
+      "name": "Radius/radius-md",
+      "collection": "Radius",
+      "modes": {
+        "Desktop": 8,
+        "Tablet": 8,
+        "Mobile": 8
+      }
+    }
+  ],
+  "inputMotion": {
+    "file": "Form Template - Platforms Code (Community).fig",
+    "node": "43:3431",
+    "trigger": "ON_CLICK",
+    "transition": "SMART_ANIMATE",
+    "durationMs": 150,
+    "easing": [
+      0,
+      0,
+      0.58,
+      1
+    ],
+    "scope": "Selected text-input pressed transitions; not a universal animation duration."
+  },
+  "adaptations": [
+    "Shared subtle text uses Neutral/600 in light mode for contrast across muted surfaces.",
+    "Shared strong boundary uses Controls/control-border; Text Input keeps its separate reference field-border.",
+    "Original Nasaq overlay and unverified focus geometry retained pending further assessment.",
+    "Existing breakpoint names retained for API stability; supplied1440/430 frames do not establish breakpoints."
+  ],
+  "selectedEffects": [
+    {
+      "node": "7:12421",
+      "name": "Shadows/shadow-sm",
+      "css": "0px 1px 2px 0px rgb(16 24 40 / 0.05), 0px 1px 3px 0px rgb(16 24 40 / 0.05)"
+    },
+    {
+      "node": "7:12422",
+      "name": "Shadows/shadow-md",
+      "css": "0px 2px 4px -2px rgb(16 24 40 / 0.06), 0px 4px 8px -2px rgb(16 24 40 / 0.10)"
+    },
+    {
+      "node": "7:12423",
+      "name": "Shadows/shadow-lg",
+      "css": "0px 4px 6px -2px rgb(16 24 40 / 0.03), 0px 12px 16px -4px rgb(16 24 40 / 0.08)"
+    }
+  ]
+}

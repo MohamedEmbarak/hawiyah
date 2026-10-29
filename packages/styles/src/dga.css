@@ -1,0 +1,291 @@
+/* DGA reference profile — supplied local snapshot, 2026-10-29.
+   This is a source-informed implementation, not an endorsement or parity claim.
+   See docs/dga-reference.md for provenance and accessibility adaptations.
+
+   Structural options inherit from the nearest theme. Explicit non-DGA themes
+   reset them, including when nested inside the default DGA page. The whitespace
+   / initial switches select colors at the component itself, so a nested dark
+   mode resolves its own semantic colors rather than its ancestor's light ones.
+   No @scope or script-driven media measurement is required. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-dga-on: ;
+  --nq-dga-off: initial;
+  --nq-profile-control-radius: 0.25rem;
+  --nq-profile-button-gap: 0.25rem;
+  --nq-profile-button-padding-block: 0px;
+  --nq-profile-button-padding-lg: 1rem;
+  --nq-profile-button-font: 1rem;
+  --nq-profile-button-leading: 1.5;
+  --nq-profile-field-padding-block: 0.375rem;
+  --nq-profile-field-padding-start: 0.5rem;
+  --nq-profile-field-padding-end: 1rem;
+  --nq-profile-field-font-lg: 1rem;
+  --nq-profile-field-leading: 1.5;
+  --nq-profile-field-focus-line: 100% 2px;
+  --nq-profile-field-pressed-line: 35% 2px;
+  --nq-profile-field-shadow: 0 2px 4px -2px rgb(16 24 40 / 0.06), 0 4px 8px -2px rgb(16 24 40 / 0.1);
+  --nq-profile-textarea-height: 6rem;
+  --nq-profile-textarea-padding: 0.75rem 1rem;
+  --nq-profile-label-leading: 1.42857143;
+  --nq-profile-header-height: 4.5rem;
+  --nq-profile-header-padding: 0px 2rem;
+  --nq-profile-header-gap: 1rem;
+  --nq-profile-footer-padding: 2.5rem 2rem;
+}
+:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
+  --nq-dga-on: initial;
+  --nq-dga-off: ;
+  --nq-profile-control-radius: initial;
+  --nq-profile-button-gap: initial;
+  --nq-profile-button-padding-block: initial;
+  --nq-profile-button-padding-lg: initial;
+  --nq-profile-button-font: initial;
+  --nq-profile-button-leading: initial;
+  --nq-profile-field-padding-block: initial;
+  --nq-profile-field-padding-start: initial;
+  --nq-profile-field-padding-end: initial;
+  --nq-profile-field-font-lg: initial;
+  --nq-profile-field-leading: initial;
+  --nq-profile-field-focus-line: initial;
+  --nq-profile-field-pressed-line: initial;
+  --nq-profile-field-shadow: initial;
+  --nq-profile-textarea-height: initial;
+  --nq-profile-textarea-padding: initial;
+  --nq-profile-label-leading: initial;
+  --nq-profile-header-height: initial;
+  --nq-profile-header-padding: initial;
+  --nq-profile-header-gap: initial;
+  --nq-profile-footer-padding: initial;
+}
+
+/* Button symbols form 2:5126 / 2:5246 / 2:5366: 40/32/24px,
+   padding 16/12/8px, gap4, radius4. Public comfortable sizes map to
+   40/32/40; compact maps to32/24/40. Density tokens own the heights. */
+.nq-button {
+  gap: var(--nq-profile-button-gap, var(--nq-space-2));
+  padding-block: var(--nq-profile-button-padding-block, var(--nq-space-2));
+  border-radius: var(--nq-profile-control-radius, var(--nq-radius-md));
+  font-size: var(--nq-profile-button-font, var(--nq-text-sm));
+  line-height: var(--nq-profile-button-leading, var(--nq-leading-heading));
+}
+.nq-button[data-size='sm'] {
+  padding-block: var(--nq-profile-button-padding-block, var(--nq-space-1));
+  padding-inline: var(--nq-dga-on, var(--nq-space-3)) var(--nq-dga-off, clamp(0.5rem, calc(var(--nq-control-height-sm) - 1.25rem), 0.75rem));
+  font-size: var(--nq-dga-on, var(--nq-text-xs)) var(--nq-dga-off, clamp(0.75rem, calc(var(--nq-control-height-sm) - 1.125rem), 0.875rem));
+}
+.nq-button[data-size='lg'] { padding-inline: var(--nq-profile-button-padding-lg, var(--nq-space-6)); font-size: var(--nq-text-md); }
+.nq-button { --nq-button-control-height: var(--nq-control-height); }
+.nq-button[data-size='sm'] { --nq-button-control-height: var(--nq-control-height-sm); }
+.nq-button[data-size='lg'] { --nq-button-control-height: var(--nq-control-height-lg); }
+.nq-button:is(:not([data-size]), [data-size]) { padding-block: clamp(0px, calc((var(--nq-button-control-height) - 1em * var(--nq-profile-button-leading, var(--nq-leading-heading)) - 2px) / 2), var(--nq-profile-button-padding-block, var(--nq-space-2))); }
+.nq-button[data-icon-only], .nq-button.nq-icon-button { padding-inline: 0; }
+.nq-button[data-variant='danger'] {
+  --nq-button-bg: var(--nq-color-danger-background, var(--nq-color-danger));
+  --nq-button-fg: var(--nq-dga-on, var(--nq-color-surface)) var(--nq-dga-off, #fff);
+}
+.nq-button:not([data-variant], :disabled, [aria-disabled='true']):active,
+.nq-button[data-variant='primary']:not(:disabled, [aria-disabled='true']):active {
+  background: var(--nq-color-primary-active);
+}
+
+/* Text Input form 43:3717(default),43:3813(hover),43:3912/3919(pressed),
+   43:4026/4034(focus),43:4334(medium),43:3741(error).
+   Radius4; input40/32; content padding8/16; label gap8 and line20.
+   The source's #9DA4AE 1px resting border fails 3:1 on white. We use
+   Controls/control-border (#6C737F light, #9DA4AE dark) as an explicit
+   accessibility adaptation; the exact source field-border token is retained.
+   A keyboard outline remains in addition to the reference bottom line.
+   Source SMART_ANIMATE:150ms cubic-bezier(0,0,.58,1), evidence recorded in
+   packages/tokens/reference/dga-foundations.json. */
+:is(.nq-input, .nq-textarea, .nq-select) {
+  padding-block: var(--nq-profile-field-padding-block, var(--nq-space-2));
+  padding-inline: var(--nq-profile-field-padding-start, var(--nq-space-3)) var(--nq-profile-field-padding-end, var(--nq-space-3));
+  border-radius: var(--nq-profile-control-radius, var(--nq-radius-md));
+  background-color: var(--nq-color-field-background, var(--nq-color-surface));
+  background-image: linear-gradient(var(--nq-color-field-active, var(--nq-color-focus)), var(--nq-color-field-active, var(--nq-color-focus)));
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 0% 2px;
+  line-height: var(--nq-profile-field-leading, var(--nq-leading-normal));
+  transition: border-color var(--nq-duration-input, 150ms) var(--nq-ease-input, ease-out), background-color var(--nq-duration-input, 150ms) var(--nq-ease-input, ease-out), background-size var(--nq-duration-input, 150ms) var(--nq-ease-input, ease-out), box-shadow var(--nq-duration-input, 150ms) var(--nq-ease-input, ease-out);
+}
+:is(.nq-input, .nq-textarea)::placeholder { color: var(--nq-color-field-placeholder, var(--nq-color-text-subtle)); }
+:is(.nq-input, .nq-textarea, .nq-select):hover:not(:disabled, [readonly]) { border-color: var(--nq-color-field-hover, var(--nq-color-primary)); }
+:is(.nq-input, .nq-textarea, .nq-select):focus:not(:disabled, [readonly]) {
+  border-color: var(--nq-dga-on, var(--nq-color-primary)) var(--nq-dga-off, var(--nq-color-border-strong));
+  background-size: var(--nq-profile-field-focus-line, 0% 2px);
+  box-shadow: var(--nq-profile-field-shadow, none);
+}
+:is(.nq-input, .nq-textarea, .nq-select):active:not(:disabled, [readonly]) {
+  background-size: var(--nq-profile-field-pressed-line, 0% 2px);
+  background-color: var(--nq-dga-on, var(--nq-color-field-background)) var(--nq-dga-off, var(--nq-color-surface-muted));
+}
+:is(.nq-input, .nq-textarea, .nq-select)[data-size='sm'] { padding-block: var(--nq-profile-button-padding-block, var(--nq-space-1)); }
+:is(.nq-input, .nq-textarea, .nq-select)[data-size='lg'] {
+  padding-inline: var(--nq-profile-field-padding-start, var(--nq-space-4)) var(--nq-profile-field-padding-end, var(--nq-space-4));
+  font-size: var(--nq-profile-field-font-lg, var(--nq-text-lg));
+}
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'] { background-color: var(--nq-color-surface-muted); background-image: linear-gradient(var(--nq-color-field-active, var(--nq-color-focus)), var(--nq-color-field-active, var(--nq-color-focus))); background-repeat: no-repeat; background-position: center bottom; background-size: 0% 2px; }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus { background-size: var(--nq-profile-field-focus-line, 0% 2px); }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:active { background-size: var(--nq-profile-field-pressed-line, 0% 2px); }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus-visible { border-color: var(--nq-color-border-strong); }
+:is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true'] {
+  border-color: var(--nq-color-danger);
+  background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger));
+}
+:is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true']:is(:hover, :focus, :active) { border-color: var(--nq-color-danger); }
+@supports selector(:user-invalid) {
+  :is(.nq-input, .nq-textarea, .nq-select):user-invalid { border-color: var(--nq-color-danger); background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger)); }
+  :is(.nq-input, .nq-textarea, .nq-select):user-invalid:is(:hover, :focus, :active) { border-color: var(--nq-color-danger); }
+}
+:is(.nq-input, .nq-textarea, .nq-select):disabled,
+:is(.nq-input, .nq-textarea)[readonly] { background-size: 0% 2px; box-shadow: none; }
+:is(.nq-input, .nq-textarea, .nq-select):disabled { border-color: var(--nq-color-border); background-color: var(--nq-dga-on, var(--nq-color-disabled)) var(--nq-dga-off, transparent); }
+:is(.nq-input, .nq-textarea)[readonly] { background-color: var(--nq-dga-on, var(--nq-color-surface-muted)) var(--nq-dga-off, transparent); }
+/* Textarea form5:47724:96px high, padding12/16. User resizing remains native. */
+.nq-textarea { min-block-size: var(--nq-profile-textarea-height, 7.5rem); padding: var(--nq-profile-textarea-padding, var(--nq-space-2) var(--nq-space-3)); }
+/* Fit the requested density without clipping translated or zoomed text. */
+:is(.nq-input, .nq-select) { --nq-field-height: var(--nq-control-height); }
+:is(.nq-input, .nq-select)[data-size='sm'] { --nq-field-height: var(--nq-control-height-sm); }
+:is(.nq-input, .nq-select)[data-size='lg'] { --nq-field-height: var(--nq-control-height-lg); }
+:is(.nq-input, .nq-select):is(:not([data-size]), [data-size]) { padding-block: clamp(0px, calc((var(--nq-field-height) - 1em * var(--nq-profile-field-leading, var(--nq-leading-normal)) - 2px) / 2), var(--nq-profile-field-padding-block, var(--nq-space-2))); }
+:is(.nq-input, .nq-select)[data-size='sm'] { line-height: max(1em, min(calc(1em * var(--nq-profile-field-leading, var(--nq-leading-normal))), calc(var(--nq-field-height) - 2px))); }
+.nq-label, .nq-hint, .nq-error { line-height: var(--nq-profile-label-leading, var(--nq-leading-normal)); }
+.nq-input-addon { border-radius: var(--nq-profile-control-radius, var(--nq-radius-md)); }
+/* Group corners must win over the later profile radius. */
+.nq-input-group > :not(:first-child) { border-start-start-radius: 0; border-end-start-radius: 0; }
+.nq-input-group > :not(:last-child) { border-start-end-radius: 0; border-end-end-radius: 0; }
+
+/* Portal header: form2:38369 and service20:4646, height72, desktop
+   inline32; mobile form48:3893 inline16. Header content may wrap when
+   translated/zoomed rather than clipping controls. */
+.nq-portal-header {
+  gap: var(--nq-profile-header-gap, var(--nq-space-5));
+  min-block-size: var(--nq-profile-header-height, 5rem);
+  padding: var(--nq-profile-header-padding, var(--nq-space-4) clamp(1rem, 4vw, 3rem));
+}
+.nq-portal-header-inner, .nq-portal-header-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: var(--nq-profile-header-height, auto);
+}
+.nq-portal-header-inner > *, .nq-portal-header-main > * { min-inline-size: 0; }
+.nq-portal-header :is(.nq-portal-actions, .nq-portal-header-actions) { flex-shrink: 0; }
+.nq-portal-header :is(.nq-portal-brand, nav a) { color: var(--nq-color-heading, var(--nq-color-text)); }
+.nq-portal-header nav a { position: relative; padding-inline: 0.5rem; }
+.nq-portal-header nav a[aria-current='page'] { color: var(--nq-color-primary-text); }
+.nq-portal-notice { padding-block: 0.375rem; color: var(--nq-color-text-muted); }
+
+/* Footer form2:44049 / service1:52987: background-SA-Flag #074D31
+   in light mode, inline32. Height is content-driven, not the fixed frame520.
+   Existing simple PortalFooter markup and the composed columns both work. */
+.nq-portal-footer {
+  padding: var(--nq-profile-footer-padding, var(--nq-space-8) clamp(1rem, 4vw, 3rem));
+  background: var(--nq-dga-on, var(--nq-color-canvas)) var(--nq-dga-off, var(--nq-color-footer));
+  color: var(--nq-dga-on, var(--nq-color-text)) var(--nq-dga-off, var(--nq-color-on-footer));
+}
+.nq-portal-footer :is(nav a, > p, > small) { color: var(--nq-dga-on, var(--nq-color-primary-text)) var(--nq-dga-off, var(--nq-color-on-footer)); }
+.nq-portal-footer a:focus-visible { outline-color: currentColor; }
+.nq-portal-footer > .nq-service-container { inline-size: min(80rem, 100%); }
+.nq-portal-footer-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 2rem; inline-size: 100%; }
+.nq-portal-footer > .nq-portal-footer-main { flex-basis: 100%; }
+.nq-portal-footer-main > * { min-inline-size: 0; }
+.nq-portal-footer-main :is(h2, h3, h4) { margin: 0 0 1rem; font-size: 1rem; line-height: 1.5; font-weight: var(--nq-weight-semibold); }
+.nq-portal-footer-links, .nq-portal-footer .nq-portal-footer-links { display: flex; flex-direction: column; align-items: start; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.nq-portal-footer .nq-portal-footer-links ul { display: flex; flex-direction: column; align-items: start; gap: 0.75rem; }
+.nq-portal-footer-links a { color: inherit; font-size: 0.875rem; line-height: 1.42857143; text-underline-offset: 0.2em; }
+.nq-portal-footer-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; inline-size: 100%; padding-block-start: 1.5rem; border-block-start: 1px solid currentColor; }
+.nq-portal-footer > .nq-portal-footer-bottom { flex-basis: 100%; }
+.nq-portal-footer-bottom :is(p, small) { margin: 0; font-size: 0.75rem; line-height: 1.5; }
+
+/* Service page service1:21393/21394/21435 and form2:17299/17300/17331.
+   The desktop reference content is1280 with832main +32gap +416aside.
+   832+32+416=1280. minmax tracks preserve this ratio below the max width.
+   Collapse960 and field collapse600 are implementation policies informed by
+   the source's mobile composition, not assertions about the Figma frame size. */
+:where(.nq-service-container, .nq-service-layout, .nq-service-main,
+  .nq-service-aside, .nq-form-layout, .nq-form-sidebar, .nq-form-main,
+  .nq-form-grid, .nq-stepper-responsive, .nq-stepper-mobile,
+  .nq-service-metadata) { box-sizing: border-box; min-inline-size: 0; font-family: var(--nq-font-sans); }
+.nq-service-container { inline-size: min(80rem, calc(100% - 2 * var(--nq-content-gutter, 2rem))); margin-inline: auto; }
+.nq-service-layout, .nq-form-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; gap: 2rem; }
+.nq-service-main, .nq-form-main { display: flex; flex-direction: column; gap: 2rem; color: var(--nq-color-text); }
+.nq-service-main { gap: 4rem; }
+.nq-service-main > *, .nq-form-main > *, .nq-service-aside > * { min-inline-size: 0; }
+.nq-service-aside { display: flex; flex-direction: column; gap: 1.5rem; padding: 2.5rem; border: 1px solid var(--nq-color-border); border-radius: 1rem; background: var(--nq-color-surface); color: var(--nq-color-text); overflow-wrap: anywhere; }
+.nq-service-aside :is(h2, h3, p) { margin: 0; }
+.nq-service-aside :is(h2, h3) { color: var(--nq-color-heading); font-size: var(--nq-text-lg); line-height: var(--nq-leading-heading); font-weight: var(--nq-weight-semibold); }
+.nq-service-aside .nq-divider { margin: 0; }
+.nq-service-metadata { display: flex; flex-direction: column; gap: 1rem; margin: 0; }
+.nq-service-metadata > div { display: grid; gap: 0.25rem; }
+.nq-service-metadata dt { color: var(--nq-color-text-muted); font-size: 0.875rem; line-height: 1.42857143; }
+.nq-service-metadata dd { margin: 0; color: var(--nq-color-heading); font-size: 1rem; line-height: 1.5; font-weight: var(--nq-weight-medium); }
+.nq-form-main { grid-column: 1; grid-row: 1 / span 2; }
+.nq-form-layout > .nq-stepper-responsive { grid-column: 2; grid-row: 1; }
+.nq-form-layout > .nq-service-aside { grid-column: 2; grid-row: 2; }
+.nq-form-sidebar { display: flex; flex-direction: column; gap: 2rem; grid-column: 2; grid-row: 1 / span 2; }
+.nq-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem 2rem; }
+.nq-form-grid > * { min-inline-size: 0; }
+.nq-form-grid > [data-span='full'] { grid-column: 1 / -1; }
+
+/* Form progress card desktop2:17331 (40px padding, radius16), mobile
+   2:17587 (16inline/24block). Radial302:28486/28048:64px diameter,
+   88% inner radius (~4px ring), text14/20; summary gap4 and text12/18.
+   A visible count/current label is required; the ring itself is decorative. */
+.nq-stepper-responsive { padding: 2.5rem; border-radius: 1rem; background: var(--nq-color-canvas); color: var(--nq-color-heading); }
+.nq-stepper-responsive .nq-stepper { flex-direction: column; gap: 0; }
+.nq-stepper-responsive .nq-step { position: relative; align-items: start; flex: none; min-block-size: 5rem; gap: 1rem; padding-block-end: 1.5rem; line-height: 1.5; }
+.nq-stepper-responsive .nq-step:last-child { min-block-size: 2rem; padding-block-end: 0; }
+.nq-stepper-responsive .nq-step::before { position: relative; z-index: 1; inline-size: 2rem; block-size: 2rem; box-shadow: none; }
+.nq-stepper-responsive .nq-step:not(:last-child)::after { position: absolute; inset-inline-start: calc(1rem - 1px); inset-block: 2rem 0; inline-size: 2px; min-inline-size: 0; block-size: auto; }
+.nq-stepper-responsive .nq-step:is([data-state='complete'], [data-state='completed'])::after { background: var(--nq-color-primary); }
+.nq-stepper-responsive .nq-step:is([data-state='complete'], [data-state='completed'])::before { border-color: var(--nq-color-primary); background: var(--nq-color-primary); color: var(--nq-color-on-primary); }
+.nq-stepper-mobile { display: none; align-items: center; gap: 0.5rem; }
+.nq-stepper-ring { position: relative; isolation: isolate; display: grid; flex: 0 0 4rem; place-items: center; inline-size: 4rem; block-size: 4rem; border-radius: 50%; color: var(--nq-color-text-muted); font-size: 0.875rem; line-height: 1.42857143; font-variant-numeric: tabular-nums; }
+.nq-stepper-ring::before { content: ''; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: conic-gradient(var(--nq-color-primary) clamp(0%, var(--nq-step-progress, 25%), 100%), var(--nq-color-border) 0); mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px)); }
+.nq-stepper-summary, .nq-stepper-mobile-content { display: flex; flex-direction: column; gap: 0.25rem; min-inline-size: 0; padding-inline-end: 1rem; }
+:is(.nq-stepper-summary, .nq-stepper-mobile-content) strong { color: var(--nq-color-heading); font-size: 0.875rem; line-height: 1.42857143; font-weight: var(--nq-weight-semibold); }
+:is(.nq-stepper-summary, .nq-stepper-mobile-content) :is(p, small, span) { margin: 0; color: var(--nq-color-text-muted); font-size: 0.75rem; line-height: 1.5; }
+
+@media (max-width: 59.999rem) {
+  .nq-service-layout, .nq-form-layout { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .nq-form-layout { grid-template-areas: 'steps' 'main' 'guidance'; }
+  .nq-form-sidebar { display: contents; }
+  .nq-form-main { grid-area: main; }
+  .nq-form-layout > .nq-stepper-responsive, .nq-form-sidebar > .nq-stepper-responsive { grid-area: steps; }
+  .nq-form-layout > .nq-service-aside, .nq-form-sidebar > .nq-service-aside { grid-area: guidance; }
+  .nq-stepper-responsive { padding: 1.5rem 1rem; }
+  .nq-stepper-responsive .nq-stepper { display: none; }
+  .nq-stepper-mobile { display: flex; }
+  .nq-service-aside { padding: 1.5rem; }
+  .nq-portal-footer-main { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 37.499rem) {
+  .nq-service-container { inline-size: calc(100% - 2 * var(--nq-content-gutter-mobile, 1rem)); }
+  .nq-form-grid { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  .nq-service-main { gap: 2rem; }
+  .nq-portal-header { padding-inline: 1rem; }
+  .nq-portal-header-inner { gap: 0.75rem; }
+  .nq-portal-header-inner > nav { order: 3; flex-basis: 100%; }
+  .nq-portal-header-inner > nav ul { flex-direction: column; align-items: stretch; gap: 0.25rem; }
+  .nq-portal-header :is(.nq-portal-header-inner, .nq-portal-header-main) > nav[data-open='false'] { display: none; }
+  .nq-portal-footer-main { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .nq-portal-footer-bottom { align-items: start; flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.nq-input, .nq-textarea, .nq-select) { transition: none; }
+}
+@media (forced-colors: active) {
+  :is(.nq-input, .nq-textarea, .nq-select) { border-color: ButtonText; background-image: none; }
+  :is(.nq-input, .nq-textarea, .nq-select):focus { border-color: Highlight; box-shadow: none; }
+  :is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true'] { border-style: dashed; }
+  :is(.nq-input, .nq-textarea, .nq-select):disabled { border-color: GrayText; color: GrayText; }
+  .nq-portal-footer { border-block-start: 1px solid CanvasText; }
+  .nq-stepper-ring::before { background: none; mask: none; border: 4px solid CanvasText; border-block-start-color: Highlight; }
+  .nq-stepper-responsive .nq-step::before { border-color: CanvasText; }
+  .nq-stepper-responsive .nq-step[aria-current='step']::before { outline: 2px solid Highlight; outline-offset: 2px; }
+}

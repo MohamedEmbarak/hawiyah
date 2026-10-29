@@ -12,7 +12,8 @@
     "tokens.json",
     "README.md",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "reference"
   ],
   "exports": {
     ".": {
@@ -20,7 +21,8 @@
       "import": "./dist/index.js"
     },
     "./tokens.css": "./dist/tokens.css",
-    "./tokens.json": "./tokens.json"
+    "./tokens.json": "./tokens.json",
+    "./reference/dga-foundations.json": "./reference/dga-foundations.json"
   },
   "scripts": {
     "generate": "node scripts/generate.mjs",

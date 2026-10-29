@@ -9,7 +9,7 @@ import brandReverse from '../../../brand/assets/nasaq-lockup-bilingual-reverse.s
 import symbol from '../../../brand/assets/nasaq-symbol.svg';
 import symbolReverse from '../../../brand/assets/nasaq-symbol-reverse.svg';
 
-const locale = ref('ar'); const direction = ref('rtl'); const theme = ref('nasaq'); const mode = ref('light'); const density = ref('comfortable');
+const locale = ref('ar'); const direction = ref('rtl'); const theme = ref('dga'); const mode = ref('light'); const density = ref('comfortable');
 const t = (ar: string, en: string) => locale.value === 'ar' ? ar : en;
 const number = (value: number) => formatNumber(value, { locale: locale.value === 'ar' ? 'ar-SA' : 'en-SA' });
 watchEffect(() => { document.documentElement.lang = locale.value; document.documentElement.dir = direction.value; Object.assign(document.documentElement.dataset, { nqTheme: theme.value, nqMode: mode.value, nqDensity: density.value }); document.title = t('نسق · الخدمات', 'Nasaq · Services'); });
@@ -50,16 +50,16 @@ function submit() {
 <template>
   <a class="skip-link" href="#main">{{ t('انتقل إلى المحتوى', 'Skip to content') }}</a>
   <header class="masthead">
-    <div class="nq-container masthead-inner">
+    <div class="nq-container nq-service-container masthead-inner">
       <a class="brand" href="#main"><img :src="mode === 'dark' ? brandReverse : brand" alt="نسق · Nasaq" /></a>
       <div class="nq-cluster"><Badge tone="info">Vue 3</Badge><Tooltip :content="t('نموذج تفاعلي للخدمات الرقمية', 'An interactive digital services example')"><Button variant="ghost">{{ t('عن التجربة', 'About this example') }}</Button></Tooltip><Avatar :name="t('زائر نسق', 'Nasaq guest')" :initials="t('ن', 'N')" /></div>
     </div>
   </header>
-  <main id="main" class="nq-container page-main">
+  <main id="main" class="nq-container nq-service-container page-main">
     <div class="settings">
       <Select :label="t('اللغة', 'Language')" v-model="locale" :options="[{value:'ar',label:'العربية'},{value:'en',label:'English'}]" />
       <Select :label="t('الاتجاه', 'Direction')" v-model="direction" :options="[{value:'rtl',label:'RTL'},{value:'ltr',label:'LTR'}]" />
-      <Select :label="t('السمة', 'Theme')" v-model="theme" :options="[{value:'nasaq',label:t('نسق','Nasaq')},{value:'dga',label:t('مستوحاة من الهيئة','DGA informed')},{value:'custom',label:t('مخصصة','Custom')}]" />
+      <Select :label="t('السمة', 'Theme')" v-model="theme" :options="[{value:'dga',label:t('مستوحاة من الهيئة','DGA informed')},{value:'nasaq',label:t('نسق','Nasaq')},{value:'custom',label:t('مخصصة','Custom')}]" />
       <Select :label="t('المظهر', 'Mode')" v-model="mode" :options="[{value:'light',label:t('فاتح','Light')},{value:'dark',label:t('داكن','Dark')}]" />
       <Select :label="t('الكثافة', 'Density')" v-model="density" :options="[{value:'comfortable',label:t('مريحة','Comfortable')},{value:'compact',label:t('مكثفة','Compact')}]" />
     </div>
@@ -71,13 +71,19 @@ function submit() {
     <Alert v-if="success" tone="success" :title="t('تم إرسال طلبك بنجاح', 'Your request has been submitted')">{{ t('يمكنك متابعة الحالة من قائمة الطلبات أدناه.', 'Follow its progress in the request list below.') }}</Alert>
     <Tabs v-model="tab" :label="t('مساحة الخدمات', 'Service workspace')" :items="[{value:'apply',label:t('طلب جديد','New application')},{value:'requests',label:t('طلباتي','My requests')},{value:'components',label:t('المكونات','Components')}]">
       <template #apply>
-        <div class="content-grid">
-          <Card>
+        <div class="nq-form-layout">
+            <div class="nq-stepper-responsive">
+              <Stepper :label="t('مراحل الطلب', 'Application steps')" :current="reviewOpen ? 'review' : 'details'" :items="[{value:'details',label:t('التفاصيل','Details')},{value:'review',label:t('المراجعة','Review')},{value:'send',label:t('الإرسال','Submit')}]" />
+              <div class="nq-stepper-mobile" role="group" :aria-label="t(`الخطوة ${number(reviewOpen ? 2 : 1)} من ${number(3)}`, `Step ${reviewOpen ? 2 : 1} of 3`)">
+                <span class="nq-stepper-ring" :style="{'--nq-step-progress': reviewOpen ? '66.667%' : '33.333%'}" aria-hidden="true">{{ number(reviewOpen ? 2 : 1) }} / {{ number(3) }}</span>
+                <div class="nq-stepper-summary"><strong>{{ reviewOpen ? t('المراجعة', 'Review') : t('التفاصيل', 'Details') }}</strong><p>{{ t('التالي: ', 'Next: ') }}{{ reviewOpen ? t('الإرسال', 'Submit') : t('المراجعة', 'Review') }}</p></div>
+              </div>
+            </div>
+          <Card class="nq-form-main">
             <template #header><h2>{{ t('ابدأ طلبك', 'Start your application') }}</h2><p class="nq-hint">{{ t('الحقول المعلّمة بنجمة مطلوبة.', 'Fields marked with an asterisk are required.') }}</p></template>
             <form class="nq-stack" @submit.prevent="review">
-              <Stepper :label="t('مراحل الطلب', 'Application steps')" current="details" :items="[{value:'details',label:t('التفاصيل','Details')},{value:'review',label:t('المراجعة','Review')},{value:'send',label:t('الإرسال','Submit')}]" />
-              <div class="form-grid"><TextField :label="t('الاسم الكامل', 'Full name')" name="applicant" v-model="applicant" autocomplete="name" required :placeholder="t('أدخل اسمك الكامل', 'Enter your full name')" /><TextField :label="t('البريد الإلكتروني', 'Email address')" name="email" type="email" dir="ltr" v-model="email" autocomplete="email" required placeholder="name@example.com" /></div>
-              <div class="form-grid"><Select :label="t('نوع الخدمة', 'Service type')" name="service" v-model="service" :options="services" required /><Combobox :label="t('المدينة', 'City')" name="city" v-model="city" :options="cities" required :hint="t('ابحث واختر مدينة من القائمة.', 'Search and choose a city from the list.')" :empty-message="t('لا توجد نتائج', 'No results found')" :required-message="t('اختر مدينة من القائمة.', 'Choose a city from the list.')" :results-message="count => t(`${number(count)} نتائج متاحة`, `${count} results available`)" /></div>
+              <div class="nq-form-grid"><TextField :label="t('الاسم الكامل', 'Full name')" name="applicant" v-model="applicant" autocomplete="name" required :placeholder="t('أدخل اسمك الكامل', 'Enter your full name')" /><TextField :label="t('البريد الإلكتروني', 'Email address')" name="email" type="email" dir="ltr" v-model="email" autocomplete="email" required placeholder="name@example.com" /></div>
+              <div class="nq-form-grid"><Select :label="t('نوع الخدمة', 'Service type')" name="service" v-model="service" :options="services" required /><Combobox :label="t('المدينة', 'City')" name="city" v-model="city" :options="cities" required :hint="t('ابحث واختر مدينة من القائمة.', 'Search and choose a city from the list.')" :empty-message="t('لا توجد نتائج', 'No results found')" :required-message="t('اختر مدينة من القائمة.', 'Choose a city from the list.')" :results-message="count => t(`${number(count)} نتائج متاحة`, `${count} results available`)" /></div>
               <TextField v-if="service === 'business'" :label="t('اسم المنشأة', 'Business name')" name="company" v-model="company" autocomplete="organization" required />
               <Textarea :label="t('تفاصيل الطلب', 'Application details')" name="details" v-model="details" :rows="4" required :hint="t('صف ما تحتاجه لمساعدتنا في توجيه طلبك.', 'Tell us what you need so we can direct your request.')" />
               <FileUpload :label="t('المرفقات الداعمة', 'Supporting documents')" name="attachment" accept=".pdf,.png,.jpg,.jpeg" multiple :hint="t('ملفات PDF أو صور. المرفقات اختيارية.', 'PDF files or images. Attachments are optional.')" @update:files="files = $event" /><span v-if="files.length" class="nq-hint">{{ files.map(file => file.name).join('، ') }}</span>
@@ -88,11 +94,11 @@ function submit() {
               <div class="form-actions"><Button type="submit">{{ t('مراجعة الطلب', 'Review application') }} <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 19 19 5M5 5h14v14" /></svg></Button><Button type="reset" variant="ghost">{{ t('مسح الحقول', 'Clear fields') }}</Button></div>
             </form>
           </Card>
-          <aside class="nq-stack">
-            <Card><template #header><h2>{{ t('قبل أن تبدأ', 'Before you begin') }}</h2></template><ul class="guidance"><li>{{ t('جهّز بيانات التواصل الخاصة بك.', 'Have your contact information ready.') }}</li><li>{{ t('اختر الخدمة والمدينة المناسبة.', 'Choose the relevant service and city.') }}</li><li>{{ t('راجع التفاصيل قبل الإرسال.', 'Review your details before submitting.') }}</li></ul><Divider /><div class="progress-label"><span>{{ t('اكتمال البيانات', 'Application progress') }}</span><strong>{{ number(completion) }}%</strong></div><Progress :label="t('اكتمال البيانات', 'Application progress')" :value="completion" /></Card>
-            <Alert tone="info" :title="t('تجربة توضيحية', 'Demonstration')">{{ t('تبقى البيانات في هذه الصفحة فقط وتُمسح عند تحديثها.', 'Data stays on this page and clears when you reload.') }}</Alert>
-            <Accordion :items="[{value:'time',title:t('متى يصلني الرد؟','When will I hear back?'),content:t('هذا نموذج توضيحي. لا تُرسل الطلبات إلى جهة خارجية.','This is a demonstration. Requests are not sent to an external service.')},{value:'edit',title:t('هل يمكن تعديل الطلب؟','Can I edit my application?'),content:t('يمكنك العودة من شاشة المراجعة لتعديل البيانات قبل الإرسال.','Return from the review dialog to edit your information before submitting.')}]" />
-          </aside>
+          <div class="nq-service-aside nq-stack">
+              <Card><template #header><h2>{{ t('قبل أن تبدأ', 'Before you begin') }}</h2></template><ul class="guidance"><li>{{ t('جهّز بيانات التواصل الخاصة بك.', 'Have your contact information ready.') }}</li><li>{{ t('اختر الخدمة والمدينة المناسبة.', 'Choose the relevant service and city.') }}</li><li>{{ t('راجع التفاصيل قبل الإرسال.', 'Review your details before submitting.') }}</li></ul><Divider /><div class="progress-label"><span>{{ t('اكتمال البيانات', 'Application progress') }}</span><strong>{{ number(completion) }}%</strong></div><Progress :label="t('اكتمال البيانات', 'Application progress')" :value="completion" /></Card>
+              <Alert tone="info" :title="t('تجربة توضيحية', 'Demonstration')">{{ t('تبقى البيانات في هذه الصفحة فقط وتُمسح عند تحديثها.', 'Data stays on this page and clears when you reload.') }}</Alert>
+              <Accordion :items="[{value:'time',title:t('متى يصلني الرد؟','When will I hear back?'),content:t('هذا نموذج توضيحي. لا تُرسل الطلبات إلى جهة خارجية.','This is a demonstration. Requests are not sent to an external service.')},{value:'edit',title:t('هل يمكن تعديل الطلب؟','Can I edit my application?'),content:t('يمكنك العودة من شاشة المراجعة لتعديل البيانات قبل الإرسال.','Return from the review dialog to edit your information before submitting.')}]" />
+            </div>
         </div>
       </template>
       <template #requests>

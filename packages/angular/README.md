@@ -45,7 +45,7 @@ Load `@nasaq/styles/styles.css` once in the host application. The optional
 `@nasaq/styles/reset.css` is separate. Themes apply to a containing element:
 
 ```html
-<main data-nq-theme="nasaq" data-nq-mode="light"
+<main data-nq-theme="dga" data-nq-mode="light"
       data-nq-density="comfortable" dir="rtl" lang="ar">
   <!-- application -->
 </main>

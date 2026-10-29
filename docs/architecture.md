@@ -2,6 +2,8 @@
 
 Nasaq has a shared foundation and native framework renderers. Vanilla comes first as the reference for HTML semantics and interaction, while React, Vue, and Angular reuse the foundation through their own component models.
 
+The default appearance is `dga`, based on the verified foundation values in the supplied Platforms Code snapshot exported on **2026-10-29**. The `nasaq` theme is an explicit visual option. This changes the shared appearance without changing framework rendering ownership or the `nq-` API. [The reference record](dga-reference.md) separates mapped evidence, implementation choices, and unresolved source coverage.
+
 The implementation has seven packages and a 77-entry catalog across four adapters. This scope includes native controls, interactive components, content/service compositions, and 12 CSS layout primitives. The [coverage guide](coverage.md) distinguishes these from native input aliases and external integration recipes. Source presence and verification remain separate in the catalog.
 
 ```mermaid
@@ -43,7 +45,7 @@ Public component classes use the `nq-` prefix; design variables use `--nq-`. Com
 Theme, color mode, density, direction, and locale are separate axes:
 
 ```html
-<main data-nq-theme="nasaq"
+<main data-nq-theme="dga"
       data-nq-mode="light"
       data-nq-density="comfortable"
       lang="ar" dir="rtl">
@@ -51,7 +53,9 @@ Theme, color mode, density, direction, and locale are separate axes:
 </main>
 ```
 
-The intended theme values are `nasaq`, `dga`, and `custom`; mode values are `light` and `dark`; density values are `comfortable` and `compact`. A selector expresses configuration, not verified coverage of every possible combination. Maintain a tested configuration matrix.
+The theme values are `dga` (default), `nasaq` (opt-in teal/ivory identity), and `custom` (application overrides); mode values are `light` and `dark`; density values are `comfortable` and `compact`. A selector expresses configuration, not verified coverage of every possible combination. Maintain a tested configuration matrix.
+
+The supplied evidence contains 17 decoded files, including Foundations and service/form templates; six files could not be transferred because they exceeded 32 MiB. No standalone web component library was supplied. Local foundation collections are the baseline for token mapping; imported component caches contain multiple versions and need separate reconciliation. Shared tokens therefore do not establish complete component or template parity, official endorsement, or certification.
 
 ## Behavior and DOM ownership
 
@@ -90,6 +94,8 @@ Calendar and DatePicker use Gregorian ISO `YYYY-MM-DD` values with independent `
 ## Responsive layout
 
 The 12 layout primitives share the pure `layoutStyles` helper. It maps spacing, alignment, columns, and sizing props to `--nq-layout-*` variables. Shared CSS resolves responsive `base`, `sm`, `md`, `lg`, and `xl` values at 40, 48, 64, and 80 rem breakpoints. No JavaScript viewport measurement is required, so the same layout configuration works during server rendering and in vanilla HTML. Read the [styles API](../packages/styles/README.md) for exact props and examples.
+
+These responsive steps are Nasaq's runtime contract. The supplied 1440px desktop and 430px mobile frames are comparison examples, not evidence for CSS breakpoint thresholds. Template implementation must also reflow at intermediate widths and at 320 CSS pixels; see [layout evidence](layout.md#supplied-layout-reference).
 
 ## Specialist engines and services
 

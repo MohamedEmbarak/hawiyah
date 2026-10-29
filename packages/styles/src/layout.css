@@ -35,8 +35,13 @@
   font-family: var(--nq-font-sans);
 }
 :where(.nq-stack, .nq-inline, .nq-grid, .nq-columns, .nq-sidebar, .nq-app-shell) > * { min-inline-size: 0; }
-.nq-container { inline-size: min(var(--nq-layout-max-width), calc(100% - 3rem)); margin-inline: auto; }
+.nq-container { inline-size: min(var(--nq-layout-max-width), calc(100% - 2 * var(--nq-content-gutter, 1.5rem))); margin-inline: auto; }
 .nq-container[data-variant='fluid'] { inline-size: 100%; }
+/* Mobile gutter is a layout policy; the reference frame widths are not
+   themselves breakpoints. Figma variable 50:3/4/5: 1280 / 32 / 16px. */
+@media (max-width: 37.499rem) {
+  .nq-container:not([data-variant='fluid']) { inline-size: min(var(--nq-layout-max-width), calc(100% - 2 * var(--nq-content-gutter-mobile, 1rem))); }
+}
 .nq-stack { display: flex; flex-direction: column; flex-wrap: nowrap; align-items: var(--nq-layout-align); justify-content: var(--nq-layout-justify); gap: var(--nq-layout-current-gap); }
 .nq-inline { --nq-layout-align: center; display: flex; flex-direction: row; flex-wrap: var(--nq-layout-wrap); align-items: var(--nq-layout-align); justify-content: var(--nq-layout-justify); }
 .nq-grid, .nq-columns {

@@ -2,7 +2,7 @@
 
 Search terms: **DGA compliance**, **Platforms Code**, **Saudi Digital Government Authority**, **هيئة الحكومة الرقمية**, **كود المنصات**, **نسق**.
 
-Nasaq is independently designed and DGA-informed. It can support products that need to evaluate Platforms Code alignment, while also supporting independent visual identities and components beyond the official examples. A theme choice does not certify an application. No official endorsement, certification, or complete conformance is claimed.
+Nasaq is an independent implementation with a DGA-based default foundation mapped from supplied Platforms Code snapshots. It supports products that need to evaluate Platforms Code alignment, while retaining an opt-in Nasaq theme and components beyond the supplied templates. A theme choice does not certify an application. No official endorsement, certification, or complete conformance is claimed.
 
 ## Separate three kinds of decisions
 
@@ -23,7 +23,7 @@ An observed pattern on another platform is inspiration, not evidence of permissi
 | [DGA accessibility guide V1.0](https://dga.gov.sa/sites/default/files/2022-12/The%20Guideline%20for%20Web%20Accessibility%20of%20Government%20Websites%20%E2%80%93%20V1.0_1.pdf), §5.1 | This published guide identifies WCAG 2.1 AA as the minimum level for government agencies | Current applicability must be checked for a specific government deployment; Nasaq's WCAG 2.2 AA target is a project decision |
 | [Official National Day 95 announcement](https://www.spa.gov.sa/en/N2402528) | DGA and GEA released an official themed variation of Platforms Code | Does not grant unrestricted agency rebranding while preserving a compliance claim |
 
-The [official design portal](https://design.dga.gov.sa/) remains the intended reference for detailed design guidance. During the initial research, direct portal requests timed out or were unavailable, and some DGA documents were readable only through indexed primary-source excerpts. The current detailed component inventory, token values, and customization rules have not been fully verified. Do not convert these gaps into assumed rules.
+The [official design portal](https://design.dga.gov.sa/) remains the intended reference for current design guidance. Initial portal access was incomplete. The later supplied Community exports dated 2026-10-29 provide inspectable local foundation values and template instructions; their export date is not an official release version. Seventeen files were decoded, six files above 32 MiB could not be transferred, and no standalone web Components Library was supplied. The local Foundations collections resolve 784 variables; imported caches contain multiple versions and require explicit reference mapping. See [the source snapshot record](dga-reference.md) for hashes, node IDs, light/dark values, instructions, and limits. Current official-version status and exhaustive component parity remain unestablished.
 
 ## Evidence from Saudi platforms
 
@@ -42,8 +42,8 @@ Musaned's article was directly accessible during research. The other three state
 
 | Area | Planned | Built | Verified |
 |---|---|---|---|
-| Independent Nasaq visual identity | Yes | Woven Rhythm brand kit and component theme | Focused brand rendering and selected contrast checks recorded |
-| DGA reference theme | Yes | Token and style implementation exists | Selected contrast pairs checked; full source/version comparison pending |
+| Independent Nasaq visual identity | Yes | Arabic wordmark and opt-in Woven Rhythm theme | Existing brand/rendering checks are scoped in the validation record |
+| DGA default foundation | Yes | Source-mapped light/dark tokens and DGA-scoped styles; explicit Nasaq theme retained | Source values, node IDs, and adaptations are recorded; current test outcomes belong to the validation record |
 | Arabic/English and RTL/LTR | Required project baseline | Expanded 77-entry catalog and examples have implementations | Only the scopes recorded in validation and catalog evidence are verified; exhaustive matrix pending |
 | Accessible semantics and interaction | Required project baseline | Expanded catalog uses native semantics and explicit behavior contracts | Selected automated/keyboard checks are recorded; expansion coverage, manual screen-reader work, and full audit are separate gates |
 | Exact official component parity | Coverage audit planned | Not established | Not established |
@@ -53,9 +53,13 @@ Use [components.json](../components.json) for per-component build and verificati
 
 The [validation record](validation.md) describes the actual checks. Passing runtime, contrast, or axe tests does not establish alignment with every DGA requirement.
 
-## The reference theme
+## The default foundation and alternative themes
 
-`data-nq-theme="dga"` selects a reference-oriented appearance; it is not a compliance switch. Document verified token sources and any adaptations alongside that theme. Dark mode, compact density, original components, and alternative compositions need their own evaluation rather than inheriting a compliance claim from the selector.
+`data-nq-theme="dga"` explicitly selects the default foundation, including source-based light/dark semantic modes. An unthemed root uses this foundation; `data-nq-theme="nasaq"` retains the original palette and font/radius/spacing/content metrics, while custom themes start from DGA with application-owned overrides. The selector is not a compliance switch.
+
+The [public foundation reference](../packages/tokens/reference/dga-foundations.json), [token source](../packages/tokens/tokens.json), and [scoped component styles](../packages/styles/src/dga.css) retain the selected source nodes and adaptations. For example, the shared subtle-text role uses a stronger neutral in light mode because it is reused on muted surfaces; field placeholders retain their separate source semantic. The source resting field border remains recorded as `#9DA4AE` in light mode, while rendered fields use the stronger control border `#6C737F` and preserve visible focus outlines. Control density values are shared across DGA and Nasaq, as detailed in the [migration record](dga-reference.md); selecting Nasaq does not freeze every legacy visual detail. Document adaptations explicitly instead of presenting them as unchanged source values.
+
+Dark mode, compact density, original components, and alternative compositions need their own evaluation. The supplied Service/Form instructions specifically preserve structure, colors, and fonts when detaching their header/footer; their broader screen-customization guidance is not blanket permission to restyle those areas while claiming exact fidelity. Follow the [migration and template guidance](dga-reference.md) and record application-specific choices.
 
 Applications remain responsible for their content, integrations, complete user journeys, identity, and any deployment-specific obligations. Public compliance statements should name the reference version, assessed scope, known deviations, and evidence.
 

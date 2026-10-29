@@ -5,12 +5,12 @@ const samples: Record<string, readonly string[]> = {
   "getting-started": [
     "npm install --global pnpm@11.25.0\ngit clone https://github.com/MohamedEmbarak/nasaq.git\ncd nasaq\npnpm install --frozen-lockfile\npnpm build:packages\npnpm dev",
     "import '@nasaq/styles/reset.css'; // Optional\nimport '@nasaq/styles/styles.css';",
-    "<main lang=\"ar\" dir=\"rtl\"\n      data-nq-theme=\"nasaq\" data-nq-mode=\"light\"\n      data-nq-density=\"comfortable\">\n  <button type=\"button\" class=\"nq-button\">ابدأ الطلب</button>\n</main>",
+    "<main lang=\"ar\" dir=\"rtl\"\n      data-nq-theme=\"dga\" data-nq-mode=\"light\"\n      data-nq-density=\"comfortable\">\n  <button type=\"button\" class=\"nq-button\">ابدأ الطلب</button>\n</main>",
     "pnpm build\npnpm test\npnpm test:browser\npnpm check:packages"
   ],
   "vanilla": [
     "pnpm build:packages\npnpm dev",
-    "<div id=\"application\" lang=\"ar\" dir=\"rtl\" data-nq-theme=\"nasaq\">\n  <div class=\"nq-field\">\n    <label class=\"nq-label\" for=\"name\">الاسم الكامل</label>\n    <input id=\"name\" name=\"name\" class=\"nq-input\"\n           autocomplete=\"name\" required aria-describedby=\"name-hint\">\n    <span id=\"name-hint\" class=\"nq-hint\">كما يظهر في المستند.</span>\n  </div>\n  <button type=\"button\" class=\"nq-button\">متابعة</button>\n</div>",
+    "<div id=\"application\" lang=\"ar\" dir=\"rtl\" data-nq-theme=\"dga\">\n  <div class=\"nq-field\">\n    <label class=\"nq-label\" for=\"name\">الاسم الكامل</label>\n    <input id=\"name\" name=\"name\" class=\"nq-input\"\n           autocomplete=\"name\" required aria-describedby=\"name-hint\">\n    <span id=\"name-hint\" class=\"nq-hint\">كما يظهر في المستند.</span>\n  </div>\n  <button type=\"button\" class=\"nq-button\">متابعة</button>\n</div>",
     "import '@nasaq/styles/styles.css';\nimport { enhance } from '@nasaq/vanilla';\n\nconst root = document.querySelector('#application');\nif (!root) throw new Error('Application root not found.');\nlet dispose = enhance(root);\n\nfunction replaceView(markup) {\n  dispose();\n  root.innerHTML = markup; // Use only your own trusted templates.\n  dispose = enhance(root);\n}\n\n// When leaving this view:\ndispose();"
   ],
   "react": [
@@ -26,7 +26,7 @@ const samples: Record<string, readonly string[]> = {
     "import { Component } from '@angular/core';\nimport { FormsModule } from '@angular/forms';\nimport { NqButtonDirective, NqTextFieldComponent } from '@nasaq/angular';\n\n@Component({\n  standalone: true,\n  imports: [FormsModule, NqButtonDirective, NqTextFieldComponent],\n  template: `\n    <form #form=\"ngForm\" lang=\"ar\" dir=\"rtl\" (ngSubmit)=\"save()\">\n      <nq-text-field controlId=\"name\" label=\"الاسم\" name=\"name\"\n        [(ngModel)]=\"name\" [required]=\"true\" />\n      <button nqButton type=\"submit\">حفظ</button>\n      <button nqButton variant=\"secondary\" type=\"button\"\n        (click)=\"form.resetForm()\">إعادة تعيين</button>\n    </form>\n  `,\n})\nexport class RequestForm {\n  name = '';\n  save() { /* Your application action. */ }\n}"
   ],
   "theming": [
-    "<main data-nq-theme=\"nasaq\" data-nq-mode=\"dark\"\n      data-nq-density=\"comfortable\" lang=\"ar\" dir=\"rtl\">\n  <!-- Components inherit this context. -->\n</main>",
+    "<main data-nq-theme=\"dga\" data-nq-mode=\"dark\"\n      data-nq-density=\"comfortable\" lang=\"ar\" dir=\"rtl\">\n  <!-- Components inherit this context. -->\n</main>",
     "[data-nq-theme=\"custom\"] {\n  --nq-color-primary: #293b8f;\n  --nq-color-primary-hover: #1d2c70;\n  --nq-color-on-primary: #ffffff;\n  --nq-color-primary-subtle: #dadff7;\n  --nq-color-primary-text: #293b8f;\n  --nq-radius-md: 0.5rem;\n}"
   ],
   "layouts": [
@@ -157,7 +157,7 @@ const articles: Record<string, string> = {
 <p class="guide-lead">غيّر المظهر عبر قيم تصميم دلالية. اجعل السمة، والوضع اللوني، والكثافة، واللغة، واتجاه النص إعدادات مستقلة.</p>
 <h2 id="theme-context">حدّد السمة على عنصر يضم المكونات</h2>
 {{code:0}}
-<p>السمات المتاحة هي <code>nasaq</code> و<code>dga</code> و<code>custom</code>. اختر الوضع <code>light</code> أو <code>dark</code>، والكثافة <code>comfortable</code> أو <code>compact</code>. جرّب التركيبات في صفحة <a href="#foundations">الأسس</a>.</p>
+<p>السمة الافتراضية هي <code>dga</code>، وترتبط بلقطات المصدر المزوّدة لأسس كود المنصات. اختر <code>nasaq</code> للاحتفاظ بألوان هوية نسق ومقاييس الخطوط والزوايا والمسافات والمحتوى الأصلية؛ وتبدأ <code>custom</code> من أساس DGA مع تجاوزاتك الخاصة. اختر الوضع <code>light</code> أو <code>dark</code>، والكثافة <code>comfortable</code> أو <code>compact</code>. جرّب التركيبات في صفحة <a href="#foundations">الأسس</a>، واقرأ <a href="#docs/alignment">إرشادات المصدر والانتقال</a>.</p>
 <h2 id="semantic-overrides">عدّل المعنى المشترك بدلًا من كل مكون</h2>
 {{code:1}}
 <p>حمّل التجاوزات بعد ملف التنسيق المشترك. راجع تباين النص والتركيز وحالات التعطيل والتحويم والأخطاء في الوضعين الفاتح والداكن. قد يحتاج اللون المناسب لخلفية زر ممتلئ إلى قيمة مختلفة عند استخدامه نصًا فوق سطح.</p>
@@ -288,21 +288,34 @@ const articles: Record<string, string> = {
 <p>استعن بـ<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/extension.md" target="_blank" rel="noopener">دليل التوسعة ↗</a> و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/CONTRACT.md" target="_blank" rel="noopener">عقد التنفيذ المشترك ↗</a> و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/llms.txt" target="_blank" rel="noopener">المرجع المختصر للمساعدات البرمجية ↗</a>. المشروع مرخّص وفق <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 ↗</a>، وتبقى إشعارات الأطراف الأخرى سارية.</p>
 `,
   "alignment": `
-<p class="guide-lead">نظام تصميم مستقل يستفيد من كود المنصات ونظام التصميم الموحد لهيئة الحكومة الرقمية السعودية.</p>
-<h2 id="national-platforms">أساس عملي للمنصات الوطنية</h2>
-<p>يستند نسق إلى <strong>كود المنصات · DGA Platforms Code</strong> و<strong>نظام التصميم الموحد · Unified Design System</strong> الصادر عن هيئة الحكومة الرقمية، في الأسس المناسبة وأنماط تقديم الخدمات. ويحتفظ بهويته العربية وتنفيذه ونموذجه الخاص للتوسعة.</p>
-<h2 id="product-alignment">تُقيّم مواءمة DGA على مستوى المنتج</h2>
-<p>السمة <code>dga</code> مرجع بصري، وليست اعتمادًا أو شهادة أو ضمانًا لمطابقة منصة كاملة. يحتاج محتوى المنتج ومعرّفاته الرسمية وخصوصيته وإمكانية الوصول ورحلات الاستخدام والمتطلبات الخاصة بخدماته إلى تقييم مستقل.</p>
-<h2 id="evidence-record">اربط الدليل بالمتطلب</h2>
+<p class="guide-lead">أساس افتراضي مستند إلى DGA، بمراجع يمكن تتبّعها، وتنفيذ مستقل، ونقاط توسعة واضحة.</p>
+<h2 id="reference-snapshot">ما المرجع الذي يستخدمه نسق؟</h2>
+<p>تربط سمة <code>dga</code> الافتراضية قيمها بالأسس المحلية في ملفات Figma Community المزوّدة من <strong>كود المنصات · DGA Platforms Code</strong> بتاريخ <strong><bdi>2026-10-29</bdi></strong>. هذا تاريخ التصدير، وليس رقم إصدار رسميًا أو إثباتًا أن الملفات تمثل أحدث إرشادات الهيئة. يحتفظ نسق بشعاره العربي وواجهاته البرمجية.</p>
+<p>فُكّ ترميز 17 ملفًا، وتركّز الفحص التفصيلي على الأسس وقالبَي صفحة الخدمة والنموذج. تجاوزت ستة ملفات حد النقل البالغ 32 MiB: الأيقونات، ويوم التأسيس السعودي، والصفحة الرئيسية، والحج، ومكونات الجوال، وصفحة البحث. لم تُزوَّد مكتبة مستقلة لمكونات الويب؛ لذلك لا يثبت فهرس نسق المؤلف من 77 مكوّنًا مطابقة جميع المكونات الرسمية.</p>
+<h2 id="semantic-source-values">قيم المصدر في الوضعين الفاتح والداكن</h2>
+<p>يحتوي ملف الأسس على 784 متغيرًا محليًا حُلّت قيمه. لكل دور دلالي قيمه في الوضعين؛ ولا ينتج الوضع الداكن من عكس ألوان الوضع الفاتح. من أمثلة ذلك:</p>
 <ul>
-<li>سجّل الإرشاد المعني وإصداره ومصدره.</li>
-<li>حدّد التنفيذ والفحوص التي تدعم المتطلب.</li>
-<li>وثّق الاختلافات المقصودة والفجوات المتبقية.</li>
-<li>أعد تقييم التجربة كاملة بعد التخصيص، ولا تستنتج المطابقة من الألوان أو أسماء المكونات.</li>
+<li>خلفية الصفحة <code>Background/background-body</code>، العنصر <code>122:19</code>: <code>#F9FAFB</code> فاتح و<code>#111927</code> داكن.</li>
+<li>النص الافتراضي <code>Text/text-default</code>، العنصر <code>53:392</code>: <code>#161616</code> فاتح و<code>#FFFFFF</code> داكن.</li>
+<li>خلفية حقل الإدخال <code>Form/field-background-default</code>، العنصر <code>113:7</code>: <code>#FFFFFF</code> فاتح و<code>#1F2A37</code> داكن.</li>
+<li>اللون الأساسي في العنصر <code>50:65</code> هو <code>#1B8354</code>، بينما يستخدم النص الأساسي <code>Text/text-primary</code> في العنصر <code>50:204</code> اللون <code>#54C08A</code> في الوضع الداكن. لا تُستخدم هذه الأدوار بالتبادل.</li>
 </ul>
-<p>ابدأ من <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/alignment.md" target="_blank" rel="noopener">سجل مواءمة DGA ومصادرها ↗</a> و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/coverage.md" target="_blank" rel="noopener">خريطة تغطية المكونات ↗</a>.</p>
-`,
-};
+<p>يسجل <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/packages/tokens/reference/dga-foundations.json" target="_blank" rel="noopener">مرجع الأسس المنشور ↗</a> ومصدر قيم التصميم معرّفات العناصر والتعديلات. مثلًا، يستخدم النص الثانوي المشترك درجة محايدة أغمق في الوضع الفاتح لأنه يظهر أيضًا فوق أسطح مخففة اللون؛ ويحتفظ النص الإرشادي داخل الحقل بقيمته الدلالية الخاصة. تبقى قيمة حدود الحقل الأصلية في حالة السكون مسجلة باللون <code>#9DA4AE</code> في الوضع الفاتح؛ ويستخدم التنفيذ اللون الأقوى <code>#6C737F</code> لزيادة التباين، مع الحفاظ على حدود التركيز المرئية. الارتباط بالمصدر وتقييم الإتاحة سجلان منفصلان.</p>
+<h2 id="template-guidance">طبّق تعليمات القوالب</h2>
+<ul>
+<li>مراجع الخدمة المفحوصة هي <code>1:21371</code> و<code>1:22148</code>، وللجوال <code>27:4851</code>. ومراجع النموذج هي <code>2:17277</code>، وللجوال <code>7:3658</code>.</li>
+<li>حافظ على بنية الترويسة والتذييل وألوانهما وخطوطهما عند تطبيق تعليمات فصلهما الواردة في المصدر. شريط التنقّل الثانوي اختياري.</li>
+<li>قدّم وصفًا موجزًا للخدمة وخطوات مرقمة ومعلومات الفئة المستهدفة والمدة والقنوات والتكلفة والتواصل والوصول إلى الأسئلة الشائعة.</li>
+<li>وضّح الحقول المطلوبة والخطوات المرقمة. يصف قالب النموذج مؤشر خطوات دائريًا للشاشات الصغيرة؛ أرفق به وصفًا نصيًا للتقدم.</li>
+<li>العرضان 1440 و430 بكسل أمثلة لإطارات التصميم، وليسا نقطتَي توقف رسميتين في CSS. اختبر إعادة التدفق على عروض أصغر ومتوسطة.</li>
+<li>لا تثبت وجهة انتقال مفقودة أو مدة حركة غير محددة سلوكًا رسميًا. حافظ على بدائل لوحة المفاتيح وتقليل الحركة في التنفيذ.</li>
+</ul>
+<h2 id="theme-migration">نقل تطبيق قائم إلى الأساس الافتراضي</h2>
+<p>حدّد <code>data-nq-theme="dga"</code> صراحة، أو استخدم الأساس الافتراضي على عنصر جذر دون سمة. وللاحتفاظ بالألوان ومقاييس الخطوط والزوايا والمسافات والمحتوى الأصلية، حدّد <code>data-nq-theme="nasaq"</code>. تشترك السمتان في ارتفاعات عناصر التحكم: الكثافة المريحة 40 بكسل للحجم الافتراضي و32 للصغير و40 للكبير؛ والمكثفة 32 للافتراضي و24 للصغير و40 للكبير، عند حجم خط جذري قدره 16 بكسل. لذلك لا يحفظ اختيار نسق كل تفصيل بصري سابق. قد يحافظ اختيار سمة محفوظ سابقًا على مظهر مختلف في الدليل. راجع التجاوزات المخصصة والمسافات والتركيز والتحقق من الإدخال والاتجاهين بعد الانتقال؛ تبقى عقود قيم المكونات وأحداثها وقيم التاريخ بصيغة ISO مستقلة عن التغيير البصري.</p>
+<h2 id="product-alignment">تُقيّم مواءمة DGA على مستوى المنتج</h2>
+<p>لا تمنح السمة أو سجل المصدر اعتمادًا أو شهادة أو ضمانًا للمطابقة الكاملة. يحتاج المحتوى والمعرّفات الرسمية المصرّح بها والخصوصية والإتاحة ورحلات الاستخدام والتزامات الخدمة إلى تقييم مستقل. لا تُضمَّن ملفات Figma الخام أو الأصول المصدّرة بالجملة في الحزم المنشورة؛ فأذونات الأصول منفصلة عن ترخيص Apache 2.0 لشفرة نسق.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/dga-reference.md" target="_blank" rel="noopener">سجل لقطات المصدر والانتقال الكامل ↗</a>، و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/alignment.md" target="_blank" rel="noopener">سجل المتطلبات والمواءمة ↗</a>، و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/validation.md" target="_blank" rel="noopener">الفحوص التي أُجريت بالفعل ↗</a>.</p>
+`,};
 
 export function arabicArticle(topic: string, code: Code): string {
   const body = articles[topic];

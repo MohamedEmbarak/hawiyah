@@ -1,4 +1,5 @@
 import { StrictMode, useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Accordion, Alert, Avatar, Badge, Breadcrumb, Button, Card, Checkbox, Combobox,
@@ -25,6 +26,7 @@ function App() {
   const [arabic, setArabic] = useState(true);
   const [rtl, setRtl] = useState(true);
   const [dark, setDark] = useState(false);
+  const [theme, setTheme] = useState('dga');
   const [tab, setTab] = useState('apply');
   const [city, setCity] = useState('');
   const [service, setService] = useState('permit');
@@ -52,13 +54,16 @@ function App() {
   const statusLabel = (value: RequestRecord['status']) => value === 'review' ? t('قيد المراجعة', 'In review') : value === 'complete' ? t('مكتمل', 'Complete') : t('مسودة', 'Draft');
   const serviceLabel = (value: string) => services.find(item => item.value === value)?.label ?? value;
   const cityLabel = (value: string) => cities.find(item => item.value === value)?.label ?? value;
+  const applicationSteps = [{ value: 'details', label: t('البيانات', 'Details') }, { value: 'review', label: t('المراجعة', 'Review') }, { value: 'send', label: t('الإرسال', 'Submit') }];
+  const applicationStep = review ? 1 : 0;
   const filtered = requests.filter(item => (status === 'all' || item.status === status) && `${item.id} ${serviceLabel(item.service)} ${cityLabel(item.city)}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
   useEffect(() => {
     document.documentElement.lang = arabic ? 'ar' : 'en';
     document.documentElement.dir = rtl ? 'rtl' : 'ltr';
     document.documentElement.dataset.nqMode = dark ? 'dark' : 'light';
+    document.documentElement.dataset.nqTheme = theme;
     document.title = t('نسق — مركز الخدمات', 'Nasaq — Service center');
-  }, [arabic, rtl, dark]);
+  }, [arabic, rtl, dark, theme]);
   function submit() {
     const id = `NQ-${1025 + requests.length - initialRequests.length}`;
     setRequests(previous => [{ id, service, city, date: new Date().toISOString(), status: 'review' }, ...previous]);
@@ -66,19 +71,20 @@ function App() {
   }
   return <>
     <a className="demo-skip" href="#main">{t('انتقل إلى المحتوى', 'Skip to content')}</a>
-    <header className="demo-header"><div className="nq-container demo-header-inner">
+    <header className="demo-header"><div className="nq-container nq-service-container demo-header-inner">
       <a className="demo-brand" href="#main" aria-label={t('نسق — مركز الخدمات', 'Nasaq — Service center')}>
         <img src={dark ? reverseSymbol : symbol} width="40" height="40" alt="" />
         <span>{t('نسق', 'Nasaq')}<small>{t('مركز الخدمات', 'Service center')}</small></span>
       </a>
       <div className="demo-controls nq-cluster">
+        <Select aria-label={t('السمة', 'Theme')} value={theme} onChange={event => setTheme(event.currentTarget.value)} options={[{ value: 'dga', label: t('سمة DGA', 'DGA theme') }, { value: 'nasaq', label: t('نسق', 'Nasaq') }]} />
         <Button variant="ghost" onClick={() => setArabic(!arabic)}>{arabic ? 'English' : 'العربية'}</Button>
         <Tooltip content={t('اتجاه الصفحة مستقل عن لغة المحتوى', 'Page direction is independent of language')}><Button variant="ghost" onClick={() => setRtl(!rtl)} aria-label={t('تغيير اتجاه الصفحة', 'Change page direction')}>{rtl ? 'RTL' : 'LTR'}</Button></Tooltip>
         <Switch checked={dark} onChange={event => setDark(event.currentTarget.checked)} label={t('الوضع الداكن', 'Dark mode')} />
         <Avatar name={t('مستخدم تجريبي', 'Demo user')} initials={t('م ت', 'DU')} />
       </div>
     </div></header>
-    <main id="main" className="nq-container demo-main" tabIndex={-1}>
+    <main id="main" className="nq-container nq-service-container demo-main" tabIndex={-1}>
       <Breadcrumb label={t('مسار التنقل', 'Breadcrumb')} items={[{ label: t('الرئيسية', 'Home'), href: '#main' }, { label: t('خدمات الأفراد', 'Personal services') }]} />
       <section className="demo-hero">
         <div><Badge tone="success">{t('خدمات أبسط، وقت أكثر', 'Simple services. More time.')}</Badge><h1>{t('خطوتك القادمة، بكل وضوح.', 'Your next step, made clear.')}</h1><p>{t('قدّم طلبك وتابع كل خطوة من مكان واحد. رحلة واضحة، من البداية حتى الإنجاز.', 'Apply and follow every step in one place. A clear journey, from your first detail to the final decision.')}</p></div>
@@ -87,14 +93,19 @@ function App() {
       <p className="nq-hint demo-disclosure">{t('نموذج تفاعلي مستقل لنسق. بيانات تجريبية تُحفظ مؤقتاً في هذه الصفحة.', 'An independent Nasaq demo. Sample data stays in this page for this session.')}</p>
       {submitted && <Alert tone="success" title={t('تم إرسال الطلب بنجاح', 'Application submitted')}><p>{t('رقم طلبك', 'Your reference')}: <bdi>{submitted}</bdi>. {t('يمكنك متابعة حالته في قائمة طلباتي.', 'Track its status in My requests.')}</p></Alert>}
       <Tabs value={tab} onValueChange={setTab} label={t('مركز الخدمات', 'Service center')} items={[
-        { value: 'apply', label: t('طلب جديد', 'New application'), content: <div className="demo-service-layout">
-          <Card header={<div><span className="demo-eyebrow">{t('ابدأ رحلتك', 'GET STARTED')}</span><h2>{t('تفاصيل الطلب', 'Application details')}</h2></div>}>
+        { value: 'apply', label: t('طلب جديد', 'New application'), content: <div className="nq-form-layout">
+            <div className="nq-stepper-responsive">
+              <Stepper label={t('خطوات الطلب', 'Application steps')} current={applicationSteps[applicationStep]!.value} items={applicationSteps} />
+              <div className="nq-stepper-mobile" role="group" aria-label={t(`الخطوة ${formatNumber(applicationStep + 1, { locale })} من ${formatNumber(applicationSteps.length, { locale })}`, `Step ${applicationStep + 1} of ${applicationSteps.length}`)}>
+                <span className="nq-stepper-ring" aria-hidden="true" style={{ '--nq-step-progress': `${(applicationStep + 1) / applicationSteps.length * 100}%` } as CSSProperties}>{formatNumber(applicationStep + 1, { locale })}/{formatNumber(applicationSteps.length, { locale })}</span>
+                <div className="nq-stepper-summary"><strong>{applicationSteps[applicationStep]!.label}</strong><p>{t('التالي: ', 'Next: ')}{applicationSteps[applicationStep + 1]!.label}</p></div>
+              </div>
+            </div>
+          <Card className="nq-form-main" header={<div><span className="demo-eyebrow">{t('ابدأ رحلتك', 'GET STARTED')}</span><h2>{t('تفاصيل الطلب', 'Application details')}</h2></div>}>
             <form className="nq-stack" onSubmit={event => { event.preventDefault(); setReview(true); }}>
-              <Stepper label={t('خطوات الطلب', 'Application steps')} current={review ? 'review' : 'details'} items={[{ value: 'details', label: t('البيانات', 'Details') }, { value: 'review', label: t('المراجعة', 'Review') }, { value: 'send', label: t('الإرسال', 'Submit') }]} />
-              <Divider />
-              <div className="demo-grid"><Select label={t('الخدمة', 'Service')} name="service" required options={services} value={service} onChange={event => setService(event.currentTarget.value)} /><Combobox key={arabic ? 'ar' : 'en'} label={t('المدينة', 'City')} name="city" required options={cities} value={city} onValueChange={setCity} placeholder={t('ابحث عن مدينة', 'Search for a city')} emptyMessage={t('لا توجد نتائج', 'No results')} getResultsMessage={count => t(`${count} نتائج متاحة`, `${count} results available`)} requiredMessage={t('اختر مدينة من القائمة.', 'Choose a city from the list.')} /></div>
+              <div className="nq-form-grid"><Select label={t('الخدمة', 'Service')} name="service" required options={services} value={service} onChange={event => setService(event.currentTarget.value)} /><Combobox key={arabic ? 'ar' : 'en'} label={t('المدينة', 'City')} name="city" required options={cities} value={city} onValueChange={setCity} placeholder={t('ابحث عن مدينة', 'Search for a city')} emptyMessage={t('لا توجد نتائج', 'No results')} getResultsMessage={count => t(`${count} نتائج متاحة`, `${count} results available`)} requiredMessage={t('اختر مدينة من القائمة.', 'Choose a city from the list.')} /></div>
               <fieldset className="demo-fieldset"><legend className="nq-label">{t('نوع مقدم الطلب', 'Applicant type')}</legend><div className="nq-cluster"><Radio name="applicant" value="individual" label={t('فرد', 'Individual')} checked={applicant === 'individual'} onChange={() => setApplicant('individual')} /><Radio name="applicant" value="business" label={t('منشأة', 'Business')} checked={applicant === 'business'} onChange={() => setApplicant('business')} /></div></fieldset>
-              <div className="demo-grid"><TextField label={t('الاسم الكامل', 'Full name')} autoComplete="name" name="fullName" value={fullName} onChange={event => setFullName(event.currentTarget.value)} required placeholder={t('كما يظهر في الهوية', 'As shown on your ID')} /><TextField label={t('البريد الإلكتروني', 'Email')} name="email" value={email} onChange={event => setEmail(event.currentTarget.value)} type="email" dir="ltr" autoComplete="email" required placeholder="name@example.com" /></div>
+              <div className="nq-form-grid"><TextField label={t('الاسم الكامل', 'Full name')} autoComplete="name" name="fullName" value={fullName} onChange={event => setFullName(event.currentTarget.value)} required placeholder={t('كما يظهر في الهوية', 'As shown on your ID')} /><TextField label={t('البريد الإلكتروني', 'Email')} name="email" value={email} onChange={event => setEmail(event.currentTarget.value)} type="email" dir="ltr" autoComplete="email" required placeholder="name@example.com" /></div>
               {applicant === 'business' && <TextField name="businessName" value={businessName} onChange={event => setBusinessName(event.currentTarget.value)} label={t('اسم المنشأة', 'Business name')} autoComplete="organization" required />}
               <Textarea label={t('وصف الطلب', 'Application description')} name="description" value={description} onChange={event => setDescription(event.currentTarget.value)} hint={t('أضف التفاصيل التي تساعدنا على معالجة طلبك.', 'Add the details that will help us process your application.')} rows={3} required />
               <FileUpload label={t('المرفقات الداعمة (اختياري)', 'Supporting documents (optional)')} name="attachments" accept=".pdf,.png,.jpg,.jpeg" multiple hint={t('PDF أو PNG أو JPG. لا تُرفع الملفات إلى أي خادم.', 'PDF, PNG or JPG. Files are not uploaded to a server.')} onFilesChange={selected => setFiles(selected.map(file => file.name))}>{files.length > 0 && <ul className="demo-file-list">{files.map((file, index) => <li key={`${file}-${index}`}><bdi>{file}</bdi></li>)}</ul>}</FileUpload>
@@ -102,8 +113,8 @@ function App() {
               <div className="demo-form-footer"><p className="nq-hint">{t('الحقول المعلّمة بـ * مطلوبة.', 'Fields marked * are required.')}</p><Button type="submit">{t('مراجعة الطلب', 'Review application')} <span aria-hidden="true">{rtl ? '←' : '→'}</span></Button></div>
             </form>
           </Card>
-          <aside className="nq-stack"><Card header={<h2>{t('قبل أن تبدأ', 'Before you begin')}</h2>}><div className="nq-stack"><p>{t('جهّز معلومات التواصل وحدد المدينة والخدمة المناسبة لطلبك.', 'Have your contact information ready, and choose the right city and service for your application.')}</p><div className="demo-meta"><span>{t('وقت تعبئة الطلب', 'Time to apply')}</span><strong>{t('٥ دقائق', '5 minutes')}</strong></div><div className="demo-meta"><span>{t('الرسوم', 'Fee')}</span><strong>{t('دون رسوم', 'No fee')}</strong></div><div className="demo-meta"><span>{t('مدة المعالجة', 'Processing time')}</span><strong>{t('٣ أيام عمل', '3 working days')}</strong></div><Divider /><p className="nq-hint">{t('هذه مدد توضيحية للنموذج وليست التزاماً من جهة حكومية.', 'These example timings are illustrative, with no government service commitment.')}</p></div></Card>
-            <Card header={<h2>{t('تحتاج مساعدة؟', 'Need a hand?')}</h2>}><p>{t('اطّلع على متطلبات الخدمة والأسئلة الشائعة قبل تقديم الطلب.', 'Read the requirements and frequently asked questions before applying.')}</p><Button variant="secondary" onClick={() => setTab('help')}>{t('دليل الخدمة', 'Service guide')}</Button></Card></aside>
+          <div className="nq-service-aside nq-stack"><Card header={<h2>{t('قبل أن تبدأ', 'Before you begin')}</h2>}><div className="nq-stack"><p>{t('جهّز معلومات التواصل وحدد المدينة والخدمة المناسبة لطلبك.', 'Have your contact information ready, and choose the right city and service for your application.')}</p><div className="demo-meta"><span>{t('وقت تعبئة الطلب', 'Time to apply')}</span><strong>{t('٥ دقائق', '5 minutes')}</strong></div><div className="demo-meta"><span>{t('الرسوم', 'Fee')}</span><strong>{t('دون رسوم', 'No fee')}</strong></div><div className="demo-meta"><span>{t('مدة المعالجة', 'Processing time')}</span><strong>{t('٣ أيام عمل', '3 working days')}</strong></div><Divider /><p className="nq-hint">{t('هذه مدد توضيحية للنموذج وليست التزاماً من جهة حكومية.', 'These example timings are illustrative, with no government service commitment.')}</p></div></Card>
+            <Card header={<h2>{t('تحتاج مساعدة؟', 'Need a hand?')}</h2>}><p>{t('اطّلع على متطلبات الخدمة والأسئلة الشائعة قبل تقديم الطلب.', 'Read the requirements and frequently asked questions before applying.')}</p><Button variant="secondary" onClick={() => setTab('help')}>{t('دليل الخدمة', 'Service guide')}</Button></Card></div>
         </div> },
         { value: 'requests', label: <>{t('طلباتي', 'My requests')} <Badge>{formatNumber(requests.length, { locale })}</Badge></>, content: <Card header={<h2>{t('كل طلباتك، في مكان واحد', 'All your requests, in one place')}</h2>}>
           <div className="demo-filter"><TextField type="search" label={t('البحث في الطلبات', 'Search requests')} placeholder={t('رقم الطلب أو الخدمة', 'Reference or service')} value={query} onChange={event => { setQuery(event.currentTarget.value); setPage(1); }} /><Select label={t('الحالة', 'Status')} value={status} onChange={event => { setStatus(event.currentTarget.value); setPage(1); }} options={[{ value: 'all', label: t('كل الحالات', 'All statuses') }, ...(['review', 'complete', 'draft'] as const).map(value => ({ value, label: statusLabel(value) }))]} /></div>
@@ -130,7 +141,7 @@ function App() {
         {detail && <div className="nq-stack"><Badge tone={detail.status === 'complete' ? 'success' : 'warning'}>{statusLabel(detail.status)}</Badge><h3>{serviceLabel(detail.service)} · {cityLabel(detail.city)}</h3><Progress label={t('تقدم الطلب', 'Application progress')} value={detail.status === 'complete' ? 100 : detail.status === 'review' ? 50 : 20} /><Stepper current={detail.status === 'complete' ? 'complete' : detail.status === 'review' ? 'review' : 'received'} items={[{ value: 'received', label: t('تم الاستلام', 'Received') }, { value: 'review', label: t('المراجعة', 'Review') }, { value: 'complete', label: t('مكتمل', 'Complete') }]} /><p className="nq-hint">{t('آخر تحديث', 'Last updated')}: {formatDate(detail.date, { locale, dateStyle: 'long' })}</p></div>}
       </Dialog>
     </main>
-    <footer className="demo-footer nq-container"><span>{t('نسق — مصمم ليمنح التفاصيل انسجامها.', 'Nasaq — details, in harmony.')}</span><span>React · {t('نموذج تفاعلي', 'Interactive demo')}</span></footer>
+    <footer className="demo-footer nq-container nq-service-container"><span>{t('نسق — مصمم ليمنح التفاصيل انسجامها.', 'Nasaq — details, in harmony.')}</span><span>React · {t('نموذج تفاعلي', 'Interactive demo')}</span></footer>
   </>;
 }
 

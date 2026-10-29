@@ -1,0 +1,59 @@
+/* Template composition only. Shared components and DGA geometry live in @nasaq/styles. */
+.nq-template { color: var(--nq-color-text); background: var(--nq-color-canvas); font-family: var(--nq-font-sans); }
+.nq-template :is(h1,h2,h3,p) { overflow-wrap: anywhere; }
+.nq-template-header { padding-inline: 0; }
+.nq-template .nq-portal-brand img { object-fit: contain; }
+[data-nq-mode='dark'] .nq-template .nq-portal-brand img { filter: brightness(0) invert(1); }
+.nq-template-content { padding-block: var(--nq-space-6) var(--nq-space-10); }
+.nq-template .nq-template-card-aside { padding: 0; border: 0; border-radius: 0; background: transparent; }
+.nq-template-heading { padding-block: var(--nq-space-8); }
+.nq-template-heading h1 { margin: 0 0 var(--nq-space-4); font-size: clamp(2rem,4vw,3rem); line-height: 1.25; font-weight: 600; }
+.nq-template-heading p { max-inline-size: 70ch; color: var(--nq-color-text-muted); font-size: var(--nq-text-lg); line-height: 1.75; }
+.nq-template-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--nq-space-6); }
+.nq-template .nq-template-grid .nq-card { min-inline-size: 0; }
+.nq-template-grid .nq-card-header h2 { font-size: var(--nq-text-lg); }
+.nq-template-related { margin-block-start: var(--nq-space-10); }
+.nq-template-related > h2 { margin-block-end: var(--nq-space-5); }
+.nq-template .nq-service-main .nq-template-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.nq-template-prose { line-height: 1.85; }
+.nq-template-prose h2 { font-size: var(--nq-text-xl); margin-block: 0 var(--nq-space-4); }
+.nq-template-prose :is(ul,ol) { padding-inline-start: var(--nq-space-6); }
+.nq-template-prose li + li { margin-block-start: var(--nq-space-3); }
+.nq-template-prose section + section { margin-block-start: var(--nq-space-8); }
+.nq-template-prose section { scroll-margin-block-start: 2rem; }
+.nq-template-fieldset { min-inline-size: 0; border: 0; padding: 0; margin: 0; }
+.nq-template-fieldset > .nq-form-grid { margin-block: var(--nq-space-6); }
+.nq-template-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--nq-space-4); margin-block-start: var(--nq-space-6); }
+.nq-template-actions .nq-button { text-align: center; }
+.nq-template-confirmation { text-align: center; padding-block: var(--nq-space-8); }
+.nq-template-confirmation .nq-template-actions { justify-content: center; }
+.nq-template-success { display: inline-grid; place-items: center; inline-size: 4rem; block-size: 4rem; margin-block-end: var(--nq-space-5); border-radius: 50%; background: var(--nq-color-success-subtle); color: var(--nq-color-success); font-size: 2rem; }
+.nq-template-reference { display: inline-block; margin-block: var(--nq-space-4); font-size: var(--nq-text-xl); }
+.nq-template-feedback { margin-block-start: var(--nq-space-10); padding-block-start: var(--nq-space-6); border-block-start: 1px solid var(--nq-color-border); }
+.nq-template-feedback > h2 { font-size: var(--nq-text-lg); margin-block-end: var(--nq-space-4); }
+.nq-template-feedback > form { max-inline-size: 48rem; margin-block-start: var(--nq-space-5); }
+.nq-template-feedback fieldset, .nq-template-ratings { border: 0; margin: 0; padding: 0; }
+.nq-template-feedback legend { margin-block-end: var(--nq-space-4); }
+.nq-template-search { display: grid; grid-template-columns: minmax(0,2fr) minmax(12rem,1fr); gap: var(--nq-space-5); margin-block-end: var(--nq-space-5); }
+.nq-template-ratings { display: flex; flex-wrap: wrap; gap: var(--nq-space-5); padding-block: var(--nq-space-4); }
+.nq-template-ratings label { display: flex; align-items: center; gap: var(--nq-space-2); }
+.nq-template-preference { display: flex; justify-content: space-between; align-items: center; gap: var(--nq-space-6); padding-block: var(--nq-space-5); border-block-end: 1px solid var(--nq-color-border); }
+.nq-template-preference h3 { margin-block: 0 var(--nq-space-2); }
+.nq-template-preference p { max-inline-size: 60ch; color: var(--nq-color-text-muted); }
+.nq-template-preference > label { flex-shrink: 0; }
+.nq-template-inpage { padding: var(--nq-space-5); border-inline-start: 2px solid var(--nq-color-primary); }
+.nq-template-inpage ul, .nq-template-link-list { margin: 0; padding-inline-start: var(--nq-space-5); }
+.nq-template-inpage li, .nq-template-link-list li { margin-block: var(--nq-space-3); }
+.nq-template-chat { max-inline-size: 52rem; margin-inline: auto; }
+.nq-template-messages { display: flex; flex-direction: column; gap: var(--nq-space-4); max-block-size: 28rem; overflow-y: auto; margin-block-end: var(--nq-space-5); }
+.nq-template-message { align-self: flex-start; max-inline-size: 85%; margin: 0; padding: var(--nq-space-4); border-radius: var(--nq-radius-md); background: var(--nq-color-surface-muted); }
+.nq-template-message-user { align-self: flex-end; background: var(--nq-color-primary-subtle); }
+.nq-template-chat-form { display: flex; gap: var(--nq-space-3); margin-block-start: var(--nq-space-5); }
+.nq-template-chat-form input { min-inline-size: 0; }
+.nq-template-not-found { padding-block: var(--nq-space-12); }
+.nq-template-not-found .nq-template-actions { justify-content: center; }
+.nq-template-error-code { font-size: clamp(4rem,15vw,8rem); line-height: 1; color: var(--nq-color-primary-text); font-weight: 600; margin: 0; }
+.nq-template-menu { display: none; }
+.nq-template [hidden] { display: none !important; }
+@media (max-width: 64rem) { .nq-template-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .nq-template-menu { display: inline-flex; margin-inline-start: auto; } .nq-template #nq-template-navigation[data-open='false'] { display: none; } .nq-template #nq-template-navigation { order: 4; flex-basis: 100%; } }
+@media (max-width: 40rem) { .nq-template-grid, .nq-template .nq-service-main .nq-template-grid, .nq-template-search { grid-template-columns: minmax(0,1fr); } .nq-template-preference { align-items: flex-start; flex-direction: column; gap: var(--nq-space-3); } .nq-template-heading { padding-block: var(--nq-space-6); } .nq-template-chat-form { flex-wrap: wrap; } .nq-template-chat-form input { flex: 1 1 100%; } .nq-template-message { max-inline-size: 100%; } }

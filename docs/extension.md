@@ -6,6 +6,8 @@ Choose the narrowest extension point that solves the product need. Theme values 
 
 The theme contract uses `data-nq-theme`, `data-nq-mode`, `data-nq-density`, and `--nq-` variables. Find the actual semantic variable in the token source, then override it in an application-owned stylesheet loaded after Nasaq. Keep overrides scoped to the intended theme or application container. Avoid editing generated output.
 
+The default appearance is `dga`, using verified foundation values from the supplied **2026-10-29** snapshot. Select `data-nq-theme="nasaq"` explicitly for the teal/ivory identity. Use `custom` for application-owned overrides, and record any departure from the mapped reference that affects an alignment claim. [The reference record](dga-reference.md) identifies the source boundary; a custom theme is not certified by inheriting these tokens.
+
 Treat a semantic token as a relationship: a surface color must be evaluated with its text, border, focus, hover, disabled, and error colors. Changing one accent does not establish that the resulting theme passes contrast checks. Recheck light/dark and RTL/LTR configurations relevant to the product.
 
 For example, an application can define a scoped light theme:
@@ -31,7 +33,7 @@ const variables = createThemeVariables(
 );
 ```
 
-The helper returns a plain variable map; the application decides where to apply it. `custom` starts with the Nasaq defaults. Token changes should be made in the source and regenerated with `pnpm --filter @nasaq/tokens generate`, not by editing generated CSS.
+The helper returns a plain variable map; the application decides where to apply it. `custom` starts from the DGA default; explicit `nasaq` uses its own palette and font/radius/spacing/content metrics. Control densities remain shared across both themes; see the [migration sizes](dga-reference.md#migrating-an-existing-nasaq-application) before adopting the updated defaults. Inspect the selected base values as well as the overrides when checking a custom theme. Token changes should be made in the source and regenerated with `pnpm --filter @nasaq/tokens generate`, not by editing generated CSS.
 
 ## Use documented variants
 
@@ -92,6 +94,8 @@ Keep visible labels connected to controls, help and error text discoverable, foc
 ## Keep changes compatible
 
 Prefer an additive variant or a new block when existing behavior can remain intact. A renamed export, removed prop, changed event meaning, changed required markup, or altered documented token is a public API change. Record the effect on all adapters and provide a migration path before releasing it. Do not promise that arbitrary private selector overrides will survive an internal rewrite.
+
+Switching the default appearance from the earlier Nasaq palette to the mapped DGA foundation is a visual migration even when component exports remain unchanged. Explicitly select the intended theme in existing applications, review source-derived spacing and typography changes, and repeat relevant contrast, reflow, focus and state checks. Keep behavior and calendar-value contracts independent from the appearance change.
 
 ## AI-assisted workflow
 

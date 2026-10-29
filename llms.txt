@@ -1,6 +1,6 @@
 # Nasaq — نسق
 
-> Independent Arabic-first UI system for vanilla JavaScript, React, Vue, and Angular. DGA-informed through Platforms Code / كود المنصات / هيئة الحكومة الرقمية. DGA compliance is documented as evidence and gaps; no official endorsement or certification is claimed.
+> Independent Arabic-first UI system for vanilla JavaScript, React, Vue, and Angular. DGA-based default foundation mapped from supplied Platforms Code / كود المنصات / هيئة الحكومة الرقمية source snapshots; original Nasaq theme is opt-in. DGA compliance is documented as evidence and gaps; no official endorsement or certification is claimed.
 
 Status: public 0.1 source preview under Apache-2.0. Seven packages support 77 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Packages are not published. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
 
@@ -29,6 +29,7 @@ Status: public 0.1 source preview under Apache-2.0. Seven packages support 77 ca
 - [Extension guide](docs/extension.md): theme overrides, variants, composition, and component workflow.
 - [Design principles](docs/design-principles.md): Arabic-first design, semantics, understandable states, and complete journeys.
 - [DGA alignment](docs/alignment.md): verified facts, guidance, design choices, and unresolved evidence.
+- [DGA reference and migration](docs/dga-reference.md): 2026-10-29 supplied snapshot identities, source nodes, light/dark semantic values, template guidance, and migration; export date is not an official release version.
 - [Roadmap](docs/roadmap.md): implementation phases and acceptance gates.
 - [Validation](docs/validation.md): tested versions, exact passing-check scope, browser setup, and remaining evaluation.
 - [Publication](docs/publication.md): public source, Pages deployment, and future npm release preparation.
@@ -37,7 +38,8 @@ Status: public 0.1 source preview under Apache-2.0. Seven packages support 77 ca
 
 - Packages: @nasaq/tokens, @nasaq/styles, @nasaq/core, @nasaq/vanilla, @nasaq/react, @nasaq/vue, @nasaq/angular.
 - Use public exports, nq- CSS classes, and --nq- tokens. Do not invent exports or edit generated dist files.
-- Theme: data-nq-theme="nasaq|dga|custom". Mode: data-nq-mode="light|dark". Density: data-nq-density="comfortable|compact".
+- Default foundation is dga; use data-nq-theme="dga" explicitly or data-nq-theme="nasaq" for opt-in Woven Rhythm. Custom overrides are application-owned. Mode: data-nq-mode="light|dark". Density: data-nq-density="comfortable|compact".
+- The supplied DGA snapshots have 17 decoded files and 6 transfer-blocked files above 32 MiB. No standalone web Components Library was supplied. Local Foundations values are mapped explicitly; imported caches contain multiple versions. Do not infer full official component parity, prototype timing, asset rights, or certification.
 - Locale, lang, and dir are separate concerns. Preserve Arabic, English, RTL, LTR, and mixed-direction text behavior.
 - Frameworks own rendering. Do not run vanilla enhancement over framework-owned component trees.
 - Core has no framework runtime dependency and no browser globals at module evaluation.

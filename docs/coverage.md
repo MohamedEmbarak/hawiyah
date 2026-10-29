@@ -4,6 +4,12 @@ Nasaq's expanded catalog has **77 named entries: the initial 27 plus 50 addition
 
 This is a defined, extensible scope for modern interfaces and Saudi service platforms. It is not an exhaustive list of every possible UI, an official DGA component count, or a certification claim. [components.json](../components.json) records planned, built, and verified coverage independently for each adapter. [EXPANSION.md](../EXPANSION.md) defines the expansion contract; the [validation record](validation.md) identifies the tested snapshot.
 
+## Supplied DGA reference coverage
+
+The default `dga` foundation is mapped from verified values in the supplied **2026-10-29** snapshot; `nasaq` is an opt-in visual theme. The reference review decoded **17 files**, with detailed inspection focused on Foundations, the Service Page template, and the Form template. Six files exceeded the 32 MiB transfer limit and were unavailable for this review. No standalone web component library was supplied.
+
+The 77-entry catalog remains Nasaq's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
+
 ## Catalog groups
 
 | Group | Entries |

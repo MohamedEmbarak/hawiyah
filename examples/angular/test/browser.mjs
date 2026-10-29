@@ -18,11 +18,16 @@ try {
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto(origin);
   await expect(page.getByRole('heading', {name: 'Make room for community.'})).toBeVisible();
+  await expect(page.locator('.example-shell')).toHaveAttribute('data-nq-theme', 'dga');
   if (process.env.NASAQ_ANGULAR_SCREENSHOT) await page.screenshot({path: process.env.NASAQ_ANGULAR_SCREENSHOT, fullPage: true});
   await page.getByLabel('Event name', {exact:true}).fill('Neighborhood gathering');
   const city = page.getByRole('combobox', {name:'City', exact:true});
   await city.fill('الرِّياض'); await city.press('ArrowDown'); await city.press('Enter');
   await expect(city).toHaveValue('الرياض · Riyadh');
+  await page.locator('#theme').selectOption('nasaq');
+  await expect(page.locator('.example-shell')).toHaveAttribute('data-nq-theme', 'nasaq');
+  await expect(city).toHaveValue('الرياض · Riyadh');
+  await page.locator('#theme').selectOption('dga');
   await page.getByLabel('Event type', {exact:true}).selectOption('outdoor');
   await expect(page.getByText('For outdoor events, include your safety plan and accessible entry route.')).toBeVisible();
   await page.getByLabel('I have checked these details and they are accurate.', {exact:true}).check();
@@ -43,6 +48,9 @@ try {
   await page.locator('#theme').selectOption('dga'); await page.locator('#mode').selectOption('dark');
   await expect(page.locator('.example-shell')).toHaveAttribute('data-nq-mode','dark');
   await page.setViewportSize({width:390,height:844});
+  await page.getByRole('tab', {name: 'طلب جديد', exact:true}).click();
+  await expect(page.locator('.nq-stepper-mobile')).toBeVisible();
+  await expect(page.locator('.nq-stepper-responsive .nq-stepper')).not.toBeVisible();
   if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error('Example overflows at mobile width');
   if (errors.length) throw new Error(errors.join('\n'));
   console.log('Angular browser proof passed: native form, Arabic combobox, conditional flow, native modal/Escape/focus, request state, RTL/theme/mobile.');

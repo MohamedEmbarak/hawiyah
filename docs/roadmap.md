@@ -12,6 +12,21 @@ The [validation record](validation.md) identifies tested snapshots, exact counts
 
 The machine-readable [component catalog](../components.json) tracks these fields separately. A component can be built in one adapter and still planned in another.
 
+## DGA reference migration
+
+The default appearance is now `dga`, using mapped, verified foundation values from the supplied snapshot exported on **2026-10-29**; the teal/ivory `nasaq` theme is opt-in. This is a source-based visual migration, with its own checkpoints in addition to the existing component implementation. The export date identifies the supplied snapshot, not an official release version.
+
+| Checkpoint | Source or implementation scope | Acceptance gate |
+|---|---|---|
+| Reference inventory | 17 files decoded; six files over the 32 MiB transfer limit remain unavailable; no standalone web component library supplied | Preserve source hashes and node references in the evidence record; do not present uninspected files as covered |
+| Foundation mapping | Use the local foundation collections; resolve imported component-version conflicts separately; make mapped DGA values the default and keep Nasaq opt-in | Value/alias checks, contrast checks, representative rendering, and explicit treatment of implementation choices |
+| Vanilla service and form templates | Referenced header/footer, conditional secondary navigation, service-information card, feedback and mobile radial-step presentation | Compare the inspected 1440px/430px examples and test 320px/intermediate reflow, Arabic/English content and keyboard behavior |
+| Input states and motion | Trace supported states and transitions to valid source destinations; do not invent unspecified timings | State/keyboard checks, focus behavior and reduced-motion equivalents; unresolved prototype records remain unverified |
+| Framework and template expansion | Apply the shared foundation to native React, Vue and Angular; review additional readable templates; keep seasonal designs opt-in | Per-adapter visual and behavioral checks, stable APIs and unchanged calendar conversion/value contracts |
+| Guide and requirement evidence | Update defaults, live examples and reference guidance alongside implementation | Record applicable requirements, deviations, tested revisions and remaining gaps; official recognition remains separate |
+
+[The reference record](dga-reference.md) holds the source boundary and mapping evidence. The earlier implementation and test history below does not automatically verify the new default theme, all source variants, or full template parity. Keep new results scoped to the configurations actually checked; no checkpoint alone establishes certification.
+
 ## Phases
 
 | Phase | Deliverable | Planned | Built | Verified |
