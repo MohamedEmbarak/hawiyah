@@ -94,7 +94,9 @@
    The source's #9DA4AE 1px resting border fails 3:1 on white. We use
    Controls/control-border (#6C737F light, #9DA4AE dark) as an explicit
    accessibility adaptation; the exact source field-border token is retained.
-   The reference bottom line is the DGA focus indicator, without a duplicate
+   The bottom line uses the theme primary text color (green in DGA) as an
+   intentional color adaptation. Invalid fields use the danger color.
+   It is the DGA focus indicator, without a duplicate
    outer ring. Read-only fields keep a single inset keyboard indicator.
    Source SMART_ANIMATE:150ms cubic-bezier(0,0,.58,1), evidence recorded in
    packages/tokens/reference/dga-foundations.json. */
@@ -103,7 +105,7 @@
   padding-inline: var(--nq-profile-field-padding-start, var(--nq-space-3)) var(--nq-profile-field-padding-end, var(--nq-space-3));
   border-radius: var(--nq-profile-control-radius, var(--nq-radius-md));
   background-color: var(--nq-color-field-background, var(--nq-color-surface));
-  background-image: linear-gradient(var(--nq-color-field-active, var(--nq-color-focus)), var(--nq-color-field-active, var(--nq-color-focus)));
+  background-image: linear-gradient(var(--nq-color-primary-text, var(--nq-color-primary)), var(--nq-color-primary-text, var(--nq-color-primary)));
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: 0% 2px;
@@ -135,7 +137,7 @@
 :is(.nq-input, .nq-textarea)[readonly]:focus-visible {
   outline: 2px solid var(--nq-color-focus);
 }
-:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'] { background-color: var(--nq-color-surface-muted); background-image: linear-gradient(var(--nq-color-field-active, var(--nq-color-focus)), var(--nq-color-field-active, var(--nq-color-focus))); background-repeat: no-repeat; background-position: center bottom; background-size: 0% 2px; }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'] { background-color: var(--nq-color-surface-muted); background-image: linear-gradient(var(--nq-color-primary-text, var(--nq-color-primary)), var(--nq-color-primary-text, var(--nq-color-primary))); background-repeat: no-repeat; background-position: center bottom; background-size: 0% 2px; }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus { background-size: var(--nq-profile-field-focus-line, 0% 2px); }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:active { background-size: var(--nq-profile-field-pressed-line, 0% 2px); }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus-visible { border-color: var(--nq-color-border-strong); }
