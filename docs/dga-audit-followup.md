@@ -27,7 +27,7 @@ Short source names below expand to exact filenames in the inventory. **Decoded**
 | Search page `1:4`, mobile AR `39:45381`, content `39:45386`, summary `39:45387`; instructions `64:12709`, `64:12718`, `76:9786`, `76:11583` | Rendered service-card and plain-link results, query/count, filter/sort and pagination; decoded instructions retain query and reset selected filters | No Search page at baseline → Search composition implemented in `apps/playground/src/discovery-templates.ts` | **Missing page template / workflow** | Retain query, result count, filter reset/removal, sorting, pagination and empty/loading/error states. The microphone glyph alone does not establish voice-search behavior | High for structure and decoded instructions |
 | Mobile body `11167:15771`, set `3149:54894`; Buttons `407:510377`, `407:510548`, `407:510617` | Decoded and rendered input body 320×44, radius 4; decoded buttons large/medium/small 44/40/32 | Shared comfortable sizes are default/small/large 40/32/40; compact 32/24/40 | **Missing mobile profile**, not a proven defect in existing web density | Implemented opt-in mobile density: fields minimum 44 px; buttons 32/40/44 px. Existing desktop density and theme choices preserved | High |
 | Mobile `3149:55032` → `3149:55105`; underline `11167:15723` → `11167:15747` | Decoded SMART_ANIMATE 150 ms, cubic-bezier(0,0,.58,1), neutral underline | DGA uses corresponding timing/geometry with green valid / red invalid underline | **Intentional approved adaptation** | Preserve colors and no duplicate outer ring. Later extend per-component motion/state fixtures; no universal 150 ms timing claim | High for decoded properties; playback unverified |
-| Mobile `8332:24453`, `8335:15376`, `1679:30950` | Decoded Tab Bar, Top Bar and Nav Drawer; example heights include mobile/device composition | Existing Tabs/Drawer/PortalHeader primitives provide partial building blocks | **Missing mobile patterns** | Later compose navigation semantics, safe-area handling, focus return and RTL; do not hardcode status-area heights from a frame | High for source structure |
+| Mobile `8332:24453`, `8335:15376`, `1679:30950` | Decoded Tab Bar, Top Bar and Nav Drawer; example heights include mobile/device composition | Mobile SecondaryNav presentation implemented; Drawer/PortalHeader remain partial building blocks | **Partially implemented mobile patterns** | Navigation-drawer and internal-page top-bar recipes remain. Preserve navigation semantics, safe-area handling, focus return and RTL; do not hardcode OS status-area heights from a frame | High for source structure |
 | Foundations `50:3`–`50:5`, `425:95`, `4422:6`/`4422:7`; Service desktop `1:21371` | Decoded container maximum 1280, desktop/mobile padding 32/16, radius-md 8, IBM Plex Sans Arabic; service columns 832+32+416 | Shared tokens and service layout already map selected values | **Confirmed correspondence with limited coverage** | Retain selected mappings. Wider display typography/grid coverage and full component render matrix remain later audit work | High for selected values |
 
 The native portal consumer checks exposed an additional confirmed defect: the
@@ -93,3 +93,16 @@ SecondaryNav now offers an opt-in mobile variant in all four adapters: equal-wid
 ## Implemented accordion motion — 2026-11-01
 
 Mobile `1147:62359` → `1147:60867` supplies 300 ms ease-in-out expansion timing. Nasaq now animates intrinsic height through native adapter lifecycles, with reversible motion, dynamic-content retargeting, immediate reduced-motion settlement and inert closing content. Native unenhanced markup and the original Nasaq theme remain immediate. The chevron rotation is an adaptation of down/up source symbols, not a decoded rotation. Conflicting title metrics are not animated. See [the lifecycle contract](accordion-motion.md).
+
+## Modal interaction follow-up — 2026-11-01
+
+Review of the remaining Nav Drawer composition (`1679:30950`) exposed an adapter
+behavior defect rather than a source-value mismatch. React, Vue and Angular
+dialogs dismissed a drag begun inside the panel when it ended on the backdrop;
+this was reproduced in all three real consumers using their date pickers.
+Dialog and Drawer now require a gesture to begin and end outside, matching the
+existing vanilla intent. All four clear cancelled/prevented gestures and stale
+state on close/reopen. Native modal focus, Escape and deliberate backdrop
+dismissal remain. Confidence is high for the reproduced runtime defect; Figma
+does not establish this browser interaction contract or a drawer entrance timing.
+Verification scope is recorded in [validation](validation.md).

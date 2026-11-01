@@ -47,24 +47,33 @@ export const Dialog = defineComponent({
     const element = ref<HTMLDialogElement>();
     const model = useValue(() => props.open, props.defaultOpen, value => emit('update:open', value));
     let previousFocus: HTMLElement | null = null;
-    const close = () => model.set(false);
-    const show = () => model.set(true);
+    let backdropStarted = false;
+    const close = () => { backdropStarted = false; model.set(false); };
+    const show = () => { backdropStarted = false; model.set(true); };
     watchEffect(() => {
       const dialog = element.value;
       if (!dialog) return;
       if (model.value.value && !dialog.open) {
+        backdropStarted = false;
         previousFocus = dialog.ownerDocument.activeElement as HTMLElement | null;
         dialog.showModal();
-      } else if (!model.value.value && dialog.open) { dialog.close(); restoreFocus(previousFocus); }
+      } else if (!model.value.value && dialog.open) { backdropStarted = false; dialog.close(); restoreFocus(previousFocus); }
     }, { flush: 'post' });
     onBeforeUnmount(() => { if (element.value?.open) { element.value.close(); restoreFocus(previousFocus); } });
     expose({ element, show, close });
     return () => [slots.trigger?.({ open: show }), h('dialog', mergeProps(attrs, {
       ref: element, class: 'nq-dialog', 'aria-labelledby': attrs['aria-labelledby'] ?? `${id}-title`, 'aria-describedby': attrs['aria-describedby'] ?? (props.description ? `${id}-description` : undefined),
-      onCancel: (event: Event) => { if (!event.defaultPrevented) { event.preventDefault(); close(); } },
-      onClose: () => { if (model.value.value) close(); restoreFocus(previousFocus); },
+      onCancel: (event: Event) => { backdropStarted = false; if (!event.defaultPrevented) { event.preventDefault(); close(); } },
+      onClose: () => { backdropStarted = false; if (model.value.value) close(); restoreFocus(previousFocus); },
+      onPointerdown: (event: PointerEvent) => {
+        const bounds = element.value!.getBoundingClientRect();
+        backdropStarted = !event.defaultPrevented && event.button === 0 && event.target === event.currentTarget &&
+          (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom);
+      },
+      onPointercancel: () => { backdropStarted = false; },
       onClick: (event: MouseEvent) => {
-        if (event.defaultPrevented || !props.closeOnBackdrop || event.target !== event.currentTarget) return;
+        const started = backdropStarted; backdropStarted = false;
+        if (event.defaultPrevented || !props.closeOnBackdrop || !started || event.target !== event.currentTarget) return;
         const bounds = element.value!.getBoundingClientRect();
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
       },

@@ -1,5 +1,18 @@
 # Validation record
 
+## 2026-11-01 modal backdrop gestures
+
+Before the fix, real Chromium content-to-backdrop drags dismissed the date-picker
+dialogs in all three native framework consumers. Ten dedicated unit cases now
+pass across vanilla, React, Vue and Angular Dialog/Drawer implementations,
+covering gesture origin, cancellation, prevented events and stale-state reset
+after reopening. Six existing dialog lifecycle tests also passed. Five Chromium
+cases passed: vanilla Dialog/Drawer at 390 px plus real React/Vue/Angular
+date-picker dialogs, covering content drags, deliberate backdrop dismissal,
+Escape and focus return. The full package, guide and native consumer build
+passed. These checks do not establish touch-device or cross-browser coverage;
+source motion/parity is not inferred.
+
 ## 2026-11-01 guide mobile reflow
 
 Long, unbroken API names in DatePicker guidance reproduced a 349 px Arabic

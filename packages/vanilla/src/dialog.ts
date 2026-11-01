@@ -29,6 +29,7 @@ export function createDialog(dialog: HTMLDialogElement, options: DialogOptions =
   };
   const finishClose = () => {
     if (dialog.open) return;
+    backdropStarted = false;
     openedHere = false;
     notify();
     const previous = trigger;
@@ -37,11 +38,13 @@ export function createDialog(dialog: HTMLDialogElement, options: DialogOptions =
   };
   const close = (returnValue?: string) => {
     if (scope.destroyed || !dialog.open) return;
+    backdropStarted = false;
     dialog.close(returnValue);
     finishClose();
   };
   const show = (opener?: HTMLElement) => {
     if (scope.destroyed || dialog.open) return;
+    backdropStarted = false;
     if (typeof dialog.showModal !== 'function') throw new Error('Nasaq: this browser must support HTMLDialogElement.showModal().');
     const active = dialog.ownerDocument.activeElement;
     const candidate = opener ?? (active && 'focus' in active ? active as HTMLElement : null);
@@ -56,6 +59,8 @@ export function createDialog(dialog: HTMLDialogElement, options: DialogOptions =
     event.preventDefault(); show(opener);
   });
   scope.listen(dialog, 'click', event => {
+    const started = backdropStarted; backdropStarted = false;
+    if (event.defaultPrevented) return;
     const closer = eventElement(event)?.closest<HTMLElement>('[data-nq-dialog-close]');
     if (closer && closer.closest('dialog') === dialog && !isDisabled(closer)) {
       event.preventDefault(); close(closer.dataset.nqDialogClose); return;
@@ -63,14 +68,15 @@ export function createDialog(dialog: HTMLDialogElement, options: DialogOptions =
     const pointer = event as MouseEvent;
     const rect = dialog.getBoundingClientRect();
     const outside = pointer.clientX < rect.left || pointer.clientX > rect.right || pointer.clientY < rect.top || pointer.clientY > rect.bottom;
-    if (options.closeOnBackdrop !== false && event.target === dialog && backdropStarted && outside) close();
-    backdropStarted = false;
+    if (options.closeOnBackdrop !== false && event.target === dialog && started && outside) close();
   });
   scope.listen(dialog, 'pointerdown', event => {
     const pointer = event as PointerEvent;
     const rect = dialog.getBoundingClientRect();
-    backdropStarted = event.target === dialog && (pointer.clientX < rect.left || pointer.clientX > rect.right || pointer.clientY < rect.top || pointer.clientY > rect.bottom);
+    backdropStarted = !event.defaultPrevented && pointer.button === 0 && event.target === dialog && (pointer.clientX < rect.left || pointer.clientX > rect.right || pointer.clientY < rect.top || pointer.clientY > rect.bottom);
   });
+  scope.listen(dialog, 'pointercancel', () => { backdropStarted = false; });
+  scope.listen(dialog, 'cancel', () => { backdropStarted = false; });
   scope.listen(dialog, 'close', finishClose);
   // Escape's native cancel default and method="dialog" form submission both emit close.
   return {

@@ -41,7 +41,7 @@ export class NqMenuComponent extends NqPopoverComponent {
   choose(item: NqMenuItem) { if (this.disabled || item.disabled) return; this.action.emit(item.id); this.close(true); }
 }
 
-@Component({selector: 'nq-drawer', standalone: true, template: `<dialog #dialog class="nq-dialog nq-drawer" [attr.data-side]="side" [attr.aria-labelledby]="titleId" (close)="closed()" (cancel)="cancelled.emit()" (click)="backdrop($event)"><header class="nq-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button type="button" class="nq-button" data-variant="ghost" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="nq-dialog-body"><ng-content /></div><footer class="nq-dialog-footer"><ng-content select="[nqDrawerFooter]" /></footer></dialog>`})
+@Component({selector: 'nq-drawer', standalone: true, template: `<dialog #dialog class="nq-dialog nq-drawer" [attr.data-side]="side" [attr.aria-labelledby]="titleId" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="nq-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button type="button" class="nq-button" data-variant="ghost" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="nq-dialog-body"><ng-content /></div><footer class="nq-dialog-footer"><ng-content select="[nqDrawerFooter]" /></footer></dialog>`})
 export class NqDrawerComponent extends NqDialogComponent { @Input() side: 'start' | 'end' | 'bottom' = 'end'; }
 
 export interface NqToast { id: string; title?: string; message: string; tone?: 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean; }

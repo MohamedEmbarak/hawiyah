@@ -55,20 +55,23 @@ export interface DialogProps extends Omit<ComponentPropsWithRef<'dialog'>, 'open
   closeOnBackdrop?: boolean;
   closeLabel?: string;
 }
-export function Dialog({ open: controlled, defaultOpen = false, onOpenChange, title, description, trigger, children, footer, closeOnBackdrop = true, closeLabel = 'Close', ref, className, onCancel, onClose, onClick, ...props }: DialogProps) {
+export function Dialog({ open: controlled, defaultOpen = false, onOpenChange, title, description, trigger, children, footer, closeOnBackdrop = true, closeLabel = 'Close', ref, className, onCancel, onClose, onClick, onPointerDown, onPointerCancel, ...props }: DialogProps) {
   const id = useId();
   const [open, setOpen] = useControllable(controlled, defaultOpen, onOpenChange);
   const [nativeCloseVersion, setNativeCloseVersion] = useState(0);
   const dialog = useRef<HTMLDialogElement | null>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
-  const close = () => setOpen(false);
+  const backdropStarted = useRef(false);
+  const close = () => { backdropStarted.current = false; setOpen(false); };
   useEffect(() => {
     const node = dialog.current;
     if (!node) return;
     if (open && !node.open) {
+      backdropStarted.current = false;
       previousFocus.current = node.ownerDocument.activeElement as HTMLElement | null;
       node.showModal();
     } else if (!open && node.open) {
+      backdropStarted.current = false;
       node.close();
       if (previousFocus.current?.isConnected) previousFocus.current.focus();
     }
@@ -86,17 +89,27 @@ export function Dialog({ open: controlled, defaultOpen = false, onOpenChange, ti
   return <>
     {trigger && cloneElement(trigger, { onClick: event => { trigger.props.onClick?.(event); if (!event.defaultPrevented) setOpen(true); }, 'aria-haspopup': 'dialog' })}
     <dialog {...props} ref={node => { dialog.current = node; assignRef(ref, node); }} className={cx('nq-dialog', className)} aria-labelledby={props['aria-labelledby'] ?? `${id}-title`} aria-describedby={props['aria-describedby'] ?? (description ? `${id}-description` : undefined)}
-      onCancel={event => { onCancel?.(event); if (!event.defaultPrevented) { event.preventDefault(); close(); } }}
+      onCancel={event => { backdropStarted.current = false; onCancel?.(event); if (!event.defaultPrevented) { event.preventDefault(); close(); } }}
       onClose={event => {
+        backdropStarted.current = false;
         onClose?.(event);
         if (open && !event.currentTarget.open) {
           close();
           if (controlled !== undefined) setNativeCloseVersion(version => version + 1);
         }
       }}
+      onPointerDown={event => {
+        onPointerDown?.(event);
+        const bounds = event.currentTarget.getBoundingClientRect();
+        backdropStarted.current = !event.defaultPrevented && event.button === 0 && event.target === event.currentTarget &&
+          (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom);
+      }}
+      onPointerCancel={event => { backdropStarted.current = false; onPointerCancel?.(event); }}
       onClick={event => {
+        const started = backdropStarted.current;
+        backdropStarted.current = false;
         onClick?.(event);
-        if (event.defaultPrevented || !closeOnBackdrop || event.target !== event.currentTarget) return;
+        if (event.defaultPrevented || !closeOnBackdrop || !started || event.target !== event.currentTarget) return;
         const bounds = event.currentTarget.getBoundingClientRect();
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
       }}>

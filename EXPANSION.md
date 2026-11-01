@@ -51,7 +51,10 @@ boundary, not a simulated implementation.
 - Popover: a disclosure with a trigger, labelled region, outside press/Escape;
   interactive children use normal Tab. Menu: menu/menuitem keyboard semantics,
   Home/End/ArrowUp/ArrowDown, focus return. Drawer composes native modal dialog
-  with data-side=start|end|bottom and proper focus behavior.
+  with data-side=start|end|bottom and proper focus behavior. Dialog/Drawer backdrop
+  dismissal requires a primary pointer gesture that starts and ends outside the
+  panel. Content drags, cancelled gestures and prevented events do not dismiss it;
+  close/reopen clears the gesture state. Escape and explicit close remain available.
 - ToastRegion: stable live region, caller-owned messages, dismiss buttons,
   no automatic expiry by default. Alert tone only assertive for urgent messages.
 - TreeView: flattened visible nodes, roving focus, RTL-aware arrows, expansion,
