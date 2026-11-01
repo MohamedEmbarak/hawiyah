@@ -1,0 +1,103 @@
+/* Mobile Nav Drawer 1679:30949 / 538:296406. Source dimensions describe
+   examples; content grows and the existing Drawer owns modal behavior/motion. */
+:is(.nq-navigation-drawer, .nq-navigation-drawer-host > nq-drawer > .nq-drawer) {
+  box-sizing: border-box;
+  inline-size: min(20.4375rem, calc(100vw - 1rem));
+  max-inline-size: calc(100vw - 1rem);
+  color: var(--nq-color-text);
+  background: var(--nq-color-surface);
+  font-family: var(--nq-font-sans);
+}
+:is(.nq-navigation-drawer, .nq-navigation-drawer-host > nq-drawer > .nq-drawer) > .nq-dialog-header {
+  align-items: center;
+  gap: 0.5rem;
+  padding: max(1rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px)) 1rem max(1rem, env(safe-area-inset-left, 0px));
+}
+:is(.nq-navigation-drawer, .nq-navigation-drawer-host > nq-drawer > .nq-drawer) > .nq-dialog-header h2 { min-inline-size: 0; overflow-wrap: anywhere; }
+:is(.nq-navigation-drawer, .nq-navigation-drawer-host > nq-drawer > .nq-drawer) > .nq-dialog-header > button {
+  flex: none;
+  min-inline-size: 2.75rem;
+  min-block-size: 2.75rem;
+  padding: 0.5rem;
+  font-size: 0;
+}
+:is(.nq-navigation-drawer, .nq-navigation-drawer-host > nq-drawer > .nq-drawer) > .nq-dialog-header > button::after {
+  content: '';
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  background: currentColor;
+  mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat;
+}
+:is(.nq-navigation-drawer, .nq-navigation-drawer-host > nq-drawer > .nq-drawer) > .nq-dialog-body {
+  padding: 0 max(1rem, env(safe-area-inset-right, 0px)) max(1rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+}
+:is(.nq-navigation-drawer, .nq-navigation-drawer-host > nq-drawer > .nq-drawer) > .nq-dialog-footer {
+  padding: 1rem max(1rem, env(safe-area-inset-right, 0px)) max(1rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+}
+.nq-navigation-drawer-host > nq-drawer > .nq-drawer > .nq-dialog-footer:has(> [nqDrawerFooter]:empty) { display: none; }
+.nq-navigation-drawer-user { padding-block: 1rem; border-block-end: 1px solid var(--nq-color-border); overflow-wrap: anywhere; }
+.nq-navigation-drawer-user:empty { display: none; }
+.nq-navigation-drawer-nav { padding-block-start: 1rem; }
+.nq-navigation-drawer-nav ul { list-style: none; margin: 0; padding: 0; }
+.nq-navigation-drawer-nav li { min-inline-size: 0; }
+.nq-navigation-drawer-row {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  min-block-size: 2.75rem;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0.25rem;
+  color: var(--nq-color-text);
+  background: transparent;
+  font: var(--nq-weight-medium) 0.875rem / 1.4286 var(--nq-font-sans);
+  text-decoration: none;
+  text-align: start;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+.nq-navigation-drawer-label { min-inline-size: 0; }
+.nq-navigation-drawer-group > ul .nq-navigation-drawer-row { padding-inline-start: 2.5rem; }
+.nq-navigation-drawer-row .nq-icon { --nq-icon-size: 1rem; }
+:is(a,summary).nq-navigation-drawer-row { cursor: pointer; }
+:is(a,summary).nq-navigation-drawer-row:hover { background: var(--nq-color-surface-muted); }
+.nq-navigation-drawer-row[aria-current='page'] {
+  color: var(--nq-color-primary-text);
+  background: var(--nq-color-surface-muted);
+  font-weight: var(--nq-weight-semibold);
+}
+.nq-navigation-drawer-row[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  inline-size: 0.375rem;
+  block-size: 2rem;
+  border-radius: var(--nq-radius-full);
+  background: currentColor;
+}
+.nq-navigation-drawer-row:focus-visible { outline: 2px solid var(--nq-color-focus); outline-offset: -2px; }
+.nq-navigation-drawer-row[aria-disabled='true'] { color: var(--nq-color-on-disabled); cursor: not-allowed; }
+summary.nq-navigation-drawer-row::-webkit-details-marker { display: none; }
+summary.nq-navigation-drawer-row::after {
+  content: '';
+  flex: none;
+  margin-inline-start: auto;
+  inline-size: 1rem;
+  block-size: 1rem;
+  background: currentColor;
+  mask: url('./assets/icons/arrow-down-01.svg') center / contain no-repeat;
+}
+.nq-navigation-drawer-group[open] > summary.nq-navigation-drawer-row::after { rotate: 180deg; }
+@media (forced-colors: active) {
+  .nq-navigation-drawer-row[aria-current='page'] { color: LinkText; }
+  .nq-navigation-drawer-row[aria-current='page']::before { background: LinkText; forced-color-adjust: none; }
+  .nq-navigation-drawer-row:focus-visible { outline-color: Highlight; }
+  .nq-navigation-drawer-row[aria-disabled='true'] { color: GrayText; }
+  summary.nq-navigation-drawer-row::after,
+  :is(.nq-navigation-drawer, .nq-navigation-drawer-host > nq-drawer > .nq-drawer) > .nq-dialog-header > button::after { background: ButtonText; forced-color-adjust: none; }
+}

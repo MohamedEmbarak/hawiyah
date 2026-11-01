@@ -16,12 +16,12 @@ Content: Link, IconButton, ButtonGroup, Chip, DescriptionList, Stat, Timeline,
 Meter, AvatarGroup, DataTable.
 
 Platform patterns: ServiceCard, ServiceDetails, PortalHeader, PortalFooter,
-Feedback, CookieConsent, NotificationList, SecondaryNav, PortalLayout, MobileTopBar.
+Feedback, CookieConsent, NotificationList, SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer.
 
 Layout: Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer,
 AspectRatio, Section, AppShell, PageHeader.
 
-These 53 additions (including three portal/mobile compositions) supplement the existing 27 entries. Native TextField also
+These 54 additions (including four portal/mobile compositions) supplement the existing 27 entries. Native TextField also
 covers all standard HTML input types; document per-type semantics rather than
 inflating component counts with aliases. Heavy engines (maps, rich text, charts,
 code editors, PDF viewers, CAPTCHA, payments) require a documented integration

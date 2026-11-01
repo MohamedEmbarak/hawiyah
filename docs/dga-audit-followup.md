@@ -122,10 +122,21 @@ excluded.
 ## Implemented mobile top bar — 2026-11-01
 
 Mobile `8335:15376` now maps to native MobileTopBar components and a vanilla
-HTML/CSS recipe. Main title `8335:15565` is26px bold; internal title/subtitle
-`8335:15402`/`8335:15403` are14px semibold/12px. Application rows are separate
-from the44px OS status area, which is excluded. Nasaq uses intrinsic height,
+HTML/CSS recipe. Main title `8335:15565` is 26px bold; internal title/subtitle
+`8335:15402`/`8335:15403` are 14px semibold/12px. Application rows are separate
+from the 44px OS status area, which is excluded. Nasaq uses intrinsic height,
 44px actions, logical back navigation, safe-area spacing and semantic theme
 colors. These are documented web adaptations. See [the API and mapping](mobile-top-bar.md)
 and [scoped verification](validation.md). The navigation-drawer composition
 remains a separate task.
+
+## Implemented navigation drawer — 2026-11-01
+
+Mobile Nav Drawer `1679:30950` now maps to NavigationDrawer in all four adapters.
+Source `1679:30949` informs the 327px preferred width, `2005:82723` the 16px
+insets, `1679:30531` the 44px rows and 4px radius, and `538:296411` the 6×32px
+current-page indicator. Semantic colors, safe areas and intrinsic scrolling are
+documented adaptations. Native links and disclosures compose the existing modal
+Drawer; disabled descendants are nonactivating and route closing respects
+preventDefault/modifier clicks. Device/status geometry and an unverified entrance
+timing are not copied. See [source mapping and API](navigation-drawer.md).

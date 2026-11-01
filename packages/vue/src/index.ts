@@ -18,3 +18,5 @@ export type { LayoutProps, Responsive } from '@nasaq/core';
 
 export type { SecondaryNavItem } from './portal.js';
 export { MobileTopBar } from './mobile-top-bar.js';
+export { NavigationDrawer } from './navigation-drawer.js';
+export type { NavigationDrawerItem } from './navigation-drawer.js';

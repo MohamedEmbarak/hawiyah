@@ -3,6 +3,9 @@ import { createAccordion } from './accordion.js';
 export { createAccordion };
 export type { AccordionOptions, AccordionController } from './accordion.js';
 import { createPortalHeader } from './portal.js';
+import { createNavigationDrawer } from './navigation-drawer.js';
+export { createNavigationDrawer };
+export type { NavigationDrawerOptions, NavigationDrawerController } from './navigation-drawer.js';
 export { createPortalHeader };
 export type { PortalHeaderOptions, PortalHeaderController } from './portal.js';
 import { createDialog } from './dialog.js';
@@ -32,6 +35,7 @@ type Controller = { destroy(): void };
 const registry = new WeakMap<HTMLElement, { controller: Controller; references: number }>();
 const factories: Record<string, (element: HTMLElement) => Controller> = {
   accordion: createAccordion,
+  'navigation-drawer': element => createNavigationDrawer(element as HTMLDialogElement),
   'portal-header': createPortalHeader,
   tabs: createTabs, dialog: element => createDialog(element as HTMLDialogElement), combobox: createCombobox,
   tooltip: createTooltip, pagination: createPagination, 'password-field': createPasswordField,

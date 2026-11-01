@@ -1,4 +1,5 @@
 import { escape as e, icon, type Locale } from "./data";
+import { navigationDrawerMarkup } from './component-mobile-guides';
 
 /** Copyable HTML recipes: behavior lives in @nasaq/vanilla, never in the gallery. */
 export function expandedSample(
@@ -17,6 +18,7 @@ export function expandedSample(
     `<span class="layout-demo-tile">${t("Content", "محتوى")} ${n}</span>`;
   const cells = [1, 2, 3].map(cell).join("");
   switch (id) {
+    case "navigation-drawer": return navigationDrawerMarkup(uid, locale);
     case "mobile-top-bar":
       return `<header class="nq-mobile-top-bar" data-variant="internal"><div class="nq-mobile-top-bar-leading"><a class="nq-mobile-top-bar-back" href="#components" aria-label="${t('Back','رجوع')}"><span class="nq-icon" data-icon="arrow-left-01" data-directional="true" aria-hidden="true"></span></a></div><div class="nq-mobile-top-bar-copy"><h2 class="nq-mobile-top-bar-title">${t('My requests','طلباتي')}</h2><p class="nq-mobile-top-bar-subtitle">${t('Track your applications','تابع طلباتك')}</p></div><div class="nq-mobile-top-bar-actions"><a class="nq-button" data-variant="ghost" href="#templates/search" aria-label="${t('Search','بحث')}"><span class="nq-icon" data-icon="search-01" aria-hidden="true"></span></a></div></header>`;
     case "input-group":

@@ -1,13 +1,26 @@
 # Validation record
 
+## 2026-11-01 navigation drawer
+
+Six focused native adapter/controller tests passed, including disabled groups,
+route cancellation, modifier clicks, disclosure behavior and cleanup. Five
+Chromium cases passed: two vanilla RTL/LTR cases at 320px across themes/modes,
+forced-colors focus and scoped axe; three native framework consumers at 390px
+verify user slots, nested links, 327px width, RTL placement, route closing and
+Escape focus return. Final focus after following a real fragment link is owned
+by browser/router navigation, not required to stay on the trigger. The Arabic
+drawer screenshot was visually inspected. All packages and consumers built.
+See [the composition contract](navigation-drawer.md); no source entrance timing
+or exhaustive visual parity is claimed.
+
 ## 2026-11-01 mobile top bar
 
-Five Chromium cases passed: two guide RTL/LTR cases at320px with DGA/Nasaq/custom,
-light/dark, enlarged text, forced colors, minimum44px actions and back navigation;
+Five Chromium cases passed: two guide RTL/LTR cases at 320px with DGA/Nasaq/custom,
+light/dark, enlarged text, forced colors, minimum 44px actions and back navigation;
 three native framework consumer cases with heading/action slots, keyboard order,
 locale changes and scoped axe scans. The Arabic narrow-screen screenshot was
 visually inspected. All packages, the guide and native consumers built. Source
-title roles are decoded evidence; the60px minimum, intrinsic height and44px
+title roles are decoded evidence; the 60px minimum, intrinsic height and 44px
 targets are accessibility adaptations. No source playback or pixel-parity claim
 is made. See [MobileTopBar](mobile-top-bar.md).
 

@@ -37,6 +37,7 @@ export const expansionCatalog = [
   ["secondary-nav", "Secondary navigation", "التنقل الثانوي", "Platforms"],
   ["portal-layout", "Portal layout", "هيكل البوابة", "Platforms"],
   ["mobile-top-bar", "Mobile top bar", "الترويسة العلوية للجوال", "Platforms"],
+  ["navigation-drawer", "Navigation drawer", "درج التنقل", "Platforms"],
   ["feedback", "Page feedback", "تقييم الصفحة", "Platforms"],
   ["cookie-consent", "Cookie consent", "تفضيلات الخصوصية", "Platforms"],
   ["notification-list", "Notification list", "قائمة إشعارات", "Platforms"],

@@ -22,7 +22,7 @@ The gallery also includes a [portal home](https://mohamedembarak.github.io/nasaq
 
 ## Development status
 
-Nasaq is an **Apache 2.0 public source preview, version 0.1**. Seven packages support a **80-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. The package scope is provisional. Nothing here is published on npm, and a source directory or a working demo does not establish production readiness.
+Nasaq is an **Apache 2.0 public source preview, version 0.1**. Seven packages support a **81-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. The package scope is provisional. Nothing here is published on npm, and a source directory or a working demo does not establish production readiness.
 
 The [roadmap](docs/roadmap.md) separates planned scope, implemented work, and verified behavior. [components.json](components.json) provides the same distinctions in a form that tools and coding assistants can read. Exact framework coverage and verification must be checked there rather than inferred from the package names.
 

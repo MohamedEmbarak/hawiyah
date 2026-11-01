@@ -40,3 +40,37 @@ export const arabicMobileGuides: Record<string, GuideInput> = {
     limitations:['لا يُعرض شريط حالة الجهاز. الارتفاع المرن ومساحات الإجراءات الأكبر تكييفات للإتاحة وليست ادعاءً بالتطابق البصري.'],
   },
 };
+
+export function navigationDrawerMarkup(id: string, locale: string) {
+  const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  return `<button class="nq-button" type="button" data-nq-dialog-open="${id}">${t('Open navigation','فتح التنقل')}</button>
+<dialog id="${id}" class="nq-dialog nq-drawer nq-navigation-drawer" data-nq="navigation-drawer" data-side="start" aria-labelledby="${id}-title">
+  <header class="nq-dialog-header"><h2 id="${id}-title">${t('Navigation','التنقل')}</h2><button type="button" class="nq-button" data-variant="ghost" data-nq-dialog-close aria-label="${t('Close navigation','إغلاق القائمة')}">×</button></header>
+  <div class="nq-dialog-body"><div class="nq-navigation-drawer-user"><p>${t('Welcome to Nasaq','مرحبًا بك في نسق')}</p></div>
+    <nav class="nq-navigation-drawer-nav" aria-label="${t('Main navigation','التنقل الرئيسي')}"><ul>
+      <li><a class="nq-navigation-drawer-row" href="#components" aria-current="page"><span class="nq-icon" data-icon="home-01" aria-hidden="true"></span><span>${t('Components','المكونات')}</span></a></li>
+      <li><details class="nq-navigation-drawer-group"><summary class="nq-navigation-drawer-row">${t('Services','الخدمات')}</summary><ul><li><a class="nq-navigation-drawer-row" href="#templates/search">${t('Search services','البحث عن الخدمات')}</a></li><li><a class="nq-navigation-drawer-row" href="#templates/service">${t('Service details','تفاصيل الخدمة')}</a></li></ul></details></li>
+      <li><span class="nq-navigation-drawer-row" aria-disabled="true">${t('Coming soon','قريبًا')}</span></li>
+    </ul></nav>
+  </div>
+</dialog>`;
+}
+mobileGuides['navigation-drawer'] = {
+  summary:'Modal page navigation with native links, nested disclosure groups and a current-page indicator.',
+  usage:navigationDrawerMarkup('navigation-example','en'),
+  lifecycle:['Render a titled drawer and a labelled navigation region. Initialize vanilla markup with enhance().', 'Open from an explicit button. Escape and deliberate backdrop dismissal return focus. Route links close the drawer; destination focus belongs to the browser/router.', 'Native summary elements expand groups. Modified link clicks and prevented router events keep the drawer open. Destroy enhancement before removing vanilla markup.'],
+  api:[{name:'items',type:'NavigationDrawerItem[]',description:'Stable id, label, optional href/icon/current/disabled/children. A group href renders a separate page link inside its disclosure.'},{name:'open / onOpenChange',type:'state',description:'React controlled or defaultOpen; Vue v-model:open/defaultOpen; Angular open/openChange or show(trigger)/close().'},{name:'navigationLabel / closeLabel / side',type:'string / start | end',description:'Arabic labels and logical start side are defaults. Supply localized labels.'},{name:'user / footer',type:'slots',description:'React userContent/footer; Vue user/footer slots; Angular [nqNavigationDrawerUser]/[nqNavigationDrawerFooter].'}],
+  accessibility:['Use page-link navigation, not menu or tree roles.', 'Native modal focus containment and visible keyboard focus remain; disabled groups expose no active descendants.', 'Links and summaries have 44px minimum rows. Current pages have aria-current and a leading indicator.'],
+  variants:['Logical start or end','Nested groups','Optional user and footer content'],related:['mobile-top-bar','drawer','secondary-nav'],
+  frameworkNotes:'NavigationDrawer composes the existing native Drawer in React/Vue; Angular uses nq-navigation-drawer. Vanilla exports createNavigationDrawer or data-nq="navigation-drawer" enhancement. Application routers own destination focus and current-route updates.',
+  limitations:['327px preferred width is constrained by the viewport; example 840px device height is not copied. Existing Drawer motion remains; no source entrance timing was established.'],source:'docs/navigation-drawer.md',
+};
+arabicMobileGuides['navigation-drawer'] = {
+  ...mobileGuides['navigation-drawer'],summary:'درج تنقل بحوار أصلي وروابط صفحات ومجموعات قابلة للطي ومؤشر للصفحة الحالية.',usage:navigationDrawerMarkup('navigation-example','ar'),
+  lifecycle:['اعرض درجًا بعنوان ومنطقة تنقل مسماة، وهيّئ HTML المباشر باستخدام enhance().','يفتحه زر واضح. يعيد Escape أو إغلاق الخلفية التركيز إلى زر الفتح؛ تغلق روابط الصفحات الدرج ويملك المتصفح أو الموجّه تركيز الوجهة.','توسّع summary المجموعات. تبقى نقرات الروابط المعدلة وأحداث الموجّه الممنوعة دون إغلاق. أنه المتحكّم قبل إزالة HTML.'],
+  api:[{name:'items',type:'NavigationDrawerItem[]',description:'معرّف ثابت وتسمية، مع href/icon/current/disabled/children اختيارية. يظهر رابط المجموعة داخلها منفصلًا عن زر التوسيع.'},{name:'open / onOpenChange',type:'حالة',description:'React: حالة مضبوطة أو defaultOpen؛ Vue: v-model:open/defaultOpen؛ Angular: open/openChange أو show(trigger)/close().'},{name:'navigationLabel / closeLabel / side',type:'string / start | end',description:'التسميات الافتراضية عربية والموضع الافتراضي البداية المنطقية. وفّر تسميات اللغة المختارة.'},{name:'user / footer',type:'فتحات محتوى',description:'React: userContent/footer؛ Vue: user/footer؛ Angular: [nqNavigationDrawerUser]/[nqNavigationDrawerFooter].'}],
+  accessibility:['استخدم روابط صفحات دون أدوار menu أو tree.','يحصر الحوار الأصلي التركيز داخله ويبقى التركيز ظاهرًا؛ لا تحتوي المجموعات المعطلة إجراءات نشطة.','ارتفاع الصف 44 بكسل على الأقل، وتحدد aria-current الصفحة الحالية مع مؤشر في البداية المنطقية.'],
+  variants:['البداية أو النهاية المنطقية','مجموعات متداخلة','محتوى مستخدم وتذييل اختياري'],
+  frameworkNotes:'يركب NavigationDrawer فوق Drawer الأصلي في React وVue، ويستخدم Angular المكوّن nq-navigation-drawer. تستخدم النسخة المباشرة createNavigationDrawer أو data-nq="navigation-drawer". يملك التطبيق التركيز بعد التوجيه وحالة المسار الحالي.',
+  limitations:['العرض المفضّل 327 بكسل مقيد بعرض الشاشة؛ لا يُنسخ ارتفاع إطار الجهاز. تبقى حركة Drawer الحالية دون استنتاج توقيت دخول من المصدر.'],
+};

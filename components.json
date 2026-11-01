@@ -27,7 +27,7 @@
     "built": "Source exists for the named adapter; this does not establish complete verification.",
     "verified": "The named adapter has direct behavior, semantic-association, or layout-contract assertions recorded in evidence. Scope is limited to those cases; rendering-only and broad suite checks remain separate. This is not a blanket accessibility or DGA certification."
   },
-  "coverageNote": "80 entries: initial 27 plus 50 expansion entries and 3 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
+  "coverageNote": "81 entries: initial 27 plus 50 expansion entries and 4 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
   "docs": {
     "overview": "README.md",
     "overviewAr": "README.ar.md",
@@ -4807,6 +4807,54 @@
         "No device status bar, implicit history navigation or component-owned motion."
       ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/mobile-top-bar"
+    },
+    {
+      "id": "navigation-drawer",
+      "name": "NavigationDrawer",
+      "labelAr": "درج التنقل",
+      "category": "platforms",
+      "description": "Modal page navigation with nested disclosures, current-page treatment and route-close behavior.",
+      "cssClasses": [
+        "nq-navigation-drawer",
+        "nq-navigation-drawer-nav",
+        "nq-navigation-drawer-row"
+      ],
+      "interaction": "interactive",
+      "sourceType": "interactive",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [],
+      "evidence": [],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/navigation-drawer.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/navigation-drawer.ts"
+        ],
+        "angular": [
+          "packages/angular/src/navigation-drawer.ts"
+        ],
+        "vanilla": [
+          "packages/vanilla/src/navigation-drawer.ts",
+          "packages/styles/src/navigation-drawer.css"
+        ]
+      },
+      "notes": [
+        "Composes existing modal Drawer; native page links/details, not menu/tree roles.",
+        "327px preferred width, safe areas and 44px rows; no source drawer entrance timing established."
+      ],
+      "documentation": "https://mohamedembarak.github.io/nasaq/#component/navigation-drawer"
     }
   ],
   "limitations": [
@@ -4929,12 +4977,12 @@
     "native": "The main interaction uses browser-native semantics.",
     "static": "Semantic composition or CSS layout; content and application actions are caller-owned.",
     "interactive": "Nasaq adds state, keyboard behavior, or lifecycle management.",
-    "integration": "A documented application recipe for an external engine or service; not counted among the 80 components."
+    "integration": "A documented application recipe for an external engine or service; not counted among the 81 components."
   },
   "scope": {
-    "components": 80,
+    "components": 81,
     "initialComponents": 27,
-    "addedComponents": 53,
+    "addedComponents": 54,
     "layoutComponents": 12,
     "nativeInputTypeCount": 22,
     "nativeInputTypes": [
