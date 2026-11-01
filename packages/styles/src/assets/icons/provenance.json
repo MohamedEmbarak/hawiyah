@@ -15,7 +15,7 @@
     "pageId": "2019:10",
     "sourceUse": "Name and component mapping only. Shipped SVG bytes are unchanged upstream MIT assets, not extracted DGA assets."
   },
-  "comparison": "Names and Stroke variants match the supplied DGA definitions. Only search-01 geometry was compared: its upstream stroked circle/handle corresponds to the expanded Figma path with small coordinate differences. No complete visual or pixel-parity claim.",
+  "comparison": "The original ten icon names and Stroke variants match supplied DGA definitions. Only search-01 geometry was compared. Password visibility icons are additional upstream MIT assets without a DGA node comparison. No complete visual or pixel-parity claim.",
   "icons": [
     {
       "name": "search-01",
@@ -124,6 +124,24 @@
       "dgaComponentId": "8681:6185",
       "dgaComponentSetId": "8681:6184",
       "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "view",
+      "file": "view.svg",
+      "sha256": "cbbeed1009739adfd21b357efc3bd1a042480fafa235935718ecebb03f894573",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/view.svg",
+      "sourceUse": "Password visibility artwork from upstream MIT assets; no DGA node or visual parity claim.",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "view-off-slash",
+      "file": "view-off-slash.svg",
+      "sha256": "d072361f42e0277442d4b385f3bcfffb49ddacc46e6a4d67b4fd214645bdf13c",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/view-off-slash.svg",
+      "sourceUse": "Password visibility artwork from upstream MIT assets; no DGA node or visual parity claim.",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
     }

@@ -1,5 +1,15 @@
 # Validation record
 
+## 2026-11-01 integrated password visibility
+
+Focused password and existing controls/expansion tests passed (32 cases in
+React/Vue/vanilla), plus the rebuilt Angular password tests. Four Chromium guide
+cases verify icon geometry inside the input, logical placement, localized names,
+keyboard activation, unchanged form values, reset and forced-colors focus at
+320px/1280px in Arabic and English. The guide Inputs page uses this composition.
+The icon/text API and licensed artwork customization are documented in
+[password visibility](password-field.md).
+
 ## 2026-11-01 custom-only date inputs
 
 All four adapters use editable ISO text drafts plus canonical hidden form values.

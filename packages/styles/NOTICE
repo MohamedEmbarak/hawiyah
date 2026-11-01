@@ -21,5 +21,7 @@ Digital Government Authority. Apache 2.0 does not grant trademark rights.
 The curated Stroke Rounded SVG icons are Copyright (c) 2025 Hugeicons,
 licensed under MIT. Their complete license and pinned source provenance
 are included in dist/assets/icons/LICENSE and dist/assets/icons/provenance.json
-(src/assets/icons in the source repository). These upstream assets are
-mapped to supplied DGA source names; they are not direct DGA Figma exports.
+(src/assets/icons in the source repository). The original icon subset is
+mapped to supplied DGA source names; password visibility artwork is an
+additional upstream subset without a DGA node comparison. None are direct
+DGA Figma exports.

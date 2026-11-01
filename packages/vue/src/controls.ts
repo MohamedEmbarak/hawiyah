@@ -59,6 +59,7 @@ function actionField(kind: "password" | "search") {
       ...textProps,
       showLabel: { type: String, default: "Show password" },
       hideLabel: { type: String, default: "Hide password" },
+      toggleVariant: { type: String as PropType<'icon' | 'text'>, default: 'icon' },
       clearLabel: { type: String, default: "Clear search" },
     },
     emits: {
@@ -74,7 +75,7 @@ function actionField(kind: "password" | "search") {
         props.defaultValue,
         (value) => emit("update:modelValue", value),
       );
-      useFormReset(element, () => model.set(props.defaultValue));
+      useFormReset(element, () => { model.set(props.defaultValue); if (kind === 'password') visible.value = false; });
       expose({ element, focus: () => element.value?.focus() });
       return () =>
         decorate(
@@ -84,7 +85,7 @@ function actionField(kind: "password" | "search") {
             "div",
             {
               class: [
-                "nq-input-group",
+                kind === 'password' ? "nq-password-control" : "nq-input-group",
                 `nq-${kind === "password" ? "password-field" : "search-field"}`,
               ],
             },
@@ -122,16 +123,19 @@ function actionField(kind: "password" | "search") {
                     Button,
                     {
                       variant: "ghost",
+                      class: "nq-password-toggle",
+                      "data-toggle-variant": props.toggleVariant,
                       disabled: props.disabled,
                       "aria-label": visible.value
                         ? props.hideLabel
                         : props.showLabel,
                       "aria-pressed": visible.value,
+                      "aria-controls": field.id.value,
                       onClick: () => {
-                        visible.value = !visible.value;
+                        if (element.value && !isDisabled(element.value)) visible.value = !visible.value;
                       },
                     },
-                    () => (visible.value ? props.hideLabel : props.showLabel),
+                    () => props.toggleVariant === 'text' ? (visible.value ? props.hideLabel : props.showLabel) : h('span', { class: 'nq-password-icon', 'aria-hidden': 'true' }),
                   )
                 : model.value.value &&
                   h(

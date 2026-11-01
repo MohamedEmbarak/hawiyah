@@ -27,7 +27,7 @@ export function expandedSample(
         `<span class="nq-input-group"><span class="nq-input-addon">https://</span><input class="nq-input" placeholder="example.test" type="text"><span class="nq-input-addon">${icon("globe", 16)}</span></span>`,
       );
     case "password-field":
-      return `<div class="nq-password-field" data-nq="password-field">${label(t("Password", "كلمة المرور"), '<input class="nq-input" type="password" autocomplete="new-password" data-nq-password-input>')}${b(t("Show password", "إظهار كلمة المرور"), "data-nq-password-toggle")}</div>`;
+      return `<div class="nq-field nq-password-field" data-nq="password-field"><label class="nq-label" for="${uid}-input">${t("Password", "كلمة المرور")}</label><div class="nq-password-control"><input id="${uid}-input" class="nq-input" type="password" name="password" autocomplete="new-password" minlength="8" data-nq-password-input>${b(t("Show password", "إظهار كلمة المرور"), `data-nq-password-toggle data-nq-show-label="${t("Show password", "إظهار كلمة المرور")}" data-nq-hide-label="${t("Hide password", "إخفاء كلمة المرور")}"`)}</div></div>`;
     case "search-field":
       return label(
         t("Search services", "ابحث عن الخدمات"),

@@ -2,17 +2,24 @@ import { clampRange, createCleanup, formatNumber, isDisabled, normalizeDigits, n
 import { emit, eventElement, localeOf, nativeChange, readOnly, remember, required, translated } from './dom.js';
 
 export interface ValueController<T> { readonly value: T; destroy(): void }
-export interface PasswordFieldOptions { showLabel?: string; hideLabel?: string }
+export interface PasswordFieldOptions { showLabel?: string; hideLabel?: string; toggleVariant?: 'icon' | 'text' }
 export function createPasswordField(root: HTMLElement, options: PasswordFieldOptions = {}): { toggle(): void; destroy(): void } {
   const input = required<HTMLInputElement>(root, '[data-nq-password-input]');
   const button = required<HTMLButtonElement>(root, '[data-nq-password-toggle]');
   const scope = createCleanup();
-  remember(scope, input, ['type']); remember(scope, button, ['aria-pressed', 'aria-label', 'type', 'disabled']);
+  remember(scope, input, ['type']); remember(scope, button, ['aria-pressed', 'aria-label', 'aria-controls', 'type', 'disabled', 'class', 'data-toggle-variant']);
   const children = [...button.childNodes]; scope.add(() => button.replaceChildren(...children));
   const show = options.showLabel || button.dataset.nqShowLabel || button.getAttribute('aria-label') || translated(root, 'Show password', 'إظهار كلمة المرور');
   const hide = options.hideLabel || button.dataset.nqHideLabel || translated(root, 'Hide password', 'إخفاء كلمة المرور');
-  button.type = 'button';
-  const render = () => { const visible = input.type === 'text'; button.setAttribute('aria-pressed', String(visible)); button.textContent = visible ? hide : show; button.setAttribute('aria-label', visible ? hide : show); button.disabled = isDisabled(input); };
+  const variant = options.toggleVariant ?? button.dataset.nqToggleVariant ?? root.dataset.nqToggleVariant ?? 'icon';
+  button.type = 'button'; button.classList.add('nq-password-toggle'); button.setAttribute('aria-controls', ensureId(scope, input, 'password'));
+  button.dataset.toggleVariant = variant === 'text' ? 'text' : 'icon';
+  const render = () => {
+    const visible = input.type === 'text'; button.setAttribute('aria-pressed', String(visible));
+    if (variant === 'text') button.textContent = visible ? hide : show;
+    else { const icon = input.ownerDocument.createElement('span'); icon.className = 'nq-password-icon'; icon.setAttribute('aria-hidden', 'true'); button.replaceChildren(icon); }
+    button.setAttribute('aria-label', visible ? hide : show); button.disabled = isDisabled(input);
+  };
   const toggle = () => { if (scope.destroyed || isDisabled(input)) return; input.type = input.type === 'password' ? 'text' : 'password'; render(); emit(root, { visible: input.type === 'text' }); };
   scope.listen(button, 'click', toggle);
   if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { input.type = 'password'; render(); } }));

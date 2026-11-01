@@ -100,14 +100,17 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     accessibility: ['وفّر تسمية فعلية عبر Field أو عنصر label.', 'اربط الوحدات أو البوادئ المؤثرة بتعليمات ظاهرة باستخدام aria-describedby.', 'أخفِ الأيقونة الزخرفية عن قارئات الشاشة، وسمِّ الزر المساعد تسمية مستقلة.'],
   }),
   'password-field': localized('password-field', {
-    summary: 'حقل كلمة مرور أصلي مع زر صريح لإظهارها أو إخفائها. يتغير نوع العرض مع بقاء عنصر الإدخال نفسه وقيمته.',
-    usage: `<div class="nq-password-field" data-nq="password-field">
-  <label class="nq-field"><span class="nq-label">كلمة المرور</span><input class="nq-input" type="password" name="password" autocomplete="current-password" data-nq-password-input></label>
-  <button class="nq-button" type="button" data-nq-password-toggle data-nq-show-label="إظهار كلمة المرور" data-nq-hide-label="إخفاء كلمة المرور">إظهار كلمة المرور</button>
+    summary: 'حقل كلمة مرور أصلي مع أيقونة عين مدمجة لإظهارها أو إخفائها. يتغير نوع العرض مع بقاء عنصر الإدخال نفسه وقيمته.',
+    usage: `<div class="nq-field nq-password-field" data-nq="password-field">
+  <label class="nq-label" for="account-password">كلمة المرور</label>
+  <div class="nq-password-control">
+    <input id="account-password" class="nq-input" type="password" name="password" autocomplete="current-password" data-nq-password-input>
+    <button class="nq-button" type="button" data-nq-password-toggle data-nq-show-label="إظهار كلمة المرور" data-nq-hide-label="إخفاء كلمة المرور">إظهار كلمة المرور</button>
+  </div>
 </div>`,
     lifecycle: ['هيّئ الحقل وزر الرؤية بعد تركيب عناصرهما في الصفحة.', 'يبدّل الزر النوع بين password وtext، ويحدّث حالته وتسميته، ويصدر الحدث {visible}. لا يمكن كشف قيمة حقل معطّل عبر الزر.', 'تعيد إعادة ضبط النموذج الحقل في نسخة JavaScript المباشرة إلى وضع الإخفاء.', 'عند destroy تُستعاد صفات الحقل والزر ومحتواه الأصلي، وتُزال المراقبات والمستمعات.'],
-    api: ['علامتان تربطان الحقل بزر التحكم في ظهوره.', 'تسميتا الإظهار والإخفاء؛ يمكن توفيرهما أيضًا بصفات data-nq-show-label وdata-nq-hide-label.', 'تبديل الرؤية ثم إنهاء دورة حياة المتحكم.', 'تحكم في الرؤية أو قيمتها الابتدائية في React، بصورة مستقلة عن قيمة كلمة المرور.'],
-    accessibility: ['اختر autocomplete=current-password أو new-password وفق الغرض.', 'يحتاج زر الرؤية إلى تسمية ظاهرة مترجمة، ويجب ألا يرسل النموذج.', 'اسمح باللصق والتكامل مع مدير كلمات المرور.'],
+    api: ['علامتان تربطان الحقل بزر التحكم في ظهوره.', 'تسميتا الإظهار والإخفاء لقارئات الشاشة؛ يمكن توفيرهما أيضًا بصفات data-nq-show-label وdata-nq-hide-label.', 'الأيقونة المدمجة هي الافتراضية. اختر text لعرض التسمية نصيًا؛ تدعم النسخة المباشرة data-nq-toggle-variant="text".', 'خصّص قناعي العين باستخدام url(...)، وحجمهما الافتراضي 1.5rem عند الحاجة.', 'تبديل الرؤية ثم إنهاء دورة حياة المتحكم.', 'تحكم في الرؤية أو قيمتها الابتدائية في React، بصورة مستقلة عن قيمة كلمة المرور.'],
+    accessibility: ['اختر autocomplete=current-password أو new-password وفق الغرض.', 'للزر تسمية مترجمة وحالة ضغط تقرؤهما التقنيات المساعدة، والأيقونة زخرفية. يجب ألا يرسل الزر النموذج.', 'ضع تسمية الحقل الفعلية خارج غلاف الحقل والزر. اسمح باللصق والتكامل مع مدير كلمات المرور.', 'يمكن إظهار قيمة حقل للقراءة فقط، بينما يمنع التعطيل المباشر أو تعطيل fieldset المحيط تبديل الرؤية.'],
     limitations: ['لا يفرض المكوّن قواعد قوة كلمة المرور، ولا يصادق على المستخدم، ولا يخزّن بيانات الدخول.'],
   }),
   'search-field': localized('search-field', {
