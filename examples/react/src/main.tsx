@@ -15,6 +15,7 @@ import symbol from '../../../brand/assets/nasaq-symbol.svg';
 import reverseSymbol from '../../../brand/assets/nasaq-symbol-reverse.svg';
 import './app.css';
 import { PortalExample } from './portal';
+import { InputControlsExample } from './input-controls';
 
 type RequestRecord = { id: string; service: string; city: string; date: string; status: 'review' | 'complete' | 'draft' };
 const initialRequests: RequestRecord[] = [
@@ -146,4 +147,5 @@ function App() {
   </>;
 }
 
-createRoot(document.getElementById('root')!).render(<StrictMode>{new URLSearchParams(location.search).get('preview') === 'portal' ? <PortalExample /> : <App />}</StrictMode>);
+const preview = new URLSearchParams(location.search).get('preview');
+createRoot(document.getElementById('root')!).render(<StrictMode>{preview === 'inputs' ? <InputControlsExample /> : preview === 'portal' ? <PortalExample /> : <App />}</StrictMode>);

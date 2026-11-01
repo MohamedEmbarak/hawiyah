@@ -157,21 +157,28 @@ assert.equal(typeof vanilla.enhance,'function');
 assert.ok(tokens.tokens);
 assert.ok(renderToString(React.createElement(react.Button,null,'Continue')).includes('nq-button'));
 assert.ok((await renderVue(createSSRApp({render:()=>h(vue.Button,{},()=> 'Continue')}))).includes('nq-button'));
-for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader','PortalLayout','SecondaryNav']) {
+for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader','PortalLayout','SecondaryNav','MobileTopBar','NavigationDrawer','PasswordField','Rating','Stepper']) {
   assert.ok(react[name], 'React missing '+name); assert.ok(vue[name], 'Vue missing '+name);
   assert.ok(angular['Nq'+name+'Component'], 'Angular missing '+name);
 }
 assert.equal(typeof vanilla.createCalendar,'function');
 assert.equal(typeof vanilla.createTreeView,'function');
 assert.equal(typeof vanilla.createPortalHeader,'function');
+for (const name of ['createNavigationDrawer','createStepper','createRating','createPasswordField']) assert.equal(typeof vanilla[name],'function');
 assert.ok(renderToString(React.createElement(react.PortalLayout,{brand:'نسق',mainId:'portal-main'},React.createElement('h1',null,'الخدمات'))).includes('href="#portal-main"'));
 assert.ok((await renderVue(createSSRApp({render:()=>h(vue.PortalLayout,{brand:'نسق',mainId:'portal-main'},()=>h('h1',{},'الخدمات'))}))).includes('href="#portal-main"'));
 assert.deepEqual(core.getCalendarDateParts('2029-08-11','islamic-umalqura'),{year:1451,month:4,day:1});
 assert.equal(core.convertCalendarDate({year:1451,month:4,day:1},'islamic-umalqura'),'2029-08-11');
-assert.ok(renderToString(React.createElement(react.Grid,{columns:{base:1,md:2}},React.createElement(react.DatePicker,{label:'Appointment',defaultValue:'2026-10-28'}))).includes('type="date"'));
-assert.ok((await renderVue(createSSRApp({render:()=>h(vue.Grid,{columns:{base:1,md:2}},()=>h(vue.DatePicker,{label:'Appointment',defaultValue:'2026-10-28'}))}))).includes('type="date"'));
+const dateHtml = [
+  renderToString(React.createElement(react.Grid,{columns:{base:1,md:2}},React.createElement(react.DatePicker,{label:'Appointment',name:'appointment',defaultValue:'2026-10-28'}))),
+  await renderVue(createSSRApp({render:()=>h(vue.Grid,{columns:{base:1,md:2}},()=>h(vue.DatePicker,{label:'Appointment',name:'appointment',defaultValue:'2026-10-28'}))}))
+];
+for (const html of dateHtml) {
+  assert.ok(html.includes('type="text"')); assert.ok(!html.includes('type="date"'));
+  assert.ok(html.includes('type="hidden"')); assert.ok(html.includes('name="appointment"')); assert.ok(html.includes('value="2026-10-28"'));
+}
 const cssEntry = new URL(import.meta.resolve('@nasaq/styles/styles.css'));
-for (const [file,marker] of [['components.css','.nq-button'],['extended.css','.nq-calendar'],['layout.css','.nq-grid']]) {
+for (const [file,marker] of [['components.css','.nq-button'],['extended.css','.nq-calendar'],['layout.css','.nq-grid'],['password-field.css','.nq-password-icon'],['stepper.css','--nq-step-current'],['riyal.css','U+20C1']]) {
   assert.ok(fs.readFileSync(cssEntry,'utf8').includes(file));
   assert.ok(fs.readFileSync(new URL(file,cssEntry),'utf8').includes(marker));
 }
@@ -180,6 +187,8 @@ assert.ok(fs.readFileSync(new URL(import.meta.resolve('@nasaq/tokens/tokens.css'
 const wordmark=fs.readFileSync(new URL(import.meta.resolve('@nasaq/styles/assets/nasaq-wordmark.svg')),'utf8');
 assert.ok(wordmark.includes('<path')); assert.ok(!wordmark.includes('<text'));
 assert.equal(fs.readFileSync(new URL(import.meta.resolve('@nasaq/styles/assets/nasaq-loader.gif'))).subarray(0,6).toString(),'GIF89a');
+assert.ok(fs.readFileSync(new URL(import.meta.resolve('@nasaq/styles/assets/fonts/riyal-LICENSE.txt')),'utf8').includes('SIL OPEN FONT LICENSE'));
+assert.equal(fs.readFileSync(new URL(import.meta.resolve('@nasaq/styles/assets/fonts/riyal.woff2'))).subarray(0,4).toString(),'wOF2');
 console.log('Clean tarball consumer: ESM, SSR, Angular APF, CSS exports passed.');
 `,
 );

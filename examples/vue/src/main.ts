@@ -5,4 +5,6 @@ import '../../../brand/fonts.css';
 import './style.css';
 import App from './App.vue';
 import PortalExample from './PortalExample.vue';
-createApp(new URLSearchParams(location.search).get('preview') === 'portal' ? PortalExample : App).mount('#app');
+import InputControlsExample from './InputControlsExample.vue';
+const preview = new URLSearchParams(location.search).get('preview');
+createApp(preview === 'inputs' ? InputControlsExample : preview === 'portal' ? PortalExample : App).mount('#app');

@@ -4,7 +4,7 @@ Nasaq has a shared foundation and native framework renderers. Vanilla comes firs
 
 The default appearance is `dga`, based on the verified foundation values in the supplied Platforms Code snapshot exported on **2026-10-29**. The `nasaq` theme is an explicit visual option. This changes the shared appearance without changing framework rendering ownership or the `nq-` API. [The reference record](dga-reference.md) separates mapped evidence, implementation choices, and unresolved source coverage.
 
-The implementation has seven packages and a 77-entry catalog across four adapters. This scope includes native controls, interactive components, content/service compositions, and 12 CSS layout primitives. The [coverage guide](coverage.md) distinguishes these from native input aliases and external integration recipes. Source presence and verification remain separate in the catalog.
+The implementation has seven packages and a 81-entry catalog across four adapters. This scope includes native controls, interactive components, content/service compositions, and 12 CSS layout primitives. The [coverage guide](coverage.md) distinguishes these from native input aliases and external integration recipes. Source presence and verification remain separate in the catalog.
 
 ```mermaid
 flowchart TD

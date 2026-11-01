@@ -44,12 +44,12 @@ Musaned's article was directly accessible during research. The other three state
 |---|---|---|---|
 | Independent Nasaq visual identity | Yes | Arabic wordmark and opt-in Woven Rhythm theme | Existing brand/rendering checks are scoped in the validation record |
 | DGA default foundation | Yes | Source-mapped light/dark tokens and DGA-scoped styles; explicit Nasaq theme retained | Source values, node IDs, and adaptations are recorded; current test outcomes belong to the validation record |
-| Arabic/English and RTL/LTR | Required project baseline | Expanded 77-entry catalog and examples have implementations | Only the scopes recorded in validation and catalog evidence are verified; exhaustive matrix pending |
+| Arabic/English and RTL/LTR | Required project baseline | Expanded 81-entry catalog and examples have implementations | Only the scopes recorded in validation and catalog evidence are verified; exhaustive matrix pending |
 | Accessible semantics and interaction | Required project baseline | Expanded catalog uses native semantics and explicit behavior contracts | Selected automated/keyboard checks are recorded; expansion coverage, manual screen-reader work, and full audit are separate gates |
 | Exact official component parity | Coverage audit planned | Not established | Not established |
 | Government certification or endorsement | Not claimed | Not applicable | Not established |
 
-Use [components.json](../components.json) for per-component build and verification status, [coverage](coverage.md) for the 77-entry scope and national input recipes, and [the roadmap](roadmap.md) for release gates. This table concerns alignment evidence rather than a claim that every framework is complete. Phone, IBAN, identity, address, consent, and service-page patterns collect or present application data; they do not verify identity, supply government integrations, or issue digital stamps.
+Use [components.json](../components.json) for per-component build and verification status, [coverage](coverage.md) for the 81-entry scope and national input recipes, and [the roadmap](roadmap.md) for release gates. This table concerns alignment evidence rather than a claim that every framework is complete. Phone, IBAN, identity, address, consent, and service-page patterns collect or present application data; they do not verify identity, supply government integrations, or issue digital stamps.
 
 The [validation record](validation.md) describes the actual checks. Passing runtime, contrast, or axe tests does not establish alignment with every DGA requirement.
 

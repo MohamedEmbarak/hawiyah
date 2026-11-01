@@ -10,6 +10,7 @@ import '@nasaq/styles/reset.css';
 import '../../../brand/fonts.css';
 import './style.css';
 import { PortalExampleComponent } from './portal';
+import { InputControlsExampleComponent } from './input-controls';
 
 @Component({
   selector: 'app-root', standalone: true,
@@ -95,4 +96,5 @@ class AppComponent {
   submit(): void { this.reviewOpen = false; this.submitted.set(true); }
 }
 
-bootstrapApplication(new URLSearchParams(location.search).get('preview') === 'portal' ? PortalExampleComponent : AppComponent).catch(error => console.error(error));
+const preview = new URLSearchParams(location.search).get('preview');
+bootstrapApplication(preview === 'inputs' ? InputControlsExampleComponent : preview === 'portal' ? PortalExampleComponent : AppComponent).catch(error => console.error(error));

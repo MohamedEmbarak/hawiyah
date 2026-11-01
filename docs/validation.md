@@ -1,5 +1,32 @@
 # Validation record
 
+## 2026-11-01 input and step-state revision
+
+The full unit run passed 249 tests in 64 files. The final input-contract suites
+passed a further focused run of 11 cases, including rebuilt Angular switch error
+semantics and dynamic option-list updates. Eight token contrast checks passed.
+All packages and three native consumers built; the `/nasaq/` guide build passed.
+Clean local tarballs passed ESM, React/Vue SSR, Angular APF, TypeScript, CSS,
+licensed glyph asset and tree-shaking checks. Nothing was published to npm.
+
+Eighteen guide Chromium cases passed: input-lab values/validation/reset,
+Arabic/English mobile overflow and scoped axe, password icon geometry and
+forced-colors focus at 320/1280px, cumulative rating hover/keyboard/reset, and
+self-hosted riyal glyph loading with unchanged numeric constraints. Two stepper
+cases passed for forward/backward progress, explicit statuses and independent
+active/previous colors. Six native consumer cases passed at 320px in RTL/LTR,
+covering icon/text password actions, ratings, readonly sliders, checkbox focus,
+stepper states, native reset and scoped axe. All six screenshots were visually
+inspected; no clipping was observed. A text-toggle hover contrast defect found
+by those checks was corrected using the semantic text color.
+
+The native examples are available with `?preview=inputs`. The guide's `#inputs`
+page uses the same password composition and custom date-input handling. See
+[input review](input-review.md), [readonly controls](readonly-inputs.md),
+[rating](rating.md), [stepper states](stepper-states.md), and
+[riyal provenance](saudi-riyal.md). Manual screen-reader and cross-browser
+coverage remain open; these checks do not establish DGA certification.
+
 ## 2026-11-01 integrated password visibility
 
 Focused password and existing controls/expansion tests passed (32 cases in

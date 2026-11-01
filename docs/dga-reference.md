@@ -10,7 +10,7 @@ All **23 supplied local files** have now been decoded, including the six that ex
 
 - Foundations; Service Page; Form; Life Journeys; Contact Us; Feedback Section; Help & Support; FAQ; Site Map; Page Not Found; Rating Section; Chatbot; Content Page; Cookies Banner; e-Participation; About The Entity; Saudi National Day.
 - The six previously transfer-blocked files were decoded locally: Icons, Saudi Founding Day, Home Page Template, Hajj Template, Mobile Components and Search Page Template. **Hajj is application-specific and excluded from Nasaq implementation scope and backlog**; its inclusion in the inventory records supplied material only.
-- No standalone web Components Library was supplied. Components embedded in templates do not establish exhaustive official component coverage. Nasaq's 77-entry catalog is its own implementation inventory.
+- No standalone web Components Library was supplied. Components embedded in templates do not establish exhaustive official component coverage. Nasaq's 81-entry catalog is its own implementation inventory.
 
 The decoded Foundations file contains **784 resolved active local variables** across Containers, Primitives, Radius, Themes, Widths, Spacing, and Typography. All **40 selected variables** in the public reference match the decoded node/mode/value evidence. Imported component/library caches contain multiple versions. The local collections form the foundation reference; imported components require exact source identity and mode mapping before their styles can be treated as part of the same baseline.
 

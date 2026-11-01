@@ -31,7 +31,7 @@ Framework adapters render native framework components. Vanilla uses semantic HTM
 header, secondary navigation, breadcrumb, focusable main container and footer;
 vanilla uses the equivalent semantic HTML recipe. Their package `PORTAL.md`
 guides and framework examples at `?preview=portal` document exact APIs.
-The 48rem disclosure breakpoint is a Nasaq adaptation. Existing 77-entry
+The 48rem disclosure breakpoint is a Nasaq adaptation. Existing 81-entry
 verification records describe their historical snapshots; the two additions
 have separate test files and remain marked built until scoped passing evidence
 is recorded.
@@ -61,7 +61,7 @@ The inputs lab covers the 22 standard `input` type values. They are browser capa
 | `password` | Masked text | PasswordField |
 | `number` | Numeric quantity | NumberField |
 | `range` | Bounded numeric selection | Slider; RangeSlider for two bounds |
-| `date` | Calendar date | DatePicker or native date input |
+| `date` | Calendar date | DatePicker with typed ISO text and the custom calendar |
 | `month` | Year and month | Field + native month input |
 | `week` | Year and week | Field + native week input |
 | `time` | Time of day | Field + native time input |
