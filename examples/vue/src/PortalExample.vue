@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Accordion, Button, PortalLayout, SecondaryNav, ServiceCard } from '@nasaq/vue';
+import { Accordion, Button, MobileTopBar, PortalLayout, SecondaryNav, ServiceCard } from '@nasaq/vue';
 import logo from '../../../brand/assets/nasaq-wordmark.svg';
 const english = ref(false); const t = (ar: string, en: string) => english.value ? en : ar;
 const links = computed(() => [{ label: t('الخدمات', 'Services'), href: '#services', current: true }, { label: t('تواصل معنا', 'Contact us'), href: '#contact' }]);
@@ -13,6 +13,7 @@ const links = computed(() => [{ label: t('الخدمات', 'Services'), href: '#
     <template #actions><Button variant="ghost" @click="english = !english">{{ english ? 'العربية' : 'English' }}</Button></template>
     <section id="services" class="nq-stack"><h1>{{ t('الخدمات', 'Services') }}</h1><h2>{{ t('الخدمات المتاحة', 'Available services') }}</h2><ServiceCard :title="t('دليل الخدمات', 'Service directory')" :description="t('اكتشف خدمات الجهة ومتطلبات التقديم.', 'Explore services and application requirements.')" href="#contact" :action-label="t('عرض الخدمة', 'View service')" /></section>
     <section id="contact"><h2>{{ t('تواصل معنا', 'Contact us') }}</h2><p>{{ t('مثال توضيحي بدون إرسال بيانات.', 'Demonstration only; no data is submitted.') }}</p></section>
+    <section data-testid="mobile-top-bar-showcase"><MobileTopBar :heading-level="2" :title="t('طلباتي','My requests')" :subtitle="t('تابع طلباتك','Track your applications')" back-href="#services" :back-label="t('رجوع','Back')"><template #actions><a class="nq-button" data-variant="ghost" href="#contact" :aria-label="t('بحث','Search')"><span class="nq-icon" data-icon="search-01" aria-hidden="true" /></a></template></MobileTopBar></section>
     <SecondaryNav variant="mobile" :label="t('تنقل الجوال', 'Mobile navigation')" :items="[
       {label:t('الرئيسية','Home'),href:'#portal-content',current:true,icon:'home-01'},
       {label:t('الخدمات','Services'),href:'#services',icon:'search-01'},

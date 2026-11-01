@@ -27,7 +27,7 @@
     "built": "Source exists for the named adapter; this does not establish complete verification.",
     "verified": "The named adapter has direct behavior, semantic-association, or layout-contract assertions recorded in evidence. Scope is limited to those cases; rendering-only and broad suite checks remain separate. This is not a blanket accessibility or DGA certification."
   },
-  "coverageNote": "79 entries: initial 27 plus 50 expansion entries and 2 portal compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
+  "coverageNote": "80 entries: initial 27 plus 50 expansion entries and 3 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
   "docs": {
     "overview": "README.md",
     "overviewAr": "README.ar.md",
@@ -4761,6 +4761,52 @@
         "Arabic and RTL are independent defaults; localize all labels when selecting English."
       ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/portal-layout"
+    },
+    {
+      "id": "mobile-top-bar",
+      "name": "MobileTopBar",
+      "labelAr": "الترويسة العلوية للجوال",
+      "category": "platforms",
+      "description": "Mobile page title, optional subtitle, logical back link and native action slots.",
+      "cssClasses": [
+        "nq-mobile-top-bar"
+      ],
+      "interaction": "static",
+      "sourceType": "static",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [],
+      "evidence": [],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/mobile-top-bar.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/mobile-top-bar.ts"
+        ],
+        "angular": [
+          "packages/angular/src/mobile-top-bar.ts"
+        ],
+        "vanilla": [
+          "docs/mobile-top-bar.md",
+          "packages/styles/src/mobile-top-bar.css"
+        ]
+      },
+      "notes": [
+        "Source-mapped typography; intrinsic 60px minimum header and 44px action targets are accessibility adaptations.",
+        "No device status bar, implicit history navigation or component-owned motion."
+      ],
+      "documentation": "https://mohamedembarak.github.io/nasaq/#component/mobile-top-bar"
     }
   ],
   "limitations": [
@@ -4883,12 +4929,12 @@
     "native": "The main interaction uses browser-native semantics.",
     "static": "Semantic composition or CSS layout; content and application actions are caller-owned.",
     "interactive": "Nasaq adds state, keyboard behavior, or lifecycle management.",
-    "integration": "A documented application recipe for an external engine or service; not counted among the 79 components."
+    "integration": "A documented application recipe for an external engine or service; not counted among the 80 components."
   },
   "scope": {
-    "components": 79,
+    "components": 80,
     "initialComponents": 27,
-    "addedComponents": 52,
+    "addedComponents": 53,
     "layoutComponents": 12,
     "nativeInputTypeCount": 22,
     "nativeInputTypes": [

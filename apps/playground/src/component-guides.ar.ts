@@ -3,11 +3,13 @@ import type { ComponentGuide, GuideInput } from './component-guide-types';
 import { arabicNativeGuides } from './component-native-guides.ar';
 import { arabicExpandedGuides } from './component-expanded-guides.ar';
 import { arabicLayoutPlatformGuides } from './component-layout-guides.ar';
+import { arabicMobileGuides } from './component-mobile-guides';
 
 const entries: Record<string, GuideInput> = {
   ...arabicNativeGuides,
   ...arabicExpandedGuides,
   ...arabicLayoutPlatformGuides,
+  ...arabicMobileGuides,
 };
 
 /** Complete Arabic reference; technical identifiers and component behavior stay shared. */

@@ -1,0 +1,15 @@
+/* Mobile 8335:15564/15565 and 8335:15397/15402/15403. OS status chrome is
+   excluded. Intrinsic height and 44px actions are accessibility adaptations. */
+.nq-mobile-top-bar { box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: var(--nq-space-2); min-inline-size: 0; inline-size: 100%; min-block-size: 3.75rem; padding-block: max(var(--nq-space-2), env(safe-area-inset-top, 0px)) var(--nq-space-2); padding-left: max(var(--nq-space-4), env(safe-area-inset-left, 0px)); padding-right: max(var(--nq-space-4), env(safe-area-inset-right, 0px)); color: var(--nq-color-text); background: var(--nq-color-surface); font-family: var(--nq-font-sans); border-block-end: 1px solid var(--nq-color-border); }
+.nq-mobile-top-bar-copy { flex: 1 1 6rem; min-inline-size: 0; overflow-wrap: anywhere; }
+.nq-mobile-top-bar-title { margin: 0; color: var(--nq-color-heading, var(--nq-color-text)); font-size: .875rem; line-height: 1.5; font-weight: var(--nq-weight-semibold); }
+.nq-mobile-top-bar[data-variant='main'] .nq-mobile-top-bar-title { font-size: 1.625rem; font-weight: var(--nq-weight-bold, 700); }
+.nq-mobile-top-bar-subtitle { margin: 0; color: var(--nq-color-text-muted); font-size: .75rem; line-height: 1.5; }
+.nq-mobile-top-bar-leading, .nq-mobile-top-bar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--nq-space-2); min-inline-size: 0; max-inline-size: 100%; }
+.nq-mobile-top-bar-leading:empty, .nq-mobile-top-bar-actions:empty { display: none; }
+.nq-mobile-top-bar-actions { margin-inline-start: auto; }
+.nq-mobile-top-bar :is(a, button) { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-inline-size: 2.75rem; min-block-size: 2.75rem; white-space: normal; overflow-wrap: anywhere; }
+.nq-mobile-top-bar-back { color: inherit; text-decoration: none; border-radius: var(--nq-radius-sm); }
+.nq-mobile-top-bar-back:hover { background: var(--nq-color-surface-muted); }
+.nq-mobile-top-bar :is(a, button):focus-visible { outline: 2px solid var(--nq-color-focus); outline-offset: -2px; }
+@media (forced-colors: active) { .nq-mobile-top-bar :is(a, button):focus-visible { outline-color: Highlight; } }

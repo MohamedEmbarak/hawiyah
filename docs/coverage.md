@@ -1,6 +1,6 @@
 # Component and input coverage
 
-Nasaq's expanded catalog has **79 named entries: the initial 27 plus 50 expansion entries and 2 portal compositions**. The count represents distinct public components and layout primitives. Native input-type aliases, visual variants, editable blocks, and external integration recipes are documented separately.
+Nasaq's expanded catalog has **80 named entries: the initial 27 plus 50 expansion entries and 3 portal/mobile compositions**. The count represents distinct public components and layout primitives. Native input-type aliases, visual variants, editable blocks, and external integration recipes are documented separately.
 
 This is a defined, extensible scope for modern interfaces and Saudi service platforms. It is not an exhaustive list of every possible UI, an official DGA component count, or a certification claim. [components.json](../components.json) records planned, built, and verified coverage independently for each adapter. [EXPANSION.md](../EXPANSION.md) defines the expansion contract; the [validation record](validation.md) identifies the tested snapshot.
 
@@ -8,7 +8,7 @@ This is a defined, extensible scope for modern interfaces and Saudi service plat
 
 The default `dga` foundation is mapped from verified values in the supplied **2026-10-29** snapshot; `nasaq` is an opt-in visual theme. The local follow-up decoded **all 23 files**, including the six previously blocked by the remote transfer limit. Rendered inspection of Mobile, Home and Search supplements decoded properties; it does not establish exhaustive visual parity. Hajj is excluded from Nasaq's requirements and implementation scope. No standalone web component library was supplied. See the [source inventory](dga-source-inventory.md) and [audit follow-up](dga-audit-followup.md).
 
-The 79-entry catalog remains Nasaq's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
+The 80-entry catalog remains Nasaq's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
 
 ## Catalog groups
 
@@ -45,7 +45,7 @@ is recorded.
 | Interactive | Nasaq implements additional state, keyboard behavior, or lifecycle | Combobox, Calendar, Menu, TreeView, DataTable |
 | Integration | The application owns a specialist engine or service; Nasaq supplies surrounding UI recipes | Maps, charts, editors, identity verification, payments |
 
-The first three types appear in the 79-component catalog. Integrations have a separate boundary and are not counted as implemented components. Native elements still require labels, appropriate attributes, and application validation.
+The first three types appear in the 80-component catalog. Integrations have a separate boundary and are not counted as implemented components. Native elements still require labels, appropriate attributes, and application validation.
 
 ## All 22 native input types
 

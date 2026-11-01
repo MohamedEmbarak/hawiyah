@@ -1,5 +1,16 @@
 # Validation record
 
+## 2026-11-01 mobile top bar
+
+Five Chromium cases passed: two guide RTL/LTR cases at320px with DGA/Nasaq/custom,
+light/dark, enlarged text, forced colors, minimum44px actions and back navigation;
+three native framework consumer cases with heading/action slots, keyboard order,
+locale changes and scoped axe scans. The Arabic narrow-screen screenshot was
+visually inspected. All packages, the guide and native consumers built. Source
+title roles are decoded evidence; the60px minimum, intrinsic height and44px
+targets are accessibility adaptations. No source playback or pixel-parity claim
+is made. See [MobileTopBar](mobile-top-bar.md).
+
 ## 2026-11-01 disabled file-drop state
 
 React, Vue and Angular FileDropzone wrappers previously checked only component

@@ -118,3 +118,14 @@ work. It adds no official source requirement or visual-parity claim. Remaining
 mobile navigation-drawer/top-bar compositions, broader state coverage and
 imported-library/licensing questions remain separate backlog items. Hajj remains
 excluded.
+
+## Implemented mobile top bar — 2026-11-01
+
+Mobile `8335:15376` now maps to native MobileTopBar components and a vanilla
+HTML/CSS recipe. Main title `8335:15565` is26px bold; internal title/subtitle
+`8335:15402`/`8335:15403` are14px semibold/12px. Application rows are separate
+from the44px OS status area, which is excluded. Nasaq uses intrinsic height,
+44px actions, logical back navigation, safe-area spacing and semantic theme
+colors. These are documented web adaptations. See [the API and mapping](mobile-top-bar.md)
+and [scoped verification](validation.md). The navigation-drawer composition
+remains a separate task.

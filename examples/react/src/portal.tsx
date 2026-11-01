@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Accordion, Button, PortalLayout, SecondaryNav, ServiceCard } from '@nasaq/react';
+import { Accordion, Button, MobileTopBar, PortalLayout, SecondaryNav, ServiceCard } from '@nasaq/react';
 import logo from '../../../brand/assets/nasaq-wordmark.svg';
 import footerLogo from '../../../brand/assets/nasaq-wordmark-white.svg';
 
@@ -13,6 +13,7 @@ export function PortalExample() {
     footerProps={{ brand: <img src={footerLogo} alt="نسق" width="96" height="40" />, linksLabel: t('روابط التذييل', 'Footer links'), links: [{ label: t('الخصوصية', 'Privacy'), href: '#privacy' }], legal: t('نموذج محلي لهيكل البوابة', 'Local portal shell example') }}>
     <section id="services" className="nq-stack"><h1>{t('الخدمات', 'Services')}</h1><h2>{t('الخدمات المتاحة', 'Available services')}</h2><ServiceCard title={t('دليل الخدمات', 'Service directory')} description={t('اكتشف خدمات الجهة ومتطلبات التقديم.', 'Explore services and application requirements.')} href="#contact" actionLabel={t('عرض الخدمة', 'View service')} /></section>
     <section id="contact"><h2>{t('تواصل معنا', 'Contact us')}</h2><p>{t('مثال توضيحي بدون إرسال بيانات.', 'Demonstration only; no data is submitted.')}</p></section>
+    <section data-testid="mobile-top-bar-showcase"><MobileTopBar headingLevel={2} title={t('طلباتي','My requests')} subtitle={t('تابع طلباتك','Track your applications')} backHref="#services" backLabel={t('رجوع','Back')} actions={<a className="nq-button" data-variant="ghost" href="#contact" aria-label={t('بحث','Search')}><span className="nq-icon" data-icon="search-01" aria-hidden="true" /></a>} /></section>
     <SecondaryNav variant="mobile" label={t('تنقل الجوال', 'Mobile navigation')} items={[
       {label:t('الرئيسية','Home'),href:'#portal-content',current:true,icon:'home-01'},
       {label:t('الخدمات','Services'),href:'#services',icon:'search-01'},

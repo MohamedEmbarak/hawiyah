@@ -17,3 +17,4 @@ export { SecondaryNav, PortalLayout } from './portal.js';
 export type { LayoutProps, Responsive } from '@nasaq/core';
 
 export type { SecondaryNavItem } from './portal.js';
+export { MobileTopBar } from './mobile-top-bar.js';
