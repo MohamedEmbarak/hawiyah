@@ -31,7 +31,7 @@ Its two labelled thumbs remain focusable; read-only values still submit normally
   data-nq-calendar="gregory" data-nq-locale="en-GB" data-nq-name="date"
   aria-label="Choose an appointment date"></div>
 <div class="nq-date-picker" data-nq="date-picker" data-nq-calendar="islamic-umalqura" data-nq-locale="ar-SA">
-  <label>Appointment <input type="date" data-nq-date-input name="appointment" required></label>
+  <label>Appointment <input type="text" placeholder="YYYY-MM-DD" data-nq-date-input name="appointment" required></label>
   <button type="button" data-nq-date-trigger aria-label="Choose date">Calendar</button>
   <dialog class="nq-dialog" data-nq-date-dialog aria-label="Choose appointment date">
     <header class="nq-dialog-header"><h2>Choose appointment date</h2><button class="nq-button" data-variant="ghost" type="button" data-nq-date-close>Close</button></header>

@@ -1,5 +1,18 @@
 # Validation record
 
+## 2026-11-01 custom-only date inputs
+
+All four adapters use editable ISO text drafts plus canonical hidden form values.
+Focused React/Vue/vanilla date tests passed (19 cases); Angular date draft and
+expansion tests passed (16 cases). Three native consumer browser cases passed
+for malformed/valid drafts, canonical submission, required clearing and keyboard
+opening/focus return. The framework calendar script passed all three adapters,
+including mobile RTL/dark layout, calendar switching, invalid-range submission
+and scoped axe. Three guide calendar/input cases passed in Arabic/English and
+320/390/1280px layouts. Packages and consumers built. The browser trigger owns
+expanded state; the editable textbox does not expose unsupported aria-expanded.
+See [the date-input contract](date-input.md). Provider calculations are unchanged.
+
 ## 2026-11-01 navigation drawer
 
 Six focused native adapter/controller tests passed, including disabled groups,
@@ -362,6 +375,6 @@ The calendar script accepts an optional `react`, `angular`, or `vue` argument. R
 
 ## Remaining evaluation
 
-Firefox and WebKit have not been covered by these runs. Manual screen-reader testing, a complete keyboard/accessibility audit, exhaustive mode/theme/density combinations, and a broader framework-version matrix remain open. Angular production AOT consumer integration and Angular SSR/hydration are not established. React/Vue hydration coverage is limited to the focused cases described above. The [DGA reference](dga-reference.md) records reviewed source mappings and accessibility adaptations. Six oversized Figma exports and the missing standalone web Components Library remain unverified; exhaustive template parity, live official-version checking and asset redistribution permissions remain separate work in [alignment](alignment.md).
+Firefox and WebKit have not been covered by these runs. Manual screen-reader testing, a complete keyboard/accessibility audit, exhaustive mode/theme/density combinations, and a broader framework-version matrix remain open. Angular production AOT consumer integration and Angular SSR/hydration are not established. React/Vue hydration coverage is limited to the focused cases described above. The [DGA reference](dga-reference.md) records reviewed source mappings and accessibility adaptations. The local audit decoded all 23 supplied exports; the standalone web Components Library was not found. Hajj is excluded by product scope; exhaustive template parity, live official-version checking and asset redistribution permissions remain separate work in [alignment](alignment.md).
 
 These checks describe this source and guide snapshot; later changes require relevant checks again. The GitHub Pages workflow builds and deploys the guide independently. npm packages are not yet published. Follow the [release gates](publication.md) before distributing registry packages.

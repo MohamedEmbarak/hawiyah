@@ -33,7 +33,7 @@ try {
     await expect(showcase.getByRole('heading', { name: 'Your appointment, in either calendar' })).toBeVisible();
     const grid = showcase.locator('.nq-grid');
     await expect.poll(() => grid.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(/\s+/u).length)).toBe(2);
-    const date = showcase.locator('input[type=date]');
+    const date = showcase.locator('input[type=text]');
     const open = showcase.getByRole('button', { name: 'Open calendar', exact: true });
     const dialog = page.getByRole('dialog', { name: 'Choose appointment date', exact: true });
     const system = dialog.getByRole('combobox', { name: 'Calendar system', exact: true });
@@ -79,7 +79,7 @@ try {
       const inputGroup = picker.locator('.nq-input-group');
       const fieldBounds = await inputGroup.boundingBox(); const outputBounds = await output.boundingBox();
       expect(outputBounds.y).toBeGreaterThanOrEqual(fieldBounds.y + fieldBounds.height - 1);
-      await picker.locator('[aria-haspopup="dialog"]').click();
+      await picker.locator('button[aria-haspopup="dialog"]').click();
       const popup = page.getByRole('dialog');
       await expect(popup.locator('.nq-dialog-header h2')).toBeVisible();
       await popup.evaluate(node => Promise.all(node.getAnimations().map(animation => animation.finished.catch(() => {}))));
@@ -88,7 +88,7 @@ try {
       expect(await popup.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
       expect(await popup.locator('.nq-calendar-day').first().evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
       await page.keyboard.press('Escape');
-      await expect(picker.locator('[aria-haspopup="dialog"]')).toBeFocused();
+      await expect(picker.locator('button[aria-haspopup="dialog"]')).toBeFocused();
     }
     const violations = (await new AxeBuilder({ page }).include('[data-testid="calendar-showcase"]').withTags(['wcag2a', 'wcag2aa']).analyze()).violations;
     expect(violations).toEqual([]); expect(errors).toEqual([]);

@@ -89,4 +89,39 @@ describe('date picker', () => {
     input.value = '2026-10-28'; input.dispatchEvent(new Event('input', { bubbles: true })); expect(display.textContent).toContain('1448'); expect(display.hidden).toBe(false);
     form.reset(); await Promise.resolve(); expect(input.value).toBe('2029-08-11'); expect(display.textContent).toContain('1451'); controller.destroy();
   });
+  it('enhances legacy native dates to editable text drafts without leaking malformed values into submission', async () => {
+    const { root, input, dialog } = picker('2026-10-15'); const form = document.createElement('form'); document.body.replaceChildren(form); form.append(root);
+    input.required = true; input.min = '2026-10-01'; input.max = '2026-10-31'; const changed = vi.fn();
+    const controller = createDatePicker(root, { onValueChange: changed, isDateDisabled: date => date === '2026-10-20' });
+    const edit = (value: string) => { input.value = value; input.dispatchEvent(new Event('input', { bubbles: true })); };
+    expect(input.type).toBe('text'); expect(input.name).toBe(''); expect(input.willValidate).toBe(true);
+    input.focus(); edit('2026-02-30'); expect(input.value).toBe('2026-02-30'); expect(input.checkValidity()).toBe(false); expect(changed).not.toHaveBeenCalled(); expect(controller.value).toBe('2026-10-15'); expect(new FormData(form).get('date')).toBe('2026-10-15');
+    edit('2026-11-01'); expect(changed).toHaveBeenLastCalledWith('2026-11-01'); expect(input.checkValidity()).toBe(false);
+    edit('2026-10-20'); expect(input.checkValidity()).toBe(false);
+    edit('2026-10-21'); expect(input.checkValidity()).toBe(true); expect(new FormData(form).getAll('date')).toEqual(['2026-10-21']);
+    edit(''); expect(changed).toHaveBeenLastCalledWith(''); expect(input.validity.valueMissing).toBe(true);
+    form.reset(); await Promise.resolve(); expect(input.value).toBe('2026-10-15'); expect(controller.value).toBe('2026-10-15');
+    input.click(); expect(dialog.open).toBe(false);
+    const enter = new KeyboardEvent('keydown', {key: 'Enter', bubbles: true, cancelable: true}); input.dispatchEvent(enter); expect(enter.defaultPrevented).toBe(false);
+    input.focus(); input.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true, cancelable: true})); expect(dialog.open).toBe(true); expect(input.hasAttribute('aria-expanded')).toBe(false); expect(root.querySelector('[data-nq-date-trigger]')!.getAttribute('aria-expanded')).toBe('true');
+    controller.close(); expect(document.activeElement).toBe(input); expect(root.querySelector('[data-nq-date-trigger]')!.getAttribute('aria-expanded')).toBe('false');
+    controller.destroy(); expect(input.type).toBe('date'); expect(input.name).toBe('date'); expect(input.value).toBe('2026-10-15');
+  });
+
+  it('refreshes calendar availability when native min/max attributes change', async () => {
+    const { root, input } = picker('2026-10-15'); const controller = createDatePicker(root);
+    const day = (value: string) => root.querySelector<HTMLButtonElement>(`[data-nq-date="${value}"]`)!;
+    expect(day('2026-10-14').disabled).toBe(false);
+    input.min = '2026-10-15'; input.max = '2026-10-16'; await Promise.resolve();
+    expect(day('2026-10-14').disabled).toBe(true); expect(day('2026-10-17').disabled).toBe(true); expect(day('2026-10-16').disabled).toBe(false);
+    input.removeAttribute('min'); input.removeAttribute('max'); await Promise.resolve();
+    expect(day('2026-10-14').disabled).toBe(false); expect(day('2026-10-17').disabled).toBe(false); expect(controller.value).toBe('2026-10-15'); controller.destroy();
+  });
+  it('moves dynamic field names to the canonical submission input without submitting malformed drafts', async () => {
+    const { root, input } = picker('2026-10-15'); const form = document.createElement('form'); document.body.replaceChildren(form); form.append(root); const controller = createDatePicker(root);
+    input.value = 'invalid'; input.dispatchEvent(new Event('input', {bubbles: true})); input.name = 'replacement'; await Promise.resolve(); await Promise.resolve();
+    expect(input.name).toBe(''); expect(new FormData(form).get('date')).toBeNull(); expect(new FormData(form).getAll('replacement')).toEqual(['2026-10-15']);
+    input.name = ''; await Promise.resolve(); await Promise.resolve(); expect([...new FormData(form)]).toEqual([]); controller.destroy();
+  });
+
 });

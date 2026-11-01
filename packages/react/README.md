@@ -213,7 +213,7 @@ Controlled values remain owned by the application.
 | `TagInput` | String array value/defaultValue, `onValueChange`, name, required, `getRemoveLabel`, `requiredMessage`; Enter/comma commits a unique tag, empty Backspace removes the last tag. Each committed tag produces a native form value. |
 | `MultiSelect` | Required label and options; string array value/defaultValue, `onValueChange`, name, required, `searchLabel`, `emptyMessage`, `requiredMessage`. Searchable native checkboxes; filtered-out selections retain repeated form values. |
 | `Calendar` | ISO Gregorian value/defaultValue, `onValueChange`; month/defaultMonth, `onMonthChange`; locale/calendar/weekStartsOn, min/max, `isDateDisabled`, disabled/readOnly, optional form/name and localized toolbar/day labels. |
-| `DatePicker` | ISO native date input plus Calendar in a native modal. Adds calendar/defaultCalendar, `onCalendarChange`, localized calendar selector labels, calendar button/dialog labels and unsupported-range message. |
+| `DatePicker` | Typed ISO text input plus Calendar in a native modal. Adds calendar/defaultCalendar, `onCalendarChange`, localized calendar selector labels, calendar button/dialog labels and unsupported-range message. |
 | `FileDropzone` | Native file input props plus `onFilesChange(File[])`, `dropLabel`, `getRejectedMessage`; accepted dropped files populate the actual native input. The picker and dropped selection participate in forms. No upload occurs automatically. |
 
 Native `TextField` input types retain their platform semantics: text/search/tel/url

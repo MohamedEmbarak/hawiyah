@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { catalog } from "../../apps/playground/src/data";
 import AxeBuilder from "@axe-core/playwright";
 
 test("brand loader switches to its static symbol for reduced motion without a logo font request", async ({
@@ -32,11 +33,11 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("77 live recipes preserve native values while richer controls are enhanced", async ({
+test("Live recipes preserve native values while richer controls are enhanced", async ({
   page,
 }) => {
   await page.goto("/#components");
-  await expect(page.locator(".component-card")).toHaveCount(77);
+  await expect(page.locator(".component-card")).toHaveCount(catalog.length);
   const password = page.locator('[data-nq="password-field"]');
   await password.locator("input").fill("fictional-password");
   await password.locator("button").click();
@@ -182,7 +183,7 @@ test("layout studio edits real responsive CSS and survives Arabic switching", as
   ).toBe(true);
 });
 
-test("input laboratory covers all 22 native types and keeps validation and reset local", async ({
+test("input laboratory covers input types with custom date handling and keeps validation and reset local", async ({
   page,
 }) => {
   await page.goto("/#inputs");
@@ -196,7 +197,6 @@ test("input laboratory covers all 22 native types and keeps validation and reset
     "button",
     "checkbox",
     "color",
-    "date",
     "datetime-local",
     "email",
     "file",

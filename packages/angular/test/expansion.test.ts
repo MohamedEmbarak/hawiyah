@@ -95,7 +95,7 @@ describe('Angular expansion behavior', () => {
     selector.value = 'islamic-umalqura'; selector.dispatchEvent(new Event('change', {bubbles: true})); fixture.detectChanges();
     expect(fixture.componentInstance.calendar).toBe('islamic-umalqura'); expect(committed).toBe(0);
     expect(fixture.componentInstance.value).toBe('2026-10-15');
-    expect((fixture.nativeElement.querySelector('input[type="date"]') as HTMLInputElement).value).toBe('2026-10-15');
+    expect((fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement).value).toBe('2026-10-15');
     fixture.componentInstance.pickerCalendar!.navigate('2027-01-01'); fixture.detectChanges(); dialog.close(); fixture.detectChanges();
     opener.click(); fixture.detectChanges();
     expect(fixture.componentInstance.pickerCalendar!.month).toBe('2026-10-15');
@@ -141,7 +141,7 @@ describe('Angular expansion behavior', () => {
     fixture.componentRef.setInput('calendar', 'islamic-umalqura');
     fixture.componentRef.setInput('unsupportedMessage', 'التاريخ خارج النطاق المدعوم');
     fixture.detectChanges();
-    const control = fixture.nativeElement.querySelector('input[type="date"]') as HTMLInputElement;
+    const control = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
     expect(control.value).toBe('1900-01-01');
     expect(control.checkValidity()).toBe(false);
     expect(control.validationMessage).toBe('التاريخ خارج النطاق المدعوم');
@@ -152,7 +152,7 @@ describe('Angular expansion behavior', () => {
     fixture.componentInstance.switchCalendar('gregory'); fixture.detectChanges();
     expect(control.value).toBe('1900-01-01'); expect(control.checkValidity()).toBe(true);
     fixture.componentRef.setInput('min', '1950-01-01'); fixture.detectChanges();
-    expect(control.checkValidity()).toBe(false); expect(control.validity.customError).toBe(false);
+    expect(control.checkValidity()).toBe(false); expect(control.validity.customError).toBe(true);
     fixture.componentRef.setInput('min', ''); fixture.componentInstance.switchCalendar('islamic-umalqura'); fixture.detectChanges();
     input(control, '2078-01-01'); fixture.detectChanges();
     expect(control.checkValidity()).toBe(false);
@@ -163,7 +163,7 @@ describe('Angular expansion behavior', () => {
   it('shows an associated canonical selected date below the closed picker field', () => {
     const fixture = TestBed.createComponent(NqDatePickerComponent);
     fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('hint', 'Original day'); fixture.componentRef.setInput('value', '2029-08-11'); fixture.componentRef.setInput('calendar', 'islamic-umalqura'); fixture.componentRef.setInput('locale', 'en-SA'); fixture.detectChanges();
-    const control = fixture.nativeElement.querySelector('input[type=date]') as HTMLInputElement;
+    const control = fixture.nativeElement.querySelector('input[type=text]') as HTMLInputElement;
     const output = fixture.nativeElement.querySelector('.nq-date-picker-value') as HTMLOutputElement;
     expect((fixture.nativeElement.querySelector('dialog') as HTMLDialogElement).open).toBe(false);
     expect(output.hidden).toBe(false);
@@ -182,7 +182,7 @@ describe('Angular expansion behavior', () => {
   it('updates reactive-form calendar validation on switching, value writes, disable and reset', () => {
     class Host { date = new FormControl<string | null>('1900-01-01'); system = 'islamic-umalqura'; }
     const fixture = host(Host, `<form><nq-date-picker label="Date" name="date" [formControl]="date" [calendar]="system" /></form>`);
-    const native = fixture.nativeElement.querySelector('input[type="date"]') as HTMLInputElement;
+    const native = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
     const control = fixture.componentInstance.date;
     expect(control.hasError('calendarUnsupported')).toBe(true);
     expect(native.checkValidity()).toBe(false);
@@ -205,7 +205,7 @@ describe('Angular expansion behavior', () => {
     const fixture = host(Host, `<form><fieldset [disabled]="fieldsetDisabled"><nq-date-picker label="Date" name="date" [(ngModel)]="date" calendar="islamic-umalqura" /></fieldset></form>`);
     await fixture.whenStable(); fixture.detectChanges();
     const form = fixture.debugElement.query(By.directive(NgForm)).injector.get(NgForm);
-    const native = fixture.nativeElement.querySelector('input[type="date"]') as HTMLInputElement;
+    const native = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
     expect(form.controls['date']!.hasError('calendarUnsupported')).toBe(true);
     expect(native.checkValidity()).toBe(false);
     fixture.componentInstance.fieldsetDisabled = true; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges();

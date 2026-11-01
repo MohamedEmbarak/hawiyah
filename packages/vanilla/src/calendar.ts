@@ -28,7 +28,8 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   const scope = createCleanup(); const document = root.ownerDocument;
   const locale = options.locale ?? localeOf(root);
   let calendar = options.calendar ?? (root.dataset.nqCalendar === 'islamic-umalqura' ? 'islamic-umalqura' : 'gregory');
-  const min = options.min ?? root.dataset.nqMin; const max = options.max ?? root.dataset.nqMax;
+  let min = options.min ?? root.dataset.nqMin; let max = options.max ?? root.dataset.nqMax;
+  const refreshBounds = () => { min = options.min ?? root.dataset.nqMin; max = options.max ?? root.dataset.nqMax; };
   const weekStartsOn = options.weekStartsOn ?? Number(root.dataset.nqWeekStartsOn || 0);
   const initial = options.value ?? root.dataset.nqValue ?? '';
   let value = isDateInRange(initial, min, max) ? initial : '';
@@ -36,13 +37,14 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   let focused = value;
   const disabled = () => !!options.disabled || root.dataset.nqDisabled === 'true' || root.getAttribute('aria-disabled') === 'true';
   const readonly = () => !!options.readOnly || readOnly(root);
-  const selectable = (date: string) => isDateInRange(date, min, max) && isCalendarDateSupported(date, calendar) && !options.isDateDisabled?.(date);
+  const selectable = (date: string) => { refreshBounds(); return isDateInRange(date, min, max) && isCalendarDateSupported(date, calendar) && !options.isDateDisabled?.(date); };
   const host = document.createElement('div'); host.className = 'nq-calendar-content'; root.append(host); scope.add(() => host.remove());
   const hidden = document.createElement('input'); hidden.type = 'hidden'; hidden.name = options.name ?? root.dataset.nqName ?? ''; if (hidden.name) { root.append(hidden); scope.add(() => hidden.remove()); }
   const titleId = ensureId(scope, host, 'calendar') + '-title';
   let model: CalendarMonth;
   const button = (label: string, action: string) => { const node = document.createElement('button'); node.type = 'button'; node.className = `nq-button nq-calendar-${action === 'previous' ? 'prev' : 'next'}`; node.setAttribute('aria-label', label); node.dataset.variant = 'ghost'; node.dataset.nqCalendarAction = action; node.textContent = label; return node; };
   const render = (focusDate?: string, focusAction?: string) => {
+    refreshBounds();
     model = getCalendarMonth({ month, value, min, max, locale, calendar, weekStartsOn });
     const first = model.days.find(day => !day.outside)!;
     month = first.value;
@@ -138,48 +140,79 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   render(); return { get value() { return value; }, get calendar() { return calendar; }, select, setValue, setMonth, setCalendar, destroy: () => scope.destroy() };
 }
 
-export interface DatePickerOptions { calendar?: CalendarSystem; locale?: string; onValueChange?: (value: string) => void; onCalendarChange?: (calendar: CalendarSystem) => void }
+export interface DatePickerOptions { calendar?: CalendarSystem; locale?: string; onValueChange?: (value: string) => void; onCalendarChange?: (calendar: CalendarSystem) => void; isDateDisabled?: (value: string) => boolean; invalidMessage?: string }
 export interface DatePickerController extends CalendarController { show(): void; close(): void }
 export function createDatePicker(root: HTMLElement, options: DatePickerOptions = {}): DatePickerController {
   const input = required<HTMLInputElement>(root, '[data-nq-date-input]'); const trigger = required<HTMLButtonElement>(root, '[data-nq-date-trigger]');
   const dialog = required<HTMLDialogElement>(root, '[data-nq-date-dialog]'); const host = required<HTMLElement>(dialog, '[data-nq-date-calendar]');
   const scope = createCleanup(); const validity = input.validity.customError ? input.validationMessage : ''; const originalValue = input.value;
-  let lastNotifiedValue = input.value;
-  remember(scope, trigger, ['aria-haspopup', 'aria-controls', 'disabled']); trigger.setAttribute('aria-haspopup', 'dialog'); trigger.setAttribute('aria-controls', ensureId(scope, dialog, 'date-picker'));
+  let value = isDateInRange(input.value) ? input.value : ''; let lastNotifiedValue = value;
+  remember(scope, input, ['type', 'name', 'aria-describedby', 'aria-invalid', 'aria-haspopup', 'aria-expanded', 'aria-controls']);
+  const originalInvalid = input.getAttribute('aria-invalid');
+  const canonical = input.ownerDocument.createElement('input'); canonical.type = 'hidden'; canonical.name = input.name;
+  const synchronizeSubmission = () => { canonical.value = value; canonical.disabled = input.disabled; const form = input.getAttribute('form'); if (form) canonical.setAttribute('form', form); else canonical.removeAttribute('form'); };
+  input.type = 'text'; input.name = ''; root.append(canonical); scope.add(() => canonical.remove());
+  const dialogId = ensureId(scope, dialog, 'date-picker');
+  remember(scope, trigger, ['aria-haspopup', 'aria-controls', 'aria-expanded', 'disabled']); trigger.setAttribute('aria-haspopup', 'dialog'); trigger.setAttribute('aria-controls', dialogId);
+  input.setAttribute('aria-haspopup', 'dialog'); input.setAttribute('aria-controls', dialogId); input.removeAttribute('aria-expanded'); trigger.setAttribute('aria-expanded', 'false');
   scope.add(() => { input.setCustomValidity(validity); input.value = originalValue; });
   const display = root.ownerDocument.createElement('output'); display.className = 'nq-hint nq-date-picker-value'; display.dataset.nqDateDisplay = ''; display.setAttribute('aria-live', 'polite');
   root.append(display); scope.add(() => display.remove());
-  const displayId = ensureId(scope, display, 'date-display'); remember(scope, input, ['aria-describedby']);
+  const displayId = ensureId(scope, display, 'date-display');
   input.setAttribute('aria-describedby', [...new Set((input.getAttribute('aria-describedby') || '').split(/\s+/u).filter(Boolean).concat(displayId))].join(' '));
   const modal = createDialog(dialog); scope.add(() => modal.destroy());
   const system = options.calendar ?? (root.dataset.nqCalendar === 'islamic-umalqura' ? 'islamic-umalqura' : 'gregory');
+  const blocked = () => isDisabled(input) || input.readOnly;
   const validate = () => {
-    const supported = !input.value || isDateInRange(input.value, input.min || undefined, input.max || undefined) && isCalendarDateSupported(input.value, calendar.calendar);
-    input.setCustomValidity(supported ? validity : translated(root, `Choose a valid date${calendar.calendar === 'islamic-umalqura' ? ` from ${UMALQURA_MIN_DATE} through ${UMALQURA_MAX_DATE}` : ''}.`, `اختر تاريخًا صحيحًا${calendar.calendar === 'islamic-umalqura' ? ` بين ${UMALQURA_MIN_DATE} و${UMALQURA_MAX_DATE}` : ''}.`));
-    trigger.disabled = isDisabled(input) || input.readOnly;
-    display.hidden = !input.value;
-    if (!input.value) display.textContent = '';
-    else if (isCalendarDateSupported(input.value, calendar.calendar)) display.textContent = formatCalendarDate(input.value, { locale: options.locale ?? localeOf(root), calendar: calendar.calendar });
+    const draft = input.value;
+    const supported = !draft || isDateInRange(draft, input.min || undefined, input.max || undefined) && isCalendarDateSupported(draft, calendar.calendar) && !options.isDateDisabled?.(draft);
+    input.setCustomValidity(supported ? validity : options.invalidMessage ?? translated(root, `Enter an available Gregorian date in YYYY-MM-DD format${calendar.calendar === 'islamic-umalqura' ? ` from ${UMALQURA_MIN_DATE} through ${UMALQURA_MAX_DATE}` : ''}.`, `أدخل تاريخًا ميلاديًا متاحًا بصيغة YYYY-MM-DD${calendar.calendar === 'islamic-umalqura' ? ` بين ${UMALQURA_MIN_DATE} و${UMALQURA_MAX_DATE}` : ''}.`));
+    if (!supported) input.setAttribute('aria-invalid', 'true'); else if (originalInvalid === null) input.removeAttribute('aria-invalid'); else input.setAttribute('aria-invalid', originalInvalid);
+    trigger.disabled = blocked(); synchronizeSubmission();
+    display.hidden = !value;
+    if (!value) display.textContent = '';
+    else if (isCalendarDateSupported(value, calendar.calendar)) display.textContent = formatCalendarDate(value, { locale: options.locale ?? localeOf(root), calendar: calendar.calendar });
     else display.textContent = calendar.calendar === 'islamic-umalqura'
       ? translated(root, `Hijri display supports ${UMALQURA_MIN_DATE} through ${UMALQURA_MAX_DATE}; the Gregorian value is unchanged.`, `العرض الهجري يدعم ${UMALQURA_MIN_DATE} إلى ${UMALQURA_MAX_DATE}؛ القيمة الميلادية لم تتغير.`)
       : translated(root, 'Enter a valid Gregorian ISO date.', 'أدخل تاريخًا ميلاديًا صحيحًا بصيغة ISO.');
     appendDateMessage(display, display.textContent || '');
   };
   const calendar = createCalendar(host, {
-    value: input.value, min: input.min || undefined, max: input.max || undefined, locale: options.locale ?? localeOf(root), calendar: system,
-    onSelect(value) { if (isDisabled(input) || input.readOnly || !isDateInRange(value, input.min || undefined, input.max || undefined)) return; input.value = value; validate(); nativeChange(input); modal.close(); },
-    onCalendarChange(value) { validate(); emit(root, { calendar: value }); options.onCalendarChange?.(value); },
+    value, get min() { return input.min || undefined; }, get max() { return input.max || undefined; }, locale: options.locale ?? localeOf(root), calendar: system, isDateDisabled: options.isDateDisabled,
+    onSelect(date) { if (blocked() || !isDateInRange(date, input.min || undefined, input.max || undefined)) return; input.value = date; nativeChange(input); modal.close(); },
+    onCalendarChange(next) { validate(); emit(root, { calendar: next }); options.onCalendarChange?.(next); },
   });
   scope.add(() => calendar.destroy());
-  // The picker owns the composed public events; internal calendar changes must
-  // not produce a second bubbling value notification on the picker root.
   scope.listen(host, 'nq:change', event => event.stopPropagation());
-  const show = () => { if (scope.destroyed || isDisabled(input) || input.readOnly) return; calendar.setValue(isDateInRange(input.value) ? input.value : ''); modal.show(trigger); };
+  const acceptDraft = () => {
+    if (scope.destroyed || blocked()) return;
+    if (!input.value || isDateInRange(input.value)) { value = input.value; calendar.setValue(value); }
+    validate();
+    if (lastNotifiedValue !== value) { lastNotifiedValue = value; emit(root, { value }); options.onValueChange?.(value); }
+  };
+  const show = (origin: HTMLElement = trigger) => { if (scope.destroyed || blocked()) return; calendar.setValue(value); modal.show(origin); trigger.setAttribute('aria-expanded', 'true'); };
   scope.listen(trigger, 'click', event => { event.preventDefault(); show(); });
+  scope.listen(input, 'keydown', event => { const key = event as KeyboardEvent; if (!key.defaultPrevented && !key.isComposing && !key.ctrlKey && !key.metaKey && !key.shiftKey && key.key === 'ArrowDown' && !blocked()) { key.preventDefault(); show(input); } });
   scope.listen(dialog, 'click', event => { if (eventElement(event)?.closest('[data-nq-date-close]')) { event.preventDefault(); modal.close(); } });
-  scope.listen(input, 'input', validate); scope.listen(input, 'change', () => { validate(); calendar.setValue(isDateInRange(input.value) ? input.value : ''); if (lastNotifiedValue !== input.value) { lastNotifiedValue = input.value; emit(root, { value: input.value }); options.onValueChange?.(input.value); } });
-  if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { lastNotifiedValue = input.value; validate(); calendar.setValue(input.value); modal.close(); } }));
-  const Observer = input.ownerDocument.defaultView?.MutationObserver; if (Observer) { const observer = new Observer(() => { validate(); if (isDisabled(input) || input.readOnly) modal.close(); }); observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'readonly'] }); scope.add(() => observer.disconnect()); }
+  scope.listen(dialog, 'close', () => trigger.setAttribute('aria-expanded', 'false'));
+  scope.listen(input, 'input', acceptDraft); scope.listen(input, 'change', acceptDraft);
+  if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { value = isDateInRange(input.value) ? input.value : ''; lastNotifiedValue = value; calendar.setValue(value); validate(); modal.close(); } }));
+  const Observer = input.ownerDocument.defaultView?.MutationObserver;
+  if (Observer) {
+    const observer = new Observer(records => {
+      const renames = records.filter(record => record.attributeName === 'name');
+      const name = input.getAttribute('name');
+      // Ignore our own nonempty-name -> empty-name mutation. Explicit caller
+      // clears (oldValue is already empty) still remove the submission name.
+      if (renames.length && (name !== '' || renames.some(record => record.oldValue === ''))) {
+        canonical.name = name ?? ''; if (name !== '') input.name = '';
+      }
+      if (records.some(record => record.attributeName === 'min' || record.attributeName === 'max')) calendar.setValue(value);
+      validate(); if (blocked()) modal.close();
+    });
+    observer.observe(input, { attributes: true, attributeOldValue: true, attributeFilter: ['disabled', 'readonly', 'min', 'max', 'form', 'name'] });
+    scope.add(() => observer.disconnect());
+  }
   validate();
-  return { get value() { return input.value; }, get calendar() { return calendar.calendar; }, select: calendar.select, setValue(value) { if (!value || isDateInRange(value)) { input.value = value; lastNotifiedValue = value; calendar.setValue(value); validate(); } }, setMonth: calendar.setMonth, setCalendar: calendar.setCalendar, show, close: () => modal.close(), destroy: () => scope.destroy() };
+  return { get value() { return value; }, get calendar() { return calendar.calendar; }, select: calendar.select, setValue(next) { if (!next || isDateInRange(next)) { value = next; input.value = next; lastNotifiedValue = next; calendar.setValue(next); validate(); } }, setMonth: calendar.setMonth, setCalendar: calendar.setCalendar, show: () => show(), close: () => modal.close(), destroy: () => scope.destroy() };
 }

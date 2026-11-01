@@ -1,6 +1,6 @@
 # Date picker presentation
 
-The date picker uses a native date input and a native modal dialog. Its submitted
+The date picker uses an editable ISO text input and Nasaq’s calendar in a native modal dialog. Its submitted
 value remains a Gregorian ISO date; switching the displayed calendar does not
 rewrite that value. This presentation update does not change the pinned
 Umm al-Qura provider, date calculations, supported range, or calendar keyboard
@@ -39,3 +39,5 @@ geometry, output placement, day height and Escape focus return at 320px and
 are Nasaq usability improvements, not evidence of DGA certification or a claim
 that these dimensions were extracted from a DGA calendar component. Hajj is
 outside this work.
+
+The custom-only input and draft/submission contract is documented in [date-input.md](date-input.md).

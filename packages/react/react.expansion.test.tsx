@@ -95,7 +95,7 @@ it('switches picker calendar systems without changing the ISO date and reopens a
   const changed = vi.fn();
   await render(<form><DatePicker label="Appointment" name="date" defaultValue="2026-10-28" locale="en-SA" onValueChange={changed} /></form>);
   const opener = container.querySelector<HTMLButtonElement>('[aria-label="Open calendar"]')!; await click(opener);
-  const dateInput = container.querySelector<HTMLInputElement>('input[type=date]')!; const calendar = container.querySelector('.nq-calendar')!;
+  const dateInput = container.querySelector<HTMLInputElement>('input[type=text]')!; const calendar = container.querySelector('.nq-calendar')!;
   const before = container.querySelector('.nq-calendar-header h3')!.textContent;
   const select = container.querySelector('select')!;
   await act(async () => { select.value = 'islamic-umalqura'; select.dispatchEvent(new Event('change', { bubbles: true })); });
@@ -110,7 +110,7 @@ it('switches picker calendar systems without changing the ISO date and reopens a
 });
 it('preserves an unsupported ISO date while explicitly limiting its Hijri display', async () => {
   await render(<form><DatePicker label="Historical date" name="date" defaultValue="1900-01-01" defaultCalendar="islamic-umalqura" locale="en-SA" /></form>);
-  const date = container.querySelector<HTMLInputElement>('input[type=date]')!;
+  const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
   expect(date.value).toBe('1900-01-01');
   expect(date.checkValidity()).toBe(false);
   expect(date.getAttribute('aria-invalid')).toBe('true');
@@ -130,21 +130,21 @@ it('preserves an unsupported ISO date while explicitly limiting its Hijri displa
 it('rejects unsupported Hijri form submission and keeps application bounds after calendar changes', async () => {
   const submitted = vi.fn();
   await render(<form onSubmit={event => { event.preventDefault(); submitted(); }}><DatePicker label="Historical date" name="date" defaultValue="1900-01-01" defaultCalendar="islamic-umalqura" min="1890-01-01" max="1910-12-31" unsupportedCalendarMessage="خارج نطاق أم القرى" /><Button type="submit">Submit</Button></form>);
-  const date = container.querySelector<HTMLInputElement>('input[type=date]')!;
+  const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
   const button = [...container.querySelectorAll('button')].find(item => item.textContent === 'Submit')!;
   await click(button); expect(submitted).not.toHaveBeenCalled(); expect(date.validationMessage).toBe('خارج نطاق أم القرى');
   const calendar = container.querySelector('select')!;
   await act(async () => { calendar.value = 'gregory'; calendar.dispatchEvent(new Event('change', { bubbles: true })); });
   expect(date.value).toBe('1900-01-01'); expect(date.checkValidity()).toBe(true);
   await click(button); expect(submitted).toHaveBeenCalledOnce();
-  await input(date, '1880-01-01'); expect(date.checkValidity()).toBe(false); expect(date.validity.rangeUnderflow).toBe(true);
+  await input(date, '1880-01-01'); expect(date.checkValidity()).toBe(false); expect(date.validity.customError).toBe(true);
   await click(button); expect(submitted).toHaveBeenCalledOnce();
-  await input(date, '1920-01-01'); expect(date.checkValidity()).toBe(false); expect(date.validity.rangeOverflow).toBe(true);
+  await input(date, '1920-01-01'); expect(date.checkValidity()).toBe(false); expect(date.validity.customError).toBe(true);
 });
 it('shows and associates the selected calendar date outside the closed picker dialog', async () => {
   const supported = '2029-08-11';
   await render(<DatePicker id="visible-date" label="Date" hint="Original day" value={supported} calendar="islamic-umalqura" locale="en-SA" />);
-  const date = container.querySelector<HTMLInputElement>('input[type=date]')!;
+  const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
   const output = container.querySelector<HTMLOutputElement>('.nq-date-picker-value')!;
   expect(container.querySelector('dialog')!.open).toBe(false);
   expect(output.hidden).toBe(false);

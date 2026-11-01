@@ -404,7 +404,7 @@ describe("Vue calendars and interactions", () => {
     expect(system.value).toBe("islamic-umalqura");
     expect(value.value).toBe("2024-03-11");
     expect(
-      root.querySelector<HTMLInputElement>("input[type=date]")!.value,
+      root.querySelector<HTMLInputElement>("input[type=text]")!.value,
     ).toBe("2024-03-11");
     expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
       "Ramadan",
@@ -482,7 +482,7 @@ describe("Vue calendars and interactions", () => {
     );
     await nextTick();
     const input =
-      outOfRange.querySelector<HTMLInputElement>("input[type=date]")!;
+      outOfRange.querySelector<HTMLInputElement>("input[type=text]")!;
     expect(input.value).toBe("1900-01-01");
     expect(input.validity.customError).toBe(true);
     expect(input.min).toBe(UMALQURA_MIN_DATE);

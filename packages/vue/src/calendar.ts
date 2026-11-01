@@ -14,6 +14,7 @@ import {
   getCalendarMonth,
   getDirection,
   isDateInRange,
+  isDisabled,
   isCalendarDateSupported,
   UMALQURA_MIN_DATE,
   UMALQURA_MAX_DATE,
@@ -391,6 +392,16 @@ export const DatePicker = defineComponent({
       props.defaultValue,
       (v) => emit("update:modelValue", v),
     );
+    const draft = ref(model.value.value);
+    watch(() => model.value.value, value => { draft.value = value; });
+    const blocked = () => props.disabled || props.readonly || !element.value || isDisabled(element.value);
+    const commit = (value: string) => {
+      const canonical = !value || isDateInRange(value);
+      draft.value = canonical && props.modelValue !== undefined ? props.modelValue : value;
+      if (canonical) model.set(value);
+    };
+    const show = () => { if (!blocked()) { open.value = true; void nextTick(() => calendar.value?.focus()); } };
+    watch(() => props.disabled || props.readonly, disabled => { if (disabled) open.value = false; });
     const minimum = computed(() =>
       calendarSystem.value.value === "islamic-umalqura" &&
       (!props.min || props.min < UMALQURA_MIN_DATE)
@@ -410,8 +421,9 @@ export const DatePicker = defineComponent({
         : "";
     });
     const validationMessage = computed(() => {
-      const value = model.value.value;
+      const value = draft.value;
       if (!value) return "";
+      if (!isDateInRange(value)) return props.invalidMessage;
       if (!isCalendarDateSupported(value, calendarSystem.value.value)) {
         return calendarSystem.value.value === "islamic-umalqura"
           ? props.unsupportedMessage
@@ -427,6 +439,7 @@ export const DatePicker = defineComponent({
     );
     useFormReset(element, () => {
       model.set(props.defaultValue);
+      draft.value = props.modelValue ?? props.defaultValue;
       open.value = false;
     });
     expose({ element, focus: () => element.value?.focus() });
@@ -440,9 +453,13 @@ export const DatePicker = defineComponent({
               "input",
               mergeProps(attrs, field.controlAttrs.value, {
                 ref: element,
-                type: "date",
+                type: "text",
+                name: undefined,
+                placeholder: attrs.placeholder ?? "YYYY-MM-DD",
+                "aria-haspopup": "dialog",
+                "aria-controls": `${field.id.value}-dialog`,
                 class: "nq-input",
-                value: model.value.value,
+                value: draft.value,
                 min: minimum.value,
                 max: maximum.value,
                 disabled: props.disabled,
@@ -456,9 +473,11 @@ export const DatePicker = defineComponent({
                   validationMessage.value &&
                     `${field.id.value}-validation-error`,
                 ),
+                onKeydown: (event: KeyboardEvent) => {
+                  if (!event.defaultPrevented && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key === "ArrowDown" && !blocked()) { event.preventDefault(); show(); }
+                },
                 onInput: (event: Event) => {
-                  if (!props.disabled && !props.readonly)
-                    model.set((event.target as HTMLInputElement).value);
+                  if (!blocked()) commit((event.target as HTMLInputElement).value);
                 },
               }),
             ),
@@ -468,15 +487,15 @@ export const DatePicker = defineComponent({
                 variant: "secondary",
                 disabled: props.disabled || props.readonly,
                 "aria-label": props.openLabel,
+                "aria-expanded": open.value,
                 "aria-haspopup": "dialog",
-                onClick: () => {
-                  open.value = true;
-                  void nextTick(() => calendar.value?.focus());
-                },
+                "aria-controls": `${field.id.value}-dialog`,
+                onClick: show,
               },
               () => props.openLabel,
             ),
           ]),
+          h("input", { type: "hidden", name: attrs.name, form: attrs.form, disabled: props.disabled, value: isDateInRange(model.value.value) ? model.value.value : "" }),
           h("output", {
             id: `${field.id.value}-formatted`,
             for: field.id.value,
@@ -498,6 +517,7 @@ export const DatePicker = defineComponent({
           h(
             Dialog,
             {
+              id: `${field.id.value}-dialog`,
               open: open.value,
               "onUpdate:open": (value: boolean) => {
                 open.value = value;
@@ -514,8 +534,9 @@ export const DatePicker = defineComponent({
                     { value: "gregory", label: props.gregoryLabel },
                     { value: "islamic-umalqura", label: props.hijriLabel },
                   ],
-                  "onUpdate:modelValue": (value: string) =>
-                    calendarSystem.set(value as CalendarSystem),
+                  "onUpdate:modelValue": (value: string) => {
+                    if (value === "gregory" || value === "islamic-umalqura") calendarSystem.set(value);
+                  },
                 }),
               h(Calendar, {
                 ...props,
@@ -528,8 +549,7 @@ export const DatePicker = defineComponent({
                 ref: calendar,
                 modelValue: model.value.value,
                 "onUpdate:modelValue": (value: string) => {
-                  model.set(value);
-                  open.value = false;
+                  if (!blocked()) { commit(value); open.value = false; }
                 },
               }),
             ],

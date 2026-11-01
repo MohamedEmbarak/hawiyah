@@ -63,7 +63,7 @@ it("restores a rejected calendar selection and applies an accepted selection to 
   expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
     "October 2026",
   );
-  expect(root.querySelector<HTMLInputElement>("input[type=date]")!.value).toBe(
+  expect(root.querySelector<HTMLInputElement>("input[type=text]")!.value).toBe(
     "2026-10-15",
   );
   accept.value = true;
@@ -73,7 +73,7 @@ it("restores a rejected calendar selection and applies an accepted selection to 
   expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
     "1448 AH",
   );
-  expect(root.querySelector<HTMLInputElement>("input[type=date]")!.value).toBe(
+  expect(root.querySelector<HTMLInputElement>("input[type=text]")!.value).toBe(
     "2026-10-15",
   );
 });
@@ -101,7 +101,7 @@ it("associates unsupported-date errors and clears them when switching back witho
   );
   application.mount(root);
   await nextTick();
-  const input = root.querySelector<HTMLInputElement>("input[type=date]")!;
+  const input = root.querySelector<HTMLInputElement>("input[type=text]")!;
   expect(input.checkValidity()).toBe(false);
   expect(input.getAttribute("aria-invalid")).toBe("true");
   const descriptionIds = input.getAttribute("aria-describedby")!.split(" ");
@@ -131,7 +131,7 @@ it("shows the canonical selected calendar below the closed field and preserves i
   const root = document.createElement("div"); document.body.append(root);
   application = createApp(defineComponent(() => () => h(DatePicker, { label: "Date", hint: "Original day", modelValue: value.value, calendar: mode.value, locale: "en-SA" })));
   application.mount(root); await nextTick();
-  const input = root.querySelector<HTMLInputElement>("input[type=date]")!;
+  const input = root.querySelector<HTMLInputElement>("input[type=text]")!;
   const output = root.querySelector<HTMLOutputElement>(".nq-date-picker-value")!;
   expect(root.querySelector("dialog")!.open).toBe(false);
   expect(output.hidden).toBe(false);
@@ -154,6 +154,6 @@ it("isolates ISO endpoints in visible validation prose without changing the nati
   const error = root.querySelector(".nq-date-picker > .nq-error")!;
   expect(error.textContent).toBe(message);
   expect([...error.querySelectorAll('bdi[dir="ltr"]')].map(node => node.textContent)).toEqual(["1924-08-01", "2077-11-16"]);
-  const input = root.querySelector<HTMLInputElement>('input[type="date"]')!;
+  const input = root.querySelector<HTMLInputElement>('input[type="text"]')!;
   expect(input.validationMessage).toBe(message); expect(input.value).toBe("1900-01-01");
 });

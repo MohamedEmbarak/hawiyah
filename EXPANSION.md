@@ -46,8 +46,10 @@ boundary, not a simulated implementation.
 - Calendar: labelled month toolbar, weekday headings, focusable date grid;
   arrows/Home/End/PageUp/PageDown; min/max and disabled selection; locale and
   calendar independent of direction. Values are ISO Gregorian dates.
-- DatePicker: ISO text/native date input plus accessible labelled dialog Calendar;
+- DatePicker: editable Gregorian ISO text plus accessible labelled dialog Calendar;
   display calendar can be gregory or islamic-umalqura. No handwritten conversions.
+  The custom calendar is the only picker popup. Malformed drafts stay visible and
+  invalid; a hidden named input submits canonical ISO. See docs/date-input.md.
 - FileDropzone: honor the native input's effective disabled state, including an
   ancestor disabled fieldset and its first-legend exception. A blocked drop must
   not change files, report a selection or reject files; clear transient dragging
