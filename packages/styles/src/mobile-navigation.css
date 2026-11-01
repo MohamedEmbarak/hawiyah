@@ -1,0 +1,43 @@
+/* Mobile Components 8332:24202 / 24242 / 24282: color state changes,
+   not a translating indicator. Route navigation keeps native link semantics. */
+.nq-secondary-nav[data-variant='mobile'] {
+  border: 0;
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+}
+.nq-secondary-nav[data-variant='mobile'] ul {
+  flex-wrap: nowrap;
+  gap: 0;
+  padding: 0 0.25rem;
+}
+.nq-secondary-nav[data-variant='mobile'] li { flex: 1 1 0; min-inline-size: 0; }
+.nq-secondary-nav[data-variant='mobile'] a {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  inline-size: 100%;
+  min-block-size: 4.375rem;
+  padding: 0.6875rem 0.5rem 0.75rem;
+  border-block-start: 1px solid transparent;
+  border-block-end: 0;
+  background: transparent;
+  color: var(--nq-color-text-muted);
+  font: var(--nq-weight-medium) 0.75rem / 1.5 var(--nq-font-sans);
+  text-align: center;
+  overflow-wrap: anywhere;
+  transition: color var(--nq-duration-tab-bar, 300ms) var(--nq-ease-tab-bar, ease-out),
+    border-block-start-color var(--nq-duration-tab-bar, 300ms) var(--nq-ease-tab-bar, ease-out);
+}
+.nq-secondary-nav[data-variant='mobile'] .nq-icon { --nq-icon-size: 1.5rem; }
+.nq-secondary-nav[data-variant='mobile'] a:is(:hover, :active, [aria-current='page']) {
+  color: var(--nq-color-primary-text);
+  background: transparent;
+}
+.nq-secondary-nav[data-variant='mobile'] a[aria-current='page'] { border-block-start-color: currentColor; }
+@media (prefers-reduced-motion: reduce) {
+  .nq-secondary-nav[data-variant='mobile'] a { transition: none; }
+}
+@media (forced-colors: active) {
+  .nq-secondary-nav[data-variant='mobile'] a[aria-current='page'] { border-block-start-color: LinkText; }
+}

@@ -6,10 +6,11 @@ import { PortalHeader, PortalFooter } from './expanded-content.js';
 import type { PortalHeaderProps, PortalFooterProps, PortalNavItem } from './expanded-content.js';
 import { cx } from './shared.js';
 
-export interface SecondaryNavProps extends ComponentPropsWithRef<'nav'> { items: readonly PortalNavItem[]; label?: string }
+export interface SecondaryNavItem extends PortalNavItem { /** Decorative icon name from the Nasaq icon stylesheet. */ icon?: string }
+export interface SecondaryNavProps extends ComponentPropsWithRef<'nav'> { items: readonly SecondaryNavItem[]; label?: string; variant?: 'default' | 'mobile' }
 /** Ordinary page links: Tab navigates links, without tablist/menu keyboard semantics. */
-export function SecondaryNav({ items, label = 'التنقل الثانوي', className, ...props }: SecondaryNavProps) {
-  return <nav {...props} className={cx('nq-secondary-nav', className)} aria-label={label}><ul>{items.map((item, index) => <li key={index}><a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a></li>)}</ul></nav>;
+export function SecondaryNav({ items, label = 'التنقل الثانوي', variant = 'default', className, ...props }: SecondaryNavProps) {
+  return <nav {...props} className={cx('nq-secondary-nav', className)} aria-label={label} data-variant={variant}><ul>{items.map((item, index) => <li key={index}><a href={item.href} aria-current={item.current ? 'page' : undefined}>{variant === 'mobile' && item.icon && <span className="nq-icon" data-icon={item.icon} aria-hidden="true" />}<span>{item.label}</span></a></li>)}</ul></nav>;
 }
 export interface PortalLayoutProps extends ComponentPropsWithRef<'div'> {
   brand: ReactNode; headerProps?: Omit<PortalHeaderProps, 'brand' | 'mainId'>;

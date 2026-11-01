@@ -5,10 +5,11 @@ import type { BreadcrumbItem } from './display.js';
 import { PortalHeader, PortalFooter } from './patterns.js';
 import type { PortalLink } from './patterns.js';
 
+export interface SecondaryNavItem extends PortalLink { icon?: string }
 export const SecondaryNav = defineComponent({
   name: 'NqSecondaryNav', inheritAttrs: false,
-  props: { items: { type: Array as PropType<readonly PortalLink[]>, required: true }, label: { type: String, default: 'التنقل الثانوي' } },
-  setup(props, { attrs }) { return () => h('nav', mergeProps(attrs, { class: 'nq-secondary-nav', 'aria-label': props.label }), h('ul', {}, props.items.map(item => h('li', { key: item.href }, h('a', { href: item.href, 'aria-current': item.current ? 'page' : undefined }, item.label))))); },
+  props: { variant: { type: String as PropType<'default' | 'mobile'>, default: 'default' }, items: { type: Array as PropType<readonly SecondaryNavItem[]>, required: true }, label: { type: String, default: 'التنقل الثانوي' } },
+  setup(props, { attrs }) { return () => h('nav', mergeProps(attrs, { class: 'nq-secondary-nav', 'aria-label': props.label, 'data-variant': props.variant }), h('ul', {}, props.items.map(item => h('li', { key: item.href }, h('a', { href: item.href, 'aria-current': item.current ? 'page' : undefined }, [props.variant === 'mobile' && item.icon && h('span', {class:'nq-icon', 'data-icon':item.icon, 'aria-hidden':'true'}), h('span', {}, item.label)]))))); },
 });
 export const PortalLayout = defineComponent({
   name: 'NqPortalLayout', inheritAttrs: false,

@@ -85,3 +85,7 @@ easing, CSS ease for the track) and a 700 ms spinner cycle. Custom starts from
 DGA. Reduced motion removes transitions/animations rather than delaying state
 changes; it is an accessibility adaptation, not a property proven by Figma.
 All four adapters use shared CSS and continue to own their DOM. Hajj is excluded.
+
+## Implemented mobile tab-bar presentation — 2026-11-01
+
+SecondaryNav now offers an opt-in mobile variant in all four adapters: equal-width icon-over-label page links, 24 px icons, a 70 px minimum height, safe-area padding and a top selection indicator. Source `8332:24202` → `8332:24242` → `8332:24282` informs 300 ms ease-out color transitions; no positional or panel motion is inferred. Semantic theme colors and currentColor icons are documented adaptations. Reduced motion and the original Nasaq theme remain immediate. See [the composition contract](mobile-navigation.md).

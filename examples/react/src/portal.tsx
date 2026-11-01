@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, PortalLayout, ServiceCard } from '@nasaq/react';
+import { Button, PortalLayout, SecondaryNav, ServiceCard } from '@nasaq/react';
 import logo from '../../../brand/assets/nasaq-wordmark.svg';
 import footerLogo from '../../../brand/assets/nasaq-wordmark-white.svg';
 
@@ -13,5 +13,9 @@ export function PortalExample() {
     footerProps={{ brand: <img src={footerLogo} alt="نسق" width="96" height="40" />, linksLabel: t('روابط التذييل', 'Footer links'), links: [{ label: t('الخصوصية', 'Privacy'), href: '#privacy' }], legal: t('نموذج محلي لهيكل البوابة', 'Local portal shell example') }}>
     <section id="services" className="nq-stack"><h1>{t('الخدمات', 'Services')}</h1><h2>{t('الخدمات المتاحة', 'Available services')}</h2><ServiceCard title={t('دليل الخدمات', 'Service directory')} description={t('اكتشف خدمات الجهة ومتطلبات التقديم.', 'Explore services and application requirements.')} href="#contact" actionLabel={t('عرض الخدمة', 'View service')} /></section>
     <section id="contact"><h2>{t('تواصل معنا', 'Contact us')}</h2><p>{t('مثال توضيحي بدون إرسال بيانات.', 'Demonstration only; no data is submitted.')}</p></section>
+    <SecondaryNav variant="mobile" label={t('تنقل الجوال', 'Mobile navigation')} items={[
+      {label:t('الرئيسية','Home'),href:'#portal-content',current:true,icon:'home-01'},
+      {label:t('الخدمات','Services'),href:'#services',icon:'search-01'},
+      {label:t('المزيد','More'),href:'#contact',icon:'menu-01'}]} />
   </PortalLayout>;
 }

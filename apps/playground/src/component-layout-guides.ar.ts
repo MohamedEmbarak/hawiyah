@@ -141,11 +141,12 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     apiDescriptions: [
       'يقبل SecondaryNav في React وVue وnq-secondary-nav في Angular الخاصية items. يقبل عنوان React عقدة ReactNode، وتكون العناوين في Vue وAngular نصوصًا.',
       'يسمّي معلم التنقل وتكون قيمته الافتراضية عربية. ميّزه عن التنقل الرئيسي وروابط التذييل.',
+      'اختر variant=mobile لروابط متساوية العرض بأيقونة فوق النص وخط علوي للصفحة الحالية وانتقال لوني 300 مللي ثانية. مرّر اسم الأيقونة الزخرفية في icon؛ تبقى الروابط عادية.',
       'تستخدم Vanilla عنصر nav وقائمة روابط. تحدد aria-current="page" الوجهة الحالية، ولا يلزم متحكّم JavaScript.',
     ],
     lifecycle: ['اعرض الروابط بحسب تسلسل الصفحات الحالي.', 'حدّث current عند تغيّر المسار؛ يبقى التنقل وتحميل البيانات من مسؤوليات التطبيق.', 'لا يلزم تحسين أو اشتراك أو إنهاء خاص.'],
     accessibility: ['استخدم الروابط الأصلية وترتيب Tab؛ لا تضف أدوار tablist أو menu.', 'تعرض الحالة الحالية خطًا ووزنًا مختلفًا إلى جانب اللون. يبقى التركيز مرئيًا في الألوان الإجبارية.', 'ترجم تسمية المعلم مستقلة عن اتجاه النص.'],
-    variants: ['روابط قابلة للالتفاف', 'رابط الصفحة الحالية'],
+    variants: ['روابط قابلة للالتفاف', 'رابط الصفحة الحالية', 'شريط أيقونات الجوال (variant=mobile)'],
     frameworkNotes: 'استورد SecondaryNav من @nasaq/react أو @nasaq/vue، أو NqSecondaryNavComponent من @nasaq/angular بمحدّد nq-secondary-nav. تستخدم جميعها items وlabel. يمرّر React وVue سمات nav الأصلية، وتضبط مدخلات Angular عنصر nav الداخلي.',
     limitations: ['هذا تنقل بين الصفحات، وليس محرّك توجيه أو متحكّم تبويبات محتوى.'],
   }),

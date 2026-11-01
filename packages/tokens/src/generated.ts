@@ -59,13 +59,15 @@ export const tokens = {
     "slow": "280ms",
     "input": "150ms",
     "switch": "200ms",
-    "spinner": "1000ms"
+    "spinner": "1000ms",
+    "tab-bar": "300ms"
   },
   "ease": {
     "standard": "cubic-bezier(0.2, 0, 0, 1)",
     "input": "cubic-bezier(0, 0, 0.58, 1)",
     "switch": "cubic-bezier(0.42, 0, 0.58, 1)",
-    "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)"
+    "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)",
+    "tab-bar": "cubic-bezier(0, 0, 0.58, 1)"
   },
   "content": {
     "max": "80rem",
@@ -377,13 +379,15 @@ export const themeFoundations = {
       "slow": "280ms",
       "input": "150ms",
       "switch": "200ms",
-      "spinner": "1000ms"
+      "spinner": "1000ms",
+      "tab-bar": "300ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
       "input": "cubic-bezier(0, 0, 0.58, 1)",
       "switch": "cubic-bezier(0.42, 0, 0.58, 1)",
-      "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)"
+      "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "tab-bar": "cubic-bezier(0, 0, 0.58, 1)"
     },
     "content": {
       "max": "80rem",
@@ -462,13 +466,15 @@ export const themeFoundations = {
       "slow": "280ms",
       "input": "120ms",
       "switch": "180ms",
-      "spinner": "700ms"
+      "spinner": "700ms",
+      "tab-bar": "0ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
       "input": "ease",
       "switch": "cubic-bezier(0.2, 0, 0, 1)",
-      "switch-track": "ease"
+      "switch-track": "ease",
+      "tab-bar": "cubic-bezier(0, 0, 0.58, 1)"
     },
     "content": {
       "max": "78rem",
@@ -591,13 +597,15 @@ export const tokenNames = {
     "slow": "--nq-duration-slow",
     "input": "--nq-duration-input",
     "switch": "--nq-duration-switch",
-    "spinner": "--nq-duration-spinner"
+    "spinner": "--nq-duration-spinner",
+    "tab-bar": "--nq-duration-tab-bar"
   },
   "ease": {
     "standard": "--nq-ease-standard",
     "input": "--nq-ease-input",
     "switch": "--nq-ease-switch",
-    "switch-track": "--nq-ease-switch-track"
+    "switch-track": "--nq-ease-switch-track",
+    "tab-bar": "--nq-ease-tab-bar"
   },
   "content": {
     "max": "--nq-content-max",
@@ -715,10 +723,12 @@ export const cssVariableNames = [
   "--nq-duration-input",
   "--nq-duration-switch",
   "--nq-duration-spinner",
+  "--nq-duration-tab-bar",
   "--nq-ease-standard",
   "--nq-ease-input",
   "--nq-ease-switch",
   "--nq-ease-switch-track",
+  "--nq-ease-tab-bar",
   "--nq-content-max",
   "--nq-content-gutter",
   "--nq-content-gutter-mobile",

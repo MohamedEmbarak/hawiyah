@@ -4683,11 +4683,13 @@
         ],
         "vanilla": [
           "packages/vanilla/PORTAL.md",
-          "packages/styles/src/portal.css"
+          "packages/styles/src/portal.css",
+          "packages/styles/src/mobile-navigation.css"
         ]
       },
       "notes": [
-        "Native anchors; no tablist or menu semantics and no controller lifecycle."
+        "Native anchors; no tablist or menu semantics and no controller lifecycle.",
+        "Opt-in mobile variant: equal-width icon-over-label links, top current-page indicator, 300ms color motion; reduced motion and original Nasaq remain immediate."
       ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/secondary-nav"
     },

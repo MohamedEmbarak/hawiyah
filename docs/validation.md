@@ -1,5 +1,15 @@
 # Validation record
 
+## 2026-11-01 mobile navigation bar
+
+The opt-in SecondaryNav mobile presentation passed two shared-CSS browser cases
+(RTL/LTR, light/dark, color interpolation, native link focus, reduced motion,
+forced colors, theme timing isolation and enlarged labels) and three native
+React/Vue/Angular consumer cases. All packages and four consumers built.
+The existing 79-entry catalog is retained: this is a navigation variant, not a
+new tab-panel controller. Source/color mapping and icon override limits are in
+[mobile navigation](mobile-navigation.md).
+
 ## 2026-11-01 component motion
 
 Five token tests and two focused Chromium motion cases passed. The browser

@@ -4,8 +4,9 @@ import type { NqLinkItem } from './content';
 import { NqBreadcrumbComponent } from './navigation';
 import type { NqBreadcrumbItem } from './navigation';
 
-@Component({selector: 'nq-secondary-nav', standalone: true, template: `<nav class="nq-secondary-nav" [attr.aria-label]="label"><ul>@for (item of items; track $index) {<li><a [href]="item.href" [attr.aria-current]="item.current ? 'page' : null">{{ item.label }}</a></li>}</ul></nav>`})
-export class NqSecondaryNavComponent { @Input() items: readonly NqLinkItem[] = []; @Input() label = 'التنقل الثانوي'; }
+export interface NqSecondaryNavItem extends NqLinkItem { icon?: string }
+@Component({selector: 'nq-secondary-nav', standalone: true, template: `<nav class="nq-secondary-nav" [attr.aria-label]="label" [attr.data-variant]="variant"><ul>@for (item of items; track $index) {<li><a [href]="item.href" [attr.aria-current]="item.current ? 'page' : null">@if (variant === 'mobile' && item.icon) {<span class="nq-icon" [attr.data-icon]="item.icon" aria-hidden="true"></span>}<span>{{ item.label }}</span></a></li>}</ul></nav>`})
+export class NqSecondaryNavComponent { @Input() variant: 'default' | 'mobile' = 'default'; @Input() items: readonly NqSecondaryNavItem[] = []; @Input() label = 'التنقل الثانوي'; }
 let nextLayoutId = 0;
 @Component({selector: 'nq-portal-layout', standalone: true, imports: [NqPortalHeaderComponent, NqPortalFooterComponent, NqBreadcrumbComponent, NqSecondaryNavComponent], template: `
   <div class="nq-portal-layout" [attr.lang]="lang" [attr.dir]="dir">

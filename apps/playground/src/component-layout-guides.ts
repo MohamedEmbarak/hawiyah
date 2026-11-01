@@ -99,13 +99,14 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   <li><a href="./requests">My requests</a></li>
 </ul></nav>`,
     api: [
-      { name: 'items', type: 'readonly { label, href, current? }[]', description: 'React/Vue SecondaryNav and Angular nq-secondary-nav accept items. React labels may be ReactNode; Vue/Angular labels are strings.' },
+      { name: 'items', type: 'readonly { label, href, current?, icon? }[]', description: 'React/Vue SecondaryNav and Angular nq-secondary-nav accept items. React labels may be ReactNode; Vue/Angular labels are strings.' },
       { name: 'label', type: 'localized string', description: 'Names this navigation landmark; defaults to Arabic. Distinguish it from the primary and footer navigation.' },
+      { name: 'variant', type: 'default | mobile', description: 'Mobile uses equal-width icon-over-label links, a top current-page indicator and 300 ms ease-out color transitions. Pass a decorative icon name on each item. Normal link semantics remain.' },
       { name: 'nq-secondary-nav / aria-current', type: 'semantic HTML', description: 'Vanilla uses a nav with a list of links. aria-current="page" marks the current destination. No JavaScript controller is needed.' },
     ],
     lifecycle: ['Render links from the current page hierarchy.', 'Update current when the route changes; navigation and loading are application-owned.', 'No enhancement, subscription or cleanup is required.'],
-    accessibility: ['Use native anchors and Tab order; these are not tabs and should not receive tablist or menu roles.', 'Current state uses an underline and weight as well as color. Focus remains visible in forced colors.', 'Translate the landmark label independently from text direction.'],
-    variants: ['Wrapping links', 'Current-page link'], related: ['portal-header', 'portal-layout', 'breadcrumb'],
+    accessibility: ['Use native anchors and Tab order; these are not tabs and should not receive tablist or menu roles.', 'Current state uses an underline and weight, or a top border in mobile presentation, as well as color. Focus remains visible in forced colors.', 'Translate the landmark label independently from text direction.'],
+    variants: ['Wrapping links', 'Current-page link', 'Mobile icon bar (variant=mobile)'], related: ['portal-header', 'portal-layout', 'breadcrumb'],
     frameworkNotes: 'Import SecondaryNav from @nasaq/react or @nasaq/vue; import NqSecondaryNavComponent from @nasaq/angular. Angular selector: nq-secondary-nav. All use items and label. React/Vue forward native nav attributes; Angular inputs configure its internal nav.',
     limitations: ['This is page navigation, not a route loader or content tab controller.'], source: 'packages/styles/src/portal.css',
   },
@@ -128,7 +129,7 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
     api: [
       { name: 'brand / lang / dir / mainId', type: 'content / string', description: 'Brand is required. lang defaults to ar and dir to rtl independently. Generated mainId connects the skip link to the focusable main; explicit IDs must be unique.' },
       { name: 'React headerProps / footerProps', type: 'PortalHeaderProps / PortalFooterProps', description: 'headerProps configures navigation, brandHref, actions, notice and navigation/menu labels. footerProps configures links, linksLabel, legal and other existing footer props. Top-level skipLabel names the skip link.' },
-      { name: 'Vue / Angular links / footerLinks', type: 'readonly { label, href, current? }[]', description: 'These adapters expose homeHref, links, footerLinks, copyright, skipLabel, menuLabel, navigationLabel and footerLabel directly. Vue slots: logo/actions/footer/default. Angular projection: [nqBrand]/[nqPortalActions]/[nqPortalFooter]/default.' },
+      { name: 'Vue / Angular links / footerLinks', type: 'readonly { label, href, current?, icon? }[]', description: 'These adapters expose homeHref, links, footerLinks, copyright, skipLabel, menuLabel, navigationLabel and footerLabel directly. Vue slots: logo/actions/footer/default. Angular projection: [nqBrand]/[nqPortalActions]/[nqPortalFooter]/default.' },
       { name: 'secondaryNavigation / breadcrumbs', type: 'readonly item arrays', description: 'Optional navigation and breadcrumb collections. secondaryLabel and breadcrumbLabel override their Arabic labels. Breadcrumb items use label/href; React/Vue also accept current.' },
       { name: 'Vanilla .nq-portal-layout', type: 'semantic HTML', description: 'Compose the shared classes with one main landmark and enhance only the marked header. The embedded gallery substitutes a section for main to avoid nesting page landmarks.' },
     ],
