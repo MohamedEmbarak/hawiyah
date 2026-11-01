@@ -48,6 +48,7 @@ for (const name of [
   }
   if (name === "styles") {
     cpSync(resolve(root, "brand/assets"), resolve(cwd, "dist/assets"), {recursive: true});
+    cpSync(resolve(cwd, "src/assets"), resolve(cwd, "dist/assets"), {recursive: true});
   }
 }
 run("node", ["scripts/build-preview.mjs"]);

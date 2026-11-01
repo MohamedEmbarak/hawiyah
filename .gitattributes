@@ -1,3 +1,6 @@
 # Preserve upstream notices byte-for-byte, including their original whitespace.
 brand/third-party/**/OFL.txt -whitespace
 examples/*/public/licenses/* -whitespace
+# Keep vendored icon bytes and their recorded SHA-256 hashes stable on every OS.
+packages/styles/src/assets/icons/*.svg -text
+packages/styles/src/assets/icons/LICENSE -text

@@ -17,6 +17,9 @@ copyFileSync(
   resolve(dest, "favicon.svg"),
 );
 mkdirSync(resolve(dest, "licenses"), { recursive: true });
+copyFileSync(resolve(root, "packages/styles/src/assets/icons/LICENSE"), resolve(dest, "licenses/hugeicons-LICENSE.txt"));
+copyFileSync(resolve(root, "packages/styles/src/assets/icons/provenance.json"), resolve(dest, "licenses/icon-provenance.json"));
+appendFileSync(resolve(dest, "NOTICE"), "\nThe curated Stroke Rounded icons are Copyright (c) 2025 Hugeicons, MIT licensed. Their notice and source mapping accompany this guide in licenses/hugeicons-LICENSE.txt and licenses/icon-provenance.json.\n");
 writeFileSync(resolve(dest, "licenses/editor.txt"), collectEditorNotices());
 appendFileSync(resolve(dest, "NOTICE"), "\nThe live documentation editor includes CodeMirror, Lezer, and their runtime dependencies. Their full license notices accompany this guide in licenses/editor.txt.\n");
 copyFileSync(resolve(root, "packages/core/third-party/hijridate-LICENSE.txt"), resolve(dest, "licenses/hijridate-LICENSE.txt"));

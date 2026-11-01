@@ -101,6 +101,51 @@ alt text, and provide separate localized `role="status"` loading text. 256px GIF
 variants use `nasaq-loader-256.gif` and `nasaq-loader-white-256.gif`. Font outlines
 are embedded in the SVG; Aref Ruqaa is not a runtime dependency or a font request.
 
+## Curated interface icons
+
+The shared stylesheet includes ten self-hosted Hugeicons Stroke Rounded icons.
+They work in vanilla, React, Vue and Angular without a renderer dependency; each
+framework owns the ordinary `span` it renders. In React use `className` in place
+of `class` in this example:
+
+```html
+<button type="button" class="nq-button" aria-label="بحث">
+  <span class="nq-icon" data-icon="search-01" aria-hidden="true"></span>
+</button>
+<a href="/next">
+  التالي
+  <span class="nq-icon" data-icon="arrow-right-01"
+        data-directional="true" aria-hidden="true"></span>
+</a>
+```
+
+Available `data-icon` names: `search-01`, `menu-01`, `cancel-01`, `arrow-left-01`,
+`arrow-right-01`, `arrow-down-01`, `filter-horizontal`, `sorting-05`, `home-01`,
+and `checkmark-circle-02`. The CSS alpha mask uses `currentColor` and defaults to
+`1.5rem` (24px at the usual root size). Set the scoped `--nq-icon-size` variable
+to change rendered size; icon size does not establish an accessible touch target.
+Provide a visible label or an accessible name on the containing control; these
+decorative spans must remain `aria-hidden="true"`.
+
+Only left/right arrows with `data-directional="true"` mirror in RTL. Use this for
+semantic forward/back navigation, not physical direction. Other glyphs keep their
+orientation. Do not apply mirroring to logos, flags, text alignment, or media
+controls by default. Forced-colors mode retains a system-colored mask.
+
+SVG files are unchanged from a pinned commit of the official MIT-licensed
+[Hugeicons repository](https://github.com/hugeicons/hugeicons). Their names map to
+the supplied DGA Figma Stroke components; they are **not direct Figma exports**
+and that mapping does not assert pixel parity. The package includes the full MIT
+notice and per-icon hashes/node IDs in `assets/icons/LICENSE` and
+`assets/icons/provenance.json`. The guide also ships these notices. Solid, custom,
+and brand assets from the supplied Figma catalog are not part of this subset.
+
+Direct asset imports are available through the existing asset export:
+
+```ts
+import searchIcon from '@nasaq/styles/assets/icons/search-01.svg';
+```
+
 ## DGA reference compositions
 
 The stylesheet includes the mapped DGA profile, input state transitions and portal

@@ -17,3 +17,9 @@ Brand source fonts are licensed separately under the SIL Open Font License
 Font software and third-party dependencies retain their own licenses.
 The Nasaq name and identity do not imply endorsement by Saudi Arabia's
 Digital Government Authority. Apache 2.0 does not grant trademark rights.
+
+The curated Stroke Rounded SVG icons are Copyright (c) 2025 Hugeicons,
+licensed under MIT. Their complete license and pinned source provenance
+are included in dist/assets/icons/LICENSE and dist/assets/icons/provenance.json
+(src/assets/icons in the source repository). These upstream assets are
+mapped to supplied DGA source names; they are not direct DGA Figma exports.

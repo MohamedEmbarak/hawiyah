@@ -1,5 +1,15 @@
 # Validation record
 
+## 2026-11-01 curated icon follow-up
+
+Ten unchanged Hugeicons Stroke Rounded SVGs are bundled from a pinned MIT-licensed
+upstream commit, with license, SHA-256 hashes and DGA component-name/node mappings.
+They are not direct DGA Figma exports; only the search glyph received a geometry
+comparison. SVG structure/hash checks passed for all ten. Package and four
+application builds passed. A Chromium regression passed for mask asset loading,
+24px geometry, inherited color, nested RTL/LTR arrow direction and forced colors.
+The original solid/custom/branded Figma exports remain outside the package.
+
 ## 2026-11-01 input follow-up
 
 The read-only RangeSlider now preserves Tab/Shift+Tab while blocking value-changing

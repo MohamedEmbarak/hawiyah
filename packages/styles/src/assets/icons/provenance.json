@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/hugeicons/hugeicons",
+    "commit": "35c0b0b6ca286617b581e3383e5cbe2232ddb7d6",
+    "license": "MIT",
+    "copyright": "Copyright (c) 2025 Hugeicons",
+    "licenseUrl": "https://github.com/hugeicons/hugeicons/blob/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/LICENSE.md",
+    "licenseFile": "LICENSE",
+    "retrieved": "2026-11-01"
+  },
+  "dgaReference": {
+    "file": "Icons - Platforms Code (Community).fig",
+    "sha256": "f9d9889716789ddc6e878f94089650770e5f68d3978cfd8b3a5f6a94d398bb18",
+    "pageId": "2019:10",
+    "sourceUse": "Name and component mapping only. Shipped SVG bytes are unchanged upstream MIT assets, not extracted DGA assets."
+  },
+  "comparison": "Names and Stroke variants match the supplied DGA definitions. Only search-01 geometry was compared: its upstream stroked circle/handle corresponds to the expanded Figma path with small coordinate differences. No complete visual or pixel-parity claim.",
+  "icons": [
+    {
+      "name": "search-01",
+      "file": "search-01.svg",
+      "sha256": "6ea6a84c2d51424070720491f7abae005258e9e114078ef10a9022b91cbcfecb",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/search-01.svg",
+      "dgaComponentId": "8681:20094",
+      "dgaComponentSetId": "8681:20093",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "menu-01",
+      "file": "menu-01.svg",
+      "sha256": "151765e41da81e656650b44591b57561d040175a378dee65a3745373b2ed17f4",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/menu-01.svg",
+      "dgaComponentId": "8681:14422",
+      "dgaComponentSetId": "8681:14421",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "cancel-01",
+      "file": "cancel-01.svg",
+      "sha256": "8fe7ea96fb2be7b0590e69c485d4ed238d7283e02a8bea9a0f13fc97cc97dc89",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/cancel-01.svg",
+      "dgaComponentId": "8681:3297",
+      "dgaComponentSetId": "8681:3296",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "arrow-left-01",
+      "file": "arrow-left-01.svg",
+      "sha256": "7c83bf83009083eaab94959cae614ff80a2010c9cec54a6dcbca09af0fa702e0",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/arrow-left-01.svg",
+      "dgaComponentId": "8681:21884",
+      "dgaComponentSetId": "8681:21883",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": true
+    },
+    {
+      "name": "arrow-right-01",
+      "file": "arrow-right-01.svg",
+      "sha256": "408bbc534c0b4112f52fe4477e0b0651591dcbc83f1762cc3eb77ea45015b1a5",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/arrow-right-01.svg",
+      "dgaComponentId": "8681:21968",
+      "dgaComponentSetId": "8681:21967",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": true
+    },
+    {
+      "name": "arrow-down-01",
+      "file": "arrow-down-01.svg",
+      "sha256": "43db2c71827166c1ce0e237acd026827d763fb4afe7e13b1bd3befcf88f3cfd2",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/arrow-down-01.svg",
+      "dgaComponentId": "8681:21940",
+      "dgaComponentSetId": "8681:21939",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "filter-horizontal",
+      "file": "filter-horizontal.svg",
+      "sha256": "d2ccdb2ad0fef7c7d1c18bb316c4922a6b3f20654b91655f38f11c4868ea7236",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/filter-horizontal.svg",
+      "dgaComponentId": "8681:16749",
+      "dgaComponentSetId": "8681:16748",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "sorting-05",
+      "file": "sorting-05.svg",
+      "sha256": "8b871ecb7e449459c6be53808e1fef80d24a099a3acd691355fbb96bd9064ca4",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/sorting-05.svg",
+      "dgaComponentId": "8681:16833",
+      "dgaComponentSetId": "8681:16832",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "home-01",
+      "file": "home-01.svg",
+      "sha256": "fe5f2e757b78d460945f10e16b3829c17d20a6ccb14216621d015454e356960d",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/home-01.svg",
+      "dgaComponentId": "8681:19081",
+      "dgaComponentSetId": "8681:19080",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    },
+    {
+      "name": "checkmark-circle-02",
+      "file": "checkmark-circle-02.svg",
+      "sha256": "14fe877a7f71a3704c36927093149c2f7a882f09f3616650bb7bafd5251ddce3",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/checkmark-circle-02.svg",
+      "dgaComponentId": "8681:6185",
+      "dgaComponentSetId": "8681:6184",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
+    }
+  ]
+}

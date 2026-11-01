@@ -1,0 +1,35 @@
+/* Artwork remains unchanged; the alpha mask adopts the surrounding text color. */
+.nq-icon {
+  display: inline-block;
+  flex: none;
+  inline-size: var(--nq-icon-size, 1.5rem);
+  block-size: var(--nq-icon-size, 1.5rem);
+  vertical-align: middle;
+  background-color: currentColor;
+  -webkit-mask: var(--nq-icon-image, none) center / contain no-repeat;
+  mask: var(--nq-icon-image, none) center / contain no-repeat;
+}
+.nq-icon[hidden] { display: none; }
+.nq-icon[data-icon='search-01'] { --nq-icon-image: url('./assets/icons/search-01.svg'); }
+.nq-icon[data-icon='menu-01'] { --nq-icon-image: url('./assets/icons/menu-01.svg'); }
+.nq-icon[data-icon='cancel-01'] { --nq-icon-image: url('./assets/icons/cancel-01.svg'); }
+.nq-icon[data-icon='arrow-left-01'] { --nq-icon-image: url('./assets/icons/arrow-left-01.svg'); }
+.nq-icon[data-icon='arrow-right-01'] { --nq-icon-image: url('./assets/icons/arrow-right-01.svg'); }
+.nq-icon[data-icon='arrow-down-01'] { --nq-icon-image: url('./assets/icons/arrow-down-01.svg'); }
+.nq-icon[data-icon='filter-horizontal'] { --nq-icon-image: url('./assets/icons/filter-horizontal.svg'); }
+.nq-icon[data-icon='sorting-05'] { --nq-icon-image: url('./assets/icons/sorting-05.svg'); }
+.nq-icon[data-icon='home-01'] { --nq-icon-image: url('./assets/icons/home-01.svg'); }
+.nq-icon[data-icon='checkmark-circle-02'] { --nq-icon-image: url('./assets/icons/checkmark-circle-02.svg'); }
+
+/* Opt in only for semantic forward/back; physical directions retain their meaning. */
+.nq-icon:is([data-icon='arrow-left-01'], [data-icon='arrow-right-01'])[data-directional='true']:dir(rtl) {
+  transform: scaleX(-1);
+}
+@media (forced-colors: active) {
+  .nq-icon {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+  :where(button, a)[aria-disabled='true'] .nq-icon,
+  button:disabled .nq-icon { background-color: GrayText; }
+}
