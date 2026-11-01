@@ -216,8 +216,8 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   <label class="nq-field"><span class="nq-label">تاريخ الموعد</span><input class="nq-input" type="date" data-nq-date-input name="appointment" required></label>
   <button class="nq-button" type="button" data-nq-date-trigger>اختر التاريخ</button>
   <dialog class="nq-dialog" data-nq-date-dialog aria-label="اختيار تاريخ الموعد">
-    <button type="button" data-nq-date-close>إغلاق</button>
-    <div class="nq-calendar" data-nq-date-calendar></div>
+    <header class="nq-dialog-header"><h2>اختيار تاريخ الموعد</h2><button class="nq-button" data-variant="ghost" type="button" data-nq-date-close>إغلاق</button></header>
+    <div class="nq-dialog-body"><div class="nq-calendar" data-nq-date-calendar></div></div>
   </dialog>
 </div>`,
     lifecycle: ['هيّئ المكوّن بعد تركيب الحقل والزر والحوار وحاوية التقويم الداخلية. لا تهيّئ الحاوية الداخلية كمكوّن Calendar مستقل.', 'يفتح التقويم على شهر التاريخ المختار. يحدّث تأكيد اليوم الحقل الأصلي مرة واحدة، ويغلق الحوار، ويعيد التركيز إلى زر الفتح.', 'يبقي تبديل الميلادي والهجري الحوار مفتوحًا ويحافظ على قيمة ISO. يصف مخرج حي تحت الحقل التاريخ بنظام العرض المختار حتى بعد الإغلاق.', 'تُحفظ القيم الواقعة خارج النطاق الهجري وتُعلَّم بأنها غير صالحة مع شرح النطاق. يزيل الرجوع للميلادي خطأ النطاق الهجري دون إلغاء min وmax.', 'تزامن تعديلات الحقل وإعادة الضبط التقويم والمخرج. يحرر destroy التقويم والحوار والمخرج المولد.'],

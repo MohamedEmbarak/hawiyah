@@ -2,6 +2,16 @@ import { createCleanup, formatCalendarDate, getCalendarMonth, getDirection, isCa
 import { createDialog } from './dialog.js';
 import { emit, ensureId, eventElement, localeOf, nativeChange, readOnly, remember, required, translated } from './dom.js';
 
+// Isolate displayed ISO dates from surrounding RTL prose without changing values.
+function appendDateMessage(node: HTMLElement, message: string) {
+  node.replaceChildren();
+  for (const part of message.split(/([0-9٠-٩]{4}-[0-9٠-٩]{2}-[0-9٠-٩]{2})/u)) {
+    if (/^[0-9٠-٩]{4}-[0-9٠-٩]{2}-[0-9٠-٩]{2}$/u.test(part)) {
+      const date = node.ownerDocument.createElement('bdi'); date.dir = 'ltr'; date.textContent = part; node.append(date);
+    } else node.append(node.ownerDocument.createTextNode(part));
+  }
+}
+
 export interface CalendarOptions {
   value?: string; month?: string; min?: string; max?: string; locale?: string; calendar?: CalendarSystem;
   weekStartsOn?: number; disabled?: boolean; readOnly?: boolean; name?: string;
@@ -31,7 +41,7 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   const hidden = document.createElement('input'); hidden.type = 'hidden'; hidden.name = options.name ?? root.dataset.nqName ?? ''; if (hidden.name) { root.append(hidden); scope.add(() => hidden.remove()); }
   const titleId = ensureId(scope, host, 'calendar') + '-title';
   let model: CalendarMonth;
-  const button = (label: string, action: string) => { const node = document.createElement('button'); node.type = 'button'; node.className = 'nq-button'; node.dataset.variant = 'ghost'; node.dataset.nqCalendarAction = action; node.textContent = label; return node; };
+  const button = (label: string, action: string) => { const node = document.createElement('button'); node.type = 'button'; node.className = `nq-button nq-calendar-${action === 'previous' ? 'prev' : 'next'}`; node.setAttribute('aria-label', label); node.dataset.variant = 'ghost'; node.dataset.nqCalendarAction = action; node.textContent = label; return node; };
   const render = (focusDate?: string, focusAction?: string) => {
     model = getCalendarMonth({ month, value, min, max, locale, calendar, weekStartsOn });
     const first = model.days.find(day => !day.outside)!;
@@ -73,7 +83,17 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
       body.append(row);
     }
     grid.append(body); host.append(grid);
-    if (calendar === 'islamic-umalqura') { const note = document.createElement('p'); note.className = 'nq-hint'; note.textContent = translated(root, `Published Umm al-Qura reference: ${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}.`, `مرجع أم القرى المنشور: ${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}.`); if (value && !isCalendarDateSupported(value, calendar)) { note.setAttribute('role', 'status'); note.textContent += translated(root, ' The selected date is outside this range; its ISO value is unchanged.', ' التاريخ المحدد خارج النطاق؛ بقيت قيمته الميلادية دون تغيير.'); } host.append(note); }
+    if (calendar === 'islamic-umalqura') {
+      const note = document.createElement('p'); note.className = 'nq-hint nq-calendar-range';
+      const label = document.createElement('span'); label.textContent = translated(root, 'Supported dates', 'التواريخ المدعومة');
+      const range = document.createElement('bdi'); range.dir = 'ltr'; range.textContent = `${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}`;
+      note.append(label, range);
+      if (value && !isCalendarDateSupported(value, calendar)) {
+        note.setAttribute('role', 'status');
+        const message = document.createElement('span'); message.textContent = translated(root, 'The selected date is outside this range; its ISO value is unchanged.', 'التاريخ المحدد خارج النطاق؛ بقيت قيمته الميلادية دون تغيير.'); note.append(message);
+      }
+      host.append(note);
+    }
     hidden.value = value; hidden.disabled = disabled();
     if (focusAction === 'system') system.focus(); else if (focusAction) host.querySelector<HTMLElement>(`[data-nq-calendar-action="${focusAction}"]`)?.focus();
     else if (focusDate) [...host.querySelectorAll<HTMLElement>('[data-nq-date]')].find(node => node.dataset.nqDate === focused)?.focus();
@@ -127,7 +147,7 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
   let lastNotifiedValue = input.value;
   remember(scope, trigger, ['aria-haspopup', 'aria-controls', 'disabled']); trigger.setAttribute('aria-haspopup', 'dialog'); trigger.setAttribute('aria-controls', ensureId(scope, dialog, 'date-picker'));
   scope.add(() => { input.setCustomValidity(validity); input.value = originalValue; });
-  const display = root.ownerDocument.createElement('output'); display.className = 'nq-date-picker-value'; display.dataset.nqDateDisplay = ''; display.setAttribute('aria-live', 'polite');
+  const display = root.ownerDocument.createElement('output'); display.className = 'nq-hint nq-date-picker-value'; display.dataset.nqDateDisplay = ''; display.setAttribute('aria-live', 'polite');
   root.append(display); scope.add(() => display.remove());
   const displayId = ensureId(scope, display, 'date-display'); remember(scope, input, ['aria-describedby']);
   input.setAttribute('aria-describedby', [...new Set((input.getAttribute('aria-describedby') || '').split(/\s+/u).filter(Boolean).concat(displayId))].join(' '));
@@ -143,6 +163,7 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
     else display.textContent = calendar.calendar === 'islamic-umalqura'
       ? translated(root, `Hijri display supports ${UMALQURA_MIN_DATE} through ${UMALQURA_MAX_DATE}; the Gregorian value is unchanged.`, `العرض الهجري يدعم ${UMALQURA_MIN_DATE} إلى ${UMALQURA_MAX_DATE}؛ القيمة الميلادية لم تتغير.`)
       : translated(root, 'Enter a valid Gregorian ISO date.', 'أدخل تاريخًا ميلاديًا صحيحًا بصيغة ISO.');
+    appendDateMessage(display, display.textContent || '');
   };
   const calendar = createCalendar(host, {
     value: input.value, min: input.min || undefined, max: input.max || undefined, locale: options.locale ?? localeOf(root), calendar: system,

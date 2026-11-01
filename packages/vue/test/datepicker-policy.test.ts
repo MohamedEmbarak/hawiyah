@@ -145,3 +145,15 @@ it("shows the canonical selected calendar below the closed field and preserves i
   value.value = ""; await nextTick(); expect(output.hidden).toBe(true); expect(output.textContent).toBe("");
   value.value = "1900-01-01"; mode.value = "islamic-umalqura"; await nextTick(); expect(output.hidden).toBe(true); expect(output.textContent).toBe(""); expect(input.checkValidity()).toBe(false);
 });
+
+it("isolates ISO endpoints in visible validation prose without changing the native message", async () => {
+  const root = document.createElement("div"); document.body.append(root);
+  const message = "خارج النطاق 1924-08-01 إلى 2077-11-16.";
+  application = createApp(defineComponent(() => () => h(DatePicker, { label: "Date", defaultValue: "1900-01-01", calendar: "islamic-umalqura", unsupportedMessage: message })));
+  application.mount(root); await nextTick();
+  const error = root.querySelector(".nq-date-picker > .nq-error")!;
+  expect(error.textContent).toBe(message);
+  expect([...error.querySelectorAll('bdi[dir="ltr"]')].map(node => node.textContent)).toEqual(["1924-08-01", "2077-11-16"]);
+  const input = root.querySelector<HTMLInputElement>('input[type="date"]')!;
+  expect(input.validationMessage).toBe(message); expect(input.value).toBe("1900-01-01");
+});

@@ -26,6 +26,7 @@ describe('calendar', () => {
     const changed = vi.fn(); const controller = createCalendar(root, { locale: 'en-GB', onValueChange: changed });
     controller.setCalendar('islamic-umalqura');
     expect(controller.value).toBe('2029-08-11');
+    expect([...root.querySelectorAll('bdi[dir=ltr]')].map(node => node.textContent)).toEqual(['1924-08-01 – 2077-11-16']);
     expect(root.querySelector('[data-nq-date="2029-08-11"]')!.textContent).toBe('1');
     expect(root.querySelector('[data-nq-date="2029-08-11"]')!.getAttribute('aria-label')).toContain('1451');
     expect(root.querySelectorAll('[data-selected]')).toHaveLength(1);

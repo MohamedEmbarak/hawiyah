@@ -84,12 +84,21 @@ input.nq-pin-input, .nq-pin-input input:not([type='hidden']) { inline-size: min(
 /* Calendar has seven stable columns and no fixed pixel width assumption. */
 .nq-calendar { inline-size: min(100%, 23rem); padding: var(--nq-space-4); border: 1px solid var(--nq-color-border); border-radius: var(--nq-radius-lg); background: var(--nq-color-surface); }
 .nq-calendar-header, .nq-calendar-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--nq-space-2); margin-block-end: var(--nq-space-3); }
-:is(.nq-calendar-header, .nq-calendar-toolbar) > :is(h2, h3, span, strong) { margin: 0; font-size: var(--nq-text-sm); font-weight: var(--nq-weight-semibold); line-height: var(--nq-leading-heading); text-align: center; }
-:is(.nq-calendar-header, .nq-calendar-toolbar) .nq-button { min-inline-size: 2rem; min-block-size: 2.25rem; padding: var(--nq-space-1) var(--nq-space-2); font-size: var(--nq-text-xs); }
+:is(.nq-calendar-header, .nq-calendar-toolbar) > :is(h2, h3, span, strong) { flex: 1; min-inline-size: 0; margin: 0; font-size: var(--nq-text-md); font-weight: var(--nq-weight-semibold); line-height: var(--nq-leading-heading); text-align: center; overflow-wrap: anywhere; }
+:is(.nq-calendar-header, .nq-calendar-toolbar) .nq-button { min-inline-size: 2.75rem; min-block-size: 2.75rem; max-inline-size: 32%; padding: var(--nq-space-1) var(--nq-space-2); font-size: var(--nq-text-sm); overflow-wrap: anywhere; }
+.nq-calendar :is(.nq-calendar-prev, .nq-calendar-next) { flex: none; inline-size: 2.75rem; max-inline-size: 2.75rem; padding: 0; gap: 0; font-size: 0; }
+.nq-calendar :is(.nq-calendar-prev, .nq-calendar-next)::before { content: ''; display: block; inline-size: 1.5rem; block-size: 1.5rem; background-color: currentColor; -webkit-mask: var(--nq-calendar-arrow) center / contain no-repeat; mask: var(--nq-calendar-arrow) center / contain no-repeat; }
+.nq-calendar-prev { --nq-calendar-arrow: url('./assets/icons/arrow-left-01.svg'); }
+.nq-calendar-next { --nq-calendar-arrow: url('./assets/icons/arrow-right-01.svg'); }
+.nq-calendar :is(.nq-calendar-prev, .nq-calendar-next):dir(rtl)::before { transform: scaleX(-1); }
+@media (forced-colors: active) {
+  .nq-calendar :is(.nq-calendar-prev, .nq-calendar-next)::before { forced-color-adjust: none; background-color: ButtonText; }
+  .nq-calendar :is(.nq-calendar-prev, .nq-calendar-next):disabled::before { background-color: GrayText; }
+}
 .nq-calendar-grid, .nq-calendar > table { inline-size: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0.125rem; }
 :is(.nq-calendar-grid, .nq-calendar > table) :is(th, td) { padding: 0; text-align: center; vertical-align: middle; }
-:is(.nq-calendar-grid, .nq-calendar > table) th, .nq-calendar-weekday { padding-block: var(--nq-space-2); color: var(--nq-color-text-muted); font-size: 0.6875rem; font-weight: var(--nq-weight-medium); overflow-wrap: anywhere; }
-.nq-calendar-day { position: relative; display: inline-grid; place-items: center; inline-size: 100%; min-block-size: var(--nq-control-height-sm); padding: var(--nq-space-1); border: 1px solid transparent; border-radius: var(--nq-radius-sm); background: transparent; color: var(--nq-color-text); font: inherit; font-size: var(--nq-text-sm); font-variant-numeric: tabular-nums; cursor: pointer; }
+:is(.nq-calendar-grid, .nq-calendar > table) th, .nq-calendar-weekday { padding-block: var(--nq-space-2); color: var(--nq-color-text-muted); font-size: var(--nq-text-xs); font-weight: var(--nq-weight-medium); white-space: nowrap; }
+.nq-calendar-day { position: relative; box-sizing: border-box; display: inline-grid; place-items: center; inline-size: 100%; min-block-size: 2.75rem; padding: var(--nq-space-1); border: 1px solid transparent; border-radius: var(--nq-radius-sm); background: transparent; color: var(--nq-color-text); font: inherit; font-size: var(--nq-text-md); font-variant-numeric: tabular-nums; cursor: pointer; }
 .nq-calendar-day:hover:not(:disabled, [aria-disabled='true']) { background: var(--nq-color-surface-muted); }
 .nq-calendar-day[data-outside='true'], .nq-calendar-day[data-outside=''] { color: var(--nq-color-text-subtle); }
 .nq-calendar-day:is([data-today='true'], [data-today=''], [aria-current='date']) { border-color: var(--nq-color-primary); font-weight: var(--nq-weight-semibold); }
@@ -98,7 +107,21 @@ input.nq-pin-input, .nq-pin-input input:not([type='hidden']) { inline-size: min(
 .nq-calendar-day:disabled { opacity: 0.45; text-decoration: line-through; cursor: not-allowed; }
 .nq-calendar-day[aria-disabled='true'] { cursor: default; }
 .nq-calendar-day:focus-visible { z-index: 1; outline-offset: -3px; }
-.nq-date-picker .nq-dialog .nq-calendar { margin-inline: auto; }
+.nq-date-picker:not(.nq-field) { flex-wrap: wrap; }
+.nq-date-picker > :is(.nq-input-group, .nq-date-picker-value, .nq-error) { flex: 0 0 100%; min-inline-size: 0; }
+.nq-date-picker-value { overflow-wrap: anywhere; }
+.nq-date-picker .nq-dialog { inline-size: min(26rem, calc(100vw - 2rem)); white-space: normal; }
+.nq-date-picker .nq-dialog-header { align-items: center; }
+.nq-date-picker .nq-dialog-header > h2 { min-inline-size: 0; overflow-wrap: anywhere; }
+.nq-date-picker .nq-dialog-header > .nq-button { flex: none; min-inline-size: 2.75rem; min-block-size: 2.75rem; }
+.nq-date-picker .nq-dialog .nq-calendar { inline-size: 100%; margin-inline: auto; padding: 0; border: 0; background: transparent; }
+.nq-calendar-system { display: grid; gap: var(--nq-space-1); margin-block-end: var(--nq-space-3); }
+.nq-calendar-range { display: grid; gap: var(--nq-space-1); text-align: center; }
+.nq-calendar-range > bdi { white-space: nowrap; }
+.nq-date-picker .nq-dialog-body > .nq-field { margin-block-end: var(--nq-space-3); }
+@media (max-width: 25rem) {
+  .nq-date-picker :is(.nq-dialog-header, .nq-dialog-body) { padding-inline: var(--nq-space-3); }
+}
 
 /* Selection, disclosure, overlays and live feedback. */
 .nq-toggle-group { display: inline-flex; flex-wrap: wrap; gap: var(--nq-space-1); max-inline-size: 100%; margin: 0; padding: var(--nq-space-1); border: 1px solid var(--nq-color-border); border-radius: var(--nq-radius-md); background: var(--nq-color-surface-muted); }

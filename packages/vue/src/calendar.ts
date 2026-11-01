@@ -30,6 +30,11 @@ import {
   useValue,
 } from "./shared.js";
 
+function dateMessage(message: string) {
+  return message.split(/([0-9٠-٩]{4}-[0-9٠-٩]{2}-[0-9٠-٩]{2})/u).map(part =>
+    /^[0-9٠-٩]{4}-[0-9٠-٩]{2}-[0-9٠-٩]{2}$/u.test(part) ? h("bdi", { dir: "ltr" }, part) : part);
+}
+
 const calendarProps = {
   modelValue: String,
   defaultValue: { type: String, default: "" },
@@ -237,6 +242,7 @@ export const Calendar = defineComponent({
             {
               variant: "ghost",
               "aria-label": props.previousLabel,
+              class: "nq-calendar-prev",
               disabled: props.disabled || !previousAllowed,
               onClick: () => changeMonth(page.value.previous),
             },
@@ -252,6 +258,7 @@ export const Calendar = defineComponent({
             {
               variant: "ghost",
               "aria-label": props.nextLabel,
+              class: "nq-calendar-next",
               disabled: props.disabled || !nextAllowed,
               onClick: () => changeMonth(page.value.next),
             },
@@ -260,7 +267,7 @@ export const Calendar = defineComponent({
         ]),
         model.value.value &&
           !isCalendarDateSupported(model.value.value, props.calendar) &&
-          h("p", { role: "status" }, props.unsupportedMessage),
+          h("p", { role: "status" }, dateMessage(props.unsupportedMessage)),
         h(
           "table",
           {
@@ -486,7 +493,7 @@ export const DatePicker = defineComponent({
                 class: "nq-error",
                 role: "alert",
               },
-              validationMessage.value,
+              dateMessage(validationMessage.value),
             ),
           h(
             Dialog,

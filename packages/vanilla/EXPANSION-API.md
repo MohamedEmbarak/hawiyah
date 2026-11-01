@@ -33,9 +33,9 @@ Its two labelled thumbs remain focusable; read-only values still submit normally
 <div class="nq-date-picker" data-nq="date-picker" data-nq-calendar="islamic-umalqura" data-nq-locale="ar-SA">
   <label>Appointment <input type="date" data-nq-date-input name="appointment" required></label>
   <button type="button" data-nq-date-trigger aria-label="Choose date">Calendar</button>
-  <dialog data-nq-date-dialog aria-label="Choose appointment date">
-    <button type="button" data-nq-date-close>Close</button>
-    <div data-nq-date-calendar></div>
+  <dialog class="nq-dialog" data-nq-date-dialog aria-label="Choose appointment date">
+    <header class="nq-dialog-header"><h2>Choose appointment date</h2><button class="nq-button" data-variant="ghost" type="button" data-nq-date-close>Close</button></header>
+    <div class="nq-dialog-body"><div class="nq-calendar" data-nq-date-calendar></div></div>
   </dialog>
 </div>
 <label class="nq-file-dropzone" data-nq="file-dropzone">Choose or drop documents

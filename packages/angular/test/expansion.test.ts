@@ -146,6 +146,9 @@ describe('Angular expansion behavior', () => {
     expect(control.checkValidity()).toBe(false);
     expect(control.validationMessage).toBe('التاريخ خارج النطاق المدعوم');
     expect(control.getAttribute('aria-invalid')).toBe('true');
+    fixture.componentRef.setInput('unsupportedMessage', 'خارج النطاق 1924-08-01 إلى 2077-11-16.'); fixture.detectChanges();
+    expect([...fixture.nativeElement.querySelectorAll('[role=status] bdi[dir=ltr]')].map(node => (node as HTMLElement).textContent)).toEqual(['1924-08-01', '2077-11-16']);
+    expect(control.value).toBe('1900-01-01');
     fixture.componentInstance.switchCalendar('gregory'); fixture.detectChanges();
     expect(control.value).toBe('1900-01-01'); expect(control.checkValidity()).toBe(true);
     fixture.componentRef.setInput('min', '1950-01-01'); fixture.detectChanges();

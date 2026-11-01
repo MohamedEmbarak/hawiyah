@@ -58,6 +58,7 @@ try {
     await date.fill('1900-01-01'); await expect.poll(() => date.evaluate(element => element.checkValidity())).toBe(true);
     await open.click(); await system.selectOption('islamic-umalqura'); await expect(date).toHaveValue('1900-01-01');
     await expect.poll(() => date.evaluate(element => element.checkValidity())).toBe(false);
+    await expect(dialog.locator('bdi[dir=ltr]')).toHaveCount(2);
     await page.keyboard.press('Escape'); await showcase.getByRole('button', { name: 'Check date', exact: true }).click();
     await expect(showcase.getByTestId('date-check')).toBeEmpty();
     await open.click(); await system.selectOption('gregory'); await page.keyboard.press('Escape');
@@ -71,6 +72,24 @@ try {
     await page.setViewportSize({ width: 390, height: 844 });
     await expect.poll(() => grid.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(/\s+/u).length)).toBe(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      const picker = showcase.locator('.nq-date-picker');
+      const output = picker.locator('.nq-date-picker-value');
+      const inputGroup = picker.locator('.nq-input-group');
+      const fieldBounds = await inputGroup.boundingBox(); const outputBounds = await output.boundingBox();
+      expect(outputBounds.y).toBeGreaterThanOrEqual(fieldBounds.y + fieldBounds.height - 1);
+      await picker.locator('[aria-haspopup="dialog"]').click();
+      const popup = page.getByRole('dialog');
+      await expect(popup.locator('.nq-dialog-header h2')).toBeVisible();
+      await popup.evaluate(node => Promise.all(node.getAnimations().map(animation => animation.finished.catch(() => {}))));
+      const bounds = await popup.boundingBox();
+      expect(bounds.x).toBeGreaterThanOrEqual(0); expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+      expect(await popup.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
+      expect(await popup.locator('.nq-calendar-day').first().evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+      await page.keyboard.press('Escape');
+      await expect(picker.locator('[aria-haspopup="dialog"]')).toBeFocused();
+    }
     const violations = (await new AxeBuilder({ page }).include('[data-testid="calendar-showcase"]').withTags(['wcag2a', 'wcag2aa']).analyze()).violations;
     expect(violations).toEqual([]); expect(errors).toEqual([]);
     console.log(`${example.name}: calendar switching, canonical labels, keyboard selection, reopening, invalid-range submission, mobile RTL/dark layout and scoped axe passed`);

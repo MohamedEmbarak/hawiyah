@@ -1,5 +1,24 @@
 # Validation record
 
+## 2026-11-01 date-picker presentation
+
+The supplied screenshot led to a narrower titled dialog, larger day targets,
+RTL-aware arrow controls, isolated date ranges, wrapped popup copy and formatted
+output below the input. Calendar/provider calculations and ISO values are
+unchanged. Focused vanilla/React/Vue units passed 28 tests; Angular expansion
+passed 14 tests. The browser picker case passed RTL/LTR at 320, 390 and 1280 px
+with native modal/focus checks, image-mask loading and six geometry combinations.
+The live enhanced recipe is isolated from guide prose for the screenshot fixture;
+the documentation host itself has a pre-existing long-paragraph overflow at
+320 px. Final 320/390/1280 px Arabic popup screenshots were visually inspected.
+
+The React/Vue/Angular calendar browser script passed calendar switching, canonical
+labels, keyboard selection, reopening, unsupported-range validation and recovery,
+open-popup geometry at 320/390 px, formatted-output placement, Escape focus return
+and scoped axe checks. Geometry checks wait for dialog entry animation to finish.
+All packages/consumers and the Pages-path guide build passed. These are UI and
+behavior checks, not source calendar parity or official certification.
+
 ## 2026-11-01 mobile navigation bar
 
 The opt-in SecondaryNav mobile presentation passed two shared-CSS browser cases

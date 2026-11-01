@@ -116,6 +116,7 @@ it('preserves an unsupported ISO date while explicitly limiting its Hijri displa
   expect(date.getAttribute('aria-invalid')).toBe('true');
   expect(date.validationMessage).toContain(UMALQURA_MIN_DATE);
   expect(container.querySelector('[role=status]')?.textContent).toContain(UMALQURA_MIN_DATE);
+  expect([...container.querySelectorAll('[role=status] bdi[dir=ltr]')].map(node => node.textContent)).toEqual([UMALQURA_MIN_DATE, UMALQURA_MAX_DATE]);
   expect(container.querySelectorAll('[role=gridcell][aria-selected=true]')).toHaveLength(0);
   expect(container.querySelector<HTMLButtonElement>('[aria-label="Previous month"]')!.disabled).toBe(true);
   const select = container.querySelector('select')!;
