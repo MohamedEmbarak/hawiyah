@@ -91,7 +91,7 @@ export class NqCheckboxComponent extends NqValueControl<boolean> {
 
 @Component({ selector: 'nq-switch', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqSwitchComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-cluster" [for]="controlId"><input class="nq-switch" type="checkbox" role="switch" [id]="controlId" [name]="name" [checked]="value" [disabled]="disabled" [required]="required" [attr.aria-describedby]="descriptionIds" (change)="update($any($event.target).checked)" (blur)="touch()"><span>{{ label }}</span></label>${fieldEnd}</div>` })
+  template: `<div class="nq-field"><label class="nq-cluster" [for]="controlId"><input class="nq-switch" type="checkbox" role="switch" [id]="controlId" [name]="name" [checked]="value" [disabled]="disabled" [required]="required" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="update($any($event.target).checked)" (blur)="touch()"><span>{{ label }}</span></label>${fieldEnd}</div>` })
 export class NqSwitchComponent extends NqValueControl<boolean> { override value = false; }
 
 @Component({ selector: 'nq-radio', standalone: true,

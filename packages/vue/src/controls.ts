@@ -449,15 +449,17 @@ export const PinInput = defineComponent({
   setup(props, { attrs, emit, expose }) {
     const field = useField(props, attrs);
     const element = ref<HTMLInputElement>();
+    const normalizedLength = () => Math.max(1, Math.floor(props.length) || 6);
+    const normalize = (value: string) => normalizeDigits(value).replace(/\D/g, '').slice(0, normalizedLength());
     const model = useValue(
       () => props.modelValue,
-      props.defaultValue,
+      normalize(props.defaultValue),
       (v) => emit("update:modelValue", v),
     );
-    useFormReset(element, () => model.set(props.defaultValue));
+    useFormReset(element, () => model.set(normalize(props.defaultValue)));
     expose({ element, focus: () => element.value?.focus() });
     return () => {
-      const length = Math.max(1, Math.floor(props.length) || 6);
+      const length = normalizedLength();
       return decorate(
         props,
         field.id.value,
@@ -472,15 +474,13 @@ export const PinInput = defineComponent({
             pattern: `[0-9]{${length}}`,
             maxlength: length,
             dir: "ltr",
-            value: model.value.value,
+            value: normalize(model.value.value),
             disabled: props.disabled,
             readonly: props.readonly,
             onInput: (event: Event) => {
               if (props.disabled || props.readonly) return;
               const input = event.target as HTMLInputElement;
-              const value = normalizeDigits(input.value)
-                .replace(/\D/g, "")
-                .slice(0, length);
+              const value = normalize(input.value);
               input.value = value;
               model.set(value);
               if (value.length === length) emit("complete", value);
@@ -618,13 +618,15 @@ export const MultiSelect = defineComponent({
       props.defaultValue,
       (v) => emit("update:modelValue", v),
     );
+    // Keep caller state intact; only known, enabled choices count or submit.
+    const selected = computed(() => model.value.value.filter(value => props.options.some(option => option.value === value && !option.disabled)));
     useFormReset(element, () => {
       query.value = "";
       model.set(props.defaultValue);
     });
     watchEffect(() =>
       element.value?.setCustomValidity(
-        field.controlAttrs.value.required && !model.value.value.length
+        field.controlAttrs.value.required && !selected.value.length
           ? props.requiredMessage
           : "",
       ),
@@ -667,15 +669,15 @@ export const MultiSelect = defineComponent({
                 h("input", {
                   type: "checkbox",
                   class: "nq-checkbox",
-                  checked: model.value.value.includes(option.value),
+                  checked: selected.value.includes(option.value),
                   disabled: props.disabled || props.readonly || option.disabled,
                   onChange: (event: Event) => {
                     if (props.disabled || props.readonly || option.disabled)
                       return;
                     model.set(
                       (event.target as HTMLInputElement).checked
-                        ? [...model.value.value, option.value]
-                        : model.value.value.filter(
+                        ? [...selected.value, option.value]
+                        : selected.value.filter(
                             (value) => value !== option.value,
                           ),
                     );
@@ -686,7 +688,7 @@ export const MultiSelect = defineComponent({
             ),
           ),
           !options.length && h("p", { role: "status" }, props.emptyMessage),
-          ...model.value.value.map((value) =>
+          ...selected.value.map((value) =>
             h("input", {
               type: "hidden",
               name: attrs.name,
