@@ -67,11 +67,18 @@ export class NqPaginationComponent {
   select(page: number): void { this.page = Math.max(1, Math.min(this.total, page)); this.pageChange.emit(this.page); }
 }
 
-export interface NqStep { label: string; description?: string }
-@Component({ selector: 'nq-stepper', standalone: true, template: `<ol class="nq-stepper" [attr.aria-label]="label">@for (step of steps; track $index; let i = $index) {<li class="nq-step" [attr.aria-current]="i === current ? 'step' : null" [attr.data-state]="i < current ? 'complete' : i === current ? 'current' : 'upcoming'"><span>{{ step.label }}@if (step.description) {<small class="nq-hint">{{ step.description }}</small>}</span></li>}</ol>` })
+export interface NqStep { label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
+@Component({ selector: 'nq-stepper', standalone: true, template: `<ol class="nq-stepper" [attr.aria-label]="label">@for (step of steps; track $index; let i = $index) {<li class="nq-step" [attr.aria-current]="state(i) === 'current' ? 'step' : null" [attr.data-state]="state(i)"><span>{{ step.label }}@if (step.description) {<small class="nq-hint">{{ step.description }}</small>}</span></li>}</ol>` })
 export class NqStepperComponent {
-  @Input() label = 'Progress';
+  @Input() label = 'التقدم';
   @Input() steps: readonly NqStep[] = [];
   /** Zero-based current step. This is a progress indicator, not navigation. */
   @Input() current = 0;
+  /** Overrides current. -1 means not started; steps.length means complete. */
+  @Input() activeIndex?: number;
+  state(index: number): 'complete' | 'current' | 'upcoming' {
+    const requested = this.activeIndex ?? this.current;
+    const active = Number.isInteger(requested) && requested >= -1 && requested <= this.steps.length ? requested : -1;
+    return this.steps[index]?.status ?? (index === active ? 'current' : index < active ? 'complete' : 'upcoming');
+  }
 }

@@ -1,4 +1,7 @@
 import { createTabs } from './tabs.js';
+import { createStepper } from './stepper.js';
+export { createStepper };
+export type { StepperOptions, StepperController } from './stepper.js';
 import { createAccordion } from './accordion.js';
 export { createAccordion };
 export type { AccordionOptions, AccordionController } from './accordion.js';
@@ -34,6 +37,7 @@ export type { PaginationOptions, PaginationController } from './pagination.js';
 type Controller = { destroy(): void };
 const registry = new WeakMap<HTMLElement, { controller: Controller; references: number }>();
 const factories: Record<string, (element: HTMLElement) => Controller> = {
+  stepper: element => createStepper(element as HTMLOListElement),
   accordion: createAccordion,
   'navigation-drawer': element => createNavigationDrawer(element as HTMLDialogElement),
   'portal-header': createPortalHeader,

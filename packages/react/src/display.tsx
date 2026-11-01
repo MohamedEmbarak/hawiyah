@@ -109,11 +109,16 @@ export function Avatar({ src, name, initials, imageProps, className, ...props }:
 export interface DividerProps extends ComponentPropsWithRef<'hr'> {}
 export function Divider({ className, ...props }: DividerProps) { return <hr {...props} className={cx('nq-divider', className)} />; }
 export interface StepItem { value: string; label: ReactNode; description?: ReactNode; status?: 'complete' | 'current' | 'upcoming' }
-export interface StepperProps extends ComponentPropsWithRef<'ol'> { items: readonly StepItem[]; current?: string; label?: string }
-export function Stepper({ items, current, label = 'Progress', className, ...props }: StepperProps) {
-  const index = items.findIndex(item => item.value === current);
+export interface StepperProps extends ComponentPropsWithRef<'ol'> {
+  items: readonly StepItem[]; current?: string; label?: string;
+  /** Zero-based active step; -1 means not started, items.length means complete. Overrides current. */
+  activeIndex?: number;
+}
+export function Stepper({ items, current, activeIndex, label = 'التقدم', className, ...props }: StepperProps) {
+  const requested = activeIndex ?? items.findIndex(item => item.value === current);
+  const index = Number.isInteger(requested) && requested >= -1 && requested <= items.length ? requested : -1;
   return <ol {...props} className={cx('nq-stepper', className)} aria-label={props['aria-label'] ?? label}>{items.map((item, itemIndex) => {
-    const status = item.status ?? (item.value === current ? 'current' : index > itemIndex ? 'complete' : 'upcoming');
+    const status = item.status ?? (itemIndex === index ? 'current' : index > itemIndex ? 'complete' : 'upcoming');
     return <li key={item.value} className="nq-step" data-state={status} aria-current={status === 'current' ? 'step' : undefined}><span>{item.label}</span>{item.description && <p className="nq-hint">{item.description}</p>}</li>;
   })}</ol>;
 }

@@ -17,6 +17,7 @@ import "./experience.css";
 import nicLogo from "./assets/nic-logo.webp";
 import { expandedSample } from "./expanded-samples";
 import { formatRiyal, riyalAmount } from './currency';
+import { stepperSample, bindStepperSamples } from './stepper-demo';
 import {
   layoutPage,
   inputPage,
@@ -238,7 +239,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "upload":
       return `<label class="nq-upload">${icon("upload", 26)}<strong>${t("Choose a document", "اختر مستندًا")}</strong><span class="nq-hint">PDF · PNG · JPG</span><input type="file" accept=".pdf,.png,.jpg,.jpeg" aria-label="${t("Choose a document", "اختر مستندًا")}"></label>`;
     case "stepper":
-      return `<ol class="nq-stepper"><li class="nq-step" data-state="complete">${t("Details", "التفاصيل")}</li><li class="nq-step" aria-current="step">${t("Review", "المراجعة")}</li><li class="nq-step">${t("Done", "اكتمل")}</li></ol>`;
+      return stepperSample(state.locale);
     case "empty":
       return `<div class="nq-empty">${icon("search", 28)}<strong>${t("Nothing here just yet", "لا يوجد شيء هنا بعد")}</strong><p>${t("Try another search or start something new.", "جرّب بحثًا آخر أو ابدأ شيئًا جديدًا.")}</p></div>`;
   }
@@ -393,11 +394,13 @@ function render() {
   const unenhance = enhance(app);
   const unlayout = bindLayoutStudio(app, state.locale);
   const uninput = bindInputLab(app);
+  const unsteppers = bindStepperSamples(app);
   dispose = () => {
     unguide();
     unhome();
     untemplates();
     uninput();
+    unsteppers();
     unlayout();
     unenhance();
   };

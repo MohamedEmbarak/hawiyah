@@ -103,9 +103,10 @@ export const Avatar = defineComponent({
 export const Divider = defineComponent({ name: 'NqDivider', inheritAttrs: false, setup(_, { attrs }) { return () => h('hr', mergeProps(attrs, { class: 'nq-divider' })); } });
 export interface StepItem { value: string; label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
 export const Stepper = defineComponent({
-  name: 'NqStepper', inheritAttrs: false, props: { items: { type: Array as PropType<readonly StepItem[]>, required: true }, current: String, label: { type: String, default: 'Progress' } },
+  name: 'NqStepper', inheritAttrs: false, props: { items: { type: Array as PropType<readonly StepItem[]>, required: true }, current: String, activeIndex: Number, label: { type: String, default: 'التقدم' } },
   setup(props, { attrs }) { return () => h('ol', mergeProps({ 'aria-label': props.label }, attrs, { class: 'nq-stepper' }), props.items.map((item, index) => {
-    const current = props.items.findIndex(step => step.value === props.current);
+    const requested = props.activeIndex ?? props.items.findIndex(step => step.value === props.current);
+    const current = Number.isInteger(requested) && requested >= -1 && requested <= props.items.length ? requested : -1;
     const status = item.status ?? (index === current ? 'current' : index < current ? 'complete' : 'upcoming');
     return h('li', { key: item.value, class: 'nq-step', 'data-state': status, 'aria-current': status === 'current' ? 'step' : undefined }, [h('span', {}, item.label), item.description && h('p', { class: 'nq-hint' }, item.description)]);
   })); },
