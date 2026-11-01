@@ -22,4 +22,5 @@
 .guide-demo{scroll-margin-block-start:125px}.guide-title-actions button[data-guide-launch-editor]{background:var(--nq-color-primary);border-color:var(--nq-color-primary);color:var(--nq-color-on-primary)}.guide-title-actions button[data-guide-launch-editor]:hover{background:var(--nq-color-primary-hover);color:var(--nq-color-on-primary)}
 @media(max-width:650px){.guide-title-actions{flex-wrap:wrap}}
 /* Keep scoped package names and API syntax readable inside Arabic prose. */
+.guide-article { overflow-wrap: anywhere; }
 .guide-article code:not([dir]){direction:ltr;unicode-bidi:isolate}

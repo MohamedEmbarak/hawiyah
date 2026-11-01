@@ -1,5 +1,17 @@
 # Validation record
 
+## 2026-11-01 guide mobile reflow
+
+Long, unbroken API names in DatePicker guidance reproduced a 349 px Arabic
+document width on a 320 px viewport (344 px in English). Guide prose now permits
+wrapping within those names; preformatted code keeps its own scroll container.
+Two Chromium cases passed Arabic/RTL and English/LTR at 320 px, including the
+live date picker inside the complete guide, popup containment, Escape focus
+return and focusable scrolling API tables. The Arabic popup screenshot was
+visually inspected. The Pages-path Vite guide build passed. This resolves the
+documentation-host limitation recorded in the earlier calendar run; library
+calendar calculations and package behavior are unchanged.
+
 ## 2026-11-01 accordion motion
 
 The final focused suite passed 24 tests across core motion, all four adapters
