@@ -12,18 +12,18 @@ import { createDialog } from './dialog.js';
 import { createCombobox } from './combobox.js';
 import { createTooltip } from './tooltip.js';
 import { createPagination } from './pagination.js';
-import { createPasswordField, createRangeSlider, createPinInput, createTagInput, createMultiSelect, createFileDropzone } from './controls.js';
+import { createPasswordField, createRangeSlider, createRating, createPinInput, createTagInput, createMultiSelect, createFileDropzone } from './controls.js';
 import { createPopover, createMenu, createDrawer, createToastRegion } from './disclosures.js';
 import { createCalendar, createDatePicker } from './calendar.js';
 import { createToggleGroup, createFeedback, createCookieConsent, createTreeView, createCarousel, createDataTable } from './content.js';
 
 export { createTabs, createDialog, createCombobox, createTooltip, createPagination };
-export { createPasswordField, createRangeSlider, createPinInput, createTagInput, createMultiSelect, createFileDropzone, createPopover, createMenu, createDrawer, createToastRegion };
+export { createPasswordField, createRangeSlider, createRating, createPinInput, createTagInput, createMultiSelect, createFileDropzone, createPopover, createMenu, createDrawer, createToastRegion };
 export { createCalendar, createDatePicker };
 export { createToggleGroup, createFeedback, createCookieConsent, createTreeView, createCarousel, createDataTable };
 export type { ToggleGroupOptions, ToggleGroupController, FeedbackOptions, FeedbackController, ConsentChoice, CookieConsentOptions, CookieConsentController, TreeViewOptions, TreeViewController, CarouselOptions, CarouselController, SortDirection, DataTableOptions, DataTableController } from './content.js';
 export type { CalendarOptions, CalendarController, DatePickerOptions, DatePickerController } from './calendar.js';
-export type { ValueController, PasswordFieldOptions, RangeSliderOptions, PinInputOptions, TagInputOptions, MultiSelectOptions, FileDropzoneOptions } from './controls.js';
+export type { ValueController, PasswordFieldOptions, RangeSliderOptions, RatingOptions, PinInputOptions, TagInputOptions, MultiSelectOptions, FileDropzoneOptions } from './controls.js';
 export type { PopoverOptions, PopoverController, MenuOptions, ToastRegionOptions } from './disclosures.js';
 export type { TabsOptions, TabsController } from './tabs.js';
 export type { DialogOptions, DialogController } from './dialog.js';
@@ -39,7 +39,7 @@ const factories: Record<string, (element: HTMLElement) => Controller> = {
   'portal-header': createPortalHeader,
   tabs: createTabs, dialog: element => createDialog(element as HTMLDialogElement), combobox: createCombobox,
   tooltip: createTooltip, pagination: createPagination, 'password-field': createPasswordField,
-  'range-slider': createRangeSlider, 'pin-input': createPinInput, 'tag-input': createTagInput,
+  'range-slider': createRangeSlider, rating: createRating, 'pin-input': createPinInput, 'tag-input': createTagInput,
   'multi-select': createMultiSelect, 'file-dropzone': createFileDropzone,
   popover: createPopover, menu: createMenu, drawer: element => createDrawer(element as HTMLDialogElement),
   'toast-region': createToastRegion,

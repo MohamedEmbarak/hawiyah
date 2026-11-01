@@ -377,6 +377,7 @@ export const Rating = defineComponent({
         mergeProps(attrs, {
           class: "nq-field nq-rating",
           disabled: props.disabled,
+          "data-nq-readonly": props.readonly || undefined,
           "aria-describedby": field.controlAttrs.value["aria-describedby"],
         }),
         [
@@ -398,8 +399,18 @@ export const Rating = defineComponent({
                   required: props.required,
                   disabled: props.disabled,
                   "aria-label": props.optionLabel(index + 1, count),
+                  "aria-disabled": props.readonly || undefined,
                   onClick: (event: MouseEvent) => {
-                    if (props.readonly) event.preventDefault();
+                    if (props.readonly) {
+                      event.preventDefault();
+                      // Radios activate before click; restore the whole native group when cancellation rolls back only the target.
+                      element.value?.closest('fieldset')?.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach(input => {
+                        input.checked = Number(input.value) === model.value.value;
+                      });
+                    }
+                  },
+                  onKeydown: (event: KeyboardEvent) => {
+                    if (props.readonly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) event.preventDefault();
                   },
                   onChange: () => {
                     if (!props.disabled && !props.readonly)

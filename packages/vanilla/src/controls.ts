@@ -56,6 +56,36 @@ export function createRangeSlider(root: HTMLElement, options: RangeSliderOptions
   render(); return { get value(): [number, number] { return [...value]; }, destroy: () => scope.destroy() };
 }
 
+export interface RatingOptions { onValueChange?: (value: number) => void }
+/** Native radios own selection, keyboard navigation and form values. Enhancement adds readonly guards. */
+export function createRating(root: HTMLElement, options: RatingOptions = {}): ValueController<number> {
+  const inputs = [...root.querySelectorAll<HTMLInputElement>('input[type="radio"]')];
+  if (!inputs.length) throw new Error('Nasaq: Rating requires native radio inputs.');
+  const scope = createCleanup();
+  const selected = () => Number(inputs.find(input => input.checked)?.value ?? 0);
+  let value = selected();
+  const restore = () => inputs.forEach(input => { input.checked = Number(input.value) === value; });
+  const readonlyState = () => inputs.forEach(input => { if (readOnly(root)) input.setAttribute('aria-disabled', 'true'); else input.removeAttribute('aria-disabled'); });
+  for (const input of inputs) {
+    const checked = input.checked;
+    remember(scope, input, ['aria-disabled']); scope.add(() => { input.checked = checked; });
+    scope.listen(input, 'click', event => { if (readOnly(root)) { event.preventDefault(); restore(); } });
+    scope.listen(input, 'keydown', event => {
+      if (readOnly(root) && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes((event as KeyboardEvent).key)) event.preventDefault();
+    });
+    scope.listen(input, 'change', () => {
+      if (readOnly(root) || isDisabled(input)) { restore(); return; }
+      value = selected(); emit(root, { value }); options.onValueChange?.(value);
+    });
+  }
+  const form = inputs[0]?.form;
+  if (form) scope.listen(form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) value = selected(); }));
+  const Observer = root.ownerDocument.defaultView?.MutationObserver;
+  if (Observer) { const observer = new Observer(readonlyState); observer.observe(root, { attributes: true, attributeFilter: ['data-nq-readonly', 'aria-readonly'] }); scope.add(() => observer.disconnect()); }
+  readonlyState();
+  return { get value() { return value; }, destroy: () => scope.destroy() };
+}
+
 export interface PinInputOptions { length?: number; onValueChange?: (value: string) => void }
 export function createPinInput(root: HTMLElement, options: PinInputOptions = {}): ValueController<string> {
   const input = required<HTMLInputElement>(root, '[data-nq-pin-input]');

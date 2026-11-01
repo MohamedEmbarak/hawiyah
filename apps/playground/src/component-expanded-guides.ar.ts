@@ -154,7 +154,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     frameworkNotes: 'يقبل React زوجًا في value أو defaultValue ومعالج onValueChange. يرسل lowerName وupperName القيمتين باسمين، أو يرسل name مكررًا. تضبط min وmax وstep الحقلين الأصليين.',
   }),
   rating: localized('rating', {
-    summary: 'جمع تقييم واحد عبر مجموعة خيارات radio أصلية. النجوم زخرفية اختيارية؛ لكل درجة معنى نصي واضح.',
+    summary: 'جمع تقييم واحد عبر مجموعة خيارات radio أصلية. تُبرز النجوم من البداية إلى الدرجة المختارة، ويعرض مرور المؤشر معاينة للنطاق دون تغيير القيمة المرسلة.',
     usage: `<fieldset class="nq-rating"><legend>قيّم الخدمة</legend>
   <label><input class="nq-radio" type="radio" name="rating" value="1" required> ١ من ٣</label>
   <label><input class="nq-radio" type="radio" name="rating" value="2"> ٢ من ٣</label>
@@ -162,7 +162,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
 </fieldset>`,
     lifecycle: ['اعرض مجموعة خيارات مسمّاة تشترك في name ثابت.', 'يُثبت الاختيار الدرجة عبر سلوك النموذج الأصلي أو onValueChange في إطار العمل.', 'تعيد إعادة الضبط التقييم الابتدائي. إرسال التقييم وحفظه عمليتان يتولاهما التطبيق.'],
     api: ['درجة التقييم الحالية أو الابتدائية ومعالجها في React.', 'عدد الدرجات المعروضة؛ من ١ إلى ١٠ والافتراضي ٥ في React.', 'تسمية مترجمة لكل درجة في React.', 'التحقق والمشاركة في بيانات النموذج الأصلي.'],
-    accessibility: ['استخدم legend للسؤال وتسمية مفهومة لكل درجة.', 'أخفِ النجوم الزخرفية عن قارئات الشاشة.', 'حافظ على سلوك الأسهم والمسافة الأصلي لمجموعة radio.'],
+    accessibility: ['استخدم legend للسؤال وتسمية مفهومة لكل درجة.', 'أخفِ النجوم الزخرفية عن قارئات الشاشة.', 'حافظ على سلوك الأسهم والمسافة الأصلي لمجموعة radio. يحتفظ التقييم للقراءة فقط بالتركيز والقيمة المرسلة؛ ولا يُرسل التقييم المعطّل.'],
   }),
   'pin-input': localized('pin-input', {
     summary: 'إدخال رمز تحقق رقمي بطول محدد في حقل واحد قابل للوصول، مع دعم لصق الأرقام العربية والهندية الشرقية وتحويلها إلى أرقام ASCII.',

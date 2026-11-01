@@ -45,11 +45,11 @@ export const expandedGuides: Record<string, GuideInput> = {
     accessibility: ['Name each bound separately; a group label alone is insufficient.', 'Preserve native arrow-key adjustment and distinguish the two values in text.', 'Do not communicate which handle is active by color alone.'], related: ['slider', 'number-field'], frameworkNotes: 'React accepts value/defaultValue pairs and onValueChange. lowerName/upperName or a repeated name submit both values; min/max/step configure the native inputs.', source: 'packages/vanilla/src/controls.ts',
   },
   rating: {
-    summary: 'Collects one rating using a native radio group. Stars are optional decoration; each rating has an explicit textual meaning.',
+    summary: 'Collects one rating using a native radio group. Stars through the selected value are highlighted together; hovering previews a range without changing the submitted value.',
     usage: `<fieldset class="nq-rating"><legend>Rate the service</legend>\n  <label><input class="nq-radio" type="radio" name="rating" value="1" required> 1 of 3</label>\n  <label><input class="nq-radio" type="radio" name="rating" value="2"> 2 of 3</label>\n  <label><input class="nq-radio" type="radio" name="rating" value="3"> 3 of 3</label>\n</fieldset>`,
     lifecycle: ['Render a labelled radio group with a stable shared name.', 'Selecting a rating commits its value through native form behavior or framework onValueChange.', 'Reset restores the initial rating. Application submission and feedback collection are separate operations.'],
     api: api(['value / defaultValue / onValueChange', 'React numeric props', 'Selected numeric rating.'], ['max', 'React integer 1–10; default 5', 'Number of choices rendered by the adapter.'], ['getRatingLabel', 'React (value,max) => string', 'Localized label for each choice.'], ['required / name', 'Native form attributes', 'Validation and form data.']),
-    accessibility: ['Use legend for the question and a meaningful label for every rating.', 'Hide decorative stars from assistive technology.', 'Retain native radio arrow/Space behavior.'], related: ['radio', 'feedback'], source: 'packages/react/src/expanded-controls.tsx',
+    accessibility: ['Use legend for the question and a meaningful label for every rating.', 'Hide decorative stars from assistive technology.', 'Retain native radio arrow/Space behavior. Read-only ratings retain keyboard focus and the selected form value; disabled ratings are excluded from submission.'], related: ['radio', 'feedback'], source: 'packages/react/src/expanded-controls.tsx',
   },
   'pin-input': {
     summary: 'Collects a fixed-length numeric one-time code in one accessible input, including pasted Arabic-Indic and Eastern Arabic digits.',
