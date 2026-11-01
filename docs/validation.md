@@ -1,5 +1,23 @@
 # Validation record
 
+## 2026-11-01 accordion motion
+
+The final focused suite passed 24 tests across core motion, all four adapters
+and tokens. Five browser cases passed: two vanilla RTL/LTR cases inspect real
+WAAPI intermediate frames, reversal, content resizing, inert closing content,
+focus return and reduced-motion settlement; three native React/Vue/Angular
+cases cover animated exclusive groups and keyboard operation. Additional unit
+regressions protect React exclusivity changes, independent shadow-root groups
+and focus return before hiding shadow content. Browser animations are paused
+by the fixture for deterministic intermediate-frame inspection.
+
+Full consumer builds and the subsequent all-package/Pages-path guide rebuild
+passed. Seven local tarballs passed isolated ESM, SSR, Angular APF, CSS export
+and TypeScript checks; both minimal-consumer bundle budgets passed. Nothing was
+published to npm. Native fallback remains immediate without WAAPI or enhancement;
+Chromium checks do not establish a complete cross-browser or screen-reader audit.
+See [the motion contract](accordion-motion.md).
+
 ## 2026-11-01 date-picker presentation
 
 The supplied screenshot led to a narrower titled dialog, larger day targets,

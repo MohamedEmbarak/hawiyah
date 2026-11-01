@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, PortalLayout, SecondaryNav, ServiceCard } from '@nasaq/react';
+import { Accordion, Button, PortalLayout, SecondaryNav, ServiceCard } from '@nasaq/react';
 import logo from '../../../brand/assets/nasaq-wordmark.svg';
 import footerLogo from '../../../brand/assets/nasaq-wordmark-white.svg';
 
@@ -17,5 +17,8 @@ export function PortalExample() {
       {label:t('الرئيسية','Home'),href:'#portal-content',current:true,icon:'home-01'},
       {label:t('الخدمات','Services'),href:'#services',icon:'search-01'},
       {label:t('المزيد','More'),href:'#contact',icon:'menu-01'}]} />
+    <section data-testid="accordion-showcase"><h2>{t('أسئلة شائعة','Frequently asked questions')}</h2><Accordion exclusive items={[
+      {value:'one',title:t('كيف أبدأ؟','How do I start?'),content:<p>{t('اختر الخدمة وراجع المتطلبات ثم ابدأ الطلب.','Choose a service, review the requirements, then start your application.')}</p>},
+      {value:'two',title:t('هل يمكنني حفظ الطلب؟','Can I save my application?'),content:<p>{t('نعم، يدير التطبيق حفظ مسودة الطلب.','Yes, draft saving is managed by your application.')}</p>}]} /></section>
   </PortalLayout>;
 }

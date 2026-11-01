@@ -1,4 +1,7 @@
-import { booleanAttribute, Component, Directive, EventEmitter, Input, Output } from '@angular/core';
+import { booleanAttribute, Component, Directive, ElementRef, EventEmitter, HostListener, Input, Output, inject } from '@angular/core';
+import type { AfterViewInit, OnChanges, OnDestroy } from '@angular/core';
+import { createAccordionMotion } from '@nasaq/core';
+import type { AccordionMotion } from '@nasaq/core';
 
 /** Native button keeps native form, keyboard, disabled and event semantics. */
 @Directive({selector: 'button[nqButton],a[nqButton]', standalone: true, host: {'class': 'nq-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}})
@@ -25,7 +28,44 @@ export class NqAlertComponent {
 
 let nextAccordionId = 0;
 export interface NqAccordionItem { id: string; title: string; content: string; open?: boolean }
-@Component({selector: 'nq-accordion', standalone: true, template: `<div class="nq-accordion">@for (item of items; track item.id) {<details class="nq-accordion-item" [open]="item.open ?? false" [attr.name]="exclusive ? groupName : null" (toggle)="toggled.emit({id: item.id, open: $any($event.target).open})"><summary class="nq-accordion-trigger">{{ item.title }}</summary><div class="nq-card-body">{{ item.content }}</div></details>}<ng-content /></div>`})
+@Directive({selector: 'details[nqAccordionOpen]', standalone: true, host: { '[attr.open]': 'initialOpen ? "" : null' }})
+export class NqAccordionMotionDirective implements AfterViewInit, OnChanges, OnDestroy {
+  private readonly element = inject<ElementRef<HTMLDetailsElement>>(ElementRef).nativeElement;
+  private motion?: AccordionMotion;
+  private localOpen = false;
+  initialOpen = false;
+  @Input() nqAccordionOpen: boolean | undefined;
+  @Input() nqAccordionGroup: string | undefined;
+  @Output() readonly nqAccordionChange = new EventEmitter<boolean>();
+  private get desired() { return this.localOpen; }
+  private change = (open: boolean) => {
+    this.localOpen = open; this.motion?.setOpen(open);
+    this.nqAccordionChange.emit(open);
+  };
+  ngAfterViewInit() { this.setupMotion(); }
+  ngOnChanges(changes: import('@angular/core').SimpleChanges) {
+    if (changes['nqAccordionOpen']) this.localOpen = this.nqAccordionOpen ?? false;
+    if (!this.motion) this.initialOpen = this.desired;
+    else if (this.nqAccordionGroup !== this.group) this.setupMotion();
+    else this.motion.setOpen(this.desired);
+  }
+  private group?: string;
+  private setupMotion() {
+    this.motion?.destroy(); this.group = this.nqAccordionGroup;
+    if (this.group) this.element.setAttribute('name', this.group); else this.element.removeAttribute('name');
+    this.motion = createAccordionMotion(this.element, this.element.querySelector<HTMLElement>(':scope > .nq-accordion-content')!, this.change);
+    this.motion.setOpen(this.desired, true);
+  }
+  @HostListener('click', ['$event']) click(event: MouseEvent) {
+    const target = event.target as Element;
+    if (target.closest('summary')?.parentElement !== this.element) return;
+    if (target.closest('a,button,input,select,textarea')) return;
+    event.preventDefault(); this.change(!this.desired);
+  }
+  @HostListener('toggle') toggle() { this.motion?.nativeToggle(); }
+  ngOnDestroy() { this.motion?.destroy(); }
+}
+@Component({selector: 'nq-accordion', standalone: true, imports: [NqAccordionMotionDirective], template: `<div class="nq-accordion">@for (item of items; track item.id) {<details class="nq-accordion-item" [nqAccordionOpen]="item.open" [nqAccordionGroup]="exclusive ? groupName : undefined" (nqAccordionChange)="toggled.emit({id: item.id, open: $event})"><summary class="nq-accordion-trigger">{{ item.title }}</summary><div class="nq-accordion-content">{{ item.content }}</div></details>}<ng-content /></div>`})
 export class NqAccordionComponent {
   @Input() items: readonly NqAccordionItem[] = [];
   @Input({transform: booleanAttribute}) exclusive = false;

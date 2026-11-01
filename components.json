@@ -855,7 +855,8 @@
       "cssClasses": [
         "nq-accordion",
         "nq-accordion-item",
-        "nq-accordion-trigger"
+        "nq-accordion-trigger",
+        "nq-accordion-content"
       ],
       "interaction": "native",
       "planned": [
@@ -872,9 +873,29 @@
       ],
       "verified": [],
       "evidence": [],
-      "notes": [],
+      "notes": [
+        "Native details fallback; opt-in vanilla enhancement and native framework lifecycles animate intrinsic height. Reduced motion and original Nasaq remain immediate.",
+        "Closing content becomes inert immediately; controlled React state remains application-owned. See docs/accordion-motion.md."
+      ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/accordion"
+      "documentation": "https://mohamedembarak.github.io/nasaq/#component/accordion",
+      "implementationSources": {
+        "core": [
+          "packages/core/src/accordion-motion.ts"
+        ],
+        "vanilla": [
+          "packages/vanilla/src/accordion.ts"
+        ],
+        "react": [
+          "packages/react/src/display.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/display.ts"
+        ],
+        "angular": [
+          "packages/angular/src/presentation.ts"
+        ]
+      }
     },
     {
       "id": "card",

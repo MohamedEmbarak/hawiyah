@@ -5,6 +5,8 @@ export { SaudiUmalquraCalendar, getCalendarDateParts, convertCalendarDate, isCal
 export type { CalendarDateParts } from './saudi-calendar.js';
 
 export * from './layout.js';
+export { createAccordionMotion } from './accordion-motion.js';
+export type { AccordionMotion } from './accordion-motion.js';
 export type Direction = 'ltr' | 'rtl';
 export type Orientation = 'horizontal' | 'vertical';
 

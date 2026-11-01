@@ -1,18 +1,47 @@
-import { defineComponent, h, mergeProps, useId } from 'vue';
+import { defineComponent, h, mergeProps, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
+import { createAccordionMotion } from '@nasaq/core';
+import type { AccordionMotion } from '@nasaq/core';
 import type { PropType, VNodeChild } from 'vue';
 import { Button } from './forms.js';
 import { useValue } from './shared.js';
 
 export interface AccordionItem { value: string; title: string; content?: VNodeChild; open?: boolean }
+const AccordionDetail = defineComponent({
+  props: { title: { type: String, required: true }, open: { type: Boolean, default: undefined }, name: String },
+  emits: { change: (_open: boolean) => true },
+  setup(props, { slots, emit }) {
+    const details = ref<HTMLDetailsElement>();
+    const content = ref<HTMLElement>();
+    const open = ref(props.open ?? false);
+    const initialOpen = open.value;
+    let motion: AccordionMotion | undefined;
+    const change = (next: boolean) => { open.value = next; emit('change', next); };
+    const setupMotion = () => {
+      motion?.destroy();
+      if (props.name) details.value!.setAttribute('name', props.name); else details.value!.removeAttribute('name');
+      motion = createAccordionMotion(details.value!, content.value!, change);
+      motion.setOpen(open.value, true);
+    };
+    onMounted(setupMotion);
+    watch(() => props.name, () => { if (details.value) setupMotion(); }, { flush: 'post' });
+    // Preserve the native-details contract: open initializes the item and a
+    // changed prop updates it, while user toggles still work without a listener.
+    watch(() => props.open, next => { open.value = next ?? false; });
+    watch(open, next => motion?.setOpen(next), { flush: 'post' });
+    onBeforeUnmount(() => motion?.destroy());
+    return () => h('details', { ref: details, class: 'nq-accordion-item', name: props.name, open: initialOpen, onToggle: () => motion?.nativeToggle() }, [
+      h('summary', { class: 'nq-accordion-trigger', onClick: (event: MouseEvent) => { event.preventDefault(); change(!open.value); } }, props.title),
+      h('div', { ref: content, class: 'nq-accordion-content' }, slots.default?.()),
+    ]);
+  },
+});
 export const Accordion = defineComponent({
   name: 'NqAccordion', inheritAttrs: false,
   props: { items: { type: Array as PropType<readonly AccordionItem[]>, required: true }, exclusive: Boolean },
   emits: { toggle: (_value: string, _open: boolean) => true },
   setup(props, { attrs, slots, emit }) {
     const group = `nq-${useId()}`;
-    return () => h('div', mergeProps(attrs, { class: 'nq-accordion' }), props.items.map(item => h('details', { key: item.value, class: 'nq-accordion-item', name: props.exclusive ? group : undefined, open: item.open, onToggle: (event: Event) => emit('toggle', item.value, (event.target as HTMLDetailsElement).open) }, [
-      h('summary', { class: 'nq-accordion-trigger' }, item.title), h('div', {}, [slots[item.value]?.() ?? item.content]),
-    ])));
+    return () => h('div', mergeProps(attrs, { class: 'nq-accordion' }), props.items.map(item => h(AccordionDetail, { key: item.value, title: item.title, name: props.exclusive ? group : undefined, open: item.open, onChange: (next: boolean) => emit('toggle', item.value, next) }, () => slots[item.value]?.() ?? item.content)));
   },
 });
 export const Card = defineComponent({

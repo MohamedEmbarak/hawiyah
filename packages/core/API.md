@@ -176,5 +176,12 @@ Options `{page?, totalPages?, onPageChange?}`; controller `{page, select(page),
 destroy()}`. Current page uses `aria-current="page"`; boundaries disable previous
 and next. Detail `{page}`. Supply a localized nav label. It does not fetch data.
 
-Buttons, fields, selects, tables, file inputs and `<details>/<summary>` accordions
-use native HTML and CSS. They require no enhancement.
+Buttons, fields, selects, tables and file inputs use native HTML and CSS.
+Accordions work natively without enhancement; opt-in vanilla motion uses
+`createAccordion` or `data-nq="accordion"` with `enhance`. See
+[accordion motion](../../docs/accordion-motion.md) for adapter lifecycle and state contracts.
+
+`createAccordionMotion(details, content, onOpenChange?)` is a browser helper
+invoked by native adapter lifecycles; imports remain SSR-safe. It coordinates
+transient height/visibility, logical state, reduced motion and cleanup. It does
+not render or reparent framework content. See [the contract](../../docs/accordion-motion.md).

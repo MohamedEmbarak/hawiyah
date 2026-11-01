@@ -1,4 +1,6 @@
-import { useId } from 'react';
+import { useId, useLayoutEffect, useRef } from 'react';
+import { createAccordionMotion } from '@nasaq/core';
+import type { AccordionMotion } from '@nasaq/core';
 import type { ComponentPropsWithRef, HTMLAttributes, Key, ReactNode } from 'react';
 import { cx, useControllable } from './shared.js';
 import { Button } from './forms.js';
@@ -6,13 +8,30 @@ import { Button } from './forms.js';
 export interface AccordionItem { value: string; title: ReactNode; content: ReactNode; open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void }
 export interface AccordionProps extends ComponentPropsWithRef<'div'> {
   items: readonly AccordionItem[];
-  /** Native details name groups enforce at most one open item. */
+  /** Coordinate one logical open item; controlled owners must accept peer close requests. */
   exclusive?: boolean;
 }
 function AccordionDetail({ item, name }: { item: AccordionItem; name?: string }) {
   const [open, setOpen] = useControllable(item.open, item.defaultOpen ?? false, item.onOpenChange);
-  return <details className="nq-accordion-item" name={name} open={open} onToggle={event => setOpen(event.currentTarget.open)}>
-    <summary className="nq-accordion-trigger" onClick={event => { event.preventDefault(); setOpen(!open); }}>{item.title}</summary><div>{item.content}</div>
+  const details = useRef<HTMLDetailsElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const motion = useRef<AccordionMotion | undefined>(undefined);
+  const initialOpen = useRef(open);
+  const latest = useRef({ open, setOpen });
+  latest.current = { open, setOpen };
+  useLayoutEffect(() => {
+    if (name) details.current!.setAttribute('name', name); else details.current!.removeAttribute('name');
+    const instance = createAccordionMotion(details.current!, content.current!, next => latest.current.setOpen(next));
+    motion.current = instance;
+    instance.setOpen(latest.current.open, true);
+    return () => { instance.destroy(); motion.current = undefined; };
+  }, [name]);
+  useLayoutEffect(() => { motion.current?.setOpen(open); }, [open]);
+  return <details ref={details} className="nq-accordion-item" name={name} open={initialOpen.current} onToggle={() => motion.current?.nativeToggle()}>
+    <summary className="nq-accordion-trigger" onClick={event => {
+      if ((event.target as Element).closest('a,button,input,select,textarea')) return;
+      event.preventDefault(); setOpen(!open);
+    }}>{item.title}</summary><div ref={content} className="nq-accordion-content">{item.content}</div>
   </details>;
 }
 export function Accordion({ items, exclusive, className, ...props }: AccordionProps) {

@@ -464,7 +464,7 @@
     },
     "notGeneralized": [
       "Tab Bar 8332:24202 hover to Pressed 8332:24242, then click to Selected 8332:24282: 300 ms ease-out; not generic tab-panel timing.",
-      "Accordion 1147:62359 to 1147:60867: 300 ms ease-in-out; native disclosure currently immediate.",
+      "Accordion 1147:62359 to 1147:60867: 300 ms ease-in-out; native fallback is immediate; enhanced disclosure now maps timing to intrinsic height.",
       "Button-Close 2763:420142 to 2763:420174 and toast close child 1730:37107 to 2763:420400: 200 ms linear hover, imported-cache targets; not toast entry/exit.",
       "Generic button hover actions have no explicit timing; reduced-motion behavior is an accessibility implementation decision."
     ],
@@ -482,6 +482,17 @@
       "itemHeightPx": 70,
       "selectedTopBorderPx": 1,
       "mapping": "SecondaryNav mobile variant uses semantic theme colors, equal-width page links, minimum height and safe-area padding. Icon currentColor follows text as an adaptation; imported icon overrides are unresolved. No positional or tab-panel animation is inferred."
+    },
+    "accordion": {
+      "from": "1147:62359",
+      "to": "1147:60867",
+      "durationMs": 300,
+      "easing": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "exampleHeightPx": [
+        56,
+        256
+      ],
+      "mapping": "Measured intrinsic content height; chevron rotation adapts source down/up symbol swap. Conflicting title typography is not animated. Reduced motion and original Nasaq use immediate disclosure."
     }
   }
 }

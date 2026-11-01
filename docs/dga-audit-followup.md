@@ -75,7 +75,7 @@ and dialog/drawer behavior remain unchanged.
 | Input `3149:55032` → `3149:55105`; underline `11167:15723` → `11167:15747` | 150 ms ease-out, centered 35%→100% expansion | Existing animated green/red underline retained as approved color adaptation | High, decoded properties |
 | Nasaq reduced-motion stylesheet | Zero-specificity rule lost to button/switch defaults; pseudo-element was inside the functional selector | Corrected explicit selectors stop button, switch track and switch thumb transitions. Existing loading/field suppression retained; state changes remain immediate | High, runtime regression |
 | Tab Bar `8332:24202` → `8332:24242` → `8332:24282` | 300 ms ease-out; Normal hover goes to a variant named Pressed, then click to Selected | Not applied to generic tab panels; source naming/trigger mismatch retained as evidence caveat | High, narrow scope |
-| Accordion `1147:62359` → `1147:60867` | 300 ms ease-in-out, 56→256 px example | Native disclosure remains immediate. Animated intrinsic-height disclosure needs a separate cross-browser design and keyboard/visibility verification | High for this source edge only |
+| Accordion `1147:62359` → `1147:60867` | 300 ms ease-in-out, 56→256 px example | Enhanced disclosure now animates intrinsic height with native adapter lifecycles, reduced-motion settlement and inert closing content; native unenhanced fallback remains immediate | High for this source edge only |
 | Button-Close `2763:420142` → `2763:420174`; toast child `1730:37107` → `2763:420400` | 200 ms linear hover, destination variants in imported caches | Not applied to toast entry/exit or generic buttons. Most local button hover actions have no explicit timing | High for decoded actions; mixed-library caveat |
 
 `--nq-duration-switch`, `--nq-ease-switch` (thumb),
@@ -89,3 +89,7 @@ All four adapters use shared CSS and continue to own their DOM. Hajj is excluded
 ## Implemented mobile tab-bar presentation — 2026-11-01
 
 SecondaryNav now offers an opt-in mobile variant in all four adapters: equal-width icon-over-label page links, 24 px icons, a 70 px minimum height, safe-area padding and a top selection indicator. Source `8332:24202` → `8332:24242` → `8332:24282` informs 300 ms ease-out color transitions; no positional or panel motion is inferred. Semantic theme colors and currentColor icons are documented adaptations. Reduced motion and the original Nasaq theme remain immediate. See [the composition contract](mobile-navigation.md).
+
+## Implemented accordion motion — 2026-11-01
+
+Mobile `1147:62359` → `1147:60867` supplies 300 ms ease-in-out expansion timing. Nasaq now animates intrinsic height through native adapter lifecycles, with reversible motion, dynamic-content retargeting, immediate reduced-motion settlement and inert closing content. Native unenhanced markup and the original Nasaq theme remain immediate. The chevron rotation is an adaptation of down/up source symbols, not a decoded rotation. Conflicting title metrics are not animated. See [the lifecycle contract](accordion-motion.md).

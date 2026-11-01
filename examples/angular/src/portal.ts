@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { NqButtonDirective, NqPortalLayoutComponent, NqSecondaryNavComponent, NqServiceCardComponent } from '@nasaq/angular';
+import { NqAccordionComponent, NqButtonDirective, NqPortalLayoutComponent, NqSecondaryNavComponent, NqServiceCardComponent } from '@nasaq/angular';
 import logo from '../../../brand/assets/nasaq-wordmark.svg';
 
-@Component({selector: 'app-root', standalone: true, imports: [NqButtonDirective, NqPortalLayoutComponent, NqSecondaryNavComponent, NqServiceCardComponent], template: `
+@Component({selector: 'app-root', standalone: true, imports: [NqAccordionComponent, NqButtonDirective, NqPortalLayoutComponent, NqSecondaryNavComponent, NqServiceCardComponent], template: `
   <nq-portal-layout brand="نسق" [lang]="english ? 'en' : 'ar'" [dir]="english ? 'ltr' : 'rtl'" [links]="links" [secondaryNavigation]="[links[0]]" mainId="portal-content"
     [skipLabel]="t('انتقل إلى المحتوى', 'Skip to content')" [menuLabel]="t('القائمة', 'Menu')" [navigationLabel]="t('التنقل الرئيسي', 'Main navigation')" [secondaryLabel]="t('التنقل الثانوي', 'Secondary navigation')" [breadcrumbLabel]="t('مسار التنقل', 'Breadcrumb')" [footerLabel]="t('روابط التذييل', 'Footer links')"
     [breadcrumbs]="[{ label: t('الرئيسية', 'Home'), href: '/' }, { label: t('الخدمات', 'Services') }]" [footerLinks]="[{ label: t('الخصوصية', 'Privacy'), href: '#privacy' }]">
@@ -14,6 +14,9 @@ import logo from '../../../brand/assets/nasaq-wordmark.svg';
       {label:t('الرئيسية','Home'),href:'#portal-content',current:true,icon:'home-01'},
       {label:t('الخدمات','Services'),href:'#services',icon:'search-01'},
       {label:t('المزيد','More'),href:'#contact',icon:'menu-01'}]" />
+    <section data-testid="accordion-showcase"><h2>{{ t('أسئلة شائعة','Frequently asked questions') }}</h2><nq-accordion [exclusive]="true" [items]="[
+      {id:'one',title:t('كيف أبدأ؟','How do I start?'),content:t('اختر الخدمة وراجع المتطلبات ثم ابدأ الطلب.','Choose a service, review the requirements, then start your application.')},
+      {id:'two',title:t('هل يمكنني حفظ الطلب؟','Can I save my application?'),content:t('نعم، يدير التطبيق حفظ مسودة الطلب.','Yes, draft saving is managed by your application.')}]" /></section>
     <p nqPortalFooter>{{ t('نموذج محلي لهيكل البوابة', 'Local portal shell example') }}</p>
   </nq-portal-layout>`})
 export class PortalExampleComponent {

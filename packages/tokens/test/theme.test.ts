@@ -9,11 +9,13 @@ describe('DGA default and explicit legacy theme contracts', () => {
     expect(dga['--nq-ease-switch']).toBe('cubic-bezier(0.42, 0, 0.58, 1)');
     expect(dga['--nq-duration-normal']).toBe('180ms');
     expect(dga['--nq-duration-tab-bar']).toBe('300ms');
+    expect(dga['--nq-duration-accordion']).toBe('300ms');
     const legacy = createThemeVariables({}, {theme:'nasaq'});
     expect(legacy['--nq-duration-switch']).toBe('180ms');
     expect(legacy['--nq-duration-spinner']).toBe('700ms');
     expect(legacy['--nq-ease-switch-track']).toBe('ease');
     expect(legacy['--nq-duration-tab-bar']).toBe('0ms');
+    expect(legacy['--nq-duration-accordion']).toBe('0ms');
     expect(createThemeVariables({'--nq-duration-switch':'350ms'}, {theme:'custom'})['--nq-duration-switch']).toBe('350ms');
   });
   it('keeps mobile field minimums separate from button sizes and caller overrides', () => {

@@ -60,14 +60,16 @@ export const tokens = {
     "input": "150ms",
     "switch": "200ms",
     "spinner": "1000ms",
-    "tab-bar": "300ms"
+    "tab-bar": "300ms",
+    "accordion": "300ms"
   },
   "ease": {
     "standard": "cubic-bezier(0.2, 0, 0, 1)",
     "input": "cubic-bezier(0, 0, 0.58, 1)",
     "switch": "cubic-bezier(0.42, 0, 0.58, 1)",
     "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)",
-    "tab-bar": "cubic-bezier(0, 0, 0.58, 1)"
+    "tab-bar": "cubic-bezier(0, 0, 0.58, 1)",
+    "accordion": "cubic-bezier(0.42, 0, 0.58, 1)"
   },
   "content": {
     "max": "80rem",
@@ -380,14 +382,16 @@ export const themeFoundations = {
       "input": "150ms",
       "switch": "200ms",
       "spinner": "1000ms",
-      "tab-bar": "300ms"
+      "tab-bar": "300ms",
+      "accordion": "300ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
       "input": "cubic-bezier(0, 0, 0.58, 1)",
       "switch": "cubic-bezier(0.42, 0, 0.58, 1)",
       "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)",
-      "tab-bar": "cubic-bezier(0, 0, 0.58, 1)"
+      "tab-bar": "cubic-bezier(0, 0, 0.58, 1)",
+      "accordion": "cubic-bezier(0.42, 0, 0.58, 1)"
     },
     "content": {
       "max": "80rem",
@@ -467,14 +471,16 @@ export const themeFoundations = {
       "input": "120ms",
       "switch": "180ms",
       "spinner": "700ms",
-      "tab-bar": "0ms"
+      "tab-bar": "0ms",
+      "accordion": "0ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
       "input": "ease",
       "switch": "cubic-bezier(0.2, 0, 0, 1)",
       "switch-track": "ease",
-      "tab-bar": "cubic-bezier(0, 0, 0.58, 1)"
+      "tab-bar": "cubic-bezier(0, 0, 0.58, 1)",
+      "accordion": "cubic-bezier(0.42, 0, 0.58, 1)"
     },
     "content": {
       "max": "78rem",
@@ -598,14 +604,16 @@ export const tokenNames = {
     "input": "--nq-duration-input",
     "switch": "--nq-duration-switch",
     "spinner": "--nq-duration-spinner",
-    "tab-bar": "--nq-duration-tab-bar"
+    "tab-bar": "--nq-duration-tab-bar",
+    "accordion": "--nq-duration-accordion"
   },
   "ease": {
     "standard": "--nq-ease-standard",
     "input": "--nq-ease-input",
     "switch": "--nq-ease-switch",
     "switch-track": "--nq-ease-switch-track",
-    "tab-bar": "--nq-ease-tab-bar"
+    "tab-bar": "--nq-ease-tab-bar",
+    "accordion": "--nq-ease-accordion"
   },
   "content": {
     "max": "--nq-content-max",
@@ -724,11 +732,13 @@ export const cssVariableNames = [
   "--nq-duration-switch",
   "--nq-duration-spinner",
   "--nq-duration-tab-bar",
+  "--nq-duration-accordion",
   "--nq-ease-standard",
   "--nq-ease-input",
   "--nq-ease-switch",
   "--nq-ease-switch-track",
   "--nq-ease-tab-bar",
+  "--nq-ease-accordion",
   "--nq-content-max",
   "--nq-content-gutter",
   "--nq-content-gutter-mobile",
