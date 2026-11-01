@@ -1,4 +1,4 @@
-import { defineComponent, h, mergeProps, ref } from "vue";
+import { defineComponent, h, mergeProps, onMounted, onBeforeUnmount, ref, useId } from "vue";
 import type { PropType } from "vue";
 import { Button, Textarea } from "./forms.js";
 import { Badge, Card } from "./display.js";
@@ -83,11 +83,24 @@ export const PortalHeader = defineComponent({
       type: Array as PropType<readonly PortalLink[]>,
       default: () => [],
     },
-    navLabel: { type: String, default: "Main navigation" },
+    navLabel: { type: String, default: "التنقل الرئيسي" },
+    menuLabel: { type: String, default: "القائمة" },
+    navigationId: String,
+    mainId: String,
+    skipLabel: { type: String, default: "انتقل إلى المحتوى" },
   },
   setup(props, { attrs, slots }) {
+    const id = useId(); const open = ref(false);
+    const root = ref<HTMLElement>(); const trigger = ref<HTMLButtonElement>();
+    const outside = (event: PointerEvent) => { if (!root.value?.contains(event.target as Node)) open.value = false; };
+    onMounted(() => root.value?.ownerDocument.addEventListener('pointerdown', outside));
+    onBeforeUnmount(() => root.value?.ownerDocument.removeEventListener('pointerdown', outside));
     return () =>
-      h("header", mergeProps(attrs, { class: "nq-portal-header" }), [
+      h("header", mergeProps(attrs, { class: "nq-portal-header", ref: root,
+        onKeydown: (event: KeyboardEvent) => { if (!event.defaultPrevented && event.key === 'Escape' && open.value) { event.preventDefault(); open.value = false; trigger.value?.focus(); } },
+        onFocusout: (event: FocusEvent) => { if (event.relatedTarget && !root.value?.contains(event.relatedTarget as Node)) open.value = false; },
+      }), [
+        props.mainId && h('a', { class: 'nq-skip-link', href: `#${props.mainId}` }, props.skipLabel),
         h(
           "a",
           {
@@ -97,9 +110,10 @@ export const PortalHeader = defineComponent({
           },
           slots.logo?.() ?? props.brand,
         ),
-        h(
+        props.links.length > 0 && h('button', { ref: trigger, type: 'button', class: 'nq-button nq-portal-menu-toggle', 'aria-expanded': open.value, 'aria-controls': props.navigationId ?? `${id}-navigation`, onClick: () => { open.value = !open.value; } }, [h('span', { class: 'nq-icon', 'data-icon': open.value ? 'cancel-01' : 'menu-01', 'aria-hidden': 'true' }), props.menuLabel]),
+        props.links.length > 0 && h(
           "nav",
-          { "aria-label": props.navLabel },
+          { id: props.navigationId ?? `${id}-navigation`, "aria-label": props.navLabel, 'data-open': String(open.value), onClick: (event: MouseEvent) => { if ((event.target as Element).closest('a[href]')) open.value = false; } },
           h(
             "ul",
             {},

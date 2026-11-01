@@ -1,4 +1,7 @@
 import { createTabs } from './tabs.js';
+import { createPortalHeader } from './portal.js';
+export { createPortalHeader };
+export type { PortalHeaderOptions, PortalHeaderController } from './portal.js';
 import { createDialog } from './dialog.js';
 import { createCombobox } from './combobox.js';
 import { createTooltip } from './tooltip.js';
@@ -25,6 +28,7 @@ export type { PaginationOptions, PaginationController } from './pagination.js';
 type Controller = { destroy(): void };
 const registry = new WeakMap<HTMLElement, { controller: Controller; references: number }>();
 const factories: Record<string, (element: HTMLElement) => Controller> = {
+  'portal-header': createPortalHeader,
   tabs: createTabs, dialog: element => createDialog(element as HTMLDialogElement), combobox: createCombobox,
   tooltip: createTooltip, pagination: createPagination, 'password-field': createPasswordField,
   'range-slider': createRangeSlider, 'pin-input': createPinInput, 'tag-input': createTagInput,

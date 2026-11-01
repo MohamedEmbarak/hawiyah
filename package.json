@@ -11,6 +11,7 @@
     "typecheck:playground": "tsc -p apps/playground/tsconfig.json --noEmit",
     "test": "node --test packages/tokens/test/contrast.test.mjs && vitest run",
     "test:browser": "playwright test",
+    "test:portals": "playwright test --config playwright.portals.config.ts",
     "check": "pnpm build && pnpm test && pnpm test:browser",
     "check:packages": "node scripts/check-packages.mjs",
     "new:component": "node scripts/new-component.mjs",

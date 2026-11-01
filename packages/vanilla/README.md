@@ -93,3 +93,9 @@ min/max/step, readonly, disabled, hints and errors remain application-controlled
 
 Licensed under Apache-2.0. This public 0.1 source preview is available through the
 workspace; the package is not yet published on npm.
+
+## Portal shell
+
+The [portal layout recipe](PORTAL.md) provides a complete header, responsive
+navigation, secondary links, breadcrumbs, content container and footer.
+`createPortalHeader` is also registered as `data-nq="portal-header"` in `enhance`.

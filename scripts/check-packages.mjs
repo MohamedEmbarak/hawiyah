@@ -21,7 +21,7 @@ function run(cmd, args, cwd = checkRoot) {
   const result = spawnSync(cmd, args, {
     cwd,
     encoding: "utf8",
-    shell: process.platform === "win32",
+    shell: process.platform === "win32" && !cmd.toLowerCase().endsWith(".exe"),
     maxBuffer: 10 * 1024 * 1024,
   });
   if (result.error || result.status !== 0) {
@@ -57,6 +57,7 @@ for (const name of [
     "NOTICE",
     "API.md",
     "EXPANSION-API.md",
+    "PORTAL.md",
     "tokens.json",
     "third-party",
   ])
@@ -86,6 +87,13 @@ for (const name of [
   for (const notice of ['LICENSE', 'NOTICE']) {
     if (!packed.files.some(file => file.path === notice))
       throw new Error(`${name}: missing ${notice} in consumer tarball`);
+  }
+  if (name === "styles") {
+    const iconProvenance = JSON.parse(readFileSync(resolve(source, "src/assets/icons/provenance.json"), "utf8"));
+    for (const file of ["LICENSE", "provenance.json", ...iconProvenance.icons.map(icon => icon.file)]) {
+      if (!packed.files.some(entry => entry.path === `dist/assets/icons/${file}`))
+        throw new Error(`styles: missing icon asset or notice ${file} in consumer tarball`);
+    }
   }
   if (
     packed.files.some((f) =>
@@ -149,12 +157,15 @@ assert.equal(typeof vanilla.enhance,'function');
 assert.ok(tokens.tokens);
 assert.ok(renderToString(React.createElement(react.Button,null,'Continue')).includes('nq-button'));
 assert.ok((await renderVue(createSSRApp({render:()=>h(vue.Button,{},()=> 'Continue')}))).includes('nq-button'));
-for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader']) {
+for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader','PortalLayout','SecondaryNav']) {
   assert.ok(react[name], 'React missing '+name); assert.ok(vue[name], 'Vue missing '+name);
   assert.ok(angular['Nq'+name+'Component'], 'Angular missing '+name);
 }
 assert.equal(typeof vanilla.createCalendar,'function');
 assert.equal(typeof vanilla.createTreeView,'function');
+assert.equal(typeof vanilla.createPortalHeader,'function');
+assert.ok(renderToString(React.createElement(react.PortalLayout,{brand:'نسق',mainId:'portal-main'},React.createElement('h1',null,'الخدمات'))).includes('href="#portal-main"'));
+assert.ok((await renderVue(createSSRApp({render:()=>h(vue.PortalLayout,{brand:'نسق',mainId:'portal-main'},()=>h('h1',{},'الخدمات'))}))).includes('href="#portal-main"'));
 assert.deepEqual(core.getCalendarDateParts('2029-08-11','islamic-umalqura'),{year:1451,month:4,day:1});
 assert.equal(core.convertCalendarDate({year:1451,month:4,day:1},'islamic-umalqura'),'2029-08-11');
 assert.ok(renderToString(React.createElement(react.Grid,{columns:{base:1,md:2}},React.createElement(react.DatePicker,{label:'Appointment',defaultValue:'2026-10-28'}))).includes('type="date"'));

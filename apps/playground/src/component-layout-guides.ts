@@ -69,10 +69,11 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   },
   'portal-header': {
     summary: 'Provide platform identity, primary navigation and account or language actions while keeping navigation meaningful on small screens.',
-    usage: `<header class="nq-portal-header">
+    usage: `<header class="nq-portal-header" data-nq="portal-header">
   <a class="nq-skip-link" href="#main-content">Skip to content</a>
   <a class="nq-portal-brand" href="./" lang="ar">نسق</a>
-  <nav aria-label="Main navigation"><ul>
+  <button class="nq-button nq-portal-menu-toggle" type="button" data-nq-portal-toggle>Menu</button>
+  <nav aria-label="Main navigation" data-nq-portal-navigation><ul>
     <li><a href="./services" aria-current="page">Services</a></li>
     <li><a href="./requests">My requests</a></li>
   </ul></nav>
@@ -82,13 +83,60 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
       { name: 'brand / home destination', type: 'content / URL', description: 'Use an accessible home link. React names the URL brandHref; Vue and Angular use homeHref.' },
       { name: 'navigation / links', type: '{ label, href, current? }[]', description: 'React calls the collection navigation; Vue and Angular call it links. Current links receive aria-current="page".' },
       { name: 'data-variant="sticky"', type: 'CSS variant', description: 'Keeps the header at the block-start edge. Ensure sticky content does not obscure focused controls or anchor destinations.' },
-      { name: 'Angular navigationId / mainId', type: 'string', description: 'Connect the responsive menu and skip link to unique real element IDs.' },
+      { name: 'navigationId / mainId / menuLabel / skipLabel', type: 'string', description: 'All framework headers support these props. Navigation IDs are generated unless supplied; mainId connects the optional skip link to a real focusable content target. Defaults are Arabic.' },
+      { name: 'createPortalHeader(root, options)', type: 'vanilla controller', description: 'Options: onOpenChange(open). Returns open, show(), close(restoreFocus?), destroy(). enhance() discovers data-nq="portal-header" with data-nq-portal-toggle and data-nq-portal-navigation.' },
     ],
-    lifecycle: ['Render navigation from route state and update aria-current when the route changes.', 'Vanilla, React and Vue recipes wrap navigation through CSS; an application-owned disclosure may manage collapsed navigation.', 'Angular includes a local menuOpen toggle for its mobile navigation. Framework teardown removes event handlers automatically; vanilla static markup has no controller.'],
-    accessibility: ['Name primary navigation and provide a working skip link to the main content.', 'The brand link needs a name even when it contains only an outlined logo image.', 'If adding a mobile menu button, maintain aria-expanded, aria-controls and sensible focus order.'],
-    variants: ['Default wrapping header', 'Sticky via data-variant'], related: ['portal-footer', 'app-shell', 'drawer'],
-    frameworkNotes: 'React accepts brand, brandHref, navigation, navigationLabel, actions and notice. Vue uses brand, homeHref, links and navLabel with logo/actions slots. Angular nq-portal-header adds menuLabel, navigationId, skipLabel and a built-in mobile toggle.',
-    limitations: ['No authentication, language routing or account state is provided by the header.'], source: contentSource,
+    lifecycle: ['Render navigation from route state and update aria-current when the route changes. Framework adapters own their disclosure state and DOM.', 'For vanilla, call enhance() or createPortalHeader() after mounting. Do not pre-hide the navigation; links remain available without JavaScript.', 'Escape closes and returns focus to the toggle. Link selection, outside press and focus leaving close the disclosure. Tab remains native.', 'Release enhance() or call destroy() before replacing vanilla markup; it removes listeners and restores original attributes. Framework unmount handles its own cleanup.'],
+    accessibility: ['Name primary navigation and provide a working skip link to a content target with tabindex="-1".', 'The brand link needs a name even when it contains only an outlined logo image.', 'The built-in toggle maintains aria-expanded and aria-controls. Navigation remains ordinary links, not a menu or a modal focus trap.'],
+    variants: ['Responsive disclosure below 48rem', 'Desktop navigation', 'Sticky via data-variant'], related: ['portal-footer', 'portal-layout', 'secondary-nav'],
+    frameworkNotes: 'React uses brand, brandHref, navigation, navigationLabel, actions and notice. Vue uses brand, homeHref, links and navLabel with logo/actions slots. Angular nq-portal-header uses brand, homeHref, links, navigationLabel and projected actions/[nqBrand]. All expose menuLabel, navigationId, mainId and skipLabel. Supply explicit stable Angular IDs for independently serialized roots.',
+    limitations: ['The 48rem breakpoint is a Nasaq adaptation, not an asserted Figma breakpoint.', 'No authentication, language routing or account state is provided by the header.'], source: contentSource,
+  },
+  'secondary-nav': {
+    summary: 'Provide a second level of ordinary page links with a clear current-page state and keyboard focus.',
+    usage: `<nav class="nq-secondary-nav" aria-label="Service navigation"><ul>
+  <li><a href="./services" aria-current="page">Services</a></li>
+  <li><a href="./requests">My requests</a></li>
+</ul></nav>`,
+    api: [
+      { name: 'items', type: 'readonly { label, href, current? }[]', description: 'React/Vue SecondaryNav and Angular nq-secondary-nav accept items. React labels may be ReactNode; Vue/Angular labels are strings.' },
+      { name: 'label', type: 'localized string', description: 'Names this navigation landmark; defaults to Arabic. Distinguish it from the primary and footer navigation.' },
+      { name: 'nq-secondary-nav / aria-current', type: 'semantic HTML', description: 'Vanilla uses a nav with a list of links. aria-current="page" marks the current destination. No JavaScript controller is needed.' },
+    ],
+    lifecycle: ['Render links from the current page hierarchy.', 'Update current when the route changes; navigation and loading are application-owned.', 'No enhancement, subscription or cleanup is required.'],
+    accessibility: ['Use native anchors and Tab order; these are not tabs and should not receive tablist or menu roles.', 'Current state uses an underline and weight as well as color. Focus remains visible in forced colors.', 'Translate the landmark label independently from text direction.'],
+    variants: ['Wrapping links', 'Current-page link'], related: ['portal-header', 'portal-layout', 'breadcrumb'],
+    frameworkNotes: 'Import SecondaryNav from @nasaq/react or @nasaq/vue; import NqSecondaryNavComponent from @nasaq/angular. Angular selector: nq-secondary-nav. All use items and label. React/Vue forward native nav attributes; Angular inputs configure its internal nav.',
+    limitations: ['This is page navigation, not a route loader or content tab controller.'], source: 'packages/styles/src/portal.css',
+  },
+  'portal-layout': {
+    summary: 'Start a public service portal with a responsive header, secondary navigation, breadcrumb, main container and footer already composed.',
+    usage: `<div class="nq-portal-layout" lang="ar" dir="rtl">
+  <header class="nq-portal-header" data-nq="portal-header">
+    <a class="nq-skip-link" href="#portal-content">انتقل إلى المحتوى</a>
+    <a class="nq-portal-brand" href="./">نسق</a>
+    <button class="nq-button nq-portal-menu-toggle" type="button" data-nq-portal-toggle>القائمة</button>
+    <nav aria-label="التنقل الرئيسي" data-nq-portal-navigation><ul><li><a href="./services" aria-current="page">الخدمات</a></li></ul></nav>
+  </header>
+  <nav class="nq-secondary-nav" aria-label="التنقل الثانوي"><ul><li><a href="./services" aria-current="page">دليل الخدمات</a></li></ul></nav>
+  <main id="portal-content" tabindex="-1" class="nq-portal-layout-main nq-container">
+    <nav class="nq-breadcrumb" aria-label="مسار التنقل"><ol><li><a href="./">الرئيسية</a></li><li><span aria-current="page">الخدمات</span></li></ol></nav>
+    <h1>الخدمات</h1>
+  </main>
+  <footer class="nq-portal-footer"><strong>نسق</strong><nav aria-label="روابط التذييل"><ul><li><a href="./privacy">الخصوصية</a></li></ul></nav></footer>
+</div>`,
+    api: [
+      { name: 'brand / lang / dir / mainId', type: 'content / string', description: 'Brand is required. lang defaults to ar and dir to rtl independently. Generated mainId connects the skip link to the focusable main; explicit IDs must be unique.' },
+      { name: 'React headerProps / footerProps', type: 'PortalHeaderProps / PortalFooterProps', description: 'headerProps configures navigation, brandHref, actions, notice and navigation/menu labels. footerProps configures links, linksLabel, legal and other existing footer props. Top-level skipLabel names the skip link.' },
+      { name: 'Vue / Angular links / footerLinks', type: 'readonly { label, href, current? }[]', description: 'These adapters expose homeHref, links, footerLinks, copyright, skipLabel, menuLabel, navigationLabel and footerLabel directly. Vue slots: logo/actions/footer/default. Angular projection: [nqBrand]/[nqPortalActions]/[nqPortalFooter]/default.' },
+      { name: 'secondaryNavigation / breadcrumbs', type: 'readonly item arrays', description: 'Optional navigation and breadcrumb collections. secondaryLabel and breadcrumbLabel override their Arabic labels. Breadcrumb items use label/href; React/Vue also accept current.' },
+      { name: 'Vanilla .nq-portal-layout', type: 'semantic HTML', description: 'Compose the shared classes with one main landmark and enhance only the marked header. The embedded gallery substitutes a section for main to avoid nesting page landmarks.' },
+    ],
+    lifecycle: ['Render one shell around application content; the application supplies a page heading, routes and data.', 'Enhance vanilla header markup after mounting and release it before replacement. Framework components own their DOM and event cleanup.', 'Update current links, breadcrumb and title together on route changes. Route focus and document.title remain application responsibilities.'],
+    accessibility: ['The skip target is programmatically focusable. Keep one main landmark per document.', 'Name the primary, secondary, breadcrumb and footer landmarks distinctly.', 'For English, set lang="en" and dir="ltr" and translate all content and accessible labels. Direction may be configured independently.'],
+    variants: ['Header and footer', 'Secondary navigation and breadcrumb', 'Arabic/RTL or English/LTR'], related: ['portal-header', 'secondary-nav', 'portal-footer', 'breadcrumb', 'app-shell'],
+    frameworkNotes: 'React/Vue export PortalLayout. Angular exports NqPortalLayoutComponent with selector nq-portal-layout. See each package PORTAL.md and run its native example with ?preview=portal. Supply stable explicit mainId/navigationId values when independently serializing Angular app roots; Angular SSR/hydration is not claimed verified.',
+    limitations: ['48rem disclosure breakpoint is Nasaq policy. Layout uses semantic theme tokens and adds no animation.', 'No route loader, authentication, government asset entitlement or DGA certification is implied.'], source: 'packages/styles/src/portal.css',
   },
   'portal-footer': {
     summary: 'Close a service page with platform context, supporting navigation and legal or contact information.',

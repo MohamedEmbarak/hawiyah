@@ -7,6 +7,7 @@
   "files": [
     "dist",
     "README.md",
+    "PORTAL.md",
     "EXPANSION-API.md",
     "LICENSE",
     "NOTICE"

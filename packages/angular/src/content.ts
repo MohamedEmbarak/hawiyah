@@ -1,4 +1,4 @@
-import { booleanAttribute, Component, EventEmitter, Input, Output } from '@angular/core';
+import { booleanAttribute, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild, inject } from '@angular/core';
 import { sortRows } from '@nasaq/core';
 import { NqAvatarComponent } from './presentation';
 
@@ -7,6 +7,7 @@ export interface NqDescription { term: string; description: string; }
 export interface NqNotification { id: string; title: string; description?: string; time?: string; href?: string; unread?: boolean; }
 export interface NqDataColumn { key: string; label: string; sortable?: boolean; }
 export type NqDataRow = Record<string, string | number | boolean | null | undefined>;
+let nextPortalId = 0;
 
 @Component({selector: 'nq-link', standalone: true, template: `<a class="nq-link" [href]="href" [attr.target]="target || null" [attr.rel]="rel || (target === '_blank' ? 'noopener noreferrer' : null)" [attr.aria-current]="current ? 'page' : null" [attr.data-variant]="variant"><ng-content /></a>`})
 export class NqLinkComponent {
@@ -41,8 +42,17 @@ export class NqDataTableComponent {
 export class NqServiceCardComponent { @Input({required: true}) title = ''; @Input({required: true}) href = ''; @Input() description = ''; @Input() category = ''; @Input() duration = ''; @Input() fee = ''; @Input() actionLabel = 'View service'; @Input() variant = 'default'; }
 @Component({selector: 'nq-service-details', standalone: true, imports: [NqDescriptionListComponent], template: `<section class="nq-service-details"><header><h2>{{ title }}</h2><p>{{ description }}</p></header><nq-description-list [items]="details" variant="horizontal" />@if (requirements.length) {<h3>{{ requirementsLabel }}</h3><ul>@for (requirement of requirements; track $index) {<li>{{ requirement }}</li>}</ul>}<ng-content /></section>`})
 export class NqServiceDetailsComponent { @Input({required: true}) title = ''; @Input() description = ''; @Input() details: readonly NqDescription[] = []; @Input() requirements: readonly string[] = []; @Input() requirementsLabel = 'Requirements'; }
-@Component({selector: 'nq-portal-header', standalone: true, template: `<header class="nq-portal-header"><a class="nq-skip-link" [href]="'#' + mainId">{{ skipLabel }}</a><a class="nq-portal-brand" [href]="homeHref"><ng-content select="[nqBrand]" /><span>{{ brand }}</span></a><button class="nq-button nq-portal-menu-toggle" type="button" [attr.aria-expanded]="menuOpen" [attr.aria-controls]="navigationId" (click)="menuOpen = !menuOpen">{{ menuLabel }}</button><nav [id]="navigationId" [attr.aria-label]="navigationLabel" [attr.data-open]="menuOpen"><ul>@for (link of links; track link.href) {<li><a class="nq-link" [href]="link.href" [attr.aria-current]="link.current ? 'page' : null">{{ link.label }}</a></li>}</ul></nav><div class="nq-portal-header-actions"><ng-content /></div></header>`})
-export class NqPortalHeaderComponent { @Input({required: true}) brand = ''; @Input() homeHref = '/'; @Input() mainId = 'main-content'; @Input() skipLabel = 'Skip to content'; @Input() menuLabel = 'Menu'; @Input() navigationLabel = 'Main navigation'; @Input() navigationId = 'nq-portal-navigation'; @Input() links: readonly NqLinkItem[] = []; menuOpen = false; }
+@Component({selector: 'nq-portal-header', standalone: true, template: `<header class="nq-portal-header">@if (mainId) {<a class="nq-skip-link" [href]="'#' + mainId">{{ skipLabel }}</a>}<a class="nq-portal-brand" [href]="homeHref"><ng-content select="[nqBrand]" /><span>{{ brand }}</span></a>@if (links.length) {<button #menuToggle class="nq-button nq-portal-menu-toggle" type="button" [attr.aria-expanded]="menuOpen" [attr.aria-controls]="navigationId" (click)="menuOpen = !menuOpen"><span class="nq-icon" [attr.data-icon]="menuOpen ? 'cancel-01' : 'menu-01'" aria-hidden="true"></span>{{ menuLabel }}</button><nav [id]="navigationId" [attr.aria-label]="navigationLabel" [attr.data-open]="menuOpen"><ul>@for (link of links; track link.href) {<li><a class="nq-link" [href]="link.href" [attr.aria-current]="link.current ? 'page' : null" (click)="menuOpen = false">{{ link.label }}</a></li>}</ul></nav>}<div class="nq-portal-header-actions"><ng-content /></div></header>`})
+export class NqPortalHeaderComponent {
+  @Input({required: true}) brand = ''; @Input() homeHref = '/'; @Input() mainId = 'main-content';
+  @Input() skipLabel = 'انتقل إلى المحتوى'; @Input() menuLabel = 'القائمة'; @Input() navigationLabel = 'التنقل الرئيسي';
+  @Input() navigationId = `nq-portal-navigation-${++nextPortalId}`; @Input() links: readonly NqLinkItem[] = []; menuOpen = false;
+  @ViewChild('menuToggle') menuToggle?: ElementRef<HTMLButtonElement>;
+  private readonly host = inject(ElementRef<HTMLElement>);
+  @HostListener('keydown', ['$event']) keydown(event: KeyboardEvent) { if (!event.defaultPrevented && event.key === 'Escape' && this.menuOpen) { event.preventDefault(); this.menuOpen = false; this.menuToggle?.nativeElement.focus(); } }
+  @HostListener('document:pointerdown', ['$event']) outside(event: PointerEvent) { if (!this.host.nativeElement.contains(event.target as Node)) this.menuOpen = false; }
+  @HostListener('focusout', ['$event']) focusout(event: FocusEvent) { if (event.relatedTarget && !this.host.nativeElement.contains(event.relatedTarget as Node)) this.menuOpen = false; }
+}
 @Component({selector: 'nq-portal-footer', standalone: true, template: `<footer class="nq-portal-footer"><div><strong>{{ brand }}</strong><ng-content /></div><nav [attr.aria-label]="navigationLabel"><ul>@for (link of links; track link.href) {<li><a class="nq-link" [href]="link.href">{{ link.label }}</a></li>}</ul></nav>@if (copyright) {<p>{{ copyright }}</p>}</footer>`})
 export class NqPortalFooterComponent { @Input() brand = ''; @Input() copyright = ''; @Input() navigationLabel = 'Footer navigation'; @Input() links: readonly NqLinkItem[] = []; }
 @Component({selector: 'nq-feedback', standalone: true, template: `<section class="nq-feedback" [attr.aria-label]="label"><p>{{ label }}</p><div class="nq-button-group" role="group" [attr.aria-label]="label"><button class="nq-button" type="button" [disabled]="disabled" [attr.aria-pressed]="value === true" (click)="choose(true)">{{ positiveLabel }}</button><button class="nq-button" type="button" [disabled]="disabled" [attr.aria-pressed]="value === false" (click)="choose(false)">{{ negativeLabel }}</button></div><p role="status">{{ value !== null ? thanksMessage : '' }}</p><ng-content /></section>`})

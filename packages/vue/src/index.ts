@@ -13,4 +13,5 @@ export type { DescriptionItem, TimelineItem, AvatarItem, DataColumn } from './co
 export { ServiceCard, ServiceDetails, PortalHeader, PortalFooter, Feedback, CookieConsent, NotificationList } from './patterns.js';
 export type { PortalLink, FeedbackValue, NotificationItem } from './patterns.js';
 export { Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer, AspectRatio, Section, AppShell, PageHeader } from './layout.js';
+export { SecondaryNav, PortalLayout } from './portal.js';
 export type { LayoutProps, Responsive } from '@nasaq/core';

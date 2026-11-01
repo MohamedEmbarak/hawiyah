@@ -109,10 +109,11 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
   }),
   'portal-header': localize('portal-header', {
     summary: 'وفّر هوية المنصة والتنقل الرئيسي وإجراءات الحساب أو اللغة، مع إبقاء التنقل واضحًا في الشاشات الصغيرة.',
-    usage: `<header class="nq-portal-header" lang="ar" dir="rtl">
+    usage: `<header class="nq-portal-header" lang="ar" dir="rtl" data-nq="portal-header">
   <a class="nq-skip-link" href="#main-content">انتقل إلى المحتوى</a>
   <a class="nq-portal-brand" href="./">نسق</a>
-  <nav aria-label="التنقل الرئيسي"><ul>
+  <button class="nq-button nq-portal-menu-toggle" type="button" data-nq-portal-toggle>القائمة</button>
+  <nav aria-label="التنقل الرئيسي" data-nq-portal-navigation><ul>
     <li><a href="./services" aria-current="page">الخدمات</a></li>
     <li><a href="./requests">طلباتي</a></li>
   </ul></nav>
@@ -122,13 +123,47 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
       'استخدم رابطًا للصفحة الرئيسية له اسم ميسّر. يسمّي React الرابط brandHref؛ ويستخدم Vue وAngular الاسم homeHref.',
       'يسمّي React مجموعة الروابط navigation؛ ويستخدم Vue وAngular الاسم links. يحصل الرابط الحالي على aria-current="page".',
       'يثبّت الترويسة عند بداية الصفحة. تأكد من أنها لا تحجب العناصر المركّز عليها أو الوجهات الداخلية للروابط.',
-      'اربط قائمة التنقل المتجاوبة ورابط تجاوز التنقل بمعرّفات فريدة لعناصر موجودة بالفعل.',
+      'تدعم الأطر الأربعة هذه الخصائص. يُنشأ معرّف التنقل تلقائيًا، ويربط mainId رابط التجاوز بهدف محتوى قابل للتركيز. التسميات الافتراضية عربية.',
+      'الخيارات: onOpenChange(open). يعيد المتحكّم open وshow() وclose(restoreFocus?) وdestroy(). يكتشف enhance() ترويسة data-nq="portal-header" وعلامتي data-nq-portal-toggle وdata-nq-portal-navigation.',
     ],
-    lifecycle: ['اعرض التنقل من حالة المسار، وحدّث aria-current عند تغيّر المسار.', 'تلتف عناصر التنقل في وصفات Vanilla وReact وVue باستخدام CSS؛ ويمكن للتطبيق إضافة عنصر إظهار وإخفاء لإدارة القائمة المطوية.', 'يوفّر Angular الحالة المحلية menuOpen لقائمة الهاتف. تزيل الأطر معالجات الأحداث عند إنهاء المكوّن تلقائيًا؛ ولا يملك HTML الثابت متحكّمًا إضافيًا.'],
-    accessibility: ['سمِّ منطقة التنقل الرئيسية ووفّر رابطًا يعمل لتجاوزها إلى المحتوى الرئيسي.', 'يحتاج رابط الهوية إلى اسم حتى عندما يحتوي على صورة شعار مرسومة بالمسارات فقط.', 'عند إضافة زر لقائمة الهاتف، حدّث aria-expanded وaria-controls وحافظ على ترتيب تركيز منطقي.'],
-    variants: ['ترويسة تلتف عناصرها تلقائيًا', 'ترويسة ثابتة عبر data-variant'],
-    frameworkNotes: 'يقبل React الخصائص brand وbrandHref وnavigation وnavigationLabel وactions وnotice. يستخدم Vue الخصائص brand وhomeHref وlinks وnavLabel مع فتحتي logo وactions. يضيف nq-portal-header في Angular الخصائص menuLabel وnavigationId وskipLabel وزرًا داخليًا لقائمة الهاتف.',
-    limitations: ['لا تنفّذ الترويسة المصادقة أو تغيير مسارات اللغة أو إدارة حالة الحساب.'],
+    lifecycle: ['اعرض التنقل من حالة المسار وحدّث aria-current. يملك كل إطار عناصره وحالة إظهار التنقل.', 'في Vanilla استدعِ enhance() أو createPortalHeader() بعد التركيب. لا تُخفِ التنقل في HTML الأولي كي تبقى الروابط متاحة دون JavaScript.', 'يغلق Escape التنقل ويعيد التركيز إلى الزر. يغلقه أيضًا اختيار رابط أو الضغط خارج الترويسة أو مغادرة التركيز. يبقى Tab طبيعيًا.', 'قبل استبدال HTML حرّر enhance() أو استدعِ destroy() لإزالة المستمعين واستعادة السمات الأصلية. تنهي الأطر مستمعيها تلقائيًا.'],
+    accessibility: ['سمِّ التنقل ووفّر رابط تجاوز إلى هدف محتوى يحمل tabindex="-1".', 'يحتاج رابط الهوية إلى اسم حتى عندما يحتوي على صورة شعار مرسومة بالمسارات فقط.', 'يحدّث الزر aria-expanded وaria-controls. تبقى العناصر روابط تنقل عادية دون أدوار menu أو حجز التركيز.'],
+    variants: ['تنقل قابل للطي تحت 48rem', 'تنقل سطح المكتب', 'ترويسة ثابتة عبر data-variant'],
+    frameworkNotes: 'يستخدم React الخصائص brand وbrandHref وnavigation وnavigationLabel وactions وnotice. يستخدم Vue الخصائص brand وhomeHref وlinks وnavLabel مع فتحتي logo وactions. يستخدم Angular الخصائص brand وhomeHref وlinks وnavigationLabel مع إسقاط [nqBrand] والإجراءات. تدعم الأطر menuLabel وnavigationId وmainId وskipLabel. وفّر معرّفات ثابتة صريحة لجذور Angular المسلسلة بصورة مستقلة.',
+    limitations: ['حد 48rem قرار تكييف في نسق وليس حدًا مؤكدًا من Figma.', 'لا تنفّذ الترويسة المصادقة أو تغيير مسارات اللغة أو إدارة حالة الحساب.'],
+  }),
+  'secondary-nav': localize('secondary-nav', {
+    summary: 'اعرض مستوى ثانيًا من روابط الصفحات مع حالة واضحة للصفحة الحالية وتركيز مرئي بلوحة المفاتيح.',
+    usage: `<nav class="nq-secondary-nav" aria-label="تنقل الخدمات"><ul>
+  <li><a href="./services" aria-current="page">الخدمات</a></li>
+  <li><a href="./requests">طلباتي</a></li>
+</ul></nav>`,
+    apiDescriptions: [
+      'يقبل SecondaryNav في React وVue وnq-secondary-nav في Angular الخاصية items. يقبل عنوان React عقدة ReactNode، وتكون العناوين في Vue وAngular نصوصًا.',
+      'يسمّي معلم التنقل وتكون قيمته الافتراضية عربية. ميّزه عن التنقل الرئيسي وروابط التذييل.',
+      'تستخدم Vanilla عنصر nav وقائمة روابط. تحدد aria-current="page" الوجهة الحالية، ولا يلزم متحكّم JavaScript.',
+    ],
+    lifecycle: ['اعرض الروابط بحسب تسلسل الصفحات الحالي.', 'حدّث current عند تغيّر المسار؛ يبقى التنقل وتحميل البيانات من مسؤوليات التطبيق.', 'لا يلزم تحسين أو اشتراك أو إنهاء خاص.'],
+    accessibility: ['استخدم الروابط الأصلية وترتيب Tab؛ لا تضف أدوار tablist أو menu.', 'تعرض الحالة الحالية خطًا ووزنًا مختلفًا إلى جانب اللون. يبقى التركيز مرئيًا في الألوان الإجبارية.', 'ترجم تسمية المعلم مستقلة عن اتجاه النص.'],
+    variants: ['روابط قابلة للالتفاف', 'رابط الصفحة الحالية'],
+    frameworkNotes: 'استورد SecondaryNav من @nasaq/react أو @nasaq/vue، أو NqSecondaryNavComponent من @nasaq/angular بمحدّد nq-secondary-nav. تستخدم جميعها items وlabel. يمرّر React وVue سمات nav الأصلية، وتضبط مدخلات Angular عنصر nav الداخلي.',
+    limitations: ['هذا تنقل بين الصفحات، وليس محرّك توجيه أو متحكّم تبويبات محتوى.'],
+  }),
+  'portal-layout': localize('portal-layout', {
+    summary: 'ابدأ بوابة خدمات بترويسة متجاوبة وتنقل ثانوي ومسار تنقل وحاوية محتوى رئيسي وتذييل مركّبة معًا.',
+    usage: layoutPlatformGuides['portal-layout']!.usage,
+    apiDescriptions: [
+      'الهوية مطلوبة. القيمة الافتراضية للغة ar وللاتجاه rtl بصورة مستقلة. يربط mainId رابط التجاوز بالمحتوى القابل للتركيز؛ يجب أن تكون المعرّفات الصريحة فريدة.',
+      'تضبط headerProps التنقل وbrandHref والإجراءات والإشعار وتسميات التنقل والقائمة. تضبط footerProps الروابط وlinksLabel وlegal وخصائص التذييل الأخرى. تسمّي skipLabel رابط التجاوز.',
+      'يعرض هذان الإطاران homeHref وlinks وfooterLinks وcopyright وskipLabel وmenuLabel وnavigationLabel وfooterLabel مباشرة. فتحات Vue: ‏logo/actions/footer/default. إسقاط Angular: ‏[nqBrand]/[nqPortalActions]/[nqPortalFooter]/default.',
+      'مجموعتان اختياريتان للتنقل ومسار الصفحة. تتجاوز secondaryLabel وbreadcrumbLabel التسميات العربية. تستخدم عناصر المسار label وhref؛ ويقبل React وVue أيضًا current.',
+      'ركّب الأصناف المشتركة مع معلم main واحد، وحسّن الترويسة المحددة فقط. يستبدل المعرض المضمّن main بعنصر section لتجنب تداخل معالم الصفحات.',
+    ],
+    lifecycle: ['اعرض هيكلًا واحدًا حول محتوى التطبيق؛ يوفّر التطبيق عنوان الصفحة والمسارات والبيانات.', 'حسّن ترويسة Vanilla بعد التركيب وحرّرها قبل الاستبدال. يملك كل إطار عناصره وتنظيف أحداثه.', 'حدّث الروابط الحالية ومسار الصفحة والعنوان مع تغيّر المسار. يبقى تركيز الموجّه وdocument.title من مسؤوليات التطبيق.'],
+    accessibility: ['هدف تجاوز التنقل قابل للتركيز برمجيًا. احتفظ بمعلم main واحد في المستند.', 'سمِّ التنقل الرئيسي والثانوي ومسار الصفحة والتذييل بأسماء متميزة.', 'للإنجليزية اضبط lang="en" وdir="ltr" وترجم المحتوى والتسميات الميسّرة كلها. يمكن ضبط الاتجاه مستقلًا عن اللغة.'],
+    variants: ['ترويسة وتذييل', 'تنقل ثانوي ومسار صفحة', 'عربي RTL أو إنجليزي LTR'],
+    frameworkNotes: 'يصدّر React وVue المكوّن PortalLayout. يصدّر Angular المكوّن NqPortalLayoutComponent بمحدّد nq-portal-layout. راجع PORTAL.md في الحزمة وشغّل المثال الأصلي مع ?preview=portal. وفّر mainId ومعرّفات التنقل الصريحة عند تسلسل جذور Angular بصورة مستقلة؛ لا يُدّعى تحقق SSR أو hydration في Angular.',
+    limitations: ['حد طي التنقل عند 48rem قرار في نسق. يستخدم الهيكل رموز السمة الدلالية ولا يضيف حركة.', 'لا يتضمن محرّك توجيه أو مصادقة أو حقوقًا لأصول حكومية أو شهادة اعتماد من الهيئة.'],
   }),
   'portal-footer': localize('portal-footer', {
     summary: 'اختم صفحة الخدمة بمعلومات المنصة وروابط مساندة وتفاصيل قانونية أو وسائل تواصل.',

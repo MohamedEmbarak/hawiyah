@@ -24,7 +24,7 @@ export function renderHome(locale: Locale, selected: string, sample: (id: Compon
     <div class="home-intro"><a class="home-release" href="#docs/getting-started"><span></span>${t('Open source. Ready to explore.', 'مفتوح المصدر. مفتوح للإبداع.')}<b dir="ltr">v0.1</b>${icon('arrow',14)}</a>
       <h1 id="home-title">${t('Your next interface.<br><em>In your own rhythm.</em>', 'واجهتك القادمة.<br><em>على نسقك.</em>')}</h1>
       <p class="home-lead">${t('An Arabic-first component system that feels like yours. Explore the parts, try the interactions, and build with the framework you love.', 'نظام مكوّنات يبدأ بالعربية، ويتشكّل بطريقتك. استكشف التفاصيل، جرّب التفاعل، وابنِ بإطار العمل الذي تحب.')}</p>
-      <div class="home-actions"><a class="nq-button" href="#docs/getting-started">${t('Start building', 'ابدأ البناء')}${icon('arrow',18)}</a><a class="home-secondary" href="#components">${t('Explore 77 components', 'استكشف ٧٧ مكوّنًا')}${icon('layers',18)}</a></div>
+      <div class="home-actions"><a class="nq-button" href="#docs/getting-started">${t('Start building', 'ابدأ البناء')}${icon('arrow',18)}</a><a class="home-secondary" href="#components">${t('Explore 79 components', 'استكشف ٧٩ مكوّنًا')}${icon('layers',18)}</a></div>
       <div class="home-proof"><span>${icon('globe',16)}${t('Arabic, by default', 'العربية في الأساس')}</span><span>${icon('code',16)}${t('4 native adapters', '٤ أطر عمل')}</span><span>${icon('check',16)}${t('Apache 2.0', 'ترخيص Apache 2.0')}</span></div>
     </div>
     <div class="home-studio"><div class="home-studio-heading"><span class="studio-live"><i></i>${t('A LITTLE LIVE PREVIEW', 'مساحة صغيرة للتجربة')}</span><span class="studio-number" dir="ltr">01 / 03</span></div>

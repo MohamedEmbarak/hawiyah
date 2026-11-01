@@ -1,14 +1,14 @@
 # Component and input coverage
 
-Nasaq's expanded catalog has **77 named entries: the initial 27 plus 50 additions**. The count represents distinct public components and layout primitives. Native input-type aliases, visual variants, editable blocks, and external integration recipes are documented separately.
+Nasaq's expanded catalog has **79 named entries: the initial 27 plus 50 expansion entries and 2 portal compositions**. The count represents distinct public components and layout primitives. Native input-type aliases, visual variants, editable blocks, and external integration recipes are documented separately.
 
 This is a defined, extensible scope for modern interfaces and Saudi service platforms. It is not an exhaustive list of every possible UI, an official DGA component count, or a certification claim. [components.json](../components.json) records planned, built, and verified coverage independently for each adapter. [EXPANSION.md](../EXPANSION.md) defines the expansion contract; the [validation record](validation.md) identifies the tested snapshot.
 
 ## Supplied DGA reference coverage
 
-The default `dga` foundation is mapped from verified values in the supplied **2026-10-29** snapshot; `nasaq` is an opt-in visual theme. The reference review decoded **17 files**, with detailed inspection focused on Foundations, the Service Page template, and the Form template. Six files exceeded the 32 MiB transfer limit and were unavailable for this review. No standalone web component library was supplied.
+The default `dga` foundation is mapped from verified values in the supplied **2026-10-29** snapshot; `nasaq` is an opt-in visual theme. The local follow-up decoded **all 23 files**, including the six previously blocked by the remote transfer limit. Rendered inspection of Mobile, Home and Search supplements decoded properties; it does not establish exhaustive visual parity. Hajj is excluded from Nasaq's requirements and implementation scope. No standalone web component library was supplied. See the [source inventory](dga-source-inventory.md) and [audit follow-up](dga-audit-followup.md).
 
-The 77-entry catalog remains Nasaq's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
+The 79-entry catalog remains Nasaq's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
 
 ## Catalog groups
 
@@ -20,10 +20,21 @@ The 77-entry catalog remains Nasaq's implementation scope. Embedded template com
 | Additional controls | InputGroup, PasswordField, SearchField, NumberField, Slider, RangeSlider, Rating, PinInput, TagInput, MultiSelect, Calendar, DatePicker, FileDropzone |
 | Additional interaction | ToggleGroup, Popover, Menu, Drawer, ToastRegion, Collapsible, TreeView, Carousel |
 | Additional content | Link, IconButton, ButtonGroup, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, DataTable |
-| Platform patterns | ServiceCard, ServiceDetails, PortalHeader, PortalFooter, Feedback, CookieConsent, NotificationList |
+| Platform patterns | ServiceCard, ServiceDetails, PortalHeader, PortalFooter, SecondaryNav, PortalLayout, Feedback, CookieConsent, NotificationList |
 | Layout | Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer, AspectRatio, Section, AppShell, PageHeader |
 
 Framework adapters render native framework components. Vanilla uses semantic HTML/CSS recipes where native behavior is sufficient, and explicit controllers for richer interaction. A static recipe is a valid implementation; it should not be represented as a JavaScript controller that does not exist.
+
+`PortalHeader` now includes a mobile disclosure in every adapter; vanilla exports
+`createPortalHeader` and registers `data-nq="portal-header"` with `enhance()`.
+`SecondaryNav` adds ordinary current-page links. `PortalLayout` composes the
+header, secondary navigation, breadcrumb, focusable main container and footer;
+vanilla uses the equivalent semantic HTML recipe. Their package `PORTAL.md`
+guides and framework examples at `?preview=portal` document exact APIs.
+The 48rem disclosure breakpoint is a Nasaq adaptation. Existing 77-entry
+verification records describe their historical snapshots; the two additions
+have separate test files and remain marked built until scoped passing evidence
+is recorded.
 
 ## Implementation types
 
@@ -34,7 +45,7 @@ Framework adapters render native framework components. Vanilla uses semantic HTM
 | Interactive | Nasaq implements additional state, keyboard behavior, or lifecycle | Combobox, Calendar, Menu, TreeView, DataTable |
 | Integration | The application owns a specialist engine or service; Nasaq supplies surrounding UI recipes | Maps, charts, editors, identity verification, payments |
 
-The first three types appear in the 77-component catalog. Integrations have a separate boundary and are not counted as implemented components. Native elements still require labels, appropriate attributes, and application validation.
+The first three types appear in the 79-component catalog. Integrations have a separate boundary and are not counted as implemented components. Native elements still require labels, appropriate attributes, and application validation.
 
 ## All 22 native input types
 

@@ -157,6 +157,7 @@ flow. `nq-stepper-responsive` groups the desktop list with a mobile summary;
 Provide an accessible current/total label alongside that ring.
 
 Keep source order meaningful: progress summary, form, then contextual guidance.
-Portal headers/footers retain their public `nq-portal-*` classes. Template content,
-menu behavior, validation and integrations remain application responsibilities.
+Portal headers/footers retain their public `nq-portal-*` classes. The adapters
+provide responsive disclosure behavior; vanilla uses `createPortalHeader` or
+`enhance`. Template content, validation and integrations remain application responsibilities.
 The Figma-derived examples are available in the guide's template gallery.

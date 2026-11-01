@@ -200,7 +200,7 @@
   background: var(--nq-dga-on, var(--nq-color-canvas)) var(--nq-dga-off, var(--nq-color-footer));
   color: var(--nq-dga-on, var(--nq-color-text)) var(--nq-dga-off, var(--nq-color-on-footer));
 }
-.nq-portal-footer :is(nav a, > p, > small) { color: var(--nq-dga-on, var(--nq-color-primary-text)) var(--nq-dga-off, var(--nq-color-on-footer)); }
+.nq-portal-footer nav a, .nq-portal-footer > p, .nq-portal-footer > small { color: var(--nq-dga-on, var(--nq-color-primary-text)) var(--nq-dga-off, var(--nq-color-on-footer)); }
 .nq-portal-footer a:focus-visible { outline-color: currentColor; }
 .nq-portal-footer > .nq-service-container { inline-size: min(80rem, 100%); }
 .nq-portal-footer-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 2rem; inline-size: 100%; }

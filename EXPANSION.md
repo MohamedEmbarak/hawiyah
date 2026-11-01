@@ -16,12 +16,12 @@ Content: Link, IconButton, ButtonGroup, Chip, DescriptionList, Stat, Timeline,
 Meter, AvatarGroup, DataTable.
 
 Platform patterns: ServiceCard, ServiceDetails, PortalHeader, PortalFooter,
-Feedback, CookieConsent, NotificationList.
+Feedback, CookieConsent, NotificationList, SecondaryNav, PortalLayout.
 
 Layout: Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer,
 AspectRatio, Section, AppShell, PageHeader.
 
-These 50 additions supplement the existing 27 entries. Native TextField also
+These 52 additions (including the two portal compositions) supplement the existing 27 entries. Native TextField also
 covers all standard HTML input types; document per-type semantics rather than
 inflating component counts with aliases. Heavy engines (maps, rich text, charts,
 code editors, PDF viewers, CAPTCHA, payments) require a documented integration
@@ -62,6 +62,14 @@ boundary, not a simulated implementation.
   virtualization/editing claim. Existing Table remains fully composable.
 - National patterns are configurable ordinary content. Do not invent government
   seals, trust verification, actual identity verification or backend integrations.
+- PortalHeader: native page-link disclosure below 48rem; Escape closes with
+  focus return, outside press/link selection/focus leaving close it, and Tab is
+  never trapped. This breakpoint is Nasaq policy. Vanilla exports
+  createPortalHeader and enhances data-nq="portal-header".
+- SecondaryNav: named ordinary page links with aria-current; no tab/menu roles.
+  PortalLayout composes header, optional secondary links/breadcrumb, focusable
+  main target and footer. Defaults are Arabic and RTL independently. Follow the
+  adapter PORTAL.md for exact props and stable explicit Angular SSR IDs.
 - All controls: disabled/readonly where meaningful, form values/reset, accessible
   names, error/hint associations, no unsafe HTML, SSR-safe imports, RTL.
 - Variants via data-variant/data-tone/data-size, shared tokens, CSS logical props.

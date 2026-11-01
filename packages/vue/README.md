@@ -296,3 +296,9 @@ Maps, rich text, charting, code editors, PDF viewers, CAPTCHA and payments are
 integration boundaries. Mount the chosen provider in a named Section/Card or
 AspectRatio with its own accessible fallback and documented data contract. Nasaq
 does not simulate these engines or handle provider credentials or transactions.
+
+## Portal shell
+
+[`PortalLayout`, `PortalHeader` and `SecondaryNav`](PORTAL.md) provide a complete
+Arabic-default portal shell with responsive navigation, breadcrumbs and footer.
+Run the Vue example with `?preview=portal` to use the native composed shell.

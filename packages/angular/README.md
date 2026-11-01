@@ -70,9 +70,9 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
 | --- | --- |
 | Button — `NqButtonDirective` | `button[nqButton]`, `a[nqButton]`; `variant: primary/secondary/ghost/danger`, `size: sm/md/lg`. Native attributes/events/form semantics are preserved. Set button `type` explicitly; anchors require `href` and do not support disabled semantics. |
 | Field — `NqFieldComponent` | `nq-field`; required `controlId`, `label`; optional `hint`, `error`. Project a native control with that ID and explicitly connect description IDs. |
-| TextField — `NqTextFieldComponent` | `nq-text-field`; string value, `type`, `placeholder`, `autocomplete`, `inputmode`, `readOnly`. The native number input still emits a string; parse at your domain boundary. |
-| Textarea — `NqTextareaComponent` | `nq-textarea`; string value, `rows`, `maxLength`, `placeholder`, `readOnly`. |
-| Select — `NqSelectComponent` | `nq-select`; string value, `options: readonly Option[]`, `placeholder`. Native single select. |
+| TextField — `NqTextFieldComponent` | `nq-text-field`; string value, `type`, `placeholder`, `autocomplete`, `inputmode`, `readOnly`; `size: sm/md/lg` (default md), `visualVariant: outline/filled` (default outline) style the native input. The native number input still emits a string; parse at your domain boundary. |
+| Textarea — `NqTextareaComponent` | `nq-textarea`; string value, `rows`, `maxLength`, `placeholder`, `readOnly`; `size: sm/md/lg`, `visualVariant: outline/filled` style the native textarea. |
+| Select — `NqSelectComponent` | `nq-select`; string value, `options: readonly Option[]`, `placeholder`; `size: sm/md/lg`, `visualVariant: outline/filled` style the native select. Native single select. |
 | Checkbox — `NqCheckboxComponent` | `nq-checkbox`; boolean value, `indeterminate`. |
 | Radio — `NqRadioComponent` | `nq-radio`; a named native radio group with a fieldset/legend, string value, `options`. |
 | Switch — `NqSwitchComponent` | `nq-switch`; boolean value, native checkbox with switch role. |
@@ -249,3 +249,9 @@ remain integration boundaries. Compose their provider SDKs in Card/Section/Grid,
 provide accessible fallbacks, and keep credentials and payment/identity actions
 in the application. DataTable has no editing or virtualization; TreeView has no
 drag/drop; these APIs make no claim to supply those larger engines.
+
+## Portal shell
+
+[`NqPortalLayoutComponent` and `NqSecondaryNavComponent`](PORTAL.md) provide a
+complete Arabic-default portal shell with responsive navigation and footer.
+Run the Angular example with `?preview=portal` to use the native composed shell.

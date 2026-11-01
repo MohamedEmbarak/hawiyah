@@ -386,3 +386,9 @@ tree focus, popover dismissal, table sorting, caller-owned toasts and explicit
 feedback/consent callbacks. Native dialog modality and browser accessibility
 remain covered by the existing browser suite; server/unit tests are not a claim
 of complete assistive-technology testing for every new pattern.
+
+## Portal shell
+
+[`PortalLayout`, `PortalHeader` and `SecondaryNav`](PORTAL.md) provide a complete
+Arabic-default portal shell with responsive navigation, breadcrumbs and footer.
+Run the React example with `?preview=portal` to use the native composed shell.

@@ -6,13 +6,17 @@ The reference is a set of supplied **Platforms Code Community Figma exports date
 
 ## What was inspected
 
-Seventeen transferable files were decoded. Detailed inspection focused on the local Foundations variable collections and the Service Page and Form templates. This was not an exhaustive visual comparison or prototype playback audit of every decoded screen.
+All **23 supplied local files** have now been decoded, including the six that exceeded the earlier remote environment's 32 MiB transfer limit. The [source inventory](dga-source-inventory.md) records filenames, byte sizes, hashes, export timestamps and serialization versions. The [audit follow-up](dga-audit-followup.md) separates decoded evidence, limited native Figma observations, implementation work and remaining gaps. This is not an exhaustive visual comparison or prototype playback audit.
 
 - Foundations; Service Page; Form; Life Journeys; Contact Us; Feedback Section; Help & Support; FAQ; Site Map; Page Not Found; Rating Section; Chatbot; Content Page; Cookies Banner; e-Participation; About The Entity; Saudi National Day.
-- Six supplied files exceeded the 32 MiB transfer limit and were not decoded: Icons, Saudi Founding Day, Home Page Template, Hajj Template, Mobile Components, and Search Page Template. Their existence is not evidence of their contents.
+- The six previously transfer-blocked files were decoded locally: Icons, Saudi Founding Day, Home Page Template, Hajj Template, Mobile Components and Search Page Template. **Hajj is application-specific and excluded from Nasaq implementation scope and backlog**; its inclusion in the inventory records supplied material only.
 - No standalone web Components Library was supplied. Components embedded in templates do not establish exhaustive official component coverage. Nasaq's 77-entry catalog is its own implementation inventory.
 
-The decoded Foundations file contains **784 resolved local variables** across Containers, Primitives, Radius, Themes, Widths, Spacing, and Typography. Imported component/library caches contain multiple versions. The local collections form the foundation reference; imported components require explicit mapping before their styles can be treated as part of the same baseline.
+The decoded Foundations file contains **784 resolved active local variables** across Containers, Primitives, Radius, Themes, Widths, Spacing, and Typography. All **40 selected variables** in the public reference match the decoded node/mode/value evidence. Imported component/library caches contain multiple versions. The local collections form the foundation reference; imported components require exact source identity and mode mapping before their styles can be treated as part of the same baseline.
+
+Each archive's format was verified independently: 17 canvases use fig-kiwi serialization v101 and six use v106, with a raw-DEFLATE Kiwi schema and Zstandard message. These are serialization versions, not DGA library releases. All 23 schemas match; the decoded data includes 1,385,975 node-change records, including deleted records and caches, not that many public components. Across the files, 104 imported variable-mode values remain ambiguous; repeated cache references must not be counted as 104 independent component defects.
+
+Mobile has 681 variable records without import markers, but only 38 active local variables after excluding soft-deleted definitions and collections. Its active local Theme supplies Light mode only; Foundations' Light/Dark modes do not establish mobile component dark-mode parity. Representative Mobile, Home and Search project copies were inspected in the native Figma renderer. Their names and node IDs correspond to the exports, but the project copies were not verified byte-for-byte against the hashed archives. These observations corroborate selected geometry and composition, not full visual parity or interaction playback.
 
 ## Identifying the supplied snapshots
 

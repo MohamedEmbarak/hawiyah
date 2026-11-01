@@ -1,5 +1,27 @@
 # Validation record
 
+## 2026-11-01 portal and package follow-up
+
+`PortalLayout` and `SecondaryNav` extend the current catalog to 79 entries.
+Responsive PortalHeader behavior is native to each adapter; vanilla also exposes
+`createPortalHeader` through `enhance`. Eight focused portal unit tests passed
+across the four adapters. Two shared-layout Chromium tests passed for RTL/LTR,
+DGA/Nasaq light/dark, narrow/desktop visibility and forced-colors focus.
+Three production-consumer cases (`pnpm test:portals`) passed for React, Vue and
+Angular: Arabic/English, visible wordmark sizing, mobile disclosure, Escape focus
+return, link dismissal, skip-target focus, desktop navigation and scoped axe scans.
+These checks exposed and fixed footer legal-text contrast and example heading
+order. They do not establish Angular SSR/hydration or full Figma visual parity.
+
+All seven packages and all four applications built successfully. The guide also
+built with `/nasaq/`, and all 79 live references passed the guide-content checks.
+`pnpm check:packages` passed for seven tarballs, new exports/SSR composition,
+TypeScript consumers, bundled icon notices and both existing bundle budgets.
+The package-check script now invokes an absolute Windows `.exe` without a shell,
+fixing a failed check when Node's path contained spaces. No npm publication ran.
+Browser checks used installed Chrome 156; machine pressure required serial runs
+and longer test timeouts. Only the stated cases are verified.
+
 ## 2026-11-01 curated icon follow-up
 
 Ten unchanged Hugeicons Stroke Rounded SVGs are bundled from a pinned MIT-licensed

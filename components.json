@@ -27,7 +27,7 @@
     "built": "Source exists for the named adapter; this does not establish complete verification.",
     "verified": "The named adapter has direct behavior, semantic-association, or layout-contract assertions recorded in evidence. Scope is limited to those cases; rendering-only and broad suite checks remain separate. This is not a blanket accessibility or DGA certification."
   },
-  "coverageNote": "77 entries: initial 27 plus 50 additions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
+  "coverageNote": "79 entries: initial 27 plus 50 expansion entries and 2 portal compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
   "docs": {
     "overview": "README.md",
     "overviewAr": "README.ar.md",
@@ -3739,12 +3739,12 @@
       "name": "PortalHeader",
       "labelAr": "ترويسة المنصة",
       "category": "platforms",
-      "description": "Configurable product identity, navigation, and actions.",
+      "description": "Product identity, responsive disclosure navigation, skip link and actions.",
       "cssClasses": [
         "nq-portal-header"
       ],
-      "interaction": "static",
-      "sourceType": "static",
+      "interaction": "interactive",
+      "sourceType": "interactive",
       "planned": [
         "vanilla",
         "react",
@@ -3770,12 +3770,14 @@
           "packages/angular/src/content.ts"
         ],
         "vanilla": [
-          "packages/vanilla/EXPANSION-API.md",
-          "packages/styles/src/components.css"
+          "packages/vanilla/src/portal.ts",
+          "packages/vanilla/PORTAL.md",
+          "packages/styles/src/portal.css"
         ]
       },
       "notes": [
-        "Use the product identity; do not invent a government digital stamp or certification."
+        "Use the product identity; do not invent a government digital stamp or certification.",
+        "Mobile disclosure below 48rem; Escape returns focus, links/outside press/focus leaving close it, and Tab remains native. The breakpoint is a Nasaq adaptation."
       ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/portal-header"
     },
@@ -4643,11 +4645,104 @@
       },
       "notes": [],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/page-header"
+    },
+    {
+      "id": "secondary-nav",
+      "name": "SecondaryNav",
+      "labelAr": "التنقل الثانوي",
+      "category": "platforms",
+      "description": "Ordinary secondary page links with current-page and keyboard focus states.",
+      "cssClasses": [
+        "nq-secondary-nav"
+      ],
+      "interaction": "static",
+      "sourceType": "static",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [],
+      "evidence": [],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/portal.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/portal.ts"
+        ],
+        "angular": [
+          "packages/angular/src/portal.ts"
+        ],
+        "vanilla": [
+          "packages/vanilla/PORTAL.md",
+          "packages/styles/src/portal.css"
+        ]
+      },
+      "notes": [
+        "Native anchors; no tablist or menu semantics and no controller lifecycle."
+      ],
+      "documentation": "https://mohamedembarak.github.io/nasaq/#component/secondary-nav"
+    },
+    {
+      "id": "portal-layout",
+      "name": "PortalLayout",
+      "labelAr": "هيكل البوابة",
+      "category": "platforms",
+      "description": "Arabic-default portal shell composing responsive header, optional secondary navigation and breadcrumb, main container and footer.",
+      "cssClasses": [
+        "nq-portal-layout",
+        "nq-portal-layout-main"
+      ],
+      "interaction": "static",
+      "sourceType": "static",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [],
+      "evidence": [],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/portal.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/portal.ts"
+        ],
+        "angular": [
+          "packages/angular/src/portal.ts"
+        ],
+        "vanilla": [
+          "packages/vanilla/PORTAL.md",
+          "packages/styles/src/portal.css"
+        ]
+      },
+      "notes": [
+        "Reuses PortalHeader behavior; vanilla composes semantic HTML and enhances only its header.",
+        "Generated main target IDs connect the skip link; use explicit stable IDs for independently serialized Angular roots. Angular SSR/hydration remains unverified.",
+        "Arabic and RTL are independent defaults; localize all labels when selecting English."
+      ],
+      "documentation": "https://mohamedembarak.github.io/nasaq/#component/portal-layout"
     }
   ],
   "limitations": [
     "Public source preview; npm packages are not published. No official DGA certification.",
-    "The 77-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
+    "The 79-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
     "Combobox is local and single-select. MultiSelect is a separate searchable checkbox list; async data and virtualization are application concerns.",
     "DataTable provides stable localized sorting, not virtualization or cell editing.",
     "FileUpload and FileDropzone select local files; application code owns transport, storage, and server validation.",
@@ -4765,12 +4860,12 @@
     "native": "The main interaction uses browser-native semantics.",
     "static": "Semantic composition or CSS layout; content and application actions are caller-owned.",
     "interactive": "Nasaq adds state, keyboard behavior, or lifecycle management.",
-    "integration": "A documented application recipe for an external engine or service; not counted among the 77 components."
+    "integration": "A documented application recipe for an external engine or service; not counted among the 79 components."
   },
   "scope": {
-    "components": 77,
+    "components": 79,
     "initialComponents": 27,
-    "addedComponents": 50,
+    "addedComponents": 52,
     "layoutComponents": 12,
     "nativeInputTypeCount": 22,
     "nativeInputTypes": [
