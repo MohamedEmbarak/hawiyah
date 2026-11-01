@@ -1,5 +1,22 @@
 # Validation record
 
+## 2026-11-01 component motion
+
+Five token tests and two focused Chromium motion cases passed. The browser
+fixture removes guide-only CSS so its global reduced-motion fallback cannot
+mask the package rules. Checks cover DGA/Nasaq/custom in a nested theme, RTL/LTR,
+normal and reduced motion, switch interpolation and containment, live preference
+changes during an active transition, keyboard toggling and Tab movement. Spinner
+cycle duration and spinner/skeleton suppression are checked. The first test run
+exposed the guide fallback in the fixture; isolating library CSS resolved that
+test-harness issue.
+
+All packages and the guide built successfully with `NASAQ_BASE_PATH=/nasaq/`.
+The preceding mobile task also built all four consumers and passed eight browser
+cases. Shared CSS changes require no framework DOM or calendar changes. Source
+prototype playback and exact switch geometry parity are not claimed. Accordion
+height animation and mobile tab-bar motion remain separate follow-up work.
+
 ## 2026-11-01 mobile density
 
 All packages and four consumer builds passed. Four token tests and eight browser

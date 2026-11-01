@@ -430,5 +430,43 @@
       }
     ],
     "mapping": "Opt-in mobile density: single-line fields minimum 44 px; small/default/large buttons 32/40/44 px at a 16 px root. Textareas remain multiline. Source dimensions do not establish mobile dark-mode parity."
+  },
+  "componentMotion": {
+    "sourceFile": "Mobile Components - Platforms Code (Community).fig",
+    "evidenceKind": "decoded prototype properties; playback not verified",
+    "switch": {
+      "from": "5403:403606",
+      "to": "5403:403570",
+      "durationMs": 200,
+      "easing": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "property": "thumb x 2 to 22 within 52 x 32 track; Nasaq retains existing web geometry"
+    },
+    "spinner": {
+      "states": [
+        "5698:11137",
+        "5698:11143",
+        "5698:11149",
+        "5698:11155"
+      ],
+      "segmentDurationMs": 250,
+      "segmentWaitMs": 1,
+      "easing": "linear",
+      "quarterTurnDegrees": 90,
+      "cssCycleMs": 1000,
+      "mapping": "Four quarter-turns; CSS omits the prototype scheduling waits (1004 ms with waits)."
+    },
+    "input": {
+      "from": "3149:55032",
+      "to": "3149:55105",
+      "durationMs": 150,
+      "easing": "cubic-bezier(0, 0, 0.58, 1)",
+      "property": "centered underline 35% to 100%; approved green/red color adaptation retained"
+    },
+    "notGeneralized": [
+      "Tab Bar 8332:24202 hover to Pressed 8332:24242, then click to Selected 8332:24282: 300 ms ease-out; not generic tab-panel timing.",
+      "Accordion 1147:62359 to 1147:60867: 300 ms ease-in-out; native disclosure currently immediate.",
+      "Button-Close 2763:420142 to 2763:420174 and toast close child 1730:37107 to 2763:420400: 200 ms linear hover, imported-cache targets; not toast entry/exit.",
+      "Generic button hover actions have no explicit timing; reduced-motion behavior is an accessibility implementation decision."
+    ]
   }
 }

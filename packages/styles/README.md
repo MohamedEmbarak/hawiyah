@@ -181,3 +181,14 @@ Source: supplied Mobile Components input set `3149:54894`, body `11167:15771`
 input size informs a shared minimum, not a claim that every Nasaq variant is an
 exact source component. The source small button is not a blanket 44 px touch
 target; applications must still evaluate target spacing and interaction needs.
+
+### Component motion
+
+DGA/custom switches use `--nq-duration-switch: 200ms` and ease-in-out for both
+track (`--nq-ease-switch-track`) and thumb (`--nq-ease-switch`). Spinners use
+`--nq-duration-spinner: 1000ms` for a linear full rotation. Nasaq keeps its original
+180 ms switch and 700 ms spinner defaults. Override these roles independently
+of generic durations. Reduced-motion preferences stop button/switch/field
+transitions and loading animations while preserving state and focus behavior.
+The reference JSON records source nodes and the four-segment spinner mapping;
+these values do not establish universal DGA motion or visual parity.

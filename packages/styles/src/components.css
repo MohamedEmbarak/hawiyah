@@ -133,7 +133,7 @@
   background: var(--nq-color-text-subtle);
   vertical-align: middle;
   cursor: pointer;
-  transition: background-color var(--nq-duration-normal), border-color var(--nq-duration-normal);
+  transition: background-color var(--nq-duration-switch, var(--nq-duration-normal)) var(--nq-ease-switch-track, ease), border-color var(--nq-duration-switch, var(--nq-duration-normal)) var(--nq-ease-switch-track, ease);
 }
 .nq-switch::before {
   content: '';
@@ -145,7 +145,7 @@
   border-radius: 50%;
   background: var(--nq-color-surface);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
-  transition: inset-inline-start var(--nq-duration-normal) var(--nq-ease-standard);
+  transition: inset-inline-start var(--nq-duration-switch, var(--nq-duration-normal)) var(--nq-ease-switch, var(--nq-ease-standard));
 }
 .nq-switch:checked { background: var(--nq-color-primary); border-color: var(--nq-color-primary); }
 .nq-switch:checked::before { inset-inline-start: 1.3125rem; background: var(--nq-color-on-primary); }
@@ -290,7 +290,7 @@ progress.nq-progress { appearance: none; }
 .nq-progress::-moz-progress-bar { border-radius: var(--nq-radius-full); background: var(--nq-color-primary); }
 .nq-progress > span { display: block; block-size: 100%; border-radius: inherit; background: var(--nq-color-primary); }
 .nq-skeleton { display: block; min-block-size: 1rem; border-radius: var(--nq-radius-sm); background: var(--nq-color-surface-muted); animation: nq-pulse 1.8s ease-in-out infinite; }
-.nq-spinner { display: inline-block; box-sizing: border-box; inline-size: 1.25rem; block-size: 1.25rem; flex: none; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; color: inherit; vertical-align: middle; animation: nq-spin 0.7s linear infinite; }
+.nq-spinner { display: inline-block; box-sizing: border-box; inline-size: 1.25rem; block-size: 1.25rem; flex: none; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; color: inherit; vertical-align: middle; animation: nq-spin var(--nq-duration-spinner, 0.7s) linear infinite; }
 @keyframes nq-spin { to { transform: rotate(360deg); } }
 @keyframes nq-pulse { 50% { opacity: 0.45; } }
 
@@ -314,7 +314,7 @@ progress.nq-progress { appearance: none; }
   .nq-table :where(th, td) { padding-inline: var(--nq-space-3); }
 }
 @media (prefers-reduced-motion: reduce) {
-  :where(.nq-button, .nq-input, .nq-textarea, .nq-select, .nq-switch, .nq-switch::before, .nq-progress > span) { transition: none; }
+  .nq-button, .nq-input, .nq-textarea, .nq-select, .nq-switch, .nq-switch::before, .nq-progress > span { transition: none; }
   .nq-dialog[open], .nq-skeleton, .nq-spinner { animation: none; }
   .nq-progress::-webkit-progress-value { transition: none; }
 }

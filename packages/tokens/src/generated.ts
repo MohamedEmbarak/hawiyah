@@ -57,11 +57,15 @@ export const tokens = {
     "fast": "120ms",
     "normal": "180ms",
     "slow": "280ms",
-    "input": "150ms"
+    "input": "150ms",
+    "switch": "200ms",
+    "spinner": "1000ms"
   },
   "ease": {
     "standard": "cubic-bezier(0.2, 0, 0, 1)",
-    "input": "cubic-bezier(0, 0, 0.58, 1)"
+    "input": "cubic-bezier(0, 0, 0.58, 1)",
+    "switch": "cubic-bezier(0.42, 0, 0.58, 1)",
+    "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)"
   },
   "content": {
     "max": "80rem",
@@ -371,11 +375,15 @@ export const themeFoundations = {
       "fast": "120ms",
       "normal": "180ms",
       "slow": "280ms",
-      "input": "150ms"
+      "input": "150ms",
+      "switch": "200ms",
+      "spinner": "1000ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
-      "input": "cubic-bezier(0, 0, 0.58, 1)"
+      "input": "cubic-bezier(0, 0, 0.58, 1)",
+      "switch": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)"
     },
     "content": {
       "max": "80rem",
@@ -452,11 +460,15 @@ export const themeFoundations = {
       "fast": "120ms",
       "normal": "180ms",
       "slow": "280ms",
-      "input": "120ms"
+      "input": "120ms",
+      "switch": "180ms",
+      "spinner": "700ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
-      "input": "ease"
+      "input": "ease",
+      "switch": "cubic-bezier(0.2, 0, 0, 1)",
+      "switch-track": "ease"
     },
     "content": {
       "max": "78rem",
@@ -577,11 +589,15 @@ export const tokenNames = {
     "fast": "--nq-duration-fast",
     "normal": "--nq-duration-normal",
     "slow": "--nq-duration-slow",
-    "input": "--nq-duration-input"
+    "input": "--nq-duration-input",
+    "switch": "--nq-duration-switch",
+    "spinner": "--nq-duration-spinner"
   },
   "ease": {
     "standard": "--nq-ease-standard",
-    "input": "--nq-ease-input"
+    "input": "--nq-ease-input",
+    "switch": "--nq-ease-switch",
+    "switch-track": "--nq-ease-switch-track"
   },
   "content": {
     "max": "--nq-content-max",
@@ -697,8 +713,12 @@ export const cssVariableNames = [
   "--nq-duration-normal",
   "--nq-duration-slow",
   "--nq-duration-input",
+  "--nq-duration-switch",
+  "--nq-duration-spinner",
   "--nq-ease-standard",
   "--nq-ease-input",
+  "--nq-ease-switch",
+  "--nq-ease-switch-track",
   "--nq-content-max",
   "--nq-content-gutter",
   "--nq-content-gutter-mobile",

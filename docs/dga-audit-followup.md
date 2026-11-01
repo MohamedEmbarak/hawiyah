@@ -61,3 +61,27 @@ No exhaustive Nasaq–Figma pixel comparison, prototype playback audit, manual s
 ## Implemented mobile sizing follow-up — 2026-11-01
 
 Mobile input/body `3149:54894` / `11167:15771` and button nodes `407:510377`, `407:510548`, `407:510617` now inform the opt-in `mobile` density: 44 px single-line field minimum and 32/40/44 px buttons at a 16 px root size. Comfortable/compact defaults remain intact. Textareas retain multiline sizing; all adapters consume the same CSS. Confidence is high for decoded dimensions and rendered Nasaq geometry, not exhaustive visual parity. The profile is available in the bilingual Foundations guide. Hajj remains out of scope.
+
+## Component motion follow-up — 2026-11-01
+
+The supplied Mobile Components export provides decoded motion properties, not
+verified prototype playback. Motion roles are additive; generic duration tokens
+and dialog/drawer behavior remain unchanged.
+
+| Source node → destination | Evidence | Implementation / status | Confidence |
+| --- | --- | --- | --- |
+| Switch `5403:403606` → `5403:403570` | SMART_ANIMATE 200 ms, cubic-bezier(.42,0,.58,1); thumb x2→22 in a 52×32 track | DGA/custom switch track and thumb now use component-specific 200 ms ease-in-out. Existing web switch geometry is retained; timing correspondence does not establish shape parity | High, decoded timing |
+| Spinner `5698:11137` → `11143` → `11149` → `11155` → `11137` | Four 250 ms linear quarter-turns; each follows a 1 ms timeout | DGA/custom CSS cycle is 1000 ms, omitting four prototype scheduling waits (1004 ms with waits). This is a documented web mapping, not a 250 ms full rotation | High for segments, explicit cycle mapping |
+| Input `3149:55032` → `3149:55105`; underline `11167:15723` → `11167:15747` | 150 ms ease-out, centered 35%→100% expansion | Existing animated green/red underline retained as approved color adaptation | High, decoded properties |
+| Nasaq reduced-motion stylesheet | Zero-specificity rule lost to button/switch defaults; pseudo-element was inside the functional selector | Corrected explicit selectors stop button, switch track and switch thumb transitions. Existing loading/field suppression retained; state changes remain immediate | High, runtime regression |
+| Tab Bar `8332:24202` → `8332:24242` → `8332:24282` | 300 ms ease-out; Normal hover goes to a variant named Pressed, then click to Selected | Not applied to generic tab panels; source naming/trigger mismatch retained as evidence caveat | High, narrow scope |
+| Accordion `1147:62359` → `1147:60867` | 300 ms ease-in-out, 56→256 px example | Native disclosure remains immediate. Animated intrinsic-height disclosure needs a separate cross-browser design and keyboard/visibility verification | High for this source edge only |
+| Button-Close `2763:420142` → `2763:420174`; toast child `1730:37107` → `2763:420400` | 200 ms linear hover, destination variants in imported caches | Not applied to toast entry/exit or generic buttons. Most local button hover actions have no explicit timing | High for decoded actions; mixed-library caveat |
+
+`--nq-duration-switch`, `--nq-ease-switch` (thumb),
+`--nq-ease-switch-track`, and `--nq-duration-spinner` allow scoped overrides.
+The original Nasaq theme explicitly retains 180 ms switch timing (standard thumb
+easing, CSS ease for the track) and a 700 ms spinner cycle. Custom starts from
+DGA. Reduced motion removes transitions/animations rather than delaying state
+changes; it is an accessibility adaptation, not a property proven by Figma.
+All four adapters use shared CSS and continue to own their DOM. Hajj is excluded.
