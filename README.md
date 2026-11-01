@@ -18,6 +18,8 @@ Nasaq draws on **DGA Platforms Code**, the **Unified Design System** for the **K
 
 Explore the [template gallery](https://mohamedembarak.github.io/nasaq/#templates), [full-width service page](https://mohamedembarak.github.io/nasaq/?preview=template#templates/service), and [application form](https://mohamedembarak.github.io/nasaq/?preview=template#templates/form). These bilingual examples use local demonstration state; connect your own services for production.
 
+The gallery also includes a [portal home](https://mohamedembarak.github.io/nasaq/?preview=template#templates/home) and [search page](https://mohamedembarak.github.io/nasaq/?preview=template#templates/search). Search retains the query and provides type filters, removable selections, sorting, pagination and result states. Reusable `PortalLayout` and `SecondaryNav` APIs are documented in each adapter's `PORTAL.md` guide.
+
 ## Development status
 
 Nasaq is an **Apache 2.0 public source preview, version 0.1**. Seven packages support a **79-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. The package scope is provisional. Nothing here is published on npm, and a source directory or a working demo does not establish production readiness.

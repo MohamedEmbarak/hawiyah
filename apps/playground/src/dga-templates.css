@@ -57,3 +57,18 @@
 .nq-template [hidden] { display: none !important; }
 @media (max-width: 64rem) { .nq-template-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .nq-template-menu { display: inline-flex; margin-inline-start: auto; } .nq-template #nq-template-navigation[data-open='false'] { display: none; } .nq-template #nq-template-navigation { order: 4; flex-basis: 100%; } }
 @media (max-width: 40rem) { .nq-template-grid, .nq-template .nq-service-main .nq-template-grid, .nq-template-search { grid-template-columns: minmax(0,1fr); } .nq-template-preference { align-items: flex-start; flex-direction: column; gap: var(--nq-space-3); } .nq-template-heading { padding-block: var(--nq-space-6); } .nq-template-chat-form { flex-wrap: wrap; } .nq-template-chat-form input { flex: 1 1 100%; } .nq-template-message { max-inline-size: 100%; } }
+
+.nq-discovery-hero { padding: var(--nq-space-10) var(--nq-space-6); border-radius: var(--nq-radius-lg); background: var(--nq-color-primary-subtle); }
+.nq-discovery-hero h1 { max-inline-size: 22ch; font-size: clamp(2rem, 4vw, 3.75rem); line-height: 1.2; margin-block: var(--nq-space-4); }
+.nq-discovery-hero > p { max-inline-size: 65ch; line-height: 1.75; }
+.nq-discovery-section { padding-block: var(--nq-space-8); }
+.nq-discovery-stats { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--nq-space-4); }
+.nq-discovery-stats > div { padding: var(--nq-space-6); }
+.nq-discovery-stats dd { margin: 0; font-size: var(--nq-text-3xl); font-weight: 600; color: var(--nq-color-primary-text); }
+.nq-discovery-search-form { display: flex; align-items: end; flex-wrap: wrap; gap: var(--nq-space-3); }
+.nq-discovery-search-form > label { flex: 1 1 16rem; }
+.nq-discovery-filters { padding-block: var(--nq-space-5); }
+.nq-discovery-filters summary { cursor: pointer; font-weight: 600; margin-block-end: var(--nq-space-4); }
+.nq-discovery-results { display: grid; gap: var(--nq-space-4); margin-block-end: var(--nq-space-6); }
+.nq-discovery-link { border-block-end: 1px solid var(--nq-color-border); }
+@media (max-width: 40rem) { .nq-discovery-hero { padding: var(--nq-space-6) var(--nq-space-4); } .nq-discovery-stats { grid-template-columns: minmax(0,1fr); } }

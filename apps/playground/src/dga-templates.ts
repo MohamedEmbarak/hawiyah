@@ -1,4 +1,5 @@
 import { normalizeSearch } from '@nasaq/core';
+import { bindSearch, renderHome, renderSearch } from './discovery-templates';
 import './dga-templates.css';
 
 /** Source-derived compositions. Submitted values stay in this page's memory. */
@@ -8,6 +9,8 @@ const copy = (locale: Locale, value: Copy): string => value[locale === 'ar' ? 1 
 const escape = (value: unknown): string => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[character]!));
 const number = (value: number, locale: Locale): string => new Intl.NumberFormat(locale === 'ar' ? 'ar-SA' : 'en-SA').format(value);
 const templates: readonly {id: string; title: Copy; description: Copy}[] = [
+  {id:'home', title:['Portal home','الرئيسية'], description:['Discover services, updates and useful guidance.','اكتشف الخدمات والمستجدات والإرشادات المفيدة.']},
+  {id:'search', title:['Search','البحث'], description:['Find services and guidance with filters and sorting.','اعثر على الخدمات والإرشادات مع التصفية والترتيب.']},
   {id:'service', title:['Service details','تفاصيل الخدمة'], description:['A service overview, requirements, steps and an application entry point.','وصف الخدمة ومتطلباتها وخطواتها ونقطة بدء الطلب.']},
   {id:'form', title:['Application form','نموذج الطلب'], description:['Complete your details, review them and receive a local confirmation.','أكمل بياناتك وراجعها واحصل على تأكيد محلي للطلب.']},
   {id:'life-journeys', title:['Life journeys','رحلات الحياة'], description:['Related services organized around one goal.','خدمات مترابطة ومنظمة حول هدف واحد.']},
@@ -38,7 +41,7 @@ const card = (title: string, body: string): string => `<section class="nq-card">
 
 function portalHeader(route: string, locale: Locale): string {
   const t = (en:string,ar:string) => copy(locale,[en,ar]);
-  return `<header class="nq-portal-header nq-template-header"><div class="nq-service-container nq-portal-header-inner"><a class="nq-portal-brand" href="#templates"><img src="${import.meta.env.BASE_URL}brand/assets/nasaq-wordmark.svg" alt="" width="96" height="40"><span>${t('Nasaq services','خدمات نسق')}</span></a><button type="button" class="nq-button nq-template-menu" data-variant="ghost" data-dga-action="menu" aria-expanded="false" aria-controls="nq-template-navigation">${t('Menu','القائمة')}</button><nav id="nq-template-navigation" aria-label="${t('Portal navigation','التنقل في البوابة')}" data-open="false"><ul>${[['service',t('Services','الخدمات')],['life-journeys',t('Life journeys','رحلات الحياة')],['about',t('About','عن البوابة')],['support',t('Help','المساعدة')]].map(([id,label])=>`<li><a href="#templates/${id}" ${route === id ? 'aria-current="page"' : ''}>${label}</a></li>`).join('')}</ul></nav><div class="nq-portal-actions">${link('contact',t('Contact us','تواصل معنا'),'secondary')}</div></div></header>`;
+  return `<header class="nq-portal-header nq-template-header" data-nq="portal-header"><div class="nq-service-container nq-portal-header-inner"><a class="nq-portal-brand" href="#templates"><img src="${import.meta.env.BASE_URL}brand/assets/nasaq-wordmark.svg" alt="" width="96" height="40"><span>${t('Nasaq services','خدمات نسق')}</span></a><button type="button" class="nq-button nq-template-menu" data-variant="ghost" data-nq-portal-toggle aria-expanded="false" aria-controls="nq-template-navigation">${t('Menu','القائمة')}</button><nav data-nq-portal-navigation id="nq-template-navigation" aria-label="${t('Portal navigation','التنقل في البوابة')}" data-open="false"><ul>${[['home',t('Home','الرئيسية')],['search',t('Search','البحث')],['service',t('Services','الخدمات')],['life-journeys',t('Life journeys','رحلات الحياة')],['about',t('About','عن البوابة')],['support',t('Help','المساعدة')]].map(([id,label])=>`<li><a href="#templates/${id}" ${route === id ? 'aria-current="page"' : ''}>${label}</a></li>`).join('')}</ul></nav><div class="nq-portal-actions">${link('contact',t('Contact us','تواصل معنا'),'secondary')}</div></div></header>`;
 }
 function portalFooter(locale: Locale): string {
   const t = (en:string,ar:string) => copy(locale,[en,ar]);
@@ -148,7 +151,7 @@ function notFound(locale: Locale): string {
 export function renderDgaTemplates(view: string, locale: Locale): string | null {
   if (view !== 'templates' && !view.startsWith('templates/')) return null;
   const route = view.split('/')[1] || 'index';
-  const renderers: Record<string,(locale:Locale)=>string> = {index:gallery,service,form:application,contact,support,faq,sitemap,'404':notFound,rating,chatbot,content,cookies,participation,about,feedback: locale=>pageHeading(titleFor('feedback',locale),copy(locale,['Help us understand whether the page answered your question.','ساعدنا في معرفة ما إذا كانت الصفحة قد أجابت عن سؤالك.'])), 'life-journeys':lifeJourneys};
+  const renderers: Record<string,(locale:Locale)=>string> = {index:gallery,home:renderHome,search:renderSearch,service,form:application,contact,support,faq,sitemap,'404':notFound,rating,chatbot,content,cookies,participation,about,feedback: locale=>pageHeading(titleFor('feedback',locale),copy(locale,['Help us understand whether the page answered your question.','ساعدنا في معرفة ما إذا كانت الصفحة قد أجابت عن سؤالك.'])), 'life-journeys':lifeJourneys};
   const render = renderers[route] ?? notFound;
   return `<div class="nq-template" data-dga-template="${escape(route)}" lang="${locale}">${portalHeader(route,locale)}<div class="nq-service-container nq-template-content">${route==='index'?'':breadcrumb(route,locale)}${render(locale)}${feedback(locale)}</div>${portalFooter(locale)}</div>`;
 }
@@ -159,6 +162,7 @@ export function bindDgaTemplates(root: HTMLElement, locale: Locale): () => void 
   if (!scope) return () => {};
   const t = (en:string,ar:string) => copy(locale,[en,ar]);
   const controller = new AbortController();
+  const disposeSearch = bindSearch(scope, locale);
   const listen = (type:string, callback:EventListener) => scope.addEventListener(type,callback,{signal:controller.signal});
   const applicationForm = scope.querySelector<HTMLFormElement>('[data-dga-application]');
   const stageLabels = [t('Applicant and site details','بيانات مقدم الطلب والموقع'),t('Review and declaration','المراجعة والإقرار'),t('Confirmation','التأكيد')];
@@ -203,8 +207,7 @@ export function bindDgaTemplates(root: HTMLElement, locale: Locale): () => void 
     const target=(event.target as Element).closest<HTMLElement>('[data-dga-action],[data-dga-scroll]');if(!target||!scope!.contains(target))return;
     if(target.dataset.dgaScroll){event.preventDefault();const destination=scope!.querySelector<HTMLElement>(`#${target.dataset.dgaScroll}`);destination?.scrollIntoView({block:'start'});destination?.focus({preventScroll:true});return;}
     const action=target.dataset.dgaAction;
-    if(action==='menu'){const nav=scope!.querySelector<HTMLElement>('#nq-template-navigation')!;const open=nav.dataset.open!=='true';nav.dataset.open=String(open);target.setAttribute('aria-expanded',String(open));}
-    else if(action==='application-edit')goToStage(0);
+    if(action==='application-edit')goToStage(0);
     else if(action==='application-reset'){applicationForm?.reset();applicationDeclared=false;applicationAttachment=null;applicationForm?.querySelector<HTMLInputElement>('[name="declaration"]')?.removeAttribute('checked');const declaration=applicationForm?.querySelector<HTMLInputElement>('[name="declaration"]');if(declaration)declaration.checked=false;for(const key of Object.keys(applicationDraft))delete applicationDraft[key];applicationForm?.querySelectorAll<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>('input:not([type=checkbox]),textarea,select').forEach(input=>input.value='');const fileStatus=scope!.querySelector('[data-dga-file-status]');if(fileStatus)fileStatus.textContent='';goToStage(0);}
     else if(action==='faq-clear'){scope!.querySelector<HTMLInputElement>('[data-dga-faq-search]')!.value='';scope!.querySelector<HTMLSelectElement>('[data-dga-faq-category]')!.value='all';filterQuestions();scope!.querySelector<HTMLInputElement>('[data-dga-faq-search]')!.focus();}
     else if(action?.startsWith('feedback-')){const block=target.closest<HTMLElement>('[data-dga-feedback]')!;const form=block.querySelector<HTMLFormElement>('form')!;const result=block.querySelector<HTMLElement>('[data-dga-success]')!;result.hidden=true;form.hidden=false;if(action==='feedback-reset'){form.reset();block.querySelectorAll('[aria-pressed]').forEach(button=>button.setAttribute('aria-pressed','false'));}else{block.querySelectorAll('[aria-pressed]').forEach(button=>button.setAttribute('aria-pressed',String(button===target)));}form.querySelector<HTMLInputElement>('input')?.focus();}
@@ -214,7 +217,6 @@ export function bindDgaTemplates(root: HTMLElement, locale: Locale): () => void 
   });
   listen('input', event=>{const input=event.target as HTMLInputElement;if(input.matches('[data-dga-faq-search]'))filterQuestions();if(input.form===applicationForm&&input.name&&input.type!=='file'&&input.type!=='checkbox')applicationDraft[input.name]=input.value;});
   listen('change', event=>{const input=event.target as HTMLInputElement;if(input.matches('[data-dga-faq-category]'))filterQuestions();if(input.form===applicationForm&&input.name){if(input.name==='declaration')applicationDeclared=input.checked;else if(input.type!=='file')applicationDraft[input.name]=input.value;}if(input.matches('#nq-template-plan')){applicationAttachment=input.files?.[0]??null;const status=scope!.querySelector('[data-dga-file-status]');if(status)status.textContent=applicationAttachment?.name??'';}});
-  listen('keydown', event=>{const key=event as KeyboardEvent;if(key.key==='Escape'){const menu=scope!.querySelector<HTMLElement>('[data-dga-action="menu"]');const nav=scope!.querySelector<HTMLElement>('#nq-template-navigation');if(nav?.dataset.open==='true'){nav.dataset.open='false';menu?.setAttribute('aria-expanded','false');menu?.focus();}}});
   if(applicationForm){updateReview();goToStage(applicationStage,false);}
-  return ()=>controller.abort();
+  return ()=>{disposeSearch();controller.abort();};
 }

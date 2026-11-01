@@ -1,5 +1,25 @@
 # Validation record
 
+## 2026-11-01 Home and Search follow-up
+
+The bilingual gallery adds Home and Search and uses the public vanilla header
+controller. Home presents a hero, service links, illustrative statistics,
+guidance and an explicit empty partner section. Search uses local demonstration
+data with retained query, category filter/reset/removal, sorting, pagination and
+empty/loading/error/retry rendering. Its injectable loader remains application
+code, not a service integration in the component library.
+
+All eight existing DGA-template browser cases and both new Arabic/English
+discovery cases passed across targeted serial runs. A service-form case exceeded
+its timeout under machine pressure, then passed in the isolated rerun. Checks
+cover application-state preservation, mobile navigation, filtering, keyboard
+focus, narrow overflow and scoped axe scans. The search loader unit test passed
+for loading, failure/retry and ignoring completion after disposal. Arabic Home
+and Search screenshots were inspected for rendering; this is not Figma pixel
+parity. The final playground TypeScript check and `/nasaq/` production build
+passed. Calendar calculations, original/custom themes and branding contracts
+remain unchanged.
+
 ## 2026-11-01 portal and package follow-up
 
 `PortalLayout` and `SecondaryNav` extend the current catalog to 79 entries.

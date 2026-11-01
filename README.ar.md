@@ -16,6 +16,8 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 استكشف [معرض القوالب](https://mohamedembarak.github.io/nasaq/#templates) و[صفحة الخدمة بعرض كامل](https://mohamedembarak.github.io/nasaq/?preview=template#templates/service) و[نموذج الطلب](https://mohamedembarak.github.io/nasaq/?preview=template#templates/form). الأمثلة ثنائية اللغة وتعمل ببيانات تجريبية محلية؛ اربطها بخدمات تطبيقك عند استخدامها فعليًا.
 
+يتضمن المعرض أيضًا [الصفحة الرئيسية](https://mohamedembarak.github.io/nasaq/?preview=template#templates/home) و[صفحة البحث](https://mohamedembarak.github.io/nasaq/?preview=template#templates/search)، مع حفظ عبارة البحث والتصفية وإزالة الاختيارات والترتيب والتنقل بين النتائج. توثّق أدلة `PORTAL.md` في حزم الأطر استخدام `PortalLayout` و`SecondaryNav` لإضافة هيكل البوابة مباشرة.
+
 ## حالة التطوير
 
 المشروع متاح المصدر في **مرحلة تطوير 0.1** بترخيص Apache 2.0. تدعم الحزم السبع **فهرسًا من 79 مكونًا** عبر vanilla وReact وVue وAngular، يشمل النماذج والتفاعل والمحتوى وأنماط الخدمات السعودية و12 مكونًا للتخطيط. أسماء الحزم مبدئية، ولم تُنشر الحزم على npm. وجود شفرة أو مثال يعمل لا يعني اكتمال الجاهزية للإنتاج.
