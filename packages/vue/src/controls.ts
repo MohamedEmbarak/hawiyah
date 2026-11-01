@@ -241,11 +241,11 @@ export const Slider = defineComponent({
               if (props.readonly) event.preventDefault();
             },
             onKeydown: (event: KeyboardEvent) => {
-              if (props.readonly && event.key !== "Tab") event.preventDefault();
+              if (props.readonly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) event.preventDefault();
             },
             onInput: (event: Event) => {
               const input = event.target as HTMLInputElement;
-              if (props.disabled || props.readonly) {
+              if (props.readonly || isDisabled(input)) {
                 input.value = String(model.value.value);
                 return;
               }
@@ -316,12 +316,12 @@ export const RangeSlider = defineComponent({
                   if (props.readonly) event.preventDefault();
                 },
                 onKeydown: (event: KeyboardEvent) => {
-                  if (props.readonly && event.key !== "Tab")
+                  if (props.readonly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key))
                     event.preventDefault();
                 },
                 onInput: (event: Event) => {
                   const input = event.target as HTMLInputElement;
-                  if (props.readonly || props.disabled) {
+                  if (props.readonly || isDisabled(input)) {
                     input.value = String(values[index]);
                     return;
                   }

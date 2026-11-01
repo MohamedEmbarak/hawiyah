@@ -1,5 +1,5 @@
 import { clampRange, createCleanup, formatNumber, isDisabled, normalizeDigits, normalizeSearch } from '@nasaq/core';
-import { emit, eventElement, localeOf, nativeChange, readOnly, remember, required, translated } from './dom.js';
+import { emit, ensureId, eventElement, localeOf, nativeChange, readOnly, remember, required, translated } from './dom.js';
 
 export interface ValueController<T> { readonly value: T; destroy(): void }
 export interface PasswordFieldOptions { showLabel?: string; hideLabel?: string; toggleVariant?: 'icon' | 'text' }
@@ -36,7 +36,8 @@ export function createRangeSlider(root: HTMLElement, options: RangeSliderOptions
   const min = options.min ?? Math.max(Number(lower.min || 0), Number(upper.min || 0));
   const max = options.max ?? Math.min(Number(lower.max || 100), Number(upper.max || 100));
   let value = clampRange([lower.valueAsNumber, upper.valueAsNumber], min, max, 'lower');
-  for (const input of [lower, upper]) { const original = input.value; scope.add(() => { input.value = original; }); remember(scope, input, ['min', 'max', 'aria-valuetext']); input.min = String(min); input.max = String(max); }
+  for (const input of [lower, upper]) { const original = input.value; scope.add(() => { input.value = original; }); remember(scope, input, ['min', 'max', 'aria-valuetext', 'aria-readonly']); input.min = String(min); input.max = String(max); }
+  const readonlyState = () => { for (const input of [lower, upper]) { if (readOnly(root)) input.setAttribute('aria-readonly', 'true'); else input.removeAttribute('aria-readonly'); } };
   const output = root.querySelector<HTMLOutputElement>('[data-nq-range-output]');
   const originalText = output?.textContent; if (output) scope.add(() => { output.textContent = originalText ?? ''; });
   const render = () => { lower.value = String(value[0]); upper.value = String(value[1]); if (output) output.textContent = `${formatNumber(value[0], { locale: localeOf(root) })} – ${formatNumber(value[1], { locale: localeOf(root) })}`; };
@@ -53,7 +54,9 @@ export function createRangeSlider(root: HTMLElement, options: RangeSliderOptions
     scope.listen(input, 'pointerdown', event => { if (readOnly(root)) event.preventDefault(); });
   }
   if (lower.form) scope.listen(lower.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { value = clampRange([lower.valueAsNumber, upper.valueAsNumber], min, max, 'lower'); render(); } }));
-  render(); return { get value(): [number, number] { return [...value]; }, destroy: () => scope.destroy() };
+  const Observer = root.ownerDocument.defaultView?.MutationObserver;
+  if (Observer) { const observer = new Observer(readonlyState); observer.observe(root, { attributes: true, attributeFilter: ['data-nq-readonly', 'aria-readonly'] }); scope.add(() => observer.disconnect()); }
+  readonlyState(); render(); return { get value(): [number, number] { return [...value]; }, destroy: () => scope.destroy() };
 }
 
 export interface RatingOptions { onValueChange?: (value: number) => void }

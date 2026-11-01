@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from 'react';
 import type { ComponentPropsWithRef, ReactNode } from 'react';
 import { assignRef, cx, Field, useFieldControl } from './shared.js';
 import type { FieldDecoration } from './shared.js';
-import type { Option } from '@nasaq/core';
+import { isDisabled, type Option } from '@nasaq/core';
 
 export interface ButtonProps extends ComponentPropsWithRef<'button'> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -44,15 +44,34 @@ export function Select({ label, hint, error, ...props }: SelectProps) {
 }
 export interface CheckboxProps extends Omit<ComponentPropsWithRef<'input'>, 'type'>, FieldDecoration { indeterminate?: boolean }
 interface ChoiceProps extends CheckboxProps { kind: 'checkbox' | 'radio' | 'switch' }
-function Choice({ kind, label, hint, error, className, indeterminate, ref, ...props }: ChoiceProps) {
+const readonlyRadioValues = new WeakMap<HTMLInputElement, boolean>();
+function restoreReadonlyRadioGroup(input: HTMLInputElement) {
+  const root = input.getRootNode() as Document | ShadowRoot;
+  const group = input.name ? Array.from(root.querySelectorAll<HTMLInputElement>('input[type="radio"]')).filter(peer => peer.name === input.name && peer.form === input.form) : [input];
+  for (const peer of group) { const checked = readonlyRadioValues.get(peer); if (checked !== undefined) peer.checked = checked; }
+}
+function Choice({ kind, label, hint, error, className, indeterminate, ref, onClick, onKeyDown, onChange, ...props }: ChoiceProps) {
   const field = useFieldControl(props);
   const input = useRef<HTMLInputElement | null>(null);
   const hintId = hint ? `${field.id}-hint` : undefined;
   const errorId = error ? `${field.id}-error` : undefined;
   useEffect(() => { if (input.current) input.current.indeterminate = Boolean(indeterminate); }, [indeterminate]);
+  useEffect(() => {
+    const node = input.current;
+    if (kind !== 'radio' || !props.readOnly || !node) return;
+    const root = node.getRootNode();
+    let disposed = false;
+    const remember = () => readonlyRadioValues.set(node, node.checked);
+    const reset = (event: Event) => { if (event.target === node.form) queueMicrotask(() => { if (!disposed && !event.defaultPrevented) remember(); }); };
+    remember(); root.addEventListener('change', remember); root.addEventListener('reset', reset);
+    return () => { disposed = true; root.removeEventListener('change', remember); root.removeEventListener('reset', reset); readonlyRadioValues.delete(node); };
+  });
   return <div className="nq-field">
     <label className="nq-choice" htmlFor={field.id}>
-      <input {...props} {...field} ref={node => { input.current = node; assignRef(ref, node); }} type={kind === 'radio' ? 'radio' : 'checkbox'} role={kind === 'switch' ? 'switch' : props.role} className={cx(`nq-${kind}`, className)} aria-invalid={error ? true : field['aria-invalid']} aria-describedby={[field['aria-describedby'], hintId, errorId].filter(Boolean).join(' ') || undefined} />
+      <input {...props} {...field} ref={node => { input.current = node; assignRef(ref, node); }} type={kind === 'radio' ? 'radio' : 'checkbox'} role={kind === 'switch' ? 'switch' : props.role} className={cx(`nq-${kind}`, className)} aria-disabled={props.readOnly || props['aria-disabled']} aria-invalid={error ? true : field['aria-invalid']} aria-describedby={[field['aria-describedby'], hintId, errorId].filter(Boolean).join(' ') || undefined}
+        onClick={event => { onClick?.(event); if (props.readOnly || isDisabled(event.currentTarget)) { event.preventDefault(); if (kind === 'radio') restoreReadonlyRadioGroup(event.currentTarget); } }}
+        onKeyDown={event => { onKeyDown?.(event); if (props.readOnly && (event.key === ' ' || kind === 'radio' && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key))) event.preventDefault(); }}
+        onChange={event => { if (!props.readOnly && !isDisabled(event.currentTarget)) onChange?.(event); }} />
       {label}
     </label>
     {hint && <span id={hintId} className="nq-hint">{hint}</span>}

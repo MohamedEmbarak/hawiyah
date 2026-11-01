@@ -4,7 +4,7 @@ import { clampRange, filterOptions, isDisabled, normalizeDigits } from '@nasaq/c
 import type { Option } from '@nasaq/core';
 import { Button, TextField } from './forms.js';
 import type { TextFieldProps } from './forms.js';
-import { assignRef, cx, Field, useControllable } from './shared.js';
+import { assignRef, cx, Field, useControllable, useFieldControl } from './shared.js';
 import type { FieldDecoration } from './shared.js';
 import { useFormReset } from './expanded-shared.js';
 
@@ -25,10 +25,17 @@ export function SearchField({ value, defaultValue = '', onValueChange, clearLabe
 export interface NumberFieldProps extends Omit<TextFieldProps, 'type'> {}
 export function NumberField({ className, ...props }: NumberFieldProps) { return <TextField {...props} type="number" className={cx('nq-number-field', className)} />; }
 export interface SliderProps extends Omit<TextFieldProps, 'type' | 'value' | 'defaultValue' | 'onChange'> { value?: number; defaultValue?: number; onValueChange?: (value: number) => void; showValue?: boolean; formatValue?: (value: number) => string }
-export function Slider({ value, defaultValue, onValueChange, showValue = true, formatValue = String, min = 0, max = 100, label, hint, error, ref, className, ...props }: SliderProps) {
+function SliderInput(props: ComponentPropsWithRef<'input'>) {
+  const field = useFieldControl(props);
+  return <input {...props} {...field} className={cx('nq-slider', props.className)} />;
+}
+export function Slider({ value, defaultValue, onValueChange, showValue = true, formatValue = String, min = 0, max = 100, label, hint, error, ref, className, onPointerDown, onKeyDown, ...props }: SliderProps) {
   const id = useId(); const input = useRef<HTMLInputElement | null>(null); const initial = defaultValue ?? (Number(min) + Number(max)) / 2; const [current, setCurrent] = useControllable(value, initial, onValueChange);
   useFormReset(input, () => { if (value === undefined) setCurrent(initial); }, props.form);
-  return <Field label={label} hint={hint} error={error} controlId={props.id ?? id} className="nq-slider"><TextField {...props} min={min} max={max} type="range" value={current} className={className} ref={node => { input.current = node; assignRef(ref, node); }} aria-valuetext={formatValue(current)} onChange={event => { if (!props.readOnly) setCurrent(event.currentTarget.valueAsNumber); }} />{showValue && <output htmlFor={props.id ?? id}>{formatValue(current)}</output>}</Field>;
+  return <Field label={label} hint={hint} error={error} controlId={props.id ?? id}><SliderInput {...props} min={min} max={max} type="range" value={current} className={className} ref={node => { input.current = node; assignRef(ref, node); }} aria-valuetext={formatValue(current)} aria-readonly={props.readOnly || props['aria-readonly']}
+    onPointerDown={event => { onPointerDown?.(event); if (props.readOnly) event.preventDefault(); }}
+    onKeyDown={event => { onKeyDown?.(event); if (props.readOnly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) event.preventDefault(); }}
+    onChange={event => { if (props.readOnly || isDisabled(event.currentTarget)) { event.currentTarget.value = String(current); return; } setCurrent(event.currentTarget.valueAsNumber); }} />{showValue && <output htmlFor={props.id ?? id}>{formatValue(current)}</output>}</Field>;
 }
 export interface RangeSliderProps extends Omit<ComponentPropsWithRef<'fieldset'>, 'onChange' | 'defaultValue'>, FieldDecoration { value?: readonly [number, number]; defaultValue?: readonly [number, number]; onValueChange?: (value: [number, number]) => void; min?: number; max?: number; step?: number; lowerLabel: string; upperLabel: string; name?: string; lowerName?: string; upperName?: string; form?: string; readOnly?: boolean; formatValue?: (value: number) => string }
 export function RangeSlider({ value, defaultValue = [0, 100], onValueChange, min = 0, max = 100, step, lowerLabel, upperLabel, name, lowerName, upperName, form, readOnly, formatValue = String, label, hint, error, className, disabled, ...props }: RangeSliderProps) {
