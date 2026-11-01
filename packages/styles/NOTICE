@@ -25,3 +25,10 @@ are included in dist/assets/icons/LICENSE and dist/assets/icons/provenance.json
 mapped to supplied DGA source names; password visibility artwork is an
 additional upstream subset without a DGA node comparison. None are direct
 DGA Figma exports.
+
+NasaqRiyal is a U+20C1-only derivative of Noto Naskh Arabic 2.021,
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/arabic),
+licensed under the SIL Open Font License 1.1. The full license and
+reproducible provenance are included in dist/assets/fonts/riyal-LICENSE.txt
+and dist/assets/fonts/riyal-provenance.json (src/assets/fonts in the source
+repository). The symbol glyph is unchanged; its font family is renamed.

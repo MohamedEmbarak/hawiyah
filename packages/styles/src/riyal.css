@@ -1,0 +1,22 @@
+/* U+20C1 only: the application's normal Arabic/Latin font remains unchanged.
+   Source, license and reproducible subset steps accompany the font asset. */
+@font-face {
+  font-family: 'NasaqRiyal';
+  src: url('./assets/fonts/riyal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+20C1;
+}
+
+/* Render the actual Unicode character, not generated content or an image.
+   When paired with an amount, hide this span from assistive technology and
+   provide the localized currency name in the amount's accessible text. */
+.nq-riyal {
+  font-family: 'NasaqRiyal', 'Segoe UI', Arial, Tahoma, sans-serif;
+  font-size: inherit;
+  line-height: inherit;
+  font-style: normal;
+  font-weight: 400;
+  font-synthesis: none;
+}

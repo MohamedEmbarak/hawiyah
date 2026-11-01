@@ -1,5 +1,6 @@
 import { escape as e, icon, type Locale } from "./data";
 import { navigationDrawerMarkup } from './component-mobile-guides';
+import { riyalAmount } from './currency';
 
 /** Copyable HTML recipes: behavior lives in @nasaq/vanilla, never in the gallery. */
 export function expandedSample(
@@ -84,7 +85,7 @@ export function expandedSample(
     case "chip":
       return `<div class="nq-inline"><span class="nq-chip" data-tone="success">${t("Verified document", "مستند مكتمل")}</span><span class="nq-chip" data-variant="outline">${t("Business", "الأعمال")}</span></div>`;
     case "description-list":
-      return `<dl class="nq-description-list"><div><dt>${t("Reference", "المرجع")}</dt><dd dir="ltr">NQ-2026-1043</dd></div><div><dt>${t("Service fee", "رسوم الخدمة")}</dt><dd>${t("SAR 200", "٢٠٠ ر.س")}</dd></div><div><dt>${t("Expected time", "المدة المتوقعة")}</dt><dd>${t("3 working days", "٣ أيام عمل")}</dd></div></dl>`;
+      return `<dl class="nq-description-list"><div><dt>${t("Reference", "المرجع")}</dt><dd dir="ltr">NQ-2026-1043</dd></div><div><dt>${t("Service fee", "رسوم الخدمة")}</dt><dd>${riyalAmount(t("200", "٢٠٠"), locale, locale === 'en' ? 'before' : 'after')}</dd></div><div><dt>${t("Expected time", "المدة المتوقعة")}</dt><dd>${t("3 working days", "٣ أيام عمل")}</dd></div></dl>`;
     case "stat":
       return `<div class="nq-stat"><span class="nq-stat-label">${t("Requests completed", "الطلبات المكتملة")}</span><strong class="nq-stat-value">1,284</strong><span class="nq-stat-trend" data-tone="success">↑ 12% ${t("this month", "هذا الشهر")}</span></div>`;
     case "timeline":
@@ -99,7 +100,7 @@ export function expandedSample(
     case "data-table":
       return `<div class="nq-table-wrap"><table class="nq-table nq-data-table" data-nq="data-table" data-nq-locale="${locale}"><caption>${t("Requests · select a heading to sort", "الطلبات · اختر عنوانًا للترتيب")}</caption><thead><tr><th data-nq-key="name">${b(t("Service", "الخدمة"), 'data-nq-sort="name"', "ghost")}</th><th data-nq-key="days" data-nq-type="number">${b(t("Days", "الأيام"), 'data-nq-sort="days"', "ghost")}</th></tr></thead><tbody><tr><td>${t("License", "الرخصة")}</td><td>3</td></tr><tr><td>${t("Certificate", "الشهادة")}</td><td>1</td></tr><tr><td>${t("Permit", "التصريح")}</td><td>5</td></tr></tbody></table></div>`;
     case "service-card":
-      return `<article class="nq-service-card" data-variant="featured"><span class="nq-badge" data-tone="info">${t("Business", "الأعمال")}</span><h3>${t("Start a business", "بدء نشاط تجاري")}</h3><p>${t("One clear path from idea to application.", "مسار واضح من الفكرة إلى الطلب.")}</p><div class="nq-service-card-meta"><span>${t("200 SAR", "٢٠٠ ر.س")}</span><span>${t("3 days", "٣ أيام")}</span></div><a class="nq-button" href="#discover">${t("View service", "عرض الخدمة")}</a></article>`;
+      return `<article class="nq-service-card" data-variant="featured"><span class="nq-badge" data-tone="info">${t("Business", "الأعمال")}</span><h3>${t("Start a business", "بدء نشاط تجاري")}</h3><p>${t("One clear path from idea to application.", "مسار واضح من الفكرة إلى الطلب.")}</p><div class="nq-service-card-meta"><span>${riyalAmount(t("200", "٢٠٠"), locale)}</span><span>${t("3 days", "٣ أيام")}</span></div><a class="nq-button" href="#discover">${t("View service", "عرض الخدمة")}</a></article>`;
     case "service-details":
       return `<section class="nq-service-details"><h3>${t("Before applying", "قبل التقديم")}</h3><dl class="nq-description-list"><div><dt>${t("Eligibility", "الأهلية")}</dt><dd>${t("Registered organizations", "المنشآت المسجلة")}</dd></div><div><dt>${t("Required documents", "المستندات المطلوبة")}</dt><dd>${t("License and address proof", "الرخصة وإثبات العنوان")}</dd></div><div><dt>${t("Support", "الدعم")}</dt><dd><a href="#docs" class="nq-link">${t("Help center", "مركز المساعدة")}</a></dd></div></dl></section>`;
     case "portal-header":

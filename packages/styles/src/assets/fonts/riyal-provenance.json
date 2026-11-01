@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "family": "NasaqRiyal",
+  "file": "riyal.woff2",
+  "sha256": "c3fb35e141547460b4f40838e5c53356d8aa125d0d701f85d5ccf83eeebb0a0f",
+  "bytes": 2560,
+  "codepoints": [
+    "U+20C1"
+  ],
+  "license": "SIL Open Font License 1.1",
+  "licenseFile": "riyal-LICENSE.txt",
+  "licenseSha256": "a7a5a25eb188bf1cd96982030d53e23c33485c69b1044a562254226857ee13af",
+  "copyright": "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/arabic)",
+  "source": {
+    "family": "Noto Naskh Arabic",
+    "version": "2.021",
+    "releaseUrl": "https://github.com/notofonts/arabic/releases/tag/NotoNaskhArabic-v2.021",
+    "archiveUrl": "https://github.com/notofonts/arabic/releases/download/NotoNaskhArabic-v2.021/NotoNaskhArabic-v2.021.zip",
+    "archiveSha256": "6c050ab9bd087d69b733c505a7576e60c528c2f33cd7b91005a5bd7da4514032",
+    "archiveMember": "NotoNaskhArabic/hinted/ttf/NotoNaskhArabic-Regular.ttf",
+    "fontSha256": "6f0a92031367b2f5a2078fe9d24f3433122b61a0bad57c423aad8f3c39aa2e6e",
+    "retrieved": "2026-11-01"
+  },
+  "modifications": [
+    "Subset to U+20C1 plus required .notdef glyph; no artwork redrawn.",
+    "Rename family/full/PostScript identifiers to NasaqRiyal; retain upstream copyright and license metadata.",
+    "Remove unrelated layout tables; compress as WOFF2."
+  ],
+  "tools": {
+    "fontTools": "4.59.2",
+    "Brotli": "1.1.0"
+  },
+  "reproduction": {
+    "prerequisites": "Install fonttools==4.59.2 and Brotli==1.1.0; extract the archiveMember from the verified upstream ZIP. Save the Python script below as subset-riyal.py.",
+    "command": "python subset-riyal.py NotoNaskhArabic-Regular.ttf riyal.woff2",
+    "pythonScript": "from fontTools.ttLib import TTFont\nfrom fontTools import subset\nimport sys\nfont=TTFont(sys.argv[1],recalcTimestamp=False)\noptions=subset.Options()\noptions.flavor=\"woff2\"\noptions.glyph_names=True\noptions.notdef_outline=True\noptions.name_IDs=[0,1,2,3,4,5,6,13,14,16,17]\noptions.name_legacy=True\noptions.name_languages=[\"*\"]\noptions.layout_features=[]\noptions.drop_tables += [\"GDEF\",\"GPOS\",\"GSUB\"]\nsubsetter=subset.Subsetter(options=options)\nsubsetter.populate(unicodes=[0x20C1])\nsubsetter.subset(font)\nrenames={1:\"NasaqRiyal\",2:\"Regular\",3:\"NasaqRiyal Regular 2.021 subset 2026-11-01\",4:\"NasaqRiyal Regular\",6:\"NasaqRiyal-Regular\",16:\"NasaqRiyal\",17:\"Regular\"}\nfor record in font[\"name\"].names:\n    if record.nameID in renames:\n        record.string=renames[record.nameID].encode(record.getEncoding())\nfont.flavor=\"woff2\"\nfont.save(sys.argv[2])\n"
+  },
+  "validation": {
+    "unicodeCmap": [
+      "U+20C1"
+    ],
+    "glyphName": "uni20C1",
+    "nonEmptyContours": 2,
+    "glyphCoordinatesAndAdvanceUnchanged": true,
+    "notAnOfficialSvgExport": true
+  }
+}

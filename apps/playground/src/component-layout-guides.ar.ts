@@ -53,7 +53,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     summary: 'اعرض أزواج المصطلح والقيمة، مثل مرجع الطلب والرسوم ووقت المعالجة، باستخدام الدلالة الأصلية لقائمة الوصف.',
     usage: `<dl class="nq-description-list" data-variant="horizontal" lang="ar" dir="rtl">
   <div><dt>المرجع</dt><dd dir="ltr">NQ-1043</dd></div>
-  <div><dt>رسوم الخدمة</dt><dd>٢٠٠ ر.س</dd></div>
+  <div><dt>رسوم الخدمة</dt><dd><bdi>٢٠٠ <span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">ريال سعودي</span></bdi></dd></div>
   <div><dt>وقت المعالجة المتوقع</dt><dd>٣ أيام عمل</dd></div>
 </dl>`,
     apiDescriptions: [
@@ -72,7 +72,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
   <span class="nq-badge" data-tone="info">الأعمال</span>
   <h3>تجديد رخصة تجارية</h3>
   <p>اطّلع على المتطلبات وجدّد الرخصة الحالية.</p>
-  <div class="nq-service-card-meta"><span>١٥٠ ر.س</span><span>يوم عمل واحد</span></div>
+  <div class="nq-service-card-meta"><span><bdi>١٥٠ <span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">ريال سعودي</span></bdi></span><span>يوم عمل واحد</span></div>
   <a class="nq-button" href="./services/license">عرض خدمة تجديد الرخصة</a>
 </article>`,
     apiDescriptions: [

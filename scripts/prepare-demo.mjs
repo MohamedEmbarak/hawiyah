@@ -19,6 +19,9 @@ copyFileSync(
 mkdirSync(resolve(dest, "licenses"), { recursive: true });
 copyFileSync(resolve(root, "packages/styles/src/assets/icons/LICENSE"), resolve(dest, "licenses/hugeicons-LICENSE.txt"));
 copyFileSync(resolve(root, "packages/styles/src/assets/icons/provenance.json"), resolve(dest, "licenses/icon-provenance.json"));
+copyFileSync(resolve(root, "packages/styles/src/assets/fonts/riyal-LICENSE.txt"), resolve(dest, "licenses/riyal-LICENSE.txt"));
+copyFileSync(resolve(root, "packages/styles/src/assets/fonts/riyal-provenance.json"), resolve(dest, "licenses/riyal-provenance.json"));
+appendFileSync(resolve(dest, "NOTICE"), "\nThe NasaqRiyal symbol font is a U+20C1-only derivative of Noto Naskh Arabic 2.021, Copyright 2022 The Noto Project Authors, licensed under SIL OFL 1.1. Its license and reproducible provenance accompany this guide in licenses/riyal-LICENSE.txt and licenses/riyal-provenance.json.\n");
 appendFileSync(resolve(dest, "NOTICE"), "\nThe curated Stroke Rounded icons are Copyright (c) 2025 Hugeicons, MIT licensed. Their notice and source mapping accompany this guide in licenses/hugeicons-LICENSE.txt and licenses/icon-provenance.json.\n");
 writeFileSync(resolve(dest, "licenses/editor.txt"), collectEditorNotices());
 appendFileSync(resolve(dest, "NOTICE"), "\nThe live documentation editor includes CodeMirror, Lezer, and their runtime dependencies. Their full license notices accompany this guide in licenses/editor.txt.\n");

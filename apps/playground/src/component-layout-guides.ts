@@ -12,7 +12,7 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
     summary: 'Present paired terms and values, such as application reference, fees and processing time, using native definition-list semantics.',
     usage: `<dl class="nq-description-list" data-variant="horizontal">
   <div><dt>Reference</dt><dd dir="ltr">NQ-1043</dd></div>
-  <div><dt>Service fee</dt><dd>SAR 200</dd></div>
+  <div><dt>Service fee</dt><dd><bdi><span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">Saudi riyals</span> 200</bdi></dd></div>
   <div><dt>Expected processing time</dt><dd>3 working days</dd></div>
 </dl>`,
     api: [
@@ -32,7 +32,7 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   <span class="nq-badge" data-tone="info">Business</span>
   <h3>Renew a commercial license</h3>
   <p>Check requirements and renew an existing license.</p>
-  <div class="nq-service-card-meta"><span>SAR 150</span><span>1 working day</span></div>
+  <div class="nq-service-card-meta"><span><bdi><span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">Saudi riyals</span> 150</bdi></span><span>1 working day</span></div>
   <a class="nq-button" href="./services/license">View license renewal</a>
 </article>`,
     api: [

@@ -24,3 +24,8 @@ mode uses a CSS filter. Rights to this artwork and the NIC trademark
 remain with their respective holders. No Apache 2.0 license for the
 artwork or trademark permission is inferred from its inclusion.
 See apps/playground/src/assets/README.md for provenance.
+
+The NasaqRiyal symbol font is a U+20C1-only derivative of Noto Naskh Arabic
+2.021, Copyright 2022 The Noto Project Authors, licensed under SIL OFL 1.1.
+Its complete license and reproducible source record are included in
+packages/styles/src/assets/fonts/riyal-LICENSE.txt and riyal-provenance.json.

@@ -4,3 +4,5 @@ examples/*/public/licenses/* -whitespace
 # Keep vendored icon bytes and their recorded SHA-256 hashes stable on every OS.
 packages/styles/src/assets/icons/*.svg -text
 packages/styles/src/assets/icons/LICENSE -text
+packages/styles/src/assets/fonts/riyal.woff2 -text
+packages/styles/src/assets/fonts/riyal-LICENSE.txt -text -whitespace
