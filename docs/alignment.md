@@ -70,3 +70,8 @@ Keep source-code licensing separate from the permissions attached to fonts, icon
 ## Updating the evidence
 
 For each evaluated guideline, record an identifier, primary URL, source version/date, classification, product applicability, affected components, verification method, outcome, and unresolved gaps. Retain previous evidence when updating a reference so consumers can understand what changed. Broader claims require broader evaluation; do not infer whole-product compliance from a component test.
+
+The opt-in `data-nq-density="mobile"` profile maps the supplied Mobile input body
+and button dimensions without replacing comfortable/compact defaults. Fields
+have a 44 px minimum; small/default/large buttons use 32/40/44 px at a 16 px root.
+See the source IDs and mapping limits in [the reference](dga-reference.md).

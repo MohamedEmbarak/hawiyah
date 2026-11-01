@@ -157,10 +157,10 @@
 /* Textarea form5:47724:96px high, padding12/16. User resizing remains native. */
 .nq-textarea { min-block-size: var(--nq-profile-textarea-height, 7.5rem); padding: var(--nq-profile-textarea-padding, var(--nq-space-2) var(--nq-space-3)); }
 /* Fit the requested density without clipping translated or zoomed text. */
-:is(.nq-input, .nq-select) { --nq-field-height: var(--nq-control-height); }
-:is(.nq-input, .nq-select)[data-size='sm'] { --nq-field-height: var(--nq-control-height-sm); }
-:is(.nq-input, .nq-select)[data-size='lg'] { --nq-field-height: var(--nq-control-height-lg); }
-:is(.nq-input, .nq-select):is(:not([data-size]), [data-size]) { padding-block: clamp(0px, calc((var(--nq-field-height) - 1em * var(--nq-profile-field-leading, var(--nq-leading-normal)) - 2px) / 2), var(--nq-profile-field-padding-block, var(--nq-space-2))); }
+:is(.nq-input, .nq-select) { --nq-field-height: max(var(--nq-control-height), var(--nq-control-field-min-height, 0px)); }
+:is(.nq-input, .nq-select)[data-size='sm'] { --nq-field-height: max(var(--nq-control-height-sm), var(--nq-control-field-min-height, 0px)); }
+:is(.nq-input, .nq-select)[data-size='lg'] { --nq-field-height: max(var(--nq-control-height-lg), var(--nq-control-field-min-height, 0px)); }
+:is(.nq-input, .nq-select):is(:not([data-size]), [data-size]) { min-block-size: var(--nq-field-height); padding-block: clamp(0px, calc((var(--nq-field-height) - 1em * var(--nq-profile-field-leading, var(--nq-leading-normal)) - 2px) / 2), var(--nq-profile-field-padding-block, var(--nq-space-2))); }
 :is(.nq-input, .nq-select)[data-size='sm'] { line-height: max(1em, min(calc(1em * var(--nq-profile-field-leading, var(--nq-leading-normal))), calc(var(--nq-field-height) - 2px))); }
 .nq-label, .nq-hint, .nq-error { line-height: var(--nq-profile-label-leading, var(--nq-leading-normal)); }
 .nq-input-addon { border-radius: var(--nq-profile-control-radius, var(--nq-radius-md)); }

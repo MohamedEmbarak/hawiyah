@@ -177,6 +177,7 @@
   --nq-control-height-sm: 2rem;
   --nq-control-height-lg: 2.5rem;
   --nq-control-padding-inline: 1rem;
+  --nq-control-field-min-height: 0px;
   --nq-density-gap: 1rem;
   --nq-density-cell-padding: 1rem;
 }
@@ -588,6 +589,7 @@
   --nq-control-height-sm: 2rem;
   --nq-control-height-lg: 2.5rem;
   --nq-control-padding-inline: 1rem;
+  --nq-control-field-min-height: 0px;
   --nq-density-gap: 1rem;
   --nq-density-cell-padding: 1rem;
 }
@@ -597,6 +599,17 @@
   --nq-control-height-sm: 1.5rem;
   --nq-control-height-lg: 2.5rem;
   --nq-control-padding-inline: 0.75rem;
+  --nq-control-field-min-height: 0px;
   --nq-density-gap: 0.75rem;
   --nq-density-cell-padding: 0.625rem;
+}
+
+:where([data-nq-density="mobile"]) {
+  --nq-control-height: 2.5rem;
+  --nq-control-height-sm: 2rem;
+  --nq-control-height-lg: 2.75rem;
+  --nq-control-padding-inline: 1rem;
+  --nq-control-field-min-height: 2.75rem;
+  --nq-density-gap: 1rem;
+  --nq-density-cell-padding: 1rem;
 }

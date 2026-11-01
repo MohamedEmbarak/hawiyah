@@ -1,5 +1,15 @@
 # Validation record
 
+## 2026-11-01 mobile density
+
+All packages and four consumer builds passed. Four token tests and eight browser
+cases (two mobile-density cases plus six existing DGA-theme regressions) passed.
+Measured control geometry covers a 320 px viewport, RTL/LTR, DGA/Nasaq/custom,
+light/dark, default/filled/disabled/read-only/invalid fields, nested compact and
+comfortable scopes, consumer height overrides and enlarged field text. Read-only
+and forced-colors focus regressions remain green. These are rendered Nasaq
+checks, not a full Figma visual comparison or mobile dark-mode parity claim.
+
 ## 2026-11-01 Home and Search follow-up
 
 The bilingual gallery adds Home and Search and uses the public vanilla header

@@ -124,7 +124,8 @@ export const tokens = {
     "height": "2.5rem",
     "height-sm": "2rem",
     "height-lg": "2.5rem",
-    "padding-inline": "1rem"
+    "padding-inline": "1rem",
+    "field-min-height": "0px"
   },
   "density": {
     "gap": "1rem",
@@ -482,7 +483,8 @@ export const densities = {
       "height": "2.5rem",
       "height-sm": "2rem",
       "height-lg": "2.5rem",
-      "padding-inline": "1rem"
+      "padding-inline": "1rem",
+      "field-min-height": "0px"
     },
     "density": {
       "gap": "1rem",
@@ -494,11 +496,25 @@ export const densities = {
       "height": "2rem",
       "height-sm": "1.5rem",
       "height-lg": "2.5rem",
-      "padding-inline": "0.75rem"
+      "padding-inline": "0.75rem",
+      "field-min-height": "0px"
     },
     "density": {
       "gap": "0.75rem",
       "cell-padding": "0.625rem"
+    }
+  },
+  "mobile": {
+    "control": {
+      "height": "2.5rem",
+      "height-sm": "2rem",
+      "height-lg": "2.75rem",
+      "padding-inline": "1rem",
+      "field-min-height": "2.75rem"
+    },
+    "density": {
+      "gap": "1rem",
+      "cell-padding": "1rem"
     }
   }
 } as const;
@@ -628,7 +644,8 @@ export const tokenNames = {
     "height": "--nq-control-height",
     "height-sm": "--nq-control-height-sm",
     "height-lg": "--nq-control-height-lg",
-    "padding-inline": "--nq-control-padding-inline"
+    "padding-inline": "--nq-control-padding-inline",
+    "field-min-height": "--nq-control-field-min-height"
   },
   "density": {
     "gap": "--nq-density-gap",
@@ -735,6 +752,7 @@ export const cssVariableNames = [
   "--nq-control-height-sm",
   "--nq-control-height-lg",
   "--nq-control-padding-inline",
+  "--nq-control-field-min-height",
   "--nq-density-gap",
   "--nq-density-cell-padding"
 ] as const;

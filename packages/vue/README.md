@@ -60,7 +60,7 @@ Use `defaultValue` alongside `v-model` if a nonempty reset value is desired.
 
 Locale, direction, theme, mode and density are independent application choices.
 Set `lang`, `dir`, `data-nq-theme="nasaq|dga|custom"`,
-`data-nq-mode="light|dark"` and `data-nq-density="comfortable|compact"` on an
+`data-nq-mode="light|dark"` and `data-nq-density="comfortable|compact|mobile"` on an
 ancestor. Provide translated labels, status messages, pagination labels and
 close labels; the library never infers text language from layout direction.
 

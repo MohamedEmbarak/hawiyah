@@ -2,6 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { createThemeVariables, cssVariableNames, tokens } from '../src/index';
 
 describe('DGA default and explicit legacy theme contracts', () => {
+  it('keeps mobile field minimums separate from button sizes and caller overrides', () => {
+    for (const theme of ['dga', 'nasaq', 'custom'] as const) {
+      const mobile = createThemeVariables({}, {theme, density:'mobile'});
+      expect(mobile['--nq-control-field-min-height']).toBe('2.75rem');
+      expect(mobile['--nq-control-height']).toBe('2.5rem');
+      expect(mobile['--nq-control-height-sm']).toBe('2rem');
+      expect(mobile['--nq-control-height-lg']).toBe('2.75rem');
+    }
+    expect(createThemeVariables({}, {density:'compact'})['--nq-control-field-min-height']).toBe('0px');
+    expect(createThemeVariables({'--nq-control-height':'3rem'}, {density:'mobile'})['--nq-control-height']).toBe('3rem');
+  });
   it('uses the mapped reference in plain exports, custom defaults and SSR variables', () => {
     expect(tokens.color.primary).toBe('#1B8354');
     const defaults = createThemeVariables();

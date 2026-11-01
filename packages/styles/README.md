@@ -161,3 +161,23 @@ Portal headers/footers retain their public `nq-portal-*` classes. The adapters
 provide responsive disclosure behavior; vanilla uses `createPortalHeader` or
 `enhance`. Template content, validation and integrations remain application responsibilities.
 The Figma-derived examples are available in the guide's template gallery.
+
+### Opt-in mobile control sizing
+
+Set `data-nq-density="mobile"` on an application or subtree, or pass
+`{ density: 'mobile' }` to `createThemeVariables`. At a 16 px root size,
+small/default/large buttons are 32/40/44 px. Single-line `.nq-input` and
+`.nq-select` controls have a 44 px minimum across size variants, using the
+additive `--nq-control-field-min-height` token. Existing control-height overrides
+still apply when larger. Textareas remain multiline and grow independently.
+Comfortable/compact scopes reset the field minimum, including inside mobile.
+This is an explicit profile shared by all four adapters; viewport width does not
+automatically select it. Nasaq/custom palettes, corners and dark mode remain
+application choices; this does not establish source mobile dark-mode parity.
+
+Source: supplied Mobile Components input set `3149:54894`, body `11167:15771`
+(320 × 44, radius 4); button nodes `407:510377`, `407:510548`, `407:510617`
+(large/medium/small: 44/40/32). These are decoded dimensions. A single source
+input size informs a shared minimum, not a claim that every Nasaq variant is an
+exact source component. The source small button is not a blanket 44 px touch
+target; applications must still evaluate target spacing and interaction needs.

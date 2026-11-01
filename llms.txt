@@ -38,7 +38,7 @@ Status: public 0.1 source preview under Apache-2.0. Seven packages support 79 ca
 
 - Packages: @nasaq/tokens, @nasaq/styles, @nasaq/core, @nasaq/vanilla, @nasaq/react, @nasaq/vue, @nasaq/angular.
 - Use public exports, nq- CSS classes, and --nq- tokens. Do not invent exports or edit generated dist files.
-- Default foundation is dga; use data-nq-theme="dga" explicitly or data-nq-theme="nasaq" for opt-in Woven Rhythm. Custom overrides are application-owned. Mode: data-nq-mode="light|dark". Density: data-nq-density="comfortable|compact".
+- Default foundation is dga; use data-nq-theme="dga" explicitly or data-nq-theme="nasaq" for opt-in Woven Rhythm. Custom overrides are application-owned. Mode: data-nq-mode="light|dark". Density: data-nq-density="comfortable|compact|mobile".
 - All 23 supplied DGA snapshots are decoded locally; the former six-file transfer limit is resolved. Verified serialization formats are fig-kiwi v101/v106 with raw-DEFLATE schema and Zstandard message. No standalone web Components Library was supplied. All 40 selected Foundations references match; imported caches require exact identity/mode mapping. Native Mobile/Home/Search observations cover representative frames only. Do not infer exhaustive visual parity, prototype playback, mobile dark-mode coverage, asset rights, or certification. See docs/dga-source-inventory.md and docs/dga-audit-followup.md. Hajj is application-specific and excluded from Nasaq scope and backlog.
 - Locale, lang, and dir are separate concerns. Preserve Arabic, English, RTL, LTR, and mixed-direction text behavior.
 - Frameworks own rendering. Do not run vanilla enhancement over framework-owned component trees.
