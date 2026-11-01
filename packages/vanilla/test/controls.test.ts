@@ -28,6 +28,26 @@ describe('native control enhancements', () => {
     lower.value = '90'; lower.dispatchEvent(new Event('input', { bubbles: true })); expect(controller.value).toEqual([80, 80]);
     form.reset(); await Promise.resolve(); expect(controller.value).toEqual([20, 80]); controller.destroy(); expect(lower.value).toBe('10'); expect(lower.min).toBe('0');
   });
+  it('keeps readonly range thumbs in native tab order while rejecting value changes', () => {
+    const root = mount('<div data-nq-readonly="true"><label>Minimum<input type="range" data-nq-lower value="20"></label><label>Maximum<input type="range" data-nq-upper value="80"></label></div>');
+    const changed = vi.fn(); const controller = createRangeSlider(root, { onValueChange: changed });
+    for (const input of root.querySelectorAll('input')) {
+      expect(key(input, 'Tab').defaultPrevented).toBe(false);
+      expect(key(input, 'Tab', { shiftKey: true }).defaultPrevented).toBe(false);
+      expect(key(input, 'Escape').defaultPrevented).toBe(false);
+      expect(key(input, 'c', { ctrlKey: true }).defaultPrevented).toBe(false);
+      for (const direction of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']) expect(key(input, direction).defaultPrevented).toBe(true);
+      const pointer = new Event('pointerdown', { bubbles: true, cancelable: true }); input.dispatchEvent(pointer); expect(pointer.defaultPrevented).toBe(true);
+      input.value = '50'; input.dispatchEvent(new Event('input', { bubbles: true }));
+      expect(controller.value).toEqual([20, 80]);
+    }
+    expect([...root.querySelectorAll('input')].map(input => input.value)).toEqual(['20', '80']); expect(changed).not.toHaveBeenCalled();
+    root.dataset.nqReadonly = 'false';
+    const lower = root.querySelector('input')!;
+    expect(key(lower, 'ArrowRight').defaultPrevented).toBe(false);
+    lower.value = '30'; lower.dispatchEvent(new Event('input', { bubbles: true })); expect(changed).toHaveBeenCalledWith([30, 80]);
+    root.dataset.nqReadonly = 'true'; controller.destroy(); expect(key(lower, 'ArrowRight').defaultPrevented).toBe(false);
+  });
   it('commits/removes unique tags, submits repeated values, validates required selection and resets', async () => {
     const form = mount('<form><div data-nq-name="tags" data-nq-value=\'["Design"]\'><label>Tags<input data-nq-tag-input required></label><div data-nq-tags></div></div></form>') as HTMLFormElement;
     const root = form.firstElementChild as HTMLElement; const before = root.outerHTML; const controller = createTagInput(root); const input = root.querySelector<HTMLInputElement>('[data-nq-tag-input]')!;

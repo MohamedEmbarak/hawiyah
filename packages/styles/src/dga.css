@@ -138,8 +138,8 @@
   outline: 2px solid var(--nq-color-focus);
 }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'] { background-color: var(--nq-color-surface-muted); background-image: linear-gradient(var(--nq-color-primary-text, var(--nq-color-primary)), var(--nq-color-primary-text, var(--nq-color-primary))); background-repeat: no-repeat; background-position: center bottom; background-size: 0% 2px; }
-:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus { background-size: var(--nq-profile-field-focus-line, 0% 2px); }
-:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:active { background-size: var(--nq-profile-field-pressed-line, 0% 2px); }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus:not(:disabled, [readonly]) { background-size: var(--nq-profile-field-focus-line, 0% 2px); }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:active:not(:disabled, [readonly]) { background-size: var(--nq-profile-field-pressed-line, 0% 2px); }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus-visible { border-color: var(--nq-color-border-strong); }
 :is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true'] {
   border-color: var(--nq-color-danger);

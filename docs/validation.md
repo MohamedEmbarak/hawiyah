@@ -1,5 +1,19 @@
 # Validation record
 
+## 2026-11-01 input follow-up
+
+The read-only RangeSlider now preserves Tab/Shift+Tab while blocking value-changing
+keys. Filled read-only inputs keep one inset keyboard focus cue. Angular TextField,
+Textarea and Select forward `size` and `visualVariant` to their native controls.
+Node 24.21.0 and the pinned pnpm 11.25.0 were used on Windows. Package compilation
+and all four application builds passed. The vanilla controls suite (10 tests),
+Angular native components suite (8 tests), and six DGA-theme Chromium cases passed,
+including RTL/LTR traversal, light/dark read-only focus, green/red editable
+underlines and forced colors. Vitest used `--pool=threads --maxWorkers=1` after
+the default fork workers timed out during startup; that startup failure ran no
+tests. The Angular input regression uses `ComponentRef.setInput` to exercise
+public input updates directly. These checks do not establish full visual parity.
+
 This record covers the Nasaq `0.1.0` library development snapshot checked on **2026-10-29**. It distinguishes source coverage, targeted behavior tests, package-consumer checks, and browser evidence. A passing check applies to its stated scope; it is not a declaration of complete accessibility, DGA compliance, or production certification.
 
 ## Environment

@@ -21,6 +21,10 @@ and Eastern Arabic digits into ASCII, keeps one focus stop and uses native
 maxlength/required. MultiSelect uses actual checkboxes; filtered selections remain
 checked and submitted. Native fieldset disabled works normally.
 
+RangeSlider's `data-nq-readonly="true"` prevents pointer and value-changing
+keyboard input while preserving Tab/Shift+Tab navigation and other native keys.
+Its two labelled thumbs remain focusable; read-only values still submit normally.
+
 ```html
 <div class="nq-calendar" data-nq="calendar" data-nq-value="2026-10-28"
   data-nq-month="2026-10-01" data-nq-min="2026-01-01" data-nq-max="2027-12-31"

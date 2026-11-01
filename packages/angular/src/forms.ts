@@ -39,9 +39,11 @@ export class NqFieldComponent {
 
 @Component({ selector: 'nq-text-field', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqTextFieldComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><input class="nq-input" [id]="controlId" [type]="type" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [placeholder]="placeholder" [attr.autocomplete]="autocomplete" [attr.inputmode]="inputmode || null" [attr.min]="min" [attr.max]="max" [attr.step]="step" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.pattern]="pattern" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()">${fieldEnd}</div>` })
+  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><input class="nq-input" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [type]="type" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [placeholder]="placeholder" [attr.autocomplete]="autocomplete" [attr.inputmode]="inputmode || null" [attr.min]="min" [attr.max]="max" [attr.step]="step" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.pattern]="pattern" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()">${fieldEnd}</div>` })
 export class NqTextFieldComponent extends NqValueControl<string> {
   override value = '';
+  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() visualVariant: 'outline' | 'filled' = 'outline';
   @Input() type: 'text' | 'email' | 'password' | 'tel' | 'url' | 'search' | 'date' | 'datetime-local' | 'month' | 'week' | 'time' | 'number' | 'color' | 'range' = 'text';
   @Input() placeholder = '';
   @Input() autocomplete = 'off';
@@ -57,9 +59,11 @@ export class NqTextFieldComponent extends NqValueControl<string> {
 
 @Component({ selector: 'nq-textarea', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqTextareaComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><textarea class="nq-textarea" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [rows]="rows" [placeholder]="placeholder" [attr.maxlength]="maxLength" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()"></textarea>${fieldEnd}</div>` })
+  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><textarea class="nq-textarea" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [rows]="rows" [placeholder]="placeholder" [attr.maxlength]="maxLength" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()"></textarea>${fieldEnd}</div>` })
 export class NqTextareaComponent extends NqValueControl<string> {
   override value = '';
+  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() visualVariant: 'outline' | 'filled' = 'outline';
   @Input() rows = 4;
   @Input() placeholder = '';
   @Input() maxLength: number | null = null;
@@ -68,9 +72,11 @@ export class NqTextareaComponent extends NqValueControl<string> {
 
 @Component({ selector: 'nq-select', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqSelectComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><select class="nq-select" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="update($any($event.target).value)" (blur)="touch()">@if (placeholder) {<option value="">{{ placeholder }}</option>}@for (option of options; track option.value) {<option [value]="option.value" [disabled]="option.disabled ?? false" [selected]="option.value === value">{{ option.label }}</option>}</select>${fieldEnd}</div>` })
+  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><select class="nq-select" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="update($any($event.target).value)" (blur)="touch()">@if (placeholder) {<option value="">{{ placeholder }}</option>}@for (option of options; track option.value) {<option [value]="option.value" [disabled]="option.disabled ?? false" [selected]="option.value === value">{{ option.label }}</option>}</select>${fieldEnd}</div>` })
 export class NqSelectComponent extends NqValueControl<string> {
   override value = '';
+  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() visualVariant: 'outline' | 'filled' = 'outline';
   @Input() options: readonly Option[] = [];
   @Input() placeholder = 'Select an option';
 }

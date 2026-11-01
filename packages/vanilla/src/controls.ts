@@ -39,7 +39,10 @@ export function createRangeSlider(root: HTMLElement, options: RangeSliderOptions
   };
   for (const [input, changed] of [[lower, 'lower'], [upper, 'upper']] as const) {
     scope.listen(input, 'input', () => update(changed));
-    scope.listen(input, 'keydown', event => { if (readOnly(root)) event.preventDefault(); });
+    scope.listen(input, 'keydown', event => {
+      // Block value changes, while leaving Tab, Escape and browser shortcuts native.
+      if (readOnly(root) && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes((event as KeyboardEvent).key)) event.preventDefault();
+    });
     scope.listen(input, 'pointerdown', event => { if (readOnly(root)) event.preventDefault(); });
   }
   if (lower.form) scope.listen(lower.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { value = clampRange([lower.valueAsNumber, upper.valueAsNumber], min, max, 'lower'); render(); } }));

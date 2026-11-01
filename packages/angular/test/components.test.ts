@@ -4,13 +4,13 @@ import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { FormsModule } from '@angular/forms';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { NqCheckboxComponent, NqComboboxComponent, NqTabComponent, NqTabsComponent, NqTextFieldComponent } from '@nasaq/angular';
+import { NqCheckboxComponent, NqComboboxComponent, NqSelectComponent, NqTabComponent, NqTabsComponent, NqTextareaComponent, NqTextFieldComponent } from '@nasaq/angular';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => TestBed.resetTestingModule());
 
 function host<T extends object>(type: new () => T, template: string) {
-  Component({standalone: true, imports: [FormsModule, NqCheckboxComponent, NqComboboxComponent, NqTabComponent, NqTabsComponent, NqTextFieldComponent], template})(type);
+  Component({standalone: true, imports: [FormsModule, NqCheckboxComponent, NqComboboxComponent, NqSelectComponent, NqTabComponent, NqTabsComponent, NqTextareaComponent, NqTextFieldComponent], template})(type);
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
   return fixture;
@@ -18,6 +18,20 @@ function host<T extends object>(type: new () => T, template: string) {
 function key(element: Element, key: string) { element.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true, cancelable: true})); }
 
 describe('Angular native component behavior', () => {
+  for (const component of [NqTextFieldComponent, NqTextareaComponent, NqSelectComponent]) {
+    it(`forwards changing size and visualVariant inputs in ${component.name}`, () => {
+      const fixture = TestBed.createComponent<{size:string; visualVariant:string}>(component);
+      fixture.componentRef.setInput('label', 'الخدمة');
+      fixture.componentRef.setInput('size', 'sm'); fixture.componentRef.setInput('visualVariant', 'filled');
+      fixture.detectChanges();
+      const control = fixture.nativeElement.querySelector('input, textarea, select') as HTMLElement;
+      expect(control.dataset.size).toBe('sm'); expect(control.dataset.variant).toBe('filled');
+      expect(fixture.nativeElement.querySelector(`label[for="${control.id}"]`)).not.toBeNull();
+      fixture.componentRef.setInput('size', 'lg'); fixture.componentRef.setInput('visualVariant', 'outline');
+      fixture.detectChanges();
+      expect(control.dataset.size).toBe('lg'); expect(control.dataset.variant).toBe('outline');
+    });
+  }
   it('propagates model writes, native input changes and disabled state through Angular forms', async () => {
     class Host { name = 'Maha'; disabled = false; }
     const fixture = host(Host, `<nq-text-field label="Name" controlId="name" name="name" [(ngModel)]="name" [disabled]="disabled" />`);
