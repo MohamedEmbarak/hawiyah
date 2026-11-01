@@ -7,7 +7,7 @@ import {
   watchEffect,
 } from "vue";
 import type { PropType } from "vue";
-import { clampRange, filterOptions, normalizeDigits } from "@nasaq/core";
+import { clampRange, filterOptions, isDisabled, normalizeDigits } from "@nasaq/core";
 import type { Option } from "@nasaq/core";
 import { Button, TextField, decorate } from "./forms.js";
 import { decorationProps, useField, useFormReset, useValue } from "./shared.js";
@@ -737,8 +737,9 @@ export const FileDropzone = defineComponent({
         })
       );
     };
+    const unavailable = () => props.disabled || props.readonly || !element.value || isDisabled(element.value);
     const select = (list: FileList | null, drop = false) => {
-      if (props.disabled || props.readonly || !list) return;
+      if (unavailable() || !list) return;
       const files = Array.from(list);
       if (
         files.some((file) => !accepted(file)) ||
@@ -765,7 +766,7 @@ export const FileDropzone = defineComponent({
             "data-dragging": dragging.value ? "true" : undefined,
             onDragover: (event: DragEvent) => {
               event.preventDefault();
-              if (!props.disabled && !props.readonly) dragging.value = true;
+              if (!unavailable()) dragging.value = true;
             },
             onDragleave: () => {
               dragging.value = false;

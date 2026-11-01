@@ -1,6 +1,6 @@
 import { booleanAttribute, Component, Directive, ElementRef, EventEmitter, forwardRef, inject, Input, Output, ViewChild, type AfterViewInit, type OnChanges, type SimpleChanges } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR, type AbstractControl, type ValidationErrors, type Validator } from '@angular/forms';
-import { clampRange, filterOptions, formatCalendarDate, getCalendarDateParts, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, moveCalendarDate, normalizeDigits, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarSystem, type Direction, type Option } from '@nasaq/core';
+import { clampRange, filterOptions, formatCalendarDate, getCalendarDateParts, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, normalizeDigits, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarSystem, type Direction, type Option } from '@nasaq/core';
 import { NqValueControl } from './forms';
 import { NqDialogComponent } from './overlays';
 
@@ -141,15 +141,16 @@ export class NqDatePickerComponent extends NqExpandedValueControl<string> implem
 export class NqFileDropzoneComponent extends NqExpandedValueControl<File[]> {
   override value: File[] = []; protected emptyValue() { return []; } @Input() accept = ''; @Input({transform: booleanAttribute}) multiple = false; @Input() instruction = 'Drop files here or choose files'; @Input() selectedMessage = (count: number) => `${count} files selected`; @Output() readonly rejected = new EventEmitter<readonly File[]>(); @ViewChild('input') input?: ElementRef<HTMLInputElement>; dragging = false;
   private accepts(file: File) { return !this.accept || this.accept.split(',').some(rule => { const part = rule.trim().toLowerCase(); return part.startsWith('.') ? file.name.toLowerCase().endsWith(part) : part.endsWith('/*') ? file.type.startsWith(part.slice(0, -1)) : file.type === part; }); }
+  private get unavailable() { return this.disabled || this.readOnly || !this.input || isDisabled(this.input.nativeElement); }
   private commit(files: File[]) {
-    if (this.disabled || this.readOnly) return;
+    if (this.unavailable) return;
     const accepted = files.filter(file => this.accepts(file)); const selected = this.multiple ? accepted : accepted.slice(0, 1); const rejected = files.filter(file => !selected.includes(file)); if (rejected.length) this.rejected.emit(rejected);
     if (this.input && typeof DataTransfer !== 'undefined') { const transfer = new DataTransfer(); selected.forEach(file => transfer.items.add(file)); this.input.nativeElement.files = transfer.files; }
     else if (this.input && rejected.length) { this.input.nativeElement.value = ''; this.update([]); return; }
     this.update(selected); this.touch();
   }
   selected(event: Event) { this.commit(Array.from((event.target as HTMLInputElement).files ?? [])); }
-  dragover(event: DragEvent) { event.preventDefault(); if (!this.disabled && !this.readOnly) this.dragging = true; }
+  dragover(event: DragEvent) { event.preventDefault(); if (!this.unavailable) this.dragging = true; }
   drop(event: DragEvent) { event.preventDefault(); this.dragging = false; if (event.dataTransfer) this.commit(Array.from(event.dataTransfer.files)); }
   override writeValue(value: File[] | null) { super.writeValue(value); if (!this.value.length && this.input) this.input.nativeElement.value = ''; }
 }

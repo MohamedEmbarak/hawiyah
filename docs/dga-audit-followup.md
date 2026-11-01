@@ -106,3 +106,15 @@ state on close/reopen. Native modal focus, Escape and deliberate backdrop
 dismissal remain. Confidence is high for the reproduced runtime defect; Figma
 does not establish this browser interaction contract or a drawer entrance timing.
 Verification scope is recorded in [validation](validation.md).
+
+## Disabled-state follow-up — 2026-11-01
+
+| Source / implementation evidence | Requirement / observed behavior | Current implementation | Mismatch | Action | Confidence |
+| --- | --- | --- | --- | --- | --- |
+| Nasaq FileDropzone state review; React `expanded-controls.tsx`, Vue `controls.ts`, Angular `advanced-controls.ts` | A native file input can inherit disabled state from a fieldset while its component prop remains false | Drop handlers now consult the input's effective disabled state; vanilla already did | Confirmed adapter defect: drops could change a disabled control's files and emit selection callbacks | Fixed all three native adapters; preserve prior files, cancel blocked drops, retain the native first-legend exception and check changes during a drag | High for code and focused regressions; not a Figma-derived browser rule |
+
+This is an accessibility/state-consistency correction found during alignment
+work. It adds no official source requirement or visual-parity claim. Remaining
+mobile navigation-drawer/top-bar compositions, broader state coverage and
+imported-library/licensing questions remain separate backlog items. Hajj remains
+excluded.

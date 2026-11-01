@@ -48,6 +48,11 @@ boundary, not a simulated implementation.
   calendar independent of direction. Values are ISO Gregorian dates.
 - DatePicker: ISO text/native date input plus accessible labelled dialog Calendar;
   display calendar can be gregory or islamic-umalqura. No handwritten conversions.
+- FileDropzone: honor the native input's effective disabled state, including an
+  ancestor disabled fieldset and its first-legend exception. A blocked drop must
+  not change files, report a selection or reject files; clear transient dragging
+  and prevent the drop's browser default. Check state at event time so a fieldset
+  can be disabled while a drag is in progress. File selection is not upload transport.
 - Popover: a disclosure with a trigger, labelled region, outside press/Escape;
   interactive children use normal Tab. Menu: menu/menuitem keyboard semantics,
   Home/End/ArrowUp/ArrowDown, focus return. Drawer composes native modal dialog

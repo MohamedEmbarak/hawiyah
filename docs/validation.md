@@ -1,5 +1,21 @@
 # Validation record
 
+## 2026-11-01 disabled file-drop state
+
+React, Vue and Angular FileDropzone wrappers previously checked only component
+props, allowing drops when their native file inputs inherited disabled state
+from a fieldset. Each now checks the input's effective state at event time.
+Six new adapter regressions cover inherited disablement, re-enabling, disabling
+during a drag, unchanged files/callbacks, cancelled drop defaults and the native
+first-legend exception. Those six plus 32 existing React/Vue expansion tests
+passed. The final React dragover amendment passed its two focused cases again.
+
+All packages, the guide and native consumers built; React was recompiled and its
+consumer rebuilt after the final dragover change. JSDOM tests use real `:disabled`
+matching but stub DataTransfer/file-list assignment; they do not establish an
+OS-level file-drag or upload-transport audit. Vanilla already used effective
+disabled checks and is unchanged. Calendar logic and public APIs are unchanged.
+
 ## 2026-11-01 modal backdrop gestures
 
 Before the fix, real Chromium content-to-backdrop drags dismissed the date-picker
