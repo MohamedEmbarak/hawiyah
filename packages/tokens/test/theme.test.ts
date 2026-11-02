@@ -64,6 +64,7 @@ describe('DGA default and explicit legacy theme contracts', () => {
     expect(values['--nq-color-primary']).toBe('#123456');
     expect(values['--nq-color-canvas']).toBe('#111927');
     expect(values['--nq-control-height']).toBe('2rem');
-    expect(values['--nq-duration-input']).toBe('150ms');
+    expect(values['--nq-duration-input']).toBe('500ms');
+    expect(values['--nq-ease-input']).toBe('ease');
   });
 });

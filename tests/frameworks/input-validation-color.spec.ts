@@ -7,7 +7,7 @@ test('native adapter fields share neutral, valid and invalid underline states', 
   await field.evaluate(node => { (node as HTMLInputElement).required = true; node.setAttribute('pattern', '.{8,}'); });
   const colors = await field.evaluate(node => {
     const probe = document.createElement('span'); node.parentElement!.append(probe);
-    const values = ['--nq-color-text', '--nq-color-primary-text', '--nq-color-danger'].map(token => { probe.style.color = `var(${token})`; const value = getComputedStyle(probe).color; return `linear-gradient(${value}, ${value})`; });
+    const values = ['--nq-color-field-active', '--nq-color-primary-text', '--nq-color-danger'].map(token => { probe.style.color = `var(${token})`; const value = getComputedStyle(probe).color; return `linear-gradient(${value}, ${value})`; });
     probe.remove(); return values;
   });
   await field.focus(); await expect(field).toHaveCSS('background-image', colors[0]!);

@@ -265,3 +265,7 @@ interaction states, dark-surface use and density adaptations.
 
 [Ready component examples](../../docs/ready-component-examples.md) cover all five
 alert/notification tones, header/footer composition and guide-only navigation containment.
+
+InputGroup tracks value presence for projected native `.nq-input` / `.nq-select`
+controls after Angular renders; no vanilla enhancer is required. Keep labels
+and hints outside the joined row. See [NIC input composition](../../docs/nic-inputs.md).

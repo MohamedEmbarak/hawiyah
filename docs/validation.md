@@ -526,3 +526,15 @@ responsive masonry, status markup, light/dark contrast and mobile navigation.
 See [scope and limits](ready-component-examples.md). Guide preview containment
 does not change production component link or form behavior.
 
+## NIC input states and motion — 2026-11-02
+
+Twenty-one focused Chromium cases passed (twelve vanilla guide/theme and nine
+native React/Vue/Angular cases). Checks cover source-backed label/padding and
+500ms underline motion, grouped controls, validation precedence, RTL/LTR,
+read-only focus, reduced motion, forced colors and original/custom themes.
+The full build, 301 unit tests and eight semantic contrast checks passed.
+See [source mappings and deliberate adaptations](nic-inputs.md). Firefox/WebKit
+and manual screen-reader checks remain outside this result.
+Clean tarball consumers passed ESM/SSR, Angular APF, CSS exports, TypeScript
+declarations and tree shaking. No package was published.
+

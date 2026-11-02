@@ -25,7 +25,7 @@ for (const mode of ['light', 'dark']) for (const variant of ['outlined', 'filled
     await page.keyboard.press('Tab'); await expect(prefilled).toHaveCSS('background-size', '0% 2px');
     for (const id of ['optional-query', 'required-email', 'required-note', 'required-choice']) {
       const field = form.locator(`#${id}`); await field.focus();
-      await expectLine(field, '--nq-color-text');
+      await expectLine(field, '--nq-color-field-active');
       await expect(field).toHaveCSS('background-size', '100% 2px'); await expect(field).toHaveCSS('outline-style', 'none');
     }
     await email.fill('invalid'); await page.keyboard.press('Tab');
@@ -41,7 +41,7 @@ for (const mode of ['light', 'dark']) for (const variant of ['outlined', 'filled
     const choice = form.locator('#required-choice'); await choice.focus(); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Tab');
     await expectLine(choice, '--nq-color-primary-text');
     await form.getByRole('button', { name: 'Reset', exact: true }).click();
-    for (const id of ['optional-query', 'required-email', 'required-note', 'required-choice']) await expectLine(form.locator(`#${id}`), '--nq-color-text');
+    for (const id of ['optional-query', 'required-email', 'required-note', 'required-choice']) await expectLine(form.locator(`#${id}`), '--nq-color-field-active');
     await expectLine(prefilled, '--nq-color-primary-text');
     await form.getByRole('button', { name: 'Submit', exact: true }).click();
     await expectLine(email, '--nq-color-danger');

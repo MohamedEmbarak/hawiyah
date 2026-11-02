@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { NqCardComponent, NqButtonDirective, NqIconButtonComponent, NqAlertComponent, NqBadgeComponent, NqToastRegionComponent, NqPortalHeaderComponent, NqPortalFooterComponent } from '@nasaq/angular';
+import { NqCardComponent, NqButtonDirective, NqIconButtonComponent, NqInputGroupComponent, NqAlertComponent, NqBadgeComponent, NqToastRegionComponent, NqPortalHeaderComponent, NqPortalFooterComponent } from '@nasaq/angular';
 @Component({
-  selector: 'app-root', standalone: true, imports: [NqCardComponent, NqButtonDirective, NqIconButtonComponent, NqAlertComponent, NqBadgeComponent, NqToastRegionComponent, NqPortalHeaderComponent, NqPortalFooterComponent],
+  selector: 'app-root', standalone: true, imports: [NqCardComponent, NqButtonDirective, NqIconButtonComponent, NqInputGroupComponent, NqAlertComponent, NqBadgeComponent, NqToastRegionComponent, NqPortalHeaderComponent, NqPortalFooterComponent],
   template: `<main class="nq-container nq-stack" data-testid="nic-showcase" data-nq-theme="dga" [attr.lang]="english ? 'en' : 'ar'" [attr.dir]="english ? 'ltr' : 'rtl'" style="padding-block:2rem;background:var(--nq-color-canvas);color:var(--nq-color-text)">
     <h1>{{ t('مرجع واجهة المركز', 'NIC UI reference') }}</h1>
     <button class="nq-button" (click)="english = !english">{{ english ? 'العربية' : 'English' }}</button>
@@ -17,6 +17,7 @@ import { NqCardComponent, NqButtonDirective, NqIconButtonComponent, NqAlertCompo
       <section id="nic-demo-main" tabindex="-1"><h2>{{ t('محتوى الصفحة','Page content') }}</h2></section>
       <nq-portal-footer brand="نسق" [links]="[{label:t('الخصوصية','Privacy'),href:'/privacy'},{label:t('تواصل معنا','Contact'),href:'/contact'}]" copyright="2026"><p>{{ t('منصة توضيحية','Example platform') }}</p></nq-portal-footer>
     </section>
+    <section class="nq-field" data-testid="group-example"><label class="nq-label" for="group-email">{{ t('البريد الإلكتروني','Email') }}</label><nq-input-group data-testid="group-field"><span nqPrefix>@</span><input class="nq-input" id="group-email" name="group-email" type="email" [value]="groupEmail" (input)="groupEmail = $any($event.target).value" required></nq-input-group></section>
     <section class="nq-grid" style="--nq-layout-columns:1;--nq-layout-columns-md:2">
       <nq-card data-testid="base-card"><h2 nqCardHeader class="nq-card-title">{{ t('بطاقة معلومات', 'Information card') }}</h2><p class="nq-card-description">{{ t('محتوى واضح بمسافات موحدة.', 'Clear content with consistent spacing.') }}</p><span nqCardFooter>{{ t('تفاصيل إضافية', 'Additional details') }}</span></nq-card>
       <nq-card data-testid="border-card" variant="outlined"><h2 nqCardHeader class="nq-card-title">{{ t('بطاقة بإطار', 'Bordered card') }}</h2><p class="nq-card-description">{{ t('إطار دون ظل.', 'A border without a shadow.') }}</p></nq-card>
@@ -33,6 +34,6 @@ export class NicReferenceExampleComponent {
   statusMessages: import('@nasaq/angular').NqToast[] = ['neutral','info','success','warning','danger'].map(tone => ({id:tone,tone: tone as 'neutral'|'info'|'success'|'warning'|'danger',title:tone,message:'تفاصيل الإشعار'}));
   dismissStatus(id: string) { this.statusMessages = this.statusMessages.filter(item => item.id !== id); }
   containPreview(event: MouseEvent) { if ((event.target as Element).closest('a[href]')) event.preventDefault(); }
-  buttonCount = 0; english = false; disabled = true; activations = 0;
+  groupEmail = 'ready@example.test'; buttonCount = 0; english = false; disabled = true; activations = 0;
   t(ar: string, en: string) { return this.english ? en : ar; }
 }

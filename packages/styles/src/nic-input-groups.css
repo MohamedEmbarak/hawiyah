@@ -1,0 +1,35 @@
+/* NIC global.css 2554–2581: one animated line spans input + addons.
+   Only an editable focused control activates it, not a sibling addon button. */
+.nq-input-group:has(> .nq-input-addon) { position: relative; --nq-group-line-color: var(--nq-color-field-active); }
+.nq-input-addon:empty { display: none; }
+.nq-input-group > .nq-input-addon:empty:first-child + :is(.nq-input, .nq-select) { border-start-start-radius: var(--nq-profile-control-radius, var(--nq-radius-md)); border-end-start-radius: var(--nq-profile-control-radius, var(--nq-radius-md)); }
+.nq-input-group > :is(.nq-input, .nq-select):has(+ .nq-input-addon:empty:last-child) { border-start-end-radius: var(--nq-profile-control-radius, var(--nq-radius-md)); border-end-end-radius: var(--nq-profile-control-radius, var(--nq-radius-md)); }
+.nq-input-group:has(> .nq-input-addon)::after {
+  content: '';
+  display: var(--nq-dga-on, none) var(--nq-dga-off, block);
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 2px;
+  background: linear-gradient(var(--nq-group-line-color), var(--nq-group-line-color)) center bottom / 0% 2px no-repeat;
+  transition: background-size var(--nq-duration-input) var(--nq-ease-input);
+}
+.nq-input-group:has(> .nq-input-addon) > :is(.nq-input, .nq-select) {
+  --nq-profile-field-focus-line: 0% 2px;
+  --nq-profile-field-pressed-line: 0% 2px;
+}
+.nq-input-group:has(> :is(.nq-input, .nq-select):focus:not(:disabled, [readonly]))::after { background-size: 100% 2px; }
+.nq-input-group:has(> :is(.nq-input, .nq-select):active:not(:disabled, [readonly]))::after { background-size: 50% 2px; }
+.nq-input-group:has(> :is(.nq-input, .nq-select):where([data-nq-filled='true']):valid) { --nq-group-line-color: var(--nq-color-primary-text); }
+.nq-input-group:has(> :is(.nq-input, .nq-select)[aria-invalid='true']) { --nq-group-line-color: var(--nq-color-danger); }
+@supports selector(:user-invalid) {
+  .nq-input-group:has(> :is(.nq-input, .nq-select):user-invalid) { --nq-group-line-color: var(--nq-color-danger); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nq-input-group:has(> .nq-input-addon)::after { transition: none; }
+}
+@media (forced-colors: active) {
+  .nq-input-group:has(> .nq-input-addon)::after { display: none; }
+}

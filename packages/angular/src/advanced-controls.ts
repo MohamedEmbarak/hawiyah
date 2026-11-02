@@ -2,6 +2,7 @@ import { booleanAttribute, Component, Directive, ElementRef, EventEmitter, forwa
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR, type AbstractControl, type ValidationErrors, type Validator } from '@angular/forms';
 import { clampRange, filterOptions, formatCalendarDate, getCalendarDateParts, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, normalizeDigits, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarSystem, type Direction, type Option } from '@nasaq/core';
 import { NqValueControl } from './forms';
+import { observeAngularFieldPresence } from './field-presence';
 import { NqDialogComponent, NqTooltipComponent } from './overlays';
 
 const fieldEnd = `@if (hint) {<p class="nq-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="nq-error" [id]="controlId + '-error'">{{ error }}</p>}`;
@@ -15,7 +16,7 @@ export abstract class NqExpandedValueControl<T> extends NqValueControl<T> {
 }
 
 @Component({selector: 'nq-input-group', standalone: true, template: `<div class="nq-input-group" [attr.data-size]="size"><span class="nq-input-addon"><ng-content select="[nqPrefix]" /></span><ng-content /><span class="nq-input-addon"><ng-content select="[nqSuffix]" /></span></div>`})
-export class NqInputGroupComponent { @Input() size: 'sm' | 'md' | 'lg' = 'md'; }
+export class NqInputGroupComponent { constructor() { observeAngularFieldPresence(); } @Input() size: 'sm' | 'md' | 'lg' = 'md'; }
 
 @Component({selector: 'nq-password-field', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqPasswordFieldComponent), multi: true}], template: `<div class="nq-field nq-password-field"><label class="nq-label" [for]="controlId">{{ label }}</label><div class="nq-password-control"><input #passwordInput class="nq-input" [id]="controlId" [type]="revealed ? 'text' : 'password'" [value]="value" [name]="name" [disabled]="disabled" [readOnly]="readOnly" [required]="required" [attr.autocomplete]="autocomplete" [placeholder]="placeholder" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()"><button type="button" class="nq-button nq-password-toggle" data-variant="ghost" [attr.data-toggle-variant]="toggleVariant" [disabled]="disabled" [attr.aria-label]="revealed ? hideLabel : showLabel" [attr.aria-pressed]="revealed" [attr.aria-controls]="controlId" (click)="toggle()">@if (toggleVariant === 'text') { {{ revealed ? hideLabel : showLabel }} } @else {<span class="nq-password-icon" aria-hidden="true"></span>}</button></div>${fieldEnd}</div>`})
 export class NqPasswordFieldComponent extends NqExpandedValueControl<string> implements AfterViewInit {

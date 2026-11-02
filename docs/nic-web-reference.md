@@ -64,8 +64,8 @@ it does not mean every source state has already passed comparison.
 | CSS 2040–2143: breadcrumbs | Breadcrumb | Compare neutral interaction colors and logical separators |
 | CSS 2148–2312; JS 931–1169: search | SearchField, Combobox, Dialog | Add documented search-modal/suggestion composition; preserve IME, names and focus return |
 | CSS 2316–2427; JS 1854–2079: tabs and overflow | Tabs | Overflow menu behavior is not covered by the existing scrolling tab list |
-| CSS 2431–2648: field labels, native/text/select inputs | Field, TextField, Textarea, Select, DatePicker | Compare 40px baseline, padding, hover/focus and 500ms underline; retain custom calendars and approved validity colors |
-| CSS 2651–2726: addons/input groups | InputGroup and composed fields | Compare shared border and group focus-line behavior |
+| CSS 2431–2648: field labels, native/text/select inputs | Field, TextField, Textarea, Select, DatePicker | [Input state/motion task](nic-inputs.md): 16px padding/labels, 500ms ease, 50% pressed line and no focus shadow; helper/select artwork and other control comparisons remain |
+| CSS 2651–2726: addons/input groups | InputGroup and composed fields | [Input group task](nic-inputs.md): single line across direct input/addon composition, validation precedence, read-only/reduced-motion/system-focus handling and Angular projected value tracking |
 | CSS 2729–3009: checkbox/radio states | Checkbox, Radio | Compare hover halo, checked/pressed/disabled/read-only treatment |
 | CSS 3018–3079: badges | Badge | Compare sizes, borders and semantic palettes |
 | CSS 3082–3153: dot status labels | Badge composition | Dot status labels now display all five tones in the guide; Angular Badge exposes the dot/outline/soft variant alongside native CSS attributes |
