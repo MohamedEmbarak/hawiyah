@@ -7,6 +7,7 @@ for (const locale of ['ar', 'en']) {
     const amount = page.getByRole('spinbutton', { name: locale === 'ar' ? 'المبلغ بالريال السعودي' : 'Amount in Saudi riyals', exact: true });
     const addon = page.locator('label').filter({ has: amount }).locator('.nq-input-addon');
     await expect(addon).toHaveText('⃁');
+    await expect(addon.locator('.nq-riyal')).toHaveCSS('font-size', '28px');
     await expect(addon).toHaveAttribute('aria-hidden', 'true');
     await expect(addon.locator('.nq-riyal')).toHaveCSS('font-family', /NasaqRiyal/);
     const loaded = await page.evaluate(async () => {

@@ -20,3 +20,13 @@
   font-weight: 400;
   font-synthesis: none;
 }
+
+/* The amount-field adornment is an icon, independent of small addon labels. */
+.nq-input-addon .nq-riyal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 1.75rem;
+  font-size: var(--nq-riyal-input-size, 1.75rem);
+  line-height: 1;
+}
