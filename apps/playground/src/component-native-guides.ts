@@ -153,10 +153,10 @@ export const nativeGuides: Record<string, GuideInput> = {
     accessibility: ['Use an appropriate heading level for the surrounding page.', 'Keep the action clearly labelled and keyboard reachable.', 'Announce changed search results through the surrounding results status if needed.'], related: ['alert', 'table', 'skeleton'], source: 'packages/react/src/display.tsx',
   },
   card: {
-    summary: 'Groups related information in a native article with optional header, body, and footer areas. Interaction is supplied by explicit links or buttons inside it.',
+    summary: 'Groups related information using NIC card spacing and content classes. A static article can contain controls; supplying href makes the whole card a native link.',
     usage: `<article class="nq-card">\n  <header class="nq-card-header"><h2>Request summary</h2></header>\n  <div class="nq-card-body"><p>Review the information before submitting.</p></div>\n  <footer class="nq-card-footer"><a class="nq-link" href="./request">View request</a></footer>\n</article>`,
     lifecycle: ['Render related content and a heading that fits its context.', 'Update the contained content from application state; the card itself has no selection or open state.', 'Remove it with the view; only application-owned interactive children need cleanup.'],
-    api: api(['header / footer', 'React slots', 'Optional sections around body children.'], ['children', 'Content', 'Body content in the native article.'], ['class / style / native article attributes', 'Native attributes', 'Application composition and styling.']),
+    api: api(['header / footer', 'React slots', 'Optional sections around body children.'], ['children', 'Content', 'Body content in the native article.'], ['class / style / native article attributes', 'Native attributes', 'Application composition and styling.'], ['variant', 'default | flat | elevated | outlined | ghost', 'Shared visual variant; vanilla uses data-variant.'], ['href / target / rel', 'Optional link attributes', 'Whole-card native link; omit href when nesting other controls.'], ['disabled', 'boolean', 'Removes the link destination, tab stop and activation callback.']),
     accessibility: ['Do not make an entire card clickable when it contains other controls.', 'Use real links for navigation and buttons for actions.', 'Keep heading levels appropriate rather than assuming every card starts a page.'], variants: ['data-variant=flat / elevated / outlined / ghost'], related: ['service-card', 'description-list'], source: 'packages/react/src/display.tsx',
   },
   badge: {

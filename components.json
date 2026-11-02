@@ -902,12 +902,16 @@
       "name": "Card",
       "labelAr": "بطاقة",
       "category": "layout",
-      "description": "Content grouping with composable header, body, and footer.",
+      "description": "Related content in a static article or an explicit whole-card native link, with shared NIC-profile variants.",
       "cssClasses": [
         "nq-card",
         "nq-card-header",
         "nq-card-body",
-        "nq-card-footer"
+        "nq-card-footer",
+        "nq-card-action",
+        "nq-card-title",
+        "nq-card-description",
+        "nq-card-image"
       ],
       "interaction": "composition",
       "planned": [
@@ -922,9 +926,69 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
-      "notes": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/browser/nic-cards.spec.ts",
+          "tests": [
+            "vanilla NIC card composition has source geometry and native focus in rtl",
+            "vanilla NIC card composition has source geometry and native focus in ltr"
+          ],
+          "scope": "NIC card slot spacing, responsive gap, typography, native links and focus in Chromium; native framework cases also cover reactive disabled links, original/custom themes and scoped axe. This is not exhaustive visual parity.",
+          "command": "pnpm exec playwright test tests/browser/nic-cards.spec.ts",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/frameworks/nic-cards.spec.ts",
+          "tests": [
+            "NIC cards preserve source geometry and native link behavior in ar",
+            "NIC cards preserve source geometry and native link behavior in en"
+          ],
+          "scope": "NIC card slot spacing, responsive gap, typography, native links and focus in Chromium; native framework cases also cover reactive disabled links, original/custom themes and scoped axe. This is not exhaustive visual parity.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/nic-cards.spec.ts --project=react",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/frameworks/nic-cards.spec.ts",
+          "tests": [
+            "NIC cards preserve source geometry and native link behavior in ar",
+            "NIC cards preserve source geometry and native link behavior in en"
+          ],
+          "scope": "NIC card slot spacing, responsive gap, typography, native links and focus in Chromium; native framework cases also cover reactive disabled links, original/custom themes and scoped axe. This is not exhaustive visual parity.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/nic-cards.spec.ts --project=vue",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/frameworks/nic-cards.spec.ts",
+          "tests": [
+            "NIC cards preserve source geometry and native link behavior in ar",
+            "NIC cards preserve source geometry and native link behavior in en"
+          ],
+          "scope": "NIC card slot spacing, responsive gap, typography, native links and focus in Chromium; native framework cases also cover reactive disabled links, original/custom themes and scoped axe. This is not exhaustive visual parity.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/nic-cards.spec.ts --project=angular",
+          "result": "passed",
+          "date": "2026-11-02"
+        }
+      ],
+      "notes": [
+        "NIC card contract: docs/nic-cards.md. href uses a native link; do not nest controls inside a whole-card link. Dark hover and focus retain documented contrast adaptations."
+      ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/card"
     },

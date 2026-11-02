@@ -126,7 +126,12 @@ export const tokens = {
     "field-placeholder": "#6C737F",
     "footer": "#074D31",
     "on-footer": "#FFFFFF",
-    "danger-background": "#D92D20"
+    "danger-background": "#D92D20",
+    "card": "#ffffff",
+    "card-text": "#1f2a37",
+    "card-hover": "#f9fafb",
+    "focus-contrast": "#000000",
+    "card-border": "#d2d6db"
   },
   "control": {
     "height": "2.5rem",
@@ -190,7 +195,12 @@ export const themes = {
         "field-placeholder": "#5c7071",
         "footer": "#142d30",
         "on-footer": "#ffffff",
-        "danger-background": "#ae2e30"
+        "danger-background": "#ae2e30",
+        "card": "#ffffff",
+        "card-text": "#142d30",
+        "card-hover": "#f0f1eb",
+        "focus-contrast": "#156bcd",
+        "card-border": "#758e8c"
       }
     },
     "dark": {
@@ -233,7 +243,12 @@ export const themes = {
         "field-placeholder": "#9cb5b2",
         "footer": "#e8f4ed",
         "on-footer": "#142d30",
-        "danger-background": "#ffaaa8"
+        "danger-background": "#ffaaa8",
+        "card": "#172728",
+        "card-text": "#eef6f1",
+        "card-hover": "#283c3c",
+        "focus-contrast": "#8abfff",
+        "card-border": "#748f8b"
       }
     }
   },
@@ -278,7 +293,12 @@ export const themes = {
         "field-placeholder": "#6C737F",
         "footer": "#074D31",
         "on-footer": "#FFFFFF",
-        "danger-background": "#D92D20"
+        "danger-background": "#D92D20",
+        "card": "#ffffff",
+        "card-text": "#1f2a37",
+        "card-hover": "#f9fafb",
+        "focus-contrast": "#000000",
+        "card-border": "#d2d6db"
       }
     },
     "dark": {
@@ -321,7 +341,12 @@ export const themes = {
         "field-placeholder": "#E5E7EB",
         "footer": "#1B8354",
         "on-footer": "#FFFFFF",
-        "danger-background": "#D92D20"
+        "danger-background": "#D92D20",
+        "card": "#1f2a37",
+        "card-text": "#f9fafb",
+        "card-hover": "#384250",
+        "focus-contrast": "#ffffff",
+        "card-border": "#d2d6db"
       }
     }
   }
@@ -698,7 +723,12 @@ export const tokenNames = {
     "field-placeholder": "--nq-color-field-placeholder",
     "footer": "--nq-color-footer",
     "on-footer": "--nq-color-on-footer",
-    "danger-background": "--nq-color-danger-background"
+    "danger-background": "--nq-color-danger-background",
+    "card": "--nq-color-card",
+    "card-text": "--nq-color-card-text",
+    "card-hover": "--nq-color-card-hover",
+    "focus-contrast": "--nq-color-focus-contrast",
+    "card-border": "--nq-color-card-border"
   },
   "control": {
     "height": "--nq-control-height",
@@ -823,6 +853,11 @@ export const cssVariableNames = [
   "--nq-color-footer",
   "--nq-color-on-footer",
   "--nq-color-danger-background",
+  "--nq-color-card",
+  "--nq-color-card-text",
+  "--nq-color-card-hover",
+  "--nq-color-focus-contrast",
+  "--nq-color-card-border",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

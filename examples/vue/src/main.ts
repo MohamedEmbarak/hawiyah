@@ -1,3 +1,4 @@
+import NicReferenceExample from './NicReferenceExample.vue';
 import { createApp } from 'vue';
 import '@nasaq/styles/reset.css';
 import '@nasaq/styles/styles.css';
@@ -7,4 +8,4 @@ import App from './App.vue';
 import PortalExample from './PortalExample.vue';
 import InputControlsExample from './InputControlsExample.vue';
 const preview = new URLSearchParams(location.search).get('preview');
-createApp(preview === 'inputs' ? InputControlsExample : preview === 'portal' ? PortalExample : App).mount('#app');
+createApp(preview === 'nic' ? NicReferenceExample : preview === 'inputs' ? InputControlsExample : preview === 'portal' ? PortalExample : App).mount('#app');

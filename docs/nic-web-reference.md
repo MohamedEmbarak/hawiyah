@@ -56,7 +56,7 @@ it does not mean every source state has already passed comparison.
 | CSS 971–1292: seven button families and sizes | Button, IconButton | Missing typed default/light/outline-white variants; compare primary pressed color and secondary/outline states |
 | CSS 1294–1386: segmented buttons | ToggleGroup, ButtonGroup | Compare separators, selected states, wrapping and keyboard behavior |
 | CSS 1388–1531: icon buttons and icon/background sizes | IconButton, icon recipes | Preserve licensed SVG system; add documented background/size compositions |
-| CSS 1565–1641: cards | Card, ServiceCard | Base/border/action composition, title/description styles, gap, shadow and semantic actions need explicit parity |
+| CSS 1565–1641: cards | Card, ServiceCard | [Implemented card task](nic-cards.md): base/border/action composition, title/description, gap, shadow and semantic links; eight scoped browser cases passed across four adapters |
 | CSS 1645–1673, 3183–3212: icon/ordered lists | semantic list recipe | Add source-mapped spacing/direction recipe without generated meaningful content |
 | CSS 1677–1766: accordion | Accordion | Compare focus/hover surfaces and chevron timing; preserve accessible details and reduced motion |
 | CSS 1770–1886: tables | Table, DataTable | Compare row height, header/separator colors and hover/striping |

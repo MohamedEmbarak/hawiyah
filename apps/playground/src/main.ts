@@ -210,7 +210,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "accordion":
       return `<div class="nq-accordion" data-nq="accordion">${[t("What is Nasaq?", "ما هو نسق؟"), t("Can I customize it?", "هل يمكنني تخصيصه؟")].map((s, i) => `<details class="nq-accordion-item"><summary class="nq-accordion-trigger">${s}</summary><div class="nq-accordion-content">${i ? t("Yes. Start with semantic tokens, then compose the parts you need.", "نعم. ابدأ بالرموز الدلالية ثم اجمع الأجزاء التي تحتاجها.") : t("An independent design system for thoughtful Saudi digital experiences.", "نظام تصميم مستقل لتجارب رقمية سعودية مدروسة.")}</div></details>`).join("")}</div>`;
     case "card":
-      return `<article class="nq-card"><div class="nq-card-header"><strong>${t("A place for your next idea", "مساحة لفكرتك القادمة")}</strong></div><div class="nq-card-body"><p>${t("Flexible parts, a consistent whole.", "أجزاء مرنة، ونتيجة متّسقة.")}</p></div><div class="nq-card-footer">${pill(t("Ready", "جاهز"), "success")}</div></article>`;
+      return `<article class="nq-card"><div class="nq-card-header"><h3 class="nq-card-title">${t("A place for your next idea", "مساحة لفكرتك القادمة")}</h3></div><div class="nq-card-body"><p class="nq-card-description">${t("Flexible parts, a consistent whole.", "أجزاء مرنة، ونتيجة متّسقة.")}</p></div><div class="nq-card-footer">${pill(t("Ready", "جاهز"), "success")}</div></article>`;
     case "badge":
       return `<div class="nq-cluster">${pill(t("Active", "نشط"), "success")}${pill(t("In review", "قيد المراجعة"), "info")}${pill(t("Attention", "تنبيه"), "warning")}${pill(t("Draft", "مسودة"))}</div>`;
     case "alert":

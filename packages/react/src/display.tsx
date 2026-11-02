@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef } from 'react';
+import { createElement, useId, useLayoutEffect, useRef } from 'react';
 import { createAccordionMotion } from '@nasaq/core';
 import type { AccordionMotion } from '@nasaq/core';
 import type { ComponentPropsWithRef, HTMLAttributes, Key, ReactNode } from 'react';
@@ -41,9 +41,25 @@ export function Accordion({ items, exclusive, className, ...props }: AccordionPr
 export interface CardProps extends ComponentPropsWithRef<'article'> {
   header?: ReactNode;
   footer?: ReactNode;
+  variant?: 'default' | 'flat' | 'elevated' | 'outlined' | 'ghost';
+  /** Turns the complete card into a native link. Do not nest interactive content. */
+  href?: string;
+  target?: string;
+  rel?: string;
+  disabled?: boolean;
 }
-export function Card({ header, footer, children, className, ...props }: CardProps) {
-  return <article {...props} className={cx('nq-card', className)}>{header && <header className="nq-card-header">{header}</header>}<div className="nq-card-body">{children}</div>{footer && <footer className="nq-card-footer">{footer}</footer>}</article>;
+export function Card({ header, footer, children, className, variant, href, disabled, onClick, ...props }: CardProps) {
+  const action = href !== undefined;
+  return createElement(action ? 'a' : 'article', {
+    ...props, className: cx('nq-card', action && 'nq-card-action', className),
+    'data-variant': variant ?? (props as Record<string, unknown>)['data-variant'],
+    'data-disabled': disabled || undefined,
+    ...(action ? { href: disabled ? undefined : href, role: disabled ? 'link' : props.role, 'aria-disabled': disabled || undefined, tabIndex: disabled ? -1 : props.tabIndex } : {}),
+    onClick: (event: React.MouseEvent<HTMLElement>) => {
+      if (disabled) { event.preventDefault(); event.stopPropagation(); return; }
+      onClick?.(event);
+    },
+  }, header && <header className="nq-card-header">{header}</header>, <div className="nq-card-body">{children}</div>, footer && <footer className="nq-card-footer">{footer}</footer>);
 }
 export interface BadgeProps extends ComponentPropsWithRef<'span'> { tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'info' }
 export function Badge({ tone = 'neutral', className, ...props }: BadgeProps) { return <span {...props} className={cx('nq-badge', className)} data-tone={tone} />; }

@@ -302,3 +302,7 @@ does not simulate these engines or handle provider credentials or transactions.
 [`PortalLayout`, `PortalHeader` and `SecondaryNav`](PORTAL.md) provide a complete
 Arabic-default portal shell with responsive navigation, breadcrumbs and footer.
 Run the Vue example with `?preview=portal` to use the native composed shell.
+
+## NIC card composition
+
+See [cards](../../docs/nic-cards.md) for source-mapped spacing, variants, whole-card links, disabled semantics and content classes. Native framework consumers include `?preview=nic`; vanilla uses the documented semantic HTML recipe.

@@ -1,4 +1,5 @@
 import '@angular/compiler';
+import { NicReferenceExampleComponent } from './nic-reference';
 import { Component, signal } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
@@ -97,4 +98,4 @@ class AppComponent {
 }
 
 const preview = new URLSearchParams(location.search).get('preview');
-bootstrapApplication(preview === 'inputs' ? InputControlsExampleComponent : preview === 'portal' ? PortalExampleComponent : AppComponent).catch(error => console.error(error));
+bootstrapApplication(preview === 'nic' ? NicReferenceExampleComponent : preview === 'inputs' ? InputControlsExampleComponent : preview === 'portal' ? PortalExampleComponent : AppComponent).catch(error => console.error(error));

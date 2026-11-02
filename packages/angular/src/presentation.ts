@@ -2,6 +2,7 @@ import { booleanAttribute, Component, Directive, ElementRef, EventEmitter, HostL
 import type { AfterViewInit, OnChanges, OnDestroy } from '@angular/core';
 import { createAccordionMotion } from '@nasaq/core';
 import type { AccordionMotion } from '@nasaq/core';
+import { NgTemplateOutlet } from '@angular/common';
 
 /** Native button keeps native form, keyboard, disabled and event semantics. */
 @Directive({selector: 'button[nqButton],a[nqButton]', standalone: true, host: {'class': 'nq-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}})
@@ -10,8 +11,21 @@ export class NqButtonDirective {
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
 }
 
-@Component({selector: 'nq-card', standalone: true, template: `<article class="nq-card"><header class="nq-card-header"><ng-content select="[nqCardHeader]" /></header><div class="nq-card-body"><ng-content /></div><footer class="nq-card-footer"><ng-content select="[nqCardFooter]" /></footer></article>`})
-export class NqCardComponent {}
+@Component({selector: 'nq-card', standalone: true, imports: [NgTemplateOutlet], template: `
+  <ng-template #content><header class="nq-card-header"><ng-content select="[nqCardHeader]" /></header><div class="nq-card-body"><ng-content /></div><footer class="nq-card-footer"><ng-content select="[nqCardFooter]" /></footer></ng-template>
+  @if (href !== undefined) {
+    <a class="nq-card nq-card-action" [attr.href]="disabled ? null : href" [attr.target]="target" [attr.rel]="rel" [attr.data-variant]="variant" [attr.data-disabled]="disabled || null" [attr.aria-disabled]="disabled || null" [attr.role]="disabled ? 'link' : null" [attr.tabindex]="disabled ? -1 : null" (click)="guard($event)"><ng-container [ngTemplateOutlet]="content" /></a>
+  } @else {
+    <article class="nq-card" [attr.data-variant]="variant" [attr.data-disabled]="disabled || null" (click)="guard($event)"><ng-container [ngTemplateOutlet]="content" /></article>
+  }`})
+export class NqCardComponent {
+  @Input() variant: 'default' | 'flat' | 'elevated' | 'outlined' | 'ghost' = 'default';
+  @Input() href: string | undefined;
+  @Input() target: string | undefined;
+  @Input() rel: string | undefined;
+  @Input({transform: booleanAttribute}) disabled = false;
+  guard(event: MouseEvent) { if (this.disabled) { event.preventDefault(); event.stopPropagation(); } }
+}
 
 @Component({selector: 'nq-badge', standalone: true, template: `<span class="nq-badge" [attr.data-tone]="tone"><ng-content /></span>`})
 export class NqBadgeComponent { @Input() tone: 'neutral' | 'success' | 'warning' | 'danger' | 'info' = 'neutral'; }

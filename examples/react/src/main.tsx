@@ -1,3 +1,4 @@
+import { NicReferenceExample } from './nic-reference';
 import { StrictMode, useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -148,4 +149,4 @@ function App() {
 }
 
 const preview = new URLSearchParams(location.search).get('preview');
-createRoot(document.getElementById('root')!).render(<StrictMode>{preview === 'inputs' ? <InputControlsExample /> : preview === 'portal' ? <PortalExample /> : <App />}</StrictMode>);
+createRoot(document.getElementById('root')!).render(<StrictMode>{preview === 'nic' ? <NicReferenceExample /> : preview === 'inputs' ? <InputControlsExample /> : preview === 'portal' ? <PortalExample /> : <App />}</StrictMode>);

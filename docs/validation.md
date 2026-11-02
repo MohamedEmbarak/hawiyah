@@ -1,5 +1,16 @@
 # Validation record
 
+## 2026-11-02 NIC card task
+
+The [NIC card contract](nic-cards.md) implements the directly mapped web-source
+card styles and native whole-card links across four adapters. Eight Chromium
+cases passed: two vanilla RTL/LTR cases and two language cases in each native
+consumer. The Angular demo's root selector/compiler import order were corrected
+before its passing rerun. Eighteen token/SSR/component tests and eight contrast
+checks passed. Packages and consumers built; guide TypeScript and clean tarball
+ESM/SSR/APF/declarations/CSS/tree-shaking checks passed. Raw source assets were
+not bundled. The [NIC inventory](nic-web-reference.md) tracks remaining work.
+
 ## 2026-11-02 full quality follow-up
 
 The [quality report](quality-2026-11-02.md) records the 301-test full unit pass,

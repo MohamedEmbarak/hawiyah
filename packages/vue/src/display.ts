@@ -46,7 +46,20 @@ export const Accordion = defineComponent({
 });
 export const Card = defineComponent({
   name: 'NqCard', inheritAttrs: false,
-  setup(_, { attrs, slots }) { return () => h('article', mergeProps(attrs, { class: 'nq-card' }), [slots.header && h('header', { class: 'nq-card-header' }, slots.header()), h('div', { class: 'nq-card-body' }, slots.default?.()), slots.footer && h('footer', { class: 'nq-card-footer' }, slots.footer())]); },
+  props: { variant: String as PropType<'default' | 'flat' | 'elevated' | 'outlined' | 'ghost'>, href: String, disabled: Boolean },
+  setup(props, { attrs, slots }) { return () => {
+    const action = props.href !== undefined;
+    const { onClick, ...rest } = attrs;
+    return h(action ? 'a' : 'article', mergeProps(rest, {
+      class: ['nq-card', action && 'nq-card-action'],
+      'data-variant': props.variant ?? attrs['data-variant'], 'data-disabled': props.disabled || undefined,
+      ...(action ? { href: props.disabled ? undefined : props.href, role: props.disabled ? 'link' : attrs.role, 'aria-disabled': props.disabled || undefined, tabindex: props.disabled ? -1 : attrs.tabindex } : {}),
+      onClick: (event: MouseEvent) => {
+        if (props.disabled) { event.preventDefault(); event.stopPropagation(); return; }
+        for (const handler of Array.isArray(onClick) ? onClick : [onClick]) if (typeof handler === 'function') handler(event);
+      },
+    }), [slots.header && h('header', { class: 'nq-card-header' }, slots.header()), h('div', { class: 'nq-card-body' }, slots.default?.()), slots.footer && h('footer', { class: 'nq-card-footer' }, slots.footer())]);
+  }; },
 });
 export type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 export const Badge = defineComponent({
