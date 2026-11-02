@@ -1,6 +1,6 @@
 import { cloneVNode, computed, defineComponent, h, isVNode, mergeProps, onBeforeUnmount, onMounted, ref, useId, watch, watchEffect } from 'vue';
 import type { PropType, VNodeChild } from 'vue';
-import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, restoreFocus, transitionCombobox } from '@nasaq/core';
+import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, restoreFocus, transitionCombobox } from '@nasaq/core';
 import type { ComboboxEvent, Option, Orientation } from '@nasaq/core';
 import { Button, decorate } from './forms.js';
 import { decorationProps, joinIds, useField, useFormReset, useValue } from './shared.js';
@@ -95,13 +95,31 @@ export const Combobox = defineComponent({
     const element = ref<HTMLInputElement>();
     const root = ref<HTMLElement>();
     const state = ref(createComboboxState(props.options, props.modelValue ?? props.defaultValue));
+    const ancestorDisabled = ref(false);
+    const blocked = () => props.disabled || props.readonly || !!(element.value && isDisabled(element.value));
+    let disabledObserver: MutationObserver | undefined;
+    onMounted(() => {
+      const input = element.value;
+      if (!input) return;
+      const refresh = () => { ancestorDisabled.value = isDisabled(input); };
+      const Observer = input.ownerDocument.defaultView?.MutationObserver;
+      if (Observer) disabledObserver = new Observer(refresh);
+      for (let ancestor = input.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (ancestor.localName === 'fieldset') disabledObserver?.observe(ancestor, { attributes: true, attributeFilter: ['disabled'] });
+      }
+      refresh();
+    });
+    onBeforeUnmount(() => disabledObserver?.disconnect());
+    watch(() => props.disabled || props.readonly || ancestorDisabled.value, unavailable => {
+      if (unavailable) state.value = { ...state.value, open: false, activeIndex: -1 };
+    });
     const effective = computed(() => ({ ...state.value, value: props.modelValue ?? state.value.value,
       query: props.modelValue !== undefined && props.modelValue !== state.value.value ? createComboboxState(props.options, props.modelValue).query : state.value.query,
-      open: !props.disabled && !props.readonly && state.value.open }));
+      open: !props.disabled && !ancestorDisabled.value && !props.readonly && state.value.open }));
     const results = computed(() => getComboboxOptions(effective.value, props.options));
     let lastEmitted: string | undefined;
     function dispatch(event: ComboboxEvent) {
-      if ((props.disabled || props.readonly) && event.type !== 'close' && event.type !== 'reset') return;
+      if (blocked() && event.type !== 'close' && event.type !== 'reset') return;
       const previous = effective.value;
       const next = transitionCombobox(previous, event, props.options);
       state.value = next;
@@ -129,13 +147,13 @@ export const Combobox = defineComponent({
       const open = effective.value.open;
       const query = effective.value.query;
       return decorate(props, field.id.value, h('div', { ref: root, class: 'nq-combobox', onFocusout: (event: FocusEvent) => { if (!root.value?.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); } }, [
-        h('input', mergeProps(inputAttrs, field.controlAttrs.value, { ref: element, form, disabled: props.disabled, readonly: props.readonly, class: 'nq-input', type: 'text', role: 'combobox', autocomplete: 'off', 'aria-autocomplete': 'list', 'aria-expanded': open, 'aria-controls': listId,
+        h('input', mergeProps(inputAttrs, field.controlAttrs.value, { ref: element, form, disabled: props.disabled, readonly: props.readonly, class: 'nq-input', type: 'text', role: 'combobox', autocomplete: 'off', 'aria-autocomplete': 'list', 'aria-readonly': props.readonly || undefined, 'aria-expanded': open, 'aria-controls': listId,
           'aria-activedescendant': open && active && !active.disabled ? `${field.id.value}-option-${state.value.activeIndex}` : undefined, value: query,
-          onInput: (event: Event) => { const query = (event.target as HTMLInputElement).value; dispatch({ type: 'input', query }); emit('update:query', query); },
+          onInput: (event: Event) => { const input = event.target as HTMLInputElement; if (blocked()) { input.value = query; return; } const nextQuery = input.value; dispatch({ type: 'input', query: nextQuery }); emit('update:query', nextQuery); },
           onFocus: (event: FocusEvent) => { if (!event.defaultPrevented) dispatch({ type: 'open' }); },
           onClick: (event: MouseEvent) => { if (!event.defaultPrevented && !open) dispatch({ type: 'open' }); },
           onKeydown: (event: KeyboardEvent) => {
-            if (event.defaultPrevented || event.isComposing || props.disabled || props.readonly) return;
+            if (event.defaultPrevented || event.isComposing || blocked()) return;
             if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
               if (!open && (event.key === 'Home' || event.key === 'End')) return;
               event.preventDefault(); dispatch({ type: 'navigate', key: event.key as 'ArrowDown' | 'ArrowUp' | 'Home' | 'End' });

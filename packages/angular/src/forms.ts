@@ -1,6 +1,6 @@
 import { booleanAttribute, ChangeDetectorRef, Component, Directive, EventEmitter, forwardRef, HostListener, inject, Input, Output, ViewChild, ElementRef, type AfterViewInit, type OnChanges, type SimpleChanges } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
-import { createComboboxState, getComboboxOptions, transitionCombobox, type ComboboxEvent, type Option } from '@nasaq/core';
+import { createComboboxState, getComboboxOptions, isDisabled, transitionCombobox, type ComboboxEvent, type Option } from '@nasaq/core';
 
 let nextId = 0;
 /** Pass controlId for stable application-owned identifiers, especially with SSR. */
@@ -104,9 +104,10 @@ export class NqRadioComponent extends NqValueControl<string> {
 
 @Component({ selector: 'nq-combobox', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqComboboxComponent), multi: true }],
-  template: `<div class="nq-field nq-combobox"><label class="nq-label" [for]="controlId">{{ label }}</label><input #input class="nq-input" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" [id]="controlId" [value]="state.query" [disabled]="disabled" [required]="required" [placeholder]="placeholder" [attr.aria-expanded]="state.open" [attr.aria-controls]="controlId + '-list'" [attr.aria-activedescendant]="state.open && state.activeIndex >= 0 ? controlId + '-option-' + state.activeIndex : null" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="inputChanged($event)" (compositionstart)="composing = true" (compositionend)="compositionEnded($event)" (focus)="dispatch({type: 'open'})" (click)="dispatch({type: 'open'})" (keydown)="keydown($event)" (blur)="blur()"><input type="hidden" [name]="name" [value]="state.value" [disabled]="disabled"><ul class="nq-listbox" role="listbox" [id]="controlId + '-list'" [attr.aria-label]="label" [hidden]="!state.open">@for (option of visibleOptions; track option.value; let i = $index) {<li class="nq-option" role="option" [id]="controlId + '-option-' + i" [attr.aria-selected]="state.value === option.value" [attr.aria-disabled]="option.disabled || null" [attr.data-active]="state.activeIndex === i ? '' : null" (mousedown)="$event.preventDefault()" (click)="select(option)">{{ option.label }}</li>}@if (visibleOptions.length === 0) {<li class="nq-hint" role="presentation">{{ emptyMessage }}</li>}</ul><span class="nq-sr-only" role="status" aria-live="polite">{{ state.open ? resultsMessage(visibleOptions.length) : '' }}</span>${fieldEnd}</div>` })
+  template: `<div class="nq-field nq-combobox"><label class="nq-label" [for]="controlId">{{ label }}</label><input #input class="nq-input" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" [id]="controlId" [value]="state.query" [disabled]="disabled" [readOnly]="readOnly" [attr.aria-readonly]="readOnly || null" [required]="required" [placeholder]="placeholder" [attr.aria-expanded]="state.open" [attr.aria-controls]="controlId + '-list'" [attr.aria-activedescendant]="state.open && state.activeIndex >= 0 ? controlId + '-option-' + state.activeIndex : null" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="inputChanged($event)" (compositionstart)="composing = true" (compositionend)="compositionEnded($event)" (focus)="dispatch({type: 'open'})" (click)="dispatch({type: 'open'})" (keydown)="keydown($event)" (blur)="blur()"><input type="hidden" [name]="name" [value]="state.value" [disabled]="disabled"><ul class="nq-listbox" role="listbox" [id]="controlId + '-list'" [attr.aria-label]="label" [hidden]="!state.open">@for (option of visibleOptions; track option.value; let i = $index) {<li class="nq-option" role="option" [id]="controlId + '-option-' + i" [attr.aria-selected]="state.value === option.value" [attr.aria-disabled]="option.disabled || null" [attr.data-active]="state.activeIndex === i ? '' : null" (mousedown)="$event.preventDefault()" (click)="select(option)">{{ option.label }}</li>}@if (visibleOptions.length === 0) {<li class="nq-hint" role="presentation">{{ emptyMessage }}</li>}</ul><span class="nq-sr-only" role="status" aria-live="polite">{{ state.open ? resultsMessage(visibleOptions.length) : '' }}</span>${fieldEnd}</div>` })
 export class NqComboboxComponent extends NqValueControl<string> implements OnChanges, AfterViewInit {
   override value = '';
+  @Input({transform: booleanAttribute}) readOnly = false;
   @Input() options: readonly Option[] = [];
   @Input() placeholder = '';
   @Input() emptyMessage = 'No results';
@@ -116,26 +117,40 @@ export class NqComboboxComponent extends NqValueControl<string> implements OnCha
   state = createComboboxState([]);
   composing = false;
   private readonly host = inject(ElementRef<HTMLElement>);
+  private disabledObserver?: MutationObserver;
+  private get blocked(): boolean { return this.disabled || this.readOnly || !!(this.input && isDisabled(this.input.nativeElement)); }
   get visibleOptions(): Option[] { return getComboboxOptions(this.state, this.options); }
   ngOnChanges(changes: SimpleChanges): void {
     if (this.value !== this.state.value || !this.state.query || (changes['options'] && this.state.value)) this.state = createComboboxState(this.options, this.value);
     else if (changes['options'] && this.state.open) this.dispatch({type: 'open'});
-    if (this.disabled) this.dispatch({type: 'close'});
+    if (this.blocked) this.dispatch({type: 'close'});
     this.syncValidity();
   }
-  ngAfterViewInit(): void { this.syncValidity(); }
+  ngAfterViewInit(): void {
+    this.syncValidity();
+    const input = this.input?.nativeElement;
+    if (!input) return;
+    const Observer = input.ownerDocument.defaultView?.MutationObserver;
+    if (Observer) {
+      this.disabledObserver = new Observer(() => { if (this.blocked) this.dispatch({type: 'close'}); this.syncValidity(); this.changeDetector.markForCheck(); });
+      for (let ancestor = input.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (ancestor.localName === 'fieldset') this.disabledObserver.observe(ancestor, { attributes: true, attributeFilter: ['disabled'] });
+      }
+    }
+  }
+  ngOnDestroy(): void { this.disabledObserver?.disconnect(); }
   private syncValidity(): void { this.input?.nativeElement.setCustomValidity(this.required && !this.disabled && !this.state.value ? this.validationMessage : ''); }
   override writeValue(value: string): void { super.writeValue(value ?? ''); this.state = createComboboxState(this.options, value ?? ''); this.syncValidity(); }
   override setDisabledState(disabled: boolean): void { super.setDisabledState(disabled); if (disabled) this.dispatch({type: 'close'}); this.syncValidity(); }
-  dispatch(event: ComboboxEvent): void { if (this.disabled && event.type !== 'close') return; this.state = transitionCombobox(this.state, event, this.options); this.syncValidity(); }
+  dispatch(event: ComboboxEvent): void { if (this.blocked && event.type !== 'close' && event.type !== 'reset') return; this.state = transitionCombobox(this.state, event, this.options); this.syncValidity(); }
   inputChanged(event: Event): void { if (!this.composing && !(event as InputEvent).isComposing) this.search((event.target as HTMLInputElement).value); }
   compositionEnded(event: Event): void { this.composing = false; this.search((event.target as HTMLInputElement).value); }
   @HostListener('document:pointerdown', ['$event']) outside(event: Event): void { if (!this.host.nativeElement.contains(event.target as Node)) this.dispatch({type: 'close'}); }
-  search(query: string): void { this.dispatch({type: 'input', query}); this.update(this.state.value); }
-  select(option: Option): void { if (this.disabled || option.disabled) return; this.dispatch({type: 'select', value: option.value}); this.update(this.state.value); this.input?.nativeElement.focus(); }
+  search(query: string): void { if (this.blocked) { if (this.input) this.input.nativeElement.value = this.state.query; return; } this.dispatch({type: 'input', query}); this.update(this.state.value); }
+  select(option: Option): void { if (this.blocked || option.disabled) return; this.dispatch({type: 'select', value: option.value}); this.update(this.state.value); this.input?.nativeElement.focus(); }
   blur(): void { this.dispatch({type: 'close'}); this.touch(); }
   keydown(event: KeyboardEvent): void {
-    if (event.isComposing || this.composing || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.isComposing || this.composing || event.altKey || event.ctrlKey || event.metaKey || this.blocked) return;
     if (['ArrowDown', 'ArrowUp'].includes(event.key) || (this.state.open && ['Home', 'End'].includes(event.key))) {
       event.preventDefault(); this.dispatch({type: 'navigate', key: event.key as 'ArrowDown' | 'ArrowUp' | 'Home' | 'End'});
       this.changeDetector.detectChanges();

@@ -1,6 +1,6 @@
 import { cloneElement, useEffect, useId, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, ComponentPropsWithRef, HTMLAttributes, ReactElement, ReactNode } from 'react';
-import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, transitionCombobox } from '@nasaq/core';
+import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, transitionCombobox } from '@nasaq/core';
 import type { ComboboxEvent, Option, Orientation } from '@nasaq/core';
 import { assignRef, cx, Field, useControllable, useFieldControl } from './shared.js';
 import type { FieldDecoration } from './shared.js';
@@ -137,9 +137,11 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
   const field = useFieldControl(props);
   const [state, setState] = useState(() => ({ ...createComboboxState(options, value ?? defaultValue), open: controlledOpen ?? defaultOpen }));
   const input = useRef<HTMLInputElement | null>(null);
+  const [ancestorDisabled, setAncestorDisabled] = useState(false);
+  const blocked = () => disabled || props.readOnly || !!(input.current && isDisabled(input.current));
   const requestedValue = value ?? state.value;
   const selected = options.some(option => option.value === requestedValue && !option.disabled) ? requestedValue : '';
-  const open = !disabled && !props.readOnly && (controlledOpen ?? state.open);
+  const open = !disabled && !ancestorDisabled && !props.readOnly && (controlledOpen ?? state.open);
   const query = value !== undefined && state.value && state.value !== selected ? options.find(option => option.value === selected)?.label ?? '' : state.query;
   const effectiveState = { ...state, value: selected, query, open };
   const results = getComboboxOptions(effectiveState, options);
@@ -150,6 +152,21 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
   const latestOptions = useRef(options);
   const previousOptions = useRef(options);
   latestOptions.current = options;
+  useEffect(() => {
+    const element = input.current;
+    if (!element) return;
+    const refresh = () => setAncestorDisabled(isDisabled(element));
+    const Observer = element.ownerDocument.defaultView?.MutationObserver;
+    const observer = Observer ? new Observer(refresh) : undefined;
+    for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.localName === 'fieldset') observer?.observe(ancestor, { attributes: true, attributeFilter: ['disabled'] });
+    }
+    refresh();
+    return () => observer?.disconnect();
+  }, []);
+  useEffect(() => {
+    if (disabled || ancestorDisabled || props.readOnly) setState(current => ({ ...current, open: false, activeIndex: -1 }));
+  }, [disabled, ancestorDisabled, props.readOnly]);
   useEffect(() => {
     if (value === undefined) return;
     if (value === lastEmittedValue.current) {
@@ -185,7 +202,7 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
     if (open && state.activeIndex >= 0) input.current?.ownerDocument.getElementById(`${field.id}-option-${state.activeIndex}`)?.scrollIntoView?.({ block: 'nearest' });
   }, [open, state.activeIndex, field.id]);
   function dispatch(event: ComboboxEvent) {
-    if ((disabled || props.readOnly) && event.type !== 'close' && event.type !== 'reset') return;
+    if (blocked() && event.type !== 'close' && event.type !== 'reset') return;
     const next = transitionCombobox(effectiveState, event, options);
     setState(next);
     if (next.value !== selected) {
@@ -195,13 +212,13 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
     if (next.open !== open) onOpenChange?.(next.open);
   }
   return <div className="nq-combobox" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); }}>
-    <input {...props} {...field} ref={node => { input.current = node; assignRef(ref, node); }} form={form} disabled={disabled} className={cx('nq-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
-      value={query} onChange={event => { dispatch({ type: 'input', query: event.currentTarget.value }); onInputChange?.(event.currentTarget.value); }}
+    <input {...props} {...field} ref={node => { input.current = node; assignRef(ref, node); }} form={form} disabled={disabled} className={cx('nq-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-readonly={props.readOnly || undefined} aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
+      value={query} onChange={event => { if (blocked()) { event.currentTarget.value = query; return; } dispatch({ type: 'input', query: event.currentTarget.value }); onInputChange?.(event.currentTarget.value); }}
       onFocus={event => { onFocus?.(event); if (!event.defaultPrevented) dispatch({ type: 'open' }); }} onBlur={onBlur}
       onClick={event => { onClick?.(event); if (!event.defaultPrevented && !open) dispatch({ type: 'open' }); }}
       onKeyDown={event => {
         onKeyDown?.(event);
-        if (event.defaultPrevented || event.nativeEvent.isComposing) return;
+        if (event.defaultPrevented || event.nativeEvent.isComposing || blocked()) return;
         if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
           if (!open && (event.key === 'Home' || event.key === 'End')) return;
           event.preventDefault();

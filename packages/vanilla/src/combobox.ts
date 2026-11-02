@@ -47,7 +47,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
   status.setAttribute('aria-atomic', 'true');
-  remember(scope, input, ['role', 'aria-autocomplete', 'aria-expanded', 'aria-controls', 'aria-activedescendant', 'autocomplete']);
+  remember(scope, input, ['role', 'aria-autocomplete', 'aria-expanded', 'aria-controls', 'aria-activedescendant', 'aria-readonly', 'autocomplete']);
   remember(scope, list, ['role', 'hidden', 'aria-label', 'aria-labelledby']);
   const originalInputValue = input.value;
   const originalHiddenValue = hidden?.value;
@@ -89,6 +89,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     const visibleValues = new Set(visible.map(item => item.value));
     const active = visible[state.activeIndex];
     input.value = state.query;
+    if (input.readOnly) input.setAttribute('aria-readonly', 'true'); else input.removeAttribute('aria-readonly');
     input.setCustomValidity(input.required && !state.value && !isDisabled(input)
       ? options.invalidSelectionMessage ?? 'اختر خيارًا من القائمة.'
       : originalCustomValidity);
@@ -131,12 +132,13 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
   const close = () => send({ type: 'close' });
   const select = (value: string) => { if (canOpen()) send({ type: 'select', value }); };
   scope.listen(input, 'input', event => {
+    if (!canOpen()) { render(); return; }
     if (!composing && !(event as InputEvent).isComposing && canOpen()) send({ type: 'input', query: input.value });
   });
   scope.listen(input, 'compositionstart', () => { composing = true; });
   scope.listen(input, 'compositionend', () => {
     composing = false;
-    if (canOpen()) send({ type: 'input', query: input.value });
+    if (canOpen()) send({ type: 'input', query: input.value }); else render();
   });
   scope.listen(input, 'click', () => { if (!state.open) show(); });
   scope.listen(input, 'keydown', event => {
@@ -181,9 +183,12 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
   if (Observer) {
     const observer = new Observer(() => {
       if (scope.destroyed) return;
-      if (isDisabled(input) && state.open) close(); else render();
+      if (!canOpen() && state.open) close(); else render();
     });
-    observer.observe(input, { attributes: true, attributeFilter: ['required', 'disabled'] });
+    observer.observe(input, { attributes: true, attributeFilter: ['required', 'disabled', 'readonly'] });
+    for (let ancestor = input.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.localName === 'fieldset') observer.observe(ancestor, { attributes: true, attributeFilter: ['disabled'] });
+    }
     scope.add(() => observer.disconnect());
   }
   render();
