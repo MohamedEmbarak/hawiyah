@@ -445,3 +445,20 @@ MultiSelect validation are also covered by this follow-up.
 
 These are Chromium and automated checks, not manual screen-reader validation,
 cross-browser parity, or DGA certification. Hajj remains excluded.
+
+## Tag and search input follow-up — 2026-11-02
+
+- TagInput keyboard/composition and removal focus now agree across all four
+  adapters. Modifier shortcuts and IME Enter do not commit tags; empty Enter
+  remains available to the form. Required committed values and reset are covered.
+- SearchField has one inset named clear icon in every adapter, including the
+  vanilla controller and guide. It respects read-only/disabled state, returns
+  focus, preserves native validation and never submits the form. Vue/Angular
+  search callbacks ignore composition and modified Enter.
+- The two parity suites passed 15 tests. Native RTL/LTR input showcases passed
+  six browser cases with scoped axe checks, and the mobile vanilla guide passed
+  its clear-action geometry, keyboard and reset case.
+
+These are input behavior/composition fixes based on the implementation review,
+not newly asserted source dimensions or official DGA template parity.
+See [tag behavior](tag-input-interaction.md) and [search behavior](search-field.md).

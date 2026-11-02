@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Checkbox, PasswordField, Rating, Slider, Stepper, Switch } from '@nasaq/vue';
+import { Checkbox, SearchField, PasswordField, Rating, Slider, Stepper, Switch } from '@nasaq/vue';
 const arabic = ref(true);
 const t = (ar: string, en: string) => arabic.value ? ar : en;
 </script>
@@ -10,6 +10,7 @@ const t = (ar: string, en: string) => arabic.value ? ar : en;
     <h1>{{ t('معاينة حقول نسق', 'Nasaq input preview') }}</h1>
     <button class="nq-button" type="button" @click="arabic = !arabic">{{ arabic ? 'English' : 'العربية' }}</button>
     <form class="nq-stack" @submit.prevent>
+      <SearchField name="query" :label="t('بحث', 'Search')" :clear-label="t('مسح البحث', 'Clear search')" default-value="Nasaq" />
       <PasswordField name="password" :label="t('كلمة المرور', 'Password')" :show-label="t('إظهار كلمة المرور', 'Show password')" :hide-label="t('إخفاء كلمة المرور', 'Hide password')" autocomplete="new-password" />
       <PasswordField name="text-password" :label="t('كلمة المرور مع زر نصي', 'Password with text toggle')" toggle-variant="text" :show-label="t('إظهار', 'Show')" :hide-label="t('إخفاء', 'Hide')" autocomplete="new-password" />
       <Rating name="rating" :label="t('التقييم', 'Rating')" :default-value="3" :option-label="(value, max) => t(`${value} من ${max}`, `${value} of ${max}`)" />

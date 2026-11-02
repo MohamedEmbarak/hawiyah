@@ -8,6 +8,23 @@ for (const direction of ['rtl', 'ltr'] as const) {
     const scope = page.getByTestId('input-controls');
     if (direction === 'ltr') await scope.getByRole('button', { name: 'English', exact: true }).click();
     await expect(scope).toHaveAttribute('dir', direction);
+    const query = scope.locator('input[name="query"]');
+    const clearSearch = scope.locator('.nq-search-clear');
+    await expect(clearSearch).toHaveAccessibleName(direction === 'rtl' ? 'مسح البحث' : 'Clear search');
+    await query.fill('Nasaq');
+    const queryBounds = (await query.boundingBox())!;
+    const clearBounds = (await clearSearch.boundingBox())!;
+    expect(clearBounds.x).toBeGreaterThanOrEqual(queryBounds.x);
+    expect(clearBounds.x + clearBounds.width).toBeLessThanOrEqual(queryBounds.x + queryBounds.width + 1);
+    expect(clearBounds.y).toBeGreaterThanOrEqual(queryBounds.y);
+    expect(clearBounds.y + clearBounds.height).toBeLessThanOrEqual(queryBounds.y + queryBounds.height + 1);
+    await query.focus(); await page.keyboard.press('Tab'); await expect(clearSearch).toBeFocused();
+    await page.keyboard.press('Space'); await expect(query).toHaveValue(''); await expect(query).toBeFocused();
+    await expect(clearSearch).toBeHidden();
+    await query.fill('Nasaq'); await expect(clearSearch).toBeVisible();
+    // A focused input is raised by input-group styles; its inset action must stay clickable.
+    await clearSearch.click(); await expect(query).toHaveValue(''); await expect(query).toBeFocused();
+    await query.fill('Nasaq');
     const input = scope.locator('input[name="password"]');
     const control = input.locator('..');
     const eye = control.locator('.nq-password-toggle');

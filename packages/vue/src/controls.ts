@@ -70,6 +70,7 @@ function actionField(kind: "password" | "search") {
       const field = useField(props, attrs);
       const element = ref<HTMLInputElement>();
       const visible = ref(false);
+      let composing = false;
       const model = useValue(
         () => props.modelValue,
         props.defaultValue,
@@ -85,7 +86,7 @@ function actionField(kind: "password" | "search") {
             "div",
             {
               class: [
-                kind === 'password' ? "nq-password-control" : "nq-input-group",
+                kind === 'password' ? "nq-password-control" : "nq-input-group nq-search-control",
                 `nq-${kind === "password" ? "password-field" : "search-field"}`,
               ],
             },
@@ -108,11 +109,13 @@ function actionField(kind: "password" | "search") {
                     if (!props.disabled && !props.readonly)
                       model.set((event.target as HTMLInputElement).value);
                   },
+                  onCompositionstart: () => { composing = true; },
+                  onCompositionend: () => { composing = false; },
                   onKeydown: (event: KeyboardEvent) => {
                     if (
                       kind === "search" &&
                       event.key === "Enter" &&
-                      !event.isComposing
+                      !event.defaultPrevented && !composing && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey && !!element.value && !isDisabled(element.value)
                     )
                       emit("search", model.value.value);
                   },
@@ -137,19 +140,20 @@ function actionField(kind: "password" | "search") {
                     },
                     () => props.toggleVariant === 'text' ? (visible.value ? props.hideLabel : props.showLabel) : h('span', { class: 'nq-password-icon', 'aria-hidden': 'true' }),
                   )
-                : model.value.value &&
-                  h(
+                : h(
                     Button,
                     {
                       variant: "ghost",
-                      disabled: props.disabled || props.readonly,
+                      class: "nq-search-clear",
+                      hidden: !model.value.value || props.readonly,
+                      disabled: props.disabled,
+                      "aria-controls": field.id.value,
                       "aria-label": props.clearLabel,
                       onClick: () => {
-                        model.set("");
-                        element.value?.focus();
+                        if (element.value && !props.readonly && !isDisabled(element.value)) { model.set(""); element.value.focus(); }
                       },
                     },
-                    () => props.clearLabel,
+                    () => h("span", { class: "nq-search-clear-icon", "aria-hidden": "true" }),
                   ),
             ],
           ),

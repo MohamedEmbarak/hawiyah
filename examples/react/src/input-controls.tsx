@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react';
-import { Checkbox, PasswordField, Rating, Slider, Stepper, Switch } from '@nasaq/react';
+import { Checkbox, SearchField, PasswordField, Rating, Slider, Stepper, Switch } from '@nasaq/react';
 
 export function InputControlsExample() {
   const [arabic, setArabic] = useState(true);
@@ -8,6 +8,7 @@ export function InputControlsExample() {
     <h1>{t('معاينة حقول نسق', 'Nasaq input preview')}</h1>
     <button className="nq-button" type="button" onClick={() => setArabic(!arabic)}>{arabic ? 'English' : 'العربية'}</button>
     <form className="nq-stack" onSubmit={event => event.preventDefault()}>
+      <SearchField name="query" label={t('بحث', 'Search')} clearLabel={t('مسح البحث', 'Clear search')} defaultValue="Nasaq" />
       <PasswordField name="password" label={t('كلمة المرور', 'Password')} showLabel={t('إظهار كلمة المرور', 'Show password')} hideLabel={t('إخفاء كلمة المرور', 'Hide password')} autoComplete="new-password" />
       <PasswordField name="text-password" label={t('كلمة المرور مع زر نصي', 'Password with text toggle')} toggleVariant="text" showLabel={t('إظهار', 'Show')} hideLabel={t('إخفاء', 'Hide')} autoComplete="new-password" />
       <Rating name="rating" label={t('التقييم', 'Rating')} defaultValue={3} getRatingLabel={(value, max) => t(`${value} من ${max}`, `${value} of ${max}`)} />

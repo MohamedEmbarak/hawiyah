@@ -157,14 +157,14 @@ assert.equal(typeof vanilla.enhance,'function');
 assert.ok(tokens.tokens);
 assert.ok(renderToString(React.createElement(react.Button,null,'Continue')).includes('nq-button'));
 assert.ok((await renderVue(createSSRApp({render:()=>h(vue.Button,{},()=> 'Continue')}))).includes('nq-button'));
-for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader','PortalLayout','SecondaryNav','MobileTopBar','NavigationDrawer','PasswordField','Rating','Stepper']) {
+for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader','PortalLayout','SecondaryNav','MobileTopBar','NavigationDrawer','PasswordField','SearchField','Rating','Stepper']) {
   assert.ok(react[name], 'React missing '+name); assert.ok(vue[name], 'Vue missing '+name);
   assert.ok(angular['Nq'+name+'Component'], 'Angular missing '+name);
 }
 assert.equal(typeof vanilla.createCalendar,'function');
 assert.equal(typeof vanilla.createTreeView,'function');
 assert.equal(typeof vanilla.createPortalHeader,'function');
-for (const name of ['createNavigationDrawer','createStepper','createRating','createPasswordField']) assert.equal(typeof vanilla[name],'function');
+for (const name of ['createNavigationDrawer','createStepper','createRating','createPasswordField','createSearchField']) assert.equal(typeof vanilla[name],'function');
 assert.ok(renderToString(React.createElement(react.PortalLayout,{brand:'نسق',mainId:'portal-main'},React.createElement('h1',null,'الخدمات'))).includes('href="#portal-main"'));
 assert.ok((await renderVue(createSSRApp({render:()=>h(vue.PortalLayout,{brand:'نسق',mainId:'portal-main'},()=>h('h1',{},'الخدمات'))}))).includes('href="#portal-main"'));
 assert.deepEqual(core.getCalendarDateParts('2029-08-11','islamic-umalqura'),{year:1451,month:4,day:1});

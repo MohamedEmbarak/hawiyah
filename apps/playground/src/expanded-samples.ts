@@ -30,10 +30,7 @@ export function expandedSample(
     case "password-field":
       return `<div class="nq-field nq-password-field" data-nq="password-field"><label class="nq-label" for="${uid}-input">${t("Password", "كلمة المرور")}</label><div class="nq-password-control"><input id="${uid}-input" class="nq-input" type="password" name="password" autocomplete="new-password" minlength="8" data-nq-password-input>${b(t("Show password", "إظهار كلمة المرور"), `data-nq-password-toggle data-nq-show-label="${t("Show password", "إظهار كلمة المرور")}" data-nq-hide-label="${t("Hide password", "إخفاء كلمة المرور")}"`)}</div></div>`;
     case "search-field":
-      return label(
-        t("Search services", "ابحث عن الخدمات"),
-        `<input type="search" class="nq-input nq-search-field" placeholder="${t("Type to search…", "اكتب للبحث…")}">`,
-      );
+      return `<div class="nq-field nq-search-field" data-nq="search-field"><label class="nq-label" for="${uid}-input">${t("Search services", "ابحث عن الخدمات")}</label><div class="nq-search-control"><input id="${uid}-input" type="search" class="nq-input" name="query" autocomplete="off" data-nq-search-input placeholder="${t("Type to search…", "اكتب للبحث…")}"><button type="button" class="nq-button nq-search-clear" hidden data-nq-search-clear aria-label="${t("Clear search", "مسح البحث")}"></button></div></div>`;
     case "number-field":
       return label(
         t("Quantity", "الكمية"),

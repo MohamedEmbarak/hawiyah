@@ -1,3 +1,4 @@
+import { createSearchField } from './search-field.js';
 import { createTabs } from './tabs.js';
 import { createStepper } from './stepper.js';
 export { createStepper };
@@ -21,6 +22,8 @@ import { createCalendar, createDatePicker } from './calendar.js';
 import { createToggleGroup, createFeedback, createCookieConsent, createTreeView, createCarousel, createDataTable } from './content.js';
 
 export { createTabs, createDialog, createCombobox, createTooltip, createPagination };
+export { createSearchField };
+export type { SearchFieldOptions, SearchFieldController } from './search-field.js';
 export { createPasswordField, createRangeSlider, createRating, createPinInput, createTagInput, createMultiSelect, createFileDropzone, createPopover, createMenu, createDrawer, createToastRegion };
 export { createCalendar, createDatePicker };
 export { createToggleGroup, createFeedback, createCookieConsent, createTreeView, createCarousel, createDataTable };
@@ -42,7 +45,7 @@ const factories: Record<string, (element: HTMLElement) => Controller> = {
   'navigation-drawer': element => createNavigationDrawer(element as HTMLDialogElement),
   'portal-header': createPortalHeader,
   tabs: createTabs, dialog: element => createDialog(element as HTMLDialogElement), combobox: createCombobox,
-  tooltip: createTooltip, pagination: createPagination, 'password-field': createPasswordField,
+  'search-field': createSearchField, tooltip: createTooltip, pagination: createPagination, 'password-field': createPasswordField,
   'range-slider': createRangeSlider, rating: createRating, 'pin-input': createPinInput, 'tag-input': createTagInput,
   'multi-select': createMultiSelect, 'file-dropzone': createFileDropzone,
   popover: createPopover, menu: createMenu, drawer: element => createDrawer(element as HTMLDialogElement),

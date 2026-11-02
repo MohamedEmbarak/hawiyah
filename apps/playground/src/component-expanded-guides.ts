@@ -19,9 +19,9 @@ export const expandedGuides: Record<string, GuideInput> = {
   },
   'search-field': {
     summary: 'A native search input for a query string. Search execution, debounce, result state, and navigation belong to the application.',
-    usage: `<label class="nq-field"><span class="nq-label">Search services</span>\n  <input class="nq-input nq-search-field" type="search" name="query" autocomplete="off">\n</label>`,
-    lifecycle: ['Render a labelled search input with an optional initial query.', 'Listen to input for local filtering or submit a search form. Cancel stale requests when the query changes.', 'React’s clear action empties the query and returns focus to the input. Clean up application timers/requests when leaving the view.'],
-    api: api(['value / defaultValue', 'React string', 'Controlled or initial query.'], ['onValueChange', 'React (value: string) => void', 'Reports the string query; native onChange also remains available.'], ['clearLabel', 'React string', 'Localized accessible name for the clear action.'], ['type=search', 'Native input type', 'Uses the browser’s search editing semantics.']),
+    usage: expandedSample('search-field', 'guide-search', 'en'),
+    lifecycle: ['Render a labelled search input with an optional initial query.', 'Listen to input for local filtering or submit a search form. Cancel stale requests when the query changes.', 'All adapters use an inset clear icon that returns focus to the input. Vanilla enhancement uses createSearchField or data-nq=search-field; destroy restores the action markup. Keep application timers and requests under application ownership.'],
+    api: api(['value / defaultValue', 'React string', 'Controlled or initial query.'], ['onValueChange', 'React (value: string) => void', 'Reports the string query; native onChange also remains available.'], ['clearLabel', 'string', 'Localized accessible name in all adapters and vanilla options.'], ['type=search', 'Native input type', 'Uses the browser’s search editing semantics.']),
     accessibility: ['Do not rely on a magnifying-glass icon as the input label.', 'Announce a useful results count outside the field without announcing every keystroke.', 'Preserve Escape and other native editing behavior unless an actual popup owns the key.'], related: ['text-field', 'combobox'], source: 'packages/react/src/expanded-controls.tsx',
   },
   'number-field': {

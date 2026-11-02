@@ -6,6 +6,24 @@ Selection/change controllers bubble `nq:change` with their value. Supply visible
 localized labels, hint/error IDs, native input names and disabled/required state.
 Static/native recipes at the end require no enhancement.
 
+Search fields can opt into an inset clear action:
+
+```html
+<div class="nq-field nq-search-field" data-nq="search-field">
+  <label class="nq-label" for="query">Search</label>
+  <div class="nq-search-control">
+    <input class="nq-input" id="query" name="query" type="search" data-nq-search-input>
+    <button class="nq-button nq-search-clear" type="button" hidden data-nq-search-clear aria-label="Clear search"></button>
+  </div>
+</div>
+```
+
+`createSearchField(root, { clearLabel, onValueChange })` returns `value`,
+`clear()`, `setValue(value)` and `destroy()`. Clear emits native input/change
+and one `nq:change`; setValue synchronizes silently. Read-only and disabled
+fields cannot be cleared. Search submission belongs to the application form.
+See [search field behavior](../../docs/search-field.md).
+
 ```html
 <div data-nq="password-field"><label>Password <input type="password" data-nq-password-input name="password"></label><button type="button" data-nq-password-toggle aria-label="Show password">Show</button></div>
 <div data-nq="range-slider"><label>Minimum <input type="range" data-nq-lower name="minimum" min="0" max="100" value="20"></label><label>Maximum <input type="range" data-nq-upper name="maximum" min="0" max="100" value="80"></label><output data-nq-range-output></output></div>
