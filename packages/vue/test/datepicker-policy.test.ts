@@ -51,30 +51,28 @@ it("restores a rejected calendar selection and applies an accepted selection to 
     .querySelector<HTMLButtonElement>('[aria-label="Open calendar"]')!
     .click();
   await nextTick();
-  const select = root.querySelector("select")!;
   const chooseHijri = async () => {
-    select.value = "islamic-umalqura";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
+    (root.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click();
     await nextTick();
   };
   await chooseHijri();
   expect(changes).toHaveBeenCalledWith("islamic-umalqura");
-  expect(select.value).toBe("gregory");
+  expect((root.querySelector('.nq-calendar-switch input:checked') as HTMLInputElement).value).toBe("gregory");
   expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
     "October 2026",
   );
   expect(root.querySelector<HTMLInputElement>("input[type=text]")!.value).toBe(
-    "2026-10-15",
+    formatCalendarDate("2026-10-15", { locale: "en-US", calendar: mode.value, dateStyle: "medium" }),
   );
   accept.value = true;
   await nextTick();
   await chooseHijri();
-  expect(select.value).toBe("islamic-umalqura");
+  expect((root.querySelector('.nq-calendar-switch input:checked') as HTMLInputElement).value).toBe("islamic-umalqura");
   expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
     "1448 AH",
   );
   expect(root.querySelector<HTMLInputElement>("input[type=text]")!.value).toBe(
-    "2026-10-15",
+    formatCalendarDate("2026-10-15", { locale: "en-US", calendar: mode.value, dateStyle: "medium" }),
   );
 });
 
@@ -121,11 +119,11 @@ it("associates unsupported-date errors and clears them when switching back witho
     "validation-error",
   );
   expect(root.querySelector(".nq-date-picker > .nq-error")).toBeNull();
-  expect(input.value).toBe("1900-01-01");
+  expect(input.value).toBe(formatCalendarDate('1900-01-01', { calendar: 'gregory', locale: 'ar-SA', dateStyle: 'medium' }));
 });
 
 
-it("shows the canonical selected calendar below the closed field and preserves its description associations", async () => {
+it("shows the canonical selected calendar in the closed field and preserves its description associations", async () => {
   const value = ref("2029-08-11");
   const mode = ref<CalendarSystem>("islamic-umalqura");
   const root = document.createElement("div"); document.body.append(root);
@@ -140,7 +138,7 @@ it("shows the canonical selected calendar below the closed field and preserves i
   expect(input.getAttribute("aria-describedby")!.split(" ")).toContain(output.id);
   expect(input.getAttribute("aria-describedby")!.split(" ").map(id => document.getElementById(id)?.textContent)).toContain("Original day");
   mode.value = "gregory"; await nextTick();
-  expect(input.value).toBe("2029-08-11");
+  expect(input.value).toBe(formatCalendarDate('2029-08-11', { calendar: 'gregory', locale: 'en-SA', dateStyle: 'medium' }));
   expect(output.textContent).toBe(formatCalendarDate(value.value, { calendar: mode.value, locale: "en-SA", dateStyle: "full" }));
   value.value = ""; await nextTick(); expect(output.hidden).toBe(true); expect(output.textContent).toBe("");
   value.value = "1900-01-01"; mode.value = "islamic-umalqura"; await nextTick(); expect(output.hidden).toBe(true); expect(output.textContent).toBe(""); expect(input.checkValidity()).toBe(false);

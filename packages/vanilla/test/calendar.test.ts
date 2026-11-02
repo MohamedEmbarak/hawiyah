@@ -1,3 +1,4 @@
+import { formatCalendarDate } from '@nasaq/core';
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createCalendar, createDatePicker, enhance } from '../src/index.js';
@@ -56,11 +57,11 @@ describe('date picker', () => {
   it('switches inside the open native modal, commits ISO, restores focus and cleans up', () => {
     const { root, dialog, input, trigger } = picker(); const before = root.outerHTML;
     const controller = createDatePicker(root, { locale: 'en-GB' }); trigger.focus(); trigger.click();
-    const select = root.querySelector<HTMLSelectElement>('[data-nq-calendar-system]')!; select.value = 'islamic-umalqura'; select.dispatchEvent(new Event('change', { bubbles: true }));
-    expect(dialog.open).toBe(true); expect(input.value).toBe('2029-08-11'); expect(dialog.showModal).toHaveBeenCalledTimes(1);
+    (root.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click();
+    expect(dialog.open).toBe(true); expect(input.value).toBe(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'en-GB', dateStyle: 'medium' })); expect(dialog.showModal).toHaveBeenCalledTimes(1);
     const display = root.querySelector<HTMLOutputElement>('[data-nq-date-display]')!; expect(display.textContent).toContain('1451'); expect(input.getAttribute('aria-describedby')).toContain(display.id);
     root.querySelector<HTMLButtonElement>('[data-nq-date="2029-08-12"]')!.click();
-    expect(input.value).toBe('2029-08-12'); expect(dialog.open).toBe(false); expect(document.activeElement).toBe(trigger);
+    expect(input.value).toBe(formatCalendarDate('2029-08-12', { calendar: 'islamic-umalqura', locale: 'en-GB', dateStyle: 'medium' })); expect(dialog.open).toBe(false); expect(document.activeElement).toBe(trigger);
     controller.destroy(); expect(root.outerHTML).toBe(before);
   });
   it('does not silently convert or clear an unsupported selection on switching to Hijri', () => {
@@ -87,7 +88,7 @@ describe('date picker', () => {
     const controller = createDatePicker(root, { locale: 'en', calendar: 'islamic-umalqura' }); const display = root.querySelector<HTMLOutputElement>('[data-nq-date-display]')!;
     expect(display.textContent).toContain('1451'); controller.setValue(''); expect(display.hidden).toBe(true);
     input.value = '2026-10-28'; input.dispatchEvent(new Event('input', { bubbles: true })); expect(display.textContent).toContain('1448'); expect(display.hidden).toBe(false);
-    form.reset(); await Promise.resolve(); expect(input.value).toBe('2029-08-11'); expect(display.textContent).toContain('1451'); controller.destroy();
+    form.reset(); await Promise.resolve(); expect(input.value).toBe(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'en', dateStyle: 'medium' })); expect(display.textContent).toContain('1451'); controller.destroy();
   });
   it('enhances legacy native dates to editable text drafts without leaking malformed values into submission', async () => {
     const { root, input, dialog } = picker('2026-10-15'); const form = document.createElement('form'); document.body.replaceChildren(form); form.append(root);

@@ -91,11 +91,10 @@ describe('Angular expansion behavior', () => {
     const opener = fixture.nativeElement.querySelector('button[aria-haspopup="dialog"]') as HTMLButtonElement;
     opener.click(); fixture.detectChanges();
     let committed = 0; fixture.componentInstance.valueChange.subscribe(() => committed++);
-    const selector = fixture.nativeElement.querySelector('.nq-calendar-system select') as HTMLSelectElement;
-    selector.value = 'islamic-umalqura'; selector.dispatchEvent(new Event('change', {bubbles: true})); fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click(); fixture.detectChanges();
     expect(fixture.componentInstance.calendar).toBe('islamic-umalqura'); expect(committed).toBe(0);
     expect(fixture.componentInstance.value).toBe('2026-10-15');
-    expect((fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement).value).toBe('2026-10-15');
+    expect((fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement).value).toBe(formatCalendarDate('2026-10-15', { calendar: 'islamic-umalqura', locale: 'en', dateStyle: 'medium' }));
     fixture.componentInstance.pickerCalendar!.navigate('2027-01-01'); fixture.detectChanges(); dialog.close(); fixture.detectChanges();
     opener.click(); fixture.detectChanges();
     expect(fixture.componentInstance.pickerCalendar!.month).toBe('2026-10-15');
@@ -150,7 +149,7 @@ describe('Angular expansion behavior', () => {
     expect([...fixture.nativeElement.querySelectorAll('[role=status] bdi[dir=ltr]')].map(node => (node as HTMLElement).textContent)).toEqual(['1924-08-01', '2077-11-16']);
     expect(control.value).toBe('1900-01-01');
     fixture.componentInstance.switchCalendar('gregory'); fixture.detectChanges();
-    expect(control.value).toBe('1900-01-01'); expect(control.checkValidity()).toBe(true);
+    expect(control.value).toBe(formatCalendarDate('1900-01-01', { locale: 'ar-SA', dateStyle: 'medium' })); expect(control.checkValidity()).toBe(true);
     fixture.componentRef.setInput('min', '1950-01-01'); fixture.detectChanges();
     expect(control.checkValidity()).toBe(false); expect(control.validity.customError).toBe(true);
     fixture.componentRef.setInput('min', ''); fixture.componentInstance.switchCalendar('islamic-umalqura'); fixture.detectChanges();
@@ -160,7 +159,7 @@ describe('Angular expansion behavior', () => {
     expect(control.checkValidity()).toBe(true);
   });
 
-  it('shows an associated canonical selected date below the closed picker field', () => {
+  it('shows an associated canonical selected date in the closed picker field', () => {
     const fixture = TestBed.createComponent(NqDatePickerComponent);
     fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('hint', 'Original day'); fixture.componentRef.setInput('value', '2029-08-11'); fixture.componentRef.setInput('calendar', 'islamic-umalqura'); fixture.componentRef.setInput('locale', 'en-SA'); fixture.detectChanges();
     const control = fixture.nativeElement.querySelector('input[type=text]') as HTMLInputElement;
@@ -171,9 +170,8 @@ describe('Angular expansion behavior', () => {
     expect(output.htmlFor.value).toBe(control.id);
     expect(control.getAttribute('aria-describedby')!.split(' ')).toContain(output.id);
     expect(control.getAttribute('aria-describedby')).toContain(control.id + '-hint');
-    const calendarSelector = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    calendarSelector.value = 'gregory'; calendarSelector.dispatchEvent(new Event('change', {bubbles: true})); fixture.detectChanges();
-    expect(control.value).toBe('2029-08-11');
+    (fixture.nativeElement.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); fixture.detectChanges();
+    expect(control.value).toBe(formatCalendarDate('2029-08-11', { locale: 'en-SA', dateStyle: 'medium' }));
     expect(output.textContent).toBe(formatCalendarDate('2029-08-11', { calendar: 'gregory', locale: 'en-SA', dateStyle: 'full' }));
     fixture.componentInstance.writeValue(''); fixture.detectChanges(); expect(output.hidden).toBe(true); expect(output.textContent).toBe('');
     fixture.componentInstance.writeValue('1900-01-01'); fixture.componentInstance.switchCalendar('islamic-umalqura'); fixture.detectChanges(); expect(output.hidden).toBe(true); expect(output.textContent).toBe(''); expect(control.checkValidity()).toBe(false);
@@ -187,7 +185,7 @@ describe('Angular expansion behavior', () => {
     expect(control.hasError('calendarUnsupported')).toBe(true);
     expect(native.checkValidity()).toBe(false);
     fixture.componentInstance.system = 'gregory'; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges();
-    expect(control.valid).toBe(true); expect(native.value).toBe('1900-01-01');
+    expect(control.valid).toBe(true); expect(native.value).toBe(formatCalendarDate('1900-01-01', { locale: 'ar-SA', dateStyle: 'medium' }));
     fixture.componentInstance.system = 'islamic-umalqura'; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges();
     expect(control.hasError('calendarUnsupported')).toBe(true);
     control.disable(); fixture.detectChanges();

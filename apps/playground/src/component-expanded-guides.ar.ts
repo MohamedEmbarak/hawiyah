@@ -1,3 +1,4 @@
+import { expandedSample } from './expanded-samples';
 import type { GuideInput } from './component-guide-types';
 import { expandedGuides } from './component-expanded-guides';
 
@@ -215,17 +216,10 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   }),
   'date-picker': localized('date-picker', {
     summary: 'حقل نصي قابل لتحرير ISO مع تقويم نسق الميلادي أو الهجري بأم القرى؛ لا تظهر نافذة التاريخ الأصلية للمتصفح. تبقى القيمة المرسلة ميلادية بصيغة ISO مهما كان تقويم العرض.',
-    usage: `<div class="nq-date-picker" data-nq="date-picker" data-nq-calendar="islamic-umalqura" data-nq-locale="ar-SA">
-  <label class="nq-field"><span class="nq-label">تاريخ الموعد</span><input class="nq-input" type="text" placeholder="YYYY-MM-DD" data-nq-date-input name="appointment" required></label>
-  <button class="nq-button" type="button" data-nq-date-trigger>اختر التاريخ</button>
-  <dialog class="nq-dialog" data-nq-date-dialog aria-label="اختيار تاريخ الموعد">
-    <header class="nq-dialog-header"><h2>اختيار تاريخ الموعد</h2><button class="nq-button" data-variant="ghost" type="button" data-nq-date-close>إغلاق</button></header>
-    <div class="nq-dialog-body"><div class="nq-calendar" data-nq-date-calendar></div></div>
-  </dialog>
-</div>`,
+    usage: expandedSample('date-picker', 'guide-date-picker', 'ar'),
     lifecycle: ['هيّئ المكوّن بعد تركيب الحقل والزر والحوار وحاوية التقويم الداخلية. لا تهيّئ الحاوية الداخلية كمكوّن Calendar مستقل.', 'يفتح التقويم على شهر التاريخ المختار. يحدّث تأكيد اليوم الحقل الأصلي مرة واحدة، ويغلق الحوار، ويعيد التركيز إلى زر الفتح.', 'يبقي تبديل الميلادي والهجري الحوار مفتوحًا ويحافظ على قيمة ISO. يصف مخرج حي تحت الحقل التاريخ بنظام العرض المختار حتى بعد الإغلاق.', 'تُحفظ القيم الواقعة خارج النطاق الهجري وتُعلَّم بأنها غير صالحة مع شرح النطاق. يزيل الرجوع للميلادي خطأ النطاق الهجري دون إلغاء min وmax.', 'تزامن تواريخ ISO وإعادة الضبط التقويم والمخرج؛ تبقى المسودات الخاطئة ظاهرة وغير صالحة دون تغيير القيمة المعتمدة. يحرر destroy التقويم والحوار والمخرج المولد.'],
-    api: ['تفضيلات نظام العرض واللغة الابتدائية.', 'يمتلك الحقل النصي المرئي التحقق، ويحمل حقل مخفي الاسم وقيمة ISO المعتمدة فقط. يقرأ مرجع الحقل المرئي المسودة.', 'التحكم في فتح الحوار وإغلاقه ونظام العرض، مع تنظيف صريح.', 'تختلف أحداث تغيير قيمة ISO عن تغيير تقويم العرض. يتولى Calendar الداخلي تأكيد اليوم.'],
-    accessibility: ['اكتب YYYY-MM-DD ميلاديًا أو افتح تقويم نسق بالزر أو ArrowDown. يحرّر النقر النص ويبقى Enter لإرسال النموذج.', 'يحتاج الحوار إلى عنوان وزر إغلاق، ويوفر Calendar تفاعل شبكة الأيام بلوحة المفاتيح.', 'اربط رسائل النطاق وعدم الإتاحة المترجمة بالحقل، ولا تمسح تاريخًا قائمًا خارج النطاق بصمت.'],
+    api: ['تفضيلات نظام العرض واللغة الابتدائية.', 'يمتلك الحقل النصي المرئي التحقق، ويحمل حقل مخفي الاسم وقيمة ISO المعتمدة فقط. يعرض الحقل التاريخ بالتقويم النشط، ويكشف مسودة ISO عند التركيز للتحرير.', 'التحكم في فتح الحوار وإغلاقه ونظام العرض، مع تنظيف صريح.', 'تختلف أحداث تغيير قيمة ISO عن تغيير تقويم العرض. يتولى Calendar الداخلي تأكيد اليوم.'],
+    accessibility: ['اكتب YYYY-MM-DD ميلاديًا أو افتح تقويم نسق بالزر أو ArrowDown. يحرّر النقر النص ويبقى Enter لإرسال النموذج.', 'يحتاج الحوار إلى عنوان وزر إغلاق، ويوفر Calendar تفاعل شبكة الأيام بلوحة المفاتيح. تعرض أيقونة المعلومات الرمادية بجوار الشهر الهجري النطاق عند المرور أو التركيز، ويغلق Escape التلميح وحده.', 'اربط رسائل النطاق وعدم الإتاحة المترجمة بالحقل، ولا تمسح تاريخًا قائمًا خارج النطاق بصمت.'],
     limitations: ['نطاق أم القرى: 1924-08-01–2077-11-16. تتبع المعاملات الرسمية سياسة الجهة المسؤولة عن التاريخ.'],
     frameworkNotes: 'يقبل DatePicker في React قيمة value/defaultValue/onValueChange ونظام calendar/defaultCalendar/onCalendarChange، مع تسميات مترجمة للمحدد والزر والحوار. تدخل isDateDisabled أيضًا ضمن صلاحية الحقل الأصلي في React.',
   }),

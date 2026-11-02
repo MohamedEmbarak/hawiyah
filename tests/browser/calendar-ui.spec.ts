@@ -13,8 +13,8 @@ test('date picker has a readable responsive popup and isolated Arabic date range
       await page.setViewportSize({ width, height: 844 });
       const inputBounds = await input.boundingBox();
       const triggerBounds = await trigger.boundingBox();
-      const outputBounds = await picker.locator('.nq-date-picker-value').boundingBox();
-      expect(outputBounds!.y).toBeGreaterThanOrEqual(Math.max(inputBounds!.y + inputBounds!.height, triggerBounds!.y + triggerBounds!.height) - 1);
+      expect(triggerBounds!.x).toBeGreaterThanOrEqual(inputBounds!.x);
+      expect(triggerBounds!.x + triggerBounds!.width).toBeLessThanOrEqual(inputBounds!.x + inputBounds!.width + 1);
       await trigger.click();
       const dialog = picker.locator('dialog');
       await expect(dialog.locator('.nq-dialog-header h2')).toBeVisible();
@@ -37,7 +37,7 @@ test('date picker has a readable responsive popup and isolated Arabic date range
       expect(arrow.transform).toBe(direction === 'rtl' ? 'matrix(-1, 0, 0, 1, 0, 0)' : 'none');
       expect((await previous.boundingBox())!.width).toBeGreaterThanOrEqual(44);
       await expect(dialog.locator('bdi[dir="ltr"]')).toHaveText(['1924-08-01 – 2077-11-16']);
-      await expect(input).toHaveValue('2026-10-28');
+      await expect(picker.locator('input[type=hidden][name=appointment]')).toHaveValue('2026-10-28');
       if (direction === 'rtl') await page.screenshot({path:testInfo.outputPath(`calendar-${width}-rtl.png`)});
       await page.keyboard.press('Escape');
       await expect(trigger).toBeFocused();

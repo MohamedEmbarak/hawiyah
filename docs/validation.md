@@ -415,3 +415,33 @@ The calendar script accepts an optional `react`, `angular`, or `vue` argument. R
 Firefox and WebKit have not been covered by these runs. Manual screen-reader testing, a complete keyboard/accessibility audit, exhaustive mode/theme/density combinations, and a broader framework-version matrix remain open. Angular production AOT consumer integration and Angular SSR/hydration are not established. React/Vue hydration coverage is limited to the focused cases described above. The [DGA reference](dga-reference.md) records reviewed source mappings and accessibility adaptations. The local audit decoded all 23 supplied exports; the standalone web Components Library was not found. Hajj is excluded by product scope; exhaustive template parity, live official-version checking and asset redistribution permissions remain separate work in [alignment](alignment.md).
 
 These checks describe this source and guide snapshot; later changes require relevant checks again. The GitHub Pages workflow builds and deploys the guide independently. npm packages are not yet published. Follow the [release gates](publication.md) before distributing registry packages.
+
+## Input follow-up — 2026-11-02
+
+The compact calendar field, active-calendar display, Latin digits, green radio
+switch and muted Hijri range tooltip now share behavior across all four adapters.
+Six presentation rows stabilize calendar height without changing provider math.
+The guide's date, month, week and local-datetime fields all use the custom calendar.
+The identity loader, larger riyal addon, mobile switch dimensions and required
+MultiSelect validation are also covered by this follow-up.
+
+- Workspace packages, guide and all three native consumers built successfully.
+  The public guide also built with the `/nasaq/` deployment base.
+- Focused date/input regression suites passed 79 tests; numeric-format suites
+  passed 10 tests and React interaction checks passed 14. The broader 75-file run
+  initially passed 281/283; its currency expectation and Angular focus regression
+  were corrected and passed the focused reruns.
+- Browser checks passed custom ISO typing/submission, compact input-icon geometry,
+  stable Gregorian/Hijri panel geometry, muted hover/focus information, and RTL/LTR
+  behavior in the guide and native React/Vue/Angular consumers. Calendar consumer
+  checks also passed keyboard selection, reopening, invalid-range submission,
+  mobile RTL/dark layout and scoped axe checks.
+- The guide's Arabic/English input and layout pages passed scoped automated AA
+  checks. The loader passed four language/mode cases, including dynamic reduced
+  motion in the isolated editor; the riyal addon passed both language cases.
+  Mobile switch geometry and interaction passed vanilla and all native consumers.
+- Clean tarball consumers passed ESM, SSR, Angular APF, CSS exports, declarations
+  and tree-shaking checks. No registry packages were published.
+
+These are Chromium and automated checks, not manual screen-reader validation,
+cross-browser parity, or DGA certification. Hajj remains excluded.

@@ -144,6 +144,15 @@
       "sourceUse": "Password visibility artwork from upstream MIT assets; no DGA node or visual parity claim.",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
+    },
+    {
+      "name": "calendar-03",
+      "file": "calendar-03.svg",
+      "sha256": "8f610b15dda166c356bedb794b85532940e0d4a7c6ccbd4c3acba598ba1c4357",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/calendar-03.svg",
+      "sourceUse": "Date picker input action from upstream MIT assets; no DGA node or visual parity claim.",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false
     }
   ]
 }

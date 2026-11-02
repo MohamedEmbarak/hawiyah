@@ -1,43 +1,28 @@
 # Date picker presentation
 
-The date picker uses an editable ISO text input and Nasaq’s calendar in a native modal dialog. Its submitted
-value remains a Gregorian ISO date; switching the displayed calendar does not
-rewrite that value. This presentation update does not change the pinned
-Umm al-Qura provider, date calculations, supported range, or calendar keyboard
-navigation.
+The compact DatePicker combines an editable text field with an inset calendar icon,
+a 24rem maximum-width modal, and a green animated rectangular Gregorian/Hijri
+switch. Arabic is the default; labels remain localized while all digits use 0–9.
+The idle field displays the active calendar, and focus exposes the Gregorian ISO
+draft for typing. Submitted values remain ISO.
 
-The supplied guide screenshot exposed an oversized generic dialog with no
-visible title, small calendar labels and an Arabic range whose ISO endpoints
-were visually reordered. Date-picker dialogs now have a 26rem maximum width,
-responsive viewport margins, a visible header and a padded body in the vanilla
-recipes. Framework dialogs retain their native adapter-owned header/body.
-The calendar fills the body without a second bordered card. Day buttons have
-a 44px minimum height at a 16px root, and larger day/weekday/navigation text.
-Month navigation uses the existing curated 24px arrow masks in 44px buttons,
-mirrored in RTL, with localized accessible names. Narrow picker dialogs reduce
-side padding and keep weekday words intact. The vanilla supported-date range
-appears on its own isolated line below a short localized label.
-Seven columns remain fluid on narrow screens; this is not a claim that every
-day has a 44px-wide target.
+The panel reserves six week rows with noninteractive blank presentation rows when
+needed. Switching calendars and navigating shorter months preserves panel height
+and position. The 44px minimum day height remains; seven fluid columns fit narrow
+screens, which does not imply 44px-wide targets at every viewport.
 
-Formatted dates and validation messages occupy a row below the input controls.
-Popup text wraps even when the React dialog is nested in an input addon. Visible
-ISO endpoints in range messages use `bdi dir="ltr"`; native validation strings
-and submitted dates remain unchanged. Caller-provided messages remain text,
-with no HTML interpretation.
+A small muted information icon beside the Hijri month heading reveals the pinned
+provider's date range on hover or keyboard focus. It has no click-to-toggle behavior.
+Escape dismisses the tooltip without closing the dialog. Visible input validation
+continues to explain unsupported dates. ISO endpoints are isolated from RTL prose.
 
-For vanilla markup, provide `.nq-dialog-header` with a visible heading and
-`[data-nq-date-close]` button, followed by `.nq-dialog-body` containing
-`[data-nq-date-calendar]`. Keep an accessible dialog name via `aria-labelledby`
-or `aria-label`. See the bilingual component guide and the vanilla expansion
-API for complete recipes. Existing public classes and enhancement hooks remain
-supported; adapters continue to own their DOM.
+The inset icon uses the pinned MIT Hugeicons calendar asset listed in provenance.
+Arrow masks mirror in RTL. Motion uses shared tokens, and reduced motion removes
+the switch transition. Original and custom themes continue to provide their colors.
 
-Regression coverage includes endpoint isolation in each adapter and open-popup
-geometry, output placement, day height and Escape focus return at 320px and
-390px. Unit checks cannot establish visual parity. The screenshot-driven fixes
-are Nasaq usability improvements, not evidence of DGA certification or a claim
-that these dimensions were extracted from a DGA calendar component. Hajj is
-outside this work.
+Framework adapters own their DOM. Public nq classes and variables remain stable.
+The pinned Umm al-Qura provider, range, calculations and keyboard date navigation
+are unchanged. See [date-input.md](date-input.md) for draft/submission behavior.
 
-The custom-only input and draft/submission contract is documented in [date-input.md](date-input.md).
+These screenshot-driven changes are Nasaq usability decisions, not extracted DGA
+calendar dimensions or a claim of official certification. Hajj remains excluded.

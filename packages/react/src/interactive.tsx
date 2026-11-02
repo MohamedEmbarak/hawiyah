@@ -265,7 +265,7 @@ export function Tooltip({ children, content, className, onMouseEnter, onMouseLea
     onMouseLeave={event => { onMouseLeave?.(event); hovered.current = false; hideAfterPointerTravel(); }}
     onFocus={event => { onFocus?.(event); focused.current = true; if (!event.defaultPrevented) show(); }}
     onBlur={event => { onBlur?.(event); if (!event.currentTarget.contains(event.relatedTarget as Node | null)) { focused.current = false; hideAfterPointerTravel(); } }}
-    onKeyDown={event => { onKeyDown?.(event); if (event.key === 'Escape' && !event.defaultPrevented) { event.stopPropagation(); clearTimeout(hideTimer.current); setOpen(false); } }}>
+    onKeyDown={event => { onKeyDown?.(event); if (event.key === 'Escape' && open && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); clearTimeout(hideTimer.current); setOpen(false); } }}>
     {cloneElement(children, { 'aria-describedby': [children.props['aria-describedby'], id].filter(Boolean).join(' ') })}
     <span className="nq-tooltip" role="tooltip" id={id} hidden={!open}>{content}</span>
   </span>;

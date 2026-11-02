@@ -97,14 +97,13 @@ it('switches picker calendar systems without changing the ISO date and reopens a
   const opener = container.querySelector<HTMLButtonElement>('[aria-label="Open calendar"]')!; await click(opener);
   const dateInput = container.querySelector<HTMLInputElement>('input[type=text]')!; const calendar = container.querySelector('.nq-calendar')!;
   const before = container.querySelector('.nq-calendar-header h3')!.textContent;
-  const select = container.querySelector('select')!;
-  await act(async () => { select.value = 'islamic-umalqura'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+  await act(async () => { (container.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click(); });
   expect(calendar.getAttribute('data-calendar')).toBe('islamic-umalqura'); expect(container.querySelector('.nq-calendar-header h3')!.textContent).not.toBe(before);
-  expect(dateInput.value).toBe('2026-10-28'); expect(changed).not.toHaveBeenCalled();
+  expect(dateInput.value).toBe(formatCalendarDate('2026-10-28', { calendar: 'islamic-umalqura', locale: 'en-SA', dateStyle: 'medium' })); expect(changed).not.toHaveBeenCalled();
   await click(container.querySelector<HTMLButtonElement>('[aria-label="Next month"]')!);
   await click(container.querySelector<HTMLButtonElement>('[aria-label="Close"]')!); await click(opener);
   expect(container.querySelector('[data-date="2026-10-28"]')?.closest('td')?.getAttribute('aria-selected')).toBe('true');
-  await act(async () => { select.value = 'gregory'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+  await act(async () => { (container.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
   expect(new FormData(container.querySelector('form')!).get('date')).toBe('2026-10-28');
   expect(container.querySelector('.nq-calendar-header h3')!.textContent).toBe(before);
 });
@@ -119,8 +118,7 @@ it('preserves an unsupported ISO date while explicitly limiting its Hijri displa
   expect([...container.querySelectorAll('[role=status] bdi[dir=ltr]')].map(node => node.textContent)).toEqual([UMALQURA_MIN_DATE, UMALQURA_MAX_DATE]);
   expect(container.querySelectorAll('[role=gridcell][aria-selected=true]')).toHaveLength(0);
   expect(container.querySelector<HTMLButtonElement>('[aria-label="Previous month"]')!.disabled).toBe(true);
-  const select = container.querySelector('select')!;
-  await act(async () => { select.value = 'gregory'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+  await act(async () => { (container.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
   expect(container.querySelector('[data-date="1900-01-01"]')?.closest('td')?.getAttribute('aria-selected')).toBe('true');
   expect(new FormData(container.querySelector('form')!).get('date')).toBe('1900-01-01');
   expect(container.querySelector('[role=status]')).toBeNull();
@@ -133,9 +131,8 @@ it('rejects unsupported Hijri form submission and keeps application bounds after
   const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
   const button = [...container.querySelectorAll('button')].find(item => item.textContent === 'Submit')!;
   await click(button); expect(submitted).not.toHaveBeenCalled(); expect(date.validationMessage).toBe('خارج نطاق أم القرى');
-  const calendar = container.querySelector('select')!;
-  await act(async () => { calendar.value = 'gregory'; calendar.dispatchEvent(new Event('change', { bubbles: true })); });
-  expect(date.value).toBe('1900-01-01'); expect(date.checkValidity()).toBe(true);
+  await act(async () => { (container.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
+  expect(date.value).toBe(formatCalendarDate('1900-01-01', { calendar: 'gregory', locale: 'ar-SA', dateStyle: 'medium' })); expect(date.checkValidity()).toBe(true);
   await click(button); expect(submitted).toHaveBeenCalledOnce();
   await input(date, '1880-01-01'); expect(date.checkValidity()).toBe(false); expect(date.validity.customError).toBe(true);
   await click(button); expect(submitted).toHaveBeenCalledOnce();
@@ -153,7 +150,7 @@ it('shows and associates the selected calendar date outside the closed picker di
   expect(output.getAttribute('aria-live')).toBe('polite');
   expect(date.getAttribute('aria-describedby')!.split(' ')).toEqual(expect.arrayContaining([output.id, 'visible-date-hint']));
   await render(<DatePicker id="visible-date" label="Date" value={supported} calendar="gregory" locale="en-SA" />);
-  expect(date.value).toBe(supported);
+  expect(date.value).toBe(formatCalendarDate(supported, { calendar: 'gregory', locale: 'en-SA', dateStyle: 'medium' }));
   expect(output.textContent).toBe(formatCalendarDate(supported, { calendar: 'gregory', locale: 'en-SA', dateStyle: 'full' }));
   await render(<DatePicker id="visible-date" label="Date" value="" calendar="islamic-umalqura" />);
   expect(output.hidden).toBe(true); expect(output.textContent).toBe('');

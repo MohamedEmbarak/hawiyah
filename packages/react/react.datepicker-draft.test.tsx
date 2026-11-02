@@ -19,7 +19,7 @@ it('keeps malformed drafts focusable and submits only canonical ISO while enforc
   await edit(input, '2026-10-20'); expect(input.checkValidity()).toBe(false);
   await edit(input, '2026-10-21'); expect(input.checkValidity()).toBe(true); expect(new FormData(form).getAll('date')).toEqual(['2026-10-21']);
   await edit(input, ''); expect(changed).toHaveBeenLastCalledWith(''); expect(input.validity.valueMissing).toBe(true); expect(new FormData(form).get('date')).toBe('');
-  await act(async () => { form.reset(); await Promise.resolve(); }); expect(input.value).toBe('2026-10-15'); expect(input.checkValidity()).toBe(true); expect(new FormData(form).get('date')).toBe('2026-10-15'); expect(container.querySelector('select')!.value).toBe('islamic-umalqura');
+  await act(async () => { form.reset(); await Promise.resolve(); }); expect(input.value).toBe('2026-10-15'); expect(input.checkValidity()).toBe(true); expect(new FormData(form).get('date')).toBe('2026-10-15'); expect(container.querySelector<HTMLInputElement>('.nq-calendar-switch input:checked')!.value).toBe('islamic-umalqura');
 });
 
 it('opens only the custom dialog from ArrowDown and leaves click/Enter editing semantics intact', async () => {

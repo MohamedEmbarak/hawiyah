@@ -1,0 +1,51 @@
+/* Compact custom date field. Native input density and focus remain authoritative. */
+.nq-date-picker-control { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-inline-size: 0; inline-size: 100%; }
+.nq-date-picker-control > .nq-input { inline-size: 100%; min-inline-size: 0; padding-inline-end: 3rem; border-radius: var(--nq-radius-md); }
+.nq-date-picker-control > .nq-date-picker-trigger { position: absolute; inset-inline-end: 0.125rem; inset-block: 0.125rem; inline-size: 2.5rem; min-block-size: 0; padding: 0; margin: 0; border: 0; border-radius: var(--nq-radius-sm); background: transparent; color: var(--nq-color-text-muted); box-shadow: none; }
+.nq-date-picker-control > .nq-date-picker-trigger:hover:not(:disabled) { background: var(--nq-color-surface-muted); color: var(--nq-color-text); }
+.nq-date-picker-control > .nq-date-picker-trigger:focus-visible { outline-offset: -3px; }
+.nq-date-picker-trigger:disabled { cursor: not-allowed; }
+.nq-date-picker-icon { display: inline-block; inline-size: 1.5rem; block-size: 1.5rem; background: currentColor; -webkit-mask: var(--nq-date-picker-icon, url('./assets/icons/calendar-03.svg')) center / contain no-repeat; mask: var(--nq-date-picker-icon, url('./assets/icons/calendar-03.svg')) center / contain no-repeat; }
+.nq-date-picker > .nq-date-picker-control { flex: 0 0 100%; }
+
+/* Native radios retain keyboard behavior; the rectangle moves in logical order. */
+.nq-calendar-switch { position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; margin-block-end: var(--nq-space-3); border: 1px solid var(--nq-color-border-strong); border-radius: var(--nq-radius-sm); background: var(--nq-color-surface-muted); }
+.nq-calendar-switch::before { content: ''; position: absolute; z-index: -1; inset-block: 4px; inset-inline-start: 4px; inline-size: calc(50% - 4px); background: var(--nq-color-primary); border: 1px solid var(--nq-color-primary); border-radius: var(--nq-radius-sm); transition: inset-inline-start var(--nq-duration-fast) var(--nq-ease-standard); }
+.nq-calendar-switch[data-calendar='islamic-umalqura']::before { inset-inline-start: 50%; }
+.nq-calendar-switch > label { position: relative; display: flex; align-items: center; justify-content: center; min-inline-size: 0; min-block-size: var(--nq-control-height); padding: var(--nq-space-1) var(--nq-space-2); color: var(--nq-color-text); font-size: var(--nq-text-sm); line-height: var(--nq-leading-heading); text-align: center; cursor: pointer; }
+.nq-calendar-switch > label > input { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; margin: 0; opacity: 0; cursor: inherit; }
+.nq-calendar-switch > label:has(input:checked) { font-weight: var(--nq-weight-semibold); color: var(--nq-color-on-primary); }
+.nq-calendar-switch > label:has(input:focus-visible) { outline: 2px solid var(--nq-color-focus); outline-offset: -2px; border-radius: var(--nq-radius-sm); }
+.nq-calendar-switch > label:has(input:disabled) { cursor: not-allowed; opacity: 0.6; }
+@media (prefers-reduced-motion: reduce) { .nq-calendar-switch::before { transition: none; } }
+@media (forced-colors: active) {
+  .nq-date-picker-icon { forced-color-adjust: none; background: ButtonText; }
+  .nq-date-picker-trigger:disabled > .nq-date-picker-icon { background: GrayText; }
+  .nq-calendar-switch::before { forced-color-adjust: none; background: Highlight; border-color: Highlight; }
+  .nq-calendar-switch > label:has(input:checked) > span { forced-color-adjust: none; color: HighlightText; }
+  .nq-calendar-switch > label:has(input:focus-visible) { outline-color: CanvasText; }
+}
+
+
+/* Compact chrome; retain 44px day targets and six week rows without layout shifts. */
+.nq-date-picker .nq-dialog { inline-size: min(24rem, calc(100vw - 2rem)); }
+.nq-date-picker .nq-dialog-header { padding: var(--nq-space-3) var(--nq-space-4) var(--nq-space-2); gap: var(--nq-space-2); }
+.nq-date-picker .nq-dialog-header > h2 { margin: 0; font-size: var(--nq-text-lg); }
+.nq-date-picker .nq-dialog-body { padding: 0 var(--nq-space-4) var(--nq-space-3); }
+.nq-date-picker .nq-dialog-footer:empty { display: none; }
+.nq-date-picker .nq-dialog-body > .nq-field { margin-block-end: 0; }
+.nq-calendar-options { margin-block-end: var(--nq-space-2); }
+.nq-calendar-options > .nq-calendar-switch { margin: 0; padding: 3px; }
+.nq-calendar-options > .nq-calendar-switch > label { min-block-size: 2.25rem; padding-block: var(--nq-space-1); }
+.nq-calendar :is(.nq-calendar-header, .nq-calendar-toolbar) { margin-block: 0 var(--nq-space-1); }
+.nq-calendar-heading { position: relative; display: flex; flex: 1; align-items: center; justify-content: center; gap: var(--nq-space-1); min-inline-size: 0; }
+.nq-calendar-heading > :is(h3, span:not(.nq-calendar-info)) { margin: 0; font-size: var(--nq-text-md); font-weight: var(--nq-weight-semibold); line-height: var(--nq-leading-heading); }
+.nq-calendar-heading .nq-calendar-info, .nq-calendar-info > .nq-tooltip-anchor { position: static; }
+.nq-calendar-info { flex: none; display: inline-flex; color: var(--nq-color-text-muted); }
+.nq-calendar-info-icon { display: inline-grid; place-items: center; inline-size: 1rem; block-size: 1rem; border: 1px solid currentColor; border-radius: 50%; font: 600 0.6875rem/1 sans-serif; color: var(--nq-color-text-muted); cursor: help; }
+.nq-calendar-info [data-nq-tooltip-trigger] { font-size: 0; }
+.nq-calendar-info [data-nq-tooltip-trigger]::before { content: 'i'; font-size: 0.6875rem; }
+.nq-calendar-info .nq-tooltip { inset-block-end: calc(100% + 4px); inset-inline: auto; left: 50%; transform: translateX(-50%); inline-size: 15rem; max-inline-size: calc(100vw - 4rem); white-space: normal; text-align: start; }
+.nq-calendar-info bdi { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.nq-calendar :is(.nq-calendar-grid, table) .nq-calendar-empty-week { block-size: 2.75rem; }
+.nq-calendar-info[hidden] { display: none; }

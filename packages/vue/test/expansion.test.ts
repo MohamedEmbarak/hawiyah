@@ -397,14 +397,12 @@ describe("Vue calendars and interactions", () => {
       .querySelector<HTMLButtonElement>('[aria-label="Open calendar"]')!
       .click();
     await nextTick();
-    const select = root.querySelector<HTMLSelectElement>("select")!;
-    select.value = "islamic-umalqura";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
+    (root.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click();
     await nextTick();
     expect(system.value).toBe("islamic-umalqura");
     expect(value.value).toBe("2024-03-11");
     expect(
-      root.querySelector<HTMLInputElement>("input[type=text]")!.value,
+      root.querySelector<HTMLInputElement>(".nq-date-picker > input[type=hidden]")!.value,
     ).toBe("2024-03-11");
     expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
       "Ramadan",
@@ -425,8 +423,7 @@ describe("Vue calendars and interactions", () => {
     expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
       "Ramadan",
     );
-    select.value = "gregory";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
+    (root.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click();
     await nextTick();
     expect(value.value).toBe("2024-03-11");
     expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(

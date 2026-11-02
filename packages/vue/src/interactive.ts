@@ -186,7 +186,7 @@ export const Tooltip = defineComponent({
     onBeforeUnmount(() => root.value?.ownerDocument.removeEventListener('pointerdown', outside));
     return () => {
       const children = slots.default?.() ?? [];
-      return h('span', mergeProps(attrs, { ref: root, 'data-nq': 'tooltip', onMouseenter: () => { open.value = true; }, onMouseleave: () => { if (!root.value?.contains(root.value.ownerDocument.activeElement)) open.value = false; }, onFocusin: () => { open.value = true; }, onFocusout: (event: FocusEvent) => { if (!root.value?.contains(event.relatedTarget as Node | null)) open.value = false; }, onKeydown: (event: KeyboardEvent) => { if (event.key === 'Escape') { event.stopPropagation(); open.value = false; } } }), [
+      return h('span', mergeProps(attrs, { ref: root, 'data-nq': 'tooltip', onMouseenter: () => { open.value = true; }, onMouseleave: () => { if (!root.value?.contains(root.value.ownerDocument.activeElement)) open.value = false; }, onFocusin: () => { open.value = true; }, onFocusout: (event: FocusEvent) => { if (!root.value?.contains(event.relatedTarget as Node | null)) open.value = false; }, onKeydown: (event: KeyboardEvent) => { if (event.key === 'Escape' && open.value) { event.preventDefault(); event.stopPropagation(); open.value = false; } } }), [
         ...children.map(child => isVNode(child) ? cloneVNode(child, { 'aria-describedby': joinIds(child.props?.['aria-describedby'], id) }) : child),
         h('span', { id, role: 'tooltip', class: 'nq-tooltip', hidden: !open.value }, props.content),
       ]);

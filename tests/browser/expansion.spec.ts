@@ -74,17 +74,17 @@ test("native date picker switches reference calendars without changing the ISO d
   await trigger.click();
   const dialog = picker.locator("dialog");
   await expect(dialog).toBeVisible();
-  const system = dialog.locator("[data-nq-calendar-system]");
+  const system = dialog.locator("[data-nq-calendar-system]:checked");
   await expect(system).toHaveValue("islamic-umalqura");
   await expect(dialog.locator('[data-nq-date="2026-10-28"]')).toHaveAttribute(
     "data-selected",
     "",
   );
-  await system.selectOption("gregory");
-  await expect(input).toHaveValue("2026-10-28");
+  await dialog.locator("input[value=gregory]").check();
+  await expect(picker.locator("input[type=hidden][name=appointment]")).toHaveValue("2026-10-28");
   await expect(dialog.locator('[data-nq-date="2026-10-28"]')).toHaveText("28");
-  await system.selectOption("islamic-umalqura");
-  await expect(input).toHaveValue("2026-10-28");
+  await dialog.locator("input[value=islamic-umalqura]").check();
+  await expect(picker.locator("input[type=hidden][name=appointment]")).toHaveValue("2026-10-28");
   await expect(dialog.locator('[data-nq-date="2026-10-28"]')).toHaveText("17");
   const scan = await new AxeBuilder({ page })
     .include("[data-nq-date-dialog]")
@@ -98,8 +98,8 @@ test("native date picker switches reference calendars without changing the ISO d
     await input.evaluate((n) => (n as HTMLInputElement).checkValidity()),
   ).toBe(false);
   await trigger.click();
-  await dialog.locator("[data-nq-calendar-system]").selectOption("gregory");
-  await expect(input).toHaveValue("1900-01-01");
+  await dialog.locator("input[value=gregory]").check();
+  await expect(picker.locator("input[type=hidden][name=appointment]")).toHaveValue("1900-01-01");
   expect(
     await input.evaluate((n) => (n as HTMLInputElement).checkValidity()),
   ).toBe(true);
@@ -197,12 +197,10 @@ test("input laboratory covers input types with custom date handling and keeps va
     "button",
     "checkbox",
     "color",
-    "datetime-local",
     "email",
     "file",
     "hidden",
     "image",
-    "month",
     "number",
     "password",
     "radio",
@@ -214,7 +212,6 @@ test("input laboratory covers input types with custom date handling and keeps va
     "text",
     "time",
     "url",
-    "week",
   ]);
   await form.locator("input[name=email]").fill("bad-email");
   await form.locator("input[type=submit]").click();

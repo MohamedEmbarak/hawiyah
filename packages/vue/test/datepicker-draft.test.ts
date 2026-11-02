@@ -16,5 +16,5 @@ it('retains malformed drafts without publishing them and validates ranges on a f
   await edit('2026-10-20'); expect(input.checkValidity()).toBe(false);
   await edit('2026-10-21'); expect(input.checkValidity()).toBe(true); expect(new FormData(form).getAll('date')).toEqual(['2026-10-21']);
   await edit(''); expect(values.at(-1)).toBe(''); expect(input.validity.valueMissing).toBe(true);
-  form.reset(); await Promise.resolve(); await nextTick(); expect(input.value).toBe('2026-10-15'); expect(new FormData(form).get('date')).toBe('2026-10-15'); expect(container.querySelector('select')!.value).toBe('islamic-umalqura');
+  form.reset(); await Promise.resolve(); await nextTick(); expect(input.value).toBe('2026-10-15'); expect(new FormData(form).get('date')).toBe('2026-10-15'); expect(container.querySelector<HTMLInputElement>('.nq-calendar-switch input:checked')!.value).toBe('islamic-umalqura');
 });

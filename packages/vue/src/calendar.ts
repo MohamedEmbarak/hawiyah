@@ -21,8 +21,8 @@ import {
   moveCalendarDate,
 } from "@nasaq/core";
 import type { CalendarDay, CalendarSystem } from "@nasaq/core";
-import { Button, Select, decorate } from "./forms.js";
-import { Dialog } from "./interactive.js";
+import { Button, decorate } from "./forms.js";
+import { Dialog, Tooltip } from "./interactive.js";
 import {
   decorationProps,
   joinIds,
@@ -249,11 +249,10 @@ export const Calendar = defineComponent({
             },
             () => props.previousLabel,
           ),
-          h(
-            "span",
-            { "aria-live": "polite", "aria-atomic": "true" },
-            page.value.label,
-          ),
+          h("div", { class: "nq-calendar-heading" }, [
+            h("span", { "aria-live": "polite", "aria-atomic": "true" }, page.value.label),
+            props.calendar === "islamic-umalqura" && h(Tooltip, { class: "nq-calendar-info", content: `${props.locale.startsWith("ar") ? "التواريخ الهجرية المدعومة" : "Supported Hijri dates"}: \u2066${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}\u2069` }, () => h("span", { tabindex: 0, role: "img", class: "nq-calendar-info-icon nq-tooltip-trigger", "aria-label": props.locale.startsWith("ar") ? "التواريخ الهجرية المدعومة" : "Supported Hijri dates" }, "i")),
+          ]),
           h(
             Button,
             {
@@ -268,7 +267,7 @@ export const Calendar = defineComponent({
         ]),
         model.value.value &&
           !isCalendarDateSupported(model.value.value, props.calendar) &&
-          h("p", { role: "status" }, dateMessage(props.unsupportedMessage)),
+          h("p", { role: "status", class: "nq-sr-only" }, dateMessage(props.unsupportedMessage)),
         h(
           "table",
           {
@@ -291,11 +290,11 @@ export const Calendar = defineComponent({
             h(
               "tbody",
               {},
-              Array.from({ length: page.value.days.length / 7 }, (_, week) =>
+              Array.from({ length: 6 }, (_, week) =>
                 h(
                   "tr",
-                  { key: week },
-                  page.value.days
+                  { key: week, "aria-hidden": week * 7 >= page.value.days.length || undefined },
+                  week * 7 >= page.value.days.length ? [h("td", { colspan: 7, class: "nq-calendar-empty-week" })] : page.value.days
                     .slice(week * 7, week * 7 + 7)
                     .map((day, dayIndex) =>
                       h(
@@ -393,6 +392,7 @@ export const DatePicker = defineComponent({
       (v) => emit("update:modelValue", v),
     );
     const draft = ref(model.value.value);
+    const editing = ref(false);
     watch(() => model.value.value, value => { draft.value = value; });
     const blocked = () => props.disabled || props.readonly || !element.value || isDisabled(element.value);
     const commit = (value: string) => {
@@ -448,7 +448,7 @@ export const DatePicker = defineComponent({
         props,
         field.id.value,
         h("div", { class: "nq-date-picker" }, [
-          h("div", { class: "nq-input-group" }, [
+          h("div", { class: "nq-date-picker-control" }, [
             h(
               "input",
               mergeProps(attrs, field.controlAttrs.value, {
@@ -459,7 +459,7 @@ export const DatePicker = defineComponent({
                 "aria-haspopup": "dialog",
                 "aria-controls": `${field.id.value}-dialog`,
                 class: "nq-input",
-                value: draft.value,
+                value: !editing.value && draft.value && !validationMessage.value && isCalendarDateSupported(draft.value, calendarSystem.value.value) ? formatCalendarDate(draft.value, { locale: props.locale, calendar: calendarSystem.value.value, dateStyle: "medium" }) : draft.value,
                 min: minimum.value,
                 max: maximum.value,
                 disabled: props.disabled,
@@ -476,6 +476,8 @@ export const DatePicker = defineComponent({
                 onKeydown: (event: KeyboardEvent) => {
                   if (!event.defaultPrevented && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key === "ArrowDown" && !blocked()) { event.preventDefault(); show(); }
                 },
+                onFocus: (event: FocusEvent) => { if (!blocked()) { (event.target as HTMLInputElement).value = draft.value; (event.target as HTMLInputElement).select(); editing.value = true; } },
+                onBlur: () => { editing.value = false; },
                 onInput: (event: Event) => {
                   if (!blocked()) commit((event.target as HTMLInputElement).value);
                 },
@@ -484,7 +486,8 @@ export const DatePicker = defineComponent({
             h(
               Button,
               {
-                variant: "secondary",
+                variant: "ghost",
+                class: "nq-date-picker-trigger",
                 disabled: props.disabled || props.readonly,
                 "aria-label": props.openLabel,
                 "aria-expanded": open.value,
@@ -492,14 +495,14 @@ export const DatePicker = defineComponent({
                 "aria-controls": `${field.id.value}-dialog`,
                 onClick: show,
               },
-              () => props.openLabel,
+              () => h("span", { class: "nq-date-picker-icon", "aria-hidden": "true" }),
             ),
           ]),
           h("input", { type: "hidden", name: attrs.name, form: attrs.form, disabled: props.disabled, value: isDateInRange(model.value.value) ? model.value.value : "" }),
           h("output", {
             id: `${field.id.value}-formatted`,
             for: field.id.value,
-            class: "nq-hint nq-date-picker-value",
+            class: "nq-sr-only nq-date-picker-value",
             "aria-live": "polite",
             "aria-atomic": "true",
             hidden: !formattedDate.value,
@@ -526,18 +529,13 @@ export const DatePicker = defineComponent({
               closeLabel: props.closeLabel,
             },
             () => [
-              props.calendarSwitchable &&
-                h(Select, {
-                  label: props.calendarSystemLabel,
-                  modelValue: calendarSystem.value.value,
-                  options: [
-                    { value: "gregory", label: props.gregoryLabel },
-                    { value: "islamic-umalqura", label: props.hijriLabel },
-                  ],
-                  "onUpdate:modelValue": (value: string) => {
-                    if (value === "gregory" || value === "islamic-umalqura") calendarSystem.set(value);
-                  },
-                }),
+              h("div", { class: "nq-calendar-options" }, [props.calendarSwitchable && h("div", { class: "nq-calendar-system nq-calendar-switch", role: "radiogroup", "aria-label": props.calendarSystemLabel, "data-calendar": calendarSystem.value.value },
+                (["gregory", "islamic-umalqura"] as const).map(system => h("label", { key: system }, [
+                  h("input", { type: "radio", name: `${field.id.value}-calendar-system`, form: "", value: system, checked: calendarSystem.value.value === system, disabled: props.disabled || props.readonly, onChange: async (event: Event) => { const group = (event.target as HTMLInputElement).closest('.nq-calendar-switch'); calendarSystem.set(system); await nextTick(); group?.querySelectorAll<HTMLInputElement>('input[type=radio]').forEach(radio => { radio.checked = radio.value === calendarSystem.value.value; }); } }),
+                  h("span", {}, system === "gregory" ? props.gregoryLabel : props.hijriLabel),
+                ]))),
+
+              ]),
               h(Calendar, {
                 ...props,
                 calendar: calendarSystem.value.value,

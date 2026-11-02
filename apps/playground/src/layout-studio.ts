@@ -1,6 +1,7 @@
 import { layoutStyles, type LayoutProps } from "@nasaq/core";
 import { escape as e, type Locale } from "./data";
 import { expandedSample } from "./expanded-samples";
+import { bindInputTemporal, inputTemporalMarkup } from './input-temporal';
 
 const css = (props: LayoutProps) =>
   Object.entries(layoutStyles(props))
@@ -166,8 +167,8 @@ export function inputPage(locale: Locale, mode: "light" | "dark" = "light") {
     ["checkbox", "Checkbox", "مربع اختيار", 'value="yes"'],
     ["radio", "Radio option", "خيار واحد", 'value="yes"'],
   ];
-  return `<div class="page-heading"><div><div class="eyebrow">${t("EVERY NATIVE INPUT", "كل مدخلات المتصفح")}</div><h1>${t("The right control for every detail.", "المدخل المناسب لكل تفصيل.")}</h1><p>${t("Native browser semantics, styled consistently. Try validation, reset, and local FormData output.", "خصائص المتصفح الأصلية بتصميم متّسق. جرّب التحقق وإعادة الضبط وعرض البيانات محليًا.")}</p></div></div>
-  <form id="native-input-lab" class="nq-stack" style="--nq-layout-gap:1.5rem"><div class="nq-grid" style="--nq-layout-columns:1;--nq-layout-columns-md:2;--nq-layout-columns-xl:3;--nq-layout-gap:1rem">${fields.map(([type, en, ar, attrs]) => type === "password" ? expandedSample("password-field", "input-lab", locale) : type === "date" ? expandedSample("date-picker", "input-lab", locale).replace('data-nq-calendar="islamic-umalqura"', 'data-nq-calendar="gregory"').replace('name="appointment"', 'name="date"').replace(t("Appointment · Umm al-Qura picker", "الموعد · تقويم أم القرى"), t("Gregorian ISO date · custom picker", "تاريخ ميلادي ISO · منتقي نسق")) : `<label class="nq-field"><span class="nq-label">${t(en, ar)} <code>${type}</code></span><input type="${type}" class="${type === "checkbox" ? "nq-checkbox" : type === "radio" ? "nq-radio" : type === "range" ? "nq-slider" : "nq-input"}" name="${type}" ${attrs}></label>`).join("")}</div>
+  return `<div class="page-heading"><div><div class="eyebrow">${t("INPUTS AND DATE COMPOSITIONS", "المدخلات وحقول التاريخ المركّبة")}</div><h1>${t("The right control for every detail.", "المدخل المناسب لكل تفصيل.")}</h1><p>${t("Native input semantics with custom Nasaq date pickers. Try validation, reset, and local FormData output.", "خصائص الإدخال الأصلية مع منتقيات تاريخ نسق المخصصة. جرّب التحقق وإعادة الضبط وعرض البيانات محليًا.")}</p></div></div>
+  <form id="native-input-lab" class="nq-stack" style="--nq-layout-gap:1.5rem"><div class="nq-grid" style="--nq-layout-columns:1;--nq-layout-columns-md:2;--nq-layout-columns-xl:3;--nq-layout-gap:1rem">${fields.map(([type, en, ar, attrs]) => type === "password" ? expandedSample("password-field", "input-lab", locale) : type === "month" || type === "week" || type === "datetime-local" ? inputTemporalMarkup(type, locale) : type === "date" ? expandedSample("date-picker", "input-lab-date", locale).replace('data-nq-calendar="islamic-umalqura"', 'data-nq-calendar="gregory"').replace('name="appointment"', 'name="date"').replace(t("Appointment · Umm al-Qura picker", "الموعد · تقويم أم القرى"), t("Gregorian ISO date · custom picker", "تاريخ ميلادي ISO · منتقي نسق")) : `<label class="nq-field"><span class="nq-label">${t(en, ar)} <code>${type}</code></span><input type="${type}" class="${type === "checkbox" ? "nq-checkbox" : type === "radio" ? "nq-radio" : type === "range" ? "nq-slider" : "nq-input"}" name="${type}" ${attrs}></label>`).join("")}</div>
   <input type="hidden" name="hidden" value="demo-context">
   <fieldset class="nq-field"><legend class="nq-label">${t("Common platform fields", "حقول المنصات الشائعة")}</legend><div class="nq-grid" style="--nq-layout-columns-md:2;--nq-layout-gap:1rem">
   <label class="nq-field"><span class="nq-label">${t("IBAN format example", "مثال تنسيق آيبان")}</span><input class="nq-input" name="iban" dir="ltr" pattern="SA[0-9]{22}" placeholder="${t("SA + 22 digits", "SA + 22 رقمًا")}" aria-describedby="iban-help"><span class="nq-hint" id="iban-help">${t("Format only. Account existence and checksum need separate validation.", "تنسيق فقط. وجود الحساب وصحة التحقق يحتاجان تحققًا منفصلًا.")}</span></label>
@@ -175,13 +176,14 @@ export function inputPage(locale: Locale, mode: "light" | "dark" = "light") {
   <label class="nq-field"><span class="nq-label">${t("Street address", "عنوان الشارع")}</span><input class="nq-input" name="address" autocomplete="street-address"></label>
   <label class="nq-field"><span class="nq-label">${t("Amount in Saudi riyals", "المبلغ بالريال السعودي")}</span><span class="nq-input-group"><input class="nq-input" name="amount" type="number" min="0" step="0.01"><span class="nq-input-addon" aria-hidden="true"><span class="nq-riyal">⃁</span></span></span></label>
   </div></fieldset><div class="nq-inline" style="--nq-layout-gap:1rem"><input type="submit" class="nq-button" value="${t("Inspect form values", "عرض قيم النموذج")}"><input type="reset" class="nq-button" data-variant="secondary" value="${t("Reset", "إعادة ضبط")}"><input type="button" class="nq-button" data-variant="ghost" value="${t("Native button", "زر أصلي")}" data-action="demo-info"><input type="image" src="${import.meta.env.BASE_URL}brand/assets/nasaq-wordmark${mode === "dark" ? "-white" : ""}.svg" width="64" height="50" style="object-fit:contain" alt="${t("Submit using image button", "إرسال بزر صورة")}" name="image-submit"></div>
-  <p class="nq-hint">${t("All 22 standard input types are represented, including hidden and image buttons. The date example uses Nasaq’s custom picker with typed ISO input. Browser support for month/week and time widgets varies. Files and entered values stay in this tab.", "جميع أنواع الإدخال القياسية الـ22 موجودة، بما فيها الحقول المخفية وأزرار الصور. يستخدم مثال التاريخ منتقي نسق المخصص مع إدخال ISO. يختلف دعم الشهر والأسبوع والوقت حسب المتصفح. تبقى القيم والملفات في علامة التبويب هذه.")}</p>
+  <p class="nq-hint">${t("Date, month, ISO week and local date-time use Nasaq’s custom date picker. Choose any day to derive its Gregorian month or ISO week; local date-time adds a time without timezone conversion. Submitted ISO values are shown below each composition. Other controls retain native browser semantics, including time, hidden and image inputs. Files and entered values stay in this tab.", "يستخدم التاريخ والشهر وأسبوع ISO والتاريخ مع الوقت المحلي منتقي تاريخ نسق المخصص. اختر أي يوم لاشتقاق شهره الميلادي أو أسبوع ISO؛ يضيف التاريخ والوقت المحلي وقتًا دون تحويل منطقة زمنية. تظهر القيم المرسلة بصيغة ISO أسفل كل حقل مركّب. تحافظ بقية الحقول على خصائص المتصفح الأصلية، بما فيها الوقت والحقول المخفية وأزرار الصور. تبقى القيم والملفات في علامة التبويب هذه.")}</p>
   <pre id="native-input-output" class="input-lab-output" aria-live="polite" dir="ltr">{}</pre></form>`;
 }
 
 export function bindInputLab(root: HTMLElement): () => void {
   const form = root.querySelector<HTMLFormElement>("#native-input-lab");
   if (!form) return () => {};
+  const unbindTemporal = bindInputTemporal(form);
   const output = root.querySelector<HTMLElement>("#native-input-output")!;
   const submit = (event: Event) => {
     event.preventDefault();
@@ -201,6 +203,7 @@ export function bindInputLab(root: HTMLElement): () => void {
   form.addEventListener("submit", submit);
   form.addEventListener("reset", reset);
   return () => {
+    unbindTemporal();
     form.removeEventListener("submit", submit);
     form.removeEventListener("reset", reset);
   };
