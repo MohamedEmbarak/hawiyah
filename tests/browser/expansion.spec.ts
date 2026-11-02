@@ -8,7 +8,7 @@ test("brand loader switches to its static symbol for reduced motion without a lo
   const requests: string[] = [];
   page.on("request", (request) => requests.push(request.url()));
   await page.goto("/#components");
-  const loader = page.locator(".brand-loader img");
+  const loader = page.locator(".brand-loader img:visible");
   await expect(loader).toBeVisible();
   await expect
     .poll(() =>

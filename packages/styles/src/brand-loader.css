@@ -1,0 +1,12 @@
+/* Compose the packaged identity assets with one status label; no runtime font. */
+.nq-brand-loader { display: inline-flex; align-items: center; justify-content: center; }
+.nq-brand-loader img { display: block; inline-size: var(--nq-brand-loader-size, 4rem); block-size: var(--nq-brand-loader-size, 4rem); object-fit: contain; }
+.nq-brand-loader > .nq-brand-loader-dark { display: none; }
+[data-nq-mode='dark'] .nq-brand-loader > .nq-brand-loader-light { display: none; }
+[data-nq-mode='dark'] .nq-brand-loader > .nq-brand-loader-dark { display: block; }
+
+.nq-brand-loader .nq-brand-loader-static { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .nq-brand-loader .nq-brand-loader-motion { display: none; }
+  .nq-brand-loader .nq-brand-loader-static { display: block; }
+}

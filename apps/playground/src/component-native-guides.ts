@@ -1,4 +1,5 @@
 import type { GuideInput } from './component-guide-types';
+import { loaderDemo } from './loader-demo';
 
 const api = (...rows: [string, string, string][]) => rows.map(([name, type, description]) => ({ name, type, description }));
 
@@ -132,7 +133,7 @@ export const nativeGuides: Record<string, GuideInput> = {
   },
   spinner: {
     summary: 'Signals ongoing work with a compact status indicator. The Arabic handwriting logo loader is an optional branded alternative.',
-    usage: `<span class="nq-spinner" role="status">\n  <span class="nq-sr-only">Loading request details</span>\n</span>`,
+    usage: loaderDemo('en'),
     lifecycle: ['Show the indicator when an operation is actually pending and expose a useful status label.', 'Keep the surrounding region’s existing content where possible and set aria-busy on that region when appropriate.', 'Remove the indicator when the operation settles and show success, content, or an error. Never leave a perpetual spinner after failure.'],
     api: api(['label', 'React string', 'Localized status text; defaults to Loading.'], ['role=status', 'ARIA role', 'Polite loading announcement for the CSS spinner.'], ['prefers-reduced-motion', 'User media preference', 'Styles reduce animation; branded GIFs require a static SVG picture source.']),
     accessibility: ['Use one loading announcement for the affected region.', 'Always pair a GIF loader with a static prefers-reduced-motion fallback.', 'Do not use the animation as the only indication of an error or completed action.'], variants: ['CSS spinner', 'Arabic handwriting GIF with static fallback', 'data-size=sm / lg for the CSS spinner'], related: ['progress', 'skeleton'], source: 'packages/react/src/display.tsx',
