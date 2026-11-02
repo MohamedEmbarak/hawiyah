@@ -20,7 +20,7 @@ The 81-entry catalog remains Nasaq's implementation scope. Embedded template com
 | Additional controls | InputGroup, PasswordField, SearchField, NumberField, Slider, RangeSlider, Rating, PinInput, TagInput, MultiSelect, Calendar, DatePicker, FileDropzone |
 | Additional interaction | ToggleGroup, Popover, Menu, Drawer, ToastRegion, Collapsible, TreeView, Carousel |
 | Additional content | Link, IconButton, ButtonGroup, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, DataTable |
-| Platform patterns | ServiceCard, ServiceDetails, PortalHeader, PortalFooter, SecondaryNav, PortalLayout, Feedback, CookieConsent, NotificationList |
+| Platform patterns | ServiceCard, ServiceDetails, PortalHeader, PortalFooter, SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer, Feedback, CookieConsent, NotificationList |
 | Layout | Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer, AspectRatio, Section, AppShell, PageHeader |
 
 Framework adapters render native framework components. Vanilla uses semantic HTML/CSS recipes where native behavior is sufficient, and explicit controllers for richer interaction. A static recipe is a valid implementation; it should not be represented as a JavaScript controller that does not exist.
@@ -31,10 +31,10 @@ Framework adapters render native framework components. Vanilla uses semantic HTM
 header, secondary navigation, breadcrumb, focusable main container and footer;
 vanilla uses the equivalent semantic HTML recipe. Their package `PORTAL.md`
 guides and framework examples at `?preview=portal` document exact APIs.
-The 48rem disclosure breakpoint is a Nasaq adaptation. Existing 81-entry
-verification records describe their historical snapshots; the two additions
-have separate test files and remain marked built until scoped passing evidence
-is recorded.
+The 48rem disclosure breakpoint is a Nasaq adaptation. Verification records
+describe their tested snapshots; the catalog evidence identifies the specific
+behavior and layout assertions for each adapter. MobileTopBar and
+NavigationDrawer have separate contracts and browser checks.
 
 ## Implementation types
 
@@ -62,10 +62,10 @@ The inputs lab covers the 22 standard `input` type values. They are browser capa
 | `number` | Numeric quantity | NumberField |
 | `range` | Bounded numeric selection | Slider; RangeSlider for two bounds |
 | `date` | Calendar date | DatePicker with typed ISO text and the custom calendar |
-| `month` | Year and month | Field + native month input |
-| `week` | Year and week | Field + native week input |
+| `month` | Year and month | Guide recipe: DatePicker selection projected to an ISO month |
+| `week` | Year and week | Guide recipe: DatePicker selection projected to an ISO week |
 | `time` | Time of day | Field + native time input |
-| `datetime-local` | Local date and time | Field + native local datetime input |
+| `datetime-local` | Local date and time | Guide recipe: DatePicker plus a native time input |
 | `color` | Color selection | Field + native color input |
 | `checkbox` | Independent checked state | Checkbox; Switch for settings |
 | `radio` | Exclusive checked state | Radio; Rating; single ToggleGroup |
@@ -76,7 +76,14 @@ The inputs lab covers the 22 standard `input` type values. They are browser capa
 | `reset` | Form reset | Explicitly labelled reset control |
 | `image` | Image submit control | Native input with meaningful alternative text |
 
-Browser-provided pickers differ by browser and operating system. The lab exposes native behavior; it does not promise identical browser chrome. Use native attributes appropriate to the type, and check the actual adapter API before forwarding a prop. `datetime-local` does not carry a time zone. Hidden inputs and client-side constraints do not establish trust in submitted values.
+The lab uses Nasaq's custom calendar for date, month, week and local-datetime
+recipes; typed Gregorian ISO dates remain supported. Month/week projection and
+time composition are guide recipes, not extra DatePicker selection modes.
+Other browser-provided controls, including time, color and file selection,
+can differ by browser and operating system. Use native attributes appropriate
+to the type, and check the actual adapter API before forwarding a prop.
+`datetime-local` does not carry a time zone. Hidden inputs and client-side
+constraints do not establish trust in submitted values.
 
 ## Saudi service input recipes
 

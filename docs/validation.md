@@ -1,5 +1,13 @@
 # Validation record
 
+## 2026-11-02 full quality follow-up
+
+The [quality report](quality-2026-11-02.md) records the 301-test full unit pass,
+8 contrast checks, guide and native-consumer browser results, resolved failures,
+input height/validation fixes and remaining release gates. It supersedes older
+input underline descriptions. Historical counts below describe their own
+snapshots; the current catalog has 81 entries.
+
 ## 2026-11-01 input and step-state revision
 
 The full unit run passed 249 tests in 64 files. The final input-contract suites
@@ -379,7 +387,7 @@ The [eight token checks](../packages/tokens/test/contrast.test.mjs) evaluate sel
 
 ## Component catalog interpretation
 
-[components.json](../components.json) lists all **77 entries** as built in all four adapters. A component's `verified` array is narrower: it identifies adapters with direct behavior, semantic-association, or layout-contract assertions mapped in that component's `evidence`. Rendering-only checks and broad journey scans are recorded at the suite level rather than used to mark every component behavior verified. An empty array means no direct component evidence is recorded there; it does not mean the source is absent. No full variant, native-input/browser, or component-by-framework state matrix is implied.
+[components.json](../components.json) lists all **81 entries** as built in all four adapters. A component's `verified` array is narrower: it identifies adapters with direct behavior, semantic-association, or layout-contract assertions mapped in that component's `evidence`. Rendering-only checks and broad journey scans are recorded at the suite level rather than used to mark every component behavior verified. An empty array means no direct component evidence is recorded there; it does not mean the source is absent. No full variant, native-input/browser, or component-by-framework state matrix is implied.
 
 ## Reproduce the checks
 
@@ -394,7 +402,11 @@ pnpm test:browser
 pnpm check:packages
 ```
 
-The root and framework browser configurations use `NASAQ_CHROMIUM` when supplied, otherwise `/usr/bin/chromium` if available, otherwise Playwright's managed Chromium. If neither is installed, install the managed browser with `pnpm exec playwright install chromium`. To select an existing executable in a POSIX shell:
+The browser configurations accept `NASAQ_CHROMIUM` for an installed executable.
+The root guide configuration also checks `/usr/bin/chromium`; the shared native
+consumer configuration otherwise uses Playwright's managed Chromium.
+Install a managed browser with `pnpm exec playwright install chromium` when
+needed. To select an existing executable in a POSIX shell:
 
 ```sh
 NASAQ_CHROMIUM=/path/to/chromium pnpm test:browser
@@ -403,6 +415,7 @@ NASAQ_CHROMIUM=/path/to/chromium pnpm test:browser
 The separate committed framework browser checks are:
 
 ```sh
+pnpm exec playwright test --config playwright.portals.config.ts --timeout=90000
 pnpm exec playwright test --config examples/react/playwright.config.ts
 pnpm --filter @nasaq/example-angular test:browser
 node tests/browser/framework-calendars.mjs
@@ -465,11 +478,14 @@ See [tag behavior](tag-input-interaction.md) and [search behavior](search-field.
 
 ## Validation-aware underline — 2026-11-02
 
-The shared underline now starts neutral, uses green only for user-valid fields,
-and red for user-invalid fields or explicit application errors. Native reset
-returns user-validation colors to neutral. A focus/blur without editing remains
-unvalidated; explicit error props should follow application touched/submitted
-state. See [validation colors](input-validation-colors.md).
+The shared underline uses a dark neutral color for empty fields and green for
+nonempty, natively valid fields, including initially populated values. Green
+appears only while focused. User-invalid fields and explicit application errors
+use red; explicit error props should follow application touched/submitted state.
+Native reset restores the initial values and their matching presentation, so an
+empty reset field is neutral and a valid populated reset field is green on focus.
+Value-presence tracking does not replace native or application validation.
+See [validation colors](input-validation-colors.md).
 
 Four guide browser cases passed input/textarea/select transitions, filled and
 outlined variants, light/dark modes, explicit-error precedence, reset, invalid

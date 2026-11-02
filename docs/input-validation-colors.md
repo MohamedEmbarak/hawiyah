@@ -11,9 +11,9 @@ The shared field underline distinguishes validation from focus:
 
 Native `:valid` and adapter-owned value presence determine success, without
 requiring an edit. Empty optional fields remain neutral. Native `:user-invalid`
-determines when an invalid edit or submission is exposed. A focus/blur without
-editing remains neutral if there is no explicit error; the browser controls that
-interaction threshold. Native form reset restores value presence and clears user
+determines when an invalid edit or submission is exposed. An empty untouched
+field remains neutral unless the application supplies an explicit error; the
+browser controls the native user-invalid threshold. Native form reset restores value presence and clears user
 validation states. Supplying an explicit error means the application has already
 validated the field; applications should gate their error props on touched or
 submitted state if they want to delay displaying those errors.

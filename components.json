@@ -4690,8 +4690,63 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/browser/mobile-tab-bar.spec.ts",
+          "tests": [
+            "mobile navigation color motion preserves route and focus semantics in rtl",
+            "mobile navigation color motion preserves route and focus semantics in ltr"
+          ],
+          "scope": "Mobile link geometry, current-page treatment, keyboard link semantics, color motion, reduced motion and theme boundaries in Chromium.",
+          "command": "pnpm exec playwright test tests/browser/mobile-tab-bar.spec.ts --workers=1 --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/frameworks/mobile-tab-bar.spec.ts",
+          "tests": [
+            "native mobile navigation variant renders icons, current state and page links"
+          ],
+          "scope": "Native consumer current-page/icon semantics, Tab/Enter route navigation, Arabic/English names, mobile overflow and reduced motion in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/mobile-tab-bar.spec.ts --project=react --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/frameworks/mobile-tab-bar.spec.ts",
+          "tests": [
+            "native mobile navigation variant renders icons, current state and page links"
+          ],
+          "scope": "Native consumer current-page/icon semantics, Tab/Enter route navigation, Arabic/English names, mobile overflow and reduced motion in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/mobile-tab-bar.spec.ts --project=vue --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/frameworks/mobile-tab-bar.spec.ts",
+          "tests": [
+            "native mobile navigation variant renders icons, current state and page links"
+          ],
+          "scope": "Native consumer current-page/icon semantics, Tab/Enter route navigation, Arabic/English names, mobile overflow and reduced motion in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/mobile-tab-bar.spec.ts --project=angular --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        }
+      ],
       "implementationSources": {
         "react": [
           "packages/react/src/portal.tsx"
@@ -4738,8 +4793,64 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/browser/portal-layout.spec.ts",
+          "tests": [
+            "embedded skip link does not cover the catalog title and reveals on keyboard focus",
+            "portal navigation hides only on mobile and keeps current links and focus visible (rtl)",
+            "portal navigation hides only on mobile and keeps current links and focus visible (ltr)"
+          ],
+          "scope": "Embedded skip-link clipping/reveal and focus target, responsive navigation CSS, current links, RTL/LTR and forced-colors focus in the vanilla guide.",
+          "command": "pnpm exec playwright test tests/browser/portal-layout.spec.ts --workers=1 --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/frameworks/portal.spec.ts",
+          "tests": [
+            "native portal shell supports Arabic/English, disclosure and skip focus"
+          ],
+          "scope": "Native consumer Arabic/English shell, mobile header disclosure, Escape focus return, skip target, overflow and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/portal.spec.ts --project=react --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/frameworks/portal.spec.ts",
+          "tests": [
+            "native portal shell supports Arabic/English, disclosure and skip focus"
+          ],
+          "scope": "Native consumer Arabic/English shell, mobile header disclosure, Escape focus return, skip target, overflow and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/portal.spec.ts --project=vue --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/frameworks/portal.spec.ts",
+          "tests": [
+            "native portal shell supports Arabic/English, disclosure and skip focus"
+          ],
+          "scope": "Native consumer Arabic/English shell, mobile header disclosure, Escape focus return, skip target, overflow and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/portal.spec.ts --project=angular --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        }
+      ],
       "implementationSources": {
         "react": [
           "packages/react/src/portal.tsx"
@@ -4785,8 +4896,63 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/browser/mobile-top-bar.spec.ts",
+          "tests": [
+            "mobile top bar wraps and preserves direction, targets and focus (ar)",
+            "mobile top bar wraps and preserves direction, targets and focus (en)"
+          ],
+          "scope": "320px layout, RTL icon direction, 44px targets, long headings, text zoom, theme/mode boundaries and forced-colors keyboard focus in Chromium.",
+          "command": "pnpm exec playwright test tests/browser/mobile-top-bar.spec.ts --workers=1 --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/frameworks/mobile-top-bar.spec.ts",
+          "tests": [
+            "native top bar renders heading, back destination and action slot in both directions"
+          ],
+          "scope": "Native consumer heading/action-slot semantics, keyboard order, back link, RTL/LTR direction, mobile overflow and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/mobile-top-bar.spec.ts --project=react --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/frameworks/mobile-top-bar.spec.ts",
+          "tests": [
+            "native top bar renders heading, back destination and action slot in both directions"
+          ],
+          "scope": "Native consumer heading/action-slot semantics, keyboard order, back link, RTL/LTR direction, mobile overflow and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/mobile-top-bar.spec.ts --project=vue --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/frameworks/mobile-top-bar.spec.ts",
+          "tests": [
+            "native top bar renders heading, back destination and action slot in both directions"
+          ],
+          "scope": "Native consumer heading/action-slot semantics, keyboard order, back link, RTL/LTR direction, mobile overflow and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/mobile-top-bar.spec.ts --project=angular --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        }
+      ],
       "implementationSources": {
         "react": [
           "packages/react/src/mobile-top-bar.tsx"
@@ -4833,8 +4999,63 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/browser/navigation-drawer.spec.ts",
+          "tests": [
+            "navigation drawer preserves native disclosure and modal behavior (ar)",
+            "navigation drawer preserves native disclosure and modal behavior (en)"
+          ],
+          "scope": "Vanilla modal/disclosure navigation at mobile size in Arabic/English, theme/mode checks, forced-colors focus and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test tests/browser/navigation-drawer.spec.ts --workers=1 --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/frameworks/navigation-drawer.spec.ts",
+          "tests": [
+            "native navigation drawer composes user content, page links and modal focus"
+          ],
+          "scope": "Native consumer user slots, modal semantics, 327px width/RTL placement, current/disabled links, nested disclosure, route close, Escape focus return and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/navigation-drawer.spec.ts --project=react --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/frameworks/navigation-drawer.spec.ts",
+          "tests": [
+            "native navigation drawer composes user content, page links and modal focus"
+          ],
+          "scope": "Native consumer user slots, modal semantics, 327px width/RTL placement, current/disabled links, nested disclosure, route close, Escape focus return and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/navigation-drawer.spec.ts --project=vue --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/frameworks/navigation-drawer.spec.ts",
+          "tests": [
+            "native navigation drawer composes user content, page links and modal focus"
+          ],
+          "scope": "Native consumer user slots, modal semantics, 327px width/RTL placement, current/disabled links, nested disclosure, route close, Escape focus return and scoped axe scan in Chromium.",
+          "command": "pnpm exec playwright test --config playwright.portals.config.ts tests/frameworks/navigation-drawer.spec.ts --project=angular --timeout=90000",
+          "result": "passed",
+          "date": "2026-11-02"
+        }
+      ],
       "implementationSources": {
         "react": [
           "packages/react/src/navigation-drawer.tsx"
@@ -4859,7 +5080,7 @@
   ],
   "limitations": [
     "Public source preview; npm packages are not published. No official DGA certification.",
-    "The 79-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
+    "The 81-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
     "Combobox is local and single-select. MultiSelect is a separate searchable checkbox list; async data and virtualization are application concerns.",
     "DataTable provides stable localized sorting, not virtualization or cell editing.",
     "FileUpload and FileDropzone select local files; application code owns transport, storage, and server validation.",
