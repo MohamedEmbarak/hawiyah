@@ -138,6 +138,13 @@ export const tokens = {
   "density": {
     "gap": "1rem",
     "cell-padding": "1rem"
+  },
+  "switch": {
+    "width": "2.75rem",
+    "height": "1.625rem",
+    "thumb-size": "1.125rem",
+    "thumb-offset": "0.1875rem",
+    "thumb-offset-checked": "1.3125rem"
   }
 } as const;
 
@@ -513,6 +520,13 @@ export const densities = {
     "density": {
       "gap": "1rem",
       "cell-padding": "1rem"
+    },
+    "switch": {
+      "width": "2.75rem",
+      "height": "1.625rem",
+      "thumb-size": "1.125rem",
+      "thumb-offset": "0.1875rem",
+      "thumb-offset-checked": "1.3125rem"
     }
   },
   "compact": {
@@ -526,6 +540,13 @@ export const densities = {
     "density": {
       "gap": "0.75rem",
       "cell-padding": "0.625rem"
+    },
+    "switch": {
+      "width": "2.75rem",
+      "height": "1.625rem",
+      "thumb-size": "1.125rem",
+      "thumb-offset": "0.1875rem",
+      "thumb-offset-checked": "1.3125rem"
     }
   },
   "mobile": {
@@ -539,6 +560,13 @@ export const densities = {
     "density": {
       "gap": "1rem",
       "cell-padding": "1rem"
+    },
+    "switch": {
+      "width": "3.25rem",
+      "height": "2rem",
+      "thumb-size": "1.75rem",
+      "thumb-offset": "calc(0.125rem - 1px)",
+      "thumb-offset-checked": "calc(1.375rem - 1px)"
     }
   }
 } as const;
@@ -682,6 +710,13 @@ export const tokenNames = {
   "density": {
     "gap": "--nq-density-gap",
     "cell-padding": "--nq-density-cell-padding"
+  },
+  "switch": {
+    "width": "--nq-switch-width",
+    "height": "--nq-switch-height",
+    "thumb-size": "--nq-switch-thumb-size",
+    "thumb-offset": "--nq-switch-thumb-offset",
+    "thumb-offset-checked": "--nq-switch-thumb-offset-checked"
   }
 } as const;
 
@@ -794,5 +829,10 @@ export const cssVariableNames = [
   "--nq-control-padding-inline",
   "--nq-control-field-min-height",
   "--nq-density-gap",
-  "--nq-density-cell-padding"
+  "--nq-density-cell-padding",
+  "--nq-switch-width",
+  "--nq-switch-height",
+  "--nq-switch-thumb-size",
+  "--nq-switch-thumb-offset",
+  "--nq-switch-thumb-offset-checked"
 ] as const;

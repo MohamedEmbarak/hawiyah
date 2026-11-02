@@ -140,3 +140,17 @@ documented adaptations. Native links and disclosures compose the existing modal
 Drawer; disabled descendants are nonactivating and route closing respects
 preventDefault/modifier clicks. Device/status geometry and an unverified entrance
 timing are not copied. See [source mapping and API](navigation-drawer.md).
+
+## Implemented mobile switch geometry — 2026-11-02
+
+The opt-in mobile density now maps local Mobile Switch set `5403:403565` to a
+52×32 px track and 28×28 px thumb at a 16 px root size. LTR default off/on
+`5403:403566` / `5403:403570` place the thumb at x2/x22; RTL counterparts
+`5403:403580` / `5403:403575` mirror those positions. Comfortable/compact retain
+the existing 44×26 / 18×18 geometry and exact prior placement. Density tokens
+scope the change across all four adapters; timing, semantic colors, native DOM,
+reduced-motion and forced-colors behavior are retained. The 48×24 internal hover
+cache `5403:403584` belongs to a different symbol version and is excluded.
+Confidence is high for decoded geometry, without a new visual-parity claim.
+See [the mapping and token contract](mobile-switch.md); verification is recorded
+separately after the relevant checks run. Hajj remains excluded.

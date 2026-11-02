@@ -188,6 +188,11 @@
   --nq-control-field-min-height: 0px;
   --nq-density-gap: 1rem;
   --nq-density-cell-padding: 1rem;
+  --nq-switch-width: 2.75rem;
+  --nq-switch-height: 1.625rem;
+  --nq-switch-thumb-size: 1.125rem;
+  --nq-switch-thumb-offset: 0.1875rem;
+  --nq-switch-thumb-offset-checked: 1.3125rem;
 }
 
 :where([data-nq-theme="nasaq"]) {
@@ -616,6 +621,11 @@
   --nq-control-field-min-height: 0px;
   --nq-density-gap: 1rem;
   --nq-density-cell-padding: 1rem;
+  --nq-switch-width: 2.75rem;
+  --nq-switch-height: 1.625rem;
+  --nq-switch-thumb-size: 1.125rem;
+  --nq-switch-thumb-offset: 0.1875rem;
+  --nq-switch-thumb-offset-checked: 1.3125rem;
 }
 
 :where([data-nq-density="compact"]) {
@@ -626,6 +636,11 @@
   --nq-control-field-min-height: 0px;
   --nq-density-gap: 0.75rem;
   --nq-density-cell-padding: 0.625rem;
+  --nq-switch-width: 2.75rem;
+  --nq-switch-height: 1.625rem;
+  --nq-switch-thumb-size: 1.125rem;
+  --nq-switch-thumb-offset: 0.1875rem;
+  --nq-switch-thumb-offset-checked: 1.3125rem;
 }
 
 :where([data-nq-density="mobile"]) {
@@ -636,4 +651,9 @@
   --nq-control-field-min-height: 2.75rem;
   --nq-density-gap: 1rem;
   --nq-density-cell-padding: 1rem;
+  --nq-switch-width: 3.25rem;
+  --nq-switch-height: 2rem;
+  --nq-switch-thumb-size: 1.75rem;
+  --nq-switch-thumb-offset: calc(0.125rem - 1px);
+  --nq-switch-thumb-offset-checked: calc(1.375rem - 1px);
 }

@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { NqCheckboxComponent, NqPasswordFieldComponent, NqRatingComponent, NqSliderComponent, NqStepperComponent } from '@nasaq/angular';
+import { NqCheckboxComponent, NqPasswordFieldComponent, NqRatingComponent, NqSliderComponent, NqStepperComponent, NqSwitchComponent } from '@nasaq/angular';
 
 @Component({
   selector: 'app-root', standalone: true,
-  imports: [NqCheckboxComponent, NqPasswordFieldComponent, NqRatingComponent, NqSliderComponent, NqStepperComponent],
+  imports: [NqCheckboxComponent, NqPasswordFieldComponent, NqRatingComponent, NqSliderComponent, NqStepperComponent, NqSwitchComponent],
   template: `<main class="nq-container nq-stack" data-testid="input-controls" data-nq-theme="dga" [attr.dir]="arabic ? 'rtl' : 'ltr'" [attr.lang]="arabic ? 'ar' : 'en'" style="max-width:40rem;padding:1rem;--nq-layout-gap:1.5rem">
     <h1>{{ t('معاينة حقول نسق', 'Nasaq input preview') }}</h1>
     <button class="nq-button" type="button" (click)="arabic = !arabic">{{ arabic ? 'English' : 'العربية' }}</button>
@@ -15,6 +15,12 @@ import { NqCheckboxComponent, NqPasswordFieldComponent, NqRatingComponent, NqSli
       <nq-checkbox name="consent" [label]="t('أوافق على الشروط', 'I agree to the terms')" />
       <button class="nq-button" type="reset">{{ t('إعادة ضبط', 'Reset') }}</button>
     </form>
+    <section class="nq-stack" data-testid="mobile-switches" data-nq-density="mobile" [attr.aria-label]="t('أحجام مفاتيح التبديل', 'Switch sizing')">
+      <nq-switch name="mobile-switch" [label]="t('تبديل الجوال', 'Mobile switch')" />
+      <nq-switch name="mobile-switch-disabled" [label]="t('تبديل معطل', 'Disabled switch')" [disabled]="true" />
+      <div data-nq-density="comfortable"><nq-switch name="desktop-switch" [label]="t('تبديل مريح', 'Comfortable switch')" /></div>
+      <div data-nq-density="compact"><nq-switch name="compact-switch" [label]="t('تبديل مضغوط', 'Compact switch')" /></div>
+    </section>
     <nq-stepper [label]="t('التقدم', 'Progress')" [activeIndex]="1" style="--nq-step-current-background:#4f378b" [steps]="[{label:t('البيانات','Details')}, {label:t('المراجعة','Review')}, {label:t('الإرسال','Submit')}]" />
   </main>`,
 })

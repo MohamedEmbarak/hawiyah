@@ -125,8 +125,8 @@
   appearance: none;
   position: relative;
   flex: none;
-  inline-size: 2.75rem;
-  block-size: 1.625rem;
+  inline-size: var(--nq-switch-width, 2.75rem);
+  block-size: var(--nq-switch-height, 1.625rem);
   margin: 0;
   border: 1px solid var(--nq-color-border-strong);
   border-radius: var(--nq-radius-full);
@@ -138,17 +138,17 @@
 .nq-switch::before {
   content: '';
   position: absolute;
-  inset-block-start: 0.1875rem;
-  inset-inline-start: 0.1875rem;
-  inline-size: 1.125rem;
-  block-size: 1.125rem;
+  inset-block-start: var(--nq-switch-thumb-offset, 0.1875rem);
+  inset-inline-start: var(--nq-switch-thumb-offset, 0.1875rem);
+  inline-size: var(--nq-switch-thumb-size, 1.125rem);
+  block-size: var(--nq-switch-thumb-size, 1.125rem);
   border-radius: 50%;
   background: var(--nq-color-surface);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
   transition: inset-inline-start var(--nq-duration-switch, var(--nq-duration-normal)) var(--nq-ease-switch, var(--nq-ease-standard));
 }
 .nq-switch:checked { background: var(--nq-color-primary); border-color: var(--nq-color-primary); }
-.nq-switch:checked::before { inset-inline-start: 1.3125rem; background: var(--nq-color-on-primary); }
+.nq-switch:checked::before { inset-inline-start: var(--nq-switch-thumb-offset-checked, 1.3125rem); background: var(--nq-color-on-primary); }
 
 /* Navigation and disclosure */
 .nq-tabs { min-inline-size: 0; color: var(--nq-color-text); }

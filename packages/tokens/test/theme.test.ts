@@ -2,6 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { createThemeVariables, cssVariableNames, tokens } from '../src/index';
 
 describe('DGA default and explicit legacy theme contracts', () => {
+  it('keeps switch geometry density-owned and accepts scoped overrides', () => {
+    for (const theme of ['dga', 'nasaq', 'custom'] as const) {
+      for (const density of ['comfortable', 'compact', 'mobile'] as const) {
+        const values = createThemeVariables({}, {theme, density});
+        const mobile = density === 'mobile';
+        expect(values['--nq-switch-width']).toBe(mobile ? '3.25rem' : '2.75rem');
+        expect(values['--nq-switch-height']).toBe(mobile ? '2rem' : '1.625rem');
+        expect(values['--nq-switch-thumb-size']).toBe(mobile ? '1.75rem' : '1.125rem');
+        expect(values['--nq-switch-thumb-offset']).toBe(mobile ? 'calc(0.125rem - 1px)' : '0.1875rem');
+        expect(values['--nq-switch-thumb-offset-checked']).toBe(mobile ? 'calc(1.375rem - 1px)' : '1.3125rem');
+      }
+    }
+    expect(createThemeVariables({'--nq-switch-width': '4rem'}, {density:'mobile'})['--nq-switch-width']).toBe('4rem');
+  });
   it('isolates source-informed component motion from legacy and generic timing', () => {
     const dga = createThemeVariables();
     expect(dga['--nq-duration-switch']).toBe('200ms');

@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react';
-import { Checkbox, PasswordField, Rating, Slider, Stepper } from '@nasaq/react';
+import { Checkbox, PasswordField, Rating, Slider, Stepper, Switch } from '@nasaq/react';
 
 export function InputControlsExample() {
   const [arabic, setArabic] = useState(true);
@@ -15,6 +15,12 @@ export function InputControlsExample() {
       <Checkbox name="consent" label={t('أوافق على الشروط', 'I agree to the terms')} />
       <button className="nq-button" type="reset">{t('إعادة ضبط', 'Reset')}</button>
     </form>
+    <section className="nq-stack" data-testid="mobile-switches" data-nq-density="mobile" aria-label={t('أحجام مفاتيح التبديل', 'Switch sizing')}>
+      <Switch name="mobile-switch" label={t('تبديل الجوال', 'Mobile switch')} />
+      <Switch name="mobile-switch-disabled" label={t('تبديل معطل', 'Disabled switch')} disabled />
+      <div data-nq-density="comfortable"><Switch name="desktop-switch" label={t('تبديل مريح', 'Comfortable switch')} /></div>
+      <div data-nq-density="compact"><Switch name="compact-switch" label={t('تبديل مضغوط', 'Compact switch')} /></div>
+    </section>
     <Stepper label={t('التقدم', 'Progress')} activeIndex={1} style={{ '--nq-step-current-background': '#4f378b' } as CSSProperties} items={[
       { value: 'details', label: t('البيانات', 'Details') }, { value: 'review', label: t('المراجعة', 'Review') }, { value: 'send', label: t('الإرسال', 'Submit') },
     ]} />
