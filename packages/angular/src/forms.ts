@@ -1,11 +1,23 @@
-import { booleanAttribute, ChangeDetectorRef, Component, Directive, EventEmitter, forwardRef, HostListener, inject, Input, Output, ViewChild, ElementRef, type AfterViewInit, type OnChanges, type SimpleChanges } from '@angular/core';
+import { afterEveryRender, DestroyRef, booleanAttribute, ChangeDetectorRef, Component, Directive, EventEmitter, forwardRef, HostListener, inject, Input, Output, ViewChild, ElementRef, type AfterViewInit, type OnChanges, type SimpleChanges } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
-import { createComboboxState, getComboboxOptions, isDisabled, transitionCombobox, type ComboboxEvent, type Option } from '@nasaq/core';
+import { observeFieldValue, type FieldValueElement, type FieldValueObserver, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox, type ComboboxEvent, type Option } from '@nasaq/core';
 
 let nextId = 0;
 /** Pass controlId for stable application-owned identifiers, especially with SSR. */
 @Directive()
 export abstract class NqValueControl<T> implements ControlValueAccessor {
+  constructor() {
+    const host: HTMLElement = inject(ElementRef).nativeElement;
+    const fields = new Map<FieldValueElement, FieldValueObserver>();
+    afterEveryRender(() => {
+      for (const [element, observer] of fields) if (!host.contains(element)) { observer.destroy(); fields.delete(element); }
+      for (const element of host.querySelectorAll<FieldValueElement>('.nq-input, .nq-textarea, .nq-select')) {
+        if (!fields.has(element)) fields.set(element, observeFieldValue(element));
+        fields.get(element)!.refresh();
+      }
+    });
+    inject(DestroyRef).onDestroy(() => { for (const observer of fields.values()) observer.destroy(); fields.clear(); });
+  }
   @Input() controlId = `nq-control-${++nextId}`;
   @Input() label = '';
   @Input() name = '';

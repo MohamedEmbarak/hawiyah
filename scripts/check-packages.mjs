@@ -88,6 +88,8 @@ for (const name of [
     if (!packed.files.some(file => file.path === notice))
       throw new Error(`${name}: missing ${notice} in consumer tarball`);
   }
+  if (packed.files.some(file => /\.(?:test|spec)\.(?:[cm]?js|d\.ts)(?:\.map)?$/.test(file.path)))
+    throw new Error(`${name}: test output must not ship in consumer tarballs`);
   if (name === "styles") {
     const iconProvenance = JSON.parse(readFileSync(resolve(source, "src/assets/icons/provenance.json"), "utf8"));
     for (const file of ["LICENSE", "provenance.json", ...iconProvenance.icons.map(icon => icon.file)]) {

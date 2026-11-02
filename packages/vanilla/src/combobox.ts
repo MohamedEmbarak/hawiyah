@@ -1,4 +1,4 @@
-import { createCleanup, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox } from '@nasaq/core';
+import { observeFieldValue, createCleanup, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox } from '@nasaq/core';
 import type { ComboboxEvent, Option } from '@nasaq/core';
 import { emit, ensureId, eventElement, nativeChange, remember, required } from './dom.js';
 
@@ -30,6 +30,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     throw new Error('Nasaq: combobox option values must be non-empty and unique.');
   }
   const scope = createCleanup();
+  const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   const hidden = root.querySelector<HTMLInputElement>('[data-nq-combobox-value]');
   let status = root.querySelector<HTMLElement>('[data-nq-combobox-status]');
   if (!status) {
@@ -89,6 +90,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     const visibleValues = new Set(visible.map(item => item.value));
     const active = visible[state.activeIndex];
     input.value = state.query;
+    presence.refresh();
     if (input.readOnly) input.setAttribute('aria-readonly', 'true'); else input.removeAttribute('aria-readonly');
     input.setCustomValidity(input.required && !state.value && !isDisabled(input)
       ? options.invalidSelectionMessage ?? 'اختر خيارًا من القائمة.'

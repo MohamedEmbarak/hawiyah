@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { createApp, h, nextTick } from 'vue';
 import { afterEach, beforeAll, expect, it } from 'vitest';
 import { SearchField as ReactSearch } from '../packages/react/src/expanded-controls.js';
+import { TextField } from '../packages/react/src/forms.js';
 import { SearchField as VueSearch } from '../packages/vue/src/controls.js';
 import { createSearchField } from '../packages/vanilla/src/search-field.js';
 
@@ -50,15 +51,18 @@ for (const adapter of ['vanilla', 'react', 'vue', 'angular']) {
     const { host, input, button, form, run, reset, changes } = await mount(adapter);
     let submits = 0; form.addEventListener('submit', event => { event.preventDefault(); submits++; });
     expect(button.hidden).toBe(false); expect(button.getAttribute('aria-label')).toBe('مسح البحث');
+    expect(input.dataset.nqFilled).toBe('true');
     expect(button.getAttribute('aria-controls')).toBe(input.id);
     host.querySelector('fieldset')!.disabled = true;
     await run(() => button.click()); expect(input.value).toBe('نسق');
     host.querySelector('fieldset')!.disabled = false;
     await run(() => { button.focus(); button.click(); });
     expect(input.value).toBe(''); expect(document.activeElement).toBe(input);
+    expect(input.dataset.nqFilled).toBe('false');
     expect(button.hidden).toBe(true); expect(new FormData(form).get('query')).toBe('');
     expect(form.checkValidity()).toBe(false); expect(submits).toBe(0); expect(changes).toEqual(['']);
     await run(reset); expect(input.value).toBe('نسق'); expect(button.hidden).toBe(false); expect(form.checkValidity()).toBe(true);
+    expect(input.dataset.nqFilled).toBe('true');
   });
   it(`${adapter}: read-only search cannot be cleared`, async () => {
     const { input, button, form, run, changes } = await mount(adapter, true);
@@ -83,4 +87,14 @@ it('vanilla restores owned markup on destroy and does not erase an edited query'
   const controller = createSearchField(root); controller.setValue('after'); controller.destroy(); controller.destroy();
   expect(root.querySelector('button')!.isEqualNode(originalButton)).toBe(true);
   expect(root.querySelector('input')!.id).toBe(''); expect(root.querySelector('input')!.value).toBe('after');
+});
+
+it('React preserves callback-ref cleanup and external controlled value changes', async () => {
+  const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+  let cleanups = 0; const ref = () => () => { cleanups++; };
+  await act(() => root.render(createElement(TextField, { value: 'ready', readOnly: true, ref })));
+  const input = host.querySelector('input')!; expect(input.dataset.nqFilled).toBe('true');
+  await act(() => root.render(createElement(TextField, { value: '', readOnly: true, ref })));
+  expect(input.dataset.nqFilled).toBe('false');
+  await act(() => root.unmount()); expect(cleanups).toBe(1); expect(input.hasAttribute('data-nq-filled')).toBe(false);
 });

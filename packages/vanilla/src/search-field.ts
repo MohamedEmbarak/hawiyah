@@ -1,4 +1,4 @@
-import { createCleanup, isDisabled } from '@nasaq/core';
+import { createCleanup, isDisabled, observeFieldValue } from '@nasaq/core';
 import { emit, ensureId, nativeChange, readOnly, remember, required, translated } from './dom.js';
 
 export interface SearchFieldOptions { clearLabel?: string; onValueChange?: (value: string) => void }
@@ -9,6 +9,7 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   const input = required<HTMLInputElement>(root, '[data-nq-search-input]');
   const button = required<HTMLButtonElement>(root, '[data-nq-search-clear]');
   const scope = createCleanup(); const children = [...button.childNodes];
+  const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   remember(scope, button, ['type', 'class', 'hidden', 'disabled', 'aria-label', 'aria-controls']);
   scope.add(() => button.replaceChildren(...children));
   button.type = 'button'; button.classList.add('nq-search-clear');
@@ -17,7 +18,7 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   const icon = input.ownerDocument.createElement('span'); icon.className = 'nq-search-clear-icon'; icon.setAttribute('aria-hidden', 'true'); button.replaceChildren(icon);
   let previous = input.value;
   const blocked = () => isDisabled(input) || readOnly(root, input);
-  const render = () => { button.hidden = !input.value || readOnly(root, input); button.disabled = input.disabled; };
+  const render = () => { presence.refresh(); button.hidden = !input.value || readOnly(root, input); button.disabled = input.disabled; };
   const changed = () => {
     render(); if (input.value === previous) return;
     previous = input.value; emit(root, { value: input.value }); options.onValueChange?.(input.value);

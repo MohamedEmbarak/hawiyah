@@ -64,7 +64,7 @@ test('unvalidated filled fields stay neutral and explicit errors red without an 
     const result = await field.evaluate(node => {
       const style = getComputedStyle(node);
       const probe = document.createElement('span');
-      probe.style.color = node.getAttribute('aria-invalid') === 'true' ? 'var(--nq-color-danger)' : 'var(--nq-color-border-strong)';
+      probe.style.color = node.getAttribute('aria-invalid') === 'true' ? 'var(--nq-color-danger)' : 'var(--nq-color-text)';
       node.parentElement!.append(probe);
       const color = getComputedStyle(probe).color; probe.remove();
       return {background: style.backgroundImage, color};

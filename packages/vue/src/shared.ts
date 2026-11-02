@@ -1,4 +1,5 @@
-import { computed, inject, onBeforeUnmount, onMounted, provide, ref, useId } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, onUpdated, provide, ref, useId } from 'vue';
+import { observeFieldValue, type FieldValueObserver } from '@nasaq/core';
 import type { ComputedRef, InjectionKey, Ref, VNodeChild } from 'vue';
 
 export interface FieldDecoration { label?: string; hint?: string; error?: string; required?: boolean }
@@ -27,9 +28,11 @@ export function useValue<T>(read: () => T | undefined, initial: T, emit: (value:
   return { value, set };
 }
 export function useFormReset(element: Ref<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | undefined>, reset: () => void) {
+  let presence: FieldValueObserver | undefined;
   let form: HTMLFormElement | null | undefined;
   const listener = (event: Event) => queueMicrotask(() => { if (!event.defaultPrevented) reset(); });
-  onMounted(() => { form = element.value?.form; form?.addEventListener('reset', listener); });
-  onBeforeUnmount(() => form?.removeEventListener('reset', listener));
+  onMounted(() => { form = element.value?.form; form?.addEventListener('reset', listener); if (element.value) presence = observeFieldValue(element.value); });
+  onUpdated(() => presence?.refresh());
+  onBeforeUnmount(() => { form?.removeEventListener('reset', listener); presence?.destroy(); });
 }
 export type RenderContent = VNodeChild;

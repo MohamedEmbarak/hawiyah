@@ -1,4 +1,4 @@
-import { createCleanup, formatCalendarDate, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarMonth, type CalendarSystem } from '@nasaq/core';
+import { observeFieldValue, createCleanup, formatCalendarDate, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarMonth, type CalendarSystem } from '@nasaq/core';
 import { createTooltip } from './tooltip.js';
 import { createDialog } from './dialog.js';
 import { emit, ensureId, eventElement, localeOf, nativeChange, readOnly, remember, required, translated } from './dom.js';
@@ -152,6 +152,7 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
   const input = required<HTMLInputElement>(root, '[data-nq-date-input]'); const trigger = required<HTMLButtonElement>(root, '[data-nq-date-trigger]');
   const dialog = required<HTMLDialogElement>(root, '[data-nq-date-dialog]'); const host = required<HTMLElement>(dialog, '[data-nq-date-calendar]');
   const scope = createCleanup(); const validity = input.validity.customError ? input.validationMessage : ''; const originalValue = input.value;
+  const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   let value = isDateInRange(input.value) ? input.value : ''; let lastNotifiedValue = value; let draft = input.value; let editing = false; let renderedValue = input.value;
   remember(scope, input, ['type', 'name', 'aria-describedby', 'aria-invalid', 'aria-haspopup', 'aria-expanded', 'aria-controls']);
   const originalInvalid = input.getAttribute('aria-invalid');
@@ -190,6 +191,7 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
     appendDateMessage(display, display.textContent || '');
     renderedValue = !editing && draft && supported ? formatCalendarDate(draft, { locale: options.locale ?? localeOf(root), calendar: calendar.calendar, dateStyle: 'medium' }) : draft;
     input.value = renderedValue;
+    presence.refresh();
   };
   const calendar = createCalendar(host, {
     value, get min() { return input.min || undefined; }, get max() { return input.max || undefined; }, locale: options.locale ?? localeOf(root), calendar: system, isDateDisabled: options.isDateDisabled,

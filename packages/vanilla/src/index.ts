@@ -1,4 +1,5 @@
 import { createSearchField } from './search-field.js';
+import { observeFieldValue, type FieldValueElement, type FieldValueObserver } from '@nasaq/core';
 import { createTabs } from './tabs.js';
 import { createStepper } from './stepper.js';
 export { createStepper };
@@ -63,10 +64,12 @@ export function enhance(root?: ParentNode): () => void {
   const elements = [...target.querySelectorAll<HTMLElement>(selector)];
   if ('matches' in target && typeof target.matches === 'function' && target.matches(selector)) elements.unshift(target as HTMLElement);
   const acquired: HTMLElement[] = [];
+  const fields: FieldValueObserver[] = [];
   let destroyed = false;
   const release = () => {
     if (destroyed) return;
     destroyed = true;
+    for (const field of fields) field.destroy();
     let failed = false;
     let firstError: unknown;
     for (const element of acquired.reverse()) {
@@ -87,6 +90,9 @@ export function enhance(root?: ParentNode): () => void {
       registry.set(element, { controller, references: 1 });
       acquired.push(element);
     }
+    const inputs = [...target.querySelectorAll<FieldValueElement>('.nq-input, .nq-textarea, .nq-select')];
+    if ('matches' in target && typeof target.matches === 'function' && target.matches('.nq-input, .nq-textarea, .nq-select')) inputs.unshift(target as FieldValueElement);
+    for (const input of inputs) fields.push(observeFieldValue(input));
   } catch (error) { release(); throw error; }
   return release;
 }

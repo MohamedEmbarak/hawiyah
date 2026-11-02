@@ -1,4 +1,4 @@
-import { clampRange, createCleanup, formatNumber, isDisabled, normalizeDigits, normalizeSearch } from '@nasaq/core';
+import { observeFieldValue, clampRange, createCleanup, formatNumber, isDisabled, normalizeDigits, normalizeSearch } from '@nasaq/core';
 import { emit, ensureId, eventElement, localeOf, nativeChange, readOnly, remember, required, translated } from './dom.js';
 
 export interface ValueController<T> { readonly value: T; destroy(): void }
@@ -7,6 +7,7 @@ export function createPasswordField(root: HTMLElement, options: PasswordFieldOpt
   const input = required<HTMLInputElement>(root, '[data-nq-password-input]');
   const button = required<HTMLButtonElement>(root, '[data-nq-password-toggle]');
   const scope = createCleanup();
+  const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   remember(scope, input, ['type']); remember(scope, button, ['aria-pressed', 'aria-label', 'aria-controls', 'type', 'disabled', 'class', 'data-toggle-variant']);
   const children = [...button.childNodes]; scope.add(() => button.replaceChildren(...children));
   const show = options.showLabel || button.dataset.nqShowLabel || button.getAttribute('aria-label') || translated(root, 'Show password', 'إظهار كلمة المرور');
@@ -95,12 +96,13 @@ export function createPinInput(root: HTMLElement, options: PinInputOptions = {})
   const length = options.length ?? (input.maxLength > 0 ? input.maxLength : 6);
   if (!Number.isInteger(length) || length < 1) throw new RangeError('Nasaq: PIN length must be positive.');
   const scope = createCleanup(); const original = input.value;
+  const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   remember(scope, input, ['type', 'inputmode', 'autocomplete', 'pattern', 'maxlength']); scope.add(() => { input.value = original; });
   input.type = 'text'; input.inputMode = 'numeric'; input.autocomplete = 'one-time-code'; input.pattern = `[0-9]{${length}}`; input.maxLength = length;
   const slots = [...root.querySelectorAll<HTMLElement>('[data-nq-pin-slot]')];
   slots.forEach(slot => { remember(scope, slot, ['aria-hidden']); const text = slot.textContent; scope.add(() => { slot.textContent = text; }); slot.setAttribute('aria-hidden', 'true'); });
   let composing = false;
-  const render = (announce = false) => { input.value = normalizeDigits(input.value).replace(/\D/gu, '').slice(0, length); slots.forEach((slot, index) => { slot.textContent = input.value[index] || ''; }); if (announce) { emit(root, { value: input.value }); options.onValueChange?.(input.value); } };
+  const render = (announce = false) => { input.value = normalizeDigits(input.value).replace(/\D/gu, '').slice(0, length); presence.refresh(); slots.forEach((slot, index) => { slot.textContent = input.value[index] || ''; }); if (announce) { emit(root, { value: input.value }); options.onValueChange?.(input.value); } };
   scope.listen(input, 'compositionstart', () => { composing = true; });
   scope.listen(input, 'compositionend', () => { composing = false; if (!isDisabled(input) && !input.readOnly) render(true); });
   scope.listen(input, 'input', () => { if (!composing && !isDisabled(input) && !input.readOnly) render(true); });
@@ -117,6 +119,7 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   const initial = [...new Set((source as string[]).map(value => value.trim()).filter(Boolean))];
   let value = [...initial]; let composing = false;
   const scope = createCleanup(); const children = [...host.childNodes]; const originalInput = input.value;
+  const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   const originalValidity = input.validity.customError ? input.validationMessage : ''; const requiredValue = input.required;
   const name = options.name ?? root.dataset.nqName ?? input.name;
   remember(scope, host, ['role']); remember(scope, input, ['name', 'required', 'aria-required']);
@@ -124,6 +127,7 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   host.setAttribute('role', 'list'); input.removeAttribute('name'); input.required = false; if (requiredValue) input.setAttribute('aria-required', 'true');
   const render = () => {
     host.replaceChildren();
+    presence.refresh();
     value.forEach((tag, index) => {
       const chip = root.ownerDocument.createElement('span'); chip.className = 'nq-chip'; chip.setAttribute('role', 'listitem'); chip.append(root.ownerDocument.createTextNode(tag));
       const remove = root.ownerDocument.createElement('button'); remove.type = 'button'; remove.dataset.nqRemoveTag = String(index); remove.textContent = '×';
@@ -155,6 +159,7 @@ export function createMultiSelect(root: HTMLElement, options: MultiSelectOptions
   const items = [...root.querySelectorAll<HTMLElement>('[data-nq-option]')];
   const inputs = items.map(item => required<HTMLInputElement>(item, 'input[type="checkbox"]'));
   const scope = createCleanup(); const status = root.querySelector<HTMLElement>('[data-nq-status]'); const originalStatus = status?.textContent;
+  const presence = observeFieldValue(search); scope.add(() => presence.destroy());
   items.forEach(item => remember(scope, item, ['hidden'])); if (status) scope.add(() => { status.textContent = originalStatus ?? ''; });
   const originalQuery = search.value; scope.add(() => { search.value = originalQuery; });
   const originalValidity = search.validity.customError ? search.validationMessage : '';
@@ -188,6 +193,7 @@ export interface FileDropzoneOptions { maxSize?: number; onValueChange?: (files:
 export function createFileDropzone(root: HTMLElement, options: FileDropzoneOptions = {}): ValueController<File[]> {
   const input = required<HTMLInputElement>(root, '[data-nq-file-input]');
   const scope = createCleanup(); const status = root.querySelector<HTMLElement>('[data-nq-file-status]'); const initialText = status?.textContent;
+  const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   remember(scope, root, ['data-dragover']); if (status) scope.add(() => { status.textContent = initialText ?? ''; });
   const maxSize = options.maxSize ?? Number(root.dataset.nqMaxSize || Infinity);
   const accepted = (file: File) => file.size <= maxSize && (!input.accept || input.accept.split(',').some(pattern => { const rule = pattern.trim().toLowerCase(); return rule.startsWith('.') ? file.name.toLowerCase().endsWith(rule) : rule.endsWith('/*') ? file.type.toLowerCase().startsWith(rule.slice(0, -1)) : file.type.toLowerCase() === rule; }));

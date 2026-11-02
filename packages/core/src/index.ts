@@ -190,3 +190,5 @@ export function restoreFocus(element: HTMLElement | null | undefined): boolean {
   element.focus({ preventScroll: true });
   return element.ownerDocument.activeElement === element;
 }
+export { observeFieldValue } from './field-value.js';
+export type { FieldValueElement, FieldValueObserver } from './field-value.js';

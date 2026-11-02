@@ -1,7 +1,22 @@
-import { createContext, useContext, useId, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
+import { observeFieldValue, type FieldValueElement, type FieldValueObserver } from '@nasaq/core';
 import type { ComponentPropsWithRef, Dispatch, HTMLAttributes, ReactNode, Ref, SetStateAction } from 'react';
 
 export const cx = (...classes: (string | undefined | false)[]) => classes.filter(Boolean).join(' ');
+export function useFieldValueRef<T extends FieldValueElement>(ref: Ref<T> | undefined) {
+  const observer = useRef<FieldValueObserver | undefined>(undefined);
+  useEffect(() => { observer.current?.refresh(); });
+  return useCallback((element: T | null) => {
+    observer.current?.destroy(); observer.current = undefined;
+    if (!element) { assignRef(ref, null); return; }
+    const current = observeFieldValue(element); observer.current = current;
+    const cleanup = typeof ref === 'function' ? ref(element) : (assignRef(ref, element), undefined);
+    return () => {
+      current.destroy(); if (observer.current === current) observer.current = undefined;
+      if (typeof cleanup === 'function') cleanup(); else assignRef(ref, null);
+    };
+  }, [ref]);
+}
 export function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
   if (typeof ref === 'function') ref(value);
   else if (ref) ref.current = value;

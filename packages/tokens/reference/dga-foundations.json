@@ -382,7 +382,7 @@
   "adaptations": [
     "Shared subtle text uses Neutral/600 in light mode for contrast across muted surfaces.",
     "Shared strong boundary uses Controls/control-border; Text Input keeps its separate reference field-border.",
-    "DGA editable inputs use an animated neutral underline before user validation, theme primary text (green) when user-valid, and danger (red) when user-invalid or explicitly marked with an application error. No additional outer outline is added. This is an approved validation-color adaptation from the neutral source underline.",
+    "DGA editable inputs use a focused dark-neutral underline while empty or not yet valid, theme primary text (green) for nonempty valid values including prefilled values, and danger (red) when user-invalid or explicitly marked with an application error. No additional outer outline is added. This is an approved validation-color adaptation from the neutral source underline.",
     "Read-only and forced-colors fields retain visible inset keyboard focus; filled read-only fields do not add the editable underline. Original Nasaq and custom themes remain supported.",
     "Existing breakpoint names retained for API stability; supplied1440/430 frames do not establish breakpoints."
   ],

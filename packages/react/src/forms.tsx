@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef } from 'react';
 import type { ComponentPropsWithRef, ReactNode } from 'react';
-import { assignRef, cx, Field, useFieldControl } from './shared.js';
+import { assignRef, cx, Field, useFieldControl, useFieldValueRef } from './shared.js';
 import type { FieldDecoration } from './shared.js';
 import { isDisabled, type Option } from '@nasaq/core';
 
@@ -15,7 +15,8 @@ export function Button({ variant = 'primary', size = 'md', loading, disabled, ty
 export interface TextFieldProps extends ComponentPropsWithRef<'input'>, FieldDecoration {}
 function InputControl(props: ComponentPropsWithRef<'input'>) {
   const field = useFieldControl(props);
-  return <input {...props} {...field} className={cx('nq-input', props.className)} />;
+  const ref = useFieldValueRef(props.ref);
+  return <input {...props} {...field} ref={ref} className={cx('nq-input', props.className)} />;
 }
 export function TextField({ label, hint, error, ...props }: TextFieldProps) {
   const generated = useId();
@@ -25,7 +26,8 @@ export function TextField({ label, hint, error, ...props }: TextFieldProps) {
 export interface TextareaProps extends ComponentPropsWithRef<'textarea'>, FieldDecoration {}
 function TextareaControl(props: ComponentPropsWithRef<'textarea'>) {
   const field = useFieldControl(props);
-  return <textarea {...props} {...field} className={cx('nq-textarea', props.className)} />;
+  const ref = useFieldValueRef(props.ref);
+  return <textarea {...props} {...field} ref={ref} className={cx('nq-textarea', props.className)} />;
 }
 export function Textarea({ label, hint, error, ...props }: TextareaProps) {
   const generated = useId();
@@ -35,7 +37,8 @@ export function Textarea({ label, hint, error, ...props }: TextareaProps) {
 export interface SelectProps extends ComponentPropsWithRef<'select'>, FieldDecoration { options?: readonly Option[] }
 function SelectControl({ options, children, ...props }: SelectProps) {
   const field = useFieldControl(props);
-  return <select {...props} {...field} className={cx('nq-select', props.className)}>{options?.map(option => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>)}{children}</select>;
+  const ref = useFieldValueRef(props.ref);
+  return <select {...props} {...field} ref={ref} className={cx('nq-select', props.className)}>{options?.map(option => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>)}{children}</select>;
 }
 export function Select({ label, hint, error, ...props }: SelectProps) {
   const generated = useId();
