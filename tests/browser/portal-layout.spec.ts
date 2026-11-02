@@ -1,5 +1,20 @@
 import { expect, test } from '@playwright/test';
 
+test('embedded skip link does not cover the catalog title and reveals on keyboard focus', async ({ page }) => {
+  await page.goto('/#components');
+  const title = page.locator('.component-card-title h2 a[href$="#component/portal-layout"]');
+  const card = page.locator('.component-card').filter({ has: title });
+  const skip = card.locator('.nq-skip-link');
+  await title.scrollIntoViewIfNeeded();
+  await expect(skip).toHaveCSS('clip-path', 'inset(50%)');
+  expect(await title.evaluate(node => { const r = node.getBoundingClientRect(); return node.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+  await title.focus(); await page.keyboard.press('Tab'); await expect(skip).toBeFocused();
+  await expect(skip).toHaveCSS('clip-path', 'none');
+  expect((await skip.boundingBox())!.height).toBeGreaterThanOrEqual(24);
+  await page.keyboard.press('Enter');
+  await expect(card.locator('.nq-portal-layout-main')).toBeFocused();
+});
+
 // Exercise the shared stylesheet loaded by the real guide. Native controller
 // lifecycle and event behavior have separate four-adapter regression tests.
 for (const direction of ['rtl', 'ltr']) {

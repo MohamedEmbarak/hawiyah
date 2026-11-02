@@ -497,10 +497,14 @@ app.addEventListener("click", async (event) => {
       return;
     }
   }
-  if (el.classList.contains("skip-link")) {
-    event.preventDefault();
-    document.getElementById("main")?.focus();
-    return;
+  if (el.matches(".skip-link, .nq-skip-link") && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+    const href = el.getAttribute("href");
+    const target = href?.startsWith("#") ? document.getElementById(href.slice(1)) : null;
+    if (target) {
+      event.preventDefault();
+      target.focus();
+      return;
+    }
   }
   if (el.dataset.docSection) {
     const section = document.getElementById(el.dataset.docSection);
