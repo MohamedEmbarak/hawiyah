@@ -147,7 +147,8 @@ export const tokens = {
     "action-light-hover": "#f3f4f6",
     "action-light-active": "#ffffffb3",
     "on-action-light": "#161616",
-    "danger-active": "#7a2619"
+    "danger-active": "#7a2619",
+    "choice-active": "#104631"
   },
   "control": {
     "height": "2.5rem",
@@ -232,7 +233,8 @@ export const themes = {
         "action-light-hover": "#f3f4f6",
         "action-light-active": "#ffffffb3",
         "on-action-light": "#161616",
-        "danger-active": "#912124"
+        "danger-active": "#912124",
+        "choice-active": "#004740"
       }
     },
     "dark": {
@@ -296,7 +298,8 @@ export const themes = {
         "action-light-hover": "#f3f4f6",
         "action-light-active": "#ffffff",
         "on-action-light": "#161616",
-        "danger-active": "#ffc0bd"
+        "danger-active": "#ffc0bd",
+        "choice-active": "#b9ede2"
       }
     }
   },
@@ -362,7 +365,8 @@ export const themes = {
         "action-light-hover": "#f3f4f6",
         "action-light-active": "#ffffffb3",
         "on-action-light": "#161616",
-        "danger-active": "#7a2619"
+        "danger-active": "#7a2619",
+        "choice-active": "#104631"
       }
     },
     "dark": {
@@ -426,7 +430,8 @@ export const themes = {
         "action-light-hover": "#f3f4f6",
         "action-light-active": "#ffffff",
         "on-action-light": "#161616",
-        "danger-active": "#7a2619"
+        "danger-active": "#7a2619",
+        "choice-active": "#54c08a"
       }
     }
   }
@@ -824,7 +829,8 @@ export const tokenNames = {
     "action-light-hover": "--nq-color-action-light-hover",
     "action-light-active": "--nq-color-action-light-active",
     "on-action-light": "--nq-color-on-action-light",
-    "danger-active": "--nq-color-danger-active"
+    "danger-active": "--nq-color-danger-active",
+    "choice-active": "--nq-color-choice-active"
   },
   "control": {
     "height": "--nq-control-height",
@@ -970,6 +976,7 @@ export const cssVariableNames = [
   "--nq-color-action-light-active",
   "--nq-color-on-action-light",
   "--nq-color-danger-active",
+  "--nq-color-choice-active",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

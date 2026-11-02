@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from 'react';
 import type { ComponentPropsWithRef, ReactNode } from 'react';
 import { assignRef, cx, Field, useFieldControl, useFieldValueRef } from './shared.js';
 import type { FieldDecoration } from './shared.js';
-import { isDisabled, type Option } from '@nasaq/core';
+import { observeReadonlyChoice, isDisabled, type Option } from '@nasaq/core';
 
 export interface ButtonProps extends ComponentPropsWithRef<'button'> {
   variant?: 'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link';
@@ -47,12 +47,6 @@ export function Select({ label, hint, error, ...props }: SelectProps) {
 }
 export interface CheckboxProps extends Omit<ComponentPropsWithRef<'input'>, 'type'>, FieldDecoration { indeterminate?: boolean }
 interface ChoiceProps extends CheckboxProps { kind: 'checkbox' | 'radio' | 'switch' }
-const readonlyRadioValues = new WeakMap<HTMLInputElement, boolean>();
-function restoreReadonlyRadioGroup(input: HTMLInputElement) {
-  const root = input.getRootNode() as Document | ShadowRoot;
-  const group = input.name ? Array.from(root.querySelectorAll<HTMLInputElement>('input[type="radio"]')).filter(peer => peer.name === input.name && peer.form === input.form) : [input];
-  for (const peer of group) { const checked = readonlyRadioValues.get(peer); if (checked !== undefined) peer.checked = checked; }
-}
 function Choice({ kind, label, hint, error, className, indeterminate, ref, onClick, onKeyDown, onChange, ...props }: ChoiceProps) {
   const field = useFieldControl(props);
   const input = useRef<HTMLInputElement | null>(null);
@@ -60,19 +54,14 @@ function Choice({ kind, label, hint, error, className, indeterminate, ref, onCli
   const errorId = error ? `${field.id}-error` : undefined;
   useEffect(() => { if (input.current) input.current.indeterminate = Boolean(indeterminate); }, [indeterminate]);
   useEffect(() => {
-    const node = input.current;
-    if (kind !== 'radio' || !props.readOnly || !node) return;
-    const root = node.getRootNode();
-    let disposed = false;
-    const remember = () => readonlyRadioValues.set(node, node.checked);
-    const reset = (event: Event) => { if (event.target === node.form) queueMicrotask(() => { if (!disposed && !event.defaultPrevented) remember(); }); };
-    remember(); root.addEventListener('change', remember); root.addEventListener('reset', reset);
-    return () => { disposed = true; root.removeEventListener('change', remember); root.removeEventListener('reset', reset); readonlyRadioValues.delete(node); };
+    if (!input.current) return;
+    const guard = observeReadonlyChoice(input.current);
+    return () => guard.destroy();
   });
   return <div className="nq-field">
     <label className="nq-choice" htmlFor={field.id}>
       <input {...props} {...field} ref={node => { input.current = node; assignRef(ref, node); }} type={kind === 'radio' ? 'radio' : 'checkbox'} role={kind === 'switch' ? 'switch' : props.role} className={cx(`nq-${kind}`, className)} aria-disabled={props.readOnly || props['aria-disabled']} aria-invalid={error ? true : field['aria-invalid']} aria-describedby={[field['aria-describedby'], hintId, errorId].filter(Boolean).join(' ') || undefined}
-        onClick={event => { onClick?.(event); if (props.readOnly || isDisabled(event.currentTarget)) { event.preventDefault(); if (kind === 'radio') restoreReadonlyRadioGroup(event.currentTarget); } }}
+        onClick={event => { onClick?.(event); if (props.readOnly || isDisabled(event.currentTarget)) { event.preventDefault(); } }}
         onKeyDown={event => { onKeyDown?.(event); if (props.readOnly && (event.key === ' ' || kind === 'radio' && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key))) event.preventDefault(); }}
         onChange={event => { if (!props.readOnly && !isDisabled(event.currentTarget)) onChange?.(event); }} />
       {label}

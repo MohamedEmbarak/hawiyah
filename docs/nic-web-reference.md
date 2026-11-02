@@ -66,7 +66,7 @@ it does not mean every source state has already passed comparison.
 | CSS 2316–2427; JS 1854–2079: tabs and overflow | Tabs | Overflow menu behavior is not covered by the existing scrolling tab list |
 | CSS 2431–2648: field labels, native/text/select inputs | Field, TextField, Textarea, Select, DatePicker | [Input state/motion task](nic-inputs.md): 16px padding/labels, 500ms ease, 50% pressed line and no focus shadow; helper/select artwork and other control comparisons remain |
 | CSS 2651–2726: addons/input groups | InputGroup and composed fields | [Input group task](nic-inputs.md): single line across direct input/addon composition, validation precedence, read-only/reduced-motion/system-focus handling and Angular projected value tracking |
-| CSS 2729–3009: checkbox/radio states | Checkbox, Radio | Compare hover halo, checked/pressed/disabled/read-only treatment |
+| CSS 2729–3009: checkbox/radio states | Checkbox, Radio | [Implemented choice task](nic-choices.md): geometry, hover halo, checked/pressed/disabled/read-only presentation and activation protection across all adapters; focus/dark/system-color adaptations documented |
 | CSS 3018–3079: badges | Badge | Compare sizes, borders and semantic palettes |
 | CSS 3082–3153: dot status labels | Badge composition | Dot status labels now display all five tones in the guide; Angular Badge exposes the dot/outline/soft variant alongside native CSS attributes |
 | CSS 3156–3181: avatars | Avatar, AvatarGroup | Compare source 40/64/80/120px options |
@@ -113,3 +113,20 @@ content variants, followed by missing reusable compositions and full regression.
 The earlier [quality report](quality-2026-11-02.md) predates these NIC changes.
 Hajj remains out of scope. Asset redistribution rights are separate from this
 source comparison; external styles/scripts/assets are not bundled wholesale.
+
+## Guide editor completion requirement
+
+Alignment completion also requires project-shaped usage examples for every
+supported adapter: vanilla, React, Vue and Angular. The editor must include
+imports, styles, component setup, bindings and event handling using that
+adapter's actual API. Show multiple files where a project needs them, and make
+the selected framework clear. Compile and exercise representative examples in
+real consumers; a vanilla preview alone cannot establish native-framework
+behavior. Snippet coverage and preview limitations must be visible rather than
+silently presenting HTML as a native framework example.
+
+The required language matrix is vanilla JavaScript/TypeScript, React JSX/TSX,
+Vue script setup JavaScript/TypeScript, and Angular TypeScript/templates.
+Syntax highlighting, filenames, imports, downloadable project files and
+validation must match the selected framework/language combination. Angular
+does not imply an unsupported plain-JavaScript component format.

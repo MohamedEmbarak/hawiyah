@@ -269,3 +269,9 @@ alert/notification tones, header/footer composition and guide-only navigation co
 InputGroup tracks value presence for projected native `.nq-input` / `.nq-select`
 controls after Angular renders; no vanilla enhancer is required. Keep labels
 and hints outside the joined row. See [NIC input composition](../../docs/nic-inputs.md).
+# Native choice read-only state
+
+`NqCheckboxComponent`, `NqRadioComponent` and `NqSwitchComponent` accept `readOnly`.
+The control remains keyboard-focusable and submits its value, while pointer and
+keyboard activation leave its value and radio peers unchanged. Disabled remains
+a separate native state. See [NIC states](../../docs/nic-choices.md).

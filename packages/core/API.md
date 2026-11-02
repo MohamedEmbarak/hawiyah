@@ -196,3 +196,10 @@ change this policy. Locale still controls language, month/day names and formatti
 order. Arabic remains the default language and RTL remains supported. Caller-provided
 prose is not rewritten. normalizeDigits continues to accept Arabic and Persian
 digits for input normalization.
+# Read-only native choices
+
+`observeReadonlyChoice(input: HTMLInputElement)` returns `{ refresh(), destroy() }`.
+Call after mounting a checkbox/radio, refresh after application-controlled value
+updates, and destroy before removal. It prevents activation when `readOnly` or
+`aria-disabled="true"` is set and preserves radio peers without rendering DOM.
+Adapters install it automatically; it does not make a disabled field focusable.

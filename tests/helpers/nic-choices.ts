@@ -1,0 +1,34 @@
+import { expect, type Page } from '@playwright/test';
+export async function checkNicChoices(page: Page) {
+  const check = page.locator('#nic-check');
+  const readonly = page.locator('#nic-readonly');
+  const radioA = page.locator('#nic-radio-a, #nic-radio-0');
+  const radioB = page.locator('#nic-radio-b, #nic-radio-1');
+  const lockedRadio = page.locator('#nic-radio-readonly, #nic-radio-readonly-0').filter({visible:true});
+  await expect(check).toHaveCSS('width', '20px'); await expect(check).toHaveCSS('height','20px');
+  await expect(check).toHaveCSS('appearance','none');
+  await check.hover();
+  expect(await check.evaluate(n=>getComputedStyle(n.parentElement!,'::before').zIndex)).toBe('-1');
+  await expect.poll(()=>check.evaluate(n=>getComputedStyle(n.parentElement!,'::before').transform)).toBe('matrix(1, 0, 0, 1, 0, 0)');
+  await check.click(); await expect(check).toBeChecked();
+  await expect(check).toHaveCSS('background-color', 'rgb(27, 131, 84)');
+  await page.mouse.down(); await expect(check).toHaveCSS('background-color','rgb(16, 70, 49)'); await page.mouse.up();
+  await check.focus(); await page.keyboard.press('Space'); await expect(check).toBeChecked();
+  await expect(check).toHaveCSS('outline-width','2px');
+  await expect(page.locator('#nic-disabled')).toBeDisabled();
+  await expect(page.locator('#nic-disabled')).toBeChecked();
+  await expect.poll(()=>page.locator('#nic-mixed').evaluate(n=>(n as HTMLInputElement).indeterminate)).toBe(true);
+  await readonly.click({force:true}); await expect(readonly).toBeChecked();
+  await readonly.focus(); await page.keyboard.press('Space'); await expect(readonly).toBeChecked();
+  await expect(readonly).toHaveCSS('outline-width','2px');
+  await radioB.check(); await expect(radioB).toBeChecked(); await expect(radioA).not.toBeChecked();
+  await lockedRadio.click({force:true}); await expect(lockedRadio).not.toBeChecked(); await expect(radioB).toBeChecked();
+  await lockedRadio.focus(); await page.keyboard.press('ArrowLeft'); await expect(lockedRadio).toBeFocused(); await expect(radioB).toBeChecked();
+  await page.emulateMedia({reducedMotion:'reduce'});
+  expect(await check.evaluate(n=>parseFloat(getComputedStyle(n.parentElement!,'::before').transitionDuration))).toBeLessThanOrEqual(0.00001);
+  await page.emulateMedia({forcedColors:'active'}); await expect(check).toHaveCSS('appearance','auto');
+  await check.focus(); await expect(check).toHaveCSS('outline-width','2px');
+  await page.emulateMedia({forcedColors:'none',reducedMotion:'no-preference'});
+  await page.getByTestId('nic-showcase').evaluate(n=>n.setAttribute('data-nq-theme','nasaq'));
+  await expect(check).toHaveCSS('appearance','auto');
+}

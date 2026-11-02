@@ -1,5 +1,5 @@
 import { createSearchField } from './search-field.js';
-import { observeFieldValue, type FieldValueElement, type FieldValueObserver } from '@nasaq/core';
+import { observeReadonlyChoice, observeFieldValue, type FieldValueElement, type FieldValueObserver } from '@nasaq/core';
 import { createTabs } from './tabs.js';
 import { createStepper } from './stepper.js';
 export { createStepper };
@@ -93,6 +93,9 @@ export function enhance(root?: ParentNode): () => void {
     const inputs = [...target.querySelectorAll<FieldValueElement>('.nq-input, .nq-textarea, .nq-select')];
     if ('matches' in target && typeof target.matches === 'function' && target.matches('.nq-input, .nq-textarea, .nq-select')) inputs.unshift(target as FieldValueElement);
     for (const input of inputs) fields.push(observeFieldValue(input));
+    const choices = [...target.querySelectorAll<HTMLInputElement>('.nq-checkbox, .nq-radio, .nq-switch')];
+    if ('matches' in target && typeof target.matches === 'function' && target.matches('.nq-checkbox, .nq-radio, .nq-switch')) choices.unshift(target as HTMLInputElement);
+    for (const input of choices) fields.push(observeReadonlyChoice(input));
   } catch (error) { release(); throw error; }
   return release;
 }

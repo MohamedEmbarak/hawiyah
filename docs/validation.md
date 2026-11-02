@@ -538,3 +538,12 @@ and manual screen-reader checks remain outside this result.
 Clean tarball consumers passed ESM/SSR, Angular APF, CSS exports, TypeScript
 declarations and tree shaking. No package was published.
 
+## NIC selectable inputs — 2026-11-02
+
+Eight Chromium cases passed across vanilla, React, Vue and Angular, in RTL/LTR.
+They cover hover/pressed geometry and colors, checkbox/mixed/disabled states,
+read-only keyboard and pointer protection, radio-peer preservation, reduced
+motion, forced colors and original theme fallback. Eight core/token tests,
+eight semantic contrast checks, full build and guide typecheck passed.
+See [source mappings and adaptations](nic-choices.md).
+

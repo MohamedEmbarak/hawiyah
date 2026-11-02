@@ -1,6 +1,6 @@
-import { computed, defineComponent, h, mergeProps, nextTick, ref, useId, watchEffect } from 'vue';
+import { onMounted, onUpdated, onBeforeUnmount, computed, defineComponent, h, mergeProps, nextTick, ref, useId, watchEffect } from 'vue';
 import type { PropType, VNodeChild } from 'vue';
-import type { Option } from '@nasaq/core';
+import { observeReadonlyChoice, type Option } from '@nasaq/core';
 import { decorationProps, joinIds, provideField, useField, useFormReset, useValue } from './shared.js';
 import type { FieldDecoration } from './shared.js';
 
@@ -69,20 +69,24 @@ export const Select = textControl('select', 'nq-select', 'NqSelect');
 function choice(kind: 'checkbox' | 'radio' | 'switch') {
   return defineComponent({
     name: `Nq${kind[0]!.toUpperCase()}${kind.slice(1)}`, inheritAttrs: false,
-    props: { ...decorationProps, modelValue: { type: [Boolean, String] as PropType<boolean | string>, default: undefined }, defaultValue: { type: [Boolean, String] as PropType<boolean | string>, default: false }, value: { type: String, default: 'on' }, indeterminate: Boolean },
+    props: { ...decorationProps, modelValue: { type: [Boolean, String] as PropType<boolean | string>, default: undefined }, defaultValue: { type: [Boolean, String] as PropType<boolean | string>, default: false }, value: { type: String, default: 'on' }, readOnly: Boolean, indeterminate: Boolean },
     emits: { 'update:modelValue': (_value: boolean | string) => true },
     setup(props, { attrs, slots, emit, expose }) {
       const field = useField(props, attrs);
       const element = ref<HTMLInputElement>();
       const model = useValue(() => props.modelValue, props.defaultValue, value => emit('update:modelValue', value));
       useFormReset(element, () => model.set(props.defaultValue));
+      let readonlyGuard: ReturnType<typeof observeReadonlyChoice> | undefined;
+      onMounted(() => { if (element.value) readonlyGuard = observeReadonlyChoice(element.value); });
+      onUpdated(() => readonlyGuard?.refresh());
+      onBeforeUnmount(() => readonlyGuard?.destroy());
       watchEffect(() => { if (element.value) element.value.indeterminate = kind === 'checkbox' && props.indeterminate; });
       expose({ element, focus: () => element.value?.focus() });
       return () => h('div', { class: 'nq-field' }, [
         h('label', { class: 'nq-choice', for: field.id.value, id: props.label ? `${field.id.value}-label` : undefined }, [
           h('input', mergeProps(attrs, field.controlAttrs.value, { ref: element, class: `nq-${kind}`, type: kind === 'radio' ? 'radio' : 'checkbox', role: kind === 'switch' ? 'switch' : attrs.role,
-            value: props.value, checked: kind === 'radio' ? model.value.value === props.value : Boolean(model.value.value),
-            onChange: (event: Event) => model.set(kind === 'radio' ? props.value : (event.target as HTMLInputElement).checked) })),
+            readOnly: props.readOnly, 'aria-disabled': props.readOnly || attrs['aria-disabled'], value: props.value, checked: kind === 'radio' ? model.value.value === props.value : Boolean(model.value.value),
+            onChange: (event: Event) => { if (!props.readOnly) model.set(kind === 'radio' ? props.value : (event.target as HTMLInputElement).checked); } })),
           props.label ?? slots.default?.(),
         ]),
         props.hint && h('span', { class: 'nq-hint', id: `${field.id.value}-hint` }, props.hint),

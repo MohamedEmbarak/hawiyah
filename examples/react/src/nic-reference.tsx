@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Button, IconButton, InputGroup, TextField, Alert, Badge, ToastRegion, PortalHeader, PortalFooter } from '@nasaq/react';
+import { Checkbox, Radio, Card, Button, IconButton, InputGroup, TextField, Alert, Badge, ToastRegion, PortalHeader, PortalFooter } from '@nasaq/react';
 export function NicReferenceExample() {
   const [buttonCount, setButtonCount] = useState(0);
   const [english, setEnglish] = useState(false);
@@ -23,7 +23,14 @@ export function NicReferenceExample() {
       <section id="nic-demo-main" tabIndex={-1}><h2>{t('محتوى الصفحة','Page content')}</h2></section>
       <PortalFooter brand="نسق" description={t('منصة توضيحية','Example platform')} links={[{label:t('الخصوصية','Privacy'),href:'/privacy'},{label:t('تواصل معنا','Contact'),href:'/contact'}]} legal="2026" />
     </section>
-    <section className="nq-field" data-testid="group-example"><label className="nq-label" htmlFor="group-email">{t('البريد الإلكتروني','Email')}</label><InputGroup data-testid="group-field" start="@"><TextField id="group-email" name="group-email" type="email" defaultValue="ready@example.test" required /></InputGroup></section>
+    <section data-testid="choices-showcase" className="nq-stack">
+      <Checkbox id="nic-check" label="Checkbox" /><Checkbox id="nic-mixed" label="Mixed" indeterminate />
+      <Checkbox id="nic-disabled" label="Disabled" disabled defaultChecked />
+      <Checkbox id="nic-readonly" label="Read only" readOnly defaultChecked />
+      <Radio id="nic-radio-a" name="nic-radio" value="a" label="First radio" defaultChecked />
+      <Radio id="nic-radio-b" name="nic-radio" value="b" label="Second radio" />
+      <Radio id="nic-radio-readonly" name="nic-radio" value="locked" label="Read only radio" readOnly />
+    </section><section className="nq-field" data-testid="group-example"><label className="nq-label" htmlFor="group-email">{t('البريد الإلكتروني','Email')}</label><InputGroup data-testid="group-field" start="@"><TextField id="group-email" name="group-email" type="email" defaultValue="ready@example.test" required /></InputGroup></section>
     <section className="nq-grid" style={{'--nq-layout-columns': '1', '--nq-layout-columns-md': '2'} as React.CSSProperties}>
       <Card data-testid="base-card" header={<h2 className="nq-card-title">{t('بطاقة معلومات', 'Information card')}</h2>} footer={<span>{t('تفاصيل إضافية', 'Additional details')}</span>}><p className="nq-card-description">{t('محتوى واضح بمسافات موحدة.', 'Clear content with consistent spacing.')}</p></Card>
       <Card data-testid="border-card" variant="outlined" header={<h2 className="nq-card-title">{t('بطاقة بإطار', 'Bordered card')}</h2>}><p className="nq-card-description">{t('إطار دون ظل.', 'A border without a shadow.')}</p></Card>

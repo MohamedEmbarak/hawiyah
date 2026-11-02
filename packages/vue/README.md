@@ -312,3 +312,9 @@ interaction states, dark-surface use and density adaptations.
 
 [Ready component examples](../../docs/ready-component-examples.md) cover all five
 alert/notification tones, header/footer composition and guide-only navigation containment.
+# Native choice read-only state
+
+`Checkbox`, `Radio` and `Switch` accept `readOnly` (`read-only` in templates).
+The control remains keyboard-focusable and submits its value, while pointer and
+keyboard activation leave its value and radio peers unchanged. Disabled remains
+a separate native state. See [NIC states](../../docs/nic-choices.md).

@@ -85,21 +85,23 @@ export class NqSelectComponent extends NqValueControl<string> {
 
 @Component({ selector: 'nq-checkbox', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqCheckboxComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-cluster" [for]="controlId"><input class="nq-checkbox" type="checkbox" [id]="controlId" [name]="name" [checked]="value" [disabled]="disabled" [required]="required" [indeterminate]="indeterminate" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="update($any($event.target).checked)" (blur)="touch()"><span>{{ label }}</span></label>${fieldEnd}</div>` })
+  template: `<div class="nq-field"><label class="nq-choice" [for]="controlId"><input class="nq-checkbox" type="checkbox" [id]="controlId" [name]="name" [checked]="value" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [attr.aria-disabled]="readOnly || null" [indeterminate]="indeterminate" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="!readOnly && update($any($event.target).checked)" (blur)="touch()"><span>{{ label }}</span></label>${fieldEnd}</div>` })
 export class NqCheckboxComponent extends NqValueControl<boolean> {
+  @Input({transform: booleanAttribute}) readOnly = false;
   override value = false;
   @Input({transform: booleanAttribute}) indeterminate = false;
 }
 
 @Component({ selector: 'nq-switch', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqSwitchComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-cluster" [for]="controlId"><input class="nq-switch" type="checkbox" role="switch" [id]="controlId" [name]="name" [checked]="value" [disabled]="disabled" [required]="required" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="update($any($event.target).checked)" (blur)="touch()"><span>{{ label }}</span></label>${fieldEnd}</div>` })
-export class NqSwitchComponent extends NqValueControl<boolean> { override value = false; }
+  template: `<div class="nq-field"><label class="nq-choice" [for]="controlId"><input class="nq-switch" type="checkbox" role="switch" [id]="controlId" [name]="name" [checked]="value" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [attr.aria-disabled]="readOnly || null" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="!readOnly && update($any($event.target).checked)" (blur)="touch()"><span>{{ label }}</span></label>${fieldEnd}</div>` })
+export class NqSwitchComponent extends NqValueControl<boolean> { @Input({transform: booleanAttribute}) readOnly = false; override value = false; }
 
 @Component({ selector: 'nq-radio', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqRadioComponent), multi: true }],
-  template: `<fieldset class="nq-field" [disabled]="disabled" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null"><legend class="nq-label">{{ label }}</legend>@for (option of options; track option.value; let i = $index) {<label class="nq-cluster" [for]="controlId + '-' + i"><input class="nq-radio" type="radio" [id]="controlId + '-' + i" [name]="name || controlId" [value]="option.value" [checked]="value === option.value" [disabled]="disabled || (option.disabled ?? false)" [required]="required" (change)="update(option.value)" (blur)="touch()"><span>{{ option.label }}</span></label>}${fieldEnd}</fieldset>` })
+  template: `<fieldset class="nq-field" [disabled]="disabled" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null"><legend class="nq-label">{{ label }}</legend>@for (option of options; track option.value; let i = $index) {<label class="nq-choice" [for]="controlId + '-' + i"><input class="nq-radio" type="radio" [id]="controlId + '-' + i" [name]="name || controlId" [value]="option.value" [checked]="value === option.value" [disabled]="disabled || (option.disabled ?? false)" [required]="required" [readOnly]="readOnly" [attr.aria-disabled]="readOnly || null" (change)="!readOnly && update(option.value)" (blur)="touch()"><span>{{ option.label }}</span></label>}${fieldEnd}</fieldset>` })
 export class NqRadioComponent extends NqValueControl<string> {
+  @Input({transform: booleanAttribute}) readOnly = false;
   override value = '';
   @Input() options: readonly Option[] = [];
 }

@@ -25,6 +25,21 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if (id === 'checkbox' || id === 'radio') {
+    const component = id === 'checkbox' ? 'Checkbox' : 'Radio';
+    const states = [
+      {label:t('Default','افتراضي'),checked:false,disabled:false,readonly:false},
+      {label:t('Selected','محدد'),checked:true,disabled:false,readonly:false},
+      {label:t('Disabled','غير متاح'),checked:true,disabled:true,readonly:false},
+      {label:t('Read only','للقراءة فقط'),checked:true,disabled:false,readonly:true},
+    ];
+    return [{ title:t('Interactive, selected, disabled and read-only states','الحالات التفاعلية والمحددة والمعطلة وللقراءة فقط'),
+      markup:`<div class="nq-stack">${states.map((s,i)=>`<label class="nq-choice"><input class="nq-${id}" type="${id}" name="ready-${id}-${i}" ${s.checked?'checked':''} ${s.disabled?'disabled':''} ${s.readonly?'readonly aria-disabled="true"':''}>${s.label}</label>`).join('')}</div>`,
+      react:`import { ${component} } from '@nasaq/react';\n\n${states.map((s,i)=>`<${component} label="${s.label}" name="example-${i}" ${s.checked?'defaultChecked ':''}${s.disabled?'disabled ':''}${s.readonly?'readOnly ':''}/>`).join('\n')}`,
+      vue:`<script setup>\nimport { ${component} } from '@nasaq/vue';\n</script>\n<template>\n${states.map((s,i)=>`  <${component} label="${s.label}" name="example-${i}" ${id==='radio'?`value="on" ${s.checked?'default-value="on" ':''}`:s.checked?':default-value="true" ':''}${s.disabled?'disabled ':''}${s.readonly?'read-only ':''}/>`).join('\n')}\n</template>`,
+      angular:`<!-- Import Nq${component}Component from @nasaq/angular into the standalone component. -->\n${states.map((s,i)=>`<nq-${id} label="${s.label}" name="example-${i}" ${id==='radio'?`[options]="[{value:'on',label:'${s.label}'}]" ${s.checked?'value="on" ':''}`:s.checked?'[value]="true" ':''}${s.disabled?'disabled ':''}${s.readonly?'readOnly ':''}/>`).join('\n')}`,
+    }];
+  }
   if (id === 'alert' || id === 'badge' || id === 'chip') {
     const component = id[0]!.toUpperCase() + id.slice(1);
     const variants = id === 'alert' ? ['default', 'outline', 'minimal'] : id === 'badge' ? ['soft', 'outline', 'dot'] : ['soft', 'outline'];

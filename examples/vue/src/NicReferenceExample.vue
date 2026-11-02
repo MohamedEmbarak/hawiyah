@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Card, Button, IconButton, InputGroup, TextField, Alert, Badge, ToastRegion, PortalHeader, PortalFooter } from '@nasaq/vue';
+import { Checkbox, Radio, Card, Button, IconButton, InputGroup, TextField, Alert, Badge, ToastRegion, PortalHeader, PortalFooter } from '@nasaq/vue';
 const statusMessages = ref<import('@nasaq/vue').ToastMessage[]>(['neutral','info','success','warning','danger'].map(tone => ({id:tone,tone: tone as 'neutral'|'info'|'success'|'warning'|'danger',title:tone,message:'تفاصيل الإشعار'})));
+const choiceRadio = ref('a');
 const buttonCount = ref(0);
 const english = ref(false); const disabled = ref(true); const activations = ref(0);
 const t = (ar: string, en: string) => english.value ? en : ar;
@@ -22,7 +23,14 @@ const t = (ar: string, en: string) => english.value ? en : ar;
       <section id="nic-demo-main" tabindex="-1"><h2>{{ t('محتوى الصفحة','Page content') }}</h2></section>
       <PortalFooter brand="نسق" :links="[{label:t('الخصوصية','Privacy'),href:'/privacy'},{label:t('تواصل معنا','Contact'),href:'/contact'}]" copyright="2026"><p>{{ t('منصة توضيحية','Example platform') }}</p></PortalFooter>
     </section>
-    <section class="nq-field" data-testid="group-example"><label class="nq-label" for="group-email">{{ t('البريد الإلكتروني','Email') }}</label><InputGroup data-testid="group-field"><template #prefix>@</template><TextField id="group-email" name="group-email" type="email" default-value="ready@example.test" required /></InputGroup></section>
+    <section data-testid="choices-showcase" class="nq-stack">
+      <Checkbox id="nic-check" label="Checkbox" /><Checkbox id="nic-mixed" label="Mixed" indeterminate />
+      <Checkbox id="nic-disabled" label="Disabled" disabled :default-value="true" />
+      <Checkbox id="nic-readonly" label="Read only" read-only :default-value="true" />
+      <Radio id="nic-radio-a" name="nic-radio" value="a" label="First radio" v-model="choiceRadio" />
+      <Radio id="nic-radio-b" name="nic-radio" value="b" label="Second radio" v-model="choiceRadio" />
+      <Radio id="nic-radio-readonly" name="nic-radio" value="locked" label="Read only radio" read-only v-model="choiceRadio" />
+    </section><section class="nq-field" data-testid="group-example"><label class="nq-label" for="group-email">{{ t('البريد الإلكتروني','Email') }}</label><InputGroup data-testid="group-field"><template #prefix>@</template><TextField id="group-email" name="group-email" type="email" default-value="ready@example.test" required /></InputGroup></section>
     <section class="nq-grid" style="--nq-layout-columns:1;--nq-layout-columns-md:2">
       <Card data-testid="base-card"><template #header><h2 class="nq-card-title">{{ t('بطاقة معلومات', 'Information card') }}</h2></template><p class="nq-card-description">{{ t('محتوى واضح بمسافات موحدة.', 'Clear content with consistent spacing.') }}</p><template #footer><span>{{ t('تفاصيل إضافية', 'Additional details') }}</span></template></Card>
       <Card data-testid="border-card" variant="outlined"><template #header><h2 class="nq-card-title">{{ t('بطاقة بإطار', 'Bordered card') }}</h2></template><p class="nq-card-description">{{ t('إطار دون ظل.', 'A border without a shadow.') }}</p></Card>
