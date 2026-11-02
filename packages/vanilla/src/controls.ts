@@ -139,7 +139,7 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   scope.listen(host, 'click', event => { const button = eventElement(event)?.closest<HTMLElement>('[data-nq-remove-tag]'); if (button) remove(value[Number(button.dataset.nqRemoveTag)] || ''); });
   scope.listen(input, 'compositionstart', () => { composing = true; }); scope.listen(input, 'compositionend', () => { composing = false; });
   scope.listen(input, 'keydown', event => {
-    const key = event as KeyboardEvent; if (composing || key.isComposing || key.ctrlKey || key.metaKey || key.altKey || isDisabled(input) || readOnly(root, input)) return;
+    const key = event as KeyboardEvent; if (key.defaultPrevented || composing || key.isComposing || key.ctrlKey || key.metaKey || key.altKey || isDisabled(input) || readOnly(root, input)) return;
     if ((key.key === 'Enter' || key.key === ',') && input.value.trim()) { key.preventDefault(); add(input.value); }
     else if (key.key === 'Backspace' && !input.value && value.length) { key.preventDefault(); remove(value.at(-1)!); }
   });

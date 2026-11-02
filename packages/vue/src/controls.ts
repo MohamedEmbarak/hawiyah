@@ -507,6 +507,8 @@ export const TagInput = defineComponent({
     const field = useField(props, attrs);
     const element = ref<HTMLInputElement>();
     const query = ref("");
+    let composing = false;
+    const blocked = () => props.disabled || props.readonly || !!element.value && isDisabled(element.value);
     const model = useValue(
       () => props.modelValue,
       props.defaultValue,
@@ -525,8 +527,7 @@ export const TagInput = defineComponent({
     );
     expose({ element, focus: () => element.value?.focus() });
     const remove = (value: string) => {
-      if (!props.disabled && !props.readonly)
-        model.set(model.value.value.filter((item) => item !== value));
+      if (!blocked()) { model.set(model.value.value.filter((item) => item !== value)); element.value?.focus(); }
     };
     return () => {
       const { name, form, ...rest } = attrs;
@@ -568,10 +569,12 @@ export const TagInput = defineComponent({
               onInput: (event: Event) => {
                 query.value = (event.target as HTMLInputElement).value;
               },
+              onCompositionstart: () => { composing = true; },
+              onCompositionend: () => { composing = false; },
               onKeydown: (event: KeyboardEvent) => {
-                if (props.disabled || props.readonly || event.isComposing)
+                if (event.defaultPrevented || blocked() || composing || event.isComposing || event.ctrlKey || event.altKey || event.metaKey)
                   return;
-                if (event.key === "Enter" || event.key === ",") {
+                if ((event.key === "Enter" || event.key === ",") && query.value.trim()) {
                   event.preventDefault();
                   const value = query.value.trim();
                   if (value && !model.value.value.includes(value))
@@ -579,7 +582,7 @@ export const TagInput = defineComponent({
                   query.value = "";
                 } else if (event.key === "Backspace" && !query.value) {
                   const last = model.value.value.at(-1);
-                  if (last) remove(last);
+                  if (last) { event.preventDefault(); remove(last); }
                 }
               },
             }),
