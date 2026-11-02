@@ -504,3 +504,15 @@ submission, reduced motion and forced colors. Three native-consumer cases passed
 the same input color/reset contract in React, Vue and Angular. Six existing theme
 regressions also passed, including read-only keyboard focus and original/custom
 theme behavior. Workspace packages and native consumers built successfully.
+# NIC button task — 2026-11-02
+
+All seven supplied button families now have shared styles and native typed
+variants. Eight Chromium browser cases passed: two directions/locales in vanilla,
+React, Vue and Angular. They check resting/hover/pressed colors, keyboard focus
+while pressing Space, activation counts, disabled/loading behavior, dark-mode
+axe checks, narrow layouts, original/custom themes and forced colors. Eight
+semantic contrast tests passed, including default/secondary and primary state
+pairs. The full build passed with all three native consumers and guide typecheck.
+See [button mappings and adaptations](nic-buttons.md); this is scoped evidence,
+not a certification or a complete NIC regression result.
+

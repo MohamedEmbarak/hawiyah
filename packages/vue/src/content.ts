@@ -34,7 +34,7 @@ export const IconButton = defineComponent({
   props: {
     label: { type: String, required: true },
     variant: {
-      type: String as PropType<"primary" | "secondary" | "ghost" | "danger">,
+      type: String as PropType<'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link'>,
       default: "ghost",
     },
     size: { type: String as PropType<"sm" | "md" | "lg">, default: "md" },

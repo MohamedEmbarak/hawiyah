@@ -53,7 +53,7 @@ it does not mean every source state has already passed comparison.
 | CSS 1–426: fonts, primitives, responsive aliases, light/dark roles | tokens/styles | Reconcile component semantic values; preserve original/custom themes |
 | CSS 427–850: typography, truncation, color, shadow, radius, divider utilities | shared styles, layout, Divider | Compare type scale and utility recipes; do not globally reset consuming applications |
 | CSS 853–965: link states, neutral links | Link | Compare hover/pressed/visited/focus; check actual foreground contrast |
-| CSS 971–1292: seven button families and sizes | Button, IconButton | Missing typed default/light/outline-white variants; compare primary pressed color and secondary/outline states |
+| CSS 971–1292: seven button families and sizes | Button, IconButton | [Implemented button task](nic-buttons.md): seven NIC families plus three existing extensions, shared typed variants, pressed/hover/focus colors and disabled states; density adaptations remain explicit |
 | CSS 1294–1386: segmented buttons | ToggleGroup, ButtonGroup | Compare separators, selected states, wrapping and keyboard behavior |
 | CSS 1388–1531: icon buttons and icon/background sizes | IconButton, icon recipes | Preserve licensed SVG system; add documented background/size compositions |
 | CSS 1565–1641: cards | Card, ServiceCard | [Implemented card task](nic-cards.md): base/border/action composition, title/description, gap, shadow and semantic links; eight scoped browser cases passed across four adapters |
@@ -84,7 +84,7 @@ it does not mean every source state has already passed comparison.
 ## Confirmed source differences and intentional adaptations
 
 - Primary button pressed background is Flag 800 `#14573a` (CSS 1065),
-  while Nasaq's earlier token uses Flag 900 `#104631`.
+  replacing Nasaq's earlier Flag 900 `#104631` token in the button task.
 - Base card padding is **16px** through `--spacing-xl`. The card uses
   `--card-lg-gap`: **24px at 768px and above, 16px below**. Declared
   `--card-lg-padding` is not used by the base card selector; it must not be

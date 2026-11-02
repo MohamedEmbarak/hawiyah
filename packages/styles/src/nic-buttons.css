@@ -1,0 +1,80 @@
+/* NIC global.css 971–1292. Keep public density sizes; see docs/nic-buttons.md.
+   Color switches resolve at the component, including nested theme boundaries. */
+.nq-button {
+  --nq-button-active: var(--nq-button-hover);
+  --nq-button-focus-bg: var(--nq-button-bg);
+  --nq-button-focus-color: var(--nq-color-focus-contrast);
+  --nq-button-rest-outline: none;
+  --nq-button-active-outline: var(--nq-button-rest-outline);
+  --nq-button-disabled-bg: var(--nq-color-disabled);
+  --nq-button-disabled-border: transparent;
+  --nq-button-disabled-outline: none;
+}
+.nq-button:not([data-variant]), .nq-button[data-variant='primary'] {
+  --nq-button-active: var(--nq-color-primary-active);
+}
+.nq-button[data-variant='default'] {
+  --nq-button-bg: var(--nq-color-action-default);
+  --nq-button-fg: var(--nq-color-on-action-default);
+  --nq-button-hover: var(--nq-color-action-default-hover);
+  --nq-button-active: var(--nq-color-action-default-active);
+}
+.nq-button[data-variant='secondary'] {
+  --nq-button-bg: var(--nq-color-action-secondary);
+  --nq-button-fg: var(--nq-color-on-action-secondary);
+  --nq-button-hover: var(--nq-color-action-secondary-hover);
+  --nq-button-border: var(--nq-dga-on, var(--nq-color-border-strong)) var(--nq-dga-off, transparent);
+}
+.nq-button[data-variant='outline'] {
+  --nq-button-bg: transparent;
+  --nq-button-fg: var(--nq-dga-on, var(--nq-color-primary-text)) var(--nq-dga-off, var(--nq-color-text));
+  --nq-button-border: var(--nq-dga-on, var(--nq-color-primary)) var(--nq-dga-off, transparent);
+  --nq-button-hover: var(--nq-color-action-outline-hover);
+  --nq-button-active: var(--nq-color-action-outline-active);
+  --nq-button-rest-outline: var(--nq-dga-on, none) var(--nq-dga-off, 1px solid var(--nq-color-action-outline-border));
+  --nq-button-active-outline: var(--nq-dga-on, none) var(--nq-dga-off, 1px solid var(--nq-color-action-outline-border-active));
+  --nq-button-disabled-bg: transparent;
+  --nq-button-disabled-outline: 1px solid var(--nq-color-action-outline-border);
+}
+.nq-button[data-variant='outline-white'] {
+  --nq-button-bg: transparent;
+  --nq-button-fg: #fff;
+  --nq-button-hover: rgb(255 255 255 / 0.2);
+  --nq-button-active: rgb(255 255 255 / 0.3);
+  --nq-button-focus-color: #fff;
+  --nq-button-rest-outline: 1px solid rgb(255 255 255 / 0.7);
+  --nq-button-disabled-bg: transparent;
+  --nq-button-disabled-outline: 1px solid var(--nq-color-action-outline-border);
+}
+.nq-button[data-variant='light'] {
+  --nq-button-bg: var(--nq-color-action-light);
+  --nq-button-fg: var(--nq-color-on-action-light);
+  --nq-button-hover: var(--nq-color-action-light-hover);
+  --nq-button-active: var(--nq-color-action-light-active);
+}
+.nq-button[data-variant='danger'] { --nq-button-active: var(--nq-color-danger-active); }
+@media (hover: hover) {
+  .nq-button:is([data-variant='secondary'], [data-variant='light'], [data-variant='danger']):hover { --nq-button-focus-bg: var(--nq-button-hover); }
+}
+.nq-button { outline: var(--nq-button-rest-outline); outline-offset: 0; }
+.nq-button:focus-visible:not(:disabled, [aria-disabled='true']) {
+  outline: var(--nq-dga-on, var(--nq-focus-width)) var(--nq-dga-off, 2px) solid var(--nq-button-focus-color);
+  outline-offset: var(--nq-dga-on, var(--nq-focus-offset)) var(--nq-dga-off, 0px);
+  background: var(--nq-dga-on, var(--nq-button-hover)) var(--nq-dga-off, var(--nq-button-focus-bg));
+}
+.nq-button:not(:disabled, [aria-disabled='true']):active {
+  background: var(--nq-button-active);
+  box-shadow: var(--nq-dga-on, inset 0 0 0 100px rgb(0 0 0 / 0.06)) var(--nq-dga-off, none);
+}
+.nq-button:active:not(:focus-visible, :disabled, [aria-disabled='true']) { outline: var(--nq-button-active-outline); }
+.nq-button:is(:disabled, [aria-disabled='true']) {
+  background: var(--nq-button-disabled-bg);
+  border-color: var(--nq-button-disabled-border);
+  outline: var(--nq-button-disabled-outline);
+}
+/* Retain a visible keyboard indicator even while the key is held down. */
+@media (forced-colors: active) {
+  .nq-button { border: 1px solid ButtonText; }
+  .nq-button:focus-visible:not(:disabled, [aria-disabled='true']) { outline: 2px solid Highlight; outline-offset: 2px; }
+  .nq-button:is(:disabled, [aria-disabled='true']) { border-color: GrayText; color: GrayText; }
+}

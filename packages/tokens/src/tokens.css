@@ -75,7 +75,7 @@
   --nq-palette-light-border-strong: #6C737F;
   --nq-palette-light-primary: #1B8354;
   --nq-palette-light-primary-hover: #166A45;
-  --nq-palette-light-primary-active: #104631;
+  --nq-palette-light-primary-active: #14573a;
   --nq-palette-light-on-primary: #FFFFFF;
   --nq-palette-light-primary-subtle: #F3FCF6;
   --nq-palette-light-primary-text: #1B8354;
@@ -102,12 +102,28 @@
   --nq-palette-light-field-placeholder: #6C737F;
   --nq-palette-light-footer: #074D31;
   --nq-palette-light-on-footer: #FFFFFF;
-  --nq-palette-light-danger-background: #D92D20;
+  --nq-palette-light-danger-background: #d92c20;
   --nq-palette-light-card: #ffffff;
   --nq-palette-light-card-text: #1f2a37;
   --nq-palette-light-card-hover: #f9fafb;
   --nq-palette-light-focus-contrast: #000000;
   --nq-palette-light-card-border: #d2d6db;
+  --nq-palette-light-action-default: #0c111b;
+  --nq-palette-light-action-default-hover: #1f2a37;
+  --nq-palette-light-action-default-active: #4d5761;
+  --nq-palette-light-on-action-default: #ffffff;
+  --nq-palette-light-action-secondary: #f3f4f6;
+  --nq-palette-light-action-secondary-hover: #e5e7eb;
+  --nq-palette-light-on-action-secondary: #161616;
+  --nq-palette-light-action-outline-hover: #d2d6db;
+  --nq-palette-light-action-outline-active: #e5e7eb;
+  --nq-palette-light-action-outline-border: #e5e7eb;
+  --nq-palette-light-action-outline-border-active: #d2d6db;
+  --nq-palette-light-action-light: #ffffff;
+  --nq-palette-light-action-light-hover: #f3f4f6;
+  --nq-palette-light-action-light-active: #ffffffb3;
+  --nq-palette-light-on-action-light: #161616;
+  --nq-palette-light-danger-active: #7a2619;
   --nq-palette-dark-canvas: #111927;
   --nq-palette-dark-surface: #1F2A37;
   --nq-palette-dark-surface-raised: #1F2A37;
@@ -119,7 +135,7 @@
   --nq-palette-dark-border-strong: #9DA4AE;
   --nq-palette-dark-primary: #1B8354;
   --nq-palette-dark-primary-hover: #166A45;
-  --nq-palette-dark-primary-active: #104631;
+  --nq-palette-dark-primary-active: #14573a;
   --nq-palette-dark-on-primary: #FFFFFF;
   --nq-palette-dark-primary-subtle: #1B83541A;
   --nq-palette-dark-primary-text: #54C08A;
@@ -146,12 +162,28 @@
   --nq-palette-dark-field-placeholder: #E5E7EB;
   --nq-palette-dark-footer: #1B8354;
   --nq-palette-dark-on-footer: #FFFFFF;
-  --nq-palette-dark-danger-background: #D92D20;
+  --nq-palette-dark-danger-background: #d92c20;
   --nq-palette-dark-card: #1f2a37;
   --nq-palette-dark-card-text: #f9fafb;
   --nq-palette-dark-card-hover: #384250;
   --nq-palette-dark-focus-contrast: #ffffff;
   --nq-palette-dark-card-border: #d2d6db;
+  --nq-palette-dark-action-default: #0c111b;
+  --nq-palette-dark-action-default-hover: #1f2a37;
+  --nq-palette-dark-action-default-active: #4d5761;
+  --nq-palette-dark-on-action-default: #ffffff;
+  --nq-palette-dark-action-secondary: #384250;
+  --nq-palette-dark-action-secondary-hover: #4d5761;
+  --nq-palette-dark-on-action-secondary: #ffffff;
+  --nq-palette-dark-action-outline-hover: #384250;
+  --nq-palette-dark-action-outline-active: #4d5761;
+  --nq-palette-dark-action-outline-border: #9da4ae;
+  --nq-palette-dark-action-outline-border-active: #d2d6db;
+  --nq-palette-dark-action-light: #ffffff;
+  --nq-palette-dark-action-light-hover: #f3f4f6;
+  --nq-palette-dark-action-light-active: #ffffff;
+  --nq-palette-dark-on-action-light: #161616;
+  --nq-palette-dark-danger-active: #7a2619;
   --nq-color-canvas: var(--nq-palette-light-canvas);
   --nq-color-surface: var(--nq-palette-light-surface);
   --nq-color-surface-raised: var(--nq-palette-light-surface-raised);
@@ -196,6 +228,22 @@
   --nq-color-card-hover: var(--nq-palette-light-card-hover);
   --nq-color-focus-contrast: var(--nq-palette-light-focus-contrast);
   --nq-color-card-border: var(--nq-palette-light-card-border);
+  --nq-color-action-default: var(--nq-palette-light-action-default);
+  --nq-color-action-default-hover: var(--nq-palette-light-action-default-hover);
+  --nq-color-action-default-active: var(--nq-palette-light-action-default-active);
+  --nq-color-on-action-default: var(--nq-palette-light-on-action-default);
+  --nq-color-action-secondary: var(--nq-palette-light-action-secondary);
+  --nq-color-action-secondary-hover: var(--nq-palette-light-action-secondary-hover);
+  --nq-color-on-action-secondary: var(--nq-palette-light-on-action-secondary);
+  --nq-color-action-outline-hover: var(--nq-palette-light-action-outline-hover);
+  --nq-color-action-outline-active: var(--nq-palette-light-action-outline-active);
+  --nq-color-action-outline-border: var(--nq-palette-light-action-outline-border);
+  --nq-color-action-outline-border-active: var(--nq-palette-light-action-outline-border-active);
+  --nq-color-action-light: var(--nq-palette-light-action-light);
+  --nq-color-action-light-hover: var(--nq-palette-light-action-light-hover);
+  --nq-color-action-light-active: var(--nq-palette-light-action-light-active);
+  --nq-color-on-action-light: var(--nq-palette-light-on-action-light);
+  --nq-color-danger-active: var(--nq-palette-light-danger-active);
   --nq-control-height: 2.5rem;
   --nq-control-height-sm: 2rem;
   --nq-control-height-lg: 2.5rem;
@@ -318,6 +366,22 @@
   --nq-palette-light-card-hover: #f0f1eb;
   --nq-palette-light-focus-contrast: #156bcd;
   --nq-palette-light-card-border: #758e8c;
+  --nq-palette-light-action-default: #142d30;
+  --nq-palette-light-action-default-hover: #142d30;
+  --nq-palette-light-action-default-active: #142d30;
+  --nq-palette-light-on-action-default: #ffffff;
+  --nq-palette-light-action-secondary: #ffffff;
+  --nq-palette-light-action-secondary-hover: #f0f1eb;
+  --nq-palette-light-on-action-secondary: #142d30;
+  --nq-palette-light-action-outline-hover: #c8e7dd;
+  --nq-palette-light-action-outline-active: #c8e7dd;
+  --nq-palette-light-action-outline-border: #006a64;
+  --nq-palette-light-action-outline-border-active: #006a64;
+  --nq-palette-light-action-light: #ffffff;
+  --nq-palette-light-action-light-hover: #f3f4f6;
+  --nq-palette-light-action-light-active: #ffffffb3;
+  --nq-palette-light-on-action-light: #161616;
+  --nq-palette-light-danger-active: #912124;
   --nq-palette-dark-canvas: #111d1e;
   --nq-palette-dark-surface: #172728;
   --nq-palette-dark-surface-raised: #213334;
@@ -362,6 +426,22 @@
   --nq-palette-dark-card-hover: #283c3c;
   --nq-palette-dark-focus-contrast: #8abfff;
   --nq-palette-dark-card-border: #748f8b;
+  --nq-palette-dark-action-default: #e8f4ed;
+  --nq-palette-dark-action-default-hover: #e8f4ed;
+  --nq-palette-dark-action-default-active: #e8f4ed;
+  --nq-palette-dark-on-action-default: #142d30;
+  --nq-palette-dark-action-secondary: #172728;
+  --nq-palette-dark-action-secondary-hover: #283c3c;
+  --nq-palette-dark-on-action-secondary: #eef6f1;
+  --nq-palette-dark-action-outline-hover: #1a4540;
+  --nq-palette-dark-action-outline-active: #1a4540;
+  --nq-palette-dark-action-outline-border: #7bd4c6;
+  --nq-palette-dark-action-outline-border-active: #7bd4c6;
+  --nq-palette-dark-action-light: #ffffff;
+  --nq-palette-dark-action-light-hover: #f3f4f6;
+  --nq-palette-dark-action-light-active: #ffffff;
+  --nq-palette-dark-on-action-light: #161616;
+  --nq-palette-dark-danger-active: #ffc0bd;
 }
 
 :where([data-nq-theme="dga"], [data-nq-theme="custom"]) {
@@ -439,7 +519,7 @@
   --nq-palette-light-border-strong: #6C737F;
   --nq-palette-light-primary: #1B8354;
   --nq-palette-light-primary-hover: #166A45;
-  --nq-palette-light-primary-active: #104631;
+  --nq-palette-light-primary-active: #14573a;
   --nq-palette-light-on-primary: #FFFFFF;
   --nq-palette-light-primary-subtle: #F3FCF6;
   --nq-palette-light-primary-text: #1B8354;
@@ -466,12 +546,28 @@
   --nq-palette-light-field-placeholder: #6C737F;
   --nq-palette-light-footer: #074D31;
   --nq-palette-light-on-footer: #FFFFFF;
-  --nq-palette-light-danger-background: #D92D20;
+  --nq-palette-light-danger-background: #d92c20;
   --nq-palette-light-card: #ffffff;
   --nq-palette-light-card-text: #1f2a37;
   --nq-palette-light-card-hover: #f9fafb;
   --nq-palette-light-focus-contrast: #000000;
   --nq-palette-light-card-border: #d2d6db;
+  --nq-palette-light-action-default: #0c111b;
+  --nq-palette-light-action-default-hover: #1f2a37;
+  --nq-palette-light-action-default-active: #4d5761;
+  --nq-palette-light-on-action-default: #ffffff;
+  --nq-palette-light-action-secondary: #f3f4f6;
+  --nq-palette-light-action-secondary-hover: #e5e7eb;
+  --nq-palette-light-on-action-secondary: #161616;
+  --nq-palette-light-action-outline-hover: #d2d6db;
+  --nq-palette-light-action-outline-active: #e5e7eb;
+  --nq-palette-light-action-outline-border: #e5e7eb;
+  --nq-palette-light-action-outline-border-active: #d2d6db;
+  --nq-palette-light-action-light: #ffffff;
+  --nq-palette-light-action-light-hover: #f3f4f6;
+  --nq-palette-light-action-light-active: #ffffffb3;
+  --nq-palette-light-on-action-light: #161616;
+  --nq-palette-light-danger-active: #7a2619;
   --nq-palette-dark-canvas: #111927;
   --nq-palette-dark-surface: #1F2A37;
   --nq-palette-dark-surface-raised: #1F2A37;
@@ -483,7 +579,7 @@
   --nq-palette-dark-border-strong: #9DA4AE;
   --nq-palette-dark-primary: #1B8354;
   --nq-palette-dark-primary-hover: #166A45;
-  --nq-palette-dark-primary-active: #104631;
+  --nq-palette-dark-primary-active: #14573a;
   --nq-palette-dark-on-primary: #FFFFFF;
   --nq-palette-dark-primary-subtle: #1B83541A;
   --nq-palette-dark-primary-text: #54C08A;
@@ -510,12 +606,28 @@
   --nq-palette-dark-field-placeholder: #E5E7EB;
   --nq-palette-dark-footer: #1B8354;
   --nq-palette-dark-on-footer: #FFFFFF;
-  --nq-palette-dark-danger-background: #D92D20;
+  --nq-palette-dark-danger-background: #d92c20;
   --nq-palette-dark-card: #1f2a37;
   --nq-palette-dark-card-text: #f9fafb;
   --nq-palette-dark-card-hover: #384250;
   --nq-palette-dark-focus-contrast: #ffffff;
   --nq-palette-dark-card-border: #d2d6db;
+  --nq-palette-dark-action-default: #0c111b;
+  --nq-palette-dark-action-default-hover: #1f2a37;
+  --nq-palette-dark-action-default-active: #4d5761;
+  --nq-palette-dark-on-action-default: #ffffff;
+  --nq-palette-dark-action-secondary: #384250;
+  --nq-palette-dark-action-secondary-hover: #4d5761;
+  --nq-palette-dark-on-action-secondary: #ffffff;
+  --nq-palette-dark-action-outline-hover: #384250;
+  --nq-palette-dark-action-outline-active: #4d5761;
+  --nq-palette-dark-action-outline-border: #9da4ae;
+  --nq-palette-dark-action-outline-border-active: #d2d6db;
+  --nq-palette-dark-action-light: #ffffff;
+  --nq-palette-dark-action-light-hover: #f3f4f6;
+  --nq-palette-dark-action-light-active: #ffffff;
+  --nq-palette-dark-on-action-light: #161616;
+  --nq-palette-dark-danger-active: #7a2619;
 }
 
 :where([data-nq-mode="light"]) {
@@ -564,6 +676,22 @@
   --nq-color-card-hover: var(--nq-palette-light-card-hover);
   --nq-color-focus-contrast: var(--nq-palette-light-focus-contrast);
   --nq-color-card-border: var(--nq-palette-light-card-border);
+  --nq-color-action-default: var(--nq-palette-light-action-default);
+  --nq-color-action-default-hover: var(--nq-palette-light-action-default-hover);
+  --nq-color-action-default-active: var(--nq-palette-light-action-default-active);
+  --nq-color-on-action-default: var(--nq-palette-light-on-action-default);
+  --nq-color-action-secondary: var(--nq-palette-light-action-secondary);
+  --nq-color-action-secondary-hover: var(--nq-palette-light-action-secondary-hover);
+  --nq-color-on-action-secondary: var(--nq-palette-light-on-action-secondary);
+  --nq-color-action-outline-hover: var(--nq-palette-light-action-outline-hover);
+  --nq-color-action-outline-active: var(--nq-palette-light-action-outline-active);
+  --nq-color-action-outline-border: var(--nq-palette-light-action-outline-border);
+  --nq-color-action-outline-border-active: var(--nq-palette-light-action-outline-border-active);
+  --nq-color-action-light: var(--nq-palette-light-action-light);
+  --nq-color-action-light-hover: var(--nq-palette-light-action-light-hover);
+  --nq-color-action-light-active: var(--nq-palette-light-action-light-active);
+  --nq-color-on-action-light: var(--nq-palette-light-on-action-light);
+  --nq-color-danger-active: var(--nq-palette-light-danger-active);
 }
 
 :where([data-nq-mode="dark"]) {
@@ -612,6 +740,22 @@
   --nq-color-card-hover: var(--nq-palette-dark-card-hover);
   --nq-color-focus-contrast: var(--nq-palette-dark-focus-contrast);
   --nq-color-card-border: var(--nq-palette-dark-card-border);
+  --nq-color-action-default: var(--nq-palette-dark-action-default);
+  --nq-color-action-default-hover: var(--nq-palette-dark-action-default-hover);
+  --nq-color-action-default-active: var(--nq-palette-dark-action-default-active);
+  --nq-color-on-action-default: var(--nq-palette-dark-on-action-default);
+  --nq-color-action-secondary: var(--nq-palette-dark-action-secondary);
+  --nq-color-action-secondary-hover: var(--nq-palette-dark-action-secondary-hover);
+  --nq-color-on-action-secondary: var(--nq-palette-dark-on-action-secondary);
+  --nq-color-action-outline-hover: var(--nq-palette-dark-action-outline-hover);
+  --nq-color-action-outline-active: var(--nq-palette-dark-action-outline-active);
+  --nq-color-action-outline-border: var(--nq-palette-dark-action-outline-border);
+  --nq-color-action-outline-border-active: var(--nq-palette-dark-action-outline-border-active);
+  --nq-color-action-light: var(--nq-palette-dark-action-light);
+  --nq-color-action-light-hover: var(--nq-palette-dark-action-light-hover);
+  --nq-color-action-light-active: var(--nq-palette-dark-action-light-active);
+  --nq-color-on-action-light: var(--nq-palette-dark-on-action-light);
+  --nq-color-danger-active: var(--nq-palette-dark-danger-active);
 }
 
 @supports (color: light-dark(white, black)) {
@@ -660,6 +804,22 @@
     --nq-color-card-hover: light-dark(var(--nq-palette-light-card-hover), var(--nq-palette-dark-card-hover));
     --nq-color-focus-contrast: light-dark(var(--nq-palette-light-focus-contrast), var(--nq-palette-dark-focus-contrast));
     --nq-color-card-border: light-dark(var(--nq-palette-light-card-border), var(--nq-palette-dark-card-border));
+    --nq-color-action-default: light-dark(var(--nq-palette-light-action-default), var(--nq-palette-dark-action-default));
+    --nq-color-action-default-hover: light-dark(var(--nq-palette-light-action-default-hover), var(--nq-palette-dark-action-default-hover));
+    --nq-color-action-default-active: light-dark(var(--nq-palette-light-action-default-active), var(--nq-palette-dark-action-default-active));
+    --nq-color-on-action-default: light-dark(var(--nq-palette-light-on-action-default), var(--nq-palette-dark-on-action-default));
+    --nq-color-action-secondary: light-dark(var(--nq-palette-light-action-secondary), var(--nq-palette-dark-action-secondary));
+    --nq-color-action-secondary-hover: light-dark(var(--nq-palette-light-action-secondary-hover), var(--nq-palette-dark-action-secondary-hover));
+    --nq-color-on-action-secondary: light-dark(var(--nq-palette-light-on-action-secondary), var(--nq-palette-dark-on-action-secondary));
+    --nq-color-action-outline-hover: light-dark(var(--nq-palette-light-action-outline-hover), var(--nq-palette-dark-action-outline-hover));
+    --nq-color-action-outline-active: light-dark(var(--nq-palette-light-action-outline-active), var(--nq-palette-dark-action-outline-active));
+    --nq-color-action-outline-border: light-dark(var(--nq-palette-light-action-outline-border), var(--nq-palette-dark-action-outline-border));
+    --nq-color-action-outline-border-active: light-dark(var(--nq-palette-light-action-outline-border-active), var(--nq-palette-dark-action-outline-border-active));
+    --nq-color-action-light: light-dark(var(--nq-palette-light-action-light), var(--nq-palette-dark-action-light));
+    --nq-color-action-light-hover: light-dark(var(--nq-palette-light-action-light-hover), var(--nq-palette-dark-action-light-hover));
+    --nq-color-action-light-active: light-dark(var(--nq-palette-light-action-light-active), var(--nq-palette-dark-action-light-active));
+    --nq-color-on-action-light: light-dark(var(--nq-palette-light-on-action-light), var(--nq-palette-dark-on-action-light));
+    --nq-color-danger-active: light-dark(var(--nq-palette-light-danger-active), var(--nq-palette-dark-danger-active));
   }
 }
 

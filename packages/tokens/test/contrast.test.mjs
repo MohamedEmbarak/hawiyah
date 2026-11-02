@@ -25,7 +25,10 @@ for (const [name, theme] of Object.entries(source.themes)) {
     const color = Object.fromEntries(Object.entries(values.color).map(([key, value]) => [key, value.$value]));
     test(`${name} ${mode}: text and semantic status pairs meet 4.5:1`, () => {
       const pairs = [
-        ['on-primary', 'primary'], ['primary-text', 'primary-subtle'],
+        ...['primary', 'primary-hover', 'primary-active'].map(bg => ['on-primary', bg]),
+        ...['action-default', 'action-default-hover', 'action-default-active'].map(bg => ['on-action-default', bg]),
+        ...['action-secondary', 'action-secondary-hover'].map(bg => ['on-action-secondary', bg]),
+        ...['action-light', 'action-light-hover'].map(bg => ['on-action-light', bg]), ['primary-text', 'primary-subtle'],
         ['success', 'success-subtle'], ['warning', 'warning-subtle'],
         ['danger', 'danger-subtle'], ['info', 'info-subtle'], ['on-inverse', 'inverse'],
         ['card-text', 'card'], ['card-text', 'card-hover'],

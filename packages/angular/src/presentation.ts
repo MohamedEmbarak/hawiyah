@@ -7,7 +7,7 @@ import { NgTemplateOutlet } from '@angular/common';
 /** Native button keeps native form, keyboard, disabled and event semantics. */
 @Directive({selector: 'button[nqButton],a[nqButton]', standalone: true, host: {'class': 'nq-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}})
 export class NqButtonDirective {
-  @Input() variant: 'primary' | 'secondary' | 'ghost' | 'danger' = 'primary';
+  @Input() variant: 'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link' = 'primary';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
 }
 

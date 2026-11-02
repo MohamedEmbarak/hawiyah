@@ -11,7 +11,7 @@ conversion or an arithmetic Hijri fallback for the reference provider.
 
 ## Shared CSS
 
-- `.nq-button` data-variant=primary|secondary|ghost|danger data-size=sm|md|lg
+- `.nq-button` data-variant=primary|default|secondary|outline|outline-white|light|danger|ghost|soft|link data-size=sm|md|lg
 - `.nq-field`, `.nq-label`, `.nq-input`, `.nq-textarea`, `.nq-select`,
   `.nq-hint`, `.nq-error`, `.nq-checkbox`, `.nq-radio`, `.nq-switch`
 - `.nq-tabs`, `.nq-tab-list`, `.nq-tab`, `.nq-tab-panel`

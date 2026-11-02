@@ -5,7 +5,7 @@ import type { FieldDecoration } from './shared.js';
 import { isDisabled, type Option } from '@nasaq/core';
 
 export interface ButtonProps extends ComponentPropsWithRef<'button'> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  variant?: 'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
 }

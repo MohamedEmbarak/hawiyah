@@ -57,7 +57,7 @@
       "name": "Button",
       "labelAr": "زر",
       "category": "actions",
-      "description": "Native action button with documented visual variants.",
+      "description": "Native action button with seven NIC visual families and ghost, soft and link extensions; shared hover, pressed, focus and disabled styles.",
       "cssClasses": [
         "nq-button"
       ],

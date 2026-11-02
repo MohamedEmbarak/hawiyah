@@ -103,3 +103,6 @@ navigation, secondary links, breadcrumbs, content container and footer.
 ## NIC card composition
 
 See [cards](../../docs/nic-cards.md) for source-mapped spacing, variants, whole-card links, disabled semantics and content classes. Native framework consumers include `?preview=nic`; vanilla uses the documented semantic HTML recipe.
+
+See [NIC button variants](../../docs/nic-buttons.md) for all ten appearances,
+interaction states, dark-surface use and density adaptations.

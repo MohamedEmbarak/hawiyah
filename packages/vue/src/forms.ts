@@ -6,7 +6,7 @@ import type { FieldDecoration } from './shared.js';
 
 export const Button = defineComponent({
   name: 'NqButton', inheritAttrs: false,
-  props: { variant: { type: String as PropType<'primary' | 'secondary' | 'ghost' | 'danger'>, default: 'primary' }, size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'md' }, loading: Boolean, disabled: Boolean, type: { type: String as PropType<'button' | 'submit' | 'reset'>, default: 'button' } },
+  props: { variant: { type: String as PropType<'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link'>, default: 'primary' }, size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'md' }, loading: Boolean, disabled: Boolean, type: { type: String as PropType<'button' | 'submit' | 'reset'>, default: 'button' } },
   setup(props, { attrs, slots, expose }) {
     const element = ref<HTMLButtonElement>();
     expose({ element, focus: () => element.value?.focus() });
