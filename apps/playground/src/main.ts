@@ -1,3 +1,5 @@
+import { statusMarkup } from "./ready-examples";
+import { bindDemoPreviews } from "./demo-previews";
 import "@fontsource-variable/inter";
 import "@fontsource/ibm-plex-sans/400.css";
 import "@fontsource/ibm-plex-sans/500.css";
@@ -37,6 +39,8 @@ import {
   type Service,
   type ComponentId,
 } from "./data";
+
+import "./demo-previews.css";
 
 const base = import.meta.env.BASE_URL;
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -212,9 +216,9 @@ function sample(id: ComponentId, p = "sample"): string {
     case "card":
       return `<article class="nq-card"><div class="nq-card-header"><h3 class="nq-card-title">${t("A place for your next idea", "مساحة لفكرتك القادمة")}</h3></div><div class="nq-card-body"><p class="nq-card-description">${t("Flexible parts, a consistent whole.", "أجزاء مرنة، ونتيجة متّسقة.")}</p></div><div class="nq-card-footer">${pill(t("Ready", "جاهز"), "success")}</div></article>`;
     case "badge":
-      return `<div class="nq-cluster">${pill(t("Active", "نشط"), "success")}${pill(t("In review", "قيد المراجعة"), "info")}${pill(t("Attention", "تنبيه"), "warning")}${pill(t("Draft", "مسودة"))}</div>`;
+      return statusMarkup("badge", state.locale, "default", uid);
     case "alert":
-      return `<div class="nq-alert" data-tone="success" role="status">${icon("check")}<div><strong>${t("All set", "كل شيء جاهز")}</strong><p>${t("Your changes have been saved.", "تم حفظ التغييرات.")}</p></div></div>`;
+      return statusMarkup("alert", state.locale, "default", uid);
     case "table":
       return `<div class="nq-table-wrap"><table class="nq-table"><caption class="nq-sr-only">${t("Example requests", "طلبات توضيحية")}</caption><thead><tr><th>${t("Request", "الطلب")}</th><th>${t("Status", "الحالة")}</th></tr></thead><tbody><tr><td>${t("License renewal", "تجديد رخصة")}</td><td>${pill(t("Complete", "مكتمل"), "success")}</td></tr><tr><td>${t("Registration", "تسجيل")}</td><td>${pill(t("In review", "قيد المراجعة"), "info")}</td></tr></tbody></table></div>`;
     case "pagination":
@@ -385,6 +389,7 @@ function render() {
   document.title = `${pageTitle} · ${t('Nasaq — نسق', 'نسق — Nasaq')}`;
   document.body.classList.toggle("navigation-open", state.mobileNav);
   document.documentElement.classList.toggle("navigation-open", state.mobileNav);
+  const unpreviews = bindDemoPreviews(app, state.locale);
   const unguide = bindGuide(app);
   const unhome = bindHome(app, state.locale);
   const untemplates = bindDgaTemplates(app, state.locale);
@@ -393,6 +398,7 @@ function render() {
   const uninput = bindInputLab(app);
   const unsteppers = bindStepperSamples(app);
   dispose = () => {
+    unpreviews();
     unguide();
     unhome();
     untemplates();
@@ -488,6 +494,7 @@ function captureDraft() {
 app.addEventListener("click", async (event) => {
   const el = (event.target as Element).closest<HTMLElement>("button,a");
   if (!el) return;
+  if (event.defaultPrevented && el.tagName === "A") return;
   if (state.mobileNav && el.matches('#site-navigation a[href^="#"]') &&
       !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
     const sameRoute = el.getAttribute('href') === location.hash;
@@ -795,6 +802,7 @@ app.addEventListener("change", (event) => {
   }
 });
 app.addEventListener("submit", (event) => {
+  if (event.defaultPrevented) return;
   if ((event.target as HTMLElement).id !== "application-form") return;
   event.preventDefault();
   captureDraft();

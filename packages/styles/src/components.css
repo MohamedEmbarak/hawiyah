@@ -235,6 +235,8 @@
 .nq-alert > svg { flex: none; inline-size: 1.25rem; block-size: 1.25rem; margin-block-start: 0.15rem; }
 .nq-alert :where(h2, h3, h4, p) { margin-block: 0; }
 .nq-alert :where(h2, h3, h4) { font-size: inherit; font-weight: var(--nq-weight-semibold); }
+.nq-alert[data-tone='neutral'] { --nq-tone: var(--nq-color-text-muted); --nq-tone-bg: var(--nq-color-canvas); }
+.nq-alert-content { flex: 1; min-inline-size: 0; }
 .nq-alert a { color: inherit; text-underline-offset: 0.2em; }
 .nq-chip { gap: var(--nq-space-2); min-block-size: 2rem; padding-inline: var(--nq-space-3) var(--nq-space-2); border-color: var(--nq-color-border); border-radius: var(--nq-radius-md); }
 .nq-chip button { display: inline-grid; place-items: center; inline-size: 1.5rem; block-size: 1.5rem; padding: 0; border: 0; border-radius: var(--nq-radius-sm); background: transparent; color: inherit; font: inherit; cursor: pointer; }

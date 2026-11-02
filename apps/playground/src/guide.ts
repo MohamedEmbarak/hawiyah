@@ -4,6 +4,7 @@ import { arabicComponentGuides } from './component-guides.ar';
 import { arabicArticle } from './guide-articles.ar';
 import type { IDEFiles } from './component-ide';
 import './guide.css';
+import { renderReadyExamples } from './ready-examples';
 
 const sourceRoot = 'https://github.com/MohamedEmbarak/nasaq/blob/main/';
 const source = (path: string, label: string) => `<a href="${sourceRoot + path}" target="_blank" rel="noopener">${e(label)} ↗</a>`;
@@ -187,7 +188,7 @@ export function renderGuide(view: string, locale: Locale, code: Code): string {
 function demoControls(id: string, locale: Locale): string {
   const t = (en:string,ar:string) => locale==='ar'?ar:en;
   if (['button','icon-button','button-group'].includes(id)) return `<label class="guide-control"><span>${t('Variant','النمط')}</span><select data-guide-variant data-guide-selector=".nq-button" data-guide-attribute="data-variant">${[['primary','Primary','أساسي'],['default','Dark','داكن'],['light','Light','أبيض'],['outline-white','White outline','إطار أبيض'],['secondary','Secondary','ثانوي'],['ghost','Ghost','خفيف'],['danger','Danger','خطر'],['soft','Soft','هادئ'],['outline','Outline','حدود'],['link','Link','رابط']].map(([value,en,ar])=>`<option value="${value}">${t(en!,ar!)}</option>`).join('')}</select></label><label class="guide-control"><span>${t('Size','الحجم')}</span><select data-guide-size><option value="md">${t('Medium','متوسط')}</option><option value="sm">${t('Small','صغير')}</option><option value="lg">${t('Large','كبير')}</option></select></label>`;
-  if (['badge','alert','chip'].includes(id)) return `<label class="guide-control"><span>${t('Tone','الدلالة')}</span><select data-guide-variant data-guide-selector=".nq-${id}" data-guide-attribute="data-tone">${[['neutral','Neutral','محايد'],['info','Information','معلومات'],['success','Success','نجاح'],['warning','Warning','تحذير'],['danger','Danger','خطر']].filter(([value])=>id!=='alert'||value!=='neutral').map(([value,en,ar])=>`<option value="${value}">${t(en!,ar!)}</option>`).join('')}</select></label>`;
+  if (['badge','alert','chip'].includes(id)) return `<label class="guide-control"><span>${t('Tone','الدلالة')}</span><select data-guide-variant data-guide-selector=".nq-${id}" data-guide-attribute="data-tone">${[['neutral','Neutral','محايد'],['info','Information','معلومات'],['success','Success','نجاح'],['warning','Warning','تحذير'],['danger','Danger','خطر']].map(([value,en,ar])=>`<option value="${value}">${t(en!,ar!)}</option>`).join('')}</select></label>`;
   return '';
 }
 
@@ -201,7 +202,8 @@ export function renderComponentGuide(id: string, locale: Locale, preview: (id: C
   const index = catalog.findIndex(component => component[0] === id);
   const previous = catalog[index-1], next = catalog[index+1];
   const title = item[ar?2:1];
-  const toc = [['usage',t('Usage','الاستخدام')],['api',t('API & markup','واجهة البرمجة')],['lifecycle',t('Lifecycle','دورة الحياة')],['accessibility',t('Accessibility','الإتاحة')],['frameworks',t('Frameworks','أطر العمل')]];
+  const readyExamples = renderReadyExamples(item[0],locale,preview,code);
+  const toc = [...(readyExamples ? [['examples',t('Examples','الأمثلة')]] : []),['usage',t('Usage','الاستخدام')],['api',t('API & markup','واجهة البرمجة')],['lifecycle',t('Lifecycle','دورة الحياة')],['accessibility',t('Accessibility','الإتاحة')],['frameworks',t('Frameworks','أطر العمل')]];
   return `<div class="component-guide-header" lang="${locale}" dir="${ar?'rtl':'ltr'}"><a class="guide-back" href="#components">${icon('arrow-back',16)}${t('All components','كل المكوّنات')}</a>
     <div class="guide-kicker"><span class="guide-chip">${icon('layers',15)}${e(ar?categoryNames[item[3]]||item[3]:item[3])}</span><code dir="ltr">${item[0]}</code><span class="guide-live-badge"><i></i>${t('LIVE EXAMPLE','مثال تفاعلي')}</span></div>
     <div class="guide-title-row"><div><h1>${e(title)}</h1><p class="guide-lead">${e(guide.summary)}</p></div><div class="guide-title-actions"><button type="button" data-guide-launch-editor>${icon('spark',16)}${t('Edit live','عدّل مباشرة')}</button>${guide.source?source(guide.source,t('View source','تصفّح المصدر')):''}<button type="button" data-guide-section="component-api">${t('API reference','مرجع البرمجة')}${icon('arrow',16)}</button></div></div>
@@ -218,6 +220,7 @@ export function renderComponentGuide(id: string, locale: Locale, preview: (id: C
       <div role="tabpanel" id="guide-playground-panel" aria-labelledby="guide-playground-tab" data-guide-panel="playground" hidden><div data-guide-ide></div></div>
       <div class="guide-demo-footnote"><span>${icon('code',14)}${t('Real components. Real interaction.','مكوّنات حقيقية، وتفاعل فعلي.')}</span><span>${t('Try Tab, arrows & Escape','جرّب Tab والأسهم وEscape')}</span></div>
     </section>
+    ${readyExamples}
     ${guide.variants?.length ? `<section id="component-variants" class="guide-content-section"><div class="guide-section-heading"><span>${icon('palette',19)}</span><h2>${t('Variants & composition','أنماط تناسب تجربتك')}</h2></div><div class="guide-variant-list">${guide.variants.map(variant=>`<span>${e(variant)}</span>`).join('')}</div></section>`:''}
     <section id="component-api" class="guide-content-section"><div class="guide-section-heading"><span>${icon('code',19)}</span><h2>${t('API & markup contract','واجهة البرمجة وعقد البنية')}</h2></div><p class="guide-section-intro">${t('The small details that connect appearance, state, and behavior.','التفاصيل التي تربط المظهر والحالة والسلوك.')}</p><div class="guide-table-wrap" tabindex="0" role="region" aria-label="${t('Scrollable API reference','جدول مرجع البرمجة القابل للتمرير')}"><table class="nq-table"><thead><tr><th scope="col">${t('Name','الاسم')}</th><th scope="col">${t('Type / values','النوع والقيم')}</th><th scope="col">${t('Purpose','الاستخدام')}</th></tr></thead><tbody>${guide.api.map(property=>`<tr><td><code dir="ltr">${e(property.name)}</code></td><td><code dir="auto">${e(property.type)}</code></td><td>${e(property.description)}</td></tr>`).join('')}</tbody></table></div></section>
     <section id="component-lifecycle" class="guide-content-section"><div class="guide-section-heading"><span>${icon('clock',19)}</span><h2>${t('From mount to cleanup','من الإنشاء إلى التنظيف')}</h2></div><p class="guide-section-intro">${t('Follow the component through its lifecycle and interaction states.','تتبّع دورة حياة المكوّن وحالات التفاعل خطوة بخطوة.')}</p><ol class="guide-lifecycle">${guide.lifecycle.map(step=>`<li><p>${e(step)}</p></li>`).join('')}</ol></section>
@@ -309,6 +312,9 @@ export function bindGuide(root: HTMLElement): () => void {
     if (variant) template.content.querySelector(variant.dataset.guideSelector!)?.setAttribute(variant.dataset.guideAttribute!, variant.value);
     if (size) template.content.querySelector('.nq-button')?.setAttribute('data-size', size.value);
     let markup = (variant || size) ? template.innerHTML : demo.dataset.guideUsage || '';
+    const darkAction = variant?.dataset.guideSelector === '.nq-button' && ['outline-white', 'light'].includes(variant.value);
+    canvas.dataset.buttonSurface = darkAction ? 'dark' : '';
+    if (darkAction) markup = `<div style="padding:16px;background:#14573a">\n${markup}\n</div>`;
     if (canvas.dir !== demo.dataset.guideInitialDir) markup = `<div dir="${canvas.dir}">\n${markup}\n</div>`;
     const code = demo.querySelector<HTMLElement>('#guide-code-panel pre code');
     if (code) code.textContent = markup;

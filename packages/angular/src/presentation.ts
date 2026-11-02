@@ -27,14 +27,15 @@ export class NqCardComponent {
   guard(event: MouseEvent) { if (this.disabled) { event.preventDefault(); event.stopPropagation(); } }
 }
 
-@Component({selector: 'nq-badge', standalone: true, template: `<span class="nq-badge" [attr.data-tone]="tone"><ng-content /></span>`})
-export class NqBadgeComponent { @Input() tone: 'neutral' | 'success' | 'warning' | 'danger' | 'info' = 'neutral'; }
+@Component({selector: 'nq-badge', standalone: true, template: `<span class="nq-badge" [attr.data-tone]="tone" [attr.data-variant]="variant"><ng-content /></span>`})
+export class NqBadgeComponent { @Input() variant: 'soft' | 'outline' | 'dot' = 'soft'; @Input() tone: 'neutral' | 'success' | 'warning' | 'danger' | 'info' = 'neutral'; }
 
-@Component({selector: 'nq-alert', standalone: true, template: `<div class="nq-alert" [attr.data-tone]="tone" [attr.role]="role"><div>@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>@if (dismissible) {<button class="nq-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="dismissed.emit()">×</button>}</div>`})
+@Component({selector: 'nq-alert', standalone: true, template: `<div class="nq-alert" [attr.data-tone]="tone" [attr.data-variant]="variant" [attr.role]="role"><div class="nq-alert-content">@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>@if (dismissible) {<button class="nq-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="dismissed.emit()">×</button>}</div>`})
 export class NqAlertComponent {
-  @Input() tone: 'info' | 'success' | 'warning' | 'danger' = 'info';
+  @Input() tone: 'neutral' | 'info' | 'success' | 'warning' | 'danger' = 'info';
+  @Input() variant: 'default' | 'outline' | 'minimal' = 'default';
   @Input() title = '';
-  @Input() role: 'alert' | 'status' | 'region' = 'status';
+  @Input() role: 'alert' | 'status' | 'region' | 'group' = 'status';
   @Input({transform: booleanAttribute}) dismissible = false;
   @Input() closeLabel = 'Dismiss';
   @Output() readonly dismissed = new EventEmitter<void>();

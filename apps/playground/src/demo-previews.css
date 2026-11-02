@@ -1,0 +1,26 @@
+/* CSS columns keep source order and let each card retain its own height. */
+.component-grid {
+  display: block;
+  columns: 24rem;
+  column-gap: 22px;
+}
+.component-grid > .component-card {
+  display: inline-block;
+  inline-size: 100%;
+  margin-block-end: 22px;
+  vertical-align: top;
+  break-inside: avoid;
+  box-sizing: border-box;
+}
+.demo-result { margin-block: 1rem 0; padding-block-start: .75rem; border-block-start: 1px solid var(--nq-color-border); }
+.ready-examples { display: grid; gap: 1.25rem; }
+.ready-example { min-inline-size: 0; border: 1px solid var(--nq-color-border); border-radius: .5rem; overflow: clip; }
+.ready-example > h3 { margin: 0; padding: 1rem; font-size: 1rem; background: var(--nq-color-canvas); }
+.ready-example .component-preview { gap: 1rem; min-block-size: 0; }
+.ready-example .source-details { margin: 0; }
+.ready-example .nq-toast-region { inline-size: 100%; max-block-size: none; }
+.guide-preview[data-button-surface='dark'] { background: #14573a; }
+@media (max-width: 640px) {
+  .component-grid { column-count: 1; }
+  .ready-example .component-preview { padding: 1rem; }
+}

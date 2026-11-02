@@ -64,12 +64,13 @@ export function Card({ header, footer, children, className, variant, href, disab
 export interface BadgeProps extends ComponentPropsWithRef<'span'> { tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'info' }
 export function Badge({ tone = 'neutral', className, ...props }: BadgeProps) { return <span {...props} className={cx('nq-badge', className)} data-tone={tone} />; }
 export interface AlertProps extends ComponentPropsWithRef<'div'> {
-  tone?: 'info' | 'success' | 'warning' | 'danger';
+  tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+  variant?: 'default' | 'outline' | 'minimal';
   title?: string;
 }
 /** Informational messages use status; urgent errors use alert. Override role when static. */
-export function Alert({ tone = 'info', title, children, className, role, ...props }: AlertProps) {
-  return <div {...props} className={cx('nq-alert', className)} data-tone={tone} role={role ?? (tone === 'danger' ? 'alert' : 'status')}>{title && <strong>{title}</strong>}{children}</div>;
+export function Alert({ tone = 'info', variant, title, children, className, role, ...props }: AlertProps) {
+  return <div {...props} {...(variant ? { 'data-variant': variant } : {})} className={cx('nq-alert', className)} data-tone={tone} role={role ?? (tone === 'danger' ? 'alert' : 'status')}><div className="nq-alert-content">{title && <strong>{title}</strong>}{children}</div></div>;
 }
 export interface TableColumn<Row> { key: string; header: ReactNode; cell: (row: Row, index: number) => ReactNode; rowHeader?: boolean }
 export interface TableProps<Row = unknown> extends Omit<ComponentPropsWithRef<'table'>, 'children'> {

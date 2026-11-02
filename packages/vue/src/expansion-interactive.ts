@@ -403,7 +403,7 @@ export interface ToastMessage {
   id: string;
   title?: string;
   message: string;
-  tone?: "info" | "success" | "warning" | "danger";
+  tone?: "neutral" | "info" | "success" | "warning" | "danger";
   urgent?: boolean;
 }
 export const ToastRegion = defineComponent({

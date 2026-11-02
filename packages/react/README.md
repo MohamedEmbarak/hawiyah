@@ -399,3 +399,6 @@ See [cards](../../docs/nic-cards.md) for source-mapped spacing, variants, whole-
 
 See [NIC button variants](../../docs/nic-buttons.md) for all ten appearances,
 interaction states, dark-surface use and density adaptations.
+
+[Ready component examples](../../docs/ready-component-examples.md) cover all five
+alert/notification tones, header/footer composition and guide-only navigation containment.

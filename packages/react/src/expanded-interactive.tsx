@@ -42,7 +42,7 @@ export function Menu({ items, label, trigger, open: controlled, defaultOpen = fa
 }
 export interface DrawerProps extends DialogProps { side?: 'start' | 'end' | 'bottom' }
 export function Drawer({ side = 'end', className, ...props }: DrawerProps) { return <Dialog {...props} className={cx('nq-drawer', className)} data-side={side} />; }
-export interface ToastMessage { id: string; title?: ReactNode; description: ReactNode; tone?: 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean }
+export interface ToastMessage { id: string; title?: ReactNode; description: ReactNode; tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean }
 export interface ToastRegionProps extends ComponentPropsWithRef<'section'> { messages: readonly ToastMessage[]; onDismiss?: (id: string) => void; label?: string; getDismissLabel?: (message: ToastMessage) => string }
 export function ToastRegion({ messages, onDismiss, label = 'Notifications', getDismissLabel = () => 'Dismiss notification', className, ...props }: ToastRegionProps) {
   const render = (message: ToastMessage) => <article key={message.id} className="nq-toast" data-tone={message.tone ?? 'info'}>{message.title && <strong>{message.title}</strong>}<div>{message.description}</div>{onDismiss && message.dismissible !== false && <Button variant="ghost" aria-label={getDismissLabel(message)} onClick={() => onDismiss(message.id)}>×</Button>}</article>;

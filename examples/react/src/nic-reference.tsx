@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Card, Button, IconButton } from '@nasaq/react';
+import { Card, Button, IconButton, Alert, Badge, ToastRegion, PortalHeader, PortalFooter } from '@nasaq/react';
 export function NicReferenceExample() {
   const [buttonCount, setButtonCount] = useState(0);
   const [english, setEnglish] = useState(false);
   const [disabled, setDisabled] = useState(true);
   const [activations, setActivations] = useState(0);
   const t = (ar: string, en: string) => english ? en : ar;
-  return <main className="nq-container nq-stack" data-testid="nic-showcase" data-nq-theme="dga" lang={english ? 'en' : 'ar'} dir={english ? 'ltr' : 'rtl'} style={{paddingBlock: '2rem'}}>
+  return <main className="nq-container nq-stack" data-testid="nic-showcase" data-nq-theme="dga" lang={english ? 'en' : 'ar'} dir={english ? 'ltr' : 'rtl'} style={{paddingBlock: '2rem', background: 'var(--nq-color-canvas)', color: 'var(--nq-color-text)'}}>
     <h1>{t('مرجع واجهة المركز', 'NIC UI reference')}</h1>
     <button className="nq-button" onClick={() => setEnglish(!english)}>{english ? 'العربية' : 'English'}</button>
 <section className="nq-stack" aria-label={t('الأزرار', 'Buttons')} data-testid="button-showcase">
@@ -15,6 +15,13 @@ export function NicReferenceExample() {
       <Button data-testid="button-loading" loading onClick={() => setButtonCount(n => n + 1)}>{t('جارٍ الحفظ', 'Saving')}</Button>
       <IconButton data-testid="button-icon" variant="default" label={t('إضافة', 'Add')} onClick={() => setButtonCount(n => n + 1)}>+</IconButton>
       <output data-testid="button-count">{buttonCount}</output>
+    </section>
+<section className="nq-stack" data-testid="status-showcase" aria-label={t('الحالات', 'Statuses')}><Alert data-testid="alert-neutral" tone="neutral" title="neutral" role="group"><p>{t('تفاصيل الحالة', 'Status details')}</p></Alert><Badge tone="neutral" data-variant="dot">neutral</Badge><Alert data-testid="alert-info" tone="info" title="info" role="group"><p>{t('تفاصيل الحالة', 'Status details')}</p></Alert><Badge tone="info" data-variant="dot">info</Badge><Alert data-testid="alert-success" tone="success" title="success" role="group"><p>{t('تفاصيل الحالة', 'Status details')}</p></Alert><Badge tone="success" data-variant="dot">success</Badge><Alert data-testid="alert-warning" tone="warning" title="warning" role="group"><p>{t('تفاصيل الحالة', 'Status details')}</p></Alert><Badge tone="warning" data-variant="dot">warning</Badge><Alert data-testid="alert-danger" tone="danger" title="danger" role="group"><p>{t('تفاصيل الحالة', 'Status details')}</p></Alert><Badge tone="danger" data-variant="dot">danger</Badge><Alert data-testid="alert-outline" tone="success" variant="outline" title="Outline" role="group"><p>Details</p></Alert><Alert data-testid="alert-minimal" tone="warning" variant="minimal" title="Minimal" role="group"><p>Details</p></Alert>
+    <ToastRegion data-testid="status-toasts" data-variant="inline" messages={['neutral','info','success','warning','danger'].map(tone => ({id:tone,tone: tone as 'neutral'|'info'|'success'|'warning'|'danger',title:tone,description:t('تفاصيل الإشعار','Notification details')}))} />
+    </section><section data-testid="chrome-showcase" onClick={event => { if ((event.target as Element).closest('a[href]')) event.preventDefault(); }}>
+      <PortalHeader brand="نسق" brandHref="/" mainId="nic-demo-main" navigation={[{label:t('الخدمات','Services'),href:'/services',current:true},{label:t('طلباتي','My requests'),href:'/requests'}]} actions={<Button>{t('تسجيل الدخول','Sign in')}</Button>} />
+      <section id="nic-demo-main" tabIndex={-1}><h2>{t('محتوى الصفحة','Page content')}</h2></section>
+      <PortalFooter brand="نسق" description={t('منصة توضيحية','Example platform')} links={[{label:t('الخصوصية','Privacy'),href:'/privacy'},{label:t('تواصل معنا','Contact'),href:'/contact'}]} legal="2026" />
     </section>
     <section className="nq-grid" style={{'--nq-layout-columns': '1', '--nq-layout-columns-md': '2'} as React.CSSProperties}>
       <Card data-testid="base-card" header={<h2 className="nq-card-title">{t('بطاقة معلومات', 'Information card')}</h2>} footer={<span>{t('تفاصيل إضافية', 'Additional details')}</span>}><p className="nq-card-description">{t('محتوى واضح بمسافات موحدة.', 'Clear content with consistent spacing.')}</p></Card>

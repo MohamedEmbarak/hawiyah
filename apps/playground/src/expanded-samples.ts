@@ -1,3 +1,4 @@
+import { statusMarkup } from "./ready-examples";
 import { escape as e, icon, type Locale } from "./data";
 import { navigationDrawerMarkup } from './component-mobile-guides';
 import { riyalAmount } from './currency';
@@ -71,7 +72,7 @@ export function expandedSample(
     case "drawer":
       return `${b(t("Open filters", "فتح الفلاتر"), `data-nq-dialog-open="${uid}"`)}<dialog id="${uid}" class="nq-dialog nq-drawer" data-nq="drawer" data-side="end" aria-labelledby="${uid}-title"><div class="nq-dialog-header"><h2 id="${uid}-title">${t("Filter requests", "تصفية الطلبات")}</h2>${b(t("Close", "إغلاق"), "data-nq-dialog-close", "ghost")}</div><div class="nq-dialog-body">${label(t("Status", "الحالة"), `<select class="nq-select"><option>${t("All statuses", "كل الحالات")}</option><option>${t("In review", "قيد المراجعة")}</option></select>`)}</div><div class="nq-dialog-footer">${b(t("Apply filters", "تطبيق الفلاتر"), "data-nq-dialog-close", "primary")}</div></dialog>`;
     case "toast-region":
-      return `<div class="nq-toast-region" data-nq="toast-region" aria-label="${t("Notifications", "الإشعارات")}"><div class="nq-toast" data-nq-toast data-tone="success"><p>${t("Your changes are saved.", "تم حفظ التغييرات.")}</p>${b("×", `data-nq-dismiss aria-label="${t("Dismiss notification", "إغلاق الإشعار")}"`, "ghost")}</div></div>`;
+      return statusMarkup("toast-region", locale, "default", uid);
     case "collapsible":
       return `<details class="nq-collapsible"><summary>${t("Before you begin", "قبل البدء")}</summary><p>${t("Prepare your organization details and supporting documents.", "جهّز بيانات منشأتك والمستندات الداعمة.")}</p></details>`;
     case "tree-view":
@@ -85,7 +86,7 @@ export function expandedSample(
     case "button-group":
       return `<div class="nq-button-group" role="group" aria-label="${t("Document actions", "إجراءات المستند")}">${b(t("Save", "حفظ"), 'data-action="demo-continue"', "primary")}${b(t("Preview", "معاينة"), 'data-action="demo-info"')}${b(t("Cancel", "إلغاء"), 'data-action="demo-info"', "ghost")}</div>`;
     case "chip":
-      return `<div class="nq-inline"><span class="nq-chip" data-tone="success">${t("Verified document", "مستند مكتمل")}</span><span class="nq-chip" data-variant="outline">${t("Business", "الأعمال")}</span></div>`;
+      return statusMarkup("chip", locale, "default", uid);
     case "description-list":
       return `<dl class="nq-description-list"><div><dt>${t("Reference", "المرجع")}</dt><dd dir="ltr">NQ-2026-1043</dd></div><div><dt>${t("Service fee", "رسوم الخدمة")}</dt><dd>${riyalAmount(t("200", "200"), locale, locale === 'en' ? 'before' : 'after')}</dd></div><div><dt>${t("Expected time", "المدة المتوقعة")}</dt><dd>${t("3 working days", "3 أيام عمل")}</dd></div></dl>`;
     case "stat":

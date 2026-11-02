@@ -516,3 +516,13 @@ pairs. The full build passed with all three native consumers and guide typecheck
 See [button mappings and adaptations](nic-buttons.md); this is scoped evidence,
 not a certification or a complete NIC regression result.
 
+# Ready component examples — 2026-11-02
+
+The guide displays all five alert/notification tones, badge/chip status groups,
+button variants and complete header/footer recipes. Four guide browser cases
+and six native adapter cases passed, plus twelve SSR/component tests. The
+build and guide typecheck passed. Checks cover demo navigation containment,
+responsive masonry, status markup, light/dark contrast and mobile navigation.
+See [scope and limits](ready-component-examples.md). Guide preview containment
+does not change production component link or form behavior.
+

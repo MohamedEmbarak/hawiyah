@@ -67,8 +67,8 @@ export const Badge = defineComponent({
   setup(props, { attrs, slots }) { return () => h('span', mergeProps(attrs, { class: 'nq-badge', 'data-tone': props.tone }), slots.default?.()); },
 });
 export const Alert = defineComponent({
-  name: 'NqAlert', inheritAttrs: false, props: { tone: { type: String as PropType<Exclude<Tone, 'neutral'>>, default: 'info' }, title: String },
-  setup(props, { attrs, slots }) { return () => h('div', mergeProps({ role: props.tone === 'danger' ? 'alert' : 'status' }, attrs, { class: 'nq-alert', 'data-tone': props.tone }), [props.title && h('strong', {}, props.title), slots.default?.()]); },
+  name: 'NqAlert', inheritAttrs: false, props: { tone: { type: String as PropType<Tone>, default: 'info' }, title: String, variant: String as PropType<'default' | 'outline' | 'minimal'> },
+  setup(props, { attrs, slots }) { return () => h('div', mergeProps({ role: props.tone === 'danger' ? 'alert' : 'status' }, attrs, { class: 'nq-alert', 'data-tone': props.tone, 'data-variant': props.variant ?? attrs['data-variant'] }), h('div', { class: 'nq-alert-content' }, [props.title && h('strong', {}, props.title), slots.default?.()])); },
 });
 export interface TableColumn { key: string; header: string; cell?: (row: Record<string, unknown>, index: number) => VNodeChild; rowHeader?: boolean }
 export const Table = defineComponent({
