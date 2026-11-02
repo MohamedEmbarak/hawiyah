@@ -83,7 +83,8 @@
 .nq-button[aria-busy='true'] { cursor: progress; }
 
 /* Inputs and field anatomy */
-.nq-field { display: grid; gap: var(--nq-space-2); min-inline-size: 0; color: var(--nq-color-text); }
+/* Equal-height form rows must not distribute spare height into labels/inputs. */
+.nq-field { display: grid; align-content: start; gap: var(--nq-space-2); min-inline-size: 0; color: var(--nq-color-text); }
 .nq-label { display: block; color: var(--nq-color-text); font-size: var(--nq-text-sm); font-weight: var(--nq-weight-semibold); line-height: var(--nq-leading-normal); }
 .nq-label abbr[title] { color: var(--nq-color-danger); text-decoration: none; }
 :where(.nq-input, .nq-textarea, .nq-select) {
