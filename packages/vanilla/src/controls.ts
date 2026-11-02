@@ -149,7 +149,7 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   render(); return { get value() { return [...value]; }, add, remove, destroy: () => scope.destroy() };
 }
 
-export interface MultiSelectOptions { onValueChange?: (values: string[]) => void; getResultsMessage?: (count: number) => string }
+export interface MultiSelectOptions { required?: boolean; requiredMessage?: string; onValueChange?: (values: string[]) => void; getResultsMessage?: (count: number) => string }
 export function createMultiSelect(root: HTMLElement, options: MultiSelectOptions = {}): ValueController<string[]> {
   const search = required<HTMLInputElement>(root, '[data-nq-multiselect-search]');
   const items = [...root.querySelectorAll<HTMLElement>('[data-nq-option]')];
@@ -157,13 +157,31 @@ export function createMultiSelect(root: HTMLElement, options: MultiSelectOptions
   const scope = createCleanup(); const status = root.querySelector<HTMLElement>('[data-nq-status]'); const originalStatus = status?.textContent;
   items.forEach(item => remember(scope, item, ['hidden'])); if (status) scope.add(() => { status.textContent = originalStatus ?? ''; });
   const originalQuery = search.value; scope.add(() => { search.value = originalQuery; });
+  const originalValidity = search.validity.customError ? search.validationMessage : '';
+  const originalDisabled = inputs.map(input => input.getAttribute('aria-disabled'));
+  remember(scope, search, ['aria-required']); inputs.forEach(input => remember(scope, input, ['aria-disabled']));
+  scope.add(() => search.setCustomValidity(originalValidity));
+  const values = () => inputs.filter(input => input.checked && !input.matches(':disabled')).map(input => input.value);
+  const validate = () => {
+    const requiredSelection = options.required ?? root.dataset.nqRequired === 'true';
+    if (requiredSelection) search.setAttribute('aria-required', 'true'); else search.removeAttribute('aria-required');
+    inputs.forEach((input, index) => { const value = readOnly(root) ? 'true' : originalDisabled[index]; if (value != null) input.setAttribute('aria-disabled', value); else input.removeAttribute('aria-disabled'); });
+    search.setCustomValidity(requiredSelection && !isDisabled(search) && !values().length ? options.requiredMessage ?? translated(root, 'Choose at least one option.', 'اختر خيارًا واحدًا على الأقل.') : originalValidity);
+  };
   let selected = inputs.map(input => input.checked);
-  const filter = () => { const query = normalizeSearch(search.value); let count = 0; items.forEach(item => { item.hidden = !normalizeSearch(item.textContent || '').includes(query); if (!item.hidden) count++; }); if (status) status.textContent = options.getResultsMessage?.(count) ?? translated(root, `${count} options`, `${count} خيارات`); };
+  const filter = () => { const query = normalizeSearch(search.value); let count = 0; items.forEach(item => { item.hidden = !normalizeSearch(item.textContent || '').includes(query); if (!item.hidden) count++; }); if (status) status.textContent = options.getResultsMessage?.(count) ?? translated(root, `${count} options`, `${count} خيارات`); validate(); };
   scope.listen(search, 'input', filter);
   scope.listen(root, 'click', event => { const target = eventElement(event); if (readOnly(root) && target?.matches('input[type="checkbox"], label')) event.preventDefault(); });
-  scope.listen(root, 'change', event => { const index = inputs.indexOf(event.target as HTMLInputElement); if (index < 0) return; if (readOnly(root) || isDisabled(inputs[index]!)) { inputs[index]!.checked = selected[index]!; return; } selected = inputs.map(input => input.checked); const value = inputs.filter(input => input.checked).map(input => input.value); emit(root, { value }); options.onValueChange?.(value); });
+  scope.listen(root, 'change', event => { const index = inputs.indexOf(event.target as HTMLInputElement); if (index < 0) return; if (readOnly(root) || isDisabled(inputs[index]!)) { inputs[index]!.checked = selected[index]!; return; } selected = inputs.map(input => input.checked); validate(); const value = values(); emit(root, { value }); options.onValueChange?.(value); });
   if (search.form) scope.listen(search.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { selected = inputs.map(input => input.checked); filter(); } }));
-  filter(); return { get value() { return inputs.filter(input => input.checked).map(input => input.value); }, destroy: () => scope.destroy() };
+  const Observer = root.ownerDocument.defaultView?.MutationObserver;
+  if (Observer) {
+    const observer = new Observer(validate);
+    observer.observe(root, { subtree: true, attributes: true, attributeFilter: ['disabled', 'data-nq-required', 'data-nq-readonly', 'aria-readonly'] });
+    for (let parent = root.parentElement; parent; parent = parent.parentElement) if (parent.tagName === 'FIELDSET') observer.observe(parent, { attributes: true, attributeFilter: ['disabled'] });
+    scope.add(() => observer.disconnect());
+  }
+  filter(); return { get value() { return values(); }, destroy: () => scope.destroy() };
 }
 
 export interface FileDropzoneOptions { maxSize?: number; onValueChange?: (files: File[]) => void; getStatusMessage?: (files: File[], rejected: boolean) => string }

@@ -626,7 +626,7 @@ export const MultiSelect = defineComponent({
     });
     watchEffect(() =>
       element.value?.setCustomValidity(
-        field.controlAttrs.value.required && !selected.value.length
+        field.controlAttrs.value.required && !props.disabled && !selected.value.length
           ? props.requiredMessage
           : "",
       ),
@@ -651,10 +651,10 @@ export const MultiSelect = defineComponent({
               type: "search",
               class: "nq-input",
               "aria-label": props.searchLabel,
+              "aria-required": field.controlAttrs.value.required || undefined,
               "aria-describedby": field.controlAttrs.value["aria-describedby"],
               "aria-invalid": field.controlAttrs.value["aria-invalid"],
               disabled: props.disabled,
-              readonly: props.readonly,
               value: query.value,
               onInput: (event: Event) => {
                 query.value = (event.target as HTMLInputElement).value;

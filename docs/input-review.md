@@ -42,10 +42,9 @@ testing. Rating, date and readonly choice fixes have separate coverage.
 
 ## Remaining bounded findings
 
-- Vanilla MultiSelect does not expose the React-style required-selection API,
-  and Angular Combobox does not expose a readonly input. These are API coverage
-  gaps, not failures of a supported contract; document/design them before adding
-  behavior.
+- The required-selection and readonly API gaps are now covered in all four
+  adapters; see [MultiSelect validation](multiselect-validation.md) and
+  [Combobox readonly behavior](combobox-readonly.md).
 - Native select popup rendering and mobile keyboards depend on the browser and
   operating system. Source inspection alone does not establish rendered parity.
 

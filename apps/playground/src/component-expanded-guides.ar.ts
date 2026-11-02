@@ -189,16 +189,16 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   }),
   'multi-select': localized('multi-select', {
     summary: 'تصفية قائمة مربعات اختيار أصلية مع الحفاظ على جميع الخيارات المحددة، بما فيها المخفية مؤقتًا بنتيجة البحث.',
-    usage: `<fieldset class="nq-multi-select" data-nq="multi-select">
-  <legend>الخدمات التي تهمك</legend>
+    usage: `<fieldset class="nq-multi-select" data-nq="multi-select" data-nq-required="true" lang="ar">
+  <legend>الخدمات التي تهمك (اختر خدمة واحدة على الأقل)</legend>
   <label>تصفية الخيارات<input class="nq-input" type="search" data-nq-multiselect-search></label>
   <div data-nq-option><label><input class="nq-checkbox" type="checkbox" name="interest" value="business"> الأعمال</label></div>
   <div data-nq-option><label><input class="nq-checkbox" type="checkbox" name="interest" value="education"> التعليم</label></div>
   <span data-nq-status role="status"></span>
 </fieldset>`,
     lifecycle: ['هيّئ القائمة القابلة للبحث؛ تحدد حالات checked القيم المختارة أولًا.', 'يخفي البحث التسميات غير المطابقة بعد تطبيع النص، لكنه لا يلغي اختيار عنصر مخفي.', 'تصدر تغييرات المربعات {value:string[]} وتُرسل القيم المكررة في النموذج. تعيد إعادة الضبط الاختيارات الأصلية وتطبق التصفية مجددًا.', 'يعيد destroy حالة التصفية ونص الحالة ويزيل المستمعات. أنهِ المتحكم وأعد تركيبه قبل استبدال عناصر الخيارات في HTML.'],
-    api: ['غلاف يحتوي مربع اختيار أصليًا واحدًا مع تسميته.', 'معالج الاختيار ورسالة مترجمة لعدد النتائج المطابقة.', 'القيم المختارة حاليًا كمصفوفة نصية.', 'الخيارات المعروفة والتحقق الاختياري من اختيار قيمة واحدة على الأقل في React.'],
-    accessibility: ['استخدم legend للمجموعة وتسمية مستقلة لحقل البحث.', 'حافظ على سلوك لوحة المفاتيح ومساحة النقر الأصلية لمربعات الاختيار.', 'وضّح حالات عدم وجود نتائج والتحقق؛ تظل الاختيارات المخفية جزءًا من النموذج.'],
+    api: ['غلاف يحتوي مربع اختيار أصليًا واحدًا مع تسميته.', 'معالج الاختيار ورسالة مترجمة لعدد النتائج المطابقة.', 'قيم الخيارات المحددة والمتاحة؛ لا تُرسل الخيارات المعطّلة.', 'اختيار قيمة متاحة واحدة على الأقل. تسمى رسالة التحقق validationMessage في Angular.', 'استخدم data-nq-required="true" أو خيارات createMultiSelect(root, { required: true, requiredMessage }). تتقدم الخيارات الصريحة على الصفات.'],
+    accessibility: ['استخدم legend للمجموعة وتسمية مستقلة لحقل البحث.', 'يتحقق الاختيار الإلزامي عبر custom validity وaria-required على حقل البحث القابل للتركيز؛ لا تجعل نص البحث أو كل مربع اختيار إلزاميًا.', 'تمنع القراءة فقط تغيير الاختيار مع إبقاء البحث متاحًا؛ لا تُرسل المجموعة المعطّلة قيمًا ولا تمنع إرسال النموذج.', 'وضّح حالات عدم وجود نتائج والتحقق؛ تظل الاختيارات المخفية جزءًا من النموذج.'],
     limitations: ['قائمة محلية بمربعات اختيار، دون تحميل خيارات عن بُعد أو عرض افتراضي للقوائم الضخمة.'],
   }),
   calendar: localized('calendar', {

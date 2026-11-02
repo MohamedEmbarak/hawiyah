@@ -21,6 +21,14 @@ and Eastern Arabic digits into ASCII, keeps one focus stop and uses native
 maxlength/required. MultiSelect uses actual checkboxes; filtered selections remain
 checked and submitted. Native fieldset disabled works normally.
 
+For required MultiSelect selection, set `data-nq-required="true"` on its root or
+pass `{ required: true, requiredMessage: 'Choose at least one service.' }` to
+`createMultiSelect`. Explicit `required` overrides the attribute. Validation
+counts checked enabled options, uses the focusable search input, and updates
+after changes/reset/disabled attributes. Do not put native `required` on the
+search text or each checkbox. Readonly selection keeps search usable and selected
+values submitted. See [validation contracts](../../docs/multiselect-validation.md).
+
 RangeSlider's `data-nq-readonly="true"` prevents pointer and value-changing
 keyboard input while preserving Tab/Shift+Tab navigation and other native keys.
 Its two labelled thumbs remain focusable; read-only values still submit normally.
