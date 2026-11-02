@@ -1,5 +1,12 @@
 # DGA foundation reference and migration
 
+The [NIC web UI reference](nic-web-reference.md), supplied on 2026-11-02,
+adds the user's approved CSS and behavior source as the primary reference for
+directly mapped web-component requirements. Its inventory and coverage queue
+track implementation separately. The Figma evidence below remains the
+foundation and mobile/template reference; it is not silently reclassified as
+evidence for the newer web-source mappings.
+
 Nasaq uses a DGA-based foundation by default, with `data-nq-theme="dga"` as the explicit selector. The original teal and ivory Woven Rhythm theme remains available through `data-nq-theme="nasaq"`. Both use the same `nq-` component classes, `--nq-` variables, native framework adapters, and interaction contracts.
 
 The reference is a set of supplied **Platforms Code Community Figma exports dated 2026-10-29**. That is a snapshot/export date, **not an official DGA release number**, and it does not establish that these files are the latest official guidance. Nasaq is an independent implementation; source correspondence does not mean official endorsement, certification, or complete DGA compliance. See [the alignment record](alignment.md) for the distinction between requirements, recommendations, and Nasaq choices.

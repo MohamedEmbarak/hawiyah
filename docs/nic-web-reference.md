@@ -1,0 +1,115 @@
+# NIC web UI reference — 2026-11-02
+
+The user supplied the following NIC/SDAIA web sources as the DGA-approved UI
+standard to implement. They take precedence over earlier inferred web-component
+styles when a requirement is directly established. Existing explicit product
+decisions, native adapter ownership, keyboard access and reduced motion remain
+part of Nasaq's contract. This records the supplied approval context; it does
+not claim that Nasaq itself has been certified.
+
+## Source inventory
+
+| Source | Retrieved bytes | Lines | SHA-256 | HTTP last-modified |
+| --- | ---: | ---: | --- | --- |
+| [global.css](https://files.sdaia.gov.sa/assets/css/global.css) | 101151 | 4192 | `939f118d428c5036675324a1d035122b682a027b6a26cb465374cb34c0ac3148` | 2026-08-09 06:21:18 GMT |
+| [master.js](https://sdaia.gov.sa/Assets/js/master.js) | 101942 | 2684 | `17fd63104d29d897d88d26cc665811b3395ee6fc99b9bcf21c07279605819993` | 2026-07-26 07:51:18 GMT |
+
+Both returned HTTP 200. Byte counts describe decoded response bodies, not
+compressed transfer lengths. The CSS hash also matches the stylesheet exported
+from the running browser. Parsing found 542 qualified CSS rules, including rules
+inside media queries. The originals, downloaded dependencies and private chat
+image stay outside Git. HTTP cookies and request identifiers are not evidence.
+
+The supplied developer message describes composable card classes: base,
+bordered and clickable variants, CSS-owned internal gaps, and separate title
+and description styling. Icon presentation varies by service; no universal
+green icon background is inferred.
+
+## Rendered evidence and boundaries
+
+[files.sdaia.gov.sa](https://files.sdaia.gov.sa/) rendered an invalid-link/code
+screen at its bare URL. The observed sample has a navigation header, brand
+images, a white rounded card, an information icon and a green return action.
+It loads Bootstrap, other plugin styles, `global.css` and a later
+`style.custom.css`; that combined page is not a standalone global-CSS fixture.
+The main SDAIA site also rendered navigation, service cards, tabs and content.
+These observations do not prove every stylesheet variant's visual behavior.
+
+`master.js` is site integration code, not a dependency to embed in Nasaq. It
+references jQuery/Bootstrap, translation data, Accessibility.js,
+FeedbackSettings.js, remote navigation/auth APIs and SharePoint markup. Nasaq
+implements reusable UI behavior in its own adapters. It does not call those
+services, embed an official verification credential, or adopt their session
+and navigation state.
+
+## Coverage map and implementation queue
+
+Line numbers below refer to the hashed snapshots above. Mapped means an
+existing Nasaq component or documented composition can own the requirement;
+it does not mean every source state has already passed comparison.
+
+| Source CSS / JS | Nasaq owner | Confirmed gap or next comparison |
+| --- | --- | --- |
+| CSS 1–426: fonts, primitives, responsive aliases, light/dark roles | tokens/styles | Reconcile component semantic values; preserve original/custom themes |
+| CSS 427–850: typography, truncation, color, shadow, radius, divider utilities | shared styles, layout, Divider | Compare type scale and utility recipes; do not globally reset consuming applications |
+| CSS 853–965: link states, neutral links | Link | Compare hover/pressed/visited/focus; check actual foreground contrast |
+| CSS 971–1292: seven button families and sizes | Button, IconButton | Missing typed default/light/outline-white variants; compare primary pressed color and secondary/outline states |
+| CSS 1294–1386: segmented buttons | ToggleGroup, ButtonGroup | Compare separators, selected states, wrapping and keyboard behavior |
+| CSS 1388–1531: icon buttons and icon/background sizes | IconButton, icon recipes | Preserve licensed SVG system; add documented background/size compositions |
+| CSS 1565–1641: cards | Card, ServiceCard | Base/border/action composition, title/description styles, gap, shadow and semantic actions need explicit parity |
+| CSS 1645–1673, 3183–3212: icon/ordered lists | semantic list recipe | Add source-mapped spacing/direction recipe without generated meaningful content |
+| CSS 1677–1766: accordion | Accordion | Compare focus/hover surfaces and chevron timing; preserve accessible details and reduced motion |
+| CSS 1770–1886: tables | Table, DataTable | Compare row height, header/separator colors and hover/striping |
+| CSS 1890–2036; JS 1750–1841: content navigation | page-navigation composition | Scroll-following current section and nested indicator need coverage |
+| CSS 2040–2143: breadcrumbs | Breadcrumb | Compare neutral interaction colors and logical separators |
+| CSS 2148–2312; JS 931–1169: search | SearchField, Combobox, Dialog | Add documented search-modal/suggestion composition; preserve IME, names and focus return |
+| CSS 2316–2427; JS 1854–2079: tabs and overflow | Tabs | Overflow menu behavior is not covered by the existing scrolling tab list |
+| CSS 2431–2648: field labels, native/text/select inputs | Field, TextField, Textarea, Select, DatePicker | Compare 40px baseline, padding, hover/focus and 500ms underline; retain custom calendars and approved validity colors |
+| CSS 2651–2726: addons/input groups | InputGroup and composed fields | Compare shared border and group focus-line behavior |
+| CSS 2729–3009: checkbox/radio states | Checkbox, Radio | Compare hover halo, checked/pressed/disabled/read-only treatment |
+| CSS 3018–3079: badges | Badge | Compare sizes, borders and semantic palettes |
+| CSS 3082–3153: dot status labels | Badge composition | Status-dot variant needs an explicit cross-adapter contract |
+| CSS 3156–3181: avatars | Avatar, AvatarGroup | Compare source 40/64/80/120px options |
+| CSS 3215–3275; JS 1318–1578: footer/cookie links | PortalFooter, CookieConsent | Compare spacing and interactions; data/routes remain application-owned |
+| CSS 3279–3423: carousel | Carousel | Compare track/control/dot geometry; CSS alone does not establish autoplay or keyboard behavior |
+| CSS 3427–3502: rating and half stars | Rating, Feedback | Confirm fractional display separately from integer input selection |
+| CSS 3505–3666, 4005–4139; JS 2101–2346: pagination | Pagination | Jump-menu and responsive presentation need explicit coverage |
+| CSS 3670–3788: high contrast | forced-colors/custom theme | Preserve system-color support; do not apply global image/body filters to host applications |
+| CSS 3846–4000; JS 318–558: notification banner/modal | ToastRegion, Alert, Dialog | Compare placement, five tones, timing and dismissal; retain live-region and modal focus contracts |
+| JS 627–929: multilevel main navigation | PortalHeader, NavigationDrawer | Compare expanded/current/route-close and nested menu behavior |
+| JS 1176–1310: government verification disclosure | disclosure/banner composition | Do not ship official registration identifiers or imply Nasaq/site certification |
+| JS 1584–1606: copy helper | application action recipe | Use native clipboard permission/error handling with accessible status |
+| CSS 4141–4192; JS auth/cache/bootstrap/devtools | site-specific integration | Excluded from generic package behavior; no SharePoint/auth/API/debug side effects |
+
+## Confirmed source differences and intentional adaptations
+
+- Primary button pressed background is Flag 800 `#14573a` (CSS 1065),
+  while Nasaq's earlier token uses Flag 900 `#104631`.
+- Base card padding is **16px** through `--spacing-xl`. The card uses
+  `--card-lg-gap`: **24px at 768px and above, 16px below**. Declared
+  `--card-lg-padding` is not used by the base card selector; it must not be
+  mistaken for actual card padding. The 768px min-width block also follows
+  the 1025px block, so its overlapping aliases win by source order.
+- Card radius is 16px, default shadow is the source medium shadow, and bordered
+  cards use a 1px Neutral 300 border without shadow. Action hover uses Neutral
+  50; focus restores the card surface with a 2px black outline. No independent
+  card-specific pressed rule is defined.
+- Card title is 18px/28px at weight 700; description is 16px/24px at weight 400.
+- The source's normal field focus underline is neutral, including nonempty
+  valid values. Nasaq retains the explicit user-approved green-on-valid focus
+  rule and red user-invalid/application-error rule. Empty fields remain neutral.
+  ISO storage, Latin digits and the pinned calendar provider are unchanged.
+- Some raw dark-mode rules use fixed light primitives, and some semantic aliases
+  reference ASCII decimal dots while definitions contain a different dot
+  character. Record actual cascade/fallback behavior instead of silently
+  claiming these unresolved values are verified design decisions.
+- Existing accessibility adaptations remain explicit. Source approval context
+  does not eliminate the need to test the actual Nasaq contrast, keyboard
+  semantics, reduced motion, forced colors and nested themes.
+
+Implementation proceeds in independently tested and pushed tasks: cards and
+button variants first; then input/selectable-control states, navigation and
+content variants, followed by missing reusable compositions and full regression.
+The earlier [quality report](quality-2026-11-02.md) predates these NIC changes.
+Hajj remains out of scope. Asset redistribution rights are separate from this
+source comparison; external styles/scripts/assets are not bundled wholesale.
