@@ -94,8 +94,8 @@
    The source's #9DA4AE 1px resting border fails 3:1 on white. We use
    Controls/control-border (#6C737F light, #9DA4AE dark) as an explicit
    accessibility adaptation; the exact source field-border token is retained.
-   The bottom line uses the theme primary text color (green in DGA) as an
-   intentional color adaptation. Invalid fields use the danger color.
+   The bottom line is neutral until user validation. User-valid fields use
+   theme primary text (green in DGA); user-invalid or explicit errors use danger.
    It is the DGA focus indicator, without a duplicate
    outer ring. Read-only fields keep a single inset keyboard indicator.
    Source SMART_ANIMATE:150ms cubic-bezier(0,0,.58,1), evidence recorded in
@@ -105,7 +105,7 @@
   padding-inline: var(--nq-profile-field-padding-start, var(--nq-space-3)) var(--nq-profile-field-padding-end, var(--nq-space-3));
   border-radius: var(--nq-profile-control-radius, var(--nq-radius-md));
   background-color: var(--nq-color-field-background, var(--nq-color-surface));
-  background-image: linear-gradient(var(--nq-color-primary-text, var(--nq-color-primary)), var(--nq-color-primary-text, var(--nq-color-primary)));
+  background-image: linear-gradient(var(--nq-color-border-strong), var(--nq-color-border-strong));
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: 0% 2px;
@@ -137,17 +137,28 @@
 :is(.nq-input, .nq-textarea)[readonly]:focus-visible {
   outline: 2px solid var(--nq-color-focus);
 }
-:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'] { background-color: var(--nq-color-surface-muted); background-image: linear-gradient(var(--nq-color-primary-text, var(--nq-color-primary)), var(--nq-color-primary-text, var(--nq-color-primary))); background-repeat: no-repeat; background-position: center bottom; background-size: 0% 2px; }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'] { background-color: var(--nq-color-surface-muted); background-image: linear-gradient(var(--nq-color-border-strong), var(--nq-color-border-strong)); background-repeat: no-repeat; background-position: center bottom; background-size: 0% 2px; }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus:not(:disabled, [readonly]) { background-size: var(--nq-profile-field-focus-line, 0% 2px); }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:active:not(:disabled, [readonly]) { background-size: var(--nq-profile-field-pressed-line, 0% 2px); }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus-visible { border-color: var(--nq-color-border-strong); }
-:is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true'] {
+/* :valid alone includes pristine optional fields. User validation avoids
+   implying success before editing/commit or form submission, and resets natively.
+   Repeating the variant selector keeps filled and outlined specificity equal. */
+@supports selector(:user-valid) {
+  :is(.nq-input, .nq-textarea, .nq-select):user-valid,
+  :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:user-valid {
+    background-image: linear-gradient(var(--nq-color-primary-text, var(--nq-color-primary)), var(--nq-color-primary-text, var(--nq-color-primary)));
+  }
+}
+:is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true'],
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'][aria-invalid='true'] {
   border-color: var(--nq-color-danger);
   background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger));
 }
 :is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true']:is(:hover, :focus, :active) { border-color: var(--nq-color-danger); }
 @supports selector(:user-invalid) {
-  :is(.nq-input, .nq-textarea, .nq-select):user-invalid { border-color: var(--nq-color-danger); background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger)); }
+  :is(.nq-input, .nq-textarea, .nq-select):user-invalid,
+  :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:user-invalid { border-color: var(--nq-color-danger); background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger)); }
   :is(.nq-input, .nq-textarea, .nq-select):user-invalid:is(:hover, :focus, :active) { border-color: var(--nq-color-danger); }
 }
 :is(.nq-input, .nq-textarea, .nq-select):disabled,

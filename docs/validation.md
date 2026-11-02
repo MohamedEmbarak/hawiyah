@@ -462,3 +462,18 @@ cross-browser parity, or DGA certification. Hajj remains excluded.
 These are input behavior/composition fixes based on the implementation review,
 not newly asserted source dimensions or official DGA template parity.
 See [tag behavior](tag-input-interaction.md) and [search behavior](search-field.md).
+
+## Validation-aware underline — 2026-11-02
+
+The shared underline now starts neutral, uses green only for user-valid fields,
+and red for user-invalid fields or explicit application errors. Native reset
+returns user-validation colors to neutral. A focus/blur without editing remains
+unvalidated; explicit error props should follow application touched/submitted
+state. See [validation colors](input-validation-colors.md).
+
+Four guide browser cases passed input/textarea/select transitions, filled and
+outlined variants, light/dark modes, explicit-error precedence, reset, invalid
+submission, reduced motion and forced colors. Three native-consumer cases passed
+the same input color/reset contract in React, Vue and Angular. Six existing theme
+regressions also passed, including read-only keyboard focus and original/custom
+theme behavior. Workspace packages and native consumers built successfully.

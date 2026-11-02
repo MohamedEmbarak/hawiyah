@@ -382,7 +382,7 @@
   "adaptations": [
     "Shared subtle text uses Neutral/600 in light mode for contrast across muted surfaces.",
     "Shared strong boundary uses Controls/control-border; Text Input keeps its separate reference field-border.",
-    "DGA editable inputs use an animated underline in theme primary text color (green), or danger color (red) when invalid, without an additional outer outline. This is an approved color adaptation from the neutral source underline.",
+    "DGA editable inputs use an animated neutral underline before user validation, theme primary text (green) when user-valid, and danger (red) when user-invalid or explicitly marked with an application error. No additional outer outline is added. This is an approved validation-color adaptation from the neutral source underline.",
     "Read-only and forced-colors fields retain visible inset keyboard focus; filled read-only fields do not add the editable underline. Original Nasaq and custom themes remain supported.",
     "Existing breakpoint names retained for API stability; supplied1440/430 frames do not establish breakpoints."
   ],
@@ -460,7 +460,7 @@
       "to": "3149:55105",
       "durationMs": 150,
       "easing": "cubic-bezier(0, 0, 0.58, 1)",
-      "property": "centered underline 35% to 100%; approved green/red color adaptation retained"
+      "property": "centered underline 35% to 100%; approved neutral/valid-green/invalid-red color adaptation"
     },
     "notGeneralized": [
       "Tab Bar 8332:24202 hover to Pressed 8332:24242, then click to Selected 8332:24282: 300 ms ease-out; not generic tab-panel timing.",

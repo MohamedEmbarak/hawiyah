@@ -54,7 +54,7 @@ for (const mode of ['light', 'dark']) {
   });
 }
 
-test('editable filled fields retain the green/red underline without an outer focus ring', async ({page}) => {
+test('unvalidated filled fields stay neutral and explicit errors red without an outer focus ring', async ({page}) => {
   await page.goto('/#foundations');
   await page.locator('#main').evaluate(main => main.insertAdjacentHTML('beforeend', '<section data-nq-theme="dga"><input id="editable-filled" class="nq-input" data-variant="filled" aria-label="Editable name"><input id="invalid-filled" class="nq-input" data-variant="filled" aria-invalid="true" aria-label="Invalid name"></section>'));
   for (const id of ['editable-filled', 'invalid-filled']) {
@@ -64,7 +64,7 @@ test('editable filled fields retain the green/red underline without an outer foc
     const result = await field.evaluate(node => {
       const style = getComputedStyle(node);
       const probe = document.createElement('span');
-      probe.style.color = node.getAttribute('aria-invalid') === 'true' ? 'var(--nq-color-danger)' : 'var(--nq-color-primary-text, var(--nq-color-primary))';
+      probe.style.color = node.getAttribute('aria-invalid') === 'true' ? 'var(--nq-color-danger)' : 'var(--nq-color-border-strong)';
       node.parentElement!.append(probe);
       const color = getComputedStyle(probe).color; probe.remove();
       return {background: style.backgroundImage, color};
