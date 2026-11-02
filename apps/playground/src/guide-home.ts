@@ -24,8 +24,8 @@ export function renderHome(locale: Locale, selected: string, sample: (id: Compon
     <div class="home-intro"><a class="home-release" href="#docs/getting-started"><span></span>${t('Open source. Ready to explore.', 'مفتوح المصدر. مفتوح للإبداع.')}<b dir="ltr">v0.1</b>${icon('arrow',14)}</a>
       <h1 id="home-title">${t('Your next interface.<br><em>In your own rhythm.</em>', 'واجهتك القادمة.<br><em>على نسقك.</em>')}</h1>
       <p class="home-lead">${t('An Arabic-first component system that feels like yours. Explore the parts, try the interactions, and build with the framework you love.', 'نظام مكوّنات يبدأ بالعربية، ويتشكّل بطريقتك. استكشف التفاصيل، جرّب التفاعل، وابنِ بإطار العمل الذي تحب.')}</p>
-      <div class="home-actions"><a class="nq-button" href="#docs/getting-started">${t('Start building', 'ابدأ البناء')}${icon('arrow',18)}</a><a class="home-secondary" href="#components">${t('Explore 79 components', 'استكشف ٧٩ مكوّنًا')}${icon('layers',18)}</a></div>
-      <div class="home-proof"><span>${icon('globe',16)}${t('Arabic, by default', 'العربية في الأساس')}</span><span>${icon('code',16)}${t('4 native adapters', '٤ أطر عمل')}</span><span>${icon('check',16)}${t('Apache 2.0', 'ترخيص Apache 2.0')}</span></div>
+      <div class="home-actions"><a class="nq-button" href="#docs/getting-started">${t('Start building', 'ابدأ البناء')}${icon('arrow',18)}</a><a class="home-secondary" href="#components">${t('Explore 79 components', 'استكشف 79 مكوّنًا')}${icon('layers',18)}</a></div>
+      <div class="home-proof"><span>${icon('globe',16)}${t('Arabic, by default', 'العربية في الأساس')}</span><span>${icon('code',16)}${t('4 native adapters', '4 أطر عمل')}</span><span>${icon('check',16)}${t('Apache 2.0', 'ترخيص Apache 2.0')}</span></div>
     </div>
     <div class="home-studio"><div class="home-studio-heading"><span class="studio-live"><i></i>${t('A LITTLE LIVE PREVIEW', 'مساحة صغيرة للتجربة')}</span><span class="studio-number" dir="ltr">01 / 03</span></div>
       <div class="home-stage" data-home-stage data-nq-theme="${studio.accent === 'dga' ? 'dga' : 'custom'}" data-nq-mode="light" data-nq-density="${studio.compact ? 'compact' : 'comfortable'}">
@@ -33,7 +33,7 @@ export function renderHome(locale: Locale, selected: string, sample: (id: Compon
         <div class="home-request nq-card"><div class="home-request-top"><span class="home-request-icon">${icon('building',23)}</span><span class="nq-badge" data-tone="success">${t('Ready to begin', 'جاهز للبدء')}</span></div>
           <h2>${t('Your next service', 'خدمتك القادمة')}</h2><p>${t('A clear first step makes a difference.', 'الخطوة الأولى الواضحة تصنع الفرق.')}</p>
           <label class="nq-field"><span class="nq-label">${t('Project name', 'اسم المشروع')}</span><input class="nq-input" name="preview-project" placeholder="${t('A new beginning', 'بداية جديدة')}" autocomplete="off"></label>
-          <div class="home-request-bottom"><div><span>${t('Your progress', 'تقدّمك')}</span><b data-home-progress>١ من ٣</b></div><progress class="nq-progress" value="1" max="3" aria-label="${t('Preview progress', 'تقدّم المعاينة')}"></progress></div>
+          <div class="home-request-bottom"><div><span>${t('Your progress', 'تقدّمك')}</span><b data-home-progress>1 من 3</b></div><progress class="nq-progress" value="1" max="3" aria-label="${t('Preview progress', 'تقدّم المعاينة')}"></progress></div>
           <button class="nq-button home-request-submit" type="button" data-home-continue>${t('Try the next step', 'جرّب الخطوة التالية')}${icon('arrow',17)}</button><span data-home-status class="nq-sr-only" role="status"></span>
         </div>
       </div>
@@ -46,7 +46,7 @@ export function renderHome(locale: Locale, selected: string, sample: (id: Compon
     <div class="home-featured">${featured.map(([id,en,ar,n])=>`<article class="home-feature-card"><div class="home-feature-caption"><span dir="ltr">${n}</span><span>${t(en,ar)}</span>${icon('spark',16)}</div><div class="home-feature-demo">${sample(id,'home-feature-'+id)}</div><a href="#component/${id}">${t(id === 'date-picker' ? 'Explore Date picker' : id === 'combobox' ? 'Explore Combobox' : 'Explore Tabs',id === 'date-picker' ? 'اكتشف منتقي التاريخ' : id === 'combobox' ? 'اكتشف البحث والاختيار' : 'اكتشف التبويبات')}${icon('arrow',17)}</a></article>`).join('')}</div>
   </section>
   <section class="home-paths" aria-labelledby="paths-title"><div class="home-section-head"><div><span class="home-section-label">${t('BUILT TO BE YOURS', 'أساس تتوسّع به')}</span><h2 id="paths-title">${t('Take the next step.', 'اختر خطوتك التالية.')}</h2></div><p>${t('A component, a complete page, or your own visual language.', 'مكوّن واحد، أو صفحة متكاملة، أو لغة بصرية تخصّك.')}</p></div><div class="home-path-grid">
-    ${[['layouts','grid','Compose a page','ركّب صفحة','See spacing, columns and responsive behavior change together.','غيّر المسافات والأعمدة وشاهد التجاوب أمامك.'],['inputs','filter','Get the input right','ابدأ بمدخل صحيح','22 native input types, each with its own semantics.','٢٢ نوعًا من المدخلات الأصلية، لكلٍ منها سلوكه.'],['docs/extending','code','Make it your own','أضف طابعك','Extend through tokens, variants and composition.','وسّع النظام بالرموز والأنماط والتركيب.']].map(([url,symbol,en,ar,descEn,descAr],index)=>`<a class="home-path-card" href="#${url}"><div class="home-path-art path-art-${index}" aria-hidden="true">${index===0?'<i></i><i></i><i></i><i></i>':index===1?'<div><span></span><b></b></div><div><span></span><b></b></div>':'<span>{</span><i></i><span>}</span>'}</div><div><span class="home-path-icon">${icon(symbol!,20)}</span><h3>${t(en!,ar!)}</h3><p>${t(descEn!,descAr!)}</p>${icon('arrow',18)}</div></a>`).join('')}
+    ${[['layouts','grid','Compose a page','ركّب صفحة','See spacing, columns and responsive behavior change together.','غيّر المسافات والأعمدة وشاهد التجاوب أمامك.'],['inputs','filter','Get the input right','ابدأ بمدخل صحيح','22 native input types, each with its own semantics.','22 نوعًا من المدخلات الأصلية، لكلٍ منها سلوكه.'],['docs/extending','code','Make it your own','أضف طابعك','Extend through tokens, variants and composition.','وسّع النظام بالرموز والأنماط والتركيب.']].map(([url,symbol,en,ar,descEn,descAr],index)=>`<a class="home-path-card" href="#${url}"><div class="home-path-art path-art-${index}" aria-hidden="true">${index===0?'<i></i><i></i><i></i><i></i>':index===1?'<div><span></span><b></b></div><div><span></span><b></b></div>':'<span>{</span><i></i><span>}</span>'}</div><div><span class="home-path-icon">${icon(symbol!,20)}</span><h3>${t(en!,ar!)}</h3><p>${t(descEn!,descAr!)}</p>${icon('arrow',18)}</div></a>`).join('')}
   </div></section>
   <section class="home-manifesto"><div class="home-manifesto-pattern" aria-hidden="true"></div><span class="home-section-label">${t('LOCAL ROOTS. OPEN POSSIBILITIES.', 'جذور محلية. وإمكانات مفتوحة.')}</span><h2>${t('Arabic comes first.<br>Your ideas come next.', 'العربية أولًا.<br>ثم تأتي أفكارك.')}</h2><p>${t('Independent by design. Informed by Saudi DGA Platforms Code, with room for your product to find its own voice.', 'تصميم مستقل يستلهم كود المنصات لهيئة الحكومة الرقمية، ويترك لمنتجك مساحة ليعبّر عن نفسه.')}</p><a href="#docs/alignment">${t('Explore the approach', 'تعرّف على المنهج')}${icon('arrow',18)}</a></section>
   </div>`;
@@ -71,7 +71,7 @@ export function bindHome(root: HTMLElement, locale: Locale): () => void {
   let progress=1;
   const setProgress=()=>{
     stage.querySelector('progress')!.value=progress;
-    stage.querySelector('[data-home-progress]')!.textContent=new Intl.NumberFormat(locale==='ar'?'ar-SA':'en',{numberingSystem:locale==='ar'?'arab':'latn'}).format(progress)+(locale==='ar'?' من ٣':' / 3');
+    stage.querySelector('[data-home-progress]')!.textContent=new Intl.NumberFormat(locale==='ar'?'ar-SA':'en',{numberingSystem:'latn'}).format(progress)+(locale==='ar'?' من 3':' / 3');
   };
   const onChange=(event:Event)=>{
     const target=event.target as HTMLInputElement;
@@ -83,7 +83,7 @@ export function bindHome(root: HTMLElement, locale: Locale): () => void {
   const onClick=(event:Event)=>{
     if(!(event.target as Element).closest('[data-home-continue]'))return;
     progress=progress===3?1:progress+1;setProgress();
-    stage.querySelector('[data-home-status]')!.textContent=progress===3?t('Preview complete. Try another design.','اكتملت المعاينة. جرّب طابعًا آخر.'):t(`Preview step ${progress} of 3.`,`خطوة المعاينة ${progress} من ٣.`);
+    stage.querySelector('[data-home-status]')!.textContent=progress===3?t('Preview complete. Try another design.','اكتملت المعاينة. جرّب طابعًا آخر.'):t(`Preview step ${progress} of 3.`,`خطوة المعاينة ${progress} من 3.`);
   };
   root.addEventListener('change',onChange);root.addEventListener('click',onClick);apply();setProgress();
   return()=>{root.removeEventListener('change',onChange);root.removeEventListener('click',onClick);};

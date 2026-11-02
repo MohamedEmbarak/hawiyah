@@ -72,13 +72,13 @@ export interface DateFormatOptions extends Intl.DateTimeFormatOptions {
 
 export function formatNumber(value: number | bigint, options: NumberFormatOptions = {}): string {
   const { locale = 'ar-SA', ...format } = options;
-  return new Intl.NumberFormat(locale, format).format(value);
+  return new Intl.NumberFormat(locale, { ...format, numberingSystem: 'latn' }).format(value);
 }
 
 export function formatDate(value: Date | number | string, options: DateFormatOptions = {}): string {
   const { locale = 'ar-SA', calendar = 'gregory', timeZone = 'Asia/Riyadh', ...format } = options;
   const date = typeof value === 'string' ? new Date(value) : value;
-  return new Intl.DateTimeFormat(locale, { calendar, timeZone, ...format }).format(date);
+  return new Intl.DateTimeFormat(locale, { calendar, timeZone, ...format, numberingSystem: 'latn' }).format(date);
 }
 
 /** State for a local, single-select, manually committed editable combobox. */

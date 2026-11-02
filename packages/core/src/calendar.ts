@@ -37,7 +37,7 @@ export function formatCalendarDate(value: string, options: CalendarDateFormatOpt
   const { locale = 'ar-SA', calendar = 'gregory', ...requested } = options;
   const fields = getCalendarDateParts(value, calendar);
   const format = Object.keys(requested).some(key => ['dateStyle', 'year', 'month', 'day', 'weekday', 'era'].includes(key)) ? requested : { ...requested, year: 'numeric' as const, month: 'long' as const, day: 'numeric' as const };
-  const formatter = new Intl.DateTimeFormat(locale, { ...format, calendar, timeZone: 'UTC' });
+  const formatter = new Intl.DateTimeFormat(locale, { ...format, calendar, timeZone: 'UTC', numberingSystem: 'latn' });
   if (calendar === 'gregory') return formatter.format(date(value).toDate('UTC'));
   // AH1447 agrees with the pinned reference and ICU. Use its localized skeleton,
   // month names and era only, replacing every numeric field from the reference.
@@ -51,7 +51,7 @@ export function formatCalendarDate(value: string, options: CalendarDateFormatOpt
     else if (part.type === 'month') number = fields.month;
     else if (part.type === 'year') number = digitCount === 2 ? fields.year % 100 : fields.year;
     else return part.value;
-    return new Intl.NumberFormat(locale, { numberingSystem: format.numberingSystem, useGrouping: false, minimumIntegerDigits: digitCount === 2 ? 2 : 1 }).format(number);
+    return new Intl.NumberFormat(locale, { numberingSystem: 'latn', useGrouping: false, minimumIntegerDigits: digitCount === 2 ? 2 : 1 }).format(number);
   }).join('');
 }
 
@@ -98,7 +98,7 @@ export function getCalendarMonth(options: CalendarMonthOptions = {}): CalendarMo
   const offset = (first.toDate('UTC').getUTCDay() - weekStartsOn + 7) % 7;
   const start = date(iso(first)).subtract({ days: offset });
   const count = Math.ceil((offset + system.getDaysInMonth(first)) / 7) * 7;
-  const number = new Intl.NumberFormat(locale, { useGrouping: false });
+  const number = new Intl.NumberFormat(locale, { useGrouping: false, numberingSystem: 'latn' });
   const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' });
   const baseSunday = parseDate('2024-01-07');
   // Intl supplies translated month names only. Numeric Hijri fields always come

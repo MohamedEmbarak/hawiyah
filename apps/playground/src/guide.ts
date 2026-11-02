@@ -164,7 +164,7 @@ const topicDescriptions: Record<string, readonly [string,string]> = {
   extending: ['Make the change you need, with a contract that keeps everything connected.', 'أضف ما تحتاجه، مع عقد واضح يحافظ على ترابط النظام.'],
   alignment: ['Saudi service conventions, independent design, and evidence you can inspect.', 'أنماط الخدمات السعودية، وتصميم مستقل، وأدلة يمكنك مراجعتها.'],
 };
-const formatIndex = (value: number, locale: Locale) => new Intl.NumberFormat(locale === 'ar' ? 'ar-SA' : 'en', { minimumIntegerDigits: 2 }).format(value);
+const formatIndex = (value: number, locale: Locale) => new Intl.NumberFormat(locale === 'ar' ? 'ar-SA' : 'en', { minimumIntegerDigits: 2, numberingSystem: 'latn' }).format(value);
 
 export function renderGuide(view: string, locale: Locale, code: Code): string {
   const topic = view.split('/')[1] || 'getting-started';

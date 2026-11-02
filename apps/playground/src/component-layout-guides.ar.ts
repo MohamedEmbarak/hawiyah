@@ -53,8 +53,8 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     summary: 'اعرض أزواج المصطلح والقيمة، مثل مرجع الطلب والرسوم ووقت المعالجة، باستخدام الدلالة الأصلية لقائمة الوصف.',
     usage: `<dl class="nq-description-list" data-variant="horizontal" lang="ar" dir="rtl">
   <div><dt>المرجع</dt><dd dir="ltr">NQ-1043</dd></div>
-  <div><dt>رسوم الخدمة</dt><dd><bdi>٢٠٠ <span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">ريال سعودي</span></bdi></dd></div>
-  <div><dt>وقت المعالجة المتوقع</dt><dd>٣ أيام عمل</dd></div>
+  <div><dt>رسوم الخدمة</dt><dd><bdi>200 <span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">ريال سعودي</span></bdi></dd></div>
+  <div><dt>وقت المعالجة المتوقع</dt><dd>3 أيام عمل</dd></div>
 </dl>`,
     apiDescriptions: [
       'يجمع كل عنصر div مباشر مصطلحه ووصفه. ويمكن أن تتضمن القيمة رابطًا أو محتوى دلاليًا آخر.',
@@ -72,7 +72,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
   <span class="nq-badge" data-tone="info">الأعمال</span>
   <h3>تجديد رخصة تجارية</h3>
   <p>اطّلع على المتطلبات وجدّد الرخصة الحالية.</p>
-  <div class="nq-service-card-meta"><span><bdi>١٥٠ <span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">ريال سعودي</span></bdi></span><span>يوم عمل واحد</span></div>
+  <div class="nq-service-card-meta"><span><bdi>150 <span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">ريال سعودي</span></bdi></span><span>يوم عمل واحد</span></div>
   <a class="nq-button" href="./services/license">عرض خدمة تجديد الرخصة</a>
 </article>`,
     apiDescriptions: [
@@ -227,7 +227,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     summary: 'اعرض إشعارات التطبيق مع تمييز حالة عدم القراءة والوجهات والإجراءات الاختيارية.',
     usage: `<section class="nq-notification-list" aria-labelledby="notifications-title" lang="ar" dir="rtl">
   <h2 id="notifications-title">الإشعارات</h2><ul>
-    <li data-state="unread"><h3><a class="nq-link" href="./requests/NQ-1043">رخصتك جاهزة</a></h3><span class="nq-badge" data-tone="info">غير مقروء</span><p>اطّلع على المستند الصادر ونزّله.</p><time datetime="2026-10-28T09:00:00+03:00">٢٨ أكتوبر، ٠٩:٠٠</time></li>
+    <li data-state="unread"><h3><a class="nq-link" href="./requests/NQ-1043">رخصتك جاهزة</a></h3><span class="nq-badge" data-tone="info">غير مقروء</span><p>اطّلع على المستند الصادر ونزّله.</p><time datetime="2026-10-28T09:00:00+03:00">28 أكتوبر، 09:00</time></li>
     <li data-state="read"><h3>تم استلام المستند</h3><p>أُضيف المستند المرفق إلى طلبك.</p></li>
   </ul>
 </section>`,

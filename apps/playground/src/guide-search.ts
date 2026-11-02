@@ -132,7 +132,7 @@ export function createGuideSearch({ getLocale }: { getLocale: () => Locale }): {
   let announcement: ReturnType<typeof setTimeout> | undefined;
   const text = (pair: Label) => pair[locale === "ar" ? 1 : 0];
   const t = (en: string, ar: string) => locale === "ar" ? ar : en;
-  const count = (value: number) => new Intl.NumberFormat(locale).format(value);
+  const count = (value: number) => new Intl.NumberFormat(locale, { numberingSystem: 'latn' }).format(value);
 
   function activate(position: number, scroll = false) {
     active = results.length ? Math.max(0, Math.min(position, results.length - 1)) : -1;

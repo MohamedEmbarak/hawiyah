@@ -51,24 +51,24 @@ const articles: Record<string, string> = {
   "getting-started": `
 <p class="guide-lead">ابنِ واجهة خدمات باستخدام HTML واضح الدلالة، وتنسيقات مشتركة، وإطار العمل الذي تعرفه. يفصل نسق الأساس البصري عن سلوك التفاعل لتتمكن من تعديل كل منهما بوضوح.</p>
 <aside class="guide-note"><strong>مصدر متاح · الإصدار 0.1 قيد التطوير</strong><p>تتوفر شفرة نسق على GitHub بترخيص Apache 2.0. لم تُنشر الحزم على npm بعد. ابدأ من المستودع وأمثلته الجاهزة؛ تُحلّ استيرادات <code>@nasaq/*</code> الواردة هنا من حزم مساحة العمل.</p></aside>
-<h2 id="run-source">١. شغّل المشروع من المصدر</h2>
+<h2 id="run-source">1. شغّل المشروع من المصدر</h2>
 <p>استخدم Node.js 24 وpnpm 11.25.0 لمطابقة أدوات المستودع. يتضمن الأمر الأول تثبيت pnpm إن لم يكن متاحًا لديك.</p>
 {{code:0}}
 <p>افتح العنوان المحلي الذي يطبعه Vite. التطبيق الافتراضي هو دليل نسق ومعرض التجربة المبني بـJavaScript دون إطار عمل.</p>
-<h2 id="choose-framework">٢. اختر نقطة البداية</h2>
+<h2 id="choose-framework">2. اختر نقطة البداية</h2>
 <div class="guide-choice-grid">
 <a class="guide-choice" href="#docs/vanilla"><span><bdi>HTML + JavaScript</bdi></span><p>ابدأ بعناصر HTML الأصلية، وأضف السلوك للمكونات التي تحتاج إليه.</p><b>إعداد JavaScript ←</b></a>
 <a class="guide-choice" href="#docs/react"><span><bdi>React</bdi></span><p>استخدم مكونات React وحالة التطبيق وأساليب العرض المعتادة.</p><b>إعداد React ←</b></a>
 <a class="guide-choice" href="#docs/vue"><span><bdi>Vue</bdi></span><p>اربط القيم باستخدام <code>v-model</code>، وركّب المحتوى عبر فتحات المحتوى (slots).</p><b>إعداد Vue ←</b></a>
 <a class="guide-choice" href="#docs/angular"><span><bdi>Angular</bdi></span><p>استخدم المكونات المستقلة وتكامل النماذج في Angular.</p><b>إعداد Angular ←</b></a>
 </div>
-<h2 id="styles-context">٣. حمّل التنسيقات وحدّد السياق</h2>
+<h2 id="styles-context">3. حمّل التنسيقات وحدّد السياق</h2>
 <p>استورد ملف التنسيق مرة واحدة عند نقطة دخول تطبيقك. ملف إعادة الضبط اختياري؛ حمّله أولًا إذا احتجت إليه. يختار كل تطبيق الخطوط التي يحمّلها.</p>
 {{code:1}}
 {{code:2}}
-<h2 id="first-component">٤. استكشف مكونًا كاملًا</h2>
+<h2 id="first-component">4. استكشف مكونًا كاملًا</h2>
 <p>تحتوي صفحة كل مكون على مثال تفاعلي، وشفرة قابلة للنسخ، ومرجع للواجهات البرمجية، ودورة الحياة، وإرشادات إمكانية الوصول، وحدود التنفيذ. ابدأ بـ<a href="#component/text-field">حقل النص</a> أو <a href="#component/dialog">الحوار</a> أو <a href="#component/date-picker">منتقي التاريخ</a>، ثم ركّب صفحتك في <a href="#layouts">استوديو التخطيط</a>.</p>
-<h2 id="verify-changes">٥. تحقّق من التغييرات</h2>
+<h2 id="verify-changes">5. تحقّق من التغييرات</h2>
 {{code:3}}
 <p>تحتاج اختبارات المتصفح إلى Chromium. حدّد مسار نسخة محلية عبر <code>NASAQ_CHROMIUM</code> عند الحاجة. تفحص أوامر الحزم أرشيفات محلية وتختبر استهلاكها؛ لا تنشر شيئًا على npm. يوضح <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/validation.md" target="_blank" rel="noopener">سجل التحقق ↗</a> نطاق الفحوص الفعلية وما بقي منها.</p>
 <h2 id="package-layers">تعرّف على طبقات الحزم</h2>

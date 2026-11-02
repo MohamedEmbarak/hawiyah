@@ -185,3 +185,14 @@ Accordions work natively without enhancement; opt-in vanilla motion uses
 invoked by native adapter lifecycles; imports remain SSR-safe. It coordinates
 transient height/visibility, logical state, reduced motion and cleanup. It does
 not render or reparent framework content. See [the contract](../../docs/accordion-motion.md).
+
+
+## Numeric display policy
+
+Nasaq-generated numeric and calendar text always uses Latin digits (0–9), including
+Arabic locales. formatNumber, formatDate, and formatCalendarDate enforce latn after
+caller options; locale extensions or a conflicting numberingSystem option do not
+change this policy. Locale still controls language, month/day names and formatting
+order. Arabic remains the default language and RTL remains supported. Caller-provided
+prose is not rewritten. normalizeDigits continues to accept Arabic and Persian
+digits for input normalization.

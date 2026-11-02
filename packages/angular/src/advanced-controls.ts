@@ -115,7 +115,7 @@ export class NqCalendarComponent extends NqExpandedValueControl<string> implemen
     const weekday = new Intl.DateTimeFormat(this.locale, {weekday: 'long', timeZone: 'UTC'}).format(new Date(`${value}T12:00:00Z`));
     const monthKey = `${this.locale}/${this.calendar}/${parts.year}/${parts.month}`; let month = this.monthLabels.get(monthKey);
     if (!month) { month = getCalendarMonth({month: value, locale: this.locale, calendar: this.calendar}).label; if (this.monthLabels.size > 48) this.monthLabels.clear(); this.monthLabels.set(monthKey, month); }
-    const label = `${weekday}, ${new Intl.NumberFormat(this.locale).format(parts.day)} ${month}`;
+    const label = `${weekday}, ${new Intl.NumberFormat(this.locale, {numberingSystem: 'latn'}).format(parts.day)} ${month}`;
     if (this.dateLabels.size > 100) this.dateLabels.clear(); this.dateLabels.set(key, label); return label;
   }
   navigate(month: string) { if (this.disabled) return; this.month = month; this.focused = ''; this.monthChange.emit(month); }

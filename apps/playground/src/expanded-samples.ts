@@ -47,7 +47,7 @@ export function expandedSample(
     case "range-slider":
       return `<div class="nq-range-slider" data-nq="range-slider">${label(t("Minimum budget", "الحد الأدنى للميزانية"), '<input class="nq-slider" type="range" min="0" max="100" value="20" data-nq-lower>')}${label(t("Maximum budget", "الحد الأعلى للميزانية"), '<input class="nq-slider" type="range" min="0" max="100" value="80" data-nq-upper>')}<output data-nq-range-output></output></div>`;
     case "rating":
-      return `<fieldset class="nq-rating" data-nq="rating"><legend class="nq-label">${t("Rate this experience", "قيّم التجربة")}</legend><div class="nq-inline">${[1, 2, 3, 4, 5].map((n) => `<label><input class="nq-radio" type="radio" name="${uid}" value="${n}" ${n === 4 ? "checked" : ""}><span aria-hidden="true">★</span><span class="nq-sr-only">${n} ${t("out of 5", "من ٥")}</span></label>`).join("")}</div></fieldset>`;
+      return `<fieldset class="nq-rating" data-nq="rating"><legend class="nq-label">${t("Rate this experience", "قيّم التجربة")}</legend><div class="nq-inline">${[1, 2, 3, 4, 5].map((n) => `<label><input class="nq-radio" type="radio" name="${uid}" value="${n}" ${n === 4 ? "checked" : ""}><span aria-hidden="true">★</span><span class="nq-sr-only">${n} ${t("out of 5", "من 5")}</span></label>`).join("")}</div></fieldset>`;
     case "pin-input":
       return `<div class="nq-pin-input" data-nq="pin-input">${label(t("One-time code", "رمز التحقق"), '<input class="nq-input" name="code" data-nq-pin-input maxlength="6" autocomplete="one-time-code" inputmode="numeric" placeholder="000000">')}<span class="nq-hint">${t("Paste Arabic or Latin digits.", "الصق أرقامًا عربية أو لاتينية.")}</span></div>`;
     case "tag-input":
@@ -59,7 +59,7 @@ export function expandedSample(
     case "date-picker":
       return `<div class="nq-date-picker" data-nq="date-picker" data-nq-calendar="islamic-umalqura" data-nq-locale="${locale === "ar" ? "ar-SA" : "en-GB"}">${label(t("Appointment · Umm al-Qura picker", "الموعد · تقويم أم القرى"), '<input class="nq-input" type="text" placeholder="YYYY-MM-DD" data-nq-date-input value="2026-10-28" name="appointment">')}${b(icon("calendar", 18) + t("Choose date", "اختيار التاريخ"), "data-nq-date-trigger")}<dialog class="nq-dialog" data-nq-date-dialog aria-label="${t("Choose appointment date", "اختر تاريخ الموعد")}"><header class="nq-dialog-header"><h2>${t("Choose appointment date", "اختر تاريخ الموعد")}</h2>${b(t("Close", "إغلاق"), "data-nq-date-close", "ghost")}</header><div class="nq-dialog-body"><div data-nq-date-calendar class="nq-calendar"></div></div></dialog></div>`;
     case "file-dropzone":
-      return `<label class="nq-file-dropzone" data-nq="file-dropzone" data-nq-max-size="5242880">${icon("upload", 24)}<strong>${t("Choose or drop documents", "اختر المستندات أو أفلتها")}</strong><span class="nq-hint">${t("PDF, PNG · 5 MB", "PDF، PNG · ٥ ميغابايت")}</span><input type="file" data-nq-file-input name="documents" accept=".pdf,.png" multiple><span data-nq-file-status role="status"></span></label>`;
+      return `<label class="nq-file-dropzone" data-nq="file-dropzone" data-nq-max-size="5242880">${icon("upload", 24)}<strong>${t("Choose or drop documents", "اختر المستندات أو أفلتها")}</strong><span class="nq-hint">${t("PDF, PNG · 5 MB", "PDF، PNG · 5 ميغابايت")}</span><input type="file" data-nq-file-input name="documents" accept=".pdf,.png" multiple><span data-nq-file-status role="status"></span></label>`;
     case "toggle-group":
       return `<fieldset class="nq-toggle-group" data-nq="toggle-group" data-variant="segmented"><legend class="nq-label">${t("View mode", "نمط العرض")}</legend>${[t("List", "قائمة"), t("Grid", "شبكة"), t("Map", "خريطة")].map((s, i) => `<label><input type="radio" name="${uid}" value="${i}" ${i === 0 ? "checked" : ""}><span>${s}</span></label>`).join("")}</fieldset>`;
     case "popover":
@@ -85,14 +85,14 @@ export function expandedSample(
     case "chip":
       return `<div class="nq-inline"><span class="nq-chip" data-tone="success">${t("Verified document", "مستند مكتمل")}</span><span class="nq-chip" data-variant="outline">${t("Business", "الأعمال")}</span></div>`;
     case "description-list":
-      return `<dl class="nq-description-list"><div><dt>${t("Reference", "المرجع")}</dt><dd dir="ltr">NQ-2026-1043</dd></div><div><dt>${t("Service fee", "رسوم الخدمة")}</dt><dd>${riyalAmount(t("200", "٢٠٠"), locale, locale === 'en' ? 'before' : 'after')}</dd></div><div><dt>${t("Expected time", "المدة المتوقعة")}</dt><dd>${t("3 working days", "٣ أيام عمل")}</dd></div></dl>`;
+      return `<dl class="nq-description-list"><div><dt>${t("Reference", "المرجع")}</dt><dd dir="ltr">NQ-2026-1043</dd></div><div><dt>${t("Service fee", "رسوم الخدمة")}</dt><dd>${riyalAmount(t("200", "200"), locale, locale === 'en' ? 'before' : 'after')}</dd></div><div><dt>${t("Expected time", "المدة المتوقعة")}</dt><dd>${t("3 working days", "3 أيام عمل")}</dd></div></dl>`;
     case "stat":
       return `<div class="nq-stat"><span class="nq-stat-label">${t("Requests completed", "الطلبات المكتملة")}</span><strong class="nq-stat-value">1,284</strong><span class="nq-stat-trend" data-tone="success">↑ 12% ${t("this month", "هذا الشهر")}</span></div>`;
     case "timeline":
       return `<ol class="nq-timeline">${[t("Application received", "استلام الطلب"), t("Documents checked", "فحص المستندات"), t("Review in progress", "المراجعة جارية")].map((v, i) => `<li class="nq-timeline-item" ${i === 2 ? 'aria-current="step"' : ""}><strong>${v}</strong><p class="nq-hint">${i === 2 ? t("Current stage", "المرحلة الحالية") : "28 / 10 / 2026"}</p></li>`).join("")}</ol>`;
     case "meter":
       return label(
-        t("Storage · 65%", "التخزين · ٦٥٪"),
+        t("Storage · 65%", "التخزين · 65٪"),
         '<meter class="nq-meter" min="0" max="100" low="25" high="85" optimum="20" value="65">65%</meter>',
       );
     case "avatar-group":
@@ -100,7 +100,7 @@ export function expandedSample(
     case "data-table":
       return `<div class="nq-table-wrap"><table class="nq-table nq-data-table" data-nq="data-table" data-nq-locale="${locale}"><caption>${t("Requests · select a heading to sort", "الطلبات · اختر عنوانًا للترتيب")}</caption><thead><tr><th data-nq-key="name">${b(t("Service", "الخدمة"), 'data-nq-sort="name"', "ghost")}</th><th data-nq-key="days" data-nq-type="number">${b(t("Days", "الأيام"), 'data-nq-sort="days"', "ghost")}</th></tr></thead><tbody><tr><td>${t("License", "الرخصة")}</td><td>3</td></tr><tr><td>${t("Certificate", "الشهادة")}</td><td>1</td></tr><tr><td>${t("Permit", "التصريح")}</td><td>5</td></tr></tbody></table></div>`;
     case "service-card":
-      return `<article class="nq-service-card" data-variant="featured"><span class="nq-badge" data-tone="info">${t("Business", "الأعمال")}</span><h3>${t("Start a business", "بدء نشاط تجاري")}</h3><p>${t("One clear path from idea to application.", "مسار واضح من الفكرة إلى الطلب.")}</p><div class="nq-service-card-meta"><span>${riyalAmount(t("200", "٢٠٠"), locale)}</span><span>${t("3 days", "٣ أيام")}</span></div><a class="nq-button" href="#discover">${t("View service", "عرض الخدمة")}</a></article>`;
+      return `<article class="nq-service-card" data-variant="featured"><span class="nq-badge" data-tone="info">${t("Business", "الأعمال")}</span><h3>${t("Start a business", "بدء نشاط تجاري")}</h3><p>${t("One clear path from idea to application.", "مسار واضح من الفكرة إلى الطلب.")}</p><div class="nq-service-card-meta"><span>${riyalAmount(t("200", "200"), locale)}</span><span>${t("3 days", "3 أيام")}</span></div><a class="nq-button" href="#discover">${t("View service", "عرض الخدمة")}</a></article>`;
     case "service-details":
       return `<section class="nq-service-details"><h3>${t("Before applying", "قبل التقديم")}</h3><dl class="nq-description-list"><div><dt>${t("Eligibility", "الأهلية")}</dt><dd>${t("Registered organizations", "المنشآت المسجلة")}</dd></div><div><dt>${t("Required documents", "المستندات المطلوبة")}</dt><dd>${t("License and address proof", "الرخصة وإثبات العنوان")}</dd></div><div><dt>${t("Support", "الدعم")}</dt><dd><a href="#docs" class="nq-link">${t("Help center", "مركز المساعدة")}</a></dd></div></dl></section>`;
     case "portal-header":

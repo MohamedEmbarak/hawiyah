@@ -19,7 +19,7 @@ const apiTypes: Record<string, string> = {
   "Input markers": "علامات حقول الإدخال",
   "Controller readonly [number,number]": "قراءة فقط: [number,number]",
   "Required React strings": "تسميات نصية مطلوبة في React",
-  "React integer 1–10; default 5": "عدد صحيح من ١ إلى ١٠ في React؛ الافتراضي ٥",
+  "React integer 1–10; default 5": "عدد صحيح من 1 إلى 10 في React؛ الافتراضي 5",
   "Native form attributes": "صفات النموذج الأصلية",
   "Vanilla/React positive integer": "عدد صحيح موجب في المتحكم المباشر أو React",
   "React boolean": "قيمة منطقية في React",
@@ -29,7 +29,7 @@ const apiTypes: Record<string, string> = {
   "Wrapper marker": "علامة الغلاف",
   "Controller readonly string[]": "قراءة فقط: string[]",
   "Gregorian ISO date strings": "تواريخ ميلادية نصية بصيغة ISO",
-  "string / 0–6 / predicate": "نص / من ٠ إلى ٦ / دالة شرطية",
+  "string / 0–6 / predicate": "نص / من 0 إلى 6 / دالة شرطية",
   "Calendar system / BCP 47 locale": "نظام التقويم / رمز لغة BCP 47",
   "Native input attributes": "صفات الحقل الأصلية",
   "Vanilla controller callbacks": "معالجات المتحكم المباشر",
@@ -67,7 +67,7 @@ const apiTypes: Record<string, string> = {
   "React optional string": "نص اختياري في React",
   "Native numbers": "أعداد أصلية",
   "React AvatarProps[]": "AvatarProps[] في React",
-  "React number; default 5": "عدد في React؛ الافتراضي ٥",
+  "React number; default 5": "عدد في React؛ الافتراضي 5",
   "React formatter": "منسّق في React",
   "Matching string keys": "مفاتيح نصية متطابقة",
   "number for numeric columns": "number للأعمدة الرقمية",
@@ -156,12 +156,12 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   rating: localized('rating', {
     summary: 'جمع تقييم واحد عبر مجموعة خيارات radio أصلية. تُبرز النجوم من البداية إلى الدرجة المختارة، ويعرض مرور المؤشر معاينة للنطاق دون تغيير القيمة المرسلة.',
     usage: `<fieldset class="nq-rating"><legend>قيّم الخدمة</legend>
-  <label><input class="nq-radio" type="radio" name="rating" value="1" required> ١ من ٣</label>
-  <label><input class="nq-radio" type="radio" name="rating" value="2"> ٢ من ٣</label>
-  <label><input class="nq-radio" type="radio" name="rating" value="3"> ٣ من ٣</label>
+  <label><input class="nq-radio" type="radio" name="rating" value="1" required> 1 من 3</label>
+  <label><input class="nq-radio" type="radio" name="rating" value="2"> 2 من 3</label>
+  <label><input class="nq-radio" type="radio" name="rating" value="3"> 3 من 3</label>
 </fieldset>`,
     lifecycle: ['اعرض مجموعة خيارات مسمّاة تشترك في name ثابت.', 'يُثبت الاختيار الدرجة عبر سلوك النموذج الأصلي أو onValueChange في إطار العمل.', 'تعيد إعادة الضبط التقييم الابتدائي. إرسال التقييم وحفظه عمليتان يتولاهما التطبيق.'],
-    api: ['درجة التقييم الحالية أو الابتدائية ومعالجها في React.', 'عدد الدرجات المعروضة؛ من ١ إلى ١٠ والافتراضي ٥ في React.', 'تسمية مترجمة لكل درجة في React.', 'التحقق والمشاركة في بيانات النموذج الأصلي.'],
+    api: ['درجة التقييم الحالية أو الابتدائية ومعالجها في React.', 'عدد الدرجات المعروضة؛ من 1 إلى 10 والافتراضي 5 في React.', 'تسمية مترجمة لكل درجة في React.', 'التحقق والمشاركة في بيانات النموذج الأصلي.'],
     accessibility: ['استخدم legend للسؤال وتسمية مفهومة لكل درجة.', 'أخفِ النجوم الزخرفية عن قارئات الشاشة.', 'حافظ على سلوك الأسهم والمسافة الأصلي لمجموعة radio. يحتفظ التقييم للقراءة فقط بالتركيز والقيمة المرسلة؛ ولا يُرسل التقييم المعطّل.'],
   }),
   'pin-input': localized('pin-input', {
@@ -232,7 +232,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   'file-dropzone': localized('file-dropzone', {
     summary: 'إضافة سحب الملفات وإفلاتها إلى حقل ملفات حقيقي، مع فحص الأنواع المقبولة والإبقاء على اختيار الملف متاحًا للجميع.',
     usage: `<label class="nq-file-dropzone" data-nq="file-dropzone" data-nq-max-size="5242880">
-  <strong>اختر المستندات أو أفلتها هنا</strong><span>PDF أو PNG، حتى ٥ ميبيبايت للملف</span>
+  <strong>اختر المستندات أو أفلتها هنا</strong><span>PDF أو PNG، حتى 5 ميبيبايت للملف</span>
   <input type="file" data-nq-file-input name="documents" accept=".pdf,.png" multiple>
   <span data-nq-file-status role="status"></span>
 </label>`,
@@ -386,8 +386,8 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     summary: 'عرض مؤشر رقمي مسمّى مع شرح أو اتجاه تغير اختياري. يتولى التطبيق تنسيق القيمة وتفسير التغير.',
     usage: `<div class="nq-stat">
   <span class="nq-stat-label">الطلبات المكتملة</span>
-  <strong class="nq-stat-value">١٬٢٨٤</strong>
-  <span class="nq-stat-trend" data-tone="success">أكثر بنسبة ١٢٪ من الشهر الماضي</span>
+  <strong class="nq-stat-value">1٬284</strong>
+  <span class="nq-stat-trend" data-tone="success">أكثر بنسبة 12٪ من الشهر الماضي</span>
 </div>`,
     lifecycle: ['نسّق القيمة للغة المختارة واعرض اسم المؤشر وفترته الزمنية.', 'حدّثه من بيانات فعلية ووضّح هل الارتفاع أو الانخفاض إيجابي أم سلبي أم محايد في هذا السياق.', 'لا يجلب المكوّن البيانات أو يستطلعها؛ ألغِ اشتراكات التطبيق عند إزالة الواجهة.'],
     api: ['اسم المؤشر والقيمة المنسّقة لدى المستدعي، وهما مطلوبان في React.', 'سياق اختياري ومعلومات المقارنة في React.'],
@@ -396,7 +396,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   timeline: localized('timeline', {
     summary: 'عرض أحداث أو سجل إجراءات بترتيب مفهوم، مع تواريخ وأوصاف وحالة حالية أو مكتملة عند الحاجة.',
     usage: `<ol class="nq-timeline" aria-label="سجل الطلب">
-  <li class="nq-timeline-item"><strong>استلام الطلب</strong><time datetime="2026-10-27">٢٧ أكتوبر ٢٠٢٦</time></li>
+  <li class="nq-timeline-item"><strong>استلام الطلب</strong><time datetime="2026-10-27">27 أكتوبر 2026</time></li>
   <li class="nq-timeline-item" aria-current="step"><strong>المراجعة جارية</strong><p>يجري فحص المستندات الداعمة.</p></li>
 </ol>`,
     lifecycle: ['اعرض أحداثًا ثابتة الهوية بترتيب زمني أو إجرائي مقصود.', 'أضف الأحداث أو حدّثها من بيانات التطبيق المعتمدة؛ لا يتابع المكوّن طلبًا عن بُعد بمفرده.', 'أزل العرض مع الواجهة ونظّف استطلاع التطبيق للبيانات بصورة مستقلة.'],
@@ -405,8 +405,8 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   }),
   meter: localized('meter', {
     summary: 'عرض قياس عددي ضمن نطاق معلوم باستخدام meter الأصلي، مثل استخدام التخزين أو درجة تقييم.',
-    usage: `<label>استخدام التخزين — ٦٥٪
-  <meter class="nq-meter" min="0" max="100" low="25" high="85" optimum="20" value="65">٦٥٪</meter>
+    usage: `<label>استخدام التخزين — 65٪
+  <meter class="nq-meter" min="0" max="100" low="25" high="85" optimum="20" value="65">65٪</meter>
 </label>`,
     lifecycle: ['حدّد حدًا أدنى وأقصى وقيمة قياس متوافقة.', 'حدّث value عند تغير القياس؛ توضّح low وhigh وoptimum تفسير النطاق.', 'لا توجد دورة اكتمال مهمة أو متحكم. يمتلك التطبيق بيانات القياس.'],
     api: ['القياس الحالي ونطاقه العددي.', 'العتبات والمنطقة المفضلة ضمن النطاق.', 'تسمية القياس المطلوبة في React.'],
@@ -417,7 +417,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     usage: `<div class="nq-avatar-group" role="group" aria-label="فريق المراجعة">
   <span class="nq-avatar" role="img" aria-label="نورة أحمد">ن أ</span>
   <span class="nq-avatar" role="img" aria-label="أمل صالح">أ ص</span>
-  <span class="nq-avatar" role="img" aria-label="عضوان إضافيان">+٢</span>
+  <span class="nq-avatar" role="img" aria-label="عضوان إضافيان">+2</span>
 </div>`,
     lifecycle: ['وفّر أعضاء مسمّين بهويات ثابتة واختر حدًا مرئيًا يلائم المساحة.', 'يحسب React العدد المتبقي؛ ترجم تسميته القابلة للوصول. تأتي تغيرات العضوية من بيانات التطبيق.', 'لا يوجد متحكم لاختيار الأشخاص أو جلب ملفاتهم؛ تظل روابط الصور ملكًا للتطبيق.'],
     api: ['أسماء الأعضاء وصورهم أو أحرفهم الاختيارية في React.', 'اسم المجموعة المطلوب في React.', 'أقصى عدد مرئي من الصور المسمّاة؛ الافتراضي خمسة.', 'منسّق التسمية المترجمة لعدد الأعضاء الإضافيين في React.'],
