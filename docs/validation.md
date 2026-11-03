@@ -547,3 +547,15 @@ motion, forced colors and original theme fallback. Eight core/token tests,
 eight semantic contrast checks, full build and guide typecheck passed.
 See [source mappings and adaptations](nic-choices.md).
 
+## Native framework project editor
+
+Sixteen Chromium cases passed, including the original sandbox/isolation,
+keyboard, responsive and draft-preservation checks. Native execution covers
+React JSX/TSX, Vue JS/TS SFCs (including scoped styles), Angular TypeScript and
+vanilla TypeScript imports. All 11 available native recipes mounted in each
+framework. React's 11 recipes passed TypeScript checking and Angular's 11
+passed strict template checking. Seven exported project combinations built;
+the downloaded ZIP passed independent integrity/readback checks. Guide build
+and typecheck passed. Remaining native recipes and Vue language-service checks
+are tracked in [editor coverage](editor-projects.md), not marked complete.
+

@@ -10,6 +10,8 @@ const editorPackages = [
   '@codemirror/language',
   '@codemirror/state',
   '@lezer/highlight',
+  'typescript', 'react', 'react-dom', 'vue', '@angular/core', '@angular/common',
+  '@angular/forms', '@angular/compiler', '@angular/platform-browser',
 ];
 const compare = (a, b) => a < b ? -1 : a > b ? 1 : 0;
 
@@ -73,7 +75,7 @@ export function collectEditorNotices() {
   }
   for (const name of editorPackages) visit(name, new URL('../package.json', import.meta.url));
   return 'Nasaq guide editor — third-party licenses\n\n'
-    + 'CodeMirror, Lezer, and their installed runtime dependencies.\n'
+    + 'CodeMirror, Lezer, TypeScript, native framework previews, and their installed runtime dependencies.\n'
     + [...notices].sort(([a], [b]) => compare(a, b))
       .map(([identity, text]) => `\n${'='.repeat(72)}\n${identity}\n${'='.repeat(72)}\n\n${text}${text.endsWith('\n') ? '' : '\n'}`)
       .join('');

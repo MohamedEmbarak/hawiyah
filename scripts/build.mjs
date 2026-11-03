@@ -52,6 +52,7 @@ for (const name of [
   }
 }
 run("node", ["scripts/build-preview.mjs"]);
+run("node", ["scripts/build-project-previews.mjs"]);
 if (!process.argv.includes("--packages")) {
   run("node", ["scripts/prepare-demo.mjs"]);
   run("pnpm", [

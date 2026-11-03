@@ -1,0 +1,22 @@
+{
+  "source": "Simple Icons",
+  "license": "CC0-1.0",
+  "purpose": "Identify supported frameworks and languages; names and logos belong to their respective owners.",
+  "icons": {
+    "react": {
+      "url": "https://github.com/simple-icons/simple-icons/blob/develop/icons/react.svg"
+    },
+    "vue": {
+      "url": "https://github.com/simple-icons/simple-icons/blob/develop/icons/vuedotjs.svg"
+    },
+    "angular": {
+      "url": "https://github.com/simple-icons/simple-icons/blob/develop/icons/angular.svg"
+    },
+    "javascript": {
+      "url": "https://github.com/simple-icons/simple-icons/blob/develop/icons/javascript.svg"
+    },
+    "typescript": {
+      "url": "https://github.com/simple-icons/simple-icons/blob/develop/icons/typescript.svg"
+    }
+  }
+}

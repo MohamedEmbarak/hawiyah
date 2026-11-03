@@ -130,3 +130,6 @@ Vue script setup JavaScript/TypeScript, and Angular TypeScript/templates.
 Syntax highlighting, filenames, imports, downloadable project files and
 validation must match the selected framework/language combination. Angular
 does not imply an unsupported plain-JavaScript component format.
+
+See [project editor coverage](editor-projects.md) for the current native recipe
+matrix, download setup, execution model and remaining catalog coverage.

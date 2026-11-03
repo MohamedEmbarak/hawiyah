@@ -24,3 +24,6 @@
 /* Keep scoped package names and API syntax readable inside Arabic prose. */
 .guide-article { overflow-wrap: anywhere; }
 .guide-article code:not([dir]){direction:ltr;unicode-bidi:isolate}
+.framework-icon { display: inline-block; flex: none; inline-size: 1.25rem; block-size: 1.25rem; vertical-align: -.2em; }
+.framework-name { display: inline-flex; align-items: center; gap: .3em; white-space: nowrap; vertical-align: baseline; }
+.framework-name .framework-icon { inline-size: 1em; block-size: 1em; }

@@ -2,9 +2,10 @@ import { catalog, escape as e, icon, type ComponentId, type Locale } from './dat
 import { componentGuides } from './component-guides';
 import { arabicComponentGuides } from './component-guides.ar';
 import { arabicArticle } from './guide-articles.ar';
-import type { IDEFiles } from './component-ide';
+import type { ProjectDraft } from './project-editor';
 import './guide.css';
 import { renderReadyExamples } from './ready-examples';
+import { decorateFrameworkMentions } from './framework-icons';
 
 const sourceRoot = 'https://github.com/MohamedEmbarak/nasaq/blob/main/';
 const source = (path: string, label: string) => `<a href="${sourceRoot + path}" target="_blank" rel="noopener">${e(label)} ↗</a>`;
@@ -235,7 +236,7 @@ export function renderComponentGuide(id: string, locale: Locale, preview: (id: C
 type GuideSession = {
   key: string;
   tab: string;
-  draft?: IDEFiles;
+  draft?: ProjectDraft;
   direction?: 'ltr' | 'rtl';
   surface?: string;
   variant?: string;
@@ -246,6 +247,7 @@ let guideSession: GuideSession | undefined;
 
 /** Owns only guide controls; component examples keep their normal vanilla lifecycle. */
 export function bindGuide(root: HTMLElement): () => void {
+  decorateFrameworkMentions(root);
   const demo = root.querySelector<HTMLElement>('[data-guide-demo]');
   const canvas = demo?.querySelector<HTMLElement>('[data-guide-canvas]');
   const key = demo?.dataset.guideKey;
@@ -277,9 +279,10 @@ export function bindGuide(root: HTMLElement): () => void {
     const ar = demo?.dataset.guideLocale === 'ar';
     host.innerHTML = `<p class="guide-editor-loading" role="status">${ar ? 'جارٍ تجهيز المحرّر…' : 'Preparing your playground…'}</p>`;
     try {
-      const { mountComponentIDE } = await import('./component-ide');
+      const { mountProjectEditor } = await import('./project-editor');
       if (disposed) return;
-      editorDispose = mountComponentIDE(host, {
+      editorDispose = mountProjectEditor(host, {
+        id: demo?.dataset.guideKey?.split(':')[0] || '',
         html: demo?.querySelector('#guide-code-panel pre code')?.textContent || demo?.dataset.guideUsage || '',
         locale: ar ? 'ar' : 'en',
         title: demo?.dataset.guideTitle || '',

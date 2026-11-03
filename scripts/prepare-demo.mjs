@@ -24,6 +24,9 @@ copyFileSync(resolve(root, "packages/styles/src/assets/fonts/riyal-provenance.js
 appendFileSync(resolve(dest, "NOTICE"), "\nThe NasaqRiyal symbol font is a U+20C1-only derivative of Noto Naskh Arabic 2.021, Copyright 2022 The Noto Project Authors, licensed under SIL OFL 1.1. Its license and reproducible provenance accompany this guide in licenses/riyal-LICENSE.txt and licenses/riyal-provenance.json.\n");
 appendFileSync(resolve(dest, "NOTICE"), "\nThe curated Stroke Rounded icons are Copyright (c) 2025 Hugeicons, MIT licensed. Their notice and source mapping accompany this guide in licenses/hugeicons-LICENSE.txt and licenses/icon-provenance.json.\n");
 writeFileSync(resolve(dest, "licenses/editor.txt"), collectEditorNotices());
+copyFileSync(resolve(root, "apps/playground/third-party/framework-icons-LICENSE.md"), resolve(dest, "licenses/framework-icons-LICENSE.md"));
+copyFileSync(resolve(root, "apps/playground/third-party/framework-icons-provenance.json"), resolve(dest, "licenses/framework-icons-provenance.json"));
+appendFileSync(resolve(dest, "NOTICE"), "\nThe guide identifies supported frameworks and languages using Simple Icons silhouettes (CC0-1.0). Their license and source mapping accompany this guide in licenses/framework-icons-LICENSE.md and licenses/framework-icons-provenance.json. Names and logos belong to their respective owners.\n");
 appendFileSync(resolve(dest, "NOTICE"), "\nThe live documentation editor includes CodeMirror, Lezer, and their runtime dependencies. Their full license notices accompany this guide in licenses/editor.txt.\n");
 copyFileSync(resolve(root, "packages/core/third-party/hijridate-LICENSE.txt"), resolve(dest, "licenses/hijridate-LICENSE.txt"));
 copyFileSync(resolve(root, "packages/core/third-party/provenance.json"), resolve(dest, "licenses/calendar-provenance.json"));

@@ -1,4 +1,15 @@
 /* A small Nasaq workbench: Arabic chrome, a real LTR editor, and an isolated preview. */
+.nq-project-editor { margin-block: 1.4rem; min-inline-size: 0; }
+.nq-project-subheader { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1rem; border: 1px solid var(--nq-color-border); border-radius: 1rem 1rem 0 0; background: var(--nq-color-surface-muted); color: var(--nq-color-text); }
+.nq-project-subheader-title { flex: 1 1 15rem; display: grid; gap: .25rem; }
+.nq-project-subheader-title strong { font-size: 1rem; }
+.nq-project-subheader-title small { color: var(--nq-color-text-muted); font-size: .75rem; }
+.nq-project-select { display: grid; gap: .35rem; min-inline-size: 10rem; font-size: .75rem; font-weight: 600; }
+.nq-project-select-control { display: block; position: relative; }
+.nq-project-select .nq-select { padding-inline-start: 2.75rem; min-inline-size: 11rem; font-size: .875rem; font-weight: 400; border-radius: .375rem; }
+.nq-project-selection-icon { position: absolute; z-index: 1; inset-inline-start: .75rem; inset-block-start: 50%; transform: translateY(-50%); display: flex; pointer-events: none; }
+.nq-project-editor .nq-ide { margin-block: 0; border-start-start-radius: 0; border-start-end-radius: 0; border-block-start: 0; }
+@media (max-width: 600px) { .nq-project-select { flex: 1 1 9rem; min-inline-size: 0; } .nq-project-select .nq-select { min-inline-size: 0; } }
 .nq-ide {
   --nq-ide-paper: #f7f5ee;
   --nq-ide-surface: #ffffff;

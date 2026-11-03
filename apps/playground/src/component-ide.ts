@@ -8,13 +8,15 @@ import { tags } from '@lezer/highlight';
 import { escape as escapeHTML, type Locale } from './data';
 import { previewRuntime, previewStyles, previewAssets } from './generated/preview-runtime';
 import './component-ide.css';
+import { frameworkIcon } from './framework-icons';
 
 type FileName = 'html' | 'css' | 'js';
 export type IDEFiles = Record<FileName, string>;
-type IDEOptions = { html: string; locale: Locale; title: string; draft?: IDEFiles; onDraftChange?: (draft: IDEFiles) => void };
+export type IDEProject = { framework: string; names: Record<FileName,string>; initial: IDEFiles; compile(files:IDEFiles):Promise<{html:string;css:string;js:string;runtime:string;angular?:boolean}> };
+type IDEOptions = { project?: IDEProject; html: string; locale: Locale; title: string; draft?: IDEFiles; onDraftChange?: (draft: IDEFiles) => void };
 type PreviewEnvironment = { mode: 'light' | 'dark'; theme: string; density: string; direction: 'rtl' | 'ltr'; tokens: [string, string][] };
 type PreviewMessage = { channel: string; token: string; run: number; type: string; text?: string; height?: number; level?: string };
-const files: { id: FileName; label: string; language: () => ReturnType<typeof htmlLanguage> }[] = [
+const defaultFiles: { id: FileName; label: string; language: () => ReturnType<typeof htmlLanguage> }[] = [
   { id: 'html', label: 'index.html', language: htmlLanguage },
   { id: 'css', label: 'style.css', language: cssLanguage },
   { id: 'js', label: 'script.js', language: javascriptLanguage },
@@ -92,7 +94,7 @@ function inlineScript(value: string): string {
 /** The bootstrap is serialized into a unique-origin sandbox, never executed in the guide window. */
 function previewBootstrap(payload: {
   token: string; run: number; nonce: string; html: string; css: string; js: string;
-  assets: Record<string, string>; tokens: [string, string][]; blocked: string; navigation: string; submitted: string; unsupported: string;
+  native?: boolean; assets: Record<string, string>; tokens: [string, string][]; blocked: string; navigation: string; submitted: string; unsupported: string;
 }): void {
   for (const [name, value] of payload.tokens) document.documentElement.style.setProperty(name, value);
   const bridge = (type: string, extra: Record<string, unknown> = {}) => {
@@ -178,8 +180,7 @@ function previewBootstrap(payload: {
   }, { once: true });
   try {
     const runtime = (window as typeof window & { NasaqVanilla?: { enhance(root: ParentNode): () => void } }).NasaqVanilla;
-    if (!runtime?.enhance) throw new Error(payload.unsupported);
-    cleanup = runtime.enhance(root);
+    if (!payload.native) { if (!runtime?.enhance) throw new Error(payload.unsupported); cleanup = runtime.enhance(root); }
     const script = document.createElement('script');
     script.nonce = payload.nonce;
     script.textContent = `${payload.js}\n//# sourceURL=nasaq-playground.js`;
@@ -189,28 +190,29 @@ function previewBootstrap(payload: {
   reportHeight();
 }
 
-function previewDocument(options: IDEOptions, content: Record<FileName, string>, token: string, run: number, environment: PreviewEnvironment): string {
+function previewDocument(options: IDEOptions, content: Record<FileName, string>, token: string, run: number, environment: PreviewEnvironment, project?: {runtime:string;angular?:boolean}): string {
   const labels = copy[options.locale];
   const nonce = crypto.randomUUID().replaceAll('-', '');
-  const policy = `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'`;
+  const policy = `default-src 'none'; script-src 'nonce-${nonce}' ${project?.angular ? "'unsafe-eval'" : ''}; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'`;
   // Both policies apply. The first requires a nonce; the second forbids external
   // script URLs even if user code reads and reuses that nonce inside its sandbox.
-  const scriptPolicy = "script-src 'unsafe-inline'";
+  const scriptPolicy = "script-src 'unsafe-inline'" + (project?.angular ? " 'unsafe-eval'" : "");
   const payload = {
-    ...content, html: content.html, token, run, nonce, assets: previewAssets, tokens: environment.tokens,
+    ...content, native: !!project, html: content.html, token, run, nonce, assets: previewAssets, tokens: environment.tokens,
     blocked: labels.blocked, navigation: labels.navigation, submitted: labels.submitted, unsupported: labels.unsupported,
   };
   return `<!doctype html><html lang="${options.locale}" dir="${environment.direction}" data-nq-theme="${escapeHTML(environment.theme)}" data-nq-mode="${environment.mode}" data-nq-density="${escapeHTML(environment.density)}"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${escapeHTML(policy)}"><meta http-equiv="Content-Security-Policy" content="${escapeHTML(scriptPolicy)}"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${previewStyles.replace(/<\/style/gi, '<\\/style')}
 html{color-scheme:${environment.mode};background:var(--nq-color-surface,#fff)}body{margin:0;padding:20px;color:var(--nq-color-text,#142d30);font-family:var(--nq-font-sans,system-ui,sans-serif);font-size:16px;line-height:1.65}*,*::before,*::after{box-sizing:border-box}#nasaq-preview-root{display:flow-root;min-inline-size:0}img{max-inline-size:100%}button,input,select,textarea{font:inherit}dialog{max-inline-size:calc(100vw - 24px)}.nq-app-shell{min-block-size:24rem}
-</style><title>${escapeHTML(options.title)}</title></head><body><div id="nasaq-preview-root"></div><script nonce="${nonce}">${inlineScript(previewRuntime)}</script><script nonce="${nonce}">(${previewBootstrap.toString()})(${embeddedJSON(payload)});</script></body></html>`;
+</style><title>${escapeHTML(options.title)}</title></head><body><div id="nasaq-preview-root"></div><script nonce="${nonce}">${inlineScript(project?.runtime ?? previewRuntime)}</script><script nonce="${nonce}">(${previewBootstrap.toString()})(${embeddedJSON(payload)});</script></body></html>`;
 }
 
 /** Mount one independent HTML/CSS/JS workbench. Cleanup is mandatory on route teardown. */
 export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () => void {
   const labels = copy[options.locale];
+  const files = defaultFiles.map(file => options.project ? {...file,label:options.project.names[file.id],language: () => file.id==='css' ? cssLanguage() : /\.(tsx?|jsx?)$/.test(options.project!.names[file.id]) ? javascriptLanguage({typescript:/\.tsx?$/.test(options.project!.names[file.id]),jsx:/\.[jt]sx$/.test(options.project!.names[file.id])}) : htmlLanguage()} : file);
   const instance = crypto.randomUUID();
   const token = crypto.randomUUID();
-  const initial: Record<FileName, string> = {
+  const initial: Record<FileName, string> = options.project?.initial ?? {
     html: options.html,
     css: `/* ${labels.cssComment} */\n\n`,
     js: `// ${labels.jsComment}\nconst root = document.querySelector('#nasaq-preview-root');\n\n// ${labels.jsEvent}\n`,
@@ -221,10 +223,10 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
   root.dataset.locale = options.locale;
   root.dir = options.locale === 'ar' ? 'rtl' : 'ltr';
   root.setAttribute('aria-label', `${labels.project}: ${options.title}`);
-  root.innerHTML = `<div class="nq-ide-toolbar"><div class="nq-ide-project"><span class="nq-ide-project-icon" aria-hidden="true">⌘</span><div><strong>${escapeHTML(labels.project)}</strong><small>${escapeHTML(options.title)}</small></div></div><div class="nq-ide-actions"><label class="nq-ide-auto"><input type="checkbox" data-ide-auto checked>${escapeHTML(labels.auto)}</label><button class="nq-ide-button" type="button" data-ide-copy>${escapeHTML(labels.copy)}</button><button class="nq-ide-button" type="button" data-ide-reset>${escapeHTML(labels.reset)}</button><button class="nq-ide-button" type="button" data-primary data-ide-run><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7Z"/></svg> ${escapeHTML(labels.run)}</button></div></div>
-    <div class="nq-ide-workspace"><div class="nq-ide-editor-panel"><div class="nq-ide-tabs" role="tablist" aria-label="${escapeHTML(labels.files)}" dir="ltr">${files.map((file, i) => `<button class="nq-ide-tab" type="button" role="tab" id="${instance}-${file.id}-tab" aria-controls="${instance}-${file.id}-panel" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-ide-file="${file.id}"><span class="nq-ide-file-icon" data-language="${file.id}" aria-hidden="true">${file.id === 'html' ? '〈〉' : file.id === 'css' ? '#' : 'JS'}</span>${file.label}</button>`).join('')}</div><div class="nq-ide-editors">${files.map((file, i) => `<div class="nq-ide-editor" role="tabpanel" id="${instance}-${file.id}-panel" aria-labelledby="${instance}-${file.id}-tab" data-ide-editor="${file.id}" ${i ? 'hidden' : ''}></div>`).join('')}</div></div>
+  root.innerHTML = `<div class="nq-ide-toolbar"><div class="nq-ide-project"><span class="nq-ide-project-icon" aria-hidden="true">${options.project ? frameworkIcon(options.project.framework) : '⌘'}</span><div><strong>${escapeHTML(labels.project)}</strong><small>${escapeHTML(options.title)}</small></div></div><div class="nq-ide-actions"><label class="nq-ide-auto"><input type="checkbox" data-ide-auto checked>${escapeHTML(labels.auto)}</label><button class="nq-ide-button" type="button" data-ide-copy>${escapeHTML(labels.copy)}</button><button class="nq-ide-button" type="button" data-ide-reset>${escapeHTML(labels.reset)}</button><button class="nq-ide-button" type="button" data-primary data-ide-run><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7Z"/></svg> ${escapeHTML(labels.run)}</button></div></div>
+    <div class="nq-ide-workspace"><div class="nq-ide-editor-panel"><div class="nq-ide-tabs" role="tablist" aria-label="${escapeHTML(labels.files)}" dir="ltr">${files.map((file, i) => `<button class="nq-ide-tab" type="button" role="tab" id="${instance}-${file.id}-tab" aria-controls="${instance}-${file.id}-panel" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-ide-file="${file.id}"><span class="nq-ide-file-icon" data-language="${file.id}" aria-hidden="true">${/\.tsx?$/.test(file.label) ? frameworkIcon('typescript') : /\.jsx?$/.test(file.label) ? frameworkIcon('javascript') : file.label.endsWith('.vue') ? frameworkIcon('vue') : file.id === 'html' ? '〈〉' : '#'}</span>${file.label}</button>`).join('')}</div><div class="nq-ide-editors">${files.map((file, i) => `<div class="nq-ide-editor" role="tabpanel" id="${instance}-${file.id}-panel" aria-labelledby="${instance}-${file.id}-tab" data-ide-editor="${file.id}" ${i ? 'hidden' : ''}></div>`).join('')}</div></div>
     <div class="nq-ide-preview-panel"><div class="nq-ide-preview-bar"><strong>${escapeHTML(labels.preview)}</strong><label><span class="nq-sr-only">${escapeHTML(labels.width)}</span><select class="nq-ide-preview-size" data-ide-size><option value="desktop">${escapeHTML(labels.desktop)}</option><option value="mobile">${escapeHTML(labels.mobile)}</option></select></label></div><div class="nq-ide-preview-stage" data-size="desktop"></div></div></div>
-    <div class="nq-ide-footer"><span class="nq-ide-status" role="status" aria-live="polite" data-state="running">${escapeHTML(labels.running)}</span><button class="nq-ide-console-toggle" type="button" aria-expanded="false" aria-controls="${instance}-console" hidden>${escapeHTML(labels.console)}</button><span class="nq-ide-shortcut">${escapeHTML(labels.shortcut)}</span></div><pre class="nq-ide-console" id="${instance}-console" dir="ltr" tabindex="0" aria-label="${escapeHTML(labels.console)}" hidden></pre><p class="nq-ide-help">${escapeHTML(labels.help)}</p>`;
+    <div class="nq-ide-footer"><span class="nq-ide-status" role="status" aria-live="polite" data-state="running">${escapeHTML(labels.running)}</span><button class="nq-ide-console-toggle" type="button" aria-expanded="false" aria-controls="${instance}-console" hidden>${escapeHTML(labels.console)}</button><span class="nq-ide-shortcut">${escapeHTML(labels.shortcut)}</span></div><pre class="nq-ide-console" id="${instance}-console" dir="ltr" tabindex="0" aria-label="${escapeHTML(labels.console)}" hidden></pre><p class="nq-ide-help">${escapeHTML(options.project ? (options.locale==='ar' ? 'ملفات مشروع فعلية. تُجمّع الشفرة محليًا وتعمل في معاينة معزولة؛ لا تُرسل البيانات أو تستورد مكتبات خارجية.' : 'Real project files, compiled locally in an isolated preview. No data is sent and external libraries cannot be imported.') : labels.help)}</p>`;
   host.replaceChildren(root);
   const abort = new AbortController();
   const listen = (target: EventTarget, type: string, listener: EventListener) => target.addEventListener(type, listener, { signal: abort.signal });
@@ -258,10 +260,11 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
     consoleToggle.textContent = `${labels.console} (${messages.length})`;
     if (level === 'error') { runFailed = true; setStatus('error', labels.error); showConsole(true); }
   };
-  const runPreview = () => {
+  const runPreview = async () => {
     if (disposed) return;
     clearTimeout(timer); clearTimeout(readyTimer);
     run++;
+    const currentRun = run;
     runFailed = false;
     messages = [];
     consoleOutput.textContent = '';
@@ -278,7 +281,13 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
       tokens: Array.from(document.documentElement.style).filter(name => name.startsWith('--nq-')).map(name => [name, document.documentElement.style.getPropertyValue(name)]),
     };
     root.dataset.mode = environment.mode;
-    frame.srcdoc = previewDocument(options, content, token, run, environment);
+    let compiled: Awaited<ReturnType<IDEProject['compile']>> | undefined;
+    if(options.project) {
+      try { compiled=await options.project.compile(content); }
+      catch(error) { if(currentRun===run && !disposed) appendMessage('error',String(error)); return; }
+      if(disposed || currentRun!==run)return;
+    }
+    frame.srcdoc = previewDocument(options, compiled ?? content, token, run, environment, compiled);
     if (!frame.isConnected) stage.append(frame);
     readyTimer = setTimeout(() => {
       if (!disposed && status.dataset.state === 'running') appendMessage('error', labels.unsupported);
