@@ -14,8 +14,8 @@ export function Link({ external, disabled=false, variant, 'data-variant': dataVa
 }
 export interface IconButtonProps extends ButtonProps { label: string }
 export function IconButton({ label, className, children, ...props }: IconButtonProps) { return <Button {...props} aria-label={label} className={cx('nq-icon-button', className)}><span aria-hidden="true">{children}</span></Button>; }
-export interface ButtonGroupProps extends ComponentPropsWithRef<'div'> { label: string }
-export function ButtonGroup({ label, className, ...props }: ButtonGroupProps) { return <div {...props} role="group" aria-label={label} className={cx('nq-button-group', className)} />; }
+export interface ButtonGroupProps extends ComponentPropsWithRef<'div'> { label: string; variant?: 'default' | 'attached'; orientation?: 'horizontal' | 'vertical'; 'data-variant'?: string; 'data-orientation'?: string }
+export function ButtonGroup({ label, variant, orientation, className, ...props }: ButtonGroupProps) { return <div {...props} data-variant={variant ?? props['data-variant']} data-orientation={orientation ?? props['data-orientation']} role="group" aria-label={label} className={cx('nq-button-group', className)} />; }
 export interface ChipProps extends ComponentPropsWithRef<'span'> { onRemove?: () => void; removeLabel?: string; disabled?: boolean; tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'info' }
 export function Chip({ onRemove, removeLabel = 'Remove', disabled, tone = 'neutral', children, className, ...props }: ChipProps) { return <span {...props} className={cx('nq-chip', className)} data-tone={tone}>{children}{onRemove && <Button variant="ghost" size="sm" disabled={disabled} aria-label={removeLabel} onClick={onRemove}>×</Button>}</span>; }
 export interface DescriptionItem { term: ReactNode; description: ReactNode; key?: Key }

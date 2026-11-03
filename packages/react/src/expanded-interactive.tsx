@@ -1,6 +1,6 @@
 import { cloneElement, useEffect, useId, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, ComponentPropsWithRef, ReactElement, ReactNode } from 'react';
-import { getDirection, getNextEnabledIndex } from '@nasaq/core';
+import { getDirection, getNextEnabledIndex, observeReadonlyChoice } from '@nasaq/core';
 import type { Option } from '@nasaq/core';
 import { Button } from './forms.js';
 import { Dialog } from './interactive.js';
@@ -13,12 +13,14 @@ export interface SingleToggleGroupProps extends ToggleBase { multiple?: false; v
 export interface MultipleToggleGroupProps extends ToggleBase { multiple: true; value?: readonly string[]; defaultValue?: readonly string[]; onValueChange?: (value: string[]) => void }
 export type ToggleGroupProps = SingleToggleGroupProps | MultipleToggleGroupProps;
 export function ToggleGroup(props: ToggleGroupProps) {
-  const { options, label, name, form, readOnly, variant = 'segmented', multiple, value, defaultValue, onValueChange, className, disabled, ...native } = props;
+  const { options, label, name, form, readOnly, variant = 'segmented', multiple, value, defaultValue, onValueChange, className, disabled, ref, ...native } = props;
+  const group = useRef<HTMLFieldSetElement | null>(null);
+  useEffect(() => { const guards = Array.from(group.current?.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? [], observeReadonlyChoice); return () => guards.forEach(guard => guard.destroy()); });
   const id = useId(); const input = useRef<HTMLInputElement | null>(null); const [internal, setInternal] = useState<string | readonly string[]>(defaultValue ?? (multiple ? [] : '')); const current = value ?? internal;
   const change = (next: string | string[]) => { if (disabled || readOnly) return; if (value === undefined) setInternal(next); if (props.multiple) props.onValueChange?.(next as string[]); else props.onValueChange?.(next as string); };
   useFormReset(input, () => { if (value === undefined) setInternal(defaultValue ?? (multiple ? [] : '')); }, form);
   const values = typeof current === 'string' ? [current] : current;
-  return <fieldset {...native} className={cx('nq-toggle-group', className)} data-variant={variant} disabled={disabled}><legend className="nq-label">{label}</legend>{options.map(option => multiple ? <Button key={option.value} variant="secondary" aria-pressed={values.includes(option.value)} disabled={disabled || option.disabled} onClick={() => change(values.includes(option.value) ? values.filter(item => item !== option.value) : [...values, option.value])}>{option.label}</Button> : <label className="nq-choice" key={option.value}><input className="nq-radio" type="radio" name={name ?? id} form={form} value={option.value} disabled={option.disabled} checked={current === option.value} onChange={() => change(option.value)} />{option.label}</label>)}<input ref={input} type="hidden" form={form} disabled />{multiple && values.filter(item => options.some(option => option.value === item && !option.disabled)).map(item => <input key={item} type="hidden" name={name} form={form} value={item} disabled={disabled} />)}</fieldset>;
+  return <fieldset {...native} ref={node => {group.current=node;assignRef(ref,node);}} data-nq-readonly={readOnly || undefined} className={cx('nq-toggle-group', className)} data-variant={variant} disabled={disabled}><legend className="nq-label">{label}</legend>{options.map(option => multiple ? <Button key={option.value} variant="secondary" aria-pressed={values.includes(option.value)} aria-disabled={readOnly || undefined} disabled={disabled || option.disabled} onClick={() => change(values.includes(option.value) ? values.filter(item => item !== option.value) : [...values, option.value])}>{option.label}</Button> : <label className="nq-choice" key={option.value}><input className="nq-radio" type="radio" name={name ?? id} form={form} value={option.value} readOnly={readOnly} aria-disabled={readOnly || undefined} disabled={option.disabled} checked={current === option.value} onChange={() => change(option.value)} />{option.label}</label>)}<input ref={input} type="hidden" form={form} disabled />{multiple && values.filter(item => options.some(option => option.value === item && !option.disabled)).map(item => <input key={item} type="hidden" name={name} form={form} value={item} disabled={disabled} />)}</fieldset>;
 }
 export interface PopoverProps extends Omit<ComponentPropsWithRef<'div'>, 'title'> { title: ReactNode; trigger: ReactElement<ButtonHTMLAttributes<HTMLButtonElement>>; open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void }
 export function Popover({ title, trigger, open: controlled, defaultOpen = false, onOpenChange, children, className, ref, ...props }: PopoverProps) {

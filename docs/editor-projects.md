@@ -23,7 +23,7 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 29 components: Button, IconButton,
+Native project recipes currently cover 30 components: Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Table, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader and PortalFooter. Other component
@@ -80,3 +80,12 @@ React JSX/TSX, Vue JS/TS and Angular TypeScript, totaling 145 rendered previews.
 These checks verify mounting and the named interaction assertions in
 `tests/browser/project-editor.spec.ts`; they do not establish exhaustive behavior
 coverage for every component.
+
+ButtonGroup brings current coverage to 30 native recipes, with mixed icon/text
+horizontal and vertical attached groups. ToggleGroup now demonstrates six
+selection/state combinations. The final 18-case Chromium run passes, including
+all 150 native recipe previews (React JSX/TSX, Vue JS/TS and Angular TypeScript),
+focused RTL/LTR segmented checks and editor regressions. All 30 React recipes
+pass TypeScript checks, all 30 Angular recipes pass strict template checks,
+and all seven exported framework/language projects build. See
+[NIC segmented controls](nic-segmented.md) for source evidence and limitations.

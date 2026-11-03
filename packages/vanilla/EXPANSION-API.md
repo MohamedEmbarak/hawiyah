@@ -109,6 +109,15 @@ when the value changes. The composed picker emits one public value event.
 <div data-nq="toast-region" class="nq-toast-region" aria-label="Notifications"><div data-nq-toast class="nq-toast"><p>Changes saved</p><button type="button" data-nq-dismiss aria-label="Dismiss notification">×</button></div></div>
 ```
 
+Set `data-nq-readonly="true"` on the group to prevent pointer/keyboard selection
+while keeping its controls focusable and its enabled values available to forms.
+Changing that attribute restores editing. `disabled` fieldsets and disabled
+options do not submit values; multiple mode uses `data-nq-name` for repeated
+entries. Use `.nq-toggle-group` with `data-variant="segmented|outline"` for styles.
+Use `.nq-button-group` with `data-variant="attached"` and optional
+`data-orientation="vertical"` for independent joined actions; it needs no controller.
+
+
 Popover uses normal Tab and closes on outside press/Escape; Menu adds roving
 ArrowUp/Down/Home/End and printable typeahead. Drawer reuses native Dialog.
 Toast messages are caller-owned and have no automatic expiration; each dismiss

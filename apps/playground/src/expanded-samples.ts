@@ -1,3 +1,4 @@
+import {toggleGroupMarkup} from './segmented-demo';
 import {portalFooterMarkup} from './portal-footer-demo';
 import {siteVerificationMarkup} from './site-verification-demo';
 import { statusMarkup } from "./ready-examples";
@@ -68,7 +69,7 @@ export function expandedSample(
     case "file-dropzone":
       return `<label class="nq-file-dropzone" data-nq="file-dropzone" data-nq-max-size="5242880">${icon("upload", 24)}<strong>${t("Choose or drop documents", "اختر المستندات أو أفلتها")}</strong><span class="nq-hint">${t("PDF, PNG · 5 MB", "PDF، PNG · 5 ميغابايت")}</span><input type="file" data-nq-file-input name="documents" accept=".pdf,.png" multiple><span data-nq-file-status role="status"></span></label>`;
     case "toggle-group":
-      return `<fieldset class="nq-toggle-group" data-nq="toggle-group" data-variant="segmented"><legend class="nq-label">${t("View mode", "نمط العرض")}</legend>${[t("List", "قائمة"), t("Grid", "شبكة"), t("Map", "خريطة")].map((s, i) => `<label><input type="radio" name="${uid}" value="${i}" ${i === 0 ? "checked" : ""}><span>${s}</span></label>`).join("")}</fieldset>`;
+      return toggleGroupMarkup(locale,'segmented',uid);
     case "popover":
       return `<div class="nq-popover" data-nq="popover">${b(t("More information", "معلومات إضافية"), "data-nq-trigger")}<div class="nq-popover-panel" data-nq-panel role="region" aria-label="${t("Service information", "معلومات الخدمة")}" hidden><p>${t("Keep useful context close to the action.", "ضع المعلومات المفيدة بالقرب من الإجراء.")}</p><a href="#discover" class="nq-link">${t("Explore services", "استكشف الخدمات")}</a>${b(t("Close", "إغلاق"), "data-nq-close", "ghost")}</div></div>`;
     case "menu":

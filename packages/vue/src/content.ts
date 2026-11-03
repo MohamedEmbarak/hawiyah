@@ -48,13 +48,13 @@ export const IconButton = defineComponent({
 export const ButtonGroup = defineComponent({
   name: "NqButtonGroup",
   inheritAttrs: false,
-  props: { label: { type: String, required: true } },
+  props: { label: { type: String, required: true }, variant:String as PropType<'default'|'attached'>, orientation:String as PropType<'horizontal'|'vertical'> },
   setup(props, { attrs, slots }) {
     return () =>
       h(
         "div",
         mergeProps(attrs, {
-          class: "nq-button-group",
+          class: "nq-button-group", "data-variant":props.variant ?? attrs["data-variant"], "data-orientation":props.orientation ?? attrs["data-orientation"],
           role: "group",
           "aria-label": props.label,
         }),

@@ -1,0 +1,117 @@
+/* NIC global.css 1294–1386. See docs/nic-segmented.md for cascade,
+   disabled, dark-mode and focus adaptations. Calendar switches are separate. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-profile-segment-gap: 0px;
+  --nq-profile-segment-group-padding: 0px 0.5rem;
+  --nq-profile-segment-group-border: 0px;
+  --nq-profile-segment-group-background: transparent;
+  --nq-profile-segment-min-width: 4.75rem;
+  --nq-profile-segment-padding: 0.375rem 0.75rem;
+  --nq-profile-segment-font: 1rem;
+  --nq-profile-segment-leading: 1.5rem;
+  --nq-profile-segment-radius: 0px;
+  --nq-profile-segment-outer-radius: 0.5rem;
+  --nq-profile-segment-border: 0px;
+  --nq-profile-segment-selected-border: transparent;
+  --nq-profile-segment-selected-shadow: none;
+  --nq-profile-segment-separator: 1px;
+  --nq-profile-segment-transition: none;
+  --nq-profile-segment-focus-width: 2px;
+  --nq-profile-segment-focus-offset: -3px;
+  --nq-profile-segment-mobile-height: 3rem;
+  --nq-profile-segment-mobile-padding: 1.25rem;
+  --nq-profile-segment-mobile-width: 100%;
+  --nq-profile-segment-mobile-flex: 1 1 auto;
+}
+:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
+  --nq-profile-segment-gap: initial;
+  --nq-profile-segment-group-padding: initial;
+  --nq-profile-segment-group-border: initial;
+  --nq-profile-segment-group-background: initial;
+  --nq-profile-segment-min-width: initial;
+  --nq-profile-segment-padding: initial;
+  --nq-profile-segment-font: initial;
+  --nq-profile-segment-leading: initial;
+  --nq-profile-segment-radius: initial;
+  --nq-profile-segment-outer-radius: initial;
+  --nq-profile-segment-border: initial;
+  --nq-profile-segment-selected-border: initial;
+  --nq-profile-segment-selected-shadow: initial;
+  --nq-profile-segment-separator: initial;
+  --nq-profile-segment-transition: initial;
+  --nq-profile-segment-focus-width: initial;
+  --nq-profile-segment-focus-offset: initial;
+  --nq-profile-segment-mobile-height: initial;
+  --nq-profile-segment-mobile-padding: initial;
+  --nq-profile-segment-mobile-width: initial;
+  --nq-profile-segment-mobile-flex: initial;
+}
+.nq-toggle-group:not([data-variant='outline']) {
+  gap: var(--nq-profile-segment-gap, var(--nq-space-1));
+  padding: var(--nq-profile-segment-group-padding, var(--nq-space-1));
+  border-width: var(--nq-profile-segment-group-border, 1px);
+  background: var(--nq-profile-segment-group-background, var(--nq-color-surface-muted));
+}
+.nq-toggle-group:not([data-variant='outline']) > :is(button,label) {
+  box-sizing: border-box; min-inline-size: var(--nq-profile-segment-min-width, 0px); min-block-size: var(--nq-control-height-sm);
+  padding: var(--nq-profile-segment-padding, var(--nq-space-1) var(--nq-space-3));
+  border-width: var(--nq-profile-segment-border, 1px); border-radius: var(--nq-profile-segment-radius, var(--nq-radius-sm));
+  background: transparent; color: var(--nq-dga-on, var(--nq-color-text-muted)) var(--nq-dga-off, var(--nq-color-text));
+  font-family: var(--nq-font-sans); font-size: var(--nq-profile-segment-font, var(--nq-text-sm));
+  line-height: var(--nq-profile-segment-leading, var(--nq-leading-normal)); font-weight: var(--nq-weight-medium);
+  box-shadow: none; transition: var(--nq-profile-segment-transition, background-color var(--nq-duration-fast));
+}
+.nq-toggle-group:not([data-variant='outline']) > :is(button,label):first-of-type { border-start-start-radius: var(--nq-profile-segment-outer-radius, var(--nq-radius-sm)); border-end-start-radius: var(--nq-profile-segment-outer-radius, var(--nq-radius-sm)); }
+.nq-toggle-group:not([data-variant='outline']) > :is(button,label):last-of-type { border-start-end-radius: var(--nq-profile-segment-outer-radius, var(--nq-radius-sm)); border-end-end-radius: var(--nq-profile-segment-outer-radius, var(--nq-radius-sm)); }
+.nq-toggle-group:not([data-variant='outline']) > :is(button,label) + :is(button,label)::before { content:''; pointer-events:none; position:absolute; inset-block:0; inset-inline-start:0; inline-size:var(--nq-profile-segment-separator,0px); background:var(--nq-color-border); }
+.nq-toggle-group:not([data-variant='outline']) > :is(button,label):hover:not(:disabled,[aria-disabled='true'],:has(input:disabled,input[readonly]),[aria-pressed='true'],:has(input:checked)) { background:var(--nq-dga-on,transparent) var(--nq-dga-off,var(--nq-color-segment-hover)); color:var(--nq-dga-on,var(--nq-color-primary-text)) var(--nq-dga-off,var(--nq-color-text)); }
+.nq-toggle-group:not([data-variant='outline']) > :is([aria-pressed='true'],label:has(input:checked)) {
+  background:var(--nq-color-segment-selected); color:var(--nq-color-on-segment-selected);
+  border-color:var(--nq-profile-segment-selected-border,var(--nq-color-border)); box-shadow:var(--nq-profile-segment-selected-shadow,var(--nq-shadow-sm));
+}
+.nq-toggle-group:not([data-variant='outline']) > :is(button,label):active:not(:disabled,[aria-disabled='true'],:has(input:disabled,input[readonly])) { background:var(--nq-color-segment-selected); color:var(--nq-color-on-segment-selected); box-shadow:none; }
+.nq-toggle-group:not([data-variant='outline']) > :is([aria-pressed='true'],label:has(input:checked),:active)::before,
+.nq-toggle-group:not([data-variant='outline']) > :is([aria-pressed='true'],label:has(input:checked),:active) + :is(button,label)::before { opacity:0; }
+/* A focus ring stays visible on selected and read-only choices. */
+.nq-toggle-group:not([data-variant='outline']) > :is(button:focus-visible,label:has(input:focus-visible)) {
+  background:var(--nq-color-segment-selected); color:var(--nq-color-on-segment-selected);
+  outline:var(--nq-profile-segment-focus-width,var(--nq-focus-width)) solid var(--nq-dga-on,var(--nq-color-focus)) var(--nq-dga-off,var(--nq-color-on-segment-selected));
+  outline-offset:var(--nq-profile-segment-focus-offset,1px); z-index:1;
+}
+.nq-toggle-group:not([data-variant='outline']) > :is(button:disabled,label:has(input:disabled)) { background:var(--nq-color-disabled); color:var(--nq-color-on-disabled); box-shadow:none; cursor:not-allowed; }
+.nq-toggle-group:not([data-variant='outline']) > :is(button:disabled[aria-pressed='true'],label:has(input:disabled:checked)) { outline:1px solid var(--nq-color-border-strong); outline-offset:-1px; }
+@media (max-width:576px) {
+  .nq-toggle-group:not([data-variant='outline']) { inline-size:var(--nq-profile-segment-mobile-width,auto); }
+  .nq-toggle-group:not([data-variant='outline']) > :is(button,label) { flex:var(--nq-profile-segment-mobile-flex,0 1 auto); min-block-size:var(--nq-profile-segment-mobile-height,var(--nq-control-height-sm)); padding-inline:var(--nq-profile-segment-mobile-padding,var(--nq-space-3)); }
+}
+@media (prefers-reduced-motion:reduce) { .nq-toggle-group > :is(button,label) { transition:none; } }
+@media (forced-colors:active) {
+  .nq-toggle-group:not([data-variant='outline']) > :is(button,label) { background:Canvas; color:CanvasText; border:1px solid ButtonText; }
+  .nq-toggle-group:not([data-variant='outline']) > :is([aria-pressed='true'],label:has(input:checked)) { background:Highlight; color:HighlightText; outline:2px solid Highlight; outline-offset:-2px; }
+  .nq-toggle-group:not([data-variant='outline']) > :is(button:focus-visible,label:has(input:focus-visible)) { outline:2px solid Highlight; outline-offset:2px; }
+  .nq-toggle-group:not([data-variant='outline']) > :is(button:disabled,label:has(input:disabled)) { color:GrayText; background:Canvas; border-color:GrayText; }
+}
+/* Attached action groups keep ordinary button semantics. Support Angular's
+   native IconButton wrapper without reparenting framework-owned content. */
+.nq-button-group > nq-icon-button { display:inline-flex; }
+.nq-button-group[data-variant='attached'] > nq-icon-button > .nq-button { inline-size:100%; }
+.nq-button-group[data-variant='attached'] > :is(.nq-button,nq-icon-button) + :is(.nq-button,nq-icon-button) { margin-inline-start:-1px; }
+.nq-button-group[data-variant='attached'] > nq-icon-button:not(:first-child) > .nq-button { border-start-start-radius:0; border-end-start-radius:0; }
+.nq-button-group[data-variant='attached'] > nq-icon-button:not(:last-child) > .nq-button { border-start-end-radius:0; border-end-end-radius:0; }
+.nq-button-group[data-variant='attached'][data-orientation='vertical'] > :is(.nq-button,nq-icon-button) { margin-inline:0; }
+.nq-button-group[data-variant='attached'][data-orientation='vertical'] > :is(.nq-button,nq-icon-button) + :is(.nq-button,nq-icon-button) { margin-block-start:-1px; }
+.nq-button-group[data-variant='attached'][data-orientation='vertical'] > .nq-button,
+.nq-button-group[data-variant='attached'][data-orientation='vertical'] > nq-icon-button > .nq-button { border-radius:0; }
+.nq-button-group[data-variant='attached'][data-orientation='vertical'] > .nq-button:first-child,
+.nq-button-group[data-variant='attached'][data-orientation='vertical'] > nq-icon-button:first-child > .nq-button { border-start-start-radius:var(--nq-profile-control-radius,var(--nq-radius-md)); border-start-end-radius:var(--nq-profile-control-radius,var(--nq-radius-md)); }
+.nq-button-group[data-variant='attached'][data-orientation='vertical'] > .nq-button:last-child,
+.nq-button-group[data-variant='attached'][data-orientation='vertical'] > nq-icon-button:last-child > .nq-button { border-end-start-radius:var(--nq-profile-control-radius,var(--nq-radius-md)); border-end-end-radius:var(--nq-profile-control-radius,var(--nq-radius-md)); }
+.nq-button-group > nq-icon-button:has(:focus-visible) { position:relative; z-index:1; }
+
+/* Read-only pressed buttons remain keyboard stops, including outline mode. */
+.nq-toggle-group[data-nq-readonly='true'][data-variant='outline'] > button[aria-disabled='true']:focus-visible:not(:disabled) {
+  outline:var(--nq-focus-width) solid var(--nq-color-focus); outline-offset:2px;
+}
+@media (forced-colors:active) {
+  .nq-toggle-group[data-nq-readonly='true'][data-variant='outline'] > button[aria-disabled='true']:focus-visible:not(:disabled) { outline:2px solid Highlight; }
+}

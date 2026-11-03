@@ -136,6 +136,9 @@
   --nq-palette-light-link-neutral-hover: #4D5761;
   --nq-palette-light-link-neutral-active: #384250;
   --nq-palette-light-breadcrumb-current: #4D5761;
+  --nq-palette-light-segment-selected: #0C111B;
+  --nq-palette-light-on-segment-selected: #FFFFFF;
+  --nq-palette-light-segment-hover: #F9FAFB;
   --nq-palette-dark-canvas: #111927;
   --nq-palette-dark-surface: #1F2A37;
   --nq-palette-dark-surface-raised: #1F2A37;
@@ -207,6 +210,9 @@
   --nq-palette-dark-link-neutral-hover: #D2D6DB;
   --nq-palette-dark-link-neutral-active: #FFFFFF;
   --nq-palette-dark-breadcrumb-current: #D2D6DB;
+  --nq-palette-dark-segment-selected: #E5E7EB;
+  --nq-palette-dark-on-segment-selected: #0C111B;
+  --nq-palette-dark-segment-hover: #384250;
   --nq-color-canvas: var(--nq-palette-light-canvas);
   --nq-color-surface: var(--nq-palette-light-surface);
   --nq-color-surface-raised: var(--nq-palette-light-surface-raised);
@@ -278,6 +284,9 @@
   --nq-color-link-neutral-hover: var(--nq-palette-light-link-neutral-hover);
   --nq-color-link-neutral-active: var(--nq-palette-light-link-neutral-active);
   --nq-color-breadcrumb-current: var(--nq-palette-light-breadcrumb-current);
+  --nq-color-segment-selected: var(--nq-palette-light-segment-selected);
+  --nq-color-on-segment-selected: var(--nq-palette-light-on-segment-selected);
+  --nq-color-segment-hover: var(--nq-palette-light-segment-hover);
   --nq-control-height: 2.5rem;
   --nq-control-height-sm: 2rem;
   --nq-control-height-lg: 2.5rem;
@@ -428,6 +437,9 @@
   --nq-palette-light-link-neutral-hover: #005b56;
   --nq-palette-light-link-neutral-active: #4c6264;
   --nq-palette-light-breadcrumb-current: #142d30;
+  --nq-palette-light-segment-selected: #ffffff;
+  --nq-palette-light-on-segment-selected: #005b56;
+  --nq-palette-light-segment-hover: #f0f1eb;
   --nq-palette-dark-canvas: #111d1e;
   --nq-palette-dark-surface: #172728;
   --nq-palette-dark-surface-raised: #213334;
@@ -499,6 +511,9 @@
   --nq-palette-dark-link-neutral-hover: #a2e0d5;
   --nq-palette-dark-link-neutral-active: #b9cdca;
   --nq-palette-dark-breadcrumb-current: #eef6f1;
+  --nq-palette-dark-segment-selected: #172728;
+  --nq-palette-dark-on-segment-selected: #a2e0d5;
+  --nq-palette-dark-segment-hover: #283c3c;
 }
 
 :where([data-nq-theme="dga"], [data-nq-theme="custom"]) {
@@ -637,6 +652,9 @@
   --nq-palette-light-link-neutral-hover: #4D5761;
   --nq-palette-light-link-neutral-active: #384250;
   --nq-palette-light-breadcrumb-current: #4D5761;
+  --nq-palette-light-segment-selected: #0C111B;
+  --nq-palette-light-on-segment-selected: #FFFFFF;
+  --nq-palette-light-segment-hover: #F9FAFB;
   --nq-palette-dark-canvas: #111927;
   --nq-palette-dark-surface: #1F2A37;
   --nq-palette-dark-surface-raised: #1F2A37;
@@ -708,6 +726,9 @@
   --nq-palette-dark-link-neutral-hover: #D2D6DB;
   --nq-palette-dark-link-neutral-active: #FFFFFF;
   --nq-palette-dark-breadcrumb-current: #D2D6DB;
+  --nq-palette-dark-segment-selected: #E5E7EB;
+  --nq-palette-dark-on-segment-selected: #0C111B;
+  --nq-palette-dark-segment-hover: #384250;
 }
 
 :where([data-nq-mode="light"]) {
@@ -783,6 +804,9 @@
   --nq-color-link-neutral-hover: var(--nq-palette-light-link-neutral-hover);
   --nq-color-link-neutral-active: var(--nq-palette-light-link-neutral-active);
   --nq-color-breadcrumb-current: var(--nq-palette-light-breadcrumb-current);
+  --nq-color-segment-selected: var(--nq-palette-light-segment-selected);
+  --nq-color-on-segment-selected: var(--nq-palette-light-on-segment-selected);
+  --nq-color-segment-hover: var(--nq-palette-light-segment-hover);
 }
 
 :where([data-nq-mode="dark"]) {
@@ -858,6 +882,9 @@
   --nq-color-link-neutral-hover: var(--nq-palette-dark-link-neutral-hover);
   --nq-color-link-neutral-active: var(--nq-palette-dark-link-neutral-active);
   --nq-color-breadcrumb-current: var(--nq-palette-dark-breadcrumb-current);
+  --nq-color-segment-selected: var(--nq-palette-dark-segment-selected);
+  --nq-color-on-segment-selected: var(--nq-palette-dark-on-segment-selected);
+  --nq-color-segment-hover: var(--nq-palette-dark-segment-hover);
 }
 
 @supports (color: light-dark(white, black)) {
@@ -933,6 +960,9 @@
     --nq-color-link-neutral-hover: light-dark(var(--nq-palette-light-link-neutral-hover), var(--nq-palette-dark-link-neutral-hover));
     --nq-color-link-neutral-active: light-dark(var(--nq-palette-light-link-neutral-active), var(--nq-palette-dark-link-neutral-active));
     --nq-color-breadcrumb-current: light-dark(var(--nq-palette-light-breadcrumb-current), var(--nq-palette-dark-breadcrumb-current));
+    --nq-color-segment-selected: light-dark(var(--nq-palette-light-segment-selected), var(--nq-palette-dark-segment-selected));
+    --nq-color-on-segment-selected: light-dark(var(--nq-palette-light-on-segment-selected), var(--nq-palette-dark-on-segment-selected));
+    --nq-color-segment-hover: light-dark(var(--nq-palette-light-segment-hover), var(--nq-palette-dark-segment-hover));
   }
 }
 

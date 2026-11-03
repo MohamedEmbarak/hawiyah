@@ -54,7 +54,7 @@ it does not mean every source state has already passed comparison.
 | CSS 427–850: typography, truncation, color, shadow, radius, divider utilities | shared styles, layout, Divider | Compare type scale and utility recipes; do not globally reset consuming applications |
 | CSS 853–965: link states, neutral links | Link | [Link states](nic-links.md): explicit brand/neutral/standalone/disabled recipes, native activation guards, readable state tokens and documented source contrast substitutions |
 | CSS 971–1292: seven button families and sizes | Button, IconButton | [Implemented button task](nic-buttons.md): seven NIC families plus three existing extensions, shared typed variants, pressed/hover/focus colors and disabled states; density adaptations remain explicit |
-| CSS 1294–1386: segmented buttons | ToggleGroup, ButtonGroup | Compare separators, selected states, wrapping and keyboard behavior |
+| CSS 1294–1386: segmented buttons | ToggleGroup, ButtonGroup | Implemented: [source geometry, states, readonly/form parity and attached groups](nic-segmented.md); outline remains an adaptation |
 | CSS 1388–1531: icon buttons and icon/background sizes | IconButton, icon recipes | Preserve licensed SVG system; add documented background/size compositions |
 | CSS 1565–1641: cards | Card, ServiceCard | [Implemented card task](nic-cards.md): base/border/action composition, title/description, gap, shadow and semantic links; eight scoped browser cases passed across four adapters |
 | CSS 1645–1673, 3183–3212: icon/ordered lists | semantic list recipe | Add source-mapped spacing/direction recipe without generated meaningful content |

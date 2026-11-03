@@ -10,7 +10,8 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
     await expect(page.locator(`.nq-project-subheader [data-framework-icon="${framework}"]`)).toBeVisible();
     await expect(page.locator(`.nq-project-subheader [data-framework-icon="${language}"]`)).toBeVisible();
     const preview=page.frameLocator('.nq-ide-frame');
-    await expect(preview.locator('.nq-toggle-group')).toBeVisible();
+    await expect(preview.locator('.nq-toggle-group')).toHaveCount(6);
+    await expect(preview.locator('.nq-toggle-group').first()).toBeVisible();
     await preview.locator('input[type="radio"]').nth(1).check({force:true});
     await expect(preview.locator('output')).toHaveText('second');
     await expect(page.locator('[data-ide-editor="html"]')).toContainText(`@nasaq/${framework}`);

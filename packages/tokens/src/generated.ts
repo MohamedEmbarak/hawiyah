@@ -159,7 +159,10 @@ export const tokens = {
     "link-neutral": "#384250",
     "link-neutral-hover": "#4D5761",
     "link-neutral-active": "#384250",
-    "breadcrumb-current": "#4D5761"
+    "breadcrumb-current": "#4D5761",
+    "segment-selected": "#0C111B",
+    "on-segment-selected": "#FFFFFF",
+    "segment-hover": "#F9FAFB"
   },
   "control": {
     "height": "2.5rem",
@@ -255,7 +258,10 @@ export const themes = {
         "link-neutral": "#4c6264",
         "link-neutral-hover": "#005b56",
         "link-neutral-active": "#4c6264",
-        "breadcrumb-current": "#142d30"
+        "breadcrumb-current": "#142d30",
+        "segment-selected": "#ffffff",
+        "on-segment-selected": "#005b56",
+        "segment-hover": "#f0f1eb"
       }
     },
     "dark": {
@@ -330,7 +336,10 @@ export const themes = {
         "link-neutral": "#b9cdca",
         "link-neutral-hover": "#a2e0d5",
         "link-neutral-active": "#b9cdca",
-        "breadcrumb-current": "#eef6f1"
+        "breadcrumb-current": "#eef6f1",
+        "segment-selected": "#172728",
+        "on-segment-selected": "#a2e0d5",
+        "segment-hover": "#283c3c"
       }
     }
   },
@@ -407,7 +416,10 @@ export const themes = {
         "link-neutral": "#384250",
         "link-neutral-hover": "#4D5761",
         "link-neutral-active": "#384250",
-        "breadcrumb-current": "#4D5761"
+        "breadcrumb-current": "#4D5761",
+        "segment-selected": "#0C111B",
+        "on-segment-selected": "#FFFFFF",
+        "segment-hover": "#F9FAFB"
       }
     },
     "dark": {
@@ -482,7 +494,10 @@ export const themes = {
         "link-neutral": "#F3F4F6",
         "link-neutral-hover": "#D2D6DB",
         "link-neutral-active": "#FFFFFF",
-        "breadcrumb-current": "#D2D6DB"
+        "breadcrumb-current": "#D2D6DB",
+        "segment-selected": "#E5E7EB",
+        "on-segment-selected": "#0C111B",
+        "segment-hover": "#384250"
       }
     }
   }
@@ -894,7 +909,10 @@ export const tokenNames = {
     "link-neutral": "--nq-color-link-neutral",
     "link-neutral-hover": "--nq-color-link-neutral-hover",
     "link-neutral-active": "--nq-color-link-neutral-active",
-    "breadcrumb-current": "--nq-color-breadcrumb-current"
+    "breadcrumb-current": "--nq-color-breadcrumb-current",
+    "segment-selected": "--nq-color-segment-selected",
+    "on-segment-selected": "--nq-color-on-segment-selected",
+    "segment-hover": "--nq-color-segment-hover"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1052,6 +1070,9 @@ export const cssVariableNames = [
   "--nq-color-link-neutral-hover",
   "--nq-color-link-neutral-active",
   "--nq-color-breadcrumb-current",
+  "--nq-color-segment-selected",
+  "--nq-color-on-segment-selected",
+  "--nq-color-segment-hover",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

@@ -19,8 +19,8 @@ export class NqLinkComponent {
 export class NqIconButtonComponent {
   @Input({required: true}) label = ''; @Input() type: 'button' | 'submit' | 'reset' = 'button'; @Input({transform: booleanAttribute}) disabled = false; @Input() pressed: boolean | null = null; @Input() variant = 'ghost'; @Input() size = 'md'; @Output() readonly activated = new EventEmitter<MouseEvent>();
 }
-@Component({selector: 'nq-button-group', standalone: true, template: `<div class="nq-button-group" role="group" [attr.aria-label]="label" [attr.data-orientation]="orientation"><ng-content /></div>`})
-export class NqButtonGroupComponent { @Input({required: true}) label = ''; @Input() orientation: 'horizontal' | 'vertical' = 'horizontal'; }
+@Component({selector: 'nq-button-group', standalone: true, template: `<div class="nq-button-group" role="group" [attr.aria-label]="label" [attr.data-orientation]="orientation" [attr.data-variant]="variant"><ng-content /></div>`})
+export class NqButtonGroupComponent { @Input({required: true}) label = ''; @Input() variant: 'default' | 'attached' = 'default'; @Input() orientation: 'horizontal' | 'vertical' = 'horizontal'; }
 @Component({selector: 'nq-chip', standalone: true, template: `<span class="nq-chip" [attr.data-tone]="tone" [attr.data-variant]="variant"><ng-content />@if (removable) {<button type="button" [disabled]="disabled" [attr.aria-label]="removeLabel" (click)="removed.emit()">×</button>}</span>`})
 export class NqChipComponent { @Input() tone = 'neutral'; @Input() variant = 'soft'; @Input({transform: booleanAttribute}) removable = false; @Input({transform: booleanAttribute}) disabled = false; @Input() removeLabel = 'Remove'; @Output() readonly removed = new EventEmitter<void>(); }
 @Component({selector: 'nq-description-list', standalone: true, template: `<dl class="nq-description-list" [attr.data-variant]="variant">@for (item of items; track $index) {<div><dt>{{ item.term }}</dt><dd>{{ item.description }}</dd></div>}<ng-content /></dl>`})

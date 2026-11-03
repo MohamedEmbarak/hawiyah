@@ -6,11 +6,12 @@ import {
   nextTick,
   onBeforeUnmount,
   onMounted,
+  onUpdated,
   ref,
   useId,
 } from "vue";
 import type { PropType, VNodeChild } from "vue";
-import { getDirection, getNextEnabledIndex, restoreFocus } from "@nasaq/core";
+import { getDirection, getNextEnabledIndex, restoreFocus, observeReadonlyChoice } from "@nasaq/core";
 import type { Option } from "@nasaq/core";
 import { Button } from "./forms.js";
 import { Dialog } from "./interactive.js";
@@ -39,6 +40,10 @@ export const ToggleGroup = defineComponent({
   setup(props, { attrs, emit }) {
     const id = `nq-${useId()}`;
     const element = ref<HTMLInputElement>();
+    const group = ref<HTMLFieldSetElement>();
+    let guards: ReturnType<typeof observeReadonlyChoice>[]=[];
+    const bindGuards=()=>{guards.forEach(guard=>guard.destroy());guards=Array.from(group.value?.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? [],observeReadonlyChoice);};
+    onMounted(bindGuards);onUpdated(bindGuards);onBeforeUnmount(()=>guards.forEach(guard=>guard.destroy()));
     const model = useValue(
       () => props.modelValue,
       props.defaultValue,
@@ -49,14 +54,14 @@ export const ToggleGroup = defineComponent({
       h(
         "fieldset",
         mergeProps(attrs, {
-          class: "nq-toggle-group",
+          class: "nq-toggle-group",ref:group,"data-nq-readonly":props.readonly || undefined,
           "data-variant": props.variant,
           disabled: props.disabled,
         }),
         [
           h("legend", { class: "nq-label" }, props.label),
           props.multiple
-            ? h("input", { ref: element, type: "hidden", disabled: true })
+            ? h("input", { ref: element, type: "hidden", form:attrs.form, disabled: true })
             : null,
           ...props.options.map((option, index) => {
             const selected = props.multiple
@@ -100,7 +105,7 @@ export const ToggleGroup = defineComponent({
                       name: attrs.name ?? id,
                       form: attrs.form,
                       value: option.value,
-                      checked: selected,
+                      checked: selected,readOnly:props.readonly,"aria-disabled":props.readonly || undefined,
                       disabled,
                       onClick: (event: MouseEvent) => {
                         if (props.readonly) event.preventDefault();
@@ -115,7 +120,7 @@ export const ToggleGroup = defineComponent({
                 );
           }),
           ...(props.multiple && Array.isArray(model.value.value)
-            ? model.value.value.map((value) =>
+            ? model.value.value.filter(value=>props.options.some(option=>option.value===value && !option.disabled)).map((value) =>
                 h("input", {
                   type: "hidden",
                   name: attrs.name,

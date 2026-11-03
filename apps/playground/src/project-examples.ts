@@ -10,6 +10,7 @@ export const nativeProjectComponents = new Set([
   "checkbox",
   "switch",
   "toggle-group",
+  "button-group",
   "badge",
   "alert",
   "divider",
@@ -69,6 +70,7 @@ export function projectExample(
     "icon-button": "IconButton",
     "text-field": "TextField",
     "toggle-group": "ToggleGroup",
+    "button-group": "ButtonGroup",
     button: "Button",
     textarea: "Textarea",
     checkbox: "Checkbox",
@@ -97,7 +99,7 @@ export function projectExample(
     "portal-footer": "PortalFooter",
   };
   const component = name[id]!;
-  const componentImports = ["site-verification","portal-header"].includes(id) ? "SiteVerification, PortalHeader" : component;
+  const componentImports = ["site-verification","portal-header"].includes(id) ? "SiteVerification, PortalHeader" : id==="button-group" ? "ButtonGroup, Button, IconButton" : component;
   const options = JSON.stringify([
     { value: "first", label: t("First", "الأول") },
     { value: "second", label: t("Second", "الثاني") },
@@ -150,10 +152,16 @@ export function projectExample(
     angular = `<nq-${id} label="${label}" [(value)]="value" /><output>{{ value }}</output>`;
   } else if (id === "toggle-group") {
     state = true;
-    react = `<ToggleGroup label="${label}" options={${options}} value={value} onValueChange={setValue} /><output>{value}</output>`;
-    vue = `<ToggleGroup label="${label}" :options='${options}' v-model="value" /><output>{{ value }}</output>`;
-    angular = `<nq-toggle-group label="${label}" [options]="options" [(value)]="value" /><output>{{ value }}</output>`;
-    angularMember = `\n  options = ${options};`;
+    const choices=JSON.stringify([{value:'first',label:t('First','الأول')},{value:'second',label:t('Second','الثاني')},{value:'blocked',label:t('Unavailable','غير متاح'),disabled:true}]);
+    react = `<div className="nq-stack"><ToggleGroup label="${label}" options={${choices}} value={value} onValueChange={setValue} /><output>{value}</output><ToggleGroup label="${t('Multiple choices','اختيارات متعددة')}" options={${choices}} multiple defaultValue={['first']} /><ToggleGroup label="${t('Read only','للقراءة فقط')}" options={${choices}} defaultValue="first" readOnly /><ToggleGroup label="${t('Disabled','معطل')}" options={${choices}} defaultValue="first" disabled /><ToggleGroup label="${t('Outlined','محدد بإطار')}" options={${choices}} defaultValue="first" variant="outline" /><ToggleGroup label="${t('Read-only multiple','اختيارات متعددة للقراءة فقط')}" options={${choices}} multiple defaultValue={['first']} variant="outline" readOnly /></div>`;
+    vue = `<div class="nq-stack"><ToggleGroup label="${label}" :options='${choices}' v-model="value" /><output>{{ value }}</output><ToggleGroup label="${t('Multiple choices','اختيارات متعددة')}" :options='${choices}' multiple :default-value="['first']" /><ToggleGroup label="${t('Read only','للقراءة فقط')}" :options='${choices}' default-value="first" readonly /><ToggleGroup label="${t('Disabled','معطل')}" :options='${choices}' default-value="first" disabled /><ToggleGroup label="${t('Outlined','محدد بإطار')}" :options='${choices}' default-value="first" variant="outline" /><ToggleGroup label="${t('Read-only multiple','اختيارات متعددة للقراءة فقط')}" :options='${choices}' multiple :default-value="['first']" variant="outline" readonly /></div>`;
+    angular = `<div class="nq-stack"><nq-toggle-group label="${label}" [options]="options" [(value)]="value" /><output>{{ value }}</output><nq-toggle-group label="${t('Multiple choices','اختيارات متعددة')}" [options]="options" [multiple]="true" [value]="['first']" /><nq-toggle-group label="${t('Read only','للقراءة فقط')}" [options]="options" value="first" [readOnly]="true" /><nq-toggle-group label="${t('Disabled','معطل')}" [options]="options" value="first" [disabled]="true" /><nq-toggle-group label="${t('Outlined','محدد بإطار')}" [options]="options" value="first" variant="outline" /><nq-toggle-group label="${t('Read-only multiple','اختيارات متعددة للقراءة فقط')}" [options]="options" [multiple]="true" [value]="['first']" variant="outline" [readOnly]="true" /></div>`;
+    angularMember = `\n  options = ${choices};`;
+  } else if (id === "button-group") {
+    state=true;
+    react=`<div className="nq-stack">${['horizontal','vertical'].map(orientation=>`<ButtonGroup label="${label}" variant="attached" orientation="${orientation}"><IconButton label="${t('Search','بحث')}" variant="secondary" onClick={()=>setValue('search')}><span className="nq-icon" data-icon="search-01" aria-hidden="true" /></IconButton><Button variant="secondary" onClick={()=>setValue('preview')}>${t('Preview','معاينة')}</Button><Button variant="secondary" disabled>${t('Delete','حذف')}</Button></ButtonGroup>`).join('')}<output>{value}</output></div>`;
+    vue=`<div class="nq-stack">${['horizontal','vertical'].map(orientation=>`<ButtonGroup label="${label}" variant="attached" orientation="${orientation}"><IconButton label="${t('Search','بحث')}" variant="secondary" @click="value='search'"><span class="nq-icon" data-icon="search-01" aria-hidden="true" /></IconButton><Button variant="secondary" @click="value='preview'">${t('Preview','معاينة')}</Button><Button variant="secondary" disabled>${t('Delete','حذف')}</Button></ButtonGroup>`).join('')}<output>{{ value }}</output></div>`;
+    angular=`<div class="nq-stack">${['horizontal','vertical'].map(orientation=>`<nq-button-group label="${label}" variant="attached" orientation="${orientation}"><nq-icon-button label="${t('Search','بحث')}" variant="secondary" (activated)="value='search'"><span class="nq-icon" data-icon="search-01" aria-hidden="true"></span></nq-icon-button><button nqButton variant="secondary" (click)="value='preview'">${t('Preview','معاينة')}</button><button nqButton variant="secondary" disabled>${t('Delete','حذف')}</button></nq-button-group>`).join('')}<output>{{ value }}</output></div>`;
   } else if (id === "select") {
     state = true;
     initialValue = "'first'";
@@ -374,7 +382,7 @@ export function projectExample(
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };
-  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "tabs" ? ", NqTabComponent" : id === "site-verification" ? ", NqPortalHeaderComponent" : id === "portal-header" ? ", NqSiteVerificationComponent" : ""}`;
+  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "button-group" ? ", NqButtonDirective, NqIconButtonComponent" : id === "tabs" ? ", NqTabComponent" : id === "site-verification" ? ", NqPortalHeaderComponent" : id === "portal-header" ? ", NqSiteVerificationComponent" : ""}`;
   return {
     names: { html: "app.component.ts", css: "style.css", js: "main.ts" },
     entry: "main.ts",

@@ -1,4 +1,4 @@
-import { createCleanup, getDirection, getNextEnabledIndex, isDisabled, normalizeDigits, normalizeSearch, sortRows } from '@nasaq/core';
+import { createCleanup, getDirection, getNextEnabledIndex, isDisabled, observeReadonlyChoice, normalizeDigits, normalizeSearch, sortRows } from '@nasaq/core';
 import { emit, eventElement, localeOf, nativeChange, readOnly, remember, translated } from './dom.js';
 import type { ValueController } from './controls.js';
 
@@ -23,6 +23,11 @@ export function createToggleGroup(root: HTMLElement, options: ToggleGroupOptions
   const items = multiple ? buttons : radios;
   const scope = createCleanup();
   const originals = radios.map(input => input.checked);
+  const originalReadOnly=radios.map(input=>input.readOnly);
+  const originalAria=new Map(items.map(item=>[item,item.getAttribute('aria-disabled')])); const readonlyMarked=new Set<HTMLElement>();
+  items.forEach(item=>remember(scope,item,['aria-disabled']));
+  const guards=radios.map(observeReadonlyChoice);scope.add(()=>guards.forEach(guard=>guard.destroy()));
+  scope.add(()=>radios.forEach((input,index)=>{input.readOnly=originalReadOnly[index]!;}));
   radios.forEach((input, index) => scope.add(() => { input.checked = originals[index]!; }));
   buttons.forEach(button => { remember(scope, button, ['aria-pressed']); buttonType(scope, button); });
   const itemValue = (item: HTMLElement) => multiple ? item.dataset.nqValue! : (item as HTMLInputElement).value;
@@ -34,7 +39,7 @@ export function createToggleGroup(root: HTMLElement, options: ToggleGroupOptions
   const name = options.name ?? root.dataset.nqName; const hiddenValues = multiple && name ? root.ownerDocument.createElement('span') : undefined;
   if (hiddenValues) { hiddenValues.hidden = true; root.append(hiddenValues); scope.add(() => hiddenValues.remove()); }
   const getValue = (): string | string[] => multiple ? [...values] : values[0] ?? '';
-  const render = () => { items.forEach(item => { if (multiple) item.setAttribute('aria-pressed', String(values.includes(itemValue(item)))); else (item as HTMLInputElement).checked = values.includes(itemValue(item)); }); if (hiddenValues) { hiddenValues.replaceChildren(); values.forEach(value => { const input = root.ownerDocument.createElement('input'); input.type = 'hidden'; input.name = name!; input.value = value; input.disabled = blocked(root) || isDisabled(items.find(item => itemValue(item) === value)!); hiddenValues.append(input); }); } };
+  const render = () => { items.forEach(item => { const frozen=readOnly(root) || !multiple && originalReadOnly[radios.indexOf(item as HTMLInputElement)]; if(!multiple)(item as HTMLInputElement).readOnly=Boolean(frozen); if(frozen){if(!readonlyMarked.has(item))originalAria.set(item,item.getAttribute('aria-disabled'));readonlyMarked.add(item);item.setAttribute('aria-disabled','true');}else if(readonlyMarked.delete(item)){if(originalAria.get(item)===null)item.removeAttribute('aria-disabled');else item.setAttribute('aria-disabled',originalAria.get(item)!);} if (multiple) item.setAttribute('aria-pressed', String(values.includes(itemValue(item)))); else (item as HTMLInputElement).checked = values.includes(itemValue(item)); }); if (hiddenValues) { hiddenValues.replaceChildren(); values.forEach(value => { const input = root.ownerDocument.createElement('input'); input.type = 'hidden'; input.name = name!; input.value = value; const item=items.find(item=>itemValue(item)===value)!; input.disabled = blocked(root) || (readOnly(root) ? item.matches(':disabled') || originalAria.get(item)==='true' : isDisabled(item)); hiddenValues.append(input); }); } guards.forEach(guard=>guard.refresh()); };
   const select = (value: string) => {
     const item = items.find(item => itemValue(item) === value);
     if (scope.destroyed || !item || blocked(root) || isDisabled(item) || readOnly(root)) { if (!scope.destroyed) render(); return; }
@@ -50,6 +55,7 @@ export function createToggleGroup(root: HTMLElement, options: ToggleGroupOptions
   if (!multiple) scope.listen(root, 'click', event => { if (blocked(root) || readOnly(root)) event.preventDefault(); });
   const form = radios[0]?.form ?? root.closest('form');
   if (form) scope.listen(form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { values = [...initial]; render(); } }));
+  const ReadonlyObserver=root.ownerDocument.defaultView?.MutationObserver; if(ReadonlyObserver){const observer=new ReadonlyObserver(render);observer.observe(root,{attributes:true,attributeFilter:['data-nq-readonly','aria-readonly']});scope.add(()=>observer.disconnect());}
   watchDisabled(scope, root, render); render(); return { get value() { return getValue(); }, select, destroy: () => scope.destroy() };
 }
 

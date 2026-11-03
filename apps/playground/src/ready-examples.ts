@@ -1,3 +1,4 @@
+import {toggleGroupMarkup} from './segmented-demo';
 import {siteVerificationMarkup,siteVerificationDemoLabels} from './site-verification-demo';
 import {portalFooterMarkup,portalFooterExampleData} from './portal-footer-demo';
 import { escape as e, icon, type ComponentId, type Locale } from './data';
@@ -28,6 +29,20 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='toggle-group')return ['segmented','outline','multiple','readonly','disabled','readonly-outline'].map(kind=>{
+    const options=JSON.stringify([{value:'first',label:t('List','قائمة')},{value:'second',label:t('Grid','شبكة')},{value:'blocked',label:t('Map','خريطة'),disabled:true}]),label=t('View mode','نمط العرض'),variant=kind.includes('outline')?'outline':'segmented';
+    return {title:t(`Toggle group · ${kind}`,`مجموعة اختيار · ${kind}`),markup:toggleGroupMarkup(locale,kind,`ready-toggle-${kind}`),
+      react:`import { ToggleGroup } from '@nasaq/react';\n\n<ToggleGroup label="${label}" options={${options}} variant="${variant}" ${(kind==='multiple'||kind==='readonly-outline')?"multiple defaultValue={['first']}":'defaultValue="first"'} ${kind.startsWith('readonly')?'readOnly':kind==='disabled'?'disabled':''} />`,
+      vue:`<!-- import { ToggleGroup } from '@nasaq/vue' -->\n<ToggleGroup label="${label}" :options='${options}' variant="${variant}" ${(kind==='multiple'||kind==='readonly-outline')?"multiple :default-value=\"['first']\"":'default-value="first"'} ${kind.startsWith('readonly')?'readonly':kind==='disabled'?'disabled':''} />`,
+      angular:`<!-- imports: [NqToggleGroupComponent] -->\n<nq-toggle-group label="${label}" [options]='${options}' variant="${variant}" ${(kind==='multiple'||kind==='readonly-outline')?"[multiple]=\"true\" [value]=\"['first']\"":'value="first"'} ${kind.startsWith('readonly')?'[readOnly]="true"':kind==='disabled'?'[disabled]="true"':''} />`,
+    };
+  });
+  if(id==='button-group')return ['horizontal','vertical'].map(orientation=>({title:t(`Attached actions · ${orientation}`,`إجراءات متصلة · ${orientation}`),
+    markup:`<div class="nq-button-group" role="group" aria-label="${t('Document actions','إجراءات المستند')}" data-variant="attached" data-orientation="${orientation}"><button class="nq-button" data-variant="secondary" type="button">${t('Save','حفظ')}</button><button class="nq-button" data-variant="secondary" type="button">${t('Preview','معاينة')}</button><button class="nq-button" data-variant="secondary" type="button" disabled>${t('Delete','حذف')}</button></div>`,
+    react:`import { ButtonGroup, Button } from '@nasaq/react';\n\n<ButtonGroup label="${t('Document actions','إجراءات المستند')}" variant="attached" orientation="${orientation}"><Button variant="secondary">${t('Save','حفظ')}</Button><Button variant="secondary">${t('Preview','معاينة')}</Button><Button variant="secondary" disabled>${t('Delete','حذف')}</Button></ButtonGroup>`,
+    vue:`<!-- import { ButtonGroup, Button } from '@nasaq/vue' -->\n<ButtonGroup label="${t('Document actions','إجراءات المستند')}" variant="attached" orientation="${orientation}"><Button variant="secondary">${t('Save','حفظ')}</Button><Button variant="secondary">${t('Preview','معاينة')}</Button><Button variant="secondary" disabled>${t('Delete','حذف')}</Button></ButtonGroup>`,
+    angular:`<!-- imports: [NqButtonGroupComponent, NqButtonDirective] -->\n<nq-button-group label="${t('Document actions','إجراءات المستند')}" variant="attached" orientation="${orientation}"><button nqButton variant="secondary">${t('Save','حفظ')}</button><button nqButton variant="secondary">${t('Preview','معاينة')}</button><button nqButton variant="secondary" disabled>${t('Delete','حذف')}</button></nq-button-group>`,
+  }));
   if(id==='link')return (['default','neutral','standalone','disabled'] as const).map(variant=>{
     const disabled=variant==='disabled',label=disabled?t('Unavailable destination','وجهة غير متاحة'):t('Read the guide','اقرأ الدليل');
     return {title:t(`Link · ${variant}`,`رابط · ${variant}`),markup:`<a class="nq-link" ${disabled?'role="link" aria-disabled="true" tabindex="-1"':`href="#guide" data-variant="${variant}"`}>${label}${variant==='standalone'?'<span class="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true"></span>':''}</a>`,

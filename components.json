@@ -2689,7 +2689,8 @@
       "verified": [
         "vanilla",
         "react",
-        "vue"
+        "vue",
+        "angular"
       ],
       "evidence": [
         {
@@ -2728,6 +2729,55 @@
           "command": "pnpm test",
           "result": "passed",
           "date": "2026-10-28"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "browser",
+          "source": "tests/browser/nic-segmented.spec.ts",
+          "tests": [
+            "NIC segmented states and grouped actions in rtl",
+            "NIC segmented states and grouped actions in ltr"
+          ],
+          "scope": "Rendered grouped actions, native selection, readonly keyboard focus, disabled choices and mobile geometry; shared RTL/LTR, theme and accessibility checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-segmented.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "browser",
+          "source": "tests/browser/nic-segmented.spec.ts",
+          "tests": [
+            "react native segmented selection, readonly and attached groups"
+          ],
+          "scope": "Rendered grouped actions, native selection, readonly keyboard focus, disabled choices and mobile geometry; shared RTL/LTR, theme and accessibility checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-segmented.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "browser",
+          "source": "tests/browser/nic-segmented.spec.ts",
+          "tests": [
+            "vue native segmented selection, readonly and attached groups"
+          ],
+          "scope": "Rendered grouped actions, native selection, readonly keyboard focus, disabled choices and mobile geometry; shared RTL/LTR, theme and accessibility checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-segmented.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "browser",
+          "source": "tests/browser/nic-segmented.spec.ts",
+          "tests": [
+            "angular native segmented selection, readonly and attached groups"
+          ],
+          "scope": "Rendered grouped actions, native selection, readonly keyboard focus, disabled choices and mobile geometry; shared RTL/LTR, theme and accessibility checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-segmented.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
         }
       ],
       "implementationSources": {
@@ -2746,7 +2796,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "NIC source geometry and explicit accessibility/theme adaptations: docs/nic-segmented.md. Verification is scoped, not certification."
+      ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/toggle-group"
     },
     {
@@ -3465,8 +3517,63 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "browser",
+          "source": "tests/browser/nic-segmented.spec.ts",
+          "tests": [
+            "NIC segmented states and grouped actions in rtl",
+            "NIC segmented states and grouped actions in ltr"
+          ],
+          "scope": "Rendered grouped actions, native selection, readonly keyboard focus, disabled choices and mobile geometry; shared RTL/LTR, theme and accessibility checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-segmented.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "browser",
+          "source": "tests/browser/nic-segmented.spec.ts",
+          "tests": [
+            "react native segmented selection, readonly and attached groups"
+          ],
+          "scope": "Rendered grouped actions, native selection, readonly keyboard focus, disabled choices and mobile geometry; shared RTL/LTR, theme and accessibility checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-segmented.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "browser",
+          "source": "tests/browser/nic-segmented.spec.ts",
+          "tests": [
+            "vue native segmented selection, readonly and attached groups"
+          ],
+          "scope": "Rendered grouped actions, native selection, readonly keyboard focus, disabled choices and mobile geometry; shared RTL/LTR, theme and accessibility checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-segmented.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "browser",
+          "source": "tests/browser/nic-segmented.spec.ts",
+          "tests": [
+            "angular native segmented selection, readonly and attached groups"
+          ],
+          "scope": "Rendered grouped actions, native selection, readonly keyboard focus, disabled choices and mobile geometry; shared RTL/LTR, theme and accessibility checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-segmented.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        }
+      ],
       "implementationSources": {
         "react": [
           "packages/react/src/expanded-content.tsx"
@@ -3482,7 +3589,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "NIC source geometry and explicit accessibility/theme adaptations: docs/nic-segmented.md. Verification is scoped, not certification."
+      ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/button-group"
     },
     {
