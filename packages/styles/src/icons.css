@@ -20,6 +20,8 @@
 .nq-icon[data-icon='sorting-05'] { --nq-icon-image: url('./assets/icons/sorting-05.svg'); }
 .nq-icon[data-icon='home-01'] { --nq-icon-image: url('./assets/icons/home-01.svg'); }
 .nq-icon[data-icon='checkmark-circle-02'] { --nq-icon-image: url('./assets/icons/checkmark-circle-02.svg'); }
+.nq-icon[data-icon='thumbs-up'] { --nq-icon-image: url('./assets/icons/thumbs-up.svg'); }
+.nq-icon[data-icon='thumbs-down'] { --nq-icon-image: url('./assets/icons/thumbs-down.svg'); }
 
 /* Opt in only for semantic forward/back; physical directions retain their meaning. */
 .nq-icon:is([data-icon='arrow-left-01'], [data-icon='arrow-right-01'])[data-directional='true']:dir(rtl) {

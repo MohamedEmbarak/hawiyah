@@ -1,4 +1,5 @@
 import { statusMarkup } from "./ready-examples";
+import { feedbackMarkup } from './feedback-demo';
 import { escape as e, icon, type Locale } from "./data";
 import { navigationDrawerMarkup } from './component-mobile-guides';
 import { riyalAmount } from './currency';
@@ -115,7 +116,7 @@ export function expandedSample(
     case "portal-footer":
       return `<footer class="nq-portal-footer"><strong>${t("Nasaq", "نسق")}</strong><nav aria-label="${t("Example footer links", "روابط التذييل التوضيحي")}"><a class="nq-link" href="#docs">${t("Privacy", "الخصوصية")}</a><a class="nq-link" href="#docs">${t("Accessibility", "إمكانية الوصول")}</a></nav><small>${t("Independent demonstration platform.", "منصة توضيحية مستقلة.")}</small></footer>`;
     case "feedback":
-      return `<div class="nq-feedback" data-nq="feedback" role="group" aria-label="${t("Was this page helpful?", "هل كانت هذه الصفحة مفيدة؟")}"><p>${t("Was this page helpful?", "هل كانت هذه الصفحة مفيدة؟")}</p><div class="nq-inline">${b(t("Yes", "نعم"), 'data-nq-value="yes" aria-pressed="false"')}${b(t("No", "لا"), 'data-nq-value="no" aria-pressed="false"')}</div><input type="hidden" data-nq-feedback-value name="helpful"><span data-nq-feedback-status role="status"></span></div>`;
+      return feedbackMarkup(locale);
     case "cookie-consent":
       return `<section class="nq-cookie-consent" data-nq="cookie-consent" aria-label="${t("Cookie preferences", "تفضيلات ملفات الارتباط")}"><h3>${t("Your privacy, your choice.", "خصوصيتك، اختيارك.")}</h3><p>${t("Choose whether to allow optional analytics. This demo stores no consent or tracking cookies.", "اختر السماح بالتحليلات الاختيارية. لا يحفظ هذا المثال الموافقة ولا ملفات تتبع.")}</p><div class="nq-inline">${b(t("Accept optional", "قبول الاختيارية"), 'data-nq-consent="accepted"')}${b(t("Reject optional", "رفض الاختيارية"), 'data-nq-consent="rejected"')}</div></section>`;
     case "notification-list":

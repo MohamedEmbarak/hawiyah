@@ -27,6 +27,8 @@ export const nativeProjectComponents = new Set([
   "skeleton",
   "avatar",
   "empty",
+  "feedback",
+  "link",
 ]);
 export type ProjectExample = {
   names: Record<keyof IDEFiles, string>;
@@ -85,6 +87,8 @@ export function projectExample(
     skeleton: "Skeleton",
     avatar: "Avatar",
     empty: "EmptyState",
+    feedback: "Feedback",
+    link: "Link",
   };
   const component = name[id]!;
   const options = JSON.stringify([
@@ -262,6 +266,40 @@ export function projectExample(
     react = `<EmptyState title="${t("No applications", "لا توجد طلبات")}" description="${t("Your applications will appear here.", "ستظهر طلباتك هنا.")}" />`;
     vue = react;
     angular = `<nq-empty-state title="${t("No applications", "لا توجد طلبات")}" description="${t("Your applications will appear here.", "ستظهر طلباتك هنا.")}" />`;
+  } else if (id === "link") {
+    const text = t("Read the guide", "اقرأ الدليل");
+    react = `<Link href="#guide">${text}<span className="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true" /></Link>`;
+    vue = `<Link href="#guide">${text}<span class="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true" /></Link>`;
+    angular = `<nq-link href="#guide">${text}<span class="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true"></span></nq-link>`;
+  } else if (id === "feedback") {
+    state = true;
+    const question = t("Was this page helpful?", "هل كانت هذه الصفحة مفيدة؟"),
+      yes = t("Yes", "نعم"),
+      no = t("No", "لا"),
+      comment = t("Tell us more", "أخبرنا بالمزيد"),
+      submit = t("Send feedback", "إرسال التقييم"),
+      thanks = t("Thank you for your feedback.", "شكراً على تقييمك.");
+    react =
+      (["text", "icon-text", "icon"] as const)
+        .map(
+          (variant) =>
+            `<Feedback label="${question}" choiceVariant="${variant}" yesLabel="${yes}" noLabel="${no}" commentLabel="${comment}" submitLabel="${submit}" successMessage="${thanks}" onValueChange={feedback => setValue(feedback.helpful)} onFeedback={feedback => console.log(feedback)} />`,
+        )
+        .join("") + "<output>{value}</output>";
+    vue =
+      (["text", "icon-text", "icon"] as const)
+        .map(
+          (variant) =>
+            `<Feedback label="${question}" choice-variant="${variant}" yes-label="${yes}" no-label="${no}" comment-label="${comment}" submit-label="${submit}" thanks="${thanks}" @update:model-value="value = $event" @submit="feedback => console.log(feedback)" />`,
+        )
+        .join("") + "<output>{{ value }}</output>";
+    angular =
+      (["text", "icon-text", "icon"] as const)
+        .map(
+          (variant) =>
+            `<nq-feedback label="${question}" choiceVariant="${variant}" positiveLabel="${yes}" negativeLabel="${no}" thanksMessage="${thanks}" (valueChange)="value = $event ? 'yes' : 'no'" />`,
+        )
+        .join("") + "<output>{{ value }}</output>";
   } else if (id === "badge") {
     react = `<Badge tone="success">${label}</Badge>`;
     vue = react;

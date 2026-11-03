@@ -1,0 +1,48 @@
+/* Choice presentation is independent of each adapter's feedback data contract. */
+.nq-feedback > .nq-inline, .nq-feedback .nq-feedback-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nq-space-2);
+  flex-basis: auto;
+}
+.nq-feedback > fieldset { flex: 1 1 100%; min-inline-size: 0; border: 0; padding: 0; margin: 0; }
+.nq-feedback > fieldset > legend { padding: 0; font-weight: var(--nq-weight-medium); }
+.nq-feedback > fieldset > .nq-button { margin-block-start: var(--nq-space-3); }
+.nq-feedback > fieldset > .nq-feedback-actions { margin-block: var(--nq-space-3); }
+.nq-feedback-actions > .nq-field { min-inline-size: 0; }
+.nq-feedback-actions .nq-choice {
+  box-sizing: border-box;
+  position: relative;
+  min-block-size: var(--nq-control-height);
+  padding: var(--nq-space-2) var(--nq-space-4);
+  border-radius: var(--nq-profile-control-radius, var(--nq-radius-md));
+  background: var(--nq-color-action-secondary);
+  color: var(--nq-color-on-action-secondary);
+  cursor: pointer;
+}
+.nq-feedback-actions .nq-choice:hover:not(:has(:disabled)) { background: var(--nq-color-action-secondary-hover); }
+.nq-feedback-actions .nq-choice:has(:checked) { outline: 2px solid var(--nq-color-primary); outline-offset: 3px; }
+.nq-feedback-actions .nq-choice:has(:focus-visible) { outline: 2px solid var(--nq-color-focus-contrast); outline-offset: 3px; }
+.nq-feedback-actions .nq-choice:has(:disabled) { background: var(--nq-color-disabled); color: var(--nq-color-on-disabled); cursor: not-allowed; }
+.nq-feedback-actions .nq-radio,
+.nq-feedback[data-choice-variant='icon'] .nq-feedback-label {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.nq-feedback .nq-feedback-icon { display: none; }
+.nq-feedback:is([data-choice-variant='icon'], [data-choice-variant='icon-text']) .nq-feedback-icon { display: inline-block; }
+.nq-feedback[data-choice-variant='icon'] .nq-feedback-actions :is(.nq-button, .nq-choice) { min-inline-size: var(--nq-control-height); padding-inline: var(--nq-space-2); }
+@media (forced-colors: active) {
+  .nq-feedback-actions .nq-choice { border: 1px solid ButtonText; }
+  .nq-feedback-actions .nq-choice:has(:checked, :focus-visible) { outline-color: Highlight; }
+  .nq-feedback-actions .nq-choice:has(:disabled) { border-color: GrayText; color: GrayText; }
+}

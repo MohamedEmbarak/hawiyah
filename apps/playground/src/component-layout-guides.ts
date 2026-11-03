@@ -174,8 +174,8 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
     ],
     lifecycle: ['Call enhance() after mounting vanilla markup, or own a createFeedback() controller directly.', 'A selection updates button state, the hidden field and the polite status. Form reset restores the initial choice.', 'Before replacing the markup, release enhance() or call controller.destroy(); original attributes, field value and status are restored.', 'Send feedback to your backend in the callback. The displayed acknowledgment alone is not proof that a server stored anything.'],
     accessibility: ['Give the choice group a visible question and accessible name; use real buttons or native radio controls.', 'Keep acknowledgment in a polite status region and localize its message.'],
-    variants: ['Vanilla yes/no choice', 'React or Vue choice plus comment', 'Angular boolean choice'], related: ['radio', 'textarea', 'alert'],
-    frameworkNotes: 'APIs differ: React Feedback value is {helpful:"yes"|"no"|"",comment:string} with onValueChange/onFeedback. Vue v-model is a string and submit emits {value,comment}. Angular [(value)] is boolean|null and emits valueChange; its base component does not include a comment field.',
+    variants: ['Text choices (default)', 'Thumbs with text', 'Thumbs only with accessible labels', 'React or Vue choice plus comment'], related: ['radio', 'textarea', 'alert'],
+    frameworkNotes: 'All adapters support choiceVariant="text"|"icon-text"|"icon" (vanilla data-choice-variant with nq-feedback-actions, nq-feedback-icon and nq-feedback-label). Keep yes/no labels for icon-only accessible names. APIs differ: React Feedback value is {helpful:"yes"|"no"|"",comment:string} with onValueChange/onFeedback. Vue v-model is a string and submit emits {value,comment}. Angular [(value)] is boolean|null and emits valueChange; its base component does not include a comment field.',
     limitations: ['No network transport, analytics or moderation is included. React/Vue submission acknowledgment is local UI state.'], source: 'packages/vanilla/src/content.ts',
   },
   'cookie-consent': {

@@ -153,6 +153,30 @@
       "sourceUse": "Date picker input action from upstream MIT assets; no DGA node or visual parity claim.",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
+    },
+    {
+      "name": "thumbs-up",
+      "file": "thumbs-up.svg",
+      "sha256": "aa79225d3c2cac7a6dbf277f25ab742c1ad12136079b4d9ac5abf88f7b53c6f6",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/thumbs-up.svg",
+      "dgaComponentId": "8681:25206",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "comparison": "Name/style mapping only; geometry not compared.",
+      "retrieved": "2026-11-03"
+    },
+    {
+      "name": "thumbs-down",
+      "file": "thumbs-down.svg",
+      "sha256": "84828c6934b45006d6a13287f619a963000338f83ac0fed3fa3883b657af71c1",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/thumbs-down.svg",
+      "dgaComponentId": "8681:25213",
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "comparison": "Name/style mapping only; geometry not compared.",
+      "retrieved": "2026-11-03"
     }
   ]
 }

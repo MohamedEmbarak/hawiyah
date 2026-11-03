@@ -1,4 +1,5 @@
 import { escape as e, icon, type ComponentId, type Locale } from './data';
+import {feedbackMarkup} from './feedback-demo';
 
 export const statusExamples = [
   { tone: 'neutral', en: 'Scheduled maintenance', ar: 'صيانة مجدولة', bodyEn: 'Service hours are shown on this page.', bodyAr: 'مواعيد الخدمة موضّحة في هذه الصفحة.' },
@@ -25,6 +26,12 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='feedback')return (['text','icon-text','icon'] as const).map(variant=>({
+    title:t(`Feedback · ${variant}`,`تقييم الصفحة · ${variant}`), markup:feedbackMarkup(locale,variant),
+    react:`import { Feedback } from '@nasaq/react';\n\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" yesLabel="${t('Yes','نعم')}" noLabel="${t('No','لا')}" commentLabel="${t('Tell us more','أخبرنا بالمزيد')}" submitLabel="${t('Send feedback','إرسال التقييم')}" successMessage="${t('Thank you for your feedback.','شكراً على تقييمك.')}" onFeedback={value => console.log(value)} />`,
+    vue:`<!-- import { Feedback } from '@nasaq/vue' -->\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choice-variant="${variant}" yes-label="${t('Yes','نعم')}" no-label="${t('No','لا')}" comment-label="${t('Tell us more','أخبرنا بالمزيد')}" submit-label="${t('Send feedback','إرسال التقييم')}" success-message="${t('Thank you for your feedback.','شكراً على تقييمك.')}" @submit="value => console.log(value)" />`,
+    angular:`<!-- imports: [NqFeedbackComponent] -->\n<nq-feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" positiveLabel="${t('Yes','نعم')}" negativeLabel="${t('No','لا')}" />`,
+  }));
   if (id === 'checkbox' || id === 'radio') {
     const component = id === 'checkbox' ? 'Checkbox' : 'Radio';
     const states = [

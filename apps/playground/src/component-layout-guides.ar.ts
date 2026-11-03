@@ -200,8 +200,8 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     ],
     lifecycle: ['استدعِ enhance() بعد تركيب HTML الخاص بوصفة Vanilla، أو أنشئ متحكّم createFeedback() تديره مباشرة.', 'يحدّث الاختيار حالة الأزرار والحقل المخفي ورسالة الحالة الهادئة. وتعيد إعادة ضبط النموذج الاختيار الأولي.', 'قبل استبدال العناصر، حرّر enhance() أو استدعِ controller.destroy()؛ فتُستعاد السمات الأصلية وقيمة الحقل ورسالة الحالة.', 'أرسل الملاحظات إلى خادم التطبيق في دالة الاستدعاء. ظهور الشكر وحده لا يعني أن الخادم حفظ البيانات.'],
     accessibility: ['ضع سؤالًا مرئيًا واسمًا ميسّرًا لمجموعة الاختيارات، واستخدم أزرارًا حقيقية أو عناصر اختيار مفرد أصلية.', 'اعرض رسالة التأكيد في منطقة حالة هادئة وترجم نصها.'],
-    variants: ['اختيار نعم أو لا في Vanilla', 'اختيار وتعليق في React أو Vue', 'اختيار منطقي في Angular'],
-    frameworkNotes: 'تختلف الواجهات: قيمة Feedback في React هي {helpful:"yes"|"no"|"",comment:string} مع onValueChange وonFeedback. قيمة v-model في Vue نص، ويصدر submit كائنًا {value,comment}. أما [(value)] في Angular فهي boolean|null، ويصدر valueChange؛ ولا يتضمن المكوّن الأساسي حقل تعليق.',
+    variants: ['نص فقط (افتراضي)', 'أيقونة مع النص', 'أيقونة فقط مع اسم ميسّر', 'اختيار وتعليق في React أو Vue'],
+    frameworkNotes: 'تدعم الأطر choiceVariant بالقيم text وicon-text وicon؛ وفي Vanilla استخدم data-choice-variant مع nq-feedback-actions وnq-feedback-icon وnq-feedback-label. احتفظ بتسميات نعم ولا للأسماء الميسّرة. تختلف الواجهات: قيمة Feedback في React هي {helpful:"yes"|"no"|"",comment:string} مع onValueChange وonFeedback. قيمة v-model في Vue نص، ويصدر submit كائنًا {value,comment}. أما [(value)] في Angular فهي boolean|null، ويصدر valueChange؛ ولا يتضمن المكوّن الأساسي حقل تعليق.',
     limitations: ['لا يتضمن المكوّن إرسالًا شبكيًا أو تحليلات أو مراجعة للمحتوى. تأكيد الإرسال في React وVue حالة محلية للواجهة.'],
   }),
   'cookie-consent': localize('cookie-consent', {

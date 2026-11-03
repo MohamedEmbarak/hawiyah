@@ -1,0 +1,10 @@
+/* Inline SVGs may be display:block in a consuming reset. Keep the label and
+   its icon on one flex row without changing link semantics or color variants. */
+.nq-link-icon, .nq-link:has(> svg, > .nq-icon) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nq-space-2);
+  max-inline-size: 100%;
+  vertical-align: middle;
+}
+.nq-link-icon > svg, .nq-link > :is(svg, .nq-icon) { flex: none; }

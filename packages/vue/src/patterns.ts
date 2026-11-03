@@ -179,6 +179,7 @@ export const Feedback = defineComponent({
   name: "NqFeedback",
   inheritAttrs: false,
   props: {
+    choiceVariant: { type: String as PropType<'text' | 'icon' | 'icon-text'>, default: 'text' },
     label: { type: String, default: "Was this page helpful?" },
     modelValue: String,
     defaultValue: { type: String, default: "" },
@@ -205,13 +206,13 @@ export const Feedback = defineComponent({
     return () =>
       h(
         "section",
-        mergeProps(attrs, { class: "nq-feedback", "aria-label": props.label }),
+        mergeProps(attrs, { class: "nq-feedback", "aria-label": props.label, "data-choice-variant": props.choiceVariant }),
         [
           h("h2", {}, props.label),
           h(
             "div",
             {
-              class: "nq-button-group",
+              class: "nq-button-group nq-feedback-actions",
               role: "group",
               "aria-label": props.label,
             },
@@ -227,7 +228,7 @@ export const Feedback = defineComponent({
                     submitted.value = false;
                   },
                 },
-                () => (value === "yes" ? props.yesLabel : props.noLabel),
+                () => [h('span', {class:'nq-icon nq-feedback-icon', 'data-icon':value==='yes'?'thumbs-up':'thumbs-down', 'aria-hidden':'true'}), h('span', {class:'nq-feedback-label'}, value==='yes'?props.yesLabel:props.noLabel)],
               ),
             ),
           ),

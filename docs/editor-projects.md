@@ -23,10 +23,10 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 24 components: Button, IconButton,
+Native project recipes currently cover 26 components: Button, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Table, Breadcrumb, Pagination, Stepper, Tabs,
-Progress, Skeleton, Avatar and EmptyState. Other component
+Progress, Skeleton, Avatar, EmptyState, Link and Feedback. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
 before the overall alignment/editor goal is complete.
@@ -65,3 +65,5 @@ downloaded ZIP passed an independent integrity/readback check. The guide built
 successfully. Reproduce project validation after `pnpm check:packages` with
 `node scripts/check-editor-projects.mjs`. Vue SFCs are compiled and exercised;
 full Vue language-service type checking remains separate work.
+
+Feedback adds text, thumbs-with-text and accessible thumbs-only recipes; Link demonstrates an inline directional icon. Focused Chromium checks cover all three native TypeScript previews and vanilla RTL/LTR at desktop/mobile sizes.
