@@ -12,6 +12,11 @@
   break-inside: avoid;
   box-sizing: border-box;
 }
+/* Round only the footer surface; keep demo popovers free to extend past cards. */
+.component-card-docs {
+  border-end-start-radius: max(0px, calc(var(--nq-radius-lg) - 1px));
+  border-end-end-radius: max(0px, calc(var(--nq-radius-lg) - 1px));
+}
 .demo-result { margin-block: 1rem 0; padding-block-start: .75rem; border-block-start: 1px solid var(--nq-color-border); }
 .ready-examples { display: grid; gap: 1.25rem; }
 .ready-example { min-inline-size: 0; border: 1px solid var(--nq-color-border); border-radius: .5rem; overflow: clip; }
