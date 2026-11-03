@@ -47,5 +47,4 @@
 .nq-calendar-info [data-nq-tooltip-trigger]::before { content: 'i'; font-size: 0.6875rem; }
 .nq-calendar-info .nq-tooltip { inset-block-end: calc(100% + 4px); inset-inline: auto; left: 50%; transform: translateX(-50%); inline-size: 15rem; max-inline-size: calc(100vw - 4rem); white-space: normal; text-align: start; }
 .nq-calendar-info bdi { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.nq-calendar :is(.nq-calendar-grid, table) .nq-calendar-empty-week { block-size: 2.75rem; }
 .nq-calendar-info[hidden] { display: none; }

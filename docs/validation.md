@@ -594,3 +594,26 @@ and tree-shaking checks. No package was published.
 The editor badge correction separately passed RTL/LTR checks for all four
 framework marks at 1864px and 390px: a centered 22px SVG in a 36px badge.
 
+
+
+## Filled calendar weeks — 2026-11-03
+
+All adapters now fill the six-row calendar with adjacent-month dates instead of
+an empty spacer week. The core `fixedWeeks` option leaves the default month
+helper result compatible. Ten presentation-data checks and the two pinned
+calendar oracle checks pass; the provider data and calculations are unchanged.
+A Vue overlapping-week focus regression caught by the full suite was fixed by
+keying rows by their starting date, and its existing keyboard regression passes.
+
+Three guide presentation cases cover RTL/LTR, the actual `/#inputs` picker,
+month navigation, switching, tooltip focus and dialog stability. The separate
+responsive popup check also passes. Six native React/Vue/Angular RTL/LTR cases
+pass, including keyboard movement into an overlapping week. Gregorian and Hijri
+screenshots were inspected. Packages, guide and all three native apps build.
+
+The final full Vitest run passed 311 of 313 checks; the two remaining checks
+hit the default five-second test timeout under concurrent browser/build load.
+Their two files passed all 14 checks in an isolated single-worker rerun with a
+15-second test timeout. No assertions or application behavior were relaxed.
+All eight token contrast checks pass. This is a focused calendar validation,
+not a claim that the entire DGA alignment program is complete.

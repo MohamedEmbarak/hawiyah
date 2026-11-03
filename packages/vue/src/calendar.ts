@@ -90,6 +90,7 @@ export const Calendar = defineComponent({
         locale: props.locale,
         calendar: props.calendar,
         weekStartsOn: props.weekStartsOn,
+        fixedWeeks: true,
       }),
     );
     const focusValue = computed(
@@ -293,8 +294,10 @@ export const Calendar = defineComponent({
               Array.from({ length: 6 }, (_, week) =>
                 h(
                   "tr",
-                  { key: week, "aria-hidden": week * 7 >= page.value.days.length || undefined },
-                  week * 7 >= page.value.days.length ? [h("td", { colspan: 7, class: "nq-calendar-empty-week" })] : page.value.days
+                  // Keep overlapping weeks keyed by date when the visible month changes.
+                  // A positional row key can mount then remove the same date ref.
+                  { key: page.value.days[week * 7]?.value ?? week },
+                  page.value.days
                     .slice(week * 7, week * 7 + 7)
                     .map((day, dayIndex) =>
                       h(

@@ -59,7 +59,7 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   const button = (label: string, action: string) => { const node = document.createElement('button'); node.type = 'button'; node.className = `nq-button nq-calendar-${action === 'previous' ? 'prev' : 'next'}`; node.setAttribute('aria-label', label); node.dataset.variant = 'ghost'; node.dataset.nqCalendarAction = action; node.textContent = label; return node; };
   const render = (focusDate?: string, focusAction?: string) => {
     refreshBounds();
-    model = getCalendarMonth({ month, value, min, max, locale, calendar, weekStartsOn });
+    model = getCalendarMonth({ month, value, min, max, locale, calendar, weekStartsOn, fixedWeeks: true });
     const first = model.days.find(day => !day.outside)!;
     month = first.value;
     const active = model.days.find(day => day.value === (focusDate || focused) && !day.disabled && selectable(day.value))
@@ -83,7 +83,6 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
     const body = document.createElement('tbody');
     for (let offset = 0; offset < 42; offset += 7) {
       const row = document.createElement('tr');
-      if (offset >= model.days.length) { row.setAttribute('aria-hidden', 'true'); const blank = document.createElement('td'); blank.colSpan = 7; blank.className = 'nq-calendar-empty-week'; row.append(blank); }
       for (const day of model.days.slice(offset, offset + 7)) {
         const cell = document.createElement('td'); cell.setAttribute('role', 'gridcell'); cell.setAttribute('aria-selected', String(day.selected));
         if (day.label) {

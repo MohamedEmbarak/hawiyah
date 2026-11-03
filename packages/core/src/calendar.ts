@@ -18,6 +18,8 @@ export interface CalendarMonthOptions {
   locale?: string;
   calendar?: CalendarSystem;
   weekStartsOn?: number;
+  /** Render six complete weeks, including adjacent-month days, without spacer rows. */
+  fixedWeeks?: boolean;
 }
 export interface CalendarMonth {
   label: string;
@@ -97,7 +99,7 @@ export function getCalendarMonth(options: CalendarMonthOptions = {}): CalendarMo
   const first = startOfMonth(toCalendar(date(anchor), system));
   const offset = (first.toDate('UTC').getUTCDay() - weekStartsOn + 7) % 7;
   const start = date(iso(first)).subtract({ days: offset });
-  const count = Math.ceil((offset + system.getDaysInMonth(first)) / 7) * 7;
+  const count = options.fixedWeeks ? 42 : Math.ceil((offset + system.getDaysInMonth(first)) / 7) * 7;
   const number = new Intl.NumberFormat(locale, { useGrouping: false, numberingSystem: 'latn' });
   const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' });
   const baseSunday = parseDate('2024-01-07');

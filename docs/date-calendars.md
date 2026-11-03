@@ -84,6 +84,17 @@ table. Broad runtime support alone therefore does not prove source agreement.
 
 ## Limits and maintenance
 
+### Stable six-week presentation
+
+All four adapters render six complete weeks, including muted dates from adjacent
+months. This replaces the empty spacer week without moving or resizing the
+picker when the visible month or calendar changes. The core month helper opts in
+with `fixedWeeks: true`; its default variable-length result remains compatible.
+The added cells use the existing date arithmetic, range checks and pinned Saudi
+provider. Unsupported boundary dates remain disabled; no conversion data changes.
+Vue keys each rendered week by its first date so a week shared by adjacent month
+views retains keyboard focus when it moves to a different row.
+
 Live bulk verification against the official KACST service was unavailable from
 this environment. We do **not** claim that every historical/future date matches
 the latest version of that service. A [separate implementation's comparison](https://github.com/AsimNet/ummulqura-calendar#eras-and-civil-records)

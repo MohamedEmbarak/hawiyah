@@ -10,12 +10,20 @@ export async function checkCalendarPresentation(page: Page, picker: Locator) {
   const dialog = picker.locator('dialog');
   await expect(dialog).toBeVisible();
   await dialog.locator('input[value=gregory]').check();
+  // Cross into a week shared by adjacent month views without losing DOM focus.
+  await dialog.locator('[aria-selected=true] .nq-calendar-day').focus();
+  await page.keyboard.press('End');
+  await page.keyboard.press('ArrowDown');
+  await expect(dialog.locator('.nq-calendar-day:focus')).toHaveCount(1);
   const before = await dialog.boundingBox();
   await expect(dialog.locator('tbody tr')).toHaveCount(6);
+  await expect(dialog.locator('tbody tr').last().locator('.nq-calendar-day')).toHaveCount(7);
+  await expect(dialog.locator('.nq-calendar-empty-week')).toHaveCount(0);
   await dialog.locator('input[value=islamic-umalqura]').check();
   const after = await dialog.boundingBox();
   expect(Math.abs(before!.height - after!.height)).toBeLessThan(1);
   expect(Math.abs(before!.y - after!.y)).toBeLessThan(1);
+  await expect(dialog.locator('tbody tr').last().locator('.nq-calendar-day')).toHaveCount(7);
   expect(await dialog.locator('.nq-calendar-day').allTextContents()).not.toEqual([]);
   expect((await dialog.innerText()).match(/[٠-٩۰-۹]/u)).toBeNull();
   const colors = await dialog.locator('.nq-calendar-switch').evaluate(node => ({ actual: getComputedStyle(node, '::before').backgroundColor, primary: getComputedStyle(node).getPropertyValue('--nq-color-primary').trim() }));
@@ -33,6 +41,17 @@ export async function checkCalendarPresentation(page: Page, picker: Locator) {
   await page.keyboard.press('Escape');
   await expect(panel).toBeHidden(); await expect(dialog).toBeVisible();
   await expect(info).toBeFocused();
+  for (const calendar of ['gregory', 'islamic-umalqura']) {
+    await dialog.locator(`input[value="${calendar}"]`).check();
+    for (const action of ['next', 'next', 'prev', 'prev']) {
+      await dialog.locator(`.nq-calendar-${action}`).click();
+      await expect(dialog.locator('tbody tr')).toHaveCount(6);
+      await expect(dialog.locator('tbody tr').last().locator('.nq-calendar-day')).toHaveCount(7);
+      const box = (await dialog.boundingBox())!;
+      expect(Math.abs(box.height - before!.height)).toBeLessThan(1);
+      expect(Math.abs(box.y - before!.y)).toBeLessThan(1);
+    }
+  }
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden(); await expect(trigger).toBeFocused();
 }

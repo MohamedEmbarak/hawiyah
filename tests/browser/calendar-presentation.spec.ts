@@ -11,3 +11,13 @@ for (const dir of ['rtl', 'ltr']) test(`calendar remains steady with muted month
   await picker.locator('input[value=islamic-umalqura]').check();
   await page.screenshot({ path: testInfo.outputPath(`calendar-${dir}.png`) });
 });
+
+test('input lab picker fills its final week without moving the dialog', async ({page}, testInfo) => {
+  await page.setViewportSize({width:1864,height:884});
+  await page.goto('/#inputs');
+  const picker=page.locator('#native-input-lab .nq-date-picker').first();
+  await checkCalendarPresentation(page,picker);
+  await picker.locator('.nq-date-picker-trigger').click();
+  await picker.locator('input[value=gregory]').check();
+  await picker.locator('dialog').screenshot({path:testInfo.outputPath('input-lab-filled-weeks.png')});
+});
