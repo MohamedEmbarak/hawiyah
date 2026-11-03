@@ -23,10 +23,10 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 26 components: Button, IconButton,
+Native project recipes currently cover 29 components: Button, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Table, Breadcrumb, Pagination, Stepper, Tabs,
-Progress, Skeleton, Avatar, EmptyState, Link and Feedback. Other component
+Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader and PortalFooter. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
 before the overall alignment/editor goal is complete.
@@ -67,3 +67,16 @@ successfully. Reproduce project validation after `pnpm check:packages` with
 full Vue language-service type checking remains separate work.
 
 Feedback adds text, thumbs-with-text and accessible thumbs-only recipes; Link demonstrates an inline directional icon. Focused Chromium checks cover all three native TypeScript previews and vanilla RTL/LTR at desktop/mobile sizes.
+
+The verification strip, composed portal header and grouped footer bring native
+coverage to 29 recipes. All 29 React recipes passed TypeScript checking and all
+29 Angular recipes passed strict template checking against fresh package
+tarballs. All seven exported framework/language combinations built. Five focused
+Chromium cases cover disclosure state, mobile navigation, footer layout and
+contained demo actions across all four adapters.
+
+The full native browser matrix also passes: five cases cover all 29 recipes in
+React JSX/TSX, Vue JS/TS and Angular TypeScript, totaling 145 rendered previews.
+These checks verify mounting and the named interaction assertions in
+`tests/browser/project-editor.spec.ts`; they do not establish exhaustive behavior
+coverage for every component.

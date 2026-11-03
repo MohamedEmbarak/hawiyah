@@ -1,3 +1,4 @@
+import { verificationGuides } from './component-verification-guide';
 import { catalog, type ComponentId } from './data';
 import type { ComponentGuide, GuideInput } from './component-guide-types';
 import { nativeGuides } from './component-native-guides';
@@ -8,6 +9,7 @@ import { mobileGuides } from './component-mobile-guides';
 export type { ComponentGuide, GuideInput } from './component-guide-types';
 
 const entries: Record<string, GuideInput> = {
+  ...verificationGuides,
   ...nativeGuides,
   ...expandedGuides,
   ...layoutPlatformGuides,

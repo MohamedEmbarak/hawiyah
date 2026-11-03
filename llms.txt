@@ -2,7 +2,7 @@
 
 > Independent Arabic-first UI system for vanilla JavaScript, React, Vue, and Angular. DGA-based default foundation mapped from supplied Platforms Code / كود المنصات / هيئة الحكومة الرقمية source snapshots; original Nasaq theme is opt-in. DGA compliance is documented as evidence and gaps; no official endorsement or certification is claimed.
 
-Status: public 0.1 source preview under Apache-2.0. Seven packages support 81 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Packages are not published. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
+Status: public 0.1 source preview under Apache-2.0. Seven packages support 82 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Packages are not published. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
 
 ## Start here
 
@@ -14,7 +14,7 @@ Status: public 0.1 source preview under Apache-2.0. Seven packages support 81 ca
 - [Shared contract](CONTRACT.md): package names, CSS conventions, and initial scope.
 - [Expansion contract](EXPANSION.md): 54 additions, native input semantics, calendars, responsive layout, and adapter responsibilities.
 - [Component catalog](components.json): machine-readable component metadata and status.
-- [Coverage guide](docs/coverage.md): all 81 entries, 22 native input types, national data recipes, and implementation types.
+- [Coverage guide](docs/coverage.md): all 82 entries, 22 native input types, national data recipes, and implementation types.
 - [Core and vanilla API](packages/core/API.md): exact helper exports, enhancement markup, controller lifecycles, and limitations.
 - [Vanilla expansion API](packages/vanilla/EXPANSION-API.md): controller markup and native/static recipes.
 - [Brand identity](brand/README.md): Woven Rhythm identity, artwork rules, typography, and provenance.

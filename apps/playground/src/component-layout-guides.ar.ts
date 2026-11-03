@@ -182,7 +182,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     lifecycle: ['اعرض التذييل بعد محتوى الصفحة. تستخدم روابطه تنقل المتصفح أو الموجّه المعتاد.', 'حدّث روابط السياسات والدعم من إعدادات المنصة؛ فلا يملك المكوّن حالة اختيار.', 'لا يحتاج محتوى التذييل الثابت إلى تحسين بجافاسكربت أو تنظيف.'],
     accessibility: ['استخدم footer ومنطقة nav مسمّاة، واجعل تسميتها مختلفة عن التنقل الرئيسي.', 'اختر نصوص روابط تصف السياسة أو الوجهة وتظل واضحة في وضع التباين العالي.'],
     variants: ['هوية وروابط', 'معلومات قانونية أو دعم إضافية'],
-    frameworkNotes: 'يقبل PortalFooter في React الخصائص brand وdescription وlinks وlinksLabel وlegal. ويقبل Vue الخصائص brand وcopyright وlinks وnavLabel مع محتوى الفتحة الافتراضية. يوفّر nq-portal-footer في Angular الخصائص brand وlinks وnavigationLabel وcopyright.',
+    frameworkNotes: 'تقبل الأطر groups بعنوان وروابط وlegalLinks للسياسات. يدعم React حقول support وpartners، وVue فتحات logo/support/partners، وAngular إسقاط nqFooterBrand/nqFooterSupport/nqFooterPartners. تظل الواجهات السابقة مدعومة. يقبل PortalFooter في React الخصائص brand وdescription وlinks وlinksLabel وlegal. ويقبل Vue الخصائص brand وcopyright وlinks وnavLabel مع محتوى الفتحة الافتراضية. يوفّر nq-portal-footer في Angular الخصائص brand وlinks وnavigationLabel وcopyright.',
   }),
   feedback: localize('feedback', {
     summary: 'اجمع اختيارًا صريحًا حول فائدة الصفحة، واربطه بمسار الملاحظات الذي يديره التطبيق.',

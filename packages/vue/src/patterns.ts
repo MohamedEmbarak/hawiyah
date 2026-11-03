@@ -139,36 +139,36 @@ export const PortalHeader = defineComponent({
       ]);
   },
 });
+export interface PortalFooterLink extends PortalLink { external?: boolean }
+export interface PortalFooterGroup { title: string; links: readonly PortalFooterLink[] }
 export const PortalFooter = defineComponent({
-  name: "NqPortalFooter",
-  inheritAttrs: false,
+  name: "NqPortalFooter", inheritAttrs: false,
   props: {
-    brand: String,
-    copyright: String,
-    links: {
-      type: Array as PropType<readonly PortalLink[]>,
-      default: () => [],
-    },
-    navLabel: { type: String, default: "Footer navigation" },
+    brand: String, description: String, copyright: String,
+    links: { type: Array as PropType<readonly PortalFooterLink[]>, default: () => [] },
+    groups: { type: Array as PropType<readonly PortalFooterGroup[]>, default: () => [] },
+    legalLinks: { type: Array as PropType<readonly PortalFooterLink[]>, default: () => [] },
+    navLabel: { type: String, default: "روابط التذييل" },
+    legalLinksLabel: { type: String, default: "السياسات وإمكانية الوصول" },
+    supportLabel: { type: String, default: "المساعدة والتواصل" },
+    externalLabel: { type: String, default: "يفتح في نافذة جديدة" },
   },
   setup(props, { attrs, slots }) {
-    return () =>
-      h("footer", mergeProps(attrs, { class: "nq-portal-footer" }), [
-        props.brand && h("strong", {}, props.brand),
-        h(
-          "nav",
-          { "aria-label": props.navLabel },
-          h(
-            "ul",
-            {},
-            props.links.map((link) =>
-              h("li", {}, h("a", { href: link.href }, link.label)),
-            ),
-          ),
-        ),
-        slots.default?.(),
-        props.copyright && h("small", {}, props.copyright),
-      ]);
+    const linkList = (items: readonly PortalFooterLink[]) => h('ul', {class:'nq-portal-footer-links'}, items.map((link,index) => h('li', {key:index}, h('a', {href:link.href,target:link.external?'_blank':undefined,rel:link.external?'noopener noreferrer':undefined}, [link.label,link.external && h('span',{class:'nq-portal-footer-external','aria-hidden':'true'},'↗'),link.external && h('span',{class:'nq-sr-only'},` · ${props.externalLabel}`)]))));
+    return () => h('footer',mergeProps(attrs,{class:'nq-portal-footer'}),[
+      h('div',{class:'nq-portal-footer-main'},[
+        (props.brand || props.description || slots.logo) && h('div',{class:'nq-portal-footer-brand'},[(slots.logo || props.brand) && h('div',{class:'nq-portal-footer-brand-marks'},slots.logo?.() ?? h('strong',{},props.brand)),props.description && h('p',{},props.description)]),
+        props.links.length > 0 && h('nav',{class:'nq-portal-footer-group','aria-label':props.navLabel},[h('h2',{},props.navLabel),linkList(props.links)]),
+        ...props.groups.filter(group=>group.links.length>0).map((group,index)=>h('nav',{class:'nq-portal-footer-group','aria-label':group.title,key:index},[h('h2',{},group.title),linkList(group.links)])),
+        slots.support && h('section',{class:'nq-portal-footer-support','aria-label':props.supportLabel},[h('h2',{},props.supportLabel),h('div',{class:'nq-portal-footer-support-content'},slots.support())]),
+        slots.default && h('div',{class:'nq-portal-footer-extra'},slots.default()),
+      ]),
+      (props.copyright || props.legalLinks.length || slots.partners) && h('div',{class:'nq-portal-footer-bottom'},[
+        props.copyright && h('small',{},props.copyright),
+        props.legalLinks.length>0 && h('nav',{class:'nq-portal-footer-legal','aria-label':props.legalLinksLabel},linkList(props.legalLinks)),
+        slots.partners && h('div',{class:'nq-portal-footer-partners'},slots.partners()),
+      ]),
+    ]);
   },
 });
 export interface FeedbackValue {

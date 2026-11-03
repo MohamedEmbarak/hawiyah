@@ -1,3 +1,4 @@
+import { arabicVerificationGuides } from './component-verification-guide';
 import { catalog, type ComponentId } from './data';
 import type { ComponentGuide, GuideInput } from './component-guide-types';
 import { arabicNativeGuides } from './component-native-guides.ar';
@@ -6,6 +7,7 @@ import { arabicLayoutPlatformGuides } from './component-layout-guides.ar';
 import { arabicMobileGuides } from './component-mobile-guides';
 
 const entries: Record<string, GuideInput> = {
+  ...arabicVerificationGuides,
   ...arabicNativeGuides,
   ...arabicExpandedGuides,
   ...arabicLayoutPlatformGuides,

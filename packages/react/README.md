@@ -402,3 +402,6 @@ interaction states, dark-surface use and density adaptations.
 
 [Ready component examples](../../docs/ready-component-examples.md) cover all five
 alert/notification tones, header/footer composition and guide-only navigation containment.
+
+
+[Site verification](../../docs/site-verification.md) composes a native disclosure above the header with deployment-owned domain and certificate information. [Grouped portal footers](../../docs/nic-footer.md) add navigation groups, support actions, legal links and identity slots.

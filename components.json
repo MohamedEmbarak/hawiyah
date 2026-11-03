@@ -27,7 +27,7 @@
     "built": "Source exists for the named adapter; this does not establish complete verification.",
     "verified": "The named adapter has direct behavior, semantic-association, or layout-contract assertions recorded in evidence. Scope is limited to those cases; rendering-only and broad suite checks remain separate. This is not a blanket accessibility or DGA certification."
   },
-  "coverageNote": "81 entries: initial 27 plus 50 expansion entries and 4 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
+  "coverageNote": "82 entries: initial 27 plus 50 expansion entries and 5 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
   "docs": {
     "overview": "README.md",
     "overviewAr": "README.ar.md",
@@ -3871,7 +3871,7 @@
       "name": "PortalFooter",
       "labelAr": "تذييل المنصة",
       "category": "platforms",
-      "description": "Configurable footer navigation and supporting information.",
+      "description": "Grouped footer navigation with brand, support, policy and partner composition.",
       "cssClasses": [
         "nq-portal-footer"
       ],
@@ -3889,8 +3889,63 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "layout",
+          "source": "tests/browser/portal-identity.spec.ts",
+          "tests": [
+            "verification masthead and grouped footer in rtl",
+            "verification masthead and grouped footer in ltr"
+          ],
+          "scope": "Grouped footer typography, separators, hover/focus, mobile stacking and contained links. Vanilla checks additionally cover light/dark, custom/original, forced colors and scoped axe.",
+          "command": "pnpm exec playwright test tests/browser/portal-identity.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "layout",
+          "source": "tests/browser/portal-identity.spec.ts",
+          "tests": [
+            "react native masthead state and footer composition"
+          ],
+          "scope": "Grouped footer typography, separators, hover/focus, mobile stacking and contained links. Vanilla checks additionally cover light/dark, custom/original, forced colors and scoped axe.",
+          "command": "pnpm exec playwright test tests/browser/portal-identity.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "layout",
+          "source": "tests/browser/portal-identity.spec.ts",
+          "tests": [
+            "vue native masthead state and footer composition"
+          ],
+          "scope": "Grouped footer typography, separators, hover/focus, mobile stacking and contained links. Vanilla checks additionally cover light/dark, custom/original, forced colors and scoped axe.",
+          "command": "pnpm exec playwright test tests/browser/portal-identity.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "layout",
+          "source": "tests/browser/portal-identity.spec.ts",
+          "tests": [
+            "angular native masthead state and footer composition"
+          ],
+          "scope": "Grouped footer typography, separators, hover/focus, mobile stacking and contained links. Vanilla checks additionally cover light/dark, custom/original, forced colors and scoped axe.",
+          "command": "pnpm exec playwright test tests/browser/portal-identity.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        }
+      ],
       "implementationSources": {
         "react": [
           "packages/react/src/expanded-content.tsx"
@@ -3902,8 +3957,9 @@
           "packages/angular/src/content.ts"
         ],
         "vanilla": [
-          "packages/vanilla/EXPANSION-API.md",
-          "packages/styles/src/components.css"
+          "docs/nic-footer.md",
+          "packages/styles/src/nic-footer.css",
+          "packages/styles/src/portal.css"
         ]
       },
       "notes": [],
@@ -5140,11 +5196,113 @@
         "327px preferred width, safe areas and 44px rows; no source drawer entrance timing established."
       ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/navigation-drawer"
+    },
+    {
+      "id": "site-verification",
+      "name": "SiteVerification",
+      "labelAr": "شريط التحقق من الموقع",
+      "category": "platforms",
+      "description": "Native disclosure above a site header for application-owned domain, HTTPS and platform-registration information.",
+      "cssClasses": [
+        "nq-site-verification",
+        "nq-portal-masthead"
+      ],
+      "interaction": "interactive",
+      "sourceType": "native",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/browser/portal-identity.spec.ts",
+          "tests": [
+            "verification masthead and grouped footer in rtl",
+            "verification masthead and grouped footer in ltr"
+          ],
+          "scope": "Native disclosure keyboard/state and contained registration actions; responsive masthead alignment.",
+          "command": "pnpm exec playwright test tests/browser/portal-identity.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/browser/portal-identity.spec.ts",
+          "tests": [
+            "react native masthead state and footer composition"
+          ],
+          "scope": "Native disclosure keyboard/state and contained registration actions; responsive masthead alignment.",
+          "command": "pnpm exec playwright test tests/browser/portal-identity.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/browser/portal-identity.spec.ts",
+          "tests": [
+            "vue native masthead state and footer composition"
+          ],
+          "scope": "Native disclosure keyboard/state and contained registration actions; responsive masthead alignment.",
+          "command": "pnpm exec playwright test tests/browser/portal-identity.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/browser/portal-identity.spec.ts",
+          "tests": [
+            "angular native masthead state and footer composition"
+          ],
+          "scope": "Native disclosure keyboard/state and contained registration actions; responsive masthead alignment.",
+          "command": "pnpm exec playwright test tests/browser/portal-identity.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        }
+      ],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/site-verification.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/site-verification.ts"
+        ],
+        "angular": [
+          "packages/angular/src/site-verification.ts"
+        ],
+        "vanilla": [
+          "docs/site-verification.md",
+          "packages/styles/src/site-verification.css"
+        ]
+      },
+      "notes": [
+        "Native details/summary works without a JavaScript controller.",
+        "Default wording does not claim government status or registration. Applications supply verified wording, certificate links and authorized artwork."
+      ],
+      "documentation": "https://mohamedembarak.github.io/nasaq/#component/site-verification"
     }
   ],
   "limitations": [
     "Public source preview; npm packages are not published. No official DGA certification.",
-    "The 81-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
+    "The 82-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
     "Combobox is local and single-select. MultiSelect is a separate searchable checkbox list; async data and virtualization are application concerns.",
     "DataTable provides stable localized sorting, not virtualization or cell editing.",
     "FileUpload and FileDropzone select local files; application code owns transport, storage, and server validation.",
@@ -5262,12 +5420,12 @@
     "native": "The main interaction uses browser-native semantics.",
     "static": "Semantic composition or CSS layout; content and application actions are caller-owned.",
     "interactive": "Nasaq adds state, keyboard behavior, or lifecycle management.",
-    "integration": "A documented application recipe for an external engine or service; not counted among the 81 components."
+    "integration": "A documented application recipe for an external engine or service; not counted among the 82 components."
   },
   "scope": {
-    "components": 81,
+    "components": 82,
     "initialComponents": 27,
-    "addedComponents": 54,
+    "addedComponents": 55,
     "layoutComponents": 12,
     "nativeInputTypeCount": 22,
     "nativeInputTypes": [

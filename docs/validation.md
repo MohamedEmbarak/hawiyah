@@ -617,3 +617,32 @@ Their two files passed all 14 checks in an isolated single-worker rerun with a
 15-second test timeout. No assertions or application behavior were relaxed.
 All eight token contrast checks pass. This is a focused calendar validation,
 not a claim that the entire DGA alignment program is complete.
+
+## Verification strip and grouped footer — 2026-11-03
+
+The source-backed layout task adds SiteVerification and expands PortalFooter
+across vanilla, React, Vue and Angular. Eleven focused unit/SSR checks pass,
+including optional verification content, external-link semantics, footer groups,
+preserved composition APIs and Angular projected regions. Full package/guide
+builds pass. Clean tarballs pass ESM/SSR, Angular APF, CSS exports, TypeScript
+declarations and tree-shaking budgets; nothing was published to npm.
+
+Five Chromium cases in `tests/browser/portal-identity.spec.ts` pass. They cover
+vanilla RTL/LTR at 1440px and 390px, native disclosure keyboard/state handling,
+registration-link containment, mobile header menu/Escape, footer typography,
+dividers, link hover/focus, responsive stacking and native adapter composition.
+Light/dark, custom/original themes, reduced motion, forced colors and scoped axe
+checks pass. Desktop/mobile screenshots were inspected. The guide's article
+heading styles no longer override component preview typography.
+
+The supplied script establishes the verification disclosure structure; its exact
+stamp styling is absent from the supplied stylesheet. Geometry and authorized
+artwork remain explicitly documented adaptations/host responsibilities. This
+task establishes neither official certification nor complete NIC/DGA parity.
+
+The 29 native project recipes pass React TypeScript and Angular strict-template
+checking against the clean consumers. All seven exported framework/language
+combinations build, and the guide TypeScript check passes.
+The five complete native editor matrix cases also pass: 145 previews across
+React JSX/TSX, Vue JS/TS and Angular TypeScript. Scope remains the mounting and
+explicit interaction assertions in `tests/browser/project-editor.spec.ts`.

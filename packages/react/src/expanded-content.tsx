@@ -65,8 +65,26 @@ export function PortalHeader({ brand, brandHref, navigation, navigationLabel = '
     </div>
   </header>;
 }
-export interface PortalFooterProps extends ComponentPropsWithRef<'footer'> { brand?: ReactNode; description?: ReactNode; links?: readonly PortalNavItem[]; linksLabel?: string; legal?: ReactNode }
-export function PortalFooter({ brand, description, links, linksLabel = 'Footer navigation', legal, children, className, ...props }: PortalFooterProps) { return <footer {...props} className={cx('nq-portal-footer', className)}>{brand}{description && <p>{description}</p>}{links && <nav aria-label={linksLabel}><ul>{links.map((item, index) => <li key={index}><Link href={item.href}>{item.label}</Link></li>)}</ul></nav>}{children}{legal && <small>{legal}</small>}</footer>; }
+export interface PortalFooterLink extends PortalNavItem { external?: boolean }
+export interface PortalFooterGroup { title: string; links: readonly PortalFooterLink[] }
+export interface PortalFooterProps extends ComponentPropsWithRef<'footer'> {
+  brand?: ReactNode; description?: ReactNode; links?: readonly PortalFooterLink[]; linksLabel?: string; legal?: ReactNode;
+  groups?: readonly PortalFooterGroup[]; legalLinks?: readonly PortalFooterLink[]; legalLinksLabel?: string;
+  support?: ReactNode; supportLabel?: string; partners?: ReactNode; externalLabel?: string;
+}
+export function PortalFooter({ brand, description, links, linksLabel = 'روابط التذييل', legal, groups = [], legalLinks = [], legalLinksLabel = 'السياسات وإمكانية الوصول', support, supportLabel = 'المساعدة والتواصل', partners, externalLabel = 'يفتح في نافذة جديدة', children, className, ...props }: PortalFooterProps) {
+  const linkList = (items: readonly PortalFooterLink[]) => <ul className="nq-portal-footer-links">{items.map((item, index) => <li key={index}><Link href={item.href} external={item.external}>{item.label}{item.external && <><span className="nq-portal-footer-external" aria-hidden="true">↗</span><span className="nq-sr-only"> · {externalLabel}</span></>}</Link></li>)}</ul>;
+  return <footer {...props} className={cx('nq-portal-footer', className)}>
+    <div className="nq-portal-footer-main">
+      {(brand || description) && <div className="nq-portal-footer-brand">{brand && <div className="nq-portal-footer-brand-marks">{brand}</div>}{description && <p>{description}</p>}</div>}
+      {!!links?.length && <nav className="nq-portal-footer-group" aria-label={linksLabel}><h2>{linksLabel}</h2>{linkList(links)}</nav>}
+      {groups.map((group, index) => group.links.length > 0 && <nav className="nq-portal-footer-group" aria-label={group.title} key={index}><h2>{group.title}</h2>{linkList(group.links)}</nav>)}
+      {support && <section className="nq-portal-footer-support" aria-label={supportLabel}><h2>{supportLabel}</h2><div className="nq-portal-footer-support-content">{support}</div></section>}
+      {children && <div className="nq-portal-footer-extra">{children}</div>}
+    </div>
+    {(legal || legalLinks.length > 0 || partners) && <div className="nq-portal-footer-bottom">{legal && <small>{legal}</small>}{legalLinks.length > 0 && <nav className="nq-portal-footer-legal" aria-label={legalLinksLabel}>{linkList(legalLinks)}</nav>}{partners && <div className="nq-portal-footer-partners">{partners}</div>}</div>}
+  </footer>;
+}
 export interface FeedbackValue { helpful: 'yes' | 'no' | ''; comment: string }
 export interface FeedbackProps extends Omit<ComponentPropsWithRef<'form'>, 'onSubmit' | 'onChange' | 'defaultValue'> { label: ReactNode; value?: FeedbackValue; defaultValue?: FeedbackValue; onValueChange?: (value: FeedbackValue) => void; onFeedback?: (value: FeedbackValue) => void; yesLabel?: string; noLabel?: string; commentLabel?: string; submitLabel?: string; successMessage?: ReactNode; disabled?: boolean; choiceVariant?: 'text' | 'icon' | 'icon-text' }
 export function Feedback({ label, value, defaultValue = { helpful: '', comment: '' }, onValueChange, onFeedback, yesLabel = 'Yes', noLabel = 'No', commentLabel = 'Tell us more (optional)', submitLabel = 'Send feedback', successMessage = 'Thank you for your feedback.', choiceVariant = 'text', disabled, className, onReset, ...props }: FeedbackProps) {

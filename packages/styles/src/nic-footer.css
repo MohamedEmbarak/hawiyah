@@ -1,0 +1,73 @@
+/* NIC global.css 3215–3275; existing DGA footer colors remain semantic.
+   Host-owned routes, social actions and licensed partner artwork are slots. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-profile-footer-title-weight: 500;
+  --nq-profile-footer-title-gap: 0.5rem;
+  --nq-profile-footer-title-border: 1px;
+  --nq-profile-footer-link-gap: 0.5rem;
+  --nq-profile-footer-bottom-gap: 3rem;
+  --nq-profile-footer-row-gap: 0px;
+  --nq-profile-footer-link-hover-opacity: 0.8;
+}
+:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
+  --nq-profile-footer-title-weight: initial;
+  --nq-profile-footer-title-gap: initial;
+  --nq-profile-footer-title-border: initial;
+  --nq-profile-footer-link-gap: initial;
+  --nq-profile-footer-bottom-gap: initial;
+  --nq-profile-footer-row-gap: initial;
+  --nq-profile-footer-link-hover-opacity: initial;
+}
+/* The source's 80% white is too faint on the brighter DGA dark footer.
+   Keep full foreground contrast in dark mode and caller-defined palettes. */
+:where([data-nq-mode='dark'], [data-nq-theme='custom']) { --nq-profile-footer-link-hover-opacity: 1; }
+.nq-portal-footer { row-gap: var(--nq-profile-footer-row-gap, var(--nq-space-8)); }
+.nq-portal-footer .nq-portal-footer-main { margin-inline: auto; max-inline-size: var(--nq-content-max); }
+.nq-portal-footer :is(.nq-portal-footer-group, .nq-portal-footer-support) { display: block; min-inline-size: 0; }
+.nq-portal-footer :is(.nq-portal-footer-group, .nq-portal-footer-support) > h2 {
+  margin: 0 0 var(--nq-profile-footer-title-gap, var(--nq-space-4));
+  padding-block-end: var(--nq-profile-footer-title-gap, 0px);
+  border-block-end: var(--nq-profile-footer-title-border, 0px) solid color-mix(in srgb, currentColor 30%, transparent);
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: var(--nq-profile-footer-title-weight, var(--nq-weight-semibold));
+}
+.nq-portal-footer .nq-portal-footer-links { display: flex; flex-direction: column; align-items: start; gap: var(--nq-profile-footer-link-gap, var(--nq-space-3)); margin: 0; padding: 0; list-style: none; }
+.nq-portal-footer :is(.nq-portal-footer-group, .nq-portal-footer-legal, .nq-portal-footer-support) a:not(.nq-button) {
+  color: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+  overflow-wrap: anywhere;
+}
+.nq-portal-footer :is(.nq-portal-footer-group, .nq-portal-footer-legal, .nq-portal-footer-support) a:not(.nq-button):hover { color: inherit; text-decoration: underline; opacity: var(--nq-profile-footer-link-hover-opacity, 1); }
+.nq-portal-footer a:focus-visible, .nq-portal-footer button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; opacity: 1; }
+.nq-portal-footer-brand { display: grid; align-content: start; gap: var(--nq-space-4); }
+.nq-portal-footer-brand :is(p, strong) { margin: 0; color: inherit; }
+.nq-portal-footer-brand p { max-inline-size: 38ch; font-size: 0.875rem; line-height: 1.5rem; }
+.nq-portal-footer-brand-marks, .nq-portal-footer-partners { display: flex; flex-wrap: wrap; align-items: center; gap: var(--nq-space-4); }
+.nq-portal-footer :is(.nq-portal-footer-brand-marks, .nq-portal-footer-partners) :is(img, svg) { display: block; block-size: 2.625rem; inline-size: auto; max-inline-size: 100%; object-fit: contain; }
+.nq-portal-footer-support-content { display: grid; gap: var(--nq-space-3); }
+.nq-portal-footer-support-content > p { margin: 0; font-size: 0.875rem; line-height: 1.5rem; }
+.nq-portal-footer-actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--nq-space-2); }
+.nq-portal-footer-actions .nq-button[data-variant='outline-white']:not(:disabled, [disabled], [aria-disabled='true']) { --nq-button-hover: color-mix(in srgb, currentColor 20%, transparent); --nq-button-active: color-mix(in srgb, currentColor 30%, transparent); --nq-button-focus-color: currentColor; color: inherit; border-color: currentColor; }
+.nq-portal-footer-wordmark { display: inline-block; inline-size: 5.25rem; block-size: 2.625rem; background: currentColor; -webkit-mask: url('./assets/nasaq-wordmark.svg') center / contain no-repeat; mask: url('./assets/nasaq-wordmark.svg') center / contain no-repeat; }
+.nq-portal-footer .nq-portal-footer-bottom { margin-block-start: var(--nq-profile-footer-bottom-gap, var(--nq-space-6)); margin-inline: auto; max-inline-size: var(--nq-content-max); border-block-start-color: color-mix(in srgb, currentColor 30%, transparent); }
+.nq-portal-footer .nq-portal-footer-bottom :is(p, small) { color: inherit; }
+.nq-portal-footer .nq-portal-footer-legal > ul { flex-direction: row; flex-wrap: wrap; gap: var(--nq-space-3) var(--nq-space-4); }
+.nq-portal-footer-external { display: inline; margin-inline-start: 0.25em; }
+/* Angular projection containers disappear when their application-owned slot is empty. */
+.nq-portal-footer :is(.nq-portal-footer-brand-marks, .nq-portal-footer-extra, .nq-portal-footer-partners):empty,
+.nq-portal-footer-brand:has(> .nq-portal-footer-brand-marks:empty):not(:has(> strong, > p)),
+.nq-portal-footer-support:has(> .nq-portal-footer-support-content:empty),
+.nq-portal-footer-bottom:not(:has(> small, > p, > nav, > .nq-portal-footer-partners:not(:empty))) { display: none; }
+@media (forced-colors: active) {
+  .nq-portal-footer { background: Canvas; color: CanvasText; --nq-profile-footer-link-hover-opacity: 1; }
+  .nq-portal-footer :is(.nq-portal-footer-group, .nq-portal-footer-support) > h2, .nq-portal-footer .nq-portal-footer-bottom { border-color: CanvasText; }
+  .nq-portal-footer :is(.nq-portal-footer-group, .nq-portal-footer-legal, .nq-portal-footer-support) a:not(.nq-button) { color: LinkText; }
+  .nq-portal-footer a:hover { opacity: 1; }
+  .nq-portal-footer :is(a, button):focus-visible { outline-color: Highlight; }
+  .nq-portal-footer-wordmark { forced-color-adjust: none; background: CanvasText; }
+}

@@ -1,3 +1,5 @@
+import {siteVerificationMarkup,siteVerificationDemoLabels} from './site-verification-demo';
+import {portalFooterMarkup,portalFooterExampleData} from './portal-footer-demo';
 import { escape as e, icon, type ComponentId, type Locale } from './data';
 import {feedbackMarkup} from './feedback-demo';
 
@@ -26,6 +28,14 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if (id === 'site-verification') {
+    const copy=siteVerificationDemoLabels(locale);
+    return [false,true].map(open=>({title:open?t('Expanded verification','تفاصيل التحقق'):t('Collapsed verification','شريط التحقق المطوي'),markup:siteVerificationMarkup(locale,open),
+      react:`import { SiteVerification } from '@nasaq/react';\n\n<SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" defaultOpen={${open}} />`,
+      vue:`<!-- import { SiteVerification } from '@nasaq/vue' -->\n<SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registration-href="#example-registration" registration-label="${copy.registrationLabel}" :default-open="${open}" />`,
+      angular:`<!-- import { NqSiteVerificationComponent } from '@nasaq/angular'; add to imports -->\n<nq-site-verification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" [open]="${open}" />`,
+    }));
+  }
   if(id==='feedback')return (['text','icon-text','icon'] as const).map(variant=>({
     title:t(`Feedback · ${variant}`,`تقييم الصفحة · ${variant}`), markup:feedbackMarkup(locale,variant),
     react:`import { Feedback } from '@nasaq/react';\n\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" yesLabel="${t('Yes','نعم')}" noLabel="${t('No','لا')}" commentLabel="${t('Tell us more','أخبرنا بالمزيد')}" submitLabel="${t('Send feedback','إرسال التقييم')}" successMessage="${t('Thank you for your feedback.','شكراً على تقييمك.')}" onFeedback={value => console.log(value)} />`,
@@ -95,13 +105,12 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
     }];
   }
   if (id === 'portal-footer') {
-    const links = [{label:t('Privacy','الخصوصية'),href:'/privacy'},{label:t('Accessibility','إمكانية الوصول'),href:'/accessibility'},{label:t('Contact us','تواصل معنا'),href:'/contact'}];
-    const description=t('A clear platform for your services.','منصة واضحة لخدماتك.'), legal=t('Example platform · 2026','منصة توضيحية · 2026');
-    return [{ title:t('Complete footer','تذييل متكامل'),
-      markup:`<footer class="nq-portal-footer"><div><img src="${import.meta.env.BASE_URL}brand/assets/nasaq-wordmark-white.svg" width="96" height="60" alt="نسق"><p>${description}</p></div><nav aria-label="${t('Example footer links','روابط تذييل المثال')}"><ul>${links.map(l=>`<li><a href="${l.href}">${l.label}</a></li>`).join('')}</ul></nav><small>${legal}</small></footer>`,
-      react:`import { PortalFooter } from '@nasaq/react';\n\n<PortalFooter brand={<img src="/brand/nasaq-wordmark-white.svg" alt="نسق" width={96} height={60} />} description="${description}" links={${JSON.stringify(links)}} legal="${legal}" />`,
-      vue:`<!-- import { PortalFooter } from '@nasaq/vue' -->\n<PortalFooter brand="نسق" :links='${JSON.stringify(links)}' copyright="${legal}"><p>${description}</p></PortalFooter>`,
-      angular:`<!-- imports: [NqPortalFooterComponent]; links = ${JSON.stringify(links)} -->\n<nq-portal-footer brand="نسق" [links]="links" copyright="${legal}"><p>${description}</p></nq-portal-footer>`,
+    const d=portalFooterExampleData(locale),groups=JSON.stringify(d.groups),policies=JSON.stringify(d.legalLinks);
+    const support=`<p>${d.supportDescription}</p><div class="nq-portal-footer-actions"><a class="nq-button" data-variant="outline-white" href="/help">${d.helpLabel}</a><a class="nq-button" data-variant="outline-white" href="/contact">${d.contactLabel}</a></div>`;
+    return [{title:t('Grouped footer with identity, support and policies','تذييل بالهوية ومجموعات الروابط والدعم والسياسات'),markup:portalFooterMarkup(locale,'ready-footer'),
+      react:`import { PortalFooter } from '@nasaq/react';\n\n<PortalFooter brand={<span className="nq-portal-footer-wordmark" role="img" aria-label="نسق" />} description="${d.description}" groups={${groups}} legalLinks={${policies}} legalLinksLabel="${d.legalLinksLabel}" legal="${d.legal}" supportLabel="${d.supportLabel}" support={<>${support.replaceAll('class=','className=')}</>} />`,
+      vue:`<!-- import { PortalFooter } from '@nasaq/vue' -->\n<PortalFooter description="${d.description}" :groups='${groups}' :legal-links='${policies}' legal-links-label="${d.legalLinksLabel}" copyright="${d.legal}" support-label="${d.supportLabel}"><template #logo><span class="nq-portal-footer-wordmark" role="img" aria-label="نسق"></span></template><template #support>${support}</template></PortalFooter>`,
+      angular:`<!-- import { NqPortalFooterComponent } from '@nasaq/angular'; add to imports; groups = ${groups}; policies = ${policies} -->\n<nq-portal-footer description="${d.description}" [groups]="groups" [legalLinks]="policies" legalLinksLabel="${d.legalLinksLabel}" copyright="${d.legal}" supportLabel="${d.supportLabel}"><span nqFooterBrand class="nq-portal-footer-wordmark" role="img" aria-label="نسق"></span><div nqFooterSupport>${support}</div></nq-portal-footer>`,
     }];
   }
   if (id === 'portal-layout') return [{ title:t('Header, page and footer together','الترويسة والصفحة والتذييل معًا'),markup:preview(id).replaceAll('reference-', 'ready-reference-') }];

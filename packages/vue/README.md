@@ -318,3 +318,6 @@ alert/notification tones, header/footer composition and guide-only navigation co
 The control remains keyboard-focusable and submits its value, while pointer and
 keyboard activation leave its value and radio peers unchanged. Disabled remains
 a separate native state. See [NIC states](../../docs/nic-choices.md).
+
+
+[Site verification](../../docs/site-verification.md) composes a native disclosure above the header with deployment-owned domain and certificate information. [Grouped portal footers](../../docs/nic-footer.md) add navigation groups, support actions, legal links and identity slots.

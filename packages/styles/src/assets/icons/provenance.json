@@ -177,6 +177,26 @@
       "directionalOptIn": false,
       "comparison": "Name/style mapping only; geometry not compared.",
       "retrieved": "2026-11-03"
+    },
+    {
+      "name": "link-04",
+      "file": "link-04.svg",
+      "sha256": "302bce03d2913e3dba573a902a328cc2c293d5ffd670d2d1d9275951849f429d",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/link-04.svg",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "comparison": "Icon name used by supplied NIC master.js verification disclosure; geometry not compared.",
+      "retrieved": "2026-11-03"
+    },
+    {
+      "name": "lock-password",
+      "file": "lock-password.svg",
+      "sha256": "536689a044a686d81ad91a16ec6c3337ffb070bbf67f0e57aca1bdb54b9048b1",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/lock-password.svg",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "comparison": "Icon name used by supplied NIC master.js verification disclosure; geometry not compared.",
+      "retrieved": "2026-11-03"
     }
   ]
 }

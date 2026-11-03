@@ -29,6 +29,9 @@ export const nativeProjectComponents = new Set([
   "empty",
   "feedback",
   "link",
+  "site-verification",
+  "portal-header",
+  "portal-footer",
 ]);
 export type ProjectExample = {
   names: Record<keyof IDEFiles, string>;
@@ -89,8 +92,12 @@ export function projectExample(
     empty: "EmptyState",
     feedback: "Feedback",
     link: "Link",
+    "site-verification": "SiteVerification",
+    "portal-header": "PortalHeader",
+    "portal-footer": "PortalFooter",
   };
   const component = name[id]!;
+  const componentImports = ["site-verification","portal-header"].includes(id) ? "SiteVerification, PortalHeader" : component;
   const options = JSON.stringify([
     { value: "first", label: t("First", "الأول") },
     { value: "second", label: t("Second", "الثاني") },
@@ -104,7 +111,23 @@ export function projectExample(
     numberState = false,
     initialValue: string | undefined;
   const label = t("Example", "مثال");
-  if (id === "button") {
+  if (["site-verification","portal-header"].includes(id)) {
+    state=true;booleanState=true;
+    const copy={label:t('Verification banner — demonstration','شريط التحقق — مثال توضيحي'),registrationLabel:t('Example platform-registration link','مثال على رابط تسجيل المنصة')},brand=t('Example service portal','بوابة خدمات توضيحية');
+    const links=JSON.stringify([{label:t('Services','الخدمات'),href:'#services',current:true},{label:t('Contact','تواصل معنا'),href:'#contact'}]);
+    react=`<div className="nq-portal-masthead"><SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" open={value} onOpenChange={setValue} /><PortalHeader brand="${brand}" brandHref="#home" navigation={${links}} /></div><output>{String(value)}</output>`;
+    vue=`<div class="nq-portal-masthead"><SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registration-href="#example-registration" registration-label="${copy.registrationLabel}" v-model:open="value" /><PortalHeader brand="${brand}" home-href="#home" :links='${links}' /></div><output>{{value}}</output>`;
+    angularMember=`\n  links = ${links};`;
+    angular=`<div class="nq-portal-masthead"><nq-site-verification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" [(open)]="value" /><nq-portal-header brand="${brand}" homeHref="#home" [links]="links" /></div><output>{{value}}</output>`;
+  } else if (id === "portal-footer") {
+    const groups=JSON.stringify([{title:t('Explore the platform','استكشف المنصة'),links:[{label:t('Services','الخدمات'),href:'#services'},{label:t('About us','عن المنصة'),href:'#about'}]},{title:t('Useful links','روابط مفيدة'),links:[{label:t('Service guide','دليل الخدمات'),href:'#guide'},{label:t('Contact us','تواصل معنا'),href:'#contact'}]}]);
+    const legalLinks=JSON.stringify([{label:t('Privacy policy','سياسة الخصوصية'),href:'#privacy'},{label:t('Accessibility','إمكانية الوصول'),href:'#accessibility'}]);
+    const description=t('Find services, track requests and get support in one place.','تعرّف على الخدمات، وتابع طلباتك، واحصل على الدعم من مكان واحد.'),support=t('Help and contact','المساعدة والتواصل'),help=t('Help centre','مركز المساعدة'),legal=t('Example platform · 2026','منصة توضيحية · 2026'),policies=t('Policies and accessibility','السياسات وإمكانية الوصول');
+    react=`<PortalFooter brand={<span className="nq-portal-footer-wordmark" role="img" aria-label="نسق" />} description="${description}" groups={${groups}} legalLinks={${legalLinks}} legalLinksLabel="${policies}" legal="${legal}" supportLabel="${support}" support={<div className="nq-portal-footer-actions"><a className="nq-button" data-variant="outline-white" href="#help">${help}</a></div>} />`;
+    vue=`<PortalFooter description="${description}" :groups='${groups}' :legal-links='${legalLinks}' legal-links-label="${policies}" copyright="${legal}" support-label="${support}"><template #logo><span class="nq-portal-footer-wordmark" role="img" aria-label="نسق"></span></template><template #support><div class="nq-portal-footer-actions"><a class="nq-button" data-variant="outline-white" href="#help">${help}</a></div></template></PortalFooter>`;
+    angularMember=`\n  groups = ${groups};\n  policies = ${legalLinks};`;
+    angular=`<nq-portal-footer description="${description}" [groups]="groups" [legalLinks]="policies" legalLinksLabel="${policies}" copyright="${legal}" supportLabel="${support}"><span nqFooterBrand class="nq-portal-footer-wordmark" role="img" aria-label="نسق"></span><div nqFooterSupport class="nq-portal-footer-actions"><a class="nq-button" data-variant="outline-white" href="#help">${help}</a></div></nq-portal-footer>`;
+  } else if (id === "button") {
     state = true;
     react = `<Button onClick={() => setValue(value + '!')}>${t("Click me", "اضغط هنا")}</Button><output>{value}</output>`;
     vue = `<Button @click="value += '!'">${t("Click me", "اضغط هنا")}</Button><output>{{ value }}</output>`;
@@ -336,7 +359,7 @@ export function projectExample(
       host: '<div id="app"></div>',
       files: {
         css,
-        html: `${state ? "import { useState } from 'react';\n" : ""}import { ${component} } from '@nasaq/react';\n\nexport default function App() {\n${state ? `  const [value, setValue] = useState${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}  return <main className="demo" lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${react}</main>;\n}\n`,
+        html: `${state ? "import { useState } from 'react';\n" : ""}import { ${componentImports} } from '@nasaq/react';\n\nexport default function App() {\n${state ? `  const [value, setValue] = useState${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}  return <main className="demo" lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${react}</main>;\n}\n`,
         js: `import { createRoot } from 'react-dom/client';\nimport App from './App';\nimport './style.css';\n\nconst root = document.getElementById('app');\nif (!root) throw new Error('Missing app root');\ncreateRoot(root).render(<App />);\n`,
       },
     };
@@ -347,11 +370,11 @@ export function projectExample(
       host: '<div id="app"></div>',
       files: {
         css,
-        html: `<script setup${typed ? ' lang="ts"' : ""}>\n${state ? "import { ref } from 'vue';\n" : ""}import { ${component} } from '@nasaq/vue';\n${state ? `const value = ref${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}</script>\n\n<template>\n  <main class="demo" lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${vue}</main>\n</template>\n`,
+        html: `<script setup${typed ? ' lang="ts"' : ""}>\n${state ? "import { ref } from 'vue';\n" : ""}import { ${componentImports} } from '@nasaq/vue';\n${state ? `const value = ref${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}</script>\n\n<template>\n  <main class="demo" lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${vue}</main>\n</template>\n`,
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };
-  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "tabs" ? ", NqTabComponent" : ""}`;
+  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "tabs" ? ", NqTabComponent" : id === "site-verification" ? ", NqPortalHeaderComponent" : id === "portal-header" ? ", NqSiteVerificationComponent" : ""}`;
   return {
     names: { html: "app.component.ts", css: "style.css", js: "main.ts" },
     entry: "main.ts",

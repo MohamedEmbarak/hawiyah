@@ -70,14 +70,14 @@ it does not mean every source state has already passed comparison.
 | CSS 3018–3079: badges | Badge | Compare sizes, borders and semantic palettes |
 | CSS 3082–3153: dot status labels | Badge composition | Dot status labels now display all five tones in the guide; Angular Badge exposes the dot/outline/soft variant alongside native CSS attributes |
 | CSS 3156–3181: avatars | Avatar, AvatarGroup | Compare source 40/64/80/120px options |
-| CSS 3215–3275; JS 1318–1578: footer/cookie links | PortalFooter, CookieConsent | Compare spacing and interactions; data/routes remain application-owned |
+| CSS 3215–3275; JS 1318–1578: footer/cookie links | PortalFooter, CookieConsent | [Grouped footer](nic-footer.md): source typography, dividers, link spacing, branding/support/legal slots; host routes and cookie integrations remain application-owned |
 | CSS 3279–3423: carousel | Carousel | Compare track/control/dot geometry; CSS alone does not establish autoplay or keyboard behavior |
 | CSS 3427–3502: rating and half stars | Rating, Feedback | Confirm fractional display separately from integer input selection |
 | CSS 3505–3666, 4005–4139; JS 2101–2346: pagination | Pagination | Jump-menu and responsive presentation need explicit coverage |
 | CSS 3670–3788: high contrast | forced-colors/custom theme | Preserve system-color support; do not apply global image/body filters to host applications |
 | CSS 3846–4000; JS 318–558: notification banner/modal | ToastRegion, Alert, Dialog | Five alert/notification tones now exposed and demonstrated across all adapters, including neutral; source banner geometry/timing/modal comparison remains pending |
 | JS 627–929: multilevel main navigation | PortalHeader, NavigationDrawer | Compare expanded/current/route-close and nested menu behavior |
-| JS 1176–1310: government verification disclosure | disclosure/banner composition | Do not ship official registration identifiers or imply Nasaq/site certification |
+| JS 1176–1310: government verification disclosure | SiteVerification, PortalHeader composition | [Native disclosure](site-verification.md): configurable domain, HTTPS and registration information; authorized host artwork, safe new-window links and accessible native details. No official identifiers or certification claim |
 | JS 1584–1606: copy helper | application action recipe | Use native clipboard permission/error handling with accessible status |
 | CSS 4141–4192; JS auth/cache/bootstrap/devtools | site-specific integration | Excluded from generic package behavior; no SharePoint/auth/API/debug side effects |
 

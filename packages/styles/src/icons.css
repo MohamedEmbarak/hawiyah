@@ -35,3 +35,7 @@
   :where(button, a)[aria-disabled='true'] .nq-icon,
   button:disabled .nq-icon { background-color: GrayText; }
 }
+
+.nq-icon[data-icon="link-04"] { --nq-icon-image: url("./assets/icons/link-04.svg"); }
+
+.nq-icon[data-icon="lock-password"] { --nq-icon-image: url("./assets/icons/lock-password.svg"); }

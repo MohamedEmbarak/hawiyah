@@ -193,3 +193,5 @@ export function restoreFocus(element: HTMLElement | null | undefined): boolean {
 export { observeFieldValue } from './field-value.js';
 export { observeReadonlyChoice } from './readonly-choice.js';
 export type { FieldValueElement, FieldValueObserver } from './field-value.js';
+
+export * from './site-verification.js';
