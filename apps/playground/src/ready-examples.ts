@@ -28,6 +28,14 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='link')return (['default','neutral','standalone','disabled'] as const).map(variant=>{
+    const disabled=variant==='disabled',label=disabled?t('Unavailable destination','وجهة غير متاحة'):t('Read the guide','اقرأ الدليل');
+    return {title:t(`Link · ${variant}`,`رابط · ${variant}`),markup:`<a class="nq-link" ${disabled?'role="link" aria-disabled="true" tabindex="-1"':`href="#guide" data-variant="${variant}"`}>${label}${variant==='standalone'?'<span class="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true"></span>':''}</a>`,
+      react:`import { Link } from '@nasaq/react';\n\n<Link href="#guide" ${disabled?'disabled':`variant="${variant}"`}>${label}</Link>`,
+      vue:`<!-- import { Link } from '@nasaq/vue' -->\n<Link href="#guide" ${disabled?'disabled':`variant="${variant}"`}>${label}</Link>`,
+      angular:`<!-- import { NqLinkComponent } from '@nasaq/angular'; add to imports -->\n<nq-link href="#guide" ${disabled?'[disabled]="true"':`variant="${variant}"`}>${label}</nq-link>`,
+    };
+  });
   if (id === 'site-verification') {
     const copy=siteVerificationDemoLabels(locale);
     return [false,true].map(open=>({title:open?t('Expanded verification','تفاصيل التحقق'):t('Collapsed verification','شريط التحقق المطوي'),markup:siteVerificationMarkup(locale,open),

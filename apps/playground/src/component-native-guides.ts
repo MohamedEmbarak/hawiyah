@@ -85,7 +85,7 @@ export const nativeGuides: Record<string, GuideInput> = {
     summary: 'Shows the current page’s position in a navigation hierarchy using an ordered list of real links.',
     usage: `<nav aria-label="Breadcrumb">\n  <ol class="nq-breadcrumb">\n    <li><a href="./">Home</a></li>\n    <li><a href="./services">Services</a></li>\n    <li aria-current="page">License renewal</li>\n  </ol>\n</nav>`,
     lifecycle: ['Build the hierarchy from route data and mark only the current page.', 'Update items when navigation changes. The browser or application router owns link navigation.', 'There is no stateful controller; remove the markup with its view.'],
-    api: api(['items', 'React {label,href?,current?}[]', 'Navigation hierarchy; the last item is current.'], ['label', 'string', 'Localized name for the breadcrumb navigation landmark.'], ['aria-current', 'page', 'Identifies the current page in vanilla markup.']),
+    api: api(['items', '{label,href?,disabled?}[]; React/Vue current?', 'Navigation hierarchy; the last item is current. Disabled destinations render without href.'], ['label', 'string', 'Localized name for the breadcrumb navigation landmark.'], ['aria-current', 'page', 'Identifies the current page in vanilla markup.']),
     accessibility: ['Use a localized nav label distinct from the main navigation.', 'Separators should not become extra focusable controls.', 'Keep meaningful link text and allow normal browser link behavior.'], related: ['page-header', 'link'], source: 'packages/react/src/display.tsx',
   },
   pagination: {

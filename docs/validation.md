@@ -646,3 +646,30 @@ combinations build, and the guide TypeScript check passes.
 The five complete native editor matrix cases also pass: 145 previews across
 React JSX/TSX, Vue JS/TS and Angular TypeScript. Scope remains the mounting and
 explicit interaction assertions in `tests/browser/project-editor.spec.ts`.
+
+
+## NIC link and breadcrumb states — 2026-11-03
+
+[The source comparison](nic-links.md) maps brand/neutral link states, disabled
+navigation, breadcrumb geometry and motion, and deliberate contrast/focus
+adaptations. Nine adapter/theme tests and eight token contrast checks pass.
+Clean package consumers pass declarations, ESM/SSR, APF, CSS exports and bundle
+budgets. All 29 React recipes pass TypeScript checking, all 29 Angular recipes
+pass strict template checking, and seven exported framework/language projects
+build. Package, guide and native consumer builds pass.
+
+Five focused Chromium cases pass across vanilla RTL/LTR and native React/Vue/
+Angular previews. The test harness was corrected to establish keyboard modality
+before testing focus-visible, scroll the mobile iframe into view before capture,
+and account for device-pixel rounding of 1.5px chevron borders. No application
+assertion was removed. Native screenshots and RTL/LTR breadcrumb chevrons were
+visually inspected. Browser privacy prevents computed-style assertions for
+visited history; the report states that limitation explicitly.
+
+Guide article anchor, paragraph and list rules no longer leak into component
+previews. This fixes example link colors and footer list spacing without changing
+host application styles. The source/API changes retain native DOM ownership,
+original/custom themes and reduced-motion/system-color behavior.
+
+The five existing portal-identity Chromium cases also pass after the shared-style
+changes, covering header disclosure, grouped footers and native compositions.

@@ -290,10 +290,10 @@ export function projectExample(
     vue = react;
     angular = `<nq-empty-state title="${t("No applications", "لا توجد طلبات")}" description="${t("Your applications will appear here.", "ستظهر طلباتك هنا.")}" />`;
   } else if (id === "link") {
-    const text = t("Read the guide", "اقرأ الدليل");
-    react = `<Link href="#guide">${text}<span className="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true" /></Link>`;
-    vue = `<Link href="#guide">${text}<span class="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true" /></Link>`;
-    angular = `<nq-link href="#guide">${text}<span class="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true"></span></nq-link>`;
+    const text=t("Read the guide", "اقرأ الدليل"),neutral=t("Explore services","استكشف الخدمات"),unavailable=t("Unavailable destination","وجهة غير متاحة");
+    react = `<div className="nq-stack"><Link href="#guide">${text}</Link><Link href="#services" variant="neutral">${neutral}</Link><Link href="#details" variant="standalone">${text}<span className="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true" /></Link><Link href="#unavailable" disabled>${unavailable}</Link></div>`;
+    vue = `<div class="nq-stack"><Link href="#guide">${text}</Link><Link href="#services" variant="neutral">${neutral}</Link><Link href="#details" variant="standalone">${text}<span class="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true" /></Link><Link href="#unavailable" disabled>${unavailable}</Link></div>`;
+    angular = `<div class="nq-stack"><nq-link href="#guide">${text}</nq-link><nq-link href="#services" variant="neutral">${neutral}</nq-link><nq-link href="#details" variant="standalone">${text}<span class="nq-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true"></span></nq-link><nq-link href="#unavailable" [disabled]="true">${unavailable}</nq-link></div>`;
   } else if (id === "feedback") {
     state = true;
     const question = t("Was this page helpful?", "هل كانت هذه الصفحة مفيدة؟"),

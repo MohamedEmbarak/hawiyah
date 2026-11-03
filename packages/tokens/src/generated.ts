@@ -151,7 +151,15 @@ export const tokens = {
     "danger-active": "#7a2619",
     "choice-active": "#104631",
     "accordion-border": "#DEE2E6",
-    "accordion-focus": "#E5E7EB"
+    "accordion-focus": "#E5E7EB",
+    "link": "#166A45",
+    "link-hover": "#14573A",
+    "link-active": "#104631",
+    "link-visited": "#14573A",
+    "link-neutral": "#384250",
+    "link-neutral-hover": "#4D5761",
+    "link-neutral-active": "#384250",
+    "breadcrumb-current": "#4D5761"
   },
   "control": {
     "height": "2.5rem",
@@ -239,7 +247,15 @@ export const themes = {
         "danger-active": "#912124",
         "choice-active": "#004740",
         "accordion-border": "#d9e0da",
-        "accordion-focus": "#f0f1eb"
+        "accordion-focus": "#f0f1eb",
+        "link": "#005b56",
+        "link-hover": "#005b56",
+        "link-active": "#005b56",
+        "link-visited": "#005b56",
+        "link-neutral": "#4c6264",
+        "link-neutral-hover": "#005b56",
+        "link-neutral-active": "#4c6264",
+        "breadcrumb-current": "#142d30"
       }
     },
     "dark": {
@@ -306,7 +322,15 @@ export const themes = {
         "danger-active": "#ffc0bd",
         "choice-active": "#b9ede2",
         "accordion-border": "#3a5150",
-        "accordion-focus": "#283c3c"
+        "accordion-focus": "#283c3c",
+        "link": "#a2e0d5",
+        "link-hover": "#a2e0d5",
+        "link-active": "#a2e0d5",
+        "link-visited": "#a2e0d5",
+        "link-neutral": "#b9cdca",
+        "link-neutral-hover": "#a2e0d5",
+        "link-neutral-active": "#b9cdca",
+        "breadcrumb-current": "#eef6f1"
       }
     }
   },
@@ -375,7 +399,15 @@ export const themes = {
         "danger-active": "#7a2619",
         "choice-active": "#104631",
         "accordion-border": "#DEE2E6",
-        "accordion-focus": "#E5E7EB"
+        "accordion-focus": "#E5E7EB",
+        "link": "#166A45",
+        "link-hover": "#14573A",
+        "link-active": "#104631",
+        "link-visited": "#14573A",
+        "link-neutral": "#384250",
+        "link-neutral-hover": "#4D5761",
+        "link-neutral-active": "#384250",
+        "breadcrumb-current": "#4D5761"
       }
     },
     "dark": {
@@ -442,7 +474,15 @@ export const themes = {
         "danger-active": "#7a2619",
         "choice-active": "#54c08a",
         "accordion-border": "#6C737F",
-        "accordion-focus": "#384250"
+        "accordion-focus": "#384250",
+        "link": "#54C08A",
+        "link-hover": "#88D8AD",
+        "link-active": "#B8EACB",
+        "link-visited": "#88D8AD",
+        "link-neutral": "#F3F4F6",
+        "link-neutral-hover": "#D2D6DB",
+        "link-neutral-active": "#FFFFFF",
+        "breadcrumb-current": "#D2D6DB"
       }
     }
   }
@@ -846,7 +886,15 @@ export const tokenNames = {
     "danger-active": "--nq-color-danger-active",
     "choice-active": "--nq-color-choice-active",
     "accordion-border": "--nq-color-accordion-border",
-    "accordion-focus": "--nq-color-accordion-focus"
+    "accordion-focus": "--nq-color-accordion-focus",
+    "link": "--nq-color-link",
+    "link-hover": "--nq-color-link-hover",
+    "link-active": "--nq-color-link-active",
+    "link-visited": "--nq-color-link-visited",
+    "link-neutral": "--nq-color-link-neutral",
+    "link-neutral-hover": "--nq-color-link-neutral-hover",
+    "link-neutral-active": "--nq-color-link-neutral-active",
+    "breadcrumb-current": "--nq-color-breadcrumb-current"
   },
   "control": {
     "height": "--nq-control-height",
@@ -996,6 +1044,14 @@ export const cssVariableNames = [
   "--nq-color-choice-active",
   "--nq-color-accordion-border",
   "--nq-color-accordion-focus",
+  "--nq-color-link",
+  "--nq-color-link-hover",
+  "--nq-color-link-active",
+  "--nq-color-link-visited",
+  "--nq-color-link-neutral",
+  "--nq-color-link-neutral-hover",
+  "--nq-color-link-neutral-active",
+  "--nq-color-breadcrumb-current",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

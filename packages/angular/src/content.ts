@@ -9,9 +9,11 @@ export interface NqDataColumn { key: string; label: string; sortable?: boolean; 
 export type NqDataRow = Record<string, string | number | boolean | null | undefined>;
 let nextPortalId = 0;
 
-@Component({selector: 'nq-link', standalone: true, template: `<a class="nq-link" [href]="href" [attr.target]="target || null" [attr.rel]="rel || (target === '_blank' ? 'noopener noreferrer' : null)" [attr.aria-current]="current ? 'page' : null" [attr.data-variant]="variant"><ng-content /></a>`})
+@Component({selector: 'nq-link', standalone: true, template: `<a class="nq-link" [attr.href]="disabled ? null : href" [attr.role]="disabled ? 'link' : null" [attr.aria-disabled]="disabled || null" [attr.tabindex]="disabled ? -1 : null" (click)="guard($event)" (auxclick)="guard($event)" [attr.target]="target || null" [attr.rel]="rel || (target === '_blank' ? 'noopener noreferrer' : null)" [attr.aria-current]="current ? 'page' : null" [attr.data-variant]="variant"><ng-content /></a>`})
 export class NqLinkComponent {
-  @Input({required: true}) href = ''; @Input() target = ''; @Input() rel = ''; @Input() variant: 'default' | 'subtle' = 'default'; @Input({transform: booleanAttribute}) current = false;
+  @Input({required: true}) href = ''; @Input() target = ''; @Input() rel = ''; @Input() variant: 'default' | 'subtle' | 'neutral' | 'standalone' = 'default'; @Input({transform: booleanAttribute}) current = false;
+  @Input({transform: booleanAttribute}) disabled = false;
+  guard(event:MouseEvent){if(this.disabled){event.preventDefault();event.stopPropagation();}}
 }
 @Component({selector: 'nq-icon-button', standalone: true, template: `<button class="nq-button nq-icon-button" [type]="type" [disabled]="disabled" [attr.aria-label]="label" [attr.aria-pressed]="pressed" [attr.data-variant]="variant" [attr.data-size]="size" (click)="activated.emit($event)"><span aria-hidden="true"><ng-content /></span></button>`})
 export class NqIconButtonComponent {

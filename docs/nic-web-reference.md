@@ -52,7 +52,7 @@ it does not mean every source state has already passed comparison.
 | --- | --- | --- |
 | CSS 1–426: fonts, primitives, responsive aliases, light/dark roles | tokens/styles | Reconcile component semantic values; preserve original/custom themes |
 | CSS 427–850: typography, truncation, color, shadow, radius, divider utilities | shared styles, layout, Divider | Compare type scale and utility recipes; do not globally reset consuming applications |
-| CSS 853–965: link states, neutral links | Link | Compare hover/pressed/visited/focus; check actual foreground contrast |
+| CSS 853–965: link states, neutral links | Link | [Link states](nic-links.md): explicit brand/neutral/standalone/disabled recipes, native activation guards, readable state tokens and documented source contrast substitutions |
 | CSS 971–1292: seven button families and sizes | Button, IconButton | [Implemented button task](nic-buttons.md): seven NIC families plus three existing extensions, shared typed variants, pressed/hover/focus colors and disabled states; density adaptations remain explicit |
 | CSS 1294–1386: segmented buttons | ToggleGroup, ButtonGroup | Compare separators, selected states, wrapping and keyboard behavior |
 | CSS 1388–1531: icon buttons and icon/background sizes | IconButton, icon recipes | Preserve licensed SVG system; add documented background/size compositions |
@@ -61,7 +61,7 @@ it does not mean every source state has already passed comparison.
 | CSS 1677–1766: accordion | Accordion | [Implemented web profile](nic-accordion.md): nested header/body spacing, hover/focus surfaces, 150ms color and 200ms chevron timing; native details, visible keyboard focus and separate 300ms height motion retained |
 | CSS 1770–1886: tables | Table, DataTable | Compare row height, header/separator colors and hover/striping |
 | CSS 1890–2036; JS 1750–1841: content navigation | page-navigation composition | Scroll-following current section and nested indicator need coverage |
-| CSS 2040–2143: breadcrumbs | Breadcrumb | Compare neutral interaction colors and logical separators |
+| CSS 2040–2143: breadcrumbs | Breadcrumb | [Breadcrumb states](nic-links.md): neutral states, logical chevrons, 200ms motion with reduced-motion support, disabled destinations and readable current-page text |
 | CSS 2148–2312; JS 931–1169: search | SearchField, Combobox, Dialog | Add documented search-modal/suggestion composition; preserve IME, names and focus return |
 | CSS 2316–2427; JS 1854–2079: tabs and overflow | Tabs | Overflow menu behavior is not covered by the existing scrolling tab list |
 | CSS 2431–2648: field labels, native/text/select inputs | Field, TextField, Textarea, Select, DatePicker | [Input state/motion task](nic-inputs.md): 16px padding/labels, 500ms ease, 50% pressed line and no focus shadow; helper/select artwork and other control comparisons remain |

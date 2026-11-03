@@ -110,10 +110,10 @@ export function Pagination({ page, defaultPage = 1, totalPages, onPageChange, la
     <Button variant="secondary" disabled={current === total} onClick={() => select(current + 1)}>{nextLabel}</Button>
   </nav>;
 }
-export interface BreadcrumbItem { label: ReactNode; href?: string; current?: boolean }
+export interface BreadcrumbItem { label: ReactNode; href?: string; current?: boolean; disabled?: boolean }
 export interface BreadcrumbProps extends ComponentPropsWithRef<'nav'> { items: readonly BreadcrumbItem[]; label?: string }
-export function Breadcrumb({ items, label = 'Breadcrumb', className, ...props }: BreadcrumbProps) {
-  return <nav {...props} className={cx('nq-breadcrumb', className)} aria-label={props['aria-label'] ?? label}><ol>{items.map((item, index) => <li key={index}>{item.href ? <a href={item.href} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</a> : <span aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</span>}</li>)}</ol></nav>;
+export function Breadcrumb({ items, label = 'مسار التنقل', className, ...props }: BreadcrumbProps) {
+  return <nav {...props} className={cx('nq-breadcrumb', className)} aria-label={props['aria-label'] ?? label}><ol>{items.map((item, index) => <li key={index}>{item.href && !item.disabled ? <a href={item.href} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</a> : <span role={item.disabled ? 'link' : undefined} aria-disabled={item.disabled || undefined} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</span>}</li>)}</ol></nav>;
 }
 export interface ProgressProps extends ComponentPropsWithRef<'progress'> { label: string }
 export function Progress({ label, className, max = 100, ...props }: ProgressProps) { return <progress {...props} max={max} className={cx('nq-progress', className)} aria-label={label} />; }

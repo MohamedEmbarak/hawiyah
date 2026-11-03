@@ -33,7 +33,7 @@ for (const [name, theme] of Object.entries(source.themes)) {
         ['danger', 'danger-subtle'], ['info', 'info-subtle'], ['on-inverse', 'inverse'],
         ['card-text', 'card'], ['card-text', 'card-hover'],
         ['text', 'accordion-focus'],
-        ...['text', 'text-muted', 'text-subtle'].flatMap(foreground =>
+        ...['text', 'text-muted', 'text-subtle', 'link', 'link-hover', 'link-active', 'link-visited', 'link-neutral', 'link-neutral-hover', 'link-neutral-active', 'breadcrumb-current'].flatMap(foreground =>
           ['canvas', 'surface', 'surface-muted', 'surface-raised'].map(background => [foreground, background])),
       ];
       for (const [foreground, background] of pairs) {

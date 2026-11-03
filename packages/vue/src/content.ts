@@ -6,26 +6,17 @@ import { Avatar } from "./display.js";
 import { useValue } from "./shared.js";
 
 export const Link = defineComponent({
-  name: "NqLink",
-  inheritAttrs: false,
-  props: { href: String, disabled: Boolean, external: Boolean },
-  setup(props, { attrs, slots }) {
-    return () =>
-      h(
-        "a",
-        mergeProps(attrs, {
-          class: "nq-link",
-          href: props.disabled ? undefined : props.href,
-          target: props.external ? "_blank" : attrs.target,
-          rel: props.external ? "noopener noreferrer" : attrs.rel,
-          "aria-disabled": props.disabled || undefined,
-          tabindex: props.disabled ? -1 : attrs.tabindex,
-          onClick: (event: MouseEvent) => {
-            if (props.disabled) event.preventDefault();
-          },
-        }),
-        slots.default?.(),
-      );
+  name: 'NqLink', inheritAttrs: false,
+  props: {href:String,disabled:Boolean,external:Boolean,variant:String as PropType<'default'|'subtle'|'neutral'|'standalone'>},
+  setup(props,{attrs,slots}) {
+    return ()=>{
+      const unavailable=props.disabled || attrs['aria-disabled']===true || attrs['aria-disabled']==='true';
+      const activation=(name:string)=>(event:MouseEvent)=>{
+        if(unavailable){event.preventDefault();event.stopPropagation();return;}
+        const handlers=attrs[name];for(const handler of Array.isArray(handlers)?handlers:[handlers])if(typeof handler==='function')handler(event);
+      };
+      return h('a',{...mergeProps(attrs,{class:'nq-link',href:unavailable?undefined:props.href,role:unavailable?'link':attrs.role,'data-variant':props.variant ?? attrs['data-variant'],target:props.external?'_blank':attrs.target,rel:props.external?'noopener noreferrer':attrs.rel,'aria-disabled':unavailable || undefined,tabindex:unavailable?-1:attrs.tabindex}),onClick:activation('onClick'),onAuxclick:activation('onAuxclick')},slots.default?.());
+    };
   },
 });
 export const IconButton = defineComponent({

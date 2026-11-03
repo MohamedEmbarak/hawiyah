@@ -98,10 +98,10 @@ export const Pagination = defineComponent({
     };
   },
 });
-export interface BreadcrumbItem { label: string; href?: string; current?: boolean }
+export interface BreadcrumbItem { label: string; href?: string; current?: boolean; disabled?: boolean }
 export const Breadcrumb = defineComponent({
-  name: 'NqBreadcrumb', inheritAttrs: false, props: { items: { type: Array as PropType<readonly BreadcrumbItem[]>, required: true }, label: { type: String, default: 'Breadcrumb' } },
-  setup(props, { attrs }) { return () => h('nav', mergeProps({ 'aria-label': props.label }, attrs, { class: 'nq-breadcrumb' }), [h('ol', {}, props.items.map((item, index) => h('li', { key: index }, [h(item.href ? 'a' : 'span', { href: item.href, 'aria-current': item.current || index === props.items.length - 1 ? 'page' : undefined }, item.label)])))]); },
+  name: 'NqBreadcrumb', inheritAttrs: false, props: { items: { type: Array as PropType<readonly BreadcrumbItem[]>, required: true }, label: { type: String, default: 'مسار التنقل' } },
+  setup(props, { attrs }) { return () => h('nav', mergeProps({ 'aria-label': props.label }, attrs, { class: 'nq-breadcrumb' }), [h('ol', {}, props.items.map((item, index) => h('li', { key: index }, [h(item.href && !item.disabled ? 'a' : 'span', { href: item.disabled ? undefined : item.href, role:item.disabled?'link':undefined,'aria-disabled':item.disabled || undefined, 'aria-current': item.current || index === props.items.length - 1 ? 'page' : undefined }, item.label)])))]); },
 });
 export const Progress = defineComponent({
   name: 'NqProgress', inheritAttrs: false, props: { label: { type: String, required: true }, value: Number, max: { type: Number, default: 100 } },

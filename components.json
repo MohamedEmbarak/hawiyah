@@ -1176,9 +1176,66 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
-      "notes": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/browser/nic-links.spec.ts",
+          "tests": [
+            "NIC links and breadcrumbs retain readable states, direction and keyboard focus in rtl",
+            "NIC links and breadcrumbs retain readable states, direction and keyboard focus in ltr"
+          ],
+          "scope": "Brand/neutral/standalone/disabled link rendering, keyboard focus, contained demo activation and breadcrumb navigation. Vanilla additionally covers light/dark, custom/original, RTL/LTR chevrons, reduced motion, forced colors and scoped axe. Browser history privacy prevents computed-style proof of visited colors.",
+          "command": "pnpm exec playwright test tests/browser/nic-links.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/browser/nic-links.spec.ts",
+          "tests": [
+            "react native link variants and disabled destinations"
+          ],
+          "scope": "Brand/neutral/standalone/disabled link rendering, keyboard focus, contained demo activation and breadcrumb navigation. Vanilla additionally covers light/dark, custom/original, RTL/LTR chevrons, reduced motion, forced colors and scoped axe. Browser history privacy prevents computed-style proof of visited colors.",
+          "command": "pnpm exec playwright test tests/browser/nic-links.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/browser/nic-links.spec.ts",
+          "tests": [
+            "vue native link variants and disabled destinations"
+          ],
+          "scope": "Brand/neutral/standalone/disabled link rendering, keyboard focus, contained demo activation and breadcrumb navigation. Vanilla additionally covers light/dark, custom/original, RTL/LTR chevrons, reduced motion, forced colors and scoped axe. Browser history privacy prevents computed-style proof of visited colors.",
+          "command": "pnpm exec playwright test tests/browser/nic-links.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/browser/nic-links.spec.ts",
+          "tests": [
+            "angular native link variants and disabled destinations"
+          ],
+          "scope": "Brand/neutral/standalone/disabled link rendering, keyboard focus, contained demo activation and breadcrumb navigation. Vanilla additionally covers light/dark, custom/original, RTL/LTR chevrons, reduced motion, forced colors and scoped axe. Browser history privacy prevents computed-style proof of visited colors.",
+          "command": "pnpm exec playwright test tests/browser/nic-links.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        }
+      ],
+      "notes": [
+        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations."
+      ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/breadcrumb"
     },
@@ -3247,7 +3304,7 @@
       "name": "Link",
       "labelAr": "رابط",
       "category": "actions",
-      "description": "Native navigation anchor with optional external-link attributes.",
+      "description": "Native destination link with default, neutral/subtle and standalone styling, optional external attributes and disabled activation guards.",
       "cssClasses": [
         "nq-link"
       ],
@@ -3265,8 +3322,63 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/browser/nic-links.spec.ts",
+          "tests": [
+            "NIC links and breadcrumbs retain readable states, direction and keyboard focus in rtl",
+            "NIC links and breadcrumbs retain readable states, direction and keyboard focus in ltr"
+          ],
+          "scope": "Brand/neutral/standalone/disabled link rendering, keyboard focus, contained demo activation and breadcrumb navigation. Vanilla additionally covers light/dark, custom/original, RTL/LTR chevrons, reduced motion, forced colors and scoped axe. Browser history privacy prevents computed-style proof of visited colors.",
+          "command": "pnpm exec playwright test tests/browser/nic-links.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/browser/nic-links.spec.ts",
+          "tests": [
+            "react native link variants and disabled destinations"
+          ],
+          "scope": "Brand/neutral/standalone/disabled link rendering, keyboard focus, contained demo activation and breadcrumb navigation. Vanilla additionally covers light/dark, custom/original, RTL/LTR chevrons, reduced motion, forced colors and scoped axe. Browser history privacy prevents computed-style proof of visited colors.",
+          "command": "pnpm exec playwright test tests/browser/nic-links.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/browser/nic-links.spec.ts",
+          "tests": [
+            "vue native link variants and disabled destinations"
+          ],
+          "scope": "Brand/neutral/standalone/disabled link rendering, keyboard focus, contained demo activation and breadcrumb navigation. Vanilla additionally covers light/dark, custom/original, RTL/LTR chevrons, reduced motion, forced colors and scoped axe. Browser history privacy prevents computed-style proof of visited colors.",
+          "command": "pnpm exec playwright test tests/browser/nic-links.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/browser/nic-links.spec.ts",
+          "tests": [
+            "angular native link variants and disabled destinations"
+          ],
+          "scope": "Brand/neutral/standalone/disabled link rendering, keyboard focus, contained demo activation and breadcrumb navigation. Vanilla additionally covers light/dark, custom/original, RTL/LTR chevrons, reduced motion, forced colors and scoped axe. Browser history privacy prevents computed-style proof of visited colors.",
+          "command": "pnpm exec playwright test tests/browser/nic-links.spec.ts --workers=1",
+          "result": "passed",
+          "date": "2026-11-03"
+        }
+      ],
       "implementationSources": {
         "react": [
           "packages/react/src/expanded-content.tsx"
@@ -3282,7 +3394,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations."
+      ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/link"
     },
     {

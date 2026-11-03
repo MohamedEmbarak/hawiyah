@@ -7,8 +7,11 @@ import { Avatar, Badge, Card } from './display.js';
 import type { AvatarProps, CardProps } from './display.js';
 import { cx, useControllable } from './shared.js';
 
-export interface LinkProps extends ComponentPropsWithRef<'a'> { external?: boolean }
-export function Link({ external, className, target, rel, ...props }: LinkProps) { return <a {...props} className={cx('nq-link', className)} target={external ? '_blank' : target} rel={external ? [rel, 'noopener', 'noreferrer'].filter(Boolean).join(' ') : rel} />; }
+export interface LinkProps extends ComponentPropsWithRef<'a'> { external?: boolean; disabled?: boolean; variant?: 'default' | 'subtle' | 'neutral' | 'standalone'; 'data-variant'?: string }
+export function Link({ external, disabled=false, variant, 'data-variant': dataVariant, className, target, rel, href, tabIndex, onClick, onAuxClick, ...props }: LinkProps) {
+  const unavailable=disabled || props['aria-disabled']===true || props['aria-disabled']==='true';
+  return <a {...props} className={cx('nq-link', className)} data-variant={variant ?? dataVariant} href={unavailable ? undefined : href} role={unavailable ? 'link' : props.role} aria-disabled={unavailable || undefined} tabIndex={unavailable ? -1 : tabIndex} target={external ? '_blank' : target} rel={external ? [rel, 'noopener', 'noreferrer'].filter(Boolean).join(' ') : rel} onClick={event=>{if(unavailable){event.preventDefault();event.stopPropagation();}else onClick?.(event);}} onAuxClick={event=>{if(unavailable){event.preventDefault();event.stopPropagation();}else onAuxClick?.(event);}} />;
+}
 export interface IconButtonProps extends ButtonProps { label: string }
 export function IconButton({ label, className, children, ...props }: IconButtonProps) { return <Button {...props} aria-label={label} className={cx('nq-icon-button', className)}><span aria-hidden="true">{children}</span></Button>; }
 export interface ButtonGroupProps extends ComponentPropsWithRef<'div'> { label: string }

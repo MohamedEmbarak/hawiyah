@@ -1,0 +1,55 @@
+/* NIC global.css 853–965 and 2040–2143. Contrast substitutions and browser
+   visited-state privacy limits are recorded in docs/nic-links.md. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-profile-link-hover-thickness: 1px;
+  --nq-profile-breadcrumb-gap: 0.25rem;
+  --nq-profile-breadcrumb-duration: 200ms;
+  --nq-profile-breadcrumb-weight: 400;
+  --nq-profile-breadcrumb-separator: '';
+  --nq-profile-breadcrumb-size: 0.375rem;
+  --nq-profile-breadcrumb-border: 1.5px;
+  --nq-profile-breadcrumb-angle: 45deg;
+  --nq-profile-breadcrumb-margin: 0.25rem;
+}
+:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
+  --nq-profile-link-hover-thickness: initial;
+  --nq-profile-breadcrumb-gap: initial;
+  --nq-profile-breadcrumb-duration: initial;
+  --nq-profile-breadcrumb-weight: initial;
+  --nq-profile-breadcrumb-separator: initial;
+  --nq-profile-breadcrumb-size: initial;
+  --nq-profile-breadcrumb-border: initial;
+  --nq-profile-breadcrumb-angle: initial;
+  --nq-profile-breadcrumb-margin: initial;
+}
+.nq-link { --nq-link-rest: var(--nq-color-link); --nq-link-hover: var(--nq-color-link-hover); --nq-link-active: var(--nq-color-link-active); --nq-link-visited: var(--nq-color-link-visited); color: var(--nq-link-rest); }
+.nq-link:is([data-variant='subtle'], [data-variant='neutral']) { --nq-link-rest: var(--nq-color-link-neutral); --nq-link-hover: var(--nq-color-link-neutral-hover); --nq-link-active: var(--nq-color-link-neutral-active); --nq-link-visited: var(--nq-color-link-neutral); color: var(--nq-link-rest); text-decoration: none; }
+.nq-link:visited { color: var(--nq-link-visited); }
+.nq-link:hover { color: var(--nq-link-hover); text-decoration: underline; text-decoration-thickness: var(--nq-profile-link-hover-thickness, 2px); }
+.nq-link:focus-visible { color: var(--nq-link-rest); outline: 2px solid var(--nq-color-focus-contrast); outline-offset: 2px; }
+.nq-link:active { color: var(--nq-link-active); }
+.nq-link:is(.nq-link-icon, [data-variant='standalone']):is(:hover, :active) { text-decoration: none; }
+.nq-link[aria-disabled='true'], .nq-link[aria-disabled='true']:is(:hover, :active, :visited) { color: var(--nq-color-on-disabled); text-decoration: underline; cursor: not-allowed; }
+.nq-breadcrumb { line-height: 1.5rem; }
+.nq-breadcrumb :is(ol, ul), .nq-breadcrumb li { gap: var(--nq-profile-breadcrumb-gap, var(--nq-space-2)); }
+.nq-breadcrumb a { color: var(--nq-color-link-neutral); transition: color var(--nq-profile-breadcrumb-duration, 0ms) ease; }
+.nq-breadcrumb a:visited { color: var(--nq-color-link-neutral); }
+.nq-breadcrumb a:hover { color: var(--nq-color-link-neutral-hover); }
+.nq-breadcrumb a:focus-visible { color: var(--nq-color-link-neutral); text-decoration: none; outline: 2px solid var(--nq-color-focus-contrast); outline-offset: 2px; }
+.nq-breadcrumb a:active { color: var(--nq-color-link-neutral-active); }
+.nq-breadcrumb [aria-current='page'] { color: var(--nq-color-breadcrumb-current); font-weight: var(--nq-profile-breadcrumb-weight, var(--nq-weight-medium)); }
+.nq-breadcrumb [aria-disabled='true'] { color: var(--nq-color-on-disabled); cursor: not-allowed; }
+/* Empty generated geometry is decorative; no private icon-font glyph is read
+   as content. A logical chevron follows direction independently of language. */
+.nq-breadcrumb li + li::before { content: var(--nq-profile-breadcrumb-separator, '/'); flex: none; inline-size: var(--nq-profile-breadcrumb-size, auto); block-size: var(--nq-profile-breadcrumb-size, auto); margin-inline: var(--nq-profile-breadcrumb-margin, 0px); border-block-start: var(--nq-profile-breadcrumb-border, 0px) solid currentColor; border-inline-end: var(--nq-profile-breadcrumb-border, 0px) solid currentColor; transform: rotate(var(--nq-profile-breadcrumb-angle, 0deg)); color: var(--nq-color-text-subtle); }
+.nq-breadcrumb:dir(rtl) li + li::before { transform: rotate(calc(-1 * var(--nq-profile-breadcrumb-angle, 0deg))); }
+@media (prefers-reduced-motion: reduce) { .nq-breadcrumb a { transition: none; } }
+@media (forced-colors: active) {
+  .nq-link, .nq-link[data-variant] { --nq-link-rest: LinkText; --nq-link-hover: LinkText; --nq-link-active: LinkText; --nq-link-visited: VisitedText; color: LinkText; }
+  .nq-breadcrumb a { color: LinkText; }
+  .nq-link:visited { color: VisitedText; }
+  .nq-link:is(:hover, :active, :focus-visible), .nq-breadcrumb a:is(:hover, :active, :focus-visible) { color: LinkText; }
+  .nq-link:focus-visible, .nq-breadcrumb a:focus-visible { outline-color: Highlight; }
+  .nq-link[aria-disabled='true'], .nq-link[aria-disabled='true']:is(:hover, :active, :visited), .nq-breadcrumb [aria-disabled='true'] { color: GrayText; }
+  .nq-breadcrumb [aria-current='page'] { color: CanvasText; }
+}

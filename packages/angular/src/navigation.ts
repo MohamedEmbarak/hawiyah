@@ -41,10 +41,10 @@ export class NqTabsComponent {
   }
 }
 
-export interface NqBreadcrumbItem { label: string; href?: string }
-@Component({ selector: 'nq-breadcrumb', standalone: true, template: `<nav class="nq-breadcrumb" [attr.aria-label]="label"><ol>@for (item of items; track $index; let last = $last) {<li>@if (item.href && !last) {<a [href]="item.href">{{ item.label }}</a>} @else {<span [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>}</li>}</ol></nav>` })
+export interface NqBreadcrumbItem { label: string; href?: string; disabled?: boolean }
+@Component({ selector: 'nq-breadcrumb', standalone: true, template: `<nav class="nq-breadcrumb" [attr.aria-label]="label"><ol>@for (item of items; track $index; let last = $last) {<li>@if (item.href && !item.disabled && !last) {<a [href]="item.href">{{ item.label }}</a>} @else {<span [attr.role]="item.disabled ? 'link' : null" [attr.aria-disabled]="item.disabled || null" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>}</li>}</ol></nav>` })
 export class NqBreadcrumbComponent {
-  @Input() label = 'Breadcrumb';
+  @Input() label = 'مسار التنقل';
   @Input() items: readonly NqBreadcrumbItem[] = [];
 }
 

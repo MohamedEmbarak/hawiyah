@@ -121,3 +121,7 @@ and limitations. Each component has a shareable `#component/<id>` route;
 example. The catalog records these documentation links for coding tools.
 
 The playground provides `#components` for the catalog, `#inputs` for native/national input recipes, and `#layouts` for composition. Read [core behavior](../packages/core/API.md), [vanilla expansion markup](../packages/vanilla/EXPANSION-API.md), and the framework package READMEs for exact APIs. The [integration guide](integrations.md) describes specialist boundaries.
+
+Links include default, neutral/subtle, standalone and disabled recipes across all
+adapters. Breadcrumbs expose disabled destinations and direction-aware separators;
+see [the NIC state comparison](nic-links.md) for source and accessibility limits.

@@ -341,9 +341,9 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     usage: `<a class="nq-link" href="./services">استكشف الخدمات</a>
 <a class="nq-link" href="https://example.org" target="_blank" rel="noopener noreferrer">إرشادات خارجية — تفتح في تبويب جديد</a>`,
     lifecycle: ['وفّر href فعليًا ونصًا يصف الوجهة.', 'دع المتصفح يتنقل أو اربط العنصر بموجّه التطبيق مع الحفاظ على دلالات الرابط الأصلية.', 'لا يحتاج الرابط إلى متحكم مباشر؛ يدير الموجّه مستمعيه ودورة حياته.'],
-    api: ['عنوان الوجهة الفعلية.', 'يفتح تبويبًا جديدًا ويضيف noopener وnoreferrer في React.', 'معالجة بصرية أخف للرابط.'],
+    api: ['عنوان الوجهة الفعلية.', 'استخدم external في React وVue أو target في Angular؛ وضّح فتح نافذة جديدة.', 'افتراضي أو محايد neutral مع الاسم المتوافق subtle أو مستقل standalone.', 'يحذف الرابط المعطل href ويمنع التنشيط؛ في HTML احذف href واستخدم role=link وaria-disabled=true وtabindex=-1.'],
     accessibility: ['اكتب نصًا مفهومًا للرابط حتى خارج سياقه.', 'وضّح فتح تبويب جديد عندما يؤثر ذلك على المستخدم.', 'استخدم button للإجراءات التي لا تنتقل إلى وجهة.'],
-    variants: ['افتراضي', 'هادئ: subtle', 'رابط خارجي'],
+    variants: ['افتراضي', 'محايد: neutral', 'هادئ: subtle', 'مستقل: standalone', 'معطل', 'رابط خارجي'],
   }),
   'icon-button': localized('icon-button', {
     summary: 'زر إجراء مختصر بأيقونة زخرفية وتسمية قابلة للوصول تصف العملية.',
