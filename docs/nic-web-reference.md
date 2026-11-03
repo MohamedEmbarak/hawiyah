@@ -59,7 +59,7 @@ it does not mean every source state has already passed comparison.
 | CSS 1565–1641: cards | Card, ServiceCard | [Implemented card task](nic-cards.md): base/border/action composition, title/description, gap, shadow and semantic links; eight scoped browser cases passed across four adapters |
 | CSS 1645–1673, 3183–3212: icon/ordered lists | semantic list recipe | Add source-mapped spacing/direction recipe without generated meaningful content |
 | CSS 1677–1766: accordion | Accordion | [Implemented web profile](nic-accordion.md): nested header/body spacing, hover/focus surfaces, 150ms color and 200ms chevron timing; native details, visible keyboard focus and separate 300ms height motion retained |
-| CSS 1770–1886: tables | Table, DataTable | Compare row height, header/separator colors and hover/striping |
+| CSS 1770–1886: tables | Table, DataTable | [Table alignment](nic-tables.md): source cell geometry, header/separator and hover colors, retained striped/bordered extensions, native row headers, empty states and keyboard scrolling |
 | CSS 1890–2036; JS 1750–1841: content navigation | page-navigation composition | Scroll-following current section and nested indicator need coverage |
 | CSS 2040–2143: breadcrumbs | Breadcrumb | [Breadcrumb states](nic-links.md): neutral states, logical chevrons, 200ms motion with reduced-motion support, disabled destinations and readable current-page text |
 | CSS 2148–2312; JS 931–1169: search | SearchField, Combobox, Dialog | Add documented search-modal/suggestion composition; preserve IME, names and focus return |

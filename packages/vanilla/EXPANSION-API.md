@@ -141,6 +141,12 @@ cell `data-nq-sort-value` overrides displayed text. CookieConsent emits choice a
 hides itself; it does not enable scripts or persist consent without application
 code. Optional direct-controller storageKey explicitly enables local persistence.
 
+DataTable header buttons can include `<span class="nq-table-sort-icon" aria-hidden="true"></span>`
+for a visible unsorted/ascending/descending indicator. CSS follows the native
+header's `aria-sort` state. Use a named, focusable `.nq-table-wrap` for horizontal
+scrolling, a caption, `scope="col"` headings and `scope="row"` row headers.
+`data-variant="striped|bordered"` and `data-size="sm|lg"` belong on `.nq-table`.
+
 ## Native/static recipes
 
 InputGroup groups `.nq-input-addon` with native `.nq-input`. Password/Search/Number

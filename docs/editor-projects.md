@@ -25,9 +25,9 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 30 components: Button, ButtonGroup, IconButton,
+Native project recipes currently cover 31 components: Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
-Divider, Spinner, Card, Accordion, Table, Breadcrumb, Pagination, Stepper, Tabs,
+Divider, Spinner, Card, Accordion, Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader and PortalFooter. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
@@ -105,3 +105,11 @@ toolbar contrast at rest and on hover. The editor/branding/project regression
 cases also pass, including all 150 native recipe previews, downloads, preserved
 drafts, custom themes and Vue scoped styles. The Vue scope test now waits for
 compilation readiness before checking styles; it previously raced compilation.
+
+DataTable brings coverage to 31 native recipes. Table/DataTable previews were
+checked in all five React JSX/TSX, Vue JS/TS and Angular TypeScript combinations
+for geometry, sorting, empty data, row headers and horizontal keyboard scrolling.
+All 31 React recipes passed TypeScript checks and all 31 Angular recipes passed
+strict template checks against clean tarball consumers; all seven exported
+framework/language projects built. This table task does not claim a fresh full
+155-preview catalog run. See [table evidence](nic-tables.md).

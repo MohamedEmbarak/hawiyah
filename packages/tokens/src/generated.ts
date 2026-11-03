@@ -162,7 +162,9 @@ export const tokens = {
     "breadcrumb-current": "#4D5761",
     "segment-selected": "#0C111B",
     "on-segment-selected": "#FFFFFF",
-    "segment-hover": "#F9FAFB"
+    "segment-hover": "#F9FAFB",
+    "table-row-hover": "#F3F4F6",
+    "table-row-hover-odd": "#F5F5F6"
   },
   "control": {
     "height": "2.5rem",
@@ -261,7 +263,9 @@ export const themes = {
         "breadcrumb-current": "#142d30",
         "segment-selected": "#ffffff",
         "on-segment-selected": "#005b56",
-        "segment-hover": "#f0f1eb"
+        "segment-hover": "#f0f1eb",
+        "table-row-hover": "#f7f5ee",
+        "table-row-hover-odd": "#f7f5ee"
       }
     },
     "dark": {
@@ -339,7 +343,9 @@ export const themes = {
         "breadcrumb-current": "#eef6f1",
         "segment-selected": "#172728",
         "on-segment-selected": "#a2e0d5",
-        "segment-hover": "#283c3c"
+        "segment-hover": "#283c3c",
+        "table-row-hover": "#111d1e",
+        "table-row-hover-odd": "#111d1e"
       }
     }
   },
@@ -419,7 +425,9 @@ export const themes = {
         "breadcrumb-current": "#4D5761",
         "segment-selected": "#0C111B",
         "on-segment-selected": "#FFFFFF",
-        "segment-hover": "#F9FAFB"
+        "segment-hover": "#F9FAFB",
+        "table-row-hover": "#F3F4F6",
+        "table-row-hover-odd": "#F5F5F6"
       }
     },
     "dark": {
@@ -497,7 +505,9 @@ export const themes = {
         "breadcrumb-current": "#D2D6DB",
         "segment-selected": "#E5E7EB",
         "on-segment-selected": "#0C111B",
-        "segment-hover": "#384250"
+        "segment-hover": "#384250",
+        "table-row-hover": "#384250",
+        "table-row-hover-odd": "#384250"
       }
     }
   }
@@ -912,7 +922,9 @@ export const tokenNames = {
     "breadcrumb-current": "--nq-color-breadcrumb-current",
     "segment-selected": "--nq-color-segment-selected",
     "on-segment-selected": "--nq-color-on-segment-selected",
-    "segment-hover": "--nq-color-segment-hover"
+    "segment-hover": "--nq-color-segment-hover",
+    "table-row-hover": "--nq-color-table-row-hover",
+    "table-row-hover-odd": "--nq-color-table-row-hover-odd"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1073,6 +1085,8 @@ export const cssVariableNames = [
   "--nq-color-segment-selected",
   "--nq-color-on-segment-selected",
   "--nq-color-segment-hover",
+  "--nq-color-table-row-hover",
+  "--nq-color-table-row-hover-odd",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

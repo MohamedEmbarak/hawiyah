@@ -1,4 +1,4 @@
-import { defineComponent, h, mergeProps, ref } from "vue";
+import { defineComponent, h, mergeProps, ref, useId } from "vue";
 import type { PropType, VNodeChild } from "vue";
 import { formatNumber, sortRows } from "@nasaq/core";
 import { Button } from "./forms.js";
@@ -294,6 +294,10 @@ export const DataTable = defineComponent({
   name: "NqDataTable",
   inheritAttrs: false,
   props: {
+    variant: String as PropType<'default' | 'striped' | 'bordered'>,
+    size: String as PropType<'sm' | 'md' | 'lg'>,
+    wrapperProps: Object as PropType<Record<string, unknown>>,
+    emptyMessage: {type: String, default: 'لا توجد سجلات'},
     columns: { type: Array as PropType<readonly DataColumn[]>, required: true },
     rows: {
       type: Array as PropType<readonly Record<string, unknown>[]>,
@@ -316,7 +320,7 @@ export const DataTable = defineComponent({
         (column: DataColumn, direction: "ascending" | "descending") => string
       >,
       default: (column: DataColumn, direction: string) =>
-        `Sort ${column.label} ${direction}`,
+        `ترتيب ${column.label} ${direction === 'ascending' ? 'تصاعديًا' : 'تنازليًا'}`,
     },
   },
   emits: {
@@ -324,6 +328,7 @@ export const DataTable = defineComponent({
     "update:sortDirection": (_value: "ascending" | "descending") => true,
   },
   setup(props, { attrs, slots, emit }) {
+    const captionId = useId();
     const key = useValue(
       () => props.sortKey,
       props.defaultSortKey,
@@ -343,9 +348,9 @@ export const DataTable = defineComponent({
             props.locale,
           )
         : props.rows;
-      return h("div", { class: "nq-table-wrap nq-data-table" }, [
-        h("table", mergeProps(attrs, { class: "nq-table" }), [
-          h("caption", {}, props.caption),
+      return h("div", mergeProps({ class: "nq-table-wrap nq-data-table", tabindex: 0, role: "region", "aria-labelledby": captionId }, props.wrapperProps ?? {}), [
+        h("table", mergeProps(attrs, { class: "nq-table", "data-variant": props.variant ?? attrs["data-variant"], "data-size": props.size ?? attrs["data-size"] }), [
+          h("caption", {id: captionId}, props.caption),
           h(
             "thead",
             {},
@@ -401,7 +406,7 @@ export const DataTable = defineComponent({
           h(
             "tbody",
             {},
-            rows.map((row, index) =>
+            rows.length ? rows.map((row, index) =>
               h(
                 "tr",
                 { key: props.rowKey?.(row, index) ?? index },
@@ -417,7 +422,7 @@ export const DataTable = defineComponent({
                   ),
                 ),
               ),
-            ),
+            ) : h("tr", {}, h("td", {colspan: props.columns.length || 1}, props.emptyMessage)),
           ),
         ]),
       ]);

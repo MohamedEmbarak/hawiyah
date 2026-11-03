@@ -169,7 +169,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Timeline | `label`, `items: {title,description?,time?,dateTime?,state?}[]`; state is complete/current/pending. |
 | Meter | `label`, `value`, `min`, `max`, `low`, `high`, `optimum`; native meter for bounded measurements. |
 | AvatarGroup | `label`, `avatars: {name,src?}[]`, `max`, `overflowLabel(count)`; named image/initials with overflow count. |
-| DataTable | `caption`, `columns: {key,label,sortable?}[]`, `rows: Record<string,string\|number\|boolean\|null\|undefined>[]`, `locale`, `emptyMessage`, `sortKey`, `sortDirection`; `sortChange({key,direction})`. Stable localized sorting, native headers and aria-sort; text cells. |
+| DataTable | `caption`, `columns: {key,label,sortable?,rowHeader?}[]`, `rows: Record<string,string\|number\|boolean\|null\|undefined>[]`, `locale`, `emptyMessage`, `sortKey`, `sortDirection`; `sortChange({key,direction})`. Stable localized sorting, native headers and aria-sort; text cells. |
 | ServiceCard | `title`, `href`, `description`, `category`, `duration`, `fee`, `actionLabel`, `variant`; project `[nqServiceIcon]` and supplemental body. |
 | ServiceDetails | `title`, `description`, `details: {term,description}[]`, `requirements: string[]`, `requirementsLabel`; projected actions/content. |
 | PortalHeader | `brand`, `homeHref`, `mainId`, `skipLabel`, `menuLabel`, `navigationLabel`, `navigationId`, `links: {label,href,current?}[]`; project `[nqBrand]` and header actions. Mobile menu is CSS-responsive; provide unique navigationId if repeated. |
@@ -280,3 +280,16 @@ a separate native state. See [NIC states](../../docs/nic-choices.md).
 [Site verification](../../docs/site-verification.md) composes a native disclosure above the header with deployment-owned domain and certificate information. [Grouped portal footers](../../docs/nic-footer.md) add navigation groups, support actions, legal links and identity slots.
 
 [Link and breadcrumb states](../../docs/nic-links.md) document neutral/standalone variants, disabled destinations, source contrast substitutions and native adapter APIs.
+
+
+### Table presentation and empty results
+
+`Table` and `DataTable` expose `variant="default|striped|bordered"`,
+`size="sm|md|lg"` and `emptyMessage`. DGA cells have a 48px default minimum;
+40px/56px alternate sizes and striped/bordered variants are Nasaq extensions.
+Captions name keyboard-focusable horizontal scroll containers; row-header
+columns render native `th scope="row"`. Empty data spans the column count and
+uses an Arabic message by default. Sorting does not mutate caller records.
+The default sort locale is `ar-SA`. Both component hosts shrink inside grid/flex
+layouts so overflow stays inside the table wrapper.
+See [table evidence and adaptations](../../docs/nic-tables.md).

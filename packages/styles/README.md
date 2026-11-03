@@ -207,3 +207,20 @@ height retains `--nq-duration-accordion: 300ms`. Original Nasaq remains immediat
 `--nq-color-accordion-border` and `--nq-color-accordion-focus` support scoped
 color overrides; source geometry and accessibility adaptations are documented
 in `docs/nic-accordion.md`.
+
+
+### Table profile
+
+`.nq-table` inside `.nq-table-wrap` uses NIC-informed 48px minimum cells,
+8px/16px padding and an 8px outer radius in the DGA/custom profile.
+`data-variant="striped|bordered"` and `data-size="sm|lg"` remain explicit
+Nasaq extensions. Use `.nq-table-heading` only for the optional 12px/18px
+medium-weight heading composition. `--nq-color-table-row-hover` and
+`--nq-color-table-row-hover-odd` are themeable semantic colors. Native table
+markup needs captions, scoped headers and a named focusable overflow wrapper;
+CSS does not add these semantics or selection behavior. See
+[table evidence](../../docs/nic-tables.md).
+
+For vanilla sorting, place `<span class="nq-table-sort-icon" aria-hidden="true"></span>`
+inside the header button. Its decorative indicator follows `aria-sort` on the
+native `th`; the controller supplies that semantic state.

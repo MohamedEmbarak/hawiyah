@@ -73,10 +73,10 @@ export const Alert = defineComponent({
 export interface TableColumn { key: string; header: string; cell?: (row: Record<string, unknown>, index: number) => VNodeChild; rowHeader?: boolean }
 export const Table = defineComponent({
   name: 'NqTable', inheritAttrs: false,
-  props: { columns: Array as PropType<readonly TableColumn[]>, rows: { type: Array as PropType<readonly Record<string, unknown>[]>, default: () => [] }, caption: String, rowKey: Function as PropType<(row: Record<string, unknown>, index: number) => string | number> },
-  setup(props, { attrs, slots }) { return () => h('div', { class: 'nq-table-wrap' }, [h('table', mergeProps(attrs, { class: 'nq-table' }), [
-    props.caption && h('caption', {}, props.caption),
-    props.columns ? [h('thead', {}, [h('tr', {}, props.columns.map(column => h('th', { key: column.key, scope: 'col' }, column.header)))]), h('tbody', {}, props.rows.map((row, index) => h('tr', { key: props.rowKey?.(row, index) ?? index }, props.columns!.map(column => h(column.rowHeader ? 'th' : 'td', { key: column.key, scope: column.rowHeader ? 'row' : undefined }, slots[`cell:${column.key}`]?.({ row, index }) ?? column.cell?.(row, index) ?? String(row[column.key] ?? ''))))))] : slots.default?.(),
+  props: { columns: Array as PropType<readonly TableColumn[]>, rows: { type: Array as PropType<readonly Record<string, unknown>[]>, default: () => [] }, caption: String, variant: String as PropType<'default' | 'striped' | 'bordered'>, size: String as PropType<'sm' | 'md' | 'lg'>, emptyMessage: {type: String, default: 'لا توجد سجلات'}, wrapperProps: Object as PropType<Record<string, unknown>>, rowKey: Function as PropType<(row: Record<string, unknown>, index: number) => string | number> },
+  setup(props, { attrs, slots }) { const captionId = useId(); return () => h('div', mergeProps({ class: 'nq-table-wrap', tabindex: 0, role: props.caption ? 'region' : undefined, 'aria-labelledby': props.caption ? captionId : undefined }, props.wrapperProps ?? {}), [h('table', mergeProps(attrs, { class: 'nq-table', 'data-variant': props.variant ?? attrs['data-variant'], 'data-size': props.size ?? attrs['data-size'] }), [
+    props.caption && h('caption', {id: captionId}, props.caption),
+    props.columns ? [h('thead', {}, [h('tr', {}, props.columns.map(column => h('th', { key: column.key, scope: 'col' }, column.header)))]), h('tbody', {}, props.rows.length ? props.rows.map((row, index) => h('tr', { key: props.rowKey?.(row, index) ?? index }, props.columns!.map(column => h(column.rowHeader ? 'th' : 'td', { key: column.key, scope: column.rowHeader ? 'row' : undefined }, slots[`cell:${column.key}`]?.({ row, index }) ?? column.cell?.(row, index) ?? String(row[column.key] ?? ''))))) : h('tr', {}, h('td', {colspan: props.columns.length || 1}, props.emptyMessage)))] : slots.default?.(),
   ])]); },
 });
 export const Pagination = defineComponent({

@@ -21,6 +21,7 @@ export const nativeProjectComponents = new Set([
   "card",
   "accordion",
   "table",
+  "data-table",
   "breadcrumb",
   "pagination",
   "stepper",
@@ -85,6 +86,7 @@ export function projectExample(
     card: "Card",
     accordion: "Accordion",
     table: "Table",
+    "data-table": "DataTable",
     breadcrumb: "Breadcrumb",
     pagination: "Pagination",
     stepper: "Stepper",
@@ -228,6 +230,23 @@ export function projectExample(
       { key: "reference", label: heading, rowHeader: true },
       { key: "status", label: status },
     ])};`;
+  } else if (id === "data-table") {
+    state = true;
+    const caption = t("Requests · select a heading to sort", "الطلبات · اختر عنوانًا للترتيب");
+    const empty = t("No records", "لا توجد سجلات");
+    const columns = JSON.stringify([
+      {key: "name", label: t("Service", "الخدمة"), sortable: true, rowHeader: true},
+      {key: "days", label: t("Days", "الأيام"), sortable: true},
+    ]);
+    const rows = JSON.stringify([
+      {name: t("License", "الرخصة"), days: 3},
+      {name: t("Certificate", "الشهادة"), days: 1},
+      {name: t("Permit", "التصريح"), days: 5},
+    ]);
+    react = `<DataTable caption="${caption}" variant="striped" columns={${columns}} rows={${rows}} locale="${locale}" rowKey={row => row.name} onSortChange={sort => setValue(sort.direction)} /><output>{value}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" columns={${columns}} rows={[]} emptyMessage="${empty}" />`;
+    vue = `<DataTable caption="${caption}" variant="striped" :columns='${columns}' :rows='${rows}' locale="${locale}" :sort-label="(column, direction) => column.label + ': ' + (direction === 'ascending' ? '${t("ascending", "تصاعدي")}' : '${t("descending", "تنازلي")}')" @update:sort-direction="value = $event" /><output>{{ value }}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" :columns='${columns}' :rows="[]" empty-message="${empty}" />`;
+    angular = `<nq-data-table caption="${caption}" variant="striped" [columns]="columns" [rows]="rows" locale="${locale}" (sortChange)="value = $event.direction" /><output>{{ value }}</output><nq-data-table caption="${t("Empty results", "نتائج فارغة")}" [columns]="columns" [rows]="[]" emptyMessage="${empty}" />`;
+    angularMember = `\n  columns = ${columns};\n  rows = ${rows};`;
   } else if (id === "breadcrumb") {
     const items = JSON.stringify([
       { label: t("Home", "الرئيسية"), href: "#home" },

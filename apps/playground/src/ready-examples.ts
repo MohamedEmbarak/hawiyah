@@ -30,6 +30,43 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if (id === 'table' || id === 'data-table') {
+    const sortable = id === 'data-table', component = sortable ? 'DataTable' : 'Table';
+    const service = t('Service', 'الخدمة'), days = t('Days', 'الأيام');
+    const emptyMessage = t('No requests found', 'لا توجد طلبات');
+    const items = [{ service: t('License', 'الرخصة'), days: 3 }, { service: t('Certificate', 'الشهادة'), days: 1 }];
+    const cases = [
+      { title: t('Default · minimum 48px', 'افتراضي · حد أدنى 48 بكسل'), variant: 'default', size: 'md' },
+      { title: t('Striped rows', 'صفوف متناوبة'), variant: 'striped', size: 'md' },
+      { title: t('Column borders', 'حدود الأعمدة'), variant: 'bordered', size: 'md' },
+      { title: t('Small · minimum 40px adaptation', 'صغير · تكييف بحد أدنى 40 بكسل'), variant: 'default', size: 'sm' },
+      { title: t('Large · minimum 56px adaptation', 'كبير · تكييف بحد أدنى 56 بكسل'), variant: 'default', size: 'lg' },
+      { title: t('Empty data', 'بيانات فارغة'), variant: 'default', size: 'md', empty: true },
+    ];
+    return cases.map(item => {
+      const caption = `${t('Requests', 'الطلبات')} · ${item.title}`, rows = item.empty ? [] : items;
+      const data = JSON.stringify(rows), language = locale === 'ar' ? 'ar-SA' : 'en';
+      // A filtered result retains the row shape in copied JS and strict TS examples.
+      const reactRows = item.empty ? `${JSON.stringify(items)}.filter(row => row.days > 30)` : data;
+      const body = rows.length
+        ? rows.map(row => `<tr><th scope="row">${row.service}</th><td>${row.days}</td></tr>`).join('')
+        : `<tr><td colspan="2">${emptyMessage}</td></tr>`;
+      const headings = sortable
+        ? `<th scope="col" data-nq-key="service"><button type="button" data-nq-sort="service">${service}<span class="nq-table-sort-icon" aria-hidden="true"></span></button></th><th scope="col" data-nq-key="days" data-nq-type="number"><button type="button" data-nq-sort="days">${days}<span class="nq-table-sort-icon" aria-hidden="true"></span></button></th>`
+        : `<th scope="col">${service}</th><th scope="col">${days}</th>`;
+      const columns = [{ key: 'service', label: service, rowHeader: true, ...(sortable ? { sortable: true } : {}) }, { key: 'days', label: days, ...(sortable ? { sortable: true } : {}) }];
+      const reactColumns = sortable ? JSON.stringify(columns)
+        : `[{key:'service',header:'${service}',rowHeader:true,cell:row => row.service},{key:'days',header:'${days}',cell:row => row.days}]`;
+      const vueColumns = sortable ? columns : columns.map(({ key, label, ...rest }) => ({ key, header: label, ...rest }));
+      return {
+        title: item.title,
+        markup: `<div class="nq-table-wrap" tabindex="0" role="region" aria-label="${caption}"><table class="nq-table${sortable ? ' nq-data-table' : ''}" ${sortable ? `data-nq="data-table" data-nq-locale="${language}"` : ''} data-variant="${item.variant}" data-size="${item.size}"><caption>${caption}</caption><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table></div>`,
+        react: `import { ${component} } from '@nasaq/react';\n\nconst rows = ${reactRows};\n\n<${component} caption="${caption}" rows={rows} columns={${reactColumns}} variant="${item.variant}" size="${item.size}" emptyMessage="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
+        vue: `<!-- import { ${component} } from '@nasaq/vue' -->\n<${component} caption="${caption}" :rows='${data}' :columns='${JSON.stringify(vueColumns)}' variant="${item.variant}" size="${item.size}" empty-message="${emptyMessage}" ${sortable ? `locale="${language}"${locale === 'en' ? ` :sort-label="(column, direction) => 'Sort ' + column.label + ' ' + direction"` : ''}` : ''} />`,
+        angular: `<!-- import { Nq${component}Component } from '@nasaq/angular'; add to imports -->\n<nq-${sortable ? 'data-table' : 'table'} caption="${caption}" [rows]='${data}' [columns]='${JSON.stringify(columns)}' variant="${item.variant}" size="${item.size}" emptyMessage="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
+      };
+    });
+  }
   if(id==='icon-button')return [
     ...iconButtonCases.map(item=>{
       const label=iconButtonLabel(locale,item.key), pressed='pressed' in item, disabled='disabled' in item, loading='loading' in item;

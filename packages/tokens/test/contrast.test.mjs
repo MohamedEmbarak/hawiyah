@@ -32,6 +32,7 @@ for (const [name, theme] of Object.entries(source.themes)) {
         ['success', 'success-subtle'], ['warning', 'warning-subtle'],
         ['danger', 'danger-subtle'], ['info', 'info-subtle'], ['on-inverse', 'inverse'],
         ['card-text', 'card'], ['card-text', 'card-hover'],
+        ...['text', 'text-muted'].flatMap(foreground => ['table-row-hover', 'table-row-hover-odd'].map(background => [foreground, background])),
         ['text', 'accordion-focus'], ['text', 'segment-hover'], ['on-segment-selected', 'segment-selected'],
         ...['text', 'text-muted', 'text-subtle', 'link', 'link-hover', 'link-active', 'link-visited', 'link-neutral', 'link-neutral-hover', 'link-neutral-active', 'breadcrumb-current'].flatMap(foreground =>
           ['canvas', 'surface', 'surface-muted', 'surface-raised'].map(background => [foreground, background])),

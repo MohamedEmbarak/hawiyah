@@ -407,3 +407,16 @@ alert/notification tones, header/footer composition and guide-only navigation co
 [Site verification](../../docs/site-verification.md) composes a native disclosure above the header with deployment-owned domain and certificate information. [Grouped portal footers](../../docs/nic-footer.md) add navigation groups, support actions, legal links and identity slots.
 
 [Link and breadcrumb states](../../docs/nic-links.md) document neutral/standalone variants, disabled destinations, source contrast substitutions and native adapter APIs.
+
+
+### Table presentation and empty results
+
+`Table` and `DataTable` expose `variant="default|striped|bordered"`,
+`size="sm|md|lg"` and `emptyMessage`. DGA cells have a 48px default minimum;
+40px/56px alternate sizes and striped/bordered variants are Nasaq extensions.
+Captions name keyboard-focusable horizontal scroll containers; row-header
+columns render native `th scope="row"`. Empty data spans the column count and
+uses an Arabic message by default. Sorting does not mutate caller records.
+React/Vue native `data-variant` and `data-size` attributes remain supported;
+typed props take precedence. `wrapperProps` customizes the scroll container.
+See [table evidence and adaptations](../../docs/nic-tables.md).

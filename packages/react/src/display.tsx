@@ -74,6 +74,11 @@ export function Alert({ tone = 'info', variant, title, children, className, role
 }
 export interface TableColumn<Row> { key: string; header: ReactNode; cell: (row: Row, index: number) => ReactNode; rowHeader?: boolean }
 export interface TableProps<Row = unknown> extends Omit<ComponentPropsWithRef<'table'>, 'children'> {
+  variant?: 'default' | 'striped' | 'bordered';
+  size?: 'sm' | 'md' | 'lg';
+  'data-variant'?: string;
+  'data-size'?: string;
+  emptyMessage?: ReactNode;
   columns?: readonly TableColumn<Row>[];
   rows?: readonly Row[];
   rowKey?: (row: Row, index: number) => Key;
@@ -82,8 +87,9 @@ export interface TableProps<Row = unknown> extends Omit<ComponentPropsWithRef<'t
   wrapperProps?: HTMLAttributes<HTMLDivElement>;
 }
 /** Either provide columns/rows or compose native thead/tbody children. */
-export function Table<Row>({ columns, rows = [], rowKey = (_, index) => index, caption, children, className, wrapperProps, ...props }: TableProps<Row>) {
-  return <div {...wrapperProps} className={cx('nq-table-wrap', wrapperProps?.className)}><table {...props} className={cx('nq-table', className)}>{caption && <caption>{caption}</caption>}{columns ? <><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.header}</th>)}</tr></thead><tbody>{rows.map((row, index) => <tr key={rowKey(row, index)}>{columns.map(column => column.rowHeader ? <th key={column.key} scope="row">{column.cell(row, index)}</th> : <td key={column.key}>{column.cell(row, index)}</td>)}</tr>)}</tbody></> : children}</table></div>;
+export function Table<Row>({ columns, rows = [], rowKey = (_, index) => index, caption, children, className, wrapperProps, variant, size, emptyMessage = 'لا توجد سجلات', ...props }: TableProps<Row>) {
+  const captionId = useId();
+  return <div tabIndex={0} role={caption ? 'region' : undefined} aria-labelledby={caption ? captionId : undefined} {...wrapperProps} className={cx('nq-table-wrap', wrapperProps?.className)}><table {...props} data-variant={variant ?? props['data-variant']} data-size={size ?? props['data-size']} className={cx('nq-table', className)}>{caption && <caption id={captionId}>{caption}</caption>}{columns ? <><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.header}</th>)}</tr></thead><tbody>{rows.length ? rows.map((row, index) => <tr key={rowKey(row, index)}>{columns.map(column => column.rowHeader ? <th key={column.key} scope="row">{column.cell(row, index)}</th> : <td key={column.key}>{column.cell(row, index)}</td>)}</tr>) : <tr><td colSpan={columns.length || 1}>{emptyMessage}</td></tr>}</tbody></> : children}</table></div>;
 }
 export interface PaginationProps extends Omit<ComponentPropsWithRef<'nav'>, 'onChange'> {
   page?: number;

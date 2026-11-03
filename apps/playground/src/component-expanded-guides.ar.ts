@@ -417,18 +417,19 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     accessibility: ['سمِّ المجموعة وكل صورة تؤدي معنى.', 'لا يغني العدد الإضافي عن قائمة أعضاء كاملة قابلة للوصول عندما تكون مطلوبة.', 'لا توحِ بأن الصورة تفتح ملفًا إلا إذا كانت رابطًا أو زرًا فعليًا.'],
   }),
   'data-table': localized('data-table', {
-    summary: 'إضافة فرز ثابت ومراعي للغة إلى جدول دلالي، مع الحفاظ على الرؤوس والصفوف الأصلية دون ادعاء سلوك ورقة حساب قابلة للتحرير.',
-    usage: `<div class="nq-table-wrap">
-  <table class="nq-table nq-data-table" data-nq="data-table" data-nq-locale="ar-SA">
+    summary: 'يضيف فرزًا ثابتًا ومراعيًا للغة إلى جدول دلالي، ويشارك Table أنماطه وأحجامه وغلافه المسمّى القابل للتمرير بلوحة المفاتيح. يستخدم نمط DGA خلايا افتراضية بحد أدنى للارتفاع 48 بكسل وحشوة 8/16 بكسل ونصف قطر خارجي 8 بكسل؛ الصغير 40 والكبير 56 تكييفان من نسق.',
+    usage: `<div class="nq-table-wrap" tabindex="0" role="region" aria-label="الطلبات">
+  <table class="nq-table nq-data-table" data-nq="data-table" data-nq-locale="ar-SA" data-variant="default" data-size="md">
     <caption>الطلبات</caption>
-    <thead><tr><th data-nq-key="name"><button type="button" data-nq-sort="name">الخدمة</button></th><th data-nq-key="days" data-nq-type="number"><button type="button" data-nq-sort="days">الأيام</button></th></tr></thead>
-    <tbody><tr><td>الرخصة</td><td>3</td></tr><tr><td>الشهادة</td><td>1</td></tr></tbody>
+    <thead><tr><th scope="col" data-nq-key="name"><button type="button" data-nq-sort="name">الخدمة<span class="nq-table-sort-icon" aria-hidden="true"></span></button></th><th scope="col" data-nq-key="days" data-nq-type="number"><button type="button" data-nq-sort="days">الأيام<span class="nq-table-sort-icon" aria-hidden="true"></span></button></th></tr></thead>
+    <tbody><tr><th scope="row">الرخصة</th><td>3</td></tr><tr><th scope="row">الشهادة</th><td>1</td></tr></tbody>
   </table>
 </div>`,
-    lifecycle: ['هيّئ الجدول المركب بمفاتيح واضحة للرؤوس القابلة للفرز ومعلومات نوع القيم.', 'يبدّل تفعيل رأس الفرز الترتيب التصاعدي والتنازلي وaria-sort. تُفرز الأعداد رقميًا والنصوص وفق اللغة.', 'الفرز ثابت، وتبقى القيم المفقودة أخيرًا. يعيد React نسخة مرتبة دون تعديل صفوف المستدعي.', 'يعيد destroy في النسخة المباشرة ترتيب tbody وصفات الرؤوس الأصلية. أنه المتحكم قبل استبدال هيكل الصفوف أو الرؤوس.'],
-    api: ['مفتاحان متطابقان يربطان زر الفرز بعموده.', 'استخدم number للأعمدة الرقمية؛ تُفرز القيم المعروضة كنصوص خلاف ذلك.', 'قيمة آلية للفرز بدل النص الظاهر عند الحاجة.', 'حالة الفرز الحالية أو الابتدائية في React بصيغة {key,direction}.'],
-    accessibility: ['استخدم caption وخلايا th الأصلية وزرًا حقيقيًا داخل كل رأس قابل للفرز.', 'ضع aria-sort على الرأس النشط وترجم تسمية الإجراء.', 'أبقِ التمرير الأفقي قابلًا للاستخدام على الشاشات الضيقة مع حفظ علاقات الرؤوس بالخلايا.'],
-    frameworkNotes: 'تستخدم أعمدة DataTable في React المفاتيح key وlabel وsortable وrender وrowHeader، مع rows وخيارات rowKey وlocale وemptyMessage وgetSortLabel. يستخدم Table شكلًا مختلفًا بأسماء header وcell؛ لا تخلط العقدين.',
+    lifecycle: ['هيّئ الجدول المركب بمفاتيح واضحة للرؤوس القابلة للفرز ومعلومات نوع القيم.', 'يبدّل تفعيل رأس الفرز الترتيب التصاعدي والتنازلي وaria-sort. تُفرز الأعداد رقميًا والنصوص وفق اللغة.', 'الفرز ثابت، وتبقى القيم المفقودة أخيرًا. ترتّب محولات الأطر الصفوف دون تعديل بيانات المستدعي.', 'يعيد destroy في النسخة المباشرة ترتيب tbody وصفات الرؤوس الأصلية. أنه المتحكم قبل استبدال هيكل الصفوف أو الرؤوس.'],
+    api: ['مفتاحان متطابقان يربطان زر الفرز بعموده.', 'استخدم number للأعمدة الرقمية؛ تُفرز القيم المعروضة كنصوص خلاف ذلك.', 'قيمة آلية للفرز بدل النص الظاهر عند الحاجة.', 'حالة الفرز الحالية أو الابتدائية في React بصيغة {key,direction}.', 'استخدم variant في الأطر أو data-variant على جدول Vanilla؛ يحتفظ React وVue بدعم سمة البيانات. النمطان striped وbordered امتدادان مستمران من نسق.', 'الحد الأدنى لارتفاع md في نمط DGA هو 48 بكسل؛ الحد الأدنى لـsm وهو 40 ولـlg وهو 56 تكييفان. تتمدد الخلايا مع التفاف المحتوى.', 'يمتد الصف الفارغ عبر جميع الأعمدة المحددة؛ الرسائل الافتراضية عربية. يكتب مستخدم Vanilla الصف الفارغ.', 'يعرض معرّف الصف بعنصر th أصلي يحمل scope=row في محولات الأطر الثلاثة.', 'يخصّص React وVue غلاف التمرير المسمّى القابل للتركيز. يشتق Angular الاسم من caption.'],
+    accessibility: ['استخدم caption وخلايا th أصلية مع scope وزرًا حقيقيًا داخل كل رأس قابل للفرز.', 'يوضّح aria-sort حالة الفرز؛ ترجم تسمية الإجراء.', 'أبقِ التمرير الأفقي متاحًا بلوحة المفاتيح على الشاشات الضيقة دون فقد علاقات الرؤوس بالخلايا.'],
+    variants: ['افتراضي: default', 'صفوف متناوبة: striped', 'حدود الأعمدة: bordered', 'الأحجام sm / md / lg', 'بيانات فارغة'],
+    frameworkNotes: 'تستخدم أعمدة DataTable الحقول key/label/sortable/rowHeader في كل محول؛ يضيف React الدالة render ويوفر Vue فتحات cell:key. يستخدم React الخصائص sort/defaultSort/onSortChange، ويستخدم Vue الربط v-model:sort-key وv-model:sort-direction، ويستخدم Angular الخصائص sortKey/sortDirection والحدث sortChange. تختلف أعمدة Table: يستخدم React وVue الأسماء header/cell ويستخدم Angular الاسم label.',
     limitations: ['لا يوفّر تحرير الخلايا أو العرض الافتراضي أو تحديد عدة صفوف أو جلب البيانات عن بُعد أو نموذج مفاتيح ورقة الحساب.'],
   }),
 };

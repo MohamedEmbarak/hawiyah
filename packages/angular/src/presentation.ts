@@ -90,12 +90,14 @@ export class NqAccordionComponent {
 
 export interface NqTableColumn { key: string; label: string; rowHeader?: boolean }
 export type NqTableRow = Record<string, string | number | null | undefined>;
-@Component({selector: 'nq-table', standalone: true, template: `<div class="nq-table-wrap" tabindex="0" role="region" [attr.aria-label]="caption"><table class="nq-table"><caption>{{ caption }}</caption><thead><tr>@for (column of columns; track column.key) {<th scope="col">{{ column.label }}</th>}</tr></thead><tbody>@for (row of rows; track $index) {<tr>@for (column of columns; track column.key) {@if (column.rowHeader) {<th scope="row">{{ row[column.key] }}</th>} @else {<td>{{ row[column.key] }}</td>}}</tr>}@empty {<tr><td [attr.colspan]="columns.length || 1">{{ emptyMessage }}</td></tr>}</tbody></table></div>`})
+@Component({selector: 'nq-table', standalone: true, styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `<div class="nq-table-wrap" tabindex="0" role="region" [attr.aria-label]="caption"><table class="nq-table" [attr.data-variant]="variant" [attr.data-size]="size"><caption>{{ caption }}</caption><thead><tr>@for (column of columns; track column.key) {<th scope="col">{{ column.label }}</th>}</tr></thead><tbody>@for (row of rows; track $index) {<tr>@for (column of columns; track column.key) {@if (column.rowHeader) {<th scope="row">{{ row[column.key] }}</th>} @else {<td>{{ row[column.key] }}</td>}}</tr>}@empty {<tr><td [attr.colspan]="columns.length || 1">{{ emptyMessage }}</td></tr>}</tbody></table></div>`})
 export class NqTableComponent {
   @Input({required: true}) caption = '';
   @Input() columns: readonly NqTableColumn[] = [];
   @Input() rows: readonly NqTableRow[] = [];
-  @Input() emptyMessage = 'No records';
+  @Input() variant?: 'default' | 'striped' | 'bordered';
+  @Input() size?: 'sm' | 'md' | 'lg';
+  @Input() emptyMessage = 'لا توجد سجلات';
 }
 
 @Component({selector: 'nq-progress', standalone: true, template: `<label class="nq-stack"><span>{{ label }}</span><progress class="nq-progress" [attr.value]="value === null ? null : boundedValue" [max]="safeMax" [attr.aria-label]="label"></progress></label>`})
