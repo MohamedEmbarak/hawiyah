@@ -220,3 +220,33 @@ accessible name; no enhancer is needed. Set `data-variant` explicitly,
 Standard form attributes and ARIA relationships belong on the button itself.
 The existing `data-icon-only` marker remains supported. Decorative background
 circles use `.nq-icon-background` around `.nq-icon`; they are not buttons.
+
+## Responsive tabs
+
+`createTabs(root, { value, activationMode, overflow, overflowLabel,
+onValueChange })` preserves authored tab buttons and panels. Horizontal tabs
+use `overflow: 'menu'` by default; `data-nq-overflow="scroll"` or the explicit
+`overflow: 'scroll'` option retains the scrolling row. Vertical tab lists never
+collapse. `overflowLabel` names the ellipsis disclosure and overrides
+`data-nq-overflow-label`; the default is Arabic or English according to the root's
+locale.
+
+The controller wraps the tab list in `.nq-tab-bar` and adds a native disclosure
+containing ordinary selection buttons. Excess tabs are measured in their
+container, removed from the accessible tab row, and represented by those buttons.
+The active panel remains labeled by its original tab. If every tab overflows,
+the empty accessible tab list is hidden and the disclosure exposes all choices.
+Selecting a hidden tab closes the disclosure and returns focus to its summary;
+Escape and outside clicks also close it. Resizing preserves focus when tabs move:
+a focused disclosure destination that becomes visible receives focus on its
+original tab; a newly hidden focused tab transfers focus to the summary.
+Visible tabs retain automatic/manual activation and direction-aware arrow keys.
+Disabled tabs remain unavailable, including inherited fieldset disabled state
+and its first-legend exception. All-disabled groups have no active panel.
+
+Labels are copied as text or from `aria-label`, without duplicating HTML IDs or
+projected controls. Provide a text alternative on icon-only authored tabs.
+`destroy()` restores the original structure, nodes and attributes and removes
+observers/listeners. The authored tab/panel set is captured at initialization;
+destroy and initialize again after adding or removing authored tabs. Runtime
+orientation, overflow mode, labels and disabled changes are observed.

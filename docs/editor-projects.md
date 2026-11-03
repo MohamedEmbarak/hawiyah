@@ -147,3 +147,19 @@ React recipes pass TypeScript checking, all 33 Angular recipes pass strict
 template checking, and all seven exported framework/language projects build
 against the updated clean tarball consumer. This does not claim a fresh full
 165-preview catalog run.
+
+
+The existing Tabs recipe now shows six native compositions: the original
+controlled three-tab example with a disabled destination, eight long labels
+with responsive overflow, manual activation, vertical tabs, explicit scrolling,
+and an initially selected overflow destination. Ready examples provide the same
+six cases in all four adapter syntaxes with localized overflow labels. Native
+project files include the real adapter imports; recipe coverage remains 33.
+The default overflow disclosure keeps
+panel state in the owning adapter; it does not navigate the guide or replace
+native tab semantics with links. See [NIC tabs alignment](nic-tabs.md) for source
+values, keyboard behavior and intentional adaptations.
+All five native framework/language previews pass focused tab browser checks.
+All 33 React recipes pass TypeScript checking, all 33 Angular recipes pass strict
+template checking and all seven exported framework/language projects build
+against clean tarball consumers. No fresh full 165-preview run is claimed.

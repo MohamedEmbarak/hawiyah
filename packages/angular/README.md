@@ -77,7 +77,7 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
 | Radio — `NqRadioComponent` | `nq-radio`; a named native radio group with a fieldset/legend, string value, `options`. |
 | Switch — `NqSwitchComponent` | `nq-switch`; boolean value, native checkbox with switch role. |
 | Combobox — `NqComboboxComponent` | `nq-combobox`; string value, `options`, `placeholder`, `emptyMessage`, `validationMessage`, `resultsMessage(count)`. Editable single selection; no async or virtualization. |
-| Tabs — `NqTabsComponent`, `NqTabComponent` | `nq-tabs` contains `nq-tab`; tabs `label`, `id`, `[(value)]`, `orientation`, optional `direction`, `activationMode: automatic/manual`. Each tab takes `value`, `label`, `disabled` and projects its panel. |
+| Tabs — `NqTabsComponent`, `NqTabComponent` | `nq-tabs` contains `nq-tab`; tabs `label`, `id`, `[(value)]`, `orientation`, optional `direction`, `activationMode: automatic/manual`, `overflow: menu/scroll` (default menu), configurable `overflowLabel`. Each tab takes `value`, `label`, `disabled` and projects its panel. Compact horizontal containers disclose excess labels; vertical tabs remain visible. |
 | Dialog — `NqDialogComponent` | `nq-dialog`; `title`, `titleId`, `[(open)]`, `closeLabel`, `closeOnBackdrop`; outputs `cancelled`, `returnValue`; methods `show(trigger?)`, `close(value?)`. Project content and `[nqDialogFooter]`. |
 | Accordion — `NqAccordionComponent` | `nq-accordion`; `items: {id,title,content,open?}[]`, `exclusive`, `groupName`; `toggled: {id,open}`. Native details/summary. Project custom native details for richer content. |
 | Card — `NqCardComponent` | `nq-card`; project `[nqCardHeader]`, body, `[nqCardFooter]`. |

@@ -1,7 +1,7 @@
-import { booleanAttribute, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, TemplateRef, ViewChild, ViewChildren, inject } from '@angular/core';
+import { booleanAttribute, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, TemplateRef, ViewChild, ViewChildren, inject } from '@angular/core';
 import { observeAngularFieldPresence } from './field-presence';
 import { NgTemplateOutlet } from '@angular/common';
-import { getDirection, getNextEnabledIndex, getPaginationItems, normalizePaginationPage, normalizePaginationTotal, type Direction, type Orientation } from '@nasaq/core';
+import { getDirection, getNextEnabledIndex, getPaginationItems, normalizePaginationPage, normalizePaginationTotal, observeTabOverflow, type Direction, type Orientation } from '@nasaq/core';
 
 let nextId = 0;
 @Component({ selector: 'nq-tab', standalone: true, template: `<ng-template #content><ng-content /></ng-template>` })
@@ -10,10 +10,16 @@ export class NqTabComponent {
   @Input({required: true}) label = '';
   @Input({transform: booleanAttribute}) disabled = false;
   @ViewChild('content', {static: true}) content!: TemplateRef<unknown>;
+  /** Notify the owning tabset when projected input state changes. */
+  readonly stateChanges = new EventEmitter<void>();
+  ngOnChanges(): void {this.stateChanges.emit();}
 }
 
 @Component({ selector: 'nq-tabs', standalone: true, imports: [NgTemplateOutlet],
-  template: `<div class="nq-tabs"><div class="nq-tab-list" role="tablist" [attr.aria-label]="label" [attr.aria-orientation]="orientation">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="nq-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [disabled]="tab.disabled" [tabIndex]="focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>@for (tab of tabs; track tab.value; let i = $index) {<section class="nq-tab-panel" role="tabpanel" tabindex="0" [id]="panelId(i)" [attr.aria-labelledby]="tabId(i)" [hidden]="activeValue !== tab.value"><ng-container [ngTemplateOutlet]="tab.content" /></section>}<ng-content /></div>` })
+  template: `<div class="nq-tabs"><div #tabBar class="nq-tab-bar" [attr.data-nq-overflow]="overflow" [attr.data-orientation]="orientation">
+  <div class="nq-tab-list" [attr.data-nq-overflow]="overflow" role="tablist" [attr.aria-label]="label" [attr.aria-orientation]="orientation" [attr.aria-hidden]="hiddenTabs.length === tabs?.length || null">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="nq-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [attr.data-nq-overflow-hidden]="hiddenTabs.includes(i) ? 'true' : null" [attr.aria-hidden]="hiddenTabs.includes(i) || null" [disabled]="tab.disabled" [tabIndex]="!hiddenTabs.includes(i) && focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>
+  <details #overflowDetails class="nq-tabs-overflow" [hidden]="!hiddenTabs.length" (keydown)="overflowKey($event)"><summary class="nq-tab-overflow-trigger" [attr.aria-label]="overflowLabel" [attr.data-active]="overflowActive || null">…</summary><div class="nq-tab-overflow-menu">@for (i of hiddenTabs; track i) {@if (tabs.get(i); as tab) {<button type="button" class="nq-tab-overflow-item" [attr.data-nq-overflow-value]="tab.value" [disabled]="tab.disabled" [attr.aria-pressed]="tab.value === activeValue" (click)="overflowSelect(tab.value)">{{ tab.label }}</button>}}</div></details>
+  </div>@for (tab of tabs; track tab.value; let i = $index) {<section class="nq-tab-panel" role="tabpanel" tabindex="0" [id]="panelId(i)" [attr.aria-labelledby]="tabId(i)" [hidden]="activeValue !== tab.value"><ng-container [ngTemplateOutlet]="tab.content" /></section>}<ng-content /></div>` })
 export class NqTabsComponent {
   @Input() id = `nq-tabs-${++nextId}`;
   @Input({required: true}) label = '';
@@ -21,21 +27,73 @@ export class NqTabsComponent {
   @Input() orientation: Orientation = 'horizontal';
   @Input() direction?: Direction;
   @Input() activationMode: 'automatic' | 'manual' = 'automatic';
+  @Input() overflow: 'menu' | 'scroll' = 'menu';
+  @Input() overflowLabel = 'المزيد من التبويبات';
   @Output() readonly valueChange = new EventEmitter<string>();
   @ContentChildren(NqTabComponent) tabs!: QueryList<NqTabComponent>;
   @ViewChildren('tabButton') buttons!: QueryList<ElementRef<HTMLButtonElement>>;
+  @ViewChild('tabBar') tabBar?: ElementRef<HTMLElement>;
+  @ViewChild('overflowDetails') overflowDetails?: ElementRef<HTMLDetailsElement>;
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  private overflowObserver?: ReturnType<typeof observeTabOverflow>;
+  private pendingFocus?: {kind: 'summary' | 'tab' | 'menu'; value?: string};
+  private previousActive = '';
+  private tabSubscriptions: Array<{unsubscribe(): void}> = [];
+  private tabsSubscription?: {unsubscribe(): void};
+  private outside = (event: Event) => {if (!this.tabBar?.nativeElement.contains(event.target as Node)) this.closeOverflow();};
+  hiddenTabs: number[] = [];
   focusedValue = '';
   get activeValue(): string { return this.tabs?.find(tab => tab.value === this.value && !tab.disabled)?.value ?? this.tabs?.find(tab => !tab.disabled)?.value ?? ''; }
-  get focusValue(): string { return this.tabs?.find(tab => tab.value === this.focusedValue && !tab.disabled)?.value ?? this.activeValue; }
+  get focusValue(): string { const visible = this.tabs?.filter((tab, index) => !tab.disabled && !this.hiddenTabs.includes(index)) ?? []; return visible.find(tab => tab.value === this.focusedValue)?.value ?? visible.find(tab => tab.value === this.activeValue)?.value ?? visible[0]?.value ?? ''; }
+  get overflowActive(): boolean {return this.hiddenTabs.some(index => this.tabs?.get(index)?.value === this.activeValue);}
+  ngAfterContentInit(): void {
+    const bind = () => {
+      this.tabSubscriptions.forEach(subscription => subscription.unsubscribe());
+      this.tabSubscriptions = this.tabs.map(tab => tab.stateChanges.subscribe(() => {this.changeDetector.markForCheck();this.overflowObserver?.refresh();}));
+      this.changeDetector.markForCheck(); this.overflowObserver?.refresh();
+    };
+    bind(); this.tabsSubscription = this.tabs.changes.subscribe(bind);
+  }
+  ngAfterViewInit(): void {
+    const node = this.tabBar!.nativeElement;
+    this.overflowObserver = observeTabOverflow({container: node, tabs: () => this.buttons.toArray().map(button => button.nativeElement), enabled: () => this.overflow === 'menu' && this.orientation === 'horizontal', onChange: next => {
+      const focusedElement = node.ownerDocument.activeElement;
+      const menuValue = (focusedElement as HTMLElement | null)?.dataset.nqOverflowValue;
+      const itemIndex = this.tabs.toArray().findIndex(tab => tab.value === menuValue);
+      if (menuValue !== undefined && itemIndex >= 0 && next.includes(itemIndex)) this.pendingFocus = {kind:'menu',value:menuValue};
+      else {
+        if (menuValue !== undefined && itemIndex >= 0) this.pendingFocus = {kind:'tab',value:menuValue};
+        else if (next.some(index => this.buttons.get(index)?.nativeElement === focusedElement)) this.pendingFocus = {kind:'summary'};
+        else if (this.overflowDetails?.nativeElement.contains(focusedElement)) this.pendingFocus = {kind:next.length ? 'summary' : 'tab'};
+        this.closeOverflow();
+      }
+      this.hiddenTabs = next; this.changeDetector.markForCheck();
+    }});
+    node.ownerDocument.addEventListener('click', this.outside);
+  }
+  ngAfterViewChecked(): void {
+    this.overflowObserver?.refresh();
+    if (this.previousActive !== this.activeValue) {this.previousActive = this.activeValue; this.closeOverflow();}
+    const destination = this.pendingFocus; this.pendingFocus = undefined;
+    if (destination?.kind === 'summary') this.overflowDetails?.nativeElement.querySelector('summary')?.focus();
+    else if (destination?.kind === 'tab') this.buttons?.get(this.tabs.toArray().findIndex(tab => tab.value === (destination.value ?? this.focusValue)))?.nativeElement.focus();
+    else if (destination?.kind === 'menu') [...(this.overflowDetails?.nativeElement.querySelectorAll<HTMLElement>('[data-nq-overflow-value]') ?? [])].find(button => button.dataset.nqOverflowValue === destination.value)?.focus();
+    else {const focusedElement = this.host.nativeElement.ownerDocument.activeElement; if (focusedElement?.getAttribute('data-nq-overflow-hidden') === 'true' && this.tabBar?.nativeElement.contains(focusedElement)) this.overflowDetails?.nativeElement.querySelector('summary')?.focus();}
+  }
+  ngOnDestroy(): void {this.overflowObserver?.destroy();this.tabsSubscription?.unsubscribe();this.tabSubscriptions.forEach(subscription => subscription.unsubscribe()); this.host.nativeElement.ownerDocument.removeEventListener('click', this.outside);}
+  closeOverflow(): void {if (this.overflowDetails) this.overflowDetails.nativeElement.open = false;}
+  overflowSelect(value: string): void {if (!this.tabs.find(tab => tab.value === value && !tab.disabled)) return; this.select(value); this.closeOverflow(); this.overflowDetails?.nativeElement.querySelector('summary')?.focus();}
+  overflowKey(event: KeyboardEvent): void {if (event.key === 'Escape' && this.overflowDetails?.nativeElement.open) {event.preventDefault(); this.closeOverflow(); this.overflowDetails.nativeElement.querySelector('summary')?.focus();}}
   tabId(index: number): string { return `${this.id}-tab-${index}`; }
   panelId(index: number): string { return `${this.id}-panel-${index}`; }
   select(value: string): void { if (!this.tabs.find(tab => tab.value === value && !tab.disabled)) return; this.value = value; this.focusedValue = value; this.valueChange.emit(value); }
   keydown(event: KeyboardEvent, index: number): void {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing) return;
     const keys = this.orientation === 'vertical' ? ['ArrowUp', 'ArrowDown', 'Home', 'End'] : ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
     if (!keys.includes(event.key)) return;
     event.preventDefault();
-    const next = getNextEnabledIndex(index, event.key, this.tabs.toArray(), this.direction ?? getDirection(this.host.nativeElement), this.orientation);
+    const next = getNextEnabledIndex(index, event.key, this.tabs.map((tab, i) => ({disabled: tab.disabled || this.hiddenTabs.includes(i)})), this.direction ?? getDirection(this.host.nativeElement), this.orientation);
     const tab = this.tabs.get(next); if (!tab) return;
     this.focusedValue = tab.value; this.buttons.get(next)?.nativeElement.focus();
     if (this.activationMode === 'automatic') this.select(tab.value);

@@ -1,6 +1,6 @@
 import { cloneElement, useEffect, useId, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, ComponentPropsWithRef, HTMLAttributes, ReactElement, ReactNode } from 'react';
-import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, transitionCombobox } from '@nasaq/core';
+import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow, transitionCombobox } from '@nasaq/core';
 import type { ComboboxEvent, Option, Orientation } from '@nasaq/core';
 import { assignRef, cx, Field, useControllable, useFieldControl, useFieldValueRef } from './shared.js';
 import type { FieldDecoration } from './shared.js';
@@ -15,29 +15,76 @@ export interface TabsProps extends Omit<ComponentPropsWithRef<'div'>, 'defaultVa
   label: string;
   orientation?: Orientation;
   activationMode?: 'automatic' | 'manual';
+  overflow?: 'menu' | 'scroll';
+  overflowLabel?: string;
 }
-export function Tabs({ items, value, defaultValue, onValueChange, label, orientation = 'horizontal', activationMode = 'automatic', className, ...props }: TabsProps) {
+export function Tabs({ items, value, defaultValue, onValueChange, label, orientation = 'horizontal', activationMode = 'automatic', overflow = 'menu', overflowLabel = 'المزيد من التبويبات', className, ...props }: TabsProps) {
   const id = useId();
   const [selected, select] = useControllable(value, defaultValue ?? items.find(item => !item.disabled)?.value ?? '', onValueChange);
   const [focused, setFocused] = useState<string | undefined>();
   const buttons = useRef(new Map<string, HTMLButtonElement>());
+  const bar = useRef<HTMLDivElement>(null);
+  const disclosure = useRef<HTMLDetailsElement>(null);
+  const [hidden, setHidden] = useState<number[]>([]);
+  const observer = useRef<ReturnType<typeof observeTabOverflow> | undefined>(undefined);
+  const latest = useRef({items, overflow, orientation}); latest.current = {items, overflow, orientation};
+  const pendingFocus = useRef<{kind: 'summary' | 'tab' | 'menu'; value?: string} | undefined>(undefined);
   const active = items.find(item => item.value === selected && !item.disabled)?.value ?? items.find(item => !item.disabled)?.value;
-  const focusValue = items.find(item => item.value === focused && !item.disabled)?.value ?? active;
+  const visible = items.filter((item, index) => !hidden.includes(index) && !item.disabled);
+  const focusValue = visible.find(item => item.value === focused)?.value ?? visible.find(item => item.value === active)?.value ?? visible[0]?.value;
+  const close = () => { if (disclosure.current) disclosure.current.open = false; };
+  useEffect(() => {
+    const node = bar.current; if (!node) return;
+    observer.current = observeTabOverflow({container: node,
+      tabs: () => latest.current.items.map(item => buttons.current.get(item.value)!).filter(Boolean),
+      enabled: () => latest.current.overflow === 'menu' && latest.current.orientation === 'horizontal',
+      onChange: next => {
+        const focusedElement = node.ownerDocument.activeElement;
+        const menuValue = (focusedElement as HTMLElement | null)?.dataset.nqOverflowValue;
+        const itemIndex = latest.current.items.findIndex(item => item.value === menuValue);
+        if (menuValue !== undefined && itemIndex >= 0 && next.includes(itemIndex)) pendingFocus.current = {kind:'menu',value:menuValue};
+        else {
+          if (menuValue !== undefined && itemIndex >= 0) pendingFocus.current = {kind:'tab',value:menuValue};
+          else if (next.some(index => buttons.current.get(latest.current.items[index]?.value ?? '') === focusedElement)) pendingFocus.current = {kind:'summary'};
+          else if (disclosure.current?.contains(focusedElement)) pendingFocus.current = {kind:next.length ? 'summary' : 'tab'};
+          close();
+        }
+        setHidden(next);
+      }});
+    const outside = (event: Event) => { if (!node.contains(event.target as Node)) close(); };
+    node.ownerDocument.addEventListener('click', outside);
+    return () => { observer.current?.destroy(); node.ownerDocument.removeEventListener('click', outside); };
+  }, []);
+  useEffect(() => { observer.current?.refresh(); const focusedElement = bar.current?.ownerDocument.activeElement; if (focusedElement?.getAttribute('data-nq-overflow-hidden') === 'true' && bar.current?.contains(focusedElement)) disclosure.current?.querySelector('summary')?.focus(); }, [items, overflow, orientation]);
+  useEffect(() => { close(); }, [active]);
+  useEffect(() => {
+    const destination = pendingFocus.current; pendingFocus.current = undefined;
+    if (destination?.kind === 'summary') disclosure.current?.querySelector('summary')?.focus();
+    else if (destination?.kind === 'tab' && (destination.value ?? focusValue)) buttons.current.get(destination.value ?? focusValue!)?.focus();
+    else if (destination?.kind === 'menu') [...(disclosure.current?.querySelectorAll<HTMLElement>('[data-nq-overflow-value]') ?? [])].find(button => button.dataset.nqOverflowValue === destination.value)?.focus();
+  }, [hidden, focusValue]);
   return <div {...props} className={cx('nq-tabs', className)}>
-    <div className="nq-tab-list" role="tablist" aria-label={label} aria-orientation={orientation}>
-      {items.map((item, index) => <button key={item.value} type="button" role="tab" className="nq-tab" id={`${id}-tab-${index}`} aria-controls={`${id}-panel-${index}`} aria-selected={active === item.value} tabIndex={focusValue === item.value ? 0 : -1} disabled={item.disabled}
+    <div className="nq-tab-bar" ref={bar} data-nq-overflow={overflow} data-orientation={orientation}>
+    <div className="nq-tab-list" data-nq-overflow={overflow} role="tablist" aria-label={label} aria-orientation={orientation} aria-hidden={hidden.length === items.length || undefined}>
+      {items.map((item, index) => <button key={item.value} type="button" role="tab" className="nq-tab" id={`${id}-tab-${index}`} aria-controls={`${id}-panel-${index}`} aria-selected={active === item.value} aria-hidden={hidden.includes(index) || undefined} data-nq-overflow-hidden={hidden.includes(index) || undefined} tabIndex={!hidden.includes(index) && focusValue === item.value ? 0 : -1} disabled={item.disabled}
         ref={node => { if (node) buttons.current.set(item.value, node); else buttons.current.delete(item.value); }}
-        onFocus={() => setFocused(item.value)} onClick={() => select(item.value)}
+        onFocus={() => setFocused(item.value)} onClick={() => { if (!item.disabled) select(item.value); }}
         onKeyDown={event => {
+          if (event.altKey || event.ctrlKey || event.metaKey || event.nativeEvent.isComposing) return;
           const keys = orientation === 'vertical' ? ['ArrowDown', 'ArrowUp', 'Home', 'End'] : ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
           if (!keys.includes(event.key)) return;
           event.preventDefault();
-          const next = items[getNextEnabledIndex(index, event.key, items, getDirection(event.currentTarget), orientation)];
+          const next = items[getNextEnabledIndex(index, event.key, items.map((candidate, i) => ({disabled: candidate.disabled || hidden.includes(i)})), getDirection(event.currentTarget), orientation)];
           if (!next) return;
           setFocused(next.value);
           buttons.current.get(next.value)?.focus();
           if (activationMode === 'automatic') select(next.value);
         }}>{item.label}</button>)}
+    </div>
+    <details ref={disclosure} className="nq-tabs-overflow" hidden={!hidden.length} onKeyDown={event => { if (event.key === 'Escape' && event.currentTarget.open) { event.preventDefault(); close(); event.currentTarget.querySelector('summary')?.focus(); } }}>
+      <summary className="nq-tab-overflow-trigger" aria-label={overflowLabel} data-active={hidden.some(index => items[index]?.value === active) || undefined}>…</summary>
+      <div className="nq-tab-overflow-menu">{hidden.map(index => { const item = items[index]; return item && <button key={item.value} type="button" className="nq-tab-overflow-item" data-nq-overflow-value={item.value} disabled={item.disabled} aria-pressed={item.value === active} onClick={() => { if (item.disabled) return; select(item.value); close(); disclosure.current?.querySelector('summary')?.focus(); }}>{item.label}</button>; })}</div>
+    </details>
     </div>
     {items.map((item, index) => <section key={item.value} className="nq-tab-panel" id={`${id}-panel-${index}`} role="tabpanel" aria-labelledby={`${id}-tab-${index}`} tabIndex={0} hidden={active !== item.value}>{item.content}</section>)}
   </div>;

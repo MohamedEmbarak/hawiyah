@@ -63,7 +63,7 @@ it does not mean every source state has already passed comparison.
 | CSS 1890–2036; JS 1750–1841: content navigation | page-navigation composition | Scroll-following current section and nested indicator need coverage |
 | CSS 2040–2143: breadcrumbs | Breadcrumb | [Breadcrumb states](nic-links.md): neutral states, logical chevrons, 200ms motion with reduced-motion support, disabled destinations and readable current-page text |
 | CSS 2148–2312; JS 931–1169: search | SearchField, Combobox, Dialog | Add documented search-modal/suggestion composition; preserve IME, names and focus return |
-| CSS 2316–2427; JS 1854–2079: tabs and overflow | Tabs | Overflow menu behavior is not covered by the existing scrolling tab list |
+| CSS 2316–2427; JS 1854–2079: tabs and overflow | Tabs | [Responsive tabs](nic-tabs.md): source geometry/states, hidden-destination disclosure, native keyboard/focus ownership and explicit scrolling/vertical modes |
 | CSS 2431–2648: field labels, native/text/select inputs | Field, TextField, Textarea, Select, DatePicker | [Input state/motion task](nic-inputs.md): 16px padding/labels, 500ms ease, 50% pressed line and no focus shadow; helper/select artwork and other control comparisons remain |
 | CSS 2651–2726: addons/input groups | InputGroup and composed fields | [Input group task](nic-inputs.md): single line across direct input/addon composition, validation precedence, read-only/reduced-motion/system-focus handling and Angular projected value tracking |
 | CSS 2729–3009: checkbox/radio states | Checkbox, Radio | [Implemented choice task](nic-choices.md): geometry, hover halo, checked/pressed/disabled/read-only presentation and activation protection across all adapters; focus/dark/system-color adaptations documented |

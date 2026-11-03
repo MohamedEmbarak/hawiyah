@@ -78,7 +78,7 @@ with explicit locale, calendar and time zone. No component infers locale from RT
 | `Checkbox` | Native checkbox plus label/hint/error and `indeterminate`. |
 | `Radio` | Native radio plus label/hint/error; supply a shared `name` for a native group. |
 | `Switch` | Native checkbox with `role="switch"`, label/hint/error. |
-| `Tabs` | `items: {value,label,content,disabled?}[]`, required `label`, `value`/`defaultValue`, `onValueChange`, `orientation`, `activationMode`. |
+| `Tabs` | `items: {value,label,content,disabled?}[]`, required `label`, `value`/`defaultValue`, `onValueChange`, `orientation`, `activationMode`, `overflow: menu/scroll` (default menu), configurable `overflowLabel`. Horizontal compact containers move excess labels into a keyboard-accessible disclosure; vertical tabs remain visible. |
 | `Dialog` | Required `title`; `description`, `trigger`, `open`/`defaultOpen`, `onOpenChange`, `closeLabel`, `closeOnBackdrop`; children/footer can render from `{close}`. |
 | `Combobox` | Single selection from `Option[]`; label/hint/error, `value`/`defaultValue`, `onValueChange(value, option?)`, `onInputChange(query)`, `open`/`defaultOpen`, `onOpenChange`, native form attributes. |
 | `Accordion` | `items: {value,title,content,open?,defaultOpen?,onOpenChange?}[]`; `exclusive` uses a native details name group. |

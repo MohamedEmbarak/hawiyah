@@ -215,3 +215,13 @@ Call after mounting a checkbox/radio, refresh after application-controlled value
 updates, and destroy before removal. It prevents activation when `readOnly` or
 `aria-disabled="true"` is set and preserves radio peers without rendering DOM.
 Adapters install it automatically; it does not make a disabled field focusable.
+
+## Responsive tab measurement
+
+`getTabOverflowIndices(widths, width, gap = 3)` returns omitted tab indices using
+the NIC compact threshold (991px) and disclosure reserve (72px). It returns no
+overflow when the full row fits, for a single tab, or for an unmeasured container.
+`observeTabOverflow({container, tabs, enabled, onChange})` returns
+`{refresh(), destroy()}`. It reads layout after mounting and reports changed
+index arrays on resize, text/child changes and font loading; it does not render,
+reparent, hide or focus DOM. Adapters own those operations. Imports are SSR-safe.

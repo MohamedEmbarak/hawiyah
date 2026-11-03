@@ -1,3 +1,4 @@
+import {tabsDemoCases,tabsDemoMarkup,tabsNativeMarkup} from './tabs-demo';
 import {paginationDemoCases,paginationDemoMarkup,paginationNativeMarkup} from './pagination-demo';
 import {ratingDemoCases,ratingDemoMarkup,ratingNativeMarkup} from './rating-demo';
 import {carouselDemoCases,carouselDemoMarkup,carouselNativeMarkup} from './carousel-demo';
@@ -34,6 +35,14 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='tabs')return tabsDemoCases(locale).map(item=>{
+    const native=tabsNativeMarkup(locale,item.kind);
+    return {title:item.title,markup:tabsDemoMarkup(locale,item.kind),
+      react:`import { Tabs } from '@nasaq/react';\n\n${native.react}`,
+      vue:`<!-- import { Tabs } from '@nasaq/vue' -->\n${native.vue}`,
+      angular:`<!-- import { NqTabsComponent, NqTabComponent } from '@nasaq/angular'; add both to imports -->\n${native.angular}`,
+    };
+  });
   if(id==='pagination')return paginationDemoCases(locale).map(item=>{
     const native=paginationNativeMarkup(locale,item.kind);
     return {title:item.title,markup:paginationDemoMarkup(locale,item.kind),

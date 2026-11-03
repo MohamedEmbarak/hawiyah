@@ -1,3 +1,4 @@
+import {tabsDemoCases,tabsNativeMarkup} from './tabs-demo.ts';
 import {paginationDemoCases,paginationNativeMarkup} from './pagination-demo.ts';
 import {ratingDemoCases,ratingNativeMarkup} from './rating-demo.ts';
 import {carouselDemoCases,carouselNativeMarkup} from './carousel-demo.ts';
@@ -287,27 +288,10 @@ export function projectExample(
   } else if (id === "tabs") {
     state = true;
     initialValue = "'first'";
-    const items = [
-      {
-        value: "first",
-        label: t("Details", "التفاصيل"),
-        content: t("Service details", "تفاصيل الخدمة"),
-      },
-      {
-        value: "second",
-        label: t("Requirements", "المتطلبات"),
-        content: t("Required documents", "المستندات المطلوبة"),
-      },
-      {
-        value: "third",
-        label: t("Unavailable", "غير متاح"),
-        content: "",
-        disabled: true,
-      },
-    ];
-    react = `<Tabs label="${label}" items={${JSON.stringify(items)}} value={value} onValueChange={setValue} /><output>{value}</output>`;
-    vue = `<Tabs label="${label}" :items='${JSON.stringify(items)}' v-model="value" /><output>{{ value }}</output>`;
-    angular = `<nq-tabs label="${label}" [(value)]="value">${items.map((item) => `<nq-tab value="${item.value}" label="${item.label}"${item.disabled ? " disabled" : ""}>${item.content}</nq-tab>`).join("")}</nq-tabs><output>{{ value }}</output>`;
+    const cases=tabsDemoCases(locale).map(item=>({...item,...tabsNativeMarkup(locale,item.kind,item.kind==='basic')}));
+    react=cases.map(item=>`<section className="nq-stack" data-tabs-demo="${item.kind}"><h2>${item.title}</h2>${item.react}${item.kind==='basic'?'<output>{value}</output>':''}</section>`).join('');
+    vue=cases.map(item=>`<section class="nq-stack" data-tabs-demo="${item.kind}"><h2>${item.title}</h2>${item.vue}${item.kind==='basic'?'<output>{{value}}</output>':''}</section>`).join('');
+    angular=cases.map(item=>`<section class="nq-stack" data-tabs-demo="${item.kind}"><h2>${item.title}</h2>${item.angular}${item.kind==='basic'?'<output>{{value}}</output>':''}</section>`).join('');
   } else if (id === "progress") {
     react = `<Progress label="${t("Upload progress", "تقدم الرفع")}" value={65} max={100} />`;
     vue = `<Progress label="${t("Upload progress", "تقدم الرفع")}" :value="65" :max="100" />`;

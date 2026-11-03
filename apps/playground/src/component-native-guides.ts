@@ -1,3 +1,4 @@
+import {tabsDemoMarkup} from './tabs-demo';
 import {paginationDemoMarkup} from './pagination-demo';
 import type { GuideInput } from './component-guide-types';
 import { loaderDemo } from './loader-demo';
@@ -76,11 +77,23 @@ export const nativeGuides: Record<string, GuideInput> = {
     accessibility: ['Retain the native file input and a visible label.', 'Explain accepted types and size rules in text.', 'Announce rejection and progress through application status/error UI.'], related: ['file-dropzone', 'progress'], limitations: ['No transport, storage, virus scanning, or server-side validation is included. Scripts cannot preload a local file path.'], source: 'packages/react/src/forms.tsx',
   },
   tabs: {
-    summary: 'Switches between related panels while keeping their content mounted. Each tab is connected to one panel through stable IDs.',
-    usage: `<div class="nq-tabs" data-nq="tabs" data-nq-activation="manual">\n  <div class="nq-tab-list" role="tablist" aria-label="Request sections">\n    <button type="button" class="nq-tab" role="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="true" data-nq-value="summary">Summary</button>\n    <button type="button" class="nq-tab" role="tab" id="tab-history" aria-controls="panel-history" data-nq-value="history">History</button>\n  </div>\n  <section class="nq-tab-panel" role="tabpanel" id="panel-summary" aria-labelledby="tab-summary">Request summary</section>\n  <section class="nq-tab-panel" role="tabpanel" id="panel-history" aria-labelledby="tab-history" hidden>Request history</section>\n</div>`,
-    lifecycle: ['Enhance mounted markup; the selected enabled tab establishes the single tab stop and visible panel.', 'Arrow navigation changes focus; automatic mode also changes selection, while manual mode waits for Enter, Space, or click.', 'Selection updates aria-selected and hidden panels; inactive content remains mounted so form state survives.', 'Destroy before changing the vanilla tab/panel structure. Cleanup restores attributes and removes listeners.'],
-    api: api(['data-nq-activation', 'automatic | manual', 'Selection follows focus by default; manual mode separates them.'], ['aria-orientation', 'horizontal | vertical', 'Set on tablist; affects the navigation keys.'], ['value / onValueChange', 'Controller options', 'Initial value and change callback.'], ['select(value) / destroy()', 'Controller methods', 'Programmatic selection and teardown.']),
-    accessibility: ['Use matching aria-controls and aria-labelledby IDs.', 'Horizontal arrows follow RTL/LTR; vertical arrows remain vertical. Home/End choose the first/last enabled tab.', 'Do not use tabs as ordinary page-navigation links.'], variants: ['horizontal / vertical', 'automatic / manual activation', 'data-variant=pills on the tabs root'], related: ['accordion', 'toggle-group'], frameworkNotes: 'React Tabs accepts label, items[{value,label,content,disabled}], value/defaultValue and onValueChange. The framework owns panel rendering and cleanup.', source: 'packages/vanilla/src/tabs.ts',
+    summary: 'Switches between related mounted panels. Horizontal lists can move excess tabs into an accessible More disclosure when their container is narrow; vertical and explicit scrolling lists remain available.',
+    usage: tabsDemoMarkup('en','manual','guide-tabs'),
+    lifecycle: ['Enhance mounted markup; the selected enabled tab establishes the visible panel and a visible tab remains the keyboard entry point.', 'Arrow navigation changes focus among visible enabled tabs; automatic mode also selects, while manual mode waits for Enter, Space or click.', 'The default menu overflow measures tab labels and available container width. At widths up to 991px, a 72px reserve accommodates the disclosure only when all tabs do not fit.', 'The disclosure contains the omitted destinations, including a selected-state marker. Choosing one updates its panel, closes the disclosure and returns focus to its trigger.', 'Selection updates aria-selected and hidden panels; inactive content stays mounted. Destroy before replacing vanilla tab/panel structure; cleanup restores authored markup and removes observers and listeners.'],
+    api: api(
+      ['data-nq-activation / activationMode', 'automatic | manual', 'Selection follows arrow focus by default; manual mode separates them.'],
+      ['aria-orientation / orientation', 'horizontal | vertical', 'Vanilla sets aria-orientation on the tablist. Vertical lists never collapse into overflow.'],
+      ['value / onValueChange', 'Vanilla controller options', 'Initial value and change callback; native adapters use their controlled/uncontrolled APIs.'],
+      ['select(value) / destroy()', 'Vanilla controller methods', 'Programmatic selection and restoration of authored structure on teardown.'],
+      ['overflow / data-nq-overflow', 'menu | scroll', 'Default menu uses a responsive disclosure; scroll preserves the scrolling tab row.'],
+      ['overflowLabel / data-nq-overflow-label', 'string', 'Localized accessible name for the More disclosure. Native defaults are Arabic.']
+    ),
+    accessibility: ['Use matching aria-controls and aria-labelledby IDs. A hidden original tab still names its selected panel.', 'Horizontal arrows follow RTL/LTR; vertical arrows remain vertical. Home/End choose the first/last visible enabled tab.', 'Tab reaches the More disclosure. Enter or Space opens it; ordinary Tab reaches its buttons. Escape closes it and returns focus; outside clicks dismiss it.', 'The overflow choices are ordinary pressed-state buttons in a disclosure, not a second tablist or a simulated ARIA menu. Disabled choices cannot select a panel.', 'Keep panel focus reachable and use ordinary links for page navigation. Demo selection never changes the route.'],
+    variants: ['horizontal / vertical', 'automatic / manual activation', 'responsive menu / explicit scrolling', 'data-variant=pills remains a Nasaq extension'],
+    related: ['accordion', 'toggle-group'],
+    limitations: ['This is local panel selection, not route navigation or remote content loading. The 991px threshold measures the component container rather than the source script’s viewport so embedded cards also work.'],
+    frameworkNotes: 'React Tabs accepts items[{value,label,content,disabled}], value/defaultValue and onValueChange. Vue uses items and v-model/defaultValue; Angular projects nq-tab children and binds value/valueChange. All support overflow and overflowLabel. Each adapter owns its DOM, measurements and cleanup; do not enhance native framework trees.',
+    source: 'packages/vanilla/src/tabs.ts',
   },
   breadcrumb: {
     summary: 'Shows the current page’s position in a navigation hierarchy using an ordered list of real links.',

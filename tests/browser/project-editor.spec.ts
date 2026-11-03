@@ -65,9 +65,10 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
       await preview.locator('summary').nth(1).click();await expect(preview.locator('details').nth(1)).toHaveAttribute('open','');
       await expect(preview.locator('details').first()).not.toHaveAttribute('open','');
     } else if(component==='tabs') {
-      await preview.getByRole('tab').first().focus();await preview.getByRole('tab').first().press('ArrowLeft');
-      await expect(preview.getByRole('tab').nth(1)).toHaveAttribute('aria-selected','true');await expect(preview.locator('output')).toHaveText('second');
-      await expect(preview.getByRole('tab').nth(2)).toBeDisabled();await expect(preview.getByRole('tabpanel')).toHaveCount(1);
+      const tabs=preview.locator('.nq-tabs').first();
+      await tabs.getByRole('tab').first().focus();await tabs.getByRole('tab').first().press('ArrowLeft');
+      await expect(tabs.getByRole('tab').nth(1)).toHaveAttribute('aria-selected','true');await expect(preview.locator('output')).toHaveText('second');
+      await expect(tabs.getByRole('tab').nth(2)).toBeDisabled();await expect(tabs.getByRole('tabpanel')).toHaveCount(1);
     } else if(component==='pagination') {
       const pagination=preview.locator('.nq-pagination').first();
       await pagination.locator('[data-nq-next]').click();await expect(preview.locator('output')).toHaveText('2');
