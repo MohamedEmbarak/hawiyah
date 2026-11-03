@@ -1,3 +1,4 @@
+import {paginationDemoMarkup} from './pagination-demo';
 import type { GuideInput } from './component-guide-types';
 import { loaderDemo } from './loader-demo';
 
@@ -89,11 +90,23 @@ export const nativeGuides: Record<string, GuideInput> = {
     accessibility: ['Use a localized nav label distinct from the main navigation.', 'Separators should not become extra focusable controls.', 'Keep meaningful link text and allow normal browser link behavior.'], related: ['page-header', 'link'], source: 'packages/react/src/display.tsx',
   },
   pagination: {
-    summary: 'Chooses a bounded page number. It reports navigation intent; fetching, filtering, and displaying the corresponding data remain application responsibilities.',
-    usage: `<nav class="nq-pagination" data-nq="pagination" data-nq-total="3" aria-label="Request pages">\n  <button type="button" data-nq-page="previous">Previous</button>\n  <button type="button" data-nq-page="1">1</button>\n  <button type="button" data-nq-page="2">2</button>\n  <button type="button" data-nq-page="3">3</button>\n  <button type="button" data-nq-page="next">Next</button>\n</nav>`,
-    lifecycle: ['Enhance mounted navigation with a known positive page count.', 'Selection updates aria-current and disables boundary actions, then emits nq:change with {page}. Apply that page to the data view.', 'If using real hrefs, native navigation remains available. For local data, announce the updated result count and preserve useful focus.', 'Destroy when replacing the button structure or removing the view.'],
-    api: api(['data-nq-total', 'positive integer', 'Total page count for automatic enhancement.'], ['page / totalPages / onPageChange', 'Controller options', 'Initial page, bounds, and application callback.'], ['select(page) / destroy()', 'Controller methods', 'Bounded programmatic navigation and teardown.'], ['siblingCount', 'React number', 'Visible neighbors around the current page; default 1.']),
-    accessibility: ['Give the navigation a localized accessible name.', 'Current page uses aria-current=page; label previous/next and individual pages clearly.', 'Do not move focus unexpectedly when results change.'], related: ['table', 'data-table'], limitations: ['No remote fetching or automatic URL synchronization.'], source: 'packages/vanilla/src/pagination.ts',
+    summary: 'Chooses a bounded page number, including pages hidden behind ellipsis disclosures. The application owns fetching, filtering and rendering results; pagination does not change the route or scroll the page.',
+    usage: paginationDemoMarkup('en','middle'),
+    lifecycle: ['Enhance a mounted navigation with a known page count. Vanilla generates its page window only inside an authored data-nq-pagination-items container; fully authored legacy buttons remain supported.', 'Selection updates aria-current and boundary actions, then emits nq:change with {page}. Native adapters report through their own controlled or uncontrolled APIs.', 'Open an ellipsis to choose a hidden page. Up to 100 hidden pages appear as buttons; larger gaps offer a bounded whole-page input instead of allocating thousands of buttons.', 'Selection closes the disclosure and focuses the current page control. Escape closes it and returns focus to its summary; outside clicks close it without navigating.', 'Destroy the vanilla controller before removing or replacing its structure. Data fetching, result announcements and URL state remain application responsibilities.'],
+    api: api(
+      ['data-nq-total / data-nq-current', 'number', 'Vanilla total and initial page. data-nq-current is read at initialization; use select(page) for runtime changes.'],
+      ['data-nq-pagination-items', 'DOM marker', 'Opt-in container for the generated page window and accessible jump disclosures.'],
+      ['page / totalPages / onPageChange', 'Controller options', 'Initial page, total and selection callback.'],
+      ['select(page) / destroy()', 'Controller methods', 'Request a page or restore the authored vanilla structure and listeners.'],
+      ['siblingCount / data-nq-siblings', 'number', 'Visible neighboring pages in all native adapters; default 1. The window expands near the first and last page.'],
+      ['disabled / hideOnSinglePage', 'boolean', 'Disable interaction or opt in to hiding one-page navigation. Vanilla uses aria-disabled=true and data-nq-hide-single=true.'],
+      ['getGapLabel / gapLabel / jumpLabel / goLabel', 'Localized labels', 'React getGapLabel and Vue/Angular gapLabel receive inclusive start/end bounds. Name the large-gap input and action separately.'],
+      ['getPageLabel / pageLabel / formatPage', 'Label formatters', 'Localize accessible page names and optional visible page text; defaults use Arabic labels and Latin digits.']
+    ),
+    frameworkNotes: 'React uses page/defaultPage/onPageChange; Vue uses v-model/defaultValue; Angular uses page/pageChange. Each adapter owns its navigation DOM. Native defaults keep single-page navigation visible; hideOnSinglePage opts in to the source-site behavior.',
+    accessibility: ['Use a unique localized nav label and one aria-current=page control.', 'Page controls are native buttons. Ellipses are disclosures with Enter/Space activation, ordinary Tab navigation and Escape dismissal, not ARIA application menus.', 'The current page has a green underline; keyboard focus remains separate and visible. Narrow screens retain usable targets and wrapping.'],
+    variants: ['First / middle / last page', 'One page', 'Disabled', 'Large hidden ranges with direct page entry'],
+    related: ['table', 'data-table'], limitations: ['No remote fetching, automatic URL synchronization, result rendering or automatic scrolling.'], source: 'packages/vanilla/src/pagination.ts',
   },
   stepper: {
     summary: 'Displays progress through a finite process. It is an ordered status presentation, rather than an automatic routing or form-validation engine.',

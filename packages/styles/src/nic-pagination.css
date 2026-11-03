@@ -1,0 +1,72 @@
+/* NIC CSS 3505–3666 / 4005–4139. See docs/nic-pagination.md. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-profile-page-size: 40px; --nq-profile-page-radius: 0px;
+  --nq-profile-page-margin: 40px; --nq-profile-page-current-bg: transparent;
+  --nq-profile-page-current-border: transparent; --nq-profile-page-underline: 3px;
+  --nq-profile-page-weight: 400; --nq-profile-page-align: center;
+}
+:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
+  --nq-profile-page-size: initial; --nq-profile-page-radius: initial;
+  --nq-profile-page-margin: initial; --nq-profile-page-current-bg: initial;
+  --nq-profile-page-current-border: initial; --nq-profile-page-underline: initial;
+  --nq-profile-page-weight: initial; --nq-profile-page-align: initial;
+}
+.nq-pagination { position: relative; justify-content: var(--nq-profile-page-align, start); margin-block: var(--nq-profile-page-margin, 0px); gap: 8px; max-inline-size: 100%; }
+.nq-pagination[hidden] { display: none; }
+.nq-pagination-items { display: contents; }
+.nq-pagination :is(.nq-pagination-item, .nq-pagination-arrow, .nq-pagination-gap-trigger, [data-nq-page], .nq-pagination-ellipsis) {
+  position: relative; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  min-inline-size: var(--nq-profile-page-size, var(--nq-control-height-sm));
+  block-size: var(--nq-profile-page-size, var(--nq-control-height-sm)); min-block-size: var(--nq-profile-page-size, var(--nq-control-height-sm));
+  padding: 0 .25rem; border: 1px solid transparent; border-radius: var(--nq-profile-page-radius, var(--nq-radius-md));
+  background: transparent; color: var(--nq-color-text); font-family: inherit; font-size: 14px;
+  font-weight: 400; line-height: 1; text-decoration: none; cursor: pointer;
+  transition: background-color var(--nq-duration-pagination) ease, color var(--nq-duration-pagination) ease;
+}
+.nq-pagination :is(.nq-pagination-item, .nq-pagination-arrow, [data-nq-page]):is(:hover, :active):not(:disabled, [aria-disabled='true']) { background: var(--nq-color-surface-muted); color: var(--nq-color-text); box-shadow: none; }
+.nq-pagination :is(.nq-pagination-item, [data-nq-page])[aria-current='page'] { color: var(--nq-color-text); font-weight: var(--nq-profile-page-weight, var(--nq-weight-semibold)); background: var(--nq-profile-page-current-bg, var(--nq-color-primary-subtle)); border-color: var(--nq-profile-page-current-border, var(--nq-color-primary)); }
+.nq-pagination :is(.nq-pagination-item, [data-nq-page])[aria-current='page']::after {
+  content: ''; position: absolute; inset-inline: 4px; inset-block-end: -1px;
+  block-size: var(--nq-profile-page-underline, 0px); border-radius: 9999px; background: var(--nq-color-primary);
+}
+.nq-pagination .nq-button:is(:disabled, [aria-disabled='true']) { color: var(--nq-color-on-disabled); background: transparent; border-color: transparent; opacity: .5; cursor: not-allowed; }
+.nq-pagination .nq-pagination-gap-trigger[aria-disabled='true'] { color: var(--nq-color-on-disabled); opacity: .5; cursor: not-allowed; }
+.nq-pagination :is(.nq-pagination-item, .nq-pagination-arrow, .nq-pagination-gap-trigger, [data-nq-page]):focus-visible:not(:disabled, [aria-disabled='true']) { outline: 2px solid var(--nq-color-focus-contrast); outline-offset: 2px; background: var(--nq-color-surface-muted); }
+.nq-pagination-arrow::before { content: '›'; font: 18px/1 sans-serif; }
+.nq-pagination-arrow[data-nq-previous]::before, .nq-pagination-arrow[data-nq-next]:dir(rtl)::before { content: '‹'; }
+.nq-pagination-arrow[data-nq-previous]:dir(rtl)::before { content: '›'; }
+.nq-pagination-gap { position: static; }
+.nq-pagination-gap-trigger { list-style: none; }
+.nq-pagination-gap-trigger::-webkit-details-marker { display: none; }
+.nq-pagination-ellipsis { cursor: default; }
+.nq-pagination-menu {
+  position: absolute; z-index: 5; inset-block-start: calc(100% + 4px); inset-inline: 0; margin-inline: auto;
+  inline-size: max-content; min-inline-size: 80px; max-inline-size: 100%; max-block-size: 300px; overflow-y: auto;
+  box-sizing: border-box; padding: 8px 0; border: 1px solid var(--nq-color-pagination-menu-border);
+  border-radius: 4px; background: var(--nq-color-surface); box-shadow: var(--nq-shadow-pagination);
+}
+.nq-pagination-gap:not([open]) > .nq-pagination-menu { display: none; }
+.nq-pagination .nq-pagination-menu > .nq-pagination-item {
+  display: flex; inline-size: 100%; min-block-size: 40px; block-size: 40px; padding-inline: 16px;
+  border: 0; border-radius: 0; font-size: 14px; transition-duration: var(--nq-duration-pagination-item);
+}
+.nq-pagination .nq-pagination-menu > .nq-pagination-item:focus-visible { outline-color: var(--nq-color-focus); outline-offset: -2px; }
+.nq-pagination-jump { display: grid; gap: .5rem; padding: .5rem; inline-size: 12rem; max-inline-size: 100%; box-sizing: border-box; }
+.nq-pagination-jump .nq-label { display: grid; gap: .5rem; margin: 0; }
+.nq-pagination-jump .nq-input { min-inline-size: 0; inline-size: 100%; }
+@media (max-width: 576px) {
+  :where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) { --nq-profile-page-size: 30px; }
+  .nq-pagination { gap: 6px; }
+  .nq-pagination :is(.nq-pagination-item, .nq-pagination-arrow, .nq-pagination-gap-trigger, [data-nq-page], .nq-pagination-ellipsis) { font-size: 12px; }
+  .nq-pagination .nq-pagination-arrow { min-inline-size: 40px; min-block-size: 40px; block-size: 40px; }
+  .nq-pagination .nq-pagination-gap-trigger { min-inline-size: 40px; }
+  .nq-pagination-arrow::before { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nq-pagination :is(.nq-pagination-item, .nq-pagination-arrow, .nq-pagination-gap-trigger, [data-nq-page]) { transition: none; }
+}
+@media (forced-colors: active) {
+  .nq-pagination [aria-current='page'] { outline: 2px solid Highlight; outline-offset: -2px; }
+  .nq-pagination [aria-current='page']::after { background: Highlight; forced-color-adjust: none; }
+  .nq-pagination-menu { border-color: CanvasText; }
+}

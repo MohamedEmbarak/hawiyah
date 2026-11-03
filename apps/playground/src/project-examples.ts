@@ -1,3 +1,4 @@
+import {paginationDemoCases,paginationNativeMarkup} from './pagination-demo.ts';
 import {ratingDemoCases,ratingNativeMarkup} from './rating-demo.ts';
 import {carouselDemoCases,carouselNativeMarkup} from './carousel-demo.ts';
 import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo.ts';
@@ -265,14 +266,12 @@ export function projectExample(
     angular = `<nq-breadcrumb label="${t("Breadcrumb", "مسار التنقل")}" [items]="items" />`;
     angularMember = `\n  items = ${items};`;
   } else if (id === "pagination") {
-    state = numberState = true;
-    initialValue = "1";
-    const labels = `label="${t("Pages", "الصفحات")}" previousLabel="${t("Previous", "السابق")}" nextLabel="${t("Next", "التالي")}"`;
-    const pageLabel = t("Page", "الصفحة");
-    react = `<Pagination ${labels} totalPages={10} page={value} onPageChange={setValue} getPageLabel={page => '${pageLabel} ' + page} /><output>{value}</output>`;
-    vue = `<Pagination ${labels} :total-pages="10" v-model="value" :page-label="page => '${pageLabel} ' + page" /><output>{{ value }}</output>`;
-    angular = `<nq-pagination ${labels} [totalPages]="10" [(page)]="value" [pageLabel]="pageLabel" /><output>{{ value }}</output>`;
-    angularMember = `\n  pageLabel = (page: number) => '${pageLabel} ' + page;`;
+    state = numberState = true; initialValue = "1";
+    const cases = paginationDemoCases(locale).map(item => ({...item, ...paginationNativeMarkup(locale,item.kind,item.kind==='first')}));
+    react = cases.map(item => `<section className="nq-stack"><h2>${item.title}</h2>${item.react}${item.kind==='first'?'<output>{value}</output>':''}</section>`).join('');
+    vue = cases.map(item => `<section class="nq-stack"><h2>${item.title}</h2>${item.vue}${item.kind==='first'?'<output>{{value}}</output>':''}</section>`).join('');
+    angular = cases.map(item => `<section class="nq-stack"><h2>${item.title}</h2>${item.angular}${item.kind==='first'?'<output>{{value}}</output>':''}</section>`).join('');
+    angularMember = cases[0]!.angularMember;
   } else if (id === "stepper") {
     state = numberState = true;
     initialValue = "1";

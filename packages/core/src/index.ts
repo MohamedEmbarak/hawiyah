@@ -196,3 +196,5 @@ export type { FieldValueElement, FieldValueObserver } from './field-value.js';
 
 export * from './site-verification.js';
 export { normalizeRatingMax, normalizeRatingValue } from './rating.js';
+export { getPaginationItems, normalizePaginationTotal, normalizePaginationPage } from './pagination.js';
+export type { PaginationItem } from './pagination.js';

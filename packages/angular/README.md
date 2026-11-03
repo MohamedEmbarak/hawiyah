@@ -84,7 +84,7 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
 | Badge — `NqBadgeComponent` | Static label; `tone="neutral\|success\|warning\|danger\|info"`, `variant="soft\|outline\|dot"`; [source and adaptations](../../docs/nic-badges.md). |
 | Alert — `NqAlertComponent` | `nq-alert`; `title`, `tone: info/success/warning/danger`, `role: status/alert/region`, `dismissible`, `closeLabel`; `dismissed` asks the parent to remove it. |
 | Table — `NqTableComponent` | `nq-table`; `caption`, `columns: {key,label,rowHeader?}[]`, `rows: Record<string,string\|number\|null\|undefined>[]`, `emptyMessage`. Values render as escaped text. |
-| Pagination — `NqPaginationComponent` | `nq-pagination`; `[(page)]`, `totalPages`, `label`, `previousLabel`, `nextLabel`, `pageLabel(page)`. Bounded window; never renders every page in a large result set. Parent fetches/slices data. |
+| Pagination — `NqPaginationComponent` | `nq-pagination`; `[(page)]`, `totalPages`, Arabic default `label`, `previousLabel`, `nextLabel`, `pageLabel(page)`, `formatPage(page)`, `siblingCount=1`, `disabled`, `hideOnSinglePage=false`. Ellipsis disclosures use `gapLabel(start,end)`, `jumpLabel`, `goLabel`; gaps above 100 pages use bounded integer entry. Parent fetches/slices data; no navigation or scrolling is imposed. |
 | Breadcrumb — `NqBreadcrumbComponent` | `nq-breadcrumb`; `items: {label,href?}[]`, `label`. Last item is current. |
 | Progress — `NqProgressComponent` | `nq-progress`; `label`, `value: number\|null`, `max`; null is indeterminate. |
 | Skeleton — `NqSkeletonComponent` | `nq-skeleton`; `width`, `height`; decorative, hidden from assistive technology. Announce surrounding loading state once. |

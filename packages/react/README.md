@@ -86,7 +86,7 @@ with explicit locale, calendar and time zone. No component infers locale from RT
 | `Badge` | Static label; `tone="neutral\|success\|warning\|danger\|info"`, `variant="soft\|outline\|dot"`; [source and adaptations](../../docs/nic-badges.md). |
 | `Alert` | `tone="info\|success\|warning\|danger"`, optional text `title`, children. Default role is status (danger: alert); override role for static content. |
 | `Table<Row>` | `caption`, `columns: {key,header,cell(row,index),rowHeader?}[]`, `rows`, `rowKey`, `wrapperProps`; alternatively native table children. |
-| `Pagination` | `totalPages`, `page`/`defaultPage`, `onPageChange`; localized `label`, `previousLabel`, `nextLabel`, `getPageLabel`, `formatPage`; `siblingCount` (default 1). |
+| `Pagination` | `totalPages`, `page`/`defaultPage`, `onPageChange`; Arabic default `label`, `previousLabel`, `nextLabel`, `getPageLabel`, `formatPage`; `siblingCount` (default 1), `disabled`, `hideOnSinglePage` (default false). Ellipsis disclosures use `getGapLabel(start,end)`, `jumpLabel`, `goLabel`; gaps above 100 pages use bounded integer entry. Parent fetches/slices data; no navigation or scrolling is imposed. |
 | `Breadcrumb` | `items: {label,href?,current?}[]`, localized `label`; last item is current. |
 | `Progress` | Native progress with required accessible `label`, `value`, `max` (100); omit value for indeterminate. |
 | `Skeleton` | Decorative span, hidden from assistive technology; set dimensions via className/style. |

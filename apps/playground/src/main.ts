@@ -1,3 +1,4 @@
+import { paginationDemoMarkup } from "./pagination-demo";
 import { statusMarkup } from "./ready-examples";
 import { bindDemoPreviews } from "./demo-previews";
 import "@fontsource-variable/inter";
@@ -222,7 +223,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "table":
       return `<div class="nq-table-wrap"><table class="nq-table"><caption class="nq-sr-only">${t("Example requests", "طلبات توضيحية")}</caption><thead><tr><th>${t("Request", "الطلب")}</th><th>${t("Status", "الحالة")}</th></tr></thead><tbody><tr><td>${t("License renewal", "تجديد رخصة")}</td><td>${pill(t("Complete", "مكتمل"), "success")}</td></tr><tr><td>${t("Registration", "تسجيل")}</td><td>${pill(t("In review", "قيد المراجعة"), "info")}</td></tr></tbody></table></div>`;
     case "pagination":
-      return `<nav class="nq-pagination" data-nq="pagination" data-nq-total="3" aria-label="${t("Example pagination", "ترقيم توضيحي")}">${[1, 2, 3].map((n) => button(String(n), `data-nq-page="${n}"`, "ghost")).join("")}</nav>`;
+      return paginationDemoMarkup(state.locale);
     case "breadcrumb":
       return `<nav aria-label="${t("Breadcrumb", "مسار التنقل")}"><ol class="nq-breadcrumb"><li><a href="#overview">${t("Home", "الرئيسية")}</a></li><li><a href="#discover">${t("Services", "الخدمات")}</a></li><li aria-current="page">${t("Details", "التفاصيل")}</li></ol></nav>`;
     case "progress":

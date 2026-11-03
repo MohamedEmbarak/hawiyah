@@ -1,8 +1,8 @@
-import { createElement, useId, useLayoutEffect, useRef, useState } from 'react';
-import { createAccordionMotion } from '@nasaq/core';
+import { createElement, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createAccordionMotion, getPaginationItems, normalizePaginationPage, normalizePaginationTotal } from '@nasaq/core';
 import type { AccordionMotion } from '@nasaq/core';
 import type { ComponentPropsWithRef, HTMLAttributes, Key, ReactNode } from 'react';
-import { cx, useControllable } from './shared.js';
+import { assignRef, cx, useControllable, useFieldValueRef } from './shared.js';
 import { Button } from './forms.js';
 
 export interface AccordionItem { value: string; title: ReactNode; content: ReactNode; open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void }
@@ -91,29 +91,87 @@ export function Table<Row>({ columns, rows = [], rowKey = (_, index) => index, c
   const captionId = useId();
   return <div tabIndex={0} role={caption ? 'region' : undefined} aria-labelledby={caption ? captionId : undefined} {...wrapperProps} className={cx('nq-table-wrap', wrapperProps?.className)}><table {...props} data-variant={variant ?? props['data-variant']} data-size={size ?? props['data-size']} className={cx('nq-table', className)}>{caption && <caption id={captionId}>{caption}</caption>}{columns ? <><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.header}</th>)}</tr></thead><tbody>{rows.length ? rows.map((row, index) => <tr key={rowKey(row, index)}>{columns.map(column => column.rowHeader ? <th key={column.key} scope="row">{column.cell(row, index)}</th> : <td key={column.key}>{column.cell(row, index)}</td>)}</tr>) : <tr><td colSpan={columns.length || 1}>{emptyMessage}</td></tr>}</tbody></> : children}</table></div>;
 }
-export interface PaginationProps extends Omit<ComponentPropsWithRef<'nav'>, 'onChange'> {
-  page?: number;
-  defaultPage?: number;
-  totalPages: number;
-  onPageChange?: (page: number) => void;
-  label?: string;
-  previousLabel?: string;
-  nextLabel?: string;
-  getPageLabel?: (page: number) => string;
-  formatPage?: (page: number) => ReactNode;
-  /** Number of neighboring pages shown around the active page. */
-  siblingCount?: number;
+function PaginationJumpInput({start, end}: {start: number; end: number}) {
+  const ref = useFieldValueRef<HTMLInputElement>(undefined);
+  return <input ref={ref} className="nq-input" data-nq-jump-input="" data-nq-filled="true" form="" type="number" inputMode="numeric" required min={start} max={end} step={1} defaultValue={start} onInput={event => {
+    const input = event.currentTarget;
+    if(input.dataset.nqJumpTouched === 'true') {if(input.checkValidity()) input.removeAttribute('aria-invalid'); else input.setAttribute('aria-invalid','true');}
+  }} />;
 }
-export function Pagination({ page, defaultPage = 1, totalPages, onPageChange, label = 'Pagination', previousLabel = 'Previous', nextLabel = 'Next', getPageLabel = number => `Page ${number}`, formatPage = number => number, siblingCount = 1, className, ...props }: PaginationProps) {
-  const total = Number.isFinite(totalPages) ? Math.max(1, Math.floor(totalPages)) : 1;
-  const [stored, select] = useControllable(page, defaultPage, onPageChange);
-  const current = Math.min(total, Math.max(1, Math.floor(stored) || 1));
-  const radius = Math.min(5, Math.max(0, Math.floor(siblingCount)));
-  const pages = [...new Set([1, total, ...Array.from({ length: radius * 2 + 1 }, (_, index) => current - radius + index)])].filter(number => number >= 1 && number <= total).sort((a, b) => a - b);
-  return <nav {...props} className={cx('nq-pagination', className)} aria-label={props['aria-label'] ?? label}>
-    <Button variant="secondary" disabled={current === 1} onClick={() => select(current - 1)}>{previousLabel}</Button>
-    {pages.map((number, index) => <span key={number}>{index > 0 && number > (pages[index - 1] ?? 0) + 1 && <span aria-hidden="true">…</span>}<Button variant={number === current ? 'primary' : 'ghost'} aria-label={getPageLabel(number)} aria-current={number === current ? 'page' : undefined} onClick={() => select(number)}>{formatPage(number)}</Button></span>)}
-    <Button variant="secondary" disabled={current === total} onClick={() => select(current + 1)}>{nextLabel}</Button>
+export interface PaginationProps extends Omit<ComponentPropsWithRef<'nav'>, 'onChange'> {
+  page?: number; defaultPage?: number; totalPages: number; onPageChange?: (page: number) => void;
+  label?: string; previousLabel?: string; nextLabel?: string;
+  getPageLabel?: (page: number) => string; formatPage?: (page: number) => ReactNode;
+  siblingCount?: number; disabled?: boolean; hideOnSinglePage?: boolean;
+  getGapLabel?: (start: number, end: number) => string; jumpLabel?: string; goLabel?: string;
+}
+export function Pagination({ page, defaultPage = 1, totalPages, onPageChange,
+  label = 'ترقيم الصفحات', previousLabel = 'الصفحة السابقة', nextLabel = 'الصفحة التالية',
+  getPageLabel = number => 'الصفحة ' + number, formatPage = String, siblingCount = 1,
+  disabled = false, hideOnSinglePage = false, getGapLabel = (start, end) => 'الصفحات ' + start + ' إلى ' + end,
+  jumpLabel = 'الانتقال إلى صفحة', goLabel = 'انتقال', className, ref, ...props
+}: PaginationProps) {
+  const total = normalizePaginationTotal(totalPages);
+  const [stored, setPage] = useControllable(page, defaultPage, onPageChange);
+  const current = normalizePaginationPage(stored, total), items = getPaginationItems(current, total, siblingCount);
+  const root = useRef<HTMLElement | null>(null), pendingFocus = useRef<number | null>(null);
+  const disabledState = useRef(disabled); disabledState.current = disabled;
+  const close = (except?: HTMLDetailsElement) => root.current?.querySelectorAll<HTMLDetailsElement>('.nq-pagination-gap[open]').forEach(details => {if (details !== except) details.open = false;});
+  const blocked = () => disabledState.current || !!root.current?.querySelector<HTMLButtonElement>(':scope > [data-nq-page]')?.matches(':disabled');
+  const syncInherited = () => {
+    const unavailable = blocked();
+    root.current?.querySelectorAll<HTMLElement>('.nq-pagination-gap > summary').forEach(summary => {
+      if(unavailable) {summary.setAttribute('aria-disabled','true'); summary.tabIndex = -1;}
+      else {summary.removeAttribute('aria-disabled'); summary.removeAttribute('tabindex');}
+    });
+    if(unavailable) close();
+  };
+  useEffect(() => {
+    const node = root.current; if (!node) return;
+    const outside = (event: Event) => {if (!node.contains(event.target as Node)) close();};
+    node.ownerDocument.addEventListener('click', outside);
+    const Observer = node.ownerDocument.defaultView?.MutationObserver;
+    const observer = Observer ? new Observer(syncInherited) : undefined;
+    for(let ancestor = node.parentElement; ancestor; ancestor = ancestor.parentElement) if(ancestor.tagName === 'FIELDSET') observer?.observe(ancestor,{attributes:true,attributeFilter:['disabled']});
+    syncInherited();
+    return () => {node.ownerDocument.removeEventListener('click', outside);observer?.disconnect();};
+  }, []);
+  useLayoutEffect(() => {
+    close(); syncInherited();
+    if (pendingFocus.current !== null) {const requested = pendingFocus.current; pendingFocus.current = null; if(current === requested) root.current?.querySelector<HTMLElement>('[aria-current="page"]')?.focus();}
+  }, [current, total, disabled, siblingCount]);
+  const select = (requested: number, gap?: HTMLDetailsElement | null) => {
+    if (blocked() || !Number.isFinite(requested)) return;
+    const next = normalizePaginationPage(requested, total);
+    close();
+    if (gap) {gap.querySelector<HTMLElement>('summary')?.focus(); pendingFocus.current = next !== current ? next : null;}
+    if (next !== current) setPage(next);
+  };
+  const jump = (node: HTMLElement, start: number, end: number) => {
+    const input = node.querySelector<HTMLInputElement>('input');
+    if(!input || blocked()) return;
+    input.dataset.nqJumpTouched = 'true';
+    if (input.checkValidity() && Number.isInteger(input.valueAsNumber) && input.valueAsNumber >= start && input.valueAsNumber <= end) {input.removeAttribute('aria-invalid');select(input.valueAsNumber, node.closest('details'));}
+    else {input.setAttribute('aria-invalid','true');input.reportValidity();}
+  };
+  return <nav {...props} ref={node => {root.current = node; assignRef(ref, node);}} className={cx('nq-pagination', className)} aria-label={props['aria-label'] ?? label} data-disabled={disabled || undefined} hidden={props.hidden || hideOnSinglePage && total === 1} onClickCapture={event => {props.onClickCapture?.(event);if(blocked()) {event.preventDefault();event.stopPropagation();syncInherited();}}} onKeyDown={event => {
+    props.onKeyDown?.(event);
+    if(blocked() && ['Enter',' '].includes(event.key)) {event.preventDefault();syncInherited();return;}
+    if (event.defaultPrevented || event.key !== 'Escape') return;
+    const details = (event.target as HTMLElement).closest<HTMLDetailsElement>('.nq-pagination-gap[open]');
+    if (details) {event.preventDefault(); details.open = false; details.querySelector<HTMLElement>('summary')?.focus();}
+  }}>
+    <button className="nq-button nq-pagination-arrow" data-variant="ghost" data-nq-previous="" type="button" aria-label={previousLabel} disabled={disabled || current === 1} onClick={() => select(current - 1)} />
+    {items.map(item => typeof item === 'number' ? <button key={item} className="nq-button nq-pagination-item" data-variant="ghost" data-nq-page={item} type="button" disabled={disabled} aria-label={getPageLabel(item)} aria-current={item === current ? 'page' : undefined} onClick={() => select(item)}>{formatPage(item)}</button> :
+      disabled ? <span key={'gap-' + item.start} className="nq-pagination-ellipsis" aria-hidden="true">…</span> :
+      <details key={'gap-' + item.start} className="nq-pagination-gap" onToggle={event => {if(blocked()) syncInherited();else if(event.currentTarget.open) close(event.currentTarget);}}>
+        <summary className="nq-pagination-gap-trigger" aria-label={getGapLabel(item.start, item.end)}>…</summary>
+        <div className="nq-pagination-menu">
+          {item.end - item.start < 100 ? Array.from({length: item.end - item.start + 1}, (_, index) => item.start + index).map(number => <button key={number} type="button" className="nq-button nq-pagination-item" data-variant="ghost" data-nq-page={number} aria-label={getPageLabel(number)} onClick={event => select(number, event.currentTarget.closest('details'))}>{formatPage(number)}</button>) :
+          <div className="nq-pagination-jump" onKeyDown={event => {if(event.key === 'Enter') {event.preventDefault(); jump(event.currentTarget, item.start, item.end);}}}><label className="nq-label">{jumpLabel}<PaginationJumpInput start={item.start} end={item.end} /></label><button type="button" className="nq-button" data-nq-jump-submit="" onClick={event => jump(event.currentTarget.parentElement!, item.start, item.end)}>{goLabel}</button></div>}
+        </div>
+      </details>)}
+    <button className="nq-button nq-pagination-arrow" data-variant="ghost" data-nq-next="" type="button" aria-label={nextLabel} disabled={disabled || current === total} onClick={() => select(current + 1)} />
   </nav>;
 }
 export interface BreadcrumbItem { label: ReactNode; href?: string; current?: boolean; disabled?: boolean }

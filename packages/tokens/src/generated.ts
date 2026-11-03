@@ -51,7 +51,8 @@ export const tokens = {
   "shadow": {
     "sm": "0px 1px 2px 0px rgb(16 24 40 / 0.05), 0px 1px 3px 0px rgb(16 24 40 / 0.05)",
     "md": "0px 2px 4px -2px rgb(16 24 40 / 0.06), 0px 4px 8px -2px rgb(16 24 40 / 0.10)",
-    "lg": "0px 4px 6px -2px rgb(16 24 40 / 0.03), 0px 12px 16px -4px rgb(16 24 40 / 0.08)"
+    "lg": "0px 4px 6px -2px rgb(16 24 40 / 0.03), 0px 12px 16px -4px rgb(16 24 40 / 0.08)",
+    "pagination": "0px 12px 16px -6px rgb(16 24 40 / .08), 0px 4px 6px -2px rgb(16 24 40 / .03)"
   },
   "duration": {
     "fast": "120ms",
@@ -65,7 +66,9 @@ export const tokens = {
     "accordion-indicator": "200ms",
     "carousel": "600ms",
     "carousel-control": "300ms",
-    "rating": "200ms"
+    "rating": "200ms",
+    "pagination": "300ms",
+    "pagination-item": "200ms"
   },
   "ease": {
     "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -191,7 +194,8 @@ export const tokens = {
     "carousel-dot-border": "#384250",
     "rating-empty": "#d0d5dd",
     "rating-fill": "#1B8354",
-    "rating-outline": "#384250"
+    "rating-outline": "#384250",
+    "pagination-menu-border": "#e5e7eb"
   },
   "control": {
     "height": "2.5rem",
@@ -315,7 +319,8 @@ export const themes = {
         "carousel-dot-border": "#4c6264",
         "rating-empty": "#4c6264",
         "rating-fill": "#005b56",
-        "rating-outline": "#4c6264"
+        "rating-outline": "#4c6264",
+        "pagination-menu-border": "#d9e0da"
       }
     },
     "dark": {
@@ -418,7 +423,8 @@ export const themes = {
         "carousel-dot-border": "#b9cdca",
         "rating-empty": "#b9cdca",
         "rating-fill": "#a2e0d5",
-        "rating-outline": "#b9cdca"
+        "rating-outline": "#b9cdca",
+        "pagination-menu-border": "#3a5150"
       }
     }
   },
@@ -523,7 +529,8 @@ export const themes = {
         "carousel-dot-border": "#384250",
         "rating-empty": "#d0d5dd",
         "rating-fill": "#1B8354",
-        "rating-outline": "#384250"
+        "rating-outline": "#384250",
+        "pagination-menu-border": "#e5e7eb"
       }
     },
     "dark": {
@@ -626,7 +633,8 @@ export const themes = {
         "carousel-dot-border": "#F3F4F6",
         "rating-empty": "#F3F4F6",
         "rating-fill": "#54C08A",
-        "rating-outline": "#F3F4F6"
+        "rating-outline": "#F3F4F6",
+        "pagination-menu-border": "#6C737F"
       }
     }
   }
@@ -685,7 +693,8 @@ export const themeFoundations = {
     "shadow": {
       "sm": "0px 1px 2px 0px rgb(16 24 40 / 0.05), 0px 1px 3px 0px rgb(16 24 40 / 0.05)",
       "md": "0px 2px 4px -2px rgb(16 24 40 / 0.06), 0px 4px 8px -2px rgb(16 24 40 / 0.10)",
-      "lg": "0px 4px 6px -2px rgb(16 24 40 / 0.03), 0px 12px 16px -4px rgb(16 24 40 / 0.08)"
+      "lg": "0px 4px 6px -2px rgb(16 24 40 / 0.03), 0px 12px 16px -4px rgb(16 24 40 / 0.08)",
+      "pagination": "0px 12px 16px -6px rgb(16 24 40 / .08), 0px 4px 6px -2px rgb(16 24 40 / .03)"
     },
     "duration": {
       "fast": "120ms",
@@ -699,7 +708,9 @@ export const themeFoundations = {
       "accordion-indicator": "200ms",
       "carousel": "600ms",
       "carousel-control": "300ms",
-      "rating": "200ms"
+      "rating": "200ms",
+      "pagination": "300ms",
+      "pagination-item": "200ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -779,7 +790,8 @@ export const themeFoundations = {
     "shadow": {
       "sm": "0 1px 2px rgb(15 35 22 / 0.05), 0 2px 6px rgb(15 35 22 / 0.025)",
       "md": "0 8px 24px -8px rgb(15 35 22 / 0.14), 0 2px 6px rgb(15 35 22 / 0.04)",
-      "lg": "0 24px 64px -16px rgb(4 19 10 / 0.3), 0 8px 24px -12px rgb(4 19 10 / 0.18)"
+      "lg": "0 24px 64px -16px rgb(4 19 10 / 0.3), 0 8px 24px -12px rgb(4 19 10 / 0.18)",
+      "pagination": "0 24px 64px -16px rgb(4 19 10 / 0.3), 0 8px 24px -12px rgb(4 19 10 / 0.18)"
     },
     "duration": {
       "fast": "120ms",
@@ -793,7 +805,9 @@ export const themeFoundations = {
       "accordion-indicator": "0ms",
       "carousel": "0ms",
       "carousel-control": "180ms",
-      "rating": "0ms"
+      "rating": "0ms",
+      "pagination": "0ms",
+      "pagination-item": "0ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -938,7 +952,8 @@ export const tokenNames = {
   "shadow": {
     "sm": "--nq-shadow-sm",
     "md": "--nq-shadow-md",
-    "lg": "--nq-shadow-lg"
+    "lg": "--nq-shadow-lg",
+    "pagination": "--nq-shadow-pagination"
   },
   "duration": {
     "fast": "--nq-duration-fast",
@@ -952,7 +967,9 @@ export const tokenNames = {
     "accordion-indicator": "--nq-duration-accordion-indicator",
     "carousel": "--nq-duration-carousel",
     "carousel-control": "--nq-duration-carousel-control",
-    "rating": "--nq-duration-rating"
+    "rating": "--nq-duration-rating",
+    "pagination": "--nq-duration-pagination",
+    "pagination-item": "--nq-duration-pagination-item"
   },
   "ease": {
     "standard": "--nq-ease-standard",
@@ -1078,7 +1095,8 @@ export const tokenNames = {
     "carousel-dot-border": "--nq-color-carousel-dot-border",
     "rating-empty": "--nq-color-rating-empty",
     "rating-fill": "--nq-color-rating-fill",
-    "rating-outline": "--nq-color-rating-outline"
+    "rating-outline": "--nq-color-rating-outline",
+    "pagination-menu-border": "--nq-color-pagination-menu-border"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1140,6 +1158,7 @@ export const cssVariableNames = [
   "--nq-shadow-sm",
   "--nq-shadow-md",
   "--nq-shadow-lg",
+  "--nq-shadow-pagination",
   "--nq-duration-fast",
   "--nq-duration-normal",
   "--nq-duration-slow",
@@ -1152,6 +1171,8 @@ export const cssVariableNames = [
   "--nq-duration-carousel",
   "--nq-duration-carousel-control",
   "--nq-duration-rating",
+  "--nq-duration-pagination",
+  "--nq-duration-pagination-item",
   "--nq-ease-standard",
   "--nq-ease-input",
   "--nq-ease-switch",
@@ -1268,6 +1289,7 @@ export const cssVariableNames = [
   "--nq-color-rating-empty",
   "--nq-color-rating-fill",
   "--nq-color-rating-outline",
+  "--nq-color-pagination-menu-border",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

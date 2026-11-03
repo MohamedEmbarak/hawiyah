@@ -40,6 +40,8 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 | Surfaces | `nq-card`, `nq-card-header`, `nq-card-body`, `nq-card-footer` |
 | Feedback | `nq-badge` and `nq-alert`; `data-tone="neutral|success|warning|danger|info"` (neutral is badge default); badges support `data-variant="soft|outline|dot"` and `nq-badges` wrapping groups; [source notes](../../docs/nic-badges.md) |
 | Data | `nq-table-wrap`, `nq-table`, `nq-pagination`, `nq-breadcrumb`; native table semantics, `aria-current="page"`; `data-numeric` on numeric cells |
+| Pagination | `nq-pagination-item`, `nq-pagination-arrow`, `nq-pagination-gap` (`details`), `nq-pagination-gap-trigger` (`summary`), `nq-pagination-menu`, `nq-pagination-jump`; [source and keyboard notes](../../docs/nic-pagination.md) |
+| Rating | `nq-rating` for native integer radios; `nq-rating-display`, `nq-rating-stars`, `nq-rating-star`, `nq-rating-fill`, `nq-rating-score` for non-interactive fractional scores; [source and accessibility notes](../../docs/nic-rating.md) |
 | Disclosure | `nq-accordion`; `nq-accordion-item` on `details`; `nq-accordion-trigger` on `summary`; optional `nq-accordion-content` |
 | Status | `nq-progress`, `nq-skeleton`, `nq-spinner`, `nq-avatar`, `nq-divider` |
 | Avatar options | `nq-avatar`; `data-size="40|64|80|120|sm|md|lg|xl"`, `data-variant="circle|square"`; [geometry and theme notes](../../docs/nic-avatars.md) |

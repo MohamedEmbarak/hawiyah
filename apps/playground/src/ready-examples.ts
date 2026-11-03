@@ -1,3 +1,4 @@
+import {paginationDemoCases,paginationDemoMarkup,paginationNativeMarkup} from './pagination-demo';
 import {ratingDemoCases,ratingDemoMarkup,ratingNativeMarkup} from './rating-demo';
 import {carouselDemoCases,carouselDemoMarkup,carouselNativeMarkup} from './carousel-demo';
 import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo';
@@ -33,6 +34,14 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='pagination')return paginationDemoCases(locale).map(item=>{
+    const native=paginationNativeMarkup(locale,item.kind);
+    return {title:item.title,markup:paginationDemoMarkup(locale,item.kind),
+      react:`import { Pagination } from '@nasaq/react';\n\n${native.react}`,
+      vue:`<!-- import { Pagination } from '@nasaq/vue' -->\n${native.vue}`,
+      angular:`<!-- import { NqPaginationComponent } from '@nasaq/angular'; add to imports -->\n<!-- Component class members:${native.angularMember} -->\n${native.angular}`,
+    };
+  });
   if(id==='rating')return ratingDemoCases(locale).map(item=>{
     const native=ratingNativeMarkup(locale,item.kind),name=item.kind==='scores'?'RatingDisplay':'Rating';
     return {title:item.title,markup:ratingDemoMarkup(locale,item.kind),

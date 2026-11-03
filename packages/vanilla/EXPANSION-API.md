@@ -150,6 +150,49 @@ header's `aria-sort` state. Use a named, focusable `.nq-table-wrap` for horizont
 scrolling, a caption, `scope="col"` headings and `scope="row"` row headers.
 `data-variant="striped|bordered"` and `data-size="sm|lg"` belong on `.nq-table`.
 
+## Pagination windows and hidden pages
+
+Legacy authored `[data-nq-page="previous|next|number"]` controls remain supported.
+Real anchors retain their URL and modifier-key behavior; buttons update the
+controller and emit `nq:change` with `{page}`. `totalPages` (or `data-nq-total`)
+must be a positive safe integer. Invalid, out-of-range and unchanged selections
+do not emit. `destroy()` restores authored attributes and child-node identities.
+
+Add a `[data-nq-pagination-items]` container to opt into generated page windows:
+
+```html
+<nav class="nq-pagination" data-nq="pagination" data-nq-total="20"
+     data-nq-current="10" aria-label="ترقيم الصفحات">
+  <button class="nq-button nq-pagination-arrow" data-variant="ghost" type="button"
+          data-nq-page="previous" data-nq-previous aria-label="الصفحة السابقة"></button>
+  <span class="nq-pagination-items" data-nq-pagination-items></span>
+  <button class="nq-button nq-pagination-arrow" data-variant="ghost" type="button"
+          data-nq-page="next" data-nq-next aria-label="الصفحة التالية"></button>
+</nav>
+```
+
+`createPagination(root, options)` adds `siblingCount`, `disabled`,
+`hideOnSinglePage`, `getPageLabel(page)`, `formatPage(page)`,
+`getGapLabel(start, end)`, `jumpLabel` and `goLabel` alongside `page`,
+`totalPages` and `onPageChange`. `data-nq-siblings` supplies the default radius;
+`data-nq-hide-single="true"` opts into hiding a single-page navigation. The
+existing single-page-visible default is retained. `data-nq-current` is an
+initial value, not an external controlled-state binding.
+
+Hidden-page ranges use native `details` disclosures with labeled summary
+triggers and ordinary page buttons. Escape closes and returns focus; outside
+click closes; selecting a page closes the list and focuses the new current
+page button. Gaps exceeding 100 pages use a labeled, bounded integer jump input
+instead of allocating every destination. Enter and the Go button validate
+against that gap's inclusive range. The jump input is disassociated from ancestor
+forms, so an invalid jump draft does not block application submission. No nested
+form or extra form value is added.
+Arabic/English labels follow the root locale; numbers default to Latin digits.
+`aria-disabled="true"`, an explicit disabled option or a disabled ancestor
+fieldset blocks actions. Root disabled-attribute changes refresh the controls.
+Applications own data fetching and scrolling; enhancement does not navigate
+button-based demos or scroll the document.
+
 ## Native/static recipes
 
 InputGroup groups `.nq-input-addon` with native `.nq-input`. Password/Search/Number

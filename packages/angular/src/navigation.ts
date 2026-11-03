@@ -1,6 +1,7 @@
 import { booleanAttribute, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, TemplateRef, ViewChild, ViewChildren, inject } from '@angular/core';
+import { observeAngularFieldPresence } from './field-presence';
 import { NgTemplateOutlet } from '@angular/common';
-import { getDirection, getNextEnabledIndex, type Direction, type Orientation } from '@nasaq/core';
+import { getDirection, getNextEnabledIndex, getPaginationItems, normalizePaginationPage, normalizePaginationTotal, type Direction, type Orientation } from '@nasaq/core';
 
 let nextId = 0;
 @Component({ selector: 'nq-tab', standalone: true, template: `<ng-template #content><ng-content /></ng-template>` })
@@ -48,23 +49,88 @@ export class NqBreadcrumbComponent {
   @Input() items: readonly NqBreadcrumbItem[] = [];
 }
 
-@Component({ selector: 'nq-pagination', standalone: true, template: `<nav class="nq-pagination" [attr.aria-label]="label"><button class="nq-button" data-variant="secondary" type="button" [disabled]="current <= 1" (click)="select(current - 1)">{{ previousLabel }}</button>@for (item of pages; track $index) {@if (item === 0) {<span aria-hidden="true">…</span>} @else {<button class="nq-button" type="button" [attr.data-variant]="item === current ? 'primary' : 'ghost'" [attr.aria-current]="item === current ? 'page' : null" [attr.aria-label]="pageLabel(item)" (click)="select(item)">{{ item }}</button>}}<button class="nq-button" data-variant="secondary" type="button" [disabled]="current >= total" (click)="select(current + 1)">{{ nextLabel }}</button></nav>` })
+@Component({ selector: 'nq-pagination', standalone: true, template: `<nav #root class="nq-pagination" [attr.aria-label]="label" [attr.data-disabled]="disabled || null" [hidden]="hideOnSinglePage && total === 1" (keydown)="key($event)" (click)="guardClick($event)">
+<button class="nq-button nq-pagination-arrow" data-variant="ghost" data-nq-previous type="button" [attr.aria-label]="previousLabel" [disabled]="disabled || current === 1" (click)="select(current - 1)"></button>
+@for (item of entries; track item.page || -item.start) {
+  @if (item.page) {<button class="nq-button nq-pagination-item" data-variant="ghost" [attr.data-nq-page]="item.page" type="button" [disabled]="disabled" [attr.aria-current]="item.page === current ? 'page' : null" [attr.aria-label]="pageLabel(item.page)" (click)="select(item.page)">{{ formatPage(item.page) }}</button>}
+  @else if (disabled) {<span class="nq-pagination-ellipsis" aria-hidden="true">…</span>}
+  @else {<details class="nq-pagination-gap" (toggle)="toggled($event)"><summary class="nq-pagination-gap-trigger" [attr.aria-label]="gapLabel(item.start, item.end)">…</summary><div class="nq-pagination-menu">
+    @if (item.end - item.start < 100) {@for (number of gapPages(item); track number) {<button class="nq-button nq-pagination-item" data-variant="ghost" [attr.data-nq-page]="number" type="button" [attr.aria-label]="pageLabel(number)" (click)="gapSelect($event, number)">{{ formatPage(number) }}</button>}}
+    @else {<div #jumpGroup class="nq-pagination-jump" (keydown.enter)="jumpKey($event, jumpGroup, item)"><label class="nq-label">{{ jumpLabel }}<input class="nq-input" data-nq-jump-input data-nq-filled="true" form="" type="number" inputmode="numeric" required [min]="item.start" [max]="item.end" step="1" [value]="item.start" (input)="jumpInput($event)"></label><button type="button" class="nq-button" data-nq-jump-submit (click)="jump(jumpGroup, item)">{{ goLabel }}</button></div>}
+  </div></details>}
+}
+<button class="nq-button nq-pagination-arrow" data-variant="ghost" data-nq-next type="button" [attr.aria-label]="nextLabel" [disabled]="disabled || current === total" (click)="select(current + 1)"></button>
+</nav>` })
 export class NqPaginationComponent {
-  @Input() label = 'Pagination';
+  constructor() { observeAngularFieldPresence(); }
+  @Input() label = 'ترقيم الصفحات';
   @Input() page = 1;
   @Input() totalPages = 1;
-  @Input() previousLabel = 'Previous';
-  @Input() nextLabel = 'Next';
-  @Input() pageLabel: (page: number) => string = page => `Page ${page}`;
+  @Input() previousLabel = 'الصفحة السابقة';
+  @Input() nextLabel = 'الصفحة التالية';
+  @Input() pageLabel: (page: number) => string = page => 'الصفحة ' + page;
+  @Input() formatPage: (page: number) => string = String;
+  @Input() siblingCount = 1;
+  @Input({transform: booleanAttribute}) disabled = false;
+  @Input({transform: booleanAttribute}) hideOnSinglePage = false;
+  @Input() gapLabel = (start: number, end: number) => 'الصفحات ' + start + ' إلى ' + end;
+  @Input() jumpLabel = 'الانتقال إلى صفحة';
+  @Input() goLabel = 'انتقال';
   @Output() readonly pageChange = new EventEmitter<number>();
-  get total(): number { return Number.isFinite(this.totalPages) ? Math.max(1, Math.floor(this.totalPages)) : 1; }
-  get current(): number { return Number.isFinite(this.page) ? Math.max(1, Math.min(this.total, Math.floor(this.page))) : 1; }
-  get pages(): number[] {
-    const visible = new Set([1, this.total, this.current - 1, this.current, this.current + 1]);
-    const sorted = [...visible].filter(page => page >= 1 && page <= this.total).sort((a, b) => a - b);
-    return sorted.flatMap((page, index) => index && page - sorted[index - 1]! > 1 ? [0, page] : [page]);
+  @ViewChild('root') root?: ElementRef<HTMLElement>;
+  private pendingFocus = false;
+  private ancestorObserver?: MutationObserver;
+  private outside = (event: Event) => {if(this.root && !this.root.nativeElement.contains(event.target as Node)) this.close();};
+  get total(): number { return normalizePaginationTotal(this.totalPages); }
+  get current(): number { return normalizePaginationPage(this.page, this.total); }
+  get entries() { return getPaginationItems(this.current, this.total, this.siblingCount).map(item => typeof item === 'number' ? {page: item, start: 0, end: 0} : {page: 0, ...item}); }
+  get pages(): number[] { return this.entries.map(item => item.page); }
+  gapPages(item: {start: number; end: number}): number[] { return item.end - item.start < 100 ? Array.from({length: item.end - item.start + 1}, (_, index) => item.start + index) : []; }
+  private close(except?: HTMLDetailsElement) { this.root?.nativeElement.querySelectorAll<HTMLDetailsElement>('.nq-pagination-gap[open]').forEach(details => {if(details !== except) details.open = false;}); }
+  private blocked() { return this.disabled || !!this.root?.nativeElement.querySelector<HTMLButtonElement>(':scope > [data-nq-page]')?.matches(':disabled'); }
+  private syncInherited() {
+    const unavailable=this.blocked();
+    this.root?.nativeElement.querySelectorAll<HTMLElement>('.nq-pagination-gap > summary').forEach(summary => {
+      if(unavailable) {summary.setAttribute('aria-disabled','true');summary.tabIndex=-1;}
+      else {summary.removeAttribute('aria-disabled');summary.removeAttribute('tabindex');}
+    });
+    if(unavailable) this.close();
   }
-  select(page: number): void { this.page = Math.max(1, Math.min(this.total, page)); this.pageChange.emit(this.page); }
+  ngAfterViewInit() {
+    const node=this.root?.nativeElement;if(!node)return;
+    node.ownerDocument.addEventListener('click',this.outside);
+    const Observer=node.ownerDocument.defaultView?.MutationObserver;
+    this.ancestorObserver=Observer?new Observer(()=>this.syncInherited()):undefined;
+    for(let ancestor=node.parentElement;ancestor;ancestor=ancestor.parentElement) if(ancestor.tagName==='FIELDSET')this.ancestorObserver?.observe(ancestor,{attributes:true,attributeFilter:['disabled']});
+    this.syncInherited();
+  }
+  ngOnDestroy() { this.root?.nativeElement.ownerDocument.removeEventListener('click', this.outside);this.ancestorObserver?.disconnect(); }
+  ngOnChanges() { this.close(); }
+  guardClick(event: MouseEvent) { if(this.blocked()) {event.preventDefault();event.stopPropagation();this.syncInherited();} }
+  ngAfterViewChecked() { this.syncInherited();if(this.pendingFocus) {this.pendingFocus = false; this.root?.nativeElement.querySelector<HTMLElement>('[aria-current="page"]')?.focus();} }
+  toggled(event: Event) { const details = event.currentTarget as HTMLDetailsElement; if(this.blocked()) this.syncInherited();else if(details.open) this.close(details); }
+  key(event: KeyboardEvent) {
+    if(this.blocked() && ['Enter',' '].includes(event.key)) {event.preventDefault();this.syncInherited();return;}
+    if(event.defaultPrevented || event.key !== 'Escape') return;
+    const details = (event.target as HTMLElement).closest<HTMLDetailsElement>('.nq-pagination-gap[open]');
+    if(details) {event.preventDefault(); details.open = false; details.querySelector<HTMLElement>('summary')?.focus();}
+  }
+  select(page: number, gap?: HTMLDetailsElement | null): void {
+    if(this.blocked() || !Number.isFinite(page)) return;
+    const next = normalizePaginationPage(page, this.total), changed = next !== this.current; this.close();
+    if(gap) {gap.querySelector<HTMLElement>('summary')?.focus(); this.pendingFocus = changed;}
+    if(changed) {this.page = next; this.pageChange.emit(next);}
+  }
+  gapSelect(event: Event, page: number) { this.select(page, (event.currentTarget as HTMLElement).closest('details')); }
+  jump(node: HTMLElement, item: {start: number; end: number}) {
+    const input = node.querySelector<HTMLInputElement>('input');
+    if(!input || this.blocked())return;
+    input.dataset.nqJumpTouched='true';
+    if(input.checkValidity() && Number.isInteger(input.valueAsNumber) && input.valueAsNumber >= item.start && input.valueAsNumber <= item.end) {input.removeAttribute('aria-invalid');this.select(input.valueAsNumber, node.closest('details'));}
+    else {input.setAttribute('aria-invalid','true');input.reportValidity();}
+  }
+  jumpInput(event: Event) {const input=event.currentTarget as HTMLInputElement;if(input.dataset.nqJumpTouched==='true'){if(input.checkValidity())input.removeAttribute('aria-invalid');else input.setAttribute('aria-invalid','true');}}
+  jumpKey(event: Event, node: HTMLElement, item: {start: number; end: number}) { event.preventDefault(); this.jump(node, item); }
 }
 
 export interface NqStep { label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }

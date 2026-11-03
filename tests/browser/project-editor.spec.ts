@@ -69,8 +69,9 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
       await expect(preview.getByRole('tab').nth(1)).toHaveAttribute('aria-selected','true');await expect(preview.locator('output')).toHaveText('second');
       await expect(preview.getByRole('tab').nth(2)).toBeDisabled();await expect(preview.getByRole('tabpanel')).toHaveCount(1);
     } else if(component==='pagination') {
-      await preview.getByRole('button',{name:'التالي',exact:true}).click();await expect(preview.locator('output')).toHaveText('2');
-      await expect(preview.locator('[aria-current="page"]')).toHaveText('2');
+      const pagination=preview.locator('.nq-pagination').first();
+      await pagination.locator('[data-nq-next]').click();await expect(preview.locator('output')).toHaveText('2');
+      await expect(pagination.locator('[aria-current="page"]')).toHaveText('2');
     } else if(component==='stepper') {
       await expect(preview.locator('[data-state="complete"]')).toHaveCount(1);
       await preview.getByRole('button').click();await expect(preview.locator('[data-state="complete"]')).toHaveCount(2);

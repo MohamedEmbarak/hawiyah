@@ -43,6 +43,18 @@ build and consume these APIs through the workspace until an npm release is annou
 
 ### Expanded pure helpers
 
+- `normalizeRatingMax(max=5)` floors/clamps finite capacities to 1…20; nonfinite
+  capacities become 5. `normalizeRatingValue(value,max)` clamps finite scores to
+  0…max while preserving fractions; nonfinite scores become 0. Integer rating
+  inputs floor the normalized score, while aggregate displays retain fractions.
+- `normalizePaginationTotal(total)` floors/clamps finite totals to positive
+  safe integers, with fallback 1. `normalizePaginationPage(page,total)` floors
+  and clamps a finite page to 1…total, with fallback 1.
+- `getPaginationItems(page,total,siblingCount=1): PaginationItem[]` returns
+  bounded visible page numbers and inclusive `{start,end}` gaps. The sibling
+  radius floors/clamps to 0…5, defaulting to 1 for nonfinite values. Empty or
+  single-page gaps become direct page numbers. It never allocates every page.
+
 - `normalizeDigits(value)` converts Arabic-Indic/Eastern Arabic digits to ASCII.
 - `clampRange([lower,upper], min, max, changed:'lower'|'upper')` clamps the moved
   thumb to its peer; finite ordered bounds are required.

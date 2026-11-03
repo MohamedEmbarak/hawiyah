@@ -134,3 +134,16 @@ React recipes pass TypeScript checking, all 33 Angular recipes pass strict
 template checking, and all seven exported framework/language projects build.
 This does not claim a fresh 165-preview catalog run. See
 [rating evidence and validation](nic-rating.md).
+
+The existing Pagination recipe now includes first, middle, last, single-page,
+disabled and large-range cases. Its first example is controlled and reports the
+selected page without navigation. Ellipsis disclosures expose hidden pages;
+ranges exceeding 100 pages use a bounded numeric jump instead of rendering
+thousands of controls. All examples use actual adapter imports, and native
+recipe coverage remains 33. See [pagination source evidence](nic-pagination.md)
+for presentation, keyboard behavior and intentional adaptations.
+All five native editor combinations pass the pagination browser checks. All 33
+React recipes pass TypeScript checking, all 33 Angular recipes pass strict
+template checking, and all seven exported framework/language projects build
+against the updated clean tarball consumer. This does not claim a fresh full
+165-preview catalog run.
