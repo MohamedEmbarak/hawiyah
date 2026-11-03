@@ -72,6 +72,19 @@
   background: var(--nq-ide-mint);
   color: #005b56;
 }
+.nq-ide-project > .nq-ide-project-icon {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 0;
+  line-height: 1;
+}
+.nq-ide-project-icon > .framework-icon {
+  display: block;
+  inline-size: 1.375rem;
+  block-size: 1.375rem;
+  margin: 0;
+}
 .nq-ide-project > :is(strong, small, div) { grid-column: 2; }
 .nq-ide-project > div { grid-row: 1 / span 2; }
 .nq-ide-project strong {
