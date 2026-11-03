@@ -99,5 +99,6 @@ test('Vue scoped SFC styles remain scoped after TypeScript compilation',async({p
   await edit('html','<script setup lang="ts">const message: string = "Scoped";</script><template><p id="inside">{{message}}</p></template><style scoped>p {color:rgb(170,0,0)}</style>');
   await edit('js',"import {createApp} from 'vue'; import App from './App.vue'; createApp(App).mount('#app'); document.body.insertAdjacentHTML('beforeend','<p id=outside>Outside</p>');");
   await page.locator('[data-ide-run]').click();
+  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
   const frame=page.frameLocator('.nq-ide-frame');await expect(frame.locator('#inside')).toHaveCSS('color','rgb(170, 0, 0)');await expect(frame.locator('#outside')).not.toHaveCSS('color','rgb(170, 0, 0)');
 });

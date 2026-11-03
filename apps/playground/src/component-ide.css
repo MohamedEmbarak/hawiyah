@@ -1,15 +1,44 @@
 /* A small Nasaq workbench: Arabic chrome, a real LTR editor, and an isolated preview. */
 .nq-project-editor { margin-block: 1.4rem; min-inline-size: 0; }
-.nq-project-subheader { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1rem; border: 1px solid var(--nq-color-border); border-radius: 1rem 1rem 0 0; background: var(--nq-color-surface-muted); color: var(--nq-color-text); }
-.nq-project-subheader-title { flex: 1 1 15rem; display: grid; gap: .25rem; }
-.nq-project-subheader-title strong { font-size: 1rem; }
-.nq-project-subheader-title small { color: var(--nq-color-text-muted); font-size: .75rem; }
-.nq-project-select { display: grid; gap: .35rem; min-inline-size: 10rem; font-size: .75rem; font-weight: 600; }
+.nq-project-subheader { display: flex; align-items: flex-end; flex-wrap: wrap; gap: .75rem; padding: .65rem .8rem; border: 1px solid var(--nq-color-border); border-radius: 1rem 1rem 0 0; background: var(--nq-color-surface); color: var(--nq-color-text); }
+.nq-project-select { display: grid; gap: .25rem; min-inline-size: 0; font-size: .75rem; font-weight: 500; color: var(--nq-color-text-muted); }
 .nq-project-select-control { display: block; position: relative; }
-.nq-project-select .nq-select { padding-inline-start: 2.75rem; min-inline-size: 11rem; font-size: .875rem; font-weight: 400; border-radius: .375rem; }
-.nq-project-selection-icon { position: absolute; z-index: 1; inset-inline-start: .75rem; inset-block-start: 50%; transform: translateY(-50%); display: flex; pointer-events: none; }
+.nq-project-select .nq-select { box-sizing: border-box; inline-size: 100%; block-size: 40px; min-block-size: 40px; padding-inline: 2.5rem 1.75rem; min-inline-size: 10.5rem; font-size: .8125rem; font-weight: 400; border-radius: .25rem; }
+.nq-project-selection-icon { position: absolute; z-index: 1; inset-inline-start: .75rem; inset-block-start: 50%; transform: translateY(-50%); display: grid; place-items: center; inline-size: 1.125rem; block-size: 1.125rem; pointer-events: none; }
+.nq-project-selection-icon .framework-icon { display: block; inline-size: 100%; block-size: 100%; margin: 0; }
+.nq-project-select-control:has(select:disabled) .nq-project-selection-icon { opacity: .5; }
+.nq-project-download { margin-inline-start: auto; min-block-size: 40px; border-radius: .25rem; font-size: .8125rem; }
+.nq-project-download > svg { flex: none; inline-size: 1.125rem; block-size: 1.125rem; }
 .nq-project-editor .nq-ide { margin-block: 0; border-start-start-radius: 0; border-start-end-radius: 0; border-block-start: 0; }
-@media (max-width: 600px) { .nq-project-select { flex: 1 1 9rem; min-inline-size: 0; } .nq-project-select .nq-select { min-inline-size: 0; } }
+/* The guide owns the frame. Its live editor is a continuous part of that card. */
+.guide-demo .nq-project-editor { margin-block: 0; }
+.guide-demo .nq-project-subheader { border: 0; border-block-end: 1px solid var(--nq-color-border); border-radius: 0; }
+.guide-demo .nq-project-editor .nq-ide {
+  --nq-ide-paper: var(--nq-color-surface);
+  --nq-ide-surface: var(--nq-color-surface);
+  --nq-ide-rule: var(--nq-color-border);
+  --nq-ide-text: var(--nq-color-text);
+  --nq-ide-muted: var(--nq-color-text-muted);
+  --nq-ide-accent: var(--nq-color-primary);
+  border: 0; border-radius: 0; box-shadow: none;
+}
+.guide-demo .nq-project-editor .nq-ide-toolbar { min-block-size: 0; padding: .65rem .8rem; gap: .75rem; background: var(--nq-color-surface); border-color: var(--nq-color-border); }
+.guide-demo .nq-project-editor .nq-ide .nq-ide-button { border-radius: .25rem; }
+.guide-demo .nq-project-editor .nq-ide .nq-ide-button:hover { background: var(--nq-color-surface-muted); color: var(--nq-color-text); border-color: var(--nq-color-text-muted); }
+.guide-demo .nq-project-editor .nq-ide .nq-ide-button[data-primary] { background: var(--nq-color-primary); color: var(--nq-color-on-primary); border-color: var(--nq-color-primary); }
+.guide-demo .nq-project-editor .nq-ide .nq-ide-button[data-primary]:hover { background: var(--nq-color-primary-hover); border-color: var(--nq-color-primary-hover); color: var(--nq-color-on-primary); }
+.guide-demo .nq-project-editor .nq-ide .nq-ide-button[data-primary]:active { background: var(--nq-color-primary-active); border-color: var(--nq-color-primary-active); }
+@media (max-width: 600px) {
+  .nq-project-subheader { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nq-project-select .nq-select { min-inline-size: 0; }
+  .nq-project-download { grid-column: 1 / -1; justify-self: end; }
+  .guide-demo .nq-project-editor .nq-ide-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); inline-size: 100%; }
+  .guide-demo .nq-project-editor .nq-ide-auto { grid-column: 1 / -1; }
+  .guide-demo .nq-project-editor .nq-ide .nq-ide-button { min-inline-size: 0; }
+}
+@media (max-width: 359px) {
+  .nq-project-subheader { grid-template-columns: minmax(0, 1fr); }
+}
 .nq-ide {
   --nq-ide-paper: #f7f5ee;
   --nq-ide-surface: #ffffff;

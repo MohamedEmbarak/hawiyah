@@ -3,9 +3,11 @@
 The component editor now uses real package imports and framework-owned DOM.
 Vanilla offers JavaScript and TypeScript; React offers JSX and TSX; Vue offers
 JavaScript and TypeScript script-setup SFCs; Angular uses standalone TypeScript
-components and templates. The subheader identifies the framework and language,
-with decorative brand icons alongside text labels. Code stays LTR in either
-guide language.
+components and templates. Framework/language selectors and the project download
+sit inside the preview card, directly below its view tabs. Visible labels and
+decorative brand icons identify the options; the native selects retain keyboard
+and assistive-technology behavior. Controls reflow within the card on narrow
+screens. Code stays LTR in either guide language.
 
 Each combination preserves its own edits when switching. Entry points, local
 styles and component files are editable. Project downloads include those edits,
@@ -95,3 +97,11 @@ circles and an unsized projected SVG. Their TypeScript previews were checked in
 React, Vue and Angular for geometry, loading protection and controlled toggle
 behavior. Native defaults use ghost consistently; use an explicit primary
 variant to preserve the former React default. See [icon evidence](nic-icons.md).
+
+The integrated editor card is checked at 320, 390, 768 and 1543px in Arabic/light
+and English/dark modes, including contiguous card edges, selector/icon geometry,
+keyboard order, Angular's fixed TypeScript option, forced-colors focus and
+toolbar contrast at rest and on hover. The editor/branding/project regression
+cases also pass, including all 150 native recipe previews, downloads, preserved
+drafts, custom themes and Vue scoped styles. The Vue scope test now waits for
+compilation readiness before checking styles; it previously raced compilation.

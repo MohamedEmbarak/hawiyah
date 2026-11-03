@@ -5,7 +5,7 @@ import {
 } from "./component-ide";
 import { projectExample, nativeProjectComponents } from "./project-examples";
 import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
-import type { Locale } from "./data";
+import { icon, type Locale } from "./data";
 import { previewRuntime } from "./generated/preview-runtime";
 import { frameworkIcon } from "./framework-icons";
 import { projectDownloadFiles, projectZip } from "./project-download";
@@ -38,10 +38,6 @@ export function mountProjectEditor(
   const workspace = document.createElement("div");
   host.replaceChildren(toolbar, workspace);
   host.classList.add("nq-project-editor");
-  toolbar.insertAdjacentHTML(
-    "afterbegin",
-    `<div class="nq-project-subheader-title"><strong>${ar ? "مشروع المكوّن" : "Component project"}</strong><small>${ar ? "اختر بيئة التطبيق ولغة الشفرة" : "Choose the application framework and code language"}</small></div>`,
-  );
   for (const label of toolbar.querySelectorAll("label")) {
     label.className = "nq-project-select";
     const select = label.querySelector("select")!;
@@ -62,10 +58,10 @@ export function mountProjectEditor(
   )!;
   const download = document.createElement("button");
   download.type = "button";
-  download.className = "nq-button";
+  download.className = "nq-button nq-project-download";
   download.dataset.variant = "secondary";
   download.dataset.projectDownload = "";
-  download.textContent = ar ? "تنزيل المشروع" : "Download project";
+  download.innerHTML = `${icon("download", 18)}<span>${ar ? "تنزيل المشروع" : "Download project"}</span>`;
   toolbar.append(download);
   framework.value = state.framework;
   language.value = state.language;
