@@ -1,3 +1,4 @@
+import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo';
 import {toggleGroupMarkup} from './segmented-demo';
 import {siteVerificationMarkup,siteVerificationDemoLabels} from './site-verification-demo';
 import {portalFooterMarkup,portalFooterExampleData} from './portal-footer-demo';
@@ -29,6 +30,18 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='icon-button')return [
+    ...iconButtonCases.map(item=>{
+      const label=iconButtonLabel(locale,item.key), pressed='pressed' in item, disabled='disabled' in item, loading='loading' in item;
+      return {title:label,markup:`<button class="nq-button nq-icon-button" type="button" aria-label="${label}" data-variant="${item.variant}" data-size="${item.size}" data-shape="${item.shape}" ${pressed?'aria-pressed="true"':''} ${disabled||loading?'disabled':''} ${loading?'aria-busy="true"':''}><span class="nq-icon" data-icon="search-01" aria-hidden="true"></span></button>`,
+        react:`import { IconButton } from '@nasaq/react';\n\n<IconButton label="${label}" variant="${item.variant}" size="${item.size}" shape="${item.shape}" ${pressed?'aria-pressed={true}':''} ${disabled?'disabled':''} ${loading?'loading':''}><span className="nq-icon" data-icon="search-01" /></IconButton>`,
+        vue:`<!-- import { IconButton } from '@nasaq/vue' -->\n<IconButton label="${label}" variant="${item.variant}" size="${item.size}" shape="${item.shape}" ${pressed?':aria-pressed="true"':''} ${disabled?'disabled':''} ${loading?'loading':''}><span class="nq-icon" data-icon="search-01" /></IconButton>`,
+        angular:`<!-- imports: [NqIconButtonComponent] -->\n<nq-icon-button label="${label}" variant="${item.variant}" size="${item.size}" shape="${item.shape}" ${pressed?'[pressed]="true"':''} ${disabled?'disabled':''} ${loading?'loading':''}><span class="nq-icon" data-icon="search-01"></span></nq-icon-button>`,
+      };
+    }),
+    {title:t('Decorative background icons','أيقونات زخرفية بخلفية'),markup:iconBackgroundMarkup()},
+    {title:t('Artwork sizes: 14, 20, 24, 30, 48 px','أحجام الرسم: 14، 20، 24، 30، 48 بكسل'),markup:`<div class="nq-cluster" style="color:var(--nq-color-success)" aria-hidden="true">${['sm','md','lg','xl','2xl'].map(size=>`<span class="nq-icon" data-icon="search-01" data-size="${size}"></span>`).join('')}</div>`},
+  ];
   if(id==='toggle-group')return ['segmented','outline','multiple','readonly','disabled','readonly-outline'].map(kind=>{
     const options=JSON.stringify([{value:'first',label:t('List','قائمة')},{value:'second',label:t('Grid','شبكة')},{value:'blocked',label:t('Map','خريطة'),disabled:true}]),label=t('View mode','نمط العرض'),variant=kind.includes('outline')?'outline':'segmented';
     return {title:t(`Toggle group · ${kind}`,`مجموعة اختيار · ${kind}`),markup:toggleGroupMarkup(locale,kind,`ready-toggle-${kind}`),

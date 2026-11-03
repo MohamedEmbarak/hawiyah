@@ -347,11 +347,12 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   }),
   'icon-button': localized('icon-button', {
     summary: 'زر إجراء مختصر بأيقونة زخرفية وتسمية قابلة للوصول تصف العملية.',
-    usage: `<button class="nq-button" type="button" data-icon-only aria-label="إغلاق الحوار">
-  <span aria-hidden="true">×</span>
+    usage: `<button class="nq-button nq-icon-button" type="button" data-variant="ghost" data-shape="circle" aria-label="إغلاق الحوار">
+  <span class="nq-icon" data-icon="cancel-01" aria-hidden="true"></span>
 </button>`,
     lifecycle: ['اعرض الزر الأصلي باسم صريح للعملية.', 'عالج النقر كأي زر آخر، بما في ذلك الانشغال أو التعطيل عند الحاجة.', 'لا يحتاج إلى متحكم مباشر؛ تتبع مستمعات إجراء التطبيق دورة حياة الواجهة.'],
-    api: ['اسم قابل للوصول يطبّقه React على الزر.', 'علامة لتحديد أبعاد زر مربع في HTML.', 'نفس خصائص المظهر والحجم والانشغال في Button الخاص بـReact.'],
+    api: ['اسم الإجراء على الزر الأصلي في كل محول.', 'شكل مربع أو دائري؛ يستخدم HTML الخاصية data-shape.', 'المظهر والحجم وحالة التحميل؛ يعطل التحميل الزر ويضيف aria-busy. يحدد HTML الحالتين صراحة.', 'حجم الرسم مستقل عن مساحة الضغط التي تحددها الكثافة.', 'خصائص الزر الأصلية؛ ينقل Angular القيم إلى الزر الداخلي.', 'مدخلات Angular لعلاقات ARIA؛ تستخدم بقية المحولات خصائص aria-* الأصلية.', 'دالة التركيز في Vue وAngular؛ يستخدم React وHTML مرجع الزر الأصلي.'],
+    variants: ['مربع أو دائري', 'مساحات ضغط صغيرة ومتوسطة وكبيرة', 'محدد أو معطل أو جارٍ التحميل', 'أيقونات زخرفية بخلفية'],
     accessibility: ['لا تعتمد على title أو شكل الأيقونة بوصفه الاسم الوحيد.', 'أخفِ الأيقونة عن قارئات الشاشة وأبقِ مساحة النقر مناسبة.', 'يمكن للتلميح أن يكمّل التسمية، لكنه لا يحل محلها.'],
   }),
   'button-group': localized('button-group', {

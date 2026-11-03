@@ -1,3 +1,4 @@
+import {iconButtonMarkup} from './icon-button-demo';
 import {toggleGroupMarkup} from './segmented-demo';
 import {portalFooterMarkup} from './portal-footer-demo';
 import {siteVerificationMarkup} from './site-verification-demo';
@@ -87,7 +88,7 @@ export function expandedSample(
     case "link":
       return `<div class="nq-stack"><a class="nq-link" href="#discover">${t("Explore services", "استكشف الخدمات")}</a><a class="nq-link" data-variant="neutral" href="#docs">${t("Read the guide", "اقرأ الدليل")}</a><a class="nq-link" data-variant="standalone" href="#details">${t("Service details", "تفاصيل الخدمة")} ${icon("arrow", 16)}</a><a class="nq-link" role="link" aria-disabled="true" tabindex="-1">${t("Unavailable destination", "وجهة غير متاحة")}</a></div>`;
     case "icon-button":
-      return `<div class="nq-inline">${b(icon("search", 19), `data-icon-only aria-label="${t("Search", "بحث")}" data-action="search-components"`)}${b(icon("palette", 19), `aria-label="${t("Change theme", "تغيير السمة")}" data-action="mode"`, "ghost")}</div>`;
+      return iconButtonMarkup(locale);
     case "button-group":
       return `<div class="nq-button-group" role="group" aria-label="${t("Document actions", "إجراءات المستند")}">${b(t("Save", "حفظ"), 'data-action="demo-continue"', "primary")}${b(t("Preview", "معاينة"), 'data-action="demo-info"')}${b(t("Cancel", "إلغاء"), 'data-action="demo-info"', "ghost")}</div>`;
     case "chip":

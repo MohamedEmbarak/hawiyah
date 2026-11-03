@@ -15,9 +15,15 @@ export class NqLinkComponent {
   @Input({transform: booleanAttribute}) disabled = false;
   guard(event:MouseEvent){if(this.disabled){event.preventDefault();event.stopPropagation();}}
 }
-@Component({selector: 'nq-icon-button', standalone: true, template: `<button class="nq-button nq-icon-button" [type]="type" [disabled]="disabled" [attr.aria-label]="label" [attr.aria-pressed]="pressed" [attr.data-variant]="variant" [attr.data-size]="size" (click)="activated.emit($event)"><span aria-hidden="true"><ng-content /></span></button>`})
+@Component({selector: 'nq-icon-button', standalone: true, template: `<button #button class="nq-button nq-icon-button" [type]="type" [disabled]="disabled || loading" [attr.form]="form" [attr.name]="name || null" [value]="value" [attr.aria-label]="label" [attr.aria-pressed]="pressed" [attr.aria-busy]="loading || null" [attr.aria-controls]="controls || null" [attr.aria-expanded]="expanded" [attr.aria-describedby]="describedBy || null" [attr.aria-haspopup]="hasPopup || null" [attr.data-variant]="variant" [attr.data-size]="size" [attr.data-shape]="shape" (click)="activated.emit($event)"><span aria-hidden="true"><ng-content /></span></button>`})
 export class NqIconButtonComponent {
-  @Input({required: true}) label = ''; @Input() type: 'button' | 'submit' | 'reset' = 'button'; @Input({transform: booleanAttribute}) disabled = false; @Input() pressed: boolean | null = null; @Input() variant = 'ghost'; @Input() size = 'md'; @Output() readonly activated = new EventEmitter<MouseEvent>();
+  @Input({required: true}) label = ''; @Input() type: 'button' | 'submit' | 'reset' = 'button';
+  @Input({transform: booleanAttribute}) disabled = false; @Input({transform: booleanAttribute}) loading = false;
+  @Input() pressed: boolean | null = null; @Input() variant = 'ghost'; @Input() size = 'md'; @Input() shape: 'square' | 'circle' = 'square';
+  @Input() form?: string | null; @Input() name = ''; @Input() value = ''; @Input() controls = ''; @Input() describedBy = '';
+  @Input({transform: (value: unknown) => value == null ? null : booleanAttribute(value)}) expanded: boolean | null = null; @Input() hasPopup: 'true' | 'false' | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog' | null = null;
+  @Output() readonly activated = new EventEmitter<MouseEvent>(); @ViewChild('button') button?: ElementRef<HTMLButtonElement>;
+  focus() { this.button?.nativeElement.focus(); }
 }
 @Component({selector: 'nq-button-group', standalone: true, template: `<div class="nq-button-group" role="group" [attr.aria-label]="label" [attr.data-orientation]="orientation" [attr.data-variant]="variant"><ng-content /></div>`})
 export class NqButtonGroupComponent { @Input({required: true}) label = ''; @Input() variant: 'default' | 'attached' = 'default'; @Input() orientation: 'horizontal' | 'vertical' = 'horizontal'; }

@@ -3458,7 +3458,8 @@
       "category": "actions",
       "description": "Native action button with an explicit accessible name.",
       "cssClasses": [
-        "nq-icon-button"
+        "nq-icon-button",
+        "nq-icon-background"
       ],
       "interaction": "native",
       "sourceType": "native",
@@ -3474,8 +3475,108 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "browser",
+          "source": "tests/browser/nic-icons.spec.ts",
+          "tests": [
+            "NIC icon geometry, states and background compositions in rtl",
+            "NIC icon geometry, states and background compositions in ltr"
+          ],
+          "scope": "Source-mapped glyph/shape/background geometry, density targets, selected/disabled/loading state, native toggle behavior, legacy marker, scoped RTL/LTR, theme, reduced-motion and forced-color checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-icons.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "browser",
+          "source": "tests/browser/nic-icons.spec.ts",
+          "tests": [
+            "react native icon shape, SVG sizing, loading and toggle actions"
+          ],
+          "scope": "Source-mapped glyph/shape/background geometry, density targets, selected/disabled/loading state, native toggle behavior, legacy marker, scoped RTL/LTR, theme, reduced-motion and forced-color checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-icons.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/icon-button-parity.test.ts",
+          "tests": [
+            "react: icon actions preserve native form, disclosure relationships and public focus",
+            "react: optional disclosure state can be removed after true and false",
+            "react: loading and disabled icon actions block activation and recover",
+            "react: an explicit empty form attribute disassociates from an ancestor form"
+          ],
+          "scope": "Actual button form association, ARIA relationships and removal, public focus, loading/disabled protection and restoration. Explicit empty form ownership and restoration are checked.",
+          "command": "pnpm exec vitest run tests/icon-button-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "browser",
+          "source": "tests/browser/nic-icons.spec.ts",
+          "tests": [
+            "vue native icon shape, SVG sizing, loading and toggle actions"
+          ],
+          "scope": "Source-mapped glyph/shape/background geometry, density targets, selected/disabled/loading state, native toggle behavior, legacy marker, scoped RTL/LTR, theme, reduced-motion and forced-color checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-icons.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/icon-button-parity.test.ts",
+          "tests": [
+            "vue: icon actions preserve native form, disclosure relationships and public focus",
+            "vue: optional disclosure state can be removed after true and false",
+            "vue: loading and disabled icon actions block activation and recover",
+            "vue: an explicit empty form attribute disassociates from an ancestor form"
+          ],
+          "scope": "Actual button form association, ARIA relationships and removal, public focus, loading/disabled protection and restoration. Explicit empty form ownership and restoration are checked.",
+          "command": "pnpm exec vitest run tests/icon-button-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "browser",
+          "source": "tests/browser/nic-icons.spec.ts",
+          "tests": [
+            "angular native icon shape, SVG sizing, loading and toggle actions"
+          ],
+          "scope": "Source-mapped glyph/shape/background geometry, density targets, selected/disabled/loading state, native toggle behavior, legacy marker, scoped RTL/LTR, theme, reduced-motion and forced-color checks.",
+          "command": "pnpm exec playwright test tests/browser/nic-icons.spec.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/icon-button-parity.test.ts",
+          "tests": [
+            "angular: icon actions preserve native form, disclosure relationships and public focus",
+            "angular: optional disclosure state can be removed after true and false",
+            "angular: loading and disabled icon actions block activation and recover",
+            "angular: an explicit empty form attribute disassociates from an ancestor form"
+          ],
+          "scope": "Actual button form association, ARIA relationships and removal, public focus, loading/disabled protection and restoration. Explicit empty form ownership and restoration are checked.",
+          "command": "pnpm exec vitest run tests/icon-button-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        }
+      ],
       "implementationSources": {
         "react": [
           "packages/react/src/expanded-content.tsx"
@@ -3488,10 +3589,13 @@
         ],
         "vanilla": [
           "packages/vanilla/EXPANSION-API.md",
-          "packages/styles/src/components.css"
+          "packages/styles/src/components.css",
+          "packages/styles/src/nic-icons.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Source sizing, optional background compositions, native ghost default and explicit accessibility adaptations: docs/nic-icons.md. Artwork bytes and licensing unchanged."
+      ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/icon-button"
     },
     {

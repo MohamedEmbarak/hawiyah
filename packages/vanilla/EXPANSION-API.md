@@ -151,3 +151,12 @@ DescriptionList, Stat, Timeline, Meter, AvatarGroup, ServiceCard, ServiceDetails
 PortalHeader/Footer and NotificationList use semantic HTML and matching CSS.
 Layout primitives use the documented core `layoutStyles` API and CSS variables.
 None of these static/native recipes needs enhancement or fabricated backend work.
+
+
+IconButton is a native `<button class="nq-button nq-icon-button">` with an
+accessible name; no enhancer is needed. Set `data-variant` explicitly,
+`data-size="sm|md|lg"`, and optional `data-shape="circle"`. Loading uses native
+`disabled` plus `aria-busy="true"`; application-owned toggles update `aria-pressed`.
+Standard form attributes and ARIA relationships belong on the button itself.
+The existing `data-icon-only` marker remains supported. Decorative background
+circles use `.nq-icon-background` around `.nq-icon`; they are not buttons.

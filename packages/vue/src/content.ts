@@ -1,4 +1,4 @@
-import { defineComponent, h, mergeProps } from "vue";
+import { defineComponent, h, mergeProps, ref } from "vue";
 import type { PropType, VNodeChild } from "vue";
 import { formatNumber, sortRows } from "@nasaq/core";
 import { Button } from "./forms.js";
@@ -29,15 +29,19 @@ export const IconButton = defineComponent({
       default: "ghost",
     },
     size: { type: String as PropType<"sm" | "md" | "lg">, default: "md" },
+    shape: String as PropType<"square" | "circle">,
     disabled: Boolean,
     loading: Boolean,
   },
-  setup(props, { attrs, slots }) {
+  setup(props, { attrs, slots, expose }) {
+    const button = ref<{focus: () => void}>();
+    expose({focus: () => button.value?.focus()});
     return () =>
       h(
         Button,
         mergeProps(attrs, {
-          ...props,
+          ref: button, variant: props.variant, size: props.size, disabled: props.disabled, loading: props.loading,
+          "data-shape": props.shape ?? attrs["data-shape"],
           class: "nq-icon-button",
           "aria-label": props.label,
         }),

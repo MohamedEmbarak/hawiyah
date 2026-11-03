@@ -89,3 +89,9 @@ focused RTL/LTR segmented checks and editor regressions. All 30 React recipes
 pass TypeScript checks, all 30 Angular recipes pass strict template checks,
 and all seven exported framework/language projects build. See
 [NIC segmented controls](nic-segmented.md) for source evidence and limitations.
+
+IconButton recipes now show seven size/shape/state cases, decorative background
+circles and an unsized projected SVG. Their TypeScript previews were checked in
+React, Vue and Angular for geometry, loading protection and controlled toggle
+behavior. Native defaults use ghost consistently; use an explicit primary
+variant to preserve the former React default. See [icon evidence](nic-icons.md).

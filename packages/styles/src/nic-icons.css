@@ -1,0 +1,50 @@
+/* NIC global.css 1388–1531; source sizes and adaptations: docs/nic-icons.md. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-profile-icon-glyph: 1.25rem;
+  --nq-profile-icon-glyph-sm: 1rem;
+}
+:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
+  --nq-profile-icon-glyph: initial;
+  --nq-profile-icon-glyph-sm: initial;
+}
+.nq-button:is(.nq-icon-button, [data-icon-only]) {
+  --nq-icon-context-size: var(--nq-profile-icon-glyph, 1.5rem);
+  inline-size: var(--nq-button-control-height); min-inline-size: var(--nq-button-control-height);
+  block-size: var(--nq-button-control-height); min-block-size: var(--nq-button-control-height);
+  flex: none; padding: 0; gap: 0;
+}
+.nq-button:is(.nq-icon-button, [data-icon-only])[data-size='sm'] { --nq-icon-context-size: var(--nq-profile-icon-glyph-sm, min(1.5rem, calc(var(--nq-button-control-height) - 2px))); }
+.nq-button:is(.nq-icon-button, [data-icon-only])[data-shape='circle'] { border-radius: var(--nq-radius-full); }
+.nq-button:is(.nq-icon-button, [data-icon-only]) > span { display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+/* Size both direct artwork and framework-projected artwork. Explicit CSS and
+   the existing --nq-icon-size override remain available. No SVG paths change. */
+.nq-button:is(.nq-icon-button, [data-icon-only]) > :is(svg,img),
+.nq-button:is(.nq-icon-button, [data-icon-only]) > span > :is(svg,img) {
+  inline-size:var(--nq-icon-size,var(--nq-icon-context-size));
+  block-size:var(--nq-icon-size,var(--nq-icon-context-size)); flex:none; object-fit:contain;
+}
+.nq-button:is(.nq-icon-button,[data-icon-only])[aria-pressed='true']:not(:disabled,[aria-disabled='true']) {
+  background:var(--nq-color-primary-subtle); color:var(--nq-color-primary-text);
+}
+.nq-button:is(.nq-icon-button, [data-icon-only]):is(:disabled,[aria-disabled='true']) {
+  color:var(--nq-color-on-disabled); box-shadow:none;
+}
+/* Background icons are decorative compositions, not extra interactive targets. */
+.nq-icon-background {
+  box-sizing:border-box; display:inline-flex; flex:none; align-items:center; justify-content:center;
+  inline-size:3rem; min-inline-size:3rem; block-size:3rem; padding:0;
+  border-radius:var(--nq-radius-full); background:var(--nq-color-success-subtle); color:var(--nq-color-success);
+  --nq-icon-context-size:1.5rem;
+}
+.nq-icon-background[data-size='xs'] { inline-size:1.875rem; min-inline-size:1.875rem; block-size:1.875rem; --nq-icon-context-size:0.875rem; }
+/* Source md and xl backgrounds are both 48px; size the artwork separately. */
+.nq-icon-background[data-size='xl'] { inline-size:3rem; min-inline-size:3rem; block-size:3rem; }
+.nq-icon[data-size='sm'] { --nq-icon-context-size:0.875rem; }
+.nq-icon[data-size='md'] { --nq-icon-context-size:1.25rem; }
+.nq-icon[data-size='lg'] { --nq-icon-context-size:1.5rem; }
+.nq-icon[data-size='xl'] { --nq-icon-context-size:1.875rem; }
+.nq-icon[data-size='2xl'] { --nq-icon-context-size:3rem; }
+@media (forced-colors:active) {
+  .nq-button:is(.nq-icon-button,[data-icon-only]):is(:disabled,[aria-disabled='true']) { color:GrayText; }
+  .nq-icon-background { background:Canvas; color:CanvasText; outline:1px solid CanvasText; }
+}

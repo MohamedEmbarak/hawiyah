@@ -4,7 +4,7 @@ The supplied `global.css` snapshot (971–1292) defines primary, default, second
 outline, outline-white, light and danger. Nasaq exposes all seven through
 `data-variant` in vanilla and `variant` in React, Vue and Angular. Existing ghost,
 soft and link variants remain supported. `default` means the dark neutral
-appearance; omitting the prop still selects primary. IconButton shares the CSS.
+appearance; omitting the prop still selects primary. IconButton shares the CSS; its native default is ghost. See [icon sizing, shape and compositions](nic-icons.md).
 
 ```html
 <button class="nq-button" data-variant="secondary" type="button">حفظ المسودة</button>

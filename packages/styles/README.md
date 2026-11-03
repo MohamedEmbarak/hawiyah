@@ -30,7 +30,8 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 
 | Family | Classes and attributes |
 | --- | --- |
-| Actions | `nq-button`; `data-variant="primary|secondary|ghost|danger"`; `data-size="sm|md|lg"`; `data-icon-only` |
+| Actions | `nq-button`; `data-variant="primary|default|secondary|outline|outline-white|light|danger|ghost|soft|link"`; `data-size="sm|md|lg"`; `data-icon-only` |
+| Icons | `nq-icon-button`; `data-shape="square|circle"`; `nq-icon-background` with `data-size="xs|md|xl"` |
 | Forms | `nq-field`, `nq-label`, `nq-input`, `nq-textarea`, `nq-select`, `nq-hint`, `nq-error`; `aria-invalid="true"` |
 | Choices | `nq-choice` on a label; `nq-checkbox`, `nq-radio`, `nq-switch` on native inputs |
 | Tabs | `nq-tabs`, `nq-tab-list`, `nq-tab`, `nq-tab-panel`; `aria-selected`; optional vertical `aria-orientation` |
@@ -103,13 +104,13 @@ are embedded in the SVG; Aref Ruqaa is not a runtime dependency or a font reques
 
 ## Curated interface icons
 
-The shared stylesheet includes ten self-hosted Hugeicons Stroke Rounded icons.
+The shared stylesheet includes 17 self-hosted Hugeicons Stroke Rounded icons.
 They work in vanilla, React, Vue and Angular without a renderer dependency; each
 framework owns the ordinary `span` it renders. In React use `className` in place
 of `class` in this example:
 
 ```html
-<button type="button" class="nq-button" aria-label="بحث">
+<button type="button" class="nq-button nq-icon-button" data-variant="ghost" aria-label="بحث">
   <span class="nq-icon" data-icon="search-01" aria-hidden="true"></span>
 </button>
 <a href="/next">
@@ -119,13 +120,19 @@ of `class` in this example:
 </a>
 ```
 
-Available `data-icon` names: `search-01`, `menu-01`, `cancel-01`, `arrow-left-01`,
-`arrow-right-01`, `arrow-down-01`, `filter-horizontal`, `sorting-05`, `home-01`,
-and `checkmark-circle-02`. The CSS alpha mask uses `currentColor` and defaults to
+Available `data-icon` names: `search-01`, `menu-01`, `cancel-01`, `arrow-left-01`, `arrow-right-01`, `arrow-down-01`, `filter-horizontal`, `sorting-05`, `home-01`, `checkmark-circle-02`, `view`, `view-off-slash`, `calendar-03`, `thumbs-up`, `thumbs-down`, `link-04`, `lock-password`. The CSS alpha mask uses `currentColor` and defaults to
 `1.5rem` (24px at the usual root size). Set the scoped `--nq-icon-size` variable
 to change rendered size; icon size does not establish an accessible touch target.
 Provide a visible label or an accessible name on the containing control; these
 decorative spans must remain `aria-hidden="true"`.
+
+Icon buttons center 20px artwork (16px for small) in DGA themes, including SVGs
+inside framework wrappers. Target dimensions follow the selected density;
+`--nq-icon-size` still overrides the artwork. Use `data-shape="circle"` for a round
+action. Background icons are noninteractive decoration: `.nq-icon-background`
+uses 48px circles; `data-size="xs"` uses 30px and `xl` remains 48px as in the source.
+Set `data-size="sm|md|lg|xl|2xl"` on `.nq-icon` for 14/20/24/30/48px artwork.
+Keep the wrapper hidden for decoration or give it meaningful image semantics.
 
 Only left/right arrows with `data-directional="true"` mirror in RTL. Use this for
 semantic forward/back navigation, not physical direction. Other glyphs keep their
@@ -133,9 +140,10 @@ orientation. Do not apply mirroring to logos, flags, text alignment, or media
 controls by default. Forced-colors mode retains a system-colored mask.
 
 SVG files are unchanged from a pinned commit of the official MIT-licensed
-[Hugeicons repository](https://github.com/hugeicons/hugeicons). Their names map to
-the supplied DGA Figma Stroke components; they are **not direct Figma exports**
-and that mapping does not assert pixel parity. The package includes the full MIT
+[Hugeicons repository](https://github.com/hugeicons/hugeicons). The original ten names map to
+the supplied DGA Figma Stroke components; these are **not direct Figma exports**.
+Additional icons do not imply new Figma geometry comparisons; per-icon evidence
+is recorded in provenance. Mapping does not assert pixel parity. The package includes the full MIT
 notice and per-icon hashes/node IDs in `assets/icons/LICENSE` and
 `assets/icons/provenance.json`. The guide also ships these notices. Solid, custom,
 and brand assets from the supplied Figma catalog are not part of this subset.

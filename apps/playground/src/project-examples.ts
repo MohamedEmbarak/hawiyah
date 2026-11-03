@@ -1,3 +1,4 @@
+import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo.ts';
 import type { IDEFiles } from "./component-ide";
 import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
 import type { Locale } from "./data";
@@ -135,10 +136,11 @@ export function projectExample(
     vue = `<Button @click="value += '!'">${t("Click me", "اضغط هنا")}</Button><output>{{ value }}</output>`;
     angular = `<button nqButton type="button" (click)="value = value + '!'">${t("Click me", "اضغط هنا")}</button><output>{{ value }}</output>`;
   } else if (id === "icon-button") {
-    state = true;
-    react = `<IconButton label="${t("Search", "بحث")}" onClick={() => setValue(value + '!')}><span className="nq-icon" data-icon="search-01" aria-hidden="true" /></IconButton><output>{value}</output>`;
-    vue = `<IconButton label="${t("Search", "بحث")}" @click="value += '!'"><span class="nq-icon" data-icon="search-01" aria-hidden="true" /></IconButton><output>{{ value }}</output>`;
-    angular = `<nq-icon-button label="${t("Search", "بحث")}" (activated)="value = value + '!'"><span class="nq-icon" data-icon="search-01" aria-hidden="true"></span></nq-icon-button><output>{{ value }}</output>`;
+    state = true; initialValue = "'saved'";
+    const svg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="10" r="6" /><path d="m15 15 6 6" /></svg>';
+    react = `<div className="nq-stack"><div className="nq-cluster">${iconButtonCases.map(item=>`<IconButton label="${iconButtonLabel(locale,item.key)}" size="${item.size}" shape="${item.shape}" ${item.key==='standard'?'':`variant="${item.variant}"`} ${item.key==='selected'?"aria-pressed={value === 'saved'}":'pressed' in item?'aria-pressed={true}':''} ${'disabled' in item?'disabled':''} ${'loading' in item?'loading':''} onClick={()=>setValue(${item.key==='selected'?"value === 'saved' ? '' : 'saved'":"'search'"})}>${item.key==='small'?svg:'<span className="nq-icon" data-icon="search-01" />'}</IconButton>`).join('')}</div><output>{value}</output>${iconBackgroundMarkup().replaceAll('class=','className=')}</div>`;
+    vue = `<div class="nq-stack"><div class="nq-cluster">${iconButtonCases.map(item=>`<IconButton label="${iconButtonLabel(locale,item.key)}" size="${item.size}" shape="${item.shape}" ${item.key==='standard'?'':`variant="${item.variant}"`} ${item.key==='selected'?`:aria-pressed="value === 'saved'"`:'pressed' in item?':aria-pressed="true"':''} ${'disabled' in item?'disabled':''} ${'loading' in item?'loading':''} @click="value=${item.key==='selected'?"value === 'saved' ? '' : 'saved'":"'search'"}">${item.key==='small'?svg:'<span class="nq-icon" data-icon="search-01" />'}</IconButton>`).join('')}</div><output>{{ value }}</output>${iconBackgroundMarkup()}</div>`;
+    angular = `<div class="nq-stack"><div class="nq-cluster">${iconButtonCases.map(item=>`<nq-icon-button label="${iconButtonLabel(locale,item.key)}" size="${item.size}" shape="${item.shape}" ${item.key==='standard'?'':`variant="${item.variant}"`} ${item.key==='selected'?`[pressed]="value === 'saved'"`:'pressed' in item?'[pressed]="true"':''} ${'disabled' in item?'disabled':''} ${'loading' in item?'loading':''} (activated)="value=${item.key==='selected'?"value === 'saved' ? '' : 'saved'":"'search'"}">${item.key==='small'?svg:'<span class="nq-icon" data-icon="search-01"></span>'}</nq-icon-button>`).join('')}</div><output>{{ value }}</output>${iconBackgroundMarkup()}</div>`;
   } else if (["text-field", "textarea"].includes(id)) {
     state = true;
     react = `<${component} label="${label}" value={value} onChange={event => setValue(event.currentTarget.value)} /><output>{value}</output>`;
