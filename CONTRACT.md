@@ -18,7 +18,7 @@ conversion or an arithmetic Hijri fallback for the reference provider.
 - `.nq-dialog` (native dialog), `.nq-dialog-header`, `.nq-dialog-body`,
   `.nq-dialog-footer`, `.nq-combobox`, `.nq-listbox`, `.nq-option`
 - `.nq-card`, `.nq-card-header`, `.nq-card-body`, `.nq-card-footer`
-- `.nq-badge` data-tone=neutral|success|warning|danger|info
+- `.nq-badge` data-tone=neutral|success|warning|danger|info data-variant=soft|outline|dot; optional `.nq-badges` wrapping group
 - `.nq-alert` data-tone=neutral|info|success|warning|danger
 - `.nq-table-wrap`, `.nq-table`, `.nq-pagination`, `.nq-breadcrumb`
 - `.nq-accordion`, `.nq-accordion-item` (details), `.nq-accordion-trigger` (summary)

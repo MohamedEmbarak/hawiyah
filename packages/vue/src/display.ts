@@ -63,8 +63,8 @@ export const Card = defineComponent({
 });
 export type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 export const Badge = defineComponent({
-  name: 'NqBadge', inheritAttrs: false, props: { tone: { type: String as PropType<Tone>, default: 'neutral' } },
-  setup(props, { attrs, slots }) { return () => h('span', mergeProps(attrs, { class: 'nq-badge', 'data-tone': props.tone }), slots.default?.()); },
+  name: 'NqBadge', inheritAttrs: false, props: { tone: { type: String as PropType<Tone>, default: 'neutral' }, variant: String as PropType<'soft' | 'outline' | 'dot'> },
+  setup(props, { attrs, slots }) { return () => h('span', mergeProps(attrs, { class: 'nq-badge', 'data-tone': props.tone, 'data-variant': props.variant ?? attrs['data-variant'] }), slots.default?.()); },
 });
 export const Alert = defineComponent({
   name: 'NqAlert', inheritAttrs: false, props: { tone: { type: String as PropType<Tone>, default: 'info' }, title: String, variant: String as PropType<'default' | 'outline' | 'minimal'> },

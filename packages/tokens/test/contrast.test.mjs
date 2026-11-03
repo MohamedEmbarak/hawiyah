@@ -31,6 +31,9 @@ for (const [name, theme] of Object.entries(source.themes)) {
         ...['action-light', 'action-light-hover'].map(bg => ['on-action-light', bg]), ['primary-text', 'primary-subtle'],
         ['success', 'success-subtle'], ['warning', 'warning-subtle'],
         ['danger', 'danger-subtle'], ['info', 'info-subtle'], ['on-inverse', 'inverse'],
+        ...['neutral', 'info', 'success', 'warning', 'danger'].flatMap(tone =>
+          ['badge-' + tone + '-background', 'canvas', 'surface', 'surface-muted', 'surface-raised'].map(background => ['badge-' + tone + '-text', background])),
+        ['badge-neutral-dot', 'badge-neutral-background'],
         ['card-text', 'card'], ['card-text', 'card-hover'],
         ...['text', 'text-muted'].flatMap(foreground => ['table-row-hover', 'table-row-hover-odd'].map(background => [foreground, background])),
         ['text', 'accordion-focus'], ['text', 'segment-hover'], ['on-segment-selected', 'segment-selected'],

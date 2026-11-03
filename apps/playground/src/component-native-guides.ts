@@ -161,10 +161,10 @@ export const nativeGuides: Record<string, GuideInput> = {
   },
   badge: {
     summary: 'Displays a short status or category label. Its tone reinforces the text but does not carry the meaning by itself.',
-    usage: `<span class="nq-badge" data-tone="success">Complete</span>\n<span class="nq-badge" data-tone="warning">Needs review</span>`,
+    usage: `<span class="nq-badge" data-tone="success" data-variant="soft">Complete</span>\n<span class="nq-badge" data-tone="warning" data-variant="outline">Needs review</span>\n<span class="nq-badge" data-tone="info" data-variant="dot">In progress</span>`,
     lifecycle: ['Render the current status as concise text.', 'Change text and tone together when the underlying state changes. Use a nearby status region for consequential dynamic changes.', 'A badge is a static span and has no controller or dismissal lifecycle.'],
-    api: api(['data-tone / tone', 'neutral | success | warning | danger | info', 'Semantic visual tone.'], ['children', 'Text/content', 'The actual status or category meaning.']),
-    accessibility: ['Never rely only on color.', 'Keep noninteractive badges out of the tab order.', 'Use Chip with an explicit remove button for removable selections.'], variants: ['neutral / success / warning / danger / info tones', 'data-variant=outline / dot'], related: ['chip', 'alert'], source: 'packages/react/src/display.tsx',
+    api: api(['data-tone / tone', 'neutral | success | warning | danger | info', 'Semantic visual tone; neutral is the default.'], ['data-variant / variant', 'soft | outline | dot', 'Soft is the default badge; outline removes its fill; dot adds a decorative status marker. Native adapters expose the typed variant prop.'], ['children', 'Text/content', 'The actual status or category meaning.']),
+    accessibility: ['Never rely only on color: every tone and dot needs meaningful visible text.', 'Keep noninteractive badges out of the tab order. A dot is decorative and does not create a live region.', 'Use Chip with an explicit remove button for removable selections.'], variants: ['All five tones in soft / outline / dot', 'DGA soft: bordered label; dot: rounded status pill'], related: ['chip', 'alert'], frameworkNotes: 'Vanilla uses data-tone and data-variant; React, Vue and Angular expose tone and variant. Every adapter renders its own static span. The DGA theme follows the NIC badge and status-label geometry; outline is a Nasaq extension. Original Nasaq and custom themes remain supported.', source: 'packages/react/src/display.tsx',
   },
   avatar: {
     summary: 'Represents a named person or entity with an image or textual initials. Initials are used when no image source is supplied.',

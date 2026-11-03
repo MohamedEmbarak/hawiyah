@@ -83,7 +83,7 @@ with explicit locale, calendar and time zone. No component infers locale from RT
 | `Combobox` | Single selection from `Option[]`; label/hint/error, `value`/`defaultValue`, `onValueChange(value, option?)`, `onInputChange(query)`, `open`/`defaultOpen`, `onOpenChange`, native form attributes. |
 | `Accordion` | `items: {value,title,content,open?,defaultOpen?,onOpenChange?}[]`; `exclusive` uses a native details name group. |
 | `Card` | Native article; header/footer slots and body children. |
-| `Badge` | Native span; `tone="neutral\|success\|warning\|danger\|info"`. |
+| `Badge` | Static label; `tone="neutral\|success\|warning\|danger\|info"`, `variant="soft\|outline\|dot"`; [source and adaptations](../../docs/nic-badges.md). |
 | `Alert` | `tone="info\|success\|warning\|danger"`, optional text `title`, children. Default role is status (danger: alert); override role for static content. |
 | `Table<Row>` | `caption`, `columns: {key,header,cell(row,index),rowHeader?}[]`, `rows`, `rowKey`, `wrapperProps`; alternatively native table children. |
 | `Pagination` | `totalPages`, `page`/`defaultPage`, `onPageChange`; localized `label`, `previousLabel`, `nextLabel`, `getPageLabel`, `formatPage`; `siblingCount` (default 1). |

@@ -61,8 +61,8 @@ export function Card({ header, footer, children, className, variant, href, disab
     },
   }, header && <header className="nq-card-header">{header}</header>, <div className="nq-card-body">{children}</div>, footer && <footer className="nq-card-footer">{footer}</footer>);
 }
-export interface BadgeProps extends ComponentPropsWithRef<'span'> { tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'info' }
-export function Badge({ tone = 'neutral', className, ...props }: BadgeProps) { return <span {...props} className={cx('nq-badge', className)} data-tone={tone} />; }
+export interface BadgeProps extends ComponentPropsWithRef<'span'> { tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'info'; variant?: 'soft' | 'outline' | 'dot' }
+export function Badge({ tone = 'neutral', variant, className, ...props }: BadgeProps) { return <span {...props} className={cx('nq-badge', className)} data-tone={tone} data-variant={variant ?? (props as Record<string, unknown>)['data-variant']} />; }
 export interface AlertProps extends ComponentPropsWithRef<'div'> {
   tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger';
   variant?: 'default' | 'outline' | 'minimal';

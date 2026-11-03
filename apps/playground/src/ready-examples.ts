@@ -23,7 +23,7 @@ export function statusMarkup(id: 'alert' | 'badge' | 'chip' | 'toast-region', lo
   }).join('\n');
   return id === 'toast-region'
     ? `<div class="nq-toast-region" data-nq="toast-region" data-variant="inline" role="group" aria-live="off" aria-label="${t('Notification examples', 'أمثلة الإشعارات')}">${items}</div>`
-    : `<div class="${id === 'alert' ? 'nq-stack' : 'nq-cluster'}">${items}</div>`;
+    : `<div class="${id === 'alert' ? 'nq-stack' : id === 'badge' ? 'nq-cluster nq-badges' : 'nq-cluster'}">${items}</div>`;
 }
 
 type Recipe = { title: string; markup: string; react?: string; vue?: string; angular?: string };
@@ -138,9 +138,9 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
       return {
         title: `${t('All statuses', 'كل الحالات')} · ${variant}`,
         markup: statusMarkup(id, locale, variant, `ready-${id}-${variant}`),
-        react: `import { ${component} } from '@nasaq/react';\n\n` + lines.map(s => id === 'alert' ? `<Alert tone="${s.tone}" variant="${variant}" title="${s.title}" role="group"><p>${s.body}</p></Alert>` : `<${component} tone="${s.tone}" data-variant="${variant}">${s.title}</${component}>`).join('\n'),
-        vue: `<!-- import { ${component} } from '@nasaq/vue' -->\n` + lines.map(s => id === 'alert' ? `<Alert tone="${s.tone}" variant="${variant}" title="${s.title}" role="group"><p>${s.body}</p></Alert>` : `<${component} tone="${s.tone}" data-variant="${variant}">${s.title}</${component}>`).join('\n'),
-        angular: `<!-- imports: [Nq${component}Component] from @nasaq/angular -->\n` + lines.map(s => id === 'alert' ? `<nq-alert tone="${s.tone}" variant="${variant}" title="${s.title}" role="group"><p>${s.body}</p></nq-alert>` : `<nq-${id} tone="${s.tone}" variant="${variant}">${s.title}</nq-${id}>`).join('\n'),
+        react: `import { ${component} } from '@nasaq/react';\n\n` + (id === 'badge' ? '<div className="nq-badges">\n' : '') + lines.map(s => id === 'alert' ? `<Alert tone="${s.tone}" variant="${variant}" title="${s.title}" role="group"><p>${s.body}</p></Alert>` : `<${component} tone="${s.tone}" ${id === 'badge' ? 'variant' : 'data-variant'}="${variant}">${s.title}</${component}>`).join('\n') + (id === 'badge' ? '\n</div>' : ''),
+        vue: `<!-- import { ${component} } from '@nasaq/vue' -->\n` + (id === 'badge' ? '<div class="nq-badges">\n' : '') + lines.map(s => id === 'alert' ? `<Alert tone="${s.tone}" variant="${variant}" title="${s.title}" role="group"><p>${s.body}</p></Alert>` : `<${component} tone="${s.tone}" ${id === 'badge' ? 'variant' : 'data-variant'}="${variant}">${s.title}</${component}>`).join('\n') + (id === 'badge' ? '\n</div>' : ''),
+        angular: `<!-- imports: [Nq${component}Component] from @nasaq/angular -->\n` + (id === 'badge' ? '<div class="nq-badges">\n' : '') + lines.map(s => id === 'alert' ? `<nq-alert tone="${s.tone}" variant="${variant}" title="${s.title}" role="group"><p>${s.body}</p></nq-alert>` : `<nq-${id} tone="${s.tone}" variant="${variant}">${s.title}</nq-${id}>`).join('\n') + (id === 'badge' ? '\n</div>' : ''),
       };
     });
   }

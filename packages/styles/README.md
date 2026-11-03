@@ -38,7 +38,7 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 | Dialog | `nq-dialog` on native `dialog`; `nq-dialog-header`, `nq-dialog-body`, `nq-dialog-footer` |
 | Combobox | `nq-combobox`, `nq-input`, `nq-listbox`, `nq-option`; `data-active` for keyboard focus, `aria-selected` for committed selection |
 | Surfaces | `nq-card`, `nq-card-header`, `nq-card-body`, `nq-card-footer` |
-| Feedback | `nq-badge` and `nq-alert`; `data-tone="neutral|success|warning|danger|info"` (neutral is badge default) |
+| Feedback | `nq-badge` and `nq-alert`; `data-tone="neutral|success|warning|danger|info"` (neutral is badge default); badges support `data-variant="soft|outline|dot"` and `nq-badges` wrapping groups; [source notes](../../docs/nic-badges.md) |
 | Data | `nq-table-wrap`, `nq-table`, `nq-pagination`, `nq-breadcrumb`; native table semantics, `aria-current="page"`; `data-numeric` on numeric cells |
 | Disclosure | `nq-accordion`; `nq-accordion-item` on `details`; `nq-accordion-trigger` on `summary`; optional `nq-accordion-content` |
 | Status | `nq-progress`, `nq-skeleton`, `nq-spinner`, `nq-avatar`, `nq-divider` |

@@ -81,7 +81,7 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
 | Dialog — `NqDialogComponent` | `nq-dialog`; `title`, `titleId`, `[(open)]`, `closeLabel`, `closeOnBackdrop`; outputs `cancelled`, `returnValue`; methods `show(trigger?)`, `close(value?)`. Project content and `[nqDialogFooter]`. |
 | Accordion — `NqAccordionComponent` | `nq-accordion`; `items: {id,title,content,open?}[]`, `exclusive`, `groupName`; `toggled: {id,open}`. Native details/summary. Project custom native details for richer content. |
 | Card — `NqCardComponent` | `nq-card`; project `[nqCardHeader]`, body, `[nqCardFooter]`. |
-| Badge — `NqBadgeComponent` | `nq-badge`; `tone: neutral/success/warning/danger/info`, projected content. |
+| Badge — `NqBadgeComponent` | Static label; `tone="neutral\|success\|warning\|danger\|info"`, `variant="soft\|outline\|dot"`; [source and adaptations](../../docs/nic-badges.md). |
 | Alert — `NqAlertComponent` | `nq-alert`; `title`, `tone: info/success/warning/danger`, `role: status/alert/region`, `dismissible`, `closeLabel`; `dismissed` asks the parent to remove it. |
 | Table — `NqTableComponent` | `nq-table`; `caption`, `columns: {key,label,rowHeader?}[]`, `rows: Record<string,string\|number\|null\|undefined>[]`, `emptyMessage`. Values render as escaped text. |
 | Pagination — `NqPaginationComponent` | `nq-pagination`; `[(page)]`, `totalPages`, `label`, `previousLabel`, `nextLabel`, `pageLabel(page)`. Bounded window; never renders every page in a large result set. Parent fetches/slices data. |

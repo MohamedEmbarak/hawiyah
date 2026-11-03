@@ -1,0 +1,56 @@
+/* NIC global.css 3018–3153. See docs/nic-badges.md for measured geometry,
+   the source's overridden badge height and accessible multiline adaptations. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-profile-badge-radius: .25rem;
+  --nq-profile-badge-padding: 0 .5rem;
+  --nq-profile-badge-leading: 1.125rem;
+  --nq-profile-badge-min-width: 2rem;
+  --nq-profile-badge-dot: .625rem;
+  --nq-profile-badge-status-gap: .5rem;
+  --nq-profile-badge-status-height: 1.5rem;
+  --nq-profile-badge-status-border: 0px;
+}
+:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
+  --nq-profile-badge-radius: initial;
+  --nq-profile-badge-padding: initial;
+  --nq-profile-badge-leading: initial;
+  --nq-profile-badge-min-width: initial;
+  --nq-profile-badge-dot: initial;
+  --nq-profile-badge-status-gap: initial;
+  --nq-profile-badge-status-height: initial;
+  --nq-profile-badge-status-border: initial;
+}
+.nq-badges { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.nq-badge {
+  --nq-tone: var(--nq-color-badge-neutral-text);
+  --nq-tone-bg: var(--nq-color-badge-neutral-background);
+  --nq-tone-border: var(--nq-color-badge-neutral-border);
+  --nq-badge-dot-color: var(--nq-color-badge-neutral-dot);
+  box-sizing: border-box; justify-content: center; flex-shrink: 0;
+  min-inline-size: min(100%, var(--nq-profile-badge-min-width, 0px));
+  padding: var(--nq-profile-badge-padding, .125rem var(--nq-space-2));
+  border-color: var(--nq-tone-border);
+  border-radius: var(--nq-profile-badge-radius, var(--nq-radius-full));
+  line-height: var(--nq-profile-badge-leading, 1.65);
+  text-align: center; white-space: normal; overflow-wrap: anywhere;
+}
+.nq-badge[data-tone='info'] { --nq-tone: var(--nq-color-badge-info-text); --nq-tone-bg: var(--nq-color-badge-info-background); --nq-tone-border: var(--nq-color-badge-info-border); --nq-badge-dot-color: currentColor; }
+.nq-badge[data-tone='success'] { --nq-tone: var(--nq-color-badge-success-text); --nq-tone-bg: var(--nq-color-badge-success-background); --nq-tone-border: var(--nq-color-badge-success-border); --nq-badge-dot-color: currentColor; }
+.nq-badge[data-tone='warning'] { --nq-tone: var(--nq-color-badge-warning-text); --nq-tone-bg: var(--nq-color-badge-warning-background); --nq-tone-border: var(--nq-color-badge-warning-border); --nq-badge-dot-color: currentColor; }
+.nq-badge[data-tone='danger'] { --nq-tone: var(--nq-color-badge-danger-text); --nq-tone-bg: var(--nq-color-badge-danger-background); --nq-tone-border: var(--nq-color-badge-danger-border); --nq-badge-dot-color: currentColor; }
+/* The outline variant is an existing Nasaq extension to the source. */
+.nq-badge[data-variant='outline'] { border-color: currentColor; background: transparent; }
+.nq-badge[data-variant='dot'] {
+  min-inline-size: 0; min-block-size: var(--nq-profile-badge-status-height, 0px);
+  gap: var(--nq-profile-badge-status-gap, var(--nq-space-1));
+  border-width: var(--nq-profile-badge-status-border, 1px);
+  border-radius: var(--nq-radius-full);
+}
+.nq-badge[data-variant='dot']::before {
+  inline-size: var(--nq-profile-badge-dot, .375rem); block-size: var(--nq-profile-badge-dot, .375rem);
+  flex: none; background: var(--nq-badge-dot-color);
+}
+@media (forced-colors: active) {
+  .nq-badge, .nq-badge[data-variant='outline'] { border-color: CanvasText; color: CanvasText; background: Canvas; }
+  .nq-badge[data-variant='dot']::before { background: CanvasText; forced-color-adjust: none; }
+}

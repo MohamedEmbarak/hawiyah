@@ -353,9 +353,18 @@ export function projectExample(
         )
         .join("") + "<output>{{ value }}</output>";
   } else if (id === "badge") {
-    react = `<Badge tone="success">${label}</Badge>`;
-    vue = react;
-    angular = `<nq-badge tone="success">${label}</nq-badge>`;
+    const statuses = [
+      { tone: "neutral", text: t("Scheduled", "مجدول") },
+      { tone: "info", text: t("In progress", "قيد التنفيذ") },
+      { tone: "success", text: t("Complete", "مكتمل") },
+      { tone: "warning", text: t("Needs review", "يحتاج إلى مراجعة") },
+      { tone: "danger", text: t("Unable to send", "تعذّر الإرسال") },
+    ];
+    react = (["soft", "outline", "dot"] as const).map(variant =>
+      `<section className="nq-stack"><h2>${variant === "soft" ? t("Badges", "الشارات") : variant === "outline" ? t("Outlined badges", "شارات بإطار") : t("Status labels", "تسميات الحالة")}</h2><div className="nq-cluster nq-badges">${statuses.map(status => `<Badge tone="${status.tone}" variant="${variant}">${status.text}</Badge>`).join("")}</div></section>`,
+    ).join("");
+    vue = react.replaceAll("className=", "class=");
+    angular = vue.replaceAll("<Badge ", "<nq-badge ").replaceAll("</Badge>", "</nq-badge>");
   } else if (id === "alert") {
     react = `<Alert tone="success" title="${label}"><p>${t("Saved successfully", "تم الحفظ بنجاح")}</p></Alert>`;
     vue = react;
