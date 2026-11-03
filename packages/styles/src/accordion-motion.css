@@ -7,7 +7,7 @@
   background: currentColor;
   mask: url('./assets/icons/arrow-down-01.svg') center / contain no-repeat;
   transform: rotate(0deg);
-  transition: transform var(--nq-duration-accordion, 0ms) var(--nq-ease-accordion, ease-in-out);
+  transition: transform var(--nq-duration-accordion-indicator, 0ms) var(--nq-ease-accordion, ease-in-out);
 }
 .nq-accordion-item[data-nq-expanded='true'] > .nq-accordion-trigger::after { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) {

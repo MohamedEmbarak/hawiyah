@@ -32,6 +32,7 @@ for (const [name, theme] of Object.entries(source.themes)) {
         ['success', 'success-subtle'], ['warning', 'warning-subtle'],
         ['danger', 'danger-subtle'], ['info', 'info-subtle'], ['on-inverse', 'inverse'],
         ['card-text', 'card'], ['card-text', 'card-hover'],
+        ['text', 'accordion-focus'],
         ...['text', 'text-muted', 'text-subtle'].flatMap(foreground =>
           ['canvas', 'surface', 'surface-muted', 'surface-raised'].map(background => [foreground, background])),
       ];
@@ -39,7 +40,7 @@ for (const [name, theme] of Object.entries(source.themes)) {
         const measured = Math.min(...['canvas', 'surface'].map(surface => ratio(color[foreground], color[background], color[surface])));
         assert.ok(measured >= 4.5, `${foreground}/${background}: ${measured.toFixed(2)}:1`);
       }
-      for (const background of ['card', 'card-hover']) {
+      for (const background of ['card', 'card-hover', 'accordion-focus']) {
         const measured = ratio(color['focus-contrast'], color[background]);
         assert.ok(measured >= 3, `focus-contrast/${background}: ${measured.toFixed(2)}:1`);
       }

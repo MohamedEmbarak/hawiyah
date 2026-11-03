@@ -1,16 +1,22 @@
 # Accordion motion
 
-The DGA theme uses `--nq-duration-accordion: 300ms` and
+The DGA theme uses `--nq-duration-accordion: 300ms` for disclosure height and
 `--nq-ease-accordion: cubic-bezier(.42, 0, .58, 1)`. Original Nasaq uses zero
 duration; custom themes can override either token. Reduced motion, including a
 preference change during an animation, settles immediately. Browsers without
 Web Animations keep immediate native disclosure.
 
+The later NIC web reference supplies the separate chevron timing:
+`--nq-duration-accordion-indicator: 200ms` with the same ease-in-out default.
+Hover/focus surface colors transition over 150ms. Original Nasaq keeps zero
+indicator duration. The [NIC web profile](nic-accordion.md) maps its nested
+header/button spacing onto the existing native disclosure markup.
+
 Source evidence is Mobile Components, accordion trigger `1147:62359` to expanded
 variant `1147:60867`: 300ms SMART_ANIMATE with INOUT_CUBIC easing. The decoded
 example grows from a 56px header to a 256px item. Production content uses its
 intrinsic height, not those fixed example dimensions. The rotating chevron is
-a web adaptation of source down/up icon swaps. Conflicting stored title metrics
+a web adaptation of source down/up icon swaps, now timed by the NIC CSS. Conflicting stored title metrics
 are not animated. This establishes source-informed behavior, not visual parity
 or certification.
 

@@ -61,7 +61,8 @@ export const tokens = {
     "switch": "200ms",
     "spinner": "1000ms",
     "tab-bar": "300ms",
-    "accordion": "300ms"
+    "accordion": "300ms",
+    "accordion-indicator": "200ms"
   },
   "ease": {
     "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -148,7 +149,9 @@ export const tokens = {
     "action-light-active": "#ffffffb3",
     "on-action-light": "#161616",
     "danger-active": "#7a2619",
-    "choice-active": "#104631"
+    "choice-active": "#104631",
+    "accordion-border": "#DEE2E6",
+    "accordion-focus": "#E5E7EB"
   },
   "control": {
     "height": "2.5rem",
@@ -234,7 +237,9 @@ export const themes = {
         "action-light-active": "#ffffffb3",
         "on-action-light": "#161616",
         "danger-active": "#912124",
-        "choice-active": "#004740"
+        "choice-active": "#004740",
+        "accordion-border": "#d9e0da",
+        "accordion-focus": "#f0f1eb"
       }
     },
     "dark": {
@@ -299,7 +304,9 @@ export const themes = {
         "action-light-active": "#ffffff",
         "on-action-light": "#161616",
         "danger-active": "#ffc0bd",
-        "choice-active": "#b9ede2"
+        "choice-active": "#b9ede2",
+        "accordion-border": "#3a5150",
+        "accordion-focus": "#283c3c"
       }
     }
   },
@@ -366,7 +373,9 @@ export const themes = {
         "action-light-active": "#ffffffb3",
         "on-action-light": "#161616",
         "danger-active": "#7a2619",
-        "choice-active": "#104631"
+        "choice-active": "#104631",
+        "accordion-border": "#DEE2E6",
+        "accordion-focus": "#E5E7EB"
       }
     },
     "dark": {
@@ -431,7 +440,9 @@ export const themes = {
         "action-light-active": "#ffffff",
         "on-action-light": "#161616",
         "danger-active": "#7a2619",
-        "choice-active": "#54c08a"
+        "choice-active": "#54c08a",
+        "accordion-border": "#6C737F",
+        "accordion-focus": "#384250"
       }
     }
   }
@@ -500,7 +511,8 @@ export const themeFoundations = {
       "switch": "200ms",
       "spinner": "1000ms",
       "tab-bar": "300ms",
-      "accordion": "300ms"
+      "accordion": "300ms",
+      "accordion-indicator": "200ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -589,7 +601,8 @@ export const themeFoundations = {
       "switch": "180ms",
       "spinner": "700ms",
       "tab-bar": "0ms",
-      "accordion": "0ms"
+      "accordion": "0ms",
+      "accordion-indicator": "0ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -743,7 +756,8 @@ export const tokenNames = {
     "switch": "--nq-duration-switch",
     "spinner": "--nq-duration-spinner",
     "tab-bar": "--nq-duration-tab-bar",
-    "accordion": "--nq-duration-accordion"
+    "accordion": "--nq-duration-accordion",
+    "accordion-indicator": "--nq-duration-accordion-indicator"
   },
   "ease": {
     "standard": "--nq-ease-standard",
@@ -830,7 +844,9 @@ export const tokenNames = {
     "action-light-active": "--nq-color-action-light-active",
     "on-action-light": "--nq-color-on-action-light",
     "danger-active": "--nq-color-danger-active",
-    "choice-active": "--nq-color-choice-active"
+    "choice-active": "--nq-color-choice-active",
+    "accordion-border": "--nq-color-accordion-border",
+    "accordion-focus": "--nq-color-accordion-focus"
   },
   "control": {
     "height": "--nq-control-height",
@@ -900,6 +916,7 @@ export const cssVariableNames = [
   "--nq-duration-spinner",
   "--nq-duration-tab-bar",
   "--nq-duration-accordion",
+  "--nq-duration-accordion-indicator",
   "--nq-ease-standard",
   "--nq-ease-input",
   "--nq-ease-switch",
@@ -977,6 +994,8 @@ export const cssVariableNames = [
   "--nq-color-on-action-light",
   "--nq-color-danger-active",
   "--nq-color-choice-active",
+  "--nq-color-accordion-border",
+  "--nq-color-accordion-focus",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

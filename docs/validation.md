@@ -573,3 +573,24 @@ build passed. An initial Vue run was interrupted by a build-triggered dev-server
 reload; the affected Vue/Angular runs passed after the build finished.
 Remaining catalog recipes and Vue language-service validation stay open.
 
+## NIC accordion web profile
+
+Thirteen Chromium cases passed: eight source-style/fallback cases across
+vanilla, React, Vue and Angular in RTL/LTR, plus five existing motion regression
+cases. Checks cover header/body geometry, hover/focus colors, 200ms chevrons,
+300ms reversible disclosure motion, focus return, exclusive groups, reduced
+motion, forced colors, and original/custom/nested dark themes. The six native
+style cases also passed scoped axe checks. Rendered expanded/focused accordions
+were visually inspected in React, Vue and Angular.
+
+The actual NIC CSS snapshot in an isolated browser fixture confirmed the
+derived 84px single-line header at desktop and mobile widths, with the baseline
+and limits described in [the source mapping](nic-accordion.md). Sixteen focused
+core/token tests and eight semantic contrast checks passed. The full build,
+final native consumer/guide builds and guide typecheck passed.
+Clean tarballs passed ESM/SSR, Angular APF, CSS exports, TypeScript declarations
+and tree-shaking checks. No package was published.
+
+The editor badge correction separately passed RTL/LTR checks for all four
+framework marks at 1864px and 390px: a centered 22px SVG in a 36px badge.
+

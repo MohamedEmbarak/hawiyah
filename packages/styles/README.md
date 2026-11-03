@@ -192,3 +192,10 @@ of generic durations. Reduced-motion preferences stop button/switch/field
 transitions and loading animations while preserving state and focus behavior.
 The reference JSON records source nodes and the four-segment spinner mapping;
 these values do not establish universal DGA motion or visual parity.
+
+The NIC accordion profile uses 150 ms hover/focus color transitions and the
+separate `--nq-duration-accordion-indicator: 200ms` chevron role. Disclosure
+height retains `--nq-duration-accordion: 300ms`. Original Nasaq remains immediate.
+`--nq-color-accordion-border` and `--nq-color-accordion-focus` support scoped
+color overrides; source geometry and accessibility adaptations are documented
+in `docs/nic-accordion.md`.
