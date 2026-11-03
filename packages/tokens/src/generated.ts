@@ -180,7 +180,8 @@ export const tokens = {
     "badge-danger-text": "#912018",
     "badge-danger-background": "#FECDCA",
     "badge-danger-border": "#FECDCA",
-    "badge-neutral-dot": "#4D5761"
+    "badge-neutral-dot": "#4D5761",
+    "avatar-border": "#FFFFFF"
   },
   "control": {
     "height": "2.5rem",
@@ -297,7 +298,8 @@ export const themes = {
         "badge-danger-text": "#ae2e30",
         "badge-danger-background": "#fff0ef",
         "badge-danger-border": "#00000000",
-        "badge-neutral-dot": "#4c6264"
+        "badge-neutral-dot": "#4c6264",
+        "avatar-border": "#d9e0da"
       }
     },
     "dark": {
@@ -393,7 +395,8 @@ export const themes = {
         "badge-danger-text": "#ffaaa8",
         "badge-danger-background": "#462729",
         "badge-danger-border": "#00000000",
-        "badge-neutral-dot": "#b9cdca"
+        "badge-neutral-dot": "#b9cdca",
+        "avatar-border": "#3a5150"
       }
     }
   },
@@ -491,7 +494,8 @@ export const themes = {
         "badge-danger-text": "#912018",
         "badge-danger-background": "#FECDCA",
         "badge-danger-border": "#FECDCA",
-        "badge-neutral-dot": "#4D5761"
+        "badge-neutral-dot": "#4D5761",
+        "avatar-border": "#FFFFFF"
       }
     },
     "dark": {
@@ -587,7 +591,8 @@ export const themes = {
         "badge-danger-text": "#F97066",
         "badge-danger-background": "#B4231833",
         "badge-danger-border": "#F97066",
-        "badge-neutral-dot": "#F3F4F6"
+        "badge-neutral-dot": "#F3F4F6",
+        "avatar-border": "#1F2A37"
       }
     }
   }
@@ -1020,7 +1025,8 @@ export const tokenNames = {
     "badge-danger-text": "--nq-color-badge-danger-text",
     "badge-danger-background": "--nq-color-badge-danger-background",
     "badge-danger-border": "--nq-color-badge-danger-border",
-    "badge-neutral-dot": "--nq-color-badge-neutral-dot"
+    "badge-neutral-dot": "--nq-color-badge-neutral-dot",
+    "avatar-border": "--nq-color-avatar-border"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1199,6 +1205,7 @@ export const cssVariableNames = [
   "--nq-color-badge-danger-background",
   "--nq-color-badge-danger-border",
   "--nq-color-badge-neutral-dot",
+  "--nq-color-avatar-border",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

@@ -42,6 +42,7 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 | Data | `nq-table-wrap`, `nq-table`, `nq-pagination`, `nq-breadcrumb`; native table semantics, `aria-current="page"`; `data-numeric` on numeric cells |
 | Disclosure | `nq-accordion`; `nq-accordion-item` on `details`; `nq-accordion-trigger` on `summary`; optional `nq-accordion-content` |
 | Status | `nq-progress`, `nq-skeleton`, `nq-spinner`, `nq-avatar`, `nq-divider` |
+| Avatar options | `nq-avatar`; `data-size="40|64|80|120|sm|md|lg|xl"`, `data-variant="circle|square"`; [geometry and theme notes](../../docs/nic-avatars.md) |
 | Workflow | `nq-toolbar`, `nq-chip`, `nq-empty`, `nq-stepper`, `nq-step`, `nq-timeline`, `nq-upload`, `nq-tooltip` |
 | Layout | `nq-stack`, `nq-cluster`, `nq-container`, `nq-sr-only` |
 

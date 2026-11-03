@@ -118,14 +118,18 @@ export class NqSkeletonComponent {
 @Component({selector: 'nq-spinner', standalone: true, template: `<span role="status"><span class="nq-spinner" aria-hidden="true"></span><span class="nq-sr-only">{{ label }}</span></span>`})
 export class NqSpinnerComponent { @Input() label = 'Loading'; }
 
-@Component({selector: 'nq-avatar', standalone: true, template: `<span class="nq-avatar" [attr.role]="src && !imageFailed ? null : 'img'" [attr.aria-label]="src && !imageFailed ? null : name">@if (src && !imageFailed) {<img [src]="src" [alt]="name" (error)="imageFailed = true">} @else {<span aria-hidden="true">{{ initials }}</span>}</span>`})
+@Component({selector: 'nq-avatar', standalone: true, template: `<span class="nq-avatar" [attr.data-size]="size" [attr.data-variant]="variant" [attr.role]="src && !imageFailed ? null : 'img'" [attr.aria-label]="src && !imageFailed ? null : name">@if (src && !imageFailed) {<img [src]="src" [alt]="name" (error)="imageFailed = true">} @else {<span aria-hidden="true">{{ initials }}</span>}</span>`})
 export class NqAvatarComponent {
   @Input({required: true}) name = '';
+  @Input() size: 'sm' | 'md' | 'lg' | 'xl' | '40' | '64' | '80' | '120' = 'md';
+  @Input() variant: 'circle' | 'square' = 'circle';
+  private suppliedInitials: string | undefined;
+  @Input() set initials(value: string | undefined) { this.suppliedInitials = value; }
   private imageSrc = '';
   @Input() set src(value: string) { this.imageSrc = value; this.imageFailed = false; }
   get src(): string { return this.imageSrc; }
   imageFailed = false;
-  get initials(): string { return this.name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0] ?? '').join(''); }
+  get initials(): string { return this.suppliedInitials ?? this.name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0] ?? '').join(''); }
 }
 
 @Component({selector: 'nq-divider', standalone: true, template: `<hr class="nq-divider">`})

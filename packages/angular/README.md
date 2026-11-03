@@ -89,7 +89,7 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
 | Progress — `NqProgressComponent` | `nq-progress`; `label`, `value: number\|null`, `max`; null is indeterminate. |
 | Skeleton — `NqSkeletonComponent` | `nq-skeleton`; `width`, `height`; decorative, hidden from assistive technology. Announce surrounding loading state once. |
 | Spinner — `NqSpinnerComponent` | `nq-spinner`; localized `label`; status announcement. |
-| Avatar — `NqAvatarComponent` | `nq-avatar`; `name`, optional `src`; accessible initials fallback on failure. |
+| Avatar — `NqAvatarComponent` | Required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"`. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
 | Divider — `NqDividerComponent` | `nq-divider`; native horizontal rule. |
 | Tooltip — `NqTooltipComponent` | `nq-tooltip`; `text`, `id`; project short noninteractive trigger content. Focusable trigger, hover/focus opening, Escape/outside closing. Do not project buttons or links into this focusable wrapper. |
 | FileUpload — `NqFileUploadComponent` | `nq-file-upload`; readonly `File[]` value, `accept`, `multiple`. Selects local files only; no upload occurs. Forms can clear, but browsers forbid programmatically populating file pickers. |

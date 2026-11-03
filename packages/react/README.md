@@ -91,7 +91,7 @@ with explicit locale, calendar and time zone. No component infers locale from RT
 | `Progress` | Native progress with required accessible `label`, `value`, `max` (100); omit value for indeterminate. |
 | `Skeleton` | Decorative span, hidden from assistive technology; set dimensions via className/style. |
 | `Spinner` | Status span; localized `label` (default “Loading”). |
-| `Avatar` | Required `name`; optional `src`, `initials`, `imageProps`. Text fallback defaults to two initials. |
+| `Avatar` | Required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"`. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
 | `Divider` | Native horizontal rule. |
 | `Tooltip` | Plain string `content`; one focusable React element as children. |
 | `FileUpload` | Native file input with label/hint/error; `accept`, `multiple`, native `onChange`, `onFilesChange(File[])`, optional supplementary children. |

@@ -87,7 +87,7 @@ close labels; the library never infers text language from layout direction.
 | `Progress`              | Required `label`, optional value for determinate mode, `max=100`                                                                                                      |
 | `Skeleton`              | Decorative hidden span, size using native style/class                                                                                                                 |
 | `Spinner`               | Status with localized `label`                                                                                                                                         |
-| `Avatar`                | Required `name`, optional `src` / `initials`                                                                                                                          |
+| `Avatar` | Required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"`. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
 | `Divider`               | Native `hr`                                                                                                                                                           |
 | `Tooltip`               | Plain `content`, one focusable trigger in default slot; description IDs merge with the trigger                                                                        |
 | `FileUpload`            | Native input attributes plus field decoration; emits `update:files(File[])`; optional default slot                                                                    |

@@ -4,6 +4,7 @@ import {siteVerificationMarkup,siteVerificationDemoLabels} from './site-verifica
 import {portalFooterMarkup,portalFooterExampleData} from './portal-footer-demo';
 import { escape as e, icon, type ComponentId, type Locale } from './data';
 import {feedbackMarkup} from './feedback-demo';
+import {avatarDemoCases,avatarDemoMarkup,avatarDemoProps} from './avatar-demo';
 
 export const statusExamples = [
   { tone: 'neutral', en: 'Scheduled maintenance', ar: 'صيانة مجدولة', bodyEn: 'Service hours are shown on this page.', bodyAr: 'مواعيد الخدمة موضّحة في هذه الصفحة.' },
@@ -30,6 +31,12 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='avatar')return avatarDemoCases(locale).map(item=>({
+    title:item.title,markup:avatarDemoMarkup(item),
+    react:`import { Avatar } from '@nasaq/react';\n\n<Avatar ${avatarDemoProps(item)} />`,
+    vue:`<!-- import { Avatar } from '@nasaq/vue' -->\n<Avatar ${avatarDemoProps(item)} />`,
+    angular:`<!-- import { NqAvatarComponent } from '@nasaq/angular'; add to imports -->\n<nq-avatar ${avatarDemoProps(item)} />`,
+  }));
   if (id === 'table' || id === 'data-table') {
     const sortable = id === 'data-table', component = sortable ? 'DataTable' : 'Table';
     const service = t('Service', 'الخدمة'), days = t('Days', 'الأيام');

@@ -110,8 +110,13 @@ export const Progress = defineComponent({
 export const Skeleton = defineComponent({ name: 'NqSkeleton', inheritAttrs: false, setup(_, { attrs }) { return () => h('span', mergeProps(attrs, { class: 'nq-skeleton', 'aria-hidden': 'true' })); } });
 export const Spinner = defineComponent({ name: 'NqSpinner', inheritAttrs: false, props: { label: { type: String, default: 'Loading' } }, setup(props, { attrs }) { return () => h('span', mergeProps(attrs, { class: 'nq-spinner', role: 'status' }), [h('span', { class: 'nq-sr-only' }, props.label)]); } });
 export const Avatar = defineComponent({
-  name: 'NqAvatar', inheritAttrs: false, props: { name: { type: String, required: true }, src: String, initials: String },
-  setup(props, { attrs }) { return () => h('span', mergeProps(attrs, { class: 'nq-avatar', role: props.src ? undefined : 'img', 'aria-label': props.src ? undefined : props.name }), props.src ? [h('img', { src: props.src, alt: props.name })] : props.initials ?? props.name.trim().split(/\s+/u).slice(0, 2).map(word => Array.from(word)[0]).join('')); },
+  name: 'NqAvatar', inheritAttrs: false, props: { name: { type: String, required: true }, src: String, initials: String, size: String as PropType<'sm' | 'md' | 'lg' | 'xl' | '40' | '64' | '80' | '120'>, variant: String as PropType<'circle' | 'square'> },
+  setup(props, { attrs }) {
+    const imageFailed = ref(false); watch(() => props.src, () => {imageFailed.value = false;}, {flush: 'sync'});
+    return () => {const visible = !!props.src && !imageFailed.value; const src = props.src;
+      return h('span', mergeProps(attrs, { class: 'nq-avatar', 'data-size': props.size ?? attrs['data-size'], 'data-variant': props.variant ?? attrs['data-variant'], role: visible ? undefined : 'img', 'aria-label': visible ? undefined : props.name }), visible ? [h('img', { key: src, src, alt: props.name, onError: () => {if(props.src === src) imageFailed.value = true;} })] : h('span', {'aria-hidden': 'true'}, props.initials ?? props.name.trim().split(/\s+/u).slice(0, 2).map(word => Array.from(word)[0]).join('')));
+    };
+  },
 });
 export const Divider = defineComponent({ name: 'NqDivider', inheritAttrs: false, setup(_, { attrs }) { return () => h('hr', mergeProps(attrs, { class: 'nq-divider' })); } });
 export interface StepItem { value: string; label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }

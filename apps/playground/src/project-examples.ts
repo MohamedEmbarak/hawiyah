@@ -1,4 +1,5 @@
 import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo.ts';
+import {avatarDemoCases,avatarDemoProps} from './avatar-demo.ts';
 import type { IDEFiles } from "./component-ide";
 import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
 import type { Locale } from "./data";
@@ -311,9 +312,9 @@ export function projectExample(
     vue = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style="width:100%;height:4rem" /></div>`;
     angular = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><nq-skeleton width="100%" height="4rem" /></div>`;
   } else if (id === "avatar") {
-    react = `<Avatar name="${t("Example user", "مستخدم تجريبي")}" />`;
-    vue = react;
-    angular = `<nq-avatar name="${t("Example user", "مستخدم تجريبي")}" />`;
+    react = `<div className="nq-cluster">${avatarDemoCases(locale).map(item=>`<div className="nq-stack"><Avatar ${avatarDemoProps(item)} /><span>${item.title}</span></div>`).join('')}</div>`;
+    vue = react.replaceAll('className=','class=');
+    angular = vue.replaceAll('<Avatar ','<nq-avatar ');
   } else if (id === "empty") {
     react = `<EmptyState title="${t("No applications", "لا توجد طلبات")}" description="${t("Your applications will appear here.", "ستظهر طلباتك هنا.")}" />`;
     vue = react;

@@ -1,4 +1,4 @@
-import { createElement, useId, useLayoutEffect, useRef } from 'react';
+import { createElement, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createAccordionMotion } from '@nasaq/core';
 import type { AccordionMotion } from '@nasaq/core';
 import type { ComponentPropsWithRef, HTMLAttributes, Key, ReactNode } from 'react';
@@ -127,8 +127,18 @@ export interface SkeletonProps extends ComponentPropsWithRef<'span'> {}
 export function Skeleton({ className, ...props }: SkeletonProps) { return <span aria-hidden="true" {...props} className={cx('nq-skeleton', className)} />; }
 export interface SpinnerProps extends ComponentPropsWithRef<'span'> { label?: string }
 export function Spinner({ label = 'Loading', className, children, ...props }: SpinnerProps) { return <span {...props} role="status" className={cx('nq-spinner', className)}><span className="nq-sr-only">{label}</span>{children}</span>; }
-export interface AvatarProps extends Omit<ComponentPropsWithRef<'span'>, 'children'> { src?: string; name: string; initials?: string; imageProps?: Omit<ComponentPropsWithRef<'img'>, 'src' | 'alt'> }
-export function Avatar({ src, name, initials, imageProps, className, ...props }: AvatarProps) { return <span {...props} className={cx('nq-avatar', className)} role={src ? undefined : 'img'} aria-label={src ? undefined : name}>{src ? <img {...imageProps} src={src} alt={name} /> : initials ?? name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('')}</span>; }
+export interface AvatarProps extends Omit<ComponentPropsWithRef<'span'>, 'children'> {
+  src?: string; name: string; initials?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '40' | '64' | '80' | '120'; variant?: 'circle' | 'square';
+  imageProps?: Omit<ComponentPropsWithRef<'img'>, 'src' | 'alt'>;
+}
+export function Avatar({ src, name, initials, size, variant, imageProps, className, ...props }: AvatarProps) {
+  const [image, setImage] = useState({src, failed: false});
+  // Reset during the prop transition so a newly supplied source renders immediately.
+  if (image.src !== src) setImage({src, failed: false});
+  const visible = !!src && !(image.src === src && image.failed);
+  return <span {...props} className={cx('nq-avatar', className)} data-size={size ?? (props as Record<string, unknown>)['data-size']} data-variant={variant ?? (props as Record<string, unknown>)['data-variant']} role={visible ? undefined : 'img'} aria-label={visible ? undefined : name}>{visible ? <img {...imageProps} key={src} src={src} alt={name} onError={event => {setImage(current => current.src === src ? {src, failed: true} : current); imageProps?.onError?.(event);}} /> : <span aria-hidden="true">{initials ?? name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('')}</span>}</span>;
+}
 export interface DividerProps extends ComponentPropsWithRef<'hr'> {}
 export function Divider({ className, ...props }: DividerProps) { return <hr {...props} className={cx('nq-divider', className)} />; }
 export interface StepItem { value: string; label: ReactNode; description?: ReactNode; status?: 'complete' | 'current' | 'upcoming' }

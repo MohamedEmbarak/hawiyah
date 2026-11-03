@@ -232,7 +232,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "skeleton":
       return `<div class="nq-stack" aria-label="${t("Loading content", "جارٍ تحميل المحتوى")}" role="status"><div class="nq-skeleton" style="height:18px;width:70%"></div><div class="nq-skeleton" style="height:12px"></div><div class="nq-skeleton" style="height:12px;width:85%"></div></div>`;
     case "avatar":
-      return `<div class="nq-cluster"><span class="nq-avatar" aria-label="${t("Noura", "نورة")}">ن</span><span class="nq-avatar" aria-label="${t("Amal", "أمل")}">${t("A", "أ")}</span><span class="nq-avatar" aria-label="${t("Mohammed", "محمد")}">${t("M", "م")}</span></div>`;
+      return `<div class="nq-cluster"><span class="nq-avatar" role="img" aria-label="${t("Noura", "نورة")}">${t("N", "ن")}</span><span class="nq-avatar" role="img" aria-label="${t("Amal", "أمل")}">${t("A", "أ")}</span><span class="nq-avatar" role="img" aria-label="${t("Mohammed", "محمد")}">${t("M", "م")}</span></div>`;
     case "divider":
       return `<div class="nq-stack"><span>${t("A little breathing room", "مساحة للتنفّس")}</span><hr class="nq-divider"><span class="muted">${t("Between the things that matter.", "بين التفاصيل المهمة.")}</span></div>`;
     case "tooltip":

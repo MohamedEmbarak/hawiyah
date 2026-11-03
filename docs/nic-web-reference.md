@@ -69,7 +69,7 @@ it does not mean every source state has already passed comparison.
 | CSS 2729–3009: checkbox/radio states | Checkbox, Radio | [Implemented choice task](nic-choices.md): geometry, hover halo, checked/pressed/disabled/read-only presentation and activation protection across all adapters; focus/dark/system-color adaptations documented |
 | CSS 3018–3079: badges | Badge | [Aligned](nic-badges.md): measured 20px single-line height, 4px radius, semantic borders and five palettes; typed soft/outline/dot variants across native adapters, all variants in ready examples |
 | CSS 3082–3153: dot status labels | Badge composition | [Aligned](nic-badges.md): 24px minimum height, 10px dot, 8px gap; all five tones in native editor projects; wrapping, dark mode and original Nasaq are documented adaptations |
-| CSS 3156–3181: avatars | Avatar, AvatarGroup | Compare source 40/64/80/120px options |
+| CSS 3156–3181: avatars | Avatar, AvatarGroup | [Aligned image geometry](nic-avatars.md): 40/64/80/120px, 3px border and centered cover crop; native image fallback/retry parity and seven guide examples. Group overlap/counts, square/initials and dark borders are Nasaq adaptations |
 | CSS 3215–3275; JS 1318–1578: footer/cookie links | PortalFooter, CookieConsent | [Grouped footer](nic-footer.md): source typography, dividers, link spacing, branding/support/legal slots; host routes and cookie integrations remain application-owned |
 | CSS 3279–3423: carousel | Carousel | Compare track/control/dot geometry; CSS alone does not establish autoplay or keyboard behavior |
 | CSS 3427–3502: rating and half stars | Rating, Feedback | Confirm fractional display separately from integer input selection |
