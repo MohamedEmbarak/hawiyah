@@ -26,7 +26,9 @@ The guide shows default, selected, disabled and read-only examples. Keep labels
 clickable using `.nq-choice`; the 20px glyph is not the whole interaction target.
 The source's radio focus square is adapted to an outline around the native
 control, preserving independent controls and visible keyboard focus. The halo
-is painted behind the label's control so it cannot cover the square border or glyph. Original Nasaq uses platform
+is anchored to the input's center and painted behind it in the label's isolated
+stacking context. This works for plain inline labels as well as flex/wrapped
+labels, without covering the square border or glyph. Original Nasaq uses platform
 widgets; forced colors restores platform painting, and reduced motion disables
 the halo. Dark mode uses semantic surfaces and a visible pressed accent.
 
@@ -35,3 +37,8 @@ click/Space selection, disabled and mixed states, read-only pointer/keyboard
 protection, radio-peer preservation, reduced motion, forced colors and original
 theme fallback. Eight focused core/token tests and the full consumer build
 passed. This is scoped coverage, not certification or full visual parity.
+
+Follow-up hover regression: four vanilla cases and six native-framework cases
+passed after anchoring the halo directly to the input. Plain inline labels,
+flex labels and wrapped labels retain the same halo center in RTL/LTR. The
+guide editor's actual rendered inline-label example was also inspected.
