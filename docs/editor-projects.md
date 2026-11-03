@@ -23,11 +23,19 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover Button, IconButton, TextField, Textarea,
-Checkbox, Switch, ToggleGroup, Badge, Alert, Divider and Spinner. Other component
+Native project recipes currently cover 24 components: Button, IconButton,
+TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
+Divider, Spinner, Card, Accordion, Table, Breadcrumb, Pagination, Stepper, Tabs,
+Progress, Skeleton, Avatar and EmptyState. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
 before the overall alignment/editor goal is complete.
+
+Examples use each adapter's actual composition and state API: React props and
+callbacks, Vue slots and models, and Angular projected content, inputs and
+outputs. Table examples retain captions and row headers; radio examples show a
+named group; tab examples include a disabled item. Accordion, pagination and
+stepper examples expose state changes. Links remain contained in the preview.
 
 The browser compiler checks syntax and executes the example; it is not a full
 project type-checker. External dependencies, preprocessors and server code are
@@ -42,10 +50,16 @@ The icons identify compatibility and do not imply endorsement.
 
 ## Validation
 
-Sixteen Chromium regression cases passed, including all 11 native recipes in
-each framework, JSX/TSX and Vue JS/TS execution, typed vanilla imports, state
+The initial sixteen Chromium regression cases passed, including the original
+11 native recipes, JSX/TSX and Vue JS/TS execution, typed vanilla imports, state
 updates, mobile layout, downloads, scoped Vue styles, draft preservation and sandbox isolation.
-React's 11 recipes passed TypeScript checking; Angular's 11 passed strict
+The expanded matrix now exercises all 24 recipes in React JSX/TSX, Vue JS/TS
+and Angular TypeScript: five passing cases covering 120 rendered previews.
+Checks require each component's real DOM, exercise radio keyboard selection,
+exclusive accordion expansion, RTL tab navigation, disabled tabs, pagination
+and stepper state, and verify table semantics and breadcrumb containment.
+Rendered Angular table and Vue tab examples were also visually inspected.
+React's 24 recipes passed TypeScript checking; Angular's 24 passed strict
 template checking. Seven exported framework/language projects built, and the
 downloaded ZIP passed an independent integrity/readback check. The guide built
 successfully. Reproduce project validation after `pnpm check:packages` with

@@ -43,14 +43,50 @@ test('project download includes real entry points and setup files',async({page})
   expect(toolbar!.x).toBeGreaterThanOrEqual(0);expect(toolbar!.x+toolbar!.width).toBeLessThanOrEqual(390);
 });
 
-for(const framework of ['react','vue','angular'])test(`every available ${framework} native project recipe mounts`,async({page})=>{
-  test.setTimeout(180000);
+for(const [framework,languages] of Object.entries({react:['javascript','typescript'],vue:['javascript','typescript'],angular:['typescript']}))for(const language of languages)test(`every available ${framework} ${language} native project recipe renders and works`,async({page})=>{
+  test.setTimeout(300000);
   for(const component of nativeProjectComponents) {
     await page.goto(`/#component/${component}`);await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);
-    if(framework!=='angular')await page.locator('[data-project-language]').selectOption('typescript');
+    if(framework!=='angular')await page.locator('[data-project-language]').selectOption(language);
     await expect(page.locator('.nq-ide-status'),`${framework}/${component}`).toHaveAttribute('data-state','ready',{timeout:30000});
-    await expect(page.frameLocator('.nq-ide-frame').locator('main.demo'),`${framework}/${component}`).toBeVisible();
+    const preview=page.frameLocator('.nq-ide-frame');
+    const selectors:Record<string,string>={'button':'.nq-button','icon-button':'.nq-button','text-field':'.nq-input','toggle-group':'.nq-toggle-group'};
+    await expect(preview.locator(selectors[component] ?? `.nq-${component}`).first(),`${framework}/${language}/${component}`).toBeVisible();
+    if(component==='select') {
+      await preview.locator('select').selectOption('second');await expect(preview.locator('output')).toHaveText('second');
+    } else if(component==='radio') {
+      await preview.locator('input').first().focus();await preview.locator('input').first().press('ArrowDown');
+      await expect(preview.locator('input').nth(1)).toBeChecked();await expect(preview.locator('output')).toHaveText('second');
+    } else if(component==='accordion') {
+      await preview.locator('summary').first().press('Enter');await expect(preview.locator('details').first()).toHaveAttribute('open','');
+      await expect(preview.locator('output')).toHaveText('first:true');
+      await preview.locator('summary').nth(1).click();await expect(preview.locator('details').nth(1)).toHaveAttribute('open','');
+      await expect(preview.locator('details').first()).not.toHaveAttribute('open','');
+    } else if(component==='tabs') {
+      await preview.getByRole('tab').first().focus();await preview.getByRole('tab').first().press('ArrowLeft');
+      await expect(preview.getByRole('tab').nth(1)).toHaveAttribute('aria-selected','true');await expect(preview.locator('output')).toHaveText('second');
+      await expect(preview.getByRole('tab').nth(2)).toBeDisabled();await expect(preview.getByRole('tabpanel')).toHaveCount(1);
+    } else if(component==='pagination') {
+      await preview.getByRole('button',{name:'التالي',exact:true}).click();await expect(preview.locator('output')).toHaveText('2');
+      await expect(preview.locator('[aria-current="page"]')).toHaveText('2');
+    } else if(component==='stepper') {
+      await expect(preview.locator('[data-state="complete"]')).toHaveCount(1);
+      await preview.getByRole('button').click();await expect(preview.locator('[data-state="complete"]')).toHaveCount(2);
+      await expect(preview.locator('[aria-current="step"]')).toHaveText('الإكمال');
+    } else if(component==='breadcrumb') {
+      await preview.getByRole('link').first().click();await expect(page).toHaveURL(/#component\/breadcrumb$/);
+      await expect(preview.locator('[aria-current="page"]')).toHaveText('الطلب');
+    } else if(component==='table') {
+      await expect(preview.getByRole('table')).toHaveAccessibleName('الطلبات');
+      await expect(preview.getByRole('rowheader')).toHaveCount(2);await expect(preview.getByRole('row')).toHaveCount(3);
+    } else if(component==='progress') {
+      await expect(preview.getByRole('progressbar')).toHaveAttribute('value','65');
+    } else if(component==='card') {
+      await expect(preview.locator('.nq-card-header')).toContainText('تفاصيل الخدمة');
+      await expect(preview.locator('.nq-card-footer')).toContainText('متاحة إلكترونياً');
+    }
+    await expect(page.locator('.nq-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
   }
 });
 

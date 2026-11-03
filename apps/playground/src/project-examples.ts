@@ -14,6 +14,19 @@ export const nativeProjectComponents = new Set([
   "alert",
   "divider",
   "spinner",
+  "select",
+  "radio",
+  "card",
+  "accordion",
+  "table",
+  "breadcrumb",
+  "pagination",
+  "stepper",
+  "tabs",
+  "progress",
+  "skeleton",
+  "avatar",
+  "empty",
 ]);
 export type ProjectExample = {
   names: Record<keyof IDEFiles, string>;
@@ -59,6 +72,19 @@ export function projectExample(
     alert: "Alert",
     divider: "Divider",
     spinner: "Spinner",
+    select: "Select",
+    radio: "Radio",
+    card: "Card",
+    accordion: "Accordion",
+    table: "Table",
+    breadcrumb: "Breadcrumb",
+    pagination: "Pagination",
+    stepper: "Stepper",
+    tabs: "Tabs",
+    progress: "Progress",
+    skeleton: "Skeleton",
+    avatar: "Avatar",
+    empty: "EmptyState",
   };
   const component = name[id]!;
   const options = JSON.stringify([
@@ -70,7 +96,9 @@ export function projectExample(
     angular = "",
     angularMember = "",
     state = false,
-    booleanState = false;
+    booleanState = false,
+    numberState = false,
+    initialValue: string | undefined;
   const label = t("Example", "مثال");
   if (id === "button") {
     state = true;
@@ -99,6 +127,141 @@ export function projectExample(
     vue = `<ToggleGroup label="${label}" :options='${options}' v-model="value" /><output>{{ value }}</output>`;
     angular = `<nq-toggle-group label="${label}" [options]="options" [(value)]="value" /><output>{{ value }}</output>`;
     angularMember = `\n  options = ${options};`;
+  } else if (id === "select") {
+    state = true;
+    initialValue = "'first'";
+    react = `<Select label="${label}" options={${options}} value={value} onChange={event => setValue(event.currentTarget.value)} /><output>{value}</output>`;
+    vue = `<Select label="${label}" :options='${options}' v-model="value" /><output>{{ value }}</output>`;
+    angular = `<nq-select label="${label}" [options]="options" placeholder="" [(value)]="value" /><output>{{ value }}</output>`;
+    angularMember = `\n  options = ${options};`;
+  } else if (id === "radio") {
+    state = true;
+    initialValue = "'first'";
+    react = `<fieldset><legend>${label}</legend>{${options}.map(option => <Radio key={option.value} name="choice" label={option.label} value={option.value} checked={value === option.value} onChange={event => setValue(event.currentTarget.value)} />)}</fieldset><output>{value}</output>`;
+    vue = `<fieldset><legend>${label}</legend><Radio v-for='option in ${options}' :key="option.value" name="choice" :label="option.label" :value="option.value" v-model="value" /></fieldset><output>{{ value }}</output>`;
+    angular = `<nq-radio label="${label}" name="choice" [options]="options" [(value)]="value" /><output>{{ value }}</output>`;
+    angularMember = `\n  options = ${options};`;
+  } else if (id === "card") {
+    const title = t("Service details", "تفاصيل الخدمة"),
+      description = t(
+        "Review the requirements before applying.",
+        "راجع المتطلبات قبل التقديم.",
+      );
+    react = `<Card variant="outlined" header={<h2 className="nq-card-title">${title}</h2>} footer={<span>${t("Available online", "متاحة إلكترونياً")}</span>}><p className="nq-card-description">${description}</p></Card>`;
+    vue = `<Card variant="outlined"><template #header><h2 class="nq-card-title">${title}</h2></template><p class="nq-card-description">${description}</p><template #footer>${t("Available online", "متاحة إلكترونياً")}</template></Card>`;
+    angular = `<nq-card variant="outlined"><h2 nqCardHeader class="nq-card-title">${title}</h2><p class="nq-card-description">${description}</p><span nqCardFooter>${t("Available online", "متاحة إلكترونياً")}</span></nq-card>`;
+  } else if (id === "accordion") {
+    state = true;
+    const items = [
+      {
+        value: "first",
+        title: t("Requirements", "المتطلبات"),
+        content: t(
+          "Prepare the required documents.",
+          "جهز المستندات المطلوبة.",
+        ),
+      },
+      {
+        value: "second",
+        title: t("Processing time", "مدة المعالجة"),
+        content: t("3 working days", "3 أيام عمل"),
+      },
+    ];
+    react = `<Accordion exclusive items={${JSON.stringify(items)}.map(item => ({...item, onOpenChange: open => setValue(item.value + ':' + open)}))} /><output>{value}</output>`;
+    vue = `<Accordion exclusive :items='${JSON.stringify(items)}' @toggle="(item, open) => value = item + ':' + open" /><output>{{ value }}</output>`;
+    angular = `<nq-accordion exclusive [items]="items" (toggled)="value = $event.id + ':' + $event.open" /><output>{{ value }}</output>`;
+    angularMember = `\n  items = ${JSON.stringify(items.map(({ value, ...item }) => ({ id: value, ...item })))};`;
+  } else if (id === "table") {
+    const caption = t("Applications", "الطلبات"),
+      heading = t("Reference", "المرجع"),
+      status = t("Status", "الحالة");
+    const rows = JSON.stringify([
+      { reference: "NQ-101", status: t("Submitted", "مقدم") },
+      { reference: "NQ-102", status: t("Draft", "مسودة") },
+    ]);
+    react = `<Table caption="${caption}" rows={${rows}} rowKey={row => row.reference} columns={[{key:'reference',header:'${heading}',rowHeader:true,cell:row => row.reference},{key:'status',header:'${status}',cell:row => row.status}]} />`;
+    vue = `<Table caption="${caption}" :rows='${rows}' :columns='${JSON.stringify(
+      [
+        { key: "reference", header: heading, rowHeader: true },
+        { key: "status", header: status },
+      ],
+    )}' />`;
+    angular = `<nq-table caption="${caption}" [rows]="rows" [columns]="columns" />`;
+    angularMember = `\n  rows = ${rows};\n  columns = ${JSON.stringify([
+      { key: "reference", label: heading, rowHeader: true },
+      { key: "status", label: status },
+    ])};`;
+  } else if (id === "breadcrumb") {
+    const items = JSON.stringify([
+      { label: t("Home", "الرئيسية"), href: "#home" },
+      { label: t("Services", "الخدمات"), href: "#services" },
+      { label: t("Application", "الطلب") },
+    ]);
+    react = `<Breadcrumb label="${t("Breadcrumb", "مسار التنقل")}" items={${items}} />`;
+    vue = `<Breadcrumb label="${t("Breadcrumb", "مسار التنقل")}" :items='${items}' />`;
+    angular = `<nq-breadcrumb label="${t("Breadcrumb", "مسار التنقل")}" [items]="items" />`;
+    angularMember = `\n  items = ${items};`;
+  } else if (id === "pagination") {
+    state = numberState = true;
+    initialValue = "1";
+    const labels = `label="${t("Pages", "الصفحات")}" previousLabel="${t("Previous", "السابق")}" nextLabel="${t("Next", "التالي")}"`;
+    const pageLabel = t("Page", "الصفحة");
+    react = `<Pagination ${labels} totalPages={10} page={value} onPageChange={setValue} getPageLabel={page => '${pageLabel} ' + page} /><output>{value}</output>`;
+    vue = `<Pagination ${labels} :total-pages="10" v-model="value" :page-label="page => '${pageLabel} ' + page" /><output>{{ value }}</output>`;
+    angular = `<nq-pagination ${labels} [totalPages]="10" [(page)]="value" [pageLabel]="pageLabel" /><output>{{ value }}</output>`;
+    angularMember = `\n  pageLabel = (page: number) => '${pageLabel} ' + page;`;
+  } else if (id === "stepper") {
+    state = numberState = true;
+    initialValue = "1";
+    const steps = [
+      { value: "details", label: t("Details", "البيانات") },
+      { value: "review", label: t("Review", "المراجعة") },
+      { value: "done", label: t("Complete", "الإكمال") },
+    ];
+    react = `<Stepper label="${t("Progress", "التقدم")}" items={${JSON.stringify(steps)}} activeIndex={value} /><button type="button" className="nq-button" onClick={() => setValue((value + 1) % 4)}>${t("Next step", "الخطوة التالية")}</button><output>{value}</output>`;
+    vue = `<Stepper label="${t("Progress", "التقدم")}" :items='${JSON.stringify(steps)}' :active-index="value" /><button type="button" class="nq-button" @click="value = (value + 1) % 4">${t("Next step", "الخطوة التالية")}</button><output>{{ value }}</output>`;
+    angular = `<nq-stepper label="${t("Progress", "التقدم")}" [steps]="steps" [activeIndex]="value" /><button type="button" class="nq-button" (click)="value = (value + 1) % 4">${t("Next step", "الخطوة التالية")}</button><output>{{ value }}</output>`;
+    angularMember = `\n  steps = ${JSON.stringify(steps.map(({ label }) => ({ label })))};`;
+  } else if (id === "tabs") {
+    state = true;
+    initialValue = "'first'";
+    const items = [
+      {
+        value: "first",
+        label: t("Details", "التفاصيل"),
+        content: t("Service details", "تفاصيل الخدمة"),
+      },
+      {
+        value: "second",
+        label: t("Requirements", "المتطلبات"),
+        content: t("Required documents", "المستندات المطلوبة"),
+      },
+      {
+        value: "third",
+        label: t("Unavailable", "غير متاح"),
+        content: "",
+        disabled: true,
+      },
+    ];
+    react = `<Tabs label="${label}" items={${JSON.stringify(items)}} value={value} onValueChange={setValue} /><output>{value}</output>`;
+    vue = `<Tabs label="${label}" :items='${JSON.stringify(items)}' v-model="value" /><output>{{ value }}</output>`;
+    angular = `<nq-tabs label="${label}" [(value)]="value">${items.map((item) => `<nq-tab value="${item.value}" label="${item.label}"${item.disabled ? " disabled" : ""}>${item.content}</nq-tab>`).join("")}</nq-tabs><output>{{ value }}</output>`;
+  } else if (id === "progress") {
+    react = `<Progress label="${t("Upload progress", "تقدم الرفع")}" value={65} max={100} />`;
+    vue = `<Progress label="${t("Upload progress", "تقدم الرفع")}" :value="65" :max="100" />`;
+    angular = `<nq-progress label="${t("Upload progress", "تقدم الرفع")}" [value]="65" [max]="100" />`;
+  } else if (id === "skeleton") {
+    react = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style={{width:'100%',height:'4rem'}} /></div>`;
+    vue = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style="width:100%;height:4rem" /></div>`;
+    angular = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><nq-skeleton width="100%" height="4rem" /></div>`;
+  } else if (id === "avatar") {
+    react = `<Avatar name="${t("Example user", "مستخدم تجريبي")}" />`;
+    vue = react;
+    angular = `<nq-avatar name="${t("Example user", "مستخدم تجريبي")}" />`;
+  } else if (id === "empty") {
+    react = `<EmptyState title="${t("No applications", "لا توجد طلبات")}" description="${t("Your applications will appear here.", "ستظهر طلباتك هنا.")}" />`;
+    vue = react;
+    angular = `<nq-empty-state title="${t("No applications", "لا توجد طلبات")}" description="${t("Your applications will appear here.", "ستظهر طلباتك هنا.")}" />`;
   } else if (id === "badge") {
     react = `<Badge tone="success">${label}</Badge>`;
     vue = react;
@@ -116,12 +279,14 @@ export function projectExample(
     vue = react;
     angular = `<nq-spinner label="${t("Loading", "جارٍ التحميل")}" />`;
   }
-  const initial = booleanState
-    ? "false"
-    : id === "toggle-group"
-      ? "'first'"
-      : "''";
-  const stateType = booleanState ? "boolean" : "string";
+  const initial =
+    initialValue ??
+    (booleanState ? "false" : id === "toggle-group" ? "'first'" : "''");
+  const stateType = booleanState
+    ? "boolean"
+    : numberState
+      ? "number"
+      : "string";
   if (framework === "react")
     return {
       names: {
@@ -148,7 +313,7 @@ export function projectExample(
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };
-  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}`;
+  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "tabs" ? ", NqTabComponent" : ""}`;
   return {
     names: { html: "app.component.ts", css: "style.css", js: "main.ts" },
     entry: "main.ts",

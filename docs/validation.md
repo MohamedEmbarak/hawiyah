@@ -559,3 +559,17 @@ the downloaded ZIP passed independent integrity/readback checks. Guide build
 and typecheck passed. Remaining native recipes and Vue language-service checks
 are tracked in [editor coverage](editor-projects.md), not marked complete.
 
+### Core project recipe expansion
+
+Native recipe coverage increased from 11 to 24 components. Five Chromium
+matrix cases passed across React JSX/TSX, Vue JS/TS and Angular TypeScript
+(120 component previews). Assertions require actual component DOM and cover
+keyboard radio selection, exclusive accordion expansion, RTL tabs and disabled
+items, pagination, stepper state, table captions/row headers, and contained
+breadcrumb clicks. Angular table and Vue tab renders were visually inspected.
+All 24 React recipes passed TypeScript checks and all 24 Angular recipes passed
+strict template checks. Seven exported project builds, guide typecheck and guide
+build passed. An initial Vue run was interrupted by a build-triggered dev-server
+reload; the affected Vue/Angular runs passed after the build finished.
+Remaining catalog recipes and Vue language-service validation stay open.
+
