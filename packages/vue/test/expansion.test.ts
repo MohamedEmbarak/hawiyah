@@ -674,6 +674,9 @@ describe("Vue content and layouts", () => {
             }),
             h(Carousel, {
               label: "Highlights",
+              previousLabel: "Previous slide",
+              nextLabel: "Next slide",
+              slideMessage: (index: number, total: number) => `Slide ${index} of ${total}`,
               slides: [
                 { id: "a", label: "First", content: "One" },
                 { id: "b", label: "Second", content: "Two" },
@@ -697,7 +700,7 @@ describe("Vue content and layouts", () => {
     expect(root.querySelector<HTMLElement>(".nq-cookie-consent")!.hidden).toBe(
       true,
     );
-    buttons.find((button) => button.textContent === "Next slide")!.click();
+    buttons.find((button) => button.getAttribute("aria-label") === "Next slide")!.click();
     await nextTick();
     expect(root.querySelector(".nq-carousel [role=status]")!.textContent).toBe(
       "Slide 2 of 2",

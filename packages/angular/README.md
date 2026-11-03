@@ -159,7 +159,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | ToastRegion | `label`, `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, `dismissLabel`; `dismissed(id)`. Caller removes messages; stable polite/urgent live regions; no expiry timers. |
 | Collapsible | `label`, `[(open)]`; native details/summary and projected body. |
 | TreeView | String selection; `nodes: {id,label,disabled?,children?}[]`, `[(expandedIds)]`, `direction`. Roving focus, RTL arrows, Home/End, Enter/Space selection. Caller supplies unique IDs. |
-| Carousel | `label`, `slides: {id?,title?,content?,src?,alt?}[]`, `[(current)]` (zero-based), `loop`; `previousLabel`, `nextLabel`, `emptyLabel`, `carouselDescription`, `slideDescription`, `slideLabel(index,total)`. Hidden inactive slides, current status, no autoplay. |
+| Carousel | Required label/slides; `[(current)]`, `loop=false`, `slides` and optional `slideTemplate` with `{ $implicit: NqSlide, index }`, one-based `slideLabel(index,total)`. `showIndicators=true`, localized control/indicator/description/empty labels, inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
 | Link | `href`, `target`, `rel`, `current`, `variant: default/subtle`; projected link text. `_blank` defaults to `noopener noreferrer`. |
 | IconButton | Required accessible `label`; `type`, `disabled`, `pressed`, `variant`, `size`; `activated(MouseEvent)`. Project a decorative icon. |
 | ButtonGroup | `label`, `orientation: horizontal/vertical`; project native buttons or IconButtons. |

@@ -283,7 +283,7 @@ input validation. `unavailableMessage` localizes custom date validation.
 | `ToastRegion` | Caller-owned `messages: {id,title?,description,tone?,urgent?,dismissible?}[]`, `onDismiss(id)`, label/getDismissLabel. Stable polite/assertive regions; only explicitly urgent messages enter the assertive region. No timer or automatic expiry. |
 | `Collapsible` | Native details with title, open/defaultOpen/onOpenChange, disabled and children. |
 | `TreeView` | Required label and `items: {id,label,disabled?,children?}[]`; value/defaultValue/onValueChange and expanded/defaultExpanded/onExpandedChange. Visible nodes have tree levels, positions and roving focus; horizontal expansion follows RTL. |
-| `Carousel` | Required label/slides; index/defaultIndex/onIndexChange, optional loop, previousLabel/nextLabel/getSlideLabel. Native controls announce the visible slide. No autoplay. |
+| `Carousel` | Required label/slides; `index/defaultIndex/onIndexChange`, `loop=false`, renderable `slides`, zero-based `getSlideLabel(index,total)`. `showIndicators=true`, localized control/indicator/description/empty labels, inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
 
 ```tsx
 // Toast state is ordinary application state. There is no global singleton.

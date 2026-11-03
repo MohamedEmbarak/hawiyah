@@ -1,4 +1,5 @@
-import { booleanAttribute, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, Input, Output, ViewChild } from '@angular/core';
+import { booleanAttribute, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, Input, Output, TemplateRef, ViewChild } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { getDirection, getNextEnabledIndex, observeReadonlyChoice, type Direction, type Option } from '@nasaq/core';
 import { NqExpandedValueControl } from './advanced-controls';
@@ -78,5 +79,46 @@ export class NqTreeViewComponent extends NqExpandedValueControl<string> {
 }
 
 export interface NqSlide { id?: string; title?: string; content?: string; src?: string; alt?: string; }
-@Component({selector: 'nq-carousel', standalone: true, template: `<section class="nq-carousel" role="region" [attr.aria-label]="label" [attr.aria-roledescription]="carouselDescription"><div class="nq-carousel-slides">@for (slide of slides; track slide.id || $index; let index = $index) {<div class="nq-carousel-slide" role="group" [attr.aria-roledescription]="slideDescription" [attr.aria-label]="slideLabel(index + 1, slides.length)" [hidden]="index !== indexValue">@if (slide.src) {<img [src]="slide.src" [alt]="slide.alt || ''">}@if (slide.title) {<h3>{{ slide.title }}</h3>}@if (slide.content) {<p>{{ slide.content }}</p>}</div>}</div><div class="nq-carousel-controls"><button class="nq-button" type="button" [disabled]="!slides.length || (!loop && indexValue === 0)" (click)="move(-1)">{{ previousLabel }}</button><span role="status" aria-live="polite">{{ slides.length ? slideLabel(indexValue + 1, slides.length) : emptyLabel }}</span><button class="nq-button" type="button" [disabled]="!slides.length || (!loop && indexValue === slides.length - 1)" (click)="move(1)">{{ nextLabel }}</button></div></section>`})
-export class NqCarouselComponent { @Input({required: true}) label = ''; @Input() slides: readonly NqSlide[] = []; @Input() current = 0; @Input({transform: booleanAttribute}) loop = false; @Input() previousLabel = 'Previous slide'; @Input() nextLabel = 'Next slide'; @Input() emptyLabel = 'No slides'; @Input() carouselDescription = 'carousel'; @Input() slideDescription = 'slide'; @Input() slideLabel = (current: number, total: number) => `${current} of ${total}`; @Output() readonly currentChange = new EventEmitter<number>(); get indexValue() { return Math.max(0, Math.min(this.slides.length - 1, this.current)); } move(amount: number) { if (!this.slides.length) return; const next = this.indexValue + amount; this.current = this.loop ? (next + this.slides.length) % this.slides.length : Math.max(0, Math.min(this.slides.length - 1, next)); this.currentChange.emit(this.current); } }
+@Component({selector: 'nq-carousel', standalone: true, imports: [NgTemplateOutlet], styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `
+  <section class="nq-carousel" data-nq-carousel-ready [style.--nq-carousel-index]="indexValue" role="region" [attr.aria-label]="label" [attr.aria-roledescription]="carouselDescription">
+    <div class="nq-carousel-viewport nq-carousel-slides"><div class="nq-carousel-track">
+      @for (slide of slides; track slide.id || $index; let index = $index) {
+        <div class="nq-carousel-slide" role="group" [attr.aria-roledescription]="slideDescription" [attr.aria-label]="slideLabel(index + 1, slides.length)" [hidden]="index !== indexValue" [inert]="index !== indexValue" [attr.aria-hidden]="index !== indexValue ? 'true' : null">
+          @if (slideTemplate) {<ng-container [ngTemplateOutlet]="slideTemplate" [ngTemplateOutletContext]="{$implicit: slide, index: index}" />} @else {
+            @if (slide.src) {<img [src]="slide.src" [alt]="slide.alt || ''">}@if (slide.title) {<h3>{{ slide.title }}</h3>}@if (slide.content) {<p>{{ slide.content }}</p>}
+          }
+        </div>
+      }
+    </div>@if (!slides.length) {<p class="nq-carousel-empty">{{ emptyLabel }}</p>}</div>
+    <div class="nq-carousel-controls">
+      @if (showIndicators && slides.length) {<div class="nq-carousel-pagination" role="group" [attr.aria-label]="indicatorsLabel">@for (slide of slides; track slide.id || $index; let index = $index) {<button class="nq-carousel-dot" type="button" [attr.aria-label]="slideLabel(index + 1, slides.length)" [attr.aria-current]="index === indexValue ? 'true' : null" (click)="select(index)"></button>}</div>}
+      <div class="nq-carousel-arrows"><button class="nq-button nq-carousel-arrow" type="button" data-nq-previous [attr.aria-label]="previousLabel" [disabled]="slides.length < 2 || (!loop && indexValue === 0)" (click)="move(-1)"></button><button class="nq-button nq-carousel-arrow" type="button" data-nq-next [attr.aria-label]="nextLabel" [disabled]="slides.length < 2 || (!loop && indexValue === slides.length - 1)" (click)="move(1)"></button></div>
+      <span class="nq-carousel-status nq-sr-only" role="status" aria-live="polite">{{ slides.length ? slideLabel(indexValue + 1, slides.length) : emptyLabel }}</span>
+    </div>
+  </section>`})
+export class NqCarouselComponent {
+  @Input({required: true}) label = '';
+  @Input() slides: readonly NqSlide[] = [];
+  @Input() slideTemplate?: TemplateRef<{$implicit: NqSlide; index: number}>;
+  @Input() current = 0;
+  @Input({transform: booleanAttribute}) loop = false;
+  @Input({transform: booleanAttribute}) showIndicators = true;
+  @Input() indicatorsLabel = 'اختيار الشريحة';
+  @Input() previousLabel = 'الشريحة السابقة';
+  @Input() nextLabel = 'الشريحة التالية';
+  @Input() emptyLabel = 'لا توجد شرائح';
+  @Input() carouselDescription = 'عرض شرائح';
+  @Input() slideDescription = 'شريحة';
+  @Input() slideLabel = (current: number, total: number) => `${current} من ${total}`;
+  @Output() readonly currentChange = new EventEmitter<number>();
+  get indexValue() { return Math.max(0, Math.min(this.slides.length - 1, Number.isFinite(this.current) ? Math.floor(this.current) : 0)); }
+  select(requested: number) {
+    const total = this.slides.length;
+    if (!total || !Number.isFinite(requested)) return;
+    const rounded = Math.floor(requested);
+    const next = this.loop ? ((rounded % total) + total) % total : Math.max(0, Math.min(total - 1, rounded));
+    if (next === this.indexValue) return;
+    this.current = next; this.currentChange.emit(next);
+  }
+  move(amount: number) { this.select(this.indexValue + amount); }
+}

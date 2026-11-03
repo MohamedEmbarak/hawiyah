@@ -1,3 +1,4 @@
+import {carouselDemoMarkup} from './carousel-demo';
 import {iconButtonMarkup} from './icon-button-demo';
 import {toggleGroupMarkup} from './segmented-demo';
 import {portalFooterMarkup} from './portal-footer-demo';
@@ -84,7 +85,7 @@ export function expandedSample(
     case "tree-view":
       return `<ul class="nq-tree-view" data-nq="tree-view" role="tree" aria-label="${t("Documents", "المستندات")}"><li role="treeitem" data-nq-value="business" aria-expanded="true"><button type="button" data-nq-tree-toggle tabindex="-1" aria-label="${t("Toggle business documents", "توسيع مستندات الأعمال")}">▾</button><span data-nq-tree-label>${t("Business", "الأعمال")}</span><ul role="group">${[t("Commercial license", "الرخصة التجارية"), t("Address proof", "إثبات العنوان")].map((v, i) => `<li role="treeitem" data-nq-value="doc-${i}"><span data-nq-tree-label>${v}</span></li>`).join("")}</ul></li><li role="treeitem" data-nq-value="personal"><span data-nq-tree-label>${t("Personal documents", "مستندات شخصية")}</span></li></ul>`;
     case "carousel":
-      return `<section class="nq-carousel" data-nq="carousel" aria-label="${t("Featured services", "الخدمات المميزة")}"><div>${[t("A clearer beginning.", "بداية أوضح."), t("Everything in one place.", "كل شيء في مكان واحد."), t("Made for your next step.", "مصمّم لخطوتك القادمة.")].map((v) => `<article class="layout-demo-tile" data-nq-slide><h3>${v}</h3><a class="nq-link" href="#discover">${t("Explore services", "استكشف الخدمات")}</a></article>`).join("")}</div><div class="nq-inline">${b(icon("arrow-back", 18), `data-nq-previous aria-label="${t("Previous slide", "الشريحة السابقة")}"`)}<span data-nq-carousel-status role="status"></span>${b(icon("arrow", 18), `data-nq-next aria-label="${t("Next slide", "الشريحة التالية")}"`)}</div></section>`;
+      return carouselDemoMarkup(locale);
     case "link":
       return `<div class="nq-stack"><a class="nq-link" href="#discover">${t("Explore services", "استكشف الخدمات")}</a><a class="nq-link" data-variant="neutral" href="#docs">${t("Read the guide", "اقرأ الدليل")}</a><a class="nq-link" data-variant="standalone" href="#details">${t("Service details", "تفاصيل الخدمة")} ${icon("arrow", 16)}</a><a class="nq-link" role="link" aria-disabled="true" tabindex="-1">${t("Unavailable destination", "وجهة غير متاحة")}</a></div>`;
     case "icon-button":

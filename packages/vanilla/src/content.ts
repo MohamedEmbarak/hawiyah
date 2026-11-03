@@ -162,21 +162,41 @@ export function createTreeView(root: HTMLElement, options: TreeViewOptions = {})
 export interface CarouselOptions { index?: number; loop?: boolean; onValueChange?: (index: number) => void; getSlideLabel?: (index: number, total: number) => string; carouselDescription?: string; slideDescription?: string }
 export interface CarouselController { readonly index: number; select(index: number): void; previous(): void; next(): void; destroy(): void }
 export function createCarousel(root: HTMLElement, options: CarouselOptions = {}): CarouselController {
-  const slides = ownItems<HTMLElement>(root, '[data-nq-slide]'); const previous = root.querySelector<HTMLElement>('[data-nq-previous]'); const next = root.querySelector<HTMLElement>('[data-nq-next]'); const status = root.querySelector<HTMLElement>('[data-nq-carousel-status]');
-  const scope = createCleanup(); const initialText = status?.textContent; const previousDisabled = !!previous && isDisabled(previous); const nextDisabled = !!next && isDisabled(next); const loop = options.loop ?? root.dataset.nqLoop === 'true';
-  remember(scope, root, ['role', 'aria-roledescription']); if (!root.hasAttribute('role')) root.setAttribute('role', 'region'); root.setAttribute('aria-roledescription', options.carouselDescription ?? translated(root, 'carousel', 'عرض شرائح'));
-  slides.forEach(slide => { remember(scope, slide, ['hidden', 'role', 'aria-label', 'aria-roledescription']); slide.setAttribute('role', 'group'); slide.setAttribute('aria-roledescription', options.slideDescription ?? translated(root, 'slide', 'شريحة')); });
-  [previous, next].forEach(button => { if (button) { remember(scope, button, ['disabled', 'aria-disabled']); buttonType(scope, button); } });
-  if (status) { remember(scope, status, ['role', 'aria-live']); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); scope.add(() => { status.textContent = initialText ?? ''; }); }
-  let index = Math.max(0, Math.min(slides.length - 1, options.index ?? Number(root.dataset.nqIndex || 0)));
-  if (!Number.isFinite(index)) index = 0; index = Math.floor(index);
-  const label = (position: number) => options.getSlideLabel?.(position + 1, slides.length) ?? translated(root, `${position + 1} of ${slides.length}`, `${position + 1} من ${slides.length}`);
-  const disable = (button: HTMLElement | null, disabled: boolean) => { if (!button) return; if (button.tagName === 'BUTTON') (button as HTMLButtonElement).disabled = disabled; button.setAttribute('aria-disabled', String(disabled)); };
-  const render = () => { slides.forEach((slide, position) => { slide.hidden = position !== index; if (!slide.hasAttribute('aria-label')) slide.setAttribute('aria-label', label(position)); }); disable(previous, previousDisabled || blocked(root) || !slides.length || (!loop && index === 0)); disable(next, nextDisabled || blocked(root) || !slides.length || (!loop && index === slides.length - 1)); if (status) status.textContent = slides.length ? label(index) : translated(root, 'No slides', 'لا توجد شرائح'); };
-  const select = (nextIndex: number) => { if (scope.destroyed || blocked(root) || !slides.length || !Number.isFinite(nextIndex)) return; const rounded = Math.floor(nextIndex); const bounded = loop ? ((rounded % slides.length) + slides.length) % slides.length : Math.max(0, Math.min(slides.length - 1, rounded)); if (bounded === index) return; index = bounded; render(); emit(root, { value: index, index }); options.onValueChange?.(index); };
-  if (previous) scope.listen(previous, 'click', event => { event.preventDefault(); if (!isDisabled(previous)) select(index - 1); });
-  if (next) scope.listen(next, 'click', event => { event.preventDefault(); if (!isDisabled(next)) select(index + 1); });
-  watchDisabled(scope, root, render); render(); return { get index() { return index; }, select, previous: () => select(index - 1), next: () => select(index + 1), destroy: () => scope.destroy() };
+  const slides = ownItems<HTMLElement>(root, '[data-nq-slide]');
+  const previous = ownItems<HTMLElement>(root, '[data-nq-previous]')[0] ?? null;
+  const next = ownItems<HTMLElement>(root, '[data-nq-next]')[0] ?? null;
+  const status = ownItems<HTMLElement>(root, '[data-nq-carousel-status]')[0];
+  const track = ownItems<HTMLElement>(root, '[data-nq-carousel-track], .nq-carousel-track')[0];
+  const dots = ownItems<HTMLButtonElement>(root, '[data-nq-carousel-dot]');
+  const dotIndexes = dots.map((dot, position) => Number(dot.dataset.nqCarouselDot || position));
+  const scope = createCleanup(); const initialText = status?.textContent;
+  const previousDisabled = !!previous && isDisabled(previous), nextDisabled = !!next && isDisabled(next);
+  const dotDisabled = dots.map(isDisabled), loop = options.loop ?? root.dataset.nqLoop === 'true';
+  remember(scope, root, ['role', 'aria-roledescription']);
+  if (!root.hasAttribute('role')) root.setAttribute('role', 'region');
+  root.setAttribute('aria-roledescription', options.carouselDescription ?? translated(root, 'carousel', 'عرض شرائح'));
+  if (track) {remember(scope, root, ['style', 'data-nq-carousel-ready']); root.setAttribute('data-nq-carousel-ready', '');}
+  slides.forEach(slide => {remember(scope, slide, ['hidden', 'inert', 'aria-hidden', 'role', 'aria-label', 'aria-roledescription']); if (!slide.hasAttribute('role') && slide.tagName !== 'ARTICLE') slide.setAttribute('role', 'group'); slide.setAttribute('aria-roledescription', options.slideDescription ?? translated(root, 'slide', 'شريحة'));});
+  [previous, next, ...dots].forEach(button => {if(button){remember(scope, button, ['disabled', 'aria-disabled']); buttonType(scope, button);}});
+  dots.forEach(dot => remember(scope, dot, ['aria-label', 'aria-current']));
+  if(status){remember(scope, status, ['role', 'aria-live']); status.setAttribute('role','status');status.setAttribute('aria-live','polite');scope.add(()=>{status.textContent=initialText??'';});}
+  const start=options.index ?? Number(root.dataset.nqIndex || 0);
+  let index=Number.isFinite(start)?Math.max(0, Math.min(slides.length-1, Math.floor(start))):0;
+  const label=(position:number)=>options.getSlideLabel?.(position+1,slides.length)??translated(root,`${position+1} of ${slides.length}`,`${position+1} من ${slides.length}`);
+  const disable=(button:HTMLElement|null,disabled:boolean)=>{if(!button)return;if(button.tagName==='BUTTON')(button as HTMLButtonElement).disabled=disabled;button.setAttribute('aria-disabled',String(disabled));};
+  const render=()=>{
+    slides.forEach((slide,position)=>{const inactive=position!==index;slide.hidden=inactive;slide.toggleAttribute('inert',inactive);slide.setAttribute('aria-hidden',String(inactive));if(!slide.hasAttribute('aria-label'))slide.setAttribute('aria-label',label(position));});
+    if(track)root.style.setProperty('--nq-carousel-index',String(index));
+    disable(previous,previousDisabled||blocked(root)||slides.length<2||(!loop&&index===0));
+    disable(next,nextDisabled||blocked(root)||slides.length<2||(!loop&&index===slides.length-1));
+    dots.forEach((dot,position)=>{const target=dotIndexes[position] ?? -1;const valid=Number.isInteger(target)&&target>=0&&target<slides.length;disable(dot,dotDisabled[position]||blocked(root)||!valid);if(target===index&&valid)dot.setAttribute('aria-current','true');else dot.removeAttribute('aria-current');if(!dot.hasAttribute('aria-label'))dot.setAttribute('aria-label',label(target));});
+    if(status)status.textContent=slides.length?label(index):translated(root,'No slides','لا توجد شرائح');
+  };
+  const select=(nextIndex:number)=>{if(scope.destroyed||blocked(root)||!slides.length||!Number.isFinite(nextIndex))return;const rounded=Math.floor(nextIndex);const bounded=loop?((rounded%slides.length)+slides.length)%slides.length:Math.max(0,Math.min(slides.length-1,rounded));if(bounded===index)return;index=bounded;render();emit(root,{value:index,index});options.onValueChange?.(index);};
+  if(previous)scope.listen(previous,'click',event=>{event.preventDefault();if(!isDisabled(previous))select(index-1);});
+  if(next)scope.listen(next,'click',event=>{event.preventDefault();if(!isDisabled(next))select(index+1);});
+  dots.forEach((dot,position)=>scope.listen(dot,'click',event=>{event.preventDefault();if(!isDisabled(dot))select(dotIndexes[position] ?? Number.NaN);}));
+  watchDisabled(scope,root,render);render();return{get index(){return index;},select,previous:()=>select(index-1),next:()=>select(index+1),destroy:()=>scope.destroy()};
 }
 
 export type SortDirection = 'ascending' | 'descending';

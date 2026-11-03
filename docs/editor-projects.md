@@ -25,9 +25,9 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 31 components: Button, ButtonGroup, IconButton,
+Native project recipes currently cover 32 components: Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
-Divider, Spinner, Card, Accordion, Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
+Divider, Spinner, Card, Accordion, Carousel, Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader and PortalFooter. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
@@ -113,3 +113,13 @@ All 31 React recipes passed TypeScript checks and all 31 Angular recipes passed
 strict template checks against clean tarball consumers; all seven exported
 framework/language projects built. This table task does not claim a fresh full
 155-preview catalog run. See [table evidence](nic-tables.md).
+
+Carousel brings coverage to 32 native recipes. Five cases demonstrate bounded
+navigation, looping, omitted indicators, empty data and one slide; native
+examples include controlled state and Angular's optional content template.
+All five React JSX/TSX, Vue JS/TS and Angular TypeScript previews pass focused
+browser interactions and geometry checks. All 32 React recipes pass TypeScript
+checks, all 32 Angular recipes pass strict template checks, and all seven
+exported framework/language projects build against clean tarball consumers.
+This does not claim a fresh 160-preview catalog run. See
+[carousel evidence](nic-carousel.md).

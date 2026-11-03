@@ -62,7 +62,9 @@ export const tokens = {
     "spinner": "1000ms",
     "tab-bar": "300ms",
     "accordion": "300ms",
-    "accordion-indicator": "200ms"
+    "accordion-indicator": "200ms",
+    "carousel": "600ms",
+    "carousel-control": "300ms"
   },
   "ease": {
     "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -70,7 +72,8 @@ export const tokens = {
     "switch": "cubic-bezier(0.42, 0, 0.58, 1)",
     "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)",
     "tab-bar": "cubic-bezier(0, 0, 0.58, 1)",
-    "accordion": "cubic-bezier(0.42, 0, 0.58, 1)"
+    "accordion": "cubic-bezier(0.42, 0, 0.58, 1)",
+    "carousel": "cubic-bezier(0.25, 1, 0.5, 1)"
   },
   "content": {
     "max": "80rem",
@@ -181,7 +184,10 @@ export const tokens = {
     "badge-danger-background": "#FECDCA",
     "badge-danger-border": "#FECDCA",
     "badge-neutral-dot": "#4D5761",
-    "avatar-border": "#FFFFFF"
+    "avatar-border": "#FFFFFF",
+    "carousel-dot": "#E5E7EB",
+    "carousel-dot-hover": "#D2D6DB",
+    "carousel-dot-border": "#384250"
   },
   "control": {
     "height": "2.5rem",
@@ -299,7 +305,10 @@ export const themes = {
         "badge-danger-background": "#fff0ef",
         "badge-danger-border": "#00000000",
         "badge-neutral-dot": "#4c6264",
-        "avatar-border": "#d9e0da"
+        "avatar-border": "#d9e0da",
+        "carousel-dot": "#f0f1eb",
+        "carousel-dot-hover": "#d9e0da",
+        "carousel-dot-border": "#4c6264"
       }
     },
     "dark": {
@@ -396,7 +405,10 @@ export const themes = {
         "badge-danger-background": "#462729",
         "badge-danger-border": "#00000000",
         "badge-neutral-dot": "#b9cdca",
-        "avatar-border": "#3a5150"
+        "avatar-border": "#3a5150",
+        "carousel-dot": "#283c3c",
+        "carousel-dot-hover": "#3a5150",
+        "carousel-dot-border": "#b9cdca"
       }
     }
   },
@@ -495,7 +507,10 @@ export const themes = {
         "badge-danger-background": "#FECDCA",
         "badge-danger-border": "#FECDCA",
         "badge-neutral-dot": "#4D5761",
-        "avatar-border": "#FFFFFF"
+        "avatar-border": "#FFFFFF",
+        "carousel-dot": "#E5E7EB",
+        "carousel-dot-hover": "#D2D6DB",
+        "carousel-dot-border": "#384250"
       }
     },
     "dark": {
@@ -592,7 +607,10 @@ export const themes = {
         "badge-danger-background": "#B4231833",
         "badge-danger-border": "#F97066",
         "badge-neutral-dot": "#F3F4F6",
-        "avatar-border": "#1F2A37"
+        "avatar-border": "#1F2A37",
+        "carousel-dot": "#1F2A37",
+        "carousel-dot-hover": "#6C737F",
+        "carousel-dot-border": "#F3F4F6"
       }
     }
   }
@@ -662,7 +680,9 @@ export const themeFoundations = {
       "spinner": "1000ms",
       "tab-bar": "300ms",
       "accordion": "300ms",
-      "accordion-indicator": "200ms"
+      "accordion-indicator": "200ms",
+      "carousel": "600ms",
+      "carousel-control": "300ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -670,7 +690,8 @@ export const themeFoundations = {
       "switch": "cubic-bezier(0.42, 0, 0.58, 1)",
       "switch-track": "cubic-bezier(0.42, 0, 0.58, 1)",
       "tab-bar": "cubic-bezier(0, 0, 0.58, 1)",
-      "accordion": "cubic-bezier(0.42, 0, 0.58, 1)"
+      "accordion": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "carousel": "cubic-bezier(0.25, 1, 0.5, 1)"
     },
     "content": {
       "max": "80rem",
@@ -752,7 +773,9 @@ export const themeFoundations = {
       "spinner": "700ms",
       "tab-bar": "0ms",
       "accordion": "0ms",
-      "accordion-indicator": "0ms"
+      "accordion-indicator": "0ms",
+      "carousel": "0ms",
+      "carousel-control": "180ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -760,7 +783,8 @@ export const themeFoundations = {
       "switch": "cubic-bezier(0.2, 0, 0, 1)",
       "switch-track": "ease",
       "tab-bar": "cubic-bezier(0, 0, 0.58, 1)",
-      "accordion": "cubic-bezier(0.42, 0, 0.58, 1)"
+      "accordion": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "carousel": "cubic-bezier(0.25, 1, 0.5, 1)"
     },
     "content": {
       "max": "78rem",
@@ -907,7 +931,9 @@ export const tokenNames = {
     "spinner": "--nq-duration-spinner",
     "tab-bar": "--nq-duration-tab-bar",
     "accordion": "--nq-duration-accordion",
-    "accordion-indicator": "--nq-duration-accordion-indicator"
+    "accordion-indicator": "--nq-duration-accordion-indicator",
+    "carousel": "--nq-duration-carousel",
+    "carousel-control": "--nq-duration-carousel-control"
   },
   "ease": {
     "standard": "--nq-ease-standard",
@@ -915,7 +941,8 @@ export const tokenNames = {
     "switch": "--nq-ease-switch",
     "switch-track": "--nq-ease-switch-track",
     "tab-bar": "--nq-ease-tab-bar",
-    "accordion": "--nq-ease-accordion"
+    "accordion": "--nq-ease-accordion",
+    "carousel": "--nq-ease-carousel"
   },
   "content": {
     "max": "--nq-content-max",
@@ -1026,7 +1053,10 @@ export const tokenNames = {
     "badge-danger-background": "--nq-color-badge-danger-background",
     "badge-danger-border": "--nq-color-badge-danger-border",
     "badge-neutral-dot": "--nq-color-badge-neutral-dot",
-    "avatar-border": "--nq-color-avatar-border"
+    "avatar-border": "--nq-color-avatar-border",
+    "carousel-dot": "--nq-color-carousel-dot",
+    "carousel-dot-hover": "--nq-color-carousel-dot-hover",
+    "carousel-dot-border": "--nq-color-carousel-dot-border"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1097,12 +1127,15 @@ export const cssVariableNames = [
   "--nq-duration-tab-bar",
   "--nq-duration-accordion",
   "--nq-duration-accordion-indicator",
+  "--nq-duration-carousel",
+  "--nq-duration-carousel-control",
   "--nq-ease-standard",
   "--nq-ease-input",
   "--nq-ease-switch",
   "--nq-ease-switch-track",
   "--nq-ease-tab-bar",
   "--nq-ease-accordion",
+  "--nq-ease-carousel",
   "--nq-content-max",
   "--nq-content-gutter",
   "--nq-content-gutter-mobile",
@@ -1206,6 +1239,9 @@ export const cssVariableNames = [
   "--nq-color-badge-danger-border",
   "--nq-color-badge-neutral-dot",
   "--nq-color-avatar-border",
+  "--nq-color-carousel-dot",
+  "--nq-color-carousel-dot-hover",
+  "--nq-color-carousel-dot-border",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

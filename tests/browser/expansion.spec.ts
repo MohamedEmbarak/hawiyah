@@ -131,9 +131,10 @@ test("menus, trees, carousels, sortable data and dismissible feedback work in th
   const carousel = page.locator('[data-nq="carousel"]');
   await expect(carousel.locator("[data-nq-slide]:visible")).toHaveCount(1);
   await carousel.locator("[data-nq-next]").click();
-  await expect(carousel.locator("[data-nq-slide]:visible")).toContainText(
+  await expect(carousel.locator("[data-nq-slide]:not([hidden])")).toContainText(
     "Everything in one place.",
   );
+  await expect(carousel.locator("[data-nq-slide]:visible")).toHaveCount(1);
   const table = page.locator('[data-nq="data-table"]');
   await table.getByRole("button", { name: "Days", exact: true }).click();
   await expect(table.locator("tbody tr").first()).toContainText("Certificate");
@@ -148,8 +149,12 @@ test("menus, trees, carousels, sortable data and dismissible feedback work in th
     .locator('[data-nq="cookie-consent"] [data-nq-consent="rejected"]')
     .click();
   await expect(page.locator('[data-nq="cookie-consent"]')).toBeHidden();
-  await page.locator('[data-nq="toast-region"] [data-nq-dismiss]').click();
-  await expect(page.locator("[data-nq-toast]")).toBeHidden();
+  const toasts = page.locator('[data-nq="toast-region"] [data-nq-toast]');
+  await expect(toasts).toHaveCount(5);
+  for (const toast of await toasts.all()) {
+    await toast.locator('[data-nq-dismiss]').click();
+    await expect(toast).toBeHidden();
+  }
 });
 
 test("layout studio edits real responsive CSS and survives Arabic switching", async ({

@@ -210,7 +210,7 @@ endorsement or a claim about religious moon-sighting determinations.
 | `ToastRegion` | Caller-owned `messages: {id,title?,message,tone?,urgent?}[]`, `label`, `dismissLabel(message)`; emits `dismiss(id)`; polite and urgent live regions stay mounted, no expiry timer                                                                                                      |
 | `Collapsible` | `label`, boolean `v-model`, `defaultValue`, `disabled`; native details/summary with default content slot                                                                                                                                                                               |
 | `TreeView`    | `items: {id,label,disabled?,children?}[]`, `label`, selected-id `v-model`, `defaultValue`, `v-model:expanded`, `defaultExpanded`, `disabled`; localized `expandLabel(node)` / `collapseLabel(node)`; flattened visible tree with level/position, roving focus and RTL expansion arrows |
-| `Carousel`    | `slides: {id,label,content?}[]`, required `label`, zero-based numeric `v-model`, `defaultValue`, `wrap=true`, `previousLabel`, `nextLabel`, `slideMessage(index,total)`; named slide-ID slots; explicit buttons and current-slide status, no autoplay                                  |
+| `Carousel` | Required label/slides; `v-model/defaultValue`, `wrap=true`, `slides` and named slide-ID slots, one-based `slideMessage(index,total)`. `showIndicators=true`, localized control/indicator/description/empty labels, inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
 
 Popover is a disclosure, not a focus trap. Menu is for commands/navigation;
 TreeView does not claim drag-and-drop. Toast and notification dismissal is

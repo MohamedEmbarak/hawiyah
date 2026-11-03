@@ -1,5 +1,5 @@
 import { cloneElement, useEffect, useId, useRef, useState } from 'react';
-import type { ButtonHTMLAttributes, ComponentPropsWithRef, ReactElement, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ComponentPropsWithRef, CSSProperties, ReactElement, ReactNode } from 'react';
 import { getDirection, getNextEnabledIndex, observeReadonlyChoice } from '@nasaq/core';
 import type { Option } from '@nasaq/core';
 import { Button } from './forms.js';
@@ -69,8 +69,34 @@ export function TreeView({ items, label, value, defaultValue = '', onValueChange
     if (event.key === 'ArrowDown') focus(enabled[Math.min(enabled.length - 1, position + 1)]?.node.id); else if (event.key === 'ArrowUp') focus(enabled[Math.max(0, position - 1)]?.node.id); else if (event.key === 'Home') focus(enabled[0]?.node.id); else if (event.key === 'End') focus(enabled.at(-1)?.node.id); else if (event.key === forward && node.children?.length) { if (!opened.includes(node.id)) expand(node, true); else focus(node.children.find(child => !child.disabled)?.id); } else if (event.key === backward) { if (node.children?.length && opened.includes(node.id)) expand(node, false); else if (parent) focus(parent); } else if (event.key === 'Enter' || event.key === ' ') select(node.id);
   }}>{node.children?.length ? <button type="button" tabIndex={-1} disabled={disabled || node.disabled} aria-label={`${opened.includes(node.id) ? 'Collapse' : 'Expand'} ${typeof node.label === 'string' ? node.label : ''}`} onClick={event => { event.stopPropagation(); expand(node, !opened.includes(node.id)); focus(node.id); }}>{opened.includes(node.id) ? '−' : '+'}</button> : null}<span id={`${id}-${encodeURIComponent(node.id)}`}>{node.label}</span></li>)}</ul>;
 }
-export interface CarouselProps extends Omit<ComponentPropsWithRef<'section'>, 'onChange'> { slides: readonly ReactNode[]; label: string; index?: number; defaultIndex?: number; onIndexChange?: (index: number) => void; previousLabel?: string; nextLabel?: string; getSlideLabel?: (index: number, count: number) => string; loop?: boolean }
-export function Carousel({ slides, label, index, defaultIndex = 0, onIndexChange, previousLabel = 'Previous slide', nextLabel = 'Next slide', getSlideLabel = (current, count) => `${current + 1} of ${count}`, loop = false, className, ...props }: CarouselProps) {
-  const [stored, select] = useControllable(index, defaultIndex, onIndexChange); const current = Math.max(0, Math.min(slides.length - 1, stored)); const move = (delta: number) => select(loop ? (current + delta + slides.length) % slides.length : current + delta);
-  return <section {...props} className={cx('nq-carousel', className)} role="region" aria-roledescription="carousel" aria-label={props['aria-label'] ?? label}>{slides.map((slide, number) => <div key={number} role="group" aria-roledescription="slide" aria-label={getSlideLabel(number, slides.length)} hidden={current !== number}>{slide}</div>)}<div className="nq-inline"><Button variant="secondary" disabled={slides.length < 2 || !loop && current === 0} onClick={() => move(-1)}>{previousLabel}</Button><span role="status" aria-live="polite">{slides.length ? getSlideLabel(current, slides.length) : ''}</span><Button variant="secondary" disabled={slides.length < 2 || !loop && current === slides.length - 1} onClick={() => move(1)}>{nextLabel}</Button></div></section>;
+export interface CarouselProps extends Omit<ComponentPropsWithRef<'section'>, 'onChange'> {
+  slides: readonly ReactNode[]; label: string; index?: number; defaultIndex?: number;
+  onIndexChange?: (index: number) => void; previousLabel?: string; nextLabel?: string;
+  getSlideLabel?: (index: number, count: number) => string; loop?: boolean;
+  showIndicators?: boolean; indicatorsLabel?: string; emptyLabel?: string;
+  carouselDescription?: string; slideDescription?: string;
+}
+export function Carousel({ slides, label, index, defaultIndex = 0, onIndexChange,
+  previousLabel = 'الشريحة السابقة', nextLabel = 'الشريحة التالية',
+  getSlideLabel = (current, count) => `${current + 1} من ${count}`, loop = false,
+  showIndicators = true, indicatorsLabel = 'اختيار الشريحة', emptyLabel = 'لا توجد شرائح',
+  carouselDescription = 'عرض شرائح', slideDescription = 'شريحة', className, style, ...props
+}: CarouselProps) {
+  const [stored, setIndex] = useControllable(index, defaultIndex, onIndexChange);
+  const total = slides.length;
+  const current = Math.max(0, Math.min(total - 1, Number.isFinite(stored) ? Math.floor(stored) : 0));
+  const select = (requested: number) => {
+    if (!total || !Number.isFinite(requested)) return;
+    const rounded = Math.floor(requested);
+    const next = loop ? ((rounded % total) + total) % total : Math.max(0, Math.min(total - 1, rounded));
+    if (next !== current) setIndex(next);
+  };
+  return <section {...props} className={cx('nq-carousel', className)} data-nq-carousel-ready="" style={{...style, '--nq-carousel-index': current} as CSSProperties} role="region" aria-roledescription={carouselDescription} aria-label={props['aria-label'] ?? label}>
+    <div className="nq-carousel-viewport nq-carousel-slides"><div className="nq-carousel-track">{slides.map((slide, number) => <div className="nq-carousel-slide" key={number} role="group" aria-roledescription={slideDescription} aria-label={getSlideLabel(number, total)} hidden={current !== number} inert={current !== number} aria-hidden={current !== number ? 'true' : undefined}>{slide}</div>)}</div>{!total && <p className="nq-carousel-empty">{emptyLabel}</p>}</div>
+    <div className="nq-carousel-controls nq-inline">
+      {showIndicators && total > 0 && <div className="nq-carousel-pagination" role="group" aria-label={indicatorsLabel}>{slides.map((_, number) => <button className="nq-carousel-dot" key={number} type="button" aria-label={getSlideLabel(number, total)} aria-current={number === current ? 'true' : undefined} onClick={() => select(number)} />)}</div>}
+      <div className="nq-carousel-arrows"><Button className="nq-carousel-arrow" variant="secondary" type="button" data-nq-previous="" aria-label={previousLabel} disabled={total < 2 || !loop && current === 0} onClick={() => select(current - 1)} /><Button className="nq-carousel-arrow" variant="secondary" type="button" data-nq-next="" aria-label={nextLabel} disabled={total < 2 || !loop && current === total - 1} onClick={() => select(current + 1)} /></div>
+      <span className="nq-carousel-status nq-sr-only" role="status" aria-live="polite">{total ? getSlideLabel(current, total) : emptyLabel}</span>
+    </div>
+  </section>;
 }

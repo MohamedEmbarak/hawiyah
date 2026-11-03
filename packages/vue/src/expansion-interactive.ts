@@ -741,11 +741,16 @@ export const Carousel = defineComponent({
     label: { type: String, required: true },
     modelValue: Number,
     defaultValue: { type: Number, default: 0 },
-    previousLabel: { type: String, default: "Previous slide" },
-    nextLabel: { type: String, default: "Next slide" },
+    previousLabel: { type: String, default: "الشريحة السابقة" },
+    nextLabel: { type: String, default: "الشريحة التالية" },
+    showIndicators: { type: Boolean, default: true },
+    indicatorsLabel: { type: String, default: "اختيار الشريحة" },
+    emptyLabel: { type: String, default: "لا توجد شرائح" },
+    carouselDescription: { type: String, default: "عرض شرائح" },
+    slideDescription: { type: String, default: "شريحة" },
     slideMessage: {
       type: Function as PropType<(index: number, total: number) => string>,
-      default: (index: number, total: number) => `Slide ${index} of ${total}`,
+      default: (index: number, total: number) => `${index} من ${total}`,
     },
     wrap: { type: Boolean, default: true },
   },
@@ -758,58 +763,51 @@ export const Carousel = defineComponent({
     );
     return () => {
       const total = props.slides.length;
-      const current = Math.max(0, Math.min(total - 1, model.value.value));
-      const select = (delta: number) =>
-        model.set(
-          props.wrap
-            ? (current + delta + total) % total
-            : Math.max(0, Math.min(total - 1, current + delta)),
-        );
+      const stored = model.value.value;
+      const current = Math.max(0, Math.min(total - 1, Number.isFinite(stored) ? Math.floor(stored) : 0));
+      const select = (requested: number) => {
+        if (!total || !Number.isFinite(requested)) return;
+        const rounded = Math.floor(requested);
+        const next = props.wrap ? ((rounded % total) + total) % total : Math.max(0, Math.min(total - 1, rounded));
+        if (next !== current) model.set(next);
+      };
       return h(
         "section",
         mergeProps(attrs, {
           class: "nq-carousel",
+          "data-nq-carousel-ready": "",
+          style: { "--nq-carousel-index": current },
           role: "region",
-          "aria-roledescription": "carousel",
+          "aria-roledescription": props.carouselDescription,
           "aria-label": props.label,
         }),
         [
-          ...props.slides.map((slide, index) =>
+          h("div", { class: "nq-carousel-viewport nq-carousel-slides" }, [h("div", { class: "nq-carousel-track" }, props.slides.map((slide, index) =>
             h(
               "div",
               {
                 key: slide.id,
+                class: "nq-carousel-slide",
                 role: "group",
-                "aria-roledescription": "slide",
+                "aria-roledescription": props.slideDescription,
                 "aria-label": `${props.slideMessage(index + 1, total)}: ${slide.label}`,
                 hidden: index !== current,
+                inert: index !== current ? true : undefined,
+                "aria-hidden": index !== current ? "true" : undefined,
               },
               [slots[slide.id]?.() ?? slide.content],
             ),
-          ),
+          )), !total && h("p", {class: "nq-carousel-empty"}, props.emptyLabel)]),
           h("div", { class: "nq-carousel-controls" }, [
-            h(
-              Button,
-              {
-                variant: "secondary",
-                disabled: total < 2 || (!props.wrap && current === 0),
-                onClick: () => select(-1),
-              },
-              () => props.previousLabel,
-            ),
+            props.showIndicators && total > 0 && h("div", {class: "nq-carousel-pagination", role: "group", "aria-label": props.indicatorsLabel}, props.slides.map((slide, index) => h("button", {class: "nq-carousel-dot", key: slide.id, type: "button", "aria-label": `${props.slideMessage(index + 1, total)}: ${slide.label}`, "aria-current": index === current ? "true" : undefined, onClick: () => select(index)}))),
+            h("div", {class: "nq-carousel-arrows"}, [
+              h(Button, {class: "nq-carousel-arrow", variant: "secondary", type: "button", "data-nq-previous": "", "aria-label": props.previousLabel, disabled: total < 2 || (!props.wrap && current === 0), onClick: () => select(current - 1)}),
+              h(Button, {class: "nq-carousel-arrow", variant: "secondary", type: "button", "data-nq-next": "", "aria-label": props.nextLabel, disabled: total < 2 || (!props.wrap && current === total - 1), onClick: () => select(current + 1)}),
+            ]),
             h(
               "span",
-              { role: "status" },
-              props.slideMessage(total ? current + 1 : 0, total),
-            ),
-            h(
-              Button,
-              {
-                variant: "secondary",
-                disabled: total < 2 || (!props.wrap && current === total - 1),
-                onClick: () => select(1),
-              },
-              () => props.nextLabel,
+              { class: "nq-carousel-status nq-sr-only", role: "status", "aria-live": "polite" },
+              total ? props.slideMessage(current + 1, total) : props.emptyLabel,
             ),
           ]),
         ],

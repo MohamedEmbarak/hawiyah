@@ -1,3 +1,4 @@
+import {carouselDemoCases,carouselDemoMarkup,carouselNativeMarkup} from './carousel-demo';
 import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo';
 import {toggleGroupMarkup} from './segmented-demo';
 import {siteVerificationMarkup,siteVerificationDemoLabels} from './site-verification-demo';
@@ -31,6 +32,14 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='carousel')return carouselDemoCases(locale).map(item=>{
+    const native=carouselNativeMarkup(locale,item.kind);
+    return {title:item.title,markup:carouselDemoMarkup(locale,item.kind),
+      react:`import { Carousel } from '@nasaq/react';\n\n${native.react}`,
+      vue:`<!-- import { Carousel } from '@nasaq/vue' -->\n${native.vue}`,
+      angular:`<!-- import { NqCarouselComponent } from '@nasaq/angular'; add to imports -->\n<!-- Component class member:${native.angularMember} -->\n${native.angular}`,
+    };
+  });
   if(id==='avatar')return avatarDemoCases(locale).map(item=>({
     title:item.title,markup:avatarDemoMarkup(item),
     react:`import { Avatar } from '@nasaq/react';\n\n<Avatar ${avatarDemoProps(item)} />`,

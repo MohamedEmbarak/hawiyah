@@ -1,3 +1,4 @@
+import {carouselDemoCases,carouselNativeMarkup} from './carousel-demo.ts';
 import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo.ts';
 import {avatarDemoCases,avatarDemoProps} from './avatar-demo.ts';
 import type { IDEFiles } from "./component-ide";
@@ -21,6 +22,7 @@ export const nativeProjectComponents = new Set([
   "radio",
   "card",
   "accordion",
+  "carousel",
   "table",
   "data-table",
   "breadcrumb",
@@ -86,6 +88,7 @@ export function projectExample(
     radio: "Radio",
     card: "Card",
     accordion: "Accordion",
+    carousel: "Carousel",
     table: "Table",
     "data-table": "DataTable",
     breadcrumb: "Breadcrumb",
@@ -311,6 +314,13 @@ export function projectExample(
     react = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style={{width:'100%',height:'4rem'}} /></div>`;
     vue = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style="width:100%;height:4rem" /></div>`;
     angular = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><nq-skeleton width="100%" height="4rem" /></div>`;
+  } else if (id === "carousel") {
+    state = true; numberState = true; initialValue = "0";
+    const cases = carouselDemoCases(locale).map(item => ({...item, ...carouselNativeMarkup(locale,item.kind,item.kind==='bounded')}));
+    react = cases.map(item => `<section className="nq-stack"><h2>${item.title}</h2>${item.react}${item.kind==='bounded'?'<output>{value}</output>':''}</section>`).join('');
+    vue = cases.map(item => `<section class="nq-stack"><h2>${item.title}</h2>${item.vue}${item.kind==='bounded'?'<output>{{value}}</output>':''}</section>`).join('');
+    angular = cases.map(item => `<section class="nq-stack"><h2>${item.title}</h2>${item.angular}${item.kind==='bounded'?'<output>{{value}}</output>':''}</section>`).join('');
+    angularMember = cases[0]!.angularMember;
   } else if (id === "avatar") {
     react = `<div className="nq-cluster">${avatarDemoCases(locale).map(item=>`<div className="nq-stack"><Avatar ${avatarDemoProps(item)} /><span>${item.title}</span></div>`).join('')}</div>`;
     vue = react.replaceAll('className=','class=');

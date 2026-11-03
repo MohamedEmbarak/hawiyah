@@ -50,8 +50,8 @@ for (const [name, theme] of Object.entries(source.themes)) {
       }
     });
     test(`${name} ${mode}: control and focus boundaries meet 3:1`, () => {
-      for (const foreground of ['border-strong', 'focus']) {
-        for (const background of ['canvas', 'surface']) {
+      for (const foreground of ['border-strong', 'focus', 'carousel-dot-border']) {
+        for (const background of ['canvas', 'surface', ...(foreground === 'carousel-dot-border' ? ['carousel-dot', 'carousel-dot-hover'] : [])]) {
           const measured = Math.min(...['canvas', 'surface'].map(surface => ratio(color[foreground], color[background], color[surface])));
           assert.ok(measured >= 3, `${foreground}/${background}: ${measured.toFixed(2)}:1`);
         }

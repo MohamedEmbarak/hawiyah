@@ -1,3 +1,4 @@
+import {carouselDemoMarkup} from './carousel-demo';
 import { expandedSample } from './expanded-samples';
 import type { GuideInput } from './component-guide-types';
 const api = (...rows: [string, string, string][]) => rows.map(([name, type, description]) => ({ name, type, description }));
@@ -144,11 +145,23 @@ export const expandedGuides: Record<string, GuideInput> = {
     accessibility: ['Use tree only when the hierarchical keyboard model is useful; ordinary nested navigation may be simpler.', 'Provide a name for the tree and readable labels for every node.', 'Keep disabled nodes unavailable and maintain visible focus after collapse.'], related: ['menu', 'notification-list'], limitations: ['No multi-selection, virtualization, drag-and-drop, or remote node loading.'], source: 'packages/vanilla/src/content.ts',
   },
   carousel: {
-    summary: 'Shows one slide at a time with explicit previous/next controls and a position announcement. It never advances automatically.',
-    usage: `<section class="nq-carousel" data-nq="carousel" aria-label="Featured services">\n  <div><article data-nq-slide><h3>Business services</h3></article><article data-nq-slide><h3>Municipal services</h3></article></div>\n  <button type="button" data-nq-previous>Previous slide</button>\n  <span data-nq-carousel-status role="status"></span>\n  <button type="button" data-nq-next>Next slide</button>\n</section>`,
-    lifecycle: ['Enhance the mounted slides and controls; inactive slides become hidden.', 'User navigation changes the active index and announces the slide position. Boundary controls disable unless looping is enabled.', 'Application content remains owned by the caller; there is no autoplay timer or background network work.', 'Destroy restores slide/control state and removes listeners before replacing slide nodes.'],
-    api: api(['data-nq-slide / data-nq-previous / data-nq-next', 'Markers', 'Slide collection and explicit navigation controls.'], ['index / defaultIndex / onIndexChange', 'React numeric props', 'Controlled or initial zero-based slide index.'], ['loop', 'React boolean', 'Optional wrap at the first/last slide.'], ['previousLabel / nextLabel / getSlideLabel', 'React localization props', 'Accessible control and position labels.']),
-    accessibility: ['Give the carousel a useful name and name each direction button.', 'Hidden slide content must not remain keyboard reachable.', 'Prefer a simple list when users need to compare all items simultaneously.'], related: ['card', 'pagination'], limitations: ['No autoplay, swipe engine, or virtualized slide loading.'], source: 'packages/vanilla/src/content.ts',
+    summary: 'Shows one slide at a time on a translated track, with previous/next arrows, optional slide indicators and a position announcement. It never advances automatically.',
+    usage: carouselDemoMarkup('en'),
+    lifecycle: ['Enhance authored vanilla slides and controls, or mount the native adapter. The track keeps its slide nodes in place; inactive slides are inert and excluded from the accessibility tree.', 'Navigation changes the zero-based active index and announces its position. The source-informed DGA transition is 600ms; reduced motion removes the transition.', 'Bounded controls disable at the ends. Looping is explicit in React/Angular/vanilla; Vue retains its existing wrap default, so pass wrap=false for bounded navigation.', 'Vanilla destroy restores authored attributes, styles and control state. Destroy before replacing its slide collection; framework adapters update their own DOM from props.'],
+    api: api(
+      ['data-nq-slide / data-nq-previous / data-nq-next / data-nq-carousel-dot', 'Markers', 'Authored slides, directional controls and zero-based indicator buttons in vanilla.'],
+      ['data-nq-carousel-track / .nq-carousel-viewport', 'Markers', 'Track and clipping viewport enable translated presentation without reparenting caller nodes.'],
+      ['index / defaultIndex / onIndexChange', 'React numeric props', 'Controlled or initial zero-based slide index.'],
+      ['modelValue / defaultValue / update:modelValue', 'Vue props and event', 'Controlled or initial zero-based slide index; v-model connects the change event.'],
+      ['current / currentChange', 'Angular input and output', 'Zero-based active index; supports [(current)] binding.'],
+      ['slideTemplate / slots / slides', 'Native content composition', 'Angular accepts TemplateRef<{$implicit: NqSlide; index: number}> through slideTemplate; let-item exposes the slide and let-index="index" its zero-based position. Vue uses slots named by slide id; React slides accept renderable content. Frameworks own the content DOM.'],
+      ['loop / wrap', 'boolean', 'React, Angular and vanilla use loop (default false); Vue uses wrap (default true). Empty and single-slide collections keep both arrows disabled.'],
+      ['showIndicators / indicatorsLabel', 'Native props', 'Show optional direct-selection buttons and provide their accessible group name. Vanilla authors or omits its indicator group.'],
+      ['previousLabel / nextLabel / emptyLabel / getSlideLabel / slideMessage / slideLabel', 'Localization props', 'Label controls, empty content and positions. React getSlideLabel receives a zero-based index; Vue slideMessage and Angular slideLabel receive a one-based position.']
+    ),
+    accessibility: ['Give the region, arrow buttons and indicator group meaningful localized names. Buttons support native Enter and Space activation.', 'Inactive content becomes inert immediately; it cannot receive focus while the outgoing slide finishes its visual transition.', 'Indicators use aria-current; their visual dots have larger hit areas and visible keyboard focus.', 'Prefer a simple list when users need to compare every item at once.'],
+    variants: ['Bounded navigation', 'Looping', 'Without indicators', 'Empty collection', 'One slide'], related: ['card', 'pagination'],
+    limitations: ['No autoplay, swipe engine, multi-item responsive viewport or virtualized loading. The supplied NIC script does not establish these behaviors.', 'The source 12px dots are presented inside larger targets, with keyboard focus and reduced-motion adaptations.'], source: 'packages/vanilla/src/content.ts',
   },
   link: {
     summary: 'Navigates to a real destination with a native anchor, preserving browser history, context menus, and keyboard behavior.',

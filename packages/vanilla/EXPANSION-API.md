@@ -134,7 +134,10 @@ the region defaults to polite status.
 
 Tree items use stable `data-nq-value`, optional `aria-disabled="true"`, nested
 role=group, and a label part. Arrows follow RTL expansion direction and visible
-nodes; Enter/Space selects. Carousel hides inactive slides and announces position;
+nodes; Enter/Space selects. Carousel protects inactive slides with hidden/inert
+state and announces position. Optional `[data-nq-carousel-track]` and
+`[data-nq-carousel-dot="0"]` markers enable the shared sliding track and authored
+position buttons; see [carousel source/API notes](../../docs/nic-carousel.md);
 there is no autoplay. DataTable sorts existing tbody rows immutably and restores
 their original order on cleanup. `data-nq-locale` controls collation; optional
 cell `data-nq-sort-value` overrides displayed text. CookieConsent emits choice and
