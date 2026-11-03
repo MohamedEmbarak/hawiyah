@@ -1,4 +1,5 @@
 export const expansionCatalog = [
+  ["content-navigation", "Content navigation", "التنقل داخل الصفحة", "Navigation"],
   ["site-verification", "Site verification", "شريط التحقق من الموقع", "Platforms"],
   ["input-group", "Input group", "مجموعة إدخال", "Forms"],
   ["password-field", "Password field", "كلمة المرور", "Forms"],

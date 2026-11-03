@@ -250,3 +250,52 @@ projected controls. Provide a text alternative on icon-only authored tabs.
 observers/listeners. The authored tab/panel set is captured at initialization;
 destroy and initialize again after adding or removing authored tabs. Runtime
 orientation, overflow mode, labels and disabled changes are observed.
+
+## Content navigation
+
+Use a labeled semantic navigation region and ordinary nested lists/anchors:
+
+```html
+<nav class="nq-content-nav" data-nq="content-navigation" aria-label="On this page"
+     data-nq-scroll-root="article-scroll" data-nq-offset="0">
+  <ol class="nq-content-nav-list">
+    <li><a class="nq-content-nav-link" href="#overview" data-nq-section="overview"><span class="nq-content-nav-marker" aria-hidden="true"></span><span class="nq-content-nav-label">Overview</span></a>
+      <ol class="nq-content-nav-sublist">
+        <li><a class="nq-content-nav-link" href="#requirements" data-nq-section="requirements"><span class="nq-content-nav-marker" aria-hidden="true"></span><span class="nq-content-nav-label">Requirements</span></a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+<div id="article-scroll">
+  <section id="overview"><h2>Overview</h2></section>
+  <section id="requirements"><h2>Requirements</h2></section>
+</div>
+```
+
+`createContentNavigation(root, {scrollRoot?, offset?, onCurrentChange?})` returns
+`{current, refresh(), navigate(id, {focus?}), destroy()}`. `current` is a read-only
+ID. Changes emit `nq:change` with `{current: id}` and call `onCurrentChange`; an
+empty ID means no eligible section. `enhance()` also initializes these roots.
+The optional scroll-root attribute is an element ID, not a CSS selector. Omit it
+for window scrolling; an explicit `scrollRoot` option, including `null`, overrides
+it. The default offset is 80px; an explicit option overrides `data-nq-offset`.
+A configured root that has not mounted does not fall back to scrolling the page.
+
+The controller preserves authored list/anchor structure, derives destinations
+from `data-nq-section` or decoded fragment-only hrefs, and marks the current link
+with `aria-current="location"`. Native adapters own their corresponding trees;
+do not enhance framework-owned navigation. Normal primary activation stays on
+the current URL and scrolls the configured viewport. Keyboard/assistive
+activation also focuses the section. Missing targets are a no-op; modifier,
+new-window and download links retain browser behavior. Disabled links use
+`aria-disabled="true"` and cannot activate. External links without a section ID
+remain ordinary navigation links. Nested content-navigation roots are isolated.
+
+Scroll-following selection handles nested sections, tall content and gaps. It
+never moves focus or scrolls the host page; only an already overflowing navigation
+region may scroll itself to keep the active link visible. Programmatic navigation
+respects reduced motion. Runtime links, destination IDs, disabled states, offsets
+and scroll-root attributes are observed; call `refresh()` after application state
+changes when necessary. Destroy restores authored attributes and temporary focus
+attributes and removes all observers and listeners. See the core API for section
+eligibility and selection thresholds.

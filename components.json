@@ -27,7 +27,7 @@
     "built": "Source exists for the named adapter; this does not establish complete verification.",
     "verified": "The named adapter has direct behavior, semantic-association, or layout-contract assertions recorded in evidence. Scope is limited to those cases; rendering-only and broad suite checks remain separate. This is not a blanket accessibility or DGA certification."
   },
-  "coverageNote": "82 entries: initial 27 plus 50 expansion entries and 5 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
+  "coverageNote": "83 entries: initial 27 plus 51 expansion entries and 5 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
   "docs": {
     "overview": "README.md",
     "overviewAr": "README.ar.md",
@@ -5625,6 +5625,123 @@
         "Default wording does not claim government status or registration. Applications supply verified wording, certificate links and authorized artwork."
       ],
       "documentation": "https://mohamedembarak.github.io/nasaq/#component/site-verification"
+    },
+    {
+      "id": "content-navigation",
+      "name": "ContentNavigation",
+      "labelAr": "التنقل داخل الصفحة",
+      "category": "navigation",
+      "description": "Nested in-page section links with scroll-following current state, local scroll roots and configurable offsets.",
+      "cssClasses": [
+        "nq-content-nav",
+        "nq-content-nav-heading",
+        "nq-content-nav-list",
+        "nq-content-nav-sublist",
+        "nq-content-nav-link",
+        "nq-content-nav-marker",
+        "nq-content-nav-label"
+      ],
+      "interaction": "interactive",
+      "sourceType": "interactive",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/content-navigation-vanilla.test.ts",
+          "tests": [
+            "enhances semantic nested anchors, tracks scroll, and emits only changed current IDs",
+            "intercepts ordinary activation without changing URL and focuses the section only for keyboard activation",
+            "restores original attributes and focus overrides and stops controller work on destroy"
+          ],
+          "scope": "Scoped nested section tracking, activation, disabled destinations, root/offset changes and cleanup in a simulated DOM; shared core has separate closed-details and reduced-motion coverage.",
+          "command": "pnpm exec vitest run tests/content-navigation-core.test.ts tests/content-navigation-vanilla.test.ts tests/content-navigation-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/content-navigation-parity.test.ts",
+          "tests": [
+            "react: nested semantic links, Arabic heading and disabled entries follow only actual visible sections",
+            "react: ordinary activation scrolls locally without hashes and keyboard activation focuses the target",
+            "react: changed labels/items/offset and scroll roots refresh without retaining old listeners",
+            "react: teardown removes scrolling observers and restores temporary target focus attributes"
+          ],
+          "scope": "Native DOM, nested/disabled semantics, ordinary and keyboard activation, root/item/offset updates and cleanup in a simulated DOM. React/Vue additionally have SSR assertions.",
+          "command": "pnpm exec vitest run tests/content-navigation-core.test.ts tests/content-navigation-vanilla.test.ts tests/content-navigation-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/content-navigation-parity.test.ts",
+          "tests": [
+            "vue: nested semantic links, Arabic heading and disabled entries follow only actual visible sections",
+            "vue: ordinary activation scrolls locally without hashes and keyboard activation focuses the target",
+            "vue: changed labels/items/offset and scroll roots refresh without retaining old listeners",
+            "vue: teardown removes scrolling observers and restores temporary target focus attributes"
+          ],
+          "scope": "Native DOM, nested/disabled semantics, ordinary and keyboard activation, root/item/offset updates and cleanup in a simulated DOM. React/Vue additionally have SSR assertions.",
+          "command": "pnpm exec vitest run tests/content-navigation-core.test.ts tests/content-navigation-vanilla.test.ts tests/content-navigation-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/content-navigation-parity.test.ts",
+          "tests": [
+            "angular: nested semantic links, Arabic heading and disabled entries follow only actual visible sections",
+            "angular: ordinary activation scrolls locally without hashes and keyboard activation focuses the target",
+            "angular: changed labels/items/offset and scroll roots refresh without retaining old listeners",
+            "angular: teardown removes scrolling observers and restores temporary target focus attributes"
+          ],
+          "scope": "Native DOM, nested/disabled semantics, ordinary and keyboard activation, root/item/offset updates and cleanup in a simulated DOM. React/Vue additionally have SSR assertions.",
+          "command": "pnpm exec vitest run tests/content-navigation-core.test.ts tests/content-navigation-vanilla.test.ts tests/content-navigation-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-03"
+        }
+      ],
+      "implementationSources": {
+        "vanilla": [
+          "packages/vanilla/src/content-navigation.ts"
+        ],
+        "react": [
+          "packages/react/src/content-navigation.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/content-navigation.ts"
+        ],
+        "angular": [
+          "packages/angular/src/content-navigation.ts"
+        ]
+      },
+      "notes": [
+        "Targets and unique section IDs belong to the application; this is document navigation, not tabs or routing.",
+        "Guide demos use bounded local scroll roots and do not change the guide URL.",
+        "Verification remains scoped to explicitly recorded evidence; no official DGA certification is claimed."
+      ],
+      "documentation": "https://mohamedembarak.github.io/nasaq/#component/content-navigation"
     }
   ],
   "limitations": [
@@ -5747,12 +5864,12 @@
     "native": "The main interaction uses browser-native semantics.",
     "static": "Semantic composition or CSS layout; content and application actions are caller-owned.",
     "interactive": "Nasaq adds state, keyboard behavior, or lifecycle management.",
-    "integration": "A documented application recipe for an external engine or service; not counted among the 82 components."
+    "integration": "A documented application recipe for an external engine or service; not counted among the 83 components."
   },
   "scope": {
-    "components": 82,
+    "components": 83,
     "initialComponents": 27,
-    "addedComponents": 55,
+    "addedComponents": 56,
     "layoutComponents": 12,
     "nativeInputTypeCount": 22,
     "nativeInputTypes": [
@@ -5802,7 +5919,7 @@
   },
   "expansionVerification": {
     "status": "scoped-evidence-recorded",
-    "scope": "50 added entries have source/export coverage. Named passing unit/browser assertions are mapped only to directly checked components; unverified entries remain built without fabricated coverage.",
+    "scope": "51 added entries have source/export coverage. Named passing unit/browser assertions are mapped only to directly checked components; unverified entries remain built without fabricated coverage.",
     "record": "docs/validation.md",
     "browser": "Chromium only",
     "manualScreenReader": "not performed"

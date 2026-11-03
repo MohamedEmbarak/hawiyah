@@ -25,10 +25,10 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 33 components: Button, ButtonGroup, IconButton,
+Native project recipes currently cover 34 components: Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
-Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader and PortalFooter. Other component
+Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter and ContentNavigation. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
 before the overall alignment/editor goal is complete.
@@ -163,3 +163,21 @@ All five native framework/language previews pass focused tab browser checks.
 All 33 React recipes pass TypeScript checking, all 33 Angular recipes pass strict
 template checking and all seven exported framework/language projects build
 against clean tarball consumers. No fresh full 165-preview run is claimed.
+
+
+ContentNavigation adds the 34th native project recipe. Two compositions show
+nested section tracking with a disabled destination and a hidden heading with a
+custom navigation label. Every composition supplies its own bounded scroll root
+and target sections, with callback-ref state in React, template refs in Vue and
+Angular, and a target element ID in vanilla. Native examples report the current
+section ID through their real callback/event APIs. Selection and scrolling stay
+inside the example without changing the surrounding guide route. Ready examples
+include complete native imports and setup. See
+[content-navigation evidence](nic-content-navigation.md) for source values,
+scoped verification and limits.
+All five native framework/language previews pass the focused content-navigation
+browser checks. All 34 React recipes pass TypeScript checks, all 34 Angular
+recipes pass strict template checks, and all seven exported framework/language
+projects build against the final clean tarball consumer. Clean packages also
+pass ESM, SSR, Angular APF, declaration, CSS-export and tree-shaking checks.
+This does not claim a fresh full 170-preview catalog run.

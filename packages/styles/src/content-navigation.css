@@ -1,0 +1,44 @@
+/* NIC global.css 1890–2036. Geometry and accessibility adaptations:
+   docs/nic-content-navigation.md. No global section-ID selector is installed. */
+.nq-content-nav {
+  display: flex; flex-direction: column; align-self: start; gap: 8px; min-inline-size: 0;
+  color: var(--nq-color-text); font-family: var(--nq-font-sans);
+}
+.nq-content-nav-heading { margin: 0; font: inherit; font-size: 16px; line-height: 24px; font-weight: var(--nq-weight-semibold); }
+.nq-content-nav-list, .nq-content-nav-sublist { list-style: none; padding: 0; margin: 0; }
+.nq-content-nav-sublist { margin-inline-start: var(--nq-content-nav-indent, 16px); }
+.nq-content-nav-link {
+  display: flex; position: relative; box-sizing: border-box; align-items: center;
+  min-inline-size: min(140px, 100%); min-block-size: 40px; padding-inline: 8px 16px;
+  border-radius: 2px; color: var(--nq-color-text); text-decoration: none; cursor: pointer;
+}
+.nq-content-nav-label { flex: 1; min-inline-size: 0; padding-block: 6px; font-size: 14px; line-height: 28px; color: var(--nq-color-text); overflow-wrap: anywhere; }
+.nq-content-nav-sublist .nq-content-nav-link::before {
+  content: ''; position: absolute; inset-inline-start: 0; inset-block: 0; inline-size: 2px; background: var(--nq-color-border);
+}
+.nq-content-nav-marker { position: absolute; inset-inline-start: 0; inset-block: 0; inline-size: 3px; border-radius: 9999px; background: transparent; }
+.nq-content-nav-link[aria-current='location'] .nq-content-nav-marker { background: var(--nq-color-primary-text); }
+.nq-content-nav-link:hover:where(:not([aria-disabled='true'])) { background: var(--nq-color-surface-muted); text-decoration: none; }
+.nq-content-nav-link:hover:where(:not([aria-disabled='true'])) .nq-content-nav-marker { background: var(--nq-color-content-nav-marker-hover, var(--nq-color-text-subtle)); }
+.nq-content-nav-link:focus { background: var(--nq-color-border); color: var(--nq-color-text); }
+.nq-content-nav-link:focus:not([aria-current='location']) .nq-content-nav-marker { visibility: hidden; }
+.nq-content-nav-link:focus::before { visibility: hidden; }
+/* The reference suppresses focus outlines. Keep an unmistakable keyboard cue. */
+.nq-content-nav-link:focus-visible { outline: 2px solid var(--nq-color-focus-contrast); outline-offset: -2px; }
+.nq-content-nav-link[aria-disabled='true'] { cursor: not-allowed; }
+.nq-content-nav-link[aria-disabled='true'] .nq-content-nav-label { color: var(--nq-color-on-disabled); }
+@media (min-width: 1200px) {
+  .nq-content-nav[data-sticky='true'] {
+    position: sticky; inset-block-start: var(--nq-content-nav-top, 145px);
+    max-block-size: calc(100dvh - var(--nq-content-nav-bottom-reserve, 165px)); overflow-y: auto;
+    overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--nq-color-primary-subtle) transparent;
+  }
+}
+@media (forced-colors: active) {
+  .nq-content-nav-link, .nq-content-nav-label { color: LinkText; }
+  .nq-content-nav-link[aria-current='location'] .nq-content-nav-marker { background: Highlight; }
+  .nq-content-nav-link[aria-current='location'] { outline: 1px solid Highlight; outline-offset: -1px; }
+  .nq-content-nav-link:hover .nq-content-nav-marker { background: Highlight; }
+  .nq-content-nav-link:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
+  .nq-content-nav-link[aria-disabled='true'] .nq-content-nav-label { color: GrayText; }
+}

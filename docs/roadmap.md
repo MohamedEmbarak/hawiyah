@@ -33,16 +33,16 @@ The default appearance is now `dga`, using mapped, verified foundation values fr
 |---|---|---|---|---|
 | 0. Product and contracts | Independent identity, DGA evidence model, package boundaries | Yes | Brand kit, initial/expansion contracts, and documentation | Brand/source/API evidence recorded separately |
 | 1. Shared foundation | Tokens, themes, styles, core helpers, exports | Yes | Seven package sources, responsive layout helpers, table-backed calendar provider | Targeted helpers, contrast pairs, canonical calendar reference checks, and isolated package consumers passed |
-| 2. Vanilla reference | Semantic HTML, explicit enhancement, cleanup | Yes | Recipes/controllers cover the 81-entry scope | Per-controller assertions and tested browser states belong in catalog/validation; native/static recipes need no invented controllers |
+| 2. Vanilla reference | Semantic HTML, explicit enhancement, cleanup | Yes | Recipes/controllers cover the 83-entry scope | Per-controller assertions and tested browser states belong in catalog/validation; native/static recipes need no invented controllers |
 | 3. Native adapters | React, Vue, and Angular rendering/forms | Yes | All three adapters export the expanded component scope | Targeted behavior, SSR/hydration, forms, and real consumers are separate checks; no blanket parity guarantee |
 | 4. Blocks and journeys | Discovery, application/review, requests | Yes | Three editable blocks, generator, playground, and three framework examples | Journey and separate framework-flow evidence recorded; each applies to its documented states |
-| 5. Expanded inspection tools | 81-component gallery, 22 native input mappings, Saudi recipes, layout studio | Yes | Playground routes and coverage/integration guides | Validate every route and representative state; gallery presence is not a full variant audit |
+| 5. Expanded inspection tools | 83-component gallery, 22 native input mappings, Saudi recipes, layout studio | Yes | Playground routes and coverage/integration guides | Validate every route and representative state; gallery presence is not a full variant audit |
 | 6. Release hardening | API stability, accessibility, archives, documentation | Yes | Local tarball checks and documented gates | Current consumers, manual accessibility, cross-browser and supported-version matrices remain distinct gates |
 | 7. Public source and guide | Standalone repository and GitHub Pages documentation | Yes | Public source and comprehensive guide prepared; deployment is verified separately | npm publication remains a separate future release |
 
 ## Component scope
 
-The catalog contains **81 entries: the initial 27 plus 50 expansion entries and 4 portal/mobile compositions**. The [coverage guide](coverage.md) lists them by category and separately maps all 22 standard HTML input types. Field is label/help/error composition; TextField is text entry. Layout primitives, service patterns, and advanced interactions have explicit contracts. Aliases and cosmetic variants do not inflate the count.
+The catalog contains **83 entries: the initial 27 plus 51 expansion entries and 5 portal/mobile compositions**. The [coverage guide](coverage.md) lists them by category and separately maps all 22 standard HTML input types. Field is label/help/error composition; TextField is text entry. Layout primitives, service patterns, and advanced interactions have explicit contracts. Aliases and cosmetic variants do not inflate the count.
 
 This is Nasaq's defined scope, not a claim to reproduce the complete current DGA catalog or every possible modern UI. Prioritize further primitives by real product needs, a clear composition boundary, and maintenance cost.
 

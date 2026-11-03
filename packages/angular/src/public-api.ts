@@ -13,3 +13,4 @@ export * from './mobile-top-bar';
 export * from './navigation-drawer';
 
 export * from './site-verification';
+export * from './content-navigation';

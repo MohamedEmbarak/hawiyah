@@ -1,3 +1,4 @@
+import {contentNavigationDemoMarkup} from './content-navigation-demo';
 import {ratingDemoMarkup,ratingDisplayMarkup} from './rating-demo';
 import {carouselDemoMarkup} from './carousel-demo';
 import { expandedSample } from './expanded-samples';
@@ -5,6 +6,27 @@ import type { GuideInput } from './component-guide-types';
 const api = (...rows: [string, string, string][]) => rows.map(([name, type, description]) => ({ name, type, description }));
 
 export const expandedGuides: Record<string, GuideInput> = {
+  'content-navigation': {
+    summary: 'An in-page navigation tree follows the current section while the user scrolls. Selecting a destination scrolls its section within the configured root without changing the page URL.',
+    usage: contentNavigationDemoMarkup('en','nested','guide-content-nav'),
+    lifecycle: ['Render stable section IDs and corresponding navigation items. In vanilla, use data-nq-section on each link and data-nq-scroll-root to identify an optional bounded scroll container.', 'Mount the controller after the navigation and target sections exist. Native adapters own their DOM, scroll listeners and observer cleanup.', 'Scrolling updates the current link and its ancestor indicator. Selecting an enabled destination scrolls that section while preserving the host route; reduced motion uses immediate scrolling.', 'Dispose before removing the vanilla navigation. Keep section content and any application routing or data loading under application ownership.'],
+    api: api(
+      ['items', 'ContentNavigationItem[]', 'Native tree of {id,label,disabled?,children?}; id is the target section ID, not a URL.'],
+      ['label / showHeading', 'string / boolean', 'Localized navigation name and optional visible heading. Native defaults are Arabic and showHeading=true.'],
+      ['sticky / data-sticky', 'boolean', 'Opt-in sticky positioning; vanilla uses data-sticky=true. The host owns the scroll container and available vertical space.'],
+      ['scrollRoot / data-nq-scroll-root', 'HTMLElement | null / element ID', 'Native reference or vanilla target ID. Omit to track the window; every guide example supplies a separate local root.'],
+      ['offset / data-nq-offset', 'number; default 80', 'Block-start offset for fixed host chrome. Examples use 0 in their local scroll regions.'],
+      ['onCurrentChange / currentChange', 'callback / event', 'React callback, Vue event or Angular output reporting the current section ID.'],
+      ['data-nq-section', 'string', 'Vanilla anchor marker mapping to an existing section ID; nested lists express hierarchy.'],
+      ['current / navigate(id, {focus?}) / refresh() / destroy()', 'Vanilla controller', 'Read the current section, request navigation, refresh target measurements or clean up. navigate returns whether a target was accepted.'],
+      ['nq:change', 'CustomEvent<{current:string}>', 'Vanilla reports a changed current ID, including its initial detected section.']
+    ),
+    accessibility: ['Use a nav landmark with a meaningful localized name. Links retain meaningful text and valid in-page href targets before enhancement.', 'Mark only the current destination with aria-current=location. Decorative markers must remain hidden from assistive technology.', 'Keep disabled items unavailable to activation. Ordinary Tab and Enter navigate links; do not use tablist or menu roles for document navigation.', 'A bounded scroll region needs a name and keyboard focus. Keep targets visible below fixed or sticky host chrome by setting the appropriate offset.'],
+    variants: ['nested section tree', 'visible or hidden heading with custom label', 'window or bounded scroll root', 'optional sticky navigation'],
+    limitations: ['No router, remote loading or automatic section creation is included. IDs must be unique in the document; the application owns target content and layout.', 'The live guide deliberately scrolls only its local example region so demonstrations do not navigate or reposition the surrounding guide.'],
+    frameworkNotes: 'React and Vue accept items and scrollRoot references. Angular exposes NqContentNavigationComponent with the same item shape and a scrollRoot input. React onCurrentChange, Vue @current-change and Angular (currentChange) report the tracked ID. All three use native framework rendering; vanilla enhancement is separate.',
+    related: ['tabs', 'secondary-nav', 'sidebar'], source: 'packages/vanilla/src/content-navigation.ts',
+  },
   'input-group': {
     summary: 'Places a prefix, suffix, or supporting action beside a native input while preserving the input’s own label and value.',
     usage: `<label class="nq-field"><span class="nq-label">Website host</span>\n  <span class="nq-input-group">\n    <span class="nq-input-addon" aria-hidden="true">https://</span>\n    <input class="nq-input" name="host" type="text" aria-describedby="host-hint">\n  </span>\n</label>\n<span class="nq-hint" id="host-hint">Enter the host name; HTTPS is added by the application.</span>`,

@@ -1,3 +1,4 @@
+import {contentNavigationDemoCases,contentNavigationDemoMarkup,contentNavigationProject} from './content-navigation-demo';
 import {tabsDemoCases,tabsDemoMarkup,tabsNativeMarkup} from './tabs-demo';
 import {paginationDemoCases,paginationDemoMarkup,paginationNativeMarkup} from './pagination-demo';
 import {ratingDemoCases,ratingDemoMarkup,ratingNativeMarkup} from './rating-demo';
@@ -35,6 +36,12 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='content-navigation')return contentNavigationDemoCases(locale).map(item=>({
+    title:item.title,markup:contentNavigationDemoMarkup(locale,item.kind),
+    react:contentNavigationProject('react','typescript',locale,[item.kind]).files.html,
+    vue:contentNavigationProject('vue','typescript',locale,[item.kind]).files.html,
+    angular:contentNavigationProject('angular','typescript',locale,[item.kind]).files.html,
+  }));
   if(id==='tabs')return tabsDemoCases(locale).map(item=>{
     const native=tabsNativeMarkup(locale,item.kind);
     return {title:item.title,markup:tabsDemoMarkup(locale,item.kind),

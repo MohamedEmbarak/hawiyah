@@ -1,3 +1,4 @@
+import {contentNavigationProject,contentNavigationDemoCases,contentNavigationDemoMarkup} from './content-navigation-demo.ts';
 import {tabsDemoCases,tabsNativeMarkup} from './tabs-demo.ts';
 import {paginationDemoCases,paginationNativeMarkup} from './pagination-demo.ts';
 import {ratingDemoCases,ratingNativeMarkup} from './rating-demo.ts';
@@ -9,6 +10,7 @@ import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
 import type { Locale } from "./data";
 
 export const nativeProjectComponents = new Set([
+  "content-navigation",
   "button",
   "icon-button",
   "text-field",
@@ -62,6 +64,7 @@ export function projectExample(
   const t = (en: string, arabic: string) => (ar ? arabic : en);
   const css =
     "@import '@nasaq/styles/styles.css';\n\n/* Application-specific styles */\n.demo { display: grid; gap: 1rem; }\n";
+  if (id === "content-navigation") html=contentNavigationDemoCases(locale).map(item=>`<section><h2>${item.title}</h2>${contentNavigationDemoMarkup(locale,item.kind,`project-content-nav-${item.kind}`)}</section>`).join('');
   if (framework === "vanilla")
     return {
       names: { html: "index.html", css: "style.css", js: `main.${ext}` },
@@ -73,6 +76,7 @@ export function projectExample(
         js: `import { enhance } from '@nasaq/vanilla';\nimport './style.css';\n\nconst root = document.querySelector${typed ? "<HTMLElement>" : ""}('#app');\nif (!root) throw new Error('Missing app root');\nconst cleanup = enhance(root);\nroot.addEventListener('nq:change', event => console.log(${typed ? "(event as CustomEvent).detail" : "event.detail"}));\nwindow.addEventListener('pagehide', cleanup, { once: true });\n`,
       },
     };
+  if (id === "content-navigation") return contentNavigationProject(framework,language,locale);
   if (!nativeProjectComponents.has(id))
     throw new Error("Native project recipe pending for " + id);
   const name: Record<string, string> = {

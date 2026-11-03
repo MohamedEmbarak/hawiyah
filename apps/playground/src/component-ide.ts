@@ -146,6 +146,9 @@ function previewBootstrap(payload: {
   document.addEventListener('click', event => {
     const anchor = (event.target as Element | null)?.closest?.('a[href]');
     if (!anchor) return;
+    if (anchor.matches('.nq-content-nav-link[data-nq-section]') && anchor.closest('.nq-content-nav') &&
+        anchor.getAttribute('href')?.startsWith('#') && event.button === 0 &&
+        !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) return;
     event.preventDefault();
     const href = anchor.getAttribute('href') ?? '';
     if (href.startsWith('#')) {
@@ -154,6 +157,11 @@ function previewBootstrap(payload: {
     }
     bridge('console', { level: 'info', text: payload.navigation });
   }, true);
+  // Framework handlers run before this fallback. Edited/unenhanced links still
+  // cannot change the sandbox URL if no section controller handles activation.
+  document.addEventListener('click', event => {
+    if ((event.target as Element | null)?.closest?.('.nq-content-nav-link[data-nq-section]')) event.preventDefault();
+  });
   document.addEventListener('auxclick', event => {
     if ((event.target as Element | null)?.closest?.('a[href]')) event.preventDefault();
   }, true);

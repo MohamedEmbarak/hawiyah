@@ -1,6 +1,9 @@
 import { createSearchField } from './search-field.js';
 import { observeReadonlyChoice, observeFieldValue, type FieldValueElement, type FieldValueObserver } from '@nasaq/core';
 import { createTabs } from './tabs.js';
+import { createContentNavigation } from './content-navigation.js';
+export { createContentNavigation };
+export type { ContentNavigationOptions, ContentNavigationController } from './content-navigation.js';
 import { createStepper } from './stepper.js';
 export { createStepper };
 export type { StepperOptions, StepperController } from './stepper.js';
@@ -41,6 +44,7 @@ export type { PaginationOptions, PaginationController } from './pagination.js';
 type Controller = { destroy(): void };
 const registry = new WeakMap<HTMLElement, { controller: Controller; references: number }>();
 const factories: Record<string, (element: HTMLElement) => Controller> = {
+  'content-navigation': createContentNavigation,
   stepper: element => createStepper(element as HTMLOListElement),
   accordion: createAccordion,
   'navigation-drawer': element => createNavigationDrawer(element as HTMLDialogElement),

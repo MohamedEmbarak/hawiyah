@@ -10,18 +10,18 @@ RangeSlider, Rating, PinInput, TagInput, MultiSelect, Calendar, DatePicker,
 FileDropzone.
 
 Interaction: ToggleGroup, Popover, Menu, Drawer, ToastRegion, Collapsible,
-TreeView, Carousel.
+TreeView, Carousel, ContentNavigation.
 
 Content: Link, IconButton, ButtonGroup, Chip, DescriptionList, Stat, Timeline,
 Meter, AvatarGroup, DataTable.
 
 Platform patterns: ServiceCard, ServiceDetails, PortalHeader, PortalFooter,
-Feedback, CookieConsent, NotificationList, SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer.
+Feedback, CookieConsent, NotificationList, SiteVerification, SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer.
 
 Layout: Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer,
 AspectRatio, Section, AppShell, PageHeader.
 
-These 54 additions (including four portal/mobile compositions) supplement the existing 27 entries. Native TextField also
+These 56 additions (including five portal/mobile compositions) supplement the existing 27 entries. Native TextField also
 covers all standard HTML input types; document per-type semantics rather than
 inflating component counts with aliases. Heavy engines (maps, rich text, charts,
 code editors, PDF viewers, CAPTCHA, payments) require a documented integration
@@ -67,6 +67,11 @@ boundary, not a simulated implementation.
 - TreeView: flattened visible nodes, roving focus, RTL-aware arrows, expansion,
   selection; items {id,label,disabled?,children?}. No drag/drop claim.
 - Carousel: previous/next buttons and current slide status, no autoplay by default.
+- ContentNavigation: semantic nested section links with scroll-following current
+  state, a configurable offset and an optional bounded scroll root. Keep IDs and
+  content application-owned. Ordinary selection scrolls locally without changing
+  the host route; disabled items, keyboard focus and reduced motion are preserved.
+  Framework adapters own their DOM and observer cleanup.
 - DataTable: native table with sortable column headers and aria-sort. Columns
   {key,label,sortable?}; rows record values. Sorting stable and localized. No
   virtualization/editing claim. Existing Table remains fully composable.

@@ -296,3 +296,20 @@ layouts so overflow stays inside the table wrapper.
 See [table evidence and adaptations](../../docs/nic-tables.md).
 
 Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Arabic labels and Latin digits are the defaults.
+
+
+### Content navigation
+
+`NqContentNavigationComponent` (`nq-content-navigation`) follows application-owned section IDs using nested
+`items: {id, label, disabled?, children?}[]`. Options are `label` (Arabic default),
+`showHeading` (true), `sticky` (false), `scrollRoot` (null/window) and `offset`
+(80px). `(currentChange)="onCurrentChange($event)"` reports the current section ID. Ordinary
+activation scrolls without changing the URL; keyboard activation also focuses
+the target. Modified anchor clicks retain browser behavior. Disabled entries
+remain noninteractive text links; no section content is created or hidden.
+
+```html
+<!-- Add NqContentNavigationComponent to the host component's imports. -->
+<nq-content-navigation [items]="[{id: 'requirements', label: 'المتطلبات'}]" />
+<section id="requirements"><h2>المتطلبات</h2></section>
+```

@@ -16,3 +16,4 @@ export * from './mobile-top-bar.js';
 export * from './navigation-drawer.js';
 
 export * from './site-verification.js';
+export * from './content-navigation.js';

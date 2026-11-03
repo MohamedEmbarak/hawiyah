@@ -4,7 +4,7 @@ Package names: @nasaq/tokens, @nasaq/styles, @nasaq/core, @nasaq/vanilla,
 @nasaq/react, @nasaq/vue, @nasaq/angular. ESM, explicit exports. npm publication is disabled pending release preparation.
 
 The initial scope below is extended by [EXPANSION.md](EXPANSION.md) and the
-portal/mobile compositions to 82 entries. See [coverage](docs/coverage.md).
+portal/mobile compositions to 83 entries. See [coverage](docs/coverage.md).
 Calendar conversion uses the pinned published reference described in
 [docs/date-calendars.md](docs/date-calendars.md); do not substitute host Intl
 conversion or an arithmetic Hijri fallback for the reference provider.

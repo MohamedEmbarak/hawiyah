@@ -200,3 +200,5 @@ export { getPaginationItems, normalizePaginationTotal, normalizePaginationPage }
 export type { PaginationItem } from './pagination.js';
 export { observeTabOverflow, getTabOverflowIndices } from './tab-overflow.js';
 export type { TabOverflowObserver, TabOverflowOptions } from './tab-overflow.js';
+export { observeContentNavigation } from './content-navigation.js';
+export type { ContentNavigationItem, ContentNavigationOptions, ContentNavigationObserver } from './content-navigation.js';

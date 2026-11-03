@@ -36,6 +36,7 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 | Choices | `nq-choice` on a label; `nq-checkbox`, `nq-radio`, `nq-switch` on native inputs |
 | Tabs | `nq-tabs`, `nq-tab-list`, `nq-tab`, `nq-tab-panel`; `aria-selected`; optional vertical `aria-orientation` |
 | Tab overflow | `nq-tab-bar`, `nq-tabs-overflow` (`details`), `nq-tab-overflow-trigger` (`summary`), `nq-tab-overflow-menu`, `nq-tab-overflow-item`; controller-owned `data-nq-overflow-hidden`; [source and keyboard notes](../../docs/nic-tabs.md) |
+| Content navigation | `nq-content-nav`, `nq-content-nav-heading`, `nq-content-nav-list`, `nq-content-nav-sublist`, `nq-content-nav-link`, `nq-content-nav-marker`, `nq-content-nav-label`; `aria-current="location"`; optional `data-sticky="true"`, `--nq-content-nav-top`, `--nq-content-nav-bottom-reserve`, `--nq-content-nav-indent` |
 | Dialog | `nq-dialog` on native `dialog`; `nq-dialog-header`, `nq-dialog-body`, `nq-dialog-footer` |
 | Combobox | `nq-combobox`, `nq-input`, `nq-listbox`, `nq-option`; `data-active` for keyboard focus, `aria-selected` for committed selection |
 | Surfaces | `nq-card`, `nq-card-header`, `nq-card-body`, `nq-card-footer` |

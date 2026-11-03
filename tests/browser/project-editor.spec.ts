@@ -52,9 +52,12 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
     if(framework!=='angular')await page.locator('[data-project-language]').selectOption(language);
     await expect(page.locator('.nq-ide-status'),`${framework}/${component}`).toHaveAttribute('data-state','ready',{timeout:30000});
     const preview=page.frameLocator('.nq-ide-frame');
-    const selectors:Record<string,string>={'button':'.nq-button','icon-button':'.nq-button','text-field':'.nq-input','toggle-group':'.nq-toggle-group'};
+    const selectors:Record<string,string>={'button':'.nq-button','icon-button':'.nq-button','text-field':'.nq-input','toggle-group':'.nq-toggle-group','content-navigation':'.nq-content-nav'};
     await expect(preview.locator(selectors[component] ?? `.nq-${component}`).first(),`${framework}/${language}/${component}`).toBeVisible();
-    if(component==='select') {
+    if(component==='content-navigation') {
+      const example=preview.locator('.content-navigation-demo').first(), link=example.locator('a[data-nq-section]').last();
+      await link.click();await expect(link).toHaveAttribute('aria-current','location');await expect(example.locator('output')).toContainText('support');
+    } else if(component==='select') {
       await preview.locator('select').selectOption('second');await expect(preview.locator('output')).toHaveText('second');
     } else if(component==='radio') {
       await preview.locator('input').first().focus();await preview.locator('input').first().press('ArrowDown');

@@ -225,3 +225,40 @@ overflow when the full row fits, for a single tab, or for an unmeasured containe
 `{refresh(), destroy()}`. It reads layout after mounting and reports changed
 index arrays on resize, text/child changes and font loading; it does not render,
 reparent, hide or focus DOM. Adapters own those operations. Imports are SSR-safe.
+
+## Content navigation observation
+
+`ContentNavigationItem` is `{id, label, disabled?, children?}`. IDs refer to
+existing sections in the same document; nested items are supported and duplicate
+IDs are considered once. Disabled, missing, hidden, inert and CSS-concealed
+sections are excluded. Content inside closed details is excluded except the
+first direct summary subtree; every closed ancestor is checked. Changes to
+`open` refresh tracking.
+
+`observeContentNavigation({navigation, getItems, getScrollRoot, offset,
+onCurrentChange})` returns `{refresh(), navigate(id, {focus?}), destroy()}`.
+Call it after mounting; imports are SSR-safe. It measures existing elements and
+owns scroll/focus listeners only. Adapters retain DOM rendering, link attributes
+and application state. `getScrollRoot()` returns a scrollable element or `null`
+for the window; targets outside a supplied element are excluded. Refresh after
+changing items, offset or root. Observers also react to scroll, resize, content,
+ID/visibility changes and font loading, without recreating resize observation on
+every frame.
+
+Current selection is deterministic: the latest target whose top has passed the
+viewport start plus offset plus 20px; otherwise the first upcoming target. At an
+actual scrollable page/container bottom, the final target is selected. This keeps
+a current section through tall content and gaps. `onCurrentChange(id)` fires only
+when the ID changes (including initialization); an empty ID clears selection if
+no eligible target remains. Passive updates never focus content or scroll the
+host. An overflowing navigation region may scroll itself to reveal its current
+link, identified by `data-nq-section`.
+
+`navigate()` returns false for unavailable IDs or a destroyed observer. Valid
+navigation scrolls only the configured viewport, uses the supplied offset (80px
+fallback for nonfinite values), and respects reduced motion by explicitly using
+instant scrolling even when the consumer declares smooth-scroll CSS. It does not modify
+the URL or history. `{focus: true}` focuses the destination without additional
+scrolling and temporarily supplies `tabindex="-1"` when needed; blur or destroy
+restores that temporary attribute. Use this for keyboard/assistive-technology
+activation, rather than for passive scrolling or ordinary pointer activation.
