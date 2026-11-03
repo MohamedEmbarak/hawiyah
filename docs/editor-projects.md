@@ -25,9 +25,9 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 32 components: Button, ButtonGroup, IconButton,
+Native project recipes currently cover 33 components: Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
-Divider, Spinner, Card, Accordion, Carousel, Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
+Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader and PortalFooter. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
@@ -123,3 +123,14 @@ checks, all 32 Angular recipes pass strict template checks, and all seven
 exported framework/language projects build against clean tarball consumers.
 This does not claim a fresh 160-preview catalog run. See
 [carousel evidence](nic-carousel.md).
+
+Rating adds the 33rd native recipe. Its controlled integer selection appears
+alongside unselected, read-only, disabled and required/error examples. The
+separate RatingDisplay shows zero, fractional (3.5) and full scores without
+creating form controls. Examples use actual native imports in React JSX/TSX,
+Vue JS/TS and Angular TypeScript; Arabic/English labels use Latin digits.
+All five native editor combinations pass focused rating browser tests. All 33
+React recipes pass TypeScript checking, all 33 Angular recipes pass strict
+template checking, and all seven exported framework/language projects build.
+This does not claim a fresh 165-preview catalog run. See
+[rating evidence and validation](nic-rating.md).

@@ -9,18 +9,18 @@ for (const direction of ['rtl', 'ltr']) {
     await page.mouse.move(0, 0);
     const initial = await colors(); const active = initial[2]; const inactive = initial[4];
     expect(active).not.toBe(inactive); expect(initial).toEqual([active, active, active, inactive, inactive]);
-    await labels.nth(0).hover(); expect(await colors()).toEqual([active, inactive, inactive, inactive, inactive]);
+    await labels.nth(0).hover(); await expect.poll(colors).toEqual([active, inactive, inactive, inactive, inactive]);
     await expect(inputs.nth(2)).toBeChecked();
-    await labels.nth(4).hover(); expect(await colors()).toEqual([active, active, active, active, active]);
+    await labels.nth(4).hover(); await expect.poll(colors).toEqual([active, active, active, active, active]);
     await labels.nth(3).click(); await page.mouse.move(0, 0);
-    expect(await colors()).toEqual([active, active, active, active, inactive]);
+    await expect.poll(colors).toEqual([active, active, active, active, inactive]);
     await inputs.nth(3).focus(); await page.keyboard.press('ArrowUp');
-    await expect(inputs.nth(2)).toBeChecked(); expect(await colors()).toEqual([active, active, active, inactive, inactive]);
+    await expect(inputs.nth(2)).toBeChecked(); await expect.poll(colors).toEqual([active, active, active, inactive, inactive]);
     await form.getByRole('button', { name: 'Reset' }).click();
     await expect(inputs.nth(2)).toBeChecked();
     await form.locator('fieldset').evaluate(node => node.setAttribute('disabled', ''));
-    await labels.nth(4).hover({ force: true }); expect(await colors()).toEqual([active, active, active, inactive, inactive]);
+    await labels.nth(4).hover({ force: true }); await expect.poll(colors).toEqual([active, active, active, inactive, inactive]);
     await form.locator('fieldset').evaluate(node => { node.removeAttribute('disabled'); node.setAttribute('data-nq-readonly', 'true'); });
-    await labels.nth(4).hover(); expect(await colors()).toEqual([active, active, active, inactive, inactive]);
+    await labels.nth(4).hover(); await expect.poll(colors).toEqual([active, active, active, inactive, inactive]);
   });
 }

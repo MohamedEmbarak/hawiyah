@@ -146,6 +146,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Slider | Number value; `min`, `max`, `step`; native range plus value output. |
 | RangeSlider | `[lower,upper]`; `min`, `max`, `step`, `lowerLabel`, `upperLabel`, `lowerName`, `upperName`. Crossing thumbs stop at the other value; absent distinct names, `name` submits two ordered values. |
 | Rating | Numeric value, `max` (1–20), `ratingLabel(value,max)`; named native radio choices. |
+| `NqRatingDisplayComponent / nq-rating-display` | Required `label`, numeric `value=0`, `max=5` (1–20), `showValue=true`, `valueLabel(value,max)`; noninteractive fractional aggregate score with one accessible image name. |
 | PinInput | String value, `length`; one numeric input with `one-time-code` autocomplete, Arabic-Indic/Eastern Arabic digit normalization, paste support. |
 | TagInput | `string[]`; `placeholder`, `addLabel`, `removeLabel`. Enter/comma or Add commits unique trimmed tags; repeated hidden form values. |
 | MultiSelect | `string[]`; `options: Option[]`, `searchLabel`, `emptyMessage`, `selectedMessage(count)`, `validationMessage`. Searchable checkbox list; selected values remain in FormData when search hides their checkboxes. |
@@ -293,3 +294,5 @@ uses an Arabic message by default. Sorting does not mutate caller records.
 The default sort locale is `ar-SA`. Both component hosts shrink inside grid/flex
 layouts so overflow stays inside the table wrapper.
 See [table evidence and adaptations](../../docs/nic-tables.md).
+
+Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Arabic labels and Latin digits are the defaults.

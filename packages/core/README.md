@@ -1,5 +1,10 @@
 # @nasaq/core
 
+`normalizeRatingMax(max)` provides a finite integer capacity from 1 to 20
+(default/fallback 5). `normalizeRatingValue(value, max)` bounds a finite score
+without discarding fractions; invalid numbers become 0. Rating inputs floor
+that value to an integer, while `RatingDisplay` preserves aggregate fractions.
+
 Framework-independent behavior utilities for Nasaq. No browser globals
 are accessed at import, so pure helpers and package imports work in SSR.
 

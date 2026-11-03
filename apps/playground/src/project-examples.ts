@@ -1,3 +1,4 @@
+import {ratingDemoCases,ratingNativeMarkup} from './rating-demo.ts';
 import {carouselDemoCases,carouselNativeMarkup} from './carousel-demo.ts';
 import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo.ts';
 import {avatarDemoCases,avatarDemoProps} from './avatar-demo.ts';
@@ -20,6 +21,7 @@ export const nativeProjectComponents = new Set([
   "spinner",
   "select",
   "radio",
+  "rating",
   "card",
   "accordion",
   "carousel",
@@ -86,6 +88,7 @@ export function projectExample(
     spinner: "Spinner",
     select: "Select",
     radio: "Radio",
+    rating: "Rating",
     card: "Card",
     accordion: "Accordion",
     carousel: "Carousel",
@@ -106,7 +109,7 @@ export function projectExample(
     "portal-footer": "PortalFooter",
   };
   const component = name[id]!;
-  const componentImports = ["site-verification","portal-header"].includes(id) ? "SiteVerification, PortalHeader" : id==="button-group" ? "ButtonGroup, Button, IconButton" : component;
+  const componentImports = ["site-verification","portal-header"].includes(id) ? "SiteVerification, PortalHeader" : id==="button-group" ? "ButtonGroup, Button, IconButton" : id==="rating" ? "Rating, RatingDisplay" : component;
   const options = JSON.stringify([
     { value: "first", label: t("First", "الأول") },
     { value: "second", label: t("Second", "الثاني") },
@@ -314,6 +317,13 @@ export function projectExample(
     react = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style={{width:'100%',height:'4rem'}} /></div>`;
     vue = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style="width:100%;height:4rem" /></div>`;
     angular = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><nq-skeleton width="100%" height="4rem" /></div>`;
+  } else if (id === "rating") {
+    state = true; numberState = true; initialValue = "4";
+    const cases = ratingDemoCases(locale).map(item => ({...item, ...ratingNativeMarkup(locale,item.kind,item.kind==='selected')}));
+    react = cases.map(item => `<section className="nq-stack"><h2>${item.title}</h2>${item.react}${item.kind==='selected'?'<output>{value}</output>':''}</section>`).join('');
+    vue = cases.map(item => `<section class="nq-stack"><h2>${item.title}</h2>${item.vue}${item.kind==='selected'?'<output>{{value}}</output>':''}</section>`).join('');
+    angular = cases.map(item => `<section class="nq-stack"><h2>${item.title}</h2>${item.angular}${item.kind==='selected'?'<output>{{value}}</output>':''}</section>`).join('');
+    angularMember = cases[0]!.angularMember;
   } else if (id === "carousel") {
     state = true; numberState = true; initialValue = "0";
     const cases = carouselDemoCases(locale).map(item => ({...item, ...carouselNativeMarkup(locale,item.kind,item.kind==='bounded')}));
@@ -423,7 +433,7 @@ export function projectExample(
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };
-  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "button-group" ? ", NqButtonDirective, NqIconButtonComponent" : id === "tabs" ? ", NqTabComponent" : id === "site-verification" ? ", NqPortalHeaderComponent" : id === "portal-header" ? ", NqSiteVerificationComponent" : ""}`;
+  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "button-group" ? ", NqButtonDirective, NqIconButtonComponent" : id === "rating" ? ", NqRatingDisplayComponent" : id === "tabs" ? ", NqTabComponent" : id === "site-verification" ? ", NqPortalHeaderComponent" : id === "portal-header" ? ", NqSiteVerificationComponent" : ""}`;
   return {
     names: { html: "app.component.ts", css: "style.css", js: "main.ts" },
     entry: "main.ts",

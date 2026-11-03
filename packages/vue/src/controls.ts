@@ -7,7 +7,7 @@ import {
   watchEffect,
 } from "vue";
 import type { PropType } from "vue";
-import { clampRange, filterOptions, isDisabled, normalizeDigits } from "@nasaq/core";
+import { clampRange, filterOptions, isDisabled, normalizeDigits, normalizeRatingMax, normalizeRatingValue } from "@nasaq/core";
 import type { Option } from "@nasaq/core";
 import { Button, TextField, decorate } from "./forms.js";
 import { decorationProps, useField, useFormReset, useValue } from "./shared.js";
@@ -361,7 +361,7 @@ export const Rating = defineComponent({
     max: { type: Number, default: 5 },
     optionLabel: {
       type: Function as PropType<(value: number, max: number) => string>,
-      default: (value: number, max: number) => `${value} of ${max}`,
+      default: (value: number, max: number) => `${value} من ${max}`,
     },
   },
   emits: { "update:modelValue": (_value: number) => true },
@@ -375,7 +375,8 @@ export const Rating = defineComponent({
     );
     useFormReset(element, () => model.set(props.defaultValue));
     return () => {
-      const count = Math.max(1, Math.min(10, Math.floor(props.max) || 5));
+      const count = normalizeRatingMax(props.max);
+      const current = Math.floor(normalizeRatingValue(model.value.value, count));
       return h(
         "fieldset",
         mergeProps(attrs, {
@@ -383,6 +384,7 @@ export const Rating = defineComponent({
           disabled: props.disabled,
           "data-nq-readonly": props.readonly || undefined,
           "aria-describedby": field.controlAttrs.value["aria-describedby"],
+          "aria-invalid": props.error ? true : undefined,
         }),
         [
           props.label && h("legend", { class: "nq-label" }, props.label),
@@ -390,7 +392,7 @@ export const Rating = defineComponent({
             h(
               "label",
               {
-                "data-selected": index < model.value.value ? "true" : undefined,
+                "data-selected": index < current ? "true" : undefined,
               },
               [
                 h("input", {
@@ -399,7 +401,7 @@ export const Rating = defineComponent({
                   name: attrs.name ?? `${field.id.value}-rating`,
                   form: attrs.form,
                   value: index + 1,
-                  checked: model.value.value === index + 1,
+                  checked: current === index + 1,
                   required: props.required,
                   disabled: props.disabled,
                   "aria-label": props.optionLabel(index + 1, count),
@@ -409,15 +411,15 @@ export const Rating = defineComponent({
                       event.preventDefault();
                       // Radios activate before click; restore the whole native group when cancellation rolls back only the target.
                       element.value?.closest('fieldset')?.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach(input => {
-                        input.checked = Number(input.value) === model.value.value;
+                        input.checked = Number(input.value) === current;
                       });
                     }
                   },
                   onKeydown: (event: KeyboardEvent) => {
                     if (props.readonly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) event.preventDefault();
                   },
-                  onChange: () => {
-                    if (!props.disabled && !props.readonly)
+                  onChange: (event: Event) => {
+                    if (!props.readonly && !isDisabled(event.currentTarget as HTMLInputElement))
                       model.set(index + 1);
                   },
                 }),
@@ -439,6 +441,24 @@ export const Rating = defineComponent({
             ),
         ],
       );
+    };
+  },
+});
+/** Read-only aggregate score; Rating remains an integer radio input. */
+export const RatingDisplay = defineComponent({
+  name: 'NqRatingDisplay', inheritAttrs: false,
+  props: {
+    label: {type: String, required: true}, value: {type: Number, default: 0},
+    max: {type: Number, default: 5}, showValue: {type: Boolean, default: true},
+    valueLabel: {type: Function as PropType<(value: number, max: number) => string>, default: (value: number, max: number) => `${value} من ${max}`},
+  },
+  setup(props, {attrs}) {
+    return () => {
+      const total = normalizeRatingMax(props.max), score = normalizeRatingValue(props.value, total);
+      return h('div', mergeProps(attrs, {class: 'nq-rating-display', role: 'img', 'aria-label': attrs['aria-label'] ?? `${props.label}: ${props.valueLabel(score, total)}`}), [
+        h('span', {class: 'nq-rating-stars', 'aria-hidden': 'true'}, Array.from({length: total}, (_, index) => h('span', {class: 'nq-rating-star', key: index}, ['★', h('span', {class: 'nq-rating-fill', style: {'--nq-rating-fill': `${Math.min(1, Math.max(0, score - index)) * 100}%`}})]))),
+        props.showValue && h('span', {class: 'nq-rating-score', 'aria-hidden': 'true'}, `${score}/${total}`),
+      ]);
     };
   },
 });

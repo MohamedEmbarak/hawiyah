@@ -1,6 +1,6 @@
 import { booleanAttribute, Component, Directive, ElementRef, EventEmitter, forwardRef, inject, Input, Output, ViewChild, type AfterViewInit, type OnChanges, type SimpleChanges } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR, type AbstractControl, type ValidationErrors, type Validator } from '@angular/forms';
-import { clampRange, filterOptions, formatCalendarDate, getCalendarDateParts, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, normalizeDigits, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarSystem, type Direction, type Option } from '@nasaq/core';
+import { clampRange, filterOptions, formatCalendarDate, getCalendarDateParts, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, normalizeDigits, normalizeRatingMax, normalizeRatingValue, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarSystem, type Direction, type Option } from '@nasaq/core';
 import { NqValueControl } from './forms';
 import { observeAngularFieldPresence } from './field-presence';
 import { NqDialogComponent, NqTooltipComponent } from './overlays';
@@ -68,8 +68,32 @@ export class NqRangeSliderComponent extends NqExpandedValueControl<[number, numb
   }
 }
 
-@Component({selector: 'nq-rating', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqRatingComponent), multi: true}], template: `<fieldset class="nq-field nq-rating" [disabled]="disabled" [attr.data-nq-readonly]="readOnly || null" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null"><legend class="nq-label">{{ label }}</legend>@for (rating of ratings; track rating) {<label><input type="radio" [name]="name || controlId" [value]="rating" [checked]="value === rating" [required]="required" [attr.aria-disabled]="readOnly || null" (click)="guardClick($event)" (keydown)="guardKey($event)" (change)="update(rating)" (blur)="touch()"><span aria-hidden="true">★</span><span class="nq-sr-only">{{ ratingLabel(rating, max) }}</span></label>}${fieldEnd}</fieldset>`})
-export class NqRatingComponent extends NqExpandedValueControl<number> { override value = 0; protected emptyValue() { return 0; } @Input() max = 5; @Input() ratingLabel = (value: number, max: number) => `${value} of ${max}`; get ratings() { return Array.from({length: Math.max(1, Math.min(20, Math.floor(this.max)))}, (_, i) => i + 1); } guardClick(event: MouseEvent) { if (this.readOnly) { event.preventDefault(); (event.currentTarget as HTMLInputElement).closest('fieldset')?.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach(input => { input.checked = Number(input.value) === this.value; }); } } guardKey(event: KeyboardEvent) { if (this.readOnly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) event.preventDefault(); } }
+@Component({selector: 'nq-rating', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqRatingComponent), multi: true}], template: `<fieldset class="nq-field nq-rating" [disabled]="disabled" [attr.data-nq-readonly]="readOnly || null" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null"><legend class="nq-label">{{ label }}</legend>@for (rating of ratings; track rating) {<label><input type="radio" [name]="name || controlId" [value]="rating" [checked]="currentInput === rating" [required]="required" [attr.aria-disabled]="readOnly || null" (click)="guardClick($event)" (keydown)="guardKey($event)" (change)="changed($event, rating)" (blur)="touch()"><span aria-hidden="true">★</span><span class="nq-sr-only">{{ ratingLabel(rating, total) }}</span></label>}${fieldEnd}</fieldset>`})
+export class NqRatingComponent extends NqExpandedValueControl<number> {
+  override value = 0; protected emptyValue() { return 0; }
+  @Input() max = 5;
+  @Input() ratingLabel = (value: number, max: number) => `${value} من ${max}`;
+  get total() { return normalizeRatingMax(this.max); }
+  get currentInput() { return Math.floor(normalizeRatingValue(this.value, this.total)); }
+  get ratings() { return Array.from({length: this.total}, (_, i) => i + 1); }
+  private restore(input: HTMLInputElement) { input.closest('fieldset')?.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach(radio => { radio.checked = Number(radio.value) === this.currentInput; }); }
+  guardClick(event: MouseEvent) { if (this.readOnly) { event.preventDefault(); this.restore(event.currentTarget as HTMLInputElement); } }
+  guardKey(event: KeyboardEvent) { if (this.readOnly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) event.preventDefault(); }
+  changed(event: Event, rating: number) { const input = event.currentTarget as HTMLInputElement; if (this.readOnly || isDisabled(input)) { this.restore(input); return; } this.update(rating); }
+}
+/** Aggregate score with fractional fill; this component has no form controls. */
+@Component({selector: 'nq-rating-display', standalone: true, template: `<div class="nq-rating-display" role="img" [attr.aria-label]="label + ': ' + valueLabel(score, total)"><span class="nq-rating-stars" aria-hidden="true">@for (star of stars; track star) {<span class="nq-rating-star">★<span class="nq-rating-fill" [style.--nq-rating-fill]="fill(star) + '%'"></span></span>}</span>@if (showValue) {<span class="nq-rating-score" aria-hidden="true">{{ score }}/{{ total }}</span>}</div>`})
+export class NqRatingDisplayComponent {
+  @Input({required: true}) label = '';
+  @Input() value = 0;
+  @Input() max = 5;
+  @Input({transform: booleanAttribute}) showValue = true;
+  @Input() valueLabel = (value: number, max: number) => `${value} من ${max}`;
+  get total() { return normalizeRatingMax(this.max); }
+  get score() { return normalizeRatingValue(this.value, this.total); }
+  get stars() { return Array.from({length: this.total}, (_, index) => index); }
+  fill(index: number) { return Math.min(1, Math.max(0, this.score - index)) * 100; }
+}
 
 @Component({selector: 'nq-pin-input', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqPinInputComponent), multi: true}], template: `<div class="nq-field nq-pin-input"><label class="nq-label" [for]="controlId">{{ label }}</label><input class="nq-input" type="text" inputmode="numeric" autocomplete="one-time-code" [attr.pattern]="'[0-9]{' + normalizedLength + '}'" [id]="controlId" [name]="name" [value]="normalizedValue" [attr.maxlength]="normalizedLength" [disabled]="disabled" [readOnly]="readOnly" [required]="required" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="inputChanged($event)" (blur)="touch()">${fieldEnd}</div>`})
 export class NqPinInputComponent extends NqExpandedValueControl<string> { override value = ''; protected emptyValue() { return ''; } @Input() length = 6; get normalizedLength() { return Math.max(1, Math.floor(this.length) || 6); } private normalize(value: string) { return normalizeDigits(value).replace(/[^0-9]/g, '').slice(0, this.normalizedLength); } get normalizedValue() { return this.normalize(this.value); } inputChanged(event: Event) { const input = event.target as HTMLInputElement; this.update(this.normalize(input.value)); input.value = this.normalizedValue; } }

@@ -1,3 +1,4 @@
+import {ratingDemoMarkup,ratingDisplayMarkup} from './rating-demo';
 import {carouselDemoMarkup} from './carousel-demo';
 import { expandedSample } from './expanded-samples';
 import type { GuideInput } from './component-guide-types';
@@ -47,11 +48,19 @@ export const expandedGuides: Record<string, GuideInput> = {
     accessibility: ['Name each bound separately; a group label alone is insufficient.', 'Preserve native arrow-key adjustment and distinguish the two values in text.', 'Do not communicate which handle is active by color alone.'], related: ['slider', 'number-field'], frameworkNotes: 'React accepts value/defaultValue pairs and onValueChange. lowerName/upperName or a repeated name submit both values; min/max/step configure the native inputs.', source: 'packages/vanilla/src/controls.ts',
   },
   rating: {
-    summary: 'Collects one rating using a native radio group. Stars through the selected value are highlighted together; hovering previews a range without changing the submitted value.',
-    usage: `<fieldset class="nq-rating"><legend>Rate the service</legend>\n  <label><input class="nq-radio" type="radio" name="rating" value="1" required> 1 of 3</label>\n  <label><input class="nq-radio" type="radio" name="rating" value="2"> 2 of 3</label>\n  <label><input class="nq-radio" type="radio" name="rating" value="3"> 3 of 3</label>\n</fieldset>`,
-    lifecycle: ['Render a labelled radio group with a stable shared name.', 'Selecting a rating commits its value through native form behavior or framework onValueChange.', 'Reset restores the initial rating. Application submission and feedback collection are separate operations.'],
-    api: api(['value / defaultValue / onValueChange', 'React numeric props', 'Selected numeric rating.'], ['max', 'React integer 1–10; default 5', 'Number of choices rendered by the adapter.'], ['getRatingLabel', 'React (value,max) => string', 'Localized label for each choice.'], ['required / name', 'Native form attributes', 'Validation and form data.']),
-    accessibility: ['Use legend for the question and a meaningful label for every rating.', 'Hide decorative stars from assistive technology.', 'Retain native radio arrow/Space behavior. Read-only ratings retain keyboard focus and the selected form value; disabled ratings are excluded from submission.'], related: ['radio', 'feedback'], source: 'packages/react/src/expanded-controls.tsx',
+    summary: 'Collect a whole-number choice with Rating, or show an average such as 3.5 with the non-interactive RatingDisplay. Input stars fill through the selected value; hover previews a range without changing the submitted value.',
+    usage: `${ratingDemoMarkup('en','selected','rating-usage')}\n\n${ratingDisplayMarkup('en',3.5)}`,
+    lifecycle: ['Render a labelled radio group with a stable shared name. Vanilla enhancement protects read-only state and exposes the selection controller; framework adapters own their controls.', 'Selection emits an integer through React onValueChange, Vue v-model or Angular valueChange/CVA. Native input values are clamped and floored; zero means no choice. Display values retain their fractional part.', 'Native form reset restores an uncontrolled initial selection; controlled applications restore their own state. RatingDisplay is presentation only: no focus target, input, form value or selection event.', 'Use max 1–20 in native adapters; it is floored and clamped, with non-finite maximums falling back to 5. Non-finite values become zero. Vanilla authors the desired integer radio choices directly.'],
+    api: api(
+      ['value / defaultValue / onValueChange · v-model · value/valueChange', 'Framework props', 'Integer selection state. Angular also supports ControlValueAccessor.'],
+      ['max', 'Framework props', 'Default 5; finite integer limit 1–20, shared by native input and display components.'],
+      ['getRatingLabel / optionLabel / ratingLabel', 'Framework props', 'React, Vue and Angular choice-name callbacks receive (value, max); defaults are Arabic with Latin digits.'],
+      ['required / name / form', 'Native form attributes', 'Native radio validation and submission; keep one shared name per group. External form association is available in React/Vue; Angular uses its ancestor form or CVA.'],
+      ['readOnly / readonly / disabled', 'Framework props', 'Read-only blocks changes while preserving focus and the selected form value; disabled excludes submission.'],
+      ['RatingDisplay · value / max / label', 'Framework props', 'A named, non-interactive score image. Values are clamped to 0–max and fractions fill from inline start.'],
+      ['getValueLabel / valueLabel · showValue', 'Framework props', 'Customize the accessible score wording; showValue defaults to true and controls the visible numeric score.'],
+    ),
+    accessibility: ['Use legend for the input question and a meaningful label for every rating.', 'Decorative stars are hidden from assistive technology. RatingDisplay exposes one accessible image name including the score; it is not a radio group.', 'Retain native radio arrow/Space behavior, visible keyboard focus, reduced-motion behavior and forced-colors boundaries. Read-only choices remain focusable; disabled choices are excluded from submission.'], related: ['radio', 'feedback'], source: 'packages/react/src/expanded-controls.tsx',
   },
   'pin-input': {
     summary: 'Collects a fixed-length numeric one-time code in one accessible input, including pasted Arabic-Indic and Eastern Arabic digits.',

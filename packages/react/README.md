@@ -208,7 +208,8 @@ Controlled values remain owned by the application.
 | `NumberField` | Native number input with label/hint/error, min/max/step and normal React input events. Empty remains empty; it is not coerced to zero. |
 | `Slider` | Numeric value/defaultValue, `onValueChange`, min/max/step, `showValue`, `formatValue`; one labelled native range. |
 | `RangeSlider` | Numeric `[lower,upper]`, `onValueChange`, min/max/step; required `lowerLabel`/`upperLabel`, optional group `label`. `lowerName`/`upperName` or repeated `name` submit both values. Native handles cannot cross. |
-| `Rating` | Numeric value/defaultValue, `onValueChange`, max (1–10, default 5), label/name/required, `getRatingLabel`; one native radio group. |
+| `Rating` | Numeric value/defaultValue, `onValueChange`, max (1–20, default 5), label/name/required, `getRatingLabel`; one native radio group. |
+| `RatingDisplay` | Required `label`, numeric `value=0`, `max=5` (1–20), `showValue=true`, `getValueLabel(value,max)`; noninteractive fractional aggregate score with one accessible image name. |
 | `PinInput` | String value/defaultValue, `onValueChange`, `length` (default 6), optional decorative `showSlots`; one accessible OTP input normalizes Arabic-Indic and Eastern Arabic digits, including pasted input. |
 | `TagInput` | String array value/defaultValue, `onValueChange`, name, required, `getRemoveLabel`, `requiredMessage`; Enter/comma commits a unique tag, empty Backspace removes the last tag. Each committed tag produces a native form value. |
 | `MultiSelect` | Required label and options; string array value/defaultValue, `onValueChange`, name, required, `searchLabel`, `emptyMessage`, `requiredMessage`. Searchable native checkboxes; filtered-out selections retain repeated form values. |
@@ -420,3 +421,5 @@ uses an Arabic message by default. Sorting does not mutate caller records.
 React/Vue native `data-variant` and `data-size` attributes remain supported;
 typed props take precedence. `wrapperProps` customizes the scroll container.
 See [table evidence and adaptations](../../docs/nic-tables.md).
+
+Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Arabic labels and Latin digits are the defaults.

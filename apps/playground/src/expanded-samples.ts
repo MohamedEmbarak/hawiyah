@@ -1,3 +1,4 @@
+import {ratingDemoMarkup} from './rating-demo';
 import {carouselDemoMarkup} from './carousel-demo';
 import {iconButtonMarkup} from './icon-button-demo';
 import {toggleGroupMarkup} from './segmented-demo';
@@ -52,7 +53,7 @@ export function expandedSample(
     case "range-slider":
       return `<div class="nq-range-slider" data-nq="range-slider">${label(t("Minimum budget", "الحد الأدنى للميزانية"), '<input class="nq-slider" type="range" min="0" max="100" value="20" data-nq-lower>')}${label(t("Maximum budget", "الحد الأعلى للميزانية"), '<input class="nq-slider" type="range" min="0" max="100" value="80" data-nq-upper>')}<output data-nq-range-output></output></div>`;
     case "rating":
-      return `<fieldset class="nq-rating" data-nq="rating"><legend class="nq-label">${t("Rate this experience", "قيّم التجربة")}</legend><div class="nq-inline">${[1, 2, 3, 4, 5].map((n) => `<label><input class="nq-radio" type="radio" name="${uid}" value="${n}" ${n === 4 ? "checked" : ""}><span aria-hidden="true">★</span><span class="nq-sr-only">${n} ${t("out of 5", "من 5")}</span></label>`).join("")}</div></fieldset>`;
+      return ratingDemoMarkup(locale,'selected',uid);
     case "pin-input":
       return `<div class="nq-pin-input" data-nq="pin-input">${label(t("One-time code", "رمز التحقق"), '<input class="nq-input" name="code" data-nq-pin-input maxlength="6" autocomplete="one-time-code" inputmode="numeric" placeholder="000000">')}<span class="nq-hint">${t("Paste Arabic or Latin digits.", "الصق أرقامًا عربية أو لاتينية.")}</span></div>`;
     case "tag-input":

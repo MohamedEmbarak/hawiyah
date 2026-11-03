@@ -155,6 +155,14 @@ scrolling, a caption, `scope="col"` headings and `scope="row"` row headers.
 InputGroup groups `.nq-input-addon` with native `.nq-input`. Password/Search/Number
 use password/search/number inputs (NumberField delegates step/min/max/empty).
 Slider is a labelled range input; Rating is a labelled native radio group.
+
+Rating selection uses authored integer radio values. A non-interactive fractional
+score uses `.nq-rating-display[role="img"]` with an accessible label including the
+score, an `aria-hidden="true"` `.nq-rating-stars` group and `.nq-rating-star` cells.
+Each cell contains `★` and a `.nq-rating-fill` span with `--nq-rating-fill: 50%`
+(or another percentage); CSS supplies the clipped overlay glyph. An optional
+`.nq-rating-score[aria-hidden="true"]` shows the numeric value. No controller or
+form input is needed. See [rating evidence and API](../../docs/nic-rating.md).
 Collapsible uses details/summary. Link, IconButton, ButtonGroup, Chip,
 DescriptionList, Stat, Timeline, Meter, AvatarGroup, ServiceCard, ServiceDetails,
 PortalHeader/Footer and NotificationList use semantic HTML and matching CSS.

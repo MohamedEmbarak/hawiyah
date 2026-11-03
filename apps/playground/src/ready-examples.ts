@@ -1,3 +1,4 @@
+import {ratingDemoCases,ratingDemoMarkup,ratingNativeMarkup} from './rating-demo';
 import {carouselDemoCases,carouselDemoMarkup,carouselNativeMarkup} from './carousel-demo';
 import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo';
 import {toggleGroupMarkup} from './segmented-demo';
@@ -32,6 +33,14 @@ type Recipe = { title: string; markup: string; react?: string; vue?: string; ang
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='rating')return ratingDemoCases(locale).map(item=>{
+    const native=ratingNativeMarkup(locale,item.kind),name=item.kind==='scores'?'RatingDisplay':'Rating';
+    return {title:item.title,markup:ratingDemoMarkup(locale,item.kind),
+      react:`import { ${name} } from '@nasaq/react';\n\n${native.react}`,
+      vue:`<!-- import { ${name} } from '@nasaq/vue' -->\n${native.vue}`,
+      angular:`<!-- import { Nq${name}Component } from '@nasaq/angular'; add to imports -->\n<!-- Component class member:${native.angularMember} -->\n${native.angular}`,
+    };
+  });
   if(id==='carousel')return carouselDemoCases(locale).map(item=>{
     const native=carouselNativeMarkup(locale,item.kind);
     return {title:item.title,markup:carouselDemoMarkup(locale,item.kind),

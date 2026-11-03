@@ -64,7 +64,8 @@ export const tokens = {
     "accordion": "300ms",
     "accordion-indicator": "200ms",
     "carousel": "600ms",
-    "carousel-control": "300ms"
+    "carousel-control": "300ms",
+    "rating": "200ms"
   },
   "ease": {
     "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -187,7 +188,10 @@ export const tokens = {
     "avatar-border": "#FFFFFF",
     "carousel-dot": "#E5E7EB",
     "carousel-dot-hover": "#D2D6DB",
-    "carousel-dot-border": "#384250"
+    "carousel-dot-border": "#384250",
+    "rating-empty": "#d0d5dd",
+    "rating-fill": "#1B8354",
+    "rating-outline": "#384250"
   },
   "control": {
     "height": "2.5rem",
@@ -308,7 +312,10 @@ export const themes = {
         "avatar-border": "#d9e0da",
         "carousel-dot": "#f0f1eb",
         "carousel-dot-hover": "#d9e0da",
-        "carousel-dot-border": "#4c6264"
+        "carousel-dot-border": "#4c6264",
+        "rating-empty": "#4c6264",
+        "rating-fill": "#005b56",
+        "rating-outline": "#4c6264"
       }
     },
     "dark": {
@@ -408,7 +415,10 @@ export const themes = {
         "avatar-border": "#3a5150",
         "carousel-dot": "#283c3c",
         "carousel-dot-hover": "#3a5150",
-        "carousel-dot-border": "#b9cdca"
+        "carousel-dot-border": "#b9cdca",
+        "rating-empty": "#b9cdca",
+        "rating-fill": "#a2e0d5",
+        "rating-outline": "#b9cdca"
       }
     }
   },
@@ -510,7 +520,10 @@ export const themes = {
         "avatar-border": "#FFFFFF",
         "carousel-dot": "#E5E7EB",
         "carousel-dot-hover": "#D2D6DB",
-        "carousel-dot-border": "#384250"
+        "carousel-dot-border": "#384250",
+        "rating-empty": "#d0d5dd",
+        "rating-fill": "#1B8354",
+        "rating-outline": "#384250"
       }
     },
     "dark": {
@@ -610,7 +623,10 @@ export const themes = {
         "avatar-border": "#1F2A37",
         "carousel-dot": "#1F2A37",
         "carousel-dot-hover": "#6C737F",
-        "carousel-dot-border": "#F3F4F6"
+        "carousel-dot-border": "#F3F4F6",
+        "rating-empty": "#F3F4F6",
+        "rating-fill": "#54C08A",
+        "rating-outline": "#F3F4F6"
       }
     }
   }
@@ -682,7 +698,8 @@ export const themeFoundations = {
       "accordion": "300ms",
       "accordion-indicator": "200ms",
       "carousel": "600ms",
-      "carousel-control": "300ms"
+      "carousel-control": "300ms",
+      "rating": "200ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -775,7 +792,8 @@ export const themeFoundations = {
       "accordion": "0ms",
       "accordion-indicator": "0ms",
       "carousel": "0ms",
-      "carousel-control": "180ms"
+      "carousel-control": "180ms",
+      "rating": "0ms"
     },
     "ease": {
       "standard": "cubic-bezier(0.2, 0, 0, 1)",
@@ -933,7 +951,8 @@ export const tokenNames = {
     "accordion": "--nq-duration-accordion",
     "accordion-indicator": "--nq-duration-accordion-indicator",
     "carousel": "--nq-duration-carousel",
-    "carousel-control": "--nq-duration-carousel-control"
+    "carousel-control": "--nq-duration-carousel-control",
+    "rating": "--nq-duration-rating"
   },
   "ease": {
     "standard": "--nq-ease-standard",
@@ -1056,7 +1075,10 @@ export const tokenNames = {
     "avatar-border": "--nq-color-avatar-border",
     "carousel-dot": "--nq-color-carousel-dot",
     "carousel-dot-hover": "--nq-color-carousel-dot-hover",
-    "carousel-dot-border": "--nq-color-carousel-dot-border"
+    "carousel-dot-border": "--nq-color-carousel-dot-border",
+    "rating-empty": "--nq-color-rating-empty",
+    "rating-fill": "--nq-color-rating-fill",
+    "rating-outline": "--nq-color-rating-outline"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1129,6 +1151,7 @@ export const cssVariableNames = [
   "--nq-duration-accordion-indicator",
   "--nq-duration-carousel",
   "--nq-duration-carousel-control",
+  "--nq-duration-rating",
   "--nq-ease-standard",
   "--nq-ease-input",
   "--nq-ease-switch",
@@ -1242,6 +1265,9 @@ export const cssVariableNames = [
   "--nq-color-carousel-dot",
   "--nq-color-carousel-dot-hover",
   "--nq-color-carousel-dot-border",
+  "--nq-color-rating-empty",
+  "--nq-color-rating-fill",
+  "--nq-color-rating-outline",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

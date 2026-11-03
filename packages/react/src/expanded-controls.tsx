@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import type { ComponentPropsWithRef, ReactNode } from 'react';
-import { clampRange, filterOptions, isDisabled, normalizeDigits } from '@nasaq/core';
+import type { ComponentPropsWithRef, CSSProperties, ReactNode } from 'react';
+import { clampRange, filterOptions, isDisabled, normalizeDigits, normalizeRatingMax, normalizeRatingValue } from '@nasaq/core';
 import type { Option } from '@nasaq/core';
 import { Button, TextField } from './forms.js';
 import type { TextFieldProps } from './forms.js';
@@ -47,10 +47,24 @@ export function RangeSlider({ value, defaultValue = [0, 100], onValueChange, min
     {hint && <p className="nq-hint" id={`${id}-hint`}>{hint}</p>}{error && <p className="nq-error" id={`${id}-error`}>{error}</p>}</fieldset>;
 }
 export interface RatingProps extends Omit<ComponentPropsWithRef<'fieldset'>, 'onChange' | 'defaultValue'>, FieldDecoration { value?: number; defaultValue?: number; onValueChange?: (value: number) => void; max?: number; name?: string; form?: string; required?: boolean; readOnly?: boolean; getRatingLabel?: (value: number, max: number) => string }
-export function Rating({ value, defaultValue = 0, onValueChange, max = 5, name, form, required, readOnly, getRatingLabel = (number, total) => `${number} of ${total}`, label, hint, error, className, disabled, ...props }: RatingProps) {
-  const id = useId(); const input = useRef<HTMLInputElement | null>(null); const total = Math.max(1, Math.min(10, Math.floor(max))); const [current, setCurrent] = useControllable(value, defaultValue, onValueChange);
+export function Rating({ value, defaultValue = 0, onValueChange, max = 5, name, form, required, readOnly, getRatingLabel = (number, total) => `${number} من ${total}`, label, hint, error, className, disabled, ...props }: RatingProps) {
+  const id = useId(); const input = useRef<HTMLInputElement | null>(null); const total = normalizeRatingMax(max); const [stored, setCurrent] = useControllable(value, defaultValue, onValueChange); const current = Math.floor(normalizeRatingValue(stored, total));
   useFormReset(input, () => { if (value === undefined) setCurrent(defaultValue); }, form);
-  return <fieldset {...props} className={cx('nq-rating', className)} disabled={disabled} data-nq-readonly={readOnly || undefined} aria-describedby={[hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined} aria-invalid={error ? true : undefined}><legend className="nq-label">{label}</legend>{Array.from({ length: total }, (_, index) => index + 1).map(number => <label key={number}><input ref={number === 1 ? input : undefined} type="radio" className="nq-radio" name={name ?? id} form={form} value={number} checked={current === number} required={required} aria-label={getRatingLabel(number, total)} aria-disabled={readOnly || undefined} onClick={event => { if (readOnly) event.preventDefault(); }} onKeyDown={event => { if (readOnly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) event.preventDefault(); }} onChange={() => { if (!readOnly && !disabled) setCurrent(number); }} /><span aria-hidden="true" data-state={number <= current ? 'selected' : undefined}>★</span></label>)}{hint && <p id={`${id}-hint`} className="nq-hint">{hint}</p>}{error && <p id={`${id}-error`} className="nq-error">{error}</p>}</fieldset>;
+  return <fieldset {...props} className={cx('nq-rating', className)} disabled={disabled} data-nq-readonly={readOnly || undefined} aria-describedby={[hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined} aria-invalid={error ? true : undefined}><legend className="nq-label">{label}</legend>{Array.from({ length: total }, (_, index) => index + 1).map(number => <label key={number}><input ref={number === 1 ? input : undefined} type="radio" className="nq-radio" name={name ?? id} form={form} value={number} checked={current === number} required={required} aria-label={getRatingLabel(number, total)} aria-disabled={readOnly || undefined} onClick={event => { if (readOnly) event.preventDefault(); }} onKeyDown={event => { if (readOnly && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(event.key)) event.preventDefault(); }} onChange={event => { if (!readOnly && !isDisabled(event.currentTarget)) setCurrent(number); }} /><span aria-hidden="true" data-state={number <= current ? 'selected' : undefined}>★</span></label>)}{hint && <p id={`${id}-hint`} className="nq-hint">{hint}</p>}{error && <p id={`${id}-error`} className="nq-error">{error}</p>}</fieldset>;
+}
+/** Read-only aggregate score; use Rating for integer input selection. */
+export interface RatingDisplayProps extends ComponentPropsWithRef<'div'> {
+  label: string; value?: number; max?: number; showValue?: boolean;
+  getValueLabel?: (value: number, max: number) => string;
+}
+export function RatingDisplay({ label, value = 0, max = 5, showValue = true,
+  getValueLabel = (score, total) => `${score} من ${total}`, className, ...props
+}: RatingDisplayProps) {
+  const total = normalizeRatingMax(max), score = normalizeRatingValue(value, total);
+  return <div {...props} className={cx('nq-rating-display', className)} role="img" aria-label={props['aria-label'] ?? `${label}: ${getValueLabel(score, total)}`}>
+    <span className="nq-rating-stars" aria-hidden="true">{Array.from({length: total}, (_, index) => <span className="nq-rating-star" key={index}>★<span className="nq-rating-fill" style={{'--nq-rating-fill': `${Math.min(1, Math.max(0, score - index)) * 100}%`} as CSSProperties} /></span>)}</span>
+    {showValue && <span className="nq-rating-score" aria-hidden="true">{score}/{total}</span>}
+  </div>;
 }
 export interface PinInputProps extends Omit<TextFieldProps, 'type' | 'value' | 'defaultValue' | 'onChange' | 'maxLength'> { value?: string; defaultValue?: string; onValueChange?: (value: string) => void; length?: number; showSlots?: boolean }
 export function PinInput({ value, defaultValue = '', onValueChange, length = 6, showSlots = false, label, hint, error, ref, className, ...props }: PinInputProps) {
