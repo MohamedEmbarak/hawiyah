@@ -84,12 +84,16 @@ describe('native control enhancements', () => {
     await Promise.resolve();
     expect(new FormData(form).getAll('tags')).toEqual([]);
     fieldset.disabled = false;
-    await Promise.resolve();
     expect(new FormData(form).getAll('tags')).toEqual(['Design']);
     const remove = fieldset.querySelector('button')!;
     expect(remove.disabled).toBe(false);
     remove.click();
     expect(controller.value).toEqual([]);
+    expect(form.checkValidity()).toBe(false);
+    fieldset.disabled = true;
+    await Promise.resolve();
+    expect(form.checkValidity()).toBe(true);
+    fieldset.disabled = false;
     expect(form.checkValidity()).toBe(false);
     controller.destroy();
   });

@@ -144,14 +144,22 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   const render = () => {
     host.replaceChildren();
     presence.refresh();
+    const controlDisabled = input.disabled || input.getAttribute('aria-disabled') === 'true';
+    const fieldsetDisabled = input.matches(':disabled');
+    const syncDisabled = (peer: HTMLInputElement | HTMLButtonElement) => {
+      // Controls in the same disabled fieldset already inherit its state synchronously.
+      peer.disabled = controlDisabled || (fieldsetDisabled && !peer.matches(':disabled'));
+    };
     value.forEach((tag, index) => {
       const chip = root.ownerDocument.createElement('span'); chip.className = 'nq-chip'; chip.setAttribute('role', 'listitem'); chip.append(root.ownerDocument.createTextNode(tag));
-      const remove = root.ownerDocument.createElement('button'); remove.type = 'button'; remove.dataset.nqRemoveTag = String(index); remove.textContent = '×';
-      remove.setAttribute('aria-label', options.getRemoveLabel?.(tag) ?? translated(root, `Remove ${tag}`, `إزالة ${tag}`)); remove.disabled = isDisabled(input) || readOnly(root, input); chip.append(remove);
-      if (name) { const hidden = root.ownerDocument.createElement('input'); hidden.type = 'hidden'; hidden.name = name; hidden.value = tag; hidden.disabled = isDisabled(input); const form = input.getAttribute('form'); if (form) hidden.setAttribute('form', form); chip.append(hidden); }
       host.append(chip);
+      const remove = root.ownerDocument.createElement('button'); remove.type = 'button'; remove.dataset.nqRemoveTag = String(index); remove.textContent = '×';
+      remove.setAttribute('aria-label', options.getRemoveLabel?.(tag) ?? translated(root, `Remove ${tag}`, `إزالة ${tag}`));
+      chip.append(remove); syncDisabled(remove);
+      if (readOnly(root, input)) remove.disabled = true;
+      if (name) { const hidden = root.ownerDocument.createElement('input'); hidden.type = 'hidden'; hidden.name = name; hidden.value = tag; const form = input.getAttribute('form'); if (form) hidden.setAttribute('form', form); chip.append(hidden); syncDisabled(hidden); }
     });
-    input.setCustomValidity(requiredValue && !value.length && !isDisabled(input) ? options.requiredMessage ?? translated(root, 'Add at least one tag.', 'أضف وسمًا واحدًا على الأقل.') : originalValidity);
+    input.setCustomValidity(requiredValue && !value.length && input.getAttribute('aria-disabled') !== 'true' ? options.requiredMessage ?? translated(root, 'Add at least one tag.', 'أضف وسمًا واحدًا على الأقل.') : originalValidity);
   };
   const notify = () => { render(); emit(root, { value: [...value] }); options.onValueChange?.([...value]); };
   const add = (tag: string) => { if (scope.destroyed || isDisabled(input) || readOnly(root, input)) return; const next = tag.trim(); if (!next || value.some(existing => normalizeSearch(existing) === normalizeSearch(next))) return; value.push(next); input.value = ''; notify(); };
@@ -168,7 +176,7 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   const Observer = input.ownerDocument.defaultView?.MutationObserver;
   if (Observer) {
     const observer = new Observer(render);
-    observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'readonly'] });
+    observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'readonly'] });
     for (let ancestor = input.parentElement; ancestor; ancestor = ancestor.parentElement) {
       if (ancestor.localName === 'fieldset') observer.observe(ancestor, { attributes: true, attributeFilter: ['disabled'] });
     }
