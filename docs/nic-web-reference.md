@@ -48,7 +48,7 @@ Line numbers below refer to the hashed snapshots above. Mapped means an
 existing Nasaq component or documented composition can own the requirement;
 it does not mean every source state has already passed comparison.
 
-| Source CSS / JS | Nasaq owner | Confirmed gap or next comparison |
+| Source CSS / JS | Nasaq owner | Nasaq mapping and evidence |
 | --- | --- | --- |
 | CSS 1–426: fonts, primitives, responsive aliases, light/dark roles | tokens/styles | [Foundations comparison](nic-foundations.md) maps light/dark roles, widths, spacing, radii, elevation and responsive alias conflicts |
 | CSS 427–850: typography, truncation, color, shadow, radius, divider utilities | shared styles, layout, Divider | [Scoped foundations](nic-foundations.md) cover 14 type styles, 1–10 line excerpts, elevation and the four divider tones; named colors use semantic tokens |
@@ -107,29 +107,19 @@ it does not mean every source state has already passed comparison.
   does not eliminate the need to test the actual Nasaq contrast, keyboard
   semantics, reduced motion, forced colors and nested themes.
 
-Implementation proceeds in independently tested and pushed tasks: cards and
-button variants first; then input/selectable-control states, navigation and
-content variants, followed by missing reusable compositions and full regression.
-The earlier [quality report](quality-2026-11-02.md) predates these NIC changes.
+The reports above record the implemented mappings, rendered measurements and
+intentional differences for each reusable source pattern. The November 2
+[quality report](quality-2026-11-02.md) describes the earlier implementation.
 Hajj remains out of scope. Asset redistribution rights are separate from this
 source comparison; external styles/scripts/assets are not bundled wholesale.
 
-## Guide editor completion requirement
+## Project editor coverage
 
-Alignment completion also requires project-shaped usage examples for every
-supported adapter: vanilla, React, Vue and Angular. The editor must include
-imports, styles, component setup, bindings and event handling using that
-adapter's actual API. Show multiple files where a project needs them, and make
-the selected framework clear. Compile and exercise representative examples in
-real consumers; a vanilla preview alone cannot establish native-framework
-behavior. Snippet coverage and preview limitations must be visible rather than
-silently presenting HTML as a native framework example.
+All 83 catalog entries have bilingual, editable projects with actual package
+imports. The guide runs vanilla JavaScript/TypeScript, React JSX/TSX, Vue
+JavaScript/TypeScript single-file components, and Angular TypeScript with
+templates. Downloaded projects include an application entry point and build
+configuration. The guide preserves Angular's supported TypeScript model.
 
-The required language matrix is vanilla JavaScript/TypeScript, React JSX/TSX,
-Vue script setup JavaScript/TypeScript, and Angular TypeScript/templates.
-Syntax highlighting, filenames, imports, downloadable project files and
-validation must match the selected framework/language combination. Angular
-does not imply an unsupported plain-JavaScript component format.
-
-See [project editor coverage](editor-projects.md) for the current native recipe
-matrix, download setup, execution model and remaining catalog coverage.
+The [editor project report](editor-projects.md) identifies the tested scenarios,
+consumer builds, live execution model and limitations of in-browser compilation.
