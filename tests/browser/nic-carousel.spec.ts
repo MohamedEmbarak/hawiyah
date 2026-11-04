@@ -41,7 +41,8 @@ for(const locale of ['ar','en'])test(`carousel source motion, keyboard, directio
   await examples.evaluate(el=>{el.setAttribute('data-nq-mode','light');el.setAttribute('data-nq-theme','nasaq');});await expect(normal.locator('.nq-carousel-track')).toHaveCSS('transition-duration','0s');
   await examples.evaluate(el=>{el.setAttribute('data-nq-theme','custom');(el as HTMLElement).style.setProperty('--nq-duration-carousel','900ms');});await expect(normal.locator('.nq-carousel-track')).toHaveCSS('transition-duration','0.9s');
   await page.emulateMedia({reducedMotion:'reduce'});await expect(normal.locator('.nq-carousel-track')).toHaveCSS('transition-property','none');await normal.locator('.nq-carousel-dot').first().click();await position(normal,0);
-  await page.setViewportSize({width:320,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.setViewportSize({width:320,height:900});
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await normal.screenshot({path:info.outputPath(`carousel-${locale}-mobile.png`)});
   await page.emulateMedia({forcedColors:'active',reducedMotion:'reduce'});await normal.locator('.nq-carousel-dot').first().focus();await page.keyboard.press('Tab');await page.keyboard.press('Shift+Tab');await expect(normal.locator('.nq-carousel-dot').first()).toBeFocused();await expect(normal.locator('.nq-carousel-dot').first()).toHaveCSS('outline-style','solid');
   await expect(page).toHaveURL(/#component\/carousel$/);
