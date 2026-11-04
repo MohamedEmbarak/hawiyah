@@ -36,21 +36,36 @@ export interface FieldDecoration {
 }
 interface FieldContextValue { id: string; labelId?: string; description?: string; invalid: boolean; required?: boolean }
 const FieldContext = createContext<FieldContextValue | undefined>(undefined);
+function descriptionIds(...values: (string | undefined)[]): string | undefined {
+  const ids = values.flatMap(value => value?.trim().split(/\s+/) ?? []).filter(Boolean);
+  return [...new Set(ids)].join(' ') || undefined;
+}
 export interface FieldProps extends ComponentPropsWithRef<'div'>, FieldDecoration {
   controlId?: string;
   required?: boolean;
 }
 /** A label and description provider for a single Nasaq form control. */
-export function Field({ label, hint, error, controlId, required, children, className, ...props }: FieldProps) {
+export function Field(props: FieldProps) {
+  return <FieldLayout {...props} />;
+}
+/** A decorated native control can add its own helpers inside a surrounding Field. */
+export function ControlField(props: FieldProps) {
+  const parent = useContext(FieldContext);
+  return <FieldLayout {...props} parent={parent} />;
+}
+function FieldLayout({ label, hint, error, controlId, required, children, className, parent, ...props }: FieldProps & {parent?: FieldContextValue}) {
   const generatedId = useId();
-  const id = controlId ?? `nq-field-${generatedId}`;
-  const description = [hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined;
-  return <FieldContext.Provider value={{ id, labelId: label != null ? `${id}-label` : undefined, description, invalid: Boolean(error), required }}>
+  const id = controlId ?? parent?.id ?? `nq-field-${generatedId}`;
+  const decorationId = parent ? `nq-field-${generatedId}` : id;
+  const labelId = label != null ? `${decorationId}-label` : parent?.labelId;
+  const description = descriptionIds(parent?.description, hint ? `${decorationId}-hint` : undefined, error ? `${decorationId}-error` : undefined);
+  const isRequired = required ?? parent?.required;
+  return <FieldContext.Provider value={{ id, labelId, description, invalid: Boolean(error || parent?.invalid), required: isRequired }}>
     <div {...props} className={cx('nq-field', className)}>
-      {label != null && <label className="nq-label" htmlFor={id} id={`${id}-label`}>{label}{required && <span aria-hidden="true"> *</span>}</label>}
+      {label != null && <label className="nq-label" htmlFor={id} id={labelId}>{label}{isRequired && <span className="nq-required-marker" aria-hidden="true"> *</span>}</label>}
       {children}
-      {hint && <div className="nq-hint" id={`${id}-hint`}>{hint}</div>}
-      {error && <div className="nq-error" id={`${id}-error`}>{error}</div>}
+      {hint && <div className="nq-hint" id={`${decorationId}-hint`}>{hint}</div>}
+      {error && <div className="nq-error" id={`${decorationId}-error`}>{error}</div>}
     </div>
   </FieldContext.Provider>;
 }
@@ -61,7 +76,7 @@ export function useFieldControl(props: { id?: string; required?: boolean; 'aria-
     id: props.id ?? field?.id ?? `nq-input-${generated}`,
     required: props.required ?? field?.required,
     'aria-labelledby': props['aria-labelledby'] ?? (props['aria-label'] ? undefined : field?.labelId),
-    'aria-describedby': [props['aria-describedby'], field?.description].filter(Boolean).join(' ') || undefined,
+    'aria-describedby': descriptionIds(props['aria-describedby'], field?.description),
     'aria-invalid': props['aria-invalid'] ?? (field?.invalid || undefined),
   };
 }

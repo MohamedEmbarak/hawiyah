@@ -60,7 +60,8 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
       const example=preview.locator('.content-navigation-demo').first(), link=example.locator('a[data-nq-section]').last();
       await link.click();await expect(link).toHaveAttribute('aria-current','location');await expect(example.locator('output')).toContainText('support');
     } else if(component==='select') {
-      await preview.locator('select').selectOption('second');await expect(preview.locator('output')).toHaveText('second');
+      const single = preview.locator('[data-select-demo="single"]');
+      await single.locator('select').selectOption('second');await expect(single.locator('output')).toHaveText('second');
     } else if(component==='radio') {
       await preview.locator('input').first().focus();await preview.locator('input').first().press('ArrowDown');
       await expect(preview.locator('input').nth(1)).toBeChecked();await expect(preview.locator('output')).toHaveText('second');

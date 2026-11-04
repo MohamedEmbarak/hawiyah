@@ -48,9 +48,7 @@ destruction. Frameworks continue to own their DOM.
 - Custom date fields, Latin digits, ISO storage and pinned Umm al-Qura conversion
   are unchanged. No global input/select resets or native date popups are added.
 
-The source's helper/error typography, select-arrow artwork and other selectable
-control families still need their separate comparisons. This is a scoped input
-state/motion task, not a claim that every source form rule is already matched.
+The subsequent [Select and field descriptions comparison](nic-select.md) covers helper/error typography, collapsed select indicators and native option changes.
 
 ## Validation
 

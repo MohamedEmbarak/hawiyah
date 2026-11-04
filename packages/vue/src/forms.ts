@@ -22,7 +22,7 @@ export const Field = defineComponent({
       describedby: joinIds(props.hint && `${props.controlId ?? generated}-hint`, props.error && `${props.controlId ?? generated}-error`), invalid: Boolean(props.error), required: props.required }));
     provideField(context);
     return () => h('div', mergeProps(attrs, { class: 'nq-field' }), [
-      props.label && h('label', { class: 'nq-label', id: context.value.labelId, for: context.value.id }, [props.label, props.required && h('span', { 'aria-hidden': 'true' }, ' *')]),
+      props.label && h('label', { class: 'nq-label', id: context.value.labelId, for: context.value.id }, [props.label, props.required && h('span', { class: 'nq-required-marker', 'aria-hidden': 'true' }, ' *')]),
       slots.default?.(context.value),
       props.hint && h('span', { class: 'nq-hint', id: `${context.value.id}-hint` }, props.hint),
       props.error && h('span', { class: 'nq-error', id: `${context.value.id}-error` }, props.error),
@@ -30,35 +30,54 @@ export const Field = defineComponent({
   },
 });
 
-export function decorate(props: FieldDecoration, id: string, content: VNodeChild, extraClass?: string) {
+export function decorate(props: FieldDecoration, id: string, content: VNodeChild, extraClass?: string, decorationId = id) {
   if (!props.label && !props.hint && !props.error && !extraClass) return content;
   return h('div', { class: ['nq-field', extraClass] }, [
-    props.label && h('label', { class: 'nq-label', id: `${id}-label`, for: id }, [props.label, props.required && h('span', { 'aria-hidden': 'true' }, ' *')]), content,
-    props.hint && h('span', { class: 'nq-hint', id: `${id}-hint` }, props.hint),
-    props.error && h('span', { class: 'nq-error', id: `${id}-error` }, props.error),
+    props.label && h('label', { class: 'nq-label', id: `${decorationId}-label`, for: id }, [props.label, props.required && h('span', { class: 'nq-required-marker', 'aria-hidden': 'true' }, ' *')]), content,
+    props.hint && h('span', { class: 'nq-hint', id: `${decorationId}-hint` }, props.hint),
+    props.error && h('span', { class: 'nq-error', id: `${decorationId}-error` }, props.error),
   ]);
 }
-const valueProps = { ...decorationProps, modelValue: String, defaultValue: { type: String, default: '' } } as const;
+const valueProps = { ...decorationProps, modelValue: String, defaultValue: String, placeholder: String } as const;
 function textControl(tag: 'input' | 'textarea' | 'select', className: string, name: string) {
   return defineComponent({
     name, inheritAttrs: false,
     props: { ...valueProps, options: { type: Array as PropType<readonly Option[]>, default: () => [] } },
     emits: { 'update:modelValue': (_value: string) => true },
     setup(props, { attrs, slots, emit, expose }) {
-      const field = useField(props, attrs);
+      const field = useField(props, attrs, true);
       const element = ref<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>();
-      const model = useValue(() => props.modelValue, props.defaultValue, value => emit('update:modelValue', value));
-      useFormReset(element, () => model.set(props.defaultValue));
+      // Without a value or prompt, let a native select choose its first enabled option.
+      const initial = props.defaultValue ?? (tag === 'select' ? undefined : '');
+      const model = useValue<string | undefined>(() => props.modelValue, initial, value => {
+        if (value !== undefined) emit('update:modelValue', value);
+      });
+      const syncSelect = () => nextTick(() => {
+        if (element.value && model.value.value !== undefined) element.value.value = model.value.value;
+      });
+      useFormReset(element, () => {
+        model.set(props.defaultValue ?? (tag === 'select' ? element.value?.value : '') ?? '');
+        if (tag === 'select') void syncSelect();
+      });
       expose({ element, focus: () => element.value?.focus() });
-      return () => decorate(props, field.id.value, h(tag, mergeProps(attrs, field.controlAttrs.value, {
-        ref: element, class: className, value: model.value.value,
-        [tag === 'select' ? 'onChange' : 'onInput']: (event: Event) => {
-          model.set((event.target as HTMLInputElement).value);
-          if (tag === 'select') void nextTick(() => {
-            if (element.value) element.value.value = model.value.value;
-          });
-        },
-      }), tag === 'select' ? [...props.options.map(option => h('option', { key: option.value, value: option.value, disabled: option.disabled }, option.label)), slots.default?.()] : undefined));
+      return () => {
+        const slotOptions = tag === 'select' ? slots.default?.() : undefined;
+        const hasEmptyOption = props.options.some(option => option.value === '') || slotOptions?.some(node => node.type === 'option' && node.props?.value === '');
+        const prompt = props.placeholder && !hasEmptyOption && (attrs.multiple == null || attrs.multiple === false) ? h('option', {value: ''}, props.placeholder) : null;
+        const options = tag === 'select' ? [prompt, ...props.options.map(option => h('option', {
+          key: option.value, value: option.value, disabled: option.disabled,
+          selected: model.value.value === undefined ? undefined : model.value.value === option.value,
+        }, option.label)), slotOptions] : undefined;
+        const control = h(tag, mergeProps(attrs, field.controlAttrs.value, {
+          ref: element, class: className, placeholder: tag === 'select' ? undefined : props.placeholder,
+          ...(model.value.value === undefined ? {} : { value: model.value.value }),
+          [tag === 'select' ? 'onChange' : 'onInput']: (event: Event) => {
+            model.set((event.target as HTMLInputElement).value);
+            if (tag === 'select') void syncSelect();
+          },
+        }), options);
+        return decorate(props, field.id.value, control, undefined, field.decorationId.value);
+      };
     },
   });
 }

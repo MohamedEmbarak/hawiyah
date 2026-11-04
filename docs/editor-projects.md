@@ -197,3 +197,14 @@ status, never fetch dictionaries/results or navigate the guide. See
 [NIC search evidence](nic-search.md) for the implementation and scoped checks.
 
 Search verification covered both React and Vue languages and Angular TypeScript in Chromium. Native form validation and submit events execute inside the opaque preview. Its content security policy blocks external form submissions, including direct calls to the native submit method.
+
+
+The existing Select project now demonstrates six cases. A controlled single
+choice reports its value. The other examples show a required empty prompt,
+an application error with associated instructions, a disabled control, a
+multiple select and a visible single-selection list. React uses Select for
+both native list modes. Vue and Angular keep their scalar Select models and
+use native HTML for multiple values. Angular also uses native HTML for the
+visible row count because its component size input sets visual size. The
+same cases appear in vanilla HTML and the bilingual ready examples. Native
+project coverage remains 35.

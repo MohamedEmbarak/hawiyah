@@ -230,3 +230,9 @@ CSS does not add these semantics or selection behavior. See
 For vanilla sorting, place `<span class="nq-table-sort-icon" aria-hidden="true"></span>`
 inside the header button. Its decorative indicator follows `aria-sort` on the
 native `th`; the controller supplies that semantic state.
+
+The DGA Select indicator follows focus and writing direction. Multiple selects,
+visible-row listboxes and forced colors use the native indicator treatment.
+Scale field descriptions with `--nq-profile-helper-size` and
+`--nq-profile-error-size`. The light and dark palettes expose
+`--nq-color-field-helper` and `--nq-color-field-error-text`.

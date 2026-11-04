@@ -1,3 +1,4 @@
+import {selectDemoCases, selectDemoMarkup, selectNativeMarkup} from './select-demo';
 import {searchDemoCases,searchDemoMarkup,searchProject} from './search-demo';
 import {contentNavigationDemoCases,contentNavigationDemoMarkup,contentNavigationProject} from './content-navigation-demo';
 import {tabsDemoCases,tabsDemoMarkup,tabsNativeMarkup} from './tabs-demo';
@@ -37,6 +38,17 @@ type Recipe = { title: string; markup: string; vanillaScript?: string; react?: s
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if (id === 'select') return selectDemoCases(locale).map(example => {
+    const native = selectNativeMarkup(example);
+    return {
+      title: example.title,
+      markup: selectDemoMarkup(example, 'ready-region'),
+      react: `import { Select } from '@nasaq/react';\n\nexport default function RegionPicker() {\n  return ${native.react};\n}`,
+      vue: `${example.kind === 'multiple' ? '' : "<script setup>\nimport { Select } from '@nasaq/vue';\n</script>\n\n"}<template>\n  ${native.vue}\n</template>`,
+      angular: `import { Component } from '@angular/core';\n${example.kind === 'multiple' || example.kind === 'listbox' ? '' : "import { NqSelectComponent } from '@nasaq/angular';\n"}\n@Component({\n  selector: 'app-region-picker',\n  standalone: true,\n  imports: [${example.kind === 'multiple' || example.kind === 'listbox' ? '' : 'NqSelectComponent'}],\n  template: \`${native.angular}\`,\n})\nexport class RegionPicker {}`,
+
+    };
+  });
   if(id==='search-field')return searchDemoCases(locale).map(item=>({
     title:item.title,markup:searchDemoMarkup(locale,item.kind),
     vanillaScript:searchProject('vanilla','javascript',locale,[item.kind]).files.js.replace("import './style.css';","import '@nasaq/styles/styles.css';").replace("'#app'",`'[data-search-demo="${item.kind}"]'`),

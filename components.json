@@ -310,7 +310,7 @@
       "name": "Select",
       "labelAr": "قائمة اختيار",
       "category": "forms",
-      "description": "Native single-choice select.",
+      "description": "Native select with associated field descriptions, platform keyboard interaction and an optional prompt.",
       "cssClasses": [
         "nq-select"
       ],
@@ -327,8 +327,62 @@
         "vue",
         "angular"
       ],
-      "verified": [],
-      "evidence": [],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "packages/vanilla/test/select-presence.test.ts",
+          "tests": [
+            "enhances async native select options and restores the authored marker after cleanup"
+          ],
+          "scope": "Native selection, filled state and cleanup.",
+          "command": "pnpm exec vitest run packages/vanilla/test/select-presence.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/basic-field-select-parity.test.ts",
+          "tests": [
+            "react preserves native selection defaults and resolves optional prompts without duplicating an empty choice"
+          ],
+          "scope": "Native selection, accessible helper references and the empty prompt.",
+          "command": "pnpm exec vitest run tests/basic-field-select-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/basic-field-select-parity.test.ts",
+          "tests": [
+            "vue preserves native selection defaults and resolves optional prompts without duplicating an empty choice"
+          ],
+          "scope": "Native selection, accessible helper references and the empty prompt.",
+          "command": "pnpm exec vitest run tests/basic-field-select-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/basic-field-select-parity.test.ts",
+          "tests": [
+            "Angular Select localizes its default prompt and connects external and changing field helpers"
+          ],
+          "scope": "Native selection, accessible helper references and the empty prompt.",
+          "command": "pnpm exec vitest run tests/basic-field-select-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        }
+      ],
       "notes": [
         "Use Combobox when an editable search is required."
       ],

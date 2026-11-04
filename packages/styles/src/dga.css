@@ -109,10 +109,10 @@
   padding-inline: var(--nq-profile-field-padding-start, var(--nq-space-3)) var(--nq-profile-field-padding-end, var(--nq-space-3));
   border-radius: var(--nq-profile-control-radius, var(--nq-radius-md));
   background-color: var(--nq-color-field-background, var(--nq-color-surface));
-  background-image: linear-gradient(var(--nq-color-field-active), var(--nq-color-field-active));
+  background-image: linear-gradient(var(--nq-color-field-active), var(--nq-color-field-active)) var(--_nq-select-image,);
   background-repeat: no-repeat;
-  background-position: center bottom;
-  background-size: 0% 2px;
+  background-position: center bottom var(--_nq-select-position,);
+  background-size: 0% 2px var(--_nq-select-size,);
   line-height: var(--nq-profile-field-leading, var(--nq-leading-normal));
   transition: var(--nq-dga-on, border-color var(--nq-duration-input) var(--nq-ease-input), background-color var(--nq-duration-input) var(--nq-ease-input), background-size var(--nq-duration-input) var(--nq-ease-input), box-shadow var(--nq-duration-input) var(--nq-ease-input)) var(--nq-dga-off, background-size var(--nq-duration-input, 500ms) var(--nq-ease-input, ease));
 }
@@ -120,11 +120,11 @@
 :is(.nq-input, .nq-textarea, .nq-select):hover:not(:disabled, [readonly]) { border-color: var(--nq-color-field-hover, var(--nq-color-primary)); }
 :is(.nq-input, .nq-textarea, .nq-select):focus:not(:disabled, [readonly]) {
   border-color: var(--nq-dga-on, var(--nq-color-primary)) var(--nq-dga-off, var(--nq-color-field-active));
-  background-size: var(--nq-profile-field-focus-line, 0% 2px);
+  background-size: var(--nq-profile-field-focus-line, 0% 2px) var(--_nq-select-size,);
   box-shadow: var(--nq-profile-field-shadow, none);
 }
 :is(.nq-input, .nq-textarea, .nq-select):active:not(:disabled, [readonly]) {
-  background-size: var(--nq-profile-field-pressed-line, 0% 2px);
+  background-size: var(--nq-profile-field-pressed-line, 0% 2px) var(--_nq-select-size,);
   background-color: var(--nq-color-field-background);
 }
 :is(.nq-input, .nq-textarea, .nq-select)[data-size='sm'] { padding-block: var(--nq-profile-button-padding-block, var(--nq-space-1)); }
@@ -141,25 +141,25 @@
 :is(.nq-input, .nq-textarea)[readonly]:focus-visible {
   outline: 2px solid var(--nq-color-focus);
 }
-:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'] { background-color: var(--nq-color-surface-muted); background-image: linear-gradient(var(--nq-color-field-active), var(--nq-color-field-active)); background-repeat: no-repeat; background-position: center bottom; background-size: 0% 2px; }
-:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus:not(:disabled, [readonly]) { background-size: var(--nq-profile-field-focus-line, 0% 2px); }
-:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:active:not(:disabled, [readonly]) { background-size: var(--nq-profile-field-pressed-line, 0% 2px); background-color: var(--nq-dga-on, var(--nq-color-field-background)) var(--nq-dga-off, var(--nq-color-surface-muted)); }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'] { background-color: var(--nq-color-surface-muted); background-image: linear-gradient(var(--nq-color-field-active), var(--nq-color-field-active)) var(--_nq-select-image,); background-repeat: no-repeat; background-position: center bottom var(--_nq-select-position,); background-size: 0% 2px var(--_nq-select-size,); }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus:not(:disabled, [readonly]) { background-size: var(--nq-profile-field-focus-line, 0% 2px) var(--_nq-select-size,); }
+:is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:active:not(:disabled, [readonly]) { background-size: var(--nq-profile-field-pressed-line, 0% 2px) var(--_nq-select-size,); background-color: var(--nq-dga-on, var(--nq-color-field-background)) var(--nq-dga-off, var(--nq-color-surface-muted)); }
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:focus-visible { border-color: var(--nq-dga-on, var(--nq-color-border-strong)) var(--nq-dga-off, var(--nq-color-field-active)); }
 /* Presence is adapter-owned; validity stays native. Empty optional fields must
    not imply success. Explicit application errors take precedence below. */
 :is(.nq-input, .nq-textarea, .nq-select):where([data-nq-filled='true']):valid,
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:where([data-nq-filled='true']):valid {
-  background-image: linear-gradient(var(--nq-color-primary-text, var(--nq-color-primary)), var(--nq-color-primary-text, var(--nq-color-primary)));
+  background-image: linear-gradient(var(--nq-color-primary-text, var(--nq-color-primary)), var(--nq-color-primary-text, var(--nq-color-primary))) var(--_nq-select-image,);
 }
 :is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true'],
 :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled'][aria-invalid='true'] {
   border-color: var(--nq-color-danger);
-  background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger));
+  background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger)) var(--_nq-select-image,);
 }
 :is(.nq-input, .nq-textarea, .nq-select)[aria-invalid='true']:is(:hover, :focus, :active) { border-color: var(--nq-color-danger); }
 @supports selector(:user-invalid) {
   :is(.nq-input, .nq-textarea, .nq-select):user-invalid,
-  :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:user-invalid { border-color: var(--nq-color-danger); background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger)); }
+  :is(.nq-input, .nq-textarea, .nq-select)[data-variant='filled']:user-invalid { border-color: var(--nq-color-danger); background-image: linear-gradient(var(--nq-color-danger), var(--nq-color-danger)) var(--_nq-select-image,); }
   :is(.nq-input, .nq-textarea, .nq-select):user-invalid:is(:hover, :focus, :active) { border-color: var(--nq-color-danger); }
 }
 :is(.nq-input, .nq-textarea, .nq-select):disabled,

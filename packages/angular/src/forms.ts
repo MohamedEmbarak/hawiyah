@@ -4,6 +4,12 @@ import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { createComboboxState, getComboboxOptions, isDisabled, transitionCombobox, type ComboboxEvent, type Option } from '@nasaq/core';
 
 let nextId = 0;
+function fieldDescriptionIds(id: string, hint: string, error: string, external?: string | null): string | null {
+  const ids = (external ?? '').trim().split(/\s+/).filter(Boolean);
+  if (hint) ids.push(`${id}-hint`);
+  if (error) ids.push(`${id}-error`);
+  return [...new Set(ids)].join(' ') || null;
+}
 /** Pass controlId for stable application-owned identifiers, especially with SSR. */
 @Directive()
 export abstract class NqValueControl<T> implements ControlValueAccessor {
@@ -13,6 +19,7 @@ export abstract class NqValueControl<T> implements ControlValueAccessor {
   @Input() name = '';
   @Input() hint = '';
   @Input() error = '';
+  @Input() describedBy?: string | null;
   @Input({transform: booleanAttribute}) required = false;
   @Input({transform: booleanAttribute}) disabled = false;
   @Input() value!: T;
@@ -20,7 +27,7 @@ export abstract class NqValueControl<T> implements ControlValueAccessor {
   protected readonly changeDetector = inject(ChangeDetectorRef);
   protected onChange: (value: T) => void = () => {};
   protected onTouched: () => void = () => {};
-  get descriptionIds(): string | null { return [this.hint && `${this.controlId}-hint`, this.error && `${this.controlId}-error`].filter(Boolean).join(' ') || null; }
+  get descriptionIds(): string | null { return fieldDescriptionIds(this.controlId, this.hint, this.error, this.describedBy); }
   writeValue(value: T): void { this.value = value; this.changeDetector.markForCheck(); }
   registerOnChange(fn: (value: T) => void): void { this.onChange = fn; }
   registerOnTouched(fn: () => void): void { this.onTouched = fn; }
@@ -29,19 +36,23 @@ export abstract class NqValueControl<T> implements ControlValueAccessor {
   touch(): void { this.onTouched(); }
 }
 
+const fieldLabel = `<label class="nq-label" [for]="controlId">{{ label }}@if (required) {<span class="nq-required-marker" aria-hidden="true"> *</span>}</label>`;
 const fieldEnd = `@if (hint) { <p class="nq-hint" [id]="controlId + '-hint'">{{ hint }}</p> } @if (error) { <p class="nq-error" [id]="controlId + '-error'">{{ error }}</p> }`;
 
-@Component({ selector: 'nq-field', standalone: true, template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><ng-content />@if (hint) {<p class="nq-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="nq-error" [id]="controlId + '-error'">{{ error }}</p>}</div>` })
+@Component({ selector: 'nq-field', standalone: true, template: `<div class="nq-field">${fieldLabel}<ng-content />@if (hint) {<p class="nq-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="nq-error" [id]="controlId + '-error'">{{ error }}</p>}</div>` })
 export class NqFieldComponent {
   @Input({ required: true }) controlId = '';
   @Input({ required: true }) label = '';
   @Input() hint = '';
   @Input() error = '';
+  @Input() describedBy?: string | null;
+  @Input({transform: booleanAttribute}) required = false;
+  get descriptionIds(): string | null { return fieldDescriptionIds(this.controlId, this.hint, this.error, this.describedBy); }
 }
 
 @Component({ selector: 'nq-text-field', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqTextFieldComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><input class="nq-input" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [type]="type" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [placeholder]="placeholder" [attr.autocomplete]="autocomplete" [attr.inputmode]="inputmode || null" [attr.min]="min" [attr.max]="max" [attr.step]="step" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.pattern]="pattern" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()">${fieldEnd}</div>` })
+  template: `<div class="nq-field">${fieldLabel}<input class="nq-input" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [type]="type" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [placeholder]="placeholder" [attr.autocomplete]="autocomplete" [attr.inputmode]="inputmode || null" [attr.min]="min" [attr.max]="max" [attr.step]="step" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.pattern]="pattern" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()">${fieldEnd}</div>` })
 export class NqTextFieldComponent extends NqValueControl<string> {
   override value = '';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
@@ -61,7 +72,7 @@ export class NqTextFieldComponent extends NqValueControl<string> {
 
 @Component({ selector: 'nq-textarea', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqTextareaComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><textarea class="nq-textarea" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [rows]="rows" [placeholder]="placeholder" [attr.maxlength]="maxLength" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()"></textarea>${fieldEnd}</div>` })
+  template: `<div class="nq-field">${fieldLabel}<textarea class="nq-textarea" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [rows]="rows" [placeholder]="placeholder" [attr.maxlength]="maxLength" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()"></textarea>${fieldEnd}</div>` })
 export class NqTextareaComponent extends NqValueControl<string> {
   override value = '';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
@@ -74,13 +85,14 @@ export class NqTextareaComponent extends NqValueControl<string> {
 
 @Component({ selector: 'nq-select', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqSelectComponent), multi: true }],
-  template: `<div class="nq-field"><label class="nq-label" [for]="controlId">{{ label }}</label><select class="nq-select" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="update($any($event.target).value)" (blur)="touch()">@if (placeholder) {<option value="">{{ placeholder }}</option>}@for (option of options; track option.value) {<option [value]="option.value" [disabled]="option.disabled ?? false" [selected]="option.value === value">{{ option.label }}</option>}</select>${fieldEnd}</div>` })
+  template: `<div class="nq-field">${fieldLabel}<select class="nq-select" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (change)="update($any($event.target).value)" (blur)="touch()">@if (showPrompt) {<option value="">{{ placeholder }}</option>}@for (option of options; track option.value) {<option [value]="option.value" [disabled]="option.disabled ?? false" [selected]="option.value === value">{{ option.label }}</option>}</select>${fieldEnd}</div>` })
 export class NqSelectComponent extends NqValueControl<string> {
   override value = '';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() visualVariant: 'outline' | 'filled' = 'outline';
   @Input() options: readonly Option[] = [];
-  @Input() placeholder = 'Select an option';
+  @Input() placeholder = 'اختر خيارًا';
+  get showPrompt(): boolean { return Boolean(this.placeholder) && !this.options.some(option => option.value === ''); }
 }
 
 @Component({ selector: 'nq-checkbox', standalone: true,

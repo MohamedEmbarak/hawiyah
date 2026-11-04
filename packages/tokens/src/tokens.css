@@ -176,6 +176,8 @@
   --nq-palette-light-search-term-border: #DFF6E7;
   --nq-palette-light-search-suggestion-border: #E5E7EB;
   --nq-palette-light-search-clear: #B4231899;
+  --nq-palette-light-field-helper: #4D5761;
+  --nq-palette-light-field-error-text: #D92C20;
   --nq-palette-dark-canvas: #111927;
   --nq-palette-dark-surface: #1F2A37;
   --nq-palette-dark-surface-raised: #1F2A37;
@@ -280,6 +282,8 @@
   --nq-palette-dark-search-term-border: #6C737F;
   --nq-palette-dark-search-suggestion-border: #6C737F;
   --nq-palette-dark-search-clear: #F97066;
+  --nq-palette-dark-field-helper: #F3F4F6;
+  --nq-palette-dark-field-error-text: #F97066;
   --nq-color-canvas: var(--nq-palette-light-canvas);
   --nq-color-surface: var(--nq-palette-light-surface);
   --nq-color-surface-raised: var(--nq-palette-light-surface-raised);
@@ -384,6 +388,8 @@
   --nq-color-search-term-border: var(--nq-palette-light-search-term-border);
   --nq-color-search-suggestion-border: var(--nq-palette-light-search-suggestion-border);
   --nq-color-search-clear: var(--nq-palette-light-search-clear);
+  --nq-color-field-helper: var(--nq-palette-light-field-helper);
+  --nq-color-field-error-text: var(--nq-palette-light-field-error-text);
   --nq-control-height: 2.5rem;
   --nq-control-height-sm: 2rem;
   --nq-control-height-lg: 2.5rem;
@@ -574,6 +580,8 @@
   --nq-palette-light-search-term-border: #d9e0da;
   --nq-palette-light-search-suggestion-border: #d9e0da;
   --nq-palette-light-search-clear: #4c6264;
+  --nq-palette-light-field-helper: #4c6264;
+  --nq-palette-light-field-error-text: #ae2e30;
   --nq-palette-dark-canvas: #111d1e;
   --nq-palette-dark-surface: #172728;
   --nq-palette-dark-surface-raised: #213334;
@@ -678,6 +686,8 @@
   --nq-palette-dark-search-term-border: #3a5150;
   --nq-palette-dark-search-suggestion-border: #3a5150;
   --nq-palette-dark-search-clear: #b9cdca;
+  --nq-palette-dark-field-helper: #b9cdca;
+  --nq-palette-dark-field-error-text: #ffaaa8;
 }
 
 :where([data-nq-theme="dga"], [data-nq-theme="custom"]) {
@@ -856,6 +866,8 @@
   --nq-palette-light-search-term-border: #DFF6E7;
   --nq-palette-light-search-suggestion-border: #E5E7EB;
   --nq-palette-light-search-clear: #B4231899;
+  --nq-palette-light-field-helper: #4D5761;
+  --nq-palette-light-field-error-text: #D92C20;
   --nq-palette-dark-canvas: #111927;
   --nq-palette-dark-surface: #1F2A37;
   --nq-palette-dark-surface-raised: #1F2A37;
@@ -960,6 +972,8 @@
   --nq-palette-dark-search-term-border: #6C737F;
   --nq-palette-dark-search-suggestion-border: #6C737F;
   --nq-palette-dark-search-clear: #F97066;
+  --nq-palette-dark-field-helper: #F3F4F6;
+  --nq-palette-dark-field-error-text: #F97066;
 }
 
 :where([data-nq-mode="light"]) {
@@ -1068,6 +1082,8 @@
   --nq-color-search-term-border: var(--nq-palette-light-search-term-border);
   --nq-color-search-suggestion-border: var(--nq-palette-light-search-suggestion-border);
   --nq-color-search-clear: var(--nq-palette-light-search-clear);
+  --nq-color-field-helper: var(--nq-palette-light-field-helper);
+  --nq-color-field-error-text: var(--nq-palette-light-field-error-text);
 }
 
 :where([data-nq-mode="dark"]) {
@@ -1176,6 +1192,8 @@
   --nq-color-search-term-border: var(--nq-palette-dark-search-term-border);
   --nq-color-search-suggestion-border: var(--nq-palette-dark-search-suggestion-border);
   --nq-color-search-clear: var(--nq-palette-dark-search-clear);
+  --nq-color-field-helper: var(--nq-palette-dark-field-helper);
+  --nq-color-field-error-text: var(--nq-palette-dark-field-error-text);
 }
 
 @supports (color: light-dark(white, black)) {
@@ -1284,6 +1302,8 @@
     --nq-color-search-term-border: light-dark(var(--nq-palette-light-search-term-border), var(--nq-palette-dark-search-term-border));
     --nq-color-search-suggestion-border: light-dark(var(--nq-palette-light-search-suggestion-border), var(--nq-palette-dark-search-suggestion-border));
     --nq-color-search-clear: light-dark(var(--nq-palette-light-search-clear), var(--nq-palette-dark-search-clear));
+    --nq-color-field-helper: light-dark(var(--nq-palette-light-field-helper), var(--nq-palette-dark-field-helper));
+    --nq-color-field-error-text: light-dark(var(--nq-palette-light-field-error-text), var(--nq-palette-dark-field-error-text));
   }
 }
 

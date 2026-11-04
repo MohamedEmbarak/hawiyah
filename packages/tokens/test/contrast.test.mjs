@@ -29,6 +29,7 @@ for (const [name, theme] of Object.entries(source.themes)) {
         ...['action-default', 'action-default-hover', 'action-default-active'].map(bg => ['on-action-default', bg]),
         ...['action-secondary', 'action-secondary-hover'].map(bg => ['on-action-secondary', bg]),
         ...['action-light', 'action-light-hover'].map(bg => ['on-action-light', bg]), ['primary-text', 'primary-subtle'],
+        ...['field-helper', 'field-error-text'].flatMap(text => ['surface', 'canvas'].map(surface => [text, surface])),
         ['success', 'success-subtle'], ['warning', 'warning-subtle'],
         ['danger', 'danger-subtle'], ['info', 'info-subtle'], ['on-inverse', 'inverse'],
         ...['neutral', 'info', 'success', 'warning', 'danger'].flatMap(tone =>

@@ -1,3 +1,4 @@
+import {selectDemoCases, selectDemoMarkup} from './select-demo';
 import {tabsDemoMarkup} from './tabs-demo';
 import {paginationDemoMarkup} from './pagination-demo';
 import type { GuideInput } from './component-guide-types';
@@ -35,11 +36,22 @@ export const nativeGuides: Record<string, GuideInput> = {
     accessibility: ['Allow user resizing where practical.', 'Explain length limits before entry; announce a live remaining count only when useful.', 'For rich text use a specialist editor and adapt its real accessibility model.'], variants: ['Default outlined', 'data-variant=filled', 'data-size=sm / lg'], related: ['field', 'text-field'], limitations: ['This is plain text, not an HTML editor.'], source: 'packages/react/src/forms.tsx',
   },
   select: {
-    summary: 'Lets the browser present a known option list. Native select remains the simplest choice when filtering and custom popup rendering are unnecessary.',
-    usage: `<label class="nq-field"><span class="nq-label">Region</span>\n  <select class="nq-select" name="region" required>\n    <option value="">Choose a region</option>\n    <option value="riyadh">Riyadh</option>\n    <option value="makkah">Makkah</option>\n  </select>\n</label>`,
-    lifecycle: ['Render options with stable values; the visible label can be localized independently.', 'A native change commits the selected option and participates in form submission.', 'Native form reset restores the default selection. No popup controller or manual focus management is needed.'],
-    api: api(['options', 'React Option[]', 'Optional {value,label,disabled} data; native option/optgroup children also work.'], ['multiple', 'boolean', 'Native multi-selection; consider MultiSelect when search is required.'], ['name / required / disabled', 'Native attributes', 'Form participation and validation.'], ['value / defaultValue', 'Native/framework value', 'Current or initial selected option values.']),
-    accessibility: ['Keep the visible label outside the option list.', 'Group related options with optgroup and a label.', 'Do not replace native keyboard behavior with custom handlers.'], variants: ['Native single / multiple selection', 'data-variant=filled', 'data-size=sm / lg'], related: ['combobox', 'multi-select'], source: 'packages/react/src/forms.tsx',
+    summary: 'A labelled native select for a known set of choices. The browser manages the options popup, keyboard selection and form submission.',
+    usage: selectDemoMarkup(selectDemoCases('en')[1]!, 'guide-region'),
+    lifecycle: ['Give each option a stable value and a localized label. A required single select starts empty when its selected prompt has value="".', 'A change commits the native selection. Read select.value for a single choice and FormData.getAll(name) for a multiple select.', 'Native reset restores authored defaults. Keep controlled application state synchronized when handling form reset.'],
+    api: api(
+      ['options', 'Option[]', 'Each option has value, label and optional disabled. React also accepts option and optgroup children.'],
+      ['placeholder', 'string', 'Native component prompt with an empty option value. React and Vue opt in with a label. Angular supplies a prompt by default and accepts an empty string to omit it.'],
+      ['value / defaultValue', 'Native/framework value', 'React uses value/onChange or defaultValue. Vue uses a string v-model/defaultValue. Angular uses value/valueChange or its form control.'],
+      ['name / required / disabled', 'Native attributes', 'A named select participates in FormData. Disabled controls are omitted and disabled options stay unavailable.'],
+      ['hint / error', 'Framework props', 'Associate help and application error text with the select. An explicit error also sets aria-invalid.'],
+      ['multiple / size', 'Native attributes', 'Vanilla and React Select support multiple values and a visible row count. Vue Select forwards the native size for a single list. Use an ordinary native select for Vue multiple or Angular multiple/row count. Angular NqSelect.size controls its visual size.']
+    ),
+    accessibility: ['Use a visible label for each select and a separate hint for instructions. Keep the empty prompt distinct from the label.', 'Expose application errors as associated text and set aria-invalid on the control. A required empty prompt can use native validity before an application error exists.', 'Use optgroup with a label for related choices. The browser handles keyboard navigation and multiple selection.', 'Native select has no read-only state. For review screens, show the selected label as text and retain the value in application state.'],
+    variants: ['single value with a hint', 'required empty prompt', 'associated application error', 'disabled control and disabled options', 'native multiple and visible single-selection lists'],
+    related: ['combobox', 'multi-select', 'field'],
+    frameworkNotes: 'The three native adapters own their selectable controls. Vue and Angular Select expose scalar models. Their native multiple examples use a select element styled with nq-select and participate in form submission through repeated values. Use the separate MultiSelect component for searchable multiple choices.',
+    source: 'packages/react/src/forms.tsx',
   },
   checkbox: {
     summary: 'Represents an independent yes/no choice. Several checkboxes may share a fieldset when multiple options can be chosen.',

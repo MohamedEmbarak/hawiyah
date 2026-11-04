@@ -1,0 +1,53 @@
+/* NIC global.css 2439–2446, 2497–2527 and 2641–2649.
+   Keep the native picker and draw its indicator independently of the focus line. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-profile-select-down: , url('./assets/select-down.svg');
+  --nq-profile-select-up: , url('./assets/select-up.svg');
+  --nq-profile-select-size: , 18px 18px;
+  --nq-profile-select-position-ltr: , right 10px center;
+  --nq-profile-select-position-rtl: , left 12px center;
+  --nq-profile-select-appearance: none;
+  --nq-profile-select-font: .875rem;
+  --nq-profile-select-padding-ltr: 35px;
+  --nq-profile-select-padding-rtl: 36px;
+  --nq-profile-helper-size: .625rem;
+  --nq-profile-error-size: .75rem;
+  --nq-profile-error-offset: -.25rem;
+}
+:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
+  --nq-profile-select-down: initial;
+  --nq-profile-select-up: initial;
+  --nq-profile-select-size: initial;
+  --nq-profile-select-position-ltr: initial;
+  --nq-profile-select-position-rtl: initial;
+  --nq-profile-select-appearance: initial;
+  --nq-profile-select-font: initial;
+  --nq-profile-select-padding-ltr: initial;
+  --nq-profile-select-padding-rtl: initial;
+  --nq-profile-helper-size: initial;
+  --nq-profile-error-size: initial;
+  --nq-profile-error-offset: initial;
+}
+@media (forced-colors: none) {
+  select.nq-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])) {
+    appearance: var(--nq-profile-select-appearance, auto);
+    --_nq-select-image: var(--nq-profile-select-down,);
+    --_nq-select-size: var(--nq-profile-select-size,);
+    --_nq-select-position: var(--nq-profile-select-position-ltr,);
+    --nq-profile-field-padding-end: var(--nq-profile-select-padding-ltr, var(--nq-space-3));
+    font-size: var(--nq-profile-select-font, inherit);
+  }
+  select.nq-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])):dir(rtl) {
+    --_nq-select-position: var(--nq-profile-select-position-rtl,);
+    --nq-profile-field-padding-end: var(--nq-profile-select-padding-rtl, var(--nq-space-3));
+  }
+  select.nq-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])):focus { --_nq-select-image: var(--nq-profile-select-up,); }
+}
+.nq-field > .nq-hint { color: var(--nq-color-field-helper, var(--nq-color-text-muted)); font-size: var(--nq-profile-helper-size, var(--nq-text-sm)); }
+.nq-field > .nq-error {
+  color: var(--nq-color-field-error-text, var(--nq-color-danger));
+  font-size: var(--nq-profile-error-size, var(--nq-text-sm));
+  margin-block-start: var(--nq-profile-error-offset, 0);
+}
+
+.nq-label > .nq-required-marker { color: var(--nq-color-danger); }

@@ -199,7 +199,9 @@ export const tokens = {
     "content-nav-marker-hover": "#98A2B3",
     "search-term-border": "#DFF6E7",
     "search-suggestion-border": "#E5E7EB",
-    "search-clear": "#B4231899"
+    "search-clear": "#B4231899",
+    "field-helper": "#4D5761",
+    "field-error-text": "#D92C20"
   },
   "control": {
     "height": "2.5rem",
@@ -328,7 +330,9 @@ export const themes = {
         "content-nav-marker-hover": "#5c7071",
         "search-term-border": "#d9e0da",
         "search-suggestion-border": "#d9e0da",
-        "search-clear": "#4c6264"
+        "search-clear": "#4c6264",
+        "field-helper": "#4c6264",
+        "field-error-text": "#ae2e30"
       }
     },
     "dark": {
@@ -436,7 +440,9 @@ export const themes = {
         "content-nav-marker-hover": "#9cb5b2",
         "search-term-border": "#3a5150",
         "search-suggestion-border": "#3a5150",
-        "search-clear": "#b9cdca"
+        "search-clear": "#b9cdca",
+        "field-helper": "#b9cdca",
+        "field-error-text": "#ffaaa8"
       }
     }
   },
@@ -546,7 +552,9 @@ export const themes = {
         "content-nav-marker-hover": "#98A2B3",
         "search-term-border": "#DFF6E7",
         "search-suggestion-border": "#E5E7EB",
-        "search-clear": "#B4231899"
+        "search-clear": "#B4231899",
+        "field-helper": "#4D5761",
+        "field-error-text": "#D92C20"
       }
     },
     "dark": {
@@ -654,7 +662,9 @@ export const themes = {
         "content-nav-marker-hover": "#E5E7EB",
         "search-term-border": "#6C737F",
         "search-suggestion-border": "#6C737F",
-        "search-clear": "#F97066"
+        "search-clear": "#F97066",
+        "field-helper": "#F3F4F6",
+        "field-error-text": "#F97066"
       }
     }
   }
@@ -1120,7 +1130,9 @@ export const tokenNames = {
     "content-nav-marker-hover": "--nq-color-content-nav-marker-hover",
     "search-term-border": "--nq-color-search-term-border",
     "search-suggestion-border": "--nq-color-search-suggestion-border",
-    "search-clear": "--nq-color-search-clear"
+    "search-clear": "--nq-color-search-clear",
+    "field-helper": "--nq-color-field-helper",
+    "field-error-text": "--nq-color-field-error-text"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1318,6 +1330,8 @@ export const cssVariableNames = [
   "--nq-color-search-term-border",
   "--nq-color-search-suggestion-border",
   "--nq-color-search-clear",
+  "--nq-color-field-helper",
+  "--nq-color-field-error-text",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

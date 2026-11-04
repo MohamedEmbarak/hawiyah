@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef } from 'react';
+import { Children, isValidElement, useEffect, useId, useRef } from 'react';
 import type { ComponentPropsWithRef, ReactNode } from 'react';
-import { assignRef, cx, Field, useFieldControl, useFieldValueRef } from './shared.js';
+import { assignRef, cx, ControlField, Field, useFieldControl, useFieldValueRef } from './shared.js';
 import type { FieldDecoration } from './shared.js';
 import { observeReadonlyChoice, isDisabled, type Option } from '@nasaq/core';
 
@@ -19,9 +19,8 @@ function InputControl(props: ComponentPropsWithRef<'input'>) {
   return <input {...props} {...field} ref={ref} className={cx('nq-input', props.className)} />;
 }
 export function TextField({ label, hint, error, ...props }: TextFieldProps) {
-  const generated = useId();
   if (label == null && hint == null && error == null) return <InputControl {...props} />;
-  return <Field label={label} hint={hint} error={error} required={props.required} controlId={props.id ?? generated}><InputControl {...props} /></Field>;
+  return <ControlField label={label} hint={hint} error={error} required={props.required} controlId={props.id}><InputControl {...props} /></ControlField>;
 }
 export interface TextareaProps extends ComponentPropsWithRef<'textarea'>, FieldDecoration {}
 function TextareaControl(props: ComponentPropsWithRef<'textarea'>) {
@@ -30,20 +29,19 @@ function TextareaControl(props: ComponentPropsWithRef<'textarea'>) {
   return <textarea {...props} {...field} ref={ref} className={cx('nq-textarea', props.className)} />;
 }
 export function Textarea({ label, hint, error, ...props }: TextareaProps) {
-  const generated = useId();
   if (label == null && hint == null && error == null) return <TextareaControl {...props} />;
-  return <Field label={label} hint={hint} error={error} required={props.required} controlId={props.id ?? generated}><TextareaControl {...props} /></Field>;
+  return <ControlField label={label} hint={hint} error={error} required={props.required} controlId={props.id}><TextareaControl {...props} /></ControlField>;
 }
-export interface SelectProps extends ComponentPropsWithRef<'select'>, FieldDecoration { options?: readonly Option[] }
-function SelectControl({ options, children, ...props }: SelectProps) {
+export interface SelectProps extends ComponentPropsWithRef<'select'>, FieldDecoration { options?: readonly Option[]; placeholder?: string }
+function SelectControl({ options, children, placeholder, ...props }: SelectProps) {
   const field = useFieldControl(props);
   const ref = useFieldValueRef(props.ref);
-  return <select {...props} {...field} ref={ref} className={cx('nq-select', props.className)}>{options?.map(option => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>)}{children}</select>;
+  const hasEmptyOption = options?.some(option => option.value === '') || Children.toArray(children).some(child => isValidElement<{value?: string}>(child) && child.type === 'option' && child.props.value === '');
+  return <select {...props} {...field} ref={ref} className={cx('nq-select', props.className)}>{placeholder && !props.multiple && !hasEmptyOption && <option value="">{placeholder}</option>}{options?.map(option => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>)}{children}</select>;
 }
 export function Select({ label, hint, error, ...props }: SelectProps) {
-  const generated = useId();
   if (label == null && hint == null && error == null) return <SelectControl {...props} />;
-  return <Field label={label} hint={hint} error={error} required={props.required} controlId={props.id ?? generated}><SelectControl {...props} /></Field>;
+  return <ControlField label={label} hint={hint} error={error} required={props.required} controlId={props.id}><SelectControl {...props} /></ControlField>;
 }
 export interface CheckboxProps extends Omit<ComponentPropsWithRef<'input'>, 'type'>, FieldDecoration { indeterminate?: boolean }
 interface ChoiceProps extends CheckboxProps { kind: 'checkbox' | 'radio' | 'switch' }

@@ -7,19 +7,23 @@ export const decorationProps = { label: String, hint: String, error: String, req
 interface FieldContext { id: string; labelId?: string; describedby?: string; invalid?: boolean; required?: boolean }
 const fieldKey: InjectionKey<ComputedRef<FieldContext>> = Symbol('nasaq-field');
 export function provideField(value: ComputedRef<FieldContext>) { provide(fieldKey, value); }
-export function joinIds(...values: unknown[]): string | undefined { return values.filter(Boolean).join(' ') || undefined; }
-export function useField(props: FieldDecoration, attrs: Record<string, unknown>) {
+export function joinIds(...values: unknown[]): string | undefined {
+  const ids = values.filter(Boolean).flatMap(value => String(value).trim().split(/\s+/)).filter(Boolean);
+  return [...new Set(ids)].join(' ') || undefined;
+}
+export function useField(props: FieldDecoration, attrs: Record<string, unknown>, separateNestedHelpers = false) {
   const generated = `nq-${useId()}`;
   const parent = inject(fieldKey, undefined);
   const decorated = computed(() => Boolean(props.label || props.hint || props.error));
   const id = computed(() => String(attrs.id ?? parent?.value.id ?? generated));
-  const labelId = computed(() => props.label ? `${id.value}-label` : parent?.value.labelId);
+  const decorationId = computed(() => separateNestedHelpers && parent ? generated : id.value);
+  const labelId = computed(() => props.label ? `${decorationId.value}-label` : parent?.value.labelId);
   const describedby = computed(() => joinIds(attrs['aria-describedby'], parent?.value.describedby,
-    props.hint && `${id.value}-hint`, props.error && `${id.value}-error`));
-  const controlAttrs = computed(() => ({ id: id.value, 'aria-labelledby': joinIds(attrs['aria-labelledby'], labelId.value),
+    props.hint && `${decorationId.value}-hint`, props.error && `${decorationId.value}-error`));
+  const controlAttrs = computed(() => ({ id: id.value, 'aria-labelledby': attrs['aria-labelledby'] ?? (attrs['aria-label'] ? undefined : labelId.value),
     'aria-describedby': describedby.value, 'aria-invalid': props.error || parent?.value.invalid ? true : attrs['aria-invalid'],
     required: props.required ?? parent?.value.required }));
-  return { id, decorated, controlAttrs };
+  return { id, decorationId, decorated, controlAttrs };
 }
 export function useValue<T>(read: () => T | undefined, initial: T, emit: (value: T) => void) {
   const local = ref(initial) as Ref<T>;

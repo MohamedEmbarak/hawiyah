@@ -7,7 +7,8 @@ async function expectLine(field: Locator, token: string) {
     const probe = document.createElement('span'); probe.style.color = `var(${token})`;
     node.parentElement!.append(probe); const color = getComputedStyle(probe).color; probe.remove(); return color;
   }, token);
-  await expect(field).toHaveCSS('background-image', `linear-gradient(${color}, ${color})`);
+  const gradient = `linear-gradient(${color}, ${color})`;
+  await expect.poll(() => field.evaluate((node, expected) => getComputedStyle(node).backgroundImage.startsWith(expected), gradient)).toBe(true);
 }
 
 for (const mode of ['light', 'dark']) for (const variant of ['outlined', 'filled']) {
@@ -26,7 +27,7 @@ for (const mode of ['light', 'dark']) for (const variant of ['outlined', 'filled
     for (const id of ['optional-query', 'required-email', 'required-note', 'required-choice']) {
       const field = form.locator(`#${id}`); await field.focus();
       await expectLine(field, '--nq-color-field-active');
-      await expect(field).toHaveCSS('background-size', '100% 2px'); await expect(field).toHaveCSS('outline-style', 'none');
+      await expect(field).toHaveCSS('background-size', id === 'required-choice' ? '100% 2px, 18px 18px' : '100% 2px'); await expect(field).toHaveCSS('outline-style', 'none');
     }
     await email.fill('invalid'); await page.keyboard.press('Tab');
     await expectLine(email, '--nq-color-danger');

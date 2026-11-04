@@ -1,3 +1,4 @@
+import {selectDemoCases, selectDemoMarkup} from './select-demo';
 import { paginationDemoMarkup } from "./pagination-demo";
 import { statusMarkup } from "./ready-examples";
 import { bindDemoPreviews } from "./demo-previews";
@@ -187,7 +188,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "textarea":
       return `<label class="nq-field"><span class="nq-label">${t("Tell us more", "أخبرنا المزيد")}</span><textarea class="nq-textarea" rows="3" placeholder="${t("A little context goes a long way…", "القليل من التفاصيل يساعد كثيرًا…")}"></textarea></label>`;
     case "select":
-      return `<label class="nq-field"><span class="nq-label">${t("Region", "المنطقة")}</span><select class="nq-select"><option>${t("Riyadh", "الرياض")}</option><option>${t("Makkah", "مكة المكرمة")}</option><option>${t("Eastern Province", "المنطقة الشرقية")}</option></select></label>`;
+      return selectDemoMarkup(selectDemoCases(state.locale)[0]!, uid);
     case "checkbox":
       return `<div class="nq-stack"><label class="choice-line"><input class="nq-checkbox" type="checkbox" checked>${t("Email updates", "تحديثات البريد الإلكتروني")}</label><label class="choice-line"><input class="nq-checkbox" type="checkbox">${t("SMS notifications", "إشعارات الرسائل النصية")}</label></div>`;
     case "radio":
