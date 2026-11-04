@@ -1,3 +1,4 @@
+import {isPortalShellId, portalShellIds, portalShellProject} from './portal-shell-projects.ts';
 import {disclosureProjectIds, disclosureProjectRecipe, isDisclosureProjectId} from './disclosure-projects.ts';
 import {siteVerificationMarkup} from './site-verification-demo.ts';
 import {portalMenuItems, portalMenuMarkup} from './portal-navigation-demo.ts';
@@ -23,6 +24,7 @@ import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
 import type { Locale } from "./data";
 
 export const nativeProjectComponents = new Set([
+  ...portalShellIds,
   ...Object.keys(layoutComponents),
   ...contentProjectIds,
   ...basicInputProjectIds,
@@ -83,6 +85,7 @@ export function projectExample(
   html: string,
 ): ProjectExample {
   if (isChoiceInput(id)) return choiceInputProject(id, framework, language, locale);
+  if (isPortalShellId(id)) return portalShellProject(id, framework, language, locale);
   if (id === "dialog") return notificationDialogProject(framework, language, locale);
   if (isFileProjectId(id)) return fileProject(id, framework, language, locale);
   if (id === "toast-region") return toastProject(framework, language, locale);

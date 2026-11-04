@@ -33,7 +33,9 @@ Dialog adds localized notification examples for five tones. The host chooses the
 
 Combobox, PinInput, TagInput and MultiSelect each have a form with a disabled toggle, reset and local submission. Examples display the current value alongside the entries read from `FormData`. Combobox submits the selected office ID. PinInput preserves leading zeros. TagInput and MultiSelect submit repeated values under one field name.
 
-Native project recipes currently cover 75 components: Tooltip, Popover, Menu, Drawer, Collapsible, TreeView, Combobox, PinInput, TagInput, MultiSelect, Dialog, FileUpload, FileDropzone, Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
+SecondaryNav, PortalLayout, MobileTopBar and NavigationDrawer use local application state to show the current page. The shell includes a skip link and responsive primary navigation. The mobile top bar changes from its overview to internal-page variant, and its menu opens a drawer with a nested service directory and an unavailable destination.
+
+Native project recipes currently cover 79 components: SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer, Tooltip, Popover, Menu, Drawer, Collapsible, TreeView, Combobox, PinInput, TagInput, MultiSelect, Dialog, FileUpload, FileDropzone, Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, ToastRegion and the 12 layout primitives listed below. Other component
