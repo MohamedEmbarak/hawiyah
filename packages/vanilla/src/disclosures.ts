@@ -1,6 +1,6 @@
-import { createCleanup, getNextEnabledIndex, isDisabled, normalizeSearch, restoreFocus } from '@nasaq/core';
+import { createCleanup, getNextEnabledIndex, isDisabled, normalizeSearch, restoreFocus, prepareToastDismissFocus } from '@nasaq/core';
 import { createDialog, type DialogController, type DialogOptions } from './dialog.js';
-import { emit, ensureId, eventElement, remember, required } from './dom.js';
+import { emit, ensureId, eventElement, remember, required, translated } from './dom.js';
 
 export interface PopoverOptions { onOpenChange?: (open: boolean) => void; focusOnOpen?: boolean }
 export interface PopoverController { readonly open: boolean; show(): void; close(restore?: boolean): void; destroy(): void }
@@ -58,19 +58,111 @@ export function createMenu(root: HTMLElement, options: MenuOptions = {}): Popove
 
 export function createDrawer(dialog: HTMLDialogElement, options: DialogOptions = {}): DialogController { return createDialog(dialog, options); }
 
-export interface ToastRegionOptions { onDismiss?: (id: string) => void }
+export interface ToastRegionOptions {
+  variant?: 'default' | 'inline' | 'banner';
+  position?: 'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+  label?: string;
+  getDismissLabel?: (toast: HTMLElement) => string;
+  onDismiss?: (id: string) => void;
+}
 export function createToastRegion(root: HTMLElement, options: ToastRegionOptions = {}): { dismiss(target: string | HTMLElement): void; destroy(): void } {
-  const scope = createCleanup(); remember(scope, root, ['role', 'aria-live', 'tabindex']);
-  if (!root.hasAttribute('role')) root.setAttribute('role', 'status'); if (!root.hasAttribute('aria-live')) root.setAttribute('aria-live', root.getAttribute('role') === 'alert' ? 'assertive' : 'polite');
-  const remembered = new WeakSet<HTMLElement>();
-  const dismiss = (target: string | HTMLElement) => {
-    if (scope.destroyed) return; const toast = typeof target === 'string' ? [...root.querySelectorAll<HTMLElement>('[data-nq-toast]')].find(node => node.id === target) : target;
-    if (!toast || !root.contains(toast) || toast.hidden) return;
-    if (!remembered.has(toast)) { remember(scope, toast, ['hidden']); remembered.add(toast); }
-    const hadFocus = toast.contains(root.ownerDocument.activeElement); toast.hidden = true;
-    if (hadFocus) { const next = [...root.querySelectorAll<HTMLElement>('[data-nq-dismiss]')].find(button => !button.closest('[hidden]')); if (next) next.focus(); else { root.tabIndex = -1; root.focus(); } }
-    emit(root, { dismissed: toast.id }); options.onDismiss?.(toast.id);
+  const scope = createCleanup();
+  remember(scope, root, ['role', 'aria-live', 'aria-label', 'tabindex', 'data-variant', 'data-position']);
+  const originalRole = root.getAttribute('role');
+  const originalLive = root.getAttribute('aria-live');
+  const own = (element: HTMLElement) => {
+    const owner = element.closest('.nq-toast-region, [data-nq="toast-region"]');
+    return root.contains(element) && (!owner || owner === root || !root.contains(owner));
   };
-  scope.listen(root, 'click', event => { const button = eventElement(event)?.closest<HTMLElement>('[data-nq-dismiss]'); if (!button || isDisabled(button)) return; const toast = button.closest<HTMLElement>('[data-nq-toast]'); if (toast) { event.preventDefault(); dismiss(toast); } });
-  return { dismiss, destroy: () => scope.destroy() };
+  if (options.variant) root.dataset.variant = options.variant;
+  if (options.position) root.dataset.position = options.position;
+  if (options.label || (!root.hasAttribute('aria-label') && !root.hasAttribute('aria-labelledby'))) root.setAttribute('aria-label', options.label ?? translated(root, 'Notifications', 'الإشعارات'));
+  if (!root.hasAttribute('tabindex')) root.tabIndex = -1;
+
+  const grouped = root.querySelectorAll<HTMLElement>(':scope > :is([data-nq-live="polite"], [data-nq-live="assertive"], [role="status"], [role="alert"], [aria-live="polite"], [aria-live="assertive"]):not([data-nq-toast], .nq-toast)');
+  for (const bucket of grouped) {
+    const urgency = bucket.dataset.nqLive ?? bucket.getAttribute('aria-live');
+    const urgent = urgency ? urgency === 'assertive' : bucket.getAttribute('role') === 'alert';
+    remember(scope, bucket, ['role', 'aria-live', 'aria-relevant']);
+    bucket.setAttribute('role', urgent ? 'alert' : 'status');
+    bucket.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
+    if (!bucket.hasAttribute('aria-relevant')) bucket.setAttribute('aria-relevant', 'additions text');
+  }
+  if (grouped.length) {
+    if (!originalRole || originalRole === 'alert' || originalRole === 'status') root.setAttribute('role', 'region');
+    if (originalLive !== 'off') root.removeAttribute('aria-live');
+  } else {
+    if (!originalRole) root.setAttribute('role', 'status');
+    if (!originalLive) root.setAttribute('aria-live', originalRole === 'alert' ? 'assertive' : 'polite');
+  }
+
+  const protectedControls = new Map<HTMLElement, string | null>();
+  const generatedLabels = new Map<HTMLElement, string>();
+  const dismissedNotices = new Set<HTMLElement>();
+  const restoreControl = (button: HTMLElement) => {
+    const hidden = protectedControls.get(button);
+    if (hidden === null) button.removeAttribute('hidden');
+    else if (hidden !== undefined) button.setAttribute('hidden', hidden);
+    protectedControls.delete(button);
+  };
+  const restoreLabel = (button: HTMLElement) => {
+    if (button.getAttribute('aria-label') === generatedLabels.get(button)) button.removeAttribute('aria-label');
+    generatedLabels.delete(button);
+  };
+  const sync = () => {
+    for (const button of protectedControls.keys()) if (!own(button)) restoreControl(button);
+    for (const button of generatedLabels.keys()) if (!own(button)) restoreLabel(button);
+    for (const notice of dismissedNotices) if (!own(notice)) { notice.hidden = false; dismissedNotices.delete(notice); }
+    for (const button of root.querySelectorAll<HTMLElement>('[data-nq-dismiss]')) {
+      const toast = button.closest<HTMLElement>('[data-nq-toast]');
+      if (!toast || !own(toast) || !own(button)) continue;
+      if (toast.dataset.nqDismissible === 'false') {
+        if (!protectedControls.has(button)) protectedControls.set(button, button.getAttribute('hidden'));
+        button.hidden = true;
+      } else if (protectedControls.has(button)) restoreControl(button);
+      const generated = generatedLabels.get(button);
+      const current = button.getAttribute('aria-label');
+      if (current?.trim() && current !== generated) { generatedLabels.delete(button); continue; }
+      if (button.hasAttribute('aria-labelledby') || (!options.getDismissLabel && button.textContent?.replace(/[×x\s]/gi, ''))) {
+        if (generated !== undefined) restoreLabel(button);
+        continue;
+      }
+      const heading = toast.querySelector('[data-nq-toast-title], strong, h2, h3, h4');
+      const title = (heading ?? toast.querySelector('.nq-toast-content, p'))?.textContent?.trim();
+      const prefix = translated(root, 'Dismiss notification', 'إغلاق الإشعار');
+      const label = options.getDismissLabel?.(toast) ?? (title ? `${prefix}: ${title}` : prefix);
+      button.setAttribute('aria-label', label);
+      generatedLabels.set(button, label);
+    }
+  };
+  sync();
+  const Observer = root.ownerDocument.defaultView?.MutationObserver;
+  if (Observer) {
+    const observer = new Observer(sync);
+    observer.observe(root, {childList: true, subtree: true, attributes: true, attributeFilter: ['data-nq-dismissible']});
+    scope.add(() => observer.disconnect());
+  }
+  scope.add(() => {
+    for (const button of protectedControls.keys()) restoreControl(button);
+    for (const button of generatedLabels.keys()) restoreLabel(button);
+    for (const notice of dismissedNotices) notice.hidden = false;
+    dismissedNotices.clear();
+  });
+  const dismiss = (target: string | HTMLElement) => {
+    if (scope.destroyed) return;
+    const toast = typeof target === 'string' ? [...root.querySelectorAll<HTMLElement>('[data-nq-toast]')].find(node => own(node) && (node.id === target || node.dataset.nqToast === target)) : target;
+    if (!toast || !own(toast) || !toast.hasAttribute('data-nq-toast') || toast.hidden || toast.dataset.nqDismissible === 'false') return;
+    dismissedNotices.add(toast);
+    const recover = prepareToastDismissFocus(root, toast);
+    toast.hidden = true;
+    const id = toast.id || toast.dataset.nqToast || '';
+    try { emit(root, {dismissed: id}); options.onDismiss?.(id); } finally { recover(); }
+  };
+  scope.listen(root, 'click', event => {
+    const button = eventElement(event)?.closest<HTMLElement>('[data-nq-dismiss]');
+    if (!button || !own(button) || isDisabled(button)) return;
+    const toast = button.closest<HTMLElement>('[data-nq-toast]');
+    if (toast && own(toast)) { event.preventDefault(); dismiss(toast); }
+  });
+  return {dismiss, destroy: () => scope.destroy()};
 }

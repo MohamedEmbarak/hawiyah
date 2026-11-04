@@ -31,6 +31,7 @@ for (const [name, theme] of Object.entries(source.themes)) {
         ...['action-light', 'action-light-hover'].map(bg => ['on-action-light', bg]), ['primary-text', 'primary-subtle'],
         ...['field-helper', 'field-error-text'].flatMap(text => ['surface', 'canvas'].map(surface => [text, surface])),
         ['success', 'success-subtle'], ['warning', 'warning-subtle'],
+        ['notice-warning-text', 'warning-subtle'], ['notice-neutral-text', 'badge-neutral-background'],
         ['danger', 'danger-subtle'], ['info', 'info-subtle'], ['on-inverse', 'inverse'],
         ...['neutral', 'info', 'success', 'warning', 'danger'].flatMap(tone =>
           ['badge-' + tone + '-background', 'canvas', 'surface', 'surface-muted', 'surface-raised'].map(background => ['badge-' + tone + '-text', background])),

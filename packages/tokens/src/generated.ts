@@ -201,7 +201,13 @@ export const tokens = {
     "search-suggestion-border": "#E5E7EB",
     "search-clear": "#B4231899",
     "field-helper": "#4D5761",
-    "field-error-text": "#D92C20"
+    "field-error-text": "#D92C20",
+    "notice-success-border": "#069454",
+    "notice-warning-border": "#DC6803",
+    "notice-danger-border": "#D92C20",
+    "notice-info-border": "#156FEE",
+    "notice-neutral-text": "#6B7280",
+    "notice-warning-text": "#B54707"
   },
   "control": {
     "height": "2.5rem",
@@ -332,7 +338,13 @@ export const themes = {
         "search-suggestion-border": "#d9e0da",
         "search-clear": "#4c6264",
         "field-helper": "#4c6264",
-        "field-error-text": "#ae2e30"
+        "field-error-text": "#ae2e30",
+        "notice-success-border": "#176447",
+        "notice-warning-border": "#855000",
+        "notice-danger-border": "#ae2e30",
+        "notice-info-border": "#175ba8",
+        "notice-neutral-text": "#4c6264",
+        "notice-warning-text": "#855000"
       }
     },
     "dark": {
@@ -442,7 +454,13 @@ export const themes = {
         "search-suggestion-border": "#3a5150",
         "search-clear": "#b9cdca",
         "field-helper": "#b9cdca",
-        "field-error-text": "#ffaaa8"
+        "field-error-text": "#ffaaa8",
+        "notice-success-border": "#93dfae",
+        "notice-warning-border": "#f2cd76",
+        "notice-danger-border": "#ffaaa8",
+        "notice-info-border": "#9dc6ff",
+        "notice-neutral-text": "#b9cdca",
+        "notice-warning-text": "#f2cd76"
       }
     }
   },
@@ -554,7 +572,13 @@ export const themes = {
         "search-suggestion-border": "#E5E7EB",
         "search-clear": "#B4231899",
         "field-helper": "#4D5761",
-        "field-error-text": "#D92C20"
+        "field-error-text": "#D92C20",
+        "notice-success-border": "#069454",
+        "notice-warning-border": "#DC6803",
+        "notice-danger-border": "#D92C20",
+        "notice-info-border": "#156FEE",
+        "notice-neutral-text": "#6B7280",
+        "notice-warning-text": "#B54707"
       }
     },
     "dark": {
@@ -664,7 +688,13 @@ export const themes = {
         "search-suggestion-border": "#6C737F",
         "search-clear": "#F97066",
         "field-helper": "#F3F4F6",
-        "field-error-text": "#F97066"
+        "field-error-text": "#F97066",
+        "notice-success-border": "#47CD89",
+        "notice-warning-border": "#FDB022",
+        "notice-danger-border": "#F97066",
+        "notice-info-border": "#53B1FD",
+        "notice-neutral-text": "#F3F4F6",
+        "notice-warning-text": "#FDB022"
       }
     }
   }
@@ -1132,7 +1162,13 @@ export const tokenNames = {
     "search-suggestion-border": "--nq-color-search-suggestion-border",
     "search-clear": "--nq-color-search-clear",
     "field-helper": "--nq-color-field-helper",
-    "field-error-text": "--nq-color-field-error-text"
+    "field-error-text": "--nq-color-field-error-text",
+    "notice-success-border": "--nq-color-notice-success-border",
+    "notice-warning-border": "--nq-color-notice-warning-border",
+    "notice-danger-border": "--nq-color-notice-danger-border",
+    "notice-info-border": "--nq-color-notice-info-border",
+    "notice-neutral-text": "--nq-color-notice-neutral-text",
+    "notice-warning-text": "--nq-color-notice-warning-text"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1332,6 +1368,12 @@ export const cssVariableNames = [
   "--nq-color-search-clear",
   "--nq-color-field-helper",
   "--nq-color-field-error-text",
+  "--nq-color-notice-success-border",
+  "--nq-color-notice-warning-border",
+  "--nq-color-notice-danger-border",
+  "--nq-color-notice-info-border",
+  "--nq-color-notice-neutral-text",
+  "--nq-color-notice-warning-text",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

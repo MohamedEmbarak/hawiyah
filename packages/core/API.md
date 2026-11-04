@@ -289,3 +289,14 @@ when available; the fallback dispatches a cancelable event from the document's
 realm and closes only if permitted and still open. Existing `returnValue` is
 preserved. Closed/nonmodal dialogs, unsupported `:modal` selectors, and
 `closedby="none"` return false without requesting a close.
+
+
+## Toast dismissal
+
+`prepareToastDismissFocus(region, toast)` snapshots focus and the neighboring
+notices before a dismissal request. Call its returned function once after that
+request commits. If the focused notice was removed or hidden and focus was
+lost, it tries the following enabled dismiss buttons, then the nearest previous
+button, then the labelled region. The region must be programmatically focusable.
+A rejected request, a visible replacement with the same ID, disconnection or
+focus deliberately placed elsewhere leaves focus with its owner.

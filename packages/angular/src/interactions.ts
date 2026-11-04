@@ -1,7 +1,7 @@
-import { booleanAttribute, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, Input, Output, TemplateRef, ViewChild } from '@angular/core';
+import { booleanAttribute, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, Input, Output, signal, TemplateRef, ViewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { getDirection, getNextEnabledIndex, observeReadonlyChoice, type Direction, type Option } from '@nasaq/core';
+import { getDirection, getNextEnabledIndex, observeReadonlyChoice, prepareToastDismissFocus, type Direction, type Option } from '@nasaq/core';
 import { NqExpandedValueControl } from './advanced-controls';
 import { NqDialogComponent } from './overlays';
 
@@ -51,8 +51,54 @@ export class NqMenuComponent extends NqPopoverComponent {
 export class NqDrawerComponent extends NqDialogComponent { @Input() side: 'start' | 'end' | 'bottom' = 'end'; }
 
 export interface NqToast { id: string; title?: string; message: string; tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean; }
-@Component({selector: 'nq-toast-region', standalone: true, template: `<section class="nq-toast-region" [attr.data-variant]="variant" [attr.aria-label]="label"><div role="status" aria-live="polite" aria-relevant="additions text">@for (toast of polite; track toast.id) {<div class="nq-toast" [attr.data-tone]="toast.tone || 'info'">@if (toast.title) {<strong>{{ toast.title }}</strong>}<p>{{ toast.message }}</p>@if (toast.dismissible !== false) {<button type="button" class="nq-button" data-variant="ghost" [attr.aria-label]="dismissLabel + ': ' + (toast.title || toast.message)" (click)="dismissed.emit(toast.id)">×</button>}</div>}</div><div role="alert" aria-live="assertive" aria-relevant="additions text">@for (toast of urgent; track toast.id) {<div class="nq-toast" [attr.data-tone]="toast.tone || 'danger'">@if (toast.title) {<strong>{{ toast.title }}</strong>}<p>{{ toast.message }}</p>@if (toast.dismissible !== false) {<button type="button" class="nq-button" data-variant="ghost" [attr.aria-label]="dismissLabel + ': ' + (toast.title || toast.message)" (click)="dismissed.emit(toast.id)">×</button>}</div>}</div></section>`})
-export class NqToastRegionComponent { @Input() variant: 'default' | 'inline' = 'default'; @Input() label = 'Notifications'; @Input() messages: readonly NqToast[] = []; @Input() dismissLabel = 'Dismiss'; @Output() readonly dismissed = new EventEmitter<string>(); get polite() { return this.messages.filter(message => !message.urgent); } get urgent() { return this.messages.filter(message => message.urgent); } }
+// Angular output subscriptions are independent of component inputs. Notify the
+// template when their presence changes, including an imperative unsubscription.
+class ToastDismissEmitter extends EventEmitter<string> {
+  constructor(private readonly changed: (observed: boolean) => void) { super(); }
+  override subscribe(...args: Parameters<EventEmitter<string>['subscribe']>) {
+    const subscription = super.subscribe(...args);
+    this.changed(this.observed);
+    subscription.add(() => this.changed(this.observed));
+    return subscription;
+  }
+}
+@Component({selector: 'nq-toast-region', standalone: true, template: `
+  <section #region class="nq-toast-region" tabindex="-1" [attr.data-variant]="variant" [attr.data-position]="position || null" [attr.aria-label]="label">
+    @for (group of groups; track group) {
+      <div [attr.role]="group === 'polite' ? 'status' : 'alert'" [attr.aria-live]="group" [attr.data-nq-live]="group" aria-relevant="additions text">
+        @for (toast of group === 'polite' ? polite : urgent; track toast.id) {
+          <article class="nq-toast" [attr.data-nq-toast]="toast.id" [attr.data-tone]="toast.tone || 'info'">
+            @if (variant === 'banner') {<span class="nq-toast-icon" aria-hidden="true"></span>}
+            <div class="nq-toast-content">@if (toast.title) {<strong>{{toast.title}}</strong>}<p>{{toast.message}}</p></div>
+            @if (toast.dismissible !== false && hasDismissListener()) {
+              <button type="button" class="nq-button nq-toast-dismiss" data-variant="ghost" data-nq-dismiss [attr.aria-label]="dismissLabel + ': ' + (toast.title || toast.message)" (click)="requestDismiss(toast, $event)">×</button>
+            }
+          </article>
+        }
+      </div>
+    }
+  </section>`})
+export class NqToastRegionComponent {
+  @Input() variant: 'default' | 'inline' | 'banner' = 'default';
+  @Input() position?: 'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+  @Input() label = 'الإشعارات';
+  @Input() messages: readonly NqToast[] = [];
+  @Input() dismissLabel = 'إغلاق الإشعار';
+  protected readonly hasDismissListener = signal(false);
+  @Output() readonly dismissed: EventEmitter<string> = new ToastDismissEmitter(observed => this.hasDismissListener.set(observed));
+  @ViewChild('region') private region?: ElementRef<HTMLElement>;
+  readonly groups = ['polite', 'assertive'] as const;
+  private pending?: () => void;
+  get polite() { return this.messages.filter(message => !message.urgent); }
+  get urgent() { return this.messages.filter(message => message.urgent); }
+  requestDismiss(toast: NqToast, event: Event) {
+    if (toast.dismissible === false || !this.dismissed.observed) return;
+    const notice = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-nq-toast]');
+    if (notice && this.region) this.pending = prepareToastDismissFocus(this.region.nativeElement, notice);
+    this.dismissed.emit(toast.id);
+  }
+  ngAfterViewChecked() { this.pending?.(); this.pending = undefined; }
+}
 
 @Component({selector: 'nq-collapsible', standalone: true, template: `<details class="nq-collapsible" [open]="open" (toggle)="toggled($event)"><summary class="nq-collapsible-trigger">{{ label }}</summary><div class="nq-collapsible-content"><ng-content /></div></details>`})
 export class NqCollapsibleComponent { @Input({required: true}) label = ''; @Input({transform: booleanAttribute}) open = false; @Output() readonly openChange = new EventEmitter<boolean>(); toggled(event: Event) { const open = (event.target as HTMLDetailsElement).open; if (this.open !== open) { this.open = open; this.openChange.emit(open); } } }

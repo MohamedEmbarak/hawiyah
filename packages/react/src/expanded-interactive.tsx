@@ -1,6 +1,6 @@
-import { cloneElement, useEffect, useId, useRef, useState } from 'react';
+import { cloneElement, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, ComponentPropsWithRef, CSSProperties, ReactElement, ReactNode } from 'react';
-import { getDirection, getNextEnabledIndex, observeReadonlyChoice } from '@nasaq/core';
+import { getDirection, getNextEnabledIndex, observeReadonlyChoice, prepareToastDismissFocus } from '@nasaq/core';
 import type { Option } from '@nasaq/core';
 import { Button } from './forms.js';
 import { Dialog } from './interactive.js';
@@ -45,10 +45,45 @@ export function Menu({ items, label, trigger, open: controlled, defaultOpen = fa
 export interface DrawerProps extends DialogProps { side?: 'start' | 'end' | 'bottom' }
 export function Drawer({ side = 'end', className, ...props }: DrawerProps) { return <Dialog {...props} className={cx('nq-drawer', className)} data-side={side} />; }
 export interface ToastMessage { id: string; title?: ReactNode; description: ReactNode; tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean }
-export interface ToastRegionProps extends ComponentPropsWithRef<'section'> { messages: readonly ToastMessage[]; onDismiss?: (id: string) => void; label?: string; getDismissLabel?: (message: ToastMessage) => string }
-export function ToastRegion({ messages, onDismiss, label = 'Notifications', getDismissLabel = () => 'Dismiss notification', className, ...props }: ToastRegionProps) {
-  const render = (message: ToastMessage) => <article key={message.id} className="nq-toast" data-tone={message.tone ?? 'info'}>{message.title && <strong>{message.title}</strong>}<div>{message.description}</div>{onDismiss && message.dismissible !== false && <Button variant="ghost" aria-label={getDismissLabel(message)} onClick={() => onDismiss(message.id)}>×</Button>}</article>;
-  return <section {...props} className={cx('nq-toast-region', className)} aria-label={props['aria-label'] ?? label}><div role="status" aria-live="polite" aria-relevant="additions text">{messages.filter(message => !message.urgent).map(render)}</div><div role="alert" aria-live="assertive" aria-relevant="additions text">{messages.filter(message => message.urgent).map(render)}</div></section>;
+export interface ToastRegionProps extends ComponentPropsWithRef<'section'> {
+  messages: readonly ToastMessage[];
+  onDismiss?: (id: string) => void;
+  label?: string;
+  getDismissLabel?: (message: ToastMessage) => string;
+  variant?: 'default' | 'inline' | 'banner';
+  position?: 'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+}
+function dismissName(message: ToastMessage) {
+  const text = (typeof message.title === 'string' && message.title.trim()) ||
+    (typeof message.description === 'string' && message.description.trim());
+  return text ? `إغلاق الإشعار: ${text}` : 'إغلاق الإشعار';
+}
+export function ToastRegion({ messages, onDismiss, label = 'الإشعارات', getDismissLabel = dismissName, variant, position, className, ref, ...props }: ToastRegionProps) {
+  const region = useRef<HTMLElement | null>(null);
+  const pending = useRef<(() => void) | undefined>(undefined);
+  const [request, setRequest] = useState(0);
+  const data = props as Record<string, unknown>;
+  const presentation = variant ?? data['data-variant'];
+  useLayoutEffect(() => {
+    pending.current?.();
+    pending.current = undefined;
+  }, [request]);
+  const render = (message: ToastMessage) => <article key={message.id} className="nq-toast" data-nq-toast={message.id} data-tone={message.tone ?? 'info'}>
+    {presentation === 'banner' && <span className="nq-toast-icon" aria-hidden="true" />}
+    <div className="nq-toast-content">{message.title && <strong>{message.title}</strong>}<div>{message.description}</div></div>
+    {onDismiss && message.dismissible !== false && <Button type="button" variant="ghost" className="nq-toast-dismiss" data-nq-dismiss="" aria-label={getDismissLabel(message)} onClick={event => {
+      const notice = event.currentTarget.closest<HTMLElement>('[data-nq-toast]');
+      if (region.current && notice) pending.current = prepareToastDismissFocus(region.current, notice);
+      try { onDismiss(message.id); } finally {
+        // Even a rejected request gets a commit boundary and discards its snapshot.
+        setRequest(previous => previous + 1);
+      }
+    }}>×</Button>}
+  </article>;
+  return <section {...props} ref={element => {region.current = element; assignRef(ref, element);}} className={cx('nq-toast-region', className)} tabIndex={props.tabIndex ?? -1} aria-label={props['aria-label'] ?? label} data-variant={presentation} data-position={position ?? data['data-position']}>
+    <div role="status" aria-live="polite" aria-relevant="additions text" data-nq-live="polite">{messages.filter(message => !message.urgent).map(render)}</div>
+    <div role="alert" aria-live="assertive" aria-relevant="additions text" data-nq-live="assertive">{messages.filter(message => message.urgent).map(render)}</div>
+  </section>;
 }
 export interface CollapsibleProps extends Omit<ComponentPropsWithRef<'details'>, 'open' | 'onToggle' | 'title'> { title: ReactNode; open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void; disabled?: boolean }
 export function Collapsible({ title, open: controlled, defaultOpen = false, onOpenChange, disabled, children, className, ...props }: CollapsibleProps) {

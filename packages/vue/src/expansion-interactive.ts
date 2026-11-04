@@ -11,7 +11,7 @@ import {
   useId,
 } from "vue";
 import type { PropType, VNodeChild } from "vue";
-import { getDirection, getNextEnabledIndex, restoreFocus, observeReadonlyChoice } from "@nasaq/core";
+import { getDirection, getNextEnabledIndex, restoreFocus, observeReadonlyChoice, prepareToastDismissFocus } from "@nasaq/core";
 import type { Option } from "@nasaq/core";
 import { Button } from "./forms.js";
 import { Dialog } from "./interactive.js";
@@ -408,82 +408,57 @@ export interface ToastMessage {
   id: string;
   title?: string;
   message: string;
-  tone?: "neutral" | "info" | "success" | "warning" | "danger";
+  tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger';
   urgent?: boolean;
+  dismissible?: boolean;
+}
+type ToastDismissHandler = (id: string) => void;
+const dismissListener = [Function, Array] as PropType<ToastDismissHandler | ToastDismissHandler[]>;
+function listens(handler: ToastDismissHandler | ToastDismissHandler[] | undefined) {
+  return typeof handler === 'function' || !!handler?.length;
 }
 export const ToastRegion = defineComponent({
-  name: "NqToastRegion",
-  inheritAttrs: false,
+  name: 'NqToastRegion', inheritAttrs: false,
   props: {
-    messages: {
-      type: Array as PropType<readonly ToastMessage[]>,
-      required: true,
-    },
-    label: { type: String, default: "Notifications" },
-    dismissLabel: {
-      type: Function as PropType<(message: ToastMessage) => string>,
-      default: (message: ToastMessage) =>
-        `Dismiss ${message.title ?? message.message}`,
-    },
+    messages: {type: Array as PropType<readonly ToastMessage[]>, required: true},
+    label: {type: String, default: 'الإشعارات'},
+    dismissLabel: {type: Function as PropType<(message: ToastMessage) => string>, default: (message: ToastMessage) => `إغلاق الإشعار: ${message.title || message.message}`},
+    variant: String as PropType<'default' | 'inline' | 'banner'>,
+    position: String as PropType<'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'>,
+    // A listener is also a rendering input: adding/removing it must update the action.
+    onDismiss: dismissListener,
+    onDismissOnce: dismissListener,
   },
-  emits: { dismiss: (_id: string) => true },
-  setup(props, { attrs, emit }) {
-    const render = (urgent: boolean) =>
-      props.messages
-        .filter((message) => Boolean(message.urgent) === urgent)
-        .map((message) =>
-          h(
-            "div",
-            {
-              key: message.id,
-              class: "nq-toast",
-              "data-tone": message.tone ?? "info",
-            },
-            [
-              message.title && h("strong", {}, message.title),
-              h("p", {}, message.message),
-              h(
-                Button,
-                {
-                  variant: "ghost",
-                  "aria-label": props.dismissLabel(message),
-                  onClick: () => emit("dismiss", message.id),
-                },
-                () => "×",
-              ),
-            ],
-          ),
-        );
-    return () =>
-      h(
-        "section",
-        mergeProps(attrs, {
-          class: "nq-toast-region",
-          "aria-label": props.label,
-        }),
-        [
-          h(
-            "div",
-            {
-              role: "status",
-              "aria-live": "polite",
-              "aria-relevant": "additions text",
-            },
-            render(false),
-          ),
-          h(
-            "div",
-            {
-              role: "alert",
-              "aria-live": "assertive",
-              "aria-relevant": "additions text",
-            },
-            render(true),
-          ),
-        ],
-      );
+  setup(props, {attrs, emit}) {
+    const region = ref<HTMLElement>();
+    const onceUsed = ref(false);
+    const render = (urgent: boolean, banner: boolean) => props.messages
+      .filter(message => Boolean(message.urgent) === urgent)
+      .map(message => h('article', {key: message.id, class: 'nq-toast', 'data-nq-toast': message.id, 'data-tone': message.tone ?? 'info'}, [
+        banner && h('span', {class: 'nq-toast-icon', 'aria-hidden': 'true'}),
+        h('div', {class: 'nq-toast-content'}, [message.title && h('strong', message.title), h('p', message.message)]),
+        message.dismissible !== false && (listens(props.onDismiss) || (!onceUsed.value && listens(props.onDismissOnce))) && h(Button, {
+          type: 'button', variant: 'ghost', class: 'nq-toast-dismiss', 'data-nq-dismiss': '', 'aria-label': props.dismissLabel(message),
+          onClick: (event: MouseEvent) => {
+            const notice = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-nq-toast]');
+            const recover = region.value && notice ? prepareToastDismissFocus(region.value, notice) : undefined;
+            try { emit('dismiss', message.id); } finally {
+              if (listens(props.onDismissOnce)) onceUsed.value = true;
+              if (recover) void nextTick(recover);
+            }
+          },
+        }, () => '×'),
+      ]));
+    return () => {
+      const variant = props.variant ?? attrs['data-variant'];
+      return h('section', mergeProps(attrs, {ref: region, class: 'nq-toast-region', tabindex: attrs.tabindex ?? -1, 'aria-label': attrs['aria-label'] ?? props.label, 'data-variant': variant, 'data-position': props.position ?? attrs['data-position']}), [
+        h('div', {role: 'status', 'aria-live': 'polite', 'aria-relevant': 'additions text', 'data-nq-live': 'polite'}, render(false, variant === 'banner')),
+        h('div', {role: 'alert', 'aria-live': 'assertive', 'aria-relevant': 'additions text', 'data-nq-live': 'assertive'}, render(true, variant === 'banner')),
+      ]);
+    };
   },
 });
+
 export const Collapsible = defineComponent({
   name: "NqCollapsible",
   inheritAttrs: false,

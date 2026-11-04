@@ -615,7 +615,7 @@ describe("Vue calendars and interactions", () => {
     await nextTick();
     expect(document.activeElement).toBe(trigger);
     root
-      .querySelector<HTMLButtonElement>('[aria-label="Dismiss Saved"]')!
+      .querySelector<HTMLButtonElement>('[aria-label="إغلاق الإشعار: Saved"]')!
       .click();
     await nextTick();
     expect(dismiss).toHaveBeenCalledWith("one");

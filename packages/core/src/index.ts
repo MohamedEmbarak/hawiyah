@@ -204,3 +204,4 @@ export { observeContentNavigation } from './content-navigation.js';
 export type { ContentNavigationItem, ContentNavigationOptions, ContentNavigationObserver } from './content-navigation.js';
 export { getSearchSuggestions, requestSearchDialogClose } from './search-suggestions.js';
 export type { SearchSuggestionMatch, SearchSuggestionSegment } from './search-suggestions.js';
+export { prepareToastDismissFocus } from './toast-focus.js';

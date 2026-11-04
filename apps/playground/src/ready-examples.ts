@@ -1,3 +1,4 @@
+import {toastDemoMarkup, toastDemoRecipes} from './toast-demo';
 import {listDemoRecipes} from './list-demo';
 import {copyActionRecipes} from './copy-action-demo';
 import {selectDemoCases, selectDemoMarkup, selectNativeMarkup} from './select-demo';
@@ -23,17 +24,15 @@ export const statusExamples = [
   { tone: 'danger', en: 'Unable to send', ar: 'تعذّر الإرسال', bodyEn: 'Try again or contact support.', bodyAr: 'حاول مجددًا أو تواصل مع الدعم.' },
 ] as const;
 
-export function statusMarkup(id: 'alert' | 'badge' | 'chip' | 'toast-region', locale: Locale, variant = 'default', prefix = 'status') {
+export function statusMarkup(id: 'alert' | 'badge' | 'chip' | 'toast-region', locale: Locale, variant = 'default', _prefix = 'status') {
+  if (id === 'toast-region') return toastDemoMarkup(locale);
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
   const items = statusExamples.map(item => {
     const label = t(item.en, item.ar), body = t(item.bodyEn, item.bodyAr);
     if (id === 'badge' || id === 'chip') return `<span class="nq-${id}" data-tone="${item.tone}" data-variant="${variant}">${label}</span>`;
-    if (id === 'toast-region') return `<div class="nq-toast" id="${prefix}-${item.tone}" data-nq-toast data-tone="${item.tone}"><div class="nq-toast-content"><strong>${label}</strong><p>${body}</p></div><button class="nq-button" data-variant="ghost" type="button" data-nq-dismiss aria-label="${t('Dismiss', 'إغلاق')}: ${label}">${icon('close', 18)}</button></div>`;
     return `<div class="nq-alert" data-tone="${item.tone}" data-variant="${variant}"><div class="nq-alert-content"><strong>${label}</strong><p>${body}</p></div></div>`;
   }).join('\n');
-  return id === 'toast-region'
-    ? `<div class="nq-toast-region" data-nq="toast-region" data-variant="inline" role="group" aria-live="off" aria-label="${t('Notification examples', 'أمثلة الإشعارات')}">${items}</div>`
-    : `<div class="${id === 'alert' ? 'nq-stack' : id === 'badge' ? 'nq-cluster nq-badges' : 'nq-cluster'}">${items}</div>`;
+  return `<div class="${id === 'alert' ? 'nq-stack' : id === 'badge' ? 'nq-cluster nq-badges' : 'nq-cluster'}">${items}</div>`;
 }
 
 type Recipe = { title: string; markup: string; vanillaScript?: string; react?: string; vue?: string; angular?: string };
@@ -231,14 +230,7 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
       angular: '<button nqButton size="sm" type="button">sm</button>\n<button nqButton size="md" type="button">md</button>\n<button nqButton size="lg" type="button">lg</button>\n<button nqButton type="button" disabled>غير متاح</button>\n<button nqButton type="button" disabled aria-busy="true">جارٍ الحفظ</button>',
     }, ...copyActionRecipes(locale)];
   }
-  if (id === 'toast-region') {
-    const messages = statusExamples.map(s => ({ id: s.tone, tone: s.tone, title: t(s.en,s.ar), message: t(s.bodyEn,s.bodyAr) }));
-    return [{ title: t('Every notification status', 'جميع حالات الإشعار'), markup: statusMarkup(id,locale,'default','ready-toast'),
-      react: `import { useState } from 'react';\nimport { ToastRegion, type ToastMessage } from '@nasaq/react';\n\nconst initialMessages = ${JSON.stringify(messages.map(({message,...s})=>({...s,description:message})),null,2)} satisfies ToastMessage[];\n// Inside your component:\nconst [messages, setMessages] = useState(initialMessages);\n<ToastRegion messages={messages} onDismiss={id => setMessages(items => items.filter(item => item.id !== id))} />`,
-      vue: `<!-- import { ref } from 'vue'; import { ToastRegion } from '@nasaq/vue' -->\n<!-- const messages = ref(${JSON.stringify(messages)}) -->\n<ToastRegion :messages="messages" @dismiss="id => messages = messages.filter(item => item.id !== id)" />`,
-      angular: `<!-- imports: [NqToastRegionComponent]; messages: NqToast[] = ${JSON.stringify(messages)} -->\n<nq-toast-region variant="inline" [messages]="messages" (dismissed)="dismiss($event)" />\n<!-- dismiss(id: string) { this.messages = this.messages.filter(item => item.id !== id); } -->`,
-    }];
-  }
+  if (id === 'toast-region') return toastDemoRecipes(locale);
   if (id === 'portal-header') {
     const services = t('Services','الخدمات'), requests = t('My requests','طلباتي'), signIn = t('Sign in','تسجيل الدخول');
     const links = JSON.stringify([{label:services,href:'/services',current:true},{label:requests,href:'/requests'}]);

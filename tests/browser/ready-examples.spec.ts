@@ -16,7 +16,8 @@ for (const locale of ['ar', 'en']) test(`ready examples expose all statuses with
     await page.goto(`/#component/${component}`);
     for (const tone of tones) await expect(page.locator(`[data-guide-canvas] [data-tone="${tone}"]`)).toBeVisible();
   }
-  const toast = page.locator('[data-guide-canvas] [data-tone="neutral"]');
+  await expect(page.locator('[data-guide-canvas] [data-tone="neutral"] [data-nq-dismiss]')).toHaveCount(0);
+  const toast = page.locator('[data-guide-canvas] [data-tone="info"]');
   await toast.locator('button').click(); await expect(toast).toBeHidden();
   await page.goto('/#component/portal-header');
   const preview = page.locator('#component-examples [data-demo-preview]');

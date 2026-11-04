@@ -151,7 +151,9 @@ test("menus, trees, carousels, sortable data and dismissible feedback work in th
   await expect(page.locator('[data-nq="cookie-consent"]')).toBeHidden();
   const toasts = page.locator('[data-nq="toast-region"] [data-nq-toast]');
   await expect(toasts).toHaveCount(5);
-  for (const toast of await toasts.all()) {
+  const dismissible = toasts.filter({has: page.locator('[data-nq-dismiss]')});
+  await expect(dismissible).toHaveCount(4);
+  for (const toast of await dismissible.all()) {
     await toast.locator('[data-nq-dismiss]').click();
     await expect(toast).toBeHidden();
   }

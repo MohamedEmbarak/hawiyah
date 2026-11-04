@@ -178,6 +178,12 @@
   --nq-palette-light-search-clear: #B4231899;
   --nq-palette-light-field-helper: #4D5761;
   --nq-palette-light-field-error-text: #D92C20;
+  --nq-palette-light-notice-success-border: #069454;
+  --nq-palette-light-notice-warning-border: #DC6803;
+  --nq-palette-light-notice-danger-border: #D92C20;
+  --nq-palette-light-notice-info-border: #156FEE;
+  --nq-palette-light-notice-neutral-text: #6B7280;
+  --nq-palette-light-notice-warning-text: #B54707;
   --nq-palette-dark-canvas: #111927;
   --nq-palette-dark-surface: #1F2A37;
   --nq-palette-dark-surface-raised: #1F2A37;
@@ -284,6 +290,12 @@
   --nq-palette-dark-search-clear: #F97066;
   --nq-palette-dark-field-helper: #F3F4F6;
   --nq-palette-dark-field-error-text: #F97066;
+  --nq-palette-dark-notice-success-border: #47CD89;
+  --nq-palette-dark-notice-warning-border: #FDB022;
+  --nq-palette-dark-notice-danger-border: #F97066;
+  --nq-palette-dark-notice-info-border: #53B1FD;
+  --nq-palette-dark-notice-neutral-text: #F3F4F6;
+  --nq-palette-dark-notice-warning-text: #FDB022;
   --nq-color-canvas: var(--nq-palette-light-canvas);
   --nq-color-surface: var(--nq-palette-light-surface);
   --nq-color-surface-raised: var(--nq-palette-light-surface-raised);
@@ -390,6 +402,12 @@
   --nq-color-search-clear: var(--nq-palette-light-search-clear);
   --nq-color-field-helper: var(--nq-palette-light-field-helper);
   --nq-color-field-error-text: var(--nq-palette-light-field-error-text);
+  --nq-color-notice-success-border: var(--nq-palette-light-notice-success-border);
+  --nq-color-notice-warning-border: var(--nq-palette-light-notice-warning-border);
+  --nq-color-notice-danger-border: var(--nq-palette-light-notice-danger-border);
+  --nq-color-notice-info-border: var(--nq-palette-light-notice-info-border);
+  --nq-color-notice-neutral-text: var(--nq-palette-light-notice-neutral-text);
+  --nq-color-notice-warning-text: var(--nq-palette-light-notice-warning-text);
   --nq-control-height: 2.5rem;
   --nq-control-height-sm: 2rem;
   --nq-control-height-lg: 2.5rem;
@@ -582,6 +600,12 @@
   --nq-palette-light-search-clear: #4c6264;
   --nq-palette-light-field-helper: #4c6264;
   --nq-palette-light-field-error-text: #ae2e30;
+  --nq-palette-light-notice-success-border: #176447;
+  --nq-palette-light-notice-warning-border: #855000;
+  --nq-palette-light-notice-danger-border: #ae2e30;
+  --nq-palette-light-notice-info-border: #175ba8;
+  --nq-palette-light-notice-neutral-text: #4c6264;
+  --nq-palette-light-notice-warning-text: #855000;
   --nq-palette-dark-canvas: #111d1e;
   --nq-palette-dark-surface: #172728;
   --nq-palette-dark-surface-raised: #213334;
@@ -688,6 +712,12 @@
   --nq-palette-dark-search-clear: #b9cdca;
   --nq-palette-dark-field-helper: #b9cdca;
   --nq-palette-dark-field-error-text: #ffaaa8;
+  --nq-palette-dark-notice-success-border: #93dfae;
+  --nq-palette-dark-notice-warning-border: #f2cd76;
+  --nq-palette-dark-notice-danger-border: #ffaaa8;
+  --nq-palette-dark-notice-info-border: #9dc6ff;
+  --nq-palette-dark-notice-neutral-text: #b9cdca;
+  --nq-palette-dark-notice-warning-text: #f2cd76;
 }
 
 :where([data-nq-theme="dga"], [data-nq-theme="custom"]) {
@@ -868,6 +898,12 @@
   --nq-palette-light-search-clear: #B4231899;
   --nq-palette-light-field-helper: #4D5761;
   --nq-palette-light-field-error-text: #D92C20;
+  --nq-palette-light-notice-success-border: #069454;
+  --nq-palette-light-notice-warning-border: #DC6803;
+  --nq-palette-light-notice-danger-border: #D92C20;
+  --nq-palette-light-notice-info-border: #156FEE;
+  --nq-palette-light-notice-neutral-text: #6B7280;
+  --nq-palette-light-notice-warning-text: #B54707;
   --nq-palette-dark-canvas: #111927;
   --nq-palette-dark-surface: #1F2A37;
   --nq-palette-dark-surface-raised: #1F2A37;
@@ -974,6 +1010,12 @@
   --nq-palette-dark-search-clear: #F97066;
   --nq-palette-dark-field-helper: #F3F4F6;
   --nq-palette-dark-field-error-text: #F97066;
+  --nq-palette-dark-notice-success-border: #47CD89;
+  --nq-palette-dark-notice-warning-border: #FDB022;
+  --nq-palette-dark-notice-danger-border: #F97066;
+  --nq-palette-dark-notice-info-border: #53B1FD;
+  --nq-palette-dark-notice-neutral-text: #F3F4F6;
+  --nq-palette-dark-notice-warning-text: #FDB022;
 }
 
 :where([data-nq-mode="light"]) {
@@ -1084,6 +1126,12 @@
   --nq-color-search-clear: var(--nq-palette-light-search-clear);
   --nq-color-field-helper: var(--nq-palette-light-field-helper);
   --nq-color-field-error-text: var(--nq-palette-light-field-error-text);
+  --nq-color-notice-success-border: var(--nq-palette-light-notice-success-border);
+  --nq-color-notice-warning-border: var(--nq-palette-light-notice-warning-border);
+  --nq-color-notice-danger-border: var(--nq-palette-light-notice-danger-border);
+  --nq-color-notice-info-border: var(--nq-palette-light-notice-info-border);
+  --nq-color-notice-neutral-text: var(--nq-palette-light-notice-neutral-text);
+  --nq-color-notice-warning-text: var(--nq-palette-light-notice-warning-text);
 }
 
 :where([data-nq-mode="dark"]) {
@@ -1194,6 +1242,12 @@
   --nq-color-search-clear: var(--nq-palette-dark-search-clear);
   --nq-color-field-helper: var(--nq-palette-dark-field-helper);
   --nq-color-field-error-text: var(--nq-palette-dark-field-error-text);
+  --nq-color-notice-success-border: var(--nq-palette-dark-notice-success-border);
+  --nq-color-notice-warning-border: var(--nq-palette-dark-notice-warning-border);
+  --nq-color-notice-danger-border: var(--nq-palette-dark-notice-danger-border);
+  --nq-color-notice-info-border: var(--nq-palette-dark-notice-info-border);
+  --nq-color-notice-neutral-text: var(--nq-palette-dark-notice-neutral-text);
+  --nq-color-notice-warning-text: var(--nq-palette-dark-notice-warning-text);
 }
 
 @supports (color: light-dark(white, black)) {
@@ -1304,6 +1358,12 @@
     --nq-color-search-clear: light-dark(var(--nq-palette-light-search-clear), var(--nq-palette-dark-search-clear));
     --nq-color-field-helper: light-dark(var(--nq-palette-light-field-helper), var(--nq-palette-dark-field-helper));
     --nq-color-field-error-text: light-dark(var(--nq-palette-light-field-error-text), var(--nq-palette-dark-field-error-text));
+    --nq-color-notice-success-border: light-dark(var(--nq-palette-light-notice-success-border), var(--nq-palette-dark-notice-success-border));
+    --nq-color-notice-warning-border: light-dark(var(--nq-palette-light-notice-warning-border), var(--nq-palette-dark-notice-warning-border));
+    --nq-color-notice-danger-border: light-dark(var(--nq-palette-light-notice-danger-border), var(--nq-palette-dark-notice-danger-border));
+    --nq-color-notice-info-border: light-dark(var(--nq-palette-light-notice-info-border), var(--nq-palette-dark-notice-info-border));
+    --nq-color-notice-neutral-text: light-dark(var(--nq-palette-light-notice-neutral-text), var(--nq-palette-dark-notice-neutral-text));
+    --nq-color-notice-warning-text: light-dark(var(--nq-palette-light-notice-warning-text), var(--nq-palette-dark-notice-warning-text));
   }
 }
 

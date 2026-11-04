@@ -3160,9 +3160,13 @@
       "name": "ToastRegion",
       "labelAr": "إشعارات فورية",
       "category": "feedback",
-      "description": "Caller-owned live notifications with explicit dismissal.",
+      "description": "Caller-owned live notifications with optional banner styling, urgency and per-message dismissal.",
       "cssClasses": [
-        "nq-toast-region"
+        "nq-toast-region",
+        "nq-toast",
+        "nq-toast-content",
+        "nq-toast-icon",
+        "nq-toast-dismiss"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -3181,7 +3185,8 @@
       "verified": [
         "vanilla",
         "react",
-        "vue"
+        "vue",
+        "angular"
       ],
       "evidence": [
         {
@@ -3219,6 +3224,54 @@
           "command": "pnpm test",
           "result": "passed",
           "date": "2026-10-28"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/toast-banner-parity.test.ts",
+          "tests": [
+            "vanilla retains mixed live buckets, protects pinned messages, skips disabled actions and restores authored markup"
+          ],
+          "scope": "Protected and urgent messages, dismissal and keyboard focus recovery.",
+          "command": "pnpm exec vitest run tests/toast-banner-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/toast-banner-parity.test.ts",
+          "tests": [
+            "react separates urgency from tone and recovers focus through accepted banner dismissals"
+          ],
+          "scope": "Protected and urgent messages, dismissal and keyboard focus recovery.",
+          "command": "pnpm exec vitest run tests/toast-banner-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/toast-banner-parity.test.ts",
+          "tests": [
+            "vue separates urgency from tone and recovers focus through accepted banner dismissals"
+          ],
+          "scope": "Protected and urgent messages, dismissal and keyboard focus recovery.",
+          "command": "pnpm exec vitest run tests/toast-banner-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/toast-banner-parity.test.ts",
+          "tests": [
+            "angular separates urgency from tone and recovers focus through accepted banner dismissals"
+          ],
+          "scope": "Protected and urgent messages, dismissal and keyboard focus recovery.",
+          "command": "pnpm exec vitest run tests/toast-banner-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
         }
       ],
       "implementationSources": {

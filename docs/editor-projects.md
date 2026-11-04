@@ -25,10 +25,10 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 53 components: Button, ButtonGroup, IconButton,
+Native project recipes currently cover 54 components: Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
-Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup and the 12 layout primitives listed below. Other component
+Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, ToastRegion and the 12 layout primitives listed below. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
 before the overall alignment/editor goal is complete.
@@ -233,3 +233,5 @@ type checking remains a separate check.
 The six content display recipes bring coverage from 47 to 53. Chip demonstrates all five tones, a protected filter, a removable filter and focus recovery on restore. DescriptionList pairs labels with values, Stat shows two figures with trends, Timeline shows three dated stages, Meter shows usage at three thresholds, and AvatarGroup limits the visible members and names the overflow count. The examples use native adapter props and events, including the different Timeline state and date contracts.
 
 The application files exported by the guide rendered in 84 Chromium cases covering six components, two languages and all seven supported framework/language combinations. Checks exercised chip removal and restoration, description pairs, stat values, dated stages, meter bounds and avatar overflow. Each timeline identified its current step. Chromium's accessibility tree exposed the overflow as a named image in vanilla, React, Vue and Angular. Those focused checks are separate from the 47-recipe clean consumer verification above.
+
+ToastRegion adds the 54th native recipe. Five service notices demonstrate the banner presentation inside the preview, including a persistent maintenance notice, three ordinary dismissible notices and an urgent failure. Each adapter shows its public dismissal API and a restore action. Keyboard dismissal moves focus through the available controls and returns it to the region when only the protected notice remains. The vanilla project uses `createToastRegion` and the native projects import their own ToastRegion component.

@@ -157,7 +157,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Popover | `label`, `triggerLabel`, `id`, `disabled`, `[(open)]`; project interactive content. Disclosure region with ordinary Tab order, outside press/Escape closing. |
 | Menu | Popover inputs plus `items: {id,label,disabled?}[]`, `action(id)`. ArrowUp/Down/Home/End navigation skips disabled items; Escape/activation returns focus. |
 | Drawer | Dialog inputs/outputs/methods plus `side: start/end/bottom`; project body and `[nqDrawerFooter]`. Native modal dialog. |
-| ToastRegion | `label`, `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, `dismissLabel`; `dismissed(id)`. Caller removes messages; stable polite/urgent live regions; no expiry timers. |
+| ToastRegion | `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, `label`, `dismissLabel`, `(dismissed)="remove($event)"`. Set `variant="banner"` and optionally `position="inline"` or a corner. A dismissal listener enables the button. Defaults are Arabic. |
 | Collapsible | `label`, `[(open)]`; native details/summary and projected body. |
 | TreeView | String selection; `nodes: {id,label,disabled?,children?}[]`, `[(expandedIds)]`, `direction`. Roving focus, RTL arrows, Home/End, Enter/Space selection. Caller supplies unique IDs. |
 | Carousel | Required label/slides; `[(current)]`, `loop=false`, `slides` and optional `slideTemplate` with `{ $implicit: NqSlide, index }`, one-based `slideLabel(index,total)`. `showIndicators=true`, localized control/indicator/description/empty labels, inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |

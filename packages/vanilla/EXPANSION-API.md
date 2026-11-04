@@ -340,3 +340,29 @@ state remains native. Destroy removes generated nodes/listeners, restores author
 ARIA/autocomplete/button attributes, and retains the current input value. Search
 submission, results rendering, modal composition and navigation belong to the
 application.
+
+
+### Notification banners
+
+Set `data-variant="banner"` on `.nq-toast-region`. Use `data-position="inline"`
+for an embedded example or `top-start`, `top-end`, `bottom-start`, `bottom-end`
+for a corner. The controller also accepts `variant`, `position`, `label`,
+`getDismissLabel(toastElement)` and `onDismiss(id)`. Authored accessible names
+are preserved. Otherwise the controller labels the region and icon-only actions
+using the document language with Arabic as its fallback.
+
+Keep stable direct child containers marked `data-nq-live="polite"` and
+`data-nq-live="assertive"` for mixed urgency. The controller gives them status
+and alert semantics and keeps their parent outside the live announcement.
+Single-region markup retains its authored role/live attributes or receives
+polite status semantics. Tone and urgency are independent.
+
+Each banner contains `.nq-toast-icon[aria-hidden="true"]`, `.nq-toast-content`
+and an optional `button.nq-toast-dismiss[data-nq-dismiss]`. Identify the notice
+with `data-nq-toast="id"` or `id="id" data-nq-toast`. A notice marked
+`data-nq-dismissible="false"` stays visible and its authored close action is
+hidden. Dismissal hides the owned notice, emits `nq:change` with `{dismissed}`
+and reports `onDismiss`. If the dismissed notice held focus, the next available
+close button receives focus, followed by the nearest preceding button or the
+region. The controller restores authored attributes on teardown. The host owns
+message creation, expiry policy and removal.

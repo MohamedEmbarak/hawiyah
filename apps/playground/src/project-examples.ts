@@ -1,3 +1,4 @@
+import {toastProject} from './toast-demo.ts';
 import {contentComponents, contentProjectIds, contentProjectRecipe, isContentProjectId} from './content-project-recipes.ts';
 import {isLayoutId, layoutComponents, layoutProjectCss, layoutProjectMarkup} from './layout-projects.ts';
 import {selectDemoCases, selectDemoMarkup, selectNativeMarkup} from './select-demo.ts';
@@ -16,6 +17,7 @@ import type { Locale } from "./data";
 export const nativeProjectComponents = new Set([
   ...Object.keys(layoutComponents),
   ...contentProjectIds,
+  "toast-region",
   "search-field",
   "content-navigation",
   "button",
@@ -65,6 +67,7 @@ export function projectExample(
   locale: Locale,
   html: string,
 ): ProjectExample {
+  if (id === "toast-region") return toastProject(framework, language, locale);
   if (id === "search-field") return searchProject(framework,language,locale);
   const typed = language === "typescript",
     ext = typed ? "ts" : "js",
