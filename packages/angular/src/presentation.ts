@@ -132,8 +132,11 @@ export class NqAvatarComponent {
   get initials(): string { return this.suppliedInitials ?? this.name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0] ?? '').join(''); }
 }
 
-@Component({selector: 'nq-divider', standalone: true, template: `<hr class="nq-divider">`})
-export class NqDividerComponent {}
+@Component({selector: 'nq-divider', standalone: true, template: `<hr class="nq-divider" [attr.data-tone]="tone" [attr.aria-orientation]="orientation">`})
+export class NqDividerComponent {
+  @Input() tone?: 'neutral' | 'primary' | 'gold' | 'tertiary';
+  @Input() orientation?: 'horizontal' | 'vertical';
+}
 
 @Component({selector: 'nq-empty-state', standalone: true, template: `<section class="nq-empty"><h3>{{ title }}</h3>@if (description) {<p>{{ description }}</p>}<ng-content /></section>`})
 export class NqEmptyStateComponent {

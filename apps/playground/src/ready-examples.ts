@@ -1,3 +1,4 @@
+import {dividerExamples} from './divider-demo';
 import {portalMenuRecipe} from './portal-navigation-demo';
 import {notificationDialogRecipes} from './notification-dialog-demo';
 import {toastDemoMarkup, toastDemoRecipes} from './toast-demo';
@@ -41,6 +42,7 @@ type Recipe = { title: string; markup: string; vanillaScript?: string; react?: s
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if (id === 'divider') return dividerExamples(locale);
   if (id === 'card') return listDemoRecipes(locale);
   if (id === 'select') return selectDemoCases(locale).map(example => {
     const native = selectNativeMarkup(example);

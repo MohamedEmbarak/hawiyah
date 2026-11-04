@@ -197,8 +197,13 @@ export function Avatar({ src, name, initials, size, variant, imageProps, classNa
   const visible = !!src && !(image.src === src && image.failed);
   return <span {...props} className={cx('nq-avatar', className)} data-size={size ?? (props as Record<string, unknown>)['data-size']} data-variant={variant ?? (props as Record<string, unknown>)['data-variant']} role={visible ? undefined : 'img'} aria-label={visible ? undefined : name}>{visible ? <img {...imageProps} key={src} src={src} alt={name} onError={event => {setImage(current => current.src === src ? {src, failed: true} : current); imageProps?.onError?.(event);}} /> : <span aria-hidden="true">{initials ?? name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('')}</span>}</span>;
 }
-export interface DividerProps extends ComponentPropsWithRef<'hr'> {}
-export function Divider({ className, ...props }: DividerProps) { return <hr {...props} className={cx('nq-divider', className)} />; }
+export interface DividerProps extends ComponentPropsWithRef<'hr'> {
+  tone?: 'neutral' | 'primary' | 'gold' | 'tertiary';
+  orientation?: 'horizontal' | 'vertical';
+}
+export function Divider({ className, tone, orientation, ...props }: DividerProps) {
+  return <hr data-tone={tone} aria-orientation={orientation} {...props} className={cx('nq-divider', className)} />;
+}
 export interface StepItem { value: string; label: ReactNode; description?: ReactNode; status?: 'complete' | 'current' | 'upcoming' }
 export interface StepperProps extends ComponentPropsWithRef<'ol'> {
   items: readonly StepItem[]; current?: string; label?: string;

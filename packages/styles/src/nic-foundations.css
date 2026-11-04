@@ -1,0 +1,115 @@
+/* NIC global.css 427–606. Visual scale is independent of heading semantics. */
+.nq-type {
+  font-family: var(--nq-font-sans);
+  font-size: var(--_nq-type-size, var(--nq-text-md));
+  line-height: var(--_nq-type-leading, 1.5);
+  font-weight: var(--nq-type-weight, var(--_nq-type-weight, var(--nq-weight-regular)));
+  margin-block: 0 var(--nq-type-spacing, var(--_nq-type-spacing, 0));
+}
+.nq-type[data-scale='display-2xl'] {
+  --_nq-type-size: var(--nq-text-7xl);
+  --_nq-type-leading: calc(90 / 72);
+  --_nq-type-weight: var(--nq-weight-bold);
+  --_nq-type-spacing: 2.375rem;
+}
+.nq-type[data-scale='display-xl'] {
+  --_nq-type-size: var(--nq-text-6xl);
+  --_nq-type-leading: calc(72 / 60);
+  --_nq-type-weight: var(--nq-weight-bold);
+  --_nq-type-spacing: 1.5rem;
+}
+.nq-type[data-scale='display-lg'] {
+  --_nq-type-size: var(--nq-text-5xl);
+  --_nq-type-leading: calc(60 / 48);
+  --_nq-type-weight: var(--nq-weight-bold);
+  --_nq-type-spacing: 0.625rem;
+}
+.nq-type[data-scale='display-md'] {
+  --_nq-type-size: var(--nq-text-4xl);
+  --_nq-type-leading: calc(44 / 36);
+  --_nq-type-weight: var(--nq-weight-semibold);
+  --_nq-type-spacing: 0.625rem;
+}
+.nq-type[data-scale='display-sm'] {
+  --_nq-type-size: var(--nq-text-3xl);
+  --_nq-type-leading: calc(38 / 30);
+  --_nq-type-weight: var(--nq-weight-bold);
+  --_nq-type-spacing: 0.625rem;
+}
+.nq-type[data-scale='display-xs'] {
+  --_nq-type-size: var(--nq-text-2xl);
+  --_nq-type-leading: calc(32 / 24);
+  --_nq-type-weight: var(--nq-weight-bold);
+  --_nq-type-spacing: 0.625rem;
+}
+.nq-type[data-scale='heading-lg'] {
+  --_nq-type-size: var(--nq-text-xl);
+  --_nq-type-leading: calc(30 / 20);
+  --_nq-type-weight: var(--nq-weight-semibold);
+  --_nq-type-spacing: 0.625rem;
+}
+.nq-type[data-scale='heading-md'] {
+  --_nq-type-size: var(--nq-text-lg);
+  --_nq-type-leading: calc(28 / 18);
+  --_nq-type-weight: var(--nq-weight-semibold);
+  --_nq-type-spacing: 0.625rem;
+}
+.nq-type[data-scale='heading-sm'] {
+  --_nq-type-size: var(--nq-text-md);
+  --_nq-type-leading: calc(24 / 16);
+  --_nq-type-weight: var(--nq-weight-semibold);
+  --_nq-type-spacing: 0.625rem;
+}
+.nq-type[data-scale='body-xl'] {
+  --_nq-type-size: var(--nq-text-xl);
+  --_nq-type-leading: calc(30 / 20);
+  --_nq-type-weight: var(--nq-weight-regular);
+  --_nq-type-spacing: 0rem;
+}
+.nq-type[data-scale='body-lg'] {
+  --_nq-type-size: var(--nq-text-lg);
+  --_nq-type-leading: calc(28 / 18);
+  --_nq-type-weight: var(--nq-weight-regular);
+  --_nq-type-spacing: 0rem;
+}
+.nq-type[data-scale='body-md'] {
+  --_nq-type-size: var(--nq-text-md);
+  --_nq-type-leading: calc(24 / 16);
+  --_nq-type-weight: var(--nq-weight-regular);
+  --_nq-type-spacing: 0rem;
+}
+.nq-type[data-scale='body-sm'] {
+  --_nq-type-size: var(--nq-text-sm);
+  --_nq-type-leading: calc(20 / 14);
+  --_nq-type-weight: var(--nq-weight-regular);
+  --_nq-type-spacing: 0rem;
+}
+.nq-type[data-scale='body-xs'] {
+  --_nq-type-size: var(--nq-text-xs);
+  --_nq-type-leading: calc(14 / 12);
+  --_nq-type-weight: var(--nq-weight-regular);
+  --_nq-type-spacing: 0rem;
+}
+
+.nq-line-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--nq-clamp-lines, 1);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.nq-line-clamp[data-lines='2'] { --nq-clamp-lines: 2; }
+.nq-line-clamp[data-lines='3'] { --nq-clamp-lines: 3; }
+.nq-line-clamp[data-lines='4'] { --nq-clamp-lines: 4; }
+.nq-line-clamp[data-lines='10'] { --nq-clamp-lines: 10; }
+
+.nq-divider[data-tone='primary'] { --_nq-divider-color: var(--nq-color-primary); }
+.nq-divider[data-tone='gold'] { --_nq-divider-color: var(--nq-color-divider-gold); }
+.nq-divider[data-tone='tertiary'] { --_nq-divider-color: var(--nq-color-divider-tertiary); }
+.nq-divider[data-tone] { border-color: var(--_nq-divider-color, var(--nq-color-border)); }
+@media (forced-colors: active) {
+  .nq-divider[data-tone] { border-color: CanvasText; }
+}
+
+/* The semantic hr itself participates in a flex or grid row in Angular. */
+nq-divider:has(> .nq-divider[aria-orientation='vertical']) { display: contents; }

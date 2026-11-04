@@ -50,8 +50,8 @@ it does not mean every source state has already passed comparison.
 
 | Source CSS / JS | Nasaq owner | Confirmed gap or next comparison |
 | --- | --- | --- |
-| CSS 1–426: fonts, primitives, responsive aliases, light/dark roles | tokens/styles | Reconcile component semantic values; preserve original/custom themes |
-| CSS 427–850: typography, truncation, color, shadow, radius, divider utilities | shared styles, layout, Divider | Compare type scale and utility recipes; do not globally reset consuming applications |
+| CSS 1–426: fonts, primitives, responsive aliases, light/dark roles | tokens/styles | [Foundations comparison](nic-foundations.md) maps light/dark roles, widths, spacing, radii, elevation and responsive alias conflicts |
+| CSS 427–850: typography, truncation, color, shadow, radius, divider utilities | shared styles, layout, Divider | [Scoped foundations](nic-foundations.md) cover 14 type styles, 1–10 line excerpts, elevation and the four divider tones; named colors use semantic tokens |
 | CSS 853–965: link states, neutral links | Link | [Link states](nic-links.md): explicit brand/neutral/standalone/disabled recipes, native activation guards, readable state tokens and documented source contrast substitutions |
 | CSS 971–1292: seven button families and sizes | Button, IconButton | [Implemented button task](nic-buttons.md): seven NIC families plus three existing extensions, shared typed variants, pressed/hover/focus colors and disabled states; density adaptations remain explicit |
 | CSS 1294–1386: segmented buttons | ToggleGroup, ButtonGroup | Implemented: [source geometry, states, readonly/form parity and attached groups](nic-segmented.md); outline remains an adaptation |

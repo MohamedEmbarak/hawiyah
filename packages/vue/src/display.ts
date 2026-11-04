@@ -192,7 +192,16 @@ export const Avatar = defineComponent({
     };
   },
 });
-export const Divider = defineComponent({ name: 'NqDivider', inheritAttrs: false, setup(_, { attrs }) { return () => h('hr', mergeProps(attrs, { class: 'nq-divider' })); } });
+export const Divider = defineComponent({
+  name: 'NqDivider', inheritAttrs: false,
+  props: {
+    tone: String as PropType<'neutral' | 'primary' | 'gold' | 'tertiary'>,
+    orientation: String as PropType<'horizontal' | 'vertical'>,
+  },
+  setup(props, { attrs }) {
+    return () => h('hr', mergeProps({ 'data-tone': props.tone, 'aria-orientation': props.orientation }, attrs, { class: 'nq-divider' }));
+  },
+});
 export interface StepItem { value: string; label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
 export const Stepper = defineComponent({
   name: 'NqStepper', inheritAttrs: false, props: { items: { type: Array as PropType<readonly StepItem[]>, required: true }, current: String, activeIndex: Number, label: { type: String, default: 'التقدم' } },

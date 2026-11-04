@@ -1,4 +1,5 @@
 import {isServicePatternId, servicePatternIds, servicePatternProject} from './service-pattern-projects.ts';
+import {dividerProjectMarkup} from './divider-demo.ts';
 import {isPortalShellId, portalShellIds, portalShellProject} from './portal-shell-projects.ts';
 import {disclosureProjectIds, disclosureProjectRecipe, isDisclosureProjectId} from './disclosure-projects.ts';
 import {siteVerificationMarkup} from './site-verification-demo.ts';
@@ -111,6 +112,7 @@ export function projectExample(
     vanillaExampleScript = `\nconst region = root.querySelector('[data-select-demo="single"] select');\nconst selectedValue = root.querySelector('[data-select-value]');\nif (region instanceof HTMLSelectElement && selectedValue instanceof HTMLOutputElement) {\n  const displayValue = () => { selectedValue.value = region.value; };\n  region.addEventListener('change', displayValue);\n  window.addEventListener('pagehide', () => region.removeEventListener('change', displayValue), { once: true });\n}\n`;
   }
   if (id === "portal-header") html = `<div class="nq-portal-masthead">${siteVerificationMarkup(locale)}${portalMenuMarkup(locale)}</div>`;
+  if (id === "divider") html = dividerProjectMarkup(locale, "vanilla");
   if (framework === "vanilla")
     return {
       names: { html: "index.html", css: "style.css", js: `main.${ext}` },
@@ -446,9 +448,9 @@ export function projectExample(
     vue = react;
     angular = `<nq-alert tone="success" title="${label}"><p>${t("Saved successfully", "تم الحفظ بنجاح")}</p></nq-alert>`;
   } else if (id === "divider") {
-    react = "<Divider />";
-    vue = react;
-    angular = "<nq-divider />";
+    react = dividerProjectMarkup(locale, "react");
+    vue = dividerProjectMarkup(locale, "vue");
+    angular = dividerProjectMarkup(locale, "angular");
   } else {
     react = `<Spinner label="${t("Loading", "جارٍ التحميل")}" />`;
     vue = react;

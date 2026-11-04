@@ -12,7 +12,10 @@ export const tokens = {
     "xl": "1.25rem",
     "2xl": "1.5rem",
     "3xl": "1.875rem",
-    "4xl": "2.25rem"
+    "4xl": "2.25rem",
+    "5xl": "3rem",
+    "6xl": "3.75rem",
+    "7xl": "4.5rem"
   },
   "weight": {
     "regular": 400,
@@ -39,20 +42,45 @@ export const tokens = {
     "12": "3rem",
     "16": "4rem",
     "20": "5rem",
-    "24": "6rem"
+    "24": "6rem",
+    "32": "8rem",
+    "40": "10rem",
+    "48": "12rem",
+    "56": "14rem",
+    "64": "16rem",
+    "80": "20rem",
+    "96": "24rem",
+    "120": "30rem",
+    "140": "35rem",
+    "160": "40rem",
+    "180": "45rem",
+    "192": "48rem",
+    "256": "64rem",
+    "320": "80rem",
+    "360": "90rem",
+    "400": "100rem",
+    "480": "120rem",
+    "0-5": "0.125rem",
+    "1-5": "0.375rem"
   },
   "radius": {
     "sm": "0.25rem",
     "md": "0.5rem",
     "lg": "1rem",
     "xl": "1.5rem",
-    "full": "9999px"
+    "full": "9999px",
+    "none": "0rem",
+    "xs": "0.125rem"
   },
   "shadow": {
-    "sm": "0px 1px 2px 0px rgb(16 24 40 / 0.05), 0px 1px 3px 0px rgb(16 24 40 / 0.05)",
-    "md": "0px 2px 4px -2px rgb(16 24 40 / 0.06), 0px 4px 8px -2px rgb(16 24 40 / 0.10)",
-    "lg": "0px 4px 6px -2px rgb(16 24 40 / 0.03), 0px 12px 16px -4px rgb(16 24 40 / 0.08)",
-    "pagination": "0px 12px 16px -6px rgb(16 24 40 / .08), 0px 4px 6px -2px rgb(16 24 40 / .03)"
+    "sm": "0px 1px 3px 0px rgba(16, 24, 40, .1), 0px 1px 2px 0px rgba(16, 24, 40, .06)",
+    "md": "0px 4px 8px -2px rgba(16, 24, 40, .1), 0px 2px 4px -2px rgba(16, 24, 40, .06)",
+    "lg": "0px 12px 16px -6px rgba(16, 24, 40, .08), 0px 4px 6px -2px rgba(16, 24, 40, .03)",
+    "pagination": "0px 12px 16px -6px rgb(16 24 40 / .08), 0px 4px 6px -2px rgb(16 24 40 / .03)",
+    "xs": "0px 1px 2px 0px rgba(16, 24, 40, .05)",
+    "xl": "0px 20px 24px -4px rgba(16, 24, 40, .08), 0px 8px 8px -4px rgba(16, 24, 40, .03)",
+    "2xl": "0px 24px 48px -12px rgba(16, 24, 40, .18)",
+    "3xl": "0px 32px 64px -12px rgba(16, 24, 40, .14)"
   },
   "duration": {
     "fast": "120ms",
@@ -94,6 +122,20 @@ export const tokens = {
     "tooltip": 40,
     "dialog": 50,
     "toast": 60
+  },
+  "width": {
+    "xxs": "20rem",
+    "xs": "24rem",
+    "sm": "30rem",
+    "md": "35rem",
+    "lg": "40rem",
+    "xl": "48rem",
+    "2xl": "64rem",
+    "3xl": "80rem",
+    "4xl": "90rem",
+    "5xl": "100rem",
+    "6xl": "120rem",
+    "paragraph": "45rem"
   },
   "color": {
     "canvas": "#F9FAFB",
@@ -207,7 +249,9 @@ export const tokens = {
     "notice-danger-border": "#D92C20",
     "notice-info-border": "#156FEE",
     "notice-neutral-text": "#6B7280",
-    "notice-warning-text": "#B54707"
+    "notice-warning-text": "#B54707",
+    "divider-gold": "#F5BD02",
+    "divider-tertiary": "#80519F"
   },
   "control": {
     "height": "2.5rem",
@@ -344,7 +388,9 @@ export const themes = {
         "notice-danger-border": "#ae2e30",
         "notice-info-border": "#175ba8",
         "notice-neutral-text": "#4c6264",
-        "notice-warning-text": "#855000"
+        "notice-warning-text": "#855000",
+        "divider-gold": "#855000",
+        "divider-tertiary": "#175ba8"
       }
     },
     "dark": {
@@ -460,7 +506,9 @@ export const themes = {
         "notice-danger-border": "#ffaaa8",
         "notice-info-border": "#9dc6ff",
         "notice-neutral-text": "#b9cdca",
-        "notice-warning-text": "#f2cd76"
+        "notice-warning-text": "#f2cd76",
+        "divider-gold": "#f2cd76",
+        "divider-tertiary": "#9dc6ff"
       }
     }
   },
@@ -578,7 +626,9 @@ export const themes = {
         "notice-danger-border": "#D92C20",
         "notice-info-border": "#156FEE",
         "notice-neutral-text": "#6B7280",
-        "notice-warning-text": "#B54707"
+        "notice-warning-text": "#B54707",
+        "divider-gold": "#F5BD02",
+        "divider-tertiary": "#80519F"
       }
     },
     "dark": {
@@ -694,7 +744,9 @@ export const themes = {
         "notice-danger-border": "#F97066",
         "notice-info-border": "#53B1FD",
         "notice-neutral-text": "#F3F4F6",
-        "notice-warning-text": "#FDB022"
+        "notice-warning-text": "#FDB022",
+        "divider-gold": "#F8D36C",
+        "divider-tertiary": "#D0B6E4"
       }
     }
   }
@@ -714,7 +766,10 @@ export const themeFoundations = {
       "xl": "1.25rem",
       "2xl": "1.5rem",
       "3xl": "1.875rem",
-      "4xl": "2.25rem"
+      "4xl": "2.25rem",
+      "5xl": "3rem",
+      "6xl": "3.75rem",
+      "7xl": "4.5rem"
     },
     "weight": {
       "regular": 400,
@@ -741,20 +796,45 @@ export const themeFoundations = {
       "12": "3rem",
       "16": "4rem",
       "20": "5rem",
-      "24": "6rem"
+      "24": "6rem",
+      "32": "8rem",
+      "40": "10rem",
+      "48": "12rem",
+      "56": "14rem",
+      "64": "16rem",
+      "80": "20rem",
+      "96": "24rem",
+      "120": "30rem",
+      "140": "35rem",
+      "160": "40rem",
+      "180": "45rem",
+      "192": "48rem",
+      "256": "64rem",
+      "320": "80rem",
+      "360": "90rem",
+      "400": "100rem",
+      "480": "120rem",
+      "0-5": "0.125rem",
+      "1-5": "0.375rem"
     },
     "radius": {
       "sm": "0.25rem",
       "md": "0.5rem",
       "lg": "1rem",
       "xl": "1.5rem",
-      "full": "9999px"
+      "full": "9999px",
+      "none": "0rem",
+      "xs": "0.125rem"
     },
     "shadow": {
-      "sm": "0px 1px 2px 0px rgb(16 24 40 / 0.05), 0px 1px 3px 0px rgb(16 24 40 / 0.05)",
-      "md": "0px 2px 4px -2px rgb(16 24 40 / 0.06), 0px 4px 8px -2px rgb(16 24 40 / 0.10)",
-      "lg": "0px 4px 6px -2px rgb(16 24 40 / 0.03), 0px 12px 16px -4px rgb(16 24 40 / 0.08)",
-      "pagination": "0px 12px 16px -6px rgb(16 24 40 / .08), 0px 4px 6px -2px rgb(16 24 40 / .03)"
+      "sm": "0px 1px 3px 0px rgba(16, 24, 40, .1), 0px 1px 2px 0px rgba(16, 24, 40, .06)",
+      "md": "0px 4px 8px -2px rgba(16, 24, 40, .1), 0px 2px 4px -2px rgba(16, 24, 40, .06)",
+      "lg": "0px 12px 16px -6px rgba(16, 24, 40, .08), 0px 4px 6px -2px rgba(16, 24, 40, .03)",
+      "pagination": "0px 12px 16px -6px rgb(16 24 40 / .08), 0px 4px 6px -2px rgb(16 24 40 / .03)",
+      "xs": "0px 1px 2px 0px rgba(16, 24, 40, .05)",
+      "xl": "0px 20px 24px -4px rgba(16, 24, 40, .08), 0px 8px 8px -4px rgba(16, 24, 40, .03)",
+      "2xl": "0px 24px 48px -12px rgba(16, 24, 40, .18)",
+      "3xl": "0px 32px 64px -12px rgba(16, 24, 40, .14)"
     },
     "duration": {
       "fast": "120ms",
@@ -796,6 +876,20 @@ export const themeFoundations = {
       "tooltip": 40,
       "dialog": 50,
       "toast": 60
+    },
+    "width": {
+      "xxs": "20rem",
+      "xs": "24rem",
+      "sm": "30rem",
+      "md": "35rem",
+      "lg": "40rem",
+      "xl": "48rem",
+      "2xl": "64rem",
+      "3xl": "80rem",
+      "4xl": "90rem",
+      "5xl": "100rem",
+      "6xl": "120rem",
+      "paragraph": "45rem"
     }
   },
   "nasaq": {
@@ -811,7 +905,10 @@ export const themeFoundations = {
       "xl": "1.375rem",
       "2xl": "1.75rem",
       "3xl": "2.25rem",
-      "4xl": "3rem"
+      "4xl": "3rem",
+      "5xl": "3rem",
+      "6xl": "3.75rem",
+      "7xl": "4.5rem"
     },
     "weight": {
       "regular": 400,
@@ -838,20 +935,45 @@ export const themeFoundations = {
       "12": "3rem",
       "16": "4rem",
       "20": "5rem",
-      "24": "6rem"
+      "24": "6rem",
+      "32": "8rem",
+      "40": "10rem",
+      "48": "12rem",
+      "56": "14rem",
+      "64": "16rem",
+      "80": "20rem",
+      "96": "24rem",
+      "120": "30rem",
+      "140": "35rem",
+      "160": "40rem",
+      "180": "45rem",
+      "192": "48rem",
+      "256": "64rem",
+      "320": "80rem",
+      "360": "90rem",
+      "400": "100rem",
+      "480": "120rem",
+      "0-5": "0.125rem",
+      "1-5": "0.375rem"
     },
     "radius": {
       "sm": "0.375rem",
       "md": "0.625rem",
       "lg": "0.875rem",
       "xl": "1.25rem",
-      "full": "999px"
+      "full": "999px",
+      "none": "0rem",
+      "xs": "0.125rem"
     },
     "shadow": {
       "sm": "0 1px 2px rgb(15 35 22 / 0.05), 0 2px 6px rgb(15 35 22 / 0.025)",
       "md": "0 8px 24px -8px rgb(15 35 22 / 0.14), 0 2px 6px rgb(15 35 22 / 0.04)",
       "lg": "0 24px 64px -16px rgb(4 19 10 / 0.3), 0 8px 24px -12px rgb(4 19 10 / 0.18)",
-      "pagination": "0 24px 64px -16px rgb(4 19 10 / 0.3), 0 8px 24px -12px rgb(4 19 10 / 0.18)"
+      "pagination": "0 24px 64px -16px rgb(4 19 10 / 0.3), 0 8px 24px -12px rgb(4 19 10 / 0.18)",
+      "xs": "0px 1px 2px 0px rgba(16, 24, 40, .05)",
+      "xl": "0px 20px 24px -4px rgba(16, 24, 40, .08), 0px 8px 8px -4px rgba(16, 24, 40, .03)",
+      "2xl": "0px 24px 48px -12px rgba(16, 24, 40, .18)",
+      "3xl": "0px 32px 64px -12px rgba(16, 24, 40, .14)"
     },
     "duration": {
       "fast": "120ms",
@@ -893,6 +1015,20 @@ export const themeFoundations = {
       "tooltip": 40,
       "dialog": 50,
       "toast": 60
+    },
+    "width": {
+      "xxs": "20rem",
+      "xs": "24rem",
+      "sm": "30rem",
+      "md": "35rem",
+      "lg": "40rem",
+      "xl": "48rem",
+      "2xl": "64rem",
+      "3xl": "80rem",
+      "4xl": "90rem",
+      "5xl": "100rem",
+      "6xl": "120rem",
+      "paragraph": "45rem"
     }
   }
 } as const;
@@ -973,7 +1109,10 @@ export const tokenNames = {
     "xl": "--nq-text-xl",
     "2xl": "--nq-text-2xl",
     "3xl": "--nq-text-3xl",
-    "4xl": "--nq-text-4xl"
+    "4xl": "--nq-text-4xl",
+    "5xl": "--nq-text-5xl",
+    "6xl": "--nq-text-6xl",
+    "7xl": "--nq-text-7xl"
   },
   "weight": {
     "regular": "--nq-weight-regular",
@@ -1000,20 +1139,45 @@ export const tokenNames = {
     "12": "--nq-space-12",
     "16": "--nq-space-16",
     "20": "--nq-space-20",
-    "24": "--nq-space-24"
+    "24": "--nq-space-24",
+    "32": "--nq-space-32",
+    "40": "--nq-space-40",
+    "48": "--nq-space-48",
+    "56": "--nq-space-56",
+    "64": "--nq-space-64",
+    "80": "--nq-space-80",
+    "96": "--nq-space-96",
+    "120": "--nq-space-120",
+    "140": "--nq-space-140",
+    "160": "--nq-space-160",
+    "180": "--nq-space-180",
+    "192": "--nq-space-192",
+    "256": "--nq-space-256",
+    "320": "--nq-space-320",
+    "360": "--nq-space-360",
+    "400": "--nq-space-400",
+    "480": "--nq-space-480",
+    "0-5": "--nq-space-0-5",
+    "1-5": "--nq-space-1-5"
   },
   "radius": {
     "sm": "--nq-radius-sm",
     "md": "--nq-radius-md",
     "lg": "--nq-radius-lg",
     "xl": "--nq-radius-xl",
-    "full": "--nq-radius-full"
+    "full": "--nq-radius-full",
+    "none": "--nq-radius-none",
+    "xs": "--nq-radius-xs"
   },
   "shadow": {
     "sm": "--nq-shadow-sm",
     "md": "--nq-shadow-md",
     "lg": "--nq-shadow-lg",
-    "pagination": "--nq-shadow-pagination"
+    "pagination": "--nq-shadow-pagination",
+    "xs": "--nq-shadow-xs",
+    "xl": "--nq-shadow-xl",
+    "2xl": "--nq-shadow-2xl",
+    "3xl": "--nq-shadow-3xl"
   },
   "duration": {
     "fast": "--nq-duration-fast",
@@ -1055,6 +1219,20 @@ export const tokenNames = {
     "tooltip": "--nq-z-tooltip",
     "dialog": "--nq-z-dialog",
     "toast": "--nq-z-toast"
+  },
+  "width": {
+    "xxs": "--nq-width-xxs",
+    "xs": "--nq-width-xs",
+    "sm": "--nq-width-sm",
+    "md": "--nq-width-md",
+    "lg": "--nq-width-lg",
+    "xl": "--nq-width-xl",
+    "2xl": "--nq-width-2xl",
+    "3xl": "--nq-width-3xl",
+    "4xl": "--nq-width-4xl",
+    "5xl": "--nq-width-5xl",
+    "6xl": "--nq-width-6xl",
+    "paragraph": "--nq-width-paragraph"
   },
   "color": {
     "canvas": "--nq-color-canvas",
@@ -1168,7 +1346,9 @@ export const tokenNames = {
     "notice-danger-border": "--nq-color-notice-danger-border",
     "notice-info-border": "--nq-color-notice-info-border",
     "notice-neutral-text": "--nq-color-notice-neutral-text",
-    "notice-warning-text": "--nq-color-notice-warning-text"
+    "notice-warning-text": "--nq-color-notice-warning-text",
+    "divider-gold": "--nq-color-divider-gold",
+    "divider-tertiary": "--nq-color-divider-tertiary"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1201,6 +1381,9 @@ export const cssVariableNames = [
   "--nq-text-2xl",
   "--nq-text-3xl",
   "--nq-text-4xl",
+  "--nq-text-5xl",
+  "--nq-text-6xl",
+  "--nq-text-7xl",
   "--nq-weight-regular",
   "--nq-weight-medium",
   "--nq-weight-semibold",
@@ -1222,15 +1405,40 @@ export const cssVariableNames = [
   "--nq-space-16",
   "--nq-space-20",
   "--nq-space-24",
+  "--nq-space-32",
+  "--nq-space-40",
+  "--nq-space-48",
+  "--nq-space-56",
+  "--nq-space-64",
+  "--nq-space-80",
+  "--nq-space-96",
+  "--nq-space-120",
+  "--nq-space-140",
+  "--nq-space-160",
+  "--nq-space-180",
+  "--nq-space-192",
+  "--nq-space-256",
+  "--nq-space-320",
+  "--nq-space-360",
+  "--nq-space-400",
+  "--nq-space-480",
+  "--nq-space-0-5",
+  "--nq-space-1-5",
   "--nq-radius-sm",
   "--nq-radius-md",
   "--nq-radius-lg",
   "--nq-radius-xl",
   "--nq-radius-full",
+  "--nq-radius-none",
+  "--nq-radius-xs",
   "--nq-shadow-sm",
   "--nq-shadow-md",
   "--nq-shadow-lg",
   "--nq-shadow-pagination",
+  "--nq-shadow-xs",
+  "--nq-shadow-xl",
+  "--nq-shadow-2xl",
+  "--nq-shadow-3xl",
   "--nq-duration-fast",
   "--nq-duration-normal",
   "--nq-duration-slow",
@@ -1262,6 +1470,18 @@ export const cssVariableNames = [
   "--nq-z-tooltip",
   "--nq-z-dialog",
   "--nq-z-toast",
+  "--nq-width-xxs",
+  "--nq-width-xs",
+  "--nq-width-sm",
+  "--nq-width-md",
+  "--nq-width-lg",
+  "--nq-width-xl",
+  "--nq-width-2xl",
+  "--nq-width-3xl",
+  "--nq-width-4xl",
+  "--nq-width-5xl",
+  "--nq-width-6xl",
+  "--nq-width-paragraph",
   "--nq-color-canvas",
   "--nq-color-surface",
   "--nq-color-surface-raised",
@@ -1374,6 +1594,8 @@ export const cssVariableNames = [
   "--nq-color-notice-info-border",
   "--nq-color-notice-neutral-text",
   "--nq-color-notice-warning-text",
+  "--nq-color-divider-gold",
+  "--nq-color-divider-tertiary",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",

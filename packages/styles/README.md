@@ -236,3 +236,5 @@ visible-row listboxes and forced colors use the native indicator treatment.
 Scale field descriptions with `--nq-profile-helper-size` and
 `--nq-profile-error-size`. The light and dark palettes expose
 `--nq-color-field-helper` and `--nq-color-field-error-text`.
+
+Use `nq-type` and a `data-scale` value to choose the NIC display, heading or body metrics independently of the heading level. Use `nq-line-clamp` with `data-lines` for a visual excerpt. When people need the full text, provide a visible way to expand or open it. `nq-divider` supports neutral, primary, gold and tertiary tones with `data-tone`. Use `aria-orientation="vertical"` in inline layouts. See the [foundations measurements](../../docs/nic-foundations.md).

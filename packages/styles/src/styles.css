@@ -1,5 +1,6 @@
 @import '@nasaq/tokens/tokens.css';
 @import './components.css';
+@import './nic-foundations.css';
 @import './extended.css';
 @import './layout.css';
 @import './dga.css';
