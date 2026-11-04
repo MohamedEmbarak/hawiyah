@@ -30,6 +30,7 @@ const copy = {
     help: 'عدّل HTML وCSS وJavaScript وشاهد النتيجة. المعاينة معزولة؛ الاستيراد الخارجي غير مدعوم.',
     shortcut: 'Ctrl / ⌘ + Enter للتشغيل', blocked: 'حُظر مورد خارجي في المعاينة:', navigation: 'التنقل خارج المثال غير متاح في المعاينة.',
     submitted: 'أُرسل نموذج المثال محليًا؛ لا تُرسل بيانات إلى خادم.', unsupported: 'تعذّر تهيئة المثال.',
+    waiting: 'لا تزال المعاينة قيد التهيئة…', timeout: 'لم تستجب المعاينة. يمكنك تشغيل المثال مجددًا.',
     cssComment: 'أضف تنسيقاتك هنا. رموز نسق ومكوّناته محمّلة مسبقًا.',
     jsComment: 'المكوّن مهيّأ بالفعل. اربط إجراءات التطبيق هنا؛ لا تهيّئ العنصر مرتين.',
     jsEvent: 'مثال: root.addEventListener("nq:change", event => console.log(event.detail));',
@@ -42,6 +43,7 @@ const copy = {
     help: 'Edit HTML, CSS, and JavaScript to see the result. Isolated preview; external imports are unsupported.',
     shortcut: 'Ctrl / ⌘ + Enter to run', blocked: 'An external preview resource was blocked:', navigation: 'Navigation outside this example is unavailable in the preview.',
     submitted: 'Example form submitted locally; no data is sent to a server.', unsupported: 'The example could not be initialized.',
+    waiting: 'The preview is still starting…', timeout: 'The preview has not responded. You can run the example again.',
     cssComment: 'Add your styles here. Nasaq tokens and component styles are already loaded.',
     jsComment: 'The component is already enhanced. Add application behavior here; do not enhance it twice.',
     jsEvent: 'Example: root.addEventListener("nq:change", event => console.log(event.detail));',
@@ -306,7 +308,14 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
     frame.srcdoc = previewDocument(options, compiled ?? content, token, run, environment, compiled);
     if (!frame.isConnected) stage.append(frame);
     readyTimer = setTimeout(() => {
-      if (!disposed && status.dataset.state === 'running') appendMessage('error', labels.unsupported);
+      if (disposed || currentRun !== run || status.dataset.state !== 'running') return;
+      setStatus('running', labels.waiting);
+      readyTimer = setTimeout(() => {
+        if (!disposed && currentRun === run && status.dataset.state === 'running') {
+          // A missing handshake is recoverable. Only an actual error marks the run failed.
+          setStatus('error', labels.timeout);
+        }
+      }, 26000);
     }, 4000);
   };
   const onEdit = () => {
