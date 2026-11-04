@@ -29,7 +29,15 @@ export function Timeline({ items, label = 'Timeline', className, ...props }: Tim
 export interface MeterProps extends ComponentPropsWithRef<'meter'> { label: string }
 export function Meter({ label, className, ...props }: MeterProps) { return <meter {...props} aria-label={label} className={cx('nq-meter', className)} />; }
 export interface AvatarGroupProps extends ComponentPropsWithRef<'div'> { items: readonly AvatarProps[]; label: string; max?: number; getOverflowLabel?: (count: number) => string }
-export function AvatarGroup({ items, label, max = 5, getOverflowLabel = count => `${count} more people`, className, ...props }: AvatarGroupProps) { const count = Math.max(0, Math.floor(max)); return <div {...props} className={cx('nq-avatar-group', className)} role="group" aria-label={label}>{items.slice(0, count).map((item, index) => <Avatar key={index} {...item} />)}{items.length > count && <span className="nq-avatar" role="img" aria-label={getOverflowLabel(items.length - count)}>+{items.length - count}</span>}</div>; }
+export function AvatarGroup({ items, label, max = 5, getOverflowLabel = count => `${count} more people`, className, ...props }: AvatarGroupProps) {
+  const rounded = Math.floor(max);
+  const visible = items.slice(0, Number.isNaN(rounded) ? 5 : Math.max(0, rounded));
+  const remaining = items.length - visible.length;
+  return <div {...props} className={cx('nq-avatar-group', className)} role="group" aria-label={label}>
+    {visible.map((item, index) => <Avatar key={index} {...item} />)}
+    {remaining > 0 && <span className="nq-avatar" role="img" aria-label={getOverflowLabel(remaining)}>+{remaining}</span>}
+  </div>;
+}
 export interface DataTableColumn<Row> { key: keyof Row & string; label: ReactNode; sortable?: boolean; render?: (value: Row[keyof Row], row: Row) => ReactNode; rowHeader?: boolean }
 export interface DataTableSort { key: string; direction: 'ascending' | 'descending' }
 export interface DataTableProps<Row extends Record<string, unknown>> extends Omit<ComponentPropsWithRef<'table'>, 'children' | 'onChange'> { variant?: 'default' | 'striped' | 'bordered'; size?: 'sm' | 'md' | 'lg'; 'data-variant'?: string; 'data-size'?: string; wrapperProps?: HTMLAttributes<HTMLDivElement>; columns: readonly DataTableColumn<Row>[]; rows: readonly Row[]; caption: ReactNode; rowKey?: (row: Row, index: number) => Key; sort?: DataTableSort | null; defaultSort?: DataTableSort | null; onSortChange?: (sort: DataTableSort) => void; locale?: string; emptyMessage?: ReactNode; getSortLabel?: (label: ReactNode, direction: 'ascending' | 'descending') => string }

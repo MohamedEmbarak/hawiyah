@@ -258,7 +258,8 @@ export const AvatarGroup = defineComponent({
   },
   setup(props, { attrs }) {
     return () => {
-      const max = Math.max(1, Math.floor(props.max) || 5);
+      const rounded = Math.floor(props.max);
+      const max = Number.isNaN(rounded) ? 5 : Math.max(0, rounded);
       return h(
         "div",
         mergeProps(attrs, {
@@ -275,6 +276,7 @@ export const AvatarGroup = defineComponent({
               "span",
               {
                 class: "nq-avatar",
+                role: "img",
                 "aria-label": props.remainingLabel(props.items.length - max),
               },
               `+${props.items.length - max}`,

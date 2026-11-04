@@ -1,3 +1,4 @@
+import {contentComponents, contentProjectIds, contentProjectRecipe, isContentProjectId} from './content-project-recipes.ts';
 import {isLayoutId, layoutComponents, layoutProjectCss, layoutProjectMarkup} from './layout-projects.ts';
 import {selectDemoCases, selectDemoMarkup, selectNativeMarkup} from './select-demo.ts';
 import {searchProject} from './search-demo.ts';
@@ -14,6 +15,7 @@ import type { Locale } from "./data";
 
 export const nativeProjectComponents = new Set([
   ...Object.keys(layoutComponents),
+  ...contentProjectIds,
   "search-field",
   "content-navigation",
   "button",
@@ -71,10 +73,12 @@ export function projectExample(
   const css =
     "@import '@nasaq/styles/styles.css';\n\n/* Application-specific styles */\n.demo { display: grid; gap: 1rem; }\n" + (isLayoutId(id) ? layoutProjectCss : "");
   if (id === "content-navigation") html=contentNavigationDemoCases(locale).map(item=>`<section><h2>${item.title}</h2>${contentNavigationDemoMarkup(locale,item.kind,`project-content-nav-${item.kind}`)}</section>`).join('');
-  let selectExampleScript = '';
+  const contentRecipe = isContentProjectId(id) ? contentProjectRecipe(id, locale, typed) : undefined;
+  if (contentRecipe) html = contentRecipe.vanilla;
+  let vanillaExampleScript = contentRecipe?.vanillaScript ?? '';
   if (id === 'select' && framework === 'vanilla') {
     html = selectDemoCases(locale).map(example => `<section class="nq-stack"><h2>${example.title}</h2>${selectDemoMarkup(example, 'project-region')}${example.kind === 'single' ? '<output data-select-value>first</output>' : ''}</section>`).join('\n');
-    selectExampleScript = `\nconst region = root.querySelector('[data-select-demo="single"] select');\nconst selectedValue = root.querySelector('[data-select-value]');\nif (region instanceof HTMLSelectElement && selectedValue instanceof HTMLOutputElement) {\n  const displayValue = () => { selectedValue.value = region.value; };\n  region.addEventListener('change', displayValue);\n  window.addEventListener('pagehide', () => region.removeEventListener('change', displayValue), { once: true });\n}\n`;
+    vanillaExampleScript = `\nconst region = root.querySelector('[data-select-demo="single"] select');\nconst selectedValue = root.querySelector('[data-select-value]');\nif (region instanceof HTMLSelectElement && selectedValue instanceof HTMLOutputElement) {\n  const displayValue = () => { selectedValue.value = region.value; };\n  region.addEventListener('change', displayValue);\n  window.addEventListener('pagehide', () => region.removeEventListener('change', displayValue), { once: true });\n}\n`;
   }
   if (framework === "vanilla")
     return {
@@ -84,7 +88,7 @@ export function projectExample(
       files: {
         html: `<!doctype html>\n<html lang="${locale}" dir="${ar ? "rtl" : "ltr"}">\n<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nasaq example</title></head>\n<body>\n<div id="app">\n${html}\n</div>\n<script type="module" src="./main.${ext}"></script>\n</body>\n</html>\n`,
         css,
-        js: `import { enhance } from '@nasaq/vanilla';\nimport './style.css';\n\nconst root = document.querySelector${typed ? "<HTMLElement>" : ""}('#app');\nif (!root) throw new Error('Missing app root');\nconst cleanup = enhance(root);\n${selectExampleScript}root.addEventListener('nq:change', event => console.log(${typed ? "(event as CustomEvent).detail" : "event.detail"}));\nwindow.addEventListener('pagehide', cleanup, { once: true });\n`,
+        js: `import { enhance } from '@nasaq/vanilla';\nimport './style.css';\n\nconst root = document.querySelector${typed ? "<HTMLElement>" : ""}('#app');\nif (!root) throw new Error('Missing app root');\nconst cleanup = enhance(root);\n${vanillaExampleScript}root.addEventListener('nq:change', event => console.log(${typed ? "(event as CustomEvent).detail" : "event.detail"}));\nwindow.addEventListener('pagehide', cleanup, { once: true });\n`,
       },
     };
   if (id === "content-navigation") return contentNavigationProject(framework,language,locale);
@@ -125,7 +129,7 @@ export function projectExample(
     "portal-header": "PortalHeader",
     "portal-footer": "PortalFooter",
   };
-  const component = isLayoutId(id) ? layoutComponents[id] : name[id]!;
+  const component = isContentProjectId(id) ? contentComponents[id] : isLayoutId(id) ? layoutComponents[id] : name[id]!;
   // AppShell provides the application's main landmark.
   const wrapperTag = id === 'app-shell' ? 'div' : 'main';
   const layoutMarker = isLayoutId(id) ? ` data-layout-project="${id}"` : '';
@@ -143,7 +147,13 @@ export function projectExample(
     numberState = false,
     initialValue: string | undefined;
   const label = t("Example", "مثال");
-  if (isLayoutId(id)) {
+  if (contentRecipe) {
+    react = contentRecipe.react;
+    vue = contentRecipe.vue;
+    angular = contentRecipe.angular;
+    angularMember = contentRecipe.angularMember ?? '';
+    state = contentRecipe.state ?? false;
+  } else if (isLayoutId(id)) {
     react = layoutProjectMarkup(id, 'react', locale);
     vue = layoutProjectMarkup(id, 'vue', locale);
     angular = layoutProjectMarkup(id, 'angular', locale);
@@ -424,7 +434,7 @@ export function projectExample(
       host: '<div id="app"></div>',
       files: {
         css,
-        html: `${state ? "import { useState } from 'react';\n" : ""}import { ${componentImports} } from '@nasaq/react';\n\nexport default function App() {\n${state ? `  const [value, setValue] = useState${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}  return <${wrapperTag} className="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${react}</${wrapperTag}>;\n}\n`,
+        html: `${state ? "import { useState } from 'react';\n" : ""}import { ${componentImports} } from '@nasaq/react';\n\n${contentRecipe?.reactDeclarations ? contentRecipe.reactDeclarations + '\n\n' : ''}export default function App() {\n${state ? `  const [value, setValue] = useState${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}  return <${wrapperTag} className="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${react}</${wrapperTag}>;\n}\n`,
         js: `import { createRoot } from 'react-dom/client';\nimport App from './App';\nimport './style.css';\n\nconst root = document.getElementById('app');\nif (!root) throw new Error('Missing app root');\ncreateRoot(root).render(<App />);\n`,
       },
     };
@@ -435,7 +445,7 @@ export function projectExample(
       host: '<div id="app"></div>',
       files: {
         css,
-        html: `<script setup${typed ? ' lang="ts"' : ""}>\n${state ? "import { ref } from 'vue';\n" : ""}import { ${componentImports} } from '@nasaq/vue';\n${state ? `const value = ref${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}</script>\n\n<template>\n  <${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${vue}</${wrapperTag}>\n</template>\n`,
+        html: `<script setup${typed ? ' lang="ts"' : ""}>\n${state ? "import { ref } from 'vue';\n" : ""}import { ${componentImports} } from '@nasaq/vue';\n${state ? `const value = ref${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}${contentRecipe?.vueDeclarations ? contentRecipe.vueDeclarations + "\n" : ""}</script>\n\n<template>\n  <${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${vue}</${wrapperTag}>\n</template>\n`,
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };
