@@ -1,3 +1,4 @@
+import {listDemoRecipes} from './list-demo';
 import {selectDemoCases, selectDemoMarkup, selectNativeMarkup} from './select-demo';
 import {searchDemoCases,searchDemoMarkup,searchProject} from './search-demo';
 import {contentNavigationDemoCases,contentNavigationDemoMarkup,contentNavigationProject} from './content-navigation-demo';
@@ -38,6 +39,7 @@ type Recipe = { title: string; markup: string; vanillaScript?: string; react?: s
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if (id === 'card') return listDemoRecipes(locale);
   if (id === 'select') return selectDemoCases(locale).map(example => {
     const native = selectNativeMarkup(example);
     return {
