@@ -153,7 +153,13 @@ function previewBootstrap(payload: {
     const href = anchor.getAttribute('href') ?? '';
     if (href.startsWith('#')) {
       const target = document.getElementById(href.slice(1));
-      if (target) { target.scrollIntoView({ block: 'nearest' }); return; }
+      if (target) {
+        if (anchor.matches('.nq-skip-link') && event.button === 0 && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+          target.focus({ preventScroll: true });
+        }
+        target.scrollIntoView({ block: 'nearest' });
+        return;
+      }
     }
     bridge('console', { level: 'info', text: payload.navigation });
   }, true);

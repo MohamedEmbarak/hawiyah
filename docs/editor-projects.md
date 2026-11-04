@@ -25,10 +25,10 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 35 components: Button, ButtonGroup, IconButton,
+Native project recipes currently cover 47 components: Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
-Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation and SearchField. Other component
+Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField and the 12 layout primitives listed below. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
 before the overall alignment/editor goal is complete.
@@ -208,3 +208,24 @@ use native HTML for multiple values. Angular also uses native HTML for the
 visible row count because its component size input sets visual size. The
 same cases appear in vanilla HTML and the bilingual ready examples. Native
 project coverage remains 35.
+
+
+The editor includes projects for all 12 layout primitives. Container and Stack
+show responsive padding and gaps. Inline wraps service statuses. Grid changes
+from one to two to three columns, while Columns uses a two-column review at the
+medium breakpoint. Sidebar places a request summary beside a secondary panel
+and collapses at medium widths. Center positions an empty state, Spacer separates
+a heading and count, AspectRatio contains a document illustration, and Section
+labels the instructions for preparing an application.
+
+AppShell composes a header, sidebar, main and footer around a localized skip
+link. PageHeader adds a breadcrumb and a button that toggles request details
+inside the example. React supplies composition props, Vue uses named slots, and
+Angular uses standalone imports and projected content. The projects include
+JSX, TSX, Vue JavaScript and TypeScript, and Angular TypeScript source files.
+
+The clean consumer check compiled all 47 React TSX recipes and 47 strict Angular
+templates. Vite also bundled each of the 47 exported Vue applications in both
+JavaScript and TypeScript, including the application bootstrap and component
+template. This checks package resolution and compilation. Vue language-service
+type checking remains a separate check.

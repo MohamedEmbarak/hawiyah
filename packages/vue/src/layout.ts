@@ -1,4 +1,4 @@
-import { defineComponent, h, mergeProps } from "vue";
+import { defineComponent, h, mergeProps, useId } from "vue";
 import type { PropType } from "vue";
 import { layoutStyles } from "@nasaq/core";
 import type { LayoutProps } from "@nasaq/core";
@@ -54,8 +54,13 @@ export const Section = layout("NqSection", "nq-section", "section");
 export const AppShell = defineComponent({
   name: "NqAppShell",
   inheritAttrs: false,
-  props: layoutProps,
+  props: {
+    ...layoutProps,
+    mainId: String,
+    skipLabel: { type: String, default: 'انتقل إلى المحتوى' },
+  },
   setup(props, { attrs, slots }) {
+    const defaultMainId = `nq-shell-${useId()}-main`;
     return () =>
       h(
         props.as,
@@ -66,11 +71,12 @@ export const AppShell = defineComponent({
           "data-collapse-at": props.collapseAt,
         }),
         [
+          h('a', { class: 'nq-skip-link', href: `#${props.mainId ?? defaultMainId}` }, props.skipLabel),
           slots.header &&
             h("div", { class: "nq-app-shell-header" }, slots.header()),
           slots.sidebar &&
             h("aside", { class: "nq-app-shell-sidebar" }, slots.sidebar()),
-          h("main", { class: "nq-app-shell-main" }, slots.default?.()),
+          h("main", { class: "nq-app-shell-main", id: props.mainId ?? defaultMainId, tabindex: -1 }, slots.default?.()),
           slots.footer &&
             h("div", { class: "nq-app-shell-footer" }, slots.footer()),
         ],

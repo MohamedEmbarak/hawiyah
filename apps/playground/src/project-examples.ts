@@ -1,3 +1,4 @@
+import {isLayoutId, layoutComponents, layoutProjectCss, layoutProjectMarkup} from './layout-projects.ts';
 import {selectDemoCases, selectDemoMarkup, selectNativeMarkup} from './select-demo.ts';
 import {searchProject} from './search-demo.ts';
 import {contentNavigationProject,contentNavigationDemoCases,contentNavigationDemoMarkup} from './content-navigation-demo.ts';
@@ -12,6 +13,7 @@ import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
 import type { Locale } from "./data";
 
 export const nativeProjectComponents = new Set([
+  ...Object.keys(layoutComponents),
   "search-field",
   "content-navigation",
   "button",
@@ -67,7 +69,7 @@ export function projectExample(
     ar = locale === "ar";
   const t = (en: string, arabic: string) => (ar ? arabic : en);
   const css =
-    "@import '@nasaq/styles/styles.css';\n\n/* Application-specific styles */\n.demo { display: grid; gap: 1rem; }\n";
+    "@import '@nasaq/styles/styles.css';\n\n/* Application-specific styles */\n.demo { display: grid; gap: 1rem; }\n" + (isLayoutId(id) ? layoutProjectCss : "");
   if (id === "content-navigation") html=contentNavigationDemoCases(locale).map(item=>`<section><h2>${item.title}</h2>${contentNavigationDemoMarkup(locale,item.kind,`project-content-nav-${item.kind}`)}</section>`).join('');
   let selectExampleScript = '';
   if (id === 'select' && framework === 'vanilla') {
@@ -123,7 +125,10 @@ export function projectExample(
     "portal-header": "PortalHeader",
     "portal-footer": "PortalFooter",
   };
-  const component = name[id]!;
+  const component = isLayoutId(id) ? layoutComponents[id] : name[id]!;
+  // AppShell provides the application's main landmark.
+  const wrapperTag = id === 'app-shell' ? 'div' : 'main';
+  const layoutMarker = isLayoutId(id) ? ` data-layout-project="${id}"` : '';
   const componentImports = ["site-verification","portal-header"].includes(id) ? "SiteVerification, PortalHeader" : id==="button-group" ? "ButtonGroup, Button, IconButton" : id==="rating" ? "Rating, RatingDisplay" : component;
   const options = JSON.stringify([
     { value: "first", label: t("First", "الأول") },
@@ -138,7 +143,12 @@ export function projectExample(
     numberState = false,
     initialValue: string | undefined;
   const label = t("Example", "مثال");
-  if (["site-verification","portal-header"].includes(id)) {
+  if (isLayoutId(id)) {
+    react = layoutProjectMarkup(id, 'react', locale);
+    vue = layoutProjectMarkup(id, 'vue', locale);
+    angular = layoutProjectMarkup(id, 'angular', locale);
+    state = booleanState = id === 'page-header';
+  } else if (["site-verification","portal-header"].includes(id)) {
     state=true;booleanState=true;
     const copy={label:t('Verification banner — demonstration','شريط التحقق — مثال توضيحي'),registrationLabel:t('Example platform-registration link','مثال على رابط تسجيل المنصة')},brand=t('Example service portal','بوابة خدمات توضيحية');
     const links=JSON.stringify([{label:t('Services','الخدمات'),href:'#services',current:true},{label:t('Contact','تواصل معنا'),href:'#contact'}]);
@@ -414,7 +424,7 @@ export function projectExample(
       host: '<div id="app"></div>',
       files: {
         css,
-        html: `${state ? "import { useState } from 'react';\n" : ""}import { ${componentImports} } from '@nasaq/react';\n\nexport default function App() {\n${state ? `  const [value, setValue] = useState${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}  return <main className="demo" lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${react}</main>;\n}\n`,
+        html: `${state ? "import { useState } from 'react';\n" : ""}import { ${componentImports} } from '@nasaq/react';\n\nexport default function App() {\n${state ? `  const [value, setValue] = useState${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}  return <${wrapperTag} className="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${react}</${wrapperTag}>;\n}\n`,
         js: `import { createRoot } from 'react-dom/client';\nimport App from './App';\nimport './style.css';\n\nconst root = document.getElementById('app');\nif (!root) throw new Error('Missing app root');\ncreateRoot(root).render(<App />);\n`,
       },
     };
@@ -425,7 +435,7 @@ export function projectExample(
       host: '<div id="app"></div>',
       files: {
         css,
-        html: `<script setup${typed ? ' lang="ts"' : ""}>\n${state ? "import { ref } from 'vue';\n" : ""}import { ${componentImports} } from '@nasaq/vue';\n${state ? `const value = ref${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}</script>\n\n<template>\n  <main class="demo" lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${vue}</main>\n</template>\n`,
+        html: `<script setup${typed ? ' lang="ts"' : ""}>\n${state ? "import { ref } from 'vue';\n" : ""}import { ${componentImports} } from '@nasaq/vue';\n${state ? `const value = ref${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}</script>\n\n<template>\n  <${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${vue}</${wrapperTag}>\n</template>\n`,
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };
@@ -436,7 +446,7 @@ export function projectExample(
     host: "<app-root></app-root>",
     files: {
       css,
-      html: `import { Component } from '@angular/core';\nimport { ${angularClass} } from '@nasaq/angular';\n\n@Component({\n  selector: 'app-root',\n  standalone: true,\n  imports: [${angularClass}],\n  template: \`<main class="demo" lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${angular}</main>\`,\n})\nexport class AppComponent {${state ? `\n  value: ${id === "toggle-group" ? "string | string[]" : stateType} = ${initial};` : ""}${angularMember}\n}\n`,
+      html: `import { Component } from '@angular/core';\nimport { ${angularClass} } from '@nasaq/angular';\n\n@Component({\n  selector: 'app-root',\n  standalone: true,\n  imports: [${angularClass}],\n  template: \`<${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${angular}</${wrapperTag}>\`,\n})\nexport class AppComponent {${state ? `\n  value: ${id === "toggle-group" ? "string | string[]" : stateType} = ${initial};` : ""}${angularMember}\n}\n`,
       js: "import '@angular/compiler';\nimport { bootstrapApplication } from '@angular/platform-browser';\nimport { AppComponent } from './app.component';\nimport './style.css';\n\nbootstrapApplication(AppComponent).catch(error => console.error(error));\n",
     },
   };

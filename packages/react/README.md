@@ -343,7 +343,7 @@ composable for those integrations.
 | `Spacer` | Flexible space div. |
 | `AspectRatio` | Div with positive numeric ratio. |
 | `Section` | Semantic section with common layout props. |
-| `AppShell` | Header/sidebar/footer content slots and native main; configurable mainId/skipLabel. |
+| `AppShell` | Supply `header`, `sidebar` and `footer` content around the main landmark. The Arabic skip link focuses main. Set `mainId` to choose its target ID and `skipLabel` to localize the link. |
 | `PageHeader` | Native header with title h1, description/breadcrumb/actions and children. |
 
 The first ten primitives accept shared `LayoutProps` and native attributes/refs.

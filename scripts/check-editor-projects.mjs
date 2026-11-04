@@ -37,6 +37,26 @@ for(const framework of ['react','angular']){
   if(errors.length)throw new Error(formatDiagnostics(errors));
   console.log(`${framework}: ${nativeProjectComponents.size} project recipes passed ${framework==='angular'?'strict template':'TypeScript'} checking.`);
 }
+// Bundle each downloaded Vue SFC and its actual bootstrap against the packed
+// adapter. Multiple HTML entries let Vite compile the catalog in a single pass.
+for (const language of ['javascript', 'typescript']) {
+  const directory = resolve(workspace, 'catalog', 'vue-' + language);
+  const entries = {};
+  const locale = language === 'javascript' ? 'ar' : 'en';
+  for (const id of nativeProjectComponents) {
+    const example = projectExample(id, 'vue', language, locale, '');
+    const files = projectDownloadFiles(example, example.files, 'vue', language, locale);
+    prepare(resolve(directory, id), files);
+    entries[id] = resolve(directory, id, 'index.html');
+  }
+  await build({
+    root: directory,
+    configFile: resolve(directory, 'button/vite.config.js'),
+    logLevel: 'error',
+    build: { write: false, rolldownOptions: { input: entries } },
+  });
+  console.log(`vue/${language}: ${nativeProjectComponents.size} exported projects bundled.`);
+}
 for(const[framework,languages]of Object.entries({vanilla:['javascript','typescript'],react:['javascript','typescript'],vue:['javascript','typescript'],angular:['typescript']})){
   for(const language of languages){
     const example=projectExample('toggle-group',framework,language,'ar','<button class="nq-button">Example</button>');

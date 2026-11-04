@@ -21,7 +21,7 @@ export const Spacer = nativeLayout('div', 'spacer');
 export const AspectRatio = nativeLayout('div', 'aspect-ratio');
 export const Section = nativeLayout('section', 'section');
 export interface AppShellProps extends ComponentPropsWithRef<'div'> { header?: ReactNode; sidebar?: ReactNode; footer?: ReactNode; mainId?: string; skipLabel?: string }
-export function AppShell({ header, sidebar, footer, mainId, skipLabel = 'Skip to content', children, className, ...props }: AppShellProps) {
+export function AppShell({ header, sidebar, footer, mainId, skipLabel = 'انتقل إلى المحتوى', children, className, ...props }: AppShellProps) {
   const id = useId(); const main = mainId ?? `${id}-main`;
   return <div {...props} className={cx('nq-app-shell', className)}><a className="nq-skip-link" href={`#${main}`}>{skipLabel}</a>{header && <div className="nq-app-shell-header">{header}</div>}<div className="nq-app-shell-body">{sidebar && <aside className="nq-app-shell-sidebar">{sidebar}</aside>}<main id={main} tabIndex={-1} className="nq-app-shell-main">{children}</main></div>{footer && <div className="nq-app-shell-footer">{footer}</div>}</div>;
 }

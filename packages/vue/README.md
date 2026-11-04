@@ -271,7 +271,7 @@ All layout primitives forward native HTML attributes and accept `as` (default
 | `Spacer`      | Flexible empty space; keep decorative                                                                                 |
 | `AspectRatio` | Media frame with positive `ratio`, e.g. `16 / 9`                                                                      |
 | `Section`     | Semantic section; name it with native `aria-label` or a heading                                                       |
-| `AppShell`    | `header`, `sidebar`, default main content, `footer` slots; renders the main landmark, so avoid nesting another main   |
+| `AppShell`    | Use `header`, `sidebar`, default main content and `footer` slots. The Arabic skip link focuses main. Set `mainId` to choose its target ID and `skipLabel` to localize the link. |
 | `PageHeader`  | `title`, `description`, heading `level=1`; `breadcrumb`, `actions`, default slots; outer element is always header     |
 
 ```vue

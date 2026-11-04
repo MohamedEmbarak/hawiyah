@@ -197,9 +197,10 @@ Breakpoints live in CSS (40/48/64/80rem), so server/client layout markup matches
   `[nqSidebar]` and main content. The main pane follows in DOM reading order.
 - AspectRatio: numeric `ratio`, default 16/9. Spacer is decorative.
 - Section: optional accessible `label`.
-- AppShell: `mainId`, `sidebarWidth`, `side`; project `[nqShellHeader]`,
-  `[nqShellSidebar]`, default main content, and `[nqShellFooter]`. Contains one main
-  landmark; do not nest it inside another main.
+- AppShell accepts `mainId`, `skipLabel`, `sidebarWidth` and `side`. Project
+  `[nqShellHeader]`, `[nqShellSidebar]`, default main content and `[nqShellFooter]`.
+  The Arabic skip link focuses the main landmark, whose default ID is `main-content`.
+  Omitted regions leave the main area at full width.
 - PageHeader: `title` (h1), `description`; `[nqBreadcrumb]` and default actions.
 
 ```html
