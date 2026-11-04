@@ -165,7 +165,15 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   });
   scope.listen(input, 'paste', event => { if (isDisabled(input) || readOnly(root, input)) return; const text = (event as ClipboardEvent).clipboardData?.getData('text') || ''; if (/[,\n]/u.test(text)) { event.preventDefault(); text.split(/[,\n]/u).forEach(add); } });
   if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { value = [...initial]; render(); } }));
-  const Observer = input.ownerDocument.defaultView?.MutationObserver; if (Observer) { const observer = new Observer(render); observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'readonly'] }); scope.add(() => observer.disconnect()); }
+  const Observer = input.ownerDocument.defaultView?.MutationObserver;
+  if (Observer) {
+    const observer = new Observer(render);
+    observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'readonly'] });
+    for (let ancestor = input.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.localName === 'fieldset') observer.observe(ancestor, { attributes: true, attributeFilter: ['disabled'] });
+    }
+    scope.add(() => observer.disconnect());
+  }
   render(); return { get value() { return [...value]; }, add, remove, destroy: () => scope.destroy() };
 }
 

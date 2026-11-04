@@ -75,6 +75,24 @@ describe('native control enhancements', () => {
     input.value = ''; key(input, 'Backspace'); controller.remove('Design'); expect(input.checkValidity()).toBe(false);
     form.reset(); await Promise.resolve(); expect(controller.value).toEqual(['Design']); controller.destroy(); expect(root.outerHTML).toBe(before);
   });
+  it('restores tag submission and removal after reset in a disabled ancestor fieldset', async () => {
+    const form = mount(`<form><fieldset><div data-nq-name="tags" data-nq-value='["Design"]'><input data-nq-tag-input required><div data-nq-tags></div></div></fieldset></form>`) as HTMLFormElement;
+    const fieldset = form.querySelector('fieldset')!;
+    const controller = createTagInput(fieldset.querySelector('div')!);
+    fieldset.disabled = true;
+    form.reset();
+    await Promise.resolve();
+    expect(new FormData(form).getAll('tags')).toEqual([]);
+    fieldset.disabled = false;
+    await Promise.resolve();
+    expect(new FormData(form).getAll('tags')).toEqual(['Design']);
+    const remove = fieldset.querySelector('button')!;
+    expect(remove.disabled).toBe(false);
+    remove.click();
+    expect(controller.value).toEqual([]);
+    expect(form.checkValidity()).toBe(false);
+    controller.destroy();
+  });
   it('filters checkbox options without losing selected native form values', async () => {
     const form = mount('<form><fieldset><legend>Services</legend><input data-nq-multiselect-search type="search" aria-label="Find"><label data-nq-option><input type="checkbox" name="services" value="a" checked>الرياض</label><label data-nq-option><input type="checkbox" name="services" value="b">أبها</label><span data-nq-status></span></fieldset></form>') as HTMLFormElement;
     const root = form.firstElementChild as HTMLElement; const controller = createMultiSelect(root); const input = root.querySelector<HTMLInputElement>('[type=search]')!;
