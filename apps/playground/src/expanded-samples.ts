@@ -122,7 +122,7 @@ export function expandedSample(
     case "secondary-nav":
       return `<nav class="nq-secondary-nav" data-variant="mobile" aria-label="${t("Service navigation", "تنقل الخدمات")}"><ul><li><a href="#discover" aria-current="page"><span class="nq-icon" data-icon="home-01" aria-hidden="true"></span><span>${t("Services", "الخدمات")}</span></a></li><li><a href="#workspace"><span class="nq-icon" data-icon="search-01" aria-hidden="true"></span><span>${t("My requests", "طلباتي")}</span></a></li><li><a href="#docs"><span class="nq-icon" data-icon="menu-01" aria-hidden="true"></span><span>${t("Help", "المساعدة")}</span></a></li></ul></nav>`;
     case "portal-layout":
-      return `<div class="nq-portal-layout" style="min-block-size:24rem">${expandedSample('portal-header',prefix+'-header',locale,mode)}<main class="nq-portal-layout-main nq-container"><h2>${t('Your digital services','خدماتك الرقمية')}</h2><p>${t('Page content belongs here.','يوضع محتوى الصفحة هنا.')}</p></main>${portalFooterMarkup(locale,uid+'-footer')}</div>`;
+      return `<div class="nq-portal-layout" style="min-block-size:24rem"><a class="nq-skip-link" href="#${uid}-content">${t('Skip to page content','انتقل إلى محتوى الصفحة')}</a>${expandedSample('portal-header',prefix+'-header',locale,mode)}<main id="${uid}-content" tabindex="-1" class="nq-portal-layout-main nq-container"><h2>${t('Your digital services','خدماتك الرقمية')}</h2><p>${t('Page content belongs here.','يوضع محتوى الصفحة هنا.')}</p></main>${portalFooterMarkup(locale,uid+'-footer')}</div>`;
     case "portal-footer":
       return portalFooterMarkup(locale,uid);
     case "feedback":

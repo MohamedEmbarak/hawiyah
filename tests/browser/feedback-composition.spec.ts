@@ -1,58 +1,114 @@
-import {expect,test,type Locator} from '@playwright/test';
+import {expect,test,type Locator,type Page} from '@playwright/test';
 
-async function sameRow(choices:Locator) {
-  const a=(await choices.nth(0).boundingBox())!,b=(await choices.nth(1).boundingBox())!;
-  expect(Math.abs(a.y-b.y)).toBeLessThan(2);
-  expect(Math.abs(a.x-b.x)).toBeGreaterThan(20);
+async function sameRow(choices: Locator) {
+  await expect(choices).toHaveCount(2);
+  const [a,b] = await Promise.all([choices.nth(0).boundingBox(),choices.nth(1).boundingBox()]);
+  expect(a).not.toBeNull(); expect(b).not.toBeNull();
+  expect(Math.abs(a!.y + a!.height / 2 - b!.y - b!.height / 2)).toBeLessThan(2);
+  expect(a!.x + a!.width <= b!.x + 1 || b!.x + b!.width <= a!.x + 1).toBe(true);
 }
 
-for(const direction of ['rtl','ltr'])test(`catalog feedback and link composition in ${direction}`,async({page},info)=>{
+async function besideText(control: Locator, selector: string) {
+  const geometry = await control.evaluate((el,selector) => {
+    const icon = el.querySelector(selector)?.getBoundingClientRect();
+    const walker = document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent?.trim() || node.parentElement?.closest('[aria-hidden=true],svg')) continue;
+      const range = document.createRange(); range.selectNodeContents(node);
+      const text = range.getBoundingClientRect();
+      if (!icon || !icon.width || !text.width) continue;
+      const overlap = Math.min(icon.bottom,text.bottom) - Math.max(icon.top,text.top);
+      return {overlap:overlap / Math.min(icon.height,text.height), beside:icon.right <= text.left + 1 || text.right <= icon.left + 1};
+    }
+    return null;
+  },selector);
+  expect(geometry).not.toBeNull();
+  expect(geometry!.beside).toBe(true);
+  expect(geometry!.overlap).toBeGreaterThan(0.7);
+}
+
+function catalogCard(page: Page, id: string) {
+  return page.locator('article.component-card').filter({has:page.locator(`a.component-card-docs[href="#component/${id}"]`)});
+}
+
+for (const locale of ['ar','en'] as const) test(`catalog feedback and standalone arrow stay inline in ${locale}`, async ({page},info) => {
+  await page.addInitScript(locale => localStorage.setItem('nasaq-locale',locale),locale);
   await page.goto('/#components');
-  for(const width of [1864,390]) {
+  const main = page.getByRole('main');
+  await expect(main).toHaveCount(1);
+  const feedback = catalogCard(page,'feedback').locator('.component-preview .nq-feedback');
+  const actions = feedback.locator('.nq-feedback-actions');
+  const yes = actions.getByRole('button',{name:locale === 'ar' ? 'نعم' : 'Yes',exact:true});
+  const no = actions.getByRole('button',{name:locale === 'ar' ? 'لا' : 'No',exact:true});
+  const arrow = catalogCard(page,'link').locator('.component-preview a.nq-link[data-variant="standalone"]');
+  for (const width of [1864,390]) {
     await page.setViewportSize({width,height:884});
-    await page.locator('main').evaluate((el,dir)=>el.setAttribute('dir',dir),direction);
-    const feedback=page.locator('.component-preview .nq-feedback').first();
-    await sameRow(feedback.getByRole('button'));
-    await feedback.getByRole('button').first().click();
+    await sameRow(actions.getByRole('button'));
+    await yes.click(); await expect(yes).toHaveAttribute('aria-pressed','true');
     await expect(feedback.locator('[data-nq-feedback-value]')).toHaveValue('yes');
-    await feedback.getByRole('button').nth(1).click();
+    await no.click(); await expect(no).toHaveAttribute('aria-pressed','true');
+    await expect(yes).toHaveAttribute('aria-pressed','false');
     await expect(feedback.locator('[data-nq-feedback-value]')).toHaveValue('no');
-    const link=page.locator('.component-preview .nq-link').filter({has:page.locator('svg')}).first();
-    await expect(link).toHaveCSS('display',/^(inline-)?flex$/);
-    const arrow=(await link.locator('svg').boundingBox())!,box=(await link.boundingBox())!;
-    expect(Math.abs(arrow.y+arrow.height/2-box.y-box.height/2)).toBeLessThan(2);
-    await link.click();await expect(page).toHaveURL(/#components$/);
+    await besideText(arrow,'svg');
+    await arrow.click(); await expect(page).toHaveURL(/#components$/);
   }
-  await page.locator('.component-preview .nq-feedback').first().screenshot({path:info.outputPath(`feedback-${direction}.png`)});
+  await feedback.screenshot({path:info.outputPath(`feedback-${locale}.png`)});
 });
 
-for(const framework of ['react','vue','angular'])test(`${framework} feedback variants and inline link`,async({page},info)=>{
+test('portal shell previews preserve one main and a local skip target while their snippets keep main', async ({page}) => {
+  await page.goto('/#components');
+  const gallery = catalogCard(page,'portal-layout');
+  await expect(gallery.locator('.source-details code').first()).toContainText('<main');
+  await page.goto('/#component/portal-layout');
+  await expect(page.getByRole('main')).toHaveCount(1);
+  const embedded = page.locator('.component-preview .nq-portal-layout');
+  await expect(embedded).toHaveCount(2);
+  for (const shell of await embedded.all()) {
+    const section = shell.locator('section.nq-portal-layout-main');
+    await expect(section).toHaveCount(1);
+    const skip = shell.locator('.nq-skip-link');
+    await expect(skip).toHaveAttribute('href','#' + await section.getAttribute('id'));
+    await skip.focus(); await skip.press('Enter');
+    await expect(section).toBeFocused();
+    await expect(page).toHaveURL(/#component\/portal-layout$/);
+  }
+  await expect(page.locator('[data-ready-example^="portal-layout-"] .source-details code').first()).toContainText('<main');
+});
+
+for (const framework of ['react','vue','angular']) test(`${framework} feedback variants and standalone arrow`, async ({page},info) => {
   test.setTimeout(90000);
-  await page.goto('/#component/feedback');await page.locator('[data-guide-tab="playground"]').click();
+  await page.goto('/#component/feedback'); await page.locator('[data-guide-tab="playground"]').click();
   await page.locator('[data-project-framework]').selectOption(framework);
-  if(framework!=='angular')await page.locator('[data-project-language]').selectOption('typescript');
+  if (framework !== 'angular') await page.locator('[data-project-language]').selectOption('typescript');
   await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-  const frame=page.frameLocator('.nq-ide-frame');
-  for(const variant of ['text','icon-text','icon']) {
-    const root=frame.locator(`.nq-feedback[data-choice-variant="${variant}"]`);
-    const choices=root.locator(framework==='react'?'.nq-feedback-actions .nq-choice':'.nq-feedback-actions button');
+  const frame = page.frameLocator('.nq-ide-frame');
+  const output = frame.locator('.demo > output');
+  for (const variant of ['text','icon-text','icon']) {
+    const root = frame.locator(`.nq-feedback[data-choice-variant="${variant}"]`);
+    const actions = root.locator('.nq-feedback-actions');
+    const choices = actions.locator(framework === 'react' ? '.nq-choice' : 'button');
     await sameRow(choices);
-    const controls=root.getByRole(framework==='react'?'radio':'button',{name:'نعم',exact:true});
-    await expect(controls).toHaveCount(1);
-    await choices.first().click();await expect(frame.locator('output')).toHaveText('yes');
-    if(framework==='react') { await controls.press('ArrowDown'); }
-    else { await root.getByRole('button',{name:'لا',exact:true}).press('Space'); }
-    await expect(frame.locator('output')).toHaveText('no');
-    const icon=root.locator('.nq-feedback-icon').first();
-    if(variant==='text')await expect(icon).toBeHidden();
-    else {await expect(icon).toBeVisible();expect(await icon.evaluate(el=>getComputedStyle(el).maskImage)).toMatch(/thumbs-up\.svg|data:image\/svg\+xml/);}
+    const role = framework === 'react' ? 'radio' : 'button';
+    const yes = actions.getByRole(role,{name:'نعم',exact:true}), no = actions.getByRole(role,{name:'لا',exact:true});
+    await choices.first().click(); await expect(output).toHaveText('yes');
+    if (role === 'radio') { await expect(yes).toBeChecked(); await yes.press('ArrowDown'); await expect(no).toBeChecked(); }
+    else { await expect(yes).toHaveAttribute('aria-pressed','true'); await no.press('Space'); await expect(no).toHaveAttribute('aria-pressed','true'); }
+    await expect(output).toHaveText('no');
+    for (const [index,name] of ['thumbs-up','thumbs-down'].entries()) {
+      const icon = choices.nth(index).locator('.nq-feedback-icon');
+      if (variant === 'text') await expect(icon).toBeHidden();
+      else {
+        await expect(icon).toBeVisible();
+        await expect(icon).toHaveAttribute('data-icon',name);
+        if (variant === 'icon-text') await besideText(choices.nth(index),'.nq-feedback-icon');
+      }
+    }
   }
   await frame.locator('.nq-feedback[data-choice-variant="icon-text"]').screenshot({path:info.outputPath(`${framework}-feedback.png`)});
-  await page.goto('/#component/link');await page.locator('[data-guide-tab="playground"]').click();
+  await page.goto('/#component/link'); await page.locator('[data-guide-tab="playground"]').click();
   await page.locator('[data-project-framework]').selectOption(framework);
   await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-  const link=frame.locator('.nq-link');await expect(link).toHaveCSS('display',/^(inline-)?flex$/);
-  const a=(await link.locator('.nq-icon').boundingBox())!,b=(await link.boundingBox())!;
-  expect(Math.abs(a.y+a.height/2-b.y-b.height/2)).toBeLessThan(2);
-  await link.click();await expect(page).toHaveURL(/#component\/link$/);
+  const arrow = frame.locator('a.nq-link[data-variant="standalone"]');
+  await besideText(arrow,'.nq-icon');
+  await arrow.click(); await expect(page).toHaveURL(/#component\/link$/);
 });
