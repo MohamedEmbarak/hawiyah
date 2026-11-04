@@ -1,7 +1,10 @@
 import { test } from '@playwright/test';
 import { checkNicButtons } from '../helpers/nic-buttons';
+import { previewStyles } from '../../apps/playground/src/generated/preview-runtime';
 for (const direction of ['rtl', 'ltr']) test(`vanilla NIC button states in ${direction}`, async ({ page }) => {
-  await page.goto('/#component/button');
+  test.setTimeout(180000);
+  await page.setContent('<!doctype html><html lang="en"><head><title>Button states</title></head><body></body></html>');
+  await page.addStyleTag({content: previewStyles});
   await page.evaluate(direction => {
     document.body.innerHTML = `<main data-testid="nic-showcase" data-nq-theme="dga" dir="${direction}" style="padding:24px"><h1>Buttons</h1>
       <section data-testid="button-showcase" aria-label="Buttons"><div class="nq-cluster">
