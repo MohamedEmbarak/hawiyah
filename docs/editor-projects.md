@@ -23,7 +23,7 @@ CSP policies restrict external resource loads. The sandbox blocks navigation of
 the guide, and demo link clicks are contained.
 Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
-## Coverage and remaining work
+## Current editor coverage
 
 The Calendar project links Gregorian and Umm al-Qura views to one ISO value. The DatePicker project accepts typed ISO dates, switches the displayed calendar and shows the value submitted by its form. Both projects follow the chosen guide language.
 
@@ -35,13 +35,9 @@ Combobox, PinInput, TagInput and MultiSelect each have a form with a disabled to
 
 SecondaryNav, PortalLayout, MobileTopBar and NavigationDrawer use local application state to show the current page. The shell includes a skip link and responsive primary navigation. The mobile top bar changes from its overview to internal-page variant, and its menu opens a drawer with a nested service directory and an unavailable destination.
 
-Native project recipes currently cover 79 components: SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer, Tooltip, Popover, Menu, Drawer, Collapsible, TreeView, Combobox, PinInput, TagInput, MultiSelect, Dialog, FileUpload, FileDropzone, Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
-TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
-Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
-Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, ToastRegion and the 12 layout primitives listed below. Other component
-pages explicitly identify their native recipes as pending and retain the
-vanilla project. Extending native recipes to every catalog entry is required
-before the overall alignment/editor goal is complete.
+All 83 components in the guide catalog have native project recipes in Arabic and English. Each opens as vanilla JavaScript or TypeScript, React JSX or TSX, a Vue JavaScript or TypeScript single-file component, or an Angular TypeScript component. The project files include the imports and bootstrap code for the selected adapter.
+
+ServiceCard and ServiceDetails demonstrate a permit renewal with locally handled actions. CookieConsent keeps the visitor’s choice in memory and lets them review it. NotificationList uses application-owned read state and demonstrates the empty list after dismissal or clearing.
 
 Examples use each adapter's actual composition and state API: React props and
 callbacks, Vue slots and models, and Angular projected content, inputs and
