@@ -1,4 +1,5 @@
 import {listDemoRecipes} from './list-demo';
+import {copyActionRecipes} from './copy-action-demo';
 import {selectDemoCases, selectDemoMarkup, selectNativeMarkup} from './select-demo';
 import {searchDemoCases,searchDemoMarkup,searchProject} from './search-demo';
 import {contentNavigationDemoCases,contentNavigationDemoMarkup,contentNavigationProject} from './content-navigation-demo';
@@ -228,7 +229,7 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
       react: '<Button size="sm">sm</Button>\n<Button size="md">md</Button>\n<Button size="lg">lg</Button>\n<Button disabled>غير متاح</Button>\n<Button loading>جارٍ الحفظ</Button>',
       vue: '<Button size="sm">sm</Button>\n<Button size="md">md</Button>\n<Button size="lg">lg</Button>\n<Button disabled>غير متاح</Button>\n<Button loading>جارٍ الحفظ</Button>',
       angular: '<button nqButton size="sm" type="button">sm</button>\n<button nqButton size="md" type="button">md</button>\n<button nqButton size="lg" type="button">lg</button>\n<button nqButton type="button" disabled>غير متاح</button>\n<button nqButton type="button" disabled aria-busy="true">جارٍ الحفظ</button>',
-    }];
+    }, ...copyActionRecipes(locale)];
   }
   if (id === 'toast-region') {
     const messages = statusExamples.map(s => ({ id: s.tone, tone: s.tone, title: t(s.en,s.ar), message: t(s.bodyEn,s.bodyAr) }));

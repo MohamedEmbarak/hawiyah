@@ -1,9 +1,11 @@
 import { bindSearchDemos } from './search-demo';
+import { bindCopyActionDemos } from './copy-action-demo';
 /** Guide-only containment. Production components retain normal link/form semantics. */
 const previewSelector = '.component-preview, [data-demo-preview]';
 
 export function bindDemoPreviews(root: HTMLElement, locale: 'ar' | 'en') {
   const scope = new AbortController();
+  bindCopyActionDemos(root, locale, scope.signal);
   const disposeSearch = bindSearchDemos(root);
   const showResult = (preview: HTMLElement, label: string) => {
     let status = preview.querySelector<HTMLElement>(':scope > [data-demo-result]');

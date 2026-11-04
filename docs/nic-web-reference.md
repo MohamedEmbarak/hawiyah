@@ -78,7 +78,7 @@ it does not mean every source state has already passed comparison.
 | CSS 3846–4000; JS 318–558: notification banner/modal | ToastRegion, Alert, Dialog | Five alert/notification tones now exposed and demonstrated across all adapters, including neutral; source banner geometry/timing/modal comparison remains pending |
 | JS 627–929: multilevel main navigation | PortalHeader, NavigationDrawer | Compare expanded/current/route-close and nested menu behavior |
 | JS 1176–1310: government verification disclosure | SiteVerification, PortalHeader composition | [Native disclosure](site-verification.md): configurable domain, HTTPS and registration information; authorized host artwork, safe new-window links and accessible native details. No official identifiers or certification claim |
-| JS 1584–1606: copy helper | application action recipe | Use native clipboard permission/error handling with accessible status |
+| JS 1584–1606: copy helper | Button composition | [Copy action](nic-copy-action.md) includes email and visible-text examples, accessible clipboard results and a selectable manual fallback across all four adapters |
 | CSS 4141–4192; JS auth/cache/bootstrap/devtools | site-specific integration | Excluded from generic package behavior; no SharePoint/auth/API/debug side effects |
 
 ## Confirmed source differences and intentional adaptations
