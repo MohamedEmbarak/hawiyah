@@ -7,6 +7,25 @@ function mount(markup: string): HTMLElement { document.body.innerHTML = markup; 
 function key(node: HTMLElement, key: string, extra: KeyboardEventInit = {}) { const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...extra }); node.dispatchEvent(event); return event; }
 
 describe('native control enhancements', () => {
+  it('exposes each range handle’s available bounds and restores defaults after a narrow selection', async () => {
+    const form = mount('<form><fieldset><input type="range" data-nq-lower min="0" max="100" value="20"><input type="range" data-nq-upper min="0" max="100" value="80"></fieldset></form>') as HTMLFormElement;
+    const field = form.querySelector('fieldset')!;
+    const [lower, upper] = field.querySelectorAll('input');
+    const controller = createRangeSlider(field);
+    expect(lower!.max).toBe('80');
+    expect(upper!.min).toBe('20');
+    lower!.value = '0'; lower!.dispatchEvent(new Event('input'));
+    upper!.value = '10'; upper!.dispatchEvent(new Event('input'));
+    expect(lower!.max).toBe('10');
+    expect(controller.value).toEqual([0, 10]);
+    form.reset(); await Promise.resolve();
+    expect(controller.value).toEqual([20, 80]);
+    expect(lower!.max).toBe('80');
+    expect(upper!.min).toBe('20');
+    controller.destroy();
+    expect(lower!.max).toBe('100');
+    expect(upper!.min).toBe('0');
+  });
   it('toggles password visibility without changing its value and restores markup', async () => {
     const root = mount('<div><label>Password<input data-nq-password-input type="password" value="secret"></label><button data-nq-password-toggle>Show</button></div>'); const before = root.outerHTML;
     const controller = createPasswordField(root, { showLabel: 'Show password', hideLabel: 'Hide password' });

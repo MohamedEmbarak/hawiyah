@@ -298,6 +298,7 @@ export const RangeSlider = defineComponent({
           class: "nq-field nq-range-slider",
           disabled: props.disabled,
           "aria-describedby": field.controlAttrs.value["aria-describedby"],
+          "aria-invalid": field.controlAttrs.value["aria-invalid"],
         }),
         [
           props.label && h("legend", { class: "nq-label" }, props.label),

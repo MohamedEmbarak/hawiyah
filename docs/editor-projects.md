@@ -25,7 +25,7 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 54 components: Button, ButtonGroup, IconButton,
+Native project recipes currently cover 60 components: Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, ToastRegion and the 12 layout primitives listed below. Other component
@@ -235,3 +235,7 @@ The six content display recipes bring coverage from 47 to 53. Chip demonstrates 
 The application files exported by the guide rendered in 84 Chromium cases covering six components, two languages and all seven supported framework/language combinations. Checks exercised chip removal and restoration, description pairs, stat values, dated stages, meter bounds and avatar overflow. Each timeline identified its current step. Chromium's accessibility tree exposed the overflow as a named image in vanilla, React, Vue and Angular. Those focused checks are separate from the 47-recipe clean consumer verification above.
 
 ToastRegion adds the 54th native recipe. Five service notices demonstrate the banner presentation inside the preview, including a persistent maintenance notice, three ordinary dismissible notices and an urgent failure. Each adapter shows its public dismissal API and a restore action. Keyboard dismissal moves focus through the available controls and returns it to the region when only the protected notice remains. The vanilla project uses `createToastRegion` and the native projects import their own ToastRegion component.
+
+## Basic input projects
+
+Field demonstrates labeling, help text, and validation after blur. InputGroup places the Saudi riyal symbol inside a numeric amount input. PasswordField keeps the reveal button inside the control and reports only whether the field is filled. NumberField compares editable, read-only and disabled form values. Slider demonstrates keyboard increments, and RangeSlider uses distinct field names and keeps each thumb within the other thumb’s current bound. Each project includes a form reset and shows its current value or password entry status.

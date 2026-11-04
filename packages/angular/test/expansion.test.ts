@@ -45,13 +45,34 @@ describe('Angular expansion behavior', () => {
     expect(pin.disabled).toBe(true);
   });
 
+  it('retains controlled number values in the DOM and FormData after a native form reset', () => {
+    class Host { seats = 2; capacity = 12; }
+    const fixture = host(Host, `<form (reset)="seats = 2">
+      <nq-number-field name="seats" [(value)]="seats" />
+      <nq-number-field name="capacity" readOnly [value]="capacity" />
+      <nq-number-field name="waiting" disabled [value]="4" />
+    </form>`);
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    const seats = form.elements.namedItem('seats') as HTMLInputElement;
+    input(seats, '7');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.seats).toBe(7);
+    form.reset();
+    fixture.detectChanges();
+    expect(Object.fromEntries(new FormData(form))).toEqual({ seats: '2', capacity: '12' });
+    expect((form.elements.namedItem('waiting') as HTMLInputElement).value).toBe('4');
+  });
+
   it('constrains crossing range thumbs and submits distinct named values', () => {
     class Host { range: [number, number] = [20, 70]; }
     const fixture = host(Host, `<form><nq-range-slider label="Budget" lowerName="from" upperName="to" [(value)]="range" /></form>`);
     const ranges = fixture.nativeElement.querySelectorAll('input[type="range"]') as NodeListOf<HTMLInputElement>;
+    expect(ranges[0]!.max).toBe('70');
+    expect(ranges[1]!.min).toBe('20');
     input(ranges[0]!, '90'); fixture.detectChanges();
     expect(fixture.componentInstance.range).toEqual([70, 70]);
     expect(ranges[0]!.value).toBe('70');
+    expect(ranges[1]!.min).toBe('70');
     input(ranges[1]!, '10'); fixture.detectChanges();
     expect(fixture.componentInstance.range).toEqual([70, 70]);
     const data = new FormData(fixture.nativeElement.querySelector('form'));

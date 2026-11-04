@@ -1,3 +1,4 @@
+import {basicInputProjectIds, basicInputProjectRecipe, isBasicInputId} from './basic-input-projects.ts';
 import {toastProject} from './toast-demo.ts';
 import {contentComponents, contentProjectIds, contentProjectRecipe, isContentProjectId} from './content-project-recipes.ts';
 import {isLayoutId, layoutComponents, layoutProjectCss, layoutProjectMarkup} from './layout-projects.ts';
@@ -17,6 +18,7 @@ import type { Locale } from "./data";
 export const nativeProjectComponents = new Set([
   ...Object.keys(layoutComponents),
   ...contentProjectIds,
+  ...basicInputProjectIds,
   "toast-region",
   "search-field",
   "content-navigation",
@@ -77,8 +79,10 @@ export function projectExample(
     "@import '@nasaq/styles/styles.css';\n\n/* Application-specific styles */\n.demo { display: grid; gap: 1rem; }\n" + (isLayoutId(id) ? layoutProjectCss : "");
   if (id === "content-navigation") html=contentNavigationDemoCases(locale).map(item=>`<section><h2>${item.title}</h2>${contentNavigationDemoMarkup(locale,item.kind,`project-content-nav-${item.kind}`)}</section>`).join('');
   const contentRecipe = isContentProjectId(id) ? contentProjectRecipe(id, locale, typed) : undefined;
-  if (contentRecipe) html = contentRecipe.vanilla;
-  let vanillaExampleScript = contentRecipe?.vanillaScript ?? '';
+  const basicInput = isBasicInputId(id) ? basicInputProjectRecipe(id, locale) : undefined;
+  const recipe = basicInput ?? contentRecipe;
+  if (recipe) html = recipe.vanilla;
+  let vanillaExampleScript = recipe?.vanillaScript ?? '';
   if (id === 'select' && framework === 'vanilla') {
     html = selectDemoCases(locale).map(example => `<section class="nq-stack"><h2>${example.title}</h2>${selectDemoMarkup(example, 'project-region')}${example.kind === 'single' ? '<output data-select-value>first</output>' : ''}</section>`).join('\n');
     vanillaExampleScript = `\nconst region = root.querySelector('[data-select-demo="single"] select');\nconst selectedValue = root.querySelector('[data-select-value]');\nif (region instanceof HTMLSelectElement && selectedValue instanceof HTMLOutputElement) {\n  const displayValue = () => { selectedValue.value = region.value; };\n  region.addEventListener('change', displayValue);\n  window.addEventListener('pagehide', () => region.removeEventListener('change', displayValue), { once: true });\n}\n`;
@@ -136,7 +140,7 @@ export function projectExample(
   // AppShell provides the application's main landmark.
   const wrapperTag = id === 'app-shell' ? 'div' : 'main';
   const layoutMarker = isLayoutId(id) ? ` data-layout-project="${id}"` : '';
-  const componentImports = ["site-verification","portal-header"].includes(id) ? "SiteVerification, PortalHeader" : id==="button-group" ? "ButtonGroup, Button, IconButton" : id==="rating" ? "Rating, RatingDisplay" : component;
+  const componentImports = basicInput?.componentImports ?? (["site-verification","portal-header"].includes(id) ? "SiteVerification, PortalHeader" : id==="button-group" ? "ButtonGroup, Button, IconButton" : id==="rating" ? "Rating, RatingDisplay" : component);
   const options = JSON.stringify([
     { value: "first", label: t("First", "الأول") },
     { value: "second", label: t("Second", "الثاني") },
@@ -150,7 +154,10 @@ export function projectExample(
     numberState = false,
     initialValue: string | undefined;
   const label = t("Example", "مثال");
-  if (contentRecipe) {
+  if (basicInput) {
+    ({react, vue, angular, initialValue} = basicInput);
+    state = true;
+  } else if (contentRecipe) {
     react = contentRecipe.react;
     vue = contentRecipe.vue;
     angular = contentRecipe.angular;
@@ -421,11 +428,11 @@ export function projectExample(
   const initial =
     initialValue ??
     (booleanState ? "false" : id === "toggle-group" ? "'first'" : "''");
-  const stateType = booleanState
+  const stateType = basicInput?.stateType ?? (booleanState
     ? "boolean"
     : numberState
       ? "number"
-      : "string";
+      : "string");
   if (framework === "react")
     return {
       names: {
@@ -452,14 +459,14 @@ export function projectExample(
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };
-  const angularClass = `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "button-group" ? ", NqButtonDirective, NqIconButtonComponent" : id === "rating" ? ", NqRatingDisplayComponent" : id === "tabs" ? ", NqTabComponent" : id === "site-verification" ? ", NqPortalHeaderComponent" : id === "portal-header" ? ", NqSiteVerificationComponent" : ""}`;
+  const angularClass = basicInput?.angularImports ?? `Nq${component}${id === "button" ? "Directive" : "Component"}${id === "button-group" ? ", NqButtonDirective, NqIconButtonComponent" : id === "rating" ? ", NqRatingDisplayComponent" : id === "tabs" ? ", NqTabComponent" : id === "site-verification" ? ", NqPortalHeaderComponent" : id === "portal-header" ? ", NqSiteVerificationComponent" : ""}`;
   return {
     names: { html: "app.component.ts", css: "style.css", js: "main.ts" },
     entry: "main.ts",
     host: "<app-root></app-root>",
     files: {
       css,
-      html: `import { Component } from '@angular/core';\nimport { ${angularClass} } from '@nasaq/angular';\n\n@Component({\n  selector: 'app-root',\n  standalone: true,\n  imports: [${angularClass}],\n  template: \`<${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${angular}</${wrapperTag}>\`,\n})\nexport class AppComponent {${state ? `\n  value: ${id === "toggle-group" ? "string | string[]" : stateType} = ${initial};` : ""}${angularMember}\n}\n`,
+      html: `import { Component } from '@angular/core';\nimport { ${angularClass} } from '@nasaq/angular';\n\n@Component({\n  selector: 'app-root',\n  standalone: true,\n  imports: [${angularClass}],\n  template: \`<${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${angular}</${wrapperTag}>\`,\n})\nexport class AppComponent {${state ? `\n  value: ${basicInput?.angularStateType ?? (id === "toggle-group" ? "string | string[]" : stateType)} = ${initial};` : ""}${angularMember}\n}\n`,
       js: "import '@angular/compiler';\nimport { bootstrapApplication } from '@angular/platform-browser';\nimport { AppComponent } from './app.component';\nimport './style.css';\n\nbootstrapApplication(AppComponent).catch(error => console.error(error));\n",
     },
   };
