@@ -1,5 +1,12 @@
 # Validation record
 
+## 2026-11-04 NIC alignment and editor coverage
+
+The [verification report](quality-2026-11-04.md) covers the 83-component catalog,
+the bilingual editor matrix, downloadable projects and native consumer checks.
+The [NIC comparison](nic-web-reference.md) links each reusable pattern to its
+source evidence and implementation.
+
 ## 2026-11-02 NIC card task
 
 The [NIC card contract](nic-cards.md) implements the directly mapped web-source
@@ -17,7 +24,7 @@ The [quality report](quality-2026-11-02.md) records the 301-test full unit pass,
 8 contrast checks, guide and native-consumer browser results, resolved failures,
 input height/validation fixes and remaining release gates. It supersedes older
 input underline descriptions. Historical counts below describe their own
-snapshots; the current catalog has 81 entries.
+snapshots. The November 2 catalog had 81 entries.
 
 ## 2026-11-01 input and step-state revision
 
