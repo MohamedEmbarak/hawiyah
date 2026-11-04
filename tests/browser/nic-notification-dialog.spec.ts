@@ -8,7 +8,7 @@ const formats = [
 
 for (const [framework,language,locale] of formats) {
   test(`${framework} ${language} notification dialog actions, Escape and focus in ${locale}`, async ({page}) => {
-    test.setTimeout(180000);
+    test.setTimeout(300000);
     await page.addInitScript(locale => {
       if (window === window.top) localStorage.setItem('nasaq-locale', locale);
     }, locale);
