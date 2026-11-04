@@ -28,6 +28,9 @@ for (const locale of ['ar', 'en']) {
     await expect(back).toHaveCSS('outline-style', 'solid');
     await page.emulateMedia({ forcedColors: 'none' });
     await page.screenshot({ path: testInfo.outputPath(`top-bar-${locale}.png`) });
-    await back.press('Enter'); await expect(page).toHaveURL(/#components$/);
+    await expect(back).toHaveAttribute('href', '#components');
+    await back.press('Enter');
+    await expect(page).toHaveURL(/#component\/mobile-top-bar$/);
+    await expect(page.locator('[data-demo-result]')).toHaveText(locale === 'ar' ? 'معاينة الإجراء: رجوع' : 'Preview action: Back');
   });
 }

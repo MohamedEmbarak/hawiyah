@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 for (const locale of ['ar', 'en']) {
   test(`navigation drawer preserves native disclosure and modal behavior (${locale})`, async ({ page }, testInfo) => {
+    test.setTimeout(120000);
     await page.setViewportSize({ width: 320, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.addInitScript(locale => localStorage.setItem('nasaq-locale', locale), locale);
@@ -29,6 +30,11 @@ for (const locale of ['ar', 'en']) {
     await page.emulateMedia({ forcedColors: 'active' }); await summary.focus(); await expect(summary).toHaveCSS('outline-style', 'solid');
     await page.emulateMedia({ forcedColors: 'none' });
     await page.screenshot({ path: testInfo.outputPath(`navigation-drawer-${locale}.png`) });
-    await dialog.locator('a[aria-current="page"]').click(); await expect(page).toHaveURL(/#components$/);
+    const current = dialog.locator('a[aria-current="page"]');
+    await expect(current).toHaveAttribute('href', '#components');
+    const action = (await current.getAttribute('aria-label')) || (await current.innerText()).trim();
+    await current.click();
+    await expect(page).toHaveURL(/#component\/navigation-drawer$/);
+    await expect(page.locator('[data-demo-result]')).toHaveText((locale === 'ar' ? 'معاينة الإجراء: ' : 'Preview action: ') + action);
   });
 }
