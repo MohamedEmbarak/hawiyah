@@ -246,7 +246,9 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
   const frame = document.createElement('iframe');
   frame.className = 'nq-ide-frame';
   frame.title = `${labels.preview}: ${options.title}`;
-  frame.setAttribute('sandbox', 'allow-scripts');
+  // Permit native validation/submit events and method="dialog" forms. Network
+  // form submission remains blocked by CSP form-action 'none' and the bootstrap.
+  frame.setAttribute('sandbox', 'allow-scripts allow-forms');
   frame.referrerPolicy = 'no-referrer';
   const views = new Map<FileName, EditorView>();
   let active: FileName = 'html';

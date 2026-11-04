@@ -1,6 +1,6 @@
 import { booleanAttribute, Component, Directive, ElementRef, EventEmitter, forwardRef, inject, Input, Output, ViewChild, type AfterViewInit, type OnChanges, type SimpleChanges } from '@angular/core';
 import { NG_VALIDATORS, NG_VALUE_ACCESSOR, type AbstractControl, type ValidationErrors, type Validator } from '@angular/forms';
-import { clampRange, filterOptions, formatCalendarDate, getCalendarDateParts, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, normalizeDigits, normalizeRatingMax, normalizeRatingValue, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarSystem, type Direction, type Option } from '@nasaq/core';
+import { clampRange, filterOptions, formatCalendarDate, getCalendarDateParts, getCalendarMonth, getDirection, getSearchSuggestions, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, normalizeDigits, normalizeRatingMax, normalizeRatingValue, requestSearchDialogClose, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarSystem, type Direction, type Option } from '@nasaq/core';
 import { NqValueControl } from './forms';
 import { observeAngularFieldPresence } from './field-presence';
 import { NqDialogComponent, NqTooltipComponent } from './overlays';
@@ -34,8 +34,71 @@ export class NqPasswordFieldComponent extends NqExpandedValueControl<string> imp
   override writeValue(value: string | null) { super.writeValue(value); this.revealed = false; }
 }
 
-@Component({selector: 'nq-search-field', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqSearchFieldComponent), multi: true}], template: `<div class="nq-field nq-search-field"><label class="nq-label" [for]="controlId">{{ label }}</label><div class="nq-input-group"><div class="nq-search-control"><input #input class="nq-input" type="search" [id]="controlId" [value]="value" [name]="name" [disabled]="disabled" [readOnly]="readOnly" [required]="required" [placeholder]="placeholder" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (keydown)="searchKey($event)" (compositionstart)="composing = true" (compositionend)="composing = false" (blur)="touch()"><button type="button" class="nq-button nq-search-clear" data-variant="ghost" [hidden]="!value || readOnly" [disabled]="disabled" [attr.aria-controls]="controlId" [attr.aria-label]="clearLabel" (click)="clear()"><span class="nq-search-clear-icon" aria-hidden="true"></span></button></div><button type="button" class="nq-button" [disabled]="disabled" (click)="searched.emit(value)">{{ searchLabel }}</button></div>${fieldEnd}</div>`})
-export class NqSearchFieldComponent extends NqExpandedValueControl<string> { override value = ''; protected emptyValue() { return ''; } @Input() placeholder = ''; @Input() clearLabel = 'Clear search'; @Input() searchLabel = 'Search'; @Output() readonly searched = new EventEmitter<string>(); @ViewChild('input') input?: ElementRef<HTMLInputElement>; composing = false; clear() { if (!this.input || this.readOnly || isDisabled(this.input.nativeElement)) return; this.update(''); this.input.nativeElement.focus(); } searchKey(event: KeyboardEvent) { if (event.key === 'Enter' && !event.defaultPrevented && !this.composing && !event.isComposing && !event.ctrlKey && !event.altKey && !event.metaKey && this.input && !isDisabled(this.input.nativeElement)) this.searched.emit(this.value); } }
+@Component({selector: 'nq-search-field', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqSearchFieldComponent), multi: true}], template: `
+<div #searchRoot class="nq-field nq-search-field"><label class="nq-label" [for]="controlId">{{ label }}</label><div class="nq-input-group"><div class="nq-search-control">
+<input #input class="nq-input" type="search" [autofocus]="autofocus" [id]="controlId" [value]="value" [name]="name" [disabled]="disabled" [readOnly]="readOnly" [required]="required" [placeholder]="placeholder" [attr.autocomplete]="autocomplete" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" [attr.role]="suggestions !== undefined ? 'combobox' : null" [attr.aria-autocomplete]="suggestions !== undefined ? 'list' : null" [attr.aria-expanded]="suggestions !== undefined ? expanded : null" [attr.aria-controls]="suggestions !== undefined ? listId : null" [attr.aria-activedescendant]="expanded && active >= 0 && active < matches.length ? listId + '-' + active : null" (input)="inputChanged($event)" (keydown)="searchKey($event)" (focus)="focused()" (compositionstart)="compositionStart()" (compositionend)="compositionEnd()" (blur)="blurred()">
+<button type="button" class="nq-button nq-search-clear" data-variant="ghost" [hidden]="!value || readOnly" [disabled]="disabled" [attr.aria-controls]="controlId" [attr.aria-label]="clearLabel" (pointerdown)="keepFocus($event)" (mousedown)="keepFocus($event)" (click)="clear()"><span class="nq-search-clear-icon" aria-hidden="true"></span></button>
+@if (suggestions !== undefined) {<div class="nq-search-suggestions" [id]="listId" role="listbox" [attr.aria-label]="label || searchLabel" [hidden]="!expanded">@for (match of matches; track match.value; let i = $index) {<div class="nq-search-option" dir="auto" [id]="listId + '-' + i" role="option" [attr.aria-selected]="active === i" (pointerdown)="keepFocus($event)" (mousedown)="keepFocus($event)" (click)="choose(i)">@for (segment of match.segments; track $index) {@if (segment.match) {<strong>{{ segment.text }}</strong>} @else {{{ segment.text }}}}</div>}</div>}
+</div>@if (showSearchButton) {<button type="button" class="nq-button nq-search-submit" [disabled]="disabled" [attr.aria-label]="searchLabel" (click)="search()"><span class="nq-search-submit-icon" aria-hidden="true"></span></button>}</div>
+@if (suggestions !== undefined) {<span class="nq-sr-only" role="status" aria-live="polite" aria-atomic="true">{{ opened && !readOnly && !disabled && !composing && value.trim() ? resultsMessage(matches.length) : '' }}</span>}
+${fieldEnd}</div>`})
+export class NqSearchFieldComponent extends NqExpandedValueControl<string> {
+  override value = ''; protected emptyValue() {return '';}
+  @Input() placeholder = ''; @Input() autocomplete = 'off'; @Input({transform: booleanAttribute}) autofocus = false; @Input() clearLabel = 'مسح البحث'; @Input() searchLabel = 'بحث';
+  @Input() suggestions?: readonly string[]; @Input() maxSuggestions = 8;
+  @Input() resultsMessage: (count: number) => string = count => `${count} اقتراحات متاحة`;
+  @Input({transform: booleanAttribute}) showSearchButton = true;
+  @Output() readonly searched = new EventEmitter<string>();
+  @ViewChild('input') input?: ElementRef<HTMLInputElement>; @ViewChild('searchRoot') searchRoot?: ElementRef<HTMLElement>;
+  composing = false; opened = false; active = -1;
+  private expectedValue?: string; private suggestionSignature?: string; private observer?: MutationObserver; private removeReset?: () => void; private destroyed = false;
+  private outside = (event: Event) => {if (!this.searchRoot?.nativeElement.contains(event.target as Node)) {this.close();this.changeDetector.markForCheck();}};
+  get listId(): string {return `${this.controlId}-suggestions`;}
+  get matches() {return getSearchSuggestions(this.value || '', this.suggestions ?? [], this.maxSuggestions);}
+  get expanded(): boolean {return this.opened && this.suggestions !== undefined && !this.disabled && !this.readOnly && !this.composing && this.matches.length > 0;}
+  private editable(): boolean {return !!this.input && !this.readOnly && !this.input.nativeElement.readOnly && !isDisabled(this.input.nativeElement);}
+  close(): void {this.opened = false;this.active = -1;}
+  focus(): void {if (this.input && !isDisabled(this.input.nativeElement)) this.input.nativeElement.focus();}
+  focused(): void {if (this.editable() && !this.composing) this.opened = true;}
+  blurred(): void {this.touch();this.close();}
+  compositionStart(): void {this.composing = true;this.close();}
+  compositionEnd(): void {this.composing = false;if (this.editable()) this.opened = true;}
+  keepFocus(event: MouseEvent): void {if (event.button === 0) event.preventDefault();}
+  inputChanged(event: Event): void {if (event.defaultPrevented || !this.editable()) return;this.expectedValue = (event.target as HTMLInputElement).value;this.update(this.expectedValue);this.active = -1;this.opened = !this.composing;}
+  clear(): void {if (!this.editable()) return;this.expectedValue = '';this.update('');this.focus();this.close();}
+  choose(index: number): void {if (!this.editable() || this.composing) return;const match = this.matches[index];if (!match) return;this.expectedValue = match.value;this.update(match.value);this.focus();this.close();}
+  search(): void {if (!this.input || isDisabled(this.input.nativeElement) || this.composing) return;const query = this.value.trim();if (query) this.searched.emit(query);this.close();}
+  searchKey(event: KeyboardEvent): void {
+    if (event.defaultPrevented || this.composing || event.isComposing || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || !this.input || isDisabled(this.input.nativeElement)) return;
+    if (event.key === 'Escape' && this.expanded) {event.preventDefault();event.stopPropagation();this.close();return;}
+    if (event.key === 'Escape' && requestSearchDialogClose(this.input.nativeElement)) {event.preventDefault();event.stopPropagation();return;}
+    const count = this.matches.length;
+    if (this.editable() && count && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {event.preventDefault();this.opened = true;this.active = event.key === 'ArrowDown' ? (this.active + 1) % count : this.active <= 0 ? count - 1 : this.active - 1;return;}
+    if (event.key === 'Enter') {if (this.expanded && this.active >= 0) {event.preventDefault();this.choose(this.active);} else this.search();}
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    const signature = JSON.stringify(this.suggestions);
+    if (signature !== this.suggestionSignature || changes['maxSuggestions'] || changes['readOnly'] || changes['disabled']) this.close();
+    this.suggestionSignature = signature;
+    if (changes['value']) {if (this.value !== this.expectedValue) this.close();this.active = -1;this.expectedValue = undefined;}
+  }
+  ngAfterViewInit(): void {
+    const input = this.input!.nativeElement;input.ownerDocument.addEventListener('pointerdown', this.outside);
+    const Observer = input.ownerDocument.defaultView?.MutationObserver;
+    this.observer = Observer ? new Observer(() => {if (input.readOnly || isDisabled(input)) {this.close();this.changeDetector.markForCheck();}}) : undefined;
+    this.observer?.observe(input, {attributes: true, attributeFilter: ['readonly','disabled','aria-disabled']});
+    for (let parent = input.parentElement; parent; parent = parent.parentElement) if (parent.localName === 'fieldset') this.observer?.observe(parent, {attributes: true, attributeFilter: ['disabled']});
+    const form = input.form, reset = (event: Event) => queueMicrotask(() => {if (!this.destroyed && !event.defaultPrevented) {this.close();this.composing = false;this.changeDetector.markForCheck();}});
+    form?.addEventListener('reset', reset);this.removeReset = () => form?.removeEventListener('reset', reset);
+  }
+  ngAfterViewChecked(): void {
+    if (!this.expanded || this.active < 0) return;const list = this.input?.nativeElement.ownerDocument.getElementById(this.listId), option = list?.children[this.active] as HTMLElement | undefined;
+    if (!list || !option) return;const outer = list.getBoundingClientRect(), inner = option.getBoundingClientRect();if (inner.top < outer.top) list.scrollTop -= outer.top - inner.top;else if (inner.bottom > outer.bottom) list.scrollTop += inner.bottom - outer.bottom;
+  }
+  override writeValue(value: string | null): void {super.writeValue(value);this.close();this.composing = false;}
+  override setDisabledState(disabled: boolean): void {super.setDisabledState(disabled);if (disabled) this.close();}
+  ngOnDestroy(): void {this.destroyed = true;this.observer?.disconnect();this.removeReset?.();this.input?.nativeElement.ownerDocument.removeEventListener('pointerdown', this.outside);}
+}
 
 @Component({selector: 'nq-number-field', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqNumberFieldComponent), multi: true}], template: `<div class="nq-field nq-number-field"><label class="nq-label" [for]="controlId">{{ label }}</label><input class="nq-input" type="number" [id]="controlId" [name]="name" [value]="value ?? ''" [disabled]="disabled" [readOnly]="readOnly" [required]="required" [attr.min]="min" [attr.max]="max" [step]="step" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="numberChanged($event)" (blur)="touch()">${fieldEnd}</div>`})
 export class NqNumberFieldComponent extends NqExpandedValueControl<number | null> { override value: number | null = null; protected emptyValue() { return null; } @Input() min: number | null = null; @Input() max: number | null = null; @Input() step: number | 'any' = 1; numberChanged(event: Event) { const value = (event.target as HTMLInputElement).valueAsNumber; this.update(Number.isNaN(value) ? null : value); } }

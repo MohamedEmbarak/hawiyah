@@ -1,3 +1,4 @@
+import {searchProject} from './search-demo.ts';
 import {contentNavigationProject,contentNavigationDemoCases,contentNavigationDemoMarkup} from './content-navigation-demo.ts';
 import {tabsDemoCases,tabsNativeMarkup} from './tabs-demo.ts';
 import {paginationDemoCases,paginationNativeMarkup} from './pagination-demo.ts';
@@ -10,6 +11,7 @@ import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
 import type { Locale } from "./data";
 
 export const nativeProjectComponents = new Set([
+  "search-field",
   "content-navigation",
   "button",
   "icon-button",
@@ -58,6 +60,7 @@ export function projectExample(
   locale: Locale,
   html: string,
 ): ProjectExample {
+  if (id === "search-field") return searchProject(framework,language,locale);
   const typed = language === "typescript",
     ext = typed ? "ts" : "js",
     ar = locale === "ar";

@@ -1679,12 +1679,16 @@
       "name": "SearchField",
       "labelAr": "حقل بحث",
       "category": "forms",
-      "description": "Native search input with a label and application-owned query handling.",
+      "description": "Labeled free-text search with optional local suggestions, keyboard selection, clearing and application-owned submission.",
       "cssClasses": [
-        "nq-search-field"
+        "nq-search-field",
+        "nq-search-control",
+        "nq-search-suggestions",
+        "nq-search-option",
+        "nq-search-submit"
       ],
-      "interaction": "native",
-      "sourceType": "native",
+      "interaction": "interactive",
+      "sourceType": "interactive",
       "planned": [
         "vanilla",
         "react",
@@ -1698,8 +1702,10 @@
         "angular"
       ],
       "verified": [
+        "vanilla",
         "react",
-        "vue"
+        "vue",
+        "angular"
       ],
       "evidence": [
         {
@@ -1725,21 +1731,71 @@
           "command": "pnpm test",
           "result": "passed",
           "date": "2026-10-28"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "tests/search-suggestions-vanilla.test.ts",
+          "tests": [
+            "wraps keyboard selection, retains input focus and prevents submission only when choosing an active option"
+          ],
+          "scope": "Keyboard selection updates the query without submitting the form.",
+          "command": "pnpm exec vitest run tests/search-suggestions-vanilla.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "tests/search-autocomplete-parity.test.ts",
+          "tests": [
+            "react: wrapping arrow navigation selects a suggestion without search or form submission"
+          ],
+          "scope": "Keyboard selection updates the query without submitting the form.",
+          "command": "pnpm exec vitest run tests/search-autocomplete-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "tests/search-autocomplete-parity.test.ts",
+          "tests": [
+            "vue: wrapping arrow navigation selects a suggestion without search or form submission"
+          ],
+          "scope": "Keyboard selection updates the query without submitting the form.",
+          "command": "pnpm exec vitest run tests/search-autocomplete-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "tests/search-autocomplete-parity.test.ts",
+          "tests": [
+            "angular: wrapping arrow navigation selects a suggestion without search or form submission"
+          ],
+          "scope": "Keyboard selection updates the query without submitting the form.",
+          "command": "pnpm exec vitest run tests/search-autocomplete-parity.test.ts",
+          "result": "passed",
+          "date": "2026-11-04"
         }
       ],
       "implementationSources": {
         "react": [
-          "packages/react/src/expanded-controls.tsx"
+          "packages/react/src/search-field.tsx",
+          "packages/styles/src/nic-search.css"
         ],
         "vue": [
-          "packages/vue/src/controls.ts"
+          "packages/vue/src/search-field.ts",
+          "packages/styles/src/nic-search.css"
         ],
         "angular": [
           "packages/angular/src/advanced-controls.ts"
         ],
         "vanilla": [
-          "packages/vanilla/EXPANSION-API.md",
-          "packages/styles/src/components.css"
+          "packages/vanilla/src/search-field.ts",
+          "packages/styles/src/nic-search.css"
         ]
       },
       "notes": [],

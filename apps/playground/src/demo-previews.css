@@ -23,6 +23,8 @@
 /* A disclosure must remain clickable beyond a compact example's panel. */
 .ready-example:has(.nq-tabs-overflow[open]) { position: relative; z-index: 2; overflow: visible; }
 .ready-example:has(.nq-tabs-overflow[open]) > h3 { border-start-start-radius: .5rem; border-start-end-radius: .5rem; }
+.ready-example:has(.nq-search-suggestions:not([hidden])), .component-card:has(.nq-search-suggestions:not([hidden])) { position: relative; z-index: 2; overflow: visible; }
+.ready-example:has(.nq-search-suggestions:not([hidden])) > h3 { border-start-start-radius: .5rem; border-start-end-radius: .5rem; }
 .ready-example > h3 { margin: 0; padding: 1rem; font-size: 1rem; background: var(--nq-color-canvas); }
 .ready-example .component-preview { gap: 1rem; min-block-size: 0; }
 .ready-example .source-details { margin: 0; }

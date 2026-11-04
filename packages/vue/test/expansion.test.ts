@@ -236,7 +236,7 @@ describe("expanded Vue controls", () => {
         () => () =>
           h("form", {}, [
             h(PasswordField, { label: "Password", defaultValue: "secret" }),
-            h(SearchField, { label: "Search", defaultValue: "query" }),
+            h(SearchField, { label: "Search", clearLabel: "Clear search", defaultValue: "query" }),
           ]),
       ),
     );

@@ -33,6 +33,7 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 | Actions | `nq-button`; `data-variant="primary|default|secondary|outline|outline-white|light|danger|ghost|soft|link"`; `data-size="sm|md|lg"`; `data-icon-only` |
 | Icons | `nq-icon-button`; `data-shape="square|circle"`; `nq-icon-background` with `data-size="xs|md|xl"` |
 | Forms | `nq-field`, `nq-label`, `nq-input`, `nq-textarea`, `nq-select`, `nq-hint`, `nq-error`; `aria-invalid="true"` |
+| Search | `nq-search-field`, `nq-search-control`, `nq-search-clear`, `nq-search-suggestions`, `nq-search-option`, `nq-search-submit`; composition: `nq-search-form`, `nq-search-terms`, `nq-search-term`, `nq-search-advanced`; active option uses `aria-selected="true"` |
 | Choices | `nq-choice` on a label; `nq-checkbox`, `nq-radio`, `nq-switch` on native inputs |
 | Tabs | `nq-tabs`, `nq-tab-list`, `nq-tab`, `nq-tab-panel`; `aria-selected`; optional vertical `aria-orientation` |
 | Tab overflow | `nq-tab-bar`, `nq-tabs-overflow` (`details`), `nq-tab-overflow-trigger` (`summary`), `nq-tab-overflow-menu`, `nq-tab-overflow-item`; controller-owned `data-nq-overflow-hidden`; [source and keyboard notes](../../docs/nic-tabs.md) |

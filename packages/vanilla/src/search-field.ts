@@ -1,10 +1,23 @@
-import { createCleanup, isDisabled, observeFieldValue } from '@nasaq/core';
-import { emit, ensureId, nativeChange, readOnly, remember, required, translated } from './dom.js';
+import { createCleanup, getSearchSuggestions, isDisabled, observeFieldValue, requestSearchDialogClose, type SearchSuggestionMatch } from '@nasaq/core';
+import { emit, ensureId, eventElement, nativeChange, readOnly, remember, required, translated } from './dom.js';
 
-export interface SearchFieldOptions { clearLabel?: string; onValueChange?: (value: string) => void }
-export interface SearchFieldController { readonly value: string; clear(): void; setValue(value: string): void; destroy(): void }
+export interface SearchFieldOptions {
+  clearLabel?: string;
+  suggestions?: readonly string[];
+  maxSuggestions?: number;
+  resultsMessage?: (count: number) => string;
+  onValueChange?: (value: string) => void;
+  onSearch?: (query: string) => void;
+}
+export interface SearchFieldController {
+  readonly value: string;
+  clear(): void;
+  setValue(value: string): void;
+  setSuggestions(items: readonly string[]): void;
+  destroy(): void;
+}
 
-/** Optional clear-action enhancement; search submission remains owned by the form. */
+/** Optional local suggestions; native form submission remains owned by the application. */
 export function createSearchField(root: HTMLElement, options: SearchFieldOptions = {}): SearchFieldController {
   const input = required<HTMLInputElement>(root, '[data-nq-search-input]');
   const button = required<HTMLButtonElement>(root, '[data-nq-search-clear]');
@@ -16,30 +29,152 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   button.setAttribute('aria-label', options.clearLabel ?? button.getAttribute('aria-label') ?? translated(root, 'Clear search', 'مسح البحث'));
   button.setAttribute('aria-controls', ensureId(scope, input, 'search'));
   const icon = input.ownerDocument.createElement('span'); icon.className = 'nq-search-clear-icon'; icon.setAttribute('aria-hidden', 'true'); button.replaceChildren(icon);
-  let previous = input.value;
-  const blocked = () => isDisabled(input) || readOnly(root, input);
-  const render = () => { presence.refresh(); button.hidden = !input.value || readOnly(root, input); button.disabled = input.disabled; };
-  const changed = () => {
-    render(); if (input.value === previous) return;
+  const aria = ['role', 'aria-autocomplete', 'aria-expanded', 'aria-controls', 'aria-activedescendant', 'autocomplete'].map(name => [name, input.getAttribute(name)] as const);
+  const restoreAria = () => { for (const [name, value] of aria) { if (value === null) input.removeAttribute(name); else input.setAttribute(name, value); } };
+  let list: HTMLDivElement | undefined, status: HTMLDivElement | undefined;
+  let explicitSuggestions = options.suggestions;
+  let previous = input.value, composing = false, suppressSuggestions = false, open = false, active = -1;
+  let matches: SearchSuggestionMatch[] = [];
+  const rootDisabled = () => root.getAttribute('aria-disabled') === 'true' || (root.localName !== 'fieldset' && root.hasAttribute('disabled'));
+  const disabled = () => isDisabled(input) || rootDisabled();
+  const blocked = () => disabled() || readOnly(root, input);
+  const enabled = () => explicitSuggestions !== undefined || root.hasAttribute('data-nq-suggestions');
+  const dictionary = (): readonly string[] => {
+    if (explicitSuggestions !== undefined) return explicitSuggestions;
+    try { const value: unknown = JSON.parse(root.dataset.nqSuggestions ?? '[]'); return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []; } catch { return []; }
+  };
+  const limit = () => options.maxSuggestions ?? Number(root.dataset.nqMaxSuggestions ?? 8);
+  const host = input.closest<HTMLElement>('.nq-search-control');
+  const popupHost = host && root.contains(host) ? host : root;
+  const close = () => {
+    open = false; active = -1; matches = [];
+    if (list) { list.hidden = true; list.replaceChildren(); input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); }
+    if (status) status.textContent = '';
+  };
+  const configure = () => {
+    if (!enabled()) {
+      if (list) { close(); list.remove(); status?.remove(); list = undefined; status = undefined; restoreAria(); }
+      return;
+    }
+    if (!list) {
+      list = input.ownerDocument.createElement('div'); list.className = 'nq-search-suggestions'; list.hidden = true;
+      list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', translated(root, 'Search suggestions', 'اقتراحات البحث')); ensureId(scope, list, 'search-suggestions');
+      status = input.ownerDocument.createElement('div'); status.className = 'nq-sr-only'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
+      popupHost.append(list); root.append(status);
+    }
+    input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list'); input.setAttribute('aria-expanded', String(open)); input.setAttribute('aria-controls', list.id); input.setAttribute('autocomplete', 'off');
+  };
+  scope.add(() => { list?.remove(); status?.remove(); restoreAria(); });
+  const renderBase = () => {
+    presence.refresh(); button.hidden = !input.value || readOnly(root, input);
+    // Inherited fieldset disabled is native and must not become a stale own attribute.
+    button.disabled = input.disabled || input.getAttribute('aria-disabled') === 'true' || rootDisabled();
+  };
+  const renderSuggestions = () => {
+    configure();
+    if (!list || !status || blocked() || composing || suppressSuggestions || input.ownerDocument.activeElement !== input) { close(); return; }
+    matches = getSearchSuggestions(input.value, dictionary(), limit()); active = -1;
+    input.removeAttribute('aria-activedescendant');
+    list.replaceChildren(...matches.map((match, index) => {
+      const option = input.ownerDocument.createElement('div'); option.className = 'nq-search-option'; option.id = `${list!.id}-${index}`;
+      option.setAttribute('role', 'option'); option.setAttribute('aria-selected', 'false'); option.dataset.nqSearchIndex = String(index); option.dir = 'auto';
+      for (const segment of match.segments) {
+        if (segment.match) { const strong = input.ownerDocument.createElement('strong'); strong.textContent = segment.text; option.append(strong); }
+        else option.append(input.ownerDocument.createTextNode(segment.text));
+      }
+      return option;
+    }));
+    open = matches.length > 0; list.hidden = !open; input.setAttribute('aria-expanded', String(open));
+    status.textContent = input.value.trim() ? (options.resultsMessage?.(matches.length) ?? translated(root, `${matches.length} suggestions available`, `${matches.length} اقتراحات متاحة`)) : '';
+  };
+  const updateActive = () => {
+    if (!list) return;
+    [...list.children].forEach((option, index) => option.setAttribute('aria-selected', String(index === active)));
+    const option = list.children[active] as HTMLElement | undefined;
+    if (!option) { input.removeAttribute('aria-activedescendant'); return; }
+    input.setAttribute('aria-activedescendant', option.id);
+    // Scroll the list only; scrollIntoView can move a surrounding modal or page.
+    const optionRect = option.getBoundingClientRect(), listRect = list.getBoundingClientRect();
+    if (list.clientHeight && list.scrollHeight > list.clientHeight) {
+      if (optionRect.top < listRect.top) list.scrollTop += optionRect.top - listRect.top;
+      else if (optionRect.bottom > listRect.top + list.clientHeight) list.scrollTop += optionRect.bottom - listRect.top - list.clientHeight;
+    }
+  };
+  const changed = (event: Event) => {
+    renderBase();
+    if (event.type === 'input') {
+      if ((event as InputEvent).isComposing || composing || suppressSuggestions) close(); else renderSuggestions();
+    }
+    if (input.value === previous) return;
     previous = input.value; emit(root, { value: input.value }); options.onValueChange?.(input.value);
   };
-  const clear = () => {
-    if (scope.destroyed || blocked() || !input.value) return;
-    input.value = ''; input.focus();
+  const dispatchChange = () => {
     const EventType = input.ownerDocument.defaultView?.Event;
     if (EventType) input.dispatchEvent(new EventType('input', { bubbles: true }));
     nativeChange(input);
   };
+  const choose = (index: number) => {
+    const match = matches[index];
+    if (scope.destroyed || blocked() || composing || !match) return;
+    input.value = match.value; suppressSuggestions = true;
+    try { close(); input.focus({preventScroll: true}); dispatchChange(); } finally { suppressSuggestions = false; }
+    close();
+  };
+  const clear = () => {
+    if (scope.destroyed || blocked() || !input.value) return;
+    input.value = ''; close(); input.focus(); dispatchChange();
+  };
   scope.listen(button, 'click', clear);
+  scope.listen(input, 'beforeinput', event => { if (blocked()) event.preventDefault(); });
   scope.listen(input, 'input', changed); scope.listen(input, 'change', changed);
-  if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { previous = input.value; render(); } }));
+  scope.listen(input, 'focus', renderSuggestions); scope.listen(input, 'blur', close);
+  scope.listen(input, 'compositionstart', () => { composing = true; close(); });
+  scope.listen(input, 'compositionend', () => { composing = false; renderSuggestions(); });
+  scope.listen(input, 'keydown', event => {
+    const key = event as KeyboardEvent;
+    if (event.defaultPrevented || composing || key.isComposing || key.keyCode === 229 || key.altKey || key.ctrlKey || key.metaKey || key.shiftKey || disabled()) return;
+    if (key.key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); close(); return; }
+    if (key.key === 'Escape' && requestSearchDialogClose(input)) { event.preventDefault(); event.stopPropagation(); return; }
+    if ((key.key === 'ArrowDown' || key.key === 'ArrowUp') && enabled() && !blocked()) {
+      if (!open) renderSuggestions();
+      if (!open || !matches.length) return;
+      event.preventDefault(); active = key.key === 'ArrowDown' ? (active + 1) % matches.length : (active < 0 ? matches.length - 1 : (active + matches.length - 1) % matches.length); updateActive();
+    } else if (key.key === 'Enter') {
+      if (open && active >= 0 && !blocked()) { event.preventDefault(); choose(active); }
+      else { const query = input.value.trim(); close(); if (query) options.onSearch?.(query); }
+    }
+  });
+  const optionFrom = (event: Event) => {
+    const option = eventElement(event)?.closest<HTMLElement>('[data-nq-search-index]');
+    return option && list?.contains(option) ? option : undefined;
+  };
+  for (const type of ['pointerdown', 'mousedown']) scope.listen(root, type, event => {
+    const pointer = event as MouseEvent;
+    const target = eventElement(event);
+    if (pointer.button === 0 && (optionFrom(event) || (target && button.contains(target))) && !blocked()) event.preventDefault();
+  });
+  scope.listen(root, 'click', event => {
+    const pointer = event as MouseEvent, option = optionFrom(event);
+    if (option && pointer.button === 0 && !pointer.ctrlKey && !pointer.metaKey && !pointer.altKey && !pointer.shiftKey) { event.preventDefault(); choose(Number(option.dataset.nqSearchIndex)); }
+  });
+  scope.listen(input.ownerDocument, 'pointerdown', event => { if (event.target && !root.contains(event.target as Node)) close(); });
+  scope.listen(input.ownerDocument, 'click', event => { if (event.target && !root.contains(event.target as Node)) close(); });
+  if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => {
+    if (!scope.destroyed && !event.defaultPrevented) { previous = input.value; composing = false; close(); renderBase(); }
+  }));
   const Observer = input.ownerDocument.defaultView?.MutationObserver;
   if (Observer) {
-    const observer = new Observer(render);
-    observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'readonly', 'value'] });
-    observer.observe(root, { attributes: true, attributeFilter: ['data-nq-readonly', 'aria-readonly'] });
+    const observer = new Observer(() => { renderBase(); renderSuggestions(); });
+    observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'readonly', 'value'] });
+    observer.observe(root, { attributes: true, attributeFilter: ['data-nq-readonly', 'aria-readonly', 'aria-disabled', 'disabled', 'data-nq-suggestions', 'data-nq-max-suggestions'] });
+    for (let ancestor = root.parentElement; ancestor; ancestor = ancestor.parentElement) if (ancestor.localName === 'fieldset') observer.observe(ancestor, {attributes: true, attributeFilter: ['disabled']});
     scope.add(() => observer.disconnect());
   }
-  render();
-  return { get value() { return input.value; }, clear, setValue(value) { if (!scope.destroyed) { input.value = value; previous = value; render(); } }, destroy: () => scope.destroy() };
+  configure(); renderBase();
+  return {
+    get value() { return input.value; }, clear,
+    setValue(value) { if (!scope.destroyed) { input.value = value; previous = value; close(); renderBase(); } },
+    setSuggestions(items) { if (!scope.destroyed) { explicitSuggestions = [...items]; renderSuggestions(); } },
+    destroy: () => scope.destroy(),
+  };
 }

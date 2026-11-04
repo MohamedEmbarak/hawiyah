@@ -54,7 +54,9 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
     const preview=page.frameLocator('.nq-ide-frame');
     const selectors:Record<string,string>={'button':'.nq-button','icon-button':'.nq-button','text-field':'.nq-input','toggle-group':'.nq-toggle-group','content-navigation':'.nq-content-nav'};
     await expect(preview.locator(selectors[component] ?? `.nq-${component}`).first(),`${framework}/${language}/${component}`).toBeVisible();
-    if(component==='content-navigation') {
+    if(component==='search-field') {
+      const example=preview.locator('[data-search-demo="suggestions"]');await example.locator('input').fill('License');await example.locator('input').press('ArrowDown');await example.locator('input').press('Enter');await expect(example.locator('input')).toHaveValue('License renewal');await example.locator('input').press('Enter');await expect(example.locator('[data-search-demo-result]')).toContainText('License renewal');
+    } else if(component==='content-navigation') {
       const example=preview.locator('.content-navigation-demo').first(), link=example.locator('a[data-nq-section]').last();
       await link.click();await expect(link).toHaveAttribute('aria-current','location');await expect(example.locator('output')).toContainText('support');
     } else if(component==='select') {

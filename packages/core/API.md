@@ -262,3 +262,30 @@ the URL or history. `{focus: true}` focuses the destination without additional
 scrolling and temporarily supplies `tabindex="-1"` when needed; blur or destroy
 restores that temporary attribute. Use this for keyboard/assistive-technology
 activation, rather than for passive scrolling or ordinary pointer activation.
+
+## Local search suggestions
+
+`getSearchSuggestions(query, suggestions, limit = 8)` returns
+`SearchSuggestionMatch[]`, where each result is
+`{value: string, segments: Array<{text: string, match: boolean}>}`. It finds the
+first case-insensitive substring after trimming the query, removing Arabic vowel
+and annotation marks, and unifying alef variants. Original display values are
+never rewritten. UTF-16 ranges map back to the source string, retaining Arabic
+marks and whole surrogate pairs/lowercase-expanding characters in highlights.
+The helper returns text segments, never HTML; render them as text and optional
+`strong` elements. General `normalizeSearch` is unchanged by this helper.
+
+Exact duplicate values are removed, with source ordering preserved. Empty or
+marks-only queries yield no results. Limits are floored and bounded to 0–100;
+NaN uses the default 8. This is a local suggestion filter with no network,
+ranking service, application routing or remote dictionary loading.
+
+`requestSearchDialogClose(input)` requests closing the nearest open native dialog
+only when it is actually modal (`:modal`) and does not specify `closedby="none"`.
+It returns true when a request was attempted, including a canceled request, so
+the adapter can prevent the search input's native Escape-to-clear behavior.
+Use it after dismissing an open suggestion list. Native `requestClose()` is used
+when available; the fallback dispatches a cancelable event from the document's
+realm and closes only if permitted and still open. Existing `returnValue` is
+preserved. Closed/nonmodal dialogs, unsupported `:modal` selectors, and
+`closedby="none"` return false without requesting a close.

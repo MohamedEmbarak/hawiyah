@@ -1,3 +1,4 @@
+import {searchDemoCases,searchDemoMarkup,searchProject} from './search-demo';
 import {contentNavigationDemoCases,contentNavigationDemoMarkup,contentNavigationProject} from './content-navigation-demo';
 import {tabsDemoCases,tabsDemoMarkup,tabsNativeMarkup} from './tabs-demo';
 import {paginationDemoCases,paginationDemoMarkup,paginationNativeMarkup} from './pagination-demo';
@@ -32,10 +33,17 @@ export function statusMarkup(id: 'alert' | 'badge' | 'chip' | 'toast-region', lo
     : `<div class="${id === 'alert' ? 'nq-stack' : id === 'badge' ? 'nq-cluster nq-badges' : 'nq-cluster'}">${items}</div>`;
 }
 
-type Recipe = { title: string; markup: string; react?: string; vue?: string; angular?: string };
+type Recipe = { title: string; markup: string; vanillaScript?: string; react?: string; vue?: string; angular?: string };
 
 function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string): Recipe[] {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  if(id==='search-field')return searchDemoCases(locale).map(item=>({
+    title:item.title,markup:searchDemoMarkup(locale,item.kind),
+    vanillaScript:searchProject('vanilla','javascript',locale,[item.kind]).files.js.replace("import './style.css';","import '@nasaq/styles/styles.css';").replace("'#app'",`'[data-search-demo="${item.kind}"]'`),
+    react:searchProject('react','typescript',locale,[item.kind]).files.html,
+    vue:searchProject('vue','typescript',locale,[item.kind]).files.html,
+    angular:searchProject('angular','typescript',locale,[item.kind]).files.html,
+  }));
   if(id==='content-navigation')return contentNavigationDemoCases(locale).map(item=>({
     title:item.title,markup:contentNavigationDemoMarkup(locale,item.kind),
     react:contentNavigationProject('react','typescript',locale,[item.kind]).files.html,
@@ -243,5 +251,5 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
 export function renderReadyExamples(id: ComponentId, locale: Locale, preview: (id: ComponentId) => string, code: (value: string) => string) {
   const examples=recipes(id,locale,preview); if (!examples.length) return '';
   const t=(en:string,ar:string)=>locale==='ar'?ar:en;
-  return `<section id="component-examples" class="guide-content-section"><h2>${t('Ready-to-use examples','أمثلة جاهزة للاستخدام')}</h2><p>${t('Every status is visible below. Demo links stay inside the preview; use your real routes when copying a component. Static examples do not announce every message as a live alert.','تظهر جميع الحالات أدناه. تبقى روابط الأمثلة داخل المعاينة؛ استخدم مسارات تطبيقك عند نسخ المكوّن. لا تعلن الأمثلة الثابتة كل رسالة كتنبيه مباشر.')}</p><div class="ready-examples">${examples.map((r,i)=>`<article class="ready-example" data-ready-example="${id}-${i}"><h3>${e(r.title)}</h3><div class="component-preview" data-demo-preview>${r.markup}</div><details class="source-details"><summary>${t('Copy component code','انسخ شفرة المكوّن')}</summary>${Object.entries({Vanilla:r.markup,React:r.react,Vue:r.vue,Angular:r.angular}).filter(([,v])=>v).map(([name,value])=>`<h4 dir="ltr">${name}</h4>${code(value!)}`).join('')}</details></article>`).join('')}</div></section>`;
+  return `<section id="component-examples" class="guide-content-section"><h2>${t('Ready-to-use examples','أمثلة جاهزة للاستخدام')}</h2><p>${t('Every status is visible below. Demo links stay inside the preview; use your real routes when copying a component. Static examples do not announce every message as a live alert.','تظهر جميع الحالات أدناه. تبقى روابط الأمثلة داخل المعاينة؛ استخدم مسارات تطبيقك عند نسخ المكوّن. لا تعلن الأمثلة الثابتة كل رسالة كتنبيه مباشر.')}</p><div class="ready-examples">${examples.map((r,i)=>`<article class="ready-example" data-ready-example="${id}-${i}"><h3>${e(r.title)}</h3><div class="component-preview" data-demo-preview>${r.markup}</div><details class="source-details"><summary>${t('Copy component code','انسخ شفرة المكوّن')}</summary>${Object.entries({Vanilla:r.markup,...(r.vanillaScript?{'Vanilla JavaScript':r.vanillaScript}:{}),React:r.react,Vue:r.vue,Angular:r.angular}).filter(([,v])=>v).map(([name,value])=>`<h4 dir="ltr">${name}</h4>${code(value!)}`).join('')}</details></article>`).join('')}</div></section>`;
 }

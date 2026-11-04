@@ -162,7 +162,7 @@ function actionField(kind: "password" | "search") {
   });
 }
 export const PasswordField = actionField("password");
-export const SearchField = actionField("search");
+export {SearchField} from './search-field.js';
 export const NumberField = defineComponent({
   name: "NqNumberField",
   inheritAttrs: false,

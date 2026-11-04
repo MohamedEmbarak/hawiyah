@@ -19,7 +19,7 @@ Search fields can opt into an inset clear action:
 ```
 
 `createSearchField(root, { clearLabel, onValueChange })` returns `value`,
-`clear()`, `setValue(value)` and `destroy()`. Clear emits native input/change
+`clear()`, `setValue(value)`, `setSuggestions(items)` and `destroy()`. Clear emits native input/change
 and one `nq:change`; setValue synchronizes silently. Read-only and disabled
 fields cannot be cleared. Search submission belongs to the application form.
 See [search field behavior](../../docs/search-field.md).
@@ -299,3 +299,44 @@ and scroll-root attributes are observed; call `refresh()` after application stat
 changes when necessary. Destroy restores authored attributes and temporary focus
 attributes and removes all observers and listeners. See the core API for section
 eligibility and selection thresholds.
+
+## SearchField local autocomplete
+
+The optional `suggestions: readonly string[]` option enables local autocomplete.
+`maxSuggestions` defaults to 8 (bounded to 0–100), `resultsMessage(count)` customizes
+the polite count announcement, and `onSearch(query)` reports a trimmed nonempty
+query on plain Enter. Existing fields without suggestions retain their original
+search-input semantics. A readonly field can report a search for its existing
+value but cannot clear, select suggestions or edit through user input.
+
+For automatic enhancement, provide a JSON string array in `data-nq-suggestions`
+on the search-field root and optionally `data-nq-max-suggestions`. Escape JSON as
+an HTML attribute in templates; malformed/non-array JSON safely yields no options.
+Explicit options override attributes, and `setSuggestions(items)` supplies a new
+explicit dictionary. Attribute changes are observed; no remote dictionary is
+fetched or executed.
+
+The generated popup sits inside `.nq-search-control`, with `.nq-search-suggestions`
+listbox and `.nq-search-option` rows. Only opt-in fields receive combobox roles,
+expanded/active-descendant state and disabled native browser autocomplete. Match
+segments are created with text nodes and `strong`, including strings that resemble
+HTML. A separate polite status reports available results. Empty queries and zero
+matches never display an empty popup.
+
+Arrow keys wrap through options while focus stays on the input. Enter on an
+active option selects it, emits the ordinary input/change value notifications,
+and prevents form submission. Plain Enter leaves native form submission intact;
+coordinate `onSearch` with your form handler instead of submitting twice. The
+first Escape closes an open list and is consumed so a containing dialog stays
+open. A second Escape requests closing an open native modal dialog, honoring
+cancellation and `closedby="none"`, without clearing the selected search text
+when that close request is handled. Modified keys and IME
+composition retain normal input behavior. Pointer/touch activation preserves
+input focus and commits on click, rather than during a scrolling gesture.
+
+Blur, outside interaction, clear, silent `setValue`, and completed form reset
+close the list. Disabled/readonly states close it too; inherited fieldset disabled
+state remains native. Destroy removes generated nodes/listeners, restores authored
+ARIA/autocomplete/button attributes, and retains the current input value. Search
+submission, results rendering, modal composition and navigation belong to the
+application.

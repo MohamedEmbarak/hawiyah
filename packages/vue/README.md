@@ -119,7 +119,7 @@ All use native Vue rendering, shared CSS, and the same attrs/slots conventions.
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `InputGroup`    | `prefix`, default and `suffix` slots; the consuming field supplies its label                                                                                                                                                                                                                                                                   |
 | `PasswordField` | String `v-model`, `defaultValue`, field decoration, `disabled`, `readonly`; `showLabel`, `hideLabel` localize the reveal button; input and button form one input group                                                                                                                                                                         |
-| `SearchField`   | String `v-model`, `defaultValue`, field decoration, `clearLabel`; emits `search(query)` on Enter; clear button restores input focus                                                                                                                                                                                                            |
+| `SearchField`   | String `v-model`, `defaultValue`, field decoration, `clearLabel`; optional `suggestions`, `maxSuggestions` (8), `resultsMessage(count)`, `showSearchButton` (false), `searchLabel`; emits `search(query)`. Input attributes and exposed `element`/`focus()` remain supported. |
 | `NumberField`   | `v-model: number \| ''`; native `min`, `max`, `step` and `required`; clearing preserves an empty value instead of inventing zero                                                                                                                                                                                                               |
 | `Slider`        | Numeric `v-model`, `defaultValue`, `min=0`, `max=100`, `step=1`, field decoration, `disabled`, `readonly`; native range keyboard behavior                                                                                                                                                                                                      |
 | `RangeSlider`   | Tuple `v-model: readonly [number,number]`, `defaultValue`, `min`, `max`, `step`; `label`, `lowerLabel`, `upperLabel`, `lowerName`, `upperName`; two native ranges enforce lower ≤ upper                                                                                                                                                        |
@@ -341,6 +341,24 @@ See [table evidence and adaptations](../../docs/nic-tables.md).
 
 Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Arabic labels and Latin digits are the defaults.
 
+
+### Search suggestions
+
+SearchField accepts local string suggestions and remains a free-text input.
+With suggestions supplied it exposes an editable combobox/listbox, highlighted
+matches and a polite result count. Arrow keys wrap through matches; Enter on an
+active suggestion selects it and prevents form submission. Ordinary Enter with
+no active suggestion emits `search` with a trimmed, nonempty query and keeps
+native form submission available. Choose either the search callback or the
+form's submit handler for the application request; wiring both duplicates it.
+The optional icon search action is a non-submit button and uses the callback.
+Arabic clear/search labels are defaults and can be localized.
+
+Escape dismisses an open list before reaching an enclosing dialog; another
+Escape can dismiss the dialog. Composition/modifier keys do not commit matches.
+Readonly inputs remain searchable but cannot edit/clear/select suggestions;
+disabled inputs cannot search. Blur, outside press, reset and changed suggestion
+configuration clear active-option state. No remote search service is called.
 
 ### Content navigation
 

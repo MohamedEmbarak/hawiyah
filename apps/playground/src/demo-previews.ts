@@ -1,8 +1,10 @@
+import { bindSearchDemos } from './search-demo';
 /** Guide-only containment. Production components retain normal link/form semantics. */
 const previewSelector = '.component-preview, [data-demo-preview]';
 
 export function bindDemoPreviews(root: HTMLElement, locale: 'ar' | 'en') {
   const scope = new AbortController();
+  const disposeSearch = bindSearchDemos(root);
   const showResult = (preview: HTMLElement, label: string) => {
     let status = preview.querySelector<HTMLElement>(':scope > [data-demo-result]');
     if (!status) {
@@ -43,7 +45,8 @@ export function bindDemoPreviews(root: HTMLElement, locale: 'ar' | 'en') {
     const preview = form?.closest<HTMLElement>(previewSelector);
     if (!form || !preview) return;
     event.preventDefault();
+    if (form.matches('[data-search-demo-form]')) return;
     showResult(preview, locale === 'ar' ? 'إرسال النموذج' : 'Submit form');
   }, { capture: true, signal: scope.signal });
-  return () => scope.abort();
+  return () => { scope.abort(); disposeSearch(); };
 }

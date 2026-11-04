@@ -25,10 +25,10 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 ## Coverage and remaining work
 
-Native project recipes currently cover 34 components: Button, ButtonGroup, IconButton,
+Native project recipes currently cover 35 components: Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
-Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter and ContentNavigation. Other component
+Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation and SearchField. Other component
 pages explicitly identify their native recipes as pending and retain the
 vanilla project. Extending native recipes to every catalog entry is required
 before the overall alignment/editor goal is complete.
@@ -181,3 +181,19 @@ recipes pass strict template checks, and all seven exported framework/language
 projects build against the final clean tarball consumer. Clean packages also
 pass ESM, SSR, Angular APF, declaration, CSS-export and tree-shaking checks.
 This does not claim a fresh full 170-preview catalog run.
+
+
+SearchField adds the 35th native recipe without adding a catalog component.
+Four compositions demonstrate free-text clearing, a local bilingual dictionary,
+read-only/disabled/error states, and a Dialog with suggested terms and an
+advanced-search action. The dictionary includes Arabic diacritics/Alef variants
+and a literal HTML-looking string to demonstrate safe text rendering. Each native
+project imports its actual SearchField and Dialog, binds query/status state, and
+uses one form-submit path with the internal search button explicitly disabled.
+The dialog autofocuses search and restores its opener; suggestion Escape is
+handled before dialog dismissal. Vanilla projects include separate application
+listeners and cleanup rather than inline event attributes. Examples report local
+status, never fetch dictionaries/results or navigate the guide. See
+[NIC search evidence](nic-search.md) for the implementation and scoped checks.
+
+Search verification covered both React and Vue languages and Angular TypeScript in Chromium. Native form validation and submit events execute inside the opaque preview. Its content security policy blocks external form submissions, including direct calls to the native submit method.

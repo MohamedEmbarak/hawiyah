@@ -79,7 +79,7 @@ test('the opaque preview blocks parent access and external resources, and ignore
     if (response.url().startsWith('https://example.test/')) responses.push(response.url());
   });
   await openIDE(page);
-  await expect(page.locator('.nq-ide-frame')).toHaveAttribute('sandbox', 'allow-scripts');
+  await expect(page.locator('.nq-ide-frame')).toHaveAttribute('sandbox', 'allow-scripts allow-forms');
   await page.locator('[data-ide-auto]').uncheck();
   await editFile(page, 'js', `
     try { parent.document.body.dataset.compromised = 'yes'; }
@@ -185,4 +185,16 @@ test('theme and navigation rerenders preserve all three edited files and inherit
   await page.locator('[data-ide-reset]').click();
   await expect(preview.locator('#draft')).toHaveCount(0);
   await expect(preview.locator('.nq-button')).toHaveCount(2);
+});
+
+
+test('native form validation and dialog forms run locally while direct external submission stays blocked',async({page})=>{
+  test.setTimeout(90000);const responses:string[]=[];page.on('response',response=>{if(response.url().startsWith('https://example.test/'))responses.push(response.url());});
+  await openIDE(page);await page.locator('[data-ide-auto]').uncheck();
+  await editFile(page,'html','<form id="search-form" action="https://example.test/search"><label>Query<input id="query" name="query" required></label><button id="run-search" type="submit">Search</button></form><output id="result">0</output><button id="bypass" type="button">Direct submission</button><button id="show" type="button">Show dialog</button><dialog id="confirm"><form method="dialog"><button value="confirmed">Confirm</button></form></dialog>');
+  await editFile(page,'js',`let count=0;const form=document.querySelector('#search-form');form.addEventListener('submit',event=>{event.preventDefault();document.querySelector('#result').textContent=String(++count);});document.querySelector('#bypass').addEventListener('click',()=>form.submit());document.querySelector('#show').addEventListener('click',()=>document.querySelector('#confirm').showModal());`);
+  await page.locator('[data-ide-run]').click();const preview=page.frameLocator('.nq-ide-frame');await expect(preview.locator('#result')).toHaveText('0');
+  await preview.locator('#run-search').click();await expect(preview.locator('#result')).toHaveText('0');await preview.locator('#query').fill('local search');await preview.locator('#query').press('Enter');await expect(preview.locator('#result')).toHaveText('1');
+  await preview.locator('#show').click();await expect(preview.locator('#confirm')).toBeVisible();await preview.locator('#confirm button').click();await expect(preview.locator('#confirm')).toBeHidden();expect(await preview.locator('#confirm').evaluate(el=>(el as HTMLDialogElement).returnValue)).toBe('confirmed');
+  const frameUrl=await preview.locator('body').evaluate(()=>location.href);await preview.locator('#bypass').click();await expect(page.locator('.nq-ide-console')).toContainText('form-action');expect(await preview.locator('body').evaluate(()=>location.href)).toBe(frameUrl);expect(responses).toEqual([]);await expect(page).toHaveURL(/#component\/button$/);
 });

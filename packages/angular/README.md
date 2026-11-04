@@ -141,7 +141,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | --- | --- |
 | InputGroup | Project `[nqPrefix]`, a labeled native/control input, and `[nqSuffix]`; `size: sm/md/lg`. Addons remain ordinary content, so label decorative icons appropriately. |
 | PasswordField | String value; `autocomplete`, `placeholder`, `showLabel`, `hideLabel`. Reveal button keeps the same input and resets to hidden with forms. |
-| SearchField | String value; `placeholder`, `searchLabel`, `clearLabel`; `searched` output on Enter/search button. Clearing restores input focus. |
+| SearchField | String value/CVA; `placeholder`, `autocomplete`, `autofocus`, `searchLabel`, `clearLabel`; optional `suggestions`, `maxSuggestions` (8), `resultsMessage(count)`, `showSearchButton` (true for compatibility); `searched(query)` output and public `focus()`. |
 | NumberField | `number \| null` value; `min`, `max`, `step` (number or `any`). Empty/invalid native numeric input maps to null. Native step/min/max validation remains active. |
 | Slider | Number value; `min`, `max`, `step`; native range plus value output. |
 | RangeSlider | `[lower,upper]`; `min`, `max`, `step`, `lowerLabel`, `upperLabel`, `lowerName`, `upperName`. Crossing thumbs stop at the other value; absent distinct names, `name` submits two ordered values. |
@@ -297,6 +297,24 @@ See [table evidence and adaptations](../../docs/nic-tables.md).
 
 Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Arabic labels and Latin digits are the defaults.
 
+
+### Search suggestions
+
+SearchField accepts local string suggestions and remains a free-text input.
+With suggestions supplied it exposes an editable combobox/listbox, highlighted
+matches and a polite result count. Arrow keys wrap through matches; Enter on an
+active suggestion selects it and prevents form submission. Ordinary Enter with
+no active suggestion emits `searched` with a trimmed, nonempty query and keeps
+native form submission available. Choose either the search callback or the
+form's submit handler for the application request; wiring both duplicates it.
+The optional icon search action is a non-submit button and uses the callback.
+Arabic clear/search labels are defaults and can be localized.
+
+Escape dismisses an open list before reaching an enclosing dialog; another
+Escape can dismiss the dialog. Composition/modifier keys do not commit matches.
+Readonly inputs remain searchable but cannot edit/clear/select suggestions;
+disabled inputs cannot search. Blur, outside press, reset and changed suggestion
+configuration clear active-option state. No remote search service is called.
 
 ### Content navigation
 

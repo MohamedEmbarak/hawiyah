@@ -196,7 +196,10 @@ export const tokens = {
     "rating-fill": "#1B8354",
     "rating-outline": "#384250",
     "pagination-menu-border": "#e5e7eb",
-    "content-nav-marker-hover": "#98A2B3"
+    "content-nav-marker-hover": "#98A2B3",
+    "search-term-border": "#DFF6E7",
+    "search-suggestion-border": "#E5E7EB",
+    "search-clear": "#B4231899"
   },
   "control": {
     "height": "2.5rem",
@@ -322,7 +325,10 @@ export const themes = {
         "rating-fill": "#005b56",
         "rating-outline": "#4c6264",
         "pagination-menu-border": "#d9e0da",
-        "content-nav-marker-hover": "#5c7071"
+        "content-nav-marker-hover": "#5c7071",
+        "search-term-border": "#d9e0da",
+        "search-suggestion-border": "#d9e0da",
+        "search-clear": "#4c6264"
       }
     },
     "dark": {
@@ -427,7 +433,10 @@ export const themes = {
         "rating-fill": "#a2e0d5",
         "rating-outline": "#b9cdca",
         "pagination-menu-border": "#3a5150",
-        "content-nav-marker-hover": "#9cb5b2"
+        "content-nav-marker-hover": "#9cb5b2",
+        "search-term-border": "#3a5150",
+        "search-suggestion-border": "#3a5150",
+        "search-clear": "#b9cdca"
       }
     }
   },
@@ -534,7 +543,10 @@ export const themes = {
         "rating-fill": "#1B8354",
         "rating-outline": "#384250",
         "pagination-menu-border": "#e5e7eb",
-        "content-nav-marker-hover": "#98A2B3"
+        "content-nav-marker-hover": "#98A2B3",
+        "search-term-border": "#DFF6E7",
+        "search-suggestion-border": "#E5E7EB",
+        "search-clear": "#B4231899"
       }
     },
     "dark": {
@@ -639,7 +651,10 @@ export const themes = {
         "rating-fill": "#54C08A",
         "rating-outline": "#F3F4F6",
         "pagination-menu-border": "#6C737F",
-        "content-nav-marker-hover": "#E5E7EB"
+        "content-nav-marker-hover": "#E5E7EB",
+        "search-term-border": "#6C737F",
+        "search-suggestion-border": "#6C737F",
+        "search-clear": "#F97066"
       }
     }
   }
@@ -1102,7 +1117,10 @@ export const tokenNames = {
     "rating-fill": "--nq-color-rating-fill",
     "rating-outline": "--nq-color-rating-outline",
     "pagination-menu-border": "--nq-color-pagination-menu-border",
-    "content-nav-marker-hover": "--nq-color-content-nav-marker-hover"
+    "content-nav-marker-hover": "--nq-color-content-nav-marker-hover",
+    "search-term-border": "--nq-color-search-term-border",
+    "search-suggestion-border": "--nq-color-search-suggestion-border",
+    "search-clear": "--nq-color-search-clear"
   },
   "control": {
     "height": "--nq-control-height",
@@ -1297,6 +1315,9 @@ export const cssVariableNames = [
   "--nq-color-rating-outline",
   "--nq-color-pagination-menu-border",
   "--nq-color-content-nav-marker-hover",
+  "--nq-color-search-term-border",
+  "--nq-color-search-suggestion-border",
+  "--nq-color-search-clear",
   "--nq-control-height",
   "--nq-control-height-sm",
   "--nq-control-height-lg",
