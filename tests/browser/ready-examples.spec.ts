@@ -20,7 +20,7 @@ for (const locale of ['ar', 'en']) test(`ready examples expose all statuses with
   const toast = page.locator('[data-guide-canvas] [data-tone="info"]');
   await toast.locator('button').click(); await expect(toast).toBeHidden();
   await page.goto('/#component/portal-header');
-  const preview = page.locator('#component-examples [data-demo-preview]');
+  const preview = page.locator('#component-examples [data-demo-preview]').filter({ has: page.locator('#ready-header-main') });
   const href = page.url();
   const service = preview.locator('a[href="/services"]');
   await service.click(); await expect(page).toHaveURL(href);

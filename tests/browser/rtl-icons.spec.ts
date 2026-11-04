@@ -55,26 +55,25 @@ test('carousel arrows and navigation respect the live preview direction switch',
   const canvas = page.locator('[data-guide-canvas]');
   const previous = canvas.locator('[data-nq-previous]');
   const next = canvas.locator('[data-nq-next]');
-  const back = previous.locator('[data-icon="arrow-back"]');
-  const forward = next.locator('[data-icon="arrow"]');
-  const visibleSlide = canvas.locator('[data-nq-slide]:not([hidden])');
-  await expect(back).toBeVisible();
-  const firstSlide = await visibleSlide.textContent();
-  expect(await transform(back)).toBe(mirrored);
-  expect(await transform(forward)).toBe(mirrored);
+  const arrow = (button: Locator) => button.evaluate(node => getComputedStyle(node, '::before').content);
+  const activeSlide = canvas.locator('[data-nq-slide]:not([inert])');
+  await expect(previous).toBeVisible();
+  const firstSlide = await activeSlide.textContent();
+  expect(await arrow(previous)).toBe('"→"');
+  expect(await arrow(next)).toBe('"←"');
   await next.click();
-  await expect(visibleSlide).not.toHaveText(firstSlide!);
+  await expect(activeSlide).not.toHaveText(firstSlide!);
   await previous.click();
-  await expect(visibleSlide).toHaveText(firstSlide!);
+  await expect(activeSlide).toHaveText(firstSlide!);
 
   await page.locator('[data-guide-direction="ltr"]').click();
   await expect(canvas).toHaveAttribute('dir', 'ltr');
-  expect(await transform(back)).toBe('none');
-  expect(await transform(forward)).toBe('none');
+  expect(await arrow(previous)).toBe('"←"');
+  expect(await arrow(next)).toBe('"→"');
   // The Arabic guide outside this LTR demo keeps its own navigation direction.
   expect(await transform(page.locator('.guide-back [data-icon="arrow-back"]'))).toBe(mirrored);
   await next.click();
-  await expect(visibleSlide).not.toHaveText(firstSlide!);
+  await expect(activeSlide).not.toHaveText(firstSlide!);
   await page.locator('[data-guide-direction="rtl"]').click();
-  expect(await transform(forward)).toBe(mirrored);
+  expect(await arrow(next)).toBe('"←"');
 });
