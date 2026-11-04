@@ -31,7 +31,9 @@ FileUpload and FileDropzone show the filenames returned by their native input an
 
 Dialog adds localized notification examples for five tones. The host chooses the actions and records acknowledgement, retry or cancellation in its own state.
 
-Native project recipes currently cover 65 components: Dialog, FileUpload, FileDropzone, Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
+Combobox, PinInput, TagInput and MultiSelect each have a form with a disabled toggle, reset and local submission. Examples display the current value alongside the entries read from `FormData`. Combobox submits the selected office ID. PinInput preserves leading zeros. TagInput and MultiSelect submit repeated values under one field name.
+
+Native project recipes currently cover 69 components: Combobox, PinInput, TagInput, MultiSelect, Dialog, FileUpload, FileDropzone, Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, ToastRegion and the 12 layout primitives listed below. Other component

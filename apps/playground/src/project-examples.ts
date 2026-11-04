@@ -1,3 +1,4 @@
+import {choiceInputIds, choiceInputProject, isChoiceInput} from './choice-input-projects.ts';
 import {notificationDialogProject} from './notification-dialog-demo.ts';
 import {fileProject, fileProjectIds, isFileProjectId} from './file-projects.ts';
 import {calendarProject} from './calendar-projects.ts';
@@ -19,6 +20,7 @@ import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
 import type { Locale } from "./data";
 
 export const nativeProjectComponents = new Set([
+  ...choiceInputIds,
   ...Object.keys(layoutComponents),
   ...contentProjectIds,
   ...basicInputProjectIds,
@@ -76,6 +78,7 @@ export function projectExample(
   locale: Locale,
   html: string,
 ): ProjectExample {
+  if (isChoiceInput(id)) return choiceInputProject(id, framework, language, locale);
   if (id === "dialog") return notificationDialogProject(framework, language, locale);
   if (isFileProjectId(id)) return fileProject(id, framework, language, locale);
   if (id === "toast-region") return toastProject(framework, language, locale);
