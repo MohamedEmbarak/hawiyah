@@ -167,7 +167,7 @@ export function mountProjectEditor(
       state.drafts[`${state.framework}:${state.language}`] ?? example.files;
     const url = URL.createObjectURL(
       projectZip(
-        projectDownloadFiles(example, edited, state.framework, state.language),
+        projectDownloadFiles(example, edited, state.framework, state.language, options.locale),
       ),
     );
     const link = document.createElement("a");

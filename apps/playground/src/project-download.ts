@@ -1,3 +1,4 @@
+import type { Locale } from "./data";
 import type { IDEFiles } from "./component-ide";
 import type {
   ProjectFramework,
@@ -11,6 +12,7 @@ export function projectDownloadFiles(
   edited: IDEFiles,
   framework: ProjectFramework,
   language: ProjectLanguage,
+  locale: Locale = "ar",
 ): ProjectFiles {
   const files = Object.fromEntries(
     Object.entries(edited).map(([id, source]) => [
@@ -23,7 +25,7 @@ export function projectDownloadFiles(
       ? `<div id="app">${edited.html}</div>`
       : example.host;
   files["index.html"] =
-    `<!doctype html>\n<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nasaq example</title></head><body>${body}<script type="module" src="./${example.entry}"></script></body></html>\n`;
+    `<!doctype html>\n<html lang="${locale}" dir="${locale === "ar" ? "rtl" : "ltr"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nasaq example</title></head><body>${body}<script type="module" src="./${example.entry}"></script></body></html>\n`;
   if (framework === "vanilla" && /<html[\s>]/i.test(edited.html))
     files["index.html"] = edited.html;
   const deps: Record<string, string> = {};
