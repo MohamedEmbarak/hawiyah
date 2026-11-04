@@ -50,34 +50,71 @@ export interface ServiceCardProps extends Omit<CardProps, 'header' | 'footer' | 
 export function ServiceCard({ title, description, href, action, actionLabel = 'View service', category, metadata, icon, children, className, ...props }: ServiceCardProps) { return <Card {...props} className={cx('nq-service-card', className)} header={<>{icon && <span aria-hidden="true">{icon}</span>}<div>{category && <Badge>{category}</Badge>}<h3>{title}</h3></div></>} footer={action ?? (href && <Link href={href}>{actionLabel}</Link>)}>{description && <p>{description}</p>}{metadata && <DescriptionList items={metadata} />}{children}</Card>; }
 export interface ServiceDetailsProps extends Omit<ComponentPropsWithRef<'article'>, 'title'> { title: ReactNode; description?: ReactNode; metadata?: readonly DescriptionItem[]; requirements?: readonly ReactNode[]; requirementsLabel?: string; action?: ReactNode }
 export function ServiceDetails({ title, description, metadata, requirements, requirementsLabel = 'Requirements', action, children, className, ...props }: ServiceDetailsProps) { return <article {...props} className={cx('nq-service-details', className)}><header><h2>{title}</h2>{description && <p>{description}</p>}</header>{metadata && <DescriptionList items={metadata} />}{requirements && <section><h3>{requirementsLabel}</h3><ul>{requirements.map((item, index) => <li key={index}>{item}</li>)}</ul></section>}{children}{action && <footer>{action}</footer>}</article>; }
-export interface PortalNavItem { label: ReactNode; href: string; current?: boolean }
+export interface PortalNavLink { label: ReactNode; href: string; current?: boolean }
+export interface PortalNavItem extends PortalNavLink { groups?: readonly { label?: string; links: readonly PortalNavLink[] }[] }
 export interface PortalHeaderProps extends ComponentPropsWithRef<'header'> { brand: ReactNode; brandHref?: string; navigation?: readonly PortalNavItem[]; navigationLabel?: string; menuLabel?: string; navigationId?: string; mainId?: string; skipLabel?: string; actions?: ReactNode; notice?: ReactNode }
 export function PortalHeader({ brand, brandHref, navigation, navigationLabel = 'التنقل الرئيسي', menuLabel = 'القائمة', navigationId, mainId, skipLabel = 'انتقل إلى المحتوى', actions, notice, children, className, onKeyDown, onBlur, ...props }: PortalHeaderProps) {
   const id = useId(); const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null); const trigger = useRef<HTMLButtonElement>(null);
   const navId = navigationId ?? `${id}-navigation`;
+  const [branch, setBranch] = useState<HTMLDetailsElement | null>(null);
+  const closeNavigation = () => { setBranch(null); setOpen(false); };
   useEffect(() => {
-    if (!open) return;
-    const root = container.current; const document = root?.ownerDocument;
-    const outside = (event: PointerEvent) => { if (!root?.contains(event.target as Node)) setOpen(false); };
-    document?.addEventListener('pointerdown', outside);
-    return () => document?.removeEventListener('pointerdown', outside);
-  }, [open]);
+    if (!open && !branch) return;
+    const root = container.current;
+    const outside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!branch?.contains(target)) setBranch(null);
+      if (!root?.contains(target)) setOpen(false);
+    };
+    root?.ownerDocument.addEventListener('pointerdown', outside);
+    return () => root?.ownerDocument.removeEventListener('pointerdown', outside);
+  }, [open, branch]);
+  const link = (item: PortalNavLink, overview = false) =>
+    <Link href={item.href} className={overview ? 'nq-portal-branch-overview' : undefined} aria-current={item.current ? 'page' : undefined} onClick={closeNavigation}>{item.label}</Link>;
   return <header {...props} className={cx('nq-portal-header', className)} onKeyDown={event => {
     onKeyDown?.(event);
-    if (!event.defaultPrevented && event.key === 'Escape' && open) { event.preventDefault(); setOpen(false); trigger.current?.focus(); }
-  }} onBlur={event => { onBlur?.(event); if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node)) setOpen(false); }}>
+    if (event.defaultPrevented || event.key !== 'Escape') return;
+    if (branch?.isConnected) {
+      event.preventDefault(); event.stopPropagation(); setBranch(null);
+      branch.querySelector<HTMLElement>(':scope > summary')?.focus();
+    } else if (open) {
+      event.preventDefault(); event.stopPropagation(); closeNavigation(); trigger.current?.focus();
+    }
+  }} onBlur={event => {
+    onBlur?.(event);
+    const target = event.relatedTarget ?? event.currentTarget.ownerDocument.activeElement;
+    if (!branch?.contains(target as Node | null)) setBranch(null);
+    if (!event.currentTarget.contains(target as Node | null)) setOpen(false);
+  }}>
     {mainId && <a className="nq-skip-link" href={`#${mainId}`}>{skipLabel}</a>}
     {notice && <div className="nq-portal-notice">{notice}</div>}
     <div ref={container} className="nq-portal-header-main">
       {brandHref ? <Link href={brandHref} className="nq-portal-brand">{brand}</Link> : <div className="nq-portal-brand">{brand}</div>}
-      {!!navigation?.length && <><button ref={trigger} className="nq-button nq-portal-menu-toggle" type="button" aria-expanded={open} aria-controls={navId} onClick={() => setOpen(!open)}><span className="nq-icon" data-icon={open ? 'cancel-01' : 'menu-01'} aria-hidden="true" />{menuLabel}</button>
-        <nav id={navId} aria-label={navigationLabel} data-open={open}><ul>{navigation.map((item, index) => <li key={index}><Link href={item.href} aria-current={item.current ? 'page' : undefined} onClick={() => setOpen(false)}>{item.label}</Link></li>)}</ul></nav></>}
+      {!!navigation?.length && <><button ref={trigger} className="nq-button nq-portal-menu-toggle" type="button" aria-expanded={open} aria-controls={navId} onClick={() => { setBranch(null); setOpen(!open); }}><span className="nq-icon" data-icon={open ? 'cancel-01' : 'menu-01'} aria-hidden="true" />{menuLabel}</button>
+        <nav id={navId} aria-label={navigationLabel} data-open={open}><ul>{navigation.map(item => {
+          const groups = item.groups?.filter(group => group.links.length);
+          if (!groups?.length) return <li key={item.href}>{link(item)}</li>;
+          const childCurrent = groups.some(group => group.links.some(child => child.current));
+          const current = item.current || childCurrent;
+          return <li key={item.href}><details data-nq-portal-branch="" className="nq-portal-branch" data-current={current || undefined} open={Boolean(branch?.isConnected && branch.dataset.branchHref === item.href)} data-branch-href={item.href}>
+            <summary onClick={event => {
+              event.preventDefault();
+              const details = event.currentTarget.parentElement as HTMLDetailsElement;
+              setBranch(branch === details ? null : details);
+            }}>{item.label}</summary>
+            <div className="nq-portal-branch-panel">{link({...item, current: item.current && !childCurrent}, true)}
+              {groups.map((group, i) => <section className="nq-portal-branch-group" key={i}>{group.label && <h2>{group.label}</h2>}
+                <ul>{group.links.map(child => <li key={child.href}>{link(child)}</li>)}</ul>
+              </section>)}
+            </div>
+          </details></li>;
+        })}</ul></nav></>}
       {actions && <div className="nq-portal-actions">{actions}</div>}{children}
     </div>
   </header>;
 }
-export interface PortalFooterLink extends PortalNavItem { external?: boolean }
+export interface PortalFooterLink extends PortalNavLink { external?: boolean }
 export interface PortalFooterGroup { title: string; links: readonly PortalFooterLink[] }
 export interface PortalFooterProps extends ComponentPropsWithRef<'footer'> {
   brand?: ReactNode; description?: ReactNode; links?: readonly PortalFooterLink[]; linksLabel?: string; legal?: ReactNode;

@@ -53,7 +53,7 @@
 .nq-portal-footer-support-content > p { margin: 0; font-size: 0.875rem; line-height: 1.5rem; }
 .nq-portal-footer-actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--nq-space-2); }
 .nq-portal-footer-actions .nq-button[data-variant='outline-white']:not(:disabled, [disabled], [aria-disabled='true']) { --nq-button-hover: color-mix(in srgb, currentColor 20%, transparent); --nq-button-active: color-mix(in srgb, currentColor 30%, transparent); --nq-button-focus-color: currentColor; color: inherit; border-color: currentColor; }
-.nq-portal-footer-wordmark { display: inline-block; inline-size: 5.25rem; block-size: 2.625rem; background: currentColor; -webkit-mask: url('./assets/nasaq-wordmark.svg') center / contain no-repeat; mask: url('./assets/nasaq-wordmark.svg') center / contain no-repeat; }
+:is(.nq-portal-wordmark, .nq-portal-footer-wordmark) { display: inline-block; inline-size: 5.25rem; block-size: 2.625rem; background: currentColor; -webkit-mask: url('./assets/nasaq-wordmark.svg') center / contain no-repeat; mask: url('./assets/nasaq-wordmark.svg') center / contain no-repeat; }
 .nq-portal-footer .nq-portal-footer-bottom { margin-block-start: var(--nq-profile-footer-bottom-gap, var(--nq-space-6)); margin-inline: auto; max-inline-size: var(--nq-content-max); border-block-start-color: color-mix(in srgb, currentColor 30%, transparent); }
 .nq-portal-footer .nq-portal-footer-bottom :is(p, small) { color: inherit; }
 .nq-portal-footer .nq-portal-footer-legal > ul { flex-direction: row; flex-wrap: wrap; gap: var(--nq-space-3) var(--nq-space-4); }
@@ -69,5 +69,5 @@
   .nq-portal-footer :is(.nq-portal-footer-group, .nq-portal-footer-legal, .nq-portal-footer-support) a:not(.nq-button) { color: LinkText; }
   .nq-portal-footer a:hover { opacity: 1; }
   .nq-portal-footer :is(a, button):focus-visible { outline-color: Highlight; }
-  .nq-portal-footer-wordmark { forced-color-adjust: none; background: CanvasText; }
+  :is(.nq-portal-wordmark, .nq-portal-footer-wordmark) { forced-color-adjust: none; background: CanvasText; }
 }

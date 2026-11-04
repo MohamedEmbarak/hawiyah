@@ -27,3 +27,91 @@ it('participates in enhancement cleanup and leaves no collapsed navigation witho
   expect(root.querySelector('nav')!.dataset.open).toBe('false'); release();
   expect(root.querySelector('nav')!.hasAttribute('data-open')).toBe(false);
 });
+
+function branchHeader() {
+  const root = document.createElement('header');
+  root.innerHTML = `<button type="button" data-nq-portal-toggle>Menu</button><nav data-nq-portal-navigation>
+    <details data-nq-portal-branch open><summary>Services</summary>
+      <ul><li><details data-nq-portal-branch><summary>Licenses</summary><ul>
+        <li><a href="#license" aria-current="page">Current license</a></li>
+      </ul></details></li></ul>
+    </details>
+    <details data-nq-portal-branch><summary>Resources</summary><a href="#help">Help</a></details>
+  </nav>`;
+  document.body.append(root);
+  const original = root.innerHTML;
+  const controller = createPortalHeader(root);
+  const [services,licenses,resources] = Array.from(root.querySelectorAll('details'));
+  const summary = (branch: HTMLDetailsElement) => branch.querySelector('summary')!;
+  return {root, original, controller, services, licenses, resources, summary, toggle:root.querySelector('button')!};
+}
+
+function escape(target: HTMLElement) {
+  const event = new KeyboardEvent('keydown', {key:'Escape',bubbles:true,cancelable:true});
+  target.dispatchEvent(event);
+  return event;
+}
+
+it('dismisses the innermost branch before the mobile navigation and restores each opener', () => {
+  const {root,original,controller,toggle,services,licenses,summary} = branchHeader();
+  toggle.click();
+  expect(services.open).toBe(false);
+  summary(services).click(); summary(licenses).click();
+  const link = licenses.querySelector('a')!;
+  link.focus();
+  expect(escape(link).defaultPrevented).toBe(true);
+  expect(services.open).toBe(true);
+  expect(licenses.open).toBe(false);
+  expect(document.activeElement).toBe(summary(licenses));
+  expect(controller.open).toBe(true);
+  escape(summary(licenses));
+  expect(services.open).toBe(false);
+  expect(document.activeElement).toBe(summary(services));
+  escape(summary(services));
+  expect(controller.open).toBe(false);
+  expect(document.activeElement).toBe(toggle);
+  expect(link.getAttribute('aria-current')).toBe('page');
+  controller.destroy();
+  expect(root.innerHTML).toBe(original);
+  summary(services).click();
+  expect(services.open).toBe(false);
+  summary(services).click(); summary(licenses).click();
+  expect(escape(link).defaultPrevented).toBe(false);
+  expect(licenses.open).toBe(true);
+});
+
+it('preserves link activation and authored current state while closing siblings, outside branches and multiple instances', () => {
+  const first = branchHeader(), second = branchHeader();
+  first.summary(first.resources).click();
+  expect(first.services.open).toBe(false);
+  expect(first.resources.open).toBe(true);
+  expect(second.services.open).toBe(true);
+  const help = first.resources.querySelector('a')!;
+  let activationPrevented = true;
+  first.root.addEventListener('click', event => {
+    if (event.target === help) {
+      activationPrevented = event.defaultPrevented;
+      event.preventDefault();
+    }
+  });
+  help.click();
+  expect(activationPrevented).toBe(false);
+  expect(first.resources.open).toBe(false);
+  expect(second.services.open).toBe(true);
+
+  first.summary(first.services).click();
+  first.summary(first.services).focus();
+  first.summary(first.resources).focus();
+  expect(first.services.open).toBe(false);
+  first.summary(first.resources).click();
+  first.root.dispatchEvent(new Event('pointerdown',{bubbles:true}));
+  expect(first.resources.open).toBe(false);
+  expect(second.services.open).toBe(false);
+  first.summary(first.services).click();
+  first.controller.close();
+  expect(first.services.open).toBe(false);
+
+  first.controller.destroy(); second.controller.destroy();
+  expect(first.root.innerHTML).toBe(first.original);
+  expect(second.root.innerHTML).toBe(second.original);
+});

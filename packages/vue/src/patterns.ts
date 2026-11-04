@@ -68,11 +68,12 @@ export const ServiceDetails = defineComponent({
       ]);
   },
 });
-export interface PortalLink {
+interface PortalNavLink {
   label: string;
   href: string;
   current?: boolean;
 }
+export interface PortalLink extends PortalNavLink { groups?: readonly { label?: string; links: readonly PortalNavLink[] }[] }
 export const PortalHeader = defineComponent({
   name: "NqPortalHeader",
   inheritAttrs: false,
@@ -92,13 +93,59 @@ export const PortalHeader = defineComponent({
   setup(props, { attrs, slots }) {
     const id = useId(); const open = ref(false);
     const root = ref<HTMLElement>(); const trigger = ref<HTMLButtonElement>();
-    const outside = (event: PointerEvent) => { if (!root.value?.contains(event.target as Node)) open.value = false; };
+    const branch = ref<HTMLDetailsElement>();
+    const close = () => { branch.value = undefined; open.value = false; };
+    const outside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!branch.value?.contains(target)) branch.value = undefined;
+      if (!root.value?.contains(target)) open.value = false;
+    };
     onMounted(() => root.value?.ownerDocument.addEventListener('pointerdown', outside));
     onBeforeUnmount(() => root.value?.ownerDocument.removeEventListener('pointerdown', outside));
+    const link = (item: PortalNavLink, className?: string) => h('a', {
+      href: item.href, class: className,
+      'aria-current': item.current ? 'page' : undefined, onClick: close,
+    }, item.label);
+    function navigationItem(item: PortalLink) {
+      const groups = item.groups?.filter(group => group.links.length);
+      if (!groups?.length) return h('li', { key: item.href }, link(item));
+      const childCurrent = groups.some(group => group.links.some(child => child.current));
+      const current = item.current || childCurrent;
+      return h('li', { key: item.href }, h('details', {
+        class: 'nq-portal-branch', 'data-nq-portal-branch': '', 'data-current': current || undefined,
+        'data-branch-href': item.href, open: Boolean(branch.value?.isConnected && branch.value.dataset.branchHref === item.href),
+      }, [
+        h('summary', { onClick(event: MouseEvent) {
+          event.preventDefault();
+          const details = (event.currentTarget as HTMLElement).parentElement as HTMLDetailsElement;
+          branch.value = details === branch.value ? undefined : details;
+        } }, item.label),
+        h('div', { class: 'nq-portal-branch-panel' }, [
+          link({...item, current: item.current && !childCurrent}, 'nq-link nq-portal-branch-overview'),
+          ...groups.map(group => h('section', { class: 'nq-portal-branch-group' }, [
+            group.label && h('h2', group.label),
+            h('ul', group.links.map(child => h('li', { key: child.href }, link(child, 'nq-link')))),
+          ])),
+        ]),
+      ]));
+    }
     return () =>
       h("header", mergeProps(attrs, { class: "nq-portal-header", ref: root,
-        onKeydown: (event: KeyboardEvent) => { if (!event.defaultPrevented && event.key === 'Escape' && open.value) { event.preventDefault(); open.value = false; trigger.value?.focus(); } },
-        onFocusout: (event: FocusEvent) => { if (event.relatedTarget && !root.value?.contains(event.relatedTarget as Node)) open.value = false; },
+        onKeydown: (event: KeyboardEvent) => {
+          if (event.defaultPrevented || event.key !== 'Escape') return;
+          if (branch.value?.isConnected) {
+            event.preventDefault(); event.stopPropagation();
+            const summary = branch.value.querySelector<HTMLElement>(':scope > summary');
+            branch.value = undefined; summary?.focus();
+          } else if (open.value) {
+            event.preventDefault(); event.stopPropagation(); close(); trigger.value?.focus();
+          }
+        },
+        onFocusout: (event: FocusEvent) => {
+          const target = (event.relatedTarget ?? root.value?.ownerDocument.activeElement) as Node | null;
+          if (!branch.value?.contains(target)) branch.value = undefined;
+          if (!root.value?.contains(target)) open.value = false;
+        },
       }), [
         props.mainId && h('a', { class: 'nq-skip-link', href: `#${props.mainId}` }, props.skipLabel),
         h(
@@ -110,28 +157,11 @@ export const PortalHeader = defineComponent({
           },
           slots.logo?.() ?? props.brand,
         ),
-        props.links.length > 0 && h('button', { ref: trigger, type: 'button', class: 'nq-button nq-portal-menu-toggle', 'aria-expanded': open.value, 'aria-controls': props.navigationId ?? `${id}-navigation`, onClick: () => { open.value = !open.value; } }, [h('span', { class: 'nq-icon', 'data-icon': open.value ? 'cancel-01' : 'menu-01', 'aria-hidden': 'true' }), props.menuLabel]),
+        props.links.length > 0 && h('button', { ref: trigger, type: 'button', class: 'nq-button nq-portal-menu-toggle', 'aria-expanded': open.value, 'aria-controls': props.navigationId ?? `${id}-navigation`, onClick: () => { branch.value = undefined; open.value = !open.value; } }, [h('span', { class: 'nq-icon', 'data-icon': open.value ? 'cancel-01' : 'menu-01', 'aria-hidden': 'true' }), props.menuLabel]),
         props.links.length > 0 && h(
           "nav",
-          { id: props.navigationId ?? `${id}-navigation`, "aria-label": props.navLabel, 'data-open': String(open.value), onClick: (event: MouseEvent) => { if ((event.target as Element).closest('a[href]')) open.value = false; } },
-          h(
-            "ul",
-            {},
-            props.links.map((link) =>
-              h(
-                "li",
-                {},
-                h(
-                  "a",
-                  {
-                    href: link.href,
-                    "aria-current": link.current ? "page" : undefined,
-                  },
-                  link.label,
-                ),
-              ),
-            ),
-          ),
+          { id: props.navigationId ?? `${id}-navigation`, "aria-label": props.navLabel, 'data-open': String(open.value) },
+          h('ul', props.links.map(navigationItem)),
         ),
         slots.actions &&
           h("div", { class: "nq-portal-header-actions" }, slots.actions()),
@@ -139,7 +169,7 @@ export const PortalHeader = defineComponent({
       ]);
   },
 });
-export interface PortalFooterLink extends PortalLink { external?: boolean }
+export interface PortalFooterLink extends PortalNavLink { external?: boolean }
 export interface PortalFooterGroup { title: string; links: readonly PortalFooterLink[] }
 export const PortalFooter = defineComponent({
   name: "NqPortalFooter", inheritAttrs: false,

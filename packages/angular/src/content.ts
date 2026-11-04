@@ -55,16 +55,69 @@ export class NqDataTableComponent {
 export class NqServiceCardComponent { @Input({required: true}) title = ''; @Input({required: true}) href = ''; @Input() description = ''; @Input() category = ''; @Input() duration = ''; @Input() fee = ''; @Input() actionLabel = 'View service'; @Input() variant = 'default'; }
 @Component({selector: 'nq-service-details', standalone: true, imports: [NqDescriptionListComponent], template: `<section class="nq-service-details"><header><h2>{{ title }}</h2><p>{{ description }}</p></header><nq-description-list [items]="details" variant="horizontal" />@if (requirements.length) {<h3>{{ requirementsLabel }}</h3><ul>@for (requirement of requirements; track $index) {<li>{{ requirement }}</li>}</ul>}<ng-content /></section>`})
 export class NqServiceDetailsComponent { @Input({required: true}) title = ''; @Input() description = ''; @Input() details: readonly NqDescription[] = []; @Input() requirements: readonly string[] = []; @Input() requirementsLabel = 'Requirements'; }
-@Component({selector: 'nq-portal-header', standalone: true, template: `<header class="nq-portal-header">@if (mainId) {<a class="nq-skip-link" [href]="'#' + mainId">{{ skipLabel }}</a>}<a class="nq-portal-brand" [href]="homeHref"><ng-content select="[nqBrand]" /><span>{{ brand }}</span></a>@if (links.length) {<button #menuToggle class="nq-button nq-portal-menu-toggle" type="button" [attr.aria-expanded]="menuOpen" [attr.aria-controls]="navigationId" (click)="menuOpen = !menuOpen"><span class="nq-icon" [attr.data-icon]="menuOpen ? 'cancel-01' : 'menu-01'" aria-hidden="true"></span>{{ menuLabel }}</button><nav [id]="navigationId" [attr.aria-label]="navigationLabel" [attr.data-open]="menuOpen"><ul>@for (link of links; track link.href) {<li><a class="nq-link" [href]="link.href" [attr.aria-current]="link.current ? 'page' : null" (click)="menuOpen = false">{{ link.label }}</a></li>}</ul></nav>}<div class="nq-portal-header-actions"><ng-content /></div></header>`})
+export interface NqPortalNavItem extends NqLinkItem {
+  groups?: readonly { label?: string; links: readonly NqLinkItem[] }[];
+}
+@Component({selector: 'nq-portal-header', standalone: true, template: `<header class="nq-portal-header">
+  @if (mainId) {<a class="nq-skip-link" [href]="'#' + mainId">{{ skipLabel }}</a>}
+  <a class="nq-portal-brand" [href]="homeHref"><ng-content select="[nqBrand]" /><span>{{ brand }}</span></a>
+  @if (links.length) {
+    <button #menuToggle class="nq-button nq-portal-menu-toggle" type="button" [attr.aria-expanded]="menuOpen" [attr.aria-controls]="navigationId" (click)="branch = undefined; menuOpen = !menuOpen"><span class="nq-icon" [attr.data-icon]="menuOpen ? 'cancel-01' : 'menu-01'" aria-hidden="true"></span>{{ menuLabel }}</button>
+    <nav [id]="navigationId" [attr.aria-label]="navigationLabel" [attr.data-open]="menuOpen"><ul>
+      @for (item of links; track item.href) {<li>
+        @if (hasGroups(item)) {
+          <details #details data-nq-portal-branch class="nq-portal-branch" [attr.data-current]="item.current || hasCurrentChild(item) || null" [open]="branch === details">
+            <summary (click)="toggleBranch($event, details)">{{ item.label }}</summary>
+            <div class="nq-portal-branch-panel">
+              <a class="nq-link nq-portal-branch-overview" [href]="item.href" [attr.aria-current]="item.current && !hasCurrentChild(item) ? 'page' : null" (click)="close()">{{ item.label }}</a>
+              @for (group of item.groups; track $index) {@if (group.links.length) {
+                <section class="nq-portal-branch-group">@if (group.label) {<h2>{{ group.label }}</h2>}
+                  <ul>@for (link of group.links; track link.href) {<li><a class="nq-link" [href]="link.href" [attr.aria-current]="link.current ? 'page' : null" (click)="close()">{{ link.label }}</a></li>}</ul>
+                </section>
+              }}
+            </div>
+          </details>
+        } @else {<a class="nq-link" [href]="item.href" [attr.aria-current]="item.current ? 'page' : null" (click)="close()">{{ item.label }}</a>}
+      </li>}
+    </ul></nav>
+  }
+  <div class="nq-portal-header-actions"><ng-content /></div>
+</header>`})
 export class NqPortalHeaderComponent {
   @Input({required: true}) brand = ''; @Input() homeHref = '/'; @Input() mainId = 'main-content';
   @Input() skipLabel = 'انتقل إلى المحتوى'; @Input() menuLabel = 'القائمة'; @Input() navigationLabel = 'التنقل الرئيسي';
-  @Input() navigationId = `nq-portal-navigation-${++nextPortalId}`; @Input() links: readonly NqLinkItem[] = []; menuOpen = false;
+  @Input() navigationId = `nq-portal-navigation-${++nextPortalId}`; @Input() links: readonly NqPortalNavItem[] = [];
+  menuOpen = false;
+  branch?: HTMLDetailsElement;
   @ViewChild('menuToggle') menuToggle?: ElementRef<HTMLButtonElement>;
   private readonly host = inject(ElementRef<HTMLElement>);
-  @HostListener('keydown', ['$event']) keydown(event: KeyboardEvent) { if (!event.defaultPrevented && event.key === 'Escape' && this.menuOpen) { event.preventDefault(); this.menuOpen = false; this.menuToggle?.nativeElement.focus(); } }
-  @HostListener('document:pointerdown', ['$event']) outside(event: PointerEvent) { if (!this.host.nativeElement.contains(event.target as Node)) this.menuOpen = false; }
-  @HostListener('focusout', ['$event']) focusout(event: FocusEvent) { if (event.relatedTarget && !this.host.nativeElement.contains(event.relatedTarget as Node)) this.menuOpen = false; }
+  hasGroups(item: NqPortalNavItem) { return item.groups?.some(group => group.links.length); }
+  hasCurrentChild(item: NqPortalNavItem) { return item.groups?.some(group => group.links.some(link => link.current)); }
+  toggleBranch(event: MouseEvent, details: HTMLDetailsElement) {
+    event.preventDefault();
+    this.branch = this.branch === details ? undefined : details;
+  }
+  close() { this.branch = undefined; this.menuOpen = false; }
+  @HostListener('keydown', ['$event']) keydown(event: KeyboardEvent) {
+    if (event.defaultPrevented || event.key !== 'Escape') return;
+    if (this.branch?.isConnected) {
+      event.preventDefault(); event.stopPropagation();
+      const summary = this.branch.querySelector<HTMLElement>(':scope > summary');
+      this.branch = undefined; summary?.focus();
+    } else if (this.menuOpen) {
+      event.preventDefault(); event.stopPropagation(); this.close(); this.menuToggle?.nativeElement.focus();
+    }
+  }
+  @HostListener('document:pointerdown', ['$event']) outside(event: PointerEvent) {
+    const target = event.target as Node;
+    if (!this.branch?.contains(target)) this.branch = undefined;
+    if (!this.host.nativeElement.contains(target)) this.menuOpen = false;
+  }
+  @HostListener('focusout', ['$event']) focusout(event: FocusEvent) {
+    const target = (event.relatedTarget ?? this.host.nativeElement.ownerDocument.activeElement) as Node | null;
+    if (!this.branch?.contains(target)) this.branch = undefined;
+    if (!this.host.nativeElement.contains(target)) this.menuOpen = false;
+  }
 }
 export interface NqPortalFooterLink extends NqLinkItem { external?: boolean }
 export interface NqPortalFooterGroup { title: string; links: readonly NqPortalFooterLink[] }

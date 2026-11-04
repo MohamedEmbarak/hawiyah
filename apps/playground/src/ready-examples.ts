@@ -1,3 +1,4 @@
+import {portalMenuRecipe} from './portal-navigation-demo';
 import {notificationDialogRecipes} from './notification-dialog-demo';
 import {toastDemoMarkup, toastDemoRecipes} from './toast-demo';
 import {listDemoRecipes} from './list-demo';
@@ -242,7 +243,7 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
       react: `import { PortalHeader } from '@nasaq/react';\n\n<PortalHeader brand={<img src="/brand/nasaq-wordmark.svg" alt="نسق" width={80} height={50} />} brandHref="/" mainId="main-content" navigation={${links}} actions={<a className="nq-button" href="/login">${signIn}</a>} />\n<main id="main-content" tabIndex={-1}>...</main>`,
       vue: `<!-- import { PortalHeader } from '@nasaq/vue' -->\n<PortalHeader brand="نسق" home-href="/" main-id="main-content" :links='${links}'><template #logo><img src="/brand/nasaq-wordmark.svg" alt="نسق" width="80" height="50"></template><template #actions><a class="nq-button" href="/login">${signIn}</a></template></PortalHeader>\n<main id="main-content" tabindex="-1">...</main>`,
       angular: `<!-- imports: [NqPortalHeaderComponent]; links = ${links} -->\n<nq-portal-header brand="" homeHref="/" mainId="main-content" [links]="links"><img nqBrand src="/brand/nasaq-wordmark.svg" alt="نسق" width="80" height="50"><a class="nq-button" href="/login">${signIn}</a></nq-portal-header>\n<main id="main-content" tabindex="-1">...</main>`,
-    }];
+    }, portalMenuRecipe(locale)];
   }
   if (id === 'portal-footer') {
     const d=portalFooterExampleData(locale),groups=JSON.stringify(d.groups),policies=JSON.stringify(d.legalLinks);

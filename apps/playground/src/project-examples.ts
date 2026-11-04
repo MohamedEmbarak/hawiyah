@@ -1,3 +1,5 @@
+import {siteVerificationMarkup} from './site-verification-demo.ts';
+import {portalMenuItems, portalMenuMarkup} from './portal-navigation-demo.ts';
 import {choiceInputIds, choiceInputProject, isChoiceInput} from './choice-input-projects.ts';
 import {notificationDialogProject} from './notification-dialog-demo.ts';
 import {fileProject, fileProjectIds, isFileProjectId} from './file-projects.ts';
@@ -20,11 +22,11 @@ import type { ProjectFramework, ProjectLanguage } from "./project-compiler";
 import type { Locale } from "./data";
 
 export const nativeProjectComponents = new Set([
-  ...choiceInputIds,
   ...Object.keys(layoutComponents),
   ...contentProjectIds,
   ...basicInputProjectIds,
   ...fileProjectIds,
+  ...choiceInputIds,
   "dialog",
   "calendar",
   "date-picker",
@@ -99,6 +101,7 @@ export function projectExample(
     html = selectDemoCases(locale).map(example => `<section class="nq-stack"><h2>${example.title}</h2>${selectDemoMarkup(example, 'project-region')}${example.kind === 'single' ? '<output data-select-value>first</output>' : ''}</section>`).join('\n');
     vanillaExampleScript = `\nconst region = root.querySelector('[data-select-demo="single"] select');\nconst selectedValue = root.querySelector('[data-select-value]');\nif (region instanceof HTMLSelectElement && selectedValue instanceof HTMLOutputElement) {\n  const displayValue = () => { selectedValue.value = region.value; };\n  region.addEventListener('change', displayValue);\n  window.addEventListener('pagehide', () => region.removeEventListener('change', displayValue), { once: true });\n}\n`;
   }
+  if (id === "portal-header") html = `<div class="nq-portal-masthead">${siteVerificationMarkup(locale)}${portalMenuMarkup(locale)}</div>`;
   if (framework === "vanilla")
     return {
       names: { html: "index.html", css: "style.css", js: `main.${ext}` },
@@ -184,7 +187,7 @@ export function projectExample(
   } else if (["site-verification","portal-header"].includes(id)) {
     state=true;booleanState=true;
     const copy={label:t('Verification banner — demonstration','شريط التحقق — مثال توضيحي'),registrationLabel:t('Example platform-registration link','مثال على رابط تسجيل المنصة')},brand=t('Example service portal','بوابة خدمات توضيحية');
-    const links=JSON.stringify([{label:t('Services','الخدمات'),href:'#services',current:true},{label:t('Contact','تواصل معنا'),href:'#contact'}]);
+    const links=JSON.stringify(id === 'portal-header' ? portalMenuItems(locale) : [{label:t('Services','الخدمات'),href:'#services',current:true},{label:t('Contact','تواصل معنا'),href:'#contact'}]);
     react=`<div className="nq-portal-masthead"><SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" open={value} onOpenChange={setValue} /><PortalHeader brand="${brand}" brandHref="#home" navigation={${links}} /></div><output>{String(value)}</output>`;
     vue=`<div class="nq-portal-masthead"><SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registration-href="#example-registration" registration-label="${copy.registrationLabel}" v-model:open="value" /><PortalHeader brand="${brand}" home-href="#home" :links='${links}' /></div><output>{{value}}</output>`;
     angularMember=`\n  links = ${links};`;

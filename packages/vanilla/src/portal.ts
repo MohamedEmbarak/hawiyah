@@ -11,6 +11,12 @@ export function createPortalHeader(root: HTMLElement, options: PortalHeaderOptio
   remember(scope, trigger, ['aria-expanded', 'aria-controls']);
   remember(scope, navigation, ['data-open']);
   trigger.setAttribute('aria-controls', ensureId(scope, navigation, 'portal-navigation'));
+  const branches = [...navigation.querySelectorAll<HTMLDetailsElement>('details[data-nq-portal-branch]')]
+    .filter(branch => branch.closest('[data-nq-portal-navigation]') === navigation);
+  for (const branch of branches) remember(scope, branch, ['open']);
+  const closeBranchesOutside = (inside: Node | null = null) => {
+    for (const branch of branches) if (branch.open && !branch.contains(inside)) branch.open = false;
+  };
   let open = false;
   const render = () => { trigger.setAttribute('aria-expanded', String(open)); navigation.dataset.open = String(open); };
   const change = (next: boolean, restore = false) => {
@@ -18,12 +24,49 @@ export function createPortalHeader(root: HTMLElement, options: PortalHeaderOptio
     open = next; render(); if (restore) trigger.focus();
     emit(root, { open }); options.onOpenChange?.(open);
   };
-  const close = (restore = false) => change(false, restore);
-  scope.listen(trigger, 'click', () => { if (!isDisabled(trigger)) change(!open); });
-  scope.listen(navigation, 'click', event => { if (eventElement(event)?.closest('a[href]')) close(); });
-  scope.listen(root, 'keydown', event => { if ((event as KeyboardEvent).key === 'Escape' && open) { event.preventDefault(); close(true); } });
-  scope.listen(root.ownerDocument, 'pointerdown', event => { if (!root.contains(event.target as Node | null)) close(); });
-  scope.listen(root, 'focusout', event => { const next = (event as FocusEvent).relatedTarget as Node | null; if (next && !root.contains(next)) close(); });
+  const close = (restore = false) => {
+    if (scope.destroyed) return;
+    closeBranchesOutside();
+    change(false, restore);
+  };
+  scope.listen(trigger, 'click', () => {
+    if (isDisabled(trigger)) return;
+    closeBranchesOutside();
+    change(!open);
+  });
+  scope.listen(navigation, 'click', event => {
+    const target = eventElement(event);
+    if (target?.closest('[data-nq-portal-navigation]') !== navigation) return;
+    if (target.closest('a[href]')) close();
+    else if (target.closest('summary')) closeBranchesOutside(target);
+  });
+  scope.listen(root, 'keydown', event => {
+    if ((event as KeyboardEvent).key !== 'Escape' || event.defaultPrevented) return;
+    const target = eventElement(event);
+    const owner = target?.closest<HTMLDetailsElement>('details[data-nq-portal-branch][open]');
+    const branch = owner && branches.includes(owner) ? owner : branches.find(item => item.open);
+    if (branch) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeBranchesOutside(branch.parentElement);
+      branch.querySelector<HTMLElement>(':scope > summary')?.focus();
+    } else if (open) {
+      event.preventDefault();
+      event.stopPropagation();
+      close(true);
+    }
+  });
+  const leave = (next: Node | null) => {
+    if (scope.destroyed) return;
+    if (!root.contains(next)) close();
+    else closeBranchesOutside(next);
+  };
+  scope.listen(root.ownerDocument, 'pointerdown', event => leave(event.target as Node | null));
+  scope.listen(root, 'focusout', event => {
+    const next = (event as FocusEvent).relatedTarget as Node | null;
+    if (next) leave(next);
+    else queueMicrotask(() => leave(root.ownerDocument.activeElement));
+  });
   render();
   return { get open() { return open; }, show() { if (!isDisabled(trigger)) change(true); }, close, destroy() { scope.destroy(); } };
 }

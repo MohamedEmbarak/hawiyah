@@ -317,7 +317,7 @@ applies a callback.
 | `DataTable<Row>` | Required caption/rows/columns; columns have key/label/sortable/render/rowHeader. Optional rowKey, sort/defaultSort/onSortChange, locale, emptyMessage, getSortLabel. Stable immutable localized sorting and native aria-sort headers. |
 | `ServiceCard` | Required title; description/category/icon/metadata, href/actionLabel or action slot, body children. |
 | `ServiceDetails` | Required title; description/metadata/requirements/requirementsLabel/action and children. |
-| `PortalHeader` | Required brand slot, optional brandHref/navigation/navigationLabel/actions/notice and children. Navigation items are label/href/current. |
+| `PortalHeader` | Required brand slot, optional brandHref/navigation/navigationLabel/actions/notice and children. Navigation items are label/href/current. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
 | `PortalFooter` | Optional brand/description/links/linksLabel/legal and children. |
 | `Feedback` | Required question label; value/defaultValue/onValueChange for `{helpful:'yes'\|'no'\|'',comment}` and `onFeedback` on native submit; translated yes/no/comment/submit/success labels. |
 | `CookieConsent` | Required title/description; value/defaultValue/onValueChange (`accepted`/`rejected`/null), translated buttons and optional policy link. Null displays the notice. Persistence and cookie activation belong to the application. |

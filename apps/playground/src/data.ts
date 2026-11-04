@@ -1,3 +1,4 @@
+import {escape} from './guide-html';
 import { expansionCatalog } from "./expansion-catalog";
 export type Locale = "en" | "ar";
 export const services = [
@@ -168,15 +169,7 @@ export const catalog = [
   ...expansionCatalog,
 ] as const;
 export type ComponentId = (typeof catalog)[number][0];
-export function escape(value: unknown): string {
-  return String(value).replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ]!,
-  );
-}
+export {escape};
 export const paths: Record<string, string> = {
   grid: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
   layers: "m12 3 10 6-10 6L2 9l10-6z M2 14l10 6 10-6 M2 19l10 6 10-6",

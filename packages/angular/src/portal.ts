@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NqPortalFooterComponent, NqPortalHeaderComponent } from './content';
-import type { NqLinkItem } from './content';
+import type { NqLinkItem, NqPortalNavItem } from './content';
 import { NqBreadcrumbComponent } from './navigation';
 import type { NqBreadcrumbItem } from './navigation';
 
@@ -17,7 +17,7 @@ let nextLayoutId = 0;
   </div>`})
 export class NqPortalLayoutComponent {
   @Input({required: true}) brand = ''; @Input() homeHref = '/'; @Input() lang = 'ar'; @Input() dir: 'rtl' | 'ltr' = 'rtl';
-  @Input() mainId = `nq-portal-main-${++nextLayoutId}`; @Input() links: readonly NqLinkItem[] = [];
+  @Input() mainId = `nq-portal-main-${++nextLayoutId}`; @Input() links: readonly NqPortalNavItem[] = [];
   @Input() secondaryNavigation: readonly NqLinkItem[] = []; @Input() footerLinks: readonly NqLinkItem[] = []; @Input() breadcrumbs: readonly NqBreadcrumbItem[] = []; @Input() copyright = '';
   @Input() skipLabel = 'انتقل إلى المحتوى'; @Input() menuLabel = 'القائمة'; @Input() navigationLabel = 'التنقل الرئيسي';
   @Input() secondaryLabel = 'التنقل الثانوي'; @Input() breadcrumbLabel = 'مسار التنقل'; @Input() footerLabel = 'روابط التذييل';

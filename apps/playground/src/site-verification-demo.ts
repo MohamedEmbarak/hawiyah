@@ -1,5 +1,6 @@
 import {getSiteVerificationLabels} from '@nasaq/core';
-import {escape,type Locale} from './data';
+import {escape} from './guide-html.ts';
+import type {Locale} from './data';
 
 export function siteVerificationDemoLabels(locale:Locale) {
   const ar=locale==='ar';
