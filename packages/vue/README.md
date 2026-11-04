@@ -129,7 +129,7 @@ All use native Vue rendering, shared CSS, and the same attrs/slots conventions.
 | `TagInput`      | String-array `v-model`, `defaultValue`, `name`, `required`, field decoration; Enter/comma adds unique trimmed tags; Backspace on an empty draft removes the last tag; `removeLabel(value)`, `requiredMessage`                                                                                                                                  |
 | `MultiSelect`   | String-array `v-model`, `defaultValue`, `options`, `label`, `searchLabel`, `emptyMessage`, `requiredMessage`; normalized search and native checkboxes, repeated hidden values for `name`; no combobox role                                                                                                                                     |
 | `Calendar`      | ISO-string `v-model`, `defaultValue`, `month`, `min`, `max`, `locale`, `calendar`, `weekStartsOn`, `isDateDisabled(value)`; `label`, `previousLabel`, `nextLabel`, `unsupportedMessage`; emits `update:month` when browsing                                                                                                                    |
-| `DatePicker`    | Calendar props plus field decoration and string `v-model`; native Gregorian date input and modal Calendar; `v-model:calendar` switches `gregory` / `islamic-umalqura` while preserving ISO value; `calendarSwitchable=true`, `calendarSystemLabel`, `gregoryLabel`, `hijriLabel`, `calendarLabel`, `openLabel`, `closeLabel`, `invalidMessage` |
+| `DatePicker`    | Calendar props plus field decoration and string `v-model`; custom ISO text input and modal Calendar; `v-model:calendar` switches `gregory` / `islamic-umalqura` while preserving ISO value; `calendarSwitchable=true`, `calendarSystemLabel`, `gregoryLabel`, `hijriLabel`, `calendarLabel`, `openLabel`, `closeLabel`, `invalidMessage` |
 | `FileDropzone`  | Field decoration, native `name`/`form`, `accept`, `multiple`, `maxSize` in bytes, `disabled`, `readonly`, `dropLabel`; emits `update:files(File[])` and `reject(File[])`; valid drops populate the native file input, invalid batches clear it                                                                                                 |
 
 Value controls support form reset. Arrays reset to `defaultValue`; native file
@@ -180,6 +180,8 @@ const system = ref<CalendarSystem>("islamic-umalqura");
   />
 </template>
 ```
+
+The default Arabic locale supplies calendar navigation, picker control labels and validation messages. Set `locale="en"` for English or override individual labels through props.
 
 The stored/submitted value stays Gregorian `YYYY-MM-DD` when switching display
 calendars. Reopening shows the selected date's month. Calendar supports arrows

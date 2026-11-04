@@ -134,6 +134,7 @@ describe('Angular expansion behavior', () => {
 
   it('keeps calendar month arrows within min/max months', () => {
     const fixture = TestBed.createComponent(NqCalendarComponent);
+    fixture.componentRef.setInput('locale', 'en');
     fixture.componentRef.setInput('value', '2026-10-15');
     fixture.componentRef.setInput('min', '2026-09-14');
     fixture.componentRef.setInput('max', '2026-11-16');

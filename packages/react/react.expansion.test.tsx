@@ -101,7 +101,7 @@ it('switches picker calendar systems without changing the ISO date and reopens a
   expect(calendar.getAttribute('data-calendar')).toBe('islamic-umalqura'); expect(container.querySelector('.nq-calendar-header h3')!.textContent).not.toBe(before);
   expect(dateInput.value).toBe(formatCalendarDate('2026-10-28', { calendar: 'islamic-umalqura', locale: 'en-SA', dateStyle: 'medium' })); expect(changed).not.toHaveBeenCalled();
   await click(container.querySelector<HTMLButtonElement>('[aria-label="Next month"]')!);
-  await click(container.querySelector<HTMLButtonElement>('[aria-label="Close"]')!); await click(opener);
+  await click(container.querySelector<HTMLButtonElement>('[aria-label="Close calendar"]')!); await click(opener);
   expect(container.querySelector('[data-date="2026-10-28"]')?.closest('td')?.getAttribute('aria-selected')).toBe('true');
   await act(async () => { (container.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
   expect(new FormData(container.querySelector('form')!).get('date')).toBe('2026-10-28');

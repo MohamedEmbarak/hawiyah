@@ -1,3 +1,4 @@
+import {calendarProject} from './calendar-projects.ts';
 import {basicInputProjectIds, basicInputProjectRecipe, isBasicInputId} from './basic-input-projects.ts';
 import {toastProject} from './toast-demo.ts';
 import {contentComponents, contentProjectIds, contentProjectRecipe, isContentProjectId} from './content-project-recipes.ts';
@@ -19,6 +20,8 @@ export const nativeProjectComponents = new Set([
   ...Object.keys(layoutComponents),
   ...contentProjectIds,
   ...basicInputProjectIds,
+  "calendar",
+  "date-picker",
   "toast-region",
   "search-field",
   "content-navigation",
@@ -98,6 +101,7 @@ export function projectExample(
         js: `import { enhance } from '@nasaq/vanilla';\nimport './style.css';\n\nconst root = document.querySelector${typed ? "<HTMLElement>" : ""}('#app');\nif (!root) throw new Error('Missing app root');\nconst cleanup = enhance(root);\n${vanillaExampleScript}root.addEventListener('nq:change', event => console.log(${typed ? "(event as CustomEvent).detail" : "event.detail"}));\nwindow.addEventListener('pagehide', cleanup, { once: true });\n`,
       },
     };
+  if (id === "calendar" || id === "date-picker") return calendarProject(id, framework, language, locale);
   if (id === "content-navigation") return contentNavigationProject(framework,language,locale);
   if (!nativeProjectComponents.has(id))
     throw new Error("Native project recipe pending for " + id);

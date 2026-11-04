@@ -205,3 +205,4 @@ export type { ContentNavigationItem, ContentNavigationOptions, ContentNavigation
 export { getSearchSuggestions, requestSearchDialogClose } from './search-suggestions.js';
 export type { SearchSuggestionMatch, SearchSuggestionSegment } from './search-suggestions.js';
 export { prepareToastDismissFocus } from './toast-focus.js';
+export { getCalendarLabels } from './calendar-labels.js';

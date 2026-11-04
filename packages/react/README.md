@@ -253,6 +253,8 @@ const [calendar, setCalendar] = useState<'gregory' | 'islamic-umalqura'>('islami
 
 The picker includes a Gregorian/Umm al-Qura selector. Switching display systems
 preserves the exact ISO day, and reopening returns to the selected date's month.
+Calendar names, navigation, picker controls and validation messages default to Arabic. Set `locale="en"` for English copy or pass a label prop to override a particular control.
+
 Direction and locale remain independent of calendar. Calendar's arrows follow
 visual RTL/LTR direction; Up/Down move a week, Home/End move within the week,
 PageUp/PageDown move a month, and Shift+PageUp/PageDown move a year. Disabled days

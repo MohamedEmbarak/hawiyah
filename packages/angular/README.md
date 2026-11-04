@@ -151,7 +151,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | TagInput | `string[]`; `placeholder`, `addLabel`, `removeLabel`. Enter/comma or Add commits unique trimmed tags; repeated hidden form values. |
 | MultiSelect | `string[]`; `options: Option[]`, `searchLabel`, `emptyMessage`, `selectedMessage(count)`, `validationMessage`. Searchable checkbox list; selected values remain in FormData when search hides their checkboxes. |
 | Calendar | ISO Gregorian string value; `month`, `min`, `max`, `locale`, `calendar: gregory/islamic-umalqura`, `weekStartsOn`, `direction`, `previousLabel`, `nextLabel`; `monthChange`. Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year). Bounds restrict selection/focus. |
-| DatePicker | ISO Gregorian string value; Calendar localization/range inputs, `dialogTitle`, `openLabel`, `closeLabel`; `calendarLabel`, `gregorianLabel`, `hijriLabel`, `unsupportedMessage`; `calendarChange`. Native date field plus modal calendar. Display calendar switching preserves the selected ISO date; opening returns to its month and day. |
+| DatePicker | ISO Gregorian value, a custom text field and modal calendar. Accepts Calendar localization and range inputs, `dialogTitle`, `openLabel`, `closeLabel`, `calendarLabel`, `gregorianLabel`, `hijriLabel` and `unsupportedMessage`. Switching emits `calendarChange` and preserves the selected ISO date. Opening returns to its month and day. |
 | FileDropzone | `File[]`; `accept`, `multiple`, `instruction`, `selectedMessage(count)`; `rejected` emits rejected files. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
 | ToggleGroup | String value for single or `string[]` for `multiple`; `options`, `variant: segmented/outline`. Single uses native radios; multiple uses pressed buttons. |
 | Popover | `label`, `triggerLabel`, `id`, `disabled`, `[(open)]`; project interactive content. Disclosure region with ordinary Tab order, outside press/Escape closing. |
@@ -236,6 +236,8 @@ an HTML color, and number/range use numeric strings. `min`, `max`, `step`,
 type supports them. File, checkbox/radio, and form-action inputs have their own
 purpose-built controls/native buttons. Use NumberField for `number | null` forms,
 and DatePicker for switchable Gregorian/Umm al-Qura display with ISO storage.
+
+The default Arabic locale supplies calendar navigation, picker control labels and validation messages. Set `locale="en"` for English or use individual label inputs for application-specific wording.
 
 Calendar arithmetic comes from the shared core, `@internationalized/date`, and
 the table-backed Saudi Umm al-Qura provider. Numeric Hijri dates, including

@@ -14,6 +14,8 @@ direction, numbering system and calendar are independent settings. General
 Gregorian calendar, and Asia/Riyadh time zone. It is not the canonical Hijri
 conversion API: an operating system's ICU data can differ from the date picker.
 
+`getCalendarLabels(locale)` returns read-only Arabic or English UI strings for navigation, calendar selection and validation. The default locale is `ar-SA`.
+
 For date-only values, use `getCalendarDateParts`, `convertCalendarDate`,
 `formatCalendarDate`, `getCalendarMonth`, and `moveCalendarDate`. Their Saudi
 Umm al-Qura provider uses the pinned published HijriDate 2.3.0 reference table
@@ -23,7 +25,7 @@ outside that range; month grids clamp their display anchor and disable unsupport
 spillover cells. There is no fallback to the civil Islamic calendar.
 
 The picker and canonical formatter obtain numeric year/month/day from that same
-reference. Intl supplies translations, order, and numeral shapes. A display
+reference. Intl supplies localized names and ordering. Formatted dates use Latin digits in both languages. A display
 calendar switch retains the selected Gregorian ISO date. See
 [provenance](./third-party/provenance.json) and the bundled third-party license;
 the published reference is not a certification of exact parity with every current

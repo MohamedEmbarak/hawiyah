@@ -59,6 +59,7 @@ Tooltip guidance follows the [APG work-in-progress pattern](https://www.w3.org/W
 focus/hover, persistent hover over content, Escape, and descriptive text only.
 
 DatePicker provides a visible Gregorian/Hijri switch inside its native dialog.
+An explicit `locale` controls generated navigation and validation text as well as date formatting. With no explicit locale the controller uses the host language, falling back to Arabic. Authored trigger labels and explicit message options take precedence.
 The switch preserves the submitted Gregorian ISO date and keeps the dialog open.
 An associated live output below the input shows the selected date in the active
 calendar, including when the dialog is closed. The editable native field retains
