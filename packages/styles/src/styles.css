@@ -37,6 +37,7 @@
 @import './content-navigation.css';
 @import './nic-search.css';
 @import './nic-notifications.css';
+@import './nic-notification-dialog.css';
 
 @import './site-verification.css';
 @import './nic-footer.css';

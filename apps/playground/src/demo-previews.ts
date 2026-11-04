@@ -1,3 +1,4 @@
+import {bindNotificationDialogs} from './notification-dialog-demo';
 import { bindToastDemos } from './toast-demo';
 import { bindSearchDemos } from './search-demo';
 import { bindCopyActionDemos } from './copy-action-demo';
@@ -6,6 +7,7 @@ const previewSelector = '.component-preview, [data-demo-preview]';
 
 export function bindDemoPreviews(root: HTMLElement, locale: 'ar' | 'en') {
   const scope = new AbortController();
+  bindNotificationDialogs(root, scope.signal);
   bindCopyActionDemos(root, locale, scope.signal);
   bindToastDemos(root, scope.signal);
   const disposeSearch = bindSearchDemos(root);

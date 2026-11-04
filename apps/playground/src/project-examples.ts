@@ -1,3 +1,4 @@
+import {notificationDialogProject} from './notification-dialog-demo.ts';
 import {fileProject, fileProjectIds, isFileProjectId} from './file-projects.ts';
 import {calendarProject} from './calendar-projects.ts';
 import {basicInputProjectIds, basicInputProjectRecipe, isBasicInputId} from './basic-input-projects.ts';
@@ -22,6 +23,7 @@ export const nativeProjectComponents = new Set([
   ...contentProjectIds,
   ...basicInputProjectIds,
   ...fileProjectIds,
+  "dialog",
   "calendar",
   "date-picker",
   "toast-region",
@@ -74,6 +76,7 @@ export function projectExample(
   locale: Locale,
   html: string,
 ): ProjectExample {
+  if (id === "dialog") return notificationDialogProject(framework, language, locale);
   if (isFileProjectId(id)) return fileProject(id, framework, language, locale);
   if (id === "toast-region") return toastProject(framework, language, locale);
   if (id === "search-field") return searchProject(framework,language,locale);

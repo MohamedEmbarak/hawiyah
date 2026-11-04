@@ -1,3 +1,4 @@
+import {notificationDialogRecipes} from './notification-dialog-demo';
 import {toastDemoMarkup, toastDemoRecipes} from './toast-demo';
 import {listDemoRecipes} from './list-demo';
 import {copyActionRecipes} from './copy-action-demo';
@@ -231,6 +232,7 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
     }, ...copyActionRecipes(locale)];
   }
   if (id === 'toast-region') return toastDemoRecipes(locale);
+  if (id === 'dialog') return notificationDialogRecipes(locale);
   if (id === 'portal-header') {
     const services = t('Services','الخدمات'), requests = t('My requests','طلباتي'), signIn = t('Sign in','تسجيل الدخول');
     const links = JSON.stringify([{label:services,href:'/services',current:true},{label:requests,href:'/requests'}]);

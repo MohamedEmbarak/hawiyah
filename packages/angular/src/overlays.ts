@@ -3,9 +3,10 @@ import { isPlatformBrowser } from '@angular/common';
 import { restoreFocus } from '@nasaq/core';
 
 let nextId = 0;
-@Component({ selector: 'nq-dialog', standalone: true, template: `<dialog #dialog class="nq-dialog" [attr.aria-labelledby]="titleId" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="nq-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="nq-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="nq-dialog-body"><ng-content /></div><footer class="nq-dialog-footer"><ng-content select="[nqDialogFooter]" /></footer></dialog>` })
+@Component({ selector: 'nq-dialog', standalone: true, template: `<dialog #dialog class="nq-dialog" [attr.aria-labelledby]="titleId" [attr.aria-describedby]="describedBy || null" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="nq-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="nq-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="nq-dialog-body"><ng-content /></div><footer class="nq-dialog-footer"><ng-content select="[nqDialogFooter]" /></footer></dialog>` })
 export class NqDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input({required: true}) title = '';
+  @Input() describedBy = '';
   @Input() titleId = `nq-dialog-title-${++nextId}`;
   @Input({transform: booleanAttribute}) open = false;
   @Input() closeLabel = 'Close dialog';
