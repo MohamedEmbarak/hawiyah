@@ -1,6 +1,8 @@
 // Verify exported project files against the same installed tarball consumers.
-import { mkdirSync, writeFileSync, symlinkSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, symlinkSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import * as ts from 'typescript';
 import { readConfiguration, performCompilation, formatDiagnostics } from '@angular/compiler-cli';
@@ -56,6 +58,18 @@ for (const language of ['javascript', 'typescript']) {
     build: { write: false, rolldownOptions: { input: entries } },
   });
   console.log(`vue/${language}: ${nativeProjectComponents.size} exported projects bundled.`);
+  if (language === 'typescript') {
+    const sample = resolve(directory, 'button', 'tsconfig.json');
+    const config = JSON.parse(readFileSync(sample, 'utf8'));
+    config.include = [...nativeProjectComponents].flatMap(id => [
+      id + '/App.vue', id + '/main.ts', id + '/env.d.ts',
+    ]);
+    const file = resolve(directory, 'tsconfig.json');
+    writeFileSync(file, JSON.stringify(config));
+    const cli = createRequire(import.meta.url).resolve('vue-tsc/bin/vue-tsc.js');
+    execFileSync(process.execPath, [cli, '--noEmit', '-p', file], { cwd: directory, stdio: 'inherit' });
+    console.log(`vue/typescript: ${nativeProjectComponents.size} strict SFC templates passed type checking.`);
+  }
 }
 for(const[framework,languages]of Object.entries({vanilla:['javascript','typescript'],react:['javascript','typescript'],vue:['javascript','typescript'],angular:['typescript']})){
   for(const language of languages){

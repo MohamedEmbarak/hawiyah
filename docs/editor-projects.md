@@ -72,7 +72,7 @@ template checking. Seven exported framework/language projects built, and the
 downloaded ZIP passed an independent integrity/readback check. The guide built
 successfully. Reproduce project validation after `pnpm check:packages` with
 `node scripts/check-editor-projects.mjs`. Vue SFCs are compiled and exercised;
-full Vue language-service type checking remains separate work.
+at that point Vue language-service checking was still pending. The current check below covers it.
 
 Feedback adds text, thumbs-with-text and accessible thumbs-only recipes; Link demonstrates an inline directional icon. Focused Chromium checks cover all three native TypeScript previews and vanilla RTL/LTR at desktop/mobile sizes.
 
@@ -233,8 +233,7 @@ JSX, TSX, Vue JavaScript and TypeScript, and Angular TypeScript source files.
 The clean consumer check compiled all 47 React TSX recipes and 47 strict Angular
 templates. Vite also bundled each of the 47 exported Vue applications in both
 JavaScript and TypeScript, including the application bootstrap and component
-template. This checks package resolution and compilation. Vue language-service
-type checking remains a separate check.
+template. This checks package resolution and compilation. This earlier build check is complemented by the current Vue language-service check below.
 
 The six content display recipes bring coverage from 47 to 53. Chip demonstrates all five tones, a protected filter, a removable filter and focus recovery on restore. DescriptionList pairs labels with values, Stat shows two figures with trends, Timeline shows three dated stages, Meter shows usage at three thresholds, and AvatarGroup limits the visible members and names the overflow count. The examples use native adapter props and events, including the different Timeline state and date contracts.
 
@@ -249,3 +248,13 @@ Field demonstrates labeling, help text, and validation after blur. InputGroup pl
 ## Disclosures and overlays
 
 Tooltip describes a focusable reference label. Popover places an interactive requirements checklist next to its trigger. Menu skips an unavailable action during keyboard navigation and displays the selected command ID. Drawer presents request filters in a modal dialog and returns focus to the opener. Collapsible uses a native disclosure for application instructions. TreeView shows a nested document list with separate expansion and selection, direction-aware arrow keys and a selected document ID. Each project runs its interactions inside the preview.
+
+## Type checking the exported projects
+
+Vue TypeScript downloads include the pinned `vue-tsc` development dependency and
+an `npm run typecheck` command. Their configuration enables strict template and
+script checks, uses Vue's JSX types, and recognizes standard `data-*`
+attributes. The consumer checker runs the actual SFCs and bootstrap files
+against declarations from local package tarballs. React TSX and Angular strict
+templates are checked separately. Vue JavaScript and TypeScript files also
+pass through a production Vite bundle.

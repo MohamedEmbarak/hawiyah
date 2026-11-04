@@ -85,19 +85,36 @@ export const TextField = textControl('input', 'nq-input', 'NqTextField');
 export const Textarea = textControl('textarea', 'nq-textarea', 'NqTextarea');
 export const Select = textControl('select', 'nq-select', 'NqSelect');
 
-function choice(kind: 'checkbox' | 'radio' | 'switch') {
+function choice<Value extends boolean | string>(kind: 'checkbox' | 'radio' | 'switch', normalize: (value: boolean | string) => Value) {
   return defineComponent({
     name: `Nq${kind[0]!.toUpperCase()}${kind.slice(1)}`, inheritAttrs: false,
     props: { ...decorationProps, modelValue: { type: [Boolean, String] as PropType<boolean | string>, default: undefined }, defaultValue: { type: [Boolean, String] as PropType<boolean | string>, default: false }, value: { type: String, default: 'on' }, readOnly: Boolean, indeterminate: Boolean },
-    emits: { 'update:modelValue': (_value: boolean | string) => true },
+    emits: { 'update:modelValue': (_value: Value) => true },
     setup(props, { attrs, slots, emit, expose }) {
       const field = useField(props, attrs);
       const element = ref<HTMLInputElement>();
-      const model = useValue(() => props.modelValue, props.defaultValue, value => emit('update:modelValue', value));
-      useFormReset(element, () => model.set(props.defaultValue));
+      const model = useValue(() => props.modelValue, props.defaultValue, value => emit('update:modelValue', normalize(value)));
+      const syncDefault = () => {
+        const input = element.value;
+        if (kind !== 'radio' || !input) return;
+        const selected = props.defaultValue === props.value;
+        if (input.defaultChecked !== selected) input.defaultChecked = selected;
+      };
+      useFormReset(element, () => {
+        const input = element.value;
+        if (kind !== 'radio' || !input?.form) { model.set(props.defaultValue); return; }
+        const peers = input.name ? Array.from(input.form.elements).filter((node): node is HTMLInputElement =>
+          node.matches('input[type="radio" i]') && node.getAttribute('name') === input.name) : [input];
+        const checked = peers.find(peer => peer.checked);
+        const restored = checked?.value ?? '';
+        // A group has one reset result. Its other members synchronize silently
+        // so an unchecked sibling cannot replace the selected default.
+        if ((checked ?? peers[0]) === input) model.set(restored);
+        else model.sync(restored);
+      });
       let readonlyGuard: ReturnType<typeof observeReadonlyChoice> | undefined;
-      onMounted(() => { if (element.value) readonlyGuard = observeReadonlyChoice(element.value); });
-      onUpdated(() => readonlyGuard?.refresh());
+      onMounted(() => { if (element.value) readonlyGuard = observeReadonlyChoice(element.value); syncDefault(); });
+      onUpdated(() => { readonlyGuard?.refresh(); syncDefault(); });
       onBeforeUnmount(() => readonlyGuard?.destroy());
       watchEffect(() => { if (element.value) element.value.indeterminate = kind === 'checkbox' && props.indeterminate; });
       expose({ element, focus: () => element.value?.focus() });
@@ -114,9 +131,9 @@ function choice(kind: 'checkbox' | 'radio' | 'switch') {
     },
   });
 }
-export const Checkbox = choice('checkbox');
-export const Radio = choice('radio');
-export const Switch = choice('switch');
+export const Checkbox = choice('checkbox', Boolean);
+export const Radio = choice('radio', value => typeof value === 'string' ? value : '');
+export const Switch = choice('switch', Boolean);
 
 export const FileUpload = defineComponent({
   name: 'NqFileUpload', inheritAttrs: false, props: decorationProps,

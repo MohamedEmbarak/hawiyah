@@ -129,7 +129,7 @@ import { ref } from 'vue';
 import { ${component} } from '@nasaq/vue';
 
 ${data}const initial = ${initialCode};
-const value = ref${typed ? `<${type}>` : ''}(initial);
+const value = ref${typed ? `<${type === 'string[]' ? 'readonly string[]' : type}>` : ''}(initial);
 const locked = ref(false);
 const submitted = ref('—');
 ${collect}

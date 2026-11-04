@@ -486,7 +486,7 @@ export function projectExample(
       host: '<div id="app"></div>',
       files: {
         css,
-        html: `<script setup${typed ? ' lang="ts"' : ""}>\n${state ? "import { ref } from 'vue';\n" : ""}import { ${componentImports} } from '@nasaq/vue';\n${state ? `const value = ref${typed ? `<${stateType}>` : ""}(${initial});\n` : ""}${contentRecipe?.vueDeclarations ? contentRecipe.vueDeclarations + "\n" : ""}</script>\n\n<template>\n  <${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${vue}</${wrapperTag}>\n</template>\n`,
+        html: `<script setup${typed ? ' lang="ts"' : ""}>\n${state ? "import { ref } from 'vue';\n" : ""}import { ${componentImports} } from '@nasaq/vue';\n${state ? `const value = ref${typed ? `<${id === "toggle-group" ? "string | readonly string[]" : stateType}>` : ""}(${initial});\n` : ""}${contentRecipe?.vueDeclarations ? contentRecipe.vueDeclarations + "\n" : ""}</script>\n\n<template>\n  <${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${vue}</${wrapperTag}>\n</template>\n`,
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };

@@ -43,6 +43,7 @@ export function projectDownloadFiles(
   if (framework === "vue") {
     deps.vue = "3.5.44";
     dev["@vitejs/plugin-vue"] = "6.0.10";
+    if (language === "typescript") dev["vue-tsc"] = "3.3.14";
   }
   if (framework === "angular") {
     for (const pkg of [
@@ -61,7 +62,10 @@ export function projectDownloadFiles(
         name: "nasaq-component-example",
         private: true,
         type: "module",
-        scripts: { dev: "vite", build: "vite build" },
+        scripts: {
+          dev: "vite", build: "vite build",
+          ...(framework === "vue" && language === "typescript" ? { typecheck: "vue-tsc --noEmit -p tsconfig.json" } : {}),
+        },
         dependencies: deps,
         devDependencies: dev,
       },
@@ -80,7 +84,8 @@ export function projectDownloadFiles(
           module: "ESNext",
           moduleResolution: "Bundler",
           strict: true,
-          jsx: "react-jsx",
+          jsx: framework === "vue" ? "preserve" : "react-jsx",
+          ...(framework === "vue" ? { jsxImportSource: "vue" } : {}),
           experimentalDecorators: true,
           useDefineForClassFields: false,
           skipLibCheck: true,
@@ -88,6 +93,7 @@ export function projectDownloadFiles(
           noEmit: true,
           lib: ["ES2022", "DOM", "DOM.Iterable"],
         },
+        ...(framework === "vue" && language === "typescript" ? { vueCompilerOptions: { strictTemplates: true, dataAttributes: ["data-*"] } } : {}),
         include: ["*.ts", "*.tsx", "*.js", "*.jsx", "*.vue"],
       },
       null,

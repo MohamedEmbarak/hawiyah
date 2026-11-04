@@ -1,3 +1,5 @@
+import type {WithNativeAttributes} from './native-attributes.js';
+import type {HTMLAttributes} from 'vue';
 import { defineComponent, h, mergeProps, useId } from "vue";
 import type { PropType } from "vue";
 import { layoutStyles } from "@nasaq/core";
@@ -22,7 +24,7 @@ const layoutProps = {
   ratio: Number,
 } as const;
 function layout(name: string, className: string, tag = "div") {
-  return defineComponent({
+  const component = defineComponent({
     name,
     inheritAttrs: false,
     props: { ...layoutProps, as: { type: String, default: tag } },
@@ -40,6 +42,7 @@ function layout(name: string, className: string, tag = "div") {
         );
     },
   });
+  return component as WithNativeAttributes<typeof component, HTMLAttributes>;
 }
 export const Container = layout("NqContainer", "nq-container");
 export const Stack = layout("NqStack", "nq-stack");

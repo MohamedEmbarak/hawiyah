@@ -58,6 +58,10 @@ booleans; radio values are strings matched against the radio's `value` prop.
 both controlled and uncontrolled controls can return to their initial state.
 Use `defaultValue` alongside `v-model` if a nonempty reset value is desired.
 
+For radios sharing a form and `name`, set `defaultValue` to the option that
+should be checked after a reset. The group emits that value once. A group
+without a checked default resets to an empty string.
+
 Locale, direction, theme, mode and density are independent application choices.
 Set `lang`, `dir`, `data-nq-theme="nasaq|dga|custom"`,
 `data-nq-mode="light|dark"` and `data-nq-density="comfortable|compact|mobile"` on an

@@ -28,8 +28,9 @@ export function useField(props: FieldDecoration, attrs: Record<string, unknown>,
 export function useValue<T>(read: () => T | undefined, initial: T, emit: (value: T) => void) {
   const local = ref(initial) as Ref<T>;
   const value = computed(() => read() === undefined ? local.value : read() as T);
-  const set = (next: T) => { local.value = next; emit(next); };
-  return { value, set };
+  const sync = (next: T) => { local.value = next; };
+  const set = (next: T) => { sync(next); emit(next); };
+  return { value, set, sync };
 }
 export function useFormReset(element: Ref<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | undefined>, reset: () => void) {
   let presence: FieldValueObserver | undefined;
