@@ -7,6 +7,8 @@ for (const locale of ['ar', 'en']) {
     await page.addInitScript(locale => localStorage.setItem('nasaq-locale', locale), locale);
     await page.goto('/#inputs');
     const form = page.locator('#native-input-lab');
+    expect(await form.evaluate(node => ['input[name=search]', 'input[type=submit]', 'input[type=reset]'].every(selector =>
+      node.ownerDocument.querySelector<HTMLInputElement>(selector)?.form === node))).toBe(true);
     const picker = form.locator('[data-nq=date-picker]').first();
     const input = picker.locator('[data-nq-date-input]');
     await expect(input).toHaveAttribute('type', 'text');

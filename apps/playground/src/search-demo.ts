@@ -31,12 +31,21 @@ export function searchDemoCopy(locale: Locale) {
   };
 }
 
+type SearchState = 'readonly'|'disabled'|'invalid'|'';
+/** A field inside an existing form. The caller owns submission. */
+export function searchFieldMarkup(locale: Locale, id: string, name: string, options: {
+  label?: string; value?: string; state?: SearchState; suggestions?: boolean; autofocus?: boolean;
+} = {}) {
+  const d = searchDemoCopy(locale);
+  const {label = d.label, value = '', state = '', suggestions = false, autofocus = false} = options;
+  const hint = state === 'invalid' ? `${id}-error` : '';
+  return `<div class="nq-field nq-search-field" data-nq="search-field"${suggestions?` data-nq-suggestions="${e(JSON.stringify(d.suggestions))}" data-nq-max-suggestions="8"`:''}><label class="nq-label" for="${id}">${e(label)}</label><div class="nq-search-control"><input id="${id}" class="nq-input" type="search" name="${e(name)}" autocomplete="off" placeholder="${e(d.placeholder)}" value="${e(value)}" data-nq-search-input${autofocus?' autofocus':''}${state==='readonly'?' readonly':state==='disabled'?' disabled':state==='invalid'?' aria-invalid="true"':''}${hint?` aria-describedby="${hint}"`:''}><button type="button" class="nq-button nq-search-clear" data-variant="ghost" data-nq-search-clear aria-label="${e(d.clear)}"></button></div>${state==='invalid'?`<p class="nq-error" id="${id}-error">${e(d.error)}</p>`:''}</div>`;
+}
+
 export function searchDemoMarkup(locale: Locale,kind: SearchDemoKind='plain',prefix=`ready-search-${kind}`) {
   const d=searchDemoCopy(locale);
-  const field=(name:string,label:string,value='',state:'readonly'|'disabled'|'invalid'|''='',suggestions=false)=>{
-    const id=`${prefix}-${name}`,hint=state==='invalid'?`${id}-error`:'';
-    return `<div class="nq-field nq-search-field" data-nq="search-field"${suggestions?` data-nq-suggestions="${e(JSON.stringify(d.suggestions))}" data-nq-max-suggestions="8"`:''}><label class="nq-label" for="${id}">${e(label)}</label><div class="nq-search-control"><input id="${id}" class="nq-input" type="search" name="query" autocomplete="off" placeholder="${e(d.placeholder)}" value="${e(value)}" data-nq-search-input${kind==='modal'?' autofocus':''}${state==='readonly'?' readonly':state==='disabled'?' disabled':state==='invalid'?' aria-invalid="true"':''}${hint?` aria-describedby="${hint}"`:''}><button type="button" class="nq-button nq-search-clear" data-variant="ghost" data-nq-search-clear aria-label="${e(d.clear)}"></button></div>${state==='invalid'?`<p class="nq-error" id="${id}-error">${e(d.error)}</p>`:''}</div>`;
-  };
+  const field=(key:string,label:string,value='',state:SearchState='',suggestions=false)=>
+    searchFieldMarkup(locale,`${prefix}-${key}`,'query',{label,value,state,suggestions,autofocus:kind==='modal'});
   const form=(suggestions=false)=>`${suggestions?`<p class="nq-hint">${e(d.hint)}</p>`:''}<form class="nq-search-form" data-search-demo-form>${field('query',d.label,kind==='plain'?d.initial:'','',suggestions)}<button class="nq-button nq-search-submit" type="submit" aria-label="${e(d.submit)}"><span class="nq-search-submit-icon" aria-hidden="true"></span></button></form>`;
   const status=`<output class="nq-hint" data-search-demo-result role="status"></output>`;
   const modal=`<button class="nq-button" type="button" data-search-demo-open data-nq-dialog-open="${prefix}-dialog">${e(d.open)}</button><dialog id="${prefix}-dialog" class="nq-dialog nq-search-dialog" data-nq="dialog" aria-labelledby="${prefix}-title"><header class="nq-dialog-header"><h2 id="${prefix}-title">${e(d.title)}</h2><button class="nq-button" type="button" data-variant="ghost" data-nq-dialog-close aria-label="${e(d.close)}">×</button></header><div class="nq-dialog-body">${form(true)}<div class="nq-search-terms" role="group" aria-label="${e(d.suggested)}"><h3>${e(d.suggested)}</h3>${d.terms.map(term=>`<button class="nq-search-term" type="button" data-search-demo-term="${e(term)}">${e(term)}</button>`).join('')}</div><div class="nq-search-advanced"><button type="button" data-search-demo-advanced>${e(d.advanced)}</button></div>${status}</div></dialog>`;
