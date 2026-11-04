@@ -1,16 +1,12 @@
 import {expect, test} from '@playwright/test';
+import {previewStyles} from '../../apps/playground/src/generated/preview-runtime';
 
 for (const direction of ['rtl', 'ltr']) {
   test(`component motion and live reduced-motion changes preserve switch state in ${direction}`, async ({page}) => {
     await page.emulateMedia({reducedMotion:'no-preference'});
-    await page.goto('/#foundations');
-    // The guide's global !important reduced-motion fallback must not mask a
-    // regression in the library CSS that other applications actually import.
-    await page.evaluate(() => {
-      for (const style of document.querySelectorAll('style[data-vite-dev-id]')) {
-        if (style.getAttribute('data-vite-dev-id')?.replaceAll('\\','/').includes('/apps/playground/')) style.remove();
-      }
-    });
+    // Exercise the built package CSS independently of the guide's global motion fallback.
+    await page.setContent('<!doctype html><html><head></head><body><main id="main"></main></body></html>');
+    await page.addStyleTag({content: previewStyles});
     await page.locator('#main').evaluate((main, direction) => {
       main.innerHTML=`<section data-nq-theme="nasaq"><div id="motion-scope" data-nq-theme="dga" dir="${direction}">
         <button class="nq-button" id="motion-button">Save</button>
