@@ -27,7 +27,9 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 The Calendar project links Gregorian and Umm al-Qura views to one ISO value. The DatePicker project accepts typed ISO dates, switches the displayed calendar and shows the value submitted by its form. Both projects follow the chosen guide language.
 
-Native project recipes currently cover 62 components: Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
+FileUpload and FileDropzone show the filenames returned by their native input and let you inspect the local form entries. Disabling the field excludes those entries from submission. Reset clears the selection. The upload chooser suggests PDF and PNG files. The dropzone rejects unsupported files. For a mixed batch Angular retains the accepted files, while vanilla, React and Vue clear the selection.
+
+Native project recipes currently cover 64 components: FileUpload, FileDropzone, Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, ToastRegion and the 12 layout primitives listed below. Other component

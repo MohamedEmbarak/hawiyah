@@ -1,3 +1,4 @@
+import {fileProject, fileProjectIds, isFileProjectId} from './file-projects.ts';
 import {calendarProject} from './calendar-projects.ts';
 import {basicInputProjectIds, basicInputProjectRecipe, isBasicInputId} from './basic-input-projects.ts';
 import {toastProject} from './toast-demo.ts';
@@ -20,6 +21,7 @@ export const nativeProjectComponents = new Set([
   ...Object.keys(layoutComponents),
   ...contentProjectIds,
   ...basicInputProjectIds,
+  ...fileProjectIds,
   "calendar",
   "date-picker",
   "toast-region",
@@ -72,6 +74,7 @@ export function projectExample(
   locale: Locale,
   html: string,
 ): ProjectExample {
+  if (isFileProjectId(id)) return fileProject(id, framework, language, locale);
   if (id === "toast-region") return toastProject(framework, language, locale);
   if (id === "search-field") return searchProject(framework,language,locale);
   const typed = language === "typescript",
