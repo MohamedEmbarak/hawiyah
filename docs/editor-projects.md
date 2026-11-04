@@ -33,7 +33,7 @@ Dialog adds localized notification examples for five tones. The host chooses the
 
 Combobox, PinInput, TagInput and MultiSelect each have a form with a disabled toggle, reset and local submission. Examples display the current value alongside the entries read from `FormData`. Combobox submits the selected office ID. PinInput preserves leading zeros. TagInput and MultiSelect submit repeated values under one field name.
 
-Native project recipes currently cover 69 components: Combobox, PinInput, TagInput, MultiSelect, Dialog, FileUpload, FileDropzone, Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
+Native project recipes currently cover 75 components: Tooltip, Popover, Menu, Drawer, Collapsible, TreeView, Combobox, PinInput, TagInput, MultiSelect, Dialog, FileUpload, FileDropzone, Calendar, DatePicker, Field, InputGroup, PasswordField, NumberField, Slider, RangeSlider, Button, ButtonGroup, IconButton,
 TextField, Textarea, Select, Checkbox, Radio, Switch, ToggleGroup, Badge, Alert,
 Divider, Spinner, Card, Accordion, Carousel, Rating (including RatingDisplay), Table, DataTable, Breadcrumb, Pagination, Stepper, Tabs,
 Progress, Skeleton, Avatar, EmptyState, Link, Feedback, SiteVerification, PortalHeader, PortalFooter, ContentNavigation, SearchField, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, ToastRegion and the 12 layout primitives listed below. Other component
@@ -247,3 +247,7 @@ ToastRegion adds the 54th native recipe. Five service notices demonstrate the ba
 ## Basic input projects
 
 Field demonstrates labeling, help text, and validation after blur. InputGroup places the Saudi riyal symbol inside a numeric amount input. PasswordField keeps the reveal button inside the control and reports only whether the field is filled. NumberField compares editable, read-only and disabled form values. Slider demonstrates keyboard increments, and RangeSlider uses distinct field names and keeps each thumb within the other thumb’s current bound. Each project includes a form reset and shows its current value or password entry status.
+
+## Disclosures and overlays
+
+Tooltip describes a focusable reference label. Popover places an interactive requirements checklist next to its trigger. Menu skips an unavailable action during keyboard navigation and displays the selected command ID. Drawer presents request filters in a modal dialog and returns focus to the opener. Collapsible uses a native disclosure for application instructions. TreeView shows a nested document list with separate expansion and selection, direction-aware arrow keys and a selected document ID. Each project runs its interactions inside the preview.

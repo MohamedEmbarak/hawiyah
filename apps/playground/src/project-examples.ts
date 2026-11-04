@@ -1,3 +1,4 @@
+import {disclosureProjectIds, disclosureProjectRecipe, isDisclosureProjectId} from './disclosure-projects.ts';
 import {siteVerificationMarkup} from './site-verification-demo.ts';
 import {portalMenuItems, portalMenuMarkup} from './portal-navigation-demo.ts';
 import {choiceInputIds, choiceInputProject, isChoiceInput} from './choice-input-projects.ts';
@@ -25,6 +26,7 @@ export const nativeProjectComponents = new Set([
   ...Object.keys(layoutComponents),
   ...contentProjectIds,
   ...basicInputProjectIds,
+  ...disclosureProjectIds,
   ...fileProjectIds,
   ...choiceInputIds,
   "dialog",
@@ -94,7 +96,8 @@ export function projectExample(
   if (id === "content-navigation") html=contentNavigationDemoCases(locale).map(item=>`<section><h2>${item.title}</h2>${contentNavigationDemoMarkup(locale,item.kind,`project-content-nav-${item.kind}`)}</section>`).join('');
   const contentRecipe = isContentProjectId(id) ? contentProjectRecipe(id, locale, typed) : undefined;
   const basicInput = isBasicInputId(id) ? basicInputProjectRecipe(id, locale) : undefined;
-  const recipe = basicInput ?? contentRecipe;
+  const disclosure = isDisclosureProjectId(id) ? disclosureProjectRecipe(id, locale, typed) : undefined;
+  const recipe = disclosure ?? basicInput ?? contentRecipe;
   if (recipe) html = recipe.vanilla;
   let vanillaExampleScript = recipe?.vanillaScript ?? '';
   if (id === 'select' && framework === 'vanilla') {
@@ -152,7 +155,7 @@ export function projectExample(
     "portal-header": "PortalHeader",
     "portal-footer": "PortalFooter",
   };
-  const component = isContentProjectId(id) ? contentComponents[id] : isLayoutId(id) ? layoutComponents[id] : name[id]!;
+  const component = disclosure?.component ?? (isContentProjectId(id) ? contentComponents[id] : isLayoutId(id) ? layoutComponents[id] : name[id]!);
   // AppShell provides the application's main landmark.
   const wrapperTag = id === 'app-shell' ? 'div' : 'main';
   const layoutMarker = isLayoutId(id) ? ` data-layout-project="${id}"` : '';
@@ -170,7 +173,11 @@ export function projectExample(
     numberState = false,
     initialValue: string | undefined;
   const label = t("Example", "مثال");
-  if (basicInput) {
+  if (disclosure) {
+    ({react, vue, angular, initialValue} = disclosure);
+    state = initialValue !== undefined;
+    angularMember = disclosure.angularMember ?? '';
+  } else if (basicInput) {
     ({react, vue, angular, initialValue} = basicInput);
     state = true;
   } else if (contentRecipe) {
