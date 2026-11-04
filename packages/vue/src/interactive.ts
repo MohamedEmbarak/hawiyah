@@ -217,12 +217,41 @@ export const Tooltip = defineComponent({
     const id = `nq-${useId()}`;
     const open = ref(false);
     const root = ref<HTMLElement>();
-    const outside = (event: Event) => { if (!root.value?.contains(event.target as Node)) open.value = false; };
-    onMounted(() => root.value?.ownerDocument.addEventListener('pointerdown', outside));
-    onBeforeUnmount(() => root.value?.ownerDocument.removeEventListener('pointerdown', outside));
+    let hovered = false, focused = false;
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    const show = () => { clearTimeout(hideTimer); open.value = true; };
+    const hide = () => { clearTimeout(hideTimer); open.value = false; };
+    const leave = () => {
+      hovered = false;
+      if (!focused) hideTimer = setTimeout(hide, 120);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (!open.value || event.key !== 'Escape' || event.defaultPrevented) return;
+      event.preventDefault(); event.stopPropagation(); hide();
+    };
+    watch(open, (visible, _, cleanup) => {
+      const element = root.value;
+      if (!visible || !element) return;
+      const doc = element.ownerDocument;
+      const outside = (event: PointerEvent) => { if (!element.contains(event.target as Node)) hide(); };
+      doc.addEventListener('keydown', escape);
+      doc.addEventListener('pointerdown', outside);
+      cleanup(() => { doc.removeEventListener('keydown', escape); doc.removeEventListener('pointerdown', outside); });
+    }, {flush: 'sync'});
+    onBeforeUnmount(() => clearTimeout(hideTimer));
     return () => {
       const children = slots.default?.() ?? [];
-      return h('span', mergeProps(attrs, { ref: root, 'data-nq': 'tooltip', onMouseenter: () => { open.value = true; }, onMouseleave: () => { if (!root.value?.contains(root.value.ownerDocument.activeElement)) open.value = false; }, onFocusin: () => { open.value = true; }, onFocusout: (event: FocusEvent) => { if (!root.value?.contains(event.relatedTarget as Node | null)) open.value = false; }, onKeydown: (event: KeyboardEvent) => { if (event.key === 'Escape' && open.value) { event.preventDefault(); event.stopPropagation(); open.value = false; } } }), [
+      return h('span', mergeProps(attrs, {
+        ref: root, 'data-nq': 'tooltip',
+        onMouseenter: () => { hovered = true; show(); }, onMouseleave: leave,
+        onFocusin: () => { focused = true; show(); },
+        onFocusout: (event: FocusEvent) => {
+          if (root.value?.contains(event.relatedTarget as Node | null)) return;
+          focused = false;
+          if (!hovered) hide();
+        },
+        onKeydown: escape,
+      }), [
         ...children.map(child => isVNode(child) ? cloneVNode(child, { 'aria-describedby': joinIds(child.props?.['aria-describedby'], id) }) : child),
         h('span', { id, role: 'tooltip', class: 'nq-tooltip', hidden: !open.value }, props.content),
       ]);

@@ -1,4 +1,4 @@
-import { booleanAttribute, AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, PLATFORM_ID, ViewChild, inject } from '@angular/core';
+import { booleanAttribute, AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, PLATFORM_ID, ViewChild, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { restoreFocus } from '@nasaq/core';
 
@@ -53,13 +53,48 @@ export class NqDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngOnDestroy(): void { if (this.dialog?.nativeElement.open) this.dialog.nativeElement.close(); restoreFocus(this.trigger); }
 }
 
-@Component({ selector: 'nq-tooltip', standalone: true, template: `<span class="nq-tooltip-anchor nq-tooltip-trigger" tabindex="0" [attr.aria-describedby]="id" (focusin)="visible = true" (focusout)="visible = false" (mouseenter)="visible = true" (mouseleave)="visible = false"><ng-content /><span class="nq-tooltip" role="tooltip" [id]="id" [hidden]="!visible">{{ text }}</span></span>` })
-export class NqTooltipComponent {
+@Component({ selector: 'nq-tooltip', standalone: true, template: `<span class="nq-tooltip-anchor nq-tooltip-trigger" tabindex="0" [attr.aria-describedby]="id" (focusin)="focusEntered()" (focusout)="focusLeft($event)" (mouseenter)="pointerEntered()" (mouseleave)="pointerLeft()" (keydown)="escape($event)"><ng-content /><span class="nq-tooltip" role="tooltip" [id]="id" [hidden]="!visible">{{ text }}</span></span>` })
+export class NqTooltipComponent implements OnDestroy {
   @Input({required: true}) text = '';
   @Input() id = `nq-tooltip-${++nextId}`;
   visible = false;
   private readonly host = inject(ElementRef<HTMLElement>);
-  hide(): void { this.visible = false; }
-  @HostListener('document:keydown.escape', ['$event']) escape(event: Event): void { if (this.visible) { event.preventDefault(); event.stopPropagation(); this.hide(); } }
-  @HostListener('document:pointerdown', ['$event']) outside(event: Event): void { if (!this.host.nativeElement.contains(event.target as Node)) this.hide(); }
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  private hovered = false;
+  private focused = false;
+  private hideTimer?: ReturnType<typeof setTimeout>;
+  private show() {
+    clearTimeout(this.hideTimer);
+    if (this.visible) return;
+    this.visible = true;
+    const doc = this.host.nativeElement.ownerDocument;
+    doc.addEventListener('keydown', this.escape);
+    doc.addEventListener('pointerdown', this.outside);
+  }
+  hide() {
+    clearTimeout(this.hideTimer);
+    if (!this.visible) return;
+    this.visible = false;
+    const doc = this.host.nativeElement.ownerDocument;
+    doc.removeEventListener('keydown', this.escape);
+    doc.removeEventListener('pointerdown', this.outside);
+    this.changeDetector.markForCheck();
+  }
+  pointerEntered() { this.hovered = true; this.show(); }
+  pointerLeft() {
+    this.hovered = false;
+    if (!this.focused) this.hideTimer = setTimeout(() => this.hide(), 120);
+  }
+  focusEntered() { this.focused = true; this.show(); }
+  focusLeft(event: FocusEvent) {
+    if (this.host.nativeElement.contains(event.relatedTarget as Node | null)) return;
+    this.focused = false;
+    if (!this.hovered) this.hide();
+  }
+  readonly escape = (event: KeyboardEvent) => {
+    if (!this.visible || event.key !== 'Escape' || event.defaultPrevented) return;
+    event.preventDefault(); event.stopPropagation(); this.hide();
+  };
+  readonly outside = (event: Event) => { if (!this.host.nativeElement.contains(event.target as Node)) this.hide(); };
+  ngOnDestroy() { this.hide(); }
 }

@@ -296,8 +296,9 @@ export interface TooltipProps extends Omit<ComponentPropsWithRef<'span'>, 'child
   children: ReactElement<HTMLAttributes<HTMLElement>>;
   content: string;
 }
-export function Tooltip({ children, content, className, onMouseEnter, onMouseLeave, onFocus, onBlur, onKeyDown, ...props }: TooltipProps) {
+export function Tooltip({ children, content, className, ref, onMouseEnter, onMouseLeave, onFocus, onBlur, onKeyDown, ...props }: TooltipProps) {
   const id = useId();
+  const root = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
   const hovered = useRef(false);
   const focused = useRef(false);
@@ -308,7 +309,18 @@ export function Tooltip({ children, content, className, onMouseEnter, onMouseLea
     if (!hovered.current && !focused.current) hideTimer.current = setTimeout(() => setOpen(false), 120);
   };
   useEffect(() => () => clearTimeout(hideTimer.current), []);
-  return <span {...props} data-nq="tooltip" className={className}
+  useEffect(() => {
+    const doc = root.current?.ownerDocument;
+    if (!open || !doc) return;
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      event.preventDefault(); event.stopPropagation();
+      clearTimeout(hideTimer.current); setOpen(false);
+    };
+    doc.addEventListener('keydown', escape);
+    return () => doc.removeEventListener('keydown', escape);
+  }, [open]);
+  return <span {...props} data-nq="tooltip" className={className} ref={node => { root.current = node; assignRef(ref, node); }}
     onMouseEnter={event => { onMouseEnter?.(event); hovered.current = true; if (!event.defaultPrevented) show(); }}
     onMouseLeave={event => { onMouseLeave?.(event); hovered.current = false; hideAfterPointerTravel(); }}
     onFocus={event => { onFocus?.(event); focused.current = true; if (!event.defaultPrevented) show(); }}
