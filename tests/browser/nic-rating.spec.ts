@@ -41,19 +41,46 @@ for(const locale of ['ar','en'])test(`rating source geometry and aggregate acces
   await page.goto('/#component/rating');const scope=page.locator('#component-examples');const half=await examples(scope);
   await expect(scope.locator('.source-details pre')).toHaveCount(24);
   await halfAlignment(half,'ltr');await halfAlignment(half,'rtl');
-  for(const mode of ['light','dark']){
-    await scope.evaluate((el,mode)=>{el.setAttribute('data-nq-mode',mode);(el as HTMLElement).style.background='var(--nq-color-surface)';},mode);
-    expect((await new AxeBuilder({page}).include('#component-examples .component-preview').analyze()).violations).toEqual([]);
-  }
   await scope.evaluate(el=>{el.setAttribute('data-nq-mode','light');el.setAttribute('data-nq-theme','nasaq');});await expect(half.locator('.nq-rating-star').first()).toHaveCSS('width','28px');await expect(half.locator('.nq-rating-fill').first()).toHaveCSS('transition-duration','0s');
   await scope.evaluate(el=>{el.setAttribute('data-nq-theme','custom');(el as HTMLElement).style.setProperty('--nq-duration-rating','500ms');});await expect(half.locator('.nq-rating-fill').first()).toHaveCSS('transition-duration','0.5s');
   await page.emulateMedia({reducedMotion:'reduce'});await expect(half.locator('.nq-rating-fill').first()).toHaveCSS('transition-property','none');
-  await page.setViewportSize({width:320,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.setViewportSize({width:320,height:900});
+  // WebKit can report the previous scrollable area until the resized layout is painted.
+  await expect.poll(() => page.evaluate(() => innerWidth === 320 && document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const outside = await scope.locator('.component-preview fieldset.nq-rating label, .component-preview .nq-rating-display .nq-rating-star').evaluateAll(nodes => nodes.flatMap(node => {
+    const {left,right} = node.getBoundingClientRect();
+    return left < -1 || right > innerWidth + 1 ? [{left,right}] : [];
+  }));
+  expect(outside).toEqual([]);
   await half.screenshot({path:info.outputPath(`rating-${locale}-fraction.png`)});
   await page.emulateMedia({forcedColors:'active'});const readonly=scope.locator('fieldset.nq-rating').nth(2);await readonly.locator('input:checked').focus();await page.keyboard.press('Tab');await page.keyboard.press('Shift+Tab');await expect(readonly.locator('input:checked')).toBeFocused();await expect(readonly.locator('label:has(input:checked)')).toHaveCSS('outline-style','solid');
-  await expect(half.locator('.nq-rating-star').first()).toHaveCSS('forced-color-adjust','none');
+  const forcedColors = await page.evaluate(() => ({
+    active: matchMedia('(forced-colors: active)').matches,
+    adjust: CSS.supports('forced-color-adjust','none'),
+  }));
+  await expect(half.locator('.nq-rating-score')).toBeVisible();
+  await expect(half).toHaveAccessibleName(/3\.5/);
+  if (forcedColors.active && forcedColors.adjust) {
+    await expect(half.locator('.nq-rating-star').first()).toHaveCSS('forced-color-adjust','none');
+  } else {
+    info.annotations.push({type:'browser capability', description:`forced-colors active=${forcedColors.active}, forced-color-adjust supported=${forcedColors.adjust}`});
+  }
   await expect(page).toHaveURL(/#component\/rating$/);
 });
+for (const locale of ['ar','en']) for (const mode of ['light','dark']) {
+  test(`rating gallery accessibility in ${locale} ${mode}`, async ({page}) => {
+    test.setTimeout(180000);
+    await page.addInitScript(locale => { if (window === window.top) localStorage.setItem('nasaq-locale', locale); },locale);
+    await page.goto('/#component/rating');
+    const scope = page.locator('#component-examples');
+    await expect(scope.locator('fieldset.nq-rating')).toHaveCount(5);
+    await scope.evaluate((node:HTMLElement,mode) => {
+      node.setAttribute('data-nq-mode',mode);
+      node.style.background = 'var(--nq-color-surface)';
+    },mode);
+    expect((await new AxeBuilder({page}).include('#component-examples .component-preview').analyze()).violations).toEqual([]);
+  });
+}
 for(const [framework,languages] of Object.entries({react:['javascript','typescript'],vue:['javascript','typescript'],angular:['typescript']}))for(const language of languages)test(`${framework} ${language} native rating input and fractional display`,async({page})=>{
   test.setTimeout(90000);await page.goto('/#component/rating');await page.locator('[data-guide-tab="playground"]').click();await page.locator('[data-project-framework]').selectOption(framework);if(framework!=='angular')await page.locator('[data-project-language]').selectOption(language);
   await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});const scope=page.frameLocator('.nq-ide-frame').locator('.demo');const half=await examples(scope);
