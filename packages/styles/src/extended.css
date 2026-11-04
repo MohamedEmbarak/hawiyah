@@ -98,7 +98,7 @@ input.nq-pin-input, .nq-pin-input input:not([type='hidden']) { inline-size: min(
 .nq-calendar :is(.nq-calendar-prev, .nq-calendar-next)::before { content: ''; display: block; inline-size: 1.5rem; block-size: 1.5rem; background-color: currentColor; -webkit-mask: var(--nq-calendar-arrow) center / contain no-repeat; mask: var(--nq-calendar-arrow) center / contain no-repeat; }
 .nq-calendar-prev { --nq-calendar-arrow: url('./assets/icons/arrow-left-01.svg'); }
 .nq-calendar-next { --nq-calendar-arrow: url('./assets/icons/arrow-right-01.svg'); }
-.nq-calendar :is(.nq-calendar-prev, .nq-calendar-next):dir(rtl)::before { transform: scaleX(-1); }
+.nq-calendar :is(.nq-calendar-prev, .nq-calendar-next)::before { --_nq-mirror: var(--_nq-rtl-only) scaleX(-1); transform: var(--_nq-mirror, none); }
 @media (forced-colors: active) {
   .nq-calendar :is(.nq-calendar-prev, .nq-calendar-next)::before { forced-color-adjust: none; background-color: ButtonText; }
   .nq-calendar :is(.nq-calendar-prev, .nq-calendar-next):disabled::before { background-color: GrayText; }

@@ -12,10 +12,9 @@
 .nq-carousel-viewport { overflow: hidden; padding-block: .5rem; }
 .nq-carousel-track {
   display: flex; gap: var(--nq-carousel-gap, 1rem); inline-size: 100%;
-  transform: translateX(calc(var(--nq-carousel-index, 0) * -100% - var(--nq-carousel-index, 0) * var(--nq-carousel-gap, 1rem)));
+  transform: translateX(calc(-1 * var(--_nq-inline-sign, 1) * var(--nq-carousel-index, 0) * (100% + var(--nq-carousel-gap, 1rem))));
   transition: transform var(--nq-duration-carousel) var(--nq-ease-carousel);
 }
-.nq-carousel-track:dir(rtl) { transform: translateX(calc(var(--nq-carousel-index, 0) * 100% + var(--nq-carousel-index, 0) * var(--nq-carousel-gap, 1rem))); }
 .nq-carousel-track > .nq-carousel-slide { box-sizing: border-box; flex: 0 0 100%; inline-size: 100%; visibility: visible; transition: visibility 0s; }
 /* hidden is retained as the no-CSS/no-enhancement fallback. In track mode the
    inactive panel occupies space, but inert and aria-hidden protect interaction
@@ -41,9 +40,8 @@
 .nq-button.nq-carousel-arrow:hover:not(:disabled) { background: var(--nq-color-primary-hover); }
 .nq-button.nq-carousel-arrow:active:not(:disabled) { background: var(--nq-color-primary-active); }
 .nq-button.nq-carousel-arrow:disabled { opacity: .3; cursor: not-allowed; }
-.nq-carousel-arrow::before { content: '→'; font-family: sans-serif; font-size: 20px; line-height: 1; }
-.nq-carousel-arrow[data-nq-previous]::before, .nq-carousel-arrow[data-nq-next]:dir(rtl)::before { content: '←'; }
-.nq-carousel-arrow[data-nq-previous]:dir(rtl)::before { content: '→'; }
+.nq-carousel-arrow::before { --_nq-rtl-arrow: var(--_nq-rtl-only) '←'; content: var(--_nq-rtl-arrow, '→'); font-family: sans-serif; font-size: 20px; line-height: 1; }
+.nq-carousel-arrow[data-nq-previous]::before { --_nq-rtl-arrow: var(--_nq-rtl-only) '→'; content: var(--_nq-rtl-arrow, '←'); }
 .nq-carousel-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: .1rem; }
 /* 12px source dots sit inside 24px targets; the 1px boundary keeps unselected
    controls recognizable against the surface without changing their fill. */

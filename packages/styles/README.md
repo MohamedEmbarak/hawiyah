@@ -238,3 +238,10 @@ Scale field descriptions with `--nq-profile-helper-size` and
 `--nq-color-field-helper` and `--nq-color-field-error-text`.
 
 Use `nq-type` and a `data-scale` value to choose the NIC display, heading or body metrics independently of the heading level. Use `nq-line-clamp` with `data-lines` for a visual excerpt. When people need the full text, provide a visible way to expand or open it. `nq-divider` supports neutral, primary, gold and tertiary tones with `data-tone`. Use `aria-orientation="vertical"` in inline layouts. See the [foundations measurements](../../docs/nic-foundations.md).
+## HTML reading direction
+
+Set `dir="rtl"` or `dir="ltr"` on the document or on the nearest section that changes direction. The carousel track, directional arrows, calendar controls, select indicator, overflow markers and notification entry follow that boundary. A nested override takes effect even when the language stays the same. Physical arrow icons mirror only when explicitly marked directional.
+
+For `dir="auto"`, Nasaq uses a CSS `@scope` root with the native `:dir(rtl)` selector. This preserves the browser’s first-strong-character decision when the guide or a consumer minifies CSS. Engines without CSS scope still apply explicit direction boundaries. Decorative geometry at an automatic boundary falls back to LTR in those engines. Set an explicit direction when the host already knows the reading order.
+
+The production direction regression loads the minified package stylesheet used by the guide editor. It checks carousel alignment, directional icon mirroring, select indicator placement and an overflow popup at 320px and desktop width.

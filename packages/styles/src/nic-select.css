@@ -33,13 +33,11 @@
     appearance: var(--nq-profile-select-appearance, auto);
     --_nq-select-image: var(--nq-profile-select-down,);
     --_nq-select-size: var(--nq-profile-select-size,);
-    --_nq-select-position: var(--nq-profile-select-position-ltr,);
-    --nq-profile-field-padding-end: var(--nq-profile-select-padding-ltr, var(--nq-space-3));
+    --_nq-rtl-position: var(--_nq-rtl-only) var(--nq-profile-select-position-rtl,);
+    --_nq-select-position: var(--_nq-rtl-position, var(--nq-profile-select-position-ltr,));
+    --_nq-rtl-padding: var(--_nq-rtl-only) var(--nq-profile-select-padding-rtl, var(--nq-space-3));
+    --nq-profile-field-padding-end: var(--_nq-rtl-padding, var(--nq-profile-select-padding-ltr, var(--nq-space-3)));
     font-size: var(--nq-profile-select-font, inherit);
-  }
-  select.nq-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])):dir(rtl) {
-    --_nq-select-position: var(--nq-profile-select-position-rtl,);
-    --nq-profile-field-padding-end: var(--nq-profile-select-padding-rtl, var(--nq-space-3));
   }
   select.nq-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])):focus { --_nq-select-image: var(--nq-profile-select-up,); }
 }

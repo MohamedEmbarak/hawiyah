@@ -41,8 +41,7 @@
 .nq-breadcrumb [aria-disabled='true'] { color: var(--nq-color-on-disabled); cursor: not-allowed; }
 /* Empty generated geometry is decorative; no private icon-font glyph is read
    as content. A logical chevron follows direction independently of language. */
-.nq-breadcrumb li + li::before { content: var(--nq-profile-breadcrumb-separator, '/'); flex: none; inline-size: var(--nq-profile-breadcrumb-size, auto); block-size: var(--nq-profile-breadcrumb-size, auto); margin-inline: var(--nq-profile-breadcrumb-margin, 0px); border-block-start: var(--nq-profile-breadcrumb-border, 0px) solid currentColor; border-inline-end: var(--nq-profile-breadcrumb-border, 0px) solid currentColor; transform: rotate(var(--nq-profile-breadcrumb-angle, 0deg)); color: var(--nq-color-text-subtle); }
-.nq-breadcrumb:dir(rtl) li + li::before { transform: rotate(calc(-1 * var(--nq-profile-breadcrumb-angle, 0deg))); }
+.nq-breadcrumb li + li::before { content: var(--nq-profile-breadcrumb-separator, '/'); flex: none; inline-size: var(--nq-profile-breadcrumb-size, auto); block-size: var(--nq-profile-breadcrumb-size, auto); margin-inline: var(--nq-profile-breadcrumb-margin, 0px); border-block-start: var(--nq-profile-breadcrumb-border, 0px) solid currentColor; border-inline-end: var(--nq-profile-breadcrumb-border, 0px) solid currentColor; transform: rotate(calc(var(--_nq-inline-sign, 1) * var(--nq-profile-breadcrumb-angle, 0deg))); color: var(--nq-color-text-subtle); }
 @media (prefers-reduced-motion: reduce) { .nq-breadcrumb a { transition: none; } }
 @media (forced-colors: active) {
   .nq-link, .nq-link[data-variant] { --nq-link-rest: LinkText; --nq-link-hover: LinkText; --nq-link-active: LinkText; --nq-link-visited: VisitedText; color: LinkText; }

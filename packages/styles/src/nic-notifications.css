@@ -78,8 +78,7 @@
 .nq-toast-region[data-variant='banner'] .nq-toast-content { grid-column: 2; min-inline-size: 0; }
 .nq-toast-region[data-variant='banner'] .nq-toast-content p { color: inherit; }
 .nq-toast-region[data-variant='banner'] .nq-toast-dismiss { grid-column: 3; grid-row: 1; align-self: center; color: inherit; }
-.nq-toast-region[data-variant='banner'] .nq-toast:dir(rtl) { --_nq-toast-from: -100%; }
-@keyframes nq-toast-banner-in { from { opacity: 0; transform: translateX(var(--_nq-toast-from, 100%)); } }
+@keyframes nq-toast-banner-in { from { opacity: 0; transform: translateX(calc(100% * var(--_nq-inline-sign, 1))); } }
 @media (max-width: 576px) {
   .nq-toast-region[data-variant='banner'] { --_nq-toast-gutter: 10px; --_nq-toast-top: var(--nq-toast-header-offset, 70px); }
 }
