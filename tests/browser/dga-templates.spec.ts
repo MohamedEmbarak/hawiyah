@@ -106,14 +106,23 @@ for (const locale of ['ar', 'en'] as const) {
     const tablist = page.locator('[data-dga-template] [role="tablist"]');
     const tabs = tablist.getByRole('tab');
     await tabs.first().focus();
+    const destinationId = await tabs.last().getAttribute('id');
+    expect(destinationId).toBeTruthy();
+    const destination = tablist.locator(`[id="${destinationId}"]`);
+    const panelId = await destination.getAttribute('aria-controls');
     await page.keyboard.press('End');
-    await expect(tabs.last()).toBeFocused();
-    await expect(tabs.last()).toHaveAttribute('aria-selected', 'true');
-    await expect.poll(async () => {
-      const list = await tablist.boundingBox();
-      const selected = await tabs.last().boundingBox();
-      return Boolean(list && selected && selected.x >= list.x - 1 && selected.x + selected.width <= list.x + list.width + 1);
-    }).toBe(true);
+    await expect(destination).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator(`[id="${panelId}"]`)).toBeVisible();
+    // The selected text can grow and move this destination into the disclosure.
+    await expect.poll(() => destination.evaluate(tab => {
+      const bar = tab.closest('.nq-tab-bar');
+      const overflow = tab.getAttribute('data-nq-overflow-hidden') === 'true';
+      const focused = overflow ? bar?.querySelector('summary[data-active="true"]') : tab;
+      const bounds = (overflow ? bar : tab.closest('[role="tablist"]'))?.getBoundingClientRect();
+      const box = focused?.getBoundingClientRect();
+      return focused === tab.ownerDocument.activeElement && !!bounds && !!box && box.width > 0 &&
+        box.left >= bounds.left - 1 && box.right <= bounds.right + 1;
+    })).toBe(true);
   });
 
   for (const mode of ['light', 'dark'] as const) {
