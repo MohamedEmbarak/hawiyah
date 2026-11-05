@@ -4,6 +4,11 @@ import AxeBuilder from '@axe-core/playwright';
 async function cases(scope:Locator){
  const navs=scope.locator('.nq-pagination');await expect(navs).toHaveCount(6);
  const first=navs.nth(0),middle=navs.nth(1),last=navs.nth(2),single=navs.nth(3),disabled=navs.nth(4),large=navs.nth(5);
+ await first.locator('[data-nq-next]').evaluate(async element => {
+  const mask = getComputedStyle(element, '::before').maskImage.match(/url\("([^"]+)"\)/)?.[1];
+  if (!mask) throw new Error('Pagination arrow mask is missing');
+  const image = new Image(); image.src = mask; await image.decode();
+ });
  const compact=await scope.evaluate(el=>el.ownerDocument.defaultView!.matchMedia('(max-width: 576px)').matches);
  const current=first.locator('[aria-current="page"]');await expect(current).toHaveText('1');
  await expect(current).toHaveCSS('min-width',compact?'30px':'40px');await expect(current).toHaveCSS('height',compact?'30px':'40px');await expect(current).toHaveCSS('border-radius','0px');await expect(current).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
@@ -30,8 +35,8 @@ for(const locale of ['ar','en'])test(`pagination source geometry and accessible 
  await expect(scope.locator('.source-details pre')).toHaveCount(24);
  for(const mode of ['light','dark']){await scope.evaluate((el,mode)=>{el.setAttribute('data-nq-mode',mode);(el as HTMLElement).style.background='var(--nq-color-surface)';},mode);expect((await new AxeBuilder({page}).include('#component-examples .component-preview').analyze()).violations).toEqual([]);}
  await scope.evaluate(el=>el.setAttribute('data-nq-mode','light'));await first.locator('summary').click();expect((await new AxeBuilder({page}).include('#component-examples .component-preview').analyze()).violations).toEqual([]);await first.locator('summary').press('Escape');
- const arrow=first.locator('[data-nq-next]');expect(await arrow.evaluate(el=>getComputedStyle(el,'::before').content)).toBe(locale==='ar'?'"‹"':'"›"');
- await first.evaluate((el,dir)=>el.setAttribute('dir',dir),locale==='ar'?'ltr':'rtl');expect(await arrow.evaluate(el=>getComputedStyle(el,'::before').content)).toBe(locale==='ar'?'"›"':'"‹"');await first.evaluate(el=>el.removeAttribute('dir'));
+ const arrow=first.locator('[data-nq-next]');expect(await arrow.evaluate(el=>getComputedStyle(el,'::before').transform)).toBe(locale==='ar'?'matrix(-1, 0, 0, 1, 0, 0)':'matrix(1, 0, 0, 1, 0, 0)');
+ await first.evaluate((el,dir)=>el.setAttribute('dir',dir),locale==='ar'?'ltr':'rtl');expect(await arrow.evaluate(el=>getComputedStyle(el,'::before').transform)).toBe(locale==='ar'?'matrix(1, 0, 0, 1, 0, 0)':'matrix(-1, 0, 0, 1, 0, 0)');await first.evaluate(el=>el.removeAttribute('dir'));
  await scope.evaluate(el=>el.setAttribute('data-nq-theme','nasaq'));await expect(first.locator('[aria-current="page"]')).not.toHaveCSS('background-color','rgba(0, 0, 0, 0)');
  await scope.evaluate(el=>{el.setAttribute('data-nq-theme','custom');(el as HTMLElement).style.setProperty('--nq-duration-pagination','500ms');});await expect(arrow).toHaveCSS('transition-duration','0.5s, 0.5s');
  await page.setViewportSize({width:320,height:900});await expect(first).toHaveCSS('gap','6px');await expect(first).toHaveCSS('margin-top','40px');await expect(first.locator('[aria-current="page"]')).toHaveCSS('min-width','30px');await expect(arrow).toHaveCSS('height','40px');

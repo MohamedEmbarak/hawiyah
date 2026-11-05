@@ -11,7 +11,7 @@ assets were not loaded, so the fixture does not prove live-site visual parity.
 | --- | --- | --- | --- |
 | CSS 3505–3555 | 40px square controls, 14px text, 8px gap, neutral-100 hover, 300ms color transition | Rounded, tinted current buttons with no source underline | DGA geometry, semantic text/hover and transition tokens; high |
 | CSS 3557–3578 | Black 2px focus outline for `.page-link`; current page has a primary 3px underline inset 4px | Filled current state | Current underline and visible keyboard outline; high for values, accessible focus retained on all native controls |
-| CSS 3581–3615 | 40px arrow controls; 18px font artwork, direction chosen by language | Text previous/next labels | Direction-aware chevron glyphs and accessible labels; dimensions match, official artwork parity is not claimed |
+| CSS 3581–3615 | 40px arrow controls; 18px font artwork, direction chosen by language | Text previous/next labels | Direction-aware geometric SVG masks and accessible labels; see the November 5 source-node comparison below |
 | CSS 3640–3666 / 4005–4009 | At ≤576px, 6px gaps, 12px numbers and declared 20×30px page controls; later `.pagination-nav` rule restores 40px margins | No specific compact pagination profile | 30×30px numeric targets, 40px arrows/ellipsis width, wrapping and effective 40px margin; narrower source targets intentionally enlarged |
 | CSS 4031–4099 | Dropdown minimum width 80px, maximum height 300px, 4px radius, neutral-200 border, source shadow; 40px items and 200ms transition | Passive ellipses | Scrollable disclosures with the measured values; high for CSS, positioned centrally below the pagination to avoid edge clipping |
 | JS 2219–2255 | First five / last five page windows; first/last plus current neighbors in the middle | Narrower edge windows | Shared bounded helper follows default source windows; empty and one-page gaps become direct page buttons |
@@ -97,3 +97,15 @@ template checking, and all seven exported framework/language projects build.
 The integrated editor card also passes its Arabic/light and English/dark layout
 checks at 320, 390, 768 and 1543px. This is focused pagination/editor validation,
 not a fresh full catalog browser run or a claim of live NIC-site visual parity.
+
+## November 5 arrow correction
+
+Pagination controls now render geometric SVG masks instead of font-dependent
+chevron characters. The right arrow uses a 24px viewBox, points (9,6), (15,12),
+(9,18), 1.5px stroke and rounded joins/caps. Source Stroke nodes 8681:21884 and
+8681:21968 in the supplied Icons file establish these proportions. The authored
+right-arrow mask differs by 0.91% normalized alpha from the decoded source
+outline in a 288px Chromium raster comparison. Its foreground inherits the
+control color, and its direction follows the nearest HTML direction boundary.
+All four adapters use this shared style. Forced colors retain visible arrows.
+The raw archive artwork is not shipped.

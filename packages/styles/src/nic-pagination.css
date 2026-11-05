@@ -32,8 +32,8 @@
 .nq-pagination .nq-button:is(:disabled, [aria-disabled='true']) { color: var(--nq-color-on-disabled); background: transparent; border-color: transparent; opacity: .5; cursor: not-allowed; }
 .nq-pagination .nq-pagination-gap-trigger[aria-disabled='true'] { color: var(--nq-color-on-disabled); opacity: .5; cursor: not-allowed; }
 .nq-pagination :is(.nq-pagination-item, .nq-pagination-arrow, .nq-pagination-gap-trigger, [data-nq-page]):focus-visible:not(:disabled, [aria-disabled='true']) { outline: 2px solid var(--nq-color-focus-contrast); outline-offset: 2px; background: var(--nq-color-surface-muted); }
-.nq-pagination-arrow::before { --_nq-rtl-arrow: var(--_nq-rtl-only) '‹'; content: var(--_nq-rtl-arrow, '›'); font: 18px/1 sans-serif; }
-.nq-pagination-arrow[data-nq-previous]::before { --_nq-rtl-arrow: var(--_nq-rtl-only) '›'; content: var(--_nq-rtl-arrow, '‹'); }
+.nq-pagination-arrow::before { content: ''; inline-size: 18px; block-size: 18px; background: currentColor; mask: url('./assets/pagination-arrow.svg') center / contain no-repeat; transform: scaleX(var(--_nq-inline-sign, 1)); }
+.nq-pagination-arrow[data-nq-previous]::before { transform: scaleX(calc(-1 * var(--_nq-inline-sign, 1))); }
 .nq-pagination-gap { position: static; }
 .nq-pagination-gap-trigger { list-style: none; }
 .nq-pagination-gap-trigger::-webkit-details-marker { display: none; }
@@ -59,12 +59,14 @@
   .nq-pagination :is(.nq-pagination-item, .nq-pagination-arrow, .nq-pagination-gap-trigger, [data-nq-page], .nq-pagination-ellipsis) { font-size: 12px; }
   .nq-pagination .nq-pagination-arrow { min-inline-size: 40px; min-block-size: 40px; block-size: 40px; }
   .nq-pagination .nq-pagination-gap-trigger { min-inline-size: 40px; }
-  .nq-pagination-arrow::before { font-size: 16px; }
+  .nq-pagination-arrow::before { inline-size: 16px; block-size: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .nq-pagination :is(.nq-pagination-item, .nq-pagination-arrow, .nq-pagination-gap-trigger, [data-nq-page]) { transition: none; }
 }
 @media (forced-colors: active) {
+  .nq-pagination-arrow::before { background: ButtonText; forced-color-adjust: none; }
+  .nq-pagination-arrow:disabled::before { background: GrayText; }
   .nq-pagination [aria-current='page'] { outline: 2px solid Highlight; outline-offset: -2px; }
   .nq-pagination [aria-current='page']::after { background: Highlight; forced-color-adjust: none; }
   .nq-pagination-menu { border-color: CanvasText; }
