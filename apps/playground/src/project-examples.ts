@@ -1,3 +1,4 @@
+import {cardActionMarkup} from './card-action-demo';
 import {isServicePatternId, servicePatternIds, servicePatternProject} from './service-pattern-projects.ts';
 import {dividerProjectMarkup} from './divider-demo.ts';
 import {isPortalShellId, portalShellIds, portalShellProject} from './portal-shell-projects.ts';
@@ -113,6 +114,7 @@ export function projectExample(
   }
   if (id === "portal-header") html = `<div class="nq-portal-masthead">${siteVerificationMarkup(locale)}${portalMenuMarkup(locale)}</div>`;
   if (id === "divider") html = dividerProjectMarkup(locale, "vanilla");
+  if (id === "card") html = cardActionMarkup(locale, "vanilla");
   if (framework === "vanilla")
     return {
       names: { html: "index.html", css: "style.css", js: `main.${ext}` },
@@ -264,14 +266,9 @@ export function projectExample(
     angular = `<nq-radio label="${label}" name="choice" [options]="options" [(value)]="value" /><output>{{ value }}</output>`;
     angularMember = `\n  options = ${options};`;
   } else if (id === "card") {
-    const title = t("Service details", "تفاصيل الخدمة"),
-      description = t(
-        "Review the requirements before applying.",
-        "راجع المتطلبات قبل التقديم.",
-      );
-    react = `<Card variant="outlined" header={<h2 className="nq-card-title">${title}</h2>} footer={<span>${t("Available online", "متاحة إلكترونياً")}</span>}><p className="nq-card-description">${description}</p></Card>`;
-    vue = `<Card variant="outlined"><template #header><h2 class="nq-card-title">${title}</h2></template><p class="nq-card-description">${description}</p><template #footer>${t("Available online", "متاحة إلكترونياً")}</template></Card>`;
-    angular = `<nq-card variant="outlined"><h2 nqCardHeader class="nq-card-title">${title}</h2><p class="nq-card-description">${description}</p><span nqCardFooter>${t("Available online", "متاحة إلكترونياً")}</span></nq-card>`;
+    react = cardActionMarkup(locale, 'react');
+    vue = cardActionMarkup(locale, 'vue');
+    angular = cardActionMarkup(locale, 'angular');
   } else if (id === "accordion") {
     state = true;
     const items = [

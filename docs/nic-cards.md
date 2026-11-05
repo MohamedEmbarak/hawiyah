@@ -25,15 +25,20 @@ an article into an accessible button. The vanilla disabled-link recipe omits
 event handlers must also respect the disabled state.
 
 ```html
-<a class="nq-card nq-card-action" href="/services/example">
+<article class="nq-card" data-variant="outlined">
   <header class="nq-card-header">
     <h2 class="nq-card-title">تفاصيل الخدمة</h2>
   </header>
   <div class="nq-card-body">
     <p class="nq-card-description">تعرف على المتطلبات والخطوات.</p>
   </div>
-</a>
+  <footer class="nq-card-footer">
+    <a class="nq-button" href="/services/example">عرض المتطلبات</a>
+  </footer>
+</article>
 ```
+
+Checklist row 118 requires a visible CTA on actionable cards. The example uses a real navigation link styled as a button inside a static card. The existing whole-card `href` API remains available for existing consumers.
 
 React uses `header`/`footer` props; Vue uses corresponding slots; Angular
 projects `[nqCardHeader]`/`[nqCardFooter]`. Use ordinary native elements with

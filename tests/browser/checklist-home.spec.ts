@@ -1,0 +1,21 @@
+import { expect, test } from '@playwright/test';
+for (const locale of ['ar', 'en']) test(`home content priority and vanilla action cards in ${locale}`, async ({page}) => {
+  test.setTimeout(90000);
+  await page.addInitScript(locale => { if (window === window.top) localStorage.setItem('nasaq-locale', locale); }, locale);
+  await page.goto('/#templates/home-information');
+  await expect(page.locator('.nq-discovery-hero + section')).toHaveAttribute('aria-labelledby','nq-home-news');
+  await page.goto('/#templates/home');
+  await expect(page.locator('.nq-discovery-hero + section')).toHaveAttribute('aria-labelledby','nq-home-services');
+  await page.goto('/#templates/sitemap');
+  await expect(page.locator('.nq-template-content a[href="#templates/home-information"]')).toBeVisible();
+  await page.goto('/#component/card');
+  await page.locator('[data-guide-tab="playground"]').click();
+  await page.locator('[data-project-framework]').selectOption('vanilla');
+  await page.locator('[data-project-language]').selectOption(locale === 'ar' ? 'javascript' : 'typescript');
+  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+  const frame = page.frameLocator('.nq-ide-frame');
+  await expect(frame.locator('.nq-card a.nq-button')).toHaveAttribute('href','#card-details');
+  await expect(frame.locator('a a, a button')).toHaveCount(0);
+  await frame.locator('.nq-card a.nq-button').click();
+  await expect(page).toHaveURL(/#component\/card$/);
+});

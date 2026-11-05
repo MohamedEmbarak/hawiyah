@@ -89,9 +89,9 @@ for (const locale of ['ar', 'en'] as const) {
     }, locale);
     await page.goto('/#component/card');
     const scope = page.locator('#component-examples');
-    const examples = scope.locator('.ready-example');
+    const examples = scope.locator('.ready-example').filter({has: page.locator('.nq-card-body > :is(ul,ol)')});
     await expect(examples).toHaveCount(3);
-    await expect(scope.locator('.source-details pre')).toHaveCount(12);
+    await expect(examples.locator('.source-details pre')).toHaveCount(12);
     for (const [index, variant] of variants.entries()) {
       await checkList(examples.nth(index).locator('.component-preview .nq-card'), variant);
     }
@@ -143,7 +143,7 @@ for (const [framework, language, sourceIndex] of [
   test(`${framework} ${language} renders the three copied Card list recipes`, async ({ page }) => {
     test.setTimeout(180000);
     await page.goto('/#component/card');
-    const examples = page.locator('#component-examples .ready-example');
+    const examples = page.locator('#component-examples .ready-example').filter({has: page.locator('.nq-card-body > :is(ul,ol)')});
     await expect(examples).toHaveCount(3);
     const sources: string[] = [];
     for (const example of await examples.all()) {
@@ -154,6 +154,12 @@ for (const [framework, language, sourceIndex] of [
     if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
     const status = page.locator('.nq-ide-status');
     await expect(status).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
+    const action = page.frameLocator('.nq-ide-frame').locator('.nq-card a.nq-button');
+    await expect(action).toBeVisible();
+    await expect(action).toHaveAttribute('href', '#card-details');
+    await expect(page.frameLocator('.nq-ide-frame').locator('a a, a button')).toHaveCount(0);
+    await action.click();
+    await expect(page).toHaveURL(/#component\/card$/);
     await page.locator('[data-ide-auto]').uncheck();
     await page.locator('[data-ide-file="html"]').click();
     const editor = page.locator('[data-ide-editor="html"] .cm-content');

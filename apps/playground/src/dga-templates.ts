@@ -11,6 +11,7 @@ const escape = (value: unknown): string => String(value ?? '').replace(/[&<>"']/
 const number = (value: number, locale: Locale): string => new Intl.NumberFormat(locale === 'ar' ? 'ar-SA' : 'en-SA', { numberingSystem: 'latn' }).format(value);
 const templates: readonly {id: string; title: Copy; description: Copy}[] = [
   {id:'home', title:['Portal home','الرئيسية'], description:['Discover services, updates and useful guidance.','اكتشف الخدمات والمستجدات والإرشادات المفيدة.']},
+  {id:'home-information', title:['Information home','الرئيسية المعلوماتية'], description:['Updates and guidance immediately after the hero.','المستجدات والإرشادات بعد القسم الرئيسي مباشرة.']},
   {id:'search', title:['Search','البحث'], description:['Find services and guidance with filters and sorting.','اعثر على الخدمات والإرشادات مع التصفية والترتيب.']},
   {id:'service', title:['Service details','تفاصيل الخدمة'], description:['A service overview, requirements, steps and an application entry point.','وصف الخدمة ومتطلباتها وخطواتها ونقطة بدء الطلب.']},
   {id:'form', title:['Application form','نموذج الطلب'], description:['Complete your details, review them and receive a local confirmation.','أكمل بياناتك وراجعها واحصل على تأكيد محلي للطلب.']},
@@ -152,7 +153,7 @@ function notFound(locale: Locale): string {
 export function renderDgaTemplates(view: string, locale: Locale): string | null {
   if (view !== 'templates' && !view.startsWith('templates/')) return null;
   const route = view.split('/')[1] || 'index';
-  const renderers: Record<string,(locale:Locale)=>string> = {index:gallery,home:renderHome,search:renderSearch,service,form:application,contact,support,faq,sitemap,'404':notFound,rating,chatbot,content,cookies,participation,about,feedback: locale=>pageHeading(titleFor('feedback',locale),copy(locale,['Help us understand whether the page answered your question.','ساعدنا في معرفة ما إذا كانت الصفحة قد أجابت عن سؤالك.'])), 'life-journeys':lifeJourneys};
+  const renderers: Record<string,(locale:Locale)=>string> = {index:gallery,home:renderHome,'home-information':locale=>renderHome(locale,'information'),search:renderSearch,service,form:application,contact,support,faq,sitemap,'404':notFound,rating,chatbot,content,cookies,participation,about,feedback: locale=>pageHeading(titleFor('feedback',locale),copy(locale,['Help us understand whether the page answered your question.','ساعدنا في معرفة ما إذا كانت الصفحة قد أجابت عن سؤالك.'])), 'life-journeys':lifeJourneys};
   const render = renderers[route] ?? notFound;
   return `<div class="nq-template" data-dga-template="${escape(route)}" lang="${locale}">${portalHeader(route,locale)}<div class="nq-service-container nq-template-content">${route==='index'?'':breadcrumb(route,locale)}${render(locale)}${feedback(locale)}</div>${portalFooter(locale)}</div>`;
 }
