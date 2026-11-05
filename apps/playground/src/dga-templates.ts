@@ -130,7 +130,7 @@ function content(locale: Locale): string {
 }
 function participation(locale: Locale): string {
   const t = (en:string,ar:string) => copy(locale,[en,ar]);
-  return `${pageHeading(t('Digital participation','المشاركة الإلكترونية'),t('Share your perspective and help improve public services.','شارك وجهة نظرك وساهم في تحسين الخدمات العامة.'))}<section aria-labelledby="participation-topics-title"><h2 id="participation-topics-title">${t('Engagement Topics','مواضيع المشاركة')}</h2><div class="nq-template-grid" data-participation-topics>${participationTopics.map(topic => card(copy(locale, topic.title), `<p>${escape(copy(locale, topic.description))}</p>${link(topic.route, t('Explore this topic','استكشف الموضوع'), 'secondary')}`)).join('')}</div></section>`;
+  return `${pageHeading(t('Digital participation','المشاركة الإلكترونية'),t('Share your perspective and help improve public services.','شارك وجهة نظرك وساهم في تحسين الخدمات العامة.'))}<section aria-labelledby="participation-topics-title"><h2 id="participation-topics-title" class="nq-type" data-scale="display-sm">${t('Engagement Topics','مواضيع المشاركة')}</h2><div class="nq-template-grid" data-participation-topics>${participationTopics.map(topic => card(copy(locale, topic.title), `<p>${escape(copy(locale, topic.description))}</p>${link(topic.route, t('Explore this topic','استكشف الموضوع'), 'secondary')}`)).join('')}</div></section>`;
 }
 function about(locale: Locale): string {
   const t = (en:string,ar:string) => copy(locale,[en,ar]);

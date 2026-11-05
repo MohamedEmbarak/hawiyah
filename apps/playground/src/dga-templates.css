@@ -10,6 +10,11 @@
 .nq-template-heading h1 { margin: 0 0 var(--nq-space-4); font-size: clamp(2rem,4vw,3rem); line-height: 1.25; font-weight: 600; }
 .nq-template-heading p { max-inline-size: 70ch; color: var(--nq-color-text-muted); font-size: var(--nq-text-lg); line-height: 1.75; }
 .nq-template-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--nq-space-6); }
+/* e-Participation local frames 1:19173/1:19174 use four columns and a 24px gap. */
+.nq-template-grid[data-participation-topics] { grid-template-columns: repeat(4,minmax(0,1fr)); padding-block: var(--nq-space-2); }
+[data-dga-template='participation'] #participation-topics-title { margin-block: 0 var(--nq-space-8); line-height: var(--_nq-type-leading); }
+@media (max-width: 64rem) { .nq-template-grid[data-participation-topics] { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 40rem) { .nq-template-grid[data-participation-topics] { grid-template-columns: minmax(0,1fr); } }
 .nq-template .nq-template-grid .nq-card { min-inline-size: 0; }
 .nq-template-grid .nq-card-header h2 { font-size: var(--nq-text-lg); }
 .nq-template-related { margin-block-start: var(--nq-space-10); }
