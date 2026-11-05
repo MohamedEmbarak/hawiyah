@@ -1,5 +1,34 @@
 # Validation record
 
+## 2026-11-05 checklist follow-up
+
+The [checklist review](dga-checklist-review.md) tracks the supplied workbook
+against implementation evidence. Completed changes cover guide DGA defaults,
+select and pagination indicators, external-link cues, tooltip positioning,
+file transfer states/removal, eight participation topics, information-first
+home ordering and explicit card actions.
+
+Focused validation passed 14 select/pagination scenarios across runs and
+rechecks, 5 external-link scenarios, 8 tooltip/default presentation checks,
+10 tooltip parity tests, 13 changed guide scenarios across runs and a replay,
+and all 7 tooltip project formats. Upload verification passed 5 unit cases
+including Angular and all 7 project formats, testing actual FileList/FormData
+removal and focus return. Home/card verification passed 9 unit cases and 10
+browser cases, including nested dark-mode contrast. The initial participation
+and sitemap checks passed 4 cases. Counts overlap in scope and should not be
+summed into a new whole-package pass count.
+
+Earlier interrupted browser attempts exposed stale generated assets, source
+reloads and outdated test assumptions. The completed checks used frozen
+source and separate result directories. The card contrast defect discovered
+by accessibility checks was corrected before its passing run.
+
+The final workspace build and clean package checks passed, including ESM,
+server rendering, Angular APF, declarations, CSS exports and tree shaking.
+All 83 React TypeScript recipes and Angular strict templates passed. All
+83 Vue recipes bundled in both languages and passed strict TypeScript SFC
+checking. The representative downloaded project built in all seven formats.
+
 ## 2026-11-04 NIC alignment and editor coverage
 
 The [verification report](quality-2026-11-04.md) covers the 83-component catalog,
