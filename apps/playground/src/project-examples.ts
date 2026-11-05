@@ -1,4 +1,4 @@
-import {cardActionMarkup} from './card-action-demo';
+import {cardActionMarkup} from './card-action-demo.ts';
 import {isServicePatternId, servicePatternIds, servicePatternProject} from './service-pattern-projects.ts';
 import {dividerProjectMarkup} from './divider-demo.ts';
 import {isPortalShellId, portalShellIds, portalShellProject} from './portal-shell-projects.ts';
