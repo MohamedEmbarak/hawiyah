@@ -1,3 +1,4 @@
+import { participationTopics } from './participation-topics';
 import { normalizeSearch } from '@nasaq/core';
 import { bindSearch, renderHome, renderSearch } from './discovery-templates';
 import './dga-templates.css';
@@ -128,7 +129,7 @@ function content(locale: Locale): string {
 }
 function participation(locale: Locale): string {
   const t = (en:string,ar:string) => copy(locale,[en,ar]);
-  return `${pageHeading(t('Digital participation','المشاركة الإلكترونية'),t('Share your perspective and help make service journeys clearer.','شارك وجهة نظرك وساعد في جعل رحلات الخدمات أوضح.'))}<div class="nq-template-grid">${card(t('Consultations','الاستشارات'),`<p>${t('Explore a sample consultation on the information needed before starting an application.','استكشف استشارة تجريبية حول المعلومات اللازمة قبل بدء الطلب.')}</p>${link('feedback',t('Share your perspective','شارك وجهة نظرك'),'secondary')}`)}${card(t('Co-creation and ideas','التطوير المشترك والأفكار'),`<p>${t('Suggest a simpler step or clearer explanation for the service journey.','اقترح خطوة أبسط أو شرحًا أوضح لرحلة الخدمة.')}</p>${link('contact',t('Suggest an improvement','اقترح تحسينًا'),'secondary')}`)}${card(t('Open information','المعلومات المفتوحة'),`<p>${t('Understand how the demonstration works and where its limits are.','تعرف على طريقة عمل المثال وحدود استخدامه.')}</p>${link('content',t('Read the guide','اقرأ الدليل'),'secondary')}`)}</div><section class="nq-template-prose nq-template-related"><h2>${t('Participation principles','مبادئ المشاركة')}</h2><ul><li>${t('Keep suggestions relevant, constructive and respectful.','اجعل الاقتراحات مرتبطة بالموضوع وبنّاءة ومحترمة.')}</li><li>${t('Avoid sharing personal or confidential information.','تجنب مشاركة المعلومات الشخصية أو السرية.')}</li><li>${t('Responses in this demonstration are stored only for the current page session.','تُحفظ الردود في هذا المثال خلال جلسة الصفحة الحالية فقط.')}</li></ul></section>`;
+  return `${pageHeading(t('Digital participation','المشاركة الإلكترونية'),t('Share your perspective and help improve public services.','شارك وجهة نظرك وساهم في تحسين الخدمات العامة.'))}<section aria-labelledby="participation-topics-title"><h2 id="participation-topics-title">${t('Engagement Topics','مواضيع المشاركة')}</h2><div class="nq-template-grid" data-participation-topics>${participationTopics.map(topic => card(copy(locale, topic.title), `<p>${escape(copy(locale, topic.description))}</p>${link(topic.route, t('Explore this topic','استكشف الموضوع'), 'secondary')}`)).join('')}</div></section>`;
 }
 function about(locale: Locale): string {
   const t = (en:string,ar:string) => copy(locale,[en,ar]);
