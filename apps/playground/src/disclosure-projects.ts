@@ -21,11 +21,16 @@ type Translate = (en: string, ar: string) => string;
 function tooltip(t: Translate): Markup {
   const term = t('Application reference', 'الرقم المرجعي للطلب');
   const tip = t('Find this reference in your confirmation message.', 'ستجد هذا الرقم في رسالة تأكيد الطلب.');
+  const variants = [
+    ['top', 'start'], ['top', 'center'], ['top', 'end'],
+    ['bottom', 'center'], ['start', 'center'], ['end', 'center'],
+  ];
+  const wrap = (items: string[]) => `<div class="nq-cluster" style="gap:4rem;padding:4rem;justify-content:center">${items.join('')}</div>`;
   return {
-    vanilla: `<span class="nq-tooltip-anchor" data-nq="tooltip"><span tabindex="0" data-nq-tooltip-trigger>${term}</span><span class="nq-tooltip" role="tooltip" hidden>${tip}</span></span>`,
-    react: `<Tooltip content="${tip}"><span tabIndex={0}>${term}</span></Tooltip>`,
-    vue: `<Tooltip content="${tip}"><span tabindex="0">${term}</span></Tooltip>`,
-    angular: `<nq-tooltip text="${tip}">${term}</nq-tooltip>`,
+    vanilla: wrap(variants.map(([placement, align]) => `<span class="nq-tooltip-anchor" data-nq="tooltip"><span tabindex="0" data-nq-tooltip-trigger>${term} (${placement}/${align})</span><span class="nq-tooltip" role="tooltip" data-placement="${placement}" data-align="${align}" hidden>${tip}</span></span>`)),
+    react: wrap(variants.map(([placement, align]) => `<Tooltip content="${tip}" placement="${placement}" align="${align}"><span tabIndex={0}>${term} (${placement}/${align})</span></Tooltip>`)).replace('class=', 'className=').replace('style="gap:4rem;padding:4rem;justify-content:center"', 'style={{gap:"4rem",padding:"4rem",justifyContent:"center"}}'),
+    vue: wrap(variants.map(([placement, align]) => `<Tooltip content="${tip}" placement="${placement}" align="${align}"><span tabindex="0">${term} (${placement}/${align})</span></Tooltip>`)),
+    angular: wrap(variants.map(([placement, align]) => `<nq-tooltip text="${tip}" placement="${placement}" align="${align}">${term} (${placement}/${align})</nq-tooltip>`)),
   };
 }
 

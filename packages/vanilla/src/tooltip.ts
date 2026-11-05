@@ -1,7 +1,7 @@
 import { createCleanup, isDisabled } from '@nasaq/core';
 import { ensureId, remember, required } from './dom.js';
 
-export interface TooltipOptions { hideDelay?: number }
+export interface TooltipOptions { hideDelay?: number; placement?: 'top' | 'bottom' | 'start' | 'end'; align?: 'start' | 'center' | 'end' }
 export interface TooltipController { show(): void; hide(): void; destroy(): void }
 
 /** Descriptive text only; use a dialog/popover for interactive content. */
@@ -10,7 +10,9 @@ export function createTooltip(root: HTMLElement, options: TooltipOptions = {}): 
   const tooltip = required<HTMLElement>(root, '[role="tooltip"]');
   const scope = createCleanup();
   remember(scope, trigger, ['aria-describedby']);
-  remember(scope, tooltip, ['hidden']);
+  remember(scope, tooltip, ['hidden', 'data-placement', 'data-align']);
+  if (options.placement) tooltip.dataset.placement = options.placement;
+  if (options.align) tooltip.dataset.align = options.align;
   const id = ensureId(scope, tooltip, 'tooltip');
   const descriptions = new Set((trigger.getAttribute('aria-describedby') ?? '').split(/\s+/u).filter(Boolean));
   descriptions.add(id);

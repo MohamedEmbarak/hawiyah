@@ -212,7 +212,7 @@ export const Combobox = defineComponent({
 });
 
 export const Tooltip = defineComponent({
-  name: 'NqTooltip', inheritAttrs: false, props: { content: { type: String, required: true } },
+  name: 'NqTooltip', inheritAttrs: false, props: { content: { type: String, required: true }, placement: {type: String as PropType<'top' | 'bottom' | 'start' | 'end'>, default: 'top'}, align: {type: String as PropType<'start' | 'center' | 'end'>, default: 'start'} },
   setup(props, { attrs, slots }) {
     const id = `nq-${useId()}`;
     const open = ref(false);
@@ -253,7 +253,7 @@ export const Tooltip = defineComponent({
         onKeydown: escape,
       }), [
         ...children.map(child => isVNode(child) ? cloneVNode(child, { 'aria-describedby': joinIds(child.props?.['aria-describedby'], id) }) : child),
-        h('span', { id, role: 'tooltip', class: 'nq-tooltip', hidden: !open.value }, props.content),
+        h('span', { id, role: 'tooltip', class: 'nq-tooltip', 'data-placement': props.placement, 'data-align': props.align, hidden: !open.value }, props.content),
       ]);
     };
   },

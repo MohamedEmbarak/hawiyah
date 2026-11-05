@@ -53,8 +53,10 @@ export class NqDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngOnDestroy(): void { if (this.dialog?.nativeElement.open) this.dialog.nativeElement.close(); restoreFocus(this.trigger); }
 }
 
-@Component({ selector: 'nq-tooltip', standalone: true, template: `<span class="nq-tooltip-anchor nq-tooltip-trigger" tabindex="0" [attr.aria-describedby]="id" (focusin)="focusEntered()" (focusout)="focusLeft($event)" (mouseenter)="pointerEntered()" (mouseleave)="pointerLeft()" (keydown)="escape($event)"><ng-content /><span class="nq-tooltip" role="tooltip" [id]="id" [hidden]="!visible">{{ text }}</span></span>` })
+@Component({ selector: 'nq-tooltip', standalone: true, template: `<span class="nq-tooltip-anchor nq-tooltip-trigger" tabindex="0" [attr.aria-describedby]="id" (focusin)="focusEntered()" (focusout)="focusLeft($event)" (mouseenter)="pointerEntered()" (mouseleave)="pointerLeft()" (keydown)="escape($event)"><ng-content /><span class="nq-tooltip" role="tooltip" [id]="id" [attr.data-placement]="placement" [attr.data-align]="align" [hidden]="!visible">{{ text }}</span></span>` })
 export class NqTooltipComponent implements OnDestroy {
+  @Input() placement: 'top' | 'bottom' | 'start' | 'end' = 'top';
+  @Input() align: 'start' | 'center' | 'end' = 'start';
   @Input({required: true}) text = '';
   @Input() id = `nq-tooltip-${++nextId}`;
   visible = false;

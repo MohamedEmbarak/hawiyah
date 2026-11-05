@@ -1,0 +1,33 @@
+/* Logical sides follow the nearest direction, independently of language. */
+.nq-tooltip[data-placement='bottom'] {
+  inset-block-start: calc(100% + var(--nq-space-2));
+  inset-block-end: auto;
+}
+.nq-tooltip:not([data-placement='start'], [data-placement='end'])[data-align='end'] {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+.nq-tooltip:not([data-placement='start'], [data-placement='end'])[data-align='center'] {
+  inset-inline-start: 50%;
+  translate: calc(-50% * var(--_nq-inline-sign, 1)) 0;
+}
+.nq-tooltip:is([data-placement='start'], [data-placement='end']) {
+  inset-block-start: 0;
+  inset-block-end: auto;
+}
+.nq-tooltip[data-placement='start'] {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + var(--nq-space-2));
+}
+.nq-tooltip[data-placement='end'] {
+  inset-inline-start: calc(100% + var(--nq-space-2));
+  inset-inline-end: auto;
+}
+.nq-tooltip:is([data-placement='start'], [data-placement='end'])[data-align='end'] {
+  inset-block-start: auto;
+  inset-block-end: 0;
+}
+.nq-tooltip:is([data-placement='start'], [data-placement='end'])[data-align='center'] {
+  inset-block-start: 50%;
+  translate: 0 -50%;
+}

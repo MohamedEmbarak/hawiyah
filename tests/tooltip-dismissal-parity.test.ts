@@ -1,4 +1,5 @@
 import '@angular/compiler';
+import {createTooltip} from '../packages/vanilla/src/tooltip';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
 import {NqTooltipComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
@@ -25,16 +26,18 @@ async function setup(adapter: Adapter) {
   if (adapter === 'react') {
     const root = createRoot(host);
     run = async fn => { await act(fn); };
-    await run(() => root.render(createElement(ReactTooltip, {content: 'معلومات إضافية', children: createElement('button',props)})));
+    await run(() => root.render(createElement(ReactTooltip, {content: 'معلومات إضافية', placement: 'bottom', align: 'center', children: createElement('button',props)})));
     destroy = () => run(() => root.unmount());
   } else if (adapter === 'vue') {
-    const app = createApp({render: () => h(VueTooltip,{content:'معلومات إضافية'}, () => h('button',props))});
+    const app = createApp({render: () => h(VueTooltip,{content:'معلومات إضافية',placement:'bottom',align:'center'}, () => h('button',props))});
     app.mount(host);
     run = async fn => {fn(); await nextTick();};
     destroy = async () => {app.unmount();};
   } else {
     const fixture = TestBed.createComponent(NqTooltipComponent);
     fixture.componentRef.setInput('text','معلومات إضافية');
+    fixture.componentRef.setInput('placement','bottom');
+    fixture.componentRef.setInput('align','center');
     host.append(fixture.nativeElement);
     fixture.detectChanges();
     run = async fn => {fn(); fixture.detectChanges();};
@@ -97,3 +100,23 @@ for (const adapter of ['react','vue','angular'] as const) {
     } finally { await destroy(); }
   });
 }
+
+for (const adapter of ['react', 'vue', 'angular'] as const) it(adapter + ' forwards tooltip placement and alignment', async () => {
+  const instance = await setup(adapter);
+  expect(instance.tip.dataset.placement).toBe('bottom');
+  expect(instance.tip.dataset.align).toBe('center');
+  await instance.destroy();
+});
+
+it('vanilla tooltip restores authored placement when destroyed', () => {
+  const host = document.createElement('span');
+  host.innerHTML = '<button data-nq-tooltip-trigger>Details</button><span role="tooltip" data-placement="start" hidden>Help</span>';
+  document.body.append(host);
+  const tooltip = host.querySelector<HTMLElement>('[role="tooltip"]')!;
+  const controller = createTooltip(host, {placement:'bottom',align:'center'});
+  expect(tooltip.dataset.placement).toBe('bottom');
+  expect(tooltip.dataset.align).toBe('center');
+  controller.destroy();
+  expect(tooltip.dataset.placement).toBe('start');
+  expect(tooltip.hasAttribute('data-align')).toBe(false);
+});

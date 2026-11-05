@@ -295,8 +295,10 @@ export function Combobox({ label, hint, error, ...props }: ComboboxProps) {
 export interface TooltipProps extends Omit<ComponentPropsWithRef<'span'>, 'children' | 'content'> {
   children: ReactElement<HTMLAttributes<HTMLElement>>;
   content: string;
+  placement?: 'top' | 'bottom' | 'start' | 'end';
+  align?: 'start' | 'center' | 'end';
 }
-export function Tooltip({ children, content, className, ref, onMouseEnter, onMouseLeave, onFocus, onBlur, onKeyDown, ...props }: TooltipProps) {
+export function Tooltip({ children, content, placement = 'top', align = 'start', className, ref, onMouseEnter, onMouseLeave, onFocus, onBlur, onKeyDown, ...props }: TooltipProps) {
   const id = useId();
   const root = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
@@ -327,6 +329,6 @@ export function Tooltip({ children, content, className, ref, onMouseEnter, onMou
     onBlur={event => { onBlur?.(event); if (!event.currentTarget.contains(event.relatedTarget as Node | null)) { focused.current = false; hideAfterPointerTravel(); } }}
     onKeyDown={event => { onKeyDown?.(event); if (event.key === 'Escape' && open && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); clearTimeout(hideTimer.current); setOpen(false); } }}>
     {cloneElement(children, { 'aria-describedby': [children.props['aria-describedby'], id].filter(Boolean).join(' ') })}
-    <span className="nq-tooltip" role="tooltip" id={id} hidden={!open}>{content}</span>
+    <span className="nq-tooltip" role="tooltip" id={id} data-placement={placement} data-align={align} hidden={!open}>{content}</span>
   </span>;
 }
