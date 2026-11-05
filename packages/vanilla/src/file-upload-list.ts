@@ -20,6 +20,7 @@ export function createFileUploadList(root: HTMLElement, options: FileUploadListO
     list.replaceChildren(...items.map(item => {
       const row = root.ownerDocument.createElement('li');
       row.className = 'nq-upload-item'; row.dataset.status = item.status;
+      if (item.message) row.dataset.message = 'true';
       const name = root.ownerDocument.createElement('span');
       name.className = 'nq-upload-name'; name.textContent = item.name;
       const status = root.ownerDocument.createElement('span');

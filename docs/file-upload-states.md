@@ -26,5 +26,41 @@ Its submitted FormData therefore matches the remaining displayed files. The
 separate transfer examples distinguish real selection from illustrative remote
 states. No successful remote transfer is inferred from file selection.
 
-This closes the reusable status/removal presentation gap identified in checklist
-row 83. Exact official visual equivalence remains part of the source comparison.
+This implements the reusable status/removal presentation in checklist row 83.
+
+## Uploaded-row source comparison
+
+The supplied Mobile Components export contains local uploaded-row definitions
+`5698:34512` (LTR) and `10705:1294` (RTL), on the File upload canvas.
+Both are 328×36px with a 4px radius, a #F3F4F6 fill and #D2D6DB border.
+Their content frames use 8px spacing and insets, 20px feedback/close slots,
+and a 14px/20px medium filename. The later single-upload definition
+`11261:13384` measures 326×120px because it includes a label and helper text.
+Its row instance `11261:27400` references `5698:34512` and remains 36px high.
+The outer component size therefore does not establish a conflicting row height.
+
+These are local source definitions rather than the older imported-reference
+or internal-cache variants in the export. Their colors include external
+variable aliases. The literal decoded paint values are used for this comparison;
+the aliases do not independently establish a globally resolved mode.
+The NIC stylesheet snapshot contains no file-upload selectors.
+
+The earlier Nasaq row stacked the filename, default status and a full text
+remove button. The row now follows the compact source arrangement. Default
+selected/completed status text remains available to assistive technology.
+Custom status messages, errors and transfer progress remain visible below the
+filename. Long filenames wrap and grow the row instead of clipping. The remove
+action retains its localized accessible name and a 28px pointer target around
+the source-sized 20px icon, expanded to 44px for coarse pointers.
+
+The source RTL filename uses IBM Plex Sans Arabic; the LTR definition uses
+Inter. Nasaq retains the approved IBM Plex Sans Arabic typography policy in
+both directions. The existing licensed check and close artwork are reused,
+and the source glyph shapes have not been established as equivalent. The
+selected/error status ring is independently authored. Those artwork and
+expanded-message differences remain explicit adaptations.
+
+The browser comparison renders an independent fixture from the decoded source
+geometry and literal colors, then compares the actual four-adapter examples.
+It is a reconstruction-based measurement, rather than a native Figma screenshot
+or an assertion of complete pixel parity.

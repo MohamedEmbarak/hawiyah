@@ -11,7 +11,7 @@ export const FileUploadList = defineComponent({
   },
   emits: { remove: (_id: string) => true },
   setup(props, { emit }) {
-    return () => h('ul', { class: 'nq-upload-list' }, props.items.map(item => h('li', { key: item.id, class: 'nq-upload-item', 'data-status': item.status }, [
+    return () => h('ul', { class: 'nq-upload-list' }, props.items.map(item => h('li', { key: item.id, class: 'nq-upload-item', 'data-status': item.status, 'data-message': item.message ? true : undefined }, [
       h('span', { class: 'nq-upload-name' }, item.name),
       h('span', { class: 'nq-upload-status', role: 'status' }, item.message || props.labels[item.status]),
       item.status === 'uploading' ? h('progress', { max: 100, value: fileUploadProgress(item.progress), 'aria-label': `${props.labels.uploading} ${item.name}` }) : null,

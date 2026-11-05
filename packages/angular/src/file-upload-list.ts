@@ -4,7 +4,7 @@ import { fileUploadLabels, fileUploadProgress, type FileUploadItem, type FileUpl
 @Component({
   selector: 'nq-file-upload-list', standalone: true,
   template: `<ul class="nq-upload-list">@for (item of items; track item.id) {
-    <li class="nq-upload-item" [attr.data-status]="item.status">
+    <li class="nq-upload-item" [attr.data-status]="item.status" [attr.data-message]="item.message ? true : null">
       <span class="nq-upload-name">{{item.name}}</span>
       <span class="nq-upload-status" role="status">{{item.message || labels[item.status]}}</span>
       @if (item.status === 'uploading') {<progress max="100" [attr.value]="progress(item.progress)" [attr.aria-label]="labels.uploading + ' ' + item.name"></progress>}
