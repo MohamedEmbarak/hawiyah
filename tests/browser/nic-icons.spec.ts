@@ -1,5 +1,22 @@
 import {expect, test, type Locator} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+async function featuredGeometry(root: Locator) {
+  const examples = root.locator('[data-featured-examples]');
+  const icons = examples.locator('.nq-icon-background');
+  await expect(icons).toHaveCount(22);
+  for (let i = 0; i < 4; i++) {
+    const icon = icons.nth(i), glyph = icon.locator('.nq-icon, svg, .nq-featured-symbol').first();
+    const box = (await icon.boundingBox())!, art = (await glyph.boundingBox())!;
+    expect(box.width).toBe([32,40,48,56][i]); expect(box.height).toBe(box.width);
+    expect(art.width).toBe([16,20,24,28][i]); expect(art.height).toBe(art.width);
+    expect(Math.abs(box.x + box.width/2 - art.x - art.width/2)).toBeLessThan(1);
+    expect(Math.abs(box.y + box.height/2 - art.y - art.height/2)).toBeLessThan(1);
+  }
+  await expect(examples.locator('[data-style="light"]').first()).toHaveCSS('border-radius','4px');
+  await expect(examples.locator('[data-style="outline"]').first()).toHaveCSS('border-radius','8px');
+  await expect(examples.locator('[data-style="outline"]').first()).toHaveCSS('border-width','1px');
+  for (const tone of ['brand','neutral','success','error','warning','info']) await expect(examples.locator(`[data-tone="${tone}"]`)).toHaveCount(3);
+}
 async function iconGeometry(root: Locator, density = 'comfortable') {
   await root.evaluate((el, density) => el.setAttribute('data-nq-density', density), density);
   const buttons = root.locator('.nq-icon-button'); await expect(buttons).toHaveCount(7);
@@ -25,6 +42,15 @@ async function stateChecks(root: Locator) {
   await root.evaluate(el => el.style.setProperty('--nq-icon-size','18px')); await expect(buttons.first().locator('.nq-icon,svg').first()).toHaveCSS('width','18px');
   await root.evaluate(el => el.style.removeProperty('--nq-icon-size'));
 }
+for (const language of ['javascript','typescript']) test(`vanilla ${language} project includes Featured icon compositions`,async({page})=>{
+  test.setTimeout(120000);
+  await page.goto('/#component/icon-button');
+  await page.locator('[data-guide-tab="playground"]').click();
+  await page.locator('[data-project-framework]').selectOption('vanilla');
+  await page.locator('[data-project-language]').selectOption(language);
+  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+  await featuredGeometry(page.frameLocator('.nq-ide-frame').locator('#app'));
+});
 for (const dir of ['rtl','ltr']) test(`NIC icon geometry, states and background compositions in ${dir}`, async ({page},info) => {
   test.setTimeout(120000); await page.goto('/#component/icon-button');
   const root = page.locator('.component-preview').first();
@@ -32,10 +58,12 @@ for (const dir of ['rtl','ltr']) test(`NIC icon geometry, states and background 
   await iconGeometry(root); await stateChecks(root);
   for (const density of ['compact','mobile']) await iconGeometry(root,density);
   await iconGeometry(root);
-  const backgrounds = page.locator('.component-preview .nq-icon-background'); await expect(backgrounds).toHaveCount(3);
+  const backgrounds = page.locator('.component-preview .nq-icon-background:not([data-variant="featured"])'); await expect(backgrounds).toHaveCount(3);
   for (let i=0;i<3;i++) {const box=(await backgrounds.nth(i).boundingBox())!;expect(box.width).toBe(i===0?30:48);expect(box.height).toBe(box.width);}
-  const sizes = page.locator('.component-preview').last().locator('.nq-icon'); await expect(sizes).toHaveCount(5);
-  for (let i=0;i<5;i++) await expect(sizes.nth(i)).toHaveCSS('width',`${[14,20,24,30,48][i]}px`);
+  await featuredGeometry(page.locator('.component-preview').filter({has:page.locator('[data-featured-examples]')}));
+  await page.locator('[data-featured-examples]').screenshot({path:info.outputPath(`featured-${dir}.png`)});
+  const sizes = page.locator('.component-preview').last().locator('.nq-icon'); await expect(sizes).toHaveCount(3);
+  for (let i=0;i<3;i++) await expect(sizes.nth(i)).toHaveCSS('width',`${[14,20,24][i]}px`);
   expect((await new AxeBuilder({page}).include('.component-preview').withTags(['wcag2a','wcag2aa']).analyze()).violations).toEqual([]);
   await page.setViewportSize({width:390,height:844}); await root.screenshot({path:info.outputPath(`icons-${dir}-mobile.png`)});
   expect(await root.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
@@ -56,6 +84,7 @@ for (const framework of ['react','vue','angular']) test(`${framework} native ico
   await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
   const frame=page.frameLocator('.nq-ide-frame'),root=frame.locator('.demo');await root.evaluate(el=>el.setAttribute('data-nq-mode','light'));
   await iconGeometry(root);await stateChecks(root);await iconGeometry(root,'compact');await iconGeometry(root,'mobile');
+  await featuredGeometry(root);
   const buttons=root.locator('.nq-icon-button');await buttons.first().press('Enter');await expect(root.locator('output')).toHaveText('search');
   await buttons.nth(4).click();await expect(buttons.nth(4)).toHaveAttribute('aria-pressed','true');await expect(root.locator('output')).toHaveText('saved');
   for(const i of [5,6])await buttons.nth(i).evaluate(el=>(el as HTMLButtonElement).click());await expect(root.locator('output')).toHaveText('saved');

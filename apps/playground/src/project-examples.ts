@@ -115,6 +115,7 @@ export function projectExample(
   if (id === "portal-header") html = `<div class="nq-portal-masthead">${siteVerificationMarkup(locale)}${portalMenuMarkup(locale)}</div>`;
   if (id === "divider") html = dividerProjectMarkup(locale, "vanilla");
   if (id === "card") html = cardActionMarkup(locale, "vanilla");
+  if (id === "icon-button") html += iconBackgroundMarkup();
   if (framework === "vanilla")
     return {
       names: { html: "index.html", css: "style.css", js: `main.${ext}` },

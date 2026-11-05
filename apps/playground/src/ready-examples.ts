@@ -155,7 +155,7 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
       };
     }),
     {title:t('Decorative background icons','أيقونات زخرفية بخلفية'),markup:iconBackgroundMarkup()},
-    {title:t('Artwork sizes: 14, 20, 24, 30, 48 px','أحجام الرسم: 14، 20، 24، 30، 48 بكسل'),markup:`<div class="nq-cluster" style="color:var(--nq-color-success)" aria-hidden="true">${['sm','md','lg','xl','2xl'].map(size=>`<span class="nq-icon" data-icon="search-01" data-size="${size}"></span>`).join('')}</div>`},
+    {title:t('Standalone artwork: 14, 20, 24 px; larger artwork uses Featured icons','الأيقونات المستقلة: 14، 20، 24 بكسل؛ تُستخدم الأيقونات المميزة للأحجام الأكبر'),markup:`<div class="nq-cluster" style="color:var(--nq-color-primary-text)" aria-hidden="true">${['sm','md','lg'].map(size=>`<span class="nq-icon" data-icon="search-01" data-size="${size}"></span>`).join('')}</div>`},
   ];
   if(id==='toggle-group')return ['segmented','outline','multiple','readonly','disabled','readonly-outline'].map(kind=>{
     const options=JSON.stringify([{value:'first',label:t('List','قائمة')},{value:'second',label:t('Grid','شبكة')},{value:'blocked',label:t('Map','خريطة'),disabled:true}]),label=t('View mode','نمط العرض'),variant=kind.includes('outline')?'outline':'segmented';

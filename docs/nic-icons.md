@@ -1,5 +1,9 @@
 # NIC icon buttons and background icons
 
+The additive [Featured icon composition](dga-featured-icons.md) covers the
+Figma container sizes, square/circle treatments and semantic status roles.
+Its 32/40/48/56px geometry is distinct from the NIC background helpers below.
+
 This task uses the hashed NIC `global.css` snapshot in the
 [source inventory](nic-web-reference.md), not an imported icon font or external
 script. The shipped artwork remains the unchanged licensed SVG set described in

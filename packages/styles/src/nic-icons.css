@@ -39,6 +39,28 @@
 .nq-icon-background[data-size='xs'] { inline-size:1.875rem; min-inline-size:1.875rem; block-size:1.875rem; --nq-icon-context-size:0.875rem; }
 /* Source md and xl backgrounds are both 48px; size the artwork separately. */
 .nq-icon-background[data-size='xl'] { inline-size:3rem; min-inline-size:3rem; block-size:3rem; }
+/* Featured icon is the Figma composition; NIC icon-bg sizing above remains available. */
+.nq-icon-background[data-variant='featured'] {
+  --nq-featured-size: 2.5rem; --nq-icon-context-size: 1.25rem;
+  --nq-featured-radius: .25rem; --nq-featured-outline-radius: .5rem;
+  --nq-featured-color: var(--nq-color-primary-text);
+  --nq-featured-background: var(--nq-color-primary-subtle);
+  inline-size: var(--nq-featured-size); min-inline-size: var(--nq-featured-size); block-size: var(--nq-featured-size);
+  color: var(--nq-featured-color); background: var(--nq-featured-background);
+}
+.nq-icon-background[data-variant='featured'][data-size='sm'] { --nq-featured-size:2rem; --nq-icon-context-size:1rem; --nq-featured-outline-radius:.375rem; }
+.nq-icon-background[data-variant='featured'][data-size='lg'] { --nq-featured-size:3rem; --nq-icon-context-size:1.5rem; --nq-featured-radius:.5rem; --nq-featured-outline-radius:.625rem; }
+.nq-icon-background[data-variant='featured'][data-size='xl'] { --nq-featured-size:3.5rem; --nq-icon-context-size:1.75rem; --nq-featured-radius:.5rem; --nq-featured-outline-radius:.75rem; }
+.nq-icon-background[data-variant='featured'][data-shape='square'] { border-radius:var(--nq-featured-radius); }
+.nq-icon-background[data-variant='featured'][data-tone='neutral'] { --nq-featured-color:var(--nq-color-text-muted); --nq-featured-background:var(--nq-color-surface-muted); }
+.nq-icon-background[data-variant='featured'][data-tone='success'] { --nq-featured-color:var(--nq-color-success); --nq-featured-background:var(--nq-color-success-subtle); }
+.nq-icon-background[data-variant='featured'][data-tone='error'] { --nq-featured-color:var(--nq-color-danger); --nq-featured-background:var(--nq-color-danger-subtle); }
+.nq-icon-background[data-variant='featured'][data-tone='warning'] { --nq-featured-color:var(--nq-color-warning); --nq-featured-background:var(--nq-color-warning-subtle); }
+.nq-icon-background[data-variant='featured'][data-tone='info'] { --nq-featured-color:var(--nq-color-info); --nq-featured-background:var(--nq-color-info-subtle); }
+.nq-icon-background[data-variant='featured'][data-style='outline'] { background:transparent; border:1px solid var(--nq-featured-color); }
+.nq-icon-background[data-variant='featured'][data-style='outline'][data-shape='square'] { border-radius:var(--nq-featured-outline-radius); }
+.nq-icon-background[data-variant='featured'][data-style='dark'] { background:var(--nq-featured-color); color:var(--nq-color-surface); }
+.nq-featured-symbol { display:inline-flex; align-items:center; justify-content:center; inline-size:var(--nq-icon-context-size); block-size:var(--nq-icon-context-size); font-size:var(--nq-icon-context-size); font-weight:600; line-height:1; }
 .nq-icon[data-size='sm'] { --nq-icon-context-size:0.875rem; }
 .nq-icon[data-size='md'] { --nq-icon-context-size:1.25rem; }
 .nq-icon[data-size='lg'] { --nq-icon-context-size:1.5rem; }
@@ -46,5 +68,5 @@
 .nq-icon[data-size='2xl'] { --nq-icon-context-size:3rem; }
 @media (forced-colors:active) {
   .nq-button:is(.nq-icon-button,[data-icon-only]):is(:disabled,[aria-disabled='true']) { color:GrayText; }
-  .nq-icon-background { background:Canvas; color:CanvasText; outline:1px solid CanvasText; }
+  .nq-icon-background, .nq-icon-background[data-variant='featured'], .nq-icon-background[data-variant='featured'][data-style] { background:Canvas; color:CanvasText; border-color:CanvasText; outline:1px solid CanvasText; }
 }
