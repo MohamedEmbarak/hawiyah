@@ -1,3 +1,35 @@
+/* Local Mobile Components tooltip content 5666:4262 and text 5666:4266. */
+:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
+  --nq-profile-tooltip-padding: var(--nq-space-2);
+  --nq-profile-tooltip-min: 10rem;
+  --nq-profile-tooltip-max: 15rem;
+  --nq-profile-tooltip-shadow: 0 4px 6px -2px rgb(16 24 40 / .03), 0 12px 16px -4px rgb(16 24 40 / .08);
+}
+[data-nq-theme='nasaq'] {
+  --nq-profile-tooltip-padding: initial;
+  --nq-profile-tooltip-min: initial;
+  --nq-profile-tooltip-max: initial;
+  --nq-profile-tooltip-shadow: initial;
+}
+.nq-tooltip {
+  --_nq-tooltip-background: var(--nq-color-inverse);
+  --_nq-tooltip-color: var(--nq-color-on-inverse);
+  box-sizing: border-box;
+  min-inline-size: min(var(--nq-tooltip-min-width, var(--nq-profile-tooltip-min, 0px)), calc(100vw - 2rem));
+  max-inline-size: min(var(--nq-tooltip-max-width, var(--nq-profile-tooltip-max, 20rem)), calc(100vw - 2rem));
+  padding: var(--nq-tooltip-padding, var(--nq-profile-tooltip-padding, var(--nq-space-2) var(--nq-space-3)));
+  background: var(--nq-tooltip-background, var(--_nq-tooltip-background));
+  color: var(--nq-tooltip-color, var(--_nq-tooltip-color));
+  line-height: 1.5;
+  box-shadow: var(--nq-tooltip-shadow, var(--nq-profile-tooltip-shadow, var(--nq-shadow-sm)));
+}
+/* Resolve color roles on the tooltip so nested mode overrides stay live. */
+@scope (:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom'])) to ([data-nq-theme]) {
+  .nq-tooltip {
+    --_nq-tooltip-background: var(--nq-color-surface);
+    --_nq-tooltip-color: var(--nq-color-text-muted);
+  }
+}
 /* Logical sides follow the nearest direction, independently of language. */
 .nq-tooltip[data-placement='bottom'] {
   inset-block-start: calc(100% + var(--nq-space-2));
