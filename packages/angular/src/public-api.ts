@@ -14,3 +14,5 @@ export * from './navigation-drawer';
 
 export * from './site-verification';
 export * from './content-navigation';
+
+export * from './file-upload-list';

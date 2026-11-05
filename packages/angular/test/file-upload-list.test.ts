@@ -1,0 +1,21 @@
+import '@angular/compiler';
+import { TestBed } from '@angular/core/testing';
+import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
+import { afterEach, beforeAll, expect, test, vi } from 'vitest';
+import { NqFileUploadListComponent } from '@nasaq/angular';
+beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
+afterEach(() => TestBed.resetTestingModule());
+test('Angular renders live transfer states and leaves removal to the owner', () => {
+  const fixture = TestBed.createComponent(NqFileUploadListComponent);
+  fixture.componentRef.setInput('items', [{id:'a',name:'document.pdf',status:'uploading'}]);
+  fixture.componentRef.setInput('removable', true);
+  fixture.detectChanges();
+  const node = fixture.nativeElement as HTMLElement;
+  const removed = vi.fn(); fixture.componentInstance.remove.subscribe(removed);
+  expect(node.querySelector('progress')?.hasAttribute('value')).toBe(false);
+  node.querySelector('button')!.click(); fixture.detectChanges();
+  expect(removed).toHaveBeenCalledWith('a'); expect(node.querySelectorAll('li')).toHaveLength(1);
+  fixture.componentRef.setInput('items', [{id:'a',name:'document.pdf',status:'complete'}]); fixture.detectChanges();
+  expect(node.querySelector('progress')).toBeNull(); expect(node.querySelector('li')?.dataset.status).toBe('complete');
+  fixture.componentRef.setInput('disabled', true); fixture.detectChanges(); expect(node.querySelector('button')?.disabled).toBe(true);
+});

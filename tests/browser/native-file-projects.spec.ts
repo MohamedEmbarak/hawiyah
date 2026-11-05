@@ -16,7 +16,7 @@ async function drop(form: Locator, names: string[]) {
 
 async function expectSelection(form: Locator, names: string[]) {
   await expect(form.locator('[data-file-count]')).toHaveText(String(names.length));
-  await expect(form.locator('[data-file-names] li')).toHaveText(names);
+  await expect(form.locator('[data-file-names] .nq-upload-name')).toHaveText(names);
   expect(await form.locator('input[type="file"]').evaluate(element =>
     Array.from((element as HTMLInputElement).files || [], file => file.name))).toEqual(names);
 }
@@ -41,6 +41,13 @@ for (const [framework, language, locale] of formats) {
       if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
       await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 60000});
       const form = page.frameLocator('.nq-ide-frame').locator(`form[data-file-project="${id}"]`);
+      const transfers = page.frameLocator('.nq-ide-frame').locator('section.demo .nq-upload-list');
+      await expect(transfers.locator('li')).toHaveCount(4);
+      await expect(transfers.locator('progress')).toHaveAttribute('value', '45');
+      await expect(transfers.locator('[data-status="error"]')).toContainText('retry.pdf');
+      await transfers.locator('[data-status="error"] button').click();
+      await expect(transfers.locator('li')).toHaveCount(3);
+      await expect(transfers.locator('[data-status="error"]')).toHaveCount(0);
       const input = form.locator('input[type="file"]');
       const toggle = form.getByRole('checkbox');
       await expect(input).toHaveAccessibleName(locale === 'ar' ? 'أرفق المستندات' : 'Attach documents');
@@ -50,6 +57,12 @@ for (const [framework, language, locale] of formats) {
       await input.setInputFiles(chosen.map(name => ({name, mimeType: name.endsWith('pdf') ? 'application/pdf' : 'image/png', buffer: Buffer.from('fixture')})));
       await expectSelection(form, chosen);
       await expectSubmitted(form, chosen);
+      await form.locator('[data-file-names] button').first().click();
+      await expectSelection(form, ['scan.png']);
+      await expect(input).toBeFocused();
+      await expectSubmitted(form, ['scan.png']);
+      await input.setInputFiles(chosen.map(name => ({name, mimeType: name.endsWith('pdf') ? 'application/pdf' : 'image/png', buffer: Buffer.from('fixture')})));
+      await expectSelection(form, chosen);
       await toggle.check();
       await expect(input).toBeDisabled();
       if (id === 'file-dropzone') await drop(form, ['ignored.pdf']);

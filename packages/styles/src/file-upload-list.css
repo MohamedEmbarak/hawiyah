@@ -1,0 +1,8 @@
+.nq-upload-list { display: grid; gap: var(--nq-space-2); margin: 0; padding: 0; list-style: none; }
+.nq-upload-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--nq-space-2); padding: var(--nq-space-3); border: 1px solid var(--nq-color-border); border-radius: var(--nq-radius-md); }
+.nq-upload-name { overflow-wrap: anywhere; }
+.nq-upload-status { grid-column: 1; color: var(--nq-color-text-muted); font-size: var(--nq-text-sm); }
+.nq-upload-item[data-status='error'] .nq-upload-status { color: var(--nq-color-danger); }
+.nq-upload-item[data-status='complete'] .nq-upload-status { color: var(--nq-color-success); }
+.nq-upload-item > button { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+.nq-upload-item > progress { grid-column: 1 / -1; inline-size: 100%; accent-color: var(--nq-color-primary); }

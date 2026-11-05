@@ -103,3 +103,6 @@ export function enhance(root?: ParentNode): () => void {
   } catch (error) { release(); throw error; }
   return release;
 }
+
+export { createFileUploadList } from './file-upload-list.js';
+export type { FileUploadListOptions } from './file-upload-list.js';

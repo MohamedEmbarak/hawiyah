@@ -25,3 +25,5 @@ export type { NavigationDrawerItem } from './navigation-drawer.js';
 export { SiteVerification } from './site-verification.js';
 export { ContentNavigation } from './content-navigation.js';
 export type { ContentNavigationItem } from './content-navigation.js';
+
+export { FileUploadList } from './file-upload-list.js';

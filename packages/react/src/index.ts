@@ -17,3 +17,5 @@ export * from './navigation-drawer.js';
 
 export * from './site-verification.js';
 export * from './content-navigation.js';
+
+export * from './file-upload-list.js';
