@@ -53,3 +53,9 @@ Hosts can override `--nq-tooltip-padding`, `--nq-tooltip-min-width`,
 `--nq-tooltip-max-width`, `--nq-tooltip-background`, `--nq-tooltip-color` and
 `--nq-tooltip-shadow`. The original Nasaq profile retains its previous
 inverse surface and horizontal spacing.
+
+All seven supported project formats passed the surface comparison and Escape
+focus checks. The vanilla scenario additionally passed nested dark-mode,
+original-theme and nested DGA-theme checks. A 1920px capture was visually
+inspected to confirm both comparison surfaces were fully visible and matched
+in wrapping and spacing. The shared package build completed before these tests.

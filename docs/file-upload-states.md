@@ -64,3 +64,10 @@ The browser comparison renders an independent fixture from the decoded source
 geometry and literal colors, then compares the actual four-adapter examples.
 It is a reconstruction-based measurement, rather than a native Figma screenshot
 or an assertion of complete pixel parity.
+
+Four Chromium cases passed, one per adapter, comparing row height, fill, border,
+radius, spacing, typography and close-action geometry. They also verify visible
+custom errors/progress, the expanded coarse-pointer action, removal and narrow
+long-filename containment. Visual inspection of the captured rows found and
+corrected an inherited white close glyph on the light background. The final
+close glyph uses the semantic text color.

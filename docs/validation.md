@@ -1,5 +1,34 @@
 # Validation record
 
+## 2026-11-05 decoded-source presentation follow-up
+
+Plain tooltip surface checks passed in all seven supported project formats,
+including nested theme checks in the vanilla case. A separate wide-viewport
+capture was visually reviewed. Upload row checks passed in all four adapters,
+covering source dimensions, colors, typography, visible errors/progress,
+removal, expanded touch targets and long-filename containment. The shared
+package build passed before these checks.
+
+Seven Featured Icon scenarios passed: the RTL/LTR gallery, JavaScript and
+TypeScript vanilla projects, and typed React, Vue and Angular projects.
+Checks cover container/artwork sizes and centering, radii, treatments, roles,
+existing icon-button behavior, mobile containment and forced colors. Gallery
+and native screenshots were reviewed. Initial runs exposed test readiness and
+root-selector mistakes; the complete corrected run passed.
+
+Both Arabic/English homepage onboarding cases passed, verifying English
+JavaScript branding with its logo, removal of the studio customization controls,
+complete source commands and local-tarball instructions for all four adapters,
+and 390px containment. The package customization APIs remain available.
+The playground typecheck passed. Two participation layout cases passed at
+1600px, 900px and 390px after correcting the Arabic guide heading override.
+Desktop participation and mobile onboarding screenshots were inspected.
+
+The reference fixtures reconstruct decoded source properties independently of
+Nasaq styles. They are not native Figma screenshots. Official artwork
+equivalence, richer tooltip variants and full source-state coverage remain
+open; these results do not establish certification or a full-package pass.
+
 ## 2026-11-05 checklist follow-up
 
 The [checklist review](dga-checklist-review.md) tracks the supplied workbook
