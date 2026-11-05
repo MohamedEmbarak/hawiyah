@@ -28,7 +28,8 @@ test('Arabic service application validates, preserves the draft, supports review
   await page.locator('#nq-template-address').fill('موقع تجريبي');
   await page.locator('#nq-template-area').fill('180');
   await page.locator('#nq-template-description').fill('وصف تجريبي لا يتضمن بيانات شخصية.');
-  await page.locator('.topbar [data-action="mode"]').click();
+  await page.locator('.topbar [data-action="locale"]').click();
+  await page.locator('.topbar [data-action="locale"]').click();
   await expect(page.locator('#nq-template-applicant')).toHaveValue('مقدم طلب تجريبي');
   await expect(page.locator('#nq-template-city')).toHaveValue('riyadh');
   await application.getByRole('button', { name: 'مراجعة الطلب', exact: true }).click();

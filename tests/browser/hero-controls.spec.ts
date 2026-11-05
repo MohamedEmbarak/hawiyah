@@ -24,7 +24,7 @@ for (const locale of ['ar', 'en'] as const) {
     const card = page.locator('.home-request');
     const stage = page.locator('[data-home-stage]');
     for (const mode of ['light', 'dark']) {
-      if (mode === 'dark') await page.locator('[data-action="mode"]').tap();
+      await page.locator('html').evaluate((root, mode) => root.setAttribute('data-nq-mode', mode), mode);
       for (const control of [corners, density]) {
         const positions: number[] = [];
         for (const checked of [false, true]) {

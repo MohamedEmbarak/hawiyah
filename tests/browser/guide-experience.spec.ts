@@ -23,7 +23,8 @@ test('an explicit English choice survives reload and navigation', async ({ page 
 
 test('dark mode loads the white sidebar wordmark without a light backing', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-action="mode"]').click();
+  await page.evaluate(() => localStorage.setItem('nasaq-mode', 'dark'));
+  await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-nq-mode', 'dark');
   const logo = page.locator('.sidebar .brand img');
   await expect(logo).toHaveAttribute('src', /\/nasaq-wordmark-white\.svg$/);

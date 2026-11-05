@@ -22,7 +22,8 @@ for (const [framework, language, locale] of projects) {
       const button = project.locator('button').first();
       if (id === 'tooltip') {
         const trigger = project.locator('[aria-describedby]').first();
-        const tip = project.locator('[role="tooltip"]');
+        await expect(project.locator('[role="tooltip"]')).toHaveCount(6);
+        const tip = project.locator('[role="tooltip"]').first();
         await trigger.focus();
         await expect(tip).toBeVisible();
         expect((await trigger.getAttribute('aria-describedby'))?.split(/\s+/)).toContain(await tip.getAttribute('id'));

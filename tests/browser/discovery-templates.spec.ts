@@ -22,7 +22,8 @@ for (const locale of ['ar','en'] as const) {
     await search.locator('[name=query]').fill('unmatched-query');
     await search.locator('[name=query]').press('Enter');
     await expect(search.locator('[data-search-results]')).toContainText(locale==='ar'?'لا توجد نتائج مطابقة':'No matching results');
-    await page.locator('.topbar [data-action="mode"]').click();
+    await page.locator('.topbar [data-action="locale"]').click();
+  await page.locator('.topbar [data-action="locale"]').click();
     await expect(search.locator('[name=query]')).toHaveValue('unmatched-query');
     await search.locator('[data-search-clear]').click();
     await search.locator('[name=sort]').selectOption('name');

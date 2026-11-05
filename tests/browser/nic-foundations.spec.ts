@@ -18,7 +18,7 @@ for (const width of [390,1280]) {
     for (const locale of ['ar','en'] as const) {
       if (locale === 'en') {
         await page.locator('.topbar [data-action="locale"]').click();
-        await page.locator('.topbar [data-action="mode"]').click();
+        await page.locator('html').evaluate(root => root.setAttribute('data-nq-mode', 'dark'));
       }
       await expect(html).toHaveAttribute('lang',locale);
       await expect(html).toHaveAttribute('dir',locale === 'ar' ? 'rtl' : 'ltr');
@@ -67,7 +67,7 @@ for (const width of [390,1280]) {
       expect(geometry).toEqual([0,0.125,0.375,20,45,0]);
     }
     for (const theme of ['nasaq','custom','dga']) {
-      await page.locator('#theme-select').selectOption(theme);
+      await page.locator('html').evaluate((root, theme) => root.setAttribute('data-nq-theme', theme), theme);
       await expect(html).toHaveAttribute('data-nq-theme',theme);
       await expect(section).toBeVisible();
       expect(await html.evaluate(node => node.scrollWidth - node.clientWidth)).toBe(0);
@@ -114,8 +114,9 @@ for (const framework of ['vanilla','react','vue','angular'] as const) {
         expect(await project.evaluate(node => node.ownerDocument.documentElement.scrollWidth - node.ownerDocument.documentElement.clientWidth)).toBe(0);
       }
     }
-    // The guide rebuilds the preview with both its requested mode and CSS color-scheme.
-    await page.locator('.topbar [data-action="mode"]').click();
+    // Load the requested mode without exposing a global appearance switch.
+    await page.evaluate(() => localStorage.setItem('nasaq-mode', 'dark'));
+    await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-nq-mode','dark');
     await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);

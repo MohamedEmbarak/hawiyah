@@ -158,9 +158,9 @@ test('Arabic editor search, keyboard file tabs and phone preview remain usable o
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
 
-test('theme and navigation rerenders preserve all three edited files and inherit custom theme tokens', async ({ page }) => {
+test('navigation preserves edited files and explicit execution inherits DGA theme tokens', async ({ page }) => {
   await page.addInitScript(() => {
-    if (window === window.top) localStorage.setItem('nasaq-theme', 'custom');
+    if (window === window.top) {localStorage.setItem('nasaq-theme', 'custom');localStorage.setItem('nasaq-mode','dark');}
   });
   await openIDE(page);
   await page.locator('[data-ide-auto]').uncheck();
@@ -168,14 +168,19 @@ test('theme and navigation rerenders preserve all three edited files and inherit
   await editFile(page, 'css', '#draft { border: 3px solid rgb(176, 0, 32); }');
   await editFile(page, 'js', 'document.querySelector("#draft").dataset.ready = "yes";');
 
-  await page.locator('[data-action="mode"]').click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('.mobile-menu[data-action="menu"]').click();
+  await page.locator('.sidebar-close[data-action="menu"]').click();
   const preview = page.frameLocator('.nq-ide-frame');
   await expect(page.locator('[data-guide-tab="playground"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'edited');
+  await expect(page.locator('[data-ide-editor="html"] .cm-content')).toContainText('id="draft"');
+  await page.locator('[data-ide-run]').click();
   await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready');
   await expect(preview.locator('html')).toHaveAttribute('data-nq-mode', 'dark');
   await expect(preview.locator('#draft')).toHaveAttribute('data-ready', 'yes');
   await expect(preview.locator('#draft')).toHaveCSS('border-top-color', 'rgb(176, 0, 32)');
-  await expect(preview.locator('#draft')).toHaveCSS('background-color', 'rgb(164, 188, 253)');
+  await expect(preview.locator('#draft')).toHaveCSS('background-color', 'rgb(27, 131, 84)');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('.mobile-menu[data-action="menu"]').click();

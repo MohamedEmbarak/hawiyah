@@ -12,11 +12,11 @@ test('fresh guide defaults to DGA and nested custom resets legacy palette and ge
   await expect(page.locator('#nested-input')).toHaveCSS('background-color','rgb(31, 42, 55)');
 });
 
-test('explicit Nasaq preference survives visits and DGA input focus does not shift layout',async({page})=>{
+test('stale Nasaq preference cannot change guide defaults and input focus does not shift layout',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('nasaq-theme','nasaq'));
   await page.goto('/#foundations');
-  await expect(page.locator('html')).toHaveAttribute('data-nq-theme','nasaq');
-  await page.locator('#theme-select').selectOption('dga');
+  await expect(page.locator('html')).toHaveAttribute('data-nq-theme','dga');
+  await expect(page.locator('.topbar [data-action="mode"], #theme-select')).toHaveCount(0);
   const input=page.locator('#main input.nq-input').first();
   const before=await input.boundingBox();
   await input.focus();
