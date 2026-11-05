@@ -34,7 +34,7 @@ export function mountProjectEditor(
   const ar = options.locale === "ar";
   const toolbar = document.createElement("div");
   toolbar.className = "nq-project-subheader";
-  toolbar.innerHTML = `<label class="nq-field">${ar ? "إطار العمل" : "Framework"}<select class="nq-select" data-project-framework><option value="vanilla">Vanilla</option><option value="react">React</option><option value="vue">Vue</option><option value="angular">Angular</option></select></label><label class="nq-field">${ar ? "اللغة" : "Language"}<select class="nq-select" data-project-language><option value="javascript">JavaScript / JSX</option><option value="typescript">TypeScript / TSX</option></select></label>`;
+  toolbar.innerHTML = `<label class="nq-field">${ar ? "إطار العمل" : "Framework"}<select class="nq-select" data-project-framework><option value="vanilla">JavaScript</option><option value="react">React</option><option value="vue">Vue</option><option value="angular">Angular</option></select></label><label class="nq-field">${ar ? "اللغة" : "Language"}<select class="nq-select" data-project-language><option value="javascript">JavaScript / JSX</option><option value="typescript">TypeScript / TSX</option></select></label>`;
   const workspace = document.createElement("div");
   host.replaceChildren(toolbar, workspace);
   host.classList.add("nq-project-editor");
@@ -90,8 +90,8 @@ export function mountProjectEditor(
       !nativeProjectComponents.has(options.id)
     ) {
       workspace.textContent = ar
-        ? "مثال المشروع الأصلي لهذا المكوّن قيد الإعداد. مثال Vanilla متاح؛ لا تمثّل معاينته تنفيذ إطار آخر."
-        : "This component’s native project recipe is still being prepared. Vanilla is available; its preview does not represent another framework.";
+        ? "مثال المشروع الأصلي لهذا المكوّن قيد الإعداد. مثال JavaScript متاح؛ لا تمثّل معاينته تنفيذ إطار آخر."
+        : "This component’s native project recipe is still being prepared. JavaScript is available; its preview does not represent another framework.";
       return;
     }
     const selectedFramework = state.framework;

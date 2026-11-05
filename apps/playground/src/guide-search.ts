@@ -17,7 +17,7 @@ type SearchItem = {
 // would also pull all component documentation into this small navigation module.
 const topics = [
   ["getting-started", "Getting started", "البداية", "installation install setup npm pnpm بدء تثبيت إعداد استخدام"],
-  ["vanilla", "Vanilla JavaScript", "جافاسكريبت", "html javascript js enhance cleanup تطوير"],
+  ["vanilla", "JavaScript", "JavaScript", "html javascript js vanilla enhance cleanup تطوير جافاسكريبت"],
   ["react", "React", "React", "jsx tsx hooks رياكت ريأكت"],
   ["vue", "Vue", "Vue", "composition api فيو"],
   ["angular", "Angular", "Angular", "signals انغولار أنجولار"],

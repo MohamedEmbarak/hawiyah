@@ -16,7 +16,7 @@ type Code = (value: string) => string;
 
 export const guideTopics = [
   ['getting-started', 'Getting started', 'البداية'],
-  ['vanilla', 'Vanilla JavaScript', 'جافاسكريبت'],
+  ['vanilla', 'JavaScript', 'JavaScript'],
   ['react', 'React', 'React'],
   ['vue', 'Vue', 'Vue'],
   ['angular', 'Angular', 'Angular'],
@@ -155,7 +155,7 @@ function article(topic: string, code: Code): string {
 const categoryNames: Record<string, string> = { Actions: 'الإجراءات', Forms: 'النماذج', Navigation: 'التنقّل', Feedback: 'التغذية الراجعة', Content: 'المحتوى', Platforms: 'المنصات', Layout: 'التخطيط' };
 const topicDescriptions: Record<string, readonly [string,string]> = {
   'getting-started': ['From a fresh checkout to your first thoughtful interface. Choose your framework and make something yours.', 'من أول تشغيل إلى أول واجهة مدروسة. اختر إطار عملك، ثم ابنِ تجربة تحمل طابعك.'],
-  vanilla: ['Meaningful HTML. A little JavaScript. A foundation you can see and shape.', 'HTML واضح، وجافاسكريبت بقدر الحاجة. أساس تراه وتفهمه وتشكّله بطريقتك.'],
+  vanilla: ['Meaningful HTML. A little JavaScript. A foundation you can see and shape.', 'HTML واضح، ومقدار بسيط من JavaScript. أساس تراه وتفهمه وتشكّله بطريقتك.'],
   react: ['Your React state, familiar composition, one shared visual language.', 'حالة React التي تعرفها، وتركيب مرن، ولغة بصرية واحدة.'],
   vue: ['Reactive models and expressive templates, with the details already connected.', 'حالة تفاعلية وقوالب معبّرة، وتفاصيل تعمل معًا.'],
   angular: ['Standalone components that fit naturally into your Angular forms and application.', 'مكوّنات مستقلة تنسجم مع نماذج Angular وتطبيقك.'],
@@ -209,7 +209,7 @@ export function renderComponentGuide(id: string, locale: Locale, preview: (id: C
   return `<div class="component-guide-header" lang="${locale}" dir="${ar?'rtl':'ltr'}"><a class="guide-back" href="#components">${icon('arrow-back',16)}${t('All components','كل المكوّنات')}</a>
     <div class="guide-kicker"><span class="guide-chip">${icon('layers',15)}${e(ar?categoryNames[item[3]]||item[3]:item[3])}</span><code dir="ltr">${item[0]}</code><span class="guide-live-badge"><i></i>${t('LIVE EXAMPLE','مثال تفاعلي')}</span></div>
     <div class="guide-title-row"><div><h1>${e(title)}</h1><p class="guide-lead">${e(guide.summary)}</p></div><div class="guide-title-actions"><button type="button" data-guide-launch-editor>${icon('spark',16)}${t('Edit live','عدّل مباشرة')}</button>${guide.source?source(guide.source,t('View source','تصفّح المصدر')):''}<button type="button" data-guide-section="component-api">${t('API reference','مرجع البرمجة')}${icon('arrow',16)}</button></div></div>
-    <div class="guide-compatibility"><span>${t('One foundation. Your framework.','أساس واحد. وإطار العمل الذي تختاره.')}</span><div>${['Vanilla','React','Vue','Angular'].map(name=>`<a href="#docs/${name.toLowerCase()}" dir="ltr">${name}</a>`).join('')}</div></div>
+    <div class="guide-compatibility"><span>${t('One foundation. Your framework.','أساس واحد. وإطار العمل الذي تختاره.')}</span><div>${['Vanilla','React','Vue','Angular'].map(name=>`<a href="#docs/${name.toLowerCase()}" dir="ltr">${name === 'Vanilla' ? 'JavaScript' : name}</a>`).join('')}</div></div>
   </div>
   <div class="component-guide-layout"><article class="guide-article component-guide" lang="${locale}" dir="${ar?'rtl':'ltr'}">
     <section class="guide-demo" data-guide-demo data-guide-key="${item[0]}:${locale}" data-guide-usage="${e(guide.usage)}" data-guide-initial-dir="${ar?'rtl':'ltr'}" data-guide-locale="${locale}" data-guide-title="${e(title)}" aria-label="${t('Interactive component example','مثال تفاعلي للمكوّن')}">
@@ -218,7 +218,7 @@ export function renderComponentGuide(id: string, locale: Locale, preview: (id: C
         <div class="component-preview guide-preview" data-guide-canvas tabindex="0" role="region" aria-label="${t('Component preview canvas','مساحة معاينة المكوّن')}" data-surface="grid" dir="${ar?'rtl':'ltr'}">${inlineExample(item[0], preview(item[0]))}</div>
         <div class="guide-demo-controls">${demoControls(id,locale)}<div class="guide-direction-control" role="group" aria-label="${t('Preview direction','اتجاه المعاينة')}"><span>${t('Direction','الاتجاه')}</span><div dir="ltr"><button type="button" data-guide-direction="rtl" aria-pressed="${ar}">RTL</button><button type="button" data-guide-direction="ltr" aria-pressed="${!ar}">LTR</button></div></div><label class="guide-control"><span>${t('Surface','الخلفية')}</span><select data-guide-surface><option value="grid">${t('Grid','شبكة')}</option><option value="plain">${t('Plain','صافية')}</option><option value="soft">${t('Soft','هادئة')}</option></select></label><button class="guide-reset" type="button" id="reset-component-demo" data-action="reset-component-demo">${t('Reset','إعادة الضبط')}</button></div>
       </div>
-      <div role="tabpanel" id="guide-code-panel" aria-labelledby="guide-code-tab" data-guide-panel="code" hidden><section id="component-usage"><div class="guide-code-intro"><h2 data-guide-ignore>${t('Use this recipe','استخدم هذا المثال')}</h2><span dir="ltr">HTML</span></div><p>${t('Load the shared stylesheet. Interactive data-nq hooks use the vanilla enhancer.','حمّل ملف الأنماط المشترك. تستخدم الخطافات التفاعلية data-nq أداة التحسين لجافاسكريبت.')} <a href="#docs/vanilla">${t('Setup guide','دليل الإعداد')}${icon('arrow',14)}</a></p>${code(guide.usage)}</section></div>
+      <div role="tabpanel" id="guide-code-panel" aria-labelledby="guide-code-tab" data-guide-panel="code" hidden><section id="component-usage"><div class="guide-code-intro"><h2 data-guide-ignore>${t('Use this recipe','استخدم هذا المثال')}</h2><span dir="ltr">HTML</span></div><p>${t('Load the shared stylesheet. Interactive data-nq hooks use the vanilla enhancer.','حمّل ملف الأنماط المشترك. تستخدم الخطافات التفاعلية data-nq أداة التحسين الخاصة بـ JavaScript.')} <a href="#docs/vanilla">${t('Setup guide','دليل الإعداد')}${icon('arrow',14)}</a></p>${code(guide.usage)}</section></div>
       <div role="tabpanel" id="guide-playground-panel" aria-labelledby="guide-playground-tab" data-guide-panel="playground" hidden><div data-guide-ide></div></div>
       <div class="guide-demo-footnote"><span>${icon('code',14)}${t('Real components. Real interaction.','مكوّنات حقيقية، وتفاعل فعلي.')}</span><span>${t('Try Tab, arrows & Escape','جرّب Tab والأسهم وEscape')}</span></div>
     </section>
