@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">
-  <style>path { stroke: #384250 } @media (prefers-color-scheme: dark) { path { stroke: #e5e7eb } }</style>
-  <path d="m4 6.5 5 5 5-5" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <style>path { stroke: #161616 } @media (prefers-color-scheme: dark) { path { stroke: #e5e7eb } }</style>
+  <path d="M6 9 12 15 18 9" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
