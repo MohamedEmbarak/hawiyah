@@ -140,7 +140,7 @@ function lifeJourneys(locale: Locale): string {
 }
 function sitemap(locale: Locale): string {
   const t = (en:string,ar:string) => copy(locale,[en,ar]);
-  return `${pageHeading(t('Sitemap','خريطة الموقع'),t('Find the page you need by its purpose.','اعثر على الصفحة التي تحتاجها بحسب الغرض منها.'))}<div class="nq-template-grid">${[[t('Services and applications','الخدمات والطلبات'),['service','form','life-journeys']],[t('Help and feedback','المساعدة والملاحظات'),['support','contact','faq','chatbot','rating','feedback']],[t('Information and participation','المعلومات والمشاركة'),['about','content','participation','cookies','404']]].map(([label,ids])=>card(label as string,`<ul class="nq-template-link-list">${(ids as string[]).map(id=>`<li>${link(id,titleFor(id,locale))}</li>`).join('')}</ul>`)).join('')}</div>`;
+  return `${pageHeading(t('Sitemap','خريطة الموقع'),t('Find the page you need by its purpose.','اعثر على الصفحة التي تحتاجها بحسب الغرض منها.'))}<div class="nq-template-grid">${[[t('Services and applications','الخدمات والطلبات'),['service','form','life-journeys']],[t('Help and feedback','المساعدة والملاحظات'),['support','contact','faq','chatbot','rating','feedback']],[t('Information and participation','المعلومات والمشاركة'),templates.filter(item => !['service','form','life-journeys','support','contact','faq','chatbot','rating','feedback','sitemap'].includes(item.id)).map(item => item.id)]].map(([label,ids])=>card(label as string,`<ul class="nq-template-link-list">${(ids as string[]).map(id=>`<li>${link(id,titleFor(id,locale))}</li>`).join('')}</ul>`)).join('')}</div>`;
 }
 function notFound(locale: Locale): string {
   const t = (en:string,ar:string) => copy(locale,[en,ar]);
