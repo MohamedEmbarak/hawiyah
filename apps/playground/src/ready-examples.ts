@@ -177,7 +177,13 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
       vue:`<!-- import { Link } from '@nasaq/vue' -->\n<Link href="#guide" ${disabled?'disabled':`variant="${variant}"`}>${label}</Link>`,
       angular:`<!-- import { NqLinkComponent } from '@nasaq/angular'; add to imports -->\n<nq-link href="#guide" ${disabled?'[disabled]="true"':`variant="${variant}"`}>${label}</nq-link>`,
     };
-  });
+  }).concat([{
+    title: t('External destination', 'وجهة خارجية'),
+    markup: `<a class="nq-link" href="https://example.test/reference" target="_blank" rel="noopener noreferrer">${t('External reference','مرجع خارجي')}<span class="nq-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></a>`,
+    react: `import { Link } from '@nasaq/react';\n<Link href="https://example.test/reference" external>${t('External reference','مرجع خارجي')}<span className="nq-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></Link>`,
+    vue: `<!-- import { Link } from '@nasaq/vue' -->\n<Link href="https://example.test/reference" external>${t('External reference','مرجع خارجي')}<span class="nq-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></Link>`,
+    angular: `<!-- imports: [NqLinkComponent] -->\n<nq-link href="https://example.test/reference" target="_blank">${t('External reference','مرجع خارجي')}<span class="nq-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></nq-link>`,
+  }]);
   if (id === 'site-verification') {
     const copy=siteVerificationDemoLabels(locale);
     return [false,true].map(open=>({title:open?t('Expanded verification','تفاصيل التحقق'):t('Collapsed verification','شريط التحقق المطوي'),markup:siteVerificationMarkup(locale,open),

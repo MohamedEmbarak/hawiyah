@@ -1,5 +1,18 @@
 import {expect,test,type Locator} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+async function externalIndicator(link: Locator) {
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link.locator('.nq-sr-only')).toContainText(/new window|نافذة جديدة/);
+  await link.evaluate(async element => {
+    const url = getComputedStyle(element, '::after').maskImage.match(/url\("([^"]+)"\)/)?.[1];
+    if (!url) throw new Error('External destination indicator is missing');
+    const image = new Image(); image.src = url; await image.decode();
+    const supplied = document.createElement('span');
+    supplied.dataset.nqExternalIcon = ''; element.append(supplied);
+    if (getComputedStyle(element, '::after').content !== 'none') throw new Error('External indicator is duplicated');
+    supplied.remove();
+  });
+}
 async function states(link:Locator,neutral=false){
   await expect(link).toHaveCSS('color',neutral?'rgb(56, 66, 80)':'rgb(22, 106, 69)');
   await link.hover();await expect(link).toHaveCSS('color',neutral?'rgb(77, 87, 97)':'rgb(20, 87, 58)');
@@ -7,7 +20,7 @@ async function states(link:Locator,neutral=false){
 }
 for(const dir of ['rtl','ltr'])test(`NIC links and breadcrumbs retain readable states, direction and keyboard focus in ${dir}`,async({page},info)=>{
   test.setTimeout(120000);await page.goto('/#component/link');const preview=page.locator('.component-preview').first();await preview.evaluate((el,dir)=>{el.setAttribute('dir',dir);el.setAttribute('data-nq-mode','light');},dir);
-  const links=preview.locator('.nq-link');await expect(links).toHaveCount(4);
+  const links=preview.locator('.nq-link');await expect(links).toHaveCount(5); await externalIndicator(links.nth(4));
   await states(links.nth(0));await page.locator('h1').click();await states(links.nth(1),true);
   await links.nth(2).hover();await expect(links.nth(2)).toHaveCSS('text-decoration-line','none');
   const icon=links.nth(2).locator('svg'),a=(await links.nth(2).boundingBox())!,b=(await icon.boundingBox())!;expect(Math.abs(a.y+a.height/2-b.y-b.height/2)).toBeLessThan(2);
@@ -30,7 +43,7 @@ for(const dir of ['rtl','ltr'])test(`NIC links and breadcrumbs retain readable s
 });
 for(const framework of ['react','vue','angular'])test(`${framework} native link variants and disabled destinations`,async({page},info)=>{
   test.setTimeout(120000);await page.goto('/#component/link');await page.locator('[data-guide-tab="playground"]').click();await page.locator('[data-project-framework]').selectOption(framework);if(framework!=='angular')await page.locator('[data-project-language]').selectOption('typescript');
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});const frame=page.frameLocator('.nq-ide-frame'),links=frame.locator('.nq-link');await expect(links).toHaveCount(4);
+  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});const frame=page.frameLocator('.nq-ide-frame'),links=frame.locator('.nq-link');await expect(links).toHaveCount(5); await externalIndicator(links.nth(4));
   await states(links.nth(0));await expect(links.nth(1)).toHaveAttribute('data-variant','neutral');await expect(links.nth(3)).not.toHaveAttribute('href');await expect(links.nth(3)).toHaveAttribute('tabindex','-1');
   await links.nth(3).dispatchEvent('click');await expect(page).toHaveURL(/#component\/link$/);await links.nth(0).press('Enter');await expect(page).toHaveURL(/#component\/link$/);
   await page.setViewportSize({width:390,height:844});await page.locator('.nq-ide-frame').scrollIntoViewIfNeeded();await frame.locator('.nq-stack').screenshot({path:info.outputPath(`${framework}-links.png`)});

@@ -23,6 +23,12 @@
   --nq-profile-breadcrumb-margin: initial;
 }
 .nq-link { --nq-link-rest: var(--nq-color-link); --nq-link-hover: var(--nq-color-link-hover); --nq-link-active: var(--nq-color-link-active); --nq-link-visited: var(--nq-color-link-visited); color: var(--nq-link-rest); }
+/* Hosts may supply their own decorative indicator using data-nq-external-icon. */
+:is(.nq-link, .nq-portal-header a)[target='_blank']:not([data-nq-external-icon='none']):not(:has([data-nq-external-icon], .nq-portal-footer-external))::after {
+  content: ''; display: inline-block; flex: none; inline-size: 1em; block-size: 1em;
+  margin-inline-start: .25em; vertical-align: -.125em;
+  background: currentColor; mask: url('./assets/external-link.svg') center / contain no-repeat;
+}
 .nq-link:is([data-variant='subtle'], [data-variant='neutral']) { --nq-link-rest: var(--nq-color-link-neutral); --nq-link-hover: var(--nq-color-link-neutral-hover); --nq-link-active: var(--nq-color-link-neutral-active); --nq-link-visited: var(--nq-color-link-neutral); color: var(--nq-link-rest); text-decoration: none; }
 .nq-link:visited { color: var(--nq-link-visited); }
 .nq-link:hover { color: var(--nq-link-hover); text-decoration: underline; text-decoration-thickness: var(--nq-profile-link-hover-thickness, 2px); }
@@ -44,6 +50,7 @@
 .nq-breadcrumb li + li::before { content: var(--nq-profile-breadcrumb-separator, '/'); flex: none; inline-size: var(--nq-profile-breadcrumb-size, auto); block-size: var(--nq-profile-breadcrumb-size, auto); margin-inline: var(--nq-profile-breadcrumb-margin, 0px); border-block-start: var(--nq-profile-breadcrumb-border, 0px) solid currentColor; border-inline-end: var(--nq-profile-breadcrumb-border, 0px) solid currentColor; transform: rotate(calc(var(--_nq-inline-sign, 1) * var(--nq-profile-breadcrumb-angle, 0deg))); color: var(--nq-color-text-subtle); }
 @media (prefers-reduced-motion: reduce) { .nq-breadcrumb a { transition: none; } }
 @media (forced-colors: active) {
+  :is(.nq-link, .nq-portal-header a)[target='_blank']::after { background: LinkText; forced-color-adjust: none; }
   .nq-link, .nq-link[data-variant] { --nq-link-rest: LinkText; --nq-link-hover: LinkText; --nq-link-active: LinkText; --nq-link-visited: VisitedText; color: LinkText; }
   .nq-breadcrumb a { color: LinkText; }
   .nq-link:visited { color: VisitedText; }

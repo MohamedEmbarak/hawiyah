@@ -74,3 +74,20 @@ claimed as verified browser-history colors.
 
 The five existing portal-identity Chromium cases also pass after the shared-style
 changes, covering header disclosure, grouped footers and native compositions.
+
+
+## Checklist external destinations
+
+Links opening a new window now display a decorative square-arrow indicator in
+all four adapters through shared CSS. The guide includes an external destination
+with a localized screen-reader notice. Host applications should likewise supply
+localized new-window text within the link. The indicator follows currentColor
+and remains visible in forced colors. It stays physically upper-right in RTL.
+Existing footer artwork is detected to avoid duplicate indicators. A custom
+indicator may use `data-nq-external-icon`; `data-nq-external-icon="none"` on the
+anchor suppresses generated artwork.
+
+The authored elementary square-arrow symbol addresses checklist rows 56/124's
+external-destination cue. It is not represented as an approved export of the
+DGA Link Square icon. Official artwork equivalence and redistribution remain
+open evidence questions.

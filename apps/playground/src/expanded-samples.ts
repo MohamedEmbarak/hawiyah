@@ -91,7 +91,7 @@ export function expandedSample(
     case "carousel":
       return carouselDemoMarkup(locale);
     case "link":
-      return `<div class="nq-stack"><a class="nq-link" href="#discover">${t("Explore services", "استكشف الخدمات")}</a><a class="nq-link" data-variant="neutral" href="#docs">${t("Read the guide", "اقرأ الدليل")}</a><a class="nq-link" data-variant="standalone" href="#details">${t("Service details", "تفاصيل الخدمة")} ${icon("arrow", 16)}</a><a class="nq-link" role="link" aria-disabled="true" tabindex="-1">${t("Unavailable destination", "وجهة غير متاحة")}</a></div>`;
+      return `<div class="nq-stack"><a class="nq-link" href="#discover">${t("Explore services", "استكشف الخدمات")}</a><a class="nq-link" data-variant="neutral" href="#docs">${t("Read the guide", "اقرأ الدليل")}</a><a class="nq-link" data-variant="standalone" href="#details">${t("Service details", "تفاصيل الخدمة")} ${icon("arrow", 16)}</a><a class="nq-link" role="link" aria-disabled="true" tabindex="-1">${t("Unavailable destination", "وجهة غير متاحة")}</a><a class="nq-link" href="https://example.test/reference" target="_blank" rel="noopener noreferrer">${t("External reference", "مرجع خارجي")}<span class="nq-sr-only"> · ${t("opens in a new window", "يفتح في نافذة جديدة")}</span></a></div>`;
     case "icon-button":
       return iconButtonMarkup(locale);
     case "button-group":
