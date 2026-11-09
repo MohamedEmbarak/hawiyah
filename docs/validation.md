@@ -10,6 +10,13 @@ passed its clean tarball consumer (ESM, React/Vue SSR, Angular APF, CSS and
 asset exports, strict TypeScript declarations) and tree-shaking budgets: React
 Button 380 of 4,096 bytes and Vanilla Tabs 4,095 of 6,144 bytes gzip.
 
+Chromium runs of the guide, homepage onboarding, project editor and editor
+layout specs passed 158 of 163 after the install commands moved from local
+tarballs to npm. The five failures are the React, Vue and Angular "card, badge,
+alert, table" editor cases: `project-editor.spec.ts` still expects the card
+footer text `متاحة إلكترونياً`, which commit `ad7bcbc` replaced with an explicit
+`عرض المتطلبات` action. The release changes do not touch card samples.
+
 `pnpm release:packages` (dry run) rebuilt the packages, repeated the consumer
 check with `NASAQ_RELEASE=1`, and confirmed each staged manifest has no
 `private` field and pins `@nasaq/*` dependencies to `0.2.0`. Packed sizes:
