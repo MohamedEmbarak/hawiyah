@@ -14,3 +14,34 @@
 
 /* Source setup stays readable and copyable at every viewport size. */
 .home-terminal{align-items:flex-start}.home-terminal pre{margin:0;min-inline-size:0;white-space:pre-wrap;overflow-wrap:anywhere}.home-consumer-setup{margin-block-start:18px;font-size:13px}.home-consumer-setup summary{cursor:pointer;font-weight:500;color:var(--hw-color-text)}.home-consumer-setup>a{display:inline-flex;align-items:center;gap:6px;color:var(--hw-color-primary-text)}
+/* Installation: npm first, source checkout second. */
+.home-quickstart{grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr);align-items:start;gap:clamp(24px,4vw,56px);padding:clamp(22px,3vw,40px);background:var(--hw-color-surface)}
+.home-quickstart-intro h2{font-size:clamp(24px,2.4vw,32px);margin-block:10px 8px}
+.home-quickstart-intro p{font-size:14px;max-inline-size:34ch}
+.home-quickstart-facts{display:grid;gap:0;margin:22px 0 0;border-block-start:1px solid var(--hw-color-border)}
+.home-quickstart-facts div{display:flex;justify-content:space-between;gap:16px;padding-block:10px;border-block-end:1px solid var(--hw-color-border);font-size:13px}
+.home-quickstart-facts dt{color:var(--hw-color-text-muted)}
+.home-quickstart-facts dd{margin:0;font-weight:500;color:var(--hw-color-text)}
+.home-install{display:grid;gap:16px}
+.home-install .home-frameworks{margin:0}
+.home-install-tabs{border:1px solid var(--hw-color-border);border-radius:var(--hw-radius-lg);background:var(--hw-color-canvas);overflow:hidden}
+.home-install-tabs .hw-tab-list{padding-inline:12px;background:var(--hw-color-surface)}
+.home-install-tabs .hw-tab{gap:8px;font-size:14px}
+.home-install-recommended{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;background:var(--hw-color-primary-subtle);color:var(--hw-color-primary-text);font-size:11px;font-weight:500;line-height:1.7}
+.home-install-panel{display:grid;gap:14px;padding:20px}
+.home-install-steps{display:grid;gap:16px;margin:0;padding:0;list-style:none;counter-reset:install}
+.home-install-steps li{display:grid;gap:8px;counter-increment:install}
+.home-install-step{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:var(--hw-color-text)}
+.home-install-step:before{content:counter(install);display:grid;place-items:center;flex:none;inline-size:24px;block-size:24px;border-radius:50%;background:var(--hw-color-primary);color:var(--hw-color-on-primary);font-size:12px;font-weight:600}
+.home-install-panel .home-terminal{align-items:flex-start;padding:14px 16px}
+.home-install-panel .home-terminal pre{margin:0;min-inline-size:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.home-install-panel .home-terminal code{font-size:12.5px;line-height:1.8}
+.home-install-note{margin:0;font-size:13px;line-height:1.8;color:var(--hw-color-text-muted)}
+.home-install-link{display:inline-flex;align-items:center;gap:6px;justify-self:start;font-size:14px;font-weight:500;text-decoration:none;color:var(--hw-color-primary-text)}
+.home-install-link:hover{text-decoration:underline;text-underline-offset:.2em}
+@media(max-width:1024px){.home-quickstart{grid-template-columns:minmax(0,1fr)}.home-quickstart-intro p{max-inline-size:none}}
+@media(max-width:420px){.home-install-panel{padding:14px}.home-install-tabs .hw-tab{font-size:13px;padding-inline:8px}.home-install-recommended{display:none}}
+.home-install-note code{font-size:12px;padding:1px 5px;border-radius:4px;background:var(--hw-color-surface-muted);color:var(--hw-color-text);unicode-bidi:isolate}
+.home-install-panel .home-terminal pre{flex:1;white-space:pre;overflow-wrap:normal;overflow-x:auto;scrollbar-width:thin}
+@media(max-width:420px){.home-install-panel .home-terminal code{font-size:12px}}
+.home-install-panel .home-terminal pre{white-space:pre-wrap;overflow-wrap:normal;word-break:normal}

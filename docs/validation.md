@@ -1,5 +1,29 @@
 # Validation record
 
+## 2026-11-09 Hawiyah rename and identity
+
+After renaming Nasaq to Hawiyah (packages, `hw-` classes and variables, data
+hooks, events, Angular symbols, theme and assets), with Node.js 24.22.1 and
+pnpm 11.25.0: `pnpm build:packages`, `pnpm typecheck:playground`, `pnpm test`
+(637 Vitest and 8 token-contrast cases), `pnpm check:packages` (clean consumer
+for all seven `@hawiyah/*` tarballs: ESM, React/Vue SSR, Angular APF, CSS and
+asset exports, strict declarations; React Button 382 and Vanilla Tabs 4,097
+bytes gzip within budget) and `HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs`
+passed. The handwriting loader build verified that the finished هوية traces
+every one of its 36,181 solid interior pixels in both colors.
+
+The full Chromium suite ran 528 tests: 509 passed and 19 failed. Fifteen
+failures also fail on the pre-rename Nasaq commit and are stale tests: the
+editor card footer text (five formats), homepage hero switches that no longer
+exist (two), the Arabic layouts and inputs audit waiting for a removed toggle
+label (two), Arabic content navigation at 320px, and the components route
+overflow and audit checks (five). Four failures passed when rerun alone and
+depend on load during the parallel run: the input-lab calendar height, live
+reduced-motion timing, the vanilla notification project width, and a
+pagination contrast reading taken mid-transition. After the installation
+section moved to npm-first tabs, the homepage onboarding and guide specs
+passed (10 tests).
+
 ## 2026-11-09 npm release 0.2.0
 
 All seven packages moved to 0.2.0 together. With Node.js 24.22.1 and pnpm
