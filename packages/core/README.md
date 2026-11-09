@@ -41,5 +41,5 @@ sort records immutably with stable localized comparison. Layout helpers emit CSS
 variables without reading the viewport; responsive behavior stays in CSS.
 
 Project code is licensed under Apache-2.0. Bundled third-party data retains its
-documented MIT license. This public 0.1 source preview is available through the
+documented MIT license. This public 0.2 source preview is available through the
 workspace; the package is not yet published on npm.

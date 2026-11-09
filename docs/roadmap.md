@@ -1,6 +1,6 @@
 # Roadmap and acceptance gates
 
-Nasaq is in `0.1` development. This roadmap defines outcomes and evidence rather than declaring unfinished work complete. Implementation can proceed in parallel where the shared contracts are settled, but later adapters must be checked against the working foundation.
+Nasaq is in `0.2` development. This roadmap defines outcomes and evidence rather than declaring unfinished work complete. Implementation can proceed in parallel where the shared contracts are settled, but later adapters must be checked against the working foundation.
 
 The [validation record](validation.md) identifies tested snapshots, exact counts, environments, and limitations. Evidence covers both the initial 27 components and targeted cases for the 50 additions; each claim remains limited to the named behavior or consumer check.
 

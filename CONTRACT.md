@@ -1,4 +1,4 @@
-# Implementation contract (0.1 source preview)
+# Implementation contract (0.2 source preview)
 
 Package names: @nasaq/tokens, @nasaq/styles, @nasaq/core, @nasaq/vanilla,
 @nasaq/react, @nasaq/vue, @nasaq/angular. ESM, explicit exports. npm publication is disabled pending release preparation.

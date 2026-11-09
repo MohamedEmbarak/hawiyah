@@ -1,6 +1,6 @@
 # @nasaq/vue
 
-Native Vue 3 components for Nasaq — نسق, an independent public 0.1 source preview.
+Native Vue 3 components for Nasaq — نسق, an independent public 0.2 source preview.
 The `@nasaq/*` packages are not yet published to npm; build and use them through
 this repository's workspace. Import the shared CSS once:
 

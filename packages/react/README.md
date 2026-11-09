@@ -1,6 +1,6 @@
 # @nasaq/react
 
-Native React 19 components for Nasaq — نسق, an independent public 0.1 source
+Native React 19 components for Nasaq — نسق, an independent public 0.2 source
 preview. DGA-informed, without government endorsement or certification. React owns
 all rendered elements. No vanilla controller is mounted into a React tree.
 

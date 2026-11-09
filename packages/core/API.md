@@ -1,8 +1,8 @@
-# Behavior contracts (0.1)
+# Behavior contracts (0.2)
 
 Frameworks own their rendered trees. Core exports pure utilities and optional DOM
 lifecycle helpers; it does not render components. Vanilla enhances existing markup.
-This is the public 0.1 source preview. Package publication remains disabled;
+This is the public 0.2 source preview. Package publication remains disabled;
 build and consume these APIs through the workspace until an npm release is announced.
 
 ## Core

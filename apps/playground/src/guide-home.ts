@@ -1,6 +1,7 @@
 import { frameworkIcon } from './framework-icons';
 import { catalog, escape as e, icon, type Locale, type ComponentId } from './data';
 import './guide-home.css';
+import { nasaqMinor, nasaqVersion } from './release';
 
 type Framework = 'vanilla' | 'react' | 'vue' | 'angular';
 const frameworks: Framework[] = ['vanilla', 'react', 'vue', 'angular'];
@@ -10,7 +11,7 @@ export function renderHome(locale: Locale, selected: string, sample: (id: Compon
   const framework = frameworks.includes(selected as Framework) ? selected as Framework : 'vanilla';
   const command = framework === 'vanilla' ? 'pnpm dev' : `pnpm --filter @nasaq/example-${framework} dev`;
   const start = `git clone https://github.com/MohamedEmbarak/nasaq.git\ncd nasaq\ncorepack enable\npnpm install --frozen-lockfile\npnpm build:packages\n${command}`;
-  const tarballs = ['tokens', 'styles', 'core', framework].map(name => `../nasaq/.artifacts/package-check/nasaq-${name}-0.1.0.tgz`).join(' ');
+  const tarballs = ['tokens', 'styles', 'core', framework].map(name => `../nasaq/.artifacts/package-check/nasaq-${name}-${nasaqVersion}.tgz`).join(' ');
   const install = `pnpm add ${tarballs}`;
   const usage: Record<Framework, string> = {
     vanilla: "import '@nasaq/styles/styles.css';\nimport { enhance } from '@nasaq/vanilla';\n\n// Enhance only application-owned HTML with data-nq hooks.\nconst dispose = enhance(document);\n// Call dispose() before removing the enhanced tree.",
@@ -25,7 +26,7 @@ export function renderHome(locale: Locale, selected: string, sample: (id: Compon
   ];
   return `<div class="home-experience">
   <section class="home-hero" aria-labelledby="home-title">
-    <div class="home-intro"><a class="home-release" href="#docs/getting-started"><span></span>${t('Open source. Ready to explore.', 'مفتوح المصدر. مفتوح للإبداع.')}<b dir="ltr">v0.1</b>${icon('arrow',14)}</a>
+    <div class="home-intro"><a class="home-release" href="#docs/getting-started"><span></span>${t('Open source. Ready to explore.', 'مفتوح المصدر. مفتوح للإبداع.')}<b dir="ltr">v${nasaqMinor}</b>${icon('arrow',14)}</a>
       <h1 id="home-title">${t('Your next interface.<br><em>In your own rhythm.</em>', 'واجهتك القادمة.<br><em>على نسقك.</em>')}</h1>
       <p class="home-lead">${t('An Arabic-first component system that feels like yours. Explore the parts, try the interactions, and build with the framework you love.', 'نظام مكوّنات يبدأ بالعربية، ويتشكّل بطريقتك. استكشف التفاصيل، جرّب التفاعل، وابنِ بإطار العمل الذي تحب.')}</p>
       <div class="home-actions"><a class="nq-button" href="#docs/getting-started">${t('Start building', 'ابدأ البناء')}${icon('arrow',18)}</a><a class="home-secondary" href="#components">${t(`Explore ${catalog.length} components`, `استكشف ${catalog.length} مكوّنًا`)}${icon('layers',18)}</a></div>

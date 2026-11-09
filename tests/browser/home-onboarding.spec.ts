@@ -25,7 +25,7 @@ for (const locale of ['ar', 'en']) test(`homepage source onboarding and JavaScri
     await expect(sourceCommands).toContainText(framework === 'vanilla' ? 'pnpm dev' : `pnpm --filter @nasaq/example-${framework} dev`);
     await page.locator('.home-consumer-setup summary').click();
     const install = page.locator('.home-consumer-setup code').first();
-    for (const name of ['tokens', 'styles', 'core', framework]) await expect(install).toContainText(`../nasaq/.artifacts/package-check/nasaq-${name}-0.1.0.tgz`);
+    for (const name of ['tokens', 'styles', 'core', framework]) await expect(install).toContainText(`../nasaq/.artifacts/package-check/nasaq-${name}-0.2.0.tgz`);
   }
   await page.screenshot({path: testInfo.outputPath(`homepage-${locale}.png`), fullPage: true});
   await page.setViewportSize({width: 390, height: 844});

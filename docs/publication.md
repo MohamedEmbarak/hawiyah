@@ -1,7 +1,7 @@
 # Public source, guide, and package releases
 
 Nasaq is available from [MohamedEmbarak/nasaq](https://github.com/MohamedEmbarak/nasaq)
-as a **0.1 source preview**, with an interactive guide at
+as a **0.2 source preview**, with an interactive guide at
 [GitHub Pages](https://mohamedembarak.github.io/nasaq/). Original project code,
 documentation, and artwork use [Apache License 2.0](../LICENSE). Bundled fonts
 and calendar reference data retain their own licenses and attribution; see

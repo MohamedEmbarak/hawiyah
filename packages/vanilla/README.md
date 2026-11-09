@@ -92,7 +92,7 @@ min/max/step, readonly, disabled, hints and errors remain application-controlled
 | file | Browser-owned FileList; scripts may clear it, never preload a local file. Dropzone accepts explicit user drops. |
 | color, hidden, submit, reset, button | Native browser behavior; hidden inputs do not provide constraint validation. |
 
-Licensed under Apache-2.0. This public 0.1 source preview is available through the
+Licensed under Apache-2.0. This public 0.2 source preview is available through the
 workspace; the package is not yet published on npm.
 
 ## Portal shell

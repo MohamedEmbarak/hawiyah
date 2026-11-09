@@ -17,6 +17,7 @@ import "./playground.css";
 import "./expansion.css";
 import { renderGuide, renderComponentGuide, guideTitle, guideTopics, bindGuide } from "./guide";
 import { renderHome, bindHome } from "./guide-home";
+import { nasaqMinor } from "./release";
 import { renderDgaTemplates, bindDgaTemplates } from "./dga-templates";
 import { createGuideSearch } from "./guide-search";
 import "./experience.css";
@@ -134,7 +135,7 @@ function shell() {
   const componentsNav = [...new Set(catalog.map(c=>c[3]))].map(category => `<details class="sidebar-category" ${activeComponent?.[3]===category?'open':''}><summary>${categoryName(category)}<small>${catalog.filter(c=>c[3]===category).length}</small></summary><div>${catalog.filter(c=>c[3]===category).map(c=>`<a class="sidebar-child ${activeComponent?.[0]===c[0]?'is-active':''}" href="#component/${c[0]}" ${activeComponent?.[0]===c[0]?'aria-current="page"':''}>${text([c[1],c[2]])}</a>`).join('')}</div></details>`).join('');
   return `<a class="skip-link" href="#main" ${mobileOpen?'inert':''}>${t('Skip to content','انتقل إلى المحتوى')}</a>
     <aside id="site-navigation" class="sidebar ${mobileOpen?'mobile-open':''}" ${mobileOpen?'role="dialog" aria-modal="true"':''} aria-label="${t('Main navigation','التنقّل الرئيسي')}">
-      <div class="sidebar-brand-row"><a href="#overview" class="brand brand-wordmark" aria-label="${t('Nasaq home','نسق — الصفحة الرئيسية')}"><img src="${base}brand/assets/nasaq-wordmark${state.mode==='dark'?'-white':''}.svg" alt="نسق" width="100" height="78"></a><span class="sidebar-version" dir="ltr">0.1</span><button type="button" class="icon-button sidebar-close" data-action="menu" aria-label="${t('Close navigation','أغلق التنقّل')}">${icon('close',21)}</button></div>
+      <div class="sidebar-brand-row"><a href="#overview" class="brand brand-wordmark" aria-label="${t('Nasaq home','نسق — الصفحة الرئيسية')}"><img src="${base}brand/assets/nasaq-wordmark${state.mode==='dark'?'-white':''}.svg" alt="نسق" width="100" height="78"></a><span class="sidebar-version" dir="ltr">${nasaqMinor}</span><button type="button" class="icon-button sidebar-close" data-action="menu" aria-label="${t('Close navigation','أغلق التنقّل')}">${icon('close',21)}</button></div>
       <button type="button" class="sidebar-search" data-action="search-components">${icon('search',17)}<span>${t('Quick search…','بحث سريع…')}</span><kbd dir="ltr" aria-hidden="true">⌘ K</kbd></button>
       <nav aria-label="${t('Guide and examples','الدليل والأمثلة')}">
         ${nav('overview',t('Discover Nasaq','اكتشف نسق'),'spark')}

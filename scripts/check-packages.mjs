@@ -31,15 +31,16 @@ function run(cmd, args, cwd = checkRoot) {
   return result.stdout;
 }
 const paths = [];
-for (const name of [
-  "tokens",
-  "styles",
-  "core",
-  "vanilla",
-  "react",
-  "vue",
-  "angular",
-]) {
+const packageNames = ["tokens", "styles", "core", "vanilla", "react", "vue", "angular"];
+const workspaceVersions = Object.fromEntries(
+  packageNames.map((name) => {
+    const { name: id, version } = JSON.parse(
+      readFileSync(resolve(root, "packages", name, "package.json"), "utf8"),
+    );
+    return [id, version];
+  }),
+);
+for (const name of packageNames) {
   const source = resolve(root, "packages", name),
     dest = resolve(checkRoot, "staging", name);
   const manifest = JSON.parse(
@@ -69,8 +70,11 @@ for (const name of [
     "optionalDependencies",
   ])
     for (const [dependency, version] of Object.entries(manifest[section] || {}))
-      if (version.startsWith("workspace:"))
-        manifest[section][dependency] = "0.1.0";
+      if (version.startsWith("workspace:")) {
+        if (!workspaceVersions[dependency])
+          throw new Error(`${name}: unknown workspace dependency ${dependency}`);
+        manifest[section][dependency] = workspaceVersions[dependency];
+      }
   delete manifest.devDependencies;
   delete manifest.scripts;
   writeFileSync(

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "name": "Nasaq",
   "nameAr": "نسق",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "lifecycle": "public-source-preview",
   "description": "Independent Arabic-first UI components informed by DGA Platforms Code; no official endorsement or certification is claimed.",
   "keywords": [

@@ -1,6 +1,6 @@
 # @nasaq/angular
 
-Independently designed Angular components for Nasaq's public 0.1 source preview,
+Independently designed Angular components for Nasaq's public 0.2 source preview,
 informed by Saudi DGA design principles. This package is not official, endorsed,
 or certified. The `@nasaq/*` packages are not yet published to npm; build and use
 them through this repository's workspace.

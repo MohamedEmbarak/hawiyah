@@ -105,7 +105,7 @@ boundaries use the stronger control-border for contrast; the original field-bord
 value remains traceable. Review all application content and custom overrides
 against the applicable requirements before making a deployment compliance claim.
 
-This Apache-2.0 public 0.1 source preview is available through the workspace.
+This Apache-2.0 public 0.2 source preview is available through the workspace.
 Packages remain marked private to prevent accidental npm publication; no npm
 release is available yet.
 

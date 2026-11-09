@@ -6,6 +6,7 @@ import type {
   ProjectFiles,
 } from "./project-compiler";
 import type { ProjectExample } from "./project-examples";
+import { nasaqVersion } from "./release";
 
 export function projectDownloadFiles(
   example: ProjectExample,
@@ -30,7 +31,7 @@ export function projectDownloadFiles(
     files["index.html"] = edited.html;
   const deps: Record<string, string> = {};
   for (const name of new Set(["tokens", "styles", "core", framework]))
-    deps[`@nasaq/${name}`] = `file:../packages/nasaq-${name}-0.1.0.tgz`;
+    deps[`@nasaq/${name}`] = `file:../packages/nasaq-${name}-${nasaqVersion}.tgz`;
   const dev: Record<string, string> = { vite: "8.3.5", typescript: "~6.0.0" };
   if (framework === "react") {
     Object.assign(deps, { react: "19.3.1", "react-dom": "19.3.1" });
