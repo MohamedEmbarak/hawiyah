@@ -1,5 +1,18 @@
 # Validation record
 
+## 2026-11-09 npm publication
+
+All seven `@hawiyah/*` packages were published at 0.2.0 with the `latest`
+dist-tag from the verified release tarballs (staged manifests without
+`private`, internal dependencies pinned to 0.2.0), in dependency order, by the
+`mhussein` account with two-factor approval. The registry lists `0.2.0` as
+`latest` for each package; it also shows an npm-generated `0.0.0-stage` entry.
+A clean project then installed `@hawiyah/styles`, `@hawiyah/react`,
+`@hawiyah/vue` and `@hawiyah/vanilla` from the public registry: React and Vue
+server rendering produced `hw-button`, `enhance` was exported, the stylesheet
+resolved `@hawiyah/tokens/tokens.css`, and the shipped wordmark uses the
+Platforms Code primary color.
+
 ## 2026-11-09 Hawiyah rename and identity
 
 After renaming Nasaq to Hawiyah (packages, `hw-` classes and variables, data
