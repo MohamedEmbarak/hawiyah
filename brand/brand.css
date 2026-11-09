@@ -9,3 +9,4 @@
 
 /* Arabic pages use the Arabic typeface; English specimens keep their own reading direction. */
 html:lang(ar) body{font-family:var(--brand-arabic);line-height:1.8}html:lang(ar) h1,html:lang(ar) h2,html:lang(ar) h3,html:lang(ar) .hero-en{letter-spacing:0;line-height:1.55}html:lang(ar) .eyebrow,html:lang(ar) .hero-art .edition{letter-spacing:0}html:lang(ar) .swatch-color strong{font-size:clamp(1.1rem,2vw,1.5rem)}[lang="en"]{font-family:var(--brand-font);direction:ltr}code{direction:ltr;unicode-bidi:isolate}.hero-art .edition{left:auto;inset-inline-start:2rem}
+.hero-copy h1:not([lang="ar"]){font-size:clamp(2.4rem,5vw,4.3rem);line-height:1.08;letter-spacing:-.035em;font-weight:600;margin-bottom:.4em}
