@@ -105,9 +105,10 @@ boundaries use the stronger control-border for contrast; the original field-bord
 value remains traceable. Review all application content and custom overrides
 against the applicable requirements before making a deployment compliance claim.
 
-This Apache-2.0 public 0.2 source preview is available through the workspace.
-Packages remain marked private to prevent accidental npm publication; no npm
-release is available yet.
+This Apache-2.0 package is published on npm as a pre-1.0 release, so a minor
+version may still rename or revise tokens. Most applications receive it through
+`@nasaq/styles`; install it directly only when code imports the token values:
+`npm install @nasaq/tokens`.
 
 ### Opt-in mobile control sizing
 

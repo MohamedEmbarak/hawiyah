@@ -14,6 +14,7 @@
     "test:portals": "playwright test --config playwright.portals.config.ts",
     "check": "pnpm build && pnpm test && pnpm test:browser",
     "check:packages": "node scripts/check-packages.mjs",
+    "release:packages": "node scripts/publish-packages.mjs",
     "new:component": "node scripts/new-component.mjs",
     "build:docs": "node scripts/build.mjs --docs",
     "preview:docs": "vite preview --host 0.0.0.0 --config apps/playground/vite.config.ts"

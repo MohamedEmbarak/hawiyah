@@ -7,11 +7,17 @@ documentation, and artwork use [Apache License 2.0](../LICENSE). Bundled fonts
 and calendar reference data retain their own licenses and attribution; see
 [NOTICE](../NOTICE) and their adjacent third-party notices.
 
-**The npm packages are not published.** The seven library manifests keep
-`private: true` to prevent accidental registry publication. Clone the public
-repository and use the documented workspace build or inspected local tarballs.
-Do not advertise an `npm install @nasaq/...` flow until those packages exist in
-the verified registry scope.
+**Version 0.2.0 is on npm** as the first registry release of all seven
+`@nasaq/*` packages. It is a pre-1.0 release: a minor version may still change
+APIs, and publication is not a production-readiness or DGA certification claim.
+
+```sh
+npm install @nasaq/styles @nasaq/react   # or vanilla, vue, angular
+```
+
+The source manifests keep `private: true`, so running `npm publish` inside a
+package directory fails. Releases go through one script that publishes the
+same tarballs the package check verified.
 
 ## The public guide
 
@@ -38,23 +44,45 @@ NASAQ_BASE_PATH=/nasaq/ pnpm build:docs
 It publishes `apps/playground/dist` through GitHub Pages. The separate `pnpm build`
 command also builds the three native framework examples for local verification.
 
-## Before the first npm release
+## Publishing a release
 
-1. Confirm ownership of the npm scope and every package name. Keep package
-   names provisional until this is verified.
-2. Define the intended API stability and supported runtime/framework versions.
-   Use prerelease versions while contracts or verification remain incomplete.
-3. Review repository, homepage, bugs, license, exports, peer dependencies, and
-   explicit file allowlists for every package.
-4. Build and inspect the actual archives, including source maps, declarations,
-   CSS, assets, and licenses. Exclude credentials, local paths, private data,
-   caches, and unrelated development output.
-5. Install those archives in clean consumer projects and verify exported APIs,
-   native framework examples, styles, calendar data, and accessibility behavior.
-6. Record release-specific results and remaining limits in the validation and
-   component catalog. A source preview is not a production-readiness claim.
-7. Prepare version notes and migrations. Remove the publication guards only as
-   part of an explicitly authorized registry release to the verified scope.
+All seven packages share one version and release together.
+
+1. Bump `version` in the root, library, playground, and example manifests,
+   `components.json`, and `packages/tokens/tokens.json`. The guide reads its
+   version from `apps/playground/package.json`.
+2. Run the focused checks for what changed, then the dry run:
+
+   ```sh
+   pnpm release:packages
+   ```
+
+   This rebuilds the packages, runs the full `check:packages` consumer check
+   with `NASAQ_RELEASE=1` (which drops `private` from the staged manifests
+   only), and runs `npm publish --dry-run` on each verified tarball.
+3. Record the release in the [validation record](validation.md) and
+   [changelog](../CHANGELOG.md), commit, and confirm the working tree is clean.
+4. Push the tag `v<version>` on the release commit, for example by creating a
+   GitHub release. The [publish workflow](../.github/workflows/publish.yml)
+   checks that the tag matches the package version, repeats the build and
+   consumer check, and runs `node scripts/publish-packages.mjs --publish` with
+   npm provenance. It authenticates with the `NPM_TOKEN` repository secret: a
+   granular npm token with read and write access to the `@nasaq` scope and
+   two-factor bypass enabled. Once the packages exist, a trusted publisher for
+   this workflow can be configured on each npm package and the token removed.
+   A manual run of the workflow is a dry run unless **publish** is checked.
+
+   Packages publish in dependency order (tokens, styles, core, vanilla, react,
+   vue, angular). Versions already on the registry are skipped, so an
+   interrupted release resumes by running it again. Prerelease versions such
+   as `0.3.0-beta.1` publish under the `next` dist-tag and leave `latest` alone.
+   The same script can publish from a maintainer machine logged in to npm.
+5. Merge the release commit to `main` only after the packages are on npm: the
+   Pages guide deploys from `main` and tells readers to `npm install` them.
+
+A published version cannot be reused, even after `npm unpublish`. Fix a bad
+release with a new patch version, and use `npm deprecate` to warn consumers
+away from the broken one.
 
 ## Release readiness
 

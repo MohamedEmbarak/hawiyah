@@ -1,7 +1,7 @@
 # Nasaq component expansion contract
 
 This extends CONTRACT.md. Every entry below must be a working native component,
-not an advertised placeholder. Frameworks own rendering. Keep npm publication disabled until release preparation is complete.
+not an advertised placeholder. Frameworks own rendering. Publish to npm only through scripts/publish-packages.mjs.
 
 ## Additional public components
 

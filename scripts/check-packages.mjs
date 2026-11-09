@@ -1,4 +1,6 @@
 // Local tarball validation only. This script never publishes packages.
+// With NASAQ_RELEASE=1 the staged manifests drop `private` so that
+// scripts/publish-packages.mjs can publish exactly these verified tarballs.
 import { spawnSync } from "node:child_process";
 import {
   readFileSync,
@@ -30,6 +32,7 @@ function run(cmd, args, cwd = checkRoot) {
   }
   return result.stdout;
 }
+const release = process.env.NASAQ_RELEASE === "1";
 const paths = [];
 const packageNames = ["tokens", "styles", "core", "vanilla", "react", "vue", "angular"];
 const workspaceVersions = Object.fromEntries(
@@ -47,7 +50,7 @@ for (const name of packageNames) {
     readFileSync(resolve(source, "package.json"), "utf8"),
   );
   if (manifest.private !== true)
-    throw new Error(`${name}: npm publication is disabled until release preparation`);
+    throw new Error(`${name}: source manifests stay private; publish only through scripts/publish-packages.mjs`);
   if (!existsSync(resolve(source, "dist")))
     throw new Error(`Build ${name} before packing`);
   mkdirSync(dest, { recursive: true });
@@ -77,6 +80,7 @@ for (const name of packageNames) {
       }
   delete manifest.devDependencies;
   delete manifest.scripts;
+  if (release) delete manifest.private;
   writeFileSync(
     resolve(dest, "package.json"),
     JSON.stringify(manifest, null, 2),

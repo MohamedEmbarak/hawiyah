@@ -30,5 +30,7 @@ exports or packaging change. `pnpm build:docs` builds the public guide;
 
 Never commit credentials, .env values, local absolute paths, real applicant data,
 or test artifacts. Preserve bundled third-party licenses and provenance.
-Package manifests remain `private: true` while npm release preparation is pending.
+Source package manifests stay `private: true`. Publish only through
+`pnpm release:packages`, which strips it from the verified staged tarballs, and
+only when explicitly authorized. The seven packages share one version.
 GitHub Pages deploys the guide from main; npm publication is a separate action.

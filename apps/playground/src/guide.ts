@@ -44,7 +44,7 @@ function article(topic: string, code: Code): string {
   switch (topic) {
     case 'getting-started': return `
       <p class="guide-lead">Build a service interface with semantic HTML, shared styles, and the framework you already use. Nasaq keeps its visual foundation separate from interaction behavior.</p>
-      ${note('Public source · 0.2 development', 'Nasaq is available from GitHub under Apache 2.0. The packages are not yet published on npm. Start from the repository and its working examples; the <code>@nasaq/*</code> imports below resolve through the workspace.')}
+      ${note('Apache 2.0 · 0.2 on npm', 'Nasaq is available from GitHub under Apache 2.0, and the <code>@nasaq/*</code> packages are published on npm. Add one to an existing application with <code>npm install @nasaq/styles @nasaq/react</code>, replacing <code>react</code> with <code>vanilla</code>, <code>vue</code> or <code>angular</code>. Version 0.x releases may change APIs between minor versions. To work on Nasaq itself or run its examples, start from the repository below.')}
       <h2>1. Run the source</h2><p>Use Node.js 24 and pnpm 11.25.0, matching the repository toolchain. Install pnpm if it is not already available.</p>
       ${code('npm install --global pnpm@11.25.0\ngit clone https://github.com/MohamedEmbarak/nasaq.git\ncd nasaq\npnpm install --frozen-lockfile\npnpm build:packages\npnpm dev')}
       <p>Open the local address printed by Vite. The default app is the vanilla guide and playground you are reading now.</p>

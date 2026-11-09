@@ -22,7 +22,7 @@ The gallery also includes a [portal home](https://mohamedembarak.github.io/nasaq
 
 ## Development status
 
-Nasaq is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **83-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. The package scope is provisional. Nothing here is published on npm, and a source directory or a working demo does not establish production readiness.
+Nasaq is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **83-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.0 is published on npm under the `@nasaq` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
 
 The [roadmap](docs/roadmap.md) separates planned scope, implemented work, and verified behavior. [components.json](components.json) provides the same distinctions in a form that tools and coding assistants can read. Exact framework coverage and verification must be checked there rather than inferred from the package names.
 
@@ -51,7 +51,7 @@ The guide opens in Arabic, with a persistent English switch and keyboard search 
 | `@nasaq/vue` | Vue components using the shared foundation |
 | `@nasaq/angular` | Angular components using the shared foundation |
 
-Package manifests retain `private: true` until an npm release is explicitly prepared; the source and guide are public. Framework dependencies belong to the relevant adapter; the core does not depend on a framework runtime.
+Install the styles and one adapter with `npm install @nasaq/styles @nasaq/react`, replacing `react` with `vanilla`, `vue`, or `angular`. Source manifests keep `private: true`; `pnpm release:packages` publishes only the tarballs that `pnpm check:packages` has verified. Framework dependencies belong to the relevant adapter; the core does not depend on a framework runtime.
 
 ## Run locally
 
@@ -139,7 +139,7 @@ The intended accessibility target is **WCAG 2.2 AA**. Release evaluation include
 
 The [validation record](docs/validation.md) identifies the tested snapshot, exact commands, package-consumer checks, targeted behavior/hydration cases, and Chromium journeys. The [catalog](components.json) separates implementation from per-component verification; baseline checks do not automatically verify later additions. Manual screen-reader testing and cross-browser coverage remain open.
 
-Source is available at [MohamedEmbarak/nasaq](https://github.com/MohamedEmbarak/nasaq). The [guide and live examples](https://mohamedembarak.github.io/nasaq/) deploy to GitHub Pages. npm packages are not published yet; use the workspace or locally packed packages as explained in the guide. See [release preparation](docs/publication.md).
+Source is available at [MohamedEmbarak/nasaq](https://github.com/MohamedEmbarak/nasaq). The [guide and live examples](https://mohamedembarak.github.io/nasaq/) deploy to GitHub Pages. The packages are on npm under `@nasaq`; [releases](docs/publication.md) explains how they are built, verified, and published.
 
 ## License
 

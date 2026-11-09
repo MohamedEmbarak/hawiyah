@@ -1,8 +1,8 @@
 # @nasaq/vue
 
 Native Vue 3 components for Nasaq — نسق, an independent public 0.2 source preview.
-The `@nasaq/*` packages are not yet published to npm; build and use them through
-this repository's workspace. Import the shared CSS once:
+Install with `npm install @nasaq/styles @nasaq/vue`. This is a pre-1.0 release,
+so a minor version may still change its API. Import the shared CSS once:
 
 ```vue
 <script setup lang="ts">

@@ -2,6 +2,7 @@
   "name": "@nasaq/vanilla",
   "version": "0.2.0",
   "private": true,
+  "description": "Vanilla JavaScript controllers that enhance semantic HTML with Nasaq behavior and cleanup",
   "type": "module",
   "sideEffects": false,
   "files": [

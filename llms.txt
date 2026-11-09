@@ -2,7 +2,7 @@
 
 > Independent Arabic-first UI system for vanilla JavaScript, React, Vue, and Angular. DGA-based default foundation mapped from supplied Platforms Code / كود المنصات / هيئة الحكومة الرقمية source snapshots; original Nasaq theme is opt-in. DGA compliance is documented as evidence and gaps; no official endorsement or certification is claimed.
 
-Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Packages are not published. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
+Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Version 0.2.0 of the seven @nasaq/* packages is published on npm; 0.x minor releases may change APIs. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
 
 ## Start here
 
@@ -32,7 +32,7 @@ Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 ca
 - [DGA reference and migration](docs/dga-reference.md): 2026-10-29 supplied snapshot identities, source nodes, light/dark semantic values, template guidance, and migration; export date is not an official release version.
 - [Roadmap](docs/roadmap.md): implementation phases and acceptance gates.
 - [Validation](docs/validation.md): tested versions, exact passing-check scope, browser setup, and remaining evaluation.
-- [Publication](docs/publication.md): public source, Pages deployment, and future npm release preparation.
+- [Publication](docs/publication.md): public source, Pages deployment, and the npm release process.
 
 ## Implementation rules
 
@@ -55,7 +55,7 @@ Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 ca
 - pnpm new:component <kebab-case-name> creates an editable block under blocks/, not library components or framework adapters.
 - The Angular package uses APF partial compilation. Its Vite example uses JIT and does not establish production AOT, SSR, or hydration coverage.
 - Add focused behavior and consumer checks for changed contracts. Update documentation and coverage honestly.
-- This public repository and its GitHub Pages guide are separate from npm publication. Packages remain private until an explicitly prepared npm release. Preserve Apache-2.0 and upstream font/calendar notices.
+- The GitHub Pages guide deploys from main; npm publication is a separate, explicit step through scripts/publish-packages.mjs. Source manifests stay private: true and only the verified staged tarballs are published. Preserve Apache-2.0 and upstream font/calendar notices.
 
 ## Good task context
 

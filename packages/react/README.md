@@ -30,12 +30,11 @@ function Application() {
 }
 ```
 
-The `@nasaq/*` packages are not yet published to npm; use this repository's
-workspace and build the packages locally. Use `@nasaq/styles` alongside this
-package. React and React DOM are peers;
-`@nasaq/core` provides the shared, pure keyboard and combobox behavior. Styles
-are never imported implicitly. Packages must be built before consuming workspace
-exports. Importing and server-rendering this package require no browser globals.
+Install with `npm install @nasaq/styles @nasaq/react`. This is a pre-1.0
+release, so a minor version may still change its API. React and React DOM are
+peers; `@nasaq/core` provides the shared, pure keyboard and combobox behavior.
+Styles are never imported implicitly. When consuming this repository's workspace
+instead of npm, build the packages before importing their exports. Importing and server-rendering this package require no browser globals.
 Stable associations use React `useId`, including during hydration.
 
 ## Common conventions

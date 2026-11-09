@@ -1,5 +1,25 @@
 # Validation record
 
+## 2026-11-09 npm release 0.2.0
+
+All seven packages moved to 0.2.0 together. With Node.js 24.22.1 and pnpm
+11.25.0: `pnpm build:packages`, `pnpm typecheck:playground`, `pnpm test`
+(637 Vitest and 8 token-contrast cases) and
+`NASAQ_BASE_PATH=/nasaq/ pnpm build:docs` passed. `pnpm check:packages`
+passed its clean tarball consumer (ESM, React/Vue SSR, Angular APF, CSS and
+asset exports, strict TypeScript declarations) and tree-shaking budgets: React
+Button 380 of 4,096 bytes and Vanilla Tabs 4,095 of 6,144 bytes gzip.
+
+`pnpm release:packages` (dry run) rebuilt the packages, repeated the consumer
+check with `NASAQ_RELEASE=1`, and confirmed each staged manifest has no
+`private` field and pins `@nasaq/*` dependencies to `0.2.0`. Packed sizes:
+tokens 48.8 kB (14 files), styles 166.4 kB (118), core 58.3 kB (79), vanilla
+89.8 kB (78), react 93.3 kB (77), vue 104.8 kB (81), angular 138.8 kB (12).
+
+Publication does not extend the scope of any check above. Firefox, WebKit,
+manual screen-reader review and Angular production AOT consumers remain open,
+as listed under [Remaining evaluation](#remaining-evaluation).
+
 ## 2026-11-05 decoded-source presentation follow-up
 
 Plain tooltip surface checks passed in all seven supported project formats,
@@ -503,7 +523,7 @@ The calendar script accepts an optional `react`, `angular`, or `vue` argument. R
 
 Firefox and WebKit have not been covered by these runs. Manual screen-reader testing, a complete keyboard/accessibility audit, exhaustive mode/theme/density combinations, and a broader framework-version matrix remain open. Angular production AOT consumer integration and Angular SSR/hydration are not established. React/Vue hydration coverage is limited to the focused cases described above. The [DGA reference](dga-reference.md) records reviewed source mappings and accessibility adaptations. The local audit decoded all 23 supplied exports; the standalone web Components Library was not found. Hajj is excluded by product scope; exhaustive template parity, live official-version checking and asset redistribution permissions remain separate work in [alignment](alignment.md).
 
-These checks describe this source and guide snapshot; later changes require relevant checks again. The GitHub Pages workflow builds and deploys the guide independently. npm packages are not yet published. Follow the [release gates](publication.md) before distributing registry packages.
+These checks describe this source and guide snapshot; later changes require relevant checks again. The GitHub Pages workflow builds and deploys the guide independently. npm packages were not published for this snapshot; the first registry release is recorded under 2026-11-09.
 
 ## Input follow-up — 2026-11-02
 

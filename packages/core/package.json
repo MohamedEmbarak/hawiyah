@@ -2,6 +2,7 @@
   "name": "@nasaq/core",
   "version": "0.2.0",
   "private": true,
+  "description": "Framework-independent behavior, calendar and Arabic/English internationalization helpers for Nasaq",
   "type": "module",
   "sideEffects": false,
   "files": [

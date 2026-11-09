@@ -2,6 +2,7 @@
   "name": "@nasaq/angular",
   "version": "0.2.0",
   "private": true,
+  "description": "Native Angular components for the Arabic-first Nasaq UI system",
   "type": "module",
   "sideEffects": false,
   "scripts": {

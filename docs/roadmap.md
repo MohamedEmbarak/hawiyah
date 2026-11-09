@@ -38,7 +38,7 @@ The default appearance is now `dga`, using mapped, verified foundation values fr
 | 4. Blocks and journeys | Discovery, application/review, requests | Yes | Three editable blocks, generator, playground, and three framework examples | Journey and separate framework-flow evidence recorded; each applies to its documented states |
 | 5. Expanded inspection tools | 83-component gallery, 22 native input mappings, Saudi recipes, layout studio | Yes | Playground routes and coverage/integration guides | Validate every route and representative state; gallery presence is not a full variant audit |
 | 6. Release hardening | API stability, accessibility, archives, documentation | Yes | Local tarball checks and documented gates | Current consumers, manual accessibility, cross-browser and supported-version matrices remain distinct gates |
-| 7. Public source and guide | Standalone repository and GitHub Pages documentation | Yes | Public source and comprehensive guide prepared; deployment is verified separately | npm publication remains a separate future release |
+| 7. Public source and guide | Standalone repository and GitHub Pages documentation | Yes | Public source and comprehensive guide prepared; deployment is verified separately | 0.2.0 published to npm from verified tarballs; later releases repeat the package gates |
 
 ## Component scope
 

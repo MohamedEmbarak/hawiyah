@@ -2,8 +2,8 @@
 
 Independently designed Angular components for Nasaq's public 0.2 source preview,
 informed by Saudi DGA design principles. This package is not official, endorsed,
-or certified. The `@nasaq/*` packages are not yet published to npm; build and use
-them through this repository's workspace.
+or certified. Install with `npm install @nasaq/styles @nasaq/angular`. This is a
+pre-1.0 release, so a minor version may still change its API.
 
 The 77 catalog entries render native HTML with Angular templates. There are no
 custom-element wrappers, schemas, runtime HTML injection, or framework renderers

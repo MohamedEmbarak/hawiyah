@@ -15,7 +15,7 @@ test('getting started links to real framework setup and every catalog entry has 
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/#docs/getting-started');
   await expect(page.getByRole('heading', { name: 'Getting started', exact: true })).toBeVisible();
-  await expect(page.locator('.guide-article')).toContainText('not yet published on npm');
+  await expect(page.locator('.guide-article')).toContainText('npm install @nasaq/styles @nasaq/react');
   await page.locator('.guide-choice[href="#docs/react"]').click();
   await expect(page.getByRole('heading', { name: 'A controlled field' })).toBeVisible();
   for (const [id, name] of catalog) {

@@ -5908,7 +5908,7 @@
     }
   ],
   "limitations": [
-    "Public source preview; npm packages are not published. No official DGA certification.",
+    "Pre-1.0 npm release; minor versions may change APIs. No official DGA certification.",
     "The 82-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
     "Combobox is local and single-select. MultiSelect is a separate searchable checkbox list; async data and virtualization are application concerns.",
     "DataTable provides stable localized sorting, not virtualization or cell editing.",

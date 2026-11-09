@@ -31,7 +31,7 @@ export function projectDownloadFiles(
     files["index.html"] = edited.html;
   const deps: Record<string, string> = {};
   for (const name of new Set(["tokens", "styles", "core", framework]))
-    deps[`@nasaq/${name}`] = `file:../packages/nasaq-${name}-${nasaqVersion}.tgz`;
+    deps[`@nasaq/${name}`] = nasaqVersion;
   const dev: Record<string, string> = { vite: "8.3.5", typescript: "~6.0.0" };
   if (framework === "react") {
     Object.assign(deps, { react: "19.3.1", "react-dom": "19.3.1" });
@@ -102,7 +102,7 @@ export function projectDownloadFiles(
     ) + "\n";
   files["env.d.ts"] = '/// <reference types="vite/client" />\n' + (framework === 'vue' ? '\ndeclare module "*.vue" {\n  import type { DefineComponent } from "vue";\n  const component: DefineComponent;\n  export default component;\n}\n' : '');
   files["README.md"] =
-    `# Nasaq ${framework} example\n\nThese are the edited project files, with real package imports and application entry points.\n\nNasaq is currently a private source preview, not an npm release. Clone MohamedEmbarak/nasaq, run corepack pnpm build:packages and corepack pnpm check:packages, then copy the required nasaq-*.tgz files from .artifacts/package-check to a packages directory beside this extracted project. The package.json file dependencies point there. Run npm install, then npm run dev.\n\nFramework and compiler versions match the guide's installed consumers. Angular uses a standalone JIT Vite example; production Angular projects should use their normal CLI/AOT pipeline. The in-browser editor transpiles syntax; it does not replace a project's full type-checker.\n\nPreview navigation is contained by the guide. Downloaded application links and forms follow normal browser behavior; connect your own routes and handlers.\n`;
+    `# Nasaq ${framework} example\n\nThese are the edited project files, with real package imports and application entry points.\n\nThe @nasaq/* dependencies are pinned to the published ${nasaqVersion} npm release, which matches this guide. Run npm install, then npm run dev. Version 0.x releases may change APIs between minor versions; review the release notes before upgrading.\n\nFramework and compiler versions match the guide's installed consumers. Angular uses a standalone JIT Vite example; production Angular projects should use their normal CLI/AOT pipeline. The in-browser editor transpiles syntax; it does not replace a project's full type-checker.\n\nPreview navigation is contained by the guide. Downloaded application links and forms follow normal browser behavior; connect your own routes and handlers.\n`;
   return files;
 }
 

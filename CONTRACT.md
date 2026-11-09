@@ -1,7 +1,9 @@
 # Implementation contract (0.2 source preview)
 
 Package names: @nasaq/tokens, @nasaq/styles, @nasaq/core, @nasaq/vanilla,
-@nasaq/react, @nasaq/vue, @nasaq/angular. ESM, explicit exports. npm publication is disabled pending release preparation.
+@nasaq/react, @nasaq/vue, @nasaq/angular. ESM, explicit exports. Published to
+npm only from verified tarballs through scripts/publish-packages.mjs; source
+manifests stay private.
 
 The initial scope below is extended by [EXPANSION.md](EXPANSION.md) and the
 portal/mobile compositions to 83 entries. See [coverage](docs/coverage.md).
