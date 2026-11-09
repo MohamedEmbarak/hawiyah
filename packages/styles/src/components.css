@@ -169,8 +169,8 @@
 .hw-accordion-item + .hw-accordion-item { border-block-start: 1px solid var(--hw-color-border); }
 .hw-accordion-trigger { display: flex; align-items: center; justify-content: space-between; gap: var(--hw-space-4); padding: var(--hw-space-4) var(--hw-space-5); font-weight: var(--hw-weight-semibold); list-style: none; cursor: pointer; }
 .hw-accordion-trigger::-webkit-details-marker { display: none; }
-.hw-accordion-trigger::after { content: '+'; display: inline-grid; flex: none; place-items: center; inline-size: 1.5rem; block-size: 1.5rem; color: var(--hw-color-text-muted); font-family: var(--hw-font-mono); font-size: 1.25rem; font-weight: 400; }
-.hw-accordion-item[open] > .hw-accordion-trigger::after { content: '−'; }
+.hw-accordion-trigger::after { content: ''; display: inline-block; flex: none; inline-size: 1.25rem; block-size: 1.25rem; color: var(--hw-color-text-muted); background: currentColor; mask: url('./assets/icons/add-01.svg') center / contain no-repeat; }
+.hw-accordion-item[open] > .hw-accordion-trigger::after { mask-image: url('./assets/icons/minus-sign.svg'); }
 .hw-accordion-trigger:hover { background: var(--hw-color-surface-muted); }
 .hw-accordion-trigger:focus-visible { outline-offset: -4px; }
 .hw-accordion-content, .hw-accordion-item > :not(summary) { padding: 0 var(--hw-space-5) var(--hw-space-5); color: var(--hw-color-text-muted); }
@@ -266,8 +266,8 @@
 .hw-step:not(:last-child)::after { content: ''; flex: 1; min-inline-size: var(--hw-space-4); block-size: 1px; background: var(--hw-color-border); }
 .hw-step[aria-current='step'], .hw-step[data-state='active'] { color: var(--hw-color-primary-text); font-weight: var(--hw-weight-semibold); }
 .hw-step[aria-current='step']::before, .hw-step[data-state='active']::before { border-color: var(--hw-color-primary); background: var(--hw-color-primary); color: var(--hw-color-on-primary); box-shadow: 0 0 0 4px var(--hw-color-primary-subtle); }
-.hw-step[data-state='complete']::before, .hw-step[data-state='completed']::before { content: '✓'; border-color: var(--hw-color-primary-subtle); background: var(--hw-color-primary-subtle); color: var(--hw-color-primary-text); }
-.hw-step[data-state='error']::before { content: '!'; border-color: var(--hw-color-danger); background: var(--hw-color-danger-subtle); color: var(--hw-color-danger); }
+.hw-step[data-state='complete']::before, .hw-step[data-state='completed']::before { content: ''; mask: url('./assets/icons/tick-02.svg') center / 1.25rem no-repeat exclude, linear-gradient(#000 0 0); border-color: var(--hw-color-primary); background: var(--hw-color-primary); color: var(--hw-color-on-primary); }
+.hw-step[data-state='error']::before { content: ''; mask: url('./assets/icons/exclamation-mark.svg') center / 1.25rem no-repeat exclude, linear-gradient(#000 0 0); border-color: var(--hw-color-danger); background: var(--hw-color-danger); color: var(--hw-color-on-primary); }
 .hw-timeline { margin: 0; padding: 0; color: var(--hw-color-text); list-style: none; }
 .hw-timeline > li { position: relative; padding-inline-start: var(--hw-space-8); padding-block-end: var(--hw-space-6); }
 .hw-timeline > li::before { content: ''; position: absolute; inset-inline-start: 0.3125rem; inset-block-start: 0.6rem; inline-size: 0.625rem; block-size: 0.625rem; border: 2px solid var(--hw-color-surface); border-radius: 50%; background: var(--hw-color-border-strong); box-shadow: 0 0 0 1px var(--hw-color-border-strong); }

@@ -9,7 +9,7 @@ import { renderReadyExamples } from './ready-examples';
 import { decorateFrameworkMentions } from './framework-icons';
 
 const sourceRoot = 'https://github.com/MohamedEmbarak/hawiyah/blob/main/';
-const source = (path: string, label: string) => `<a href="${sourceRoot + path}" target="_blank" rel="noopener">${e(label)} ↗</a>`;
+const source = (path: string, label: string) => `<a href="${sourceRoot + path}" target="_blank" rel="noopener">${e(label)} ${icon('external',14)}</a>`;
 const list = (items: readonly string[], ordered = false) => `<${ordered ? 'ol' : 'ul'}>${items.map(item => `<li>${e(item)}</li>`).join('')}</${ordered ? 'ol' : 'ul'}>`;
 const note = (title: string, body: string) => `<aside class="guide-note"><strong>${title}</strong><p>${body}</p></aside>`;
 type Code = (value: string) => string;

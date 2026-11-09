@@ -176,7 +176,7 @@ export const expandedGuides: Record<string, GuideInput> = {
     <article class="hw-toast" data-hw-toast="saved" data-tone="success">
       <span class="hw-toast-icon" aria-hidden="true"></span>
       <div class="hw-toast-content"><strong>Draft saved</strong><p>You can return to your request later.</p></div>
-      <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss aria-label="Dismiss draft saved notice">×</button>
+      <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss aria-label="Dismiss draft saved notice"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>
     </article>
   </div>
   <div data-hw-live="assertive" role="alert"></div>
@@ -195,7 +195,7 @@ export const expandedGuides: Record<string, GuideInput> = {
   },
   'tree-view': {
     summary: 'Navigates a hierarchical collection with single selection, expansion state, and one roving focus stop across visible nodes.',
-    usage: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="Documents">\n  <li role="treeitem" data-hw-value="business" aria-expanded="true">\n    <button type="button" data-hw-tree-toggle tabindex="-1" aria-label="Toggle business documents">▾</button>\n    <span data-hw-tree-label>Business</span>\n    <ul role="group"><li role="treeitem" data-hw-value="license"><span data-hw-tree-label>License</span></li></ul>\n  </li>\n</ul>`,
+    usage: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="Documents">\n  <li role="treeitem" data-hw-value="business" aria-expanded="true">\n    <button type="button" data-hw-tree-toggle tabindex="-1" aria-label="Toggle business documents"><span class="hw-icon" data-icon="arrow-down-01" data-size="sm" aria-hidden="true"></span></button>\n    <span data-hw-tree-label>Business</span>\n    <ul role="group"><li role="treeitem" data-hw-value="license"><span data-hw-tree-label>License</span></li></ul>\n  </li>\n</ul>`,
     lifecycle: ['Enhance the fixed hierarchy with unique node values and explicit expandable parents.', 'ArrowUp/Down move through visible nodes; horizontal arrows expand/collapse or move to parent/child according to RTL/LTR.', 'Enter/Space selects an enabled node and reports its value. Selection does not automatically navigate or fetch documents.', 'Destroy before replacing the hierarchy so generated focus/ARIA attributes and listeners are restored.'],
     api: api(['data-hw-value', 'Stable string', 'Node identity for selection.'], ['aria-expanded / role=group', 'Parent state / child group', 'Explicit hierarchical structure.'], ['items / value / onValueChange', 'React node data / selection props', 'TreeNode uses id,label,disabled,children.'], ['expanded / defaultExpanded / onExpandedChange', 'React string[] props', 'Controlled or initial expanded node IDs.']),
     accessibility: ['Use tree only when the hierarchical keyboard model is useful; ordinary nested navigation may be simpler.', 'Provide a name for the tree and readable labels for every node.', 'Keep disabled nodes unavailable and maintain visible focus after collapse.'], related: ['menu', 'notification-list'], limitations: ['No multi-selection, virtualization, drag-and-drop, or remote node loading.'], source: 'packages/vanilla/src/content.ts',
@@ -242,7 +242,7 @@ export const expandedGuides: Record<string, GuideInput> = {
   },
   chip: {
     summary: 'Represents a compact tag or removable selection. An optional remove action is separate from its label.',
-    usage: `<span class="hw-chip" data-tone="info">Business\n  <button type="button" aria-label="Remove Business filter">×</button>\n</span>`,
+    usage: `<span class="hw-chip" data-tone="info">Business\n  <button type="button" aria-label="Remove Business filter"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>\n</span>`,
     lifecycle: ['Render text and, when removable, an explicit labelled remove button.', 'The application removes the associated selected value when the button is activated; the plain vanilla chip has no automatic controller.', 'React onRemove reports the action but does not mutate caller-owned arrays. Restore focus to a useful adjacent control after removing a focused chip.'],
     api: api(['tone', 'React Badge tone', 'Visual category/status tone.'], ['onRemove / removeLabel', 'React callback / string', 'Optional removal action and its accessible name.'], ['disabled', 'React boolean', 'Prevents the remove operation.'], ['data-variant', 'outline', 'Optional outlined vanilla presentation.']),
     accessibility: ['Keep removal labels specific to the chip.', 'Do not make status-only chips focusable.', 'Use TagInput for a complete tag editing and form-value lifecycle.'], variants: ['tonal', 'outline', 'removable'], related: ['badge', 'tag-input'], source: 'packages/react/src/expanded-content.tsx',

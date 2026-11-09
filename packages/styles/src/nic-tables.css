@@ -42,9 +42,9 @@
 .hw-data-table [aria-sort='ascending'],
 .hw-data-table [aria-sort='descending'] { color: var(--hw-color-link); }
 /* Author this span with aria-hidden="true"; aria-sort carries the meaning. */
-.hw-table-sort-icon::before { content: '↕'; }
-th[aria-sort='ascending'] .hw-table-sort-icon::before { content: '↑'; }
-th[aria-sort='descending'] .hw-table-sort-icon::before { content: '↓'; }
+.hw-table-sort-icon::before { content: ''; display: inline-block; inline-size: 1rem; block-size: 1rem; vertical-align: middle; background: currentColor; mask: url('./assets/icons/arrow-data-transfer-vertical.svg') center / contain no-repeat; }
+th[aria-sort='ascending'] .hw-table-sort-icon::before { mask-image: url('./assets/icons/arrow-up-02.svg'); }
+th[aria-sort='descending'] .hw-table-sort-icon::before { mask-image: url('./assets/icons/arrow-down-02.svg'); }
 .hw-table tbody tr:hover { background: var(--hw-color-table-row-hover, var(--hw-color-canvas)); }
 .hw-table tbody tr:nth-child(odd):hover { background: var(--hw-color-table-row-hover-odd, var(--hw-color-canvas)); }
 /* Selection stays visible while hovering, including on striped rows. */

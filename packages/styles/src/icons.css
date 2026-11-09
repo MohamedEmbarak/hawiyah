@@ -24,9 +24,9 @@
 .hw-icon[data-icon='thumbs-down'] { --hw-icon-image: url('./assets/icons/thumbs-down.svg'); }
 
 /* Opt in only for semantic forward/back; physical directions retain their meaning. */
-.hw-icon:is([data-icon='arrow-left-01'], [data-icon='arrow-right-01'])[data-directional='true'] {
-  --_nq-mirror: var(--_nq-rtl-only) scaleX(-1);
-  transform: var(--_nq-mirror, none);
+.hw-icon:is([data-icon='arrow-left-01'], [data-icon='arrow-right-01'], [data-icon='arrow-left-02'], [data-icon='arrow-right-02'])[data-directional='true'] {
+  --_hw-mirror: var(--_hw-rtl-only) scaleX(-1);
+  transform: var(--_hw-mirror, none);
 }
 @media (forced-colors: active) {
   .hw-icon {
@@ -40,3 +40,28 @@
 .hw-icon[data-icon="link-04"] { --hw-icon-image: url("./assets/icons/link-04.svg"); }
 
 .hw-icon[data-icon="lock-password"] { --hw-icon-image: url("./assets/icons/lock-password.svg"); }
+
+.hw-icon[data-icon="arrow-up-01"] { --hw-icon-image: url("./assets/icons/arrow-up-01.svg"); }
+
+.hw-icon[data-icon="arrow-up-right-01"] { --hw-icon-image: url("./assets/icons/arrow-up-right-01.svg"); }
+
+.hw-icon[data-icon="link-square-02"] { --hw-icon-image: url("./assets/icons/link-square-02.svg"); }
+
+.hw-icon[data-icon="information-circle"] { --hw-icon-image: url("./assets/icons/information-circle.svg"); }
+
+.hw-icon[data-icon="alert-02"] { --hw-icon-image: url("./assets/icons/alert-02.svg"); }
+
+.hw-icon[data-icon="cancel-circle"] { --hw-icon-image: url("./assets/icons/cancel-circle.svg"); }
+
+.hw-icon[data-icon="minus-sign-circle"] { --hw-icon-image: url("./assets/icons/minus-sign-circle.svg"); }
+
+.hw-icon[data-icon="add-01"] { --hw-icon-image: url("./assets/icons/add-01.svg"); }
+.hw-icon[data-icon="minus-sign"] { --hw-icon-image: url("./assets/icons/minus-sign.svg"); }
+.hw-icon[data-icon="tick-02"] { --hw-icon-image: url("./assets/icons/tick-02.svg"); }
+.hw-icon[data-icon="exclamation-mark"] { --hw-icon-image: url("./assets/icons/exclamation-mark.svg"); }
+.hw-icon[data-icon="arrow-up-02"] { --hw-icon-image: url("./assets/icons/arrow-up-02.svg"); }
+.hw-icon[data-icon="arrow-down-02"] { --hw-icon-image: url("./assets/icons/arrow-down-02.svg"); }
+.hw-icon[data-icon="arrow-left-02"] { --hw-icon-image: url("./assets/icons/arrow-left-02.svg"); }
+.hw-icon[data-icon="arrow-right-02"] { --hw-icon-image: url("./assets/icons/arrow-right-02.svg"); }
+.hw-icon[data-icon="arrow-data-transfer-vertical"] { --hw-icon-image: url("./assets/icons/arrow-data-transfer-vertical.svg"); }
+.hw-icon[data-icon="star"] { --hw-icon-image: url("./assets/icons/star.svg"); }

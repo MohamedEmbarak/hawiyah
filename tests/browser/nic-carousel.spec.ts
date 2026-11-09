@@ -1,4 +1,5 @@
 import {expect,test,type Locator} from '@playwright/test';
+import { arrowDirection } from '../helpers/icon-direction';
 import AxeBuilder from '@axe-core/playwright';
 
 async function position(root:Locator,index:number){
@@ -17,7 +18,7 @@ async function cases(scope:Locator){
   await expect(normal.locator('.hw-carousel-track')).toHaveCSS('gap','16px');
   for(const arrow of await normal.locator('.hw-carousel-arrow').all()){expect((await arrow.boundingBox())!.width).toBe(45);expect((await arrow.boundingBox())!.height).toBe(45);await expect(arrow).toHaveCSS('border-radius','50%');await expect(arrow).toHaveAttribute('aria-label',/.+/);}
   const dot=normal.locator('.hw-carousel-dot').first();expect((await dot.boundingBox())!.width).toBe(24);expect(await dot.evaluate(el=>getComputedStyle(el,'::before').width)).toBe('12px');
-  await dot.hover();expect(await dot.evaluate(el=>getComputedStyle(el,'::before').backgroundColor)).toBe('rgb(27, 131, 84)');
+  await dot.hover();await expect.poll(()=>dot.evaluate(el=>getComputedStyle(el,'::before').backgroundColor)).toBe('rgb(27, 131, 84)');
   await normal.locator('[data-hw-next]').press('Enter');await position(normal,1);await expect(normal.locator('.hw-carousel-slide').first()).toHaveAttribute('inert','');
   await normal.locator('.hw-carousel-dot').last().press('Space');await position(normal,2);await expect(normal.locator('[data-hw-next]')).toBeDisabled();
   await normal.locator('[data-hw-previous]').press('Enter');await position(normal,1);
@@ -31,9 +32,9 @@ for(const locale of ['ar','en'])test(`carousel source motion, keyboard, directio
   test.setTimeout(120000);await page.addInitScript(locale=>{if(window===window.top){localStorage.setItem('hawiyah-locale',locale);localStorage.setItem('hawiyah-mode','light');}},locale);
   await page.goto('/#component/carousel');const examples=page.locator('#component-examples');const normal=await cases(examples);
   await expect(examples.locator('.source-details pre')).toHaveCount(20);
-  expect(await normal.locator('[data-hw-next]').evaluate(el=>getComputedStyle(el,'::before').content)).toBe(locale==='ar'?'"←"':'"→"');
+  expect(await normal.locator('[data-hw-next]').evaluate(arrowDirection)).toBe(locale==='ar'?'"←"':'"→"');
   await normal.evaluate((el,dir)=>el.setAttribute('dir',dir),locale==='ar'?'ltr':'rtl');await position(normal,1);
-  expect(await normal.locator('[data-hw-next]').evaluate(el=>getComputedStyle(el,'::before').content)).toBe(locale==='ar'?'"→"':'"←"');
+  expect(await normal.locator('[data-hw-next]').evaluate(arrowDirection)).toBe(locale==='ar'?'"→"':'"←"');
   await normal.evaluate(el=>el.removeAttribute('dir'));await position(normal,1);
   await normal.locator('.hw-carousel-slide').first().evaluate(el=>{const button=document.createElement('button');button.textContent='Inactive action';el.append(button);button.focus();});
   await expect(normal.locator('.hw-carousel-slide').first().locator('button')).not.toBeFocused();

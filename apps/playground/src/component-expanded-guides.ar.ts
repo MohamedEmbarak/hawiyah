@@ -305,7 +305,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     <article class="hw-toast" data-hw-toast="saved" data-tone="success">
       <span class="hw-toast-icon" aria-hidden="true"></span>
       <div class="hw-toast-content"><strong>تم حفظ المسودة</strong><p>يمكنك العودة إلى طلبك لاحقًا.</p></div>
-      <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss aria-label="إغلاق إشعار حفظ المسودة">×</button>
+      <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss aria-label="إغلاق إشعار حفظ المسودة"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>
     </article>
   </div>
   <div data-hw-live="assertive" role="alert"></div>
@@ -329,7 +329,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     summary: 'التنقل في مجموعة هرمية بتحديد واحد وحالة توسع، مع نقطة تركيز متحركة واحدة بين العقد المرئية.',
     usage: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="المستندات">
   <li role="treeitem" data-hw-value="business" aria-expanded="true">
-    <button type="button" data-hw-tree-toggle tabindex="-1" aria-label="توسيع مستندات المنشأة أو طيها">▾</button>
+    <button type="button" data-hw-tree-toggle tabindex="-1" aria-label="توسيع مستندات المنشأة أو طيها"><span class="hw-icon" data-icon="arrow-down-01" data-size="sm" aria-hidden="true"></span></button>
     <span data-hw-tree-label>المنشأة</span>
     <ul role="group"><li role="treeitem" data-hw-value="license"><span data-hw-tree-label>الرخصة</span></li></ul>
   </li>
@@ -380,7 +380,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   chip: localized('chip', {
     summary: 'وسم مختصر أو اختيار قابل للإزالة، مع زر حذف اختياري منفصل عن نصه.',
     usage: `<span class="hw-chip" data-tone="info">الأعمال
-  <button type="button" aria-label="إزالة مرشح الأعمال">×</button>
+  <button type="button" aria-label="إزالة مرشح الأعمال"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>
 </span>`,
     lifecycle: ['اعرض النص وزر حذف مسمّى عندما يكون الوسم قابلًا للإزالة.', 'يحذف التطبيق القيمة المختارة عند تفعيل الزر؛ لا تحتوي شريحة HTML وحدها متحكمًا تلقائيًا.', 'يبلغ onRemove في React عن الإجراء دون تعديل مصفوفات المستدعي. بعد إزالة شريحة مركّزة أعد التركيز إلى عنصر مجاور مفيد.'],
     api: ['نبرة مرئية للفئة أو الحالة في React.', 'معالج الإزالة الاختياري وتسميته القابلة للوصول في React.', 'يمنع إجراء الإزالة في React.', 'مظهر اختياري بحدود خارجية في HTML.'],

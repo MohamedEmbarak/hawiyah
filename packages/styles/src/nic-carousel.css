@@ -12,7 +12,7 @@
 .hw-carousel-viewport { overflow: hidden; padding-block: .5rem; }
 .hw-carousel-track {
   display: flex; gap: var(--hw-carousel-gap, 1rem); inline-size: 100%;
-  transform: translateX(calc(-1 * var(--_nq-inline-sign, 1) * var(--hw-carousel-index, 0) * (100% + var(--hw-carousel-gap, 1rem))));
+  transform: translateX(calc(-1 * var(--_hw-inline-sign, 1) * var(--hw-carousel-index, 0) * (100% + var(--hw-carousel-gap, 1rem))));
   transition: transform var(--hw-duration-carousel) var(--hw-ease-carousel);
 }
 .hw-carousel-track > .hw-carousel-slide { box-sizing: border-box; flex: 0 0 100%; inline-size: 100%; visibility: visible; transition: visibility 0s; }
@@ -40,8 +40,8 @@
 .hw-button.hw-carousel-arrow:hover:not(:disabled) { background: var(--hw-color-primary-hover); }
 .hw-button.hw-carousel-arrow:active:not(:disabled) { background: var(--hw-color-primary-active); }
 .hw-button.hw-carousel-arrow:disabled { opacity: .3; cursor: not-allowed; }
-.hw-carousel-arrow::before { --_nq-rtl-arrow: var(--_nq-rtl-only) '←'; content: var(--_nq-rtl-arrow, '→'); font-family: sans-serif; font-size: 20px; line-height: 1; }
-.hw-carousel-arrow[data-hw-previous]::before { --_nq-rtl-arrow: var(--_nq-rtl-only) '→'; content: var(--_nq-rtl-arrow, '←'); }
+.hw-carousel-arrow::before { content: ''; inline-size: 20px; block-size: 20px; background: currentColor; mask: url('./assets/icons/arrow-right-02.svg') center / contain no-repeat; transform: scaleX(var(--_hw-inline-sign, 1)); }
+.hw-carousel-arrow[data-hw-previous]::before { mask-image: url('./assets/icons/arrow-left-02.svg'); }
 .hw-carousel-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: .1rem; }
 /* 12px source dots sit inside 24px targets; the 1px boundary keeps unselected
    controls recognizable against the surface without changing their fill. */

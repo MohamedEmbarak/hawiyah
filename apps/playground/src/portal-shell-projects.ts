@@ -69,7 +69,7 @@ function pageFromClick(event${ts('MouseEvent')}) {
     const trigger = `<button class="${triggerClass}" type="button" data-drawer-open aria-haspopup="dialog" aria-controls="service-menu" aria-expanded="false"${triggerLabel}>${triggerContent}</button>`;
     const row = (p: typeof pages[number]) => link(p,true).replace('<a ', '<a class="hw-navigation-drawer-row" ');
     const drawerHtml = `<dialog id="service-menu" aria-labelledby="menu-heading" class="hw-dialog hw-drawer hw-navigation-drawer">
-    <header class="hw-dialog-header"><h2 id="menu-heading">${mainNav}</h2><button type="button" class="hw-button" data-hw-dialog-close data-variant="ghost" aria-label="${close}">×</button></header>
+    <header class="hw-dialog-header"><h2 id="menu-heading">${mainNav}</h2><button type="button" class="hw-button" data-hw-dialog-close data-variant="ghost" aria-label="${close}"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header>
     <div class="hw-dialog-body"><div class="hw-navigation-drawer-user">${account}</div>
       <nav class="hw-navigation-drawer-nav" aria-label="${mainNav}"><ul>${row(pages[0]!)}
         <li><details class="hw-navigation-drawer-group"><summary class="hw-navigation-drawer-row">${group}</summary><ul>${row(pages[1]!)}${row(pages[2]!)}</ul></details></li>

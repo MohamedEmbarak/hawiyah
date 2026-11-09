@@ -98,7 +98,7 @@ input.hw-pin-input, .hw-pin-input input:not([type='hidden']) { inline-size: min(
 .hw-calendar :is(.hw-calendar-prev, .hw-calendar-next)::before { content: ''; display: block; inline-size: 1.5rem; block-size: 1.5rem; background-color: currentColor; -webkit-mask: var(--hw-calendar-arrow) center / contain no-repeat; mask: var(--hw-calendar-arrow) center / contain no-repeat; }
 .hw-calendar-prev { --hw-calendar-arrow: url('./assets/icons/arrow-left-01.svg'); }
 .hw-calendar-next { --hw-calendar-arrow: url('./assets/icons/arrow-right-01.svg'); }
-.hw-calendar :is(.hw-calendar-prev, .hw-calendar-next)::before { --_nq-mirror: var(--_nq-rtl-only) scaleX(-1); transform: var(--_nq-mirror, none); }
+.hw-calendar :is(.hw-calendar-prev, .hw-calendar-next)::before { --_hw-mirror: var(--_hw-rtl-only) scaleX(-1); transform: var(--_hw-mirror, none); }
 @media (forced-colors: active) {
   .hw-calendar :is(.hw-calendar-prev, .hw-calendar-next)::before { forced-color-adjust: none; background-color: ButtonText; }
   .hw-calendar :is(.hw-calendar-prev, .hw-calendar-next):disabled::before { background-color: GrayText; }
@@ -174,7 +174,7 @@ input.hw-pin-input, .hw-pin-input input:not([type='hidden']) { inline-size: min(
 .hw-collapsible { border: 1px solid var(--hw-color-border); border-radius: var(--hw-radius-md); background: var(--hw-color-surface); }
 .hw-collapsible > :is(summary, .hw-collapsible-trigger, [data-hw-trigger]) { display: flex; align-items: center; justify-content: space-between; gap: var(--hw-space-3); inline-size: 100%; min-block-size: var(--hw-control-height); padding: var(--hw-space-3) var(--hw-space-4); border: 0; border-radius: var(--hw-radius-md); background: transparent; color: var(--hw-color-text); font: inherit; font-weight: var(--hw-weight-medium); text-align: start; list-style: none; cursor: pointer; }
 .hw-collapsible > summary::-webkit-details-marker { display: none; }
-.hw-collapsible > summary::after { content: '+'; color: var(--hw-color-text-muted); }.hw-collapsible[open] > summary::after { content: '−'; }
+.hw-collapsible > summary::after { content: ''; display: inline-block; flex: none; inline-size: 1.25rem; block-size: 1.25rem; color: var(--hw-color-text-muted); background: currentColor; mask: url('./assets/icons/add-01.svg') center / contain no-repeat; }.hw-collapsible[open] > summary::after { mask-image: url('./assets/icons/minus-sign.svg'); }
 .hw-collapsible-content, .hw-collapsible > :is([data-hw-panel], div, p, section) { padding: var(--hw-space-4); border-block-start: 1px solid var(--hw-color-border); }
 .hw-tree-view, .hw-tree-view [role='group'] { margin: 0; padding: 0; list-style: none; }
 .hw-tree-view { padding: var(--hw-space-2); border: 1px solid var(--hw-color-border); border-radius: var(--hw-radius-md); background: var(--hw-color-surface); }

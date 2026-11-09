@@ -1,14 +1,14 @@
 /* Resolve reading direction at the closest HTML boundary, independent of language.
    The empty RTL marker enables component-specific values through var() fallbacks. */
 :where([dir='ltr'], [dir='auto']) {
-  --_nq-inline-sign: 1;
-  --_nq-rtl-only: initial;
+  --_hw-inline-sign: 1;
+  --_hw-rtl-only: initial;
 }
 :where([dir='rtl']) {
-  --_nq-inline-sign: -1;
-  --_nq-rtl-only: ;
+  --_hw-inline-sign: -1;
+  --_hw-rtl-only: ;
 }
 /* Scope roots retain the browser's first-strong-text test when CSS is minified. */
 @scope ([dir='auto']:dir(rtl)) {
-  :scope { --_nq-inline-sign: -1; --_nq-rtl-only: ; }
+  :scope { --_hw-inline-sign: -1; --_hw-rtl-only: ; }
 }

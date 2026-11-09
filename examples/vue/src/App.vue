@@ -91,7 +91,7 @@ function submit() {
               <TextField v-if="contact === 'phone'" :label="t('رقم الجوال', 'Mobile number')" name="phone" type="tel" autocomplete="tel" dir="ltr" required placeholder="+966 5X XXX XXXX" />
               <Switch v-model="notifications" :label="t('أرسل لي تحديثات حالة الطلب', 'Send me request status updates')" />
               <Checkbox v-model="consent" name="consent" required :label="t('أؤكد صحة البيانات المدخلة', 'I confirm the information is accurate')" />
-              <div class="form-actions"><Button type="submit">{{ t('مراجعة الطلب', 'Review application') }} <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 19 19 5M5 5h14v14" /></svg></Button><Button type="reset" variant="ghost">{{ t('مسح الحقول', 'Clear fields') }}</Button></div>
+              <div class="form-actions"><Button type="submit">{{ t('مراجعة الطلب', 'Review application') }} <span class="hw-icon" data-icon="arrow-up-right-01" style="--hw-icon-size: 18px" aria-hidden="true"></span></Button><Button type="reset" variant="ghost">{{ t('مسح الحقول', 'Clear fields') }}</Button></div>
             </form>
           </Card>
           <div class="hw-service-aside hw-stack">

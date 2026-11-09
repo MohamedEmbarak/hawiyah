@@ -11,7 +11,7 @@ export function avatarDemoCases(locale: Locale) {
     ...(['40','64','80','120'] as const).map(size=>({title:t(`Image · ${size}px`,`صورة · ${size} بكسل`),name,size,variant:'circle' as const,src:avatarDemoImage,initials:undefined})),
     {title:t('Square image · Hawiyah extension','صورة مربعة · امتداد من هوية'),name,size:'64',variant:'square' as const,src:avatarDemoImage,initials:undefined},
     {title:t('Name-derived initials','أحرف مشتقة من الاسم'),name,size:'64',variant:'circle' as const,src:undefined,initials:undefined},
-    {title:t('Explicit initials','أحرف مختصرة محددة'),name:t('Hawiyah team','فريق هوية'),size:'64',variant:'circle' as const,src:undefined,initials:t('NQ','نس')},
+    {title:t('Explicit initials','أحرف مختصرة محددة'),name:t('Hawiyah team','فريق هوية'),size:'64',variant:'circle' as const,src:undefined,initials:t('HW','هو')},
   ];
 }
 

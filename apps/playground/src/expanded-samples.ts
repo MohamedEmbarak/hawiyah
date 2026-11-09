@@ -87,7 +87,7 @@ export function expandedSample(
     case "collapsible":
       return `<details class="hw-collapsible"><summary>${t("Before you begin", "قبل البدء")}</summary><p>${t("Prepare your organization details and supporting documents.", "جهّز بيانات منشأتك والمستندات الداعمة.")}</p></details>`;
     case "tree-view":
-      return `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="${t("Documents", "المستندات")}"><li role="treeitem" data-hw-value="business" aria-expanded="true"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="${t("Toggle business documents", "توسيع مستندات الأعمال")}">▾</button><span data-hw-tree-label>${t("Business", "الأعمال")}</span><ul role="group">${[t("Commercial license", "الرخصة التجارية"), t("Address proof", "إثبات العنوان")].map((v, i) => `<li role="treeitem" data-hw-value="doc-${i}"><span data-hw-tree-label>${v}</span></li>`).join("")}</ul></li><li role="treeitem" data-hw-value="personal"><span data-hw-tree-label>${t("Personal documents", "مستندات شخصية")}</span></li></ul>`;
+      return `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="${t("Documents", "المستندات")}"><li role="treeitem" data-hw-value="business" aria-expanded="true"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="${t("Toggle business documents", "توسيع مستندات الأعمال")}"><span class="hw-icon" data-icon="arrow-down-01" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>${t("Business", "الأعمال")}</span><ul role="group">${[t("Commercial license", "الرخصة التجارية"), t("Address proof", "إثبات العنوان")].map((v, i) => `<li role="treeitem" data-hw-value="doc-${i}"><span data-hw-tree-label>${v}</span></li>`).join("")}</ul></li><li role="treeitem" data-hw-value="personal"><span data-hw-tree-label>${t("Personal documents", "مستندات شخصية")}</span></li></ul>`;
     case "carousel":
       return carouselDemoMarkup(locale);
     case "link":
@@ -101,7 +101,7 @@ export function expandedSample(
     case "description-list":
       return `<dl class="hw-description-list"><div><dt>${t("Reference", "المرجع")}</dt><dd dir="ltr">HW-2026-1043</dd></div><div><dt>${t("Service fee", "رسوم الخدمة")}</dt><dd>${riyalAmount(t("200", "200"), locale, locale === 'en' ? 'before' : 'after')}</dd></div><div><dt>${t("Expected time", "المدة المتوقعة")}</dt><dd>${t("3 working days", "3 أيام عمل")}</dd></div></dl>`;
     case "stat":
-      return `<div class="hw-stat"><span class="hw-stat-label">${t("Requests completed", "الطلبات المكتملة")}</span><strong class="hw-stat-value">1,284</strong><span class="hw-stat-trend" data-tone="success">↑ 12% ${t("this month", "هذا الشهر")}</span></div>`;
+      return `<div class="hw-stat"><span class="hw-stat-label">${t("Requests completed", "الطلبات المكتملة")}</span><strong class="hw-stat-value">1,284</strong><span class="hw-stat-trend" data-tone="success"><span class="hw-icon" data-icon="arrow-up-02" data-size="sm" aria-hidden="true"></span> 12% ${t("this month", "هذا الشهر")}</span></div>`;
     case "timeline":
       return `<ol class="hw-timeline">${[t("Application received", "استلام الطلب"), t("Documents checked", "فحص المستندات"), t("Review in progress", "المراجعة جارية")].map((v, i) => `<li class="hw-timeline-item" ${i === 2 ? 'aria-current="step"' : ""}><strong>${v}</strong><p class="hw-hint">${i === 2 ? t("Current stage", "المرحلة الحالية") : "28 / 10 / 2026"}</p></li>`).join("")}</ol>`;
     case "meter":

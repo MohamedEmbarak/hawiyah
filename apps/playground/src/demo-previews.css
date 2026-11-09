@@ -21,7 +21,7 @@
 .ready-examples { display: grid; gap: 1.25rem; }
 .ready-example { min-inline-size: 0; border: 1px solid var(--hw-color-border); border-radius: .5rem; overflow: clip; }
 /* A disclosure must remain clickable beyond a compact example's panel. */
-.ready-example:has(.hw-tabs-overflow[open]) { position: relative; z-index: 2; overflow: visible; }
+.ready-example:has(.hw-tabs-overflow[open], .hw-pagination-gap[open]) { position: relative; z-index: 2; overflow: visible; }
 .ready-example:has(.hw-tabs-overflow[open]) > h3 { border-start-start-radius: .5rem; border-start-end-radius: .5rem; }
 .ready-example:has(.hw-search-suggestions:not([hidden])), .component-card:has(.hw-search-suggestions:not([hidden])) { position: relative; z-index: 2; overflow: visible; }
 .ready-example:has(.hw-search-suggestions:not([hidden])) > h3 { border-start-start-radius: .5rem; border-start-end-radius: .5rem; }

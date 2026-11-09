@@ -114,7 +114,7 @@ export const Dialog = defineComponent({
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
       },
     }), [
-      h('header', { class: 'hw-dialog-header' }, [h('h2', { id: `${id}-title` }, props.title), h(Button, { variant: 'ghost', 'aria-label': props.closeLabel, onClick: close }, () => '×')]),
+      h('header', { class: 'hw-dialog-header' }, [h('h2', { id: `${id}-title` }, props.title), h(Button, { variant: 'ghost', 'aria-label': props.closeLabel, onClick: close }, () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }))]),
       h('div', { class: 'hw-dialog-body' }, [props.description && h('p', { id: `${id}-description` }, props.description), slots.default?.({ close })]),
       slots.footer && h('footer', { class: 'hw-dialog-footer' }, slots.footer({ close })),
     ])];

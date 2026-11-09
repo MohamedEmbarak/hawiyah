@@ -25,7 +25,7 @@ export function notificationDialogMarkup(locale: Locale, prefix = 'notice-projec
     return `<div data-notice-case>
   <button type="button" class="hw-button" data-variant="secondary" data-notice-open="${notice.tone}" aria-haspopup="dialog">${notice.title}</button>
   <dialog class="hw-dialog" data-variant="notification" data-tone="${notice.tone}" aria-labelledby="${prefix}-${notice.tone}-title" aria-describedby="${prefix}-${notice.tone}-message">
-    <header class="hw-dialog-header"><h2 id="${prefix}-${notice.tone}-title">${notice.title}</h2><button type="button" class="hw-button" data-variant="ghost" data-hw-dialog-close aria-label="${closeLabel(locale)}">×</button></header>
+    <header class="hw-dialog-header"><h2 id="${prefix}-${notice.tone}-title">${notice.title}</h2><button type="button" class="hw-button" data-variant="ghost" data-hw-dialog-close aria-label="${closeLabel(locale)}"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header>
     <div class="hw-dialog-body"><p id="${prefix}-${notice.tone}-message">${notice.message}</p></div>${buttons ? `\n    <footer class="hw-dialog-footer">${buttons}</footer>` : ''}
   </dialog>
 </div>`;

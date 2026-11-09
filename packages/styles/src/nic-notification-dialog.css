@@ -1,33 +1,33 @@
 /* NIC global.css 3883–3957 and master.js 441–520. The Angular host carries the variant. */
 :where(dialog, hw-dialog)[data-variant='notification'] {
-  --_nq-notice-ink: var(--hw-color-info);
-  --_nq-notice-surface: var(--hw-color-info-subtle);
-  --_nq-notice-border: var(--hw-color-notice-info-border);
-  --_nq-notice-symbol: url('./assets/notifications/info-outline.svg');
+  --_hw-notice-ink: var(--hw-color-info);
+  --_hw-notice-surface: var(--hw-color-info-subtle);
+  --_hw-notice-border: var(--hw-color-notice-info-border);
+  --_hw-notice-symbol: url('./assets/icons/information-circle.svg');
 }
 :where(dialog, hw-dialog)[data-variant='notification'][data-tone='success'] {
-  --_nq-notice-ink: var(--hw-color-success);
-  --_nq-notice-surface: var(--hw-color-success-subtle);
-  --_nq-notice-border: var(--hw-color-notice-success-border);
-  --_nq-notice-symbol: url('./assets/notifications/success-outline.svg');
+  --_hw-notice-ink: var(--hw-color-success);
+  --_hw-notice-surface: var(--hw-color-success-subtle);
+  --_hw-notice-border: var(--hw-color-notice-success-border);
+  --_hw-notice-symbol: url('./assets/icons/checkmark-circle-02.svg');
 }
 :where(dialog, hw-dialog)[data-variant='notification'][data-tone='warning'] {
-  --_nq-notice-ink: var(--hw-color-notice-warning-text);
-  --_nq-notice-surface: var(--hw-color-warning-subtle);
-  --_nq-notice-border: var(--hw-color-notice-warning-border);
-  --_nq-notice-symbol: url('./assets/notifications/warning-outline.svg');
+  --_hw-notice-ink: var(--hw-color-notice-warning-text);
+  --_hw-notice-surface: var(--hw-color-warning-subtle);
+  --_hw-notice-border: var(--hw-color-notice-warning-border);
+  --_hw-notice-symbol: url('./assets/icons/alert-02.svg');
 }
 :where(dialog, hw-dialog)[data-variant='notification'][data-tone='danger'] {
-  --_nq-notice-ink: var(--hw-color-danger);
-  --_nq-notice-surface: var(--hw-color-danger-subtle);
-  --_nq-notice-border: var(--hw-color-notice-danger-border);
-  --_nq-notice-symbol: url('./assets/notifications/danger-outline.svg');
+  --_hw-notice-ink: var(--hw-color-danger);
+  --_hw-notice-surface: var(--hw-color-danger-subtle);
+  --_hw-notice-border: var(--hw-color-notice-danger-border);
+  --_hw-notice-symbol: url('./assets/icons/cancel-circle.svg');
 }
 :where(dialog, hw-dialog)[data-variant='notification'][data-tone='neutral'] {
-  --_nq-notice-ink: var(--hw-color-notice-neutral-text);
-  --_nq-notice-surface: var(--hw-color-badge-neutral-background);
-  --_nq-notice-border: var(--hw-color-notice-neutral-text);
-  --_nq-notice-symbol: url('./assets/notifications/neutral-outline.svg');
+  --_hw-notice-ink: var(--hw-color-notice-neutral-text);
+  --_hw-notice-surface: var(--hw-color-badge-neutral-background);
+  --_hw-notice-border: var(--hw-color-notice-neutral-text);
+  --_hw-notice-symbol: url('./assets/icons/minus-sign-circle.svg');
 }
 
 :is(dialog.hw-dialog[data-variant='notification'], hw-dialog[data-variant='notification'] > dialog.hw-dialog) {
@@ -38,7 +38,7 @@
   padding: 24px;
   overflow: auto;
   border: 0;
-  border-inline-start: 4px solid var(--_nq-notice-border);
+  border-inline-start: 4px solid var(--_hw-notice-border);
   border-radius: 12px;
   background: var(--hw-color-surface);
   color: var(--hw-color-text);
@@ -61,12 +61,12 @@
     justify-self: center;
     pointer-events: none;
   }
-  & > .hw-dialog-header::before { inline-size: 48px; block-size: 48px; border-radius: 50%; background: var(--_nq-notice-surface); }
+  & > .hw-dialog-header::before { inline-size: 48px; block-size: 48px; border-radius: 50%; background: var(--_hw-notice-surface); }
   & > .hw-dialog-header::after {
     margin-block-start: 12px;
     inline-size: 24px; block-size: 24px;
-    background-color: var(--_nq-notice-ink);
-    mask: var(--_nq-notice-symbol) center / contain no-repeat;
+    background-color: var(--_hw-notice-ink);
+    mask: var(--_hw-notice-symbol) center / contain no-repeat;
   }
   & > .hw-dialog-header > :is(h1, h2, h3) { grid-column: 2; grid-row: 1; align-self: start; margin: 0; font-size: 1.125rem; font-weight: 600; overflow-wrap: anywhere; }
   & > .hw-dialog-header > button {
@@ -74,6 +74,7 @@
     display: grid; place-items: center; gap: 0; inline-size: 40px; min-inline-size: 40px;
     padding: 0; font-size: 0; color: var(--hw-color-text-muted);
   }
+  & > .hw-dialog-header > button:has(.hw-icon)::before { content: none; }
   & > .hw-dialog-header > button::before {
     content: ''; inline-size: 24px; block-size: 24px; background-color: currentColor;
     mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat;

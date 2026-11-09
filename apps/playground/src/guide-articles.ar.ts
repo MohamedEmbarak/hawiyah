@@ -1,3 +1,4 @@
+import { icon } from './data';
 /** Full Arabic guide articles. Keep code samples synchronized with the English guide. */
 type Code = (value: string) => string;
 
@@ -57,10 +58,10 @@ const articles: Record<string, string> = {
 <p>افتح العنوان المحلي الذي يطبعه Vite. التطبيق الافتراضي هو دليل هوية ومعرض التجربة المبني بـJavaScript دون إطار عمل.</p>
 <h2 id="choose-framework">2. اختر نقطة البداية</h2>
 <div class="guide-choice-grid">
-<a class="guide-choice" href="#docs/vanilla"><span><bdi>HTML + JavaScript</bdi></span><p>ابدأ بعناصر HTML الأصلية، وأضف السلوك للمكونات التي تحتاج إليه.</p><b>إعداد JavaScript ←</b></a>
-<a class="guide-choice" href="#docs/react"><span><bdi>React</bdi></span><p>استخدم مكونات React وحالة التطبيق وأساليب العرض المعتادة.</p><b>إعداد React ←</b></a>
-<a class="guide-choice" href="#docs/vue"><span><bdi>Vue</bdi></span><p>اربط القيم باستخدام <code>v-model</code>، وركّب المحتوى عبر فتحات المحتوى (slots).</p><b>إعداد Vue ←</b></a>
-<a class="guide-choice" href="#docs/angular"><span><bdi>Angular</bdi></span><p>استخدم المكونات المستقلة وتكامل النماذج في Angular.</p><b>إعداد Angular ←</b></a>
+<a class="guide-choice" href="#docs/vanilla"><span><bdi>HTML + JavaScript</bdi></span><p>ابدأ بعناصر HTML الأصلية، وأضف السلوك للمكونات التي تحتاج إليه.</p><b>إعداد JavaScript {{icon:arrow}}</b></a>
+<a class="guide-choice" href="#docs/react"><span><bdi>React</bdi></span><p>استخدم مكونات React وحالة التطبيق وأساليب العرض المعتادة.</p><b>إعداد React {{icon:arrow}}</b></a>
+<a class="guide-choice" href="#docs/vue"><span><bdi>Vue</bdi></span><p>اربط القيم باستخدام <code>v-model</code>، وركّب المحتوى عبر فتحات المحتوى (slots).</p><b>إعداد Vue {{icon:arrow}}</b></a>
+<a class="guide-choice" href="#docs/angular"><span><bdi>Angular</bdi></span><p>استخدم المكونات المستقلة وتكامل النماذج في Angular.</p><b>إعداد Angular {{icon:arrow}}</b></a>
 </div>
 <h2 id="styles-context">3. حمّل التنسيقات وحدّد السياق</h2>
 <p>استورد ملف التنسيق مرة واحدة عند نقطة دخول تطبيقك. ملف إعادة الضبط اختياري؛ حمّله أولًا إذا احتجت إليه. يختار كل تطبيق الخطوط التي يحمّلها.</p>
@@ -70,7 +71,7 @@ const articles: Record<string, string> = {
 <p>تحتوي صفحة كل مكون على مثال تفاعلي، وشفرة قابلة للنسخ، ومرجع للواجهات البرمجية، ودورة الحياة، وإرشادات إمكانية الوصول، وحدود التنفيذ. ابدأ بـ<a href="#component/text-field">حقل النص</a> أو <a href="#component/dialog">الحوار</a> أو <a href="#component/date-picker">منتقي التاريخ</a>، ثم ركّب صفحتك في <a href="#layouts">استوديو التخطيط</a>.</p>
 <h2 id="verify-changes">5. تحقّق من التغييرات</h2>
 {{code:3}}
-<p>تحتاج اختبارات المتصفح إلى Chromium. حدّد مسار نسخة محلية عبر <code>HAWIYAH_CHROMIUM</code> عند الحاجة. تفحص أوامر الحزم أرشيفات محلية وتختبر استهلاكها؛ لا تنشر شيئًا على npm. يوضح <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">سجل التحقق ↗</a> نطاق الفحوص الفعلية وما بقي منها.</p>
+<p>تحتاج اختبارات المتصفح إلى Chromium. حدّد مسار نسخة محلية عبر <code>HAWIYAH_CHROMIUM</code> عند الحاجة. تفحص أوامر الحزم أرشيفات محلية وتختبر استهلاكها؛ لا تنشر شيئًا على npm. يوضح <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">سجل التحقق {{icon:external}}</a> نطاق الفحوص الفعلية وما بقي منها.</p>
 <h2 id="package-layers">تعرّف على طبقات الحزم</h2>
 <div class="guide-table-wrap" tabindex="0" role="region" aria-label="جدول الحزم، قابل للتمرير">
 <table class="hw-table"><thead><tr><th>الحزمة</th><th>المسؤولية</th></tr></thead><tbody>
@@ -80,7 +81,7 @@ const articles: Record<string, string> = {
 <tr><td><code>@hawiyah/vanilla</code></td><td>إضافة التفاعل إلى عناصر DOM مع إتاحة إنهاء التفعيل وتنظيف آثاره.</td></tr>
 <tr><td><code>@hawiyah/react</code><br><code>@hawiyah/vue</code><br><code>@hawiyah/angular</code></td><td>مكونات طبيعية لكل إطار، متكاملة مع حالته ودورة حياته.</td></tr>
 </tbody></table></div>
-<p>للتجربة في تطبيق آخر قبل إصدار npm، اتبع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/scripts/check-packages.mjs" target="_blank" rel="noopener">إعداد استهلاك الحزم المحلية المستخدم في الفحوص ↗</a>، أو اعمل داخل أحد تطبيقات الأمثلة. لا تفترض أن أي حزمة موجودة في السجل تحمل الاسم نفسه تابعة لهذا المشروع.</p>
+<p>للتجربة في تطبيق آخر قبل إصدار npm، اتبع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/scripts/check-packages.mjs" target="_blank" rel="noopener">إعداد استهلاك الحزم المحلية المستخدم في الفحوص {{icon:external}}</a>، أو اعمل داخل أحد تطبيقات الأمثلة. لا تفترض أن أي حزمة موجودة في السجل تحمل الاسم نفسه تابعة لهذا المشروع.</p>
 `,
   "vanilla": `
 <p class="guide-lead">ابدأ بعناصر HTML الأصلية. أضف متحكمًا عندما يتطلب التفاعل سلوكًا إضافيًا.</p>
@@ -95,7 +96,7 @@ const articles: Record<string, string> = {
 <aside class="guide-note"><strong>جهة واحدة تدير كل جزء من DOM</strong><p>لا تستخدم تفعيل vanilla على شجرة مكونات يديرها React أو Vue أو Angular. تتولى حزمة كل إطار حالتها التفاعلية وتنظيفها بالفعل.</p></aside>
 <h2 id="events-data">اربط أحداث التطبيق وبياناته</h2>
 <p>تحتفظ الحقول الأصلية بالأسماء، والتحقق من الحقول المطلوبة، و<code>FormData</code>، وأحداث <code>input</code> و<code>change</code>. توفّر المكونات الأغنى أحداثًا موثقة أو قيمًا مؤكدة داخل حقول مخفية. تعامل مع نص البحث في Combobox والقيمة المختارة منه باعتبارهما معلومتين مختلفتين. تختار حقول الملفات ملفات محلية؛ يتولى تطبيقك نقلها إلى الخادم.</p>
-<p>تابع إلى <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vanilla/README.md" target="_blank" rel="noopener">مرجع vanilla ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vanilla/EXPANSION-API.md" target="_blank" rel="noopener">العقد الكامل لبنية التفعيل ↗</a> لمعرفة العلامات والواجهات الفعلية لكل متحكم.</p>
+<p>تابع إلى <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vanilla/README.md" target="_blank" rel="noopener">مرجع vanilla {{icon:external}}</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vanilla/EXPANSION-API.md" target="_blank" rel="noopener">العقد الكامل لبنية التفعيل {{icon:external}}</a> لمعرفة العلامات والواجهات الفعلية لكل متحكم.</p>
 `,
   "react": `
 <p class="guide-lead">استخدم مكونات مبنية خصيصًا لـReact، مع حالة يديرها التطبيق أو يحتفظ بها العنصر نفسه. تتولى ملفات CSS المشتركة المظهر.</p>
@@ -113,7 +114,7 @@ const articles: Record<string, string> = {
 </ul>
 <h2 id="server-rendering">العرض على الخادم وربط التفاعل</h2>
 <p>لا تصل الاستيرادات والعرض على الخادم إلى كائنات المتصفح العامة. تُنشأ المعرّفات باستخدام <code>useId</code> في React، وتُفتح الحوارات الأصلية بعد تركيب المكون. حافظ على تطابق البيانات الأولية بين الخادم والعميل، واتبع متطلبات React المعتادة لعملية hydration، أي ربط HTML المولّد على الخادم بالتفاعل. يصف سجل التحقق الحالات التي اختُبرت؛ لا يعني ذلك ضمان كل تكامل محتمل مع أطر الاستضافة.</p>
-<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/react/README.md" target="_blank" rel="noopener">خصائص React وواجهات تركيب المحتوى ↗</a>، أو استكشف <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/examples/react/src/main.tsx" target="_blank" rel="noopener">المثال الكامل ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/react/README.md" target="_blank" rel="noopener">خصائص React وواجهات تركيب المحتوى {{icon:external}}</a>، أو استكشف <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/examples/react/src/main.tsx" target="_blank" rel="noopener">المثال الكامل {{icon:external}}</a>.</p>
 `,
   "vue": `
 <p class="guide-lead">ركّب واجهتك من مكونات Vue 3.5+، باستخدام <code>v-model</code> وفتحات المحتوى (slots) والحالة التفاعلية المعتادة.</p>
@@ -132,7 +133,7 @@ const articles: Record<string, string> = {
 </ul>
 <h2 id="rendering-accessibility">العرض وإمكانية الوصول</h2>
 <p>توفر <code>useId</code> في Vue معرّفات ثابتة لربط العناصر بين الخادم والعميل. يتحول الحوار المعروض مفتوحًا من الخادم إلى حوار يمنع التفاعل مع بقية الصفحة (modal) بعد تركيب المكون. وفّر تسميات مترجمة، ورسائل للحالات الفارغة، ونصوص أزرار الإغلاق، وإعلانات الحالة؛ تعيين <code>dir</code> وحده لا يترجمها.</p>
-<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vue/README.md" target="_blank" rel="noopener">نماذج القيم وفتحات المحتوى وخصائص Vue ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/examples/vue/src/App.vue" target="_blank" rel="noopener">مثال Vue الكامل ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vue/README.md" target="_blank" rel="noopener">نماذج القيم وفتحات المحتوى وخصائص Vue {{icon:external}}</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/examples/vue/src/App.vue" target="_blank" rel="noopener">مثال Vue الكامل {{icon:external}}</a>.</p>
 `,
   "angular": `
 <p class="guide-lead">استورد مكونات Angular المستقلة. تتكامل حقول القيم مع النماذج المعتمدة على القالب والنماذج التفاعلية.</p>
@@ -151,7 +152,7 @@ const articles: Record<string, string> = {
 <li>يبدأ عرض الحوار الأصلي بوضع يمنع التفاعل مع بقية الصفحة (modal) بعد إنشاء العرض. يعيد الإغلاق أو إتلاف المكون التركيز إلى عنصر الفتح إذا ظل متصلًا بالصفحة.</li>
 </ul>
 <aside class="guide-note"><strong>صيغة الحزمة وحدود المثال</strong><p>تُبنى المكتبة بصيغة Angular Package Format باستخدام <code>ng-packagr</code> والتجميع الجزئي. يستخدم مثال Vite الصغير وضع JIT عمدًا. استخدم بناء Angular المعتاد بنمط AOT للإنتاج؛ لا يثبت هذا المثال تغطية AOT أو العرض على الخادم أو hydration.</p></aside>
-<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/angular/README.md" target="_blank" rel="noopener">محددات المكونات المستقلة ومدخلاتها ومخرجاتها ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/angular/README.md" target="_blank" rel="noopener">محددات المكونات المستقلة ومدخلاتها ومخرجاتها {{icon:external}}</a>.</p>
 `,
   "theming": `
 <p class="guide-lead">غيّر المظهر عبر قيم تصميم دلالية. اجعل السمة، والوضع اللوني، والكثافة، واللغة، واتجاه النص إعدادات مستقلة.</p>
@@ -171,7 +172,7 @@ const articles: Record<string, string> = {
 <li>لا تعكس سلاسل النص العربي، ولا تضف تباعدًا بين الحروف المتصلة، ولا تعكس الشعار.</li>
 <li>اختبر التنقل الأفقي في الاتجاهين، وحافظ على ترتيب بصري وترتيب قراءة في DOM لهما معنى.</li>
 </ul>
-<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/tokens/README.md" target="_blank" rel="noopener">حزمة قيم التصميم ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/design-principles.md" target="_blank" rel="noopener">مبادئ التصميم ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/tokens/README.md" target="_blank" rel="noopener">حزمة قيم التصميم {{icon:external}}</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/design-principles.md" target="_blank" rel="noopener">مبادئ التصميم {{icon:external}}</a>.</p>
 `,
   "layouts": `
 <p class="guide-lead">ركّب الصفحة من مجموعة صغيرة من الأدوات ذات السلوك الواضح. تتولى CSS التجاوب دون الحاجة إلى قياس عرض الشاشة بـJavaScript.</p>
@@ -188,7 +189,7 @@ const articles: Record<string, string> = {
 <p>تستخدم الخصائص المتجاوبة <code>base</code> ثم <code>sm</code> عند 40rem، و<code>md</code> عند 48rem، و<code>lg</code> عند 64rem، و<code>xl</code> عند 80rem. ترث النقطة غير المحددة أقرب قيمة من النقاط الأصغر. يتيح <code>minItemWidth</code> شبكة تتكيف مع عرض العناصر، وتكون له الأولوية على عدد الأعمدة المحدد.</p>
 <h2 id="page-shell">أكمل هيكل الصفحة</h2>
 <p>استخدم <a href="#component/sidebar">Sidebar</a> للمحتوى أو التنقل الجانبي، و<a href="#component/app-shell">App shell</a> لمناطق التطبيق، و<a href="#component/page-header">Page header</a> للعنوان والإجراءات، و<a href="#component/aspect-ratio">Aspect ratio</a> لحجز مساحة الوسائط. حافظ على دلالات مناطق الصفحة؛ لا تضع عنصر <code>main</code> داخل عنصر <code>main</code> آخر.</p>
-<p>جرّب <a href="#layouts">استوديو التخطيط التفاعلي</a>، وراجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/layout.md" target="_blank" rel="noopener">خصائص التخطيط ومتغيرات CSS وأمثلة الأطر ↗</a>.</p>
+<p>جرّب <a href="#layouts">استوديو التخطيط التفاعلي</a>، وراجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/layout.md" target="_blank" rel="noopener">خصائص التخطيط ومتغيرات CSS وأمثلة الأطر {{icon:external}}</a>.</p>
 `,
   "lifecycle": `
 <p class="guide-lead">لكل مكون جهة تديره، وحالة، وقواعد تفاعل، ونهاية لدورة حياته. وضّح هذه الحدود منذ البداية.</p>
@@ -236,7 +237,7 @@ const articles: Record<string, string> = {
 <li>افصل تاريخ العمل الذي لا يتضمن وقتًا عن الطابع الزمني. لا تمرّر <code>YYYY-MM-DD</code> عبر تحويل منطقة زمنية محلية قد يغيّر اليوم.</li>
 <li>ترجم أسماء الأشهر وتسميات التنقل ورسائل الحالة. نمط الأرقام واتجاه النص إعدادان مستقلان.</li>
 </ul>
-<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/date-calendars.md" target="_blank" rel="noopener">بحث مصادر التقويم، ومنشأ البيانات، وفحوص الموثوقية ↗</a> قبل دمج التواريخ في سجلات رسمية.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/date-calendars.md" target="_blank" rel="noopener">بحث مصادر التقويم، ومنشأ البيانات، وفحوص الموثوقية {{icon:external}}</a> قبل دمج التواريخ في سجلات رسمية.</p>
 `,
   "accessibility": `
 <p class="guide-lead">حافظ على إمكانات المتصفح الأصلية، ثم اختبر التجربة كاملة بمحتوى وتفاعل واقعيين.</p>
@@ -259,7 +260,7 @@ const articles: Record<string, string> = {
 <h2 id="test-experience">اختبر تجربة التطبيق</h2>
 {{code:0}}
 <p>تكشف الفحوص الآلية جزءًا من المشكلات فقط. اختبر قارئ شاشة، والتكبير وإعادة تدفق المحتوى، والاستخدام بلوحة المفاتيح وحدها، وأحجام أهداف اللمس، والتسميات العربية الطويلة، ومتصفحات تمثل الاستخدام المتوقع. الهدف هو WCAG 2.2 AA؛ لا يمنح استيراد هوية وحده حكمًا شاملًا بالمطابقة.</p>
-<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">نطاق التحقق والفجوات المتبقية ↗</a>. تحدد صفحات المكونات مسؤوليات إمكانية الوصول الخاصة بسلوك كل مكون.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">نطاق التحقق والفجوات المتبقية {{icon:external}}</a>. تحدد صفحات المكونات مسؤوليات إمكانية الوصول الخاصة بسلوك كل مكون.</p>
 `,
   "extending": `
 <p class="guide-lead">اختر توسعة صغيرة وموثقة تحافظ على سلوك المكون.</p>
@@ -285,7 +286,7 @@ const articles: Record<string, string> = {
 <h2 id="coding-assistant">اعمل بوضوح مع مساعد برمجي</h2>
 <p>يمكنك استخدام التوجيه التالي، مع تحديد المهمة وإطار العمل ولغة الواجهة والحالات المطلوبة:</p>
 {{code:1}}
-<p>استعن بـ<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/extension.md" target="_blank" rel="noopener">دليل التوسعة ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/CONTRACT.md" target="_blank" rel="noopener">عقد التنفيذ المشترك ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/llms.txt" target="_blank" rel="noopener">المرجع المختصر للمساعدات البرمجية ↗</a>. المشروع مرخّص وفق <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 ↗</a>، وتبقى إشعارات الأطراف الأخرى سارية.</p>
+<p>استعن بـ<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/extension.md" target="_blank" rel="noopener">دليل التوسعة {{icon:external}}</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/CONTRACT.md" target="_blank" rel="noopener">عقد التنفيذ المشترك {{icon:external}}</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/llms.txt" target="_blank" rel="noopener">المرجع المختصر للمساعدات البرمجية {{icon:external}}</a>. المشروع مرخّص وفق <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 {{icon:external}}</a>، وتبقى إشعارات الأطراف الأخرى سارية.</p>
 `,
   "alignment": `
 <p class="guide-lead">أساس افتراضي مستند إلى DGA، بمراجع يمكن تتبّعها، وتنفيذ مستقل، ونقاط توسعة واضحة.</p>
@@ -300,7 +301,7 @@ const articles: Record<string, string> = {
 <li>خلفية حقل الإدخال <code>Form/field-background-default</code>، العنصر <code>113:7</code>: <code>#FFFFFF</code> فاتح و<code>#1F2A37</code> داكن.</li>
 <li>اللون الأساسي في العنصر <code>50:65</code> هو <code>#1B8354</code>، بينما يستخدم النص الأساسي <code>Text/text-primary</code> في العنصر <code>50:204</code> اللون <code>#54C08A</code> في الوضع الداكن. لا تُستخدم هذه الأدوار بالتبادل.</li>
 </ul>
-<p>يسجل <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/tokens/reference/dga-foundations.json" target="_blank" rel="noopener">مرجع الأسس المنشور ↗</a> ومصدر قيم التصميم معرّفات العناصر والتعديلات. مثلًا، يستخدم النص الثانوي المشترك درجة محايدة أغمق في الوضع الفاتح لأنه يظهر أيضًا فوق أسطح مخففة اللون؛ ويحتفظ النص الإرشادي داخل الحقل بقيمته الدلالية الخاصة. تبقى قيمة حدود الحقل الأصلية في حالة السكون مسجلة باللون <code>#9DA4AE</code> في الوضع الفاتح؛ ويستخدم التنفيذ اللون الأقوى <code>#6C737F</code> لزيادة التباين، مع خط سفلي أخضر متحرك، وأحمر عند عدم الصلاحية، ومؤشر تركيز داخلي واحد للقراءة فقط ووضع الألوان القسرية. الارتباط بالمصدر وتقييم الإتاحة سجلان منفصلان.</p>
+<p>يسجل <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/tokens/reference/dga-foundations.json" target="_blank" rel="noopener">مرجع الأسس المنشور {{icon:external}}</a> ومصدر قيم التصميم معرّفات العناصر والتعديلات. مثلًا، يستخدم النص الثانوي المشترك درجة محايدة أغمق في الوضع الفاتح لأنه يظهر أيضًا فوق أسطح مخففة اللون؛ ويحتفظ النص الإرشادي داخل الحقل بقيمته الدلالية الخاصة. تبقى قيمة حدود الحقل الأصلية في حالة السكون مسجلة باللون <code>#9DA4AE</code> في الوضع الفاتح؛ ويستخدم التنفيذ اللون الأقوى <code>#6C737F</code> لزيادة التباين، مع خط سفلي أخضر متحرك، وأحمر عند عدم الصلاحية، ومؤشر تركيز داخلي واحد للقراءة فقط ووضع الألوان القسرية. الارتباط بالمصدر وتقييم الإتاحة سجلان منفصلان.</p>
 <h2 id="template-guidance">طبّق تعليمات القوالب</h2>
 <ul>
 <li>مراجع الخدمة المفحوصة هي <code>1:21371</code> و<code>1:22148</code>، وللجوال <code>27:4851</code>. ومراجع النموذج هي <code>2:17277</code>، وللجوال <code>7:3658</code>.</li>
@@ -314,13 +315,13 @@ const articles: Record<string, string> = {
 <p>حدّد <code>data-hw-theme="dga"</code> صراحة، أو استخدم الأساس الافتراضي على عنصر جذر دون سمة. وللاحتفاظ بالألوان ومقاييس الخطوط والزوايا والمسافات والمحتوى الأصلية، حدّد <code>data-hw-theme="hawiyah"</code>. تشترك السمتان في ارتفاعات عناصر التحكم: الكثافة المريحة 40 بكسل للحجم الافتراضي و32 للصغير و40 للكبير؛ والمكثفة 32 للافتراضي و24 للصغير و40 للكبير، عند حجم خط جذري قدره 16 بكسل. لذلك لا يحفظ اختيار هوية كل تفصيل بصري سابق. قد يحافظ اختيار سمة محفوظ سابقًا على مظهر مختلف في الدليل. راجع التجاوزات المخصصة والمسافات والتركيز والتحقق من الإدخال والاتجاهين بعد الانتقال؛ تبقى عقود قيم المكونات وأحداثها وقيم التاريخ بصيغة ISO مستقلة عن التغيير البصري.</p>
 <h2 id="product-alignment">تُقيّم مواءمة DGA على مستوى المنتج</h2>
 <p>لا تمنح السمة أو سجل المصدر اعتمادًا أو شهادة أو ضمانًا للمطابقة الكاملة. يحتاج المحتوى والمعرّفات الرسمية المصرّح بها والخصوصية والإتاحة ورحلات الاستخدام والتزامات الخدمة إلى تقييم مستقل. لا تُضمَّن ملفات Figma الخام أو الأصول المصدّرة بالجملة في الحزم المنشورة؛ فأذونات الأصول منفصلة عن ترخيص Apache 2.0 لشفرة هوية.</p>
-<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/dga-reference.md" target="_blank" rel="noopener">سجل لقطات المصدر والانتقال الكامل ↗</a>، و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/alignment.md" target="_blank" rel="noopener">سجل المتطلبات والمواءمة ↗</a>، و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">الفحوص التي أُجريت بالفعل ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/dga-reference.md" target="_blank" rel="noopener">سجل لقطات المصدر والانتقال الكامل {{icon:external}}</a>، و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/alignment.md" target="_blank" rel="noopener">سجل المتطلبات والمواءمة {{icon:external}}</a>، و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">الفحوص التي أُجريت بالفعل {{icon:external}}</a>.</p>
 `,};
 
 export function arabicArticle(topic: string, code: Code): string {
   const body = articles[topic];
   if (typeof body !== 'string') return '<p>لم نعثر على هذه الصفحة. <a href="#docs/getting-started">ابدأ بدليل الإعداد</a>.</p>';
-  return body.replace(/\{\{code:(\d+)\}\}/g, (_, index: string) => {
+  return body.replace(/\{\{icon:([a-z-]+)\}\}/g, (_, name: string) => icon(name, 14)).replace(/\{\{code:(\d+)\}\}/g, (_, index: string) => {
     const sample = samples[topic]?.[Number(index)];
     if (sample === undefined) throw new Error('Missing guide code sample: ' + topic + '/' + index);
     return code(sample);

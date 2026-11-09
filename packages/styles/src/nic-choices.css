@@ -40,8 +40,8 @@ label:has(> :is(.hw-checkbox, .hw-radio)) { position: relative; isolation: isola
   content: var(--hw-dga-on, none) var(--hw-dga-off, '');
   visibility: hidden;
 }
-.hw-checkbox::before { inline-size: 5px; block-size: 10px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
-.hw-checkbox:indeterminate::before { inline-size: 10px; block-size: 0; border-width: 0 0 2px; transform: none; }
+.hw-checkbox::before { inline-size: 14px; block-size: 14px; background: currentColor; mask: url('./assets/icons/tick-02.svg') center / contain no-repeat; }
+.hw-checkbox:indeterminate::before { mask-image: url('./assets/icons/minus-sign.svg'); }
 .hw-radio::before { inline-size: 12px; block-size: 12px; border-radius: 50%; background: var(--hw-choice-mark); }
 :is(.hw-checkbox, .hw-radio):is(:checked, :indeterminate)::before { visibility: visible; }
 :is(.hw-checkbox, .hw-radio):active:not(:disabled, [readonly], [aria-disabled='true']) { border-color: var(--hw-dga-on, revert) var(--hw-dga-off, var(--hw-color-choice-active)); --hw-choice-mark: var(--hw-color-choice-active); }

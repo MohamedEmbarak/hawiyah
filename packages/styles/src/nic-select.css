@@ -31,15 +31,15 @@
 @media (forced-colors: none) {
   select.hw-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])) {
     appearance: var(--hw-profile-select-appearance, auto);
-    --_nq-select-image: var(--hw-profile-select-down,);
-    --_nq-select-size: var(--hw-profile-select-size,);
-    --_nq-rtl-position: var(--_nq-rtl-only) var(--hw-profile-select-position-rtl,);
-    --_nq-select-position: var(--_nq-rtl-position, var(--hw-profile-select-position-ltr,));
-    --_nq-rtl-padding: var(--_nq-rtl-only) var(--hw-profile-select-padding-rtl, var(--hw-space-3));
-    --hw-profile-field-padding-end: var(--_nq-rtl-padding, var(--hw-profile-select-padding-ltr, var(--hw-space-3)));
+    --_hw-select-image: var(--hw-profile-select-down,);
+    --_hw-select-size: var(--hw-profile-select-size,);
+    --_hw-rtl-position: var(--_hw-rtl-only) var(--hw-profile-select-position-rtl,);
+    --_hw-select-position: var(--_hw-rtl-position, var(--hw-profile-select-position-ltr,));
+    --_hw-rtl-padding: var(--_hw-rtl-only) var(--hw-profile-select-padding-rtl, var(--hw-space-3));
+    --hw-profile-field-padding-end: var(--_hw-rtl-padding, var(--hw-profile-select-padding-ltr, var(--hw-space-3)));
     font-size: var(--hw-profile-select-font, inherit);
   }
-  select.hw-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])):focus { --_nq-select-image: var(--hw-profile-select-up,); }
+  select.hw-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])):focus { --_hw-select-image: var(--hw-profile-select-up,); }
 }
 .hw-field > .hw-hint { color: var(--hw-color-field-helper, var(--hw-color-text-muted)); font-size: var(--hw-profile-helper-size, var(--hw-text-sm)); }
 .hw-field > .hw-error {

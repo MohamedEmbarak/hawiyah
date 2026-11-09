@@ -206,7 +206,8 @@ async function checkNativeInteraction(component: string, preview: FrameLocator) 
     expect(await bar.evaluate(el => el.getAttribute('aria-valuenow') ?? el.getAttribute('value'))).toBe('65');
   } else if (component === 'card') {
     await expect(preview.locator('.hw-card-header').first()).toContainText('تفاصيل الخدمة');
-    await expect(preview.locator('.hw-card-footer').first()).toContainText('متاحة إلكترونياً');
+    // Cards end with an explicit action rather than a status line.
+    await expect(preview.locator('.hw-card-footer').first().locator('a, button').first()).toHaveText('عرض المتطلبات');
   }
 }
 

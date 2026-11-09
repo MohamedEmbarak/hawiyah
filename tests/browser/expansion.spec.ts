@@ -242,13 +242,13 @@ for (const route of ["layouts", "inputs"])
     test(`${route} ${locale} has no automated WCAG AA findings or mobile overflow`, async ({
       page,
     }) => {
+      // Arabic is audited in dark mode; English in the default light mode.
+      await page.addInitScript((locale) => {
+        localStorage.setItem("hawiyah-locale", locale);
+        localStorage.setItem("hawiyah-mode", locale === "ar" ? "dark" : "light");
+      }, locale);
       await page.goto(`/#${route}`);
-      if (locale === "ar") {
-        await page
-          .getByRole("button", { name: "ع — Switch to Arabic" })
-          .click();
-        await page.getByRole("button", { name: "تبديل المظهر" }).click();
-      }
+      await page.waitForFunction((locale) => document.documentElement.lang === locale, locale);
       await page.setViewportSize({ width: 390, height: 844 });
       expect(
         await page.evaluate(

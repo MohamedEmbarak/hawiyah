@@ -1,4 +1,5 @@
 import {expect, test, type Locator} from '@playwright/test';
+import { sortIcon } from '../helpers/icon-direction';
 import AxeBuilder from '@axe-core/playwright';
 
 for(const locale of ['ar','en'])test(`table galleries expose all ready variants and localized empty results in ${locale}`,async({page},info)=>{
@@ -22,7 +23,7 @@ for(const locale of ['ar','en'])test(`table galleries expose all ready variants 
       await expect(examples.first().locator('.hw-table-sort-icon')).toHaveCount(2);
       await examples.first().locator('thead button').last().click();
       await expect(examples.first().locator('tbody tr').first().locator('td')).toHaveText('1');
-      expect(await examples.first().locator('.hw-table-sort-icon').last().evaluate(el=>getComputedStyle(el,'::before').content)).toBe('"↑"');
+      expect(await examples.first().locator('.hw-table-sort-icon').last().evaluate(sortIcon)).toBe('ascending');
       await expect(page).toHaveURL(/#component\/data-table$/);
       await page.setViewportSize({width:1543,height:1100});
       await examples.first().scrollIntoViewIfNeeded();
@@ -67,9 +68,9 @@ for(const locale of ['ar','en'])test(`NIC table source geometry, variants and sc
   await expect(table.locator('tbody tr').first().locator('td').last()).toHaveText('1');
   await expect(table.locator('thead th').nth(1)).toHaveAttribute('aria-sort','ascending');
   const indicator=table.locator('.hw-table-sort-icon').last();await expect(indicator).toHaveAttribute('aria-hidden','true');
-  expect(await indicator.evaluate(el=>getComputedStyle(el,'::before').content)).toBe('"↑"');
+  expect(await indicator.evaluate(sortIcon)).toBe('ascending');
   await table.locator('thead button').nth(1).press('Enter');
-  expect(await indicator.evaluate(el=>getComputedStyle(el,'::before').content)).toBe('"↓"');
+  expect(await indicator.evaluate(sortIcon)).toBe('descending');
   await expect(table.locator('tbody th[scope="row"]')).toHaveCount(3);
   expect((await new AxeBuilder({page}).include('.guide-demo .hw-table-wrap').analyze()).violations).toEqual([]);
   await page.setViewportSize({width:390,height:844});

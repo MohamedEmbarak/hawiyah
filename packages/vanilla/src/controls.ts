@@ -153,7 +153,8 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
     value.forEach((tag, index) => {
       const chip = root.ownerDocument.createElement('span'); chip.className = 'hw-chip'; chip.setAttribute('role', 'listitem'); chip.append(root.ownerDocument.createTextNode(tag));
       host.append(chip);
-      const remove = root.ownerDocument.createElement('button'); remove.type = 'button'; remove.dataset.hwRemoveTag = String(index); remove.textContent = '×';
+      const remove = root.ownerDocument.createElement('button'); remove.type = 'button'; remove.dataset.hwRemoveTag = String(index);
+      const glyph = root.ownerDocument.createElement('span'); glyph.className = 'hw-icon'; glyph.dataset.icon = 'cancel-01'; glyph.dataset.size = 'md'; glyph.setAttribute('aria-hidden', 'true'); remove.append(glyph);
       remove.setAttribute('aria-label', options.getRemoveLabel?.(tag) ?? translated(root, `Remove ${tag}`, `إزالة ${tag}`));
       chip.append(remove); syncDisabled(remove);
       if (readOnly(root, input)) remove.disabled = true;

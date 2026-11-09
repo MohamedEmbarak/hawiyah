@@ -1,4 +1,5 @@
 import {expect,test} from '@playwright/test';
+import { arrowDirection } from '../helpers/icon-direction';
 import {previewStyles} from '../../apps/playground/src/generated/preview-runtime';
 
 for (const width of [320,1280]) {
@@ -34,11 +35,10 @@ for (const width of [320,1280]) {
         const menuNode=find('.hw-tab-overflow-menu'), popup=menuNode.getBoundingClientRect();
         const anchor=(menuNode.offsetParent as HTMLElement).getBoundingClientRect();
         return {slide:Math.abs(slide.left-track.left), left:Math.abs(popup.left-anchor.left),right:Math.abs(popup.right-anchor.right),
-          next:getComputedStyle(find('.hw-carousel-arrow'),'::before').content,
           select:getComputedStyle(find('.hw-select')).backgroundPositionX};
       });
       expect(geometry.slide).toBeLessThan(1);
-      expect(geometry.next).toBe(rtl?'"←"':'"→"');
+      expect(await region.locator('.hw-carousel-arrow').first().evaluate(arrowDirection)).toBe(rtl?'"←"':'"→"');
       expect(geometry.select).toMatch(rtl?/12px/:/10px/);
       expect(rtl?geometry.left:geometry.right).toBeLessThan(2);
     };

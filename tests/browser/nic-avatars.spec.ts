@@ -47,5 +47,5 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
   await expect(avatar.locator('img')).toHaveCount(0);await expect(avatar).toHaveAttribute('role','img');await expect(avatar).toHaveAttribute('aria-label','مستخدم تجريبي');await expect(avatar).toHaveText('مت');
   expect((await avatar.boundingBox())!.width).toBe(40);
   await page.setViewportSize({width:390,height:844});expect(await root.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
-  await expect(root.locator('.hw-avatar').last()).toHaveText('نس');
+  await expect(root.locator('.hw-avatar').last()).toHaveText('هو');
 });

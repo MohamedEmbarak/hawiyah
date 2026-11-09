@@ -78,7 +78,7 @@ export function ToastRegion({ messages, onDismiss, label = 'الإشعارات',
         // Even a rejected request gets a commit boundary and discards its snapshot.
         setRequest(previous => previous + 1);
       }
-    }}>×</Button>}
+    }}><span className="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true" /></Button>}
   </article>;
   return <section {...props} ref={element => {region.current = element; assignRef(ref, element);}} className={cx('hw-toast-region', className)} tabIndex={props.tabIndex ?? -1} aria-label={props['aria-label'] ?? label} data-variant={presentation} data-position={position ?? data['data-position']}>
     <div role="status" aria-live="polite" aria-relevant="additions text" data-hw-live="polite">{messages.filter(message => !message.urgent).map(render)}</div>
@@ -102,7 +102,7 @@ export function TreeView({ items, label, value, defaultValue = '', onValueChange
     if (disabled || node.disabled) return; const position = enabled.findIndex(item => item.node.id === node.id); const forward = getDirection(event.currentTarget) === 'rtl' ? 'ArrowLeft' : 'ArrowRight'; const backward = forward === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
     if (['ArrowUp', 'ArrowDown', 'Home', 'End', forward, backward, 'Enter', ' '].includes(event.key)) event.preventDefault();
     if (event.key === 'ArrowDown') focus(enabled[Math.min(enabled.length - 1, position + 1)]?.node.id); else if (event.key === 'ArrowUp') focus(enabled[Math.max(0, position - 1)]?.node.id); else if (event.key === 'Home') focus(enabled[0]?.node.id); else if (event.key === 'End') focus(enabled.at(-1)?.node.id); else if (event.key === forward && node.children?.length) { if (!opened.includes(node.id)) expand(node, true); else focus(node.children.find(child => !child.disabled)?.id); } else if (event.key === backward) { if (node.children?.length && opened.includes(node.id)) expand(node, false); else if (parent) focus(parent); } else if (event.key === 'Enter' || event.key === ' ') select(node.id);
-  }}>{node.children?.length ? <button type="button" tabIndex={-1} disabled={disabled || node.disabled} aria-label={`${opened.includes(node.id) ? 'Collapse' : 'Expand'} ${typeof node.label === 'string' ? node.label : ''}`} onClick={event => { event.stopPropagation(); expand(node, !opened.includes(node.id)); focus(node.id); }}>{opened.includes(node.id) ? '−' : '+'}</button> : null}<span id={`${id}-${encodeURIComponent(node.id)}`}>{node.label}</span></li>)}</ul>;
+  }}>{node.children?.length ? <button type="button" tabIndex={-1} disabled={disabled || node.disabled} aria-label={`${opened.includes(node.id) ? 'Collapse' : 'Expand'} ${typeof node.label === 'string' ? node.label : ''}`} onClick={event => { event.stopPropagation(); expand(node, !opened.includes(node.id)); focus(node.id); }}><span className="hw-icon" data-size="sm" aria-hidden="true" data-icon={opened.includes(node.id) ? 'minus-sign' : 'add-01'} /></button> : null}<span id={`${id}-${encodeURIComponent(node.id)}`}>{node.label}</span></li>)}</ul>;
 }
 export interface CarouselProps extends Omit<ComponentPropsWithRef<'section'>, 'onChange'> {
   slides: readonly ReactNode[]; label: string; index?: number; defaultIndex?: number;

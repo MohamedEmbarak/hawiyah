@@ -15,8 +15,8 @@
   font-weight: var(--hw-step-complete-weight, inherit);
 }
 .hw-step:is([data-state='complete'], [data-state='completed'])::before {
-  border-color: var(--hw-step-complete-border, var(--hw-color-primary-subtle));
-  background: var(--hw-step-complete-background, var(--hw-color-primary-subtle));
+  border-color: var(--hw-step-complete-border, var(--hw-color-primary));
+  background: var(--hw-step-complete-background, var(--hw-color-primary));
   color: var(--hw-step-complete-marker-color, var(--hw-color-primary-text));
 }
 .hw-step:is([data-state='complete'], [data-state='completed']):not(:last-child)::after { background: var(--hw-step-complete-connector, var(--hw-color-border)); }

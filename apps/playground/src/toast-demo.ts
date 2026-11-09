@@ -28,7 +28,7 @@ export function toastDemoMarkup(locale: Locale): string {
     const notices = copy.messages.filter(message => Boolean(message.urgent) === urgent).map(message => `    <article class="hw-toast" data-hw-toast="${message.id}" data-tone="${message.tone}"${message.dismissible === false ? ' data-hw-dismissible="false"' : ''}>
       <span class="hw-toast-icon" aria-hidden="true"></span>
       <div class="hw-toast-content"><strong>${message.title}</strong><p>${message.message}</p></div>${message.dismissible === false ? '' : `
-      <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss aria-label="${copy.dismiss}: ${message.title}">×</button>`}
+      <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss aria-label="${copy.dismiss}: ${message.title}"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>`}
     </article>`);
     return `  <div data-hw-live="${live}" role="${urgent ? 'alert' : 'status'}" aria-live="${live}" aria-relevant="additions text">\n${notices.join('\n')}\n  </div>`;
   }

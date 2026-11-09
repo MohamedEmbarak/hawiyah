@@ -99,7 +99,7 @@ export const Chip = defineComponent({
                 "aria-label": props.removeLabel,
                 onClick: () => emit("remove"),
               },
-              () => "×",
+              () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),
             ),
         ],
       );
@@ -389,15 +389,16 @@ export const DataTable = defineComponent({
                         },
                         [
                           column.label,
-                          h(
-                            "span",
-                            { "aria-hidden": "true" },
-                            active
+                          h("span", {
+                            class: "hw-icon",
+                            "data-size": "sm",
+                            "aria-hidden": "true",
+                            "data-icon": active
                               ? direction.value.value === "ascending"
-                                ? " ↑"
-                                : " ↓"
-                              : " ↕",
-                          ),
+                                ? "arrow-up-02"
+                                : "arrow-down-02"
+                              : "arrow-data-transfer-vertical",
+                          }),
                         ],
                       )
                     : column.label,

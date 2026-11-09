@@ -43,8 +43,8 @@
 .hw-calendar-heading .hw-calendar-info, .hw-calendar-info > .hw-tooltip-anchor { position: static; }
 .hw-calendar-info { flex: none; display: inline-flex; color: var(--hw-color-text-muted); }
 .hw-calendar-info-icon { display: inline-grid; place-items: center; inline-size: 1rem; block-size: 1rem; border: 1px solid currentColor; border-radius: 50%; font: 600 0.6875rem/1 sans-serif; color: var(--hw-color-text-muted); cursor: help; }
-.hw-calendar-info [data-hw-tooltip-trigger] { font-size: 0; }
-.hw-calendar-info [data-hw-tooltip-trigger]::before { content: 'i'; font-size: 0.6875rem; }
+.hw-calendar-info [data-hw-tooltip-trigger] { font-size: 0; border: 0; }
+.hw-calendar-info [data-hw-tooltip-trigger]::before { content: ''; inline-size: 1rem; block-size: 1rem; background: currentColor; mask: url('./assets/icons/information-circle.svg') center / contain no-repeat; }
 .hw-calendar-info .hw-tooltip { inset-block-end: calc(100% + 4px); inset-inline: auto; left: 50%; transform: translateX(-50%); inline-size: 15rem; max-inline-size: calc(100vw - 4rem); white-space: normal; text-align: start; }
 .hw-calendar-info bdi { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .hw-calendar-info[hidden] { display: none; }

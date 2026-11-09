@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { restoreFocus } from '@hawiyah/core';
 
 let nextId = 0;
-@Component({ selector: 'hw-dialog', standalone: true, template: `<dialog #dialog class="hw-dialog" [attr.aria-labelledby]="titleId" [attr.aria-describedby]="describedBy || null" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[hwDialogFooter]" /></footer></dialog>` })
+@Component({ selector: 'hw-dialog', standalone: true, template: `<dialog #dialog class="hw-dialog" [attr.aria-labelledby]="titleId" [attr.aria-describedby]="describedBy || null" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="close()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[hwDialogFooter]" /></footer></dialog>` })
 export class HwDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input({required: true}) title = '';
   @Input() describedBy = '';

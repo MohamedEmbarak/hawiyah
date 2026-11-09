@@ -57,7 +57,7 @@ export function bindSearch(root:HTMLElement, locale:Locale, load:()=>Promise<Dis
     const current=++request;
     status.textContent=t('Loading results…','جارٍ تحميل النتائج…');
     results.setAttribute('aria-busy','true');results.replaceChildren();pages.replaceChildren();
-    chips.innerHTML=state.category==='all'?'':`<button class="hw-chip" type="button" data-search-remove aria-label="${t('Remove filter: ','إزالة التصفية: ')+label(locale,state.category)}">${label(locale,state.category)} ×</button>`;
+    chips.innerHTML=state.category==='all'?'':`<button class="hw-chip" type="button" data-search-remove aria-label="${t('Remove filter: ','إزالة التصفية: ')+label(locale,state.category)}">${label(locale,state.category)} <span class="hw-icon" data-icon="cancel-01" data-size="sm" aria-hidden="true"></span></button>`;
     try {
       const catalog=await load();
       if(controller.signal.aborted||current!==request)return;

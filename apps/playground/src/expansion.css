@@ -78,6 +78,8 @@
 }
 .component-preview .hw-toast-region {
   position: static;
+  /* Entering toasts slide in from the inline end; keep that inside the card. */
+  overflow-x: clip;
 }
 .component-preview .hw-cookie-consent {
   position: static;

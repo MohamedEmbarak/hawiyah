@@ -35,6 +35,10 @@ for (const direction of ['rtl', 'ltr']) {
       await page.emulateMedia({reducedMotion:'no-preference'});
     }
     await scope.evaluate(node=>node.setAttribute('data-hw-theme','dga'));
+    // The motion preference must be back in effect before a transition is started.
+    await expect.poll(()=>control.evaluate(node=>getComputedStyle(node,'::before').transitionDuration)).toBe('0.2s');
+    // Switching theme can move the thumb; let that transition end so the next one is not a shortened reversal.
+    await control.evaluate(node=>Promise.all(node.getAnimations({subtree:true}).map(animation=>animation.finished)));
     // Freeze a real CSS transition halfway through to check interpolation and containment.
     const movement=await control.evaluate(node=>{
       const input=node as HTMLInputElement;

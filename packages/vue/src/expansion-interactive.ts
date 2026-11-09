@@ -447,7 +447,7 @@ export const ToastRegion = defineComponent({
               if (recover) void nextTick(recover);
             }
           },
-        }, () => '×'),
+        }, () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' })),
       ]));
     return () => {
       const variant = props.variant ?? attrs['data-variant'];
@@ -691,7 +691,7 @@ export const TreeView = defineComponent({
                       focus(row.node.id);
                     },
                   },
-                  isOpen ? "−" : "+",
+                  h('span', { class: 'hw-icon', 'data-icon': isOpen ? 'minus-sign' : 'add-01', 'data-size': 'sm', 'aria-hidden': 'true' }),
                 ),
               h("span", {}, row.node.label),
             ],

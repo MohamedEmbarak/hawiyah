@@ -1,4 +1,5 @@
 import { expect, test, type Locator } from '@playwright/test';
+import { arrowDirection } from '../helpers/icon-direction';
 
 const mirrored = 'matrix(-1, 0, 0, 1, 0, 0)';
 const transform = (icon: Locator) => icon.evaluate(node => getComputedStyle(node).transform);
@@ -11,14 +12,15 @@ test('home navigation arrows follow the nearest direction without mirroring othe
   await page.goto('/#overview');
   const start = page.locator('.home-actions [data-icon="arrow"]');
   await expect(start).toBeVisible();
-  const arrows = page.locator('main [data-icon="arrow"]');
+  // Only rendered arrows have a resolved transform; hidden tab panels report none.
+  const arrows = page.locator('main [data-icon="arrow"]:visible');
   expect(await arrows.count()).toBeGreaterThan(8);
   for (const arrow of await arrows.all()) expect(await transform(arrow)).toBe(mirrored);
   for (const symbol of await page.locator('main .pg-icon:not(.pg-icon-directional)').all()) {
     expect(await transform(symbol)).toBe('none');
   }
-  const external = page.locator('.topbar-github span');
-  await expect(external).toHaveText('↗');
+  const external = page.locator('.topbar-github [data-icon="external"]');
+  await expect(external).toHaveAttribute('data-dga-icon', 'link-square-02');
   expect(await transform(external)).toBe('none');
 
   // A local LTR region must override the surrounding Arabic page.
@@ -43,8 +45,8 @@ test('guide back and forward arrows reverse once while action and external symbo
   expect(await transform(forward)).toBe(mirrored);
   expect(await transform(page.locator('[data-guide-launch-editor] [data-icon="spark"]'))).toBe('none');
   const source = page.locator('.guide-title-actions a[target="_blank"]');
-  await expect(source).toContainText('↗');
-  expect(await transform(source)).toBe('none');
+  await expect(source.locator('[data-icon="external"]')).toHaveAttribute('data-dga-icon', 'link-square-02');
+  expect(await transform(source.locator('[data-icon="external"]'))).toBe('none');
   await page.locator('[data-action="locale"]').click();
   expect(await transform(back)).toBe('none');
   expect(await transform(forward)).toBe('none');
@@ -55,7 +57,7 @@ test('carousel arrows and navigation respect the live preview direction switch',
   const canvas = page.locator('[data-guide-canvas]');
   const previous = canvas.locator('[data-hw-previous]');
   const next = canvas.locator('[data-hw-next]');
-  const arrow = (button: Locator) => button.evaluate(node => getComputedStyle(node, '::before').content);
+  const arrow = (button: Locator) => button.evaluate(arrowDirection);
   const activeSlide = canvas.locator('[data-hw-slide]:not([inert])');
   await expect(previous).toBeVisible();
   const firstSlide = await activeSlide.textContent();

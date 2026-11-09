@@ -184,7 +184,7 @@ export const PortalFooter = defineComponent({
     externalLabel: { type: String, default: "يفتح في نافذة جديدة" },
   },
   setup(props, { attrs, slots }) {
-    const linkList = (items: readonly PortalFooterLink[]) => h('ul', {class:'hw-portal-footer-links'}, items.map((link,index) => h('li', {key:index}, h('a', {href:link.href,target:link.external?'_blank':undefined,rel:link.external?'noopener noreferrer':undefined}, [link.label,link.external && h('span',{class:'hw-portal-footer-external','aria-hidden':'true'},'↗'),link.external && h('span',{class:'hw-sr-only'},` · ${props.externalLabel}`)]))));
+    const linkList = (items: readonly PortalFooterLink[]) => h('ul', {class:'hw-portal-footer-links'}, items.map((link,index) => h('li', {key:index}, h('a', {href:link.href,target:link.external?'_blank':undefined,rel:link.external?'noopener noreferrer':undefined}, [link.label,link.external && h('span',{class:'hw-portal-footer-external hw-icon','data-icon':'link-square-02','data-size':'sm','aria-hidden':'true'}),link.external && h('span',{class:'hw-sr-only'},` · ${props.externalLabel}`)]))));
     return () => h('footer',mergeProps(attrs,{class:'hw-portal-footer'}),[
       h('div',{class:'hw-portal-footer-main'},[
         (props.brand || props.description || slots.logo) && h('div',{class:'hw-portal-footer-brand'},[(slots.logo || props.brand) && h('div',{class:'hw-portal-footer-brand-marks'},slots.logo?.() ?? h('strong',{},props.brand)),props.description && h('p',{},props.description)]),
@@ -442,7 +442,7 @@ export const NotificationList = defineComponent({
                           "aria-label": props.dismissLabel(item),
                           onClick: () => emit("dismiss", item.id),
                         },
-                        () => "×",
+                        () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),
                       ),
                     ],
                   ),

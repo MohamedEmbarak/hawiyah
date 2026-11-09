@@ -15,14 +15,18 @@ export async function checkCalendarPresentation(page: Page, picker: Locator) {
   await page.keyboard.press('End');
   await page.keyboard.press('ArrowDown');
   await expect(dialog.locator('.hw-calendar-day:focus')).toHaveCount(1);
+  // Compare like with like: take the baseline once web fonts have loaded and the open animation has ended.
+  await page.evaluate(() => document.fonts.ready);
+  await dialog.evaluate(node => Promise.all(node.getAnimations({ subtree: true }).filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity).map(animation => animation.finished)));
   const before = await dialog.boundingBox();
   await expect(dialog.locator('tbody tr')).toHaveCount(6);
   await expect(dialog.locator('tbody tr').last().locator('.hw-calendar-day')).toHaveCount(7);
   await expect(dialog.locator('.hw-calendar-empty-week')).toHaveCount(0);
   await dialog.locator('input[value=islamic-umalqura]').check();
+  // The calendar re-renders after the switch; compare once that render has settled.
+  await expect.poll(async () => Math.abs(before!.height - (await dialog.boundingBox())!.height)).toBeLessThan(1);
+  await expect.poll(async () => Math.abs(before!.y - (await dialog.boundingBox())!.y)).toBeLessThan(1);
   const after = await dialog.boundingBox();
-  expect(Math.abs(before!.height - after!.height)).toBeLessThan(1);
-  expect(Math.abs(before!.y - after!.y)).toBeLessThan(1);
   await expect(dialog.locator('tbody tr').last().locator('.hw-calendar-day')).toHaveCount(7);
   expect(await dialog.locator('.hw-calendar-day').allTextContents()).not.toEqual([]);
   expect((await dialog.innerText()).match(/[٠-٩۰-۹]/u)).toBeNull();

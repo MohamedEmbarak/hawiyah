@@ -140,7 +140,7 @@ function tree(t: Translate, typed: boolean): Markup {
   const leaf = (item: {id: string; label: string}) => `<li role="treeitem" data-hw-value="${item.id}"><span data-hw-tree-label>${item.label}</span></li>`;
   return withSelection({
     vanilla: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="${label}">
-  <li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="${t('Toggle business documents','تبديل عرض مستندات المنشأة')}">▸</button><span data-hw-tree-label>${business}</span>
+  <li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="${t('Toggle business documents','تبديل عرض مستندات المنشأة')}"><span class="hw-icon" data-icon="arrow-right-01" data-directional="true" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>${business}</span>
     <ul role="group" hidden>${children.map(leaf).join('\n      ')}</ul>
   </li>
   ${leaf(personal)}

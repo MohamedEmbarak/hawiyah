@@ -45,7 +45,7 @@ export function navigationDrawerMarkup(id: string, locale: string) {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
   return `<button class="hw-button" type="button" data-hw-dialog-open="${id}">${t('Open navigation','فتح التنقل')}</button>
 <dialog id="${id}" class="hw-dialog hw-drawer hw-navigation-drawer" data-hw="navigation-drawer" data-side="start" aria-labelledby="${id}-title">
-  <header class="hw-dialog-header"><h2 id="${id}-title">${t('Navigation','التنقل')}</h2><button type="button" class="hw-button" data-variant="ghost" data-hw-dialog-close aria-label="${t('Close navigation','إغلاق القائمة')}">×</button></header>
+  <header class="hw-dialog-header"><h2 id="${id}-title">${t('Navigation','التنقل')}</h2><button type="button" class="hw-button" data-variant="ghost" data-hw-dialog-close aria-label="${t('Close navigation','إغلاق القائمة')}"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header>
   <div class="hw-dialog-body"><div class="hw-navigation-drawer-user"><p>${t('Welcome to Hawiyah','مرحبًا بك في هوية')}</p></div>
     <nav class="hw-navigation-drawer-nav" aria-label="${t('Main navigation','التنقل الرئيسي')}"><ul>
       <li><a class="hw-navigation-drawer-row" href="#components" aria-current="page"><span class="hw-icon" data-icon="home-01" aria-hidden="true"></span><span>${t('Components','المكونات')}</span></a></li>

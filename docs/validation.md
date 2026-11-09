@@ -1,5 +1,29 @@
 # Validation record
 
+## 2026-11-09 DGA icons and a clean browser suite
+
+Every interface icon in the guide, the four adapters, the stylesheet and the
+examples now comes from the Hugeicons Stroke Rounded commit already pinned in
+`packages/styles/src/assets/icons/provenance.json`; text glyphs and hand-drawn
+SVGs were removed, except the rating star and keyboard key legends. With
+Node.js 24.22.1: `pnpm typecheck:playground`, `pnpm test` (637 Vitest and 8
+token-contrast cases), `pnpm check:packages` (all icons listed in provenance
+present in the styles tarball) and `HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs`
+passed.
+
+The full Chromium suite passed 526 of 526 tests. Earlier failures were resolved
+as follows. Product fixes: the verification banner link now uses the DGA link
+color (6.0:1 on the muted banner), entering toasts in catalog previews no longer
+widen the page, open pagination menus are no longer clipped by their example
+card, and the search shortcut hint sits at the inline end in RTL. Stale tests
+were updated: the card footer action, the Arabic dark-mode audit setup, and
+glyph assertions replaced by icon and mirroring checks; the hero switch spec
+was removed with the feature it covered. Timing-sensitive tests now wait for
+the state they check: the dialog open animation and web fonts before the
+calendar baseline, the theme-change transition before the switch transition,
+color transitions before accessibility scans, and layout after viewport
+resizes.
+
 ## 2026-11-09 npm publication
 
 All seven `@hawiyah/*` packages were published at 0.2.0 with the `latest`

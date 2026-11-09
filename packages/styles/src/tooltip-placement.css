@@ -12,22 +12,22 @@
   --hw-profile-tooltip-shadow: initial;
 }
 .hw-tooltip {
-  --_nq-tooltip-background: var(--hw-color-inverse);
-  --_nq-tooltip-color: var(--hw-color-on-inverse);
+  --_hw-tooltip-background: var(--hw-color-inverse);
+  --_hw-tooltip-color: var(--hw-color-on-inverse);
   box-sizing: border-box;
   min-inline-size: min(var(--hw-tooltip-min-width, var(--hw-profile-tooltip-min, 0px)), calc(100vw - 2rem));
   max-inline-size: min(var(--hw-tooltip-max-width, var(--hw-profile-tooltip-max, 20rem)), calc(100vw - 2rem));
   padding: var(--hw-tooltip-padding, var(--hw-profile-tooltip-padding, var(--hw-space-2) var(--hw-space-3)));
-  background: var(--hw-tooltip-background, var(--_nq-tooltip-background));
-  color: var(--hw-tooltip-color, var(--_nq-tooltip-color));
+  background: var(--hw-tooltip-background, var(--_hw-tooltip-background));
+  color: var(--hw-tooltip-color, var(--_hw-tooltip-color));
   line-height: 1.5;
   box-shadow: var(--hw-tooltip-shadow, var(--hw-profile-tooltip-shadow, var(--hw-shadow-sm)));
 }
 /* Resolve color roles on the tooltip so nested mode overrides stay live. */
 @scope (:where(:root:not([data-hw-theme]), [data-hw-theme='dga'], [data-hw-theme='custom'])) to ([data-hw-theme]) {
   .hw-tooltip {
-    --_nq-tooltip-background: var(--hw-color-surface);
-    --_nq-tooltip-color: var(--hw-color-text-muted);
+    --_hw-tooltip-background: var(--hw-color-surface);
+    --_hw-tooltip-color: var(--hw-color-text-muted);
   }
 }
 /* Logical sides follow the nearest direction, independently of language. */
@@ -41,7 +41,7 @@
 }
 .hw-tooltip:not([data-placement='start'], [data-placement='end'])[data-align='center'] {
   inset-inline-start: 50%;
-  translate: calc(-50% * var(--_nq-inline-sign, 1)) 0;
+  translate: calc(-50% * var(--_hw-inline-sign, 1)) 0;
 }
 .hw-tooltip:is([data-placement='start'], [data-placement='end']) {
   inset-block-start: 0;

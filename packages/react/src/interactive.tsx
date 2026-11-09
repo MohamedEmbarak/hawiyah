@@ -160,7 +160,7 @@ export function Dialog({ open: controlled, defaultOpen = false, onOpenChange, ti
         const bounds = event.currentTarget.getBoundingClientRect();
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
       }}>
-      <header className="hw-dialog-header"><h2 id={`${id}-title`}>{title}</h2><Button variant="ghost" aria-label={closeLabel} onClick={close}>×</Button></header>
+      <header className="hw-dialog-header"><h2 id={`${id}-title`}>{title}</h2><Button variant="ghost" aria-label={closeLabel} onClick={close}><span className="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true" /></Button></header>
       <div className="hw-dialog-body">{description && <p id={`${id}-description`}>{description}</p>}{typeof children === 'function' ? children(context) : children}</div>
       {footer && <footer className="hw-dialog-footer">{typeof footer === 'function' ? footer(context) : footer}</footer>}
     </dialog>

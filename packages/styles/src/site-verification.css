@@ -7,7 +7,7 @@
 .hw-verification-mark { flex: none; display: inline-flex; align-items: center; justify-content: center; inline-size: 1.25rem; block-size: 1.25rem; }
 .hw-verification-mark:empty { display: none; }
 .hw-verification-mark :is(img,svg) { display: block; max-inline-size: 100%; max-block-size: 100%; }
-.hw-verification-toggle { display: inline-flex; align-items: center; gap: var(--hw-space-1); color: var(--hw-color-primary-text); text-decoration: underline; text-underline-offset: .25em; }
+.hw-verification-toggle { display: inline-flex; align-items: center; gap: var(--hw-space-1); color: var(--hw-color-link); text-decoration: underline; text-underline-offset: .25em; }
 .hw-verification-toggle .hw-icon { inline-size: 1rem; block-size: 1rem; transition: transform 200ms ease; }
 .hw-site-verification details[open] .hw-verification-toggle .hw-icon { transform: rotate(180deg); }
 .hw-site-verification summary:hover .hw-verification-toggle { color: var(--hw-color-text); }

@@ -109,10 +109,10 @@
   padding-inline: var(--hw-profile-field-padding-start, var(--hw-space-3)) var(--hw-profile-field-padding-end, var(--hw-space-3));
   border-radius: var(--hw-profile-control-radius, var(--hw-radius-md));
   background-color: var(--hw-color-field-background, var(--hw-color-surface));
-  background-image: linear-gradient(var(--hw-color-field-active), var(--hw-color-field-active)) var(--_nq-select-image,);
+  background-image: linear-gradient(var(--hw-color-field-active), var(--hw-color-field-active)) var(--_hw-select-image,);
   background-repeat: no-repeat;
-  background-position: center bottom var(--_nq-select-position,);
-  background-size: 0% 2px var(--_nq-select-size,);
+  background-position: center bottom var(--_hw-select-position,);
+  background-size: 0% 2px var(--_hw-select-size,);
   line-height: var(--hw-profile-field-leading, var(--hw-leading-normal));
   transition: var(--hw-dga-on, border-color var(--hw-duration-input) var(--hw-ease-input), background-color var(--hw-duration-input) var(--hw-ease-input), background-size var(--hw-duration-input) var(--hw-ease-input), box-shadow var(--hw-duration-input) var(--hw-ease-input)) var(--hw-dga-off, background-size var(--hw-duration-input, 500ms) var(--hw-ease-input, ease));
 }
@@ -120,11 +120,11 @@
 :is(.hw-input, .hw-textarea, .hw-select):hover:not(:disabled, [readonly]) { border-color: var(--hw-color-field-hover, var(--hw-color-primary)); }
 :is(.hw-input, .hw-textarea, .hw-select):focus:not(:disabled, [readonly]) {
   border-color: var(--hw-dga-on, var(--hw-color-primary)) var(--hw-dga-off, var(--hw-color-field-active));
-  background-size: var(--hw-profile-field-focus-line, 0% 2px) var(--_nq-select-size,);
+  background-size: var(--hw-profile-field-focus-line, 0% 2px) var(--_hw-select-size,);
   box-shadow: var(--hw-profile-field-shadow, none);
 }
 :is(.hw-input, .hw-textarea, .hw-select):active:not(:disabled, [readonly]) {
-  background-size: var(--hw-profile-field-pressed-line, 0% 2px) var(--_nq-select-size,);
+  background-size: var(--hw-profile-field-pressed-line, 0% 2px) var(--_hw-select-size,);
   background-color: var(--hw-color-field-background);
 }
 :is(.hw-input, .hw-textarea, .hw-select)[data-size='sm'] { padding-block: var(--hw-profile-button-padding-block, var(--hw-space-1)); }
@@ -141,25 +141,25 @@
 :is(.hw-input, .hw-textarea)[readonly]:focus-visible {
   outline: 2px solid var(--hw-color-focus);
 }
-:is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled'] { background-color: var(--hw-color-surface-muted); background-image: linear-gradient(var(--hw-color-field-active), var(--hw-color-field-active)) var(--_nq-select-image,); background-repeat: no-repeat; background-position: center bottom var(--_nq-select-position,); background-size: 0% 2px var(--_nq-select-size,); }
-:is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled']:focus:not(:disabled, [readonly]) { background-size: var(--hw-profile-field-focus-line, 0% 2px) var(--_nq-select-size,); }
-:is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled']:active:not(:disabled, [readonly]) { background-size: var(--hw-profile-field-pressed-line, 0% 2px) var(--_nq-select-size,); background-color: var(--hw-dga-on, var(--hw-color-field-background)) var(--hw-dga-off, var(--hw-color-surface-muted)); }
+:is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled'] { background-color: var(--hw-color-surface-muted); background-image: linear-gradient(var(--hw-color-field-active), var(--hw-color-field-active)) var(--_hw-select-image,); background-repeat: no-repeat; background-position: center bottom var(--_hw-select-position,); background-size: 0% 2px var(--_hw-select-size,); }
+:is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled']:focus:not(:disabled, [readonly]) { background-size: var(--hw-profile-field-focus-line, 0% 2px) var(--_hw-select-size,); }
+:is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled']:active:not(:disabled, [readonly]) { background-size: var(--hw-profile-field-pressed-line, 0% 2px) var(--_hw-select-size,); background-color: var(--hw-dga-on, var(--hw-color-field-background)) var(--hw-dga-off, var(--hw-color-surface-muted)); }
 :is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled']:focus-visible { border-color: var(--hw-dga-on, var(--hw-color-border-strong)) var(--hw-dga-off, var(--hw-color-field-active)); }
 /* Presence is adapter-owned; validity stays native. Empty optional fields must
    not imply success. Explicit application errors take precedence below. */
 :is(.hw-input, .hw-textarea, .hw-select):where([data-hw-filled='true']):valid,
 :is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled']:where([data-hw-filled='true']):valid {
-  background-image: linear-gradient(var(--hw-color-primary-text, var(--hw-color-primary)), var(--hw-color-primary-text, var(--hw-color-primary))) var(--_nq-select-image,);
+  background-image: linear-gradient(var(--hw-color-primary-text, var(--hw-color-primary)), var(--hw-color-primary-text, var(--hw-color-primary))) var(--_hw-select-image,);
 }
 :is(.hw-input, .hw-textarea, .hw-select)[aria-invalid='true'],
 :is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled'][aria-invalid='true'] {
   border-color: var(--hw-color-danger);
-  background-image: linear-gradient(var(--hw-color-danger), var(--hw-color-danger)) var(--_nq-select-image,);
+  background-image: linear-gradient(var(--hw-color-danger), var(--hw-color-danger)) var(--_hw-select-image,);
 }
 :is(.hw-input, .hw-textarea, .hw-select)[aria-invalid='true']:is(:hover, :focus, :active) { border-color: var(--hw-color-danger); }
 @supports selector(:user-invalid) {
   :is(.hw-input, .hw-textarea, .hw-select):user-invalid,
-  :is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled']:user-invalid { border-color: var(--hw-color-danger); background-image: linear-gradient(var(--hw-color-danger), var(--hw-color-danger)) var(--_nq-select-image,); }
+  :is(.hw-input, .hw-textarea, .hw-select)[data-variant='filled']:user-invalid { border-color: var(--hw-color-danger); background-image: linear-gradient(var(--hw-color-danger), var(--hw-color-danger)) var(--_hw-select-image,); }
   :is(.hw-input, .hw-textarea, .hw-select):user-invalid:is(:hover, :focus, :active) { border-color: var(--hw-color-danger); }
 }
 :is(.hw-input, .hw-textarea, .hw-select):disabled,

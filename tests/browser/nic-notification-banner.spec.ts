@@ -157,7 +157,8 @@ for (const [framework, languages] of Object.entries({
     const example = page.frameLocator('.hw-ide-frame').locator('[data-toast-demo]');
     await exerciseBanner(example);
     await page.setViewportSize({width: 390, height: 844});
-    expect(await example.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+    // The editor frame reflows after the page resize; check the settled layout.
+    await expect.poll(() => example.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     await expect(page).toHaveURL(/#component\/toast-region$/);
   });
 }

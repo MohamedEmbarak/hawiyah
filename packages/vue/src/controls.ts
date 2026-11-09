@@ -575,7 +575,7 @@ export const TagInput = defineComponent({
                     "aria-label": props.removeLabel(value),
                     onClick: () => remove(value),
                   },
-                  () => "×",
+                  () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),
                 ),
               ]),
             ),

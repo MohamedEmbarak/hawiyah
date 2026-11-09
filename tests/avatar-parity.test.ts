@@ -37,9 +37,9 @@ for(const adapter of ['react','vue','angular']) {
     expect(avatar.getAttribute('data-size')).toBe('64');expect(avatar.getAttribute('data-variant')).toBe('square');
   });
   it(`${adapter}: explicit initials survive failure and changing the name preserves full accessible identity`,async()=>{
-    const m=await mount(adapter);m.state.initials='نس';await m.sync();await m.error();
-    const avatar=m.host.querySelector('.hw-avatar')!;expect(avatar.textContent).toBe('نس');
-    m.state.name='فريق هوية';await m.sync();expect(avatar.getAttribute('aria-label')).toBe('فريق هوية');expect(avatar.textContent).toBe('نس');
+    const m=await mount(adapter);m.state.initials='هو';await m.sync();await m.error();
+    const avatar=m.host.querySelector('.hw-avatar')!;expect(avatar.textContent).toBe('هو');
+    m.state.name='فريق هوية';await m.sync();expect(avatar.getAttribute('aria-label')).toBe('فريق هوية');expect(avatar.textContent).toBe('هو');
     m.state.src='';m.state.initials=undefined;m.state.name='🟢 فريق';await m.sync();expect(avatar.textContent).toBe('🟢ف');
   });
 }

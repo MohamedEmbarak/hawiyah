@@ -30,7 +30,7 @@ export class HwCardComponent {
 @Component({selector: 'hw-badge', standalone: true, template: `<span class="hw-badge" [attr.data-tone]="tone" [attr.data-variant]="variant"><ng-content /></span>`})
 export class HwBadgeComponent { @Input() variant: 'soft' | 'outline' | 'dot' = 'soft'; @Input() tone: 'neutral' | 'success' | 'warning' | 'danger' | 'info' = 'neutral'; }
 
-@Component({selector: 'hw-alert', standalone: true, template: `<div class="hw-alert" [attr.data-tone]="tone" [attr.data-variant]="variant" [attr.role]="role"><div class="hw-alert-content">@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>@if (dismissible) {<button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="dismissed.emit()">×</button>}</div>`})
+@Component({selector: 'hw-alert', standalone: true, template: `<div class="hw-alert" [attr.data-tone]="tone" [attr.data-variant]="variant" [attr.role]="role"><div class="hw-alert-content">@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>@if (dismissible) {<button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="dismissed.emit()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>}</div>`})
 export class HwAlertComponent {
   @Input() tone: 'neutral' | 'info' | 'success' | 'warning' | 'danger' = 'info';
   @Input() variant: 'default' | 'outline' | 'minimal' = 'default';

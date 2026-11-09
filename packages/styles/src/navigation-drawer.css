@@ -101,3 +101,4 @@ summary.hw-navigation-drawer-row::after {
   summary.hw-navigation-drawer-row::after,
   :is(.hw-navigation-drawer, .hw-navigation-drawer-host > hw-drawer > .hw-drawer) > .hw-dialog-header > button::after { background: ButtonText; forced-color-adjust: none; }
 }
+:is(.hw-navigation-drawer, .hw-navigation-drawer-host > hw-drawer > .hw-drawer) > .hw-dialog-header > button:has(.hw-icon)::after { content: none; }

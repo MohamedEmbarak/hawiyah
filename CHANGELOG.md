@@ -3,6 +3,41 @@
 All seven `@hawiyah/*` packages share one version. Versions below 1.0 may change
 APIs in a minor release; read the notes before upgrading.
 
+## Unreleased
+
+### Icons follow the DGA Platforms Code icon library
+
+Every interface icon now comes from Hugeicons Stroke Rounded at the pinned
+commit already recorded in `packages/styles/src/assets/icons/provenance.json`,
+the set used by the DGA Platforms Code icon library. Files are shipped
+unchanged and colored through CSS masks; the two native select arrows keep the
+upstream geometry with a fixed text color, as recorded under `derived`.
+
+- Close and remove buttons in every adapter render a `cancel-01` icon element
+  instead of a `×` character. Tree toggles use `add-01` / `minus-sign`,
+  calendar navigation uses `arrow-left-01` / `arrow-right-01` (mirrored in
+  RTL), sortable table headers use `arrow-up-02`, `arrow-down-02` and
+  `arrow-data-transfer-vertical`, and external footer links use
+  `link-square-02`.
+- Stylesheet glyphs became icon masks: accordion and collapsible indicators,
+  checkbox ticks, the date-picker information trigger, carousel arrows, table
+  sort indicators, external links, pagination arrows and notification icons.
+  Completed and error stepper markers are now solid circles with the DGA tick
+  or exclamation cut out.
+- Where a component's CSS already draws a close icon, it is skipped when the
+  button contains its own `.hw-icon`, so markup written for 0.2.0 still shows
+  exactly one icon.
+- The rating keeps its star glyph: the DGA reference CSS draws stars as a glyph
+  with a fractional fill, which the outline-only icon set cannot reproduce.
+
+### Fixes
+
+- The official-site verification toggle uses the DGA link color
+  (`--hw-color-link`), raising its contrast on the muted banner from 4.31:1 to
+  6.0:1 in light mode.
+- Private custom properties that kept the old prefix (`--_nq-*`) are renamed
+  `--_hw-*`.
+
 ## 0.2.0 — 2026-11-09
 
 First npm release of `@hawiyah/tokens`, `@hawiyah/styles`, `@hawiyah/core`,

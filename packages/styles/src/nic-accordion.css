@@ -66,15 +66,16 @@
 .hw-accordion-trigger::after {
   position: relative;
   top: var(--hw-profile-accordion-icon-offset, 0px);
-  content: var(--hw-profile-accordion-icon-content, '+');
+  content: var(--hw-profile-accordion-icon-content, '');
   inline-size: var(--hw-profile-accordion-icon-size, 1.5rem);
   block-size: var(--hw-profile-accordion-icon-size, 1.5rem);
-  background: var(--hw-profile-accordion-icon-background, transparent);
-  mask: var(--hw-profile-accordion-icon-mask, none);
+  background: var(--hw-profile-accordion-icon-background, currentColor);
+  mask: var(--hw-profile-accordion-icon-mask, url('./assets/icons/add-01.svg') center / contain no-repeat);
   transition: transform var(--hw-duration-accordion-indicator, 0ms) var(--hw-ease-accordion, ease-in-out);
 }
 .hw-accordion-item[open] > .hw-accordion-trigger::after {
-  content: var(--hw-profile-accordion-icon-content, '−');
+  content: var(--hw-profile-accordion-icon-content, '');
+  mask: var(--hw-profile-accordion-icon-mask, url('./assets/icons/minus-sign.svg') center / contain no-repeat);
   transform: var(--hw-profile-accordion-icon-expanded, none);
 }
 .hw-accordion-item[data-hw-expanded] > .hw-accordion-trigger::after {
