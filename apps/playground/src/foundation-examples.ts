@@ -13,12 +13,12 @@ export function foundationExamples(locale: Locale): string {
     <h2 id="type-scale-title">${t('Typography and elevation', 'الخطوط والظلال')}</h2>
     <p>${t('Choose a visual scale independently of the HTML heading level.', 'اختر مقياس الخط المرئي بشكل مستقل عن مستوى العنوان.')}</p>
     <details><summary>${t('Compare all 14 type styles', 'مقارنة أنماط الخط الأربعة عشر')}</summary>
-      <div class="foundation-scale-list">${scales.map(scale => `<div><code>${scale}</code><p class="nq-type" data-scale="${scale}">${sample}</p></div>`).join('')}</div>
+      <div class="foundation-scale-list">${scales.map(scale => `<div><code>${scale}</code><p class="hw-type" data-scale="${scale}">${sample}</p></div>`).join('')}</div>
     </details>
     <h3>${t('Two-line excerpt', 'مقتطف من سطرين')}</h3>
-    <div class="foundation-excerpt"><p class="nq-type nq-line-clamp" data-scale="body-md" data-lines="2">${passage}</p>
+    <div class="foundation-excerpt"><p class="hw-type hw-line-clamp" data-scale="body-md" data-lines="2">${passage}</p>
       <details><summary>${t('Read the full text', 'قراءة النص الكامل')}</summary><p>${passage}</p></details></div>
     <h3>${t('Elevation levels', 'مستويات الظلال')}</h3>
-    <div class="foundation-elevations">${elevations.map(level => `<div style="box-shadow:var(--nq-shadow-${level})"><code>--nq-shadow-${level}</code></div>`).join('')}</div>
+    <div class="foundation-elevations">${elevations.map(level => `<div style="box-shadow:var(--hw-shadow-${level})"><code>--hw-shadow-${level}</code></div>`).join('')}</div>
   </section>`;
 }

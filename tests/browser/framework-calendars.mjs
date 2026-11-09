@@ -21,7 +21,7 @@ try {
     let logs = ''; server.stdout.on('data', chunk => { logs += chunk; }); server.stderr.on('data', chunk => { logs += chunk; });
     await expect.poll(async () => { if (server.exitCode !== null) throw new Error(logs); return responds(example.url); }, { timeout: 30000 }).toBe(true);
   }
-  browser = await chromium.launch({ headless: true, executablePath: process.env.NASAQ_CHROMIUM || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined), args: ['--no-sandbox'] });
+  browser = await chromium.launch({ headless: true, executablePath: process.env.HAWIYAH_CHROMIUM || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined), args: ['--no-sandbox'] });
   for (const example of examples) {
     const context = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
     const page = await context.newPage();
@@ -31,13 +31,13 @@ try {
     if (example.name === 'vue') { await page.locator('.settings select').nth(0).selectOption('en'); await page.locator('.settings select').nth(1).selectOption('ltr'); }
     const showcase = page.getByTestId('calendar-showcase');
     await expect(showcase.getByRole('heading', { name: 'Your appointment, in either calendar' })).toBeVisible();
-    const grid = showcase.locator('.nq-grid');
+    const grid = showcase.locator('.hw-grid');
     await expect.poll(() => grid.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(/\s+/u).length)).toBe(2);
     const date = showcase.locator('input[type=text]');
     const open = showcase.getByRole('button', { name: 'Open calendar', exact: true });
     const dialog = page.getByRole('dialog', { name: 'Choose appointment date', exact: true });
     const system = (value) => dialog.locator(`input[value="${value}"]`);
-    const canonicalInput = showcase.locator('.nq-date-picker > input[type=hidden]');
+    const canonicalInput = showcase.locator('.hw-date-picker > input[type=hidden]');
     const canonical = (value, calendar, locale = 'en-SA') => formatCalendarDate(value, { calendar, locale, dateStyle: 'full' });
     const labelParts = label => (label?.match(/[\p{L}\p{N}]+/gu) ?? []).sort();
     const checkDayLabel = async (button, value) => expect.poll(async () => labelParts(await button.getAttribute('aria-label'))).toEqual(labelParts(canonical(value, 'islamic-umalqura')));
@@ -75,20 +75,20 @@ try {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     for (const width of [320, 390]) {
       await page.setViewportSize({ width, height: 844 });
-      const picker = showcase.locator('.nq-date-picker');
-      const output = picker.locator('.nq-date-picker-value');
-      const inputGroup = picker.locator('.nq-date-picker-control');
-      const fieldBounds = await inputGroup.boundingBox(); const triggerBounds = await picker.locator('.nq-date-picker-trigger').boundingBox();
+      const picker = showcase.locator('.hw-date-picker');
+      const output = picker.locator('.hw-date-picker-value');
+      const inputGroup = picker.locator('.hw-date-picker-control');
+      const fieldBounds = await inputGroup.boundingBox(); const triggerBounds = await picker.locator('.hw-date-picker-trigger').boundingBox();
       expect(triggerBounds.x).toBeGreaterThanOrEqual(fieldBounds.x);
       expect(triggerBounds.x + triggerBounds.width).toBeLessThanOrEqual(fieldBounds.x + fieldBounds.width + 1);
       await picker.locator('button[aria-haspopup="dialog"]').click();
       const popup = page.getByRole('dialog');
-      await expect(popup.locator('.nq-dialog-header h2')).toBeVisible();
+      await expect(popup.locator('.hw-dialog-header h2')).toBeVisible();
       await popup.evaluate(node => Promise.all(node.getAnimations().map(animation => animation.finished.catch(() => {}))));
       const bounds = await popup.boundingBox();
       expect(bounds.x).toBeGreaterThanOrEqual(0); expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
       expect(await popup.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
-      expect(await popup.locator('.nq-calendar-day').first().evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+      expect(await popup.locator('.hw-calendar-day').first().evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
       await page.keyboard.press('Escape');
       await expect(picker.locator('button[aria-haspopup="dialog"]')).toBeFocused();
     }

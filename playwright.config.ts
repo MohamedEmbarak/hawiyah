@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import { existsSync } from "node:fs";
-const port = Number(process.env.NASAQ_TEST_PORT || 4173);
+const port = Number(process.env.HAWIYAH_TEST_PORT || 4173);
 export default defineConfig({
   testDir: "./tests/browser",
   fullyParallel: true,
@@ -18,7 +18,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         launchOptions: {
           executablePath:
-            process.env.NASAQ_CHROMIUM ||
+            process.env.HAWIYAH_CHROMIUM ||
             (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined),
           args: ["--no-sandbox"],
         },

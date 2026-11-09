@@ -1,32 +1,32 @@
 # Layout that follows your content
 
-Nasaq layouts use native HTML, ordinary CSS, and the same semantic tokens as the
+Hawiyah layouts use native HTML, ordinary CSS, and the same semantic tokens as the
 components. They do not measure the viewport in JavaScript. Server rendering and
 client rendering produce the same styles; CSS handles breakpoints and direction.
 
-The default appearance uses the mapped `dga` foundation. The `nasaq` theme remains
+The default appearance uses the mapped `dga` foundation. The `hawiyah` theme remains
 an explicit option; choosing a visual theme does not change DOM order, layout
 semantics, or the shared responsive-prop contract.
 
-Import `@nasaq/styles/styles.css` once. This entry includes component, extended
+Import `@hawiyah/styles/styles.css` once. This entry includes component, extended
 component, and layout styles. The reset remains separately opt-in.
 
 ## Choose a primitive
 
 | Primitive / CSS class | Use it for | Default |
 | --- | --- | --- |
-| `Container` / `nq-container` | Centered content with a readable maximum width | Theme container maximum and responsive gutters; override `maxWidth` when needed |
-| `Stack` / `nq-stack` | A vertical sequence of fields, cards, or sections | Flex column, spacing token `4` |
-| `Inline` / `nq-inline` | Actions, metadata, and wrapping controls | Flex row, centered alignment, wrapping |
-| `Grid` / `nq-grid` | Responsive, equal-width cards | One column |
-| `Columns` / `nq-columns` | Explicit responsive columns | Same grid behavior; use the name that fits the content |
-| `Sidebar` / `nq-sidebar` | Navigation or context next to primary content | `18rem` sidebar, collapses below `48rem` |
-| `Center` / `nq-center` | Center content within its available space | Flex, centered on both axes |
-| `Spacer` / `nq-spacer` | Flexible space inside a flex container | Grows into remaining space; `gap` can provide a minimum |
-| `AspectRatio` / `nq-aspect-ratio` | Reserve space for media | `16 / 9`, cover images/video |
-| `Section` / `nq-section` | A semantic section with consistent padding | Padding token `6` |
-| `AppShell` / `nq-app-shell` | Header, navigation, main area and footer | Full viewport minimum height; sidebar columns from `64rem` |
-| `PageHeader` / `nq-page-header` | Heading, description, breadcrumb and actions | Wrapping content and action groups |
+| `Container` / `hw-container` | Centered content with a readable maximum width | Theme container maximum and responsive gutters; override `maxWidth` when needed |
+| `Stack` / `hw-stack` | A vertical sequence of fields, cards, or sections | Flex column, spacing token `4` |
+| `Inline` / `hw-inline` | Actions, metadata, and wrapping controls | Flex row, centered alignment, wrapping |
+| `Grid` / `hw-grid` | Responsive, equal-width cards | One column |
+| `Columns` / `hw-columns` | Explicit responsive columns | Same grid behavior; use the name that fits the content |
+| `Sidebar` / `hw-sidebar` | Navigation or context next to primary content | `18rem` sidebar, collapses below `48rem` |
+| `Center` / `hw-center` | Center content within its available space | Flex, centered on both axes |
+| `Spacer` / `hw-spacer` | Flexible space inside a flex container | Grows into remaining space; `gap` can provide a minimum |
+| `AspectRatio` / `hw-aspect-ratio` | Reserve space for media | `16 / 9`, cover images/video |
+| `Section` / `hw-section` | A semantic section with consistent padding | Padding token `6` |
+| `AppShell` / `hw-app-shell` | Header, navigation, main area and footer | Full viewport minimum height; sidebar columns from `64rem` |
+| `PageHeader` / `hw-page-header` | Heading, description, breadcrumb and actions | Wrapping content and action groups |
 
 Choose the appropriate semantic tag when an adapter offers `as`. A visual
 `Section` does not create a meaningful document outline on its own: give it a
@@ -36,11 +36,11 @@ it hidden from assistive technology when it has no content.
 ## Shared props
 
 ```ts
-import { layoutStyles } from '@nasaq/core';
+import { layoutStyles } from '@hawiyah/core';
 import type {
   LayoutProps, LayoutSpacing, LayoutSpaceToken, Responsive,
   LayoutAlign, LayoutJustify, LayoutSide, LayoutBreakpoint,
-} from '@nasaq/core';
+} from '@hawiyah/core';
 
 const props: LayoutProps = {
   gap: { base: 3, md: 5 },
@@ -88,10 +88,10 @@ These are viewport media queries, not container queries. A narrow embedded layou
 may need `minItemWidth` even on a wide viewport. CSS Grid uses `minmax(0, 1fr)` for
 counted columns and bounds adaptive item minima by the available width.
 
-Numeric spacing `4` becomes `var(--nq-space-4, 1rem)`. Values such as `7`, which
+Numeric spacing `4` becomes `var(--hw-space-4, 1rem)`. Values such as `7`, which
 are absent from the original public token scale, receive the equivalent quarter-rem
 fallback. Zero remains zero. CSS strings support `clamp()`, `calc()`, `var()`, and
-ordinary units; Nasaq does not evaluate them in JavaScript. Invalid numeric spacing,
+ordinary units; Hawiyah does not evaluate them in JavaScript. Invalid numeric spacing,
 column counts, or ratios throw a `RangeError`; empty CSS strings throw a
 `TypeError`. Values beyond the numeric token scale should be explicit CSS strings.
 
@@ -119,8 +119,8 @@ The reference dimensions do not mean every Sidebar composition should use the
 service template's column widths. See [the reference record](dga-reference.md)
 for snapshot scope and unmapped source areas.
 
-Container reads `--nq-content-max`, `--nq-content-gutter`, and
-`--nq-content-gutter-mobile` from the selected theme. Inspect the
+Container reads `--hw-content-max`, `--hw-content-gutter`, and
+`--hw-content-gutter-mobile` from the selected theme. Inspect the
 [token source](../packages/tokens/tokens.json) and
 [layout styles](../packages/styles/src/layout.css) for current runtime values
 and gutter thresholds. Container and service/form reflow thresholds are
@@ -132,7 +132,7 @@ they must not be inferred from the reference frame widths.
 React:
 
 ```tsx
-import { Container, Grid, ServiceCard } from '@nasaq/react';
+import { Container, Grid, ServiceCard } from '@hawiyah/react';
 
 <Container maxWidth="72rem">
   <Grid columns={{ base: 1, sm: 2, lg: 3 }} gap={{ base: 4, lg: 6 }}>
@@ -154,11 +154,11 @@ Vue:
 Angular:
 
 ```html
-<nq-container maxWidth="72rem">
-  <nq-grid [columns]="{ base: 1, sm: 2, lg: 3 }" [gap]="{ base: 4, lg: 6 }">
+<hw-container maxWidth="72rem">
+  <hw-grid [columns]="{ base: 1, sm: 2, lg: 3 }" [gap]="{ base: 4, lg: 6 }">
     <!-- Native Angular component content -->
-  </nq-grid>
-</nq-container>
+  </hw-grid>
+</hw-container>
 ```
 
 For width-driven wrapping, use `minItemWidth="16rem"`. This selects `auto-fit`
@@ -167,13 +167,13 @@ and ignores explicit `columns`; avoid specifying both to keep intent clear.
 Vanilla:
 
 ```html
-<div class="nq-grid" id="service-grid">
+<div class="hw-grid" id="service-grid">
   <!-- Native service cards -->
 </div>
 ```
 
 ```ts
-import { layoutStyles } from '@nasaq/core';
+import { layoutStyles } from '@hawiyah/core';
 
 const grid = document.querySelector<HTMLElement>('#service-grid')!;
 for (const [name, value] of Object.entries(layoutStyles({
@@ -193,8 +193,8 @@ viewports both children stack in their original DOM order. RTL changes logical
 placement without changing content or locale.
 
 ```html
-<div class="nq-sidebar" data-side="end" data-collapse-at="lg"
-     style="--nq-layout-sidebar-width: 20rem; --nq-layout-gap: var(--nq-space-6)">
+<div class="hw-sidebar" data-side="end" data-collapse-at="lg"
+     style="--hw-layout-sidebar-width: 20rem; --hw-layout-gap: var(--hw-space-6)">
   <aside aria-label="Application guidance">…</aside>
   <section aria-labelledby="application-heading">…</section>
 </div>
@@ -207,13 +207,13 @@ drawer when collapsed navigation is required.
 ## Shell and page-header anatomy
 
 AppShell accepts direct `header`, `aside` / `nav`, `main`, and `footer` landmarks,
-or the equivalent `.nq-app-shell-header`, `-sidebar`, `-main`, and `-footer`
-classes. A `.nq-app-shell-body` wrapper is supported. Without a sidebar, the main
+or the equivalent `.hw-app-shell-header`, `-sidebar`, `-main`, and `-footer`
+classes. A `.hw-app-shell-body` wrapper is supported. Without a sidebar, the main
 area spans the available width. The default sidebar becomes a second column at
 `64rem`; use Sidebar for a separately configurable collapse breakpoint.
 
-PageHeader groups content and actions using `.nq-page-header-main` (optional),
-`.nq-page-header-content`, and `.nq-page-header-actions`. A breadcrumb can occupy
+PageHeader groups content and actions using `.hw-page-header-main` (optional),
+`.hw-page-header-content`, and `.hw-page-header-actions`. A breadcrumb can occupy
 its own full row. Actions wrap naturally; avoid fixed-width controls when long
 Arabic labels need additional space.
 
@@ -221,14 +221,14 @@ Arabic labels need additional space.
 
 The public variables emitted by the helper are:
 
-- `--nq-layout-gap` and `--nq-layout-padding`, with optional `-sm`, `-md`, `-lg`, `-xl` suffixes.
-- `--nq-layout-columns`, with the same breakpoint suffixes.
-- `--nq-layout-align`, `--nq-layout-justify`, `--nq-layout-wrap`.
-- `--nq-layout-min-item`, `--nq-layout-sidebar-width`, `--nq-layout-max-width`, `--nq-layout-ratio`.
+- `--hw-layout-gap` and `--hw-layout-padding`, with optional `-sm`, `-md`, `-lg`, `-xl` suffixes.
+- `--hw-layout-columns`, with the same breakpoint suffixes.
+- `--hw-layout-align`, `--hw-layout-justify`, `--hw-layout-wrap`.
+- `--hw-layout-min-item`, `--hw-layout-sidebar-width`, `--hw-layout-max-width`, `--hw-layout-ratio`.
 
-`--nq-layout-current-*` properties are internal CSS calculations. Do not override
-them. The established `--nq-gap` hook remains a fallback for Stack/Inline and other
-layout defaults, but explicit `--nq-layout-gap` takes precedence.
+`--hw-layout-current-*` properties are internal CSS calculations. Do not override
+them. The established `--hw-gap` hook remains a fallback for Stack/Inline and other
+layout defaults, but explicit `--hw-layout-gap` takes precedence.
 
 Use `data-variant="fluid"` for a Container without the default outer gutters.
 AspectRatio supports `data-fit="contain"` for uncropped images or video. Section

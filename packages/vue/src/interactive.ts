@@ -1,19 +1,19 @@
 import { cloneVNode, computed, defineComponent, h, isVNode, mergeProps, nextTick, onBeforeUnmount, onMounted, ref, useId, watch, watchEffect } from 'vue';
 import type { PropType, VNodeChild } from 'vue';
-import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow, restoreFocus, transitionCombobox } from '@nasaq/core';
-import type { ComboboxEvent, Option, Orientation } from '@nasaq/core';
+import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow, restoreFocus, transitionCombobox } from '@hawiyah/core';
+import type { ComboboxEvent, Option, Orientation } from '@hawiyah/core';
 import { Button, decorate } from './forms.js';
 import { decorationProps, joinIds, useField, useFormReset, useValue } from './shared.js';
 
 export interface TabItem { value: string; label: string; content?: VNodeChild; disabled?: boolean }
 export const Tabs = defineComponent({
-  name: 'NqTabs', inheritAttrs: false,
+  name: 'HwTabs', inheritAttrs: false,
   props: { items: { type: Array as PropType<readonly TabItem[]>, required: true }, label: { type: String, required: true }, modelValue: String, defaultValue: String,
     orientation: { type: String as PropType<Orientation>, default: 'horizontal' }, activationMode: { type: String as PropType<'automatic' | 'manual'>, default: 'automatic' },
     overflow: {type: String as PropType<'menu' | 'scroll'>, default: 'menu'}, overflowLabel: {type: String, default: 'المزيد من التبويبات'} },
   emits: { 'update:modelValue': (_value: string) => true },
   setup(props, { attrs, slots, emit }) {
-    const id = `nq-${useId()}`;
+    const id = `hw-${useId()}`;
     const model = useValue(() => props.modelValue, props.defaultValue ?? props.items.find(item => !item.disabled)?.value ?? '', value => emit('update:modelValue', value));
     const focused = ref<string>();
     const active = computed(() => props.items.find(item => item.value === model.value.value && !item.disabled)?.value ?? props.items.find(item => !item.disabled)?.value);
@@ -31,26 +31,26 @@ export const Tabs = defineComponent({
       const node = bar.value!;
       observer = observeTabOverflow({container: node, tabs: () => props.items.map(item => buttons.get(item.value)!).filter(Boolean), enabled: () => props.overflow === 'menu' && props.orientation === 'horizontal', onChange: next => {
         const focusedElement = node.ownerDocument.activeElement;
-        const menuValue = (focusedElement as HTMLElement | null)?.dataset.nqOverflowValue;
+        const menuValue = (focusedElement as HTMLElement | null)?.dataset.hwOverflowValue;
         const itemIndex = props.items.findIndex(item => item.value === menuValue);
         const toMenu = menuValue !== undefined && itemIndex >= 0 && next.includes(itemIndex);
         const toOriginal = menuValue !== undefined && itemIndex >= 0 && !toMenu;
         const toSummary = next.some(index => buttons.get(props.items[index]?.value ?? '') === focusedElement) || (!toMenu && !toOriginal && !!next.length && !!disclosure.value?.contains(focusedElement));
         const toTab = !next.length && disclosure.value?.contains(focusedElement);
         if (!toMenu) close(); hidden.value = next;
-        void nextTick(() => {if (!alive) return; if (toMenu) [...(disclosure.value?.querySelectorAll<HTMLElement>('[data-nq-overflow-value]') ?? [])].find(button => button.dataset.nqOverflowValue === menuValue)?.focus(); else if (toOriginal) buttons.get(menuValue!)?.focus(); else if (toSummary) disclosure.value?.querySelector('summary')?.focus(); else if (toTab && focusValue.value) buttons.get(focusValue.value)?.focus();});
+        void nextTick(() => {if (!alive) return; if (toMenu) [...(disclosure.value?.querySelectorAll<HTMLElement>('[data-hw-overflow-value]') ?? [])].find(button => button.dataset.hwOverflowValue === menuValue)?.focus(); else if (toOriginal) buttons.get(menuValue!)?.focus(); else if (toSummary) disclosure.value?.querySelector('summary')?.focus(); else if (toTab && focusValue.value) buttons.get(focusValue.value)?.focus();});
       }});
       node.ownerDocument.addEventListener('click', outside);
     });
-    watch(() => [props.items, props.overflow, props.orientation], () => {observer?.refresh(); const focusedElement = bar.value?.ownerDocument.activeElement; if (focusedElement?.getAttribute('data-nq-overflow-hidden') === 'true' && bar.value?.contains(focusedElement)) disclosure.value?.querySelector('summary')?.focus();}, {deep: true, flush: 'post'});
+    watch(() => [props.items, props.overflow, props.orientation], () => {observer?.refresh(); const focusedElement = bar.value?.ownerDocument.activeElement; if (focusedElement?.getAttribute('data-hw-overflow-hidden') === 'true' && bar.value?.contains(focusedElement)) disclosure.value?.querySelector('summary')?.focus();}, {deep: true, flush: 'post'});
     watch(active, close);
     onBeforeUnmount(() => {alive = false; observer?.destroy(); bar.value?.ownerDocument.removeEventListener('click', outside);});
-    return () => h('div', mergeProps(attrs, { class: 'nq-tabs' }), [
-      h('div', {class: 'nq-tab-bar', ref: bar, 'data-nq-overflow': props.overflow, 'data-orientation': props.orientation}, [
-      h('div', { class: 'nq-tab-list', 'data-nq-overflow': props.overflow, role: 'tablist', 'aria-label': props.label, 'aria-orientation': props.orientation, 'aria-hidden': hidden.value.length === props.items.length || undefined }, props.items.map((item, index) => h('button', {
+    return () => h('div', mergeProps(attrs, { class: 'hw-tabs' }), [
+      h('div', {class: 'hw-tab-bar', ref: bar, 'data-hw-overflow': props.overflow, 'data-orientation': props.orientation}, [
+      h('div', { class: 'hw-tab-list', 'data-hw-overflow': props.overflow, role: 'tablist', 'aria-label': props.label, 'aria-orientation': props.orientation, 'aria-hidden': hidden.value.length === props.items.length || undefined }, props.items.map((item, index) => h('button', {
         key: item.value, ref: (element: unknown) => { if (element) buttons.set(item.value, element as HTMLButtonElement); else buttons.delete(item.value); },
-        class: 'nq-tab', type: 'button', role: 'tab', id: `${id}-tab-${index}`, 'aria-controls': `${id}-panel-${index}`, 'aria-selected': active.value === item.value,
-        'data-nq-overflow-hidden': hidden.value.includes(index) ? 'true' : undefined, 'aria-hidden': hidden.value.includes(index) || undefined,
+        class: 'hw-tab', type: 'button', role: 'tab', id: `${id}-tab-${index}`, 'aria-controls': `${id}-panel-${index}`, 'aria-selected': active.value === item.value,
+        'data-hw-overflow-hidden': hidden.value.includes(index) ? 'true' : undefined, 'aria-hidden': hidden.value.includes(index) || undefined,
         tabindex: !hidden.value.includes(index) && focusValue.value === item.value ? 0 : -1, disabled: item.disabled,
         onFocus: () => { focused.value = item.value; }, onClick: () => {if (!item.disabled) model.set(item.value);},
         onKeydown: (event: KeyboardEvent) => {
@@ -64,22 +64,22 @@ export const Tabs = defineComponent({
           if (props.activationMode === 'automatic') model.set(next.value);
         },
       }, slots[`tab:${item.value}`]?.({ item }) ?? item.label))),
-      h('details', {class: 'nq-tabs-overflow', ref: disclosure, hidden: !hidden.value.length, onKeydown: (event: KeyboardEvent) => {if (event.key === 'Escape' && disclosure.value?.open) {event.preventDefault(); close(); disclosure.value.querySelector('summary')?.focus();}}}, [
-        h('summary', {class: 'nq-tab-overflow-trigger', 'aria-label': props.overflowLabel, 'data-active': hidden.value.some(index => props.items[index]?.value === active.value) ? 'true' : undefined}, '…'),
-        h('div', {class: 'nq-tab-overflow-menu'}, hidden.value.map(index => {const item = props.items[index]; return item && h('button', {key: item.value, type: 'button', class: 'nq-tab-overflow-item', 'data-nq-overflow-value': item.value, disabled: item.disabled, 'aria-pressed': item.value === active.value, onClick: () => {if (item.disabled) return; model.set(item.value); close(); disclosure.value?.querySelector('summary')?.focus();}}, slots[`tab:${item.value}`]?.({item}) ?? item.label);})),
+      h('details', {class: 'hw-tabs-overflow', ref: disclosure, hidden: !hidden.value.length, onKeydown: (event: KeyboardEvent) => {if (event.key === 'Escape' && disclosure.value?.open) {event.preventDefault(); close(); disclosure.value.querySelector('summary')?.focus();}}}, [
+        h('summary', {class: 'hw-tab-overflow-trigger', 'aria-label': props.overflowLabel, 'data-active': hidden.value.some(index => props.items[index]?.value === active.value) ? 'true' : undefined}, '…'),
+        h('div', {class: 'hw-tab-overflow-menu'}, hidden.value.map(index => {const item = props.items[index]; return item && h('button', {key: item.value, type: 'button', class: 'hw-tab-overflow-item', 'data-hw-overflow-value': item.value, disabled: item.disabled, 'aria-pressed': item.value === active.value, onClick: () => {if (item.disabled) return; model.set(item.value); close(); disclosure.value?.querySelector('summary')?.focus();}}, slots[`tab:${item.value}`]?.({item}) ?? item.label);})),
       ]),
       ]),
-      ...props.items.map((item, index) => h('section', { key: item.value, class: 'nq-tab-panel', id: `${id}-panel-${index}`, role: 'tabpanel', 'aria-labelledby': `${id}-tab-${index}`, tabindex: 0, hidden: active.value !== item.value }, [slots[item.value]?.() ?? item.content])),
+      ...props.items.map((item, index) => h('section', { key: item.value, class: 'hw-tab-panel', id: `${id}-panel-${index}`, role: 'tabpanel', 'aria-labelledby': `${id}-tab-${index}`, tabindex: 0, hidden: active.value !== item.value }, [slots[item.value]?.() ?? item.content])),
     ]);
   },
 });
 
 export const Dialog = defineComponent({
-  name: 'NqDialog', inheritAttrs: false,
+  name: 'HwDialog', inheritAttrs: false,
   props: { open: { type: Boolean, default: undefined }, defaultOpen: Boolean, title: { type: String, required: true }, description: String, closeLabel: { type: String, default: 'Close' }, closeOnBackdrop: { type: Boolean, default: true } },
   emits: { 'update:open': (_open: boolean) => true },
   setup(props, { attrs, slots, emit, expose }) {
-    const id = `nq-${useId()}`;
+    const id = `hw-${useId()}`;
     const element = ref<HTMLDialogElement>();
     const model = useValue(() => props.open, props.defaultOpen, value => emit('update:open', value));
     let previousFocus: HTMLElement | null = null;
@@ -98,7 +98,7 @@ export const Dialog = defineComponent({
     onBeforeUnmount(() => { if (element.value?.open) { element.value.close(); restoreFocus(previousFocus); } });
     expose({ element, show, close });
     return () => [slots.trigger?.({ open: show }), h('dialog', mergeProps(attrs, {
-      ref: element, class: 'nq-dialog', 'aria-labelledby': attrs['aria-labelledby'] ?? `${id}-title`, 'aria-describedby': attrs['aria-describedby'] ?? (props.description ? `${id}-description` : undefined),
+      ref: element, class: 'hw-dialog', 'aria-labelledby': attrs['aria-labelledby'] ?? `${id}-title`, 'aria-describedby': attrs['aria-describedby'] ?? (props.description ? `${id}-description` : undefined),
       onCancel: (event: Event) => { backdropStarted = false; if (!event.defaultPrevented) { event.preventDefault(); close(); } },
       onClose: () => { backdropStarted = false; if (model.value.value) close(); restoreFocus(previousFocus); },
       onPointerdown: (event: PointerEvent) => {
@@ -114,15 +114,15 @@ export const Dialog = defineComponent({
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
       },
     }), [
-      h('header', { class: 'nq-dialog-header' }, [h('h2', { id: `${id}-title` }, props.title), h(Button, { variant: 'ghost', 'aria-label': props.closeLabel, onClick: close }, () => '×')]),
-      h('div', { class: 'nq-dialog-body' }, [props.description && h('p', { id: `${id}-description` }, props.description), slots.default?.({ close })]),
-      slots.footer && h('footer', { class: 'nq-dialog-footer' }, slots.footer({ close })),
+      h('header', { class: 'hw-dialog-header' }, [h('h2', { id: `${id}-title` }, props.title), h(Button, { variant: 'ghost', 'aria-label': props.closeLabel, onClick: close }, () => '×')]),
+      h('div', { class: 'hw-dialog-body' }, [props.description && h('p', { id: `${id}-description` }, props.description), slots.default?.({ close })]),
+      slots.footer && h('footer', { class: 'hw-dialog-footer' }, slots.footer({ close })),
     ])];
   },
 });
 
 export const Combobox = defineComponent({
-  name: 'NqCombobox', inheritAttrs: false,
+  name: 'HwCombobox', inheritAttrs: false,
   props: { ...decorationProps, options: { type: Array as PropType<readonly Option[]>, required: true }, modelValue: String, defaultValue: { type: String, default: '' }, disabled: Boolean, readonly: Boolean,
     emptyMessage: { type: String, default: 'No options found' }, resultsMessage: { type: Function as PropType<(count: number) => string>, default: (count: number) => `${count} results available` }, requiredMessage: { type: String, default: 'Choose an option from the list.' } },
   emits: { 'update:modelValue': (_value: string) => true, 'update:open': (_open: boolean) => true, 'update:query': (_query: string) => true },
@@ -182,8 +182,8 @@ export const Combobox = defineComponent({
       const active = results.value[state.value.activeIndex];
       const open = effective.value.open;
       const query = effective.value.query;
-      return decorate(props, field.id.value, h('div', { ref: root, class: 'nq-combobox', onFocusout: (event: FocusEvent) => { if (!root.value?.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); } }, [
-        h('input', mergeProps(inputAttrs, field.controlAttrs.value, { ref: element, form, disabled: props.disabled, readonly: props.readonly, class: 'nq-input', type: 'text', role: 'combobox', autocomplete: 'off', 'aria-autocomplete': 'list', 'aria-readonly': props.readonly || undefined, 'aria-expanded': open, 'aria-controls': listId,
+      return decorate(props, field.id.value, h('div', { ref: root, class: 'hw-combobox', onFocusout: (event: FocusEvent) => { if (!root.value?.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); } }, [
+        h('input', mergeProps(inputAttrs, field.controlAttrs.value, { ref: element, form, disabled: props.disabled, readonly: props.readonly, class: 'hw-input', type: 'text', role: 'combobox', autocomplete: 'off', 'aria-autocomplete': 'list', 'aria-readonly': props.readonly || undefined, 'aria-expanded': open, 'aria-controls': listId,
           'aria-activedescendant': open && active && !active.disabled ? `${field.id.value}-option-${state.value.activeIndex}` : undefined, value: query,
           onInput: (event: Event) => { const input = event.target as HTMLInputElement; if (blocked()) { input.value = query; return; } const nextQuery = input.value; dispatch({ type: 'input', query: nextQuery }); emit('update:query', nextQuery); },
           onFocus: (event: FocusEvent) => { if (!event.defaultPrevented) dispatch({ type: 'open' }); },
@@ -199,22 +199,22 @@ export const Combobox = defineComponent({
           },
         })),
         h('input', { type: 'hidden', name, form, disabled: props.disabled, value: effective.value.value }),
-        h('ul', { id: listId, role: 'listbox', class: 'nq-listbox', 'aria-label': attrs['aria-label'], 'aria-labelledby': field.controlAttrs.value['aria-labelledby'], hidden: !open }, [
-          ...results.value.map((option, index) => h('li', { key: option.value, id: `${field.id.value}-option-${index}`, role: 'option', class: 'nq-option', 'aria-selected': effective.value.value === option.value, 'aria-disabled': option.disabled || undefined,
+        h('ul', { id: listId, role: 'listbox', class: 'hw-listbox', 'aria-label': attrs['aria-label'], 'aria-labelledby': field.controlAttrs.value['aria-labelledby'], hidden: !open }, [
+          ...results.value.map((option, index) => h('li', { key: option.value, id: `${field.id.value}-option-${index}`, role: 'option', class: 'hw-option', 'aria-selected': effective.value.value === option.value, 'aria-disabled': option.disabled || undefined,
             'data-active': state.value.activeIndex === index ? 'true' : undefined, 'data-state': state.value.activeIndex === index ? 'active' : undefined,
             onPointerdown: (event: PointerEvent) => event.preventDefault(), onClick: () => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); element.value?.focus(); } },
-          }, option.label)), !results.value.length && h('li', { role: 'presentation', class: 'nq-hint' }, props.emptyMessage),
+          }, option.label)), !results.value.length && h('li', { role: 'presentation', class: 'hw-hint' }, props.emptyMessage),
         ]),
-        h('span', { class: 'nq-sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, open ? props.resultsMessage(results.value.length) : ''),
+        h('span', { class: 'hw-sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, open ? props.resultsMessage(results.value.length) : ''),
       ]));
     };
   },
 });
 
 export const Tooltip = defineComponent({
-  name: 'NqTooltip', inheritAttrs: false, props: { content: { type: String, required: true }, placement: {type: String as PropType<'top' | 'bottom' | 'start' | 'end'>, default: 'top'}, align: {type: String as PropType<'start' | 'center' | 'end'>, default: 'start'} },
+  name: 'HwTooltip', inheritAttrs: false, props: { content: { type: String, required: true }, placement: {type: String as PropType<'top' | 'bottom' | 'start' | 'end'>, default: 'top'}, align: {type: String as PropType<'start' | 'center' | 'end'>, default: 'start'} },
   setup(props, { attrs, slots }) {
-    const id = `nq-${useId()}`;
+    const id = `hw-${useId()}`;
     const open = ref(false);
     const root = ref<HTMLElement>();
     let hovered = false, focused = false;
@@ -242,7 +242,7 @@ export const Tooltip = defineComponent({
     return () => {
       const children = slots.default?.() ?? [];
       return h('span', mergeProps(attrs, {
-        ref: root, 'data-nq': 'tooltip',
+        ref: root, 'data-hw': 'tooltip',
         onMouseenter: () => { hovered = true; show(); }, onMouseleave: leave,
         onFocusin: () => { focused = true; show(); },
         onFocusout: (event: FocusEvent) => {
@@ -253,7 +253,7 @@ export const Tooltip = defineComponent({
         onKeydown: escape,
       }), [
         ...children.map(child => isVNode(child) ? cloneVNode(child, { 'aria-describedby': joinIds(child.props?.['aria-describedby'], id) }) : child),
-        h('span', { id, role: 'tooltip', class: 'nq-tooltip', 'data-placement': props.placement, 'data-align': props.align, hidden: !open.value }, props.content),
+        h('span', { id, role: 'tooltip', class: 'hw-tooltip', 'data-placement': props.placement, 'data-align': props.align, hidden: !open.value }, props.content),
       ]);
     };
   },

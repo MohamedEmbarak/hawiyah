@@ -4,14 +4,14 @@ import {createPagination} from '../packages/vanilla/src/pagination';
 const cleanups:Array<()=>void>=[];
 afterEach(()=>{for(const cleanup of cleanups.splice(0))cleanup();document.body.replaceChildren();});
 function mount(total=20,page=10,extra=''){
- document.body.innerHTML=`<nav class="nq-pagination" data-nq="pagination" data-nq-total="${total}" data-nq-current="${page}" ${extra}><button data-nq-page="previous">Previous</button><span data-nq-pagination-items><i>Authored fallback</i></span><button data-nq-page="next">Next</button></nav><button id="outside">Outside</button>`;
+ document.body.innerHTML=`<nav class="hw-pagination" data-hw="pagination" data-hw-total="${total}" data-hw-current="${page}" ${extra}><button data-hw-page="previous">Previous</button><span data-hw-pagination-items><i>Authored fallback</i></span><button data-hw-page="next">Next</button></nav><button id="outside">Outside</button>`;
  return document.querySelector<HTMLElement>('nav')!;
 }
 function enhance(root:HTMLElement,options:Parameters<typeof createPagination>[1]={}){const controller=createPagination(root,options);cleanups.push(controller.destroy);return controller;}
-const button=(root:HTMLElement,page:number|string)=>root.querySelector<HTMLButtonElement>(`[data-nq-page="${page}"]`)!;
+const button=(root:HTMLElement,page:number|string)=>root.querySelector<HTMLButtonElement>(`[data-hw-page="${page}"]`)!;
 
 it('generates bounded windows and jumps to omitted pages with one event and focus return',()=>{
- const root=mount(),callback=vi.fn(),event=vi.fn();root.addEventListener('nq:change',event);
+ const root=mount(),callback=vi.fn(),event=vi.fn();root.addEventListener('hw:change',event);
  const controller=enhance(root,{onPageChange:callback});
  expect(root.querySelectorAll('details')).toHaveLength(2);
  expect(root.querySelector('summary')?.getAttribute('aria-label')).toBe('الصفحات 2 إلى 8');
@@ -31,12 +31,12 @@ it('closes disclosures with Escape, outside click and another opening',()=>{
 });
 it('uses a validated numeric jump for large gaps without allocating every page or nesting a form',()=>{
  const root=mount(10000,5000);const form=document.createElement('form');root.before(form);form.append(root);const controller=enhance(root);
- expect(root.querySelectorAll('[data-nq-page]').length).toBeLessThan(10);expect(root.querySelector('form')).toBeNull();
- const gap=root.querySelector('details')!;gap.open=true;const input=gap.querySelector<HTMLInputElement>('[data-nq-jump-input]')!;
- expect(input.name).toBe('');expect(input.form).toBeNull();expect(input.min).toBe('2');expect(input.max).toBe('4998');expect(input.dataset.nqFilled).toBe('true');expect(input.hasAttribute('aria-invalid')).toBe(false);
- input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));expect(input.dataset.nqFilled).toBe('false');
- input.value='25';input.dispatchEvent(new Event('input',{bubbles:true}));expect(input.dataset.nqFilled).toBe('true');
- for(const invalid of ['', '1','4999','2.5']){input.value=invalid;gap.querySelector<HTMLButtonElement>('[data-nq-jump-submit]')!.click();expect(controller.page).toBe(5000);expect(form.checkValidity()).toBe(true);expect(input.getAttribute('aria-invalid')).toBe('true');}
+ expect(root.querySelectorAll('[data-hw-page]').length).toBeLessThan(10);expect(root.querySelector('form')).toBeNull();
+ const gap=root.querySelector('details')!;gap.open=true;const input=gap.querySelector<HTMLInputElement>('[data-hw-jump-input]')!;
+ expect(input.name).toBe('');expect(input.form).toBeNull();expect(input.min).toBe('2');expect(input.max).toBe('4998');expect(input.dataset.hwFilled).toBe('true');expect(input.hasAttribute('aria-invalid')).toBe(false);
+ input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));expect(input.dataset.hwFilled).toBe('false');
+ input.value='25';input.dispatchEvent(new Event('input',{bubbles:true}));expect(input.dataset.hwFilled).toBe('true');
+ for(const invalid of ['', '1','4999','2.5']){input.value=invalid;gap.querySelector<HTMLButtonElement>('[data-hw-jump-submit]')!.click();expect(controller.page).toBe(5000);expect(form.checkValidity()).toBe(true);expect(input.getAttribute('aria-invalid')).toBe('true');}
  input.value='7000';input.dispatchEvent(new Event('input',{bubbles:true}));expect(input.getAttribute('aria-invalid')).toBe('true');
  input.value='25';input.dispatchEvent(new Event('input',{bubbles:true}));expect(input.hasAttribute('aria-invalid')).toBe(false);input.focus();input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));
  expect(controller.page).toBe(25);expect(document.activeElement).toBe(button(root,25));
@@ -59,7 +59,7 @@ it('closes and removes inherited-disabled disclosures when an ancestor fieldset 
  fieldset.disabled=false;await Promise.resolve();expect(root.querySelectorAll('details')).toHaveLength(2);controller.select(11);expect(controller.page).toBe(11);
 });
 it('restores original nodes and attributes on teardown, retaining authored links and modifier behavior',()=>{
- document.body.innerHTML='<nav data-nq-total="3"><a href="#page-2" data-nq-page="2">Two</a><button data-nq-page="previous" disabled>Previous</button><button data-nq-page="3">Three</button><button data-nq-page="next">Next</button></nav>';
+ document.body.innerHTML='<nav data-hw-total="3"><a href="#page-2" data-hw-page="2">Two</a><button data-hw-page="previous" disabled>Previous</button><button data-hw-page="3">Three</button><button data-hw-page="next">Next</button></nav>';
  const legacy=document.querySelector<HTMLElement>('nav')!,before=legacy.outerHTML;const controller=enhance(legacy);
  const event=new MouseEvent('click',{bubbles:true,cancelable:true,ctrlKey:true});legacy.querySelector('a')!.dispatchEvent(event);expect(event.defaultPrevented).toBe(false);expect(controller.page).toBe(1);
  controller.select(3);expect(button(legacy,'previous').disabled).toBe(true);controller.destroy();expect(legacy.outerHTML).toBe(before);
@@ -67,7 +67,7 @@ it('restores original nodes and attributes on teardown, retaining authored links
  button(root,'next').click();expect(generated.page).toBe(20);
 });
 it('does not process a nested pagination action and rejects unsafe totals',()=>{
- const root=mount(10,1);const controller=enhance(root);root.insertAdjacentHTML('beforeend','<nav data-nq="pagination"><button data-nq-page="3">Nested</button></nav>');
+ const root=mount(10,1);const controller=enhance(root);root.insertAdjacentHTML('beforeend','<nav data-hw="pagination"><button data-hw-page="3">Nested</button></nav>');
  root.querySelector<HTMLButtonElement>('nav button')!.click();expect(controller.page).toBe(1);
  for(const total of [0,NaN,Infinity,1.5,Number.MAX_SAFE_INTEGER+1])expect(()=>createPagination(document.createElement('nav'),{totalPages:total})).toThrow('positive safe integer');
 });

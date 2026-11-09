@@ -1,7 +1,7 @@
 import {expect, test} from '@playwright/test';
 
 for (const locale of ['ar', 'en']) test(`participation source grid and heading in ${locale}`, async ({page}, info) => {
-  await page.addInitScript(locale => localStorage.setItem('nasaq-locale', locale), locale);
+  await page.addInitScript(locale => localStorage.setItem('hawiyah-locale', locale), locale);
   await page.setViewportSize({width: 1600, height: 1000});
   await page.goto('/#templates/participation');
   const grid = page.locator('[data-participation-topics]');

@@ -3,15 +3,15 @@ import { expect, test } from '@playwright/test';
 for (const locale of ['ar', 'en']) {
   test(`mobile top bar wraps and preserves direction, targets and focus (${locale})`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 320, height: 844 });
-    await page.addInitScript(locale => localStorage.setItem('nasaq-locale', locale), locale);
+    await page.addInitScript(locale => localStorage.setItem('hawiyah-locale', locale), locale);
     await page.goto('/#component/mobile-top-bar');
-    const bar = page.locator('.guide-preview .nq-mobile-top-bar');
+    const bar = page.locator('.guide-preview .hw-mobile-top-bar');
     await expect(bar).toBeVisible();
-    const back = bar.locator('.nq-mobile-top-bar-back');
-    const icon = back.locator('.nq-icon');
+    const back = bar.locator('.hw-mobile-top-bar-back');
+    const icon = back.locator('.hw-icon');
     expect(await icon.evaluate(node => getComputedStyle(node).transform)).toBe(locale === 'ar' ? 'matrix(-1, 0, 0, 1, 0, 0)' : 'none');
-    for (const theme of ['dga', 'nasaq', 'custom']) for (const mode of ['light', 'dark']) {
-      await bar.evaluate((node, [theme, mode]) => { (node as HTMLElement).dataset.nqTheme = theme; (node as HTMLElement).dataset.nqMode = mode; }, [theme, mode]);
+    for (const theme of ['dga', 'hawiyah', 'custom']) for (const mode of ['light', 'dark']) {
+      await bar.evaluate((node, [theme, mode]) => { (node as HTMLElement).dataset.hwTheme = theme; (node as HTMLElement).dataset.hwMode = mode; }, [theme, mode]);
       expect(await bar.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
       for (const link of await bar.locator('a').all()) {
         const bounds = await link.boundingBox(); expect(bounds!.width).toBeGreaterThanOrEqual(44); expect(bounds!.height).toBeGreaterThanOrEqual(44);

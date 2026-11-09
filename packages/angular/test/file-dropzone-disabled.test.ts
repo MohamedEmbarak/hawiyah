@@ -2,15 +2,15 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
-import { NqFileDropzoneComponent } from '@nasaq/angular';
+import { HwFileDropzoneComponent } from '@hawiyah/angular';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => { TestBed.resetTestingModule(); document.body.replaceChildren(); vi.unstubAllGlobals(); });
 function fixture(firstLegend = false) {
-  const component = TestBed.createComponent(NqFileDropzoneComponent); component.componentRef.setInput('label', 'Upload'); component.detectChanges();
+  const component = TestBed.createComponent(HwFileDropzoneComponent); component.componentRef.setInput('label', 'Upload'); component.detectChanges();
   const fieldset = document.createElement('fieldset'); fieldset.disabled = true; document.body.append(fieldset);
   if (firstLegend) { const legend = document.createElement('legend'); fieldset.append(legend); legend.append(component.nativeElement); } else fieldset.append(component.nativeElement);
-  const input = component.nativeElement.querySelector('input') as HTMLInputElement; const zone = component.nativeElement.querySelector('.nq-file-dropzone') as HTMLElement;
+  const input = component.nativeElement.querySelector('input') as HTMLInputElement; const zone = component.nativeElement.querySelector('.hw-file-dropzone') as HTMLElement;
   const changed = vi.fn(); const rejected = vi.fn(); component.componentInstance.valueChange.subscribe(changed); component.componentInstance.rejected.subscribe(rejected);
   // JSDOM has no DataTransfer; retain the actual native :disabled computation.
   let files: File[] = []; Object.defineProperty(input, 'files', { configurable: true, get: () => files, set: value => { files = Array.from(value); } });

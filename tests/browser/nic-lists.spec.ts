@@ -8,16 +8,16 @@ test('a nested original-theme Card keeps authored list markers decorative', asyn
   await page.goto('/#component/card');
   const scope = page.locator('#component-examples');
   await scope.evaluate(el => {
-    el.setAttribute('data-nq-theme', 'dga');
-    el.setAttribute('data-nq-mode', 'dark');
+    el.setAttribute('data-hw-theme', 'dga');
+    el.setAttribute('data-hw-mode', 'dark');
   });
-  const card = scope.locator('.component-preview .nq-card').first();
+  const card = scope.locator('.component-preview .hw-card').first();
   await card.evaluate(el => {
-    el.setAttribute('data-nq-theme', 'nasaq');
-    el.setAttribute('data-nq-mode', 'light');
-    (el as HTMLElement).style.setProperty('--nq-list-marker-size', '20px');
+    el.setAttribute('data-hw-theme', 'hawiyah');
+    el.setAttribute('data-hw-mode', 'light');
+    (el as HTMLElement).style.setProperty('--hw-list-marker-size', '20px');
   });
-  const marker = card.locator('.nq-list-marker').first();
+  const marker = card.locator('.hw-list-marker').first();
   await expect(marker).toHaveCSS('color', await card.evaluate(el => getComputedStyle(el).color));
   await expect(marker).toHaveCSS('width', '20px');
   expect(await marker.evaluate(el => getComputedStyle(el, '::before').content)).toBe('""');
@@ -34,13 +34,13 @@ test('a nested original-theme Card keeps authored list markers decorative', asyn
   await expect(marker.locator('svg')).toHaveCSS('width', '20px');
   expect(await marker.evaluate(el => getComputedStyle(el, '::before').content)).toBe('none');
   // The neighboring card retains its own marker size and inherits the outer theme.
-  await expect(scope.locator('ul.nq-list-custom .nq-list-marker').first()).toHaveCSS('width', '16px');
+  await expect(scope.locator('ul.hw-list-custom .hw-list-marker').first()).toHaveCSS('width', '16px');
 });
 
 async function checkList(card: Locator, variant: Variant) {
-  const list = card.locator(`.nq-card-body > .nq-list-${variant}`);
+  const list = card.locator(`.hw-card-body > .hw-list-${variant}`);
   await expect(list).toBeVisible();
-  await expect(list).toHaveAccessibleName(await card.locator('.nq-card-title').innerText());
+  await expect(list).toHaveAccessibleName(await card.locator('.hw-card-title').innerText());
   await expect(list.locator(':scope > li')).toHaveCount(3);
   const first = list.locator(':scope > li').first();
 
@@ -49,14 +49,14 @@ async function checkList(card: Locator, variant: Variant) {
     await expect(list).toHaveAttribute('start', '2');
     await expect(list).toHaveCSS('margin-inline-start', '5px');
     await expect(first).toHaveCSS('list-style-type', 'decimal');
-    await expect(list.locator('.nq-list-marker')).toHaveCount(0);
+    await expect(list.locator('.hw-list-marker')).toHaveCount(0);
     return list;
   }
 
   await expect(list).toHaveJSProperty('tagName', 'UL');
   await expect(list).toHaveAttribute('role', 'list');
-  await expect(list.locator(':scope > li > .nq-list-marker[aria-hidden="true"]')).toHaveCount(3);
-  const marker = first.locator(':scope > .nq-list-marker');
+  await expect(list.locator(':scope > li > .hw-list-marker[aria-hidden="true"]')).toHaveCount(3);
+  const marker = first.locator(':scope > .hw-list-marker');
   await expect(marker).toBeEmpty();
   await expect(marker).toHaveCSS('width', '16px');
   await expect(marker).toHaveCSS('font-size', '16px');
@@ -67,7 +67,7 @@ async function checkList(card: Locator, variant: Variant) {
     await expect(first).toHaveCSS('padding-inline-start', '30px');
     await expect(marker).toHaveCSS('height', '28px');
     await expect(marker).toHaveCSS('line-height', '28px');
-    const nested = list.locator('ol.nq-list-ordered');
+    const nested = list.locator('ol.hw-list-ordered');
     await expect(nested.getByRole('listitem')).toHaveCount(2);
     await expect(nested.locator('li').first()).toHaveCSS('list-style-type', 'decimal');
   } else {
@@ -84,20 +84,20 @@ for (const locale of ['ar', 'en'] as const) {
     test.setTimeout(90000);
     await page.addInitScript(language => {
       if (window !== window.top) return;
-      localStorage.setItem('nasaq-locale', language);
-      localStorage.setItem('nasaq-mode', 'light');
+      localStorage.setItem('hawiyah-locale', language);
+      localStorage.setItem('hawiyah-mode', 'light');
     }, locale);
     await page.goto('/#component/card');
     const scope = page.locator('#component-examples');
-    const examples = scope.locator('.ready-example').filter({has: page.locator('.nq-card-body > :is(ul,ol)')});
+    const examples = scope.locator('.ready-example').filter({has: page.locator('.hw-card-body > :is(ul,ol)')});
     await expect(examples).toHaveCount(3);
     await expect(examples.locator('.source-details pre')).toHaveCount(12);
     for (const [index, variant] of variants.entries()) {
-      await checkList(examples.nth(index).locator('.component-preview .nq-card'), variant);
+      await checkList(examples.nth(index).locator('.component-preview .hw-card'), variant);
     }
-    const iconList = scope.locator('ul.nq-list-icon');
+    const iconList = scope.locator('ul.hw-list-icon');
     const first = iconList.locator(':scope > li').first();
-    const marker = first.locator(':scope > .nq-list-marker');
+    const marker = first.locator(':scope > .hw-list-marker');
     for (const direction of ['rtl', 'ltr']) {
       await iconList.evaluate((el, value) => el.setAttribute('dir', value), direction);
       const itemBox = (await first.boundingBox())!;
@@ -109,24 +109,24 @@ for (const locale of ['ar', 'en'] as const) {
     await iconList.evaluate(el => el.removeAttribute('dir'));
     for (const mode of ['light', 'dark']) {
       await scope.evaluate((el, mode) => {
-        el.setAttribute('data-nq-mode', mode);
-        el.style.background = 'var(--nq-color-surface)';
+        el.setAttribute('data-hw-mode', mode);
+        el.style.background = 'var(--hw-color-surface)';
       }, mode);
       await expect(marker).toHaveCSS('color', await first.evaluate(el => getComputedStyle(el).color));
       expect((await new AxeBuilder({ page }).include('#component-examples .component-preview').analyze()).violations).toEqual([]);
     }
     await scope.evaluate(el => {
-      el.removeAttribute('data-nq-mode');
-      el.setAttribute('data-nq-theme', 'custom');
-      el.style.setProperty('--nq-list-icon-indent', '36px');
+      el.removeAttribute('data-hw-mode');
+      el.setAttribute('data-hw-theme', 'custom');
+      el.style.setProperty('--hw-list-icon-indent', '36px');
     });
     await expect(first).toHaveCSS('padding-inline-start', '36px');
     await scope.evaluate(el => {
-      el.removeAttribute('data-nq-theme');
-      el.style.removeProperty('--nq-list-icon-indent');
+      el.removeAttribute('data-hw-theme');
+      el.style.removeProperty('--hw-list-icon-indent');
     });
     await page.setViewportSize({ width: 320, height: 844 });
-    for (const list of await scope.locator('.nq-card-body > :is(ol,ul)').all()) {
+    for (const list of await scope.locator('.hw-card-body > :is(ol,ul)').all()) {
       expect(await list.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
     }
     await examples.first().screenshot({ path: info.outputPath(`card-list-${locale}-mobile.png`) });
@@ -143,7 +143,7 @@ for (const [framework, language, sourceIndex] of [
   test(`${framework} ${language} renders the three copied Card list recipes`, async ({ page }) => {
     test.setTimeout(180000);
     await page.goto('/#component/card');
-    const examples = page.locator('#component-examples .ready-example').filter({has: page.locator('.nq-card-body > :is(ul,ol)')});
+    const examples = page.locator('#component-examples .ready-example').filter({has: page.locator('.hw-card-body > :is(ul,ol)')});
     await expect(examples).toHaveCount(3);
     const sources: string[] = [];
     for (const example of await examples.all()) {
@@ -152,12 +152,12 @@ for (const [framework, language, sourceIndex] of [
     await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);
     if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-    const status = page.locator('.nq-ide-status');
+    const status = page.locator('.hw-ide-status');
     await expect(status).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
-    const action = page.frameLocator('.nq-ide-frame').locator('.nq-card a.nq-button');
+    const action = page.frameLocator('.hw-ide-frame').locator('.hw-card a.hw-button');
     await expect(action).toBeVisible();
     await expect(action).toHaveAttribute('href', '#card-details');
-    await expect(page.frameLocator('.nq-ide-frame').locator('a a, a button')).toHaveCount(0);
+    await expect(page.frameLocator('.hw-ide-frame').locator('a a, a button')).toHaveCount(0);
     await action.click();
     await expect(page).toHaveURL(/#component\/card$/);
     await page.locator('[data-ide-auto]').uncheck();
@@ -169,7 +169,7 @@ for (const [framework, language, sourceIndex] of [
       await page.keyboard.insertText(sources[index]!);
       await page.locator('[data-ide-run]').click();
       await expect(status).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
-      const card = page.frameLocator('.nq-ide-frame').locator('.nq-card');
+      const card = page.frameLocator('.hw-ide-frame').locator('.hw-card');
       await checkList(card, variant);
     }
     await expect(page).toHaveURL(/#component\/card$/);

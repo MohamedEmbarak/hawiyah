@@ -1,15 +1,16 @@
-# @nasaq/vue
+# @hawiyah/vue
 
-Native Vue 3 components for Nasaq — نسق, an independent public 0.2 source preview.
-Install with `npm install @nasaq/styles @nasaq/vue`. This is a pre-1.0 release,
+Native Vue 3 components for Hawiyah — هوية, a UI library built to comply with the
+DGA Platforms Code.
+Install with `npm install @hawiyah/styles @hawiyah/vue`. This is a pre-1.0 release,
 so a minor version may still change its API. Import the shared CSS once:
 
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { Button, Combobox, Dialog, TextField } from "@nasaq/vue";
-import "@nasaq/styles/styles.css";
-// Optional for a new application: import '@nasaq/styles/reset.css';
+import { Button, Combobox, Dialog, TextField } from "@hawiyah/vue";
+import "@hawiyah/styles/styles.css";
+// Optional for a new application: import '@hawiyah/styles/reset.css';
 const name = ref("");
 const city = ref("");
 const reviewing = ref(false);
@@ -63,8 +64,8 @@ should be checked after a reset. The group emits that value once. A group
 without a checked default resets to an empty string.
 
 Locale, direction, theme, mode and density are independent application choices.
-Set `lang`, `dir`, `data-nq-theme="nasaq|dga|custom"`,
-`data-nq-mode="light|dark"` and `data-nq-density="comfortable|compact|mobile"` on an
+Set `lang`, `dir`, `data-hw-theme="hawiyah|dga|custom"`,
+`data-hw-mode="light|dark"` and `data-hw-density="comfortable|compact|mobile"` on an
 ancestor. Provide translated labels, status messages, pagination labels and
 close labels; the library never infers text language from layout direction.
 
@@ -156,8 +157,8 @@ time-zone information.
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { DatePicker } from "@nasaq/vue";
-import type { CalendarSystem } from "@nasaq/core";
+import { DatePicker } from "@hawiyah/vue";
+import type { CalendarSystem } from "@hawiyah/core";
 const date = ref("2024-03-11");
 const system = ref<CalendarSystem>("islamic-umalqura");
 </script>
@@ -301,7 +302,7 @@ viewport measurements or hydration-dependent layout branches are used.
 
 Maps, rich text, charting, code editors, PDF viewers, CAPTCHA and payments are
 integration boundaries. Mount the chosen provider in a named Section/Card or
-AspectRatio with its own accessible fallback and documented data contract. Nasaq
+AspectRatio with its own accessible fallback and documented data contract. Hawiyah
 does not simulate these engines or handle provider credentials or transactions.
 
 ## Portal shell
@@ -336,7 +337,7 @@ a separate native state. See [NIC states](../../docs/nic-choices.md).
 
 `Table` and `DataTable` expose `variant="default|striped|bordered"`,
 `size="sm|md|lg"` and `emptyMessage`. DGA cells have a 48px default minimum;
-40px/56px alternate sizes and striped/bordered variants are Nasaq extensions.
+40px/56px alternate sizes and striped/bordered variants are Hawiyah extensions.
 Captions name keyboard-focusable horizontal scroll containers; row-header
 columns render native `th scope="row"`. Empty data spans the column count and
 uses an Arabic message by default. Sorting does not mutate caller records.
@@ -378,7 +379,7 @@ remain noninteractive text links; no section content is created or hidden.
 
 ```vue
 <script setup>
-import {ContentNavigation} from '@nasaq/vue';
+import {ContentNavigation} from '@hawiyah/vue';
 const sections = [{id: 'requirements', label: 'المتطلبات'}];
 </script>
 <template>

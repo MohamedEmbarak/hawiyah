@@ -1,28 +1,28 @@
-# @nasaq/styles
+# @hawiyah/styles
 
-Framework-neutral presentation for Nasaq. The same styles serve semantic vanilla
+Framework-neutral presentation for Hawiyah. The same styles serve semantic vanilla
 HTML and the React, Angular, and Vue adapters. Every component is opt-in; no global
 application reset or external font fetch occurs in the component stylesheet.
 
 ```ts
-import '@nasaq/styles/styles.css';
+import '@hawiyah/styles/styles.css';
 // Optional, for a new application whose base styling you own:
-import '@nasaq/styles/reset.css';
+import '@hawiyah/styles/reset.css';
 ```
 
-The stylesheet imports `@nasaq/tokens/tokens.css`; a bundler must resolve the bare
+The stylesheet imports `@hawiyah/tokens/tokens.css`; a bundler must resolve the bare
 package import. For direct browser use, bundle once or rewrite that import to your
 self-hosted token stylesheet. CSS custom properties provide theming without a
 framework, utility-class compiler, or CSS-in-JS runtime.
 
 ```html
-<main lang="ar" dir="rtl" data-nq-theme="dga" data-nq-mode="light">
-  <div class="nq-field">
-    <label class="nq-label" for="request-name">اسم الطلب</label>
-    <input class="nq-input" id="request-name" aria-describedby="name-hint">
-    <p class="nq-hint" id="name-hint">اسم واضح يساعدك على متابعة الطلب.</p>
+<main lang="ar" dir="rtl" data-hw-theme="dga" data-hw-mode="light">
+  <div class="hw-field">
+    <label class="hw-label" for="request-name">اسم الطلب</label>
+    <input class="hw-input" id="request-name" aria-describedby="name-hint">
+    <p class="hw-hint" id="name-hint">اسم واضح يساعدك على متابعة الطلب.</p>
   </div>
-  <button class="nq-button" type="submit">متابعة الطلب</button>
+  <button class="hw-button" type="submit">متابعة الطلب</button>
 </main>
 ```
 
@@ -30,29 +30,29 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 
 | Family | Classes and attributes |
 | --- | --- |
-| Actions | `nq-button`; `data-variant="primary|default|secondary|outline|outline-white|light|danger|ghost|soft|link"`; `data-size="sm|md|lg"`; `data-icon-only` |
-| Icons | `nq-icon-button`; `data-shape="square|circle"`; `nq-icon-background` with `data-size="xs|md|xl"` |
-| Forms | `nq-field`, `nq-label`, `nq-input`, `nq-textarea`, `nq-select`, `nq-hint`, `nq-error`; `aria-invalid="true"` |
-| Search | `nq-search-field`, `nq-search-control`, `nq-search-clear`, `nq-search-suggestions`, `nq-search-option`, `nq-search-submit`; composition: `nq-search-form`, `nq-search-terms`, `nq-search-term`, `nq-search-advanced`; active option uses `aria-selected="true"` |
-| Choices | `nq-choice` on a label; `nq-checkbox`, `nq-radio`, `nq-switch` on native inputs |
-| Tabs | `nq-tabs`, `nq-tab-list`, `nq-tab`, `nq-tab-panel`; `aria-selected`; optional vertical `aria-orientation` |
-| Tab overflow | `nq-tab-bar`, `nq-tabs-overflow` (`details`), `nq-tab-overflow-trigger` (`summary`), `nq-tab-overflow-menu`, `nq-tab-overflow-item`; controller-owned `data-nq-overflow-hidden`; [source and keyboard notes](../../docs/nic-tabs.md) |
-| Content navigation | `nq-content-nav`, `nq-content-nav-heading`, `nq-content-nav-list`, `nq-content-nav-sublist`, `nq-content-nav-link`, `nq-content-nav-marker`, `nq-content-nav-label`; `aria-current="location"`; optional `data-sticky="true"`, `--nq-content-nav-top`, `--nq-content-nav-bottom-reserve`, `--nq-content-nav-indent` |
-| Dialog | `nq-dialog` on native `dialog`; `nq-dialog-header`, `nq-dialog-body`, `nq-dialog-footer` |
-| Combobox | `nq-combobox`, `nq-input`, `nq-listbox`, `nq-option`; `data-active` for keyboard focus, `aria-selected` for committed selection |
-| Surfaces | `nq-card`, `nq-card-header`, `nq-card-body`, `nq-card-footer` |
-| Feedback | `nq-badge` and `nq-alert`; `data-tone="neutral|success|warning|danger|info"` (neutral is badge default); badges support `data-variant="soft|outline|dot"` and `nq-badges` wrapping groups; [source notes](../../docs/nic-badges.md) |
-| Data | `nq-table-wrap`, `nq-table`, `nq-pagination`, `nq-breadcrumb`; native table semantics, `aria-current="page"`; `data-numeric` on numeric cells |
-| Pagination | `nq-pagination-item`, `nq-pagination-arrow`, `nq-pagination-gap` (`details`), `nq-pagination-gap-trigger` (`summary`), `nq-pagination-menu`, `nq-pagination-jump`; [source and keyboard notes](../../docs/nic-pagination.md) |
-| Rating | `nq-rating` for native integer radios; `nq-rating-display`, `nq-rating-stars`, `nq-rating-star`, `nq-rating-fill`, `nq-rating-score` for non-interactive fractional scores; [source and accessibility notes](../../docs/nic-rating.md) |
-| Disclosure | `nq-accordion`; `nq-accordion-item` on `details`; `nq-accordion-trigger` on `summary`; optional `nq-accordion-content` |
-| Status | `nq-progress`, `nq-skeleton`, `nq-spinner`, `nq-avatar`, `nq-divider` |
-| Avatar options | `nq-avatar`; `data-size="40|64|80|120|sm|md|lg|xl"`, `data-variant="circle|square"`; [geometry and theme notes](../../docs/nic-avatars.md) |
-| Workflow | `nq-toolbar`, `nq-chip`, `nq-empty`, `nq-stepper`, `nq-step`, `nq-timeline`, `nq-upload`, `nq-tooltip` |
-| Layout | `nq-stack`, `nq-cluster`, `nq-container`, `nq-sr-only` |
+| Actions | `hw-button`; `data-variant="primary|default|secondary|outline|outline-white|light|danger|ghost|soft|link"`; `data-size="sm|md|lg"`; `data-icon-only` |
+| Icons | `hw-icon-button`; `data-shape="square|circle"`; `hw-icon-background` with `data-size="xs|md|xl"` |
+| Forms | `hw-field`, `hw-label`, `hw-input`, `hw-textarea`, `hw-select`, `hw-hint`, `hw-error`; `aria-invalid="true"` |
+| Search | `hw-search-field`, `hw-search-control`, `hw-search-clear`, `hw-search-suggestions`, `hw-search-option`, `hw-search-submit`; composition: `hw-search-form`, `hw-search-terms`, `hw-search-term`, `hw-search-advanced`; active option uses `aria-selected="true"` |
+| Choices | `hw-choice` on a label; `hw-checkbox`, `hw-radio`, `hw-switch` on native inputs |
+| Tabs | `hw-tabs`, `hw-tab-list`, `hw-tab`, `hw-tab-panel`; `aria-selected`; optional vertical `aria-orientation` |
+| Tab overflow | `hw-tab-bar`, `hw-tabs-overflow` (`details`), `hw-tab-overflow-trigger` (`summary`), `hw-tab-overflow-menu`, `hw-tab-overflow-item`; controller-owned `data-hw-overflow-hidden`; [source and keyboard notes](../../docs/nic-tabs.md) |
+| Content navigation | `hw-content-nav`, `hw-content-nav-heading`, `hw-content-nav-list`, `hw-content-nav-sublist`, `hw-content-nav-link`, `hw-content-nav-marker`, `hw-content-nav-label`; `aria-current="location"`; optional `data-sticky="true"`, `--hw-content-nav-top`, `--hw-content-nav-bottom-reserve`, `--hw-content-nav-indent` |
+| Dialog | `hw-dialog` on native `dialog`; `hw-dialog-header`, `hw-dialog-body`, `hw-dialog-footer` |
+| Combobox | `hw-combobox`, `hw-input`, `hw-listbox`, `hw-option`; `data-active` for keyboard focus, `aria-selected` for committed selection |
+| Surfaces | `hw-card`, `hw-card-header`, `hw-card-body`, `hw-card-footer` |
+| Feedback | `hw-badge` and `hw-alert`; `data-tone="neutral|success|warning|danger|info"` (neutral is badge default); badges support `data-variant="soft|outline|dot"` and `hw-badges` wrapping groups; [source notes](../../docs/nic-badges.md) |
+| Data | `hw-table-wrap`, `hw-table`, `hw-pagination`, `hw-breadcrumb`; native table semantics, `aria-current="page"`; `data-numeric` on numeric cells |
+| Pagination | `hw-pagination-item`, `hw-pagination-arrow`, `hw-pagination-gap` (`details`), `hw-pagination-gap-trigger` (`summary`), `hw-pagination-menu`, `hw-pagination-jump`; [source and keyboard notes](../../docs/nic-pagination.md) |
+| Rating | `hw-rating` for native integer radios; `hw-rating-display`, `hw-rating-stars`, `hw-rating-star`, `hw-rating-fill`, `hw-rating-score` for non-interactive fractional scores; [source and accessibility notes](../../docs/nic-rating.md) |
+| Disclosure | `hw-accordion`; `hw-accordion-item` on `details`; `hw-accordion-trigger` on `summary`; optional `hw-accordion-content` |
+| Status | `hw-progress`, `hw-skeleton`, `hw-spinner`, `hw-avatar`, `hw-divider` |
+| Avatar options | `hw-avatar`; `data-size="40|64|80|120|sm|md|lg|xl"`, `data-variant="circle|square"`; [geometry and theme notes](../../docs/nic-avatars.md) |
+| Workflow | `hw-toolbar`, `hw-chip`, `hw-empty`, `hw-stepper`, `hw-step`, `hw-timeline`, `hw-upload`, `hw-tooltip` |
+| Layout | `hw-stack`, `hw-cluster`, `hw-container`, `hw-sr-only` |
 
 Defaults are primary/medium buttons, comfortable density, light mode, and the
-DGA reference theme. Select `data-nq-theme="nasaq"` for the original palette. Use `data-nq-density="compact"` to reduce control and
+DGA reference theme. Select `data-hw-theme="hawiyah"` for the original palette. Use `data-hw-density="compact"` to reduce control and
 table spacing. Compact and small controls may require additional hit-area spacing
 for touch-heavy applications. Step states are `active`, `complete` (or `completed`),
 and `error`; current steps should also use `aria-current="step"`. Steps include a
@@ -60,9 +60,9 @@ CSS counter circle, so their content should contain the label without another
 visible number. Timelines style direct list items. Upload supports
 `data-state="dragging|error"`; drop behavior belongs to application code.
 
-`nq-stack` and `nq-cluster` accept the scoped `--nq-gap` property. This is a
+`hw-stack` and `hw-cluster` accept the scoped `--hw-gap` property. This is a
 layout customization hook, not a global design token. Components otherwise use
-the semantic `--nq-*` variables documented by `@nasaq/tokens`.
+the semantic `--hw-*` variables documented by `@hawiyah/tokens`.
 
 ## Semantics and behavior
 
@@ -71,12 +71,12 @@ presentation and communicates state but does not suppress click behavior by itse
 Keep inactive panels and closed tooltips/listboxes `hidden`; component display
 rules preserve that attribute. The stylesheet does not assign roles, manage focus,
 trap dialogs, announce errors, or implement keyboard navigation. Use native HTML
-and Nasaq adapters for those responsibilities.
+and Hawiyah adapters for those responsibilities.
 
 Native `select`, `checkbox`, and `radio` preserve platform behavior. Labels and
 messages must be associated in markup. Native progress needs a label; loading
 spinners and skeletons need suitable surrounding loading announcements. A tooltip
-must supplement an accessible control name. Its wrapper uses `data-nq="tooltip"`
+must supplement an accessible control name. Its wrapper uses `data-hw="tooltip"`
 and must have room for the positioned tooltip; adapters do not promise collision
 avoidance. Make horizontally overflowing table wrappers keyboard focusable with an
 accessible label when scrolling is needed.
@@ -96,16 +96,16 @@ stays a separate opt-in entry point.
 The package also exports the Arabic-only outlined logo and transparent loaders:
 
 ```ts
-import wordmark from '@nasaq/styles/assets/nasaq-wordmark.svg';
-import loader from '@nasaq/styles/assets/nasaq-loader.gif';
-import whiteLoader from '@nasaq/styles/assets/nasaq-loader-white.gif';
+import wordmark from '@hawiyah/styles/assets/hawiyah-wordmark.svg';
+import loader from '@hawiyah/styles/assets/hawiyah-loader.gif';
+import whiteLoader from '@hawiyah/styles/assets/hawiyah-loader-white.gif';
 ```
 
 Asset imports depend on the application's bundler; vanilla projects can copy the
 files into their public directory. Use the static SVG in a `<picture>` source
 with `media="(prefers-reduced-motion: reduce)"`, give the decorative image empty
 alt text, and provide separate localized `role="status"` loading text. 256px GIF
-variants use `nasaq-loader-256.gif` and `nasaq-loader-white-256.gif`. Font outlines
+variants use `hawiyah-loader-256.gif` and `hawiyah-loader-white-256.gif`. Font outlines
 are embedded in the SVG; Aref Ruqaa is not a runtime dependency or a font request.
 
 ## Curated interface icons
@@ -116,28 +116,28 @@ framework owns the ordinary `span` it renders. In React use `className` in place
 of `class` in this example:
 
 ```html
-<button type="button" class="nq-button nq-icon-button" data-variant="ghost" aria-label="بحث">
-  <span class="nq-icon" data-icon="search-01" aria-hidden="true"></span>
+<button type="button" class="hw-button hw-icon-button" data-variant="ghost" aria-label="بحث">
+  <span class="hw-icon" data-icon="search-01" aria-hidden="true"></span>
 </button>
 <a href="/next">
   التالي
-  <span class="nq-icon" data-icon="arrow-right-01"
+  <span class="hw-icon" data-icon="arrow-right-01"
         data-directional="true" aria-hidden="true"></span>
 </a>
 ```
 
 Available `data-icon` names: `search-01`, `menu-01`, `cancel-01`, `arrow-left-01`, `arrow-right-01`, `arrow-down-01`, `filter-horizontal`, `sorting-05`, `home-01`, `checkmark-circle-02`, `view`, `view-off-slash`, `calendar-03`, `thumbs-up`, `thumbs-down`, `link-04`, `lock-password`. The CSS alpha mask uses `currentColor` and defaults to
-`1.5rem` (24px at the usual root size). Set the scoped `--nq-icon-size` variable
+`1.5rem` (24px at the usual root size). Set the scoped `--hw-icon-size` variable
 to change rendered size; icon size does not establish an accessible touch target.
 Provide a visible label or an accessible name on the containing control; these
 decorative spans must remain `aria-hidden="true"`.
 
 Icon buttons center 20px artwork (16px for small) in DGA themes, including SVGs
 inside framework wrappers. Target dimensions follow the selected density;
-`--nq-icon-size` still overrides the artwork. Use `data-shape="circle"` for a round
-action. Background icons are noninteractive decoration: `.nq-icon-background`
+`--hw-icon-size` still overrides the artwork. Use `data-shape="circle"` for a round
+action. Background icons are noninteractive decoration: `.hw-icon-background`
 uses 48px circles; `data-size="xs"` uses 30px and `xl` remains 48px as in the source.
-Set `data-size="sm|md|lg|xl|2xl"` on `.nq-icon` for 14/20/24/30/48px artwork.
+Set `data-size="sm|md|lg|xl|2xl"` on `.hw-icon` for 14/20/24/30/48px artwork.
 Keep the wrapper hidden for decoration or give it meaningful image semantics.
 
 Only left/right arrows with `data-directional="true"` mirror in RTL. Use this for
@@ -157,50 +157,50 @@ and brand assets from the supplied Figma catalog are not part of this subset.
 Direct asset imports are available through the existing asset export:
 
 ```ts
-import searchIcon from '@nasaq/styles/assets/icons/search-01.svg';
+import searchIcon from '@hawiyah/styles/assets/icons/search-01.svg';
 ```
 
 ## DGA reference compositions
 
 The stylesheet includes the mapped DGA profile, input state transitions and portal
-compositions. `nq-service-container` provides the 1280px content region;
-`nq-service-layout` composes `nq-service-main` and `nq-service-aside` with a 32px gap.
-`nq-form-layout` supports a desktop progress column and a single-column mobile
-flow. `nq-stepper-responsive` groups the desktop list with a mobile summary;
-`nq-stepper-ring` uses `--nq-step-progress` for its decorative progress ring.
+compositions. `hw-service-container` provides the 1280px content region;
+`hw-service-layout` composes `hw-service-main` and `hw-service-aside` with a 32px gap.
+`hw-form-layout` supports a desktop progress column and a single-column mobile
+flow. `hw-stepper-responsive` groups the desktop list with a mobile summary;
+`hw-stepper-ring` uses `--hw-step-progress` for its decorative progress ring.
 Provide an accessible current/total label alongside that ring.
 
 Keep source order meaningful: progress summary, form, then contextual guidance.
-Portal headers/footers retain their public `nq-portal-*` classes. The adapters
+Portal headers/footers retain their public `hw-portal-*` classes. The adapters
 provide responsive disclosure behavior; vanilla uses `createPortalHeader` or
 `enhance`. Template content, validation and integrations remain application responsibilities.
 The Figma-derived examples are available in the guide's template gallery.
 
 ### Opt-in mobile control sizing
 
-Set `data-nq-density="mobile"` on an application or subtree, or pass
+Set `data-hw-density="mobile"` on an application or subtree, or pass
 `{ density: 'mobile' }` to `createThemeVariables`. At a 16 px root size,
-small/default/large buttons are 32/40/44 px. Single-line `.nq-input` and
-`.nq-select` controls have a 44 px minimum across size variants, using the
-additive `--nq-control-field-min-height` token. Existing control-height overrides
+small/default/large buttons are 32/40/44 px. Single-line `.hw-input` and
+`.hw-select` controls have a 44 px minimum across size variants, using the
+additive `--hw-control-field-min-height` token. Existing control-height overrides
 still apply when larger. Textareas remain multiline and grow independently.
 Comfortable/compact scopes reset the field minimum, including inside mobile.
 This is an explicit profile shared by all four adapters; viewport width does not
-automatically select it. Nasaq/custom palettes, corners and dark mode remain
+automatically select it. Hawiyah/custom palettes, corners and dark mode remain
 application choices; this does not establish source mobile dark-mode parity.
 
 Source: supplied Mobile Components input set `3149:54894`, body `11167:15771`
 (320 × 44, radius 4); button nodes `407:510377`, `407:510548`, `407:510617`
 (large/medium/small: 44/40/32). These are decoded dimensions. A single source
-input size informs a shared minimum, not a claim that every Nasaq variant is an
+input size informs a shared minimum, not a claim that every Hawiyah variant is an
 exact source component. The source small button is not a blanket 44 px touch
 target; applications must still evaluate target spacing and interaction needs.
 
 ### Component motion
 
-DGA/custom switches use `--nq-duration-switch: 200ms` and ease-in-out for both
-track (`--nq-ease-switch-track`) and thumb (`--nq-ease-switch`). Spinners use
-`--nq-duration-spinner: 1000ms` for a linear full rotation. Nasaq keeps its original
+DGA/custom switches use `--hw-duration-switch: 200ms` and ease-in-out for both
+track (`--hw-ease-switch-track`) and thumb (`--hw-ease-switch`). Spinners use
+`--hw-duration-spinner: 1000ms` for a linear full rotation. Hawiyah keeps its original
 180 ms switch and 700 ms spinner defaults. Override these roles independently
 of generic durations. Reduced-motion preferences stop button/switch/field
 transitions and loading animations while preserving state and focus behavior.
@@ -208,40 +208,40 @@ The reference JSON records source nodes and the four-segment spinner mapping;
 these values do not establish universal DGA motion or visual parity.
 
 The NIC accordion profile uses 150 ms hover/focus color transitions and the
-separate `--nq-duration-accordion-indicator: 200ms` chevron role. Disclosure
-height retains `--nq-duration-accordion: 300ms`. Original Nasaq remains immediate.
-`--nq-color-accordion-border` and `--nq-color-accordion-focus` support scoped
+separate `--hw-duration-accordion-indicator: 200ms` chevron role. Disclosure
+height retains `--hw-duration-accordion: 300ms`. Original Hawiyah remains immediate.
+`--hw-color-accordion-border` and `--hw-color-accordion-focus` support scoped
 color overrides; source geometry and accessibility adaptations are documented
 in `docs/nic-accordion.md`.
 
 
 ### Table profile
 
-`.nq-table` inside `.nq-table-wrap` uses NIC-informed 48px minimum cells,
+`.hw-table` inside `.hw-table-wrap` uses NIC-informed 48px minimum cells,
 8px/16px padding and an 8px outer radius in the DGA/custom profile.
 `data-variant="striped|bordered"` and `data-size="sm|lg"` remain explicit
-Nasaq extensions. Use `.nq-table-heading` only for the optional 12px/18px
-medium-weight heading composition. `--nq-color-table-row-hover` and
-`--nq-color-table-row-hover-odd` are themeable semantic colors. Native table
+Hawiyah extensions. Use `.hw-table-heading` only for the optional 12px/18px
+medium-weight heading composition. `--hw-color-table-row-hover` and
+`--hw-color-table-row-hover-odd` are themeable semantic colors. Native table
 markup needs captions, scoped headers and a named focusable overflow wrapper;
 CSS does not add these semantics or selection behavior. See
 [table evidence](../../docs/nic-tables.md).
 
-For vanilla sorting, place `<span class="nq-table-sort-icon" aria-hidden="true"></span>`
+For vanilla sorting, place `<span class="hw-table-sort-icon" aria-hidden="true"></span>`
 inside the header button. Its decorative indicator follows `aria-sort` on the
 native `th`; the controller supplies that semantic state.
 
 The DGA Select indicator follows focus and writing direction. Multiple selects,
 visible-row listboxes and forced colors use the native indicator treatment.
-Scale field descriptions with `--nq-profile-helper-size` and
-`--nq-profile-error-size`. The light and dark palettes expose
-`--nq-color-field-helper` and `--nq-color-field-error-text`.
+Scale field descriptions with `--hw-profile-helper-size` and
+`--hw-profile-error-size`. The light and dark palettes expose
+`--hw-color-field-helper` and `--hw-color-field-error-text`.
 
-Use `nq-type` and a `data-scale` value to choose the NIC display, heading or body metrics independently of the heading level. Use `nq-line-clamp` with `data-lines` for a visual excerpt. When people need the full text, provide a visible way to expand or open it. `nq-divider` supports neutral, primary, gold and tertiary tones with `data-tone`. Use `aria-orientation="vertical"` in inline layouts. See the [foundations measurements](../../docs/nic-foundations.md).
+Use `hw-type` and a `data-scale` value to choose the NIC display, heading or body metrics independently of the heading level. Use `hw-line-clamp` with `data-lines` for a visual excerpt. When people need the full text, provide a visible way to expand or open it. `hw-divider` supports neutral, primary, gold and tertiary tones with `data-tone`. Use `aria-orientation="vertical"` in inline layouts. See the [foundations measurements](../../docs/nic-foundations.md).
 ## HTML reading direction
 
 Set `dir="rtl"` or `dir="ltr"` on the document or on the nearest section that changes direction. The carousel track, directional arrows, calendar controls, select indicator, overflow markers and notification entry follow that boundary. A nested override takes effect even when the language stays the same. Physical arrow icons mirror only when explicitly marked directional.
 
-For `dir="auto"`, Nasaq uses a CSS `@scope` root with the native `:dir(rtl)` selector. This preserves the browser’s first-strong-character decision when the guide or a consumer minifies CSS. Engines without CSS scope still apply explicit direction boundaries. Decorative geometry at an automatic boundary falls back to LTR in those engines. Set an explicit direction when the host already knows the reading order.
+For `dir="auto"`, Hawiyah uses a CSS `@scope` root with the native `:dir(rtl)` selector. This preserves the browser’s first-strong-character decision when the guide or a consumer minifies CSS. Engines without CSS scope still apply explicit direction boundaries. Decorative geometry at an automatic boundary falls back to LTR in those engines. Set an explicit direction when the host already knows the reading order.
 
 The production direction regression loads the minified package stylesheet used by the guide editor. It checks carousel alignment, directional icon mirroring, select indicator placement and an overflow popup at 320px and desktop width.

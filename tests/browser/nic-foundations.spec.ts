@@ -18,14 +18,14 @@ for (const width of [390,1280]) {
     for (const locale of ['ar','en'] as const) {
       if (locale === 'en') {
         await page.locator('.topbar [data-action="locale"]').click();
-        await page.locator('html').evaluate(root => root.setAttribute('data-nq-mode', 'dark'));
+        await page.locator('html').evaluate(root => root.setAttribute('data-hw-mode', 'dark'));
       }
       await expect(html).toHaveAttribute('lang',locale);
       await expect(html).toHaveAttribute('dir',locale === 'ar' ? 'rtl' : 'ltr');
-      await expect(html).toHaveAttribute('data-nq-mode',locale === 'ar' ? 'light' : 'dark');
+      await expect(html).toHaveAttribute('data-hw-mode',locale === 'ar' ? 'light' : 'dark');
       const disclosure = section.locator(':scope > details > summary');
       await disclosure.press('Enter');
-      const styles = await section.locator('.foundation-scale-list .nq-type').evaluateAll(nodes =>
+      const styles = await section.locator('.foundation-scale-list .hw-type').evaluateAll(nodes =>
         Object.fromEntries(nodes.map(node => {
           const style = getComputedStyle(node);
           return [node.getAttribute('data-scale'),[parseFloat(style.fontSize),parseFloat(style.lineHeight)]];
@@ -36,7 +36,7 @@ for (const width of [390,1280]) {
         expect(styles[name][1],name + ' line height').toBeCloseTo(leading,2);
       }
       const excerpt = section.locator('.foundation-excerpt');
-      const clamp = excerpt.locator('.nq-line-clamp'), full = excerpt.locator('details p');
+      const clamp = excerpt.locator('.hw-line-clamp'), full = excerpt.locator('details p');
       const text = (await full.textContent())?.trim() ?? '';
       expect(text.length).toBeGreaterThan(50);
       await expect(clamp).toHaveText(text);
@@ -59,16 +59,16 @@ for (const width of [390,1280]) {
       const geometry = await section.evaluate(node => {
         const style = getComputedStyle(node);
         const root = node.ownerDocument.documentElement;
-        return [root.scrollWidth - root.clientWidth, ...['--nq-space-0-5','--nq-space-1-5','--nq-width-xxs','--nq-width-paragraph','--nq-radius-none'].map(token => {
+        return [root.scrollWidth - root.clientWidth, ...['--hw-space-0-5','--hw-space-1-5','--hw-width-xxs','--hw-width-paragraph','--hw-radius-none'].map(token => {
           const value = style.getPropertyValue(token).trim();
           return value.endsWith('rem') ? parseFloat(value) : NaN;
         })];
       });
       expect(geometry).toEqual([0,0.125,0.375,20,45,0]);
     }
-    for (const theme of ['nasaq','custom','dga']) {
-      await page.locator('html').evaluate((root, theme) => root.setAttribute('data-nq-theme', theme), theme);
-      await expect(html).toHaveAttribute('data-nq-theme',theme);
+    for (const theme of ['hawiyah','custom','dga']) {
+      await page.locator('html').evaluate((root, theme) => root.setAttribute('data-hw-theme', theme), theme);
+      await expect(html).toHaveAttribute('data-hw-theme',theme);
       await expect(section).toBeVisible();
       expect(await html.evaluate(node => node.scrollWidth - node.clientWidth)).toBe(0);
     }
@@ -88,8 +88,8 @@ for (const framework of ['vanilla','react','vue','angular'] as const) {
     await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);
     if (framework !== 'angular') await page.locator('[data-project-language]').selectOption('typescript');
-    await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-    const project = page.frameLocator('.nq-ide-frame').locator('[data-divider-examples]');
+    await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+    const project = page.frameLocator('.hw-ide-frame').locator('[data-divider-examples]');
     await expect(project).toBeVisible();
     const rules = project.getByRole('separator');
     await expect(rules).toHaveCount(5);
@@ -115,13 +115,13 @@ for (const framework of ['vanilla','react','vue','angular'] as const) {
       }
     }
     // Load the requested mode without exposing a global appearance switch.
-    await page.evaluate(() => localStorage.setItem('nasaq-mode', 'dark'));
+    await page.evaluate(() => localStorage.setItem('hawiyah-mode', 'dark'));
     await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-nq-mode','dark');
+    await expect(page.locator('html')).toHaveAttribute('data-hw-mode','dark');
     await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);
     if (framework !== 'angular') await page.locator('[data-project-language]').selectOption('typescript');
-    await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+    await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
     await expect(rules.nth(2)).toHaveCSS('border-block-start-color','rgb(248, 211, 108)');
     await expect(rules.nth(3)).toHaveCSS('border-block-start-color','rgb(208, 182, 228)');
     await page.emulateMedia({forcedColors:'active'});

@@ -6,7 +6,7 @@ export async function pauseAccordionAnimations(page: Page) {
     const animate = Element.prototype.animate;
     Element.prototype.animate = function (...args: Parameters<Element['animate']>) {
       const animation = animate.apply(this, args);
-      if (this.matches('.nq-accordion-item')) animation.pause();
+      if (this.matches('.hw-accordion-item')) animation.pause();
       return animation;
     };
   });

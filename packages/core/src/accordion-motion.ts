@@ -13,7 +13,7 @@ const groups = new WeakMap<Node, Map<string, Set<AccordionMotion>>>();
 export function createAccordionMotion(details: HTMLDetailsElement, content: HTMLElement,
   onOpenChange?: (open: boolean) => void): AccordionMotion {
   const summary = [...details.children].find(child => child.localName === 'summary') as HTMLElement | undefined;
-  if (!summary) throw new Error('Nasaq: accordion items require a summary.');
+  if (!summary) throw new Error('Hawiyah: accordion items require a summary.');
   const view = details.ownerDocument.defaultView;
   const media = view?.matchMedia?.('(prefers-reduced-motion: reduce)');
   const name = details.getAttribute('name');
@@ -21,7 +21,7 @@ export function createAccordionMotion(details: HTMLDetailsElement, content: HTML
   const initial = {
     expanded: summary.getAttribute('aria-expanded'), hidden: content.getAttribute('aria-hidden'),
     inert: content.hasAttribute('inert'), overflow: details.style.overflow,
-    state: details.getAttribute('data-nq-expanded'),
+    state: details.getAttribute('data-hw-expanded'),
   };
   let target = details.open;
   let animation: Animation | undefined;
@@ -46,7 +46,7 @@ export function createAccordionMotion(details: HTMLDetailsElement, content: HTML
     const active = 'activeElement' in tree ? (tree as Document | ShadowRoot).activeElement : details.ownerDocument.activeElement;
     if (!target && content.contains(active)) summary.focus({ preventScroll: true });
     summary.setAttribute('aria-expanded', String(target));
-    details.dataset.nqExpanded = String(target);
+    details.dataset.hwExpanded = String(target);
     content.toggleAttribute('inert', !target || initial.inert);
     if (target) restore(content, 'aria-hidden', initial.hidden); else content.setAttribute('aria-hidden', 'true');
   };
@@ -63,9 +63,9 @@ export function createAccordionMotion(details: HTMLDetailsElement, content: HTML
     if (open && (changed || immediate)) for (const peer of peers ?? []) if (peer !== controller && peer.open) peer.request(false);
     accessibility();
     const style = view?.getComputedStyle?.(details);
-    const token = style?.getPropertyValue('--nq-duration-accordion').trim() ?? '';
+    const token = style?.getPropertyValue('--hw-duration-accordion').trim() ?? '';
     const duration = Math.max(0, Number.parseFloat(token) * (token.endsWith('ms') ? 1 : 1000)) || 0;
-    const easing = style?.getPropertyValue('--nq-ease-accordion').trim() || 'ease-in-out';
+    const easing = style?.getPropertyValue('--hw-ease-accordion').trim() || 'ease-in-out';
     if (immediate || !duration || media?.matches || typeof details.animate !== 'function') { finish(); return; }
     const from = details.getBoundingClientRect().height;
     cancel();
@@ -114,7 +114,7 @@ export function createAccordionMotion(details: HTMLDetailsElement, content: HTML
       restore(summary, 'aria-expanded', initial.expanded);
       restore(content, 'aria-hidden', initial.hidden);
       content.toggleAttribute('inert', initial.inert);
-      restore(details, 'data-nq-expanded', initial.state);
+      restore(details, 'data-hw-expanded', initial.state);
     },
   };
   peers?.add(controller);

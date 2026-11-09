@@ -1,80 +1,80 @@
 /* NIC global.css 971–1292. Keep public density sizes; see docs/nic-buttons.md.
    Color switches resolve at the component, including nested theme boundaries. */
-.nq-button {
-  --nq-button-active: var(--nq-button-hover);
-  --nq-button-focus-bg: var(--nq-button-bg);
-  --nq-button-focus-color: var(--nq-color-focus-contrast);
-  --nq-button-rest-outline: none;
-  --nq-button-active-outline: var(--nq-button-rest-outline);
-  --nq-button-disabled-bg: var(--nq-color-disabled);
-  --nq-button-disabled-border: transparent;
-  --nq-button-disabled-outline: none;
+.hw-button {
+  --hw-button-active: var(--hw-button-hover);
+  --hw-button-focus-bg: var(--hw-button-bg);
+  --hw-button-focus-color: var(--hw-color-focus-contrast);
+  --hw-button-rest-outline: none;
+  --hw-button-active-outline: var(--hw-button-rest-outline);
+  --hw-button-disabled-bg: var(--hw-color-disabled);
+  --hw-button-disabled-border: transparent;
+  --hw-button-disabled-outline: none;
 }
-.nq-button:not([data-variant]), .nq-button[data-variant='primary'] {
-  --nq-button-active: var(--nq-color-primary-active);
+.hw-button:not([data-variant]), .hw-button[data-variant='primary'] {
+  --hw-button-active: var(--hw-color-primary-active);
 }
-.nq-button[data-variant='default'] {
-  --nq-button-bg: var(--nq-color-action-default);
-  --nq-button-fg: var(--nq-color-on-action-default);
-  --nq-button-hover: var(--nq-color-action-default-hover);
-  --nq-button-active: var(--nq-color-action-default-active);
+.hw-button[data-variant='default'] {
+  --hw-button-bg: var(--hw-color-action-default);
+  --hw-button-fg: var(--hw-color-on-action-default);
+  --hw-button-hover: var(--hw-color-action-default-hover);
+  --hw-button-active: var(--hw-color-action-default-active);
 }
-.nq-button[data-variant='secondary'] {
-  --nq-button-bg: var(--nq-color-action-secondary);
-  --nq-button-fg: var(--nq-color-on-action-secondary);
-  --nq-button-hover: var(--nq-color-action-secondary-hover);
-  --nq-button-border: var(--nq-dga-on, var(--nq-color-border-strong)) var(--nq-dga-off, transparent);
+.hw-button[data-variant='secondary'] {
+  --hw-button-bg: var(--hw-color-action-secondary);
+  --hw-button-fg: var(--hw-color-on-action-secondary);
+  --hw-button-hover: var(--hw-color-action-secondary-hover);
+  --hw-button-border: var(--hw-dga-on, var(--hw-color-border-strong)) var(--hw-dga-off, transparent);
 }
-.nq-button[data-variant='outline'] {
-  --nq-button-bg: transparent;
-  --nq-button-fg: var(--nq-dga-on, var(--nq-color-primary-text)) var(--nq-dga-off, var(--nq-color-text));
-  --nq-button-border: var(--nq-dga-on, var(--nq-color-primary)) var(--nq-dga-off, transparent);
-  --nq-button-hover: var(--nq-color-action-outline-hover);
-  --nq-button-active: var(--nq-color-action-outline-active);
-  --nq-button-rest-outline: var(--nq-dga-on, none) var(--nq-dga-off, 1px solid var(--nq-color-action-outline-border));
-  --nq-button-active-outline: var(--nq-dga-on, none) var(--nq-dga-off, 1px solid var(--nq-color-action-outline-border-active));
-  --nq-button-disabled-bg: transparent;
-  --nq-button-disabled-outline: 1px solid var(--nq-color-action-outline-border);
+.hw-button[data-variant='outline'] {
+  --hw-button-bg: transparent;
+  --hw-button-fg: var(--hw-dga-on, var(--hw-color-primary-text)) var(--hw-dga-off, var(--hw-color-text));
+  --hw-button-border: var(--hw-dga-on, var(--hw-color-primary)) var(--hw-dga-off, transparent);
+  --hw-button-hover: var(--hw-color-action-outline-hover);
+  --hw-button-active: var(--hw-color-action-outline-active);
+  --hw-button-rest-outline: var(--hw-dga-on, none) var(--hw-dga-off, 1px solid var(--hw-color-action-outline-border));
+  --hw-button-active-outline: var(--hw-dga-on, none) var(--hw-dga-off, 1px solid var(--hw-color-action-outline-border-active));
+  --hw-button-disabled-bg: transparent;
+  --hw-button-disabled-outline: 1px solid var(--hw-color-action-outline-border);
 }
-.nq-button[data-variant='outline-white'] {
-  --nq-button-bg: transparent;
-  --nq-button-fg: #fff;
-  --nq-button-hover: rgb(255 255 255 / 0.2);
-  --nq-button-active: rgb(255 255 255 / 0.3);
-  --nq-button-focus-color: #fff;
-  --nq-button-rest-outline: 1px solid rgb(255 255 255 / 0.7);
-  --nq-button-disabled-bg: transparent;
-  --nq-button-disabled-outline: 1px solid var(--nq-color-action-outline-border);
+.hw-button[data-variant='outline-white'] {
+  --hw-button-bg: transparent;
+  --hw-button-fg: #fff;
+  --hw-button-hover: rgb(255 255 255 / 0.2);
+  --hw-button-active: rgb(255 255 255 / 0.3);
+  --hw-button-focus-color: #fff;
+  --hw-button-rest-outline: 1px solid rgb(255 255 255 / 0.7);
+  --hw-button-disabled-bg: transparent;
+  --hw-button-disabled-outline: 1px solid var(--hw-color-action-outline-border);
 }
-.nq-button[data-variant='light'] {
-  --nq-button-bg: var(--nq-color-action-light);
-  --nq-button-fg: var(--nq-color-on-action-light);
-  --nq-button-hover: var(--nq-color-action-light-hover);
-  --nq-button-active: var(--nq-color-action-light-active);
+.hw-button[data-variant='light'] {
+  --hw-button-bg: var(--hw-color-action-light);
+  --hw-button-fg: var(--hw-color-on-action-light);
+  --hw-button-hover: var(--hw-color-action-light-hover);
+  --hw-button-active: var(--hw-color-action-light-active);
 }
-.nq-button[data-variant='danger'] { --nq-button-active: var(--nq-color-danger-active); }
+.hw-button[data-variant='danger'] { --hw-button-active: var(--hw-color-danger-active); }
 @media (hover: hover) {
-  .nq-button:is([data-variant='secondary'], [data-variant='light'], [data-variant='danger']):hover { --nq-button-focus-bg: var(--nq-button-hover); }
+  .hw-button:is([data-variant='secondary'], [data-variant='light'], [data-variant='danger']):hover { --hw-button-focus-bg: var(--hw-button-hover); }
 }
-.nq-button { outline: var(--nq-button-rest-outline); outline-offset: 0; }
-.nq-button:focus-visible:not(:disabled, [aria-disabled='true']) {
-  outline: var(--nq-dga-on, var(--nq-focus-width)) var(--nq-dga-off, 2px) solid var(--nq-button-focus-color);
-  outline-offset: var(--nq-dga-on, var(--nq-focus-offset)) var(--nq-dga-off, 0px);
-  background: var(--nq-dga-on, var(--nq-button-hover)) var(--nq-dga-off, var(--nq-button-focus-bg));
+.hw-button { outline: var(--hw-button-rest-outline); outline-offset: 0; }
+.hw-button:focus-visible:not(:disabled, [aria-disabled='true']) {
+  outline: var(--hw-dga-on, var(--hw-focus-width)) var(--hw-dga-off, 2px) solid var(--hw-button-focus-color);
+  outline-offset: var(--hw-dga-on, var(--hw-focus-offset)) var(--hw-dga-off, 0px);
+  background: var(--hw-dga-on, var(--hw-button-hover)) var(--hw-dga-off, var(--hw-button-focus-bg));
 }
-.nq-button:not(:disabled, [aria-disabled='true']):active {
-  background: var(--nq-button-active);
-  box-shadow: var(--nq-dga-on, inset 0 0 0 100px rgb(0 0 0 / 0.06)) var(--nq-dga-off, none);
+.hw-button:not(:disabled, [aria-disabled='true']):active {
+  background: var(--hw-button-active);
+  box-shadow: var(--hw-dga-on, inset 0 0 0 100px rgb(0 0 0 / 0.06)) var(--hw-dga-off, none);
 }
-.nq-button:active:not(:focus-visible, :disabled, [aria-disabled='true']) { outline: var(--nq-button-active-outline); }
-.nq-button:is(:disabled, [aria-disabled='true']) {
-  background: var(--nq-button-disabled-bg);
-  border-color: var(--nq-button-disabled-border);
-  outline: var(--nq-button-disabled-outline);
+.hw-button:active:not(:focus-visible, :disabled, [aria-disabled='true']) { outline: var(--hw-button-active-outline); }
+.hw-button:is(:disabled, [aria-disabled='true']) {
+  background: var(--hw-button-disabled-bg);
+  border-color: var(--hw-button-disabled-border);
+  outline: var(--hw-button-disabled-outline);
 }
 /* Retain a visible keyboard indicator even while the key is held down. */
 @media (forced-colors: active) {
-  .nq-button { border: 1px solid ButtonText; }
-  .nq-button:focus-visible:not(:disabled, [aria-disabled='true']) { outline: 2px solid Highlight; outline-offset: 2px; }
-  .nq-button:is(:disabled, [aria-disabled='true']) { border-color: GrayText; color: GrayText; }
+  .hw-button { border: 1px solid ButtonText; }
+  .hw-button:focus-visible:not(:disabled, [aria-disabled='true']) { outline: 2px solid Highlight; outline-offset: 2px; }
+  .hw-button:is(:disabled, [aria-disabled='true']) { border-color: GrayText; color: GrayText; }
 }

@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 /** Source values from NIC global.css 1677–1766; shared assertions against real adapters. */
 export async function checkNicAccordion(page: Page, accordion: Locator) {
-  const item=accordion.locator('.nq-accordion-item').first(), trigger=item.locator('summary'), content=item.locator('.nq-accordion-content');
+  const item=accordion.locator('.hw-accordion-item').first(), trigger=item.locator('summary'), content=item.locator('.hw-accordion-content');
   await page.emulateMedia({reducedMotion:'no-preference'});
   await expect(accordion).toHaveCSS('border-radius','6px');
   await expect(accordion).toHaveCSS('border-top-color','rgb(222, 226, 230)');
@@ -37,14 +37,14 @@ export async function checkNicAccordion(page: Page, accordion: Locator) {
     await page.setViewportSize({width,height:1000});
     expect(await accordion.evaluate(node=>node.scrollWidth<=node.clientWidth)).toBe(true);
   }
-  await accordion.evaluate(node=>node.setAttribute('data-nq-mode','dark'));
+  await accordion.evaluate(node=>node.setAttribute('data-hw-mode','dark'));
   await trigger.focus();await expect(trigger).toHaveCSS('background-color','rgb(56, 66, 80)');
   await expect(trigger).toHaveCSS('outline-color','rgb(255, 255, 255)');
-  await accordion.evaluate(node=>{node.setAttribute('data-nq-theme','nasaq');node.setAttribute('data-nq-mode','light');});
+  await accordion.evaluate(node=>{node.setAttribute('data-hw-theme','hawiyah');node.setAttribute('data-hw-mode','light');});
   await expect(item).toHaveCSS('padding','0px');await expect(trigger).toHaveCSS('padding','16px 20px');
   await expect(accordion).toHaveCSS('border-radius','14px');
   expect((await indicator()).duration).toBe('0s');
-  await accordion.evaluate(node=>{node.setAttribute('data-nq-theme','custom');(node as HTMLElement).style.setProperty('--nq-color-accordion-focus','rgb(50, 60, 70)');});
+  await accordion.evaluate(node=>{node.setAttribute('data-hw-theme','custom');(node as HTMLElement).style.setProperty('--hw-color-accordion-focus','rgb(50, 60, 70)');});
   await expect(item).toHaveCSS('padding','18px');await expect(trigger).toHaveCSS('background-color','rgb(50, 60, 70)');
   await page.emulateMedia({reducedMotion:'reduce'});
   await expect(trigger).toHaveCSS('transition-property','none');

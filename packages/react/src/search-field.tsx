@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useId, useRef, useState} from 'react';
-import {getSearchSuggestions, isDisabled, requestSearchDialogClose} from '@nasaq/core';
+import {getSearchSuggestions, isDisabled, requestSearchDialogClose} from '@hawiyah/core';
 import {Button, TextField} from './forms.js';
 import type {TextFieldProps} from './forms.js';
 import {assignRef, Field, useControllable} from './shared.js';
@@ -50,8 +50,8 @@ export function SearchField({value, defaultValue = '', onValueChange, clearLabel
   }, []);
   const choose=(index:number)=>{if(!canEdit() || composing.current)return;const match=matches[index];if(!match)return;write(match.value);input.current?.focus();close();};
   const search=()=>{if(!input.current || isDisabled(input.current) || composing.current)return;const query=text.trim();if(query)onSearch?.(query);close();};
-  return <Field ref={root} label={label} hint={hint} error={error} required={props.required} controlId={props.id ?? id} className="nq-search-field">
-    <div className="nq-input-group"><div className="nq-search-control">
+  return <Field ref={root} label={label} hint={hint} error={error} required={props.required} controlId={props.id ?? id} className="hw-search-field">
+    <div className="hw-input-group"><div className="hw-search-control">
       <TextField {...props} ref={setInput} type="search" value={text} autoComplete={props.autoComplete ?? (suggestions !== undefined ? 'off' : undefined)} role={suggestions !== undefined ? 'combobox' : props.role} aria-autocomplete={suggestions !== undefined ? 'list' : props['aria-autocomplete']} aria-expanded={suggestions !== undefined ? expanded : props['aria-expanded']} aria-controls={suggestions !== undefined ? listId : props['aria-controls']} aria-activedescendant={expanded && active >= 0 && active < matches.length ? `${listId}-${active}` : undefined}
         onChange={event=>{onChange?.(event);if(event.defaultPrevented || !canEdit())return;write(event.currentTarget.value);setActive(-1);setOpened(!composing.current);}}
         onFocus={event=>{onFocus?.(event);if(!event.defaultPrevented && canEdit() && !composing.current)setOpened(true);}}
@@ -65,9 +65,9 @@ export function SearchField({value, defaultValue = '', onValueChange, clearLabel
           if(canEdit() && matches.length && (event.key==='ArrowDown' || event.key==='ArrowUp')){event.preventDefault();setOpened(true);setActive(index=>event.key==='ArrowDown'?(index+1)%matches.length:(index<=0?matches.length-1:index-1));return;}
           if(event.key==='Enter'){if(expanded && active>=0){event.preventDefault();choose(active);}else search();}
         }}/>
-      <Button className="nq-search-clear" variant="ghost" hidden={!text || props.readOnly} disabled={props.disabled} aria-label={clearLabel} aria-controls={props.id ?? id} onPointerDown={event=>{if(event.button===0)event.preventDefault();}} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>{if(canEdit()){write('');input.current?.focus();close();}}}><span className="nq-search-clear-icon" aria-hidden="true" /></Button>
-      {suggestions !== undefined && <div className="nq-search-suggestions" id={listId} role="listbox" aria-label={props['aria-label'] ?? (typeof label === 'string' ? label : searchLabel)} hidden={!expanded}>{matches.map((match,index)=><div className="nq-search-option" dir="auto" key={match.value} id={`${listId}-${index}`} role="option" aria-selected={index===active} onPointerDown={event=>{if(event.button===0)event.preventDefault();}} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>choose(index)}>{match.segments.map((segment,i)=>segment.match?<strong key={i}>{segment.text}</strong>:segment.text)}</div>)}</div>}
-    </div>{showSearchButton && <Button className="nq-search-submit" disabled={props.disabled} aria-label={searchLabel} onClick={search}><span className="nq-search-submit-icon" aria-hidden="true" /></Button>}</div>
-    {suggestions !== undefined && <span className="nq-sr-only" role="status" aria-live="polite" aria-atomic="true">{opened && !props.readOnly && !props.disabled && !composing.current && text.trim() ? resultsMessage(matches.length) : ''}</span>}
+      <Button className="hw-search-clear" variant="ghost" hidden={!text || props.readOnly} disabled={props.disabled} aria-label={clearLabel} aria-controls={props.id ?? id} onPointerDown={event=>{if(event.button===0)event.preventDefault();}} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>{if(canEdit()){write('');input.current?.focus();close();}}}><span className="hw-search-clear-icon" aria-hidden="true" /></Button>
+      {suggestions !== undefined && <div className="hw-search-suggestions" id={listId} role="listbox" aria-label={props['aria-label'] ?? (typeof label === 'string' ? label : searchLabel)} hidden={!expanded}>{matches.map((match,index)=><div className="hw-search-option" dir="auto" key={match.value} id={`${listId}-${index}`} role="option" aria-selected={index===active} onPointerDown={event=>{if(event.button===0)event.preventDefault();}} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>choose(index)}>{match.segments.map((segment,i)=>segment.match?<strong key={i}>{segment.text}</strong>:segment.text)}</div>)}</div>}
+    </div>{showSearchButton && <Button className="hw-search-submit" disabled={props.disabled} aria-label={searchLabel} onClick={search}><span className="hw-search-submit-icon" aria-hidden="true" /></Button>}</div>
+    {suggestions !== undefined && <span className="hw-sr-only" role="status" aria-live="polite" aria-atomic="true">{opened && !props.readOnly && !props.disabled && !composing.current && text.trim() ? resultsMessage(matches.length) : ''}</span>}
   </Field>;
 }

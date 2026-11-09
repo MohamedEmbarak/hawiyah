@@ -1,5 +1,5 @@
 {
-  "name": "@nasaq/example-angular",
+  "name": "@hawiyah/example-angular",
   "version": "0.2.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "test:browser": "node test/browser.mjs"
   },
   "dependencies": {
-    "@nasaq/angular": "workspace:*",
-    "@nasaq/styles": "workspace:*",
-    "@nasaq/core": "workspace:*",
+    "@hawiyah/angular": "workspace:*",
+    "@hawiyah/styles": "workspace:*",
+    "@hawiyah/core": "workspace:*",
     "@angular/core": "^22.0.0",
     "@angular/common": "^22.0.0",
     "@angular/compiler": "^22.0.0",
@@ -23,12 +23,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEmbarak/nasaq.git",
+    "url": "git+https://github.com/MohamedEmbarak/hawiyah.git",
     "directory": "examples/angular"
   },
-  "homepage": "https://mohamedembarak.github.io/nasaq/",
+  "homepage": "https://mohamedembarak.github.io/hawiyah/",
   "bugs": {
-    "url": "https://github.com/MohamedEmbarak/nasaq/issues"
+    "url": "https://github.com/MohamedEmbarak/hawiyah/issues"
   },
   "author": {
     "name": "Development Team, National Platforms Sector — National Information Center"

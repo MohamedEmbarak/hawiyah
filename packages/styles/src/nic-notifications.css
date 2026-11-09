@@ -1,7 +1,7 @@
 /* NIC global.css 3797–3876 and master.js 318–412. */
-.nq-toast-region[data-variant='banner'] {
+.hw-toast-region[data-variant='banner'] {
   --_nq-toast-gutter: 20px;
-  --_nq-toast-top: var(--nq-toast-header-offset, 80px);
+  --_nq-toast-top: var(--hw-toast-header-offset, 80px);
   box-sizing: border-box;
   inset-block: var(--_nq-toast-top) auto;
   inset-inline: auto var(--_nq-toast-gutter);
@@ -11,24 +11,24 @@
   overscroll-behavior: contain;
   /* The viewport edge bounds a fixed stack; notices may be taller when text wraps. */
 }
-.nq-toast-region[data-variant='banner']:is([data-position='top-start'], [data-position='bottom-start']) {
+.hw-toast-region[data-variant='banner']:is([data-position='top-start'], [data-position='bottom-start']) {
   inset-inline: var(--_nq-toast-gutter) auto;
 }
-.nq-toast-region[data-variant='banner']:is([data-position='bottom-start'], [data-position='bottom-end']) {
+.hw-toast-region[data-variant='banner']:is([data-position='bottom-start'], [data-position='bottom-end']) {
   inset-block: auto var(--_nq-toast-gutter);
   max-block-size: calc(100dvh - 2 * var(--_nq-toast-gutter));
 }
-.nq-toast-region[data-position='inline'] {
+.hw-toast-region[data-position='inline'] {
   position: static;
   inline-size: 100%;
   max-block-size: none;
   overflow: visible;
 }
-.nq-toast-region[data-variant='banner'] .nq-toast {
-  --_nq-toast-accent: var(--nq-color-notice-info-border);
+.hw-toast-region[data-variant='banner'] .hw-toast {
+  --_nq-toast-accent: var(--hw-color-notice-info-border);
   --_nq-toast-icon: url('./assets/notifications/info.svg');
-  --_nq-toast-text: var(--nq-color-info);
-  --_nq-toast-bg: var(--nq-color-info-subtle);
+  --_nq-toast-text: var(--hw-color-info);
+  --_nq-toast-bg: var(--hw-color-info-subtle);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 12px;
@@ -40,75 +40,75 @@
   border-radius: 0;
   color: var(--_nq-toast-text);
   background-color: var(--_nq-toast-bg);
-  box-shadow: var(--nq-toast-banner-shadow, 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -1px rgb(0 0 0 / .06));
+  box-shadow: var(--hw-toast-banner-shadow, 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -1px rgb(0 0 0 / .06));
   font-size: .875rem;
   line-height: 1.5;
   overflow-wrap: anywhere;
-  animation: nq-toast-banner-in 300ms ease-out;
+  animation: hw-toast-banner-in 300ms ease-out;
 }
-.nq-toast-region[data-variant='banner'] .nq-toast[data-tone='neutral'] {
+.hw-toast-region[data-variant='banner'] .hw-toast[data-tone='neutral'] {
   --_nq-toast-icon: url('./assets/notifications/neutral.svg');
-  --_nq-toast-text: var(--nq-color-notice-neutral-text);
+  --_nq-toast-text: var(--hw-color-notice-neutral-text);
   --_nq-toast-accent: var(--_nq-toast-text);
-  --_nq-toast-bg: var(--nq-color-badge-neutral-background);
+  --_nq-toast-bg: var(--hw-color-badge-neutral-background);
 }
-.nq-toast-region[data-variant='banner'] .nq-toast[data-tone='success'] {
+.hw-toast-region[data-variant='banner'] .hw-toast[data-tone='success'] {
   --_nq-toast-icon: url('./assets/notifications/success.svg');
-  --_nq-toast-text: var(--nq-color-success);
-  --_nq-toast-accent: var(--nq-color-notice-success-border);
-  --_nq-toast-bg: var(--nq-color-success-subtle);
+  --_nq-toast-text: var(--hw-color-success);
+  --_nq-toast-accent: var(--hw-color-notice-success-border);
+  --_nq-toast-bg: var(--hw-color-success-subtle);
 }
-.nq-toast-region[data-variant='banner'] .nq-toast[data-tone='warning'] {
+.hw-toast-region[data-variant='banner'] .hw-toast[data-tone='warning'] {
   --_nq-toast-icon: url('./assets/notifications/warning.svg');
-  --_nq-toast-text: var(--nq-color-notice-warning-text);
-  --_nq-toast-accent: var(--nq-color-notice-warning-border);
-  --_nq-toast-bg: var(--nq-color-warning-subtle);
+  --_nq-toast-text: var(--hw-color-notice-warning-text);
+  --_nq-toast-accent: var(--hw-color-notice-warning-border);
+  --_nq-toast-bg: var(--hw-color-warning-subtle);
 }
-.nq-toast-region[data-variant='banner'] .nq-toast[data-tone='danger'] {
+.hw-toast-region[data-variant='banner'] .hw-toast[data-tone='danger'] {
   --_nq-toast-icon: url('./assets/notifications/danger.svg');
-  --_nq-toast-text: var(--nq-color-danger);
-  --_nq-toast-accent: var(--nq-color-notice-danger-border);
-  --_nq-toast-bg: var(--nq-color-danger-subtle);
+  --_nq-toast-text: var(--hw-color-danger);
+  --_nq-toast-accent: var(--hw-color-notice-danger-border);
+  --_nq-toast-bg: var(--hw-color-danger-subtle);
 }
-.nq-toast-region[data-variant='banner'] .nq-toast-icon {
+.hw-toast-region[data-variant='banner'] .hw-toast-icon {
   grid-column: 1; inline-size: 20px; block-size: 20px;
   background-color: currentColor;
   mask: var(--_nq-toast-icon) center / contain no-repeat;
 }
-.nq-toast-region[data-variant='banner'] .nq-toast-content { grid-column: 2; min-inline-size: 0; }
-.nq-toast-region[data-variant='banner'] .nq-toast-content p { color: inherit; }
-.nq-toast-region[data-variant='banner'] .nq-toast-dismiss { grid-column: 3; grid-row: 1; align-self: center; color: inherit; }
-@keyframes nq-toast-banner-in { from { opacity: 0; transform: translateX(calc(100% * var(--_nq-inline-sign, 1))); } }
+.hw-toast-region[data-variant='banner'] .hw-toast-content { grid-column: 2; min-inline-size: 0; }
+.hw-toast-region[data-variant='banner'] .hw-toast-content p { color: inherit; }
+.hw-toast-region[data-variant='banner'] .hw-toast-dismiss { grid-column: 3; grid-row: 1; align-self: center; color: inherit; }
+@keyframes hw-toast-banner-in { from { opacity: 0; transform: translateX(calc(100% * var(--_nq-inline-sign, 1))); } }
 @media (max-width: 576px) {
-  .nq-toast-region[data-variant='banner'] { --_nq-toast-gutter: 10px; --_nq-toast-top: var(--nq-toast-header-offset, 70px); }
+  .hw-toast-region[data-variant='banner'] { --_nq-toast-gutter: 10px; --_nq-toast-top: var(--hw-toast-header-offset, 70px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nq-toast-region[data-variant='banner'] .nq-toast { animation: none; }
+  .hw-toast-region[data-variant='banner'] .hw-toast { animation: none; }
 }
 @media (forced-colors: active) {
-  .nq-toast-region[data-variant='banner'] .nq-toast { border: 1px solid CanvasText; border-block-end-width: 2px; }
-  .nq-toast-region[data-variant='banner'] .nq-toast-icon { forced-color-adjust: none; background-color: CanvasText; }
+  .hw-toast-region[data-variant='banner'] .hw-toast { border: 1px solid CanvasText; border-block-end-width: 2px; }
+  .hw-toast-region[data-variant='banner'] .hw-toast-icon { forced-color-adjust: none; background-color: CanvasText; }
 }
 
 
 /* Empty live regions stay mounted for announcements without occupying a gap. */
-.nq-toast-region[data-variant='banner'] { row-gap: 0; }
-.nq-toast-region[data-variant='banner'] > [data-nq-live]:has(.nq-toast) + [data-nq-live]:has(.nq-toast) {
-  margin-block-start: var(--nq-space-3);
+.hw-toast-region[data-variant='banner'] { row-gap: 0; }
+.hw-toast-region[data-variant='banner'] > [data-hw-live]:has(.hw-toast) + [data-hw-live]:has(.hw-toast) {
+  margin-block-start: var(--hw-space-3);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .nq-toast-region[data-variant='banner'] .nq-toast-dismiss { transition: color 200ms ease, background-color 200ms ease; }
+  .hw-toast-region[data-variant='banner'] .hw-toast-dismiss { transition: color 200ms ease, background-color 200ms ease; }
 }
 
-.nq-toast-region[data-variant='banner'] .nq-toast-dismiss {
-  color: var(--nq-color-text);
+.hw-toast-region[data-variant='banner'] .hw-toast-dismiss {
+  color: var(--hw-color-text);
   font-size: 0;
   gap: 0;
   inline-size: 40px;
   min-inline-size: 40px;
   padding-inline: 0;
 }
-.nq-toast-region[data-variant='banner'] .nq-toast-dismiss::before {
+.hw-toast-region[data-variant='banner'] .hw-toast-dismiss::before {
   content: '';
   display: block;
   inline-size: 20px;
@@ -117,7 +117,7 @@
   mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat;
 }
 @media (forced-colors: active) {
-  .nq-toast-region[data-variant='banner'] .nq-toast-dismiss::before {
+  .hw-toast-region[data-variant='banner'] .hw-toast-dismiss::before {
     forced-color-adjust: none;
     background-color: ButtonText;
   }

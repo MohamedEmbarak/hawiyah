@@ -14,7 +14,7 @@ export function decorateFrameworkMentions(root:HTMLElement):void {
   const nodes:Text[]=[];let node:Node|null;
   while((node=walker.nextNode())) {
     const text=node as Text;
-    if(!text.parentElement?.closest('code,pre,script,style,textarea,select,option,.cm-editor,.framework-name,.nq-project-subheader')&&/\b(?:React|Vue|Angular|Vanilla|TypeScript|JavaScript|TSX|JSX)\b/.test(text.data))nodes.push(text);
+    if(!text.parentElement?.closest('code,pre,script,style,textarea,select,option,.cm-editor,.framework-name,.hw-project-subheader')&&/\b(?:React|Vue|Angular|Vanilla|TypeScript|JavaScript|TSX|JSX)\b/.test(text.data))nodes.push(text);
   }
   for(const text of nodes) {
     const fragment=document.createDocumentFragment();let offset=0;

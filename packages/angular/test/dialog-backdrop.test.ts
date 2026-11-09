@@ -2,7 +2,7 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
-import { NqDialogComponent, NqDrawerComponent } from '@nasaq/angular';
+import { HwDialogComponent, HwDrawerComponent } from '@hawiyah/angular';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 beforeEach(() => {
@@ -13,7 +13,7 @@ afterEach(() => { TestBed.resetTestingModule(); vi.restoreAllMocks(); });
 function dispatch(element: Element, type: string, outside = true) {
   element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: outside ? 0 : 150, clientY: outside ? 0 : 150 }));
 }
-for (const Component of [NqDialogComponent, NqDrawerComponent]) {
+for (const Component of [HwDialogComponent, HwDrawerComponent]) {
   it(`${Component.name} honors gesture origin, cancellation, consumer prevention and reopen`, () => {
     const fixture = TestBed.createComponent(Component); fixture.componentRef.setInput('title', 'Review'); fixture.detectChanges();
     fixture.componentInstance.show(); fixture.detectChanges();
@@ -22,7 +22,7 @@ for (const Component of [NqDialogComponent, NqDrawerComponent]) {
     let preventClick = false; let preventDown = false;
     dialog.addEventListener('click', event => { if (preventClick) event.preventDefault(); }, true);
     dialog.addEventListener('pointerdown', event => { if (preventDown) event.preventDefault(); }, true);
-    dispatch(dialog.querySelector('.nq-dialog-body')!, 'pointerdown', false); dispatch(dialog, 'click'); expect(dialog.open).toBe(true);
+    dispatch(dialog.querySelector('.hw-dialog-body')!, 'pointerdown', false); dispatch(dialog, 'click'); expect(dialog.open).toBe(true);
     dispatch(dialog, 'pointerdown'); dispatch(dialog, 'pointercancel'); dispatch(dialog, 'click'); expect(dialog.open).toBe(true);
     preventClick = true; dispatch(dialog, 'pointerdown'); dispatch(dialog, 'click');
     preventClick = false; dispatch(dialog, 'click'); expect(dialog.open).toBe(true);

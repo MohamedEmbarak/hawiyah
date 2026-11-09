@@ -4,8 +4,8 @@ The user supplied the following NIC/SDAIA web sources as the DGA-approved UI
 standard to implement. They take precedence over earlier inferred web-component
 styles when a requirement is directly established. Existing explicit product
 decisions, native adapter ownership, keyboard access and reduced motion remain
-part of Nasaq's contract. This records the supplied approval context; it does
-not claim that Nasaq itself has been certified.
+part of Hawiyah's contract. This records the supplied approval context; it does
+not claim that Hawiyah itself has been certified.
 
 ## Source inventory
 
@@ -35,9 +35,9 @@ It loads Bootstrap, other plugin styles, `global.css` and a later
 The main SDAIA site also rendered navigation, service cards, tabs and content.
 These observations do not prove every stylesheet variant's visual behavior.
 
-`master.js` is site integration code, not a dependency to embed in Nasaq. It
+`master.js` is site integration code, not a dependency to embed in Hawiyah. It
 references jQuery/Bootstrap, translation data, Accessibility.js,
-FeedbackSettings.js, remote navigation/auth APIs and SharePoint markup. Nasaq
+FeedbackSettings.js, remote navigation/auth APIs and SharePoint markup. Hawiyah
 implements reusable UI behavior in its own adapters. It does not call those
 services, embed an official verification credential, or adopt their session
 and navigation state.
@@ -45,10 +45,10 @@ and navigation state.
 ## Coverage map and implementation queue
 
 Line numbers below refer to the hashed snapshots above. Mapped means an
-existing Nasaq component or documented composition can own the requirement;
+existing Hawiyah component or documented composition can own the requirement;
 it does not mean every source state has already passed comparison.
 
-| Source CSS / JS | Nasaq owner | Nasaq mapping and evidence |
+| Source CSS / JS | Hawiyah owner | Hawiyah mapping and evidence |
 | --- | --- | --- |
 | CSS 1–426: fonts, primitives, responsive aliases, light/dark roles | tokens/styles | [Foundations comparison](nic-foundations.md) maps light/dark roles, widths, spacing, radii, elevation and responsive alias conflicts |
 | CSS 427–850: typography, truncation, color, shadow, radius, divider utilities | shared styles, layout, Divider | [Scoped foundations](nic-foundations.md) cover 14 type styles, 1–10 line excerpts, elevation and the four divider tones; named colors use semantic tokens |
@@ -68,8 +68,8 @@ it does not mean every source state has already passed comparison.
 | CSS 2651–2726: addons/input groups | InputGroup and composed fields | [Input group task](nic-inputs.md): single line across direct input/addon composition, validation precedence, read-only/reduced-motion/system-focus handling and Angular projected value tracking |
 | CSS 2729–3009: checkbox/radio states | Checkbox, Radio | [Implemented choice task](nic-choices.md): geometry, hover halo, checked/pressed/disabled/read-only presentation and activation protection across all adapters; focus/dark/system-color adaptations documented |
 | CSS 3018–3079: badges | Badge | [Aligned](nic-badges.md): measured 20px single-line height, 4px radius, semantic borders and five palettes; typed soft/outline/dot variants across native adapters, all variants in ready examples |
-| CSS 3082–3153: dot status labels | Badge composition | [Aligned](nic-badges.md): 24px minimum height, 10px dot, 8px gap; all five tones in native editor projects; wrapping, dark mode and original Nasaq are documented adaptations |
-| CSS 3156–3181: avatars | Avatar, AvatarGroup | [Aligned image geometry](nic-avatars.md): 40/64/80/120px, 3px border and centered cover crop; native image fallback/retry parity and seven guide examples. Group overlap/counts, square/initials and dark borders are Nasaq adaptations |
+| CSS 3082–3153: dot status labels | Badge composition | [Aligned](nic-badges.md): 24px minimum height, 10px dot, 8px gap; all five tones in native editor projects; wrapping, dark mode and original Hawiyah are documented adaptations |
+| CSS 3156–3181: avatars | Avatar, AvatarGroup | [Aligned image geometry](nic-avatars.md): 40/64/80/120px, 3px border and centered cover crop; native image fallback/retry parity and seven guide examples. Group overlap/counts, square/initials and dark borders are Hawiyah adaptations |
 | CSS 3215–3275; JS 1318–1578: footer/cookie links | PortalFooter, CookieConsent | [Grouped footer](nic-footer.md): source typography, dividers, link spacing, branding/support/legal slots; host routes and cookie integrations remain application-owned |
 | CSS 3279–3423: carousel | Carousel | [Track and controls](nic-carousel.md): 600ms source easing, 45px arrows, 12px visual indicators, native index/indicator APIs and Angular slide templates. Inert slides, larger targets, reduced motion and responsive controls are documented adaptations; no source JS/autoplay claim |
 | CSS 3427–3502: rating and half stars | Rating, RatingDisplay; Feedback remains separate | 30px stars, 200ms fractional display, integer native input and explicit accessibility adaptations; see [rating evidence](nic-rating.md) |
@@ -84,7 +84,7 @@ it does not mean every source state has already passed comparison.
 ## Confirmed source differences and intentional adaptations
 
 - Primary button pressed background is Flag 800 `#14573a` (CSS 1065),
-  replacing Nasaq's earlier Flag 900 `#104631` token in the button task.
+  replacing Hawiyah's earlier Flag 900 `#104631` token in the button task.
 - Base card padding is **16px** through `--spacing-xl`. The card uses
   `--card-lg-gap`: **24px at 768px and above, 16px below**. Declared
   `--card-lg-padding` is not used by the base card selector; it must not be
@@ -96,7 +96,7 @@ it does not mean every source state has already passed comparison.
   card-specific pressed rule is defined.
 - Card title is 18px/28px at weight 700; description is 16px/24px at weight 400.
 - The source's normal field focus underline is neutral, including nonempty
-  valid values. Nasaq retains the explicit user-approved green-on-valid focus
+  valid values. Hawiyah retains the explicit user-approved green-on-valid focus
   rule and red user-invalid/application-error rule. Empty fields remain neutral.
   ISO storage, Latin digits and the pinned calendar provider are unchanged.
 - Some raw dark-mode rules use fixed light primitives, and some semantic aliases
@@ -104,7 +104,7 @@ it does not mean every source state has already passed comparison.
   character. Record actual cascade/fallback behavior instead of silently
   claiming these unresolved values are verified design decisions.
 - Existing accessibility adaptations remain explicit. Source approval context
-  does not eliminate the need to test the actual Nasaq contrast, keyboard
+  does not eliminate the need to test the actual Hawiyah contrast, keyboard
   semantics, reduced motion, forced colors and nested themes.
 
 The reports above record the implemented mappings, rendered measurements and

@@ -2,13 +2,13 @@
 
 Feedback choices stay in one horizontal action row, wrapping only when space
 requires it. A broad panel-grid rule had overridden the vanilla choice row.
-Link anchors containing direct SVG or `nq-icon` children now align their text
+Link anchors containing direct SVG or `hw-icon` children now align their text
 and icon in a flex row; the global block-SVG reset no longer drops arrows below
 their label. Directional icons retain their existing RTL treatment.
 
 All native adapters accept `choiceVariant="text" | "icon-text" | "icon"`.
-Vanilla uses `data-choice-variant` on `nq-feedback`, an `nq-feedback-actions`
-row, decorative `nq-feedback-icon` spans and `nq-feedback-label` text spans.
+Vanilla uses `data-choice-variant` on `hw-feedback`, an `hw-feedback-actions`
+row, decorative `hw-feedback-icon` spans and `hw-feedback-label` text spans.
 Text is the default. Icon-only presentation hides labels visually but keeps
 accessible names. React retains native radio selection and comment submission;
 Vue retains its string model and comment submission; Angular retains its boolean

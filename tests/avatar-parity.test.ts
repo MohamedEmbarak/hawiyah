@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
-import {NqAvatarComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwAvatarComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act, createElement as r} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp, h, nextTick, reactive} from 'vue';
@@ -22,13 +22,13 @@ async function mount(adapter: string) {
   } else if(adapter==='vue') {
     const props=reactive({...state});const app=createApp({render:()=>h(VueAvatar,props as any)});app.mount(host);sync=async()=>{Object.assign(props,state);await nextTick();};cleanup.push(()=>app.unmount());
   } else {
-    const fixture=TestBed.createComponent(NqAvatarComponent);host.append(fixture.nativeElement);sync=async()=>{for(const [key,value] of Object.entries(state))fixture.componentRef.setInput(key,value);fixture.detectChanges();};cleanup.push(()=>fixture.destroy());
+    const fixture=TestBed.createComponent(HwAvatarComponent);host.append(fixture.nativeElement);sync=async()=>{for(const [key,value] of Object.entries(state))fixture.componentRef.setInput(key,value);fixture.detectChanges();};cleanup.push(()=>fixture.destroy());
   }
   await sync();return {host,state,sync,onError,error:async()=>{await act(async()=>{host.querySelector('img')!.dispatchEvent(new Event('error'));await nextTick();});await sync();}};
 }
 for(const adapter of ['react','vue','angular']) {
   it(`${adapter}: failed image falls back to one named representation and retries changed sources`,async()=>{
-    const m=await mount(adapter);const avatar=m.host.querySelector('.nq-avatar')!;
+    const m=await mount(adapter);const avatar=m.host.querySelector('.hw-avatar')!;
     expect(avatar.querySelector('img')?.getAttribute('alt')).toBe('نورة أحمد');expect(avatar.hasAttribute('role')).toBe(false);
     await m.error();expect(avatar.querySelector('img')).toBeNull();expect(avatar.getAttribute('role')).toBe('img');expect(avatar.getAttribute('aria-label')).toBe('نورة أحمد');expect(avatar.textContent).toBe('نأ');expect(avatar.firstElementChild?.getAttribute('aria-hidden')).toBe('true');
     if(adapter==='react')expect(m.onError).toHaveBeenCalledTimes(1);
@@ -38,8 +38,8 @@ for(const adapter of ['react','vue','angular']) {
   });
   it(`${adapter}: explicit initials survive failure and changing the name preserves full accessible identity`,async()=>{
     const m=await mount(adapter);m.state.initials='نس';await m.sync();await m.error();
-    const avatar=m.host.querySelector('.nq-avatar')!;expect(avatar.textContent).toBe('نس');
-    m.state.name='فريق نسق';await m.sync();expect(avatar.getAttribute('aria-label')).toBe('فريق نسق');expect(avatar.textContent).toBe('نس');
+    const avatar=m.host.querySelector('.hw-avatar')!;expect(avatar.textContent).toBe('نس');
+    m.state.name='فريق هوية';await m.sync();expect(avatar.getAttribute('aria-label')).toBe('فريق هوية');expect(avatar.textContent).toBe('نس');
     m.state.src='';m.state.initials=undefined;m.state.name='🟢 فريق';await m.sync();expect(avatar.textContent).toBe('🟢ف');
   });
 }

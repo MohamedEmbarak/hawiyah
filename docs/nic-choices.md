@@ -23,12 +23,12 @@ existing read-only API uses the same guard. Disabled controls retain native
 disabled behavior. The switch's geometry is unchanged by this task.
 
 The guide shows default, selected, disabled and read-only examples. Keep labels
-clickable using `.nq-choice`; the 20px glyph is not the whole interaction target.
+clickable using `.hw-choice`; the 20px glyph is not the whole interaction target.
 The source's radio focus square is adapted to an outline around the native
 control, preserving independent controls and visible keyboard focus. The halo
 is anchored to the input's center and painted behind it in the label's isolated
 stacking context. This works for plain inline labels as well as flex/wrapped
-labels, without covering the square border or glyph. Original Nasaq uses platform
+labels, without covering the square border or glyph. Original Hawiyah uses platform
 widgets; forced colors restores platform painting, and reduced motion disables
 the halo. Dark mode uses semantic surfaces and a visible pressed accent.
 

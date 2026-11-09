@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createRating, enhance } from '../src/index.js';
 afterEach(() => document.body.replaceChildren());
 function mount(readonly = false) {
-  document.body.innerHTML = `<form><fieldset class="nq-rating" data-nq="rating" data-nq-readonly="${readonly}"><legend>Rating</legend>${[1,2,3,4,5].map(value => `<label><input type="radio" name="rating" value="${value}" ${value === 3 ? 'checked' : ''} required><span aria-hidden="true">★</span></label>`).join('')}</fieldset></form>`;
+  document.body.innerHTML = `<form><fieldset class="hw-rating" data-hw="rating" data-hw-readonly="${readonly}"><legend>Rating</legend>${[1,2,3,4,5].map(value => `<label><input type="radio" name="rating" value="${value}" ${value === 3 ? 'checked' : ''} required><span aria-hidden="true">★</span></label>`).join('')}</fieldset></form>`;
   return { form: document.querySelector('form')!, fieldset: document.querySelector('fieldset')!, inputs: [...document.querySelectorAll('input')] };
 }
 it('keeps one native form value, reset state and change callbacks', async () => {

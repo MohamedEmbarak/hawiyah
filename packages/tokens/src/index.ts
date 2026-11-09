@@ -23,7 +23,7 @@ function flatten(value: object, path: string[] = []): Record<string, string> {
     const next = [...path, key];
     return child !== null && typeof child === 'object'
       ? Object.entries(flatten(child, next))
-      : [[`--nq-${next.join('-')}`, String(child)]];
+      : [[`--hw-${next.join('-')}`, String(child)]];
   }));
 }
 

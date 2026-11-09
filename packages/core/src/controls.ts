@@ -4,7 +4,7 @@ export function normalizeDigits(value: string): string {
 }
 
 export function clampRange(values: readonly [number, number], min: number, max: number, changed: 'lower' | 'upper'): [number, number] {
-  if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) throw new RangeError('Nasaq: range bounds must be finite and ordered.');
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) throw new RangeError('Hawiyah: range bounds must be finite and ordered.');
   const clamp = (value: number, fallback: number) => Math.min(max, Math.max(min, Number.isFinite(value) ? value : fallback));
   let lower = clamp(values[0], min);
   let upper = clamp(values[1], max);

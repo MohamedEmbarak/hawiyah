@@ -11,39 +11,42 @@ import { execFileSync } from 'node:child_process';
 
 const root = dirname(fileURLToPath(import.meta.url));
 export const motion = { fps: 25, frames: 90, clearAt: 3.44 };
-// Contour indices in the source SVG: qaf=1, seen=2, noon dot=3, noon=4.
+// Letters as contour indices in the source SVG. A letter's counter (hole) is
+// clipped with its outer contour so the pen never fills it.
+export const letters = {
+  ha: [6, 7], waw: [5], ya: [4], ta: [1, 2], 'ya-dots': [3], 'ta-dots': [0],
+};
 // Width knots are [fraction of pen travel, nib diameter] in the 144×112 view box.
-// Connected letters share end points; only the final noon dot lifts the pen.
+// Connected letters share end points. The pen lifts after the non-connecting
+// waw and again for each Ruqaa two-dot dash.
 export const strokes = [
-  { part: 4, name: 'noon', start: .08, end: .52,
-    d: 'M123 28 C120 35 122 42 120.5 47 C119 54 110 57 100 58.5',
-    widths: [[0, 2], [.15, 14], [1, 14]] },
-  { part: 2, name: 'seen-first-rise', start: .52, end: .60,
-    d: 'M100 58.5 Q104 54 105.9 44.1', widths: [[0, 14], [.4, 4], [1, 3]] },
-  { part: 2, name: 'seen-first-return', start: .60, end: .72,
-    d: 'M105.9 44.1 C105.5 51.5 104.2 56 100.7 57.7', widths: [[0, 3], [.45, 11], [.75, 16], [1, 16]] },
-  { part: 2, name: 'seen-second-rise', start: .72, end: .80,
-    d: 'M100.7 57.7 Q98.3 59 97.8 47.2', widths: [[0, 16], [.4, 4], [1, 3]] },
-  { part: 2, name: 'seen-second-return', start: .80, end: .92,
-    d: 'M97.8 47.2 Q98 57.5 93.8 60', widths: [[0, 3], [.45, 11], [.75, 16], [1, 16]] },
-  { part: 2, name: 'seen-third-rise', start: .92, end: 1,
-    d: 'M93.8 60 Q88.4 63 87.5 49.4', widths: [[0, 16], [.4, 4], [1, 3]] },
-  { part: 2, name: 'seen-third-return', start: 1, end: 1.12,
-    d: 'M87.5 49.4 Q87.8 59.4 82 60.8', widths: [[0, 3], [.45, 11], [.75, 16.5], [1, 16]] },
-  { part: 2, name: 'seen-join', start: 1.12, end: 1.24,
-    d: 'M82 60.8 Q74 61.5 65 64.5', widths: [[0, 16], [1, 16]] },
-  { part: 1, name: 'qaf-head-rise', start: 1.24, end: 1.42,
-    d: 'M65 64.5 C64 61 62.8 54.5 60.5 55.2', widths: [[0, 12], [1, 16]] },
-  { part: 1, name: 'qaf-head-turn', start: 1.42, end: 1.56,
-    d: 'M60.5 55.2 Q56.8 60.5 55.2 65.6', widths: [[0, 16], [1, 16]] },
-  { part: 1, name: 'qaf-head-return', start: 1.56, end: 1.68,
-    d: 'M55.2 65.6 Q58 69 64.6 65.3', widths: [[0, 16], [1, 16]] },
-  { part: 1, name: 'qaf-bowl', start: 1.68, end: 2.04,
-    d: 'M64.6 65.3 C67 76 60 87.2 50 91.5 C38 96 31 92 31.8 81', widths: [[0, 16], [1, 16]] },
-  { part: 1, name: 'qaf-terminal', start: 2.04, end: 2.24,
-    d: 'M31.8 81 Q32.3 75 33.4 69.3 Q23 71.2 16.6 82.4', widths: [[0, 16], [.45, 16], [1, 4]] },
-  { part: 3, name: 'noon-dot', start: 2.36, end: 2.56,
-    d: 'M124.8 14.5 L115.5 23.5', widths: [[0, 2], [.1, 13], [1, 13]] },
+  { part: 'ha', name: 'ha-hook', start: .08, end: .24,
+    d: 'M104.5 32.5 C108.5 27 113.5 21 119.5 18.5', widths: [[0, 3], [.3, 10], [1, 13]] },
+  { part: 'ha', name: 'ha-outer-bowl', start: .24, end: .60,
+    d: 'M119.5 18.5 C122.5 19 122.8 25 123 32 C123.2 41 119 49.5 111 55 C106 58 102 58.5 99.5 58.2',
+    widths: [[0, 13], [.25, 14], [1, 12]] },
+  { part: 'ha', name: 'ha-inner-lobe', start: .60, end: .82,
+    d: 'M99.5 58.2 C101.5 47 105.5 35.5 110.5 33.5 C115 32.5 116.5 40.5 113.2 46.2',
+    widths: [[0, 12], [.6, 13], [1, 8]] },
+  { part: 'ha', name: 'ha-join', start: .82, end: .94,
+    d: 'M113.2 46.2 Q106 50 100 53 L88 55.5', widths: [[0, 8], [.3, 12], [1, 12]] },
+  { part: 'waw', name: 'waw-head', start: .94, end: 1.16,
+    d: 'M88 55.5 C86 59 80.5 61 78.8 57.5 C78 52.5 80.8 47 84 47 C88 47.4 89.6 53 89 58',
+    widths: [[0, 12], [1, 12]] },
+  { part: 'waw', name: 'waw-tail', start: 1.16, end: 1.44,
+    d: 'M89 58 C88 64 85 68 80 71.3 C74 74.5 64 77.5 54 79.5', widths: [[0, 13], [.6, 12], [1, 5]] },
+  { part: 'ya', name: 'ya-tooth', start: 1.54, end: 1.78,
+    d: 'M49.6 50.5 C49.4 58 49 64 46 70.5 C42.5 75.5 36.5 78 31 80.5',
+    widths: [[0, 2], [.15, 10], [.55, 15], [1, 15]] },
+  { part: 'ta', name: 'ta-stem', start: 1.78, end: 1.94,
+    d: 'M31 80.5 C32.2 76 33.6 68 34.3 62 C34.9 57 35.6 53 35.4 51', widths: [[0, 15], [1, 15]] },
+  { part: 'ta', name: 'ta-loop', start: 1.94, end: 2.28,
+    d: 'M35.4 51 C35 47 32.5 45.5 30 45.5 C26 46 21.5 52 18.5 58.5 C16.2 64 16.5 69 19.5 70.5 C22.5 72 26.5 71.2 29 69.5 Q28.6 66.5 27.2 64',
+    widths: [[0, 14], [.2, 16], [1, 16]] },
+  { part: 'ya-dots', name: 'ya-dash', start: 2.40, end: 2.54,
+    d: 'M53.8 89.8 L39 92.2', widths: [[0, 14], [1, 14]] },
+  { part: 'ta-dots', name: 'ta-dash', start: 2.62, end: 2.76,
+    d: 'M39.2 31.7 L24.5 34.2', widths: [[0, 14], [1, 14]] },
 ];
 
 export async function prepareScene(page, source) {
@@ -51,13 +54,13 @@ export async function prepareScene(page, source) {
   const outlines = mark?.match(/\bd="([^"]+)"/)?.[1].match(/M[^M]+/g);
   const transform = mark?.match(/\btransform="([^"]+)"/)?.[1];
   const color = mark?.match(/\bfill="([^"]+)"/)?.[1];
-  if (outlines?.length !== 5 || !transform || !color) {
+  if (outlines?.length !== 8 || !transform || !color) {
     throw new Error('Wordmark outline changed: review the handwriting paths before regenerating.');
   }
-  const parts = [4, 2, 1, 3];
+  const parts = Object.keys(letters);
   await page.setContent(`<style>html,body{margin:0;background:transparent}svg{display:block;width:256px;height:256px}</style>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 112">
-      <defs>${parts.map(part => `<clipPath id="letter-${part}"><path transform="${transform}" d="${outlines[part]}"/></clipPath>`).join('')}</defs>
+      <defs>${parts.map(part => `<clipPath id="letter-${part}"><path transform="${transform}" d="${letters[part].map(index => outlines[index]).join('')}"/></clipPath>`).join('')}</defs>
       <g id="ink" fill="${color}">${parts.map(part => `<path data-part="${part}" clip-path="url(#letter-${part})"/>`).join('')}</g>
     </svg>`);
   await page.evaluate(strokes => {
@@ -90,8 +93,8 @@ export async function prepareScene(page, source) {
 }
 
 export async function drawFrame(page, seconds) {
-  await page.evaluate(({ seconds, clearAt }) => {
-    const parts = new Map([4, 2, 1, 3].map(part => [part, '']));
+  await page.evaluate(({ seconds, clearAt, names }) => {
+    const parts = new Map(names.map(part => [part, '']));
     if (seconds < clearAt) {
       for (const stroke of window.penStrokes) {
         const progress = Math.max(0, Math.min(1, (seconds - stroke.start) / (stroke.end - stroke.start)));
@@ -101,7 +104,7 @@ export async function drawFrame(page, seconds) {
       }
     }
     for (const [part, d] of parts) document.querySelector(`[data-part="${part}"]`).setAttribute('d', d);
-  }, { seconds, clearAt: motion.clearAt });
+  }, { seconds, clearAt: motion.clearAt, names: Object.keys(letters) });
 }
 
 async function verifyFinishedWordmark(page, source) {
@@ -141,16 +144,16 @@ async function verifyFinishedWordmark(page, source) {
 }
 
 async function build() {
-  const temp = await mkdtemp(join(tmpdir(), 'nasaq-handwriting-'));
+  const temp = await mkdtemp(join(tmpdir(), 'hawiyah-handwriting-'));
   const proof = process.argv.includes('--proof') ? resolve(root, '../.artifacts/handwriting') : null;
   if (proof) await mkdir(proof, { recursive: true });
   const browser = await chromium.launch({
-    executablePath: process.env.NASAQ_CHROMIUM || '/usr/bin/chromium',
+    executablePath: process.env.HAWIYAH_CHROMIUM || '/usr/bin/chromium',
     headless: true, args: ['--no-sandbox'],
   });
   try {
     const page = await browser.newPage({ viewport: { width: 256, height: 256 } });
-    for (const [name, source] of [['nasaq-loader', 'nasaq-wordmark.svg'], ['nasaq-loader-white', 'nasaq-wordmark-white.svg']]) {
+    for (const [name, source] of [['hawiyah-loader', 'hawiyah-wordmark.svg'], ['hawiyah-loader-white', 'hawiyah-wordmark-white.svg']]) {
       const original = await readFile(join(root, 'assets', source), 'utf8');
       await prepareScene(page, original);
       await verifyFinishedWordmark(page, original);
@@ -158,13 +161,13 @@ async function build() {
         await drawFrame(page, frame / motion.fps);
         const path = join(temp, `frame-${String(frame).padStart(3, '0')}.png`);
         await page.screenshot({ path, omitBackground: true });
-        if (proof && name === 'nasaq-loader') await copyFile(path, join(proof, `frame-${String(frame).padStart(3, '0')}.png`));
+        if (proof && name === 'hawiyah-loader') await copyFile(path, join(proof, `frame-${String(frame).padStart(3, '0')}.png`));
       }
       for (const size of [128, 256]) {
         const output = join(root, 'assets', `${name}${size === 256 ? '-256' : ''}.gif`);
         const filter = `scale=${size}:${size}:flags=lanczos,split[a][b];[a]palettegen=max_colors=32:reserve_transparent=1[p];[b][p]paletteuse=dither=none:alpha_threshold=128`;
         execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-framerate', String(motion.fps), '-i', join(temp, 'frame-%03d.png'), '-filter_complex', filter, '-loop', '0', '-gifflags', '0', output]);
-        await copyFile(output, output.replace('nasaq-loader', 'nasaq-wordmark-loader'));
+        await copyFile(output, output.replace('hawiyah-loader', 'hawiyah-wordmark-loader'));
         console.log(output);
       }
     }

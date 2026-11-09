@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import { NqAvatarGroupComponent, NqTimelineComponent } from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import { HwAvatarGroupComponent, HwTimelineComponent } from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createApp, h, nextTick, ref } from 'vue';
@@ -37,7 +37,7 @@ async function mountGroup(adapter: string, host: HTMLElement) {
     cleanups.push(() => app.unmount());
     return async (max: number) => { limit.value = max; await nextTick(); };
   }
-  const fixture = TestBed.createComponent(NqAvatarGroupComponent);
+  const fixture = TestBed.createComponent(HwAvatarGroupComponent);
   host.append(fixture.nativeElement);
   fixture.componentRef.setInput('label', label);
   fixture.componentRef.setInput('avatars', members);
@@ -55,9 +55,9 @@ for (const adapter of ['react', 'vue', 'angular']) {
       await setMax(max);
       const group = host.querySelector('[role="group"]')!;
       const hiddenCount = members.length - visible;
-      const overflow = group.querySelector(':scope > .nq-avatar:last-child[aria-label^="Additional members"]');
+      const overflow = group.querySelector(':scope > .hw-avatar:last-child[aria-label^="Additional members"]');
       expect(group.getAttribute('aria-label')).toBe('Review team');
-      expect(group.querySelectorAll('.nq-avatar')).toHaveLength(visible + Number(hiddenCount > 0));
+      expect(group.querySelectorAll('.hw-avatar')).toHaveLength(visible + Number(hiddenCount > 0));
       if (hiddenCount) {
         expect(overflow?.getAttribute('role')).toBe('img');
         expect(overflow?.getAttribute('aria-label')).toBe(overflowLabel(hiddenCount));
@@ -70,7 +70,7 @@ for (const adapter of ['react', 'vue', 'angular']) {
 }
 
 it('Angular announces the current timeline step and moves that marker when the state changes', () => {
-  const fixture = TestBed.createComponent(NqTimelineComponent);
+  const fixture = TestBed.createComponent(HwTimelineComponent);
   cleanups.push(() => fixture.destroy());
   fixture.componentRef.setInput('label', 'Application stages');
   const update = (current: number) => {

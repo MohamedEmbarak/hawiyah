@@ -15,7 +15,7 @@ export interface NavigationDrawerProps extends Omit<DrawerProps, 'children' | 's
 }
 
 function label(item: NavigationDrawerItem) {
-  return <>{item.icon && <span className="nq-icon" data-icon={item.icon} aria-hidden="true" />}<span className="nq-navigation-drawer-label">{item.label}</span></>;
+  return <>{item.icon && <span className="hw-icon" data-icon={item.icon} aria-hidden="true" />}<span className="hw-navigation-drawer-label">{item.label}</span></>;
 }
 function groupEntries(item: NavigationDrawerItem): readonly NavigationDrawerItem[] {
   const children = item.children ?? [];
@@ -25,14 +25,14 @@ function groupEntries(item: NavigationDrawerItem): readonly NavigationDrawerItem
   return [{ ...item, id, children: undefined }, ...children];
 }
 function entries(items: readonly NavigationDrawerItem[]): ReactNode {
-  return <ul>{items.map(item => <li key={item.id} data-nq-value={item.id}>
-    {item.disabled ? <span className="nq-navigation-drawer-row" aria-disabled="true">{label(item)}</span>
-      : item.children?.length ? <details className="nq-navigation-drawer-group">
-        <summary className="nq-navigation-drawer-row">{label(item)}</summary>
+  return <ul>{items.map(item => <li key={item.id} data-hw-value={item.id}>
+    {item.disabled ? <span className="hw-navigation-drawer-row" aria-disabled="true">{label(item)}</span>
+      : item.children?.length ? <details className="hw-navigation-drawer-group">
+        <summary className="hw-navigation-drawer-row">{label(item)}</summary>
         {entries(groupEntries(item))}
       </details>
-        : item.href ? <a className="nq-navigation-drawer-row" href={item.href} aria-current={item.current ? 'page' : undefined}>{label(item)}</a>
-          : <span className="nq-navigation-drawer-row">{label(item)}</span>}
+        : item.href ? <a className="hw-navigation-drawer-row" href={item.href} aria-current={item.current ? 'page' : undefined}>{label(item)}</a>
+          : <span className="hw-navigation-drawer-row">{label(item)}</span>}
   </li>)}</ul>;
 }
 function routeActivation(event: MouseEvent<HTMLElement>, close: () => void) {
@@ -46,9 +46,9 @@ function routeActivation(event: MouseEvent<HTMLElement>, close: () => void) {
 
 /** Page navigation in an existing modal Drawer; groups are native disclosures. */
 export function NavigationDrawer({ items, navigationLabel = 'التنقل الرئيسي', userContent, side = 'start', closeLabel = 'إغلاق القائمة', className, ...props }: NavigationDrawerProps) {
-  return <Drawer {...props} side={side} closeLabel={closeLabel} className={cx('nq-navigation-drawer', className)}>
-    {({ close }) => <>{userContent && <div className="nq-navigation-drawer-user">{userContent}</div>}
-      <nav className="nq-navigation-drawer-nav" aria-label={navigationLabel} onClick={event => routeActivation(event, close)}>{entries(items)}</nav>
+  return <Drawer {...props} side={side} closeLabel={closeLabel} className={cx('hw-navigation-drawer', className)}>
+    {({ close }) => <>{userContent && <div className="hw-navigation-drawer-user">{userContent}</div>}
+      <nav className="hw-navigation-drawer-nav" aria-label={navigationLabel} onClick={event => routeActivation(event, close)}>{entries(items)}</nav>
     </>}
   </Drawer>;
 }

@@ -1,12 +1,12 @@
 import '@angular/compiler';
-import { formatCalendarDate } from '@nasaq/core';
+import { formatCalendarDate } from '@hawiyah/core';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { By } from '@angular/platform-browser';
 import { FormControl, FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { NqCalendarComponent, NqDataTableComponent, NqDatePickerComponent, NqGridComponent, NqMenuComponent, NqMultiSelectComponent, NqNumberFieldComponent, NqPinInputComponent, NqRangeSliderComponent, NqTagInputComponent, NqTreeViewComponent } from '@nasaq/angular';
+import { HwCalendarComponent, HwDataTableComponent, HwDatePickerComponent, HwGridComponent, HwMenuComponent, HwMultiSelectComponent, HwNumberFieldComponent, HwPinInputComponent, HwRangeSliderComponent, HwTagInputComponent, HwTreeViewComponent } from '@hawiyah/angular';
 
 beforeAll(() => {
   TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
@@ -19,7 +19,7 @@ beforeAll(() => {
   };
 });
 afterEach(() => TestBed.resetTestingModule());
-const imports = [FormsModule, ReactiveFormsModule, NqCalendarComponent, NqDataTableComponent, NqDatePickerComponent, NqGridComponent, NqMenuComponent, NqMultiSelectComponent, NqNumberFieldComponent, NqPinInputComponent, NqRangeSliderComponent, NqTagInputComponent, NqTreeViewComponent];
+const imports = [FormsModule, ReactiveFormsModule, HwCalendarComponent, HwDataTableComponent, HwDatePickerComponent, HwGridComponent, HwMenuComponent, HwMultiSelectComponent, HwNumberFieldComponent, HwPinInputComponent, HwRangeSliderComponent, HwTagInputComponent, HwTreeViewComponent];
 function host<T extends object>(type: new () => T, template: string) {
   Component({standalone: true, changeDetection: ChangeDetectionStrategy.Default, imports, template})(type);
   const fixture = TestBed.createComponent(type); fixture.detectChanges(); return fixture;
@@ -30,7 +30,7 @@ function input(element: HTMLInputElement, value: string) { element.value = value
 describe('Angular expansion behavior', () => {
   it('normalizes pasted Arabic digits and resets numeric, pin and array CVAs through ngForm', async () => {
     class Host { pin = '123456'; count: number | null = 3; tags = ['first']; disabled = false; }
-    const fixture = host(Host, `<form #form="ngForm"><nq-pin-input label="Code" name="pin" [(ngModel)]="pin" [disabled]="disabled" /><nq-number-field label="Count" name="count" [(ngModel)]="count" /><nq-tag-input label="Tags" name="tags" [(ngModel)]="tags" /><button type="button" (click)="form.resetForm()">Reset</button></form>`);
+    const fixture = host(Host, `<form #form="ngForm"><hw-pin-input label="Code" name="pin" [(ngModel)]="pin" [disabled]="disabled" /><hw-number-field label="Count" name="count" [(ngModel)]="count" /><hw-tag-input label="Tags" name="tags" [(ngModel)]="tags" /><button type="button" (click)="form.resetForm()">Reset</button></form>`);
     await fixture.whenStable(); fixture.detectChanges();
     const pin = fixture.nativeElement.querySelector('[autocomplete="one-time-code"]') as HTMLInputElement;
     input(pin, '١٢۳۴٥۶'); fixture.detectChanges();
@@ -40,7 +40,7 @@ describe('Angular expansion behavior', () => {
     const buttons = fixture.nativeElement.querySelectorAll('button'); buttons[buttons.length - 1].click();
     await fixture.whenStable(); fixture.detectChanges();
     expect(pin.value).toBe('');
-    expect(fixture.nativeElement.querySelectorAll('.nq-tag-input input[type="hidden"]').length).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.hw-tag-input input[type="hidden"]').length).toBe(0);
     fixture.componentInstance.disabled = true; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
     expect(pin.disabled).toBe(true);
   });
@@ -48,9 +48,9 @@ describe('Angular expansion behavior', () => {
   it('retains controlled number values in the DOM and FormData after a native form reset', () => {
     class Host { seats = 2; capacity = 12; }
     const fixture = host(Host, `<form (reset)="seats = 2">
-      <nq-number-field name="seats" [(value)]="seats" />
-      <nq-number-field name="capacity" readOnly [value]="capacity" />
-      <nq-number-field name="waiting" disabled [value]="4" />
+      <hw-number-field name="seats" [(value)]="seats" />
+      <hw-number-field name="capacity" readOnly [value]="capacity" />
+      <hw-number-field name="waiting" disabled [value]="4" />
     </form>`);
     const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
     const seats = form.elements.namedItem('seats') as HTMLInputElement;
@@ -65,7 +65,7 @@ describe('Angular expansion behavior', () => {
 
   it('constrains crossing range thumbs and submits distinct named values', () => {
     class Host { range: [number, number] = [20, 70]; }
-    const fixture = host(Host, `<form><nq-range-slider label="Budget" lowerName="from" upperName="to" [(value)]="range" /></form>`);
+    const fixture = host(Host, `<form><hw-range-slider label="Budget" lowerName="from" upperName="to" [(value)]="range" /></form>`);
     const ranges = fixture.nativeElement.querySelectorAll('input[type="range"]') as NodeListOf<HTMLInputElement>;
     expect(ranges[0]!.max).toBe('70');
     expect(ranges[1]!.min).toBe('20');
@@ -81,7 +81,7 @@ describe('Angular expansion behavior', () => {
 
   it('keeps multi-select values in FormData while filtering and enforces required selection', () => {
     class Host { selected: string[] = []; options = [{value: 'riyadh', label: 'الرياض'}, {value: 'jeddah', label: 'جدة'}, {value: 'blocked', label: 'Unavailable', disabled: true}]; }
-    const fixture = host(Host, `<form><nq-multi-select label="Cities" name="city" [options]="options" [(value)]="selected" required /></form>`);
+    const fixture = host(Host, `<form><hw-multi-select label="Cities" name="city" [options]="options" [(value)]="selected" required /></form>`);
     const search = fixture.nativeElement.querySelector('input[type="search"]') as HTMLInputElement;
     expect(search.checkValidity()).toBe(false);
     fixture.nativeElement.querySelector('input[type="checkbox"]').click(); fixture.detectChanges();
@@ -92,7 +92,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('navigates calendar dates in RTL, clamps at min/max, and switches display calendar without changing ISO selection', () => {
-    const fixture = TestBed.createComponent(NqCalendarComponent);
+    const fixture = TestBed.createComponent(HwCalendarComponent);
     fixture.componentRef.setInput('label', 'Choose date'); fixture.componentRef.setInput('value', '2026-10-15'); fixture.componentRef.setInput('locale', 'en'); fixture.componentRef.setInput('direction', 'rtl'); fixture.componentRef.setInput('min', '2026-10-14'); fixture.componentRef.setInput('max', '2026-10-16'); fixture.detectChanges();
     const date = fixture.nativeElement.querySelector('[data-date="2026-10-15"]') as HTMLButtonElement;
     date.focus(); key(date, 'ArrowLeft'); fixture.detectChanges();
@@ -106,13 +106,13 @@ describe('Angular expansion behavior', () => {
   });
 
   it('preserves selected ISO date when switching DatePicker calendars and reopens on that selected month', () => {
-    const fixture = TestBed.createComponent(NqDatePickerComponent); fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('value', '2026-10-15'); fixture.componentRef.setInput('locale', 'en'); fixture.detectChanges();
+    const fixture = TestBed.createComponent(HwDatePickerComponent); fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('value', '2026-10-15'); fixture.componentRef.setInput('locale', 'en'); fixture.detectChanges();
     const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
     dialog.showModal = function() { this.open = true; }; dialog.close = function() { this.open = false; this.dispatchEvent(new Event('close')); };
     const opener = fixture.nativeElement.querySelector('button[aria-haspopup="dialog"]') as HTMLButtonElement;
     opener.click(); fixture.detectChanges();
     let committed = 0; fixture.componentInstance.valueChange.subscribe(() => committed++);
-    (fixture.nativeElement.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click(); fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.hw-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click(); fixture.detectChanges();
     expect(fixture.componentInstance.calendar).toBe('islamic-umalqura'); expect(committed).toBe(0);
     expect(fixture.componentInstance.value).toBe('2026-10-15');
     expect((fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement).value).toBe(formatCalendarDate('2026-10-15', { calendar: 'islamic-umalqura', locale: 'en', dateStyle: 'medium' }));
@@ -123,7 +123,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('bounds Saudi calendar keyboard navigation and labels historical dates from the Saudi table', () => {
-    const fixture = TestBed.createComponent(NqCalendarComponent);
+    const fixture = TestBed.createComponent(HwCalendarComponent);
     fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('value', '1924-08-01'); fixture.componentRef.setInput('calendar', 'islamic-umalqura'); fixture.componentRef.setInput('locale', 'en'); fixture.componentRef.setInput('direction', 'ltr'); fixture.detectChanges();
     const first = fixture.nativeElement.querySelector('[data-date="1924-08-01"]') as HTMLButtonElement;
     expect(first.getAttribute('aria-label')).toContain('1 Muharram 1343 AH');
@@ -133,7 +133,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('keeps calendar month arrows within min/max months', () => {
-    const fixture = TestBed.createComponent(NqCalendarComponent);
+    const fixture = TestBed.createComponent(HwCalendarComponent);
     fixture.componentRef.setInput('locale', 'en');
     fixture.componentRef.setInput('value', '2026-10-15');
     fixture.componentRef.setInput('min', '2026-09-14');
@@ -143,10 +143,10 @@ describe('Angular expansion behavior', () => {
     const next = fixture.nativeElement.querySelector('[aria-label="Next month"]') as HTMLButtonElement;
     next.click(); fixture.detectChanges();
     expect(next.disabled).toBe(true);
-    expect(fixture.nativeElement.querySelector('.nq-calendar-day:not(:disabled)')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.hw-calendar-day:not(:disabled)')).not.toBeNull();
     previous.click(); fixture.detectChanges(); previous.click(); fixture.detectChanges();
     expect(previous.disabled).toBe(true);
-    expect(fixture.nativeElement.querySelector('.nq-calendar-day:not(:disabled)')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.hw-calendar-day:not(:disabled)')).not.toBeNull();
     fixture.componentRef.setInput('value', '2026-10-15');
     fixture.componentRef.setInput('min', '2026-10-14');
     fixture.componentRef.setInput('max', '2026-10-16');
@@ -156,7 +156,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('invalidates unsupported Hijri dates without rewriting ISO values and restores native validity in Gregorian mode', () => {
-    const fixture = TestBed.createComponent(NqDatePickerComponent);
+    const fixture = TestBed.createComponent(HwDatePickerComponent);
     fixture.componentRef.setInput('label', 'Historic date');
     fixture.componentRef.setInput('value', '1900-01-01');
     fixture.componentRef.setInput('calendar', 'islamic-umalqura');
@@ -182,17 +182,17 @@ describe('Angular expansion behavior', () => {
   });
 
   it('shows an associated canonical selected date in the closed picker field', () => {
-    const fixture = TestBed.createComponent(NqDatePickerComponent);
+    const fixture = TestBed.createComponent(HwDatePickerComponent);
     fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('hint', 'Original day'); fixture.componentRef.setInput('value', '2029-08-11'); fixture.componentRef.setInput('calendar', 'islamic-umalqura'); fixture.componentRef.setInput('locale', 'en-SA'); fixture.detectChanges();
     const control = fixture.nativeElement.querySelector('input[type=text]') as HTMLInputElement;
-    const output = fixture.nativeElement.querySelector('.nq-date-picker-value') as HTMLOutputElement;
+    const output = fixture.nativeElement.querySelector('.hw-date-picker-value') as HTMLOutputElement;
     expect((fixture.nativeElement.querySelector('dialog') as HTMLDialogElement).open).toBe(false);
     expect(output.hidden).toBe(false);
     expect(output.textContent).toBe(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'en-SA', dateStyle: 'full' }));
     expect(output.htmlFor.value).toBe(control.id);
     expect(control.getAttribute('aria-describedby')!.split(' ')).toContain(output.id);
     expect(control.getAttribute('aria-describedby')).toContain(control.id + '-hint');
-    (fixture.nativeElement.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.hw-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); fixture.detectChanges();
     expect(control.value).toBe(formatCalendarDate('2029-08-11', { locale: 'en-SA', dateStyle: 'medium' }));
     expect(output.textContent).toBe(formatCalendarDate('2029-08-11', { calendar: 'gregory', locale: 'en-SA', dateStyle: 'full' }));
     fixture.componentInstance.writeValue(''); fixture.detectChanges(); expect(output.hidden).toBe(true); expect(output.textContent).toBe('');
@@ -201,7 +201,7 @@ describe('Angular expansion behavior', () => {
 
   it('updates reactive-form calendar validation on switching, value writes, disable and reset', () => {
     class Host { date = new FormControl<string | null>('1900-01-01'); system = 'islamic-umalqura'; }
-    const fixture = host(Host, `<form><nq-date-picker label="Date" name="date" [formControl]="date" [calendar]="system" /></form>`);
+    const fixture = host(Host, `<form><hw-date-picker label="Date" name="date" [formControl]="date" [calendar]="system" /></form>`);
     const native = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
     const control = fixture.componentInstance.date;
     expect(control.hasError('calendarUnsupported')).toBe(true);
@@ -222,7 +222,7 @@ describe('Angular expansion behavior', () => {
 
   it('exposes unsupported calendar errors through ngModel and respects disabled fieldsets', async () => {
     class Host { date: string | null = '1900-01-01'; fieldsetDisabled = false; }
-    const fixture = host(Host, `<form><fieldset [disabled]="fieldsetDisabled"><nq-date-picker label="Date" name="date" [(ngModel)]="date" calendar="islamic-umalqura" /></fieldset></form>`);
+    const fixture = host(Host, `<form><fieldset [disabled]="fieldsetDisabled"><hw-date-picker label="Date" name="date" [(ngModel)]="date" calendar="islamic-umalqura" /></fieldset></form>`);
     await fixture.whenStable(); fixture.detectChanges();
     const form = fixture.debugElement.query(By.directive(NgForm)).injector.get(NgForm);
     const native = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
@@ -238,7 +238,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('skips disabled menu items, invokes an action, and returns focus', () => {
-    const fixture = TestBed.createComponent(NqMenuComponent); fixture.componentRef.setInput('label', 'Actions'); fixture.componentRef.setInput('items', [{id: 'first', label: 'First'}, {id: 'blocked', label: 'Blocked', disabled: true}, {id: 'last', label: 'Last'}]); fixture.detectChanges();
+    const fixture = TestBed.createComponent(HwMenuComponent); fixture.componentRef.setInput('label', 'Actions'); fixture.componentRef.setInput('items', [{id: 'first', label: 'First'}, {id: 'blocked', label: 'Blocked', disabled: true}, {id: 'last', label: 'Last'}]); fixture.detectChanges();
     const trigger = fixture.nativeElement.querySelector('button') as HTMLButtonElement; trigger.click(); fixture.detectChanges();
     expect(document.activeElement?.textContent).toBe('First');
     key(document.activeElement!, 'ArrowDown'); fixture.detectChanges();
@@ -249,7 +249,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('expands RTL trees, skips disabled children and supports keyboard selection', () => {
-    const fixture = TestBed.createComponent(NqTreeViewComponent); fixture.componentRef.setInput('label', 'Services'); fixture.componentRef.setInput('direction', 'rtl'); fixture.componentRef.setInput('nodes', [{id: 'parent', label: 'Parent', children: [{id: 'blocked', label: 'Blocked', disabled: true}, {id: 'child', label: 'Child'}]}]); fixture.detectChanges();
+    const fixture = TestBed.createComponent(HwTreeViewComponent); fixture.componentRef.setInput('label', 'Services'); fixture.componentRef.setInput('direction', 'rtl'); fixture.componentRef.setInput('nodes', [{id: 'parent', label: 'Parent', children: [{id: 'blocked', label: 'Blocked', disabled: true}, {id: 'child', label: 'Child'}]}]); fixture.detectChanges();
     const parent = fixture.nativeElement.querySelector('[role="treeitem"]') as HTMLElement; parent.focus(); key(parent, 'ArrowLeft'); fixture.detectChanges();
     expect(parent.getAttribute('aria-expanded')).toBe('true'); key(parent, 'ArrowLeft'); fixture.detectChanges();
     expect(document.activeElement?.getAttribute('data-node')).toBe('child'); key(document.activeElement!, ' '); fixture.detectChanges();
@@ -259,13 +259,13 @@ describe('Angular expansion behavior', () => {
 
   it('sorts data stably with aria-sort and emits responsive CSS variables', () => {
     class Host { rows = [{name: 'Item 10'}, {name: 'Item 2'}, {name: 'Item 2'}]; columns = [{key: 'name', label: 'Name', sortable: true}]; }
-    const fixture = host(Host, `<nq-grid [columns]="{base: 1, md: 3}" [gap]="{base: 2, lg: 6}"><nq-data-table caption="Results" [rows]="rows" [columns]="columns" /></nq-grid>`);
+    const fixture = host(Host, `<hw-grid [columns]="{base: 1, md: 3}" [gap]="{base: 2, lg: 6}"><hw-data-table caption="Results" [rows]="rows" [columns]="columns" /></hw-grid>`);
     fixture.nativeElement.querySelector('th button').click(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('th').getAttribute('aria-sort')).toBe('ascending');
     expect(fixture.nativeElement.querySelector('tbody td').textContent).toBe('Item 2');
     expect(fixture.componentInstance.rows[0]!.name).toBe('Item 10');
-    const grid = fixture.nativeElement.querySelector('.nq-grid') as HTMLElement;
-    expect(grid.style.getPropertyValue('--nq-layout-columns-md')).toBe('3');
-    expect(grid.style.getPropertyValue('--nq-layout-gap-lg')).toContain('--nq-space-6');
+    const grid = fixture.nativeElement.querySelector('.hw-grid') as HTMLElement;
+    expect(grid.style.getPropertyValue('--hw-layout-columns-md')).toBe('3');
+    expect(grid.style.getPropertyValue('--hw-layout-gap-lg')).toContain('--hw-space-6');
   });
 });

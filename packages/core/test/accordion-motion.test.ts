@@ -7,8 +7,8 @@ afterEach(() => { cleanups.splice(0).reverse().forEach(cleanup => cleanup()); do
 function fixture(open = false, name?: string) {
   const details = document.createElement('details');
   details.open = open; if (name) details.setAttribute('name', name);
-  details.style.setProperty('--nq-duration-accordion', '300ms');
-  details.style.setProperty('--nq-ease-accordion', 'cubic-bezier(.42,0,.58,1)');
+  details.style.setProperty('--hw-duration-accordion', '300ms');
+  details.style.setProperty('--hw-ease-accordion', 'cubic-bezier(.42,0,.58,1)');
   details.innerHTML = '<summary>Heading</summary><div><button>Action</button></div>';
   document.body.append(details);
   const summary = details.querySelector('summary')!;
@@ -141,7 +141,7 @@ describe('accordion motion lifecycle', () => {
 
   it.each(['zero duration', 'missing WAAPI'])('preserves immediate disclosure with %s', reason => {
     const f = fixture();
-    if (reason === 'zero duration') f.details.style.setProperty('--nq-duration-accordion', '0ms');
+    if (reason === 'zero duration') f.details.style.setProperty('--hw-duration-accordion', '0ms');
     else Object.defineProperty(f.details, 'animate', { value: undefined });
     const controller = createAccordionMotion(f.details, f.content); cleanups.push(() => controller.destroy());
     vi.mocked(f.details.getBoundingClientRect).mockImplementation(() => { throw new Error('No layout engine'); });

@@ -1,34 +1,34 @@
-# نسق — Nasaq
+# هوية — Hawiyah
 
-**نظام واجهات قابل للتوسعة، يدعم العربية من الأساس، ويستهدف JavaScript دون إطار عمل وReact وVue وAngular.** يجمع نسق أساسًا بصريًا افتراضيًا مستندًا إلى DGA، وسمات اختيارية، وسلوكًا مشتركًا للمكونات، وأنماطًا قابلة للتعديل لبناء رحلات خدمات متكاملة.
+**مكتبة مكوّنات واجهات مستخدم مبنية للامتثال لكود المنصات الصادر عن هيئة الحكومة الرقمية.** توفّر هوية رموز التصميم والأنماط والمكوّنات القابلة للوصول لـ JavaScript وReact وVue وAngular، مع دعم كامل للعربية والإنجليزية وقوالب صفحات لرحلات الخدمات الحكومية المتكاملة.
 
 تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني
 
 Developed by the Development Team in the National Platforms Sector — National Information Center.
 
-[الدليل التفاعلي](https://mohamedembarak.github.io/nasaq/) · [المستودع](https://github.com/MohamedEmbarak/nasaq) · [English](README.md) · [نطاق التغطية](docs/coverage.md) · [البنية](docs/architecture.md) · [دليل التوسعة](docs/extension.md) · [سجل التحقق](docs/validation.md) · [دليل المساعدات البرمجية](llms.txt)
+[الدليل التفاعلي](https://mohamedembarak.github.io/hawiyah/) · [المستودع](https://github.com/MohamedEmbarak/hawiyah) · [English](README.md) · [نطاق التغطية](docs/coverage.md) · [البنية](docs/architecture.md) · [دليل التوسعة](docs/extension.md) · [سجل التحقق](docs/validation.md) · [دليل المساعدات البرمجية](llms.txt)
 
-تستخدم الواجهة افتراضيًا أساس DGA المربوط بلقطات المصدر المزوّدة من كود المنصات. وتحتفظ سمة **Woven Rhythm** الاختيارية (`data-nq-theme="nasaq"`) بالأخضر المزرق والعاجي الدافئ. يبقى شعار **نسق** كتابيًا وعربيًا فقط. تستخدم كتابة الشعار **Aref Ruqaa Bold محوّلًا إلى مسارات SVG**، فلا يحتاج عرضه إلى تحميل الخط. تبقى خطوط الواجهات IBM Plex Sans Arabic وIBM Plex Sans. يتضمن [دليل الهوية المحلي](brand/index.html) و[إرشادات الشعار](brand/README.md) و[حزمة الهوية ZIP](brand/nasaq-brand-kit.zip) الشعار ومؤشرات تحميل تحرّك حروفه بخلفية شفافة.
+تستخدم الواجهة افتراضيًا أساس DGA المربوط بلقطات المصدر المزوّدة من كود المنصات. وتحتفظ سمة **Signature** (التوقيع) الاختيارية (`data-hw-theme="hawiyah"`) بالأخضر المزرق والعاجي الدافئ. شعار هوية هو كلمة **هوية** العربية باللون الأساسي لكود المنصات. تستخدم كتابة الشعار **Aref Ruqaa Bold محوّلًا إلى مسارات SVG**، فلا يحتاج عرضه إلى تحميل الخط. تبقى خطوط الواجهات IBM Plex Sans Arabic وIBM Plex Sans. يتضمن [دليل الهوية المحلي](brand/index.html) و[إرشادات الشعار](brand/README.md) و[حزمة الهوية ZIP](brand/hawiyah-brand-kit.zip) الشعار ومؤشرات تحميل تحرّك حروفه بخلفية شفافة.
 
 معاينات: [المحرّر المباشر بالعربية](docs/previews/component-editor-ar-dark.png)، و[المعرض بالعربية على الهاتف](docs/previews/playground-ar-mobile.png)، و[استوديو التخطيط](docs/previews/layouts.png)، و[منتقي التاريخ الميلادي وأم القرى](docs/previews/date-picker.png).
 
-يستفيد نسق من إرشادات **هيئة الحكومة الرقمية — DGA** و**كود المنصات — Platforms Code**، وهو **نظام التصميم الموحد — Unified Design System** في **المملكة العربية السعودية — Kingdom of Saudi Arabia (KSA)**، في الأسس المناسبة وتجارب الخدمات الحكومية، مع تصميمه ومكوناته وتركيباته الخاصة. **تُوثَّق مواءمة DGA compliance بالأدلة والفجوات. نسق تنفيذ مستقل، ولا يدّعي اعتمادًا رسميًا أو تصديقًا من الهيئة.** راجع [توثيق المواءمة](docs/alignment.md) قبل وصف أي منتج بأنه متوافق. يسجل [مرجع DGA ودليل الانتقال](docs/dga-reference.md) لقطات المصدر المزوّدة بتاريخ 2026-10-29، والقيم الدلالية للوضعين الفاتح والداكن، ومعرّفات العناصر والفجوات. تاريخ التصدير ليس رقم إصدار رسميًا. فُكّ ترميز الملفات المحلية الـ23 جميعها، بما فيها الملفات الستة التي تعذّر نقلها سابقًا، ولم تُزوَّد مكتبة مستقلة لمكونات الويب. يوضح [جرد المصادر](docs/dga-source-inventory.md) و[متابعة التدقيق](docs/dga-audit-followup.md) الأدلة والفجوات المتبقية. قالب الحج خاص بتطبيق الحج وخارج نطاق نسق.
+تطبّق هوية **كود المنصات — Platforms Code** الصادر عن **هيئة الحكومة الرقمية — DGA**، وهو **نظام التصميم الموحد — Unified Design System** في **المملكة العربية السعودية — Kingdom of Saudi Arabia (KSA)**، في الأسس والمكوّنات وأنماط الخدمات الحكومية. **يُوثَّق الامتثال متطلبًا متطلبًا، مع أدلة الاختبار والبنود المفتوحة.** تُطوَّر هوية بشكل مستقل، وليست منتجًا رسميًا للهيئة. راجع [توثيق المواءمة](docs/alignment.md) قبل وصف أي منتج بأنه متوافق. يسجل [مرجع DGA ودليل الانتقال](docs/dga-reference.md) لقطات المصدر المزوّدة بتاريخ 2026-10-29، والقيم الدلالية للوضعين الفاتح والداكن، ومعرّفات العناصر والفجوات. تاريخ التصدير ليس رقم إصدار رسميًا. فُكّ ترميز الملفات المحلية الـ23 جميعها، بما فيها الملفات الستة التي تعذّر نقلها سابقًا، ولم تُزوَّد مكتبة مستقلة لمكونات الويب. يوضح [جرد المصادر](docs/dga-source-inventory.md) و[متابعة التدقيق](docs/dga-audit-followup.md) الأدلة والفجوات المتبقية. قالب الحج خاص بتطبيق الحج وخارج نطاق هوية.
 
-استكشف [معرض القوالب](https://mohamedembarak.github.io/nasaq/#templates) و[صفحة الخدمة بعرض كامل](https://mohamedembarak.github.io/nasaq/?preview=template#templates/service) و[نموذج الطلب](https://mohamedembarak.github.io/nasaq/?preview=template#templates/form). الأمثلة ثنائية اللغة وتعمل ببيانات تجريبية محلية؛ اربطها بخدمات تطبيقك عند استخدامها فعليًا.
+استكشف [معرض القوالب](https://mohamedembarak.github.io/hawiyah/#templates) و[صفحة الخدمة بعرض كامل](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/service) و[نموذج الطلب](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/form). الأمثلة ثنائية اللغة وتعمل ببيانات تجريبية محلية؛ اربطها بخدمات تطبيقك عند استخدامها فعليًا.
 
-يتضمن المعرض أيضًا [الصفحة الرئيسية](https://mohamedembarak.github.io/nasaq/?preview=template#templates/home) و[صفحة البحث](https://mohamedembarak.github.io/nasaq/?preview=template#templates/search)، مع حفظ عبارة البحث والتصفية وإزالة الاختيارات والترتيب والتنقل بين النتائج. توثّق أدلة `PORTAL.md` في حزم الأطر استخدام `PortalLayout` و`SecondaryNav` لإضافة هيكل البوابة مباشرة.
+يتضمن المعرض أيضًا [الصفحة الرئيسية](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/home) و[صفحة البحث](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/search)، مع حفظ عبارة البحث والتصفية وإزالة الاختيارات والترتيب والتنقل بين النتائج. توثّق أدلة `PORTAL.md` في حزم الأطر استخدام `PortalLayout` و`SecondaryNav` لإضافة هيكل البوابة مباشرة.
 
 ## حالة التطوير
 
-المشروع متاح المصدر في **مرحلة تطوير 0.2** بترخيص Apache 2.0. تدعم الحزم السبع **فهرسًا من 83 مكونًا** عبر vanilla وReact وVue وAngular، يشمل النماذج والتفاعل والمحتوى وأنماط الخدمات السعودية و12 مكونًا للتخطيط. نُشر الإصدار 0.2.0 على npm تحت النطاق `@nasaq` إصدارًا سابقًا للإصدار 1.0، لذا قد تتغير الواجهات البرمجية بين الإصدارات الفرعية. ولا يعني النشر أو وجود شفرة أو مثال يعمل اكتمال الجاهزية للإنتاج.
+المشروع متاح المصدر في **مرحلة تطوير 0.2** بترخيص Apache 2.0. تدعم الحزم السبع **فهرسًا من 83 مكونًا** عبر vanilla وReact وVue وAngular، يشمل النماذج والتفاعل والمحتوى وأنماط الخدمات السعودية و12 مكونًا للتخطيط. نُشر الإصدار 0.2.0 على npm تحت النطاق `@hawiyah` إصدارًا سابقًا للإصدار 1.0، لذا قد تتغير الواجهات البرمجية بين الإصدارات الفرعية. ولا يعني النشر أو وجود شفرة أو مثال يعمل اكتمال الجاهزية للإنتاج.
 
 تفصل [خريطة الطريق](docs/roadmap.md) بين المخطط والمنفذ والمتحقق منه. يعرض [components.json](components.json) هذه الحالات أيضًا بصيغة قابلة للقراءة آليًا. تُراجع تغطية كل إطار عمل والتحقق الفعلي من الفهرس، ولا تُستنتج من أسماء الحزم.
 
-يفتح الدليل بالعربية، مع حفظ اختيار الإنجليزية وإتاحة البحث باختصار Ctrl/Cmd + K. تتضمن صفحة كل مكوّن تبويبات للمعاينة والشفرة والتجربة الحية، مع محررات HTML وCSS وJavaScript، ونتيجة تفاعلية معزولة، وسجل للأخطاء، وإعادة ضبط المثال. تستخدم مساحة التجربة تطبيق المكوّن بلغة جافاسكريبت دون إطار عمل؛ وتبقى إرشادات الأطر وواجهاتها البرمجية في مقالاتها المخصصة. لا تدعم المعاينة المضمّنة استيراد المكتبات الخارجية. ترافق الدليل المنشور [تراخيص مكتبات المحرر](https://mohamedembarak.github.io/nasaq/licenses/editor.txt).
+يفتح الدليل بالعربية، مع حفظ اختيار الإنجليزية وإتاحة البحث باختصار Ctrl/Cmd + K. تتضمن صفحة كل مكوّن تبويبات للمعاينة والشفرة والتجربة الحية، مع محررات HTML وCSS وJavaScript، ونتيجة تفاعلية معزولة، وسجل للأخطاء، وإعادة ضبط المثال. تستخدم مساحة التجربة تطبيق المكوّن بلغة جافاسكريبت دون إطار عمل؛ وتبقى إرشادات الأطر وواجهاتها البرمجية في مقالاتها المخصصة. لا تدعم المعاينة المضمّنة استيراد المكتبات الخارجية. ترافق الدليل المنشور [تراخيص مكتبات المحرر](https://mohamedembarak.github.io/hawiyah/licenses/editor.txt).
 
 ## اتجاه النظام
 
-- أساس DGA افتراضي موثق بالمصدر، وسمة نسق اختيارية، وإمكان إنشاء سمات مخصصة.
+- أساس DGA افتراضي موثق بالمصدر، وسمة هوية اختيارية، وإمكان إنشاء سمات مخصصة.
 - العربية والإنجليزية، مع استقلال اللغة عن اتجاه العرض، واستخدام خصائص CSS المنطقية لدعم RTL وLTR.
 - مكونات بواجهات برمجية طبيعية لكل إطار، تشترك في قيم التصميم والتنسيق ومنطق التفاعل.
 - HTML وCSS قابلان للاستخدام دون JavaScript حيث تسمح طبيعة المكون، مع تفعيل واضح للسلوك التفاعلي.
@@ -41,23 +41,23 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 | الحزمة | المسؤولية |
 |---|---|
-| `@nasaq/tokens` | قيم التصميم والمتغيرات الدلالية للسمات |
-| `@nasaq/styles` | تنسيقات المكونات وأدوات التخطيط وملف reset اختياري |
-| `@nasaq/core` | منطق مشترك مستقل عن الأطر وأدوات اللغة والتنسيق المحلي |
-| `@nasaq/vanilla` | متحكمات تضيف التفاعل إلى HTML مع إتاحة إزالة التفعيل |
-| `@nasaq/react` | مكونات React تستخدم الأساس المشترك |
-| `@nasaq/vue` | مكونات Vue تستخدم الأساس المشترك |
-| `@nasaq/angular` | مكونات Angular تستخدم الأساس المشترك |
+| `@hawiyah/tokens` | قيم التصميم والمتغيرات الدلالية للسمات |
+| `@hawiyah/styles` | تنسيقات المكونات وأدوات التخطيط وملف reset اختياري |
+| `@hawiyah/core` | منطق مشترك مستقل عن الأطر وأدوات اللغة والتنسيق المحلي |
+| `@hawiyah/vanilla` | متحكمات تضيف التفاعل إلى HTML مع إتاحة إزالة التفعيل |
+| `@hawiyah/react` | مكونات React تستخدم الأساس المشترك |
+| `@hawiyah/vue` | مكونات Vue تستخدم الأساس المشترك |
+| `@hawiyah/angular` | مكونات Angular تستخدم الأساس المشترك |
 
-ثبّت التنسيقات ومحوّلًا واحدًا بالأمر `npm install @nasaq/styles @nasaq/react`، مع استبدال `react` بـ `vanilla` أو `vue` أو `angular`. تبقى ملفات الحزم في المصدر موسومة بـ `private: true`، ولا ينشر الأمر `pnpm release:packages` إلا الأرشيفات التي تحقق منها `pnpm check:packages`. ترتبط كل حزمة إطار بتبعياتها، ولا يعتمد المنطق المشترك على بيئة تشغيل أي إطار.
+ثبّت التنسيقات ومحوّلًا واحدًا بالأمر `npm install @hawiyah/styles @hawiyah/react`، مع استبدال `react` بـ `vanilla` أو `vue` أو `angular`. تبقى ملفات الحزم في المصدر موسومة بـ `private: true`، ولا ينشر الأمر `pnpm release:packages` إلا الأرشيفات التي تحقق منها `pnpm check:packages`. ترتبط كل حزمة إطار بتبعياتها، ولا يعتمد المنطق المشترك على بيئة تشغيل أي إطار.
 
 ## التشغيل محليًا
 
 من مجلد المشروع، استخدم إصدار pnpm المحدد في `package.json`. أُجريت فحوص التطوير باستخدام Node.js `24.19.0` وpnpm `11.25.0`:
 
 ```sh
-git clone https://github.com/MohamedEmbarak/nasaq.git
-cd nasaq
+git clone https://github.com/MohamedEmbarak/hawiyah.git
+cd hawiyah
 pnpm install
 pnpm build:packages
 pnpm dev
@@ -66,9 +66,9 @@ pnpm dev
 تبدأ بيئة التطوير بمعرض vanilla. افتح `#components` لفهرس المكونات، و`#inputs` لدلالات الإدخال، و`#layouts` لتركيب التخطيطات. يتضمن المعرض دليل الهوية المحلي. لتشغيل مثال إطار بعد بناء الحزم:
 
 ```sh
-pnpm --filter @nasaq/example-react dev
-pnpm --filter @nasaq/example-vue dev
-pnpm --filter @nasaq/example-angular dev
+pnpm --filter @hawiyah/example-react dev
+pnpm --filter @hawiyah/example-vue dev
+pnpm --filter @hawiyah/example-angular dev
 ```
 
 اختر المثال المطلوب؛ كل أمر يشغّل خادم تطوير مستقلًا. تشمل الفحوص `pnpm build` و`pnpm typecheck:playground` و`pnpm test` و`pnpm test:browser` و`pnpm check:packages`. تُوثَّق النتائج وإعداد المتصفح في [سجل التحقق](docs/validation.md). أدلة الواجهات البرمجية: [vanilla](packages/vanilla/README.md)، و[React](packages/react/README.md)، و[Vue](packages/vue/README.md)، و[Angular](packages/angular/README.md).
@@ -76,13 +76,13 @@ pnpm --filter @nasaq/example-angular dev
 ## مثال HTML
 
 ```html
-<section lang="ar" dir="rtl" data-nq-theme="dga"
-         data-nq-mode="light" data-nq-density="comfortable">
-  <div class="nq-card">
-    <div class="nq-card-body">
+<section lang="ar" dir="rtl" data-hw-theme="dga"
+         data-hw-mode="light" data-hw-density="comfortable">
+  <div class="hw-card">
+    <div class="hw-card-body">
       <h2>طلب جديد</h2>
       <p>راجع متطلبات الخدمة قبل البدء.</p>
-      <button class="nq-button" data-variant="primary" type="button">
+      <button class="hw-button" data-variant="primary" type="button">
         ابدأ الطلب
       </button>
     </div>
@@ -93,10 +93,10 @@ pnpm --filter @nasaq/example-angular dev
 تُحمَّل التنسيقات في التطبيق المستهلك:
 
 ```ts
-import '@nasaq/styles/styles.css';
+import '@hawiyah/styles/styles.css';
 ```
 
-ملف `@nasaq/styles/reset.css` اختياري، ويُحمَّل قبل تنسيقات المكونات عند الحاجة. يوثق [عقد التفاعل](packages/core/API.md) و[دليل توسعة vanilla](packages/vanilla/EXPANSION-API.md) بنية HTML وواجهات التفعيل. يتولى كل إطار إدارة عناصره؛ لذلك لا يُفعَّل متحكم vanilla فوق شجرة مكونات يديرها React أو Vue أو Angular.
+ملف `@hawiyah/styles/reset.css` اختياري، ويُحمَّل قبل تنسيقات المكونات عند الحاجة. يوثق [عقد التفاعل](packages/core/API.md) و[دليل توسعة vanilla](packages/vanilla/EXPANSION-API.md) بنية HTML وواجهات التفعيل. يتولى كل إطار إدارة عناصره؛ لذلك لا يُفعَّل متحكم vanilla فوق شجرة مكونات يديرها React أو Vue أو Angular.
 
 ## التعديل والتوسعة
 
@@ -118,4 +118,4 @@ import '@nasaq/styles/styles.css';
 
 يحدد [سجل التحقق](docs/validation.md) النسخة المفحوصة والأوامر ونتائج استهلاك الحزم وحالات السلوك وhydration ورحلات Chromium. يفصل [الفهرس](components.json) التنفيذ عن التحقق لكل مكون؛ ولا تثبت فحوص النسخة السابقة تلقائيًا سلوك الإضافات اللاحقة. لم يُستكمل بعد الاختبار اليدوي بقارئات الشاشة أو التحقق عبر عدة متصفحات.
 
-تتوفر الشفرة في [مستودع نسق](https://github.com/MohamedEmbarak/nasaq)، ويعرض [الدليل التفاعلي](https://mohamedembarak.github.io/nasaq/) البدء من المصدر وأمثلة المكونات وسلوكها وواجهاتها البرمجية. يُرخَّص العمل الأصلي بترخيص [Apache 2.0](LICENSE)، وتبقى الخطوط وبيانات التقويم التابعة لأطراف أخرى خاضعة لتراخيصها وإشعاراتها المرفقة. الحزم منشورة على npm تحت النطاق `@nasaq`؛ يشرح [دليل الإصدارات](docs/publication.md) طريقة بنائها والتحقق منها ونشرها.
+تتوفر الشفرة في [مستودع هوية](https://github.com/MohamedEmbarak/hawiyah)، ويعرض [الدليل التفاعلي](https://mohamedembarak.github.io/hawiyah/) البدء من المصدر وأمثلة المكونات وسلوكها وواجهاتها البرمجية. يُرخَّص العمل الأصلي بترخيص [Apache 2.0](LICENSE)، وتبقى الخطوط وبيانات التقويم التابعة لأطراف أخرى خاضعة لتراخيصها وإشعاراتها المرفقة. الحزم منشورة على npm تحت النطاق `@hawiyah`؛ يشرح [دليل الإصدارات](docs/publication.md) طريقة بنائها والتحقق منها ونشرها.

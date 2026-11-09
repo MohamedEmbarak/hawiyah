@@ -6,7 +6,7 @@ import type {
   ProjectFiles,
 } from "./project-compiler";
 import type { ProjectExample } from "./project-examples";
-import { nasaqVersion } from "./release";
+import { hawiyahVersion } from "./release";
 
 export function projectDownloadFiles(
   example: ProjectExample,
@@ -26,12 +26,12 @@ export function projectDownloadFiles(
       ? `<div id="app">${edited.html}</div>`
       : example.host;
   files["index.html"] =
-    `<!doctype html>\n<html lang="${locale}" dir="${locale === "ar" ? "rtl" : "ltr"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nasaq example</title></head><body>${body}<script type="module" src="./${example.entry}"></script></body></html>\n`;
+    `<!doctype html>\n<html lang="${locale}" dir="${locale === "ar" ? "rtl" : "ltr"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hawiyah example</title></head><body>${body}<script type="module" src="./${example.entry}"></script></body></html>\n`;
   if (framework === "vanilla" && /<html[\s>]/i.test(edited.html))
     files["index.html"] = edited.html;
   const deps: Record<string, string> = {};
   for (const name of new Set(["tokens", "styles", "core", framework]))
-    deps[`@nasaq/${name}`] = nasaqVersion;
+    deps[`@hawiyah/${name}`] = hawiyahVersion;
   const dev: Record<string, string> = { vite: "8.3.5", typescript: "~6.0.0" };
   if (framework === "react") {
     Object.assign(deps, { react: "19.3.1", "react-dom": "19.3.1" });
@@ -60,7 +60,7 @@ export function projectDownloadFiles(
   files["package.json"] =
     JSON.stringify(
       {
-        name: "nasaq-component-example",
+        name: "hawiyah-component-example",
         private: true,
         type: "module",
         scripts: {
@@ -102,7 +102,7 @@ export function projectDownloadFiles(
     ) + "\n";
   files["env.d.ts"] = '/// <reference types="vite/client" />\n' + (framework === 'vue' ? '\ndeclare module "*.vue" {\n  import type { DefineComponent } from "vue";\n  const component: DefineComponent;\n  export default component;\n}\n' : '');
   files["README.md"] =
-    `# Nasaq ${framework} example\n\nThese are the edited project files, with real package imports and application entry points.\n\nThe @nasaq/* dependencies are pinned to the published ${nasaqVersion} npm release, which matches this guide. Run npm install, then npm run dev. Version 0.x releases may change APIs between minor versions; review the release notes before upgrading.\n\nFramework and compiler versions match the guide's installed consumers. Angular uses a standalone JIT Vite example; production Angular projects should use their normal CLI/AOT pipeline. The in-browser editor transpiles syntax; it does not replace a project's full type-checker.\n\nPreview navigation is contained by the guide. Downloaded application links and forms follow normal browser behavior; connect your own routes and handlers.\n`;
+    `# Hawiyah ${framework} example\n\nThese are the edited project files, with real package imports and application entry points.\n\nThe @hawiyah/* dependencies are pinned to the published ${hawiyahVersion} npm release, which matches this guide. Run npm install, then npm run dev. Version 0.x releases may change APIs between minor versions; review the release notes before upgrading.\n\nFramework and compiler versions match the guide's installed consumers. Angular uses a standalone JIT Vite example; production Angular projects should use their normal CLI/AOT pipeline. The in-browser editor transpiles syntax; it does not replace a project's full type-checker.\n\nPreview navigation is contained by the guide. Downloaded application links and forms follow normal browser behavior; connect your own routes and handlers.\n`;
   return files;
 }
 

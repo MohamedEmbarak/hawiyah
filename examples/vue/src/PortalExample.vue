@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Accordion, Button, MobileTopBar, NavigationDrawer, PortalLayout, SecondaryNav, ServiceCard } from '@nasaq/vue';
-import logo from '../../../brand/assets/nasaq-wordmark.svg';
+import { Accordion, Button, MobileTopBar, NavigationDrawer, PortalLayout, SecondaryNav, ServiceCard } from '@hawiyah/vue';
+import logo from '../../../brand/assets/hawiyah-wordmark.svg';
 const english = ref(false); const t = (ar: string, en: string) => english.value ? en : ar;
 const links = computed(() => [{ label: t('الخدمات', 'Services'), href: '#services', current: true }, { label: t('تواصل معنا', 'Contact us'), href: '#contact' }]);
 </script>
 <template>
-  <PortalLayout brand="نسق" :lang="english ? 'en' : 'ar'" :dir="english ? 'ltr' : 'rtl'" :links="links" :secondary-navigation="[links[0]!]" main-id="portal-content"
+  <PortalLayout brand="هوية" :lang="english ? 'en' : 'ar'" :dir="english ? 'ltr' : 'rtl'" :links="links" :secondary-navigation="[links[0]!]" main-id="portal-content"
     :skip-label="t('انتقل إلى المحتوى', 'Skip to content')" :menu-label="t('القائمة', 'Menu')" :navigation-label="t('التنقل الرئيسي', 'Main navigation')" :secondary-label="t('التنقل الثانوي', 'Secondary navigation')" :breadcrumb-label="t('مسار التنقل', 'Breadcrumb')" :footer-label="t('روابط التذييل', 'Footer links')"
     :breadcrumbs="[{ label: t('الرئيسية', 'Home'), href: '/' }, { label: t('الخدمات', 'Services'), current: true }]" :footer-links="[{ label: t('الخصوصية', 'Privacy'), href: '#privacy' }]">
-    <template #logo><img :src="logo" alt="نسق" width="96" height="40" /></template>
+    <template #logo><img :src="logo" alt="هوية" width="96" height="40" /></template>
     <template #actions><Button variant="ghost" @click="english = !english">{{ english ? 'العربية' : 'English' }}</Button></template>
-    <section id="services" class="nq-stack"><h1>{{ t('الخدمات', 'Services') }}</h1><h2>{{ t('الخدمات المتاحة', 'Available services') }}</h2><ServiceCard :title="t('دليل الخدمات', 'Service directory')" :description="t('اكتشف خدمات الجهة ومتطلبات التقديم.', 'Explore services and application requirements.')" href="#contact" :action-label="t('عرض الخدمة', 'View service')" /></section>
+    <section id="services" class="hw-stack"><h1>{{ t('الخدمات', 'Services') }}</h1><h2>{{ t('الخدمات المتاحة', 'Available services') }}</h2><ServiceCard :title="t('دليل الخدمات', 'Service directory')" :description="t('اكتشف خدمات الجهة ومتطلبات التقديم.', 'Explore services and application requirements.')" href="#contact" :action-label="t('عرض الخدمة', 'View service')" /></section>
     <section id="contact"><h2>{{ t('تواصل معنا', 'Contact us') }}</h2><p>{{ t('مثال توضيحي بدون إرسال بيانات.', 'Demonstration only; no data is submitted.') }}</p></section>
-    <section data-testid="mobile-top-bar-showcase"><MobileTopBar :heading-level="2" :title="t('طلباتي','My requests')" :subtitle="t('تابع طلباتك','Track your applications')" back-href="#services" :back-label="t('رجوع','Back')"><template #actions><a class="nq-button" data-variant="ghost" href="#contact" :aria-label="t('بحث','Search')"><span class="nq-icon" data-icon="search-01" aria-hidden="true" /></a></template></MobileTopBar></section>
+    <section data-testid="mobile-top-bar-showcase"><MobileTopBar :heading-level="2" :title="t('طلباتي','My requests')" :subtitle="t('تابع طلباتك','Track your applications')" back-href="#services" :back-label="t('رجوع','Back')"><template #actions><a class="hw-button" data-variant="ghost" href="#contact" :aria-label="t('بحث','Search')"><span class="hw-icon" data-icon="search-01" aria-hidden="true" /></a></template></MobileTopBar></section>
     <section data-testid="navigation-drawer-showcase"><NavigationDrawer :title="t('التنقل','Navigation')" :navigation-label="t('التنقل الرئيسي','Main navigation')" :close-label="t('إغلاق القائمة','Close navigation')" :items="[
       {id:'home',label:t('الرئيسية','Home'),href:'#portal-content',current:true,icon:'home-01'},
       {id:'services',label:t('الخدمات','Services'),children:[{id:'directory',label:t('دليل الخدمات','Service directory'),href:'#services'},{id:'contact',label:t('تواصل معنا','Contact us'),href:'#contact'}]},
       {id:'disabled',label:t('قريبًا','Coming soon'),href:'#disabled',disabled:true}]">
-      <template #trigger="{open}"><Button data-testid="navigation-drawer-trigger" @click="open">{{ t('فتح التنقل','Open navigation') }}</Button></template><template #user><p>{{ t('مرحبًا بك في نسق','Welcome to Nasaq') }}</p></template>
+      <template #trigger="{open}"><Button data-testid="navigation-drawer-trigger" @click="open">{{ t('فتح التنقل','Open navigation') }}</Button></template><template #user><p>{{ t('مرحبًا بك في هوية','Welcome to Hawiyah') }}</p></template>
     </NavigationDrawer></section>
     <SecondaryNav variant="mobile" :label="t('تنقل الجوال', 'Mobile navigation')" :items="[
       {label:t('الرئيسية','Home'),href:'#portal-content',current:true,icon:'home-01'},

@@ -17,22 +17,22 @@ function inspect(html:string) {
   expect(root.querySelector('nav[aria-label="Explore"] h2')?.textContent).toBe('Explore');
   expect(root.querySelector('nav[aria-label="Empty"]')).toBeNull();
   expect(root.querySelector('a[href="/contact"]')?.textContent).toBe('Contact');
-  expect(root.querySelector('.nq-portal-footer-bottom a')?.getAttribute('href')).toBe('/privacy');
+  expect(root.querySelector('.hw-portal-footer-bottom a')?.getAttribute('href')).toBe('/privacy');
   const external=root.querySelector('a[target="_blank"]')!;
   expect(external.getAttribute('rel')).toContain('noopener');
   expect(external.getAttribute('rel')).toContain('noreferrer');
   expect(external.textContent).toContain('New window');
   expect(external.querySelector('[aria-hidden="true"]')).not.toBeNull();
-  expect(root.querySelector('.nq-portal-footer-support-content button')?.textContent).toBe('Help');
-  expect(root.querySelector('.nq-portal-footer-extra')?.textContent).toBe('Legacy content');
-  expect(root.querySelector('.nq-portal-footer-partners img')?.getAttribute('alt')).toBe('Example partner');
+  expect(root.querySelector('.hw-portal-footer-support-content button')?.textContent).toBe('Help');
+  expect(root.querySelector('.hw-portal-footer-extra')?.textContent).toBe('Legacy content');
+  expect(root.querySelector('.hw-portal-footer-partners img')?.getAttribute('alt')).toBe('Example partner');
   expect(root.querySelectorAll('[id]')).toHaveLength(0);
 }
 it('React footer preserves legacy content while server-rendering named groups, support and legal links',()=>{
-  inspect(renderReact(r(ReactFooter,{brand:r('span',null,'نسق'),description:'Example',links:legacy,groups,legalLinks:legal,legal:'2026',externalLabel:'New window',support:r('button',{type:'button'},'Help'),partners:r('img',{src:'/example.svg',alt:'Example partner'})},'Legacy content')));
+  inspect(renderReact(r(ReactFooter,{brand:r('span',null,'هوية'),description:'Example',links:legacy,groups,legalLinks:legal,legal:'2026',externalLabel:'New window',support:r('button',{type:'button'},'Help'),partners:r('img',{src:'/example.svg',alt:'Example partner'})},'Legacy content')));
 });
 it('Vue footer preserves legacy content and slots with the same grouped navigation semantics',async()=>{
-  inspect(await renderVue(createSSRApp({render:()=>h(VueFooter,{brand:'نسق',description:'Example',links:legacy,groups,legalLinks:legal,copyright:'2026',externalLabel:'New window'}, {default:()=> 'Legacy content',support:()=>h('button',{type:'button'},'Help'),partners:()=>h('img',{src:'/example.svg',alt:'Example partner'})})})));
+  inspect(await renderVue(createSSRApp({render:()=>h(VueFooter,{brand:'هوية',description:'Example',links:legacy,groups,legalLinks:legal,copyright:'2026',externalLabel:'New window'}, {default:()=> 'Legacy content',support:()=>h('button',{type:'button'},'Help'),partners:()=>h('img',{src:'/example.svg',alt:'Example partner'})})})));
 });
 it.each(['ar','en'] as const)('vanilla %s footer has complete groups, actions and policies with unique instance labels',locale=>{
   const root=document.createElement('div');root.innerHTML=portalFooterMarkup(locale,'one')+portalFooterMarkup(locale,'two');
@@ -40,9 +40,9 @@ it.each(['ar','en'] as const)('vanilla %s footer has complete groups, actions an
   expect(new Set(ids).size).toBe(ids.length);
   for(const group of root.querySelectorAll('[aria-labelledby]'))expect(root.querySelector(`[id="${group.getAttribute('aria-labelledby')}"]`)).not.toBeNull();
   for(const footer of root.querySelectorAll('footer')) {
-    expect(footer.querySelectorAll('.nq-portal-footer-group')).toHaveLength(2);
-    expect(footer.querySelectorAll('.nq-portal-footer-actions a')).toHaveLength(2);
-    expect(footer.querySelectorAll('.nq-portal-footer-legal a')).toHaveLength(3);
-    expect(footer.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe('نسق');
+    expect(footer.querySelectorAll('.hw-portal-footer-group')).toHaveLength(2);
+    expect(footer.querySelectorAll('.hw-portal-footer-actions a')).toHaveLength(2);
+    expect(footer.querySelectorAll('.hw-portal-footer-legal a')).toHaveLength(3);
+    expect(footer.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe('هوية');
   }
 });

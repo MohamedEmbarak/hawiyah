@@ -2,8 +2,8 @@ import { afterEach, expect, it, vi } from "vitest";
 import { createApp, defineComponent, h, nextTick, ref } from "vue";
 import type { App } from "vue";
 import { DatePicker } from "../src/index.js";
-import { formatCalendarDate } from "@nasaq/core";
-import type { CalendarSystem } from "@nasaq/core";
+import { formatCalendarDate } from "@hawiyah/core";
+import type { CalendarSystem } from "@hawiyah/core";
 
 let application: App | undefined;
 afterEach(() => {
@@ -52,13 +52,13 @@ it("restores a rejected calendar selection and applies an accepted selection to 
     .click();
   await nextTick();
   const chooseHijri = async () => {
-    (root.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click();
+    (root.querySelector('.hw-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click();
     await nextTick();
   };
   await chooseHijri();
   expect(changes).toHaveBeenCalledWith("islamic-umalqura");
-  expect((root.querySelector('.nq-calendar-switch input:checked') as HTMLInputElement).value).toBe("gregory");
-  expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
+  expect((root.querySelector('.hw-calendar-switch input:checked') as HTMLInputElement).value).toBe("gregory");
+  expect(root.querySelector(".hw-calendar-toolbar")!.textContent).toContain(
     "October 2026",
   );
   expect(root.querySelector<HTMLInputElement>("input[type=text]")!.value).toBe(
@@ -67,8 +67,8 @@ it("restores a rejected calendar selection and applies an accepted selection to 
   accept.value = true;
   await nextTick();
   await chooseHijri();
-  expect((root.querySelector('.nq-calendar-switch input:checked') as HTMLInputElement).value).toBe("islamic-umalqura");
-  expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
+  expect((root.querySelector('.hw-calendar-switch input:checked') as HTMLInputElement).value).toBe("islamic-umalqura");
+  expect(root.querySelector(".hw-calendar-toolbar")!.textContent).toContain(
     "1448 AH",
   );
   expect(root.querySelector<HTMLInputElement>("input[type=text]")!.value).toBe(
@@ -118,7 +118,7 @@ it("associates unsupported-date errors and clears them when switching back witho
   expect(input.getAttribute("aria-describedby")).not.toContain(
     "validation-error",
   );
-  expect(root.querySelector(".nq-date-picker > .nq-error")).toBeNull();
+  expect(root.querySelector(".hw-date-picker > .hw-error")).toBeNull();
   expect(input.value).toBe(formatCalendarDate('1900-01-01', { calendar: 'gregory', locale: 'ar-SA', dateStyle: 'medium' }));
 });
 
@@ -130,7 +130,7 @@ it("shows the canonical selected calendar in the closed field and preserves its 
   application = createApp(defineComponent(() => () => h(DatePicker, { label: "Date", hint: "Original day", modelValue: value.value, calendar: mode.value, locale: "en-SA" })));
   application.mount(root); await nextTick();
   const input = root.querySelector<HTMLInputElement>("input[type=text]")!;
-  const output = root.querySelector<HTMLOutputElement>(".nq-date-picker-value")!;
+  const output = root.querySelector<HTMLOutputElement>(".hw-date-picker-value")!;
   expect(root.querySelector("dialog")!.open).toBe(false);
   expect(output.hidden).toBe(false);
   expect(output.textContent).toBe(formatCalendarDate(value.value, { calendar: mode.value, locale: "en-SA", dateStyle: "full" }));
@@ -149,7 +149,7 @@ it("isolates ISO endpoints in visible validation prose without changing the nati
   const message = "خارج النطاق 1924-08-01 إلى 2077-11-16.";
   application = createApp(defineComponent(() => () => h(DatePicker, { label: "Date", defaultValue: "1900-01-01", calendar: "islamic-umalqura", unsupportedMessage: message })));
   application.mount(root); await nextTick();
-  const error = root.querySelector(".nq-date-picker > .nq-error")!;
+  const error = root.querySelector(".hw-date-picker > .hw-error")!;
   expect(error.textContent).toBe(message);
   expect([...error.querySelectorAll('bdi[dir="ltr"]')].map(node => node.textContent)).toEqual(["1924-08-01", "2077-11-16"]);
   const input = root.querySelector<HTMLInputElement>('input[type="text"]')!;

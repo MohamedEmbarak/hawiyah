@@ -6,9 +6,9 @@ the stylesheet at 1280px and 390px in RTL and LTR. Network/font requests were
 blocked. CSS measurements and the static JavaScript inspection are separate
 evidence; neither establishes full visual parity with the live SDAIA website.
 
-| Source | Requirement or observed value | Nasaq implementation | Confidence |
+| Source | Requirement or observed value | Hawiyah implementation | Confidence |
 | --- | --- | --- | --- |
-| CSS 1890–1928 | Sticky top 145px; at ≥1200px max-height viewport−165px, internal scrolling | Optional `sticky`; configurable `--nq-content-nav-top` and `--nq-content-nav-bottom-reserve`; desktop-only sticky layout | High; external Bootstrap positioning is replaced by explicit local CSS |
+| CSS 1890–1928 | Sticky top 145px; at ≥1200px max-height viewport−165px, internal scrolling | Optional `sticky`; configurable `--hw-content-nav-top` and `--hw-content-nav-bottom-reserve`; desktop-only sticky layout | High; external Bootstrap positioning is replaced by explicit local CSS |
 | CSS 1930–1948 | Global section scroll-margin 90px, unstyled lists, column gap 8px | Scoped semantic lists and gap 8px; offset is an instance option, with no global section-ID rule | High; global selector intentionally omitted |
 | CSS 1950–1989 | 2px nested rail, 3px indicator, 2px radius, 140px minimum width; label 14px, padding 6px block | 40px measured link height, 28px line-height, wrapping labels and logical 8px/16px inline padding | High in RTL; LTR uses logical padding rather than preserving physical left/right asymmetry |
 | CSS 1992–2025 | Neutral100 hover and Gray400 marker; Neutral300 focus; reference removes focus outline | Matching semantic surfaces and measured Gray400 hover token; visible keyboard outline retained | High; focus outline is an accessibility adaptation |
@@ -18,7 +18,7 @@ evidence; neither establishes full visual parity with the live SDAIA website.
 | JS 1820–1841 | IntersectionObserver threshold 0.3, root margin −100px/−50%; first item initially active | Deterministic geometry tracking, initial measured section, active threshold offset+20px and last section at scroll end | Intentional reliability adaptation for tall sections, gaps and independent scroll roots |
 
 `ContentNavigation` is a new reusable component across React, Vue and Angular;
-vanilla exports `createContentNavigation` and registers `data-nq="content-navigation"`.
+vanilla exports `createContentNavigation` and registers `data-hw="content-navigation"`.
 It adds a distinct entry to the catalog (83 total), rather than treating local
 section navigation as a tab panel switch or another horizontal site navigation.
 
@@ -38,13 +38,13 @@ are ignored (the first summary of closed details remains eligible). A missing co
 scrolling the host page.
 
 The source observer can fail to activate a section taller than its observation
-band, and multiple intersecting callbacks depend on delivery order. Nasaq tracks
+band, and multiple intersecting callbacks depend on delivery order. Hawiyah tracks
 the latest section whose top passes the configured offset plus 20px, preserves
 the preceding section through gaps, and activates the final section at scroll
 end. This supports nested IDs and long content without copying the source's
 global selectors or one-container assumptions. Observe current changes through
 `onCurrentChange` (React/vanilla), `currentChange` (Vue/Angular) or vanilla's
-`nq:change` event with `detail.current`.
+`hw:change` event with `detail.current`.
 
 The core observer measures and scrolls existing nodes. Each adapter owns its
 rendered tree and active attributes. Refresh/rebinding handles changed roots,

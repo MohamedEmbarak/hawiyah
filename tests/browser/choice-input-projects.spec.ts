@@ -13,15 +13,15 @@ async function submitted(form: Locator, name: string) {
 for (const [framework, language, locale] of projects) {
   test(`${framework} ${language} supports keyboard editing, form submission and reset in four structured inputs`, async ({page}) => {
     test.setTimeout(300000);
-    await page.addInitScript(locale => { if (window === window.top) localStorage.setItem('nasaq-locale', locale); }, locale);
+    await page.addInitScript(locale => { if (window === window.top) localStorage.setItem('hawiyah-locale', locale); }, locale);
     const ar = locale === 'ar';
     for (const id of ['combobox', 'pin-input', 'tag-input', 'multi-select'] as const) await test.step(id, async () => {
       await page.goto(`/#component/${id}`);
       await page.locator('[data-guide-tab="playground"]').click();
       await page.locator('[data-project-framework]').selectOption(framework);
       if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-      await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', {timeout:45000});
-      const form = page.frameLocator('.nq-ide-frame').locator(`form[data-choice-input-project="${id}"]`);
+      await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', {timeout:45000});
+      const form = page.frameLocator('.hw-ide-frame').locator(`form[data-choice-input-project="${id}"]`);
       const model = form.locator('[data-model]'), result = form.locator('[data-submitted]');
       const city = ar ? 'جدة' : 'Jeddah', topic = ar ? 'التقارير' : 'Reports';
       const name = {combobox:'city', 'pin-input':'code', 'tag-input':'tags', 'multi-select':'offices'}[id];

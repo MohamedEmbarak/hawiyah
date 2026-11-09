@@ -1,12 +1,12 @@
-import { createCleanup, getNextEnabledIndex, isDisabled, normalizeSearch, restoreFocus, prepareToastDismissFocus } from '@nasaq/core';
+import { createCleanup, getNextEnabledIndex, isDisabled, normalizeSearch, restoreFocus, prepareToastDismissFocus } from '@hawiyah/core';
 import { createDialog, type DialogController, type DialogOptions } from './dialog.js';
 import { emit, ensureId, eventElement, remember, required, translated } from './dom.js';
 
 export interface PopoverOptions { onOpenChange?: (open: boolean) => void; focusOnOpen?: boolean }
 export interface PopoverController { readonly open: boolean; show(): void; close(restore?: boolean): void; destroy(): void }
 export function createPopover(root: HTMLElement, options: PopoverOptions = {}): PopoverController {
-  const trigger = required<HTMLElement>(root, '[data-nq-trigger]');
-  const panel = required<HTMLElement>(root, '[data-nq-panel]');
+  const trigger = required<HTMLElement>(root, '[data-hw-trigger]');
+  const panel = required<HTMLElement>(root, '[data-hw-panel]');
   const scope = createCleanup();
   remember(scope, trigger, ['aria-expanded', 'aria-controls']); remember(scope, panel, ['hidden', 'role', 'tabindex']);
   trigger.setAttribute('aria-controls', ensureId(scope, panel, 'popover'));
@@ -20,7 +20,7 @@ export function createPopover(root: HTMLElement, options: PopoverOptions = {}): 
     emit(root, { open }); options.onOpenChange?.(open);
   };
   scope.listen(trigger, 'click', event => { if (isDisabled(trigger)) return; event.preventDefault(); if (open) close(); else show(); });
-  scope.listen(root, 'click', event => { if (eventElement(event)?.closest('[data-nq-close]')) { event.preventDefault(); close(true); } });
+  scope.listen(root, 'click', event => { if (eventElement(event)?.closest('[data-hw-close]')) { event.preventDefault(); close(true); } });
   scope.listen(root, 'keydown', event => { if ((event as KeyboardEvent).key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); close(true); } });
   scope.listen(root.ownerDocument, 'pointerdown', event => { if (!root.contains(event.target as Node | null)) close(); });
   scope.listen(root, 'focusout', event => { const next = (event as FocusEvent).relatedTarget as Node | null; if (next && !root.contains(next)) close(); });
@@ -30,7 +30,7 @@ export function createPopover(root: HTMLElement, options: PopoverOptions = {}): 
 
 export interface MenuOptions { onSelect?: (value: string) => void }
 export function createMenu(root: HTMLElement, options: MenuOptions = {}): PopoverController {
-  const trigger = required<HTMLElement>(root, '[data-nq-trigger]'); const panel = required<HTMLElement>(root, '[data-nq-panel]');
+  const trigger = required<HTMLElement>(root, '[data-hw-trigger]'); const panel = required<HTMLElement>(root, '[data-hw-panel]');
   const items = [...panel.querySelectorAll<HTMLElement>('[role="menuitem"]')]; const scope = createCleanup();
   remember(scope, trigger, ['aria-haspopup']); remember(scope, panel, ['role']); trigger.setAttribute('aria-haspopup', 'menu'); panel.setAttribute('role', 'menu');
   items.forEach(item => { remember(scope, item, ['tabindex']); item.tabIndex = -1; });
@@ -52,7 +52,7 @@ export function createMenu(root: HTMLElement, options: MenuOptions = {}): Popove
       for (let offset = 1; offset <= items.length; offset++) { const index = (current + offset + items.length) % items.length; if (!isDisabled(items[index]!) && normalizeSearch(items[index]!.textContent || '').startsWith(query)) { event.preventDefault(); focus(index); break; } }
     }
   });
-  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.nqValue ?? item.textContent?.trim() ?? ''; disclosure.close(true); emit(root, { value }); options.onSelect?.(value); });
+  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; disclosure.close(true); emit(root, { value }); options.onSelect?.(value); });
   return { get open() { return disclosure.open; }, show() { disclosure.show(); navigate(-1, 'ArrowDown'); }, close: disclosure.close, destroy() { disclosure.destroy(); scope.destroy(); } };
 }
 
@@ -71,7 +71,7 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
   const originalRole = root.getAttribute('role');
   const originalLive = root.getAttribute('aria-live');
   const own = (element: HTMLElement) => {
-    const owner = element.closest('.nq-toast-region, [data-nq="toast-region"]');
+    const owner = element.closest('.hw-toast-region, [data-hw="toast-region"]');
     return root.contains(element) && (!owner || owner === root || !root.contains(owner));
   };
   if (options.variant) root.dataset.variant = options.variant;
@@ -79,9 +79,9 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
   if (options.label || (!root.hasAttribute('aria-label') && !root.hasAttribute('aria-labelledby'))) root.setAttribute('aria-label', options.label ?? translated(root, 'Notifications', 'الإشعارات'));
   if (!root.hasAttribute('tabindex')) root.tabIndex = -1;
 
-  const grouped = root.querySelectorAll<HTMLElement>(':scope > :is([data-nq-live="polite"], [data-nq-live="assertive"], [role="status"], [role="alert"], [aria-live="polite"], [aria-live="assertive"]):not([data-nq-toast], .nq-toast)');
+  const grouped = root.querySelectorAll<HTMLElement>(':scope > :is([data-hw-live="polite"], [data-hw-live="assertive"], [role="status"], [role="alert"], [aria-live="polite"], [aria-live="assertive"]):not([data-hw-toast], .hw-toast)');
   for (const bucket of grouped) {
-    const urgency = bucket.dataset.nqLive ?? bucket.getAttribute('aria-live');
+    const urgency = bucket.dataset.hwLive ?? bucket.getAttribute('aria-live');
     const urgent = urgency ? urgency === 'assertive' : bucket.getAttribute('role') === 'alert';
     remember(scope, bucket, ['role', 'aria-live', 'aria-relevant']);
     bucket.setAttribute('role', urgent ? 'alert' : 'status');
@@ -113,10 +113,10 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
     for (const button of protectedControls.keys()) if (!own(button)) restoreControl(button);
     for (const button of generatedLabels.keys()) if (!own(button)) restoreLabel(button);
     for (const notice of dismissedNotices) if (!own(notice)) { notice.hidden = false; dismissedNotices.delete(notice); }
-    for (const button of root.querySelectorAll<HTMLElement>('[data-nq-dismiss]')) {
-      const toast = button.closest<HTMLElement>('[data-nq-toast]');
+    for (const button of root.querySelectorAll<HTMLElement>('[data-hw-dismiss]')) {
+      const toast = button.closest<HTMLElement>('[data-hw-toast]');
       if (!toast || !own(toast) || !own(button)) continue;
-      if (toast.dataset.nqDismissible === 'false') {
+      if (toast.dataset.hwDismissible === 'false') {
         if (!protectedControls.has(button)) protectedControls.set(button, button.getAttribute('hidden'));
         button.hidden = true;
       } else if (protectedControls.has(button)) restoreControl(button);
@@ -127,8 +127,8 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
         if (generated !== undefined) restoreLabel(button);
         continue;
       }
-      const heading = toast.querySelector('[data-nq-toast-title], strong, h2, h3, h4');
-      const title = (heading ?? toast.querySelector('.nq-toast-content, p'))?.textContent?.trim();
+      const heading = toast.querySelector('[data-hw-toast-title], strong, h2, h3, h4');
+      const title = (heading ?? toast.querySelector('.hw-toast-content, p'))?.textContent?.trim();
       const prefix = translated(root, 'Dismiss notification', 'إغلاق الإشعار');
       const label = options.getDismissLabel?.(toast) ?? (title ? `${prefix}: ${title}` : prefix);
       button.setAttribute('aria-label', label);
@@ -139,7 +139,7 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
   const Observer = root.ownerDocument.defaultView?.MutationObserver;
   if (Observer) {
     const observer = new Observer(sync);
-    observer.observe(root, {childList: true, subtree: true, attributes: true, attributeFilter: ['data-nq-dismissible']});
+    observer.observe(root, {childList: true, subtree: true, attributes: true, attributeFilter: ['data-hw-dismissible']});
     scope.add(() => observer.disconnect());
   }
   scope.add(() => {
@@ -150,18 +150,18 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
   });
   const dismiss = (target: string | HTMLElement) => {
     if (scope.destroyed) return;
-    const toast = typeof target === 'string' ? [...root.querySelectorAll<HTMLElement>('[data-nq-toast]')].find(node => own(node) && (node.id === target || node.dataset.nqToast === target)) : target;
-    if (!toast || !own(toast) || !toast.hasAttribute('data-nq-toast') || toast.hidden || toast.dataset.nqDismissible === 'false') return;
+    const toast = typeof target === 'string' ? [...root.querySelectorAll<HTMLElement>('[data-hw-toast]')].find(node => own(node) && (node.id === target || node.dataset.hwToast === target)) : target;
+    if (!toast || !own(toast) || !toast.hasAttribute('data-hw-toast') || toast.hidden || toast.dataset.hwDismissible === 'false') return;
     dismissedNotices.add(toast);
     const recover = prepareToastDismissFocus(root, toast);
     toast.hidden = true;
-    const id = toast.id || toast.dataset.nqToast || '';
+    const id = toast.id || toast.dataset.hwToast || '';
     try { emit(root, {dismissed: id}); options.onDismiss?.(id); } finally { recover(); }
   };
   scope.listen(root, 'click', event => {
-    const button = eventElement(event)?.closest<HTMLElement>('[data-nq-dismiss]');
+    const button = eventElement(event)?.closest<HTMLElement>('[data-hw-dismiss]');
     if (!button || !own(button) || isDisabled(button)) return;
-    const toast = button.closest<HTMLElement>('[data-nq-toast]');
+    const toast = button.closest<HTMLElement>('[data-hw-toast]');
     if (toast && own(toast)) { event.preventDefault(); dismiss(toast); }
   });
   return {dismiss, destroy: () => scope.destroy()};

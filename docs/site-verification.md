@@ -1,10 +1,10 @@
 # Site verification above the header
 
-`SiteVerification` (React/Vue), `NqSiteVerificationComponent` (Angular), and
-`.nq-site-verification` native HTML provide an optional disclosure above a portal
-header. Use `.nq-portal-masthead` around the banner and `PortalHeader`; the shared
+`SiteVerification` (React/Vue), `HwSiteVerificationComponent` (Angular), and
+`.hw-site-verification` native HTML provide an optional disclosure above a portal
+header. Use `.hw-portal-masthead` around the banner and `PortalHeader`; the shared
 gutter is 32px on larger screens and 16px below 600px, overridable with
-`--nq-portal-gutter`. `data-variant="sticky"` sticks the complete masthead.
+`--hw-portal-gutter`. `data-variant="sticky"` sticks the complete masthead.
 
 The default label is **معلومات الموقع**. It does not assert government ownership,
 registration or compliance. An authorized deployment supplies its own approved
@@ -17,7 +17,7 @@ logo or registration identifier is distributed in this component.
 The supplied [NIC/SDAIA script](https://sdaia.gov.sa/Assets/js/master.js), pinned
 in [the source record](nic-web-reference.md), defines the structure below.
 
-| Source | Observed requirement | Nasaq implementation | Confidence / limits |
+| Source | Observed requirement | Hawiyah implementation | Confidence / limits |
 | --- | --- | --- | --- |
 | JS1176–1200 | Verification aside at the top; identity mark, claim and disclosure label | Native aside/details/summary, optional mark slot, configurable labels | High for structure; native summary is an accessibility adaptation |
 | JS1201–1230 | Domain guidance and HTTPS guidance in two columns | Responsive two-column checks; omit domain section when not configured | High for content structure; exact stamp-specific CSS was not in supplied global.css |
@@ -41,7 +41,7 @@ The helper `getSiteVerificationLabels(locale)` and its types are exported by cor
 
 - React: `open` / `onOpenChange`, or `defaultOpen`; `mark` and ordinary children.
 - Vue: `v-model:open`, or `defaultOpen`; `mark` and default slots.
-- Angular: `[(open)]`; `[nqVerificationMark]` and default projected content.
+- Angular: `[(open)]`; `[hwVerificationMark]` and default projected content.
 - Vanilla: ordinary `<details open>` and its native `toggle` event. No controller
   or `enhance()` call is required for this component.
 
@@ -49,7 +49,7 @@ The disclosure uses native keyboard and expanded-state semantics. Its links stay
 out of the tab sequence while collapsed; focus is visibly outlined. Domains and
 numbers use LTR isolation within Arabic content. Reduced motion removes the
 decorative arrow transition; forced colors preserve boundaries and focus.
-The 44px summary target and token-based surfaces are intentional Nasaq choices.
+The 44px summary target and token-based surfaces are intentional Hawiyah choices.
 
 The link and lock icons are unchanged MIT Hugeicons assets from the existing
 pinned revision; the supplied script uses those names. Provenance accompanies

@@ -7,7 +7,7 @@ language and direction remain independent.
 
 Each item has `{ id, label, href?, icon?, current?, disabled?, children? }`.
 Use a unique stable `id` and a text `label`. Icons are decorative names from
-Nasaq's curated icon stylesheet. A leaf with `href` is a native link, with
+Hawiyah's curated icon stylesheet. A leaf with `href` is a native link, with
 `aria-current="page"` when current. Children form a native `<details>/<summary>`
 group containing a nested list. When a group also has an `href`, its page link
 appears first inside the disclosed group. A leaf without `href` is static text.
@@ -34,21 +34,21 @@ tree or tablist roles, roving tabindex, or custom arrow-key navigation.
   `description`, `closeLabel` and `closeOnBackdrop`. Slots are `trigger` with
   `{ open }`, `user`, and `footer` with `{ close }`. The component exposes
   `show()`, `close()` and the underlying dialog `element`.
-- Angular exports `NqNavigationDrawerComponent` (`nq-navigation-drawer`) and
-  `NqNavigationDrawerItem`. Supply `items`, `title`, `navigationLabel`, `side`,
+- Angular exports `HwNavigationDrawerComponent` (`hw-navigation-drawer`) and
+  `HwNavigationDrawerItem`. Supply `items`, `title`, `navigationLabel`, `side`,
   `open`/`openChange`, `closeLabel` and `closeOnBackdrop`. Project optional user
-  content with `nqNavigationDrawerUser` and footer content with
-  `nqNavigationDrawerFooter`. Call `show(trigger?)` or `close()` on the component.
-  Its markup is owned by Angular and composes `NqDrawerComponent`.
+  content with `hwNavigationDrawerUser` and footer content with
+  `hwNavigationDrawerFooter`. Call `show(trigger?)` or `close()` on the component.
+  Its markup is owned by Angular and composes `HwDrawerComponent`.
 - Vanilla exports `createNavigationDrawer(dialog, options)` and supports
-  `data-nq="navigation-drawer"` through `enhance()`. It enhances caller-owned
+  `data-hw="navigation-drawer"` through `enhance()`. It enhances caller-owned
   semantic HTML instead of rendering an items array. Options extend
   `DialogOptions` with `navigationLabel`; the controller has `open`, `show`,
   `close` and `destroy`. Give the dialog an accessible title and a
-  `.nq-navigation-drawer-nav` nav, with lists, native links and optional details
-  groups. Use `.nq-navigation-drawer-row` for rows and
-  `.nq-navigation-drawer-group` for disclosures. Existing
-  `data-nq-dialog-open`/`data-nq-dialog-close` controls work. Initial
+  `.hw-navigation-drawer-nav` nav, with lists, native links and optional details
+  groups. Use `.hw-navigation-drawer-row` for rows and
+  `.hw-navigation-drawer-group` for disclosures. Existing
+  `data-hw-dialog-open`/`data-hw-dialog-close` controls work. Initial
   `aria-disabled="true"` entries are made untabbable/nonactivating, with
   descendant controls inert; cleanup restores their original attributes.
   Applications own subsequent changes to disabled markup. Destroy the
@@ -63,10 +63,10 @@ Nested row `1679:30532` uses 40px leading padding. Selected row `538:296406`
 has a muted background and selector `538:296411` is 6×32px; title
 `538:296409` uses semibold 14px text. Focused row `538:296401` has a 2px stroke.
 
-Nasaq uses a 327px preferred maximum constrained by viewport width, 16px insets,
+Hawiyah uses a 327px preferred maximum constrained by viewport width, 16px insets,
 44px minimum row heights, 40px nested leading padding and a 6×32px logical
 leading indicator. Labels wrap and rows grow. Semantic colors preserve dark,
-original Nasaq and custom themes. Top/bottom/side safe areas are accommodated;
+original Hawiyah and custom themes. Top/bottom/side safe areas are accommodated;
 the source's fixed 840px height and 80px bottom example padding are not copied.
 The optional user content area does not embed source sample identities or assets.
 

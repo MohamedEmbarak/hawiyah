@@ -1,4 +1,4 @@
-Nasaq — نسق
+Hawiyah — هوية
 
 تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني
 Developed by the Development Team in the National Platforms Sector — National Information Center.
@@ -15,7 +15,7 @@ source repository and third-party in the core package.
 Brand source fonts are licensed separately under the SIL Open Font License
 1.1. The unmodified notices accompany their files in brand/third-party.
 Font software and third-party dependencies retain their own licenses.
-The Nasaq name and identity do not imply endorsement by Saudi Arabia's
+The Hawiyah name and identity do not imply endorsement by Saudi Arabia's
 Digital Government Authority. Apache 2.0 does not grant trademark rights.
 
 The curated Stroke Rounded SVG icons are Copyright (c) 2025 Hugeicons,
@@ -26,7 +26,7 @@ mapped to supplied DGA source names; password visibility and calendar-field artw
 additional upstream subset without a DGA node comparison. None are direct
 DGA Figma exports.
 
-NasaqRiyal is a U+20C1-only derivative of Noto Naskh Arabic 2.021,
+HawiyahRiyal is a U+20C1-only derivative of Noto Naskh Arabic 2.021,
 Copyright 2022 The Noto Project Authors (https://github.com/notofonts/arabic),
 licensed under the SIL Open Font License 1.1. The full license and
 reproducible provenance are included in dist/assets/fonts/riyal-LICENSE.txt

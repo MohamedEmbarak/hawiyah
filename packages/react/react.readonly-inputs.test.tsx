@@ -24,7 +24,7 @@ it('blocks read-only range gestures but preserves focus, native values, consumer
   const changed = vi.fn(); const keyed = vi.fn(); const pointer = vi.fn();
   await act(() => root.render(<form><Slider label="Amount" name="amount" defaultValue={35} readOnly onValueChange={changed} onKeyDown={keyed} onPointerDown={pointer} /></form>));
   const input = host.querySelector('input')!; input.focus(); expect(document.activeElement).toBe(input);
-  expect(input.classList.contains('nq-slider')).toBe(true); expect(input.classList.contains('nq-input')).toBe(false); expect(host.querySelector('.nq-field')!.classList.contains('nq-slider')).toBe(false);
+  expect(input.classList.contains('hw-slider')).toBe(true); expect(input.classList.contains('hw-input')).toBe(false); expect(host.querySelector('.hw-field')!.classList.contains('hw-slider')).toBe(false);
   expect(input.disabled).toBe(false); expect(input.getAttribute('aria-readonly')).toBe('true');
   const down = new Event('pointerdown', { bubbles: true, cancelable: true }); input.dispatchEvent(down); expect(down.defaultPrevented).toBe(true); expect(pointer).toHaveBeenCalledOnce();
   for (const key of ['ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown']) { const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }); input.dispatchEvent(event); expect(event.defaultPrevented).toBe(true); }

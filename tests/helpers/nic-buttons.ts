@@ -4,8 +4,8 @@ import AxeBuilder from '@axe-core/playwright';
 export async function checkNicButtons(page: Page) {
   const scope = page.getByTestId('nic-showcase');
   // A nested dark preview owns its backdrop; changing tokens alone does not paint it.
-  await scope.evaluate(node => { node.style.background = 'var(--nq-color-canvas)'; node.style.color = 'var(--nq-color-text)'; });
-  const button = (name: string) => page.locator(`[data-testid="button-${name}"].nq-button, [data-testid="button-${name}"] > .nq-button`);
+  await scope.evaluate(node => { node.style.background = 'var(--hw-color-canvas)'; node.style.color = 'var(--hw-color-text)'; });
+  const button = (name: string) => page.locator(`[data-testid="button-${name}"].hw-button, [data-testid="button-${name}"] > .hw-button`);
   const cases = [
     ['primary', 'rgb(27, 131, 84)', 'rgb(22, 106, 69)', 'rgb(20, 87, 58)'],
     ['default', 'rgb(12, 17, 27)', 'rgb(31, 42, 55)', 'rgb(77, 87, 97)'],
@@ -41,7 +41,7 @@ export async function checkNicButtons(page: Page) {
   await button('icon').focus(); await page.keyboard.press('Enter');
   await expect(page.getByTestId('button-count')).toHaveText('15');
   for (const mode of ['light', 'dark']) {
-    await scope.evaluate((node, mode) => node.setAttribute('data-nq-mode', mode), mode);
+    await scope.evaluate((node, mode) => node.setAttribute('data-hw-mode', mode), mode);
     await page.keyboard.press('Tab'); await page.mouse.move(0, 0);
     expect((await new AxeBuilder({ page }).include('[data-testid="button-showcase"]').analyze()).violations).toEqual([]);
     await button('secondary').hover();
@@ -51,11 +51,11 @@ export async function checkNicButtons(page: Page) {
     await page.setViewportSize({ width, height: 900 });
     expect(await scope.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
   }
-  await scope.evaluate(node => { node.setAttribute('data-nq-theme', 'nasaq'); node.setAttribute('data-nq-mode', 'light'); });
+  await scope.evaluate(node => { node.setAttribute('data-hw-theme', 'hawiyah'); node.setAttribute('data-hw-mode', 'light'); });
   await page.mouse.move(0, 0);
   await expect(button('secondary')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
   await expect(button('secondary')).toHaveCSS('border-color', 'rgb(117, 142, 140)');
-  await scope.evaluate(node => node.setAttribute('data-nq-theme', 'custom'));
+  await scope.evaluate(node => node.setAttribute('data-hw-theme', 'custom'));
   await expect(button('secondary')).toHaveCSS('background-color', 'rgb(243, 244, 246)');
   await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
   await button('primary').focus(); await expect(button('primary')).toHaveCSS('outline-style', 'solid');

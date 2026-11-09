@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 
 async function preferences(page: Page, locale: 'ar' | 'en', mode: 'light' | 'dark' = 'light') {
   await page.addInitScript(({ locale, mode }) => {
-    localStorage.setItem('nasaq-locale', locale);
-    localStorage.setItem('nasaq-mode', mode);
-    localStorage.setItem('nasaq-theme', 'dga');
+    localStorage.setItem('hawiyah-locale', locale);
+    localStorage.setItem('hawiyah-mode', mode);
+    localStorage.setItem('hawiyah-theme', 'dga');
   }, { locale, mode });
 }
 
@@ -21,17 +21,17 @@ test('Arabic service application validates, preserves the draft, supports review
   const application = page.locator('[data-dga-application]');
   await application.getByRole('button', { name: 'مراجعة الطلب', exact: true }).click();
   await expect(application).toHaveAttribute('data-stage', '0');
-  await expect(page.locator('#nq-template-applicant')).toBeFocused();
-  await page.locator('#nq-template-applicant').fill('مقدم طلب تجريبي');
-  await page.locator('#nq-template-email').fill('demo@example.com');
-  await page.locator('#nq-template-city').selectOption('riyadh');
-  await page.locator('#nq-template-address').fill('موقع تجريبي');
-  await page.locator('#nq-template-area').fill('180');
-  await page.locator('#nq-template-description').fill('وصف تجريبي لا يتضمن بيانات شخصية.');
+  await expect(page.locator('#hw-template-applicant')).toBeFocused();
+  await page.locator('#hw-template-applicant').fill('مقدم طلب تجريبي');
+  await page.locator('#hw-template-email').fill('demo@example.com');
+  await page.locator('#hw-template-city').selectOption('riyadh');
+  await page.locator('#hw-template-address').fill('موقع تجريبي');
+  await page.locator('#hw-template-area').fill('180');
+  await page.locator('#hw-template-description').fill('وصف تجريبي لا يتضمن بيانات شخصية.');
   await page.locator('.topbar [data-action="locale"]').click();
   await page.locator('.topbar [data-action="locale"]').click();
-  await expect(page.locator('#nq-template-applicant')).toHaveValue('مقدم طلب تجريبي');
-  await expect(page.locator('#nq-template-city')).toHaveValue('riyadh');
+  await expect(page.locator('#hw-template-applicant')).toHaveValue('مقدم طلب تجريبي');
+  await expect(page.locator('#hw-template-city')).toHaveValue('riyadh');
   await application.getByRole('button', { name: 'مراجعة الطلب', exact: true }).click();
   await expect(application).toHaveAttribute('data-stage', '1');
   await expect(application.locator('[data-dga-review]')).toContainText('مقدم طلب تجريبي');
@@ -41,8 +41,8 @@ test('Arabic service application validates, preserves the draft, supports review
   await expect(application.getByRole('heading', { name: 'Review your application' })).toBeVisible();
   await page.locator('.topbar [data-action="locale"]').click();
   await application.getByRole('button', { name: 'تعديل البيانات', exact: true }).click();
-  await expect(page.locator('#nq-template-area')).toHaveValue('180');
-  await page.locator('#nq-template-area').fill('220');
+  await expect(page.locator('#hw-template-area')).toHaveValue('180');
+  await page.locator('#hw-template-area').fill('220');
   await application.getByRole('button', { name: 'مراجعة الطلب', exact: true }).click();
   await expect(application.locator('[data-dga-review]')).toContainText('220');
   await application.getByRole('button', { name: 'تأكيد الطلب', exact: true }).click();
@@ -51,11 +51,11 @@ test('Arabic service application validates, preserves the draft, supports review
   await application.getByRole('button', { name: 'تأكيد الطلب', exact: true }).click();
   await expect(application).toHaveAttribute('data-stage', '2');
   await expect(application.getByRole('heading', { name: 'اكتمل طلبك التجريبي' })).toBeFocused();
-  await expect(application.locator('.nq-template-reference')).toHaveText('NQ-DEMO-2026-104');
+  await expect(application.locator('.hw-template-reference')).toHaveText('HW-DEMO-2026-104');
   await application.getByRole('button', { name: 'بدء طلب جديد', exact: true }).click();
   await expect(application).toHaveAttribute('data-stage', '0');
-  await expect(page.locator('#nq-template-applicant')).toHaveValue('');
-  await expect(page.locator('#nq-template-city')).toHaveValue('');
+  await expect(page.locator('#hw-template-applicant')).toHaveValue('');
+  await expect(page.locator('#hw-template-city')).toHaveValue('');
   expect(errors).toEqual([]);
 });
 
@@ -90,7 +90,7 @@ test('FAQ filters, local feedback and cookie preferences provide usable results'
   await page.goto('/#templates/content');
   await template.getByRole('navigation', { name: 'On this page' }).getByRole('link', { name: 'Review before confirming' }).click();
   await expect(page).toHaveURL(/#templates\/content$/);
-  await expect(template.locator('#nq-content-review')).toBeFocused();
+  await expect(template.locator('#hw-content-review')).toBeFocused();
   await page.goto('/#templates/cookies');
   await expect(template.getByRole('switch', { name: 'Analytics', exact: true })).toBeChecked();
   await template.getByRole('button', { name: 'Reject optional', exact: true }).click();
@@ -116,8 +116,8 @@ for (const locale of ['ar', 'en'] as const) {
     await expect(page.locator(`[id="${panelId}"]`)).toBeVisible();
     // The selected text can grow and move this destination into the disclosure.
     await expect.poll(() => destination.evaluate(tab => {
-      const bar = tab.closest('.nq-tab-bar');
-      const overflow = tab.getAttribute('data-nq-overflow-hidden') === 'true';
+      const bar = tab.closest('.hw-tab-bar');
+      const overflow = tab.getAttribute('data-hw-overflow-hidden') === 'true';
       const focused = overflow ? bar?.querySelector('summary[data-active="true"]') : tab;
       const bounds = (overflow ? bar : tab.closest('[role="tablist"]'))?.getBoundingClientRect();
       const box = focused?.getBoundingClientRect();
@@ -132,24 +132,24 @@ for (const locale of ['ar', 'en'] as const) {
       await page.setViewportSize({ width: 430, height: 900 });
       await page.goto('/#templates/form');
       const template = page.locator('[data-dga-template]');
-      await expect(page.locator('html')).toHaveAttribute('data-nq-mode', mode);
-      await expect(template.locator('.nq-stepper-mobile')).toBeVisible();
-      await expect(template.locator('.nq-stepper-responsive > .nq-stepper')).not.toBeVisible();
-      await expect(template.locator('.nq-stepper-ring')).toHaveCSS('inline-size', '64px');
+      await expect(page.locator('html')).toHaveAttribute('data-hw-mode', mode);
+      await expect(template.locator('.hw-stepper-mobile')).toBeVisible();
+      await expect(template.locator('.hw-stepper-responsive > .hw-stepper')).not.toBeVisible();
+      await expect(template.locator('.hw-stepper-ring')).toHaveCSS('inline-size', '64px');
       const menu = template.getByRole('button', { name: locale === 'ar' ? 'القائمة' : 'Menu', exact: true });
       await menu.click();
       await expect(menu).toHaveAttribute('aria-expanded', 'true');
-      await expect(template.locator('#nq-template-navigation')).toBeVisible();
+      await expect(template.locator('#hw-template-navigation')).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(menu).toBeFocused();
       await expect(menu).toHaveAttribute('aria-expanded', 'false');
       await menu.click();
-      await template.locator('#nq-template-navigation').getByRole('link', { name: locale === 'ar' ? 'الخدمات' : 'Services', exact: true }).click();
+      await template.locator('#hw-template-navigation').getByRole('link', { name: locale === 'ar' ? 'الخدمات' : 'Services', exact: true }).click();
       await expect(template).toHaveAttribute('data-dga-template', 'service');
       for (const width of [430, 320]) {
         await page.setViewportSize({ width, height: 900 });
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        await expect(template.locator('.nq-portal-brand')).toBeVisible();
+        await expect(template.locator('.hw-portal-brand')).toBeVisible();
       }
     });
   }

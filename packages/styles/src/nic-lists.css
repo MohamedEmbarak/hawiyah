@@ -1,40 +1,40 @@
 /* NIC global.css 1645–1674 and 3183–3211. Styling is opt-in per list. */
-ul.nq-list-icon,
-ol.nq-list-ordered {
-  margin-inline: var(--nq-list-start-margin, 5px) 0;
+ul.hw-list-icon,
+ol.hw-list-ordered {
+  margin-inline: var(--hw-list-start-margin, 5px) 0;
 }
 
-ol.nq-list-ordered {
+ol.hw-list-ordered {
   list-style-type: decimal;
 }
 
-ul.nq-list-icon > li,
-ul.nq-list-custom > li {
+ul.hw-list-icon > li,
+ul.hw-list-custom > li {
   list-style-type: none;
 }
 
-ul.nq-list-icon > li {
+ul.hw-list-icon > li {
   position: relative;
-  padding-inline-start: var(--nq-list-icon-indent, 30px);
+  padding-inline-start: var(--hw-list-icon-indent, 30px);
 }
 
-.nq-list-marker {
+.hw-list-marker {
   display: inline-grid;
   place-items: center;
-  inline-size: var(--nq-list-marker-size, 16px);
-  block-size: var(--nq-list-marker-size, 16px);
+  inline-size: var(--hw-list-marker-size, 16px);
+  block-size: var(--hw-list-marker-size, 16px);
   color: inherit;
-  font-size: var(--nq-list-marker-size, 16px);
+  font-size: var(--hw-list-marker-size, 16px);
 }
 
-.nq-list-marker > svg {
+.hw-list-marker > svg {
   display: block;
   inline-size: 1em;
   block-size: 1em;
 }
 
 /* The source uses an external icon font. This local ring is decorative. */
-.nq-list-marker:empty::before {
+.hw-list-marker:empty::before {
   content: '';
   box-sizing: border-box;
   inline-size: .45em;
@@ -43,20 +43,20 @@ ul.nq-list-icon > li {
   border-radius: 50%;
 }
 
-ul.nq-list-icon > li > .nq-list-marker {
+ul.hw-list-icon > li > .hw-list-marker {
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
-  block-size: var(--nq-list-marker-line, 28px);
-  line-height: var(--nq-list-marker-line, 28px);
+  block-size: var(--hw-list-marker-line, 28px);
+  line-height: var(--hw-list-marker-line, 28px);
 }
 
-ul.nq-list-custom {
+ul.hw-list-custom {
   margin-inline-start: 0;
-  padding-inline-start: var(--nq-list-custom-indent, 20px);
+  padding-inline-start: var(--hw-list-custom-indent, 20px);
 }
 
-ul.nq-list-custom > li > .nq-list-marker {
+ul.hw-list-custom > li > .hw-list-marker {
   position: relative;
   inset-block-start: 1px;
   margin-inline-end: .25em;
@@ -64,5 +64,5 @@ ul.nq-list-custom > li > .nq-list-marker {
 }
 
 @media (forced-colors: active) {
-  .nq-list-marker:empty::before { border-color: CanvasText; }
+  .hw-list-marker:empty::before { border-color: CanvasText; }
 }

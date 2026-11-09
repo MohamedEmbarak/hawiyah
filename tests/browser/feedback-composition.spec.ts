@@ -32,23 +32,23 @@ function catalogCard(page: Page, id: string) {
 }
 
 for (const locale of ['ar','en'] as const) test(`catalog feedback and standalone arrow stay inline in ${locale}`, async ({page},info) => {
-  await page.addInitScript(locale => localStorage.setItem('nasaq-locale',locale),locale);
+  await page.addInitScript(locale => localStorage.setItem('hawiyah-locale',locale),locale);
   await page.goto('/#components');
   const main = page.getByRole('main');
   await expect(main).toHaveCount(1);
-  const feedback = catalogCard(page,'feedback').locator('.component-preview .nq-feedback');
-  const actions = feedback.locator('.nq-feedback-actions');
+  const feedback = catalogCard(page,'feedback').locator('.component-preview .hw-feedback');
+  const actions = feedback.locator('.hw-feedback-actions');
   const yes = actions.getByRole('button',{name:locale === 'ar' ? 'نعم' : 'Yes',exact:true});
   const no = actions.getByRole('button',{name:locale === 'ar' ? 'لا' : 'No',exact:true});
-  const arrow = catalogCard(page,'link').locator('.component-preview a.nq-link[data-variant="standalone"]');
+  const arrow = catalogCard(page,'link').locator('.component-preview a.hw-link[data-variant="standalone"]');
   for (const width of [1864,390]) {
     await page.setViewportSize({width,height:884});
     await sameRow(actions.getByRole('button'));
     await yes.click(); await expect(yes).toHaveAttribute('aria-pressed','true');
-    await expect(feedback.locator('[data-nq-feedback-value]')).toHaveValue('yes');
+    await expect(feedback.locator('[data-hw-feedback-value]')).toHaveValue('yes');
     await no.click(); await expect(no).toHaveAttribute('aria-pressed','true');
     await expect(yes).toHaveAttribute('aria-pressed','false');
-    await expect(feedback.locator('[data-nq-feedback-value]')).toHaveValue('no');
+    await expect(feedback.locator('[data-hw-feedback-value]')).toHaveValue('no');
     await besideText(arrow,'svg');
     await arrow.click(); await expect(page).toHaveURL(/#components$/);
   }
@@ -61,12 +61,12 @@ test('portal shell previews preserve one main and a local skip target while thei
   await expect(gallery.locator('.source-details code').first()).toContainText('<main');
   await page.goto('/#component/portal-layout');
   await expect(page.getByRole('main')).toHaveCount(1);
-  const embedded = page.locator('.component-preview .nq-portal-layout');
+  const embedded = page.locator('.component-preview .hw-portal-layout');
   await expect(embedded).toHaveCount(2);
   for (const shell of await embedded.all()) {
-    const section = shell.locator('section.nq-portal-layout-main');
+    const section = shell.locator('section.hw-portal-layout-main');
     await expect(section).toHaveCount(1);
-    const skip = shell.locator('.nq-skip-link');
+    const skip = shell.locator('.hw-skip-link');
     await expect(skip).toHaveAttribute('href','#' + await section.getAttribute('id'));
     await skip.focus(); await skip.press('Enter');
     await expect(section).toBeFocused();
@@ -80,13 +80,13 @@ for (const framework of ['react','vue','angular']) test(`${framework} feedback v
   await page.goto('/#component/feedback'); await page.locator('[data-guide-tab="playground"]').click();
   await page.locator('[data-project-framework]').selectOption(framework);
   if (framework !== 'angular') await page.locator('[data-project-language]').selectOption('typescript');
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-  const frame = page.frameLocator('.nq-ide-frame');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+  const frame = page.frameLocator('.hw-ide-frame');
   const output = frame.locator('.demo > output');
   for (const variant of ['text','icon-text','icon']) {
-    const root = frame.locator(`.nq-feedback[data-choice-variant="${variant}"]`);
-    const actions = root.locator('.nq-feedback-actions');
-    const choices = actions.locator(framework === 'react' ? '.nq-choice' : 'button');
+    const root = frame.locator(`.hw-feedback[data-choice-variant="${variant}"]`);
+    const actions = root.locator('.hw-feedback-actions');
+    const choices = actions.locator(framework === 'react' ? '.hw-choice' : 'button');
     await sameRow(choices);
     const role = framework === 'react' ? 'radio' : 'button';
     const yes = actions.getByRole(role,{name:'نعم',exact:true}), no = actions.getByRole(role,{name:'لا',exact:true});
@@ -95,20 +95,20 @@ for (const framework of ['react','vue','angular']) test(`${framework} feedback v
     else { await expect(yes).toHaveAttribute('aria-pressed','true'); await no.press('Space'); await expect(no).toHaveAttribute('aria-pressed','true'); }
     await expect(output).toHaveText('no');
     for (const [index,name] of ['thumbs-up','thumbs-down'].entries()) {
-      const icon = choices.nth(index).locator('.nq-feedback-icon');
+      const icon = choices.nth(index).locator('.hw-feedback-icon');
       if (variant === 'text') await expect(icon).toBeHidden();
       else {
         await expect(icon).toBeVisible();
         await expect(icon).toHaveAttribute('data-icon',name);
-        if (variant === 'icon-text') await besideText(choices.nth(index),'.nq-feedback-icon');
+        if (variant === 'icon-text') await besideText(choices.nth(index),'.hw-feedback-icon');
       }
     }
   }
-  await frame.locator('.nq-feedback[data-choice-variant="icon-text"]').screenshot({path:info.outputPath(`${framework}-feedback.png`)});
+  await frame.locator('.hw-feedback[data-choice-variant="icon-text"]').screenshot({path:info.outputPath(`${framework}-feedback.png`)});
   await page.goto('/#component/link'); await page.locator('[data-guide-tab="playground"]').click();
   await page.locator('[data-project-framework]').selectOption(framework);
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-  const arrow = frame.locator('a.nq-link[data-variant="standalone"]');
-  await besideText(arrow,'.nq-icon');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+  const arrow = frame.locator('a.hw-link[data-variant="standalone"]');
+  await besideText(arrow,'.hw-icon');
   await arrow.click(); await expect(page).toHaveURL(/#component\/link$/);
 });

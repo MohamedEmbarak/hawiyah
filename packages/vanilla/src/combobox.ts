@@ -1,5 +1,5 @@
-import { observeFieldValue, createCleanup, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox } from '@nasaq/core';
-import type { ComboboxEvent, Option } from '@nasaq/core';
+import { observeFieldValue, createCleanup, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox } from '@hawiyah/core';
+import type { ComboboxEvent, Option } from '@hawiyah/core';
 import { emit, ensureId, eventElement, nativeChange, remember, required } from './dom.js';
 
 export interface ComboboxOptions {
@@ -19,24 +19,24 @@ export interface ComboboxController {
 }
 
 export function createCombobox(root: HTMLElement, options: ComboboxOptions = {}): ComboboxController {
-  const input = required<HTMLInputElement>(root, '[data-nq-combobox-input]');
-  const list = required<HTMLElement>(root, '[data-nq-combobox-list]');
-  if (input.localName !== 'input') throw new Error('Nasaq: combobox input must be a native input.');
-  const nodes = [...list.querySelectorAll<HTMLElement>('[data-nq-value]')];
+  const input = required<HTMLInputElement>(root, '[data-hw-combobox-input]');
+  const list = required<HTMLElement>(root, '[data-hw-combobox-list]');
+  if (input.localName !== 'input') throw new Error('Hawiyah: combobox input must be a native input.');
+  const nodes = [...list.querySelectorAll<HTMLElement>('[data-hw-value]')];
   const items: Option[] = nodes.map(node => ({
-    value: node.dataset.nqValue ?? '', label: node.textContent?.trim() ?? '', disabled: isDisabled(node),
+    value: node.dataset.hwValue ?? '', label: node.textContent?.trim() ?? '', disabled: isDisabled(node),
   }));
   if (items.some(item => !item.value) || new Set(items.map(item => item.value)).size !== items.length) {
-    throw new Error('Nasaq: combobox option values must be non-empty and unique.');
+    throw new Error('Hawiyah: combobox option values must be non-empty and unique.');
   }
   const scope = createCleanup();
   const presence = observeFieldValue(input); scope.add(() => presence.destroy());
-  const hidden = root.querySelector<HTMLInputElement>('[data-nq-combobox-value]');
-  let status = root.querySelector<HTMLElement>('[data-nq-combobox-status]');
+  const hidden = root.querySelector<HTMLInputElement>('[data-hw-combobox-value]');
+  let status = root.querySelector<HTMLElement>('[data-hw-combobox-status]');
   if (!status) {
     status = root.ownerDocument.createElement('span');
-    status.className = 'nq-sr-only';
-    status.dataset.nqComboboxStatus = '';
+    status.className = 'hw-sr-only';
+    status.dataset.hwComboboxStatus = '';
     root.append(status);
     const generated = status;
     scope.add(() => generated.remove());
@@ -80,7 +80,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     remember(scope, node, ['role', 'aria-selected', 'data-active', 'hidden']);
     node.setAttribute('role', 'option');
   });
-  const initialValue = options.value ?? hidden?.value ?? nodes.find(node => node.getAttribute('aria-selected') === 'true')?.dataset.nqValue ?? '';
+  const initialValue = options.value ?? hidden?.value ?? nodes.find(node => node.getAttribute('aria-selected') === 'true')?.dataset.hwValue ?? '';
   let state = createComboboxState(items, initialValue);
   if (!state.value && originalInputValue && options.value === undefined) state = { ...state, query: originalInputValue };
   let composing = false;
@@ -161,12 +161,12 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     } else if (key === 'Tab') close();
   });
   scope.listen(list, 'pointerdown', event => {
-    if (eventElement(event)?.closest('[data-nq-value]')) event.preventDefault();
+    if (eventElement(event)?.closest('[data-hw-value]')) event.preventDefault();
   });
   scope.listen(list, 'click', event => {
-    const option = eventElement(event)?.closest<HTMLElement>('[data-nq-value]');
+    const option = eventElement(event)?.closest<HTMLElement>('[data-hw-value]');
     if (!option || !nodes.includes(option) || option.hidden || isDisabled(option)) return;
-    select(option.dataset.nqValue ?? '');
+    select(option.dataset.hwValue ?? '');
     input.focus();
   });
   scope.listen(root, 'focusout', event => {

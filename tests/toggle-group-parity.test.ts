@@ -2,7 +2,7 @@ import '@angular/compiler';
 import {Component, signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule,platformBrowserTesting} from '@angular/platform-browser/testing';
-import {NqToggleGroupComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwToggleGroupComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act,createElement as r} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp,h,nextTick,reactive} from 'vue';
@@ -16,7 +16,7 @@ beforeAll(()=>TestBed.initTestEnvironment(BrowserTestingModule,platformBrowserTe
 afterEach(async()=>{for(const cleanup of cleanups.splice(0))await cleanup();TestBed.resetTestingModule();document.body.replaceChildren();});
 const options=[{value:'a',label:'First'},{value:'b',label:'Second'},{value:'blocked',label:'Unavailable',disabled:true}];
 class Host {options=options;multiple=false;readOnly=signal(true);disabled=signal(false);value:string|string[]='a';changes:unknown[]=[];changed(value:unknown){this.changes.push(value);} }
-Component({standalone:true,imports:[NqToggleGroupComponent],template:`<form><nq-toggle-group label="View" name="view" [options]="options" [multiple]="multiple" [readOnly]="readOnly()" [disabled]="disabled()" [(value)]="value" (valueChange)="changed($event)" /></form>`})(Host);
+Component({standalone:true,imports:[HwToggleGroupComponent],template:`<form><hw-toggle-group label="View" name="view" [options]="options" [multiple]="multiple" [readOnly]="readOnly()" [disabled]="disabled()" [(value)]="value" (valueChange)="changed($event)" /></form>`})(Host);
 async function mount(adapter:string,multiple=false,external=false){
   const host=document.createElement('div');document.body.append(host);
   const state={readonly:true,disabled:false},initial=multiple?['a','blocked','missing']:'a',changes:unknown[]=[];
@@ -33,9 +33,9 @@ async function mount(adapter:string,multiple=false,external=false){
     const fixture=TestBed.createComponent(Host);fixture.componentInstance.multiple=multiple;fixture.componentInstance.value=initial;target.append(fixture.nativeElement);
     run=async fn=>{fn();fixture.detectChanges();await Promise.resolve();fixture.detectChanges();changes.splice(0,changes.length,...fixture.componentInstance.changes);};sync=async()=>{fixture.componentInstance.readOnly.set(state.readonly);fixture.componentInstance.disabled.set(state.disabled);fixture.detectChanges();};
   }else{
-    target.innerHTML=`<form><fieldset class="nq-toggle-group" data-nq="toggle-group" data-nq-readonly="true" ${multiple?'data-nq-multiple="true" data-nq-name="view"':''}><legend>View</legend>${options.map((o,i)=>multiple?`<button type="button" data-nq-value="${o.value}" aria-pressed="${i!==1}" ${o.disabled?'disabled':''}>${o.label}</button>`:`<label><input type="radio" name="view" value="${o.value}" ${i===0?'checked':''} ${o.disabled?'disabled':''}>${o.label}</label>`).join('')}</fieldset></form>`;
+    target.innerHTML=`<form><fieldset class="hw-toggle-group" data-hw="toggle-group" data-hw-readonly="true" ${multiple?'data-hw-multiple="true" data-hw-name="view"':''}><legend>View</legend>${options.map((o,i)=>multiple?`<button type="button" data-hw-value="${o.value}" aria-pressed="${i!==1}" ${o.disabled?'disabled':''}>${o.label}</button>`:`<label><input type="radio" name="view" value="${o.value}" ${i===0?'checked':''} ${o.disabled?'disabled':''}>${o.label}</label>`).join('')}</fieldset></form>`;
     const fieldset=target.querySelector('fieldset')!,controller=createToggleGroup(fieldset,{onValueChange:value=>changes.push(value)});cleanups.push(()=>controller.destroy());
-    run=async fn=>{fn();await Promise.resolve();await Promise.resolve();};sync=async()=>{fieldset.dataset.nqReadonly=String(state.readonly);fieldset.disabled=state.disabled;await Promise.resolve();};
+    run=async fn=>{fn();await Promise.resolve();await Promise.resolve();};sync=async()=>{fieldset.dataset.hwReadonly=String(state.readonly);fieldset.disabled=state.disabled;await Promise.resolve();};
   }
   await sync();return {host,form:host.querySelector('form')!,state,sync,run,changes};
 }
@@ -49,13 +49,13 @@ for(const adapter of ['vanilla','react','vue','angular']){
   });
   it(`${adapter}: multiple readonly values exclude unavailable destinations and disabled groups submit nothing`,async()=>{
     const {host,form,state,sync,run,changes}=await mount(adapter,true);expect(new FormData(form).getAll('view')).toEqual(['a']);
-    const buttons=host.querySelectorAll<HTMLButtonElement>('.nq-toggle-group button');buttons[0]!.focus();expect(document.activeElement).toBe(buttons[0]);
+    const buttons=host.querySelectorAll<HTMLButtonElement>('.hw-toggle-group button');buttons[0]!.focus();expect(document.activeElement).toBe(buttons[0]);
     await run(()=>buttons[1]!.click());expect(changes).toEqual([]);expect(new FormData(form).getAll('view')).toEqual(['a']);
     state.readonly=false;await sync();await run(()=>buttons[1]!.click());expect(new FormData(form).getAll('view')).toEqual(['a','b']);
     state.disabled=true;await sync();expect(new FormData(form).getAll('view')).toEqual([]);
   });
 }
 for(const adapter of ['react','vue'])it(`${adapter}: external form reset restores multiple selection`,async()=>{
-  const {host,form,state,sync,run}=await mount(adapter,true,true);state.readonly=false;await sync();await run(()=>host.querySelectorAll<HTMLButtonElement>('.nq-toggle-group button')[1]!.click());expect(new FormData(form).getAll('view')).toEqual(['a','b']);
-  await run(()=>form.reset());expect(new FormData(form).getAll('view')).toEqual(['a']);expect(host.querySelectorAll('.nq-toggle-group button')[1]!.getAttribute('aria-pressed')).toBe('false');
+  const {host,form,state,sync,run}=await mount(adapter,true,true);state.readonly=false;await sync();await run(()=>host.querySelectorAll<HTMLButtonElement>('.hw-toggle-group button')[1]!.click());expect(new FormData(form).getAll('view')).toEqual(['a','b']);
+  await run(()=>form.reset());expect(new FormData(form).getAll('view')).toEqual(['a']);expect(host.querySelectorAll('.hw-toggle-group button')[1]!.getAttribute('aria-pressed')).toBe('false');
 });

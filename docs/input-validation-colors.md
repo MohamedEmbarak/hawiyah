@@ -19,7 +19,7 @@ validated the field; applications should gate their error props on touched or
 submitted state if they want to delay displaying those errors.
 
 These styles apply to input, textarea and select, including filled variants,
-in vanilla, React, Vue and Angular. Each adapter tracks `data-nq-filled` on its own
+in vanilla, React, Vue and Angular. Each adapter tracks `data-hw-filled` on its own
 native fields using the core `observeFieldValue(element)` lifecycle helper.
 Framework renders refresh controlled values; native input/change/reset events
 refresh uncontrolled values. Vanilla `enhance(root)` includes plain native fields;
@@ -34,6 +34,6 @@ When a browser lacks `:user-invalid`, explicit application errors still show red
 
 Focus expands the line using the existing duration/easing; blur hides it. No
 success line remains visible at rest. This does not add
-a duplicate outer outline. Read-only, forced-colors and original Nasaq theme
+a duplicate outer outline. Read-only, forced-colors and original Hawiyah theme
 focus treatments remain available. Reduced motion removes the transition.
 This is a product-approved adaptation, not a newly verified DGA source rule.

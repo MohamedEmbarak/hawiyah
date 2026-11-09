@@ -2,7 +2,7 @@ import '@angular/compiler';
 import {createTooltip} from '../packages/vanilla/src/tooltip';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
-import {NqTooltipComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwTooltipComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act, createElement} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp, h, nextTick} from 'vue';
@@ -34,7 +34,7 @@ async function setup(adapter: Adapter) {
     run = async fn => {fn(); await nextTick();};
     destroy = async () => {app.unmount();};
   } else {
-    const fixture = TestBed.createComponent(NqTooltipComponent);
+    const fixture = TestBed.createComponent(HwTooltipComponent);
     fixture.componentRef.setInput('text','معلومات إضافية');
     fixture.componentRef.setInput('placement','bottom');
     fixture.componentRef.setInput('align','center');
@@ -110,7 +110,7 @@ for (const adapter of ['react', 'vue', 'angular'] as const) it(adapter + ' forwa
 
 it('vanilla tooltip restores authored placement when destroyed', () => {
   const host = document.createElement('span');
-  host.innerHTML = '<button data-nq-tooltip-trigger>Details</button><span role="tooltip" data-placement="start" hidden>Help</span>';
+  host.innerHTML = '<button data-hw-tooltip-trigger>Details</button><span role="tooltip" data-placement="start" hidden>Help</span>';
   document.body.append(host);
   const tooltip = host.querySelector<HTMLElement>('[role="tooltip"]')!;
   const controller = createTooltip(host, {placement:'bottom',align:'center'});

@@ -5,7 +5,7 @@ test('a native React service application supports validation, review, submission
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/');
-  await expect(page.locator('html')).toHaveAttribute('data-nq-theme', 'dga');
+  await expect(page.locator('html')).toHaveAttribute('data-hw-theme', 'dga');
   await page.getByRole('button', { name: 'English', exact: true }).click();
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -19,8 +19,8 @@ test('a native React service application supports validation, review, submission
   await city.press('Enter');
   await expect(city).toHaveValue('Riyadh');
   await page.getByRole('textbox', { name: 'Full name', exact: true }).fill('Demo Applicant');
-  await page.getByRole('combobox', { name: 'Theme', exact: true }).selectOption('nasaq');
-  await expect(page.locator('html')).toHaveAttribute('data-nq-theme', 'nasaq');
+  await page.getByRole('combobox', { name: 'Theme', exact: true }).selectOption('hawiyah');
+  await expect(page.locator('html')).toHaveAttribute('data-hw-theme', 'hawiyah');
   await expect(page.getByRole('textbox', { name: 'Full name', exact: true })).toHaveValue('Demo Applicant');
   await page.getByRole('combobox', { name: 'Theme', exact: true }).selectOption('dga');
   await page.getByRole('textbox', { name: 'Email', exact: true }).fill('demo@example.com');
@@ -41,13 +41,13 @@ test('a native React service application supports validation, review, submission
   await review.click();
   await page.getByRole('button', { name: 'Submit application', exact: true }).click();
   await expect(page.getByRole('tab', { name: 'My requests' })).toHaveAttribute('aria-selected', 'true');
-  await expect(page.getByRole('row', { name: /NQ-1025/ })).toBeVisible();
-  await page.getByRole('button', { name: 'View request NQ-1025', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: /Request details NQ-1025/ })).toBeVisible();
+  await expect(page.getByRole('row', { name: /HW-1025/ })).toBeVisible();
+  await page.getByRole('button', { name: 'View request HW-1025', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: /Request details HW-1025/ })).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click();
   await page.getByRole('switch', { name: 'Dark mode', exact: true }).check();
   await page.getByRole('button', { name: 'Change page direction', exact: true }).click();
-  await expect(page.locator('html')).toHaveAttribute('data-nq-mode', 'dark');
+  await expect(page.locator('html')).toHaveAttribute('data-hw-mode', 'dark');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations).toEqual([]);
   expect(errors).toEqual([]);
@@ -57,8 +57,8 @@ test('Arabic forms remain usable at a narrow viewport without horizontal page ov
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  await expect(page.locator('.nq-stepper-mobile')).toBeVisible();
-  await expect(page.locator('.nq-stepper-responsive > .nq-stepper')).not.toBeVisible();
+  await expect(page.locator('.hw-stepper-mobile')).toBeVisible();
+  await expect(page.locator('.hw-stepper-responsive > .hw-stepper')).not.toBeVisible();
   const city = page.getByRole('combobox', { name: 'المدينة', exact: true });
   await city.fill('الرياض');
   await city.press('ArrowDown');

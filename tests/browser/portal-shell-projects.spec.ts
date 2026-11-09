@@ -8,15 +8,15 @@ const projects = [
 for (const [framework,language,locale] of projects) {
   test(`${framework} ${language} portal projects keep local navigation, current page and keyboard focus in ${locale}`, async ({page}) => {
     test.setTimeout(300000);
-    await page.addInitScript(locale => { if (window === window.top) localStorage.setItem('nasaq-locale', locale); }, locale);
+    await page.addInitScript(locale => { if (window === window.top) localStorage.setItem('hawiyah-locale', locale); }, locale);
     for (const id of ['secondary-nav','portal-layout','mobile-top-bar','navigation-drawer'] as const) await test.step(id, async () => {
       await page.goto(`/#component/${id}`);
       await page.locator('[data-guide-tab="playground"]').click();
       await page.locator('[data-project-framework]').selectOption(framework);
       if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-      await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+      await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
       await page.locator('[data-ide-size]').selectOption('mobile');
-      const app = page.frameLocator('.nq-ide-frame').locator(`[data-portal-project="${id}"][data-project-format="${framework}-${language}"]`);
+      const app = page.frameLocator('.hw-ide-frame').locator(`[data-portal-project="${id}"][data-project-format="${framework}-${language}"]`);
       const view = app.locator('[data-page-view]');
       await expect(view).toHaveAttribute('data-page-view','overview');
       const initialUrl = await app.evaluate(el => el.ownerDocument.URL);
@@ -24,7 +24,7 @@ for (const [framework,language,locale] of projects) {
         const navs = app.getByRole('navigation');
         await expect(navs).toHaveCount(2);
         const shortcuts = app.locator('nav[data-variant="mobile"]');
-        await expect(shortcuts.locator('[aria-hidden="true"].nq-icon')).toHaveCount(3);
+        await expect(shortcuts.locator('[aria-hidden="true"].hw-icon')).toHaveCount(3);
         await shortcuts.locator('a[href="#demo-page-requests"]').press('Enter');
         for (const nav of await navs.all()) {
           await expect(nav.locator('a[aria-current="page"]')).toHaveAttribute('href','#demo-page-requests');
@@ -34,21 +34,21 @@ for (const [framework,language,locale] of projects) {
         await expect(app.getByRole('main')).toHaveCount(1);
         await expect(app.getByRole('contentinfo')).toHaveCount(1);
         await expect(app.getByRole('banner').getByText(locale === 'ar' ? 'حساب زائر' : 'Guest account', {exact:true})).toBeVisible();
-        const skip = app.locator('.nq-skip-link');
+        const skip = app.locator('.hw-skip-link');
         await skip.focus(); await skip.press('Enter'); await expect(app.getByRole('main')).toBeFocused();
-        const menu = app.locator('.nq-portal-menu-toggle');
+        const menu = app.locator('.hw-portal-menu-toggle');
         await menu.click(); await expect(menu).toHaveAttribute('aria-expanded','true');
         await menu.press('Escape'); await expect(menu).toHaveAttribute('aria-expanded','false'); await expect(menu).toBeFocused();
         await menu.click();
         await app.locator('header nav a[href="#demo-page-requests"]').press('Enter');
         await expect(menu).toHaveAttribute('aria-expanded','false');
-        await expect(app.locator('.nq-secondary-nav a[aria-current="page"]')).toHaveAttribute('href','#demo-page-requests');
-        await expect(app.locator('.nq-breadcrumb [aria-current="page"]')).toHaveText(locale === 'ar' ? 'طلباتي' : 'My requests');
+        await expect(app.locator('.hw-secondary-nav a[aria-current="page"]')).toHaveAttribute('href','#demo-page-requests');
+        await expect(app.locator('.hw-breadcrumb [aria-current="page"]')).toHaveText(locale === 'ar' ? 'طلباتي' : 'My requests');
       } else {
         const trigger = app.locator('[data-drawer-open]');
         if (id === 'mobile-top-bar') {
           await expect(trigger).toHaveAccessibleName(locale === 'ar' ? 'فتح قائمة التنقل' : 'Open navigation');
-          await expect(app.locator('.nq-mobile-top-bar-actions a')).toBeVisible();
+          await expect(app.locator('.hw-mobile-top-bar-actions a')).toBeVisible();
         }
         await trigger.press('Enter');
         const dialog = app.getByRole('dialog');
@@ -63,9 +63,9 @@ for (const [framework,language,locale] of projects) {
       }
       await expect(view).toHaveAttribute('data-page-view','requests');
       if (id === 'mobile-top-bar') {
-        const bar = app.locator('.nq-mobile-top-bar');
+        const bar = app.locator('.hw-mobile-top-bar');
         await expect(bar).toHaveAttribute('data-variant','internal');
-        await bar.locator('.nq-mobile-top-bar-actions a').press('Enter');
+        await bar.locator('.hw-mobile-top-bar-actions a').press('Enter');
         await expect(view).toHaveAttribute('data-page-view','overview');
         await expect(bar).toHaveAttribute('data-variant','main');
       }

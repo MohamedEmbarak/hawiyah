@@ -1,51 +1,51 @@
 /* NIC global.css 2439–2446, 2497–2527 and 2641–2649.
    Keep the native picker and draw its indicator independently of the focus line. */
-:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
-  --nq-profile-select-down: , url('./assets/select-down.svg');
-  --nq-profile-select-up: , url('./assets/select-up.svg');
-  --nq-profile-select-size: , 18px 18px;
-  --nq-profile-select-position-ltr: , right 10px center;
-  --nq-profile-select-position-rtl: , left 12px center;
-  --nq-profile-select-appearance: none;
-  --nq-profile-select-font: .875rem;
-  --nq-profile-select-padding-ltr: 35px;
-  --nq-profile-select-padding-rtl: 36px;
-  --nq-profile-helper-size: .625rem;
-  --nq-profile-error-size: .75rem;
-  --nq-profile-error-offset: -.25rem;
+:where(:root:not([data-hw-theme]), [data-hw-theme='dga'], [data-hw-theme='custom']) {
+  --hw-profile-select-down: , url('./assets/select-down.svg');
+  --hw-profile-select-up: , url('./assets/select-up.svg');
+  --hw-profile-select-size: , 18px 18px;
+  --hw-profile-select-position-ltr: , right 10px center;
+  --hw-profile-select-position-rtl: , left 12px center;
+  --hw-profile-select-appearance: none;
+  --hw-profile-select-font: .875rem;
+  --hw-profile-select-padding-ltr: 35px;
+  --hw-profile-select-padding-rtl: 36px;
+  --hw-profile-helper-size: .625rem;
+  --hw-profile-error-size: .75rem;
+  --hw-profile-error-offset: -.25rem;
 }
-:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
-  --nq-profile-select-down: initial;
-  --nq-profile-select-up: initial;
-  --nq-profile-select-size: initial;
-  --nq-profile-select-position-ltr: initial;
-  --nq-profile-select-position-rtl: initial;
-  --nq-profile-select-appearance: initial;
-  --nq-profile-select-font: initial;
-  --nq-profile-select-padding-ltr: initial;
-  --nq-profile-select-padding-rtl: initial;
-  --nq-profile-helper-size: initial;
-  --nq-profile-error-size: initial;
-  --nq-profile-error-offset: initial;
+:where([data-hw-theme]:not([data-hw-theme='dga'], [data-hw-theme='custom'])) {
+  --hw-profile-select-down: initial;
+  --hw-profile-select-up: initial;
+  --hw-profile-select-size: initial;
+  --hw-profile-select-position-ltr: initial;
+  --hw-profile-select-position-rtl: initial;
+  --hw-profile-select-appearance: initial;
+  --hw-profile-select-font: initial;
+  --hw-profile-select-padding-ltr: initial;
+  --hw-profile-select-padding-rtl: initial;
+  --hw-profile-helper-size: initial;
+  --hw-profile-error-size: initial;
+  --hw-profile-error-offset: initial;
 }
 @media (forced-colors: none) {
-  select.nq-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])) {
-    appearance: var(--nq-profile-select-appearance, auto);
-    --_nq-select-image: var(--nq-profile-select-down,);
-    --_nq-select-size: var(--nq-profile-select-size,);
-    --_nq-rtl-position: var(--_nq-rtl-only) var(--nq-profile-select-position-rtl,);
-    --_nq-select-position: var(--_nq-rtl-position, var(--nq-profile-select-position-ltr,));
-    --_nq-rtl-padding: var(--_nq-rtl-only) var(--nq-profile-select-padding-rtl, var(--nq-space-3));
-    --nq-profile-field-padding-end: var(--_nq-rtl-padding, var(--nq-profile-select-padding-ltr, var(--nq-space-3)));
-    font-size: var(--nq-profile-select-font, inherit);
+  select.hw-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])) {
+    appearance: var(--hw-profile-select-appearance, auto);
+    --_nq-select-image: var(--hw-profile-select-down,);
+    --_nq-select-size: var(--hw-profile-select-size,);
+    --_nq-rtl-position: var(--_nq-rtl-only) var(--hw-profile-select-position-rtl,);
+    --_nq-select-position: var(--_nq-rtl-position, var(--hw-profile-select-position-ltr,));
+    --_nq-rtl-padding: var(--_nq-rtl-only) var(--hw-profile-select-padding-rtl, var(--hw-space-3));
+    --hw-profile-field-padding-end: var(--_nq-rtl-padding, var(--hw-profile-select-padding-ltr, var(--hw-space-3)));
+    font-size: var(--hw-profile-select-font, inherit);
   }
-  select.nq-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])):focus { --_nq-select-image: var(--nq-profile-select-up,); }
+  select.hw-select:where(:not([multiple]):is(:not([size]), [size='0'], [size='1'])):focus { --_nq-select-image: var(--hw-profile-select-up,); }
 }
-.nq-field > .nq-hint { color: var(--nq-color-field-helper, var(--nq-color-text-muted)); font-size: var(--nq-profile-helper-size, var(--nq-text-sm)); }
-.nq-field > .nq-error {
-  color: var(--nq-color-field-error-text, var(--nq-color-danger));
-  font-size: var(--nq-profile-error-size, var(--nq-text-sm));
-  margin-block-start: var(--nq-profile-error-offset, 0);
+.hw-field > .hw-hint { color: var(--hw-color-field-helper, var(--hw-color-text-muted)); font-size: var(--hw-profile-helper-size, var(--hw-text-sm)); }
+.hw-field > .hw-error {
+  color: var(--hw-color-field-error-text, var(--hw-color-danger));
+  font-size: var(--hw-profile-error-size, var(--hw-text-sm));
+  margin-block-start: var(--hw-profile-error-offset, 0);
 }
 
-.nq-label > .nq-required-marker { color: var(--nq-color-danger); }
+.hw-label > .hw-required-marker { color: var(--hw-color-danger); }

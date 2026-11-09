@@ -26,7 +26,7 @@ jobs:
       - name: Build guide and component examples
         run: pnpm build:docs
         env:
-          NASAQ_BASE_PATH: /nasaq/
+          HAWIYAH_BASE_PATH: /hawiyah/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/playground/dist

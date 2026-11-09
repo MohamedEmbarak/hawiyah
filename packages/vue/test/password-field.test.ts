@@ -14,5 +14,5 @@ it('provides a decorative eye, readonly reveal, effective disabled guard and for
 });
 it('retains localized text as an explicit presentation option', async () => {
   const container=document.createElement('div'); document.body.append(container); const app=createApp(PasswordField,{label:'Password',toggleVariant:'text',showLabel:'إظهار',hideLabel:'إخفاء'});apps.push(app);app.mount(container);
-  const toggle=container.querySelector('button')!; expect(toggle.textContent).toBe('إظهار'); expect(toggle.querySelector('.nq-password-icon')).toBeNull(); toggle.click(); await nextTick(); expect(toggle.textContent).toBe('إخفاء');
+  const toggle=container.querySelector('button')!; expect(toggle.textContent).toBe('إظهار'); expect(toggle.querySelector('.hw-password-icon')).toBeNull(); toggle.click(); await nextTick(); expect(toggle.textContent).toBe('إخفاء');
 });

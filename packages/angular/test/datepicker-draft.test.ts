@@ -2,7 +2,7 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
-import { NqDatePickerComponent } from '@nasaq/angular';
+import { HwDatePickerComponent } from '@hawiyah/angular';
 
 beforeAll(() => {
   TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
@@ -11,7 +11,7 @@ beforeAll(() => {
 });
 afterEach(() => { TestBed.resetTestingModule(); document.body.replaceChildren(); });
 it('preserves canonical form values during invalid drafts and updates custom range validity and CVA resets', () => {
-  const fixture = TestBed.createComponent(NqDatePickerComponent); const form = document.createElement('form'); document.body.append(form); form.append(fixture.nativeElement);
+  const fixture = TestBed.createComponent(HwDatePickerComponent); const form = document.createElement('form'); document.body.append(form); form.append(fixture.nativeElement);
   for (const [name, value] of Object.entries({label: 'Date', name: 'date', required: true, value: '2026-10-15', min: '2026-10-01', max: '2026-10-31'})) fixture.componentRef.setInput(name, value);
   fixture.detectChanges(); const changed = vi.fn(); fixture.componentInstance.valueChange.subscribe(changed);
   const input = form.querySelector<HTMLInputElement>('input[type=text]')!;
@@ -26,7 +26,7 @@ it('preserves canonical form values during invalid drafts and updates custom ran
 });
 
 it('renders malformed external values as invalid drafts without passing them to the calendar model', () => {
-  const fixture = TestBed.createComponent(NqDatePickerComponent); fixture.componentRef.setInput('value', 'not-a-date'); fixture.detectChanges();
+  const fixture = TestBed.createComponent(HwDatePickerComponent); fixture.componentRef.setInput('value', 'not-a-date'); fixture.detectChanges();
   const input = fixture.nativeElement.querySelector('input[type=text]') as HTMLInputElement;
   expect(input.value).toBe('not-a-date'); expect(input.checkValidity()).toBe(false);
   expect((fixture.nativeElement.querySelector('input[type=hidden]') as HTMLInputElement).value).toBe('');

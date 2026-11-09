@@ -17,14 +17,14 @@ async function thumbGeometry(control: Locator) {
 
 for (const locale of ['ar', 'en'] as const) {
   test(`hero switches stay inside their tracks and update the preview in ${locale}`, async ({ page }) => {
-    await page.addInitScript(locale => localStorage.setItem('nasaq-locale', locale), locale);
+    await page.addInitScript(locale => localStorage.setItem('hawiyah-locale', locale), locale);
     await page.goto('/#overview');
     const corners = page.locator('[data-home-round]');
     const density = page.locator('[data-home-compact]');
     const card = page.locator('.home-request');
     const stage = page.locator('[data-home-stage]');
     for (const mode of ['light', 'dark']) {
-      await page.locator('html').evaluate((root, mode) => root.setAttribute('data-nq-mode', mode), mode);
+      await page.locator('html').evaluate((root, mode) => root.setAttribute('data-hw-mode', mode), mode);
       for (const control of [corners, density]) {
         const positions: number[] = [];
         for (const checked of [false, true]) {
@@ -44,10 +44,10 @@ for (const locale of ['ar', 'en'] as const) {
       await page.keyboard.press('Space');
       await expect(corners).not.toBeChecked();
       expect(await card.evaluate(el => parseFloat(getComputedStyle(el).borderTopLeftRadius))).toBeLessThan(roundedRadius);
-      await expect(stage).toHaveAttribute('data-nq-density', 'compact');
+      await expect(stage).toHaveAttribute('data-hw-density', 'compact');
       const compactPadding = await card.evaluate(el => parseFloat(getComputedStyle(el).paddingTop));
       await density.tap();
-      await expect(stage).toHaveAttribute('data-nq-density', 'comfortable');
+      await expect(stage).toHaveAttribute('data-hw-density', 'comfortable');
       expect(await card.evaluate(el => parseFloat(getComputedStyle(el).paddingTop))).toBeGreaterThan(compactPadding);
     }
     const project = page.locator('[name="preview-project"]');

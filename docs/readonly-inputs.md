@@ -22,13 +22,13 @@ duplicate hidden inputs to submit read-only values. Guards also check effective
 disabled state before accepting input events.
 
 The vanilla `createRangeSlider` retains its existing gesture guards and now
-synchronizes `aria-readonly` on both handles with `data-nq-readonly="true"` or
+synchronizes `aria-readonly` on both handles with `data-hw-readonly="true"` or
 `aria-readonly="true"` on the root. Changing either root attribute updates the
 handles; destruction restores the original handle attributes. A plain unenhanced
 `input[type="range"]` has no native read-only behavior: applications should use
 the supported adapter/controller when they need it.
 
-React and Angular now place the existing `nq-slider` class on the native range
+React and Angular now place the existing `hw-slider` class on the native range
 control, matching Vue and vanilla. The surrounding field retains intrinsic
 height, and the input receives the shared track, thumb and focus styles rather
 than text-field styling. Motion timing remains unchanged. Read-only choices must

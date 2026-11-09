@@ -1,11 +1,11 @@
 import { booleanAttribute, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, TemplateRef, ViewChild, ViewChildren, inject } from '@angular/core';
 import { observeAngularFieldPresence } from './field-presence';
 import { NgTemplateOutlet } from '@angular/common';
-import { getDirection, getNextEnabledIndex, getPaginationItems, normalizePaginationPage, normalizePaginationTotal, observeTabOverflow, type Direction, type Orientation } from '@nasaq/core';
+import { getDirection, getNextEnabledIndex, getPaginationItems, normalizePaginationPage, normalizePaginationTotal, observeTabOverflow, type Direction, type Orientation } from '@hawiyah/core';
 
 let nextId = 0;
-@Component({ selector: 'nq-tab', standalone: true, template: `<ng-template #content><ng-content /></ng-template>` })
-export class NqTabComponent {
+@Component({ selector: 'hw-tab', standalone: true, template: `<ng-template #content><ng-content /></ng-template>` })
+export class HwTabComponent {
   @Input({required: true}) value = '';
   @Input({required: true}) label = '';
   @Input({transform: booleanAttribute}) disabled = false;
@@ -15,13 +15,13 @@ export class NqTabComponent {
   ngOnChanges(): void {this.stateChanges.emit();}
 }
 
-@Component({ selector: 'nq-tabs', standalone: true, imports: [NgTemplateOutlet],
-  template: `<div class="nq-tabs"><div #tabBar class="nq-tab-bar" [attr.data-nq-overflow]="overflow" [attr.data-orientation]="orientation">
-  <div class="nq-tab-list" [attr.data-nq-overflow]="overflow" role="tablist" [attr.aria-label]="label" [attr.aria-orientation]="orientation" [attr.aria-hidden]="hiddenTabs.length === tabs?.length || null">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="nq-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [attr.data-nq-overflow-hidden]="hiddenTabs.includes(i) ? 'true' : null" [attr.aria-hidden]="hiddenTabs.includes(i) || null" [disabled]="tab.disabled" [tabIndex]="!hiddenTabs.includes(i) && focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>
-  <details #overflowDetails class="nq-tabs-overflow" [hidden]="!hiddenTabs.length" (keydown)="overflowKey($event)"><summary class="nq-tab-overflow-trigger" [attr.aria-label]="overflowLabel" [attr.data-active]="overflowActive || null">…</summary><div class="nq-tab-overflow-menu">@for (i of hiddenTabs; track i) {@if (tabs.get(i); as tab) {<button type="button" class="nq-tab-overflow-item" [attr.data-nq-overflow-value]="tab.value" [disabled]="tab.disabled" [attr.aria-pressed]="tab.value === activeValue" (click)="overflowSelect(tab.value)">{{ tab.label }}</button>}}</div></details>
-  </div>@for (tab of tabs; track tab.value; let i = $index) {<section class="nq-tab-panel" role="tabpanel" tabindex="0" [id]="panelId(i)" [attr.aria-labelledby]="tabId(i)" [hidden]="activeValue !== tab.value"><ng-container [ngTemplateOutlet]="tab.content" /></section>}<ng-content /></div>` })
-export class NqTabsComponent {
-  @Input() id = `nq-tabs-${++nextId}`;
+@Component({ selector: 'hw-tabs', standalone: true, imports: [NgTemplateOutlet],
+  template: `<div class="hw-tabs"><div #tabBar class="hw-tab-bar" [attr.data-hw-overflow]="overflow" [attr.data-orientation]="orientation">
+  <div class="hw-tab-list" [attr.data-hw-overflow]="overflow" role="tablist" [attr.aria-label]="label" [attr.aria-orientation]="orientation" [attr.aria-hidden]="hiddenTabs.length === tabs?.length || null">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="hw-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [attr.data-hw-overflow-hidden]="hiddenTabs.includes(i) ? 'true' : null" [attr.aria-hidden]="hiddenTabs.includes(i) || null" [disabled]="tab.disabled" [tabIndex]="!hiddenTabs.includes(i) && focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>
+  <details #overflowDetails class="hw-tabs-overflow" [hidden]="!hiddenTabs.length" (keydown)="overflowKey($event)"><summary class="hw-tab-overflow-trigger" [attr.aria-label]="overflowLabel" [attr.data-active]="overflowActive || null">…</summary><div class="hw-tab-overflow-menu">@for (i of hiddenTabs; track i) {@if (tabs.get(i); as tab) {<button type="button" class="hw-tab-overflow-item" [attr.data-hw-overflow-value]="tab.value" [disabled]="tab.disabled" [attr.aria-pressed]="tab.value === activeValue" (click)="overflowSelect(tab.value)">{{ tab.label }}</button>}}</div></details>
+  </div>@for (tab of tabs; track tab.value; let i = $index) {<section class="hw-tab-panel" role="tabpanel" tabindex="0" [id]="panelId(i)" [attr.aria-labelledby]="tabId(i)" [hidden]="activeValue !== tab.value"><ng-container [ngTemplateOutlet]="tab.content" /></section>}<ng-content /></div>` })
+export class HwTabsComponent {
+  @Input() id = `hw-tabs-${++nextId}`;
   @Input({required: true}) label = '';
   @Input() value = '';
   @Input() orientation: Orientation = 'horizontal';
@@ -30,7 +30,7 @@ export class NqTabsComponent {
   @Input() overflow: 'menu' | 'scroll' = 'menu';
   @Input() overflowLabel = 'المزيد من التبويبات';
   @Output() readonly valueChange = new EventEmitter<string>();
-  @ContentChildren(NqTabComponent) tabs!: QueryList<NqTabComponent>;
+  @ContentChildren(HwTabComponent) tabs!: QueryList<HwTabComponent>;
   @ViewChildren('tabButton') buttons!: QueryList<ElementRef<HTMLButtonElement>>;
   @ViewChild('tabBar') tabBar?: ElementRef<HTMLElement>;
   @ViewChild('overflowDetails') overflowDetails?: ElementRef<HTMLDetailsElement>;
@@ -59,7 +59,7 @@ export class NqTabsComponent {
     const node = this.tabBar!.nativeElement;
     this.overflowObserver = observeTabOverflow({container: node, tabs: () => this.buttons.toArray().map(button => button.nativeElement), enabled: () => this.overflow === 'menu' && this.orientation === 'horizontal', onChange: next => {
       const focusedElement = node.ownerDocument.activeElement;
-      const menuValue = (focusedElement as HTMLElement | null)?.dataset.nqOverflowValue;
+      const menuValue = (focusedElement as HTMLElement | null)?.dataset.hwOverflowValue;
       const itemIndex = this.tabs.toArray().findIndex(tab => tab.value === menuValue);
       if (menuValue !== undefined && itemIndex >= 0 && next.includes(itemIndex)) this.pendingFocus = {kind:'menu',value:menuValue};
       else {
@@ -78,8 +78,8 @@ export class NqTabsComponent {
     const destination = this.pendingFocus; this.pendingFocus = undefined;
     if (destination?.kind === 'summary') this.overflowDetails?.nativeElement.querySelector('summary')?.focus();
     else if (destination?.kind === 'tab') this.buttons?.get(this.tabs.toArray().findIndex(tab => tab.value === (destination.value ?? this.focusValue)))?.nativeElement.focus();
-    else if (destination?.kind === 'menu') [...(this.overflowDetails?.nativeElement.querySelectorAll<HTMLElement>('[data-nq-overflow-value]') ?? [])].find(button => button.dataset.nqOverflowValue === destination.value)?.focus();
-    else {const focusedElement = this.host.nativeElement.ownerDocument.activeElement; if (focusedElement?.getAttribute('data-nq-overflow-hidden') === 'true' && this.tabBar?.nativeElement.contains(focusedElement)) this.overflowDetails?.nativeElement.querySelector('summary')?.focus();}
+    else if (destination?.kind === 'menu') [...(this.overflowDetails?.nativeElement.querySelectorAll<HTMLElement>('[data-hw-overflow-value]') ?? [])].find(button => button.dataset.hwOverflowValue === destination.value)?.focus();
+    else {const focusedElement = this.host.nativeElement.ownerDocument.activeElement; if (focusedElement?.getAttribute('data-hw-overflow-hidden') === 'true' && this.tabBar?.nativeElement.contains(focusedElement)) this.overflowDetails?.nativeElement.querySelector('summary')?.focus();}
   }
   ngOnDestroy(): void {this.overflowObserver?.destroy();this.tabsSubscription?.unsubscribe();this.tabSubscriptions.forEach(subscription => subscription.unsubscribe()); this.host.nativeElement.ownerDocument.removeEventListener('click', this.outside);}
   closeOverflow(): void {if (this.overflowDetails) this.overflowDetails.nativeElement.open = false;}
@@ -100,26 +100,26 @@ export class NqTabsComponent {
   }
 }
 
-export interface NqBreadcrumbItem { label: string; href?: string; disabled?: boolean }
-@Component({ selector: 'nq-breadcrumb', standalone: true, template: `<nav class="nq-breadcrumb" [attr.aria-label]="label"><ol>@for (item of items; track $index; let last = $last) {<li>@if (item.href && !item.disabled && !last) {<a [href]="item.href">{{ item.label }}</a>} @else {<span [attr.role]="item.disabled ? 'link' : null" [attr.aria-disabled]="item.disabled || null" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>}</li>}</ol></nav>` })
-export class NqBreadcrumbComponent {
+export interface HwBreadcrumbItem { label: string; href?: string; disabled?: boolean }
+@Component({ selector: 'hw-breadcrumb', standalone: true, template: `<nav class="hw-breadcrumb" [attr.aria-label]="label"><ol>@for (item of items; track $index; let last = $last) {<li>@if (item.href && !item.disabled && !last) {<a [href]="item.href">{{ item.label }}</a>} @else {<span [attr.role]="item.disabled ? 'link' : null" [attr.aria-disabled]="item.disabled || null" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>}</li>}</ol></nav>` })
+export class HwBreadcrumbComponent {
   @Input() label = 'مسار التنقل';
-  @Input() items: readonly NqBreadcrumbItem[] = [];
+  @Input() items: readonly HwBreadcrumbItem[] = [];
 }
 
-@Component({ selector: 'nq-pagination', standalone: true, template: `<nav #root class="nq-pagination" [attr.aria-label]="label" [attr.data-disabled]="disabled || null" [hidden]="hideOnSinglePage && total === 1" (keydown)="key($event)" (click)="guardClick($event)">
-<button class="nq-button nq-pagination-arrow" data-variant="ghost" data-nq-previous type="button" [attr.aria-label]="previousLabel" [disabled]="disabled || current === 1" (click)="select(current - 1)"></button>
+@Component({ selector: 'hw-pagination', standalone: true, template: `<nav #root class="hw-pagination" [attr.aria-label]="label" [attr.data-disabled]="disabled || null" [hidden]="hideOnSinglePage && total === 1" (keydown)="key($event)" (click)="guardClick($event)">
+<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous type="button" [attr.aria-label]="previousLabel" [disabled]="disabled || current === 1" (click)="select(current - 1)"></button>
 @for (item of entries; track item.page || -item.start) {
-  @if (item.page) {<button class="nq-button nq-pagination-item" data-variant="ghost" [attr.data-nq-page]="item.page" type="button" [disabled]="disabled" [attr.aria-current]="item.page === current ? 'page' : null" [attr.aria-label]="pageLabel(item.page)" (click)="select(item.page)">{{ formatPage(item.page) }}</button>}
-  @else if (disabled) {<span class="nq-pagination-ellipsis" aria-hidden="true">…</span>}
-  @else {<details class="nq-pagination-gap" (toggle)="toggled($event)"><summary class="nq-pagination-gap-trigger" [attr.aria-label]="gapLabel(item.start, item.end)">…</summary><div class="nq-pagination-menu">
-    @if (item.end - item.start < 100) {@for (number of gapPages(item); track number) {<button class="nq-button nq-pagination-item" data-variant="ghost" [attr.data-nq-page]="number" type="button" [attr.aria-label]="pageLabel(number)" (click)="gapSelect($event, number)">{{ formatPage(number) }}</button>}}
-    @else {<div #jumpGroup class="nq-pagination-jump" (keydown.enter)="jumpKey($event, jumpGroup, item)"><label class="nq-label">{{ jumpLabel }}<input class="nq-input" data-nq-jump-input data-nq-filled="true" form="" type="number" inputmode="numeric" required [min]="item.start" [max]="item.end" step="1" [value]="item.start" (input)="jumpInput($event)"></label><button type="button" class="nq-button" data-nq-jump-submit (click)="jump(jumpGroup, item)">{{ goLabel }}</button></div>}
+  @if (item.page) {<button class="hw-button hw-pagination-item" data-variant="ghost" [attr.data-hw-page]="item.page" type="button" [disabled]="disabled" [attr.aria-current]="item.page === current ? 'page' : null" [attr.aria-label]="pageLabel(item.page)" (click)="select(item.page)">{{ formatPage(item.page) }}</button>}
+  @else if (disabled) {<span class="hw-pagination-ellipsis" aria-hidden="true">…</span>}
+  @else {<details class="hw-pagination-gap" (toggle)="toggled($event)"><summary class="hw-pagination-gap-trigger" [attr.aria-label]="gapLabel(item.start, item.end)">…</summary><div class="hw-pagination-menu">
+    @if (item.end - item.start < 100) {@for (number of gapPages(item); track number) {<button class="hw-button hw-pagination-item" data-variant="ghost" [attr.data-hw-page]="number" type="button" [attr.aria-label]="pageLabel(number)" (click)="gapSelect($event, number)">{{ formatPage(number) }}</button>}}
+    @else {<div #jumpGroup class="hw-pagination-jump" (keydown.enter)="jumpKey($event, jumpGroup, item)"><label class="hw-label">{{ jumpLabel }}<input class="hw-input" data-hw-jump-input data-hw-filled="true" form="" type="number" inputmode="numeric" required [min]="item.start" [max]="item.end" step="1" [value]="item.start" (input)="jumpInput($event)"></label><button type="button" class="hw-button" data-hw-jump-submit (click)="jump(jumpGroup, item)">{{ goLabel }}</button></div>}
   </div></details>}
 }
-<button class="nq-button nq-pagination-arrow" data-variant="ghost" data-nq-next type="button" [attr.aria-label]="nextLabel" [disabled]="disabled || current === total" (click)="select(current + 1)"></button>
+<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next type="button" [attr.aria-label]="nextLabel" [disabled]="disabled || current === total" (click)="select(current + 1)"></button>
 </nav>` })
-export class NqPaginationComponent {
+export class HwPaginationComponent {
   constructor() { observeAngularFieldPresence(); }
   @Input() label = 'ترقيم الصفحات';
   @Input() page = 1;
@@ -144,11 +144,11 @@ export class NqPaginationComponent {
   get entries() { return getPaginationItems(this.current, this.total, this.siblingCount).map(item => typeof item === 'number' ? {page: item, start: 0, end: 0} : {page: 0, ...item}); }
   get pages(): number[] { return this.entries.map(item => item.page); }
   gapPages(item: {start: number; end: number}): number[] { return item.end - item.start < 100 ? Array.from({length: item.end - item.start + 1}, (_, index) => item.start + index) : []; }
-  private close(except?: HTMLDetailsElement) { this.root?.nativeElement.querySelectorAll<HTMLDetailsElement>('.nq-pagination-gap[open]').forEach(details => {if(details !== except) details.open = false;}); }
-  private blocked() { return this.disabled || !!this.root?.nativeElement.querySelector<HTMLButtonElement>(':scope > [data-nq-page]')?.matches(':disabled'); }
+  private close(except?: HTMLDetailsElement) { this.root?.nativeElement.querySelectorAll<HTMLDetailsElement>('.hw-pagination-gap[open]').forEach(details => {if(details !== except) details.open = false;}); }
+  private blocked() { return this.disabled || !!this.root?.nativeElement.querySelector<HTMLButtonElement>(':scope > [data-hw-page]')?.matches(':disabled'); }
   private syncInherited() {
     const unavailable=this.blocked();
-    this.root?.nativeElement.querySelectorAll<HTMLElement>('.nq-pagination-gap > summary').forEach(summary => {
+    this.root?.nativeElement.querySelectorAll<HTMLElement>('.hw-pagination-gap > summary').forEach(summary => {
       if(unavailable) {summary.setAttribute('aria-disabled','true');summary.tabIndex=-1;}
       else {summary.removeAttribute('aria-disabled');summary.removeAttribute('tabindex');}
     });
@@ -170,7 +170,7 @@ export class NqPaginationComponent {
   key(event: KeyboardEvent) {
     if(this.blocked() && ['Enter',' '].includes(event.key)) {event.preventDefault();this.syncInherited();return;}
     if(event.defaultPrevented || event.key !== 'Escape') return;
-    const details = (event.target as HTMLElement).closest<HTMLDetailsElement>('.nq-pagination-gap[open]');
+    const details = (event.target as HTMLElement).closest<HTMLDetailsElement>('.hw-pagination-gap[open]');
     if(details) {event.preventDefault(); details.open = false; details.querySelector<HTMLElement>('summary')?.focus();}
   }
   select(page: number, gap?: HTMLDetailsElement | null): void {
@@ -183,19 +183,19 @@ export class NqPaginationComponent {
   jump(node: HTMLElement, item: {start: number; end: number}) {
     const input = node.querySelector<HTMLInputElement>('input');
     if(!input || this.blocked())return;
-    input.dataset.nqJumpTouched='true';
+    input.dataset.hwJumpTouched='true';
     if(input.checkValidity() && Number.isInteger(input.valueAsNumber) && input.valueAsNumber >= item.start && input.valueAsNumber <= item.end) {input.removeAttribute('aria-invalid');this.select(input.valueAsNumber, node.closest('details'));}
     else {input.setAttribute('aria-invalid','true');input.reportValidity();}
   }
-  jumpInput(event: Event) {const input=event.currentTarget as HTMLInputElement;if(input.dataset.nqJumpTouched==='true'){if(input.checkValidity())input.removeAttribute('aria-invalid');else input.setAttribute('aria-invalid','true');}}
+  jumpInput(event: Event) {const input=event.currentTarget as HTMLInputElement;if(input.dataset.hwJumpTouched==='true'){if(input.checkValidity())input.removeAttribute('aria-invalid');else input.setAttribute('aria-invalid','true');}}
   jumpKey(event: Event, node: HTMLElement, item: {start: number; end: number}) { event.preventDefault(); this.jump(node, item); }
 }
 
-export interface NqStep { label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
-@Component({ selector: 'nq-stepper', standalone: true, template: `<ol class="nq-stepper" [attr.aria-label]="label">@for (step of steps; track $index; let i = $index) {<li class="nq-step" [attr.aria-current]="state(i) === 'current' ? 'step' : null" [attr.data-state]="state(i)"><span>{{ step.label }}@if (step.description) {<small class="nq-hint">{{ step.description }}</small>}</span></li>}</ol>` })
-export class NqStepperComponent {
+export interface HwStep { label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
+@Component({ selector: 'hw-stepper', standalone: true, template: `<ol class="hw-stepper" [attr.aria-label]="label">@for (step of steps; track $index; let i = $index) {<li class="hw-step" [attr.aria-current]="state(i) === 'current' ? 'step' : null" [attr.data-state]="state(i)"><span>{{ step.label }}@if (step.description) {<small class="hw-hint">{{ step.description }}</small>}</span></li>}</ol>` })
+export class HwStepperComponent {
   @Input() label = 'التقدم';
-  @Input() steps: readonly NqStep[] = [];
+  @Input() steps: readonly HwStep[] = [];
   /** Zero-based current step. This is a progress indicator, not navigation. */
   @Input() current = 0;
   /** Overrides current. -1 means not started; steps.length means complete. */

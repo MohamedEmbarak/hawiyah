@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { NqTagInputComponent } from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import { HwTagInputComponent } from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createApp, h, nextTick } from 'vue';
@@ -23,22 +23,22 @@ async function mount(adapter: string) {
   let reset: () => void;
   if (adapter === 'react') {
     const root = createRoot(host); run = async action => { await act(action); };
-    await run(() => root.render(createElement('form', {}, createElement('fieldset', {}, createElement(ReactTags, { label: 'الوسوم', name: 'tags', required: true, defaultValue: ['نسق'] })))));
+    await run(() => root.render(createElement('form', {}, createElement('fieldset', {}, createElement(ReactTags, { label: 'الوسوم', name: 'tags', required: true, defaultValue: ['هوية'] })))));
     disposers.push(async () => { await act(() => root.unmount()); });
   } else if (adapter === 'vue') {
-    const app = createApp({ render: () => h('form', [h('fieldset', [h(VueTags, { label: 'الوسوم', name: 'tags', required: true, defaultValue: ['نسق'] })])]) });
+    const app = createApp({ render: () => h('form', [h('fieldset', [h(VueTags, { label: 'الوسوم', name: 'tags', required: true, defaultValue: ['هوية'] })])]) });
     app.mount(host); run = async action => { action(); await nextTick(); await nextTick(); }; disposers.push(() => app.unmount());
   } else if (adapter === 'angular') {
-    class Host { tags = new FormControl(['نسق'], { nonNullable: true }); }
-    Component({ standalone: true, imports: [ReactiveFormsModule, NqTagInputComponent], template: '<form><fieldset><nq-tag-input label="الوسوم" name="tags" required [formControl]="tags" /></fieldset></form>' })(Host);
+    class Host { tags = new FormControl(['هوية'], { nonNullable: true }); }
+    Component({ standalone: true, imports: [ReactiveFormsModule, HwTagInputComponent], template: '<form><fieldset><hw-tag-input label="الوسوم" name="tags" required [formControl]="tags" /></fieldset></form>' })(Host);
     const fixture = TestBed.createComponent(Host); host.append(fixture.nativeElement); fixture.detectChanges();
     run = async action => { action(); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges(); };
     reset = () => fixture.componentInstance.tags.reset(); disposers.push(() => fixture.destroy());
   } else {
-    host.innerHTML = '<form><fieldset><div class="nq-tag-input" data-nq-value=\'["نسق"]\' data-nq-name="tags"><label>الوسوم<input type="text" required data-nq-tag-input></label><div data-nq-tags></div></div></fieldset></form>';
-    const controller = createTagInput(host.querySelector('.nq-tag-input')!); disposers.push(() => controller.destroy());
+    host.innerHTML = '<form><fieldset><div class="hw-tag-input" data-hw-value=\'["هوية"]\' data-hw-name="tags"><label>الوسوم<input type="text" required data-hw-tag-input></label><div data-hw-tags></div></div></fieldset></form>';
+    const controller = createTagInput(host.querySelector('.hw-tag-input')!); disposers.push(() => controller.destroy());
   }
-  const form = host.querySelector('form')!; const input = host.querySelector<HTMLInputElement>('.nq-tag-input input:not([type=hidden])')!;
+  const form = host.querySelector('form')!; const input = host.querySelector<HTMLInputElement>('.hw-tag-input input:not([type=hidden])')!;
   return { host, input, form, run, reset: () => reset ? reset() : form.reset(), values: () => new FormData(form).getAll('tags') };
 }
 
@@ -47,17 +47,17 @@ for (const adapter of ['vanilla', 'react', 'vue', 'angular']) it(`${adapter}: ta
   const edit = (value: string) => run(() => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value); input.dispatchEvent(new Event('input', { bubbles: true })); });
   const key = async (key: string, extra: KeyboardEventInit = {}) => { const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...extra }); await run(() => input.dispatchEvent(event)); return event; };
   await edit('بحث'); await run(() => input.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true })));
-  expect((await key('Enter')).defaultPrevented).toBe(false); expect(values()).toEqual(['نسق']);
+  expect((await key('Enter')).defaultPrevented).toBe(false); expect(values()).toEqual(['هوية']);
   await run(() => input.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true })));
-  for (const modifier of ['ctrlKey', 'altKey', 'metaKey']) { expect((await key('Enter', { [modifier]: true })).defaultPrevented).toBe(false); expect(values()).toEqual(['نسق']); }
-  expect((await key('Enter')).defaultPrevented).toBe(true); expect(values()).toEqual(['نسق', 'بحث']); expect(input.value).toBe('');
+  for (const modifier of ['ctrlKey', 'altKey', 'metaKey']) { expect((await key('Enter', { [modifier]: true })).defaultPrevented).toBe(false); expect(values()).toEqual(['هوية']); }
+  expect((await key('Enter')).defaultPrevented).toBe(true); expect(values()).toEqual(['هوية', 'بحث']); expect(input.value).toBe('');
   expect((await key('Enter')).defaultPrevented).toBe(false);
   await key('Backspace', { ctrlKey: true }); expect(values()).toHaveLength(2);
-  expect((await key('Backspace')).defaultPrevented).toBe(true); expect(values()).toEqual(['نسق']);
-  const remove = host.querySelector<HTMLButtonElement>('.nq-chip button')!;
+  expect((await key('Backspace')).defaultPrevented).toBe(true); expect(values()).toEqual(['هوية']);
+  const remove = host.querySelector<HTMLButtonElement>('.hw-chip button')!;
   await run(() => { remove.focus(); remove.click(); }); expect(document.activeElement).toBe(input); expect(form.checkValidity()).toBe(false);
-  await edit('uncommitted'); await run(reset); expect(values()).toEqual(['نسق']); expect(input.value).toBe(''); expect(form.checkValidity()).toBe(true);
+  await edit('uncommitted'); await run(reset); expect(values()).toEqual(['هوية']); expect(input.value).toBe(''); expect(form.checkValidity()).toBe(true);
   await edit('blocked'); host.querySelector('fieldset')!.disabled = true;
   expect((await key('Enter')).defaultPrevented).toBe(false);
-  host.querySelector('fieldset')!.disabled = false; expect(values()).toEqual(['نسق']);
+  host.querySelector('fieldset')!.disabled = false; expect(values()).toEqual(['هوية']);
 });

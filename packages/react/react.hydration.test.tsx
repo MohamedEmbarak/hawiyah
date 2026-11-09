@@ -12,7 +12,7 @@ function HydratedApplication() {
   return <main>
     <form>
       <Field label="Reference" hint="Keep your reference number">
-        <TextField name="reference" defaultValue="NQ-1024" />
+        <TextField name="reference" defaultValue="HW-1024" />
       </Field>
       <Combobox label="City" name="city" required value={city} onValueChange={setCity} options={[
         { value: 'riyadh', label: 'الرياض' },
@@ -32,7 +32,7 @@ function HydratedApplication() {
 it('hydrates generated associations without recovery or node replacement and retains keyboard behavior', async () => {
   const container = document.createElement('div');
   document.body.append(container);
-  const identifierPrefix = 'nasaq-hydration-';
+  const identifierPrefix = 'hawiyah-hydration-';
   const recoverableError = vi.fn();
   const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   let root: Root | undefined;

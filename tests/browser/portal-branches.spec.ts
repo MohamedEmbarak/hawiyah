@@ -12,22 +12,22 @@ for (const [framework, language, locale] of combinations) {
   test(`grouped PortalHeader works at desktop and mobile widths in ${framework} ${language} ${locale}`, async ({page}) => {
     test.setTimeout(150000);
     await page.setViewportSize({width: 1500, height: 960});
-    await page.addInitScript(lang => {if (window === window.top) localStorage.setItem('nasaq-locale', lang);}, locale);
+    await page.addInitScript(lang => {if (window === window.top) localStorage.setItem('hawiyah-locale', lang);}, locale);
     await page.goto('/#component/portal-header');
     await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);
     if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-    await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 45000});
-    const frame = page.frameLocator('.nq-ide-frame');
-    const header = frame.locator('.nq-portal-header').first();
+    await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 45000});
+    const frame = page.frameLocator('.hw-ide-frame');
+    const header = frame.locator('.hw-portal-header').first();
     await expect(header).toBeVisible();
-    const toggle = header.locator('.nq-portal-menu-toggle');
-    const nav = header.locator('nav:has(.nq-portal-branch)');
-    const branches = nav.locator('details[data-nq-portal-branch]');
+    const toggle = header.locator('.hw-portal-menu-toggle');
+    const nav = header.locator('nav:has(.hw-portal-branch)');
+    const branches = nav.locator('details[data-hw-portal-branch]');
     const first = branches.first(), second = branches.nth(1);
     const summary = first.locator(':scope > summary'), secondSummary = second.locator(':scope > summary');
-    const panel = first.locator('.nq-portal-branch-panel');
-    const overview = panel.locator(':scope > .nq-portal-branch-overview');
+    const panel = first.locator('.hw-portal-branch-panel');
+    const overview = panel.locator(':scope > .hw-portal-branch-overview');
     const direct = nav.locator(':scope > ul > li > a').first();
 
     await frameWidth(page, header, 1100);
@@ -41,7 +41,7 @@ for (const [framework, language, locale] of combinations) {
     await expect(panel).toBeVisible();
     await expect(panel).toHaveCSS('position', 'absolute');
     await expect(overview).toHaveAttribute('href', /.+/);
-    await expect(panel.locator('.nq-portal-branch-group a[aria-current="page"]')).toHaveCount(1);
+    await expect(panel.locator('.hw-portal-branch-group a[aria-current="page"]')).toHaveCount(1);
     const size = await panel.evaluate(element => {
       const rect = element.getBoundingClientRect();
       return {left: rect.left, right: rect.right, viewport: element.ownerDocument.documentElement.clientWidth};
@@ -49,10 +49,10 @@ for (const [framework, language, locale] of combinations) {
     expect(size.left).toBeGreaterThanOrEqual(-1); expect(size.right).toBeLessThanOrEqual(size.viewport + 1);
     await secondSummary.press('Space');
     await expect(panel).toBeHidden();
-    await expect(second.locator('.nq-portal-branch-panel')).toBeVisible();
+    await expect(second.locator('.hw-portal-branch-panel')).toBeVisible();
     await second.locator('a').first().press('Escape');
     await expect(secondSummary).toBeFocused();
-    await expect(second.locator('.nq-portal-branch-panel')).toBeHidden();
+    await expect(second.locator('.hw-portal-branch-panel')).toBeHidden();
 
     await frameWidth(page, header, 390);
     await expect(toggle).toBeVisible();
@@ -82,7 +82,7 @@ for (const [framework, language, locale] of combinations) {
     expect(await summary.evaluate(node => getComputedStyle(node, '::after').transitionDuration)).toBe('0s');
     expect(await summary.evaluate(node => getComputedStyle(node).outlineStyle)).not.toBe('none');
     await expect(page).toHaveURL(/#component\/portal-header$/);
-    await expect(page.locator('.nq-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
+    await expect(page.locator('.hw-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
   });
 }
 
@@ -91,8 +91,8 @@ test('catalog header keeps its open panel and links reachable in a narrow card',
   await page.setViewportSize({width: 1400, height: 920});
   await page.goto('/#components', {waitUntil: 'domcontentloaded'});
   const card = page.locator('.component-card').filter({has: page.locator('.component-card-title a[href="#component/portal-header"]')});
-  const first = card.locator('details[data-nq-portal-branch]').first();
-  const summary = first.locator('summary'), panel = first.locator('.nq-portal-branch-panel');
+  const first = card.locator('details[data-hw-portal-branch]').first();
+  const summary = first.locator('summary'), panel = first.locator('.hw-portal-branch-panel');
   await summary.scrollIntoViewIfNeeded();
   await summary.press('Enter');
   await expect(panel).toBeVisible();

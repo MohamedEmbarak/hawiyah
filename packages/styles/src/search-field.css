@@ -1,11 +1,11 @@
 /* A single named clear action, inset within the native search field. */
-.nq-search-control, .nq-search-control.nq-search-field { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); flex: 1; min-inline-size: 0; inline-size: 100%; }
-.nq-search-control > .nq-input { inline-size: 100%; min-inline-size: 0; padding-inline-end: 3rem; border-radius: var(--nq-radius-md); }
-.nq-search-control > input[type='search']::-webkit-search-cancel-button { display: none; -webkit-appearance: none; }
-.nq-search-control > .nq-search-clear { position: absolute; inset-inline-end: 0.125rem; inset-block: 0.125rem; inline-size: 2.5rem; min-block-size: 0; padding: 0; margin: 0; border: 0; border-radius: var(--nq-radius-sm); background: transparent; color: var(--nq-color-text-muted); box-shadow: none; }
-.nq-search-control > .nq-search-clear:hover:not(:disabled) { color: var(--nq-color-text); background: var(--nq-color-surface-muted); }
-.nq-search-control > .nq-search-clear:focus-visible { outline-offset: -3px; }
-.nq-search-control > .nq-search-clear { z-index: 1; }
-.nq-search-control > .nq-search-clear[hidden] { display: none; }
-.nq-search-clear-icon { display: inline-block; inline-size: 1.25rem; block-size: 1.25rem; background: currentColor; -webkit-mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat; mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat; }
-@media (forced-colors: active) { .nq-search-clear-icon { forced-color-adjust: none; background: ButtonText; } .nq-search-clear:disabled .nq-search-clear-icon { background: GrayText; } }
+.hw-search-control, .hw-search-control.hw-search-field { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); flex: 1; min-inline-size: 0; inline-size: 100%; }
+.hw-search-control > .hw-input { inline-size: 100%; min-inline-size: 0; padding-inline-end: 3rem; border-radius: var(--hw-radius-md); }
+.hw-search-control > input[type='search']::-webkit-search-cancel-button { display: none; -webkit-appearance: none; }
+.hw-search-control > .hw-search-clear { position: absolute; inset-inline-end: 0.125rem; inset-block: 0.125rem; inline-size: 2.5rem; min-block-size: 0; padding: 0; margin: 0; border: 0; border-radius: var(--hw-radius-sm); background: transparent; color: var(--hw-color-text-muted); box-shadow: none; }
+.hw-search-control > .hw-search-clear:hover:not(:disabled) { color: var(--hw-color-text); background: var(--hw-color-surface-muted); }
+.hw-search-control > .hw-search-clear:focus-visible { outline-offset: -3px; }
+.hw-search-control > .hw-search-clear { z-index: 1; }
+.hw-search-control > .hw-search-clear[hidden] { display: none; }
+.hw-search-clear-icon { display: inline-block; inline-size: 1.25rem; block-size: 1.25rem; background: currentColor; -webkit-mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat; mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat; }
+@media (forced-colors: active) { .hw-search-clear-icon { forced-color-adjust: none; background: ButtonText; } .hw-search-clear:disabled .hw-search-clear-icon { background: GrayText; } }

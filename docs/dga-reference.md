@@ -7,17 +7,17 @@ track implementation separately. The Figma evidence below remains the
 foundation and mobile/template reference; it is not silently reclassified as
 evidence for the newer web-source mappings.
 
-Nasaq uses a DGA-based foundation by default, with `data-nq-theme="dga"` as the explicit selector. The original teal and ivory Woven Rhythm theme remains available through `data-nq-theme="nasaq"`. Both use the same `nq-` component classes, `--nq-` variables, native framework adapters, and interaction contracts.
+Hawiyah uses a DGA-based foundation by default, with `data-hw-theme="dga"` as the explicit selector. The original teal and ivory Signature theme remains available through `data-hw-theme="hawiyah"`. Both use the same `hw-` component classes, `--hw-` variables, native framework adapters, and interaction contracts.
 
-The reference is a set of supplied **Platforms Code Community Figma exports dated 2026-10-29**. That is a snapshot/export date, **not an official DGA release number**, and it does not establish that these files are the latest official guidance. Nasaq is an independent implementation; source correspondence does not mean official endorsement, certification, or complete DGA compliance. See [the alignment record](alignment.md) for the distinction between requirements, recommendations, and Nasaq choices.
+The reference is a set of supplied **Platforms Code Community Figma exports dated 2026-10-29**. That is a snapshot/export date, **not an official DGA release number**, and it does not establish that these files are the latest official guidance. Hawiyah is an independent implementation; source correspondence does not mean official endorsement, certification, or complete DGA compliance. See [the alignment record](alignment.md) for the distinction between requirements, recommendations, and Hawiyah choices.
 
 ## What was inspected
 
 All **23 supplied local files** have now been decoded, including the six that exceeded the earlier remote environment's 32 MiB transfer limit. The [source inventory](dga-source-inventory.md) records filenames, byte sizes, hashes, export timestamps and serialization versions. The [audit follow-up](dga-audit-followup.md) separates decoded evidence, limited native Figma observations, implementation work and remaining gaps. This is not an exhaustive visual comparison or prototype playback audit.
 
 - Foundations; Service Page; Form; Life Journeys; Contact Us; Feedback Section; Help & Support; FAQ; Site Map; Page Not Found; Rating Section; Chatbot; Content Page; Cookies Banner; e-Participation; About The Entity; Saudi National Day.
-- The six previously transfer-blocked files were decoded locally: Icons, Saudi Founding Day, Home Page Template, Hajj Template, Mobile Components and Search Page Template. **Hajj is application-specific and excluded from Nasaq implementation scope and backlog**; its inclusion in the inventory records supplied material only.
-- No standalone web Components Library was supplied. Components embedded in templates do not establish exhaustive official component coverage. Nasaq's 81-entry catalog is its own implementation inventory.
+- The six previously transfer-blocked files were decoded locally: Icons, Saudi Founding Day, Home Page Template, Hajj Template, Mobile Components and Search Page Template. **Hajj is application-specific and excluded from Hawiyah implementation scope and backlog**; its inclusion in the inventory records supplied material only.
+- No standalone web Components Library was supplied. Components embedded in templates do not establish exhaustive official component coverage. Hawiyah's 81-entry catalog is its own implementation inventory.
 
 The decoded Foundations file contains **784 resolved active local variables** across Containers, Primitives, Radius, Themes, Widths, Spacing, and Typography. All **40 selected variables** in the public reference match the decoded node/mode/value evidence. Imported component/library caches contain multiple versions. The local collections form the foundation reference; imported components require exact source identity and mode mapping before their styles can be treated as part of the same baseline.
 
@@ -52,13 +52,13 @@ Use a value according to its role. A primary text token, a link token, and a fil
 
 These are source values, not a claim that every possible foreground/background pairing meets the accessibility target. An implementation may need an explicitly documented adaptation for its actual surface and state. Keep source correspondence and contrast results separate; do not silently relabel an adjusted value as the original.
 
-The public [foundation reference](../packages/tokens/reference/dga-foundations.json) contains the selected variables and adaptations. Color entries in [tokens.json](../packages/tokens/tokens.json) carry source nodes/names in `$extensions.org.nasaq.dga`; [DGA component styles](../packages/styles/src/dga.css) record relevant template nodes. One deliberate adaptation uses Neutral 600 for shared subtle text in light mode because that role is also used on muted surfaces. The field-placeholder role retains its original semantic value. The source resting field-border token remains `#9DA4AE` in light mode; rendered input borders use the stronger control-border value `#6C737F` for contrast. DGA fields use an animated bottom line that uses a dark neutral while empty or not yet valid, turns green for nonempty valid values including prefilled values, and turns red after user-invalid editing or an explicit application error. There is no additional outer outline. This underline color is an intentional adaptation from the source’s neutral pressed-field color. Read-only fields, legacy-theme fields and forced-colors mode retain a single inset keyboard indicator. These are documented implementation adaptations, not unchanged source values.
+The public [foundation reference](../packages/tokens/reference/dga-foundations.json) contains the selected variables and adaptations. Color entries in [tokens.json](../packages/tokens/tokens.json) carry source nodes/names in `$extensions.org.hawiyah.dga`; [DGA component styles](../packages/styles/src/dga.css) record relevant template nodes. One deliberate adaptation uses Neutral 600 for shared subtle text in light mode because that role is also used on muted surfaces. The field-placeholder role retains its original semantic value. The source resting field-border token remains `#9DA4AE` in light mode; rendered input borders use the stronger control-border value `#6C737F` for contrast. DGA fields use an animated bottom line that uses a dark neutral while empty or not yet valid, turns green for nonempty valid values including prefilled values, and turns red after user-invalid editing or an explicit application error. There is no additional outer outline. This underline color is an intentional adaptation from the source’s neutral pressed-field color. Read-only fields, legacy-theme fields and forced-colors mode retain a single inset keyboard indicator. These are documented implementation adaptations, not unchanged source values.
 
 Other source references:
 
 - Containers `50:3`, `50:4`, and `50:5`: 1280 px desktop content maximum, 32 px desktop padding, and 16 px mobile padding.
 - Radius `425:95`: `radius-md` is 8 px in Desktop, Tablet, and Mobile modes.
-- Typography `4422:6` and `4422:7`: display and text families are IBM Plex Sans Arabic in all three modes. Nasaq's Latin fallback and font-loading policy remain explicit application choices; the Arabic wordmark remains outlined SVG.
+- Typography `4422:6` and `4422:7`: display and text families are IBM Plex Sans Arabic in all three modes. Hawiyah's Latin fallback and font-loading policy remain explicit application choices; the Arabic wordmark remains outlined SVG.
 - Service frames: English desktop `1:21371`, Arabic desktop `1:22148`, Arabic mobile `27:4851`.
 - Form frames: English desktop `2:17277`, Arabic mobile `7:3658`.
 
@@ -80,17 +80,17 @@ The Service and Form instruction pages support the following implementation deci
 | Page/platform modification dates communicate freshness | Display meaningful content-maintenance dates, not the current date on every render |
 | A digital stamp depends on the platform domain/category; placing it at the top replaces the footer placement | Use only authorized identity and stamp data. A sample must not imply that the demo is an officially registered platform |
 
-Some prototype actions have missing/sentinel destinations or no explicit timing. Such records do not justify inventing an “official” animation. Where Nasaq supplies interaction or motion, document it as implementation behavior and preserve keyboard and reduced-motion equivalents.
+Some prototype actions have missing/sentinel destinations or no explicit timing. Such records do not justify inventing an “official” animation. Where Hawiyah supplies interaction or motion, document it as implementation behavior and preserve keyboard and reduced-motion equivalents.
 
-## Migrating an existing Nasaq application
+## Migrating an existing Hawiyah application
 
-1. Import the shared stylesheet as before. Choose `data-nq-theme="dga"` explicitly on the application root when that is the intended baseline; a fresh unthemed root now uses DGA defaults.
-2. To retain the original palette and font/radius/spacing/content metrics, set `data-nq-theme="nasaq"` explicitly. Control density is shared across themes, so this does not preserve every legacy visual detail. Keep mode, density, language, and direction independent. Review an existing saved theme preference in the guide if its appearance differs from a fresh visit.
-3. Audit application overrides of `--nq-*`, hard-coded colors, borders, radius, spacing, and container widths. `data-nq-theme="custom"` inherits the DGA foundation before application overrides. Custom styles are still application-owned; adopting the DGA default does not rewrite them.
+1. Import the shared stylesheet as before. Choose `data-hw-theme="dga"` explicitly on the application root when that is the intended baseline; a fresh unthemed root now uses DGA defaults.
+2. To retain the original palette and font/radius/spacing/content metrics, set `data-hw-theme="hawiyah"` explicitly. Control density is shared across themes, so this does not preserve every legacy visual detail. Keep mode, density, language, and direction independent. Review an existing saved theme preference in the guide if its appearance differs from a fresh visit.
+3. Audit application overrides of `--hw-*`, hard-coded colors, borders, radius, spacing, and container widths. `data-hw-theme="custom"` inherits the DGA foundation before application overrides. Custom styles are still application-owned; adopting the DGA default does not rewrite them.
 4. Compare real screens in both modes and directions, including long labels, field validation, disabled/read-only states, focus, service metadata, and narrow/intermediate layouts. Preserve the existing component value/event contracts.
 5. Record intended deviations with their source nodes, reason, affected scope, and evaluation. Component behavior, calendar ISO values, and the pinned Umm al-Qura provider remain independent of the visual theme.
 
-Shared control height tokens now apply to both DGA and Nasaq themes. At the default 16 px root size:
+Shared control height tokens now apply to both DGA and Hawiyah themes. At the default 16 px root size:
 
 | Density | Default size | Small (`sm`) | Large (`lg`) |
 |---|---|---|---|
@@ -100,8 +100,8 @@ Shared control height tokens now apply to both DGA and Nasaq themes. At the defa
 Review existing layouts and touch targets when adopting these sizes; a control height alone does not establish complete target-size compliance.
 
 ```html
-<html lang="ar" dir="rtl" data-nq-theme="dga" data-nq-mode="light">
-  <!-- Application content uses the shared nq- component contract. -->
+<html lang="ar" dir="rtl" data-hw-theme="dga" data-hw-mode="light">
+  <!-- Application content uses the shared hw- component contract. -->
 </html>
 ```
 
@@ -109,27 +109,27 @@ The [token package](../packages/tokens/README.md) describes the current mapping 
 
 ## Publication boundaries
 
-Only the implementation, focused source references, and documented mappings belong in the public package/guide. The raw `.fig` inputs and bulk exported assets are research material, not package contents. Fonts, icons, official marks, and other assets require their own provenance and redistribution terms. Nasaq's Apache 2.0 license does not automatically relicense those materials.
+Only the implementation, focused source references, and documented mappings belong in the public package/guide. The raw `.fig` inputs and bulk exported assets are research material, not package contents. Fonts, icons, official marks, and other assets require their own provenance and redistribution terms. Hawiyah's Apache 2.0 license does not automatically relicense those materials.
 
 Recheck the [official design portal](https://design.dga.gov.sa/) and applicable DGA requirements for a deployment. Keep snapshot identity, implementation scope, known gaps, and official recognition separate in any public compliance statement.
 
 ### Opt-in mobile control sizing
 
-Set `data-nq-density="mobile"` on an application or subtree, or pass
+Set `data-hw-density="mobile"` on an application or subtree, or pass
 `{ density: 'mobile' }` to `createThemeVariables`. At a 16 px root size,
-small/default/large buttons are 32/40/44 px. Single-line `.nq-input` and
-`.nq-select` controls have a 44 px minimum across size variants, using the
-additive `--nq-control-field-min-height` token. Existing control-height overrides
+small/default/large buttons are 32/40/44 px. Single-line `.hw-input` and
+`.hw-select` controls have a 44 px minimum across size variants, using the
+additive `--hw-control-field-min-height` token. Existing control-height overrides
 still apply when larger. Textareas remain multiline and grow independently.
 Comfortable/compact scopes reset the field minimum, including inside mobile.
 This is an explicit profile shared by all four adapters; viewport width does not
-automatically select it. Nasaq/custom palettes, corners and dark mode remain
+automatically select it. Hawiyah/custom palettes, corners and dark mode remain
 application choices; this does not establish source mobile dark-mode parity.
 
 Source: supplied Mobile Components input set `3149:54894`, body `11167:15771`
 (320 × 44, radius 4); button nodes `407:510377`, `407:510548`, `407:510617`
 (large/medium/small: 44/40/32). These are decoded dimensions. A single source
-input size informs a shared minimum, not a claim that every Nasaq variant is an
+input size informs a shared minimum, not a claim that every Hawiyah variant is an
 exact source component. The source small button is not a blanket 44 px touch
 target; applications must still evaluate target spacing and interaction needs.
 
@@ -144,14 +144,14 @@ and dialog/drawer behavior remain unchanged.
 | Switch `5403:403606` → `5403:403570` | SMART_ANIMATE 200 ms, cubic-bezier(.42,0,.58,1); thumb x2→22 in a 52×32 track | DGA/custom switch track and thumb now use component-specific 200 ms ease-in-out. Existing web switch geometry is retained; timing correspondence does not establish shape parity | High, decoded timing |
 | Spinner `5698:11137` → `11143` → `11149` → `11155` → `11137` | Four 250 ms linear quarter-turns; each follows a 1 ms timeout | DGA/custom CSS cycle is 1000 ms, omitting four prototype scheduling waits (1004 ms with waits). This is a documented web mapping, not a 250 ms full rotation | High for segments, explicit cycle mapping |
 | Input `3149:55032` → `3149:55105`; underline `11167:15723` → `11167:15747` | 150 ms ease-out, centered 35%→100% expansion | Historical Figma measurement; NIC web now uses 500ms ease and 50%→100%. Validation colors remain an approved adaptation; see nic-inputs.md | High, decoded properties |
-| Nasaq reduced-motion stylesheet | Zero-specificity rule lost to button/switch defaults; pseudo-element was inside the functional selector | Corrected explicit selectors stop button, switch track and switch thumb transitions. Existing loading/field suppression retained; state changes remain immediate | High, runtime regression |
+| Hawiyah reduced-motion stylesheet | Zero-specificity rule lost to button/switch defaults; pseudo-element was inside the functional selector | Corrected explicit selectors stop button, switch track and switch thumb transitions. Existing loading/field suppression retained; state changes remain immediate | High, runtime regression |
 | Tab Bar `8332:24202` → `8332:24242` → `8332:24282` | 300 ms ease-out; Normal hover goes to a variant named Pressed, then click to Selected | Not applied to generic tab panels; source naming/trigger mismatch retained as evidence caveat | High, narrow scope |
 | Accordion `1147:62359` → `1147:60867` | 300 ms ease-in-out, 56→256 px example | Enhanced disclosure now uses measured intrinsic-height motion with native adapter lifecycles, immediate reduced-motion settlement and inert closing content; native unenhanced fallback remains immediate | High for this source edge only |
 | Button-Close `2763:420142` → `2763:420174`; toast child `1730:37107` → `2763:420400` | 200 ms linear hover, destination variants in imported caches | Not applied to toast entry/exit or generic buttons. Most local button hover actions have no explicit timing | High for decoded actions; mixed-library caveat |
 
-`--nq-duration-switch`, `--nq-ease-switch` (thumb),
-`--nq-ease-switch-track`, and `--nq-duration-spinner` allow scoped overrides.
-The original Nasaq theme explicitly retains 180 ms switch timing (standard thumb
+`--hw-duration-switch`, `--hw-ease-switch` (thumb),
+`--hw-ease-switch-track`, and `--hw-duration-spinner` allow scoped overrides.
+The original Hawiyah theme explicitly retains 180 ms switch timing (standard thumb
 easing, CSS ease for the track) and a 700 ms spinner cycle. Custom starts from
 DGA. Reduced motion removes transitions/animations rather than delaying state
 changes; it is an accessibility adaptation, not a property proven by Figma.

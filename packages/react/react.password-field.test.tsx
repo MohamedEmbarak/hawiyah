@@ -19,6 +19,6 @@ it('supports localized text presentation and controlled visibility without repla
   const container = document.createElement('div'); document.body.append(container); const root = createRoot(container); roots.push(root); const changed = vi.fn();
   await act(() => root.render(<PasswordField label="Password" toggleVariant="text" showLabel="إظهار" hideLabel="إخفاء" visible={false} onVisibleChange={changed} />));
   const input = container.querySelector('input')!; const toggle = container.querySelector('button')!;
-  expect(toggle.textContent).toBe('إظهار'); expect(toggle.querySelector('.nq-password-icon')).toBeNull();
+  expect(toggle.textContent).toBe('إظهار'); expect(toggle.querySelector('.hw-password-icon')).toBeNull();
   await act(() => toggle.click()); expect(changed).toHaveBeenCalledExactlyOnceWith(true); expect(input.type).toBe('password'); expect(container.querySelector('input')).toBe(input);
 });

@@ -2,19 +2,19 @@ import { expect, test } from '@playwright/test';
 
 for (const locale of ['ar', 'en']) {
   test(`amount input shows the Unicode riyal with a self-hosted font (${locale})`, async ({ page }) => {
-    await page.addInitScript(value => localStorage.setItem('nasaq-locale', value), locale);
+    await page.addInitScript(value => localStorage.setItem('hawiyah-locale', value), locale);
     await page.goto('/#inputs');
     const amount = page.getByRole('spinbutton', { name: locale === 'ar' ? 'المبلغ بالريال السعودي' : 'Amount in Saudi riyals', exact: true });
-    const addon = page.locator('label').filter({ has: amount }).locator('.nq-input-addon');
+    const addon = page.locator('label').filter({ has: amount }).locator('.hw-input-addon');
     await expect(addon).toHaveText('⃁');
-    await expect(addon.locator('.nq-riyal')).toHaveCSS('font-size', '28px');
+    await expect(addon.locator('.hw-riyal')).toHaveCSS('font-size', '28px');
     await expect(addon).toHaveAttribute('aria-hidden', 'true');
-    await expect(addon.locator('.nq-riyal')).toHaveCSS('font-family', /NasaqRiyal/);
+    await expect(addon.locator('.hw-riyal')).toHaveCSS('font-family', /HawiyahRiyal/);
     const loaded = await page.evaluate(async () => {
-      const faces = await document.fonts.load('24px NasaqRiyal', '\u20C1');
+      const faces = await document.fonts.load('24px HawiyahRiyal', '\u20C1');
       return faces.map(face => ({ family: face.family.replace(/^['"]|['"]$/g, ''), status: face.status }));
     });
-    expect(loaded).toContainEqual({ family: 'NasaqRiyal', status: 'loaded' });
+    expect(loaded).toContainEqual({ family: 'HawiyahRiyal', status: 'loaded' });
     await expect(amount).toHaveAttribute('min', '0');
     await expect(amount).toHaveAttribute('step', '0.01');
     await amount.fill('123.45');

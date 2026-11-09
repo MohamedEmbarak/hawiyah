@@ -30,7 +30,7 @@ it('restores a normalized default PIN on native form reset', async () => {
 });
 
 it('announces required tags without requiring a nonempty draft', () => {
-  const host = mount(() => h('form', [h(TagInput, { name: 'tags', label: 'الوسوم', required: true, defaultValue: ['نسق'] })]));
+  const host = mount(() => h('form', [h(TagInput, { name: 'tags', label: 'الوسوم', required: true, defaultValue: ['هوية'] })]));
   const form = host.querySelector('form')!; const input = host.querySelector<HTMLInputElement>('input:not([type=hidden])')!;
-  expect(input.required).toBe(false); expect(input.getAttribute('aria-required')).toBe('true'); expect(form.checkValidity()).toBe(true); expect(new FormData(form).getAll('tags')).toEqual(['نسق']);
+  expect(input.required).toBe(false); expect(input.getAttribute('aria-required')).toBe('true'); expect(form.checkValidity()).toBe(true); expect(new FormData(form).getAll('tags')).toEqual(['هوية']);
 });

@@ -6,8 +6,8 @@ for(const direction of ['rtl','ltr'])test(`editor framework badges stay centered
     await page.setViewportSize({width,height:884});
     for(const framework of ['vanilla','react','vue','angular']) {
       await page.locator('[data-project-framework]').selectOption(framework);
-      await page.locator('.nq-ide').evaluate((node,direction)=>node.setAttribute('dir',direction),direction);
-      const badge=page.locator('.nq-ide-project-icon'), icon=badge.locator('svg');
+      await page.locator('.hw-ide').evaluate((node,direction)=>node.setAttribute('dir',direction),direction);
+      const badge=page.locator('.hw-ide-project-icon'), icon=badge.locator('svg');
       await expect(icon).toHaveAttribute('data-framework-icon',framework==='vanilla'?'javascript':framework);
       await expect(icon).toHaveAttribute('aria-hidden','true');
       const box=(await badge.boundingBox())!, mark=(await icon.boundingBox())!;
@@ -19,5 +19,5 @@ for(const direction of ['rtl','ltr'])test(`editor framework badges stay centered
   }
   await page.setViewportSize({width:1864,height:884});
   await page.locator('[data-project-framework]').selectOption('vanilla');
-  await page.locator('.nq-ide-project').screenshot({path:testInfo.outputPath(`editor-js-badge-${direction}.png`)});
+  await page.locator('.hw-ide-project').screenshot({path:testInfo.outputPath(`editor-js-badge-${direction}.png`)});
 });

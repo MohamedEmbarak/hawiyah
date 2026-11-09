@@ -2,16 +2,16 @@
 
 Source: the hashed `global.css` snapshot recorded in
 [NIC web reference](nic-web-reference.md), lines 1770–1886. The stylesheet is
-evidence, not a package dependency or a certification of Nasaq.
+evidence, not a package dependency or a certification of Hawiyah.
 
-| Source | Observed requirement | Nasaq implementation | Confidence / boundary |
+| Source | Observed requirement | Hawiyah implementation | Confidence / boundary |
 | --- | --- | --- | --- |
-| 1770–1792 | Neutral 300 border, 8px radius, separate borders with zero spacing | `nq-table-wrap` owns the single outer border and radius; table remains native and horizontally scrollable | High for values; retaining the wrapper/collapsed internal borders is an adaptation |
+| 1770–1792 | Neutral 300 border, 8px radius, separate borders with zero spacing | `hw-table-wrap` owns the single outer border and radius; table remains native and horizontally scrollable | High for values; retaining the wrapper/collapsed internal borders is an adaptation |
 | 1805–1838 | Neutral 100 header; 48px cells; 8px vertical and 16px horizontal padding; direct header text regular | DGA/custom table profile, logical separators between header cells, 16px body/header text and weight 400 headers | High; default source font is 16px at CSS 427–437 |
-| 1825–1833 | Header spans 12px/18px, weight 500, Neutral 700 | Optional `nq-table-heading` composition | High; not imposed on arbitrary spans or every header |
+| 1825–1833 | Header spans 12px/18px, weight 500, Neutral 700 | Optional `hw-table-heading` composition | High; not imposed on arbitrary spans or every header |
 | 1840–1852 | Odd resting rows white; odd hover Gray 50 `#f5f5f6`, even hover Neutral 100 `#f3f4f6` | White table surface and two semantic hover tokens | High in light mode; dark hover uses readable Neutral 700 rather than fixed light surfaces |
 | 1855–1886 | Body cell height/padding and logical edge cleanup | Shared cell rules apply equally to `td` and semantic row-header `th`; avoid duplicate outer separators | High for geometry; row-header treatment is an accessibility adaptation |
-| 1795–1802 and Bootstrap variables | Source clears odd stripe accents; complete stripe/separator painting depends on other loaded styles | Existing `striped` even-row and `bordered` variants retained explicitly as Nasaq extensions | Do not claim pixel parity with the combined site styles |
+| 1795–1802 and Bootstrap variables | Source clears odd stripe accents; complete stripe/separator painting depends on other loaded styles | Existing `striped` even-row and `bordered` variants retained explicitly as Hawiyah extensions | Do not claim pixel parity with the combined site styles |
 
 An isolated Chromium fixture loaded only the supplied stylesheet, blocked
 network requests and measured RTL/LTR tables both with and without an explicit
@@ -29,18 +29,18 @@ not reproduced, so it is not a visual-parity claim.
 Typed props take precedence when both forms are supplied.
 
 The default DGA cell minimum is 48px; small/large minimums are 40px/56px
-Nasaq extensions. Content, wrapping and controls may require taller cells.
-The original Nasaq profile retains its typography and spacing. Custom themes
-can override `--nq-color-table-row-hover` and `--nq-color-table-row-hover-odd`.
+Hawiyah extensions. Content, wrapping and controls may require taller cells.
+The original Hawiyah profile retains its typography and spacing. Custom themes
+can override `--hw-color-table-row-hover` and `--hw-color-table-row-hover-odd`.
 Selection remains visible on hover, including striped rows; applications own
 selection behavior. Sorting is still stable, localized, and adapter-owned.
 Active/hovered sort headings use the contrast-tested link color: the previous
 green measured only 4.31:1 on the gray header. Angular hosts explicitly shrink
 inside grid/flex layouts, keeping horizontal overflow within their wrappers.
-Vanilla can compose `<span class="nq-table-sort-icon" aria-hidden="true"></span>`
+Vanilla can compose `<span class="hw-table-sort-icon" aria-hidden="true"></span>`
 inside each sort button; its visual arrows follow the header's `aria-sort`.
 The semantic state remains on the header, and native adapters keep their own
-existing indicator markup. This is a Nasaq sorting extension, not an inferred
+existing indicator markup. This is a Hawiyah sorting extension, not an inferred
 NIC JavaScript requirement.
 
 Use a caption and native `scope="col"`/`scope="row"`. Every native adapter
@@ -68,7 +68,7 @@ these selectors; calendar conversion and stored ISO dates are unchanged.
 The completed task passed 62 adapter behavior tests (including 16 focused table
 cases), eight theme contrast checks and nine focused Chromium scenarios. The
 four vanilla/gallery scenarios were repeated after adding the visual sort
-indicator and passed. The full workspace/consumer builds and `/nasaq/` guide
+indicator and passed. The full workspace/consumer builds and `/hawiyah/` guide
 build passed, as did clean tarball checks. All 31 React project recipes passed
 TypeScript checking, all 31 Angular recipes passed strict template checking,
 and all seven exported framework/language project builds passed.

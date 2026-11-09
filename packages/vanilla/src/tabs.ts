@@ -1,4 +1,4 @@
-import { createCleanup, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow } from '@nasaq/core';
+import { createCleanup, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow } from '@hawiyah/core';
 import { emit, ensureId, eventElement, remember, required, translated } from './dom.js';
 
 export interface TabsOptions {
@@ -19,29 +19,29 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
   const list = required<HTMLElement>(root, '[role="tablist"]');
   const tabs = [...list.querySelectorAll<HTMLElement>('[role="tab"]')]
     .filter(tab => tab.closest('[role="tablist"]') === list);
-  if (!tabs.length) throw new Error('Nasaq: tabs requires at least one tab.');
+  if (!tabs.length) throw new Error('Hawiyah: tabs requires at least one tab.');
   const panels = tabs.map(tab => {
     const id = tab.getAttribute('aria-controls');
     const panel = id ? root.ownerDocument.getElementById(id) : null;
-    if (!panel || !root.contains(panel)) throw new Error('Nasaq: each tab requires aria-controls pointing to a panel inside its root.');
+    if (!panel || !root.contains(panel)) throw new Error('Hawiyah: each tab requires aria-controls pointing to a panel inside its root.');
     return panel;
   });
   const scope = createCleanup();
-  const values = tabs.map((tab, index) => tab.dataset.nqValue ?? ensureId(scope, tab, `tab-${index}`));
-  if (new Set(values).size !== values.length) { scope.destroy(); throw new Error('Nasaq: tab values must be unique.'); }
-  const manual = (options.activationMode ?? root.dataset.nqActivation) === 'manual';
-  const overflowMode = () => (options.overflow ?? root.dataset.nqOverflow) === 'scroll' ? 'scroll' : 'menu';
+  const values = tabs.map((tab, index) => tab.dataset.hwValue ?? ensureId(scope, tab, `tab-${index}`));
+  if (new Set(values).size !== values.length) { scope.destroy(); throw new Error('Hawiyah: tab values must be unique.'); }
+  const manual = (options.activationMode ?? root.dataset.hwActivation) === 'manual';
+  const overflowMode = () => (options.overflow ?? root.dataset.hwOverflow) === 'scroll' ? 'scroll' : 'menu';
   const overflowEnabled = () => overflowMode() === 'menu' && list.getAttribute('aria-orientation') !== 'vertical';
-  const bar = root.ownerDocument.createElement('div'); bar.className = 'nq-tab-bar';
-  const details = root.ownerDocument.createElement('details'); details.className = 'nq-tabs-overflow'; details.hidden = true;
-  const summary = root.ownerDocument.createElement('summary'); summary.className = 'nq-tab-overflow-trigger'; summary.textContent = '…';
-  const menu = root.ownerDocument.createElement('div'); menu.className = 'nq-tab-overflow-menu';
+  const bar = root.ownerDocument.createElement('div'); bar.className = 'hw-tab-bar';
+  const details = root.ownerDocument.createElement('details'); details.className = 'hw-tabs-overflow'; details.hidden = true;
+  const summary = root.ownerDocument.createElement('summary'); summary.className = 'hw-tab-overflow-trigger'; summary.textContent = '…';
+  const menu = root.ownerDocument.createElement('div'); menu.className = 'hw-tab-overflow-menu';
   details.append(summary, menu);
   list.before(bar); bar.append(list, details);
   scope.add(() => { bar.replaceWith(list); });
-  remember(scope, list, ['data-nq-overflow', 'aria-hidden']);
+  remember(scope, list, ['data-hw-overflow', 'aria-hidden']);
   tabs.forEach((tab, index) => {
-    remember(scope, tab, ['aria-selected', 'tabindex', 'data-nq-overflow-hidden', 'aria-hidden']);
+    remember(scope, tab, ['aria-selected', 'tabindex', 'data-hw-overflow-hidden', 'aria-hidden']);
     const panel = panels[index]!;
     remember(scope, panel, ['hidden', 'role', 'aria-labelledby', 'tabindex']);
     panel.setAttribute('role', 'tabpanel');
@@ -50,7 +50,7 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
   });
   const overflowButtons = tabs.map((tab, index) => {
     const button = root.ownerDocument.createElement('button');
-    button.type = 'button'; button.className = 'nq-tab-overflow-item'; button.dataset.nqOverflowIndex = String(index);
+    button.type = 'button'; button.className = 'hw-tab-overflow-item'; button.dataset.hwOverflowIndex = String(index);
     button.setAttribute('aria-controls', panels[index]!.id);
     return button;
   });
@@ -62,16 +62,16 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
   const blocked = () => isDisabled(root) || tabs.every(isDisabled);
   const firstVisible = () => tabs.findIndex((tab, index) => !hidden.has(index) && !isDisabled(tab));
   const render = (focusIndex = selected) => {
-    summary.setAttribute('aria-label', options.overflowLabel ?? root.dataset.nqOverflowLabel ?? translated(root, 'More tabs', 'المزيد من التبويبات'));
+    summary.setAttribute('aria-label', options.overflowLabel ?? root.dataset.hwOverflowLabel ?? translated(root, 'More tabs', 'المزيد من التبويبات'));
     if (selected < 0 || isDisabled(tabs[selected]!)) selected = tabs.findIndex(tab => !isDisabled(tab));
     if (hidden.has(focusIndex) || focusIndex < 0 || isDisabled(tabs[focusIndex]!)) focusIndex = firstVisible();
-    bar.dataset.nqOverflow = overflowMode(); list.dataset.nqOverflow = overflowMode();
+    bar.dataset.hwOverflow = overflowMode(); list.dataset.hwOverflow = overflowMode();
     if (hidden.size === tabs.length) list.setAttribute('aria-hidden', 'true'); else list.removeAttribute('aria-hidden');
     tabs.forEach((tab, index) => {
       tab.setAttribute('aria-selected', String(index === selected));
       tab.tabIndex = !hidden.has(index) && index === focusIndex ? 0 : -1;
-      if (hidden.has(index)) { tab.dataset.nqOverflowHidden = 'true'; tab.setAttribute('aria-hidden', 'true'); }
-      else { tab.removeAttribute('data-nq-overflow-hidden'); tab.removeAttribute('aria-hidden'); }
+      if (hidden.has(index)) { tab.dataset.hwOverflowHidden = 'true'; tab.setAttribute('aria-hidden', 'true'); }
+      else { tab.removeAttribute('data-hw-overflow-hidden'); tab.removeAttribute('aria-hidden'); }
       panels[index]!.hidden = index !== selected;
       const button = overflowButtons[index]!;
       const label = tab.getAttribute('aria-label') || tab.textContent?.trim() || values[index]!;
@@ -120,10 +120,10 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
   });
   scope.listen(details, 'click', event => {
     if (blocked()) { event.preventDefault(); details.open = false; return; }
-    const button = eventElement(event)?.closest<HTMLButtonElement>('[data-nq-overflow-index]');
+    const button = eventElement(event)?.closest<HTMLButtonElement>('[data-hw-overflow-index]');
     if (!button || !menu.contains(button)) return;
     event.preventDefault();
-    const index = Number(button.dataset.nqOverflowIndex);
+    const index = Number(button.dataset.hwOverflowIndex);
     if (!hidden.has(index) || isDisabled(button) || isDisabled(tabs[index]!)) return;
     select(values[index]!); summary.focus({preventScroll: true});
   });
@@ -162,7 +162,7 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
   const MutationObserver = root.ownerDocument.defaultView?.MutationObserver;
   if (MutationObserver) {
     const mutations = new MutationObserver(() => { render(); observer.refresh(); });
-    mutations.observe(root, {attributes: true, attributeFilter: ['aria-disabled', 'disabled', 'data-nq-overflow', 'data-nq-overflow-label']});
+    mutations.observe(root, {attributes: true, attributeFilter: ['aria-disabled', 'disabled', 'data-hw-overflow', 'data-hw-overflow-label']});
     mutations.observe(list, {attributes: true, attributeFilter: ['aria-orientation', 'dir']});
     for (const tab of tabs) mutations.observe(tab, {attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'aria-label'], childList: true, characterData: true, subtree: true});
     for (let ancestor = root.parentElement; ancestor; ancestor = ancestor.parentElement) {

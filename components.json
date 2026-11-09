@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "name": "Nasaq",
-  "nameAr": "نسق",
+  "name": "Hawiyah",
+  "nameAr": "هوية",
   "version": "0.2.0",
   "lifecycle": "public-source-preview",
-  "description": "Independent Arabic-first UI components informed by DGA Platforms Code; no official endorsement or certification is claimed.",
+  "description": "UI component library built to comply with the DGA Platforms Code. Compliance evidence and open items are documented; Hawiyah is not an official DGA product.",
   "keywords": [
     "DGA",
     "DGA compliance",
@@ -46,10 +46,10 @@
     "vanillaExpansion": "packages/vanilla/EXPANSION-API.md"
   },
   "adapters": {
-    "vanilla": "@nasaq/vanilla",
-    "react": "@nasaq/react",
-    "vue": "@nasaq/vue",
-    "angular": "@nasaq/angular"
+    "vanilla": "@hawiyah/vanilla",
+    "react": "@hawiyah/react",
+    "vue": "@hawiyah/vue",
+    "angular": "@hawiyah/angular"
   },
   "components": [
     {
@@ -59,7 +59,7 @@
       "category": "actions",
       "description": "Native action button with seven NIC visual families and ghost, soft and link extensions; shared hover, pressed, focus and disabled styles.",
       "cssClasses": [
-        "nq-button"
+        "hw-button"
       ],
       "interaction": "native",
       "planned": [
@@ -95,7 +95,7 @@
         "Use a link for navigation and a button for an action."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/button"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/button"
     },
     {
       "id": "field",
@@ -104,10 +104,10 @@
       "category": "forms",
       "description": "Label, help, error, and control composition.",
       "cssClasses": [
-        "nq-field",
-        "nq-label",
-        "nq-hint",
-        "nq-error"
+        "hw-field",
+        "hw-label",
+        "hw-hint",
+        "hw-error"
       ],
       "interaction": "composition",
       "planned": [
@@ -180,7 +180,7 @@
         "Field and TextField may be composed differently by each adapter."
       ],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/field"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/field"
     },
     {
       "id": "text-field",
@@ -189,7 +189,7 @@
       "category": "forms",
       "description": "Single-line text entry with native input semantics.",
       "cssClasses": [
-        "nq-input"
+        "hw-input"
       ],
       "interaction": "native",
       "planned": [
@@ -275,7 +275,7 @@
         "Business validation belongs to the consuming application."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/text-field"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/text-field"
     },
     {
       "id": "textarea",
@@ -284,7 +284,7 @@
       "category": "forms",
       "description": "Multiline text entry.",
       "cssClasses": [
-        "nq-textarea"
+        "hw-textarea"
       ],
       "interaction": "native",
       "planned": [
@@ -303,7 +303,7 @@
       "evidence": [],
       "notes": [],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/textarea"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/textarea"
     },
     {
       "id": "select",
@@ -312,7 +312,7 @@
       "category": "forms",
       "description": "Native select with associated field descriptions, platform keyboard interaction and an optional prompt.",
       "cssClasses": [
-        "nq-select"
+        "hw-select"
       ],
       "interaction": "native",
       "planned": [
@@ -387,7 +387,7 @@
         "Use Combobox when an editable search is required."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/select"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/select"
     },
     {
       "id": "checkbox",
@@ -396,7 +396,7 @@
       "category": "forms",
       "description": "Native independent checked state.",
       "cssClasses": [
-        "nq-checkbox"
+        "hw-checkbox"
       ],
       "interaction": "native",
       "planned": [
@@ -443,7 +443,7 @@
       ],
       "notes": [],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/checkbox"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/checkbox"
     },
     {
       "id": "radio",
@@ -452,7 +452,7 @@
       "category": "forms",
       "description": "Native mutually exclusive selection.",
       "cssClasses": [
-        "nq-radio"
+        "hw-radio"
       ],
       "interaction": "native",
       "planned": [
@@ -473,7 +473,7 @@
         "Group related options with an accessible group label."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/radio"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/radio"
     },
     {
       "id": "switch",
@@ -482,7 +482,7 @@
       "category": "forms",
       "description": "Binary on/off setting.",
       "cssClasses": [
-        "nq-switch"
+        "hw-switch"
       ],
       "interaction": "native",
       "planned": [
@@ -503,7 +503,7 @@
         "Keep the accessible label stable when the state changes."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/switch"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/switch"
     },
     {
       "id": "tabs",
@@ -512,10 +512,10 @@
       "category": "navigation",
       "description": "Related panels with keyboard-controlled tab selection.",
       "cssClasses": [
-        "nq-tabs",
-        "nq-tab-list",
-        "nq-tab",
-        "nq-tab-panel"
+        "hw-tabs",
+        "hw-tab-list",
+        "hw-tab",
+        "hw-tab-panel"
       ],
       "interaction": "enhanced",
       "planned": [
@@ -629,7 +629,7 @@
         "Horizontal key behavior follows direction; vertical behavior follows orientation."
       ],
       "sourceType": "interactive",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/tabs"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tabs"
     },
     {
       "id": "dialog",
@@ -638,10 +638,10 @@
       "category": "overlays",
       "description": "Native modal dialog with explicit open and close lifecycle.",
       "cssClasses": [
-        "nq-dialog",
-        "nq-dialog-header",
-        "nq-dialog-body",
-        "nq-dialog-footer"
+        "hw-dialog",
+        "hw-dialog-header",
+        "hw-dialog-body",
+        "hw-dialog-footer"
       ],
       "interaction": "enhanced",
       "planned": [
@@ -732,7 +732,7 @@
             "Angular browser proof passed: native form, Arabic combobox, conditional flow, native modal/Escape/focus, request state, RTL/theme/mobile."
           ],
           "scope": "Real Chromium modal review, Escape dismissal, and restored opener focus in the example application.",
-          "command": "pnpm --filter @nasaq/example-angular test:browser",
+          "command": "pnpm --filter @hawiyah/example-angular test:browser",
           "result": "passed",
           "date": "2026-10-28"
         },
@@ -765,7 +765,7 @@
         "Native dialog support is required by the initial vanilla implementation."
       ],
       "sourceType": "interactive",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/dialog"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/dialog"
     },
     {
       "id": "combobox",
@@ -774,9 +774,9 @@
       "category": "forms",
       "description": "Editable single-select search and selection.",
       "cssClasses": [
-        "nq-combobox",
-        "nq-listbox",
-        "nq-option"
+        "hw-combobox",
+        "hw-listbox",
+        "hw-option"
       ],
       "interaction": "enhanced",
       "planned": [
@@ -898,7 +898,7 @@
         "Initial scope excludes multiselect, async loading, and virtualization."
       ],
       "sourceType": "interactive",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/combobox"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/combobox"
     },
     {
       "id": "accordion",
@@ -907,10 +907,10 @@
       "category": "disclosure",
       "description": "Disclosure sections using native details and summary.",
       "cssClasses": [
-        "nq-accordion",
-        "nq-accordion-item",
-        "nq-accordion-trigger",
-        "nq-accordion-content"
+        "hw-accordion",
+        "hw-accordion-item",
+        "hw-accordion-trigger",
+        "hw-accordion-content"
       ],
       "interaction": "native",
       "planned": [
@@ -928,11 +928,11 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Native details fallback; opt-in vanilla enhancement and native framework lifecycles animate intrinsic height. Reduced motion and original Nasaq remain immediate.",
+        "Native details fallback; opt-in vanilla enhancement and native framework lifecycles animate intrinsic height. Reduced motion and original Hawiyah remain immediate.",
         "Closing content becomes inert immediately; controlled React state remains application-owned. See docs/accordion-motion.md."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/accordion",
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/accordion",
       "implementationSources": {
         "core": [
           "packages/core/src/accordion-motion.ts"
@@ -958,14 +958,14 @@
       "category": "layout",
       "description": "Related content in a static article or an explicit whole-card native link, with shared NIC-profile variants.",
       "cssClasses": [
-        "nq-card",
-        "nq-card-header",
-        "nq-card-body",
-        "nq-card-footer",
-        "nq-card-action",
-        "nq-card-title",
-        "nq-card-description",
-        "nq-card-image"
+        "hw-card",
+        "hw-card-header",
+        "hw-card-body",
+        "hw-card-footer",
+        "hw-card-action",
+        "hw-card-title",
+        "hw-card-description",
+        "hw-card-image"
       ],
       "interaction": "composition",
       "planned": [
@@ -1044,7 +1044,7 @@
         "NIC card contract: docs/nic-cards.md. href uses a native link; do not nest controls inside a whole-card link. Dark hover and focus retain documented contrast adaptations."
       ],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/card"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/card"
     },
     {
       "id": "badge",
@@ -1053,7 +1053,7 @@
       "category": "feedback",
       "description": "Compact label or status indicator.",
       "cssClasses": [
-        "nq-badge"
+        "hw-badge"
       ],
       "interaction": "static",
       "planned": [
@@ -1074,7 +1074,7 @@
         "Provide meaningful text; color alone is insufficient."
       ],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/badge"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/badge"
     },
     {
       "id": "alert",
@@ -1083,7 +1083,7 @@
       "category": "feedback",
       "description": "Contextual information, success, warning, or error message.",
       "cssClasses": [
-        "nq-alert"
+        "hw-alert"
       ],
       "interaction": "static",
       "planned": [
@@ -1104,7 +1104,7 @@
         "Choose announcement semantics according to urgency and timing."
       ],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/alert"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/alert"
     },
     {
       "id": "table",
@@ -1113,8 +1113,8 @@
       "category": "data-display",
       "description": "Semantic table presentation.",
       "cssClasses": [
-        "nq-table-wrap",
-        "nq-table"
+        "hw-table-wrap",
+        "hw-table"
       ],
       "interaction": "native",
       "planned": [
@@ -1135,7 +1135,7 @@
         "Filtering, sorting, pagination, and fetching remain explicit application behavior."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/table"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/table"
     },
     {
       "id": "pagination",
@@ -1144,7 +1144,7 @@
       "category": "navigation",
       "description": "Page selection controls with current and boundary states.",
       "cssClasses": [
-        "nq-pagination"
+        "hw-pagination"
       ],
       "interaction": "enhanced",
       "planned": [
@@ -1206,7 +1206,7 @@
         "The component does not fetch data."
       ],
       "sourceType": "interactive",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/pagination"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/pagination"
     },
     {
       "id": "breadcrumb",
@@ -1215,7 +1215,7 @@
       "category": "navigation",
       "description": "Navigation path with a clearly identified current page.",
       "cssClasses": [
-        "nq-breadcrumb"
+        "hw-breadcrumb"
       ],
       "interaction": "native",
       "planned": [
@@ -1291,7 +1291,7 @@
         "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/breadcrumb"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/breadcrumb"
     },
     {
       "id": "progress",
@@ -1300,7 +1300,7 @@
       "category": "feedback",
       "description": "Progress indication with accessible value semantics.",
       "cssClasses": [
-        "nq-progress"
+        "hw-progress"
       ],
       "interaction": "native",
       "planned": [
@@ -1319,7 +1319,7 @@
       "evidence": [],
       "notes": [],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/progress"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/progress"
     },
     {
       "id": "skeleton",
@@ -1328,7 +1328,7 @@
       "category": "feedback",
       "description": "Visual placeholder while content loads.",
       "cssClasses": [
-        "nq-skeleton"
+        "hw-skeleton"
       ],
       "interaction": "static",
       "planned": [
@@ -1349,7 +1349,7 @@
         "Announce the containing loading state rather than every decorative placeholder."
       ],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/skeleton"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/skeleton"
     },
     {
       "id": "spinner",
@@ -1358,7 +1358,7 @@
       "category": "feedback",
       "description": "Compact indeterminate loading indicator.",
       "cssClasses": [
-        "nq-spinner"
+        "hw-spinner"
       ],
       "interaction": "static",
       "planned": [
@@ -1379,7 +1379,7 @@
         "Supply understandable status text in context."
       ],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/spinner"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/spinner"
     },
     {
       "id": "avatar",
@@ -1388,7 +1388,7 @@
       "category": "data-display",
       "description": "Person or entity image with fallback content.",
       "cssClasses": [
-        "nq-avatar"
+        "hw-avatar"
       ],
       "interaction": "static",
       "planned": [
@@ -1409,7 +1409,7 @@
         "Image alternative text depends on nearby identifying text."
       ],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/avatar"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/avatar"
     },
     {
       "id": "divider",
@@ -1418,7 +1418,7 @@
       "category": "layout",
       "description": "Visual or semantic separation.",
       "cssClasses": [
-        "nq-divider"
+        "hw-divider"
       ],
       "interaction": "static",
       "planned": [
@@ -1437,7 +1437,7 @@
       "evidence": [],
       "notes": [],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/divider"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/divider"
     },
     {
       "id": "tooltip",
@@ -1446,7 +1446,7 @@
       "category": "overlays",
       "description": "Noninteractive descriptive content on hover and focus.",
       "cssClasses": [
-        "nq-tooltip"
+        "hw-tooltip"
       ],
       "interaction": "enhanced",
       "planned": [
@@ -1520,7 +1520,7 @@
         "Do not place essential or interactive content solely in a tooltip."
       ],
       "sourceType": "interactive",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/tooltip"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tooltip"
     },
     {
       "id": "file-upload",
@@ -1529,7 +1529,7 @@
       "category": "forms",
       "description": "Native file selection presented within a reusable field.",
       "cssClasses": [
-        "nq-upload"
+        "hw-upload"
       ],
       "interaction": "native",
       "planned": [
@@ -1550,7 +1550,7 @@
         "Selection does not upload files; transport, server validation, and progress belong to the application."
       ],
       "sourceType": "native",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/upload"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/upload"
     },
     {
       "id": "stepper",
@@ -1559,8 +1559,8 @@
       "category": "navigation",
       "description": "Current and completed stages in a process.",
       "cssClasses": [
-        "nq-stepper",
-        "nq-step"
+        "hw-stepper",
+        "hw-step"
       ],
       "interaction": "composition",
       "planned": [
@@ -1581,7 +1581,7 @@
         "Journey navigation and validation belong to the application."
       ],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/stepper"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/stepper"
     },
     {
       "id": "empty-state",
@@ -1590,7 +1590,7 @@
       "category": "feedback",
       "description": "Explain absent content and offer an appropriate next action.",
       "cssClasses": [
-        "nq-empty"
+        "hw-empty"
       ],
       "interaction": "composition",
       "planned": [
@@ -1609,7 +1609,7 @@
       "evidence": [],
       "notes": [],
       "sourceType": "static",
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/empty"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/empty"
     },
     {
       "id": "input-group",
@@ -1618,7 +1618,7 @@
       "category": "forms",
       "description": "Compose input prefixes, suffixes, and actions with a labelled control.",
       "cssClasses": [
-        "nq-input-group"
+        "hw-input-group"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -1654,7 +1654,7 @@
       "notes": [
         "The surrounding group does not replace the actual input label."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/input-group"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/input-group"
     },
     {
       "id": "password-field",
@@ -1663,7 +1663,7 @@
       "category": "forms",
       "description": "Native password entry with explicit visibility toggle.",
       "cssClasses": [
-        "nq-password-field"
+        "hw-password-field"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -1726,7 +1726,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/password-field"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/password-field"
     },
     {
       "id": "search-field",
@@ -1735,11 +1735,11 @@
       "category": "forms",
       "description": "Labeled free-text search with optional local suggestions, keyboard selection, clearing and application-owned submission.",
       "cssClasses": [
-        "nq-search-field",
-        "nq-search-control",
-        "nq-search-suggestions",
-        "nq-search-option",
-        "nq-search-submit"
+        "hw-search-field",
+        "hw-search-control",
+        "hw-search-suggestions",
+        "hw-search-option",
+        "hw-search-submit"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -1853,7 +1853,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/search-field"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/search-field"
     },
     {
       "id": "number-field",
@@ -1862,7 +1862,7 @@
       "category": "forms",
       "description": "Numeric quantity entry using native min, max, step, and empty-value semantics.",
       "cssClasses": [
-        "nq-number-field"
+        "hw-number-field"
       ],
       "interaction": "native",
       "sourceType": "native",
@@ -1926,7 +1926,7 @@
       "notes": [
         "Use text inputs for identifiers, IBANs, and values whose exact string representation must be preserved."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/number-field"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/number-field"
     },
     {
       "id": "slider",
@@ -1935,7 +1935,7 @@
       "category": "forms",
       "description": "One labelled native range input for a bounded numeric value.",
       "cssClasses": [
-        "nq-slider"
+        "hw-slider"
       ],
       "interaction": "native",
       "sourceType": "native",
@@ -1969,7 +1969,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/slider"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/slider"
     },
     {
       "id": "range-slider",
@@ -1978,7 +1978,7 @@
       "category": "forms",
       "description": "Two labelled native range inputs with ordered lower and upper values.",
       "cssClasses": [
-        "nq-range-slider"
+        "hw-range-slider"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2067,7 +2067,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/range-slider"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/range-slider"
     },
     {
       "id": "rating",
@@ -2076,7 +2076,7 @@
       "category": "forms",
       "description": "A labelled native radio group for a discrete rating.",
       "cssClasses": [
-        "nq-rating"
+        "hw-rating"
       ],
       "interaction": "native",
       "sourceType": "native",
@@ -2110,7 +2110,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/rating"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/rating"
     },
     {
       "id": "pin-input",
@@ -2119,7 +2119,7 @@
       "category": "forms",
       "description": "One accessible code input with paste and Arabic-digit normalization.",
       "cssClasses": [
-        "nq-pin-input"
+        "hw-pin-input"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2210,7 +2210,7 @@
       "notes": [
         "One focus stop; code validation, expiry, attempts, and authentication are application/server concerns."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/pin-input"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/pin-input"
     },
     {
       "id": "tag-input",
@@ -2219,7 +2219,7 @@
       "category": "forms",
       "description": "Editable text tags with repeated native form values.",
       "cssClasses": [
-        "nq-tag-input"
+        "hw-tag-input"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2308,7 +2308,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/tag-input"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tag-input"
     },
     {
       "id": "multi-select",
@@ -2317,7 +2317,7 @@
       "category": "forms",
       "description": "Searchable checkbox list preserving multiple selected form values.",
       "cssClasses": [
-        "nq-multi-select"
+        "hw-multi-select"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2408,7 +2408,7 @@
       "notes": [
         "Uses native checkboxes; it is not an ARIA single-select combobox."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/multi-select"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/multi-select"
     },
     {
       "id": "calendar",
@@ -2417,7 +2417,7 @@
       "category": "forms",
       "description": "Keyboard date grid with Gregorian or table-backed Umm al-Qura display.",
       "cssClasses": [
-        "nq-calendar"
+        "hw-calendar"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2515,7 +2515,7 @@
       "notes": [
         "Values/min/max are Gregorian ISO YYYY-MM-DD. See docs/date-calendars.md for pinned reference, supported range, and official-source limitations."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/calendar"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/calendar"
     },
     {
       "id": "date-picker",
@@ -2524,7 +2524,7 @@
       "category": "forms",
       "description": "Date-only input and labelled calendar dialog with ISO Gregorian values.",
       "cssClasses": [
-        "nq-date-picker"
+        "hw-date-picker"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2697,7 +2697,7 @@
       "notes": [
         "Native date input presentation is browser-owned; the calendar display mode does not change the ISO stored day. See docs/date-calendars.md."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/date-picker"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/date-picker"
     },
     {
       "id": "file-dropzone",
@@ -2706,7 +2706,7 @@
       "category": "forms",
       "description": "Native local-file selection and drop feedback with selection constraints.",
       "cssClasses": [
-        "nq-file-dropzone"
+        "hw-file-dropzone"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2771,7 +2771,7 @@
       "notes": [
         "Local selection is not upload transport; application code owns storage, server validation, and authoritative progress."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/file-dropzone"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/file-dropzone"
     },
     {
       "id": "toggle-group",
@@ -2780,7 +2780,7 @@
       "category": "actions",
       "description": "Single native radio selection or multiple pressed-button choices.",
       "cssClasses": [
-        "nq-toggle-group"
+        "hw-toggle-group"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2909,7 +2909,7 @@
       "notes": [
         "NIC source geometry and explicit accessibility/theme adaptations: docs/nic-segmented.md. Verification is scoped, not certification."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/toggle-group"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/toggle-group"
     },
     {
       "id": "popover",
@@ -2918,7 +2918,7 @@
       "category": "navigation",
       "description": "Labelled disclosure region with outside-press and Escape dismissal.",
       "cssClasses": [
-        "nq-popover"
+        "hw-popover"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -2996,7 +2996,7 @@
       "notes": [
         "Interactive children use normal Tab navigation; use Menu for action-menu keyboard semantics."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/popover"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/popover"
     },
     {
       "id": "menu",
@@ -3005,7 +3005,7 @@
       "category": "navigation",
       "description": "Action menu with roving keyboard focus and return to its trigger.",
       "cssClasses": [
-        "nq-menu"
+        "hw-menu"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -3094,7 +3094,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/menu"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/menu"
     },
     {
       "id": "drawer",
@@ -3103,7 +3103,7 @@
       "category": "navigation",
       "description": "Native modal dialog presented from a logical side or the bottom.",
       "cssClasses": [
-        "nq-drawer"
+        "hw-drawer"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -3153,7 +3153,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/drawer"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/drawer"
     },
     {
       "id": "toast-region",
@@ -3162,11 +3162,11 @@
       "category": "feedback",
       "description": "Caller-owned live notifications with optional banner styling, urgency and per-message dismissal.",
       "cssClasses": [
-        "nq-toast-region",
-        "nq-toast",
-        "nq-toast-content",
-        "nq-toast-icon",
-        "nq-toast-dismiss"
+        "hw-toast-region",
+        "hw-toast",
+        "hw-toast-content",
+        "hw-toast-icon",
+        "hw-toast-dismiss"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -3293,7 +3293,7 @@
       "notes": [
         "No automatic expiry by default. Reserve assertive announcements for urgent content."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/toast-region"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/toast-region"
     },
     {
       "id": "collapsible",
@@ -3302,7 +3302,7 @@
       "category": "content",
       "description": "Native details and summary disclosure.",
       "cssClasses": [
-        "nq-collapsible"
+        "hw-collapsible"
       ],
       "interaction": "native",
       "sourceType": "native",
@@ -3336,7 +3336,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/collapsible"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/collapsible"
     },
     {
       "id": "tree-view",
@@ -3345,7 +3345,7 @@
       "category": "navigation",
       "description": "Hierarchical selection with visible-node navigation and RTL expansion.",
       "cssClasses": [
-        "nq-tree-view"
+        "hw-tree-view"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -3438,7 +3438,7 @@
       "notes": [
         "No drag-and-drop or virtualization claim."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/tree-view"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tree-view"
     },
     {
       "id": "carousel",
@@ -3447,7 +3447,7 @@
       "category": "content",
       "description": "Manual slide navigation and current-position status.",
       "cssClasses": [
-        "nq-carousel"
+        "hw-carousel"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -3512,7 +3512,7 @@
       "notes": [
         "No autoplay by default."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/carousel"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/carousel"
     },
     {
       "id": "link",
@@ -3521,7 +3521,7 @@
       "category": "actions",
       "description": "Native destination link with default, neutral/subtle and standalone styling, optional external attributes and disabled activation guards.",
       "cssClasses": [
-        "nq-link"
+        "hw-link"
       ],
       "interaction": "native",
       "sourceType": "native",
@@ -3612,7 +3612,7 @@
       "notes": [
         "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/link"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/link"
     },
     {
       "id": "icon-button",
@@ -3621,8 +3621,8 @@
       "category": "actions",
       "description": "Native action button with an explicit accessible name.",
       "cssClasses": [
-        "nq-icon-button",
-        "nq-icon-background"
+        "hw-icon-button",
+        "hw-icon-background"
       ],
       "interaction": "native",
       "sourceType": "native",
@@ -3759,7 +3759,7 @@
       "notes": [
         "Source sizing, optional background compositions, native ghost default and explicit accessibility adaptations: docs/nic-icons.md. Artwork bytes and licensing unchanged."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/icon-button"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/icon-button"
     },
     {
       "id": "button-group",
@@ -3768,7 +3768,7 @@
       "category": "actions",
       "description": "Labelled grouping and shared layout for related actions.",
       "cssClasses": [
-        "nq-button-group"
+        "hw-button-group"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -3859,7 +3859,7 @@
       "notes": [
         "NIC source geometry and explicit accessibility/theme adaptations: docs/nic-segmented.md. Verification is scoped, not certification."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/button-group"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/button-group"
     },
     {
       "id": "chip",
@@ -3868,7 +3868,7 @@
       "category": "content",
       "description": "Compact labelled content with an optional application-owned remove action.",
       "cssClasses": [
-        "nq-chip"
+        "hw-chip"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -3902,7 +3902,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/chip"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/chip"
     },
     {
       "id": "description-list",
@@ -3911,7 +3911,7 @@
       "category": "content",
       "description": "Semantic terms and descriptions for structured metadata.",
       "cssClasses": [
-        "nq-description-list"
+        "hw-description-list"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -3945,7 +3945,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/description-list"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/description-list"
     },
     {
       "id": "stat",
@@ -3954,7 +3954,7 @@
       "category": "content",
       "description": "A labelled value with optional supporting context.",
       "cssClasses": [
-        "nq-stat"
+        "hw-stat"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -3988,7 +3988,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/stat"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/stat"
     },
     {
       "id": "timeline",
@@ -3997,7 +3997,7 @@
       "category": "content",
       "description": "Ordered events or stages with optional dates and state.",
       "cssClasses": [
-        "nq-timeline"
+        "hw-timeline"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4031,7 +4031,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/timeline"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/timeline"
     },
     {
       "id": "meter",
@@ -4040,7 +4040,7 @@
       "category": "feedback",
       "description": "Native scalar measurement with a label and domain bounds.",
       "cssClasses": [
-        "nq-meter"
+        "hw-meter"
       ],
       "interaction": "native",
       "sourceType": "native",
@@ -4074,7 +4074,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/meter"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/meter"
     },
     {
       "id": "avatar-group",
@@ -4083,7 +4083,7 @@
       "category": "content",
       "description": "Grouped avatars with a labelled overflow count.",
       "cssClasses": [
-        "nq-avatar-group"
+        "hw-avatar-group"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4117,7 +4117,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/avatar-group"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/avatar-group"
     },
     {
       "id": "data-table",
@@ -4126,7 +4126,7 @@
       "category": "content",
       "description": "Semantic table with stable localized sorting and aria-sort headers.",
       "cssClasses": [
-        "nq-data-table"
+        "hw-data-table"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -4217,7 +4217,7 @@
       "notes": [
         "Sorting only: virtualization, cell editing, remote data, and advanced grid selection require application integrations."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/data-table"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/data-table"
     },
     {
       "id": "service-card",
@@ -4226,7 +4226,7 @@
       "category": "platforms",
       "description": "Service summary, metadata, and application-owned next action.",
       "cssClasses": [
-        "nq-service-card"
+        "hw-service-card"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4262,7 +4262,7 @@
       "notes": [
         "No official identity, endorsement, or government-service connection is implied."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/service-card"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/service-card"
     },
     {
       "id": "service-details",
@@ -4271,7 +4271,7 @@
       "category": "platforms",
       "description": "Service description, requirements, metadata, and action composition.",
       "cssClasses": [
-        "nq-service-details"
+        "hw-service-details"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4307,7 +4307,7 @@
       "notes": [
         "Requirements and actions are application-owned content."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/service-details"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/service-details"
     },
     {
       "id": "portal-header",
@@ -4316,7 +4316,7 @@
       "category": "platforms",
       "description": "Product identity, responsive disclosure navigation, skip link and actions.",
       "cssClasses": [
-        "nq-portal-header"
+        "hw-portal-header"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -4352,9 +4352,9 @@
       },
       "notes": [
         "Use the product identity; do not invent a government digital stamp or certification.",
-        "Mobile disclosure below 48rem; Escape returns focus, links/outside press/focus leaving close it, and Tab remains native. The breakpoint is a Nasaq adaptation."
+        "Mobile disclosure below 48rem; Escape returns focus, links/outside press/focus leaving close it, and Tab remains native. The breakpoint is a Hawiyah adaptation."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/portal-header"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/portal-header"
     },
     {
       "id": "portal-footer",
@@ -4363,7 +4363,7 @@
       "category": "platforms",
       "description": "Grouped footer navigation with brand, support, policy and partner composition.",
       "cssClasses": [
-        "nq-portal-footer"
+        "hw-portal-footer"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4453,7 +4453,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/portal-footer"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/portal-footer"
     },
     {
       "id": "feedback",
@@ -4462,7 +4462,7 @@
       "category": "platforms",
       "description": "Page usefulness selection and acknowledgement UI.",
       "cssClasses": [
-        "nq-feedback"
+        "hw-feedback"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -4540,7 +4540,7 @@
       "notes": [
         "Recording feedback on a server requires an application integration."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/feedback"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/feedback"
     },
     {
       "id": "cookie-consent",
@@ -4549,7 +4549,7 @@
       "category": "platforms",
       "description": "Preference choice UI with application-owned policy and script gating.",
       "cssClasses": [
-        "nq-cookie-consent"
+        "hw-cookie-consent"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -4628,7 +4628,7 @@
       "notes": [
         "Preference UI does not gate scripts. Persistence and policy/version handling must be explicitly configured by the application."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/cookie-consent"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/cookie-consent"
     },
     {
       "id": "notification-list",
@@ -4637,7 +4637,7 @@
       "category": "platforms",
       "description": "Application-owned notification content and dismissal actions.",
       "cssClasses": [
-        "nq-notification-list"
+        "hw-notification-list"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4673,7 +4673,7 @@
       "notes": [
         "Data and actions belong to the application; the vanilla recipe needs application listeners for custom actions."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/notification-list"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/notification-list"
     },
     {
       "id": "container",
@@ -4682,7 +4682,7 @@
       "category": "layout",
       "description": "Constrain content width with responsive spacing.",
       "cssClasses": [
-        "nq-container"
+        "hw-container"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4716,7 +4716,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/container"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/container"
     },
     {
       "id": "stack",
@@ -4725,7 +4725,7 @@
       "category": "layout",
       "description": "Arrange children vertically with shared spacing and alignment.",
       "cssClasses": [
-        "nq-stack"
+        "hw-stack"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4774,7 +4774,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/stack"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/stack"
     },
     {
       "id": "inline",
@@ -4783,7 +4783,7 @@
       "category": "layout",
       "description": "Arrange children horizontally with optional wrapping.",
       "cssClasses": [
-        "nq-inline"
+        "hw-inline"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4817,7 +4817,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/inline"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/inline"
     },
     {
       "id": "grid",
@@ -4826,7 +4826,7 @@
       "category": "layout",
       "description": "Responsive CSS grid with column and minimum-item sizing.",
       "cssClasses": [
-        "nq-grid"
+        "hw-grid"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4914,7 +4914,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/grid"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/grid"
     },
     {
       "id": "columns",
@@ -4923,7 +4923,7 @@
       "category": "layout",
       "description": "Responsive equal-column composition.",
       "cssClasses": [
-        "nq-columns"
+        "hw-columns"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -4957,7 +4957,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/columns"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/columns"
     },
     {
       "id": "sidebar",
@@ -4966,7 +4966,7 @@
       "category": "layout",
       "description": "Logical-side secondary content with a CSS collapse breakpoint.",
       "cssClasses": [
-        "nq-sidebar"
+        "hw-sidebar"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5015,7 +5015,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/sidebar"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/sidebar"
     },
     {
       "id": "center",
@@ -5024,7 +5024,7 @@
       "category": "layout",
       "description": "Center content within a composition.",
       "cssClasses": [
-        "nq-center"
+        "hw-center"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5058,7 +5058,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/center"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/center"
     },
     {
       "id": "spacer",
@@ -5067,7 +5067,7 @@
       "category": "layout",
       "description": "Flexible decorative spacing within a layout.",
       "cssClasses": [
-        "nq-spacer"
+        "hw-spacer"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5101,7 +5101,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/spacer"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/spacer"
     },
     {
       "id": "aspect-ratio",
@@ -5110,7 +5110,7 @@
       "category": "layout",
       "description": "Preserve a requested width-to-height ratio.",
       "cssClasses": [
-        "nq-aspect-ratio"
+        "hw-aspect-ratio"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5144,7 +5144,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/aspect-ratio"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/aspect-ratio"
     },
     {
       "id": "section",
@@ -5153,7 +5153,7 @@
       "category": "layout",
       "description": "Semantic section with shared layout spacing.",
       "cssClasses": [
-        "nq-section"
+        "hw-section"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5187,7 +5187,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/section"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/section"
     },
     {
       "id": "app-shell",
@@ -5196,7 +5196,7 @@
       "category": "layout",
       "description": "Compose application header, main, sidebar, and footer regions.",
       "cssClasses": [
-        "nq-app-shell"
+        "hw-app-shell"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5232,7 +5232,7 @@
       "notes": [
         "Give the main region a stable unique identifier and provide an appropriate skip link in the application."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/app-shell"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/app-shell"
     },
     {
       "id": "page-header",
@@ -5241,7 +5241,7 @@
       "category": "layout",
       "description": "Page title, description, breadcrumb, and actions.",
       "cssClasses": [
-        "nq-page-header"
+        "hw-page-header"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5275,7 +5275,7 @@
         ]
       },
       "notes": [],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/page-header"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/page-header"
     },
     {
       "id": "secondary-nav",
@@ -5284,7 +5284,7 @@
       "category": "platforms",
       "description": "Ordinary secondary page links with current-page and keyboard focus states.",
       "cssClasses": [
-        "nq-secondary-nav"
+        "hw-secondary-nav"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5375,9 +5375,9 @@
       },
       "notes": [
         "Native anchors; no tablist or menu semantics and no controller lifecycle.",
-        "Opt-in mobile variant: equal-width icon-over-label links, top current-page indicator, 300ms color motion; reduced motion and original Nasaq remain immediate."
+        "Opt-in mobile variant: equal-width icon-over-label links, top current-page indicator, 300ms color motion; reduced motion and original Hawiyah remain immediate."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/secondary-nav"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/secondary-nav"
     },
     {
       "id": "portal-layout",
@@ -5386,8 +5386,8 @@
       "category": "platforms",
       "description": "Arabic-default portal shell composing responsive header, optional secondary navigation and breadcrumb, main container and footer.",
       "cssClasses": [
-        "nq-portal-layout",
-        "nq-portal-layout-main"
+        "hw-portal-layout",
+        "hw-portal-layout-main"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5481,7 +5481,7 @@
         "Generated main target IDs connect the skip link; use explicit stable IDs for independently serialized Angular roots. Angular SSR/hydration remains unverified.",
         "Arabic and RTL are independent defaults; localize all labels when selecting English."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/portal-layout"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/portal-layout"
     },
     {
       "id": "mobile-top-bar",
@@ -5490,7 +5490,7 @@
       "category": "platforms",
       "description": "Mobile page title, optional subtitle, logical back link and native action slots.",
       "cssClasses": [
-        "nq-mobile-top-bar"
+        "hw-mobile-top-bar"
       ],
       "interaction": "static",
       "sourceType": "static",
@@ -5582,7 +5582,7 @@
         "Source-mapped typography; intrinsic 60px minimum header and 44px action targets are accessibility adaptations.",
         "No device status bar, implicit history navigation or component-owned motion."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/mobile-top-bar"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/mobile-top-bar"
     },
     {
       "id": "navigation-drawer",
@@ -5591,9 +5591,9 @@
       "category": "platforms",
       "description": "Modal page navigation with nested disclosures, current-page treatment and route-close behavior.",
       "cssClasses": [
-        "nq-navigation-drawer",
-        "nq-navigation-drawer-nav",
-        "nq-navigation-drawer-row"
+        "hw-navigation-drawer",
+        "hw-navigation-drawer-nav",
+        "hw-navigation-drawer-row"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -5685,7 +5685,7 @@
         "Composes existing modal Drawer; native page links/details, not menu/tree roles.",
         "327px preferred width, safe areas and 44px rows; no source drawer entrance timing established."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/navigation-drawer"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/navigation-drawer"
     },
     {
       "id": "site-verification",
@@ -5694,8 +5694,8 @@
       "category": "platforms",
       "description": "Native disclosure above a site header for application-owned domain, HTTPS and platform-registration information.",
       "cssClasses": [
-        "nq-site-verification",
-        "nq-portal-masthead"
+        "hw-site-verification",
+        "hw-portal-masthead"
       ],
       "interaction": "interactive",
       "sourceType": "native",
@@ -5787,7 +5787,7 @@
         "Native details/summary works without a JavaScript controller.",
         "Default wording does not claim government status or registration. Applications supply verified wording, certificate links and authorized artwork."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/site-verification"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/site-verification"
     },
     {
       "id": "content-navigation",
@@ -5796,13 +5796,13 @@
       "category": "navigation",
       "description": "Nested in-page section links with scroll-following current state, local scroll roots and configurable offsets.",
       "cssClasses": [
-        "nq-content-nav",
-        "nq-content-nav-heading",
-        "nq-content-nav-list",
-        "nq-content-nav-sublist",
-        "nq-content-nav-link",
-        "nq-content-nav-marker",
-        "nq-content-nav-label"
+        "hw-content-nav",
+        "hw-content-nav-heading",
+        "hw-content-nav-list",
+        "hw-content-nav-sublist",
+        "hw-content-nav-link",
+        "hw-content-nav-marker",
+        "hw-content-nav-label"
       ],
       "interaction": "interactive",
       "sourceType": "interactive",
@@ -5904,7 +5904,7 @@
         "Guide demos use bounded local scroll roots and do not change the guide URL.",
         "Verification remains scoped to explicitly recorded evidence; no official DGA certification is claimed."
       ],
-      "documentation": "https://mohamedembarak.github.io/nasaq/#component/content-navigation"
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/content-navigation"
     }
   ],
   "limitations": [
@@ -6026,7 +6026,7 @@
   "sourceTypeDefinitions": {
     "native": "The main interaction uses browser-native semantics.",
     "static": "Semantic composition or CSS layout; content and application actions are caller-owned.",
-    "interactive": "Nasaq adds state, keyboard behavior, or lifecycle management.",
+    "interactive": "Hawiyah adds state, keyboard behavior, or lifecycle management.",
     "integration": "A documented application recipe for an external engine or service; not counted among the 83 components."
   },
   "scope": {
@@ -6088,8 +6088,8 @@
     "manualScreenReader": "not performed"
   },
   "license": "Apache-2.0",
-  "repository": "https://github.com/MohamedEmbarak/nasaq",
-  "guide": "https://mohamedembarak.github.io/nasaq/",
+  "repository": "https://github.com/MohamedEmbarak/hawiyah",
+  "guide": "https://mohamedembarak.github.io/hawiyah/",
   "documentationVerification": {
     "date": "2026-10-28",
     "result": "passed",

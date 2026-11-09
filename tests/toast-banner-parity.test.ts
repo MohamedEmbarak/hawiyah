@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import { NqToastRegionComponent } from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import { HwToastRegionComponent } from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import { act, createElement as react } from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -64,7 +64,7 @@ async function mount(adapter: Adapter) {
     run = async action => { action(); await nextTick(); await nextTick(); };
     disposal.push(() => app.unmount());
   } else {
-    const fixture = TestBed.createComponent(NqToastRegionComponent);
+    const fixture = TestBed.createComponent(HwToastRegionComponent);
     host.append(fixture.nativeElement);
     let subscription: {unsubscribe(): void} | undefined;
     paint = () => {
@@ -78,8 +78,8 @@ async function mount(adapter: Adapter) {
     disposal.push(() => fixture.destroy());
   }
   await run(paint);
-  const region = host.querySelector<HTMLElement>('.nq-toast-region')!;
-  const button = (id: string) => region.querySelector<HTMLButtonElement>(`[data-nq-toast="${id}"] [data-nq-dismiss]`);
+  const region = host.querySelector<HTMLElement>('.hw-toast-region')!;
+  const button = (id: string) => region.querySelector<HTMLButtonElement>(`[data-hw-toast="${id}"] [data-hw-dismiss]`);
   const press = (id: string) => run(() => { const close = button(id)!; close.focus(); close.click(); });
   return {region, button, press, external, dismiss, run,
     mode(value: typeof response) {response = value;},
@@ -97,7 +97,7 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
     expect(ui.region.hasAttribute('aria-live')).toBe(false);
     expect(polite?.querySelector('[data-tone="danger"]')).not.toBeNull();
     expect(urgent?.querySelector('[data-tone="info"]')).not.toBeNull();
-    expect(ui.region.querySelectorAll('.nq-toast-icon[aria-hidden="true"]')).toHaveLength(4);
+    expect(ui.region.querySelectorAll('.hw-toast-icon[aria-hidden="true"]')).toHaveLength(4);
     expect(ui.button('pinned')).toBeNull();
     expect(ui.button('one')?.getAttribute('aria-label')).toBe('إغلاق الإشعار: الأول');
     await ui.press('one'); expect(document.activeElement).toBe(ui.button('two'));
@@ -106,7 +106,7 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
     expect(ui.dismiss.mock.calls.map(([id]) => id)).toEqual(['one', 'urgent', 'two']);
     expect(ui.region.querySelector('[role="status"]')).toBe(polite);
     expect(ui.region.querySelector('[role="alert"]')).toBe(urgent);
-    expect(ui.region.querySelector('[data-nq-toast="pinned"]')).not.toBeNull();
+    expect(ui.region.querySelector('[data-hw-toast="pinned"]')).not.toBeNull();
   });
   it(`${adapter} discards rejected requests and respects owner-directed and external focus`, async () => {
     const ui = await mount(adapter);
@@ -118,7 +118,7 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
   });
   it(`${adapter} exposes dismiss actions only while the owner listens`, async () => {
     const ui = await mount(adapter);
-    await ui.listen(false); expect(ui.region.querySelector('[data-nq-dismiss]')).toBeNull();
+    await ui.listen(false); expect(ui.region.querySelector('[data-hw-dismiss]')).toBeNull();
     await ui.listen(true); expect(ui.button('one')).not.toBeNull(); expect(ui.button('pinned')).toBeNull();
   });
 }
@@ -128,23 +128,23 @@ it('React and Vue retain authored inline placement in server-rendered markup', a
   const html = [renderToStaticMarkup(react(ReactToast, {...attrs, messages: []})), await renderToString(createSSRApp({render: () => h(VueToast, {...attrs, messages: []})}))];
   for (const markup of html) {
     const host = document.createElement('div'); host.innerHTML = markup;
-    const region = host.querySelector('.nq-toast-region')!;
+    const region = host.querySelector('.hw-toast-region')!;
     expect(region.getAttribute('data-variant')).toBe('inline');
     expect(region.getAttribute('data-position')).toBe('bottom-start');
     expect(region.querySelectorAll('[aria-live]')).toHaveLength(2);
-    expect(region.querySelector('.nq-toast-icon')).toBeNull();
+    expect(region.querySelector('.hw-toast-icon')).toBeNull();
   }
 });
 
 it('vanilla retains mixed live buckets, protects pinned messages, skips disabled actions and restores authored markup', () => {
-  const root = document.createElement('section'); root.className = 'nq-toast-region'; root.lang = 'ar';
-  root.innerHTML = '<div data-nq-live="polite"><div data-nq-toast id="one"><strong>الأول</strong><button data-nq-dismiss>×</button></div><div data-nq-toast id="pinned" data-nq-dismissible="false"><button data-nq-dismiss>×</button></div><div data-nq-toast id="blocked"><button data-nq-dismiss disabled>×</button></div></div><div data-nq-live="assertive"><div data-nq-toast="last"><strong>الأخير</strong><button data-nq-dismiss>×</button></div></div>';
+  const root = document.createElement('section'); root.className = 'hw-toast-region'; root.lang = 'ar';
+  root.innerHTML = '<div data-hw-live="polite"><div data-hw-toast id="one"><strong>الأول</strong><button data-hw-dismiss>×</button></div><div data-hw-toast id="pinned" data-hw-dismissible="false"><button data-hw-dismiss>×</button></div><div data-hw-toast id="blocked"><button data-hw-dismiss disabled>×</button></div></div><div data-hw-live="assertive"><div data-hw-toast="last"><strong>الأخير</strong><button data-hw-dismiss>×</button></div></div>';
   document.body.append(root);
   const original = root.outerHTML, callback = vi.fn();
   const controller = createToastRegion(root, {variant: 'banner', position: 'inline', onDismiss: callback});
   expect(root.getAttribute('role')).toBe('region'); expect(root.hasAttribute('aria-live')).toBe(false);
   expect(root.querySelector('[role="alert"]')?.getAttribute('aria-live')).toBe('assertive');
-  const first = root.querySelector<HTMLButtonElement>('#one button')!, last = root.querySelector<HTMLButtonElement>('[data-nq-toast="last"] button')!;
+  const first = root.querySelector<HTMLButtonElement>('#one button')!, last = root.querySelector<HTMLButtonElement>('[data-hw-toast="last"] button')!;
   expect(first.getAttribute('aria-label')).toBe('إغلاق الإشعار: الأول');
   expect(root.querySelector<HTMLButtonElement>('#pinned button')!.hidden).toBe(true);
   controller.dismiss('pinned'); expect(root.querySelector<HTMLElement>('#pinned')!.hidden).toBe(false);
@@ -155,8 +155,8 @@ it('vanilla retains mixed live buckets, protects pinned messages, skips disabled
 });
 
 it('vanilla preserves unrelated focus and does not intercept nested region dismissals', () => {
-  const root = document.createElement('div'); root.className = 'nq-toast-region';
-  root.innerHTML = '<div data-nq-toast id="outer" role="alert"><button data-nq-dismiss>Dismiss</button></div><div class="nq-toast-region"><div data-nq-toast id="inner"><button data-nq-dismiss>Dismiss</button></div></div>';
+  const root = document.createElement('div'); root.className = 'hw-toast-region';
+  root.innerHTML = '<div data-hw-toast id="outer" role="alert"><button data-hw-dismiss>Dismiss</button></div><div class="hw-toast-region"><div data-hw-toast id="inner"><button data-hw-dismiss>Dismiss</button></div></div>';
   const external = document.createElement('button'); document.body.append(root, external);
   const dismissed = vi.fn(); const controller = createToastRegion(root, {onDismiss: dismissed});
   expect(root.getAttribute('role')).toBe('status');
@@ -169,10 +169,10 @@ it('vanilla preserves unrelated focus and does not intercept nested region dismi
 
 
 it('retains owner focus when a notice keeps its identity through DOM replacement', () => {
-  const region = document.createElement('section'); region.className = 'nq-toast-region'; region.tabIndex = -1;
-  region.innerHTML = '<div data-nq-toast="one"><button data-nq-dismiss>Close</button></div><div data-nq-toast="two"><button data-nq-dismiss>Close</button></div>';
+  const region = document.createElement('section'); region.className = 'hw-toast-region'; region.tabIndex = -1;
+  region.innerHTML = '<div data-hw-toast="one"><button data-hw-dismiss>Close</button></div><div data-hw-toast="two"><button data-hw-dismiss>Close</button></div>';
   document.body.append(region);
-  const original = region.querySelector<HTMLElement>('[data-nq-toast="one"]')!;
+  const original = region.querySelector<HTMLElement>('[data-hw-toast="one"]')!;
   original.querySelector('button')!.focus();
   const recover = prepareToastDismissFocus(region, original);
   original.replaceWith(original.cloneNode(true));
@@ -182,12 +182,12 @@ it('retains owner focus when a notice keeps its identity through DOM replacement
 it('vanilla handles authored messages appended or unpinned after mounting', async () => {
   const root = document.createElement('div'); root.lang = 'en'; document.body.append(root);
   const controller = createToastRegion(root);
-  const notice = document.createElement('div'); notice.dataset.nqToast = 'later'; notice.dataset.nqDismissible = 'false';
-  notice.innerHTML = '<div class="nq-toast-content"><strong>Later</strong><p>Details</p></div><button data-nq-dismiss>×</button>';
+  const notice = document.createElement('div'); notice.dataset.hwToast = 'later'; notice.dataset.hwDismissible = 'false';
+  notice.innerHTML = '<div class="hw-toast-content"><strong>Later</strong><p>Details</p></div><button data-hw-dismiss>×</button>';
   root.append(notice); await Promise.resolve();
   const close = notice.querySelector('button')!;
   expect(close.hidden).toBe(true); expect(close.getAttribute('aria-label')).toBe('Dismiss notification: Later');
-  delete notice.dataset.nqDismissible; await Promise.resolve(); expect(close.hidden).toBe(false);
+  delete notice.dataset.hwDismissible; await Promise.resolve(); expect(close.hidden).toBe(false);
   close.hidden = true; close.setAttribute('aria-label', 'Application action');
   notice.querySelector('strong')!.textContent = 'Updated'; await Promise.resolve();
   expect(close.hidden).toBe(true); expect(close.getAttribute('aria-label')).toBe('Application action');
@@ -200,9 +200,9 @@ it('Vue consumes a one-shot dismiss listener without leaving inert actions', asy
   const dismiss = vi.fn();
   const app = createApp({render: () => h(VueToast, {messages: notices(), onDismissOnce: dismiss})});
   app.mount(host); disposal.push(() => app.unmount());
-  host.querySelector<HTMLButtonElement>('[data-nq-dismiss]')!.click();
+  host.querySelector<HTMLButtonElement>('[data-hw-dismiss]')!.click();
   await nextTick();
   expect(dismiss.mock.calls).toEqual([['one']]);
-  expect(host.querySelector('[data-nq-dismiss]')).toBeNull();
-  expect(host.querySelectorAll('[data-nq-toast]')).toHaveLength(4);
+  expect(host.querySelector('[data-hw-dismiss]')).toBeNull();
+  expect(host.querySelectorAll('[data-hw-toast]')).toHaveLength(4);
 });

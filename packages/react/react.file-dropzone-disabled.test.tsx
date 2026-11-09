@@ -12,7 +12,7 @@ async function fixture(firstLegend = false) {
   const root = createRoot(container); roots.push(root); const changed = vi.fn();
   const picker = <FileDropzone label="Upload" onFilesChange={changed} />;
   await act(() => root.render(<fieldset disabled>{firstLegend ? <legend>{picker}</legend> : picker}</fieldset>));
-  const input = container.querySelector('input')!; const zone = container.querySelector('.nq-file-dropzone')!;
+  const input = container.querySelector('input')!; const zone = container.querySelector('.hw-file-dropzone')!;
   // JSDOM has no DataTransfer; retain the actual native :disabled computation.
   let files: File[] = [];
   Object.defineProperty(input, 'files', { configurable: true, get: () => files, set: value => { files = Array.from(value); } });

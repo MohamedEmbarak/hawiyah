@@ -10,14 +10,14 @@ const ids = ['tooltip', 'popover', 'menu', 'drawer', 'collapsible', 'tree-view']
 for (const [framework, language, locale] of projects) {
   test(`six disclosure projects support keyboard interaction in ${framework} ${language} ${locale}`, async ({page}) => {
     test.setTimeout(360000);
-    await page.addInitScript(lang => { if (window === window.top) localStorage.setItem('nasaq-locale', lang); }, locale);
+    await page.addInitScript(lang => { if (window === window.top) localStorage.setItem('hawiyah-locale', lang); }, locale);
     for (const id of ids) await test.step(id, async () => {
       await page.goto(`/#component/${id}`);
       await page.locator('[data-guide-tab="playground"]').click();
       await page.locator('[data-project-framework]').selectOption(framework);
       if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-      await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-      const project = page.frameLocator('.nq-ide-frame').locator(`[data-disclosure-project="${id}"]`);
+      await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+      const project = page.frameLocator('.hw-ide-frame').locator(`[data-disclosure-project="${id}"]`);
       await expect(project).toBeVisible();
       const button = project.locator('button').first();
       if (id === 'tooltip') {
@@ -104,7 +104,7 @@ for (const [framework, language, locale] of projects) {
         await expect(items).toHaveCount(2);
       }
       await expect(page).toHaveURL(new RegExp(`#component/${id}$`));
-      await expect(page.locator('.nq-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
+      await expect(page.locator('.hw-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
     });
   });
 }

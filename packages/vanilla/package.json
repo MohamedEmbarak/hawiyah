@@ -1,8 +1,8 @@
 {
-  "name": "@nasaq/vanilla",
+  "name": "@hawiyah/vanilla",
   "version": "0.2.0",
   "private": true,
-  "description": "Vanilla JavaScript controllers that enhance semantic HTML with Nasaq behavior and cleanup",
+  "description": "JavaScript controllers for Hawiyah, a UI library built to comply with the DGA Platforms Code",
   "type": "module",
   "sideEffects": false,
   "files": [
@@ -23,13 +23,13 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@nasaq/core": "workspace:*"
+    "@hawiyah/core": "workspace:*"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
   "keywords": [
-    "nasaq",
+    "hawiyah",
     "dga",
     "sdga",
     "platforms-code",
@@ -42,12 +42,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEmbarak/nasaq.git",
+    "url": "git+https://github.com/MohamedEmbarak/hawiyah.git",
     "directory": "packages/vanilla"
   },
-  "homepage": "https://mohamedembarak.github.io/nasaq/",
+  "homepage": "https://mohamedembarak.github.io/hawiyah/",
   "bugs": {
-    "url": "https://github.com/MohamedEmbarak/nasaq/issues"
+    "url": "https://github.com/MohamedEmbarak/hawiyah/issues"
   },
   "author": {
     "name": "Development Team, National Platforms Sector — National Information Center"

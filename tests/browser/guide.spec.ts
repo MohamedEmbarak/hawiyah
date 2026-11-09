@@ -4,8 +4,8 @@ import { catalog } from '../../apps/playground/src/data';
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('nasaq-locale', 'en');
-    localStorage.setItem('nasaq-mode', 'light');
+    localStorage.setItem('hawiyah-locale', 'en');
+    localStorage.setItem('hawiyah-mode', 'light');
   });
 });
 
@@ -15,7 +15,7 @@ test('getting started links to real framework setup and every catalog entry has 
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/#docs/getting-started');
   await expect(page.getByRole('heading', { name: 'Getting started', exact: true })).toBeVisible();
-  await expect(page.locator('.guide-article')).toContainText('npm install @nasaq/styles @nasaq/react');
+  await expect(page.locator('.guide-article')).toContainText('npm install @hawiyah/styles @hawiyah/react');
   await page.locator('.guide-choice[href="#docs/react"]').click();
   await expect(page.getByRole('heading', { name: 'A controlled field' })).toBeVisible();
   for (const [id, name] of catalog) {
@@ -34,14 +34,14 @@ test('a component reference can mount, interact, reset and remount its controlle
   await page.goto('/#component/password-field');
   const field = page.locator('[data-guide-canvas] input');
   await field.fill('example-password');
-  await page.locator('[data-guide-canvas] [data-nq-password-toggle]').click();
+  await page.locator('[data-guide-canvas] [data-hw-password-toggle]').click();
   await expect(field).toHaveAttribute('type', 'text');
   await page.locator('[data-action=reset-component-demo]').click();
   await expect(field).toHaveAttribute('type', 'password');
   await page.evaluate(() => { location.hash = 'docs/lifecycle'; });
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('State & component lifecycle');
   await page.evaluate(() => { location.hash = 'component/password-field'; });
-  await page.locator('[data-guide-canvas] [data-nq-password-toggle]').click();
+  await page.locator('[data-guide-canvas] [data-hw-password-toggle]').click();
   await expect(field).toHaveAttribute('type', 'text');
 });
 

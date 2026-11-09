@@ -1,10 +1,10 @@
-# @nasaq/vanilla
+# @hawiyah/vanilla
 
 Progressive enhancement for semantic HTML. Import styles separately:
 
 ```js
-import '@nasaq/styles/styles.css';
-import { enhance } from '@nasaq/vanilla';
+import '@hawiyah/styles/styles.css';
+import { enhance } from '@hawiyah/vanilla';
 
 const destroy = enhance(document.querySelector('#application'));
 // Before the application subtree is removed:
@@ -27,7 +27,7 @@ static content and native controls use ordinary semantic HTML recipes.
 
 Native buttons, fields, select, file input, progress, and details/summary accordions
 work without this package. Tabs, single-select combobox, tooltip, and pagination
-enhance explicit `data-nq` hooks. A native `<dialog>` supplies modality, its top
+enhance explicit `data-hw` hooks. A native `<dialog>` supplies modality, its top
 layer, Escape handling, and focus containment through `showModal()`/`close()`.
 Supply accessible names and localized text in markup. The default combobox
 results announcement and required-selection message are Arabic; override
@@ -80,7 +80,7 @@ is still needed before production claims.
 
 ## Native input types
 
-Use native inputs inside a labelled `.nq-field`; names, autocomplete, required,
+Use native inputs inside a labelled `.hw-field`; names, autocomplete, required,
 min/max/step, readonly, disabled, hints and errors remain application-controlled.
 
 | Input family | Semantics |
@@ -92,14 +92,14 @@ min/max/step, readonly, disabled, hints and errors remain application-controlled
 | file | Browser-owned FileList; scripts may clear it, never preload a local file. Dropzone accepts explicit user drops. |
 | color, hidden, submit, reset, button | Native browser behavior; hidden inputs do not provide constraint validation. |
 
-Licensed under Apache-2.0. Install with `npm install @nasaq/styles @nasaq/vanilla`.
+Licensed under Apache-2.0. Install with `npm install @hawiyah/styles @hawiyah/vanilla`.
 This is a pre-1.0 release, so a minor version may still change its API.
 
 ## Portal shell
 
 The [portal layout recipe](PORTAL.md) provides a complete header, responsive
 navigation, secondary links, breadcrumbs, content container and footer.
-`createPortalHeader` is also registered as `data-nq="portal-header"` in `enhance`.
+`createPortalHeader` is also registered as `data-hw="portal-header"` in `enhance`.
 
 ## NIC card composition
 

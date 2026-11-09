@@ -1,18 +1,18 @@
 import { computed, inject, onBeforeUnmount, onMounted, onUpdated, provide, ref, useId } from 'vue';
-import { observeFieldValue, type FieldValueObserver } from '@nasaq/core';
+import { observeFieldValue, type FieldValueObserver } from '@hawiyah/core';
 import type { ComputedRef, InjectionKey, Ref, VNodeChild } from 'vue';
 
 export interface FieldDecoration { label?: string; hint?: string; error?: string; required?: boolean }
 export const decorationProps = { label: String, hint: String, error: String, required: { type: Boolean, default: undefined } } as const;
 interface FieldContext { id: string; labelId?: string; describedby?: string; invalid?: boolean; required?: boolean }
-const fieldKey: InjectionKey<ComputedRef<FieldContext>> = Symbol('nasaq-field');
+const fieldKey: InjectionKey<ComputedRef<FieldContext>> = Symbol('hawiyah-field');
 export function provideField(value: ComputedRef<FieldContext>) { provide(fieldKey, value); }
 export function joinIds(...values: unknown[]): string | undefined {
   const ids = values.filter(Boolean).flatMap(value => String(value).trim().split(/\s+/)).filter(Boolean);
   return [...new Set(ids)].join(' ') || undefined;
 }
 export function useField(props: FieldDecoration, attrs: Record<string, unknown>, separateNestedHelpers = false) {
-  const generated = `nq-${useId()}`;
+  const generated = `hw-${useId()}`;
   const parent = inject(fieldKey, undefined);
   const decorated = computed(() => Boolean(props.label || props.hint || props.error));
   const id = computed(() => String(attrs.id ?? parent?.value.id ?? generated));

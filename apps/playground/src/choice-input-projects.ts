@@ -29,8 +29,8 @@ export function choiceInputProject(id: ChoiceInputId, framework: ProjectFramewor
   const disable = t('Disable field', 'تعطيل الحقل'), submit = t('Inspect form values', 'عرض قيم النموذج'), reset = t('Reset', 'إعادة الضبط');
   const modelLabel = t('Current value', 'القيمة الحالية'), formLabel = t('Submitted values', 'القيم المرسلة');
   const attrs = `data-choice-input-project="${id}" lang="${locale}" dir="${direction}"`;
-  const buttons = `<div class="nq-inline"><button type="submit" class="nq-button">${submit}</button><button type="reset" class="nq-button" data-variant="secondary">${reset}</button></div>`;
-  const css = "@import '@nasaq/styles/styles.css';\n\n.demo { display:grid; gap:1rem; max-inline-size:34rem; }\n.demo fieldset { min-inline-size:0; }\n.demo > fieldset { border:0; margin:0; padding:0; }\n.demo output { overflow-wrap:anywhere; }\n";
+  const buttons = `<div class="hw-inline"><button type="submit" class="hw-button">${submit}</button><button type="reset" class="hw-button" data-variant="secondary">${reset}</button></div>`;
+  const css = "@import '@hawiyah/styles/styles.css';\n\n.demo { display:grid; gap:1rem; max-inline-size:34rem; }\n.demo fieldset { min-inline-size:0; }\n.demo > fieldset { border:0; margin:0; padding:0; }\n.demo output { overflow-wrap:anywhere; }\n";
   const initialCode = JSON.stringify(initial);
   const ext = typed ? 'ts' : 'js';
   const collect = `function submittedValues(form${typed ? ': HTMLFormElement' : ''}) {
@@ -42,35 +42,35 @@ export function choiceInputProject(id: ChoiceInputId, framework: ProjectFramewor
   const type = multiple ? 'string[]' : 'string';
 
   if (framework === 'vanilla') {
-    const inputLabel = `<label class="nq-label" for="choice-input">${label}</label>`;
-    const hints = `<p class="nq-hint" id="choice-hint">${hint}</p>`;
-    const inputAttrs = 'id="choice-input" class="nq-input" aria-describedby="choice-hint"';
+    const inputLabel = `<label class="hw-label" for="choice-input">${label}</label>`;
+    const hints = `<p class="hw-hint" id="choice-hint">${hint}</p>`;
+    const inputAttrs = 'id="choice-input" class="hw-input" aria-describedby="choice-hint"';
     const fields = {
-      combobox: `<div class="nq-field nq-combobox" data-control>${inputLabel}
-    <input ${inputAttrs} required data-nq-combobox-input autocomplete="off">
-    <input type="hidden" name="${name}" value="riyadh" data-nq-combobox-value>
-    <ul class="nq-listbox" hidden data-nq-combobox-list>${options.map(o => `<li class="nq-option" data-nq-value="${o.value}"${o.disabled ? ' aria-disabled="true"' : ''}>${o.label}</li>`).join('')}</ul>
+      combobox: `<div class="hw-field hw-combobox" data-control>${inputLabel}
+    <input ${inputAttrs} required data-hw-combobox-input autocomplete="off">
+    <input type="hidden" name="${name}" value="riyadh" data-hw-combobox-value>
+    <ul class="hw-listbox" hidden data-hw-combobox-list>${options.map(o => `<li class="hw-option" data-hw-value="${o.value}"${o.disabled ? ' aria-disabled="true"' : ''}>${o.label}</li>`).join('')}</ul>
     ${hints}</div>`,
-      'pin-input': `<div class="nq-field" data-control>${inputLabel}
-    <input ${inputAttrs} data-nq-pin-input name="${name}" value="0123" maxlength="4" required>${hints}</div>`,
-      'tag-input': `<div class="nq-field nq-tag-input" data-control data-nq-value='${initialCode}'>${inputLabel}
-    <div class="nq-tags" data-nq-tags></div><input ${inputAttrs} data-nq-tag-input name="${name}" required>${hints}</div>`,
-      'multi-select': `<fieldset class="nq-multi-select" data-control data-nq-required="true" aria-describedby="choice-hint"><legend class="nq-label">${label}</legend>
-    <label for="choice-input">${search}</label><input ${inputAttrs} type="search" data-nq-multiselect-search>
-    ${options.map(o => `<label class="nq-choice" data-nq-option><input type="checkbox" class="nq-checkbox" name="${name}" value="${o.value}"${o.value === 'riyadh' ? ' checked' : ''}${o.disabled ? ' disabled' : ''}>${o.label}</label>`).join('\n    ')}
-    <span class="nq-sr-only" role="status" data-nq-status></span>${hints}</fieldset>`,
+      'pin-input': `<div class="hw-field" data-control>${inputLabel}
+    <input ${inputAttrs} data-hw-pin-input name="${name}" value="0123" maxlength="4" required>${hints}</div>`,
+      'tag-input': `<div class="hw-field hw-tag-input" data-control data-hw-value='${initialCode}'>${inputLabel}
+    <div class="hw-tags" data-hw-tags></div><input ${inputAttrs} data-hw-tag-input name="${name}" required>${hints}</div>`,
+      'multi-select': `<fieldset class="hw-multi-select" data-control data-hw-required="true" aria-describedby="choice-hint"><legend class="hw-label">${label}</legend>
+    <label for="choice-input">${search}</label><input ${inputAttrs} type="search" data-hw-multiselect-search>
+    ${options.map(o => `<label class="hw-choice" data-hw-option><input type="checkbox" class="hw-checkbox" name="${name}" value="${o.value}"${o.value === 'riyadh' ? ' checked' : ''}${o.disabled ? ' disabled' : ''}>${o.label}</label>`).join('\n    ')}
+    <span class="hw-sr-only" role="status" data-hw-status></span>${hints}</fieldset>`,
     };
     const config = combo ? `, { getResultsMessage: count => count + ' ${results}', invalidSelectionMessage: '${required}' }` : '';
     const html = `<!doctype html>
 <html lang="${locale}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${label}</title></head>
 <body><form class="demo" ${attrs}>
-  <fieldset data-field><legend class="nq-sr-only">${label}</legend>${fields[id]}</fieldset>
+  <fieldset data-field><legend class="hw-sr-only">${label}</legend>${fields[id]}</fieldset>
   <label><input type="checkbox" data-disable> ${disable}</label>
   <p>${modelLabel} <output data-model></output></p>
   ${buttons}
   <p>${formLabel} <output data-submitted>—</output></p>
 </form><script type="module" src="./main.${ext}"></script></body></html>`;
-    const js = `import { create${component} } from '@nasaq/vanilla';
+    const js = `import { create${component} } from '@hawiyah/vanilla';
 import './style.css';
 
 ${collect}
@@ -85,7 +85,7 @@ const controller = create${component}(root${config});
 const listeners = new AbortController();
 const events = { signal: listeners.signal };
 const refresh = () => { model.value = JSON.stringify(controller.value); };
-root.addEventListener('nq:change', refresh, events);
+root.addEventListener('hw:change', refresh, events);
 disable.addEventListener('change', () => { field.disabled = disable.checked; }, events);
 form.addEventListener('submit', event => { event.preventDefault(); submitted.value = submittedValues(form); }, events);
 form.addEventListener('reset', () => queueMicrotask(() => { field.disabled = false; submitted.value = '—'; refresh(); }), events);
@@ -99,7 +99,7 @@ window.addEventListener('pagehide', () => { listeners.abort(); controller.destro
     const jsx = typed ? 'tsx' : 'jsx';
     const props = combo ? `options={offices} emptyMessage="${empty}" getResultsMessage={count => count + ' ${results}'} requiredMessage="${required}"` : pin ? 'length={4}' : tags ? `getRemoveLabel={tag => '${remove} ' + tag} requiredMessage="${required}"` : `options={offices} searchLabel="${search}" emptyMessage="${empty}" requiredMessage="${required}"`;
     const html = `import { useState } from 'react';
-import { ${component} } from '@nasaq/react';
+import { ${component} } from '@hawiyah/react';
 
 ${data}${collect}
 
@@ -126,7 +126,7 @@ export default function App() {
     const props = combo ? `:options="offices" empty-message="${empty}" :results-message="count => count + ' ${results}'" required-message="${required}"` : pin ? ':length="4"' : tags ? `:remove-label="tag => '${remove} ' + tag" required-message="${required}"` : `:options="offices" search-label="${search}" empty-message="${empty}" required-message="${required}"`;
     const html = `<script setup${typed ? ' lang="ts"' : ''}>
 import { ref } from 'vue';
-import { ${component} } from '@nasaq/vue';
+import { ${component} } from '@hawiyah/vue';
 
 ${data}const initial = ${initialCode};
 const value = ref${typed ? `<${type === 'string[]' ? 'readonly string[]' : type}>` : ''}(initial);
@@ -159,14 +159,14 @@ function reset() { value.value = initial; locked.value = false; submitted.value 
   selectedMessage = (count: number) => count + ' ${selected}';` : '';
   const html = `import { Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Nq${component}Component } from '@nasaq/angular';
+import { Hw${component}Component } from '@hawiyah/angular';
 
 ${data}${collect}
 
 @Component({
-  selector: 'app-root', standalone: true, imports: [ReactiveFormsModule, Nq${component}Component],
+  selector: 'app-root', standalone: true, imports: [ReactiveFormsModule, Hw${component}Component],
   template: \`<form #form class="demo" ${attrs} (submit)="$event.preventDefault(); submit(form)" (reset)="$event.preventDefault(); reset()">
-    <nq-${id} ${common} ${props} [formControl]="control" />
+    <hw-${id} ${common} ${props} [formControl]="control" />
     <label><input #toggle type="checkbox" data-disable [checked]="control.disabled" (change)="setDisabled(toggle.checked)"> ${disable}</label>
     <p>${modelLabel} <output data-model>{{ model }}</output></p>
     ${buttons}

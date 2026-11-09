@@ -2,7 +2,7 @@ import {expect, test} from '@playwright/test';
 
 test.beforeEach(async ({page}) => {
   await page.addInitScript(() => {
-    if (window === window.top) localStorage.setItem('nasaq-locale','en');
+    if (window === window.top) localStorage.setItem('hawiyah-locale','en');
   });
 });
 
@@ -12,7 +12,7 @@ test('a slow preview can acknowledge startup after the timeout', async ({page}) 
     if (window !== window.top) return;
     let acknowledgement: MessageEvent | undefined;
     window.addEventListener('message', event => {
-      if (!event.isTrusted || event.data?.channel !== 'nasaq-component-preview' || event.data.type !== 'ready') return;
+      if (!event.isTrusted || event.data?.channel !== 'hawiyah-component-preview' || event.data.type !== 'ready') return;
       event.stopImmediatePropagation();
       acknowledgement = event;
       document.documentElement.dataset.previewAcknowledged = '';
@@ -25,7 +25,7 @@ test('a slow preview can acknowledge startup after the timeout', async ({page}) 
   });
   await page.goto('/#component/button');
   await page.locator('[data-guide-tab="playground"]').click();
-  const status = page.locator('.nq-ide-status');
+  const status = page.locator('.hw-ide-status');
   await expect(page.locator('html')).toHaveAttribute('data-preview-acknowledged','',{timeout:45000});
   await expect(status).toHaveText('The preview is still starting…',{timeout:15000});
   await expect(status).toHaveAttribute('data-state','running');
@@ -33,14 +33,14 @@ test('a slow preview can acknowledge startup after the timeout', async ({page}) 
   await expect(status).toHaveAttribute('data-state','error');
   await page.evaluate(() => window.dispatchEvent(new Event('release-preview-acknowledgement')));
   await expect(status).toHaveAttribute('data-state','ready');
-  await expect(page.locator('.nq-ide-console')).toBeEmpty();
+  await expect(page.locator('.hw-ide-console')).toBeEmpty();
 });
 
 test('a successfully started script that reports a real error keeps its error visible', async ({page}) => {
   test.setTimeout(90000);
   await page.goto('/#component/button');
   await page.locator('[data-guide-tab="playground"]').click();
-  const status = page.locator('.nq-ide-status');
+  const status = page.locator('.hw-ide-status');
   await expect(status).toHaveAttribute('data-state','ready',{timeout:45000});
   await page.locator('[data-ide-auto]').uncheck();
   await page.locator('[data-ide-file="js"]').click();
@@ -49,6 +49,6 @@ test('a successfully started script that reports a real error keeps its error vi
   await page.keyboard.insertText("console.error('Fixture initialization failed');");
   await page.locator('[data-ide-run]').click();
   await expect(status).toHaveAttribute('data-state','error');
-  await expect(page.locator('.nq-ide-console')).toContainText('Fixture initialization failed');
-  await expect(page.locator('.nq-ide-console')).toBeVisible();
+  await expect(page.locator('.hw-ide-console')).toContainText('Fixture initialization failed');
+  await expect(page.locator('.hw-ide-console')).toBeVisible();
 });

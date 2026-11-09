@@ -1,7 +1,7 @@
 /* U+20C1 only: the application's normal Arabic/Latin font remains unchanged.
    Source, license and reproducible subset steps accompany the font asset. */
 @font-face {
-  font-family: 'NasaqRiyal';
+  font-family: 'HawiyahRiyal';
   src: url('./assets/fonts/riyal.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
@@ -12,8 +12,8 @@
 /* Render the actual Unicode character, not generated content or an image.
    When paired with an amount, hide this span from assistive technology and
    provide the localized currency name in the amount's accessible text. */
-.nq-riyal {
-  font-family: 'NasaqRiyal', 'Segoe UI', Arial, Tahoma, sans-serif;
+.hw-riyal {
+  font-family: 'HawiyahRiyal', 'Segoe UI', Arial, Tahoma, sans-serif;
   font-size: inherit;
   line-height: inherit;
   font-style: normal;
@@ -22,11 +22,11 @@
 }
 
 /* The amount-field adornment is an icon, independent of small addon labels. */
-.nq-input-addon .nq-riyal {
+.hw-input-addon .hw-riyal {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-inline-size: 1.75rem;
-  font-size: var(--nq-riyal-input-size, 1.75rem);
+  font-size: var(--hw-riyal-input-size, 1.75rem);
   line-height: 1;
 }

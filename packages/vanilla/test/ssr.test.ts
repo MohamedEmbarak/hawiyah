@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, it } from 'vitest';
-import { formatNumber } from '@nasaq/core';
+import { formatNumber } from '@hawiyah/core';
 import { createCombobox, createDialog, createTabs, enhance } from '../src/index.js';
 
 it('imports core and vanilla with no browser globals and makes default enhancement inert', () => {

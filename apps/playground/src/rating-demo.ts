@@ -29,30 +29,30 @@ function ratingCopy(locale: Locale,kind: RatingDemoKind) {
 
 export function ratingDisplayMarkup(locale: Locale,value: number) {
   const copy=ratingCopy(locale,'scores');
-  return `<div class="nq-rating-display" role="img" aria-label="${copy.scoreLabel(value)}: ${copy.valueLabel(value,5)}"><span class="nq-rating-stars" aria-hidden="true">${[0,1,2,3,4].map(index=>`<span class="nq-rating-star">★<span class="nq-rating-fill" style="--nq-rating-fill:${Math.max(0,Math.min(1,value-index))*100}%"></span></span>`).join('')}</span><span class="nq-rating-score" aria-hidden="true">${value}/5</span></div>`;
+  return `<div class="hw-rating-display" role="img" aria-label="${copy.scoreLabel(value)}: ${copy.valueLabel(value,5)}"><span class="hw-rating-stars" aria-hidden="true">${[0,1,2,3,4].map(index=>`<span class="hw-rating-star">★<span class="hw-rating-fill" style="--hw-rating-fill:${Math.max(0,Math.min(1,value-index))*100}%"></span></span>`).join('')}</span><span class="hw-rating-score" aria-hidden="true">${value}/5</span></div>`;
 }
 
 export function ratingDemoMarkup(locale: Locale,kind: RatingDemoKind='selected',prefix=`rating-${kind}`) {
   const copy=ratingCopy(locale,kind);
-  if(kind==='scores')return `<div class="nq-stack">${[0,3.5,5].map(value=>ratingDisplayMarkup(locale,value)).join('')}</div>`;
+  if(kind==='scores')return `<div class="hw-stack">${[0,3.5,5].map(value=>ratingDisplayMarkup(locale,value)).join('')}</div>`;
   const description=kind==='empty'?`${prefix}-hint`:kind==='invalid'?`${prefix}-error`:'';
-  return `<fieldset class="nq-rating" data-nq="rating" ${kind==='readonly'?'data-nq-readonly="true" ':''}${kind==='disabled'?'disabled ':''}${kind==='invalid'?'aria-invalid="true" ':''}${description?`aria-describedby="${description}"`:''}><legend class="nq-label">${copy.label}</legend>${[1,2,3,4,5].map(value=>`<label><input type="radio" class="nq-radio" name="${prefix}" value="${value}" ${value===copy.value?'checked ':''}${kind==='invalid'?'required ':''}aria-label="${copy.valueLabel(value,5)}"><span aria-hidden="true">★</span></label>`).join('')}${kind==='empty'?`<p class="nq-hint" id="${description}">${copy.hint}</p>`:kind==='invalid'?`<p class="nq-error" id="${description}">${copy.error}</p>`:''}</fieldset>`;
+  return `<fieldset class="hw-rating" data-hw="rating" ${kind==='readonly'?'data-hw-readonly="true" ':''}${kind==='disabled'?'disabled ':''}${kind==='invalid'?'aria-invalid="true" ':''}${description?`aria-describedby="${description}"`:''}><legend class="hw-label">${copy.label}</legend>${[1,2,3,4,5].map(value=>`<label><input type="radio" class="hw-radio" name="${prefix}" value="${value}" ${value===copy.value?'checked ':''}${kind==='invalid'?'required ':''}aria-label="${copy.valueLabel(value,5)}"><span aria-hidden="true">★</span></label>`).join('')}${kind==='empty'?`<p class="hw-hint" id="${description}">${copy.hint}</p>`:kind==='invalid'?`<p class="hw-error" id="${description}">${copy.error}</p>`:''}</fieldset>`;
 }
 
 export function ratingNativeMarkup(locale: Locale,kind: RatingDemoKind='selected',controlled=false) {
   const copy=ratingCopy(locale,kind);
   const expression=copy.valueExpression;
   if(kind==='scores')return {
-    react:`<div className="nq-stack">${[0,3.5,5].map(value=>`<RatingDisplay label="${copy.scoreLabel(value)}" value={${value}} getValueLabel={(value, total) => ${expression}} />`).join('')}</div>`,
-    vue:`<div class="nq-stack">${[0,3.5,5].map(value=>`<RatingDisplay label="${copy.scoreLabel(value)}" :value="${value}" :value-label="(value, total) => ${expression}" />`).join('')}</div>`,
-    angular:`<div class="nq-stack">${[0,3.5,5].map(value=>`<nq-rating-display label="${copy.scoreLabel(value)}" [value]="${value}" [valueLabel]="ratingLabel" />`).join('')}</div>`,
+    react:`<div className="hw-stack">${[0,3.5,5].map(value=>`<RatingDisplay label="${copy.scoreLabel(value)}" value={${value}} getValueLabel={(value, total) => ${expression}} />`).join('')}</div>`,
+    vue:`<div class="hw-stack">${[0,3.5,5].map(value=>`<RatingDisplay label="${copy.scoreLabel(value)}" :value="${value}" :value-label="(value, total) => ${expression}" />`).join('')}</div>`,
+    angular:`<div class="hw-stack">${[0,3.5,5].map(value=>`<hw-rating-display label="${copy.scoreLabel(value)}" [value]="${value}" [valueLabel]="ratingLabel" />`).join('')}</div>`,
     angularMember:`\n  ratingLabel = (value: number, total: number) => ${expression};`,
   };
   const common=`label="${copy.label}"${kind==='empty'?` hint="${copy.hint}"`:kind==='invalid'?` required error="${copy.error}"`:''}${kind==='disabled'?' disabled':''}`;
   return {
     react:`<Rating ${common} ${controlled?'value={value} onValueChange={setValue}':`defaultValue={${copy.value}}`} ${kind==='readonly'?'readOnly ':''}getRatingLabel={(value, total) => ${expression}} />`,
     vue:`<Rating ${common} ${controlled?'v-model="value"':`:default-value="${copy.value}"`} ${kind==='readonly'?'readonly ':''}:option-label="(value, total) => ${expression}" />`,
-    angular:`<nq-rating ${common} ${controlled?'[(value)]="value"':`[value]="${copy.value}"`} ${kind==='readonly'?'[readOnly]="true" ':''}[ratingLabel]="ratingLabel" />`,
+    angular:`<hw-rating ${common} ${controlled?'[(value)]="value"':`[value]="${copy.value}"`} ${kind==='readonly'?'[readOnly]="true" ':''}[ratingLabel]="ratingLabel" />`,
     angularMember:`\n  ratingLabel = (value: number, total: number) => ${expression};`,
   };
 }

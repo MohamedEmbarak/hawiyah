@@ -11,9 +11,9 @@ export async function checkMobileSwitches(page: Page, scope: Locator, direction:
   const mobile = scope.locator('input[name="mobile-switch"]');
   const disabled = scope.locator('input[name="mobile-switch-disabled"]');
   for (const theme of themes) {
-    await scope.evaluate((node, value) => node.setAttribute('data-nq-theme', value), theme);
+    await scope.evaluate((node, value) => node.setAttribute('data-hw-theme', value), theme);
     for (const mode of ['light', 'dark']) {
-      await scope.evaluate((node, value) => node.setAttribute('data-nq-mode', value), mode);
+      await scope.evaluate((node, value) => node.setAttribute('data-hw-mode', value), mode);
       await page.emulateMedia({ reducedMotion: 'no-preference' });
       for (const [name, small] of [['mobile-switch', false], ['desktop-switch', true], ['compact-switch', true]] as const) {
         const control = scope.locator(`input[name="${name}"]`);

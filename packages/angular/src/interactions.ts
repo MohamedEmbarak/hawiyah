@@ -1,13 +1,13 @@
 import { booleanAttribute, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, Input, Output, signal, TemplateRef, ViewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { getDirection, getNextEnabledIndex, observeReadonlyChoice, prepareToastDismissFocus, type Direction, type Option } from '@nasaq/core';
-import { NqExpandedValueControl } from './advanced-controls';
-import { NqDialogComponent } from './overlays';
+import { getDirection, getNextEnabledIndex, observeReadonlyChoice, prepareToastDismissFocus, type Direction, type Option } from '@hawiyah/core';
+import { HwExpandedValueControl } from './advanced-controls';
+import { HwDialogComponent } from './overlays';
 
 let nextId = 0;
-@Component({selector: 'nq-toggle-group', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqToggleGroupComponent), multi: true}], template: `<fieldset #group class="nq-toggle-group" [disabled]="disabled" [attr.data-nq-readonly]="readOnly || null" [attr.data-variant]="variant" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null"><legend class="nq-label">{{ label }}</legend>@for (option of options; track option.value) {@if (multiple) {<button type="button" class="nq-button" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [attr.aria-pressed]="selected(option.value)" (click)="toggle(option)" (blur)="touch()">{{ option.label }}</button>} @else {<label><input type="radio" [name]="name || controlId" [value]="option.value" [checked]="selected(option.value)" [readOnly]="readOnly" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [required]="required" (change)="toggle(option)" (blur)="touch()"><span>{{ option.label }}</span></label>}}@if (hint) {<p class="nq-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="nq-error" [id]="controlId + '-error'">{{ error }}</p>}</fieldset>@if (multiple) {@for (selected of submittedValues; track selected) {<input type="hidden" [name]="name" [value]="selected" [disabled]="disabled">}}`})
-export class NqToggleGroupComponent extends NqExpandedValueControl<string | string[]> {
+@Component({selector: 'hw-toggle-group', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwToggleGroupComponent), multi: true}], template: `<fieldset #group class="hw-toggle-group" [disabled]="disabled" [attr.data-hw-readonly]="readOnly || null" [attr.data-variant]="variant" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null"><legend class="hw-label">{{ label }}</legend>@for (option of options; track option.value) {@if (multiple) {<button type="button" class="hw-button" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [attr.aria-pressed]="selected(option.value)" (click)="toggle(option)" (blur)="touch()">{{ option.label }}</button>} @else {<label><input type="radio" [name]="name || controlId" [value]="option.value" [checked]="selected(option.value)" [readOnly]="readOnly" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [required]="required" (change)="toggle(option)" (blur)="touch()"><span>{{ option.label }}</span></label>}}@if (hint) {<p class="hw-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="hw-error" [id]="controlId + '-error'">{{ error }}</p>}</fieldset>@if (multiple) {@for (selected of submittedValues; track selected) {<input type="hidden" [name]="name" [value]="selected" [disabled]="disabled">}}`})
+export class HwToggleGroupComponent extends HwExpandedValueControl<string | string[]> {
   override value: string | string[] = ''; @Input() options: readonly Option[] = []; @Input({transform: booleanAttribute}) multiple = false; @Input() variant: 'segmented' | 'outline' = 'segmented'; protected emptyValue() { return this.multiple ? [] : ''; }
   get selectedValues() { return Array.isArray(this.value) ? this.value : this.value ? [this.value] : []; }
   @ViewChild('group') group?: ElementRef<HTMLFieldSetElement>;
@@ -19,9 +19,9 @@ export class NqToggleGroupComponent extends NqExpandedValueControl<string | stri
   toggle(option: Option) { if (option.disabled) return; this.update(this.multiple ? this.selected(option.value) ? this.selectedValues.filter(value => value !== option.value) : [...this.selectedValues, option.value] : option.value); }
 }
 
-@Component({selector: 'nq-popover', standalone: true, template: `<div class="nq-popover"><button #trigger class="nq-button" type="button" [disabled]="disabled" [attr.aria-expanded]="open" [attr.aria-controls]="id" (click)="toggle()">{{ triggerLabel }}</button><div #panel class="nq-popover-panel" role="region" [id]="id" [attr.aria-label]="label" [hidden]="!open"><ng-content /></div></div>`})
-export class NqPopoverComponent {
-  @Input() id = `nq-popover-${++nextId}`; @Input({required: true}) label = ''; @Input() triggerLabel = 'Open'; @Input({transform: booleanAttribute}) disabled = false; @Input({transform: booleanAttribute}) open = false; @Output() readonly openChange = new EventEmitter<boolean>(); @ViewChild('trigger') trigger?: ElementRef<HTMLButtonElement>; @ViewChild('panel') panel?: ElementRef<HTMLElement>;
+@Component({selector: 'hw-popover', standalone: true, template: `<div class="hw-popover"><button #trigger class="hw-button" type="button" [disabled]="disabled" [attr.aria-expanded]="open" [attr.aria-controls]="id" (click)="toggle()">{{ triggerLabel }}</button><div #panel class="hw-popover-panel" role="region" [id]="id" [attr.aria-label]="label" [hidden]="!open"><ng-content /></div></div>`})
+export class HwPopoverComponent {
+  @Input() id = `hw-popover-${++nextId}`; @Input({required: true}) label = ''; @Input() triggerLabel = 'Open'; @Input({transform: booleanAttribute}) disabled = false; @Input({transform: booleanAttribute}) open = false; @Output() readonly openChange = new EventEmitter<boolean>(); @ViewChild('trigger') trigger?: ElementRef<HTMLButtonElement>; @ViewChild('panel') panel?: ElementRef<HTMLElement>;
   protected readonly host: ElementRef<HTMLElement> = inject(ElementRef); protected readonly changeDetector = inject(ChangeDetectorRef);
   ngOnChanges() { if (this.disabled) this.close(); }
   toggle() { if (this.open) this.close(); else this.show(); }
@@ -31,10 +31,10 @@ export class NqPopoverComponent {
   @HostListener('document:keydown.escape', ['$event']) escape(event: Event) { if (this.open && this.host.nativeElement.contains(event.target as Node)) { event.preventDefault(); event.stopPropagation(); this.close(true); } }
 }
 
-export interface NqMenuItem { id: string; label: string; disabled?: boolean; }
-@Component({selector: 'nq-menu', standalone: true, template: `<div class="nq-menu"><button #trigger type="button" class="nq-button" aria-haspopup="menu" [disabled]="disabled" [attr.aria-expanded]="open" [attr.aria-controls]="id" (click)="toggle()" (keydown)="triggerKey($event)">{{ triggerLabel }}</button><div #panel class="nq-menu-panel" role="menu" [id]="id" [attr.aria-label]="label" [hidden]="!open" (keydown)="keydown($event)">@for (item of items; track item.id; let index = $index) {<button type="button" role="menuitem" class="nq-menu-item" [disabled]="item.disabled" [tabIndex]="index === active ? 0 : -1" (focus)="active = index" (click)="choose(item)">{{ item.label }}</button>}</div></div>`})
-export class NqMenuComponent extends NqPopoverComponent {
-  @Input() items: readonly NqMenuItem[] = []; @Output() readonly action = new EventEmitter<string>(); active = -1;
+export interface HwMenuItem { id: string; label: string; disabled?: boolean; }
+@Component({selector: 'hw-menu', standalone: true, template: `<div class="hw-menu"><button #trigger type="button" class="hw-button" aria-haspopup="menu" [disabled]="disabled" [attr.aria-expanded]="open" [attr.aria-controls]="id" (click)="toggle()" (keydown)="triggerKey($event)">{{ triggerLabel }}</button><div #panel class="hw-menu-panel" role="menu" [id]="id" [attr.aria-label]="label" [hidden]="!open" (keydown)="keydown($event)">@for (item of items; track item.id; let index = $index) {<button type="button" role="menuitem" class="hw-menu-item" [disabled]="item.disabled" [tabIndex]="index === active ? 0 : -1" (focus)="active = index" (click)="choose(item)">{{ item.label }}</button>}</div></div>`})
+export class HwMenuComponent extends HwPopoverComponent {
+  @Input() items: readonly HwMenuItem[] = []; @Output() readonly action = new EventEmitter<string>(); active = -1;
   override show() { if (this.disabled) return; super.show(); this.active = getNextEnabledIndex(-1, 'Home', this.items, 'ltr', 'vertical'); this.focusActive(); }
   private focusActive() { this.changeDetector.detectChanges(); this.panel?.nativeElement.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')[this.active]?.focus(); }
   triggerKey(event: KeyboardEvent) { if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); this.show(); if (event.key === 'ArrowUp') { this.active = getNextEnabledIndex(-1, 'End', this.items, 'ltr', 'vertical'); this.focusActive(); } } }
@@ -44,13 +44,13 @@ export class NqMenuComponent extends NqPopoverComponent {
     else if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); this.close(true); }
     else if (event.key === 'Tab') this.close();
   }
-  choose(item: NqMenuItem) { if (this.disabled || item.disabled) return; this.action.emit(item.id); this.close(true); }
+  choose(item: HwMenuItem) { if (this.disabled || item.disabled) return; this.action.emit(item.id); this.close(true); }
 }
 
-@Component({selector: 'nq-drawer', standalone: true, template: `<dialog #dialog class="nq-dialog nq-drawer" [attr.data-side]="side" [attr.aria-labelledby]="titleId" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="nq-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button type="button" class="nq-button" data-variant="ghost" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="nq-dialog-body"><ng-content /></div><footer class="nq-dialog-footer"><ng-content select="[nqDrawerFooter]" /></footer></dialog>`})
-export class NqDrawerComponent extends NqDialogComponent { @Input() side: 'start' | 'end' | 'bottom' = 'end'; }
+@Component({selector: 'hw-drawer', standalone: true, template: `<dialog #dialog class="hw-dialog hw-drawer" [attr.data-side]="side" [attr.aria-labelledby]="titleId" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button type="button" class="hw-button" data-variant="ghost" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[hwDrawerFooter]" /></footer></dialog>`})
+export class HwDrawerComponent extends HwDialogComponent { @Input() side: 'start' | 'end' | 'bottom' = 'end'; }
 
-export interface NqToast { id: string; title?: string; message: string; tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean; }
+export interface HwToast { id: string; title?: string; message: string; tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean; }
 // Angular output subscriptions are independent of component inputs. Notify the
 // template when their presence changes, including an imperative unsubscription.
 class ToastDismissEmitter extends EventEmitter<string> {
@@ -62,27 +62,27 @@ class ToastDismissEmitter extends EventEmitter<string> {
     return subscription;
   }
 }
-@Component({selector: 'nq-toast-region', standalone: true, template: `
-  <section #region class="nq-toast-region" tabindex="-1" [attr.data-variant]="variant" [attr.data-position]="position || null" [attr.aria-label]="label">
+@Component({selector: 'hw-toast-region', standalone: true, template: `
+  <section #region class="hw-toast-region" tabindex="-1" [attr.data-variant]="variant" [attr.data-position]="position || null" [attr.aria-label]="label">
     @for (group of groups; track group) {
-      <div [attr.role]="group === 'polite' ? 'status' : 'alert'" [attr.aria-live]="group" [attr.data-nq-live]="group" aria-relevant="additions text">
+      <div [attr.role]="group === 'polite' ? 'status' : 'alert'" [attr.aria-live]="group" [attr.data-hw-live]="group" aria-relevant="additions text">
         @for (toast of group === 'polite' ? polite : urgent; track toast.id) {
-          <article class="nq-toast" [attr.data-nq-toast]="toast.id" [attr.data-tone]="toast.tone || 'info'">
-            @if (variant === 'banner') {<span class="nq-toast-icon" aria-hidden="true"></span>}
-            <div class="nq-toast-content">@if (toast.title) {<strong>{{toast.title}}</strong>}<p>{{toast.message}}</p></div>
+          <article class="hw-toast" [attr.data-hw-toast]="toast.id" [attr.data-tone]="toast.tone || 'info'">
+            @if (variant === 'banner') {<span class="hw-toast-icon" aria-hidden="true"></span>}
+            <div class="hw-toast-content">@if (toast.title) {<strong>{{toast.title}}</strong>}<p>{{toast.message}}</p></div>
             @if (toast.dismissible !== false && hasDismissListener()) {
-              <button type="button" class="nq-button nq-toast-dismiss" data-variant="ghost" data-nq-dismiss [attr.aria-label]="dismissLabel + ': ' + (toast.title || toast.message)" (click)="requestDismiss(toast, $event)">×</button>
+              <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss [attr.aria-label]="dismissLabel + ': ' + (toast.title || toast.message)" (click)="requestDismiss(toast, $event)">×</button>
             }
           </article>
         }
       </div>
     }
   </section>`})
-export class NqToastRegionComponent {
+export class HwToastRegionComponent {
   @Input() variant: 'default' | 'inline' | 'banner' = 'default';
   @Input() position?: 'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
   @Input() label = 'الإشعارات';
-  @Input() messages: readonly NqToast[] = [];
+  @Input() messages: readonly HwToast[] = [];
   @Input() dismissLabel = 'إغلاق الإشعار';
   protected readonly hasDismissListener = signal(false);
   @Output() readonly dismissed: EventEmitter<string> = new ToastDismissEmitter(observed => this.hasDismissListener.set(observed));
@@ -91,30 +91,30 @@ export class NqToastRegionComponent {
   private pending?: () => void;
   get polite() { return this.messages.filter(message => !message.urgent); }
   get urgent() { return this.messages.filter(message => message.urgent); }
-  requestDismiss(toast: NqToast, event: Event) {
+  requestDismiss(toast: HwToast, event: Event) {
     if (toast.dismissible === false || !this.dismissed.observed) return;
-    const notice = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-nq-toast]');
+    const notice = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-hw-toast]');
     if (notice && this.region) this.pending = prepareToastDismissFocus(this.region.nativeElement, notice);
     this.dismissed.emit(toast.id);
   }
   ngAfterViewChecked() { this.pending?.(); this.pending = undefined; }
 }
 
-@Component({selector: 'nq-collapsible', standalone: true, template: `<details class="nq-collapsible" [open]="open" (toggle)="toggled($event)"><summary class="nq-collapsible-trigger">{{ label }}</summary><div class="nq-collapsible-content"><ng-content /></div></details>`})
-export class NqCollapsibleComponent { @Input({required: true}) label = ''; @Input({transform: booleanAttribute}) open = false; @Output() readonly openChange = new EventEmitter<boolean>(); toggled(event: Event) { const open = (event.target as HTMLDetailsElement).open; if (this.open !== open) { this.open = open; this.openChange.emit(open); } } }
+@Component({selector: 'hw-collapsible', standalone: true, template: `<details class="hw-collapsible" [open]="open" (toggle)="toggled($event)"><summary class="hw-collapsible-trigger">{{ label }}</summary><div class="hw-collapsible-content"><ng-content /></div></details>`})
+export class HwCollapsibleComponent { @Input({required: true}) label = ''; @Input({transform: booleanAttribute}) open = false; @Output() readonly openChange = new EventEmitter<boolean>(); toggled(event: Event) { const open = (event.target as HTMLDetailsElement).open; if (this.open !== open) { this.open = open; this.openChange.emit(open); } } }
 
-export interface NqTreeNode { id: string; label: string; disabled?: boolean; children?: readonly NqTreeNode[]; }
-interface NqVisibleTreeNode { node: NqTreeNode; level: number; parent?: string; position: number; total: number; disabled?: boolean; }
-@Component({selector: 'nq-tree-view', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NqTreeViewComponent), multi: true}], template: `<ul class="nq-tree-view" role="tree" [attr.aria-label]="label" [attr.aria-disabled]="disabled" [attr.aria-describedby]="descriptionIds" [attr.dir]="direction || null">@for (entry of visible; track entry.node.id) {<li role="treeitem" class="nq-tree-item" [attr.data-node]="entry.node.id" [attr.aria-level]="entry.level" [attr.aria-posinset]="entry.position" [attr.aria-setsize]="entry.total" [attr.aria-expanded]="entry.node.children?.length ? isExpanded(entry.node.id) : null" [attr.aria-selected]="value === entry.node.id" [attr.aria-disabled]="disabled || entry.node.disabled || null" [style.padding-inline-start]="(entry.level - 1) + 'rem'" [tabIndex]="!disabled && !entry.node.disabled && focusId === entry.node.id ? 0 : -1" (focus)="focused = entry.node.id" (click)="select(entry.node)" (keydown)="keydown($event, entry)" (blur)="touch()">@if (entry.node.children?.length) {<span class="nq-tree-toggle" aria-hidden="true" (click)="$event.stopPropagation(); toggleNode(entry.node)">{{ isExpanded(entry.node.id) ? '−' : '+' }}</span>}<span>{{ entry.node.label }}</span></li>}</ul><input type="hidden" [name]="name" [value]="value" [disabled]="disabled">@if (hint) {<p class="nq-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="nq-error" [id]="controlId + '-error'">{{ error }}</p>}`})
-export class NqTreeViewComponent extends NqExpandedValueControl<string> {
-  override value = ''; protected emptyValue() { return ''; } @Input() nodes: readonly NqTreeNode[] = []; @Input() expandedIds: readonly string[] = []; @Input() direction?: Direction; @Output() readonly expandedIdsChange = new EventEmitter<readonly string[]>(); private readonly host: ElementRef<HTMLElement> = inject(ElementRef); focused = '';
-  get visible(): NqVisibleTreeNode[] { const entries: NqVisibleTreeNode[] = []; const visit = (nodes: readonly NqTreeNode[], level: number, parent?: string) => nodes.forEach((node, index) => { entries.push({node, level, parent, position: index + 1, total: nodes.length, disabled: node.disabled}); if (node.children && this.isExpanded(node.id)) visit(node.children, level + 1, node.id); }); visit(this.nodes, 1); return entries; }
+export interface HwTreeNode { id: string; label: string; disabled?: boolean; children?: readonly HwTreeNode[]; }
+interface HwVisibleTreeNode { node: HwTreeNode; level: number; parent?: string; position: number; total: number; disabled?: boolean; }
+@Component({selector: 'hw-tree-view', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwTreeViewComponent), multi: true}], template: `<ul class="hw-tree-view" role="tree" [attr.aria-label]="label" [attr.aria-disabled]="disabled" [attr.aria-describedby]="descriptionIds" [attr.dir]="direction || null">@for (entry of visible; track entry.node.id) {<li role="treeitem" class="hw-tree-item" [attr.data-node]="entry.node.id" [attr.aria-level]="entry.level" [attr.aria-posinset]="entry.position" [attr.aria-setsize]="entry.total" [attr.aria-expanded]="entry.node.children?.length ? isExpanded(entry.node.id) : null" [attr.aria-selected]="value === entry.node.id" [attr.aria-disabled]="disabled || entry.node.disabled || null" [style.padding-inline-start]="(entry.level - 1) + 'rem'" [tabIndex]="!disabled && !entry.node.disabled && focusId === entry.node.id ? 0 : -1" (focus)="focused = entry.node.id" (click)="select(entry.node)" (keydown)="keydown($event, entry)" (blur)="touch()">@if (entry.node.children?.length) {<span class="hw-tree-toggle" aria-hidden="true" (click)="$event.stopPropagation(); toggleNode(entry.node)">{{ isExpanded(entry.node.id) ? '−' : '+' }}</span>}<span>{{ entry.node.label }}</span></li>}</ul><input type="hidden" [name]="name" [value]="value" [disabled]="disabled">@if (hint) {<p class="hw-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="hw-error" [id]="controlId + '-error'">{{ error }}</p>}`})
+export class HwTreeViewComponent extends HwExpandedValueControl<string> {
+  override value = ''; protected emptyValue() { return ''; } @Input() nodes: readonly HwTreeNode[] = []; @Input() expandedIds: readonly string[] = []; @Input() direction?: Direction; @Output() readonly expandedIdsChange = new EventEmitter<readonly string[]>(); private readonly host: ElementRef<HTMLElement> = inject(ElementRef); focused = '';
+  get visible(): HwVisibleTreeNode[] { const entries: HwVisibleTreeNode[] = []; const visit = (nodes: readonly HwTreeNode[], level: number, parent?: string) => nodes.forEach((node, index) => { entries.push({node, level, parent, position: index + 1, total: nodes.length, disabled: node.disabled}); if (node.children && this.isExpanded(node.id)) visit(node.children, level + 1, node.id); }); visit(this.nodes, 1); return entries; }
   get focusId() { const entries = this.visible; return entries.find(entry => entry.node.id === this.focused && !entry.node.disabled)?.node.id ?? entries.find(entry => entry.node.id === this.value && !entry.node.disabled)?.node.id ?? entries.find(entry => !entry.node.disabled)?.node.id ?? ''; }
   isExpanded(id: string) { return this.expandedIds.includes(id); }
-  toggleNode(node: NqTreeNode) { if (this.disabled || node.disabled || !node.children?.length) return; this.expandedIds = this.isExpanded(node.id) ? this.expandedIds.filter(id => id !== node.id) : [...this.expandedIds, node.id]; this.expandedIdsChange.emit(this.expandedIds); this.focus(node.id); }
-  select(node: NqTreeNode) { if (!this.disabled && !node.disabled) { this.focused = node.id; this.update(node.id); } }
+  toggleNode(node: HwTreeNode) { if (this.disabled || node.disabled || !node.children?.length) return; this.expandedIds = this.isExpanded(node.id) ? this.expandedIds.filter(id => id !== node.id) : [...this.expandedIds, node.id]; this.expandedIdsChange.emit(this.expandedIds); this.focus(node.id); }
+  select(node: HwTreeNode) { if (!this.disabled && !node.disabled) { this.focused = node.id; this.update(node.id); } }
   private focus(id: string) { this.focused = id; this.changeDetector.detectChanges(); Array.from(this.host.nativeElement.querySelectorAll<HTMLElement>('[role="treeitem"]')).find(element => element.dataset['node'] === id)?.focus(); }
-  keydown(event: KeyboardEvent, entry: NqVisibleTreeNode) {
+  keydown(event: KeyboardEvent, entry: HwVisibleTreeNode) {
     if (this.disabled || entry.node.disabled || event.altKey || event.ctrlKey || event.metaKey) return;
     const entries = this.visible; const index = entries.findIndex(item => item.node.id === entry.node.id); const rtl = (this.direction ?? getDirection(this.host.nativeElement)) === 'rtl';
     if (['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) { event.preventDefault(); const next = getNextEnabledIndex(index, event.key, entries, 'ltr', 'vertical'); if (entries[next]) this.focus(entries[next]!.node.id); }
@@ -124,28 +124,28 @@ export class NqTreeViewComponent extends NqExpandedValueControl<string> {
   }
 }
 
-export interface NqSlide { id?: string; title?: string; content?: string; src?: string; alt?: string; }
-@Component({selector: 'nq-carousel', standalone: true, imports: [NgTemplateOutlet], styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `
-  <section class="nq-carousel" data-nq-carousel-ready [style.--nq-carousel-index]="indexValue" role="region" [attr.aria-label]="label" [attr.aria-roledescription]="carouselDescription">
-    <div class="nq-carousel-viewport nq-carousel-slides"><div class="nq-carousel-track">
+export interface HwSlide { id?: string; title?: string; content?: string; src?: string; alt?: string; }
+@Component({selector: 'hw-carousel', standalone: true, imports: [NgTemplateOutlet], styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `
+  <section class="hw-carousel" data-hw-carousel-ready [style.--hw-carousel-index]="indexValue" role="region" [attr.aria-label]="label" [attr.aria-roledescription]="carouselDescription">
+    <div class="hw-carousel-viewport hw-carousel-slides"><div class="hw-carousel-track">
       @for (slide of slides; track slide.id || $index; let index = $index) {
-        <div class="nq-carousel-slide" role="group" [attr.aria-roledescription]="slideDescription" [attr.aria-label]="slideLabel(index + 1, slides.length)" [hidden]="index !== indexValue" [inert]="index !== indexValue" [attr.aria-hidden]="index !== indexValue ? 'true' : null">
+        <div class="hw-carousel-slide" role="group" [attr.aria-roledescription]="slideDescription" [attr.aria-label]="slideLabel(index + 1, slides.length)" [hidden]="index !== indexValue" [inert]="index !== indexValue" [attr.aria-hidden]="index !== indexValue ? 'true' : null">
           @if (slideTemplate) {<ng-container [ngTemplateOutlet]="slideTemplate" [ngTemplateOutletContext]="{$implicit: slide, index: index}" />} @else {
             @if (slide.src) {<img [src]="slide.src" [alt]="slide.alt || ''">}@if (slide.title) {<h3>{{ slide.title }}</h3>}@if (slide.content) {<p>{{ slide.content }}</p>}
           }
         </div>
       }
-    </div>@if (!slides.length) {<p class="nq-carousel-empty">{{ emptyLabel }}</p>}</div>
-    <div class="nq-carousel-controls">
-      @if (showIndicators && slides.length) {<div class="nq-carousel-pagination" role="group" [attr.aria-label]="indicatorsLabel">@for (slide of slides; track slide.id || $index; let index = $index) {<button class="nq-carousel-dot" type="button" [attr.aria-label]="slideLabel(index + 1, slides.length)" [attr.aria-current]="index === indexValue ? 'true' : null" (click)="select(index)"></button>}</div>}
-      <div class="nq-carousel-arrows"><button class="nq-button nq-carousel-arrow" type="button" data-nq-previous [attr.aria-label]="previousLabel" [disabled]="slides.length < 2 || (!loop && indexValue === 0)" (click)="move(-1)"></button><button class="nq-button nq-carousel-arrow" type="button" data-nq-next [attr.aria-label]="nextLabel" [disabled]="slides.length < 2 || (!loop && indexValue === slides.length - 1)" (click)="move(1)"></button></div>
-      <span class="nq-carousel-status nq-sr-only" role="status" aria-live="polite">{{ slides.length ? slideLabel(indexValue + 1, slides.length) : emptyLabel }}</span>
+    </div>@if (!slides.length) {<p class="hw-carousel-empty">{{ emptyLabel }}</p>}</div>
+    <div class="hw-carousel-controls">
+      @if (showIndicators && slides.length) {<div class="hw-carousel-pagination" role="group" [attr.aria-label]="indicatorsLabel">@for (slide of slides; track slide.id || $index; let index = $index) {<button class="hw-carousel-dot" type="button" [attr.aria-label]="slideLabel(index + 1, slides.length)" [attr.aria-current]="index === indexValue ? 'true' : null" (click)="select(index)"></button>}</div>}
+      <div class="hw-carousel-arrows"><button class="hw-button hw-carousel-arrow" type="button" data-hw-previous [attr.aria-label]="previousLabel" [disabled]="slides.length < 2 || (!loop && indexValue === 0)" (click)="move(-1)"></button><button class="hw-button hw-carousel-arrow" type="button" data-hw-next [attr.aria-label]="nextLabel" [disabled]="slides.length < 2 || (!loop && indexValue === slides.length - 1)" (click)="move(1)"></button></div>
+      <span class="hw-carousel-status hw-sr-only" role="status" aria-live="polite">{{ slides.length ? slideLabel(indexValue + 1, slides.length) : emptyLabel }}</span>
     </div>
   </section>`})
-export class NqCarouselComponent {
+export class HwCarouselComponent {
   @Input({required: true}) label = '';
-  @Input() slides: readonly NqSlide[] = [];
-  @Input() slideTemplate?: TemplateRef<{$implicit: NqSlide; index: number}>;
+  @Input() slides: readonly HwSlide[] = [];
+  @Input() slideTemplate?: TemplateRef<{$implicit: HwSlide; index: number}>;
   @Input() current = 0;
   @Input({transform: booleanAttribute}) loop = false;
   @Input({transform: booleanAttribute}) showIndicators = true;

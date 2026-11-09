@@ -32,7 +32,7 @@ function example(kind: CopyKind, locale: Locale) {
     title: ar ? 'نسخ مرجع الطلب' : 'Copy a request reference',
     label: ar ? 'مرجع الطلب' : 'Request reference',
     action: ar ? 'نسخ المرجع' : 'Copy reference',
-    uri: '', text: 'NQ-1043',
+    uri: '', text: 'HW-1043',
   };
 }
 
@@ -115,18 +115,18 @@ export function copyActionRecipes(locale: Locale) {
   const { manual, messages } = copyLabels(locale);
   return (['email', 'reference'] as const).map(kind => {
     const {title, label, action, uri, text} = example(kind, locale);
-    const markup = `<div class="nq-field" data-copy-action="${kind}">
-  <div class="nq-label">${label}</div>
-  <div class="nq-inline">
+    const markup = `<div class="hw-field" data-copy-action="${kind}">
+  <div class="hw-label">${label}</div>
+  <div class="hw-inline">
     <data dir="ltr" data-copy-source value="${uri}">${text}</data>
-    <button type="button" class="nq-button" data-variant="secondary" data-copy-trigger>${action}</button>
+    <button type="button" class="hw-button" data-variant="secondary" data-copy-trigger>${action}</button>
   </div>
-  <p class="nq-hint" role="status" aria-live="polite" aria-atomic="true" data-copy-status></p>
-  <div hidden data-copy-manual><label class="nq-field"><span class="nq-label">${manual}</span><input class="nq-input" dir="auto" type="text" readonly></label></div>
+  <p class="hw-hint" role="status" aria-live="polite" aria-atomic="true" data-copy-status></p>
+  <div hidden data-copy-manual><label class="hw-field"><span class="hw-label">${manual}</span><input class="hw-input" dir="auto" type="text" readonly></label></div>
 </div>`;
     const constants = `const source = ${JSON.stringify({uri, text}, null, 2)};\nconst messages = ${JSON.stringify(messages, null, 2)};`;
-    const vanillaScript = `import '@nasaq/styles/styles.css';
-import { enhance } from '@nasaq/vanilla';
+    const vanillaScript = `import '@hawiyah/styles/styles.css';
+import { enhance } from '@hawiyah/vanilla';
 
 ${copyHelpers(false)}
 
@@ -154,8 +154,8 @@ button.addEventListener('click', async () => {
 field.addEventListener('focus', () => field.select(), { signal: events.signal });
 window.addEventListener('pagehide', () => { events.abort(); cleanup(); }, { once: true });`;
     const react = `import { useEffect, useRef, useState } from 'react';
-import { Button } from '@nasaq/react';
-import '@nasaq/styles/styles.css';
+import { Button } from '@hawiyah/react';
+import '@hawiyah/styles/styles.css';
 
 ${copyHelpers(true)}
 
@@ -174,17 +174,17 @@ export default function CopyAction() {
     setStatus(messages[result]);
     setManualText(result === 'copied' || result === 'empty' ? '' : text);
   }
-  return <div className="nq-field">
-    <span className="nq-label">${label}</span>
-    <div className="nq-inline"><bdi>{source.text}</bdi> <Button type="button" variant="secondary" onClick={copy}>${action}</Button></div>
-    <p className="nq-hint" role="status" aria-live="polite" aria-atomic="true">{status}</p>
-    {manualText && <label className="nq-field">${manual}<input className="nq-input" dir="auto" readOnly value={manualText} onFocus={event => event.currentTarget.select()} /></label>}
+  return <div className="hw-field">
+    <span className="hw-label">${label}</span>
+    <div className="hw-inline"><bdi>{source.text}</bdi> <Button type="button" variant="secondary" onClick={copy}>${action}</Button></div>
+    <p className="hw-hint" role="status" aria-live="polite" aria-atomic="true">{status}</p>
+    {manualText && <label className="hw-field">${manual}<input className="hw-input" dir="auto" readOnly value={manualText} onFocus={event => event.currentTarget.select()} /></label>}
   </div>;
 }`;
     const vue = `<script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue';
-import { Button } from '@nasaq/vue';
-import '@nasaq/styles/styles.css';
+import { Button } from '@hawiyah/vue';
+import '@hawiyah/styles/styles.css';
 
 ${copyHelpers(true)}
 
@@ -207,28 +207,28 @@ function selectText(event: FocusEvent) {
 </script>
 
 <template>
-  <div class="nq-field">
-    <span class="nq-label">${label}</span>
-    <div class="nq-inline"><bdi>{{ source.text }}</bdi> <Button type="button" variant="secondary" @click="copy">${action}</Button></div>
-    <p class="nq-hint" role="status" aria-live="polite" aria-atomic="true">{{ status }}</p>
-    <label v-if="manualText" class="nq-field">${manual}<input class="nq-input" dir="auto" readonly :value="manualText" @focus="selectText"></label>
+  <div class="hw-field">
+    <span class="hw-label">${label}</span>
+    <div class="hw-inline"><bdi>{{ source.text }}</bdi> <Button type="button" variant="secondary" @click="copy">${action}</Button></div>
+    <p class="hw-hint" role="status" aria-live="polite" aria-atomic="true">{{ status }}</p>
+    <label v-if="manualText" class="hw-field">${manual}<input class="hw-input" dir="auto" readonly :value="manualText" @focus="selectText"></label>
   </div>
 </template>`;
     const angular = `import { Component, signal } from '@angular/core';
-import { NqButtonDirective } from '@nasaq/angular';
-import '@nasaq/styles/styles.css';
+import { HwButtonDirective } from '@hawiyah/angular';
+import '@hawiyah/styles/styles.css';
 
 ${copyHelpers(true)}
 
 ${constants}
 
 @Component({
-  selector: 'app-copy-action', standalone: true, imports: [NqButtonDirective],
-  template: \`<div class="nq-field">
-    <span class="nq-label">${label}</span>
-    <div class="nq-inline"><bdi>{{ source.text }}</bdi> <button nqButton type="button" variant="secondary" (click)="copy()">${action}</button></div>
-    <p class="nq-hint" role="status" aria-live="polite" aria-atomic="true">{{ status() }}</p>
-    @if (manualText()) {<label class="nq-field">${manual}<input #field class="nq-input" dir="auto" readonly [value]="manualText()" (focus)="field.select()"></label>}
+  selector: 'app-copy-action', standalone: true, imports: [HwButtonDirective],
+  template: \`<div class="hw-field">
+    <span class="hw-label">${label}</span>
+    <div class="hw-inline"><bdi>{{ source.text }}</bdi> <button hwButton type="button" variant="secondary" (click)="copy()">${action}</button></div>
+    <p class="hw-hint" role="status" aria-live="polite" aria-atomic="true">{{ status() }}</p>
+    @if (manualText()) {<label class="hw-field">${manual}<input #field class="hw-input" dir="auto" readonly [value]="manualText()" (focus)="field.select()"></label>}
   </div>\`,
 })
 export class CopyActionComponent {

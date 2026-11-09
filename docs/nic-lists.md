@@ -9,18 +9,18 @@ supplied 40px list-level padding for the icon and ordered lists. Host styles
 can change that browser default. The original font glyph has no verified
 visual comparison in this task.
 
-| Source | Source value | Nasaq implementation | Confidence |
+| Source | Source value | Hawiyah implementation | Confidence |
 | --- | --- | --- | --- |
-| CSS 1645–1654 | Each icon-list item reserves 30px on the right in Arabic or the left in English. | `ul.nq-list-icon > li` reserves 30px on its logical start side. The item establishes the marker's positioning context. | High for geometry |
+| CSS 1645–1654 | Each icon-list item reserves 30px on the right in Arabic or the left in English. | `ul.hw-list-icon > li` reserves 30px on its logical start side. The item establishes the marker's positioning context. | High for geometry |
 | CSS 1656–1674 | The source positions a 16px icon-font glyph at the top and start of a 28px line. | An `aria-hidden` marker spans 16×28px at the item's top and logical start. An empty marker draws a small ring using `currentColor`. | High for the box, unverified for the source artwork |
-| CSS 3183–3193 | Icon lists and ordered lists have a 5px start margin and zero end margin. | `ul.nq-list-icon` and `ol.nq-list-ordered` set those logical margins. The native list retains its list-level indentation from the host stylesheet or browser. | High for the margins |
-| CSS 3195–3198 | The custom list has zero start margin and 20px start padding. | `ul.nq-list-custom` applies those values. | High |
+| CSS 3183–3193 | Icon lists and ordered lists have a 5px start margin and zero end margin. | `ul.hw-list-icon` and `ol.hw-list-ordered` set those logical margins. The native list retains its list-level indentation from the host stylesheet or browser. | High for the margins |
+| CSS 3195–3198 | The custom list has zero start margin and 20px start padding. | `ul.hw-list-custom` applies those values. | High |
 | CSS 3200–3211 | A 16px inline icon precedes the text, offset down by 1px and separated by spaces in generated content. | A decorative 16px inline marker moves down 1px. A quarter-em logical margin separates it from the text. Wrapped lines follow normal inline layout. | High for size and vertical offset, adapted for spacing and artwork |
 
 The classes affect only lists that opt in. Logical CSS follows `dir`, including
 an English list in an RTL container and an Arabic list in an LTR container.
 The source list rules declare their pixel dimensions directly and inherit text
-color. Nasaq exposes those dimensions through the properties below.
+color. Hawiyah exposes those dimensions through the properties below.
 Item selectors apply to direct children so a nested ordered list keeps its
 native markers. The browser owns numbering, including `start`, `reversed` and
 item `value`. The ordered recipe uses decimal markers with Latin digits.
@@ -32,22 +32,22 @@ the list items. A native `ol` communicates sequence without generated numbers.
 
 ## Customization and assets
 
-The local ring inherits the item's text color in light, dark and original Nasaq
+The local ring inherits the item's text color in light, dark and original Hawiyah
 themes. Forced colors use `CanvasText`. Authors can place their own authorized
 SVG inside the decorative marker to replace the ring. The source references the
 `hgi-stroke-rounded` font and a font-specific glyph. Its distribution rights and
-glyph shape remain unresolved. Nasaq ships its own CSS marker alongside these
+glyph shape remain unresolved. Hawiyah ships its own CSS marker alongside these
 recipes.
 
 | Variable | Default |
 | --- | --- |
-| `--nq-list-start-margin` | 5px |
-| `--nq-list-icon-indent` | 30px |
-| `--nq-list-marker-size` | 16px |
-| `--nq-list-marker-line` | 28px |
-| `--nq-list-custom-indent` | 20px |
+| `--hw-list-start-margin` | 5px |
+| `--hw-list-icon-indent` | 30px |
+| `--hw-list-marker-size` | 16px |
+| `--hw-list-marker-line` | 28px |
+| `--hw-list-custom-indent` | 20px |
 
-The [Card guide](https://mohamedembarak.github.io/nasaq/#component/card) includes
+The [Card guide](https://mohamedembarak.github.io/hawiyah/#component/card) includes
 an icon list with nested preparation steps, a custom inline list of service
 notes and an ordered sequence starting at step 2. Each case includes vanilla
 HTML, React children, Vue slots and Angular projection into the existing Card.
@@ -60,7 +60,7 @@ The Arabic and English galleries cover the three list treatments, nested decimal
 markers, logical placement with direction changed independently of language,
 light and dark accessibility scans, 320px fit, forced-color marker visibility
 and a custom indent. Both 320px screenshots were inspected. The nested-theme
-check exercises a light original Nasaq Card inside a dark DGA region and verifies
+check exercises a light original Hawiyah Card inside a dark DGA region and verifies
 that an authored SVG replaces the decorative ring.
 
 The other five scenarios copy all three displayed snippets into the editor and

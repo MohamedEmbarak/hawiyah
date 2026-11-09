@@ -16,7 +16,7 @@ export interface StepperController {
 export function createStepper(element: HTMLOListElement, options: StepperOptions = {}): StepperController {
   const saved = new Map<HTMLElement, Map<string, string | null>>();
   let destroyed = false;
-  const steps = () => Array.from(element.children).filter((child): child is HTMLLIElement => child.tagName === 'LI' && child.classList.contains('nq-step'));
+  const steps = () => Array.from(element.children).filter((child): child is HTMLLIElement => child.tagName === 'LI' && child.classList.contains('hw-step'));
   const remember = (node: HTMLElement, names: readonly string[]) => {
     if (!saved.has(node)) saved.set(node, new Map(names.map(name => [name, node.getAttribute(name)])));
   };

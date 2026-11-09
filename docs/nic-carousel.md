@@ -5,10 +5,10 @@ CSS 3279–3423. The supplied `master.js` contains no carousel implementation.
 The stylesheet establishes presentation and a transform transition; it does not
 establish autoplay, swipe, looping, breakpoint counts or keyboard behavior.
 
-| Source | Observed value | Nasaq implementation | Confidence / boundary |
+| Source | Observed value | Hawiyah implementation | Confidence / boundary |
 | --- | --- | --- | --- |
 | 3279–3292 | Wrapper reserves 4rem below content; viewport has 8px block padding and clips overflow | Desktop track/controls composition uses those dimensions | High; small screens and many indicators put controls in flow to avoid overlap |
-| 3294–3305 | Flex track, 16px gap, slides 100% wide; transform 600ms `cubic-bezier(.25,1,.5,1)` | Responsive single-slide track with matching gap, duration and easing | High for CSS; index calculation and navigation are Nasaq behavior |
+| 3294–3305 | Flex track, 16px gap, slides 100% wide; transform 600ms `cubic-bezier(.25,1,.5,1)` | Responsive single-slide track with matching gap, duration and easing | High for CSS; index calculation and navigation are Hawiyah behavior |
 | 3313–3331 | Controls 16px inline padding; arrow group gap 12px | Logical, direction-aware control groups | High for dimensions; indicators precede arrows in DOM, placing arrows at the inline end |
 | 3333–3365 | 45px circular primary arrows, Flag 700 hover, 300ms transition, disabled opacity .3 | Native labeled buttons with matching geometry/colors | High; visible keyboard focus is retained, and only relevant color properties transition |
 | 3368–3392 | 20px font-based direction icons selected from page language | Direction-aware plain arrow glyphs, 20px, selected by actual `dir` | Intentional adaptation; no official icon font is redistributed and glyph parity is not claimed |
@@ -23,8 +23,8 @@ source's permanent `will-change` promotion is not copied to every idle carousel.
 
 ## Native composition and behavior
 
-The native adapters render `.nq-carousel-viewport > .nq-carousel-track >
-.nq-carousel-slide`, then indicator and arrow groups. Slides remain mounted so
+The native adapters render `.hw-carousel-viewport > .hw-carousel-track >
+.hw-carousel-slide`, then indicator and arrow groups. Slides remain mounted so
 application state and content are retained. CSS translates by the viewport
 width plus the gap, with direction taken from `dir`, independently of language.
 Track height accommodates its content, including the tallest mounted slide.
@@ -35,15 +35,15 @@ a narrow CSS override keeps their layout boxes for translation. `inert` and
 immediately; delayed visibility allows the outgoing slide to finish its motion.
 This intentional override must not be generalized to arbitrary hidden content.
 Reduced motion removes both track motion and visibility delay. No timers or
-autoplay engine are introduced. Original Nasaq keeps instant slide changes;
-custom themes can override `--nq-duration-carousel`, `--nq-ease-carousel`,
-`--nq-duration-carousel-control`, `--nq-carousel-gap` and the three dot-color tokens
-(`--nq-color-carousel-dot`, `--nq-color-carousel-dot-hover`,
-`--nq-color-carousel-dot-border`).
+autoplay engine are introduced. Original Hawiyah keeps instant slide changes;
+custom themes can override `--hw-duration-carousel`, `--hw-ease-carousel`,
+`--hw-duration-carousel-control`, `--hw-carousel-gap` and the three dot-color tokens
+(`--hw-color-carousel-dot`, `--hw-color-carousel-dot-hover`,
+`--hw-color-carousel-dot-border`).
 
-Vanilla uses authored `[data-nq-carousel-track]`, `[data-nq-slide]`,
-`[data-nq-previous]`, `[data-nq-next]`, `[data-nq-carousel-status]` and optional
-`[data-nq-carousel-dot="0"]` buttons. `createCarousel` sets current state and
+Vanilla uses authored `[data-hw-carousel-track]`, `[data-hw-slide]`,
+`[data-hw-previous]`, `[data-hw-next]`, `[data-hw-carousel-status]` and optional
+`[data-hw-carousel-dot="0"]` buttons. `createCarousel` sets current state and
 restores authored attributes, styles, status text and listeners on destroy.
 Legacy markup without a track continues to hide/show its authored slides.
 Authored roles and implicit article semantics are preserved. Destroy and
@@ -68,7 +68,7 @@ Arabic labels and Latin digits are the default. Label/description props remain
 localizable. React `getSlideLabel` receives a zero-based index; vanilla
 `getSlideLabel`, Vue `slideMessage` and Angular `slideLabel` receive a one-based
 position. React accepts renderable slide content; Vue supports named slide-ID
-slots; Angular adds optional `slideTemplate: TemplateRef<{$implicit: NqSlide;
+slots; Angular adds optional `slideTemplate: TemplateRef<{$implicit: HwSlide;
 index: number}>`, retaining the existing image/title/content renderer as fallback.
 This API types the supplied context; it does not promise automatic type inference
 for every external Angular template local. Each adapter owns its DOM.

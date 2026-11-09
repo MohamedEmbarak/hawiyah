@@ -1,8 +1,8 @@
 {
-  "name": "@nasaq/react",
+  "name": "@hawiyah/react",
   "version": "0.2.0",
   "private": true,
-  "description": "Native React components for the Arabic-first Nasaq UI system",
+  "description": "React components for Hawiyah, a UI library built to comply with the DGA Platforms Code",
   "type": "module",
   "files": [
     "dist",
@@ -22,14 +22,14 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@nasaq/core": "workspace:*"
+    "@hawiyah/core": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "keywords": [
-    "nasaq",
+    "hawiyah",
     "dga",
     "sdga",
     "platforms-code",
@@ -42,12 +42,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEmbarak/nasaq.git",
+    "url": "git+https://github.com/MohamedEmbarak/hawiyah.git",
     "directory": "packages/react"
   },
-  "homepage": "https://mohamedembarak.github.io/nasaq/",
+  "homepage": "https://mohamedembarak.github.io/hawiyah/",
   "bugs": {
-    "url": "https://github.com/MohamedEmbarak/nasaq/issues"
+    "url": "https://github.com/MohamedEmbarak/hawiyah/issues"
   },
   "author": {
     "name": "Development Team, National Platforms Sector — National Information Center"

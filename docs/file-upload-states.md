@@ -1,7 +1,7 @@
 # File transfer state and removal
 
 `FileUploadList` composes with FileUpload and FileDropzone in React and Vue.
-Angular exposes `NqFileUploadListComponent` with `nq-file-upload-list`. Vanilla
+Angular exposes `HwFileUploadListComponent` with `hw-file-upload-list`. Vanilla
 exposes `createFileUploadList(host, options)` with `update(items)`, `setDisabled(value)` and `destroy()`.
 
 Each `FileUploadItem` has a stable `id`, a filename and a status of `selected`,
@@ -45,7 +45,7 @@ variable aliases. The literal decoded paint values are used for this comparison;
 the aliases do not independently establish a globally resolved mode.
 The NIC stylesheet snapshot contains no file-upload selectors.
 
-The earlier Nasaq row stacked the filename, default status and a full text
+The earlier Hawiyah row stacked the filename, default status and a full text
 remove button. The row now follows the compact source arrangement. Default
 selected/completed status text remains available to assistive technology.
 Custom status messages, errors and transfer progress remain visible below the
@@ -54,7 +54,7 @@ action retains its localized accessible name and a 28px pointer target around
 the source-sized 20px icon, expanded to 44px for coarse pointers.
 
 The source RTL filename uses IBM Plex Sans Arabic; the LTR definition uses
-Inter. Nasaq retains the approved IBM Plex Sans Arabic typography policy in
+Inter. Hawiyah retains the approved IBM Plex Sans Arabic typography policy in
 both directions. The existing licensed check and close artwork are reused,
 and the source glyph shapes have not been established as equivalent. The
 selected/error status ring is independently authored. Those artwork and

@@ -9,9 +9,9 @@ for (const direction of ['rtl', 'ltr'] as const) {
     if (direction === 'ltr') await scope.getByRole('button', { name: 'English', exact: true }).click();
     await expect(scope).toHaveAttribute('dir', direction);
     const query = scope.locator('input[name="query"]');
-    const clearSearch = scope.locator('.nq-search-clear');
+    const clearSearch = scope.locator('.hw-search-clear');
     await expect(clearSearch).toHaveAccessibleName(direction === 'rtl' ? 'مسح البحث' : 'Clear search');
-    await query.fill('Nasaq');
+    await query.fill('Hawiyah');
     const queryBounds = (await query.boundingBox())!;
     const clearBounds = (await clearSearch.boundingBox())!;
     expect(clearBounds.x).toBeGreaterThanOrEqual(queryBounds.x);
@@ -21,16 +21,16 @@ for (const direction of ['rtl', 'ltr'] as const) {
     await query.focus(); await page.keyboard.press('Tab'); await expect(clearSearch).toBeFocused();
     await page.keyboard.press('Space'); await expect(query).toHaveValue(''); await expect(query).toBeFocused();
     await expect(clearSearch).toBeHidden();
-    await query.fill('Nasaq'); await expect(clearSearch).toBeVisible();
+    await query.fill('Hawiyah'); await expect(clearSearch).toBeVisible();
     // A focused input is raised by input-group styles; its inset action must stay clickable.
     await clearSearch.click(); await expect(query).toHaveValue(''); await expect(query).toBeFocused();
-    await query.fill('Nasaq');
+    await query.fill('Hawiyah');
     const input = scope.locator('input[name="password"]');
     const control = input.locator('..');
-    const eye = control.locator('.nq-password-toggle');
+    const eye = control.locator('.hw-password-toggle');
     await expect(eye).toHaveAttribute('data-toggle-variant', 'icon');
     await expect(eye).toHaveAccessibleName(direction === 'rtl' ? 'إظهار كلمة المرور' : 'Show password');
-    await expect(eye.locator('.nq-password-icon')).toBeVisible();
+    await expect(eye.locator('.hw-password-icon')).toBeVisible();
     await input.fill('sample-only-password');
     await input.focus(); await page.keyboard.press('Tab'); await expect(eye).toBeFocused();
     await page.keyboard.press('Space');
@@ -42,10 +42,10 @@ for (const direction of ['rtl', 'ltr'] as const) {
     expect(toggleBounds.x + toggleBounds.width).toBeLessThanOrEqual(bounds.x + bounds.width + 1);
     expect(toggleBounds.y).toBeGreaterThanOrEqual(bounds.y);
     expect(toggleBounds.y + toggleBounds.height).toBeLessThanOrEqual(bounds.y + bounds.height + 1);
-    const textToggle = scope.locator('.nq-password-toggle[data-toggle-variant="text"]');
+    const textToggle = scope.locator('.hw-password-toggle[data-toggle-variant="text"]');
     await expect(textToggle).toHaveText(direction === 'rtl' ? 'إظهار' : 'Show');
     await textToggle.click(); await expect(textToggle).toHaveText(direction === 'rtl' ? 'إخفاء' : 'Hide');
-    const rating = scope.locator('.nq-rating');
+    const rating = scope.locator('.hw-rating');
     await expect(rating.locator('input:checked')).toHaveValue('3');
     await rating.locator('input:checked').focus(); await page.keyboard.press('ArrowDown');
     await expect(rating.locator('input:checked')).toHaveValue('4');
@@ -56,7 +56,7 @@ for (const direction of ['rtl', 'ltr'] as const) {
     const checkbox = scope.locator('input[name="consent"]');
     await expect(checkbox).toBeFocused();
     await page.keyboard.press('Space'); await expect(checkbox).toBeChecked();
-    const steps = scope.locator('.nq-stepper .nq-step');
+    const steps = scope.locator('.hw-stepper .hw-step');
     await expect(steps.nth(0)).toHaveAttribute('data-state', 'complete');
     await expect(steps.nth(1)).toHaveAttribute('aria-current', 'step');
     await expect(steps.nth(2)).toHaveAttribute('data-state', 'upcoming');

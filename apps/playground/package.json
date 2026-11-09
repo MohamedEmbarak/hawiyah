@@ -1,23 +1,23 @@
 {
-  "name": "@nasaq/playground",
+  "name": "@hawiyah/playground",
   "version": "0.2.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@nasaq/core": "workspace:*",
-    "@nasaq/tokens": "workspace:*",
-    "@nasaq/styles": "workspace:*",
-    "@nasaq/vanilla": "workspace:*"
+    "@hawiyah/core": "workspace:*",
+    "@hawiyah/tokens": "workspace:*",
+    "@hawiyah/styles": "workspace:*",
+    "@hawiyah/vanilla": "workspace:*"
   },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEmbarak/nasaq.git",
+    "url": "git+https://github.com/MohamedEmbarak/hawiyah.git",
     "directory": "apps/playground"
   },
-  "homepage": "https://mohamedembarak.github.io/nasaq/",
+  "homepage": "https://mohamedembarak.github.io/hawiyah/",
   "bugs": {
-    "url": "https://github.com/MohamedEmbarak/nasaq/issues"
+    "url": "https://github.com/MohamedEmbarak/hawiyah/issues"
   },
   "author": {
     "name": "Development Team, National Platforms Sector — National Information Center"

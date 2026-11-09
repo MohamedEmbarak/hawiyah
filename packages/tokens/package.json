@@ -1,8 +1,8 @@
 {
-  "name": "@nasaq/tokens",
+  "name": "@hawiyah/tokens",
   "version": "0.2.0",
   "private": true,
-  "description": "Semantic design tokens for the independent Nasaq UI system",
+  "description": "Design tokens for Hawiyah, mapped to the DGA Platforms Code foundations",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -31,7 +31,7 @@
     "test": "node --test test/contrast.test.mjs"
   },
   "keywords": [
-    "nasaq",
+    "hawiyah",
     "dga",
     "sdga",
     "platforms-code",
@@ -44,12 +44,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEmbarak/nasaq.git",
+    "url": "git+https://github.com/MohamedEmbarak/hawiyah.git",
     "directory": "packages/tokens"
   },
-  "homepage": "https://mohamedembarak.github.io/nasaq/",
+  "homepage": "https://mohamedembarak.github.io/hawiyah/",
   "bugs": {
-    "url": "https://github.com/MohamedEmbarak/nasaq/issues"
+    "url": "https://github.com/MohamedEmbarak/hawiyah/issues"
   },
   "author": {
     "name": "Development Team, National Platforms Sector — National Information Center"

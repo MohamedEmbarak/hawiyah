@@ -1,8 +1,8 @@
 # Mobile switch geometry
 
-Opt into the mobile profile with `data-nq-density="mobile"` on an application
+Opt into the mobile profile with `data-hw-density="mobile"` on an application
 or subtree, or `createThemeVariables({}, { density: 'mobile' })`. All four native
-adapters use the same `nq-switch` styles. At a 16 px root font size:
+adapters use the same `hw-switch` styles. At a 16 px root font size:
 
 | Geometry | Comfortable / compact | Mobile |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ adapters use the same `nq-switch` styles. At a 16 px root font size:
 Comfortable and compact preserve their previous placement exactly. A nested
 comfortable/compact density resets the switch geometry even inside a mobile
 scope. Theme and color-mode boundaries do not reset density. Existing DGA/custom
-200 ms and original Nasaq 180 ms motion, semantic colors and shadows remain;
+200 ms and original Hawiyah 180 ms motion, semantic colors and shadows remain;
 reduced motion removes the transition. Forced colors retains native appearance
 with the decorative thumb hidden. Native checkbox/switch semantics, names,
 disabled behavior and keyboard focus remain owned by each framework or the
@@ -40,18 +40,18 @@ Their local symbol versions are `10980:63665` through `10980:63676`; these
 identifiers are not official library release numbers. The internal hover cache
 `5403:403584` is **48×24**, with older symbol version `10303:28773`. That cache is
 excluded from this geometry mapping. Fill/radius references on local nodes still
-include imported variables; this task maps explicit geometry and retains Nasaq's
+include imported variables; this task maps explicit geometry and retains Hawiyah's
 existing theme colors and focus treatment.
 
 ## Scoped geometry tokens
 
 The density profiles define these additive variables:
 
-- `--nq-switch-width`
-- `--nq-switch-height`
-- `--nq-switch-thumb-size`
-- `--nq-switch-thumb-offset`
-- `--nq-switch-thumb-offset-checked`
+- `--hw-switch-width`
+- `--hw-switch-height`
+- `--hw-switch-thumb-size`
+- `--hw-switch-thumb-offset`
+- `--hw-switch-thumb-offset-checked`
 
 The offset tokens are CSS inset values **inside the existing 1 px border**.
 For mobile they are `calc(0.125rem - 1px)` and `calc(1.375rem - 1px)`, yielding

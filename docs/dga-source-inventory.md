@@ -2,7 +2,7 @@
 
 23 local `.fig` files; total 869,877,088 bytes. Entries below identify supplied source filenames, without local filesystem paths. SHA-256 hashes identify the exact source bytes. Source archives remain unmodified.
 
-**Hajj is excluded from Nasaq implementation scope and backlog.** Its row records supplied material only; the transfer-status column is historical, not an implementation priority.
+**Hajj is excluded from Hawiyah implementation scope and backlog.** Its row records supplied material only; the transfer-status column is historical, not an implementation priority.
 
 No standalone web Components Library appears in this supplied directory. Mobile Components is a distinct file and is not a substitute for a web library.
 

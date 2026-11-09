@@ -58,9 +58,9 @@ export function formatCalendarDate(value: string, options: CalendarDateFormatOpt
 }
 
 function date(value: string): CalendarDate {
-  if (!/^\d{4}-\d{2}-\d{2}$/u.test(value)) throw new RangeError('Nasaq: dates must use Gregorian YYYY-MM-DD.');
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(value)) throw new RangeError('Hawiyah: dates must use Gregorian YYYY-MM-DD.');
   const parsed = parseDate(value);
-  if (parsed.toString() !== value) throw new RangeError('Nasaq: Gregorian date is outside the supported range.');
+  if (parsed.toString() !== value) throw new RangeError('Hawiyah: Gregorian date is outside the supported range.');
   return parsed;
 }
 function iso(value: CalendarDate): string { return toCalendar(value, new GregorianCalendar()).toString(); }
@@ -75,15 +75,15 @@ export function isDateInRange(value: string, min?: string, max?: string): boolea
 }
 
 export function moveCalendarDate(value: string, amount: number, unit: 'day' | 'month' | 'year', calendar: CalendarSystem = 'gregory'): string {
-  if (!Number.isInteger(amount)) throw new RangeError('Nasaq: calendar movement must be an integer.');
+  if (!Number.isInteger(amount)) throw new RangeError('Hawiyah: calendar movement must be an integer.');
   const current = toCalendar(date(value), calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar());
-  if (unit === 'day') { const result = date(value).add({ days: amount }).toString(); if (!isCalendarDateSupported(result, calendar)) throw new RangeError('Nasaq: calendar movement is outside the supported range.'); return result; }
+  if (unit === 'day') { const result = date(value).add({ days: amount }).toString(); if (!isCalendarDateSupported(result, calendar)) throw new RangeError('Hawiyah: calendar movement is outside the supported range.'); return result; }
   if (calendar === 'islamic-umalqura') {
     const targetMonth = (current.year - 1343) * 12 + current.month - 1 + (unit === 'month' ? amount : amount * 12);
-    if (targetMonth < 0 || targetMonth >= 158 * 12) throw new RangeError('Nasaq: calendar movement is outside AH 1343–1500.');
+    if (targetMonth < 0 || targetMonth >= 158 * 12) throw new RangeError('Hawiyah: calendar movement is outside AH 1343–1500.');
   } else {
     const targetMonth = (current.year - 1) * 12 + current.month - 1 + (unit === 'month' ? amount : amount * 12);
-    if (targetMonth < 0 || targetMonth >= 9999 * 12) throw new RangeError('Nasaq: Gregorian movement is outside years 1–9999.');
+    if (targetMonth < 0 || targetMonth >= 9999 * 12) throw new RangeError('Hawiyah: Gregorian movement is outside years 1–9999.');
   }
   const duration = unit === 'month' ? { months: amount } : { years: amount };
   return iso(current.add(duration));
@@ -91,7 +91,7 @@ export function moveCalendarDate(value: string, amount: number, unit: 'day' | 'm
 
 export function getCalendarMonth(options: CalendarMonthOptions = {}): CalendarMonth {
   const { locale = 'ar-SA', calendar = 'gregory', weekStartsOn = 0 } = options;
-  if (!Number.isInteger(weekStartsOn) || weekStartsOn < 0 || weekStartsOn > 6) throw new RangeError('Nasaq: weekStartsOn must be 0 through 6.');
+  if (!Number.isInteger(weekStartsOn) || weekStartsOn < 0 || weekStartsOn > 6) throw new RangeError('Hawiyah: weekStartsOn must be 0 through 6.');
   const system = calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar();
   const currentDay = today('Asia/Riyadh');
   let anchor = iso(date(options.month || options.value || iso(currentDay)));

@@ -22,7 +22,7 @@ it('composes native drawer/groups with disabled entries, route cancellation and 
   }) }); apps.push(app); app.mount(container);
   const trigger = container.querySelector('button')!; trigger.focus(); trigger.click(); await nextTick();
   const dialog = container.querySelector('dialog')!;
-  expect(dialog.open).toBe(true); expect(dialog.classList.contains('nq-navigation-drawer')).toBe(true);
+  expect(dialog.open).toBe(true); expect(dialog.classList.contains('hw-navigation-drawer')).toBe(true);
   expect(dialog.querySelector('nav')!.getAttribute('aria-label')).toBe('التنقل الرئيسي');
   expect(dialog.querySelector('a[href="#blocked"], a[href="#hidden"]')).toBeNull();
   const summary = dialog.querySelector('summary')!; summary.focus(); summary.click(); await nextTick();

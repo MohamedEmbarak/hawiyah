@@ -25,27 +25,27 @@ function tooltip(t: Translate): Markup {
     ['top', 'start'], ['top', 'center'], ['top', 'end'],
     ['bottom', 'center'], ['start', 'center'], ['end', 'center'],
   ];
-  const wrap = (items: string[]) => `<div class="nq-cluster" style="gap:4rem;padding:4rem;justify-content:center">${items.join('')}</div>`;
+  const wrap = (items: string[]) => `<div class="hw-cluster" style="gap:4rem;padding:4rem;justify-content:center">${items.join('')}</div>`;
   return {
-    vanilla: wrap(variants.map(([placement, align]) => `<span class="nq-tooltip-anchor" data-nq="tooltip"><span tabindex="0" data-nq-tooltip-trigger>${term} (${placement}/${align})</span><span class="nq-tooltip" role="tooltip" data-placement="${placement}" data-align="${align}" hidden>${tip}</span></span>`)),
+    vanilla: wrap(variants.map(([placement, align]) => `<span class="hw-tooltip-anchor" data-hw="tooltip"><span tabindex="0" data-hw-tooltip-trigger>${term} (${placement}/${align})</span><span class="hw-tooltip" role="tooltip" data-placement="${placement}" data-align="${align}" hidden>${tip}</span></span>`)),
     react: wrap(variants.map(([placement, align]) => `<Tooltip content="${tip}" placement="${placement}" align="${align}"><span tabIndex={0}>${term} (${placement}/${align})</span></Tooltip>`)).replace('class=', 'className=').replace('style="gap:4rem;padding:4rem;justify-content:center"', 'style={{gap:"4rem",padding:"4rem",justifyContent:"center"}}'),
     vue: wrap(variants.map(([placement, align]) => `<Tooltip content="${tip}" placement="${placement}" align="${align}"><span tabindex="0">${term} (${placement}/${align})</span></Tooltip>`)),
-    angular: wrap(variants.map(([placement, align]) => `<nq-tooltip text="${tip}" placement="${placement}" align="${align}">${term} (${placement}/${align})</nq-tooltip>`)),
+    angular: wrap(variants.map(([placement, align]) => `<hw-tooltip text="${tip}" placement="${placement}" align="${align}">${term} (${placement}/${align})</hw-tooltip>`)),
   };
 }
 
 function popover(t: Translate): Markup {
   const trigger = t('Check requirements', 'تحقق من المتطلبات');
   const label = t('Service requirements', 'متطلبات الخدمة');
-  const checkbox = `<label><input type="checkbox" class="nq-checkbox"> ${t('I have the supporting documents', 'لدي المستندات الداعمة')}</label>`;
+  const checkbox = `<label><input type="checkbox" class="hw-checkbox"> ${t('I have the supporting documents', 'لدي المستندات الداعمة')}</label>`;
   return {
-    vanilla: `<div class="nq-popover" data-nq="popover"><button type="button" class="nq-button" data-nq-trigger>${trigger}</button>
-  <section class="nq-popover-panel" data-nq-panel role="region" aria-labelledby="requirements-title" hidden><h3 id="requirements-title">${label}</h3>${checkbox}</section></div>`,
-    react: `<Popover title="${label}" trigger={<button type="button" className="nq-button">${trigger}</button>}>
-  ${checkbox.replace('class="nq-checkbox">', 'className="nq-checkbox" />')}
+    vanilla: `<div class="hw-popover" data-hw="popover"><button type="button" class="hw-button" data-hw-trigger>${trigger}</button>
+  <section class="hw-popover-panel" data-hw-panel role="region" aria-labelledby="requirements-title" hidden><h3 id="requirements-title">${label}</h3>${checkbox}</section></div>`,
+    react: `<Popover title="${label}" trigger={<button type="button" className="hw-button">${trigger}</button>}>
+  ${checkbox.replace('class="hw-checkbox">', 'className="hw-checkbox" />')}
 </Popover>`,
     vue: `<Popover label="${label}" trigger-label="${trigger}">${checkbox}</Popover>`,
-    angular: `<nq-popover label="${label}" triggerLabel="${trigger}">${checkbox}</nq-popover>`,
+    angular: `<hw-popover label="${label}" triggerLabel="${trigger}">${checkbox}</hw-popover>`,
   };
 }
 
@@ -60,8 +60,8 @@ const onSelection = (event${typed ? ': Event' : ''}) => {
     selection.value = event.detail.value;
   }
 };
-root.addEventListener('nq:change', onSelection);
-window.addEventListener('pagehide', () => root.removeEventListener('nq:change', onSelection), {once: true});
+root.addEventListener('hw:change', onSelection);
+window.addEventListener('pagehide', () => root.removeEventListener('hw:change', onSelection), {once: true});
 `;
 function withSelection(sample: Markup, label: string, typed: boolean): Markup {
   return {
@@ -83,14 +83,14 @@ function menu(t: Translate, typed: boolean): Markup {
   ];
   const data = JSON.stringify(items);
   return withSelection({
-    vanilla: `<div class="nq-menu" data-nq="menu"><button class="nq-button" type="button" data-nq-trigger>${label}</button>
-  <div class="nq-menu-content" data-nq-panel role="menu" aria-label="${label}" hidden>
-    ${items.map(item => `<button class="nq-menu-item" type="button" role="menuitem" data-nq-value="${item.value}"${item.disabled ? ' disabled' : ''}>${item.label}</button>`).join('\n    ')}
+    vanilla: `<div class="hw-menu" data-hw="menu"><button class="hw-button" type="button" data-hw-trigger>${label}</button>
+  <div class="hw-menu-content" data-hw-panel role="menu" aria-label="${label}" hidden>
+    ${items.map(item => `<button class="hw-menu-item" type="button" role="menuitem" data-hw-value="${item.value}"${item.disabled ? ' disabled' : ''}>${item.label}</button>`).join('\n    ')}
   </div></div>`,
     react: `<Menu label="${label}" items={${data}} onAction={setValue}
-  trigger={<button className="nq-button" type="button">${label}</button>} />`,
+  trigger={<button className="hw-button" type="button">${label}</button>} />`,
     vue: `<Menu label="${label}" :items='${data}' @select="value = $event" />`,
-    angular: `<nq-menu label="${label}" triggerLabel="${label}" [items]="actions" (action)="value = $event" />`,
+    angular: `<hw-menu label="${label}" triggerLabel="${label}" [items]="actions" (action)="value = $event" />`,
     angularMember: `\n  readonly actions = ${JSON.stringify(items.map(({value, ...item}) => ({id: value, ...item})))};`,
   }, t('Last action ID', 'معرّف آخر إجراء'), typed);
 }
@@ -100,23 +100,23 @@ function drawer(t: Translate): Markup {
   const title = t('Request filters', 'مرشحات الطلبات');
   const close = t('Close filters', 'إغلاق المرشحات');
   const label = t('Include closed requests', 'تضمين الطلبات المغلقة');
-  const field = `<label><input class="nq-checkbox" type="checkbox"> ${label}</label>`;
+  const field = `<label><input class="hw-checkbox" type="checkbox"> ${label}</label>`;
   return {
-    vanilla: `<button type="button" class="nq-button" data-nq-dialog-open="request-filters">${trigger}</button>
-<dialog id="request-filters" class="nq-dialog nq-drawer" data-nq="drawer" data-side="end" aria-labelledby="filters-title">
-  <div class="nq-dialog-header"><h2 id="filters-title">${title}</h2><button type="button" class="nq-button" data-nq-dialog-close>${close}</button></div>
-  <div class="nq-dialog-body">${field}</div>
+    vanilla: `<button type="button" class="hw-button" data-hw-dialog-open="request-filters">${trigger}</button>
+<dialog id="request-filters" class="hw-dialog hw-drawer" data-hw="drawer" data-side="end" aria-labelledby="filters-title">
+  <div class="hw-dialog-header"><h2 id="filters-title">${title}</h2><button type="button" class="hw-button" data-hw-dialog-close>${close}</button></div>
+  <div class="hw-dialog-body">${field}</div>
 </dialog>`,
     react: `<Drawer side="end" title="${title}" closeLabel="${close}"
-  trigger={<button type="button" className="nq-button">${trigger}</button>}>
+  trigger={<button type="button" className="hw-button">${trigger}</button>}>
   ${field.replace('class=', 'className=').replace('checkbox">', 'checkbox" />')}
 </Drawer>`,
     vue: `<Drawer side="end" title="${title}" close-label="${close}">
-  <template #trigger="{ open }"><button type="button" class="nq-button" @click="open">${trigger}</button></template>
+  <template #trigger="{ open }"><button type="button" class="hw-button" @click="open">${trigger}</button></template>
   ${field}
 </Drawer>`,
-    angular: `<button type="button" class="nq-button" #opener (click)="filters.show(opener)">${trigger}</button>
-<nq-drawer #filters side="end" title="${title}" closeLabel="${close}">${field}</nq-drawer>`,
+    angular: `<button type="button" class="hw-button" #opener (click)="filters.show(opener)">${trigger}</button>
+<hw-drawer #filters side="end" title="${title}" closeLabel="${close}">${field}</hw-drawer>`,
   };
 }
 
@@ -124,10 +124,10 @@ function collapsible(t: Translate): Markup {
   const label = t('Before you apply', 'قبل تقديم الطلب');
   const body = `<ul><li>${t('Prepare your identification.', 'جهّز وثيقة الهوية.')}</li><li>${t('Check your contact details.', 'تحقق من بيانات التواصل.')}</li></ul>`;
   return {
-    vanilla: `<details class="nq-collapsible"><summary>${label}</summary>${body}</details>`,
+    vanilla: `<details class="hw-collapsible"><summary>${label}</summary>${body}</details>`,
     react: `<Collapsible title="${label}">${body}</Collapsible>`,
     vue: `<Collapsible label="${label}">${body}</Collapsible>`,
-    angular: `<nq-collapsible label="${label}">${body}</nq-collapsible>`,
+    angular: `<hw-collapsible label="${label}">${body}</hw-collapsible>`,
   };
 }
 
@@ -137,10 +137,10 @@ function tree(t: Translate, typed: boolean): Markup {
   const children = [{id: 'license', label: t('Commercial license', 'الرخصة التجارية')}, {id: 'address', label: t('Address proof', 'إثبات العنوان')}];
   const personal = {id: 'personal', label: t('Personal documents', 'المستندات الشخصية')};
   const data = JSON.stringify([{id: 'business', label: business, children}, personal]);
-  const leaf = (item: {id: string; label: string}) => `<li role="treeitem" data-nq-value="${item.id}"><span data-nq-tree-label>${item.label}</span></li>`;
+  const leaf = (item: {id: string; label: string}) => `<li role="treeitem" data-hw-value="${item.id}"><span data-hw-tree-label>${item.label}</span></li>`;
   return withSelection({
-    vanilla: `<ul class="nq-tree-view" data-nq="tree-view" role="tree" aria-label="${label}">
-  <li role="treeitem" data-nq-value="business" aria-expanded="false"><button type="button" data-nq-tree-toggle tabindex="-1" aria-label="${t('Toggle business documents','تبديل عرض مستندات المنشأة')}">▸</button><span data-nq-tree-label>${business}</span>
+    vanilla: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="${label}">
+  <li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="${t('Toggle business documents','تبديل عرض مستندات المنشأة')}">▸</button><span data-hw-tree-label>${business}</span>
     <ul role="group" hidden>${children.map(leaf).join('\n      ')}</ul>
   </li>
   ${leaf(personal)}
@@ -148,7 +148,7 @@ function tree(t: Translate, typed: boolean): Markup {
     react: `<TreeView label="${label}" items={${data}} value={value} onValueChange={setValue} />`,
     vue: `<TreeView label="${label}" :items='${data}' v-model="value"
   :expand-label="node => '${t('Expand', 'توسيع')} ' + node.label" :collapse-label="node => '${t('Collapse', 'طي')} ' + node.label" />`,
-    angular: `<nq-tree-view label="${label}" [nodes]="documents" [(value)]="value" />`,
+    angular: `<hw-tree-view label="${label}" [nodes]="documents" [(value)]="value" />`,
     angularMember: `\n  readonly documents = ${data};`,
   }, t('Selected document ID', 'معرّف المستند المحدد'), typed);
 }
@@ -157,6 +157,6 @@ const recipes = {tooltip, popover, menu, drawer, collapsible, 'tree-view': tree}
 export function disclosureProjectRecipe(id: DisclosureId, locale: Locale, typed: boolean) {
   const result = recipes[id]((en, ar) => locale === 'ar' ? ar : en, typed);
   const wrap = (markup: string, classAttribute: string) =>
-    `<div ${classAttribute}="nq-stack" data-disclosure-project="${id}">\n${markup}\n</div>`;
+    `<div ${classAttribute}="hw-stack" data-disclosure-project="${id}">\n${markup}\n</div>`;
   return {...result, component: componentNames[id], react: wrap(result.react, 'className'), vue: wrap(result.vue, 'class'), angular: wrap(result.angular, 'class'), vanilla: wrap(result.vanilla, 'class')};
 }

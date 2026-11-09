@@ -128,7 +128,7 @@ export function selectDemoMarkup(
         `<option value="${option.value}"${initial.includes(option.value) ? " selected" : ""}${option.disabled ? " disabled" : ""}>${content(option.label)}</option>`,
     )
     .join("");
-  return `<div class="nq-field" data-select-demo="${kind}"><label class="nq-label" for="${id}">${content(label)}</label><select id="${id}" class="nq-select" name="${kind}-region" aria-describedby="${id}-hint${error ? ` ${id}-error` : ""}" ${attributes}>${optionMarkup}</select><span id="${id}-hint" class="nq-hint">${content(hint)}</span>${error ? `<span id="${id}-error" class="nq-error">${content(error)}</span>` : ""}</div>`;
+  return `<div class="hw-field" data-select-demo="${kind}"><label class="hw-label" for="${id}">${content(label)}</label><select id="${id}" class="hw-select" name="${kind}-region" aria-describedby="${id}-hint${error ? ` ${id}-error` : ""}" ${attributes}>${optionMarkup}</select><span id="${id}-hint" class="hw-hint">${content(hint)}</span>${error ? `<span id="${id}-error" class="hw-error">${content(error)}</span>` : ""}</div>`;
 }
 
 export function selectNativeMarkup(example: SelectExample, controlled = false) {
@@ -157,6 +157,6 @@ export function selectNativeMarkup(example: SelectExample, controlled = false) {
     angular:
       kind === "multiple" || kind === "listbox"
         ? nativeMarkup()
-        : `<nq-select ${attributes} [options]='${data}' placeholder="${content(placeholder)}" ${controlled ? '[(value)]="value"' : `value="${value}"`} />`,
+        : `<hw-select ${attributes} [options]='${data}' placeholder="${content(placeholder)}" ${controlled ? '[(value)]="value"' : `value="${value}"`} />`,
   };
 }

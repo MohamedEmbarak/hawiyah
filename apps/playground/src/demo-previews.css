@@ -14,21 +14,21 @@
 }
 /* Round only the footer surface; keep demo popovers free to extend past cards. */
 .component-card-docs {
-  border-end-start-radius: max(0px, calc(var(--nq-radius-lg) - 1px));
-  border-end-end-radius: max(0px, calc(var(--nq-radius-lg) - 1px));
+  border-end-start-radius: max(0px, calc(var(--hw-radius-lg) - 1px));
+  border-end-end-radius: max(0px, calc(var(--hw-radius-lg) - 1px));
 }
-.demo-result { margin-block: 1rem 0; padding-block-start: .75rem; border-block-start: 1px solid var(--nq-color-border); }
+.demo-result { margin-block: 1rem 0; padding-block-start: .75rem; border-block-start: 1px solid var(--hw-color-border); }
 .ready-examples { display: grid; gap: 1.25rem; }
-.ready-example { min-inline-size: 0; border: 1px solid var(--nq-color-border); border-radius: .5rem; overflow: clip; }
+.ready-example { min-inline-size: 0; border: 1px solid var(--hw-color-border); border-radius: .5rem; overflow: clip; }
 /* A disclosure must remain clickable beyond a compact example's panel. */
-.ready-example:has(.nq-tabs-overflow[open]) { position: relative; z-index: 2; overflow: visible; }
-.ready-example:has(.nq-tabs-overflow[open]) > h3 { border-start-start-radius: .5rem; border-start-end-radius: .5rem; }
-.ready-example:has(.nq-search-suggestions:not([hidden])), .component-card:has(.nq-search-suggestions:not([hidden])) { position: relative; z-index: 2; overflow: visible; }
-.ready-example:has(.nq-search-suggestions:not([hidden])) > h3 { border-start-start-radius: .5rem; border-start-end-radius: .5rem; }
-.ready-example > h3 { margin: 0; padding: 1rem; font-size: 1rem; background: var(--nq-color-canvas); }
+.ready-example:has(.hw-tabs-overflow[open]) { position: relative; z-index: 2; overflow: visible; }
+.ready-example:has(.hw-tabs-overflow[open]) > h3 { border-start-start-radius: .5rem; border-start-end-radius: .5rem; }
+.ready-example:has(.hw-search-suggestions:not([hidden])), .component-card:has(.hw-search-suggestions:not([hidden])) { position: relative; z-index: 2; overflow: visible; }
+.ready-example:has(.hw-search-suggestions:not([hidden])) > h3 { border-start-start-radius: .5rem; border-start-end-radius: .5rem; }
+.ready-example > h3 { margin: 0; padding: 1rem; font-size: 1rem; background: var(--hw-color-canvas); }
 .ready-example .component-preview { gap: 1rem; min-block-size: 0; }
 .ready-example .source-details { margin: 0; }
-.ready-example .nq-toast-region { inline-size: 100%; max-block-size: none; }
+.ready-example .hw-toast-region { inline-size: 100%; max-block-size: none; }
 .guide-preview[data-button-surface='dark'] { background: #14573a; }
 @media (max-width: 640px) {
   .component-grid { column-count: 1; }

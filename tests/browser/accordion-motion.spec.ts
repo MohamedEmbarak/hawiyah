@@ -6,9 +6,9 @@ for (const direction of ['rtl','ltr']) {
     await pauseAccordionAnimations(page);
     await page.emulateMedia({reducedMotion:'no-preference'});
     await page.goto('/#component/accordion');
-    const root=page.locator('.component-preview .nq-accordion').first();
+    const root=page.locator('.component-preview .hw-accordion').first();
     // Use the live recipe and its public vanilla enhancement, not a test controller.
-    const accordion=await root.count()?root:page.locator('.nq-accordion[data-nq="accordion"]').first();
+    const accordion=await root.count()?root:page.locator('.hw-accordion[data-hw="accordion"]').first();
     await accordion.evaluate((node,dir)=>node.setAttribute('dir',dir),direction);
     const items=accordion.locator(':scope > details'), first=items.first(), summary=first.locator('summary');
     const collapsed=(await first.boundingBox())!.height;
@@ -21,11 +21,11 @@ for (const direction of ['rtl','ltr']) {
     expect(closing.from).toBeCloseTo(opening.height,0);
     expect(closing.height).toBeLessThan(closing.from);
     await expect(summary).toHaveAttribute('aria-expanded','false');
-    await expect(first.locator('.nq-accordion-content')).toHaveAttribute('inert','');
+    await expect(first.locator('.hw-accordion-content')).toHaveAttribute('inert','');
     await summary.evaluate(node=>(node as HTMLElement).click());
     const reopened=await motionFrame(first,150);
     expect(reopened.from).toBeCloseTo(closing.height,0);
-    await first.locator('.nq-accordion-content').evaluate(node=>node.insertAdjacentHTML('beforeend','<p style="height:80px">Additional content</p><button type="button">Inside action</button>'));
+    await first.locator('.hw-accordion-content').evaluate(node=>node.insertAdjacentHTML('beforeend','<p style="height:80px">Additional content</p><button type="button">Inside action</button>'));
     const resized=await motionFrame(first,150);
     expect(resized.to).toBeGreaterThan(reopened.to);
     await finishMotion(first);
@@ -34,13 +34,13 @@ for (const direction of ['rtl','ltr']) {
     await first.getByRole('button',{name:'Inside action'}).focus();
     await summary.evaluate(node=>(node as HTMLElement).click());
     await expect(summary).toBeFocused();
-    await expect(first.locator('.nq-accordion-content')).toHaveAttribute('aria-hidden','true');
+    await expect(first.locator('.hw-accordion-content')).toHaveAttribute('aria-hidden','true');
     await page.keyboard.press('Tab'); await expect(items.nth(1).locator('summary')).toBeFocused();
     await page.emulateMedia({reducedMotion:'reduce'});
     await expect(first).not.toHaveAttribute('open');
     await summary.focus(); await page.keyboard.press('Space'); await expect(first).toHaveAttribute('open','');
     expect(await first.evaluate(node=>node.getAnimations().length)).toBe(0);
-    await accordion.evaluate(node=>node.setAttribute('data-nq-theme','nasaq'));
+    await accordion.evaluate(node=>node.setAttribute('data-hw-theme','hawiyah'));
     await page.emulateMedia({reducedMotion:'no-preference'});
     await summary.click(); await expect(first).not.toHaveAttribute('open');
     expect(await first.evaluate(node=>node.getAnimations().length)).toBe(0);

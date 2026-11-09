@@ -8,8 +8,8 @@ await mkdir(generated, { recursive: true });
 for (const framework of ["react", "vue", "angular"]) {
   const aliases = Object.fromEntries(
     ["core", "react", "vue", "angular"].map((name) => [
-      `@nasaq/${name}`,
-      `${root}packages/${name}/dist/${name === "angular" ? "fesm2022/nasaq-angular.mjs" : "index.js"}`,
+      `@hawiyah/${name}`,
+      `${root}packages/${name}/dist/${name === "angular" ? "fesm2022/hawiyah-angular.mjs" : "index.js"}`,
     ]),
   );
   const output = await build({
@@ -23,7 +23,7 @@ for (const framework of ["react", "vue", "angular"]) {
       minify: true,
       lib: {
         entry: `${root}scripts/preview-entries/${framework}.ts`,
-        name: "NasaqProjectRuntime",
+        name: "HawiyahProjectRuntime",
         formats: ["iife"],
       },
     },

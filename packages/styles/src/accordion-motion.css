@@ -1,5 +1,5 @@
 /* Native details remain the no-script fallback. Motion is owned by each adapter. */
-.nq-accordion-item[data-nq-expanded] > .nq-accordion-trigger::after {
+.hw-accordion-item[data-hw-expanded] > .hw-accordion-trigger::after {
   content: '';
   inline-size: 1rem;
   block-size: 1rem;
@@ -7,12 +7,12 @@
   background: currentColor;
   mask: url('./assets/icons/arrow-down-01.svg') center / contain no-repeat;
   transform: rotate(0deg);
-  transition: transform var(--nq-duration-accordion-indicator, 0ms) var(--nq-ease-accordion, ease-in-out);
+  transition: transform var(--hw-duration-accordion-indicator, 0ms) var(--hw-ease-accordion, ease-in-out);
 }
-.nq-accordion-item[data-nq-expanded='true'] > .nq-accordion-trigger::after { transform: rotate(180deg); }
+.hw-accordion-item[data-hw-expanded='true'] > .hw-accordion-trigger::after { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) {
-  .nq-accordion-item[data-nq-expanded] > .nq-accordion-trigger::after { transition: none; }
+  .hw-accordion-item[data-hw-expanded] > .hw-accordion-trigger::after { transition: none; }
 }
 @media (forced-colors: active) {
-  .nq-accordion-item[data-nq-expanded] > .nq-accordion-trigger::after { background: ButtonText; forced-color-adjust: none; }
+  .hw-accordion-item[data-hw-expanded] > .hw-accordion-trigger::after { background: ButtonText; forced-color-adjust: none; }
 }

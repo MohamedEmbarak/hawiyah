@@ -2,8 +2,8 @@ import type {WithNativeAttributes} from './native-attributes.js';
 import type {HTMLAttributes} from 'vue';
 import { defineComponent, h, mergeProps, useId } from "vue";
 import type { PropType } from "vue";
-import { layoutStyles } from "@nasaq/core";
-import type { LayoutProps } from "@nasaq/core";
+import { layoutStyles } from "@hawiyah/core";
+import type { LayoutProps } from "@hawiyah/core";
 
 const layoutProps = {
   as: { type: String, default: "div" },
@@ -44,18 +44,18 @@ function layout(name: string, className: string, tag = "div") {
   });
   return component as WithNativeAttributes<typeof component, HTMLAttributes>;
 }
-export const Container = layout("NqContainer", "nq-container");
-export const Stack = layout("NqStack", "nq-stack");
-export const Inline = layout("NqInline", "nq-inline");
-export const Grid = layout("NqGrid", "nq-grid");
-export const Columns = layout("NqColumns", "nq-columns");
-export const Sidebar = layout("NqSidebar", "nq-sidebar");
-export const Center = layout("NqCenter", "nq-center");
-export const Spacer = layout("NqSpacer", "nq-spacer");
-export const AspectRatio = layout("NqAspectRatio", "nq-aspect-ratio");
-export const Section = layout("NqSection", "nq-section", "section");
+export const Container = layout("HwContainer", "hw-container");
+export const Stack = layout("HwStack", "hw-stack");
+export const Inline = layout("HwInline", "hw-inline");
+export const Grid = layout("HwGrid", "hw-grid");
+export const Columns = layout("HwColumns", "hw-columns");
+export const Sidebar = layout("HwSidebar", "hw-sidebar");
+export const Center = layout("HwCenter", "hw-center");
+export const Spacer = layout("HwSpacer", "hw-spacer");
+export const AspectRatio = layout("HwAspectRatio", "hw-aspect-ratio");
+export const Section = layout("HwSection", "hw-section", "section");
 export const AppShell = defineComponent({
-  name: "NqAppShell",
+  name: "HwAppShell",
   inheritAttrs: false,
   props: {
     ...layoutProps,
@@ -63,31 +63,31 @@ export const AppShell = defineComponent({
     skipLabel: { type: String, default: 'انتقل إلى المحتوى' },
   },
   setup(props, { attrs, slots }) {
-    const defaultMainId = `nq-shell-${useId()}-main`;
+    const defaultMainId = `hw-shell-${useId()}-main`;
     return () =>
       h(
         props.as,
         mergeProps(attrs, {
-          class: "nq-app-shell",
+          class: "hw-app-shell",
           style: layoutStyles(props),
           "data-side": props.side,
           "data-collapse-at": props.collapseAt,
         }),
         [
-          h('a', { class: 'nq-skip-link', href: `#${props.mainId ?? defaultMainId}` }, props.skipLabel),
+          h('a', { class: 'hw-skip-link', href: `#${props.mainId ?? defaultMainId}` }, props.skipLabel),
           slots.header &&
-            h("div", { class: "nq-app-shell-header" }, slots.header()),
+            h("div", { class: "hw-app-shell-header" }, slots.header()),
           slots.sidebar &&
-            h("aside", { class: "nq-app-shell-sidebar" }, slots.sidebar()),
-          h("main", { class: "nq-app-shell-main", id: props.mainId ?? defaultMainId, tabindex: -1 }, slots.default?.()),
+            h("aside", { class: "hw-app-shell-sidebar" }, slots.sidebar()),
+          h("main", { class: "hw-app-shell-main", id: props.mainId ?? defaultMainId, tabindex: -1 }, slots.default?.()),
           slots.footer &&
-            h("div", { class: "nq-app-shell-footer" }, slots.footer()),
+            h("div", { class: "hw-app-shell-footer" }, slots.footer()),
         ],
       );
   },
 });
 export const PageHeader = defineComponent({
-  name: "NqPageHeader",
+  name: "HwPageHeader",
   inheritAttrs: false,
   props: {
     ...layoutProps,
@@ -100,18 +100,18 @@ export const PageHeader = defineComponent({
       h(
         "header",
         mergeProps(attrs, {
-          class: "nq-page-header",
+          class: "hw-page-header",
           style: layoutStyles(props),
         }),
         [
           slots.breadcrumb?.(),
-          h("div", { class: "nq-page-header-main" }, [
+          h("div", { class: "hw-page-header-main" }, [
             h("div", {}, [
               h(`h${Math.min(6, Math.max(1, props.level))}`, {}, props.title),
               props.description && h("p", {}, props.description),
             ]),
             slots.actions &&
-              h("div", { class: "nq-page-header-actions" }, slots.actions()),
+              h("div", { class: "hw-page-header-actions" }, slots.actions()),
           ]),
           slots.default?.(),
         ],

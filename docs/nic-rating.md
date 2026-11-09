@@ -5,7 +5,7 @@ CSS 3427–3502. The supplied `master.js` contains no rating/star implementation
 The CSS establishes star presentation and fractional overlays; it does not
 establish selection steps, server aggregation, submission or form disclosure.
 
-| Source | Observed value | Nasaq implementation | Confidence / boundary |
+| Source | Observed value | Hawiyah implementation | Confidence / boundary |
 | --- | --- | --- | --- |
 | 3427–3434 | Primary stars at 30px; bold numeric score | 30px DGA stars, semantic fill and bold score | High for CSS; an ordinary star glyph is used, with no claim of official font artwork parity |
 | 3452–3464 | 30×30px wrapper, 4px physical margin | 30px display cells with 4px logical gap | High; no trailing gap, direction follows `dir` |
@@ -30,14 +30,14 @@ Vanilla radios own values, required validation and reset, with `createRating`
 adding read-only guards and change callbacks. Authors supply integer radio values.
 
 `RatingDisplay` is a separate non-interactive aggregate visualization, exported
-by React/Vue and as `NqRatingDisplayComponent` by Angular. It has `role="img"` and
+by React/Vue and as `HwRatingDisplayComponent` by Angular. It has `role="img"` and
 one accessible name containing the label and score; decorative stars and the
 optional visible number are hidden from assistive technology to avoid repetition.
 It does not add radios, focus stops or form values. A score of 3.5 renders three
 full stars and one half star. Arbitrary finite fractions are supported, not just
-half steps. Vanilla uses the same static `.nq-rating-display`, `.nq-rating-stars`,
-`.nq-rating-star`, `.nq-rating-fill` and `.nq-rating-score` composition, without a
-controller. Each overlay takes `--nq-rating-fill` as a percentage.
+half steps. Vanilla uses the same static `.hw-rating-display`, `.hw-rating-stars`,
+`.hw-rating-star`, `.hw-rating-fill` and `.hw-rating-score` composition, without a
+controller. Each overlay takes `--hw-rating-fill` as a percentage.
 
 Native components share a finite maximum from 1 to 20 (default/fallback 5).
 Values clamp to 0…max, with nonfinite data becoming 0. Display preserves fractions;
@@ -56,9 +56,9 @@ an aggregate display into a clickable input.
 ## Themes and accessibility adaptations
 
 The DGA profile follows the measured source dimensions/fill/timing. Original
-Nasaq retains its 28px star size and instant state changes. Custom themes can
-override `--nq-color-rating-empty`, `--nq-color-rating-fill`,
-`--nq-color-rating-outline`, and `--nq-duration-rating`.
+Hawiyah retains its 28px star size and instant state changes. Custom themes can
+override `--hw-color-rating-empty`, `--hw-color-rating-fill`,
+`--hw-color-rating-outline`, and `--hw-duration-rating`.
 Input targets and cumulative selection backgrounds remain larger than the source
 display cells. Dark mode uses semantic colors; a thin boundary improves pale-star
 visibility. Forced colors preserve the display silhouette and fractional fill,

@@ -11,9 +11,9 @@ export async function frameWidth(page: Page, project: Locator, width: number) {
       document.head.append(style);
     }
     // The project editor can replace its iframe when a language finishes compiling.
-    style.textContent = `.nq-ide-preview-stage iframe.nq-ide-frame { inline-size: ${pixels}px !important; min-inline-size: ${pixels}px !important; max-inline-size: ${pixels}px !important; flex-shrink: 0 !important; }`;
+    style.textContent = `.hw-ide-preview-stage iframe.hw-ide-frame { inline-size: ${pixels}px !important; min-inline-size: ${pixels}px !important; max-inline-size: ${pixels}px !important; flex-shrink: 0 !important; }`;
   }, width);
-  const frame = page.locator('.nq-ide-frame');
+  const frame = page.locator('.hw-ide-frame');
   // Chromium can defer layout for an off-screen embedded document. Flush the
   // host's geometry, expose the frame, then compare the two browsing contexts.
   await frame.scrollIntoViewIfNeeded();

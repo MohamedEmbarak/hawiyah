@@ -29,7 +29,7 @@ async function exerciseSelects(scope: Locator, direction: Direction) {
   for (const example of await examples.all()) {
     const control = example.locator('select');
     await expect(control).toHaveAccessibleName(/\S/);
-    const descriptions = await example.locator('.nq-hint, .nq-error').allTextContents();
+    const descriptions = await example.locator('.hw-hint, .hw-error').allTextContents();
     expect(descriptions.length).toBeGreaterThan(0);
     await expect(control).toHaveAccessibleDescription(descriptions.join(' '));
     await expect(control.locator('option[value="unavailable"]')).toBeDisabled();
@@ -63,8 +63,8 @@ async function exerciseSelects(scope: Locator, direction: Direction) {
 
   const error = control('error');
   await expect(error).toHaveAttribute('aria-invalid', 'true');
-  await expect(scope.locator('[data-select-demo="error"] .nq-error')).toHaveCSS('font-size', '12px');
-  await expect(scope.locator('[data-select-demo="single"] .nq-hint')).toHaveCSS('font-size', '10px');
+  await expect(scope.locator('[data-select-demo="error"] .hw-error')).toHaveCSS('font-size', '12px');
+  await expect(scope.locator('[data-select-demo="single"] .hw-hint')).toHaveCSS('font-size', '10px');
   await expect(control('disabled')).toBeDisabled();
 
   const multiple = control('multiple');
@@ -102,8 +102,8 @@ for (const locale of ['ar', 'en'] as const) {
     test.setTimeout(90000);
     await page.addInitScript(language => {
       if (window !== window.top) return;
-      localStorage.setItem('nasaq-locale', language);
-      localStorage.setItem('nasaq-mode', 'light');
+      localStorage.setItem('hawiyah-locale', language);
+      localStorage.setItem('hawiyah-mode', 'light');
     }, locale);
     await page.setViewportSize({ width: 1543, height: 1000 });
     await page.goto('/#component/select');
@@ -112,22 +112,22 @@ for (const locale of ['ar', 'en'] as const) {
     const single = await exerciseSelects(scope, locale === 'ar' ? 'rtl' : 'ltr');
     for (const mode of ['light', 'dark']) {
       await scope.evaluate((element, mode) => {
-        element.setAttribute('data-nq-mode', mode);
-        element.style.background = 'var(--nq-color-surface)';
+        element.setAttribute('data-hw-mode', mode);
+        element.style.background = 'var(--hw-color-surface)';
       }, mode);
       expect((await new AxeBuilder({ page }).include('#component-examples .component-preview').analyze()).violations).toEqual([]);
     }
-    await scope.evaluate(element => element.removeAttribute('data-nq-mode'));
+    await scope.evaluate(element => element.removeAttribute('data-hw-mode'));
     const opposite = locale === 'ar' ? 'ltr' : 'rtl';
     await single.evaluate((element, direction) => element.dir = direction, opposite);
     await expectPlacement(single, opposite);
     await single.evaluate(element => element.removeAttribute('dir'));
 
-    await scope.evaluate(element => element.setAttribute('data-nq-theme', 'nasaq'));
+    await scope.evaluate(element => element.setAttribute('data-hw-theme', 'hawiyah'));
     await single.focus();
     await expect(single).not.toHaveCSS('appearance', 'none');
     expect(await arrowImage(single)).toBe('');
-    await scope.evaluate(element => element.removeAttribute('data-nq-theme'));
+    await scope.evaluate(element => element.removeAttribute('data-hw-theme'));
     await page.setViewportSize({ width: 320, height: 844 });
     await expectMobileFit(scope);
     await scope.locator('.ready-example').first().screenshot({ path: info.outputPath(`select-${locale}-mobile.png`) });
@@ -152,15 +152,15 @@ for (const [framework, language, locale] of projects) {
   test(`${framework} ${language} Select project in ${locale}`, async ({ page }) => {
     test.setTimeout(120000);
     await page.addInitScript(language => {
-      if (window === window.top) localStorage.setItem('nasaq-locale', language);
+      if (window === window.top) localStorage.setItem('hawiyah-locale', language);
     }, locale);
     await page.setViewportSize({ width: 1864, height: 1000 });
     await page.goto('/#component/select');
     await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);
     if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-    await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
-    const scope = page.frameLocator('.nq-ide-frame').locator('.demo');
+    await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
+    const scope = page.frameLocator('.hw-ide-frame').locator('.demo');
     await exerciseSelects(scope, locale === 'ar' ? 'rtl' : 'ltr');
     await expect(scope.locator('[data-select-demo="single"] output')).toHaveText('second');
     await page.setViewportSize({ width: 390, height: 844 });

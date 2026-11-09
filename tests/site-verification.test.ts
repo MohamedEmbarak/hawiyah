@@ -11,11 +11,11 @@ for(const framework of ['react','vue'])it(`${framework} verification has no inve
   const root=document.createElement('div');root.innerHTML=await render({});
   expect(root.querySelector('summary')?.textContent).toContain('معلومات الموقع');
   expect(root.querySelector('details')?.open).toBe(false);
-  expect(root.querySelector('a')).toBeNull();expect(root.querySelectorAll('.nq-verification-checks section')).toHaveLength(1);
+  expect(root.querySelector('a')).toBeNull();expect(root.querySelectorAll('.hw-verification-checks section')).toHaveLength(1);
   expect(root.textContent).not.toContain('موقع حكومي');
   root.innerHTML=await render({locale:'en',label:'Organization website',domain:'example.test',registrationHref:'https://example.test/registration',registrationNumber:'012345',defaultOpen:true});
   expect(root.querySelector('details')?.open).toBe(true);
-  expect(root.querySelectorAll('.nq-verification-checks section')).toHaveLength(2);
+  expect(root.querySelectorAll('.hw-verification-checks section')).toHaveLength(2);
   expect(root.querySelector('a')?.getAttribute('href')).toBe('https://example.test/registration');
   expect(root.querySelector('a')?.getAttribute('target')).toBe('_blank');
   expect(root.querySelector('a')?.getAttribute('rel')).toBe('noopener noreferrer');

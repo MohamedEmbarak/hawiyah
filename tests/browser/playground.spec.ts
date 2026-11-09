@@ -8,9 +8,9 @@ const routes = ['overview', 'foundations', 'components', 'discover', 'apply', 'w
 
 async function settings(page: Page, locale: Locale = 'en', mode: Mode = 'light') {
   await page.addInitScript(({ locale, mode }) => {
-    localStorage.setItem('nasaq-locale', locale);
-    localStorage.setItem('nasaq-mode', mode);
-    localStorage.setItem('nasaq-theme', 'nasaq');
+    localStorage.setItem('hawiyah-locale', locale);
+    localStorage.setItem('hawiyah-mode', mode);
+    localStorage.setItem('hawiyah-theme', 'hawiyah');
   }, { locale, mode });
 }
 
@@ -62,11 +62,11 @@ test('guided application validates conditional details, rejects documents, revie
   await expect(page.locator('#business-name')).toBeFocused();
   await expect(form.getByRole('heading', { name: 'Tell us about your business' })).toBeVisible();
 
-  await page.getByLabel('Business name').fill('Woven Test Studio');
+  await page.getByLabel('Business name').fill('Hawiyah Test Studio');
   await page.getByLabel('Activity', { exact: false }).selectOption('other');
   const description = page.getByLabel('Describe your activity');
   await expect(description).toBeVisible();
-  await expect(page.getByLabel('Business name')).toHaveValue('Woven Test Studio');
+  await expect(page.getByLabel('Business name')).toHaveValue('Hawiyah Test Studio');
   await page.getByLabel('City', { exact: false }).selectOption('riyadh');
   await page.getByLabel('Contact email').fill('invalid-email');
   await continueButton.click();
@@ -92,7 +92,7 @@ test('guided application validates conditional details, rejects documents, revie
   await expect(page.getByRole('alert')).toBeEmpty();
   await continueButton.click();
   await expect(form.getByRole('heading', { name: 'A final look before you go' })).toBeFocused();
-  await expect(form).toContainText('Woven Test Studio');
+  await expect(form).toContainText('Hawiyah Test Studio');
   await expect(form).toContainText('Fictional design and accessibility consulting.');
   await expect(form).toContainText('Riyadh');
   await expect(form).toContainText('demo@example.test');
@@ -104,7 +104,7 @@ test('guided application validates conditional details, rejects documents, revie
   await declaration.check();
   await form.getByRole('button', { name: 'Complete example' }).click();
   await expect(page.getByRole('heading', { name: 'A good beginning.' })).toBeFocused();
-  await expect(page.locator('.reference-box')).toContainText('NQ-DEMO-1043');
+  await expect(page.locator('.reference-box')).toContainText('HW-DEMO-1043');
 });
 
 test('workspace filters records, exports only the selection, and opens actionable details', async ({ page }) => {
@@ -115,7 +115,7 @@ test('workspace filters records, exports only the selection, and opens actionabl
   const search = page.getByRole('searchbox', { name: 'Search requests' });
   await search.fill('missing request');
   await expect(rows).toHaveCount(0);
-  await expect(page.locator('.nq-empty')).toContainText('No matching requests');
+  await expect(page.locator('.hw-empty')).toContainText('No matching requests');
   await search.fill('');
   await page.getByLabel('Filter by status').selectOption('completed');
   await expect(rows).toHaveCount(2);
@@ -126,9 +126,9 @@ test('workspace filters records, exports only the selection, and opens actionabl
   const downloadEvent = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export selected' }).click();
   const download = await downloadEvent;
-  expect(download.suggestedFilename()).toBe('nasaq-demo-requests.json');
+  expect(download.suggestedFilename()).toBe('hawiyah-demo-requests.json');
   const exported = JSON.parse(await readFile((await download.path())!, 'utf8')) as { id: string }[];
-  expect(exported.map(record => record.id).sort()).toEqual(['NQ-1024', 'NQ-1031']);
+  expect(exported.map(record => record.id).sort()).toEqual(['HW-1024', 'HW-1031']);
   await page.getByRole('button', { name: 'Clear selection' }).click();
   await expect(page.locator('.bulk-bar')).toHaveCount(0);
   await expect(page.locator('tbody input[type="checkbox"]:checked')).toHaveCount(0);
@@ -148,7 +148,7 @@ test('Arabic component tabs follow visual RTL and combobox selection remains exp
   await settings(page, 'ar');
   await visit(page, 'components');
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-  const tabs = page.locator('[data-nq="tabs"]');
+  const tabs = page.locator('[data-hw="tabs"]');
   const overview = tabs.getByRole('tab', { name: 'نظرة عامة' });
   const details = tabs.getByRole('tab', { name: 'التفاصيل' });
   await overview.focus();
@@ -162,8 +162,8 @@ test('Arabic component tabs follow visual RTL and combobox selection remains exp
   await expect(tabs.getByRole('tab', { name: 'السجل' })).toBeFocused();
 
   const input = page.getByRole('combobox', { name: 'ابحث عن مدينة' });
-  const combo = page.locator('[data-nq="combobox"]');
-  const value = combo.locator('[data-nq-combobox-value]');
+  const combo = page.locator('[data-hw="combobox"]');
+  const value = combo.locator('[data-hw-combobox-value]');
   await input.fill('ابه');
   await expect(combo.getByRole('option')).toHaveCount(1);
   await expect(combo.getByRole('option')).toHaveText('أبها');

@@ -1,34 +1,40 @@
-# نسق — Arabic wordmark
+# هوية — Brand guidelines
 
 تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني
 
 Developed by the Development Team in the National Platforms Sector — National Information Center.
 
-The current logo is **نسق alone**, in **Aref Ruqaa Bold**, converted to SVG paths.
-It has no accompanying symbol or Latin lettering. [decision.json](decision.json)
-records the identity, typography, palette, and motion specification.
+Hawiyah is a UI component library built to comply with the Digital Government
+Authority (DGA) Platforms Code. Its logo is the Arabic word **هوية** in
+**Aref Ruqaa Bold**, converted to SVG paths, with no separate symbol or Latin
+lettering. The identity uses the Platforms Code theme variables for color and
+IBM Plex Sans Arabic, the Platforms Code typeface, for interface text.
+[decision.json](decision.json) records the identity, typography, palette, and
+motion specification.
 
-Open the guide in [Arabic](index.html) or [English](index-en.html), or view [the preview](previews/arabic-wordmark.png).
-The teal, mint, ivory and ink palette remains. English and Arabic interface text
-continue to use IBM Plex; the logo stays Arabic in either interface language.
+Open the guidelines in [Arabic](index.html) or [English](index-en.html), or view
+[the preview](previews/arabic-wordmark.png). The logo stays Arabic in either
+interface language. The earlier teal palette remains available to products only
+as the opt-in Signature theme (`data-hw-theme="hawiyah"`); it is not part of the
+brand identity.
 
 ## Current artwork
 
 | File | Use |
 | --- | --- |
-| `assets/nasaq-wordmark.svg` | Primary teal wordmark |
-| `assets/nasaq-wordmark-reverse.svg` | Ivory on dark surfaces |
-| `assets/nasaq-wordmark-mono.svg` | Ink monochrome |
-| `assets/nasaq-wordmark-white.svg` | White on dark surfaces |
-| `assets/favicon.svg` | Arabic wordmark on a teal browser tile |
-| `assets/nasaq-pattern.svg` | Quiet decorative Arabic-wordmark repetition |
+| `assets/hawiyah-wordmark.svg` | Primary wordmark, `#1B8354` |
+| `assets/hawiyah-wordmark-reverse.svg` | Primary-50 `#F3FCF6` on primary or dark backgrounds |
+| `assets/hawiyah-wordmark-mono.svg` | Monochrome, default text `#161616` |
+| `assets/hawiyah-wordmark-white.svg` | White on primary or dark backgrounds |
+| `assets/favicon.svg` | White wordmark on a primary browser tile |
+| `assets/hawiyah-pattern.svg` | Decorative wordmark repetition |
 | `editable-wordmark.svg` | Editable Arabic outline group |
 
-All wordmarks use a **144 × 112** view box. The older `nasaq-symbol`,
-`nasaq-lockup-ar`, `nasaq-lockup-en`, and `nasaq-lockup-bilingual` filenames and
+All wordmarks use a **144 × 112** view box. The older `hawiyah-symbol`,
+`hawiyah-lockup-ar`, `hawiyah-lockup-en`, and `hawiyah-lockup-bilingual` filenames and
 their color variants are compatibility aliases containing **exactly the same
 Arabic-only artwork**. They no longer denote separate symbols or language variants.
-Use `nasaq-wordmark` for new integrations.
+Use `hawiyah-wordmark` for new integrations.
 
 Every current SVG contains outlined Arabic lettering. No installed font, CSS,
 font download, package dependency, or network request is needed to display it.
@@ -41,23 +47,24 @@ provided for inspection and the dedicated favicon handles browser tabs. Preserve
 the view-box proportions and at least 12 units of clear space around the artwork.
 Do not mirror, stretch, rotate, separate the letters, or add another symbol or
 Latin word to the logo. A linked logo needs a translated accessible name such as
-“Nasaq home”; decorative repeats use empty alt text.
+“Hawiyah home”; decorative repeats use empty alt text.
 
 ## Animated wordmark loader
 
 The Arabic lettering follows a reconstructed handwriting sequence: the initial
-nūn descends into the connected sīn, then the final qāf forms its head, bowl,
-and terminal return. A brief pen lift precedes the nūn's diamond dot. The exact
-existing outline is retained, including the qāf's end marks incorporated into
-its terminal stroke.
+hāʾ forms its hook, outer bowl and inner stroke, then joins the wāw head and
+tail. After a pen lift, the initial yāʾ flows into the stem and loop of the
+final tāʾ marbūṭa, and the two-dot strokes are added below yāʾ and above tāʾ
+marbūṭa. The exact outline is retained and the letter counters stay open; the
+build fails if any solid pixel of the finished word is left uninked.
 
 The transparent GIF loop lasts **3.6 seconds**, with **90 frames at 25 fps**.
 It holds the complete wordmark, clears, and restarts without reverse erasing.
 
-- `assets/nasaq-wordmark-loader.gif`: teal, 128 × 128 pixels.
-- `assets/nasaq-wordmark-loader-256.gif`: teal, 256 × 256 pixels.
-- `assets/nasaq-wordmark-loader-white.gif`: white, 128 × 128 pixels.
-- `assets/nasaq-wordmark-loader-white-256.gif`: white, 256 × 256 pixels.
+- `assets/hawiyah-wordmark-loader.gif`: primary `#1B8354`, 128 × 128 pixels.
+- `assets/hawiyah-wordmark-loader-256.gif`: primary `#1B8354`, 256 × 256 pixels.
+- `assets/hawiyah-wordmark-loader-white.gif`: white, 128 × 128 pixels.
+- `assets/hawiyah-wordmark-loader-white-256.gif`: white, 256 × 256 pixels.
 
 Use a static wordmark for reduced motion and supply the loading status in text.
 Translate the status and remove the loader when the operation finishes.
@@ -66,17 +73,17 @@ Translate the status and remove the loader when the operation finishes.
 <p role="status">
   <picture>
     <source media="(prefers-reduced-motion: reduce)"
-            srcset="./brand/assets/nasaq-wordmark.svg" type="image/svg+xml">
-    <img src="./brand/assets/nasaq-wordmark-loader.gif" width="64" height="64" alt="">
+            srcset="./brand/assets/hawiyah-wordmark.svg" type="image/svg+xml">
+    <img src="./brand/assets/hawiyah-wordmark-loader.gif" width="64" height="64" alt="">
   </picture>
   <span>Loading…</span>
 </p>
 ```
 
 Resolve asset paths against the consuming application’s base path. The older
-`nasaq-loader*.gif` filenames remain identical compatibility aliases.
+`hawiyah-loader*.gif` filenames remain identical compatibility aliases.
 
-For dark surfaces, pair the white GIF with `nasaq-wordmark-white.svg`.
+For dark surfaces, pair the white GIF with `hawiyah-wordmark-white.svg`.
 The animation uses the exact outlined lettering, rendered locally by Chromium
 and encoded by ffmpeg. It does not use generated raster lettering.
 
@@ -85,31 +92,28 @@ and encoded by ffmpeg. It does not use generated raster lettering.
 The sequence and timing reconstruct a plausible pen movement through this
 specific outline. They are not a universal prescribed Ruqʿah stroke order.
 
-- [Al-Wasat's Ruqʿah lesson 5](https://www.alwasatnews.com/news/887827.html)
-  describes qāf as a wāw head combined with a nūn body.
-- [The Jordanian Arabic Language Academy's *تيسير تعلم الخط العربي*](https://arabic.jo/res/seasons/16/16-3.pdf)
-  discusses continuous motion and the qāf's two dots attached at its end.
-  This reference was checked through its indexed excerpt; direct PDF access
-  timed out, so it does not establish the animation's exact trajectory.
 - [El-Sana and Biadsy's Arabic handwriting research](https://patents.google.com/patent/WO2008012824A1/en)
   describes dots and supplementary marks as strokes usually added after the
   word, and records joined forms of multiple dots.
 
 ## Color and typography
 
-The palette is teal `#006A64`, mint `#C8E7DD`, ivory `#F7F5EE`, and ink `#142D30`.
-[palette.json](palette.json) records measured contrast pairs. White on teal is
-6.47:1; teal on ivory is 5.93:1; ink on ivory is 13.30:1. Test new states and
-pairings separately; these measurements do not certify an entire interface.
+The identity uses the DGA Platforms Code theme variables: primary `#1B8354`,
+primary-50 `#F3FCF6`, body background `#F9FAFB`, and default text `#161616`;
+in dark mode, background `#111927`, surface `#1F2A37`, and primary text
+`#54C08A`. [palette.json](palette.json) records each variable and the measured
+WCAG contrast pairs: white on primary 4.75:1, primary on body 4.55:1, default
+text on body 17.32:1, and primary text on the dark background 7.79:1. Test new
+states and pairings separately.
 
 **Logo:** Aref Ruqaa Bold 700, Arabic only, outlined into the asset.
-**UI:** IBM Plex Sans Arabic and IBM Plex Sans, unchanged. Arabic body text
+**UI:** IBM Plex Sans Arabic, the Platforms Code typeface, and IBM Plex Sans. Arabic body text
 normally uses 16px or larger with line height around 1.75; Latin body text uses
 around 1.55. Never letter-space connected Arabic or reverse its characters.
 
 Use real Unicode and `lang="ar" dir="rtl"` for Arabic UI content. The logo image
 keeps its orientation regardless of surrounding reading direction. The product
-may still be named “Nasaq” in English prose and package names; that spelling is
+may still be named “Hawiyah” in English prose and package names; that spelling is
 not a second visual wordmark.
 
 ## Sources and rights
@@ -120,8 +124,8 @@ were fetched from Google Fonts. Their Git blob hashes were verified against
 GitHub contents metadata, and SHA-256 checksums are recorded in
 [third-party/sources.json](third-party/sources.json).
 
-Nasaq’s original code, documentation, and artwork are distributed under
-[Apache License 2.0](https://github.com/MohamedEmbarak/nasaq/blob/main/LICENSE).
+Hawiyah’s original code, documentation, and artwork are distributed under
+[Apache License 2.0](https://github.com/MohamedEmbarak/hawiyah/blob/main/LICENSE).
 The brand kit includes the project LICENSE and NOTICE. Upstream font software
 remains under its own SIL Open Font License; that license does not govern the
 finished artwork. Keep the relevant notices with redistributed font sources.
@@ -134,7 +138,7 @@ DGA certification.
 
 ## Regeneration
 
-From the Nasaq project directory:
+From the Hawiyah project directory:
 
 ```sh
 python brand/build-assets.py
@@ -148,7 +152,7 @@ generator checks the completed silhouette before encoding. Add `--proof` to
 save frame images and a sequence sheet under `.artifacts/handwriting` for review.
 
 The SVG generator needs Python fontTools and system HarfBuzz. The GIF generator
-needs `@playwright/test`, Chromium and ffmpeg; `NASAQ_CHROMIUM` overrides the
+needs `@playwright/test`, Chromium and ffmpeg; `HAWIYAH_CHROMIUM` overrides the
 browser path. These scripts work locally and make no network requests. The kit
 generator includes current artwork, guide, previews, generators, and the font
 sources/licenses they use. Only the current identity assets are distributed.

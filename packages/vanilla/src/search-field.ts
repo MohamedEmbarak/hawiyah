@@ -1,4 +1,4 @@
-import { createCleanup, getSearchSuggestions, isDisabled, observeFieldValue, requestSearchDialogClose, type SearchSuggestionMatch } from '@nasaq/core';
+import { createCleanup, getSearchSuggestions, isDisabled, observeFieldValue, requestSearchDialogClose, type SearchSuggestionMatch } from '@hawiyah/core';
 import { emit, ensureId, eventElement, nativeChange, readOnly, remember, required, translated } from './dom.js';
 
 export interface SearchFieldOptions {
@@ -19,16 +19,16 @@ export interface SearchFieldController {
 
 /** Optional local suggestions; native form submission remains owned by the application. */
 export function createSearchField(root: HTMLElement, options: SearchFieldOptions = {}): SearchFieldController {
-  const input = required<HTMLInputElement>(root, '[data-nq-search-input]');
-  const button = required<HTMLButtonElement>(root, '[data-nq-search-clear]');
+  const input = required<HTMLInputElement>(root, '[data-hw-search-input]');
+  const button = required<HTMLButtonElement>(root, '[data-hw-search-clear]');
   const scope = createCleanup(); const children = [...button.childNodes];
   const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   remember(scope, button, ['type', 'class', 'hidden', 'disabled', 'aria-label', 'aria-controls']);
   scope.add(() => button.replaceChildren(...children));
-  button.type = 'button'; button.classList.add('nq-search-clear');
+  button.type = 'button'; button.classList.add('hw-search-clear');
   button.setAttribute('aria-label', options.clearLabel ?? button.getAttribute('aria-label') ?? translated(root, 'Clear search', 'مسح البحث'));
   button.setAttribute('aria-controls', ensureId(scope, input, 'search'));
-  const icon = input.ownerDocument.createElement('span'); icon.className = 'nq-search-clear-icon'; icon.setAttribute('aria-hidden', 'true'); button.replaceChildren(icon);
+  const icon = input.ownerDocument.createElement('span'); icon.className = 'hw-search-clear-icon'; icon.setAttribute('aria-hidden', 'true'); button.replaceChildren(icon);
   const aria = ['role', 'aria-autocomplete', 'aria-expanded', 'aria-controls', 'aria-activedescendant', 'autocomplete'].map(name => [name, input.getAttribute(name)] as const);
   const restoreAria = () => { for (const [name, value] of aria) { if (value === null) input.removeAttribute(name); else input.setAttribute(name, value); } };
   let list: HTMLDivElement | undefined, status: HTMLDivElement | undefined;
@@ -38,13 +38,13 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   const rootDisabled = () => root.getAttribute('aria-disabled') === 'true' || (root.localName !== 'fieldset' && root.hasAttribute('disabled'));
   const disabled = () => isDisabled(input) || rootDisabled();
   const blocked = () => disabled() || readOnly(root, input);
-  const enabled = () => explicitSuggestions !== undefined || root.hasAttribute('data-nq-suggestions');
+  const enabled = () => explicitSuggestions !== undefined || root.hasAttribute('data-hw-suggestions');
   const dictionary = (): readonly string[] => {
     if (explicitSuggestions !== undefined) return explicitSuggestions;
-    try { const value: unknown = JSON.parse(root.dataset.nqSuggestions ?? '[]'); return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []; } catch { return []; }
+    try { const value: unknown = JSON.parse(root.dataset.hwSuggestions ?? '[]'); return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []; } catch { return []; }
   };
-  const limit = () => options.maxSuggestions ?? Number(root.dataset.nqMaxSuggestions ?? 8);
-  const host = input.closest<HTMLElement>('.nq-search-control');
+  const limit = () => options.maxSuggestions ?? Number(root.dataset.hwMaxSuggestions ?? 8);
+  const host = input.closest<HTMLElement>('.hw-search-control');
   const popupHost = host && root.contains(host) ? host : root;
   const close = () => {
     open = false; active = -1; matches = [];
@@ -57,9 +57,9 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
       return;
     }
     if (!list) {
-      list = input.ownerDocument.createElement('div'); list.className = 'nq-search-suggestions'; list.hidden = true;
+      list = input.ownerDocument.createElement('div'); list.className = 'hw-search-suggestions'; list.hidden = true;
       list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', translated(root, 'Search suggestions', 'اقتراحات البحث')); ensureId(scope, list, 'search-suggestions');
-      status = input.ownerDocument.createElement('div'); status.className = 'nq-sr-only'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
+      status = input.ownerDocument.createElement('div'); status.className = 'hw-sr-only'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
       popupHost.append(list); root.append(status);
     }
     input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list'); input.setAttribute('aria-expanded', String(open)); input.setAttribute('aria-controls', list.id); input.setAttribute('autocomplete', 'off');
@@ -76,8 +76,8 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
     matches = getSearchSuggestions(input.value, dictionary(), limit()); active = -1;
     input.removeAttribute('aria-activedescendant');
     list.replaceChildren(...matches.map((match, index) => {
-      const option = input.ownerDocument.createElement('div'); option.className = 'nq-search-option'; option.id = `${list!.id}-${index}`;
-      option.setAttribute('role', 'option'); option.setAttribute('aria-selected', 'false'); option.dataset.nqSearchIndex = String(index); option.dir = 'auto';
+      const option = input.ownerDocument.createElement('div'); option.className = 'hw-search-option'; option.id = `${list!.id}-${index}`;
+      option.setAttribute('role', 'option'); option.setAttribute('aria-selected', 'false'); option.dataset.hwSearchIndex = String(index); option.dir = 'auto';
       for (const segment of match.segments) {
         if (segment.match) { const strong = input.ownerDocument.createElement('strong'); strong.textContent = segment.text; option.append(strong); }
         else option.append(input.ownerDocument.createTextNode(segment.text));
@@ -145,7 +145,7 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
     }
   });
   const optionFrom = (event: Event) => {
-    const option = eventElement(event)?.closest<HTMLElement>('[data-nq-search-index]');
+    const option = eventElement(event)?.closest<HTMLElement>('[data-hw-search-index]');
     return option && list?.contains(option) ? option : undefined;
   };
   for (const type of ['pointerdown', 'mousedown']) scope.listen(root, type, event => {
@@ -155,7 +155,7 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   });
   scope.listen(root, 'click', event => {
     const pointer = event as MouseEvent, option = optionFrom(event);
-    if (option && pointer.button === 0 && !pointer.ctrlKey && !pointer.metaKey && !pointer.altKey && !pointer.shiftKey) { event.preventDefault(); choose(Number(option.dataset.nqSearchIndex)); }
+    if (option && pointer.button === 0 && !pointer.ctrlKey && !pointer.metaKey && !pointer.altKey && !pointer.shiftKey) { event.preventDefault(); choose(Number(option.dataset.hwSearchIndex)); }
   });
   scope.listen(input.ownerDocument, 'pointerdown', event => { if (event.target && !root.contains(event.target as Node)) close(); });
   scope.listen(input.ownerDocument, 'click', event => { if (event.target && !root.contains(event.target as Node)) close(); });
@@ -166,7 +166,7 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   if (Observer) {
     const observer = new Observer(() => { renderBase(); renderSuggestions(); });
     observer.observe(input, { attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'readonly', 'value'] });
-    observer.observe(root, { attributes: true, attributeFilter: ['data-nq-readonly', 'aria-readonly', 'aria-disabled', 'disabled', 'data-nq-suggestions', 'data-nq-max-suggestions'] });
+    observer.observe(root, { attributes: true, attributeFilter: ['data-hw-readonly', 'aria-readonly', 'aria-disabled', 'disabled', 'data-hw-suggestions', 'data-hw-max-suggestions'] });
     for (let ancestor = root.parentElement; ancestor; ancestor = ancestor.parentElement) if (ancestor.localName === 'fieldset') observer.observe(ancestor, {attributes: true, attributeFilter: ['disabled']});
     scope.add(() => observer.disconnect());
   }

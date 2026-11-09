@@ -20,7 +20,7 @@ test("brand loader switches to its static symbol for reduced motion without a lo
     .poll(() =>
       loader.evaluate((node) => (node as HTMLImageElement).currentSrc),
     )
-    .toContain("nasaq-symbol.svg");
+    .toContain("hawiyah-symbol.svg");
   expect(
     requests.filter((url) => /ArefRuqaa.*\.(?:ttf|woff2?)/i.test(url)),
   ).toEqual([]);
@@ -28,8 +28,8 @@ test("brand loader switches to its static symbol for reduced motion without a lo
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem("nasaq-locale", "en");
-    localStorage.setItem("nasaq-mode", "light");
+    localStorage.setItem("hawiyah-locale", "en");
+    localStorage.setItem("hawiyah-mode", "light");
   });
 });
 
@@ -38,23 +38,23 @@ test("Live recipes preserve native values while richer controls are enhanced", a
 }) => {
   await page.goto("/#components");
   await expect(page.locator(".component-card")).toHaveCount(catalog.length);
-  const password = page.locator('[data-nq="password-field"]');
+  const password = page.locator('[data-hw="password-field"]');
   await password.locator("input").fill("fictional-password");
   await password.locator("button").click();
   await expect(password.locator("input")).toHaveAttribute("type", "text");
   await expect(password.locator("input")).toHaveValue("fictional-password");
-  await page.locator("[data-nq-pin-input]").fill("١٢٣۴۵۶");
-  await expect(page.locator("[data-nq-pin-input]")).toHaveValue("123456");
-  const tags = page.locator('[data-nq="tag-input"]');
-  await tags.locator("[data-nq-tag-input]").fill("Accessibility");
-  await tags.locator("[data-nq-tag-input]").press("Enter");
-  await expect(tags.locator("[data-nq-tags]")).toContainText("Accessibility");
+  await page.locator("[data-hw-pin-input]").fill("١٢٣۴۵۶");
+  await expect(page.locator("[data-hw-pin-input]")).toHaveValue("123456");
+  const tags = page.locator('[data-hw="tag-input"]');
+  await tags.locator("[data-hw-tag-input]").fill("Accessibility");
+  await tags.locator("[data-hw-tag-input]").press("Enter");
+  await expect(tags.locator("[data-hw-tags]")).toContainText("Accessibility");
   expect(
     await tags
       .locator("input[type=hidden]")
       .evaluateAll((nodes) => nodes.map((n) => (n as HTMLInputElement).value)),
   ).toEqual(["Design", "Accessibility"]);
-  const multi = page.locator('[data-nq="multi-select"]');
+  const multi = page.locator('[data-hw="multi-select"]');
   await multi.locator("input[type=search]").fill("Education");
   await expect(multi.locator('input[value="0"]')).toBeChecked();
   await multi.getByLabel("Education", { exact: true }).check();
@@ -68,26 +68,26 @@ test("native date picker switches reference calendars without changing the ISO d
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/#components");
-  const picker = page.locator('[data-nq="date-picker"]');
-  const input = picker.locator("[data-nq-date-input]");
-  const trigger = picker.locator("[data-nq-date-trigger]");
+  const picker = page.locator('[data-hw="date-picker"]');
+  const input = picker.locator("[data-hw-date-input]");
+  const trigger = picker.locator("[data-hw-date-trigger]");
   await trigger.click();
   const dialog = picker.locator("dialog");
   await expect(dialog).toBeVisible();
-  const system = dialog.locator("[data-nq-calendar-system]:checked");
+  const system = dialog.locator("[data-hw-calendar-system]:checked");
   await expect(system).toHaveValue("islamic-umalqura");
-  await expect(dialog.locator('[data-nq-date="2026-10-28"]')).toHaveAttribute(
+  await expect(dialog.locator('[data-hw-date="2026-10-28"]')).toHaveAttribute(
     "data-selected",
     "",
   );
   await dialog.locator("input[value=gregory]").check();
   await expect(picker.locator("input[type=hidden][name=appointment]")).toHaveValue("2026-10-28");
-  await expect(dialog.locator('[data-nq-date="2026-10-28"]')).toHaveText("28");
+  await expect(dialog.locator('[data-hw-date="2026-10-28"]')).toHaveText("28");
   await dialog.locator("input[value=islamic-umalqura]").check();
   await expect(picker.locator("input[type=hidden][name=appointment]")).toHaveValue("2026-10-28");
-  await expect(dialog.locator('[data-nq-date="2026-10-28"]')).toHaveText("17");
+  await expect(dialog.locator('[data-hw-date="2026-10-28"]')).toHaveText("17");
   const scan = await new AxeBuilder({ page })
-    .include("[data-nq-date-dialog]")
+    .include("[data-hw-date-dialog]")
     .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
     .analyze();
   expect(scan.violations).toEqual([]);
@@ -111,50 +111,50 @@ test("menus, trees, carousels, sortable data and dismissible feedback work in th
   page,
 }) => {
   await page.goto("/#components");
-  const menu = page.locator('[data-nq="menu"]');
-  await menu.locator("[data-nq-trigger]").click();
+  const menu = page.locator('[data-hw="menu"]');
+  await menu.locator("[data-hw-trigger]").click();
   await expect(menu.locator("[role=menu]")).toBeVisible();
   await page.keyboard.press("End");
   await expect(menu.getByRole("menuitem", { name: "Archive" })).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(menu.locator("[data-nq-trigger]")).toBeFocused();
-  const tree = page.locator('[data-nq="tree-view"]');
-  const business = tree.locator('[data-nq-value="business"]');
+  await expect(menu.locator("[data-hw-trigger]")).toBeFocused();
+  const tree = page.locator('[data-hw="tree-view"]');
+  const business = tree.locator('[data-hw-value="business"]');
   await business.focus();
   await page.keyboard.press("ArrowDown");
-  await expect(tree.locator('[data-nq-value="doc-0"]')).toBeFocused();
+  await expect(tree.locator('[data-hw-value="doc-0"]')).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(tree.locator('[data-nq-value="doc-0"]')).toHaveAttribute(
+  await expect(tree.locator('[data-hw-value="doc-0"]')).toHaveAttribute(
     "aria-selected",
     "true",
   );
-  const carousel = page.locator('[data-nq="carousel"]');
-  await expect(carousel.locator("[data-nq-slide]:visible")).toHaveCount(1);
-  await carousel.locator("[data-nq-next]").click();
-  await expect(carousel.locator("[data-nq-slide]:not([hidden])")).toContainText(
+  const carousel = page.locator('[data-hw="carousel"]');
+  await expect(carousel.locator("[data-hw-slide]:visible")).toHaveCount(1);
+  await carousel.locator("[data-hw-next]").click();
+  await expect(carousel.locator("[data-hw-slide]:not([hidden])")).toContainText(
     "Everything in one place.",
   );
-  await expect(carousel.locator("[data-nq-slide]:visible")).toHaveCount(1);
-  const table = page.locator('[data-nq="data-table"]');
+  await expect(carousel.locator("[data-hw-slide]:visible")).toHaveCount(1);
+  const table = page.locator('[data-hw="data-table"]');
   await table.getByRole("button", { name: "Days", exact: true }).click();
   await expect(table.locator("tbody tr").first()).toContainText("Certificate");
   await table.getByRole("button", { name: "Days", exact: true }).click();
   await expect(table.locator("tbody tr").first()).toContainText("Permit");
-  const feedback = page.locator('[data-nq="feedback"]');
+  const feedback = page.locator('[data-hw="feedback"]');
   await feedback.getByRole("button", { name: "Yes", exact: true }).click();
   await expect(
     feedback.getByRole("button", { name: "Yes", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await page
-    .locator('[data-nq="cookie-consent"] [data-nq-consent="rejected"]')
+    .locator('[data-hw="cookie-consent"] [data-hw-consent="rejected"]')
     .click();
-  await expect(page.locator('[data-nq="cookie-consent"]')).toBeHidden();
-  const toasts = page.locator('[data-nq="toast-region"] [data-nq-toast]');
+  await expect(page.locator('[data-hw="cookie-consent"]')).toBeHidden();
+  const toasts = page.locator('[data-hw="toast-region"] [data-hw-toast]');
   await expect(toasts).toHaveCount(5);
-  const dismissible = toasts.filter({has: page.locator('[data-nq-dismiss]')});
+  const dismissible = toasts.filter({has: page.locator('[data-hw-dismiss]')});
   await expect(dismissible).toHaveCount(4);
   for (const toast of await dismissible.all()) {
-    await toast.locator('[data-nq-dismiss]').click();
+    await toast.locator('[data-hw-dismiss]').click();
     await expect(toast).toBeHidden();
   }
 });
@@ -167,13 +167,13 @@ test("layout studio edits real responsive CSS and survives Arabic switching", as
   await page.locator("#layout-columns").fill("4");
   const columns = () =>
     page
-      .locator("#layout-canvas > .nq-grid")
+      .locator("#layout-canvas > .hw-grid")
       .evaluate(
         (n) => getComputedStyle(n).gridTemplateColumns.split(" ").length,
       );
   await expect.poll(columns).toBe(4);
   await page.locator("#layout-gap").fill("8");
-  await expect(page.locator("#layout-code")).toContainText("--nq-space-8");
+  await expect(page.locator("#layout-code")).toContainText("--hw-space-8");
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(columns).toBe(1);
   await page.getByRole("button", { name: "ع — Switch to Arabic" }).click();
@@ -181,7 +181,7 @@ test("layout studio edits real responsive CSS and survives Arabic switching", as
   await expect(page.locator("#layout-columns")).toHaveValue("4");
   await page.locator("#layout-pattern").selectOption("sidebar");
   await expect(
-    page.locator("#layout-canvas > .nq-sidebar > aside"),
+    page.locator("#layout-canvas > .hw-sidebar > aside"),
   ).toContainText("الفلاتر");
   expect(
     await page.evaluate(

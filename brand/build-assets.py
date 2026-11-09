@@ -1,4 +1,4 @@
-"""Rebuild editable Nasaq SVG artwork and outlined typographic lockups.
+"""Rebuild editable Hawiyah SVG artwork and outlined typographic lockups.
 
 Requires Python fontTools and system HarfBuzz. Font files are read, never modified.
 This script does not access the network or write outside brand/.
@@ -17,10 +17,13 @@ from fontTools.pens.transformPen import TransformPen
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / 'assets'
 OUT.mkdir(exist_ok=True)
-COLORS = {'primary': '#006A64', 'mint': '#C8E7DD', 'ivory': '#F7F5EE', 'ink': '#142D30'}
+# DGA Platforms Code theme variables (see packages/tokens/reference/dga-foundations.json).
+COLORS = {'primary': '#1B8354', 'primary-50': '#F3FCF6', 'body': '#F9FAFB', 'text': '#161616'}
+# Decorative pattern only: a 15% tint of the primary over the body background.
+PATTERN_TINT = '#D8E8E2'
 
 
-def svg(width, height, title, content, description='Outlined Arabic Nasaq wordmark in Aref Ruqaa Bold. No font dependency.'):
+def svg(width, height, title, content, description='Outlined Arabic Hawiyah wordmark in Aref Ruqaa Bold. No font dependency.'):
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc">
 <title id="title">{title}</title><desc id="desc">{description}</desc>
 {content}
@@ -95,7 +98,7 @@ def outlined(text, font_path, weight=None):
 
 # Aref Ruqaa is an offline artwork input only. Every distributed wordmark is
 # outlined; applications never load or depend on this font.
-ar = outlined('نسق', ROOT/'third-party/arefruqaa/ArefRuqaa-Bold.ttf')
+ar = outlined('هوية', ROOT/'third-party/arefruqaa/ArefRuqaa-Bold.ttf')
 
 
 def placed(item, left, top, width, color):
@@ -104,20 +107,27 @@ def placed(item, left, top, width, color):
     return f'<path fill="{color}" transform="translate({left-xmin*scale:.5f} {top+ymax*scale:.5f}) scale({scale:.7f} {-scale:.7f})" d="{path}"/>'
 
 
-variants = {'': '#006A64', '-reverse': '#F7F5EE', '-mono': '#142D30', '-white': '#FFFFFF'}
+def centered(item, box_width, box_height, width, color):
+    """Place the lettering at `width`, centred in the box on both axes."""
+    _, (xmin, ymin, xmax, ymax) = item
+    height = width * (ymax - ymin) / (xmax - xmin)
+    return placed(item, (box_width - width) / 2, (box_height - height) / 2, width, color)
+
+
+variants = {'': COLORS['primary'], '-reverse': COLORS['primary-50'], '-mono': COLORS['text'], '-white': '#FFFFFF'}
 # Historical filenames remain aliases, containing exactly the same Arabic-only
 # artwork. There is no separate symbol, Latin name or bilingual lockup anymore.
-aliases = ['nasaq-symbol', 'nasaq-lockup-ar', 'nasaq-lockup-en', 'nasaq-lockup-bilingual']
+aliases = ['hawiyah-symbol', 'hawiyah-lockup-ar', 'hawiyah-lockup-en', 'hawiyah-lockup-bilingual']
 for suffix, color in variants.items():
-    artwork = svg(144, 112, 'نسق', placed(ar, 16, 10, 112, color))
-    (OUT/f'nasaq-wordmark{suffix}.svg').write_text(artwork, encoding='utf-8')
+    artwork = svg(144, 112, 'هوية', centered(ar, 144, 112, 112, color))
+    (OUT/f'hawiyah-wordmark{suffix}.svg').write_text(artwork, encoding='utf-8')
     for alias in aliases:
         (OUT/f'{alias}{suffix}.svg').write_text(artwork, encoding='utf-8')
 
-favicon = '<rect width="96" height="96" rx="20" fill="#006A64"/><g transform="translate(0 10.666667) scale(.6666667)">' + placed(ar, 16, 10, 112, '#F7F5EE') + '</g>'
-(OUT/'favicon.svg').write_text(svg(96, 96, 'نسق', favicon), encoding='utf-8')
-pattern = '<defs><pattern id="wordmark-repeat" width="144" height="128" patternUnits="userSpaceOnUse">' + placed(ar, 24, 20, 96, '#C8E7DD') + '</pattern></defs><rect width="768" height="384" fill="#F7F5EE"/><rect width="768" height="384" fill="url(#wordmark-repeat)"/>'
-(OUT/'nasaq-pattern.svg').write_text(svg(768,384,'نسق',pattern,'Quiet repeating Arabic wordmark pattern.'),encoding='utf-8')
-source = '<g id="arabic-wordmark">' + placed(ar, 16, 10, 112, COLORS['primary']) + '</g>'
-(ROOT/'editable-wordmark.svg').write_text(svg(144,112,'نسق',source,'Editable outlined Arabic lettering. No installed font or network request required.'),encoding='utf-8')
+favicon = '<rect width="96" height="96" rx="20" fill="#1B8354"/><g transform="translate(0 10.666667) scale(.6666667)">' + centered(ar, 144, 112, 112, '#FFFFFF') + '</g>'
+(OUT/'favicon.svg').write_text(svg(96, 96, 'هوية', favicon), encoding='utf-8')
+pattern = '<defs><pattern id="wordmark-repeat" width="144" height="128" patternUnits="userSpaceOnUse">' + centered(ar, 144, 128, 96, PATTERN_TINT) + '</pattern></defs><rect width="768" height="384" fill="#F9FAFB"/><rect width="768" height="384" fill="url(#wordmark-repeat)"/>'
+(OUT/'hawiyah-pattern.svg').write_text(svg(768,384,'هوية',pattern,'Quiet repeating Arabic wordmark pattern.'),encoding='utf-8')
+source = '<g id="arabic-wordmark">' + centered(ar, 144, 112, 112, COLORS['primary']) + '</g>'
+(ROOT/'editable-wordmark.svg').write_text(svg(144,112,'هوية',source,'Editable outlined Arabic lettering. No installed font or network request required.'),encoding='utf-8')
 print('Generated Arabic-only wordmarks, compatibility aliases, favicon, pattern and editable outline source.')

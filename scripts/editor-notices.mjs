@@ -74,7 +74,7 @@ export function collectEditorNotices() {
     }
   }
   for (const name of editorPackages) visit(name, new URL('../package.json', import.meta.url));
-  return 'Nasaq guide editor — third-party licenses\n\n'
+  return 'Hawiyah guide editor — third-party licenses\n\n'
     + 'CodeMirror, Lezer, TypeScript, native framework previews, and their installed runtime dependencies.\n'
     + [...notices].sort(([a], [b]) => compare(a, b))
       .map(([identity, text]) => `\n${'='.repeat(72)}\n${identity}\n${'='.repeat(72)}\n\n${text}${text.endsWith('\n') ? '' : '\n'}`)

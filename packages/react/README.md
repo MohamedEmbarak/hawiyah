@@ -1,15 +1,15 @@
-# @nasaq/react
+# @hawiyah/react
 
-Native React 19 components for Nasaq — نسق, an independent public 0.2 source
-preview. DGA-informed, without government endorsement or certification. React owns
+Native React 19 components for Hawiyah — هوية, a UI library built to comply with
+the DGA Platforms Code. React owns
 all rendered elements. No vanilla controller is mounted into a React tree.
 
 ```tsx
 import { useState } from 'react';
-import '@nasaq/styles/styles.css';
+import '@hawiyah/styles/styles.css';
 // Optional, only when the application wants the reset:
-import '@nasaq/styles/reset.css';
-import { Button, Combobox, Dialog, TextField } from '@nasaq/react';
+import '@hawiyah/styles/reset.css';
+import { Button, Combobox, Dialog, TextField } from '@hawiyah/react';
 
 function Application() {
   const [city, setCity] = useState('');
@@ -30,9 +30,9 @@ function Application() {
 }
 ```
 
-Install with `npm install @nasaq/styles @nasaq/react`. This is a pre-1.0
+Install with `npm install @hawiyah/styles @hawiyah/react`. This is a pre-1.0
 release, so a minor version may still change its API. React and React DOM are
-peers; `@nasaq/core` provides the shared, pure keyboard and combobox behavior.
+peers; `@hawiyah/core` provides the shared, pure keyboard and combobox behavior.
 Styles are never imported implicitly. When consuming this repository's workspace
 instead of npm, build the packages before importing their exports. Importing and server-rendering this package require no browser globals.
 Stable associations use React `useId`, including during hydration.
@@ -57,12 +57,12 @@ follow computed direction; vertical arrows stay vertical. Theme, mode and densit
 are CSS attributes on an ancestor:
 
 ```html
-<div dir="rtl" lang="ar" data-nq-theme="dga"
-     data-nq-mode="dark" data-nq-density="comfortable">…</div>
+<div dir="rtl" lang="ar" data-hw-theme="dga"
+     data-hw-mode="dark" data-hw-density="comfortable">…</div>
 ```
 
 Default auxiliary labels are English; provide Arabic or another language through
-label/message props. Business dates and numbers can use `@nasaq/core` formatters
+label/message props. Business dates and numbers can use `@hawiyah/core` formatters
 with explicit locale, calendar and time zone. No component infers locale from RTL.
 
 ## Catalog
@@ -260,7 +260,7 @@ PageUp/PageDown move a month, and Shift+PageUp/PageDown move a year. Disabled da
 are skipped and focus remains on one roving date button.
 
 Umm al-Qura arithmetic and numeric date labels use the shared Saudi reference
-table through `@nasaq/core`, including `formatCalendarDate`; they do not rely on
+table through `@hawiyah/core`, including `formatCalendarDate`; they do not rely on
 ICU's differing historical/future numeric Hijri fields. The supported table spans
 **1924-08-01 through 2077-11-16 (AH 1343–1500)**. Navigation stops at these
 boundaries. When a Gregorian selected date lies outside this range, switching to
@@ -415,7 +415,7 @@ alert/notification tones, header/footer composition and guide-only navigation co
 
 `Table` and `DataTable` expose `variant="default|striped|bordered"`,
 `size="sm|md|lg"` and `emptyMessage`. DGA cells have a 48px default minimum;
-40px/56px alternate sizes and striped/bordered variants are Nasaq extensions.
+40px/56px alternate sizes and striped/bordered variants are Hawiyah extensions.
 Captions name keyboard-focusable horizontal scroll containers; row-header
 columns render native `th scope="row"`. Empty data spans the column count and
 uses an Arabic message by default. Sorting does not mutate caller records.
@@ -455,7 +455,7 @@ the target. Modified anchor clicks retain browser behavior. Disabled entries
 remain noninteractive text links; no section content is created or hidden.
 
 ```tsx
-import {ContentNavigation} from '@nasaq/react';
+import {ContentNavigation} from '@hawiyah/react';
 
 <ContentNavigation items={[{id: 'requirements', label: 'المتطلبات'}]} />
 <section id="requirements"><h2>المتطلبات</h2></section>

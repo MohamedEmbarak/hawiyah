@@ -4,9 +4,9 @@ type EditorFile = 'html' | 'css' | 'js';
 
 async function openIDE(page: Page, component = 'button') {
   await page.goto(`/#component/${component}`);
-  await expect(page.locator('.nq-ide')).toHaveCount(0);
+  await expect(page.locator('.hw-ide')).toHaveCount(0);
   await page.locator('[data-guide-tab="playground"]').click();
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', { timeout: 15_000 });
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', { timeout: 15_000 });
 }
 
 async function editFile(page: Page, file: EditorFile, value: string) {
@@ -19,17 +19,17 @@ async function editFile(page: Page, file: EditorFile, value: string) {
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     if (window !== window.top) return;
-    localStorage.setItem('nasaq-locale', 'ar');
-    localStorage.setItem('nasaq-mode', 'light');
+    localStorage.setItem('hawiyah-locale', 'ar');
+    localStorage.setItem('hawiyah-mode', 'light');
   });
 });
 
 test('HTML, CSS and JavaScript edits run together, recover from errors, and reset to the example', async ({ page }) => {
   await openIDE(page);
-  const preview = page.frameLocator('.nq-ide-frame');
-  const status = page.locator('.nq-ide-status');
+  const preview = page.frameLocator('.hw-ide-frame');
+  const status = page.locator('.hw-ide-status');
   await page.locator('[data-ide-auto]').uncheck();
-  await editFile(page, 'html', '<button id="demo" class="nq-button" type="button">انقر</button> <output id="counter">0</output>');
+  await editFile(page, 'html', '<button id="demo" class="hw-button" type="button">انقر</button> <output id="counter">0</output>');
   // Wait longer than the automatic debounce: manual mode must leave the running document intact.
   await page.waitForTimeout(800);
   await expect(preview.locator('#demo')).toHaveCount(0);
@@ -47,7 +47,7 @@ test('HTML, CSS and JavaScript edits run together, recover from errors, and rese
   await preview.locator('#demo').click();
   await expect(preview.locator('#counter')).toHaveText('1');
   await expect(preview.locator('#demo')).toHaveCSS('background-color', 'rgb(176, 0, 32)');
-  await expect(page.locator('.nq-ide-console')).toContainText('interactive ready');
+  await expect(page.locator('.hw-ide-console')).toContainText('interactive ready');
 
   await page.locator('[data-ide-editor="js"] .cm-content').click();
   await page.keyboard.press('ControlOrMeta+Enter');
@@ -55,13 +55,13 @@ test('HTML, CSS and JavaScript edits run together, recover from errors, and rese
   await editFile(page, 'js', 'throw new Error("intentional preview error")');
   await page.locator('[data-ide-run]').click();
   await expect(status).toHaveAttribute('data-state', 'error');
-  await expect(page.locator('.nq-ide-console')).toBeVisible();
-  await expect(page.locator('.nq-ide-console')).toContainText('intentional preview error');
+  await expect(page.locator('.hw-ide-console')).toBeVisible();
+  await expect(page.locator('.hw-ide-console')).toContainText('intentional preview error');
 
   await page.locator('[data-ide-reset]').click();
   await expect(status).toHaveAttribute('data-state', 'ready');
   await expect(preview.locator('#demo')).toHaveCount(0);
-  await expect(preview.locator('.nq-button')).toHaveCount(2);
+  await expect(preview.locator('.hw-button')).toHaveCount(2);
   await expect(page.locator('[data-ide-file="html"]')).toHaveAttribute('aria-selected', 'true');
   await page.locator('[data-ide-auto]').check();
   await editFile(page, 'html', '<p id="auto-result">تحديث تلقائي</p>');
@@ -79,14 +79,14 @@ test('the opaque preview blocks parent access and external resources, and ignore
     if (response.url().startsWith('https://example.test/')) responses.push(response.url());
   });
   await openIDE(page);
-  await expect(page.locator('.nq-ide-frame')).toHaveAttribute('sandbox', 'allow-scripts allow-forms');
+  await expect(page.locator('.hw-ide-frame')).toHaveAttribute('sandbox', 'allow-scripts allow-forms');
   await page.locator('[data-ide-auto]').uncheck();
   await editFile(page, 'js', `
     try { parent.document.body.dataset.compromised = 'yes'; }
     catch { console.log('parent access blocked'); }
   `);
   await page.locator('[data-ide-run]').click();
-  await expect(page.locator('.nq-ide-console')).toContainText('parent access blocked');
+  await expect(page.locator('.hw-ide-console')).toContainText('parent access blocked');
   await expect(page.locator('body')).not.toHaveAttribute('data-compromised');
 
   await editFile(page, 'js', `
@@ -97,31 +97,31 @@ test('the opaque preview blocks parent access and external resources, and ignore
     document.head.append(external);
   `);
   await page.locator('[data-ide-run]').click();
-  await expect(page.locator('.nq-ide-console')).toContainText('connect-src');
-  await expect(page.locator('.nq-ide-console')).toContainText('script-src');
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'error');
+  await expect(page.locator('.hw-ide-console')).toContainText('connect-src');
+  await expect(page.locator('.hw-ide-console')).toContainText('script-src');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'error');
   expect(responses).toEqual([]);
   // Chromium can report an attempted request before CSP rejects it; it must never receive a response.
   expect(failures).not.toEqual([]);
   expect(failures.every(error => /csp/i.test(error))).toBe(true);
 
   await page.evaluate(() => {
-    const frame = document.querySelector<HTMLIFrameElement>('.nq-ide-frame')!;
+    const frame = document.querySelector<HTMLIFrameElement>('.hw-ide-frame')!;
     const token = frame.srcdoc.match(/"token":"([^"]+)"/)![1];
     const run = Number(frame.srcdoc.match(/"run":(\d+)/)![1]);
-    const data = { channel: 'nasaq-component-preview', token, run, type: 'ready' };
+    const data = { channel: 'hawiyah-component-preview', token, run, type: 'ready' };
     // Correct source with the wrong token, then correct token with the wrong source.
     window.dispatchEvent(new MessageEvent('message', { source: frame.contentWindow, data: { ...data, token: 'wrong' } }));
     window.dispatchEvent(new MessageEvent('message', { source: window, data }));
   });
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'error');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'error');
 });
 
 test('the real enhancer works inside the preview, tab switches preserve edits, and navigation removes the editor', async ({ page }) => {
   await openIDE(page, 'password-field');
-  const preview = page.frameLocator('.nq-ide-frame');
+  const preview = page.frameLocator('.hw-ide-frame');
   await preview.locator('input').fill('example-password');
-  await preview.locator('[data-nq-password-toggle]').click();
+  await preview.locator('[data-hw-password-toggle]').click();
   await expect(preview.locator('input')).toHaveAttribute('type', 'text');
   await page.locator('[data-ide-auto]').uncheck();
   await editFile(page, 'html', '<p id="preserved">يبقى التعديل عند تغيير التبويب</p>');
@@ -132,12 +132,12 @@ test('the real enhancer works inside the preview, tab switches preserve edits, a
   await expect(preview.locator('#preserved')).toBeVisible();
 
   await page.evaluate(() => { location.hash = '#component/card'; });
-  await expect(page.locator('.nq-ide')).toHaveCount(0);
-  await expect(page.locator('.nq-ide-frame')).toHaveCount(0);
+  await expect(page.locator('.hw-ide')).toHaveCount(0);
+  await expect(page.locator('.hw-ide-frame')).toHaveCount(0);
   await page.locator('[data-guide-tab="playground"]').click();
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready');
   await expect(preview.locator('#preserved')).toHaveCount(0);
-  await expect(preview.locator('.nq-card')).toBeVisible();
+  await expect(preview.locator('.hw-card')).toBeVisible();
 });
 
 test('Arabic editor search, keyboard file tabs and phone preview remain usable on a narrow screen', async ({ page }) => {
@@ -154,30 +154,30 @@ test('Arabic editor search, keyboard file tabs and phone preview remain usable o
   await expect(page.locator('.cm-search input[name="search"]')).toHaveAttribute('aria-label', 'بحث');
   await page.keyboard.press('Escape');
   await page.locator('[data-ide-size]').selectOption('mobile');
-  await expect(page.locator('.nq-ide-preview-stage')).toHaveAttribute('data-size', 'mobile');
+  await expect(page.locator('.hw-ide-preview-stage')).toHaveAttribute('data-size', 'mobile');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
 
 test('navigation preserves edited files and explicit execution inherits DGA theme tokens', async ({ page }) => {
   await page.addInitScript(() => {
-    if (window === window.top) {localStorage.setItem('nasaq-theme', 'custom');localStorage.setItem('nasaq-mode','dark');}
+    if (window === window.top) {localStorage.setItem('hawiyah-theme', 'custom');localStorage.setItem('hawiyah-mode','dark');}
   });
   await openIDE(page);
   await page.locator('[data-ide-auto]').uncheck();
-  await editFile(page, 'html', '<button id="draft" class="nq-button">مثال محفوظ</button>');
+  await editFile(page, 'html', '<button id="draft" class="hw-button">مثال محفوظ</button>');
   await editFile(page, 'css', '#draft { border: 3px solid rgb(176, 0, 32); }');
   await editFile(page, 'js', 'document.querySelector("#draft").dataset.ready = "yes";');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('.mobile-menu[data-action="menu"]').click();
   await page.locator('.sidebar-close[data-action="menu"]').click();
-  const preview = page.frameLocator('.nq-ide-frame');
+  const preview = page.frameLocator('.hw-ide-frame');
   await expect(page.locator('[data-guide-tab="playground"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'edited');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'edited');
   await expect(page.locator('[data-ide-editor="html"] .cm-content')).toContainText('id="draft"');
   await page.locator('[data-ide-run]').click();
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready');
-  await expect(preview.locator('html')).toHaveAttribute('data-nq-mode', 'dark');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready');
+  await expect(preview.locator('html')).toHaveAttribute('data-hw-mode', 'dark');
   await expect(preview.locator('#draft')).toHaveAttribute('data-ready', 'yes');
   await expect(preview.locator('#draft')).toHaveCSS('border-top-color', 'rgb(176, 0, 32)');
   await expect(preview.locator('#draft')).toHaveCSS('background-color', 'rgb(27, 131, 84)');
@@ -189,7 +189,7 @@ test('navigation preserves edited files and explicit execution inherits DGA them
   await expect(page.locator('[data-ide-editor="html"] .cm-content')).toContainText('id="draft"');
   await page.locator('[data-ide-reset]').click();
   await expect(preview.locator('#draft')).toHaveCount(0);
-  await expect(preview.locator('.nq-button')).toHaveCount(2);
+  await expect(preview.locator('.hw-button')).toHaveCount(2);
 });
 
 
@@ -198,8 +198,8 @@ test('native form validation and dialog forms run locally while direct external 
   await openIDE(page);await page.locator('[data-ide-auto]').uncheck();
   await editFile(page,'html','<form id="search-form" action="https://example.test/search"><label>Query<input id="query" name="query" required></label><button id="run-search" type="submit">Search</button></form><output id="result">0</output><button id="bypass" type="button">Direct submission</button><button id="show" type="button">Show dialog</button><dialog id="confirm"><form method="dialog"><button value="confirmed">Confirm</button></form></dialog>');
   await editFile(page,'js',`let count=0;const form=document.querySelector('#search-form');form.addEventListener('submit',event=>{event.preventDefault();document.querySelector('#result').textContent=String(++count);});document.querySelector('#bypass').addEventListener('click',()=>form.submit());document.querySelector('#show').addEventListener('click',()=>document.querySelector('#confirm').showModal());`);
-  await page.locator('[data-ide-run]').click();const preview=page.frameLocator('.nq-ide-frame');await expect(preview.locator('#result')).toHaveText('0');
+  await page.locator('[data-ide-run]').click();const preview=page.frameLocator('.hw-ide-frame');await expect(preview.locator('#result')).toHaveText('0');
   await preview.locator('#run-search').click();await expect(preview.locator('#result')).toHaveText('0');await preview.locator('#query').fill('local search');await preview.locator('#query').press('Enter');await expect(preview.locator('#result')).toHaveText('1');
   await preview.locator('#show').click();await expect(preview.locator('#confirm')).toBeVisible();await preview.locator('#confirm button').click();await expect(preview.locator('#confirm')).toBeHidden();expect(await preview.locator('#confirm').evaluate(el=>(el as HTMLDialogElement).returnValue)).toBe('confirmed');
-  const frameUrl=await preview.locator('body').evaluate(()=>location.href);await preview.locator('#bypass').click();await expect(page.locator('.nq-ide-console')).toContainText('form-action');expect(await preview.locator('body').evaluate(()=>location.href)).toBe(frameUrl);expect(responses).toEqual([]);await expect(page).toHaveURL(/#component\/button$/);
+  const frameUrl=await preview.locator('body').evaluate(()=>location.href);await preview.locator('#bypass').click();await expect(page.locator('.hw-ide-console')).toContainText('form-action');expect(await preview.locator('body').evaluate(()=>location.href)).toBe(frameUrl);expect(responses).toEqual([]);await expect(page).toHaveURL(/#component\/button$/);
 });

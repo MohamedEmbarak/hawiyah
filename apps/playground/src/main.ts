@@ -11,13 +11,13 @@ import "@fontsource/ibm-plex-sans/600.css";
 import "@fontsource/ibm-plex-sans-arabic/400.css";
 import "@fontsource/ibm-plex-sans-arabic/500.css";
 import "@fontsource/ibm-plex-sans-arabic/600.css";
-import "@nasaq/styles/reset.css";
-import "@nasaq/styles/styles.css";
+import "@hawiyah/styles/reset.css";
+import "@hawiyah/styles/styles.css";
 import "./playground.css";
 import "./expansion.css";
 import { renderGuide, renderComponentGuide, guideTitle, guideTopics, bindGuide } from "./guide";
 import { renderHome, bindHome } from "./guide-home";
-import { nasaqMinor } from "./release";
+import { hawiyahMinor } from "./release";
 import { renderDgaTemplates, bindDgaTemplates } from "./dga-templates";
 import { createGuideSearch } from "./guide-search";
 import "./experience.css";
@@ -32,8 +32,8 @@ import {
   bindLayoutStudio,
   bindInputLab,
 } from "./layout-studio";
-import { enhance } from "@nasaq/vanilla";
-import { normalizeSearch, formatNumber, formatDate } from "@nasaq/core";
+import { enhance } from "@hawiyah/vanilla";
+import { normalizeSearch, formatNumber, formatDate } from "@hawiyah/core";
 import {
   catalog,
   services,
@@ -52,12 +52,12 @@ const app = document.querySelector<HTMLDivElement>("#app")!;
 const mobileViewport = matchMedia('(max-width: 1024px)');
 let dispose = () => {};
 const state = {
-  locale: (localStorage.getItem("nasaq-locale") === "en" ? "en" : "ar") as Locale,
-  mode: localStorage.getItem("nasaq-mode") || "light",
+  locale: (localStorage.getItem("hawiyah-locale") === "en" ? "en" : "ar") as Locale,
+  mode: localStorage.getItem("hawiyah-mode") || "light",
   theme: "dga",
   density: "comfortable",
   view: location.hash.slice(1) || "overview",
-  framework: localStorage.getItem("nasaq-framework") || "vanilla",
+  framework: localStorage.getItem("hawiyah-framework") || "vanilla",
   search: "",
   category: "all",
   componentSearch: "",
@@ -84,9 +84,9 @@ const state = {
 const t = (en: string, ar: string) => (state.locale === "ar" ? ar : en);
 const text = (pair: readonly string[]) => pair[state.locale === "ar" ? 1 : 0]!;
 const button = (label: string, attrs = "", variant = "primary") =>
-  `<button type="button" class="nq-button" data-variant="${variant}" ${attrs}>${label}</button>`;
+  `<button type="button" class="hw-button" data-variant="${variant}" ${attrs}>${label}</button>`;
 const pill = (label: string, tone = "neutral") =>
-  `<span class="nq-badge" data-tone="${tone}">${label}</span>`;
+  `<span class="hw-badge" data-tone="${tone}">${label}</span>`;
 const statusLabel = (status: string) =>
   ({
     review: t("In review", "قيد المراجعة"),
@@ -118,10 +118,10 @@ function categoryName(category: string) {
 }
 function shell() {
   if (new URLSearchParams(location.search).get('preview') === 'template' && state.view.startsWith('templates')) {
-    return `<nav class="nq-inline" aria-label="${t('Template preview controls','أدوات معاينة القالب')}" style="padding:12px 16px;background:var(--nq-color-surface);border-block-end:1px solid var(--nq-color-border)"><a class="nq-button" data-variant="ghost" href="${base}#${e(state.view)}">${icon('arrow-back',16)}${t('Back to the guide','العودة إلى الدليل')}</a><button type="button" class="nq-button" data-variant="ghost" data-action="locale">${t('العربية','English')}</button><button type="button" class="nq-button" data-variant="ghost" data-action="mode">${t('Toggle color mode','تبديل المظهر')}</button></nav><main id="main" tabindex="-1" data-view="${e(state.view)}" style="padding:0">${renderDgaTemplates(state.view,state.locale)||''}</main><div id="toast" role="status" class="toast" hidden></div>`;
+    return `<nav class="hw-inline" aria-label="${t('Template preview controls','أدوات معاينة القالب')}" style="padding:12px 16px;background:var(--hw-color-surface);border-block-end:1px solid var(--hw-color-border)"><a class="hw-button" data-variant="ghost" href="${base}#${e(state.view)}">${icon('arrow-back',16)}${t('Back to the guide','العودة إلى الدليل')}</a><button type="button" class="hw-button" data-variant="ghost" data-action="locale">${t('العربية','English')}</button><button type="button" class="hw-button" data-variant="ghost" data-action="mode">${t('Toggle color mode','تبديل المظهر')}</button></nav><main id="main" tabindex="-1" data-view="${e(state.view)}" style="padding:0">${renderDgaTemplates(state.view,state.locale)||''}</main><div id="toast" role="status" class="toast" hidden></div>`;
   }
   const titles: Record<string, string> = {
-    overview: t('Discover Nasaq', 'اكتشف نسق'), components: t('Components', 'المكوّنات'),
+    overview: t('About Hawiyah', 'عن هوية'), components: t('Components', 'المكوّنات'),
     foundations: t('Foundations', 'الأساسيات'), discover: t('Service discovery', 'اكتشاف الخدمات'),
     apply: t('Guided application', 'طلب خطوة بخطوة'), workspace: t('Request workspace', 'مساحة الطلبات'),
     docs: t('Getting started', 'البداية'), brand: t('Brand identity', 'الهوية البصرية'),
@@ -135,11 +135,11 @@ function shell() {
   const componentsNav = [...new Set(catalog.map(c=>c[3]))].map(category => `<details class="sidebar-category" ${activeComponent?.[3]===category?'open':''}><summary>${categoryName(category)}<small>${catalog.filter(c=>c[3]===category).length}</small></summary><div>${catalog.filter(c=>c[3]===category).map(c=>`<a class="sidebar-child ${activeComponent?.[0]===c[0]?'is-active':''}" href="#component/${c[0]}" ${activeComponent?.[0]===c[0]?'aria-current="page"':''}>${text([c[1],c[2]])}</a>`).join('')}</div></details>`).join('');
   return `<a class="skip-link" href="#main" ${mobileOpen?'inert':''}>${t('Skip to content','انتقل إلى المحتوى')}</a>
     <aside id="site-navigation" class="sidebar ${mobileOpen?'mobile-open':''}" ${mobileOpen?'role="dialog" aria-modal="true"':''} aria-label="${t('Main navigation','التنقّل الرئيسي')}">
-      <div class="sidebar-brand-row"><a href="#overview" class="brand brand-wordmark" aria-label="${t('Nasaq home','نسق — الصفحة الرئيسية')}"><img src="${base}brand/assets/nasaq-wordmark${state.mode==='dark'?'-white':''}.svg" alt="نسق" width="100" height="78"></a><span class="sidebar-version" dir="ltr">${nasaqMinor}</span><button type="button" class="icon-button sidebar-close" data-action="menu" aria-label="${t('Close navigation','أغلق التنقّل')}">${icon('close',21)}</button></div>
+      <div class="sidebar-brand-row"><a href="#overview" class="brand brand-wordmark" aria-label="${t('Hawiyah home','هوية — الصفحة الرئيسية')}"><img src="${base}brand/assets/hawiyah-wordmark${state.mode==='dark'?'-white':''}.svg" alt="هوية" width="100" height="78"></a><span class="sidebar-version" dir="ltr">${hawiyahMinor}</span><button type="button" class="icon-button sidebar-close" data-action="menu" aria-label="${t('Close navigation','أغلق التنقّل')}">${icon('close',21)}</button></div>
       <button type="button" class="sidebar-search" data-action="search-components">${icon('search',17)}<span>${t('Quick search…','بحث سريع…')}</span><kbd dir="ltr" aria-hidden="true">⌘ K</kbd></button>
       <nav aria-label="${t('Guide and examples','الدليل والأمثلة')}">
-        ${nav('overview',t('Discover Nasaq','اكتشف نسق'),'spark')}
-        <details class="sidebar-group" ${isDocs || state.view==='overview'?'open':''}><summary>${icon('code',18)}<span>${t('Build with Nasaq','ابدأ مع نسق')}</span></summary><div>${docNav}</div></details>
+        ${nav('overview',t('About Hawiyah','عن هوية'),'spark')}
+        <details class="sidebar-group" ${isDocs || state.view==='overview'?'open':''}><summary>${icon('code',18)}<span>${t('Build with Hawiyah','ابدأ مع هوية')}</span></summary><div>${docNav}</div></details>
         ${nav('components',t('Component library','مكتبة المكوّنات'),'layers',`<small>${catalog.length}</small>`)}
         <details class="sidebar-group component-navigation" ${isComponent?'open':''}><summary>${icon('grid',18)}<span>${t('Browse by category','تصفّح حسب الفئة')}</span></summary><div>${componentsNav}</div></details>
         <details class="sidebar-group" ${state.view.startsWith('templates')?'open':''}><summary>${icon('building',18)}<span>${t('DGA reference templates','قوالب كود المنصات')}</span></summary><div>${nav('templates',t('Template gallery','معرض القوالب'),'grid')}${nav('templates/service',t('Service details','تفاصيل الخدمة'),'briefcase')}${nav('templates/form',t('Application form','نموذج الطلب'),'file')}</div></details>
@@ -147,15 +147,15 @@ function shell() {
         ${nav('layouts',t('Layout studio','مختبر التخطيط'),'grid')}${nav('inputs',t('Input laboratory','مختبر المدخلات'),'filter')}${nav('foundations',t('Design foundations','أسس التصميم'),'palette')}${nav('brand',t('Brand identity','الهوية البصرية'),'spark')}
         <details class="sidebar-group" ${['discover','apply','workspace'].includes(state.view)?'open':''}><summary>${icon('briefcase',18)}<span>${t('Complete journeys','تجارب متكاملة')}</span></summary><div>${nav('discover',t('Discover a service','اكتشف خدمة'),'search')}${nav('apply',t('Application flow','رحلة تقديم طلب'),'file')}${nav('workspace',t('Request workspace','مساحة الطلبات'),'briefcase')}</div></details>
       </nav>
-      <div class="sidebar-bottom"><a class="sidebar-github" href="https://github.com/MohamedEmbarak/nasaq" target="_blank" rel="noopener">${icon('code',17)}<span>${t('Source on GitHub','المصدر على GitHub')}</span><span aria-hidden="true">↗</span></a><span class="version">${t('Open source · Apache 2.0','مفتوح المصدر · Apache 2.0')}</span></div>
+      <div class="sidebar-bottom"><a class="sidebar-github" href="https://github.com/MohamedEmbarak/hawiyah" target="_blank" rel="noopener">${icon('code',17)}<span>${t('Source on GitHub','المصدر على GitHub')}</span><span aria-hidden="true">↗</span></a><span class="version">${t('Open source · Apache 2.0','مفتوح المصدر · Apache 2.0')}</span></div>
     </aside>
     ${mobileOpen?`<button class="nav-backdrop" type="button" data-action="menu" aria-label="${t('Close navigation','أغلق التنقّل')}" tabindex="-1"></button>`:''}
-    <div class="main-shell" ${mobileOpen?'inert':''}><header class="topbar"><p class="site-attribution"><img src="${nicLogo}" width="136" height="150" alt="" decoding="async"><span>${t("Developed by the Development Team in the National Platforms Sector — National Information Center", "تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني ")}</span></p><div class="breadcrumb-top"><button type="button" class="icon-button mobile-menu" data-action="menu" aria-controls="site-navigation" aria-expanded="${mobileOpen}" aria-label="${t('Toggle navigation','تبديل التنقّل')}">${icon('menu')}</button><a href="#overview" class="topbar-home">${t('Nasaq','نسق')}</a><span class="breadcrumb-separator" aria-hidden="true">/</span><span>${guideTitle(state.view,state.locale)||titles[state.view]||(state.view.startsWith('templates')?t('DGA reference templates','قوالب كود المنصات'):titles.overview)}</span></div><div class="topbar-actions"><button type="button" class="search-trigger" data-action="search-components" aria-label="${t('Search the guide…','ابحث في الدليل…')} ⌘ K" aria-keyshortcuts="Control+k Meta+k">${icon('search',17)}<span>${t('Search the guide…','ابحث في الدليل…')}</span><kbd dir="ltr" aria-hidden="true">⌘ K</kbd></button><button type="button" class="icon-button locale-button" data-action="locale" aria-label="${t('ع — Switch to Arabic','EN — Switch to English')}">${icon('globe',18)}<span>${t('ع','EN')}</span></button><a class="topbar-github" href="https://github.com/MohamedEmbarak/nasaq" target="_blank" rel="noopener" aria-label="${t('Nasaq on GitHub','نسق على GitHub')}">GitHub <span aria-hidden="true">↗</span></a></div></header>
-    <main id="main" tabindex="-1" data-view="${e(state.view)}">${content()}</main><footer class="page-footer"><span>${t('Made for the way you build.','مصمّم للطريقة التي تبني بها.')}</span><a href="#docs/alignment">${t('DGA reference · Independent implementation.','مرجع كود المنصات · تنفيذ مستقل.')}</a><span dir="ltr">Apache 2.0 · Nasaq</span></footer></div><div id="toast" role="status" class="toast" hidden></div>`;
+    <div class="main-shell" ${mobileOpen?'inert':''}><header class="topbar"><p class="site-attribution"><img src="${nicLogo}" width="136" height="150" alt="" decoding="async"><span>${t("Developed by the Development Team in the National Platforms Sector — National Information Center", "تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني ")}</span></p><div class="breadcrumb-top"><button type="button" class="icon-button mobile-menu" data-action="menu" aria-controls="site-navigation" aria-expanded="${mobileOpen}" aria-label="${t('Toggle navigation','تبديل التنقّل')}">${icon('menu')}</button><a href="#overview" class="topbar-home">${t('Hawiyah','هوية')}</a><span class="breadcrumb-separator" aria-hidden="true">/</span><span>${guideTitle(state.view,state.locale)||titles[state.view]||(state.view.startsWith('templates')?t('DGA reference templates','قوالب كود المنصات'):titles.overview)}</span></div><div class="topbar-actions"><button type="button" class="search-trigger" data-action="search-components" aria-label="${t('Search the guide…','ابحث في الدليل…')} ⌘ K" aria-keyshortcuts="Control+k Meta+k">${icon('search',17)}<span>${t('Search the guide…','ابحث في الدليل…')}</span><kbd dir="ltr" aria-hidden="true">⌘ K</kbd></button><button type="button" class="icon-button locale-button" data-action="locale" aria-label="${t('ع — Switch to Arabic','EN — Switch to English')}">${icon('globe',18)}<span>${t('ع','EN')}</span></button><a class="topbar-github" href="https://github.com/MohamedEmbarak/hawiyah" target="_blank" rel="noopener" aria-label="${t('Hawiyah on GitHub','هوية على GitHub')}">GitHub <span aria-hidden="true">↗</span></a></div></header>
+    <main id="main" tabindex="-1" data-view="${e(state.view)}">${content()}</main><footer class="page-footer"><span>${t('Made for the way you build.','مصمّم للطريقة التي تبني بها.')}</span><a href="#docs/alignment">${t('DGA reference · Independent implementation.','مرجع كود المنصات · تنفيذ مستقل.')}</a><span dir="ltr">Apache 2.0 · Hawiyah</span></footer></div><div id="toast" role="status" class="toast" hidden></div>`;
 }
 
 function content() {
-  if (state.view === "templates" || state.view.startsWith("templates/")) return `<div class="nq-inline" style="margin-block-end:16px"><a class="nq-button" data-variant="secondary" href="${base}?preview=template#${e(state.view)}" target="_blank" rel="noopener">${t('Open full-width preview','افتح معاينة بعرض كامل')} <span aria-hidden="true">↗</span></a></div>` + (renderDgaTemplates(state.view, state.locale) || overview());
+  if (state.view === "templates" || state.view.startsWith("templates/")) return `<div class="hw-inline" style="margin-block-end:16px"><a class="hw-button" data-variant="secondary" href="${base}?preview=template#${e(state.view)}" target="_blank" rel="noopener">${t('Open full-width preview','افتح معاينة بعرض كامل')} <span aria-hidden="true">↗</span></a></div>` + (renderDgaTemplates(state.view, state.locale) || overview());
   if (state.view === "components") return componentPage();
   if (state.view === "foundations") return foundations();
   if (state.view === "discover") return discovery();
@@ -184,22 +184,22 @@ function sample(id: ComponentId, p = "sample"): string {
   const uid = p + "-" + id;
   switch (id) {
     case "button":
-      return `<div class="nq-cluster">${button(t("Continue", "متابعة"), 'data-action="demo-continue"')}${button(t("Secondary", "ثانوي"), 'data-action="demo-info"', "secondary")}${button(t("Disabled", "غير متاح"), "disabled", "ghost")}</div>`;
+      return `<div class="hw-cluster">${button(t("Continue", "متابعة"), 'data-action="demo-continue"')}${button(t("Secondary", "ثانوي"), 'data-action="demo-info"', "secondary")}${button(t("Disabled", "غير متاح"), "disabled", "ghost")}</div>`;
     case "field":
     case "text-field":
-      return `<div class="nq-field"><label class="nq-label" for="${uid}">${t("Full name", "الاسم الكامل")}</label><input id="${uid}" class="nq-input" placeholder="${t("Enter your name", "أدخل اسمك")}" aria-describedby="${uid}-hint"><span class="nq-hint" id="${uid}-hint">${t("As shown on your document.", "كما يظهر في المستند.")}</span></div>`;
+      return `<div class="hw-field"><label class="hw-label" for="${uid}">${t("Full name", "الاسم الكامل")}</label><input id="${uid}" class="hw-input" placeholder="${t("Enter your name", "أدخل اسمك")}" aria-describedby="${uid}-hint"><span class="hw-hint" id="${uid}-hint">${t("As shown on your document.", "كما يظهر في المستند.")}</span></div>`;
     case "textarea":
-      return `<label class="nq-field"><span class="nq-label">${t("Tell us more", "أخبرنا المزيد")}</span><textarea class="nq-textarea" rows="3" placeholder="${t("A little context goes a long way…", "القليل من التفاصيل يساعد كثيرًا…")}"></textarea></label>`;
+      return `<label class="hw-field"><span class="hw-label">${t("Tell us more", "أخبرنا المزيد")}</span><textarea class="hw-textarea" rows="3" placeholder="${t("A little context goes a long way…", "القليل من التفاصيل يساعد كثيرًا…")}"></textarea></label>`;
     case "select":
       return selectDemoMarkup(selectDemoCases(state.locale)[0]!, uid);
     case "checkbox":
-      return `<div class="nq-stack"><label class="choice-line"><input class="nq-checkbox" type="checkbox" checked>${t("Email updates", "تحديثات البريد الإلكتروني")}</label><label class="choice-line"><input class="nq-checkbox" type="checkbox">${t("SMS notifications", "إشعارات الرسائل النصية")}</label></div>`;
+      return `<div class="hw-stack"><label class="choice-line"><input class="hw-checkbox" type="checkbox" checked>${t("Email updates", "تحديثات البريد الإلكتروني")}</label><label class="choice-line"><input class="hw-checkbox" type="checkbox">${t("SMS notifications", "إشعارات الرسائل النصية")}</label></div>`;
     case "radio":
-      return `<fieldset class="plain-fieldset"><legend class="nq-label">${t("Account type", "نوع الحساب")}</legend><label class="choice-line"><input type="radio" class="nq-radio" name="${uid}" checked>${t("Individual", "فرد")}</label><label class="choice-line"><input type="radio" class="nq-radio" name="${uid}">${t("Business", "منشأة")}</label></fieldset>`;
+      return `<fieldset class="plain-fieldset"><legend class="hw-label">${t("Account type", "نوع الحساب")}</legend><label class="choice-line"><input type="radio" class="hw-radio" name="${uid}" checked>${t("Individual", "فرد")}</label><label class="choice-line"><input type="radio" class="hw-radio" name="${uid}">${t("Business", "منشأة")}</label></fieldset>`;
     case "switch":
-      return `<label class="choice-line"><input type="checkbox" role="switch" class="nq-switch" checked>${t("Enable notifications", "تفعيل الإشعارات")}</label>`;
+      return `<label class="choice-line"><input type="checkbox" role="switch" class="hw-switch" checked>${t("Enable notifications", "تفعيل الإشعارات")}</label>`;
     case "combobox":
-      return `<div class="nq-field nq-combobox" data-nq="combobox"><label class="nq-label" for="${uid}">${t("Find a city", "ابحث عن مدينة")}</label><input id="${uid}" class="nq-input" data-nq-combobox-input autocomplete="off" placeholder="${t("Search cities…", "ابحث عن المدن…")}"><input type="hidden" data-nq-combobox-value name="city"><ul class="nq-listbox" data-nq-combobox-list hidden>${[
+      return `<div class="hw-field hw-combobox" data-hw="combobox"><label class="hw-label" for="${uid}">${t("Find a city", "ابحث عن مدينة")}</label><input id="${uid}" class="hw-input" data-hw-combobox-input autocomplete="off" placeholder="${t("Search cities…", "ابحث عن المدن…")}"><input type="hidden" data-hw-combobox-value name="city"><ul class="hw-listbox" data-hw-combobox-list hidden>${[
         ["riyadh", "Riyadh", "الرياض"],
         ["jeddah", "Jeddah", "جدة"],
         ["dammam", "Dammam", "الدمام"],
@@ -207,47 +207,47 @@ function sample(id: ComponentId, p = "sample"): string {
       ]
         .map(
           ([v, en, ar]) =>
-            `<li class="nq-option" data-nq-value="${v}">${t(en!, ar!)}</li>`,
+            `<li class="hw-option" data-hw-value="${v}">${t(en!, ar!)}</li>`,
         )
         .join(
           "",
-        )}</ul><span class="nq-sr-only" data-nq-combobox-status role="status"></span></div>`;
+        )}</ul><span class="hw-sr-only" data-hw-combobox-status role="status"></span></div>`;
     case "tabs":
-      return `<div class="nq-tabs" data-nq="tabs"><div class="nq-tab-list" role="tablist" aria-label="${t("Example sections", "أقسام المثال")}">${["overview", "details", "history"].map((v, i) => `<button class="nq-tab" role="tab" id="${uid}-t${i}" data-nq-value="${v}" aria-controls="${uid}-p${i}" aria-selected="${i === 0}">${[t("Overview", "نظرة عامة"), t("Details", "التفاصيل"), t("History", "السجل")][i]}</button>`).join("")}</div>${["overview", "details", "history"].map((v, i) => `<section class="nq-tab-panel" role="tabpanel" id="${uid}-p${i}" aria-labelledby="${uid}-t${i}" ${i ? "hidden" : ""}>${[t("Everything you need, in one place.", "كل ما تحتاجه في مكان واحد."), t("Clear information for your next step.", "معلومات واضحة لخطوتك القادمة."), t("Your latest updates appear here.", "تظهر آخر تحديثاتك هنا.")][i]}</section>`).join("")}</div>`;
+      return `<div class="hw-tabs" data-hw="tabs"><div class="hw-tab-list" role="tablist" aria-label="${t("Example sections", "أقسام المثال")}">${["overview", "details", "history"].map((v, i) => `<button class="hw-tab" role="tab" id="${uid}-t${i}" data-hw-value="${v}" aria-controls="${uid}-p${i}" aria-selected="${i === 0}">${[t("Overview", "نظرة عامة"), t("Details", "التفاصيل"), t("History", "السجل")][i]}</button>`).join("")}</div>${["overview", "details", "history"].map((v, i) => `<section class="hw-tab-panel" role="tabpanel" id="${uid}-p${i}" aria-labelledby="${uid}-t${i}" ${i ? "hidden" : ""}>${[t("Everything you need, in one place.", "كل ما تحتاجه في مكان واحد."), t("Clear information for your next step.", "معلومات واضحة لخطوتك القادمة."), t("Your latest updates appear here.", "تظهر آخر تحديثاتك هنا.")][i]}</section>`).join("")}</div>`;
     case "dialog":
-      return `${button(t("Open dialog", "افتح الحوار"), `data-nq-dialog-open="${uid}"`)}<dialog id="${uid}" class="nq-dialog" data-nq="dialog" aria-labelledby="${uid}-title"><div class="nq-dialog-header"><h2 id="${uid}-title">${t("A moment of clarity", "لحظة وضوح")}</h2>${button(icon("close"), `data-nq-dialog-close aria-label="${t("Close", "إغلاق")}"`, "ghost")}</div><div class="nq-dialog-body"><p>${t("A focused space for a meaningful decision. Escape closes this dialog and returns focus to your starting point.", "مساحة مركّزة لاتخاذ قرار واضح. يغلق مفتاح Escape الحوار ويعيد التركيز إلى نقطة البداية.")}</p></div><div class="nq-dialog-footer">${button(t("Got it", "فهمت"), "data-nq-dialog-close autofocus")}</div></dialog>`;
+      return `${button(t("Open dialog", "افتح الحوار"), `data-hw-dialog-open="${uid}"`)}<dialog id="${uid}" class="hw-dialog" data-hw="dialog" aria-labelledby="${uid}-title"><div class="hw-dialog-header"><h2 id="${uid}-title">${t("A moment of clarity", "لحظة وضوح")}</h2>${button(icon("close"), `data-hw-dialog-close aria-label="${t("Close", "إغلاق")}"`, "ghost")}</div><div class="hw-dialog-body"><p>${t("A focused space for a meaningful decision. Escape closes this dialog and returns focus to your starting point.", "مساحة مركّزة لاتخاذ قرار واضح. يغلق مفتاح Escape الحوار ويعيد التركيز إلى نقطة البداية.")}</p></div><div class="hw-dialog-footer">${button(t("Got it", "فهمت"), "data-hw-dialog-close autofocus")}</div></dialog>`;
     case "accordion":
-      return `<div class="nq-accordion" data-nq="accordion">${[t("What is Nasaq?", "ما هو نسق؟"), t("Can I customize it?", "هل يمكنني تخصيصه؟")].map((s, i) => `<details class="nq-accordion-item"><summary class="nq-accordion-trigger">${s}</summary><div class="nq-accordion-content">${i ? t("Yes. Start with semantic tokens, then compose the parts you need.", "نعم. ابدأ بالرموز الدلالية ثم اجمع الأجزاء التي تحتاجها.") : t("An independent design system for thoughtful Saudi digital experiences.", "نظام تصميم مستقل لتجارب رقمية سعودية مدروسة.")}</div></details>`).join("")}</div>`;
+      return `<div class="hw-accordion" data-hw="accordion">${[t("What is Hawiyah?", "ما هي هوية؟"), t("Can I customize it?", "هل يمكنني تخصيصها؟")].map((s, i) => `<details class="hw-accordion-item"><summary class="hw-accordion-trigger">${s}</summary><div class="hw-accordion-content">${i ? t("Yes, through semantic tokens and documented variants that keep the Platforms Code requirements.", "نعم، عبر الرموز الدلالية والمتغيرات الموثقة التي تحافظ على متطلبات كود المنصات.") : t("A UI component library built to comply with the DGA Platforms Code.", "مكتبة مكوّنات واجهات مبنية للامتثال لكود المنصات.")}</div></details>`).join("")}</div>`;
     case "card":
-      return `<article class="nq-card"><div class="nq-card-header"><h3 class="nq-card-title">${t("A place for your next idea", "مساحة لفكرتك القادمة")}</h3></div><div class="nq-card-body"><p class="nq-card-description">${t("Flexible parts, a consistent whole.", "أجزاء مرنة، ونتيجة متّسقة.")}</p></div><div class="nq-card-footer">${pill(t("Ready", "جاهز"), "success")}</div></article>`;
+      return `<article class="hw-card"><div class="hw-card-header"><h3 class="hw-card-title">${t("A place for your next idea", "مساحة لفكرتك القادمة")}</h3></div><div class="hw-card-body"><p class="hw-card-description">${t("Flexible parts, a consistent whole.", "أجزاء مرنة، ونتيجة متّسقة.")}</p></div><div class="hw-card-footer">${pill(t("Ready", "جاهز"), "success")}</div></article>`;
     case "badge":
       return statusMarkup("badge", state.locale, "default", uid);
     case "alert":
       return statusMarkup("alert", state.locale, "default", uid);
     case "table":
-      return `<div class="nq-table-wrap"><table class="nq-table"><caption class="nq-sr-only">${t("Example requests", "طلبات توضيحية")}</caption><thead><tr><th>${t("Request", "الطلب")}</th><th>${t("Status", "الحالة")}</th></tr></thead><tbody><tr><td>${t("License renewal", "تجديد رخصة")}</td><td>${pill(t("Complete", "مكتمل"), "success")}</td></tr><tr><td>${t("Registration", "تسجيل")}</td><td>${pill(t("In review", "قيد المراجعة"), "info")}</td></tr></tbody></table></div>`;
+      return `<div class="hw-table-wrap"><table class="hw-table"><caption class="hw-sr-only">${t("Example requests", "طلبات توضيحية")}</caption><thead><tr><th>${t("Request", "الطلب")}</th><th>${t("Status", "الحالة")}</th></tr></thead><tbody><tr><td>${t("License renewal", "تجديد رخصة")}</td><td>${pill(t("Complete", "مكتمل"), "success")}</td></tr><tr><td>${t("Registration", "تسجيل")}</td><td>${pill(t("In review", "قيد المراجعة"), "info")}</td></tr></tbody></table></div>`;
     case "pagination":
       return paginationDemoMarkup(state.locale);
     case "breadcrumb":
-      return `<nav aria-label="${t("Breadcrumb", "مسار التنقل")}"><ol class="nq-breadcrumb"><li><a href="#overview">${t("Home", "الرئيسية")}</a></li><li><a href="#discover">${t("Services", "الخدمات")}</a></li><li aria-current="page">${t("Details", "التفاصيل")}</li></ol></nav>`;
+      return `<nav aria-label="${t("Breadcrumb", "مسار التنقل")}"><ol class="hw-breadcrumb"><li><a href="#overview">${t("Home", "الرئيسية")}</a></li><li><a href="#discover">${t("Services", "الخدمات")}</a></li><li aria-current="page">${t("Details", "التفاصيل")}</li></ol></nav>`;
     case "progress":
-      return `<label class="nq-stack">${t("Uploading · 65%", "جارٍ الرفع · 65٪")}<progress class="nq-progress" value="65" max="100"></progress></label>`;
+      return `<label class="hw-stack">${t("Uploading · 65%", "جارٍ الرفع · 65٪")}<progress class="hw-progress" value="65" max="100"></progress></label>`;
     case "spinner":
       return loaderDemo(state.locale);
     case "skeleton":
-      return `<div class="nq-stack" aria-label="${t("Loading content", "جارٍ تحميل المحتوى")}" role="status"><div class="nq-skeleton" style="height:18px;width:70%"></div><div class="nq-skeleton" style="height:12px"></div><div class="nq-skeleton" style="height:12px;width:85%"></div></div>`;
+      return `<div class="hw-stack" aria-label="${t("Loading content", "جارٍ تحميل المحتوى")}" role="status"><div class="hw-skeleton" style="height:18px;width:70%"></div><div class="hw-skeleton" style="height:12px"></div><div class="hw-skeleton" style="height:12px;width:85%"></div></div>`;
     case "avatar":
-      return `<div class="nq-cluster"><span class="nq-avatar" role="img" aria-label="${t("Noura", "نورة")}">${t("N", "ن")}</span><span class="nq-avatar" role="img" aria-label="${t("Amal", "أمل")}">${t("A", "أ")}</span><span class="nq-avatar" role="img" aria-label="${t("Mohammed", "محمد")}">${t("M", "م")}</span></div>`;
+      return `<div class="hw-cluster"><span class="hw-avatar" role="img" aria-label="${t("Noura", "نورة")}">${t("N", "ن")}</span><span class="hw-avatar" role="img" aria-label="${t("Amal", "أمل")}">${t("A", "أ")}</span><span class="hw-avatar" role="img" aria-label="${t("Mohammed", "محمد")}">${t("M", "م")}</span></div>`;
     case "divider":
-      return `<div class="nq-stack"><span>${t("A little breathing room", "مساحة للتنفّس")}</span><hr class="nq-divider"><span class="muted">${t("Between the things that matter.", "بين التفاصيل المهمة.")}</span></div>`;
+      return `<div class="hw-stack"><span>${t("A little breathing room", "مساحة للتنفّس")}</span><hr class="hw-divider"><span class="muted">${t("Between the things that matter.", "بين التفاصيل المهمة.")}</span></div>`;
     case "tooltip":
-      return `<span data-nq="tooltip">${button(t("Hover or focus me", "مرّر أو ركّز هنا"), "data-nq-tooltip-trigger", "secondary")}<span class="nq-tooltip" role="tooltip" id="${uid}" hidden>${t("Helpful context, right here.", "معلومة مفيدة في مكانها.")}</span></span>`;
+      return `<span data-hw="tooltip">${button(t("Hover or focus me", "مرّر أو ركّز هنا"), "data-hw-tooltip-trigger", "secondary")}<span class="hw-tooltip" role="tooltip" id="${uid}" hidden>${t("Helpful context, right here.", "معلومة مفيدة في مكانها.")}</span></span>`;
     case "upload":
-      return `<label class="nq-upload">${icon("upload", 26)}<strong>${t("Choose a document", "اختر مستندًا")}</strong><span class="nq-hint">PDF · PNG · JPG</span><input type="file" accept=".pdf,.png,.jpg,.jpeg" aria-label="${t("Choose a document", "اختر مستندًا")}"></label>`;
+      return `<label class="hw-upload">${icon("upload", 26)}<strong>${t("Choose a document", "اختر مستندًا")}</strong><span class="hw-hint">PDF · PNG · JPG</span><input type="file" accept=".pdf,.png,.jpg,.jpeg" aria-label="${t("Choose a document", "اختر مستندًا")}"></label>`;
     case "stepper":
       return stepperSample(state.locale);
     case "empty":
-      return `<div class="nq-empty">${icon("search", 28)}<strong>${t("Nothing here just yet", "لا يوجد شيء هنا بعد")}</strong><p>${t("Try another search or start something new.", "جرّب بحثًا آخر أو ابدأ شيئًا جديدًا.")}</p></div>`;
+      return `<div class="hw-empty">${icon("search", 28)}<strong>${t("Nothing here just yet", "لا يوجد شيء هنا بعد")}</strong><p>${t("Try another search or start something new.", "جرّب بحثًا آخر أو ابدأ شيئًا جديدًا.")}</p></div>`;
   }
   return expandedSample(id, p, state.locale, state.mode === "dark" ? "dark" : "light");
 }
@@ -259,7 +259,7 @@ function componentPage() {
         normalizeSearch(state.componentSearch),
       ),
   );
-  return `${heading(t("THE BUILDING BLOCKS", "لبنات البناء"), t("Considered in every state.", "مدروسة في كل حالة."), t("Explore, interact, and make it yours. Every component shares one foundation.", "استكشف وجرّب وخصّص. كل مكوّن يرتكز على أساس واحد."))}<div class="catalog-controls"><label class="search-field">${icon("search", 18)}<input id="component-search" type="search" value="${e(state.componentSearch)}" placeholder="${t(`Search ${catalog.length} components…`, `ابحث في ${catalog.length} مكوّنًا…`)}" aria-label="${t("Search components", "البحث في المكوّنات")}"></label><div class="filter-chips" aria-label="${t("Component categories", "فئات المكوّنات")}">${["All", "Actions", "Forms", "Navigation", "Feedback", "Content", "Platforms", "Layout"].map((c) => `<button class="filter-chip ${state.componentCategory === c ? "active" : ""}" data-component-category="${c}" aria-pressed="${state.componentCategory === c}">${state.locale === "en" ? c : { All: "الكل", Actions: "الإجراءات", Forms: "النماذج", Navigation: "التنقل", Feedback: "التغذية الراجعة", Content: "المحتوى", Platforms: "المنصات", Layout: "التخطيط" }[c]}</button>`).join("")}</div></div><p class="result-count" role="status">${list.length} ${t("components", "مكوّنًا")}</p><div class="component-grid">${list.map((c) => `<article class="component-card"><div class="component-card-title"><h2><a href="#component/${c[0]}">${text([c[1], c[2]])}</a></h2><span>${categoryName(c[3])}</span></div><div class="component-preview">${inlineExample(c[0], sample(c[0], `gallery-${c[0]}`))}</div><details class="source-details"><summary>${icon("code", 15)}${t("View markup", "عرض الشفرة")}</summary>${codeBlock(sample(c[0], `example-${c[0]}`).replace(/ data-action="[^"]*"/g, ""))}</details><a class="component-card-docs" href="#component/${c[0]}">${t("Usage, API & lifecycle", "الاستخدام وواجهة البرمجة ودورة الحياة")}${icon("arrow", 15)}</a></article>`).join("")}</div>${list.length ? "" : `<div class="nq-empty"><h2>${t("No components found", "لم نعثر على مكوّنات")}</h2>${button(t("Reset search", "إعادة البحث"), 'data-action="reset-components"', "secondary")}</div>`}`;
+  return `${heading(t("THE BUILDING BLOCKS", "لبنات البناء"), t("Defined for every state.", "محددة في كل حالة."), t("Each component documents its states, keyboard behavior and accessibility requirements, and shares the Platforms Code foundation.", "يوثّق كل مكوّن حالاته وسلوك لوحة المفاتيح ومتطلبات إمكانية الوصول، ويرتكز على أسس كود المنصات."))}<div class="catalog-controls"><label class="search-field">${icon("search", 18)}<input id="component-search" type="search" value="${e(state.componentSearch)}" placeholder="${t(`Search ${catalog.length} components…`, `ابحث في ${catalog.length} مكوّنًا…`)}" aria-label="${t("Search components", "البحث في المكوّنات")}"></label><div class="filter-chips" aria-label="${t("Component categories", "فئات المكوّنات")}">${["All", "Actions", "Forms", "Navigation", "Feedback", "Content", "Platforms", "Layout"].map((c) => `<button class="filter-chip ${state.componentCategory === c ? "active" : ""}" data-component-category="${c}" aria-pressed="${state.componentCategory === c}">${state.locale === "en" ? c : { All: "الكل", Actions: "الإجراءات", Forms: "النماذج", Navigation: "التنقل", Feedback: "التغذية الراجعة", Content: "المحتوى", Platforms: "المنصات", Layout: "التخطيط" }[c]}</button>`).join("")}</div></div><p class="result-count" role="status">${list.length} ${t("components", "مكوّنًا")}</p><div class="component-grid">${list.map((c) => `<article class="component-card"><div class="component-card-title"><h2><a href="#component/${c[0]}">${text([c[1], c[2]])}</a></h2><span>${categoryName(c[3])}</span></div><div class="component-preview">${inlineExample(c[0], sample(c[0], `gallery-${c[0]}`))}</div><details class="source-details"><summary>${icon("code", 15)}${t("View markup", "عرض الشفرة")}</summary>${codeBlock(sample(c[0], `example-${c[0]}`).replace(/ data-action="[^"]*"/g, ""))}</details><a class="component-card-docs" href="#component/${c[0]}">${t("Usage, API & lifecycle", "الاستخدام وواجهة البرمجة ودورة الحياة")}${icon("arrow", 15)}</a></article>`).join("")}</div>${list.length ? "" : `<div class="hw-empty"><h2>${t("No components found", "لم نعثر على مكوّنات")}</h2>${button(t("Reset search", "إعادة البحث"), 'data-action="reset-components"', "secondary")}</div>`}`;
 }
 function foundations() {
   const palette = [
@@ -272,7 +272,7 @@ function foundations() {
     ["success", t("Success", "نجاح")],
     ["warning", t("Warning", "تحذير")],
   ];
-  return `${heading(t("THE SHARED LANGUAGE", "اللغة المشتركة"), t("Flexible by nature.", "المرونة في الأساس."), t("Change the rhythm without losing the system. Themes, type, spacing, and density work together.", "غيّر الإيقاع مع الحفاظ على النظام. الألوان والخطوط والمسافات والكثافة تعمل معًا."))}<div class="theme-toolbar"><label class="nq-field"><span class="nq-label">${t("Density", "الكثافة")}</span><select id="density-select" class="nq-select"><option value="comfortable" ${state.density === "comfortable" ? "selected" : ""}>${t("Comfortable", "مريحة")}</option><option value="compact" ${state.density === "compact" ? "selected" : ""}>${t("Compact", "مكثّفة")}</option><option value="mobile" ${state.density === "mobile" ? "selected" : ""}>${t("Mobile", "الجوال")}</option></select></label><label class="nq-field"><span class="nq-label">${t("Direction", "الاتجاه")}</span><select id="direction-select" class="nq-select"><option value="ltr" ${document.documentElement.dir === "ltr" ? "selected" : ""}>${t("Left to right", "من اليسار إلى اليمين")}</option><option value="rtl" ${document.documentElement.dir === "rtl" ? "selected" : ""}>${t("Right to left", "من اليمين إلى اليسار")}</option></select></label>${button(icon("download", 17) + t("Export theme CSS", "تصدير CSS للسمة"), 'data-action="export-theme"', "secondary")}</div><section class="section"><h2>${t("Color with a purpose", "ألوان ذات معنى")}</h2><div class="swatch-grid">${palette.map(([key, label]) => `<div class="swatch-card"><div class="swatch" style="background:var(--nq-color-${key})"></div><strong>${label}</strong><code>--nq-color-${key}</code></div>`).join("")}</div></section><section class="foundation-split"><div class="type-specimen"><div class="eyebrow">${t("TYPOGRAPHY", "الخطوط")}</div><p class="type-display" lang="ar" dir="rtl">وضوحٌ يربط التفاصيل</p><p class="type-display latin" lang="en" dir="ltr">Clarity, woven together.</p><p>${t("Readable rhythm in both languages. Type scales serve the content, from a public service page to a working dashboard.", "إيقاع مقروء في اللغتين. مقاييس خط تخدم المحتوى، من صفحة خدمة عامة إلى لوحة عمل.")}</p></div><div class="foundation-preview"><div class="eyebrow">${t("SAME COMPONENTS, YOUR EXPRESSION", "المكوّنات نفسها، بتعبيرك")}</div>${sample("text-field", "theme")}${sample("button", "theme")}${sample("alert", "theme")}</div></section><section class="section"><h2>${t("Space to make sense", "مساحة للوضوح")}</h2><div class="spacing-scale">${[1, 2, 3, 4, 5, 6, 8, 10, 12].map((n) => `<div><span style="width:var(--nq-space-${n})"></span><code>${n}</code></div>`).join("")}</div></section>${codeBlock(":root {\n  --nq-color-primary: #1B8354;\n  --nq-color-primary-hover: #166A45;\n  --nq-color-primary-subtle: #F3FCF6;\n  --nq-radius-md: 0.5rem;\n}\n/* Components keep the same behavior. */")}${foundationExamples(state.locale)}`;
+  return `${heading(t("THE SHARED LANGUAGE", "اللغة المشتركة"), t("Configurable within the standard.", "قابلة للضبط ضمن المعيار."), t("Themes, typography, spacing and density are controlled through semantic tokens.", "تُضبط السمات والخطوط والمسافات والكثافة عبر الرموز الدلالية."))}<div class="theme-toolbar"><label class="hw-field"><span class="hw-label">${t("Density", "الكثافة")}</span><select id="density-select" class="hw-select"><option value="comfortable" ${state.density === "comfortable" ? "selected" : ""}>${t("Comfortable", "مريحة")}</option><option value="compact" ${state.density === "compact" ? "selected" : ""}>${t("Compact", "مكثّفة")}</option><option value="mobile" ${state.density === "mobile" ? "selected" : ""}>${t("Mobile", "الجوال")}</option></select></label><label class="hw-field"><span class="hw-label">${t("Direction", "الاتجاه")}</span><select id="direction-select" class="hw-select"><option value="ltr" ${document.documentElement.dir === "ltr" ? "selected" : ""}>${t("Left to right", "من اليسار إلى اليمين")}</option><option value="rtl" ${document.documentElement.dir === "rtl" ? "selected" : ""}>${t("Right to left", "من اليمين إلى اليسار")}</option></select></label>${button(icon("download", 17) + t("Export theme CSS", "تصدير CSS للسمة"), 'data-action="export-theme"', "secondary")}</div><section class="section"><h2>${t("Color with a purpose", "ألوان ذات معنى")}</h2><div class="swatch-grid">${palette.map(([key, label]) => `<div class="swatch-card"><div class="swatch" style="background:var(--hw-color-${key})"></div><strong>${label}</strong><code>--hw-color-${key}</code></div>`).join("")}</div></section><section class="foundation-split"><div class="type-specimen"><div class="eyebrow">${t("TYPOGRAPHY", "الخطوط")}</div><p class="type-display" lang="ar" dir="rtl">وضوحٌ يربط التفاصيل</p><p class="type-display latin" lang="en" dir="ltr">Clarity, woven together.</p><p>${t("Readable rhythm in both languages. Type scales serve the content, from a public service page to a working dashboard.", "إيقاع مقروء في اللغتين. مقاييس خط تخدم المحتوى، من صفحة خدمة عامة إلى لوحة عمل.")}</p></div><div class="foundation-preview"><div class="eyebrow">${t("SAME COMPONENTS, YOUR EXPRESSION", "المكوّنات نفسها، بتعبيرك")}</div>${sample("text-field", "theme")}${sample("button", "theme")}${sample("alert", "theme")}</div></section><section class="section"><h2>${t("Space to make sense", "مساحة للوضوح")}</h2><div class="spacing-scale">${[1, 2, 3, 4, 5, 6, 8, 10, 12].map((n) => `<div><span style="width:var(--hw-space-${n})"></span><code>${n}</code></div>`).join("")}</div></section>${codeBlock(":root {\n  --hw-color-primary: #1B8354;\n  --hw-color-primary-hover: #166A45;\n  --hw-color-primary-subtle: #F3FCF6;\n  --hw-radius-md: 0.5rem;\n}\n/* Components keep the same behavior. */")}${foundationExamples(state.locale)}`;
 }
 function serviceCard(s: Service) {
   return `<article class="service-card"><div class="service-card-top"><span class="service-icon">${icon(s.icon, 23)}</span>${"popular" in s ? pill(t("Popular", "شائعة"), "success") : ""}</div><h2>${text(s.title)}</h2><p>${text(s.description)}</p><div class="service-meta"><span>${icon("clock", 15)}${s.days} ${t("working days", "أيام عمل")}</span><span>${s.fee ? riyalAmount(String(s.fee), state.locale, 'before') : t("Free", "مجانية")}</span></div><button class="service-link" data-service="${s.id}">${t("View service", "عرض الخدمة")}${icon("arrow", 18)}</button></article>`;
@@ -287,7 +287,7 @@ function discovery() {
   );
   const pages = Math.ceil(filtered.length / 6);
   state.page = Math.min(state.page, Math.max(pages, 1));
-  return `${heading(t("EXPERIENCE / 01", "التجربة / 01"), t("Your next step starts here.", "خطوتك القادمة تبدأ هنا."), t("Find what you need, understand what comes next, and move forward with confidence.", "اعثر على ما تحتاجه، وافهم الخطوة التالية، وانطلق بثقة."))}<div class="demo-notice">${icon("spark", 16)}${t("An interactive example with fictional services. No requests are sent.", "مثال تفاعلي بخدمات افتراضية. لا تُرسل أي طلبات.")}</div><div class="discovery-search"><label class="search-field">${icon("search", 21)}<input id="service-search" type="search" value="${e(state.search)}" placeholder="${t("What would you like to do?", "ماذا تود أن تفعل؟")}" aria-label="${t("Search services", "ابحث عن الخدمات")}"></label><div class="filter-chips">${[
+  return `${heading(t("EXPERIENCE / 01", "التجربة / 01"), t("Service discovery.", "الوصول إلى الخدمة."), t("Search, browse and open a service with clear eligibility and next steps.", "البحث عن الخدمة وتصفحها وفتحها، مع توضيح الأهلية والخطوات التالية."))}<div class="demo-notice">${icon("spark", 16)}${t("An interactive example with fictional services. No requests are sent.", "مثال تفاعلي بخدمات افتراضية. لا تُرسل أي طلبات.")}</div><div class="discovery-search"><label class="search-field">${icon("search", 21)}<input id="service-search" type="search" value="${e(state.search)}" placeholder="${t("What would you like to do?", "ماذا تود أن تفعل؟")}" aria-label="${t("Search services", "ابحث عن الخدمات")}"></label><div class="filter-chips">${[
     ["all", "All services", "كل الخدمات"],
     ["business", "Business", "الأعمال"],
     ["personal", "Individuals", "الأفراد"],
@@ -304,17 +304,17 @@ function discovery() {
     .map(serviceCard)
     .join(
       "",
-    )}</div>${!filtered.length ? `<div class="nq-empty">${icon("search", 32)}<h2>${t("Let’s try another way", "لنجرّب طريقة أخرى")}</h2><p>${t("Try a different word or clear your filters.", "جرّب كلمة أخرى أو امسح الفلاتر.")}</p>${button(t("Show all services", "عرض كل الخدمات"), 'data-action="reset-services"', "secondary")}</div>` : ""}<nav class="page-pagination" aria-label="${t("Service pages", "صفحات الخدمات")}">${Array.from({ length: pages }, (_, i) => button(String(i + 1), `data-service-page="${i + 1}" ${state.page === i + 1 ? 'aria-current="page"' : ""}`, state.page === i + 1 ? "primary" : "ghost")).join("")}</nav><dialog id="service-dialog" class="nq-dialog service-dialog" data-nq="dialog" aria-labelledby="service-dialog-title"><div id="service-dialog-content"></div></dialog>`;
+    )}</div>${!filtered.length ? `<div class="hw-empty">${icon("search", 32)}<h2>${t("Let’s try another way", "لنجرّب طريقة أخرى")}</h2><p>${t("Try a different word or clear your filters.", "جرّب كلمة أخرى أو امسح الفلاتر.")}</p>${button(t("Show all services", "عرض كل الخدمات"), 'data-action="reset-services"', "secondary")}</div>` : ""}<nav class="page-pagination" aria-label="${t("Service pages", "صفحات الخدمات")}">${Array.from({ length: pages }, (_, i) => button(String(i + 1), `data-service-page="${i + 1}" ${state.page === i + 1 ? 'aria-current="page"' : ""}`, state.page === i + 1 ? "primary" : "ghost")).join("")}</nav><dialog id="service-dialog" class="hw-dialog service-dialog" data-hw="dialog" aria-labelledby="service-dialog-title"><div id="service-dialog-content"></div></dialog>`;
 }
 function application() {
   if (state.submitted)
-    return `<div class="success-page"><span class="success-icon">${icon("check", 40)}</span><div class="eyebrow">${t("EXAMPLE COMPLETE", "اكتمل المثال")}</div><h1>${t("A good beginning.", "بداية موفّقة.")}</h1><p>${t("You have completed the sample application. In a connected platform, this is where your reference and next steps would appear.", "لقد أكملت الطلب التجريبي. في منصة متصلة، يظهر هنا الرقم المرجعي والخطوات التالية.")}</p><div class="reference-box"><span>${t("Demo reference", "مرجع توضيحي")}</span><strong dir="ltr">NQ-DEMO-1043</strong></div><div class="nq-cluster">${button(t("Start another example", "بدء مثال جديد"), 'data-action="restart-application"', "secondary")}<a class="nq-button" href="#workspace">${t("Explore request tracking", "استكشف متابعة الطلبات")}${icon("arrow", 17)}</a></div></div>`;
+    return `<div class="success-page"><span class="success-icon">${icon("check", 40)}</span><div class="eyebrow">${t("EXAMPLE COMPLETE", "اكتمل المثال")}</div><h1>${t("A good beginning.", "بداية موفّقة.")}</h1><p>${t("You have completed the sample application. In a connected platform, this is where your reference and next steps would appear.", "لقد أكملت الطلب التجريبي. في منصة متصلة، يظهر هنا الرقم المرجعي والخطوات التالية.")}</p><div class="reference-box"><span>${t("Demo reference", "مرجع توضيحي")}</span><strong dir="ltr">HW-DEMO-1043</strong></div><div class="hw-cluster">${button(t("Start another example", "بدء مثال جديد"), 'data-action="restart-application"', "secondary")}<a class="hw-button" href="#workspace">${t("Explore request tracking", "استكشف متابعة الطلبات")}${icon("arrow", 17)}</a></div></div>`;
   const step = state.applicationStep;
   const d = state.draft;
-  return `${heading(t("EXPERIENCE / 02", "التجربة / 02"), t("A little guidance. A big difference.", "إرشاد بسيط. فرق كبير."), t("A clear, considered path from the first detail to the final review.", "مسار واضح ومدروس، من أول تفصيل إلى المراجعة النهائية."))}<div class="application-layout"><div class="application-main"><ol class="app-stepper" aria-label="${t("Application steps", "خطوات الطلب")}">${[t("Your details", "تفاصيلك"), t("Documents", "المستندات"), t("Review", "المراجعة")].map((s, i) => `<li class="${i === step ? "current" : i < step ? "complete" : ""}" ${i === step ? 'aria-current="step"' : ""}><span>${i < step ? icon("check", 16) : i + 1}</span><strong>${s}</strong></li>`).join("")}</ol><form id="application-form" class="application-form"><div class="form-step-label">${t("STEP", "الخطوة")} ${step + 1} / 3</div><h2>${[t("Tell us about your business", "أخبرنا عن منشأتك"), t("Bring the details together", "اجمع التفاصيل"), t("A final look before you go", "نظرة أخيرة قبل الإرسال")][step]}</h2><p class="muted">${[t("A few essentials to get you started. Fields marked * are required.", "بعض الأساسيات للبدء. الحقول المعلّمة * مطلوبة."), t("Use a sample file. Documents stay in this browser and are never uploaded.", "استخدم ملفًا تجريبيًا. تبقى المستندات في المتصفح ولا تُرفع."), t("Check your information. You can go back and make changes at any time.", "تحقّق من المعلومات. يمكنك العودة والتعديل في أي وقت.")][step]}</p>
+  return `${heading(t("EXPERIENCE / 02", "التجربة / 02"), t("Guided application.", "تقديم الطلب خطوة بخطوة."), t("A structured path from the first field to the final review.", "مسار منظم من أول حقل حتى المراجعة النهائية."))}<div class="application-layout"><div class="application-main"><ol class="app-stepper" aria-label="${t("Application steps", "خطوات الطلب")}">${[t("Your details", "تفاصيلك"), t("Documents", "المستندات"), t("Review", "المراجعة")].map((s, i) => `<li class="${i === step ? "current" : i < step ? "complete" : ""}" ${i === step ? 'aria-current="step"' : ""}><span>${i < step ? icon("check", 16) : i + 1}</span><strong>${s}</strong></li>`).join("")}</ol><form id="application-form" class="application-form"><div class="form-step-label">${t("STEP", "الخطوة")} ${step + 1} / 3</div><h2>${[t("Tell us about your business", "أخبرنا عن منشأتك"), t("Bring the details together", "اجمع التفاصيل"), t("A final look before you go", "نظرة أخيرة قبل الإرسال")][step]}</h2><p class="muted">${[t("A few essentials to get you started. Fields marked * are required.", "بعض الأساسيات للبدء. الحقول المعلّمة * مطلوبة."), t("Use a sample file. Documents stay in this browser and are never uploaded.", "استخدم ملفًا تجريبيًا. تبقى المستندات في المتصفح ولا تُرفع."), t("Check your information. You can go back and make changes at any time.", "تحقّق من المعلومات. يمكنك العودة والتعديل في أي وقت.")][step]}</p>
  ${
    step === 0
-     ? `<div class="form-grid"><label class="nq-field full"><span class="nq-label">${t("Business name", "اسم المنشأة")} *</span><input class="nq-input" id="business-name" name="business" required minlength="2" value="${e(d.business)}" placeholder="${t("For example, Woven Studio", "مثلًا: استوديو نسق")}"></label><label class="nq-field"><span class="nq-label">${t("Activity", "النشاط")} *</span><select name="activity" id="business-activity" class="nq-select">${[
+     ? `<div class="form-grid"><label class="hw-field full"><span class="hw-label">${t("Business name", "اسم المنشأة")} *</span><input class="hw-input" id="business-name" name="business" required minlength="2" value="${e(d.business)}" placeholder="${t("For example, Hawiyah Studio", "مثلًا: استوديو هوية")}"></label><label class="hw-field"><span class="hw-label">${t("Activity", "النشاط")} *</span><select name="activity" id="business-activity" class="hw-select">${[
          ["retail", "Retail", "تجارة التجزئة"],
          ["consulting", "Consulting", "استشارات"],
          ["other", "Other", "آخر"],
@@ -325,7 +325,7 @@ function application() {
          )
          .join(
            "",
-         )}</select></label><label class="nq-field"><span class="nq-label">${t("City", "المدينة")} *</span><select name="city" class="nq-select" required><option value="">${t("Select a city", "اختر مدينة")}</option>${[
+         )}</select></label><label class="hw-field"><span class="hw-label">${t("City", "المدينة")} *</span><select name="city" class="hw-select" required><option value="">${t("Select a city", "اختر مدينة")}</option>${[
          ["riyadh", "Riyadh", "الرياض"],
          ["jeddah", "Jeddah", "جدة"],
          ["dammam", "Dammam", "الدمام"],
@@ -336,12 +336,12 @@ function application() {
          )
          .join(
            "",
-         )}</select></label>${d.activity === "other" ? `<label class="nq-field full"><span class="nq-label">${t("Describe your activity", "صِف نشاطك")} *</span><textarea class="nq-textarea" name="description" required>${e(d.description)}</textarea></label>` : ""}<label class="nq-field full"><span class="nq-label">${t("Contact email", "البريد الإلكتروني")} *</span><input type="email" class="nq-input" name="email" required value="${e(d.email)}" placeholder="hello@example.com" dir="ltr"><span class="nq-hint">${t("Use a fictional address for this demo.", "استخدم عنوانًا افتراضيًا لهذا المثال.")}</span></label></div>`
+         )}</select></label>${d.activity === "other" ? `<label class="hw-field full"><span class="hw-label">${t("Describe your activity", "صِف نشاطك")} *</span><textarea class="hw-textarea" name="description" required>${e(d.description)}</textarea></label>` : ""}<label class="hw-field full"><span class="hw-label">${t("Contact email", "البريد الإلكتروني")} *</span><input type="email" class="hw-input" name="email" required value="${e(d.email)}" placeholder="hello@example.com" dir="ltr"><span class="hw-hint">${t("Use a fictional address for this demo.", "استخدم عنوانًا افتراضيًا لهذا المثال.")}</span></label></div>`
      : step === 1
-       ? `<div class="document-checklist"><div>${icon("check", 18)}<span>${t("Business details", "معلومات المنشأة")}</span>${pill(t("Ready", "جاهزة"), "success")}</div><div>${icon("file", 18)}<span>${t("Supporting document", "مستند داعم")}</span>${pill(t("Optional in this demo", "اختياري في المثال"))}</div></div><label class="nq-upload application-upload">${icon("upload", 34)}<strong>${state.fileName ? e(state.fileName) : t("Choose a supporting document", "اختر مستندًا داعمًا")}</strong><span>${t("PDF, PNG or JPG · Up to 5 MB", "PDF أو PNG أو JPG · حتى 5 ميجابايت")}</span><input id="application-file" type="file" accept=".pdf,.png,.jpg,.jpeg" aria-label="${t("Supporting document", "مستند داعم")}"></label><p id="file-error" class="nq-error" role="alert"></p>`
-       : `<dl class="review-list"><div><dt>${t("Service", "الخدمة")}</dt><dd>${text(state.service.title)}</dd></div><div><dt>${t("Business name", "اسم المنشأة")}</dt><dd>${e(d.business)}</dd></div><div><dt>${t("Activity", "النشاط")}</dt><dd>${({ retail: t("Retail", "تجارة التجزئة"), consulting: t("Consulting", "استشارات"), other: t("Other", "آخر") } as Record<string, string>)[d.activity] || e(d.activity)}</dd></div>${d.activity === "other" ? `<div><dt>${t("Activity details", "تفاصيل النشاط")}</dt><dd>${e(d.description)}</dd></div>` : ""}<div><dt>${t("City", "المدينة")}</dt><dd>${({ riyadh: t("Riyadh", "الرياض"), jeddah: t("Jeddah", "جدة"), dammam: t("Dammam", "الدمام") } as Record<string, string>)[d.city] || e(d.city)}</dd></div><div><dt>${t("Email", "البريد الإلكتروني")}</dt><dd dir="ltr">${e(d.email)}</dd></div><div><dt>${t("Document", "المستند")}</dt><dd>${e(state.fileName || t("Not attached", "غير مرفق"))}</dd></div></dl><label class="choice-line declaration"><input type="checkbox" class="nq-checkbox" name="declaration" required ${d.declaration ? "checked" : ""}>${t("I understand this is a demonstration and no real application will be submitted.", "أفهم أن هذا مثال توضيحي ولن يُرسل طلب فعلي.")}</label>`
+       ? `<div class="document-checklist"><div>${icon("check", 18)}<span>${t("Business details", "معلومات المنشأة")}</span>${pill(t("Ready", "جاهزة"), "success")}</div><div>${icon("file", 18)}<span>${t("Supporting document", "مستند داعم")}</span>${pill(t("Optional in this demo", "اختياري في المثال"))}</div></div><label class="hw-upload application-upload">${icon("upload", 34)}<strong>${state.fileName ? e(state.fileName) : t("Choose a supporting document", "اختر مستندًا داعمًا")}</strong><span>${t("PDF, PNG or JPG · Up to 5 MB", "PDF أو PNG أو JPG · حتى 5 ميجابايت")}</span><input id="application-file" type="file" accept=".pdf,.png,.jpg,.jpeg" aria-label="${t("Supporting document", "مستند داعم")}"></label><p id="file-error" class="hw-error" role="alert"></p>`
+       : `<dl class="review-list"><div><dt>${t("Service", "الخدمة")}</dt><dd>${text(state.service.title)}</dd></div><div><dt>${t("Business name", "اسم المنشأة")}</dt><dd>${e(d.business)}</dd></div><div><dt>${t("Activity", "النشاط")}</dt><dd>${({ retail: t("Retail", "تجارة التجزئة"), consulting: t("Consulting", "استشارات"), other: t("Other", "آخر") } as Record<string, string>)[d.activity] || e(d.activity)}</dd></div>${d.activity === "other" ? `<div><dt>${t("Activity details", "تفاصيل النشاط")}</dt><dd>${e(d.description)}</dd></div>` : ""}<div><dt>${t("City", "المدينة")}</dt><dd>${({ riyadh: t("Riyadh", "الرياض"), jeddah: t("Jeddah", "جدة"), dammam: t("Dammam", "الدمام") } as Record<string, string>)[d.city] || e(d.city)}</dd></div><div><dt>${t("Email", "البريد الإلكتروني")}</dt><dd dir="ltr">${e(d.email)}</dd></div><div><dt>${t("Document", "المستند")}</dt><dd>${e(state.fileName || t("Not attached", "غير مرفق"))}</dd></div></dl><label class="choice-line declaration"><input type="checkbox" class="hw-checkbox" name="declaration" required ${d.declaration ? "checked" : ""}>${t("I understand this is a demonstration and no real application will be submitted.", "أفهم أن هذا مثال توضيحي ولن يُرسل طلب فعلي.")}</label>`
  }
- <div class="form-actions">${step ? button(icon("arrow-back", 16) + t("Back", "السابق"), 'data-action="previous-step"', "ghost") : button(t("Save demo draft", "حفظ المسودة التجريبية"), 'data-action="save-draft"', "ghost")}<button class="nq-button" type="submit">${step === 2 ? t("Complete example", "إكمال المثال") : t("Continue", "متابعة")}${icon("arrow", 17)}</button></div></form></div><aside class="application-aside"><span class="service-icon">${icon(state.service.icon, 25)}</span><h3>${text(state.service.title)}</h3><p>${text(state.service.description)}</p><div class="aside-fact">${icon("clock", 18)}<div><span>${t("Estimated processing", "المدة المتوقعة")}</span><strong>${state.service.days} ${t("working days", "أيام عمل")}</strong></div></div><div class="aside-fact">${icon("file", 18)}<div><span>${t("Service fee", "رسوم الخدمة")}</span><strong>${state.service.fee ? riyalAmount(String(state.service.fee), state.locale) : t("Free", "مجانية")}</strong></div></div><div class="aside-help"><strong>${t("A little help along the way", "مساعدة في كل خطوة")}</strong><p>${t("Your progress stays here while you explore. Only a draft you explicitly save is kept on this device.", "يبقى تقدّمك أثناء التجربة. تُحفظ على هذا الجهاز فقط المسودة التي تختار حفظها.")}</p>${button(t("Load saved draft", "استرجاع المسودة"), 'data-action="load-draft" data-size="sm"', "secondary")}</div></aside></div>`;
+ <div class="form-actions">${step ? button(icon("arrow-back", 16) + t("Back", "السابق"), 'data-action="previous-step"', "ghost") : button(t("Save demo draft", "حفظ المسودة التجريبية"), 'data-action="save-draft"', "ghost")}<button class="hw-button" type="submit">${step === 2 ? t("Complete example", "إكمال المثال") : t("Continue", "متابعة")}${icon("arrow", 17)}</button></div></form></div><aside class="application-aside"><span class="service-icon">${icon(state.service.icon, 25)}</span><h3>${text(state.service.title)}</h3><p>${text(state.service.description)}</p><div class="aside-fact">${icon("clock", 18)}<div><span>${t("Estimated processing", "المدة المتوقعة")}</span><strong>${state.service.days} ${t("working days", "أيام عمل")}</strong></div></div><div class="aside-fact">${icon("file", 18)}<div><span>${t("Service fee", "رسوم الخدمة")}</span><strong>${state.service.fee ? riyalAmount(String(state.service.fee), state.locale) : t("Free", "مجانية")}</strong></div></div><div class="aside-help"><strong>${t("A little help along the way", "مساعدة في كل خطوة")}</strong><p>${t("Your progress stays here while you explore. Only a draft you explicitly save is kept on this device.", "يبقى تقدّمك أثناء التجربة. تُحفظ على هذا الجهاز فقط المسودة التي تختار حفظها.")}</p>${button(t("Load saved draft", "استرجاع المسودة"), 'data-action="load-draft" data-size="sm"', "secondary")}</div></aside></div>`;
 }
 function workspace() {
   const rows = requests.filter(
@@ -351,7 +351,7 @@ function workspace() {
         normalizeSearch(state.requestSearch),
       ),
   );
-  return `${heading(t("EXPERIENCE / 03", "التجربة / 03"), t("A clear view of your day.", "صورة واضحة ليومك."), t("Your requests, their progress, and what needs your attention.", "طلباتك، وتقدّمها، وما يحتاج إلى انتباهك."), `<a class="nq-button" href="#apply" data-action="new-application">${t("New request", "طلب جديد")}${icon("arrow", 17)}</a>`)}<div class="demo-notice">${icon("spark", 16)}${t("Sample workspace · All records are fictional.", "مساحة عمل توضيحية · كل السجلات افتراضية.")}</div><div class="metrics-row">${[
+  return `${heading(t("EXPERIENCE / 03", "التجربة / 03"), t("Request tracking.", "متابعة الطلبات."), t("Requests, their status, and the actions that are required.", "الطلبات وحالاتها والإجراءات المطلوبة."), `<a class="hw-button" href="#apply" data-action="new-application">${t("New request", "طلب جديد")}${icon("arrow", 17)}</a>`)}<div class="demo-notice">${icon("spark", 16)}${t("Sample workspace · All records are fictional.", "مساحة عمل توضيحية · كل السجلات افتراضية.")}</div><div class="metrics-row">${[
     [t("Total requests", "إجمالي الطلبات"), "5", "briefcase"],
     [t("In review", "قيد المراجعة"), "1", "clock"],
     [t("Needs attention", "تحتاج إجراء"), "1", "message"],
@@ -363,24 +363,24 @@ function workspace() {
     )
     .join(
       "",
-    )}</div><section class="workspace-panel"><div class="workspace-toolbar"><label class="search-field">${icon("search", 18)}<input id="request-search" type="search" value="${e(state.requestSearch)}" placeholder="${t("Search requests…", "ابحث في الطلبات…")}" aria-label="${t("Search requests", "ابحث في الطلبات")}"></label><label class="status-filter"><span class="nq-sr-only">${t("Filter by status", "تصفية حسب الحالة")}</span><select class="nq-select" id="request-status"><option value="all">${t("All statuses", "كل الحالات")}</option>${["review", "action", "completed", "draft"].map((s) => `<option value="${s}" ${state.requestStatus === s ? "selected" : ""}>${statusLabel(s)}</option>`).join("")}</select></label></div>${state.selected.size ? `<div class="bulk-bar"><span>${state.selected.size} ${t("selected", "محدد")}</span>${button(icon("download", 15) + t("Export selected", "تصدير المحدد"), 'data-action="export-selected" data-size="sm"', "secondary")}${button(t("Clear selection", "إلغاء التحديد"), 'data-action="clear-selection" data-size="sm"', "ghost")}</div>` : ""}<div class="nq-table-wrap"><table class="nq-table requests-table"><caption class="nq-sr-only">${t("Your sample requests", "طلباتك التوضيحية")}</caption><thead><tr><th><input class="nq-checkbox" id="select-all" type="checkbox" ${rows.length && rows.every((r) => state.selected.has(r.id)) ? "checked" : ""} aria-label="${t("Select visible requests", "تحديد الطلبات الظاهرة")}"></th><th>${t("Request", "الطلب")}</th><th>${t("Reference", "المرجع")}</th><th>${t("Submitted", "تاريخ التقديم")}</th><th>${t("Status", "الحالة")}</th><th><span class="nq-sr-only">${t("Details", "التفاصيل")}</span></th></tr></thead><tbody>${rows.map((r) => `<tr><td><input class="nq-checkbox" type="checkbox" data-select="${r.id}" ${state.selected.has(r.id) ? "checked" : ""} aria-label="${e(t("Select ", "تحديد ") + text(r.name))}"></td><td><strong>${text(r.name)}</strong></td><td class="reference" dir="ltr">${r.id}</td><td>${formatDate(r.date + "T12:00:00Z", { locale: state.locale === "ar" ? "ar-SA" : "en-GB", month: "short", day: "numeric" })}</td><td>${pill(statusLabel(r.status), statusTone(r.status))}</td><td><button class="icon-button" data-request="${r.id}" aria-label="${e(t("View ", "عرض ") + text(r.name))}">${icon("arrow", 18)}</button></td></tr>`).join("")}</tbody></table></div>${!rows.length ? `<div class="nq-empty">${t("No matching requests. Try another search.", "لا توجد طلبات مطابقة. جرّب بحثًا آخر.")}</div>` : ""}<div class="table-footer"><span role="status">${rows.length} ${t("requests", "طلبات")}</span><span>${t("Sample data · October 2026", "بيانات توضيحية · أكتوبر 2026")}</span></div></section><dialog id="request-dialog" class="nq-dialog" data-nq="dialog" aria-labelledby="request-title"><div id="request-content"></div></dialog>`;
+    )}</div><section class="workspace-panel"><div class="workspace-toolbar"><label class="search-field">${icon("search", 18)}<input id="request-search" type="search" value="${e(state.requestSearch)}" placeholder="${t("Search requests…", "ابحث في الطلبات…")}" aria-label="${t("Search requests", "ابحث في الطلبات")}"></label><label class="status-filter"><span class="hw-sr-only">${t("Filter by status", "تصفية حسب الحالة")}</span><select class="hw-select" id="request-status"><option value="all">${t("All statuses", "كل الحالات")}</option>${["review", "action", "completed", "draft"].map((s) => `<option value="${s}" ${state.requestStatus === s ? "selected" : ""}>${statusLabel(s)}</option>`).join("")}</select></label></div>${state.selected.size ? `<div class="bulk-bar"><span>${state.selected.size} ${t("selected", "محدد")}</span>${button(icon("download", 15) + t("Export selected", "تصدير المحدد"), 'data-action="export-selected" data-size="sm"', "secondary")}${button(t("Clear selection", "إلغاء التحديد"), 'data-action="clear-selection" data-size="sm"', "ghost")}</div>` : ""}<div class="hw-table-wrap"><table class="hw-table requests-table"><caption class="hw-sr-only">${t("Your sample requests", "طلباتك التوضيحية")}</caption><thead><tr><th><input class="hw-checkbox" id="select-all" type="checkbox" ${rows.length && rows.every((r) => state.selected.has(r.id)) ? "checked" : ""} aria-label="${t("Select visible requests", "تحديد الطلبات الظاهرة")}"></th><th>${t("Request", "الطلب")}</th><th>${t("Reference", "المرجع")}</th><th>${t("Submitted", "تاريخ التقديم")}</th><th>${t("Status", "الحالة")}</th><th><span class="hw-sr-only">${t("Details", "التفاصيل")}</span></th></tr></thead><tbody>${rows.map((r) => `<tr><td><input class="hw-checkbox" type="checkbox" data-select="${r.id}" ${state.selected.has(r.id) ? "checked" : ""} aria-label="${e(t("Select ", "تحديد ") + text(r.name))}"></td><td><strong>${text(r.name)}</strong></td><td class="reference" dir="ltr">${r.id}</td><td>${formatDate(r.date + "T12:00:00Z", { locale: state.locale === "ar" ? "ar-SA" : "en-GB", month: "short", day: "numeric" })}</td><td>${pill(statusLabel(r.status), statusTone(r.status))}</td><td><button class="icon-button" data-request="${r.id}" aria-label="${e(t("View ", "عرض ") + text(r.name))}">${icon("arrow", 18)}</button></td></tr>`).join("")}</tbody></table></div>${!rows.length ? `<div class="hw-empty">${t("No matching requests. Try another search.", "لا توجد طلبات مطابقة. جرّب بحثًا آخر.")}</div>` : ""}<div class="table-footer"><span role="status">${rows.length} ${t("requests", "طلبات")}</span><span>${t("Sample data · October 2026", "بيانات توضيحية · أكتوبر 2026")}</span></div></section><dialog id="request-dialog" class="hw-dialog" data-hw="dialog" aria-labelledby="request-title"><div id="request-content"></div></dialog>`;
 }
 function brand() {
-  return `${heading(t("THE NASAQ IDENTITY", "هوية نسق"), t("Clarity, woven together.", "وضوحٌ يربط التفاصيل."), t("One word. Its own character. Arabic lettering is the complete Nasaq identity.", "كلمة واحدة. وشخصية خاصة. الحروف العربية هي هوية نسق كاملة."))}<section class="brand-showcase"><img src="${base}brand/assets/nasaq-lockup-bilingual.svg" alt="Nasaq — نسق"><p>${t("Different parts. One rhythm.", "تفاصيل مختلفة. إيقاع واحد.")}</p></section><div class="brand-principles"><article><span>01</span><h2>${t("Arabic, by name", "عربيٌ باسمه")}</h2><p>${t("The Arabic name نسق stands alone in outlined Aref Ruqaa lettering. No separate icon or Latin wordmark.", "اسم نسق وحده بحروف عارف رقعة المحوّلة إلى مسارات متجهة. دون رمز منفصل أو كتابة لاتينية.")}</p></article><article><span>02</span><h2>${t("Considered", "مدروس")}</h2><p>${t("Calm colors, clear typography, and purposeful space.", "ألوان هادئة، وخطوط واضحة، ومساحات هادفة.")}</p></article><article><span>03</span><h2>${t("Adaptable", "مرن")}</h2><p>${t("A consistent foundation with room for individual expression.", "أساس متّسق يترك مساحة للتعبير الخاص.")}</p></article></div><a class="nq-button" href="${base}brand/${state.locale === "ar" ? "index.html" : "index-en.html"}" target="_blank" rel="noopener">${t("Open the complete identity guide", "افتح دليل الهوية الكامل")}${icon("arrow", 17)}</a>`;
+  return `${heading(t("THE HAWIYAH WORDMARK", "شعار هوية"), t("One wordmark. Platforms Code colors.", "شعار واحد. بألوان كود المنصات."), t("The Arabic wordmark is the complete Hawiyah logo, shown in the Platforms Code primary color.", "الشعار العربي هو شعار هوية كاملًا، ويظهر باللون الأساسي لكود المنصات."))}<section class="brand-showcase"><img src="${base}brand/assets/hawiyah-lockup-bilingual.svg" alt="Hawiyah — هوية"><p>${t("Different parts. One identity.", "تفاصيل مختلفة. هوية واحدة.")}</p></section><div class="brand-principles"><article><span>01</span><h2>${t("Arabic, by name", "عربيٌ باسمه")}</h2><p>${t("The Arabic name هوية stands alone in outlined Aref Ruqaa lettering. No separate icon or Latin wordmark.", "اسم هوية وحده بحروف عارف رقعة المحوّلة إلى مسارات متجهة. دون رمز منفصل أو كتابة لاتينية.")}</p></article><article><span>02</span><h2>${t("Considered", "مدروس")}</h2><p>${t("Calm colors, clear typography, and purposeful space.", "ألوان هادئة، وخطوط واضحة، ومساحات هادفة.")}</p></article><article><span>03</span><h2>${t("Adaptable", "مرن")}</h2><p>${t("A consistent foundation with room for individual expression.", "أساس متّسق يترك مساحة للتعبير الخاص.")}</p></article></div><a class="hw-button" href="${base}brand/${state.locale === "ar" ? "index.html" : "index-en.html"}" target="_blank" rel="noopener">${t("Open the complete identity guide", "افتح دليل الهوية الكامل")}${icon("arrow", 17)}</a>`;
 }
 
 function applySettings() {
   document.documentElement.lang = state.locale;
-  document.documentElement.dataset.nqTheme = state.theme;
-  document.documentElement.dataset.nqMode = state.mode;
-  document.documentElement.dataset.nqDensity = state.density;
+  document.documentElement.dataset.hwTheme = state.theme;
+  document.documentElement.dataset.hwMode = state.mode;
+  document.documentElement.dataset.hwDensity = state.density;
   document.documentElement.style.colorScheme = state.mode;
   const custom = state.mode === 'dark'
     ? {primary:'#A4BCFD', 'primary-hover':'#B2CCFF', 'primary-active':'#C7D7FE', 'on-primary':'#101828', 'primary-subtle':'#1D2939', 'primary-text':'#B2CCFF'}
     : {primary:'#293B8F', 'primary-hover':'#1D2C70', 'primary-active':'#18245C', 'on-primary':'#FFFFFF', 'primary-subtle':'#DADFF7', 'primary-text':'#293B8F'};
   for (const [key, value] of Object.entries(custom)) {
-    if (state.theme === 'custom') document.documentElement.style.setProperty('--nq-color-' + key, value);
-    else document.documentElement.style.removeProperty('--nq-color-' + key);
+    if (state.theme === 'custom') document.documentElement.style.setProperty('--hw-color-' + key, value);
+    else document.documentElement.style.removeProperty('--hw-color-' + key);
   }
 }
 function render() {
@@ -391,7 +391,7 @@ function render() {
   applySettings();
   app.innerHTML = shell();
   const pageTitle = guideTitle(state.view, state.locale) || app.querySelector('main h1')?.textContent?.trim() || t('Guide & playground', 'الدليل ومساحة التجربة');
-  document.title = `${pageTitle} · ${t('Nasaq — نسق', 'نسق — Nasaq')}`;
+  document.title = `${pageTitle} · ${t('Hawiyah — هوية', 'هوية — Hawiyah')}`;
   document.body.classList.toggle("navigation-open", state.mobileNav);
   document.documentElement.classList.toggle("navigation-open", state.mobileNav);
   const unpreviews = bindDemoPreviews(app, state.locale);
@@ -509,7 +509,7 @@ app.addEventListener("click", async (event) => {
       return;
     }
   }
-  if (el.matches(".skip-link, .nq-skip-link") && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+  if (el.matches(".skip-link, .hw-skip-link") && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
     const href = el.getAttribute("href");
     const target = href?.startsWith("#") ? document.getElementById(href.slice(1)) : null;
     if (target) {
@@ -527,7 +527,7 @@ app.addEventListener("click", async (event) => {
   }
   if (el.dataset.framework) {
     state.framework = el.dataset.framework;
-    localStorage.setItem("nasaq-framework", state.framework);
+    localStorage.setItem("hawiyah-framework", state.framework);
     render();
     return;
   }
@@ -560,7 +560,7 @@ app.addEventListener("click", async (event) => {
     const service = services.find((s) => s.id === el.dataset.service)!;
     state.service = service;
     document.getElementById("service-dialog-content")!.innerHTML =
-      `<div class="nq-dialog-header"><span class="service-icon">${icon(service.icon, 24)}</span>${button(icon("close"), `data-nq-dialog-close aria-label="${t("Close", "إغلاق")}"`, "ghost")}</div><div class="nq-dialog-body"><h2 id="service-dialog-title">${text(service.title)}</h2><p>${text(service.description)}</p><dl class="review-list"><div><dt>${t("Fee", "الرسوم")}</dt><dd>${service.fee ? formatRiyal(service.fee, state.locale) : t("Free", "مجانية")}</dd></div><div><dt>${t("Time", "المدة")}</dt><dd>${service.days} ${t("working days", "أيام عمل")}</dd></div></dl><h3>${t("Before you begin", "قبل البدء")}</h3><ul><li>${t("Prepare your organization details.", "جهّز معلومات منشأتك.")}</li><li>${t("Have a contact email ready.", "جهّز بريدًا إلكترونيًا للتواصل.")}</li><li>${t("Review supporting document requirements.", "راجع متطلبات المستندات الداعمة.")}</li></ul></div><div class="nq-dialog-footer">${button(t("Start example application", "بدء طلب تجريبي"), 'data-action="start-service"')}</div>`;
+      `<div class="hw-dialog-header"><span class="service-icon">${icon(service.icon, 24)}</span>${button(icon("close"), `data-hw-dialog-close aria-label="${t("Close", "إغلاق")}"`, "ghost")}</div><div class="hw-dialog-body"><h2 id="service-dialog-title">${text(service.title)}</h2><p>${text(service.description)}</p><dl class="review-list"><div><dt>${t("Fee", "الرسوم")}</dt><dd>${service.fee ? formatRiyal(service.fee, state.locale) : t("Free", "مجانية")}</dd></div><div><dt>${t("Time", "المدة")}</dt><dd>${service.days} ${t("working days", "أيام عمل")}</dd></div></dl><h3>${t("Before you begin", "قبل البدء")}</h3><ul><li>${t("Prepare your organization details.", "جهّز معلومات منشأتك.")}</li><li>${t("Have a contact email ready.", "جهّز بريدًا إلكترونيًا للتواصل.")}</li><li>${t("Review supporting document requirements.", "راجع متطلبات المستندات الداعمة.")}</li></ul></div><div class="hw-dialog-footer">${button(t("Start example application", "بدء طلب تجريبي"), 'data-action="start-service"')}</div>`;
     (
       document.getElementById("service-dialog") as HTMLDialogElement
     ).showModal();
@@ -569,7 +569,7 @@ app.addEventListener("click", async (event) => {
   if (el.dataset.request) {
     const r = requests.find((r) => r.id === el.dataset.request)!;
     document.getElementById("request-content")!.innerHTML =
-      `<div class="nq-dialog-header"><h2 id="request-title">${text(r.name)}</h2>${button(icon("close"), `data-nq-dialog-close aria-label="${t("Close", "إغلاق")}"`, "ghost")}</div><div class="nq-dialog-body"><p class="reference" dir="ltr">${r.id}</p>${pill(statusLabel(r.status), statusTone(r.status))}<ol class="request-timeline">${[t("Application prepared", "تم إعداد الطلب"), t("Documents received", "تم استلام المستندات"), t("Under review", "قيد المراجعة"), t("Completed", "مكتمل")].map((x, i) => `<li class="${i <= r.step ? "done" : ""}"><span>${i <= r.step ? icon("check", 13) : ""}</span><div><strong>${x}</strong><p>${i === r.step ? t("Current stage", "المرحلة الحالية") : i < r.step ? t("Complete", "مكتمل") : t("Coming next", "الخطوة القادمة")}</p></div></li>`).join("")}</ol>${r.status === "action" ? `<div class="nq-alert" data-tone="warning"><p>${t("Next step: attach an updated supporting document. This is a sample status.", "الخطوة التالية: أرفق مستندًا داعمًا محدّثًا. هذه حالة توضيحية.")}</p></div>` : ""}</div><div class="nq-dialog-footer">${button(t("Close details", "إغلاق التفاصيل"), "data-nq-dialog-close", "secondary")}</div>`;
+      `<div class="hw-dialog-header"><h2 id="request-title">${text(r.name)}</h2>${button(icon("close"), `data-hw-dialog-close aria-label="${t("Close", "إغلاق")}"`, "ghost")}</div><div class="hw-dialog-body"><p class="reference" dir="ltr">${r.id}</p>${pill(statusLabel(r.status), statusTone(r.status))}<ol class="request-timeline">${[t("Application prepared", "تم إعداد الطلب"), t("Documents received", "تم استلام المستندات"), t("Under review", "قيد المراجعة"), t("Completed", "مكتمل")].map((x, i) => `<li class="${i <= r.step ? "done" : ""}"><span>${i <= r.step ? icon("check", 13) : ""}</span><div><strong>${x}</strong><p>${i === r.step ? t("Current stage", "المرحلة الحالية") : i < r.step ? t("Complete", "مكتمل") : t("Coming next", "الخطوة القادمة")}</p></div></li>`).join("")}</ol>${r.status === "action" ? `<div class="hw-alert" data-tone="warning"><p>${t("Next step: attach an updated supporting document. This is a sample status.", "الخطوة التالية: أرفق مستندًا داعمًا محدّثًا. هذه حالة توضيحية.")}</p></div>` : ""}</div><div class="hw-dialog-footer">${button(t("Close details", "إغلاق التفاصيل"), "data-hw-dialog-close", "secondary")}</div>`;
     (
       document.getElementById("request-dialog") as HTMLDialogElement
     ).showModal();
@@ -581,14 +581,14 @@ app.addEventListener("click", async (event) => {
       break;
     case "mode":
       state.mode = state.mode === "light" ? "dark" : "light";
-      localStorage.setItem("nasaq-mode", state.mode);
+      localStorage.setItem("hawiyah-mode", state.mode);
       render();
       break;
     case "locale":
       captureDraft();
       state.locale = state.locale === "en" ? "ar" : "en";
       document.documentElement.dir = state.locale === "ar" ? "rtl" : "ltr";
-      localStorage.setItem("nasaq-locale", state.locale);
+      localStorage.setItem("hawiyah-locale", state.locale);
       render();
       break;
     case "menu":
@@ -633,7 +633,7 @@ app.addEventListener("click", async (event) => {
       break;
     case "save-draft":
       captureDraft();
-      localStorage.setItem("nasaq-demo-draft", JSON.stringify(state.draft));
+      localStorage.setItem("hawiyah-demo-draft", JSON.stringify(state.draft));
       toast(
         t(
           "Demo draft saved on this device.",
@@ -644,7 +644,7 @@ app.addEventListener("click", async (event) => {
     case "load-draft":
       try {
         const saved = JSON.parse(
-          localStorage.getItem("nasaq-demo-draft") || "null",
+          localStorage.getItem("hawiyah-demo-draft") || "null",
         );
         if (!saved) throw new Error();
         for (const key of [
@@ -688,7 +688,7 @@ app.addEventListener("click", async (event) => {
       break;
     case "export-selected":
       download(
-        "nasaq-demo-requests.json",
+        "hawiyah-demo-requests.json",
         JSON.stringify(
           requests.filter((r) => state.selected.has(r.id)),
           null,
@@ -714,8 +714,8 @@ app.addEventListener("click", async (event) => {
         "surface",
       ];
       download(
-        "nasaq-theme.css",
-        `:root {\n${names.map((n) => `  --nq-color-${n}: ${css.getPropertyValue("--nq-color-" + n).trim()};`).join("\n")}\n}`,
+        "hawiyah-theme.css",
+        `:root {\n${names.map((n) => `  --hw-color-${n}: ${css.getPropertyValue("--hw-color-" + n).trim()};`).join("\n")}\n}`,
         "text/css",
       );
       break;
@@ -809,7 +809,7 @@ app.addEventListener("submit", (event) => {
   if (state.applicationStep < 2) state.applicationStep++;
   else {
     state.submitted = true;
-    localStorage.removeItem("nasaq-demo-draft");
+    localStorage.removeItem("hawiyah-demo-draft");
   }
   render();
   document

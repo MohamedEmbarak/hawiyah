@@ -1,4 +1,4 @@
-import { layoutStyles, type LayoutProps } from "@nasaq/core";
+import { layoutStyles, type LayoutProps } from "@hawiyah/core";
 import { escape as e, type Locale } from "./data";
 import {searchFieldMarkup} from './search-demo';
 import { expandedSample } from "./expanded-samples";
@@ -14,7 +14,7 @@ const tiles = (locale: Locale) =>
   Array.from(
     { length: 6 },
     (_, i) =>
-      `<article class="layout-demo-tile"><span class="nq-badge">0${i + 1}</span><strong>${words(locale)("Your content", "المحتوى")}</strong><p>${words(locale)("Room for what matters.", "مساحة لما يهم.")}</p></article>`,
+      `<article class="layout-demo-tile"><span class="hw-badge">0${i + 1}</span><strong>${words(locale)("Your content", "المحتوى")}</strong><p>${words(locale)("Room for what matters.", "مساحة لما يهم.")}</p></article>`,
   ).join("");
 const layoutState = {
   pattern: "grid",
@@ -40,9 +40,9 @@ function markup(locale: Locale) {
   };
   const body =
     layoutState.pattern === "sidebar"
-      ? `<aside class="layout-demo-tile">${words(locale)("Filters & navigation", "الفلاتر والتنقل")}</aside><div class="nq-grid" style="${css({ columns: { base: 1, md: 2 }, gap: 4 })}">${tiles(locale)}</div>`
+      ? `<aside class="layout-demo-tile">${words(locale)("Filters & navigation", "الفلاتر والتنقل")}</aside><div class="hw-grid" style="${css({ columns: { base: 1, md: 2 }, gap: 4 })}">${tiles(locale)}</div>`
       : tiles(locale);
-  return `<div class="nq-${layoutState.pattern}" data-collapse-at="md" style="${css(props)}">${body}</div>`;
+  return `<div class="hw-${layoutState.pattern}" data-collapse-at="md" style="${css(props)}">${body}</div>`;
 }
 function code(locale: Locale) {
   return markup(locale)
@@ -53,14 +53,14 @@ export function layoutPage(locale: Locale) {
   const t = words(locale);
   return `<div class="page-heading"><div><div class="eyebrow">${t("COMPOSITION, MADE SIMPLE", "تركيب بسيط")}</div><h1>${t("A little structure. Endless possibilities.", "قليل من التنظيم. إمكانات بلا حدود.")}</h1><p>${t("Choose a pattern, adjust its rhythm, and copy working markup. Responsive columns begin with one on small screens.", "اختر نمطًا واضبط المسافات وانسخ الشفرة. تبدأ الأعمدة المتجاوبة بعمود واحد على الشاشات الصغيرة.")}</p></div></div>
   <section class="layout-studio"><div class="layout-studio-controls">
-  <label class="nq-field"><span class="nq-label">${t("Pattern", "النمط")}</span><select class="nq-select" id="layout-pattern">${layoutPatterns.map(([value, en, ar]) => `<option value="${value}" ${layoutState.pattern === value ? "selected" : ""}>${t(en, ar)}</option>`).join("")}</select></label>
-  <label class="nq-field"><span class="nq-label">${t("Large-screen columns", "أعمدة الشاشة الكبيرة")}</span><input class="nq-input" type="number" id="layout-columns" min="1" max="6" value="${layoutState.columns}"></label>
-  <label class="nq-field"><span class="nq-label">${t("Gap token", "رمز التباعد")}</span><input class="nq-input" type="number" id="layout-gap" min="0" max="16" value="${layoutState.gap}"></label>
-  <label class="nq-field"><span class="nq-label">${t("Padding token", "رمز الحشو")}</span><input class="nq-input" type="number" id="layout-padding" min="0" max="16" value="${layoutState.padding}"></label>
-  <label class="nq-field"><span class="nq-label">${t("Preview width", "عرض المعاينة")}</span><select class="nq-select" id="layout-width"><option value="100%">${t("Fill available width", "ملء المساحة")}</option><option value="390px">${t("Narrow container · 390px", "حاوية ضيقة · 390px")}</option></select></label>
-  </div><p class="nq-hint">${t("Breakpoints follow the browser viewport. Narrow-container mode demonstrates wrapping; resize the browser to try responsive columns.", "تتبع نقاط التحول عرض المتصفح. تعرض الحاوية الضيقة التفاف المحتوى؛ غيّر حجم المتصفح لتجربة الأعمدة المتجاوبة.")}</p>
+  <label class="hw-field"><span class="hw-label">${t("Pattern", "النمط")}</span><select class="hw-select" id="layout-pattern">${layoutPatterns.map(([value, en, ar]) => `<option value="${value}" ${layoutState.pattern === value ? "selected" : ""}>${t(en, ar)}</option>`).join("")}</select></label>
+  <label class="hw-field"><span class="hw-label">${t("Large-screen columns", "أعمدة الشاشة الكبيرة")}</span><input class="hw-input" type="number" id="layout-columns" min="1" max="6" value="${layoutState.columns}"></label>
+  <label class="hw-field"><span class="hw-label">${t("Gap token", "رمز التباعد")}</span><input class="hw-input" type="number" id="layout-gap" min="0" max="16" value="${layoutState.gap}"></label>
+  <label class="hw-field"><span class="hw-label">${t("Padding token", "رمز الحشو")}</span><input class="hw-input" type="number" id="layout-padding" min="0" max="16" value="${layoutState.padding}"></label>
+  <label class="hw-field"><span class="hw-label">${t("Preview width", "عرض المعاينة")}</span><select class="hw-select" id="layout-width"><option value="100%">${t("Fill available width", "ملء المساحة")}</option><option value="390px">${t("Narrow container · 390px", "حاوية ضيقة · 390px")}</option></select></label>
+  </div><p class="hw-hint">${t("Breakpoints follow the browser viewport. Narrow-container mode demonstrates wrapping; resize the browser to try responsive columns.", "تتبع نقاط التحول عرض المتصفح. تعرض الحاوية الضيقة التفاف المحتوى؛ غيّر حجم المتصفح لتجربة الأعمدة المتجاوبة.")}</p>
   <div class="layout-studio-canvas" id="layout-canvas" style="max-inline-size:${layoutState.width}">${markup(locale)}</div>
-  <div class="code-block"><div class="code-label"><span>Vanilla HTML</span><button class="nq-button" data-variant="ghost" data-size="sm" id="layout-copy" data-copy="${e(code(locale))}">${t("Copy", "نسخ")}</button></div><pre dir="ltr" tabindex="0" aria-label="${t("Generated layout markup", "شفرة التخطيط الناتجة")}"><code id="layout-code">${e(code(locale))}</code></pre></div></section>
+  <div class="code-block"><div class="code-label"><span>Vanilla HTML</span><button class="hw-button" data-variant="ghost" data-size="sm" id="layout-copy" data-copy="${e(code(locale))}">${t("Copy", "نسخ")}</button></div><pre dir="ltr" tabindex="0" aria-label="${t("Generated layout markup", "شفرة التخطيط الناتجة")}"><code id="layout-code">${e(code(locale))}</code></pre></div></section>
   <section class="section"><h2>${t("The same idea in every framework", "الفكرة نفسها في كل إطار")}</h2><div class="integration-grid">${[
     [
       "React",
@@ -72,12 +72,12 @@ export function layoutPage(locale: Locale) {
     ],
     [
       "Angular",
-      '<nq-grid [columns]="{ base: 1, md: 2, lg: 3 }" [gap]="4">\n  <nq-card>...</nq-card>\n</nq-grid>',
+      '<hw-grid [columns]="{ base: 1, md: 2, lg: 3 }" [gap]="4">\n  <hw-card>...</hw-card>\n</hw-grid>',
     ],
   ]
     .map(
       ([name, snippet]) =>
-        `<article class="nq-card"><div class="nq-card-header"><h3>${name}</h3></div><div class="nq-card-body"><pre dir="ltr"><code>${e(snippet)}</code></pre></div></article>`,
+        `<article class="hw-card"><div class="hw-card-header"><h3>${name}</h3></div><div class="hw-card-body"><pre dir="ltr"><code>${e(snippet)}</code></pre></div></article>`,
     )
     .join("")}</div></section>`;
 }
@@ -162,22 +162,22 @@ export function inputPage(locale: Locale, mode: "light" | "dark" = "light") {
     ["month", "Month", "الشهر", 'value="2026-10"'],
     ["week", "Week", "الأسبوع", 'value="2026-W44"'],
     ["time", "Time", "الوقت", 'value="09:30"'],
-    ["color", "Color", "اللون", 'value="#006a64"'],
+    ["color", "Color", "اللون", 'value="#1b8354"'],
     ["range", "Range", "نطاق", 'min="0" max="100" value="60"'],
     ["file", "Files", "الملفات", 'accept=".pdf,.png,.jpg" multiple'],
     ["checkbox", "Checkbox", "مربع اختيار", 'value="yes"'],
     ["radio", "Radio option", "خيار واحد", 'value="yes"'],
   ];
-  return `<div class="page-heading"><div><div class="eyebrow">${t("INPUTS AND DATE COMPOSITIONS", "المدخلات وحقول التاريخ المركّبة")}</div><h1>${t("The right control for every detail.", "المدخل المناسب لكل تفصيل.")}</h1><p>${t("Native input semantics with custom Nasaq date pickers. Try validation, reset, and local FormData output.", "خصائص الإدخال الأصلية مع منتقيات تاريخ نسق المخصصة. جرّب التحقق وإعادة الضبط وعرض البيانات محليًا.")}</p></div></div>
-  <form id="native-input-lab" class="nq-stack" style="--nq-layout-gap:1.5rem"><div class="nq-grid" style="--nq-layout-columns:1;--nq-layout-columns-md:2;--nq-layout-columns-xl:3;--nq-layout-gap:1rem">${fields.map(([type, en, ar, attrs]) => type === "search" ? searchFieldMarkup(locale, "input-lab-search-field-query", "search") : type === "password" ? expandedSample("password-field", "input-lab", locale) : type === "month" || type === "week" || type === "datetime-local" ? inputTemporalMarkup(type, locale) : type === "date" ? expandedSample("date-picker", "input-lab-date", locale).replace('data-nq-calendar="islamic-umalqura"', 'data-nq-calendar="gregory"').replace('name="appointment"', 'name="date"').replace(t("Appointment · Umm al-Qura picker", "الموعد · تقويم أم القرى"), t("Gregorian ISO date · custom picker", "تاريخ ميلادي ISO · منتقي نسق")) : `<label class="nq-field"><span class="nq-label">${t(en, ar)} <code>${type}</code></span><input type="${type}" class="${type === "checkbox" ? "nq-checkbox" : type === "radio" ? "nq-radio" : type === "range" ? "nq-slider" : "nq-input"}" name="${type}" ${attrs}></label>`).join("")}</div>
+  return `<div class="page-heading"><div><div class="eyebrow">${t("INPUTS AND DATE COMPOSITIONS", "المدخلات وحقول التاريخ المركّبة")}</div><h1>${t("The right control for every detail.", "المدخل المناسب لكل تفصيل.")}</h1><p>${t("Native input semantics with custom Hawiyah date pickers. Try validation, reset, and local FormData output.", "خصائص الإدخال الأصلية مع منتقيات تاريخ هوية المخصصة. جرّب التحقق وإعادة الضبط وعرض البيانات محليًا.")}</p></div></div>
+  <form id="native-input-lab" class="hw-stack" style="--hw-layout-gap:1.5rem"><div class="hw-grid" style="--hw-layout-columns:1;--hw-layout-columns-md:2;--hw-layout-columns-xl:3;--hw-layout-gap:1rem">${fields.map(([type, en, ar, attrs]) => type === "search" ? searchFieldMarkup(locale, "input-lab-search-field-query", "search") : type === "password" ? expandedSample("password-field", "input-lab", locale) : type === "month" || type === "week" || type === "datetime-local" ? inputTemporalMarkup(type, locale) : type === "date" ? expandedSample("date-picker", "input-lab-date", locale).replace('data-hw-calendar="islamic-umalqura"', 'data-hw-calendar="gregory"').replace('name="appointment"', 'name="date"').replace(t("Appointment · Umm al-Qura picker", "الموعد · تقويم أم القرى"), t("Gregorian ISO date · custom picker", "تاريخ ميلادي ISO · منتقي هوية")) : `<label class="hw-field"><span class="hw-label">${t(en, ar)} <code>${type}</code></span><input type="${type}" class="${type === "checkbox" ? "hw-checkbox" : type === "radio" ? "hw-radio" : type === "range" ? "hw-slider" : "hw-input"}" name="${type}" ${attrs}></label>`).join("")}</div>
   <input type="hidden" name="hidden" value="demo-context">
-  <fieldset class="nq-field"><legend class="nq-label">${t("Common platform fields", "حقول المنصات الشائعة")}</legend><div class="nq-grid" style="--nq-layout-columns-md:2;--nq-layout-gap:1rem">
-  <label class="nq-field"><span class="nq-label">${t("IBAN format example", "مثال تنسيق آيبان")}</span><input class="nq-input" name="iban" dir="ltr" pattern="SA[0-9]{22}" placeholder="${t("SA + 22 digits", "SA + 22 رقمًا")}" aria-describedby="iban-help"><span class="nq-hint" id="iban-help">${t("Format only. Account existence and checksum need separate validation.", "تنسيق فقط. وجود الحساب وصحة التحقق يحتاجان تحققًا منفصلًا.")}</span></label>
-  <label class="nq-field"><span class="nq-label">${t("National ID / Iqama format example", "مثال تنسيق الهوية / الإقامة")}</span><input class="nq-input" name="identity" inputmode="numeric" pattern="[12][0-9]{9}" maxlength="10" aria-describedby="id-help"><span class="nq-hint" id="id-help">${t("Use fictional digits. This does not verify identity.", "استخدم أرقامًا وهمية. هذا الحقل لا يثبت الهوية.")}</span></label>
-  <label class="nq-field"><span class="nq-label">${t("Street address", "عنوان الشارع")}</span><input class="nq-input" name="address" autocomplete="street-address"></label>
-  <label class="nq-field"><span class="nq-label">${t("Amount in Saudi riyals", "المبلغ بالريال السعودي")}</span><span class="nq-input-group"><input class="nq-input" name="amount" type="number" min="0" step="0.01"><span class="nq-input-addon" aria-hidden="true"><span class="nq-riyal">⃁</span></span></span></label>
-  </div></fieldset><div class="nq-inline" style="--nq-layout-gap:1rem"><input type="submit" class="nq-button" value="${t("Inspect form values", "عرض قيم النموذج")}"><input type="reset" class="nq-button" data-variant="secondary" value="${t("Reset", "إعادة ضبط")}"><input type="button" class="nq-button" data-variant="ghost" value="${t("Native button", "زر أصلي")}" data-action="demo-info"><input type="image" src="${import.meta.env.BASE_URL}brand/assets/nasaq-wordmark${mode === "dark" ? "-white" : ""}.svg" width="64" height="50" style="object-fit:contain" alt="${t("Submit using image button", "إرسال بزر صورة")}" name="image-submit"></div>
-  <p class="nq-hint">${t("Date, month, ISO week and local date-time use Nasaq’s custom date picker. Choose any day to derive its Gregorian month or ISO week; local date-time adds a time without timezone conversion. Submitted ISO values are shown below each composition. Other controls retain native browser semantics, including time, hidden and image inputs. Files and entered values stay in this tab.", "يستخدم التاريخ والشهر وأسبوع ISO والتاريخ مع الوقت المحلي منتقي تاريخ نسق المخصص. اختر أي يوم لاشتقاق شهره الميلادي أو أسبوع ISO؛ يضيف التاريخ والوقت المحلي وقتًا دون تحويل منطقة زمنية. تظهر القيم المرسلة بصيغة ISO أسفل كل حقل مركّب. تحافظ بقية الحقول على خصائص المتصفح الأصلية، بما فيها الوقت والحقول المخفية وأزرار الصور. تبقى القيم والملفات في علامة التبويب هذه.")}</p>
+  <fieldset class="hw-field"><legend class="hw-label">${t("Common platform fields", "حقول المنصات الشائعة")}</legend><div class="hw-grid" style="--hw-layout-columns-md:2;--hw-layout-gap:1rem">
+  <label class="hw-field"><span class="hw-label">${t("IBAN format example", "مثال تنسيق آيبان")}</span><input class="hw-input" name="iban" dir="ltr" pattern="SA[0-9]{22}" placeholder="${t("SA + 22 digits", "SA + 22 رقمًا")}" aria-describedby="iban-help"><span class="hw-hint" id="iban-help">${t("Format only. Account existence and checksum need separate validation.", "تنسيق فقط. وجود الحساب وصحة التحقق يحتاجان تحققًا منفصلًا.")}</span></label>
+  <label class="hw-field"><span class="hw-label">${t("National ID / Iqama format example", "مثال تنسيق الهوية / الإقامة")}</span><input class="hw-input" name="identity" inputmode="numeric" pattern="[12][0-9]{9}" maxlength="10" aria-describedby="id-help"><span class="hw-hint" id="id-help">${t("Use fictional digits. This does not verify identity.", "استخدم أرقامًا وهمية. هذا الحقل لا يثبت الهوية.")}</span></label>
+  <label class="hw-field"><span class="hw-label">${t("Street address", "عنوان الشارع")}</span><input class="hw-input" name="address" autocomplete="street-address"></label>
+  <label class="hw-field"><span class="hw-label">${t("Amount in Saudi riyals", "المبلغ بالريال السعودي")}</span><span class="hw-input-group"><input class="hw-input" name="amount" type="number" min="0" step="0.01"><span class="hw-input-addon" aria-hidden="true"><span class="hw-riyal">⃁</span></span></span></label>
+  </div></fieldset><div class="hw-inline" style="--hw-layout-gap:1rem"><input type="submit" class="hw-button" value="${t("Inspect form values", "عرض قيم النموذج")}"><input type="reset" class="hw-button" data-variant="secondary" value="${t("Reset", "إعادة ضبط")}"><input type="button" class="hw-button" data-variant="ghost" value="${t("Native button", "زر أصلي")}" data-action="demo-info"><input type="image" src="${import.meta.env.BASE_URL}brand/assets/hawiyah-wordmark${mode === "dark" ? "-white" : ""}.svg" width="64" height="50" style="object-fit:contain" alt="${t("Submit using image button", "إرسال بزر صورة")}" name="image-submit"></div>
+  <p class="hw-hint">${t("Date, month, ISO week and local date-time use Hawiyah’s custom date picker. Choose any day to derive its Gregorian month or ISO week; local date-time adds a time without timezone conversion. Submitted ISO values are shown below each composition. Other controls retain native browser semantics, including time, hidden and image inputs. Files and entered values stay in this tab.", "يستخدم التاريخ والشهر وأسبوع ISO والتاريخ مع الوقت المحلي منتقي تاريخ هوية المخصص. اختر أي يوم لاشتقاق شهره الميلادي أو أسبوع ISO؛ يضيف التاريخ والوقت المحلي وقتًا دون تحويل منطقة زمنية. تظهر القيم المرسلة بصيغة ISO أسفل كل حقل مركّب. تحافظ بقية الحقول على خصائص المتصفح الأصلية، بما فيها الوقت والحقول المخفية وأزرار الصور. تبقى القيم والملفات في علامة التبويب هذه.")}</p>
   <pre id="native-input-output" class="input-lab-output" aria-live="polite" dir="ltr">{}</pre></form>`;
 }
 

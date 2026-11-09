@@ -4,7 +4,7 @@ Sources are the hashed snapshots linked in [NIC web reference](nic-web-reference
 `global.css` 2316–2427 and `master.js` 1854–2079. The stylesheet was rendered in
 an isolated Chromium fixture at 1000px and 390px with network requests blocked.
 Anchor markup measures 44px height; unreset browser buttons add their own border
-and resting background. Nasaq owns its button reset. The fixture did not load
+and resting background. Hawiyah owns its button reset. The fixture did not load
 official font files, Bootstrap or Popper, and does not establish full live-site
 visual parity.
 
@@ -19,7 +19,7 @@ visual parity.
 | JS 1985–2059 | Hidden selection activates panel and synchronizes overflow state | Native value APIs update panel/disclosure and restore focus | High |
 | JS 2064–2078 | Rebuild after window resize with 120ms debounce | ResizeObserver plus font/text/resize observation; one measurement per animation frame | Lifecycle adaptation |
 
-The source always subtracts 72px before deciding whether overflow exists. Nasaq
+The source always subtracts 72px before deciding whether overflow exists. Hawiyah
 first checks whether all labels fit, avoiding an unnecessary disclosure. It
 measures the component container so narrow cards and embedded projects work on
 wide monitors. Above 991px the normal row can scroll; `overflow="scroll"` keeps
@@ -30,7 +30,7 @@ their disclosure text wraps within the component width.
 The source's global `.disabled` rules apply a disabled background and underline
 with `!important`, overriding the tab-specific transparent declaration for
 class-disabled anchors. Native disabled buttons avoid that global class leak.
-Nasaq uses native disabled semantics and semantic disabled text, with no link
+Hawiyah uses native disabled semantics and semantic disabled text, with no link
 underline on a tab button. The later focus rule also overrides the pressed
 background once a pointer-pressed tab receives focus; this precedence is retained.
 
@@ -39,7 +39,7 @@ background once a pointer-pressed tab receives focus; this precedence is retaine
 React, Vue and Angular retain controlled/uncontrolled selection and manual/
 automatic activation. They add `overflow: 'menu' | 'scroll'` (default `menu`)
 and `overflowLabel` (Arabic default). Vanilla accepts these options plus
-`data-nq-overflow` / `data-nq-overflow-label`; destroy restores authored DOM and
+`data-hw-overflow` / `data-hw-overflow-label`; destroy restores authored DOM and
 attributes. No vanilla controller owns native framework trees.
 
 The ellipsis is a sibling native `details/summary` disclosure, outside the
@@ -58,7 +58,7 @@ reachable, and demo actions do not navigate the guide.
 
 ## Themes and evidence limits
 
-These source tab rules depend on external Bootstrap dropdown styling. Nasaq's
+These source tab rules depend on external Bootstrap dropdown styling. Hawiyah's
 popup uses semantic surface, border and shadow, bounded width/height, wrapping
 labels and visible focus. No source tab transition duration is declared, so no
 animated tab transition is inferred. Dark, original, custom, reduced-motion and

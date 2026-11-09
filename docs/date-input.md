@@ -1,6 +1,6 @@
 # Custom date input
 
-DatePicker uses an editable text input and Nasaq's calendar dialog in every
+DatePicker uses an editable text input and Hawiyah's calendar dialog in every
 adapter. It never renders `type="date"`, so the browser's date-picker popup is
 not offered. Type a Gregorian ISO date (`YYYY-MM-DD`), or activate the calendar
 button / ArrowDown (including Alt+ArrowDown). Clicking the text input edits it;
@@ -29,7 +29,7 @@ existing unavailable/provider labels remain adapter-specific. The guide explains
 the ISO format in Arabic and English. The pinned Umm al-Qura provider, range and
 calendar arithmetic are unchanged.
 
-Vanilla markup should use `type="text" data-nq-date-input` with a format hint.
+Vanilla markup should use `type="text" data-hw-date-input` with a format hint.
 Enhancement also converts existing `type="date"` markup to text. It restores the
 original type/name/value on destruction. Runtime min/max changes refresh both
 validation and the calendar grid; name changes transfer to the canonical input.
@@ -55,7 +55,7 @@ range on hover or keyboard focus. It is not a clickable disclosure. Escape dismi
 the tooltip while keeping the calendar open. Unsupported dates still produce a
 visible input validation error; the tooltip does not replace that error.
 
-The guide's month, ISO-week and local-datetime examples also use Nasaq's custom
+The guide's month, ISO-week and local-datetime examples also use Hawiyah's custom
 calendar. They project the selected ISO day to YYYY-MM, YYYY-Www, or a local ISO
 datetime; the latter composes a separate native time input. Browser date/month/week/
 datetime-local pickers are not offered. Their ISO submission examples remain explicit.

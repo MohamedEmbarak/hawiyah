@@ -4,7 +4,7 @@ const mirrored = 'matrix(-1, 0, 0, 1, 0, 0)';
 const transform = (icon: Locator) => icon.evaluate(node => getComputedStyle(node).transform);
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('nasaq-locale', 'ar'));
+  await page.addInitScript(() => localStorage.setItem('hawiyah-locale', 'ar'));
 });
 
 test('home navigation arrows follow the nearest direction without mirroring other symbols', async ({ page }) => {
@@ -53,10 +53,10 @@ test('guide back and forward arrows reverse once while action and external symbo
 test('carousel arrows and navigation respect the live preview direction switch', async ({ page }) => {
   await page.goto('/#component/carousel');
   const canvas = page.locator('[data-guide-canvas]');
-  const previous = canvas.locator('[data-nq-previous]');
-  const next = canvas.locator('[data-nq-next]');
+  const previous = canvas.locator('[data-hw-previous]');
+  const next = canvas.locator('[data-hw-next]');
   const arrow = (button: Locator) => button.evaluate(node => getComputedStyle(node, '::before').content);
-  const activeSlide = canvas.locator('[data-nq-slide]:not([inert])');
+  const activeSlide = canvas.locator('[data-hw-slide]:not([inert])');
   await expect(previous).toBeVisible();
   const firstSlide = await activeSlide.textContent();
   expect(await arrow(previous)).toBe('"→"');

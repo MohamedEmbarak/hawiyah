@@ -116,16 +116,16 @@ importers:
 
   apps/playground:
     dependencies:
-      '@nasaq/core':
+      '@hawiyah/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@nasaq/styles':
+      '@hawiyah/styles':
         specifier: workspace:*
         version: link:../../packages/styles
-      '@nasaq/tokens':
+      '@hawiyah/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
-      '@nasaq/vanilla':
+      '@hawiyah/vanilla':
         specifier: workspace:*
         version: link:../../packages/vanilla
 
@@ -146,13 +146,13 @@ importers:
       '@angular/platform-browser':
         specifier: ^22.0.0
         version: 22.2.3(@angular/common@22.2.3(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))
-      '@nasaq/angular':
+      '@hawiyah/angular':
         specifier: workspace:*
         version: link:../../packages/angular
-      '@nasaq/core':
+      '@hawiyah/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@nasaq/styles':
+      '@hawiyah/styles':
         specifier: workspace:*
         version: link:../../packages/styles
       rxjs:
@@ -161,13 +161,13 @@ importers:
 
   examples/react:
     dependencies:
-      '@nasaq/core':
+      '@hawiyah/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@nasaq/react':
+      '@hawiyah/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@nasaq/styles':
+      '@hawiyah/styles':
         specifier: workspace:*
         version: link:../../packages/styles
       react:
@@ -179,13 +179,13 @@ importers:
 
   examples/vue:
     dependencies:
-      '@nasaq/core':
+      '@hawiyah/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@nasaq/styles':
+      '@hawiyah/styles':
         specifier: workspace:*
         version: link:../../packages/styles
-      '@nasaq/vue':
+      '@hawiyah/vue':
         specifier: workspace:*
         version: link:../../packages/vue
       vue:
@@ -203,7 +203,7 @@ importers:
       '@angular/forms':
         specifier: ^22.0.0
         version: 22.2.3(@angular/common@22.2.3(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(@angular/platform-browser@22.2.3(@angular/common@22.2.3(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2)))(rxjs@7.8.2)
-      '@nasaq/core':
+      '@hawiyah/core':
         specifier: workspace:*
         version: link:../core
       rxjs:
@@ -221,7 +221,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@nasaq/core':
+      '@hawiyah/core':
         specifier: workspace:*
         version: link:../core
       react:
@@ -233,7 +233,7 @@ importers:
 
   packages/styles:
     dependencies:
-      '@nasaq/tokens':
+      '@hawiyah/tokens':
         specifier: workspace:*
         version: link:../tokens
 
@@ -241,13 +241,13 @@ importers:
 
   packages/vanilla:
     dependencies:
-      '@nasaq/core':
+      '@hawiyah/core':
         specifier: workspace:*
         version: link:../core
 
   packages/vue:
     dependencies:
-      '@nasaq/core':
+      '@hawiyah/core':
         specifier: workspace:*
         version: link:../core
       vue:

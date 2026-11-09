@@ -31,9 +31,9 @@ const copy = {
     shortcut: 'Ctrl / ⌘ + Enter للتشغيل', blocked: 'حُظر مورد خارجي في المعاينة:', navigation: 'التنقل خارج المثال غير متاح في المعاينة.',
     submitted: 'أُرسل نموذج المثال محليًا؛ لا تُرسل بيانات إلى خادم.', unsupported: 'تعذّر تهيئة المثال.',
     waiting: 'لا تزال المعاينة قيد التهيئة…', timeout: 'لم تستجب المعاينة. يمكنك تشغيل المثال مجددًا.',
-    cssComment: 'أضف تنسيقاتك هنا. رموز نسق ومكوّناته محمّلة مسبقًا.',
+    cssComment: 'أضف تنسيقاتك هنا. رموز هوية ومكوّناتها محمّلة مسبقًا.',
     jsComment: 'المكوّن مهيّأ بالفعل. اربط إجراءات التطبيق هنا؛ لا تهيّئ العنصر مرتين.',
-    jsEvent: 'مثال: root.addEventListener("nq:change", event => console.log(event.detail));',
+    jsEvent: 'مثال: root.addEventListener("hw:change", event => console.log(event.detail));',
   },
   en: {
     project: 'Component workspace', files: 'Example files', editor: 'File editor', run: 'Run', reset: 'Reset example', copy: 'Copy file',
@@ -44,21 +44,21 @@ const copy = {
     shortcut: 'Ctrl / ⌘ + Enter to run', blocked: 'An external preview resource was blocked:', navigation: 'Navigation outside this example is unavailable in the preview.',
     submitted: 'Example form submitted locally; no data is sent to a server.', unsupported: 'The example could not be initialized.',
     waiting: 'The preview is still starting…', timeout: 'The preview has not responded. You can run the example again.',
-    cssComment: 'Add your styles here. Nasaq tokens and component styles are already loaded.',
+    cssComment: 'Add your styles here. Hawiyah tokens and component styles are already loaded.',
     jsComment: 'The component is already enhanced. Add application behavior here; do not enhance it twice.',
-    jsEvent: 'Example: root.addEventListener("nq:change", event => console.log(event.detail));',
+    jsEvent: 'Example: root.addEventListener("hw:change", event => console.log(event.detail));',
   },
 } as const;
 
 const editorTheme = EditorView.theme({
-  '&': { backgroundColor: '#142D30', color: '#E1EEEA', fontSize: '13px' },
-  '.cm-content': { caretColor: '#C8E7DD', padding: '14px 0' },
+  '&': { backgroundColor: '#111927', color: '#F3F4F6', fontSize: '13px' },
+  '.cm-content': { caretColor: '#54C08A', padding: '14px 0' },
   '.cm-scroller': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', lineHeight: '1.75' },
-  '.cm-gutters': { backgroundColor: '#142D30', color: '#91B1AB', border: 'none' },
+  '.cm-gutters': { backgroundColor: '#111927', color: '#9DA4AE', border: 'none' },
   '.cm-activeLineGutter': { backgroundColor: '#203D40', color: '#D8EAE4' },
   '.cm-activeLine': { backgroundColor: '#203D4055' },
   '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': { backgroundColor: '#32635E' },
-  '.cm-cursor, .cm-dropCursor': { borderLeftColor: '#C8E7DD' },
+  '.cm-cursor, .cm-dropCursor': { borderLeftColor: '#54C08A' },
   '.cm-matchingBracket': { backgroundColor: '#32635E', outline: '1px solid #8DC5B7' },
 }, { dark: true });
 const codeColors = syntaxHighlighting(HighlightStyle.define([
@@ -67,7 +67,7 @@ const codeColors = syntaxHighlighting(HighlightStyle.define([
   { tag: [tags.number, tags.bool, tags.null], color: '#FFD28F' },
   { tag: [tags.tagName, tags.typeName, tags.className], color: '#8DE4D1' },
   { tag: tags.attributeName, color: '#A7D8FA' },
-  { tag: [tags.variableName, tags.propertyName], color: '#E1EEEA' },
+  { tag: [tags.variableName, tags.propertyName], color: '#F3F4F6' },
   { tag: [tags.operator, tags.punctuation], color: '#C4D9D4' },
   { tag: tags.comment, color: '#98B8B2', fontStyle: 'italic' },
   { tag: tags.invalid, color: '#FFB6AD', textDecoration: 'underline' },
@@ -100,7 +100,7 @@ function previewBootstrap(payload: {
 }): void {
   for (const [name, value] of payload.tokens) document.documentElement.style.setProperty(name, value);
   const bridge = (type: string, extra: Record<string, unknown> = {}) => {
-    parent.postMessage({ channel: 'nasaq-component-preview', token: payload.token, run: payload.run, type, ...extra }, '*');
+    parent.postMessage({ channel: 'hawiyah-component-preview', token: payload.token, run: payload.run, type, ...extra }, '*');
   };
   const format = (value: unknown): string => {
     try {
@@ -130,7 +130,7 @@ function previewBootstrap(payload: {
       original(...args);
     };
   }
-  const root = document.getElementById('nasaq-preview-root')!;
+  const root = document.getElementById('hawiyah-preview-root')!;
   // Markup is deliberately editable. Navigation-capable document elements and
   // HTML scripts are excluded; executable code belongs in the JavaScript file.
   const template = document.createElement('template');
@@ -148,7 +148,7 @@ function previewBootstrap(payload: {
   document.addEventListener('click', event => {
     const anchor = (event.target as Element | null)?.closest?.('a[href]');
     if (!anchor) return;
-    if (anchor.matches('.nq-content-nav-link[data-nq-section]') && anchor.closest('.nq-content-nav') &&
+    if (anchor.matches('.hw-content-nav-link[data-hw-section]') && anchor.closest('.hw-content-nav') &&
         anchor.getAttribute('href')?.startsWith('#') && event.button === 0 &&
         !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) return;
     event.preventDefault();
@@ -156,7 +156,7 @@ function previewBootstrap(payload: {
     if (href.startsWith('#')) {
       const target = document.getElementById(href.slice(1));
       if (target) {
-        if (anchor.matches('.nq-skip-link') && event.button === 0 && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+        if (anchor.matches('.hw-skip-link') && event.button === 0 && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
           target.focus({ preventScroll: true });
         }
         target.scrollIntoView({ block: 'nearest' });
@@ -168,7 +168,7 @@ function previewBootstrap(payload: {
   // Framework handlers run before this fallback. Edited/unenhanced links still
   // cannot change the sandbox URL if no section controller handles activation.
   document.addEventListener('click', event => {
-    if ((event.target as Element | null)?.closest?.('.nq-content-nav-link[data-nq-section]')) event.preventDefault();
+    if ((event.target as Element | null)?.closest?.('.hw-content-nav-link[data-hw-section]')) event.preventDefault();
   });
   document.addEventListener('auxclick', event => {
     if ((event.target as Element | null)?.closest?.('a[href]')) event.preventDefault();
@@ -195,11 +195,11 @@ function previewBootstrap(payload: {
     try { cleanup?.(); } catch { /* The document is being discarded. */ }
   }, { once: true });
   try {
-    const runtime = (window as typeof window & { NasaqVanilla?: { enhance(root: ParentNode): () => void } }).NasaqVanilla;
+    const runtime = (window as typeof window & { HawiyahVanilla?: { enhance(root: ParentNode): () => void } }).HawiyahVanilla;
     if (!payload.native) { if (!runtime?.enhance) throw new Error(payload.unsupported); cleanup = runtime.enhance(root); }
     const script = document.createElement('script');
     script.nonce = payload.nonce;
-    script.textContent = `${payload.js}\n//# sourceURL=nasaq-playground.js`;
+    script.textContent = `${payload.js}\n//# sourceURL=hawiyah-playground.js`;
     document.body.append(script);
     if (!errorSeen) bridge('ready');
   } catch (error) { reportError(format(error)); }
@@ -217,9 +217,9 @@ function previewDocument(options: IDEOptions, content: Record<FileName, string>,
     ...content, native: !!project, html: content.html, token, run, nonce, assets: previewAssets, tokens: environment.tokens,
     blocked: labels.blocked, navigation: labels.navigation, submitted: labels.submitted, unsupported: labels.unsupported,
   };
-  return `<!doctype html><html lang="${options.locale}" dir="${environment.direction}" data-nq-theme="${escapeHTML(environment.theme)}" data-nq-mode="${environment.mode}" data-nq-density="${escapeHTML(environment.density)}"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${escapeHTML(policy)}"><meta http-equiv="Content-Security-Policy" content="${escapeHTML(scriptPolicy)}"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${previewStyles.replace(/<\/style/gi, '<\\/style')}
-html{color-scheme:${environment.mode};background:var(--nq-color-surface,#fff)}body{margin:0;padding:20px;color:var(--nq-color-text,#142d30);font-family:var(--nq-font-sans,system-ui,sans-serif);font-size:16px;line-height:1.65}*,*::before,*::after{box-sizing:border-box}#nasaq-preview-root{display:flow-root;min-inline-size:0}img{max-inline-size:100%}button,input,select,textarea{font:inherit}dialog{max-inline-size:calc(100vw - 24px)}.nq-app-shell{min-block-size:24rem}
-</style><title>${escapeHTML(options.title)}</title></head><body><div id="nasaq-preview-root"></div><script nonce="${nonce}">${inlineScript(project?.runtime ?? previewRuntime)}</script><script nonce="${nonce}">(${previewBootstrap.toString()})(${embeddedJSON(payload)});</script></body></html>`;
+  return `<!doctype html><html lang="${options.locale}" dir="${environment.direction}" data-hw-theme="${escapeHTML(environment.theme)}" data-hw-mode="${environment.mode}" data-hw-density="${escapeHTML(environment.density)}"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${escapeHTML(policy)}"><meta http-equiv="Content-Security-Policy" content="${escapeHTML(scriptPolicy)}"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${previewStyles.replace(/<\/style/gi, '<\\/style')}
+html{color-scheme:${environment.mode};background:var(--hw-color-surface,#fff)}body{margin:0;padding:20px;color:var(--hw-color-text,#111927);font-family:var(--hw-font-sans,system-ui,sans-serif);font-size:16px;line-height:1.65}*,*::before,*::after{box-sizing:border-box}#hawiyah-preview-root{display:flow-root;min-inline-size:0}img{max-inline-size:100%}button,input,select,textarea{font:inherit}dialog{max-inline-size:calc(100vw - 24px)}.hw-app-shell{min-block-size:24rem}
+</style><title>${escapeHTML(options.title)}</title></head><body><div id="hawiyah-preview-root"></div><script nonce="${nonce}">${inlineScript(project?.runtime ?? previewRuntime)}</script><script nonce="${nonce}">(${previewBootstrap.toString()})(${embeddedJSON(payload)});</script></body></html>`;
 }
 
 /** Mount one independent HTML/CSS/JS workbench. Cleanup is mandatory on route teardown. */
@@ -231,28 +231,28 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
   const initial: Record<FileName, string> = options.project?.initial ?? {
     html: options.html,
     css: `/* ${labels.cssComment} */\n\n`,
-    js: `// ${labels.jsComment}\nconst root = document.querySelector('#nasaq-preview-root');\n\n// ${labels.jsEvent}\n`,
+    js: `// ${labels.jsComment}\nconst root = document.querySelector('#hawiyah-preview-root');\n\n// ${labels.jsEvent}\n`,
   };
   const draft = options.draft ?? initial;
   const root = document.createElement('section');
-  root.className = 'nq-ide';
+  root.className = 'hw-ide';
   root.dataset.locale = options.locale;
   root.dir = options.locale === 'ar' ? 'rtl' : 'ltr';
   root.setAttribute('aria-label', `${labels.project}: ${options.title}`);
-  root.innerHTML = `<div class="nq-ide-toolbar"><div class="nq-ide-project"><span class="nq-ide-project-icon" aria-hidden="true">${options.project ? frameworkIcon(options.project.framework) : '⌘'}</span><div><strong>${escapeHTML(labels.project)}</strong><small>${escapeHTML(options.title)}</small></div></div><div class="nq-ide-actions"><label class="nq-ide-auto"><input type="checkbox" data-ide-auto checked>${escapeHTML(labels.auto)}</label><button class="nq-ide-button" type="button" data-ide-copy>${escapeHTML(labels.copy)}</button><button class="nq-ide-button" type="button" data-ide-reset>${escapeHTML(labels.reset)}</button><button class="nq-ide-button" type="button" data-primary data-ide-run><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7Z"/></svg> ${escapeHTML(labels.run)}</button></div></div>
-    <div class="nq-ide-workspace"><div class="nq-ide-editor-panel"><div class="nq-ide-tabs" role="tablist" aria-label="${escapeHTML(labels.files)}" dir="ltr">${files.map((file, i) => `<button class="nq-ide-tab" type="button" role="tab" id="${instance}-${file.id}-tab" aria-controls="${instance}-${file.id}-panel" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-ide-file="${file.id}"><span class="nq-ide-file-icon" data-language="${file.id}" aria-hidden="true">${/\.tsx?$/.test(file.label) ? frameworkIcon('typescript') : /\.jsx?$/.test(file.label) ? frameworkIcon('javascript') : file.label.endsWith('.vue') ? frameworkIcon('vue') : file.id === 'html' ? '〈〉' : '#'}</span>${file.label}</button>`).join('')}</div><div class="nq-ide-editors">${files.map((file, i) => `<div class="nq-ide-editor" role="tabpanel" id="${instance}-${file.id}-panel" aria-labelledby="${instance}-${file.id}-tab" data-ide-editor="${file.id}" ${i ? 'hidden' : ''}></div>`).join('')}</div></div>
-    <div class="nq-ide-preview-panel"><div class="nq-ide-preview-bar"><strong>${escapeHTML(labels.preview)}</strong><label><span class="nq-sr-only">${escapeHTML(labels.width)}</span><select class="nq-ide-preview-size" data-ide-size><option value="desktop">${escapeHTML(labels.desktop)}</option><option value="mobile">${escapeHTML(labels.mobile)}</option></select></label></div><div class="nq-ide-preview-stage" data-size="desktop"></div></div></div>
-    <div class="nq-ide-footer"><span class="nq-ide-status" role="status" aria-live="polite" data-state="running">${escapeHTML(labels.running)}</span><button class="nq-ide-console-toggle" type="button" aria-expanded="false" aria-controls="${instance}-console" hidden>${escapeHTML(labels.console)}</button><span class="nq-ide-shortcut">${escapeHTML(labels.shortcut)}</span></div><pre class="nq-ide-console" id="${instance}-console" dir="ltr" tabindex="0" aria-label="${escapeHTML(labels.console)}" hidden></pre><p class="nq-ide-help">${escapeHTML(options.project ? (options.locale==='ar' ? 'ملفات مشروع فعلية. تُجمّع الشفرة محليًا وتعمل في معاينة معزولة؛ لا تُرسل البيانات أو تستورد مكتبات خارجية.' : 'Real project files, compiled locally in an isolated preview. No data is sent and external libraries cannot be imported.') : labels.help)}</p>`;
+  root.innerHTML = `<div class="hw-ide-toolbar"><div class="hw-ide-project"><span class="hw-ide-project-icon" aria-hidden="true">${options.project ? frameworkIcon(options.project.framework) : '⌘'}</span><div><strong>${escapeHTML(labels.project)}</strong><small>${escapeHTML(options.title)}</small></div></div><div class="hw-ide-actions"><label class="hw-ide-auto"><input type="checkbox" data-ide-auto checked>${escapeHTML(labels.auto)}</label><button class="hw-ide-button" type="button" data-ide-copy>${escapeHTML(labels.copy)}</button><button class="hw-ide-button" type="button" data-ide-reset>${escapeHTML(labels.reset)}</button><button class="hw-ide-button" type="button" data-primary data-ide-run><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7Z"/></svg> ${escapeHTML(labels.run)}</button></div></div>
+    <div class="hw-ide-workspace"><div class="hw-ide-editor-panel"><div class="hw-ide-tabs" role="tablist" aria-label="${escapeHTML(labels.files)}" dir="ltr">${files.map((file, i) => `<button class="hw-ide-tab" type="button" role="tab" id="${instance}-${file.id}-tab" aria-controls="${instance}-${file.id}-panel" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-ide-file="${file.id}"><span class="hw-ide-file-icon" data-language="${file.id}" aria-hidden="true">${/\.tsx?$/.test(file.label) ? frameworkIcon('typescript') : /\.jsx?$/.test(file.label) ? frameworkIcon('javascript') : file.label.endsWith('.vue') ? frameworkIcon('vue') : file.id === 'html' ? '〈〉' : '#'}</span>${file.label}</button>`).join('')}</div><div class="hw-ide-editors">${files.map((file, i) => `<div class="hw-ide-editor" role="tabpanel" id="${instance}-${file.id}-panel" aria-labelledby="${instance}-${file.id}-tab" data-ide-editor="${file.id}" ${i ? 'hidden' : ''}></div>`).join('')}</div></div>
+    <div class="hw-ide-preview-panel"><div class="hw-ide-preview-bar"><strong>${escapeHTML(labels.preview)}</strong><label><span class="hw-sr-only">${escapeHTML(labels.width)}</span><select class="hw-ide-preview-size" data-ide-size><option value="desktop">${escapeHTML(labels.desktop)}</option><option value="mobile">${escapeHTML(labels.mobile)}</option></select></label></div><div class="hw-ide-preview-stage" data-size="desktop"></div></div></div>
+    <div class="hw-ide-footer"><span class="hw-ide-status" role="status" aria-live="polite" data-state="running">${escapeHTML(labels.running)}</span><button class="hw-ide-console-toggle" type="button" aria-expanded="false" aria-controls="${instance}-console" hidden>${escapeHTML(labels.console)}</button><span class="hw-ide-shortcut">${escapeHTML(labels.shortcut)}</span></div><pre class="hw-ide-console" id="${instance}-console" dir="ltr" tabindex="0" aria-label="${escapeHTML(labels.console)}" hidden></pre><p class="hw-ide-help">${escapeHTML(options.project ? (options.locale==='ar' ? 'ملفات مشروع فعلية. تُجمّع الشفرة محليًا وتعمل في معاينة معزولة؛ لا تُرسل البيانات أو تستورد مكتبات خارجية.' : 'Real project files, compiled locally in an isolated preview. No data is sent and external libraries cannot be imported.') : labels.help)}</p>`;
   host.replaceChildren(root);
   const abort = new AbortController();
   const listen = (target: EventTarget, type: string, listener: EventListener) => target.addEventListener(type, listener, { signal: abort.signal });
-  const status = root.querySelector<HTMLElement>('.nq-ide-status')!;
+  const status = root.querySelector<HTMLElement>('.hw-ide-status')!;
   const auto = root.querySelector<HTMLInputElement>('[data-ide-auto]')!;
-  const stage = root.querySelector<HTMLElement>('.nq-ide-preview-stage')!;
-  const consoleOutput = root.querySelector<HTMLPreElement>('.nq-ide-console')!;
-  const consoleToggle = root.querySelector<HTMLButtonElement>('.nq-ide-console-toggle')!;
+  const stage = root.querySelector<HTMLElement>('.hw-ide-preview-stage')!;
+  const consoleOutput = root.querySelector<HTMLPreElement>('.hw-ide-console')!;
+  const consoleToggle = root.querySelector<HTMLButtonElement>('.hw-ide-console-toggle')!;
   const frame = document.createElement('iframe');
-  frame.className = 'nq-ide-frame';
+  frame.className = 'hw-ide-frame';
   frame.title = `${labels.preview}: ${options.title}`;
   // Permit native validation/submit events and method="dialog" forms. Network
   // form submission remains blocked by CSP form-action 'none' and the bootstrap.
@@ -292,11 +292,11 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
     const content = readFiles();
     frame.style.height = '360px';
     const environment: PreviewEnvironment = {
-      mode: host.closest('[data-nq-mode]')?.getAttribute('data-nq-mode') === 'dark' ? 'dark' : 'light',
-      theme: host.closest('[data-nq-theme]')?.getAttribute('data-nq-theme') || 'nasaq',
-      density: host.closest('[data-nq-density]')?.getAttribute('data-nq-density') || 'comfortable',
+      mode: host.closest('[data-hw-mode]')?.getAttribute('data-hw-mode') === 'dark' ? 'dark' : 'light',
+      theme: host.closest('[data-hw-theme]')?.getAttribute('data-hw-theme') || 'hawiyah',
+      density: host.closest('[data-hw-density]')?.getAttribute('data-hw-density') || 'comfortable',
       direction: document.documentElement.dir === 'rtl' ? 'rtl' : document.documentElement.dir === 'ltr' ? 'ltr' : options.locale === 'ar' ? 'rtl' : 'ltr',
-      tokens: Array.from(document.documentElement.style).filter(name => name.startsWith('--nq-')).map(name => [name, document.documentElement.style.getPropertyValue(name)]),
+      tokens: Array.from(document.documentElement.style).filter(name => name.startsWith('--hw-')).map(name => [name, document.documentElement.style.getPropertyValue(name)]),
     };
     root.dataset.mode = environment.mode;
     let compiled: Awaited<ReturnType<IDEProject['compile']>> | undefined;
@@ -348,11 +348,11 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
     }
     views.get(id)!.requestMeasure();
   };
-  listen(root.querySelector('.nq-ide-tabs')!, 'click', event => {
+  listen(root.querySelector('.hw-ide-tabs')!, 'click', event => {
     const tab = (event.target as Element).closest<HTMLElement>('[data-ide-file]');
     if (tab) activate(tab.dataset.ideFile as FileName);
   });
-  listen(root.querySelector('.nq-ide-tabs')!, 'keydown', event => {
+  listen(root.querySelector('.hw-ide-tabs')!, 'keydown', event => {
     const key = event as KeyboardEvent;
     const index = files.findIndex(file => file.id === active);
     let next = index;
@@ -396,7 +396,7 @@ export function mountComponentIDE(host: HTMLElement, options: IDEOptions): () =>
     const message = event as MessageEvent<PreviewMessage>;
     if (disposed || message.source !== frame.contentWindow) return;
     const data = message.data;
-    if (!data || typeof data !== 'object' || data.channel !== 'nasaq-component-preview' || data.token !== token || data.run !== run) return;
+    if (!data || typeof data !== 'object' || data.channel !== 'hawiyah-component-preview' || data.token !== token || data.run !== run) return;
     if (data.type === 'ready') {
       clearTimeout(readyTimer);
       if (!runFailed) setStatus('ready', labels.ready);

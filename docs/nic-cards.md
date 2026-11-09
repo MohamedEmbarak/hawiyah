@@ -8,10 +8,10 @@ footer do not add a second layer of spacing. Empty header/footer slots are hidde
 
 Use `variant="outlined"` for the source bordered card and `variant="flat"`
 for its shadowless option. Existing `elevated` and `ghost` options remain.
-Vanilla uses the equivalent `data-variant` attribute. Original Nasaq styling
+Vanilla uses the equivalent `data-variant` attribute. Original Hawiyah styling
 retains its palette, radius and padded slots.
 
-React/Vue `Card` and Angular `nq-card` accept `href` to render a native anchor.
+React/Vue `Card` and Angular `hw-card` accept `href` to render a native anchor.
 An enabled action card supports normal Tab/Enter navigation, modifier clicks,
 context menus and optional `target`/`rel`. `disabled` removes the destination,
 sets disabled link semantics, leaves the tab order and blocks the card click
@@ -25,15 +25,15 @@ an article into an accessible button. The vanilla disabled-link recipe omits
 event handlers must also respect the disabled state.
 
 ```html
-<article class="nq-card" data-variant="outlined">
-  <header class="nq-card-header">
-    <h2 class="nq-card-title">تفاصيل الخدمة</h2>
+<article class="hw-card" data-variant="outlined">
+  <header class="hw-card-header">
+    <h2 class="hw-card-title">تفاصيل الخدمة</h2>
   </header>
-  <div class="nq-card-body">
-    <p class="nq-card-description">تعرف على المتطلبات والخطوات.</p>
+  <div class="hw-card-body">
+    <p class="hw-card-description">تعرف على المتطلبات والخطوات.</p>
   </div>
-  <footer class="nq-card-footer">
-    <a class="nq-button" href="/services/example">عرض المتطلبات</a>
+  <footer class="hw-card-footer">
+    <a class="hw-button" href="/services/example">عرض المتطلبات</a>
   </footer>
 </article>
 ```
@@ -41,13 +41,13 @@ event handlers must also respect the disabled state.
 Checklist row 118 requires a visible CTA on actionable cards. The example uses a real navigation link styled as a button inside a static card. The existing whole-card `href` API remains available for existing consumers.
 
 React uses `header`/`footer` props; Vue uses corresponding slots; Angular
-projects `[nqCardHeader]`/`[nqCardFooter]`. Use ordinary native elements with
-`nq-card-title`, `nq-card-description` and `nq-card-image` for content.
+projects `[hwCardHeader]`/`[hwCardFooter]`. Use ordinary native elements with
+`hw-card-title`, `hw-card-description` and `hw-card-image` for content.
 No vanilla controller is required. Each framework owns its markup.
 
-The semantic colors `--nq-color-card`, `--nq-color-card-text`,
-`--nq-color-card-hover`, `--nq-color-card-border` and
-`--nq-color-focus-contrast` are customizable. Dark hover uses Neutral 700 and
+The semantic colors `--hw-color-card`, `--hw-color-card-text`,
+`--hw-color-card-hover`, `--hw-color-card-border` and
+`--hw-color-focus-contrast` are customizable. Dark hover uses Neutral 700 and
 dark focus uses white to retain contrast; these are explicit adaptations of
 the source's fixed light hover/black focus rules. Forced-colors uses system
 colors. Cards do not add motion.

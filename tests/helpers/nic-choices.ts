@@ -31,6 +31,6 @@ export async function checkNicChoices(page: Page) {
   await page.emulateMedia({forcedColors:'active'}); await expect(check).toHaveCSS('appearance','auto');
   await check.focus(); await expect(check).toHaveCSS('outline-width','2px');
   await page.emulateMedia({forcedColors:'none',reducedMotion:'no-preference'});
-  await page.getByTestId('nic-showcase').evaluate(n=>n.setAttribute('data-nq-theme','nasaq'));
+  await page.getByTestId('nic-showcase').evaluate(n=>n.setAttribute('data-hw-theme','hawiyah'));
   await expect(check).toHaveCSS('appearance','auto');
 }

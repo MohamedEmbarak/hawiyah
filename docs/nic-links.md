@@ -6,7 +6,7 @@ native adapter behavior and guide recipes; it does not claim certification.
 
 | Source | Observed rule | Implementation / adaptation | Confidence |
 | --- | --- | --- | --- |
-| CSS 853–858 | Primary green, no resting underline | Semantic `--nq-color-link`; inline default keeps an underline so color is not the only link cue. Neutral/standalone variants remove it | High source evidence; explicit accessibility adaptation |
+| CSS 853–858 | Primary green, no resting underline | Semantic `--hw-color-link`; inline default keeps an underline so color is not the only link cue. Neutral/standalone variants remove it | High source evidence; explicit accessibility adaptation |
 | CSS 864–887 | Hover Flag 400 `#54c08a`; pressed Flag 300 `#88d8ad`; underline | Light-mode hover/pressed use darker Flag 800/900, while dark mode uses Flag 300/200. These remain readable on supported surfaces | High; source light colors have only 2.26:1 / 1.68:1 contrast on white |
 | CSS 889–908 | 2px black focus, 2px radius; icon-link focus removed | Retain a 2px focus outline for every link, including icon links and pressed keyboard focus; theme-aware black/white or system Highlight | High; removing icon-link focus is intentionally not reproduced |
 | CSS 910–916 | Visited Flag 800, underline | Separate visited semantic color; hover/focus/pressed remain usable after visiting | High declaration evidence; browser history privacy prevents direct computed-style proof |
@@ -21,21 +21,21 @@ the supported muted surface `#f3f4f6`. Link text therefore uses Flag 700
 `#166a45` in light mode. Source neutral hover is also below 4.5:1 on that muted
 surface; use Neutral 600 `#4d5761`. Source pressed/current Neutral 400 is only
 2.51:1 on white and is reserved for disabled/decorative uses. Neutral visited
-links remain neutral in Nasaq; the source global visited selector can override
+links remain neutral in Hawiyah; the source global visited selector can override
 its neutral class, while its neutral-specific visited rule is commented out. These decisions
 preserve the existing accessibility requirement; they are not claims that the
 substitutions have received official approval.
 
 ## APIs and examples
 
-- React/Vue `Link` and Angular `NqLinkComponent` accept `disabled` and
+- React/Vue `Link` and Angular `HwLinkComponent` accept `disabled` and
   `variant="default|neutral|subtle|standalone"`. Existing `data-variant` usage in
   React/Vue, including caller-defined strings, remains supported. Angular binds `variant` on its native anchor.
 - React/Vue preserve enabled application click handlers. Disabled links omit
   href, expose `role=link` / `aria-disabled=true`, use tabindex -1 and stop
   primary/auxiliary activation before application callbacks. Angular likewise
   stops the native anchor event before it reaches a host click binding.
-- Vanilla uses `<a class="nq-link" role="link" aria-disabled="true"
+- Vanilla uses `<a class="hw-link" role="link" aria-disabled="true"
   tabindex="-1">Unavailable</a>`. Do not add a destination or navigation handler
   to this disabled recipe. No controller is required.
 - Breadcrumb items accept `disabled?: boolean` in all native adapters. Their
@@ -45,9 +45,9 @@ substitutions have received official approval.
 - The guide displays all four principal variants and includes project imports
   and actual adapter APIs. Demo destinations remain inside the preview.
 
-`--nq-color-link`, `link-hover`, `link-active`, `link-visited`, `link-neutral`,
+`--hw-color-link`, `link-hover`, `link-active`, `link-visited`, `link-neutral`,
 `link-neutral-hover`, `link-neutral-active` and `breadcrumb-current` are additive
-semantic tokens (all with the `--nq-color-` prefix). Nasaq's original palette and
+semantic tokens (all with the `--hw-color-` prefix). Hawiyah's original palette and
 slash breadcrumb separator remain available. Custom themes can override these
 roles; theme boundaries reset the source-specific geometry. Application-specific
 surfaces still require contrast checks.
@@ -84,7 +84,7 @@ with a localized screen-reader notice. Host applications should likewise supply
 localized new-window text within the link. The indicator follows currentColor
 and remains visible in forced colors. It stays physically upper-right in RTL.
 Existing footer artwork is detected to avoid duplicate indicators. A custom
-indicator may use `data-nq-external-icon`; `data-nq-external-icon="none"` on the
+indicator may use `data-hw-external-icon`; `data-hw-external-icon="none"` on the
 anchor suppresses generated artwork.
 
 The authored elementary square-arrow symbol addresses checklist rows 56/124's

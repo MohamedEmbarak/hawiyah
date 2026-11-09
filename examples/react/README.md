@@ -1,7 +1,7 @@
 # React service example
 
-A native React 19 consumer of the built `@nasaq/react`, `@nasaq/core`, and
-`@nasaq/styles` packages. Start from the workspace root after building packages:
+A native React 19 consumer of the built `@hawiyah/react`, `@hawiyah/core`, and
+`@hawiyah/styles` packages. Start from the workspace root after building packages:
 
 ```sh
 pnpm exec vite --config examples/react/vite.config.ts
@@ -14,10 +14,10 @@ direction and dark mode have independent controls. Data is illustrative and held
 in memory; no application or file is sent to a server.
 
 The app uses shared component CSS; `src/app.css` only lays out the example using
-Nasaq tokens. `tsconfig.json` checks app types without emitting files. Production
+Hawiyah tokens. `tsconfig.json` checks app types without emitting files. Production
 Vite output is local to `examples/react/dist`.
 
-The selected Woven Rhythm symbol and local IBM Plex fonts come from the workspace
+The Hawiyah wordmark and local IBM Plex fonts come from the workspace
 brand assets. Fonts remain unmodified; their OFL notices live under
 `brand/third-party` and are copied into the example build under `licenses/`.
 
@@ -30,5 +30,5 @@ pnpm exec playwright test --config examples/react/playwright.config.ts
 The suite checks the complete form/review/submission flow, native modal behavior,
 mobile Arabic layout, independent preferences, and WCAG A/AA axe scans in light
 and dark modes. It uses system Chromium when available, otherwise Playwright’s installed browser.
-Set `NASAQ_CHROMIUM` to select another executable, or run
+Set `HAWIYAH_CHROMIUM` to select another executable, or run
 `pnpm exec playwright install chromium` once when no browser is installed.

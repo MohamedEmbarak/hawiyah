@@ -4,10 +4,10 @@ Source: the hashed `global.css` snapshot in [NIC web reference](nic-web-referenc
 lines 3018–3153. It supplies design evidence, not a runtime dependency or official
 certification. No official artwork or fonts were copied for this change.
 
-| Source | Observed value | Nasaq implementation | Confidence / boundary |
+| Source | Observed value | Hawiyah implementation | Confidence / boundary |
 | --- | --- | --- | --- |
-| 3018–3026 | Wrapping groups, 8px gap | Optional `nq-badges` grouping class | High |
-| 3029–3052 | 12px/18px medium type, 8px horizontal padding, 4px radius, 1px border, 32px minimum width | DGA/custom `nq-badge` soft/default profile | High; border-box minimum width avoids dependence on an application reset |
+| 3018–3026 | Wrapping groups, 8px gap | Optional `hw-badges` grouping class | High |
+| 3029–3052 | 12px/18px medium type, 8px horizontal padding, 4px radius, 1px border, 32px minimum width | DGA/custom `hw-badge` soft/default profile | High; border-box minimum width avoids dependence on an application reset |
 | 3043–3051 | `height: 24px` is overridden by later `height: max-content` | Single-line soft badges measure 20px; content may wrap and grow | High; source cascade was rendered, not inferred from the first height declaration |
 | 3054–3079 | Five semantic background/text/border palettes | `neutral`, `info`, `success`, `warning`, `danger` map to source default/info/success/warning/error | High for the supplied light palette; dark mode is a contrast-tested adaptation |
 | 3091–3153 | Pill status, 24px height, 10px dot, 8px gap, no border | `data-variant="dot"`; 24px minimum height allows wrapped labels | High for single-line geometry; minimum instead of fixed height is an accessibility adaptation |
@@ -28,11 +28,11 @@ and measured all five badges and status labels in RTL/LTR, with and without a
 border-box reset. Both measured 20px badge height, 24px status height, the stated
 padding, radius, colors and 10px dots. Official font files and the live site's
 complete CSS stack were not loaded; these measurements do not establish full
-visual parity. A named medium source font maps to Nasaq's bundled medium weight.
+visual parity. A named medium source font maps to Hawiyah's bundled medium weight.
 
 ## Usage and intentional adaptations
 
-React/Vue `Badge` and Angular `nq-badge` accept `tone` and
+React/Vue `Badge` and Angular `hw-badge` accept `tone` and
 `variant="soft|outline|dot"`. Vanilla uses the corresponding `data-tone` and
 `data-variant` attributes on a `span`. React/Vue continue accepting native data
 attributes; a typed `variant` takes precedence. Badge is static content: it
@@ -41,25 +41,25 @@ For changing status announcements, applications can supply a separate live
 region. Never communicate status by color or a dot alone.
 
 ```html
-<div class="nq-badges">
-  <span class="nq-badge" data-tone="success">تم حفظ الطلب</span>
-  <span class="nq-badge" data-tone="info" data-variant="dot">قيد المراجعة</span>
+<div class="hw-badges">
+  <span class="hw-badge" data-tone="success">تم حفظ الطلب</span>
+  <span class="hw-badge" data-tone="info" data-variant="dot">قيد المراجعة</span>
 </div>
 ```
 
-The outline variant remains a Nasaq extension, with a transparent background
+The outline variant remains a Hawiyah extension, with a transparent background
 and current-color border. Source default-badge margins are represented by the
 consistent group gap, rather than giving only neutral badges extra margins.
 Status labels can grow when text wraps; the dot never shrinks. Long labels can
 wrap inside narrow containers. Badges are informational, so their heights are
 not interactive touch-target sizes.
 
-Original Nasaq keeps its pill geometry, transparent borders, 6px dots and
+Original Hawiyah keeps its pill geometry, transparent borders, 6px dots and
 palette. Dark mode uses readable existing status colors; its soft borders use
 the tone color. Custom themes inherit DGA geometry and can override
-`--nq-color-badge-{tone}-text`, `--nq-color-badge-{tone}-background`,
-`--nq-color-badge-{tone}-border` and `--nq-color-badge-neutral-dot`.
-The existing `--nq-tone` / `--nq-tone-bg` component overrides remain available.
+`--hw-color-badge-{tone}-text`, `--hw-color-badge-{tone}-background`,
+`--hw-color-badge-{tone}-border` and `--hw-color-badge-neutral-dot`.
+The existing `--hw-tone` / `--hw-tone-bg` component overrides remain available.
 Forced colors uses system text/borders and preserves the decorative dot.
 No animation, calendar calculations or interactive input behavior changes.
 
@@ -85,7 +85,7 @@ browser round trips; the same geometry/color assertions remain in place.
 All eight token contrast checks pass, including badge text on its background and
 outline text on the supported surfaces. Six token-theme tests and 46 native
 adapter regression tests pass. Package, guide and native example builds pass,
-including the `/nasaq/` guide base path. Clean tarballs pass ESM/SSR, Angular APF,
+including the `/hawiyah/` guide base path. Clean tarballs pass ESM/SSR, Angular APF,
 CSS imports, declarations and tree-shaking checks. All 31 React recipes pass
 TypeScript checking, all 31 Angular recipes pass strict templates, and all seven
 exported framework/language project combinations build. Nothing was published

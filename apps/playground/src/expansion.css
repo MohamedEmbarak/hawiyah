@@ -28,9 +28,9 @@
 .layout-studio-canvas {
   inline-size: 100%;
   margin-inline: auto;
-  border: 1px dashed var(--nq-color-border-strong);
-  border-radius: var(--nq-radius-lg);
-  background: var(--nq-color-surface-muted);
+  border: 1px dashed var(--hw-color-border-strong);
+  border-radius: var(--hw-radius-lg);
+  background: var(--hw-color-surface-muted);
   overflow: auto;
 }
 .layout-demo-tile {
@@ -40,18 +40,18 @@
   gap: 0.5rem;
   min-inline-size: 0;
   padding: 1rem;
-  border: 1px solid var(--nq-color-border);
-  border-radius: var(--nq-radius-md);
-  background: var(--nq-color-surface);
-  color: var(--nq-color-text);
+  border: 1px solid var(--hw-color-border);
+  border-radius: var(--hw-radius-md);
+  background: var(--hw-color-surface);
+  color: var(--hw-color-text);
   overflow-wrap: anywhere;
 }
-.layout-demo-tile .nq-badge {
+.layout-demo-tile .hw-badge {
   align-self: start;
 }
 .layout-demo-tile p {
   margin: 0;
-  color: var(--nq-color-text-muted);
+  color: var(--hw-color-text-muted);
   font-size: 0.875rem;
 }
 .integration-grid {
@@ -68,34 +68,34 @@
   max-inline-size: 100%;
   overflow: auto;
   padding: 1rem;
-  border-radius: var(--nq-radius-md);
-  background: var(--nq-color-surface-muted);
+  border-radius: var(--hw-radius-md);
+  background: var(--hw-color-surface-muted);
   font-size: 0.8rem;
 }
 .component-preview > * {
   min-inline-size: 0;
   max-inline-size: 100%;
 }
-.component-preview .nq-toast-region {
+.component-preview .hw-toast-region {
   position: static;
 }
-.component-preview .nq-cookie-consent {
+.component-preview .hw-cookie-consent {
   position: static;
 }
-.component-preview .nq-app-shell {
+.component-preview .hw-app-shell {
   min-block-size: 12rem;
 }
-.component-preview .nq-menu-content,
-.component-preview .nq-popover-panel {
+.component-preview .hw-menu-content,
+.component-preview .hw-popover-panel {
   z-index: 5;
 }
-.component-preview .nq-calendar {
+.component-preview .hw-calendar {
   inline-size: 100%;
 }
-.component-preview .nq-portal-header {
+.component-preview .hw-portal-header {
   flex-wrap: wrap;
 }
-.component-card:has([data-nq-panel]:not([hidden])) {
+.component-card:has([data-hw-panel]:not([hidden])) {
   z-index: 5;
 }
 .catalog-controls {

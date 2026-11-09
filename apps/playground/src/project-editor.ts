@@ -33,21 +33,21 @@ export function mountProjectEditor(
   };
   const ar = options.locale === "ar";
   const toolbar = document.createElement("div");
-  toolbar.className = "nq-project-subheader";
-  toolbar.innerHTML = `<label class="nq-field">${ar ? "إطار العمل" : "Framework"}<select class="nq-select" data-project-framework><option value="vanilla">JavaScript</option><option value="react">React</option><option value="vue">Vue</option><option value="angular">Angular</option></select></label><label class="nq-field">${ar ? "اللغة" : "Language"}<select class="nq-select" data-project-language><option value="javascript">JavaScript / JSX</option><option value="typescript">TypeScript / TSX</option></select></label>`;
+  toolbar.className = "hw-project-subheader";
+  toolbar.innerHTML = `<label class="hw-field">${ar ? "إطار العمل" : "Framework"}<select class="hw-select" data-project-framework><option value="vanilla">JavaScript</option><option value="react">React</option><option value="vue">Vue</option><option value="angular">Angular</option></select></label><label class="hw-field">${ar ? "اللغة" : "Language"}<select class="hw-select" data-project-language><option value="javascript">JavaScript / JSX</option><option value="typescript">TypeScript / TSX</option></select></label>`;
   const workspace = document.createElement("div");
   host.replaceChildren(toolbar, workspace);
-  host.classList.add("nq-project-editor");
+  host.classList.add("hw-project-editor");
   for (const label of toolbar.querySelectorAll("label")) {
-    label.className = "nq-project-select";
+    label.className = "hw-project-select";
     const select = label.querySelector("select")!;
     const field = document.createElement("span");
-    field.className = "nq-project-select-control";
+    field.className = "hw-project-select-control";
     select.before(field);
     field.append(select);
     field.insertAdjacentHTML(
       "afterbegin",
-      '<span class="nq-project-selection-icon" aria-hidden="true"></span>',
+      '<span class="hw-project-selection-icon" aria-hidden="true"></span>',
     );
   }
   const framework = toolbar.querySelector<HTMLSelectElement>(
@@ -58,7 +58,7 @@ export function mountProjectEditor(
   )!;
   const download = document.createElement("button");
   download.type = "button";
-  download.className = "nq-button nq-project-download";
+  download.className = "hw-button hw-project-download";
   download.dataset.variant = "secondary";
   download.dataset.projectDownload = "";
   download.innerHTML = `${icon("download", 18)}<span>${ar ? "تنزيل المشروع" : "Download project"}</span>`;
@@ -77,10 +77,10 @@ export function mountProjectEditor(
     state.framework = framework.value as ProjectFramework;
     state.language = language.value as ProjectLanguage;
     framework.parentElement!.querySelector(
-      ".nq-project-selection-icon",
+      ".hw-project-selection-icon",
     )!.innerHTML = frameworkIcon(state.framework);
     language.parentElement!.querySelector(
-      ".nq-project-selection-icon",
+      ".hw-project-selection-icon",
     )!.innerHTML = frameworkIcon(state.language);
     options.onDraftChange(state);
     download.disabled =
@@ -121,7 +121,7 @@ export function mountProjectEditor(
         const runtime =
           selectedFramework === "vanilla"
             ? previewRuntime +
-              '\nvar NasaqProjectRuntime={modules:{"@nasaq/vanilla":NasaqVanilla,"@nasaq/core":NasaqVanilla.core}};'
+              '\nvar HawiyahProjectRuntime={modules:{"@hawiyah/vanilla":HawiyahVanilla,"@hawiyah/core":HawiyahVanilla.core}};'
             : selectedFramework === "react"
               ? (await import("./generated/project-react-runtime")).default
               : selectedFramework === "vue"
@@ -172,7 +172,7 @@ export function mountProjectEditor(
     );
     const link = document.createElement("a");
     link.href = url;
-    link.download = `nasaq-${options.id}-${state.framework}-${state.language}.zip`;
+    link.download = `hawiyah-${options.id}-${state.framework}-${state.language}.zip`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };

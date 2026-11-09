@@ -1,9 +1,9 @@
-import { normalizeDigits } from '@nasaq/core';
+import { normalizeDigits } from '@hawiyah/core';
 import { escape as e, type Locale } from './data';
 
 /** Keep visible text as U+20C1; assistive technology gets the currency's name. */
 function symbol(locale: Locale): string {
-  return `<span class="nq-riyal" aria-hidden="true">⃁</span><span class="nq-sr-only">${locale === 'ar' ? 'ريال سعودي' : 'Saudi riyals'}</span>`;
+  return `<span class="hw-riyal" aria-hidden="true">⃁</span><span class="hw-sr-only">${locale === 'ar' ? 'ريال سعودي' : 'Saudi riyals'}</span>`;
 }
 
 /** Wrap an already formatted amount using Latin digits while preserving precision. */

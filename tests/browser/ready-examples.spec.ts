@@ -2,13 +2,13 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 for (const locale of ['ar', 'en']) test(`ready examples expose all statuses without navigating the guide in ${locale}`, async ({ page, context }) => {
-  await page.addInitScript(locale => { localStorage.setItem('nasaq-locale', locale); localStorage.setItem('nasaq-mode', 'light'); }, locale);
+  await page.addInitScript(locale => { localStorage.setItem('hawiyah-locale', locale); localStorage.setItem('hawiyah-mode', 'light'); }, locale);
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('/#component/alert');
   const tones = ['neutral', 'info', 'success', 'warning', 'danger'];
   for (const tone of tones) {
-    await expect(page.locator(`[data-guide-canvas] .nq-alert[data-tone="${tone}"]`)).toBeVisible();
-    await expect(page.locator(`#component-examples .nq-alert[data-tone="${tone}"]`)).toHaveCount(3);
+    await expect(page.locator(`[data-guide-canvas] .hw-alert[data-tone="${tone}"]`)).toBeVisible();
+    await expect(page.locator(`#component-examples .hw-alert[data-tone="${tone}"]`)).toHaveCount(3);
   }
   await expect(page.locator('#component-examples [role="alert"]')).toHaveCount(0);
   expect((await new AxeBuilder({page}).include('#component-examples').analyze()).violations).toEqual([]);
@@ -16,7 +16,7 @@ for (const locale of ['ar', 'en']) test(`ready examples expose all statuses with
     await page.goto(`/#component/${component}`);
     for (const tone of tones) await expect(page.locator(`[data-guide-canvas] [data-tone="${tone}"]`)).toBeVisible();
   }
-  await expect(page.locator('[data-guide-canvas] [data-tone="neutral"] [data-nq-dismiss]')).toHaveCount(0);
+  await expect(page.locator('[data-guide-canvas] [data-tone="neutral"] [data-hw-dismiss]')).toHaveCount(0);
   const toast = page.locator('[data-guide-canvas] [data-tone="info"]');
   await toast.locator('button').click(); await expect(toast).toBeHidden();
   await page.goto('/#component/portal-header');
@@ -31,14 +31,14 @@ for (const locale of ['ar', 'en']) test(`ready examples expose all statuses with
   expect(context.pages()).toHaveLength(1);
   await expect(page).toHaveURL(href);
   // Skip links resolve only inside their preview and keep the guide's URL.
-  await preview.locator('.nq-skip-link').focus(); await page.keyboard.press('Enter');
+  await preview.locator('.hw-skip-link').focus(); await page.keyboard.press('Enter');
   await expect(preview.locator('#ready-header-main')).toBeFocused();
   await expect(page).toHaveURL(href);
   await page.setViewportSize({width:390,height:900});
-  await preview.locator('[data-nq-portal-toggle]').click();
-  await expect(preview.locator('[data-nq-portal-navigation]')).toBeVisible();
+  await preview.locator('[data-hw-portal-toggle]').click();
+  await expect(preview.locator('[data-hw-portal-navigation]')).toBeVisible();
   await service.click(); await expect(page).toHaveURL(href);
-  await expect(preview.locator('[data-nq-portal-toggle]')).toHaveAttribute('aria-expanded','false');
+  await expect(preview.locator('[data-hw-portal-toggle]')).toHaveAttribute('aria-expanded','false');
   await page.goto('/#component/portal-footer');
   await page.locator('#component-examples a[href="/privacy"]').click();
   await expect(page).toHaveURL(/#component\/portal-footer$/);

@@ -2,22 +2,22 @@ import {expect,test} from '@playwright/test';
 
 test('fresh guide defaults to DGA and nested custom resets legacy palette and geometry',async({page})=>{
   await page.goto('/#foundations');
-  await expect(page.locator('html')).toHaveAttribute('data-nq-theme','dga');
-  await page.locator('#main').evaluate(main=>main.insertAdjacentHTML('beforeend',`<div id="theme-scope" data-nq-theme="nasaq"><button class="nq-button" id="legacy-theme-button">Legacy</button><div data-nq-theme="custom"><button class="nq-button" id="custom-theme-button">Custom</button><input class="nq-input" id="nested-input" aria-label="Nested input"></div></div>`));
+  await expect(page.locator('html')).toHaveAttribute('data-hw-theme','dga');
+  await page.locator('#main').evaluate(main=>main.insertAdjacentHTML('beforeend',`<div id="theme-scope" data-hw-theme="hawiyah"><button class="hw-button" id="legacy-theme-button">Legacy</button><div data-hw-theme="custom"><button class="hw-button" id="custom-theme-button">Custom</button><input class="hw-input" id="nested-input" aria-label="Nested input"></div></div>`));
   await expect(page.locator('#legacy-theme-button')).toHaveCSS('background-color','rgb(0, 106, 100)');
   await expect(page.locator('#custom-theme-button')).toHaveCSS('background-color','rgb(27, 131, 84)');
   await expect(page.locator('#nested-input')).toHaveCSS('border-radius','4px');
-  await page.locator('#theme-scope').evaluate(node=>node.setAttribute('data-nq-mode','dark'));
+  await page.locator('#theme-scope').evaluate(node=>node.setAttribute('data-hw-mode','dark'));
   await expect(page.locator('#custom-theme-button')).toHaveCSS('background-color','rgb(27, 131, 84)');
   await expect(page.locator('#nested-input')).toHaveCSS('background-color','rgb(31, 42, 55)');
 });
 
-test('stale Nasaq preference cannot change guide defaults and input focus does not shift layout',async({page})=>{
-  await page.addInitScript(()=>localStorage.setItem('nasaq-theme','nasaq'));
+test('stale Hawiyah preference cannot change guide defaults and input focus does not shift layout',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('hawiyah-theme','hawiyah'));
   await page.goto('/#foundations');
-  await expect(page.locator('html')).toHaveAttribute('data-nq-theme','dga');
+  await expect(page.locator('html')).toHaveAttribute('data-hw-theme','dga');
   await expect(page.locator('.topbar [data-action="mode"], #theme-select')).toHaveCount(0);
-  const input=page.locator('#main input.nq-input').first();
+  const input=page.locator('#main input.hw-input').first();
   const before=await input.boundingBox();
   await input.focus();
   await expect(input).toBeFocused();
@@ -32,7 +32,7 @@ test('stale Nasaq preference cannot change guide defaults and input focus does n
 for (const mode of ['light', 'dark']) {
   test(`filled readonly fields retain a single keyboard focus cue in ${mode} mode`, async ({page}) => {
     await page.goto('/#foundations');
-    await page.locator('#main').evaluate((main, mode) => main.insertAdjacentHTML('beforeend', `<section id="readonly-regression" data-nq-theme="dga" data-nq-mode="${mode}"><button id="before-readonly">Before fields</button><input id="readonly-input" class="nq-input" data-variant="filled" readonly value="نسق" aria-label="Read-only name"><textarea id="readonly-textarea" class="nq-textarea" data-variant="filled" readonly aria-invalid="true" aria-label="Read-only details">Details</textarea><button id="after-readonly">After fields</button></section>`), mode);
+    await page.locator('#main').evaluate((main, mode) => main.insertAdjacentHTML('beforeend', `<section id="readonly-regression" data-hw-theme="dga" data-hw-mode="${mode}"><button id="before-readonly">Before fields</button><input id="readonly-input" class="hw-input" data-variant="filled" readonly value="هوية" aria-label="Read-only name"><textarea id="readonly-textarea" class="hw-textarea" data-variant="filled" readonly aria-invalid="true" aria-label="Read-only details">Details</textarea><button id="after-readonly">After fields</button></section>`), mode);
     await page.locator('#before-readonly').focus();
     for (const id of ['readonly-input', 'readonly-textarea']) {
       await page.keyboard.press('Tab');
@@ -56,7 +56,7 @@ for (const mode of ['light', 'dark']) {
 
 test('unvalidated filled fields stay neutral and explicit errors red without an outer focus ring', async ({page}) => {
   await page.goto('/#foundations');
-  await page.locator('#main').evaluate(main => main.insertAdjacentHTML('beforeend', '<section data-nq-theme="dga"><input id="editable-filled" class="nq-input" data-variant="filled" aria-label="Editable name"><input id="invalid-filled" class="nq-input" data-variant="filled" aria-invalid="true" aria-label="Invalid name"></section>'));
+  await page.locator('#main').evaluate(main => main.insertAdjacentHTML('beforeend', '<section data-hw-theme="dga"><input id="editable-filled" class="hw-input" data-variant="filled" aria-label="Editable name"><input id="invalid-filled" class="hw-input" data-variant="filled" aria-invalid="true" aria-label="Invalid name"></section>'));
   for (const id of ['editable-filled', 'invalid-filled']) {
     const field = page.locator(`#${id}`); await field.focus();
     await expect(field).toHaveCSS('background-size', '100% 2px');
@@ -64,7 +64,7 @@ test('unvalidated filled fields stay neutral and explicit errors red without an 
     const result = await field.evaluate(node => {
       const style = getComputedStyle(node);
       const probe = document.createElement('span');
-      probe.style.color = node.getAttribute('aria-invalid') === 'true' ? 'var(--nq-color-danger)' : 'var(--nq-color-field-active)';
+      probe.style.color = node.getAttribute('aria-invalid') === 'true' ? 'var(--hw-color-danger)' : 'var(--hw-color-field-active)';
       node.parentElement!.append(probe);
       const color = getComputedStyle(probe).color; probe.remove();
       return {background: style.backgroundImage, color};
@@ -75,13 +75,13 @@ test('unvalidated filled fields stay neutral and explicit errors red without an 
 
 test('readonly range sliders allow Tab and Shift+Tab in both directions', async ({page}) => {
   await page.goto('/#components');
-  const range = page.locator('[data-nq="range-slider"]').first();
+  const range = page.locator('[data-hw="range-slider"]').first();
   await range.evaluate(root => {
-    root.setAttribute('data-nq-readonly', 'true');
+    root.setAttribute('data-hw-readonly', 'true');
     root.insertAdjacentHTML('beforebegin', '<button id="before-range">Before range</button>');
     root.insertAdjacentHTML('afterend', '<button id="after-range">After range</button>');
   });
-  const lower = range.locator('[data-nq-lower]'); const upper = range.locator('[data-nq-upper]');
+  const lower = range.locator('[data-hw-lower]'); const upper = range.locator('[data-hw-upper]');
   const initial = await lower.inputValue();
   for (const direction of ['rtl', 'ltr']) {
     await range.evaluate((root, direction) => root.setAttribute('dir', direction), direction);

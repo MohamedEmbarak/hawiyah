@@ -1,4 +1,4 @@
-import { createCleanup, isDisabled, restoreFocus } from '@nasaq/core';
+import { createCleanup, isDisabled, restoreFocus } from '@hawiyah/core';
 import { emit, eventElement } from './dom.js';
 
 export interface DialogOptions {
@@ -15,7 +15,7 @@ export interface DialogController {
 
 /** Uses native modal focus containment and the browser's top layer. */
 export function createDialog(dialog: HTMLDialogElement, options: DialogOptions = {}): DialogController {
-  if (dialog.localName !== 'dialog') throw new Error('Nasaq: createDialog requires a native dialog element.');
+  if (dialog.localName !== 'dialog') throw new Error('Hawiyah: createDialog requires a native dialog element.');
   const scope = createCleanup();
   let trigger: HTMLElement | null = null;
   let openedHere = false;
@@ -45,7 +45,7 @@ export function createDialog(dialog: HTMLDialogElement, options: DialogOptions =
   const show = (opener?: HTMLElement) => {
     if (scope.destroyed || dialog.open) return;
     backdropStarted = false;
-    if (typeof dialog.showModal !== 'function') throw new Error('Nasaq: this browser must support HTMLDialogElement.showModal().');
+    if (typeof dialog.showModal !== 'function') throw new Error('Hawiyah: this browser must support HTMLDialogElement.showModal().');
     const active = dialog.ownerDocument.activeElement;
     const candidate = opener ?? (active && 'focus' in active ? active as HTMLElement : null);
     dialog.showModal();
@@ -54,16 +54,16 @@ export function createDialog(dialog: HTMLDialogElement, options: DialogOptions =
     notify();
   };
   scope.listen(dialog.ownerDocument, 'click', event => {
-    const opener = eventElement(event)?.closest<HTMLElement>('[data-nq-dialog-open]');
-    if (!opener || !dialog.id || opener.dataset.nqDialogOpen !== dialog.id || isDisabled(opener)) return;
+    const opener = eventElement(event)?.closest<HTMLElement>('[data-hw-dialog-open]');
+    if (!opener || !dialog.id || opener.dataset.hwDialogOpen !== dialog.id || isDisabled(opener)) return;
     event.preventDefault(); show(opener);
   });
   scope.listen(dialog, 'click', event => {
     const started = backdropStarted; backdropStarted = false;
     if (event.defaultPrevented) return;
-    const closer = eventElement(event)?.closest<HTMLElement>('[data-nq-dialog-close]');
+    const closer = eventElement(event)?.closest<HTMLElement>('[data-hw-dialog-close]');
     if (closer && closer.closest('dialog') === dialog && !isDisabled(closer)) {
-      event.preventDefault(); close(closer.dataset.nqDialogClose); return;
+      event.preventDefault(); close(closer.dataset.hwDialogClose); return;
     }
     const pointer = event as MouseEvent;
     const rect = dialog.getBoundingClientRect();

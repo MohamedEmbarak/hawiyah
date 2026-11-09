@@ -1,5 +1,5 @@
 import { createSearchField } from './search-field.js';
-import { observeReadonlyChoice, observeFieldValue, type FieldValueElement, type FieldValueObserver } from '@nasaq/core';
+import { observeReadonlyChoice, observeFieldValue, type FieldValueElement, type FieldValueObserver } from '@hawiyah/core';
 import { createTabs } from './tabs.js';
 import { createContentNavigation } from './content-navigation.js';
 export { createContentNavigation };
@@ -59,7 +59,7 @@ const factories: Record<string, (element: HTMLElement) => Controller> = {
   'toggle-group': createToggleGroup, feedback: createFeedback, 'cookie-consent': createCookieConsent,
   'tree-view': createTreeView, carousel: createCarousel, 'data-table': createDataTable,
 };
-const selector = Object.keys(factories).map(name => `[data-nq="${name}"]`).join(', ');
+const selector = Object.keys(factories).map(name => `[data-hw="${name}"]`).join(', ');
 
 /** Enhance existing semantic HTML; call the returned function before removing it. */
 export function enhance(root?: ParentNode): () => void {
@@ -88,17 +88,17 @@ export function enhance(root?: ParentNode): () => void {
     for (const element of elements) {
       const existing = registry.get(element);
       if (existing) { existing.references++; acquired.push(element); continue; }
-      const factory = factories[element.dataset.nq || ''];
+      const factory = factories[element.dataset.hw || ''];
       if (!factory) continue;
       const controller = factory(element);
       registry.set(element, { controller, references: 1 });
       acquired.push(element);
     }
-    const inputs = [...target.querySelectorAll<FieldValueElement>('.nq-input, .nq-textarea, .nq-select')];
-    if ('matches' in target && typeof target.matches === 'function' && target.matches('.nq-input, .nq-textarea, .nq-select')) inputs.unshift(target as FieldValueElement);
+    const inputs = [...target.querySelectorAll<FieldValueElement>('.hw-input, .hw-textarea, .hw-select')];
+    if ('matches' in target && typeof target.matches === 'function' && target.matches('.hw-input, .hw-textarea, .hw-select')) inputs.unshift(target as FieldValueElement);
     for (const input of inputs) fields.push(observeFieldValue(input));
-    const choices = [...target.querySelectorAll<HTMLInputElement>('.nq-checkbox, .nq-radio, .nq-switch')];
-    if ('matches' in target && typeof target.matches === 'function' && target.matches('.nq-checkbox, .nq-radio, .nq-switch')) choices.unshift(target as HTMLInputElement);
+    const choices = [...target.querySelectorAll<HTMLInputElement>('.hw-checkbox, .hw-radio, .hw-switch')];
+    if ('matches' in target && typeof target.matches === 'function' && target.matches('.hw-checkbox, .hw-radio, .hw-switch')) choices.unshift(target as HTMLInputElement);
     for (const input of choices) fields.push(observeReadonlyChoice(input));
   } catch (error) { release(); throw error; }
   return release;

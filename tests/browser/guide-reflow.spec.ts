@@ -4,7 +4,7 @@ for (const locale of ['ar', 'en']) {
   test(`guide prose and the live date picker reflow at 320px (${locale})`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 320, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.addInitScript(locale => localStorage.setItem('nasaq-locale', locale), locale);
+    await page.addInitScript(locale => localStorage.setItem('hawiyah-locale', locale), locale);
     await page.goto('/#component/date-picker');
     await expect(page.locator('.guide-article')).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr');
@@ -13,8 +13,8 @@ for (const locale of ['ar', 'en']) {
     expect(await table.evaluate(node => node.scrollWidth > node.clientWidth)).toBe(true);
     await table.focus();
     await expect(table).toBeFocused();
-    const picker = page.locator('[data-nq="date-picker"]');
-    const trigger = picker.locator('[data-nq-date-trigger]');
+    const picker = page.locator('[data-hw="date-picker"]');
+    const trigger = picker.locator('[data-hw-date-trigger]');
     await trigger.click();
     const dialog = picker.locator('dialog');
     await expect(dialog).toBeVisible();

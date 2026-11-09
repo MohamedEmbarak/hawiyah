@@ -1,96 +1,96 @@
 /* NIC global.css 1677–1766; see docs/nic-accordion.md for DOM mapping.
    The source header has 16px padding + a 2px transparent border around its
    button. Item padding preserves that space without adding a wrapper to summary. */
-:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
-  --nq-profile-accordion-radius: 0.375rem;
-  --nq-profile-accordion-item-padding: 1.125rem;
-  --nq-profile-accordion-trigger-padding: 0.75rem 1rem;
-  --nq-profile-accordion-trigger-leading: 1.5rem;
-  --nq-profile-accordion-content-padding: 1rem;
-  --nq-profile-accordion-content-margin: 1.125rem -1.125rem -1.125rem;
-  --nq-profile-accordion-surface-duration: 150ms;
-  --nq-profile-accordion-icon-size: 1.125rem;
-  --nq-profile-accordion-icon-offset: 1px;
-  --nq-profile-accordion-icon-content: '';
-  --nq-profile-accordion-icon-mask: url('./assets/icons/arrow-down-01.svg') center / contain no-repeat;
-  --nq-profile-accordion-icon-background: currentColor;
-  --nq-profile-accordion-icon-expanded: rotate(-180deg);
+:where(:root:not([data-hw-theme]), [data-hw-theme='dga'], [data-hw-theme='custom']) {
+  --hw-profile-accordion-radius: 0.375rem;
+  --hw-profile-accordion-item-padding: 1.125rem;
+  --hw-profile-accordion-trigger-padding: 0.75rem 1rem;
+  --hw-profile-accordion-trigger-leading: 1.5rem;
+  --hw-profile-accordion-content-padding: 1rem;
+  --hw-profile-accordion-content-margin: 1.125rem -1.125rem -1.125rem;
+  --hw-profile-accordion-surface-duration: 150ms;
+  --hw-profile-accordion-icon-size: 1.125rem;
+  --hw-profile-accordion-icon-offset: 1px;
+  --hw-profile-accordion-icon-content: '';
+  --hw-profile-accordion-icon-mask: url('./assets/icons/arrow-down-01.svg') center / contain no-repeat;
+  --hw-profile-accordion-icon-background: currentColor;
+  --hw-profile-accordion-icon-expanded: rotate(-180deg);
 }
-:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
-  --nq-profile-accordion-radius: initial;
-  --nq-profile-accordion-item-padding: initial;
-  --nq-profile-accordion-trigger-padding: initial;
-  --nq-profile-accordion-trigger-leading: initial;
-  --nq-profile-accordion-content-padding: initial;
-  --nq-profile-accordion-content-margin: initial;
-  --nq-profile-accordion-surface-duration: initial;
-  --nq-profile-accordion-icon-size: initial;
-  --nq-profile-accordion-icon-offset: initial;
-  --nq-profile-accordion-icon-content: initial;
-  --nq-profile-accordion-icon-mask: initial;
-  --nq-profile-accordion-icon-background: initial;
-  --nq-profile-accordion-icon-expanded: initial;
+:where([data-hw-theme]:not([data-hw-theme='dga'], [data-hw-theme='custom'])) {
+  --hw-profile-accordion-radius: initial;
+  --hw-profile-accordion-item-padding: initial;
+  --hw-profile-accordion-trigger-padding: initial;
+  --hw-profile-accordion-trigger-leading: initial;
+  --hw-profile-accordion-content-padding: initial;
+  --hw-profile-accordion-content-margin: initial;
+  --hw-profile-accordion-surface-duration: initial;
+  --hw-profile-accordion-icon-size: initial;
+  --hw-profile-accordion-icon-offset: initial;
+  --hw-profile-accordion-icon-content: initial;
+  --hw-profile-accordion-icon-mask: initial;
+  --hw-profile-accordion-icon-background: initial;
+  --hw-profile-accordion-icon-expanded: initial;
 }
-.nq-accordion {
-  border-color: var(--nq-color-accordion-border);
-  border-radius: var(--nq-profile-accordion-radius, var(--nq-radius-lg));
+.hw-accordion {
+  border-color: var(--hw-color-accordion-border);
+  border-radius: var(--hw-profile-accordion-radius, var(--hw-radius-lg));
 }
-.nq-accordion-item {
+.hw-accordion-item {
   box-sizing: border-box;
-  padding: var(--nq-profile-accordion-item-padding, 0px);
+  padding: var(--hw-profile-accordion-item-padding, 0px);
 }
-.nq-accordion-item + .nq-accordion-item { border-block-start-color: var(--nq-color-accordion-border); }
-.nq-accordion-trigger {
-  --nq-accordion-trigger-background: transparent;
-  padding: var(--nq-profile-accordion-trigger-padding, var(--nq-space-4) var(--nq-space-5));
-  line-height: var(--nq-profile-accordion-trigger-leading, inherit);
-  background: var(--nq-accordion-trigger-background);
+.hw-accordion-item + .hw-accordion-item { border-block-start-color: var(--hw-color-accordion-border); }
+.hw-accordion-trigger {
+  --hw-accordion-trigger-background: transparent;
+  padding: var(--hw-profile-accordion-trigger-padding, var(--hw-space-4) var(--hw-space-5));
+  line-height: var(--hw-profile-accordion-trigger-leading, inherit);
+  background: var(--hw-accordion-trigger-background);
   overflow-anchor: none;
-  transition: color var(--nq-profile-accordion-surface-duration, 0ms) ease-in-out,
-    background-color var(--nq-profile-accordion-surface-duration, 0ms) ease-in-out;
+  transition: color var(--hw-profile-accordion-surface-duration, 0ms) ease-in-out,
+    background-color var(--hw-profile-accordion-surface-duration, 0ms) ease-in-out;
 }
-.nq-accordion-trigger:hover { --nq-accordion-trigger-background: var(--nq-color-surface-muted); }
-.nq-accordion-trigger:focus {
-  background: var(--nq-dga-on, var(--nq-accordion-trigger-background)) var(--nq-dga-off, var(--nq-color-accordion-focus));
+.hw-accordion-trigger:hover { --hw-accordion-trigger-background: var(--hw-color-surface-muted); }
+.hw-accordion-trigger:focus {
+  background: var(--hw-dga-on, var(--hw-accordion-trigger-background)) var(--hw-dga-off, var(--hw-color-accordion-focus));
 }
-.nq-accordion-trigger:focus-visible {
-  outline-width: var(--nq-dga-on, var(--nq-focus-width)) var(--nq-dga-off, 2px);
-  outline-color: var(--nq-dga-on, var(--nq-color-focus)) var(--nq-dga-off, var(--nq-color-focus-contrast));
+.hw-accordion-trigger:focus-visible {
+  outline-width: var(--hw-dga-on, var(--hw-focus-width)) var(--hw-dga-off, 2px);
+  outline-color: var(--hw-dga-on, var(--hw-color-focus)) var(--hw-dga-off, var(--hw-color-focus-contrast));
 }
-.nq-accordion-item > .nq-accordion-content {
-  margin: var(--nq-profile-accordion-content-margin, 0px);
-  padding: var(--nq-profile-accordion-content-padding, 0 var(--nq-space-5) var(--nq-space-5));
-  color: var(--nq-dga-on, var(--nq-color-text-muted)) var(--nq-dga-off, var(--nq-color-text));
+.hw-accordion-item > .hw-accordion-content {
+  margin: var(--hw-profile-accordion-content-margin, 0px);
+  padding: var(--hw-profile-accordion-content-padding, 0 var(--hw-space-5) var(--hw-space-5));
+  color: var(--hw-dga-on, var(--hw-color-text-muted)) var(--hw-dga-off, var(--hw-color-text));
 }
 /* Native no-script disclosure gets the same indicator in the DGA profile. */
-.nq-accordion-trigger::after {
+.hw-accordion-trigger::after {
   position: relative;
-  top: var(--nq-profile-accordion-icon-offset, 0px);
-  content: var(--nq-profile-accordion-icon-content, '+');
-  inline-size: var(--nq-profile-accordion-icon-size, 1.5rem);
-  block-size: var(--nq-profile-accordion-icon-size, 1.5rem);
-  background: var(--nq-profile-accordion-icon-background, transparent);
-  mask: var(--nq-profile-accordion-icon-mask, none);
-  transition: transform var(--nq-duration-accordion-indicator, 0ms) var(--nq-ease-accordion, ease-in-out);
+  top: var(--hw-profile-accordion-icon-offset, 0px);
+  content: var(--hw-profile-accordion-icon-content, '+');
+  inline-size: var(--hw-profile-accordion-icon-size, 1.5rem);
+  block-size: var(--hw-profile-accordion-icon-size, 1.5rem);
+  background: var(--hw-profile-accordion-icon-background, transparent);
+  mask: var(--hw-profile-accordion-icon-mask, none);
+  transition: transform var(--hw-duration-accordion-indicator, 0ms) var(--hw-ease-accordion, ease-in-out);
 }
-.nq-accordion-item[open] > .nq-accordion-trigger::after {
-  content: var(--nq-profile-accordion-icon-content, '−');
-  transform: var(--nq-profile-accordion-icon-expanded, none);
+.hw-accordion-item[open] > .hw-accordion-trigger::after {
+  content: var(--hw-profile-accordion-icon-content, '−');
+  transform: var(--hw-profile-accordion-icon-expanded, none);
 }
-.nq-accordion-item[data-nq-expanded] > .nq-accordion-trigger::after {
+.hw-accordion-item[data-hw-expanded] > .hw-accordion-trigger::after {
   content: '';
-  inline-size: var(--nq-profile-accordion-icon-size, 1rem);
-  block-size: var(--nq-profile-accordion-icon-size, 1rem);
+  inline-size: var(--hw-profile-accordion-icon-size, 1rem);
+  block-size: var(--hw-profile-accordion-icon-size, 1rem);
   background: currentColor;
   mask: url('./assets/icons/arrow-down-01.svg') center / contain no-repeat;
   transform: rotate(0deg);
 }
-.nq-accordion-item[data-nq-expanded='true'] > .nq-accordion-trigger::after { transform: rotate(-180deg); }
+.hw-accordion-item[data-hw-expanded='true'] > .hw-accordion-trigger::after { transform: rotate(-180deg); }
 @media (prefers-reduced-motion: reduce) {
-  .nq-accordion-trigger, .nq-accordion-trigger::after { transition: none; }
+  .hw-accordion-trigger, .hw-accordion-trigger::after { transition: none; }
 }
 @media (forced-colors: active) {
-  .nq-accordion, .nq-accordion-item + .nq-accordion-item { border-color: CanvasText; }
-  .nq-accordion-trigger:focus-visible { outline-color: Highlight; }
-  .nq-accordion-trigger::after { color: ButtonText; forced-color-adjust: none; }
+  .hw-accordion, .hw-accordion-item + .hw-accordion-item { border-color: CanvasText; }
+  .hw-accordion-trigger:focus-visible { outline-color: Highlight; }
+  .hw-accordion-trigger::after { color: ButtonText; forced-color-adjust: none; }
 }

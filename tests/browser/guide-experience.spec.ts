@@ -23,11 +23,11 @@ test('an explicit English choice survives reload and navigation', async ({ page 
 
 test('dark mode loads the white sidebar wordmark without a light backing', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => localStorage.setItem('nasaq-mode', 'dark'));
+  await page.evaluate(() => localStorage.setItem('hawiyah-mode', 'dark'));
   await page.reload();
-  await expect(page.locator('html')).toHaveAttribute('data-nq-mode', 'dark');
+  await expect(page.locator('html')).toHaveAttribute('data-hw-mode', 'dark');
   const logo = page.locator('.sidebar .brand img');
-  await expect(logo).toHaveAttribute('src', /\/nasaq-wordmark-white\.svg$/);
+  await expect(logo).toHaveAttribute('src', /\/hawiyah-wordmark-white\.svg$/);
   await expect.poll(() => logo.evaluate(image =>
     image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0,
   )).toBe(true);
@@ -39,7 +39,7 @@ test('guide search supports keyboard selection, navigation and focus return', as
   const trigger = page.locator('.topbar [data-action="search-components"]');
   await trigger.focus();
   await page.keyboard.press('ControlOrMeta+k');
-  const dialog = page.getByRole('dialog', { name: 'ابحث في دليل نسق' });
+  const dialog = page.getByRole('dialog', { name: 'ابحث في دليل هوية' });
   const query = dialog.getByRole('combobox');
   const options = dialog.getByRole('option');
   await expect(query).toBeFocused();

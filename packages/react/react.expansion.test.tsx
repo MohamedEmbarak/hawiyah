@@ -3,7 +3,7 @@ import { act, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
-import { formatCalendarDate, moveCalendarDate, UMALQURA_MIN_DATE, UMALQURA_MAX_DATE } from '@nasaq/core';
+import { formatCalendarDate, moveCalendarDate, UMALQURA_MIN_DATE, UMALQURA_MAX_DATE } from '@hawiyah/core';
 import { Button, Calendar, CookieConsent, DataTable, DatePicker, Feedback, Menu, MultiSelect, PinInput, Popover, RangeSlider, SearchField, TagInput, ToastRegion, ToggleGroup, TreeView } from './src/index.js';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -31,7 +31,7 @@ it('normalizes Arabic PIN digits in one native input and honors canceled and nat
 });
 it('keeps tag and multiple-option form values explicit across filtering and reset', async () => {
   await render(<form><TagInput name="tags" label="Tags" defaultValue={['initial']} /><MultiSelect name="cities" label="Cities" defaultValue={['riyadh']} options={[{ value: 'riyadh', label: 'الرياض' }, { value: 'abha', label: 'أبها' }]} /></form>);
-  const tag = container.querySelector<HTMLInputElement>('.nq-tag-input input[type=text]')!;
+  const tag = container.querySelector<HTMLInputElement>('.hw-tag-input input[type=text]')!;
   await input(tag, 'new'); await key(tag, 'Enter');
   const search = container.querySelector<HTMLInputElement>('input[type=search]')!;
   await input(search, 'ابها'); await click(container.querySelector<HTMLInputElement>('input[type=checkbox]')!);
@@ -62,18 +62,18 @@ it('navigates calendar dates in RTL, skips disabled days, and uses Hijri month a
   expect((document.activeElement as HTMLElement).dataset.date).toBe('2026-10-30');
   await key(document.activeElement!, 'PageDown');
   expect((document.activeElement as HTMLElement).dataset.date).toBe(moveCalendarDate('2026-10-30', 1, 'month', 'islamic-umalqura'));
-  expect(container.querySelectorAll('.nq-calendar-day[tabindex="0"]')).toHaveLength(1);
+  expect(container.querySelectorAll('.hw-calendar-day[tabindex="0"]')).toHaveLength(1);
   await key(document.activeElement!, 'Home');
   expect(document.activeElement?.closest('td')?.cellIndex).toBe(0);
 });
 it('recenters externally updated calendar selection while respecting an explicit month', async () => {
   await render(<Calendar value="2026-01-15" locale="en-SA" />);
   await render(<Calendar value="2026-06-15" locale="en-SA" />);
-  expect(container.querySelector('.nq-calendar-header h3')?.textContent).toContain('June');
+  expect(container.querySelector('.hw-calendar-header h3')?.textContent).toContain('June');
   expect(container.querySelector('[data-date="2026-06-15"]')?.closest('td')?.getAttribute('aria-selected')).toBe('true');
-  expect(container.querySelector('.nq-calendar-day[tabindex="0"]')?.getAttribute('data-date')).toBe('2026-06-15');
+  expect(container.querySelector('.hw-calendar-day[tabindex="0"]')?.getAttribute('data-date')).toBe('2026-06-15');
   await render(<Calendar value="2026-08-15" month="2026-03-01" locale="en-SA" />);
-  expect(container.querySelector('.nq-calendar-header h3')?.textContent).toContain('March');
+  expect(container.querySelector('.hw-calendar-header h3')?.textContent).toContain('March');
 });
 it('stops Hijri month and keyboard navigation at the authoritative table boundaries', async () => {
   await render(<Calendar value={UMALQURA_MIN_DATE} month={UMALQURA_MIN_DATE} calendar="islamic-umalqura" locale="en-SA" />);
@@ -95,17 +95,17 @@ it('switches picker calendar systems without changing the ISO date and reopens a
   const changed = vi.fn();
   await render(<form><DatePicker label="Appointment" name="date" defaultValue="2026-10-28" locale="en-SA" onValueChange={changed} /></form>);
   const opener = container.querySelector<HTMLButtonElement>('[aria-label="Open calendar"]')!; await click(opener);
-  const dateInput = container.querySelector<HTMLInputElement>('input[type=text]')!; const calendar = container.querySelector('.nq-calendar')!;
-  const before = container.querySelector('.nq-calendar-header h3')!.textContent;
-  await act(async () => { (container.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click(); });
-  expect(calendar.getAttribute('data-calendar')).toBe('islamic-umalqura'); expect(container.querySelector('.nq-calendar-header h3')!.textContent).not.toBe(before);
+  const dateInput = container.querySelector<HTMLInputElement>('input[type=text]')!; const calendar = container.querySelector('.hw-calendar')!;
+  const before = container.querySelector('.hw-calendar-header h3')!.textContent;
+  await act(async () => { (container.querySelector('.hw-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click(); });
+  expect(calendar.getAttribute('data-calendar')).toBe('islamic-umalqura'); expect(container.querySelector('.hw-calendar-header h3')!.textContent).not.toBe(before);
   expect(dateInput.value).toBe(formatCalendarDate('2026-10-28', { calendar: 'islamic-umalqura', locale: 'en-SA', dateStyle: 'medium' })); expect(changed).not.toHaveBeenCalled();
   await click(container.querySelector<HTMLButtonElement>('[aria-label="Next month"]')!);
   await click(container.querySelector<HTMLButtonElement>('[aria-label="Close calendar"]')!); await click(opener);
   expect(container.querySelector('[data-date="2026-10-28"]')?.closest('td')?.getAttribute('aria-selected')).toBe('true');
-  await act(async () => { (container.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
+  await act(async () => { (container.querySelector('.hw-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
   expect(new FormData(container.querySelector('form')!).get('date')).toBe('2026-10-28');
-  expect(container.querySelector('.nq-calendar-header h3')!.textContent).toBe(before);
+  expect(container.querySelector('.hw-calendar-header h3')!.textContent).toBe(before);
 });
 it('preserves an unsupported ISO date while explicitly limiting its Hijri display', async () => {
   await render(<form><DatePicker label="Historical date" name="date" defaultValue="1900-01-01" defaultCalendar="islamic-umalqura" locale="en-SA" /></form>);
@@ -118,7 +118,7 @@ it('preserves an unsupported ISO date while explicitly limiting its Hijri displa
   expect([...container.querySelectorAll('[role=status] bdi[dir=ltr]')].map(node => node.textContent)).toEqual([UMALQURA_MIN_DATE, UMALQURA_MAX_DATE]);
   expect(container.querySelectorAll('[role=gridcell][aria-selected=true]')).toHaveLength(0);
   expect(container.querySelector<HTMLButtonElement>('[aria-label="Previous month"]')!.disabled).toBe(true);
-  await act(async () => { (container.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
+  await act(async () => { (container.querySelector('.hw-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
   expect(container.querySelector('[data-date="1900-01-01"]')?.closest('td')?.getAttribute('aria-selected')).toBe('true');
   expect(new FormData(container.querySelector('form')!).get('date')).toBe('1900-01-01');
   expect(container.querySelector('[role=status]')).toBeNull();
@@ -131,7 +131,7 @@ it('rejects unsupported Hijri form submission and keeps application bounds after
   const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
   const button = [...container.querySelectorAll('button')].find(item => item.textContent === 'Submit')!;
   await click(button); expect(submitted).not.toHaveBeenCalled(); expect(date.validationMessage).toBe('خارج نطاق أم القرى');
-  await act(async () => { (container.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
+  await act(async () => { (container.querySelector('.hw-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
   expect(date.value).toBe(formatCalendarDate('1900-01-01', { calendar: 'gregory', locale: 'ar-SA', dateStyle: 'medium' })); expect(date.checkValidity()).toBe(true);
   await click(button); expect(submitted).toHaveBeenCalledOnce();
   await input(date, '1880-01-01'); expect(date.checkValidity()).toBe(false); expect(date.validity.customError).toBe(true);
@@ -142,7 +142,7 @@ it('shows and associates the selected calendar date outside the closed picker di
   const supported = '2029-08-11';
   await render(<DatePicker id="visible-date" label="Date" hint="Original day" value={supported} calendar="islamic-umalqura" locale="en-SA" />);
   const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
-  const output = container.querySelector<HTMLOutputElement>('.nq-date-picker-value')!;
+  const output = container.querySelector<HTMLOutputElement>('.hw-date-picker-value')!;
   expect(container.querySelector('dialog')!.open).toBe(false);
   expect(output.hidden).toBe(false);
   expect(output.textContent).toBe(formatCalendarDate(supported, { calendar: 'islamic-umalqura', locale: 'en-SA', dateStyle: 'full' }));
@@ -181,10 +181,10 @@ it('sorts a native data table stably and exposes direction on headers', async ()
 });
 it('keeps toasts caller owned, with only urgent messages in the assertive region', async () => {
   const dismiss = vi.fn(); await render(<ToastRegion messages={[{ id: 'saved', description: 'Saved', tone: 'success' }, { id: 'urgent', description: 'Connection lost', urgent: true }]} onDismiss={dismiss} />);
-  expect(container.querySelector('[role=status]')?.textContent).toContain('Saved'); expect(container.querySelector('[role=alert]')?.textContent).toContain('Connection lost'); await click(container.querySelector('button')!); expect(dismiss).toHaveBeenCalledWith('saved'); expect(container.querySelectorAll('.nq-toast')).toHaveLength(2);
+  expect(container.querySelector('[role=status]')?.textContent).toContain('Saved'); expect(container.querySelector('[role=alert]')?.textContent).toContain('Connection lost'); await click(container.querySelector('button')!); expect(dismiss).toHaveBeenCalledWith('saved'); expect(container.querySelectorAll('.hw-toast')).toHaveLength(2);
 });
 it('reports configurable consent and feedback without implied persistence or network requests', async () => {
   const consent = vi.fn(); const feedback = vi.fn(); await render(<><CookieConsent title="Optional cookies" description="Choose a preference" onValueChange={consent} /><Feedback label="Was this helpful?" onFeedback={feedback} /></>);
-  await click([...container.querySelectorAll('button')].find(button => button.textContent === 'Reject optional cookies')!); expect(consent).toHaveBeenCalledWith('rejected'); expect(container.querySelector<HTMLElement>('.nq-cookie-consent')!.hidden).toBe(true);
+  await click([...container.querySelectorAll('button')].find(button => button.textContent === 'Reject optional cookies')!); expect(consent).toHaveBeenCalledWith('rejected'); expect(container.querySelector<HTMLElement>('.hw-cookie-consent')!.hidden).toBe(true);
   await click(container.querySelector<HTMLInputElement>('input[value=yes]')!); await click([...container.querySelectorAll('button')].find(button => button.textContent === 'Send feedback')!); expect(feedback).toHaveBeenCalledWith({ helpful: 'yes', comment: '' }); expect(container.querySelector('[role=status]')?.textContent).toContain('Thank you');
 });

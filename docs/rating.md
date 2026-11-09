@@ -12,7 +12,7 @@ The native radio keyboard behavior remains: Tab enters/leaves the group and
 arrow keys move selection. Focus remains visible on the focused star.
 
 ```html
-<fieldset class="nq-rating" data-nq="rating">
+<fieldset class="hw-rating" data-hw="rating">
   <legend>قيّم الخدمة</legend>
   <label><input type="radio" name="rating" value="1" required aria-label="١ من ٣"><span aria-hidden="true">★</span></label>
   <label><input type="radio" name="rating" value="2" checked aria-label="٢ من ٣"><span aria-hidden="true">★</span></label>
@@ -25,7 +25,7 @@ Do not reverse DOM order for RTL; inherited direction handles placement.
 The star span is decorative; the radio needs its numeric accessible name.
 Native `name`, `required`, disabled fieldsets and form reset retain their semantics.
 An editable vanilla rating works without JavaScript. Call `enhance()` or
-`createRating(fieldset)` when using `data-nq-readonly="true"`; HTML radios do not
+`createRating(fieldset)` when using `data-hw-readonly="true"`; HTML radios do not
 have a native readonly mode. The controller blocks changes while retaining
 keyboard focus and submission of the checked value. Call `destroy()`/cleanup
 when removing an enhanced vanilla tree.

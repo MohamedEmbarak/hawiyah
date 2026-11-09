@@ -5,7 +5,7 @@ afterEach(() => document.body.replaceChildren());
 it('enhances native navigation, guards disabled entries, respects prevention and restores attributes/focus', async () => {
   const trigger = document.createElement('button'); trigger.textContent = 'Open'; document.body.append(trigger);
   const dialog = document.createElement('dialog');
-  dialog.innerHTML = '<h2>القائمة</h2><nav class="nq-navigation-drawer-nav"><ul><li><details><summary>الخدمات</summary><ul><li><a href="#service" aria-current="page">طلب خدمة</a></li></ul></details></li><li><a href="#disabled" aria-disabled="true">Disabled</a></li><li><details aria-disabled="true"><summary>Disabled group</summary><a href="#child">Child</a></details></li></ul></nav>';
+  dialog.innerHTML = '<h2>القائمة</h2><nav class="hw-navigation-drawer-nav"><ul><li><details><summary>الخدمات</summary><ul><li><a href="#service" aria-current="page">طلب خدمة</a></li></ul></details></li><li><a href="#disabled" aria-disabled="true">Disabled</a></li><li><details aria-disabled="true"><summary>Disabled group</summary><a href="#child">Child</a></details></li></ul></nav>';
   document.body.append(dialog); const before = dialog.cloneNode(true);
   dialog.showModal = () => { dialog.open = true; };
   dialog.close = () => { dialog.open = false; dialog.dispatchEvent(new Event('close')); };
@@ -29,7 +29,7 @@ it('enhances native navigation, guards disabled entries, respects prevention and
   expect(dialog.isEqualNode(before)).toBe(true);
 });
 it('does not close after destruction while a route activation is queued', async () => {
-  const dialog = document.createElement('dialog'); dialog.innerHTML = '<nav class="nq-navigation-drawer-nav"><a href="#service">Service</a></nav>'; document.body.append(dialog);
+  const dialog = document.createElement('dialog'); dialog.innerHTML = '<nav class="hw-navigation-drawer-nav"><a href="#service">Service</a></nav>'; document.body.append(dialog);
   dialog.open = true;
   let closed = 0; dialog.close = () => { closed++; dialog.open = false; };
   const controller = createNavigationDrawer(dialog); dialog.querySelector('a')!.click(); controller.destroy();

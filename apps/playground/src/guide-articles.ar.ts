@@ -3,35 +3,35 @@ type Code = (value: string) => string;
 
 const samples: Record<string, readonly string[]> = {
   "getting-started": [
-    "npm install --global pnpm@11.25.0\ngit clone https://github.com/MohamedEmbarak/nasaq.git\ncd nasaq\npnpm install --frozen-lockfile\npnpm build:packages\npnpm dev",
-    "import '@nasaq/styles/reset.css'; // Optional\nimport '@nasaq/styles/styles.css';",
-    "<main lang=\"ar\" dir=\"rtl\"\n      data-nq-theme=\"dga\" data-nq-mode=\"light\"\n      data-nq-density=\"comfortable\">\n  <button type=\"button\" class=\"nq-button\">ابدأ الطلب</button>\n</main>",
+    "npm install --global pnpm@11.25.0\ngit clone https://github.com/MohamedEmbarak/hawiyah.git\ncd hawiyah\npnpm install --frozen-lockfile\npnpm build:packages\npnpm dev",
+    "import '@hawiyah/styles/reset.css'; // Optional\nimport '@hawiyah/styles/styles.css';",
+    "<main lang=\"ar\" dir=\"rtl\"\n      data-hw-theme=\"dga\" data-hw-mode=\"light\"\n      data-hw-density=\"comfortable\">\n  <button type=\"button\" class=\"hw-button\">ابدأ الطلب</button>\n</main>",
     "pnpm build\npnpm test\npnpm test:browser\npnpm check:packages"
   ],
   "vanilla": [
     "pnpm build:packages\npnpm dev",
-    "<div id=\"application\" lang=\"ar\" dir=\"rtl\" data-nq-theme=\"dga\">\n  <div class=\"nq-field\">\n    <label class=\"nq-label\" for=\"name\">الاسم الكامل</label>\n    <input id=\"name\" name=\"name\" class=\"nq-input\"\n           autocomplete=\"name\" required aria-describedby=\"name-hint\">\n    <span id=\"name-hint\" class=\"nq-hint\">كما يظهر في المستند.</span>\n  </div>\n  <button type=\"button\" class=\"nq-button\">متابعة</button>\n</div>",
-    "import '@nasaq/styles/styles.css';\nimport { enhance } from '@nasaq/vanilla';\n\nconst root = document.querySelector('#application');\nif (!root) throw new Error('Application root not found.');\nlet dispose = enhance(root);\n\nfunction replaceView(markup) {\n  dispose();\n  root.innerHTML = markup; // Use only your own trusted templates.\n  dispose = enhance(root);\n}\n\n// When leaving this view:\ndispose();"
+    "<div id=\"application\" lang=\"ar\" dir=\"rtl\" data-hw-theme=\"dga\">\n  <div class=\"hw-field\">\n    <label class=\"hw-label\" for=\"name\">الاسم الكامل</label>\n    <input id=\"name\" name=\"name\" class=\"hw-input\"\n           autocomplete=\"name\" required aria-describedby=\"name-hint\">\n    <span id=\"name-hint\" class=\"hw-hint\">كما يظهر في المستند.</span>\n  </div>\n  <button type=\"button\" class=\"hw-button\">متابعة</button>\n</div>",
+    "import '@hawiyah/styles/styles.css';\nimport { enhance } from '@hawiyah/vanilla';\n\nconst root = document.querySelector('#application');\nif (!root) throw new Error('Application root not found.');\nlet dispose = enhance(root);\n\nfunction replaceView(markup) {\n  dispose();\n  root.innerHTML = markup; // Use only your own trusted templates.\n  dispose = enhance(root);\n}\n\n// When leaving this view:\ndispose();"
   ],
   "react": [
-    "pnpm build:packages\npnpm --filter @nasaq/example-react dev",
-    "import { useState } from 'react';\nimport { Button, TextField } from '@nasaq/react';\nimport '@nasaq/styles/styles.css';\n\nexport function RequestForm() {\n  const [name, setName] = useState('');\n  return (\n    <form lang=\"ar\" dir=\"rtl\" onSubmit={event => event.preventDefault()}>\n      <TextField label=\"الاسم الكامل\" name=\"name\" required\n        value={name} onChange={event => setName(event.currentTarget.value)} />\n      <Button type=\"submit\">متابعة</Button>\n    </form>\n  );\n}"
+    "pnpm build:packages\npnpm --filter @hawiyah/example-react dev",
+    "import { useState } from 'react';\nimport { Button, TextField } from '@hawiyah/react';\nimport '@hawiyah/styles/styles.css';\n\nexport function RequestForm() {\n  const [name, setName] = useState('');\n  return (\n    <form lang=\"ar\" dir=\"rtl\" onSubmit={event => event.preventDefault()}>\n      <TextField label=\"الاسم الكامل\" name=\"name\" required\n        value={name} onChange={event => setName(event.currentTarget.value)} />\n      <Button type=\"submit\">متابعة</Button>\n    </form>\n  );\n}"
   ],
   "vue": [
-    "pnpm build:packages\npnpm --filter @nasaq/example-vue dev",
-    "<script setup lang=\"ts\">\nimport { ref } from 'vue';\nimport { Button, Dialog, TextField } from '@nasaq/vue';\nimport '@nasaq/styles/styles.css';\nconst name = ref('');\nconst reviewing = ref(false);\n</script>\n\n<template>\n  <form lang=\"ar\" dir=\"rtl\" @submit.prevent=\"reviewing = true\">\n    <TextField v-model=\"name\" label=\"الاسم\" name=\"name\" required />\n    <Button type=\"submit\">مراجعة</Button>\n  </form>\n  <Dialog v-model:open=\"reviewing\" title=\"مراجعة الطلب\" close-label=\"إغلاق\">\n    <p>{{ name }}</p>\n    <template #footer=\"{ close }\"><Button @click=\"close\">تم</Button></template>\n  </Dialog>\n</template>"
+    "pnpm build:packages\npnpm --filter @hawiyah/example-vue dev",
+    "<script setup lang=\"ts\">\nimport { ref } from 'vue';\nimport { Button, Dialog, TextField } from '@hawiyah/vue';\nimport '@hawiyah/styles/styles.css';\nconst name = ref('');\nconst reviewing = ref(false);\n</script>\n\n<template>\n  <form lang=\"ar\" dir=\"rtl\" @submit.prevent=\"reviewing = true\">\n    <TextField v-model=\"name\" label=\"الاسم\" name=\"name\" required />\n    <Button type=\"submit\">مراجعة</Button>\n  </form>\n  <Dialog v-model:open=\"reviewing\" title=\"مراجعة الطلب\" close-label=\"إغلاق\">\n    <p>{{ name }}</p>\n    <template #footer=\"{ close }\"><Button @click=\"close\">تم</Button></template>\n  </Dialog>\n</template>"
   ],
   "angular": [
-    "pnpm build:packages\npnpm --filter @nasaq/example-angular dev",
-    "import { Component } from '@angular/core';\nimport { FormsModule } from '@angular/forms';\nimport { NqButtonDirective, NqTextFieldComponent } from '@nasaq/angular';\n\n@Component({\n  standalone: true,\n  imports: [FormsModule, NqButtonDirective, NqTextFieldComponent],\n  template: `\n    <form #form=\"ngForm\" lang=\"ar\" dir=\"rtl\" (ngSubmit)=\"save()\">\n      <nq-text-field controlId=\"name\" label=\"الاسم\" name=\"name\"\n        [(ngModel)]=\"name\" [required]=\"true\" />\n      <button nqButton type=\"submit\">حفظ</button>\n      <button nqButton variant=\"secondary\" type=\"button\"\n        (click)=\"form.resetForm()\">إعادة تعيين</button>\n    </form>\n  `,\n})\nexport class RequestForm {\n  name = '';\n  save() { /* Your application action. */ }\n}"
+    "pnpm build:packages\npnpm --filter @hawiyah/example-angular dev",
+    "import { Component } from '@angular/core';\nimport { FormsModule } from '@angular/forms';\nimport { HwButtonDirective, HwTextFieldComponent } from '@hawiyah/angular';\n\n@Component({\n  standalone: true,\n  imports: [FormsModule, HwButtonDirective, HwTextFieldComponent],\n  template: `\n    <form #form=\"ngForm\" lang=\"ar\" dir=\"rtl\" (ngSubmit)=\"save()\">\n      <hw-text-field controlId=\"name\" label=\"الاسم\" name=\"name\"\n        [(ngModel)]=\"name\" [required]=\"true\" />\n      <button hwButton type=\"submit\">حفظ</button>\n      <button hwButton variant=\"secondary\" type=\"button\"\n        (click)=\"form.resetForm()\">إعادة تعيين</button>\n    </form>\n  `,\n})\nexport class RequestForm {\n  name = '';\n  save() { /* Your application action. */ }\n}"
   ],
   "theming": [
-    "<main data-nq-theme=\"dga\" data-nq-mode=\"dark\"\n      data-nq-density=\"comfortable\" lang=\"ar\" dir=\"rtl\">\n  <!-- Components inherit this context. -->\n</main>",
-    "[data-nq-theme=\"custom\"] {\n  --nq-color-primary: #293b8f;\n  --nq-color-primary-hover: #1d2c70;\n  --nq-color-on-primary: #ffffff;\n  --nq-color-primary-subtle: #dadff7;\n  --nq-color-primary-text: #293b8f;\n  --nq-radius-md: 0.5rem;\n}"
+    "<main data-hw-theme=\"dga\" data-hw-mode=\"dark\"\n      data-hw-density=\"comfortable\" lang=\"ar\" dir=\"rtl\">\n  <!-- Components inherit this context. -->\n</main>",
+    "[data-hw-theme=\"custom\"] {\n  --hw-color-primary: #293b8f;\n  --hw-color-primary-hover: #1d2c70;\n  --hw-color-on-primary: #ffffff;\n  --hw-color-primary-subtle: #dadff7;\n  --hw-color-primary-text: #293b8f;\n  --hw-radius-md: 0.5rem;\n}"
   ],
   "layouts": [
-    "<main class=\"nq-container\">\n  <section class=\"nq-stack\" style=\"--nq-layout-gap:var(--nq-space-6)\">\n    <header class=\"nq-page-header\"><h1>الخدمات</h1></header>\n    <div class=\"nq-grid\" style=\"--nq-layout-columns:auto-fit;--nq-layout-min-item:18rem\">\n      <article class=\"nq-card\"><div class=\"nq-card-body\">خدمة أولى</div></article>\n      <article class=\"nq-card\"><div class=\"nq-card-body\">خدمة ثانية</div></article>\n    </div>\n  </section>\n</main>",
-    "import { Container, Grid, Card, Stack } from '@nasaq/react';\n\n<Container maxWidth=\"78rem\">\n  <Stack gap={{ base: 4, lg: 6 }}>\n    <h1>Services</h1>\n    <Grid columns={{ base: 1, sm: 2, lg: 3 }} gap={4}>\n      <Card>First service</Card>\n      <Card>Second service</Card>\n    </Grid>\n  </Stack>\n</Container>"
+    "<main class=\"hw-container\">\n  <section class=\"hw-stack\" style=\"--hw-layout-gap:var(--hw-space-6)\">\n    <header class=\"hw-page-header\"><h1>الخدمات</h1></header>\n    <div class=\"hw-grid\" style=\"--hw-layout-columns:auto-fit;--hw-layout-min-item:18rem\">\n      <article class=\"hw-card\"><div class=\"hw-card-body\">خدمة أولى</div></article>\n      <article class=\"hw-card\"><div class=\"hw-card-body\">خدمة ثانية</div></article>\n    </div>\n  </section>\n</main>",
+    "import { Container, Grid, Card, Stack } from '@hawiyah/react';\n\n<Container maxWidth=\"78rem\">\n  <Stack gap={{ base: 4, lg: 6 }}>\n    <h1>Services</h1>\n    <Grid columns={{ base: 1, sm: 2, lg: 3 }} gap={4}>\n      <Card>First service</Card>\n      <Card>Second service</Card>\n    </Grid>\n  </Stack>\n</Container>"
   ],
   "lifecycle": [],
   "calendars": [
@@ -49,12 +49,12 @@ const samples: Record<string, readonly string[]> = {
 
 const articles: Record<string, string> = {
   "getting-started": `
-<p class="guide-lead">ابنِ واجهة خدمات باستخدام HTML واضح الدلالة، وتنسيقات مشتركة، وإطار العمل الذي تعرفه. يفصل نسق الأساس البصري عن سلوك التفاعل لتتمكن من تعديل كل منهما بوضوح.</p>
-<aside class="guide-note"><strong>Apache 2.0 · الإصدار 0.2 على npm</strong><p>تتوفر شفرة نسق على GitHub بترخيص Apache 2.0، وحزم <code>@nasaq/*</code> منشورة على npm. أضفها إلى تطبيق قائم بالأمر <code>npm install @nasaq/styles @nasaq/react</code>، مع استبدال <code>react</code> بـ <code>vanilla</code> أو <code>vue</code> أو <code>angular</code>. قد تتغير الواجهات البرمجية بين الإصدارات الفرعية ما دام الإصدار 0.x. للعمل على نسق نفسه أو تشغيل أمثلته، ابدأ من المستودع كما يلي.</p></aside>
+<p class="guide-lead">ابنِ واجهة خدمات باستخدام HTML واضح الدلالة، وتنسيقات مشتركة، وإطار العمل الذي تعرفه. تفصل هوية الأساس البصري عن سلوك التفاعل لتتمكن من تعديل كل منهما بوضوح.</p>
+<aside class="guide-note"><strong>Apache 2.0 · الإصدار 0.2 على npm</strong><p>تتوفر شفرة هوية على GitHub بترخيص Apache 2.0، وحزم <code>@hawiyah/*</code> منشورة على npm. أضفها إلى تطبيق قائم بالأمر <code>npm install @hawiyah/styles @hawiyah/react</code>، مع استبدال <code>react</code> بـ <code>vanilla</code> أو <code>vue</code> أو <code>angular</code>. قد تتغير الواجهات البرمجية بين الإصدارات الفرعية ما دام الإصدار 0.x. للعمل على هوية نفسها أو تشغيل أمثلته، ابدأ من المستودع كما يلي.</p></aside>
 <h2 id="run-source">1. شغّل المشروع من المصدر</h2>
 <p>استخدم Node.js 24 وpnpm 11.25.0 لمطابقة أدوات المستودع. يتضمن الأمر الأول تثبيت pnpm إن لم يكن متاحًا لديك.</p>
 {{code:0}}
-<p>افتح العنوان المحلي الذي يطبعه Vite. التطبيق الافتراضي هو دليل نسق ومعرض التجربة المبني بـJavaScript دون إطار عمل.</p>
+<p>افتح العنوان المحلي الذي يطبعه Vite. التطبيق الافتراضي هو دليل هوية ومعرض التجربة المبني بـJavaScript دون إطار عمل.</p>
 <h2 id="choose-framework">2. اختر نقطة البداية</h2>
 <div class="guide-choice-grid">
 <a class="guide-choice" href="#docs/vanilla"><span><bdi>HTML + JavaScript</bdi></span><p>ابدأ بعناصر HTML الأصلية، وأضف السلوك للمكونات التي تحتاج إليه.</p><b>إعداد JavaScript ←</b></a>
@@ -70,17 +70,17 @@ const articles: Record<string, string> = {
 <p>تحتوي صفحة كل مكون على مثال تفاعلي، وشفرة قابلة للنسخ، ومرجع للواجهات البرمجية، ودورة الحياة، وإرشادات إمكانية الوصول، وحدود التنفيذ. ابدأ بـ<a href="#component/text-field">حقل النص</a> أو <a href="#component/dialog">الحوار</a> أو <a href="#component/date-picker">منتقي التاريخ</a>، ثم ركّب صفحتك في <a href="#layouts">استوديو التخطيط</a>.</p>
 <h2 id="verify-changes">5. تحقّق من التغييرات</h2>
 {{code:3}}
-<p>تحتاج اختبارات المتصفح إلى Chromium. حدّد مسار نسخة محلية عبر <code>NASAQ_CHROMIUM</code> عند الحاجة. تفحص أوامر الحزم أرشيفات محلية وتختبر استهلاكها؛ لا تنشر شيئًا على npm. يوضح <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/validation.md" target="_blank" rel="noopener">سجل التحقق ↗</a> نطاق الفحوص الفعلية وما بقي منها.</p>
+<p>تحتاج اختبارات المتصفح إلى Chromium. حدّد مسار نسخة محلية عبر <code>HAWIYAH_CHROMIUM</code> عند الحاجة. تفحص أوامر الحزم أرشيفات محلية وتختبر استهلاكها؛ لا تنشر شيئًا على npm. يوضح <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">سجل التحقق ↗</a> نطاق الفحوص الفعلية وما بقي منها.</p>
 <h2 id="package-layers">تعرّف على طبقات الحزم</h2>
 <div class="guide-table-wrap" tabindex="0" role="region" aria-label="جدول الحزم، قابل للتمرير">
-<table class="nq-table"><thead><tr><th>الحزمة</th><th>المسؤولية</th></tr></thead><tbody>
-<tr><td><code>@nasaq/tokens</code></td><td>قيم التصميم الدلالية ومتغيرات السمات.</td></tr>
-<tr><td><code>@nasaq/styles</code></td><td>تنسيقات المكونات، وأدوات التخطيط المتجاوب، وإعادة الضبط الاختيارية.</td></tr>
-<tr><td><code>@nasaq/core</code></td><td>منطق مشترك مستقل عن العرض، وتحويل التواريخ، والتنسيق، وأدوات التخطيط.</td></tr>
-<tr><td><code>@nasaq/vanilla</code></td><td>إضافة التفاعل إلى عناصر DOM مع إتاحة إنهاء التفعيل وتنظيف آثاره.</td></tr>
-<tr><td><code>@nasaq/react</code><br><code>@nasaq/vue</code><br><code>@nasaq/angular</code></td><td>مكونات طبيعية لكل إطار، متكاملة مع حالته ودورة حياته.</td></tr>
+<table class="hw-table"><thead><tr><th>الحزمة</th><th>المسؤولية</th></tr></thead><tbody>
+<tr><td><code>@hawiyah/tokens</code></td><td>قيم التصميم الدلالية ومتغيرات السمات.</td></tr>
+<tr><td><code>@hawiyah/styles</code></td><td>تنسيقات المكونات، وأدوات التخطيط المتجاوب، وإعادة الضبط الاختيارية.</td></tr>
+<tr><td><code>@hawiyah/core</code></td><td>منطق مشترك مستقل عن العرض، وتحويل التواريخ، والتنسيق، وأدوات التخطيط.</td></tr>
+<tr><td><code>@hawiyah/vanilla</code></td><td>إضافة التفاعل إلى عناصر DOM مع إتاحة إنهاء التفعيل وتنظيف آثاره.</td></tr>
+<tr><td><code>@hawiyah/react</code><br><code>@hawiyah/vue</code><br><code>@hawiyah/angular</code></td><td>مكونات طبيعية لكل إطار، متكاملة مع حالته ودورة حياته.</td></tr>
 </tbody></table></div>
-<p>للتجربة في تطبيق آخر قبل إصدار npm، اتبع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/scripts/check-packages.mjs" target="_blank" rel="noopener">إعداد استهلاك الحزم المحلية المستخدم في الفحوص ↗</a>، أو اعمل داخل أحد تطبيقات الأمثلة. لا تفترض أن أي حزمة موجودة في السجل تحمل الاسم نفسه تابعة لهذا المشروع.</p>
+<p>للتجربة في تطبيق آخر قبل إصدار npm، اتبع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/scripts/check-packages.mjs" target="_blank" rel="noopener">إعداد استهلاك الحزم المحلية المستخدم في الفحوص ↗</a>، أو اعمل داخل أحد تطبيقات الأمثلة. لا تفترض أن أي حزمة موجودة في السجل تحمل الاسم نفسه تابعة لهذا المشروع.</p>
 `,
   "vanilla": `
 <p class="guide-lead">ابدأ بعناصر HTML الأصلية. أضف متحكمًا عندما يتطلب التفاعل سلوكًا إضافيًا.</p>
@@ -91,11 +91,11 @@ const articles: Record<string, string> = {
 {{code:1}}
 <h2 id="mount-cleanup">فعّل السلوك بعد الإدراج، ونظّفه قبل الاستبدال</h2>
 {{code:2}}
-<p>تبحث الدالة <code>enhance</code> عن علامات <code>data-nq</code> الصريحة لتفعيل التبويبات، والحوارات، والقوائم القابلة للبحث، والتقاويم، وقوائم الإجراءات وغيرها. تحتفظ الأزرار والتسميات والحقول وقوائم الاختيار الأصلية وأقسام <code>details/summary</code> بسلوك المتصفح دون هذا التفعيل. حافظ على استقرار عناصر DOM ما دام المتحكم مرتبطًا بها.</p>
+<p>تبحث الدالة <code>enhance</code> عن علامات <code>data-hw</code> الصريحة لتفعيل التبويبات، والحوارات، والقوائم القابلة للبحث، والتقاويم، وقوائم الإجراءات وغيرها. تحتفظ الأزرار والتسميات والحقول وقوائم الاختيار الأصلية وأقسام <code>details/summary</code> بسلوك المتصفح دون هذا التفعيل. حافظ على استقرار عناصر DOM ما دام المتحكم مرتبطًا بها.</p>
 <aside class="guide-note"><strong>جهة واحدة تدير كل جزء من DOM</strong><p>لا تستخدم تفعيل vanilla على شجرة مكونات يديرها React أو Vue أو Angular. تتولى حزمة كل إطار حالتها التفاعلية وتنظيفها بالفعل.</p></aside>
 <h2 id="events-data">اربط أحداث التطبيق وبياناته</h2>
 <p>تحتفظ الحقول الأصلية بالأسماء، والتحقق من الحقول المطلوبة، و<code>FormData</code>، وأحداث <code>input</code> و<code>change</code>. توفّر المكونات الأغنى أحداثًا موثقة أو قيمًا مؤكدة داخل حقول مخفية. تعامل مع نص البحث في Combobox والقيمة المختارة منه باعتبارهما معلومتين مختلفتين. تختار حقول الملفات ملفات محلية؛ يتولى تطبيقك نقلها إلى الخادم.</p>
-<p>تابع إلى <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/packages/vanilla/README.md" target="_blank" rel="noopener">مرجع vanilla ↗</a> و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/packages/vanilla/EXPANSION-API.md" target="_blank" rel="noopener">العقد الكامل لبنية التفعيل ↗</a> لمعرفة العلامات والواجهات الفعلية لكل متحكم.</p>
+<p>تابع إلى <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vanilla/README.md" target="_blank" rel="noopener">مرجع vanilla ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vanilla/EXPANSION-API.md" target="_blank" rel="noopener">العقد الكامل لبنية التفعيل ↗</a> لمعرفة العلامات والواجهات الفعلية لكل متحكم.</p>
 `,
   "react": `
 <p class="guide-lead">استخدم مكونات مبنية خصيصًا لـReact، مع حالة يديرها التطبيق أو يحتفظ بها العنصر نفسه. تتولى ملفات CSS المشتركة المظهر.</p>
@@ -113,7 +113,7 @@ const articles: Record<string, string> = {
 </ul>
 <h2 id="server-rendering">العرض على الخادم وربط التفاعل</h2>
 <p>لا تصل الاستيرادات والعرض على الخادم إلى كائنات المتصفح العامة. تُنشأ المعرّفات باستخدام <code>useId</code> في React، وتُفتح الحوارات الأصلية بعد تركيب المكون. حافظ على تطابق البيانات الأولية بين الخادم والعميل، واتبع متطلبات React المعتادة لعملية hydration، أي ربط HTML المولّد على الخادم بالتفاعل. يصف سجل التحقق الحالات التي اختُبرت؛ لا يعني ذلك ضمان كل تكامل محتمل مع أطر الاستضافة.</p>
-<p>راجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/packages/react/README.md" target="_blank" rel="noopener">خصائص React وواجهات تركيب المحتوى ↗</a>، أو استكشف <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/examples/react/src/main.tsx" target="_blank" rel="noopener">المثال الكامل ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/react/README.md" target="_blank" rel="noopener">خصائص React وواجهات تركيب المحتوى ↗</a>، أو استكشف <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/examples/react/src/main.tsx" target="_blank" rel="noopener">المثال الكامل ↗</a>.</p>
 `,
   "vue": `
 <p class="guide-lead">ركّب واجهتك من مكونات Vue 3.5+، باستخدام <code>v-model</code> وفتحات المحتوى (slots) والحالة التفاعلية المعتادة.</p>
@@ -132,7 +132,7 @@ const articles: Record<string, string> = {
 </ul>
 <h2 id="rendering-accessibility">العرض وإمكانية الوصول</h2>
 <p>توفر <code>useId</code> في Vue معرّفات ثابتة لربط العناصر بين الخادم والعميل. يتحول الحوار المعروض مفتوحًا من الخادم إلى حوار يمنع التفاعل مع بقية الصفحة (modal) بعد تركيب المكون. وفّر تسميات مترجمة، ورسائل للحالات الفارغة، ونصوص أزرار الإغلاق، وإعلانات الحالة؛ تعيين <code>dir</code> وحده لا يترجمها.</p>
-<p>راجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/packages/vue/README.md" target="_blank" rel="noopener">نماذج القيم وفتحات المحتوى وخصائص Vue ↗</a> و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/examples/vue/src/App.vue" target="_blank" rel="noopener">مثال Vue الكامل ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/vue/README.md" target="_blank" rel="noopener">نماذج القيم وفتحات المحتوى وخصائص Vue ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/examples/vue/src/App.vue" target="_blank" rel="noopener">مثال Vue الكامل ↗</a>.</p>
 `,
   "angular": `
 <p class="guide-lead">استورد مكونات Angular المستقلة. تتكامل حقول القيم مع النماذج المعتمدة على القالب والنماذج التفاعلية.</p>
@@ -141,7 +141,7 @@ const articles: Record<string, string> = {
 <h2 id="standalone-field">استخدم حقلًا مستقلًا</h2>
 <p>أضف المكونات والتوجيهات المطلوبة إلى <code>imports</code>، ثم اربط القيمة باستخدام آلية النماذج التي يعتمدها تطبيقك.</p>
 {{code:1}}
-<p>حمّل <code>@nasaq/styles/styles.css</code> مرة واحدة في ملف التنسيق العام لتطبيقك أو عند نقطة دخوله. لا تستورده حزمة Angular ضمنيًا.</p>
+<p>حمّل <code>@hawiyah/styles/styles.css</code> مرة واحدة في ملف التنسيق العام لتطبيقك أو عند نقطة دخوله. لا تستورده حزمة Angular ضمنيًا.</p>
 <h2 id="forms-lifecycle">عقد النماذج ودورة الحياة</h2>
 <ul>
 <li>تطبّق حقول القيم <code>ControlValueAccessor</code>. استخدم <code>ngModel</code> أو عنصرًا من النماذج التفاعلية أو الزوج <code>value/valueChange</code>؛ لا تربط أكثر من آلية متنافسة للقيمة نفسها.</li>
@@ -151,18 +151,18 @@ const articles: Record<string, string> = {
 <li>يبدأ عرض الحوار الأصلي بوضع يمنع التفاعل مع بقية الصفحة (modal) بعد إنشاء العرض. يعيد الإغلاق أو إتلاف المكون التركيز إلى عنصر الفتح إذا ظل متصلًا بالصفحة.</li>
 </ul>
 <aside class="guide-note"><strong>صيغة الحزمة وحدود المثال</strong><p>تُبنى المكتبة بصيغة Angular Package Format باستخدام <code>ng-packagr</code> والتجميع الجزئي. يستخدم مثال Vite الصغير وضع JIT عمدًا. استخدم بناء Angular المعتاد بنمط AOT للإنتاج؛ لا يثبت هذا المثال تغطية AOT أو العرض على الخادم أو hydration.</p></aside>
-<p>راجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/packages/angular/README.md" target="_blank" rel="noopener">محددات المكونات المستقلة ومدخلاتها ومخرجاتها ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/angular/README.md" target="_blank" rel="noopener">محددات المكونات المستقلة ومدخلاتها ومخرجاتها ↗</a>.</p>
 `,
   "theming": `
 <p class="guide-lead">غيّر المظهر عبر قيم تصميم دلالية. اجعل السمة، والوضع اللوني، والكثافة، واللغة، واتجاه النص إعدادات مستقلة.</p>
 <h2 id="theme-context">حدّد السمة على عنصر يضم المكونات</h2>
 {{code:0}}
-<p>السمة الافتراضية هي <code>dga</code>، وترتبط بلقطات المصدر المزوّدة لأسس كود المنصات. اختر <code>nasaq</code> للاحتفاظ بألوان هوية نسق ومقاييس الخطوط والزوايا والمسافات والمحتوى الأصلية؛ وتبدأ <code>custom</code> من أساس DGA مع تجاوزاتك الخاصة. اختر الوضع <code>light</code> أو <code>dark</code>، والكثافة <code>comfortable</code> أو <code>compact</code> أو <code>mobile</code>. كثافة الجوال اختيارية: الحد الأدنى لارتفاع الحقول أحادية السطر 44 بكسل، وارتفاع الأزرار الصغيرة والافتراضية والكبيرة 32 و40 و44 بكسل عند حجم خط جذري 16 بكسل. تبقى مساحات النص متعددة الأسطر. جرّب التركيبات في صفحة <a href="#foundations">الأسس</a>، واقرأ <a href="#docs/alignment">إرشادات المصدر والانتقال</a>.</p>
+<p>السمة الافتراضية هي <code>dga</code>، وترتبط بلقطات المصدر المزوّدة لأسس كود المنصات. اختر <code>hawiyah</code> للاحتفاظ بألوان علامة هوية ومقاييس الخطوط والزوايا والمسافات والمحتوى الأصلية؛ وتبدأ <code>custom</code> من أساس DGA مع تجاوزاتك الخاصة. اختر الوضع <code>light</code> أو <code>dark</code>، والكثافة <code>comfortable</code> أو <code>compact</code> أو <code>mobile</code>. كثافة الجوال اختيارية: الحد الأدنى لارتفاع الحقول أحادية السطر 44 بكسل، وارتفاع الأزرار الصغيرة والافتراضية والكبيرة 32 و40 و44 بكسل عند حجم خط جذري 16 بكسل. تبقى مساحات النص متعددة الأسطر. جرّب التركيبات في صفحة <a href="#foundations">الأسس</a>، واقرأ <a href="#docs/alignment">إرشادات المصدر والانتقال</a>.</p>
 <h2 id="semantic-overrides">عدّل المعنى المشترك بدلًا من كل مكون</h2>
 {{code:1}}
 <p>حمّل التجاوزات بعد ملف التنسيق المشترك. راجع تباين النص والتركيز وحالات التعطيل والتحويم والأخطاء في الوضعين الفاتح والداكن. قد يحتاج اللون المناسب لخلفية زر ممتلئ إلى قيمة مختلفة عند استخدامه نصًا فوق سطح.</p>
 <h2 id="application-fonts">يتولى التطبيق تحميل الخطوط</h2>
-<p>تُعرّف التنسيقات عائلات الخطوط، لكنها لا تنزّل ملفاتها. يستخدم هذا الدليل IBM Plex Sans Arabic وIBM Plex Sans. حمّل الأوزان ومجموعات المحارف التي تحتاج إليها فقط، واحتفظ بإشعارات تراخيص الخطوط عند إعادة توزيعها. شعار نسق العربي مسارات SVG، ولا يعتمد عرضه على تحميل خط.</p>
+<p>تُعرّف التنسيقات عائلات الخطوط، لكنها لا تنزّل ملفاتها. يستخدم هذا الدليل IBM Plex Sans Arabic وIBM Plex Sans. حمّل الأوزان ومجموعات المحارف التي تحتاج إليها فقط، واحتفظ بإشعارات تراخيص الخطوط عند إعادة توزيعها. شعار هوية العربي مسارات SVG، ولا يعتمد عرضه على تحميل خط.</p>
 <h2 id="language-direction">العربية لغة، وRTL اتجاه للتخطيط</h2>
 <ul>
 <li>حدّد <code>lang="ar"</code> للمحتوى العربي و<code>dir="rtl"</code> للتخطيط من اليمين إلى اليسار؛ لا يحل أحدهما محل الآخر.</li>
@@ -171,7 +171,7 @@ const articles: Record<string, string> = {
 <li>لا تعكس سلاسل النص العربي، ولا تضف تباعدًا بين الحروف المتصلة، ولا تعكس الشعار.</li>
 <li>اختبر التنقل الأفقي في الاتجاهين، وحافظ على ترتيب بصري وترتيب قراءة في DOM لهما معنى.</li>
 </ul>
-<p>راجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/packages/tokens/README.md" target="_blank" rel="noopener">حزمة قيم التصميم ↗</a> و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/design-principles.md" target="_blank" rel="noopener">مبادئ التصميم ↗</a>.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/tokens/README.md" target="_blank" rel="noopener">حزمة قيم التصميم ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/design-principles.md" target="_blank" rel="noopener">مبادئ التصميم ↗</a>.</p>
 `,
   "layouts": `
 <p class="guide-lead">ركّب الصفحة من مجموعة صغيرة من الأدوات ذات السلوك الواضح. تتولى CSS التجاوب دون الحاجة إلى قياس عرض الشاشة بـJavaScript.</p>
@@ -188,7 +188,7 @@ const articles: Record<string, string> = {
 <p>تستخدم الخصائص المتجاوبة <code>base</code> ثم <code>sm</code> عند 40rem، و<code>md</code> عند 48rem، و<code>lg</code> عند 64rem، و<code>xl</code> عند 80rem. ترث النقطة غير المحددة أقرب قيمة من النقاط الأصغر. يتيح <code>minItemWidth</code> شبكة تتكيف مع عرض العناصر، وتكون له الأولوية على عدد الأعمدة المحدد.</p>
 <h2 id="page-shell">أكمل هيكل الصفحة</h2>
 <p>استخدم <a href="#component/sidebar">Sidebar</a> للمحتوى أو التنقل الجانبي، و<a href="#component/app-shell">App shell</a> لمناطق التطبيق، و<a href="#component/page-header">Page header</a> للعنوان والإجراءات، و<a href="#component/aspect-ratio">Aspect ratio</a> لحجز مساحة الوسائط. حافظ على دلالات مناطق الصفحة؛ لا تضع عنصر <code>main</code> داخل عنصر <code>main</code> آخر.</p>
-<p>جرّب <a href="#layouts">استوديو التخطيط التفاعلي</a>، وراجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/layout.md" target="_blank" rel="noopener">خصائص التخطيط ومتغيرات CSS وأمثلة الأطر ↗</a>.</p>
+<p>جرّب <a href="#layouts">استوديو التخطيط التفاعلي</a>، وراجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/layout.md" target="_blank" rel="noopener">خصائص التخطيط ومتغيرات CSS وأمثلة الأطر ↗</a>.</p>
 `,
   "lifecycle": `
 <p class="guide-lead">لكل مكون جهة تديره، وحالة، وقواعد تفاعل، ونهاية لدورة حياته. وضّح هذه الحدود منذ البداية.</p>
@@ -201,7 +201,7 @@ const articles: Record<string, string> = {
 </ol>
 <h2 id="value-ownership">اختر من يدير القيمة</h2>
 <div class="guide-table-wrap" tabindex="0" role="region" aria-label="جدول إدارة الحالة، قابل للتمرير">
-<table class="nq-table"><thead><tr><th>الأسلوب</th><th>متى تستخدمه؟</th><th>المسؤولية</th></tr></thead><tbody>
+<table class="hw-table"><thead><tr><th>الأسلوب</th><th>متى تستخدمه؟</th><th>المسؤولية</th></tr></thead><tbody>
 <tr><td>حالة أصلية يديرها العنصر</td><td>عندما يستطيع النموذج المحلي الاحتفاظ بقيمه الحالية.</td><td>اقرأ FormData أو الأحداث، واستخدم القيم الأولية وسلوك إعادة التعيين الموثّقين.</td></tr>
 <tr><td>حالة يديرها التطبيق</td><td>عندما تحتاج عدة حقول إلى التنسيق مع حالة واحدة في التطبيق.</td><td>حدّث الحالة بعد استدعاء معالج التغيير، ولا تُعد تمرير قيمة قديمة.</td></tr>
 <tr><td>قيمة مشتقة</td><td>عندما تُحسب قيمة من حالة أخرى.</td><td>احتفظ بمصدر واحد للحقيقة بدلًا من مزامنة نسخ متعددة منها.</td></tr>
@@ -224,9 +224,9 @@ const articles: Record<string, string> = {
 <p class="guide-lead">يوم واحد يُرسل في النموذج، وتقويمان لعرضه. يجب ألا يغيّر الانتقال بين الميلادي والهجري التاريخ الذي اختاره المستخدم.</p>
 <h2 id="stored-date">القيمة المحفوظة تاريخ ميلادي دون وقت</h2>
 {{code:0}}
-<p>يجمع <a href="#component/date-picker">منتقي التاريخ</a> بين إدخال نصي ميلادي بصيغة ISO وحوار تقويم نسق، دون نافذة التاريخ الأصلية للمتصفح، بينما يعرض <a href="#component/calendar">Calendar</a> التقويم مباشرة داخل الصفحة. تبقى قيمة الحقل والنموذج ميلادية بصيغة ISO، ويعرض النص المرتبط بالحقل اليوم المختار وفق التقويم النشط.</p>
+<p>يجمع <a href="#component/date-picker">منتقي التاريخ</a> بين إدخال نصي ميلادي بصيغة ISO وحوار تقويم هوية، دون نافذة التاريخ الأصلية للمتصفح، بينما يعرض <a href="#component/calendar">Calendar</a> التقويم مباشرة داخل الصفحة. تبقى قيمة الحقل والنموذج ميلادية بصيغة ISO، ويعرض النص المرتبط بالحقل اليوم المختار وفق التقويم النشط.</p>
 <h2 id="hijri-reference">ما المرجع المستخدم للهجري؟</h2>
-<p>يستخدم نسق مجموعة بيانات منشورة ومثبتة الإصدار لتقويم أم القرى، تشترك فيها جميع حزم الأطر. لا يستخدم تقريبًا حسابيًا جدوليًا، ولا يعتمد ضمنيًا على نسخة تقويم ICU داخل المتصفح. النطاق الموثّق هو <strong><bdi>1924-08-01</bdi> إلى <bdi>2077-11-16</bdi></strong>، ضمن الأعوام الهجرية 1343–1500.</p>
+<p>تستخدم هوية مجموعة بيانات منشورة ومثبتة الإصدار لتقويم أم القرى، تشترك فيها جميع حزم الأطر. لا يستخدم تقريبًا حسابيًا جدوليًا، ولا يعتمد ضمنيًا على نسخة تقويم ICU داخل المتصفح. النطاق الموثّق هو <strong><bdi>1924-08-01</bdi> إلى <bdi>2077-11-16</bdi></strong>، ضمن الأعوام الهجرية 1343–1500.</p>
 <aside class="guide-note"><strong>تقويم مدني بمرجع وحدود واضحين</strong><p>الجدول المرجعي مجموعة بيانات منشورة يمكن إعادة إنتاج نتائجها، وليس بثًا مباشرًا من خدمة سعودية رسمية. قد تعتمد المناسبات الدينية على إعلان رسمي. يوضح بحث المصادر هذا الفرق، ولماذا لا تحل حسابات رؤية الهلال البديلة محل مرجع التقويم المدني السعودي.</p></aside>
 <h2 id="switches-boundaries">التبديل وحدود النطاق</h2>
 <ul>
@@ -236,7 +236,7 @@ const articles: Record<string, string> = {
 <li>افصل تاريخ العمل الذي لا يتضمن وقتًا عن الطابع الزمني. لا تمرّر <code>YYYY-MM-DD</code> عبر تحويل منطقة زمنية محلية قد يغيّر اليوم.</li>
 <li>ترجم أسماء الأشهر وتسميات التنقل ورسائل الحالة. نمط الأرقام واتجاه النص إعدادان مستقلان.</li>
 </ul>
-<p>راجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/date-calendars.md" target="_blank" rel="noopener">بحث مصادر التقويم، ومنشأ البيانات، وفحوص الموثوقية ↗</a> قبل دمج التواريخ في سجلات رسمية.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/date-calendars.md" target="_blank" rel="noopener">بحث مصادر التقويم، ومنشأ البيانات، وفحوص الموثوقية ↗</a> قبل دمج التواريخ في سجلات رسمية.</p>
 `,
   "accessibility": `
 <p class="guide-lead">حافظ على إمكانات المتصفح الأصلية، ثم اختبر التجربة كاملة بمحتوى وتفاعل واقعيين.</p>
@@ -255,11 +255,11 @@ const articles: Record<string, string> = {
 <li>لا تضف حصر تركيز مخصصًا إلى الحوارات الأصلية، ولا تضع محتوى تفاعليًا داخل التلميحات الوصفية.</li>
 </ul>
 <h2 id="motion-contrast">الحركة والتحميل والتباين</h2>
-<p>احترم تفضيل <code>prefers-reduced-motion</code>: تتوقف انتقالات الأزرار والمفاتيح والحقول مع بقاء الحالة والتركيز قابلين للاستخدام. تستخدم مفاتيح DGA وcustom مدة 200 مللي ثانية بتسارع وتباطؤ تدريجي، وتستغرق دورة مؤشر التحميل ثانية واحدة بسرعة ثابتة. تحتفظ سمة نسق بمدة 180 مللي ثانية للمفتاح و700 مللي ثانية للمؤشر. يمكن تخصيص <code>--nq-duration-switch</code> و<code>--nq-ease-switch</code> و<code>--nq-ease-switch-track</code> و<code>--nq-duration-spinner</code> بصورة مستقلة. تتوفر بدائل SVG ثابتة لمؤشرات تحميل الشعار المتحركة. أعلن التحميل مرة واحدة بنص؛ لا تعلن كل هيكل مؤقت للمحتوى (Skeleton) أو كل إطار من الحركة. افحص تباين النص ومؤشرات التركيز والحدود اللازمة لتمييز الحقول وحالات الخطأ في كل سمة وكثافة.</p>
+<p>احترم تفضيل <code>prefers-reduced-motion</code>: تتوقف انتقالات الأزرار والمفاتيح والحقول مع بقاء الحالة والتركيز قابلين للاستخدام. تستخدم مفاتيح DGA وcustom مدة 200 مللي ثانية بتسارع وتباطؤ تدريجي، وتستغرق دورة مؤشر التحميل ثانية واحدة بسرعة ثابتة. تحتفظ سمة هوية بمدة 180 مللي ثانية للمفتاح و700 مللي ثانية للمؤشر. يمكن تخصيص <code>--hw-duration-switch</code> و<code>--hw-ease-switch</code> و<code>--hw-ease-switch-track</code> و<code>--hw-duration-spinner</code> بصورة مستقلة. تتوفر بدائل SVG ثابتة لمؤشرات تحميل الشعار المتحركة. أعلن التحميل مرة واحدة بنص؛ لا تعلن كل هيكل مؤقت للمحتوى (Skeleton) أو كل إطار من الحركة. افحص تباين النص ومؤشرات التركيز والحدود اللازمة لتمييز الحقول وحالات الخطأ في كل سمة وكثافة.</p>
 <h2 id="test-experience">اختبر تجربة التطبيق</h2>
 {{code:0}}
-<p>تكشف الفحوص الآلية جزءًا من المشكلات فقط. اختبر قارئ شاشة، والتكبير وإعادة تدفق المحتوى، والاستخدام بلوحة المفاتيح وحدها، وأحجام أهداف اللمس، والتسميات العربية الطويلة، ومتصفحات تمثل الاستخدام المتوقع. الهدف هو WCAG 2.2 AA؛ لا يمنح استيراد نسق وحده حكمًا شاملًا بالمطابقة.</p>
-<p>راجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/validation.md" target="_blank" rel="noopener">نطاق التحقق والفجوات المتبقية ↗</a>. تحدد صفحات المكونات مسؤوليات إمكانية الوصول الخاصة بسلوك كل مكون.</p>
+<p>تكشف الفحوص الآلية جزءًا من المشكلات فقط. اختبر قارئ شاشة، والتكبير وإعادة تدفق المحتوى، والاستخدام بلوحة المفاتيح وحدها، وأحجام أهداف اللمس، والتسميات العربية الطويلة، ومتصفحات تمثل الاستخدام المتوقع. الهدف هو WCAG 2.2 AA؛ لا يمنح استيراد هوية وحده حكمًا شاملًا بالمطابقة.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">نطاق التحقق والفجوات المتبقية ↗</a>. تحدد صفحات المكونات مسؤوليات إمكانية الوصول الخاصة بسلوك كل مكون.</p>
 `,
   "extending": `
 <p class="guide-lead">اختر توسعة صغيرة وموثقة تحافظ على سلوك المكون.</p>
@@ -275,7 +275,7 @@ const articles: Record<string, string> = {
 <p>ينشئ الأمر ملفات HTML وCSS وإرشادات قابلة للتعديل داخل <code>blocks/</code>، ولا يولّد الأجزاء الداخلية لحزم الأطر. اقرأ الملفات الناتجة، واربط بيانات التطبيق، وحافظ على دلالات HTML.</p>
 <h2 id="stable-contract">حافظ على عقد واضح عند التخصيص</h2>
 <ul>
-<li>ابدأ أصناف CSS العامة بالبادئة <code>nq-</code>، والمتغيرات المخصصة بالبادئة <code>--nq-</code>.</li>
+<li>ابدأ أصناف CSS العامة بالبادئة <code>hw-</code>، والمتغيرات المخصصة بالبادئة <code>--hw-</code>.</li>
 <li>استخدم خصائص CSS المنطقية، واختبر العربية والإنجليزية وRTL وLTR والوضعين الفاتح والداكن والكثافتين المريحة والمضغوطة.</li>
 <li>أبقِ انتقالات الحالة والأدوات المستقلة عن العرض في الحزمة الأساسية <code>core</code>؛ تتولى حزم الأطر العرض ودورة الحياة.</li>
 <li>لا تستبدل السلوك الأصلي بمحاكاة بصرية، إلا إذا حُدّد السلوك الجديد واختُبر بوضوح.</li>
@@ -285,13 +285,13 @@ const articles: Record<string, string> = {
 <h2 id="coding-assistant">اعمل بوضوح مع مساعد برمجي</h2>
 <p>يمكنك استخدام التوجيه التالي، مع تحديد المهمة وإطار العمل ولغة الواجهة والحالات المطلوبة:</p>
 {{code:1}}
-<p>استعن بـ<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/extension.md" target="_blank" rel="noopener">دليل التوسعة ↗</a> و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/CONTRACT.md" target="_blank" rel="noopener">عقد التنفيذ المشترك ↗</a> و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/llms.txt" target="_blank" rel="noopener">المرجع المختصر للمساعدات البرمجية ↗</a>. المشروع مرخّص وفق <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 ↗</a>، وتبقى إشعارات الأطراف الأخرى سارية.</p>
+<p>استعن بـ<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/extension.md" target="_blank" rel="noopener">دليل التوسعة ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/CONTRACT.md" target="_blank" rel="noopener">عقد التنفيذ المشترك ↗</a> و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/llms.txt" target="_blank" rel="noopener">المرجع المختصر للمساعدات البرمجية ↗</a>. المشروع مرخّص وفق <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 ↗</a>، وتبقى إشعارات الأطراف الأخرى سارية.</p>
 `,
   "alignment": `
 <p class="guide-lead">أساس افتراضي مستند إلى DGA، بمراجع يمكن تتبّعها، وتنفيذ مستقل، ونقاط توسعة واضحة.</p>
-<h2 id="reference-snapshot">ما المرجع الذي يستخدمه نسق؟</h2>
-<p>تربط سمة <code>dga</code> الافتراضية قيمها بالأسس المحلية في ملفات Figma Community المزوّدة من <strong>كود المنصات · DGA Platforms Code</strong> بتاريخ <strong><bdi>2026-10-29</bdi></strong>. هذا تاريخ التصدير، وليس رقم إصدار رسميًا أو إثباتًا أن الملفات تمثل أحدث إرشادات الهيئة. يحتفظ نسق بشعاره العربي وواجهاته البرمجية.</p>
-<p>فُكّ ترميز جميع الملفات المحلية البالغ عددها 23، بما فيها الستة التي منع حد النقل فحصها سابقًا. يدعم الفحص المرئي لمكونات الجوال والرئيسية والبحث الخصائص المستخرجة، دون إثبات التطابق المرئي الشامل. لم تُزوَّد مكتبة مستقلة لمكونات الويب؛ ولا يثبت فهرس نسق المؤلف من 83 مكوّنًا مطابقة جميع المكونات الرسمية. قالب الحج خارج نطاق نسق.</p>
+<h2 id="reference-snapshot">ما المرجع الذي تستخدمه هوية؟</h2>
+<p>تربط سمة <code>dga</code> الافتراضية قيمها بالأسس المحلية في ملفات Figma Community المزوّدة من <strong>كود المنصات · DGA Platforms Code</strong> بتاريخ <strong><bdi>2026-10-29</bdi></strong>. هذا تاريخ التصدير، وليس رقم إصدار رسميًا أو إثباتًا أن الملفات تمثل أحدث إرشادات الهيئة. تحتفظ هوية بشعارها العربي وواجهاتها البرمجية.</p>
+<p>فُكّ ترميز جميع الملفات المحلية البالغ عددها 23، بما فيها الستة التي منع حد النقل فحصها سابقًا. يدعم الفحص المرئي لمكونات الجوال والرئيسية والبحث الخصائص المستخرجة، دون إثبات التطابق المرئي الشامل. لم تُزوَّد مكتبة مستقلة لمكونات الويب؛ ولا يثبت فهرس هوية المؤلف من 83 مكوّنًا مطابقة جميع المكونات الرسمية. قالب الحج خارج نطاق هوية.</p>
 <h2 id="semantic-source-values">قيم المصدر في الوضعين الفاتح والداكن</h2>
 <p>يحتوي ملف الأسس على 784 متغيرًا محليًا حُلّت قيمه. لكل دور دلالي قيمه في الوضعين؛ ولا ينتج الوضع الداكن من عكس ألوان الوضع الفاتح. من أمثلة ذلك:</p>
 <ul>
@@ -300,7 +300,7 @@ const articles: Record<string, string> = {
 <li>خلفية حقل الإدخال <code>Form/field-background-default</code>، العنصر <code>113:7</code>: <code>#FFFFFF</code> فاتح و<code>#1F2A37</code> داكن.</li>
 <li>اللون الأساسي في العنصر <code>50:65</code> هو <code>#1B8354</code>، بينما يستخدم النص الأساسي <code>Text/text-primary</code> في العنصر <code>50:204</code> اللون <code>#54C08A</code> في الوضع الداكن. لا تُستخدم هذه الأدوار بالتبادل.</li>
 </ul>
-<p>يسجل <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/packages/tokens/reference/dga-foundations.json" target="_blank" rel="noopener">مرجع الأسس المنشور ↗</a> ومصدر قيم التصميم معرّفات العناصر والتعديلات. مثلًا، يستخدم النص الثانوي المشترك درجة محايدة أغمق في الوضع الفاتح لأنه يظهر أيضًا فوق أسطح مخففة اللون؛ ويحتفظ النص الإرشادي داخل الحقل بقيمته الدلالية الخاصة. تبقى قيمة حدود الحقل الأصلية في حالة السكون مسجلة باللون <code>#9DA4AE</code> في الوضع الفاتح؛ ويستخدم التنفيذ اللون الأقوى <code>#6C737F</code> لزيادة التباين، مع خط سفلي أخضر متحرك، وأحمر عند عدم الصلاحية، ومؤشر تركيز داخلي واحد للقراءة فقط ووضع الألوان القسرية. الارتباط بالمصدر وتقييم الإتاحة سجلان منفصلان.</p>
+<p>يسجل <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/packages/tokens/reference/dga-foundations.json" target="_blank" rel="noopener">مرجع الأسس المنشور ↗</a> ومصدر قيم التصميم معرّفات العناصر والتعديلات. مثلًا، يستخدم النص الثانوي المشترك درجة محايدة أغمق في الوضع الفاتح لأنه يظهر أيضًا فوق أسطح مخففة اللون؛ ويحتفظ النص الإرشادي داخل الحقل بقيمته الدلالية الخاصة. تبقى قيمة حدود الحقل الأصلية في حالة السكون مسجلة باللون <code>#9DA4AE</code> في الوضع الفاتح؛ ويستخدم التنفيذ اللون الأقوى <code>#6C737F</code> لزيادة التباين، مع خط سفلي أخضر متحرك، وأحمر عند عدم الصلاحية، ومؤشر تركيز داخلي واحد للقراءة فقط ووضع الألوان القسرية. الارتباط بالمصدر وتقييم الإتاحة سجلان منفصلان.</p>
 <h2 id="template-guidance">طبّق تعليمات القوالب</h2>
 <ul>
 <li>مراجع الخدمة المفحوصة هي <code>1:21371</code> و<code>1:22148</code>، وللجوال <code>27:4851</code>. ومراجع النموذج هي <code>2:17277</code>، وللجوال <code>7:3658</code>.</li>
@@ -311,10 +311,10 @@ const articles: Record<string, string> = {
 <li>لا تثبت وجهة انتقال مفقودة أو مدة حركة غير محددة سلوكًا رسميًا. حافظ على بدائل لوحة المفاتيح وتقليل الحركة في التنفيذ.</li>
 </ul>
 <h2 id="theme-migration">نقل تطبيق قائم إلى الأساس الافتراضي</h2>
-<p>حدّد <code>data-nq-theme="dga"</code> صراحة، أو استخدم الأساس الافتراضي على عنصر جذر دون سمة. وللاحتفاظ بالألوان ومقاييس الخطوط والزوايا والمسافات والمحتوى الأصلية، حدّد <code>data-nq-theme="nasaq"</code>. تشترك السمتان في ارتفاعات عناصر التحكم: الكثافة المريحة 40 بكسل للحجم الافتراضي و32 للصغير و40 للكبير؛ والمكثفة 32 للافتراضي و24 للصغير و40 للكبير، عند حجم خط جذري قدره 16 بكسل. لذلك لا يحفظ اختيار نسق كل تفصيل بصري سابق. قد يحافظ اختيار سمة محفوظ سابقًا على مظهر مختلف في الدليل. راجع التجاوزات المخصصة والمسافات والتركيز والتحقق من الإدخال والاتجاهين بعد الانتقال؛ تبقى عقود قيم المكونات وأحداثها وقيم التاريخ بصيغة ISO مستقلة عن التغيير البصري.</p>
+<p>حدّد <code>data-hw-theme="dga"</code> صراحة، أو استخدم الأساس الافتراضي على عنصر جذر دون سمة. وللاحتفاظ بالألوان ومقاييس الخطوط والزوايا والمسافات والمحتوى الأصلية، حدّد <code>data-hw-theme="hawiyah"</code>. تشترك السمتان في ارتفاعات عناصر التحكم: الكثافة المريحة 40 بكسل للحجم الافتراضي و32 للصغير و40 للكبير؛ والمكثفة 32 للافتراضي و24 للصغير و40 للكبير، عند حجم خط جذري قدره 16 بكسل. لذلك لا يحفظ اختيار هوية كل تفصيل بصري سابق. قد يحافظ اختيار سمة محفوظ سابقًا على مظهر مختلف في الدليل. راجع التجاوزات المخصصة والمسافات والتركيز والتحقق من الإدخال والاتجاهين بعد الانتقال؛ تبقى عقود قيم المكونات وأحداثها وقيم التاريخ بصيغة ISO مستقلة عن التغيير البصري.</p>
 <h2 id="product-alignment">تُقيّم مواءمة DGA على مستوى المنتج</h2>
-<p>لا تمنح السمة أو سجل المصدر اعتمادًا أو شهادة أو ضمانًا للمطابقة الكاملة. يحتاج المحتوى والمعرّفات الرسمية المصرّح بها والخصوصية والإتاحة ورحلات الاستخدام والتزامات الخدمة إلى تقييم مستقل. لا تُضمَّن ملفات Figma الخام أو الأصول المصدّرة بالجملة في الحزم المنشورة؛ فأذونات الأصول منفصلة عن ترخيص Apache 2.0 لشفرة نسق.</p>
-<p>راجع <a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/dga-reference.md" target="_blank" rel="noopener">سجل لقطات المصدر والانتقال الكامل ↗</a>، و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/alignment.md" target="_blank" rel="noopener">سجل المتطلبات والمواءمة ↗</a>، و<a href="https://github.com/MohamedEmbarak/nasaq/blob/main/docs/validation.md" target="_blank" rel="noopener">الفحوص التي أُجريت بالفعل ↗</a>.</p>
+<p>لا تمنح السمة أو سجل المصدر اعتمادًا أو شهادة أو ضمانًا للمطابقة الكاملة. يحتاج المحتوى والمعرّفات الرسمية المصرّح بها والخصوصية والإتاحة ورحلات الاستخدام والتزامات الخدمة إلى تقييم مستقل. لا تُضمَّن ملفات Figma الخام أو الأصول المصدّرة بالجملة في الحزم المنشورة؛ فأذونات الأصول منفصلة عن ترخيص Apache 2.0 لشفرة هوية.</p>
+<p>راجع <a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/dga-reference.md" target="_blank" rel="noopener">سجل لقطات المصدر والانتقال الكامل ↗</a>، و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/alignment.md" target="_blank" rel="noopener">سجل المتطلبات والمواءمة ↗</a>، و<a href="https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/validation.md" target="_blank" rel="noopener">الفحوص التي أُجريت بالفعل ↗</a>.</p>
 `,};
 
 export function arabicArticle(topic: string, code: Code): string {

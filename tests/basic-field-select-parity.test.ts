@@ -2,7 +2,7 @@ import '@angular/compiler';
 import {Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
-import {NqFieldComponent, NqSelectComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwFieldComponent, HwSelectComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act, createElement as r} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp, createSSRApp, h, nextTick, reactive} from 'vue';
@@ -126,7 +126,7 @@ it('Vue serializes a preselected option for a server-rendered Select', async () 
 
 it('Angular Select localizes its default prompt and connects external and changing field helpers', () => {
   const {host} = createForm();
-  const fixture = TestBed.createComponent(NqSelectComponent);
+  const fixture = TestBed.createComponent(HwSelectComponent);
   host.append(fixture.nativeElement);
   const set = (key: string, value: unknown) => fixture.componentRef.setInput(key, value);
   set('options', choices); set('controlId', 'place'); set('label', 'المنطقة'); set('required', true);
@@ -135,7 +135,7 @@ it('Angular Select localizes its default prompt and connects external and changi
   expect(select.selectedOptions[0]!.textContent).toBe('اختر خيارًا');
   expect(select.validity.valueMissing).toBe(true);
   expect(host.querySelector('label')!.control).toBe(select);
-  expect(host.querySelector('.nq-required-marker')?.getAttribute('aria-hidden')).toBe('true');
+  expect(host.querySelector('.hw-required-marker')?.getAttribute('aria-hidden')).toBe('true');
   expect(descriptions(select)).toEqual(['External instructions', 'Hint', 'Error']);
   set('placeholder', 'Choose a place'); set('error', ''); fixture.detectChanges();
   expect(select.options[0]!.textContent).toBe('Choose a place');
@@ -146,7 +146,7 @@ it('Angular Select localizes its default prompt and connects external and changi
 
 it('Angular projected controls can bind to the Field helper IDs and required state', () => {
   class Host {error = 'Error';}
-  Component({standalone: true, imports: [NqFieldComponent], template: `<nq-field #field controlId="place" label="Place" hint="Hint" [error]="error" describedBy="external external" required><select id="place" [required]="field.required" [attr.aria-describedby]="field.descriptionIds"><option value="">Choose a place</option></select></nq-field>`})(Host);
+  Component({standalone: true, imports: [HwFieldComponent], template: `<hw-field #field controlId="place" label="Place" hint="Hint" [error]="error" describedBy="external external" required><select id="place" [required]="field.required" [attr.aria-describedby]="field.descriptionIds"><option value="">Choose a place</option></select></hw-field>`})(Host);
   const {host} = createForm();
   const fixture = TestBed.createComponent(Host);
   host.append(fixture.nativeElement); fixture.detectChanges();

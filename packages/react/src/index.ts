@@ -1,17 +1,17 @@
-/** Native React components. Import @nasaq/styles/styles.css once in the application. */
+/** Native React components. Import @hawiyah/styles/styles.css once in the application. */
 export { Field } from './shared.js';
 export type { FieldProps, FieldDecoration } from './shared.js';
 export * from './forms.js';
 export * from './interactive.js';
 export * from './display.js';
-export type { Direction, Orientation, Option } from '@nasaq/core';
+export type { Direction, Orientation, Option } from '@hawiyah/core';
 export * from './expanded-controls.js';
 export * from './calendar.js';
 export * from './expanded-interactive.js';
 export * from './expanded-content.js';
 export * from './expanded-layout.js';
 export * from './portal.js';
-export type { CalendarSystem } from '@nasaq/core';
+export type { CalendarSystem } from '@hawiyah/core';
 export * from './mobile-top-bar.js';
 export * from './navigation-drawer.js';
 

@@ -1,52 +1,52 @@
 /* Native portal disclosures. NIC master.js 627–929 supplies structure and
-   interaction evidence; dimensions here use Nasaq tokens. */
-.nq-portal-header:has(.nq-portal-branch) { position: relative; }
-.nq-portal-branch > summary {
-  display: inline-flex; align-items: center; gap: var(--nq-space-2);
-  min-block-size: var(--nq-control-height);
-  padding-inline: var(--nq-space-2); border-radius: var(--nq-radius-sm);
-  color: var(--nq-color-heading, var(--nq-color-text));
+   interaction evidence; dimensions here use Hawiyah tokens. */
+.hw-portal-header:has(.hw-portal-branch) { position: relative; }
+.hw-portal-branch > summary {
+  display: inline-flex; align-items: center; gap: var(--hw-space-2);
+  min-block-size: var(--hw-control-height);
+  padding-inline: var(--hw-space-2); border-radius: var(--hw-radius-sm);
+  color: var(--hw-color-heading, var(--hw-color-text));
   font: inherit; cursor: pointer; list-style: none;
 }
-.nq-portal-branch > summary::-webkit-details-marker { display: none; }
-.nq-portal-branch > summary::after {
+.hw-portal-branch > summary::-webkit-details-marker { display: none; }
+.hw-portal-branch > summary::after {
   content: ''; flex: none; inline-size: 1.125rem; block-size: 1.125rem;
   background: currentColor; mask: url('./assets/icons/arrow-down-01.svg') center / contain no-repeat;
-  transition: transform var(--nq-duration-fast) var(--nq-ease-standard);
+  transition: transform var(--hw-duration-fast) var(--hw-ease-standard);
 }
-.nq-portal-branch[open] > summary::after { transform: rotate(180deg); }
-.nq-portal-branch > summary:hover, .nq-portal-branch[open] > summary { background: var(--nq-color-surface-muted); }
-.nq-portal-branch[data-current='true'] > summary { color: var(--nq-color-primary-text); font-weight: var(--nq-weight-semibold); }
-.nq-portal-branch > summary:focus-visible { outline: 2px solid var(--nq-color-focus-contrast); outline-offset: -2px; }
-.nq-portal-branch-panel {
-  box-sizing: border-box; position: absolute; z-index: var(--nq-z-popover, 10);
+.hw-portal-branch[open] > summary::after { transform: rotate(180deg); }
+.hw-portal-branch > summary:hover, .hw-portal-branch[open] > summary { background: var(--hw-color-surface-muted); }
+.hw-portal-branch[data-current='true'] > summary { color: var(--hw-color-primary-text); font-weight: var(--hw-weight-semibold); }
+.hw-portal-branch > summary:focus-visible { outline: 2px solid var(--hw-color-focus-contrast); outline-offset: -2px; }
+.hw-portal-branch-panel {
+  box-sizing: border-box; position: absolute; z-index: var(--hw-z-popover, 10);
   inset-inline: 0; inset-block-start: 100%; margin-inline: auto;
   display: grid; grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
-  gap: var(--nq-space-4); max-inline-size: 64rem; max-block-size: 65dvh; overflow: auto;
-  padding: var(--nq-space-4); border: 1px solid var(--nq-color-border);
-  border-radius: var(--nq-radius-md); background: var(--nq-color-surface);
-  color: var(--nq-color-text); box-shadow: var(--nq-shadow-md);
+  gap: var(--hw-space-4); max-inline-size: 64rem; max-block-size: 65dvh; overflow: auto;
+  padding: var(--hw-space-4); border: 1px solid var(--hw-color-border);
+  border-radius: var(--hw-radius-md); background: var(--hw-color-surface);
+  color: var(--hw-color-text); box-shadow: var(--hw-shadow-md);
 }
-.nq-portal-branch-panel .nq-portal-branch-overview { grid-column: 1 / -1; justify-self: start; }
-.nq-portal-branch-group { min-inline-size: 0; }
-.nq-portal-branch-group > h2 { margin: 0 0 var(--nq-space-2); font-size: 1rem; }
-.nq-portal-header nav .nq-portal-branch-group > ul {
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--nq-space-1);
+.hw-portal-branch-panel .hw-portal-branch-overview { grid-column: 1 / -1; justify-self: start; }
+.hw-portal-branch-group { min-inline-size: 0; }
+.hw-portal-branch-group > h2 { margin: 0 0 var(--hw-space-2); font-size: 1rem; }
+.hw-portal-header nav .hw-portal-branch-group > ul {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--hw-space-1);
   margin: 0; padding: 0; list-style: none;
 }
-.nq-portal-header nav .nq-portal-branch-panel a { overflow-wrap: anywhere; white-space: normal; }
+.hw-portal-header nav .hw-portal-branch-panel a { overflow-wrap: anywhere; white-space: normal; }
 @media (max-width: 47.999rem) {
-  .nq-portal-branch > summary { box-sizing: border-box; inline-size: 100%; justify-content: space-between; }
-  .nq-portal-branch-panel {
+  .hw-portal-branch > summary { box-sizing: border-box; inline-size: 100%; justify-content: space-between; }
+  .hw-portal-branch-panel {
     position: static; grid-template-columns: minmax(0, 1fr);
     max-block-size: none; box-shadow: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nq-portal-branch > summary::after { transition: none; }
+  .hw-portal-branch > summary::after { transition: none; }
 }
 @media (forced-colors: active) {
-  .nq-portal-branch > summary::after { forced-color-adjust: none; background: ButtonText; }
-  .nq-portal-branch > summary:focus-visible { outline-color: Highlight; }
-  .nq-portal-branch-panel { border-color: CanvasText; }
+  .hw-portal-branch > summary::after { forced-color-adjust: none; background: ButtonText; }
+  .hw-portal-branch > summary:focus-visible { outline-color: Highlight; }
+  .hw-portal-branch-panel { border-color: CanvasText; }
 }

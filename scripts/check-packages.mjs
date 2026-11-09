@@ -1,5 +1,5 @@
 // Local tarball validation only. This script never publishes packages.
-// With NASAQ_RELEASE=1 the staged manifests drop `private` so that
+// With HAWIYAH_RELEASE=1 the staged manifests drop `private` so that
 // scripts/publish-packages.mjs can publish exactly these verified tarballs.
 import { spawnSync } from "node:child_process";
 import {
@@ -32,7 +32,7 @@ function run(cmd, args, cwd = checkRoot) {
   }
   return result.stdout;
 }
-const release = process.env.NASAQ_RELEASE === "1";
+const release = process.env.HAWIYAH_RELEASE === "1";
 const paths = [];
 const packageNames = ["tokens", "styles", "core", "vanilla", "react", "vue", "angular"];
 const workspaceVersions = Object.fromEntries(
@@ -123,7 +123,7 @@ mkdirSync(consumer);
 writeFileSync(
   resolve(consumer, "package.json"),
   JSON.stringify({
-    name: "nasaq-local-consumer",
+    name: "hawiyah-local-consumer",
     private: true,
     type: "module",
     dependencies: {
@@ -152,12 +152,12 @@ writeFileSync(
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import '@angular/compiler';
-import * as tokens from '@nasaq/tokens';
-import * as core from '@nasaq/core';
-import * as vanilla from '@nasaq/vanilla';
-import * as react from '@nasaq/react';
-import * as vue from '@nasaq/vue';
-import * as angular from '@nasaq/angular';
+import * as tokens from '@hawiyah/tokens';
+import * as core from '@hawiyah/core';
+import * as vanilla from '@hawiyah/vanilla';
+import * as react from '@hawiyah/react';
+import * as vue from '@hawiyah/vue';
+import * as angular from '@hawiyah/angular';
 import React from 'react';
 import {renderToString} from 'react-dom/server';
 import {createSSRApp,h} from 'vue';
@@ -165,18 +165,18 @@ import {renderToString as renderVue} from '@vue/server-renderer';
 assert.equal(core.normalizeSearch('الرِّيَاض'),'الرياض');
 assert.equal(typeof vanilla.enhance,'function');
 assert.ok(tokens.tokens);
-assert.ok(renderToString(React.createElement(react.Button,null,'Continue')).includes('nq-button'));
-assert.ok((await renderVue(createSSRApp({render:()=>h(vue.Button,{},()=> 'Continue')}))).includes('nq-button'));
+assert.ok(renderToString(React.createElement(react.Button,null,'Continue')).includes('hw-button'));
+assert.ok((await renderVue(createSSRApp({render:()=>h(vue.Button,{},()=> 'Continue')}))).includes('hw-button'));
 for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader','PortalLayout','SecondaryNav','MobileTopBar','NavigationDrawer','PasswordField','SearchField','Rating','Stepper']) {
   assert.ok(react[name], 'React missing '+name); assert.ok(vue[name], 'Vue missing '+name);
-  assert.ok(angular['Nq'+name+'Component'], 'Angular missing '+name);
+  assert.ok(angular['Hw'+name+'Component'], 'Angular missing '+name);
 }
 assert.equal(typeof vanilla.createCalendar,'function');
 assert.equal(typeof vanilla.createTreeView,'function');
 assert.equal(typeof vanilla.createPortalHeader,'function');
 for (const name of ['createNavigationDrawer','createStepper','createRating','createPasswordField','createSearchField']) assert.equal(typeof vanilla[name],'function');
-assert.ok(renderToString(React.createElement(react.PortalLayout,{brand:'نسق',mainId:'portal-main'},React.createElement('h1',null,'الخدمات'))).includes('href="#portal-main"'));
-assert.ok((await renderVue(createSSRApp({render:()=>h(vue.PortalLayout,{brand:'نسق',mainId:'portal-main'},()=>h('h1',{},'الخدمات'))}))).includes('href="#portal-main"'));
+assert.ok(renderToString(React.createElement(react.PortalLayout,{brand:'هوية',mainId:'portal-main'},React.createElement('h1',null,'الخدمات'))).includes('href="#portal-main"'));
+assert.ok((await renderVue(createSSRApp({render:()=>h(vue.PortalLayout,{brand:'هوية',mainId:'portal-main'},()=>h('h1',{},'الخدمات'))}))).includes('href="#portal-main"'));
 assert.deepEqual(core.getCalendarDateParts('2029-08-11','islamic-umalqura'),{year:1451,month:4,day:1});
 assert.equal(core.convertCalendarDate({year:1451,month:4,day:1},'islamic-umalqura'),'2029-08-11');
 const dateHtml = [
@@ -187,25 +187,25 @@ for (const html of dateHtml) {
   assert.ok(html.includes('type="text"')); assert.ok(!html.includes('type="date"'));
   assert.ok(html.includes('type="hidden"')); assert.ok(html.includes('name="appointment"')); assert.ok(html.includes('value="2026-10-28"'));
 }
-const cssEntry = new URL(import.meta.resolve('@nasaq/styles/styles.css'));
-for (const [file,marker] of [['components.css','.nq-button'],['extended.css','.nq-calendar'],['layout.css','.nq-grid'],['password-field.css','.nq-password-icon'],['stepper.css','--nq-step-current'],['riyal.css','U+20C1']]) {
+const cssEntry = new URL(import.meta.resolve('@hawiyah/styles/styles.css'));
+for (const [file,marker] of [['components.css','.hw-button'],['extended.css','.hw-calendar'],['layout.css','.hw-grid'],['password-field.css','.hw-password-icon'],['stepper.css','--hw-step-current'],['riyal.css','U+20C1']]) {
   assert.ok(fs.readFileSync(cssEntry,'utf8').includes(file));
   assert.ok(fs.readFileSync(new URL(file,cssEntry),'utf8').includes(marker));
 }
-assert.ok(fs.readFileSync(new URL('../third-party/hijridate-LICENSE.txt',import.meta.resolve('@nasaq/core')),'utf8').includes('MIT License'));
-assert.ok(fs.readFileSync(new URL(import.meta.resolve('@nasaq/tokens/tokens.css')),'utf8').includes('--nq-color-primary'));
-const wordmark=fs.readFileSync(new URL(import.meta.resolve('@nasaq/styles/assets/nasaq-wordmark.svg')),'utf8');
+assert.ok(fs.readFileSync(new URL('../third-party/hijridate-LICENSE.txt',import.meta.resolve('@hawiyah/core')),'utf8').includes('MIT License'));
+assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/tokens/tokens.css')),'utf8').includes('--hw-color-primary'));
+const wordmark=fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/hawiyah-wordmark.svg')),'utf8');
 assert.ok(wordmark.includes('<path')); assert.ok(!wordmark.includes('<text'));
-assert.equal(fs.readFileSync(new URL(import.meta.resolve('@nasaq/styles/assets/nasaq-loader.gif'))).subarray(0,6).toString(),'GIF89a');
-assert.ok(fs.readFileSync(new URL(import.meta.resolve('@nasaq/styles/assets/fonts/riyal-LICENSE.txt')),'utf8').includes('SIL OPEN FONT LICENSE'));
-assert.equal(fs.readFileSync(new URL(import.meta.resolve('@nasaq/styles/assets/fonts/riyal.woff2'))).subarray(0,4).toString(),'wOF2');
+assert.equal(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/hawiyah-loader.gif'))).subarray(0,6).toString(),'GIF89a');
+assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/fonts/riyal-LICENSE.txt')),'utf8').includes('SIL OPEN FONT LICENSE'));
+assert.equal(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/fonts/riyal.woff2'))).subarray(0,4).toString(),'wOF2');
 console.log('Clean tarball consumer: ESM, SSR, Angular APF, CSS exports passed.');
 `,
 );
 console.log(run("node", ["smoke.mjs"], consumer).trim());
 writeFileSync(
   resolve(consumer, "types.ts"),
-  `import * as core from '@nasaq/core';\nimport * as vanilla from '@nasaq/vanilla';\nimport * as react from '@nasaq/react';\nimport * as vue from '@nasaq/vue';\nimport * as angular from '@nasaq/angular';\nconst options: core.Option[] = [{value:'a',label:'A'}];\ncore.filterOptions(options,'a');\nvoid [vanilla.enhance,react.Button,vue.Button,angular];\n`,
+  `import * as core from '@hawiyah/core';\nimport * as vanilla from '@hawiyah/vanilla';\nimport * as react from '@hawiyah/react';\nimport * as vue from '@hawiyah/vue';\nimport * as angular from '@hawiyah/angular';\nconst options: core.Option[] = [{value:'a',label:'A'}];\ncore.filterOptions(options,'a');\nvoid [vanilla.enhance,react.Button,vue.Button,angular];\n`,
 );
 run(
   process.execPath,
@@ -232,14 +232,14 @@ console.log(
 for (const check of [
   {
     name: "React Button",
-    entry: 'export {Button} from "@nasaq/react";',
-    forbidden: /nq-dialog|nq-combobox|nq-tab-list|nq-calendar|2423999/,
+    entry: 'export {Button} from "@hawiyah/react";',
+    forbidden: /hw-dialog|hw-combobox|hw-tab-list|hw-calendar|2423999/,
     budget: 4096,
   },
   {
     name: "Vanilla Tabs",
-    entry: 'export {createTabs} from "@nasaq/vanilla";',
-    forbidden: /data-nq-combobox|data-nq-tooltip|nq-calendar|2423999/,
+    entry: 'export {createTabs} from "@hawiyah/vanilla";',
+    forbidden: /data-hw-combobox|data-hw-tooltip|hw-calendar|2423999/,
     budget: 6144,
   },
 ]) {

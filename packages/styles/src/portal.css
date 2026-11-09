@@ -1,24 +1,24 @@
-/* Public portal composition. The 48rem disclosure breakpoint is Nasaq policy,
+/* Public portal composition. The 48rem disclosure breakpoint is Hawiyah policy,
    not an asserted Figma breakpoint. No viewport script or motion is required. */
-.nq-portal-layout { display: flex; flex-direction: column; min-block-size: 100dvh; color: var(--nq-color-text); background: var(--nq-color-canvas); font-family: var(--nq-font-sans); }
-.nq-portal-layout > *, .nq-portal-layout-main > * { min-inline-size: 0; }
+.hw-portal-layout { display: flex; flex-direction: column; min-block-size: 100dvh; color: var(--hw-color-text); background: var(--hw-color-canvas); font-family: var(--hw-font-sans); }
+.hw-portal-layout > *, .hw-portal-layout-main > * { min-inline-size: 0; }
 /* Moving a skip link above its header does not hide it in an embedded layout.
    Clip it until focus so it cannot cover preceding content or pointer targets. */
-.nq-skip-link:not(:focus) { inline-size: 1px; block-size: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; transform: none; }
-.nq-portal-layout-main { flex: 1; padding-block: var(--nq-space-8); }
-.nq-portal-layout-main > .nq-breadcrumb, .nq-portal-layout-main > nq-breadcrumb { display: block; margin-block-end: var(--nq-space-6); }
-.nq-secondary-nav { color: var(--nq-color-text); background: var(--nq-color-surface); border-block-end: 1px solid var(--nq-color-border); overflow-x: auto; }
-.nq-secondary-nav ul { display: flex; flex-wrap: wrap; gap: var(--nq-space-2); max-inline-size: var(--nq-content-max); margin: 0 auto; padding: var(--nq-space-2) var(--nq-content-gutter-mobile, 1rem); list-style: none; }
-.nq-secondary-nav a { display: inline-flex; align-items: center; min-block-size: var(--nq-control-height); padding: var(--nq-space-2) var(--nq-space-3); color: inherit; text-decoration: none; border-block-end: 2px solid transparent; }
-.nq-secondary-nav a[aria-current='page'] { color: var(--nq-color-primary-text); border-block-end-color: currentColor; font-weight: var(--nq-weight-semibold); }
-.nq-secondary-nav a:hover { background: var(--nq-color-surface-muted); }
-.nq-secondary-nav a:focus-visible { outline: 2px solid var(--nq-color-focus); outline-offset: -2px; }
+.hw-skip-link:not(:focus) { inline-size: 1px; block-size: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; transform: none; }
+.hw-portal-layout-main { flex: 1; padding-block: var(--hw-space-8); }
+.hw-portal-layout-main > .hw-breadcrumb, .hw-portal-layout-main > hw-breadcrumb { display: block; margin-block-end: var(--hw-space-6); }
+.hw-secondary-nav { color: var(--hw-color-text); background: var(--hw-color-surface); border-block-end: 1px solid var(--hw-color-border); overflow-x: auto; }
+.hw-secondary-nav ul { display: flex; flex-wrap: wrap; gap: var(--hw-space-2); max-inline-size: var(--hw-content-max); margin: 0 auto; padding: var(--hw-space-2) var(--hw-content-gutter-mobile, 1rem); list-style: none; }
+.hw-secondary-nav a { display: inline-flex; align-items: center; min-block-size: var(--hw-control-height); padding: var(--hw-space-2) var(--hw-space-3); color: inherit; text-decoration: none; border-block-end: 2px solid transparent; }
+.hw-secondary-nav a[aria-current='page'] { color: var(--hw-color-primary-text); border-block-end-color: currentColor; font-weight: var(--hw-weight-semibold); }
+.hw-secondary-nav a:hover { background: var(--hw-color-surface-muted); }
+.hw-secondary-nav a:focus-visible { outline: 2px solid var(--hw-color-focus); outline-offset: -2px; }
 @media (max-width: 47.999rem) {
-  .nq-portal-header :is(.nq-portal-header-main, .nq-portal-header-inner) > nav[data-open='false'] { display: none; }
-  .nq-portal-header :is(.nq-portal-header-main, .nq-portal-header-inner) > nav { order: 3; flex-basis: 100%; }
-  .nq-portal-header :is(.nq-portal-header-main, .nq-portal-header-inner) > nav ul { flex-direction: column; align-items: stretch; inline-size: 100%; }
+  .hw-portal-header :is(.hw-portal-header-main, .hw-portal-header-inner) > nav[data-open='false'] { display: none; }
+  .hw-portal-header :is(.hw-portal-header-main, .hw-portal-header-inner) > nav { order: 3; flex-basis: 100%; }
+  .hw-portal-header :is(.hw-portal-header-main, .hw-portal-header-inner) > nav ul { flex-direction: column; align-items: stretch; inline-size: 100%; }
 }
 @media (forced-colors: active) {
-  .nq-secondary-nav a:focus-visible { outline-color: Highlight; }
-  .nq-secondary-nav a[aria-current='page'] { border-block-end-color: LinkText; }
+  .hw-secondary-nav a:focus-visible { outline-color: Highlight; }
+  .hw-secondary-nav a[aria-current='page'] { border-block-end-color: LinkText; }
 }

@@ -43,7 +43,7 @@ function space(value: LayoutSpacing): string {
     throw new RangeError('Layout spacing numbers must be integer tokens from 0 through 16; use a CSS length string otherwise.');
   }
   // All spacing steps are supported, including steps absent from a theme's scale.
-  return `var(--nq-space-${value}, ${value === 0 ? '0px' : `${value / 4}rem`})`;
+  return `var(--hw-space-${value}, ${value === 0 ? '0px' : `${value / 4}rem`})`;
 }
 
 function columnCount(value: number): number {
@@ -74,22 +74,22 @@ function responsive<T>(styles: Record<string, string | number>, name: string, va
  */
 export function layoutStyles(props: LayoutProps = {}): Record<string, string | number> {
   const styles: Record<string, string | number> = {};
-  responsive(styles, '--nq-layout-gap', props.gap, space);
-  responsive(styles, '--nq-layout-padding', props.padding, space);
+  responsive(styles, '--hw-layout-gap', props.gap, space);
+  responsive(styles, '--hw-layout-padding', props.padding, space);
   if (props.minItemWidth !== undefined) {
-    styles['--nq-layout-min-item'] = cssLength(props.minItemWidth);
-    styles['--nq-layout-columns'] = 'auto-fit';
+    styles['--hw-layout-min-item'] = cssLength(props.minItemWidth);
+    styles['--hw-layout-columns'] = 'auto-fit';
   } else {
-    responsive(styles, '--nq-layout-columns', props.columns, columnCount);
+    responsive(styles, '--hw-layout-columns', props.columns, columnCount);
   }
-  if (props.align !== undefined) styles['--nq-layout-align'] = props.align;
-  if (props.justify !== undefined) styles['--nq-layout-justify'] = justifyValues[props.justify];
-  if (props.wrap !== undefined) styles['--nq-layout-wrap'] = props.wrap ? 'wrap' : 'nowrap';
-  if (props.sidebarWidth !== undefined) styles['--nq-layout-sidebar-width'] = cssLength(props.sidebarWidth);
-  if (props.maxWidth !== undefined) styles['--nq-layout-max-width'] = cssLength(props.maxWidth);
+  if (props.align !== undefined) styles['--hw-layout-align'] = props.align;
+  if (props.justify !== undefined) styles['--hw-layout-justify'] = justifyValues[props.justify];
+  if (props.wrap !== undefined) styles['--hw-layout-wrap'] = props.wrap ? 'wrap' : 'nowrap';
+  if (props.sidebarWidth !== undefined) styles['--hw-layout-sidebar-width'] = cssLength(props.sidebarWidth);
+  if (props.maxWidth !== undefined) styles['--hw-layout-max-width'] = cssLength(props.maxWidth);
   if (props.ratio !== undefined) {
     if (!Number.isFinite(props.ratio) || props.ratio <= 0) throw new RangeError('Layout aspect ratio must be a positive finite number.');
-    styles['--nq-layout-ratio'] = props.ratio;
+    styles['--hw-layout-ratio'] = props.ratio;
   }
   return styles;
 }

@@ -4,8 +4,8 @@ import { enhance } from '../src/index.js';
 
 afterEach(() => document.body.replaceChildren());
 function setup() {
-  const list = document.createElement('ol'); list.className = 'nq-stepper';
-  list.innerHTML = '<li class="nq-step"><span>البيانات</span></li><li class="nq-step" aria-current="step"><span>المراجعة</span></li><li class="nq-step"><span>الإرسال</span></li>';
+  const list = document.createElement('ol'); list.className = 'hw-stepper';
+  list.innerHTML = '<li class="hw-step"><span>البيانات</span></li><li class="hw-step" aria-current="step"><span>المراجعة</span></li><li class="hw-step"><span>الإرسال</span></li>';
   document.body.append(list); return list;
 }
 it('keeps direct list item state, aria-current and original DOM synchronized and restores on destroy', () => {
@@ -29,13 +29,13 @@ it('supports explicit states, accessible labels, dynamic direct items and exclud
   const controller = createStepper(list, { activeIndex: 3 });
   expect([...list.children].map(step => step.getAttribute('data-state'))).toEqual(['upcoming', 'current', 'complete']);
   expect(list.hasAttribute('aria-label')).toBe(false);
-  list.insertAdjacentHTML('beforeend', '<li class="nq-step"><span>New</span><ol><li class="nq-step" data-state="untouched">Nested</li></ol></li>');
+  list.insertAdjacentHTML('beforeend', '<li class="hw-step"><span>New</span><ol><li class="hw-step" data-state="untouched">Nested</li></ol></li>');
   controller.refresh(); expect(list.children[3]!.getAttribute('data-state')).toBe('current');
   expect(list.querySelector('ol')!.querySelector('li')!.getAttribute('data-state')).toBe('untouched');
   controller.destroy(); expect(list.children[3]!.hasAttribute('data-state')).toBe(false);
 });
 it('enhances declarative markup and retains an explicit English name', () => {
-  const list = setup(); list.dataset.nq = 'stepper'; list.dataset.activeIndex = '2'; list.setAttribute('aria-label', 'Progress');
+  const list = setup(); list.dataset.hw = 'stepper'; list.dataset.activeIndex = '2'; list.setAttribute('aria-label', 'Progress');
   const before = list.cloneNode(true); const cleanup = enhance(list);
   expect(list.children[2]!.getAttribute('aria-current')).toBe('step'); expect(list.getAttribute('aria-label')).toBe('Progress');
   cleanup(); expect(list.isEqualNode(before)).toBe(true);

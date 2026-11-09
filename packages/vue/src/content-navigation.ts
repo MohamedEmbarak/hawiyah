@@ -1,11 +1,11 @@
 import {defineComponent, h, mergeProps, onBeforeUnmount, onMounted, ref, watch} from 'vue';
 import type {PropType, VNode} from 'vue';
-import {observeContentNavigation} from '@nasaq/core';
-import type {ContentNavigationItem} from '@nasaq/core';
+import {observeContentNavigation} from '@hawiyah/core';
+import type {ContentNavigationItem} from '@hawiyah/core';
 
-export type {ContentNavigationItem} from '@nasaq/core';
+export type {ContentNavigationItem} from '@hawiyah/core';
 export const ContentNavigation = defineComponent({
-  name: 'NqContentNavigation', inheritAttrs: false,
+  name: 'HwContentNavigation', inheritAttrs: false,
   props: {
     items: {type: Array as PropType<readonly ContentNavigationItem[]>, required: true},
     label: {type: String, default: 'في هذه الصفحة'}, showHeading: {type: Boolean, default: true}, sticky: Boolean,
@@ -22,10 +22,10 @@ export const ContentNavigation = defineComponent({
       if (event.defaultPrevented || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       event.preventDefault(); observer?.navigate(id, {focus: event.detail === 0});
     };
-    const renderItems = (entries: readonly ContentNavigationItem[], nested = false): VNode => h('ul', {class: nested ? 'nq-content-nav-sublist' : 'nq-content-nav-list'}, entries.map(item => h('li', {key: item.id}, [
-      h(item.disabled ? 'span' : 'a', {class: 'nq-content-nav-link', 'data-nq-section': item.id, ...(item.disabled ? {role: 'link', 'aria-disabled': 'true'} : {href: `#${encodeURIComponent(item.id)}`, 'aria-current': current.value === item.id ? 'location' : undefined, onClick: (event: MouseEvent) => activate(event, item.id)})}, [h('span', {class: 'nq-content-nav-marker', 'aria-hidden': 'true'}), h('span', {class: 'nq-content-nav-label'}, item.label)]),
+    const renderItems = (entries: readonly ContentNavigationItem[], nested = false): VNode => h('ul', {class: nested ? 'hw-content-nav-sublist' : 'hw-content-nav-list'}, entries.map(item => h('li', {key: item.id}, [
+      h(item.disabled ? 'span' : 'a', {class: 'hw-content-nav-link', 'data-hw-section': item.id, ...(item.disabled ? {role: 'link', 'aria-disabled': 'true'} : {href: `#${encodeURIComponent(item.id)}`, 'aria-current': current.value === item.id ? 'location' : undefined, onClick: (event: MouseEvent) => activate(event, item.id)})}, [h('span', {class: 'hw-content-nav-marker', 'aria-hidden': 'true'}), h('span', {class: 'hw-content-nav-label'}, item.label)]),
       item.children?.length ? renderItems(item.children, true) : null,
     ])));
-    return () => h('nav', mergeProps(attrs, {ref: navigation, class: 'nq-content-nav', 'aria-label': props.label, 'data-sticky': props.sticky ? 'true' : undefined}), [props.showHeading ? h('h2', {class: 'nq-content-nav-heading'}, props.label) : null, renderItems(props.items)]);
+    return () => h('nav', mergeProps(attrs, {ref: navigation, class: 'hw-content-nav', 'aria-label': props.label, 'data-sticky': props.sticky ? 'true' : undefined}), [props.showHeading ? h('h2', {class: 'hw-content-nav-heading'}, props.label) : null, renderItems(props.items)]);
   },
 });

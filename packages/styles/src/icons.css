@@ -1,42 +1,42 @@
 /* Artwork remains unchanged; the alpha mask adopts the surrounding text color. */
-.nq-icon {
+.hw-icon {
   display: inline-block;
   flex: none;
-  inline-size: var(--nq-icon-size, var(--nq-icon-context-size, 1.5rem));
-  block-size: var(--nq-icon-size, var(--nq-icon-context-size, 1.5rem));
+  inline-size: var(--hw-icon-size, var(--hw-icon-context-size, 1.5rem));
+  block-size: var(--hw-icon-size, var(--hw-icon-context-size, 1.5rem));
   vertical-align: middle;
   background-color: currentColor;
-  -webkit-mask: var(--nq-icon-image, none) center / contain no-repeat;
-  mask: var(--nq-icon-image, none) center / contain no-repeat;
+  -webkit-mask: var(--hw-icon-image, none) center / contain no-repeat;
+  mask: var(--hw-icon-image, none) center / contain no-repeat;
 }
-.nq-icon[hidden] { display: none; }
-.nq-icon[data-icon='search-01'] { --nq-icon-image: url('./assets/icons/search-01.svg'); }
-.nq-icon[data-icon='menu-01'] { --nq-icon-image: url('./assets/icons/menu-01.svg'); }
-.nq-icon[data-icon='cancel-01'] { --nq-icon-image: url('./assets/icons/cancel-01.svg'); }
-.nq-icon[data-icon='arrow-left-01'] { --nq-icon-image: url('./assets/icons/arrow-left-01.svg'); }
-.nq-icon[data-icon='arrow-right-01'] { --nq-icon-image: url('./assets/icons/arrow-right-01.svg'); }
-.nq-icon[data-icon='arrow-down-01'] { --nq-icon-image: url('./assets/icons/arrow-down-01.svg'); }
-.nq-icon[data-icon='filter-horizontal'] { --nq-icon-image: url('./assets/icons/filter-horizontal.svg'); }
-.nq-icon[data-icon='sorting-05'] { --nq-icon-image: url('./assets/icons/sorting-05.svg'); }
-.nq-icon[data-icon='home-01'] { --nq-icon-image: url('./assets/icons/home-01.svg'); }
-.nq-icon[data-icon='checkmark-circle-02'] { --nq-icon-image: url('./assets/icons/checkmark-circle-02.svg'); }
-.nq-icon[data-icon='thumbs-up'] { --nq-icon-image: url('./assets/icons/thumbs-up.svg'); }
-.nq-icon[data-icon='thumbs-down'] { --nq-icon-image: url('./assets/icons/thumbs-down.svg'); }
+.hw-icon[hidden] { display: none; }
+.hw-icon[data-icon='search-01'] { --hw-icon-image: url('./assets/icons/search-01.svg'); }
+.hw-icon[data-icon='menu-01'] { --hw-icon-image: url('./assets/icons/menu-01.svg'); }
+.hw-icon[data-icon='cancel-01'] { --hw-icon-image: url('./assets/icons/cancel-01.svg'); }
+.hw-icon[data-icon='arrow-left-01'] { --hw-icon-image: url('./assets/icons/arrow-left-01.svg'); }
+.hw-icon[data-icon='arrow-right-01'] { --hw-icon-image: url('./assets/icons/arrow-right-01.svg'); }
+.hw-icon[data-icon='arrow-down-01'] { --hw-icon-image: url('./assets/icons/arrow-down-01.svg'); }
+.hw-icon[data-icon='filter-horizontal'] { --hw-icon-image: url('./assets/icons/filter-horizontal.svg'); }
+.hw-icon[data-icon='sorting-05'] { --hw-icon-image: url('./assets/icons/sorting-05.svg'); }
+.hw-icon[data-icon='home-01'] { --hw-icon-image: url('./assets/icons/home-01.svg'); }
+.hw-icon[data-icon='checkmark-circle-02'] { --hw-icon-image: url('./assets/icons/checkmark-circle-02.svg'); }
+.hw-icon[data-icon='thumbs-up'] { --hw-icon-image: url('./assets/icons/thumbs-up.svg'); }
+.hw-icon[data-icon='thumbs-down'] { --hw-icon-image: url('./assets/icons/thumbs-down.svg'); }
 
 /* Opt in only for semantic forward/back; physical directions retain their meaning. */
-.nq-icon:is([data-icon='arrow-left-01'], [data-icon='arrow-right-01'])[data-directional='true'] {
+.hw-icon:is([data-icon='arrow-left-01'], [data-icon='arrow-right-01'])[data-directional='true'] {
   --_nq-mirror: var(--_nq-rtl-only) scaleX(-1);
   transform: var(--_nq-mirror, none);
 }
 @media (forced-colors: active) {
-  .nq-icon {
+  .hw-icon {
     forced-color-adjust: none;
     background-color: CanvasText;
   }
-  :where(button, a)[aria-disabled='true'] .nq-icon,
-  button:disabled .nq-icon { background-color: GrayText; }
+  :where(button, a)[aria-disabled='true'] .hw-icon,
+  button:disabled .hw-icon { background-color: GrayText; }
 }
 
-.nq-icon[data-icon="link-04"] { --nq-icon-image: url("./assets/icons/link-04.svg"); }
+.hw-icon[data-icon="link-04"] { --hw-icon-image: url("./assets/icons/link-04.svg"); }
 
-.nq-icon[data-icon="lock-password"] { --nq-icon-image: url("./assets/icons/lock-password.svg"); }
+.hw-icon[data-icon="lock-password"] { --hw-icon-image: url("./assets/icons/lock-password.svg"); }

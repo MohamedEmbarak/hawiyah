@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
-import {NqIconButtonComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwIconButtonComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act, createElement as r} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp, h, nextTick, reactive} from 'vue';
@@ -37,7 +37,7 @@ async function mount(adapter: string, relations = false) {
     app.mount(host); sync = async () => {Object.assign(props, state); await nextTick();};
     focus = () => instance?.focus(); cleanup.push(() => app.unmount());
   } else {
-    const fixture = TestBed.createComponent(NqIconButtonComponent); host.append(fixture.nativeElement);
+    const fixture = TestBed.createComponent(HwIconButtonComponent); host.append(fixture.nativeElement);
     fixture.componentRef.setInput('label', 'Search');
     for (const [key, value] of Object.entries(shared)) fixture.componentRef.setInput(key, value);
     if (relations) for (const [key, value] of Object.entries({controls:'results', expanded:false, describedBy:'search-help', hasPopup:'dialog'})) fixture.componentRef.setInput(key, value);

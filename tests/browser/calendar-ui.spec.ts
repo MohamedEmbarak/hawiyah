@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 
 test('date picker has a readable responsive popup and isolated Arabic date range', async ({ page }, testInfo) => {
   await page.goto('/#component/date-picker');
-  const picker = page.locator('[data-nq="date-picker"]');
+  const picker = page.locator('[data-hw="date-picker"]');
   // Exercise the live enhanced recipe independently of documentation paragraph widths.
   await picker.evaluate(node=>{ document.body.replaceChildren(node); document.body.style.padding='16px'; });
-  const trigger = picker.locator('[data-nq-date-trigger]');
-  const input = picker.locator('[data-nq-date-input]');
+  const trigger = picker.locator('[data-hw-date-trigger]');
+  const input = picker.locator('[data-hw-date-input]');
   for (const direction of ['rtl', 'ltr']) {
     await picker.evaluate((node, direction) => node.setAttribute('dir', direction), direction);
     for (const width of [320, 390, 1280]) {
@@ -17,16 +17,16 @@ test('date picker has a readable responsive popup and isolated Arabic date range
       expect(triggerBounds!.x + triggerBounds!.width).toBeLessThanOrEqual(inputBounds!.x + inputBounds!.width + 1);
       await trigger.click();
       const dialog = picker.locator('dialog');
-      await expect(dialog.locator('.nq-dialog-header h2')).toBeVisible();
-      await expect(dialog.locator('.nq-dialog-body')).toBeVisible();
+      await expect(dialog.locator('.hw-dialog-header h2')).toBeVisible();
+      await expect(dialog.locator('.hw-dialog-body')).toBeVisible();
       await dialog.evaluate(node=>Promise.all(node.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
       const bounds = await dialog.boundingBox();
       expect(bounds!.x).toBeGreaterThanOrEqual(0);
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
       expect(await dialog.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
       expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      expect(await dialog.locator('.nq-calendar-day').first().evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
-      const previous = dialog.locator('.nq-calendar-prev');
+      expect(await dialog.locator('.hw-calendar-day').first().evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+      const previous = dialog.locator('.hw-calendar-prev');
       const arrow = await previous.evaluate(node => { const style = getComputedStyle(node, '::before'); return { size: style.width, mask: style.maskImage, transform: style.transform }; });
       expect(arrow.size).toBe('24px'); expect(arrow.mask).toMatch(/^url\(/);
       const iconWidth = await previous.evaluate(node => new Promise<number>(resolve => {

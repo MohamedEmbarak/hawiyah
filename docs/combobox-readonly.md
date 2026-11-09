@@ -1,7 +1,7 @@
 # Read-only combobox
 
 Use `readOnly` in React and Angular, `readonly` in Vue, or the native `readonly`
-attribute/property on vanilla's `[data-nq-combobox-input]`. Angular's input is an
+attribute/property on vanilla's `[data-hw-combobox-input]`. Angular's input is an
 additive boolean API and supports boolean attribute coercion.
 
 The textbox remains focusable and selectable for copying. Native `readonly`

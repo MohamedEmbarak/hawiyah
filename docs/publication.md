@@ -1,18 +1,18 @@
 # Public source, guide, and package releases
 
-Nasaq is available from [MohamedEmbarak/nasaq](https://github.com/MohamedEmbarak/nasaq)
+Hawiyah is available from [MohamedEmbarak/hawiyah](https://github.com/MohamedEmbarak/hawiyah)
 as a **0.2 source preview**, with an interactive guide at
-[GitHub Pages](https://mohamedembarak.github.io/nasaq/). Original project code,
+[GitHub Pages](https://mohamedembarak.github.io/hawiyah/). Original project code,
 documentation, and artwork use [Apache License 2.0](../LICENSE). Bundled fonts
 and calendar reference data retain their own licenses and attribution; see
 [NOTICE](../NOTICE) and their adjacent third-party notices.
 
 **Version 0.2.0 is on npm** as the first registry release of all seven
-`@nasaq/*` packages. It is a pre-1.0 release: a minor version may still change
+`@hawiyah/*` packages. It is a pre-1.0 release: a minor version may still change
 APIs, and publication is not a production-readiness or DGA certification claim.
 
 ```sh
-npm install @nasaq/styles @nasaq/react   # or vanilla, vue, angular
+npm install @hawiyah/styles @hawiyah/react   # or vanilla, vue, angular
 ```
 
 The source manifests keep `private: true`, so running `npm publish` inside a
@@ -26,7 +26,7 @@ component APIs and lifecycles, framework setup, themes, Arabic/RTL behavior,
 calendar provenance, layout composition, and extension guidance. The source
 lives in `apps/playground`; the brand guide is in `brand`.
 
-GitHub Pages serves this project beneath `/nasaq/`. A deployment must use that
+GitHub Pages serves this project beneath `/hawiyah/`. A deployment must use that
 base path for scripts, styles, images, fonts, downloads, and guide navigation.
 Check direct links to component pages, reloads, search, narrow screens,
 Arabic/RTL, and reduced-motion behavior against the built site. Deploy only
@@ -38,7 +38,7 @@ The [Pages workflow](../.github/workflows/pages.yml) builds with:
 
 ```sh
 pnpm install --frozen-lockfile
-NASAQ_BASE_PATH=/nasaq/ pnpm build:docs
+HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs
 ```
 
 It publishes `apps/playground/dist` through GitHub Pages. The separate `pnpm build`
@@ -58,7 +58,7 @@ All seven packages share one version and release together.
    ```
 
    This rebuilds the packages, runs the full `check:packages` consumer check
-   with `NASAQ_RELEASE=1` (which drops `private` from the staged manifests
+   with `HAWIYAH_RELEASE=1` (which drops `private` from the staged manifests
    only), and runs `npm publish --dry-run` on each verified tarball.
 3. Record the release in the [validation record](validation.md) and
    [changelog](../CHANGELOG.md), commit, and confirm the working tree is clean.
@@ -67,7 +67,7 @@ All seven packages share one version and release together.
    checks that the tag matches the package version, repeats the build and
    consumer check, and runs `node scripts/publish-packages.mjs --publish` with
    npm provenance. It authenticates with the `NPM_TOKEN` repository secret: a
-   granular npm token with read and write access to the `@nasaq` scope and
+   granular npm token with read and write access to the `@hawiyah` scope and
    two-factor bypass enabled. Once the packages exist, a trusted publisher for
    this workflow can be configured on each npm package and the token removed.
    A manual run of the workflow is a dry run unless **publish** is checked.
@@ -100,8 +100,8 @@ away from the broken one.
 
 ## Discoverability and accuracy
 
-Describe **Nasaq — نسق** as an independent, Arabic-first system with vanilla
-JavaScript, React, Vue, and Angular adapters. Relevant searchable terms include
+Describe **Hawiyah — هوية** as a UI component library built to comply with the
+DGA Platforms Code, with JavaScript, React, Vue, and Angular adapters. Relevant searchable terms include
 **DGA**, **DGA compliance**, **Platforms Code**, **Saudi design system**, **KSA**,
 **Unified Design System**, **RTL**, **هيئة الحكومة الرقمية**, and **كود المنصات**.
 Use those terms to explain the reference and documented evidence; they do not

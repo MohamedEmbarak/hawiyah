@@ -1,59 +1,94 @@
 {
-  "identity": "Nasaq — نسق",
-  "direction": "Woven Rhythm",
-  "mark": "نسق — Arabic-only outlined wordmark",
+  "identity": "Hawiyah — هوية",
+  "direction": "DGA Platforms Code",
+  "mark": "هوية — Arabic outlined wordmark",
   "colors": {
-    "teal": {
-      "hex": "#006A64",
-      "role": "Primary actions and logo on light surfaces"
+    "primary": {
+      "hex": "#1B8354",
+      "variable": "button-background-primary-default / text-primary",
+      "role": "Primary actions and the wordmark on light backgrounds"
     },
-    "mint": {
-      "hex": "#C8E7DD",
-      "role": "Supportive surfaces; dark-mode primary actions with ink text"
+    "primary-hover": {
+      "hex": "#166A45",
+      "variable": "button-background-primary-hovered",
+      "role": "Hovered primary actions"
     },
-    "ivory": {
-      "hex": "#F7F5EE",
-      "role": "Warm brand canvas and reverse logo"
+    "primary-50": {
+      "hex": "#F3FCF6",
+      "variable": "background-primary-50",
+      "role": "Subtle primary surfaces and the reverse wordmark"
     },
-    "ink": {
-      "hex": "#142D30",
-      "role": "Body text and dark canvas"
+    "body": {
+      "hex": "#F9FAFB",
+      "variable": "background-body",
+      "role": "Page background"
+    },
+    "text": {
+      "hex": "#161616",
+      "variable": "text-default",
+      "role": "Body text and the monochrome wordmark"
+    },
+    "dark": {
+      "hex": "#111927",
+      "variable": "background-body (dark)",
+      "role": "Dark page background"
+    },
+    "dark-surface": {
+      "hex": "#1F2A37",
+      "variable": "background-card (dark)",
+      "role": "Dark surfaces"
+    },
+    "dark-primary-text": {
+      "hex": "#54C08A",
+      "variable": "text-primary (dark)",
+      "role": "Primary text on dark backgrounds"
     },
     "white": {
       "hex": "#FFFFFF",
-      "role": "Primary action text and neutral surface"
+      "variable": "text-oncolor-primary",
+      "role": "Text on primary actions and the white wordmark"
     }
   },
   "verifiedContrastPairs": [
     {
       "foreground": "white",
-      "background": "teal",
-      "ratio": 6.47
+      "background": "primary",
+      "ratio": 4.75
     },
     {
-      "foreground": "teal",
-      "background": "ivory",
-      "ratio": 5.93
+      "foreground": "primary",
+      "background": "body",
+      "ratio": 4.55
     },
     {
-      "foreground": "ink",
-      "background": "ivory",
-      "ratio": 13.3
+      "foreground": "primary",
+      "background": "primary-50",
+      "ratio": 4.54
     },
     {
-      "foreground": "ink",
-      "background": "mint",
-      "ratio": 11.0
+      "foreground": "text",
+      "background": "body",
+      "ratio": 17.32
     },
     {
-      "foreground": "mint",
-      "background": "ink",
-      "ratio": 11.0
+      "foreground": "text",
+      "background": "primary-50",
+      "ratio": 17.29
     },
     {
-      "foreground": "teal",
-      "background": "mint",
-      "ratio": 4.91
+      "foreground": "white",
+      "background": "dark",
+      "ratio": 17.61
+    },
+    {
+      "foreground": "dark-primary-text",
+      "background": "dark",
+      "ratio": 7.79
+    },
+    {
+      "foreground": "white",
+      "background": "primary-hover",
+      "ratio": 6.6
     }
   ],
   "contrastMethod": "WCAG relative luminance, opaque sRGB values, rounded to two decimals; these tested pairs pass 4.5:1 normal text. All other states and pairs require their own checks.",
@@ -66,6 +101,13 @@
     "latinBodyLineHeight": 1.55,
     "arabicLetterSpacing": 0,
     "wordmarkFamily": "Aref Ruqaa",
-    "wordmarkFormat": "Arabic-only outlined SVG artwork; no runtime font dependency. UI fonts remain IBM Plex."
+    "wordmarkFormat": "Arabic outlined SVG artwork; no runtime font dependency. Interface text uses IBM Plex Sans Arabic, the Platforms Code typeface, and IBM Plex Sans."
+  },
+  "source": "DGA Platforms Code theme variables, as recorded in packages/tokens/reference/dga-foundations.json",
+  "decorative": {
+    "patternTint": {
+      "hex": "#D8E8E2",
+      "role": "Decorative pattern only: a 15% primary tint over the body background. Never use for text."
+    }
   }
 }

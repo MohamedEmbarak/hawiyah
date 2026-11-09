@@ -33,14 +33,14 @@ it('server-renders all 50 additions without browser globals or implicit engines'
     <N.Section>Section</N.Section><N.AppShell header="Header" footer="Footer">Main</N.AppShell>
     <N.PageHeader title="Services" description="Explore services" />
   </>);
-  expect(html).toContain('nq-date-picker-value');
-  for (const name of ['input-group', 'password-field', 'search-field', 'number-field', 'slider', 'range-slider', 'rating', 'pin-input', 'tag-input', 'multi-select', 'calendar', 'date-picker', 'file-dropzone', 'toggle-group', 'popover', 'menu', 'drawer', 'toast-region', 'collapsible', 'tree-view', 'carousel', 'link', 'icon-button', 'button-group', 'chip', 'description-list', 'stat', 'timeline', 'meter', 'avatar-group', 'data-table', 'service-card', 'service-details', 'portal-header', 'portal-footer', 'feedback', 'cookie-consent', 'notification-list', 'container', 'stack', 'inline', 'grid', 'columns', 'sidebar', 'center', 'spacer', 'aspect-ratio', 'section', 'app-shell', 'page-header']) expect(html).toContain(`nq-${name}`);
+  expect(html).toContain('hw-date-picker-value');
+  for (const name of ['input-group', 'password-field', 'search-field', 'number-field', 'slider', 'range-slider', 'rating', 'pin-input', 'tag-input', 'multi-select', 'calendar', 'date-picker', 'file-dropzone', 'toggle-group', 'popover', 'menu', 'drawer', 'toast-region', 'collapsible', 'tree-view', 'carousel', 'link', 'icon-button', 'button-group', 'chip', 'description-list', 'stat', 'timeline', 'meter', 'avatar-group', 'data-table', 'service-card', 'service-details', 'portal-header', 'portal-footer', 'feedback', 'cookie-consent', 'notification-list', 'container', 'stack', 'inline', 'grid', 'columns', 'sidebar', 'center', 'spacer', 'aspect-ratio', 'section', 'app-shell', 'page-header']) expect(html).toContain(`hw-${name}`);
 });
 it('serializes layout variables without leaking presentation props onto HTML', () => {
   const html = renderToString(<N.Grid columns={{ base: 1, md: 3 }} gap={{ base: 2, lg: '2rem' }} padding={4} align="center" justify="between" wrap aria-label="Cards">Content</N.Grid>);
-  expect(html).toContain('--nq-layout-columns:1');
-  expect(html).toContain('--nq-layout-columns-md:3');
-  expect(html).toContain('--nq-layout-gap-lg:2rem');
-  expect(html).toContain('--nq-layout-justify:space-between');
+  expect(html).toContain('--hw-layout-columns:1');
+  expect(html).toContain('--hw-layout-columns-md:3');
+  expect(html).toContain('--hw-layout-gap-lg:2rem');
+  expect(html).toContain('--hw-layout-justify:space-between');
   expect(html).not.toMatch(/\s(?:gap|columns|padding|justify|wrap)=/u);
 });

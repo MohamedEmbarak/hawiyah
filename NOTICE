@@ -1,4 +1,4 @@
-Nasaq — نسق
+Hawiyah — هوية
 
 تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني
 Developed by the Development Team in the National Platforms Sector — National Information Center.
@@ -15,7 +15,7 @@ source repository and third-party in the core package.
 Brand source fonts are licensed separately under the SIL Open Font License
 1.1. The unmodified notices accompany their files in brand/third-party.
 Font software and third-party dependencies retain their own licenses.
-The Nasaq name and identity do not imply endorsement by Saudi Arabia's
+The Hawiyah name and identity do not imply endorsement by Saudi Arabia's
 Digital Government Authority. Apache 2.0 does not grant trademark rights.
 
 The guide includes a user-supplied National Information Center (NIC) logo
@@ -25,7 +25,7 @@ remain with their respective holders. No Apache 2.0 license for the
 artwork or trademark permission is inferred from its inclusion.
 See apps/playground/src/assets/README.md for provenance.
 
-The NasaqRiyal symbol font is a U+20C1-only derivative of Noto Naskh Arabic
+The HawiyahRiyal symbol font is a U+20C1-only derivative of Noto Naskh Arabic
 2.021, Copyright 2022 The Noto Project Authors, licensed under SIL OFL 1.1.
 Its complete license and reproducible source record are included in
 packages/styles/src/assets/fonts/riyal-LICENSE.txt and riyal-provenance.json.

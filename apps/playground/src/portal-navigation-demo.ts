@@ -26,26 +26,26 @@ export function portalMenuItems(locale: Locale): Branch[] {
 
 export function portalMenuList(locale: Locale) {
   const anchor = (item: Destination, extra = '') =>
-    `<a class="nq-link${extra}" href="${item.href}"${item.current ? ' aria-current="page"' : ''}>${item.label}</a>`;
+    `<a class="hw-link${extra}" href="${item.href}"${item.current ? ' aria-current="page"' : ''}>${item.label}</a>`;
   return portalMenuItems(locale).map(item => {
     if (!item.groups) return `<li>${anchor(item)}</li>`;
     const groups = item.groups.map(group =>
-      `<section class="nq-portal-branch-group">${group.label ? `<h2>${group.label}</h2>` : ''}<ul>${group.links.map(child => `<li>${anchor(child)}</li>`).join('')}</ul></section>`
+      `<section class="hw-portal-branch-group">${group.label ? `<h2>${group.label}</h2>` : ''}<ul>${group.links.map(child => `<li>${anchor(child)}</li>`).join('')}</ul></section>`
     ).join('');
     const current = item.groups.some(group => group.links.some(link => link.current));
-    return `<li><details class="nq-portal-branch" data-nq-portal-branch${current ? ' data-current="true"' : ''}>
+    return `<li><details class="hw-portal-branch" data-hw-portal-branch${current ? ' data-current="true"' : ''}>
       <summary>${item.label}</summary>
-      <div class="nq-portal-branch-panel">${anchor(item, ' nq-portal-branch-overview')}${groups}</div>
+      <div class="hw-portal-branch-panel">${anchor(item, ' hw-portal-branch-overview')}${groups}</div>
     </details></li>`;
   }).join('');
 }
 
 export function portalMenuMarkup(locale: Locale) {
   const ar = locale === 'ar';
-  return `<header class="nq-portal-header" data-nq="portal-header"><div class="nq-portal-header-inner">
-    <a class="nq-portal-brand" href="#home"><span class="nq-portal-wordmark" role="img" aria-label="نسق"></span></a>
-    <button class="nq-button nq-portal-menu-toggle" type="button" data-nq-portal-toggle>${ar ? 'القائمة' : 'Menu'}</button>
-    <nav aria-label="${ar ? 'التنقل الرئيسي' : 'Main navigation'}" data-nq-portal-navigation><ul>${portalMenuList(locale)}</ul></nav>
+  return `<header class="hw-portal-header" data-hw="portal-header"><div class="hw-portal-header-inner">
+    <a class="hw-portal-brand" href="#home"><span class="hw-portal-wordmark" role="img" aria-label="هوية"></span></a>
+    <button class="hw-button hw-portal-menu-toggle" type="button" data-hw-portal-toggle>${ar ? 'القائمة' : 'Menu'}</button>
+    <nav aria-label="${ar ? 'التنقل الرئيسي' : 'Main navigation'}" data-hw-portal-navigation><ul>${portalMenuList(locale)}</ul></nav>
   </div></header>`;
 }
 
@@ -57,9 +57,9 @@ export function portalMenuRecipe(locale: Locale) {
   return {
     title: ar ? 'روابط تنقل مجمّعة' : 'Grouped navigation links',
     markup: portalMenuMarkup(locale),
-    vanillaScript: `import { createPortalHeader } from '@nasaq/vanilla';\nconst header = createPortalHeader(document.querySelector('[data-nq="portal-header"]'));\nwindow.addEventListener('pagehide', () => header.destroy(), { once: true });`,
-    react: `import { PortalHeader } from '@nasaq/react';\nconst links = ${links};\nexport default function SiteHeader() {\n  return <PortalHeader brand="نسق" brandHref="#home" navigation={links} navigationLabel="${label}" menuLabel="${menu}" />;\n}`,
-    vue: `<script setup>\nimport { PortalHeader } from '@nasaq/vue';\nconst links = ${links};\n</script>\n<template><PortalHeader brand="نسق" home-href="#home" :links="links" nav-label="${label}" menu-label="${menu}" /></template>`,
-    angular: `import { Component } from '@angular/core';\nimport { NqPortalHeaderComponent } from '@nasaq/angular';\n@Component({ selector: 'app-site-header', standalone: true, imports: [NqPortalHeaderComponent], template: \`<nq-portal-header brand="نسق" homeHref="#home" mainId="" [links]="links" navigationLabel="${label}" menuLabel="${menu}" />\` })\nexport class SiteHeader { readonly links = ${links}; }`,
+    vanillaScript: `import { createPortalHeader } from '@hawiyah/vanilla';\nconst header = createPortalHeader(document.querySelector('[data-hw="portal-header"]'));\nwindow.addEventListener('pagehide', () => header.destroy(), { once: true });`,
+    react: `import { PortalHeader } from '@hawiyah/react';\nconst links = ${links};\nexport default function SiteHeader() {\n  return <PortalHeader brand="هوية" brandHref="#home" navigation={links} navigationLabel="${label}" menuLabel="${menu}" />;\n}`,
+    vue: `<script setup>\nimport { PortalHeader } from '@hawiyah/vue';\nconst links = ${links};\n</script>\n<template><PortalHeader brand="هوية" home-href="#home" :links="links" nav-label="${label}" menu-label="${menu}" /></template>`,
+    angular: `import { Component } from '@angular/core';\nimport { HwPortalHeaderComponent } from '@hawiyah/angular';\n@Component({ selector: 'app-site-header', standalone: true, imports: [HwPortalHeaderComponent], template: \`<hw-portal-header brand="هوية" homeHref="#home" mainId="" [links]="links" navigationLabel="${label}" menuLabel="${menu}" />\` })\nexport class SiteHeader { readonly links = ${links}; }`,
   };
 }

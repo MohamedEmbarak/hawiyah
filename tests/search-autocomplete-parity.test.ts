@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule,platformBrowserTesting} from '@angular/platform-browser/testing';
-import {NqSearchFieldComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwSearchFieldComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act,createElement as r,createRef} from 'react';
 import {createRoot} from 'react-dom/client';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -29,7 +29,7 @@ async function mount(adapter:string,initial:Partial<State>={},controlled=false){
     const model=reactive({...state}),app=createApp({render:()=>h(VueSearch,{...model,readonly:model.readOnly,modelValue:controlled?model.value:undefined,defaultValue:model.value,'onUpdate:modelValue':changes,onSearch:searches,ref:'search',id:'search-query',label:'البحث',hint:'تلميح',error:'راجع البحث',name:'query',required:true})});app.mount(host);instance=app._instance?.refs.search;
     dispose=async()=>app.unmount();sync=async()=>{Object.assign(model,state);await nextTick();};flush=async()=>{await nextTick();await nextTick();};
   }else{
-    const fixture=TestBed.createComponent(NqSearchFieldComponent);host.append(fixture.nativeElement);instance=fixture.componentInstance;instance.valueChange.subscribe(changes);instance.searched.subscribe(searches);dispose=async()=>fixture.destroy();
+    const fixture=TestBed.createComponent(HwSearchFieldComponent);host.append(fixture.nativeElement);instance=fixture.componentInstance;instance.valueChange.subscribe(changes);instance.searched.subscribe(searches);dispose=async()=>fixture.destroy();
     sync=async()=>{for(const [key,value]of Object.entries({...state,controlId:'search-query',label:'البحث',hint:'تلميح',error:'راجع البحث',name:'query',required:true}))fixture.componentRef.setInput(key,value);fixture.detectChanges();};
     flush=async()=>{await Promise.resolve();fixture.detectChanges();};resetModel=()=>instance.writeValue(state.value);
   }
@@ -46,7 +46,7 @@ for(const adapter of ['react','vue','angular']){
     const m=await mount(adapter);expect(m.input().getAttribute('role')).toBe('combobox');expect(m.input().getAttribute('aria-expanded')).toBe('false');expect(m.input().getAttribute('aria-controls')).toBe(m.list().id);expect(m.input().getAttribute('aria-invalid')).toBe('true');
     for(const id of m.input().getAttribute('aria-describedby')!.split(' '))expect(document.getElementById(id)).not.toBeNull();expect(m.host.querySelector('label')!.htmlFor).toBe(m.input().id);
     await m.run(()=>m.input().focus());expect(m.list().hidden).toBe(false);expect(m.list().querySelectorAll('[role="option"]')).toHaveLength(2);for(const option of m.list().querySelectorAll('[role="option"]'))expect(option.getAttribute('dir')).toBe('auto');expect(m.list().querySelector('strong')!.textContent).toBe('خدمة');expect(m.host.querySelector('[role="status"]')!.textContent).toContain('2');
-    expect(m.host.querySelector('.nq-search-submit')!.getAttribute('aria-label')).toBe('بحث');expect(m.host.querySelector('.nq-search-clear')!.getAttribute('aria-label')).toBe('مسح البحث');expect(new FormData(m.form).get('query')).toBe('خدمة');
+    expect(m.host.querySelector('.hw-search-submit')!.getAttribute('aria-label')).toBe('بحث');expect(m.host.querySelector('.hw-search-clear')!.getAttribute('aria-label')).toBe('مسح البحث');expect(new FormData(m.form).get('query')).toBe('خدمة');
     if(adapter==='react')expect(m.forwarded.current).toBe(m.input());if(adapter==='vue'){expect(m.instance.element).toBe(m.input());expect(typeof m.instance.focus).toBe('function');}if(adapter==='angular')expect(typeof m.instance.focus).toBe('function');
   });
   it(`${adapter}: wrapping arrow navigation selects a suggestion without search or form submission`,async()=>{
@@ -57,13 +57,13 @@ for(const adapter of ['react','vue','angular']){
   it(`${adapter}: primary pointer selection and clearing retain focus without activating on pointerdown`,async()=>{
     const m=await mount(adapter);await m.run(()=>m.input().focus());const option=m.list().querySelector<HTMLElement>('[role="option"]')!,down=new MouseEvent('pointerdown',{bubbles:true,cancelable:true,button:0});
     await m.run(()=>option.dispatchEvent(down));expect(down.defaultPrevented).toBe(true);expect(m.changes).not.toHaveBeenCalled();await m.run(()=>option.click());expect(m.input().value).toBe(suggestions[0]);expect(document.activeElement).toBe(m.input());
-    const clear=m.host.querySelector<HTMLButtonElement>('.nq-search-clear')!,clearDown=new MouseEvent('pointerdown',{bubbles:true,cancelable:true,button:0});await m.run(()=>clear.dispatchEvent(clearDown));expect(clearDown.defaultPrevented).toBe(true);await m.run(()=>clear.click());expect(m.input().value).toBe('');expect(m.list().hidden).toBe(true);expect(document.activeElement).toBe(m.input());
+    const clear=m.host.querySelector<HTMLButtonElement>('.hw-search-clear')!,clearDown=new MouseEvent('pointerdown',{bubbles:true,cancelable:true,button:0});await m.run(()=>clear.dispatchEvent(clearDown));expect(clearDown.defaultPrevented).toBe(true);await m.run(()=>clear.click());expect(m.input().value).toBe('');expect(m.list().hidden).toBe(true);expect(document.activeElement).toBe(m.input());
     await m.reset();expect(m.input().value).toBe('خدمة');expect(m.list().hidden).toBe(true);
   });
   it(`${adapter}: plain Enter searches trimmed free text but leaves form submission available`,async()=>{
     const m=await mount(adapter,{value:'  خدمة  '});await m.run(()=>m.input().focus());const enter=await m.key('Enter');expect(enter.defaultPrevented).toBe(false);expect(m.searches).toHaveBeenLastCalledWith('خدمة');expect(m.list().hidden).toBe(true);
     await m.type('سؤال حر');const free=await m.key('Enter');expect(free.defaultPrevented).toBe(false);expect(m.searches).toHaveBeenLastCalledWith('سؤال حر');
-    await m.type('   ');const count=m.searches.mock.calls.length;await m.key('Enter');await m.run(()=>m.host.querySelector<HTMLButtonElement>('.nq-search-submit')!.click());expect(m.searches).toHaveBeenCalledTimes(count);
+    await m.type('   ');const count=m.searches.mock.calls.length;await m.key('Enter');await m.run(()=>m.host.querySelector<HTMLButtonElement>('.hw-search-submit')!.click());expect(m.searches).toHaveBeenCalledTimes(count);
   });
   it(`${adapter}: composition and modifiers never select or search, and Escape respects the dialog layer`,async()=>{
     const m=await mount(adapter);const dialog=document.createElement('dialog');document.body.append(dialog);dialog.append(m.form);dialog.open=true;const parentEscape=vi.fn();dialog.addEventListener('keydown',event=>{if(event.key==='Escape' && !event.defaultPrevented){parentEscape();dialog.open=false;}});
@@ -72,8 +72,8 @@ for(const adapter of ['react','vue','angular']){
     await m.run(()=>m.input().dispatchEvent(new CompositionEvent('compositionend',{bubbles:true})));for(const modifiers of [{isComposing:true},{ctrlKey:true},{metaKey:true},{altKey:true},{shiftKey:true}]){await m.key('Enter',modifiers);await m.key('ArrowDown',modifiers);}expect(m.searches).not.toHaveBeenCalled();expect(m.input().hasAttribute('aria-activedescendant')).toBe(false);
   });
   it(`${adapter}: readonly remains searchable, while native disabled state blocks all changes and closes suggestions`,async()=>{
-    const m=await mount(adapter);await m.run(()=>m.input().focus());m.state.readOnly=true;await m.sync();expect(m.list().hidden).toBe(true);await m.key('ArrowDown');await m.run(()=>m.host.querySelector<HTMLButtonElement>('.nq-search-clear')!.click());expect(m.changes).not.toHaveBeenCalled();await m.key('Enter');expect(m.searches).toHaveBeenLastCalledWith('خدمة');
-    m.state.readOnly=false;await m.sync();await m.key('ArrowDown');expect(m.list().hidden).toBe(false);await m.run(()=>{m.fieldset.disabled=true;});expect(m.list().hidden).toBe(true);const count=m.searches.mock.calls.length;await m.key('Enter');await m.run(()=>m.host.querySelector<HTMLButtonElement>('.nq-search-submit')!.click());expect(m.searches).toHaveBeenCalledTimes(count);expect(m.changes).not.toHaveBeenCalled();
+    const m=await mount(adapter);await m.run(()=>m.input().focus());m.state.readOnly=true;await m.sync();expect(m.list().hidden).toBe(true);await m.key('ArrowDown');await m.run(()=>m.host.querySelector<HTMLButtonElement>('.hw-search-clear')!.click());expect(m.changes).not.toHaveBeenCalled();await m.key('Enter');expect(m.searches).toHaveBeenLastCalledWith('خدمة');
+    m.state.readOnly=false;await m.sync();await m.key('ArrowDown');expect(m.list().hidden).toBe(false);await m.run(()=>{m.fieldset.disabled=true;});expect(m.list().hidden).toBe(true);const count=m.searches.mock.calls.length;await m.key('Enter');await m.run(()=>m.host.querySelector<HTMLButtonElement>('.hw-search-submit')!.click());expect(m.searches).toHaveBeenCalledTimes(count);expect(m.changes).not.toHaveBeenCalled();
     await m.run(()=>{m.fieldset.disabled=false;});await m.key('ArrowDown');expect(m.list().hidden).toBe(false);
   });
   it(`${adapter}: second Escape requests modal cancellation without clearing the query and honors canceled close`,async()=>{
@@ -94,7 +94,7 @@ for(const adapter of ['react','vue','angular']){
     await m.key('ArrowDown');await m.run(()=>m.input().blur());expect(m.list().hidden).toBe(true);
   });
   it(`${adapter}: suggestions can be omitted and teardown removes native outside listeners`,async()=>{
-    const m=await mount(adapter,{suggestions:undefined,showSearchButton:false}),remove=vi.spyOn(document,'removeEventListener');expect(m.input().hasAttribute('role')).toBe(false);expect(m.host.querySelector('[role="listbox"]')).toBeNull();expect(m.host.querySelector('.nq-search-submit')).toBeNull();await m.run(()=>m.input().focus());await m.key('Enter');expect(m.searches).toHaveBeenCalledWith('خدمة');await m.destroy();expect(remove.mock.calls.some(([name])=>name==='pointerdown')).toBe(true);
+    const m=await mount(adapter,{suggestions:undefined,showSearchButton:false}),remove=vi.spyOn(document,'removeEventListener');expect(m.input().hasAttribute('role')).toBe(false);expect(m.host.querySelector('[role="listbox"]')).toBeNull();expect(m.host.querySelector('.hw-search-submit')).toBeNull();await m.run(()=>m.input().focus());await m.key('Enter');expect(m.searches).toHaveBeenCalledWith('خدمة');await m.destroy();expect(remove.mock.calls.some(([name])=>name==='pointerdown')).toBe(true);
   });
 }
 for(const adapter of ['react','vue'])it(`${adapter}: controlled owners retain the value when a suggestion change is rejected`,async()=>{
@@ -103,7 +103,7 @@ for(const adapter of ['react','vue'])it(`${adapter}: controlled owners retain th
 });
 it('React and Vue SSR render closed suggestions without claiming an active option',async()=>{
   const renders=[renderToStaticMarkup(r(ReactSearch,{label:'البحث',defaultValue:'خدمة',suggestions})),await renderToString(createSSRApp({render:()=>h(VueSearch,{label:'البحث',defaultValue:'خدمة',suggestions})}))];
-  for(const html of renders){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelector('input')!.getAttribute('role')).toBe('combobox');expect(host.querySelector('input')!.getAttribute('aria-expanded')).toBe('false');expect(host.querySelector<HTMLElement>('[role="listbox"]')!.hidden).toBe(true);expect(host.querySelector('input')!.hasAttribute('aria-activedescendant')).toBe(false);expect(host.querySelector('.nq-search-submit')).toBeNull();}
+  for(const html of renders){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelector('input')!.getAttribute('role')).toBe('combobox');expect(host.querySelector('input')!.getAttribute('aria-expanded')).toBe('false');expect(host.querySelector<HTMLElement>('[role="listbox"]')!.hidden).toBe(true);expect(host.querySelector('input')!.hasAttribute('aria-activedescendant')).toBe(false);expect(host.querySelector('.hw-search-submit')).toBeNull();}
 });
 it('React SearchField preserves callback-ref cleanup across value and suggestion state updates',async()=>{
   const host=document.createElement('div');document.body.append(host);const root=createRoot(host),cleaned=vi.fn(),forwarded=vi.fn(()=>cleaned);
@@ -111,5 +111,5 @@ it('React SearchField preserves callback-ref cleanup across value and suggestion
   const input=host.querySelector<HTMLInputElement>('input')!;expect(forwarded).toHaveBeenCalledTimes(1);expect(forwarded).toHaveBeenCalledWith(input);
   await act(()=>{input.focus();input.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));});
   await act(()=>input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true})));expect(cleaned).not.toHaveBeenCalled();expect(forwarded).toHaveBeenCalledTimes(1);
-  await act(()=>root.unmount());expect(cleaned).toHaveBeenCalledTimes(1);expect(input.hasAttribute('data-nq-filled')).toBe(false);
+  await act(()=>root.unmount());expect(cleaned).toHaveBeenCalledTimes(1);expect(input.hasAttribute('data-hw-filled')).toBe(false);
 });

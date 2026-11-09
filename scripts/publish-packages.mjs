@@ -1,4 +1,4 @@
-// Publishes the seven @nasaq packages to npm from the tarballs that
+// Publishes the seven @hawiyah packages to npm from the tarballs that
 // check-packages.mjs builds and verifies. Without --publish this is a dry run.
 //
 //   node scripts/publish-packages.mjs              build, verify, npm publish --dry-run
@@ -55,11 +55,11 @@ requireCleanTree("before");
 run(process.execPath, ["scripts/build.mjs", "--packages"]);
 // The build must not rewrite tracked sources, or the release would not match its commit.
 requireCleanTree("after building, before");
-run(process.execPath, ["scripts/check-packages.mjs"], { env: { NASAQ_RELEASE: "1" } });
+run(process.execPath, ["scripts/check-packages.mjs"], { env: { HAWIYAH_RELEASE: "1" } });
 
 for (const [index, name] of order.entries()) {
   const id = manifests[index].name;
-  const tarball = resolve(root, ".artifacts/package-check", `nasaq-${name}-${version}.tgz`);
+  const tarball = resolve(root, ".artifacts/package-check", `hawiyah-${name}-${version}.tgz`);
   if (!existsSync(tarball)) throw new Error(`Missing verified tarball for ${id}`);
   const view = run("npm", ["view", `${id}@${version}`, "version"], {
     capture: true,
@@ -83,6 +83,6 @@ for (const [index, name] of order.entries()) {
 }
 console.log(
   publish
-    ? `Published @nasaq/* ${version} with dist-tag ${tag}.`
-    : `Dry run complete for @nasaq/* ${version}. Re-run with --publish to release.`,
+    ? `Published @hawiyah/* ${version} with dist-tag ${tag}.`
+    : `Dry run complete for @hawiyah/* ${version}. Re-run with --publish to release.`,
 );

@@ -11,7 +11,7 @@ for (const [framework,language,locale] of formats) {
   test(`${framework} ${language} service projects keep actions and consent local in ${locale}`, async ({page}) => {
     test.setTimeout(420000);
     await page.addInitScript(locale => {
-      if (window === window.top) localStorage.setItem('nasaq-locale', locale);
+      if (window === window.top) localStorage.setItem('hawiyah-locale', locale);
     },locale);
     const ar = locale === 'ar';
     for (const id of ids) await test.step(id, async () => {
@@ -19,8 +19,8 @@ for (const [framework,language,locale] of formats) {
       await page.locator('[data-guide-tab="playground"]').click();
       await page.locator('[data-project-framework]').selectOption(framework);
       if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-      await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:90000});
-      const root = page.frameLocator('.nq-ide-frame').locator(`[data-service-project="${id}"]`);
+      await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:90000});
+      const root = page.frameLocator('.hw-ide-frame').locator(`[data-service-project="${id}"]`);
       const status = root.locator('[data-service-status]');
       await expect(status).toHaveText('—');
       await expect(root).toHaveAttribute('dir',ar?'rtl':'ltr');
@@ -39,7 +39,7 @@ for (const [framework,language,locale] of formats) {
         await expect(status).toHaveText(ar?'تم بدء المسودة محليًا.':'Draft started locally.');
       }
       if (id === 'cookie-consent') {
-        const banner = root.locator('.nq-cookie-consent');
+        const banner = root.locator('.hw-cookie-consent');
         const net:string[] = [];
         const onRequest = (request: import('@playwright/test').Request) => {
           if (['document','fetch','xhr','ping'].includes(request.resourceType())) net.push(request.url());
@@ -60,7 +60,7 @@ for (const [framework,language,locale] of formats) {
         } finally {page.off('request',onRequest);}
       }
       if (id === 'notification-list') {
-        const list = root.locator('.nq-notification-list');
+        const list = root.locator('.hw-notification-list');
         await expect(list.getByRole('listitem')).toHaveCount(2);
         const unread = list.locator('[data-state="unread"], [data-unread="true"], [data-read="false"]');
         await expect(unread).toHaveCount(1);

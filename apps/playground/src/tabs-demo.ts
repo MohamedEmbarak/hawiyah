@@ -48,7 +48,7 @@ export function tabsDemoCopy(locale: Locale,kind: TabsDemoKind='basic') {
 
 export function tabsDemoMarkup(locale: Locale,kind: TabsDemoKind='basic',prefix=`ready-tabs-${kind}`) {
   const d=tabsDemoCopy(locale,kind);
-  return `<div class="nq-tabs" data-nq="tabs" data-nq-activation="${d.activation}" data-nq-overflow="${d.overflow}" data-nq-overflow-label="${e(d.more)}"><div class="nq-tab-list" role="tablist" aria-label="${e(d.label)}" aria-orientation="${d.orientation}">${d.items.map((item,index)=>`<button class="nq-tab" type="button" role="tab" id="${prefix}-tab-${index}" aria-controls="${prefix}-panel-${index}" data-nq-value="${item.value}" aria-selected="${item.value===d.initial}"${item.disabled?' disabled':''}>${e(item.label)}</button>`).join('')}</div>${d.items.map((item,index)=>`<section class="nq-tab-panel" role="tabpanel" id="${prefix}-panel-${index}" aria-labelledby="${prefix}-tab-${index}"${item.value!==d.initial?' hidden':''}>${e(item.content)}</section>`).join('')}</div>`;
+  return `<div class="hw-tabs" data-hw="tabs" data-hw-activation="${d.activation}" data-hw-overflow="${d.overflow}" data-hw-overflow-label="${e(d.more)}"><div class="hw-tab-list" role="tablist" aria-label="${e(d.label)}" aria-orientation="${d.orientation}">${d.items.map((item,index)=>`<button class="hw-tab" type="button" role="tab" id="${prefix}-tab-${index}" aria-controls="${prefix}-panel-${index}" data-hw-value="${item.value}" aria-selected="${item.value===d.initial}"${item.disabled?' disabled':''}>${e(item.label)}</button>`).join('')}</div>${d.items.map((item,index)=>`<section class="hw-tab-panel" role="tabpanel" id="${prefix}-panel-${index}" aria-labelledby="${prefix}-tab-${index}"${item.value!==d.initial?' hidden':''}>${e(item.content)}</section>`).join('')}</div>`;
 }
 
 export function tabsNativeMarkup(locale: Locale,kind: TabsDemoKind='basic',controlled=false) {
@@ -57,6 +57,6 @@ export function tabsNativeMarkup(locale: Locale,kind: TabsDemoKind='basic',contr
   return {
     react:`<Tabs ${common} items={${JSON.stringify(d.items)}} ${controlled?'value={value} onValueChange={setValue}':`defaultValue="${d.initial}"`} />`,
     vue:`<Tabs ${common} :items='${JSON.stringify(d.items)}' ${controlled?'v-model="value"':`default-value="${d.initial}"`} />`,
-    angular:`<nq-tabs ${common} ${controlled?'[(value)]="value"':`value="${d.initial}"`}>${d.items.map(item=>`<nq-tab value="${item.value}" label="${item.label}"${item.disabled?' disabled':''}>${item.content}</nq-tab>`).join('')}</nq-tabs>`,
+    angular:`<hw-tabs ${common} ${controlled?'[(value)]="value"':`value="${d.initial}"`}>${d.items.map(item=>`<hw-tab value="${item.value}" label="${item.label}"${item.disabled?' disabled':''}>${item.content}</hw-tab>`).join('')}</hw-tabs>`,
   };
 }

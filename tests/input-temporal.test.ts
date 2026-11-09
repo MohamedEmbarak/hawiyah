@@ -29,14 +29,14 @@ it('validates Gregorian days and preserves month/year and local time without off
 it('renders custom date compositions for all date-related inputs and submits each ISO value once', async () => {
   document.body.innerHTML = inputPage('ar');
   expect(document.querySelectorAll('input[type=date], input[type=month], input[type=week], input[type=datetime-local]')).toHaveLength(0);
-  expect(document.querySelectorAll('[data-nq="date-picker"]')).toHaveLength(4);
+  expect(document.querySelectorAll('[data-hw="date-picker"]')).toHaveLength(4);
   for (const dialog of document.querySelectorAll('dialog')) { dialog.showModal = vi.fn(() => { dialog.open = true; }); dialog.close = vi.fn(() => { dialog.open = false; }); }
   disposers.push(enhance(document.body)); disposers.push(bindInputTemporal(document.body));
   const form = document.querySelector<HTMLFormElement>('#native-input-lab')!;
   const values = () => new FormData(form);
   expect(values().getAll('date')).toEqual(['2026-10-28']); expect(values().getAll('month')).toEqual(['2026-10']); expect(values().getAll('week')).toEqual(['2026-W44']); expect(values().getAll('datetime-local')).toEqual(['2026-10-28T09:30']);
   expect(values().getAll('appointment')).toEqual([]);
-  const inputFor = (kind: string) => document.querySelector<HTMLInputElement>(`[data-input-temporal="${kind}"] [data-nq-date-input]`)!;
+  const inputFor = (kind: string) => document.querySelector<HTMLInputElement>(`[data-input-temporal="${kind}"] [data-hw-date-input]`)!;
   const type = (input: HTMLInputElement, value: string) => { input.focus(); input.value = value; input.dispatchEvent(new Event('input', { bubbles: true })); };
   type(inputFor('month'), '2027-01-01'); type(inputFor('week'), '2027-01-01'); type(inputFor('datetime-local'), '2027-01-01');
   const time = document.querySelector<HTMLInputElement>('[data-temporal-time]')!; time.value = '17:45'; time.dispatchEvent(new Event('input', { bubbles: true }));
@@ -49,11 +49,11 @@ it('renders custom date compositions for all date-related inputs and submits eac
 
 it('ignores calendar-only events and cancelled reset, and stops synchronizing after cleanup', async () => {
   document.body.innerHTML = `<form>${inputTemporalMarkup('month', 'en')}</form>`;
-  const form = document.querySelector('form')!; const picker = form.querySelector<HTMLElement>('[data-nq="date-picker"]')!;
+  const form = document.querySelector('form')!; const picker = form.querySelector<HTMLElement>('[data-hw="date-picker"]')!;
   const cleanup = bindInputTemporal(form); disposers.push(cleanup);
-  picker.dispatchEvent(new CustomEvent('nq:change', { bubbles: true, detail: { value: '2027-02-01' } }));
-  picker.dispatchEvent(new CustomEvent('nq:change', { bubbles: true, detail: { calendar: 'islamic-umalqura' } }));
+  picker.dispatchEvent(new CustomEvent('hw:change', { bubbles: true, detail: { value: '2027-02-01' } }));
+  picker.dispatchEvent(new CustomEvent('hw:change', { bubbles: true, detail: { calendar: 'islamic-umalqura' } }));
   expect(new FormData(form).getAll('month')).toEqual(['2027-02']);
   form.addEventListener('reset', event => event.preventDefault()); form.reset(); await Promise.resolve(); expect(new FormData(form).getAll('month')).toEqual(['2027-02']);
-  cleanup(); picker.dispatchEvent(new CustomEvent('nq:change', { bubbles: true, detail: { value: '2027-03-01' } })); expect(new FormData(form).getAll('month')).toEqual(['2027-02']);
+  cleanup(); picker.dispatchEvent(new CustomEvent('hw:change', { bubbles: true, detail: { value: '2027-03-01' } })); expect(new FormData(form).getAll('month')).toEqual(['2027-02']);
 });

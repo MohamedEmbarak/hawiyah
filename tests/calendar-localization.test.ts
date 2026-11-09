@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import { NqDatePickerComponent } from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import { HwDatePickerComponent } from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createApp, h, nextTick, shallowRef } from 'vue';
@@ -38,14 +38,14 @@ async function mount(adapter: Adapter) {
     run = async action => { action(); await nextTick(); };
     dispose.push(() => app.unmount());
   } else {
-    const fixture = TestBed.createComponent(NqDatePickerComponent); root.append(fixture.nativeElement);
+    const fixture = TestBed.createComponent(HwDatePickerComponent); root.append(fixture.nativeElement);
     fixture.componentRef.setInput('name', 'appointment'); fixture.componentRef.setInput('value', initial);
     paint = () => { for (const [key, value] of Object.entries(options)) fixture.componentRef.setInput(key, value); };
     run = async action => { action(); fixture.detectChanges(); };
     dispose.push(() => fixture.destroy());
   }
   await run(paint);
-  const input = root.querySelector<HTMLInputElement>('.nq-date-picker-control input')!;
+  const input = root.querySelector<HTMLInputElement>('.hw-date-picker-control input')!;
   return {
     form, root, input,
     set: (next: Record<string, string>) => run(() => { options = {...options, ...next}; paint(); }),
@@ -60,10 +60,10 @@ async function mount(adapter: Adapter) {
 for (const adapter of ['react', 'vue', 'angular'] as const) {
   it(`${adapter} changes calendar labels and draft validation with locale while preserving its ISO value`, async () => {
     const ui = await mount(adapter);
-    const previous = ui.root.querySelector('.nq-calendar-prev')!;
-    const next = ui.root.querySelector('.nq-calendar-next')!;
-    const open = ui.root.querySelector('.nq-date-picker-trigger')!;
-    const close = ui.root.querySelector('.nq-dialog-header button')!;
+    const previous = ui.root.querySelector('.hw-calendar-prev')!;
+    const next = ui.root.querySelector('.hw-calendar-next')!;
+    const open = ui.root.querySelector('.hw-date-picker-trigger')!;
+    const close = ui.root.querySelector('.hw-dialog-header button')!;
     expect(ui.input.type).toBe('text');
     expect(ui.root.querySelector('input[type="date"]')).toBeNull();
     expect(ui.input.labels?.[0]?.textContent).toContain('التاريخ');
@@ -71,7 +71,7 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
     expect(next.getAttribute('aria-label')).toBe('الشهر التالي');
     expect(open.getAttribute('aria-label')).toBe('فتح التقويم');
     expect(close.getAttribute('aria-label')).toBe('إغلاق التقويم');
-    const group = ui.root.querySelector('.nq-calendar-switch')!;
+    const group = ui.root.querySelector('.hw-calendar-switch')!;
     expect(group.getAttribute('aria-label')).toBe('نظام التقويم');
     expect(group.textContent).toContain('أم القرى');
     await ui.edit('2026-02-30');
@@ -98,10 +98,10 @@ it('vanilla navigation follows the explicit locale independently of host languag
     const root = document.createElement('div'); root.lang = hostLocale!; root.dir = hostLocale === 'ar' ? 'rtl' : 'ltr'; document.body.append(root);
     const api = createCalendar(root, {locale, value: initial, calendar: 'islamic-umalqura'});
     const copy = getCalendarLabels(locale);
-    expect(root.querySelector('.nq-calendar-prev')?.getAttribute('aria-label')).toBe(copy.previous);
-    expect(root.querySelector('.nq-calendar-next')?.getAttribute('aria-label')).toBe(copy.next);
-    expect(root.querySelector('.nq-calendar-switch')?.getAttribute('aria-label')).toBe(copy.system);
-    expect(root.querySelector('.nq-calendar-info-icon')?.getAttribute('aria-label')).toBe(copy.range);
+    expect(root.querySelector('.hw-calendar-prev')?.getAttribute('aria-label')).toBe(copy.previous);
+    expect(root.querySelector('.hw-calendar-next')?.getAttribute('aria-label')).toBe(copy.next);
+    expect(root.querySelector('.hw-calendar-switch')?.getAttribute('aria-label')).toBe(copy.system);
+    expect(root.querySelector('.hw-calendar-info-icon')?.getAttribute('aria-label')).toBe(copy.range);
     expect(api.value).toBe(initial); api.destroy();
   }
 }, 15000);

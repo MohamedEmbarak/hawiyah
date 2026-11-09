@@ -9,7 +9,7 @@ function fixture(firstLegend = false) {
   const container = document.createElement('div'); document.body.append(container); const changed = vi.fn(); const rejected = vi.fn();
   const app = createApp({ render() { const picker = h(FileDropzone, { label: 'Upload', 'onUpdate:files': changed, onReject: rejected }); return h('fieldset', { disabled: true }, firstLegend ? h('legend', {}, picker) : picker); } });
   apps.push(app); app.mount(container);
-  const input = container.querySelector('input')!; const zone = container.querySelector('.nq-file-dropzone')!;
+  const input = container.querySelector('input')!; const zone = container.querySelector('.hw-file-dropzone')!;
   // JSDOM has no DataTransfer; retain the actual native :disabled computation.
   let files: File[] = []; Object.defineProperty(input, 'files', { configurable: true, get: () => files, set: value => { files = Array.from(value); } });
   const send = async (type: string, file = new File(['a'], 'document.txt')) => {

@@ -11,7 +11,7 @@ function bounds(node: Element) {
 const box = (node: Locator) => node.evaluate(bounds);
 
 async function geometry(id: LayoutId, project: Locator, wide: boolean, rtl: boolean) {
-  const component = project.locator(`.nq-${id}`).first();
+  const component = project.locator(`.hw-${id}`).first();
   const root = await box(component);
   const viewport = await project.evaluate(node => node.ownerDocument.defaultView!.innerWidth);
   expect(root.width, `${id} has space in the preview`).toBeGreaterThan(0);
@@ -37,7 +37,7 @@ async function geometry(id: LayoutId, project: Locator, wide: boolean, rtl: bool
     case 'inline': {
       await expect(component).toHaveCSS('flex-wrap', 'wrap');
       await expect(component).toHaveCSS('gap', '8px');
-      const badges = component.locator('.nq-badge');
+      const badges = component.locator('.hw-badge');
       await expect(badges).toHaveCount(3);
       const first = await box(badges.first()), next = await box(badges.nth(1));
       expect(first.y).toBeCloseTo(next.y, 0);
@@ -72,7 +72,7 @@ async function geometry(id: LayoutId, project: Locator, wide: boolean, rtl: bool
       break;
     }
     case 'spacer': {
-      const row = project.locator('.nq-inline');
+      const row = project.locator('.hw-inline');
       const first = await box(row.locator('strong')), last = await box(row.locator(':scope > span').last());
       const separation = rtl ? first.x - last.right : last.x - first.right;
       expect(root.width).toBeGreaterThan((await box(row)).width / 3);
@@ -106,7 +106,7 @@ async function geometry(id: LayoutId, project: Locator, wide: boolean, rtl: bool
     case 'page-header': {
       await expect(component.locator(':scope > nav[data-layout-slot="breadcrumb"]')).toHaveAccessibleName(rtl ? 'مسار التنقل' : 'Breadcrumb');
       await expect(component.getByRole('heading', {level: 1})).toHaveCount(1);
-      await expect(component.locator('.nq-page-header-actions').getByRole('button')).toBeVisible();
+      await expect(component.locator('.hw-page-header-actions').getByRole('button')).toBeVisible();
       break;
     }
   }
@@ -121,23 +121,23 @@ for (const [framework, language, locale] of projects) {
   test(`twelve ${framework} ${language} layout projects render and reflow in ${locale}`, async ({page}) => {
     test.setTimeout(600000);
     await page.addInitScript(locale => {
-      if (window === window.top) localStorage.setItem('nasaq-locale', locale);
+      if (window === window.top) localStorage.setItem('hawiyah-locale', locale);
     }, locale);
     for (const id of layouts) await test.step(id, async () => {
       await page.goto(`/#component/${id}`);
       await page.locator('[data-guide-tab="playground"]').click();
       await page.locator('[data-project-framework]').selectOption(framework);
       if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-      await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 45000});
-      const frame = page.frameLocator('.nq-ide-frame');
+      await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 45000});
+      const frame = page.frameLocator('.hw-ide-frame');
       const project = frame.locator(`[data-layout-project="${id}"]`);
       await expect(project).toHaveCount(1);
-      await expect(page.locator('[data-ide-editor="html"] .cm-content')).toContainText(`@nasaq/${framework}`);
+      await expect(page.locator('[data-ide-editor="html"] .cm-content')).toContainText(`@hawiyah/${framework}`);
       await frameWidth(page, project, 390);
       await geometry(id, project, false, locale === 'ar');
       if (id === 'grid') {
         await frameWidth(page, project, 700);
-        expect(await project.locator('.nq-grid').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(/\s+/).length)).toBe(2);
+        expect(await project.locator('.hw-grid').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(/\s+/).length)).toBe(2);
       }
       await frameWidth(page, project, 1100);
       await geometry(id, project, true, locale === 'ar');
@@ -152,7 +152,7 @@ for (const [framework, language, locale] of projects) {
         await expect(details).toBeHidden();
       }
       if (id === 'app-shell') {
-        const main = project.getByRole('main'), skip = project.locator('.nq-skip-link');
+        const main = project.getByRole('main'), skip = project.locator('.hw-skip-link');
         await expect(main).toHaveAttribute('id', 'service-workspace');
         await expect(main).toHaveAttribute('tabindex', '-1');
         await expect(skip).toHaveAttribute('href', '#service-workspace');
@@ -161,7 +161,7 @@ for (const [framework, language, locale] of projects) {
         expect(await project.evaluate(node => node.ownerDocument.defaultView!.location.hash)).toBe('');
       }
       await expect(page).toHaveURL(new RegExp(`#component/${id}$`));
-      await expect(page.locator('.nq-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
+      await expect(page.locator('.hw-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
     });
   });
 }
@@ -171,20 +171,20 @@ test('Angular AppShell omits empty regions from desktop layout and keyboard navi
   await page.goto('/#component/app-shell');
   await page.locator('[data-guide-tab="playground"]').click();
   await page.locator('[data-project-framework]').selectOption('angular');
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 45000});
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 45000});
   await page.locator('[data-ide-file="html"]').click();
   const code = page.locator('[data-ide-editor="html"] .cm-content');
   await code.click();
   await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.insertText(`import {Component} from '@angular/core';
-import {NqAppShellComponent} from '@nasaq/angular';
-@Component({selector:'app-root',standalone:true,imports:[NqAppShellComponent],template:'<div class="demo" data-bare-shell><nq-app-shell><h1>طلبات الخدمة</h1></nq-app-shell></div>'})
+import {HwAppShellComponent} from '@hawiyah/angular';
+@Component({selector:'app-root',standalone:true,imports:[HwAppShellComponent],template:'<div class="demo" data-bare-shell><hw-app-shell><h1>طلبات الخدمة</h1></hw-app-shell></div>'})
 export class AppComponent {}`);
   await page.locator('[data-ide-run]').click();
-  const project = page.frameLocator('.nq-ide-frame').locator('[data-bare-shell]');
+  const project = page.frameLocator('.hw-ide-frame').locator('[data-bare-shell]');
   await expect(project).toBeVisible({timeout: 45000});
   await frameWidth(page, project, 1100);
-  const shell = project.locator('.nq-app-shell');
+  const shell = project.locator('.hw-app-shell');
   expect(await shell.evaluate(node => getComputedStyle(node).gridTemplateColumns.split(/\s+/).length)).toBe(1);
   await expect(shell.getByRole('banner')).toHaveCount(0);
   await expect(shell.getByRole('complementary')).toHaveCount(0);

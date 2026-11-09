@@ -1,13 +1,13 @@
 import { booleanAttribute, AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, PLATFORM_ID, ViewChild, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { restoreFocus } from '@nasaq/core';
+import { restoreFocus } from '@hawiyah/core';
 
 let nextId = 0;
-@Component({ selector: 'nq-dialog', standalone: true, template: `<dialog #dialog class="nq-dialog" [attr.aria-labelledby]="titleId" [attr.aria-describedby]="describedBy || null" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="nq-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="nq-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="nq-dialog-body"><ng-content /></div><footer class="nq-dialog-footer"><ng-content select="[nqDialogFooter]" /></footer></dialog>` })
-export class NqDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
+@Component({ selector: 'hw-dialog', standalone: true, template: `<dialog #dialog class="hw-dialog" [attr.aria-labelledby]="titleId" [attr.aria-describedby]="describedBy || null" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="close()">×</button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[hwDialogFooter]" /></footer></dialog>` })
+export class HwDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input({required: true}) title = '';
   @Input() describedBy = '';
-  @Input() titleId = `nq-dialog-title-${++nextId}`;
+  @Input() titleId = `hw-dialog-title-${++nextId}`;
   @Input({transform: booleanAttribute}) open = false;
   @Input() closeLabel = 'Close dialog';
   @Input({transform: booleanAttribute}) closeOnBackdrop = true;
@@ -53,12 +53,12 @@ export class NqDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngOnDestroy(): void { if (this.dialog?.nativeElement.open) this.dialog.nativeElement.close(); restoreFocus(this.trigger); }
 }
 
-@Component({ selector: 'nq-tooltip', standalone: true, template: `<span class="nq-tooltip-anchor nq-tooltip-trigger" tabindex="0" [attr.aria-describedby]="id" (focusin)="focusEntered()" (focusout)="focusLeft($event)" (mouseenter)="pointerEntered()" (mouseleave)="pointerLeft()" (keydown)="escape($event)"><ng-content /><span class="nq-tooltip" role="tooltip" [id]="id" [attr.data-placement]="placement" [attr.data-align]="align" [hidden]="!visible">{{ text }}</span></span>` })
-export class NqTooltipComponent implements OnDestroy {
+@Component({ selector: 'hw-tooltip', standalone: true, template: `<span class="hw-tooltip-anchor hw-tooltip-trigger" tabindex="0" [attr.aria-describedby]="id" (focusin)="focusEntered()" (focusout)="focusLeft($event)" (mouseenter)="pointerEntered()" (mouseleave)="pointerLeft()" (keydown)="escape($event)"><ng-content /><span class="hw-tooltip" role="tooltip" [id]="id" [attr.data-placement]="placement" [attr.data-align]="align" [hidden]="!visible">{{ text }}</span></span>` })
+export class HwTooltipComponent implements OnDestroy {
   @Input() placement: 'top' | 'bottom' | 'start' | 'end' = 'top';
   @Input() align: 'start' | 'center' | 'end' = 'start';
   @Input({required: true}) text = '';
-  @Input() id = `nq-tooltip-${++nextId}`;
+  @Input() id = `hw-tooltip-${++nextId}`;
   visible = false;
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly changeDetector = inject(ChangeDetectorRef);

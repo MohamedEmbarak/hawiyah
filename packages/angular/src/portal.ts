@@ -1,24 +1,24 @@
 import { Component, Input } from '@angular/core';
-import { NqPortalFooterComponent, NqPortalHeaderComponent } from './content';
-import type { NqLinkItem, NqPortalNavItem } from './content';
-import { NqBreadcrumbComponent } from './navigation';
-import type { NqBreadcrumbItem } from './navigation';
+import { HwPortalFooterComponent, HwPortalHeaderComponent } from './content';
+import type { HwLinkItem, HwPortalNavItem } from './content';
+import { HwBreadcrumbComponent } from './navigation';
+import type { HwBreadcrumbItem } from './navigation';
 
-export interface NqSecondaryNavItem extends NqLinkItem { icon?: string }
-@Component({selector: 'nq-secondary-nav', standalone: true, template: `<nav class="nq-secondary-nav" [attr.aria-label]="label" [attr.data-variant]="variant"><ul>@for (item of items; track $index) {<li><a [href]="item.href" [attr.aria-current]="item.current ? 'page' : null">@if (variant === 'mobile' && item.icon) {<span class="nq-icon" [attr.data-icon]="item.icon" aria-hidden="true"></span>}<span>{{ item.label }}</span></a></li>}</ul></nav>`})
-export class NqSecondaryNavComponent { @Input() variant: 'default' | 'mobile' = 'default'; @Input() items: readonly NqSecondaryNavItem[] = []; @Input() label = 'التنقل الثانوي'; }
+export interface HwSecondaryNavItem extends HwLinkItem { icon?: string }
+@Component({selector: 'hw-secondary-nav', standalone: true, template: `<nav class="hw-secondary-nav" [attr.aria-label]="label" [attr.data-variant]="variant"><ul>@for (item of items; track $index) {<li><a [href]="item.href" [attr.aria-current]="item.current ? 'page' : null">@if (variant === 'mobile' && item.icon) {<span class="hw-icon" [attr.data-icon]="item.icon" aria-hidden="true"></span>}<span>{{ item.label }}</span></a></li>}</ul></nav>`})
+export class HwSecondaryNavComponent { @Input() variant: 'default' | 'mobile' = 'default'; @Input() items: readonly HwSecondaryNavItem[] = []; @Input() label = 'التنقل الثانوي'; }
 let nextLayoutId = 0;
-@Component({selector: 'nq-portal-layout', standalone: true, imports: [NqPortalHeaderComponent, NqPortalFooterComponent, NqBreadcrumbComponent, NqSecondaryNavComponent], template: `
-  <div class="nq-portal-layout" [attr.lang]="lang" [attr.dir]="dir">
-    <nq-portal-header [brand]="brand" [homeHref]="homeHref" [links]="links" [mainId]="mainId" [skipLabel]="skipLabel" [menuLabel]="menuLabel" [navigationLabel]="navigationLabel"><ng-content select="[nqBrand]" ngProjectAs="[nqBrand]" /><ng-content select="[nqPortalActions]" /></nq-portal-header>
-    @if (secondaryNavigation.length) {<nq-secondary-nav [items]="secondaryNavigation" [label]="secondaryLabel" />}
-    <main [id]="mainId" tabindex="-1" class="nq-portal-layout-main nq-container">@if (breadcrumbs.length) {<nq-breadcrumb [items]="breadcrumbs" [label]="breadcrumbLabel" />}<ng-content /></main>
-    <nq-portal-footer [brand]="brand" [links]="footerLinks" [copyright]="copyright" [navigationLabel]="footerLabel"><ng-content select="[nqPortalFooter]" /></nq-portal-footer>
+@Component({selector: 'hw-portal-layout', standalone: true, imports: [HwPortalHeaderComponent, HwPortalFooterComponent, HwBreadcrumbComponent, HwSecondaryNavComponent], template: `
+  <div class="hw-portal-layout" [attr.lang]="lang" [attr.dir]="dir">
+    <hw-portal-header [brand]="brand" [homeHref]="homeHref" [links]="links" [mainId]="mainId" [skipLabel]="skipLabel" [menuLabel]="menuLabel" [navigationLabel]="navigationLabel"><ng-content select="[hwBrand]" ngProjectAs="[hwBrand]" /><ng-content select="[hwPortalActions]" /></hw-portal-header>
+    @if (secondaryNavigation.length) {<hw-secondary-nav [items]="secondaryNavigation" [label]="secondaryLabel" />}
+    <main [id]="mainId" tabindex="-1" class="hw-portal-layout-main hw-container">@if (breadcrumbs.length) {<hw-breadcrumb [items]="breadcrumbs" [label]="breadcrumbLabel" />}<ng-content /></main>
+    <hw-portal-footer [brand]="brand" [links]="footerLinks" [copyright]="copyright" [navigationLabel]="footerLabel"><ng-content select="[hwPortalFooter]" /></hw-portal-footer>
   </div>`})
-export class NqPortalLayoutComponent {
+export class HwPortalLayoutComponent {
   @Input({required: true}) brand = ''; @Input() homeHref = '/'; @Input() lang = 'ar'; @Input() dir: 'rtl' | 'ltr' = 'rtl';
-  @Input() mainId = `nq-portal-main-${++nextLayoutId}`; @Input() links: readonly NqPortalNavItem[] = [];
-  @Input() secondaryNavigation: readonly NqLinkItem[] = []; @Input() footerLinks: readonly NqLinkItem[] = []; @Input() breadcrumbs: readonly NqBreadcrumbItem[] = []; @Input() copyright = '';
+  @Input() mainId = `hw-portal-main-${++nextLayoutId}`; @Input() links: readonly HwPortalNavItem[] = [];
+  @Input() secondaryNavigation: readonly HwLinkItem[] = []; @Input() footerLinks: readonly HwLinkItem[] = []; @Input() breadcrumbs: readonly HwBreadcrumbItem[] = []; @Input() copyright = '';
   @Input() skipLabel = 'انتقل إلى المحتوى'; @Input() menuLabel = 'القائمة'; @Input() navigationLabel = 'التنقل الرئيسي';
   @Input() secondaryLabel = 'التنقل الثانوي'; @Input() breadcrumbLabel = 'مسار التنقل'; @Input() footerLabel = 'روابط التذييل';
 }

@@ -20,18 +20,18 @@ it('validates chooser and dropped files with the same accept policy and clears r
   await choose(accepted);
   const drop = new Event('drop', { bubbles: true, cancelable: true });
   Object.defineProperty(drop, 'dataTransfer', { value: { files: [new File(['image'], 'image.png', { type: 'image/png' })], types: ['Files'] } });
-  await act(async () => host.querySelector('.nq-file-dropzone')!.dispatchEvent(drop));
+  await act(async () => host.querySelector('.hw-file-dropzone')!.dispatchEvent(drop));
   expect(changed).toHaveBeenLastCalledWith([]); expect(host.querySelector('li')).toBeNull(); expect(host.textContent).toContain('PDF only');
 });
 
 it('requires committed tags, announces required, and permits an empty draft with existing tags', async () => {
   const { host, root } = mount();
-  await act(async () => root.render(<form><TagInput label="الوسوم" name="tags" required defaultValue={['نسق']} /></form>));
+  await act(async () => root.render(<form><TagInput label="الوسوم" name="tags" required defaultValue={['هوية']} /></form>));
   const form = host.querySelector('form')!; const input = host.querySelector<HTMLInputElement>('input[type=text]')!;
   expect(input.required).toBe(false); expect(input.getAttribute('aria-required')).toBe('true'); expect(form.checkValidity()).toBe(true);
-  expect(new FormData(form).getAll('tags')).toEqual(['نسق']);
+  expect(new FormData(form).getAll('tags')).toEqual(['هوية']);
   await act(async () => host.querySelector<HTMLButtonElement>('button')!.click()); expect(form.checkValidity()).toBe(false);
-  await act(async () => form.reset()); expect(form.checkValidity()).toBe(true); expect(new FormData(form).getAll('tags')).toEqual(['نسق']);
+  await act(async () => form.reset()); expect(form.checkValidity()).toBe(true); expect(new FormData(form).getAll('tags')).toEqual(['هوية']);
 });
 
 it('normalizes external PIN digits without mutating the controlled source', async () => {

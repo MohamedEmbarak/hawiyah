@@ -2,7 +2,7 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, beforeEach, expect, it } from 'vitest';
-import { NqNavigationDrawerComponent } from '@nasaq/angular';
+import { HwNavigationDrawerComponent } from '@hawiyah/angular';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 beforeEach(() => {
@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 afterEach(() => { TestBed.resetTestingModule(); document.body.replaceChildren(); });
 it('composes the native Drawer with page links, disclosure groups and disabled entries', async () => {
-  const fixture = TestBed.createComponent(NqNavigationDrawerComponent);
+  const fixture = TestBed.createComponent(HwNavigationDrawerComponent);
   fixture.componentRef.setInput('title', 'القائمة'); fixture.componentRef.setInput('items', [
     { id: 'services', label: 'الخدمات', href: '#services', children: [{ id: 'request', label: 'طلب خدمة', href: '#request', current: true }] },
     { id: 'disabled', label: 'غير متاح', href: '#disabled', disabled: true },

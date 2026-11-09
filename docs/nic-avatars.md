@@ -5,12 +5,12 @@ Source: the hashed `global.css` snapshot recorded in
 image presentation, not profile fetching, image-error behavior or identity
 verification. No official profile artwork was redistributed.
 
-| Source | Observed value | Nasaq implementation | Confidence / boundary |
+| Source | Observed value | Hawiyah implementation | Confidence / boundary |
 | --- | --- | --- | --- |
 | 3156–3162 | Circle, 3px white border, centered cover crop | DGA/custom avatar profile; direct image and wrapped image markup | High for image presentation; using the existing full-radius token is equivalent for square dimensions |
-| 3164–3181 | Explicit 40, 64, 80, 120px options | Additive `data-size="40|64|80|120"` and matching native `size` props | High; these are border-box dimensions in Nasaq |
+| 3164–3181 | Explicit 40, 64, 80, 120px options | Additive `data-size="40|64|80|120"` and matching native `size` props | High; these are border-box dimensions in Hawiyah |
 | Reset dependency | Without border-box, source rendered sizes are 46/70/86/126px | Explicit component border-box keeps the intended 40/64/80/120px independent of optional reset.css | Rendered evidence; isolated source fixture checked both reset conditions |
-| No default size or fallback logic in this block | Host selects a size and supplies image | DGA default selects the 40px source option; original Nasaq default stays 44px; native adapters supply initials fallback | Explicit Nasaq adaptations, not inferred NIC behavior |
+| No default size or fallback logic in this block | Host selects a size and supplies image | DGA default selects the 40px source option; original Hawiyah default stays 44px; native adapters supply initials fallback | Explicit Hawiyah adaptations, not inferred NIC behavior |
 
 An isolated Chromium fixture loaded the source CSS with network requests
 blocked and self-authored SVG image content. It measured all four dimensions,
@@ -19,23 +19,23 @@ This confirms properties and reset dependence, not live-site visual parity.
 
 ## API and compatibility
 
-React/Vue `Avatar` and Angular `nq-avatar` accept required `name`, optional
+React/Vue `Avatar` and Angular `hw-avatar` accept required `name`, optional
 `src`, `initials`, `size` and `variant`. Numeric source sizes are string values
 `"40"`, `"64"`, `"80"`, `"120"`. Existing `sm` (32px), `lg` (56px), `xl` (80px)
-remain available as Nasaq extensions. `md` uses the theme default (40px DGA,
-44px original Nasaq). The square variant is an existing Nasaq extension;
+remain available as Hawiyah extensions. `md` uses the theme default (40px DGA,
+44px original Hawiyah). The square variant is an existing Hawiyah extension;
 circle is the default. React/Vue retain native `data-size` / `data-variant`
 attributes; typed props take precedence.
 
 ```html
-<span class="nq-avatar" data-size="64">
+<span class="hw-avatar" data-size="64">
   <img src="/profile-example.svg" alt="مستخدم تجريبي">
 </span>
 ```
 
-Direct `<img class="nq-avatar" data-size="64" ...>` also works. Nested images
+Direct `<img class="hw-avatar" data-size="64" ...>` also works. Nested images
 fill the inner content box, not the border box, and retain centered cropping.
-Use `--nq-avatar-size` for custom dimensions. Sizes use rem equivalents at the
+Use `--hw-avatar-size` for custom dimensions. Sizes use rem equivalents at the
 default 16px root and scale with the application's root font size. Native adapters own
 their DOM; there is no vanilla enhancer applied to their markup.
 
@@ -55,10 +55,10 @@ opens an action. Vanilla authors own image-error handling and any DOM updates;
 the static HTML examples do not promise an automatic controller.
 
 The DGA light border is white. Dark mode uses a semantic surface separator;
-custom themes may override `--nq-color-avatar-border`. Original Nasaq retains
+custom themes may override `--hw-color-avatar-border`. Original Hawiyah retains
 its 1px border and existing sizes; its grouped avatars retain their 2px surface
 separator. DGA groups inherit the 3px border and 40px default, while overlap and
-overflow counts remain Nasaq compositions rather than source-defined behavior.
+overflow counts remain Hawiyah compositions rather than source-defined behavior.
 System colors preserve the border. No animation or calendar behavior changes.
 
 The guide's seven ready examples and native editor recipes include all four
@@ -81,7 +81,7 @@ Six focused adapter tests verify failure, source-change retry (including a
 previously failed URL), explicit/name-derived initials, accessible identity and
 the React error callback. Together with the existing adapter regression suites,
 52 tests pass. All eight token contrast checks pass. Package, guide and native
-application builds pass, including the `/nasaq/` guide deployment path. Clean
+application builds pass, including the `/hawiyah/` guide deployment path. Clean
 tarballs pass ESM/SSR, Angular APF, CSS imports, declarations and tree-shaking
 checks. All 31 React recipes pass TypeScript checking, all 31 Angular recipes
 pass strict templates, and seven exported framework/language combinations

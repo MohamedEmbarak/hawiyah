@@ -9,7 +9,7 @@ import {
 } from "vue";
 import type { App, Component } from "vue";
 import { renderToString } from "@vue/server-renderer";
-import { UMALQURA_MIN_DATE, UMALQURA_MAX_DATE } from "@nasaq/core";
+import { UMALQURA_MIN_DATE, UMALQURA_MAX_DATE } from "@hawiyah/core";
 import {
   Calendar,
   DatePicker,
@@ -246,7 +246,7 @@ describe("expanded Vue controls", () => {
     reveal.click();
     await nextTick();
     expect(
-      root.querySelector<HTMLInputElement>(".nq-password-field input")!.type,
+      root.querySelector<HTMLInputElement>(".hw-password-field input")!.type,
     ).toBe("text");
     expect(reveal.getAttribute("aria-pressed")).toBe("true");
     root
@@ -320,7 +320,7 @@ describe("expanded Vue controls", () => {
     Object.defineProperty(drop, "dataTransfer", {
       value: { files: [new File(["bad"], "image.png", { type: "image/png" })] },
     });
-    root.querySelector(".nq-file-dropzone")!.dispatchEvent(drop);
+    root.querySelector(".hw-file-dropzone")!.dispatchEvent(drop);
     await nextTick();
     expect(reject).toHaveBeenCalledOnce();
     expect(files).toHaveBeenCalledWith([]);
@@ -397,20 +397,20 @@ describe("Vue calendars and interactions", () => {
       .querySelector<HTMLButtonElement>('[aria-label="Open calendar"]')!
       .click();
     await nextTick();
-    (root.querySelector('.nq-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click();
+    (root.querySelector('.hw-calendar-switch input[value="islamic-umalqura"]') as HTMLInputElement).click();
     await nextTick();
     expect(system.value).toBe("islamic-umalqura");
     expect(value.value).toBe("2024-03-11");
     expect(
-      root.querySelector<HTMLInputElement>(".nq-date-picker > input[type=hidden]")!.value,
+      root.querySelector<HTMLInputElement>(".hw-date-picker > input[type=hidden]")!.value,
     ).toBe("2024-03-11");
-    expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
+    expect(root.querySelector(".hw-calendar-toolbar")!.textContent).toContain(
       "Ramadan",
     );
     root.querySelector<HTMLButtonElement>('[aria-label="Next month"]')!.click();
     await nextTick();
     expect(
-      root.querySelector(".nq-calendar-toolbar")!.textContent,
+      root.querySelector(".hw-calendar-toolbar")!.textContent,
     ).not.toContain("Ramadan");
     root
       .querySelector("dialog")!
@@ -420,13 +420,13 @@ describe("Vue calendars and interactions", () => {
       .querySelector<HTMLButtonElement>('[aria-label="Open calendar"]')!
       .click();
     await nextTick();
-    expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
+    expect(root.querySelector(".hw-calendar-toolbar")!.textContent).toContain(
       "Ramadan",
     );
-    (root.querySelector('.nq-calendar-switch input[value="gregory"]') as HTMLInputElement).click();
+    (root.querySelector('.hw-calendar-switch input[value="gregory"]') as HTMLInputElement).click();
     await nextTick();
     expect(value.value).toBe("2024-03-11");
-    expect(root.querySelector(".nq-calendar-toolbar")!.textContent).toContain(
+    expect(root.querySelector(".hw-calendar-toolbar")!.textContent).toContain(
       "March 2024",
     );
   });
@@ -516,14 +516,14 @@ describe("Vue calendars and interactions", () => {
     await key(document.activeElement!, "Escape");
     expect(document.activeElement).toBe(trigger);
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
-    root.querySelector<HTMLButtonElement>(".nq-popover button")!.click();
+    root.querySelector<HTMLButtonElement>(".hw-popover button")!.click();
     await nextTick();
-    expect(root.querySelector<HTMLElement>(".nq-popover-content")!.hidden).toBe(
+    expect(root.querySelector<HTMLElement>(".hw-popover-content")!.hidden).toBe(
       false,
     );
     document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
     await nextTick();
-    expect(root.querySelector<HTMLElement>(".nq-popover-content")!.hidden).toBe(
+    expect(root.querySelector<HTMLElement>(".hw-popover-content")!.hidden).toBe(
       true,
     );
   });
@@ -697,12 +697,12 @@ describe("Vue content and layouts", () => {
       .click();
     await nextTick();
     expect(reject).toHaveBeenCalledOnce();
-    expect(root.querySelector<HTMLElement>(".nq-cookie-consent")!.hidden).toBe(
+    expect(root.querySelector<HTMLElement>(".hw-cookie-consent")!.hidden).toBe(
       true,
     );
     buttons.find((button) => button.getAttribute("aria-label") === "Next slide")!.click();
     await nextTick();
-    expect(root.querySelector(".nq-carousel [role=status]")!.textContent).toBe(
+    expect(root.querySelector(".hw-carousel [role=status]")!.textContent).toBe(
       "Slide 2 of 2",
     );
   });
@@ -722,8 +722,8 @@ describe("Vue content and layouts", () => {
           ),
       }),
     );
-    expect(html).toContain("--nq-layout-columns-md:3");
-    expect(html).toContain("--nq-layout-gap-lg:var(--nq-space-6, 1.5rem)");
+    expect(html).toContain("--hw-layout-columns-md:3");
+    expect(html).toContain("--hw-layout-gap-lg:var(--hw-space-6, 1.5rem)");
     expect(html).toContain("<section");
   });
 });

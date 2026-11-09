@@ -1,6 +1,6 @@
 # Roadmap and acceptance gates
 
-Nasaq is in `0.2` development. This roadmap defines outcomes and evidence rather than declaring unfinished work complete. Implementation can proceed in parallel where the shared contracts are settled, but later adapters must be checked against the working foundation.
+Hawiyah is in `0.2` development. This roadmap defines outcomes and evidence rather than declaring unfinished work complete. Implementation can proceed in parallel where the shared contracts are settled, but later adapters must be checked against the working foundation.
 
 The [validation record](validation.md) identifies tested snapshots, exact counts, environments, and limitations. Evidence covers both the initial 27 components and targeted cases for the 50 additions; each claim remains limited to the named behavior or consumer check.
 
@@ -14,12 +14,12 @@ The machine-readable [component catalog](../components.json) tracks these fields
 
 ## DGA reference migration
 
-The default appearance is now `dga`, using mapped, verified foundation values from the supplied snapshot exported on **2026-10-29**; the teal/ivory `nasaq` theme is opt-in. This is a source-based visual migration, with its own checkpoints in addition to the existing component implementation. The export date identifies the supplied snapshot, not an official release version.
+The default appearance is now `dga`, using mapped, verified foundation values from the supplied snapshot exported on **2026-10-29**; the teal/ivory `hawiyah` theme is opt-in. This is a source-based visual migration, with its own checkpoints in addition to the existing component implementation. The export date identifies the supplied snapshot, not an official release version.
 
 | Checkpoint | Source or implementation scope | Acceptance gate |
 |---|---|---|
 | Reference inventory | 17 files decoded; six files over the 32 MiB transfer limit remain unavailable; no standalone web component library supplied | Preserve source hashes and node references in the evidence record; do not present uninspected files as covered |
-| Foundation mapping | Use the local foundation collections; resolve imported component-version conflicts separately; make mapped DGA values the default and keep Nasaq opt-in | Value/alias checks, contrast checks, representative rendering, and explicit treatment of implementation choices |
+| Foundation mapping | Use the local foundation collections; resolve imported component-version conflicts separately; make mapped DGA values the default and keep Hawiyah opt-in | Value/alias checks, contrast checks, representative rendering, and explicit treatment of implementation choices |
 | Vanilla service and form templates | Referenced header/footer, conditional secondary navigation, service-information card, feedback and mobile radial-step presentation | Compare the inspected 1440px/430px examples and test 320px/intermediate reflow, Arabic/English content and keyboard behavior |
 | Input states and motion | Trace supported states and transitions to valid source destinations; do not invent unspecified timings | State/keyboard checks, focus behavior and reduced-motion equivalents; unresolved prototype records remain unverified |
 | Framework and template expansion | Apply the shared foundation to native React, Vue and Angular; review additional readable templates; keep seasonal designs opt-in | Per-adapter visual and behavioral checks, stable APIs and unchanged calendar conversion/value contracts |
@@ -44,7 +44,7 @@ The default appearance is now `dga`, using mapped, verified foundation values fr
 
 The catalog contains **83 entries: the initial 27 plus 51 expansion entries and 5 portal/mobile compositions**. The [coverage guide](coverage.md) lists them by category and separately maps all 22 standard HTML input types. Field is label/help/error composition; TextField is text entry. Layout primitives, service patterns, and advanced interactions have explicit contracts. Aliases and cosmetic variants do not inflate the count.
 
-This is Nasaq's defined scope, not a claim to reproduce the complete current DGA catalog or every possible modern UI. Prioritize further primitives by real product needs, a clear composition boundary, and maintenance cost.
+This is Hawiyah's defined scope, not a claim to reproduce the complete current DGA catalog or every possible modern UI. Prioritize further primitives by real product needs, a clear composition boundary, and maintenance cost.
 
 Calendar and DatePicker support Gregorian and Umm al-Qura display with date-only ISO values; [calendar reliability](date-calendars.md) defines the reference and limits. MultiSelect provides searchable checkboxes; Combobox stays local and single-select. DataTable adds sorting, not virtualization/editing. Maps, charts, rich/code editors, PDF, CAPTCHA, uploads, authentication, and payments follow [specialist integration recipes](integrations.md); engines and backends are application dependencies.
 

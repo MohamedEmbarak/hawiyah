@@ -11,7 +11,7 @@ export function isFileProjectId(id: string): id is FileProjectId {
 export function fileProject(id: FileProjectId, framework: ProjectFramework, language: ProjectLanguage, locale: Locale): ProjectExample {
   const ar = locale === 'ar', typed = language === 'typescript', drop = id === 'file-dropzone';
   const component = drop ? 'FileDropzone' : 'FileUpload';
-  const selector = drop ? 'nq-file-dropzone' : 'nq-file-upload';
+  const selector = drop ? 'hw-file-dropzone' : 'hw-file-upload';
   const dir = ar ? 'rtl' : 'ltr';
   const label = ar ? 'أرفق المستندات' : 'Attach documents';
   const help = !drop
@@ -35,7 +35,7 @@ export function fileProject(id: FileProjectId, framework: ProjectFramework, lang
     {id:'complete',name:'approved.pdf',status:'complete'},
     {id:'error',name:'retry.pdf',status:'error',message:ar ? 'تعذر الاتصال. أعد المحاولة.' : 'Connection failed. Please retry.'},
   ]);
-  const css = `@import '@nasaq/styles/styles.css';\n\n.demo { display: grid; gap: 1rem; max-inline-size: 34rem; margin-inline: auto; }\n.demo ul { margin: 0; overflow-wrap: anywhere; }\n.demo output { overflow-wrap: anywhere; }\n`;
+  const css = `@import '@hawiyah/styles/styles.css';\n\n.demo { display: grid; gap: 1rem; max-inline-size: 34rem; margin-inline: auto; }\n.demo ul { margin: 0; overflow-wrap: anywhere; }\n.demo output { overflow-wrap: anywhere; }\n`;
   const ext = typed ? 'ts' : 'js';
   const formDataHelper = `function submittedNames(form${typed || framework === 'angular' ? ': HTMLFormElement' : ''}) {
   return new FormData(form).getAll('documents')
@@ -57,26 +57,26 @@ function removeSelectedFile(id${typed || framework === 'angular' ? ': string' : 
 }`;
   const formAttrs = `id="${id}-example-form" class="demo" data-file-project="${id}" lang="${locale}" dir="${dir}"`;
   const inputAttrs = 'name="documents" multiple accept=".pdf,.png"';
-  const buttons = `<div class="nq-inline"><button class="nq-button" type="submit">${submit}</button><button class="nq-button" data-variant="secondary" type="reset">${reset}</button></div>`;
+  const buttons = `<div class="hw-inline"><button class="hw-button" type="submit">${submit}</button><button class="hw-button" data-variant="secondary" type="reset">${reset}</button></div>`;
 
   if (framework === 'vanilla') {
     const html = `<!doctype html>
 <html lang="${locale}" dir="${dir}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${label}</title></head>
 <body><form ${formAttrs}>
-  <div class="nq-field ${drop ? 'nq-file-dropzone' : 'nq-upload'}"${drop ? ' data-file-dropzone' : ''}>
-    <label class="nq-label" for="documents">${label}</label>
-    <input id="documents" class="nq-input" type="file" ${inputAttrs} aria-describedby="file-hint"${drop ? ' data-nq-file-input' : ''}>
-    <p id="file-hint" class="nq-hint">${help}</p>${drop ? '\n    <p role="status" data-nq-file-status></p>' : ''}
+  <div class="hw-field ${drop ? 'hw-file-dropzone' : 'hw-upload'}"${drop ? ' data-file-dropzone' : ''}>
+    <label class="hw-label" for="documents">${label}</label>
+    <input id="documents" class="hw-input" type="file" ${inputAttrs} aria-describedby="file-hint"${drop ? ' data-hw-file-input' : ''}>
+    <p id="file-hint" class="hw-hint">${help}</p>${drop ? '\n    <p role="status" data-hw-file-status></p>' : ''}
   </div>
-  <label><input type="checkbox" class="nq-checkbox" data-file-disable> ${disabled}</label>
+  <label><input type="checkbox" class="hw-checkbox" data-file-disable> ${disabled}</label>
   <div>${count} <output data-file-count>0</output><div data-file-names></div></div>
   ${buttons}
   <div>${result} <output data-file-submitted>—</output></div>
-  <p class="nq-hint">${local}</p>
+  <p class="hw-hint">${local}</p>
 </form><section class="demo"><h2>${statesTitle}</h2><p>${statesHint}</p><div data-upload-states></div></section><script type="module" src="./main.${ext}"></script></body></html>`;
-    const js = `import { createFileUploadList, ${drop ? 'createFileDropzone' : 'enhance'} } from '@nasaq/vanilla';
-${typed ? "import type { FileUploadItem } from '@nasaq/core';" : ''}
+    const js = `import { createFileUploadList, ${drop ? 'createFileDropzone' : 'enhance'} } from '@hawiyah/vanilla';
+${typed ? "import type { FileUploadItem } from '@hawiyah/core';" : ''}
 import './style.css';
 
 let transferItems${typed ? ': FileUploadItem[]' : ''} = ${statusItems};
@@ -133,8 +133,8 @@ window.addEventListener('pagehide', () => { listeners.abort(); selectedList.dest
   if (framework === 'react') {
     const jsx = typed ? 'tsx' : 'jsx';
     const html = `import { useState } from 'react';
-import { Button, FileUploadList, ${component} } from '@nasaq/react';
-${typed ? "import type { FileUploadItem } from '@nasaq/core';" : ''}
+import { Button, FileUploadList, ${component} } from '@hawiyah/react';
+${typed ? "import type { FileUploadItem } from '@hawiyah/core';" : ''}
 
 ${formDataHelper}
 
@@ -148,11 +148,11 @@ export default function App() {
     setSubmitted(submittedNames(event.currentTarget));
   }} onReset={() => { setFiles([]); setDisabled(false); setSubmitted('—'); }}>
     <${component} label="${label}" hint="${help}" ${inputAttrs} disabled={disabled} onFilesChange={setFiles}${drop ? ` getRejectedMessage={() => ${JSON.stringify(rejected)}}` : ''} />
-    <label><input className="nq-checkbox" type="checkbox" checked={disabled} onChange={event => setDisabled(event.target.checked)} /> ${disabled}</label>
+    <label><input className="hw-checkbox" type="checkbox" checked={disabled} onChange={event => setDisabled(event.target.checked)} /> ${disabled}</label>
     <div>${count} <output data-file-count>{files.length}</output><div data-file-names><FileUploadList items={files.map((file, index) => ({id: String(index), name: file.name, status: 'selected'}))} labels={${statusLabels}} disabled={disabled} onRemove={removeSelectedFile} /></div></div>
-    <div className="nq-inline"><Button type="submit">${submit}</Button><Button type="reset" variant="secondary">${reset}</Button></div>
+    <div className="hw-inline"><Button type="submit">${submit}</Button><Button type="reset" variant="secondary">${reset}</Button></div>
     <div>${result} <output data-file-submitted>{submitted}</output></div>
-    <p className="nq-hint">${local}</p>
+    <p className="hw-hint">${local}</p>
   </form><section className="demo"><h2>${statesTitle}</h2><p>${statesHint}</p><FileUploadList items={transfers} labels={${statusLabels}} onRemove={id => setTransfers(items => items.filter(item => item.id !== id))} /></section></>;
 }
 `;
@@ -162,8 +162,8 @@ export default function App() {
   if (framework === 'vue') {
     const html = `<script setup${typed ? ' lang="ts"' : ''}>
 import { ref, computed } from 'vue';
-import { Button, FileUploadList, ${component} } from '@nasaq/vue';
-${typed ? "import type { FileUploadItem } from '@nasaq/core';" : ''}
+import { Button, FileUploadList, ${component} } from '@hawiyah/vue';
+${typed ? "import type { FileUploadItem } from '@hawiyah/core';" : ''}
 const transfers = ref${typed ? '<FileUploadItem[]>' : ''}(${statusItems});
 const transferLabels = ${statusLabels};
 function removeTransfer(id${typed ? ': string' : ''}) { transfers.value = transfers.value.filter(item => item.id !== id); }
@@ -187,11 +187,11 @@ function reset() {
 <template>
   <form ${formAttrs} @submit.prevent="inspect" @reset="reset">
     <${component} label="${label}" hint="${help}" ${inputAttrs} :disabled="disabled" @update:files="files = $event${drop ? "; rejection = ''" : ''}"${drop ? ` drop-label="${label}" @reject="rejection = '${rejected}'"` : ''} />${drop ? '\n    <p role="status">{{ rejection }}</p>' : ''}
-    <label><input class="nq-checkbox" type="checkbox" v-model="disabled"> ${disabled}</label>
+    <label><input class="hw-checkbox" type="checkbox" v-model="disabled"> ${disabled}</label>
     <div>${count} <output data-file-count>{{ files.length }}</output><div data-file-names><FileUploadList :items="selectedItems" :labels="transferLabels" :disabled="disabled" removable @remove="removeSelectedFile" /></div></div>
-    <div class="nq-inline"><Button type="submit">${submit}</Button><Button type="reset" variant="secondary">${reset}</Button></div>
+    <div class="hw-inline"><Button type="submit">${submit}</Button><Button type="reset" variant="secondary">${reset}</Button></div>
     <div>${result} <output data-file-submitted>{{ submitted }}</output></div>
-    <p class="nq-hint">${local}</p>
+    <p class="hw-hint">${local}</p>
   </form>
   <section class="demo"><h2>${statesTitle}</h2><p>${statesHint}</p><FileUploadList :items="transfers" :labels="transferLabels" removable @remove="removeTransfer" /></section>
 </template>
@@ -200,21 +200,21 @@ function reset() {
   }
 
   const html = `import { Component } from '@angular/core';
-import { NqButtonDirective, NqFileUploadListComponent, Nq${component}Component } from '@nasaq/angular';
-import type { FileUploadItem } from '@nasaq/core';
+import { HwButtonDirective, HwFileUploadListComponent, Hw${component}Component } from '@hawiyah/angular';
+import type { FileUploadItem } from '@hawiyah/core';
 
 ${formDataHelper}
 
 @Component({
-  selector: 'app-root', standalone: true, imports: [NqButtonDirective, NqFileUploadListComponent, Nq${component}Component],
+  selector: 'app-root', standalone: true, imports: [HwButtonDirective, HwFileUploadListComponent, Hw${component}Component],
   template: \`<form ${formAttrs} (submit)="inspect($event)" (reset)="reset()">
     <${selector} label="${label}" hint="${help}" ${inputAttrs} [disabled]="disabled" [value]="files" (valueChange)="files = $event"${drop ? ` instruction="${label}" [selectedMessage]="selectionMessage" (rejected)="setRejected($event)"` : ''} />${drop ? '\n    <p role="status">{{ rejection }}</p>' : ''}
-    <label><input class="nq-checkbox" type="checkbox" [checked]="disabled" (change)="disabled = $any($event.target).checked"> ${disabled}</label>
-    <div>${count} <output data-file-count>{{ files.length }}</output><div data-file-names><nq-file-upload-list [items]="selectedItems" [labels]="transferLabels" [disabled]="disabled" removable (remove)="removeSelectedFile($event)" /></div></div>
-    <div class="nq-inline"><button nqButton type="submit">${submit}</button><button nqButton type="reset" variant="secondary">${reset}</button></div>
+    <label><input class="hw-checkbox" type="checkbox" [checked]="disabled" (change)="disabled = $any($event.target).checked"> ${disabled}</label>
+    <div>${count} <output data-file-count>{{ files.length }}</output><div data-file-names><hw-file-upload-list [items]="selectedItems" [labels]="transferLabels" [disabled]="disabled" removable (remove)="removeSelectedFile($event)" /></div></div>
+    <div class="hw-inline"><button hwButton type="submit">${submit}</button><button hwButton type="reset" variant="secondary">${reset}</button></div>
     <div>${result} <output data-file-submitted>{{ submitted }}</output></div>
-    <p class="nq-hint">${local}</p>
-  </form><section class="demo"><h2>${statesTitle}</h2><p>${statesHint}</p><nq-file-upload-list [items]="transfers" [labels]="transferLabels" removable (remove)="removeTransfer($event)" /></section>\`,
+    <p class="hw-hint">${local}</p>
+  </form><section class="demo"><h2>${statesTitle}</h2><p>${statesHint}</p><hw-file-upload-list [items]="transfers" [labels]="transferLabels" removable (remove)="removeTransfer($event)" /></section>\`,
 })
 export class AppComponent {
   transfers: FileUploadItem[] = ${statusItems};

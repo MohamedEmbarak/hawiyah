@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 for (const locale of ['ar','en'] as const) {
   test(`Home and Search work in ${locale} on narrow screens`,async({page},testInfo)=>{
     test.setTimeout(90_000);
-    await page.addInitScript(locale=>{localStorage.setItem('nasaq-locale',locale);localStorage.setItem('nasaq-mode','dark');},locale);
+    await page.addInitScript(locale=>{localStorage.setItem('hawiyah-locale',locale);localStorage.setItem('hawiyah-mode','dark');},locale);
     await page.setViewportSize({width:390,height:844});
     await page.goto('/#templates/home');
     const scope=page.locator('[data-dga-template]');

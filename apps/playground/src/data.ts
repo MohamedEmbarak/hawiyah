@@ -103,35 +103,35 @@ export const services = [
 export type Service = (typeof services)[number];
 export const requests = [
   {
-    id: "NQ-1042",
+    id: "HW-1042",
     name: ["Commercial registration", "سجل تجاري"],
     date: "2026-10-24",
     status: "review",
     step: 2,
   },
   {
-    id: "NQ-1038",
+    id: "HW-1038",
     name: ["Event permit", "تصريح فعالية"],
     date: "2026-10-22",
     status: "action",
     step: 1,
   },
   {
-    id: "NQ-1031",
+    id: "HW-1031",
     name: ["Digital certificate", "شهادة رقمية"],
     date: "2026-10-20",
     status: "completed",
     step: 3,
   },
   {
-    id: "NQ-1024",
+    id: "HW-1024",
     name: ["License renewal", "تجديد رخصة"],
     date: "2026-10-18",
     status: "completed",
     step: 3,
   },
   {
-    id: "NQ-1019",
+    id: "HW-1019",
     name: ["Building permit", "رخصة بناء"],
     date: "2026-10-16",
     status: "draft",

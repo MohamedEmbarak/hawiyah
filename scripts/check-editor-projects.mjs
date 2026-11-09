@@ -73,7 +73,7 @@ for (const language of ['javascript', 'typescript']) {
 }
 for(const[framework,languages]of Object.entries({vanilla:['javascript','typescript'],react:['javascript','typescript'],vue:['javascript','typescript'],angular:['typescript']})){
   for(const language of languages){
-    const example=projectExample('toggle-group',framework,language,'ar','<button class="nq-button">Example</button>');
+    const example=projectExample('toggle-group',framework,language,'ar','<button class="hw-button">Example</button>');
     const directory=resolve(workspace,'builds',`${framework}-${language}`);
     prepare(directory,projectDownloadFiles(example,example.files,framework,language));
     await build({root:directory,configFile:resolve(directory,'vite.config.js'),logLevel:'error'});

@@ -1,24 +1,24 @@
 import { booleanAttribute, Component, Directive, ElementRef, EventEmitter, HostListener, Input, Output, inject } from '@angular/core';
 import type { AfterViewInit, OnChanges, OnDestroy } from '@angular/core';
-import { createAccordionMotion } from '@nasaq/core';
-import type { AccordionMotion } from '@nasaq/core';
+import { createAccordionMotion } from '@hawiyah/core';
+import type { AccordionMotion } from '@hawiyah/core';
 import { NgTemplateOutlet } from '@angular/common';
 
 /** Native button keeps native form, keyboard, disabled and event semantics. */
-@Directive({selector: 'button[nqButton],a[nqButton]', standalone: true, host: {'class': 'nq-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}})
-export class NqButtonDirective {
+@Directive({selector: 'button[hwButton],a[hwButton]', standalone: true, host: {'class': 'hw-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}})
+export class HwButtonDirective {
   @Input() variant: 'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link' = 'primary';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
 }
 
-@Component({selector: 'nq-card', standalone: true, imports: [NgTemplateOutlet], template: `
-  <ng-template #content><header class="nq-card-header"><ng-content select="[nqCardHeader]" /></header><div class="nq-card-body"><ng-content /></div><footer class="nq-card-footer"><ng-content select="[nqCardFooter]" /></footer></ng-template>
+@Component({selector: 'hw-card', standalone: true, imports: [NgTemplateOutlet], template: `
+  <ng-template #content><header class="hw-card-header"><ng-content select="[hwCardHeader]" /></header><div class="hw-card-body"><ng-content /></div><footer class="hw-card-footer"><ng-content select="[hwCardFooter]" /></footer></ng-template>
   @if (href !== undefined) {
-    <a class="nq-card nq-card-action" [attr.href]="disabled ? null : href" [attr.target]="target" [attr.rel]="rel" [attr.data-variant]="variant" [attr.data-disabled]="disabled || null" [attr.aria-disabled]="disabled || null" [attr.role]="disabled ? 'link' : null" [attr.tabindex]="disabled ? -1 : null" (click)="guard($event)"><ng-container [ngTemplateOutlet]="content" /></a>
+    <a class="hw-card hw-card-action" [attr.href]="disabled ? null : href" [attr.target]="target" [attr.rel]="rel" [attr.data-variant]="variant" [attr.data-disabled]="disabled || null" [attr.aria-disabled]="disabled || null" [attr.role]="disabled ? 'link' : null" [attr.tabindex]="disabled ? -1 : null" (click)="guard($event)"><ng-container [ngTemplateOutlet]="content" /></a>
   } @else {
-    <article class="nq-card" [attr.data-variant]="variant" [attr.data-disabled]="disabled || null" (click)="guard($event)"><ng-container [ngTemplateOutlet]="content" /></article>
+    <article class="hw-card" [attr.data-variant]="variant" [attr.data-disabled]="disabled || null" (click)="guard($event)"><ng-container [ngTemplateOutlet]="content" /></article>
   }`})
-export class NqCardComponent {
+export class HwCardComponent {
   @Input() variant: 'default' | 'flat' | 'elevated' | 'outlined' | 'ghost' = 'default';
   @Input() href: string | undefined;
   @Input() target: string | undefined;
@@ -27,11 +27,11 @@ export class NqCardComponent {
   guard(event: MouseEvent) { if (this.disabled) { event.preventDefault(); event.stopPropagation(); } }
 }
 
-@Component({selector: 'nq-badge', standalone: true, template: `<span class="nq-badge" [attr.data-tone]="tone" [attr.data-variant]="variant"><ng-content /></span>`})
-export class NqBadgeComponent { @Input() variant: 'soft' | 'outline' | 'dot' = 'soft'; @Input() tone: 'neutral' | 'success' | 'warning' | 'danger' | 'info' = 'neutral'; }
+@Component({selector: 'hw-badge', standalone: true, template: `<span class="hw-badge" [attr.data-tone]="tone" [attr.data-variant]="variant"><ng-content /></span>`})
+export class HwBadgeComponent { @Input() variant: 'soft' | 'outline' | 'dot' = 'soft'; @Input() tone: 'neutral' | 'success' | 'warning' | 'danger' | 'info' = 'neutral'; }
 
-@Component({selector: 'nq-alert', standalone: true, template: `<div class="nq-alert" [attr.data-tone]="tone" [attr.data-variant]="variant" [attr.role]="role"><div class="nq-alert-content">@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>@if (dismissible) {<button class="nq-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="dismissed.emit()">×</button>}</div>`})
-export class NqAlertComponent {
+@Component({selector: 'hw-alert', standalone: true, template: `<div class="hw-alert" [attr.data-tone]="tone" [attr.data-variant]="variant" [attr.role]="role"><div class="hw-alert-content">@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>@if (dismissible) {<button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="dismissed.emit()">×</button>}</div>`})
+export class HwAlertComponent {
   @Input() tone: 'neutral' | 'info' | 'success' | 'warning' | 'danger' = 'info';
   @Input() variant: 'default' | 'outline' | 'minimal' = 'default';
   @Input() title = '';
@@ -42,33 +42,33 @@ export class NqAlertComponent {
 }
 
 let nextAccordionId = 0;
-export interface NqAccordionItem { id: string; title: string; content: string; open?: boolean }
-@Directive({selector: 'details[nqAccordionOpen]', standalone: true, host: { '[attr.open]': 'initialOpen ? "" : null' }})
-export class NqAccordionMotionDirective implements AfterViewInit, OnChanges, OnDestroy {
+export interface HwAccordionItem { id: string; title: string; content: string; open?: boolean }
+@Directive({selector: 'details[hwAccordionOpen]', standalone: true, host: { '[attr.open]': 'initialOpen ? "" : null' }})
+export class HwAccordionMotionDirective implements AfterViewInit, OnChanges, OnDestroy {
   private readonly element = inject<ElementRef<HTMLDetailsElement>>(ElementRef).nativeElement;
   private motion?: AccordionMotion;
   private localOpen = false;
   initialOpen = false;
-  @Input() nqAccordionOpen: boolean | undefined;
-  @Input() nqAccordionGroup: string | undefined;
-  @Output() readonly nqAccordionChange = new EventEmitter<boolean>();
+  @Input() hwAccordionOpen: boolean | undefined;
+  @Input() hwAccordionGroup: string | undefined;
+  @Output() readonly hwAccordionChange = new EventEmitter<boolean>();
   private get desired() { return this.localOpen; }
   private change = (open: boolean) => {
     this.localOpen = open; this.motion?.setOpen(open);
-    this.nqAccordionChange.emit(open);
+    this.hwAccordionChange.emit(open);
   };
   ngAfterViewInit() { this.setupMotion(); }
   ngOnChanges(changes: import('@angular/core').SimpleChanges) {
-    if (changes['nqAccordionOpen']) this.localOpen = this.nqAccordionOpen ?? false;
+    if (changes['hwAccordionOpen']) this.localOpen = this.hwAccordionOpen ?? false;
     if (!this.motion) this.initialOpen = this.desired;
-    else if (this.nqAccordionGroup !== this.group) this.setupMotion();
+    else if (this.hwAccordionGroup !== this.group) this.setupMotion();
     else this.motion.setOpen(this.desired);
   }
   private group?: string;
   private setupMotion() {
-    this.motion?.destroy(); this.group = this.nqAccordionGroup;
+    this.motion?.destroy(); this.group = this.hwAccordionGroup;
     if (this.group) this.element.setAttribute('name', this.group); else this.element.removeAttribute('name');
-    this.motion = createAccordionMotion(this.element, this.element.querySelector<HTMLElement>(':scope > .nq-accordion-content')!, this.change);
+    this.motion = createAccordionMotion(this.element, this.element.querySelector<HTMLElement>(':scope > .hw-accordion-content')!, this.change);
     this.motion.setOpen(this.desired, true);
   }
   @HostListener('click', ['$event']) click(event: MouseEvent) {
@@ -80,28 +80,28 @@ export class NqAccordionMotionDirective implements AfterViewInit, OnChanges, OnD
   @HostListener('toggle') toggle() { this.motion?.nativeToggle(); }
   ngOnDestroy() { this.motion?.destroy(); }
 }
-@Component({selector: 'nq-accordion', standalone: true, imports: [NqAccordionMotionDirective], template: `<div class="nq-accordion">@for (item of items; track item.id) {<details class="nq-accordion-item" [nqAccordionOpen]="item.open" [nqAccordionGroup]="exclusive ? groupName : undefined" (nqAccordionChange)="toggled.emit({id: item.id, open: $event})"><summary class="nq-accordion-trigger">{{ item.title }}</summary><div class="nq-accordion-content">{{ item.content }}</div></details>}<ng-content /></div>`})
-export class NqAccordionComponent {
-  @Input() items: readonly NqAccordionItem[] = [];
+@Component({selector: 'hw-accordion', standalone: true, imports: [HwAccordionMotionDirective], template: `<div class="hw-accordion">@for (item of items; track item.id) {<details class="hw-accordion-item" [hwAccordionOpen]="item.open" [hwAccordionGroup]="exclusive ? groupName : undefined" (hwAccordionChange)="toggled.emit({id: item.id, open: $event})"><summary class="hw-accordion-trigger">{{ item.title }}</summary><div class="hw-accordion-content">{{ item.content }}</div></details>}<ng-content /></div>`})
+export class HwAccordionComponent {
+  @Input() items: readonly HwAccordionItem[] = [];
   @Input({transform: booleanAttribute}) exclusive = false;
-  @Input() groupName = `nq-accordion-${++nextAccordionId}`;
+  @Input() groupName = `hw-accordion-${++nextAccordionId}`;
   @Output() readonly toggled = new EventEmitter<{id: string; open: boolean}>();
 }
 
-export interface NqTableColumn { key: string; label: string; rowHeader?: boolean }
-export type NqTableRow = Record<string, string | number | null | undefined>;
-@Component({selector: 'nq-table', standalone: true, styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `<div class="nq-table-wrap" tabindex="0" role="region" [attr.aria-label]="caption"><table class="nq-table" [attr.data-variant]="variant" [attr.data-size]="size"><caption>{{ caption }}</caption><thead><tr>@for (column of columns; track column.key) {<th scope="col">{{ column.label }}</th>}</tr></thead><tbody>@for (row of rows; track $index) {<tr>@for (column of columns; track column.key) {@if (column.rowHeader) {<th scope="row">{{ row[column.key] }}</th>} @else {<td>{{ row[column.key] }}</td>}}</tr>}@empty {<tr><td [attr.colspan]="columns.length || 1">{{ emptyMessage }}</td></tr>}</tbody></table></div>`})
-export class NqTableComponent {
+export interface HwTableColumn { key: string; label: string; rowHeader?: boolean }
+export type HwTableRow = Record<string, string | number | null | undefined>;
+@Component({selector: 'hw-table', standalone: true, styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `<div class="hw-table-wrap" tabindex="0" role="region" [attr.aria-label]="caption"><table class="hw-table" [attr.data-variant]="variant" [attr.data-size]="size"><caption>{{ caption }}</caption><thead><tr>@for (column of columns; track column.key) {<th scope="col">{{ column.label }}</th>}</tr></thead><tbody>@for (row of rows; track $index) {<tr>@for (column of columns; track column.key) {@if (column.rowHeader) {<th scope="row">{{ row[column.key] }}</th>} @else {<td>{{ row[column.key] }}</td>}}</tr>}@empty {<tr><td [attr.colspan]="columns.length || 1">{{ emptyMessage }}</td></tr>}</tbody></table></div>`})
+export class HwTableComponent {
   @Input({required: true}) caption = '';
-  @Input() columns: readonly NqTableColumn[] = [];
-  @Input() rows: readonly NqTableRow[] = [];
+  @Input() columns: readonly HwTableColumn[] = [];
+  @Input() rows: readonly HwTableRow[] = [];
   @Input() variant?: 'default' | 'striped' | 'bordered';
   @Input() size?: 'sm' | 'md' | 'lg';
   @Input() emptyMessage = 'لا توجد سجلات';
 }
 
-@Component({selector: 'nq-progress', standalone: true, template: `<label class="nq-stack"><span>{{ label }}</span><progress class="nq-progress" [attr.value]="value === null ? null : boundedValue" [max]="safeMax" [attr.aria-label]="label"></progress></label>`})
-export class NqProgressComponent {
+@Component({selector: 'hw-progress', standalone: true, template: `<label class="hw-stack"><span>{{ label }}</span><progress class="hw-progress" [attr.value]="value === null ? null : boundedValue" [max]="safeMax" [attr.aria-label]="label"></progress></label>`})
+export class HwProgressComponent {
   @Input({required: true}) label = '';
   @Input() value: number | null = null;
   @Input() max = 100;
@@ -109,17 +109,17 @@ export class NqProgressComponent {
   get boundedValue(): number { return Math.max(0, Math.min(this.safeMax, this.value ?? 0)); }
 }
 
-@Component({selector: 'nq-skeleton', standalone: true, template: `<span class="nq-skeleton" aria-hidden="true" [style.inline-size]="width" [style.block-size]="height"></span>`})
-export class NqSkeletonComponent {
+@Component({selector: 'hw-skeleton', standalone: true, template: `<span class="hw-skeleton" aria-hidden="true" [style.inline-size]="width" [style.block-size]="height"></span>`})
+export class HwSkeletonComponent {
   @Input() width = '100%';
   @Input() height = '1rem';
 }
 
-@Component({selector: 'nq-spinner', standalone: true, template: `<span role="status"><span class="nq-spinner" aria-hidden="true"></span><span class="nq-sr-only">{{ label }}</span></span>`})
-export class NqSpinnerComponent { @Input() label = 'Loading'; }
+@Component({selector: 'hw-spinner', standalone: true, template: `<span role="status"><span class="hw-spinner" aria-hidden="true"></span><span class="hw-sr-only">{{ label }}</span></span>`})
+export class HwSpinnerComponent { @Input() label = 'Loading'; }
 
-@Component({selector: 'nq-avatar', standalone: true, template: `<span class="nq-avatar" [attr.data-size]="size" [attr.data-variant]="variant" [attr.role]="src && !imageFailed ? null : 'img'" [attr.aria-label]="src && !imageFailed ? null : name">@if (src && !imageFailed) {<img [src]="src" [alt]="name" (error)="imageFailed = true">} @else {<span aria-hidden="true">{{ initials }}</span>}</span>`})
-export class NqAvatarComponent {
+@Component({selector: 'hw-avatar', standalone: true, template: `<span class="hw-avatar" [attr.data-size]="size" [attr.data-variant]="variant" [attr.role]="src && !imageFailed ? null : 'img'" [attr.aria-label]="src && !imageFailed ? null : name">@if (src && !imageFailed) {<img [src]="src" [alt]="name" (error)="imageFailed = true">} @else {<span aria-hidden="true">{{ initials }}</span>}</span>`})
+export class HwAvatarComponent {
   @Input({required: true}) name = '';
   @Input() size: 'sm' | 'md' | 'lg' | 'xl' | '40' | '64' | '80' | '120' = 'md';
   @Input() variant: 'circle' | 'square' = 'circle';
@@ -132,14 +132,14 @@ export class NqAvatarComponent {
   get initials(): string { return this.suppliedInitials ?? this.name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0] ?? '').join(''); }
 }
 
-@Component({selector: 'nq-divider', standalone: true, template: `<hr class="nq-divider" [attr.data-tone]="tone" [attr.aria-orientation]="orientation">`})
-export class NqDividerComponent {
+@Component({selector: 'hw-divider', standalone: true, template: `<hr class="hw-divider" [attr.data-tone]="tone" [attr.aria-orientation]="orientation">`})
+export class HwDividerComponent {
   @Input() tone?: 'neutral' | 'primary' | 'gold' | 'tertiary';
   @Input() orientation?: 'horizontal' | 'vertical';
 }
 
-@Component({selector: 'nq-empty-state', standalone: true, template: `<section class="nq-empty"><h3>{{ title }}</h3>@if (description) {<p>{{ description }}</p>}<ng-content /></section>`})
-export class NqEmptyStateComponent {
+@Component({selector: 'hw-empty-state', standalone: true, template: `<section class="hw-empty"><h3>{{ title }}</h3>@if (description) {<p>{{ description }}</p>}<ng-content /></section>`})
+export class HwEmptyStateComponent {
   @Input({required: true}) title = '';
   @Input() description = '';
 }

@@ -7,7 +7,7 @@ import type { DescriptionItem } from "./content.js";
 import { useValue } from "./shared.js";
 
 export const ServiceCard = defineComponent({
-  name: "NqServiceCard",
+  name: "HwServiceCard",
   inheritAttrs: false,
   props: {
     title: { type: String, required: true },
@@ -19,7 +19,7 @@ export const ServiceCard = defineComponent({
   },
   setup(props, { attrs, slots }) {
     return () =>
-      h(Card, mergeProps(attrs, { class: "nq-service-card" }), {
+      h(Card, mergeProps(attrs, { class: "hw-service-card" }), {
         header: () => [
           slots.icon?.(),
           h("h3", {}, props.title),
@@ -44,7 +44,7 @@ export const ServiceCard = defineComponent({
   },
 });
 export const ServiceDetails = defineComponent({
-  name: "NqServiceDetails",
+  name: "HwServiceDetails",
   inheritAttrs: false,
   props: {
     title: { type: String, required: true },
@@ -56,7 +56,7 @@ export const ServiceDetails = defineComponent({
   },
   setup(props, { attrs, slots }) {
     return () =>
-      h("section", mergeProps(attrs, { class: "nq-service-details" }), [
+      h("section", mergeProps(attrs, { class: "hw-service-details" }), [
         h("header", {}, [
           h("h2", {}, props.title),
           props.description && h("p", {}, props.description),
@@ -64,7 +64,7 @@ export const ServiceDetails = defineComponent({
         h(DescriptionList, { items: props.items }),
         slots.default?.(),
         slots.action &&
-          h("div", { class: "nq-service-details-action" }, slots.action()),
+          h("div", { class: "hw-service-details-action" }, slots.action()),
       ]);
   },
 });
@@ -75,7 +75,7 @@ interface PortalNavLink {
 }
 export interface PortalLink extends PortalNavLink { groups?: readonly { label?: string; links: readonly PortalNavLink[] }[] }
 export const PortalHeader = defineComponent({
-  name: "NqPortalHeader",
+  name: "HwPortalHeader",
   inheritAttrs: false,
   props: {
     brand: { type: String, required: true },
@@ -112,7 +112,7 @@ export const PortalHeader = defineComponent({
       const childCurrent = groups.some(group => group.links.some(child => child.current));
       const current = item.current || childCurrent;
       return h('li', { key: item.href }, h('details', {
-        class: 'nq-portal-branch', 'data-nq-portal-branch': '', 'data-current': current || undefined,
+        class: 'hw-portal-branch', 'data-hw-portal-branch': '', 'data-current': current || undefined,
         'data-branch-href': item.href, open: Boolean(branch.value?.isConnected && branch.value.dataset.branchHref === item.href),
       }, [
         h('summary', { onClick(event: MouseEvent) {
@@ -120,17 +120,17 @@ export const PortalHeader = defineComponent({
           const details = (event.currentTarget as HTMLElement).parentElement as HTMLDetailsElement;
           branch.value = details === branch.value ? undefined : details;
         } }, item.label),
-        h('div', { class: 'nq-portal-branch-panel' }, [
-          link({...item, current: item.current && !childCurrent}, 'nq-link nq-portal-branch-overview'),
-          ...groups.map(group => h('section', { class: 'nq-portal-branch-group' }, [
+        h('div', { class: 'hw-portal-branch-panel' }, [
+          link({...item, current: item.current && !childCurrent}, 'hw-link hw-portal-branch-overview'),
+          ...groups.map(group => h('section', { class: 'hw-portal-branch-group' }, [
             group.label && h('h2', group.label),
-            h('ul', group.links.map(child => h('li', { key: child.href }, link(child, 'nq-link')))),
+            h('ul', group.links.map(child => h('li', { key: child.href }, link(child, 'hw-link')))),
           ])),
         ]),
       ]));
     }
     return () =>
-      h("header", mergeProps(attrs, { class: "nq-portal-header", ref: root,
+      h("header", mergeProps(attrs, { class: "hw-portal-header", ref: root,
         onKeydown: (event: KeyboardEvent) => {
           if (event.defaultPrevented || event.key !== 'Escape') return;
           if (branch.value?.isConnected) {
@@ -147,24 +147,24 @@ export const PortalHeader = defineComponent({
           if (!root.value?.contains(target)) open.value = false;
         },
       }), [
-        props.mainId && h('a', { class: 'nq-skip-link', href: `#${props.mainId}` }, props.skipLabel),
+        props.mainId && h('a', { class: 'hw-skip-link', href: `#${props.mainId}` }, props.skipLabel),
         h(
           "a",
           {
             href: props.homeHref,
-            class: "nq-portal-brand",
+            class: "hw-portal-brand",
             "aria-label": props.brand,
           },
           slots.logo?.() ?? props.brand,
         ),
-        props.links.length > 0 && h('button', { ref: trigger, type: 'button', class: 'nq-button nq-portal-menu-toggle', 'aria-expanded': open.value, 'aria-controls': props.navigationId ?? `${id}-navigation`, onClick: () => { branch.value = undefined; open.value = !open.value; } }, [h('span', { class: 'nq-icon', 'data-icon': open.value ? 'cancel-01' : 'menu-01', 'aria-hidden': 'true' }), props.menuLabel]),
+        props.links.length > 0 && h('button', { ref: trigger, type: 'button', class: 'hw-button hw-portal-menu-toggle', 'aria-expanded': open.value, 'aria-controls': props.navigationId ?? `${id}-navigation`, onClick: () => { branch.value = undefined; open.value = !open.value; } }, [h('span', { class: 'hw-icon', 'data-icon': open.value ? 'cancel-01' : 'menu-01', 'aria-hidden': 'true' }), props.menuLabel]),
         props.links.length > 0 && h(
           "nav",
           { id: props.navigationId ?? `${id}-navigation`, "aria-label": props.navLabel, 'data-open': String(open.value) },
           h('ul', props.links.map(navigationItem)),
         ),
         slots.actions &&
-          h("div", { class: "nq-portal-header-actions" }, slots.actions()),
+          h("div", { class: "hw-portal-header-actions" }, slots.actions()),
         slots.default?.(),
       ]);
   },
@@ -172,7 +172,7 @@ export const PortalHeader = defineComponent({
 export interface PortalFooterLink extends PortalNavLink { external?: boolean }
 export interface PortalFooterGroup { title: string; links: readonly PortalFooterLink[] }
 export const PortalFooter = defineComponent({
-  name: "NqPortalFooter", inheritAttrs: false,
+  name: "HwPortalFooter", inheritAttrs: false,
   props: {
     brand: String, description: String, copyright: String,
     links: { type: Array as PropType<readonly PortalFooterLink[]>, default: () => [] },
@@ -184,19 +184,19 @@ export const PortalFooter = defineComponent({
     externalLabel: { type: String, default: "يفتح في نافذة جديدة" },
   },
   setup(props, { attrs, slots }) {
-    const linkList = (items: readonly PortalFooterLink[]) => h('ul', {class:'nq-portal-footer-links'}, items.map((link,index) => h('li', {key:index}, h('a', {href:link.href,target:link.external?'_blank':undefined,rel:link.external?'noopener noreferrer':undefined}, [link.label,link.external && h('span',{class:'nq-portal-footer-external','aria-hidden':'true'},'↗'),link.external && h('span',{class:'nq-sr-only'},` · ${props.externalLabel}`)]))));
-    return () => h('footer',mergeProps(attrs,{class:'nq-portal-footer'}),[
-      h('div',{class:'nq-portal-footer-main'},[
-        (props.brand || props.description || slots.logo) && h('div',{class:'nq-portal-footer-brand'},[(slots.logo || props.brand) && h('div',{class:'nq-portal-footer-brand-marks'},slots.logo?.() ?? h('strong',{},props.brand)),props.description && h('p',{},props.description)]),
-        props.links.length > 0 && h('nav',{class:'nq-portal-footer-group','aria-label':props.navLabel},[h('h2',{},props.navLabel),linkList(props.links)]),
-        ...props.groups.filter(group=>group.links.length>0).map((group,index)=>h('nav',{class:'nq-portal-footer-group','aria-label':group.title,key:index},[h('h2',{},group.title),linkList(group.links)])),
-        slots.support && h('section',{class:'nq-portal-footer-support','aria-label':props.supportLabel},[h('h2',{},props.supportLabel),h('div',{class:'nq-portal-footer-support-content'},slots.support())]),
-        slots.default && h('div',{class:'nq-portal-footer-extra'},slots.default()),
+    const linkList = (items: readonly PortalFooterLink[]) => h('ul', {class:'hw-portal-footer-links'}, items.map((link,index) => h('li', {key:index}, h('a', {href:link.href,target:link.external?'_blank':undefined,rel:link.external?'noopener noreferrer':undefined}, [link.label,link.external && h('span',{class:'hw-portal-footer-external','aria-hidden':'true'},'↗'),link.external && h('span',{class:'hw-sr-only'},` · ${props.externalLabel}`)]))));
+    return () => h('footer',mergeProps(attrs,{class:'hw-portal-footer'}),[
+      h('div',{class:'hw-portal-footer-main'},[
+        (props.brand || props.description || slots.logo) && h('div',{class:'hw-portal-footer-brand'},[(slots.logo || props.brand) && h('div',{class:'hw-portal-footer-brand-marks'},slots.logo?.() ?? h('strong',{},props.brand)),props.description && h('p',{},props.description)]),
+        props.links.length > 0 && h('nav',{class:'hw-portal-footer-group','aria-label':props.navLabel},[h('h2',{},props.navLabel),linkList(props.links)]),
+        ...props.groups.filter(group=>group.links.length>0).map((group,index)=>h('nav',{class:'hw-portal-footer-group','aria-label':group.title,key:index},[h('h2',{},group.title),linkList(group.links)])),
+        slots.support && h('section',{class:'hw-portal-footer-support','aria-label':props.supportLabel},[h('h2',{},props.supportLabel),h('div',{class:'hw-portal-footer-support-content'},slots.support())]),
+        slots.default && h('div',{class:'hw-portal-footer-extra'},slots.default()),
       ]),
-      (props.copyright || props.legalLinks.length || slots.partners) && h('div',{class:'nq-portal-footer-bottom'},[
+      (props.copyright || props.legalLinks.length || slots.partners) && h('div',{class:'hw-portal-footer-bottom'},[
         props.copyright && h('small',{},props.copyright),
-        props.legalLinks.length>0 && h('nav',{class:'nq-portal-footer-legal','aria-label':props.legalLinksLabel},linkList(props.legalLinks)),
-        slots.partners && h('div',{class:'nq-portal-footer-partners'},slots.partners()),
+        props.legalLinks.length>0 && h('nav',{class:'hw-portal-footer-legal','aria-label':props.legalLinksLabel},linkList(props.legalLinks)),
+        slots.partners && h('div',{class:'hw-portal-footer-partners'},slots.partners()),
       ]),
     ]);
   },
@@ -206,7 +206,7 @@ export interface FeedbackValue {
   comment: string;
 }
 export const Feedback = defineComponent({
-  name: "NqFeedback",
+  name: "HwFeedback",
   inheritAttrs: false,
   props: {
     choiceVariant: { type: String as PropType<'text' | 'icon' | 'icon-text'>, default: 'text' },
@@ -236,13 +236,13 @@ export const Feedback = defineComponent({
     return () =>
       h(
         "section",
-        mergeProps(attrs, { class: "nq-feedback", "aria-label": props.label, "data-choice-variant": props.choiceVariant }),
+        mergeProps(attrs, { class: "hw-feedback", "aria-label": props.label, "data-choice-variant": props.choiceVariant }),
         [
           h("h2", {}, props.label),
           h(
             "div",
             {
-              class: "nq-button-group nq-feedback-actions",
+              class: "hw-button-group hw-feedback-actions",
               role: "group",
               "aria-label": props.label,
             },
@@ -258,7 +258,7 @@ export const Feedback = defineComponent({
                     submitted.value = false;
                   },
                 },
-                () => [h('span', {class:'nq-icon nq-feedback-icon', 'data-icon':value==='yes'?'thumbs-up':'thumbs-down', 'aria-hidden':'true'}), h('span', {class:'nq-feedback-label'}, value==='yes'?props.yesLabel:props.noLabel)],
+                () => [h('span', {class:'hw-icon hw-feedback-icon', 'data-icon':value==='yes'?'thumbs-up':'thumbs-down', 'aria-hidden':'true'}), h('span', {class:'hw-feedback-label'}, value==='yes'?props.yesLabel:props.noLabel)],
               ),
             ),
           ),
@@ -295,7 +295,7 @@ export const Feedback = defineComponent({
   },
 });
 export const CookieConsent = defineComponent({
-  name: "NqCookieConsent",
+  name: "HwCookieConsent",
   inheritAttrs: false,
   props: {
     open: { type: Boolean, default: undefined },
@@ -322,7 +322,7 @@ export const CookieConsent = defineComponent({
       h(
         "section",
         mergeProps(attrs, {
-          class: "nq-cookie-consent",
+          class: "hw-cookie-consent",
           role: "region",
           "aria-label": props.label,
           hidden: !model.value.value,
@@ -331,7 +331,7 @@ export const CookieConsent = defineComponent({
           h("h2", {}, props.label),
           h("p", {}, props.description),
           slots.default?.(),
-          h("div", { class: "nq-button-group" }, [
+          h("div", { class: "hw-button-group" }, [
             h(
               Button,
               {
@@ -373,7 +373,7 @@ export interface NotificationItem {
   href?: string;
 }
 export const NotificationList = defineComponent({
-  name: "NqNotificationList",
+  name: "HwNotificationList",
   inheritAttrs: false,
   props: {
     items: {
@@ -397,7 +397,7 @@ export const NotificationList = defineComponent({
       h(
         "section",
         mergeProps(attrs, {
-          class: "nq-notification-list",
+          class: "hw-notification-list",
           "aria-label": props.label,
         }),
         [

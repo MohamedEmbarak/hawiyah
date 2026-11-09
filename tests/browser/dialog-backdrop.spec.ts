@@ -5,8 +5,8 @@ for (const component of ['dialog', 'drawer']) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(`/#component/${component}`);
-    const trigger = page.locator('.guide-preview [data-nq-dialog-open]');
-    const dialog = page.locator(`.guide-preview dialog[data-nq="${component}"]`);
+    const trigger = page.locator('.guide-preview [data-hw-dialog-open]');
+    const dialog = page.locator(`.guide-preview dialog[data-hw="${component}"]`);
     await trigger.click();
     await expect(dialog).toBeVisible();
     const bounds = await dialog.boundingBox();

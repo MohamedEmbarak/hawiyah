@@ -1,4 +1,4 @@
-import { createCleanup, isDisabled } from '@nasaq/core';
+import { createCleanup, isDisabled } from '@hawiyah/core';
 import { ensureId, remember, required } from './dom.js';
 
 export interface TooltipOptions { hideDelay?: number; placement?: 'top' | 'bottom' | 'start' | 'end'; align?: 'start' | 'center' | 'end' }
@@ -6,7 +6,7 @@ export interface TooltipController { show(): void; hide(): void; destroy(): void
 
 /** Descriptive text only; use a dialog/popover for interactive content. */
 export function createTooltip(root: HTMLElement, options: TooltipOptions = {}): TooltipController {
-  const trigger = required<HTMLElement>(root, '[data-nq-tooltip-trigger]');
+  const trigger = required<HTMLElement>(root, '[data-hw-tooltip-trigger]');
   const tooltip = required<HTMLElement>(root, '[role="tooltip"]');
   const scope = createCleanup();
   remember(scope, trigger, ['aria-describedby']);

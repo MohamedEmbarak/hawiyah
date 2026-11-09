@@ -7,7 +7,7 @@ requests blocked; the extracted pure page-window function was evaluated against
 first, middle, last and six-page inputs. Bootstrap/Popper and official icon/font
 assets were not loaded, so the fixture does not prove live-site visual parity.
 
-| Source | Observed requirement/value | Previous Nasaq gap | Implemented action / confidence |
+| Source | Observed requirement/value | Previous Hawiyah gap | Implemented action / confidence |
 | --- | --- | --- | --- |
 | CSS 3505–3555 | 40px square controls, 14px text, 8px gap, neutral-100 hover, 300ms color transition | Rounded, tinted current buttons with no source underline | DGA geometry, semantic text/hover and transition tokens; high |
 | CSS 3557–3578 | Black 2px focus outline for `.page-link`; current page has a primary 3px underline inset 4px | Filled current state | Current underline and visible keyboard outline; high for values, accessible focus retained on all native controls |
@@ -20,12 +20,12 @@ assets were not loaded, so the fixture does not prove live-site visual parity.
 
 The source has two cascade/data nuances. Its late 40px navigation margin wins
 over the earlier 24px mobile rule. Its default six-page window includes an
-ellipsis between 5 and 6 with no omitted destinations. Nasaq preserves the
+ellipsis between 5 and 6 with no omitted destinations. Hawiyah preserves the
 effective margin and removes that empty disclosure. The isolated stylesheet
 fixture measures 38px mobile page height without Bootstrap's border-box reset
-(30px declared height plus padding); Nasaq explicitly uses border-box sizing.
+(30px declared height plus padding); Hawiyah explicitly uses border-box sizing.
 The supplied JS's `maxPagesToShow` condition does not parameterize its hardcoded
-five-page edge branches. Nasaq instead retains its documented `siblingCount` API.
+five-page edge branches. Hawiyah instead retains its documented `siblingCount` API.
 
 ## Native behavior and composition
 
@@ -50,11 +50,11 @@ constraint and draft never affect a surrounding application's form validation
 or submitted data. Its filled/invalid states use the shared input styling.
 This is a navigation disclosure rather than a nested form.
 
-Vanilla preserves fully authored `[data-nq-page="previous|next|number"]` markup
+Vanilla preserves fully authored `[data-hw-page="previous|next|number"]` markup
 and real link navigation, including modifiers. Adding
-`[data-nq-pagination-items]` opts into generated page windows. The root uses
-`data-nq-total`, optional `data-nq-current`, `data-nq-siblings` and
-`data-nq-hide-single`; typed options offer equivalent configuration and callbacks.
+`[data-hw-pagination-items]` opts into generated page windows. The root uses
+`data-hw-total`, optional `data-hw-current`, `data-hw-siblings` and
+`data-hw-hide-single`; typed options offer equivalent configuration and callbacks.
 Destroy restores original item-host children, authored attributes and listeners.
 `select()` retains its strict integer/range contract and does not emit on no-ops.
 
@@ -68,7 +68,7 @@ automatically scrolls the host application. Demo actions stay within their examp
 
 ## Themes and adaptations
 
-Original Nasaq retains rounded, tinted current-page presentation and instant
+Original Hawiyah retains rounded, tinted current-page presentation and instant
 transitions. DGA/custom profiles use the source geometry and underline. Dark
 mode uses semantic colors; reduced motion removes transitions and forced colors
 retain focus/current-page cues. The source's low-opacity disabled treatment is

@@ -1,12 +1,12 @@
 import { defineComponent, h, mergeProps, ref, useId } from "vue";
 import type { PropType, VNodeChild } from "vue";
-import { formatNumber, sortRows } from "@nasaq/core";
+import { formatNumber, sortRows } from "@hawiyah/core";
 import { Button } from "./forms.js";
 import { Avatar } from "./display.js";
 import { useValue } from "./shared.js";
 
 export const Link = defineComponent({
-  name: 'NqLink', inheritAttrs: false,
+  name: 'HwLink', inheritAttrs: false,
   props: {href:String,disabled:Boolean,external:Boolean,variant:String as PropType<'default'|'subtle'|'neutral'|'standalone'>},
   setup(props,{attrs,slots}) {
     return ()=>{
@@ -15,12 +15,12 @@ export const Link = defineComponent({
         if(unavailable){event.preventDefault();event.stopPropagation();return;}
         const handlers=attrs[name];for(const handler of Array.isArray(handlers)?handlers:[handlers])if(typeof handler==='function')handler(event);
       };
-      return h('a',{...mergeProps(attrs,{class:'nq-link',href:unavailable?undefined:props.href,role:unavailable?'link':attrs.role,'data-variant':props.variant ?? attrs['data-variant'],target:props.external?'_blank':attrs.target,rel:props.external?'noopener noreferrer':attrs.rel,'aria-disabled':unavailable || undefined,tabindex:unavailable?-1:attrs.tabindex}),onClick:activation('onClick'),onAuxclick:activation('onAuxclick')},slots.default?.());
+      return h('a',{...mergeProps(attrs,{class:'hw-link',href:unavailable?undefined:props.href,role:unavailable?'link':attrs.role,'data-variant':props.variant ?? attrs['data-variant'],target:props.external?'_blank':attrs.target,rel:props.external?'noopener noreferrer':attrs.rel,'aria-disabled':unavailable || undefined,tabindex:unavailable?-1:attrs.tabindex}),onClick:activation('onClick'),onAuxclick:activation('onAuxclick')},slots.default?.());
     };
   },
 });
 export const IconButton = defineComponent({
-  name: "NqIconButton",
+  name: "HwIconButton",
   inheritAttrs: false,
   props: {
     label: { type: String, required: true },
@@ -42,7 +42,7 @@ export const IconButton = defineComponent({
         mergeProps(attrs, {
           ref: button, variant: props.variant, size: props.size, disabled: props.disabled, loading: props.loading,
           "data-shape": props.shape ?? attrs["data-shape"],
-          class: "nq-icon-button",
+          class: "hw-icon-button",
           "aria-label": props.label,
         }),
         () => h("span", { "aria-hidden": "true" }, slots.default?.()),
@@ -50,7 +50,7 @@ export const IconButton = defineComponent({
   },
 });
 export const ButtonGroup = defineComponent({
-  name: "NqButtonGroup",
+  name: "HwButtonGroup",
   inheritAttrs: false,
   props: { label: { type: String, required: true }, variant:String as PropType<'default'|'attached'>, orientation:String as PropType<'horizontal'|'vertical'> },
   setup(props, { attrs, slots }) {
@@ -58,7 +58,7 @@ export const ButtonGroup = defineComponent({
       h(
         "div",
         mergeProps(attrs, {
-          class: "nq-button-group", "data-variant":props.variant ?? attrs["data-variant"], "data-orientation":props.orientation ?? attrs["data-orientation"],
+          class: "hw-button-group", "data-variant":props.variant ?? attrs["data-variant"], "data-orientation":props.orientation ?? attrs["data-orientation"],
           role: "group",
           "aria-label": props.label,
         }),
@@ -67,7 +67,7 @@ export const ButtonGroup = defineComponent({
   },
 });
 export const Chip = defineComponent({
-  name: "NqChip",
+  name: "HwChip",
   inheritAttrs: false,
   props: {
     label: String,
@@ -86,7 +86,7 @@ export const Chip = defineComponent({
     return () =>
       h(
         "span",
-        mergeProps(attrs, { class: "nq-chip", "data-tone": props.tone }),
+        mergeProps(attrs, { class: "hw-chip", "data-tone": props.tone }),
         [
           props.label ?? slots.default?.(),
           props.removable &&
@@ -110,7 +110,7 @@ export interface DescriptionItem {
   description: VNodeChild;
 }
 export const DescriptionList = defineComponent({
-  name: "NqDescriptionList",
+  name: "HwDescriptionList",
   inheritAttrs: false,
   props: {
     items: {
@@ -127,7 +127,7 @@ export const DescriptionList = defineComponent({
       h(
         "dl",
         mergeProps(attrs, {
-          class: "nq-description-list",
+          class: "hw-description-list",
           "data-variant": props.variant,
         }),
         props.items.map((item, index) =>
@@ -142,7 +142,7 @@ export const DescriptionList = defineComponent({
   },
 });
 export const Stat = defineComponent({
-  name: "NqStat",
+  name: "HwStat",
   inheritAttrs: false,
   props: {
     label: { type: String, required: true },
@@ -153,18 +153,18 @@ export const Stat = defineComponent({
   },
   setup(props, { attrs, slots }) {
     return () =>
-      h("div", mergeProps(attrs, { class: "nq-stat" }), [
-        h("span", { class: "nq-stat-label" }, props.label),
+      h("div", mergeProps(attrs, { class: "hw-stat" }), [
+        h("span", { class: "hw-stat-label" }, props.label),
         h(
           "strong",
-          { class: "nq-stat-value" },
+          { class: "hw-stat-value" },
           typeof props.value === "number"
             ? formatNumber(props.value, { locale: props.locale })
             : props.value,
         ),
         props.description &&
-          h("p", { class: "nq-stat-description" }, props.description),
-        props.trend && h("span", { class: "nq-stat-trend" }, props.trend),
+          h("p", { class: "hw-stat-description" }, props.description),
+        props.trend && h("span", { class: "hw-stat-trend" }, props.trend),
         slots.default?.(),
       ]);
   },
@@ -178,7 +178,7 @@ export interface TimelineItem {
   status?: "complete" | "current" | "upcoming";
 }
 export const Timeline = defineComponent({
-  name: "NqTimeline",
+  name: "HwTimeline",
   inheritAttrs: false,
   props: {
     items: { type: Array as PropType<readonly TimelineItem[]>, required: true },
@@ -188,13 +188,13 @@ export const Timeline = defineComponent({
     return () =>
       h(
         "ol",
-        mergeProps(attrs, { class: "nq-timeline", "aria-label": props.label }),
+        mergeProps(attrs, { class: "hw-timeline", "aria-label": props.label }),
         props.items.map((item) =>
           h(
             "li",
             {
               key: item.id,
-              class: "nq-timeline-item",
+              class: "hw-timeline-item",
               "data-state": item.status,
               "aria-current": item.status === "current" ? "step" : undefined,
             },
@@ -211,7 +211,7 @@ export const Timeline = defineComponent({
   },
 });
 export const Meter = defineComponent({
-  name: "NqMeter",
+  name: "HwMeter",
   inheritAttrs: false,
   props: {
     label: { type: String, required: true },
@@ -227,7 +227,7 @@ export const Meter = defineComponent({
       h(
         "meter",
         mergeProps(attrs, {
-          class: "nq-meter",
+          class: "hw-meter",
           "aria-label": props.label,
           value: props.value,
           min: props.min,
@@ -245,7 +245,7 @@ export interface AvatarItem {
   initials?: string;
 }
 export const AvatarGroup = defineComponent({
-  name: "NqAvatarGroup",
+  name: "HwAvatarGroup",
   inheritAttrs: false,
   props: {
     items: { type: Array as PropType<readonly AvatarItem[]>, required: true },
@@ -263,7 +263,7 @@ export const AvatarGroup = defineComponent({
       return h(
         "div",
         mergeProps(attrs, {
-          class: "nq-avatar-group",
+          class: "hw-avatar-group",
           role: "group",
           "aria-label": props.label,
         }),
@@ -275,7 +275,7 @@ export const AvatarGroup = defineComponent({
             h(
               "span",
               {
-                class: "nq-avatar",
+                class: "hw-avatar",
                 role: "img",
                 "aria-label": props.remainingLabel(props.items.length - max),
               },
@@ -293,7 +293,7 @@ export interface DataColumn {
   rowHeader?: boolean;
 }
 export const DataTable = defineComponent({
-  name: "NqDataTable",
+  name: "HwDataTable",
   inheritAttrs: false,
   props: {
     variant: String as PropType<'default' | 'striped' | 'bordered'>,
@@ -350,8 +350,8 @@ export const DataTable = defineComponent({
             props.locale,
           )
         : props.rows;
-      return h("div", mergeProps({ class: "nq-table-wrap nq-data-table", tabindex: 0, role: "region", "aria-labelledby": captionId }, props.wrapperProps ?? {}), [
-        h("table", mergeProps(attrs, { class: "nq-table", "data-variant": props.variant ?? attrs["data-variant"], "data-size": props.size ?? attrs["data-size"] }), [
+      return h("div", mergeProps({ class: "hw-table-wrap hw-data-table", tabindex: 0, role: "region", "aria-labelledby": captionId }, props.wrapperProps ?? {}), [
+        h("table", mergeProps(attrs, { class: "hw-table", "data-variant": props.variant ?? attrs["data-variant"], "data-size": props.size ?? attrs["data-size"] }), [
           h("caption", {id: captionId}, props.caption),
           h(
             "thead",

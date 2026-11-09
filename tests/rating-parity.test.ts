@@ -3,7 +3,7 @@ import {Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {NqRatingComponent, NqRatingDisplayComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwRatingComponent, HwRatingDisplayComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act, createElement as r} from 'react';
 import {createRoot} from 'react-dom/client';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -28,17 +28,17 @@ async function display(adapter: string) {
     const model = reactive({...state}); const app = createApp({render: () => h(VueRatingDisplay, {...model, label: 'تقييم الخدمة', id: 'score', class: 'consumer-score', dir: 'rtl'})}); app.mount(host); cleanup.push(() => app.unmount());
     sync = async () => {Object.assign(model, state); await nextTick();};
   } else {
-    const fixture = TestBed.createComponent(NqRatingDisplayComponent); host.append(fixture.nativeElement); cleanup.push(() => fixture.destroy());
+    const fixture = TestBed.createComponent(HwRatingDisplayComponent); host.append(fixture.nativeElement); cleanup.push(() => fixture.destroy());
     sync = async () => {fixture.componentRef.setInput('label', 'تقييم الخدمة'); for (const [key, value] of Object.entries(state)) fixture.componentRef.setInput(key, value); fixture.detectChanges();};
   }
   await sync(); return {host, state, sync};
 }
 function expectScore(host: HTMLElement, score: number, max: number) {
-  const root = host.querySelector<HTMLElement>('.nq-rating-display')!;
+  const root = host.querySelector<HTMLElement>('.hw-rating-display')!;
   expect(root.getAttribute('role')).toBe('img'); expect(root.getAttribute('aria-label')).toBe(`تقييم الخدمة: ${score} من ${max}`);
-  expect(root.querySelector('.nq-rating-stars')?.getAttribute('aria-hidden')).toBe('true');
-  const fills = [...root.querySelectorAll<HTMLElement>('.nq-rating-fill')]; expect(fills).toHaveLength(max);
-  fills.forEach((fill, index) => expect(fill.style.getPropertyValue('--nq-rating-fill')).toBe(`${Math.min(1, Math.max(0, score - index)) * 100}%`));
+  expect(root.querySelector('.hw-rating-stars')?.getAttribute('aria-hidden')).toBe('true');
+  const fills = [...root.querySelectorAll<HTMLElement>('.hw-rating-fill')]; expect(fills).toHaveLength(max);
+  fills.forEach((fill, index) => expect(fill.style.getPropertyValue('--hw-rating-fill')).toBe(`${Math.min(1, Math.max(0, score - index)) * 100}%`));
   expect(root.querySelector('input, button, [tabindex]')).toBeNull();
 }
 
@@ -52,7 +52,7 @@ async function input(adapter: string, controlled = false) {
     const model = reactive({...state}); const app = createApp({render: () => h(VueRating, {label: 'التقييم', modelValue: controlled ? model.value : undefined, defaultValue: model.value, max: model.max, readonly: model.readOnly, disabled: model.disabled, name: 'score', required: true, 'onUpdate:modelValue': changed})}); app.mount(host); cleanup.push(() => app.unmount());
     sync = async () => {Object.assign(model, state); await nextTick();};
   } else {
-    const fixture = TestBed.createComponent(NqRatingComponent); host.append(fixture.nativeElement); cleanup.push(() => fixture.destroy()); fixture.componentInstance.valueChange.subscribe(changed);
+    const fixture = TestBed.createComponent(HwRatingComponent); host.append(fixture.nativeElement); cleanup.push(() => fixture.destroy()); fixture.componentInstance.valueChange.subscribe(changed);
     sync = async () => {fixture.componentRef.setInput('label', 'التقييم'); fixture.componentRef.setInput('name', 'score'); fixture.componentRef.setInput('required', true); for (const [key, value] of Object.entries(state)) fixture.componentRef.setInput(key, value); fixture.detectChanges();};
   }
   await sync(); return {host, state, sync, changed, click: async (value: number) => {await act(async () => {host.querySelector<HTMLInputElement>(`input[value="${value}"]`)!.click(); await nextTick();}); await sync();}};
@@ -61,10 +61,10 @@ function selected(host: HTMLElement) {return host.querySelector<HTMLInputElement
 
 for (const adapter of ['react', 'vue', 'angular']) {
   it(`${adapter}: fractional aggregate display exposes one named score and decorative fill, without form controls`, async () => {
-    const m = await display(adapter); expectScore(m.host, 3.5, 5); expect(m.host.querySelector('.nq-rating-score')?.textContent).toBe('3.5/5');
+    const m = await display(adapter); expectScore(m.host, 3.5, 5); expect(m.host.querySelector('.hw-rating-score')?.textContent).toBe('3.5/5');
     m.state.value = 1.25; await m.sync(); expectScore(m.host, 1.25, 5);
-    m.state.showValue = false; await m.sync(); expect(m.host.querySelector('.nq-rating-score')).toBeNull(); expectScore(m.host, 1.25, 5);
-    if (adapter !== 'angular') {const root = m.host.querySelector('.nq-rating-display')!; expect(root.id).toBe('score'); expect(root.classList.contains('consumer-score')).toBe(true); expect(root.getAttribute('dir')).toBe('rtl');}
+    m.state.showValue = false; await m.sync(); expect(m.host.querySelector('.hw-rating-score')).toBeNull(); expectScore(m.host, 1.25, 5);
+    if (adapter !== 'angular') {const root = m.host.querySelector('.hw-rating-display')!; expect(root.id).toBe('score'); expect(root.classList.contains('consumer-score')).toBe(true); expect(root.getAttribute('dir')).toBe('rtl');}
   });
   it(`${adapter}: nonfinite values and bounded maxima cannot create invalid aggregate scores`, async () => {
     const m = await display(adapter);
@@ -96,7 +96,7 @@ for (const adapter of ['react', 'vue']) it(`${adapter}: uncontrolled radio input
 
 it('angular: rating CVA preserves touch, reset and disabled behavior', () => {
   class Host {score = new FormControl(3);}
-  Component({standalone: true, imports: [ReactiveFormsModule, NqRatingComponent], template: '<nq-rating label="التقييم" name="score" [formControl]="score" />'})(Host);
+  Component({standalone: true, imports: [ReactiveFormsModule, HwRatingComponent], template: '<hw-rating label="التقييم" name="score" [formControl]="score" />'})(Host);
   const fixture = TestBed.createComponent(Host); document.body.append(fixture.nativeElement); cleanup.push(() => fixture.destroy()); fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement; const control = fixture.componentInstance.score;
   host.querySelector<HTMLInputElement>('input[value="4"]')!.click(); fixture.detectChanges(); expect(control.value).toBe(4);
@@ -107,5 +107,5 @@ it('angular: rating CVA preserves touch, reset and disabled behavior', () => {
 
 it('React and Vue SSR retain fractional fills and the default accessible Arabic score', async () => {
   const renderings = [renderToStaticMarkup(r(ReactRatingDisplay, {label: 'تقييم الخدمة', value: 2.5})), await renderToString(createSSRApp({render: () => h(VueRatingDisplay, {label: 'تقييم الخدمة', value: 2.5})}))];
-  for (const html of renderings) {const host = document.createElement('div'); host.innerHTML = html; expectScore(host, 2.5, 5); expect(host.querySelector('.nq-rating-score')?.textContent).toBe('2.5/5');}
+  for (const html of renderings) {const host = document.createElement('div'); host.innerHTML = html; expectScore(host, 2.5, 5); expect(host.querySelector('.hw-rating-score')?.textContent).toBe('2.5/5');}
 });

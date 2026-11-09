@@ -1,33 +1,33 @@
 /* NIC global.css 3156–3181. Explicit source sizes are additive;
-   existing sm/lg/xl options remain Nasaq extensions. */
-:where(:root:not([data-nq-theme]), [data-nq-theme='dga'], [data-nq-theme='custom']) {
-  --nq-profile-avatar-size: 2.5rem;
-  --nq-profile-avatar-border: 3px;
+   existing sm/lg/xl options remain Hawiyah extensions. */
+:where(:root:not([data-hw-theme]), [data-hw-theme='dga'], [data-hw-theme='custom']) {
+  --hw-profile-avatar-size: 2.5rem;
+  --hw-profile-avatar-border: 3px;
 }
-:where([data-nq-theme]:not([data-nq-theme='dga'], [data-nq-theme='custom'])) {
-  --nq-profile-avatar-size: initial;
-  --nq-profile-avatar-border: initial;
+:where([data-hw-theme]:not([data-hw-theme='dga'], [data-hw-theme='custom'])) {
+  --hw-profile-avatar-size: initial;
+  --hw-profile-avatar-border: initial;
 }
-.nq-avatar, img.nq-avatar {
-  inline-size: var(--nq-avatar-size, var(--nq-profile-avatar-size, 2.75rem));
-  block-size: var(--nq-avatar-size, var(--nq-profile-avatar-size, 2.75rem));
-  border-width: var(--nq-profile-avatar-border, 1px);
-  border-color: var(--nq-color-avatar-border);
+.hw-avatar, img.hw-avatar {
+  inline-size: var(--hw-avatar-size, var(--hw-profile-avatar-size, 2.75rem));
+  block-size: var(--hw-avatar-size, var(--hw-profile-avatar-size, 2.75rem));
+  border-width: var(--hw-profile-avatar-border, 1px);
+  border-color: var(--hw-color-avatar-border);
   object-fit: cover; object-position: center;
 }
-.nq-avatar[data-size='sm'] { --nq-avatar-size: 2rem; }
-.nq-avatar[data-size='lg'] { --nq-avatar-size: 3.5rem; }
-.nq-avatar[data-size='xl'], .nq-avatar[data-size='80'] { --nq-avatar-size: 5rem; }
-.nq-avatar[data-size='40'] { --nq-avatar-size: 2.5rem; }
-.nq-avatar[data-size='64'] { --nq-avatar-size: 4rem; }
-.nq-avatar[data-size='120'] { --nq-avatar-size: 7.5rem; }
-.nq-avatar[data-size='64'] { font-size: var(--nq-text-lg); }
-.nq-avatar:is([data-size='80'], [data-size='120']) { font-size: var(--nq-text-2xl); }
-.nq-avatar > img { display: block; min-inline-size: 0; min-block-size: 0; inline-size: 100%; block-size: 100%; object-fit: cover; object-position: center; }
-.nq-avatar-group .nq-avatar {
-  border-width: var(--nq-profile-avatar-border, 2px);
-  border-color: var(--nq-dga-on, var(--nq-color-avatar-border)) var(--nq-dga-off, var(--nq-color-surface));
+.hw-avatar[data-size='sm'] { --hw-avatar-size: 2rem; }
+.hw-avatar[data-size='lg'] { --hw-avatar-size: 3.5rem; }
+.hw-avatar[data-size='xl'], .hw-avatar[data-size='80'] { --hw-avatar-size: 5rem; }
+.hw-avatar[data-size='40'] { --hw-avatar-size: 2.5rem; }
+.hw-avatar[data-size='64'] { --hw-avatar-size: 4rem; }
+.hw-avatar[data-size='120'] { --hw-avatar-size: 7.5rem; }
+.hw-avatar[data-size='64'] { font-size: var(--hw-text-lg); }
+.hw-avatar:is([data-size='80'], [data-size='120']) { font-size: var(--hw-text-2xl); }
+.hw-avatar > img { display: block; min-inline-size: 0; min-block-size: 0; inline-size: 100%; block-size: 100%; object-fit: cover; object-position: center; }
+.hw-avatar-group .hw-avatar {
+  border-width: var(--hw-profile-avatar-border, 2px);
+  border-color: var(--hw-dga-on, var(--hw-color-avatar-border)) var(--hw-dga-off, var(--hw-color-surface));
 }
 @media (forced-colors: active) {
-  .nq-avatar, .nq-avatar-group .nq-avatar { border-color: CanvasText; }
+  .hw-avatar, .hw-avatar-group .hw-avatar { border-color: CanvasText; }
 }

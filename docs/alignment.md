@@ -1,8 +1,8 @@
 # DGA alignment and compliance evidence
 
-Search terms: **DGA compliance**, **Platforms Code**, **Saudi Digital Government Authority**, **هيئة الحكومة الرقمية**, **كود المنصات**, **نسق**.
+Search terms: **DGA compliance**, **Platforms Code**, **Saudi Digital Government Authority**, **هيئة الحكومة الرقمية**, **كود المنصات**, **هوية**.
 
-Nasaq is an independent implementation with a DGA-based default foundation mapped from supplied Platforms Code snapshots. It supports products that need to evaluate Platforms Code alignment, while retaining an opt-in Nasaq theme and components beyond the supplied templates. A theme choice does not certify an application. No official endorsement, certification, or complete conformance is claimed.
+Hawiyah is an independent implementation with a DGA-based default foundation mapped from supplied Platforms Code snapshots. It supports products that need to evaluate Platforms Code alignment, while retaining an opt-in Hawiyah theme and components beyond the supplied templates. A theme choice does not certify an application. No official endorsement, certification, or complete conformance is claimed.
 
 ## Separate three kinds of decisions
 
@@ -10,7 +10,7 @@ Nasaq is an independent implementation with a DGA-based default foundation mappe
 |---|---|---|
 | Verified requirement | A primary source states an obligation applicable to the target product | Source, version, exact section, applicability, implementation, and verification evidence |
 | Recommended guidance | A primary source recommends a pattern or supplies a reference | Source, rationale for adoption or adaptation, and relevant evaluation |
-| Nasaq design choice | An original behavior, visual choice, extension, or quality target | Rationale, public contract, and tests appropriate to the change |
+| Hawiyah design choice | An original behavior, visual choice, extension, or quality target | Rationale, public contract, and tests appropriate to the change |
 
 An observed pattern on another platform is inspiration, not evidence of permission or compliance. A component catalog entry is not an audited requirement.
 
@@ -20,14 +20,14 @@ An observed pattern on another platform is inspiration, not evidence of permissi
 |---|---|---|
 | [DGA Platforms Code overview](https://dga.gov.sa/ar/digital-knowledge/national-design-system-of-Saudi-Arabia) | Platforms Code is a national reference for government platform interfaces, reusable components, and implementation guidance | Does not establish a current exhaustive component inventory or package license |
 | [Digital Transformation Basic Standards V4.0](https://dga.gov.sa/sites/default/files/2025-12/Digital%20Transformation%20Basic%20Standards%20-%20V4.0.pdf), §5.13.8 | The government-agency compliance requirements include preparing an implementation plan for Platforms Code across the agency's platforms, applications, and websites | Does not establish that every example or implementation technique is mandatory |
-| [DGA accessibility guide V1.0](https://dga.gov.sa/sites/default/files/2022-12/The%20Guideline%20for%20Web%20Accessibility%20of%20Government%20Websites%20%E2%80%93%20V1.0_1.pdf), §5.1 | This published guide identifies WCAG 2.1 AA as the minimum level for government agencies | Current applicability must be checked for a specific government deployment; Nasaq's WCAG 2.2 AA target is a project decision |
+| [DGA accessibility guide V1.0](https://dga.gov.sa/sites/default/files/2022-12/The%20Guideline%20for%20Web%20Accessibility%20of%20Government%20Websites%20%E2%80%93%20V1.0_1.pdf), §5.1 | This published guide identifies WCAG 2.1 AA as the minimum level for government agencies | Current applicability must be checked for a specific government deployment; Hawiyah's WCAG 2.2 AA target is a project decision |
 | [Official National Day 95 announcement](https://www.spa.gov.sa/en/N2402528) | DGA and GEA released an official themed variation of Platforms Code | Does not grant unrestricted agency rebranding while preserving a compliance claim |
 
-The [official design portal](https://design.dga.gov.sa/) remains the intended reference for current design guidance. Initial portal access was incomplete. The later supplied Community exports dated 2026-10-29 provide inspectable local foundation values and template instructions; their export date is not an official release version. All 23 supplied local files have now been decoded, resolving the earlier six-file remote transfer limit. No standalone web Components Library was supplied. The local Foundations collections resolve 784 active variables, and all 40 selected public references match the decoded values. Imported caches contain multiple versions and require exact identity/mode mapping. Native Figma inspection of representative Mobile, Home and Search project frames corroborates selected geometry and composition, but does not establish complete visual parity or prototype playback. The Hajj template is application-specific and excluded from Nasaq implementation scope and backlog. See the [inventory](dga-source-inventory.md) and [audit follow-up](dga-audit-followup.md). See [the source snapshot record](dga-reference.md) for hashes, node IDs, light/dark values, instructions, and limits. Current official-version status and exhaustive component parity remain unestablished.
+The [official design portal](https://design.dga.gov.sa/) remains the intended reference for current design guidance. Initial portal access was incomplete. The later supplied Community exports dated 2026-10-29 provide inspectable local foundation values and template instructions; their export date is not an official release version. All 23 supplied local files have now been decoded, resolving the earlier six-file remote transfer limit. No standalone web Components Library was supplied. The local Foundations collections resolve 784 active variables, and all 40 selected public references match the decoded values. Imported caches contain multiple versions and require exact identity/mode mapping. Native Figma inspection of representative Mobile, Home and Search project frames corroborates selected geometry and composition, but does not establish complete visual parity or prototype playback. The Hajj template is application-specific and excluded from Hawiyah implementation scope and backlog. See the [inventory](dga-source-inventory.md) and [audit follow-up](dga-audit-followup.md). See [the source snapshot record](dga-reference.md) for hashes, node IDs, light/dark values, instructions, and limits. Current official-version status and exhaustive component parity remain unestablished.
 
 ## Evidence from Saudi platforms
 
-These primary statements explain why service discovery, requirements, requests, feedback, and portal structure matter in the expanded Nasaq scope. They establish what the named organizations report, not approval of Nasaq or a universal rule for every screen.
+These primary statements explain why service discovery, requirements, requests, feedback, and portal structure matter in the expanded Hawiyah scope. They establish what the named organizations report, not approval of Hawiyah or a universal rule for every screen.
 
 | Primary statement | Evidence supported | Boundary |
 |---|---|---|
@@ -38,12 +38,12 @@ These primary statements explain why service discovery, requirements, requests, 
 
 Musaned's article was directly accessible during research. The other three statements were available through indexed excerpts from their primary domains when direct requests failed. Current detailed screenshots and component inventories were not audited. Patterns seen on live platforms are useful product references; they do not establish that deviation from official guidance is permitted, or that their assets may be redistributed.
 
-## Nasaq's current alignment position
+## Hawiyah's current alignment position
 
 | Area | Planned | Built | Verified |
 |---|---|---|---|
-| Independent Nasaq visual identity | Yes | Arabic wordmark and opt-in Woven Rhythm theme | Existing brand/rendering checks are scoped in the validation record |
-| DGA default foundation | Yes | Source-mapped light/dark tokens and DGA-scoped styles; explicit Nasaq theme retained | Source values, node IDs, and adaptations are recorded; current test outcomes belong to the validation record |
+| Independent Hawiyah visual identity | Yes | Arabic wordmark and opt-in Signature theme | Existing brand/rendering checks are scoped in the validation record |
+| DGA default foundation | Yes | Source-mapped light/dark tokens and DGA-scoped styles; explicit Hawiyah theme retained | Source values, node IDs, and adaptations are recorded; current test outcomes belong to the validation record |
 | Arabic/English and RTL/LTR | Required project baseline | Expanded 81-entry catalog and examples have implementations | Only the scopes recorded in validation and catalog evidence are verified; exhaustive matrix pending |
 | Accessible semantics and interaction | Required project baseline | Expanded catalog uses native semantics and explicit behavior contracts | Selected automated/keyboard checks are recorded; expansion coverage, manual screen-reader work, and full audit are separate gates |
 | Exact official component parity | Coverage audit planned | Not established | Not established |
@@ -55,9 +55,9 @@ The [validation record](validation.md) describes the actual checks. Passing runt
 
 ## The default foundation and alternative themes
 
-`data-nq-theme="dga"` explicitly selects the default foundation, including source-based light/dark semantic modes. An unthemed root uses this foundation; `data-nq-theme="nasaq"` retains the original palette and font/radius/spacing/content metrics, while custom themes start from DGA with application-owned overrides. The selector is not a compliance switch.
+`data-hw-theme="dga"` explicitly selects the default foundation, including source-based light/dark semantic modes. An unthemed root uses this foundation; `data-hw-theme="hawiyah"` retains the original palette and font/radius/spacing/content metrics, while custom themes start from DGA with application-owned overrides. The selector is not a compliance switch.
 
-The [public foundation reference](../packages/tokens/reference/dga-foundations.json), [token source](../packages/tokens/tokens.json), and [scoped component styles](../packages/styles/src/dga.css) retain the selected source nodes and adaptations. For example, the shared subtle-text role uses a stronger neutral in light mode because it is reused on muted surfaces; field placeholders retain their separate source semantic. The source resting field border remains recorded as `#9DA4AE` in light mode, while rendered fields use the stronger control border `#6C737F`. Editable DGA fields use a focused dark-neutral underline while empty or not yet valid, green for nonempty valid values including prefilled values, and red when user-invalid or explicitly marked with an application error, without a duplicate outer outline. This is the approved validation-color adaptation. Read-only fields retain a single inset keyboard indicator, including when filled; forced-colors mode retains visible system-color focus. Control density values are shared across DGA and Nasaq, as detailed in the [migration record](dga-reference.md); selecting Nasaq does not freeze every legacy visual detail. Document adaptations explicitly instead of presenting them as unchanged source values.
+The [public foundation reference](../packages/tokens/reference/dga-foundations.json), [token source](../packages/tokens/tokens.json), and [scoped component styles](../packages/styles/src/dga.css) retain the selected source nodes and adaptations. For example, the shared subtle-text role uses a stronger neutral in light mode because it is reused on muted surfaces; field placeholders retain their separate source semantic. The source resting field border remains recorded as `#9DA4AE` in light mode, while rendered fields use the stronger control border `#6C737F`. Editable DGA fields use a focused dark-neutral underline while empty or not yet valid, green for nonempty valid values including prefilled values, and red when user-invalid or explicitly marked with an application error, without a duplicate outer outline. This is the approved validation-color adaptation. Read-only fields retain a single inset keyboard indicator, including when filled; forced-colors mode retains visible system-color focus. Control density values are shared across DGA and Hawiyah, as detailed in the [migration record](dga-reference.md); selecting Hawiyah does not freeze every legacy visual detail. Document adaptations explicitly instead of presenting them as unchanged source values.
 
 Dark mode, compact density, original components, and alternative compositions need their own evaluation. The supplied Service/Form instructions specifically preserve structure, colors, and fonts when detaching their header/footer; their broader screen-customization guidance is not blanket permission to restyle those areas while claiming exact fidelity. Follow the [migration and template guidance](dga-reference.md) and record application-specific choices.
 
@@ -71,7 +71,7 @@ Keep source-code licensing separate from the permissions attached to fonts, icon
 
 For each evaluated guideline, record an identifier, primary URL, source version/date, classification, product applicability, affected components, verification method, outcome, and unresolved gaps. Retain previous evidence when updating a reference so consumers can understand what changed. Broader claims require broader evaluation; do not infer whole-product compliance from a component test.
 
-The opt-in `data-nq-density="mobile"` profile maps the supplied Mobile input body
+The opt-in `data-hw-density="mobile"` profile maps the supplied Mobile input body
 and button dimensions without replacing comfortable/compact defaults. Fields
 have a 44 px minimum; small/default/large buttons use 32/40/44 px at a 16 px root.
 See the source IDs and mapping limits in [the reference](dga-reference.md).

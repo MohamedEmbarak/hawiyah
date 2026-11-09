@@ -4,17 +4,17 @@ import AxeBuilder from '@axe-core/playwright';
 test.describe.configure({timeout: 180000});
 
 async function exerciseBanner(example: Locator) {
-  const region = example.locator('.nq-toast-region');
+  const region = example.locator('.hw-toast-region');
   const count = example.locator('[data-toast-count]');
   const restore = example.locator('[data-toast-restore]');
-  const notice = (id: string) => region.locator(`[data-nq-toast="${id}"]`);
+  const notice = (id: string) => region.locator(`[data-hw-toast="${id}"]`);
   const dismiss = (id: string) => notice(id).getByRole('button');
   await expect(region).toHaveAttribute('data-variant', 'banner');
   await expect(region).toHaveAttribute('data-position', 'inline');
   await expect(region).toHaveCSS('position', 'static');
-  await expect(region.locator('[data-nq-live="polite"][role="status"] .nq-toast')).toHaveCount(4);
-  await expect(region.locator('[data-nq-live="assertive"][role="alert"] .nq-toast')).toHaveCount(1);
-  await expect(region.locator('.nq-toast-icon[aria-hidden="true"]')).toHaveCount(5);
+  await expect(region.locator('[data-hw-live="polite"][role="status"] .hw-toast')).toHaveCount(4);
+  await expect(region.locator('[data-hw-live="assertive"][role="alert"] .hw-toast')).toHaveCount(1);
+  await expect(region.locator('.hw-toast-icon[aria-hidden="true"]')).toHaveCount(5);
   for (const tone of ['neutral', 'info', 'success', 'warning', 'danger']) {
     await expect(region.locator(`[data-tone="${tone}"]`)).toBeVisible();
   }
@@ -40,7 +40,7 @@ async function exerciseBanner(example: Locator) {
   await expect(notice('maintenance')).toBeVisible();
   await restore.click();
   await expect(count).toHaveText('5');
-  await expect(region.locator('[data-nq-toast]:visible')).toHaveCount(5);
+  await expect(region.locator('[data-hw-toast]:visible')).toHaveCount(5);
 }
 
 async function fixedFrame(page: Page, example: Locator, width: number, direction: 'ltr' | 'rtl') {
@@ -53,24 +53,24 @@ async function fixedFrame(page: Page, example: Locator, width: number, direction
     const doc = frame.contentDocument!;
     doc.documentElement.dir = direction;
     doc.documentElement.lang = document.documentElement.lang;
-    doc.documentElement.dataset.nqTheme = 'dga';
-    doc.documentElement.dataset.nqMode = 'light';
+    doc.documentElement.dataset.hwTheme = 'dga';
+    doc.documentElement.dataset.hwMode = 'light';
     for (const node of document.querySelectorAll<HTMLStyleElement | HTMLLinkElement>('style,link[rel="stylesheet"]')) {
       const style = node.cloneNode(true) as HTMLStyleElement | HTMLLinkElement;
       if (node instanceof HTMLLinkElement) (style as HTMLLinkElement).href = node.href;
       doc.head.append(style);
     }
-    const region = el.querySelector('.nq-toast-region')!.cloneNode(true) as HTMLElement;
+    const region = el.querySelector('.hw-toast-region')!.cloneNode(true) as HTMLElement;
     region.removeAttribute('data-position');
     // Measure the single-banner presentation used by the source fixture.
-    region.querySelectorAll('[data-nq-toast]').forEach(notice => {
-      if ((notice as HTMLElement).dataset.nqToast !== 'saved') notice.remove();
+    region.querySelectorAll('[data-hw-toast]').forEach(notice => {
+      if ((notice as HTMLElement).dataset.hwToast !== 'saved') notice.remove();
     });
     doc.body.append(region);
   }, {width, direction});
   const frame = page.frameLocator('iframe[data-test-toast-frame]');
-  const region = frame.locator('.nq-toast-region');
-  const notice = frame.locator('.nq-toast');
+  const region = frame.locator('.hw-toast-region');
+  const notice = frame.locator('.hw-toast');
   await expect(region).toHaveCSS('position', 'fixed');
   await notice.evaluate(async element => {
     await Promise.all(element.getAnimations().map(animation => animation.finished.catch(() => {})));
@@ -88,34 +88,34 @@ async function fixedFrame(page: Page, example: Locator, width: number, direction
   await expect(notice).toHaveCSS('border-bottom-width', '2px');
   await expect(notice).toHaveCSS('padding-inline-start', '24px');
   await expect(notice).toHaveCSS('padding-block-start', '16px');
-  await expect(notice.locator('.nq-toast-icon')).toHaveCSS('width', '20px');
+  await expect(notice.locator('.hw-toast-icon')).toHaveCSS('width', '20px');
   return {frame, notice};
 }
 
 for (const locale of ['ar', 'en'] as const) {
   test(`five localized notification banners dismiss, restore and fit the viewport in ${locale}`, async ({page}) => {
     await page.addInitScript(language => {
-      if (window === window.top) { localStorage.setItem('nasaq-locale', language); localStorage.setItem('nasaq-mode', 'light'); }
+      if (window === window.top) { localStorage.setItem('hawiyah-locale', language); localStorage.setItem('hawiyah-mode', 'light'); }
     }, locale);
     await page.setViewportSize({width: 1440, height: 1000});
     await page.goto('/#component/toast-region');
     const example = page.locator('#component-examples [data-toast-demo]');
     await expect(example).toBeVisible({timeout: 45000});
     await exerciseBanner(example);
-    const region = example.locator('.nq-toast-region');
+    const region = example.locator('.hw-toast-region');
     await expect(region).toHaveAccessibleName(locale === 'ar' ? 'إشعارات الخدمة' : 'Service notices');
-    const masks = await region.locator('.nq-toast-icon').evaluateAll(icons => icons.map(icon => getComputedStyle(icon).maskImage));
+    const masks = await region.locator('.hw-toast-icon').evaluateAll(icons => icons.map(icon => getComputedStyle(icon).maskImage));
     expect(masks).not.toContain('none');
     expect(new Set(masks).size).toBe(5);
-    await expect(region.locator('.nq-toast').first()).toHaveCSS('animation-duration', '0.3s');
+    await expect(region.locator('.hw-toast').first()).toHaveCSS('animation-duration', '0.3s');
     for (const mode of ['light', 'dark']) {
-      await example.evaluate((node, mode) => { node.setAttribute('data-nq-mode', mode); (node as HTMLElement).style.background = 'var(--nq-color-surface)'; }, mode);
+      await example.evaluate((node, mode) => { node.setAttribute('data-hw-mode', mode); (node as HTMLElement).style.background = 'var(--hw-color-surface)'; }, mode);
       expect((await new AxeBuilder({page}).include('#component-examples [data-toast-demo]').analyze()).violations).toEqual([]);
-      const close = region.locator('.nq-toast-dismiss').first();
+      const close = region.locator('.hw-toast-dismiss').first();
       const art = await close.evaluate(async button => {
         await Promise.all(button.getAnimations().map(animation => animation.finished.catch(() => {})));
         const probe = button.ownerDocument.createElement('span');
-        probe.hidden = true; probe.style.color = 'var(--nq-color-text)'; button.append(probe);
+        probe.hidden = true; probe.style.color = 'var(--hw-color-text)'; button.append(probe);
         const neutral = getComputedStyle(probe).color;
         probe.remove();
         const glyph = getComputedStyle(button, '::before');
@@ -129,8 +129,8 @@ for (const locale of ['ar', 'en'] as const) {
     for (const width of [1180, 390, 320]) for (const direction of ['ltr', 'rtl'] as const) {
       await fixedFrame(page, example, width, direction);
     }
-    const override = page.frameLocator('iframe[data-test-toast-frame]').locator('.nq-toast-region');
-    await override.evaluate(el => (el as HTMLElement).style.setProperty('--nq-toast-header-offset', '96px'));
+    const override = page.frameLocator('iframe[data-test-toast-frame]').locator('.hw-toast-region');
+    await override.evaluate(el => (el as HTMLElement).style.setProperty('--hw-toast-header-offset', '96px'));
     await expect(override).toHaveCSS('top', '96px');
     await override.evaluate(el => el.setAttribute('data-position', 'bottom-start'));
     await expect(override).toHaveCSS('bottom', '10px');
@@ -153,8 +153,8 @@ for (const [framework, languages] of Object.entries({
     await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);
     if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-    await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 90000});
-    const example = page.frameLocator('.nq-ide-frame').locator('[data-toast-demo]');
+    await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 90000});
+    const example = page.frameLocator('.hw-ide-frame').locator('[data-toast-demo]');
     await exerciseBanner(example);
     await page.setViewportSize({width: 390, height: 844});
     expect(await example.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);

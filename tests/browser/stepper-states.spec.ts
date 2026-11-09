@@ -5,7 +5,7 @@ for (const direction of ['rtl', 'ltr']) {
     await page.goto('/#component/stepper');
     const demo = page.locator('[data-stepper-demo]').first(); await expect(demo).toBeVisible();
     await demo.evaluate((node, dir) => node.setAttribute('dir', dir), direction);
-    const items = demo.locator('.nq-step');
+    const items = demo.locator('.hw-step');
     const states = () => items.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-state')));
     expect(await states()).toEqual(['complete', 'current', 'upcoming']);
     await demo.locator('[data-stepper-index]').selectOption('2'); expect(await states()).toEqual(['complete', 'complete', 'current']);
@@ -20,6 +20,6 @@ for (const direction of ['rtl', 'ltr']) {
     await expect(demo.locator('[aria-current]')).toHaveCount(0);
     await demo.locator('[data-stepper-index]').selectOption('-1'); expect(await states()).toEqual(['upcoming', 'upcoming', 'upcoming']);
     await demo.locator('[data-stepper-index]').selectOption('0'); expect(await states()).toEqual(['current', 'upcoming', 'upcoming']);
-    await expect(demo.locator('.nq-step button, .nq-step a, .nq-step[tabindex]')).toHaveCount(0);
+    await expect(demo.locator('.hw-step button, .hw-step a, .hw-step[tabindex]')).toHaveCount(0);
   });
 }

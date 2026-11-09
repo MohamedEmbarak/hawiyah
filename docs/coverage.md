@@ -1,14 +1,14 @@
 # Component and input coverage
 
-Nasaq's expanded catalog has **83 named entries: the initial 27 plus 51 expansion entries and 5 portal/mobile compositions**. The count represents distinct public components and layout primitives. Native input-type aliases, visual variants, editable blocks, and external integration recipes are documented separately.
+Hawiyah's expanded catalog has **83 named entries: the initial 27 plus 51 expansion entries and 5 portal/mobile compositions**. The count represents distinct public components and layout primitives. Native input-type aliases, visual variants, editable blocks, and external integration recipes are documented separately.
 
 This is a defined, extensible scope for modern interfaces and Saudi service platforms. It is not an exhaustive list of every possible UI, an official DGA component count, or a certification claim. [components.json](../components.json) records planned, built, and verified coverage independently for each adapter. [EXPANSION.md](../EXPANSION.md) defines the expansion contract; the [validation record](validation.md) identifies the tested snapshot.
 
 ## Supplied DGA reference coverage
 
-The default `dga` foundation is mapped from verified values in the supplied **2026-10-29** snapshot; `nasaq` is an opt-in visual theme. The local follow-up decoded **all 23 files**, including the six previously blocked by the remote transfer limit. Rendered inspection of Mobile, Home and Search supplements decoded properties; it does not establish exhaustive visual parity. Hajj is excluded from Nasaq's requirements and implementation scope. No standalone web component library was supplied. See the [source inventory](dga-source-inventory.md) and [audit follow-up](dga-audit-followup.md).
+The default `dga` foundation is mapped from verified values in the supplied **2026-10-29** snapshot; `hawiyah` is an opt-in visual theme. The local follow-up decoded **all 23 files**, including the six previously blocked by the remote transfer limit. Rendered inspection of Mobile, Home and Search supplements decoded properties; it does not establish exhaustive visual parity. Hajj is excluded from Hawiyah's requirements and implementation scope. No standalone web component library was supplied. See the [source inventory](dga-source-inventory.md) and [audit follow-up](dga-audit-followup.md).
 
-The 83-entry catalog remains Nasaq's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
+The 83-entry catalog remains Hawiyah's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
 
 ## Catalog groups
 
@@ -26,12 +26,12 @@ The 83-entry catalog remains Nasaq's implementation scope. Embedded template com
 Framework adapters render native framework components. Vanilla uses semantic HTML/CSS recipes where native behavior is sufficient, and explicit controllers for richer interaction. A static recipe is a valid implementation; it should not be represented as a JavaScript controller that does not exist.
 
 `PortalHeader` now includes a mobile disclosure in every adapter; vanilla exports
-`createPortalHeader` and registers `data-nq="portal-header"` with `enhance()`.
+`createPortalHeader` and registers `data-hw="portal-header"` with `enhance()`.
 `SecondaryNav` adds ordinary current-page links. `PortalLayout` composes the
 header, secondary navigation, breadcrumb, focusable main container and footer;
 vanilla uses the equivalent semantic HTML recipe. Their package `PORTAL.md`
 guides and framework examples at `?preview=portal` document exact APIs.
-The 48rem disclosure breakpoint is a Nasaq adaptation. Verification records
+The 48rem disclosure breakpoint is a Hawiyah adaptation. Verification records
 describe their tested snapshots; the catalog evidence identifies the specific
 behavior and layout assertions for each adapter. MobileTopBar and
 NavigationDrawer have separate contracts and browser checks.
@@ -47,16 +47,16 @@ Tabs (panel selection) and SecondaryNav (page links). See
 |---|---|---|
 | Native | Browser semantics provide the main interaction | Button, Select, Slider, Collapsible, Meter |
 | Static | Semantic composition or CSS layout; content/actions come from the application | Card, Stat, PortalFooter, Grid |
-| Interactive | Nasaq implements additional state, keyboard behavior, or lifecycle | Combobox, Calendar, Menu, TreeView, DataTable |
-| Integration | The application owns a specialist engine or service; Nasaq supplies surrounding UI recipes | Maps, charts, editors, identity verification, payments |
+| Interactive | Hawiyah implements additional state, keyboard behavior, or lifecycle | Combobox, Calendar, Menu, TreeView, DataTable |
+| Integration | The application owns a specialist engine or service; Hawiyah supplies surrounding UI recipes | Maps, charts, editors, identity verification, payments |
 
 The first three types appear in the 83-component catalog. Integrations have a separate boundary and are not counted as implemented components. Native elements still require labels, appropriate attributes, and application validation.
 
 ## All 22 native input types
 
-The inputs lab covers the 22 standard `input` type values. They are browser capabilities, not 22 extra Nasaq components. The type list follows the [HTML Standard](https://html.spec.whatwg.org/multipage/input.html#states-of-the-type-attribute); the Nasaq mapping below is an application recipe.
+The inputs lab covers the 22 standard `input` type values. They are browser capabilities, not 22 extra Hawiyah components. The type list follows the [HTML Standard](https://html.spec.whatwg.org/multipage/input.html#states-of-the-type-attribute); the Hawiyah mapping below is an application recipe.
 
-| Type | Native purpose | Preferred Nasaq composition |
+| Type | Native purpose | Preferred Hawiyah composition |
 |---|---|---|
 | `text` | Plain text | TextField; Field + native input |
 | `search` | Search query | SearchField |
@@ -81,7 +81,7 @@ The inputs lab covers the 22 standard `input` type values. They are browser capa
 | `reset` | Form reset | Explicitly labelled reset control |
 | `image` | Image submit control | Native input with meaningful alternative text |
 
-The lab uses Nasaq's custom calendar for date, month, week and local-datetime
+The lab uses Hawiyah's custom calendar for date, month, week and local-datetime
 recipes; typed Gregorian ISO dates remain supported. Month/week projection and
 time composition are guide recipes, not extra DatePicker selection modes.
 Other browser-provided controls, including time, color and file selection,
@@ -107,7 +107,7 @@ Keep Arabic and English copy, numeral normalization, display direction, storage 
 
 ## Calendars and date values
 
-Calendar and DatePicker support Gregorian (`gregory`) and Umm al-Qura (`islamic-umalqura`) display modes. Their values and date bounds use Gregorian ISO `YYYY-MM-DD`; display calendar, locale, numerals, and layout direction are independent. Arithmetic uses pinned `@internationalized/date` with Nasaq's table-backed Umm al-Qura provider; Hijri month starts come from pinned HijriDate reference data. No manual day-offset conversion is used.
+Calendar and DatePicker support Gregorian (`gregory`) and Umm al-Qura (`islamic-umalqura`) display modes. Their values and date bounds use Gregorian ISO `YYYY-MM-DD`; display calendar, locale, numerals, and layout direction are independent. Arithmetic uses pinned `@internationalized/date` with Hawiyah's table-backed Umm al-Qura provider; Hijri month starts come from pinned HijriDate reference data. No manual day-offset conversion is used.
 
 Date-only values are not timestamps. Select the application calendar policy and supported range explicitly, especially for historic dates or dates used in official processes. Read [calendar reliability](date-calendars.md) for provenance, range, conversion checks, and source limitations; component support alone does not establish agreement with every religious observance or external authority.
 
@@ -119,10 +119,10 @@ Treat configuration axes separately: component variant, tone, size, theme, mode,
 
 ## Where to inspect behavior
 
-Open the [interactive guide](https://mohamedembarak.github.io/nasaq/#components)
+Open the [interactive guide](https://mohamedembarak.github.io/hawiyah/#components)
 and select a component for its live preview, markup, API, lifecycle, accessibility,
 and limitations. Each component has a shareable `#component/<id>` route;
-[DatePicker](https://mohamedembarak.github.io/nasaq/#component/date-picker) is an
+[DatePicker](https://mohamedembarak.github.io/hawiyah/#component/date-picker) is an
 example. The catalog records these documentation links for coding tools.
 
 The playground provides `#components` for the catalog, `#inputs` for native/national input recipes, and `#layouts` for composition. Read [core behavior](../packages/core/API.md), [vanilla expansion markup](../packages/vanilla/EXPANSION-API.md), and the framework package READMEs for exact APIs. The [integration guide](integrations.md) describes specialist boundaries.

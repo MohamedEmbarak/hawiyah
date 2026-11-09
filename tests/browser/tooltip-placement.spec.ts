@@ -3,11 +3,11 @@ import {expect, test} from '@playwright/test';
 for (const direction of ['ltr', 'rtl']) test(`tooltip logical placement and alignment in ${direction}`, async ({page}) => {
   await page.goto('/#component/tooltip');
   await page.locator('main').evaluate((main, direction) => {
-    main.innerHTML = '<span id="tooltip-placement" class="nq-tooltip-anchor" style="margin:150px;width:160px;height:60px"><span class="nq-tooltip">Help</span></span>';
+    main.innerHTML = '<span id="tooltip-placement" class="hw-tooltip-anchor" style="margin:150px;width:160px;height:60px"><span class="hw-tooltip">Help</span></span>';
     main.setAttribute('dir', direction);
   }, direction);
   const anchor = page.locator('#tooltip-placement');
-  const tooltip = anchor.locator('.nq-tooltip');
+  const tooltip = anchor.locator('.hw-tooltip');
   for (const placement of ['top', 'bottom', 'start', 'end']) {
     for (const align of ['start', 'center', 'end']) {
       await tooltip.evaluate((node, values) => {

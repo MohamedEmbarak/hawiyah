@@ -15,7 +15,7 @@ export { ServiceCard, ServiceDetails, PortalHeader, PortalFooter, Feedback, Cook
 export type { PortalLink, PortalFooterLink, PortalFooterGroup, FeedbackValue, NotificationItem } from './patterns.js';
 export { Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer, AspectRatio, Section, AppShell, PageHeader } from './layout.js';
 export { SecondaryNav, PortalLayout } from './portal.js';
-export type { LayoutProps, Responsive } from '@nasaq/core';
+export type { LayoutProps, Responsive } from '@hawiyah/core';
 
 export type { SecondaryNavItem } from './portal.js';
 export { MobileTopBar } from './mobile-top-bar.js';

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('custom date field keeps typed drafts separate from canonical submission', async ({ page }) => {
   await page.goto('/');
-  const picker = page.getByTestId('calendar-showcase').locator('.nq-date-picker');
+  const picker = page.getByTestId('calendar-showcase').locator('.hw-date-picker');
   const input = picker.locator('input[type=text]');
   const canonical = picker.locator('input[type=hidden][name]:not([name=""])');
   await expect(picker.locator('input[type=date]')).toHaveCount(0);

@@ -8,7 +8,7 @@ for (const locale of ['ar', 'en']) test(`NIC cards preserve source geometry and 
   await expect(page.getByTestId('nic-showcase')).toBeVisible();
   if (locale === 'en') await page.getByRole('button', { name: 'English', exact: true }).click();
   const scope = page.getByTestId('nic-showcase');
-  const card = (id: string) => page.locator(`[data-testid="${id}"].nq-card, [data-testid="${id}"] > .nq-card`);
+  const card = (id: string) => page.locator(`[data-testid="${id}"].hw-card, [data-testid="${id}"] > .hw-card`);
   const base = card('base-card'), outlined = card('border-card'), action = card('action-card'), disabled = card('disabled-card');
   for (const width of [1440, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -16,9 +16,9 @@ for (const locale of ['ar', 'en']) test(`NIC cards preserve source geometry and 
     await expect(base).toHaveCSS('gap', width < 768 ? '16px' : '24px');
     await expect(base).toHaveCSS('border-radius', '16px');
     await expect(base).toHaveCSS('border-top-width', '2px');
-    await expect(base.locator('.nq-card-header')).toHaveCSS('padding', '0px');
-    await expect(base.locator('.nq-card-body')).toHaveCSS('padding', '0px');
-    await expect(base.locator('.nq-card-footer')).toHaveCSS('padding', '0px');
+    await expect(base.locator('.hw-card-header')).toHaveCSS('padding', '0px');
+    await expect(base.locator('.hw-card-body')).toHaveCSS('padding', '0px');
+    await expect(base.locator('.hw-card-footer')).toHaveCSS('padding', '0px');
     await expect(base.locator('h2')).toHaveCSS('font-size', '18px');
     await expect(base.locator('h2')).toHaveCSS('line-height', '28px');
     await expect(base.locator('h2')).toHaveCSS('font-weight', '700');
@@ -29,7 +29,7 @@ for (const locale of ['ar', 'en']) test(`NIC cards preserve source geometry and 
     expect(await scope.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
   }
   for (const mode of ['light', 'dark']) {
-    await scope.evaluate((node, mode) => node.setAttribute('data-nq-mode', mode), mode);
+    await scope.evaluate((node, mode) => node.setAttribute('data-hw-mode', mode), mode);
     await action.hover();
     await expect(action).toHaveCSS('background-color', mode === 'light' ? 'rgb(249, 250, 251)' : 'rgb(56, 66, 80)');
     await action.focus();
@@ -51,15 +51,15 @@ for (const locale of ['ar', 'en']) test(`NIC cards preserve source geometry and 
   await expect(disabled).toHaveAttribute('href', '#disabled-destination');
   await disabled.click(); await expect(page.getByTestId('card-activations')).toHaveText('1');
   await expect(page).toHaveURL(/#disabled-destination$/);
-  await scope.evaluate(node => { node.setAttribute('data-nq-theme', 'nasaq'); node.setAttribute('data-nq-mode', 'light'); });
+  await scope.evaluate(node => { node.setAttribute('data-hw-theme', 'hawiyah'); node.setAttribute('data-hw-mode', 'light'); });
   await expect(base).toHaveCSS('padding', '0px');
   await expect(base).toHaveCSS('gap', '0px');
   await expect(base).toHaveCSS('border-radius', '14px');
-  await scope.evaluate(node => node.setAttribute('data-nq-theme', 'custom'));
+  await scope.evaluate(node => node.setAttribute('data-hw-theme', 'custom'));
   await expect(base).toHaveCSS('padding', '16px');
   await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
   await action.focus(); await expect(action).toHaveCSS('outline-style', 'solid');
   await page.emulateMedia({ forcedColors: 'none' });
-  await scope.evaluate(node => { node.setAttribute('data-nq-theme', 'dga'); node.setAttribute('data-nq-mode', 'light'); });
+  await scope.evaluate(node => { node.setAttribute('data-hw-theme', 'dga'); node.setAttribute('data-hw-mode', 'light'); });
   await page.screenshot({ path: testInfo.outputPath(`nic-cards-${locale}.png`), fullPage: true });
 });

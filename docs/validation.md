@@ -5,7 +5,7 @@
 All seven packages moved to 0.2.0 together. With Node.js 24.22.1 and pnpm
 11.25.0: `pnpm build:packages`, `pnpm typecheck:playground`, `pnpm test`
 (637 Vitest and 8 token-contrast cases) and
-`NASAQ_BASE_PATH=/nasaq/ pnpm build:docs` passed. `pnpm check:packages`
+`HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs` passed. `pnpm check:packages`
 passed its clean tarball consumer (ESM, React/Vue SSR, Angular APF, CSS and
 asset exports, strict TypeScript declarations) and tree-shaking budgets: React
 Button 380 of 4,096 bytes and Vanilla Tabs 4,095 of 6,144 bytes gzip.
@@ -18,8 +18,8 @@ footer text `متاحة إلكترونياً`, which commit `ad7bcbc` replaced w
 `عرض المتطلبات` action. The release changes do not touch card samples.
 
 `pnpm release:packages` (dry run) rebuilt the packages, repeated the consumer
-check with `NASAQ_RELEASE=1`, and confirmed each staged manifest has no
-`private` field and pins `@nasaq/*` dependencies to `0.2.0`. Packed sizes:
+check with `HAWIYAH_RELEASE=1`, and confirmed each staged manifest has no
+`private` field and pins `@hawiyah/*` dependencies to `0.2.0`. Packed sizes:
 tokens 48.8 kB (14 files), styles 166.4 kB (118), core 58.3 kB (79), vanilla
 89.8 kB (78), react 93.3 kB (77), vue 104.8 kB (81), angular 138.8 kB (12).
 
@@ -52,7 +52,7 @@ The playground typecheck passed. Two participation layout cases passed at
 Desktop participation and mobile onboarding screenshots were inspected.
 
 The reference fixtures reconstruct decoded source properties independently of
-Nasaq styles. They are not native Figma screenshots. Official artwork
+Hawiyah styles. They are not native Figma screenshots. Official artwork
 equivalence, richer tooltip variants and full source-state coverage remain
 open; these results do not establish certification or a full-package pass.
 
@@ -116,7 +116,7 @@ snapshots. The November 2 catalog had 81 entries.
 The full unit run passed 249 tests in 64 files. The final input-contract suites
 passed a further focused run of 11 cases, including rebuilt Angular switch error
 semantics and dynamic option-list updates. Eight token contrast checks passed.
-All packages and three native consumers built; the `/nasaq/` guide build passed.
+All packages and three native consumers built; the `/hawiyah/` guide build passed.
 Clean local tarballs passed ESM, React/Vue SSR, Angular APF, TypeScript, CSS,
 licensed glyph asset and tree-shaking checks. Nothing was published to npm.
 
@@ -176,7 +176,7 @@ or exhaustive visual parity is claimed.
 
 ## 2026-11-01 mobile top bar
 
-Five Chromium cases passed: two guide RTL/LTR cases at 320px with DGA/Nasaq/custom,
+Five Chromium cases passed: two guide RTL/LTR cases at 320px with DGA/Hawiyah/custom,
 light/dark, enlarged text, forced colors, minimum 44px actions and back navigation;
 three native framework consumer cases with heading/action slots, keyboard order,
 locale changes and scoped axe scans. The Arabic narrow-screen screenshot was
@@ -277,14 +277,14 @@ new tab-panel controller. Source/color mapping and icon override limits are in
 
 Five token tests and two focused Chromium motion cases passed. The browser
 fixture removes guide-only CSS so its global reduced-motion fallback cannot
-mask the package rules. Checks cover DGA/Nasaq/custom in a nested theme, RTL/LTR,
+mask the package rules. Checks cover DGA/Hawiyah/custom in a nested theme, RTL/LTR,
 normal and reduced motion, switch interpolation and containment, live preference
 changes during an active transition, keyboard toggling and Tab movement. Spinner
 cycle duration and spinner/skeleton suppression are checked. The first test run
 exposed the guide fallback in the fixture; isolating library CSS resolved that
 test-harness issue.
 
-All packages and the guide built successfully with `NASAQ_BASE_PATH=/nasaq/`.
+All packages and the guide built successfully with `HAWIYAH_BASE_PATH=/hawiyah/`.
 The preceding mobile task also built all four consumers and passed eight browser
 cases. Shared CSS changes require no framework DOM or calendar changes. Source
 prototype playback and exact switch geometry parity are not claimed. Accordion
@@ -294,10 +294,10 @@ height animation and mobile tab-bar motion remain separate follow-up work.
 
 All packages and four consumer builds passed. Four token tests and eight browser
 cases (two mobile-density cases plus six existing DGA-theme regressions) passed.
-Measured control geometry covers a 320 px viewport, RTL/LTR, DGA/Nasaq/custom,
+Measured control geometry covers a 320 px viewport, RTL/LTR, DGA/Hawiyah/custom,
 light/dark, default/filled/disabled/read-only/invalid fields, nested compact and
 comfortable scopes, consumer height overrides and enlarged field text. Read-only
-and forced-colors focus regressions remain green. These are rendered Nasaq
+and forced-colors focus regressions remain green. These are rendered Hawiyah
 checks, not a full Figma visual comparison or mobile dark-mode parity claim.
 
 ## 2026-11-01 Home and Search follow-up
@@ -316,7 +316,7 @@ cover application-state preservation, mobile navigation, filtering, keyboard
 focus, narrow overflow and scoped axe scans. The search loader unit test passed
 for loading, failure/retry and ignoring completion after disposal. Arabic Home
 and Search screenshots were inspected for rendering; this is not Figma pixel
-parity. The final playground TypeScript check and `/nasaq/` production build
+parity. The final playground TypeScript check and `/hawiyah/` production build
 passed. Calendar calculations, original/custom themes and branding contracts
 remain unchanged.
 
@@ -326,7 +326,7 @@ remain unchanged.
 Responsive PortalHeader behavior is native to each adapter; vanilla also exposes
 `createPortalHeader` through `enhance`. Eight focused portal unit tests passed
 across the four adapters. Two shared-layout Chromium tests passed for RTL/LTR,
-DGA/Nasaq light/dark, narrow/desktop visibility and forced-colors focus.
+DGA/Hawiyah light/dark, narrow/desktop visibility and forced-colors focus.
 Three production-consumer cases (`pnpm test:portals`) passed for React, Vue and
 Angular: Arabic/English, visible wordmark sizing, mobile disclosure, Escape focus
 return, link dismissal, skip-target focus, desktop navigation and scoped axe scans.
@@ -334,7 +334,7 @@ These checks exposed and fixed footer legal-text contrast and example heading
 order. They do not establish Angular SSR/hydration or full Figma visual parity.
 
 All seven packages and all four applications built successfully. The guide also
-built with `/nasaq/`, and all 79 live references passed the guide-content checks.
+built with `/hawiyah/`, and all 79 live references passed the guide-content checks.
 `pnpm check:packages` passed for seven tarballs, new exports/SSR composition,
 TypeScript consumers, bundled icon notices and both existing bundle budgets.
 The package-check script now invokes an absolute Windows `.exe` without a shell,
@@ -366,7 +366,7 @@ the default fork workers timed out during startup; that startup failure ran no
 tests. The Angular input regression uses `ComponentRef.setInput` to exercise
 public input updates directly. These checks do not establish full visual parity.
 
-This record covers the Nasaq `0.1.0` library development snapshot checked on **2026-10-29**. It distinguishes source coverage, targeted behavior tests, package-consumer checks, and browser evidence. A passing check applies to its stated scope; it is not a declaration of complete accessibility, DGA compliance, or production certification.
+This record covers the Hawiyah `0.1.0` library development snapshot checked on **2026-10-29**. It distinguishes source coverage, targeted behavior tests, package-consumer checks, and browser evidence. A passing check applies to its stated scope; it is not a declaration of complete accessibility, DGA compliance, or production certification.
 
 ## Environment
 
@@ -413,7 +413,7 @@ Eight [DGA-template tests](../tests/browser/dga-templates.spec.ts) cover local a
 
 Production template checks covered service, form and gallery in four locale/mode/viewport combinations, plus 13 other templates in English/dark at 320px and Arabic/light at 1440px. Initial findings in accessible brand names, heading order and the preview toolbar landmark were corrected. The final 16-case audit covered service, form, gallery and support in English/light and Arabic/dark at 320px, plus English/dark and Arabic/light at 1440px: no axe violations, viewport overflow or runtime errors in those cases. Keyboard-selected tabs remained fully visible in both directions, and service/form sidebars matched the 416px desktop column without duplicate framing. Selected revealed and success states were also scanned. These are scoped automated checks, not exhaustive visual parity or a manual assistive-technology audit.
 
-The guide production build passed with the `/nasaq/` GitHub Pages base path.
+The guide production build passed with the `/hawiyah/` GitHub Pages base path.
 All 77 Arabic component examples initialized inside the production editor's
 sandbox without runtime errors or failed resource responses. Scoped Chromium
 axe scans passed in light/dark and Arabic/English views; these automated checks
@@ -436,7 +436,7 @@ retain their original notices.
 
 The package-consumer script packs files locally and performs no publication. Its Angular import check loads the compiler for the consumer smoke test; it is not a production Angular AOT application build.
 
-The subsequent input-focus refinement removed the duplicate outer ring from DGA fields. The Pages-base guide build and two focused theme browser tests passed. A production browser check covered 36 field/theme/mode combinations (text, select, textarea, read-only, filled and invalid fields across DGA/custom/Nasaq and light/dark), plus the forced-colors fallback, without field-size changes. Compound tag/search fields use a single inset indicator. The follow-up green underline change passed the Pages-base build and 24 production field/variant/mode/state checks, plus native invalid-state checks in both modes; invalid underlines remain red.
+The subsequent input-focus refinement removed the duplicate outer ring from DGA fields. The Pages-base guide build and two focused theme browser tests passed. A production browser check covered 36 field/theme/mode combinations (text, select, textarea, read-only, filled and invalid fields across DGA/custom/Hawiyah and light/dark), plus the forced-colors fallback, without field-size changes. Compound tag/search fields use a single inset indicator. The follow-up green underline change passed the Pages-base build and 24 production field/variant/mode/state checks, plus native invalid-state checks in both modes; invalid underlines remain red.
 
 ## Representative bundle checks
 
@@ -478,7 +478,7 @@ The [original 17-test suite](../tests/browser/playground.spec.ts) exercises thre
 
 Layout checks cover **32 route/configuration combinations**: eight routes (`overview`, `foundations`, `components`, `discover`, `apply`, `workspace`, `docs`, and `brand`) at 1440 and 390 CSS pixels, in English/light/LTR and Arabic/dark/RTL. These checks assert no horizontal document overflow and exercise mobile navigation. They do not exhaust every language, theme, density, viewport, or mixed-direction configuration.
 
-The suite performs **eight axe scans**: `overview`, `components`, `apply`, and `workspace`, each in English/light and Arabic/dark. It uses the WCAG 2 A/AA, 2.1 A/AA, and 2.2 AA tags and reported no violations in those evaluated states. These scans use the Nasaq theme and the default density. They do not constitute a complete WCAG audit or assess every interactive state.
+The suite performs **eight axe scans**: `overview`, `components`, `apply`, and `workspace`, each in English/light and Arabic/dark. It uses the WCAG 2 A/AA, 2.1 A/AA, and 2.2 AA tags and reported no violations in those evaluated states. These scans use the Hawiyah theme and the default density. They do not constitute a complete WCAG audit or assess every interactive state.
 
 The [ten expansion tests](../tests/browser/expansion.spec.ts) assert 77 live catalog recipes, selected input/form behavior, native DatePicker calendar switching and unsupported-date validity, menu/tree/carousel/sorting/feedback interactions, responsive layout editing, and the 22 native input types with local validation/reset. They also verify that the Arabic wordmark GIF loads, reduced-motion preference selects static SVG artwork, and no Aref Ruqaa font request is made. Four mobile cases cover `layouts` and `inputs` at 390 CSS pixels in English/light and Arabic/dark, each with an axe scan. A fifth expansion scan evaluates the open date-picker dialog. Together the root suites include **13 scoped axe scans**, plus the separately recorded framework scans.
 
@@ -486,7 +486,7 @@ The [three-framework calendar script](../tests/browser/framework-calendars.mjs) 
 
 ## Token contrast scope
 
-The [eight token checks](../packages/tokens/test/contrast.test.mjs) evaluate selected foreground/background pairs in Nasaq and DGA reference themes, in light and dark modes. They assert 4.5:1 for the named text/status pairs and 3:1 for the named control/focus boundaries. Semi-transparent status backgrounds are composited over both canvas and surface. This validates the named pairings, not arbitrary custom overrides or all visual compositions. Source-token correspondence is documented separately in the [DGA reference](dga-reference.md).
+The [eight token checks](../packages/tokens/test/contrast.test.mjs) evaluate selected foreground/background pairs in Hawiyah and DGA reference themes, in light and dark modes. They assert 4.5:1 for the named text/status pairs and 3:1 for the named control/focus boundaries. Semi-transparent status backgrounds are composited over both canvas and surface. This validates the named pairings, not arbitrary custom overrides or all visual compositions. Source-token correspondence is documented separately in the [DGA reference](dga-reference.md).
 
 ## Component catalog interpretation
 
@@ -505,14 +505,14 @@ pnpm test:browser
 pnpm check:packages
 ```
 
-The browser configurations accept `NASAQ_CHROMIUM` for an installed executable.
+The browser configurations accept `HAWIYAH_CHROMIUM` for an installed executable.
 The root guide configuration also checks `/usr/bin/chromium`; the shared native
 consumer configuration otherwise uses Playwright's managed Chromium.
 Install a managed browser with `pnpm exec playwright install chromium` when
 needed. To select an existing executable in a POSIX shell:
 
 ```sh
-NASAQ_CHROMIUM=/path/to/chromium pnpm test:browser
+HAWIYAH_CHROMIUM=/path/to/chromium pnpm test:browser
 ```
 
 The separate committed framework browser checks are:
@@ -520,7 +520,7 @@ The separate committed framework browser checks are:
 ```sh
 pnpm exec playwright test --config playwright.portals.config.ts --timeout=90000
 pnpm exec playwright test --config examples/react/playwright.config.ts
-pnpm --filter @nasaq/example-angular test:browser
+pnpm --filter @hawiyah/example-angular test:browser
 node tests/browser/framework-calendars.mjs
 ```
 
@@ -542,7 +542,7 @@ The identity loader, larger riyal addon, mobile switch dimensions and required
 MultiSelect validation are also covered by this follow-up.
 
 - Workspace packages, guide and all three native consumers built successfully.
-  The public guide also built with the `/nasaq/` deployment base.
+  The public guide also built with the `/hawiyah/` deployment base.
 - Focused date/input regression suites passed 79 tests; numeric-format suites
   passed 10 tests and React interaction checks passed 14. The broader 75-file run
   initially passed 281/283; its currency expectation and Angular focus regression

@@ -8,15 +8,15 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
     await page.locator('[data-guide-tab="playground"]').click();
     await page.locator('[data-project-framework]').selectOption(framework);
     if(framework!=='angular')await page.locator('[data-project-language]').selectOption(language);
-    await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-    await expect(page.locator(`.nq-project-subheader [data-framework-icon="${framework}"]`)).toBeVisible();
-    await expect(page.locator(`.nq-project-subheader [data-framework-icon="${language}"]`)).toBeVisible();
-    const preview=page.frameLocator('.nq-ide-frame');
-    await expect(preview.locator('.nq-toggle-group')).toHaveCount(6);
-    await expect(preview.locator('.nq-toggle-group').first()).toBeVisible();
+    await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+    await expect(page.locator(`.hw-project-subheader [data-framework-icon="${framework}"]`)).toBeVisible();
+    await expect(page.locator(`.hw-project-subheader [data-framework-icon="${language}"]`)).toBeVisible();
+    const preview=page.frameLocator('.hw-ide-frame');
+    await expect(preview.locator('.hw-toggle-group')).toHaveCount(6);
+    await expect(preview.locator('.hw-toggle-group').first()).toBeVisible();
     await preview.locator('input[type="radio"]').nth(1).check({force:true});
     await expect(preview.locator('output')).toHaveText('second');
-    await expect(page.locator('[data-ide-editor="html"]')).toContainText(`@nasaq/${framework}`);
+    await expect(page.locator('[data-ide-editor="html"]')).toContainText(`@hawiyah/${framework}`);
     await page.locator('[data-ide-file="js"]').click();
     await expect(page.locator('[data-ide-editor="js"]')).toContainText("import './style.css'");
     await expect(page).toHaveURL(/#component\/toggle-group$/);
@@ -25,18 +25,18 @@ for(const [framework,languages] of Object.entries({react:['javascript','typescri
 test('vanilla TypeScript imports compile and errors stay inside the preview',async({page})=>{
   await page.goto('/#component/button');await page.locator('[data-guide-tab="playground"]').click();
   await page.locator('[data-project-language]').selectOption('typescript');
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
   await page.locator('[data-ide-file="js"]').click();
   await expect(page.locator('[data-ide-file="js"]')).toContainText('main.ts');
   const code=page.locator('[data-ide-editor="js"] .cm-content');await code.click();await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.insertText("const answer: number = 42; document.querySelector('#app')!.textContent = String(answer);");
   await page.locator('[data-ide-run]').click();
-  await expect(page.frameLocator('.nq-ide-frame').locator('#app')).toHaveText('42');
+  await expect(page.frameLocator('.hw-ide-frame').locator('#app')).toHaveText('42');
   await code.click(); await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.insertText("throw new Error('Example runtime error')");
   await page.locator('[data-ide-run]').click();
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','error');
-  await expect(page.locator('.nq-ide-console')).toContainText('Example runtime error');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','error');
+  await expect(page.locator('.hw-ide-console')).toContainText('Example runtime error');
   await expect(page).toHaveURL(/#component\/button$/);
 });
 
@@ -45,13 +45,13 @@ test('project download includes real entry points and setup files',async({page})
   await page.locator('[data-project-framework]').selectOption('react');
   await page.locator('[data-project-language]').selectOption('typescript');
   const pending=page.waitForEvent('download');await page.locator('[data-project-download]').click();
-  const download=await pending;expect(download.suggestedFilename()).toBe('nasaq-button-react-typescript.zip');
+  const download=await pending;expect(download.suggestedFilename()).toBe('hawiyah-button-react-typescript.zip');
   const archive = readFileSync((await download.path())!);
   for (const name of ['App.tsx','main.tsx','index.html','package.json','tsconfig.json','vite.config.js','style.css']) {
     expect(archive.includes(Buffer.from(name)), `missing ${name} in React project download`).toBe(true);
   }
   await page.setViewportSize({width:390,height:844});
-  const toolbar=await page.locator('.nq-project-subheader').boundingBox();
+  const toolbar=await page.locator('.hw-project-subheader').boundingBox();
   expect(toolbar!.x).toBeGreaterThanOrEqual(0);expect(toolbar!.x+toolbar!.width).toBeLessThanOrEqual(390);
 });
 
@@ -84,8 +84,8 @@ async function openProject(page: Page, id: string, {framework,language}: Project
   if (await frameworkSelect.inputValue() !== framework) await frameworkSelect.selectOption(framework);
   if (await languageSelect.inputValue() !== language) await languageSelect.selectOption(language);
   await expect(page.locator('[data-project-download]')).toBeEnabled();
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-  return page.frameLocator('.nq-ide-frame');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+  return page.frameLocator('.hw-ide-frame');
 }
 
 async function checkDisclosure(id: string, preview: FrameLocator) {
@@ -121,7 +121,7 @@ async function checkRendered(entry: CatalogEntry, preview: FrameLocator) {
   if (await checkDisclosure(entry.id, preview)) return;
   if (entry.id === 'spacer') {
     // A flexible spacer is decorative and can legitimately have zero height.
-    const spacer = preview.locator('.nq-spacer').first();
+    const spacer = preview.locator('.hw-spacer').first();
     await expect(spacer).toBeAttached();
     expect(await spacer.evaluate(node => Number(getComputedStyle(node).flexGrow))).toBeGreaterThan(0);
     return;
@@ -136,15 +136,15 @@ async function checkRendered(entry: CatalogEntry, preview: FrameLocator) {
   const semantics: Record<string,string> = {
     button:'button', 'icon-button':'button[aria-label]', 'text-field':'input:not([type=hidden])', textarea:'textarea', select:'select',
     checkbox:'input[type=checkbox]', radio:'input[type=radio]', switch:'input[role=switch], [role=switch], input[type=checkbox]',
-    combobox:'[role=combobox]', 'pin-input':'input[autocomplete=one-time-code]', 'tag-input':'.nq-tag-input input:not([type=hidden])',
+    combobox:'[role=combobox]', 'pin-input':'input[autocomplete=one-time-code]', 'tag-input':'.hw-tag-input input:not([type=hidden])',
     'multi-select':'input[type=checkbox]', 'number-field':'input[type=number]', slider:'input[type=range]', 'range-slider':'input[type=range]',
-    'password-field':'input[type=password]', 'search-field':'input[type=search], .nq-search-field input:not([type=hidden])',
-    calendar:'table[role=grid]', 'date-picker':'input[aria-haspopup=dialog]', 'input-group':'.nq-input-group input',
+    'password-field':'input[type=password]', 'search-field':'input[type=search], .hw-search-field input:not([type=hidden])',
+    calendar:'table[role=grid]', 'date-picker':'input[aria-haspopup=dialog]', 'input-group':'.hw-input-group input',
     field:'label', table:'table', 'data-table':'table', 'description-list':'dl', progress:'progress, [role=progressbar]', meter:'meter, [role=meter]',
     tabs:'[role=tablist]', 'tree-view':'[role=tree]', collapsible:'details > summary', accordion:'details > summary',
     link:'a[href]', 'secondary-nav':'nav a[href]', 'portal-layout':'main', 'mobile-top-bar':'header h1, header h2, header h3',
-    'portal-header':'header', 'portal-footer':'footer', breadcrumb:'[aria-current=page]', 'content-navigation':'nav a[data-nq-section]',
-    'toast-region':'[data-toast-demo] button', 'app-shell':'main', 'page-header':'h1, h2', 'avatar-group':'.nq-avatar-group',
+    'portal-header':'header', 'portal-footer':'footer', breadcrumb:'[aria-current=page]', 'content-navigation':'nav a[data-hw-section]',
+    'toast-region':'[data-toast-demo] button', 'app-shell':'main', 'page-header':'h1, h2', 'avatar-group':'.hw-avatar-group',
   };
   // Layout, surface and decorative components expose public classes documented
   // in the catalog. Their route IDs need not be CSS class names.
@@ -159,7 +159,7 @@ async function checkNativeInteraction(component: string, preview: FrameLocator) 
     await expect(input).toHaveValue('License renewal'); await input.press('Enter');
     await expect(example.locator('[data-search-demo-result]')).toContainText('License renewal');
   } else if (component === 'content-navigation') {
-    const example = preview.locator('.content-navigation-demo').first(), link = example.locator('a[data-nq-section]').last();
+    const example = preview.locator('.content-navigation-demo').first(), link = example.locator('a[data-hw-section]').last();
     await link.click(); await expect(link).toHaveAttribute('aria-current','location');
     await expect(example.locator('output')).toContainText('support');
   } else if (component === 'select') {
@@ -185,8 +185,8 @@ async function checkNativeInteraction(component: string, preview: FrameLocator) 
     await expect(example.getByRole('tab',{name:'غير متاح'})).toBeDisabled();
     await expect(example.getByRole('tabpanel')).toHaveCount(1);
   } else if (component === 'pagination') {
-    const pagination = preview.locator('.nq-pagination').first();
-    await pagination.locator('[data-nq-next]').click();
+    const pagination = preview.locator('.hw-pagination').first();
+    await pagination.locator('[data-hw-next]').click();
     await expect(preview.locator('output').first()).toHaveText('2');
     await expect(pagination.locator('[aria-current="page"]')).toHaveText('2');
   } else if (component === 'stepper') {
@@ -205,8 +205,8 @@ async function checkNativeInteraction(component: string, preview: FrameLocator) 
     const bar = preview.getByRole('progressbar').first();
     expect(await bar.evaluate(el => el.getAttribute('aria-valuenow') ?? el.getAttribute('value'))).toBe('65');
   } else if (component === 'card') {
-    await expect(preview.locator('.nq-card-header').first()).toContainText('تفاصيل الخدمة');
-    await expect(preview.locator('.nq-card-footer').first()).toContainText('متاحة إلكترونياً');
+    await expect(preview.locator('.hw-card-header').first()).toContainText('تفاصيل الخدمة');
+    await expect(preview.locator('.hw-card-footer').first()).toContainText('متاحة إلكترونياً');
   }
 }
 
@@ -219,7 +219,7 @@ for (const format of formats) {
         const preview = await openProject(page, entry.id, format);
         await checkRendered(entry, preview);
         if (format.framework !== 'vanilla') await checkNativeInteraction(entry.id,preview);
-        await expect(page.locator('.nq-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
+        await expect(page.locator('.hw-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
         await expect(page).toHaveURL(new RegExp(`#component/${entry.id}$`));
       });
     });
@@ -234,6 +234,6 @@ test('Vue scoped SFC styles remain scoped after TypeScript compilation',async({p
   await edit('html','<script setup lang="ts">const message: string = "Scoped";</script><template><p id="inside">{{message}}</p></template><style scoped>p {color:rgb(170,0,0)}</style>');
   await edit('js',"import {createApp} from 'vue'; import App from './App.vue'; createApp(App).mount('#app'); document.body.insertAdjacentHTML('beforeend','<p id=outside>Outside</p>');");
   await page.locator('[data-ide-run]').click();
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
-  const frame=page.frameLocator('.nq-ide-frame');await expect(frame.locator('#inside')).toHaveCSS('color','rgb(170, 0, 0)');await expect(frame.locator('#outside')).not.toHaveCSS('color','rgb(170, 0, 0)');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state','ready',{timeout:45000});
+  const frame=page.frameLocator('.hw-ide-frame');await expect(frame.locator('#inside')).toHaveCSS('color','rgb(170, 0, 0)');await expect(frame.locator('#outside')).not.toHaveCSS('color','rgb(170, 0, 0)');
 });

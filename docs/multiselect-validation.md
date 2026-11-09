@@ -2,12 +2,12 @@
 
 MultiSelect requires at least one **known, enabled selected option** when its
 required-selection API is enabled. Search text does not satisfy the requirement.
-Filtering never removes selected form values. This is a Nasaq form contract;
+Filtering never removes selected form values. This is a Hawiyah form contract;
 decoded DGA styling evidence does not establish native validation behavior.
 
 | Adapter | Required selection | Localized validation message | Readonly selection |
 | --- | --- | --- | --- |
-| Vanilla | Root `data-nq-required="true"` or controller `required: true` | Controller `requiredMessage`; default follows `data-nq-locale`/nearest `lang`, Arabic by default | Root `data-nq-readonly="true"` |
+| Vanilla | Root `data-hw-required="true"` or controller `required: true` | Controller `requiredMessage`; default follows `data-hw-locale`/nearest `lang`, Arabic by default | Root `data-hw-readonly="true"` |
 | React | `required` | `requiredMessage` | `readOnly` |
 | Vue | `required` (including provided Field context) | `requiredMessage` | `readonly` |
 | Angular | `required` | `validationMessage` | `readOnly` |
@@ -18,12 +18,12 @@ Use a fieldset/legend to name the group and a separate visible or accessible
 label for search. Explain the minimum selection in visible help text.
 
 ```html
-<fieldset data-nq="multi-select" data-nq-required="true" lang="ar">
+<fieldset data-hw="multi-select" data-hw-required="true" lang="ar">
   <legend>الخدمات المطلوبة — اختر خدمة واحدة على الأقل</legend>
-  <label>تصفية الخيارات<input type="search" data-nq-multiselect-search></label>
-  <label data-nq-option><input type="checkbox" name="service" value="business">الأعمال</label>
-  <label data-nq-option><input type="checkbox" name="service" value="education">التعليم</label>
-  <span role="status" data-nq-status></span>
+  <label>تصفية الخيارات<input type="search" data-hw-multiselect-search></label>
+  <label data-hw-option><input type="checkbox" name="service" value="business">الأعمال</label>
+  <label data-hw-option><input type="checkbox" name="service" value="education">التعليم</label>
+  <span role="status" data-hw-status></span>
 </fieldset>
 ```
 

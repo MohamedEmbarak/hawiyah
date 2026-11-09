@@ -1,16 +1,16 @@
 /* Mobile Components 8332:24202 / 24242 / 24282: color state changes,
    not a translating indicator. Route navigation keeps native link semantics. */
-.nq-secondary-nav[data-variant='mobile'] {
+.hw-secondary-nav[data-variant='mobile'] {
   border: 0;
   padding-block-end: env(safe-area-inset-bottom, 0px);
 }
-.nq-secondary-nav[data-variant='mobile'] ul {
+.hw-secondary-nav[data-variant='mobile'] ul {
   flex-wrap: nowrap;
   gap: 0;
   padding: 0 0.25rem;
 }
-.nq-secondary-nav[data-variant='mobile'] li { flex: 1 1 0; min-inline-size: 0; }
-.nq-secondary-nav[data-variant='mobile'] a {
+.hw-secondary-nav[data-variant='mobile'] li { flex: 1 1 0; min-inline-size: 0; }
+.hw-secondary-nav[data-variant='mobile'] a {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -22,22 +22,22 @@
   border-block-start: 1px solid transparent;
   border-block-end: 0;
   background: transparent;
-  color: var(--nq-color-text-muted);
-  font: var(--nq-weight-medium) 0.75rem / 1.5 var(--nq-font-sans);
+  color: var(--hw-color-text-muted);
+  font: var(--hw-weight-medium) 0.75rem / 1.5 var(--hw-font-sans);
   text-align: center;
   overflow-wrap: anywhere;
-  transition: color var(--nq-duration-tab-bar, 300ms) var(--nq-ease-tab-bar, ease-out),
-    border-block-start-color var(--nq-duration-tab-bar, 300ms) var(--nq-ease-tab-bar, ease-out);
+  transition: color var(--hw-duration-tab-bar, 300ms) var(--hw-ease-tab-bar, ease-out),
+    border-block-start-color var(--hw-duration-tab-bar, 300ms) var(--hw-ease-tab-bar, ease-out);
 }
-.nq-secondary-nav[data-variant='mobile'] .nq-icon { --nq-icon-size: 1.5rem; }
-.nq-secondary-nav[data-variant='mobile'] a:is(:hover, :active, [aria-current='page']) {
-  color: var(--nq-color-primary-text);
+.hw-secondary-nav[data-variant='mobile'] .hw-icon { --hw-icon-size: 1.5rem; }
+.hw-secondary-nav[data-variant='mobile'] a:is(:hover, :active, [aria-current='page']) {
+  color: var(--hw-color-primary-text);
   background: transparent;
 }
-.nq-secondary-nav[data-variant='mobile'] a[aria-current='page'] { border-block-start-color: currentColor; }
+.hw-secondary-nav[data-variant='mobile'] a[aria-current='page'] { border-block-start-color: currentColor; }
 @media (prefers-reduced-motion: reduce) {
-  .nq-secondary-nav[data-variant='mobile'] a { transition: none; }
+  .hw-secondary-nav[data-variant='mobile'] a { transition: none; }
 }
 @media (forced-colors: active) {
-  .nq-secondary-nav[data-variant='mobile'] a[aria-current='page'] { border-block-start-color: LinkText; }
+  .hw-secondary-nav[data-variant='mobile'] a[aria-current='page'] { border-block-start-color: LinkText; }
 }

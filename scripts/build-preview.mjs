@@ -14,7 +14,7 @@ const output = await build({
     cssCodeSplit: false,
     lib: {
       entry: resolve(root, 'apps/playground/src/preview-entry.ts'),
-      name: 'NasaqVanilla',
+      name: 'HawiyahVanilla',
       formats: ['iife'],
       fileName: 'preview-runtime',
     },
@@ -23,15 +23,15 @@ const output = await build({
 const files = (Array.isArray(output) ? output : [output]).flatMap(result => result.output);
 const runtime = files.filter(file => file.type === 'chunk').map(file => file.code).join('\n');
 const styles = files.filter(file => file.type === 'asset' && file.fileName.endsWith('.css')).map(file => String(file.source)).join('\n');
-if (!runtime.includes('enhance') || !styles.includes('.nq-button') || /@import\s/.test(styles)) throw new Error('Preview runtime or bundled CSS is incomplete.');
+if (!runtime.includes('enhance') || !styles.includes('.hw-button') || /@import\s/.test(styles)) throw new Error('Preview runtime or bundled CSS is incomplete.');
 const asset = async name => `data:image/svg+xml;base64,${Buffer.from(await readFile(resolve(root, 'brand/assets', name))).toString('base64')}`;
 const assets = {};
 for (const variant of ['', '-white', '-reverse', '-mono']) {
-  const value = await asset(`nasaq-wordmark${variant}.svg`);
-  for (const alias of ['nasaq-wordmark','nasaq-symbol','nasaq-lockup-ar','nasaq-lockup-en','nasaq-lockup-bilingual']) assets[`${alias}${variant}.svg`] = value;
+  const value = await asset(`hawiyah-wordmark${variant}.svg`);
+  for (const alias of ['hawiyah-wordmark','hawiyah-symbol','hawiyah-lockup-ar','hawiyah-lockup-en','hawiyah-lockup-bilingual']) assets[`${alias}${variant}.svg`] = value;
 }
 for (const suffix of ['', '-white']) {
-  const name = `nasaq-loader${suffix}.gif`;
+  const name = `hawiyah-loader${suffix}.gif`;
   assets[name] = `data:image/gif;base64,${Buffer.from(await readFile(resolve(root, 'brand/assets', name))).toString('base64')}`;
 }
 const dest = resolve(root, 'apps/playground/src/generated/preview-runtime.ts');

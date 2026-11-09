@@ -1,4 +1,4 @@
-# Nasaq component expansion contract
+# Hawiyah component expansion contract
 
 This extends CONTRACT.md. Every entry below must be a working native component,
 not an advertised placeholder. Frameworks own rendering. Publish to npm only through scripts/publish-packages.mjs.
@@ -29,13 +29,13 @@ boundary, not a simulated implementation.
 
 ## Shared conventions
 
-- CSS uses the kebab-case name, e.g. `.nq-range-slider`, `.nq-service-card`.
-- Layout primitives use `.nq-container`, `.nq-stack`, `.nq-inline`, `.nq-grid`,
-  `.nq-columns`, `.nq-sidebar`, `.nq-center`, `.nq-spacer`, `.nq-aspect-ratio`,
-  `.nq-section`, `.nq-app-shell`, `.nq-page-header`.
-- InputGroup uses `.nq-input-group` and `.nq-input-addon`.
+- CSS uses the kebab-case name, e.g. `.hw-range-slider`, `.hw-service-card`.
+- Layout primitives use `.hw-container`, `.hw-stack`, `.hw-inline`, `.hw-grid`,
+  `.hw-columns`, `.hw-sidebar`, `.hw-center`, `.hw-spacer`, `.hw-aspect-ratio`,
+  `.hw-section`, `.hw-app-shell`, `.hw-page-header`.
+- InputGroup uses `.hw-input-group` and `.hw-input-addon`.
 - ToggleGroup: native radio group for single selection; buttons with aria-pressed
-  for multiple selection. `.nq-toggle-group`; data-variant=segmented|outline.
+  for multiple selection. `.hw-toggle-group`; data-variant=segmented|outline.
 - MultiSelect: searchable checkbox list, explicit label, checked values; name
   produces repeated native form values. Do not pretend it is a single combobox.
 - PinInput: one accessible native input with autocomplete=one-time-code and
@@ -79,8 +79,8 @@ boundary, not a simulated implementation.
   seals, trust verification, actual identity verification or backend integrations.
 - PortalHeader: native page-link disclosure below 48rem; Escape closes with
   focus return, outside press/link selection/focus leaving close it, and Tab is
-  never trapped. This breakpoint is Nasaq policy. Vanilla exports
-  createPortalHeader and enhances data-nq="portal-header".
+  never trapped. This breakpoint is Hawiyah policy. Vanilla exports
+  createPortalHeader and enhances data-hw="portal-header".
 - SecondaryNav: named ordinary page links with aria-current; no tab/menu roles.
   PortalLayout composes header, optional secondary links/breadcrumb, focusable
   main target and footer. Defaults are Arabic and RTL independently. Follow the
@@ -99,7 +99,7 @@ selected:boolean,today:boolean}`. month, value, min, max and prev/next use ISO
 Gregorian date strings. Weeks contain seven days. weekStartsOn defaults Sunday 0.
 `moveCalendarDate(value,amount,unit:'day'|'month'|'year',calendar?)` returns ISO.
 `isDateInRange(value,min?,max?)` validates actual dates and bounds.
-Use pinned @internationalized/date for date-only arithmetic with Nasaq’s published-reference Umm al-Qura provider. Month starts come from the versioned HijriDate table, never hand-written astronomical approximations or implicit runtime fallback. See docs/date-calendars.md for provenance and limits.
+Use pinned @internationalized/date for date-only arithmetic with Hawiyah’s published-reference Umm al-Qura provider. Month starts come from the versioned HijriDate table, never hand-written astronomical approximations or implicit runtime fallback. See docs/date-calendars.md for provenance and limits.
 `normalizeDigits(value)` converts Arabic-Indic and Eastern Arabic digits.
 `clampRange([lower,upper],min,max,changed:'lower'|'upper')` returns numeric pair.
 `sortRows(rows,key,direction:'ascending'|'descending',locale?)` immutable stable sort.
@@ -114,10 +114,10 @@ Common props: gap, padding, align (start|center|end|stretch|baseline), justify
 Grid/Columns columns=Responsive<number>, minItemWidth?:string; Sidebar
 side?:start|end, sidebarWidth?:string, collapseAt?:sm|md|lg; Container
 maxWidth?:string; AspectRatio ratio?:number; Stack/Inline use flex.
-Variables: --nq-layout-gap[-sm|-md|-lg|-xl], --nq-layout-padding[...],
---nq-layout-columns[...], --nq-layout-align, --nq-layout-justify,
---nq-layout-wrap, --nq-layout-min-item, --nq-layout-sidebar-width,
---nq-layout-max-width, --nq-layout-ratio. CSS breakpoints sm40rem md48rem
+Variables: --hw-layout-gap[-sm|-md|-lg|-xl], --hw-layout-padding[...],
+--hw-layout-columns[...], --hw-layout-align, --hw-layout-justify,
+--hw-layout-wrap, --hw-layout-min-item, --hw-layout-sidebar-width,
+--hw-layout-max-width, --hw-layout-ratio. CSS breakpoints sm40rem md48rem
 lg64rem xl80rem with mobile-first fallbacks. Sidebar data-side and
 data-collapse-at control placement/breakpoint. No JS viewport measurements.
 
@@ -125,7 +125,7 @@ data-collapse-at control placement/breakpoint. No JS viewport measurements.
 
 Keep dependency and lockfile edits coordinated. Shared behavior, styles, native
 adapters, examples and guide entries should describe the same public contract.
-Angular names use Nq{Name}Component and selectors use nq-kebab-case; value inputs
+Angular names use Hw{Name}Component and selectors use hw-kebab-case; value inputs
 integrate with Angular forms. Branding stays independent of framework runtimes.
 
 Write focused regression tests for new behavioral contracts and real examples.

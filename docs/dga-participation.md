@@ -22,7 +22,7 @@ is preserved where the export's English text says “Feedback and Ideas.”
 The guide demonstrates topic discovery with explicit action links. Its routes
 open local example content. Production integrations must supply their actual
 consultation, dataset, policy, report and statistics destinations. The new
-descriptions are Nasaq-authored illustrative copy. Source heading coverage
+descriptions are Hawiyah-authored illustrative copy. Source heading coverage
 does not establish complete visual equivalence or production content readiness.
 
 ## Rendered layout follow-up

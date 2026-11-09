@@ -6,21 +6,21 @@ for (const [locale, mode] of [['ar', 'light'], ['en', 'dark']]) {
     test.setTimeout(90000);
     await page.addInitScript(({ locale, mode }) => {
       if (window !== window.top) return;
-      localStorage.setItem('nasaq-locale', locale);
-      localStorage.setItem('nasaq-mode', mode);
+      localStorage.setItem('hawiyah-locale', locale);
+      localStorage.setItem('hawiyah-mode', mode);
     }, { locale, mode });
     await page.goto('/#component/stepper');
     await page.locator('[data-guide-tab="playground"]').click();
-    await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
+    await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
     const card = page.locator('.guide-demo');
-    const settings = page.locator('.nq-project-subheader');
+    const settings = page.locator('.hw-project-subheader');
     const framework = page.locator('[data-project-framework]');
     const language = page.locator('[data-project-language]');
     for (const width of [1543, 768, 390, 320]) {
       await page.setViewportSize({ width, height: 884 });
       const top = (await page.locator('.guide-demo-top').boundingBox())!;
       const bar = (await settings.boundingBox())!;
-      const ide = (await page.locator('.nq-ide').boundingBox())!;
+      const ide = (await page.locator('.hw-ide').boundingBox())!;
       expect(bar.y).toBeCloseTo(top.y + top.height, 1);
       expect(ide.y).toBeCloseTo(bar.y + bar.height, 1);
       expect(bar.x).toBeCloseTo(top.x, 1);
@@ -28,8 +28,8 @@ for (const [locale, mode] of [['ar', 'light'], ['en', 'dark']]) {
       expect(ide.width).toBeCloseTo(bar.width, 1);
       expect(bar.x).toBeGreaterThanOrEqual(0);
       expect(bar.x + bar.width).toBeLessThanOrEqual(width);
-      await expect(page.locator('.nq-ide')).toHaveCSS('border-radius', '0px');
-      await expect(page.locator('.nq-ide')).toHaveCSS('box-shadow', 'none');
+      await expect(page.locator('.hw-ide')).toHaveCSS('border-radius', '0px');
+      await expect(page.locator('.hw-ide')).toHaveCSS('box-shadow', 'none');
       for (const select of [framework, language]) {
         const box = (await select.boundingBox())!;
         expect(box.height).toBe(40);
@@ -47,12 +47,12 @@ for (const [locale, mode] of [['ar', 'light'], ['en', 'dark']]) {
         await card.screenshot({ path: testInfo.outputPath(`editor-${locale}-${width}.png`) });
       }
     }
-    expect((await new AxeBuilder({ page }).include('.nq-project-subheader').include('.nq-ide-toolbar').analyze()).violations).toEqual([]);
+    expect((await new AxeBuilder({ page }).include('.hw-project-subheader').include('.hw-ide-toolbar').analyze()).violations).toEqual([]);
     await page.locator('[data-ide-run]').hover();
     await page.locator('[data-ide-run]').evaluate(async el => {
       await Promise.all(el.getAnimations().map(animation => animation.finished.catch(() => {})));
     });
-    expect((await new AxeBuilder({ page }).include('.nq-ide-toolbar').analyze()).violations).toEqual([]);
+    expect((await new AxeBuilder({ page }).include('.hw-ide-toolbar').analyze()).violations).toEqual([]);
     await framework.focus();
     await framework.press('Tab');
     await expect(language).toBeFocused();
@@ -71,7 +71,7 @@ for (const [locale, mode] of [['ar', 'light'], ['en', 'dark']]) {
     await expect(page).toHaveURL(/#component\/stepper$/);
     await page.emulateMedia({ forcedColors: 'none' });
     await framework.selectOption('vanilla');
-    await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
+    await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', { timeout: 45000 });
     await page.setViewportSize({ width: 1543, height: 1100 });
     await card.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await page.screenshot({ path: testInfo.outputPath(`editor-${locale}-context.png`) });

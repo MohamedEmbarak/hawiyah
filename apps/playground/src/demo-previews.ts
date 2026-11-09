@@ -15,7 +15,7 @@ export function bindDemoPreviews(root: HTMLElement, locale: 'ar' | 'en') {
     let status = preview.querySelector<HTMLElement>(':scope > [data-demo-result]');
     if (!status) {
       status = document.createElement('p');
-      status.className = 'nq-hint demo-result';
+      status.className = 'hw-hint demo-result';
       status.dataset.demoResult = '';
       status.setAttribute('role', 'status');
       preview.append(status);
@@ -29,8 +29,8 @@ export function bindDemoPreviews(root: HTMLElement, locale: 'ar' | 'en') {
     // Let the section controller handle its own bounded scroll before the
     // bubble-phase fallback blocks an unenhanced demo link's hash navigation.
     const click = event as MouseEvent;
-    if (event.type === 'click' && target.matches('.nq-content-nav-link[data-nq-section]') &&
-        target.closest('.nq-content-nav') && target.getAttribute('href')?.startsWith('#') &&
+    if (event.type === 'click' && target.matches('.hw-content-nav-link[data-hw-section]') &&
+        target.closest('.hw-content-nav') && target.getAttribute('href')?.startsWith('#') &&
         click.button === 0 && !click.altKey && !click.ctrlKey && !click.metaKey && !click.shiftKey) return;
     event.preventDefault();
     // A skip/section link may focus content inside this preview without changing
@@ -43,7 +43,7 @@ export function bindDemoPreviews(root: HTMLElement, locale: 'ar' | 'en') {
   root.addEventListener('click', onLink, { capture: true, signal: scope.signal });
   root.addEventListener('auxclick', onLink, { capture: true, signal: scope.signal });
   root.addEventListener('click', event => {
-    const target = event.target instanceof Element ? event.target.closest('.nq-content-nav-link[data-nq-section]') : null;
+    const target = event.target instanceof Element ? event.target.closest('.hw-content-nav-link[data-hw-section]') : null;
     if (target?.closest(previewSelector)) event.preventDefault();
   }, { signal: scope.signal });
   root.addEventListener('submit', event => {

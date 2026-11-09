@@ -2,11 +2,11 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, test, vi } from 'vitest';
-import { NqFileUploadListComponent } from '@nasaq/angular';
+import { HwFileUploadListComponent } from '@hawiyah/angular';
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => TestBed.resetTestingModule());
 test('Angular renders live transfer states and leaves removal to the owner', () => {
-  const fixture = TestBed.createComponent(NqFileUploadListComponent);
+  const fixture = TestBed.createComponent(HwFileUploadListComponent);
   fixture.componentRef.setInput('items', [{id:'a',name:'document.pdf',status:'uploading'}]);
   fixture.componentRef.setInput('removable', true);
   fixture.detectChanges();

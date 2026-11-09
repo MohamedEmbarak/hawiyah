@@ -1,9 +1,9 @@
-# Nasaq Vue example
+# Hawiyah Vue example
 
 From the workspace root after building packages:
 
 ```sh
-pnpm --filter @nasaq/example-vue dev
+pnpm --filter @hawiyah/example-vue dev
 ```
 
 Opens the local example on port 4176. Arabic/English, RTL/LTR, theme, appearance

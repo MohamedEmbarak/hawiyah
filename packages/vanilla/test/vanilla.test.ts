@@ -15,20 +15,20 @@ function key(element: HTMLElement, value: string, extra: KeyboardEventInit = {})
   return event;
 }
 
-const tabMarkup = `<div data-nq="tabs" dir="rtl">
+const tabMarkup = `<div data-hw="tabs" dir="rtl">
   <div role="tablist" aria-label="Details">
-    <button role="tab" aria-controls="one" data-nq-value="one">One</button>
-    <button role="tab" aria-controls="two" data-nq-value="two" disabled>Two</button>
-    <button role="tab" aria-controls="three" data-nq-value="three">Three</button>
-    <button role="tab" aria-controls="four" data-nq-value="four">Four</button>
+    <button role="tab" aria-controls="one" data-hw-value="one">One</button>
+    <button role="tab" aria-controls="two" data-hw-value="two" disabled>Two</button>
+    <button role="tab" aria-controls="three" data-hw-value="three">Three</button>
+    <button role="tab" aria-controls="four" data-hw-value="four">Four</button>
   </div>
   <div id="one">First</div><div id="two">Second</div><div id="three">Third</div><div id="four">Fourth</div>
 </div>`;
 
-const comboMarkup = `<div data-nq="combobox"><label for="city">City</label>
-  <input id="city" data-nq-combobox-input><input type="hidden" name="city" data-nq-combobox-value>
-  <ul data-nq-combobox-list hidden>
-    <li data-nq-value="riyadh">الرياض</li><li data-nq-value="jeddah" aria-disabled="true">جدة</li><li data-nq-value="abha">أبها</li>
+const comboMarkup = `<div data-hw="combobox"><label for="city">City</label>
+  <input id="city" data-hw-combobox-input><input type="hidden" name="city" data-hw-combobox-value>
+  <ul data-hw-combobox-list hidden>
+    <li data-hw-value="riyadh">الرياض</li><li data-hw-value="jeddah" aria-disabled="true">جدة</li><li data-hw-value="abha">أبها</li>
   </ul></div>`;
 
 describe('tabs', () => {
@@ -67,7 +67,7 @@ describe('tabs', () => {
     const submitted = vi.fn((event: Event) => event.preventDefault());
     form.addEventListener('submit', submitted);
     const controller = createTabs(form.firstElementChild as HTMLElement);
-    form.querySelector<HTMLButtonElement>('[data-nq-value="three"]')!.click();
+    form.querySelector<HTMLButtonElement>('[data-hw-value="three"]')!.click();
     expect(controller.value).toBe('three');
     expect(submitted).not.toHaveBeenCalled();
     controller.destroy();
@@ -79,12 +79,12 @@ describe('combobox', () => {
     const root = mount(comboMarkup);
     const before = root.outerHTML;
     const changed = vi.fn();
-    root.addEventListener('nq:change', changed);
+    root.addEventListener('hw:change', changed);
     const controller = createCombobox(root);
-    const input = root.querySelector<HTMLInputElement>('[data-nq-combobox-input]')!;
+    const input = root.querySelector<HTMLInputElement>('[data-hw-combobox-input]')!;
     input.focus();
     key(input, 'ArrowDown'); key(input, 'ArrowDown');
-    expect(input.getAttribute('aria-activedescendant')).toBe(root.querySelector('[data-nq-value="abha"]')!.id);
+    expect(input.getAttribute('aria-activedescendant')).toBe(root.querySelector('[data-hw-value="abha"]')!.id);
     expect(controller.value).toBe('');
     key(input, 'Enter');
     expect(controller.value).toBe('abha');
@@ -95,7 +95,7 @@ describe('combobox', () => {
     expect([...root.querySelectorAll<HTMLElement>('[role="option"]')].every(node => !node.hidden)).toBe(true);
     input.value = 'الريا'; input.dispatchEvent(new Event('input', { bubbles: true }));
     expect(controller.value).toBe('');
-    expect(root.querySelector<HTMLElement>('[data-nq-value="abha"]')!.hidden).toBe(true);
+    expect(root.querySelector<HTMLElement>('[data-hw-value="abha"]')!.hidden).toBe(true);
     key(input, 'ArrowDown'); key(input, 'Escape');
     expect(controller.open).toBe(false);
     expect(controller.value).toBe('');
@@ -109,7 +109,7 @@ describe('combobox', () => {
     const form = mount(`<form>${comboMarkup}<button type="button">Outside</button></form>`);
     const root = form.firstElementChild as HTMLElement;
     const controller = createCombobox(root, { value: 'riyadh' });
-    const input = root.querySelector<HTMLInputElement>('[data-nq-combobox-input]')!;
+    const input = root.querySelector<HTMLInputElement>('[data-hw-combobox-input]')!;
     expect(key(input, 'Home').defaultPrevented).toBe(false);
     expect(key(input, 'ArrowDown', { isComposing: true }).defaultPrevented).toBe(false);
     input.dispatchEvent(new Event('compositionstart'));
@@ -170,13 +170,13 @@ describe('combobox', () => {
     const form = mount(`<form>${comboMarkup}</form>`) as HTMLFormElement;
     const root = form.firstElementChild as HTMLElement;
     const controller = createCombobox(root, { value: 'riyadh' });
-    const input = root.querySelector<HTMLInputElement>('[data-nq-combobox-input]')!;
+    const input = root.querySelector<HTMLInputElement>('[data-hw-combobox-input]')!;
     expect(new FormData(form).get('city')).toBe('riyadh');
     input.disabled = true;
     await Promise.resolve();
     expect(new FormData(form).has('city')).toBe(false);
     controller.destroy();
-    expect(root.querySelector<HTMLInputElement>('[data-nq-combobox-value]')!.disabled).toBe(false);
+    expect(root.querySelector<HTMLInputElement>('[data-hw-combobox-value]')!.disabled).toBe(false);
   });
 });
 
@@ -186,7 +186,7 @@ describe('enhancement ownership', () => {
     const before = root.outerHTML;
     const first = enhance(root);
     const second = enhance(document);
-    expect(root.querySelectorAll('[data-nq-combobox-status]')).toHaveLength(1);
+    expect(root.querySelectorAll('[data-hw-combobox-status]')).toHaveLength(1);
     first(); first();
     const input = root.querySelector<HTMLInputElement>('input')!;
     key(input, 'ArrowDown');
@@ -199,7 +199,7 @@ describe('enhancement ownership', () => {
   });
 
   it('rolls back previously enhanced roots when later markup is invalid', () => {
-    const root = mount(`<main>${comboMarkup}<div data-nq="tabs"></div></main>`);
+    const root = mount(`<main>${comboMarkup}<div data-hw="tabs"></div></main>`);
     const before = root.outerHTML;
     expect(() => enhance(root)).toThrow();
     expect(root.outerHTML).toBe(before);
@@ -208,7 +208,7 @@ describe('enhancement ownership', () => {
 
 describe('native dialog lifecycle', () => {
   it('uses native modal methods and restores focus, including destroy while open', () => {
-    mount(`<main><button data-nq-dialog-open="dialog">Open</button><dialog id="dialog"><button data-nq-dialog-close>Close</button></dialog></main>`);
+    mount(`<main><button data-hw-dialog-open="dialog">Open</button><dialog id="dialog"><button data-hw-dialog-close>Close</button></dialog></main>`);
     const trigger = document.querySelector<HTMLButtonElement>('button')!;
     const dialog = document.querySelector<HTMLDialogElement>('dialog')!;
     // jsdom has no modal focus algorithm; native browser coverage verifies that.
@@ -232,7 +232,7 @@ describe('native dialog lifecycle', () => {
 describe('tooltip and pagination', () => {
   it('keeps tooltip open across pointer movement and preserves existing descriptions', () => {
     vi.useFakeTimers();
-    const root = mount(`<span><button data-nq-tooltip-trigger aria-describedby="help">Help</button><span role="tooltip" hidden>Details</span></span>`);
+    const root = mount(`<span><button data-hw-tooltip-trigger aria-describedby="help">Help</button><span role="tooltip" hidden>Details</span></span>`);
     const before = root.outerHTML;
     const controller = createTooltip(root);
     const trigger = root.querySelector('button')!;
@@ -250,14 +250,14 @@ describe('tooltip and pagination', () => {
   });
 
   it('updates pagination boundaries and current page without trapping keyboard focus', () => {
-    const root = mount(`<nav data-nq-total="3"><button data-nq-page="previous">Previous</button><button data-nq-page="1">1</button><button data-nq-page="2">2</button><button data-nq-page="3">3</button><button data-nq-page="next">Next</button></nav>`);
+    const root = mount(`<nav data-hw-total="3"><button data-hw-page="previous">Previous</button><button data-hw-page="1">1</button><button data-hw-page="2">2</button><button data-hw-page="3">3</button><button data-hw-page="next">Next</button></nav>`);
     const before = root.outerHTML;
     const controller = createPagination(root);
-    expect(root.querySelector<HTMLButtonElement>('[data-nq-page="previous"]')!.disabled).toBe(true);
-    root.querySelector<HTMLButtonElement>('[data-nq-page="3"]')!.click();
+    expect(root.querySelector<HTMLButtonElement>('[data-hw-page="previous"]')!.disabled).toBe(true);
+    root.querySelector<HTMLButtonElement>('[data-hw-page="3"]')!.click();
     expect(controller.page).toBe(3);
     expect(root.querySelector('[aria-current="page"]')!.textContent).toBe('3');
-    expect(root.querySelector<HTMLButtonElement>('[data-nq-page="next"]')!.disabled).toBe(true);
+    expect(root.querySelector<HTMLButtonElement>('[data-hw-page="next"]')!.disabled).toBe(true);
     controller.select(4);
     expect(controller.page).toBe(3);
     controller.destroy();

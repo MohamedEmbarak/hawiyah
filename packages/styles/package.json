@@ -1,8 +1,8 @@
 {
-  "name": "@nasaq/styles",
+  "name": "@hawiyah/styles",
   "version": "0.2.0",
   "private": true,
-  "description": "Framework-neutral, Arabic-first Nasaq component styles",
+  "description": "Component styles for Hawiyah, a UI library built to comply with the DGA Platforms Code",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -20,10 +20,10 @@
     "./assets/*": "./dist/assets/*"
   },
   "dependencies": {
-    "@nasaq/tokens": "workspace:*"
+    "@hawiyah/tokens": "workspace:*"
   },
   "keywords": [
-    "nasaq",
+    "hawiyah",
     "dga",
     "sdga",
     "platforms-code",
@@ -36,12 +36,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEmbarak/nasaq.git",
+    "url": "git+https://github.com/MohamedEmbarak/hawiyah.git",
     "directory": "packages/styles"
   },
-  "homepage": "https://mohamedembarak.github.io/nasaq/",
+  "homepage": "https://mohamedembarak.github.io/hawiyah/",
   "bugs": {
-    "url": "https://github.com/MohamedEmbarak/nasaq/issues"
+    "url": "https://github.com/MohamedEmbarak/hawiyah/issues"
   },
   "author": {
     "name": "Development Team, National Platforms Sector — National Information Center"

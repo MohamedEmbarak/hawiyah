@@ -3,7 +3,7 @@ import {expect, test, type Locator} from '@playwright/test';
 test.use({hasTouch: true, viewport: {width: 1920, height: 1080}});
 
 // Reconstructed only from the local source row's geometry and literal colors.
-// This fixture is independent of Nasaq classes and does not assert icon parity.
+// This fixture is independent of Hawiyah classes and does not assert icon parity.
 const sourceRow = '<div id="source-upload" style="box-sizing:border-box;display:flex;align-items:center;gap:8px;width:328px;min-height:36px;padding:7px;border:1px solid #D2D6DB;border-radius:4px;background:#F3F4F6;color:#161616;font-size:14px;font-weight:500;line-height:20px"><span style="width:20px;height:20px;flex:none;border:1.5px solid currentColor;border-radius:50%;box-sizing:border-box"></span><span style="flex:1;min-width:0">document.pdf</span><span style="width:20px;height:20px;flex:none">×</span></div>';
 
 async function metrics(row: Locator) {
@@ -20,9 +20,9 @@ for (const framework of ['vanilla', 'react', 'vue', 'angular']) test(`${framewor
   await page.locator('[data-guide-tab="playground"]').click();
   await page.locator('[data-project-framework]').selectOption(framework);
   if (framework !== 'angular') await page.locator('[data-project-language]').selectOption('typescript');
-  await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 60000});
-  const frame = page.frameLocator('.nq-ide-frame');
-  const transfers = frame.locator('section.demo .nq-upload-list');
+  await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 60000});
+  const frame = page.frameLocator('.hw-ide-frame');
+  const transfers = frame.locator('section.demo .hw-upload-list');
   await transfers.evaluate(element => { (element as HTMLElement).style.width = '328px'; });
   const complete = transfers.locator('[data-status="complete"]');
   await expect(complete).toBeVisible();
@@ -33,15 +33,15 @@ for (const framework of ['vanilla', 'react', 'vue', 'angular']) test(`${framewor
     document.body.append(reference);
   }, sourceRow);
   expect(await metrics(complete)).toEqual(await metrics(page.locator('#source-upload')));
-  await expect(complete.locator('.nq-upload-name')).toHaveCSS('font-size', '14px');
-  await expect(complete.locator('.nq-upload-name')).toHaveCSS('line-height', '20px');
+  await expect(complete.locator('.hw-upload-name')).toHaveCSS('font-size', '14px');
+  await expect(complete.locator('.hw-upload-name')).toHaveCSS('line-height', '20px');
   await expect(complete.locator('button')).toHaveAccessibleName(/.+/);
   await expect(complete.locator('button')).toHaveCSS('color', 'rgb(22, 22, 22)');
   expect(await complete.locator('button').evaluate(element => {
     const box = element.getBoundingClientRect();
     return [box.width, box.height];
   })).toEqual([20, 20]);
-  await expect(transfers.locator('[data-status="error"] .nq-upload-status')).toBeVisible();
+  await expect(transfers.locator('[data-status="error"] .hw-upload-status')).toBeVisible();
   await expect(transfers.locator('progress')).toHaveAttribute('value', '45');
   await transfers.screenshot({path: info.outputPath('rendered-upload-states.png'), timeout: 10000});
   await page.locator('#source-upload').screenshot({path: info.outputPath('reconstructed-source-row.png'), timeout: 10000});
@@ -54,7 +54,7 @@ for (const framework of ['vanilla', 'react', 'vue', 'angular']) test(`${framewor
   await page.setViewportSize({width: 390, height: 844});
   await transfers.evaluate(element => {
     (element as HTMLElement).style.width = '100%';
-    const name = element.querySelector('.nq-upload-name');
+    const name = element.querySelector('.hw-upload-name');
     if (name) name.textContent = 'long-filename-without-spaces-'.repeat(8) + '.pdf';
   });
   expect(await transfers.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);

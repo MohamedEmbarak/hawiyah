@@ -14,7 +14,7 @@ export async function compileProject(
     if (name.endsWith(".css")) {
       css +=
         original.replace(
-          /@import\s+['"]@nasaq\/styles\/styles\.css['"]\s*;/g,
+          /@import\s+['"]@hawiyah\/styles\/styles\.css['"]\s*;/g,
           "",
         ) + "\n";
       continue;
@@ -34,11 +34,11 @@ export async function compileProject(
       const component = compileScript(parsed.descriptor, {
         id: scope,
         inlineTemplate: true,
-        genDefaultAs: "__nasaq_component",
+        genDefaultAs: "__hawiyah_component",
       });
       source =
         component.content +
-        `\n${parsed.descriptor.styles.some((style) => style.scoped) ? `__nasaq_component.__scopeId = 'data-v-${scope}';` : ""}\nexport default __nasaq_component;`;
+        `\n${parsed.descriptor.styles.some((style) => style.scoped) ? `__hawiyah_component.__scopeId = 'data-v-${scope}';` : ""}\nexport default __hawiyah_component;`;
       for (const style of parsed.descriptor.styles) {
         if (style.lang || style.src)
           throw new Error("Use local plain CSS in this preview.");
@@ -88,7 +88,7 @@ const sources={${modules.join(",\n")}};
 const cache={};
 function load(id,from='') {
   if(id.endsWith('.css')) return {};
-  if(Object.prototype.hasOwnProperty.call(NasaqProjectRuntime.modules,id))return NasaqProjectRuntime.modules[id];
+  if(Object.prototype.hasOwnProperty.call(HawiyahProjectRuntime.modules,id))return HawiyahProjectRuntime.modules[id];
   if(id.startsWith('.')) {
     const parts=(from.split('/').slice(0,-1).join('/')+'/'+id).split('/');const clean=[];
     for(const part of parts){if(part==='..')clean.pop();else if(part&&part!=='.')clean.push(part);}id=clean.join('/');

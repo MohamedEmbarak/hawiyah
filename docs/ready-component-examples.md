@@ -22,7 +22,7 @@ Do not run vanilla enhancement on framework-owned DOM.
 The neutral type in the supplied `master.js` notification configuration
 (318–360) is now supported by Alert and ToastMessage types in all native
 adapters. Existing `danger` corresponds to the source's `error`; the public
-name remains stable. Neutral Alert uses Nasaq semantic text/surface tokens.
+name remains stable. Neutral Alert uses Hawiyah semantic text/surface tokens.
 This does not claim that all source notification placement or timing is matched.
 
 React and Vue Alert now group their title and body vertically, matching Angular
@@ -57,7 +57,7 @@ down each column in the active writing direction. Mobile uses one column.
   light/dark axe checks and responsive header/footer interaction at 390/320px.
 - Twelve focused SSR/component tests passed; full package/guide/native build passed.
 - Rendered gallery and five-alert screenshots were inspected locally. These are
-  Nasaq render checks, not an assertion of visual parity with every NIC source.
+  Hawiyah render checks, not an assertion of visual parity with every NIC source.
 
 Hajj remains excluded. No private chat image or external CSS/JS/asset archive
 is included. These checks do not constitute official DGA certification.

@@ -1,4 +1,4 @@
-import { createCleanup } from '@nasaq/core';
+import { createCleanup } from '@hawiyah/core';
 import { createDrawer } from './disclosures.js';
 import type { DialogController, DialogOptions } from './dialog.js';
 import { eventElement, remember } from './dom.js';
@@ -8,12 +8,12 @@ export type NavigationDrawerController = DialogController;
 
 /** Existing semantic dialog/nav/details markup stays owned by the caller. */
 export function createNavigationDrawer(dialog: HTMLDialogElement, options: NavigationDrawerOptions = {}): NavigationDrawerController {
-  const navigation = dialog.querySelector<HTMLElement>('.nq-navigation-drawer-nav');
-  if (!navigation || navigation.closest('dialog') !== dialog) throw new Error('Nasaq: navigation drawer requires its own .nq-navigation-drawer-nav.');
+  const navigation = dialog.querySelector<HTMLElement>('.hw-navigation-drawer-nav');
+  if (!navigation || navigation.closest('dialog') !== dialog) throw new Error('Hawiyah: navigation drawer requires its own .hw-navigation-drawer-nav.');
   const scope = createCleanup();
   remember(scope, dialog, ['class', 'data-side']);
   remember(scope, navigation, ['aria-label']);
-  dialog.classList.add('nq-dialog', 'nq-drawer', 'nq-navigation-drawer');
+  dialog.classList.add('hw-dialog', 'hw-drawer', 'hw-navigation-drawer');
   if (!dialog.hasAttribute('data-side')) dialog.dataset.side = 'start';
   if (options.navigationLabel || !navigation.hasAttribute('aria-label')) navigation.setAttribute('aria-label', options.navigationLabel ?? 'التنقل الرئيسي');
   // Disabled native links cannot be disabled with ARIA alone. Preserve their

@@ -7,8 +7,8 @@ import {
   watchEffect,
 } from "vue";
 import type { PropType } from "vue";
-import { clampRange, filterOptions, isDisabled, normalizeDigits, normalizeRatingMax, normalizeRatingValue } from "@nasaq/core";
-import type { Option } from "@nasaq/core";
+import { clampRange, filterOptions, isDisabled, normalizeDigits, normalizeRatingMax, normalizeRatingValue } from "@hawiyah/core";
+import type { Option } from "@hawiyah/core";
 import { Button, TextField, decorate } from "./forms.js";
 import { decorationProps, useField, useFormReset, useValue } from "./shared.js";
 
@@ -40,20 +40,20 @@ const arrayProps = {
   readonly: Boolean,
 } as const;
 export const InputGroup = defineComponent({
-  name: "NqInputGroup",
+  name: "HwInputGroup",
   inheritAttrs: false,
   setup(_, { attrs, slots }) {
     return () =>
-      h("div", mergeProps(attrs, { class: "nq-input-group" }), [
-        slots.prefix && h("span", { class: "nq-input-addon" }, slots.prefix()),
+      h("div", mergeProps(attrs, { class: "hw-input-group" }), [
+        slots.prefix && h("span", { class: "hw-input-addon" }, slots.prefix()),
         slots.default?.(),
-        slots.suffix && h("span", { class: "nq-input-addon" }, slots.suffix()),
+        slots.suffix && h("span", { class: "hw-input-addon" }, slots.suffix()),
       ]);
   },
 });
 function actionField(kind: "password" | "search") {
   return defineComponent({
-    name: kind === "password" ? "NqPasswordField" : "NqSearchField",
+    name: kind === "password" ? "HwPasswordField" : "HwSearchField",
     inheritAttrs: false,
     props: {
       ...textProps,
@@ -86,8 +86,8 @@ function actionField(kind: "password" | "search") {
             "div",
             {
               class: [
-                kind === 'password' ? "nq-password-control" : "nq-input-group nq-search-control",
-                `nq-${kind === "password" ? "password-field" : "search-field"}`,
+                kind === 'password' ? "hw-password-control" : "hw-input-group hw-search-control",
+                `hw-${kind === "password" ? "password-field" : "search-field"}`,
               ],
             },
             [
@@ -95,7 +95,7 @@ function actionField(kind: "password" | "search") {
                 "input",
                 mergeProps(attrs, field.controlAttrs.value, {
                   ref: element,
-                  class: "nq-input",
+                  class: "hw-input",
                   type:
                     kind === "password"
                       ? visible.value
@@ -126,7 +126,7 @@ function actionField(kind: "password" | "search") {
                     Button,
                     {
                       variant: "ghost",
-                      class: "nq-password-toggle",
+                      class: "hw-password-toggle",
                       "data-toggle-variant": props.toggleVariant,
                       disabled: props.disabled,
                       "aria-label": visible.value
@@ -138,13 +138,13 @@ function actionField(kind: "password" | "search") {
                         if (element.value && !isDisabled(element.value)) visible.value = !visible.value;
                       },
                     },
-                    () => props.toggleVariant === 'text' ? (visible.value ? props.hideLabel : props.showLabel) : h('span', { class: 'nq-password-icon', 'aria-hidden': 'true' }),
+                    () => props.toggleVariant === 'text' ? (visible.value ? props.hideLabel : props.showLabel) : h('span', { class: 'hw-password-icon', 'aria-hidden': 'true' }),
                   )
                 : h(
                     Button,
                     {
                       variant: "ghost",
-                      class: "nq-search-clear",
+                      class: "hw-search-clear",
                       hidden: !model.value.value || props.readonly,
                       disabled: props.disabled,
                       "aria-controls": field.id.value,
@@ -153,7 +153,7 @@ function actionField(kind: "password" | "search") {
                         if (element.value && !props.readonly && !isDisabled(element.value)) { model.set(""); element.value.focus(); }
                       },
                     },
-                    () => h("span", { class: "nq-search-clear-icon", "aria-hidden": "true" }),
+                    () => h("span", { class: "hw-search-clear-icon", "aria-hidden": "true" }),
                   ),
             ],
           ),
@@ -164,7 +164,7 @@ function actionField(kind: "password" | "search") {
 export const PasswordField = actionField("password");
 export {SearchField} from './search-field.js';
 export const NumberField = defineComponent({
-  name: "NqNumberField",
+  name: "HwNumberField",
   inheritAttrs: false,
   props: {
     ...decorationProps,
@@ -195,7 +195,7 @@ export const NumberField = defineComponent({
           "input",
           mergeProps(attrs, field.controlAttrs.value, {
             ref: element,
-            class: "nq-input nq-number-field",
+            class: "hw-input hw-number-field",
             type: "number",
             disabled: props.disabled,
             readonly: props.readonly,
@@ -211,7 +211,7 @@ export const NumberField = defineComponent({
   },
 });
 export const Slider = defineComponent({
-  name: "NqSlider",
+  name: "HwSlider",
   inheritAttrs: false,
   props: numberProps,
   emits: { "update:modelValue": (_value: number) => true },
@@ -233,7 +233,7 @@ export const Slider = defineComponent({
           "input",
           mergeProps(attrs, field.controlAttrs.value, {
             ref: element,
-            class: "nq-slider",
+            class: "hw-slider",
             type: "range",
             min: props.min,
             max: props.max,
@@ -261,7 +261,7 @@ export const Slider = defineComponent({
   },
 });
 export const RangeSlider = defineComponent({
-  name: "NqRangeSlider",
+  name: "HwRangeSlider",
   inheritAttrs: false,
   props: {
     ...numberProps,
@@ -295,20 +295,20 @@ export const RangeSlider = defineComponent({
       return h(
         "fieldset",
         mergeProps(attrs, {
-          class: "nq-field nq-range-slider",
+          class: "hw-field hw-range-slider",
           disabled: props.disabled,
           "aria-describedby": field.controlAttrs.value["aria-describedby"],
           "aria-invalid": field.controlAttrs.value["aria-invalid"],
         }),
         [
-          props.label && h("legend", { class: "nq-label" }, props.label),
+          props.label && h("legend", { class: "hw-label" }, props.label),
           ...(["lower", "upper"] as const).map((side, index) =>
-            h("label", { class: "nq-label" }, [
+            h("label", { class: "hw-label" }, [
               side === "lower" ? props.lowerLabel : props.upperLabel,
               h("input", {
                 ref: index === 0 ? element : undefined,
                 type: "range",
-                class: "nq-slider",
+                class: "hw-slider",
                 name: side === "lower" ? props.lowerName : props.upperName,
                 form: attrs.form,
                 min: index === 0 ? props.min : values[0],
@@ -340,13 +340,13 @@ export const RangeSlider = defineComponent({
           props.hint &&
             h(
               "span",
-              { id: `${field.id.value}-hint`, class: "nq-hint" },
+              { id: `${field.id.value}-hint`, class: "hw-hint" },
               props.hint,
             ),
           props.error &&
             h(
               "span",
-              { id: `${field.id.value}-error`, class: "nq-error" },
+              { id: `${field.id.value}-error`, class: "hw-error" },
               props.error,
             ),
         ],
@@ -355,7 +355,7 @@ export const RangeSlider = defineComponent({
   },
 });
 export const Rating = defineComponent({
-  name: "NqRating",
+  name: "HwRating",
   inheritAttrs: false,
   props: {
     ...numberProps,
@@ -381,14 +381,14 @@ export const Rating = defineComponent({
       return h(
         "fieldset",
         mergeProps(attrs, {
-          class: "nq-field nq-rating",
+          class: "hw-field hw-rating",
           disabled: props.disabled,
-          "data-nq-readonly": props.readonly || undefined,
+          "data-hw-readonly": props.readonly || undefined,
           "aria-describedby": field.controlAttrs.value["aria-describedby"],
           "aria-invalid": props.error ? true : undefined,
         }),
         [
-          props.label && h("legend", { class: "nq-label" }, props.label),
+          props.label && h("legend", { class: "hw-label" }, props.label),
           ...Array.from({ length: count }, (_, index) =>
             h(
               "label",
@@ -431,13 +431,13 @@ export const Rating = defineComponent({
           props.hint &&
             h(
               "span",
-              { id: `${field.id.value}-hint`, class: "nq-hint" },
+              { id: `${field.id.value}-hint`, class: "hw-hint" },
               props.hint,
             ),
           props.error &&
             h(
               "span",
-              { id: `${field.id.value}-error`, class: "nq-error" },
+              { id: `${field.id.value}-error`, class: "hw-error" },
               props.error,
             ),
         ],
@@ -447,7 +447,7 @@ export const Rating = defineComponent({
 });
 /** Read-only aggregate score; Rating remains an integer radio input. */
 export const RatingDisplay = defineComponent({
-  name: 'NqRatingDisplay', inheritAttrs: false,
+  name: 'HwRatingDisplay', inheritAttrs: false,
   props: {
     label: {type: String, required: true}, value: {type: Number, default: 0},
     max: {type: Number, default: 5}, showValue: {type: Boolean, default: true},
@@ -456,15 +456,15 @@ export const RatingDisplay = defineComponent({
   setup(props, {attrs}) {
     return () => {
       const total = normalizeRatingMax(props.max), score = normalizeRatingValue(props.value, total);
-      return h('div', mergeProps(attrs, {class: 'nq-rating-display', role: 'img', 'aria-label': attrs['aria-label'] ?? `${props.label}: ${props.valueLabel(score, total)}`}), [
-        h('span', {class: 'nq-rating-stars', 'aria-hidden': 'true'}, Array.from({length: total}, (_, index) => h('span', {class: 'nq-rating-star', key: index}, ['★', h('span', {class: 'nq-rating-fill', style: {'--nq-rating-fill': `${Math.min(1, Math.max(0, score - index)) * 100}%`}})]))),
-        props.showValue && h('span', {class: 'nq-rating-score', 'aria-hidden': 'true'}, `${score}/${total}`),
+      return h('div', mergeProps(attrs, {class: 'hw-rating-display', role: 'img', 'aria-label': attrs['aria-label'] ?? `${props.label}: ${props.valueLabel(score, total)}`}), [
+        h('span', {class: 'hw-rating-stars', 'aria-hidden': 'true'}, Array.from({length: total}, (_, index) => h('span', {class: 'hw-rating-star', key: index}, ['★', h('span', {class: 'hw-rating-fill', style: {'--hw-rating-fill': `${Math.min(1, Math.max(0, score - index)) * 100}%`}})]))),
+        props.showValue && h('span', {class: 'hw-rating-score', 'aria-hidden': 'true'}, `${score}/${total}`),
       ]);
     };
   },
 });
 export const PinInput = defineComponent({
-  name: "NqPinInput",
+  name: "HwPinInput",
   inheritAttrs: false,
   props: { ...textProps, length: { type: Number, default: 6 } },
   emits: {
@@ -492,7 +492,7 @@ export const PinInput = defineComponent({
           "input",
           mergeProps(attrs, field.controlAttrs.value, {
             ref: element,
-            class: "nq-input nq-pin-input",
+            class: "hw-input hw-pin-input",
             type: "text",
             autocomplete: "one-time-code",
             inputmode: "numeric",
@@ -517,7 +517,7 @@ export const PinInput = defineComponent({
   },
 });
 export const TagInput = defineComponent({
-  name: "NqTagInput",
+  name: "HwTagInput",
   inheritAttrs: false,
   props: {
     ...arrayProps,
@@ -559,12 +559,12 @@ export const TagInput = defineComponent({
       return decorate(
         props,
         field.id.value,
-        h("div", { class: "nq-tag-input" }, [
+        h("div", { class: "hw-tag-input" }, [
           h(
             "ul",
             {},
             model.value.value.map((value) =>
-              h("li", { class: "nq-chip", key: value }, [
+              h("li", { class: "hw-chip", key: value }, [
                 value,
                 h(
                   Button,
@@ -585,7 +585,7 @@ export const TagInput = defineComponent({
             mergeProps(rest, field.controlAttrs.value, {
               ref: element,
               form,
-              class: "nq-input",
+              class: "hw-input",
               value: query.value,
               required: undefined,
               "aria-required": field.controlAttrs.value.required || undefined,
@@ -627,7 +627,7 @@ export const TagInput = defineComponent({
   },
 });
 export const MultiSelect = defineComponent({
-  name: "NqMultiSelect",
+  name: "HwMultiSelect",
   inheritAttrs: false,
   props: {
     ...arrayProps,
@@ -664,12 +664,12 @@ export const MultiSelect = defineComponent({
       return h(
         "fieldset",
         {
-          class: "nq-field nq-multi-select",
+          class: "hw-field hw-multi-select",
           disabled: props.disabled,
           "aria-describedby": field.controlAttrs.value["aria-describedby"],
         },
         [
-          props.label && h("legend", { class: "nq-label" }, props.label),
+          props.label && h("legend", { class: "hw-label" }, props.label),
           h(
             "input",
             mergeProps(attrs, {
@@ -677,7 +677,7 @@ export const MultiSelect = defineComponent({
               id: field.id.value,
               name: undefined,
               type: "search",
-              class: "nq-input",
+              class: "hw-input",
               "aria-label": props.searchLabel,
               "aria-required": field.controlAttrs.value.required || undefined,
               "aria-describedby": field.controlAttrs.value["aria-describedby"],
@@ -691,12 +691,12 @@ export const MultiSelect = defineComponent({
           ),
           h(
             "div",
-            { class: "nq-multi-select-options" },
+            { class: "hw-multi-select-options" },
             options.map((option) =>
-              h("label", { class: "nq-choice", key: option.value }, [
+              h("label", { class: "hw-choice", key: option.value }, [
                 h("input", {
                   type: "checkbox",
-                  class: "nq-checkbox",
+                  class: "hw-checkbox",
                   checked: selected.value.includes(option.value),
                   disabled: props.disabled || props.readonly || option.disabled,
                   onChange: (event: Event) => {
@@ -728,13 +728,13 @@ export const MultiSelect = defineComponent({
           props.hint &&
             h(
               "span",
-              { id: `${field.id.value}-hint`, class: "nq-hint" },
+              { id: `${field.id.value}-hint`, class: "hw-hint" },
               props.hint,
             ),
           props.error &&
             h(
               "span",
-              { id: `${field.id.value}-error`, class: "nq-error" },
+              { id: `${field.id.value}-error`, class: "hw-error" },
               props.error,
             ),
         ],
@@ -743,7 +743,7 @@ export const MultiSelect = defineComponent({
   },
 });
 export const FileDropzone = defineComponent({
-  name: "NqFileDropzone",
+  name: "HwFileDropzone",
   inheritAttrs: false,
   props: {
     ...decorationProps,
@@ -807,7 +807,7 @@ export const FileDropzone = defineComponent({
         h(
           "div",
           {
-            class: "nq-file-dropzone",
+            class: "hw-file-dropzone",
             "data-dragging": dragging.value ? "true" : undefined,
             onDragover: (event: DragEvent) => {
               event.preventDefault();
@@ -828,7 +828,7 @@ export const FileDropzone = defineComponent({
               "input",
               mergeProps(attrs, field.controlAttrs.value, {
                 ref: element,
-                class: "nq-input",
+                class: "hw-input",
                 type: "file",
                 accept: props.accept,
                 multiple: props.multiple,

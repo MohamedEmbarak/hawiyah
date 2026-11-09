@@ -9,17 +9,17 @@ export function avatarDemoCases(locale: Locale) {
   const name=t('Example user','مستخدم تجريبي');
   return [
     ...(['40','64','80','120'] as const).map(size=>({title:t(`Image · ${size}px`,`صورة · ${size} بكسل`),name,size,variant:'circle' as const,src:avatarDemoImage,initials:undefined})),
-    {title:t('Square image · Nasaq extension','صورة مربعة · امتداد من نسق'),name,size:'64',variant:'square' as const,src:avatarDemoImage,initials:undefined},
+    {title:t('Square image · Hawiyah extension','صورة مربعة · امتداد من هوية'),name,size:'64',variant:'square' as const,src:avatarDemoImage,initials:undefined},
     {title:t('Name-derived initials','أحرف مشتقة من الاسم'),name,size:'64',variant:'circle' as const,src:undefined,initials:undefined},
-    {title:t('Explicit initials','أحرف مختصرة محددة'),name:t('Nasaq team','فريق نسق'),size:'64',variant:'circle' as const,src:undefined,initials:t('NQ','نس')},
+    {title:t('Explicit initials','أحرف مختصرة محددة'),name:t('Hawiyah team','فريق هوية'),size:'64',variant:'circle' as const,src:undefined,initials:t('NQ','نس')},
   ];
 }
 
 export function avatarDemoMarkup(item: ReturnType<typeof avatarDemoCases>[number]) {
   const appearance=`data-size="${item.size}" data-variant="${item.variant}"`;
-  if(item.src)return `<span class="nq-avatar" ${appearance}><img src="${item.src}" alt="${item.name}"></span>`;
+  if(item.src)return `<span class="hw-avatar" ${appearance}><img src="${item.src}" alt="${item.name}"></span>`;
   const initials=item.initials??item.name.trim().split(/\s+/u).slice(0,2).map(part=>Array.from(part)[0]).join('');
-  return `<span class="nq-avatar" ${appearance} role="img" aria-label="${item.name}"><span aria-hidden="true">${initials}</span></span>`;
+  return `<span class="hw-avatar" ${appearance} role="img" aria-label="${item.name}"><span aria-hidden="true">${initials}</span></span>`;
 }
 
 export function avatarDemoProps(item: ReturnType<typeof avatarDemoCases>[number]) {

@@ -1,46 +1,46 @@
-# Modify and extend Nasaq
+# Modify and extend Hawiyah
 
 Choose the narrowest extension point that solves the product need. Theme values change appearance; documented variants change a component presentation; blocks compose reusable controls; new primitives are added when the interaction itself is reusable.
 
 ## Change appearance through tokens
 
-The theme contract uses `data-nq-theme`, `data-nq-mode`, `data-nq-density`, and `--nq-` variables. Find the actual semantic variable in the token source, then override it in an application-owned stylesheet loaded after Nasaq. Keep overrides scoped to the intended theme or application container. Avoid editing generated output.
+The theme contract uses `data-hw-theme`, `data-hw-mode`, `data-hw-density`, and `--hw-` variables. Find the actual semantic variable in the token source, then override it in an application-owned stylesheet loaded after Hawiyah. Keep overrides scoped to the intended theme or application container. Avoid editing generated output.
 
-The default appearance is `dga`, using verified foundation values from the supplied **2026-10-29** snapshot. Select `data-nq-theme="nasaq"` explicitly for the teal/ivory identity. Use `custom` for application-owned overrides, and record any departure from the mapped reference that affects an alignment claim. [The reference record](dga-reference.md) identifies the source boundary; a custom theme is not certified by inheriting these tokens.
+The default appearance is `dga`, using verified foundation values from the supplied **2026-10-29** snapshot. Select `data-hw-theme="hawiyah"` explicitly for the teal/ivory identity. Use `custom` for application-owned overrides, and record any departure from the mapped reference that affects an alignment claim. [The reference record](dga-reference.md) identifies the source boundary; a custom theme is not certified by inheriting these tokens.
 
 Treat a semantic token as a relationship: a surface color must be evaluated with its text, border, focus, hover, disabled, and error colors. Changing one accent does not establish that the resulting theme passes contrast checks. Recheck light/dark and RTL/LTR configurations relevant to the product.
 
 For example, an application can define a scoped light theme:
 
 ```css
-[data-nq-theme="custom"][data-nq-mode="light"] {
-  --nq-color-primary: #005b56;
-  --nq-color-primary-hover: #004b47;
-  --nq-color-primary-active: #003b38;
-  --nq-color-on-primary: #ffffff;
-  --nq-radius-md: 0.75rem;
+[data-hw-theme="custom"][data-hw-mode="light"] {
+  --hw-color-primary: #005b56;
+  --hw-color-primary-hover: #004b47;
+  --hw-color-primary-active: #003b38;
+  --hw-color-on-primary: #ffffff;
+  --hw-radius-md: 0.75rem;
 }
 ```
 
 These are illustrative application overrides, not official DGA token values. Inspect `packages/tokens/tokens.json` for the complete source and `packages/tokens/src/index.ts` for the typed helper:
 
 ```ts
-import { createThemeVariables } from '@nasaq/tokens';
+import { createThemeVariables } from '@hawiyah/tokens';
 
 const variables = createThemeVariables(
-  { '--nq-radius-md': '0.75rem' },
+  { '--hw-radius-md': '0.75rem' },
   { theme: 'custom', mode: 'light', density: 'comfortable' },
 );
 ```
 
-The helper returns a plain variable map; the application decides where to apply it. `custom` starts from the DGA default; explicit `nasaq` uses its own palette and font/radius/spacing/content metrics. Control densities remain shared across both themes; see the [migration sizes](dga-reference.md#migrating-an-existing-nasaq-application) before adopting the updated defaults. Inspect the selected base values as well as the overrides when checking a custom theme. Token changes should be made in the source and regenerated with `pnpm --filter @nasaq/tokens generate`, not by editing generated CSS.
+The helper returns a plain variable map; the application decides where to apply it. `custom` starts from the DGA default; explicit `hawiyah` uses its own palette and font/radius/spacing/content metrics. Control densities remain shared across both themes; see the [migration sizes](dga-reference.md#migrating-an-existing-hawiyah-application) before adopting the updated defaults. Inspect the selected base values as well as the overrides when checking a custom theme. Token changes should be made in the source and regenerated with `pnpm --filter @hawiyah/tokens generate`, not by editing generated CSS.
 
 ## Use documented variants
 
 Button appearance is expressed through the shared class and attributes:
 
 ```html
-<button type="button" class="nq-button"
+<button type="button" class="hw-button"
         data-variant="secondary" data-size="sm">
   Save draft
 </button>
@@ -55,12 +55,12 @@ Native `disabled`, validation semantics, and supported ARIA/state attributes des
 The application owns this service-card composition:
 
 ```html
-<article class="nq-card">
-  <div class="nq-card-body">
-    <span class="nq-badge" data-tone="info">Online service</span>
+<article class="hw-card">
+  <div class="hw-card-body">
+    <span class="hw-badge" data-tone="info">Online service</span>
     <h2>Update a request</h2>
     <p>Review the requirements before changing your application.</p>
-    <a class="nq-button" data-variant="secondary" href="/services/update">
+    <a class="hw-button" data-variant="secondary" href="/services/update">
       View requirements
     </a>
   </div>
@@ -95,12 +95,12 @@ Keep visible labels connected to controls, help and error text discoverable, foc
 
 Prefer an additive variant or a new block when existing behavior can remain intact. A renamed export, removed prop, changed event meaning, changed required markup, or altered documented token is a public API change. Record the effect on all adapters and provide a migration path before releasing it. Do not promise that arbitrary private selector overrides will survive an internal rewrite.
 
-Switching the default appearance from the earlier Nasaq palette to the mapped DGA foundation is a visual migration even when component exports remain unchanged. Explicitly select the intended theme in existing applications, review source-derived spacing and typography changes, and repeat relevant contrast, reflow, focus and state checks. Keep behavior and calendar-value contracts independent from the appearance change.
+Switching the default appearance from the earlier Hawiyah palette to the mapped DGA foundation is a visual migration even when component exports remain unchanged. Explicitly select the intended theme in existing applications, review source-derived spacing and typography changes, and repeat relevant contrast, reflow, focus and state checks. Keep behavior and calendar-value contracts independent from the appearance change.
 
 ## AI-assisted workflow
 
 Give the assistant the desired task, framework, locale, direction, theme, data states, and constraints. Ask it to inspect actual exports and an existing example before editing. A useful request is:
 
-> Build a request-review block using the existing Nasaq components in this application. Use Arabic with RTL layout, show loading and validation states, keep business data outside the primitives, and preserve keyboard behavior. Inspect the component catalog and actual adapter APIs first. Report any component you need to add and verify the affected flow.
+> Build a request-review block using the existing Hawiyah components in this application. Use Arabic with RTL layout, show loading and validation states, keep business data outside the primitives, and preserve keyboard behavior. Inspect the component catalog and actual adapter APIs first. Report any component you need to add and verify the affected flow.
 
 The assistant should extend source files and tests through public contracts, not patch generated `dist` files or invent package exports. `llms.txt` and `components.json` help navigation; they do not replace reading the implementation.

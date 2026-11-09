@@ -21,18 +21,18 @@ async function descriptions(input: Locator) {
 for (const [framework, language, locale] of projects) {
   test(`six ${framework} ${language} basic input projects preserve form values in ${locale}`, async ({page}) => {
     test.setTimeout(360000);
-    await page.addInitScript(locale => {if (window === window.top) localStorage.setItem('nasaq-locale', locale);}, locale);
+    await page.addInitScript(locale => {if (window === window.top) localStorage.setItem('hawiyah-locale', locale);}, locale);
     const ar = locale === 'ar';
     for (const id of ids) await test.step(id, async () => {
       await page.goto(`/#component/${id}`);
       await page.locator('[data-guide-tab="playground"]').click();
       await page.locator('[data-project-framework]').selectOption(framework);
       if (framework !== 'angular') await page.locator('[data-project-language]').selectOption(language);
-      await expect(page.locator('.nq-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 45000});
-      const form = page.frameLocator('.nq-ide-frame').locator(`form[data-basic-input-project="${id}"]`);
+      await expect(page.locator('.hw-ide-status')).toHaveAttribute('data-state', 'ready', {timeout: 45000});
+      const form = page.frameLocator('.hw-ide-frame').locator(`form[data-basic-input-project="${id}"]`);
       const output = form.locator('[data-basic-value]'), reset = form.locator('button[type="reset"]');
       await expect(form).toBeVisible();
-      if (framework !== 'vanilla') await expect(page.locator('[data-ide-editor="html"] .cm-content')).toContainText(`@nasaq/${framework}`);
+      if (framework !== 'vanilla') await expect(page.locator('[data-ide-editor="html"] .cm-content')).toContainText(`@hawiyah/${framework}`);
       switch (id) {
         case 'field': {
           const input = form.getByRole('textbox', {name: ar ? 'اسم الخدمة' : 'Service name'});
@@ -55,7 +55,7 @@ for (const [framework, language, locale] of projects) {
         }
         case 'input-group': {
           const input = form.getByRole('spinbutton', {name: ar ? 'المبلغ بالريال السعودي' : 'Amount in Saudi riyals'});
-          const symbol = form.locator('.nq-input-addon .nq-riyal');
+          const symbol = form.locator('.hw-input-addon .hw-riyal');
           await expect(symbol).toHaveText('⃁');
           await expect(symbol).toHaveAttribute('aria-hidden', 'true');
           expect(await symbol.evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(24);
@@ -70,11 +70,11 @@ for (const [framework, language, locale] of projects) {
         }
         case 'password-field': {
           const input = form.locator('input[name="password"]');
-          const toggle = form.locator('.nq-password-toggle');
+          const toggle = form.locator('.hw-password-toggle');
           await expect(input).toHaveAccessibleName(ar ? 'كلمة مرور تجريبية' : 'Demo password');
           await expect(input).toHaveAttribute('type', 'password');
           await expect(input).toHaveAttribute('autocomplete', 'new-password');
-          await expect(toggle.locator('.nq-password-icon')).toHaveCount(1);
+          await expect(toggle.locator('.hw-password-icon')).toHaveCount(1);
           await expect(toggle).toHaveAttribute('aria-controls', await input.getAttribute('id') as string);
           await input.fill('demo-example-24');
           await expect(output).toHaveText(ar ? 'تم الإدخال' : 'Entered');
@@ -136,7 +136,7 @@ for (const [framework, language, locale] of projects) {
         }
       }
       await expect(page).toHaveURL(new RegExp(`#component/${id}$`));
-      await expect(page.locator('.nq-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
+      await expect(page.locator('.hw-ide-console')).not.toContainText(/Failed to resolve component|\[error\]/);
     });
   });
 }

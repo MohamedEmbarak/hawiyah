@@ -17,16 +17,16 @@ not a supplied standalone web component library.
 The set contains Brand, Gray, Error, Warning, Success and Info roles, Light,
 Outline and Dark treatments, and circular/square variants. The outline uses a
 1px inside stroke. The composition is now available through the existing
-`.nq-icon-background` class with `data-variant="featured"`. Use `data-size`,
+`.hw-icon-background` class with `data-variant="featured"`. Use `data-size`,
 `data-shape="square"`, `data-tone="brand|neutral|error|warning|success|info"`
 and `data-style="light|outline|dark"`. Omitted values are md, circle, brand and
 light. All four adapters own this ordinary markup through their normal slots.
 
 ```html
 <p>
-  <span class="nq-icon-background" data-variant="featured" data-size="lg"
+  <span class="hw-icon-background" data-variant="featured" data-size="lg"
         data-tone="success" aria-hidden="true">
-    <span class="nq-icon" data-icon="checkmark-circle-02"></span>
+    <span class="hw-icon" data-icon="checkmark-circle-02"></span>
   </span>
   تم حفظ البيانات بنجاح
 </p>
@@ -39,11 +39,11 @@ example is the 28px glyph inside the Featured 56px container. The existing large
 artwork sizing APIs remain configurable for application-specific compositions.
 
 The NIC `.icon-bg` helpers are a separate source convention measuring 30/48/48px.
-Existing `.nq-icon-background` markup without the featured variant preserves that
+Existing `.hw-icon-background` markup without the featured variant preserves that
 contract. A Featured xl container now reserves the correct 56px rather than
 enlarging a glyph inside the NIC 48px background.
 
-Colors follow Nasaq's semantic roles. This is explicit normalization of a mixed
+Colors follow Hawiyah's semantic roles. This is explicit normalization of a mixed
 source version. The imported Brand Dark fill resolves to #079455, while the
 current approved NIC primary is #1B8354. Gray Light in the imported set resolves
 to #F9FAFB, while the shared muted surface is #F3F4F6. Brand/neutral are for

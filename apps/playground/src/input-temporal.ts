@@ -36,11 +36,11 @@ export function inputTemporalMarkup(kind: InputTemporalKind, locale: Locale): st
     : kind === 'week' ? t('ISO week · choose any day in the week', 'أسبوع ISO · اختر أي يوم في الأسبوع')
       : t('Local date and time · choose a date', 'التاريخ والوقت المحلي · اختر التاريخ');
   const picker = expandedSample('date-picker', `input-lab-${kind}`, locale)
-    .replace('data-nq-calendar="islamic-umalqura"', 'data-nq-calendar="gregory"')
+    .replace('data-hw-calendar="islamic-umalqura"', 'data-hw-calendar="gregory"')
     .replace('name="appointment"', 'name=""')
     .replace(t('Appointment · Umm al-Qura picker', 'الموعد · تقويم أم القرى'), e(label));
   const projected = projectInputTemporal(kind, initialDate, initialTime);
-  return `<div class="nq-stack" data-input-temporal="${kind}" data-temporal-default="${initialDate}" data-temporal-locale="${locale}">${picker}${kind === 'datetime-local' ? `<label class="nq-field"><span class="nq-label">${t('Local time (no timezone)', 'الوقت المحلي (دون منطقة زمنية)')}</span><input class="nq-input" type="time" value="${initialTime}" data-temporal-time></label>` : ''}<input type="hidden" name="${kind}" value="${projected}" data-temporal-value><p class="nq-hint">${t('Submitted Gregorian ISO value', 'القيمة الميلادية المرسلة بصيغة ISO')}: <output data-temporal-output dir="ltr" aria-live="polite">${projected}</output></p></div>`;
+  return `<div class="hw-stack" data-input-temporal="${kind}" data-temporal-default="${initialDate}" data-temporal-locale="${locale}">${picker}${kind === 'datetime-local' ? `<label class="hw-field"><span class="hw-label">${t('Local time (no timezone)', 'الوقت المحلي (دون منطقة زمنية)')}</span><input class="hw-input" type="time" value="${initialTime}" data-temporal-time></label>` : ''}<input type="hidden" name="${kind}" value="${projected}" data-temporal-value><p class="hw-hint">${t('Submitted Gregorian ISO value', 'القيمة الميلادية المرسلة بصيغة ISO')}: <output data-temporal-output dir="ltr" aria-live="polite">${projected}</output></p></div>`;
 }
 
 /** Bind after enhance(), so DatePicker accepts canonical values before projection. */
@@ -48,7 +48,7 @@ export function bindInputTemporal(root: HTMLElement): () => void {
   const disposers: (() => void)[] = [];
   for (const wrapper of root.querySelectorAll<HTMLElement>('[data-input-temporal]')) {
     const kind = wrapper.dataset.inputTemporal as InputTemporalKind;
-    const picker = wrapper.querySelector<HTMLElement>('[data-nq="date-picker"]')!;
+    const picker = wrapper.querySelector<HTMLElement>('[data-hw="date-picker"]')!;
     const hidden = wrapper.querySelector<HTMLInputElement>('[data-temporal-value]')!;
     const output = wrapper.querySelector<HTMLOutputElement>('[data-temporal-output]')!;
     const time = wrapper.querySelector<HTMLInputElement>('[data-temporal-time]');
@@ -69,9 +69,9 @@ export function bindInputTemporal(root: HTMLElement): () => void {
       if (destroyed || event.defaultPrevented) return;
       date = wrapper.dataset.temporalDefault || ''; update();
     });
-    picker.addEventListener('nq:change', selected); time?.addEventListener('input', update); time?.addEventListener('change', update); hidden.form?.addEventListener('reset', reset);
+    picker.addEventListener('hw:change', selected); time?.addEventListener('input', update); time?.addEventListener('change', update); hidden.form?.addEventListener('reset', reset);
     const form = hidden.form;
-    disposers.push(() => { destroyed = true; picker.removeEventListener('nq:change', selected); time?.removeEventListener('input', update); time?.removeEventListener('change', update); form?.removeEventListener('reset', reset); time?.setCustomValidity(''); });
+    disposers.push(() => { destroyed = true; picker.removeEventListener('hw:change', selected); time?.removeEventListener('input', update); time?.removeEventListener('change', update); form?.removeEventListener('reset', reset); time?.setCustomValidity(''); });
     update();
   }
   return () => disposers.splice(0).forEach(dispose => dispose());

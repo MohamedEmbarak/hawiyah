@@ -4,7 +4,7 @@ This record updates the 2026-10-29 source audit during the implementation work b
 
 ## What newly accessible sources change
 
-All **23 supplied files** are decoded, including the six previously blocked by remote transfer size. The [inventory](dga-source-inventory.md) records exact filenames, sizes, SHA-256 hashes and export metadata. No standalone web Components Library was supplied. **Hajj is an application-specific design and is excluded from Nasaq implementation scope and backlog.** Historical inventory counts include that file, without making its features requirements for Nasaq.
+All **23 supplied files** are decoded, including the six previously blocked by remote transfer size. The [inventory](dga-source-inventory.md) records exact filenames, sizes, SHA-256 hashes and export metadata. No standalone web Components Library was supplied. **Hajj is an application-specific design and is excluded from Hawiyah implementation scope and backlog.** Historical inventory counts include that file, without making its features requirements for Hawiyah.
 
 The new evidence strengthens the case for Home and Search compositions, a reusable responsive portal shell, and explicit mobile input sizing. It does **not** require replacing the mapped foundation: all 40 selected Foundations variables match the decoded source values. It also confirms that source mobile control dimensions differ from the existing web density. These differences require an additive mapping rather than a global token replacement.
 
@@ -18,9 +18,9 @@ Short source names below expand to exact filenames in the inventory. **Decoded**
 
 | Source file / node | Requirement or observed value | Implementation at baseline → current work | Mismatch / classification | Recommended action and status | Confidence |
 |---|---|---|---|---|---|
-| Nasaq runtime audit; Mobile input state set `3149:54894` supplies related read-only state evidence | A read-only value must not trap keyboard navigation; Figma metadata does not establish Tab behavior | `packages/vanilla/src/controls.ts` cancelled every read-only RangeSlider keydown → now cancels value-changing keys only | **Confirmed defect** in Nasaq keyboard behavior | Fix implemented; unit and browser RTL/LTR Tab/Shift+Tab regressions added; verification recorded separately | High: implementation and reproduced runtime defect |
+| Hawiyah runtime audit; Mobile input state set `3149:54894` supplies related read-only state evidence | A read-only value must not trap keyboard navigation; Figma metadata does not establish Tab behavior | `packages/vanilla/src/controls.ts` cancelled every read-only RangeSlider keydown → now cancels value-changing keys only | **Confirmed defect** in Hawiyah keyboard behavior | Fix implemented; unit and browser RTL/LTR Tab/Shift+Tab regressions added; verification recorded separately | High: implementation and reproduced runtime defect |
 | Mobile `3149:54894`; underline `11167:15723` → `11167:15747` | Decoded pressed/focused underline changes from 35% to 100%; read-only is a separate state | Filled focus selectors overrode read-only suppression in `packages/styles/src/dga.css` → editable-only selectors | **Confirmed defect**: filled read-only fields displayed an underline plus inset focus | Fix implemented; light/dark and forced-colors browser regressions added. Preserve single inset read-only focus | High: decoded source and reproduced runtime defect |
-| Mobile input `3149:54894`, Dropdown `3534:49934`, Textarea `5462:417368`; Nasaq shared `data-size`/`data-variant` contract | Source provides multiple visual/state choices; Nasaq exposes its own documented size and filled variant | Angular native TextField/Textarea/Select lacked forwarding → `size` and `visualVariant` now target native controls | **Confirmed adapter gap**, not a promise to implement every mobile source variant | Fix implemented and Angular binding regression added; eight Angular native component tests passed; see validation | High: source and adapter inspection |
+| Mobile input `3149:54894`, Dropdown `3534:49934`, Textarea `5462:417368`; Hawiyah shared `data-size`/`data-variant` contract | Source provides multiple visual/state choices; Hawiyah exposes its own documented size and filled variant | Angular native TextField/Textarea/Select lacked forwarding → `size` and `visualVariant` now target native controls | **Confirmed adapter gap**, not a promise to implement every mobile source variant | Fix implemented and Angular binding regression added; eight Angular native component tests passed; see validation | High: source and adapter inspection |
 | Home `62:45927`, `62:45930`; Search `39:53390`, `39:53393`, `266:28917` | Decoded guidance preserves header structure/colors/fonts; optional secondary navigation. Rendered Home `176:9378` shows open header search | Existing PortalHeader implementations lacked consistent responsive disclosure behavior | **Missing component composition / behavior** | Responsive PortalHeader, SecondaryNav and PortalLayout implemented across native adapters, with Escape/outside close, focus return, RTL and responsive tests; see validation | High for source structure; exact parity unestablished |
 | Home `861:9628`; Search `39:53428` | Decoded footer structure guidance; rendered desktop Home has a multi-column green footer | Simplified footer and shared layout primitives exist | **Missing reusable layout coverage**, with existing simplification an adaptation | Implemented reusable footer, breadcrumbs, content container and page shell. Consumer content and slots remain explicit; no claim of exact official reconstruction | High for structure |
 | Home `176:9378`, `72:46744`, hero `72:46782`, services `72:46864` | Rendered desktop has hero, statistics, services, news, partners and footer. Mobile hero/services use 16 px inline / 40 px block padding and 32 px gaps | No Home gallery recipe at baseline → Home composition implemented in `apps/playground/src/discovery-templates.ts` | **Missing page template** | Arabic-default bilingual responsive recipe; content-driven hero height, meaningful actions, reduced-motion support. Do not infer autoplay from pagination dots | High for composition and selected geometry |
@@ -48,19 +48,19 @@ exports remain local pending specific redistribution evidence. See the
 
 ## Preserved product decisions
 
-Arabic remains the default; locale and direction are independent. The Nasaq mark remains the Arabic-only outlined wordmark. NIC artwork keeps original colors in light mode and becomes entirely white in dark mode. DGA editable focus uses an animated green underline, red when invalid, without a duplicate outer ring; read-only and forced-colors states retain visible keyboard focus. These approved adaptations must not be overwritten by a neutral source underline.
+Arabic remains the default; locale and direction are independent. The Hawiyah mark remains the Arabic-only outlined wordmark. NIC artwork keeps original colors in light mode and becomes entirely white in dark mode. DGA editable focus uses an animated green underline, red when invalid, without a duplicate outer ring; read-only and forced-colors states retain visible keyboard focus. These approved adaptations must not be overwritten by a neutral source underline.
 
-Original Nasaq and custom themes remain supported. Public `nq-` classes and `--nq-` variables remain stable, and each framework owns its DOM. Calendar values remain ISO dates with the pinned Umm al-Qura provider; a visual audit does not change calendar calculations. Seasonal Founding/National Day presentations are optional product decisions. Hajj is not a Nasaq backlog item.
+Original Hawiyah and custom themes remain supported. Public `hw-` classes and `--hw-` variables remain stable, and each framework owns its DOM. Calendar values remain ISO dates with the pinned Umm al-Qura provider; a visual audit does not change calendar calculations. Seasonal Founding/National Day presentations are optional product decisions. Hajj is not a Hawiyah backlog item.
 
 ## Remaining evidence limits
 
 Representative Mobile, Home and Search frames were observed in the native Figma application. Project names and selected node IDs correspond to the decoded exports; the project copies were not byte-verified against those archives. Mobile input `3149:55023` / body `11167:15771` / underline `11167:15772` visually corroborates the pale filled body, radius 4 and short dark pressed underline. Home and Search observations establish composition and selected dimensions, not every typographic or spacing detail.
 
-No exhaustive Nasaq–Figma pixel comparison, prototype playback audit, manual screen-reader assessment, full four-adapter state matrix, or mobile dark-mode parity is established by those views. Hover references into older internal symbols and ambiguous imported alias modes need explicit source/version resolution. No standalone web Components Library means exhaustive official web-component coverage remains unresolved. Source correspondence and passing automated tests do not establish DGA certification.
+No exhaustive Hawiyah–Figma pixel comparison, prototype playback audit, manual screen-reader assessment, full four-adapter state matrix, or mobile dark-mode parity is established by those views. Hover references into older internal symbols and ambiguous imported alias modes need explicit source/version resolution. No standalone web Components Library means exhaustive official web-component coverage remains unresolved. Source correspondence and passing automated tests do not establish DGA certification.
 
 ## Implemented mobile sizing follow-up — 2026-11-01
 
-Mobile input/body `3149:54894` / `11167:15771` and button nodes `407:510377`, `407:510548`, `407:510617` now inform the opt-in `mobile` density: 44 px single-line field minimum and 32/40/44 px buttons at a 16 px root size. Comfortable/compact defaults remain intact. Textareas retain multiline sizing; all adapters consume the same CSS. Confidence is high for decoded dimensions and rendered Nasaq geometry, not exhaustive visual parity. The profile is available in the bilingual Foundations guide. Hajj remains out of scope.
+Mobile input/body `3149:54894` / `11167:15771` and button nodes `407:510377`, `407:510548`, `407:510617` now inform the opt-in `mobile` density: 44 px single-line field minimum and 32/40/44 px buttons at a 16 px root size. Comfortable/compact defaults remain intact. Textareas retain multiline sizing; all adapters consume the same CSS. Confidence is high for decoded dimensions and rendered Hawiyah geometry, not exhaustive visual parity. The profile is available in the bilingual Foundations guide. Hajj remains out of scope.
 
 ## Component motion follow-up — 2026-11-01
 
@@ -73,14 +73,14 @@ and dialog/drawer behavior remain unchanged.
 | Switch `5403:403606` → `5403:403570` | SMART_ANIMATE 200 ms, cubic-bezier(.42,0,.58,1); thumb x2→22 in a 52×32 track | DGA/custom switch track and thumb now use component-specific 200 ms ease-in-out. Existing web switch geometry is retained; timing correspondence does not establish shape parity | High, decoded timing |
 | Spinner `5698:11137` → `11143` → `11149` → `11155` → `11137` | Four 250 ms linear quarter-turns; each follows a 1 ms timeout | DGA/custom CSS cycle is 1000 ms, omitting four prototype scheduling waits (1004 ms with waits). This is a documented web mapping, not a 250 ms full rotation | High for segments, explicit cycle mapping |
 | Input `3149:55032` → `3149:55105`; underline `11167:15723` → `11167:15747` | 150 ms ease-out, centered 35%→100% expansion | Existing animated green/red underline retained as approved color adaptation | High, decoded properties |
-| Nasaq reduced-motion stylesheet | Zero-specificity rule lost to button/switch defaults; pseudo-element was inside the functional selector | Corrected explicit selectors stop button, switch track and switch thumb transitions. Existing loading/field suppression retained; state changes remain immediate | High, runtime regression |
+| Hawiyah reduced-motion stylesheet | Zero-specificity rule lost to button/switch defaults; pseudo-element was inside the functional selector | Corrected explicit selectors stop button, switch track and switch thumb transitions. Existing loading/field suppression retained; state changes remain immediate | High, runtime regression |
 | Tab Bar `8332:24202` → `8332:24242` → `8332:24282` | 300 ms ease-out; Normal hover goes to a variant named Pressed, then click to Selected | Not applied to generic tab panels; source naming/trigger mismatch retained as evidence caveat | High, narrow scope |
 | Accordion `1147:62359` → `1147:60867` | 300 ms ease-in-out, 56→256 px example | Enhanced disclosure now animates intrinsic height with native adapter lifecycles, reduced-motion settlement and inert closing content; native unenhanced fallback remains immediate | High for this source edge only |
 | Button-Close `2763:420142` → `2763:420174`; toast child `1730:37107` → `2763:420400` | 200 ms linear hover, destination variants in imported caches | Not applied to toast entry/exit or generic buttons. Most local button hover actions have no explicit timing | High for decoded actions; mixed-library caveat |
 
-`--nq-duration-switch`, `--nq-ease-switch` (thumb),
-`--nq-ease-switch-track`, and `--nq-duration-spinner` allow scoped overrides.
-The original Nasaq theme explicitly retains 180 ms switch timing (standard thumb
+`--hw-duration-switch`, `--hw-ease-switch` (thumb),
+`--hw-ease-switch-track`, and `--hw-duration-spinner` allow scoped overrides.
+The original Hawiyah theme explicitly retains 180 ms switch timing (standard thumb
 easing, CSS ease for the track) and a 700 ms spinner cycle. Custom starts from
 DGA. Reduced motion removes transitions/animations rather than delaying state
 changes; it is an accessibility adaptation, not a property proven by Figma.
@@ -88,11 +88,11 @@ All four adapters use shared CSS and continue to own their DOM. Hajj is excluded
 
 ## Implemented mobile tab-bar presentation — 2026-11-01
 
-SecondaryNav now offers an opt-in mobile variant in all four adapters: equal-width icon-over-label page links, 24 px icons, a 70 px minimum height, safe-area padding and a top selection indicator. Source `8332:24202` → `8332:24242` → `8332:24282` informs 300 ms ease-out color transitions; no positional or panel motion is inferred. Semantic theme colors and currentColor icons are documented adaptations. Reduced motion and the original Nasaq theme remain immediate. See [the composition contract](mobile-navigation.md).
+SecondaryNav now offers an opt-in mobile variant in all four adapters: equal-width icon-over-label page links, 24 px icons, a 70 px minimum height, safe-area padding and a top selection indicator. Source `8332:24202` → `8332:24242` → `8332:24282` informs 300 ms ease-out color transitions; no positional or panel motion is inferred. Semantic theme colors and currentColor icons are documented adaptations. Reduced motion and the original Hawiyah theme remain immediate. See [the composition contract](mobile-navigation.md).
 
 ## Implemented accordion motion — 2026-11-01
 
-Mobile `1147:62359` → `1147:60867` supplies 300 ms ease-in-out expansion timing. Nasaq now animates intrinsic height through native adapter lifecycles, with reversible motion, dynamic-content retargeting, immediate reduced-motion settlement and inert closing content. Native unenhanced markup and the original Nasaq theme remain immediate. The chevron rotation is an adaptation of down/up source symbols, not a decoded rotation. Conflicting title metrics are not animated. See [the lifecycle contract](accordion-motion.md).
+Mobile `1147:62359` → `1147:60867` supplies 300 ms ease-in-out expansion timing. Hawiyah now animates intrinsic height through native adapter lifecycles, with reversible motion, dynamic-content retargeting, immediate reduced-motion settlement and inert closing content. Native unenhanced markup and the original Hawiyah theme remain immediate. The chevron rotation is an adaptation of down/up source symbols, not a decoded rotation. Conflicting title metrics are not animated. See [the lifecycle contract](accordion-motion.md).
 
 ## Modal interaction follow-up — 2026-11-01
 
@@ -111,7 +111,7 @@ Verification scope is recorded in [validation](validation.md).
 
 | Source / implementation evidence | Requirement / observed behavior | Current implementation | Mismatch | Action | Confidence |
 | --- | --- | --- | --- | --- | --- |
-| Nasaq FileDropzone state review; React `expanded-controls.tsx`, Vue `controls.ts`, Angular `advanced-controls.ts` | A native file input can inherit disabled state from a fieldset while its component prop remains false | Drop handlers now consult the input's effective disabled state; vanilla already did | Confirmed adapter defect: drops could change a disabled control's files and emit selection callbacks | Fixed all three native adapters; preserve prior files, cancel blocked drops, retain the native first-legend exception and check changes during a drag | High for code and focused regressions; not a Figma-derived browser rule |
+| Hawiyah FileDropzone state review; React `expanded-controls.tsx`, Vue `controls.ts`, Angular `advanced-controls.ts` | A native file input can inherit disabled state from a fieldset while its component prop remains false | Drop handlers now consult the input's effective disabled state; vanilla already did | Confirmed adapter defect: drops could change a disabled control's files and emit selection callbacks | Fixed all three native adapters; preserve prior files, cancel blocked drops, retain the native first-legend exception and check changes during a drag | High for code and focused regressions; not a Figma-derived browser rule |
 
 This is an accessibility/state-consistency correction found during alignment
 work. It adds no official source requirement or visual-parity claim. Remaining
@@ -124,7 +124,7 @@ excluded.
 Mobile `8335:15376` now maps to native MobileTopBar components and a vanilla
 HTML/CSS recipe. Main title `8335:15565` is 26px bold; internal title/subtitle
 `8335:15402`/`8335:15403` are 14px semibold/12px. Application rows are separate
-from the 44px OS status area, which is excluded. Nasaq uses intrinsic height,
+from the 44px OS status area, which is excluded. Hawiyah uses intrinsic height,
 44px actions, logical back navigation, safe-area spacing and semantic theme
 colors. These are documented web adaptations. See [the API and mapping](mobile-top-bar.md)
 and [scoped verification](validation.md). The navigation-drawer composition

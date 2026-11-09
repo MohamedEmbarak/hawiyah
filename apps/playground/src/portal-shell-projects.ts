@@ -28,7 +28,7 @@ export function portalShellProject(id: ShellId, framework: ProjectFramework, lan
 function pageFromClick(event${ts('MouseEvent')}) {
   const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
   if (!link || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-  if (link.matches('.nq-skip-link')) {
+  if (link.matches('.hw-skip-link')) {
     event.preventDefault();
     document.getElementById('service-content')?.focus();
     return;
@@ -46,15 +46,15 @@ function pageFromClick(event${ts('MouseEvent')}) {
   return [overview, { id:'directory', label:'${group}', children:[requests, help] }, {id:'appointments', label:'${upcoming}', disabled:true}];
 }`;
   const declarations = data + (framework === 'vanilla' ? '' : '\n' + linkData + (drawer ? '\n\n' + menuData : ''));
-  const css = "@import '@nasaq/styles/styles.css';\n\n.demo { display:grid; gap:1rem; min-inline-size:0; }\n.demo nav { max-inline-size:100%; }\n.demo h1, .demo h2 { margin-block:0 .5rem; }\n";
+  const css = "@import '@hawiyah/styles/styles.css';\n\n.demo { display:grid; gap:1rem; min-inline-size:0; }\n.demo nav { max-inline-size:100%; }\n.demo h1, .demo h2 { margin-block:0 .5rem; }\n";
   const component = components[id], imports = bar ? 'MobileTopBar, NavigationDrawer' : component;
   const classes = framework === 'react' ? 'className' : 'class';
-  const triggerClass = bar ? 'nq-button nq-icon-button' : 'nq-button';
+  const triggerClass = bar ? 'hw-button hw-icon-button' : 'hw-button';
   const triggerLabel = bar ? ` data-variant="ghost" aria-label="${menu}"` : '';
-  const triggerContent = bar ? `<span ${classes}="nq-icon" data-icon="menu-01" aria-hidden="true"></span>` : menu;
+  const triggerContent = bar ? `<span ${classes}="hw-icon" data-icon="menu-01" aria-hidden="true"></span>` : menu;
   const back = t('Back to overview','العودة إلى النظرة العامة');
-  const helpLink = `<a ${classes}="nq-link" href="${pages[2]!.href}">${pages[2]!.label}</a>`;
-  const backLink = `<a ${classes}="nq-link" href="${pages[0]!.href}">${back}</a>`;
+  const helpLink = `<a ${classes}="hw-link" href="${pages[2]!.href}">${pages[2]!.label}</a>`;
+  const backLink = `<a ${classes}="hw-link" href="${pages[0]!.href}">${back}</a>`;
   const markup = {
     react: `<section data-page-view={page.id} aria-live="polite"><h2>{page.label}</h2><p>{page.description}</p></section>`,
     vue: `<section :data-page-view="page.id" aria-live="polite"><h2>{{ page.label }}</h2><p>{{ page.description }}</p></section>`,
@@ -63,25 +63,25 @@ function pageFromClick(event${ts('MouseEvent')}) {
   };
   const ext = typed ? 'ts' : 'js';
   if (framework === 'vanilla') {
-    const link = (p: typeof pages[number], icons = false) => `<li><a href="${p.href}"${p.id === 'overview' ? ' aria-current="page"' : ''}>${icons ? `<span class="nq-icon" data-icon="${p.icon}" aria-hidden="true"></span>` : ''}<span>${p.label}</span></a></li>`;
+    const link = (p: typeof pages[number], icons = false) => `<li><a href="${p.href}"${p.id === 'overview' ? ' aria-current="page"' : ''}>${icons ? `<span class="hw-icon" data-icon="${p.icon}" aria-hidden="true"></span>` : ''}<span>${p.label}</span></a></li>`;
     const links = pages.map(p => link(p)).join('');
-    const nav = (mobile: boolean) => `<nav class="nq-secondary-nav" aria-label="${mobile ? shortcuts : sections}" data-variant="${mobile ? 'mobile' : 'default'}"><ul>${pages.map(p => link(p,mobile)).join('')}</ul></nav>`;
+    const nav = (mobile: boolean) => `<nav class="hw-secondary-nav" aria-label="${mobile ? shortcuts : sections}" data-variant="${mobile ? 'mobile' : 'default'}"><ul>${pages.map(p => link(p,mobile)).join('')}</ul></nav>`;
     const trigger = `<button class="${triggerClass}" type="button" data-drawer-open aria-haspopup="dialog" aria-controls="service-menu" aria-expanded="false"${triggerLabel}>${triggerContent}</button>`;
-    const row = (p: typeof pages[number]) => link(p,true).replace('<a ', '<a class="nq-navigation-drawer-row" ');
-    const drawerHtml = `<dialog id="service-menu" aria-labelledby="menu-heading" class="nq-dialog nq-drawer nq-navigation-drawer">
-    <header class="nq-dialog-header"><h2 id="menu-heading">${mainNav}</h2><button type="button" class="nq-button" data-nq-dialog-close data-variant="ghost" aria-label="${close}">×</button></header>
-    <div class="nq-dialog-body"><div class="nq-navigation-drawer-user">${account}</div>
-      <nav class="nq-navigation-drawer-nav" aria-label="${mainNav}"><ul>${row(pages[0]!)}
-        <li><details class="nq-navigation-drawer-group"><summary class="nq-navigation-drawer-row">${group}</summary><ul>${row(pages[1]!)}${row(pages[2]!)}</ul></details></li>
-        <li><span class="nq-navigation-drawer-row" aria-disabled="true">${upcoming}</span></li>
+    const row = (p: typeof pages[number]) => link(p,true).replace('<a ', '<a class="hw-navigation-drawer-row" ');
+    const drawerHtml = `<dialog id="service-menu" aria-labelledby="menu-heading" class="hw-dialog hw-drawer hw-navigation-drawer">
+    <header class="hw-dialog-header"><h2 id="menu-heading">${mainNav}</h2><button type="button" class="hw-button" data-hw-dialog-close data-variant="ghost" aria-label="${close}">×</button></header>
+    <div class="hw-dialog-body"><div class="hw-navigation-drawer-user">${account}</div>
+      <nav class="hw-navigation-drawer-nav" aria-label="${mainNav}"><ul>${row(pages[0]!)}
+        <li><details class="hw-navigation-drawer-group"><summary class="hw-navigation-drawer-row">${group}</summary><ul>${row(pages[1]!)}${row(pages[2]!)}</ul></details></li>
+        <li><span class="hw-navigation-drawer-row" aria-disabled="true">${upcoming}</span></li>
       </ul></nav></div></dialog>`;
-    const topBar = `<header class="nq-mobile-top-bar" data-variant="main"><div class="nq-mobile-top-bar-leading">${trigger}</div><div class="nq-mobile-top-bar-copy"><h1 class="nq-mobile-top-bar-title">${portal}</h1><p class="nq-mobile-top-bar-subtitle">${account}</p></div><div class="nq-mobile-top-bar-actions">${helpLink}</div></header>`;
-    const layout = `<div class="nq-portal-layout">
-  <header class="nq-portal-header" data-nq="portal-header"><a class="nq-skip-link" href="#service-content">${skip}</a><div class="nq-portal-header-main"><a class="nq-portal-brand" href="${pages[0]!.href}">${portal}</a>
-    <button type="button" class="nq-button nq-portal-menu-toggle" data-nq-portal-toggle>${menu}</button><nav data-nq-portal-navigation aria-label="${mainNav}"><ul>${links}</ul></nav><span>${account}</span></div></header>
+    const topBar = `<header class="hw-mobile-top-bar" data-variant="main"><div class="hw-mobile-top-bar-leading">${trigger}</div><div class="hw-mobile-top-bar-copy"><h1 class="hw-mobile-top-bar-title">${portal}</h1><p class="hw-mobile-top-bar-subtitle">${account}</p></div><div class="hw-mobile-top-bar-actions">${helpLink}</div></header>`;
+    const layout = `<div class="hw-portal-layout">
+  <header class="hw-portal-header" data-hw="portal-header"><a class="hw-skip-link" href="#service-content">${skip}</a><div class="hw-portal-header-main"><a class="hw-portal-brand" href="${pages[0]!.href}">${portal}</a>
+    <button type="button" class="hw-button hw-portal-menu-toggle" data-hw-portal-toggle>${menu}</button><nav data-hw-portal-navigation aria-label="${mainNav}"><ul>${links}</ul></nav><span>${account}</span></div></header>
   ${nav(false)}
-  <main id="service-content" tabindex="-1" class="nq-portal-layout-main nq-container"><nav class="nq-breadcrumb" aria-label="${trail}"><ol><li><a href="${pages[0]!.href}">${portal}</a></li><li><span aria-current="page" data-crumb>${pages[0]!.label}</span></li></ol></nav>${markup.vanilla.replaceAll('h2','h1')}</main>
-  <footer class="nq-portal-footer"><div class="nq-portal-footer-main"><strong>${portal}</strong><nav class="nq-portal-footer-group" aria-label="${footer}"><h2>${footer}</h2><ul>${link(pages[2]!)}</ul></nav></div></footer></div>`;
+  <main id="service-content" tabindex="-1" class="hw-portal-layout-main hw-container"><nav class="hw-breadcrumb" aria-label="${trail}"><ol><li><a href="${pages[0]!.href}">${portal}</a></li><li><span aria-current="page" data-crumb>${pages[0]!.label}</span></li></ol></nav>${markup.vanilla.replaceAll('h2','h1')}</main>
+  <footer class="hw-portal-footer"><div class="hw-portal-footer-main"><strong>${portal}</strong><nav class="hw-portal-footer-group" aria-label="${footer}"><h2>${footer}</h2><ul>${link(pages[2]!)}</ul></nav></div></footer></div>`;
     const content = shell ? layout : secondary ? nav(false) + '\n' + nav(true) + '\n' + markup.vanilla : (bar ? topBar : trigger) + '\n' + drawerHtml + '\n' + markup.vanilla;
     const html = `<!doctype html>
 <html lang="${locale}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${portal}</title></head>
@@ -91,7 +91,7 @@ const trigger = root.querySelector('[data-drawer-open]');
 if (!dialog || !(trigger instanceof HTMLButtonElement)) throw new Error('Missing navigation drawer');
 const drawer = createNavigationDrawer(dialog, {onOpenChange: open => trigger.setAttribute('aria-expanded', String(open))});
 trigger.addEventListener('click', () => drawer.show(trigger), events);` : `const release = enhance(root);`;
-    const js = `import { ${drawer ? 'createNavigationDrawer' : 'enhance'} } from '@nasaq/vanilla';
+    const js = `import { ${drawer ? 'createNavigationDrawer' : 'enhance'} } from '@hawiyah/vanilla';
 import './style.css';
 
 ${data}
@@ -109,14 +109,14 @@ root.addEventListener('click', event => {
   const title = view.querySelector('${shell ? 'h1' : 'h2'}'), description = view.querySelector('p');
   if (title) title.textContent = page.label;
   if (description) description.textContent = page.description;${bar ? `
-  const topBar = root.querySelector('.nq-mobile-top-bar');
-  const topTitle = topBar?.querySelector('.nq-mobile-top-bar-title');
+  const topBar = root.querySelector('.hw-mobile-top-bar');
+  const topTitle = topBar?.querySelector('.hw-mobile-top-bar-title');
   const action = topBar?.querySelector('a');
   const home = page.id === 'overview';
   if (topBar) topBar.setAttribute('data-variant', home ? 'main' : 'internal');
   if (topTitle) topTitle.textContent = home ? '${portal}' : page.label;
   if (action) { action.href = home ? pages[2].href : pages[0].href; action.textContent = home ? pages[2].label : '${back}'; }` : ''}
-  for (const link of root.querySelectorAll(':is(.nq-secondary-nav,.nq-navigation-drawer-nav,[data-nq-portal-navigation]) a[href]')) {
+  for (const link of root.querySelectorAll(':is(.hw-secondary-nav,.hw-navigation-drawer-nav,[data-hw-portal-navigation]) a[href]')) {
     if (link.getAttribute('href') === page.href) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }${shell ? "\n  const crumb = root.querySelector('[data-crumb]');\n  if (crumb) crumb.textContent = page.label;" : ''}${drawer ? '\n  drawer.close();' : ''}
@@ -141,7 +141,7 @@ window.addEventListener('pagehide', () => {listeners.abort(); ${drawer ? 'drawer
     ${markup.react}`;
     const jsx = typed ? 'tsx' : 'jsx';
     const html = `import { useState } from 'react';
-import { ${imports} } from '@nasaq/react';
+import { ${imports} } from '@hawiyah/react';
 
 ${declarations}
 export default function App() {
@@ -166,13 +166,13 @@ export default function App() {
     </PortalLayout>` : secondary ? `<SecondaryNav :items="links" label="${sections}" />
     <SecondaryNav :items="links" label="${shortcuts}" variant="mobile" />
     ${markup.vue}` : `${bar ? `<MobileTopBar :title="page.id === 'overview' ? '${portal}' : page.label" subtitle="${account}" :variant="page.id === 'overview' ? 'main' : 'internal'">
-      <template #leading>${trigger}</template><template #actions><a class="nq-link" :href="page.id === 'overview' ? pages[2].href : pages[0].href">{{ page.id === 'overview' ? pages[2].label : '${back}' }}</a></template>
+      <template #leading>${trigger}</template><template #actions><a class="hw-link" :href="page.id === 'overview' ? pages[2].href : pages[0].href">{{ page.id === 'overview' ? pages[2].label : '${back}' }}</a></template>
     </MobileTopBar>` : trigger}
     ${panel}
     ${markup.vue}`;
     const html = `<script setup${typed ? ' lang="ts"' : ''}>
 import { ${drawer ? 'ref' : 'ref, computed'} } from 'vue';
-import { ${imports} } from '@nasaq/vue';
+import { ${imports} } from '@hawiyah/vue';
 
 ${declarations}
 const page = ref(pages[0]);${drawer ? '\nconst open = ref(false);' : '\nconst links = computed(() => navigation(page.value.id));'}
@@ -191,19 +191,19 @@ function route(event${ts('MouseEvent')}) {
     const js = "import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n";
     return {names:{html:'App.vue',css:'style.css',js:`main.${ext}`},entry:`main.${ext}`,host:'<div id="app"></div>',files:{html,css,js}};
   }
-  const native = imports.split(', ').map(name => `Nq${name}Component`).join(', ');
-  const trigger = `<button #trigger class="${triggerClass}" type="button" data-drawer-open aria-haspopup="dialog" aria-controls="service-menu" [attr.aria-expanded]="open" (click)="drawer.show(trigger)"${bar ? ' nqTopBarLeading' : ''}${triggerLabel}>${triggerContent}</button>`;
-  const panel = `<nq-navigation-drawer #drawer id="service-menu" title="${mainNav}" navigationLabel="${mainNav}" closeLabel="${close}" [items]="items" [(open)]="open"><span nqNavigationDrawerUser>${account}</span></nq-navigation-drawer>`;
-  const content = shell ? `<nq-portal-layout brand="${portal}" lang="${locale}" dir="${dir}" mainId="service-content" skipLabel="${skip}" [homeHref]="pages[0].href" [links]="links" menuLabel="${menu}" navigationLabel="${mainNav}" [secondaryNavigation]="links" secondaryLabel="${sections}" breadcrumbLabel="${trail}" [breadcrumbs]="[{label:'${portal}',href:pages[0].href},{label:page.label}]" [footerLinks]="[pages[2]]" footerLabel="${footer}">
-      <span nqPortalActions>${account}</span>
+  const native = imports.split(', ').map(name => `Hw${name}Component`).join(', ');
+  const trigger = `<button #trigger class="${triggerClass}" type="button" data-drawer-open aria-haspopup="dialog" aria-controls="service-menu" [attr.aria-expanded]="open" (click)="drawer.show(trigger)"${bar ? ' hwTopBarLeading' : ''}${triggerLabel}>${triggerContent}</button>`;
+  const panel = `<hw-navigation-drawer #drawer id="service-menu" title="${mainNav}" navigationLabel="${mainNav}" closeLabel="${close}" [items]="items" [(open)]="open"><span hwNavigationDrawerUser>${account}</span></hw-navigation-drawer>`;
+  const content = shell ? `<hw-portal-layout brand="${portal}" lang="${locale}" dir="${dir}" mainId="service-content" skipLabel="${skip}" [homeHref]="pages[0].href" [links]="links" menuLabel="${menu}" navigationLabel="${mainNav}" [secondaryNavigation]="links" secondaryLabel="${sections}" breadcrumbLabel="${trail}" [breadcrumbs]="[{label:'${portal}',href:pages[0].href},{label:page.label}]" [footerLinks]="[pages[2]]" footerLabel="${footer}">
+      <span hwPortalActions>${account}</span>
       ${markup.angular.replaceAll('h2','h1')}
-    </nq-portal-layout>` : secondary ? `<nq-secondary-nav [items]="links" label="${sections}" />
-    <nq-secondary-nav [items]="links" label="${shortcuts}" variant="mobile" />
-    ${markup.angular}` : `${bar ? `<nq-mobile-top-bar [title]="page.id === 'overview' ? '${portal}' : page.label" subtitle="${account}" [variant]="page.id === 'overview' ? 'main' : 'internal'">${trigger}<a nqTopBarActions class="nq-link" [href]="page.id === 'overview' ? pages[2].href : pages[0].href">{{ page.id === 'overview' ? pages[2].label : '${back}' }}</a></nq-mobile-top-bar>` : trigger}
+    </hw-portal-layout>` : secondary ? `<hw-secondary-nav [items]="links" label="${sections}" />
+    <hw-secondary-nav [items]="links" label="${shortcuts}" variant="mobile" />
+    ${markup.angular}` : `${bar ? `<hw-mobile-top-bar [title]="page.id === 'overview' ? '${portal}' : page.label" subtitle="${account}" [variant]="page.id === 'overview' ? 'main' : 'internal'">${trigger}<a hwTopBarActions class="hw-link" [href]="page.id === 'overview' ? pages[2].href : pages[0].href">{{ page.id === 'overview' ? pages[2].label : '${back}' }}</a></hw-mobile-top-bar>` : trigger}
     ${panel}
     ${markup.angular}`;
   const html = `import { Component } from '@angular/core';
-import { ${native} } from '@nasaq/angular';
+import { ${native} } from '@hawiyah/angular';
 
 ${declarations}
 @Component({
@@ -215,7 +215,7 @@ ${declarations}
 export class AppComponent {
   pages = pages;
   page = pages[0];${drawer ? '\n  open = false;\n  items = drawerItems(this.page.id);' : '\n  links = navigation(this.page.id);'}
-  route(event: MouseEvent${drawer ? ', drawer: NqNavigationDrawerComponent' : ''}) {
+  route(event: MouseEvent${drawer ? ', drawer: HwNavigationDrawerComponent' : ''}) {
     const next = pageFromClick(event);
     if (!next) return;
     this.page = next;${drawer ? '\n    this.items = drawerItems(next.id);\n    drawer.close();' : '\n    this.links = navigation(next.id);'}

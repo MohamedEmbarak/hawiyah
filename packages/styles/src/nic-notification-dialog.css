@@ -1,36 +1,36 @@
 /* NIC global.css 3883–3957 and master.js 441–520. The Angular host carries the variant. */
-:where(dialog, nq-dialog)[data-variant='notification'] {
-  --_nq-notice-ink: var(--nq-color-info);
-  --_nq-notice-surface: var(--nq-color-info-subtle);
-  --_nq-notice-border: var(--nq-color-notice-info-border);
+:where(dialog, hw-dialog)[data-variant='notification'] {
+  --_nq-notice-ink: var(--hw-color-info);
+  --_nq-notice-surface: var(--hw-color-info-subtle);
+  --_nq-notice-border: var(--hw-color-notice-info-border);
   --_nq-notice-symbol: url('./assets/notifications/info-outline.svg');
 }
-:where(dialog, nq-dialog)[data-variant='notification'][data-tone='success'] {
-  --_nq-notice-ink: var(--nq-color-success);
-  --_nq-notice-surface: var(--nq-color-success-subtle);
-  --_nq-notice-border: var(--nq-color-notice-success-border);
+:where(dialog, hw-dialog)[data-variant='notification'][data-tone='success'] {
+  --_nq-notice-ink: var(--hw-color-success);
+  --_nq-notice-surface: var(--hw-color-success-subtle);
+  --_nq-notice-border: var(--hw-color-notice-success-border);
   --_nq-notice-symbol: url('./assets/notifications/success-outline.svg');
 }
-:where(dialog, nq-dialog)[data-variant='notification'][data-tone='warning'] {
-  --_nq-notice-ink: var(--nq-color-notice-warning-text);
-  --_nq-notice-surface: var(--nq-color-warning-subtle);
-  --_nq-notice-border: var(--nq-color-notice-warning-border);
+:where(dialog, hw-dialog)[data-variant='notification'][data-tone='warning'] {
+  --_nq-notice-ink: var(--hw-color-notice-warning-text);
+  --_nq-notice-surface: var(--hw-color-warning-subtle);
+  --_nq-notice-border: var(--hw-color-notice-warning-border);
   --_nq-notice-symbol: url('./assets/notifications/warning-outline.svg');
 }
-:where(dialog, nq-dialog)[data-variant='notification'][data-tone='danger'] {
-  --_nq-notice-ink: var(--nq-color-danger);
-  --_nq-notice-surface: var(--nq-color-danger-subtle);
-  --_nq-notice-border: var(--nq-color-notice-danger-border);
+:where(dialog, hw-dialog)[data-variant='notification'][data-tone='danger'] {
+  --_nq-notice-ink: var(--hw-color-danger);
+  --_nq-notice-surface: var(--hw-color-danger-subtle);
+  --_nq-notice-border: var(--hw-color-notice-danger-border);
   --_nq-notice-symbol: url('./assets/notifications/danger-outline.svg');
 }
-:where(dialog, nq-dialog)[data-variant='notification'][data-tone='neutral'] {
-  --_nq-notice-ink: var(--nq-color-notice-neutral-text);
-  --_nq-notice-surface: var(--nq-color-badge-neutral-background);
-  --_nq-notice-border: var(--nq-color-notice-neutral-text);
+:where(dialog, hw-dialog)[data-variant='notification'][data-tone='neutral'] {
+  --_nq-notice-ink: var(--hw-color-notice-neutral-text);
+  --_nq-notice-surface: var(--hw-color-badge-neutral-background);
+  --_nq-notice-border: var(--hw-color-notice-neutral-text);
   --_nq-notice-symbol: url('./assets/notifications/neutral-outline.svg');
 }
 
-:is(dialog.nq-dialog[data-variant='notification'], nq-dialog[data-variant='notification'] > dialog.nq-dialog) {
+:is(dialog.hw-dialog[data-variant='notification'], hw-dialog[data-variant='notification'] > dialog.hw-dialog) {
   box-sizing: border-box;
   inline-size: min(500px, calc(100% - 40px));
   max-inline-size: none;
@@ -40,20 +40,20 @@
   border: 0;
   border-inline-start: 4px solid var(--_nq-notice-border);
   border-radius: 12px;
-  background: var(--nq-color-surface);
-  color: var(--nq-color-text);
-  box-shadow: var(--nq-notification-dialog-shadow, 0 20px 25px -5px rgb(0 0 0 / .1), 0 10px 10px -5px rgb(0 0 0 / .04));
+  background: var(--hw-color-surface);
+  color: var(--hw-color-text);
+  box-shadow: var(--hw-notification-dialog-shadow, 0 20px 25px -5px rgb(0 0 0 / .1), 0 10px 10px -5px rgb(0 0 0 / .04));
 
   &[open] {
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr) auto;
     column-gap: 16px;
     row-gap: 8px;
-    animation: nq-notice-dialog-in 300ms ease-out;
+    animation: hw-notice-dialog-in 300ms ease-out;
   }
-  &::backdrop { background: rgb(0 0 0 / .5); backdrop-filter: none; animation: nq-notice-backdrop-in 200ms ease-out; }
-  & > .nq-dialog-header { display: contents; }
-  & > .nq-dialog-header::before, & > .nq-dialog-header::after {
+  &::backdrop { background: rgb(0 0 0 / .5); backdrop-filter: none; animation: hw-notice-backdrop-in 200ms ease-out; }
+  & > .hw-dialog-header { display: contents; }
+  & > .hw-dialog-header::before, & > .hw-dialog-header::after {
     content: '';
     grid-column: 1;
     grid-row: 1 / span 2;
@@ -61,54 +61,54 @@
     justify-self: center;
     pointer-events: none;
   }
-  & > .nq-dialog-header::before { inline-size: 48px; block-size: 48px; border-radius: 50%; background: var(--_nq-notice-surface); }
-  & > .nq-dialog-header::after {
+  & > .hw-dialog-header::before { inline-size: 48px; block-size: 48px; border-radius: 50%; background: var(--_nq-notice-surface); }
+  & > .hw-dialog-header::after {
     margin-block-start: 12px;
     inline-size: 24px; block-size: 24px;
     background-color: var(--_nq-notice-ink);
     mask: var(--_nq-notice-symbol) center / contain no-repeat;
   }
-  & > .nq-dialog-header > :is(h1, h2, h3) { grid-column: 2; grid-row: 1; align-self: start; margin: 0; font-size: 1.125rem; font-weight: 600; overflow-wrap: anywhere; }
-  & > .nq-dialog-header > button {
+  & > .hw-dialog-header > :is(h1, h2, h3) { grid-column: 2; grid-row: 1; align-self: start; margin: 0; font-size: 1.125rem; font-weight: 600; overflow-wrap: anywhere; }
+  & > .hw-dialog-header > button {
     grid-column: 3; grid-row: 1 / span 2; align-self: start; justify-self: end;
     display: grid; place-items: center; gap: 0; inline-size: 40px; min-inline-size: 40px;
-    padding: 0; font-size: 0; color: var(--nq-color-text-muted);
+    padding: 0; font-size: 0; color: var(--hw-color-text-muted);
   }
-  & > .nq-dialog-header > button::before {
+  & > .hw-dialog-header > button::before {
     content: ''; inline-size: 24px; block-size: 24px; background-color: currentColor;
     mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat;
   }
-  & > .nq-dialog-header > button:hover { color: var(--nq-color-text); }
-  & > .nq-dialog-body {
+  & > .hw-dialog-header > button:hover { color: var(--hw-color-text); }
+  & > .hw-dialog-body {
     grid-column: 2; grid-row: 2; min-inline-size: 0; padding: 0;
-    font-size: .875rem; line-height: 1.6; color: var(--nq-color-text-muted); overflow-wrap: anywhere;
+    font-size: .875rem; line-height: 1.6; color: var(--hw-color-text-muted); overflow-wrap: anywhere;
   }
-  & > .nq-dialog-body > :first-child { margin-block-start: 0; }
-  & > .nq-dialog-body > :last-child { margin-block-end: 0; }
-  & > .nq-dialog-footer {
+  & > .hw-dialog-body > :first-child { margin-block-start: 0; }
+  & > .hw-dialog-body > :last-child { margin-block-end: 0; }
+  & > .hw-dialog-footer {
     grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: flex-end;
     gap: 12px; margin-block-start: 12px; padding: 0; background: transparent; border: 0;
   }
-  & > .nq-dialog-footer:empty { display: none; }
+  & > .hw-dialog-footer:empty { display: none; }
 }
-@keyframes nq-notice-dialog-in { from { transform: translateY(-20px); opacity: 0; } }
-@keyframes nq-notice-backdrop-in { from { opacity: 0; } }
+@keyframes hw-notice-dialog-in { from { transform: translateY(-20px); opacity: 0; } }
+@keyframes hw-notice-backdrop-in { from { opacity: 0; } }
 @media (max-width: 576px) {
-  :is(dialog.nq-dialog[data-variant='notification'], nq-dialog[data-variant='notification'] > dialog.nq-dialog) {
+  :is(dialog.hw-dialog[data-variant='notification'], hw-dialog[data-variant='notification'] > dialog.hw-dialog) {
     inline-size: calc(100% - 60px);
-    & > .nq-dialog-header::before, & > .nq-dialog-header::after, & > .nq-dialog-header > button { grid-row: 1; }
-    & > .nq-dialog-body { grid-column: 1 / -1; }
-    & > .nq-dialog-footer { flex-direction: column; align-items: stretch; }
+    & > .hw-dialog-header::before, & > .hw-dialog-header::after, & > .hw-dialog-header > button { grid-row: 1; }
+    & > .hw-dialog-body { grid-column: 1 / -1; }
+    & > .hw-dialog-footer { flex-direction: column; align-items: stretch; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(dialog.nq-dialog[data-variant='notification'], nq-dialog[data-variant='notification'] > dialog.nq-dialog) {
+  :is(dialog.hw-dialog[data-variant='notification'], hw-dialog[data-variant='notification'] > dialog.hw-dialog) {
     &[open], &::backdrop { animation: none; }
   }
 }
 @media (forced-colors: active) {
-  :is(dialog.nq-dialog[data-variant='notification'], nq-dialog[data-variant='notification'] > dialog.nq-dialog) {
+  :is(dialog.hw-dialog[data-variant='notification'], hw-dialog[data-variant='notification'] > dialog.hw-dialog) {
     border: 1px solid CanvasText; border-inline-start-width: 4px;
-    & > .nq-dialog-header::after, & > .nq-dialog-header > button::before { forced-color-adjust: none; background-color: CanvasText; }
+    & > .hw-dialog-header::after, & > .hw-dialog-header > button::before { forced-color-adjust: none; background-color: CanvasText; }
   }
 }

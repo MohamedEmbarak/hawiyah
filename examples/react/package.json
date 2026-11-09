@@ -1,5 +1,5 @@
 {
-  "name": "@nasaq/example-react",
+  "name": "@hawiyah/example-react",
   "version": "0.2.0",
   "private": true,
   "type": "module",
@@ -10,21 +10,21 @@
     "test:browser": "playwright test --config playwright.config.ts"
   },
   "dependencies": {
-    "@nasaq/core": "workspace:*",
-    "@nasaq/react": "workspace:*",
-    "@nasaq/styles": "workspace:*",
+    "@hawiyah/core": "workspace:*",
+    "@hawiyah/react": "workspace:*",
+    "@hawiyah/styles": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEmbarak/nasaq.git",
+    "url": "git+https://github.com/MohamedEmbarak/hawiyah.git",
     "directory": "examples/react"
   },
-  "homepage": "https://mohamedembarak.github.io/nasaq/",
+  "homepage": "https://mohamedembarak.github.io/hawiyah/",
   "bugs": {
-    "url": "https://github.com/MohamedEmbarak/nasaq/issues"
+    "url": "https://github.com/MohamedEmbarak/hawiyah/issues"
   },
   "author": {
     "name": "Development Team, National Platforms Sector — National Information Center"

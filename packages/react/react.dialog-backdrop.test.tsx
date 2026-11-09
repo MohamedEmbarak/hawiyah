@@ -21,7 +21,7 @@ for (const Component of [Dialog, Drawer]) {
     await act(() => root.render(<Component title="Review" defaultOpen><button>Content</button></Component>));
     const dialog = container.querySelector('dialog')!;
     vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 100, right: 400, bottom: 400 } as DOMRect);
-    await dispatch(dialog.querySelector('.nq-dialog-body button')!, 'pointerdown', false);
+    await dispatch(dialog.querySelector('.hw-dialog-body button')!, 'pointerdown', false);
     await dispatch(dialog, 'click');
     expect(dialog.open).toBe(true);
     await dispatch(dialog, 'pointerdown'); await dispatch(dialog, 'click');

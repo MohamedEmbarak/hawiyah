@@ -12,7 +12,7 @@ test('native navigation drawer composes user content, page links and modal focus
     if (english) await page.getByRole('button', { name: 'English', exact: true }).click();
     await trigger.click(); await expect(dialog).toBeVisible();
     expect(await dialog.evaluate(node => node.matches(':modal'))).toBe(true);
-    await expect(dialog.locator('.nq-navigation-drawer-user')).toHaveText(english ? 'Welcome to Nasaq' : 'مرحبًا بك في نسق');
+    await expect(dialog.locator('.hw-navigation-drawer-user')).toHaveText(english ? 'Welcome to Hawiyah' : 'مرحبًا بك في هوية');
     const bounds = await dialog.boundingBox(); expect(bounds!.width).toBeCloseTo(327, 0);
     expect(bounds!.x).toBeCloseTo(english ? 0 : 390 - 327, 0);
     expect(await dialog.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);

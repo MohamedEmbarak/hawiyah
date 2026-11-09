@@ -2,12 +2,12 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it } from 'vitest';
-import { NqStepperComponent } from '@nasaq/angular';
+import { HwStepperComponent } from '@hawiyah/angular';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => TestBed.resetTestingModule());
 it('preserves numeric current and updates activeIndex forward, backward, complete and not started', () => {
-  const fixture = TestBed.createComponent(NqStepperComponent);
+  const fixture = TestBed.createComponent(HwStepperComponent);
   fixture.componentRef.setInput('steps', [{ label: 'البيانات' }, { label: 'المراجعة' }, { label: 'الإرسال' }]);
   fixture.componentRef.setInput('current', 1); fixture.detectChanges();
   const list = fixture.nativeElement.querySelector('ol') as HTMLOListElement;
@@ -23,7 +23,7 @@ it('preserves numeric current and updates activeIndex forward, backward, complet
   expect(list.querySelector('button, a, [tabindex]')).toBeNull();
 });
 it('allows explicit step status and an English accessible name', () => {
-  const fixture = TestBed.createComponent(NqStepperComponent);
+  const fixture = TestBed.createComponent(HwStepperComponent);
   fixture.componentRef.setInput('steps', [{ label: 'Details', status: 'upcoming' }, { label: 'Review', status: 'current' }, { label: 'Send' }]);
   fixture.componentRef.setInput('activeIndex', 3); fixture.componentRef.setInput('label', 'Progress'); fixture.detectChanges();
   const list = fixture.nativeElement.querySelector('ol') as HTMLOListElement;

@@ -11,14 +11,14 @@ import {
   useId,
 } from "vue";
 import type { PropType, VNodeChild } from "vue";
-import { getDirection, getNextEnabledIndex, restoreFocus, observeReadonlyChoice, prepareToastDismissFocus } from "@nasaq/core";
-import type { Option } from "@nasaq/core";
+import { getDirection, getNextEnabledIndex, restoreFocus, observeReadonlyChoice, prepareToastDismissFocus } from "@hawiyah/core";
+import type { Option } from "@hawiyah/core";
 import { Button } from "./forms.js";
 import { Dialog } from "./interactive.js";
 import { useFormReset, useValue } from "./shared.js";
 
 export const ToggleGroup = defineComponent({
-  name: "NqToggleGroup",
+  name: "HwToggleGroup",
   inheritAttrs: false,
   props: {
     options: { type: Array as PropType<readonly Option[]>, required: true },
@@ -38,7 +38,7 @@ export const ToggleGroup = defineComponent({
   },
   emits: { "update:modelValue": (_value: string | readonly string[]) => true },
   setup(props, { attrs, emit }) {
-    const id = `nq-${useId()}`;
+    const id = `hw-${useId()}`;
     const element = ref<HTMLInputElement>();
     const group = ref<HTMLFieldSetElement>();
     let guards: ReturnType<typeof observeReadonlyChoice>[]=[];
@@ -54,12 +54,12 @@ export const ToggleGroup = defineComponent({
       h(
         "fieldset",
         mergeProps(attrs, {
-          class: "nq-toggle-group",ref:group,"data-nq-readonly":props.readonly || undefined,
+          class: "hw-toggle-group",ref:group,"data-hw-readonly":props.readonly || undefined,
           "data-variant": props.variant,
           disabled: props.disabled,
         }),
         [
-          h("legend", { class: "nq-label" }, props.label),
+          h("legend", { class: "hw-label" }, props.label),
           props.multiple
             ? h("input", { ref: element, type: "hidden", form:attrs.form, disabled: true })
             : null,
@@ -135,7 +135,7 @@ export const ToggleGroup = defineComponent({
   },
 });
 export const Popover = defineComponent({
-  name: "NqPopover",
+  name: "HwPopover",
   inheritAttrs: false,
   props: {
     label: { type: String, required: true },
@@ -146,7 +146,7 @@ export const Popover = defineComponent({
   },
   emits: { "update:open": (_value: boolean) => true },
   setup(props, { attrs, slots, emit, expose }) {
-    const id = `nq-${useId()}`;
+    const id = `hw-${useId()}`;
     const root = ref<HTMLElement>();
     const trigger = ref<HTMLButtonElement>();
     const model = useValue(
@@ -179,7 +179,7 @@ export const Popover = defineComponent({
         "div",
         mergeProps(attrs, {
           ref: root,
-          class: "nq-popover",
+          class: "hw-popover",
           onKeydown: (event: KeyboardEvent) => {
             if (event.key === "Escape" && model.value.value) {
               event.preventDefault();
@@ -194,7 +194,7 @@ export const Popover = defineComponent({
             {
               ref: trigger,
               type: "button",
-              class: "nq-button",
+              class: "hw-button",
               "data-variant": "secondary",
               disabled: props.disabled,
               "aria-expanded": model.value.value,
@@ -207,7 +207,7 @@ export const Popover = defineComponent({
             "div",
             {
               id,
-              class: "nq-popover-content",
+              class: "hw-popover-content",
               role: "region",
               "aria-label": props.label,
               hidden: !model.value.value,
@@ -225,7 +225,7 @@ export interface MenuItem {
   href?: string;
 }
 export const Menu = defineComponent({
-  name: "NqMenu",
+  name: "HwMenu",
   inheritAttrs: false,
   props: {
     label: { type: String, required: true },
@@ -234,7 +234,7 @@ export const Menu = defineComponent({
   },
   emits: { select: (_value: string) => true },
   setup(props, { attrs, emit, slots }) {
-    const id = `nq-${useId()}`;
+    const id = `hw-${useId()}`;
     const root = ref<HTMLElement>();
     const trigger = ref<HTMLButtonElement>();
     const open = ref(false);
@@ -269,7 +269,7 @@ export const Menu = defineComponent({
         "div",
         mergeProps(attrs, {
           ref: root,
-          class: "nq-menu",
+          class: "hw-menu",
           onFocusout: (event: FocusEvent) => {
             if (!root.value?.contains(event.relatedTarget as Node | null))
               close(false);
@@ -280,7 +280,7 @@ export const Menu = defineComponent({
             "button",
             {
               ref: trigger,
-              class: "nq-button",
+              class: "hw-button",
               type: "button",
               "data-variant": "secondary",
               disabled: props.disabled,
@@ -363,7 +363,7 @@ export const Menu = defineComponent({
   },
 });
 export const Drawer = defineComponent({
-  name: "NqDrawer",
+  name: "HwDrawer",
   inheritAttrs: false,
   props: {
     open: { type: Boolean, default: undefined },
@@ -396,7 +396,7 @@ export const Drawer = defineComponent({
           ...attrs,
           ...props,
           ref: dialog,
-          class: ["nq-drawer", attrs.class],
+          class: ["hw-drawer", attrs.class],
           "data-side": props.side,
           "onUpdate:open": (value: boolean) => emit("update:open", value),
         },
@@ -418,7 +418,7 @@ function listens(handler: ToastDismissHandler | ToastDismissHandler[] | undefine
   return typeof handler === 'function' || !!handler?.length;
 }
 export const ToastRegion = defineComponent({
-  name: 'NqToastRegion', inheritAttrs: false,
+  name: 'HwToastRegion', inheritAttrs: false,
   props: {
     messages: {type: Array as PropType<readonly ToastMessage[]>, required: true},
     label: {type: String, default: 'الإشعارات'},
@@ -434,13 +434,13 @@ export const ToastRegion = defineComponent({
     const onceUsed = ref(false);
     const render = (urgent: boolean, banner: boolean) => props.messages
       .filter(message => Boolean(message.urgent) === urgent)
-      .map(message => h('article', {key: message.id, class: 'nq-toast', 'data-nq-toast': message.id, 'data-tone': message.tone ?? 'info'}, [
-        banner && h('span', {class: 'nq-toast-icon', 'aria-hidden': 'true'}),
-        h('div', {class: 'nq-toast-content'}, [message.title && h('strong', message.title), h('p', message.message)]),
+      .map(message => h('article', {key: message.id, class: 'hw-toast', 'data-hw-toast': message.id, 'data-tone': message.tone ?? 'info'}, [
+        banner && h('span', {class: 'hw-toast-icon', 'aria-hidden': 'true'}),
+        h('div', {class: 'hw-toast-content'}, [message.title && h('strong', message.title), h('p', message.message)]),
         message.dismissible !== false && (listens(props.onDismiss) || (!onceUsed.value && listens(props.onDismissOnce))) && h(Button, {
-          type: 'button', variant: 'ghost', class: 'nq-toast-dismiss', 'data-nq-dismiss': '', 'aria-label': props.dismissLabel(message),
+          type: 'button', variant: 'ghost', class: 'hw-toast-dismiss', 'data-hw-dismiss': '', 'aria-label': props.dismissLabel(message),
           onClick: (event: MouseEvent) => {
-            const notice = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-nq-toast]');
+            const notice = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-hw-toast]');
             const recover = region.value && notice ? prepareToastDismissFocus(region.value, notice) : undefined;
             try { emit('dismiss', message.id); } finally {
               if (listens(props.onDismissOnce)) onceUsed.value = true;
@@ -451,16 +451,16 @@ export const ToastRegion = defineComponent({
       ]));
     return () => {
       const variant = props.variant ?? attrs['data-variant'];
-      return h('section', mergeProps(attrs, {ref: region, class: 'nq-toast-region', tabindex: attrs.tabindex ?? -1, 'aria-label': attrs['aria-label'] ?? props.label, 'data-variant': variant, 'data-position': props.position ?? attrs['data-position']}), [
-        h('div', {role: 'status', 'aria-live': 'polite', 'aria-relevant': 'additions text', 'data-nq-live': 'polite'}, render(false, variant === 'banner')),
-        h('div', {role: 'alert', 'aria-live': 'assertive', 'aria-relevant': 'additions text', 'data-nq-live': 'assertive'}, render(true, variant === 'banner')),
+      return h('section', mergeProps(attrs, {ref: region, class: 'hw-toast-region', tabindex: attrs.tabindex ?? -1, 'aria-label': attrs['aria-label'] ?? props.label, 'data-variant': variant, 'data-position': props.position ?? attrs['data-position']}), [
+        h('div', {role: 'status', 'aria-live': 'polite', 'aria-relevant': 'additions text', 'data-hw-live': 'polite'}, render(false, variant === 'banner')),
+        h('div', {role: 'alert', 'aria-live': 'assertive', 'aria-relevant': 'additions text', 'data-hw-live': 'assertive'}, render(true, variant === 'banner')),
       ]);
     };
   },
 });
 
 export const Collapsible = defineComponent({
-  name: "NqCollapsible",
+  name: "HwCollapsible",
   inheritAttrs: false,
   props: {
     label: { type: String, required: true },
@@ -479,7 +479,7 @@ export const Collapsible = defineComponent({
       h(
         "details",
         mergeProps(attrs, {
-          class: "nq-collapsible",
+          class: "hw-collapsible",
           open: model.value.value,
           onToggle: (event: Event) => {
             const element = event.target as HTMLDetailsElement;
@@ -509,7 +509,7 @@ export interface TreeNode {
   children?: readonly TreeNode[];
 }
 export const TreeView = defineComponent({
-  name: "NqTreeView",
+  name: "HwTreeView",
   inheritAttrs: false,
   props: {
     items: { type: Array as PropType<readonly TreeNode[]>, required: true },
@@ -590,7 +590,7 @@ export const TreeView = defineComponent({
       h(
         "ul",
         mergeProps(attrs, {
-          class: "nq-tree-view",
+          class: "hw-tree-view",
           role: "tree",
           "aria-label": props.label,
           "aria-disabled": props.disabled || undefined,
@@ -616,7 +616,7 @@ export const TreeView = defineComponent({
               },
               key: row.node.id,
               role: "treeitem",
-              class: "nq-tree-item",
+              class: "hw-tree-item",
               "aria-label": row.node.label,
               "aria-level": row.depth,
               "aria-posinset": row.position,
@@ -625,7 +625,7 @@ export const TreeView = defineComponent({
               "aria-selected": model.value.value === row.node.id,
               "aria-disabled": props.disabled || row.node.disabled || undefined,
               tabindex: !props.disabled && active === row.node.id ? 0 : -1,
-              style: { "--nq-tree-depth": row.depth - 1 },
+              style: { "--hw-tree-depth": row.depth - 1 },
               onFocus: () => {
                 focused.value = row.node.id;
               },
@@ -706,7 +706,7 @@ export interface CarouselSlide {
   content?: VNodeChild;
 }
 export const Carousel = defineComponent({
-  name: "NqCarousel",
+  name: "HwCarousel",
   inheritAttrs: false,
   props: {
     slides: {
@@ -749,20 +749,20 @@ export const Carousel = defineComponent({
       return h(
         "section",
         mergeProps(attrs, {
-          class: "nq-carousel",
-          "data-nq-carousel-ready": "",
-          style: { "--nq-carousel-index": current },
+          class: "hw-carousel",
+          "data-hw-carousel-ready": "",
+          style: { "--hw-carousel-index": current },
           role: "region",
           "aria-roledescription": props.carouselDescription,
           "aria-label": props.label,
         }),
         [
-          h("div", { class: "nq-carousel-viewport nq-carousel-slides" }, [h("div", { class: "nq-carousel-track" }, props.slides.map((slide, index) =>
+          h("div", { class: "hw-carousel-viewport hw-carousel-slides" }, [h("div", { class: "hw-carousel-track" }, props.slides.map((slide, index) =>
             h(
               "div",
               {
                 key: slide.id,
-                class: "nq-carousel-slide",
+                class: "hw-carousel-slide",
                 role: "group",
                 "aria-roledescription": props.slideDescription,
                 "aria-label": `${props.slideMessage(index + 1, total)}: ${slide.label}`,
@@ -772,16 +772,16 @@ export const Carousel = defineComponent({
               },
               [slots[slide.id]?.() ?? slide.content],
             ),
-          )), !total && h("p", {class: "nq-carousel-empty"}, props.emptyLabel)]),
-          h("div", { class: "nq-carousel-controls" }, [
-            props.showIndicators && total > 0 && h("div", {class: "nq-carousel-pagination", role: "group", "aria-label": props.indicatorsLabel}, props.slides.map((slide, index) => h("button", {class: "nq-carousel-dot", key: slide.id, type: "button", "aria-label": `${props.slideMessage(index + 1, total)}: ${slide.label}`, "aria-current": index === current ? "true" : undefined, onClick: () => select(index)}))),
-            h("div", {class: "nq-carousel-arrows"}, [
-              h(Button, {class: "nq-carousel-arrow", variant: "secondary", type: "button", "data-nq-previous": "", "aria-label": props.previousLabel, disabled: total < 2 || (!props.wrap && current === 0), onClick: () => select(current - 1)}),
-              h(Button, {class: "nq-carousel-arrow", variant: "secondary", type: "button", "data-nq-next": "", "aria-label": props.nextLabel, disabled: total < 2 || (!props.wrap && current === total - 1), onClick: () => select(current + 1)}),
+          )), !total && h("p", {class: "hw-carousel-empty"}, props.emptyLabel)]),
+          h("div", { class: "hw-carousel-controls" }, [
+            props.showIndicators && total > 0 && h("div", {class: "hw-carousel-pagination", role: "group", "aria-label": props.indicatorsLabel}, props.slides.map((slide, index) => h("button", {class: "hw-carousel-dot", key: slide.id, type: "button", "aria-label": `${props.slideMessage(index + 1, total)}: ${slide.label}`, "aria-current": index === current ? "true" : undefined, onClick: () => select(index)}))),
+            h("div", {class: "hw-carousel-arrows"}, [
+              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-previous": "", "aria-label": props.previousLabel, disabled: total < 2 || (!props.wrap && current === 0), onClick: () => select(current - 1)}),
+              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-next": "", "aria-label": props.nextLabel, disabled: total < 2 || (!props.wrap && current === total - 1), onClick: () => select(current + 1)}),
             ]),
             h(
               "span",
-              { class: "nq-carousel-status nq-sr-only", role: "status", "aria-live": "polite" },
+              { class: "hw-carousel-status hw-sr-only", role: "status", "aria-live": "polite" },
               total ? props.slideMessage(current + 1, total) : props.emptyLabel,
             ),
           ]),

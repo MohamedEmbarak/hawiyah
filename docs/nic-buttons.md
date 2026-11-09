@@ -1,13 +1,13 @@
 # NIC button families
 
 The supplied `global.css` snapshot (971–1292) defines primary, default, secondary,
-outline, outline-white, light and danger. Nasaq exposes all seven through
+outline, outline-white, light and danger. Hawiyah exposes all seven through
 `data-variant` in vanilla and `variant` in React, Vue and Angular. Existing ghost,
 soft and link variants remain supported. `default` means the dark neutral
 appearance; omitting the prop still selects primary. IconButton shares the CSS; its native default is ghost. See [icon sizing, shape and compositions](nic-icons.md).
 
 ```html
-<button class="nq-button" data-variant="secondary" type="button">حفظ المسودة</button>
+<button class="hw-button" data-variant="secondary" type="button">حفظ المسودة</button>
 ```
 
 ```tsx
@@ -19,7 +19,7 @@ appearance; omitting the prop still selects primary. IconButton shares the CSS; 
 ```
 
 ```html
-<button nqButton variant="secondary" type="button" (click)="saveDraft()">حفظ المسودة</button>
+<button hwButton variant="secondary" type="button" (click)="saveDraft()">حفظ المسودة</button>
 ```
 
 ## Source mapping
@@ -50,7 +50,7 @@ on that backdrop; they are not substitutes for primary on a white page.
 - Danger uses white text for readable contrast instead of the source's red text.
 - Dark secondary/outline surfaces and text are paired for readable contrast.
   Light pressed stays opaque in dark mode to retain contrast on arbitrary dark
-  surfaces. Original Nasaq colors and public customization variables remain.
+  surfaces. Original Hawiyah colors and public customization variables remain.
 - Existing comfortable/compact/mobile density heights remain. Source `.btn`
   declares 32px minimum, `.btn-sm` 24px and `.btn-lg` 40px; the small source still
   inherits 6px vertical padding and 20px line height, so declarations alone do

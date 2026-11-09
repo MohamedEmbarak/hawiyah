@@ -1,7 +1,7 @@
 import NicReferenceExample from './NicReferenceExample.vue';
 import { createApp } from 'vue';
-import '@nasaq/styles/reset.css';
-import '@nasaq/styles/styles.css';
+import '@hawiyah/styles/reset.css';
+import '@hawiyah/styles/styles.css';
 import '../../../brand/fonts.css';
 import './style.css';
 import App from './App.vue';

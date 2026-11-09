@@ -31,7 +31,7 @@ export function paginationNativeMarkup(locale: Locale,kind: PaginationDemoKind='
   return {
     react:`<Pagination ${common} totalPages={${copy.total}} ${controlled?'page={value} onPageChange={setValue}':`defaultPage={${copy.page}}`} getPageLabel={page => '${copy.pageLabel} ' + page} getGapLabel={(start, end) => ${copy.gapExpression}} />`,
     vue:`<Pagination ${common} :total-pages="${copy.total}" ${controlled?'v-model="value"':`:default-value="${copy.page}"`} :page-label="page => '${copy.pageLabel} ' + page" :gap-label="(start, end) => ${copy.gapExpression}" />`,
-    angular:`<nq-pagination ${common} [totalPages]="${copy.total}" ${controlled?'[(page)]="value"':`[page]="${copy.page}"`} [pageLabel]="pageLabel" [gapLabel]="gapLabel" />`,
+    angular:`<hw-pagination ${common} [totalPages]="${copy.total}" ${controlled?'[(page)]="value"':`[page]="${copy.page}"`} [pageLabel]="pageLabel" [gapLabel]="gapLabel" />`,
     angularMember:`\n  pageLabel = (page: number) => '${copy.pageLabel} ' + page;\n  gapLabel = (start: number, end: number) => ${copy.gapExpression};`,
   };
 }
@@ -39,5 +39,5 @@ export function paginationNativeMarkup(locale: Locale,kind: PaginationDemoKind='
 export function paginationDemoMarkup(locale: Locale,kind?: PaginationDemoKind) {
   const copy=paginationCopy(locale,kind??'first');
   const label=kind?copy.label:locale==='ar'?'صفحات النتائج':'Results pages';
-  return `<nav class="nq-pagination" data-nq="pagination" data-nq-total="${copy.total}" data-nq-current="${copy.page}" aria-label="${label}"${kind==='disabled'?' aria-disabled="true"':''}><button class="nq-button nq-pagination-arrow" data-variant="ghost" type="button" data-nq-page="previous" data-nq-previous aria-label="${copy.previous}"></button><span class="nq-pagination-items" data-nq-pagination-items></span><button class="nq-button nq-pagination-arrow" data-variant="ghost" type="button" data-nq-page="next" data-nq-next aria-label="${copy.next}"></button></nav>`;
+  return `<nav class="hw-pagination" data-hw="pagination" data-hw-total="${copy.total}" data-hw-current="${copy.page}" aria-label="${label}"${kind==='disabled'?' aria-disabled="true"':''}><button class="hw-button hw-pagination-arrow" data-variant="ghost" type="button" data-hw-page="previous" data-hw-previous aria-label="${copy.previous}"></button><span class="hw-pagination-items" data-hw-pagination-items></span><button class="hw-button hw-pagination-arrow" data-variant="ghost" type="button" data-hw-page="next" data-hw-next aria-label="${copy.next}"></button></nav>`;
 }

@@ -2,7 +2,7 @@ import '@angular/compiler';
 import {Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule,platformBrowserTesting} from '@angular/platform-browser/testing';
-import {NqLinkComponent,NqBreadcrumbComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwLinkComponent,HwBreadcrumbComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act,createElement as r} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp,h,nextTick,ref} from 'vue';
@@ -17,7 +17,7 @@ const cleanups:Array<()=>void|Promise<void>>=[];
 afterEach(async()=>{for(const cleanup of cleanups.splice(0))await cleanup();TestBed.resetTestingModule();document.body.replaceChildren();});
 const items=[{label:'Home',href:'#home'},{label:'Unavailable',href:'#blocked',disabled:true},{label:'Current'}];
 class Host { disabled=false; calls=0; items=items; activate(event:Event){event.preventDefault();this.calls++;} }
-Component({standalone:true,imports:[NqLinkComponent,NqBreadcrumbComponent],template:`<nq-link href="#destination" variant="neutral" [disabled]="disabled" (click)="activate($event)" (auxclick)="activate($event)">Destination</nq-link><nq-breadcrumb label="Hierarchy" [items]="items" />`})(Host);
+Component({standalone:true,imports:[HwLinkComponent,HwBreadcrumbComponent],template:`<hw-link href="#destination" variant="neutral" [disabled]="disabled" (click)="activate($event)" (auxclick)="activate($event)">Destination</hw-link><hw-breadcrumb label="Hierarchy" [items]="items" />`})(Host);
 for(const adapter of ['react','vue','angular'])it(`${adapter}: disabled links suppress primary/auxiliary callbacks, restore href, and preserve breadcrumb semantics`,async()=>{
   const host=document.createElement('div');document.body.append(host);let calls=0;
   const activation=(event:Event)=>{event.preventDefault();calls++;};
@@ -32,7 +32,7 @@ for(const adapter of ['react','vue','angular'])it(`${adapter}: disabled links su
     const fixture=TestBed.createComponent(Host);host.append(fixture.nativeElement);
     setDisabled=async value=>{fixture.componentInstance.disabled=value;fixture.detectChanges();calls=fixture.componentInstance.calls;};
   }
-  await setDisabled(false);const link=host.querySelector<HTMLAnchorElement>('.nq-link')!;
+  await setDisabled(false);const link=host.querySelector<HTMLAnchorElement>('.hw-link')!;
   expect(link.getAttribute('data-variant')).toBe('neutral');expect(link.getAttribute('href')).toBe('#destination');
   link.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));link.dispatchEvent(new MouseEvent('auxclick',{bubbles:true,cancelable:true,button:1}));
   await setDisabled(true);expect(calls).toBe(2);expect(link.hasAttribute('href')).toBe(false);expect(link.getAttribute('aria-disabled')).toBe('true');expect(link.tabIndex).toBe(-1);

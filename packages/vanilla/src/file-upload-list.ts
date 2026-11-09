@@ -1,4 +1,4 @@
-import { fileUploadLabels, fileUploadProgress, type FileUploadItem, type FileUploadLabels } from '@nasaq/core';
+import { fileUploadLabels, fileUploadProgress, type FileUploadItem, type FileUploadLabels } from '@hawiyah/core';
 
 export interface FileUploadListOptions {
   items: readonly FileUploadItem[];
@@ -10,7 +10,7 @@ export interface FileUploadListOptions {
 export function createFileUploadList(root: HTMLElement, options: FileUploadListOptions) {
   const original = Array.from(root.childNodes);
   const list = root.ownerDocument.createElement('ul');
-  list.className = 'nq-upload-list';
+  list.className = 'hw-upload-list';
   root.replaceChildren(list);
   const labels = options.labels ?? fileUploadLabels;
   let destroyed = false;
@@ -19,12 +19,12 @@ export function createFileUploadList(root: HTMLElement, options: FileUploadListO
     if (destroyed) return;
     list.replaceChildren(...items.map(item => {
       const row = root.ownerDocument.createElement('li');
-      row.className = 'nq-upload-item'; row.dataset.status = item.status;
+      row.className = 'hw-upload-item'; row.dataset.status = item.status;
       if (item.message) row.dataset.message = 'true';
       const name = root.ownerDocument.createElement('span');
-      name.className = 'nq-upload-name'; name.textContent = item.name;
+      name.className = 'hw-upload-name'; name.textContent = item.name;
       const status = root.ownerDocument.createElement('span');
-      status.className = 'nq-upload-status'; status.setAttribute('role', 'status');
+      status.className = 'hw-upload-status'; status.setAttribute('role', 'status');
       status.textContent = item.message || labels[item.status]; row.append(name, status);
       if (item.status === 'uploading') {
         const progress = root.ownerDocument.createElement('progress');
@@ -35,7 +35,7 @@ export function createFileUploadList(root: HTMLElement, options: FileUploadListO
       }
       if (options.onRemove && item.removable !== false) {
         const button = root.ownerDocument.createElement('button');
-        button.type = 'button'; button.className = 'nq-button'; button.dataset.variant = 'subtle';
+        button.type = 'button'; button.className = 'hw-button'; button.dataset.variant = 'subtle';
         button.textContent = labels.remove; button.disabled = disabled;
         button.setAttribute('aria-label', `${labels.remove} ${item.name}`);
         button.addEventListener('click', () => {

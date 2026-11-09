@@ -1,36 +1,36 @@
-# Nasaq — نسق
+# Hawiyah — هوية
 
-**An Arabic-first, extensible UI system for vanilla JavaScript, React, Vue, and Angular.** Nasaq combines a DGA-based default foundation with shared behavior, optional visual themes, and editable patterns for complete service journeys.
+**A UI component library built to comply with the Digital Government Authority (DGA) Platforms Code.** Hawiyah provides design tokens, styles, and accessible components for JavaScript, React, Vue, and Angular, with full Arabic and English support and page templates for complete government service journeys.
 
-Developed by the Development Team in the National Platforms Sector — National Information Center.
+Developed by the Development Team in the National Platforms Sector — National Information Center. Formerly developed as Nasaq; see the [changelog](CHANGELOG.md) for the rename.
 
 تم التطوير بواسطة فريق التطوير في قطاع المنصات الوطنية - مركز المعلومات الوطني
 
-[Guide & live examples](https://mohamedembarak.github.io/nasaq/) · [العربية](README.ar.md) · [Coverage](docs/coverage.md) · [Architecture](docs/architecture.md) · [Extension guide](docs/extension.md) · [Validation](docs/validation.md) · [AI guide](llms.txt)
+[Guide & live examples](https://mohamedembarak.github.io/hawiyah/) · [العربية](README.ar.md) · [Coverage](docs/coverage.md) · [Architecture](docs/architecture.md) · [Extension guide](docs/extension.md) · [Validation](docs/validation.md) · [AI guide](llms.txt)
 
-The default interface uses the DGA foundation mapped from supplied Platforms Code source snapshots. The optional **Woven Rhythm** theme (`data-nq-theme="nasaq"`) retains teal and warm ivory. Nasaq keeps its Arabic-only **نسق** wordmark. Its **Aref Ruqaa Bold lettering is exported as SVG paths**, with no font dependency to display the logo. Interface typography remains IBM Plex Sans Arabic and IBM Plex Sans. The [brand guide](brand/index-en.html), [artwork guidance](brand/README.md), and [brand kit ZIP](brand/nasaq-brand-kit.zip) include the wordmark and transparent loaders that animate its lettering.
+The default interface uses the DGA foundation mapped from supplied Platforms Code source snapshots. The optional **Signature** theme (`data-hw-theme="hawiyah"`) retains teal and warm ivory. Hawiyah's logo is the Arabic **هوية** wordmark in the Platforms Code primary color. Its **Aref Ruqaa Bold lettering is exported as SVG paths**, with no font dependency to display the logo. Interface typography remains IBM Plex Sans Arabic and IBM Plex Sans. The [brand guide](brand/index-en.html), [artwork guidance](brand/README.md), and [brand kit ZIP](brand/hawiyah-brand-kit.zip) include the wordmark and transparent loaders that animate its lettering.
 
-![Nasaq playground preview](docs/previews/playground.png)
+![Hawiyah playground preview](docs/previews/playground.png)
 
 Preview the [live editor in Arabic](docs/previews/component-editor-ar-dark.png), [layout studio](docs/previews/layouts.png) and [Gregorian/Umm al-Qura date picker](docs/previews/date-picker.png).
 
-Nasaq draws on **DGA Platforms Code**, the **Unified Design System** for the **Kingdom of Saudi Arabia (KSA)** — **كود المنصات، نظام التصميم الموحد، هيئة الحكومة الرقمية** — for relevant foundations and government service conventions. It adds its own design, components, and compositions. **DGA compliance is tracked as evidence and gaps; Nasaq is an independent implementation, with no claim of official endorsement or certification.** Read [DGA alignment](docs/alignment.md) before describing a product as compliant. The [DGA reference and migration guide](docs/dga-reference.md) records the supplied 2026-10-29 snapshots, semantic light/dark values, reference nodes, and remaining gaps. The export date is not an official release number. All 23 local files are now decoded; the earlier six-file transfer limit is resolved. No standalone web Components Library was supplied. See the [source inventory](docs/dga-source-inventory.md) and [audit follow-up](docs/dga-audit-followup.md) for evidence and remaining gaps. The application-specific Hajj template is outside Nasaq scope.
+Hawiyah implements the **DGA Platforms Code**, the **Unified Design System** for the **Kingdom of Saudi Arabia (KSA)** — **كود المنصات، نظام التصميم الموحد، هيئة الحكومة الرقمية** — across foundations, components, and government service patterns. **Compliance is documented requirement by requirement, with test evidence and open items.** Hawiyah is maintained independently and is not an official DGA product. Read [DGA alignment](docs/alignment.md) before describing a product as compliant. The [DGA reference and migration guide](docs/dga-reference.md) records the supplied 2026-10-29 snapshots, semantic light/dark values, reference nodes, and remaining gaps. The export date is not an official release number. All 23 local files are now decoded; the earlier six-file transfer limit is resolved. No standalone web Components Library was supplied. See the [source inventory](docs/dga-source-inventory.md) and [audit follow-up](docs/dga-audit-followup.md) for evidence and remaining gaps. The application-specific Hajj template is outside Hawiyah scope.
 
-Explore the [template gallery](https://mohamedembarak.github.io/nasaq/#templates), [full-width service page](https://mohamedembarak.github.io/nasaq/?preview=template#templates/service), and [application form](https://mohamedembarak.github.io/nasaq/?preview=template#templates/form). These bilingual examples use local demonstration state; connect your own services for production.
+Explore the [template gallery](https://mohamedembarak.github.io/hawiyah/#templates), [full-width service page](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/service), and [application form](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/form). These bilingual examples use local demonstration state; connect your own services for production.
 
-The gallery also includes a [portal home](https://mohamedembarak.github.io/nasaq/?preview=template#templates/home) and [search page](https://mohamedembarak.github.io/nasaq/?preview=template#templates/search). Search retains the query and provides type filters, removable selections, sorting, pagination and result states. Reusable `PortalLayout` and `SecondaryNav` APIs are documented in each adapter's `PORTAL.md` guide.
+The gallery also includes a [portal home](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/home) and [search page](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/search). Search retains the query and provides type filters, removable selections, sorting, pagination and result states. Reusable `PortalLayout` and `SecondaryNav` APIs are documented in each adapter's `PORTAL.md` guide.
 
 ## Development status
 
-Nasaq is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **83-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.0 is published on npm under the `@nasaq` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
+Hawiyah is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **83-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.0 is published on npm under the `@hawiyah` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
 
 The [roadmap](docs/roadmap.md) separates planned scope, implemented work, and verified behavior. [components.json](components.json) provides the same distinctions in a form that tools and coding assistants can read. Exact framework coverage and verification must be checked there rather than inferred from the package names.
 
-The guide opens in Arabic, with a persistent English switch and keyboard search (Ctrl/Cmd + K). Every component includes Preview, Code, and Playground tabs. The playground offers project files with real imports and native previews for JavaScript/TypeScript, React JSX/TSX, Vue JavaScript/TypeScript, and Angular TypeScript. Each supported recipe runs its selected adapter in an isolated preview with console errors and reset controls; the editor explicitly identifies any recipe still awaiting a native example. Downloaded projects include their setup files. The embedded preview resolves bundled dependencies only; arbitrary external imports are unsupported. [Editor license notices](https://mohamedembarak.github.io/nasaq/licenses/editor.txt) accompany the deployed guide.
+The guide opens in Arabic, with a persistent English switch and keyboard search (Ctrl/Cmd + K). Every component includes Preview, Code, and Playground tabs. The playground offers project files with real imports and native previews for JavaScript/TypeScript, React JSX/TSX, Vue JavaScript/TypeScript, and Angular TypeScript. Each supported recipe runs its selected adapter in an isolated preview with console errors and reset controls; the editor explicitly identifies any recipe still awaiting a native example. Downloaded projects include their setup files. The embedded preview resolves bundled dependencies only; arbitrary external imports are unsupported. [Editor license notices](https://mohamedembarak.github.io/hawiyah/licenses/editor.txt) accompany the deployed guide.
 
 ## What the system is designed to provide
 
-- A source-mapped DGA default foundation, an opt-in Nasaq theme, and explicit custom-theme overrides.
+- A source-mapped DGA default foundation, an opt-in Hawiyah theme, and explicit custom-theme overrides.
 - Arabic and English content, independent locale and text direction, and logical CSS for RTL/LTR layouts.
 - Native component APIs in each framework, built on shared tokens, styles, and behavior helpers.
 - Vanilla HTML/CSS that remains useful without JavaScript, with explicit enhancement for interactive controls.
@@ -43,23 +43,23 @@ The guide opens in Arabic, with a persistent English switch and keyboard search 
 
 | Package | Responsibility |
 |---|---|
-| `@nasaq/tokens` | Design values and semantic theme variables |
-| `@nasaq/styles` | Component CSS, layout helpers, and a separately imported reset |
-| `@nasaq/core` | Framework-independent behavior and internationalization helpers |
-| `@nasaq/vanilla` | HTML enhancement controllers with cleanup |
-| `@nasaq/react` | React components using the shared foundation |
-| `@nasaq/vue` | Vue components using the shared foundation |
-| `@nasaq/angular` | Angular components using the shared foundation |
+| `@hawiyah/tokens` | Design values and semantic theme variables |
+| `@hawiyah/styles` | Component CSS, layout helpers, and a separately imported reset |
+| `@hawiyah/core` | Framework-independent behavior and internationalization helpers |
+| `@hawiyah/vanilla` | HTML enhancement controllers with cleanup |
+| `@hawiyah/react` | React components using the shared foundation |
+| `@hawiyah/vue` | Vue components using the shared foundation |
+| `@hawiyah/angular` | Angular components using the shared foundation |
 
-Install the styles and one adapter with `npm install @nasaq/styles @nasaq/react`, replacing `react` with `vanilla`, `vue`, or `angular`. Source manifests keep `private: true`; `pnpm release:packages` publishes only the tarballs that `pnpm check:packages` has verified. Framework dependencies belong to the relevant adapter; the core does not depend on a framework runtime.
+Install the styles and one adapter with `npm install @hawiyah/styles @hawiyah/react`, replacing `react` with `vanilla`, `vue`, or `angular`. Source manifests keep `private: true`; `pnpm release:packages` publishes only the tarballs that `pnpm check:packages` has verified. Framework dependencies belong to the relevant adapter; the core does not depend on a framework runtime.
 
 ## Run locally
 
 Clone the source, then use the pnpm version pinned in `package.json`. The development checks ran with Node.js `24.19.0` and pnpm `11.25.0`:
 
 ```sh
-git clone https://github.com/MohamedEmbarak/nasaq.git
-cd nasaq
+git clone https://github.com/MohamedEmbarak/hawiyah.git
+cd hawiyah
 corepack enable
 pnpm install --frozen-lockfile
 pnpm build:packages
@@ -69,25 +69,25 @@ pnpm dev
 The development entry point is the vanilla playground. Explore `#components` for the catalog, `#inputs` for input semantics, and `#layouts` for layout composition. The local brand guide is included. To run a native framework example after building packages:
 
 ```sh
-pnpm --filter @nasaq/example-react dev
-pnpm --filter @nasaq/example-vue dev
-pnpm --filter @nasaq/example-angular dev
+pnpm --filter @hawiyah/example-react dev
+pnpm --filter @hawiyah/example-vue dev
+pnpm --filter @hawiyah/example-angular dev
 ```
 
 Choose the example you need; each command starts a separate development server. Available checks are `pnpm build`, `pnpm typecheck:playground`, `pnpm test`, `pnpm test:browser`, and `pnpm check:packages`. See the [validation record](docs/validation.md) for results and browser setup. API guides: [vanilla](packages/vanilla/README.md), [React](packages/react/README.md), [Vue](packages/vue/README.md), and [Angular](packages/angular/README.md).
 
 ## Start with HTML and CSS
 
-The shared styling contract uses ordinary HTML, `nq-` classes, and `--nq-` custom properties:
+The shared styling contract uses ordinary HTML, `hw-` classes, and `--hw-` custom properties:
 
 ```html
-<section lang="ar" dir="rtl" data-nq-theme="dga"
-         data-nq-mode="light" data-nq-density="comfortable">
-  <div class="nq-card">
-    <div class="nq-card-body">
+<section lang="ar" dir="rtl" data-hw-theme="dga"
+         data-hw-mode="light" data-hw-density="comfortable">
+  <div class="hw-card">
+    <div class="hw-card-body">
       <h2>طلب جديد</h2>
       <p>راجع متطلبات الخدمة قبل البدء.</p>
-      <button class="nq-button" data-variant="primary" type="button">
+      <button class="hw-button" data-variant="primary" type="button">
         ابدأ الطلب
       </button>
     </div>
@@ -98,17 +98,17 @@ The shared styling contract uses ordinary HTML, `nq-` classes, and `--nq-` custo
 Load the styles through the consuming application's package setup:
 
 ```ts
-import '@nasaq/styles/styles.css';
+import '@hawiyah/styles/styles.css';
 ```
 
-The reset is optional; import `@nasaq/styles/reset.css` before the component stylesheet if the application needs it. The [behavior contract](packages/core/API.md) and [vanilla expansion guide](packages/vanilla/EXPANSION-API.md) document enhancement APIs and markup. A framework adapter owns its rendered DOM; do not run vanilla enhancement over React, Vue, or Angular component trees.
+The reset is optional; import `@hawiyah/styles/reset.css` before the component stylesheet if the application needs it. The [behavior contract](packages/core/API.md) and [vanilla expansion guide](packages/vanilla/EXPANSION-API.md) document enhancement APIs and markup. A framework adapter owns its rendered DOM; do not run vanilla enhancement over React, Vue, or Angular component trees.
 
 The React adapter uses ordinary controlled inputs:
 
 ```tsx
 import { useState } from 'react';
-import { TextField } from '@nasaq/react';
-import '@nasaq/styles/styles.css';
+import { TextField } from '@hawiyah/react';
+import '@hawiyah/styles/styles.css';
 
 export function RequestName() {
   const [name, setName] = useState('');
@@ -139,8 +139,8 @@ The intended accessibility target is **WCAG 2.2 AA**. Release evaluation include
 
 The [validation record](docs/validation.md) identifies the tested snapshot, exact commands, package-consumer checks, targeted behavior/hydration cases, and Chromium journeys. The [catalog](components.json) separates implementation from per-component verification; baseline checks do not automatically verify later additions. Manual screen-reader testing and cross-browser coverage remain open.
 
-Source is available at [MohamedEmbarak/nasaq](https://github.com/MohamedEmbarak/nasaq). The [guide and live examples](https://mohamedembarak.github.io/nasaq/) deploy to GitHub Pages. The packages are on npm under `@nasaq`; [releases](docs/publication.md) explains how they are built, verified, and published.
+Source is available at [MohamedEmbarak/hawiyah](https://github.com/MohamedEmbarak/hawiyah). The [guide and live examples](https://mohamedembarak.github.io/hawiyah/) deploy to GitHub Pages. The packages are on npm under `@hawiyah`; [releases](docs/publication.md) explains how they are built, verified, and published.
 
 ## License
 
-Nasaq source is licensed under [Apache 2.0](LICENSE). See [NOTICE](NOTICE) for attribution and the bundled notices for third-party fonts and calendar data. The license does not grant trademark rights or DGA endorsement.
+Hawiyah source is licensed under [Apache 2.0](LICENSE). See [NOTICE](NOTICE) for attribution and the bundled notices for third-party fonts and calendar data. The license does not grant trademark rights or DGA endorsement.

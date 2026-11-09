@@ -4,7 +4,7 @@ This comparison uses the hashed `global.css` snapshot in the
 [NIC source inventory](nic-web-reference.md). It covers reusable presentation
 and adapter behavior, not certification. Calendar switches are separate.
 
-| Source | Observed requirement/value | Nasaq implementation or adaptation | Confidence |
+| Source | Observed requirement/value | Hawiyah implementation or adaptation | Confidence |
 | --- | --- | --- | --- |
 | CSS 1294–1305 | Inline flex, wrap, gap 0, padding 0 8px, fit-content | Segmented ToggleGroup uses this layout; outline remains a supported alternative | High |
 | CSS 1307–1327 and inherited base button | Minimum 32px; inherited 6px vertical padding and 24px line-height produce an actual 36px plain segment; minimum width 76px; font 16px/24px, weight 500 | Match actual cascade, not only the declared minimum | High |
@@ -14,13 +14,13 @@ and adapter behavior, not certification. Calendar switches are separate.
 | Source disabled/focus cascade | Selected rules can override disabled rules; inherited focus declarations can erase the ring | Disabled styling wins while selected-disabled retains a border cue. Readonly stays focusable. Outline readonly multiple buttons retain their focus ring | High; explicit correction |
 | Source dark palette | Fixed near-white hover can conflict with dark-mode white text | Contrast-tested dark hover and selected tokens; original/custom themes remain supported | High declaration evidence; dark treatment is an adaptation |
 | Source motion | No segment-specific transition declared | No inferred animation timing in DGA segmented controls; reduced-motion disables legacy transitions | High |
-| Nasaq attached ButtonGroup composition | Independent actions, not radio selection | All native adapters expose variant/orientation; vertical joins use block-axis overlap and corners. Mixed Angular icon-button hosts/native buttons share one seam | Nasaq composition fix; not a source-specific selection requirement |
+| Hawiyah attached ButtonGroup composition | Independent actions, not radio selection | All native adapters expose variant/orientation; vertical joins use block-axis overlap and corners. Mixed Angular icon-button hosts/native buttons share one seam | Hawiyah composition fix; not a source-specific selection requirement |
 
 ## Behavior and public APIs
 
 ToggleGroup uses native radios for single selection and `aria-pressed` buttons
 for multiple selection. React/Angular use `readOnly`, Vue uses `readonly`, and
-vanilla uses `data-nq-readonly="true"`. Readonly does not disable the fieldset:
+vanilla uses `data-hw-readonly="true"`. Readonly does not disable the fieldset:
 users can focus the selected control, inspect it, and submit its enabled value,
 but cannot change it with clicks or selection keys. Removing readonly restores
 editing. Disabled groups submit nothing. Multiple values exclude missing or
@@ -29,7 +29,7 @@ retains its existing value/CVA model.
 
 ButtonGroup accepts `variant="default|attached"` and
 `orientation="horizontal|vertical"` in React, Vue and Angular. Vanilla uses
-`data-variant` and `data-orientation` on `.nq-button-group`. Each action retains
+`data-variant` and `data-orientation` on `.hw-button-group`. Each action retains
 ordinary button behavior and its own Tab stop. No toolbar role or implicit
 roving focus is introduced. Existing React/Vue data attributes remain supported.
 
@@ -38,8 +38,8 @@ readonly-multiple-outline examples. Native project recipes import the actual
 adapters; ButtonGroup adds the thirtieth native recipe with horizontal/vertical
 mixed icon and text actions. Demo handlers update local state without navigating.
 
-`--nq-color-segment-selected`, `--nq-color-on-segment-selected` and
-`--nq-color-segment-hover` are additive semantic roles. Original Nasaq themes
+`--hw-color-segment-selected`, `--hw-color-on-segment-selected` and
+`--hw-color-segment-hover` are additive semantic roles. Original Hawiyah themes
 retain their prior grouping geometry; custom themes may override these colors.
 Nested theme boundaries reset DGA-only geometry. Forced colors retain selected,
 disabled and keyboard focus cues. No calendar calculation or value format changes.

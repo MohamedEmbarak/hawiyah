@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import { NqPortalHeaderComponent } from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import { HwPortalHeaderComponent } from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import { act, createElement, createRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -21,7 +21,7 @@ const items = [
   { label: 'الأخبار', href: '#news', groups: [{ links: [] }] },
 ];
 type Adapter = 'react' | 'vue' | 'angular';
-const props = { brand: 'نسق', links: items };
+const props = { brand: 'هوية', links: items };
 const cleanups: Array<() => void | Promise<void>> = [];
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
@@ -39,7 +39,7 @@ async function mount(adapter: Adapter) {
     const root = createRoot(host);
     const ref = createRef<HTMLElement>();
     run = async action => { await act(action); };
-    await run(() => root.render(createElement(ReactHeader, { brand: 'نسق', navigation: items, ref })));
+    await run(() => root.render(createElement(ReactHeader, { brand: 'هوية', navigation: items, ref })));
     expect(ref.current).toBe(host.querySelector('header'));
     cleanups.push(() => run(() => root.unmount()));
   } else if (adapter === 'vue') {
@@ -48,16 +48,16 @@ async function mount(adapter: Adapter) {
     run = async action => { action(); await nextTick(); };
     cleanups.push(() => app.unmount());
   } else {
-    const fixture = TestBed.createComponent(NqPortalHeaderComponent);
+    const fixture = TestBed.createComponent(HwPortalHeaderComponent);
     for (const [key, value] of Object.entries(props)) fixture.componentRef.setInput(key, value);
     host.append(fixture.nativeElement);
     fixture.detectChanges();
     run = async action => { action(); fixture.detectChanges(); };
     cleanups.push(() => fixture.destroy());
   }
-  const branches = Array.from(host.querySelectorAll<HTMLDetailsElement>('details[data-nq-portal-branch]'));
+  const branches = Array.from(host.querySelectorAll<HTMLDetailsElement>('details[data-hw-portal-branch]'));
   const summaries = branches.map(branch => branch.querySelector('summary')!);
-  const toggle = host.querySelector<HTMLButtonElement>('.nq-portal-menu-toggle')!;
+  const toggle = host.querySelector<HTMLButtonElement>('.hw-portal-menu-toggle')!;
   return { host, branches, summaries, toggle, run };
 }
 
@@ -66,9 +66,9 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
     const { host, branches } = await mount(adapter);
     expect(branches).toHaveLength(2);
     expect(branches[0].dataset.current).toBe('true');
-    expect(branches[0].querySelectorAll('.nq-portal-branch-group')).toHaveLength(2);
-    expect(branches[0].querySelector('.nq-portal-branch-group h2')?.textContent).toBe('الأفراد');
-    expect(branches[0].querySelector('.nq-portal-branch-panel > :first-child')?.getAttribute('href')).toBe('#services');
+    expect(branches[0].querySelectorAll('.hw-portal-branch-group')).toHaveLength(2);
+    expect(branches[0].querySelector('.hw-portal-branch-group h2')?.textContent).toBe('الأفراد');
+    expect(branches[0].querySelector('.hw-portal-branch-panel > :first-child')?.getAttribute('href')).toBe('#services');
     expect(Array.from(host.querySelectorAll('[aria-current]'), link => link.getAttribute('href'))).toEqual(['#requests']);
     expect(host.querySelector('nav > ul > li:last-child > a')?.getAttribute('href')).toBe('#news');
     expect(host.querySelectorAll('[role="menu"],[role="menuitem"]')).toHaveLength(0);
@@ -132,12 +132,12 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
 
 it('renders initially collapsed, navigable group markup on the React and Vue server', async () => {
   const markup = [
-    renderToStaticMarkup(createElement(ReactHeader, { brand: 'نسق', navigation: items })),
+    renderToStaticMarkup(createElement(ReactHeader, { brand: 'هوية', navigation: items })),
     await renderToString(createSSRApp({ render: () => h(VueHeader, props) })),
   ];
   for (const html of markup) {
     const parsed = new DOMParser().parseFromString(html, 'text/html');
     expect(parsed.querySelectorAll('details:not([open])')).toHaveLength(2);
-    expect(parsed.querySelector('.nq-portal-branch-overview')?.getAttribute('href')).toBe('#services');
+    expect(parsed.querySelector('.hw-portal-branch-overview')?.getAttribute('href')).toBe('#services');
   }
 });

@@ -17,12 +17,12 @@ for (const width of [390, 820, 900]) {
         const height = 844;
         await page.setViewportSize({ width, height });
         await page.addInitScript(({ locale, mode }) => {
-          localStorage.setItem('nasaq-locale', locale);
-          localStorage.setItem('nasaq-mode', mode);
+          localStorage.setItem('hawiyah-locale', locale);
+          localStorage.setItem('hawiyah-mode', mode);
         }, { locale, mode });
         await page.goto('/#docs/getting-started');
         await expect(page.locator('html')).toHaveAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr');
-        await expect(page.locator('html')).toHaveAttribute('data-nq-mode', mode);
+        await expect(page.locator('html')).toHaveAttribute('data-hw-mode', mode);
 
         const sidebar = page.locator('#site-navigation');
         const menu = page.locator('.mobile-menu');

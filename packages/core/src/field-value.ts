@@ -13,7 +13,7 @@ function hasSelectedValue(select: HTMLSelectElement): boolean {
 export function observeFieldValue(element: FieldValueElement): FieldValueObserver {
   let entry = observers.get(element);
   if (!entry) {
-    const original = element.getAttribute('data-nq-filled');
+    const original = element.getAttribute('data-hw-filled');
     const select = element.localName === 'select' ? element as HTMLSelectElement : undefined;
     let active = true;
     let form = element.form;
@@ -22,11 +22,11 @@ export function observeFieldValue(element: FieldValueElement): FieldValueObserve
       if (form !== element.form) { form?.removeEventListener('reset', reset); form = element.form; form?.addEventListener('reset', reset); }
       const filled = select?.multiple ? hasSelectedValue(select) : element.value !== '';
       const value = String(filled);
-      if (element.getAttribute('data-nq-filled') !== value) element.setAttribute('data-nq-filled', value);
+      if (element.getAttribute('data-hw-filled') !== value) element.setAttribute('data-hw-filled', value);
     };
     const reset = (event: Event) => queueMicrotask(() => { if (!event.defaultPrevented) refresh(); });
     const changed = () => { refresh(); queueMicrotask(refresh); };
-    const composition = element.closest('[data-nq]');
+    const composition = element.closest('[data-hw]');
     const Observer = element.ownerDocument.defaultView?.MutationObserver;
     const mutation = Observer ? new Observer(refresh) : undefined;
     if (select) {
@@ -41,13 +41,13 @@ export function observeFieldValue(element: FieldValueElement): FieldValueObserve
       mutation?.observe(element, { attributes: true, attributeFilter: ['value', 'type', 'form'] });
     }
     element.addEventListener('input', changed); element.addEventListener('change', changed);
-    form?.addEventListener('reset', reset); composition?.addEventListener('nq:change', refresh);
+    form?.addEventListener('reset', reset); composition?.addEventListener('hw:change', refresh);
     entry = { references: 0, refresh, release() {
       active = false; mutation?.disconnect();
       select?.removeEventListener('focus', refresh);
       element.removeEventListener('input', changed); element.removeEventListener('change', changed);
-      form?.removeEventListener('reset', reset); composition?.removeEventListener('nq:change', refresh);
-      if (original === null) element.removeAttribute('data-nq-filled'); else element.setAttribute('data-nq-filled', original);
+      form?.removeEventListener('reset', reset); composition?.removeEventListener('hw:change', refresh);
+      if (original === null) element.removeAttribute('data-hw-filled'); else element.setAttribute('data-hw-filled', original);
     } };
     observers.set(element, entry);
   }

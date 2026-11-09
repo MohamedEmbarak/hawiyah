@@ -18,7 +18,7 @@ it('supports controlled changes without duplicate native toggle notifications', 
   expect(changed).toHaveBeenCalledExactlyOnceWith(true);
   open.value = false; await nextTick();
   expect(container.querySelector('details')!.open).toBe(false);
-  expect(container.querySelector('.nq-accordion-content')!.hasAttribute('inert')).toBe(true);
+  expect(container.querySelector('.hw-accordion-content')!.hasAttribute('inert')).toBe(true);
   expect(changed).toHaveBeenCalledOnce();
 });
 

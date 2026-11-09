@@ -24,7 +24,7 @@ it('honors controlled disclosure and calls its change callback only once per req
   expect(changed).toHaveBeenCalledOnce();
   await act(() => summary.click());
   expect(details.open).toBe(false); expect(changed).toHaveBeenCalledTimes(2);
-  expect(container.querySelector('.nq-accordion-content')!.hasAttribute('inert')).toBe(true);
+  expect(container.querySelector('.hw-accordion-content')!.hasAttribute('inert')).toBe(true);
 });
 
 it('closes an uncontrolled exclusive peer and preserves its logical state after rerender', async () => {

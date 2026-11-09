@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
-import {NqTableComponent, NqDataTableComponent} from '../packages/angular/dist/fesm2022/nasaq-angular.mjs';
+import {HwTableComponent, HwDataTableComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act, createElement as r} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp, h, nextTick, reactive} from 'vue';
@@ -29,7 +29,7 @@ async function mount(adapter: string, sortable: boolean) {
     const props=reactive({...state});const app=createApp({render:()=>h(sortable?VueDataTable:VueTable,{...props,columns})});app.mount(host);
     sync=async()=>{Object.assign(props,state);await nextTick();};cleanup.push(()=>app.unmount());
   } else {
-    const fixture=TestBed.createComponent((sortable?NqDataTableComponent:NqTableComponent) as any);host.append(fixture.nativeElement);
+    const fixture=TestBed.createComponent((sortable?HwDataTableComponent:HwTableComponent) as any);host.append(fixture.nativeElement);
     fixture.componentRef.setInput('columns',columns);sync=async()=>{for(const [key,value] of Object.entries(state)) fixture.componentRef.setInput(key,value);fixture.detectChanges();};
     cleanup.push(()=>fixture.destroy());
   }
@@ -38,7 +38,7 @@ async function mount(adapter: string, sortable: boolean) {
 for(const adapter of ['react','vue','angular'])for(const sortable of [false,true]) {
   const name=`${adapter} ${sortable?'DataTable':'Table'}`;
   it(`${name}: variants preserve native row/column headers and a named keyboard scroll region`,async()=>{
-    const m=await mount(adapter,sortable);const wrapper=m.host.querySelector<HTMLElement>('.nq-table-wrap')!;
+    const m=await mount(adapter,sortable);const wrapper=m.host.querySelector<HTMLElement>('.hw-table-wrap')!;
     expect(wrapper.tabIndex).toBe(0);expect(wrapper.getAttribute('role')).toBe('region');
     const label=wrapper.getAttribute('aria-label')??document.getElementById(wrapper.getAttribute('aria-labelledby')!)?.textContent;
     expect(label).toBe('السجلات');wrapper.focus();expect(document.activeElement).toBe(wrapper);
@@ -61,7 +61,7 @@ for(const adapter of ['react','vue','angular'])for(const sortable of [false,true
   });
 }
 it('vanilla sorting preserves authored row headers, native nodes, and cleanup order',()=>{
-  const host=document.createElement('div');host.innerHTML='<table><caption>السجلات</caption><thead><tr><th scope="col">الاسم</th><th data-nq-key="count" data-nq-type="number"><button data-nq-sort="count">العدد</button></th></tr></thead><tbody><tr><th scope="row">Beta</th><td>2</td></tr><tr><th scope="row">Alpha</th><td>1</td></tr></tbody></table>';
+  const host=document.createElement('div');host.innerHTML='<table><caption>السجلات</caption><thead><tr><th scope="col">الاسم</th><th data-hw-key="count" data-hw-type="number"><button data-hw-sort="count">العدد</button></th></tr></thead><tbody><tr><th scope="row">Beta</th><td>2</td></tr><tr><th scope="row">Alpha</th><td>1</td></tr></tbody></table>';
   document.body.append(host);const original=[...host.querySelectorAll('tbody tr')];const controller=createDataTable(host);
   controller.sort('count');expect(host.querySelector('tbody tr')).toBe(original[1]);expect(host.querySelectorAll('tbody th[scope="row"]')).toHaveLength(2);
   controller.destroy();expect([...host.querySelectorAll('tbody tr')]).toEqual(original);

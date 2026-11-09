@@ -1,7 +1,7 @@
 # Implementation contract (0.2 source preview)
 
-Package names: @nasaq/tokens, @nasaq/styles, @nasaq/core, @nasaq/vanilla,
-@nasaq/react, @nasaq/vue, @nasaq/angular. ESM, explicit exports. Published to
+Package names: @hawiyah/tokens, @hawiyah/styles, @hawiyah/core, @hawiyah/vanilla,
+@hawiyah/react, @hawiyah/vue, @hawiyah/angular. ESM, explicit exports. Published to
 npm only from verified tarballs through scripts/publish-packages.mjs; source
 manifests stay private.
 
@@ -13,20 +13,20 @@ conversion or an arithmetic Hijri fallback for the reference provider.
 
 ## Shared CSS
 
-- `.nq-button` data-variant=primary|default|secondary|outline|outline-white|light|danger|ghost|soft|link data-size=sm|md|lg
-- `.nq-field`, `.nq-label`, `.nq-input`, `.nq-textarea`, `.nq-select`,
-  `.nq-hint`, `.nq-error`, `.nq-checkbox`, `.nq-radio`, `.nq-switch`
-- `.nq-tabs`, `.nq-tab-list`, `.nq-tab`, `.nq-tab-panel`
-- `.nq-dialog` (native dialog), `.nq-dialog-header`, `.nq-dialog-body`,
-  `.nq-dialog-footer`, `.nq-combobox`, `.nq-listbox`, `.nq-option`
-- `.nq-card`, `.nq-card-header`, `.nq-card-body`, `.nq-card-footer`
-- `.nq-badge` data-tone=neutral|success|warning|danger|info data-variant=soft|outline|dot; optional `.nq-badges` wrapping group
-- `.nq-alert` data-tone=neutral|info|success|warning|danger
-- `.nq-table-wrap`, `.nq-table`, `.nq-pagination`, `.nq-breadcrumb`
-- `.nq-accordion`, `.nq-accordion-item` (details), `.nq-accordion-trigger` (summary)
-- `.nq-progress`, `.nq-skeleton`, `.nq-spinner`, `.nq-avatar`, `.nq-divider`
-- `.nq-toolbar`, `.nq-chip`, `.nq-empty`, `.nq-stepper`, `.nq-step`, `.nq-timeline`
-- `.nq-upload`, `.nq-tooltip`, `.nq-sr-only`, `.nq-stack`, `.nq-cluster`, `.nq-container`
+- `.hw-button` data-variant=primary|default|secondary|outline|outline-white|light|danger|ghost|soft|link data-size=sm|md|lg
+- `.hw-field`, `.hw-label`, `.hw-input`, `.hw-textarea`, `.hw-select`,
+  `.hw-hint`, `.hw-error`, `.hw-checkbox`, `.hw-radio`, `.hw-switch`
+- `.hw-tabs`, `.hw-tab-list`, `.hw-tab`, `.hw-tab-panel`
+- `.hw-dialog` (native dialog), `.hw-dialog-header`, `.hw-dialog-body`,
+  `.hw-dialog-footer`, `.hw-combobox`, `.hw-listbox`, `.hw-option`
+- `.hw-card`, `.hw-card-header`, `.hw-card-body`, `.hw-card-footer`
+- `.hw-badge` data-tone=neutral|success|warning|danger|info data-variant=soft|outline|dot; optional `.hw-badges` wrapping group
+- `.hw-alert` data-tone=neutral|info|success|warning|danger
+- `.hw-table-wrap`, `.hw-table`, `.hw-pagination`, `.hw-breadcrumb`
+- `.hw-accordion`, `.hw-accordion-item` (details), `.hw-accordion-trigger` (summary)
+- `.hw-progress`, `.hw-skeleton`, `.hw-spinner`, `.hw-avatar`, `.hw-divider`
+- `.hw-toolbar`, `.hw-chip`, `.hw-empty`, `.hw-stepper`, `.hw-step`, `.hw-timeline`
+- `.hw-upload`, `.hw-tooltip`, `.hw-sr-only`, `.hw-stack`, `.hw-cluster`, `.hw-container`
 
 CSS handles native disabled/invalid, aria-selected/expanded, data-state. Reset
 must be separately importable; base components do not globally reset applications.
@@ -43,7 +43,7 @@ DOM utilities may be invoked by adapters but may not render into framework trees
 
 ## Vanilla markup
 
-`enhance(root?: ParentNode): () => void` initializes data-nq='tabs|dialog|combobox|...'.
+`enhance(root?: ParentNode): () => void` initializes data-hw='tabs|dialog|combobox|...'.
 Each controller also exported for direct use with cleanup. Native static elements
 and details work without JavaScript. The core and vanilla API guides define behavior markup shared by framework adapters.
 

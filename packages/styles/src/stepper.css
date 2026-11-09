@@ -1,46 +1,46 @@
 /* State hooks are shared by static HTML and all native adapters. Defaults preserve
    the original marker treatments; consumers can scope these variables per list. */
-.nq-step {
-  color: var(--nq-step-upcoming-color, var(--nq-color-text-muted));
-  font-weight: var(--nq-step-upcoming-weight, inherit);
+.hw-step {
+  color: var(--hw-step-upcoming-color, var(--hw-color-text-muted));
+  font-weight: var(--hw-step-upcoming-weight, inherit);
 }
-.nq-step::before {
-  border-color: var(--nq-step-upcoming-border, var(--nq-color-border-strong));
-  background: var(--nq-step-upcoming-background, var(--nq-color-surface));
-  color: var(--nq-step-upcoming-marker-color, var(--nq-color-text-muted));
+.hw-step::before {
+  border-color: var(--hw-step-upcoming-border, var(--hw-color-border-strong));
+  background: var(--hw-step-upcoming-background, var(--hw-color-surface));
+  color: var(--hw-step-upcoming-marker-color, var(--hw-color-text-muted));
 }
-.nq-step:not(:last-child)::after { background: var(--nq-step-upcoming-connector, var(--nq-color-border)); }
-.nq-step:is([data-state='complete'], [data-state='completed']) {
-  color: var(--nq-step-complete-color, var(--nq-color-text-muted));
-  font-weight: var(--nq-step-complete-weight, inherit);
+.hw-step:not(:last-child)::after { background: var(--hw-step-upcoming-connector, var(--hw-color-border)); }
+.hw-step:is([data-state='complete'], [data-state='completed']) {
+  color: var(--hw-step-complete-color, var(--hw-color-text-muted));
+  font-weight: var(--hw-step-complete-weight, inherit);
 }
-.nq-step:is([data-state='complete'], [data-state='completed'])::before {
-  border-color: var(--nq-step-complete-border, var(--nq-color-primary-subtle));
-  background: var(--nq-step-complete-background, var(--nq-color-primary-subtle));
-  color: var(--nq-step-complete-marker-color, var(--nq-color-primary-text));
+.hw-step:is([data-state='complete'], [data-state='completed'])::before {
+  border-color: var(--hw-step-complete-border, var(--hw-color-primary-subtle));
+  background: var(--hw-step-complete-background, var(--hw-color-primary-subtle));
+  color: var(--hw-step-complete-marker-color, var(--hw-color-primary-text));
 }
-.nq-step:is([data-state='complete'], [data-state='completed']):not(:last-child)::after { background: var(--nq-step-complete-connector, var(--nq-color-border)); }
-.nq-step:is([aria-current='step'], [data-state='active'], [data-state='current']) {
-  color: var(--nq-step-current-color, var(--nq-color-primary-text));
-  font-weight: var(--nq-step-current-weight, var(--nq-weight-semibold));
+.hw-step:is([data-state='complete'], [data-state='completed']):not(:last-child)::after { background: var(--hw-step-complete-connector, var(--hw-color-border)); }
+.hw-step:is([aria-current='step'], [data-state='active'], [data-state='current']) {
+  color: var(--hw-step-current-color, var(--hw-color-primary-text));
+  font-weight: var(--hw-step-current-weight, var(--hw-weight-semibold));
 }
-.nq-step:is([aria-current='step'], [data-state='active'], [data-state='current'])::before {
-  border-color: var(--nq-step-current-border, var(--nq-color-primary));
-  background: var(--nq-step-current-background, var(--nq-color-primary));
-  color: var(--nq-step-current-marker-color, var(--nq-color-on-primary));
-  box-shadow: var(--nq-step-current-ring, 0 0 0 4px var(--nq-color-primary-subtle));
+.hw-step:is([aria-current='step'], [data-state='active'], [data-state='current'])::before {
+  border-color: var(--hw-step-current-border, var(--hw-color-primary));
+  background: var(--hw-step-current-background, var(--hw-color-primary));
+  color: var(--hw-step-current-marker-color, var(--hw-color-on-primary));
+  box-shadow: var(--hw-step-current-ring, 0 0 0 4px var(--hw-color-primary-subtle));
 }
-.nq-step:is([aria-current='step'], [data-state='active'], [data-state='current']):not(:last-child)::after { background: var(--nq-step-current-connector, var(--nq-color-border)); }
+.hw-step:is([aria-current='step'], [data-state='active'], [data-state='current']):not(:last-child)::after { background: var(--hw-step-current-connector, var(--hw-color-border)); }
 /* The form sidebar retains its filled completed marker and vertical connector. */
-.nq-stepper-responsive .nq-step:is([data-state='complete'], [data-state='completed'])::before {
-  border-color: var(--nq-step-complete-border, var(--nq-color-primary));
-  background: var(--nq-step-complete-background, var(--nq-color-primary));
-  color: var(--nq-step-complete-marker-color, var(--nq-color-on-primary));
+.hw-stepper-responsive .hw-step:is([data-state='complete'], [data-state='completed'])::before {
+  border-color: var(--hw-step-complete-border, var(--hw-color-primary));
+  background: var(--hw-step-complete-background, var(--hw-color-primary));
+  color: var(--hw-step-complete-marker-color, var(--hw-color-on-primary));
 }
-.nq-stepper-responsive .nq-step:is([data-state='complete'], [data-state='completed']):not(:last-child)::after { background: var(--nq-step-complete-connector, var(--nq-color-primary)); }
-.nq-stepper-responsive .nq-step:is([aria-current='step'], [data-state='active'], [data-state='current'])::before { box-shadow: var(--nq-step-current-ring, none); }
+.hw-stepper-responsive .hw-step:is([data-state='complete'], [data-state='completed']):not(:last-child)::after { background: var(--hw-step-complete-connector, var(--hw-color-primary)); }
+.hw-stepper-responsive .hw-step:is([aria-current='step'], [data-state='active'], [data-state='current'])::before { box-shadow: var(--hw-step-current-ring, none); }
 @media (forced-colors: active) {
-  .nq-stepper .nq-step::before, .nq-stepper-responsive .nq-stepper .nq-step::before { border-color: CanvasText; }
-  .nq-stepper .nq-step:is([aria-current='step'], [data-state='active'], [data-state='current'])::before { border: 3px solid Highlight; box-shadow: none; }
-  .nq-stepper-responsive .nq-stepper .nq-step:is([aria-current='step'], [data-state='active'], [data-state='current'])::before { outline: 2px solid Highlight; outline-offset: 2px; box-shadow: none; }
+  .hw-stepper .hw-step::before, .hw-stepper-responsive .hw-stepper .hw-step::before { border-color: CanvasText; }
+  .hw-stepper .hw-step:is([aria-current='step'], [data-state='active'], [data-state='current'])::before { border: 3px solid Highlight; box-shadow: none; }
+  .hw-stepper-responsive .hw-stepper .hw-step:is([aria-current='step'], [data-state='active'], [data-state='current'])::before { outline: 2px solid Highlight; outline-offset: 2px; box-shadow: none; }
 }

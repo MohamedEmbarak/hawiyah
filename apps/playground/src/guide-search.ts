@@ -1,4 +1,4 @@
-import { normalizeSearch } from "@nasaq/core";
+import { normalizeSearch } from "@hawiyah/core";
 import { catalog, escape as e, icon, type Locale } from "./data";
 import "./guide-search.css";
 
@@ -68,12 +68,12 @@ const index: SearchItem[] = [
     keywords: `${id} ${aliases[id] || ""}`,
   })),
   ...([
-    ["overview", "Nasaq overview", "نظرة عامة على نسق", "home", "home nasaq نسق الرئيسية"],
+    ["overview", "Hawiyah overview", "نظرة عامة على هوية", "home", "home hawiyah هوية الرئيسية"],
     ["components", "All components", "كل المكوّنات", "layers", "catalog library components مكونات مكتبة فهرس"],
     ["foundations", "Design foundations", "أسس التصميم", "palette", "tokens typography color spacing themes ألوان خطوط مسافات سمات"],
     ["layouts", "Layout studio", "استوديو التخطيطات", "grid", "responsive grid stack inline layout تخطيط متجاوب شبكة"],
     ["inputs", "Input lab", "مختبر المدخلات", "code", "native html inputs forms iban saudi national phone id إدخال نماذج آيبان هوية وطنية هاتف"],
-    ["brand", "Brand & wordmark", "الهوية والشعار", "spark", "logo loader gif animation sadu identity nasaq نسق شعار هوية تحميل حركة رقعة"],
+    ["brand", "Brand & wordmark", "الهوية والشعار", "spark", "logo loader gif animation sadu identity hawiyah هوية شعار هوية تحميل حركة رقعة"],
     ["discover", "Service discovery example", "مثال استكشاف الخدمات", "search", "services journey منصة خدمة رحلة"],
     ["apply", "Application form example", "مثال نموذج الطلب", "file", "form journey application تقديم طلب رحلة نموذج"],
     ["workspace", "Requests workspace example", "مثال مساحة الطلبات", "briefcase", "dashboard requests table لوحة طلبات جدول"],
@@ -98,27 +98,27 @@ let nextId = 0;
 
 /** One persistent dialog per app; destroy it with the app's own lifecycle. */
 export function createGuideSearch({ getLocale }: { getLocale: () => Locale }): { open(): void; destroy(): void } {
-  const id = `nq-guide-search-${++nextId}`;
+  const id = `hw-guide-search-${++nextId}`;
   const dialog = document.createElement("dialog");
-  dialog.className = "nq-guide-search";
+  dialog.className = "hw-guide-search";
   dialog.id = id;
   dialog.setAttribute("aria-labelledby", `${id}-title`);
   dialog.innerHTML = `
-    <header class="nq-guide-search-header"><div><span class="nq-guide-search-eyebrow">نسق</span><h2 id="${id}-title"></h2></div><button type="button" class="nq-guide-search-close">${icon("close", 20)}</button></header>
-    <div class="nq-guide-search-field">${icon("search", 22)}<input id="${id}-input" type="text" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="${id}-results" aria-describedby="${id}-help" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" autofocus></div>
-    <div class="nq-guide-search-meta" aria-hidden="true"></div>
-    <div class="nq-guide-search-results" id="${id}-results" role="listbox" tabindex="-1"></div>
-    <div class="nq-guide-search-empty" hidden></div>
-    <footer class="nq-guide-search-footer" id="${id}-help"></footer>
-    <p class="nq-guide-search-sr-only" role="status" aria-live="polite" aria-atomic="true"></p>`;
+    <header class="hw-guide-search-header"><div><span class="hw-guide-search-eyebrow">هوية</span><h2 id="${id}-title"></h2></div><button type="button" class="hw-guide-search-close">${icon("close", 20)}</button></header>
+    <div class="hw-guide-search-field">${icon("search", 22)}<input id="${id}-input" type="text" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="${id}-results" aria-describedby="${id}-help" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" autofocus></div>
+    <div class="hw-guide-search-meta" aria-hidden="true"></div>
+    <div class="hw-guide-search-results" id="${id}-results" role="listbox" tabindex="-1"></div>
+    <div class="hw-guide-search-empty" hidden></div>
+    <footer class="hw-guide-search-footer" id="${id}-help"></footer>
+    <p class="hw-guide-search-sr-only" role="status" aria-live="polite" aria-atomic="true"></p>`;
   document.body.append(dialog);
 
   const input = dialog.querySelector<HTMLInputElement>("input")!;
   const title = dialog.querySelector<HTMLElement>("h2")!;
   const closeButton = dialog.querySelector<HTMLButtonElement>("button")!;
   const list = dialog.querySelector<HTMLElement>("[role=listbox]")!;
-  const empty = dialog.querySelector<HTMLElement>(".nq-guide-search-empty")!;
-  const meta = dialog.querySelector<HTMLElement>(".nq-guide-search-meta")!;
+  const empty = dialog.querySelector<HTMLElement>(".hw-guide-search-empty")!;
+  const meta = dialog.querySelector<HTMLElement>(".hw-guide-search-meta")!;
   const help = dialog.querySelector<HTMLElement>("footer")!;
   const status = dialog.querySelector<HTMLElement>("[role=status]")!;
   const events = new AbortController();
@@ -160,9 +160,9 @@ export function createGuideSearch({ getLocale }: { getLocale: () => Locale }): {
     const groups = [...new Set(matches.map(item => item.group))];
     results = groups.flatMap(group => matches.filter(item => item.group === group));
     let position = 0;
-    list.innerHTML = groups.map(group => `<div class="nq-guide-search-group" role="group" aria-labelledby="${id}-${group}"><div class="nq-guide-search-group-title" id="${id}-${group}">${e(text(groupLabels[group]))}</div>${results.filter(item => item.group === group).map(item => {
+    list.innerHTML = groups.map(group => `<div class="hw-guide-search-group" role="group" aria-labelledby="${id}-${group}"><div class="hw-guide-search-group-title" id="${id}-${group}">${e(text(groupLabels[group]))}</div>${results.filter(item => item.group === group).map(item => {
       const i = position++;
-      return `<div class="nq-guide-search-option" id="${id}-option-${i}" role="option" aria-selected="false" data-search-index="${i}"><span class="nq-guide-search-option-icon">${icon(item.icon, 19)}</span><span class="nq-guide-search-option-copy"><strong>${e(text(item.label))}</strong><small>${e(text(item.detail))}${item.group === "components" ? ` <span aria-hidden="true">·</span> <bdi lang="${locale === "ar" ? "en" : "ar"}">${e(item.label[locale === "ar" ? 0 : 1])}</bdi>` : ""}</small></span><span class="nq-guide-search-enter" aria-hidden="true">↵</span></div>`;
+      return `<div class="hw-guide-search-option" id="${id}-option-${i}" role="option" aria-selected="false" data-search-index="${i}"><span class="hw-guide-search-option-icon">${icon(item.icon, 19)}</span><span class="hw-guide-search-option-copy"><strong>${e(text(item.label))}</strong><small>${e(text(item.detail))}${item.group === "components" ? ` <span aria-hidden="true">·</span> <bdi lang="${locale === "ar" ? "en" : "ar"}">${e(item.label[locale === "ar" ? 0 : 1])}</bdi>` : ""}</small></span><span class="hw-guide-search-enter" aria-hidden="true">↵</span></div>`;
     }).join("")}</div>`).join("");
     empty.hidden = results.length > 0;
     if (!results.length) empty.innerHTML = `${icon("search", 28)}<strong>${t("No matching pages", "لا توجد صفحات مطابقة")}</strong><p>${t("Try a component name or topic in Arabic or English.", "جرّب اسم مكوّن أو موضوع بالعربية أو الإنجليزية.")}</p>`;
@@ -211,12 +211,12 @@ export function createGuideSearch({ getLocale }: { getLocale: () => Locale }): {
     locale = getLocale() === "en" ? "en" : "ar";
     dialog.lang = locale;
     dialog.dir = locale === "ar" ? "rtl" : "ltr";
-    title.textContent = t("Search the guide", "ابحث في دليل نسق");
+    title.textContent = t("Search the guide", "ابحث في دليل هوية");
     input.setAttribute("aria-label", t("Search components and guides", "ابحث عن المكوّنات والأدلة"));
     input.placeholder = t("A component, a question, a place to start…", "مكوّن، موضوع، أو بداية جديدة…");
     closeButton.setAttribute("aria-label", t("Close search", "إغلاق البحث"));
     list.setAttribute("aria-label", t("Search results", "نتائج البحث"));
-    help.innerHTML = `<span><kbd>↑</kbd><kbd>↓</kbd> ${t("Navigate", "تنقّل")}</span><span><kbd>↵</kbd> ${t("Open", "افتح")}</span><span><kbd>Esc</kbd> ${t("Close", "أغلق")}</span><span class="nq-guide-search-language">${t("Arabic + English", "العربية + English")}</span>`;
+    help.innerHTML = `<span><kbd>↑</kbd><kbd>↓</kbd> ${t("Navigate", "تنقّل")}</span><span><kbd>↵</kbd> ${t("Open", "افتح")}</span><span><kbd>Esc</kbd> ${t("Close", "أغلق")}</span><span class="hw-guide-search-language">${t("Arabic + English", "العربية + English")}</span>`;
     opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     input.value = "";
     status.textContent = "";

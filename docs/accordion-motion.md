@@ -1,14 +1,14 @@
 # Accordion motion
 
-The DGA theme uses `--nq-duration-accordion: 300ms` for disclosure height and
-`--nq-ease-accordion: cubic-bezier(.42, 0, .58, 1)`. Original Nasaq uses zero
+The DGA theme uses `--hw-duration-accordion: 300ms` for disclosure height and
+`--hw-ease-accordion: cubic-bezier(.42, 0, .58, 1)`. Original Hawiyah uses zero
 duration; custom themes can override either token. Reduced motion, including a
 preference change during an animation, settles immediately. Browsers without
 Web Animations keep immediate native disclosure.
 
 The later NIC web reference supplies the separate chevron timing:
-`--nq-duration-accordion-indicator: 200ms` with the same ease-in-out default.
-Hover/focus surface colors transition over 150ms. Original Nasaq keeps zero
+`--hw-duration-accordion-indicator: 200ms` with the same ease-in-out default.
+Hover/focus surface colors transition over 150ms. Original Hawiyah keeps zero
 indicator duration. The [NIC web profile](nic-accordion.md) maps its nested
 header/button spacing onto the existing native disclosure markup.
 
@@ -36,11 +36,11 @@ for the previous item when they accept opening another item; a controlled value
 remains the application's authority. Native unenhanced markup needs no helper.
 
 Vanilla users can call `createAccordion(root, { onOpenChange })` or use
-`data-nq="accordion"` with `enhance()`. Each direct `.nq-accordion-item` must contain
-a summary and one content wrapper. Set `data-nq-value` on each details element
+`data-hw="accordion"` with `enhance()`. Each direct `.hw-accordion-item` must contain
+a summary and one content wrapper. Set `data-hw-value` on each details element
 for stable values (otherwise its zero-based index is used). Use matching `name`
 attributes for exclusive groups. The controller exposes `setOpen(value, open)`
-and `destroy()`; callbacks and `nq:change` describe logical state, not delayed
+and `destroy()`; callbacks and `hw:change` describe logical state, not delayed
 physical attribute changes. Destroy before removing enhanced markup.
 
 Vue's `toggle(value, open)` and Angular's `toggled({ id, open })` fire once for

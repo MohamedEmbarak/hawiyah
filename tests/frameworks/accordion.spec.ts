@@ -13,7 +13,7 @@ test('native accordion animates exclusive items and settles reduced motion',asyn
   await finishMotion(items.first());
   await items.nth(1).locator('summary').click();
   await expect(items.first().locator('summary')).toHaveAttribute('aria-expanded','false');
-  await expect(items.first().locator('.nq-accordion-content')).toHaveAttribute('inert','');
+  await expect(items.first().locator('.hw-accordion-content')).toHaveAttribute('inert','');
   await expect(items.nth(1).locator('summary')).toHaveAttribute('aria-expanded','true');
   await page.emulateMedia({reducedMotion:'reduce'});
   await expect(items.first()).not.toHaveAttribute('open'); await expect(items.nth(1)).toHaveAttribute('open','');

@@ -9,7 +9,7 @@ beforeEach(()=>{vi.useFakeTimers();viewportY=0;vi.stubGlobal('ResizeObserver',cl
 afterEach(()=>{for(const cleanup of cleanups.splice(0))cleanup();document.body.replaceChildren();rootObservers.splice(0);vi.restoreAllMocks();vi.unstubAllGlobals();vi.useRealTimers();});
 const frame=async()=>{await vi.advanceTimersByTimeAsync(20);};
 function setup(){
- document.body.innerHTML='<nav><a href="#first" data-nq-section="first">First</a><a href="#nested" data-nq-section="nested">Nested</a><a href="#last" data-nq-section="last">Last</a></nav><section id="first">First</section><section id="nested">Nested</section><section id="last">Last</section><button id="outside">Outside</button>';
+ document.body.innerHTML='<nav><a href="#first" data-hw-section="first">First</a><a href="#nested" data-hw-section="nested">Nested</a><a href="#last" data-hw-section="last">Last</a></nav><section id="first">First</section><section id="nested">Nested</section><section id="last">Last</section><button id="outside">Outside</button>';
  const navigation=document.querySelector<HTMLElement>('nav')!,first=document.getElementById('first')!,nested=document.getElementById('nested')!,last=document.getElementById('last')!;
  rect(navigation,()=>0,100);rect(first,()=>200-viewportY,900);rect(nested,()=>600-viewportY,250);rect(last,()=>1800-viewportY,100);
  let items:readonly ContentNavigationItem[]=[{id:'first',label:'First',children:[{id:'nested',label:'Nested'}]},{id:'last',label:'Last'}],scrollRoot:HTMLElement|null=null;
@@ -85,7 +85,7 @@ it('scrolls only a configured container, rebinding it after refresh and ignoring
  const oldRemove=vi.spyOn(root,'removeEventListener'),other=document.createElement('div');document.body.append(other);other.append(last);rect(other,()=>0,300);number(other,'clientHeight',300);number(other,'scrollHeight',1000);other.scrollTo=vi.fn();rect(last,()=>100);setRoot(other);await frame();expect(oldRemove).toHaveBeenCalledWith('scroll',expect.any(Function));expect(onCurrentChange).toHaveBeenLastCalledWith('last');expect(observer.navigate('first')).toBe(false);expect(observer.navigate('last')).toBe(true);expect(other.scrollTo).toHaveBeenCalled();expect(navigation.isConnected).toBe(true);
 });
 it('keeps the current link visible by scrolling only an overflowing navigation region',async()=>{
- const {navigation,observer}=setup(),link=navigation.querySelector<HTMLElement>('[data-nq-section="first"]')!;navigation.scrollTo=vi.fn();number(navigation,'clientHeight',100);number(navigation,'scrollHeight',100);rect(link,()=>250,40);await frame();expect(navigation.scrollTo).not.toHaveBeenCalled();
+ const {navigation,observer}=setup(),link=navigation.querySelector<HTMLElement>('[data-hw-section="first"]')!;navigation.scrollTo=vi.fn();number(navigation,'clientHeight',100);number(navigation,'scrollHeight',100);rect(link,()=>250,40);await frame();expect(navigation.scrollTo).not.toHaveBeenCalled();
  number(navigation,'scrollHeight',500);observer.refresh();await frame();expect(navigation.scrollTo).toHaveBeenLastCalledWith({top:220,behavior:'instant'});expect(window.scrollTo).not.toHaveBeenCalled();
  rect(link,()=>20,40);vi.mocked(navigation.scrollTo).mockClear();observer.refresh();await frame();expect(navigation.scrollTo).not.toHaveBeenCalled();
 });

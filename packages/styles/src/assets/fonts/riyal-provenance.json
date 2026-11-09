@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "family": "NasaqRiyal",
+  "family": "HawiyahRiyal",
   "file": "riyal.woff2",
   "sha256": "c3fb35e141547460b4f40838e5c53356d8aa125d0d701f85d5ccf83eeebb0a0f",
   "bytes": 2560,
@@ -23,7 +23,7 @@
   },
   "modifications": [
     "Subset to U+20C1 plus required .notdef glyph; no artwork redrawn.",
-    "Rename family/full/PostScript identifiers to NasaqRiyal; retain upstream copyright and license metadata.",
+    "Rename family/full/PostScript identifiers to HawiyahRiyal; retain upstream copyright and license metadata.",
     "Remove unrelated layout tables; compress as WOFF2."
   ],
   "tools": {
@@ -33,7 +33,7 @@
   "reproduction": {
     "prerequisites": "Install fonttools==4.59.2 and Brotli==1.1.0; extract the archiveMember from the verified upstream ZIP. Save the Python script below as subset-riyal.py.",
     "command": "python subset-riyal.py NotoNaskhArabic-Regular.ttf riyal.woff2",
-    "pythonScript": "from fontTools.ttLib import TTFont\nfrom fontTools import subset\nimport sys\nfont=TTFont(sys.argv[1],recalcTimestamp=False)\noptions=subset.Options()\noptions.flavor=\"woff2\"\noptions.glyph_names=True\noptions.notdef_outline=True\noptions.name_IDs=[0,1,2,3,4,5,6,13,14,16,17]\noptions.name_legacy=True\noptions.name_languages=[\"*\"]\noptions.layout_features=[]\noptions.drop_tables += [\"GDEF\",\"GPOS\",\"GSUB\"]\nsubsetter=subset.Subsetter(options=options)\nsubsetter.populate(unicodes=[0x20C1])\nsubsetter.subset(font)\nrenames={1:\"NasaqRiyal\",2:\"Regular\",3:\"NasaqRiyal Regular 2.021 subset 2026-11-01\",4:\"NasaqRiyal Regular\",6:\"NasaqRiyal-Regular\",16:\"NasaqRiyal\",17:\"Regular\"}\nfor record in font[\"name\"].names:\n    if record.nameID in renames:\n        record.string=renames[record.nameID].encode(record.getEncoding())\nfont.flavor=\"woff2\"\nfont.save(sys.argv[2])\n"
+    "pythonScript": "from fontTools.ttLib import TTFont\nfrom fontTools import subset\nimport sys\nfont=TTFont(sys.argv[1],recalcTimestamp=False)\noptions=subset.Options()\noptions.flavor=\"woff2\"\noptions.glyph_names=True\noptions.notdef_outline=True\noptions.name_IDs=[0,1,2,3,4,5,6,13,14,16,17]\noptions.name_legacy=True\noptions.name_languages=[\"*\"]\noptions.layout_features=[]\noptions.drop_tables += [\"GDEF\",\"GPOS\",\"GSUB\"]\nsubsetter=subset.Subsetter(options=options)\nsubsetter.populate(unicodes=[0x20C1])\nsubsetter.subset(font)\nrenames={1:\"HawiyahRiyal\",2:\"Regular\",3:\"HawiyahRiyal Regular 2.021 subset 2026-11-01\",4:\"HawiyahRiyal Regular\",6:\"HawiyahRiyal-Regular\",16:\"HawiyahRiyal\",17:\"Regular\"}\nfor record in font[\"name\"].names:\n    if record.nameID in renames:\n        record.string=renames[record.nameID].encode(record.getEncoding())\nfont.flavor=\"woff2\"\nfont.save(sys.argv[2])\n"
   },
   "validation": {
     "unicodeCmap": [

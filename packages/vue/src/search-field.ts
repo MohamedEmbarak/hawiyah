@@ -1,11 +1,11 @@
 import {computed, defineComponent, h, mergeProps, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue';
 import type {PropType} from 'vue';
-import {getSearchSuggestions, isDisabled, requestSearchDialogClose} from '@nasaq/core';
+import {getSearchSuggestions, isDisabled, requestSearchDialogClose} from '@hawiyah/core';
 import {Button, decorate} from './forms.js';
 import {decorationProps, useField, useFormReset, useValue} from './shared.js';
 
 export const SearchField = defineComponent({
-  name: 'NqSearchField', inheritAttrs: false,
+  name: 'HwSearchField', inheritAttrs: false,
   props: {...decorationProps, modelValue: String, defaultValue:{type:String,default:''}, disabled:Boolean, readonly:Boolean,
     clearLabel:{type:String,default:'مسح البحث'}, suggestions:Array as PropType<readonly string[]>, maxSuggestions:{type:Number,default:8},
     resultsMessage:{type:Function as PropType<(count:number)=>string>,default:(count:number)=>`${count} اقتراحات متاحة`},
@@ -46,9 +46,9 @@ export const SearchField = defineComponent({
       if(inner.top<outer.top)list.scrollTop-=outer.top-inner.top;else if(inner.bottom>outer.bottom)list.scrollTop+=inner.bottom-outer.bottom;
     },{flush:'post'});
     return()=>decorate(props,field.id.value,[
-      h('div',{class:'nq-input-group',ref:container},[
-        h('div',{class:'nq-search-control'},[
-          h('input',mergeProps(attrs,field.controlAttrs.value,{ref:element,class:'nq-input',type:'search',value:model.value.value,disabled:props.disabled,readonly:props.readonly,
+      h('div',{class:'hw-input-group',ref:container},[
+        h('div',{class:'hw-search-control'},[
+          h('input',mergeProps(attrs,field.controlAttrs.value,{ref:element,class:'hw-input',type:'search',value:model.value.value,disabled:props.disabled,readonly:props.readonly,
             autocomplete:attrs.autocomplete??(props.suggestions!==undefined?'off':undefined),role:props.suggestions!==undefined?'combobox':attrs.role,
             'aria-autocomplete':props.suggestions!==undefined?'list':attrs['aria-autocomplete'],'aria-expanded':props.suggestions!==undefined?expanded.value:attrs['aria-expanded'],'aria-controls':props.suggestions!==undefined?listId.value:attrs['aria-controls'],'aria-activedescendant':expanded.value && active.value>=0 && active.value<matches.value.length?`${listId.value}-${active.value}`:undefined,
             onInput:(event:Event)=>{if(event.defaultPrevented || !editable())return;write((event.target as HTMLInputElement).value);active.value=-1;opened.value=!composing.value;},
@@ -62,12 +62,12 @@ export const SearchField = defineComponent({
               if(event.key==='Enter'){if(expanded.value && active.value>=0){event.preventDefault();choose(active.value);}else search();}
             },
           })),
-          h(Button,{class:'nq-search-clear',variant:'ghost',hidden:!model.value.value || props.readonly,disabled:props.disabled,'aria-label':props.clearLabel,'aria-controls':field.id.value,onPointerdown:(event:PointerEvent)=>{if(event.button===0)event.preventDefault();},onMousedown:(event:MouseEvent)=>{if(event.button===0)event.preventDefault();},onClick:()=>{if(editable()){write('');element.value?.focus();close();}}},()=>h('span',{class:'nq-search-clear-icon','aria-hidden':'true'})),
-          props.suggestions!==undefined?h('div',{class:'nq-search-suggestions',id:listId.value,role:'listbox','aria-label':props.label??attrs['aria-label']??props.searchLabel,hidden:!expanded.value},matches.value.map((match,index)=>h('div',{class:'nq-search-option',dir:'auto',key:match.value,id:`${listId.value}-${index}`,role:'option','aria-selected':index===active.value,onPointerdown:(event:PointerEvent)=>{if(event.button===0)event.preventDefault();},onMousedown:(event:MouseEvent)=>{if(event.button===0)event.preventDefault();},onClick:()=>choose(index)},match.segments.map(segment=>segment.match?h('strong',segment.text):segment.text)))):null,
+          h(Button,{class:'hw-search-clear',variant:'ghost',hidden:!model.value.value || props.readonly,disabled:props.disabled,'aria-label':props.clearLabel,'aria-controls':field.id.value,onPointerdown:(event:PointerEvent)=>{if(event.button===0)event.preventDefault();},onMousedown:(event:MouseEvent)=>{if(event.button===0)event.preventDefault();},onClick:()=>{if(editable()){write('');element.value?.focus();close();}}},()=>h('span',{class:'hw-search-clear-icon','aria-hidden':'true'})),
+          props.suggestions!==undefined?h('div',{class:'hw-search-suggestions',id:listId.value,role:'listbox','aria-label':props.label??attrs['aria-label']??props.searchLabel,hidden:!expanded.value},matches.value.map((match,index)=>h('div',{class:'hw-search-option',dir:'auto',key:match.value,id:`${listId.value}-${index}`,role:'option','aria-selected':index===active.value,onPointerdown:(event:PointerEvent)=>{if(event.button===0)event.preventDefault();},onMousedown:(event:MouseEvent)=>{if(event.button===0)event.preventDefault();},onClick:()=>choose(index)},match.segments.map(segment=>segment.match?h('strong',segment.text):segment.text)))):null,
         ]),
-        props.showSearchButton?h(Button,{class:'nq-search-submit',disabled:props.disabled,'aria-label':props.searchLabel,onClick:search},()=>h('span',{class:'nq-search-submit-icon','aria-hidden':'true'})):null,
+        props.showSearchButton?h(Button,{class:'hw-search-submit',disabled:props.disabled,'aria-label':props.searchLabel,onClick:search},()=>h('span',{class:'hw-search-submit-icon','aria-hidden':'true'})):null,
       ]),
-      props.suggestions!==undefined?h('span',{class:'nq-sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},opened.value && !props.readonly && !props.disabled && !composing.value && model.value.value.trim()?props.resultsMessage(matches.value.length):''):null,
-    ],'nq-search-field');
+      props.suggestions!==undefined?h('span',{class:'hw-sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},opened.value && !props.readonly && !props.disabled && !composing.value && model.value.value.trim()?props.resultsMessage(matches.value.length):''):null,
+    ],'hw-search-field');
   },
 });

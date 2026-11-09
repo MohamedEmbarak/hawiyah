@@ -1,4 +1,4 @@
-import {createDialog} from '@nasaq/vanilla';
+import {createDialog} from '@hawiyah/vanilla';
 import type {Locale} from './data';
 import type {ProjectFramework, ProjectLanguage} from './project-compiler';
 import type {ProjectExample} from './project-examples';
@@ -14,19 +14,19 @@ function notices(locale: Locale) {
   ];
 }
 
-const css = "@import '@nasaq/styles/styles.css';\n\n.demo { display: grid; gap: 1rem; min-inline-size: 0; }\n";
+const css = "@import '@hawiyah/styles/styles.css';\n\n.demo { display: grid; gap: 1rem; min-inline-size: 0; }\n";
 const title = (locale: Locale) => locale === 'ar' ? 'حوارات الإشعارات' : 'Notification dialogs';
 const closeLabel = (locale: Locale) => locale === 'ar' ? 'إغلاق الإشعار' : 'Close notification';
 
 export function notificationDialogMarkup(locale: Locale, prefix = 'notice-project') {
   const content = notices(locale).map(notice => {
     const buttons = [notice.primary, notice.secondary].map((action, index) => action
-      ? `<button class="nq-button" data-variant="${index ? 'secondary' : 'primary'}" data-notice-action type="button">${action}</button>` : '').join('\n');
+      ? `<button class="hw-button" data-variant="${index ? 'secondary' : 'primary'}" data-notice-action type="button">${action}</button>` : '').join('\n');
     return `<div data-notice-case>
-  <button type="button" class="nq-button" data-variant="secondary" data-notice-open="${notice.tone}" aria-haspopup="dialog">${notice.title}</button>
-  <dialog class="nq-dialog" data-variant="notification" data-tone="${notice.tone}" aria-labelledby="${prefix}-${notice.tone}-title" aria-describedby="${prefix}-${notice.tone}-message">
-    <header class="nq-dialog-header"><h2 id="${prefix}-${notice.tone}-title">${notice.title}</h2><button type="button" class="nq-button" data-variant="ghost" data-nq-dialog-close aria-label="${closeLabel(locale)}">×</button></header>
-    <div class="nq-dialog-body"><p id="${prefix}-${notice.tone}-message">${notice.message}</p></div>${buttons ? `\n    <footer class="nq-dialog-footer">${buttons}</footer>` : ''}
+  <button type="button" class="hw-button" data-variant="secondary" data-notice-open="${notice.tone}" aria-haspopup="dialog">${notice.title}</button>
+  <dialog class="hw-dialog" data-variant="notification" data-tone="${notice.tone}" aria-labelledby="${prefix}-${notice.tone}-title" aria-describedby="${prefix}-${notice.tone}-message">
+    <header class="hw-dialog-header"><h2 id="${prefix}-${notice.tone}-title">${notice.title}</h2><button type="button" class="hw-button" data-variant="ghost" data-hw-dialog-close aria-label="${closeLabel(locale)}">×</button></header>
+    <div class="hw-dialog-body"><p id="${prefix}-${notice.tone}-message">${notice.message}</p></div>${buttons ? `\n    <footer class="hw-dialog-footer">${buttons}</footer>` : ''}
   </dialog>
 </div>`;
   }).join('\n');
@@ -64,7 +64,7 @@ export function notificationDialogProject(framework: ProjectFramework, language:
   if (framework === 'vanilla') return project('index.html', `<!doctype html><html lang="${locale}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${heading}</title></head><body>
 ${notificationDialogMarkup(locale)}
 <script type="module" src="./${entry}"></script></body></html>
-`, `import { createDialog } from '@nasaq/vanilla';
+`, `import { createDialog } from '@hawiyah/vanilla';
 import './style.css';
 
 const region = document.querySelector('[data-notice-project]');
@@ -88,7 +88,7 @@ for (const row of region.querySelectorAll('[data-notice-case]')) {
 window.addEventListener('pagehide', () => scope.abort(), {once:true});
 `, '');
   if (framework === 'react') return project(typed ? 'App.tsx' : 'App.jsx', `import { useState } from 'react';
-import { Button, Dialog } from '@nasaq/react';
+import { Button, Dialog } from '@hawiyah/react';
 
 const notices = ${source};
 export default function App() {
@@ -108,7 +108,7 @@ export default function App() {
 `, `import { createRoot } from 'react-dom/client';\nimport App from './App';\nimport './style.css';\n\nconst root = document.getElementById('app');\nif (root) createRoot(root).render(<App />);\n`, '<div id="app"></div>');
   if (framework === 'vue') return project('App.vue', `<script setup${typed ? ' lang="ts"' : ''}>
 import { ref } from 'vue';
-import { Button, Dialog } from '@nasaq/vue';
+import { Button, Dialog } from '@hawiyah/vue';
 
 const notices = ${source};
 const outcome = ref('');
@@ -130,21 +130,21 @@ const outcome = ref('');
 </template>
 `, "import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n", '<div id="app"></div>');
   return project('app.component.ts', `import { Component } from '@angular/core';
-import { NqButtonDirective, NqDialogComponent } from '@nasaq/angular';
+import { HwButtonDirective, HwDialogComponent } from '@hawiyah/angular';
 
 @Component({
-  selector: 'app-root', standalone: true, imports: [NqButtonDirective, NqDialogComponent],
+  selector: 'app-root', standalone: true, imports: [HwButtonDirective, HwDialogComponent],
   template: \`<main class="demo" data-notice-project lang="${locale}" dir="${dir}">
     <h2>${heading}</h2>
     @for (notice of notices; track notice.tone) {
-      <button #trigger nqButton type="button" variant="secondary" [attr.data-notice-open]="notice.tone" aria-haspopup="dialog" (click)="dialog.show(trigger)">{{ notice.title }}</button>
-      <nq-dialog #dialog data-variant="notification" [attr.data-tone]="notice.tone" [title]="notice.title" [describedBy]="'notice-message-' + notice.tone" closeLabel="${close}">
+      <button #trigger hwButton type="button" variant="secondary" [attr.data-notice-open]="notice.tone" aria-haspopup="dialog" (click)="dialog.show(trigger)">{{ notice.title }}</button>
+      <hw-dialog #dialog data-variant="notification" [attr.data-tone]="notice.tone" [title]="notice.title" [describedBy]="'notice-message-' + notice.tone" closeLabel="${close}">
         <p [id]="'notice-message-' + notice.tone">{{ notice.message }}</p>
-        <ng-container nqDialogFooter>
-          @if (notice.primary) {<button nqButton type="button" data-notice-action (click)="outcome = notice.primary; dialog.close()">{{ notice.primary }}</button>}
-          @if (notice.secondary) {<button nqButton type="button" data-notice-action variant="secondary" (click)="outcome = notice.secondary; dialog.close()">{{ notice.secondary }}</button>}
+        <ng-container hwDialogFooter>
+          @if (notice.primary) {<button hwButton type="button" data-notice-action (click)="outcome = notice.primary; dialog.close()">{{ notice.primary }}</button>}
+          @if (notice.secondary) {<button hwButton type="button" data-notice-action variant="secondary" (click)="outcome = notice.secondary; dialog.close()">{{ notice.secondary }}</button>}
         </ng-container>
-      </nq-dialog>
+      </hw-dialog>
     }
     <output data-notice-outcome>{{ outcome }}</output>
   </main>\`,
@@ -158,7 +158,7 @@ export class AppComponent {
 
 export function notificationDialogRecipes(locale: Locale) {
   return [{title:title(locale), markup:notificationDialogMarkup(locale, 'ready-notice'),
-    vanillaScript:notificationDialogProject('vanilla','javascript',locale).files.js.replace("import './style.css';", "import '@nasaq/styles/styles.css';"),
+    vanillaScript:notificationDialogProject('vanilla','javascript',locale).files.js.replace("import './style.css';", "import '@hawiyah/styles/styles.css';"),
     react:notificationDialogProject('react','typescript',locale).files.html,
     vue:notificationDialogProject('vue','typescript',locale).files.html,
     angular:notificationDialogProject('angular','typescript',locale).files.html,

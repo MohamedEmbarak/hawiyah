@@ -89,7 +89,7 @@ build and consume these APIs through the workspace until an npm release is annou
 ## Vanilla
 
 `enhance(root?: ParentNode): () => void` initializes descendants (and the root,
-if it matches) with supported `data-nq` hooks, including tabs, dialog, combobox,
+if it matches) with supported `data-hw` hooks, including tabs, dialog, combobox,
 tooltip and pagination. [The expansion contract](../vanilla/EXPANSION-API.md) lists
 the additional control, calendar, disclosure and content hooks. Repeated
 enhancement shares existing controllers; each cleanup releases its registration.
@@ -100,39 +100,39 @@ attributes changed during enhancement and removes generated nodes/listeners.
 Direct exports: `createTabs(element, options?)`, `createDialog(dialog, options?)`,
 `createCombobox(element, options?)`, `createTooltip(element, options?)`, and
 `createPagination(element, options?)`. Every controller has `destroy()`.
-Selection and dialog controllers dispatch bubbling `nq:change` CustomEvents with
+Selection and dialog controllers dispatch bubbling `hw:change` CustomEvents with
 the detail below.
 
 ### Tabs
 
 ```html
-<div class="nq-tabs" data-nq="tabs">
-  <div class="nq-tab-list" role="tablist" aria-label="Request details">
-    <button class="nq-tab" role="tab" id="overview-tab" aria-controls="overview"
-      aria-selected="true" data-nq-value="overview">Overview</button>
-    <button class="nq-tab" role="tab" id="history-tab" aria-controls="history"
-      data-nq-value="history">History</button>
+<div class="hw-tabs" data-hw="tabs">
+  <div class="hw-tab-list" role="tablist" aria-label="Request details">
+    <button class="hw-tab" role="tab" id="overview-tab" aria-controls="overview"
+      aria-selected="true" data-hw-value="overview">Overview</button>
+    <button class="hw-tab" role="tab" id="history-tab" aria-controls="history"
+      data-hw-value="history">History</button>
   </div>
-  <section class="nq-tab-panel" id="overview" role="tabpanel"
+  <section class="hw-tab-panel" id="overview" role="tabpanel"
     aria-labelledby="overview-tab">…</section>
-  <section class="nq-tab-panel" id="history" role="tabpanel"
+  <section class="hw-tab-panel" id="history" role="tabpanel"
     aria-labelledby="history-tab" hidden>…</section>
 </div>
 ```
 
 Options `{ value?, activationMode?: 'automatic'|'manual', onValueChange? }`.
-Controller `{ value, select(value), destroy }`. Value defaults to `data-nq-value`
+Controller `{ value, select(value), destroy }`. Value defaults to `data-hw-value`
 then tab ID. `aria-orientation="vertical"` on tablist changes arrow keys.
-`data-nq-activation="manual"` on root enables manual activation. Detail `{value}`.
+`data-hw-activation="manual"` on root enables manual activation. Detail `{value}`.
 
 ### Native modal dialog
 
 ```html
-<button data-nq-dialog-open="request-dialog">Open request</button>
-<dialog id="request-dialog" class="nq-dialog" data-nq="dialog"
+<button data-hw-dialog-open="request-dialog">Open request</button>
+<dialog id="request-dialog" class="hw-dialog" data-hw="dialog"
   aria-labelledby="request-title">
   <h2 id="request-title">Request</h2>
-  <button data-nq-dialog-close>Close</button>
+  <button data-hw-dialog-close>Close</button>
 </dialog>
 ```
 
@@ -147,15 +147,15 @@ the connected trigger. It leaves a dialog already open before enhancement open.
 ### Editable, single-select combobox
 
 ```html
-<div class="nq-combobox" data-nq="combobox">
+<div class="hw-combobox" data-hw="combobox">
   <label for="city">City</label>
-  <input id="city" class="nq-input" data-nq-combobox-input autocomplete="off">
-  <input type="hidden" name="city" data-nq-combobox-value>
-  <ul class="nq-listbox" data-nq-combobox-list hidden>
-    <li class="nq-option" data-nq-value="riyadh">الرياض</li>
-    <li class="nq-option" data-nq-value="jeddah" aria-disabled="true">جدة</li>
+  <input id="city" class="hw-input" data-hw-combobox-input autocomplete="off">
+  <input type="hidden" name="city" data-hw-combobox-value>
+  <ul class="hw-listbox" data-hw-combobox-list hidden>
+    <li class="hw-option" data-hw-value="riyadh">الرياض</li>
+    <li class="hw-option" data-hw-value="jeddah" aria-disabled="true">جدة</li>
   </ul>
-  <span class="nq-sr-only" data-nq-combobox-status role="status"></span>
+  <span class="hw-sr-only" data-hw-combobox-status role="status"></span>
 </div>
 ```
 
@@ -177,20 +177,20 @@ restores the input's original custom validity.
 
 ### Tooltip and pagination
 
-Tooltip root: `data-nq="tooltip"`, one `[data-nq-tooltip-trigger]`, and one
+Tooltip root: `data-hw="tooltip"`, one `[data-hw-tooltip-trigger]`, and one
 `[role="tooltip"]` with plain descriptive text and `hidden`. Controller
 `{show(), hide(), destroy()}`. Opens on hover/focus, closes on Escape/blur/outside,
 and remains open while pointer is over the tooltip. No interactive tooltip content.
 
-Pagination root: `data-nq="pagination"`, native buttons with `data-nq-page="1"`
-etc., optional `data-nq-page="previous|next"`, and `data-nq-total="N"`.
+Pagination root: `data-hw="pagination"`, native buttons with `data-hw-page="1"`
+etc., optional `data-hw-page="previous|next"`, and `data-hw-total="N"`.
 Options `{page?, totalPages?, onPageChange?}`; controller `{page, select(page),
 destroy()}`. Current page uses `aria-current="page"`; boundaries disable previous
 and next. Detail `{page}`. Supply a localized nav label. It does not fetch data.
 
 Buttons, fields, selects, tables and file inputs use native HTML and CSS.
 Accordions work natively without enhancement; opt-in vanilla motion uses
-`createAccordion` or `data-nq="accordion"` with `enhance`. See
+`createAccordion` or `data-hw="accordion"` with `enhance`. See
 [accordion motion](../../docs/accordion-motion.md) for adapter lifecycle and state contracts.
 
 `createAccordionMotion(details, content, onOpenChange?)` is a browser helper
@@ -201,7 +201,7 @@ not render or reparent framework content. See [the contract](../../docs/accordio
 
 ## Numeric display policy
 
-Nasaq-generated numeric and calendar text always uses Latin digits (0–9), including
+Hawiyah-generated numeric and calendar text always uses Latin digits (0–9), including
 Arabic locales. formatNumber, formatDate, and formatCalendarDate enforce latn after
 caller options; locale extensions or a conflicting numberingSystem option do not
 change this policy. Locale still controls language, month/day names and formatting
@@ -252,7 +252,7 @@ a current section through tall content and gaps. `onCurrentChange(id)` fires onl
 when the ID changes (including initialization); an empty ID clears selection if
 no eligible target remains. Passive updates never focus content or scroll the
 host. An overflowing navigation region may scroll itself to reveal its current
-link, identified by `data-nq-section`.
+link, identified by `data-hw-section`.
 
 `navigate()` returns false for unavailable IDs or a destroyed observer. Valid
 navigation scrolls only the configured viewport, uses the supplied offset (80px

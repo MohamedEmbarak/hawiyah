@@ -22,10 +22,10 @@ function service(id: 'service-card'|'service-details', t: Translate, typed: bool
   const href = '/services/renew-permit';
   const message = id === 'service-card' ? t('Service selected locally.','تم اختيار الخدمة محليًا.') : t('Draft started locally.','تم بدء المسودة محليًا.');
   const meta = JSON.stringify([{term,description:duration}]);
-  const details = `<dl class="nq-description-list"><div><dt>${term}</dt><dd>${duration}</dd></div></dl>`;
+  const details = `<dl class="hw-description-list"><div><dt>${term}</dt><dd>${duration}</dd></div></dl>`;
   const list = `<h3>${requirements}</h3><ul><li>${document}</li></ul>`;
   if (id === 'service-card') return {
-    vanilla: `<article class="nq-card nq-service-card"><span class="nq-badge">${category}</span><h3>${title}</h3><p>${description}</p>${details}<a class="nq-link" href="${href}">${action}</a></article>`,
+    vanilla: `<article class="hw-card hw-service-card"><span class="hw-badge">${category}</span><h3>${title}</h3><p>${description}</p>${details}<a class="hw-link" href="${href}">${action}</a></article>`,
     vanillaState: `root.querySelector('a')?.addEventListener('click', event => {
   event.preventDefault();
   output.textContent = '${message}';
@@ -40,7 +40,7 @@ function service(id: 'service-card'|'service-details', t: Translate, typed: bool
     status.value = '${message}';
   }
 }`,
-    angular: `<nq-service-card title="${title}" description="${description}" category="${category}" duration="${term} — ${duration}" href="${href}" actionLabel="${action}" (click)="openService($event)" />`,
+    angular: `<hw-service-card title="${title}" description="${description}" category="${category}" duration="${term} — ${duration}" href="${href}" actionLabel="${action}" (click)="openService($event)" />`,
     angularState: `openService(event: Event) {
     if (event.target instanceof Element && event.target.closest('a[href]')) {
       event.preventDefault();
@@ -49,16 +49,16 @@ function service(id: 'service-card'|'service-details', t: Translate, typed: bool
   }`,
   };
   return {
-    vanilla: `<article class="nq-service-details"><header><h2>${title}</h2><p>${description}</p></header>${details}${list}<button class="nq-button" type="button">${start}</button></article>`,
+    vanilla: `<article class="hw-service-details"><header><h2>${title}</h2><p>${description}</p></header>${details}${list}<button class="hw-button" type="button">${start}</button></article>`,
     vanillaState: `root.querySelector('button')?.addEventListener('click', () => {output.textContent = '${message}';}, events);`,
     react: `<ServiceDetails title="${title}" description="${description}" metadata={${meta}} requirements={['${document}']} requirementsLabel="${requirements}" action={<Button onClick={() => setStatus('${message}')}>${start}</Button>} />`,
     vue: `<ServiceDetails title="${title}" description="${description}" :items='${meta}'>
     <section>${list}</section>
     <template #action><Button @click="status = '${message}'">${start}</Button></template>
   </ServiceDetails>`,
-    angular: `<nq-service-details title="${title}" description="${description}" [details]="details" [requirements]="['${document}']" requirementsLabel="${requirements}">
-    <button nqButton type="button" (click)="status = '${message}'">${start}</button>
-  </nq-service-details>`,
+    angular: `<hw-service-details title="${title}" description="${description}" [details]="details" [requirements]="['${document}']" requirementsLabel="${requirements}">
+    <button hwButton type="button" (click)="status = '${message}'">${start}</button>
+  </hw-service-details>`,
     angularState:`readonly details = ${meta};`,
   };
 }
@@ -71,12 +71,12 @@ function consent(t: Translate, typed: boolean): Recipe {
   const reopen = t('Review choice','مراجعة الخيار'), prefs = t('About these choices','حول هذه الخيارات');
   const attrs = `description="${description}"`;
   return {
-    vanilla: `<section class="nq-cookie-consent" data-nq="cookie-consent" aria-label="${title}"><h2>${title}</h2><p>${description}</p><div class="nq-inline">
-    <button type="button" class="nq-button" data-nq-consent="accepted">${accept}</button>
-    <button type="button" class="nq-button" data-variant="secondary" data-nq-consent="rejected">${reject}</button>
+    vanilla: `<section class="hw-cookie-consent" data-hw="cookie-consent" aria-label="${title}"><h2>${title}</h2><p>${description}</p><div class="hw-inline">
+    <button type="button" class="hw-button" data-hw-consent="accepted">${accept}</button>
+    <button type="button" class="hw-button" data-variant="secondary" data-hw-consent="rejected">${reject}</button>
   </div></section>
-  <button type="button" class="nq-button" data-variant="secondary" data-review-choice>${reopen}</button>`,
-    vanillaState: `const banner = root.querySelector('[data-nq="cookie-consent"]');
+  <button type="button" class="hw-button" data-variant="secondary" data-review-choice>${reopen}</button>`,
+    vanillaState: `const banner = root.querySelector('[data-hw="cookie-consent"]');
 if (!(banner instanceof HTMLElement)) throw new Error('Missing consent region');
 const connect = () => createCookieConsent(banner, {onValueChange: choice => {
   output.textContent = choice === 'accepted' ? '${accepted}' : '${rejected}';
@@ -99,9 +99,9 @@ scope.signal.addEventListener('abort', () => consent.destroy(), {once:true});`,
     @accept="status = '${accepted}'" @reject="status = '${rejected}'" @preferences="status = '${description}'" />
   <Button variant="secondary" data-review-choice @click="open = true; status = '—'">${reopen}</Button>`,
     angularState:'open = true;',
-    angular: `<nq-cookie-consent title="${title}" ${attrs} acceptLabel="${accept}" rejectLabel="${reject}" preferencesLabel="${prefs}" [(visible)]="open"
+    angular: `<hw-cookie-consent title="${title}" ${attrs} acceptLabel="${accept}" rejectLabel="${reject}" preferencesLabel="${prefs}" [(visible)]="open"
     (consent)="status = $event === 'accepted' ? '${accepted}' : '${rejected}'" (preferences)="status = '${description}'" />
-  <button nqButton type="button" variant="secondary" data-review-choice (click)="open = true; status = '—'">${reopen}</button>`,
+  <button hwButton type="button" variant="secondary" data-review-choice (click)="open = true; status = '—'">${reopen}</button>`,
   };
 }
 
@@ -113,8 +113,8 @@ function notifications(t: Translate, typed: boolean): Recipe {
   const items = [{id:'review',title:t('Review complete','اكتملت المراجعة'),read:false},{id:'received',title:t('Request received','تم استلام الطلب'),read:true}];
   const initial = JSON.stringify(items);
   return {
-    vanilla: `<section class="nq-notification-list" aria-label="${label}"><h2>${label}</h2><ul>${items.map(item=>`<li data-state="${item.read ? 'read':'unread'}"><h3>${item.title}</h3>${item.read ? '' : `<span class="nq-badge">${unread}</span><button class="nq-button" type="button" data-mark-read>${mark}</button>`}</li>`).join('')}</ul><p hidden data-empty>${empty}</p></section>
-  <div class="nq-inline"><button class="nq-button" type="button" data-mark-all>${all}</button><button class="nq-button" type="button" data-clear-list>${clear}</button></div>`,
+    vanilla: `<section class="hw-notification-list" aria-label="${label}"><h2>${label}</h2><ul>${items.map(item=>`<li data-state="${item.read ? 'read':'unread'}"><h3>${item.title}</h3>${item.read ? '' : `<span class="hw-badge">${unread}</span><button class="hw-button" type="button" data-mark-read>${mark}</button>`}</li>`).join('')}</ul><p hidden data-empty>${empty}</p></section>
+  <div class="hw-inline"><button class="hw-button" type="button" data-mark-all>${all}</button><button class="hw-button" type="button" data-clear-list>${clear}</button></div>`,
     vanillaState: `root.addEventListener('click', event => {
   if (!(event.target instanceof Element)) return;
   if (event.target.closest('[data-mark-all], [data-mark-read]')) {
@@ -122,7 +122,7 @@ function notifications(t: Translate, typed: boolean): Recipe {
     for (const row of rows) {
       if (!row) continue;
       row.dataset.state = 'read';
-      row.querySelector('.nq-badge')?.remove();
+      row.querySelector('.hw-badge')?.remove();
       row.querySelector('[data-mark-read]')?.remove();
     }
     output.textContent = '${marked}';
@@ -139,7 +139,7 @@ function notifications(t: Translate, typed: boolean): Recipe {
     setStatus('${marked}');
   }`,
     react: `<NotificationList label="${label}" items={items} emptyMessage="${empty}" unreadLabel="${unread}" onMarkRead={markRead} getMarkReadLabel={item => '${mark} — ' + item.title} />
-  <div className="nq-inline"><Button data-mark-all onClick={() => markRead()}>${all}</Button><Button variant="secondary" data-clear-list onClick={() => {setItems([]); setStatus('${cleared}');}}>${clear}</Button></div>`,
+  <div className="hw-inline"><Button data-mark-all onClick={() => markRead()}>${all}</Button><Button variant="secondary" data-clear-list onClick={() => {setItems([]); setStatus('${cleared}');}}>${clear}</Button></div>`,
     vueState:`const items = ref(${initial});
 function markRead(id${typed ? '?: string' : ''}) {
   items.value = items.value.map(item => !id || item.id === id ? {...item, read:true} : item);
@@ -147,12 +147,12 @@ function markRead(id${typed ? '?: string' : ''}) {
 }
 function dismiss(id${typed ? ': string' : ''}) { items.value = items.value.filter(item => item.id !== id); }`,
     vue:`<NotificationList label="${label}" :items="items" empty-message="${empty}" :read-label="item => '${mark} — ' + item.title" :dismiss-label="item => '${dismiss} — ' + item.title" @read="markRead" @dismiss="dismiss" />
-  <div class="nq-inline"><Button data-mark-all @click="markRead()">${all}</Button><Button variant="secondary" data-clear-list @click="items = []; status = '${cleared}'">${clear}</Button></div>`,
+  <div class="hw-inline"><Button data-mark-all @click="markRead()">${all}</Button><Button variant="secondary" data-clear-list @click="items = []; status = '${cleared}'">${clear}</Button></div>`,
     angularState: `items = ${JSON.stringify(items.map(({read,...item})=>({...item,unread:!read})))};
   markRead() { this.items = this.items.map(item => ({...item, unread:false})); this.status = '${marked}'; }
   dismiss(id: string) { this.items = this.items.filter(item => item.id !== id); }`,
-    angular:`<nq-notification-list label="${label}" [items]="items" emptyMessage="${empty}" unreadLabel="${unread}" dismissLabel="${dismiss}" (dismissed)="dismiss($event)" />
-  <div class="nq-inline"><button nqButton type="button" data-mark-all (click)="markRead()">${all}</button><button nqButton type="button" variant="secondary" data-clear-list (click)="items = []; status = '${cleared}'">${clear}</button></div>`,
+    angular:`<hw-notification-list label="${label}" [items]="items" emptyMessage="${empty}" unreadLabel="${unread}" dismissLabel="${dismiss}" (dismissed)="dismiss($event)" />
+  <div class="hw-inline"><button hwButton type="button" data-mark-all (click)="markRead()">${all}</button><button hwButton type="button" variant="secondary" data-clear-list (click)="items = []; status = '${cleared}'">${clear}</button></div>`,
   };
 }
 
@@ -164,7 +164,7 @@ export function servicePatternProject(id: ServicePatternId, framework: ProjectFr
   const main = `data-service-project="${id}" lang="${locale}" dir="${dir}"`;
   const output = t('Local result','النتيجة المحلية');
   const entry = framework === 'angular' ? 'main.ts' : `main.${typed ? 'ts':'js'}${framework === 'react' ? 'x':''}`;
-  const css = "@import '@nasaq/styles/styles.css';\n\n.demo { display: grid; gap: 1rem; min-inline-size: 0; }\n";
+  const css = "@import '@hawiyah/styles/styles.css';\n\n.demo { display: grid; gap: 1rem; min-inline-size: 0; }\n";
   const project = (file: string, html: string, js: string, host: string): ProjectExample => ({
     files:{html,css,js}, names:{html:file,css:'style.css',js:entry},entry,host,
   });
@@ -172,7 +172,7 @@ export function servicePatternProject(id: ServicePatternId, framework: ProjectFr
 <main class="demo" ${main}>
   ${r.vanilla}
   <p>${output} <output data-service-status>—</output></p>
-</main><script type="module" src="./${entry}"></script></body></html>`,`import { ${id === 'cookie-consent' ? 'createCookieConsent':'enhance'} } from '@nasaq/vanilla';
+</main><script type="module" src="./${entry}"></script></body></html>`,`import { ${id === 'cookie-consent' ? 'createCookieConsent':'enhance'} } from '@hawiyah/vanilla';
 import './style.css';
 
 const root = document.querySelector('[data-service-project]');
@@ -184,7 +184,7 @@ ${id === 'cookie-consent' ? '' : "const release = enhance(root);\nscope.signal.a
 window.addEventListener('pagehide', () => scope.abort(), {once:true});
 `,'');
   if (framework === 'react') return project(typed?'App.tsx':'App.jsx',`import { useState } from 'react';
-import { ${name}${useButton?', Button':''} } from '@nasaq/react';
+import { ${name}${useButton?', Button':''} } from '@hawiyah/react';
 
 export default function App() {
   const [status, setStatus] = useState('—');
@@ -197,7 +197,7 @@ export default function App() {
 `,"import { createRoot } from 'react-dom/client';\nimport App from './App';\nimport './style.css';\nconst root = document.getElementById('app');\nif (root) createRoot(root).render(<App />);\n",'<div id="app"></div>');
   if (framework === 'vue') return project('App.vue',`<script setup${typed?' lang="ts"':''}>
 import { ref } from 'vue';
-import { ${name}${useButton?', Button':''} } from '@nasaq/vue';
+import { ${name}${useButton?', Button':''} } from '@hawiyah/vue';
 const status = ref('—');
 ${r.vueState || ''}
 </script>
@@ -206,9 +206,9 @@ ${r.vueState || ''}
   <p>${output} <output data-service-status>{{ status }}</output></p>
 </main></template>
 `,"import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\ncreateApp(App).mount('#app');\n",'<div id="app"></div>');
-  const imports = `Nq${name}Component${useButton?', NqButtonDirective':''}`;
+  const imports = `Hw${name}Component${useButton?', HwButtonDirective':''}`;
   return project('app.component.ts',`import { Component } from '@angular/core';
-import { ${imports} } from '@nasaq/angular';
+import { ${imports} } from '@hawiyah/angular';
 @Component({
   selector:'app-root', standalone:true, imports:[${imports}],
   template:\`<main class="demo" ${main}>

@@ -12,7 +12,7 @@ screens. Code stays LTR in either guide language.
 Each combination preserves its own edits when switching. Entry points, local
 styles and component files are editable. Project downloads include those edits,
 an HTML entry, package manifest, Vite configuration, TypeScript configuration
-and setup instructions. Nasaq is still a private source preview: downloads use
+and setup instructions. Hawiyah is still a private source preview: downloads use
 local package tarballs, not nonexistent npm releases.
 
 Native projects run the actual installed adapters in a unique-origin sandbox.

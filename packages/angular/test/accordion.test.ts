@@ -2,13 +2,13 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
-import { NqAccordionComponent } from '@nasaq/angular';
+import { HwAccordionComponent } from '@hawiyah/angular';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => TestBed.resetTestingModule());
 
 it('preserves native user toggles with open:false and synchronizes changed inputs', () => {
-  const fixture = TestBed.createComponent(NqAccordionComponent);
+  const fixture = TestBed.createComponent(HwAccordionComponent);
   fixture.componentRef.setInput('items', [{ id: 'one', title: 'Heading', content: 'Body', open: false }]);
   fixture.detectChanges();
   const changed = vi.fn(); fixture.componentInstance.toggled.subscribe(changed);
@@ -19,12 +19,12 @@ it('preserves native user toggles with open:false and synchronizes changed input
   fixture.componentRef.setInput('items', [{ id: 'one', title: 'Heading', content: 'Body', open: true }]); fixture.detectChanges();
   fixture.componentRef.setInput('items', [{ id: 'one', title: 'Heading', content: 'Body', open: false }]); fixture.detectChanges();
   expect(details.open).toBe(false);
-  expect(details.querySelector('.nq-accordion-content')!.hasAttribute('inert')).toBe(true);
+  expect(details.querySelector('.hw-accordion-content')!.hasAttribute('inert')).toBe(true);
   expect(changed).toHaveBeenCalledOnce();
 });
 
 it('coordinates exclusive peers without duplicate delayed toggle events', () => {
-  const fixture = TestBed.createComponent(NqAccordionComponent);
+  const fixture = TestBed.createComponent(HwAccordionComponent);
   fixture.componentRef.setInput('exclusive', true);
   fixture.componentRef.setInput('items', [{ id: 'one', title: 'First', content: 'A', open: true }, { id: 'two', title: 'Second', content: 'B' }]);
   fixture.detectChanges();

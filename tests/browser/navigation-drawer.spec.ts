@@ -6,12 +6,12 @@ for (const locale of ['ar', 'en']) {
     test.setTimeout(120000);
     await page.setViewportSize({ width: 320, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.addInitScript(locale => localStorage.setItem('nasaq-locale', locale), locale);
+    await page.addInitScript(locale => localStorage.setItem('hawiyah-locale', locale), locale);
     await page.goto('/#component/navigation-drawer');
-    const trigger = page.locator('.guide-preview [data-nq-dialog-open]');
+    const trigger = page.locator('.guide-preview [data-hw-dialog-open]');
     const dialog = page.locator('.guide-preview dialog');
-    for (const theme of ['dga', 'nasaq', 'custom']) for (const mode of ['light', 'dark']) {
-      await dialog.evaluate((node, [theme, mode]) => { (node as HTMLElement).dataset.nqTheme = theme; (node as HTMLElement).dataset.nqMode = mode; }, [theme, mode]);
+    for (const theme of ['dga', 'hawiyah', 'custom']) for (const mode of ['light', 'dark']) {
+      await dialog.evaluate((node, [theme, mode]) => { (node as HTMLElement).dataset.hwTheme = theme; (node as HTMLElement).dataset.hwMode = mode; }, [theme, mode]);
       await trigger.click();
       expect(await dialog.evaluate(node => node.matches(':modal'))).toBe(true);
       const bounds = await dialog.boundingBox(); expect(bounds!.width).toBeLessThanOrEqual(304); expect(bounds!.x).toBeGreaterThanOrEqual(0); expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(320);

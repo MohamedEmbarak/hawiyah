@@ -1,6 +1,6 @@
 name: Publish packages to npm
 
-# Pushing a tag such as v0.2.0 publishes that commit's seven @nasaq packages.
+# Pushing a tag such as v0.2.0 publishes that commit's seven @hawiyah packages.
 # A manual run is a dry run unless "publish" is checked.
 on:
   push:

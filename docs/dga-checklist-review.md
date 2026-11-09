@@ -1,6 +1,6 @@
 # Platforms Code checklist review — November 5, 2026
 
-This review revises the November 4 implementation assessment against the supplied SDAIA checklist. The workbook has one worksheet, `Sheet1`, 56 numbered criteria and subordinate requirements in rows 6–189. Rows 190–296 contain no substantive criteria. Column G contains the supplied SDAIA assessment and is not a Nasaq result. Personal comments, site-specific findings and the raw workbook are omitted from this repository.
+This review revises the November 4 implementation assessment against the supplied SDAIA checklist. The workbook has one worksheet, `Sheet1`, 56 numbered criteria and subordinate requirements in rows 6–189. Rows 190–296 contain no substantive criteria. Column G contains the supplied SDAIA assessment and is not a Hawiyah result. Personal comments, site-specific findings and the raw workbook are omitted from this repository.
 
 Source SHA-256 is `c3d10450a0adafb9056d33fccd60180c6598aadbd9b67ea18f61daaaab0f6792`. References below use the workbook row numbers and repository evidence inspected at this review. The workbook's Arabic text governs where translations are ambiguous. For example, row 33 names rating in Arabic while its English translation repeats feedback.
 
@@ -32,7 +32,7 @@ The sitemap defect in rows 150–152 is repaired in this review. Its information
 
 Each row links to implementation or the source comparison that describes its measured behavior. Generic component-exists evidence is recorded as partial, rather than treated as a full exact-design pass. The numbered parent criteria and every substantive subordinate row are included.
 
-| Sheet1 row | Criterion | Requirement | Nasaq assessment | Evidence and action |
+| Sheet1 row | Criterion | Requirement | Hawiyah assessment | Evidence and action |
 | --- | --- | --- | --- | --- |
 | 6 | 1 | 6 — Ensure the Unified Design System (Platforms Code) version 1.0 is correctly implemented | Open | [Evidence](dga-reference.md). Version 1.0 is the target. NIC CSS alignment and passing tests cannot establish full checklist acceptance. |
 | 7–9 | 2 | 7 — Ensure the use of approved colors as defined in the Unified Design System (Platforms Code)<br>8 — Ensure adherence to the designated color design tokens (e.g., background, text colors, etc.) without any modifications or replacements.<br>9 — Ensure that any elements placed on colored backgrounds meet the required contrast and clarity standards for usability and accessibility, by applying the On Color property provided in the component. | Partial | [Evidence](nic-foundations.md). Semantic tokens and contrast checks exist. Source contrast substitutions and original/custom themes are documented adaptations requiring separate assessment. |
@@ -91,4 +91,4 @@ Each row links to implementation or the source comparison that describes its mea
 | 188 | 55 | 188 — Ensure the content (text, images, videos) is presented in a uniform style and tone appropriate for the target audience | Host review | [Evidence](../apps/playground/src/dga-templates.ts). Templates establish reusable content structure. Production media and editorial tone need review. |
 | 189 | 56 | 189 — Ensure that feedback provided to users for their actions is consistent in style and timing across the application/website to avoid confusion | Covered with limits | [Evidence](nic-notifications.md). Feedback styles and timing are documented. Application asynchronous outcomes must map consistently to those components. |
 
-Coverage check includes 183 substantive rows and all 56 numbered criteria. Row 10 contains an additional contrast-tool reference without a separate requirement and belongs to criterion 2. Source spreadsheet status values were not carried over into Nasaq assessments.
+Coverage check includes 183 substantive rows and all 56 numbered criteria. Row 10 contains an additional contrast-tool reference without a separate requirement and belongs to criterion 2. Source spreadsheet status values were not carried over into Hawiyah assessments.

@@ -12,7 +12,7 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4174',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
-    launchOptions: { executablePath: process.env.NASAQ_CHROMIUM || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined), args: ['--no-sandbox'] },
+    launchOptions: { executablePath: process.env.HAWIYAH_CHROMIUM || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined), args: ['--no-sandbox'] },
   },
   webServer: {
     command: 'node node_modules/vite/bin/vite.js --host 127.0.0.1 --config examples/react/vite.config.ts',

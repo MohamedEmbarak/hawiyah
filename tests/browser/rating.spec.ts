@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 for (const direction of ['rtl', 'ltr']) {
   test(`rating previews and fills cumulatively with native radio navigation (${direction})`, async ({ page }) => {
     await page.goto('/#components/rating');
-    await page.locator('#main').evaluate((main, dir) => main.insertAdjacentHTML('beforeend', `<form id="rating-regression" dir="${dir}"><fieldset class="nq-rating"><legend>Rating regression</legend><div class="nq-inline">${[1,2,3,4,5].map(value => `<label><input type="radio" name="rating-regression" value="${value}" ${value === 3 ? 'checked' : ''} aria-label="${value} of 5"><span aria-hidden="true">★</span></label>`).join('')}</div></fieldset><button type="reset">Reset</button></form>`), direction);
+    await page.locator('#main').evaluate((main, dir) => main.insertAdjacentHTML('beforeend', `<form id="rating-regression" dir="${dir}"><fieldset class="hw-rating"><legend>Rating regression</legend><div class="hw-inline">${[1,2,3,4,5].map(value => `<label><input type="radio" name="rating-regression" value="${value}" ${value === 3 ? 'checked' : ''} aria-label="${value} of 5"><span aria-hidden="true">★</span></label>`).join('')}</div></fieldset><button type="reset">Reset</button></form>`), direction);
     const form = page.locator('#rating-regression'); const labels = form.locator('label'); const inputs = form.locator('input');
     const colors = () => labels.locator('span').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).color));
     await page.mouse.move(0, 0);
@@ -20,7 +20,7 @@ for (const direction of ['rtl', 'ltr']) {
     await expect(inputs.nth(2)).toBeChecked();
     await form.locator('fieldset').evaluate(node => node.setAttribute('disabled', ''));
     await labels.nth(4).hover({ force: true }); await expect.poll(colors).toEqual([active, active, active, inactive, inactive]);
-    await form.locator('fieldset').evaluate(node => { node.removeAttribute('disabled'); node.setAttribute('data-nq-readonly', 'true'); });
+    await form.locator('fieldset').evaluate(node => { node.removeAttribute('disabled'); node.setAttribute('data-hw-readonly', 'true'); });
     await labels.nth(4).hover(); await expect.poll(colors).toEqual([active, active, active, inactive, inactive]);
   });
 }

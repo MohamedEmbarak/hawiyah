@@ -64,7 +64,7 @@ export function observeContentNavigation(options: ContentNavigationOptions): Con
   };
   const ensureLinkVisible = (id: string, smooth: boolean) => {
     if (navigation.clientHeight <= 0 || navigation.scrollHeight <= navigation.clientHeight) return;
-    const link = [...navigation.querySelectorAll<HTMLElement>('[data-nq-section]')].find(link => link.dataset.nqSection === id);
+    const link = [...navigation.querySelectorAll<HTMLElement>('[data-hw-section]')].find(link => link.dataset.hwSection === id);
     if (!link) return;
     const outer = navigation.getBoundingClientRect(), inner = link.getBoundingClientRect();
     const top = outer.top + navigation.clientTop, bottom = top + navigation.clientHeight;

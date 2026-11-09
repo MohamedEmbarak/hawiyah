@@ -6,7 +6,7 @@ to match its context. All four adapters now expose logical placement
 (`start`, `center`, `end`). Defaults preserve top/start presentation.
 
 React and Vue use `placement` and `align` props. Angular exposes the same
-inputs on `nq-tooltip`. Vanilla accepts the same controller options or
+inputs on `hw-tooltip`. Vanilla accepts the same controller options or
 `data-placement` and `data-align` on the element with `role="tooltip"`.
 Destroying a vanilla controller restores its authored attributes.
 
@@ -39,7 +39,7 @@ and 160 but contains no general tooltip surface rule.
 The source also defines optional title, icon and beak variants. The current
 plain descriptive tooltip corresponds to no-title/no-icon/no-beak usage.
 Those additional content variants remain outside this comparison. The source
-English text uses Inter; Nasaq retains IBM Plex Sans Arabic as its shared
+English text uses Inter; Hawiyah retains IBM Plex Sans Arabic as its shared
 product typography.
 
 The browser comparison reconstructs the decoded surface in an independent
@@ -49,9 +49,9 @@ through the actual vanilla, React, Vue and Angular editor examples. Captured
 browser images compare these rendered surfaces. They are not native Figma
 screenshots or evidence for all tooltip variants.
 
-Hosts can override `--nq-tooltip-padding`, `--nq-tooltip-min-width`,
-`--nq-tooltip-max-width`, `--nq-tooltip-background`, `--nq-tooltip-color` and
-`--nq-tooltip-shadow`. The original Nasaq profile retains its previous
+Hosts can override `--hw-tooltip-padding`, `--hw-tooltip-min-width`,
+`--hw-tooltip-max-width`, `--hw-tooltip-background`, `--hw-tooltip-color` and
+`--hw-tooltip-shadow`. The original Hawiyah profile retains its previous
 inverse surface and horizontal spacing.
 
 All seven supported project formats passed the surface comparison and Escape

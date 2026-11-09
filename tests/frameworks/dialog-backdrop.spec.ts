@@ -4,8 +4,8 @@ test('native dialog keeps content drags open and dismisses intentional backdrop 
   await page.setViewportSize({ width: 1280, height: 1000 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
-  const picker = page.getByTestId('calendar-showcase').locator('.nq-date-picker');
-  const trigger = picker.locator('.nq-date-picker-trigger');
+  const picker = page.getByTestId('calendar-showcase').locator('.hw-date-picker');
+  const trigger = picker.locator('.hw-date-picker-trigger');
   const dialog = picker.locator('dialog');
   await trigger.click();
   await expect(dialog).toBeVisible();

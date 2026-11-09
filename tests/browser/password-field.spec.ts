@@ -5,16 +5,16 @@ for (const locale of ['ar', 'en'] as const) {
     test(`password eye stays inside the native input in ${locale} at ${width}px`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width, height: 900 });
       await page.addInitScript(locale => {
-        localStorage.setItem('nasaq-locale', locale);
-        localStorage.setItem('nasaq-theme', 'dga');
-        localStorage.setItem('nasaq-mode', 'light');
+        localStorage.setItem('hawiyah-locale', locale);
+        localStorage.setItem('hawiyah-theme', 'dga');
+        localStorage.setItem('hawiyah-mode', 'light');
       }, locale);
       await page.goto('/#inputs');
       const form = page.locator('#native-input-lab');
-      const field = form.locator('[data-nq="password-field"]');
-      const input = field.locator('[data-nq-password-input]');
-      const toggle = field.locator('[data-nq-password-toggle]');
-      const icon = toggle.locator('.nq-password-icon');
+      const field = form.locator('[data-hw="password-field"]');
+      const input = field.locator('[data-hw-password-input]');
+      const toggle = field.locator('[data-hw-password-toggle]');
+      const icon = toggle.locator('.hw-password-icon');
       await expect(toggle).toHaveAttribute('data-toggle-variant', 'icon');
       await expect(toggle).toHaveAccessibleName(locale === 'ar' ? 'إظهار كلمة المرور' : 'Show password');
       await expect(input).toHaveAccessibleName(locale === 'ar' ? 'كلمة المرور' : 'Password');

@@ -4,7 +4,7 @@ import { createAccordion } from '../src/accordion.js';
 afterEach(() => document.body.replaceChildren());
 it('enhances native details, coordinates named items, emits once and cleans up', () => {
   const root = document.createElement('div');
-  root.innerHTML = '<details class="nq-accordion-item" name="test" data-nq-value="a" open><summary>A</summary><div>First</div></details><details class="nq-accordion-item" name="test" data-nq-value="b"><summary>B</summary><div>Second</div></details>';
+  root.innerHTML = '<details class="hw-accordion-item" name="test" data-hw-value="a" open><summary>A</summary><div>First</div></details><details class="hw-accordion-item" name="test" data-hw-value="b"><summary>B</summary><div>Second</div></details>';
   document.body.append(root);
   const change = vi.fn(); const controller = createAccordion(root, { onOpenChange: change });
   root.querySelectorAll('summary')[1]!.click();
@@ -19,7 +19,7 @@ it('enhances native details, coordinates named items, emits once and cleans up',
 
 it('rejects multiple content wrappers so no closing sibling remains keyboard reachable', () => {
   const root = document.createElement('div');
-  root.innerHTML = '<details class="nq-accordion-item"><summary>A</summary><div>First</div><button>Outside</button></details>';
+  root.innerHTML = '<details class="hw-accordion-item"><summary>A</summary><div>First</div><button>Outside</button></details>';
   expect(() => createAccordion(root)).toThrow('exactly one content wrapper');
   expect(root.querySelector('summary')!.hasAttribute('aria-expanded')).toBe(false);
 });

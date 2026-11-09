@@ -1,7 +1,7 @@
 {
   "status": "current",
-  "paletteDirection": "woven-rhythm",
-  "markBrief": "The Arabic word نسق alone. No separate symbol and no Latin lettering in the logo or loader. Preserve teal, mint, ivory and ink.",
+  "paletteDirection": "dga-platforms-code",
+  "markBrief": "The Arabic word هوية alone. No separate symbol and no Latin lettering in the logo or loader. Colors are DGA Platforms Code theme variables.",
   "wordmark": {
     "family": "Aref Ruqaa",
     "weight": 700,
@@ -11,9 +11,9 @@
     "distribution": "Outlined SVG paths only; source TTF and OFL are offline artwork inputs. No runtime font dependency.",
     "uiTypography": "IBM Plex Sans Arabic and IBM Plex Sans unchanged"
   },
-  "loader": "Arabic wordmark itself, reconstructed handwriting: connected noon descent through seen, then qaf head, bowl and terminal return, followed by a pen lift and noon diamond. Exact existing outline retained, including qaf's incorporated end marks. Transparent teal/white GIFs; 3.6-second loop, 90 frames at 25 fps; full-word hold, clear and restart without reverse erasing; static reduced-motion fallback.",
-  "scope": "Independent Nasaq identity. Upstream fonts retain their SIL Open Font License. No official endorsement, DGA certification, or trademark clearance is implied.",
+  "loader": "Arabic wordmark itself, reconstructed handwriting: hāʾ hook, outer bowl and inner stroke; joined wāw head and tail; pen lift; yāʾ flowing into the tāʾ marbūṭa stem and loop; then the two-dot strokes below yāʾ and above tāʾ marbūṭa. Exact outline retained, counters kept open. Transparent primary and white GIFs; 3.6-second loop, 90 frames at 25 fps; full-word hold, clear and restart without reverse erasing; static reduced-motion fallback.",
+  "scope": "Hawiyah, a UI library built to comply with the DGA Platforms Code. Upstream fonts retain their SIL Open Font License. Hawiyah is not an official DGA product; no trademark clearance is implied.",
   "direction": "arabic-wordmark-only",
-  "mark": "outlined-arabic-nasaq",
+  "mark": "outlined-arabic-hawiyah",
   "license": "Apache-2.0"
 }

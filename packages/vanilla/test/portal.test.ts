@@ -3,7 +3,7 @@ import { createPortalHeader, enhance } from '../src/index.js';
 
 afterEach(() => { document.body.innerHTML = ''; });
 function markup() {
-  document.body.innerHTML = `<header class="nq-portal-header" data-nq="portal-header"><button type="button" data-nq-portal-toggle>القائمة</button><nav data-nq-portal-navigation><a href="#main">الخدمات</a></nav></header><main id="main" tabindex="-1">المحتوى</main><button id="outside">خارج</button>`;
+  document.body.innerHTML = `<header class="hw-portal-header" data-hw="portal-header"><button type="button" data-hw-portal-toggle>القائمة</button><nav data-hw-portal-navigation><a href="#main">الخدمات</a></nav></header><main id="main" tabindex="-1">المحتوى</main><button id="outside">خارج</button>`;
   return document.querySelector('header')!;
 }
 it('discloses navigation, returns focus on Escape and leaves Tab native', () => {
@@ -30,13 +30,13 @@ it('participates in enhancement cleanup and leaves no collapsed navigation witho
 
 function branchHeader() {
   const root = document.createElement('header');
-  root.innerHTML = `<button type="button" data-nq-portal-toggle>Menu</button><nav data-nq-portal-navigation>
-    <details data-nq-portal-branch open><summary>Services</summary>
-      <ul><li><details data-nq-portal-branch><summary>Licenses</summary><ul>
+  root.innerHTML = `<button type="button" data-hw-portal-toggle>Menu</button><nav data-hw-portal-navigation>
+    <details data-hw-portal-branch open><summary>Services</summary>
+      <ul><li><details data-hw-portal-branch><summary>Licenses</summary><ul>
         <li><a href="#license" aria-current="page">Current license</a></li>
       </ul></details></li></ul>
     </details>
-    <details data-nq-portal-branch><summary>Resources</summary><a href="#help">Help</a></details>
+    <details data-hw-portal-branch><summary>Resources</summary><a href="#help">Help</a></details>
   </nav>`;
   document.body.append(root);
   const original = root.innerHTML;

@@ -1,8 +1,8 @@
 {
-  "name": "@nasaq/core",
+  "name": "@hawiyah/core",
   "version": "0.2.0",
   "private": true,
-  "description": "Framework-independent behavior, calendar and Arabic/English internationalization helpers for Nasaq",
+  "description": "Framework-independent behavior and Arabic/English internationalization for Hawiyah, a DGA Platforms Code UI library",
   "type": "module",
   "sideEffects": false,
   "files": [
@@ -26,7 +26,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "keywords": [
-    "nasaq",
+    "hawiyah",
     "dga",
     "sdga",
     "platforms-code",
@@ -42,12 +42,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEmbarak/nasaq.git",
+    "url": "git+https://github.com/MohamedEmbarak/hawiyah.git",
     "directory": "packages/core"
   },
-  "homepage": "https://mohamedembarak.github.io/nasaq/",
+  "homepage": "https://mohamedembarak.github.io/hawiyah/",
   "bugs": {
-    "url": "https://github.com/MohamedEmbarak/nasaq/issues"
+    "url": "https://github.com/MohamedEmbarak/hawiyah/issues"
   },
   "author": {
     "name": "Development Team, National Platforms Sector — National Information Center"

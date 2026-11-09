@@ -3,8 +3,8 @@ import {createSearchField,type SearchFieldOptions} from '../packages/vanilla/src
 const cleanups:Array<()=>void>=[];
 afterEach(()=>{for(const cleanup of cleanups.splice(0))cleanup();document.body.replaceChildren();});
 function setup(options:SearchFieldOptions={},attrs='',value=''){
- document.body.innerHTML=`<form><fieldset><div class="nq-search-field" ${attrs}><label for="query">Search</label><div class="nq-search-control"><input id="query" type="search" name="query" value="${value}" data-nq-search-input><button hidden data-nq-search-clear>Clear</button></div></div></fieldset></form><button id="outside">Outside</button>`;
- const root=document.querySelector<HTMLElement>('.nq-search-field')!,input=root.querySelector<HTMLInputElement>('input')!,clear=root.querySelector<HTMLButtonElement>('button')!,form=document.querySelector('form')!,before=root.outerHTML;
+ document.body.innerHTML=`<form><fieldset><div class="hw-search-field" ${attrs}><label for="query">Search</label><div class="hw-search-control"><input id="query" type="search" name="query" value="${value}" data-hw-search-input><button hidden data-hw-search-clear>Clear</button></div></div></fieldset></form><button id="outside">Outside</button>`;
+ const root=document.querySelector<HTMLElement>('.hw-search-field')!,input=root.querySelector<HTMLInputElement>('input')!,clear=root.querySelector<HTMLButtonElement>('button')!,form=document.querySelector('form')!,before=root.outerHTML;
  const controller=createSearchField(root,options);cleanups.push(controller.destroy);
  return {root,input,clear,form,controller,before};
 }
@@ -16,7 +16,7 @@ const matchesMarkup=(root:HTMLElement,html:string)=>{const template=document.cre
 
 it('exposes optional labeled combobox semantics and highlights source-safe text without HTML injection',()=>{
  const {root,input}=setup({suggestions:['😀 إِدَارَةُ البيانات','<img src=x onerror=alert(1)>'],resultsMessage:count=>`${count} local results`});
- expect(input.getAttribute('role')).toBe('combobox');expect(input.getAttribute('aria-controls')).toBe(list(root).id);expect(input.getAttribute('autocomplete')).toBe('off');expect(list(root).hidden).toBe(true);expect(list(root).parentElement).toBe(root.querySelector('.nq-search-control'));
+ expect(input.getAttribute('role')).toBe('combobox');expect(input.getAttribute('aria-controls')).toBe(list(root).id);expect(input.getAttribute('autocomplete')).toBe('off');expect(list(root).hidden).toBe(true);expect(list(root).parentElement).toBe(root.querySelector('.hw-search-control'));
  type(input,'ادارة');expect(options(root)).toHaveLength(1);expect(options(root)[0]!.querySelector('strong')!.textContent).toBe('إِدَارَةُ');expect(options(root)[0]!.textContent).toBe('😀 إِدَارَةُ البيانات');expect(root.querySelector('[role="status"]')!.textContent).toBe('1 local results');
  type(input,'img');expect(root.querySelector('img')).toBeNull();expect(options(root)[0]!.textContent).toBe('<img src=x onerror=alert(1)>');
 });
@@ -52,9 +52,9 @@ it('closes on clear, silent setValue and form reset, preserving canonical input/
  controller.setValue('second');expect(list(root).hidden).toBe(true);expect(changed.mock.calls.map(call=>call[0])).toEqual(['second','']);type(input,'second');form.reset();await Promise.resolve();expect(input.value).toBe('Search first');expect(list(root).hidden).toBe(true);expect(changed.mock.calls.map(call=>call[0])).toEqual(['second','']);
 });
 it('supports safe declarative dictionaries, option precedence and replacement dictionaries',async()=>{
- const {root,input,controller}=setup({},'data-nq-suggestions="not-json" data-nq-max-suggestions="1"');type(input,'search');expect(options(root)).toHaveLength(0);expect(list(root).hidden).toBe(true);
- root.dataset.nqSuggestions=JSON.stringify({not:'array'});await Promise.resolve();expect(options(root)).toHaveLength(0);root.dataset.nqSuggestions=JSON.stringify(['Search one','Search two']);await Promise.resolve();expect(options(root)).toHaveLength(1);expect(options(root)[0]!.textContent).toBe('Search one');
- controller.setSuggestions(['Search replacement']);expect(options(root)[0]!.textContent).toBe('Search replacement');root.dataset.nqSuggestions=JSON.stringify(['Search ignored']);await Promise.resolve();expect(options(root)[0]!.textContent).toBe('Search replacement');
+ const {root,input,controller}=setup({},'data-hw-suggestions="not-json" data-hw-max-suggestions="1"');type(input,'search');expect(options(root)).toHaveLength(0);expect(list(root).hidden).toBe(true);
+ root.dataset.hwSuggestions=JSON.stringify({not:'array'});await Promise.resolve();expect(options(root)).toHaveLength(0);root.dataset.hwSuggestions=JSON.stringify(['Search one','Search two']);await Promise.resolve();expect(options(root)).toHaveLength(1);expect(options(root)[0]!.textContent).toBe('Search one');
+ controller.setSuggestions(['Search replacement']);expect(options(root)[0]!.textContent).toBe('Search replacement');root.dataset.hwSuggestions=JSON.stringify(['Search ignored']);await Promise.resolve();expect(options(root)[0]!.textContent).toBe('Search replacement');
  controller.destroy();const explicit=createSearchField(root,{suggestions:['Search explicit','Search other'],maxSuggestions:2});cleanups.push(explicit.destroy);type(input,'search');expect(options(root)).toHaveLength(2);expect(options(root)[0]!.textContent).toBe('Search explicit');
 });
 it('leaves no-suggestion search fields unchanged and restores generated semantics and DOM on destroy',()=>{
@@ -62,7 +62,7 @@ it('leaves no-suggestion search fields unchanged and restores generated semantic
  const {root,input,controller,before}=setup({suggestions:['Search first']});type(input,'search');key(input,'ArrowDown');controller.destroy();controller.destroy();expect(matchesMarkup(root,before)).toBe(true);expect(input.value).toBe('search');input.dispatchEvent(new Event('focus'));expect(root.querySelector('[role="listbox"]')).toBeNull();
 });
 it('announces zero matches without displaying a popup and removes optional semantics when its declaration is removed',async()=>{
- const {root,input}=setup({},'data-nq-suggestions="[]"');type(input,'nothing');expect(list(root).hidden).toBe(true);expect(root.querySelector('[role="status"]')!.textContent).toContain('0');root.removeAttribute('data-nq-suggestions');await Promise.resolve();expect(root.querySelector('[role="listbox"]')).toBeNull();expect(input.hasAttribute('role')).toBe(false);expect(input.hasAttribute('autocomplete')).toBe(false);
+ const {root,input}=setup({},'data-hw-suggestions="[]"');type(input,'nothing');expect(list(root).hidden).toBe(true);expect(root.querySelector('[role="status"]')!.textContent).toContain('0');root.removeAttribute('data-hw-suggestions');await Promise.resolve();expect(root.querySelector('[role="listbox"]')).toBeNull();expect(input.hasAttribute('role')).toBe(false);expect(input.hasAttribute('autocomplete')).toBe(false);
 });
 it('routes the second Escape to an open native modal without clearing the chosen search text',()=>{
  const {root,input,form}=setup({suggestions:['Search first']});const dialog=document.createElement('dialog');dialog.open=true;form.before(dialog);dialog.append(form);vi.spyOn(dialog,'matches').mockImplementation(selector=>selector===':modal');const request=vi.fn();Object.defineProperty(dialog,'requestClose',{configurable:true,value:request});

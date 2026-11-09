@@ -3,10 +3,10 @@ import {expect,test} from '@playwright/test';
 test('native mobile navigation variant renders icons, current state and page links',async({page})=>{
   await page.setViewportSize({width:320,height:800});
   await page.goto('/?preview=portal');
-  const bar=page.locator('.nq-secondary-nav[data-variant="mobile"]');
+  const bar=page.locator('.hw-secondary-nav[data-variant="mobile"]');
   await expect(bar).toHaveAttribute('aria-label','تنقل الجوال');
   await expect(bar.locator('a')).toHaveCount(3);
-  await expect(bar.locator('.nq-icon[aria-hidden="true"]')).toHaveCount(3);
+  await expect(bar.locator('.hw-icon[aria-hidden="true"]')).toHaveCount(3);
   await expect(bar.locator('a').first()).toHaveAttribute('aria-current','page');
   await bar.locator('a').first().focus(); await page.keyboard.press('Tab'); await expect(bar.locator('a').nth(1)).toBeFocused();
   await page.keyboard.press('Enter'); await expect(page).toHaveURL(/#services$/);
