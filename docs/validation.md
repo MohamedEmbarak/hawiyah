@@ -1,5 +1,25 @@
 # Validation record
 
+## 2026-11-10 npm release 0.2.1
+
+All seven packages moved to 0.2.1 together. With Node.js 24.22.1 and pnpm
+11.25.0: `pnpm build:packages`, `pnpm typecheck:playground`, `pnpm test`
+(637 Vitest and 8 token-contrast cases), `pnpm check:packages` (clean consumer
+for all seven tarballs; React Button 382 and Vanilla Tabs 4,097 bytes gzip
+within budget) and `HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs` passed. The
+guide, homepage onboarding and guide experience Chromium specs passed 20 of 20
+across two repeats; in the first run one guide case (every catalog entry has a
+live reference) failed once under load and passed when rerun alone.
+
+`pnpm release:packages` (dry run) rebuilt and staged the tarballs from commit
+`0a5092d`. They were published with the `latest` dist-tag, in dependency
+order, by the `mhussein` account with two-factor approval. A clean project then
+installed `@hawiyah/styles`, `@hawiyah/react`, `@hawiyah/vue` and
+`@hawiyah/vanilla` 0.2.1 from the public registry: React and Vue server
+rendering produced `hw-button`, `enhance` was exported, the stylesheet resolved
+`@hawiyah/tokens/tokens.css`, the wordmark uses the Platforms Code primary
+color, and the DGA icon assets resolve from `@hawiyah/styles/assets/icons/`.
+
 ## 2026-11-09 DGA icons and a clean browser suite
 
 Every interface icon in the guide, the four adapters, the stylesheet and the
