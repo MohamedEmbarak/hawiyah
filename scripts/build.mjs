@@ -1,7 +1,8 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, copyFileSync, readdirSync, cpSync } from "node:fs";
+import { existsSync, mkdirSync, copyFileSync, readdirSync, cpSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { hashTree, manifestPath, manifestRoot } from "./dist-manifest.mjs";
 const root = fileURLToPath(new URL("../", import.meta.url));
 function run(command, args, cwd = root) {
   const result = spawnSync(command, args, {
@@ -25,6 +26,11 @@ for (const name of [
 ]) {
   const cwd = resolve(root, "packages", name);
   if (!existsSync(resolve(cwd, "package.json"))) continue;
+  // Start from an empty dist so files removed from the sources never ship.
+  // Packages build in dependency order, so each dependent sees a fresh dist.
+  const dist = resolve(cwd, "dist");
+  rmSync(dist, { recursive: true, force: true });
+  rmSync(manifestPath(name), { force: true });
   if (name === "angular")
     run(
       "pnpm",
@@ -50,6 +56,9 @@ for (const name of [
     cpSync(resolve(root, "brand/assets"), resolve(cwd, "dist/assets"), {recursive: true});
     cpSync(resolve(cwd, "src/assets"), resolve(cwd, "dist/assets"), {recursive: true});
   }
+  // Record the clean output; scripts/check-packages.mjs packs nothing else.
+  mkdirSync(manifestRoot, { recursive: true });
+  writeFileSync(manifestPath(name), JSON.stringify(hashTree(dist), null, 2) + "\n");
 }
 run("node", ["scripts/build-preview.mjs"]);
 run("node", ["scripts/build-project-previews.mjs"]);

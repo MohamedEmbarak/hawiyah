@@ -71,6 +71,27 @@ Found by server-rendering and hydrating every component of the published
   (Vue). As in React, the visible instruction (`instruction` / `dropLabel`) is
   now the input's label when no label is given; with a label nothing changes.
 
+### Choice styles, clean package builds and continuous integration
+
+- A radio group with no selection no longer shows every radio as selected in
+  the DGA and custom themes. Browsers match `:indeterminate` on every radio of
+  a group with no checked member, and the shared choice styles showed the mark
+  for it; this happened in all four adapters, and in Angular also after a
+  native form reset. Only a checkbox now uses the mixed presentation. A
+  Chromium test loads only the package stylesheet and checks an unselected,
+  a selected and a reset group, and a mixed checkbox, in every theme and mode.
+- `pnpm build:packages` empties each package's `dist` before building it. The
+  0.2.1 `@hawiyah/styles` tarball shipped 12 asset files that had been deleted
+  from the sources and survived in `dist` from earlier builds.
+- `pnpm check:packages` fails when a tarball contains a file the last clean
+  build did not produce or that changed since, and when an `exports` target is
+  not in the tarball. Files other than `dist` are now staged from each
+  package's `files` field, so `@hawiyah/tokens` ships
+  `reference/dga-foundations.json`, which 0.2.1 exported without containing.
+- A CI workflow runs the package build, unit and token-contrast tests, the
+  guide typecheck, the tarball check and the Chromium browser suite on every
+  push and pull request. Before this, no workflow ran a test.
+
 ## 0.2.1 — 2026-11-10
 
 ### Icons follow the DGA Platforms Code icon library

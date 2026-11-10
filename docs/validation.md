@@ -605,7 +605,9 @@ pnpm --filter @hawiyah/example-angular test:browser
 node tests/browser/framework-calendars.mjs
 ```
 
-The calendar script accepts an optional `react`, `angular`, or `vue` argument. Run it after package builds; it starts local example servers when needed. `pnpm check` groups build, unit/token, and root browser checks; the isolated package check and separate framework browser commands remain explicit. Re-run relevant checks after implementation changes and update the evidence rather than treating this snapshot as permanent.
+The calendar script accepts an optional `react`, `angular`, or `vue` argument. Run it after package builds; it starts local example servers when needed. `pnpm check` groups build, unit/token, and root browser checks; the isolated package check and separate framework browser commands remain explicit.
+
+The [CI workflow](../.github/workflows/ci.yml) runs `pnpm build:packages`, `pnpm test`, `pnpm typecheck:playground`, `pnpm check:packages` and, with Playwright's managed Chromium and the guide's public assets copied by `scripts/prepare-demo.mjs`, `pnpm test:browser` on every push and pull request. The portal and native framework browser commands above, the calendar script and the full `pnpm build` are not part of it and remain manual. Re-run relevant checks after implementation changes and update the evidence rather than treating this snapshot as permanent.
 
 ## Remaining evaluation
 

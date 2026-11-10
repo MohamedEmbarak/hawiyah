@@ -15,6 +15,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { build } from "vite";
+import { hashTree, manifestPath } from "./dist-manifest.mjs";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const checkRoot = resolve(root, ".artifacts/package-check");
 rmSync(checkRoot, { recursive: true, force: true });
@@ -51,22 +52,24 @@ for (const name of packageNames) {
   );
   if (manifest.private !== true)
     throw new Error(`${name}: source manifests stay private; publish only through scripts/publish-packages.mjs`);
-  if (!existsSync(resolve(source, "dist")))
-    throw new Error(`Build ${name} before packing`);
+  if (!existsSync(resolve(source, "dist")) || !existsSync(manifestPath(name)))
+    throw new Error(`Build ${name} with pnpm build:packages before packing`);
+  // dist must be exactly what the last clean build wrote: nothing stale, nothing edited.
+  const built = JSON.parse(readFileSync(manifestPath(name), "utf8"));
+  const current = hashTree(resolve(source, "dist"));
+  for (const file of new Set([...Object.keys(built), ...Object.keys(current)]))
+    if (built[file] !== current[file])
+      throw new Error(`${name}: dist/${file} ${!built[file] ? "was not written by the last clean build" : !current[file] ? "is missing" : "changed after the last clean build"}; run pnpm build:packages before packing`);
   mkdirSync(dest, { recursive: true });
   cpSync(resolve(source, "dist"), resolve(dest, "dist"), { recursive: true });
-  for (const file of [
-    "README.md",
-    "LICENSE",
-    "NOTICE",
-    "API.md",
-    "EXPANSION-API.md",
-    "PORTAL.md",
-    "tokens.json",
-    "third-party",
-  ])
+  // Everything else the manifest's "files" field names ships from the source tree.
+  const sourceEntries = (manifest.files || []).filter((entry) => entry !== "dist");
+  for (const file of sourceEntries) {
+    if (/[*?[\]{}!]/.test(file))
+      throw new Error(`${name}: "files" entry ${file} must be a literal path`);
     if (existsSync(resolve(source, file)))
       cpSync(resolve(source, file), resolve(dest, file), { recursive: true });
+  }
   for (const section of [
     "dependencies",
     "peerDependencies",
@@ -95,6 +98,33 @@ for (const name of packageNames) {
   for (const notice of ['LICENSE', 'NOTICE']) {
     if (!packed.files.some(file => file.path === notice))
       throw new Error(`${name}: missing ${notice} in consumer tarball`);
+  }
+  const packedPaths = new Set(packed.files.map((file) => file.path));
+  for (const file of packedPaths) {
+    const fromBuild = file.startsWith("dist/") && built[file.slice(5)];
+    const fromSource = sourceEntries.some((entry) => file === entry || file.startsWith(`${entry}/`));
+    if (file !== "package.json" && !fromBuild && !fromSource)
+      throw new Error(`${name}: ${file} in the tarball is not produced by a clean build`);
+  }
+  for (const file of Object.keys(built))
+    if (!packedPaths.has(`dist/${file}`))
+      throw new Error(`${name}: built file dist/${file} is missing from the tarball`);
+  // Every export target (and legacy entry field) must exist in the tarball.
+  const targets = [];
+  const collect = (value) => {
+    if (typeof value === "string") targets.push(value);
+    else if (value && typeof value === "object") Object.values(value).forEach(collect);
+  };
+  collect(manifest.exports);
+  for (const field of ["main", "module", "types", "typings"]) collect(manifest[field]);
+  if (!targets.length) throw new Error(`${name}: no export targets`);
+  for (const target of targets) {
+    const path = target.replace(/^\.\//, "");
+    const [prefix, suffix] = path.split("*");
+    const found = path.includes("*")
+      ? [...packedPaths].some((file) => file.length > prefix.length + suffix.length && file.startsWith(prefix) && file.endsWith(suffix))
+      : packedPaths.has(path);
+    if (!found) throw new Error(`${name}: export target ${target} is missing from the tarball`);
   }
   if (packed.files.some(file => /\.(?:test|spec)\.(?:[cm]?js|d\.ts)(?:\.map)?$/.test(file.path)))
     throw new Error(`${name}: test output must not ship in consumer tarballs`);
@@ -194,6 +224,7 @@ for (const [file,marker] of [['components.css','.hw-button'],['extended.css','.h
 }
 assert.ok(fs.readFileSync(new URL('../third-party/hijridate-LICENSE.txt',import.meta.resolve('@hawiyah/core')),'utf8').includes('MIT License'));
 assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/tokens/tokens.css')),'utf8').includes('--hw-color-primary'));
+assert.ok(JSON.parse(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/tokens/reference/dga-foundations.json')),'utf8')).source);
 const wordmark=fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/hawiyah-wordmark.svg')),'utf8');
 assert.ok(wordmark.includes('<path')); assert.ok(!wordmark.includes('<text'));
 assert.equal(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/hawiyah-loader.gif'))).subarray(0,6).toString(),'GIF89a');

@@ -44,6 +44,50 @@ HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs
 It publishes `apps/playground/dist` through GitHub Pages. The separate `pnpm build`
 command also builds the three native framework examples for local verification.
 
+## Continuous integration
+
+The [CI workflow](../.github/workflows/ci.yml) runs on every push and pull
+request, with read-only repository permissions; a newer run on the same ref
+cancels the older one. It installs with the pinned pnpm and Node.js 24, then
+runs:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm build:packages
+pnpm test
+pnpm typecheck:playground
+pnpm check:packages
+pnpm exec playwright install --with-deps chromium
+node scripts/prepare-demo.mjs
+pnpm test:browser
+```
+
+It deploys and publishes nothing. The Pages and publish workflows do not wait
+for it, so check its result on the commit before merging to `main` or tagging a
+release.
+
+## Package contents
+
+`pnpm build:packages` deletes each package's `dist` before building it, so a
+file removed from the sources cannot survive in a later tarball, and records
+what the clean build wrote (path and SHA-256) under
+`.artifacts/build-manifest/`. Packages build in dependency order and nothing
+else writes into a package's `dist`, so no file needs to survive between
+builds. `pnpm check:packages` then refuses to pack when:
+
+- a file in `dist` was not written by the last clean build, is missing, or
+  changed since; rebuild with `pnpm build:packages`;
+- the tarball contains anything other than `package.json`, that clean `dist`
+  output, and the other entries of the manifest's `files` field, copied from
+  the package source;
+- an `exports` target (or a `main`, `module` or `types` field) names a file
+  that is not in the tarball. Pattern targets such as `./dist/assets/*` need at
+  least one matching file.
+
+The clean consumer also resolves
+`@hawiyah/tokens/reference/dga-foundations.json`, which the 0.2.1 tarball
+exported without containing.
+
 ## Publishing a release
 
 All seven packages share one version and release together.
@@ -57,9 +101,11 @@ All seven packages share one version and release together.
    pnpm release:packages
    ```
 
-   This rebuilds the packages, runs the full `check:packages` consumer check
-   with `HAWIYAH_RELEASE=1` (which drops `private` from the staged manifests
-   only), and runs `npm publish --dry-run` on each verified tarball.
+   This rebuilds the packages from an empty `dist`, runs the full
+   `check:packages` content, exports and consumer check with
+   `HAWIYAH_RELEASE=1` (which drops `private` from the staged manifests only),
+   and runs `npm publish --dry-run` on each verified tarball. Confirm that the
+   [CI workflow](../.github/workflows/ci.yml) passed on the release commit.
 3. Record the release in the [validation record](validation.md) and
    [changelog](../CHANGELOG.md), commit, and confirm the working tree is clean.
 4. Push the tag `v<version>` on the release commit, for example by creating a
