@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "name": "Hawiyah",
   "nameAr": "هوية",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "lifecycle": "public-source-preview",
   "description": "UI component library built to comply with the DGA Platforms Code. Compliance evidence and open items are documented; Hawiyah is not an official DGA product.",
   "keywords": [

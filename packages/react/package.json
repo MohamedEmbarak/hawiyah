@@ -1,6 +1,6 @@
 {
   "name": "@hawiyah/react",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "React components for Hawiyah, a UI library built to comply with the DGA Platforms Code",
   "type": "module",

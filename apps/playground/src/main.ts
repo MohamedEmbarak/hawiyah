@@ -120,13 +120,7 @@ function shell() {
   if (new URLSearchParams(location.search).get('preview') === 'template' && state.view.startsWith('templates')) {
     return `<nav class="hw-inline" aria-label="${t('Template preview controls','أدوات معاينة القالب')}" style="padding:12px 16px;background:var(--hw-color-surface);border-block-end:1px solid var(--hw-color-border)"><a class="hw-button" data-variant="ghost" href="${base}#${e(state.view)}">${icon('arrow-back',16)}${t('Back to the guide','العودة إلى الدليل')}</a><button type="button" class="hw-button" data-variant="ghost" data-action="locale">${t('العربية','English')}</button><button type="button" class="hw-button" data-variant="ghost" data-action="mode">${t('Toggle color mode','تبديل المظهر')}</button></nav><main id="main" tabindex="-1" data-view="${e(state.view)}" style="padding:0">${renderDgaTemplates(state.view,state.locale)||''}</main><div id="toast" role="status" class="toast" hidden></div>`;
   }
-  const titles: Record<string, string> = {
-    overview: t('About Hawiyah', 'عن هوية'), components: t('Components', 'المكوّنات'),
-    foundations: t('Foundations', 'الأساسيات'), discover: t('Service discovery', 'اكتشاف الخدمات'),
-    apply: t('Guided application', 'طلب خطوة بخطوة'), workspace: t('Request workspace', 'مساحة الطلبات'),
-    docs: t('Getting started', 'البداية'), brand: t('Brand identity', 'الهوية البصرية'),
-    layouts: t('Layout studio', 'مختبر التخطيط'), inputs: t('Input laboratory', 'مختبر المدخلات'),
-  };
+  const titles = viewTitles();
   const isDocs = state.view === 'docs' || state.view.startsWith('docs/');
   const isComponent = state.view.startsWith('component/');
   const activeComponent = catalog.find(c => 'component/'+c[0] === state.view);
@@ -383,6 +377,15 @@ function applySettings() {
     else document.documentElement.style.removeProperty('--hw-color-' + key);
   }
 }
+function viewTitles(): Record<string, string> {
+  return {
+    overview: t('About Hawiyah', 'عن هوية'), components: t('Components', 'المكوّنات'),
+    foundations: t('Foundations', 'الأساسيات'), discover: t('Service discovery', 'اكتشاف الخدمات'),
+    apply: t('Guided application', 'طلب خطوة بخطوة'), workspace: t('Request workspace', 'مساحة الطلبات'),
+    docs: t('Getting started', 'البداية'), brand: t('Brand identity', 'الهوية البصرية'),
+    layouts: t('Layout studio', 'مختبر التخطيط'), inputs: t('Input laboratory', 'مختبر المدخلات'),
+  };
+}
 function render() {
   const active = document.activeElement as HTMLInputElement | null;
   const activeId = active?.id;
@@ -390,7 +393,11 @@ function render() {
   dispose();
   applySettings();
   app.innerHTML = shell();
-  const pageTitle = guideTitle(state.view, state.locale) || app.querySelector('main h1')?.textContent?.trim() || t('Guide & playground', 'الدليل ومساحة التجربة');
+  const pageTitle = (state.view === 'overview' ? t('UI components built to the DGA Platforms Code', 'مكتبة مكوّنات واجهات وفق كود المنصات') : guideTitle(state.view, state.locale))
+    || viewTitles()[state.view]
+    || (state.view.startsWith('templates') ? t('DGA reference templates', 'قوالب كود المنصات') : undefined)
+    || app.querySelector<HTMLElement>('main h1')?.innerText.replace(/\s+/g, ' ').trim()
+    || t('Guide & playground', 'الدليل ومساحة التجربة');
   document.title = `${pageTitle} · ${t('Hawiyah — هوية', 'هوية — Hawiyah')}`;
   document.body.classList.toggle("navigation-open", state.mobileNav);
   document.documentElement.classList.toggle("navigation-open", state.mobileNav);

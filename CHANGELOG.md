@@ -3,7 +3,7 @@
 All seven `@hawiyah/*` packages share one version. Versions below 1.0 may change
 APIs in a minor release; read the notes before upgrading.
 
-## Unreleased
+## 0.2.1 — 2026-11-10
 
 ### Icons follow the DGA Platforms Code icon library
 
@@ -37,6 +37,9 @@ upstream geometry with a fixed text color, as recorded under `derived`.
   6.0:1 in light mode.
 - Private custom properties that kept the old prefix (`--_nq-*`) are renamed
   `--_hw-*`.
+- Guide tab titles use the page name. The overview and layout studio titles were
+  built from their two-line headings and ran words together.
+- The guide search shortcut hint stays at the inline end of the field in Arabic.
 
 ## 0.2.0 — 2026-11-09
 

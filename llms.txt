@@ -2,7 +2,7 @@
 
 > UI component library built to comply with the DGA Platforms Code (كود المنصات, هيئة الحكومة الرقمية), for JavaScript, React, Vue, and Angular. The default foundation is mapped from supplied Platforms Code source snapshots; the Signature theme is opt-in. Compliance is documented requirement by requirement with evidence and open items; Hawiyah is not an official DGA product.
 
-Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Version 0.2.0 of the seven @hawiyah/* packages is published on npm; 0.x minor releases may change APIs. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
+Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Version 0.2.1 of the seven @hawiyah/* packages is published on npm; 0.x minor releases may change APIs. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
 
 ## Start here
 

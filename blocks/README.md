@@ -3,7 +3,7 @@
 These small HTML compositions use maintained Hawiyah primitives. Copy them into
 your application and change content/layout there; keep the semantic roles and
 documented behavior hooks. These files are application-owned after copying.
-Source version: Hawiyah 0.2.0. Later updates require review against your changes.
+Source version: Hawiyah 0.2.1. Later updates require review against your changes.
 
 - `service-card.html`: service discovery metadata and a meaningful action.
 - `application-section.html`: conditional form section with native validation.

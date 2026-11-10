@@ -22,7 +22,7 @@ The gallery also includes a [portal home](https://mohamedembarak.github.io/hawiy
 
 ## Development status
 
-Hawiyah is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **83-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.0 is published on npm under the `@hawiyah` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
+Hawiyah is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **83-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.1 is published on npm under the `@hawiyah` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
 
 The [roadmap](docs/roadmap.md) separates planned scope, implemented work, and verified behavior. [components.json](components.json) provides the same distinctions in a form that tools and coding assistants can read. Exact framework coverage and verification must be checked there rather than inferred from the package names.
 
