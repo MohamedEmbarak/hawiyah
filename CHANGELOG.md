@@ -16,6 +16,61 @@ APIs in a minor release; read the notes before upgrading.
 - The release script reports when every package was already on npm instead of
   claiming it published them.
 
+### Angular server rendering and hydration
+
+Found by server-rendering and hydrating every component of the published
+0.2.1 packages in a prerendered Angular 22 application.
+
+- `hw-tabs` and `hw-content-navigation` no longer end a prerender. Both
+  started layout measurement during server rendering; a timer then called
+  `getBoundingClientRect`, which the server DOM does not have, and the uncaught
+  exception stopped the render worker and unrelated routes with it. The Angular
+  adapter now starts the observers only in the browser, and
+  `observeTabOverflow` / `observeContentNavigation` in `@hawiyah/core` return
+  inert handles when the DOM has no layout.
+- `hw-combobox`, `hw-tag-input`, `hw-multi-select` and `hw-date-picker` no
+  longer throw `setCustomValidity is not a function` on the server (an unhandled
+  rejection when bound through `ngModel`). The date picker's dialog now receives
+  its id on the server, so `aria-controls` resolves in the prerendered page.
+- `hw-toggle-group` in single-select mode and `hw-accordion` (and
+  `details[hwAccordionOpen]`) no longer throw on the server, where the failed
+  pass left later accordion items and following components empty.
+  `observeReadonlyChoice` falls back to the owner document without
+  `getRootNode`, and `createAccordionMotion` no longer spreads
+  `details.children`. Choice guards and accordion motion start in the browser;
+  the server keeps `<details open>` and the native `name` of an exclusive group.
+- `hw-tabs` can be hydrated. Each `hw-tab` now renders its own
+  `section.hw-tab-panel` instead of handing a template to `hw-tabs`, which
+  Angular could only locate from `document.body` and which failed with NG0509,
+  leaving the tabs inert. **Markup change:** panels are children of their
+  `hw-tab` element (given `display: contents` by `@hawiyah/styles`) instead of
+  direct children of `.hw-tabs`; roles, ids, `aria-controls`,
+  `aria-labelledby` and panel order are unchanged. **API change:** the
+  `content` template reference on `HwTabComponent` is removed, and the
+  component gains the signals `panelId`, `tabId` and `active`, which the
+  owning tabset sets. Inputs, outputs and selectors are unchanged.
+- A package test now server-renders every exported Angular component and
+  directive with `@angular/platform-server`, value controls through
+  `[(value)]`, `ngModel` and `formControl`, and fails on any thrown or logged
+  error; a second test hydrates the same pages in jsdom. React and Vue were
+  checked for the same hazards and needed no change.
+
+### Typed values and accessible names
+
+- Angular `hw-number-field` and `hw-text-field` no longer rewrite text while
+  it is typed. Replacing `12` with `-5` committed `5`, typing `1e2` committed
+  `2`, and editing one segment of a `type="date"` field cleared the whole date,
+  because the model was bound back into the input on every keystroke. The input
+  is now written only when the model changes from outside and does not already
+  show that value; a form reset still clears a draft. Values emitted match the
+  other adapters: `-5` and `100` from NumberField, the typed string from
+  TextField.
+- A FileDropzone without a label has an accessible name in Angular and Vue.
+  Angular rendered an empty `<label>` and Vue none, so the file input was
+  announced without a name (Angular) or with the browser's own button text
+  (Vue). As in React, the visible instruction (`instruction` / `dropLabel`) is
+  now the input's label when no label is given; with a label nothing changes.
+
 ## 0.2.1 — 2026-11-10
 
 ### Icons follow the DGA Platforms Code icon library

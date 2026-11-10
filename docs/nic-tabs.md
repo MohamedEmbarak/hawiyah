@@ -42,6 +42,17 @@ and `overflowLabel` (Arabic default). Vanilla accepts these options plus
 `data-hw-overflow` / `data-hw-overflow-label`; destroy restores authored DOM and
 attributes. No vanilla controller owns native framework trees.
 
+In Angular each `hw-tab` renders its own `section.hw-tab-panel`; `hw-tabs`
+renders the tab list and supplies the panel identifiers and the selection. The
+panels therefore sit inside `hw-tab` elements, which the stylesheet reduces to
+`display: contents`, instead of directly inside `.hw-tabs` as in React, Vue
+and vanilla markup. Roles, identifiers, `aria-controls` / `aria-labelledby`
+and the order of panels are the same. The earlier structure stamped a template
+declared in `hw-tab` inside `hw-tabs`, which Angular hydration could only locate
+from `document.body` and which failed with NG0509 in a prerendered application.
+On the server, and wherever the DOM has no layout, overflow is not measured and
+every tab stays in the list.
+
 The ellipsis is a sibling native `details/summary` disclosure, outside the
 `tablist`. Its buttons use `aria-pressed` for the selected destination, without
 claiming ARIA menu semantics. Original tabs keep panel IDs and names; omitted

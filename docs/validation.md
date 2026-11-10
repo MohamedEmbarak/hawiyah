@@ -846,3 +846,46 @@ original/custom themes and reduced-motion/system-color behavior.
 
 The five existing portal-identity Chromium cases also pass after the shared-style
 changes, covering header disclosure, grouped footers and native compositions.
+
+
+## Angular server rendering, hydration and typed values — 2026-11-10
+
+An audit of the published 0.2.1 packages in a prerendered Angular 22
+application found that seven Angular components threw during server rendering,
+that `hw-tabs` could not be hydrated, that Angular NumberField and TextField
+rewrote text while it was typed, and that a FileDropzone without a label had no
+accessible name in Angular and only the browser's default in Vue. The
+[changelog](../CHANGELOG.md) lists each defect and its fix.
+
+Each fix has a regression test that was run before and after the change:
+
+| Test | Before | After |
+| --- | --- | --- |
+| `packages/angular/test/ssr.test.ts`: every exported Angular component and directive (87) rendered with `@angular/platform-server`; value controls through `[(value)]`, `ngModel` and `formControl` | 21 of 87 cases failed (`setCustomValidity`, `getRootNode`, `details.children`, two timer exceptions, a dangling `aria-controls`) | 87 pass |
+| `packages/core/test/server-dom.test.ts`: core observers against a DOM without layout, `getRootNode` or iterable child collections | 4 of 4 failed | 4 pass |
+| `packages/angular/test/hydration.test.ts`: the same 83 pages rendered in a separate process into the document an Angular CLI build produces, then hydrated in jsdom | with the previous tab structure the tab cases failed: five projected nodes were addressed from `document.body`, and hydration reported errors | 85 pass; no error, no component left unhydrated, server nodes reused |
+| `packages/angular/test/tabs-panels.test.ts`: panel markup, OnPush hosts, tabs added, disabled and removed | new | 3 pass |
+| `packages/angular/test/field-typing.test.ts`: no assignment to the input while typing `-5`, `1e2` or a date segment; outside changes and form reset still shown | 4 of 5 failed | 5 pass |
+| `tests/file-dropzone-name-parity.test.ts`: React, Vue and Angular | Vue and Angular failed | 4 pass |
+
+`pnpm build:packages`, `pnpm test` (8 contrast checks and 825 tests in 123
+files), `pnpm typecheck:playground` and `pnpm check:packages` pass.
+
+The typed-value fix was also exercised with real key presses in Chromium
+against a page built from the workspace packages: NumberField committed 100 for
+`1e2` and -5 for select-all then `-5`, with `[(value)]` and with `ngModel`;
+TextField `type="number"` kept `-5` and `1e2`; deleting the month of a
+`type="date"` TextField and typing `07` gave `2024-07-01`, as a native input
+did. The same script against the 0.2.1 sources gave 2, 5 and an empty date.
+That page is not part of the repository.
+
+Limits. The server-rendering and hydration tests compile with the JIT compiler
+and use simulated DOMs (the one bundled with `@angular/platform-server`, and
+jsdom); they do not build an Angular CLI application or run a browser. React
+and Vue were checked by server-rendering every export once with generic props;
+no DOM access was found and no test was added for them. Open items: generated
+identifiers still come from module counters and can differ between server and
+browser (associations stay valid; pass explicit ids where stability matters);
+a calendar bound through `ngModel` rebuilds its day grid once after hydration;
+a static `id` attribute on `hw-popover`, `hw-menu` or `hw-tooltip` is still
+duplicated on the inner element.

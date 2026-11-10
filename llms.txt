@@ -54,6 +54,7 @@ Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 ca
 - Put product routes, business rules, data fetching, and journey state in application blocks, not shared primitives.
 - pnpm new:component <kebab-case-name> creates an editable block under blocks/, not library components or framework adapters.
 - The Angular package uses APF partial compilation. Its Vite example uses JIT and does not establish production AOT, SSR, or hydration coverage.
+- Package tests server-render every exported Angular component with @angular/platform-server and hydrate the result in jsdom (JIT). A production Angular CLI build verified in a browser is a separate check. Pass controlId/id inputs where an identifier must be stable across server and browser.
 - Add focused behavior and consumer checks for changed contracts. Update documentation and coverage honestly.
 - The GitHub Pages guide deploys from main; npm publication is a separate, explicit step through scripts/publish-packages.mjs. Source manifests stay private: true and only the verified staged tarballs are published. Preserve Apache-2.0 and upstream font/calendar notices.
 

@@ -69,14 +69,14 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
 | --- | --- |
 | Button — `HwButtonDirective` | `button[hwButton]`, `a[hwButton]`; `variant: primary/secondary/ghost/danger`, `size: sm/md/lg`. Native attributes/events/form semantics are preserved. Set button `type` explicitly; anchors require `href` and do not support disabled semantics. |
 | Field — `HwFieldComponent` | `hw-field`; required `controlId`, `label`; optional `hint`, `error`. Project a native control with that ID and explicitly connect description IDs. |
-| TextField — `HwTextFieldComponent` | `hw-text-field`; string value, `type`, `placeholder`, `autocomplete`, `inputmode`, `readOnly`; `size: sm/md/lg` (default md), `visualVariant: outline/filled` (default outline) style the native input. The native number input still emits a string; parse at your domain boundary. |
+| TextField — `HwTextFieldComponent` | `hw-text-field`; string value, `type`, `placeholder`, `autocomplete`, `inputmode`, `readOnly`; `size: sm/md/lg` (default md), `visualVariant: outline/filled` (default outline) style the native input. The native number input still emits a string; parse at your domain boundary. Text being typed is never rewritten: while a number or date is incomplete the value is `''`, and the input keeps what the user typed. |
 | Textarea — `HwTextareaComponent` | `hw-textarea`; string value, `rows`, `maxLength`, `placeholder`, `readOnly`; `size: sm/md/lg`, `visualVariant: outline/filled` style the native textarea. |
 | Select — `HwSelectComponent` | `hw-select`; string value, `options: readonly Option[]`, `placeholder`; `size: sm/md/lg`, `visualVariant: outline/filled` style the native select. Native single select. |
 | Checkbox — `HwCheckboxComponent` | `hw-checkbox`; boolean value, `indeterminate`. |
 | Radio — `HwRadioComponent` | `hw-radio`; a named native radio group with a fieldset/legend, string value, `options`. |
 | Switch — `HwSwitchComponent` | `hw-switch`; boolean value, native checkbox with switch role. |
 | Combobox — `HwComboboxComponent` | `hw-combobox`; string value, `options`, `placeholder`, `emptyMessage`, `validationMessage`, `resultsMessage(count)`. Editable single selection; no async or virtualization. |
-| Tabs — `HwTabsComponent`, `HwTabComponent` | `hw-tabs` contains `hw-tab`; tabs `label`, `id`, `[(value)]`, `orientation`, optional `direction`, `activationMode: automatic/manual`, `overflow: menu/scroll` (default menu), configurable `overflowLabel`. Each tab takes `value`, `label`, `disabled` and projects its panel. Compact horizontal containers disclose excess labels; vertical tabs remain visible. |
+| Tabs — `HwTabsComponent`, `HwTabComponent` | `hw-tabs` contains `hw-tab`; tabs `label`, `id`, `[(value)]`, `orientation`, optional `direction`, `activationMode: automatic/manual`, `overflow: menu/scroll` (default menu), configurable `overflowLabel`. Each tab takes `value`, `label`, `disabled` and renders its projected content in its own panel: `<hw-tab>` contains the `<section class="hw-tab-panel" role="tabpanel">`, and the shared stylesheet gives `hw-tab` `display: contents`. Compact horizontal containers disclose excess labels; vertical tabs remain visible. |
 | Dialog — `HwDialogComponent` | `hw-dialog`; `title`, `titleId`, `[(open)]`, `closeLabel`, `closeOnBackdrop`; outputs `cancelled`, `returnValue`; methods `show(trigger?)`, `close(value?)`. Project content and `[hwDialogFooter]`. |
 | Accordion — `HwAccordionComponent` | `hw-accordion`; `items: {id,title,content,open?}[]`, `exclusive`, `groupName`; `toggled: {id,open}`. Native details/summary. Project custom native details for richer content. |
 | Card — `HwCardComponent` | `hw-card`; project `[hwCardHeader]`, body, `[hwCardFooter]`. |
@@ -104,14 +104,55 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
   focus through `aria-activedescendant`. Disabled options cannot be committed.
 - Tabs share core's wrapping navigation, skip disabled tabs, and follow RTL for
   horizontal arrows. Manual activation uses native button Enter/Space. Panels
-  stay mounted; hidden panels leave the focus order.
+  stay mounted; hidden panels leave the focus order. The tab list is rendered
+  by `hw-tabs` and each panel by its `hw-tab`, in tab order after the list.
 - Dialog uses native `showModal()`/`close()` after view creation. Native modality,
   focus containment and Escape behavior require a browser with dialog support.
   Close and destruction restore the opening trigger when it remains connected.
   No DOM globals are touched at module evaluation. A server render leaves the
   dialog closed; the browser opens it during view initialization.
+- TextField and NumberField write a value into the native input only when the
+  model changes from outside (an input binding, `writeValue`, a form reset) and
+  the input does not already show it. Typing `-5` commits `-5`, typing `1e2`
+  commits `100` in NumberField and the string `1e2` in TextField, and editing
+  one segment of a date keeps the other segments.
 - The library imports no global CSS. HTML text is interpolated, never trusted HTML.
   Theme selectors and CSS logical properties come from the shared style package.
+
+## Server rendering and hydration
+
+Every exported component and directive renders with `@angular/platform-server`
+without throwing and without logging an error, and the result can be hydrated
+with `provideClientHydration()`. On the server the components emit markup only:
+
+- Tab overflow measurement, content navigation tracking, accordion motion,
+  read-only choice guards and document-level listeners start in the browser.
+  The core observers also return inert handles when the DOM has no layout.
+- Native constraint validation (`setCustomValidity` in Combobox, TagInput,
+  MultiSelect and DatePicker) is applied in the browser; the server DOM has no
+  such method. `required`, `aria-invalid` and messages are in the server markup.
+- Dialog, Drawer, NavigationDrawer and the DatePicker dialog are rendered closed.
+- An accordion item that is open is rendered as `<details open>`, and an
+  exclusive group keeps its native `name`; `aria-expanded`, `inert` and motion
+  are added when the browser takes over.
+- Each `hw-tab` renders its own panel, so projected tab content stays in the
+  view that declares it. Angular can therefore hydrate a tabset in place.
+
+Generated identifiers come from counters, so the server and the browser can
+assign different values to the same control; associations are rewritten
+together and remain valid. Pass `controlId`, `id`, `titleId`, `mainId` or
+`navigationId` wherever markup, tests or fragment links depend on an identifier.
+`NgModel` delivers its value in a microtask after the first render, so a
+calendar bound through `ngModel` rebuilds its day grid once after hydration;
+`[(value)]` and reactive forms do not.
+
+Evidence: `packages/angular/test/ssr.test.ts` renders every export with minimal
+inputs, and every value control through `[(value)]`, `ngModel` and
+`formControl`; it fails on a rejected render, a logged error or an exception
+from a timer. `packages/angular/test/hydration.test.ts` renders the same pages
+in a separate process and hydrates them in jsdom. Both use the JIT compiler
+and a simulated DOM. They do not replace a production Angular CLI build
+checked in a browser.
 
 ## Example and limits
 
@@ -141,7 +182,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | InputGroup | Project `[hwPrefix]`, a labeled native/control input, and `[hwSuffix]`; `size: sm/md/lg`. Addons remain ordinary content, so label decorative icons appropriately. |
 | PasswordField | String value; `autocomplete`, `placeholder`, `showLabel`, `hideLabel`. Reveal button keeps the same input and resets to hidden with forms. |
 | SearchField | String value/CVA; `placeholder`, `autocomplete`, `autofocus`, `searchLabel`, `clearLabel`; optional `suggestions`, `maxSuggestions` (8), `resultsMessage(count)`, `showSearchButton` (true for compatibility); `searched(query)` output and public `focus()`. |
-| NumberField | `number \| null` value; `min`, `max`, `step` (number or `any`). Empty/invalid native numeric input maps to null. Native step/min/max validation remains active. |
+| NumberField | `number \| null` value; `min`, `max`, `step` (number or `any`). Empty/invalid native numeric input maps to null. Text that is not yet a number (`-`, `1e`) emits null and stays in the input, so `-5` and `1e2` commit -5 and 100. Native step/min/max validation remains active. |
 | Slider | Number value; `min`, `max`, `step`; native range plus value output. |
 | RangeSlider | `[lower,upper]`; `min`, `max`, `step`, `lowerLabel`, `upperLabel`, `lowerName`, `upperName`. Crossing thumbs stop at the other value; absent distinct names, `name` submits two ordered values. |
 | Rating | Numeric value, `max` (1–20), `ratingLabel(value,max)`; named native radio choices. |
@@ -151,7 +192,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | MultiSelect | `string[]`; `options: Option[]`, `searchLabel`, `emptyMessage`, `selectedMessage(count)`, `validationMessage`. Searchable checkbox list; selected values remain in FormData when search hides their checkboxes. |
 | Calendar | ISO Gregorian string value; `month`, `min`, `max`, `locale`, `calendar: gregory/islamic-umalqura`, `weekStartsOn`, `direction`, `previousLabel`, `nextLabel`; `monthChange`. Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year). Bounds restrict selection/focus. |
 | DatePicker | ISO Gregorian value, a custom text field and modal calendar. Accepts Calendar localization and range inputs, `dialogTitle`, `openLabel`, `closeLabel`, `calendarLabel`, `gregorianLabel`, `hijriLabel` and `unsupportedMessage`. Switching emits `calendarChange` and preserves the selected ISO date. Opening returns to its month and day. |
-| FileDropzone | `File[]`; `accept`, `multiple`, `instruction`, `selectedMessage(count)`; `rejected` emits rejected files. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
+| FileDropzone | `File[]`; `accept`, `multiple`, `instruction`, `selectedMessage(count)`; `rejected` emits rejected files. Without `label`, the visible `instruction` is the input's label and accessible name; with `label`, the instruction is a paragraph below it. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
 | ToggleGroup | String value for single or `string[]` for `multiple`; `options`, `variant: segmented/outline`. Single uses native radios; multiple uses pressed buttons. |
 | Popover | `label`, `triggerLabel`, `id`, `disabled`, `[(open)]`; project interactive content. Disclosure region with ordinary Tab order, outside press/Escape closing. |
 | Menu | Popover inputs plus `items: {id,label,disabled?}[]`, `action(id)`. ArrowUp/Down/Home/End navigation skips disabled items; Escape/activation returns focus. |

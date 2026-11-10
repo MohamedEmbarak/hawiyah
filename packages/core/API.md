@@ -194,7 +194,9 @@ Accordions work natively without enhancement; opt-in vanilla motion uses
 [accordion motion](../../docs/accordion-motion.md) for adapter lifecycle and state contracts.
 
 `createAccordionMotion(details, content, onOpenChange?)` is a browser helper
-invoked by native adapter lifecycles; imports remain SSR-safe. It coordinates
+invoked by native adapter lifecycles; imports remain SSR-safe. Called against a
+server DOM (no `getRootNode`, child collections that are not iterable) it does
+not throw; adapters still create it only in the browser. It coordinates
 transient height/visibility, logical state, reduced motion and cleanup. It does
 not render or reparent framework content. See [the contract](../../docs/accordion-motion.md).
 
@@ -215,6 +217,7 @@ Call after mounting a checkbox/radio, refresh after application-controlled value
 updates, and destroy before removal. It prevents activation when `readOnly` or
 `aria-disabled="true"` is set and preserves radio peers without rendering DOM.
 Adapters install it automatically; it does not make a disabled field focusable.
+Where the input has no `getRootNode` (a server DOM) the owner document is used.
 
 ## Responsive tab measurement
 
@@ -225,6 +228,9 @@ overflow when the full row fits, for a single tab, or for an unmeasured containe
 `{refresh(), destroy()}`. It reads layout after mounting and reports changed
 index arrays on resize, text/child changes and font loading; it does not render,
 reparent, hide or focus DOM. Adapters own those operations. Imports are SSR-safe.
+When the container has no `getBoundingClientRect` or its window has no
+`getComputedStyle` (a server DOM), the returned handle does nothing: no timer
+is started and `onChange` is never called.
 
 ## Content navigation observation
 
@@ -237,7 +243,9 @@ first direct summary subtree; every closed ancestor is checked. Changes to
 
 `observeContentNavigation({navigation, getItems, getScrollRoot, offset,
 onCurrentChange})` returns `{refresh(), navigate(id, {focus?}), destroy()}`.
-Call it after mounting; imports are SSR-safe. It measures existing elements and
+Call it after mounting; imports are SSR-safe. Without a window or
+`getBoundingClientRect` (a server DOM) the returned handle does nothing and
+`navigate` returns `false`. It measures existing elements and
 owns scroll/focus listeners only. Adapters retain DOM rendering, link attributes
 and application state. `getScrollRoot()` returns a scrollable element or `null`
 for the window; targets outside a supplied element are excluded. Refresh after
