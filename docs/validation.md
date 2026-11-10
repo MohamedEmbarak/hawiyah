@@ -891,3 +891,29 @@ browser (associations stay valid; pass explicit ids where stability matters);
 a calendar bound through `ngModel` rebuilds its day grid once after hydration;
 a static `id` attribute on `hw-popover`, `hw-menu` or `hw-tooltip` is still
 duplicated on the inner element.
+
+## Unselected radios, clean package builds and CI — 2026-11-10
+
+`tests/browser/choice-indeterminate.spec.ts` loads only the package stylesheet
+and checks an unselected, a selected and a form-reset radio group and a mixed
+checkbox in the default, DGA, custom and Hawiyah themes, light and dark. Before
+the style fix 6 of its 8 cases failed (every DGA-family case: each unselected
+radio showed its mark); after it all 8 pass, as do the existing
+`nic-choices` and `choice-halo` specs.
+
+`pnpm check:packages` was run against a dist with an added stale asset, an
+edited compiled file and a `files` field without `reference`; it failed on each
+with the file named, and passed on the clean build. The tarballs now hold 15
+files for `@hawiyah/tokens` (with `reference/dga-foundations.json`, which the
+clean consumer resolves) and 123 for `@hawiyah/styles`.
+
+With Node.js 24 and pnpm 11.25.0: `pnpm build:packages`, `pnpm test` (8
+contrast checks and 825 tests in 123 files), `pnpm typecheck:playground` and
+`pnpm check:packages` pass. The full `pnpm test:browser` run (539 Chromium
+tests, local Chromium 1243 through `HAWIYAH_CHROMIUM`, on a non-default port)
+passed 537. The two failures were in the tests: the button-group spec set the
+locale from an init script that also ran in the live editor's sandboxed frame,
+where reading `localStorage` throws, so the vanilla and React editors stopped
+with an error; it now sets it only in the top window, as the other specs do,
+and its five cases pass. The touch search case navigates to the fixed port
+4173 and passes on that port. The new CI workflow has not yet run on GitHub.
