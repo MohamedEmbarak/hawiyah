@@ -5,6 +5,12 @@ APIs in a minor release; read the notes before upgrading.
 
 ## Unreleased
 
+- Button groups keep their content width inside flex and grid containers.
+  In plain HTML, React and Vue a group stretched to the full width of a stack;
+  Angular hid this behind its host element. In vertical attached groups, icon
+  buttons now share the other segments' width.
+- The button group preview, code tab and all four live editor projects render
+  one shared example, and the preview style control switches whole groups.
 - The guide header links to GitHub with the DGA set's `github` icon instead of
   the word GitHub and an external-link mark.
 - The release script reports when every package was already on npm instead of

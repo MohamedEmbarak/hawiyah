@@ -99,6 +99,8 @@
 .hw-button-group[data-variant='attached'] > hw-icon-button:not(:first-child) > .hw-button { border-start-start-radius:0; border-end-start-radius:0; }
 .hw-button-group[data-variant='attached'] > hw-icon-button:not(:last-child) > .hw-button { border-start-end-radius:0; border-end-end-radius:0; }
 .hw-button-group[data-variant='attached'][data-orientation='vertical'] > :is(.hw-button,hw-icon-button) { margin-inline:0; }
+/* Attached vertical segments share one width, icon-only buttons included. */
+.hw-button-group[data-variant='attached'][data-orientation='vertical'] > .hw-icon-button { inline-size:auto; }
 .hw-button-group[data-variant='attached'][data-orientation='vertical'] > :is(.hw-button,hw-icon-button) + :is(.hw-button,hw-icon-button) { margin-block-start:-1px; }
 .hw-button-group[data-variant='attached'][data-orientation='vertical'] > .hw-button,
 .hw-button-group[data-variant='attached'][data-orientation='vertical'] > hw-icon-button > .hw-button { border-radius:0; }

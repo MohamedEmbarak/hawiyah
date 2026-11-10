@@ -1,3 +1,4 @@
+import {buttonGroupMarkup} from './button-group-demo';
 import {contentNavigationDemoMarkup} from './content-navigation-demo';
 import {ratingDemoMarkup,ratingDisplayMarkup} from './rating-demo';
 import {carouselDemoMarkup} from './carousel-demo';
@@ -235,7 +236,7 @@ export const expandedGuides: Record<string, GuideInput> = {
   },
   'button-group': {
     summary: 'Visually and semantically groups related independent actions. It does not introduce selection state or toolbar keyboard shortcuts.',
-    usage: `<div class="hw-button-group" role="group" aria-label="Document actions">\n  <button class="hw-button" type="button">Save</button>\n  <button class="hw-button" data-variant="secondary" type="button">Preview</button>\n</div>`,
+    usage: buttonGroupMarkup('en', { pretty: true }),
     lifecycle: ['Render a labelled group containing native action buttons.', 'Each button performs its own action and remains a normal Tab stop.', 'There is no group controller or implicit pressed-state management.'],
     api: api(['label', 'Required string', 'Name of the action group in every native adapter.'], ['children', 'Button content', 'Independent native controls.'], ['role=group / aria-label', 'Vanilla semantics', 'Expose the relationship without inventing toolbar behavior.'], ['variant', 'default | attached', 'All native adapters; vanilla uses data-variant.'], ['orientation', 'horizontal | vertical', 'All native adapters; vanilla uses data-orientation.']),
     accessibility: ['Use a concise group name when the relationship is not otherwise clear.', 'Do not add toolbar roles unless implementing the corresponding keyboard behavior.', 'For selectable modes use ToggleGroup, not a row of unlabelled pressed buttons.'], related: ['button', 'toggle-group'], source: 'packages/react/src/expanded-content.tsx',

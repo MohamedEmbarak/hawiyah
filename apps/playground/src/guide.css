@@ -16,7 +16,7 @@
 @media(prefers-reduced-motion:reduce){.guide-choice,.guide-related>a,.guide-pagination a{transition:none}.guide-choice:hover,.guide-related>a:hover{transform:none}}
 
 .guide-editor-loading{display:grid;justify-items:center;gap:1rem;min-block-size:280px;align-content:center;padding:2rem;text-align:center;font-size:.95rem;color:var(--hw-color-text-muted)}
-.guide-preview>:is(.hw-cluster,.hw-inline,.hw-button-group){align-self:center}
+.guide-preview>:is(.hw-cluster,.hw-inline,.hw-button-group,.hw-stack:has(>.hw-button-group)){align-self:center}
 @media(max-width:650px){.guide-demo-tabs button{padding:.45rem .5rem;font-size:.78rem;gap:.3rem}.guide-demo-tabs button svg{inline-size:15px;block-size:15px}.guide-copy-button>span{display:none}.guide-copy-button{min-inline-size:36px}.guide-demo-top{gap:.25rem}}
 
 .guide-demo{scroll-margin-block-start:125px}.guide-title-actions button[data-guide-launch-editor]{background:var(--hw-color-primary);border-color:var(--hw-color-primary);color:var(--hw-color-on-primary)}.guide-title-actions button[data-guide-launch-editor]:hover{background:var(--hw-color-primary-hover);color:var(--hw-color-on-primary)}

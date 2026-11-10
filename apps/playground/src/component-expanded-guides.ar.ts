@@ -1,3 +1,4 @@
+import {buttonGroupMarkup} from './button-group-demo';
 import {contentNavigationDemoMarkup} from './content-navigation-demo';
 import {ratingDemoMarkup,ratingDisplayMarkup} from './rating-demo';
 import {carouselDemoMarkup} from './carousel-demo';
@@ -369,10 +370,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   }),
   'button-group': localized('button-group', {
     summary: 'تجميع بصري ودلالي لإجراءات مستقلة مترابطة، دون إضافة حالة اختيار أو اختصارات شريط أدوات.',
-    usage: `<div class="hw-button-group" role="group" aria-label="إجراءات المستند">
-  <button class="hw-button" type="button">حفظ</button>
-  <button class="hw-button" data-variant="secondary" type="button">معاينة</button>
-</div>`,
+    usage: buttonGroupMarkup('ar', { pretty: true }),
     lifecycle: ['اعرض مجموعة مسمّاة تحتوي أزرار إجراءات أصلية.', 'ينفذ كل زر إجراءه ويظل محطة Tab عادية.', 'لا يوجد متحكم للمجموعة أو إدارة ضمنية لحالات الضغط.'],
     api: ['اسم مجموعة الإجراءات في جميع المحولات.', 'أزرار أصلية مستقلة داخل المجموعة.', 'دلالات المجموعة في HTML دون ادعاء سلوك toolbar.', 'عرض عادي أو متصل؛ يستخدم HTML الخاصية data-variant.', 'اتجاه أفقي أو رأسي؛ يستخدم HTML الخاصية data-orientation.'],
     accessibility: ['سمِّ المجموعة بإيجاز إذا لم تكن العلاقة واضحة من السياق.', 'لا تضف دور toolbar دون تطبيق نموذج لوحة مفاتيحه.', 'استخدم ToggleGroup للأوضاع القابلة للاختيار.'],

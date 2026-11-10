@@ -187,9 +187,16 @@ export function renderGuide(view: string, locale: Locale, code: Code): string {
   </article><aside class="guide-outline"><p class="guide-outline-title">${t('IN THIS GUIDE','في هذا الدليل')}</p><nav data-guide-toc aria-label="${t('On this page','أقسام هذه الصفحة')}"></nav><a class="guide-outline-help" href="#docs/extending">${icon('spark',18)}<span>${t('Have a different idea?','لديك فكرة مختلفة؟')}<strong>${t('Extend the library','توسعة المكتبة')}${icon('arrow',15)}</strong></span></a></aside></div>`;
 }
 
+/** Applies a preview control to its first target, or to every target when the control has data-guide-all. */
+function applyControl(root: ParentNode, select: HTMLSelectElement) {
+  const {guideSelector: selector, guideAttribute: attribute} = select.dataset;
+  const targets = select.hasAttribute('data-guide-all') ? [...root.querySelectorAll(selector!)] : [root.querySelector(selector!)];
+  for (const target of targets) target?.setAttribute(attribute!, select.value);
+}
 function demoControls(id: string, locale: Locale): string {
   const t = (en:string,ar:string) => locale==='ar'?ar:en;
-  if (['button','icon-button','button-group'].includes(id)) return `<label class="guide-control"><span>${t('Variant','النمط')}</span><select data-guide-variant data-guide-selector=".hw-button" data-guide-attribute="data-variant">${[['primary','Primary','أساسي'],['default','Dark','داكن'],['light','Light','أبيض'],['outline-white','White outline','إطار أبيض'],['secondary','Secondary','ثانوي'],['ghost','Ghost','خفيف'],['danger','Danger','خطر'],['soft','Soft','هادئ'],['outline','Outline','حدود'],['link','Link','رابط']].map(([value,en,ar])=>`<option value="${value}">${t(en!,ar!)}</option>`).join('')}</select></label><label class="guide-control"><span>${t('Size','الحجم')}</span><select data-guide-size><option value="md">${t('Medium','متوسط')}</option><option value="sm">${t('Small','صغير')}</option><option value="lg">${t('Large','كبير')}</option></select></label>`;
+  if (id === 'button-group') return `<label class="guide-control"><span>${t('Style','النمط')}</span><select data-guide-variant data-guide-all data-guide-selector=".hw-button-group" data-guide-attribute="data-variant">${[['attached','Attached','متصلة'],['default','Separate','منفصلة']].map(([value,en,ar])=>`<option value="${value}">${t(en!,ar!)}</option>`).join('')}</select></label>`;
+  if (['button','icon-button'].includes(id)) return `<label class="guide-control"><span>${t('Variant','النمط')}</span><select data-guide-variant data-guide-selector=".hw-button" data-guide-attribute="data-variant">${[['primary','Primary','أساسي'],['default','Dark','داكن'],['light','Light','أبيض'],['outline-white','White outline','إطار أبيض'],['secondary','Secondary','ثانوي'],['ghost','Ghost','خفيف'],['danger','Danger','خطر'],['soft','Soft','هادئ'],['outline','Outline','حدود'],['link','Link','رابط']].map(([value,en,ar])=>`<option value="${value}">${t(en!,ar!)}</option>`).join('')}</select></label><label class="guide-control"><span>${t('Size','الحجم')}</span><select data-guide-size><option value="md">${t('Medium','متوسط')}</option><option value="sm">${t('Small','صغير')}</option><option value="lg">${t('Large','كبير')}</option></select></label>`;
   if (['badge','alert','chip'].includes(id)) return `<label class="guide-control"><span>${t('Tone','الدلالة')}</span><select data-guide-variant data-guide-selector=".hw-${id}" data-guide-attribute="data-tone">${[['neutral','Neutral','محايد'],['info','Information','معلومات'],['success','Success','نجاح'],['warning','Warning','تحذير'],['danger','Danger','خطر']].map(([value,en,ar])=>`<option value="${value}">${t(en!,ar!)}</option>`).join('')}</select></label>`;
   return '';
 }
@@ -313,7 +320,7 @@ export function bindGuide(root: HTMLElement): () => void {
     template.innerHTML = demo.dataset.guideUsage || '';
     const variant = demo.querySelector<HTMLSelectElement>('[data-guide-variant]');
     const size = demo.querySelector<HTMLSelectElement>('[data-guide-size]');
-    if (variant) template.content.querySelector(variant.dataset.guideSelector!)?.setAttribute(variant.dataset.guideAttribute!, variant.value);
+    if (variant) applyControl(template.content, variant);
     if (size) template.content.querySelector('.hw-button')?.setAttribute('data-size', size.value);
     let markup = (variant || size) ? template.innerHTML : demo.dataset.guideUsage || '';
     const darkAction = variant?.dataset.guideSelector === '.hw-button' && ['outline-white', 'light'].includes(variant.value);
@@ -329,7 +336,7 @@ export function bindGuide(root: HTMLElement): () => void {
     const initial = canvas.querySelector(variant.dataset.guideSelector!)?.getAttribute(variant.dataset.guideAttribute!) || 'primary';
     const value = session?.variant || initial;
     if ([...variant.options].some(option=>option.value===value)) variant.value=value;
-    if (session?.variant) canvas.querySelector(variant.dataset.guideSelector!)?.setAttribute(variant.dataset.guideAttribute!,variant.value);
+    if (session?.variant) applyControl(canvas, variant);
   }
   const size = demo?.querySelector<HTMLSelectElement>('[data-guide-size]');
   if (size && canvas && session?.size) {
@@ -373,7 +380,7 @@ export function bindGuide(root: HTMLElement): () => void {
     if (!canvas || !demo) return;
     if (select.matches('[data-guide-surface]')) {canvas.dataset.surface=select.value;if(session)session.surface=select.value;}
     if (select.matches('[data-guide-variant]')) {
-      canvas.querySelector(select.dataset.guideSelector!)?.setAttribute(select.dataset.guideAttribute!,select.value);
+      applyControl(canvas, select);
       if (session) session.variant=select.value;
       updateCode();
     }

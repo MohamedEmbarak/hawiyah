@@ -1,3 +1,4 @@
+import {buttonGroupMarkup} from './button-group-demo';
 import {portalMenuList} from './portal-navigation-demo';
 import {searchDemoMarkup} from './search-demo';
 import {contentNavigationDemoMarkup} from './content-navigation-demo';
@@ -95,7 +96,7 @@ export function expandedSample(
     case "icon-button":
       return iconButtonMarkup(locale);
     case "button-group":
-      return `<div class="hw-button-group" role="group" aria-label="${t("Document actions", "إجراءات المستند")}">${b(t("Save", "حفظ"), 'data-action="demo-continue"', "primary")}${b(t("Preview", "معاينة"), 'data-action="demo-info"')}${b(t("Cancel", "إلغاء"), 'data-action="demo-info"', "ghost")}</div>`;
+      return buttonGroupMarkup(locale);
     case "chip":
       return statusMarkup("chip", locale, "default", uid);
     case "description-list":

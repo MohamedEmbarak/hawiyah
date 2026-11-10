@@ -1,3 +1,4 @@
+import { buttonGroupDemo, buttonGroupMarkup } from './button-group-demo';
 import {cardActionMarkup} from './card-action-demo.ts';
 import {isServicePatternId, servicePatternIds, servicePatternProject} from './service-pattern-projects.ts';
 import {dividerProjectMarkup} from './divider-demo.ts';
@@ -111,6 +112,12 @@ export function projectExample(
   if (id === 'select' && framework === 'vanilla') {
     html = selectDemoCases(locale).map(example => `<section class="hw-stack"><h2>${example.title}</h2>${selectDemoMarkup(example, 'project-region')}${example.kind === 'single' ? '<output data-select-value>first</output>' : ''}</section>`).join('\n');
     vanillaExampleScript = `\nconst region = root.querySelector('[data-select-demo="single"] select');\nconst selectedValue = root.querySelector('[data-select-value]');\nif (region instanceof HTMLSelectElement && selectedValue instanceof HTMLOutputElement) {\n  const displayValue = () => { selectedValue.value = region.value; };\n  region.addEventListener('change', displayValue);\n  window.addEventListener('pagehide', () => region.removeEventListener('change', displayValue), { once: true });\n}\n`;
+  }
+  if (id === "button-group") {
+    html = buttonGroupMarkup(locale, { values: true, pretty: true });
+    vanillaExampleScript = typed
+      ? `\nconst chosen = root.querySelector<HTMLOutputElement>('[data-button-group-value]');\nconst choose = (event: Event) => {\n  const button = (event.target as Element | null)?.closest<HTMLElement>('.hw-button-group [data-value]');\n  if (button && chosen) chosen.value = button.dataset.value ?? '';\n};\nroot.addEventListener('click', choose);\nwindow.addEventListener('pagehide', () => root.removeEventListener('click', choose), { once: true });\n`
+      : `\nconst chosen = root.querySelector('[data-button-group-value]');\nconst choose = event => {\n  const button = event.target.closest('.hw-button-group [data-value]');\n  if (button && chosen) chosen.value = button.dataset.value ?? '';\n};\nroot.addEventListener('click', choose);\nwindow.addEventListener('pagehide', () => root.removeEventListener('click', choose), { once: true });\n`;
   }
   if (id === "portal-header") html = `<div class="hw-portal-masthead">${siteVerificationMarkup(locale)}${portalMenuMarkup(locale)}</div>`;
   if (id === "divider") html = dividerProjectMarkup(locale, "vanilla");
@@ -248,9 +255,10 @@ export function projectExample(
     angularMember = `\n  options = ${choices};`;
   } else if (id === "button-group") {
     state=true;
-    react=`<div className="hw-stack">${['horizontal','vertical'].map(orientation=>`<ButtonGroup label="${label}" variant="attached" orientation="${orientation}"><IconButton label="${t('Search','بحث')}" variant="secondary" onClick={()=>setValue('search')}><span className="hw-icon" data-icon="search-01" aria-hidden="true" /></IconButton><Button variant="secondary" onClick={()=>setValue('preview')}>${t('Preview','معاينة')}</Button><Button variant="secondary" disabled>${t('Delete','حذف')}</Button></ButtonGroup>`).join('')}<output>{value}</output></div>`;
-    vue=`<div class="hw-stack">${['horizontal','vertical'].map(orientation=>`<ButtonGroup label="${label}" variant="attached" orientation="${orientation}"><IconButton label="${t('Search','بحث')}" variant="secondary" @click="value='search'"><span class="hw-icon" data-icon="search-01" aria-hidden="true" /></IconButton><Button variant="secondary" @click="value='preview'">${t('Preview','معاينة')}</Button><Button variant="secondary" disabled>${t('Delete','حذف')}</Button></ButtonGroup>`).join('')}<output>{{ value }}</output></div>`;
-    angular=`<div class="hw-stack">${['horizontal','vertical'].map(orientation=>`<hw-button-group label="${label}" variant="attached" orientation="${orientation}"><hw-icon-button label="${t('Search','بحث')}" variant="secondary" (activated)="value='search'"><span class="hw-icon" data-icon="search-01" aria-hidden="true"></span></hw-icon-button><button hwButton variant="secondary" (click)="value='preview'">${t('Preview','معاينة')}</button><button hwButton variant="secondary" disabled>${t('Delete','حذف')}</button></hw-button-group>`).join('')}<output>{{ value }}</output></div>`;
+    const groups = buttonGroupDemo(locale);
+    react=`<div className="hw-stack">${groups.map(g=>`<ButtonGroup label="${g.label}" variant="attached" orientation="${g.orientation}"><IconButton label="${g.search}" variant="secondary" onClick={()=>setValue('search')}><span className="hw-icon" data-icon="search-01" aria-hidden="true" /></IconButton><Button variant="secondary" onClick={()=>setValue('preview')}>${g.preview}</Button><Button variant="secondary" disabled>${g.remove}</Button></ButtonGroup>`).join('')}<output>{value}</output></div>`;
+    vue=`<div class="hw-stack">${groups.map(g=>`<ButtonGroup label="${g.label}" variant="attached" orientation="${g.orientation}"><IconButton label="${g.search}" variant="secondary" @click="value='search'"><span class="hw-icon" data-icon="search-01" aria-hidden="true" /></IconButton><Button variant="secondary" @click="value='preview'">${g.preview}</Button><Button variant="secondary" disabled>${g.remove}</Button></ButtonGroup>`).join('')}<output>{{ value }}</output></div>`;
+    angular=`<div class="hw-stack">${groups.map(g=>`<hw-button-group label="${g.label}" variant="attached" orientation="${g.orientation}"><hw-icon-button label="${g.search}" variant="secondary" (activated)="value='search'"><span class="hw-icon" data-icon="search-01" aria-hidden="true"></span></hw-icon-button><button hwButton variant="secondary" (click)="value='preview'">${g.preview}</button><button hwButton variant="secondary" disabled>${g.remove}</button></hw-button-group>`).join('')}<output>{{ value }}</output></div>`;
   } else if (id === "select") {
     state = true;
     initialValue = "'first'";
