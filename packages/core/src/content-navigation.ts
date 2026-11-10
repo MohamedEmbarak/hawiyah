@@ -17,11 +17,13 @@ export interface ContentNavigationObserver {
   destroy(): void;
 }
 
-/** Measures and scrolls existing elements; rendering and current-link attributes belong to adapters. */
+/** Measures and scrolls existing elements; rendering and current-link attributes belong to adapters.
+ * Without layout APIs (a server DOM) nothing is measured and no timer is started. */
 export function observeContentNavigation(options: ContentNavigationOptions): ContentNavigationObserver {
   const { navigation } = options;
   const document = navigation.ownerDocument;
-  const view = document.defaultView;
+  const view = document?.defaultView;
+  if (!view || typeof navigation.getBoundingClientRect !== 'function') return { refresh() {}, navigate: () => false, destroy() {} };
   let destroyed = false;
   let frame: number | undefined;
   let scrollRoot: HTMLElement | null = null;

@@ -2,6 +2,7 @@ import {booleanAttribute, ChangeDetectorRef, Component, ElementRef, EventEmitter
 import {NgTemplateOutlet} from '@angular/common';
 import {observeContentNavigation} from '@hawiyah/core';
 import type {ContentNavigationItem} from '@hawiyah/core';
+import {injectIsBrowser} from './platform';
 
 export type {ContentNavigationItem} from '@hawiyah/core';
 @Component({selector: 'hw-content-navigation', standalone: true, imports: [NgTemplateOutlet], template: `
@@ -26,10 +27,11 @@ export class HwContentNavigationComponent {
   @Output() readonly currentChange = new EventEmitter<string>();
   @ViewChild('navigation') navigation?: ElementRef<HTMLElement>;
   private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly browser = injectIsBrowser();
   private observer?: ReturnType<typeof observeContentNavigation>;
   current = '';
   fragment(id: string): string {return `#${encodeURIComponent(id)}`;}
-  ngAfterViewInit(): void {this.observer = observeContentNavigation({navigation: this.navigation!.nativeElement, getItems: () => this.items, getScrollRoot: () => this.scrollRoot, offset: () => this.offset, onCurrentChange: id => {this.current = id; this.currentChange.emit(id); this.changeDetector.markForCheck();}});}
+  ngAfterViewInit(): void {if (!this.browser) return; this.observer = observeContentNavigation({navigation: this.navigation!.nativeElement, getItems: () => this.items, getScrollRoot: () => this.scrollRoot, offset: () => this.offset, onCurrentChange: id => {this.current = id; this.currentChange.emit(id); this.changeDetector.markForCheck();}});}
   ngOnChanges(): void {this.observer?.refresh();}
   ngOnDestroy(): void {this.observer?.destroy();}
   activate(event: MouseEvent, id: string): void {

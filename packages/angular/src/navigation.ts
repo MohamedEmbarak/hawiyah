@@ -1,25 +1,30 @@
-import { booleanAttribute, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, TemplateRef, ViewChild, ViewChildren, inject } from '@angular/core';
+import { booleanAttribute, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, ViewChild, ViewChildren, inject, signal } from '@angular/core';
 import { observeAngularFieldPresence } from './field-presence';
-import { NgTemplateOutlet } from '@angular/common';
+import { injectIsBrowser } from './platform';
 import { getDirection, getNextEnabledIndex, getPaginationItems, normalizePaginationPage, normalizePaginationTotal, observeTabOverflow, type Direction, type Orientation } from '@hawiyah/core';
 
 let nextId = 0;
-@Component({ selector: 'hw-tab', standalone: true, template: `<ng-template #content><ng-content /></ng-template>` })
+/** Renders its own panel, so projected content stays in the view that declares it and
+ * the tabset can be hydrated after server rendering. */
+@Component({ selector: 'hw-tab', standalone: true, template: `<section class="hw-tab-panel" role="tabpanel" tabindex="0" [attr.id]="panelId() || null" [attr.aria-labelledby]="tabId() || null" [hidden]="!active()"><ng-content /></section>` })
 export class HwTabComponent {
   @Input({required: true}) value = '';
   @Input({required: true}) label = '';
   @Input({transform: booleanAttribute}) disabled = false;
-  @ViewChild('content', {static: true}) content!: TemplateRef<unknown>;
+  /** Panel identity and visibility, assigned by the owning tabset once it has ordered its tabs. */
+  readonly panelId = signal('');
+  readonly tabId = signal('');
+  readonly active = signal(false);
   /** Notify the owning tabset when projected input state changes. */
   readonly stateChanges = new EventEmitter<void>();
   ngOnChanges(): void {this.stateChanges.emit();}
 }
 
-@Component({ selector: 'hw-tabs', standalone: true, imports: [NgTemplateOutlet],
+@Component({ selector: 'hw-tabs', standalone: true,
   template: `<div class="hw-tabs"><div #tabBar class="hw-tab-bar" [attr.data-hw-overflow]="overflow" [attr.data-orientation]="orientation">
   <div class="hw-tab-list" [attr.data-hw-overflow]="overflow" role="tablist" [attr.aria-label]="label" [attr.aria-orientation]="orientation" [attr.aria-hidden]="hiddenTabs.length === tabs?.length || null">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="hw-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [attr.data-hw-overflow-hidden]="hiddenTabs.includes(i) ? 'true' : null" [attr.aria-hidden]="hiddenTabs.includes(i) || null" [disabled]="tab.disabled" [tabIndex]="!hiddenTabs.includes(i) && focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>
   <details #overflowDetails class="hw-tabs-overflow" [hidden]="!hiddenTabs.length" (keydown)="overflowKey($event)"><summary class="hw-tab-overflow-trigger" [attr.aria-label]="overflowLabel" [attr.data-active]="overflowActive || null">…</summary><div class="hw-tab-overflow-menu">@for (i of hiddenTabs; track i) {@if (tabs.get(i); as tab) {<button type="button" class="hw-tab-overflow-item" [attr.data-hw-overflow-value]="tab.value" [disabled]="tab.disabled" [attr.aria-pressed]="tab.value === activeValue" (click)="overflowSelect(tab.value)">{{ tab.label }}</button>}}</div></details>
-  </div>@for (tab of tabs; track tab.value; let i = $index) {<section class="hw-tab-panel" role="tabpanel" tabindex="0" [id]="panelId(i)" [attr.aria-labelledby]="tabId(i)" [hidden]="activeValue !== tab.value"><ng-container [ngTemplateOutlet]="tab.content" /></section>}<ng-content /></div>` })
+  </div><ng-content /></div>` })
 export class HwTabsComponent {
   @Input() id = `hw-tabs-${++nextId}`;
   @Input({required: true}) label = '';
@@ -36,6 +41,7 @@ export class HwTabsComponent {
   @ViewChild('overflowDetails') overflowDetails?: ElementRef<HTMLDetailsElement>;
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly browser = injectIsBrowser();
   private overflowObserver?: ReturnType<typeof observeTabOverflow>;
   private pendingFocus?: {kind: 'summary' | 'tab' | 'menu'; value?: string};
   private previousActive = '';
@@ -55,7 +61,15 @@ export class HwTabsComponent {
     };
     bind(); this.tabsSubscription = this.tabs.changes.subscribe(bind);
   }
+  ngAfterContentChecked(): void { this.syncPanels(); }
+  /** Each hw-tab renders its panel; the tabset supplies the identifiers and the selection. */
+  private syncPanels(): void {
+    const active = this.activeValue;
+    this.tabs?.forEach((tab, index) => { tab.panelId.set(this.panelId(index)); tab.tabId.set(this.tabId(index)); tab.active.set(tab.value === active); });
+  }
   ngAfterViewInit(): void {
+    // Overflow measurement and outside-click handling need layout and a user; a server render has neither.
+    if (!this.browser) return;
     const node = this.tabBar!.nativeElement;
     this.overflowObserver = observeTabOverflow({container: node, tabs: () => this.buttons.toArray().map(button => button.nativeElement), enabled: () => this.overflow === 'menu' && this.orientation === 'horizontal', onChange: next => {
       const focusedElement = node.ownerDocument.activeElement;
@@ -87,7 +101,7 @@ export class HwTabsComponent {
   overflowKey(event: KeyboardEvent): void {if (event.key === 'Escape' && this.overflowDetails?.nativeElement.open) {event.preventDefault(); this.closeOverflow(); this.overflowDetails.nativeElement.querySelector('summary')?.focus();}}
   tabId(index: number): string { return `${this.id}-tab-${index}`; }
   panelId(index: number): string { return `${this.id}-panel-${index}`; }
-  select(value: string): void { if (!this.tabs.find(tab => tab.value === value && !tab.disabled)) return; this.value = value; this.focusedValue = value; this.valueChange.emit(value); }
+  select(value: string): void { if (!this.tabs.find(tab => tab.value === value && !tab.disabled)) return; this.value = value; this.focusedValue = value; this.syncPanels(); this.valueChange.emit(value); }
   keydown(event: KeyboardEvent, index: number): void {
     if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing) return;
     const keys = this.orientation === 'vertical' ? ['ArrowUp', 'ArrowDown', 'Home', 'End'] : ['ArrowLeft', 'ArrowRight', 'Home', 'End'];

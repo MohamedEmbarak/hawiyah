@@ -1,0 +1,102 @@
+// Shared by the server-rendering test, the hydration test and the script that renders
+// the pages for hydration in a separate process. Plain erasable TypeScript: Node runs it as is.
+import '@angular/compiler';
+import { Component, inject, PendingTasks, type Type } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import * as hawiyah from '@hawiyah/angular';
+
+/** Every exported class that Angular can place in a template, keyed by export name. */
+export const declarations = Object.entries(hawiyah).flatMap(([name, value]) => {
+  const type = value as unknown as { ɵcmp?: { selectors: unknown[][] }; ɵdir?: { selectors: unknown[][] } };
+  if (typeof value !== 'function') return [];
+  const definition = type.ɵcmp ?? type.ɵdir;
+  return definition?.selectors.length ? [{ name, type: value as unknown as Type<object> }] : [];
+});
+export const valueControls = declarations.filter(({ type }) => typeof type.prototype.writeValue === 'function').map(({ name }) => name);
+
+const cities = [{ value: 'riyadh', label: 'Riyadh' }, { value: 'jeddah', label: 'Jeddah' }, { value: 'dammam', label: 'Dammam', disabled: true }];
+const links = [{ label: 'Home', href: 'https://example.org/', current: true }, { label: 'Services', href: 'https://example.org/services' }];
+
+interface Control { tag: string; attributes?: string; value: unknown; empty: unknown; state?: Record<string, unknown> }
+/** Minimal valid inputs for each value control; rendered through [(value)], ngModel and formControl. */
+export const controls: Record<string, Control> = {
+  HwTextFieldComponent: { tag: 'hw-text-field', attributes: 'hint="Hint" error="Error"', value: 'Maha', empty: '' },
+  HwTextareaComponent: { tag: 'hw-textarea', value: 'Notes', empty: '' },
+  HwSelectComponent: { tag: 'hw-select', attributes: '[options]="cities"', value: 'jeddah', empty: '' },
+  HwCheckboxComponent: { tag: 'hw-checkbox', value: true, empty: false },
+  HwSwitchComponent: { tag: 'hw-switch', value: true, empty: false },
+  HwRadioComponent: { tag: 'hw-radio', attributes: '[options]="cities"', value: 'jeddah', empty: '' },
+  HwComboboxComponent: { tag: 'hw-combobox', attributes: '[options]="cities"', value: 'riyadh', empty: '' },
+  HwFileUploadComponent: { tag: 'hw-file-upload', attributes: 'accept=".pdf" multiple', value: [], empty: [] },
+  HwPasswordFieldComponent: { tag: 'hw-password-field', value: 'secret', empty: '' },
+  HwSearchFieldComponent: { tag: 'hw-search-field', attributes: `[suggestions]="['Passport renewal', 'Passport status']"`, value: 'Pass', empty: '' },
+  HwNumberFieldComponent: { tag: 'hw-number-field', attributes: '[min]="-10" [max]="10"', value: -5, empty: null },
+  HwSliderComponent: { tag: 'hw-slider', value: 30, empty: 0 },
+  HwRangeSliderComponent: { tag: 'hw-range-slider', value: [20, 60], empty: [0, 100] },
+  HwRatingComponent: { tag: 'hw-rating', value: 3, empty: 0 },
+  HwPinInputComponent: { tag: 'hw-pin-input', attributes: '[length]="4"', value: '1234', empty: '' },
+  HwTagInputComponent: { tag: 'hw-tag-input', value: ['alpha'], empty: [] },
+  HwMultiSelectComponent: { tag: 'hw-multi-select', attributes: '[options]="cities"', value: ['riyadh'], empty: [] },
+  HwCalendarComponent: { tag: 'hw-calendar', attributes: 'locale="ar-SA" calendar="islamic-umalqura"', value: '2024-03-11', empty: '' },
+  HwDatePickerComponent: { tag: 'hw-date-picker', attributes: 'locale="en-SA"', value: '2024-03-11', empty: '' },
+  HwFileDropzoneComponent: { tag: 'hw-file-dropzone', attributes: 'accept=".pdf" multiple', value: [], empty: [] },
+  HwToggleGroupComponent: { tag: 'hw-toggle-group', attributes: '[options]="cities"', value: 'jeddah', empty: '' },
+  HwTreeViewComponent: { tag: 'hw-tree-view', attributes: `[nodes]="nodes" [expandedIds]="['a']"`, value: 'a1', empty: '', state: { nodes: [{ id: 'a', label: 'Services', children: [{ id: 'a1', label: 'Permits' }, { id: 'a2', label: 'Licences', disabled: true }] }, { id: 'b', label: 'About' }] } },
+};
+
+export interface Scenario { name: string; covers: string[]; template: string; state?: () => Record<string, unknown> }
+export const controlScenarios: Scenario[] = Object.entries(controls).flatMap(([name, control]) => {
+  const open = `<${control.tag} label="Label" name="field" ${control.attributes ?? ''}`;
+  const state = () => ({ cities, value: control.value, empty: control.empty, control: new FormControl(control.value), ...control.state });
+  return [
+    { name: `${control.tag} with [(value)]`, covers: [name], state, template: `${open} [(value)]="value" /><${control.tag} label="Empty" ${control.attributes ?? ''} required />` },
+    { name: `${control.tag} with ngModel`, covers: [name], state, template: `<form>${open} required [(ngModel)]="value" />${open.replace('name="field"', 'name="empty"')} [(ngModel)]="empty" /></form>` },
+    { name: `${control.tag} with formControl`, covers: [name], state, template: `${open} [formControl]="control" /><fieldset disabled>${open} [disabled]="true" /></fieldset>` },
+  ];
+});
+
+export const scenarios: Scenario[] = [
+  ...controlScenarios,
+  { name: 'toggle group in multiple mode', covers: ['HwToggleGroupComponent'], state: () => ({ cities, value: ['riyadh'] }), template: `<hw-toggle-group label="Days" name="days" [options]="cities" multiple variant="outline" [(value)]="value" /><hw-toggle-group label="Read only" [options]="cities" readOnly value="riyadh" />` },
+  { name: 'field', covers: ['HwFieldComponent', 'HwInputGroupComponent'], template: `<hw-field controlId="amount" label="Amount" hint="Hint" error="Error" required><hw-input-group><span hwPrefix>SAR</span><input class="hw-input" id="amount"><span hwSuffix>.00</span></hw-input-group></hw-field>` },
+  { name: 'button, link and icon button', covers: ['HwButtonDirective', 'HwLinkComponent', 'HwIconButtonComponent', 'HwButtonGroupComponent'], template: `<hw-button-group label="Actions" variant="attached"><button hwButton type="button">Save</button><a hwButton variant="link" href="https://example.org/">Open</a><hw-icon-button label="Search" [pressed]="false"><span class="hw-icon" data-icon="search-01"></span></hw-icon-button></hw-button-group><hw-link href="https://example.org/" target="_blank" variant="standalone">External</hw-link>` },
+  { name: 'tabs', covers: ['HwTabsComponent', 'HwTabComponent'], state: () => ({ value: 'two', more: [{ value: 'three', label: 'Three' }, { value: 'four', label: 'Four' }] }), template: `<hw-tabs label="Sections" [(value)]="value"><hw-tab value="one" label="Overview"><p>Overview panel</p></hw-tab><hw-tab value="two" label="Details"><p>Details panel</p></hw-tab>@for (tab of more; track tab.value) {<hw-tab [value]="tab.value" [label]="tab.label" [disabled]="tab.value === 'four'"><p>{{ tab.label }} panel</p></hw-tab>}</hw-tabs><hw-tabs label="Vertical" orientation="vertical" overflow="scroll" activationMode="manual"><hw-tab value="a" label="A">A</hw-tab></hw-tabs><hw-tabs label="Empty" />` },
+  { name: 'content navigation', covers: ['HwContentNavigationComponent'], state: () => ({ items: [{ id: 'intro', label: 'Intro' }, { id: 'usage', label: 'Usage', children: [{ id: 'api', label: 'API' }] }, { id: 'off', label: 'Disabled', disabled: true }] }), template: `<hw-content-navigation label="On this page" sticky [items]="items" /><section id="intro"><h2>Intro</h2></section><section id="usage"><h2>Usage</h2><h3 id="api">API</h3></section>` },
+  { name: 'breadcrumb, pagination and stepper', covers: ['HwBreadcrumbComponent', 'HwPaginationComponent', 'HwStepperComponent'], template: `<hw-breadcrumb label="Breadcrumb" [items]="[{label: 'Home', href: 'https://example.org/'}, {label: 'Permit'}]" /><hw-pagination label="Results pages" [totalPages]="20" [page]="7" /><fieldset disabled><hw-pagination label="Disabled pages" [totalPages]="20" [page]="1" /></fieldset><hw-stepper label="Progress" [steps]="[{label: 'Details', description: 'About you'}, {label: 'Review'}]" [current]="1" />` },
+  { name: 'dialog and drawer, closed and open', covers: ['HwDialogComponent', 'HwDrawerComponent'], template: `<hw-dialog title="Closed"><p>Body</p><div hwDialogFooter>Footer</div></hw-dialog><hw-dialog title="Open" open><p>Body</p></hw-dialog><hw-drawer title="Closed drawer" side="start"><p>Body</p><div hwDrawerFooter>Footer</div></hw-drawer><hw-drawer title="Open drawer" open><p>Body</p></hw-drawer>` },
+  { name: 'tooltip, popover and menu', covers: ['HwTooltipComponent', 'HwPopoverComponent', 'HwMenuComponent'], template: `<hw-tooltip text="Hint" placement="bottom"><span>Target</span></hw-tooltip><hw-popover label="Filters" triggerLabel="Open filters"><p>Closed</p></hw-popover><hw-popover label="Open filters" open><p>Open</p></hw-popover><hw-menu label="Actions" triggerLabel="Actions" [items]="[{id: 'edit', label: 'Edit'}, {id: 'delete', label: 'Delete', disabled: true}]" /><hw-menu label="Open actions" open [items]="[{id: 'edit', label: 'Edit'}]" />` },
+  { name: 'accordion and collapsible', covers: ['HwAccordionComponent', 'HwAccordionMotionDirective', 'HwCollapsibleComponent'], state: () => ({ items: [{ id: 'q1', title: 'First question', content: 'First answer', open: true }, { id: 'q2', title: 'Second question', content: 'Second answer' }], open: true }), template: `<hw-accordion [items]="items" /><hw-accordion [items]="items" exclusive /><div class="hw-accordion"><details class="hw-accordion-item" [hwAccordionOpen]="open" hwAccordionGroup="custom"><summary class="hw-accordion-trigger">Custom</summary><div class="hw-accordion-content"><p>Rich content</p></div></details></div><hw-collapsible label="More" [open]="open"><p>Details</p></hw-collapsible><hw-collapsible label="Closed"><p>Details</p></hw-collapsible><p id="after-accordion">after</p>` },
+  { name: 'carousel and toast region', covers: ['HwCarouselComponent', 'HwToastRegionComponent'], state: () => ({ slides: [{ id: 's1', title: 'One', content: 'First slide' }, { id: 's2', title: 'Two', content: 'Second slide' }], messages: [{ id: 't1', title: 'Saved', message: 'Your draft was saved.', tone: 'success' }, { id: 't2', message: 'Connection lost.', tone: 'danger', urgent: true }], dismissed: [] as string[] }), template: `<hw-carousel label="Highlights" [slides]="slides" [current]="1" /><hw-carousel label="Empty" [slides]="[]" /><hw-toast-region label="Notifications" position="inline" [messages]="messages" (dismissed)="dismissed.push($event)" /><hw-toast-region label="Static" [messages]="messages" />` },
+  { name: 'cards, badges and feedback', covers: ['HwCardComponent', 'HwBadgeComponent', 'HwAlertComponent', 'HwChipComponent', 'HwDividerComponent', 'HwEmptyStateComponent', 'HwProgressComponent', 'HwSkeletonComponent', 'HwSpinnerComponent', 'HwMeterComponent', 'HwStatComponent'], template: `<hw-card variant="elevated"><h3 hwCardHeader>Title</h3><p>Body</p><div hwCardFooter>Footer</div></hw-card><hw-card href="https://example.org/"><p>Link card</p></hw-card><hw-badge tone="success">Approved</hw-badge><hw-alert tone="warning" title="Check" dismissible closeLabel="Dismiss">Message</hw-alert><hw-chip tone="info">Static</hw-chip><hw-chip removable removeLabel="Remove">Removable</hw-chip><hw-divider /><hw-empty-state title="No requests" description="Start a request."><button hwButton type="button">New</button></hw-empty-state><hw-progress label="Upload" [value]="40" /><hw-progress label="Loading" [value]="null" /><hw-skeleton width="12rem" height="1.5rem" /><hw-spinner label="Loading" /><hw-meter label="Storage" [value]="60" [low]="30" [high]="80" [optimum]="20" /><hw-stat label="Requests" [value]="128" description="This month" tone="success" />` },
+  { name: 'avatars and rating display', covers: ['HwAvatarComponent', 'HwAvatarGroupComponent', 'HwRatingDisplayComponent'], template: `<hw-avatar name="Sara Ali" size="lg" /><hw-avatar-group label="Team" [avatars]="[{name: 'Sara Ali'}, {name: 'Omar Hassan'}, {name: 'Lina Saleh'}]" [max]="2" /><hw-rating-display label="Average rating" [value]="3.5" />` },
+  { name: 'tables and lists', covers: ['HwTableComponent', 'HwDataTableComponent', 'HwDescriptionListComponent', 'HwTimelineComponent', 'HwNotificationListComponent', 'HwFileUploadListComponent'], state: () => ({ columns: [{ key: 'id', label: 'Reference', rowHeader: true }, { key: 'title', label: 'Title', sortable: true }], rows: [{ id: 'R-1', title: 'Beta' }, { id: 'R-2', title: 'Alpha' }], files: [{ id: 'f1', name: 'plan.pdf', status: 'uploading', progress: 40 }, { id: 'f2', name: 'id.png', status: 'complete' }] }), template: `<hw-table caption="Requests" [columns]="columns" [rows]="rows" /><hw-table caption="Empty" [columns]="columns" [rows]="[]" /><hw-data-table caption="Sortable" locale="en-SA" [columns]="columns" [rows]="rows" /><hw-description-list [items]="[{term: 'Fee', description: 'No fee'}]" variant="horizontal" /><hw-timeline label="History" [items]="[{title: 'Submitted', time: '11 March 2024', dateTime: '2024-03-11', state: 'complete'}, {title: 'Review', state: 'current'}]" /><hw-notification-list label="Notifications" [items]="[{id: 'n1', title: 'Approved', description: 'R-1', time: 'Today', unread: true}, {id: 'n2', title: 'Reminder', href: 'https://example.org/r'}]" /><hw-file-upload-list [items]="files" removable />` },
+  { name: 'layout primitives', covers: ['HwContainerComponent', 'HwStackComponent', 'HwInlineComponent', 'HwGridComponent', 'HwColumnsComponent', 'HwSidebarComponent', 'HwCenterComponent', 'HwSpacerComponent', 'HwAspectRatioComponent', 'HwSectionComponent', 'HwAppShellComponent', 'HwPageHeaderComponent'], template: `<hw-app-shell mainId="shell-main" skipLabel="Skip to content"><div hwShellHeader>Header</div><nav hwShellSidebar aria-label="Shell">Sidebar</nav><hw-page-header title="Services" description="Find a service"><button hwButton type="button">Start</button></hw-page-header><hw-container maxWidth="40rem" [padding]="{base: 2, md: 6}"><hw-stack [gap]="4"><hw-inline [gap]="2" align="center"><span>Start</span><hw-spacer [gap]="8" /><span>End</span></hw-inline><hw-grid [columns]="{base: 1, md: 3}" [gap]="4"><div>A</div></hw-grid><hw-columns [columns]="2" minItemWidth="12rem"><div>A</div></hw-columns><hw-sidebar sidebarWidth="14rem" side="start"><nav hwSidebar aria-label="Section">Side</nav><div>Main</div></hw-sidebar><hw-center maxWidth="30rem"><p>Centered</p></hw-center><hw-aspect-ratio [ratio]="2"><div>2:1</div></hw-aspect-ratio><hw-section label="Summary" [padding]="4"><p>Body</p></hw-section></hw-stack></hw-container><div hwShellFooter>Footer</div></hw-app-shell>` },
+  { name: 'service content, feedback and consent', covers: ['HwServiceCardComponent', 'HwServiceDetailsComponent', 'HwFeedbackComponent', 'HwCookieConsentComponent'], template: `<hw-service-card title="Event permit" href="https://example.org/permit" description="Apply." category="Community" duration="3 days" fee="No fee" actionLabel="View" /><hw-service-details title="Event permit" description="Details." [details]="[{term: 'Fee', description: 'No fee'}]" [requirements]="['National ID']" requirementsLabel="Requirements" /><hw-feedback label="Was this page helpful?" choiceVariant="icon-text" /><hw-feedback [value]="true" /><hw-cookie-consent title="Cookies" description="Optional cookies." />` },
+  { name: 'portal header, footer and layout', covers: ['HwPortalHeaderComponent', 'HwPortalFooterComponent', 'HwPortalLayoutComponent', 'HwSecondaryNavComponent'], state: () => ({ links, nested: [{ label: 'Services', href: 'https://example.org/services', groups: [{ label: 'Popular', links }] }] }), template: `<hw-portal-header brand="Portal" homeHref="https://example.org/" mainId="header-main" [links]="nested"><button hwButton variant="ghost" type="button">Sign in</button></hw-portal-header><main id="header-main" tabindex="-1">Main</main><hw-secondary-nav label="Section" [items]="links" /><hw-secondary-nav label="Mobile" variant="mobile" [items]="links" /><hw-portal-footer brand="Portal" description="Demonstration." copyright="2026" [links]="links" [groups]="[{title: 'Services', links: links}]" [legalLinks]="links"><p hwFooterSupport>Call 199099</p></hw-portal-footer><hw-portal-layout brand="Portal" homeHref="https://example.org/" lang="en" dir="ltr" mainId="layout-main" [links]="links" [secondaryNavigation]="links" [footerLinks]="links" [breadcrumbs]="[{label: 'Home', href: 'https://example.org/'}, {label: 'Here'}]"><p>Content</p></hw-portal-layout>` },
+  { name: 'mobile top bar, navigation drawer and site verification', covers: ['HwMobileTopBarComponent', 'HwNavigationDrawerComponent', 'HwSiteVerificationComponent'], state: () => ({ items: [{ id: 'home', label: 'Home', href: 'https://example.org/', icon: 'home-01', current: true }, { id: 'services', label: 'Services', href: 'https://example.org/s', children: [{ id: 'permits', label: 'Permits', href: 'https://example.org/p' }] }, { id: 'off', label: 'Disabled', disabled: true }] }), template: `<hw-mobile-top-bar title="Request" subtitle="R-1" backHref="https://example.org/" backLabel="Back" [headingLevel]="2" /><hw-mobile-top-bar title="Home" variant="main" /><hw-navigation-drawer title="Menu" navigationLabel="Main" [items]="items"><p hwNavigationDrawerUser>Sara Ali</p></hw-navigation-drawer><hw-navigation-drawer title="Open menu" [items]="items" open /><hw-site-verification locale="en" domain="example.gov.sa" registrationHref="https://example.org/reg" registrationNumber="20250000000" /><hw-site-verification locale="ar" open />` },
+];
+
+export const selectorsOf = (name: string): string[] => {
+  const type = declarations.find(entry => entry.name === name)!.type as unknown as { ɵcmp?: { selectors: unknown[][] }; ɵdir?: { selectors: unknown[][] } };
+  return (type.ɵcmp ?? type.ɵdir)!.selectors.map(selector => String(selector[0] || selector[1]));
+};
+
+export const hostDocument = '<!doctype html><html lang="en" dir="ltr"><head><title>Hawiyah</title></head><body><ssr-host></ssr-host></body></html>';
+/** The document an Angular CLI build renders into: the event-replay contract script opens the body,
+ * and the server adds a second script after it once the hydration data has been written. */
+export const hydrationDocument = hostDocument.replace('<body>', '<body><script type="text/javascript" id="ng-event-dispatch-contract"></script>');
+
+/** A root component for one scenario. `pendingMs` keeps the application unstable for that long,
+ * as a routed or data-loading application is, so that timers started by components during
+ * server rendering fire before the document is serialized. */
+export function createHost(scenario: Scenario, pendingMs = 0): Type<object> {
+  class Host {
+    constructor() {
+      Object.assign(this, scenario.state?.());
+      if (pendingMs) { const done = inject(PendingTasks).add(); setTimeout(done, pendingMs); }
+    }
+  }
+  // The host attribute keeps the generated ids of same-shaped scenario components apart (NG0912).
+  Component({ selector: 'ssr-host', standalone: true, host: { 'data-scenario': scenario.name }, imports: [FormsModule, ReactiveFormsModule, ...declarations.map(({ type }) => type)], template: scenario.template })(Host);
+  return Host;
+}

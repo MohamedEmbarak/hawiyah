@@ -1,4 +1,6 @@
 import { observeAngularFieldPresence } from './field-presence';
+import { setCustomValidity } from './platform';
+import { InputValueSync } from './input-value';
 import { booleanAttribute, ChangeDetectorRef, Component, Directive, EventEmitter, forwardRef, HostListener, inject, Input, Output, ViewChild, ElementRef, type AfterViewInit, type OnChanges, type SimpleChanges } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { createComboboxState, getComboboxOptions, isDisabled, transitionCombobox, type ComboboxEvent, type Option } from '@hawiyah/core';
@@ -52,9 +54,16 @@ export class HwFieldComponent {
 
 @Component({ selector: 'hw-text-field', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwTextFieldComponent), multi: true }],
-  template: `<div class="hw-field">${fieldLabel}<input class="hw-input" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [type]="type" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [placeholder]="placeholder" [attr.autocomplete]="autocomplete" [attr.inputmode]="inputmode || null" [attr.min]="min" [attr.max]="max" [attr.step]="step" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.pattern]="pattern" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()">${fieldEnd}</div>` })
+  template: `<div class="hw-field">${fieldLabel}<input #input class="hw-input" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [type]="type" [name]="name" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [placeholder]="placeholder" [attr.autocomplete]="autocomplete" [attr.inputmode]="inputmode || null" [attr.min]="min" [attr.max]="max" [attr.step]="step" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.pattern]="pattern" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="typed($any($event.target).value)" (blur)="touch()">${fieldEnd}</div>` })
 export class HwTextFieldComponent extends HwValueControl<string> {
   override value = '';
+  @ViewChild('input') input?: ElementRef<HTMLInputElement>;
+  // The value is written after each render instead of bound in the template, so that
+  // text being typed into a number or date input is never replaced.
+  private readonly shown = new InputValueSync();
+  typed(value: string): void { this.shown.typed(value); this.update(value); }
+  ngAfterViewChecked(): void { this.shown.apply(this.input?.nativeElement, this.value || ''); }
+  override writeValue(value: string): void { super.writeValue(value); this.shown.force(); }
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() visualVariant: 'outline' | 'filled' = 'outline';
   @Input() type: 'text' | 'email' | 'password' | 'tel' | 'url' | 'search' | 'date' | 'datetime-local' | 'month' | 'week' | 'time' | 'number' | 'color' | 'range' = 'text';
@@ -155,7 +164,7 @@ export class HwComboboxComponent extends HwValueControl<string> implements OnCha
     }
   }
   ngOnDestroy(): void { this.disabledObserver?.disconnect(); }
-  private syncValidity(): void { this.input?.nativeElement.setCustomValidity(this.required && !this.disabled && !this.state.value ? this.validationMessage : ''); }
+  private syncValidity(): void { setCustomValidity(this.input?.nativeElement, this.required && !this.disabled && !this.state.value ? this.validationMessage : ''); }
   override writeValue(value: string): void { super.writeValue(value ?? ''); this.state = createComboboxState(this.options, value ?? ''); this.syncValidity(); }
   override setDisabledState(disabled: boolean): void { super.setDisabledState(disabled); if (disabled) this.dispatch({type: 'close'}); this.syncValidity(); }
   dispatch(event: ComboboxEvent): void { if (this.blocked && event.type !== 'close' && event.type !== 'reset') return; this.state = transitionCombobox(this.state, event, this.options); this.syncValidity(); }

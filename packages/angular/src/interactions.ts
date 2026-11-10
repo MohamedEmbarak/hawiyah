@@ -4,6 +4,7 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { getDirection, getNextEnabledIndex, observeReadonlyChoice, prepareToastDismissFocus, type Direction, type Option } from '@hawiyah/core';
 import { HwExpandedValueControl } from './advanced-controls';
 import { HwDialogComponent } from './overlays';
+import { injectIsBrowser } from './platform';
 
 let nextId = 0;
 @Component({selector: 'hw-toggle-group', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwToggleGroupComponent), multi: true}], template: `<fieldset #group class="hw-toggle-group" [disabled]="disabled" [attr.data-hw-readonly]="readOnly || null" [attr.data-variant]="variant" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null"><legend class="hw-label">{{ label }}</legend>@for (option of options; track option.value) {@if (multiple) {<button type="button" class="hw-button" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [attr.aria-pressed]="selected(option.value)" (click)="toggle(option)" (blur)="touch()">{{ option.label }}</button>} @else {<label><input type="radio" [name]="name || controlId" [value]="option.value" [checked]="selected(option.value)" [readOnly]="readOnly" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [required]="required" (change)="toggle(option)" (blur)="touch()"><span>{{ option.label }}</span></label>}}@if (hint) {<p class="hw-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="hw-error" [id]="controlId + '-error'">{{ error }}</p>}</fieldset>@if (multiple) {@for (selected of submittedValues; track selected) {<input type="hidden" [name]="name" [value]="selected" [disabled]="disabled">}}`})
@@ -12,7 +13,8 @@ export class HwToggleGroupComponent extends HwExpandedValueControl<string | stri
   get selectedValues() { return Array.isArray(this.value) ? this.value : this.value ? [this.value] : []; }
   @ViewChild('group') group?: ElementRef<HTMLFieldSetElement>;
   private guarded: HTMLInputElement[]=[]; private guards: ReturnType<typeof observeReadonlyChoice>[]=[];
-  ngAfterViewChecked() { const inputs=Array.from(this.group?.nativeElement.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? []); if(inputs.length!==this.guarded.length || inputs.some((input,index)=>input!==this.guarded[index])) {this.guards.forEach(guard=>guard.destroy());this.guarded=inputs;this.guards=inputs.map(observeReadonlyChoice);} else this.guards.forEach(guard=>guard.refresh()); }
+  private readonly browser = injectIsBrowser();
+  ngAfterViewChecked() { if (!this.browser) return; const inputs=Array.from(this.group?.nativeElement.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? []); if(inputs.length!==this.guarded.length || inputs.some((input,index)=>input!==this.guarded[index])) {this.guards.forEach(guard=>guard.destroy());this.guarded=inputs;this.guards=inputs.map(observeReadonlyChoice);} else this.guards.forEach(guard=>guard.refresh()); }
   ngOnDestroy(){this.guards.forEach(guard=>guard.destroy());}
   get submittedValues(){return this.selectedValues.filter(value=>this.options.some(option=>option.value===value && !option.disabled));}
   selected(value: string) { return this.selectedValues.includes(value); }

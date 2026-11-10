@@ -1,7 +1,8 @@
 /** Protect native choices without replacing their DOM or keyboard semantics.
- * HTML readonly does not itself prevent checkbox/radio activation. */
+ * HTML readonly does not itself prevent checkbox/radio activation.
+ * A DOM without getRootNode (server rendering) falls back to the owner document. */
 export function observeReadonlyChoice(input: HTMLInputElement): { refresh(): void; destroy(): void } {
-  const root = input.getRootNode() as Document | ShadowRoot;
+  const root = (typeof input.getRootNode === 'function' ? input.getRootNode() : input.ownerDocument) as Document | ShadowRoot;
   let saved = new Map<HTMLInputElement, boolean>();
   let destroyed = false;
   const refresh = () => {

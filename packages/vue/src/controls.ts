@@ -823,7 +823,21 @@ export const FileDropzone = defineComponent({
             },
           },
           [
-            h("p", {}, props.dropLabel),
+            // Without a label of its own, of a parent Field or from ARIA attributes,
+            // the visible instruction names the input.
+            props.label ||
+            field.controlAttrs.value["aria-labelledby"] ||
+            attrs["aria-label"]
+              ? h("p", {}, props.dropLabel)
+              : h("label", { class: "hw-label", for: field.id.value }, [
+                  props.dropLabel,
+                  props.required &&
+                    h(
+                      "span",
+                      { class: "hw-required-marker", "aria-hidden": "true" },
+                      " *",
+                    ),
+                ]),
             h(
               "input",
               mergeProps(attrs, field.controlAttrs.value, {

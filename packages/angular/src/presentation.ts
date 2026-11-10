@@ -3,6 +3,7 @@ import type { AfterViewInit, OnChanges, OnDestroy } from '@angular/core';
 import { createAccordionMotion } from '@hawiyah/core';
 import type { AccordionMotion } from '@hawiyah/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { injectIsBrowser } from './platform';
 
 /** Native button keeps native form, keyboard, disabled and event semantics. */
 @Directive({selector: 'button[hwButton],a[hwButton]', standalone: true, host: {'class': 'hw-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}})
@@ -46,6 +47,7 @@ export interface HwAccordionItem { id: string; title: string; content: string; o
 @Directive({selector: 'details[hwAccordionOpen]', standalone: true, host: { '[attr.open]': 'initialOpen ? "" : null' }})
 export class HwAccordionMotionDirective implements AfterViewInit, OnChanges, OnDestroy {
   private readonly element = inject<ElementRef<HTMLDetailsElement>>(ElementRef).nativeElement;
+  private readonly browser = injectIsBrowser();
   private motion?: AccordionMotion;
   private localOpen = false;
   initialOpen = false;
@@ -68,6 +70,8 @@ export class HwAccordionMotionDirective implements AfterViewInit, OnChanges, OnD
   private setupMotion() {
     this.motion?.destroy(); this.group = this.hwAccordionGroup;
     if (this.group) this.element.setAttribute('name', this.group); else this.element.removeAttribute('name');
+    // A server render keeps native details semantics; motion starts with hydration.
+    if (!this.browser) return;
     this.motion = createAccordionMotion(this.element, this.element.querySelector<HTMLElement>(':scope > .hw-accordion-content')!, this.change);
     this.motion.setOpen(this.desired, true);
   }
