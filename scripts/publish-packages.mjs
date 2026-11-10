@@ -57,6 +57,7 @@ run(process.execPath, ["scripts/build.mjs", "--packages"]);
 requireCleanTree("after building, before");
 run(process.execPath, ["scripts/check-packages.mjs"], { env: { HAWIYAH_RELEASE: "1" } });
 
+const released = [];
 for (const [index, name] of order.entries()) {
   const id = manifests[index].name;
   const tarball = resolve(root, ".artifacts/package-check", `hawiyah-${name}-${version}.tgz`);
@@ -80,9 +81,8 @@ for (const [index, name] of order.entries()) {
     tag,
     ...(publish ? [] : ["--dry-run"]),
   ]);
+  released.push(id);
 }
-console.log(
-  publish
-    ? `Published @hawiyah/* ${version} with dist-tag ${tag}.`
-    : `Dry run complete for @hawiyah/* ${version}. Re-run with --publish to release.`,
-);
+if (released.length === 0) console.log(`All @hawiyah/* ${version} packages were already on npm; nothing was published.`);
+else if (publish) console.log(`Published ${released.join(", ")} ${version} with dist-tag ${tag}.`);
+else console.log(`Dry run complete for ${released.length} @hawiyah/* ${version} packages. Re-run with --publish to release.`);

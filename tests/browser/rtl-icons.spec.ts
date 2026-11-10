@@ -19,9 +19,9 @@ test('home navigation arrows follow the nearest direction without mirroring othe
   for (const symbol of await page.locator('main .pg-icon:not(.pg-icon-directional)').all()) {
     expect(await transform(symbol)).toBe('none');
   }
-  const external = page.locator('.topbar-github [data-icon="external"]');
-  await expect(external).toHaveAttribute('data-dga-icon', 'link-square-02');
-  expect(await transform(external)).toBe('none');
+  const github = page.locator('.topbar-github [data-icon="github"]');
+  await expect(github).toHaveAttribute('data-dga-icon', 'github');
+  expect(await transform(github)).toBe('none');
 
   // A local LTR region must override the surrounding Arabic page.
   await page.locator('.home-actions').evaluate(node => node.setAttribute('dir', 'ltr'));

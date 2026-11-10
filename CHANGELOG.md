@@ -3,6 +3,13 @@
 All seven `@hawiyah/*` packages share one version. Versions below 1.0 may change
 APIs in a minor release; read the notes before upgrading.
 
+## Unreleased
+
+- The guide header links to GitHub with the DGA set's `github` icon instead of
+  the word GitHub and an external-link mark.
+- The release script reports when every package was already on npm instead of
+  claiming it published them.
+
 ## 0.2.1 — 2026-11-10
 
 ### Icons follow the DGA Platforms Code icon library
