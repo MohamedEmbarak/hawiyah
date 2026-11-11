@@ -38,15 +38,17 @@ it('renders page links and native groups, suppresses disabled actions, closes ro
   await act(() => route.click());
   expect(dialog.open).toBe(false); expect(document.activeElement).toBe(trigger);
 });
+// The drawer decides in a timer after the click was dispatched, so that listeners on ancestors have run (a microtask would run before them during a user click).
+const dispatched = () => new Promise<void>(resolve => setTimeout(resolve));
 it('respects a consumer prevented route and preserves modifier-click navigation', async () => {
   const container = document.createElement('div'); document.body.append(container);
   const root = createRoot(container); roots.push(root);
   let prevent = true;
   await act(() => root.render(<NavigationDrawer title="القائمة" navigationLabel="التنقل الرئيسي" closeLabel="إغلاق القائمة" defaultOpen items={items} onClick={event => { if (prevent) event.preventDefault(); }} />));
   const dialog = container.querySelector('dialog')!; const link = dialog.querySelector('a')!;
-  await act(() => link.click()); expect(dialog.open).toBe(true);
+  await act(async () => { link.click(); await dispatched(); }); expect(dialog.open).toBe(true);
   prevent = false;
-  await act(() => link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })));
+  await act(async () => { link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })); await dispatched(); });
   expect(dialog.open).toBe(true);
-  await act(() => link.click()); expect(dialog.open).toBe(false);
+  await act(async () => { link.click(); await Promise.resolve(); expect(dialog.open).toBe(true); await dispatched(); }); expect(dialog.open).toBe(false);
 });

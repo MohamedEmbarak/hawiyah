@@ -1,4 +1,5 @@
 import type { Locale } from './data';
+import { copyButtonMarkup, copyCommand, sideNavigationItems, sideNavigationMarkup } from './component-support-guides';
 
 export const contentComponents = {
   chip: 'Chip',
@@ -7,6 +8,8 @@ export const contentComponents = {
   timeline: 'Timeline',
   meter: 'Meter',
   'avatar-group': 'AvatarGroup',
+  'copy-button': 'CopyButton',
+  'side-navigation': 'SideNavigation',
 } as const;
 
 export type ContentProjectId = keyof typeof contentComponents;
@@ -153,6 +156,30 @@ function avatarsRecipe(locale: Locale, typed: boolean): ContentProjectRecipe {
   };
 }
 
+function copyButtonRecipe(locale: Locale): ContentProjectRecipe {
+  const ar = locale === 'ar';
+  const label = ar ? 'نسخ أمر التثبيت' : 'Copy the install command';
+  const copied = ar ? 'تم نسخ الأمر' : 'Command copied';
+  const failed = ar ? 'تعذّر النسخ. حدّد الأمر وانسخه يدويًا.' : 'Copying failed. Select the command and copy it manually.';
+  return {
+    vanilla: copyButtonMarkup('install', locale),
+    react: `<p>\n  <code className="hw-code">${copyCommand}</code>\n  <CopyButton text="${copyCommand}" label="${label}" copiedMessage="${copied}" failedMessage="${failed}" />\n</p>`,
+    vue: `<p>\n  <code class="hw-code">${copyCommand}</code>\n  <CopyButton text="${copyCommand}" label="${label}" copied-message="${copied}" failed-message="${failed}" />\n</p>`,
+    angular: `<p>\n  <code class="hw-code">${copyCommand}</code>\n  <hw-copy-button text="${copyCommand}" label="${label}" copiedMessage="${copied}" failedMessage="${failed}" />\n</p>`,
+  };
+}
+
+function sideNavigationRecipe(locale: Locale, typed: boolean): ContentProjectRecipe {
+  const label = locale === 'ar' ? 'أقسام الدليل' : 'Guide sections';
+  return {
+    ...declarations('pages', sideNavigationItems(locale), typed),
+    vanilla: sideNavigationMarkup(locale),
+    react: `<SideNavigation label="${label}" items={pages} />`,
+    vue: `<SideNavigation label="${label}" :items="pages" />`,
+    angular: `<hw-side-navigation label="${label}" [items]="pages" />`,
+  };
+}
+
 export function contentProjectRecipe(id: ContentProjectId, locale: Locale, typed: boolean): ContentProjectRecipe {
   switch (id) {
     case 'chip': return chipRecipe(locale, typed);
@@ -161,5 +188,7 @@ export function contentProjectRecipe(id: ContentProjectId, locale: Locale, typed
     case 'timeline': return timelineRecipe(locale, typed);
     case 'meter': return meterRecipe(locale, typed);
     case 'avatar-group': return avatarsRecipe(locale, typed);
+    case 'copy-button': return copyButtonRecipe(locale);
+    case 'side-navigation': return sideNavigationRecipe(locale, typed);
   }
 }

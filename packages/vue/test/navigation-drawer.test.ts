@@ -9,6 +9,8 @@ beforeEach(() => {
   Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value() { this.open = false; this.dispatchEvent(new Event('close')); } });
 });
 afterEach(() => { apps.splice(0).forEach(app => app.unmount()); document.body.replaceChildren(); });
+// The drawer decides in a timer after the click was dispatched, so that listeners on ancestors have run (a microtask would run before them during a user click).
+const dispatched = () => new Promise<void>(resolve => setTimeout(resolve));
 it('composes native drawer/groups with disabled entries, route cancellation and focus return', async () => {
   const container = document.createElement('div'); document.body.append(container);
   let prevent = false;
@@ -31,7 +33,7 @@ it('composes native drawer/groups with disabled entries, route cancellation and 
   summary.click(); await nextTick();
   expect(summary.parentElement!.hasAttribute('open')).toBe(true); expect(dialog.open).toBe(true);
   const link = dialog.querySelector<HTMLAnchorElement>('a')!; link.focus();
-  prevent = true; link.click(); await nextTick(); expect(dialog.open).toBe(true);
-  prevent = false; link.click(); await nextTick(); await nextTick();
+  prevent = true; link.click(); await dispatched(); await nextTick(); expect(dialog.open).toBe(true);
+  prevent = false; link.click(); await nextTick(); expect(dialog.open).toBe(true); await dispatched(); await nextTick();
   expect(dialog.open).toBe(false); expect(document.activeElement).toBe(trigger);
 });

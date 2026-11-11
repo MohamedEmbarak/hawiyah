@@ -7,19 +7,26 @@ navigation content; the component has no text of its own, and language and
 direction remain independent. Angular also accepts `titleId` for the drawer
 title.
 
-Each item has `{ id, label, href?, icon?, current?, disabled?, children? }`.
+Each item has `{ id, label, href?, icon?, current?, disabled?, expanded?, children? }`.
 Use a unique stable `id` and a text `label`. Icons are decorative names from
 Hawiyah's curated icon stylesheet. A leaf with `href` is a native link, with
 `aria-current="page"` when current. Children form a native `<details>/<summary>`
 group containing a nested list. When a group also has an `href`, its page link
 appears first inside the disclosed group. A leaf without `href` is static text.
 Disabled entries are nonfocusable text, and disabled groups omit descendant
-actions. Groups are initially collapsed and retain native keyboard behavior.
+actions. A group is open when it holds the current page or is marked `expanded`;
+every other group starts collapsed. The adapter writes `open` again only when
+that answer changes, so the reader's own toggles stand in between, and groups
+retain native keyboard behavior. `SideNavigation` renders the same list outside
+a drawer.
 
 Normal, unprevented route activation closes the drawer. Final destination focus
 belongs to the browser or application router; Escape and explicit dismissal
 return focus to the opener. Consumers can prevent the click, for example while
-validating a route change; dismissal is checked after event dispatch. Modified
+validating a route change; dismissal is decided in a timer after the click was
+dispatched, so a listener on any ancestor has run. A click that core
+`bindLinkNavigation` handed to the application's router closes the drawer
+although its default was prevented. Modified
 clicks, downloads and links targeting another browsing context leave the drawer
 open. Escape, backdrop interaction, modal focus containment and controlled state
 are supplied by each framework's existing native Drawer. There are no menu,
@@ -46,7 +53,8 @@ tree or tablist roles, roving tabindex, or custom arrow-key navigation.
   `data-hw="navigation-drawer"` through `enhance()`. It enhances caller-owned
   semantic HTML instead of rendering an items array. Options extend
   `DialogOptions` with `navigationLabel`; the controller has `open`, `show`,
-  `close` and `destroy`. Give the dialog an accessible title and a
+  `close`, `refresh` and `destroy`. The groups follow `aria-current="page"` each
+  time the drawer is shown; `refresh()` recomputes them while it is open. Give the dialog an accessible title and a
   `.hw-navigation-drawer-nav` nav, with lists, native links and optional details
   groups. Use `.hw-navigation-drawer-row` for rows and
   `.hw-navigation-drawer-group` for disclosures. Existing

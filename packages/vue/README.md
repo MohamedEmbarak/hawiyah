@@ -166,7 +166,8 @@ behavior and server rendering; browser checks validate the application workflow.
 
 ## Expanded controls
 
-The package now exports **77 components**: the original 27 and these 50 additions.
+The package covers all **85 catalogue entries**; this section describes the 50
+added to the original 27 in the first expansion.
 All use native Vue rendering, shared CSS, and the same attrs/slots conventions.
 
 | Component       | Props, models and events                                                                                                                                                                                                                                                                                                                       |
@@ -490,7 +491,9 @@ copy ever fails; a missing one renders nothing in its place. The root
 `span.hw-copy` carries `data-state="idle|copied|failed"`, the icon follows the
 state (`copy-01`, `tick-02`, `alert-02`) and `span.hw-copy-message`
 (`role="status"`) holds the message. Each activation first returns to idle, so a
-repeated message is announced again. `copyResult` fires once per activation that
+repeated message is announced again. A result that settles at once (an empty text,
+no Clipboard API) empties and fills the status inside one task; that an identical
+message is then repeated has not been verified with a screen reader. `copyResult` fires once per activation that
 still counts, with core `CopyResult` `{status, text}` (`CopyStatus` and
 `CopyResult` are exported as types); a later activation overtakes an earlier one,
 and a result after unmount is ignored. When the status is not `copied` the

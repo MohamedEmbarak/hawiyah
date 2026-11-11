@@ -117,6 +117,14 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('getResultsMessage', count, when('[data-hw-status] exists (vanilla only)', 'يوجد [data-hw-status] (في Vanilla فقط)')),
     input('getSelectedMessage', count, when('the adapter renders the selected count (Angular)', 'يعرض المحوّل عدد العناصر المختارة (Angular)')),
   ],
+  'copy-button': [
+    input('label', text, ['Required (vanilla: when the button has no text or aria-label)', 'مطلوب دائمًا (في Vanilla: عندما لا يحمل الزر نصًا أو aria-label)']),
+    input('copiedMessage', text, always),
+    input('failedMessage', text, always),
+  ],
+  'side-navigation': [
+    input('label', text, ['Required (vanilla: when the navigation has no aria-label)', 'مطلوب دائمًا (في Vanilla: عندما لا يحمل التنقل aria-label)']),
+  ],
   'navigation-drawer': [
     input('navigationLabel', text, ['Required (vanilla: when the navigation has no aria-label)', 'مطلوب دائمًا (في Vanilla: عندما لا يحمل التنقل aria-label)']),
     input('closeLabel', text, ['Required (vanilla: the authored close button)', 'مطلوب دائمًا (في Vanilla: زر الإغلاق المكتوب)']),

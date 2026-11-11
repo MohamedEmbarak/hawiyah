@@ -13,6 +13,7 @@ import { statusMarkup } from "./ready-examples";
 import { feedbackMarkup } from './feedback-demo';
 import { escape as e, icon, type Locale } from "./data";
 import { navigationDrawerMarkup } from './component-mobile-guides';
+import { copyButtonMarkup, sideNavigationMarkup } from './component-support-guides';
 import { riyalAmount } from './currency';
 
 /** Copyable HTML recipes: behavior lives in @hawiyah/vanilla, never in the gallery. */
@@ -35,6 +36,8 @@ export function expandedSample(
   switch (id) {
     case "content-navigation": return contentNavigationDemoMarkup(locale,'nested',uid);
     case "navigation-drawer": return navigationDrawerMarkup(uid, locale);
+    case "copy-button": return copyButtonMarkup(uid, locale);
+    case "side-navigation": return sideNavigationMarkup(locale);
     case "mobile-top-bar":
       return `<header class="hw-mobile-top-bar" data-variant="internal"><div class="hw-mobile-top-bar-leading"><a class="hw-mobile-top-bar-back" href="#components" aria-label="${t('Back','رجوع')}"><span class="hw-icon" data-icon="arrow-left-01" data-directional="true" aria-hidden="true"></span></a></div><div class="hw-mobile-top-bar-copy"><h2 class="hw-mobile-top-bar-title">${t('My requests','طلباتي')}</h2><p class="hw-mobile-top-bar-subtitle">${t('Track your applications','تابع طلباتك')}</p></div><div class="hw-mobile-top-bar-actions"><a class="hw-button" data-variant="ghost" href="#templates/search" aria-label="${t('Search','بحث')}"><span class="hw-icon" data-icon="search-01" aria-hidden="true"></span></a></div></header>`;
     case "input-group":

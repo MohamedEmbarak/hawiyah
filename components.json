@@ -27,7 +27,7 @@
     "built": "Source exists for the named adapter; this does not establish complete verification.",
     "verified": "The named adapter has direct behavior, semantic-association, or layout-contract assertions recorded in evidence. Scope is limited to those cases; rendering-only and broad suite checks remain separate. This is not a blanket accessibility or DGA certification."
   },
-  "coverageNote": "83 entries: initial 27 plus 51 expansion entries and 5 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
+  "coverageNote": "85 entries: initial 27 plus 53 expansion entries and 5 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
   "docs": {
     "overview": "README.md",
     "overviewAr": "README.ar.md",
@@ -5905,12 +5905,245 @@
         "Verification remains scoped to explicitly recorded evidence; no official DGA certification is claimed."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/content-navigation"
+    },
+    {
+      "id": "copy-button",
+      "name": "CopyButton",
+      "labelAr": "زر النسخ",
+      "category": "actions",
+      "description": "Button that copies a value the page already shows and reports the outcome in a polite status.",
+      "cssClasses": [
+        "hw-copy",
+        "hw-copy-message"
+      ],
+      "interaction": "interactive",
+      "sourceType": "interactive",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "packages/vanilla/test/copy-button.test.ts",
+          "tests": [
+            "[cb-failures] shows the failed state for every failure until the next activation",
+            "[cb-repeat-announces] empties the status before a repeated result",
+            "[cb-name-constant] keeps the accessible name in every state",
+            "[cb-server] creates without navigator and fails as unavailable"
+          ],
+          "scope": "Unit assertions in jsdom with an injected clipboard writer: the status is emptied before a repeated result, and the accessible name is constant in the idle, copied and failed states. No browser clipboard permission prompt and no screen reader were exercised.",
+          "command": "pnpm exec vitest run packages/vanilla/test/copy-button.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "packages/react/react.copy-button.test.tsx",
+          "tests": [
+            "[cb-repeat-announces] empties the status before a repeated result",
+            "[cb-name-constant] keeps the accessible name in every state",
+            "[cb-server] renders the idle markup on the server and hydrates without a mismatch"
+          ],
+          "scope": "Unit assertions in jsdom with an injected clipboard writer: the status is emptied before a repeated result, and the accessible name is constant in the idle, copied and failed states. No browser clipboard permission prompt and no screen reader were exercised.",
+          "command": "pnpm exec vitest run packages/react/react.copy-button.test.tsx",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "packages/vue/test/copy-button.test.ts",
+          "tests": [
+            "[cb-failures] shows the failure message for every failed status until the next activation",
+            "[cb-repeat-announces] empties the status before a repeated result and restarts the duration",
+            "[cb-name-constant] keeps the accessible name in every state",
+            "[cb-server] renders the idle markup on the server and hydrates without a mismatch"
+          ],
+          "scope": "Unit assertions in jsdom with an injected clipboard writer: the status is emptied before a repeated result, and the accessible name is constant in the idle, copied and failed states. No browser clipboard permission prompt and no screen reader were exercised.",
+          "command": "pnpm exec vitest run packages/vue/test/copy-button.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "packages/angular/test/copy-button.test.ts",
+          "tests": [
+            "[cb-repeat-announces] empties the status before a repeated result, and the copied state lasts a full duration from it",
+            "[cb-name-constant] keeps one accessible name in the idle, copied and failed states"
+          ],
+          "scope": "Unit assertions in jsdom with an injected clipboard writer: the status is emptied before a repeated result, and the accessible name is constant in the idle, copied and failed states. No browser clipboard permission prompt and no screen reader were exercised.",
+          "command": "pnpm exec vitest run packages/angular/test/copy-button.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        }
+      ],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/copy-button.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/copy-button.ts"
+        ],
+        "angular": [
+          "packages/angular/src/copy-button.ts"
+        ],
+        "vanilla": [
+          "packages/vanilla/src/copy-button.ts",
+          "packages/styles/src/copy.css"
+        ],
+        "core": [
+          "packages/core/src/copy.ts"
+        ]
+      },
+      "notes": [
+        "The clipboard is written only on activation through the asynchronous Clipboard API and is never read; there is no execCommand fallback.",
+        "A result that settles at once empties and fills the status inside one task; repetition of an identical message has not been verified with a screen reader."
+      ],
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/copy-button"
+    },
+    {
+      "id": "side-navigation",
+      "name": "SideNavigation",
+      "labelAr": "التنقل الجانبي",
+      "category": "navigation",
+      "description": "The page list of NavigationDrawer outside a drawer: links and native group disclosures in a navigation landmark.",
+      "cssClasses": [
+        "hw-side-navigation",
+        "hw-navigation-drawer-nav",
+        "hw-navigation-drawer-row"
+      ],
+      "interaction": "interactive",
+      "sourceType": "interactive",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "packages/vanilla/test/side-navigation.test.ts",
+          "tests": [
+            "[sn-root] keeps the classes, names the landmark and holds one list",
+            "[sn-current] marks only the current link",
+            "[sn-group-open] opens the group of the current page and expanded groups",
+            "[sn-current-moves] follows the current link after refresh()",
+            "[sn-shared-list] gives the same list as an open NavigationDrawer"
+          ],
+          "scope": "Unit assertions in jsdom: named navigation landmark, current link, the open group of the current page, and the same list markup as an open NavigationDrawer. Sticky placement and the current-row contrast are checked separately in tests/browser/side-navigation.spec.ts.",
+          "command": "pnpm exec vitest run packages/vanilla/test/side-navigation.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "packages/react/react.side-navigation.test.tsx",
+          "tests": [
+            "[sn-root] renders a named nav with the two classes and one list",
+            "[sn-current] marks only the current link",
+            "[sn-group-open] opens the group of the current page, an expanded group, and nothing else",
+            "[sn-shared-list] renders the same list as an open NavigationDrawer",
+            "[sn-server] renders open groups and the current page on the server and hydrates without a mismatch"
+          ],
+          "scope": "Unit assertions in jsdom: named navigation landmark, current link, the open group of the current page, and the same list markup as an open NavigationDrawer. Sticky placement and the current-row contrast are checked separately in tests/browser/side-navigation.spec.ts.",
+          "command": "pnpm exec vitest run packages/react/react.side-navigation.test.tsx",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "packages/vue/test/guide-support.test.ts",
+          "tests": [
+            "[sn-root] renders a labelled nav with the two classes and one list",
+            "[sn-current] marks only the current link",
+            "[sn-group-open] opens the group of the current page and expanded groups",
+            "[sn-shared-list] renders the same list as an open NavigationDrawer",
+            "[sn-server] renders open groups and the current page on the server and hydrates without a mismatch"
+          ],
+          "scope": "Unit assertions in jsdom: named navigation landmark, current link, the open group of the current page, and the same list markup as an open NavigationDrawer. Sticky placement and the current-row contrast are checked separately in tests/browser/side-navigation.spec.ts.",
+          "command": "pnpm exec vitest run packages/vue/test/guide-support.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "packages/angular/test/side-navigation.test.ts",
+          "tests": [
+            "[sn-root] is a navigation landmark named by label, with the two classes in order and one list",
+            "[sn-current] marks only the link of the current item",
+            "[sn-group-open] opens a group that holds the current page or is expanded, and no other",
+            "[sn-shared-list] renders the same list as an open navigation drawer for the same items"
+          ],
+          "scope": "Unit assertions in jsdom: named navigation landmark, current link, the open group of the current page, and the same list markup as an open NavigationDrawer. Sticky placement and the current-row contrast are checked separately in tests/browser/side-navigation.spec.ts.",
+          "command": "pnpm exec vitest run packages/angular/test/side-navigation.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        }
+      ],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/navigation-drawer.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/side-navigation.ts"
+        ],
+        "angular": [
+          "packages/angular/src/side-navigation.ts"
+        ],
+        "vanilla": [
+          "packages/vanilla/src/side-navigation.ts",
+          "packages/styles/src/navigation-drawer.css"
+        ],
+        "core": [
+          "packages/core/src/navigation-list.ts"
+        ]
+      },
+      "notes": [
+        "Native links and details/summary groups; no tree role, roving focus or custom arrow keys.",
+        "A persistent side navigation for pages is not covered by the references in this repository; its placement is a Hawiyah design choice."
+      ],
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/side-navigation"
     }
   ],
   "limitations": [
     "Pre-1.0 npm release; minor versions may change APIs. No official DGA certification.",
     "Components contain no user-visible strings and choose no locale. Applications supply every text and, where a component formats or sorts, the locale; see CONTRACT.md \"Text and localisation\".",
-    "The 82-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
+    "The 85-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
     "Combobox is local and single-select. MultiSelect is a separate searchable checkbox list; async data and virtualization are application concerns.",
     "DataTable sorts stably in the locale the application supplies; it does not provide virtualization or cell editing.",
     "FileUpload and FileDropzone select local files; application code owns transport, storage, and server validation.",
@@ -6028,12 +6261,12 @@
     "native": "The main interaction uses browser-native semantics.",
     "static": "Semantic composition or CSS layout; content and application actions are caller-owned.",
     "interactive": "Hawiyah adds state, keyboard behavior, or lifecycle management.",
-    "integration": "A documented application recipe for an external engine or service; not counted among the 83 components."
+    "integration": "A documented application recipe for an external engine or service; not counted among the 85 components."
   },
   "scope": {
-    "components": 83,
+    "components": 85,
     "initialComponents": 27,
-    "addedComponents": 56,
+    "addedComponents": 58,
     "layoutComponents": 12,
     "nativeInputTypeCount": 22,
     "nativeInputTypes": [
@@ -6083,7 +6316,7 @@
   },
   "expansionVerification": {
     "status": "scoped-evidence-recorded",
-    "scope": "51 added entries have source/export coverage. Named passing unit/browser assertions are mapped only to directly checked components; unverified entries remain built without fabricated coverage.",
+    "scope": "53 added entries have source/export coverage. Named passing unit/browser assertions are mapped only to directly checked components; unverified entries remain built without fabricated coverage.",
     "record": "docs/validation.md",
     "browser": "Chromium only",
     "manualScreenReader": "not performed"

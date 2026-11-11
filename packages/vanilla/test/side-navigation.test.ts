@@ -155,4 +155,19 @@ describe('NavigationDrawer groups', () => {
     expect(group(dialog, 'foundations').open).toBe(true); expect(group(dialog, 'patterns').open).toBe(false);
     controller.destroy(); expect(group(dialog, 'components').hasAttribute('open')).toBe(false);
   });
+  it('[nd-current-moves] follows a moved current page when the drawer is shown and on refresh()', () => {
+    const dialog = mount(`<dialog><nav class="hw-navigation-drawer-nav" aria-label="x">${authored(() => list(items))}</nav></dialog>`) as HTMLDialogElement;
+    dialog.showModal = function () { this.setAttribute('open', ''); }; dialog.close = function () { this.removeAttribute('open'); };
+    const controller = createNavigationDrawer(dialog);
+    const move = (from: string, to: string) => { dialog.querySelector(`li[data-hw-value="${from}"] > a`)!.removeAttribute('aria-current'); dialog.querySelector(`li[data-hw-value="${to}"] > a`)!.setAttribute('aria-current', 'page'); };
+    expect(group(dialog, 'components').open).toBe(true); expect(group(dialog, 'patterns').open).toBe(false);
+    // The application moved the current page while the drawer was closed: the groups follow when it opens.
+    move('button', 'forms-pattern'); expect(group(dialog, 'patterns').open).toBe(false);
+    controller.show(); expect(group(dialog, 'patterns').open).toBe(true); expect(group(dialog, 'components').open).toBe(false); expect(group(dialog, 'foundations').open).toBe(true);
+    // While it is open, refresh() does the same, and the reader's own toggle of another group stands.
+    group(dialog, 'foundations').open = false; move('forms-pattern', 'copy'); controller.refresh();
+    expect(group(dialog, 'components').open).toBe(true); expect(group(dialog, 'patterns').open).toBe(false); expect(group(dialog, 'foundations').open).toBe(false);
+    controller.close(); controller.destroy(); expect(() => controller.refresh()).not.toThrow();
+    expect(group(dialog, 'components').hasAttribute('open')).toBe(false); expect(group(dialog, 'foundations').hasAttribute('open')).toBe(true);
+  });
 });

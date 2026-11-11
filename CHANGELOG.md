@@ -391,6 +391,118 @@ Found by server-rendering and hydrating every component of the published
 - Field hints use 12px, the smallest step of the documented type scale,
   instead of the 10px of the NIC source.
 
+### Copy button, side navigation, code and prose styles, opt-in fonts
+
+The catalogue grows from 83 to 85 entries. Every text of the additions is an
+input of the application, as described above; nothing here ships wording.
+
+- **CopyButton** (React and Vue `CopyButton`, Angular `hw-copy-button`,
+  vanilla `createCopyButton` and `data-hw="copy-button"`). It copies a value
+  the page already shows and reports the outcome in a polite status beside the
+  button. Required: `text`, `label`, `copiedMessage` and `failedMessage`;
+  optional `display`, `variant`, `size`, `feedbackDuration` (3000 ms) and
+  `disabled`; the result is `{status, text}` with `status` one of `copied`,
+  `denied`, `unavailable`, `failed` or `empty`. The clipboard is written on
+  activation only, through the asynchronous Clipboard API; it is never read
+  and there is no `document.execCommand` fallback. A failure message is
+  visible text and stays until the next activation.
+- **SideNavigation** (React and Vue `SideNavigation`, Angular
+  `hw-side-navigation` and `nav[hwSideNavigation]`, vanilla
+  `createSideNavigation` and `data-hw="side-navigation"`). It renders the list
+  of NavigationDrawer outside a drawer, from the same `items`, with the same
+  markup and classes. Required: `items` and `label`; `sticky` makes it stick
+  from 64rem and scroll in its own box, placed with
+  `--hw-side-navigation-top` and `--hw-side-navigation-bottom-reserve`.
+- **NavigationDrawer.** Items accept `expanded`. A group is open when it holds
+  the current page or is marked `expanded`; before, every group started
+  closed. The drawer also closes after a click that the application's router
+  took. The decision to close is now taken in a timer after the click was
+  dispatched: with the former microtask, a click that a listener on an
+  ancestor prevented still closed the drawer when a person clicked. The
+  vanilla controller gains `refresh()` and recomputes its groups each time the
+  drawer is shown.
+- **Core helpers.** `copyText`, `createCopyFeedback`, `copyFeedbackIcons` and
+  `COPY_FEEDBACK_DURATION`; `bindLinkNavigation(root, {navigate, base?})` and
+  `isLinkNavigationHandled`, with which an application's router takes over
+  packaged links through one delegated listener that renders nothing;
+  `getNavigationItemKind`, `getNavigationGroupEntries`,
+  `isNavigationGroupOpen`, `getNavigationCurrentId` and
+  `revealNavigationCurrent` with the `NavigationItem` type. CONTRACT.md
+  records the rules under "Routed links", "Copying" and "Navigation lists".
+- **Code styles.** `.hw-code-block` (with a header, a title, actions and a
+  scrolling or wrapping listing), `.hw-code` and `.hw-kbd`, and ten syntax
+  role classes, `hw-code-token-comment` to `hw-code-token-punctuation`. The
+  tokens `--hw-color-code-surface`, `-text`, `-border` and one per role are
+  aliases of existing Platforms Code colours; every role measures at least
+  4.5:1 on the code surface in both themes and both modes. Code stays left to
+  right in a right-to-left page, and each role span is its own bidirectional
+  run, so two Arabic strings on one line keep their source order.
+- **Prose.** `.hw-prose` on any container styles class-less content inside it
+  (headings, paragraphs, lists, quotations, tables, figures, code) and leaves
+  an element with a class to its component. `.hw-type` accepts
+  `data-tone="muted"` or `"subtle"`. See docs/code-and-prose.md.
+- **Opt-in fonts.** `@hawiyah/styles/fonts.css` declares IBM Plex Sans Arabic
+  400, 500, 600 and 700 and IBM Plex Mono 400 with `font-display: swap`.
+  `styles.css` never imports it and still fetches no text font. The nine WOFF2
+  files are IBM's published files, unchanged, 366,128 bytes together, with
+  the SIL Open Font License text and a provenance record beside them. They
+  take the packed `@hawiyah/styles` tarball from 275,524 to 647,257 bytes (154
+  to 166 files). See docs/fonts.md.
+- **ToggleGroup** accepts `labelHidden`, which hides the legend visually and
+  keeps it as the accessible name.
+- **PortalHeader.** Vue and Angular accept the notice above the brand row that
+  React already had. The actions container is `hw-portal-header-actions` in
+  every adapter; the stylesheet keeps the earlier `hw-portal-actions` for one
+  release. Actions shrink and may wrap at 320px. The header is not sticky.
+- **ContentNavigation** keeps one current item while a scroll that it started
+  is in progress, instead of stepping through the sections the scroll passes.
+- **Fixes.** The current row of NavigationDrawer and SideNavigation keeps the
+  text colour and shows the primary colour in its marker: `primary-text` on
+  `surface-muted` measured 4.32:1 in the default light theme. The Vue
+  CopyButton no longer writes an empty `style` attribute in server markup.
+  Vue `SideNavigation` types the native attributes it forwards.
+- **Package check.** `pnpm check:packages` verifies the new exports of the
+  five packages, renders CopyButton and SideNavigation on the server in the
+  clean consumer, resolves `@hawiyah/styles/fonts.css` and every file it
+  names, and fails when `styles.css` declares a font other than the riyal face
+  or loads the opt-in fonts. The tree-shaking budgets are unchanged: React
+  Button measures 382 bytes gzip of 4,096 and vanilla Tabs 4,474 of 6,144.
+
+#### Breaking: Angular layout primitives render on the host element
+
+`hw-container`, `hw-stack`, `hw-inline`, `hw-grid`, `hw-columns`, `hw-sidebar`,
+`hw-center`, `hw-aspect-ratio`, `hw-section` and `hw-app-shell` now carry their
+`hw-` class and the layout custom properties on the host element, as
+`hw-spacer` did, and render the projected content alone. `class`, `id`,
+`aria-*` and `data-*` written on the element therefore take effect on the
+layout box. The same box is available on a native element through the
+attribute selectors `hwContainer`, `hwStack`, `hwInline`, `hwGrid`,
+`hwColumns`, `hwCenter`, `hwAspectRatio` and `hwSection`. `<hw-inline wrap>`
+now means `wrap` is true. React, Vue and vanilla are unchanged.
+
+Migration:
+
+- A selector such as `hw-stack > .hw-stack` no longer matches: select
+  `.hw-stack`, which is the host. A rule that styled the host as an inline
+  wrapper now styles the box.
+- `hw-section` no longer renders a `section` element. With `label` the host
+  has `role="region"` and `aria-label`; write `<section hwSection label="…">`
+  where a `section` element is wanted. An `aria-label` or `role` that the
+  application writes or binds on the element is kept, and `label` takes its
+  place only while it is set.
+- `hw-sidebar` no longer wraps its two panes in `aside` and `div`: the element
+  marked `hwSidebar` and one content element are the two children of the host,
+  so use the element that fits, for example `<aside hwSidebar>`.
+- `hw-app-shell` renders `div.hw-app-shell-header` and
+  `div.hw-app-shell-footer`, as React and Vue do, where it rendered `header`
+  and `footer`. Project a `header` and a `footer` element to keep the banner
+  and contentinfo landmarks. The skip link is a child of the host.
+- `@hawiyah/styles` makes `hw-container`, `hw-section`, `hw-aspect-ratio`,
+  `hw-page-header` and `hw-alert` blocks and `hw-card` and `hw-service-card`
+  grids, with zero specificity.
+- The public method `HwNavigationDrawerComponent.groupEntries(item)` is
+  removed; core `getNavigationGroupEntries(item)` returns the same entries.
+
 ## 0.2.1 — 2026-11-10
 
 ### Icons follow the DGA Platforms Code icon library

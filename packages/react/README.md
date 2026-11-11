@@ -230,7 +230,8 @@ focus containment need the browser integration suite.
 
 ## Expanded catalog: 50 additional components
 
-The package now exports 77 components. Added components use the same native
+The package covers all 85 catalogue entries; this section describes the 50
+added in the first expansion. Added components use the same native
 attributes/ref conventions and shared styles. Array values and item identifiers
 must be unique. Custom form controls support `value`/`defaultValue` and
 `onValueChange`; uncontrolled values return to their defaults on native form reset,
@@ -550,7 +551,10 @@ import {CopyButton} from '@hawiyah/react';
 `copied` or `failed`); the ref and every other native attribute go to the button.
 An `onClick` is called first and cannot cancel the copy. The icon follows the
 state (`copy-01`, `tick-02`, `alert-02`) and the status (`role="status"`) is
-emptied before each activation, so a repeated result is announced again. Focus
+emptied before each activation, so a repeated result is announced again.
+A result that settles at once (an empty text, no Clipboard API) empties and fills
+the status inside one task; that an identical message is then repeated has not been
+verified with a screen reader. Focus
 stays on the button. Only the latest activation reports; a result that arrives
 after unmount is ignored. Nothing reads the clipboard, and nothing touches it
 during render, mount or hydration. The application may offer manual copying

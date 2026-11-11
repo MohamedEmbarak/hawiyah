@@ -1,4 +1,4 @@
-export { Button, Checkbox, Radio, Switch, TextField, Textarea, Select, FileUpload, IconButton, PasswordField, SearchField, NumberField, Slider, PinInput, TagInput, MultiSelect, FileDropzone, Combobox, DatePicker, NavigationDrawer, CopyButton } from './native-attributes.js';
+export { Button, Checkbox, Radio, Switch, TextField, Textarea, Select, FileUpload, IconButton, PasswordField, SearchField, NumberField, Slider, PinInput, TagInput, MultiSelect, FileDropzone, Combobox, DatePicker, NavigationDrawer, CopyButton, SideNavigation } from './native-attributes.js';
 export { Field } from './forms.js';
 export { Tabs, Dialog, Tooltip } from './interactive.js';
 export type { TabItem } from './interactive.js';
@@ -21,7 +21,6 @@ export type { SecondaryNavItem } from './portal.js';
 export { MobileTopBar } from './mobile-top-bar.js';
 
 export type { NavigationDrawerItem } from './navigation-drawer.js';
-export { SideNavigation } from './side-navigation.js';
 export type { SideNavigationItem } from './side-navigation.js';
 export type { CopyStatus, CopyResult } from '@hawiyah/core';
 

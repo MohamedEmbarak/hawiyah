@@ -134,6 +134,25 @@ for (const name of packageNames) {
       if (!packed.files.some(entry => entry.path === `dist/assets/icons/${file}`))
         throw new Error(`styles: missing icon asset or notice ${file} in consumer tarball`);
     }
+    // The opt-in fonts: every recorded file, the licence and the provenance record ship; every url() of
+    // fonts.css is a packed file; styles.css declares no font but the riyal face and never loads fonts.css.
+    const fontProvenance = JSON.parse(readFileSync(resolve(source, "src/assets/fonts/ibm-plex-provenance.json"), "utf8"));
+    for (const file of [fontProvenance.licenseFile, "ibm-plex-provenance.json", ...fontProvenance.packages.flatMap(pack => pack.files.map(entry => entry.file))]) {
+      if (!packedPaths.has(`dist/assets/fonts/${file}`))
+        throw new Error(`styles: missing font file, licence or provenance record ${file} in consumer tarball`);
+    }
+    const packedCss = (file) => readFileSync(resolve(dest, "dist", file), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    const fontsCss = packedCss("fonts.css");
+    const fontUrls = [...fontsCss.matchAll(/url\(\s*(['"]?)([^'")]+)\1\s*\)/g)].map(match => match[2]);
+    if (!fontUrls.length) throw new Error("styles: fonts.css declares no font file");
+    for (const url of fontUrls)
+      if (!/^\.\/assets\/fonts\/[A-Za-z0-9-]+\.woff2$/.test(url) || !packedPaths.has(`dist/${url.slice(2)}`))
+        throw new Error(`styles: fonts.css references ${url}, which is not in the consumer tarball`);
+    const stylesCss = packedCss("styles.css");
+    const families = [...stylesCss.matchAll(/@font-face\s*\{[^}]*?font-family:\s*(['"]?)([^;'"]+)\1/g)].map(match => match[2]);
+    if (families.length !== 1 || families[0] !== "HawiyahRiyal")
+      throw new Error(`styles: styles.css may declare the riyal face only, found ${families.join(", ") || "none"}`);
+    if (/IBMPlex|fonts\.css/.test(stylesCss)) throw new Error("styles: styles.css must not load the opt-in fonts");
   }
   if (
     packed.files.some((f) =>
@@ -201,14 +220,29 @@ assert.equal(typeof vanilla.enhance,'function');
 assert.ok(tokens.tokens);
 assert.ok(renderToString(React.createElement(react.Button,null,'Continue')).includes('hw-button'));
 assert.ok((await renderVue(createSSRApp({render:()=>h(vue.Button,{},()=> 'Continue')}))).includes('hw-button'));
-for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader','PortalLayout','SecondaryNav','MobileTopBar','NavigationDrawer','PasswordField','SearchField','Rating','Stepper']) {
+for (const name of ['DatePicker','Calendar','Grid','Stack','Menu','TreeView','DataTable','ServiceCard','PortalHeader','PortalLayout','SecondaryNav','MobileTopBar','NavigationDrawer','PasswordField','SearchField','Rating','Stepper','CopyButton','SideNavigation']) {
   assert.ok(react[name], 'React missing '+name); assert.ok(vue[name], 'Vue missing '+name);
   assert.ok(angular['Hw'+name+'Component'], 'Angular missing '+name);
 }
 assert.equal(typeof vanilla.createCalendar,'function');
 assert.equal(typeof vanilla.createTreeView,'function');
 assert.equal(typeof vanilla.createPortalHeader,'function');
-for (const name of ['createNavigationDrawer','createStepper','createRating','createPasswordField','createSearchField']) assert.equal(typeof vanilla[name],'function');
+for (const name of ['createNavigationDrawer','createStepper','createRating','createPasswordField','createSearchField','createCopyButton','createSideNavigation']) assert.equal(typeof vanilla[name],'function');
+for (const name of ['copyText','createCopyFeedback','bindLinkNavigation','isLinkNavigationHandled','getNavigationItemKind','getNavigationGroupEntries','isNavigationGroupOpen','getNavigationCurrentId','revealNavigationCurrent','observeContentNavigation']) assert.equal(typeof core[name],'function','core missing '+name);
+assert.deepEqual(core.copyFeedbackIcons,{idle:'copy-01',copied:'tick-02',failed:'alert-02'});
+// Nothing touches the clipboard on a server: no Clipboard API there, so a copy reports that and writes nothing.
+assert.equal(await core.copyText('نص'),'unavailable');
+const copyText = {text:'pnpm add @hawiyah/styles',label:'نسخ الأمر',copiedMessage:'تم النسخ',failedMessage:'تعذر النسخ'};
+const navigationItems = [{id:'start',label:'البداية',href:'/start'},{id:'components',label:'المكونات',children:[{id:'copy-button',label:'زر النسخ',href:'/components/copy-button',current:true}]}];
+const newHtml = [
+  renderToString(React.createElement('div',null,React.createElement(react.CopyButton,copyText),React.createElement(react.SideNavigation,{label:'أقسام الدليل',items:navigationItems}))),
+  await renderVue(createSSRApp({render:()=>h('div',[h(vue.CopyButton,copyText),h(vue.SideNavigation,{label:'أقسام الدليل',items:navigationItems})])}))
+];
+for (const html of newHtml) {
+  assert.ok(html.includes('class="hw-copy"') && html.includes('data-state="idle"') && html.includes('data-icon="copy-01"'));
+  assert.ok(html.includes('class="hw-side-navigation hw-navigation-drawer-nav"') && html.includes('aria-current="page"'));
+  assert.ok(/<details class="hw-navigation-drawer-group" open(="")?>/.test(html), 'the group of the current page is open in the server markup');
+}
 assert.ok(renderToString(React.createElement(react.PortalLayout,{brand:'هوية',mainId:'portal-main',...layoutText},React.createElement('h1',null,'الخدمات'))).includes('href="#portal-main"'));
 assert.ok((await renderVue(createSSRApp({render:()=>h(vue.PortalLayout,{brand:'هوية',mainId:'portal-main',...layoutText},()=>h('h1',{},'الخدمات'))}))).includes('href="#portal-main"'));
 assert.deepEqual(core.getCalendarDateParts('2029-08-11','islamic-umalqura'),{year:1451,month:4,day:1});
@@ -244,6 +278,20 @@ assert.ok(wordmark.includes('<path')); assert.ok(!wordmark.includes('<text'));
 assert.equal(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/hawiyah-loader.gif'))).subarray(0,6).toString(),'GIF89a');
 assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/fonts/riyal-LICENSE.txt')),'utf8').includes('SIL OPEN FONT LICENSE'));
 assert.equal(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/fonts/riyal.woff2'))).subarray(0,4).toString(),'wOF2');
+// The fonts are opt-in: their own entry, every file it names present, and nothing of them in styles.css.
+const fontsEntry = new URL(import.meta.resolve('@hawiyah/styles/fonts.css'));
+const fontsCss = fs.readFileSync(fontsEntry,'utf8').replace(/\\/\\*[\\s\\S]*?\\*\\//g,'');
+const fontUrls = [...fontsCss.matchAll(/url\\(\\s*(['"]?)([^'")]+)\\1\\s*\\)/g)].map(match => match[2]);
+assert.ok(fontUrls.length >= 9, 'fonts.css declares the IBM Plex files');
+for (const url of fontUrls) assert.equal(fs.readFileSync(new URL(url,fontsEntry)).subarray(0,4).toString(),'wOF2','fonts.css references missing or invalid '+url);
+for (const family of ['IBM Plex Sans Arabic','IBM Plex Mono']) assert.ok(fontsCss.includes(family),'fonts.css must declare '+family);
+assert.ok(!fontsCss.includes('@import'), 'fonts.css must not contain @import');
+const faces = [...flatCss.replace(/\\/\\*[\\s\\S]*?\\*\\//g,'').matchAll(/@font-face\\s*\\{[^}]*?font-family:\\s*(['"]?)([^;'"]+)\\1/g)].map(match => match[2]);
+assert.deepEqual(faces,['HawiyahRiyal'],'styles.css declares no font but the riyal face');
+assert.ok(!/IBMPlex|fonts\\.css/.test(flatCss),'styles.css must not load the opt-in fonts');
+assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/fonts/ibm-plex-LICENSE.txt')),'utf8').includes('SIL OPEN FONT LICENSE Version 1.1'));
+assert.ok(JSON.parse(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/fonts/ibm-plex-provenance.json')),'utf8')).packages.every(pack => pack.license === 'OFL-1.1'));
+for (const [file,marker] of [['code.css','.hw-code-block'],['prose.css','.hw-prose'],['copy.css','.hw-copy']]) { assert.ok(flatCss.includes(marker)); assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/'+file)),'utf8').includes(marker)); }
 assert.deepEqual(warnings,[],'The consumer left a required text or locale unsupplied');
 console.log('Clean tarball consumer: ESM, SSR, Angular APF, CSS exports passed.');
 `,

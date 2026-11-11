@@ -94,6 +94,21 @@ describe('Angular layout hosts', () => {
     update({ label: '' }); expect(named.hasAttribute('role')).toBe(false); expect(named.hasAttribute('aria-label')).toBe(false);
   });
 
+  it('[al-section-bound-attributes] keeps an aria-label or role the application binds on the host, and label takes its place only while it is set', () => {
+    const { root, update } = page(`<hw-section id="bound" [attr.aria-label]="name" [attr.role]="role"><p>Body</p></hw-section><section hwSection id="native" [attr.aria-label]="name"><p>Body</p></section><hw-section id="both" [attr.aria-label]="name" [attr.role]="role" [label]="label"><p>Body</p></hw-section><hw-section id="static" aria-label="Static name" role="group" [label]="label"><p>Body</p></hw-section>`, { name: 'Bound name' as string | null, role: 'group' as string | null, label: '' });
+    const bound = root.querySelector('#bound')!, native = root.querySelector('#native')!, both = root.querySelector('#both')!, fixed = root.querySelector('#static')!;
+    expect(bound.getAttribute('aria-label')).toBe('Bound name'); expect(bound.getAttribute('role')).toBe('group');
+    expect(native.getAttribute('aria-label')).toBe('Bound name'); expect(native.hasAttribute('role')).toBe(false);
+    expect(both.getAttribute('aria-label')).toBe('Bound name'); expect(fixed.getAttribute('aria-label')).toBe('Static name'); expect(fixed.getAttribute('role')).toBe('group');
+    update({ name: 'Second name' }); expect(bound.getAttribute('aria-label')).toBe('Second name'); expect(native.getAttribute('aria-label')).toBe('Second name');
+    // label wins while it is set, also when the application binding changes underneath it.
+    update({ label: 'Label' }); expect(both.getAttribute('aria-label')).toBe('Label'); expect(both.getAttribute('role')).toBe('region'); expect(fixed.getAttribute('aria-label')).toBe('Label'); expect(fixed.getAttribute('role')).toBe('region');
+    update({ name: 'Third name' }); expect(both.getAttribute('aria-label')).toBe('Label'); expect(bound.getAttribute('aria-label')).toBe('Third name');
+    // Without label the application values are back: the latest bound ones and the static ones.
+    update({ label: '' }); expect(both.getAttribute('aria-label')).toBe('Third name'); expect(both.getAttribute('role')).toBe('group'); expect(fixed.getAttribute('aria-label')).toBe('Static name'); expect(fixed.getAttribute('role')).toBe('group');
+    update({ name: null, role: null }); expect(bound.hasAttribute('aria-label')).toBe(false); expect(bound.hasAttribute('role')).toBe(false); expect(both.hasAttribute('aria-label')).toBe(false);
+  });
+
   it('[al-sidebar-children] makes the marked sidebar and the content the two children of the host grid', () => {
     const { root } = page(`<hw-sidebar><div id="main">Main</div><nav hwSidebar id="side" aria-label="Section">Side</nav></hw-sidebar><hw-sidebar side="end" collapseAt="lg"><aside hwSidebar>Side</aside><div>Main</div></hw-sidebar>`);
     const [first, second] = [...root.querySelectorAll('hw-sidebar')];

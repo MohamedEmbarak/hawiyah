@@ -28,10 +28,11 @@ export const CopyButton = defineComponent({
     return () => {
       // All three texts are checked on every render, so a missing message is reported before a copy ever fails.
       const label = needText('CopyButton', 'label', props.label), copied = needText('CopyButton', 'copiedMessage', props.copiedMessage), failed = needText('CopyButton', 'failedMessage', props.failedMessage);
+      // The style key is passed only when the application gave one: the server renderer writes style="" for a key that is present but undefined.
       const { class: className, style, ...native } = attrs;
       const textDisplay = props.display === 'text';
       const icon = h('span', { class: 'hw-icon', 'data-icon': copyFeedbackIcons[state.value], 'aria-hidden': 'true' });
-      return h('span', { class: ['hw-copy', className], style, 'data-state': state.value }, [
+      return h('span', { class: ['hw-copy', className], ...(style === undefined ? {} : { style }), 'data-state': state.value }, [
         h('button', mergeProps(native, { ref: button, type: 'button', class: textDisplay ? 'hw-button' : 'hw-button hw-icon-button', 'data-variant': props.variant, 'data-size': props.size, 'aria-label': textDisplay ? undefined : label, disabled: props.disabled, onClick: () => { void feedback.copy(); } }), textDisplay && label !== undefined ? [icon, label] : [icon]),
         h('span', { class: 'hw-copy-message', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, state.value === 'copied' ? copied : state.value === 'failed' ? failed : undefined),
       ]);

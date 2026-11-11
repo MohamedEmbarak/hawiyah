@@ -154,21 +154,23 @@ it('[nd-group-open] opens the group that holds the current page and expanded gro
   expect(group(root, 'components').hasAttribute('open')).toBe(true); expect(group(root, 'more').hasAttribute('open')).toBe(true);
   expect(group(root, 'guides').hasAttribute('open')).toBe(false); expect(group(root, 'forms').hasAttribute('open')).toBe(false);
 });
+// The drawer decides in a timer after the click was dispatched, so that listeners on ancestors have run (a microtask would run before them during a user click).
+const dispatched = () => new Promise<void>(resolve => setTimeout(resolve));
 it('[nd-closes-after-routed-click] [ln-drawer-closes] closes after a click the application routed', async () => {
   const paths = routed();
   const root = mount(() => h(NavigationDrawer, { ...drawerText, defaultOpen: true, items })); await nextTick();
   const dialog = root.querySelector('dialog')!; expect(dialog.open).toBe(true);
   root.querySelector<HTMLAnchorElement>('a[href="/home"]')!.click(); await flush();
-  expect(paths).toEqual(['/home']); expect(dialog.open).toBe(false);
+  expect(paths).toEqual(['/home']); expect(dialog.open).toBe(true); await dispatched(); await flush(); expect(dialog.open).toBe(false);
   cleanups.splice(0).forEach(cleanup => cleanup());
   const preventOnly = (event: Event) => event.preventDefault(); document.addEventListener('click', preventOnly); cleanups.push(() => document.removeEventListener('click', preventOnly));
   const second = mount(() => h(NavigationDrawer, { ...drawerText, defaultOpen: true, items })); await nextTick();
-  second.querySelector<HTMLAnchorElement>('a[href="/home"]')!.click(); await flush();
+  second.querySelector<HTMLAnchorElement>('a[href="/home"]')!.click(); await dispatched(); await flush();
   expect(second.querySelector('dialog')!.open).toBe(true);
   cleanups.splice(0).forEach(cleanup => cleanup());
   const modified = routed(); settleClicks();
   const third = mount(() => h(NavigationDrawer, { ...drawerText, defaultOpen: true, items })); await nextTick();
-  third.querySelector<HTMLAnchorElement>('a[href="/home"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })); await flush();
+  third.querySelector<HTMLAnchorElement>('a[href="/home"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })); await dispatched(); await flush();
   expect(modified).toEqual([]); expect(third.querySelector('dialog')!.open).toBe(true);
 });
 

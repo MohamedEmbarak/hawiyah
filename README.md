@@ -22,7 +22,7 @@ The gallery also includes a [portal home](https://mohamedembarak.github.io/hawiy
 
 ## Development status
 
-Hawiyah is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **83-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.1 is published on npm under the `@hawiyah` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
+Hawiyah is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **85-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.1 is published on npm under the `@hawiyah` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
 
 The [roadmap](docs/roadmap.md) separates planned scope, implemented work, and verified behavior. [components.json](components.json) provides the same distinctions in a form that tools and coding assistants can read. Exact framework coverage and verification must be checked there rather than inferred from the package names.
 
@@ -127,7 +127,7 @@ export function ResultPages({ page, onPageChange }: { page: number; onPageChange
 
 A missing required text is a type error in React and Angular; in every adapter the component renders nothing in its place and warns once in development. [CONTRACT.md](CONTRACT.md#text-and-localisation) defines the text and locale rules, and each adapter README lists its inputs. The [changelog](CHANGELOG.md) maps every former built-in text to the input that replaces it.
 
-Set `lang` and `dir` on the application container, and load the fonts appropriate to the product. No component reads `lang` or sets a default `dir`. Styles declare font families; consumers control font loading.
+Set `lang` and `dir` on the application container, and load the fonts appropriate to the product. No component reads `lang` or sets a default `dir`. Styles declare font families; consumers control font loading. `@hawiyah/styles/fonts.css` is an opt-in stylesheet with IBM Plex Sans Arabic (400 to 700) and IBM Plex Mono (400), which `styles.css` never imports; see [docs/fonts.md](docs/fonts.md).
 
 ## Modify and extend
 

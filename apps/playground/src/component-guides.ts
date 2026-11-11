@@ -5,6 +5,7 @@ import { nativeGuides } from './component-native-guides';
 import { expandedGuides } from './component-expanded-guides';
 import { layoutPlatformGuides } from './component-layout-guides';
 import { mobileGuides } from './component-mobile-guides';
+import { supportGuides } from './component-support-guides';
 
 export type { ComponentGuide, GuideInput } from './component-guide-types';
 
@@ -14,6 +15,7 @@ const entries: Record<string, GuideInput> = {
   ...expandedGuides,
   ...layoutPlatformGuides,
   ...mobileGuides,
+  ...supportGuides,
 };
 
 /** Every public catalog entry has a source-backed guide and a live recipe. */

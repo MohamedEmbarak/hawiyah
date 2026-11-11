@@ -2,6 +2,8 @@ import { afterEach, expect, it } from 'vitest';
 import { createNavigationDrawer } from '../src/navigation-drawer.js';
 
 afterEach(() => document.body.replaceChildren());
+// The drawer decides in a timer after the click was dispatched, so that listeners on ancestors have run (a microtask would run before them during a user click).
+const dispatched = () => new Promise<void>(resolve => setTimeout(resolve));
 it('enhances native navigation, guards disabled entries, respects prevention and restores attributes/focus', async () => {
   const trigger = document.createElement('button'); trigger.textContent = 'Open'; document.body.append(trigger);
   const dialog = document.createElement('dialog');
@@ -22,9 +24,9 @@ it('enhances native navigation, guards disabled entries, respects prevention and
   group.querySelector('summary')!.click(); expect(group.hasAttribute('open')).toBe(false);
   const summary = dialog.querySelector('summary')!; summary.click(); expect(summary.parentElement!.hasAttribute('open')).toBe(true);
   const link = dialog.querySelector<HTMLAnchorElement>('a[href="#service"]')!;
-  prevent = true; link.click(); await Promise.resolve(); expect(dialog.open).toBe(true);
+  prevent = true; link.click(); await dispatched(); expect(dialog.open).toBe(true);
   prevent = false; link.focus(); expect(document.activeElement).toBe(link);
-  link.click(); await Promise.resolve(); expect(dialog.open).toBe(false); expect(document.activeElement).toBe(trigger);
+  link.click(); await Promise.resolve(); expect(dialog.open).toBe(true); await dispatched(); expect(dialog.open).toBe(false); expect(document.activeElement).toBe(trigger);
   summary.parentElement!.removeAttribute('open'); controller.destroy();
   expect(dialog.isEqualNode(before)).toBe(true);
 });
@@ -33,5 +35,5 @@ it('does not close after destruction while a route activation is queued', async 
   dialog.open = true;
   let closed = 0; dialog.close = () => { closed++; dialog.open = false; };
   const controller = createNavigationDrawer(dialog); dialog.querySelector('a')!.click(); controller.destroy();
-  await Promise.resolve(); expect(closed).toBe(0);
+  await dispatched(); expect(closed).toBe(0);
 });

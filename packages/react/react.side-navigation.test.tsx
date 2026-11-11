@@ -142,19 +142,21 @@ it('[nd-group-open] opens the group of the current page and expanded groups in N
   const details = (id: string) => container.querySelector<HTMLDetailsElement>(`dialog li[data-hw-value="${id}"] > details`)!;
   expect(details('b').open).toBe(true); expect(details('c').open).toBe(true); expect(details('a').open).toBe(false); expect(details('a2').open).toBe(false);
 });
+// The drawer decides in a timer after the click was dispatched, so that listeners on ancestors have run (a microtask would run before them during a user click).
+const dispatched = () => new Promise<void>(resolve => setTimeout(resolve));
 it('[nd-closes-after-routed-click] [ln-drawer-closes] closes after a click handed to the router, not after a prevented or modified one', async () => {
   const paths: string[] = []; const drawer = () => container.querySelector('dialog')!;
   const open = async () => { await render(<NavigationDrawer title="القائمة" navigationLabel="أقسام" closeLabel="إغلاق" trigger={<button type="button">فتح</button>} items={withCurrent(items, 'b1')} />); await act(async () => container.querySelector<HTMLButtonElement>('button')!.click()); expect(drawer().open).toBe(true); };
   const prevented = recordClicks();
   await open(); const links = bindLinkNavigation(document, { navigate: ({ path }) => { paths.push(path); } });
-  await act(async () => drawer().querySelector<HTMLAnchorElement>('a[href="/b/1"]')!.click());
+  await act(async () => { drawer().querySelector<HTMLAnchorElement>('a[href="/b/1"]')!.click(); await Promise.resolve(); expect(drawer().open).toBe(true); await dispatched(); });
   expect(paths).toEqual(['/b/1']); expect(drawer().open).toBe(false);
   await open();
-  await act(async () => { drawer().querySelector<HTMLAnchorElement>('a[href="/b/1"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })); });
+  await act(async () => { drawer().querySelector<HTMLAnchorElement>('a[href="/b/1"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })); await dispatched(); });
   expect(paths).toEqual(['/b/1']); expect(drawer().open).toBe(true); expect(prevented.at(-1)).toBe(false);
   links.destroy();
   const preventOnly = (event: Event) => event.preventDefault(); document.addEventListener('click', preventOnly); cleanups.push(() => document.removeEventListener('click', preventOnly));
-  await act(async () => drawer().querySelector<HTMLAnchorElement>('a[href="/b/1"]')!.click());
+  await act(async () => { drawer().querySelector<HTMLAnchorElement>('a[href="/b/1"]')!.click(); await dispatched(); });
   expect(drawer().open).toBe(true); expect(paths).toEqual(['/b/1']);
 });
 it('[ln-routed] hands a plain click on a packaged link to the router', async () => {

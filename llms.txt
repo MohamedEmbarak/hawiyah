@@ -2,7 +2,7 @@
 
 > UI component library built to comply with the DGA Platforms Code (كود المنصات, هيئة الحكومة الرقمية), for JavaScript, React, Vue, and Angular. The default foundation is mapped from supplied Platforms Code source snapshots; the Signature theme is opt-in. Compliance is documented requirement by requirement with evidence and open items; Hawiyah is not an official DGA product.
 
-Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Version 0.2.1 of the seven @hawiyah/* packages is published on npm; 0.x minor releases may change APIs. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
+Status: public 0.2 source preview under Apache-2.0. Seven packages support 85 catalog entries across vanilla, React, Vue, and Angular. The 22 native input types, variants, blocks, and integration recipes do not increase that component count. Version 0.2.1 of the seven @hawiyah/* packages is published on npm; 0.x minor releases may change APIs. Check components.json for planned, built, and verified coverage; read actual exports before generating code. Verification is scoped to recorded tests, not inferred from source presence.
 
 ## Start here
 
@@ -12,9 +12,9 @@ Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 ca
 - [Arabic guide](README.ar.md): Arabic introduction and usage context.
 - [Agent instructions](AGENTS.md): local boundaries and implementation rules.
 - [Shared contract](CONTRACT.md): package names, CSS conventions, and initial scope.
-- [Expansion contract](EXPANSION.md): 56 additions, native input semantics, calendars, responsive layout, and adapter responsibilities.
+- [Expansion contract](EXPANSION.md): 58 additions, native input semantics, calendars, responsive layout, and adapter responsibilities.
 - [Component catalog](components.json): machine-readable component metadata and status.
-- [Coverage guide](docs/coverage.md): all 83 entries, 22 native input types, national data recipes, and implementation types.
+- [Coverage guide](docs/coverage.md): all 85 entries, 22 native input types, national data recipes, and implementation types.
 - [Core and vanilla API](packages/core/API.md): exact helper exports, enhancement markup, controller lifecycles, and limitations.
 - [Vanilla expansion API](packages/vanilla/EXPANSION-API.md): controller markup and native/static recipes.
 - [Brand identity](brand/README.md): Arabic wordmark, Signature palette, artwork rules, typography, and provenance.
@@ -45,12 +45,13 @@ Status: public 0.2 source preview under Apache-2.0. Seven packages support 83 ca
 - Locale, lang, and dir are separate concerns. No component reads lang or sets a default dir; set them on the application container. Preserve Arabic, English, RTL, LTR, and mixed-direction text behavior.
 - Frameworks own rendering. Do not run vanilla enhancement over framework-owned component trees.
 - Core has no framework runtime dependency and no browser globals at module evaluation.
-- The logo is Arabic-only هوية in Aref Ruqaa Bold outlined SVG paths, with no runtime font dependency; its loader animates that lettering. Hawiyah remains the English product name in documentation. Component/UI fonts remain IBM Plex Sans Arabic and IBM Plex Sans; do not add the logo font to component styles.
+- The logo is Arabic-only هوية in Aref Ruqaa Bold outlined SVG paths, with no runtime font dependency; its loader animates that lettering. Hawiyah remains the English product name in documentation. Component/UI fonts remain IBM Plex Sans Arabic and IBM Plex Sans; do not add the logo font to component styles. @hawiyah/styles/fonts.css is opt-in (IBM Plex Sans Arabic 400 to 700, IBM Plex Mono 400) and is never imported by styles.css; see docs/fonts.md.
 - Shared headless behavior is project-owned; there is no Zag dependency. The combobox reducer covers local single selection.
 - Preserve semantics, labels, keyboard interaction, focus, validation, disabled states, and cleanup.
 - General number/timestamp formatting uses Intl with the locale the application passes and explicit options. Calendar/DatePicker use ISO Gregorian YYYY-MM-DD values and gregory/islamic-umalqura display. Never round-trip a date-only value through local-midnight Date.
 - Canonical Umm al-Qura conversion uses pinned HijriDate reference data through Hawiyah's table-backed provider with @internationalized/date arithmetic. Read date-calendars.md; general Intl formatDate is not a canonical persisted-record converter. Never hand-code offsets or silently use an arithmetic fallback.
 - MultiSelect is a searchable checkbox list; Combobox remains local single selection. DataTable sorts stably with the application's locale; it does not provide virtualization or cell editing.
+- CopyButton writes the clipboard only on activation through core copyText and never reads it; SideNavigation renders the NavigationDrawer list outside a drawer from the same items. An application router takes packaged links over with core bindLinkNavigation (one delegated listener, renders nothing). Code listings and class-less content use .hw-code-block, .hw-code, .hw-kbd and .hw-prose; see docs/code-and-prose.md.
 - Layout uses 12 primitives and layoutStyles with responsive base/sm/md/lg/xl values resolved by CSS. No viewport JavaScript is needed.
 - Saudi phone, IBAN, identity, and address recipes collect text; backend verification belongs to the application. File selection is not upload transport; CookieConsent UI is not script gating.
 - Put product routes, business rules, data fetching, and journey state in application blocks, not shared primitives.

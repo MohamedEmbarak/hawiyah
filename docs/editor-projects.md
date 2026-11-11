@@ -35,7 +35,7 @@ Combobox, PinInput, TagInput and MultiSelect each have a form with a disabled to
 
 SecondaryNav, PortalLayout, MobileTopBar and NavigationDrawer use local application state to show the current page. The shell includes a skip link and responsive primary navigation. The mobile top bar changes from its overview to internal-page variant, and its menu opens a drawer with a nested service directory and an unavailable destination.
 
-All 83 components in the guide catalog have native project recipes in Arabic and English. Each opens as vanilla JavaScript or TypeScript, React JSX or TSX, a Vue JavaScript or TypeScript single-file component, or an Angular TypeScript component. The project files include the imports and bootstrap code for the selected adapter.
+All 85 components in the guide catalog have native project recipes in Arabic and English. Each opens as vanilla JavaScript or TypeScript, React JSX or TSX, a Vue JavaScript or TypeScript single-file component, or an Angular TypeScript component. The project files include the imports and bootstrap code for the selected adapter.
 
 ServiceCard and ServiceDetails demonstrate a permit renewal with locally handled actions. CookieConsent keeps the visitor’s choice in memory and lets them review it. NotificationList uses application-owned read state and demonstrates the empty list after dismissal or clearing.
 

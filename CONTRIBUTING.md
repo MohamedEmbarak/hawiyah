@@ -2,7 +2,7 @@
 
 Hawiyah is an early public source preview. Use Node 24 and the pnpm version pinned
 in package.json, then run `pnpm install --frozen-lockfile`, `pnpm build:packages`,
-and `pnpm dev`. The guide includes live examples and the API for all 77 entries.
+and `pnpm dev`. The guide includes live examples and the API for all 85 entries.
 
 For a visual change, prefer semantic token overrides or an existing variant.
 For application-specific UI, compose the primitives or use

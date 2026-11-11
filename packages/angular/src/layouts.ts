@@ -1,4 +1,4 @@
-import { booleanAttribute, Component, Directive, ElementRef, HostAttributeToken, inject, Input } from '@angular/core';
+import { booleanAttribute, Component, Directive, type DoCheck, ElementRef, HostAttributeToken, inject, Input, Renderer2 } from '@angular/core';
 import { bindAngularFragmentLinks } from './fragment-links';
 import { HwTexts } from './text';
 import { NgStyle } from '@angular/common';
@@ -43,14 +43,33 @@ export class HwCenterComponent extends HwLayout {}
 export class HwSpacerComponent extends HwLayout {}
 @Component({selector: 'hw-aspect-ratio, [hwAspectRatio]', standalone: true, host: {class: 'hw-aspect-ratio', '[style]': 'styles'}, template: `<ng-content />`})
 export class HwAspectRatioComponent extends HwLayout { override ratio = 16 / 9; }
-@Component({selector: 'hw-section, [hwSection]', standalone: true, host: {class: 'hw-section', '[style]': 'styles', '[attr.aria-label]': 'label || authoredLabel', '[attr.role]': 'label && !native ? "region" : authoredRole'}, template: `<ng-content />`})
-export class HwSectionComponent extends HwLayout {
+@Component({selector: 'hw-section, [hwSection]', standalone: true, host: {class: 'hw-section', '[style]': 'styles'}, template: `<ng-content />`})
+export class HwSectionComponent extends HwLayout implements DoCheck {
   /** Optional name of the section. On hw-section it also makes the host a region; a native section needs no role. */
   @Input() label = '';
-  protected readonly native = (inject(ElementRef).nativeElement as Element).tagName.toLowerCase() === 'section';
-  // The two bindings own their attributes, so what the application wrote there is kept while label is not given.
-  protected readonly authoredLabel = inject(new HostAttributeToken('aria-label'), {optional: true});
-  protected readonly authoredRole = inject(new HostAttributeToken('role'), {optional: true});
+  private readonly host = inject(ElementRef).nativeElement as Element;
+  private readonly renderer = inject(Renderer2);
+  private readonly native = this.host.tagName.toLowerCase() === 'section';
+  // aria-label and role are not host bindings: a host binding owns its attribute and would remove what the
+  // application binds there. The component writes them only while label is given and puts back what the
+  // application had, whether it was written as an attribute or bound.
+  private readonly authored: Record<string, string | null> = {'aria-label': inject(new HostAttributeToken('aria-label'), {optional: true}), role: inject(new HostAttributeToken('role'), {optional: true})};
+  private readonly written: Record<string, string | undefined> = {};
+  // Runs after the bindings of the application on this element, in every pass, so label keeps its place.
+  ngDoCheck(): void {
+    this.own('aria-label', this.label || null);
+    this.own('role', this.label && !this.native ? 'region' : null);
+  }
+  private own(name: string, wanted: string | null): void {
+    const written = this.written[name];
+    if (wanted === null && written === undefined) return;
+    const current = this.host.getAttribute(name);
+    // A value that is neither what was written nor what is wanted came from the application since the last pass.
+    if (current !== written && current !== wanted) this.authored[name] = current;
+    if (wanted !== null) { if (current !== wanted) this.renderer.setAttribute(this.host, name, wanted); this.written[name] = wanted; return; }
+    if (current === written) { const authored = this.authored[name]; if (authored === null) this.renderer.removeAttribute(this.host, name); else this.renderer.setAttribute(this.host, name, authored); }
+    delete this.written[name];
+  }
 }
 /** Three regions are always rendered and the stylesheet hides an empty one: projection cannot be detected.
  * The banner and contentinfo landmarks come from what the application projects. */

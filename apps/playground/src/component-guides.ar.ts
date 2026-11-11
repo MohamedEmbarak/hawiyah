@@ -5,6 +5,7 @@ import { arabicNativeGuides } from './component-native-guides.ar';
 import { arabicExpandedGuides } from './component-expanded-guides.ar';
 import { arabicLayoutPlatformGuides } from './component-layout-guides.ar';
 import { arabicMobileGuides } from './component-mobile-guides';
+import { arabicSupportGuides } from './component-support-guides';
 
 const entries: Record<string, GuideInput> = {
   ...arabicVerificationGuides,
@@ -12,6 +13,7 @@ const entries: Record<string, GuideInput> = {
   ...arabicExpandedGuides,
   ...arabicLayoutPlatformGuides,
   ...arabicMobileGuides,
+  ...arabicSupportGuides,
 };
 
 /** Complete Arabic reference; technical identifiers and component behavior stay shared. */

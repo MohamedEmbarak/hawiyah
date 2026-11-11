@@ -13,6 +13,8 @@ beforeEach(() => {
   Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value() { this.open = false; this.dispatchEvent(new Event('close')); } });
 });
 afterEach(() => { TestBed.resetTestingModule(); document.body.replaceChildren(); });
+// The drawer decides in a timer after the click was dispatched, so that listeners on ancestors have run (a microtask would run before them during a user click).
+const dispatched = () => new Promise<void>(resolve => setTimeout(resolve));
 it('composes the native Drawer with page links, disclosure groups and disabled entries', async () => {
   const fixture = TestBed.createComponent(HwNavigationDrawerComponent);
   fixture.componentRef.setInput('title', 'القائمة'); fixture.componentRef.setInput('navigationLabel', 'التنقل الرئيسي'); fixture.componentRef.setInput('closeLabel', 'إغلاق القائمة'); fixture.componentRef.setInput('titleId', 'menu-title'); fixture.componentRef.setInput('items', [
@@ -33,8 +35,8 @@ it('composes the native Drawer with page links, disclosure groups and disabled e
   const summary = dialog.querySelector('summary')!; expect(summary.parentElement!.hasAttribute('open')).toBe(true); summary.click(); expect(summary.parentElement!.hasAttribute('open')).toBe(false); summary.click(); expect(summary.parentElement!.hasAttribute('open')).toBe(true);
   const link = dialog.querySelector<HTMLAnchorElement>('a[href="#request"]')!;
   const prevent = (event: Event) => event.preventDefault(); dialog.addEventListener('click', prevent);
-  link.click(); await Promise.resolve(); expect(dialog.open).toBe(true);
-  dialog.removeEventListener('click', prevent); link.focus(); link.click(); await Promise.resolve(); fixture.detectChanges();
+  link.click(); await dispatched(); expect(dialog.open).toBe(true);
+  dialog.removeEventListener('click', prevent); link.focus(); link.click(); await Promise.resolve(); expect(dialog.open).toBe(true); await dispatched(); fixture.detectChanges();
   expect(dialog.open).toBe(false); expect(document.activeElement).toBe(trigger);
 });
 
@@ -59,19 +61,19 @@ it('[nd-closes-after-routed-click] [ln-drawer-closes] closes after a click the a
   expect(drawer()).toBe(true);
   // A listener that only cancels the click: nothing navigated, so the drawer stays open.
   const cancel = (event: Event) => event.preventDefault(); document.addEventListener('click', cancel);
-  root.querySelector<HTMLAnchorElement>('a[href="/home"]')!.click(); await Promise.resolve(); expect(drawer()).toBe(true);
+  root.querySelector<HTMLAnchorElement>('a[href="/home"]')!.click(); await dispatched(); expect(drawer()).toBe(true);
   document.removeEventListener('click', cancel);
   // The router took it: the default is prevented although the navigation went ahead, and the drawer closes.
   const navigate = vi.fn(); const links = bindLinkNavigation(document, { navigate: ({ path }) => { navigate(path); } });
-  const routed = new MouseEvent('click', { bubbles: true, cancelable: true }); root.querySelector<HTMLAnchorElement>('a[href="/guides/install"]')!.dispatchEvent(routed); await Promise.resolve();
+  const routed = new MouseEvent('click', { bubbles: true, cancelable: true }); root.querySelector<HTMLAnchorElement>('a[href="/guides/install"]')!.dispatchEvent(routed); await Promise.resolve(); expect(drawer()).toBe(true); await dispatched();
   expect(navigate.mock.calls).toEqual([['/guides/install']]); expect(routed.defaultPrevented).toBe(true); expect(drawer()).toBe(false);
   // A synthetic link.click() is the same activation.
   reopen(); expect(drawer()).toBe(true);
-  root.querySelector<HTMLAnchorElement>('a[href="/home"]')!.click(); await Promise.resolve(); expect(navigate.mock.calls).toEqual([['/guides/install'], ['/home']]); expect(drawer()).toBe(false);
+  root.querySelector<HTMLAnchorElement>('a[href="/home"]')!.click(); await dispatched(); expect(navigate.mock.calls).toEqual([['/guides/install'], ['/home']]); expect(drawer()).toBe(false);
   // Ctrl-click opens a new tab: it is not handed to the router and the drawer stays as it is.
   reopen(); expect(drawer()).toBe(true);
   const seen: boolean[] = []; const last = (event: Event) => { seen.push(event.defaultPrevented); event.preventDefault(); }; window.addEventListener('click', last);
-  root.querySelector<HTMLAnchorElement>('a[href="/home"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })); await Promise.resolve();
+  root.querySelector<HTMLAnchorElement>('a[href="/home"]')!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })); await dispatched();
   window.removeEventListener('click', last); links.destroy();
   expect(seen).toEqual([false]); expect(navigate).toHaveBeenCalledTimes(2); expect(drawer()).toBe(true);
 });

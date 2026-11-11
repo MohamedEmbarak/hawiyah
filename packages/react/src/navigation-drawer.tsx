@@ -43,7 +43,8 @@ function routeActivation(event: MouseEvent<HTMLElement>, close: () => void) {
   if (event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
   const native = event.nativeEvent;
   // Let router/consumer handlers decide whether this route activation proceeds; a click that bindLinkNavigation handed to the router still closes.
-  queueMicrotask(() => { if ((!native.defaultPrevented || isLinkNavigationHandled(native)) && link.isConnected) close(); });
+  // A timer, not a microtask: during a user click a microtask runs as soon as this listener returns, before listeners on ancestors.
+  setTimeout(() => { if ((!native.defaultPrevented || isLinkNavigationHandled(native)) && link.isConnected) close(); });
 }
 
 /** Page navigation in an existing modal Drawer; groups are native disclosures. */

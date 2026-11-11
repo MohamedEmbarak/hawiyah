@@ -465,7 +465,7 @@
   --hw-color-code-constant: var(--hw-color-warning);
   --hw-color-code-attribute: var(--hw-color-warning);
   --hw-color-code-tag: var(--hw-color-danger);
-  --hw-color-code-type: var(--hw-color-danger);
+  --hw-color-code-type: var(--hw-color-text);
   --hw-color-code-function: var(--hw-color-text);
   --hw-control-height: 2.5rem;
   --hw-control-height-sm: 2rem;
@@ -1292,7 +1292,7 @@
   --hw-color-code-constant: var(--hw-color-warning);
   --hw-color-code-attribute: var(--hw-color-warning);
   --hw-color-code-tag: var(--hw-color-danger);
-  --hw-color-code-type: var(--hw-color-danger);
+  --hw-color-code-type: var(--hw-color-text);
   --hw-color-code-function: var(--hw-color-text);
 }
 
@@ -1423,7 +1423,7 @@
   --hw-color-code-constant: var(--hw-color-warning);
   --hw-color-code-attribute: var(--hw-color-warning);
   --hw-color-code-tag: var(--hw-color-danger);
-  --hw-color-code-type: var(--hw-color-danger);
+  --hw-color-code-type: var(--hw-color-text);
   --hw-color-code-function: var(--hw-color-text);
 }
 
@@ -1554,7 +1554,7 @@
     --hw-color-code-constant: var(--hw-color-warning);
     --hw-color-code-attribute: var(--hw-color-warning);
     --hw-color-code-tag: var(--hw-color-danger);
-    --hw-color-code-type: var(--hw-color-danger);
+    --hw-color-code-type: var(--hw-color-text);
     --hw-color-code-function: var(--hw-color-text);
   }
 }

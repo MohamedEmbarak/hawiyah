@@ -263,7 +263,7 @@ export const tokens = {
     "code-constant": "var(--hw-color-warning)",
     "code-attribute": "var(--hw-color-warning)",
     "code-tag": "var(--hw-color-danger)",
-    "code-type": "var(--hw-color-danger)",
+    "code-type": "var(--hw-color-text)",
     "code-function": "var(--hw-color-text)"
   },
   "control": {
@@ -415,7 +415,7 @@ export const themes = {
         "code-constant": "var(--hw-color-warning)",
         "code-attribute": "var(--hw-color-warning)",
         "code-tag": "var(--hw-color-danger)",
-        "code-type": "var(--hw-color-danger)",
+        "code-type": "var(--hw-color-text)",
         "code-function": "var(--hw-color-text)"
       }
     },
@@ -546,7 +546,7 @@ export const themes = {
         "code-constant": "var(--hw-color-warning)",
         "code-attribute": "var(--hw-color-warning)",
         "code-tag": "var(--hw-color-danger)",
-        "code-type": "var(--hw-color-danger)",
+        "code-type": "var(--hw-color-text)",
         "code-function": "var(--hw-color-text)"
       }
     }
@@ -679,7 +679,7 @@ export const themes = {
         "code-constant": "var(--hw-color-warning)",
         "code-attribute": "var(--hw-color-warning)",
         "code-tag": "var(--hw-color-danger)",
-        "code-type": "var(--hw-color-danger)",
+        "code-type": "var(--hw-color-text)",
         "code-function": "var(--hw-color-text)"
       }
     },
@@ -810,7 +810,7 @@ export const themes = {
         "code-constant": "var(--hw-color-warning)",
         "code-attribute": "var(--hw-color-warning)",
         "code-tag": "var(--hw-color-danger)",
-        "code-type": "var(--hw-color-danger)",
+        "code-type": "var(--hw-color-text)",
         "code-function": "var(--hw-color-text)"
       }
     }

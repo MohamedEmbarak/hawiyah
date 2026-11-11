@@ -42,6 +42,7 @@ export class HwNavigationDrawerComponent {
     const link = (event.target as Element).closest<HTMLAnchorElement>('a[href]');
     if (!link || !(event.currentTarget as Element).contains(link) || link.closest('[aria-disabled="true"], [inert]')) return;
     if (event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
-    queueMicrotask(() => { if ((!event.defaultPrevented || isLinkNavigationHandled(event)) && link.isConnected) this.close(); });
+    // A timer, not a microtask: during a user click a microtask runs as soon as this listener returns, before listeners on ancestors.
+    setTimeout(() => { if ((!event.defaultPrevented || isLinkNavigationHandled(event)) && link.isConnected) this.close(); });
   }
 }

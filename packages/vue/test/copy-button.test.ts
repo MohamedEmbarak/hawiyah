@@ -180,6 +180,9 @@ it('[cb-server] renders the idle markup on the server and hydrates without a mis
   const application = { render: () => h('main', [h(CopyButton, { text, ...texts }), h(CopyButton, { text, display: 'text', ...texts })]) };
   const markup = await renderToString(createSSRApp(application));
   expect(read).not.toHaveBeenCalled(); expect(text).not.toHaveBeenCalled();
+  // No style attribute unless the application gave one: the server and the client markup are the same.
+  expect(markup).not.toContain('style='); expect(markup).toContain('<span class="hw-copy" data-state="idle">');
+  expect(await renderToString(createSSRApp({ render: () => h(CopyButton, { text, ...texts, class: 'own', style: { marginInlineStart: '4px' } }) }))).toContain('<span class="hw-copy own" style="margin-inline-start:4px;" data-state="idle">');
   const container = document.createElement('div'); container.innerHTML = markup; document.body.append(container);
   for (const copy of container.querySelectorAll('.hw-copy')) { expect(copy.getAttribute('data-state')).toBe('idle'); expect(copy.querySelector('.hw-copy-message')!.textContent).toBe(''); expect(copy.querySelector('[data-icon]')!.getAttribute('data-icon')).toBe('copy-01'); }
   expect(container.querySelector('button')!.getAttribute('aria-label')).toBe(texts.label);

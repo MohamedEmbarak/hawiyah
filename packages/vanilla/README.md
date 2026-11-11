@@ -157,7 +157,9 @@ the icon (`copy-01`, `tick-02`, `alert-02`) and fills the polite status: empty w
 idle, `copiedMessage`, or `failedMessage`, which the stylesheet shows as visible text.
 The copied state returns to idle after the duration; the failed state stays until
 the next activation. Each activation first empties the status, so a repeated message
-is announced again, and only the latest activation counts. The three texts are
+is announced again, and only the latest activation counts. A result that settles at
+once (an empty text, no Clipboard API) empties and fills the status inside one task;
+that an identical message is then repeated has not been verified with a screen reader. The three texts are
 checked when the controller is created. `status` is one of `copied`, `denied`,
 `unavailable` (no Clipboard API, for example an insecure context), `failed` or
 `empty`; when it is not `copied` the application may offer manual copying, for
@@ -206,8 +208,10 @@ The application marks the current page on each route change; after moving
 one that no longer does returns to its authored state, and any other group stays
 as the reader left it. `destroy()` restores the authored attributes.
 `createNavigationDrawer` applies the same group rule to its authored
-`details.hw-navigation-drawer-group` elements, so the group of the current page is
-open when the drawer opens.
+`details.hw-navigation-drawer-group` elements: it recomputes the groups each time
+the drawer is shown, so the group of the current page is open when the drawer
+opens, and its controller has the same `refresh()` for a current page that moves
+while the drawer is open.
 
 ## Client-side routing
 

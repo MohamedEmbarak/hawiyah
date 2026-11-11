@@ -95,15 +95,17 @@ describe('Client-side routing with core bindLinkNavigation', () => {
     dialog.showModal = () => { dialog.open = true; }; dialog.close = () => { dialog.open = false; };
     const controller = createNavigationDrawer(dialog); controller.show(); return { dialog, controller, link: dialog.querySelector('a')! };
   };
+  // The drawer decides in a timer after the click was dispatched, so that listeners on ancestors have run (a microtask would run before them during a user click).
+  const dispatched = () => new Promise<void>(resolve => setTimeout(resolve));
   it('[nd-closes-after-routed-click] [ln-drawer-closes] closes the drawer after a routed click only', async () => {
     route();
-    const routed = drawer(); routed.link.click(); await Promise.resolve();
+    const routed = drawer(); routed.link.click(); await Promise.resolve(); expect(routed.dialog.open).toBe(true); await dispatched();
     expect(paths).toEqual(['/components/copy-button']); expect(routed.dialog.open).toBe(false); routed.controller.destroy();
-    const modified = drawer(); click(modified.link, { ctrlKey: true }); await Promise.resolve();
+    const modified = drawer(); click(modified.link, { ctrlKey: true }); await dispatched();
     expect(paths).toHaveLength(1); expect(modified.dialog.open).toBe(true); modified.controller.destroy();
     links!.destroy(); links = undefined;
     const prevent = (event: Event) => event.preventDefault(); document.addEventListener('click', prevent);
-    const guarded = drawer(); guarded.link.click(); await Promise.resolve();
+    const guarded = drawer(); guarded.link.click(); await dispatched();
     expect(guarded.dialog.open).toBe(true); document.removeEventListener('click', prevent); guarded.controller.destroy();
   });
   it('[ln-no-handler-prevents] packaged link handlers do not prevent a plain navigation', () => {

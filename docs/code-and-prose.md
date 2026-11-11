@@ -111,7 +111,7 @@ An alias follows its target through themes, modes and application overrides.
 | `--hw-color-code-constant` | `--hw-color-warning` | Numbers, booleans, named constants |
 | `--hw-color-code-attribute` | `--hw-color-warning` | Markup attribute names |
 | `--hw-color-code-tag` | `--hw-color-danger` | Markup tags and CSS selectors |
-| `--hw-color-code-type` | `--hw-color-danger` | Type and class names |
+| `--hw-color-code-type` | `--hw-color-text` | Type and class names |
 | `--hw-color-code-function` | `--hw-color-text` | Function and method names |
 
 Contrast of each role on `--hw-color-code-surface`, measured in Chromium from
@@ -121,22 +121,25 @@ that drops below it.
 
 | Role | DGA light | DGA dark | Hawiyah light | Hawiyah dark |
 | --- | --- | --- | --- | --- |
-| text, function | 16.44 | 14.53 | 12.76 | 10.59 |
+| text, function, type | 16.44 | 14.53 | 12.76 | 10.59 |
 | comment | 6.69 | 11.74 | 4.60 | 5.36 |
 | punctuation | 9.24 | 13.20 | 5.70 | 7.01 |
 | keyword, property | 5.43 | 6.28 | 5.96 | 6.63 |
 | string | 5.17 | 7.17 | 6.26 | 7.44 |
 | constant, attribute | 4.93 | 7.89 | 5.87 | 7.64 |
-| tag, type | 5.97 | 5.21 | 5.71 | 6.41 |
+| tag | 5.97 | 5.21 | 5.71 | 6.41 |
 
 Open items:
 
-- The available Platforms Code colours give four hues. `function` and `type`
-  have no fifth and sixth hue: `type` shares the hue of `tag`, and `function`
-  keeps the text colour. `--hw-color-primary-text` was not used because it
-  measures 4.32:1 on the code surface in the DGA light palette. The mapping of
-  these two roles awaits the owner's review of rendered samples; the token names
-  are not frozen until then.
+- The available Platforms Code colours give four hues, so `function` and `type`
+  have no hue of their own. Both keep the text colour: the danger hue stays
+  with tags and selectors, and a type name does not read as an error. The two
+  token names exist so that a theme can colour them.
+  `--hw-color-primary-text` was not used because it measures 4.32:1 on the code
+  surface in the DGA light palette.
+- In the dark palettes a comment is close to the text colour (11.74:1 against
+  14.53:1 in DGA dark), because `--hw-color-text-subtle` is that bright there.
+  An alias cannot dim it without leaving the palette.
 - The automated accessibility run of the listing markup reports no violation,
   including for the focusable `pre` with `role="group"`. A screen-reader check
   of that element has not been done and is required before the contract is

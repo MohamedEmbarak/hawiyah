@@ -4,7 +4,7 @@ Angular components for Hawiyah — هوية, a UI library built to comply with t
 Platforms Code. Install with `npm install @hawiyah/styles @hawiyah/angular`. This is a
 pre-1.0 release, so a minor version may still change its API.
 
-The 77 catalog entries render native HTML with Angular templates. There are no
+The 85 catalog entries render native HTML with Angular templates. There are no
 custom-element wrappers, schemas, runtime HTML injection, or framework renderers
 inside core. Angular owns state and DOM; the shared core supplies pure combobox
 transitions and keyboard navigation. Shared `hw-` classes provide appearance.
@@ -384,8 +384,9 @@ Spacer, AppShell and PageHeader have the element selector only.
 - AspectRatio: numeric `ratio`, default 16/9. Spacer is decorative.
 - Section: optional accessible `label`, written as `aria-label`. `hw-section`
   with a label also gets `role="region"`; `<section hwSection label="…">` is a
-  native landmark and gets no role. An `aria-label` or `role` written on the
-  element is kept while `label` is not given.
+  native landmark and gets no role. An `aria-label` or `role` that the
+  application writes or binds on the element (`[attr.aria-label]`) is kept;
+  `label` takes its place only while it is set.
 - AppShell accepts `mainId`, the required `skipLabel`, `sidebarWidth` and `side`. Project
   `[hwShellHeader]`, `[hwShellSidebar]`, default main content and `[hwShellFooter]`.
   The skip link focuses the main landmark, whose default ID is `main-content`.
@@ -444,6 +445,11 @@ depended on the wrappers:
   grids, with zero specificity, so a card fills its grid row.
 - NavigationDrawer groups no longer all start closed: the group that holds the
   current page is open.
+- The public method `HwNavigationDrawerComponent.groupEntries(item)` is removed;
+  core `getNavigationGroupEntries(item)` returns the same entries.
+- `hw-section` no longer owns `aria-label` and `role` through host bindings: a
+  value the application writes or binds there is kept, and `label` takes its
+  place only while it is set.
 
 TextField additionally supports text/email/password/tel/url/search, native
 number/range/color, and date/datetime-local/month/week/time. Its value remains a
@@ -584,7 +590,10 @@ Enter or Space) and focus stays on the button. The icon follows the state
 (`copy-01`, `tick-02`, `alert-02`). After a success the status holds
 `copiedMessage` for `feedbackDuration`, visually hidden; after a failure it holds
 `failedMessage` as visible text until the next activation. An activation first
-empties the status, so a repeated message is announced again. `focus()` focuses
+empties the status, so a repeated message is announced again. A result that
+settles at once (an empty text, no Clipboard API) empties and fills the status
+inside one task; that an identical message is then repeated has not been verified
+with a screen reader. `focus()` focuses
 the button. No attribute is forwarded to the button; `class` and `style` on
 `hw-copy-button` apply to the root.
 
