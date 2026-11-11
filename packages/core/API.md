@@ -64,16 +64,19 @@ build and consume these APIs through the workspace until an npm release is annou
 - `CalendarSystem = 'gregory'|'islamic-umalqura'`.
 - `getCalendarDateParts(iso, calendar?)` returns `{year,month,day}`;
   `convertCalendarDate(parts, calendar?)` returns Gregorian `YYYY-MM-DD`.
-- `formatCalendarDate(iso, {calendar?,locale?,numberingSystem?,year?,month?,day?,
-  weekday?,era?,dateStyle?})` formats those same date-only fields. It uses the
+- `formatCalendarDate(iso, {locale,calendar?,numberingSystem?,year?,month?,day?,
+  weekday?,era?,dateStyle?})` formats those same date-only fields. `locale` is
+  required and has no default. It uses the
   pinned reference for all numeric Hijri values, including dates where ICU differs.
 - `isCalendarDateSupported(iso, calendar?)` checks conversion support;
   `isDateInRange(iso,min?,max?)` validates actual Gregorian dates and bounds.
 - `moveCalendarDate(iso, amount, 'day'|'month'|'year', calendar?)` uses calendar
   math and clamps to the destination month's actual last day. Unsupported Hijri
   movement throws RangeError instead of silently using another calendar.
-- `getCalendarMonth({month?,value?,min?,max?,locale?,calendar?,weekStartsOn?})`
-  returns `{label,weekdays,days,previous,next}`. Each day is
+- `getCalendarMonth({locale,month?,value?,min?,max?,calendar?,weekStartsOn?})`
+  returns `{label,weekdays,days,previous,next}`. `locale` is required and has no
+  default; month names, weekday names and the Hijri era in `label` are Intl
+  output for it, and core adds no words of its own. Each day is
   `{value,label,disabled,outside,selected,today}`. Week starts Sunday (0) by default;
   complete grids have 28/35/42 cells. Values are always Gregorian ISO dates.
 - `UMALQURA_MIN_DATE='1924-08-01'`, `UMALQURA_MAX_DATE='2077-11-16'` bound the
@@ -186,7 +189,8 @@ Pagination root: `data-hw="pagination"`, native buttons with `data-hw-page="1"`
 etc., optional `data-hw-page="previous|next"`, and `data-hw-total="N"`.
 Options `{page?, totalPages?, onPageChange?}`; controller `{page, select(page),
 destroy()}`. Current page uses `aria-current="page"`; boundaries disable previous
-and next. Detail `{page}`. Supply a localized nav label. It does not fetch data.
+and next. Detail `{page}`. The application supplies the nav label and every other
+text (see "Application text"). It does not fetch data.
 
 Buttons, fields, selects, tables and file inputs use native HTML and CSS.
 Accordions work natively without enhancement; opt-in vanilla motion uses
@@ -308,3 +312,54 @@ lost, it tries the following enabled dismiss buttons, then the nearest previous
 button, then the labelled region. The region must be programmatically focusable.
 A rejected request, a visible replacement with the same ID, disconnection or
 focus deliberately placed elsewhere leaves focus with its owner.
+
+## Application text
+
+Core holds no user-visible or accessible-name strings and no language registry.
+The registries `getCalendarLabels`, `fileUploadLabels` and
+`getSiteVerificationLabels` are removed. Their names stay exported from
+`src/removed.ts` for the transition only: they hold no text (every value is an
+empty string), are typed `RemovedExport` so that source still using them fails
+to type-check, and are deleted once no adapter imports them. The types
+`FileUploadLabels` and `SiteVerificationLabels` remain as the shapes the
+application fills. `FileUploadLabels` is `{selected, uploading,
+complete, error, remove, getProgressLabel(name), getRemoveLabel(name)}`.
+`SiteVerificationOptions` requires every label and has no `locale`.
+
+- `hasText(value)` is true for a string with a non-space character, a finite
+  number, a function, a non-empty array containing text and any other rendered
+  value; false for `null`, `undefined`, booleans, blank strings, `NaN` and
+  empty arrays.
+- `requireText(component, name, value, when?)` returns `hasText(value)`. When the
+  text is missing it warns once per component and input with `console.warn` in
+  development and returns `false`. It never substitutes a string: the caller
+  renders nothing in its place. Development means `process.env.NODE_ENV` is not
+  `'production'`; a bundler replaces that expression, and a page without a
+  bundler can set `globalThis.__HAWIYAH_DEV__` to `true` or `false`. Nothing runs
+  at module evaluation and no browser global is read, so it is safe during server
+  rendering. `resetTextWarnings()` clears the once-only memory for tests.
+- `formatTextTemplate(template, values)` replaces `{name}` placeholders in an
+  application-supplied template and leaves unknown placeholders as written. The
+  vanilla adapter uses it for template attributes such as
+  `data-hw-page-label="… {page}"`.
+
+## In-page links
+
+- `getFragmentHref(id, documentUrl?, baseUrl?)` is pure. It returns `#id`
+  (percent-encoded) when no document URL is known or the base equals the document
+  URL without its fragment; the document path, query and fragment when a base on
+  the same origin differs; and the absolute document URL with the fragment when
+  the base is on another origin.
+- `getFragmentId(href)` returns the decoded fragment of `#id` or `path#id`.
+- `bindFragmentLink(link, {id?, navigate?, updateHash?})` returns `{refresh(),
+  activate(), destroy()}`. It leaves the rendered `#id` untouched when called, so
+  hydration sees the server markup. On focus, pointer contact, the context menu,
+  auxiliary clicks and clicks it rewrites the href with `getFragmentHref` for the
+  current `location` and `document.baseURI`. A plain primary click is handled in
+  the page: the target is found by id, then either `navigate(id, target)` runs or
+  the target is scrolled into view without animation and focused, with a
+  temporary `tabindex="-1"` when needed. The URL is not changed unless
+  `updateHash` is true (`history.replaceState`). Modified clicks, other `target`
+  values, a missing target and `navigate` returning `false` are left to the
+  browser. `destroy()` removes the listeners and restores `#id` only if the href
+  is still the value it wrote. On a server DOM without a window it is inert.

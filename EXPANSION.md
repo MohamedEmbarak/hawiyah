@@ -45,7 +45,9 @@ boundary, not a simulated implementation.
   delegates native input number semantics (step/min/max/empty).
 - Calendar: labelled month toolbar, weekday headings, focusable date grid;
   arrows/Home/End/PageUp/PageDown; min/max and disabled selection; locale and
-  calendar independent of direction. Values are ISO Gregorian dates.
+  calendar independent of direction. `locale` is required and only formats:
+  month names, weekday names and the era come from Intl, every other label from
+  the application. Values are ISO Gregorian dates.
 - DatePicker: editable Gregorian ISO text plus accessible labelled dialog Calendar;
   display calendar can be gregory or islamic-umalqura. No handwritten conversions.
   The custom calendar is the only picker popup. Malformed drafts stay visible and
@@ -83,17 +85,24 @@ boundary, not a simulated implementation.
   createPortalHeader and enhances data-hw="portal-header".
 - SecondaryNav: named ordinary page links with aria-current; no tab/menu roles.
   PortalLayout composes header, optional secondary links/breadcrumb, focusable
-  main target and footer. Defaults are Arabic and RTL independently. Follow the
+  main target and footer. It has no default strings and sets no direction of
+  its own: the application supplies every label and, where it wants one, `dir`.
+  Its skip link follows the in-page link contract in CONTRACT.md. Follow the
   adapter PORTAL.md for exact props and stable explicit Angular SSR IDs.
 - All controls: disabled/readonly where meaningful, form values/reset, accessible
   names, error/hint associations, no unsafe HTML, SSR-safe imports, RTL.
+- All text: no component in this expansion ships a string. Accessible names,
+  labels of internal controls, status, empty and validation messages and
+  templated text (page, slide, count and remove labels) are inputs the
+  application supplies, under the rules in CONTRACT.md "Text and localisation".
 - Variants via data-variant/data-tone/data-size, shared tokens, CSS logical props.
 
 ## Shared behavior
 
 `CalendarSystem = 'gregory' | 'islamic-umalqura'`.
-`getCalendarMonth({month?,value?,min?,max?,locale?,calendar?,weekStartsOn?})`
-returns `{label,weekdays:string[],days:CalendarDay[],previous,next}`.
+`getCalendarMonth({locale,month?,value?,min?,max?,calendar?,weekStartsOn?})`
+returns `{label,weekdays:string[],days:CalendarDay[],previous,next}`. `locale` is
+required; the month label, including the Hijri era, is Intl output for it.
 CalendarDay = `{value:string,label:string,disabled:boolean,outside:boolean,
 selected:boolean,today:boolean}`. month, value, min, max and prev/next use ISO
 Gregorian date strings. Weeks contain seven days. weekStartsOn defaults Sunday 0.
@@ -103,6 +112,11 @@ Use pinned @internationalized/date for date-only arithmetic with Hawiyah’s pub
 `normalizeDigits(value)` converts Arabic-Indic and Eastern Arabic digits.
 `clampRange([lower,upper],min,max,changed:'lower'|'upper')` returns numeric pair.
 `sortRows(rows,key,direction:'ascending'|'descending',locale?)` immutable stable sort.
+`requireText(component,name,value,when?)` and `hasText(value)` report missing
+application text in development; `formatTextTemplate(template,values)` fills
+`{name}` placeholders in application templates. `getFragmentHref(id,documentUrl?,
+baseUrl?)`, `getFragmentId(href)` and `bindFragmentLink(link,options?)` keep
+packaged in-page links on the current document under `<base href>`.
 
 ## Layout contract
 

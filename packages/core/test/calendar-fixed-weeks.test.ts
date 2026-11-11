@@ -5,7 +5,7 @@ import {UMALQURA_MIN_DATE,UMALQURA_MAX_DATE} from '../src/saudi-calendar';
 describe('fixed calendar weeks are presentation-only',()=>{
   for(const calendar of ['gregory','islamic-umalqura'] as const)for(const month of ['2026-02-14','2026-08-15','2026-10-28',UMALQURA_MIN_DATE,UMALQURA_MAX_DATE]) {
     it(`${calendar} ${month} preserves existing dates and fills six weeks`,()=>{
-      const options={month,value:month,calendar,min:UMALQURA_MIN_DATE,max:UMALQURA_MAX_DATE};
+      const options={month,value:month,calendar,locale:'en',min:UMALQURA_MIN_DATE,max:UMALQURA_MAX_DATE};
       const normal=getCalendarMonth(options),fixed=getCalendarMonth({...options,fixedWeeks:true});
       expect(fixed.days).toHaveLength(42);
       expect(new Set(fixed.days.map(day=>day.value)).size).toBe(42);

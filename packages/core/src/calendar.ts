@@ -15,7 +15,8 @@ export interface CalendarMonthOptions {
   value?: string;
   min?: string;
   max?: string;
-  locale?: string;
+  /** BCP 47 tag handed to Intl for month and weekday names. There is no default. */
+  locale: string;
   calendar?: CalendarSystem;
   weekStartsOn?: number;
   /** Render six complete weeks, including adjacent-month days, without spacer rows. */
@@ -30,13 +31,14 @@ export interface CalendarMonth {
 }
 
 export interface CalendarDateFormatOptions extends Pick<Intl.DateTimeFormatOptions, 'weekday' | 'era' | 'year' | 'month' | 'day' | 'dateStyle' | 'numberingSystem'> {
-  locale?: string;
+  /** BCP 47 tag handed to Intl. There is no default. */
+  locale: string;
   calendar?: CalendarSystem;
 }
 
 /** Canonical date-only formatting using the same numeric fields as the picker. */
-export function formatCalendarDate(value: string, options: CalendarDateFormatOptions = {}): string {
-  const { locale = 'ar-SA', calendar = 'gregory', ...requested } = options;
+export function formatCalendarDate(value: string, options: CalendarDateFormatOptions): string {
+  const { locale, calendar = 'gregory', ...requested } = options;
   const fields = getCalendarDateParts(value, calendar);
   const format = Object.keys(requested).some(key => ['dateStyle', 'year', 'month', 'day', 'weekday', 'era'].includes(key)) ? requested : { ...requested, year: 'numeric' as const, month: 'long' as const, day: 'numeric' as const };
   const formatter = new Intl.DateTimeFormat(locale, { ...format, calendar, timeZone: 'UTC', numberingSystem: 'latn' });
@@ -89,8 +91,8 @@ export function moveCalendarDate(value: string, amount: number, unit: 'day' | 'm
   return iso(current.add(duration));
 }
 
-export function getCalendarMonth(options: CalendarMonthOptions = {}): CalendarMonth {
-  const { locale = 'ar-SA', calendar = 'gregory', weekStartsOn = 0 } = options;
+export function getCalendarMonth(options: CalendarMonthOptions): CalendarMonth {
+  const { locale, calendar = 'gregory', weekStartsOn = 0 } = options;
   if (!Number.isInteger(weekStartsOn) || weekStartsOn < 0 || weekStartsOn > 6) throw new RangeError('Hawiyah: weekStartsOn must be 0 through 6.');
   const system = calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar();
   const currentDay = today('Asia/Riyadh');
@@ -107,7 +109,9 @@ export function getCalendarMonth(options: CalendarMonthOptions = {}): CalendarMo
   // from the Saudi table, since ICU disagrees with historical/future table dates.
   const nameAnchor = calendar === 'gregory' ? first.toDate('UTC') : parseDate(convertCalendarDate({ year: 1447, month: first.month, day: 15 }, calendar)).toDate('UTC');
   const monthName = new Intl.DateTimeFormat(locale, { month: 'long', calendar, timeZone: 'UTC' }).format(nameAnchor);
-  const label = `${monthName} ${number.format(first.year)}${calendar === 'islamic-umalqura' ? locale.startsWith('ar') ? ' هـ' : ' AH' : ''}`;
+  // The era word comes from Intl for the requested locale; nothing is chosen by language here.
+  const era = calendar === 'islamic-umalqura' ? new Intl.DateTimeFormat(locale, { era: 'short', year: 'numeric', calendar, timeZone: 'UTC' }).formatToParts(nameAnchor).find(part => part.type === 'era')?.value : undefined;
+  const label = `${monthName} ${number.format(first.year)}${era ? ` ${era}` : ''}`;
   const adjacent = (amount: number) => { try { return moveCalendarDate(iso(first), amount, 'month', calendar); } catch { return iso(first); } };
   return {
     label,

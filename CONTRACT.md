@@ -39,7 +39,66 @@ must be separately importable; base components do not globally reset application
 items have optional disabled, key is KeyboardEvent.key, orientation horizontal|vertical.
 `formatNumber(value, options?)`, `formatDate(value, options?)` using Intl, explicit
 locale/calendar/numberingSystem/timeZone; never hand-code Hijri conversion.
+`requireText`, `hasText`, `formatTextTemplate` report and format application text;
+`getFragmentHref`, `getFragmentId`, `bindFragmentLink` serve in-page links (both below).
 DOM utilities may be invoked by adapters but may not render into framework trees.
+
+## Text and localisation
+
+The packages are agnostic to localisation. They offer layout direction and
+nothing else in that area: no language registry, no translations and no default
+strings.
+
+- Every user-visible string and every accessible-name string is content that the
+  application supplies: children, a slot, projected content or authored markup
+  for a component's primary content, and a named input for text the component
+  places itself (accessible names, labels of internal controls, headings it
+  renders, live-region and validation messages, templated text).
+- A named input has the same name and shape as a React prop, a Vue prop, an
+  Angular input and a vanilla controller option. Strings are `<thing>Label` or
+  `<thing>Message`; templated text is a function `get<Thing>Label(...)` or
+  `get<Thing>Message(...)` with one signature in every adapter, returning the
+  whole string. Adapters never join texts with words or language-specific
+  punctuation.
+- Vanilla reads text, in order, from authored markup, from `data-hw-<name>` on the
+  controller root (for a function input, a template such as
+  `data-hw-page-label="… {page}"`, filled by `formatTextTemplate`), then from the
+  controller option of the same name.
+- Text needed in every use is required: a required prop in React types,
+  `@Input({ required: true })` in Angular, `required: true` in Vue. Text needed
+  only when a prop, slot, handler or attribute switches a feature on is required
+  under that condition. Text whose need depends on runtime data (an empty list,
+  overflow, a failed validation) is required always. Optional text has no default.
+- Adapters call `requireText(component, name, value, when?)` from `@hawiyah/core`
+  where a required text would be rendered. It warns once per component and input
+  in development and does nothing in production builds; it is safe during server
+  rendering.
+- When required text is missing the component renders nothing in its place and
+  omits the attribute. It does not invent a name, reuse another input or hide the
+  control. A constraint with a missing validation message still blocks submission.
+- Direction is read from `dir` and never from `lang`. No component sets `dir`
+  unless the application supplies it. No adapter reads `lang`, the document
+  language or a locale to choose a string, a default or a behaviour.
+- `locale` is a formatting argument only: a BCP 47 tag handed to Intl. Calendar
+  and DatePicker, which print month names, weekday names and the era from Intl,
+  require it; core `getCalendarMonth` and `formatCalendarDate` have no default
+  locale. Formatting adds no words of its own.
+- Thrown errors and console warnings are developer diagnostics in English. They
+  never reach the document.
+
+## In-page links
+
+Packaged in-page links (the AppShell, PortalHeader and PortalLayout skip links
+and ContentNavigation links) are rendered as a bare `#id` on the server and on
+the first client render. In the browser the adapter binds each link with
+`bindFragmentLink`: from the reader's first interaction the href resolves to the
+current document under any `<base href>`, including after client-side route
+changes, so modified clicks, "open in new tab" and "copy link" stay on the page.
+A plain activation is handled in the page: the target is scrolled into view and
+receives focus. The URL fragment is not written unless the application asks for
+it (`updateHash` on ContentNavigation), so hash-routed applications keep their
+route. A skip link is rendered only when its target id is known. Adapters do not
+read the location during server rendering.
 
 ## Vanilla markup
 
@@ -52,7 +111,8 @@ and details work without JavaScript. The core and vanilla API guides define beha
 Button, Field/TextField, Textarea, Select, Checkbox, Radio, Switch, Tabs, Dialog,
 Combobox, Accordion, Card, Badge, Alert, Table, Pagination, Breadcrumb, Progress,
 Skeleton, Spinner, Avatar, Divider, Tooltip, FileUpload, Stepper, EmptyState.
-Native semantics first. Framework-specific props idiomatic. Blocks and examples
+Native semantics first. Framework-specific props idiomatic, except text inputs,
+which share one name and shape (see Text and localisation). Blocks and examples
 add service discovery, conditional application/review, request management.
 
 ## Package build

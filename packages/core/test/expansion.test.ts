@@ -45,7 +45,7 @@ describe('bounded calendar math and canonical formatting', () => {
     expect(first.days.length % 7).toBe(0);
     expect(first.weekdays[0]).toBe('Mon');
     expect(first.days.filter(day => day.value < UMALQURA_MIN_DATE).every(day => day.disabled && day.label === '')).toBe(true);
-    const last = getCalendarMonth({ month: '2100-01-01', calendar: 'islamic-umalqura' });
+    const last = getCalendarMonth({ month: '2100-01-01', calendar: 'islamic-umalqura', locale: 'en' });
     expect(last.next).toBe(last.days.find(day => !day.outside)?.value);
     expect(last.days.filter(day => day.value > UMALQURA_MAX_DATE).every(day => day.disabled && day.label === '')).toBe(true);
   });
@@ -53,6 +53,6 @@ describe('bounded calendar math and canonical formatting', () => {
     expect(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'en-GB', year: 'numeric', month: '2-digit', day: '2-digit' })).toBe('01/04/1451 AH');
     expect(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'ar-SA', numberingSystem: 'latn' })).toContain('1451');
     expect(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'en', numberingSystem: 'deva' })).toContain('1451');
-    expect(() => formatCalendarDate('1800-01-01', { calendar: 'islamic-umalqura' })).toThrow(RangeError);
+    expect(() => formatCalendarDate('1800-01-01', { calendar: 'islamic-umalqura', locale: 'en' })).toThrow(RangeError);
   });
 });

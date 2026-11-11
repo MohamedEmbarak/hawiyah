@@ -205,7 +205,11 @@ export type { ContentNavigationItem, ContentNavigationOptions, ContentNavigation
 export { getSearchSuggestions, requestSearchDialogClose } from './search-suggestions.js';
 export type { SearchSuggestionMatch, SearchSuggestionSegment } from './search-suggestions.js';
 export { prepareToastDismissFocus } from './toast-focus.js';
-export { getCalendarLabels } from './calendar-labels.js';
+export { hasText, requireText, resetTextWarnings, formatTextTemplate } from './text.js';
+export { getCalendarLabels, getSiteVerificationLabels, fileUploadLabels } from './removed.js';
+export type { RemovedExport } from './removed.js';
+export { getFragmentHref, getFragmentId, bindFragmentLink } from './fragment-link.js';
+export type { FragmentLink, FragmentLinkOptions } from './fragment-link.js';
 
-export { fileUploadProgress, fileUploadLabels } from './file-upload-state.js';
+export { fileUploadProgress } from './file-upload-state.js';
 export type { FileUploadItem, FileUploadLabels } from './file-upload-state.js';

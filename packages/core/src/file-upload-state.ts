@@ -12,7 +12,16 @@ export function fileUploadProgress(value: number | undefined): number | undefine
   return value === undefined || !Number.isFinite(value) ? undefined : Math.min(100, Math.max(0, value));
 }
 
-export const fileUploadLabels = {
-  selected: 'جاهز للرفع', uploading: 'جارٍ الرفع', complete: 'اكتمل الرفع', error: 'تعذر الرفع', remove: 'إزالة الملف',
-};
-export type FileUploadLabels = typeof fileUploadLabels;
+/** Text for the upload list. All of it is supplied by the application. */
+export interface FileUploadLabels {
+  selected: string;
+  uploading: string;
+  complete: string;
+  error: string;
+  /** Visible text of the remove button. */
+  remove: string;
+  /** Accessible name of one file's progress bar. */
+  getProgressLabel: (name: string) => string;
+  /** Accessible name of one file's remove button. */
+  getRemoveLabel: (name: string) => string;
+}
