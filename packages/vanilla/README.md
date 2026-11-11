@@ -29,10 +29,78 @@ Native buttons, fields, select, file input, progress, and details/summary accord
 work without this package. Tabs, single-select combobox, tooltip, and pagination
 enhance explicit `data-hw` hooks. A native `<dialog>` supplies modality, its top
 layer, Escape handling, and focus containment through `showModal()`/`close()`.
-Supply accessible names and localized text in markup. The default combobox
-results announcement and required-selection message are Arabic; override
-`getResultsMessage` and `invalidSelectionMessage` for other locales. A required
-combobox must have a committed value before native form validation succeeds.
+Supply accessible names and every other text in markup, root attributes or
+controller options (see below). A required combobox must have a committed value
+before native form validation succeeds.
+
+## Text is supplied by the application
+
+The package contains no built-in words in any language and never reads `lang`,
+the document language or `navigator.language` to choose text. Every text that a
+controller places on an element it creates (accessible names, labels of internal
+controls, live-region, status and validation messages) comes from the
+application, from these sources in order:
+
+1. Authored markup: the text or `aria-label` already on the element the
+   controller would otherwise name is used as written.
+2. An attribute on the controller root: `data-hw-<kebab-name>` for a string input
+   (`overflowLabel` → `data-hw-overflow-label`) and, for a function input, a
+   template attribute named after the input without `get`, whose `{placeholders}`
+   are filled with core `formatTextTemplate` (`getPageLabel` →
+   `data-hw-page-label="Page {page}"`).
+3. The controller option of the same name, which wins over the attribute.
+
+`enhance()` therefore works from markup alone. When a required text is missing
+the controller renders nothing in its place (no text node, the attribute is
+omitted) and core `requireText` warns once per component and input in
+development (`Hawiyah: <Component> requires "<name>" …`). A validation
+constraint without its message still blocks submission. Function inputs return
+the whole string; the controller adds no words or punctuation to it.
+
+| Controller | Text inputs (required unless noted) |
+| --- | --- |
+| `createCalendar` | `label`, `previousLabel`, `nextLabel`, `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`, `rangeLabel`, `unsupportedMessage`; optional `getDayLabel(value)`; `locale` is required |
+| `createDatePicker` | `calendarLabel`, `openLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage`, `unsupportedMessage`; `unavailableMessage` when `isDateDisabled` is given; `locale` is required |
+| `createCarousel` | `label`, `getSlideLabel(position, total)` (one-based), `emptyLabel`; optional `carouselDescription`, `slideDescription` |
+| `createCombobox` | `getResultsMessage(count)`; `requiredMessage` when the input is required |
+| `createContentNavigation` | `label` |
+| `createFeedback` | `successMessage`; optional `getStatusMessage(value)` |
+| `createFileDropzone` | when `[data-hw-file-status]` exists: `getSelectedMessage(files)`, `unsupportedDropMessage`, and `getRejectedMessage(rejected)` when `accept` or `maxSize` is set |
+| `createFileUploadList` | `labels` (core `FileUploadLabels`, including `getProgressLabel(name)` and `getRemoveLabel(name)`) |
+| `createMultiSelect` | `getResultsMessage(count)` when `[data-hw-status]` exists; `requiredMessage` when required |
+| `createNavigationDrawer` | `navigationLabel` |
+| `createPagination` | `label`; with an items container `getPageLabel(page)`, `getGapLabel(start, end)`, `jumpLabel`, `goLabel` |
+| `createPasswordField` | `showLabel`, `hideLabel` |
+| `createPortalHeader` | `menuLabel`, `navigationLabel`; optional `brandLabel` (see [PORTAL.md](PORTAL.md)) |
+| `createSearchField` | `clearLabel`; `getResultsMessage(count)` when suggestions are given |
+| `createSkipLink` | the link's own text (`skipLabel`) |
+| `createStepper` | `label` |
+| `createTabs` | `overflowLabel` when overflow is `menu` |
+| `createTagInput` | `getRemoveLabel(tag)`; `requiredMessage` when required |
+| `createToastRegion` | `label`; `getDismissLabel(toast)` (the toast element; template attribute `{title}`) for dismissible toasts |
+
+Renamed in this release (no aliases): combobox `invalidSelectionMessage` →
+`requiredMessage`; search field `resultsMessage` → `getResultsMessage`;
+dropzone `getStatusMessage(files, rejected)` → `getSelectedMessage(files)` and
+`getRejectedMessage(rejected)`. The core registries `getCalendarLabels`,
+`fileUploadLabels` and `getSiteVerificationLabels` no longer provide text.
+
+## Skip links and in-page links
+
+Packaged in-page links keep `href="#id"` in markup. `createSkipLink(link)`
+(registered as `data-hw="skip-link"`) and `createContentNavigation` bind them with
+core `bindFragmentLink`: on interaction the href resolves to the current document
+under any `<base href>`, and a plain activation scrolls to the target and moves
+focus to it without writing the URL fragment. `createContentNavigation` accepts
+`updateHash` (`data-hw-update-hash="true"`) to write the resolved URL with
+`history.replaceState`. A skip link inside `[data-hw="portal-header"]` is bound by
+the header and shares one binding with `enhance()`.
+
+```html
+<a class="hw-skip-link" data-hw="skip-link" href="#main-content">Skip to main content</a>
+<nav data-hw="pagination" aria-label="Search results pages" data-hw-page-label="Page {page}"
+  data-hw-gap-label="Pages {start} to {end}" data-hw-jump-label="Go to page" data-hw-go-label="Go">…</nav>
+```
 
 ## Behavior choice
 
@@ -59,12 +127,12 @@ Tooltip guidance follows the [APG work-in-progress pattern](https://www.w3.org/W
 focus/hover, persistent hover over content, Escape, and descriptive text only.
 
 DatePicker provides a visible Gregorian/Hijri switch inside its native dialog.
-An explicit `locale` controls generated navigation and validation text as well as date formatting. With no explicit locale the controller uses the host language, falling back to Arabic. Authored trigger labels and explicit message options take precedence.
+A BCP 47 `locale` (`options.locale` or `data-hw-locale`) is required and only formats dates: month and weekday names come from Intl, and the controller throws without it. Every word in the picker (trigger, navigation, switch and validation text) is application text; see the table above.
 The switch preserves the submitted Gregorian ISO date and keeps the dialog open.
 An associated live output below the input shows the selected date in the active
 calendar, including when the dialog is closed. The editable native field retains
 Gregorian ISO semantics; it is not a custom Hijri text editor. Blank values hide
-the output, and unsupported Hijri dates show a range message instead.
+the output, and unsupported Hijri dates show `unsupportedMessage` instead.
 Umm al-Qura uses the pinned published reference shared by core, not runtime ICU
 conversion. Its explicit range is 1924-08-01 through 2077-11-16; an unsupported
 selection is preserved and marked invalid when Hijri is chosen. No arithmetic

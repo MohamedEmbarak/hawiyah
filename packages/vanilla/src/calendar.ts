@@ -42,11 +42,13 @@ export interface CalendarController {
   select(value: string): void; setValue(value: string): void; setMonth(value: string): void; setCalendar(calendar: CalendarSystem): void; destroy(): void;
 }
 
+// Calendars nested in a DatePicker dialog: the dialog's calendarLabel already reports a missing name, so the calendar does not warn again.
+const pickerCalendars = new WeakSet<Element>();
 export function createCalendar(root: HTMLElement, options: CalendarOptions = {}): CalendarController {
   const scope = createCleanup(); const document = root.ownerDocument;
   const locale = calendarLocale(root, options.locale, 'createCalendar');
   const say = (name: keyof CalendarTexts) => text(root, name, options[name]);
-  remember(scope, root, ['aria-label']); nameRoot(root, 'Calendar', say('label'));
+  remember(scope, root, ['aria-label']); if (!pickerCalendars.has(root) || say('label') !== undefined) nameRoot(root, 'Calendar', say('label'));
   let calendar = options.calendar ?? (root.dataset.hwCalendar === 'islamic-umalqura' ? 'islamic-umalqura' : 'gregory');
   let min = options.min ?? root.dataset.hwMin; let max = options.max ?? root.dataset.hwMax;
   const refreshBounds = () => { min = options.min ?? root.dataset.hwMin; max = options.max ?? root.dataset.hwMax; };
@@ -231,6 +233,7 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
     input.value = renderedValue;
     presence.refresh();
   };
+  pickerCalendars.add(host); scope.add(() => pickerCalendars.delete(host));
   const calendar = createCalendar(host, {
     value, get min() { return input.min || undefined; }, get max() { return input.max || undefined; }, locale, calendar: system, isDateDisabled: options.isDateDisabled, getDayLabel: options.getDayLabel,
     get label() { return dialog.getAttribute('aria-label') ?? undefined; }, get previousLabel() { return say('previousLabel'); }, get nextLabel() { return say('nextLabel'); }, get unsupportedMessage() { return say('unsupportedMessage'); },

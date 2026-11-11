@@ -106,7 +106,7 @@ describe('native control enhancements', () => {
   });
   it('rejects oversized or mismatched dropped files without pretending to upload them', () => {
     const root = mount('<label><input type="file" data-hw-file-input accept=".pdf"><span data-hw-file-status role="status"></span></label>');
-    const changed = vi.fn(); const rejectedMessage = vi.fn((files: readonly File[]) => `Not attached: ${files.map(file => file.name).join(' ')}`); const controller = createFileDropzone(root, { maxSize: 2, onValueChange: changed, getRejectedMessage: rejectedMessage, getSelectedMessage: files => `${files.length} attached` });
+    const changed = vi.fn(); const rejectedMessage = vi.fn((files: readonly File[]) => `Not attached: ${files.map(file => file.name).join(' ')}`); const controller = createFileDropzone(root, { maxSize: 2, onValueChange: changed, getRejectedMessage: rejectedMessage, getSelectedMessage: files => `${files.length} attached`, unsupportedDropMessage: 'Use the file chooser.' });
     const event = new Event('drop', { bubbles: true, cancelable: true }); Object.defineProperty(event, 'dataTransfer', { value: { files: [new File(['four'], 'sample.pdf', { type: 'application/pdf' })] } }); root.dispatchEvent(event);
     expect(controller.value).toEqual([]); expect(changed).toHaveBeenCalledWith([]); expect(rejectedMessage).toHaveBeenCalledWith([expect.objectContaining({ name: 'sample.pdf' })]); expect(root.querySelector('[role=status]')!.textContent).toBe('Not attached: sample.pdf'); controller.destroy();
   });

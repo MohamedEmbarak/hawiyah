@@ -2,8 +2,8 @@ import { observeFieldValue, clampRange, createCleanup, formatNumber, isDisabled,
 import { emit, ensureId, eventElement, nativeChange, readOnly, remember, required, templated, text, validityMessage, writeText } from './dom.js';
 
 export interface ValueController<T> { readonly value: T; destroy(): void }
-/** showLabel and hideLabel are required: the option, else data-hw-show-label / data-hw-hide-label on the toggle or the root.
- * The toggle's authored aria-label or text is used as showLabel when no option is given. */
+/** showLabel and hideLabel are required. showLabel: the option, else the toggle's authored aria-label or text, else data-hw-show-label
+ * on the toggle or the root. hideLabel: the option, else data-hw-hide-label on the toggle or the root. */
 export interface PasswordFieldOptions { showLabel?: string; hideLabel?: string; toggleVariant?: 'icon' | 'text' }
 export function createPasswordField(root: HTMLElement, options: PasswordFieldOptions = {}): { toggle(): void; destroy(): void } {
   const input = required<HTMLInputElement>(root, '[data-hw-password-input]');
@@ -13,7 +13,7 @@ export function createPasswordField(root: HTMLElement, options: PasswordFieldOpt
   remember(scope, input, ['type']); remember(scope, button, ['aria-pressed', 'aria-label', 'aria-controls', 'type', 'disabled', 'class', 'data-toggle-variant']);
   const children = [...button.childNodes]; scope.add(() => button.replaceChildren(...children));
   const authored = button.getAttribute('aria-label')?.trim() || button.textContent?.trim() || undefined;
-  const show = options.showLabel ?? button.dataset.hwShowLabel ?? authored ?? text(root, 'showLabel');
+  const show = options.showLabel ?? authored ?? button.dataset.hwShowLabel ?? text(root, 'showLabel');
   const hide = options.hideLabel ?? button.dataset.hwHideLabel ?? text(root, 'hideLabel');
   const variant = options.toggleVariant ?? button.dataset.hwToggleVariant ?? root.dataset.hwToggleVariant ?? 'icon';
   button.type = 'button'; button.classList.add('hw-password-toggle'); button.setAttribute('aria-controls', ensureId(scope, input, 'password'));
@@ -265,6 +265,7 @@ export function createFileDropzone(root: HTMLElement, options: FileDropzoneOptio
   const rejectedMessage = templated(root, 'getRejectedMessage', options.getRejectedMessage, (files: readonly File[]) => ({ count: files.length }));
   const restricted = () => !!input.accept || Number.isFinite(maxSize);
   if (status) requireText('FileDropzone', 'getSelectedMessage', options.getSelectedMessage ?? root.getAttribute('data-hw-selected-message'), 'a selection status is rendered');
+  if (status) requireText('FileDropzone', 'unsupportedDropMessage', text(root, 'unsupportedDropMessage', options.unsupportedDropMessage), 'a selection status is rendered');
   if (status && restricted()) requireText('FileDropzone', 'getRejectedMessage', options.getRejectedMessage ?? root.getAttribute('data-hw-rejected-message'), 'accept or maxSize is set');
   const announce = (rejectedFiles: readonly File[]) => {
     const value = [...(input.files || [])]; const rejected = rejectedFiles.length > 0;
