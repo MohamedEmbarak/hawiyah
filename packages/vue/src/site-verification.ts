@@ -20,7 +20,7 @@ export const SiteVerification=defineComponent({
             props.domain && check('link-04',text('domainLabel'),props.domain,text('domainDescription')),
             check('lock-password',text('httpsLabel'),undefined,text('httpsDescription')),
           ]),
-          props.registrationHref && h('p',{class:'hw-verification-registration'},h('a',{href:props.registrationHref,target:props.registrationExternal?'_blank':undefined,rel:props.registrationExternal?'noopener noreferrer':undefined},[text('registrationLabel','registrationHref is set'),props.registrationNumber && [' ',h('bdi',{},props.registrationNumber)],props.registrationExternal && text('externalLabel','registrationHref is set and registrationExternal is on') && [' ',h('span',{class:'hw-sr-only'},props.externalLabel)]])),slots.default?.(),
+          props.registrationHref && h('p',{class:'hw-verification-registration'},h('a',{href:props.registrationHref,target:props.registrationExternal?'_blank':undefined,rel:props.registrationExternal?'noopener noreferrer':undefined},[text('registrationLabel','registrationHref is set'),props.registrationNumber && [' ',h('bdi',{},props.registrationNumber)],props.registrationExternal && text('externalLabel','registrationHref is set and registrationExternal is on') && h('span',{class:'hw-sr-only'},' '+props.externalLabel)])),slots.default?.(),
         ]),
       ]));
     };

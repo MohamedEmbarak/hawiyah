@@ -1,6 +1,6 @@
 import { defineComponent, h, mergeProps, ref, useId } from "vue";
 import type { PropType, VNodeChild } from "vue";
-import { formatNumber, sortRows } from "@hawiyah/core";
+import { sortRows } from "@hawiyah/core";
 import { Button } from "./forms.js";
 import { Avatar } from "./display.js";
 import { needText, optionalText, rootLabel, useValue } from "./shared.js";
@@ -148,7 +148,6 @@ export const Stat = defineComponent({
     label: { type: String, required: true },
     value: { type: [String, Number], required: true },
     description: String,
-    locale: { type: String, default: "ar-SA" },
     trend: String,
   },
   setup(props, { attrs, slots }) {
@@ -158,9 +157,7 @@ export const Stat = defineComponent({
         h(
           "strong",
           { class: "hw-stat-value" },
-          typeof props.value === "number"
-            ? formatNumber(props.value, { locale: props.locale })
-            : props.value,
+          String(props.value),
         ),
         props.description &&
           h("p", { class: "hw-stat-description" }, props.description),
@@ -182,7 +179,7 @@ export const Timeline = defineComponent({
   inheritAttrs: false,
   props: {
     items: { type: Array as PropType<readonly TimelineItem[]>, required: true },
-    label: { type: String, required: true },
+    label: String,
   },
   setup(props, { attrs, slots }) {
     return () =>
@@ -250,7 +247,7 @@ export const AvatarGroup = defineComponent({
   props: {
     items: { type: Array as PropType<readonly AvatarItem[]>, required: true },
     max: { type: Number, default: 5 },
-    label: { type: String, required: true },
+    label: String,
     getOverflowLabel: {
       type: Function as PropType<(count: number) => string>,
       required: true,
@@ -314,7 +311,7 @@ export const DataTable = defineComponent({
       type: String as PropType<"ascending" | "descending">,
       default: "ascending",
     },
-    locale: { type: String, default: "ar-SA" },
+    locale: { type: String, required: true },
     rowKey: Function as PropType<
       (row: Record<string, unknown>, index: number) => string | number
     >,
@@ -339,12 +336,14 @@ export const DataTable = defineComponent({
       (v) => emit("update:sortDirection", v),
     );
     return () => {
-      const rows = key.value.value
+      // Sorting compares text with the application's locale; without it the rows keep their source order.
+      const locale = needText("DataTable", "locale", props.locale);
+      const rows = key.value.value && locale
         ? sortRows(
             props.rows,
             key.value.value,
             direction.value.value,
-            props.locale,
+            locale,
           )
         : props.rows;
       return h("div", mergeProps({ class: "hw-table-wrap hw-data-table", tabindex: 0, role: "region", "aria-labelledby": captionId }, props.wrapperProps ?? {}), [

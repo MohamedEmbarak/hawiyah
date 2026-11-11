@@ -71,13 +71,30 @@ strings.
   only when a prop, slot, handler or attribute switches a feature on is required
   under that condition. Text whose need depends on runtime data (an empty list,
   overflow, a failed validation) is required always. Optional text has no default.
+- A root or field name (`label`) is satisfied by an `aria-label`, an
+  `aria-labelledby` or a parent Field label where the adapter forwards them.
+  React types this as a union; Vue declares such a name without `required: true`
+  and checks it at render; Angular hosts do not forward attributes, so `label` is
+  the only source there and is a required input; vanilla uses authored markup.
+- An optional action (dismiss, mark as read, preferences) is rendered only while
+  the application has bound its handler, and its text is required under that
+  condition. An optional status whose text is a function (FileDropzone
+  `getSelectedMessage`) is rendered only when the function is supplied.
 - Adapters call `requireText(component, name, value, when?)` from `@hawiyah/core`
   where a required text would be rendered. It warns once per component and input
   in development and does nothing in production builds; it is safe during server
   rendering.
 - When required text is missing the component renders nothing in its place and
   omits the attribute. It does not invent a name, reuse another input or hide the
-  control. A constraint with a missing validation message still blocks submission.
+  control. A constraint with a missing validation message still blocks submission
+  through a single-space custom validity; `aria-invalid` is what it would be with
+  the message present and never depends on the text.
+- No adapter writes punctuation or words between two texts or between text and
+  data. One space may separate two inline runs: the screen-reader-only external
+  link text is `<span class="hw-sr-only"> text</span>` with the space inside, and
+  a data value follows its label as label, space, `<bdi>value</bdi>`.
+- A component that passes a text to an inner component reports a missing one
+  under its own name first; the inner component may report it once more.
 - Direction is read from `dir` and never from `lang`. No component sets `dir`
   unless the application supplies it. No adapter reads `lang`, the document
   language or a locale to choose a string, a default or a behaviour.

@@ -648,6 +648,7 @@ describe("Vue content and layouts", () => {
         () => () =>
           h(DataTable, {
             caption: "Requests",
+            locale: "en-US",
             emptyMessage: "No requests",
             rows,
             columns: [

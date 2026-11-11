@@ -9,7 +9,7 @@ import type { PortalLink } from './patterns.js';
 export interface SecondaryNavItem extends PortalLink { icon?: string }
 export const SecondaryNav = defineComponent({
   name: 'HwSecondaryNav', inheritAttrs: false,
-  props: { variant: { type: String as PropType<'default' | 'mobile'>, default: 'default' }, items: { type: Array as PropType<readonly SecondaryNavItem[]>, required: true }, label: { type: String, required: true } },
+  props: { variant: { type: String as PropType<'default' | 'mobile'>, default: 'default' }, items: { type: Array as PropType<readonly SecondaryNavItem[]>, required: true }, label: String },
   setup(props, { attrs }) { return () => h('nav', mergeProps(attrs, { class: 'hw-secondary-nav', 'aria-label': rootLabel('SecondaryNav', props.label, attrs), 'data-variant': props.variant }), h('ul', {}, props.items.map(item => h('li', { key: item.href }, h('a', { href: item.href, 'aria-current': item.current ? 'page' : undefined }, [props.variant === 'mobile' && item.icon && h('span', {class:'hw-icon', 'data-icon':item.icon, 'aria-hidden':'true'}), h('span', {}, item.label)]))))); },
 });
 export const PortalLayout = defineComponent({

@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { missingTextWarnings } from './fixtures/texts';
 import { text, withText } from './fixtures/application-text';
 import { APP_ID, ChangeDetectionStrategy, Component } from '@angular/core';
@@ -6,6 +8,7 @@ import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as hawiyah from '@hawiyah/angular';
+import { formatCalendarDate, getCalendarMonth, sortRows } from '@hawiyah/core';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => { TestBed.resetTestingModule(); document.head.querySelector('base')?.remove(); document.body.replaceChildren(); delete (globalThis as { __HAWIYAH_DEV__?: boolean }).__HAWIYAH_DEV__; });
@@ -84,7 +87,7 @@ describe('text is supplied by the application', () => {
       <hw-combobox label="City" emptyMessage="None" [getResultsMessage]="record.results" [options]="[{value: 'r', label: 'Riyadh'}, {value: 'j', label: 'Jeddah'}]" />
       <hw-multi-select label="Cities" searchLabel="Filter" emptyMessage="None" [getSelectedMessage]="record.selected" [options]="[{value: 'r', label: 'Riyadh'}]" [value]="['r']" />
       <hw-tag-input label="Tags" addLabel="Add" [getRemoveLabel]="record.remove" [value]="['alpha']" />
-      <hw-data-table caption="Requests" emptyMessage="None" [getSortLabel]="record.sort" sortKey="title" [columns]="[{key: 'title', label: 'Title', sortable: true}, {key: 'date', label: 'Date', sortable: true}]" [rows]="[{title: 'B', date: '2'}]" />
+      <hw-data-table caption="Requests" emptyMessage="None" locale="en" [getSortLabel]="record.sort" sortKey="title" [columns]="[{key: 'title', label: 'Title', sortable: true}, {key: 'date', label: 'Date', sortable: true}]" [rows]="[{title: 'B', date: '2'}]" />
       <hw-calendar label="Date" locale="en" previousLabel="Previous" nextLabel="Next" value="2026-10-15" [getDayLabel]="record.day" />
       <hw-file-upload-list [labels]="{selected: 'Selected', uploading: 'Uploading', complete: 'Done', error: 'Failed', remove: 'Remove', getProgressLabel: record.progress, getRemoveLabel: record.removeFile}" [items]="[{id: 'f1', name: 'plan.pdf', status: 'uploading', progress: 40}]" removable />
       <hw-search-field label="Find" clearLabel="Clear" searchLabel="Search" [getResultsMessage]="record.suggestions" [suggestions]="['Passport renewal', 'Passport status', 'Permit']" value="Pass" />`, state);
@@ -122,13 +125,41 @@ describe('text is supplied by the application', () => {
     expect(calls['suggestions']!.at(-1)).toEqual([2]); expect(root.querySelector('hw-search-field [role=status]')!.textContent).toBe('suggestions(2)');
   });
 
-  it('passes the selected files to the file dropzone message', () => {
+  it('names the file dropzone by its label and describes it by the visible instruction', () => {
+    const { root } = page(`<hw-file-dropzone controlId="files" label="Documents" dropLabel="Drop files here" hint="PDF only" /><hw-file-dropzone controlId="bare" label="Photos" dropLabel="Drop photos here" />`);
+    const input = root.querySelector<HTMLInputElement>('#files')!, instruction = root.querySelector('.hw-file-dropzone > p')!;
+    expect(root.querySelector('label[for=files]')!.textContent).toBe('Documents'); expect(input.labels![0]!.textContent).toBe('Documents');
+    expect(instruction.className).toBe('hw-file-dropzone-instruction'); expect(instruction.id).toBe('files-instruction'); expect(instruction.textContent).toBe('Drop files here');
+    expect(instruction.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The instruction is listed first, ahead of the hint.
+    expect(input.getAttribute('aria-describedby')).toBe('files-instruction files-hint'); expect(root.querySelector('#bare')!.getAttribute('aria-describedby')).toBe('bare-instruction');
+    expect(root.querySelectorAll('.hw-file-dropzone-instruction')).toHaveLength(2);
+  });
+
+  it('renders no instruction and no reference to one when dropLabel is missing', () => {
+    const warnings = missingTextWarnings();
+    const { root } = page(`<hw-file-dropzone controlId="files" label="Documents" dropLabel="" hint="PDF only" /><hw-file-dropzone controlId="bare" label="Photos" dropLabel="  " />`);
+    expect(root.querySelector('.hw-file-dropzone-instruction')).toBeNull(); expect(root.querySelector('[id$="-instruction"]')).toBeNull(); expect(root.querySelectorAll('.hw-file-dropzone > p')).toHaveLength(1);
+    expect(root.querySelector('#files')!.getAttribute('aria-describedby')).toBe('files-hint'); expect(root.querySelector('#bare')!.hasAttribute('aria-describedby')).toBe(false);
+    // The label still names the input: dropLabel is never its fallback, and nothing else is asked for.
+    expect(root.querySelector<HTMLInputElement>('#bare')!.labels![0]!.textContent).toBe('Photos');
+    expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-file-dropzone requires "dropLabel"']);
+  });
+
+  it('renders the file dropzone status only when the application supplies getSelectedMessage', () => {
     const selected = vi.fn((files: readonly File[]) => `${files.length}: ${files.map(file => file.name).join(', ')}`);
-    const { fixture, root } = page(`<hw-file-dropzone label="Documents" dropLabel="Drop files here" [getSelectedMessage]="selected" [(value)]="files" />`, { selected, files: [] as File[] });
-    expect(root.querySelector('label')!.textContent).toBe('Documents'); expect(root.querySelector('.hw-file-dropzone > p')!.textContent).toBe('Drop files here'); expect(root.querySelector('[role=status]')!.textContent).toBe(''); expect(selected).not.toHaveBeenCalled();
-    const files = [new File(['a'], 'plan.pdf'), new File(['b'], 'id.png')];
-    (fixture.componentInstance as unknown as { files: File[] }).files = files; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges();
-    expect(selected).toHaveBeenLastCalledWith(files); expect(root.querySelector('[role=status]')!.textContent).toBe('2: plan.pdf, id.png');
+    const { fixture, root } = page(`<hw-file-dropzone id="silent" label="Documents" dropLabel="Drop files here" [(value)]="files" /><hw-file-dropzone id="spoken" label="Documents" dropLabel="Drop files here" [getSelectedMessage]="selected" [(value)]="files" />`, { selected, files: [] as File[] });
+    const show = (files: File[]) => { (fixture.componentInstance as unknown as { files: File[] }).files = files; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges(); };
+    // Not bound: no status element and no warning (the test would fail on one). Bound: one visible status after the input, empty until files are selected.
+    expect(root.querySelector('#silent [role=status]')).toBeNull();
+    const status = root.querySelector('#spoken [role=status]')!; expect(root.querySelectorAll('#spoken [role=status]')).toHaveLength(1);
+    expect(status.tagName).toBe('P'); expect(status.hasAttribute('class')).toBe(false); expect(status.textContent).toBe(''); expect(selected).not.toHaveBeenCalled();
+    expect(root.querySelector('#spoken input')!.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const files = [new File(['a'], 'plan.pdf'), new File(['b'], 'id.png')]; show(files);
+    expect(selected).toHaveBeenLastCalledWith(files); expect(root.querySelector('#spoken [role=status]')!.textContent).toBe('2: plan.pdf, id.png'); expect(root.querySelector('#silent [role=status]')).toBeNull();
+    // The file names are listed as data; the status is the application's whole string, and empties again when the selection does.
+    expect([...root.querySelectorAll('#silent li')].map(item => item.textContent)).toEqual(['plan.pdf (1)', 'id.png (1)']);
+    show([]); expect(root.querySelector('#spoken [role=status]')!.textContent).toBe('');
   });
 
   it('never leaves an input named like a native attribute on the wrapper element', () => {
@@ -179,12 +210,25 @@ describe('brand', () => {
     TestBed.tick();
     const brand = root.querySelector('hw-portal-layout .hw-portal-brand')!; expect(brand.getAttribute('aria-label')).toBe('Hawiyah home'); expect(brand.textContent).toBe(''); expect(brand.querySelector('svg')).not.toBeNull();
     // Angular projects a node once: without its own [hwFooterBrand] copy the layout's footer brand block stays empty, and an empty block is not named.
-    const empty = root.querySelector('hw-portal-layout:not(#both) .hw-portal-footer-brand')!; expect(empty.textContent).toBe(''); expect(empty.querySelector('svg')).toBeNull(); expect(empty.hasAttribute('role')).toBe(false); expect(empty.hasAttribute('aria-label')).toBe(false);
+    const empty = root.querySelector('hw-portal-layout:not(#both) .hw-portal-footer-brand')!; expect(empty.textContent).toBe(''); expect(empty.querySelector('svg')).toBeNull(); expect(empty.querySelector('[role], [aria-label]')).toBeNull(); expect(empty.hasAttribute('role')).toBe(false); expect(empty.hasAttribute('aria-label')).toBe(false);
     // With that copy the layout hands the artwork and brandLabel to its footer, and the header keeps its own.
     const both = root.querySelector('#both')!; expect(both.querySelector('.hw-portal-brand svg path')!.getAttribute('d')).toBe('M0 0h8v8H0z'); expect(both.querySelector('.hw-portal-brand')!.getAttribute('aria-label')).toBe('Hawiyah home');
-    const passed = both.querySelector('.hw-portal-footer-brand')!; expect(passed.querySelector('.hw-portal-footer-brand-marks svg path')!.getAttribute('d')).toBe('M0 0h4v4H0z'); expect(passed.getAttribute('role')).toBe('group'); expect(passed.getAttribute('aria-label')).toBe('Hawiyah home');
-    const footer = root.querySelector(':scope > hw-portal-footer .hw-portal-footer-brand')!; expect(footer.getAttribute('role')).toBe('group'); expect(footer.getAttribute('aria-label')).toBe('Hawiyah'); expect(footer.textContent).toBe('');
+    const passed = both.querySelector('.hw-portal-footer-brand')!; const passedMarks = passed.querySelector('.hw-portal-footer-brand-marks')!; expect(passedMarks.querySelector('svg path')!.getAttribute('d')).toBe('M0 0h4v4H0z'); expect(passedMarks.getAttribute('role')).toBe('group'); expect(passedMarks.getAttribute('aria-label')).toBe('Hawiyah home'); expect(passed.hasAttribute('role')).toBe(false); expect(passed.hasAttribute('aria-label')).toBe(false);
+    const footer = root.querySelector(':scope > hw-portal-footer .hw-portal-footer-brand')!, marks = footer.querySelector('.hw-portal-footer-brand-marks')!; expect(marks.getAttribute('role')).toBe('group'); expect(marks.getAttribute('aria-label')).toBe('Hawiyah'); expect(footer.hasAttribute('role')).toBe(false); expect(footer.hasAttribute('aria-label')).toBe(false); expect(footer.textContent).toBe('');
     expect(warnings).toEqual([]);
+  });
+
+  it('writes the footer brandLabel on the group that holds the artwork and the brand text, and leaves the description outside it', () => {
+    const { fixture, root, state } = page(`<hw-portal-footer [brand]="brand" [brandLabel]="brandLabel" description="A component library" externalLabel="opens in a new window"><svg hwFooterBrand viewBox="0 0 8 8" aria-hidden="true"><path d="M0 0h8v8H0z" /></svg></hw-portal-footer><hw-portal-footer id="unnamed" brand="Hawiyah" description="A component library" externalLabel="opens in a new window" />`, { brand: 'Hawiyah', brandLabel: 'Hawiyah platform' });
+    const block = root.querySelector('.hw-portal-footer-brand')!, marks = block.querySelector(':scope > .hw-portal-footer-brand-marks')!;
+    expect(marks.getAttribute('role')).toBe('group'); expect(marks.getAttribute('aria-label')).toBe('Hawiyah platform'); expect(block.hasAttribute('role')).toBe(false); expect(block.hasAttribute('aria-label')).toBe(false);
+    // Artwork first, then the plain text, both inside the named group; the description is a sibling of the group.
+    expect([...marks.children].map(child => child.tagName.toLowerCase())).toEqual(['svg', 'strong']); expect(marks.querySelector('strong')!.textContent).toBe('Hawiyah');
+    expect(block.querySelector(':scope > p')!.textContent).toBe('A component library'); expect(marks.querySelector('p')).toBeNull(); expect(block.querySelector(':scope > strong')).toBeNull();
+    // Without brandLabel no role and no aria-label are rendered anywhere in the block.
+    const unnamed = root.querySelector('#unnamed .hw-portal-footer-brand')!; expect(unnamed.querySelector('strong')!.parentElement!.className).toBe('hw-portal-footer-brand-marks'); expect(unnamed.querySelector('[role], [aria-label]')).toBeNull(); expect(unnamed.hasAttribute('role')).toBe(false);
+    state.brandLabel = ''; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges();
+    expect(marks.hasAttribute('role')).toBe(false); expect(marks.hasAttribute('aria-label')).toBe(false);
   });
 });
 
@@ -246,5 +290,86 @@ describe('packaged in-page links', () => {
     links[2]!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
     expect(replaced).toHaveBeenCalledTimes(1); expect(String(replaced.mock.calls[0]![2])).toBe(`${location.pathname}#api`);
     replaced.mockRestore(); history.replaceState(null, '', location.pathname);
+  });
+});
+
+describe('locale is supplied by the application', () => {
+  const pickerText = withText.datePicker.replace(/locale="[^"]*"/, '');
+
+  it('renders nothing that Intl would have produced when the locale is missing, and does not throw', () => {
+    const warnings = missingTextWarnings();
+    const { fixture, root } = page(`<hw-calendar label="Date" locale="" previousLabel="Previous" nextLabel="Next" name="day" value="2026-10-15" hint="Working days" /><hw-date-picker ${pickerText} locale="" name="date" value="2026-10-15" />`);
+    fixture.detectChanges(); fixture.detectChanges();
+    // Calendar: the root, its hidden input and its hint stay; no toolbar, weekday row, grid or status.
+    const calendar = root.querySelector('hw-calendar .hw-calendar')!;
+    expect(calendar.querySelector('.hw-calendar-toolbar, table, th, h3, button, [role=status]')).toBeNull(); expect(calendar.querySelector('.hw-hint')!.textContent).toBe('Working days');
+    expect(calendar.querySelector<HTMLInputElement>('input[type=hidden]')!.name).toBe('day'); expect(calendar.querySelector<HTMLInputElement>('input[type=hidden]')!.value).toBe('2026-10-15');
+    // DatePicker: field, input, hidden input, trigger and dialog as usual; the ISO date stays as typed, no formatted date, an empty nested calendar.
+    const picker = root.querySelector('hw-date-picker')!, input = picker.querySelector<HTMLInputElement>('input[type=text]')!, hidden = picker.querySelector<HTMLInputElement>(':scope > .hw-date-picker > input[type=hidden]')!;
+    expect(picker.querySelector('label')!.textContent).toBe('Date'); expect(input.value).toBe('2026-10-15'); expect(hidden.value).toBe('2026-10-15');
+    expect(picker.querySelector('.hw-date-picker-trigger')!.getAttribute('aria-label')).toBe('Open calendar'); expect(picker.querySelector('dialog')).not.toBeNull();
+    const output = picker.querySelector('output')!; expect(output.textContent).toBe(''); expect(output.hidden).toBe(true); expect(input.getAttribute('aria-describedby') ?? '').not.toContain('-formatted');
+    expect(picker.querySelector('hw-calendar .hw-calendar')).not.toBeNull(); expect(picker.querySelector('hw-calendar :is(.hw-calendar-toolbar, table)')).toBeNull();
+    // Value, form participation and events are unchanged.
+    input.value = '2026-11-01'; input.dispatchEvent(new Event('input', { bubbles: true })); fixture.detectChanges();
+    expect(hidden.value).toBe('2026-11-01'); expect(input.value).toBe('2026-11-01'); expect(input.validity.valid).toBe(true);
+    // One warning per component and input: the nested calendar reports under hw-calendar, which has already been reported.
+    expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-calendar requires "locale"', 'Hawiyah: hw-date-picker requires "locale"']);
+    expect(warnings[0]).toBe('Hawiyah: hw-calendar requires "locale". Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.');
+  });
+
+  it('formats the calendar and the date picker exactly as core does with the locale that used to be the default', () => {
+    const { root } = page(`<hw-calendar label="Date" locale="ar-SA" previousLabel="Previous" nextLabel="Next" value="2026-10-15" /><hw-date-picker ${pickerText} locale="ar-SA" name="date" value="2026-10-15" /><hw-calendar id="english" label="Date" locale="en-GB" previousLabel="Previous" nextLabel="Next" value="2026-10-15" />`);
+    const month = (locale: string) => getCalendarMonth({ month: '2026-10-15', value: '2026-10-15', locale, calendar: 'gregory', weekStartsOn: 0, fixedWeeks: true });
+    const arabic = root.querySelector('hw-calendar')!;
+    expect(arabic.querySelector('h3')!.textContent).toBe(month('ar-SA').label); expect([...arabic.querySelectorAll('th')].map(cell => cell.textContent)).toEqual(month('ar-SA').weekdays);
+    expect([...arabic.querySelectorAll('.hw-calendar-day')].map(day => day.textContent)).toEqual(month('ar-SA').days.map(day => day.label));
+    expect(arabic.querySelector('[data-date="2026-10-15"]')!.getAttribute('aria-label')).toBe(formatCalendarDate('2026-10-15', { locale: 'ar-SA', calendar: 'gregory', dateStyle: 'full' }));
+    const picker = root.querySelector('hw-date-picker')!;
+    expect(picker.querySelector('output')!.textContent).toBe(formatCalendarDate('2026-10-15', { locale: 'ar-SA', calendar: 'gregory', dateStyle: 'full' })); expect(picker.querySelector('output')!.hidden).toBe(false);
+    expect(picker.querySelector<HTMLInputElement>('input[type=text]')!.value).toBe(formatCalendarDate('2026-10-15', { locale: 'ar-SA', calendar: 'gregory', dateStyle: 'medium' }));
+    expect(picker.querySelector('hw-calendar h3')!.textContent).toBe(month('ar-SA').label);
+    // The tag is the application's: another one gives that locale's text, never a built-in one.
+    expect(root.querySelector('#english h3')!.textContent).toBe(month('en-GB').label); expect(month('en-GB').label).not.toBe(month('ar-SA').label);
+  });
+
+  it('sorts the data table with the application locale and keeps the source order without one', () => {
+    const warnings = missingTextWarnings();
+    const rows = [{ name: 'Item 10' }, { name: 'ب' }, { name: 'Item 2' }, { name: 'أ' }], columns = [{ key: 'name', label: 'Name', sortable: true }];
+    const { fixture, root, state } = page(`<hw-data-table id="sorted" caption="Sorted" emptyMessage="None" locale="ar-SA" sortKey="name" [sortDirection]="'descending'" [columns]="columns" [rows]="rows" /><hw-data-table id="plain" caption="Plain" emptyMessage="None" locale="" [getSortLabel]="label" [columns]="columns" [rows]="rows" (sortChange)="sorted = $event" />`, { rows, columns, sorted: null as unknown, label: (column: { label: string }, direction: string) => `${column.label}: ${direction}` });
+    const names = (id: string) => [...root.querySelectorAll(`#${id} tbody td`)].map(cell => cell.textContent);
+    const expected = sortRows(rows, 'name', 'descending', 'ar-SA').map(row => row.name);
+    expect(names('sorted')).toEqual(expected); expect(expected).not.toEqual(rows.map(row => row.name)); expect(names('plain')).toEqual(rows.map(row => row.name));
+    // Nothing is asked for until a sort is requested.
+    expect(warnings).toEqual([]);
+    const button = root.querySelector<HTMLButtonElement>('#plain th button')!; button.click(); fixture.detectChanges(); fixture.detectChanges();
+    // Sort state, aria-sort, the event and getSortLabel behave as usual; the rows stay in their source order.
+    expect(root.querySelector('#plain th')!.getAttribute('aria-sort')).toBe('ascending'); expect(state.sorted).toEqual({ key: 'name', direction: 'ascending' }); expect(button.getAttribute('aria-label')).toBe('Name: descending');
+    expect(names('plain')).toEqual(rows.map(row => row.name));
+    button.click(); fixture.detectChanges(); expect(root.querySelector('#plain th')!.getAttribute('aria-sort')).toBe('descending'); expect(names('plain')).toEqual(rows.map(row => row.name));
+    expect(warnings).toEqual(['Hawiyah: hw-data-table requires "locale". Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.']);
+  });
+
+  it('has no Intl call, no locale-sensitive method, no built-in tag and no host-locale read in the adapter source', () => {
+    const directory = join(import.meta.dirname, '../src/');
+    const files = readdirSync(directory).filter(file => file.endsWith('.ts'));
+    expect(files.length).toBeGreaterThanOrEqual(20);
+    const forbidden: Array<[string, RegExp]> = [
+      ['Intl', /\bIntl\b/], ['toLocale*', /\.toLocale\w*\s*\(/], ['localeCompare', /\blocaleCompare\b/], ['resolvedOptions', /\bresolvedOptions\b/],
+      ['formatNumber or formatDate (no Angular component formats a number or a date; a new call needs a required locale input and a rule here)', /\bformat(Number|Date)\s*\(/], ['host locale', /\bnavigator\s*\.\s*languages?\b|\bdocumentElement\s*\.\s*lang\b|\.lang\b|getAttribute\(\s*['"]lang['"]/],
+      ['built-in locale tag', /['"`][a-z]{2,3}(-[A-Z][a-z]{3})?-[A-Z]{2}(-u-[a-z0-9-]+)?['"`]/], ['default locale', /\blocale\b[!?]?\s*(:\s*[\w |\[\]]+)?\s*(=|\?\?=?|\|\|=?)\s*['"`][^'"`]/],
+    ];
+    const found: string[] = [];
+    for (const file of files) {
+      // Comments may name Intl; code may not.
+      const code = readFileSync(join(directory, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+      for (const [name, pattern] of forbidden) if (pattern.test(code)) found.push(`${file}: ${name}`);
+    }
+    expect(found).toEqual([]);
+    // Every locale input is required and starts empty; every core call that takes a locale is given that input.
+    const source = files.map(file => readFileSync(join(directory, file), 'utf8')).join('\n');
+    expect(source.match(/@Input\(\{required: true\}\) locale = '';/g)).toHaveLength(3); expect(source.match(/@Input\([^)]*\)\s*locale\b/g)).toHaveLength(3);
+    expect(source.match(/\b(sortRows|getCalendarMonth|formatCalendarDate)\(/g)).toHaveLength(5);
+    expect(source.match(/sortRows\(this\.rows, this\.sortKey, this\.sortDirection, this\.locale\)|formatCalendarDate\([^,]+, \{locale: this\.locale,|locale: this\.locale, calendar: this\.calendar, weekStartsOn/g)).toHaveLength(5);
   });
 });

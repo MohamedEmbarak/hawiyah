@@ -193,7 +193,7 @@ export const PortalFooter = defineComponent({
   setup(props, { attrs, slots }) {
     const brand = ref<HTMLElement>();
     useBrandName("PortalFooter", () => brand.value);
-    const linkList = (items: readonly PortalFooterLink[]) => h('ul', {class:'hw-portal-footer-links'}, items.map((link,index) => h('li', {key:index}, h('a', {href:link.href,target:link.external?'_blank':undefined,rel:link.external?'noopener noreferrer':undefined}, [link.label,link.external && h('span',{class:'hw-portal-footer-external hw-icon','data-icon':'link-square-02','data-size':'sm','aria-hidden':'true'}),link.external && needText('PortalFooter','externalLabel',props.externalLabel) && [' ',h('span',{class:'hw-sr-only'},props.externalLabel)]]))));
+    const linkList = (items: readonly PortalFooterLink[]) => h('ul', {class:'hw-portal-footer-links'}, items.map((link,index) => h('li', {key:index}, h('a', {href:link.href,target:link.external?'_blank':undefined,rel:link.external?'noopener noreferrer':undefined}, [link.label,link.external && h('span',{class:'hw-portal-footer-external hw-icon','data-icon':'link-square-02','data-size':'sm','aria-hidden':'true'}),link.external && needText('PortalFooter','externalLabel',props.externalLabel) && h('span',{class:'hw-sr-only'},' '+props.externalLabel)]))));
     return () => h('footer',mergeProps(attrs,{class:'hw-portal-footer'}),[
       h('div',{class:'hw-portal-footer-main'},[
         (optionalText(props.brand) || props.description || slots.brand) && h('div',{class:'hw-portal-footer-brand'},[(slots.brand || optionalText(props.brand)) && h('div',{ref:brand,class:'hw-portal-footer-brand-marks',role:optionalText(props.brandLabel)?'group':undefined,'aria-label':optionalText(props.brandLabel)},[slots.brand?.(),optionalText(props.brand) && h('strong',{},props.brand)]),props.description && h('p',{},props.description)]),
@@ -316,6 +316,8 @@ export const CookieConsent = defineComponent({
     acceptLabel: { type: String, required: true },
     rejectLabel: { type: String, required: true },
     preferencesLabel: String,
+    policyHref: String,
+    policyLabel: String,
     // The preferences action is rendered only while @preferences is bound.
     onPreferences: listener<[]>(),
   },
@@ -343,6 +345,7 @@ export const CookieConsent = defineComponent({
         [
           h("h2", {}, optionalText(props.title)),
           h("p", {}, props.description),
+          props.policyHref && h(Link, { href: props.policyHref }, () => needText("CookieConsent", "policyLabel", props.policyLabel, "policyHref is set")),
           slots.default?.(),
           h("div", { class: "hw-button-group" }, [
             h(
@@ -393,7 +396,7 @@ export const NotificationList = defineComponent({
       type: Array as PropType<readonly NotificationItem[]>,
       required: true,
     },
-    label: { type: String, required: true },
+    label: String,
     emptyMessage: { type: String, required: true },
     getMarkReadLabel: Function as PropType<(item: NotificationItem) => string>,
     getDismissLabel: Function as PropType<(item: NotificationItem) => string>,

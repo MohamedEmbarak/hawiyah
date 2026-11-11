@@ -21,12 +21,13 @@ export interface CalendarTexts {
   unsupportedMessage?: string;
   calendarSystemLabel?: string; gregorianLabel?: string; hijriLabel?: string; rangeLabel?: string;
 }
-/** A BCP 47 `locale` (options.locale or data-hw-locale) is required: month and weekday names come from Intl. */
-// Month and weekday names come from Intl, so a locale is required; the document language is never read.
-function calendarLocale(root: HTMLElement, locale: string | undefined, factory: string): string {
+/** A BCP 47 `locale` (options.locale or data-hw-locale) is required: month and weekday names come from Intl. Without it the controller warns in development and renders nothing that Intl would produce. */
+// Month and weekday names come from Intl, so a locale is required; the document language is never read and nothing falls back to a built-in or host locale.
+function calendarLocale(root: HTMLElement, locale: string | undefined, component: 'Calendar' | 'DatePicker', report = true): string | undefined {
   const value = locale ?? root.dataset.hwLocale;
-  if (!value?.trim()) throw new Error(`Hawiyah: ${factory} requires a BCP 47 locale (options.locale or data-hw-locale); the document language is not read.`);
-  return value;
+  if (hasText(value)) return value;
+  if (report) requireText(component, 'locale', value);
+  return undefined;
 }
 export interface CalendarOptions extends CalendarTexts {
   /** Optional accessible name of a day button; value is the ISO date. Defaults to Intl formatting of the date. */
@@ -46,7 +47,17 @@ export interface CalendarController {
 const pickerCalendars = new WeakSet<Element>();
 export function createCalendar(root: HTMLElement, options: CalendarOptions = {}): CalendarController {
   const scope = createCleanup(); const document = root.ownerDocument;
-  const locale = calendarLocale(root, options.locale, 'createCalendar');
+  // The DatePicker reports its own missing locale, so its nested calendar does not warn again.
+  const resolved = calendarLocale(root, options.locale, 'Calendar', !pickerCalendars.has(root));
+  if (resolved === undefined) {
+    // No locale: no switch, toolbar, grid or status and no core call; the authored root is left untouched.
+    let value = options.value ?? root.dataset.hwValue ?? ''; let calendar: CalendarSystem = options.calendar ?? (root.dataset.hwCalendar === 'islamic-umalqura' ? 'islamic-umalqura' : 'gregory');
+    const setValue = (date: string) => { if (!scope.destroyed && (!date || isDateInRange(date))) value = date; };
+    const select = (date: string) => { if (scope.destroyed || !isDateInRange(date, options.min ?? root.dataset.hwMin, options.max ?? root.dataset.hwMax) || options.isDateDisabled?.(date)) return; const changed = value !== date; value = date; if (changed) { emit(root, { value }); options.onValueChange?.(value); } options.onSelect?.(value); };
+    const setCalendar = (system: CalendarSystem) => { if (scope.destroyed || calendar === system) return; calendar = system; emit(root, { calendar }); options.onCalendarChange?.(calendar); };
+    return { get value() { return value; }, get calendar() { return calendar; }, select, setValue, setMonth: () => {}, setCalendar, destroy: () => scope.destroy() };
+  }
+  const locale: string = resolved;
   const say = (name: keyof CalendarTexts) => text(root, name, options[name]);
   remember(scope, root, ['aria-label']); if (!pickerCalendars.has(root) || say('label') !== undefined) nameRoot(root, 'Calendar', say('label'));
   let calendar = options.calendar ?? (root.dataset.hwCalendar === 'islamic-umalqura' ? 'islamic-umalqura' : 'gregory');
@@ -71,9 +82,9 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   const info = document.createElement('div'); info.className = 'hw-calendar-info';
   const infoButton = document.createElement('span'); infoButton.tabIndex = 0; infoButton.className = 'hw-calendar-info-icon hw-tooltip-trigger'; infoButton.dataset.hwTooltipTrigger = ''; infoButton.setAttribute('role', 'img'); const range = say('rangeLabel'); writeContent(infoButton, 'Calendar', 'rangeLabel', range);
   writeOptional(infoButton, 'aria-label', range); const infoPanel = document.createElement('span'); infoPanel.className = 'hw-tooltip hw-calendar-range'; infoPanel.setAttribute('role', 'tooltip'); infoPanel.hidden = true; writeOptional(infoPanel, 'aria-label', range);
-  const infoLabel = document.createElement('span'); infoLabel.textContent = hasText(range) ? range! : '';
+  const infoLabel = document.createElement('span'); infoLabel.textContent = range ?? '';
   const infoRange = document.createElement('bdi'); infoRange.dir = 'ltr'; infoRange.textContent = `${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}`;
-  infoPanel.append(infoLabel, infoRange); info.append(infoButton, infoPanel); optionsRow.append(systemGroup); root.insertBefore(optionsRow, host);
+  if (hasText(range)) infoPanel.append(infoLabel, ' ', infoRange); else infoPanel.append(infoRange); info.append(infoButton, infoPanel); optionsRow.append(systemGroup); root.insertBefore(optionsRow, host);
   const infoTooltip = createTooltip(info); scope.add(() => { infoTooltip.destroy(); optionsRow.remove(); });
   scope.listen(info, 'keydown', event => { if ((event as KeyboardEvent).key === 'Escape' && !infoPanel.hidden) { event.preventDefault(); event.stopPropagation(); infoTooltip.hide(); } });
   let model: CalendarMonth;
@@ -178,11 +189,11 @@ export interface DatePickerTexts extends Omit<CalendarTexts, 'label'> {
   /** Validation message for a typed date that isDateDisabled rejects. Required when isDateDisabled is given. */
   unavailableMessage?: string;
 }
-/** A BCP 47 `locale` (options.locale or data-hw-locale) is required: month and weekday names come from Intl. */
+/** A BCP 47 `locale` (options.locale or data-hw-locale) is required: dates are formatted with Intl. Without it the picker warns in development, keeps the typed ISO value, its validation and the trigger, shows no formatted date and leaves the dialog calendar empty. */
 export interface DatePickerOptions extends DatePickerTexts { calendar?: CalendarSystem; locale?: string; getDayLabel?: (value: string) => string; onValueChange?: (value: string) => void; onCalendarChange?: (calendar: CalendarSystem) => void; isDateDisabled?: (value: string) => boolean }
 export interface DatePickerController extends CalendarController { show(): void; close(): void }
 export function createDatePicker(root: HTMLElement, options: DatePickerOptions = {}): DatePickerController {
-  const locale = calendarLocale(root, options.locale, 'createDatePicker');
+  const locale = calendarLocale(root, options.locale, 'DatePicker');
   const say = (name: keyof DatePickerTexts) => text(root, name, options[name]);
   const input = required<HTMLInputElement>(root, '[data-hw-date-input]'); const trigger = required<HTMLButtonElement>(root, '[data-hw-date-trigger]');
   const dialog = required<HTMLDialogElement>(root, '[data-hw-date-dialog]'); const host = required<HTMLElement>(dialog, '[data-hw-date-calendar]');
@@ -226,10 +237,10 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
     trigger.disabled = blocked(); synchronizeSubmission();
     display.hidden = !value;
     if (!value) display.textContent = '';
-    else if (isCalendarDateSupported(value, calendar.calendar)) display.textContent = formatCalendarDate(value, { locale, calendar: calendar.calendar });
+    else if (isCalendarDateSupported(value, calendar.calendar)) display.textContent = locale === undefined ? '' : formatCalendarDate(value, { locale, calendar: calendar.calendar });
     else display.textContent = (calendar.calendar === 'islamic-umalqura' ? say('unsupportedMessage') : say('invalidMessage')) ?? '';
     appendDateMessage(display, display.textContent || '');
-    renderedValue = !editing && draft && supported ? formatCalendarDate(draft, { locale, calendar: calendar.calendar, dateStyle: 'medium' }) : draft;
+    renderedValue = !editing && draft && supported && locale !== undefined ? formatCalendarDate(draft, { locale, calendar: calendar.calendar, dateStyle: 'medium' }) : draft;
     input.value = renderedValue;
     presence.refresh();
   };

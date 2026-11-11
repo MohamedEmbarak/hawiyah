@@ -79,9 +79,21 @@ and none of them has a default label. The application passes every string:
   stay silent.
 - A constraint with a missing message (`requiredMessage`, `invalidMessage`,
   `unsupportedMessage`) still blocks submission and sets `aria-invalid`.
-- `locale` is a formatting argument only: a BCP 47 tag handed to `Intl`. Calendar
+- `locale` is a formatting argument only: a BCP 47 tag that the component hands to
+  `@hawiyah/core`, which hands it to `Intl`. There is no default locale. Calendar
   and DatePicker require it because month names, weekday names and the era come
-  from `Intl`. `dir` is rendered only where the application supplies it.
+  from `Intl`; DataTable requires it because text is sorted with a collator. The
+  input is named `locale` in all three and a template without it does not compile
+  (NG8008). A locale that is empty at run time is reported once like a missing
+  text (`Hawiyah: hw-calendar requires "locale"`), and nothing that `Intl` would
+  have produced is rendered: Calendar keeps its root element, hidden input, hint
+  and error but renders no toolbar and no grid; DatePicker keeps its field,
+  dialog and value, shows the ISO date as typed and announces no formatted date;
+  DataTable keeps its sort state, `aria-sort` and `sortChange` and leaves the rows
+  in their source order. The package itself calls no `Intl` API and reads no
+  locale from the document or the browser. Numbers that are data (page numbers,
+  counts, ratings, file sizes) are rendered as given.
+- `dir` is rendered only where the application supplies it.
 
 ```html
 <hw-pagination label="صفحات النتائج" previousLabel="الصفحة السابقة" nextLabel="الصفحة التالية"
@@ -112,6 +124,23 @@ Menu `id` → `panelId`. SiteVerification `locale` and PortalLayout `lang` are r
 ServiceCard no longer appends the card title to its action link: `actionLabel` is the
 whole accessible name. PortalLayout passes `brandLabel` and projected `[hwFooterBrand]`
 artwork to its footer.
+
+Also changed in this release:
+
+- DataTable `locale` is required. It used to default to `ar-SA`; pass
+  `locale="ar-SA"` to keep the previous order. Calendar and DatePicker `locale`
+  were already required; an empty value now renders no calendar and no formatted
+  date, where it used to fall back to the locale of the host.
+- FileDropzone `getSelectedMessage(files)` is optional and is the switch for the
+  selection status: when it is bound, one visible `<p role="status">` follows the
+  input (it is no longer visually hidden); when it is not bound, no status
+  element is rendered and nothing is reported. `dropLabel` is rendered as
+  `<p class="hw-file-dropzone-instruction" id="{controlId}-instruction">` and is
+  the first id in the input's `aria-describedby`; it never names the input.
+- PortalFooter writes `brandLabel` as `aria-label` with `role="group"` on
+  `.hw-portal-footer-brand-marks` instead of the outer `.hw-portal-footer-brand`,
+  and renders the `brand` text inside that group, after the projected artwork.
+  The description stays outside the group.
 
 ## Inputs and outputs
 
@@ -264,9 +293,9 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | PinInput | String value, `length`; one numeric input with `one-time-code` autocomplete, Arabic-Indic/Eastern Arabic digit normalization, paste support. |
 | TagInput | `string[]`; `placeholder`; required `addLabel` and `getRemoveLabel(tag)`; `requiredMessage` is required with `required`. Enter/comma or Add commits unique trimmed tags; repeated hidden form values. |
 | MultiSelect | `string[]`; `options: Option[]`; required `searchLabel` (the accessible name of the filter input, not a placeholder), `emptyMessage` and `getSelectedMessage(count)`; optional `placeholder`; `requiredMessage` is required with `required`. Searchable checkbox list; selected values remain in FormData when search hides their checkboxes. |
-| Calendar | ISO Gregorian string value; `month`, `min`, `max`, `calendar: gregory/islamic-umalqura`, `weekStartsOn`, `direction`; required `label`, `locale`, `previousLabel` and `nextLabel`; `rangeLabel` is required with `calendar="islamic-umalqura"` and names the supported-range information, whose tooltip id is `rangeTooltipId`; optional `getDayLabel(isoDate)` replaces the Intl day name; `monthChange`. Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year). Bounds restrict selection/focus. |
-| DatePicker | ISO Gregorian value, a custom text field and modal calendar. Accepts Calendar range inputs. Required: `label`, `locale`, `calendarLabel` (dialog title and name of the calendar), `openLabel`, `closeLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel` (name of the Gregorian/Hijri switch), `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage` and `unsupportedMessage`. `placeholder` is optional and has no default. Switching emits `calendarChange` and preserves the selected ISO date. Opening returns to its month and day. |
-| FileDropzone | `File[]`; `accept`, `multiple`; required `label`, `dropLabel` (the visible instruction, a paragraph below the label) and `getSelectedMessage(files)`; `rejected` emits rejected files. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
+| Calendar | ISO Gregorian string value; `month`, `min`, `max`, `calendar: gregory/islamic-umalqura`, `weekStartsOn`, `direction`; required `label`, `locale`, `previousLabel` and `nextLabel`; `rangeLabel` is required with `calendar="islamic-umalqura"` and names the supported-range information, whose tooltip id is `rangeTooltipId`; optional `getDayLabel(isoDate)` replaces the Intl day name; `monthChange`. `locale` has no default: while it is empty the toolbar and the grid are not rendered. Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year). Bounds restrict selection/focus. |
+| DatePicker | ISO Gregorian value, a custom text field and modal calendar. Accepts Calendar range inputs. Required: `label`, `locale`, `calendarLabel` (dialog title and name of the calendar), `openLabel`, `closeLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel` (name of the Gregorian/Hijri switch), `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage` and `unsupportedMessage`. `placeholder` is optional and has no default. `locale` has no default: while it is empty the typed ISO date is shown as typed, no formatted date is announced and the calendar in the dialog is empty; the value and validation are unaffected. Switching emits `calendarChange` and preserves the selected ISO date. Opening returns to its month and day. |
+| FileDropzone | `File[]`; `accept`, `multiple`; required `label` (it names the input) and `dropLabel` (the visible instruction: `<p class="hw-file-dropzone-instruction" id="{controlId}-instruction">` before the input, listed first in its `aria-describedby`); optional `getSelectedMessage(files)`, which when bound renders one visible `<p role="status">` after the input, empty until files are selected and then the returned string; without it no status element is rendered. Selected file names are listed as data. `rejected` emits rejected files. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
 | ToggleGroup | String value for single or `string[]` for `multiple`; `options`, `variant: segmented/outline`. Single uses native radios; multiple uses pressed buttons. |
 | Popover | Required `label` and `triggerLabel`; `panelId` (the id of the panel; no id is left on the wrapper), `disabled`, `[(open)]`; project interactive content. Disclosure region with ordinary Tab order, outside press/Escape closing. |
 | Menu | Popover inputs plus `items: {id,label,disabled?}[]`, `action(id)`. ArrowUp/Down/Home/End navigation skips disabled items; Escape/activation returns focus. |
@@ -284,11 +313,11 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Timeline | Required `label`, `items: {title,description?,time?,dateTime?,state?}[]`; state is complete/current/pending. |
 | Meter | `label`, `value`, `min`, `max`, `low`, `high`, `optimum`; native meter for bounded measurements. |
 | AvatarGroup | Required `label` and `getOverflowLabel(count)` (count is the number of hidden avatars); `avatars: {name,src?}[]`, `max`; named image/initials with overflow count. |
-| DataTable | `caption`, `columns: {key,label,sortable?,rowHeader?}[]`, `rows: Record<string,string\|number\|boolean\|null\|undefined>[]`, `locale`, required `emptyMessage`, `sortKey`, `sortDirection`, optional `getSortLabel(column,direction)` (the name of a sort button; direction is the order it will apply); `sortChange({key,direction})`. Stable localized sorting, native headers and aria-sort; text cells. |
+| DataTable | `caption`, `columns: {key,label,sortable?,rowHeader?}[]`, `rows: Record<string,string\|number\|boolean\|null\|undefined>[]`, required `locale` (BCP 47 tag for sorting; no default) and `emptyMessage`, `sortKey`, `sortDirection`, optional `getSortLabel(column,direction)` (the name of a sort button; direction is the order it will apply); `sortChange({key,direction})`. Stable sorting in the application's locale, native headers and aria-sort; text cells, rendered as given. |
 | ServiceCard | `title`, `href`, `description`, `category`, `duration`, `fee`, `variant`; `actionLabel` is the whole text and accessible name of the action link (the card appends nothing to it, so include the service name where several cards share a page) and is required unless `[hwServiceAction]` content replaces the link; project `[hwServiceIcon]` and supplemental body. |
 | ServiceDetails | `title`, `description`, `details: {term,description}[]`, `requirements: string[]`; `requirementsLabel` is required with requirements; projected actions/content. |
 | PortalHeader | Required `menuLabel` and `navigationLabel`; optional `brand` text, `brandLabel`, `homeHref`, `mainId`, `skipLabel`, `navigationId`, `links: {label,href,current?}[]`; project `[hwBrand]` artwork and header actions. The brand may be artwork alone: no brand text is printed unless `brand` is supplied, and `brandLabel` gives artwork its accessible name (`aria-label` on the brand). An empty `homeHref` renders the brand without an `href`. The skip link is rendered only when `mainId` is set, and then needs `skipLabel`. Mobile menu is CSS-responsive; provide unique navigationId if repeated. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
-| PortalFooter | Required `externalLabel` (screen-reader text added to links marked external); `brand`, `brandLabel`, `description`, `copyright`, `links`, `groups`, `legalLinks`; `navigationLabel` is required with `links`, `legalLinksLabel` with `legalLinks`, and `supportLabel` with projected `[hwFooterSupport]` content, the only case in which the support section is shown (otherwise it stays in the document with the `hidden` attribute, no heading and no name). `brandLabel` is written only while the brand block has brand text or `[hwFooterBrand]` artwork. Project `[hwFooterBrand]`, `[hwFooterSupport]`, `[hwFooterPartners]` and supplementary content. |
+| PortalFooter | Required `externalLabel` (screen-reader text added to links marked external); `brand`, `brandLabel`, `description`, `copyright`, `links`, `groups`, `legalLinks`; `navigationLabel` is required with `links`, `legalLinksLabel` with `legalLinks`, and `supportLabel` with projected `[hwFooterSupport]` content, the only case in which the support section is shown (otherwise it stays in the document with the `hidden` attribute, no heading and no name). `brandLabel` is written, as `aria-label` with `role="group"`, on `.hw-portal-footer-brand-marks`, which holds the `[hwFooterBrand]` artwork followed by the `brand` text, and only while that group has either; the description is outside the group, and without `brandLabel` no role and no name are rendered. Project `[hwFooterBrand]`, `[hwFooterSupport]`, `[hwFooterPartners]` and supplementary content. |
 | Feedback | Required `label`, `yesLabel`, `noLabel` and `successMessage`; `disabled`, `[(value)]` (boolean or null initially). Emits local feedback choice; caller handles storage. |
 | CookieConsent | Required `title`, `acceptLabel` and `rejectLabel`; `description`, `[(visible)]`; `consent(accepted/rejected)` and `preferences`. The preferences button is rendered while a `(preferences)` listener is bound and then needs `preferencesLabel`; a policy link is rendered with `policyHref` and then needs `policyLabel`. Application decides persistence and script gating; this UI does not imply consent has been stored. |
 | NotificationList | Required `label`, `emptyMessage` and `unreadLabel`; `items: {id,title,description?,time?,href?,unread?}[]`; `dismissed(id)`. The dismiss button is rendered while a `(dismissed)` listener is bound and is named by `getDismissLabel(item)`. Caller owns read/dismiss state. |
@@ -415,7 +444,8 @@ a separate native state. See [NIC states](../../docs/nic-choices.md).
 Captions name keyboard-focusable horizontal scroll containers; row-header
 columns render native `th scope="row"`. Empty data spans the column count and
 shows the required `emptyMessage`. Sorting does not mutate caller records.
-The default sort locale is `ar-SA`. Both component hosts shrink inside grid/flex
+DataTable sorts with the required `locale` input through core `sortRows`; there is
+no default sort locale, and without one the rows keep their source order. Both component hosts shrink inside grid/flex
 layouts so overflow stays inside the table wrapper.
 See [table evidence and adaptations](../../docs/nic-tables.md).
 

@@ -13,6 +13,7 @@ import {
   formatCalendarDate,
   getCalendarMonth,
   getDirection,
+  hasText,
   isDateInRange,
   isDisabled,
   isCalendarDateSupported,
@@ -50,7 +51,7 @@ const calendarProps = {
   weekStartsOn: { type: Number, default: 0 },
   disabled: Boolean,
   readonly: Boolean,
-  label: { type: String, required: true },
+  label: String,
   previousLabel: { type: String, required: true },
   nextLabel: { type: String, required: true },
   unsupportedMessage: String,
@@ -140,7 +141,7 @@ export const Calendar = defineComponent({
     });
     expose({
       focus: () => {
-        if (focusValue.value) buttons.get(focusValue.value)?.focus();
+        if (hasText(props.locale) && focusValue.value) buttons.get(focusValue.value)?.focus();
       },
     });
     function move(
@@ -214,6 +215,8 @@ export const Calendar = defineComponent({
       focusDate(candidate);
     }
     return () => {
+      // No built-in locale: without the application's locale nothing that Intl would produce is rendered (no toolbar, weekdays or grid).
+      if (!needText("Calendar", "locale", props.locale)) return h("div", mergeProps(attrs, { class: "hw-calendar" }), [h("input", { ref: hidden, type: "hidden", name: attrs.name, form: attrs.form, value: model.value.value, disabled: props.disabled })]);
       const monthStart = page.value.days.find((day) => !day.outside)?.value;
       const previousAllowed =
         page.value.previous !== monthStart &&
@@ -428,7 +431,7 @@ export const DatePicker = defineComponent({
     );
     const formattedDate = computed(() => {
       const value = model.value.value;
-      return value && isCalendarDateSupported(value, calendarSystem.value.value)
+      return value && hasText(props.locale) && isCalendarDateSupported(value, calendarSystem.value.value)
         ? formatCalendarDate(value, { locale: props.locale, calendar: calendarSystem.value.value, dateStyle: "full" })
         : "";
     });
@@ -452,7 +455,7 @@ export const DatePicker = defineComponent({
       open.value = false;
     });
     expose({ element, focus: () => element.value?.focus() });
-    return () =>
+    return () => (needText("DatePicker", "locale", props.locale),
       decorate(
         {...props, label: optionalText(attrs['aria-label']) || optionalText(attrs['aria-labelledby']) || (!props.label && field.controlAttrs.value['aria-labelledby']) ? optionalText(props.label) : needText("DatePicker", "label", props.label)},
         field.id.value,
@@ -468,7 +471,7 @@ export const DatePicker = defineComponent({
                 "aria-haspopup": "dialog",
                 "aria-controls": `${field.id.value}-dialog`,
                 class: "hw-input",
-                value: !editing.value && draft.value && !validationMessage.value && isCalendarDateSupported(draft.value, calendarSystem.value.value) ? formatCalendarDate(draft.value, { locale: props.locale, calendar: calendarSystem.value.value, dateStyle: "medium" }) : draft.value,
+                value: !editing.value && draft.value && !validationMessage.value && hasText(props.locale) && isCalendarDateSupported(draft.value, calendarSystem.value.value) ? formatCalendarDate(draft.value, { locale: props.locale, calendar: calendarSystem.value.value, dateStyle: "medium" }) : draft.value,
                 min: minimum.value,
                 max: maximum.value,
                 disabled: props.disabled,
@@ -562,6 +565,6 @@ export const DatePicker = defineComponent({
             ],
           ),
         ]),
-      );
+      ));
   },
 });

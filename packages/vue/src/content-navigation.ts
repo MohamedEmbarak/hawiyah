@@ -9,7 +9,7 @@ export const ContentNavigation = defineComponent({
   name: 'HwContentNavigation', inheritAttrs: false,
   props: {
     items: {type: Array as PropType<readonly ContentNavigationItem[]>, required: true},
-    label: {type: String, required: true}, showHeading: {type: Boolean, default: true}, sticky: Boolean, updateHash: Boolean,
+    label: String, showHeading: {type: Boolean, default: true}, sticky: Boolean, updateHash: Boolean,
     scrollRoot: {type: Object as PropType<HTMLElement | null>, default: null}, offset: {type: Number, default: 80},
   },
   emits: {'currentChange': (_id: string) => true},

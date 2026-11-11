@@ -83,7 +83,20 @@ Renamed in this release (no aliases): combobox `invalidSelectionMessage` →
 `requiredMessage`; search field `resultsMessage` → `getResultsMessage`;
 dropzone `getStatusMessage(files, rejected)` → `getSelectedMessage(files)` and
 `getRejectedMessage(rejected)`. The core registries `getCalendarLabels`,
-`fileUploadLabels` and `getSiteVerificationLabels` no longer provide text.
+`fileUploadLabels` and `getSiteVerificationLabels` have been removed from core.
+
+## Locale is supplied by the application
+
+No controller chooses a locale, reads `lang` or falls back to the host locale. A controller that formats a number or a date, or sorts text, takes `locale` (a BCP 47 tag, as `options.locale` or `data-hw-locale` on the controller root) whenever that feature is used. Without it core `requireText` warns once in development (`Hawiyah: <Component> requires "locale"`), the controller does not throw, and the feature renders unformatted or unsorted.
+
+| Controller | `locale` is required | Without it |
+| --- | --- | --- |
+| `createCalendar` | always | no switch, toolbar, weekday row, grid or status; the authored root is left untouched; `value`, `setValue`, `select` and `destroy()` still work |
+| `createDatePicker` | always | the input keeps the typed ISO value and its validation, the trigger and dialog work, no formatted date is shown and the dialog calendar is empty |
+| `createDataTable` | when a column has a `[data-hw-sort]` button | `aria-sort`, `sortKey`, `sortDirection` and the change event update as usual; the rows stay in source order |
+| `createRangeSlider` | when the root contains `[data-hw-range-output]` | the output stays empty; values, clamping and events are unchanged |
+
+Output is unchanged when the application passes the locale that used to be the default (`ar-SA`).
 
 ## Skip links and in-page links
 
@@ -127,7 +140,7 @@ Tooltip guidance follows the [APG work-in-progress pattern](https://www.w3.org/W
 focus/hover, persistent hover over content, Escape, and descriptive text only.
 
 DatePicker provides a visible Gregorian/Hijri switch inside its native dialog.
-A BCP 47 `locale` (`options.locale` or `data-hw-locale`) is required and only formats dates: month and weekday names come from Intl, and the controller throws without it. Every word in the picker (trigger, navigation, switch and validation text) is application text; see the table above.
+A BCP 47 `locale` (`options.locale` or `data-hw-locale`) is required and only formats dates: month and weekday names come from Intl. Without it the controller does not throw; it warns in development and renders nothing that Intl would produce (see [Locale is supplied by the application](#locale-is-supplied-by-the-application)). Every word in the picker (trigger, navigation, switch and validation text) is application text; see the table above.
 The switch preserves the submitted Gregorian ISO date and keeps the dialog open.
 An associated live output below the input shows the selected date in the active
 calendar, including when the dialog is closed. The editable native field retains

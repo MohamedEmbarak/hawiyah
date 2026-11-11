@@ -3,7 +3,11 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createApp, createSSRApp, h, nextTick } from 'vue';
 import type { App, Component } from 'vue';
 import { renderToString } from '@vue/server-renderer';
-import { resetTextWarnings } from '@hawiyah/core';
+import { formatCalendarDate, getCalendarMonth, resetTextWarnings, sortRows } from '@hawiyah/core';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { Breadcrumb, Calendar, DataTable, DatePicker, FileDropzone, PortalFooter, SiteVerification, Spinner, Stat, Table } from '../src/index.js';
+import { calendarText, datePickerText, dropzoneText, paginationText } from './texts.js';
 import { AppShell, Carousel, ContentNavigation, CookieConsent, Dialog, Drawer, NotificationList, Pagination, PortalHeader, PortalLayout, Rating, RatingDisplay, TagInput, ToastRegion, TreeView } from '../src/index.js';
 
 const apps: App[] = [];
@@ -160,4 +164,144 @@ it('names the layout and drawer inputs in their warnings', async () => {
   const messages = hawiyahWarnings(warn);
   for (const name of ['secondaryLabel', 'breadcrumbLabel', 'footerLabel', 'footerProps.externalLabel']) expect(messages.some(message => message.startsWith(`Hawiyah: PortalLayout requires "${name}"`))).toBe(true);
   expect(messages.some(message => message.startsWith('Hawiyah: Drawer requires "closeLabel"'))).toBe(true);
+});
+
+it('takes the name of RatingDisplay from aria-labelledby or getValueLabel without writing a second aria-label', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const named = mount({ render: () => h(loose(RatingDisplay), { value: 3, 'aria-labelledby': 'rating-heading' }) });
+  expect(named.querySelector('.hw-rating-display')!.hasAttribute('aria-label')).toBe(false);
+  expect(warn).not.toHaveBeenCalled();
+  const unnamed = mount({ render: () => h(loose(RatingDisplay), { value: 3 }) });
+  expect(unnamed.querySelector('.hw-rating-display')!.hasAttribute('aria-label')).toBe(false);
+  expect(hawiyahWarnings(warn).filter(message => message.includes('RatingDisplay requires "getValueLabel"'))).toHaveLength(1);
+});
+
+it('renders the FileDropzone instruction only when dropLabel is given', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const root = mount({ render: () => h(loose(FileDropzone), { label: 'Attachments' }) });
+  expect(root.querySelector('.hw-file-dropzone-instruction')).toBeNull();
+  expect(root.querySelector('input[type=file]')!.getAttribute('aria-describedby') ?? '').not.toContain('-instruction');
+  expect(hawiyahWarnings(warn).filter(message => message.includes('FileDropzone requires "dropLabel"'))).toHaveLength(1);
+  const given = mount({ render: () => h(FileDropzone, { label: 'Attachments', ...dropzoneText }) });
+  const instruction = given.querySelector('.hw-file-dropzone-instruction')!;
+  expect(instruction.textContent).toBe(dropzoneText.dropLabel);
+  expect(given.querySelector('input[type=file]')!.getAttribute('aria-describedby')!.split(' ')[0]).toBe(instruction.id);
+});
+
+it('accepts aria-label in place of a root label and warns once for an unnamed root', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const items = [{ label: 'Home', href: '/' }];
+  mount({ render: () => h('div', [
+    h(loose(Breadcrumb), { items, 'aria-label': 'Breadcrumb' }),
+    h(loose(Pagination), { ...paginationText, label: undefined, totalPages: 3, 'aria-label': 'Pages' }),
+    h(loose(Spinner), { 'aria-label': 'Loading' }),
+    h(loose(Spinner), { 'aria-hidden': 'true' }),
+    h(loose(Spinner), { 'aria-hidden': true }),
+  ]) });
+  expect(warn).not.toHaveBeenCalled();
+  const root = mount({ render: () => h('div', [
+    h(loose(Breadcrumb), { items }),
+    h(loose(Pagination), { ...paginationText, label: undefined, totalPages: 3 }),
+    h(loose(Spinner), {}),
+  ]) });
+  const messages = hawiyahWarnings(warn);
+  for (const name of ['Breadcrumb', 'Pagination', 'Spinner']) expect(messages.filter(message => message.includes(`${name} requires "label"`))).toHaveLength(1);
+  expect(messages).toHaveLength(3);
+  expect(root.querySelector('.hw-breadcrumb')!.hasAttribute('aria-label')).toBe(false);
+  expect(root.querySelector('.hw-pagination')!.hasAttribute('aria-label')).toBe(false);
+  expect(root.querySelector('.hw-spinner')!.hasAttribute('aria-label')).toBe(false);
+});
+
+it('keeps the space before externalLabel inside the visually hidden span', async () => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const root = mount({ render: () => h('div', [
+    h(loose(SiteVerification), { label: 'Verified site', detailsLabel: 'Details', domainLabel: 'Domain', domainDescription: 'Official domain.', httpsLabel: 'HTTPS', httpsDescription: 'Encrypted.', registrationLabel: 'Registered', registrationHref: 'https://example.test/registry', registrationExternal: true, externalLabel: 'opens in a new tab' }),
+    h(loose(PortalFooter), { navigationLabel: 'Footer', externalLabel: 'opens in a new tab', links: [{ label: 'Portal', href: 'https://example.test', external: true }] }),
+  ]) });
+  const links = [root.querySelector<HTMLAnchorElement>('.hw-verification-registration a')!, root.querySelector<HTMLAnchorElement>('.hw-portal-footer-links a')!];
+  for (const link of links) {
+    expect(link.textContent!.endsWith(' opens in a new tab')).toBe(true);
+    expect(link.querySelector('.hw-sr-only')!.textContent).toBe(' opens in a new tab');
+    expect(link.lastChild).toBe(link.querySelector('.hw-sr-only'));
+  }
+});
+
+it('renders the CookieConsent policy link only with policyHref and requires policyLabel then', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const base = { title: 'Cookies', description: 'We use cookies.', acceptLabel: 'Accept', rejectLabel: 'Reject' };
+  const none = mount({ render: () => h(CookieConsent, base) });
+  expect(none.querySelector('a')).toBeNull();
+  const given = mount({ render: () => h(CookieConsent, { ...base, policyHref: '/privacy', policyLabel: 'Cookie policy' }) });
+  expect(given.querySelector('a')!.getAttribute('href')).toBe('/privacy');
+  expect(given.querySelector('a')!.textContent).toBe('Cookie policy');
+  expect(warn).not.toHaveBeenCalled();
+  const missing = mount({ render: () => h(CookieConsent, { ...base, policyHref: '/privacy' }) });
+  expect(missing.querySelector('a')!.textContent).toBe('');
+  expect(hawiyahWarnings(warn).filter(message => message.includes('CookieConsent requires "policyLabel" when policyHref is set'))).toHaveLength(1);
+});
+
+it('requires Table emptyMessage only when columns is given', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  mount({ render: () => h(Table, { caption: 'Slots' }, () => h('tbody')) });
+  expect(warn).not.toHaveBeenCalled();
+  const root = mount({ render: () => h(Table, { caption: 'Requests', columns: [{ key: 'id', header: 'ID' }], rows: [] }) });
+  expect(root.querySelector('tbody td')!.textContent).toBe('');
+  expect(hawiyahWarnings(warn).filter(message => message.includes('Table requires "emptyMessage" when columns is given'))).toHaveLength(1);
+});
+
+it('sorts DataTable rows only with the application locale', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const rows = [{ name: 'ب' }, { name: 'a' }, { name: 'أ' }, { name: 'B' }];
+  const props = { caption: 'Names', emptyMessage: 'No names', rows, columns: [{ key: 'name', label: 'Name', sortable: true }], defaultSortKey: 'name' };
+  const cells = (root: Element) => [...root.querySelectorAll('tbody td, tbody th')].map(cell => cell.textContent);
+  const missing = mount({ render: () => h(loose(DataTable), props) });
+  expect(cells(missing)).toEqual(rows.map(row => row.name));
+  expect(missing.querySelector('th[aria-sort]')!.getAttribute('aria-sort')).toBe('ascending');
+  expect(hawiyahWarnings(warn).filter(message => message.includes('Hawiyah: DataTable requires "locale"'))).toHaveLength(1);
+  const sorted = mount({ render: () => h(DataTable, { ...props, locale: 'ar-SA' }) });
+  expect(cells(sorted)).toEqual(sortRows(rows, 'name', 'ascending', 'ar-SA').map(row => row.name));
+});
+
+it('renders Stat values as given and takes no locale', async () => {
+  const root = mount({ render: () => h(loose(Stat), { label: 'Requests', value: 1234567, locale: 'ar-SA' }) });
+  expect(root.querySelector('.hw-stat-value')!.textContent).toBe('1234567');
+  expect(Object.keys((Stat as unknown as { props: object }).props)).not.toContain('locale');
+});
+
+it('renders no Intl output from Calendar and DatePicker without a locale, and the core output with one', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const value = '2026-11-11';
+  const root = mount({ render: () => h('div', [
+    h(loose(Calendar), { ...calendarText, locale: undefined, defaultValue: value }),
+    h(loose(DatePicker), { ...datePickerText, label: 'Date', locale: undefined, defaultValue: value }),
+  ]) });
+  await nextTick();
+  const calendar = root.querySelector('.hw-calendar')!;
+  expect(calendar.querySelector('table, .hw-calendar-toolbar')).toBeNull();
+  expect(calendar.querySelector<HTMLInputElement>('input[type=hidden]')!.value).toBe(value);
+  const input = root.querySelector<HTMLInputElement>('.hw-date-picker input.hw-input')!;
+  expect(input.value).toBe(value);
+  expect(root.querySelector('[id$="-formatted"]')?.textContent ?? '').toBe('');
+  const messages = hawiyahWarnings(warn);
+  expect(messages.filter(message => message.includes('Hawiyah: Calendar requires "locale"'))).toHaveLength(1);
+  expect(messages.filter(message => message.includes('Hawiyah: DatePicker requires "locale"'))).toHaveLength(1);
+  const localized = mount({ render: () => h('div', [
+    h(Calendar, { ...calendarText, locale: 'ar-SA', defaultValue: value }),
+    h(DatePicker, { ...datePickerText, label: 'Date', locale: 'ar-SA', defaultValue: value }),
+  ]) });
+  await nextTick();
+  const month = getCalendarMonth({ month: value, value, locale: 'ar-SA', calendar: 'gregory', weekStartsOn: 0, fixedWeeks: true });
+  expect(localized.querySelector('.hw-calendar-heading [aria-live]')!.textContent).toBe(month.label);
+  expect([...localized.querySelector('.hw-calendar')!.querySelectorAll('thead th')].map(cell => cell.textContent)).toEqual(month.weekdays);
+  expect(localized.querySelector('[id$="-formatted"]')!.textContent).toBe(formatCalendarDate(value, { locale: 'ar-SA', calendar: 'gregory', dateStyle: 'full' }));
+  expect(localized.querySelector<HTMLInputElement>('.hw-date-picker input.hw-input')!.value).toBe(formatCalendarDate(value, { locale: 'ar-SA', calendar: 'gregory', dateStyle: 'medium' }));
+});
+
+it('chooses no locale: no Intl, toLocaleString, localeCompare or locale literal in packages/vue/src', () => {
+  const directory = join(__dirname, '../src');
+  expect(readdirSync(directory).filter(name => name.endsWith('.ts')).length).toBeGreaterThan(10);
+  for (const file of readdirSync(directory).filter(name => name.endsWith('.ts'))) {
+    const source = readFileSync(join(directory, file), 'utf8');
+    expect(source, file).not.toMatch(/\bIntl\.|toLocale\w*\(|localeCompare|resolvedOptions|\b[a-z]{2}-[A-Z]{2}\b|navigator\.language/);
+  }
 });

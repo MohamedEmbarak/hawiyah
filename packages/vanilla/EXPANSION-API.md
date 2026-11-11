@@ -38,7 +38,7 @@ See [search field behavior](../../docs/search-field.md).
 
 ```html
 <div data-hw="password-field"><label>Password <input type="password" data-hw-password-input name="password"></label><button type="button" data-hw-password-toggle aria-label="Show password" data-hw-hide-label="Hide password"></button></div>
-<div data-hw="range-slider"><label>Minimum <input type="range" data-hw-lower name="minimum" min="0" max="100" value="20"></label><label>Maximum <input type="range" data-hw-upper name="maximum" min="0" max="100" value="80"></label><output data-hw-range-output></output></div>
+<div data-hw="range-slider" data-hw-locale="en"><label>Minimum <input type="range" data-hw-lower name="minimum" min="0" max="100" value="20"></label><label>Maximum <input type="range" data-hw-upper name="maximum" min="0" max="100" value="80"></label><output data-hw-range-output></output></div>
 <div data-hw="pin-input"><label>One-time code <input data-hw-pin-input name="code" maxlength="6"></label></div>
 <div data-hw="tag-input" data-hw-name="tags" data-hw-value='["Design"]' data-hw-remove-label="Remove {tag}"><label>Add a tag <input data-hw-tag-input></label><div data-hw-tags></div></div>
 <fieldset data-hw="multi-select" data-hw-results-message="{count} options"><legend>Services</legend><label>Search options <input type="search" data-hw-multiselect-search></label><div data-hw-option><label><input type="checkbox" name="services" value="a">Service A</label></div><div data-hw-option><label><input type="checkbox" name="services" value="b">Service B</label></div><span data-hw-status role="status"></span></fieldset>
@@ -65,7 +65,10 @@ after changes/reset/disabled attributes. Do not put native `required` on the
 search text or each checkbox. Readonly selection keeps search usable and selected
 values submitted. See [validation contracts](../../docs/multiselect-validation.md).
 
-RangeSlider's `data-hw-readonly="true"` prevents pointer and value-changing
+RangeSlider writes the formatted lower and upper values into an optional
+`[data-hw-range-output]`; `locale` (or `data-hw-locale`) is required when that
+element is present, and without it the output stays empty and a development
+warning is logged. RangeSlider's `data-hw-readonly="true"` prevents pointer and value-changing
 keyboard input while preserving Tab/Shift+Tab navigation and other native keys.
 Its two labelled thumbs remain focusable; read-only values still submit normally.
 
@@ -126,6 +129,9 @@ Direct Calendar options include `value`, `month`, `min`, `max`, `locale`, `calen
 `nextLabel`, `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`, `rangeLabel`,
 `unsupportedMessage` and the optional `getDayLabel(value)`. `locale` (or
 `data-hw-locale`) is required; month and weekday names come from Intl for it.
+Without it the controller does not throw: it warns in development and renders
+no switch, toolbar or grid (DatePicker keeps its input, validation and trigger
+and shows no formatted date).
 DatePicker takes the same texts except `label`, and adds `calendarLabel`,
 `openLabel` (unless the trigger has its own text or `aria-label`),
 `invalidMessage` and, with `isDateDisabled`, `unavailableMessage`. Its controller has `value`, `calendar`,
@@ -165,7 +171,7 @@ the region defaults to polite status.
 ```html
 <ul data-hw="tree-view" role="tree" aria-label="Documents"><li role="treeitem" data-hw-value="business" aria-expanded="true"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="Toggle business documents">▾</button><span data-hw-tree-label>Business</span><ul role="group"><li role="treeitem" data-hw-value="license"><span data-hw-tree-label>License</span></li></ul></li></ul>
 <section data-hw="carousel" aria-label="Featured services" data-hw-slide-label="{position} of {total}" data-hw-empty-label="No services to show"><div><article data-hw-slide>First service</article><article data-hw-slide>Second service</article></div><button type="button" data-hw-previous>Previous slide</button><span data-hw-carousel-status role="status"></span><button type="button" data-hw-next>Next slide</button></section>
-<table data-hw="data-table" class="hw-table"><caption>Requests</caption><thead><tr><th data-hw-key="name"><button type="button" data-hw-sort="name">Name</button></th><th data-hw-key="count" data-hw-type="number"><button type="button" data-hw-sort="count">Count</button></th></tr></thead><tbody><tr><td>Alpha</td><td>2</td></tr><tr><td>Beta</td><td>1</td></tr></tbody></table>
+<table data-hw="data-table" class="hw-table" data-hw-locale="en"><caption>Requests</caption><thead><tr><th data-hw-key="name"><button type="button" data-hw-sort="name">Name</button></th><th data-hw-key="count" data-hw-type="number"><button type="button" data-hw-sort="count">Count</button></th></tr></thead><tbody><tr><td>Alpha</td><td>2</td></tr><tr><td>Beta</td><td>1</td></tr></tbody></table>
 <div data-hw="feedback" role="group" aria-label="Was this page helpful?" data-hw-success-message="Thank you for your feedback."><button type="button" data-hw-value="yes" aria-pressed="false">Yes</button><button type="button" data-hw-value="no" aria-pressed="false">No</button><input type="hidden" data-hw-feedback-value name="helpful"><span data-hw-feedback-status role="status"></span></div>
 <section data-hw="cookie-consent" aria-label="Cookie preferences"><p>Choose optional cookie preferences.</p><button type="button" data-hw-consent="accepted">Accept optional cookies</button><button type="button" data-hw-consent="rejected">Reject optional cookies</button></section>
 ```
@@ -180,7 +186,9 @@ optional `aria-roledescription` texts with no default. Optional `[data-hw-carous
 `[data-hw-carousel-dot="0"]` markers enable the shared sliding track and authored
 position buttons; see [carousel source/API notes](../../docs/nic-carousel.md);
 there is no autoplay. DataTable sorts existing tbody rows immutably and restores
-their original order on cleanup. `data-hw-locale` controls collation; optional
+their original order on cleanup. `locale` (or `data-hw-locale`) controls collation and is required when a
+column is sortable; without it the controller warns in development, updates
+`aria-sort` and emits as usual, and keeps the source order. Optional
 cell `data-hw-sort-value` overrides displayed text. CookieConsent emits choice and
 hides itself; it does not enable scripts or persist consent without application
 code. Optional direct-controller storageKey explicitly enables local persistence.

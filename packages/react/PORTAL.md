@@ -22,7 +22,7 @@ import '@hawiyah/styles/styles.css';
 
 Every text is application content; nothing defaults to a language. `skipLabel`,
 `menuLabel` and `navigationLabel` are required (the layout always renders its skip
-link). `secondaryLabel` is required with `secondaryNavigation`, `breadcrumbLabel`
+link; a missing one warns under `PortalLayout` first). `secondaryLabel` is required with `secondaryNavigation`, `breadcrumbLabel`
 with `breadcrumbs`, and `footerLabel` (passed to the footer as `navigationLabel`)
 with `footerProps.links`. `footerProps` carries the footer content and its texts
 under the `PortalFooter` names: the required `externalLabel`, and `legalLinksLabel`
@@ -33,8 +33,8 @@ remaining header API (`brandHref`, `navigation`, `navigationId`, `actions`,
 `brand` is text, artwork or both and is passed to the header and footer. Supply
 your actual brand SVG as `brand`; no government artwork is inferred. Artwork alone
 takes its accessible name from `brandLabel`, which is written as `aria-label` on
-the brand link (or on the brand container, as an image, when there is no
-`brandHref`). In development, a mounted brand with no text, no `aria-label` and no
+the header brand link (or on the header brand container, as an image, when there
+is no `brandHref`) and, with `role="group"`, on the footer brand marks. In development, a mounted brand with no text, no `aria-label` and no
 image `alt` warns once through `console.warn`; server rendering never warns.
 
 For English, set `lang="en" dir="ltr"` and pass English texts. Language and

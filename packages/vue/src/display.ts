@@ -73,11 +73,11 @@ export const Alert = defineComponent({
 export interface TableColumn { key: string; header: string; cell?: (row: Record<string, unknown>, index: number) => VNodeChild; rowHeader?: boolean }
 export const Table = defineComponent({
   name: 'HwTable', inheritAttrs: false,
-  props: { columns: Array as PropType<readonly TableColumn[]>, rows: { type: Array as PropType<readonly Record<string, unknown>[]>, default: () => [] }, caption: String, variant: String as PropType<'default' | 'striped' | 'bordered'>, size: String as PropType<'sm' | 'md' | 'lg'>, emptyMessage: {type: String, required: true}, wrapperProps: Object as PropType<Record<string, unknown>>, rowKey: Function as PropType<(row: Record<string, unknown>, index: number) => string | number> },
-  setup(props, { attrs, slots }) { const captionId = useId(); return () => h('div', mergeProps({ class: 'hw-table-wrap', tabindex: 0, role: props.caption ? 'region' : undefined, 'aria-labelledby': props.caption ? captionId : undefined }, props.wrapperProps ?? {}), [h('table', mergeProps(attrs, { class: 'hw-table', 'data-variant': props.variant ?? attrs['data-variant'], 'data-size': props.size ?? attrs['data-size'] }), [
+  props: { columns: Array as PropType<readonly TableColumn[]>, rows: { type: Array as PropType<readonly Record<string, unknown>[]>, default: () => [] }, caption: String, variant: String as PropType<'default' | 'striped' | 'bordered'>, size: String as PropType<'sm' | 'md' | 'lg'>, emptyMessage: String, wrapperProps: Object as PropType<Record<string, unknown>>, rowKey: Function as PropType<(row: Record<string, unknown>, index: number) => string | number> },
+  setup(props, { attrs, slots }) { const captionId = useId(); return () => { const emptyMessage = props.columns ? needText('Table', 'emptyMessage', props.emptyMessage, 'columns is given') : undefined; return h('div', mergeProps({ class: 'hw-table-wrap', tabindex: 0, role: props.caption ? 'region' : undefined, 'aria-labelledby': props.caption ? captionId : undefined }, props.wrapperProps ?? {}), [h('table', mergeProps(attrs, { class: 'hw-table', 'data-variant': props.variant ?? attrs['data-variant'], 'data-size': props.size ?? attrs['data-size'] }), [
     props.caption && h('caption', {id: captionId}, props.caption),
-    props.columns ? [h('thead', {}, [h('tr', {}, props.columns.map(column => h('th', { key: column.key, scope: 'col' }, column.header)))]), h('tbody', {}, props.rows.length ? props.rows.map((row, index) => h('tr', { key: props.rowKey?.(row, index) ?? index }, props.columns!.map(column => h(column.rowHeader ? 'th' : 'td', { key: column.key, scope: column.rowHeader ? 'row' : undefined }, slots[`cell:${column.key}`]?.({ row, index }) ?? column.cell?.(row, index) ?? String(row[column.key] ?? ''))))) : h('tr', {}, h('td', {colspan: props.columns.length || 1}, needText('Table', 'emptyMessage', props.emptyMessage))))] : slots.default?.(),
-  ])]); },
+    props.columns ? [h('thead', {}, [h('tr', {}, props.columns.map(column => h('th', { key: column.key, scope: 'col' }, column.header)))]), h('tbody', {}, props.rows.length ? props.rows.map((row, index) => h('tr', { key: props.rowKey?.(row, index) ?? index }, props.columns!.map(column => h(column.rowHeader ? 'th' : 'td', { key: column.key, scope: column.rowHeader ? 'row' : undefined }, slots[`cell:${column.key}`]?.({ row, index }) ?? column.cell?.(row, index) ?? String(row[column.key] ?? ''))))) : h('tr', {}, h('td', {colspan: props.columns.length || 1}, emptyMessage)))] : slots.default?.(),
+  ])]); }; },
 });
 const PaginationJumpInput = defineComponent({
   props: {start: {type: Number, required: true}, end: {type: Number, required: true}},
@@ -96,7 +96,7 @@ export const Pagination = defineComponent({
   name: 'HwPagination', inheritAttrs: false,
   props: {
     modelValue: Number, defaultValue: {type: Number, default: 1}, totalPages: {type: Number, required: true},
-    label: {type: String, required: true}, previousLabel: {type: String, required: true}, nextLabel: {type: String, required: true},
+    label: String, previousLabel: {type: String, required: true}, nextLabel: {type: String, required: true},
     getPageLabel: {type: Function as PropType<(page: number) => string>, required: true},
     formatPage: {type: Function as PropType<(page: number) => string>, default: String}, siblingCount: {type: Number, default: 1},
     disabled: Boolean, hideOnSinglePage: Boolean,
@@ -176,7 +176,7 @@ export const Pagination = defineComponent({
 });
 export interface BreadcrumbItem { label: string; href?: string; current?: boolean; disabled?: boolean }
 export const Breadcrumb = defineComponent({
-  name: 'HwBreadcrumb', inheritAttrs: false, props: { items: { type: Array as PropType<readonly BreadcrumbItem[]>, required: true }, label: { type: String, required: true } },
+  name: 'HwBreadcrumb', inheritAttrs: false, props: { items: { type: Array as PropType<readonly BreadcrumbItem[]>, required: true }, label: String },
   setup(props, { attrs }) { return () => h('nav', mergeProps({ 'aria-label': rootLabel('Breadcrumb', props.label, attrs) }, attrs, { class: 'hw-breadcrumb' }), [h('ol', {}, props.items.map((item, index) => h('li', { key: index }, [h(item.href && !item.disabled ? 'a' : 'span', { href: item.disabled ? undefined : item.href, role:item.disabled?'link':undefined,'aria-disabled':item.disabled || undefined, 'aria-current': item.current || index === props.items.length - 1 ? 'page' : undefined }, item.label)])))]); },
 });
 export const Progress = defineComponent({
@@ -184,7 +184,7 @@ export const Progress = defineComponent({
   setup(props, { attrs }) { return () => h('progress', mergeProps(attrs, { class: 'hw-progress', 'aria-label': props.label, value: props.value, max: props.max })); },
 });
 export const Skeleton = defineComponent({ name: 'HwSkeleton', inheritAttrs: false, setup(_, { attrs }) { return () => h('span', mergeProps(attrs, { class: 'hw-skeleton', 'aria-hidden': 'true' })); } });
-export const Spinner = defineComponent({ name: 'HwSpinner', inheritAttrs: false, props: { label: { type: String, required: true } }, setup(props, { attrs }) { return () => h('span', mergeProps(attrs, { class: 'hw-spinner', role: 'status' }), [h('span', { class: 'hw-sr-only' }, String(attrs['aria-hidden']) === 'true' || optionalText(attrs['aria-label']) || optionalText(attrs['aria-labelledby']) ? optionalText(props.label) : needText('Spinner', 'label', props.label))]); } });
+export const Spinner = defineComponent({ name: 'HwSpinner', inheritAttrs: false, props: { label: String }, setup(props, { attrs }) { return () => h('span', mergeProps(attrs, { class: 'hw-spinner', role: 'status' }), [h('span', { class: 'hw-sr-only' }, String(attrs['aria-hidden']) === 'true' || optionalText(attrs['aria-label']) || optionalText(attrs['aria-labelledby']) ? optionalText(props.label) : needText('Spinner', 'label', props.label))]); } });
 export const Avatar = defineComponent({
   name: 'HwAvatar', inheritAttrs: false, props: { name: { type: String, required: true }, src: String, initials: String, size: String as PropType<'sm' | 'md' | 'lg' | 'xl' | '40' | '64' | '80' | '120'>, variant: String as PropType<'circle' | 'square'> },
   setup(props, { attrs }) {
@@ -206,7 +206,7 @@ export const Divider = defineComponent({
 });
 export interface StepItem { value: string; label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
 export const Stepper = defineComponent({
-  name: 'HwStepper', inheritAttrs: false, props: { items: { type: Array as PropType<readonly StepItem[]>, required: true }, current: String, activeIndex: Number, label: { type: String, required: true } },
+  name: 'HwStepper', inheritAttrs: false, props: { items: { type: Array as PropType<readonly StepItem[]>, required: true }, current: String, activeIndex: Number, label: String },
   setup(props, { attrs }) { return () => h('ol', mergeProps({ 'aria-label': rootLabel('Stepper', props.label, attrs) }, attrs, { class: 'hw-stepper' }), props.items.map((item, index) => {
     const requested = props.activeIndex ?? props.items.findIndex(step => step.value === props.current);
     const current = Number.isInteger(requested) && requested >= -1 && requested <= props.items.length ? requested : -1;

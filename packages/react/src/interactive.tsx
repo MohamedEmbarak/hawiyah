@@ -266,7 +266,7 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
     if (next.open !== open) onOpenChange?.(next.open);
   }
   return <div className="hw-combobox" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); }}>
-    <input {...props} {...field} aria-invalid={field.required && !selected && !requiredText ? true : field['aria-invalid']} ref={presenceRef} form={form} disabled={disabled} className={cx('hw-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-readonly={props.readOnly || undefined} aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
+    <input {...props} {...field} aria-invalid={field['aria-invalid']} ref={presenceRef} form={form} disabled={disabled} className={cx('hw-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-readonly={props.readOnly || undefined} aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
       value={query} onChange={event => { if (blocked()) { event.currentTarget.value = query; return; } dispatch({ type: 'input', query: event.currentTarget.value }); onInputChange?.(event.currentTarget.value); }}
       onFocus={event => { onFocus?.(event); if (!event.defaultPrevented) dispatch({ type: 'open' }); }} onBlur={onBlur}
       onClick={event => { onClick?.(event); if (!event.defaultPrevented && !open) dispatch({ type: 'open' }); }}

@@ -26,7 +26,7 @@ interface CalendarBaseProps extends Omit<ComponentPropsWithRef<'section'>, 'defa
 /** `rangeLabel` names the supported-range information shown with the Umm al-Qura calendar. */
 export type CalendarProps = CalendarBaseProps & RootName & ({ calendar?: 'gregory'; rangeLabel?: string } | { calendar?: CalendarSystem; rangeLabel: string });
 export function Calendar({ value, defaultValue = '', onValueChange, month, defaultMonth, onMonthChange, min, max, locale, calendar = 'gregory', weekStartsOn = 0, isDateDisabled, disabled, readOnly, label, previousLabel, nextLabel, rangeLabel, getDayLabel, name, form, className, ...props }: CalendarProps) {
-  const names = { label: rootLabel('Calendar', props, label), previous: text('Calendar', 'previousLabel', previousLabel), next: text('Calendar', 'nextLabel', nextLabel), range: calendar === 'islamic-umalqura' ? text('Calendar', 'rangeLabel', rangeLabel, "calendar is 'islamic-umalqura'") : undefined };
+  const tag = text('Calendar', 'locale', locale); const names = { label: rootLabel('Calendar', props, label), previous: text('Calendar', 'previousLabel', previousLabel), next: text('Calendar', 'nextLabel', nextLabel), range: calendar === 'islamic-umalqura' ? text('Calendar', 'rangeLabel', rangeLabel, "calendar is 'islamic-umalqura'") : undefined };
   const id = useId(); const nativeValue = useRef<HTMLInputElement | null>(null); const [selected, select] = useControllable(value, defaultValue, onValueChange);
   const [visibleMonth, setMonth] = useControllable<string | undefined>(month, defaultMonth ?? (isDateInRange(selected) ? selected : undefined), next => { if (next) onMonthChange?.(next); });
   const previousSelected = useRef(selected);
@@ -36,14 +36,17 @@ export function Calendar({ value, defaultValue = '', onValueChange, month, defau
     if (month === undefined && isDateInRange(selected)) { setMonth(selected); setFocused(selected); }
   }, [selected, month]);
   const [focused, setFocused] = useState<string | undefined>(isDateInRange(selected) ? selected : undefined); const shouldFocus = useRef(false); const buttons = useRef(new Map<string, HTMLButtonElement>());
-  const model = getCalendarMonth({ month: visibleMonth && isDateInRange(visibleMonth) ? visibleMonth : undefined, value: isDateInRange(selected) ? selected : undefined, min, max, locale, calendar, weekStartsOn, fixedWeeks: true });
+  const model = tag === undefined ? undefined : getCalendarMonth({ month: visibleMonth && isDateInRange(visibleMonth) ? visibleMonth : undefined, value: isDateInRange(selected) ? selected : undefined, min, max, locale: tag, calendar, weekStartsOn, fixedWeeks: true });
   const unavailable = (day: string) => Boolean(disabled || !isCalendarDateSupported(day, calendar) || !isDateInRange(day, min, max) || isDateDisabled?.(day));
-  const focusValue = model.days.find(day => day.value === focused && !unavailable(day.value))?.value ?? model.days.find(day => day.selected && !unavailable(day.value))?.value ?? model.days.find(day => day.today && !unavailable(day.value))?.value ?? model.days.find(day => !day.outside && !unavailable(day.value))?.value ?? model.days.find(day => !unavailable(day.value))?.value;
+  const focusValue = model?.days.find(day => day.value === focused && !unavailable(day.value))?.value ?? model?.days.find(day => day.selected && !unavailable(day.value))?.value ?? model?.days.find(day => day.today && !unavailable(day.value))?.value ?? model?.days.find(day => !day.outside && !unavailable(day.value))?.value ?? model?.days.find(day => !unavailable(day.value))?.value;
   useFormReset(nativeValue, () => { if (value === undefined) select(defaultValue); if (month === undefined) setMonth(defaultMonth ?? (defaultValue || undefined)); setFocused(defaultValue || undefined); }, form);
-  useEffect(() => { if (shouldFocus.current && focused) { const button = buttons.current.get(focused); if (button) { button.focus(); shouldFocus.current = false; } } }, [focused, model.label]);
+  useEffect(() => { if (shouldFocus.current && focused) { const button = buttons.current.get(focused); if (button) { button.focus(); shouldFocus.current = false; } } }, [focused, model?.label]);
+  const hidden = <input ref={nativeValue} type="hidden" name={name} form={form} value={isCalendarDateSupported(selected, calendar) && isDateInRange(selected, min, max) && !isDateDisabled?.(selected) ? selected : ''} disabled={disabled} />;
+  if (!model || tag === undefined) return <section {...props} className={cx('hw-calendar', className)} aria-label={names.label} data-calendar={calendar}>{hidden}</section>;
   const first = model.days.find(day => !day.outside)!.value;
-  const fullLabel = (date: string) => getDayLabel?.(date) ?? (isCalendarDateSupported(date, calendar) ? formatCalendarDate(date, { locale, calendar, dateStyle: 'full' }) : date);
+  const fullLabel = (date: string) => getDayLabel?.(date) ?? (isCalendarDateSupported(date, calendar) ? formatCalendarDate(date, { locale: tag, calendar, dateStyle: 'full' }) : date);
   function navigate(current: string, key: string, shift: boolean, direction: string) {
+    if (!model) return;
     try {
     const column = model.days.findIndex(day => day.value === current) % 7;
     let next: string; let step = 1;
@@ -63,7 +66,7 @@ export function Calendar({ value, defaultValue = '', onValueChange, month, defau
   return <section {...props} className={cx('hw-calendar', className)} aria-label={names.label} data-calendar={calendar}>
     <header className="hw-calendar-header"><Button variant="ghost" className="hw-calendar-prev" aria-label={names.previous} disabled={disabled || model.previous === first || Boolean(min && moveCalendarDate(first, -1, 'day', 'gregory') < min)} onClick={() => { setMonth(model.previous); setFocused(undefined); }}><span className="hw-icon" data-icon="arrow-left-01" data-directional="true" data-size="md" aria-hidden="true" /></Button><div className="hw-calendar-heading"><h3 id={`${id}-month`} aria-live="polite">{model.label}</h3>{calendar === 'islamic-umalqura' && <Tooltip className="hw-calendar-info" content={[names.range, `\u2066${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}\u2069`].filter(Boolean).join(' ')}><span tabIndex={0} role="img" className="hw-calendar-info-icon hw-tooltip-trigger" aria-label={names.range}>i</span></Tooltip>}</div><Button variant="ghost" className="hw-calendar-next" aria-label={names.next} disabled={disabled || model.next === first || Boolean(max && model.next > max)} onClick={() => { setMonth(model.next); setFocused(undefined); }}><span className="hw-icon" data-icon="arrow-right-01" data-directional="true" data-size="md" aria-hidden="true" /></Button></header>
     <table role="grid" aria-readonly={readOnly || undefined} aria-labelledby={`${id}-month`} className="hw-calendar-grid"><thead><tr>{model.weekdays.map((day, index) => <th key={index} scope="col">{day}</th>)}</tr></thead><tbody>{Array.from({ length: 6 }, (_, row) => <tr key={row}>{model.days.slice(row * 7, row * 7 + 7).map(day => <td key={day.value} role="gridcell" aria-selected={day.selected}><button type="button" className="hw-calendar-day" data-date={day.value} data-outside={day.outside || undefined} aria-label={fullLabel(day.value)} aria-current={day.today ? 'date' : undefined} disabled={unavailable(day.value)} tabIndex={focusValue === day.value ? 0 : -1} ref={node => { if (node) buttons.current.set(day.value, node); else buttons.current.delete(day.value); }} onFocus={() => setFocused(day.value)} onClick={() => { if (!readOnly) { select(day.value); setFocused(day.value); if (day.outside) setMonth(day.value); } }} onKeyDown={event => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) { event.preventDefault(); navigate(day.value, event.key, event.shiftKey, getDirection(event.currentTarget)); } }}>{day.label}</button></td>)}</tr>)}</tbody></table>
-    <input ref={nativeValue} type="hidden" name={name} form={form} value={isCalendarDateSupported(selected, calendar) && isDateInRange(selected, min, max) && !isDateDisabled?.(selected) ? selected : ''} disabled={disabled} />
+    {hidden}
   </section>;
 }
 interface DatePickerBaseProps extends Omit<TextFieldProps, 'type' | 'value' | 'defaultValue' | 'onChange' | 'min' | 'max' | 'label'> { value?: string; defaultValue?: string; onValueChange?: (value: string) => void; min?: string; max?: string; locale: string; calendar?: CalendarSystem; defaultCalendar?: CalendarSystem; onCalendarChange?: (calendar: CalendarSystem) => void; calendarSystemLabel: string; gregorianLabel: string; hijriLabel: string; rangeLabel: string; weekStartsOn?: number; calendarLabel: string; openLabel: string; previousLabel: string; nextLabel: string; closeLabel: string; unsupportedMessage: string; invalidMessage: string }
@@ -72,6 +75,7 @@ export type DatePickerProps = DatePickerBaseProps & FieldName & ({ isDateDisable
 export function DatePicker({ value, defaultValue = '', onValueChange, min, max, locale, calendar: controlledCalendar, defaultCalendar = 'gregory', onCalendarChange, calendarSystemLabel, gregorianLabel, hijriLabel, rangeLabel, weekStartsOn, isDateDisabled, calendarLabel, openLabel, previousLabel, nextLabel, closeLabel, unavailableMessage, invalidMessage, unsupportedMessage, label, hint, error, ref, className, name, onKeyDown, onFocus, onBlur, ...props }: DatePickerProps) {
   const copy = { calendar: text('DatePicker', 'calendarLabel', calendarLabel), open: text('DatePicker', 'openLabel', openLabel), close: text('DatePicker', 'closeLabel', closeLabel), system: text('DatePicker', 'calendarSystemLabel', calendarSystemLabel), gregorian: text('DatePicker', 'gregorianLabel', gregorianLabel), hijri: text('DatePicker', 'hijriLabel', hijriLabel), invalid: text('DatePicker', 'invalidMessage', invalidMessage), unsupported: text('DatePicker', 'unsupportedMessage', unsupportedMessage), unavailable: isDateDisabled ? text('DatePicker', 'unavailableMessage', unavailableMessage, 'isDateDisabled is given') : undefined };
   if (!hasText(props['aria-label']) && !hasText(props['aria-labelledby'])) text('DatePicker', 'label', label);
+  const tag = text('DatePicker', 'locale', locale);
   const [calendar, setCalendar] = useControllable(controlledCalendar, defaultCalendar, onCalendarChange);
   const id = useId(); const input = useRef<HTMLInputElement | null>(null);
   const [selected, select] = useControllable(value, defaultValue, onValueChange);
@@ -81,7 +85,7 @@ export function DatePicker({ value, defaultValue = '', onValueChange, min, max, 
   useEffect(() => { if (previousValue.current !== selected) { previousValue.current = selected; setDraft(selected); } }, [selected]);
   useEffect(() => { if (props.disabled || props.readOnly) setOpen(false); }, [props.disabled, props.readOnly]);
   useFormReset(input, () => { if (value === undefined) select(defaultValue); setDraft(value ?? defaultValue); setOpen(false); setMonth(isDateInRange(value ?? defaultValue) ? (value ?? defaultValue) : undefined); }, props.form);
-  const formatted = selected && isCalendarDateSupported(selected, calendar) ? formatCalendarDate(selected, { locale, calendar, dateStyle: 'full' }) : '';
+  const formatted = tag !== undefined && selected && isCalendarDateSupported(selected, calendar) ? formatCalendarDate(selected, { locale: tag, calendar, dateStyle: 'full' }) : '';
   const formattedId = `${props.id ?? id}-formatted`; const dialogId = `${props.id ?? id}-dialog`;
   const malformed = Boolean(draft && !isDateInRange(draft));
   const unsupported = Boolean(draft && !malformed && calendar === 'islamic-umalqura' && !isCalendarDateSupported(draft, calendar));
@@ -89,7 +93,7 @@ export function DatePicker({ value, defaultValue = '', onValueChange, min, max, 
   const outside = Boolean(draft && !malformed && !isDateInRange(draft, min, max));
   const invalid = malformed || outside || unsupported || unavailable;
   const message = malformed || outside ? copy.invalid : unsupported ? copy.unsupported : unavailable ? copy.unavailable : undefined;
-  const displayed = !editing && draft && !invalid && isCalendarDateSupported(draft, calendar) ? formatCalendarDate(draft, { locale, calendar, dateStyle: 'medium' }) : draft;
+  const displayed = tag !== undefined && !editing && draft && !invalid && isCalendarDateSupported(draft, calendar) ? formatCalendarDate(draft, { locale: tag, calendar, dateStyle: 'medium' }) : draft;
   useEffect(() => { input.current?.setCustomValidity(invalid ? message ?? ' ' : ''); }, [invalid, message]);
   const blocked = () => props.disabled || props.readOnly || !input.current || isDisabled(input.current);
   const show = () => { if (!blocked()) { setMonth(isDateInRange(selected) ? selected : undefined); setOpen(true); } };

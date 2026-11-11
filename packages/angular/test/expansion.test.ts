@@ -262,7 +262,7 @@ describe('Angular expansion behavior', () => {
 
   it('sorts data stably with aria-sort and emits responsive CSS variables', () => {
     class Host { rows = [{name: 'Item 10'}, {name: 'Item 2'}, {name: 'Item 2'}]; columns = [{key: 'name', label: 'Name', sortable: true}]; }
-    const fixture = host(Host, `<hw-grid [columns]="{base: 1, md: 3}" [gap]="{base: 2, lg: 6}"><hw-data-table ${withText.table} caption="Results" [rows]="rows" [columns]="columns" /></hw-grid>`);
+    const fixture = host(Host, `<hw-grid [columns]="{base: 1, md: 3}" [gap]="{base: 2, lg: 6}"><hw-data-table ${withText.dataTable} caption="Results" [rows]="rows" [columns]="columns" /></hw-grid>`);
     fixture.nativeElement.querySelector('th button').click(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('th').getAttribute('aria-sort')).toBe('ascending');
     expect(fixture.nativeElement.querySelector('tbody td').textContent).toBe('Item 2');

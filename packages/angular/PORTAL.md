@@ -82,7 +82,10 @@ only when `mainId` names a target, which then needs `skipLabel`. Standalone
 projected `[hwFooterSupport]` content, and its support section is shown only for
 that content; without it the section stays in the document with the `hidden`
 attribute, no heading and no name. `brandLabel` names projected `[hwFooterBrand]`
-artwork or the brand text, and is written only while the brand block has either. Escape closes the mobile
+artwork or the brand text: it is written as `aria-label` with `role="group"` on
+`.hw-portal-footer-brand-marks`, which holds the artwork followed by the `brand`
+text, and only while that group has either. The outer `.hw-portal-footer-brand`
+and the description inside it carry no role and no name. Escape closes the mobile
 disclosure and focuses its toggle; link selection, outside press and focus
 leaving close it. Tab remains native and desktop links stay visible. Each header
 gets a distinct navigation ID unless supplied explicitly. No vanilla controller

@@ -30,7 +30,7 @@ export function PortalLayout({ brand, brandLabel, headerProps, footerProps, foot
   const id = useId(); const contentId = mainId ?? `${id}-main`;
   const footerLinksLabel = footerProps.links?.length ? text('PortalLayout', 'footerLabel', footerLabel, 'footer links are given') : undefined;
   return <div {...props} className={cx('hw-portal-layout', className)}>
-    <PortalHeader {...headerProps} brand={brand} brandLabel={brandLabel} mainId={contentId} skipLabel={text('PortalLayout', 'skipLabel', skipLabel) as string} menuLabel={menuLabel} navigationLabel={navigationLabel} />
+    <PortalHeader {...headerProps} brand={brand} brandLabel={brandLabel} mainId={contentId} skipLabel={text('PortalLayout', 'skipLabel', skipLabel) as string} menuLabel={text('PortalLayout', 'menuLabel', menuLabel) as string} navigationLabel={text('PortalLayout', 'navigationLabel', navigationLabel) as string} />
     {secondaryNavigation?.length ? <SecondaryNav items={secondaryNavigation} label={text('PortalLayout', 'secondaryLabel', secondaryLabel, 'secondary navigation items are given') as string} /> : null}
     <main id={contentId} tabIndex={-1} className="hw-portal-layout-main hw-container">
       {breadcrumbs?.length ? <Breadcrumb items={breadcrumbs} label={text('PortalLayout', 'breadcrumbLabel', breadcrumbLabel, 'breadcrumbs are given') as string} /> : null}{children}

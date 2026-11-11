@@ -4,8 +4,11 @@ import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
-import { resetTextWarnings } from '@hawiyah/core';
-import { AppShell, Carousel, Combobox, ContentNavigation, CookieConsent, DataTable, Feedback, FileUploadList, MultiSelect, NotificationList, Pagination, PortalFooter, PortalHeader, RangeSlider, Rating, SearchField, TagInput } from './src/index.js';
+import { readdirSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import ts from 'typescript';
+import { getCalendarMonth, resetTextWarnings, sortRows } from '@hawiyah/core';
+import { AppShell, Calendar, Carousel, Combobox, ContentNavigation, CookieConsent, DataTable, DatePicker, Feedback, FileDropzone, FileUploadList, MultiSelect, NotificationList, Pagination, PortalFooter, PortalHeader, PortalLayout, RangeSlider, Rating, SearchField, TagInput } from './src/index.js';
 import type { PaginationProps } from './src/index.js';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -41,7 +44,7 @@ it('passes the documented arguments to templated texts and adds nothing to the r
     <Carousel label="الشرائح" previousLabel="السابقة" nextLabel="التالية" indicatorsLabel="المؤشرات" emptyLabel="لا شيء" getSlideLabel={slide} slides={['أ', 'ب']} />
     <Pagination {...pageTexts} getPageLabel={page} totalPages={2} />
     <Rating label="التقييم" max={3} getRatingLabel={rating} />
-    <DataTable caption="الطلبات" emptyMessage="لا توجد سجلات" getSortLabel={sort} columns={[{ key: 'name', label: 'الاسم', sortable: true }]} rows={[{ name: 'أ' }]} />
+    <DataTable caption="الطلبات" locale="ar-SA" emptyMessage="لا توجد سجلات" getSortLabel={sort} columns={[{ key: 'name', label: 'الاسم', sortable: true }]} rows={[{ name: 'أ' }]} />
     <FileUploadList items={[{ id: 'one', name: 'a.pdf', status: 'uploading', progress: 40 }]} labels={{ selected: 'جاهز', uploading: 'جارٍ الرفع', complete: 'اكتمل', error: 'تعذر', remove: 'إزالة', getProgressLabel: progress, getRemoveLabel: name => `إزالة ${name}` }} />
   </>);
   expect(slide).toHaveBeenCalledWith(1, 2); expect(slide).toHaveBeenCalledWith(2, 2); expect(slide).not.toHaveBeenCalledWith(0, 2);
@@ -59,7 +62,8 @@ it('accepts artwork alone as the brand and names it with brandLabel', async () =
   await render(<><PortalHeader brand={artwork} brandHref="/" brandLabel="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" /><PortalFooter brand={artwork} brandLabel="هوية" externalLabel="يفتح في نافذة جديدة" /></>);
   const link = container.querySelector<HTMLAnchorElement>('a.hw-portal-brand')!;
   expect(link.getAttribute('aria-label')).toBe('هوية'); expect(link.textContent).toBe(''); expect(link.querySelector('svg')).not.toBeNull();
-  expect(container.querySelector('.hw-portal-footer-brand-marks')!.getAttribute('aria-label')).toBe('هوية');
+  expect(container.querySelector('.hw-portal-footer-brand-marks')!.getAttribute('aria-label')).toBe('هوية'); expect(container.querySelector('.hw-portal-footer-brand-marks')!.getAttribute('role')).toBe('group');
+  expect(container.querySelector('.hw-portal-footer-brand')!.hasAttribute('role')).toBe(false); expect(container.querySelector('.hw-portal-footer-brand')!.hasAttribute('aria-label')).toBe(false);
   expect(container.querySelector('.hw-portal-footer-support')).toBeNull();
   expect(warnings()).toEqual([]);
   await render(<PortalHeader brand={artwork} navigationLabel="التنقل الرئيسي" menuLabel="القائمة" />);
@@ -104,14 +108,110 @@ it('warns for missing always-texts that the types already require and renders no
   container.querySelectorAll('.hw-range-slider input[type="range"]').forEach(input => { expect(input.hasAttribute('aria-label')).toBe(false); expect(input.getAttribute('aria-labelledby') ?? '').toBe(''); });
 });
 
-it('omits names that application functions return empty and keeps required controls without a message invalid', async () => {
+it('omits names that application functions return empty and keeps required controls without a message blocking without marking them invalid', async () => {
   const options = [{ value: 'a', label: 'أ' }]; const [Tags, Multi, Combo] = [untyped(TagInput), untyped(MultiSelect), untyped(Combobox)];
   await render(<><Rating label="التقييم" getRatingLabel={() => ''} /><TagInput label="الوسوم" defaultValue={['x']} getRemoveLabel={() => ''} /><form id="f"><Tags label="وسوم مطلوبة" required getRemoveLabel={(tag: string) => tag} /><Multi label="اختيارات" options={options} searchLabel="بحث" emptyMessage="لا نتائج" required /><Combo label="خيار" options={options} emptyMessage="لا نتائج" getResultsMessage={(count: number) => String(count)} required /></form></>);
   container.querySelectorAll('.hw-rating input[type="radio"]').forEach(input => expect(input.hasAttribute('aria-label')).toBe(false));
   expect(container.querySelector('.hw-chip button')!.hasAttribute('aria-label')).toBe(false);
   const controls = Array.from(container.querySelectorAll<HTMLInputElement>('#f input:not([type="hidden"]):not([type="checkbox"])'));
   expect(controls).toHaveLength(3);
-  controls.forEach(input => { expect(input.validity.customError).toBe(true); expect(input.getAttribute('aria-invalid')).toBe('true'); });
+  controls.forEach(input => { expect(input.validationMessage).toBe(' '); expect(input.validity.customError).toBe(true); expect(input.hasAttribute('aria-invalid')).toBe(false); });
   expect((container.querySelector('#f') as HTMLFormElement).checkValidity()).toBe(false);
-  expect(warnings().filter(message => message.includes('"requiredMessage"'))).toHaveLength(3);
+  expect(warnings().filter(message => message.includes('"requiredMessage"')).map(message => message.match(/^Hawiyah: (\w+) /)![1]).sort()).toEqual(['Combobox', 'MultiSelect', 'TagInput']);
+});
+
+const calendarTexts = { label: 'التقويم', previousLabel: 'الشهر السابق', nextLabel: 'الشهر التالي' };
+const pickerTexts = { label: 'التاريخ', calendarLabel: 'اختر التاريخ', openLabel: 'فتح التقويم', closeLabel: 'إغلاق التقويم', previousLabel: 'الشهر السابق', nextLabel: 'الشهر التالي', calendarSystemLabel: 'نظام التقويم', gregorianLabel: 'ميلادي', hijriLabel: 'هجري', rangeLabel: 'النطاق المدعوم', invalidMessage: 'تاريخ غير صالح', unsupportedMessage: 'تاريخ خارج النطاق' };
+
+it('makes a missing locale and a preferences action without its label type errors', () => {
+  // jsdom gives import.meta.url no file scheme; Vitest runs from the repository root.
+  const fixture = resolve('packages/react/fixtures/required-locale.tsx');
+  const program = ts.createProgram([fixture], { strict: true, noEmit: true, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'], skipLibCheck: true, isolatedModules: true });
+  const diagnostics = ts.getPreEmitDiagnostics(program).map(diagnostic => `${diagnostic.file?.fileName.split('/').pop() ?? ''}:${diagnostic.file && diagnostic.start !== undefined ? diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start).line + 1 : 0} ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')}`);
+  // An accepted element under @ts-expect-error is reported as an unused directive, so an empty list proves all four are rejected.
+  expect(diagnostics).toEqual([]);
+  expect(readFileSync(fixture, 'utf8').match(/{\/\* @ts-expect-error/g)).toHaveLength(4);
+}, 60_000);
+
+it('renders Calendar and DatePicker without Intl output and without throwing when locale is missing, and as core formats it when given', async () => {
+  const [Cal, Picker] = [untyped(Calendar), untyped(DatePicker)];
+  await render(<form id="dates"><Cal {...calendarTexts} name="day" defaultValue="2026-03-15" /><Picker {...pickerTexts} name="date" defaultValue="2026-03-15" /></form>);
+  const root = container.querySelector('.hw-calendar')!;
+  expect(root.getAttribute('aria-label')).toBe('التقويم'); expect(root.querySelector('header, [role="grid"], [role="status"], h3')).toBeNull();
+  expect(container.querySelector('[role="grid"]')).toBeNull();
+  expect(container.querySelector<HTMLInputElement>('.hw-date-picker input[type="text"]')!.value).toBe('2026-03-15');
+  expect(container.querySelector('.hw-date-picker-value')!.textContent).toBe('');
+  expect(new FormData(container.querySelector<HTMLFormElement>('#dates')!).getAll('day')).toEqual(['2026-03-15']);
+  expect(new FormData(container.querySelector<HTMLFormElement>('#dates')!).getAll('date')).toEqual(['2026-03-15']);
+  const locales = warnings().filter(message => message.includes('"locale"'));
+  expect(locales.filter(message => message.startsWith('Hawiyah: Calendar '))).toHaveLength(1);
+  expect(locales.filter(message => message.startsWith('Hawiyah: DatePicker '))).toHaveLength(1);
+  expect(warnings()).toHaveLength(2);
+  await render(<Calendar {...calendarTexts} locale="ar-SA" defaultValue="2026-03-15" />);
+  expect(container.querySelector('.hw-calendar h3')!.textContent).toBe(getCalendarMonth({ locale: 'ar-SA', month: '2026-03-15', value: '2026-03-15', calendar: 'gregory', weekStartsOn: 0, fixedWeeks: true }).label);
+  expect(container.querySelector('[role="grid"]')).not.toBeNull();
+  expect(warnings()).toHaveLength(2);
+});
+
+it('keeps DataTable rows in source order when locale is missing and sorts as core does with the locale given', async () => {
+  const rows = [{ name: 'ياسر' }, { name: 'أحمد' }, { name: 'باسم' }]; const columns = [{ key: 'name' as const, label: 'الاسم', sortable: true }];
+  const Table = untyped(DataTable);
+  await render(<Table caption="الطلبات" emptyMessage="لا توجد سجلات" columns={columns} rows={rows} />);
+  const names = () => Array.from(container.querySelectorAll('tbody td')).map(cell => cell.textContent);
+  await act(async () => container.querySelector<HTMLButtonElement>('th button')!.click());
+  expect(container.querySelector('th')!.getAttribute('aria-sort')).toBe('ascending');
+  expect(names()).toEqual(['ياسر', 'أحمد', 'باسم']);
+  expect(warnings()).toEqual([expect.stringMatching(/^Hawiyah: DataTable requires "locale"/)]);
+  await render(<DataTable caption="الطلبات" emptyMessage="لا توجد سجلات" locale="ar-SA" columns={columns} rows={rows} defaultSort={{ key: 'name', direction: 'ascending' }} key="sorted" />);
+  expect(names()).toEqual(sortRows(rows, 'name', 'ascending', 'ar-SA').map(row => row.name));
+  expect(names()).toEqual(['أحمد', 'باسم', 'ياسر']);
+  expect(warnings()).toHaveLength(1);
+});
+
+it('renders the FileDropzone selection status only with getSelectedMessage', async () => {
+  await render(<FileDropzone label="المرفقات" dropLabel="أفلت الملفات هنا" />);
+  expect(container.querySelector('[role="status"]')).toBeNull();
+  await render(<form id="upload"><FileDropzone label="المرفقات" dropLabel="أفلت الملفات هنا" getSelectedMessage={files => `تم اختيار ${files.length}`} key="status" /></form>);
+  const status = () => container.querySelector('.hw-file-dropzone p[role="status"]')!;
+  expect(status().textContent).toBe(''); expect(status().classList.contains('hw-sr-only')).toBe(false);
+  const input = container.querySelector<HTMLInputElement>('input[type="file"]')!; // JSDOM has no DataTransfer; give the input a selection directly.
+  let selection: File[] = []; Object.defineProperty(input, 'files', { configurable: true, get: () => selection, set: value => { selection = Array.from(value as Iterable<File>); } });
+  selection = [new File(['a'], 'a.pdf', { type: 'application/pdf' })]; await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })));
+  expect(status().textContent).toBe('تم اختيار 1');
+  await act(async () => { container.querySelector<HTMLFormElement>('#upload')!.reset(); await Promise.resolve(); });
+  expect(status().textContent).toBe('');
+  expect(warnings()).toEqual([]);
+});
+
+it('renders the CookieConsent preferences action only while its handler is bound', async () => {
+  const texts = { title: 'ملفات تعريف الارتباط', description: 'وصف', acceptLabel: 'قبول', rejectLabel: 'رفض' };
+  await render(<CookieConsent {...texts} />);
+  expect(container.querySelectorAll('.hw-cookie-consent button')).toHaveLength(2);
+  const onPreferences = vi.fn();
+  await render(<CookieConsent {...texts} onPreferences={onPreferences} preferencesLabel="التفضيلات" />);
+  const buttons = container.querySelectorAll<HTMLButtonElement>('.hw-cookie-consent button'); const preferences = buttons[buttons.length - 1]!;
+  expect(buttons).toHaveLength(3); expect(preferences.textContent).toBe('التفضيلات'); expect(preferences.dataset.variant).toBe('ghost');
+  await act(async () => preferences.click());
+  expect(onPreferences).toHaveBeenCalledTimes(1); expect(container.querySelector('.hw-cookie-consent')!.hasAttribute('hidden')).toBe(false);
+  expect(warnings()).toEqual([]);
+  const Cookie = untyped(CookieConsent);
+  await render(<Cookie {...texts} onPreferences={onPreferences} />); await render(<Cookie {...texts} onPreferences={onPreferences} />);
+  expect(container.querySelectorAll('.hw-cookie-consent button')[2]!.textContent).toBe('');
+  expect(warnings()).toEqual([expect.stringMatching(/^Hawiyah: CookieConsent requires "preferencesLabel" when onPreferences is given/)]);
+});
+
+it('reports a missing PortalLayout menuLabel under PortalLayout first', async () => {
+  const Layout = untyped(PortalLayout);
+  await render(<Layout brand="هوية" footerProps={{ externalLabel: 'يفتح في نافذة جديدة' }} skipLabel="تخطي إلى المحتوى" navigationLabel="التنقل الرئيسي"><p>محتوى</p></Layout>);
+  expect(warnings()[0]).toMatch(/^Hawiyah: PortalLayout requires "menuLabel"/);
+});
+
+it('calls no Intl, toLocaleString or localeCompare in the React sources and chooses no locale', () => {
+  const directory = resolve('packages/react/src') + '/';
+  for (const name of readdirSync(directory)) {
+    const source = readFileSync(directory + name, 'utf8');
+    expect(source, name).not.toMatch(/\bIntl\s*\.|toLocale\w*\s*\(|localeCompare|resolvedOptions|navigator\.languages?\b/);
+    expect(source, name).not.toMatch(/['"](ar|en)(-[A-Za-z]{2})?['"]/);
+    expect(source, name).not.toMatch(/locale\s*=\s*['"]/);
+  }
 });

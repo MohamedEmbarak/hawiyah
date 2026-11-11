@@ -80,12 +80,27 @@ When a required text is missing or empty, the component renders nothing in its
 place (no text node, no empty attribute) and warns once per component and prop
 through `console.warn` with the `Hawiyah:` prefix in development builds
 (`process.env.NODE_ENV !== 'production'`). A constraint whose message is missing
-still blocks form submission: the control keeps a single-space custom validity and
-`aria-invalid="true"`. No component reads `lang`, the document language or
-`navigator.language`; `dir` is read only from the DOM. `locale` is a formatting
-argument handed to `Intl` (required for Calendar and DatePicker, which print
-month, weekday and date names); business dates and numbers can use the
-`@hawiyah/core` formatters with explicit locale, calendar and time zone.
+still blocks form submission: the control keeps a single-space custom validity.
+A missing message never changes `aria-invalid`; it stays what it would be with the
+message present. No component reads `lang`, the document language or
+`navigator.language`; `dir` is read only from the DOM.
+
+The adapter chooses no locale and calls no `Intl` API itself. `locale` (one BCP 47
+tag) is a required prop of every component that formats a date or sorts text:
+`Calendar` and `DatePicker` (month, weekday and date names) and `DataTable`
+(collation of sorted columns). Omitting it is a type error; at run time a missing
+`locale` warns once like a missing text and the feature renders unformatted or
+unsorted (Calendar renders its named root without toolbar, weekdays or grid;
+DatePicker shows the ISO value; DataTable keeps the source order). Numbers in
+other components are data or pass through the formatter function the
+application supplies (`formatValue`, `formatPage`). Business dates and numbers
+can use the `@hawiyah/core` formatters, which also require a locale.
+
+Migration from 0.2: pass `locale` to `DataTable` (`locale="ar-SA"` gives the
+previous order); `CookieConsent` takes an optional `onPreferences` with the then
+required `preferencesLabel`; `FileDropzone` takes an optional
+`getSelectedMessage(files)` that renders a visible selection status; the
+`PortalFooter` brand marks are a named group instead of an image.
 
 ## Catalog
 
@@ -237,7 +252,7 @@ Controlled values remain owned by the application.
 | `MultiSelect` | Required label and options; string array value/defaultValue, `onValueChange`, name, required, required `searchLabel` (name of the filter input) and `emptyMessage`, optional `placeholder`, `requiredMessage` with `required`. Searchable native checkboxes; filtered-out selections retain repeated form values. |
 | `Calendar` | ISO Gregorian value/defaultValue, `onValueChange`; month/defaultMonth, `onMonthChange`; required `locale`, `label`, `previousLabel`, `nextLabel` (and `rangeLabel` with `calendar="islamic-umalqura"`); calendar/weekStartsOn, min/max, `isDateDisabled`, disabled/readOnly, optional form/name and `getDayLabel(value)`. |
 | `DatePicker` | Typed ISO text input plus Calendar in a native modal. Adds calendar/defaultCalendar, `onCalendarChange` and the required texts `locale`, `calendarLabel`, `openLabel`, `closeLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage`, `unsupportedMessage` (and `unavailableMessage` with `isDateDisabled`); optional `placeholder`. |
-| `FileDropzone` | Native file input props plus `onFilesChange(File[])`, field `label`, required visible instruction `dropLabel`, `getRejectedMessage(rejected)` with `accept`; accepted dropped files populate the actual native input. The picker and dropped selection participate in forms. No upload occurs automatically. |
+| `FileDropzone` | Native file input props plus `onFilesChange(File[])`, field `label`, required visible instruction `dropLabel`, `getRejectedMessage(rejected)` with `accept`; optional `getSelectedMessage(files)`, which renders a visible `role="status"` paragraph after the input (empty until files are selected, then the returned string; none without the function); accepted dropped files populate the actual native input. The picker and dropped selection participate in forms. No upload occurs automatically. |
 
 Native `TextField` input types retain their platform semantics: text/search/tel/url
 are strings; email uses native validation; number uses native numeric constraints
@@ -338,13 +353,13 @@ applies a callback.
 | `Timeline` | `items: {id,title,description?,dateTime?,dateLabel?,status?}[]`; status complete/active/upcoming and required `label`. |
 | `Meter` | Native meter attributes with required accessible label. |
 | `AvatarGroup` | Required items/label and `getOverflowLabel(count)`, max (default 5). Items use AvatarProps. |
-| `DataTable<Row>` | Required caption/rows/columns; columns have key/label/sortable/render/rowHeader. Required `emptyMessage`; optional rowKey, sort/defaultSort/onSortChange, locale, `getSortLabel(column,direction)` (without it the button is named by the column label). Stable immutable localized sorting and native aria-sort headers. |
+| `DataTable<Row>` | Required caption/rows/columns; columns have key/label/sortable/render/rowHeader. Required `emptyMessage`; required `locale` (collation; no default, `"ar-SA"` gives the order of 0.2; without it rows stay in source order and a warning is logged); optional rowKey, sort/defaultSort/onSortChange, `getSortLabel(column,direction)` (without it the button is named by the column label). Stable immutable localized sorting and native aria-sort headers. |
 | `ServiceCard` | Required title; description/category/icon/metadata, `href` with `actionLabel` or an `action` slot, body children. |
 | `ServiceDetails` | Required title; description/metadata/action and children; `requirements` with the then-required `requirementsLabel`. |
 | `PortalHeader` | Required `brand` (text, artwork or both), `navigationLabel` and `menuLabel`; optional `brandLabel` (accessible name of an artwork-only brand), brandHref/navigation/actions/notice and children; `mainId` adds a skip link and requires `skipLabel`. Navigation items are label/href/current. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
-| `PortalFooter` | Required `externalLabel` (screen-reader text of external links); optional brand/brandLabel/description/legal and children; `links` require `navigationLabel` (formerly `linksLabel`), `legalLinks` require `legalLinksLabel`, `support` requires `supportLabel`. |
+| `PortalFooter` | Required `externalLabel` (screen-reader text of external links); optional brand/brandLabel/description/legal and children (`brandLabel` is written with `role="group"` on the brand marks, not on the description); `links` require `navigationLabel` (formerly `linksLabel`), `legalLinks` require `legalLinksLabel`, `support` requires `supportLabel`. |
 | `Feedback` | Required question label; value/defaultValue/onValueChange for `{helpful:'yes'\|'no'\|'',comment}` and `onFeedback` on native submit; required `yesLabel`, `noLabel`, `commentLabel`, `submitLabel`, `successMessage`. |
-| `CookieConsent` | Required title/description; value/defaultValue/onValueChange (`accepted`/`rejected`/null), required `acceptLabel`/`rejectLabel`, optional `policyHref` with the then-required `policyLabel`. Null displays the notice. Persistence and cookie activation belong to the application. |
+| `CookieConsent` | Required title/description; value/defaultValue/onValueChange (`accepted`/`rejected`/null), required `acceptLabel`/`rejectLabel`, optional `policyHref` with the then-required `policyLabel`; optional `onPreferences` with the then-required `preferencesLabel`, rendered as the last, ghost button, which calls the handler and leaves the choice and the notice unchanged. Null displays the notice. Persistence and cookie activation belong to the application. |
 | `NotificationList` | Required label/items; items id/title/description/href/dateTime/dateLabel/read. Required `emptyMessage` and `unreadLabel`; `onMarkRead` with the then-required `getMarkReadLabel(item)`. |
 
 Platform patterns are configurable ordinary content. Supply your own brand,

@@ -43,7 +43,7 @@ describe('native control enhancements', () => {
   });
   it('clamps only the moved range thumb, resets, and restores narrower overridden bounds', async () => {
     const form = mount('<form><div><input type="range" data-hw-lower min="0" max="100" value="10"><input type="range" data-hw-upper min="0" max="100" value="80"><output data-hw-range-output></output></div></form>') as HTMLFormElement;
-    const root = form.firstElementChild as HTMLElement; const controller = createRangeSlider(root, { min: 20 }); const lower = root.querySelector<HTMLInputElement>('[data-hw-lower]')!;
+    const root = form.firstElementChild as HTMLElement; const controller = createRangeSlider(root, { min: 20, locale: 'ar-SA' }); const lower = root.querySelector<HTMLInputElement>('[data-hw-lower]')!;
     lower.value = '90'; lower.dispatchEvent(new Event('input', { bubbles: true })); expect(controller.value).toEqual([80, 80]);
     form.reset(); await Promise.resolve(); expect(controller.value).toEqual([20, 80]); controller.destroy(); expect(lower.value).toBe('10'); expect(lower.min).toBe('0');
   });

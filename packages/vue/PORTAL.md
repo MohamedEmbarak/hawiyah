@@ -69,7 +69,7 @@ server and on first render, is bound with core `bindFragmentLink` after mounting
 and from the first interaction resolves against the current document under any
 `<base href>`. Escape returns focus to the toggle; selection, outside press and
 focus leaving close the mobile disclosure. Tab is native. Desktop links remain
-visible. `SecondaryNav` uses `items`, a required `label` (or `aria-label` /
+visible. `SecondaryNav` uses `items`, a `label` (or `aria-label` /
 `aria-labelledby`) and ordinary page links with `aria-current`, not menu/tablist
 semantics.
 

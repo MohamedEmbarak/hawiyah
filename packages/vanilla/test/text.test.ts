@@ -1,6 +1,8 @@
-import { resetTextWarnings } from '@hawiyah/core';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { resetTextWarnings, formatNumber, getCalendarMonth, sortRows } from '@hawiyah/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCarousel, createContentNavigation, createDatePicker, createPagination, createPortalHeader, createSkipLink, createStepper, enhance } from '../src/index.js';
+import { createCalendar, createCarousel, createContentNavigation, createDataTable, createDatePicker, createRangeSlider, createPagination, createPortalHeader, createSkipLink, createStepper, enhance } from '../src/index.js';
 
 const mount = (html: string) => { document.body.insertAdjacentHTML('beforeend', html); return document.body.lastElementChild as HTMLElement; };
 let warn: ReturnType<typeof vi.spyOn>;
@@ -120,5 +122,71 @@ describe('fragment links', () => {
     expect(warnings('calendarLabel')).toBe(1); expect(warnings('label')).toBe(0);
     expect(root.querySelector('dialog')!.hasAttribute('aria-label')).toBe(false); expect(root.querySelector('[data-hw-date-calendar]')!.hasAttribute('aria-label')).toBe(false);
     controller.destroy();
+  });
+});
+
+describe('locale is supplied by the application', () => {
+  const calendarTexts = 'data-hw-label="Calendar" data-hw-previous-label="Previous month" data-hw-next-label="Next month" data-hw-calendar-system-label="Calendar system" data-hw-gregorian-label="Gregorian" data-hw-hijri-label="Hijri" data-hw-range-label="Supported range" data-hw-unsupported-message="Unsupported date."';
+  const pickerMarkup = (locale = '') => `<div data-hw="date-picker" ${locale} data-hw-open-label="Open" data-hw-previous-label="Previous month" data-hw-next-label="Next month" data-hw-calendar-system-label="Calendar system" data-hw-gregorian-label="Gregorian" data-hw-hijri-label="Hijri" data-hw-range-label="Supported range" data-hw-invalid-message="Invalid date." data-hw-unsupported-message="Unsupported date."><input type="date" data-hw-date-input aria-label="Date" value="2026-11-11"><button type="button" data-hw-date-trigger></button><dialog data-hw-date-dialog aria-label="Choose date"><div data-hw-date-calendar></div></dialog></div>`;
+  const tableMarkup = (locale = '') => `<table data-hw="data-table" ${locale}><thead><tr><th data-hw-key="name"><button type="button" data-hw-sort="name">Name</button></th></tr></thead><tbody><tr id="b"><td>باء</td></tr><tr id="a"><td>ألف</td></tr><tr id="c"><td>جيم</td></tr></tbody></table>`;
+  const ids = (root: HTMLElement) => [...root.querySelectorAll('tbody tr')].map(row => row.id);
+
+  it('renders no Intl output for a calendar or date picker without a locale, warns once and does not throw', () => {
+    const root = mount(`<div data-hw="calendar" ${calendarTexts}></div>`); const before = root.outerHTML;
+    let calendar!: ReturnType<typeof createCalendar>; expect(() => { calendar = createCalendar(root, { value: '2026-11-11' }); }).not.toThrow();
+    expect(warn.mock.calls.map(([message]) => String(message).split('. ')[0])).toEqual(['Hawiyah: Calendar requires "locale"']);
+    expect(root.querySelector('[role=grid]')).toBeNull(); expect(root.outerHTML).toBe(before);
+    expect(calendar.value).toBe('2026-11-11'); calendar.setValue('2026-12-01'); expect(calendar.value).toBe('2026-12-01'); calendar.destroy(); expect(root.outerHTML).toBe(before);
+    warn.mockClear(); resetTextWarnings();
+    const picker = mount(pickerMarkup()); const input = picker.querySelector<HTMLInputElement>('[data-hw-date-input]')!;
+    let controller!: ReturnType<typeof createDatePicker>; expect(() => { controller = createDatePicker(picker); }).not.toThrow();
+    expect(warn.mock.calls.map(([message]) => String(message).split('. ')[0])).toEqual(['Hawiyah: DatePicker requires "locale"']);
+    expect(picker.querySelector('[role=grid]')).toBeNull(); expect(picker.querySelector('[data-hw-date-display]')!.textContent).toBe('');
+    expect(input.value).toBe('2026-11-11'); expect(controller.value).toBe('2026-11-11'); expect(input.validity.valid).toBe(true);
+    input.value = 'not a date'; input.dispatchEvent(new Event('input', { bubbles: true })); expect(input.getAttribute('aria-invalid')).toBe('true');
+    controller.destroy();
+  });
+
+  it('keeps enhancing the rest of the page when a calendar has no locale', () => {
+    mount(`<div data-hw="calendar" ${calendarTexts}></div>`); const table = mount(tableMarkup('data-hw-locale="ar-SA"'));
+    const release = enhance(document.body);
+    expect(table.querySelector('th')!.getAttribute('aria-sort')).toBe('none'); table.querySelector<HTMLButtonElement>('[data-hw-sort]')!.click(); expect(table.querySelector('th')!.getAttribute('aria-sort')).toBe('ascending');
+    expect(warnings('locale')).toBe(1); release();
+  });
+
+  it('formats the calendar with the application locale, with output unchanged for ar-SA', () => {
+    const root = mount(`<div data-hw="calendar" data-hw-locale="ar-SA" ${calendarTexts}></div>`); const controller = createCalendar(root, { value: '2026-11-11' });
+    expect(root.querySelector('h3')!.textContent).toBe(getCalendarMonth({ locale: 'ar-SA', month: '2026-11-11', value: '2026-11-11', calendar: 'gregory', weekStartsOn: 0, fixedWeeks: true }).label);
+    expect(root.querySelector('.hw-calendar-range')!.textContent).toBe('Supported range 1924-08-01 – 2077-11-16'); expect(warn).not.toHaveBeenCalled();
+    controller.destroy();
+  });
+
+  it('keeps data-table rows in source order without a locale and sorts with the application locale', () => {
+    const plain = mount(tableMarkup()); const unsorted = createDataTable(plain);
+    expect(warnings('locale')).toBe(1); plain.querySelector<HTMLButtonElement>('[data-hw-sort]')!.click();
+    expect(plain.querySelector('th')!.getAttribute('aria-sort')).toBe('ascending'); expect(unsorted.sortDirection).toBe('ascending'); expect(ids(plain)).toEqual(['b', 'a', 'c']); unsorted.destroy();
+    warn.mockClear();
+    const sorted = mount(tableMarkup('data-hw-locale="ar-SA"')); const controller = createDataTable(sorted); controller.sort('name');
+    const expected = sortRows([...sorted.querySelectorAll('tbody tr')].map(row => ({ id: row.id, value: row.textContent!.trim() })), 'value', 'ascending', 'ar-SA').map(row => row.id);
+    expect(ids(sorted)).toEqual(expected); expect(ids(sorted)).toEqual(['a', 'b', 'c']); controller.destroy();
+    const unsortable = mount('<table data-hw="data-table"><thead><tr><th data-hw-key="name">Name</th></tr></thead><tbody><tr><td>ألف</td></tr></tbody></table>'); createDataTable(unsortable).destroy();
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('leaves the range output empty without a locale and formats it with the application locale', () => {
+    const markup = (attributes = '', output = '<output data-hw-range-output></output>') => `<div ${attributes}><input type="range" data-hw-lower aria-label="Minimum" max="5000" value="1000"><input type="range" data-hw-upper aria-label="Maximum" max="5000" value="2500">${output}</div>`;
+    const bare = mount(markup()); let slider!: ReturnType<typeof createRangeSlider>; expect(() => { slider = createRangeSlider(bare); }).not.toThrow();
+    expect(warnings('locale')).toBe(1); expect(bare.querySelector('output')!.textContent).toBe(''); expect(slider.value).toEqual([1000, 2500]); slider.destroy();
+    warn.mockClear(); resetTextWarnings();
+    createRangeSlider(mount(markup('', ''))).destroy(); expect(warn).not.toHaveBeenCalled();
+    const localized = mount(markup('data-hw-locale="ar-SA"')); const controller = createRangeSlider(localized);
+    expect(localized.querySelector('output')!.textContent).toBe(`${formatNumber(1000, { locale: 'ar-SA' })} – ${formatNumber(2500, { locale: 'ar-SA' })}`); expect(warn).not.toHaveBeenCalled(); controller.destroy();
+  });
+
+  it('calls no Intl formatter and names no locale in the vanilla sources', () => {
+    const directory = join(process.cwd(), 'packages/vanilla/src'); const pattern = /new Intl\.|toLocale(String|DateString|TimeString)\(|localeCompare\(|['"][a-z]{2,3}-[A-Z]{2}['"]/;
+    const files = readdirSync(directory); expect(files).toContain('calendar.ts');
+    const offenders = files.filter(file => file.endsWith('.ts')).filter(file => pattern.test(readFileSync(join(directory, file), 'utf8')));
+    expect(offenders).toEqual([]);
   });
 });

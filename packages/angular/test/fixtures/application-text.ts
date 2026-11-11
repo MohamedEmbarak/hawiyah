@@ -21,6 +21,7 @@ export const text = {
   carousel: { previousLabel: 'Previous slide', nextLabel: 'Next slide', indicatorsLabel: 'Choose a slide', emptyLabel: 'No slides', getSlideLabel: (position: number, total: number) => `Slide ${position} of ${total}` },
   toastRegion: { label: 'Notifications', getDismissLabel: (toast: { title?: string; message: string }) => `Dismiss: ${toast.title ?? toast.message}` },
   table: { emptyMessage: 'No records' },
+  dataTable: { emptyMessage: 'No records', locale: 'ar-SA' },
 };
 export type TextKey = keyof typeof text;
 

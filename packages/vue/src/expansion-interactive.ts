@@ -422,7 +422,7 @@ export const ToastRegion = defineComponent({
   name: 'HwToastRegion', inheritAttrs: false,
   props: {
     messages: {type: Array as PropType<readonly ToastMessage[]>, required: true},
-    label: {type: String, required: true},
+    label: String,
     getDismissLabel: Function as PropType<(message: ToastMessage) => string>,
     variant: String as PropType<'default' | 'inline' | 'banner'>,
     position: String as PropType<'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'>,
@@ -514,7 +514,7 @@ export const TreeView = defineComponent({
   inheritAttrs: false,
   props: {
     items: { type: Array as PropType<readonly TreeNode[]>, required: true },
-    label: { type: String, required: true },
+    label: String,
     modelValue: String,
     defaultValue: { type: String, default: "" },
     expanded: Array as PropType<readonly string[]>,
@@ -587,7 +587,7 @@ export const TreeView = defineComponent({
         mergeProps(attrs, {
           class: "hw-tree-view",
           role: "tree",
-          "aria-label": props.label,
+          "aria-label": rootLabel("TreeView", props.label, attrs),
           "aria-disabled": props.disabled || undefined,
         }),
         visible.value.map((row, index) => {
@@ -707,7 +707,7 @@ export const Carousel = defineComponent({
       type: Array as PropType<readonly CarouselSlide[]>,
       required: true,
     },
-    label: { type: String, required: true },
+    label: String,
     modelValue: Number,
     defaultValue: { type: Number, default: 0 },
     previousLabel: { type: String, required: true },

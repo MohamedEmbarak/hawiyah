@@ -71,6 +71,21 @@ describe('Angular server rendering', () => {
     expect(html).not.toMatch(/<hw-(tooltip|popover|menu|calendar|navigation-drawer|portal-layout)\b[^>]*\sid=/);
   });
 
+  it('renders without a locale and without throwing: no grid, no formatted date, rows in their source order', async () => {
+    const template = (locale: string) => `<hw-calendar label="Date" locale="${locale}" previousLabel="Previous month" nextLabel="Next month" name="day" value="2024-03-11" /><hw-date-picker label="Date" locale="${locale}" calendarLabel="Choose a date" openLabel="Open calendar" closeLabel="Close" previousLabel="Previous month" nextLabel="Next month" calendarSystemLabel="Calendar system" gregorianLabel="Gregorian" hijriLabel="Hijri" rangeLabel="Supported dates" invalidMessage="Enter a valid date." unsupportedMessage="Outside the supported range." name="date" value="2024-03-11" /><hw-data-table caption="Requests" emptyMessage="None" locale="${locale}" sortKey="name" [columns]="[{key: 'name', label: 'Name', sortable: true}]" [rows]="[{name: 'b'}, {name: 'c'}, {name: 'a'}]" />`;
+    const { html, errors } = await render({ name: 'no locale', covers: [], template: template('') });
+    // The only reports are the three development warnings: nothing throws and core is never called without a locale.
+    expect(errors.map(error => error.split('. ')[0]).sort()).toEqual(['console.warn: Hawiyah: hw-calendar requires "locale"', 'console.warn: Hawiyah: hw-data-table requires "locale"', 'console.warn: Hawiyah: hw-date-picker requires "locale"']);
+    expect(html).not.toMatch(/hw-calendar-toolbar|hw-calendar-grid|<th scope="col"/); expect(html.match(/<div class="hw-field hw-calendar"/g)).toHaveLength(2);
+    expect(html).toMatch(/<input type="hidden"[^>]*name="day"[^>]*value="2024-03-11"/); expect(html).toMatch(/<input type="hidden"[^>]*name="date"[^>]*value="2024-03-11"/);
+    expect(html).toMatch(/<output[^>]*hidden=""[^>]*><\/output>/); expect(html).toMatch(/<input[^>]*type="text"[^>]*value="2024-03-11"/);
+    expect([...html.matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map(match => match[1])).toEqual(['b', 'c', 'a']); expect(html).toMatch(/<th[^>]*aria-sort="ascending"/);
+    // With a locale the same page renders the grids, the formatted date and the sorted rows, and reports nothing.
+    const localized = await render({ name: 'locale', covers: [], template: template('en-SA') });
+    expect(localized.errors).toEqual([]); expect(localized.html.match(/hw-calendar-grid/g)).toHaveLength(2); expect(localized.html).toMatch(/<output[^>]*>[^<]*2024[^<]*<\/output>/);
+    expect([...localized.html.matchAll(/<td(?![^>]*role=)[^>]*>([^<]*)<\/td>/g)].map(match => match[1])).toEqual(['a', 'b', 'c']);
+  });
+
   it('keeps rendering what follows an accordion and gives every item its content', async () => {
     const { html } = await render(scenarios.find(scenario => scenario.name === 'accordion and collapsible')!);
     expect(html.match(/First answer/g)).toHaveLength(2); expect(html.match(/Second answer/g)).toHaveLength(2);

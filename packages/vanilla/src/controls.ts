@@ -33,7 +33,7 @@ export function createPasswordField(root: HTMLElement, options: PasswordFieldOpt
   requireText('PasswordField', 'hideLabel', hide); render(); return { toggle, destroy: () => scope.destroy() };
 }
 
-/** The thumbs are named in markup (label or aria-label). `locale` (or data-hw-locale) only affects digit grouping. */
+/** The thumbs are named in markup (label or aria-label). `locale` (or data-hw-locale) formats the numbers in a [data-hw-range-output] element and is required when one is present; without it the controller warns in development and leaves the output empty. */
 export interface RangeSliderOptions { min?: number; max?: number; locale?: string; onValueChange?: (value: [number, number]) => void }
 export function createRangeSlider(root: HTMLElement, options: RangeSliderOptions = {}): ValueController<[number, number]> {
   const lower = required<HTMLInputElement>(root, '[data-hw-lower]');
@@ -51,8 +51,8 @@ export function createRangeSlider(root: HTMLElement, options: RangeSliderOptions
     upper.min = String(value[0]);
     lower.value = String(value[0]);
     upper.value = String(value[1]);
-    const locale = options.locale ?? (root.dataset.hwLocale || undefined);
-    if (output) output.textContent = `${formatNumber(value[0], { locale })} – ${formatNumber(value[1], { locale })}`;
+    const locale = options.locale ?? root.dataset.hwLocale;
+    if (output) output.textContent = requireText('RangeSlider', 'locale', locale, 'a [data-hw-range-output] element is present') ? `${formatNumber(value[0], { locale: locale! })} – ${formatNumber(value[1], { locale: locale! })}` : '';
   };
   const update = (changed: 'lower' | 'upper') => {
     if (readOnly(root) || isDisabled(changed === 'lower' ? lower : upper)) { render(); return; }

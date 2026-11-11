@@ -408,12 +408,12 @@ export const RatingDisplay = defineComponent({
   props: {
     value: {type: Number, default: 0},
     max: {type: Number, default: 5}, showValue: {type: Boolean, default: true},
-    getValueLabel: {type: Function as PropType<(value: number, max: number) => string>, required: true},
+    getValueLabel: Function as PropType<(value: number, max: number) => string>,
   },
   setup(props, {attrs}) {
     return () => {
       const total = normalizeRatingMax(props.max), score = normalizeRatingValue(props.value, total);
-      return h('div', mergeProps(attrs, {class: 'hw-rating-display', role: 'img', 'aria-label': optionalText(attrs['aria-label']) ?? textOf('RatingDisplay', 'getValueLabel', props.getValueLabel, [score, total])}), [
+      return h('div', mergeProps(attrs, {class: 'hw-rating-display', role: 'img', 'aria-label': optionalText(attrs['aria-label']) ?? (optionalText(attrs['aria-labelledby']) ? undefined : textOf('RatingDisplay', 'getValueLabel', props.getValueLabel, [score, total]))}), [
         h('span', {class: 'hw-rating-stars', 'aria-hidden': 'true'}, Array.from({length: total}, (_, index) => h('span', {class: 'hw-rating-star', key: index}, ['★', h('span', {class: 'hw-rating-fill', style: {'--hw-rating-fill': `${Math.min(1, Math.max(0, score - index)) * 100}%`}})]))),
         props.showValue && h('span', {class: 'hw-rating-score', 'aria-hidden': 'true'}, `${score}/${total}`),
       ]);
@@ -751,7 +751,7 @@ export const FileDropzone = defineComponent({
       selection.value = files;
       emit("update:files", files);
     };
-    return () =>
+    return () => { const dropLabel = needText("FileDropzone", "dropLabel", props.dropLabel); return (
       decorate(
         props,
         field.id.value,
@@ -776,14 +776,14 @@ export const FileDropzone = defineComponent({
           [
             // The instruction describes the input; the field label (label, a parent Field or ARIA attributes) names it.
             !field.controlAttrs.value["aria-labelledby"] && !optionalText(attrs["aria-label"]) && needText("FileDropzone", "label", props.label) && null,
-            h("p", { id: `${field.id.value}-instruction`, class: "hw-file-dropzone-instruction" }, needText("FileDropzone", "dropLabel", props.dropLabel)),
+            dropLabel && h("p", { id: `${field.id.value}-instruction`, class: "hw-file-dropzone-instruction" }, dropLabel),
             h(
               "input",
               mergeProps(attrs, field.controlAttrs.value, {
                 ref: element,
                 class: "hw-input",
                 type: "file",
-                "aria-describedby": joinIds(`${field.id.value}-instruction`, field.controlAttrs.value["aria-describedby"]),
+                "aria-describedby": joinIds(dropLabel && `${field.id.value}-instruction`, field.controlAttrs.value["aria-describedby"]),
                 accept: props.accept,
                 multiple: props.multiple,
                 disabled: props.disabled,
@@ -799,6 +799,6 @@ export const FileDropzone = defineComponent({
             slots.default?.(),
           ],
         ),
-      );
+      )); };
   },
 });

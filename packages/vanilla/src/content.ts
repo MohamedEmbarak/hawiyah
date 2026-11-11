@@ -1,4 +1,4 @@
-import { createCleanup, getDirection, getNextEnabledIndex, isDisabled, observeReadonlyChoice, normalizeDigits, normalizeSearch, requireText, sortRows } from '@hawiyah/core';
+import { createCleanup, getDirection, hasText, getNextEnabledIndex, isDisabled, observeReadonlyChoice, normalizeDigits, normalizeSearch, requireText, sortRows } from '@hawiyah/core';
 import { emit, eventElement, nameRoot, nativeChange, readOnly, remember, templated, text, writeOptional, writeText } from './dom.js';
 import type { ValueController } from './controls.js';
 
@@ -221,6 +221,7 @@ export function createCarousel(root: HTMLElement, options: CarouselOptions = {})
 }
 
 export type SortDirection = 'ascending' | 'descending';
+/** `locale` (or data-hw-locale on the root) collates text when sorting and is required when the table has a [data-hw-sort] button. Without it the controller warns in development, updates aria-sort and emits as usual, and keeps the rows in their source order. */
 export interface DataTableOptions { locale?: string; onSortChange?: (state: {key: string; direction: SortDirection}) => void }
 export interface DataTableController { readonly sortKey: string | null; readonly sortDirection: SortDirection | null; sort(key: string, direction?: SortDirection): void; destroy(): void }
 export function createDataTable(root: HTMLElement, options: DataTableOptions = {}): DataTableController {
@@ -232,16 +233,18 @@ export function createDataTable(root: HTMLElement, options: DataTableOptions = {
   const bodies = [...table.tBodies].map(body => ({body, rows: [...body.rows], children: [...body.childNodes]}));
   // Preserve authored row nodes, handlers, and inter-row text/comments on cleanup.
   bodies.forEach(({body, children}) => scope.add(() => { const added = [...body.childNodes].filter(node => !children.includes(node)); body.replaceChildren(...children, ...added); }));
+  const locale = () => { const value = options.locale ?? root.dataset.hwLocale; return hasText(value) ? value : undefined; };
+  if (buttons.length) requireText('DataTable', 'locale', locale(), 'a column is sortable');
   let sortKey: string | null = null; let sortDirection: SortDirection | null = null;
   const sort = (key: string, direction?: SortDirection) => {
     const header = headers.find(header => header.dataset.hwKey === key); const button = buttons.find(button => button.dataset.hwSort === key);
     if (scope.destroyed || blocked(root) || !header || !button || isDisabled(button)) return;
     sortDirection = direction ?? (sortKey === key && sortDirection === 'ascending' ? 'descending' : 'ascending'); sortKey = key;
     headers.forEach(header => { if (buttons.some(button => button.dataset.hwSort === header.dataset.hwKey)) header.setAttribute('aria-sort', header.dataset.hwKey === key ? sortDirection! : 'none'); });
-    bodies.forEach(({body, rows}) => {
+    const collation = locale(); if (collation !== undefined) bodies.forEach(({body, rows}) => {
       const currentRows = [...body.rows]; const ordered = [...rows.filter(row => currentRows.includes(row)), ...currentRows.filter(row => !rows.includes(row))];
       const records = ordered.map(row => { const cell = row.cells[header.cellIndex]; const raw = cell?.dataset.hwSortValue ?? cell?.textContent?.trim() ?? ''; const numeric = Number(normalizeDigits(raw).replace(/[,٬\s]/gu, '').replace(/٫/gu, '.')); return { row, value: header.dataset.hwType === 'number' ? raw && Number.isFinite(numeric) ? numeric : null : raw }; });
-      sortRows(records, 'value', sortDirection!, options.locale ?? (root.dataset.hwLocale || undefined)).forEach(record => body.append(record.row));
+      sortRows(records, 'value', sortDirection!, collation).forEach(record => body.append(record.row));
     });
     const state = {key, direction: sortDirection}; emit(root, { value: state, ...state }); options.onSortChange?.(state);
   };
