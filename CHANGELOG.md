@@ -92,6 +92,53 @@ Found by server-rendering and hydrating every component of the published
   guide typecheck, the tarball check and the Chromium browser suite on every
   push and pull request. Before this, no workflow ran a test.
 
+### One flat stylesheet, more icons and style-only fixes
+
+- `@hawiyah/styles/styles.css` is now one flat file. The build inlines the
+  tokens and every component file in source order, so the published entry has
+  no `@import` and a page can link it directly, without a bundler; 0.2.1
+  started with a bare `@import '@hawiyah/tokens/tokens.css'` that a browser
+  cannot resolve, followed by 47 more imports. Font and icon URLs stay relative
+  to the file. `reset.css` remains separate and opt-in, and the individual
+  files stay available as `@hawiyah/styles/<file>.css`. The source files are
+  unchanged. `node scripts/build.mjs --only <package>` rebuilds one package.
+- `pnpm check:packages` checks that the packed `styles.css` contains no
+  `@import`, defines `--hw-color-primary`, contains `.hw-button`, leaves the
+  reset out and references only files that are in the tarball.
+- 28 icons, each an unchanged Hugeicons Stroke Rounded file from the pinned
+  commit with its SHA-256 and upstream URL: `book-open-01`, `briefcase-01`,
+  `building-03`, `certificate-01`, `clock-01`, `code`, `copy-01`,
+  `download-01`, `file-01`, `folder-01`, `github`, `globe-02`, `grid-view`,
+  `layers-01`, `left-to-right-list-bullet`, `location-01`, `message-01`,
+  `moon-02`, `paint-board`, `play`, `reload`, `right-to-left-list-bullet`,
+  `shield-01`, `source-code`, `sparkles`, `sun-03`, `translate` and
+  `upload-01`. The pinned commit has no dedicated text-direction icon, so the
+  two list-bullet icons stand for left-to-right and right-to-left text.
+  `calendar-03`, `view` and `view-off-slash` now have `data-icon` rules too,
+  and `arrow-up-right-01` mirrors with `data-directional="true"`, as its
+  provenance already declared.
+- A `progress` without a value shows a segment moving along the inline axis,
+  with static stripes under reduced motion; it looked the same as 0% before.
+- In dark mode, progress and meter tracks and skeletons are visible on
+  surfaces. The DGA dark palette gives surface and surface-muted one value, so
+  they had disappeared; light mode is unchanged.
+- Forced colours: the progress value is drawn in `Highlight`, carousel arrows
+  keep their glyph, and a pressed icon button takes the selection colours.
+- Segmented toggle groups: keyboard focus no longer gives an unpressed button
+  in multiple mode the pressed colours. Outline groups keep 4.5:1 label
+  contrast on hover and focus. At 576px and below the segments share one row,
+  so a four-option group no longer wraps to a second row at 390px or 320px.
+- The upload-list remove action no longer turns green on hover or focus, where
+  its glyph had 2.74:1 contrast.
+- The file upload and dropzone native inputs shrink inside a narrow card
+  instead of widening the page at 320px. The vanilla dropzone's
+  `data-dragover` marker now shows the drag-over state.
+- A calendar month button that contains icon markup (React and Angular) shows
+  one chevron, not two. An empty-state icon wrapped in a decorative span
+  (React and Vue) gets the icon tile.
+- Field hints use 12px, the smallest step of the documented type scale,
+  instead of the 10px of the NIC source.
+
 ## 0.2.1 — 2026-11-10
 
 ### Icons follow the DGA Platforms Code icon library
