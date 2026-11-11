@@ -29,11 +29,14 @@ async function render(scenario: Scenario): Promise<{ html: string; errors: strin
   return { html, errors: [...problems] };
 }
 
+/** Server markup without Angular's comment anchors and with the attributes of each tag in name order: neither is part of the contract. */
+const canonical = (html: string) => html.replace(/<!--.*?-->/gs, '').replace(/<([a-z][\w-]*)((?:\s+[^\s=>]+(?:="[^"]*")?)+)\s*>/g, (_tag, name: string, attributes: string) => `<${name}${attributes.match(/\s+[^\s=>]+(?:="[^"]*")?/g)!.map(attribute => ` ${attribute.trim()}`).sort().join('')}>`);
+
 describe('Angular server rendering', () => {
   it('has a scenario for every exported component and directive', () => {
     const covered = new Set(scenarios.flatMap(scenario => scenario.covers));
     expect(declarations.map(({ name }) => name).filter(name => !covered.has(name))).toEqual([]);
-    expect(declarations.length).toBeGreaterThanOrEqual(87);
+    expect(declarations.length).toBeGreaterThanOrEqual(89);
     expect(valueControls.filter(name => !controls[name])).toEqual([]);
     for (const scenario of scenarios) for (const name of scenario.covers) expect(selectorsOf(name).some(selector => scenario.template.includes(selector)), `${scenario.name} renders ${name}`).toBe(true);
   });
@@ -52,6 +55,64 @@ describe('Angular server rendering', () => {
       expect(again.errors).toEqual([]); expect(again.html).toBe(html);
     });
   }
+
+  it('[cb-server] renders the idle copy button with an empty status and touches neither navigator nor a timer', async () => {
+    const navigatorRead = vi.spyOn(globalThis, 'navigator', 'get'); const timers = vi.spyOn(globalThis, 'setTimeout');
+    const read = vi.fn(() => 'value');
+    const { html, errors } = await render({ name: 'copy', covers: [], state: () => ({ read }), template: `<hw-copy-button [text]="read" label="Copy the command" copiedMessage="Copied" failedMessage="Copy failed" /><hw-copy-button [text]="read" display="text" variant="primary" size="lg" label="Copy" copiedMessage="Copied" failedMessage="Copy failed" />` });
+    const componentTimers = timers.mock.calls.filter(call => call[1] === 3000);
+    const reads = navigatorRead.mock.calls.length; navigatorRead.mockRestore(); timers.mockRestore();
+    expect(errors).toEqual([]); expect(reads).toBe(0); expect(componentTimers).toEqual([]); expect(read).not.toHaveBeenCalled();
+    const hosts = [...html.matchAll(/<hw-copy-button([^>]*)>(.*?)<\/hw-copy-button>/g)];
+    expect(hosts).toHaveLength(2);
+    for (const host of hosts) { expect(host[1]).toContain('class="hw-copy"'); expect(host[1]).toContain('data-state="idle"'); }
+    expect(canonical(hosts[0]![2]!)).toBe(canonical('<button type="button" class="hw-button hw-icon-button" data-variant="ghost" data-size="md" aria-label="Copy the command"><span class="hw-icon" data-icon="copy-01" aria-hidden="true"></span></button><span class="hw-copy-message" role="status" aria-live="polite" aria-atomic="true"></span>'));
+    expect(canonical(hosts[1]![2]!)).toBe(canonical('<button type="button" class="hw-button" data-variant="primary" data-size="lg"><span class="hw-icon" data-icon="copy-01" aria-hidden="true"></span>Copy</button><span class="hw-copy-message" role="status" aria-live="polite" aria-atomic="true"></span>'));
+  });
+
+  it('[sn-server] renders the whole side navigation, the open groups and the current page', async () => {
+    const scrolled = vi.fn(); (globalThis as { scrollTo?: unknown }).scrollTo = scrolled;
+    const { html, errors } = await render(scenarios.find(scenario => scenario.name === 'side navigation')!);
+    delete (globalThis as { scrollTo?: unknown }).scrollTo;
+    expect(errors).toEqual([]); expect(scrolled).not.toHaveBeenCalled();
+    const host = /<hw-side-navigation([^>]*)>(.*?)<\/hw-side-navigation>/.exec(html)!, native = /<nav hwsidenavigation([^>]*)>(.*?)<\/nav>/.exec(html)!;
+    expect(host[1]).toContain('class="hw-side-navigation hw-navigation-drawer-nav"'); expect(host[1]).toContain('role="navigation"'); expect(host[1]).toContain('aria-label="Documentation"'); expect(host[1]).toContain('data-sticky="true"');
+    expect(native[1]).toContain('aria-label="Same pages"'); expect(native[1]).not.toContain('role='); expect(native[1]).not.toContain('data-sticky');
+    const list = canonical(host[2]!);
+    expect(canonical(native[2]!)).toBe(list); expect(list).toMatch(/^<ul>.*<\/ul>$/); expect(list.match(/aria-current="page"/g)).toHaveLength(1);
+    // The group of the current page and the expanded group are open before any script runs; the nested closed group is not.
+    expect([...list.matchAll(/<details class="hw-navigation-drawer-group"( open="")?><summary class="hw-navigation-drawer-row"><span class="hw-navigation-drawer-label">([^<]*)</g)].map(match => [match[2], !!match[1]])).toEqual([['Guides', true], ['More', false], ['Reference', true]]);
+    expect(list).toContain(canonical('<li data-hw-value="install"><a class="hw-navigation-drawer-row" href="https://example.org/guides/install" aria-current="page">'));
+    expect(list).toContain('<li data-hw-value="guides-page"><a class="hw-navigation-drawer-row" href="https://example.org/guides">'); expect(list).toContain(canonical('<span class="hw-navigation-drawer-row" aria-disabled="true"><span class="hw-navigation-drawer-label">Disabled</span></span>')); expect(list).toContain(canonical('<a class="hw-navigation-drawer-row" href="https://example.org/"><span class="hw-icon" data-icon="home-01" aria-hidden="true"></span>'));
+  });
+
+  it('[al-server-hydration] renders the class of every layout primitive on its host', async () => {
+    const { html, errors } = await render(scenarios.find(scenario => scenario.name === 'layout primitives')!);
+    expect(errors).toEqual([]);
+    for (const name of ['container', 'stack', 'inline', 'grid', 'columns', 'sidebar', 'center', 'spacer', 'aspect-ratio', 'section', 'app-shell']) {
+      expect(html, name).toMatch(new RegExp(`<hw-${name}\\b[^>]*\\sclass="hw-${name}"`));
+      // The host is the box: its first child is not a wrapper that repeats the class.
+      expect(html, name).not.toMatch(new RegExp(`<hw-${name}\\b[^>]*><(div|section)\\b[^>]*\\sclass="hw-${name}"`));
+    }
+    expect(html).toMatch(/<hw-page-header\b[^>]*><header[^>]*class="hw-page-header"/); expect(html).not.toMatch(/<hw-page-header\b[^>]*class=/);
+    // The same boxes on native elements, and the custom properties in the server markup.
+    expect(html).toMatch(/<ul hwstack=""[^>]*class="hw-stack"[^>]*style="[^"]*--hw-layout-gap:/); expect(html).toMatch(/<section hwsection=""[^>]*class="hw-section"[^>]*aria-label="Native section"/); expect(html).not.toMatch(/<section hwsection=""[^>]*role=/);
+    expect(html).toMatch(/<hw-section[^>]*role="region"[^>]*aria-label="Summary"|<hw-section[^>]*aria-label="Summary"[^>]*role="region"/); expect(html).toMatch(/<p hwinline=""[^>]*style="[^"]*--hw-layout-wrap:\s*wrap/);
+    const plain = canonical(html);
+    expect(plain).toMatch(/<hw-app-shell[^>]*><a class="hw-skip-link" href="#shell-main">Skip to content<\/a><div class="hw-app-shell-header">/);
+    // A shell without a header, a sidebar or a footer keeps three empty regions for the stylesheet to hide.
+    expect(plain).toContain(canonical('<div class="hw-app-shell-header"></div><aside class="hw-app-shell-sidebar"></aside><main class="hw-app-shell-main" tabindex="-1" id="bare-main">')); expect(plain).toContain('<div class="hw-app-shell-footer"></div></hw-app-shell>');
+  });
+
+  it('[ln-server] renders packaged links with their href and binds nothing on the server', async () => {
+    const listened = vi.fn(); const original = globalThis.addEventListener; (globalThis as { addEventListener?: unknown }).addEventListener = listened;
+    const { html, errors } = await render({ name: 'links', covers: [], state: () => ({ items: [{ id: 'guides', label: 'Guides', href: '/guides', children: [{ id: 'install', label: 'Install', href: '/guides/install', current: true }] }] }), template: `<hw-breadcrumb label="Breadcrumb" [items]="[{label: 'Home', href: '/'}, {label: 'Here'}]" /><hw-side-navigation label="Documentation" [items]="items" /><hw-navigation-drawer title="Menu" navigationLabel="Pages" closeLabel="Close" open [items]="items" /><hw-portal-header brand="Portal" menuLabel="Menu" navigationLabel="Main" [links]="[{label: 'Services', href: '/services'}]"><p hwPortalNotice>Notice</p></hw-portal-header>` });
+    (globalThis as { addEventListener?: unknown }).addEventListener = original;
+    expect(errors).toEqual([]); expect(listened).not.toHaveBeenCalled();
+    for (const href of ['/', '/guides', '/guides/install', '/services']) expect(html).toContain(`href="${href}"`);
+    expect(canonical(html).match(/aria-current="page" class="hw-navigation-drawer-row" href="\/guides\/install"/g)).toHaveLength(2);
+    expect(canonical(html)).toMatch(/<header class="hw-portal-header"><div class="hw-portal-notice"><p hwportalnotice="">Notice<\/p><\/div><a class="hw-portal-brand"/); expect(canonical(html)).toContain('<div class="hw-portal-header-actions"></div></header>');
+  });
 
   it('generates unique ids in creation order', async () => {
     const ids = (html: string) => [...html.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]!);

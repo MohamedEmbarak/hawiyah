@@ -70,6 +70,7 @@ the whole string; the controller adds no words or punctuation to it.
 | `createCarousel` | `label`, `getSlideLabel(position, total)` (one-based), `emptyLabel`; optional `carouselDescription`, `slideDescription` |
 | `createCombobox` | `getResultsMessage(count)`; `requiredMessage` when the input is required |
 | `createContentNavigation` | `label` |
+| `createCopyButton` | `label` (when the button has no `aria-label`, `aria-labelledby` or text), `copiedMessage`, `failedMessage` |
 | `createFeedback` | `successMessage`; optional `getStatusMessage(value)` |
 | `createFileDropzone` | when `[data-hw-file-status]` exists: `getSelectedMessage(files)`, `unsupportedDropMessage`, and `getRejectedMessage(rejected)` when `accept` or `maxSize` is set |
 | `createFileUploadList` | `labels` (core `FileUploadLabels`, including `getProgressLabel(name)` and `getRemoveLabel(name)`) |
@@ -78,6 +79,7 @@ the whole string; the controller adds no words or punctuation to it.
 | `createPagination` | `label`; with an items container `getPageLabel(page)`, `getGapLabel(start, end)`, `jumpLabel`, `goLabel` |
 | `createPasswordField` | `showLabel`, `hideLabel` |
 | `createPortalHeader` | `menuLabel`, `navigationLabel`; optional `brandLabel` (see [PORTAL.md](PORTAL.md)) |
+| `createSideNavigation` | `label` (when the nav has no `aria-label` or `aria-labelledby`) |
 | `createSearchField` | `clearLabel`; `getResultsMessage(count)` when suggestions are given |
 | `createSkipLink` | the link's own text (`skipLabel`) |
 | `createStepper` | `label` |
@@ -114,12 +116,118 @@ focus to it without writing the URL fragment. `createContentNavigation` accepts
 `updateHash` (`data-hw-update-hash="true"`) to write the resolved URL with
 `history.replaceState`. A skip link inside `[data-hw="portal-header"]` is bound by
 the header and shares one binding with `enhance()`.
+In `createContentNavigation` an activation reports one change; the marker does
+not step through the sections a smooth scroll passes.
 
 ```html
 <a class="hw-skip-link" data-hw="skip-link" href="#main-content">Skip to main content</a>
 <nav data-hw="pagination" aria-label="Search results pages" data-hw-page-label="Page {page}"
   data-hw-gap-label="Pages {start} to {end}" data-hw-jump-label="Go to page" data-hw-go-label="Go">…</nav>
 ```
+
+## CopyButton
+
+`createCopyButton(root, options?)` (registered as `data-hw="copy-button"`) copies
+a value with the asynchronous Clipboard API and reports the outcome. Place the
+button beside the visible value it copies. Author the icon form or the text form:
+
+```html
+<pre id="install-command"><code>pnpm add @hawiyah/vanilla</code></pre>
+<span class="hw-copy" data-hw="copy-button" data-hw-target="install-command"
+  data-hw-copied-message="تم نسخ الأمر" data-hw-failed-message="تعذّر النسخ، انسخ الأمر يدويًا">
+  <button type="button" class="hw-button hw-icon-button" data-variant="ghost" data-size="md" aria-label="نسخ أمر التثبيت"><span class="hw-icon" data-icon="copy-01" aria-hidden="true"></span></button>
+  <span class="hw-copy-message" role="status" aria-live="polite" aria-atomic="true"></span>
+</span>
+<!-- Text form: the label is a text node after the icon, and the button has no aria-label. -->
+<button type="button" class="hw-button" data-variant="ghost" data-size="md"><span class="hw-icon" data-icon="copy-01" aria-hidden="true"></span>Copy</button>
+```
+
+| Option | Attribute on the root | Notes |
+| --- | --- | --- |
+| `text` (`string \| () => string`) | `data-hw-text`, else `data-hw-target` | The value, read at activation and never before. `data-hw-target` names an element whose `textContent` is read at activation. The option wins over `data-hw-text`, which wins over `data-hw-target`. Missing or white space only is the `empty` failure. |
+| `label` | `data-hw-label` | Required. The constant name: the authored `aria-label` or text is kept; only a button with neither gets `aria-label` from this text. |
+| `copiedMessage` | `data-hw-copied-message` | Required. Status text after a successful copy. |
+| `failedMessage` | `data-hw-failed-message` | Required. Status text after any failure. |
+| `feedbackDuration` | `data-hw-feedback-duration` | Milliseconds the copied state lasts; not a finite number above zero means 3000. |
+| `onCopyResult(result)` | | Called once per activation that still counts, before the bubbling `hw:change` with detail `{ status, text }`. |
+
+Variant, size, `disabled` and the display form are authored markup. The controller
+writes `data-state` (`idle`, `copied`, `failed`) on the root, follows the state with
+the icon (`copy-01`, `tick-02`, `alert-02`) and fills the polite status: empty when
+idle, `copiedMessage`, or `failedMessage`, which the stylesheet shows as visible text.
+The copied state returns to idle after the duration; the failed state stays until
+the next activation. Each activation first empties the status, so a repeated message
+is announced again, and only the latest activation counts. The three texts are
+checked when the controller is created. `status` is one of `copied`, `denied`,
+`unavailable` (no Clipboard API, for example an insecure context), `failed` or
+`empty`; when it is not `copied` the application may offer manual copying, for
+example by selecting the value. Focus stays on the button. The controller returns
+`{ state, copy(), destroy() }`; `destroy()` restores every authored attribute and
+the status text. `CopyStatus` and `CopyResult` are re-exported as types.
+
+## SideNavigation
+
+`createSideNavigation(nav, options?)` (registered as `data-hw="side-navigation"`)
+enhances the NavigationDrawer list outside a drawer, for a documentation or
+service sidebar. Author the same list as the drawer; one item model (core
+`NavigationItem`: `id`, `label`, `href`, `icon`, `current`, `disabled`,
+`expanded`, `children`) produces both, so the phone drawer and the sidebar share
+one array in a server template.
+
+```html
+<nav class="hw-side-navigation hw-navigation-drawer-nav" data-hw="side-navigation" aria-label="أقسام الدليل" data-sticky="true">
+  <ul>
+    <li data-hw-value="start"><a class="hw-navigation-drawer-row" href="/start"><span class="hw-icon" data-icon="home-01" aria-hidden="true"></span><span class="hw-navigation-drawer-label">البداية</span></a></li>
+    <li data-hw-value="components"><details class="hw-navigation-drawer-group"><summary class="hw-navigation-drawer-row"><span class="hw-navigation-drawer-label">المكونات</span></summary><ul>
+      <li data-hw-value="copy-button"><a class="hw-navigation-drawer-row" href="/components/copy-button" aria-current="page"><span class="hw-navigation-drawer-label">زر النسخ</span></a></li>
+    </ul></details></li>
+    <li data-hw-value="soon"><span class="hw-navigation-drawer-row" aria-disabled="true"><span class="hw-navigation-drawer-label">قريبًا</span></span></li>
+  </ul>
+</nav>
+```
+
+Rows: a link is `a.hw-navigation-drawer-row` (with `aria-current="page"` on the
+current page), a group is `details.hw-navigation-drawer-group` with a summary row,
+a disabled entry is a span with `aria-disabled="true"` and no children, and other
+text is a plain span. A group that has its own page repeats it as the first link
+inside, in `li[data-hw-value="{id}-page"]`. The `label` text names the landmark:
+an authored `aria-label` or `aria-labelledby` is kept, else the `label` option, else
+`data-hw-label`; without any, no name is written and a development warning asks for
+`label`. `data-sticky="true"` makes it sticky from 64rem; place it with
+`--hw-side-navigation-top` and `--hw-side-navigation-bottom-reserve`.
+
+An authored `open` attribute is the group's `expanded` flag. The controller also
+opens every group that holds `a[aria-current="page"]`, adds the two classes when
+they are missing, removes `href` and tab stops from disabled rows, and scrolls the
+current link to the middle of the nav's own scroll box (never the page, without
+animation, without moving focus). It adds no listener and dispatches no event.
+The application marks the current page on each route change; after moving
+`aria-current`, call `refresh()`: a group that now holds the current page opens,
+one that no longer does returns to its authored state, and any other group stays
+as the reader left it. `destroy()` restores the authored attributes.
+`createNavigationDrawer` applies the same group rule to its authored
+`details.hw-navigation-drawer-group` elements, so the group of the current page is
+open when the drawer opens.
+
+## Client-side routing
+
+Packaged links keep their `href`. A client-side router takes them over with one
+delegated listener from core; components never call it:
+
+```ts
+import { bindLinkNavigation } from '@hawiyah/core';
+const links = bindLinkNavigation(document, { navigate: ({ url }) => { history.pushState(null, '', url); render(); } });
+// links.destroy() when the application is torn down.
+```
+
+It hands over a plain primary click (button 0, no modifier key, not prevented) on a
+same-origin `a[href]` inside the base path (the `base` option, else the directory of
+a same-origin `<base href>`, else `/`). The browser keeps links with `download`, a
+target other than `_self`, `rel="external"`, aria-disabled, inert or editable links,
+fragment links within the current document, and every click for which `navigate`
+returns false. `createNavigationDrawer` still closes after a routed click. Focus
+after navigation, route announcements, scroll restoration and `aria-current` are
+the application's.
 
 ## Behavior choice
 

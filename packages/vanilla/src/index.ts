@@ -17,6 +17,13 @@ export type { SkipLinkController } from './skip-link.js';
 import { createNavigationDrawer } from './navigation-drawer.js';
 export { createNavigationDrawer };
 export type { NavigationDrawerOptions, NavigationDrawerController } from './navigation-drawer.js';
+import { createSideNavigation } from './side-navigation.js';
+export { createSideNavigation };
+export type { SideNavigationOptions, SideNavigationController } from './side-navigation.js';
+import { createCopyButton } from './copy-button.js';
+export { createCopyButton };
+export type { CopyButtonOptions, CopyButtonController } from './copy-button.js';
+export type { CopyStatus, CopyResult } from '@hawiyah/core';
 export { createPortalHeader };
 export type { PortalHeaderOptions, PortalHeaderController } from './portal.js';
 import { createDialog } from './dialog.js';
@@ -51,6 +58,7 @@ const factories: Record<string, (element: HTMLElement) => Controller> = {
   stepper: element => createStepper(element as HTMLOListElement),
   accordion: createAccordion,
   'navigation-drawer': element => createNavigationDrawer(element as HTMLDialogElement),
+  'side-navigation': createSideNavigation, 'copy-button': createCopyButton,
   'portal-header': createPortalHeader,
   'skip-link': element => createSkipLink(element as HTMLAnchorElement),
   tabs: createTabs, dialog: element => createDialog(element as HTMLDialogElement), combobox: createCombobox,

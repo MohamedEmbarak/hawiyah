@@ -152,6 +152,8 @@ export const PortalHeader = defineComponent({
         },
       }), [
         props.mainId && h('a', { ref: skip, class: 'hw-skip-link', href: getFragmentHref(props.mainId) }, needText("PortalHeader", "skipLabel", props.skipLabel, "mainId is set")),
+        // Application content (an official-site notice): no text contract, no role and no aria attribute.
+        slots.notice && h("div", { class: "hw-portal-notice" }, slots.notice()),
         // The brand is application content: artwork in the brand slot, text in the brand prop, or both.
         h(
           props.homeHref ? "a" : "span",

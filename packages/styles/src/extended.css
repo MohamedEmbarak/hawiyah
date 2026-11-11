@@ -250,7 +250,11 @@ input.hw-pin-input, .hw-pin-input input:not([type='hidden']) { inline-size: min(
 .hw-service-details > section > h3 { margin: 0; font-size: var(--hw-text-lg); }.hw-service-details > section > ul { padding-inline-start: var(--hw-space-6); color: var(--hw-color-text-muted); }
 .hw-portal-header-main { display: flex; align-items: center; flex-wrap: wrap; gap: var(--hw-space-5); inline-size: 100%; min-inline-size: 0; }
 .hw-portal-notice { flex-basis: 100%; inline-size: 100%; padding-block-end: var(--hw-space-3); border-block-end: 1px solid var(--hw-color-border); color: var(--hw-color-text-muted); font-size: var(--hw-text-sm); }
-.hw-portal-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hw-space-2); margin-inline-start: auto; }
+.hw-portal-notice:empty { display: none; }
+/* One name for the actions container in every adapter: hw-portal-header-actions. The earlier hw-portal-actions stays for one release.
+   The container may shrink and its controls wrap, so three controls fit a 320px viewport on a second row (WCAG 1.4.10). */
+.hw-portal-header-actions, .hw-portal-actions { display: flex; flex: 0 1 auto; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--hw-space-2); min-inline-size: 0; margin-inline-start: auto; }
+:is(.hw-portal-header-actions, .hw-portal-actions):empty { display: none; }
 .hw-portal-footer > small { flex-basis: 100%; color: var(--hw-color-text-muted); font-size: var(--hw-text-xs); }.hw-portal-footer nav a { color: var(--hw-color-primary-text); text-underline-offset: 0.2em; }
 .hw-feedback > h2 { flex: 1 1 12rem; margin: 0; font-size: var(--hw-text-md); font-weight: var(--hw-weight-semibold); }
 .hw-feedback > div:not(.hw-button-group, .hw-inline, .hw-feedback-actions) { display: grid; gap: var(--hw-space-3); flex-basis: 100%; }
@@ -281,7 +285,6 @@ input.hw-pin-input, .hw-pin-input input:not([type='hidden']) { inline-size: min(
   .hw-portal-header > nav[data-open='false'] { display: none; }
   .hw-portal-header > nav ul, .hw-portal-header-main > nav ul { align-items: stretch; flex-direction: column; gap: var(--hw-space-1); }
   .hw-portal-header > nav a, .hw-portal-header-main > nav a { inline-size: 100%; padding-inline: var(--hw-space-2); }
-  .hw-portal-header-actions:empty { display: none; }
   .hw-portal-footer { gap: var(--hw-space-5); }
 }
 @media (max-width: 39.999rem) {

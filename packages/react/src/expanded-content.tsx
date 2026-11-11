@@ -127,7 +127,7 @@ export function PortalHeader({ brand, brandHref, brandLabel, navigation, navigat
             </div>
           </details></li>;
         })}</ul></nav></>}
-      {actions && <div className="hw-portal-actions">{actions}</div>}{children}
+      {actions && <div className="hw-portal-header-actions">{actions}</div>}{children}
     </div>
   </header>;
 }

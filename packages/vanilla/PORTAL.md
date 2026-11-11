@@ -9,6 +9,7 @@ without enhancement: do not put `hidden` or `data-open="false"` in initial HTML.
 <div class="hw-portal-layout" lang="ar" dir="rtl">
   <header class="hw-portal-header" data-hw="portal-header">
     <a class="hw-skip-link" href="#portal-content">انتقل إلى المحتوى</a>
+    <div class="hw-portal-notice">…</div>
     <a class="hw-portal-brand" href="/">هوية</a>
     <button class="hw-button hw-portal-menu-toggle" type="button" data-hw-portal-toggle>
       <span class="hw-icon" data-icon="menu-01" aria-hidden="true"></span>القائمة
@@ -16,6 +17,7 @@ without enhancement: do not put `hidden` or `data-open="false"` in initial HTML.
     <nav aria-label="التنقل الرئيسي" data-hw-portal-navigation>
       <ul><li><a href="/services" aria-current="page">الخدمات</a></li></ul>
     </nav>
+    <div class="hw-portal-header-actions"><a class="hw-button" data-variant="ghost" href="/en/" lang="en">English</a></div>
   </header>
   <nav class="hw-secondary-nav" aria-label="التنقل الثانوي">
     <ul><li><a href="/services" aria-current="page">دليل الخدمات</a></li></ul>
@@ -38,6 +40,15 @@ import '@hawiyah/styles/styles.css';
 const dispose = enhance(document.querySelector('.hw-portal-layout')!);
 // Dispose before replacing the shell.
 ```
+
+The order inside the header is the reading and tab order: skip link, notice,
+brand, menu toggle, navigation, actions. `div.hw-portal-notice` (optional) holds
+application content above the brand, such as a site verification line; it is not
+a text input, so it gets no role, no `aria-*` attribute and no warning. Omit the
+element when there is no notice. `div.hw-portal-header-actions` (optional) holds
+the application's actions after the navigation and may wrap at narrow widths; it
+replaces the older `hw-portal-actions` class, which the stylesheet keeps for one
+release. `createPortalHeader` does not touch either element.
 
 For direct control, `createPortalHeader(header, { onOpenChange })` returns
 `open`, `show()`, `close(restoreFocus?)` and `destroy()`. Escape closes the mobile

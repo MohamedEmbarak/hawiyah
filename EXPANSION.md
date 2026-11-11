@@ -10,18 +10,19 @@ RangeSlider, Rating, PinInput, TagInput, MultiSelect, Calendar, DatePicker,
 FileDropzone.
 
 Interaction: ToggleGroup, Popover, Menu, Drawer, ToastRegion, Collapsible,
-TreeView, Carousel, ContentNavigation.
+TreeView, Carousel, ContentNavigation, CopyButton.
 
 Content: Link, IconButton, ButtonGroup, Chip, DescriptionList, Stat, Timeline,
 Meter, AvatarGroup, DataTable.
 
 Platform patterns: ServiceCard, ServiceDetails, PortalHeader, PortalFooter,
-Feedback, CookieConsent, NotificationList, SiteVerification, SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer.
+Feedback, CookieConsent, NotificationList, SiteVerification, SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer,
+SideNavigation.
 
 Layout: Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer,
 AspectRatio, Section, AppShell, PageHeader.
 
-These 56 additions (including five portal/mobile compositions) supplement the existing 27 entries. Native TextField also
+These 58 additions (including five portal/mobile compositions) supplement the existing 27 entries, 85 in all. Native TextField also
 covers all standard HTML input types; document per-type semantics rather than
 inflating component counts with aliases. Heavy engines (maps, rich text, charts,
 code editors, PDF viewers, CAPTCHA, payments) require a documented integration
@@ -127,6 +128,28 @@ application text in development; `formatTextTemplate(template,values)` fills
 `{name}` placeholders in application templates. `getFragmentHref(id,documentUrl?,
 baseUrl?)`, `getFragmentId(href)` and `bindFragmentLink(link,options?)` keep
 packaged in-page links on the current document under `<base href>`.
+`copyText(text): Promise<'copied'|'denied'|'unavailable'|'failed'|'empty'>` writes
+to the clipboard inside the call only. `createCopyFeedback({getText,getDuration?,
+onStateChange,onResult?,write?})` returns `{state,status,copy(),reset(),destroy()}`
+with state `idle|copied|failed`; `copyFeedbackIcons` names the icon per state.
+`bindLinkNavigation(root,{navigate,base?})` returns `{destroy()}`: one delegated
+click listener that hands plain same-origin link activations to the application's
+router; `isLinkNavigationHandled(event)` tells a component that such a click went
+ahead. `NavigationItem = {id,label,href?,icon?,current?,disabled?,expanded?,
+children?}`; `getNavigationItemKind(item)` returns `disabled|group|link|text`,
+`getNavigationGroupEntries(item)`, `isNavigationGroupOpen(item)` and
+`getNavigationCurrentId(items)` are pure, and `revealNavigationCurrent(nav)`
+scrolls the current link into view inside the navigation's own scroll box.
+`observeContentNavigation` keeps the target of `navigate()` current while the
+scroll it started is in progress.
+
+CopyButton: `text` (string or function read at activation), `label`,
+`copiedMessage`, `failedMessage` (all required), `display: 'icon'|'text'`,
+`variant`, `size`, `feedbackDuration`, `disabled`; result event `copyResult`
+(`onCopyResult` in React and vanilla) with `{status,text}`. SideNavigation:
+`items`, `label` (required), `sticky`; no outputs. ToggleGroup gains
+`labelHidden`. PortalHeader takes a notice in every adapter and names its
+actions container `hw-portal-header-actions`.
 
 ## Layout contract
 
@@ -144,6 +167,13 @@ Variables: --hw-layout-gap[-sm|-md|-lg|-xl], --hw-layout-padding[...],
 --hw-layout-max-width, --hw-layout-ratio. CSS breakpoints sm40rem md48rem
 lg64rem xl80rem with mobile-first fallbacks. Sidebar data-side and
 data-collapse-at control placement/breakpoint. No JS viewport measurements.
+Every adapter renders a layout primitive as one element that carries the class,
+the variables and any native attribute the application writes. In Angular that
+element is the component host (`hw-stack`), or a native element through the
+attribute selector (`<ul hwStack>`); there is no inner wrapper. AppShell regions
+are `div.hw-app-shell-header`, `aside.hw-app-shell-sidebar`,
+`main.hw-app-shell-main` and `div.hw-app-shell-footer` in every adapter: banner
+and contentinfo landmarks come from what the application places inside.
 
 ## Coordinating changes
 

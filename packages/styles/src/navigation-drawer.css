@@ -102,3 +102,14 @@ summary.hw-navigation-drawer-row::after {
   :is(.hw-navigation-drawer, .hw-navigation-drawer-host > hw-drawer > .hw-drawer) > .hw-dialog-header > button::after { background: ButtonText; forced-color-adjust: none; }
 }
 :is(.hw-navigation-drawer, .hw-navigation-drawer-host > hw-drawer > .hw-drawer) > .hw-dialog-header > button:has(.hw-icon)::after { content: none; }
+/* SideNavigation: the same list outside a drawer. The row, group, current-marker, focus, disabled
+   and forced-colours rules above apply unchanged. The application may set --hw-side-navigation-top
+   and --hw-side-navigation-bottom-reserve as placement. */
+.hw-side-navigation { display: block; box-sizing: border-box; inline-size: 100%; min-inline-size: 0; padding-block-start: 0; color: var(--hw-color-text); font-family: var(--hw-font-sans); }
+@media (min-width: 64rem) {
+  .hw-side-navigation[data-sticky='true'] {
+    position: sticky; align-self: start; inset-block-start: var(--hw-side-navigation-top, var(--hw-space-4));
+    max-block-size: calc(100dvh - var(--hw-side-navigation-top, var(--hw-space-4)) - var(--hw-side-navigation-bottom-reserve, var(--hw-space-4)));
+    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  }
+}

@@ -25,7 +25,10 @@ it('composes native drawer/groups with disabled entries, route cancellation and 
   expect(dialog.open).toBe(true); expect(dialog.classList.contains('hw-navigation-drawer')).toBe(true);
   expect(dialog.querySelector('nav')!.getAttribute('aria-label')).toBe('التنقل الرئيسي');
   expect(dialog.querySelector('a[href="#blocked"], a[href="#hidden"]')).toBeNull();
-  const summary = dialog.querySelector('summary')!; summary.focus(); summary.click(); await nextTick();
+  // The group that holds the current page starts open; the reader's toggles stand.
+  const summary = dialog.querySelector('summary')!; expect(summary.parentElement!.hasAttribute('open')).toBe(true);
+  summary.focus(); summary.click(); await nextTick(); expect(summary.parentElement!.hasAttribute('open')).toBe(false);
+  summary.click(); await nextTick();
   expect(summary.parentElement!.hasAttribute('open')).toBe(true); expect(dialog.open).toBe(true);
   const link = dialog.querySelector<HTMLAnchorElement>('a')!; link.focus();
   prevent = true; link.click(); await nextTick(); expect(dialog.open).toBe(true);

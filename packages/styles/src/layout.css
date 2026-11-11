@@ -127,3 +127,8 @@
 .hw-page-header-main { display: flex; flex-wrap: wrap; align-items: var(--hw-layout-align); justify-content: var(--hw-layout-justify); gap: var(--hw-layout-current-gap); flex: 1 1 100%; min-inline-size: 0; }
 .hw-page-header-main > :first-child { flex: 1 1 16rem; min-inline-size: 0; }
 .hw-page-header > :is(.hw-breadcrumb, nav) { flex-basis: 100%; }
+/* Angular hosts. A custom element is an inline box unless a rule says otherwise; these rules have
+   zero specificity. Layout primitives carry their class on the host, which sets display where the
+   class does. Page header, alert and the cards keep an inner element and need a box around it. */
+:where(hw-container, hw-section, hw-aspect-ratio, hw-page-header, hw-alert) { display: block; }
+:where(hw-card, hw-service-card) { display: grid; }

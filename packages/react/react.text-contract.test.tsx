@@ -157,7 +157,7 @@ it('names ContentNavigation by its label, or by an aria-label or aria-labelledby
   const program = ts.createProgram([fixture], { strict: true, noEmit: true, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'], skipLibCheck: true, isolatedModules: true });
   const diagnostics = ts.getPreEmitDiagnostics(program).map(diagnostic => `${diagnostic.file?.fileName.split('/').pop() ?? ''}:${diagnostic.file && diagnostic.start !== undefined ? diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start).line + 1 : 0} ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')}`);
   expect(diagnostics).toEqual([]);
-  expect(readFileSync(fixture, 'utf8').match(/{\/\* @ts-expect-error/g)).toHaveLength(1);
+  expect(readFileSync(fixture, 'utf8').match(/{\/\* @ts-expect-error/g)).toHaveLength(2);
 }, 60_000);
 
 it('renders Calendar and DatePicker without Intl output and without throwing when locale is missing, and as core formats it when given', async () => {

@@ -1,0 +1,70 @@
+/* Class-less content inside .hw-prose: Markdown or CMS output that cannot carry
+   classes. An element is styled only when it has no class attribute and no
+   ancestor inside the container has one, so a component placed in prose, and
+   everything inside it, keeps its own look; prose only spaces it. Every element
+   rule has zero specificity. Heading levels stay the author's: the container
+   changes metrics only, as .hw-type does. Inline code, kbd and pre are styled
+   in code.css. Scales, measure and source notes: docs/code-and-prose.md. */
+.hw-prose { min-inline-size: 0; }
+
+:where(.hw-prose) :where(h1, h2, h3, h4, h5, h6, p, ul, ol, dl, dd, blockquote, figure, hr, table):where(:not([class])):not(:where(.hw-prose [class] *)) { margin: 0; }
+:where(.hw-prose) :where(h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, figure, table):where(:not([class])):not(:where(.hw-prose [class] *)) { font-family: var(--hw-font-sans); }
+/* Text blocks keep the paragraph measure; tables, listings, figures and components do not. */
+:where(.hw-prose) :where(h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote):where(:not([class])):not(:where(.hw-prose [class] *)) { box-sizing: border-box; max-inline-size: var(--hw-width-paragraph); overflow-wrap: break-word; }
+
+/* h1 display-sm, h2 display-xs, h3 heading-lg, h4 heading-md, h5 and h6 heading-sm. */
+:where(.hw-prose) :where(h1:not([class])):not(:where(.hw-prose [class] *)) { font-size: var(--hw-text-3xl); line-height: calc(38 / 30); font-weight: var(--hw-weight-bold); }
+:where(.hw-prose) :where(h2:not([class])):not(:where(.hw-prose [class] *)) { font-size: var(--hw-text-2xl); line-height: calc(32 / 24); font-weight: var(--hw-weight-bold); }
+:where(.hw-prose) :where(h3:not([class])):not(:where(.hw-prose [class] *)) { font-size: var(--hw-text-xl); line-height: calc(30 / 20); font-weight: var(--hw-weight-semibold); }
+:where(.hw-prose) :where(h4:not([class])):not(:where(.hw-prose [class] *)) { font-size: var(--hw-text-lg); line-height: calc(28 / 18); font-weight: var(--hw-weight-semibold); }
+:where(.hw-prose) :where(h5, h6):where(:not([class])):not(:where(.hw-prose [class] *)) { font-size: var(--hw-text-md); line-height: calc(24 / 16); font-weight: var(--hw-weight-semibold); }
+:where(.hw-prose) :where(h1, h2, h3, h4, h5, h6):where([id]:not([class])):not(:where(.hw-prose [class] *)) { scroll-margin-block-start: var(--hw-space-6); }
+/* p, li and dd body-md; small body-sm. */
+:where(.hw-prose) :where(p, li, dd):where(:not([class])):not(:where(.hw-prose [class] *)) { font-size: var(--hw-text-md); line-height: calc(24 / 16); font-weight: var(--hw-weight-regular); }
+:where(.hw-prose) :where(dt:not([class])):not(:where(.hw-prose [class] *)) { font-size: var(--hw-text-md); line-height: calc(24 / 16); font-weight: var(--hw-weight-semibold); }
+:where(.hw-prose) :where(small:not([class])):not(:where(.hw-prose [class] *)) { font-size: var(--hw-text-sm); line-height: calc(20 / 14); }
+
+/* Native markers; the indent is logical, so it follows the nearest dir. */
+:where(.hw-prose) :where(ul, ol):where(:not([class])):not(:where(.hw-prose [class] *)) { padding-inline-start: var(--hw-space-6); }
+:where(.hw-prose) :where(li + li:not([class])):not(:where(.hw-prose [class] *)) { margin-block-start: var(--hw-space-1); }
+:where(.hw-prose) :where(dd + dt:not([class])):not(:where(.hw-prose [class] *)) { margin-block-start: var(--hw-space-3); }
+:where(.hw-prose) :where(blockquote:not([class])):not(:where(.hw-prose [class] *)) { padding-inline-start: var(--hw-space-4); border-inline-start: var(--hw-space-1) solid var(--hw-color-border); color: var(--hw-color-text-muted); }
+:where(.hw-prose) :where(hr:not([class])):not(:where(.hw-prose [class] *)) { block-size: 0; border: 0; border-block-start: 1px solid var(--hw-color-border); }
+
+/* Links follow .hw-link. */
+:where(.hw-prose) :where(a:any-link:not([class])):not(:where(.hw-prose [class] *)) { border-radius: 2px; color: var(--hw-color-link); text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+:where(.hw-prose) :where(a:visited:not([class])):not(:where(.hw-prose [class] *)) { color: var(--hw-color-link-visited); }
+:where(.hw-prose) :where(a:any-link:hover:not([class])):not(:where(.hw-prose [class] *)) { color: var(--hw-color-link-hover); text-decoration-thickness: var(--hw-profile-link-hover-thickness, 2px); }
+:where(.hw-prose) :where(a:any-link:focus-visible:not([class])):not(:where(.hw-prose [class] *)) { color: var(--hw-color-link); outline: 2px solid var(--hw-color-focus-contrast); outline-offset: 2px; }
+:where(.hw-prose) :where(a:any-link:active:not([class])):not(:where(.hw-prose [class] *)) { color: var(--hw-color-link-active); }
+
+/* A bare table takes the .hw-table metrics and stays inside the container:
+   cells wrap instead of widening it. A wide table uses the .hw-table-wrap markup. */
+:where(.hw-prose) :where(table:not([class])):not(:where(.hw-prose [class] *)) { inline-size: 100%; max-inline-size: 100%; border: 1px solid var(--hw-color-border); border-collapse: collapse; color: var(--hw-color-text); font-size: var(--hw-profile-table-font, var(--hw-text-sm)); line-height: var(--hw-leading-normal); text-align: start; }
+:where(.hw-prose) :where(th, td):where(:not([class])):not(:where(.hw-prose [class] *)) { padding: var(--hw-table-cell-padding, var(--hw-profile-table-cell-padding, var(--hw-density-cell-padding) var(--hw-space-5))); border-block-end: 1px solid var(--hw-color-border); text-align: start; vertical-align: middle; overflow-wrap: anywhere; }
+:where(.hw-prose) :where(th:not([class])):not(:where(.hw-prose [class] *)) { font-weight: var(--hw-weight-semibold); }
+:where(.hw-prose) :where(thead:not([class])):not(:where(.hw-prose [class] *)) { background: var(--hw-color-surface-muted); }
+:where(.hw-prose) :where(thead th:not([class])):not(:where(.hw-prose [class] *)) { font-weight: var(--hw-profile-table-heading-weight, var(--hw-weight-semibold)); }
+:where(.hw-prose) :where(tbody tr:last-child > :not([class])):not(:where(.hw-prose [class] *)) { border-block-end: 0; }
+:where(.hw-prose) :where(caption:not([class])):not(:where(.hw-prose [class] *)) { padding-block-end: var(--hw-space-2); font-weight: var(--hw-weight-semibold); text-align: start; }
+
+:where(.hw-prose) :where(img:not([class])):not(:where(.hw-prose [class] *)) { max-inline-size: 100%; block-size: auto; }
+:where(.hw-prose) :where(figcaption:not([class])):not(:where(.hw-prose [class] *)) { margin-block-start: var(--hw-space-2); color: var(--hw-color-text-muted); font-size: var(--hw-text-sm); line-height: calc(20 / 14); }
+
+/* Flow spacing. The child rules carry one class of specificity and this file is
+   imported last, so they also space the components placed in prose. */
+:where(.hw-prose) :where(blockquote, li, dd, figure):where(:not([class])):not(:where(.hw-prose [class] *)) > :where(* + *) { margin-block-start: var(--hw-space-3); }
+.hw-prose > * { margin-block: 0; }
+.hw-prose > * + * { margin-block-start: var(--hw-space-4); }
+.hw-prose > * + :where(h1, h2) { margin-block-start: var(--hw-space-10); }
+.hw-prose > * + :where(h3) { margin-block-start: var(--hw-space-8); }
+.hw-prose > * + :where(h4, h5, h6) { margin-block-start: var(--hw-space-6); }
+.hw-prose > :where(h1, h2, h3, h4, h5, h6) + * { margin-block-start: var(--hw-space-3); }
+.hw-prose > * + :where(hr), .hw-prose > :where(hr) + * { margin-block-start: var(--hw-space-8); }
+
+@media (forced-colors: active) {
+  :where(.hw-prose) :where(a:any-link:not([class])):not(:where(.hw-prose [class] *)) { color: LinkText; }
+  :where(.hw-prose) :where(a:visited:not([class])):not(:where(.hw-prose [class] *)) { color: VisitedText; }
+  :where(.hw-prose) :where(a:any-link:focus-visible:not([class])):not(:where(.hw-prose [class] *)) { outline-color: Highlight; }
+  :where(.hw-prose) :where(blockquote, hr, table, th, td):where(:not([class])):not(:where(.hw-prose [class] *)) { border-color: CanvasText; }
+}

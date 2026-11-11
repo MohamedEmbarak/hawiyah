@@ -220,3 +220,10 @@ export type { FragmentLink, FragmentLinkOptions } from './fragment-link.js';
 
 export { fileUploadProgress } from './file-upload-state.js';
 export type { FileUploadItem, FileUploadLabels } from './file-upload-state.js';
+
+export { copyText, createCopyFeedback, copyFeedbackIcons, COPY_FEEDBACK_DURATION } from './copy.js';
+export type { CopyStatus, CopyFeedbackState, CopyResult, CopyFeedbackOptions, CopyFeedback } from './copy.js';
+export { bindLinkNavigation, isLinkNavigationHandled } from './link-navigation.js';
+export type { LinkNavigation, LinkNavigationOptions, LinkNavigationTarget } from './link-navigation.js';
+export { getNavigationItemKind, getNavigationGroupEntries, isNavigationGroupOpen, getNavigationCurrentId, revealNavigationCurrent } from './navigation-list.js';
+export type { NavigationItem, NavigationItemKind } from './navigation-list.js';

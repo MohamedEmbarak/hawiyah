@@ -2,7 +2,7 @@
 :where(:root) {
   color-scheme: light;
   --hw-font-sans: "IBM Plex Sans Arabic", "IBM Plex Sans", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
-  --hw-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --hw-font-mono: "IBM Plex Mono", "Hawiyah Code Arabic", "SFMono-Regular", Consolas, monospace;
   --hw-text-xs: 0.75rem;
   --hw-text-sm: 0.875rem;
   --hw-text-md: 1rem;
@@ -454,6 +454,19 @@
   --hw-color-notice-warning-text: var(--hw-palette-light-notice-warning-text);
   --hw-color-divider-gold: var(--hw-palette-light-divider-gold);
   --hw-color-divider-tertiary: var(--hw-palette-light-divider-tertiary);
+  --hw-color-code-surface: var(--hw-color-surface-muted);
+  --hw-color-code-text: var(--hw-color-text);
+  --hw-color-code-border: var(--hw-color-border);
+  --hw-color-code-comment: var(--hw-color-text-subtle);
+  --hw-color-code-punctuation: var(--hw-color-text-muted);
+  --hw-color-code-keyword: var(--hw-color-info);
+  --hw-color-code-property: var(--hw-color-info);
+  --hw-color-code-string: var(--hw-color-success);
+  --hw-color-code-constant: var(--hw-color-warning);
+  --hw-color-code-attribute: var(--hw-color-warning);
+  --hw-color-code-tag: var(--hw-color-danger);
+  --hw-color-code-type: var(--hw-color-danger);
+  --hw-color-code-function: var(--hw-color-text);
   --hw-control-height: 2.5rem;
   --hw-control-height-sm: 2rem;
   --hw-control-height-lg: 2.5rem;
@@ -470,7 +483,7 @@
 
 :where([data-hw-theme="hawiyah"]) {
   --hw-font-sans: "IBM Plex Sans Arabic", "IBM Plex Sans", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
-  --hw-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --hw-font-mono: "IBM Plex Mono", "Hawiyah Code Arabic", "SFMono-Regular", Consolas, monospace;
   --hw-text-xs: 0.75rem;
   --hw-text-sm: 0.875rem;
   --hw-text-md: 1rem;
@@ -812,7 +825,7 @@
 
 :where([data-hw-theme="dga"], [data-hw-theme="custom"]) {
   --hw-font-sans: "IBM Plex Sans Arabic", "IBM Plex Sans", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
-  --hw-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --hw-font-mono: "IBM Plex Mono", "Hawiyah Code Arabic", "SFMono-Regular", Consolas, monospace;
   --hw-text-xs: 0.75rem;
   --hw-text-sm: 0.875rem;
   --hw-text-md: 1rem;
@@ -1268,6 +1281,19 @@
   --hw-color-notice-warning-text: var(--hw-palette-light-notice-warning-text);
   --hw-color-divider-gold: var(--hw-palette-light-divider-gold);
   --hw-color-divider-tertiary: var(--hw-palette-light-divider-tertiary);
+  --hw-color-code-surface: var(--hw-color-surface-muted);
+  --hw-color-code-text: var(--hw-color-text);
+  --hw-color-code-border: var(--hw-color-border);
+  --hw-color-code-comment: var(--hw-color-text-subtle);
+  --hw-color-code-punctuation: var(--hw-color-text-muted);
+  --hw-color-code-keyword: var(--hw-color-info);
+  --hw-color-code-property: var(--hw-color-info);
+  --hw-color-code-string: var(--hw-color-success);
+  --hw-color-code-constant: var(--hw-color-warning);
+  --hw-color-code-attribute: var(--hw-color-warning);
+  --hw-color-code-tag: var(--hw-color-danger);
+  --hw-color-code-type: var(--hw-color-danger);
+  --hw-color-code-function: var(--hw-color-text);
 }
 
 :where([data-hw-mode="dark"]) {
@@ -1386,6 +1412,19 @@
   --hw-color-notice-warning-text: var(--hw-palette-dark-notice-warning-text);
   --hw-color-divider-gold: var(--hw-palette-dark-divider-gold);
   --hw-color-divider-tertiary: var(--hw-palette-dark-divider-tertiary);
+  --hw-color-code-surface: var(--hw-color-surface-muted);
+  --hw-color-code-text: var(--hw-color-text);
+  --hw-color-code-border: var(--hw-color-border);
+  --hw-color-code-comment: var(--hw-color-text-subtle);
+  --hw-color-code-punctuation: var(--hw-color-text-muted);
+  --hw-color-code-keyword: var(--hw-color-info);
+  --hw-color-code-property: var(--hw-color-info);
+  --hw-color-code-string: var(--hw-color-success);
+  --hw-color-code-constant: var(--hw-color-warning);
+  --hw-color-code-attribute: var(--hw-color-warning);
+  --hw-color-code-tag: var(--hw-color-danger);
+  --hw-color-code-type: var(--hw-color-danger);
+  --hw-color-code-function: var(--hw-color-text);
 }
 
 @supports (color: light-dark(white, black)) {
@@ -1504,6 +1543,19 @@
     --hw-color-notice-warning-text: light-dark(var(--hw-palette-light-notice-warning-text), var(--hw-palette-dark-notice-warning-text));
     --hw-color-divider-gold: light-dark(var(--hw-palette-light-divider-gold), var(--hw-palette-dark-divider-gold));
     --hw-color-divider-tertiary: light-dark(var(--hw-palette-light-divider-tertiary), var(--hw-palette-dark-divider-tertiary));
+    --hw-color-code-surface: var(--hw-color-surface-muted);
+    --hw-color-code-text: var(--hw-color-text);
+    --hw-color-code-border: var(--hw-color-border);
+    --hw-color-code-comment: var(--hw-color-text-subtle);
+    --hw-color-code-punctuation: var(--hw-color-text-muted);
+    --hw-color-code-keyword: var(--hw-color-info);
+    --hw-color-code-property: var(--hw-color-info);
+    --hw-color-code-string: var(--hw-color-success);
+    --hw-color-code-constant: var(--hw-color-warning);
+    --hw-color-code-attribute: var(--hw-color-warning);
+    --hw-color-code-tag: var(--hw-color-danger);
+    --hw-color-code-type: var(--hw-color-danger);
+    --hw-color-code-function: var(--hw-color-text);
   }
 }
 

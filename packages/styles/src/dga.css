@@ -199,7 +199,6 @@
   min-block-size: var(--hw-profile-header-height, auto);
 }
 .hw-portal-header-inner > *, .hw-portal-header-main > * { min-inline-size: 0; }
-.hw-portal-header :is(.hw-portal-actions, .hw-portal-header-actions) { flex-shrink: 0; }
 .hw-portal-header :is(.hw-portal-brand, nav a) { color: var(--hw-color-heading, var(--hw-color-text)); }
 .hw-portal-header nav a { position: relative; padding-inline: 0.5rem; }
 .hw-portal-header nav a[aria-current='page'] { color: var(--hw-color-primary-text); }

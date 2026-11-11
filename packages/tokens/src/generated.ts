@@ -2,7 +2,7 @@
 export const tokens = {
   "font": {
     "sans": "\"IBM Plex Sans Arabic\", \"IBM Plex Sans\", \"Noto Sans Arabic\", \"Segoe UI\", Tahoma, Arial, sans-serif",
-    "mono": "\"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace"
+    "mono": "\"IBM Plex Mono\", \"Hawiyah Code Arabic\", \"SFMono-Regular\", Consolas, monospace"
   },
   "text": {
     "xs": "0.75rem",
@@ -251,7 +251,20 @@ export const tokens = {
     "notice-neutral-text": "#6B7280",
     "notice-warning-text": "#B54707",
     "divider-gold": "#F5BD02",
-    "divider-tertiary": "#80519F"
+    "divider-tertiary": "#80519F",
+    "code-surface": "var(--hw-color-surface-muted)",
+    "code-text": "var(--hw-color-text)",
+    "code-border": "var(--hw-color-border)",
+    "code-comment": "var(--hw-color-text-subtle)",
+    "code-punctuation": "var(--hw-color-text-muted)",
+    "code-keyword": "var(--hw-color-info)",
+    "code-property": "var(--hw-color-info)",
+    "code-string": "var(--hw-color-success)",
+    "code-constant": "var(--hw-color-warning)",
+    "code-attribute": "var(--hw-color-warning)",
+    "code-tag": "var(--hw-color-danger)",
+    "code-type": "var(--hw-color-danger)",
+    "code-function": "var(--hw-color-text)"
   },
   "control": {
     "height": "2.5rem",
@@ -390,7 +403,20 @@ export const themes = {
         "notice-neutral-text": "#4c6264",
         "notice-warning-text": "#855000",
         "divider-gold": "#855000",
-        "divider-tertiary": "#175ba8"
+        "divider-tertiary": "#175ba8",
+        "code-surface": "var(--hw-color-surface-muted)",
+        "code-text": "var(--hw-color-text)",
+        "code-border": "var(--hw-color-border)",
+        "code-comment": "var(--hw-color-text-subtle)",
+        "code-punctuation": "var(--hw-color-text-muted)",
+        "code-keyword": "var(--hw-color-info)",
+        "code-property": "var(--hw-color-info)",
+        "code-string": "var(--hw-color-success)",
+        "code-constant": "var(--hw-color-warning)",
+        "code-attribute": "var(--hw-color-warning)",
+        "code-tag": "var(--hw-color-danger)",
+        "code-type": "var(--hw-color-danger)",
+        "code-function": "var(--hw-color-text)"
       }
     },
     "dark": {
@@ -508,7 +534,20 @@ export const themes = {
         "notice-neutral-text": "#b9cdca",
         "notice-warning-text": "#f2cd76",
         "divider-gold": "#f2cd76",
-        "divider-tertiary": "#9dc6ff"
+        "divider-tertiary": "#9dc6ff",
+        "code-surface": "var(--hw-color-surface-muted)",
+        "code-text": "var(--hw-color-text)",
+        "code-border": "var(--hw-color-border)",
+        "code-comment": "var(--hw-color-text-subtle)",
+        "code-punctuation": "var(--hw-color-text-muted)",
+        "code-keyword": "var(--hw-color-info)",
+        "code-property": "var(--hw-color-info)",
+        "code-string": "var(--hw-color-success)",
+        "code-constant": "var(--hw-color-warning)",
+        "code-attribute": "var(--hw-color-warning)",
+        "code-tag": "var(--hw-color-danger)",
+        "code-type": "var(--hw-color-danger)",
+        "code-function": "var(--hw-color-text)"
       }
     }
   },
@@ -628,7 +667,20 @@ export const themes = {
         "notice-neutral-text": "#6B7280",
         "notice-warning-text": "#B54707",
         "divider-gold": "#F5BD02",
-        "divider-tertiary": "#80519F"
+        "divider-tertiary": "#80519F",
+        "code-surface": "var(--hw-color-surface-muted)",
+        "code-text": "var(--hw-color-text)",
+        "code-border": "var(--hw-color-border)",
+        "code-comment": "var(--hw-color-text-subtle)",
+        "code-punctuation": "var(--hw-color-text-muted)",
+        "code-keyword": "var(--hw-color-info)",
+        "code-property": "var(--hw-color-info)",
+        "code-string": "var(--hw-color-success)",
+        "code-constant": "var(--hw-color-warning)",
+        "code-attribute": "var(--hw-color-warning)",
+        "code-tag": "var(--hw-color-danger)",
+        "code-type": "var(--hw-color-danger)",
+        "code-function": "var(--hw-color-text)"
       }
     },
     "dark": {
@@ -746,7 +798,20 @@ export const themes = {
         "notice-neutral-text": "#F3F4F6",
         "notice-warning-text": "#FDB022",
         "divider-gold": "#F8D36C",
-        "divider-tertiary": "#D0B6E4"
+        "divider-tertiary": "#D0B6E4",
+        "code-surface": "var(--hw-color-surface-muted)",
+        "code-text": "var(--hw-color-text)",
+        "code-border": "var(--hw-color-border)",
+        "code-comment": "var(--hw-color-text-subtle)",
+        "code-punctuation": "var(--hw-color-text-muted)",
+        "code-keyword": "var(--hw-color-info)",
+        "code-property": "var(--hw-color-info)",
+        "code-string": "var(--hw-color-success)",
+        "code-constant": "var(--hw-color-warning)",
+        "code-attribute": "var(--hw-color-warning)",
+        "code-tag": "var(--hw-color-danger)",
+        "code-type": "var(--hw-color-danger)",
+        "code-function": "var(--hw-color-text)"
       }
     }
   }
@@ -756,7 +821,7 @@ export const themeFoundations = {
   "dga": {
     "font": {
       "sans": "\"IBM Plex Sans Arabic\", \"IBM Plex Sans\", \"Noto Sans Arabic\", \"Segoe UI\", Tahoma, Arial, sans-serif",
-      "mono": "\"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace"
+      "mono": "\"IBM Plex Mono\", \"Hawiyah Code Arabic\", \"SFMono-Regular\", Consolas, monospace"
     },
     "text": {
       "xs": "0.75rem",
@@ -895,7 +960,7 @@ export const themeFoundations = {
   "hawiyah": {
     "font": {
       "sans": "\"IBM Plex Sans Arabic\", \"IBM Plex Sans\", \"Noto Sans Arabic\", \"Segoe UI\", Tahoma, Arial, sans-serif",
-      "mono": "\"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace"
+      "mono": "\"IBM Plex Mono\", \"Hawiyah Code Arabic\", \"SFMono-Regular\", Consolas, monospace"
     },
     "text": {
       "xs": "0.75rem",
@@ -1348,7 +1413,20 @@ export const tokenNames = {
     "notice-neutral-text": "--hw-color-notice-neutral-text",
     "notice-warning-text": "--hw-color-notice-warning-text",
     "divider-gold": "--hw-color-divider-gold",
-    "divider-tertiary": "--hw-color-divider-tertiary"
+    "divider-tertiary": "--hw-color-divider-tertiary",
+    "code-surface": "--hw-color-code-surface",
+    "code-text": "--hw-color-code-text",
+    "code-border": "--hw-color-code-border",
+    "code-comment": "--hw-color-code-comment",
+    "code-punctuation": "--hw-color-code-punctuation",
+    "code-keyword": "--hw-color-code-keyword",
+    "code-property": "--hw-color-code-property",
+    "code-string": "--hw-color-code-string",
+    "code-constant": "--hw-color-code-constant",
+    "code-attribute": "--hw-color-code-attribute",
+    "code-tag": "--hw-color-code-tag",
+    "code-type": "--hw-color-code-type",
+    "code-function": "--hw-color-code-function"
   },
   "control": {
     "height": "--hw-control-height",
@@ -1596,6 +1674,19 @@ export const cssVariableNames = [
   "--hw-color-notice-warning-text",
   "--hw-color-divider-gold",
   "--hw-color-divider-tertiary",
+  "--hw-color-code-surface",
+  "--hw-color-code-text",
+  "--hw-color-code-border",
+  "--hw-color-code-comment",
+  "--hw-color-code-punctuation",
+  "--hw-color-code-keyword",
+  "--hw-color-code-property",
+  "--hw-color-code-string",
+  "--hw-color-code-constant",
+  "--hw-color-code-attribute",
+  "--hw-color-code-tag",
+  "--hw-color-code-type",
+  "--hw-color-code-function",
   "--hw-control-height",
   "--hw-control-height-sm",
   "--hw-control-height-lg",

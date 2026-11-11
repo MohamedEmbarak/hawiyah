@@ -31,6 +31,8 @@ export const ToggleGroup = defineComponent({
     multiple: Boolean,
     disabled: Boolean,
     readonly: Boolean,
+    /** Hides the legend visually; it stays the accessible name of the group. */
+    labelHidden: Boolean,
     variant: {
       type: String as PropType<"segmented" | "outline">,
       default: "segmented",
@@ -59,7 +61,7 @@ export const ToggleGroup = defineComponent({
           disabled: props.disabled,
         }),
         [
-          h("legend", { class: "hw-label" }, props.label),
+          h("legend", { class: props.labelHidden ? "hw-label hw-sr-only" : "hw-label" }, props.label),
           props.multiple
             ? h("input", { ref: element, type: "hidden", form:attrs.form, disabled: true })
             : null,

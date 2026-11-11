@@ -22,7 +22,8 @@ const ratio = (foreground, background, surface = '#ffffff') => {
 for (const [name, theme] of Object.entries(source.themes)) {
   if (name.startsWith('$')) continue;
   for (const [mode, values] of Object.entries(theme)) {
-    const color = Object.fromEntries(Object.entries(values.color).map(([key, value]) => [key, value.$value]));
+    // {color.<name>} is an alias of another colour in the same group; measure what it resolves to.
+    const color = Object.fromEntries(Object.entries(values.color).map(([key, value]) => [key, values.color[/^\{color\.([a-z0-9-]+)\}$/.exec(value.$value)?.[1]]?.$value ?? value.$value]));
     test(`${name} ${mode}: text and semantic status pairs meet 4.5:1`, () => {
       const pairs = [
         ...['primary', 'primary-hover', 'primary-active'].map(bg => ['on-primary', bg]),
@@ -49,6 +50,19 @@ for (const [name, theme] of Object.entries(source.themes)) {
       for (const background of ['card', 'card-hover', 'accordion-focus']) {
         const measured = ratio(color['focus-contrast'], color[background]);
         assert.ok(measured >= 3, `focus-contrast/${background}: ${measured.toFixed(2)}:1`);
+      }
+    });
+    test(`${name} ${mode}: code text and every syntax role meet 4.5:1 on the code surface`, () => {
+      const roles = Object.keys(color).filter(key => key.startsWith('code-') && !['code-surface', 'code-border'].includes(key));
+      assert.deepEqual(roles.sort(), ['attribute', 'comment', 'constant', 'function', 'keyword', 'property', 'punctuation', 'string', 'tag', 'text', 'type'].map(role => 'code-' + role));
+      for (const role of roles) {
+        const measured = ratio(color[role], color['code-surface']);
+        assert.ok(measured >= 4.5, `${role}/code-surface: ${measured.toFixed(2)}:1`);
+      }
+      // The focus ring of a scrolling listing is drawn outside it, on the page.
+      for (const background of ['canvas', 'surface', 'code-surface']) {
+        const measured = ratio(color.focus, color[background]);
+        assert.ok(measured >= 3, `focus/${background}: ${measured.toFixed(2)}:1`);
       }
     });
     test(`${name} ${mode}: control and focus boundaries meet 3:1`, () => {

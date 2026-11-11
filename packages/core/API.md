@@ -286,6 +286,24 @@ scrolling and temporarily supplies `tabindex="-1"` when needed; blur or destroy
 restores that temporary attribute. Use this for keyboard/assistive-technology
 activation, rather than for passive scrolling or ordinary pointer activation.
 
+One activation reports one change. While a scroll that `navigate()` started is in
+progress, the target stays current and measured updates wait, so a smooth scroll
+past several sections does not step the marker through them. The hold ends when
+the scroll position reaches the target (or the end of the scroll range, when the
+target cannot reach the top), on `scrollend` from the scroll root or the window,
+or after a pause in scroll events: 150 ms where `scrollend` is missing, and
+1000 ms as a safety net where it exists. A `scrollend` that arrives short of the
+target is confirmed by 150 ms without movement, because it can belong to a scroll
+that a second activation replaced. The reader takes over at once with a wheel, a
+touch move or a scrolling key (arrows, Page Up/Down, Home, End, Space), and when
+the position moves away from the target, as a dragged scrollbar does; measurement
+then resumes immediately. A second `navigate()` replaces the first. After a
+scroll that arrived, the target stays current until the scroll position changes,
+including when the page ends before the section reaches the top; a scroll that
+stopped short of its end is measured where it stopped. A changed scroll root, a
+target that disappears and `destroy()` end the hold. An instant scroll (reduced
+motion) needs no hold.
+
 ## Local search suggestions
 
 `getSearchSuggestions(query, suggestions, limit = 8)` returns
@@ -375,3 +393,75 @@ complete, error, remove, getProgressLabel(name), getRemoveLabel(name)}`.
   values, a missing target and `navigate` returning `false` are left to the
   browser. `destroy()` removes the listeners and restores `#id` only if the href
   is still the value it wrote. On a server DOM without a window it is inert.
+
+## Copying text
+
+- `copyText(text): Promise<CopyStatus>` with `CopyStatus = 'copied' | 'denied' |
+  'unavailable' | 'failed' | 'empty'`. `empty`: the text is not a string or holds
+  only white space; nothing is written. `unavailable`: there is no
+  `navigator.clipboard.writeText` (a server, an insecure context). `denied`: the
+  write was rejected with `NotAllowedError` or `SecurityError`. `failed`: any
+  other rejection. The text is written as given, without trimming. The function
+  reads `navigator` only when called, never reads the clipboard, has no
+  `document.execCommand` fallback and never throws.
+- `createCopyFeedback({getText, getDuration?, onStateChange, onResult?, write?})`
+  returns `{state, status, copy(), reset(), destroy()}`. Creating it touches
+  nothing. `state` is `'idle' | 'copied' | 'failed'`; `status` is the outcome
+  behind it. `copy()` is one activation: it clears the timer, returns to `idle`
+  (which empties the status element, so a repeated message is announced again),
+  reads `getText()`, awaits `write` (`copyText` by default) and then reports
+  `copied` or `failed` through `onStateChange(state, status)`, followed by
+  `onResult({status, text})`. `copied` returns to `idle` after `getDuration()`
+  milliseconds (`COPY_FEEDBACK_DURATION`, 3000, for a value that is not a finite
+  number above zero); `failed` stays until the next activation, with no timer.
+  Only the latest activation counts: an earlier one resolves to `undefined`,
+  changes no state and reports no result. The same holds after `reset()` and
+  `destroy()`, which also clear the timer. A `getText` or `write` that throws is
+  `failed`.
+- `copyFeedbackIcons` is `{idle: 'copy-01', copied: 'tick-02', failed: 'alert-02'}`.
+
+## Routed links
+
+- `bindLinkNavigation(root, {navigate, base?})` returns `{destroy()}`. `root` is a
+  document or an element. One click listener is added to it in the bubble phase,
+  so component handlers and application guards run first. Nothing is rendered and
+  no node is changed. Without a root, or without a browser window, the handle is
+  inert, so the call is safe during server rendering.
+- It acts on a click with button 0, no modifier key and the default not prevented
+  (Enter on a link arrives as such a click), on an HTML `a[href]` inside `root`
+  that is same-origin, inside the base path, has no `download`, no `target` other
+  than `_self` (its own, or the one on `<base target>`), no `rel="external"`, is
+  not inside `[aria-disabled="true"]` or `[inert]`, is not editable content, and
+  is not a link to the current document whose href holds a fragment. SVG anchors
+  are left alone.
+- `navigate({url, path, link, event})`: `url` is the resolved `URL`; `path` is
+  pathname, search and hash relative to the base path, starting with `/`. The
+  base path is `base` when given, else the directory of a same-origin
+  `<base href>`, else `/`. Returning `false` leaves the click to the browser. Any
+  other return prevents the default and records the event. If `navigate` throws,
+  the default is not prevented and the browser follows the link.
+- `isLinkNavigationHandled(event)` is true for a recorded event. A component that
+  reacts to a link activation "unless it was prevented" checks
+  `!event.defaultPrevented || isLinkNavigationHandled(event)`.
+
+## Navigation lists
+
+`NavigationItem` is `{id, label, href?, icon?, current?, disabled?, expanded?,
+children?}`. NavigationDrawer and SideNavigation render it with the same markup.
+
+- `getNavigationItemKind(item)`: `disabled` (text with `aria-disabled="true"`;
+  children are not rendered), else `group` (it has children; native `details`),
+  else `link` (it has an `href`), else `text`.
+- `getNavigationGroupEntries(item)`: the children, preceded by the group itself
+  as a link when the group has an `href`, under the id `<id>-page` (suffixed again
+  until no child uses it).
+- `isNavigationGroupOpen(item)`: `expanded === true`, or a link rendered inside
+  the group is the current page. A disabled entry, an entry without `href` and
+  everything under a disabled group never count as current.
+- `getNavigationCurrentId(items)`: the `data-hw-value` of the first link rendered
+  with `aria-current="page"`, or `''`.
+- `revealNavigationCurrent(navigation)`: when the navigation overflows its own
+  box and `a[aria-current="page"]` is not fully visible in it, centres the link
+  by scrolling the navigation only, without animation, and returns `true`. It
+  never scrolls the page and never moves focus. A link in a closed group has no
+  box and is skipped. Without layout (a server DOM) it returns `false`.

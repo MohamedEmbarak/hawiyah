@@ -17,6 +17,7 @@
     ".": "./dist/styles.css",
     "./styles.css": "./dist/styles.css",
     "./reset.css": "./dist/reset.css",
+    "./fonts.css": "./dist/fonts.css",
     "./*.css": "./dist/*.css",
     "./assets/*": "./dist/assets/*"
   },

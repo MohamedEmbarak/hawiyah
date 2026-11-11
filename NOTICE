@@ -29,3 +29,10 @@ The HawiyahRiyal symbol font is a U+20C1-only derivative of Noto Naskh Arabic
 2.021, Copyright 2022 The Noto Project Authors, licensed under SIL OFL 1.1.
 Its complete license and reproducible source record are included in
 packages/styles/src/assets/fonts/riyal-LICENSE.txt and riyal-provenance.json.
+
+The opt-in fonts stylesheet of @hawiyah/styles ships IBM Plex Sans Arabic and
+IBM Plex Mono, Copyright © 2017 IBM Corp. with Reserved Font Name "Plex",
+licensed under SIL OFL 1.1. The files are unchanged copies from the npm
+packages @ibm/plex-sans-arabic 1.1.0 and @ibm/plex-mono 2.5.0. The complete
+license and the provenance record are included in
+packages/styles/src/assets/fonts/ibm-plex-LICENSE.txt and ibm-plex-provenance.json.

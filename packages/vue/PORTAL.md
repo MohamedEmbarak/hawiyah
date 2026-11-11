@@ -29,8 +29,8 @@ props such as `externalLabel`, `legalLinksLabel`, `supportLabel`). Required text
 `secondaryNavigation` is given; `breadcrumbLabel` when `breadcrumbs` are given;
 `footerLabel` (the footer's `navigationLabel`) when `footerLinks` are given; and
 `footerProps.externalLabel` always, because footer links may be marked external.
-`mainId` uses Vue `useId` by default. Slots: `brand`, `actions`, `footer`, default
-(page content).
+`mainId` uses Vue `useId` by default. Slots: `brand`, `notice`, `actions`, `footer`, default
+(page content). `notice` and `actions` are forwarded to the header.
 
 ## Text is supplied by the application
 
@@ -62,7 +62,14 @@ support section only when its `support` slot is supplied.
 ## Header and secondary navigation
 
 Standalone `PortalHeader` takes `brand`, `brandLabel`, `homeHref`, `links`,
-required `navigationLabel` and `menuLabel`, and `navigationId`. Its skip link is
+required `navigationLabel` and `menuLabel`, and `navigationId`. Its `notice` slot
+(for example the official-site notice) renders in `div.hw-portal-notice`, a direct
+child of the header between the skip link and the brand; it is application
+content with no text requirement, role or ARIA attribute. The `actions` slot renders
+in `div.hw-portal-header-actions` after the navigation (`hw-portal-actions` is
+replaced by `hw-portal-header-actions`); each container is rendered only when its
+slot is given. Reading and tab order: skip link, notice, brand, menu toggle,
+navigation, actions. Its skip link is
 rendered only when `mainId` names a target; `skipLabel` is then required. The
 skip link is a packaged fragment link: it is rendered as `href="#id"` on the
 server and on first render, is bound with core `bindFragmentLink` after mounting,

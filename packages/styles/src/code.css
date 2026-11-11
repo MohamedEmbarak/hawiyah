@@ -1,0 +1,78 @@
+/* Code listings, inline code and keyboard keys: a class contract with no script
+   and no shipped text. Hawiyah design choice: the Platforms Code references
+   supplied to the project have no code component. Colours are the
+   --hw-color-code-* aliases of existing semantic colours. Code is always left to
+   right: the stylesheet sets direction and the author also writes dir="ltr" on
+   the pre. The selectors that begin with :where(.hw-prose) give class-less
+   Markdown output the same look at zero specificity (see prose.css and
+   docs/code-and-prose.md). */
+.hw-code-block { box-sizing: border-box; min-inline-size: 0; max-inline-size: 100%; margin: 0; border: 1px solid var(--hw-color-code-border); border-radius: var(--hw-radius-md); background: var(--hw-color-code-surface); color: var(--hw-color-code-text); }
+/* The header row follows the page direction; only the listing is left to right. */
+.hw-code-block-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--hw-space-2); padding-block: var(--hw-space-2); padding-inline: var(--hw-space-4) var(--hw-space-2); border-block-end: 1px solid var(--hw-color-code-border); font-family: var(--hw-font-sans); font-size: var(--hw-text-sm); line-height: var(--hw-leading-normal); }
+.hw-code-block-title { min-inline-size: 0; font-weight: var(--hw-weight-medium); overflow-wrap: anywhere; }
+.hw-code-block-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hw-space-1); margin-inline-start: auto; }
+
+/* The default is a scrolling listing. Its pre is then the only tab stop: the
+   author gives it tabindex="0", role="group" and an accessible name. */
+.hw-code-block-content,
+:where(.hw-prose) :where(pre:not([class])):not(:where(.hw-prose [class] *)) {
+  box-sizing: border-box; max-inline-size: 100%; margin: 0; padding: var(--hw-space-4); overflow: auto;
+  border: 1px solid var(--hw-color-code-border); border-radius: var(--hw-radius-md);
+  background: var(--hw-color-code-surface); color: var(--hw-color-code-text);
+  font-family: var(--hw-font-mono); font-size: var(--hw-text-sm); font-weight: var(--hw-weight-regular); line-height: calc(22 / 14);
+  tab-size: 2; white-space: pre; direction: ltr; unicode-bidi: isolate; text-align: start;
+}
+.hw-code-block > .hw-code-block-content { border: 0; border-radius: calc(var(--hw-radius-md) - 1px); background: none; }
+.hw-code-block > .hw-code-block-header + .hw-code-block-content { border-start-start-radius: 0; border-start-end-radius: 0; }
+.hw-code-block-content:focus-visible,
+:where(.hw-prose) :where(pre:not([class])):not(:where(.hw-prose [class] *)):focus-visible { outline: var(--hw-focus-width) solid var(--hw-color-focus); outline-offset: var(--hw-focus-offset); }
+:where(.hw-code-block-content) :where(code),
+:where(.hw-prose) :where(pre:not([class])):not(:where(.hw-prose [class] *)) :where(code) { font: inherit; }
+/* Wrapped lines: nothing scrolls, so the author omits tabindex, role and name. */
+.hw-code-block[data-wrap='true'] > .hw-code-block-content { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.hw-code,
+:where(.hw-prose) :where(code:not([class])):not(:where(.hw-prose [class] *, pre *)) {
+  padding: 0.125em 0.375em; border: 1px solid var(--hw-color-code-border); border-radius: var(--hw-radius-sm);
+  background: var(--hw-color-code-surface); color: var(--hw-color-code-text);
+  font-family: var(--hw-font-mono); font-size: 0.875em;
+  direction: ltr; unicode-bidi: isolate; overflow-wrap: anywhere; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+/* Inline code in a link keeps the link colour and its underline. */
+a .hw-code,
+:where(.hw-prose) :where(a code:not([class])):not(:where(.hw-prose [class] *, pre *)) { color: inherit; }
+.hw-kbd,
+:where(.hw-prose) :where(kbd:not([class])):not(:where(.hw-prose [class] *)) {
+  display: inline-block; box-sizing: border-box; min-inline-size: 1.75em; padding: 0 0.375em;
+  border: 1px solid var(--hw-color-code-border); border-block-end-width: 2px; border-radius: var(--hw-radius-sm);
+  background: var(--hw-color-surface); color: var(--hw-color-code-text);
+  font-family: var(--hw-font-mono); font-size: 0.875em; line-height: var(--hw-leading-normal);
+  text-align: center; white-space: nowrap; direction: ltr; unicode-bidi: isolate;
+}
+
+/* Syntax roles are classes, not data attributes: a framework HTML sanitizer
+   keeps class and removes data-*. Zero specificity, so a highlighter's own
+   theme or an application rule replaces any of them. */
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-comment) { color: var(--hw-color-code-comment); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-punctuation) { color: var(--hw-color-code-punctuation); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-keyword) { color: var(--hw-color-code-keyword); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-property) { color: var(--hw-color-code-property); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-string) { color: var(--hw-color-code-string); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-constant) { color: var(--hw-color-code-constant); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-attribute) { color: var(--hw-color-code-attribute); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-tag) { color: var(--hw-color-code-tag); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-type) { color: var(--hw-color-code-type); }
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-function) { color: var(--hw-color-code-function); }
+
+@media (forced-colors: active) {
+  .hw-code-block, .hw-code-block-header, .hw-code-block-content, .hw-code, .hw-kbd,
+  :where(.hw-prose) :where(pre:not([class]), code:not([class]), kbd:not([class])):not(:where(.hw-prose [class] *)) { border-color: CanvasText; }
+  :where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where([class*='hw-code-token-']) { color: CanvasText; }
+  .hw-code-block-content:focus-visible,
+  :where(.hw-prose) :where(pre:not([class])):not(:where(.hw-prose [class] *)):focus-visible { outline-color: Highlight; }
+}
+/* Paper cannot scroll. */
+@media print {
+  .hw-code-block-content,
+  :where(.hw-prose) :where(pre:not([class])):not(:where(.hw-prose [class] *)) { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; }
+}

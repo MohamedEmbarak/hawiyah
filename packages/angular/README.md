@@ -220,6 +220,14 @@ with `provideClientHydration()`. On the server the components emit markup only:
   MultiSelect and DatePicker) is applied in the browser; the server DOM has no
   such method. `required`, `aria-invalid` and messages are in the server markup.
 - Dialog, Drawer, NavigationDrawer and the DatePicker dialog are rendered closed.
+- CopyButton is rendered idle, with its empty status element. It reads no
+  `navigator`, starts no timer and does not call a `text` function until the
+  reader activates it.
+- SideNavigation and NavigationDrawer render the whole list, with `open` on the
+  groups that hold the current page or are expanded and `aria-current="page"`
+  on the current link, so a prerendered page shows the right group open before
+  hydration. Nothing is measured or scrolled on the server.
+- The layout hosts carry their class and custom properties in the server markup.
 - An accordion item that is open is rendered as `<details open>`, and an
   exclusive group keeps its native `name`; `aria-expanded`, `inert` and motion
   are added when the browser takes over.
@@ -300,7 +308,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Calendar | ISO Gregorian string value; `month`, `min`, `max`, `calendar: gregory/islamic-umalqura`, `weekStartsOn`, `direction`; required `label`, `locale`, `previousLabel` and `nextLabel`; `rangeLabel` is required with `calendar="islamic-umalqura"` and names the supported-range information, whose tooltip id is `rangeTooltipId`; optional `getDayLabel(isoDate)` replaces the Intl day name; `monthChange`. `locale` has no default: while it is empty the toolbar and the grid are not rendered. Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year). Bounds restrict selection/focus. |
 | DatePicker | ISO Gregorian value, a custom text field and modal calendar. Accepts Calendar range inputs. Required: `label`, `locale`, `calendarLabel` (dialog title and name of the calendar), `openLabel`, `closeLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel` (name of the Gregorian/Hijri switch), `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage` and `unsupportedMessage`. `placeholder` is optional and has no default. `locale` has no default: while it is empty the typed ISO date is shown as typed, no formatted date is announced and the calendar in the dialog is empty; the value and validation are unaffected. Switching emits `calendarChange` and preserves the selected ISO date. Opening returns to its month and day. |
 | FileDropzone | `File[]`; `accept`, `multiple`; required `label` (it names the input) and `dropLabel` (the visible instruction: `<p class="hw-file-dropzone-instruction" id="{controlId}-instruction">` before the input, listed first in its `aria-describedby`); optional `getSelectedMessage(files)`, which when bound renders one visible `<p role="status">` after the input, empty until files are selected and then the returned string; without it no status element is rendered. Selected file names are listed as data. `rejected` emits rejected files. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
-| ToggleGroup | Required `label` (the legend); string value for single or `string[]` for `multiple`; `options`, `variant: segmented/outline`. Single uses native radios; multiple uses pressed buttons. |
+| ToggleGroup | Required `label` (the legend); string value for single or `string[]` for `multiple`; `options`, `variant: segmented/outline`, `labelHidden` (false). Single uses native radios; multiple uses pressed buttons. `labelHidden` adds `hw-sr-only` to the legend, which stays the first child of the fieldset and the accessible name of the group; `label` remains required. Hide the label only where the option texts make the purpose visible, as in a toolbar. |
 | Popover | Required `label` and `triggerLabel`; `panelId` (the id of the panel; no id is left on the wrapper), `disabled`, `[(open)]`; project interactive content. Disclosure region with ordinary Tab order, outside press/Escape closing. |
 | Menu | Popover inputs plus `items: {id,label,disabled?}[]`, `action(id)`. ArrowUp/Down/Home/End navigation skips disabled items; Escape/activation returns focus. |
 | Drawer | Dialog inputs/outputs/methods (including the required `closeLabel`) plus `side: start/end/bottom`; project body and `[hwDrawerFooter]`. Native modal dialog. |
@@ -328,7 +336,9 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | FileUploadList | `items: FileUploadItem[]`, `removable`, `disabled`; required `labels: FileUploadLabels` from `@hawiyah/core`: the status words `selected`, `uploading`, `complete`, `error`, the visible `remove` text, and `getProgressLabel(name)` and `getRemoveLabel(name)` for the progress bar and the remove button. `remove(id)` asks the owner to remove an item. |
 | SiteVerification | Required `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel` (include the protocol name in it) and `httpsDescription`; `domain`, `[(open)]`; `registrationHref` needs `registrationLabel`, and `externalLabel` while `registrationExternal` is on; `registrationNumber`. There is no `locale` input. |
 | MobileTopBar | Required `title`; `subtitle`, `variant`, `headingLevel`; `backHref` needs `backLabel`. Project `[hwTopBarLeading]` and `[hwTopBarActions]`. |
-| NavigationDrawer | Required `title`, `navigationLabel` and `closeLabel`; `titleId`, `items`, `side`, `[(open)]`, `closeOnBackdrop`. |
+| NavigationDrawer | Required `title`, `navigationLabel` and `closeLabel`; `titleId`, `items`, `side`, `[(open)]`, `closeOnBackdrop`. Items are `HwNavigationDrawerItem[]` (see Side navigation); a group is open when it holds the current page or has `expanded: true`. |
+| `HwSideNavigationComponent / hw-side-navigation, nav[hwSideNavigation]` | Required `items` and `label`; `sticky` (false). The page list of NavigationDrawer outside a drawer. No outputs. See Side navigation. |
+| `HwCopyButtonComponent / hw-copy-button` | Required `text`, `label`, `copiedMessage` and `failedMessage`; `display: icon/text`, `variant` (ghost), `size` (md), `feedbackDuration` (3000), `disabled`; output `copyResult`. See Copy button. |
 
 The national platform patterns are configurable ordinary application content. They
 provide no seals, government endorsement, identity verification or connected
@@ -341,17 +351,53 @@ Section, AppShell and PageHeader are native layout components. Shared props:
 `gap`, `padding`, `align`, `justify`, `wrap`; spacing accepts token numbers 0–16
 or CSS lengths. `gap`/`padding` and `columns` accept `{base,sm,md,lg,xl}` objects.
 Breakpoints live in CSS (40/48/64/80rem), so server/client layout markup matches.
+`wrap` is a boolean: the bare attribute (`<hw-inline wrap>`) means true, and an
+unset input writes nothing.
+
+The host element is the layout box. `hw-container`, `hw-stack`, `hw-inline`,
+`hw-grid`, `hw-columns`, `hw-sidebar`, `hw-center`, `hw-spacer`,
+`hw-aspect-ratio`, `hw-section` and `hw-app-shell` carry their `hw-` class and
+the layout custom properties themselves, and their template is the projected
+content alone: there is no inner `div`. `class`, `id`, `style`, `aria-*` and
+`data-*` (`data-variant` on Container, `data-fit` on AspectRatio, `data-tone`
+on Section) written on the element therefore sit on the element the stylesheet
+styles, and the projected elements are the direct children of the flex or grid
+box. PageHeader is the exception: its host wraps `<header class="hw-page-header">`,
+because a host cannot be a `header` element.
+
+Each primitive whose attribute name is free also matches a native element, which
+then is the box and keeps its tag: `hwContainer`, `hwStack`, `hwInline`,
+`hwGrid`, `hwColumns`, `hwCenter`, `hwAspectRatio` and `hwSection`. Sidebar,
+Spacer, AppShell and PageHeader have the element selector only.
+
+```html
+<ul hwStack [gap]="2"><li>الأول</li><li>الثاني</li></ul>
+<section hwSection label="ملخص الطلب" [padding]="4">…</section>
+```
 
 - Container: `maxWidth`.
 - Grid/Columns: `columns`, `minItemWidth` (adaptive auto-fit).
 - Sidebar: `sidebarWidth`, `side: start/end`, `collapseAt: sm/md/lg`; project
-  `[hwSidebar]` and main content. The main pane follows in DOM reading order.
+  one element marked `[hwSidebar]` and one content element. They are the two
+  children of the host grid, the sidebar first whatever the source order; no
+  `aside` and no `div` is added, so use the element that fits (`nav`, `aside`).
 - AspectRatio: numeric `ratio`, default 16/9. Spacer is decorative.
-- Section: optional accessible `label`.
+- Section: optional accessible `label`, written as `aria-label`. `hw-section`
+  with a label also gets `role="region"`; `<section hwSection label="…">` is a
+  native landmark and gets no role. An `aria-label` or `role` written on the
+  element is kept while `label` is not given.
 - AppShell accepts `mainId`, the required `skipLabel`, `sidebarWidth` and `side`. Project
   `[hwShellHeader]`, `[hwShellSidebar]`, default main content and `[hwShellFooter]`.
   The skip link focuses the main landmark, whose default ID is `main-content`.
-  Omitted regions leave the main area at full width.
+  The children of the host are the skip link, `div.hw-app-shell-header`,
+  `aside.hw-app-shell-sidebar`, `main.hw-app-shell-main` and
+  `div.hw-app-shell-footer`, the same region elements React and Vue render. The
+  shell renders no `header` and no `footer` element: the banner and contentinfo
+  landmarks come from what the application projects (`hw-portal-header`,
+  `hw-portal-footer`, or its own `header` and `footer`). The three projected
+  regions are always rendered, because Angular cannot tell whether content was
+  projected; the stylesheet hides an empty one, so omitted regions leave the
+  main area at full width.
 - PageHeader: `title` (h1), `description`; `[hwBreadcrumb]` and default actions.
 
 ```html
@@ -379,6 +425,25 @@ Breakpoints live in CSS (40/48/64/80rem), so server/client layout markup matches
   <hw-portal-footer hwShellFooter brand="بوابة الخدمات" externalLabel="يفتح في نافذة جديدة" />
 </hw-app-shell>
 ```
+
+Migration to 0.3.0. The layout markup changed, so review CSS and tests that
+depended on the wrappers:
+
+- `hw-stack > .hw-stack` (and the same for Container, Inline, Grid, Columns,
+  Sidebar, Center, AspectRatio, Section and AppShell) no longer exists: select
+  `.hw-stack`, which is now the host. A rule that styled the host as a plain
+  inline wrapper now styles the box.
+- `hw-section` no longer renders a `section` element. With `label` the host is a
+  region; use `<section hwSection>` where a `section` element is wanted.
+- `hw-sidebar` no longer wraps the two panes in `aside` and `div`.
+- `hw-app-shell` renders `div.hw-app-shell-header` and `div.hw-app-shell-footer`
+  where it rendered `header` and `footer`, so a projected `header` is the
+  banner instead of sitting inside one. Its skip link is a child of the host.
+- `@hawiyah/styles` makes `hw-container`, `hw-section`, `hw-aspect-ratio`,
+  `hw-page-header` and `hw-alert` blocks and `hw-card` and `hw-service-card`
+  grids, with zero specificity, so a card fills its grid row.
+- NavigationDrawer groups no longer all start closed: the group that holds the
+  current page is open.
 
 TextField additionally supports text/email/password/tel/url/search, native
 number/range/color, and date/datetime-local/month/week/time. Its value remains a
@@ -414,7 +479,9 @@ complete portal shell with responsive navigation and footer. Its text, language
 and direction are supplied by the application. `hw-portal-layout` requires
 `skipLabel`, `menuLabel`, `navigationLabel` and `externalLabel` in every use,
 `secondaryLabel` with `secondaryNavigation`, `breadcrumbLabel` with `breadcrumbs`
-and `footerLabel` with `footerLinks`.
+and `footerLabel` with `footerLinks`. `hw-portal-header` and `hw-portal-layout`
+project an optional `[hwPortalNotice]` above the brand row; the actions container
+is `div.hw-portal-header-actions` (it replaces `hw-portal-actions`).
 Run the Angular example with `?preview=portal` to use the native composed shell.
 
 ## NIC card composition
@@ -478,6 +545,151 @@ Readonly inputs remain searchable but cannot edit/clear/select suggestions;
 disabled inputs cannot search. Blur, outside press, reset and changed suggestion
 configuration clear active-option state. No remote search service is called.
 
+### Copy button
+
+`HwCopyButtonComponent` (`hw-copy-button`) copies a value the page already shows.
+Place the button beside the visible value, so the reader sees what was copied.
+
+```html
+<!-- Add HwCopyButtonComponent to the host component's imports. -->
+<code class="hw-code">pnpm add @hawiyah/angular</code>
+<hw-copy-button text="pnpm add @hawiyah/angular" label="نسخ الأمر"
+  copiedMessage="تم النسخ" failedMessage="تعذّر النسخ. حدّد النص وانسخه يدويًا."
+  (copyResult)="onCopy($event)" />
+```
+
+| Input | Type and default | Notes |
+| --- | --- | --- |
+| `text` | `string \| (() => string)`, required | The value to copy, written as given (no trimming). A function is called when the reader activates the button and never before. |
+| `label` | `string`, required text | The accessible name (`aria-label`) in the icon display and the visible text in the text display. It is the same in every state. |
+| `copiedMessage` | `string`, required text | Status text after a successful copy. |
+| `failedMessage` | `string`, required text | Status text after any failure. |
+| `display` | `'icon' \| 'text'`, `'icon'` | The text display shows the icon followed by `label`. |
+| `variant` | the Button variants, `'ghost'` | Written to `data-variant`. |
+| `size` | `'sm' \| 'md' \| 'lg'`, `'md'` | Written to `data-size`. |
+| `feedbackDuration` | `number`, `3000` | Milliseconds the copied state lasts. A value that is not a finite number above zero means 3000. |
+| `disabled` | `boolean`, `false` | The native `disabled` attribute. |
+
+The application supplies three texts: `label`, `copiedMessage` and
+`failedMessage`. All three are checked on every render, so a missing failure
+message is reported in development before a copy ever fails. A missing one
+renders nothing in its place (no `aria-label`, no label text, an empty status)
+and the control keeps working.
+
+The host `hw-copy-button` is the root: it carries `class="hw-copy"` and
+`data-state` (`idle`, `copied`, `failed`), and holds a native
+`<button type="button">` and a `<span class="hw-copy-message" role="status"
+aria-live="polite" aria-atomic="true">`. Activation is the native click (pointer,
+Enter or Space) and focus stays on the button. The icon follows the state
+(`copy-01`, `tick-02`, `alert-02`). After a success the status holds
+`copiedMessage` for `feedbackDuration`, visually hidden; after a failure it holds
+`failedMessage` as visible text until the next activation. An activation first
+empties the status, so a repeated message is announced again. `focus()` focuses
+the button. No attribute is forwarded to the button; `class` and `style` on
+`hw-copy-button` apply to the root.
+
+`(copyResult)` emits `CopyResult`, `{ status, text }`, once per activation whose
+result still counts (a later activation overtakes an earlier one; nothing is
+emitted after the component is destroyed). `status` is a `CopyStatus`:
+`copied`; `denied` (the browser refused permission); `unavailable` (no
+asynchronous Clipboard API: an insecure context or an old browser); `failed`
+(any other rejection); `empty` (the text was not a string or only white space,
+and nothing was written). When the status is not `copied`, the application may
+offer manual copying, for example by selecting the visible value. The clipboard
+is never read, nothing is written on render or hydration, and there is no
+`document.execCommand` fallback.
+
+### Side navigation
+
+`HwSideNavigationComponent` (`hw-side-navigation`, or `nav[hwSideNavigation]`)
+renders the page list of NavigationDrawer in the page: native links and native
+`details` groups, with no script behaviour of its own.
+
+```html
+<!-- Add HwSideNavigationComponent and HwNavigationDrawerComponent to the imports. -->
+<hw-side-navigation label="صفحات الدليل" sticky [items]="pages" />
+<hw-navigation-drawer title="القائمة" navigationLabel="صفحات الدليل" closeLabel="إغلاق القائمة"
+  [items]="pages" [(open)]="menuOpen" />
+```
+
+```ts
+pages: HwNavigationDrawerItem[] = [
+  { id: 'start', label: 'البدء', href: '/start', icon: 'home-01' },
+  { id: 'components', label: 'المكوّنات', expanded: true, children: [
+    { id: 'button', label: 'الزر', href: '/components/button', current: true },
+  ] },
+];
+```
+
+- `items` (required): `HwNavigationDrawerItem[]`, `{ id, label, href?, icon?,
+  current?, disabled?, expanded?, children? }`. `HwSideNavigationItem` is the same
+  type, so one array feeds the side navigation on wide screens and
+  NavigationDrawer on phones. A disabled entry is text with
+  `aria-disabled="true"` and its children are not rendered; an entry with
+  children is a group; an entry with `href` is a link; anything else is text. A
+  group with its own `href` repeats itself as the first link inside, because a
+  `summary` cannot also be a link.
+- `label` (required text): the accessible name of the navigation landmark. A
+  missing one leaves the landmark without `aria-label`.
+- `sticky` (false): writes `data-sticky="true"`. From 64rem the navigation
+  stays in view and scrolls inside its own box. Place it with
+  `--hw-side-navigation-top` (the distance from the top, for example the height
+  of a header above it) and `--hw-side-navigation-bottom-reserve`.
+
+The application marks the current page through `items` (`current: true`) on
+each route change; the link then carries `aria-current="page"`. A group is open
+when `expanded` is true or when a link inside it is the current page, on the
+server as well. The `open` attribute is written again only when that computed
+value changes, so a group the reader opened or closed stays as it is. In the
+browser, after the first render and whenever the current page changes, the
+current link is brought into view inside the navigation's own scroll box; the
+page does not scroll and focus does not move.
+
+The host element is the landmark and carries
+`class="hw-side-navigation hw-navigation-drawer-nav"`, because a sticky box must
+be the child of the application's column. `hw-side-navigation` gets
+`role="navigation"`; `<nav hwSideNavigation>` needs no role. There are no
+outputs: entries are links. For client-side routing see the next section.
+
+### Client-side routing
+
+Packaged links are plain `<a href>` elements, so pages work without script and
+"open in a new tab" keeps working. An application with a router binds one
+delegated listener with `bindLinkNavigation` from `@hawiyah/core` in its root
+component:
+
+```ts
+import { afterNextRender, Component, DestroyRef, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { bindLinkNavigation } from '@hawiyah/core';
+
+@Component({ /* ... */ })
+export class App {
+  constructor() {
+    const router = inject(Router), destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const links = bindLinkNavigation(document, { navigate: ({ path }) => { void router.navigateByUrl(path); } });
+      destroyRef.onDestroy(() => links.destroy());
+    });
+  }
+}
+```
+
+With `<base href="/hawiyah/">` the `path` is already relative to it; without a
+`base` element pass `base` when the router is mounted below the root. The
+helper is called by the application, not by components, and is imported from
+`@hawiyah/core`: the Angular package does not re-export it.
+
+Left to the browser: a click with a modifier key or another button, a click
+whose default something already prevented, links to another origin or outside
+the base path, links with `download`, a `target` other than `_self` or
+`rel="external"`, disabled, inert or editable links, in-page fragment links,
+and any click for which `navigate` returns `false`. No packaged component
+prevents a plain navigation of its own links, and NavigationDrawer closes after
+a click the router took. Focus after navigation, route announcements, scroll
+restoration and `aria-current` (through `items`, `links` and `current`) remain
+the application's.
+
 ### Content navigation
 
 `HwContentNavigationComponent` (`hw-content-navigation`) follows application-owned section IDs using nested
@@ -488,7 +700,8 @@ configuration clear active-option state. No remote search service is called.
 link is rendered as `#id` and keeps resolving to the current document under a
 `<base href>`. Ordinary activation scrolls without changing the URL, unless
 `updateHash` asks for `history.replaceState`; keyboard activation also focuses
-the target. Modified anchor clicks retain browser behavior, and a link whose
+the target. An activation reports one change: the marker does not step through
+the sections a smooth scroll passes. Modified anchor clicks retain browser behavior, and a link whose
 target is not in the document is left to the browser. Disabled entries
 remain noninteractive text links; no section content is created or hidden.
 

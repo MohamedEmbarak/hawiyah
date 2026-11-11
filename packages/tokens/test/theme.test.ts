@@ -69,4 +69,18 @@ describe('DGA default and explicit legacy theme contracts', () => {
     expect(values['--hw-duration-input']).toBe('500ms');
     expect(values['--hw-ease-input']).toBe('ease');
   });
+  it('exports code colours as aliases that follow their targets through themes, modes and overrides', () => {
+    const roles = ['surface', 'text', 'border', 'comment', 'punctuation', 'keyword', 'property', 'string', 'constant', 'attribute', 'tag', 'type', 'function'];
+    for (const theme of ['dga', 'hawiyah', 'custom'] as const) for (const mode of ['light', 'dark'] as const) {
+      const values = createThemeVariables({}, {theme, mode}) as Record<string, string>;
+      for (const role of roles) {
+        const target = /^var\((--hw-color-[a-z-]+)\)$/.exec(values[`--hw-color-code-${role}`])?.[1];
+        expect(target, `${theme} ${mode} ${role}`).toBeDefined();
+        expect(values[target!], `${theme} ${mode} ${role}`).toMatch(/^#[\da-f]{6}$/i);
+      }
+    }
+    expect(roles.every(role => (cssVariableNames as readonly string[]).includes(`--hw-color-code-${role}`))).toBe(true);
+    expect((tokens.color as Record<string, string>)['code-keyword']).toBe('var(--hw-color-info)');
+    expect(tokens.font.mono.split(',').slice(0, 2).map(family => family.trim())).toEqual(['"IBM Plex Mono"', '"Hawiyah Code Arabic"']);
+  });
 });

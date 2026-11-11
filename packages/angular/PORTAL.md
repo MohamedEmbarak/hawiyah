@@ -70,13 +70,36 @@ application's `HwIdSource` when omitted, identically on the server and during
 hydration; pass explicit values when markup or tests depend on them.
 
 Content projection: `[hwBrand]` for brand artwork in the header, `[hwFooterBrand]`
-for brand artwork in the footer, `[hwPortalActions]` for header actions, `[hwPortalFooter]` for additional footer content, default for
-main page content. `HwSecondaryNavComponent` is independently available with
+for brand artwork in the footer, `[hwPortalNotice]` for a notice above the brand row, `[hwPortalActions]` for header actions, `[hwPortalFooter]` for additional footer content, default for
+main page content.
+
+The notice is application content, for example a beta or maintenance message. It
+has no text input, no role and no `aria-` attribute of its own:
+
+```html
+<hw-portal-layout brand="هوية" skipLabel="انتقل إلى المحتوى" menuLabel="القائمة"
+  navigationLabel="التنقل الرئيسي" externalLabel="يفتح في نافذة جديدة" [links]="links">
+  <p hwPortalNotice>هذه نسخة تجريبية من الخدمة.</p>
+  <button hwPortalActions hwButton variant="ghost" type="button">تسجيل الدخول</button>
+  <h1>الخدمات</h1>
+</hw-portal-layout>
+```
+
+Inside `header.hw-portal-header` the order is: the skip link (when `mainId` is
+set), `div.hw-portal-notice`, the brand, the menu toggle, the navigation and
+`div.hw-portal-header-actions`. Focusable content of the notice is reached
+before the brand. Angular cannot tell whether content was projected, so both
+containers are always rendered and `@hawiyah/styles` hides an empty one. The
+actions container has one class in every adapter, `hw-portal-header-actions`;
+it replaces `hw-portal-actions`, which the stylesheet still styles for one
+release. The header is not sticky, and its actions may wrap onto a second row
+on a narrow screen. `HwSecondaryNavComponent` is independently available with
 `items` and the required `label`. It uses ordinary links with `aria-current`, not tab/menu roles.
 
 Standalone `HwPortalHeaderComponent` requires `menuLabel` and `navigationLabel`,
 takes the same `brand`, `brandLabel` and `homeHref`, and renders its skip link
-only when `mainId` names a target, which then needs `skipLabel`. Standalone
+only when `mainId` names a target, which then needs `skipLabel`. It projects
+`[hwBrand]`, `[hwPortalNotice]` and, as its default content, the actions. Standalone
 `HwPortalFooterComponent` requires `externalLabel`; `navigationLabel`,
 `legalLinksLabel` and `supportLabel` are required with `links`, `legalLinks` and
 projected `[hwFooterSupport]` content, and its support section is shown only for

@@ -88,7 +88,7 @@ core `requireText` warns once per component and prop in development
 `label` on a component names its root; an `aria-label` or `aria-labelledby`
 passed to the root satisfies it. Such root names (`AvatarGroup`, `Breadcrumb`,
 `Calendar`, `Carousel`, `ContentNavigation`, `NotificationList`, `Pagination`,
-`SecondaryNav`, `Spinner`, `Stepper`, `Timeline`, `ToastRegion`, `TreeView`, and
+`SecondaryNav`, `SideNavigation`, `Spinner`, `Stepper`, `Timeline`, `ToastRegion`, `TreeView`, and
 the field label of `DatePicker`, `FileDropzone` and `SearchField`) are declared without
 `required: true` and checked at render: `requireText` warns only when `label`,
 `aria-label`, `aria-labelledby` and (for fields) a parent `Field` label are all
@@ -261,7 +261,7 @@ endorsement or a claim about religious moon-sighting determinations.
 
 | Component     | Contract                                                                                                                                                                                                                                                                               |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ToggleGroup` | `options`, `label`, `variant: segmented\|outline`; string `v-model` uses native radio selection; `multiple` uses string-array `v-model` and pressed buttons; `defaultValue`, native `name`/`form`, `disabled`, `readonly`                                                              |
+| `ToggleGroup` | `options`, `label`, `variant: segmented\|outline`; string `v-model` uses native radio selection; `multiple` uses string-array `v-model` and pressed buttons; `defaultValue`, native `name`/`form`, `disabled`, `readonly`; `labelHidden` hides the legend visually (`hw-label hw-sr-only`) while it stays the group's accessible name: use it only where the option texts make the purpose visible, as in a toolbar                                                              |
 | `Popover`     | `label`, `triggerLabel`, `v-model:open` / `defaultOpen`, `disabled`; optional trigger content slot; default slot `{close}`; labelled region, ordinary Tab navigation, outside press and Escape dismissal                                                                               |
 | `Menu`        | `label`, `items: {value,label,disabled?,href?}[]`; optional trigger content slot; emits `select(value)`; Home/End/ArrowUp/ArrowDown skip disabled items, Escape returns focus, Tab exits normally                                                                                      |
 | `Drawer`      | Dialog API (required `title` and `closeLabel`) with `side: start\|end\|bottom`; modal native dialog and preserved trigger focus; default/footer/trigger scoped slots inherited                                                                                                                                             |
@@ -290,7 +290,7 @@ caller-owned: update the supplied message array in response to the emitted ID.
 | `DataTable`        | `caption`, `rows: Record<string,unknown>[]`, `columns: {key,label,sortable?,rowHeader?}[]`, `rowKey`, required `locale` (sorts text with `sortRows`; without it the rows keep their source order) and `emptyMessage`; `v-model:sort-key`, `v-model:sort-direction`, initial `defaultSortKey` / `defaultSortDirection`; optional `getSortLabel(column,nextDirection)` (without it a sort button is named by the column label and `aria-sort` carries the state); `cell:key` slots receive `{row,index}` |
 | `ServiceCard`      | `title`, `description`, `href`, `actionLabel` (required when `href` is set and no `action` slot is given), `badge`, `metadata`; `icon`, default and `action` slots                                                                                                                                                                                     |
 | `ServiceDetails`   | `title`, `description`, DescriptionList `items`; default and `action` slots                                                                                                                                                                                                                |
-| `PortalHeader`     | `brand` and/or `brand` slot artwork, `brandLabel`, `homeHref`, `links: {label,href,current?}[]`, required `navigationLabel` and `menuLabel`, `mainId` with `skipLabel`; `brand`, `actions` slots. Optional top-level `groups` contain a label and child links. See [portal layout](PORTAL.md). See [grouped navigation](../../docs/nic-portal-navigation.md). |
+| `PortalHeader`     | `brand` and/or `brand` slot artwork, `brandLabel`, `homeHref`, `links: {label,href,current?}[]`, required `navigationLabel` and `menuLabel`, `mainId` with `skipLabel`; `brand`, `notice` and `actions` slots (the notice renders in `div.hw-portal-notice` between the skip link and the brand; actions in `div.hw-portal-header-actions` after the navigation, which replaces `hw-portal-actions`; each container only when its slot is given). Optional top-level `groups` contain a label and child links. See [portal layout](PORTAL.md). See [grouped navigation](../../docs/nic-portal-navigation.md). |
 | `PortalFooter`     | `brand` and/or `brand` slot, `brandLabel`, `copyright`, `links`, `groups`, `legalLinks`, `description`; required `externalLabel`; `navigationLabel` when `links` are given, `legalLinksLabel` when `legalLinks` are given, `supportLabel` with the `support` slot; default content slot                                                                                                                                                                                                                            |
 | `Feedback`         | Required `label`, `yesLabel`, `noLabel`, `successMessage`; required `commentLabel` and `submitLabel` (the comment field appears once the reader answers); selected answer string `v-model` (`yes`/`no`), `defaultValue`, `disabled`, `readonly`; emits `submit({value,comment})`                                                                                            |
 | `CookieConsent`    | `v-model:open`, `defaultOpen=true`, required `title`, `description`, `acceptLabel`, `rejectLabel`; `preferencesLabel` when `@preferences` is bound (the preferences action is rendered only then); `policyHref` renders a policy link after the description, and `policyLabel` is required then; emits `accept`, `reject`, `preferences`; no hidden storage or third-party initialization                                                                            |
@@ -360,7 +360,9 @@ does not simulate these engines or handle provider credentials or transactions.
 | Component          | API |
 | ------------------ | --- |
 | `MobileTopBar`     | Required `title`; `subtitle`, `variant="main|internal"`, `headingLevel` (1); `backHref` with `backLabel` (required when `backHref` is set); `leading`, `title`, `subtitle`, `actions` slots |
-| `NavigationDrawer` | Drawer API: `v-model:open`, `defaultOpen`, `closeOnBackdrop`, `side="start|end"`, `description`; required `title`, `items`, `navigationLabel` and `closeLabel`; `trigger`, `user` and `footer` slots |
+| `NavigationDrawer` | Drawer API: `v-model:open`, `defaultOpen`, `closeOnBackdrop`, `side="start|end"`, `description`; required `title`, `items`, `navigationLabel` and `closeLabel`; `trigger`, `user` and `footer` slots. Items `{id, label, href?, icon?, current?, disabled?, expanded?, children?}`: the group that holds the current page, or has `expanded: true`, is rendered open (the reader's own toggles stand until that value changes). A link click closes the drawer unless it was prevented, or when core `bindLinkNavigation` handed it to the router |
+| `SideNavigation`   | Required `items` (the `NavigationDrawer` item model; `SideNavigationItem` is the same type) and `label` (or `aria-label` / `aria-labelledby`); `sticky` (false). See [side navigation](#side-navigation) |
+| `CopyButton`       | Required `text` (string or function read at activation), `label`, `copiedMessage` and `failedMessage`; `display="icon\|text"` (icon), `variant` (ghost), `size` (md), `feedbackDuration` (3000), `disabled`; emits `copyResult({status, text})`. See [copy button](#copy-button) |
 | `SiteVerification` | `v-model:open`, `defaultOpen`; required `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel`, `httpsDescription`; `domain`; `registrationHref` with `registrationNumber` and `registrationLabel` (required when `registrationHref` is set) and `externalLabel` (required when `registrationExternal`, default on, applies); `mark` and default slots |
 | `FileUploadList`   | `items`, `disabled`, `removable`; required `labels` (core `FileUploadLabels`: `selected`, `uploading`, `complete`, `error`, `remove`, `getProgressLabel(name)`, `getRemoveLabel(name)`); emits `remove(id)` |
 
@@ -450,3 +452,104 @@ const sections = [{id: 'requirements', label: 'المتطلبات'}];
   <section id="requirements"><h2>المتطلبات</h2></section>
 </template>
 ```
+Each activation reports one change: the marker does not step through the
+sections a smooth scroll passes, and stays on the target the reader chose.
+
+### Copy button
+
+`CopyButton` copies a value with the asynchronous Clipboard API (core
+`createCopyFeedback`); it never reads the clipboard and has no `execCommand`
+fallback. Place it beside the visible value it copies.
+
+```vue
+<script setup>
+import {CopyButton} from '@hawiyah/vue';
+const command = 'pnpm add @hawiyah/vue';
+function onCopyResult({status}) { if (status !== 'copied') showManualCopy(); }
+</script>
+<template>
+  <code>{{ command }}</code>
+  <CopyButton :text="command" label="نسخ الأمر" copied-message="تم النسخ"
+    failed-message="تعذر النسخ، حدد النص وانسخه يدويا" @copy-result="onCopyResult" />
+</template>
+```
+
+| Prop | Contract |
+| ---- | -------- |
+| `text` | Required. A string, or a function called at activation and never before. Written unchanged (no trimming); an empty or white-space value is the `empty` outcome |
+| `label` | Required text. The constant accessible name (`aria-label` in the icon display) and the visible text in the text display; it never changes with the state |
+| `copiedMessage` | Required text. Status text after a successful copy |
+| `failedMessage` | Required text. Status text after any failure (`denied`, `unavailable`, `failed`, `empty`), shown visibly until the next activation |
+| `display` | `'icon'` (default) or `'text'` |
+| `variant`, `size` | Button variants (default `ghost`) and `sm\|md\|lg` (default `md`) |
+| `feedbackDuration` | Milliseconds the copied state lasts (3000; a value that is not a finite number above zero means 3000) |
+| `disabled` | Native `disabled` on the button |
+
+The three texts are checked on every render, so a missing message warns before a
+copy ever fails; a missing one renders nothing in its place. The root
+`span.hw-copy` carries `data-state="idle|copied|failed"`, the icon follows the
+state (`copy-01`, `tick-02`, `alert-02`) and `span.hw-copy-message`
+(`role="status"`) holds the message. Each activation first returns to idle, so a
+repeated message is announced again. `copyResult` fires once per activation that
+still counts, with core `CopyResult` `{status, text}` (`CopyStatus` and
+`CopyResult` are exported as types); a later activation overtakes an earlier one,
+and a result after unmount is ignored. When the status is not `copied` the
+application may offer manual copying, for example by selecting the value. `class`
+and `style` go to the root; other attributes and listeners go to the button, and
+the exposed `focus()` focuses it. Focus never moves.
+
+### Side navigation
+
+`SideNavigation` renders the `NavigationDrawer` list in a page column: a
+`nav.hw-side-navigation.hw-navigation-drawer-nav` with native links and native
+`details` groups, and no script beyond revealing the current link. Feed the same
+array to `NavigationDrawer` for phones, and mark the current page through
+`current` on each route change.
+
+```vue
+<script setup>
+import {NavigationDrawer, SideNavigation} from '@hawiyah/vue';
+const items = [
+  {id: 'start', label: 'البدء', href: '/start'},
+  {id: 'components', label: 'المكونات', children: [{id: 'button', label: 'الزر', href: '/components/button', current: true}]},
+];
+</script>
+<template>
+  <SideNavigation label="أقسام الدليل" :items="items" sticky />
+</template>
+```
+
+Items are `{id, label, href?, icon?, current?, disabled?, expanded?, children?}`.
+A disabled entry is text with `aria-disabled="true"` and its children are not
+rendered; an entry with children is a group; a group with its own `href` repeats
+itself as the first link inside. A group is open when it holds the current page or
+has `expanded: true`; the reader's toggles stand until that value changes. `label`
+(required text, or `aria-label` / `aria-labelledby`) names the landmark. `sticky`
+writes `data-sticky="true"`, which makes the nav sticky from 64rem with its own
+scroll box; `--hw-side-navigation-top` and `--hw-side-navigation-bottom-reserve`
+set its offset and the space kept below it. After mounting and whenever the
+current page changes, the current link is centred inside the nav's own scroll
+box, without animation, without scrolling the page and without moving focus.
+
+## Client-side routing
+
+Packaged links keep their `href`. To route them through Vue Router, bind core
+`bindLinkNavigation` once in the root component:
+
+```js
+import {onBeforeUnmount, onMounted} from 'vue';
+import {useRouter} from 'vue-router';
+import {bindLinkNavigation} from '@hawiyah/core';
+const router = useRouter(); let links;
+onMounted(() => { links = bindLinkNavigation(document, {navigate: ({path}) => { void router.push(path); }}); });
+onBeforeUnmount(() => links?.destroy());
+```
+
+One delegated click listener hands same-origin links inside the base path (the
+`base` option, else a same-origin `<base href>`, else `/`) to `navigate`. Left to
+the browser: modified or non-primary clicks, clicks already prevented, links with
+`target`, `download` or `rel="external"`, disabled, inert or editable links, links
+outside the base path and fragment links to the current document; `navigate`
+returning `false` also leaves the click alone. `NavigationDrawer` closes after a
+routed click. Focus, route announcements, scroll restoration and `aria-current`
+after navigation remain the application's.

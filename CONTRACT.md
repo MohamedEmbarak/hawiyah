@@ -6,7 +6,7 @@ npm only from verified tarballs through scripts/publish-packages.mjs; source
 manifests stay private.
 
 The initial scope below is extended by [EXPANSION.md](EXPANSION.md) and the
-portal/mobile compositions to 83 entries. See [coverage](docs/coverage.md).
+portal/mobile compositions to 85 entries. See [coverage](docs/coverage.md).
 Calendar conversion uses the pinned published reference described in
 [docs/date-calendars.md](docs/date-calendars.md); do not substitute host Intl
 conversion or an arithmetic Hijri fallback for the reference provider.
@@ -43,6 +43,10 @@ required `options.locale` and explicit calendar/numberingSystem/timeZone;
 Hijri conversion.
 `requireText`, `hasText`, `formatTextTemplate` report and format application text;
 `getFragmentHref`, `getFragmentId`, `bindFragmentLink` serve in-page links (both below).
+`copyText`, `createCopyFeedback` (CopyButton); `bindLinkNavigation`,
+`isLinkNavigationHandled` (routed links); `getNavigationItemKind`,
+`getNavigationGroupEntries`, `isNavigationGroupOpen`, `getNavigationCurrentId`,
+`revealNavigationCurrent` (the list NavigationDrawer and SideNavigation share): all below.
 DOM utilities may be invoked by adapters but may not render into framework trees.
 
 ## Text and localisation
@@ -143,6 +147,55 @@ receives focus. The URL fragment is not written unless the application asks for
 it (`updateHash` on ContentNavigation), so hash-routed applications keep their
 route. A skip link is rendered only when its target id is known. Adapters do not
 read the location during server rendering.
+
+## Routed links
+
+Packaged links (Breadcrumb, NavigationDrawer, SideNavigation, SecondaryNav,
+PortalHeader, PortalFooter, Card, ServiceCard, Link) are plain `a[href]` anchors
+in every adapter and stay so: pages work without script, and "open in new tab"
+and "copy link" keep working. No adapter depends on a router. An application with
+a client-side router calls core `bindLinkNavigation(root, {navigate, base?})`
+once, in the browser. It adds one delegated click listener to the root the
+application names, renders nothing and changes no node, which is why a core DOM
+utility may run over framework-owned trees here. It hands over a plain primary
+activation of a same-origin link inside the base path and leaves everything else
+to the browser: a prevented click, a modifier key or another button, `download`,
+a `target` other than `_self`, `rel="external"`, aria-disabled or inert links,
+and links to the current document that only add a fragment, which stay with
+`bindFragmentLink`. `navigate` receives `{url, path, link, event}`; `path` is
+relative to the base path and starts with `/`. Returning `false` leaves the click
+to the browser. A handled click has its default prevented, so a component that
+closes on a link activation "unless it was prevented" (NavigationDrawer) uses
+`!event.defaultPrevented || isLinkNavigationHandled(event)`. No handler on a
+packaged link may return `false`, which Angular treats as `preventDefault()`.
+Focus after navigation, route announcements, scroll restoration and
+`aria-current` remain the application's.
+
+## Copying
+
+`copyText(text)` resolves to `copied | denied | unavailable | failed | empty` and
+never throws. The clipboard is written only inside that call, which an activation
+makes; nothing is written on mount, nothing is ever read from the clipboard, and
+there is no `document.execCommand` fallback. CopyButton keeps its state in
+`createCopyFeedback`: only the latest activation counts, `copied` returns to
+`idle` after `feedbackDuration` (3000 ms), a failure stays until the next
+activation, and a result that arrives after the component is destroyed is
+ignored. The button's accessible name never changes; the outcome is announced by
+a polite status element that exists, empty, from the first render. `label`,
+`copiedMessage` and `failedMessage` are required text with no default.
+
+## Navigation lists
+
+NavigationDrawer and SideNavigation render one list from one item model,
+`{id, label, href?, icon?, current?, disabled?, expanded?, children?}`, with the
+same markup and classes (`hw-navigation-drawer-row`, `-group`, `-label`), so one
+array feeds the page sidebar and the phone drawer. Core decides what must not
+differ: how an entry renders (`getNavigationItemKind`), the entries of a group
+(`getNavigationGroupEntries`) and whether a group is open
+(`isNavigationGroupOpen`: `expanded` is true, or a link inside it is the
+current page). The `open` attribute is rendered on the server and written again
+only when that value changes, so the reader's own toggles stand in between.
+Groups are native `details`; there is no tree role and no roving focus.
 
 ## Vanilla markup
 

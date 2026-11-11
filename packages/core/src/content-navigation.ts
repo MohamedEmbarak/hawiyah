@@ -18,7 +18,9 @@ export interface ContentNavigationObserver {
 }
 
 /** Measures and scrolls existing elements; rendering and current-link attributes belong to adapters.
- * Without layout APIs (a server DOM) nothing is measured and no timer is started. */
+ * Without layout APIs (a server DOM) nothing is measured and no timer is started.
+ * While a scroll that navigate() started is in progress the target stays current and measured
+ * updates wait, so one activation reports one change however many sections the scroll passes. */
 export function observeContentNavigation(options: ContentNavigationOptions): ContentNavigationObserver {
   const { navigation } = options;
   const document = navigation.ownerDocument;
@@ -28,6 +30,17 @@ export function observeContentNavigation(options: ContentNavigationOptions): Con
   let frame: number | undefined;
   let scrollRoot: HTMLElement | null = null;
   let current: string | undefined;
+  // A scroll navigate() started. `top` is where it ends, `distance` how far it still was at the last scroll event.
+  let hold: { id: string; top: number; distance: number } | undefined;
+  // Where that scroll arrived. The target stays current until the position changes.
+  let settled: { id: string; position: number } | undefined;
+  let idle: number | undefined;
+  const takeover = ['wheel', 'touchmove', 'keydown'] as const;
+  const scrollKeys = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
+  // Browsers without scrollend end the hold after a short pause in scroll events; with it the pause is only a safety net.
+  const idleDelay = (confirmed = false) => confirmed || !('onscrollend' in view) ? 150 : 1000;
+  const position = () => scrollRoot?.scrollTop ?? view.scrollY ?? 0;
+  const maxScroll = () => Math.max(0, (scrollRoot?.scrollHeight ?? Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight ?? 0)) - (scrollRoot?.clientHeight ?? view.innerHeight ?? 0));
   const observed = new Set<Element>();
   const focusCleanups = new Map<HTMLElement, () => void>();
   const offset = () => { const value = options.offset(); return Number.isFinite(value) ? Math.max(0, value) : 80; };
@@ -78,12 +91,39 @@ export function observeContentNavigation(options: ContentNavigationOptions): Con
     if (current !== id) { current = id; options.onCurrentChange(id); }
     if (id) ensureLinkVisible(id, smooth);
   };
+  const clearIdle = () => { if (idle !== undefined) { view.clearTimeout(idle); idle = undefined; } };
+  const endHold = () => {
+    if (!hold) return;
+    hold = undefined; clearIdle();
+    for (const type of takeover) view.removeEventListener(type, onTakeover, true);
+  };
+  /** Ends the hold and measures. A scroll that arrived keeps its target until the position
+   * changes; one that stopped short, or that the reader took over, shows what is measured. */
+  const release = () => {
+    if (!hold) return;
+    settled = Math.abs(position() - hold.top) <= 1 ? { id: hold.id, position: position() } : undefined;
+    endHold(); refresh();
+  };
+  const armIdle = (confirmed = false) => { clearIdle(); idle = view.setTimeout(() => { idle = undefined; release(); }, idleDelay(confirmed)); };
+  function onTakeover(event: Event) { if (event.type !== 'keydown' || scrollKeys.has((event as KeyboardEvent).key)) release(); }
+  function onScroll() {
+    if (hold) {
+      const distance = Math.abs(position() - hold.top);
+      // Arrived, or moving away from the target: the reader dragged the scrollbar or another script scrolled.
+      if (distance <= 1 || distance > hold.distance + 2) release();
+      else { hold.distance = distance; armIdle(); }
+    }
+    refresh();
+  }
+  // A scrollend short of the target can belong to a scroll this one replaced: wait briefly for more movement.
+  function onScrollEnd() { if (!hold) return; if (Math.abs(position() - hold.top) <= 1) release(); else armIdle(true); }
   const bindRoot = () => {
     const next = options.getScrollRoot();
     if (next === scrollRoot) return;
-    scrollRoot?.removeEventListener('scroll', refresh);
+    endHold(); settled = undefined;
+    scrollRoot?.removeEventListener('scroll', onScroll); scrollRoot?.removeEventListener('scrollend', onScrollEnd);
     scrollRoot = next;
-    scrollRoot?.addEventListener('scroll', refresh, { passive: true });
+    scrollRoot?.addEventListener('scroll', onScroll, { passive: true }); scrollRoot?.addEventListener('scrollend', onScrollEnd);
   };
   const syncObserved = (elements: readonly HTMLElement[]) => {
     const next = new Set<Element>([navigation, ...(scrollRoot ? [scrollRoot] : []), ...elements]);
@@ -96,14 +136,16 @@ export function observeContentNavigation(options: ContentNavigationOptions): Con
     bindRoot();
     const entries = targets();
     syncObserved(entries.map(item => item.element));
-    if (!entries.length) { updateCurrent(''); return; }
+    if (hold) { if (entries.some(item => item.id === hold!.id)) return; endHold(); }
+    if (!entries.length) { settled = undefined; updateCurrent(''); return; }
+    if (settled) {
+      if (Math.abs(position() - settled.position) <= 1 && entries.some(item => item.id === settled!.id)) { updateCurrent(settled.id); return; }
+      settled = undefined;
+    }
     const positioned = entries.map(item => ({...item, top: item.element.getBoundingClientRect().top})).sort((a,b) => a.top - b.top);
     const viewportTop = scrollRoot ? scrollRoot.getBoundingClientRect().top + scrollRoot.clientTop : 0;
-    const viewportHeight = scrollRoot?.clientHeight ?? view?.innerHeight ?? 0;
-    const position = scrollRoot?.scrollTop ?? view?.scrollY ?? 0;
-    const height = scrollRoot?.scrollHeight ?? Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight ?? 0);
-    const maxScroll = Math.max(0, height - viewportHeight);
-    const atBottom = maxScroll > 0 && position >= maxScroll - 1;
+    const limit = maxScroll();
+    const atBottom = limit > 0 && position() >= limit - 1;
     const threshold = viewportTop + offset() + 20;
     const passed = positioned.filter(item => item.top <= threshold);
     const active = atBottom ? positioned[positioned.length - 1]! : passed[passed.length - 1] ?? positioned[0]!;
@@ -116,7 +158,7 @@ export function observeContentNavigation(options: ContentNavigationOptions): Con
   const resize = view?.ResizeObserver ? new view.ResizeObserver(refresh) : undefined;
   const mutation = view?.MutationObserver ? new view.MutationObserver(refresh) : undefined;
   mutation?.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['id', 'hidden', 'inert', 'open', 'class', 'style', 'disabled', 'aria-disabled'] });
-  view?.addEventListener('scroll', refresh, { passive: true });
+  view?.addEventListener('scroll', onScroll, { passive: true }); view?.addEventListener('scrollend', onScrollEnd);
   view?.addEventListener('resize', refresh);
   const fonts = document.fonts;
   fonts?.addEventListener('loadingdone', refresh);
@@ -140,11 +182,19 @@ export function observeContentNavigation(options: ContentNavigationOptions): Con
       const target = targets().find(item => item.id === id)?.element;
       if (!target) return false;
       const viewportTop = scrollRoot ? scrollRoot.getBoundingClientRect().top + scrollRoot.clientTop : 0;
-      const position = scrollRoot?.scrollTop ?? view?.scrollY ?? 0;
-      const top = Math.max(0, target.getBoundingClientRect().top - viewportTop + position - offset());
+      const top = Math.max(0, target.getBoundingClientRect().top - viewportTop + position() - offset());
+      endHold(); settled = undefined;
       if (scrollRoot) scrollRoot.scrollTo?.({ top, behavior: scrollBehavior(true) });
       else view?.scrollTo({ top, behavior: scrollBehavior(true) });
       if (focus) focusTarget(target);
+      // The scroll ends at the target or at the end of the scroll range, whichever comes first.
+      const end = Math.min(top, maxScroll()), distance = Math.abs(position() - end);
+      if (distance <= 1) settled = { id, position: position() };
+      else {
+        hold = { id, top: end, distance };
+        for (const type of takeover) view.addEventListener(type, onTakeover, { capture: true, passive: true });
+        armIdle();
+      }
       updateCurrent(id, true);
       return true;
     },
@@ -154,8 +204,9 @@ export function observeContentNavigation(options: ContentNavigationOptions): Con
       if (frame !== undefined) {
         if (view?.cancelAnimationFrame) view.cancelAnimationFrame(frame); else view?.clearTimeout(frame);
       }
-      scrollRoot?.removeEventListener('scroll', refresh);
-      view?.removeEventListener('scroll', refresh); view?.removeEventListener('resize', refresh);
+      endHold();
+      scrollRoot?.removeEventListener('scroll', onScroll); scrollRoot?.removeEventListener('scrollend', onScrollEnd);
+      view?.removeEventListener('scroll', onScroll); view?.removeEventListener('scrollend', onScrollEnd); view?.removeEventListener('resize', refresh);
       fonts?.removeEventListener('loadingdone', refresh);
       mutation?.disconnect(); resize?.disconnect(); observed.clear();
       for (const cleanup of [...focusCleanups.values()]) cleanup();

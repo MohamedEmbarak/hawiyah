@@ -3,27 +3,26 @@ import type { PropType, VNodeChild } from 'vue';
 import { Drawer } from './expansion-interactive.js';
 import { needText } from './shared.js';
 
-export interface NavigationDrawerItem {
-  id: string; label: string; href?: string; icon?: string; current?: boolean;
-  disabled?: boolean; children?: readonly NavigationDrawerItem[];
-}
+import { getNavigationGroupEntries, getNavigationItemKind, isLinkNavigationHandled, isNavigationGroupOpen } from '@hawiyah/core';
+import type { NavigationItem } from '@hawiyah/core';
+
+/** One entry of NavigationDrawer and SideNavigation: the fields of core NavigationItem. */
+export interface NavigationDrawerItem extends NavigationItem { children?: readonly NavigationDrawerItem[] }
 function label(item: NavigationDrawerItem): VNodeChild[] {
   return [item.icon && h('span', { class: 'hw-icon', 'data-icon': item.icon, 'aria-hidden': 'true' }), h('span', { class: 'hw-navigation-drawer-label' }, item.label)];
 }
-function groupEntries(item: NavigationDrawerItem): readonly NavigationDrawerItem[] {
-  const children = item.children ?? [];
-  if (!item.href) return children;
-  let id = `${item.id}-page`;
-  while (children.some(child => child.id === id)) id += '-page';
-  return [{ ...item, id, children: undefined }, ...children];
-}
-function entries(items: readonly NavigationDrawerItem[]): VNodeChild {
-  return h('ul', {}, items.map(item => h('li', { key: item.id, 'data-hw-value': item.id }, [
-    item.disabled ? h('span', { class: 'hw-navigation-drawer-row', 'aria-disabled': 'true' }, label(item))
-      : item.children?.length ? h('details', { class: 'hw-navigation-drawer-group' }, [h('summary', { class: 'hw-navigation-drawer-row' }, label(item)), entries(groupEntries(item))])
-        : item.href ? h('a', { class: 'hw-navigation-drawer-row', href: item.href, 'aria-current': item.current ? 'page' : undefined }, label(item))
-          : h('span', { class: 'hw-navigation-drawer-row' }, label(item)),
-  ])));
+/** The list of NavigationDrawer and SideNavigation (internal; not exported from the package entry). A group's open
+ * attribute is the pure isNavigationGroupOpen value: Vue patches it only when that value changes, so the reader's toggles stand. */
+export function navigationList(items: readonly NavigationDrawerItem[]): VNodeChild {
+  return h('ul', {}, items.map(item => {
+    const kind = getNavigationItemKind(item);
+    return h('li', { key: item.id, 'data-hw-value': item.id }, [
+      kind === 'disabled' ? h('span', { class: 'hw-navigation-drawer-row', 'aria-disabled': 'true' }, label(item))
+        : kind === 'group' ? h('details', { class: 'hw-navigation-drawer-group', open: isNavigationGroupOpen(item) }, [h('summary', { class: 'hw-navigation-drawer-row' }, label(item)), navigationList(getNavigationGroupEntries(item))])
+          : kind === 'link' ? h('a', { class: 'hw-navigation-drawer-row', href: item.href, 'aria-current': item.current ? 'page' : undefined }, label(item))
+            : h('span', { class: 'hw-navigation-drawer-row' }, label(item)),
+    ]);
+  }));
 }
 export const NavigationDrawer = defineComponent({
   name: 'HwNavigationDrawer', inheritAttrs: false,
@@ -49,8 +48,8 @@ export const NavigationDrawer = defineComponent({
           const link = (event.target as Element).closest<HTMLAnchorElement>('a[href]');
           if (!link || !(event.currentTarget as Element).contains(link) || link.closest('[aria-disabled="true"], [inert]')) return;
           if (event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
-          queueMicrotask(() => { if (!event.defaultPrevented && link.isConnected) close(); });
-        } }, [entries(props.items)]),
+          queueMicrotask(() => { if ((!event.defaultPrevented || isLinkNavigationHandled(event)) && link.isConnected) close(); });
+        } }, [navigationList(props.items)]),
       ],
     });
   },

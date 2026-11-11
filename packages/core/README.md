@@ -56,6 +56,30 @@ Other shared helpers normalize Arabic digits, clamp two-thumb native ranges, and
 sort records immutably with stable localized comparison. Layout helpers emit CSS
 variables without reading the viewport; responsive behavior stays in CSS.
 
+`copyText(text)` writes to the clipboard when it is called, never before, and
+resolves to `copied`, `denied`, `unavailable`, `failed` or `empty`; it does not
+read the clipboard and does not throw. `createCopyFeedback` is the state behind
+CopyButton: the latest activation wins, the copied state returns to idle after a
+duration and a failure stays until the next activation.
+
+```ts
+import { bindLinkNavigation } from '@hawiyah/core';
+
+// Once, in the browser: packaged links are handed to the application's router.
+const links = bindLinkNavigation(document, { navigate: ({ path }) => { router.navigate(path); } });
+// links.destroy() removes the listener.
+```
+
+`bindLinkNavigation` adds one delegated click listener and renders nothing.
+Links keep their `href`; modified clicks, `target`, `download`,
+`rel="external"`, other origins, links outside the base path and in-page
+fragments stay with the browser. Focus, announcements and scroll restoration
+after a route change remain the application's.
+
+The navigation-list helpers (`getNavigationItemKind`, `getNavigationGroupEntries`,
+`isNavigationGroupOpen`, `getNavigationCurrentId`, `revealNavigationCurrent`)
+hold the rules NavigationDrawer and SideNavigation share. See [API.md](./API.md).
+
 Project code is licensed under Apache-2.0. Bundled third-party data retains its
 documented MIT license. The package is published on npm as a pre-1.0 release, so
 a minor version may still change its API. The framework adapters depend on it;

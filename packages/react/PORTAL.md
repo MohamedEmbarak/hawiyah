@@ -29,6 +29,10 @@ under the `PortalFooter` names: the required `externalLabel`, and `legalLinksLab
 or `supportLabel` with `legalLinks` or `support`. `headerProps` accepts the
 remaining header API (`brandHref`, `navigation`, `navigationId`, `actions`,
 `notice`). `mainId` is generated with React `useId` unless supplied.
+`headerProps.notice` renders in `div.hw-portal-notice`, a direct child of the header
+between the skip link and the brand; it is application content with no role and no
+text requirement. Actions render in `div.hw-portal-header-actions`, which replaces
+`hw-portal-actions`. Each container exists only when its content is given.
 
 `brand` is text, artwork or both and is passed to the header and footer. Supply
 your actual brand SVG as `brand`; no government artwork is inferred. Artwork alone

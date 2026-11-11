@@ -318,7 +318,7 @@ input validation; `unavailableMessage`, required with it, is the custom date val
 
 | Added interaction | API and behavior |
 | --- | --- |
-| `ToggleGroup` | Required label/options, `variant="segmented\|outline"`. Default single selection uses native radios with string value; `multiple` uses pressed buttons with string-array value and repeated hidden form values. Both support defaultValue/onValueChange/name/form/disabled/readOnly. |
+| `ToggleGroup` | Required label/options, `variant="segmented\|outline"`. Default single selection uses native radios with string value; `multiple` uses pressed buttons with string-array value and repeated hidden form values. Both support defaultValue/onValueChange/name/form/disabled/readOnly. `labelHidden` adds `hw-sr-only` to the legend (`class="hw-label hw-sr-only"`): the legend stays first, keeps its text and remains the accessible name, so `label` is still required. Hide it only where the option texts make the purpose visible, such as a toolbar. |
 | `Popover` | Required title/trigger, open/defaultOpen/onOpenChange and region children. Trigger toggles a labelled disclosure; outside press and Escape close. Interactive content uses ordinary Tab. |
 | `Menu` | Required trigger/label and `items: {value,label,disabled?,href?,onSelect?}[]`; open/defaultOpen/onOpenChange and `onAction(value)`. Up/Down/Home/End skip disabled entries; Escape/action return focus. |
 | `Drawer` | Dialog props plus `side="start\|end\|bottom"`; same native modal and focus behavior as Dialog. |
@@ -356,7 +356,7 @@ applies a callback.
 | `DataTable<Row>` | Required caption/rows/columns; columns have key/label/sortable/render/rowHeader. Required `emptyMessage`; required `locale` (collation; no default, `"ar-SA"` gives the order of 0.2; without it rows stay in source order and a warning is logged); optional rowKey, sort/defaultSort/onSortChange, `getSortLabel(column,direction)` (without it the button is named by the column label). Stable immutable localized sorting and native aria-sort headers. |
 | `ServiceCard` | Required title; description/category/icon/metadata, `href` with `actionLabel` or an `action` slot, body children. |
 | `ServiceDetails` | Required title; description/metadata/action and children; `requirements` with the then-required `requirementsLabel`. |
-| `PortalHeader` | Required `brand` (text, artwork or both), `navigationLabel` and `menuLabel`; optional `brandLabel` (accessible name of an artwork-only brand), brandHref/navigation/actions/notice and children; `mainId` adds a skip link and requires `skipLabel`. Navigation items are label/href/current. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
+| `PortalHeader` | Required `brand` (text, artwork or both), `navigationLabel` and `menuLabel`; optional `brandLabel` (accessible name of an artwork-only brand), brandHref/navigation/actions/notice and children (`notice` renders in `div.hw-portal-notice`, the first region after the skip link and before the brand, with no role or text requirement of its own; `actions` render in `div.hw-portal-header-actions`, which replaces `hw-portal-actions`; each container exists only when given); `mainId` adds a skip link and requires `skipLabel`. Navigation items are label/href/current. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
 | `PortalFooter` | Required `externalLabel` (screen-reader text of external links); optional brand/brandLabel/description/legal and children (`brandLabel` is written with `role="group"` on the brand marks, not on the description); `links` require `navigationLabel` (formerly `linksLabel`), `legalLinks` require `legalLinksLabel`, `support` requires `supportLabel`. |
 | `Feedback` | Required question label; value/defaultValue/onValueChange for `{helpful:'yes'\|'no'\|'',comment}` and `onFeedback` on native submit; required `yesLabel`, `noLabel`, `commentLabel`, `submitLabel`, `successMessage`. |
 | `CookieConsent` | Required title/description; value/defaultValue/onValueChange (`accepted`/`rejected`/null), required `acceptLabel`/`rejectLabel`, optional `policyHref` with the then-required `policyLabel`; optional `onPreferences` with the then-required `preferencesLabel`, rendered as the last, ghost button, which calls the handler and leaves the choice and the notice unchanged. Null displays the notice. Persistence and cookie activation belong to the application. |
@@ -443,7 +443,7 @@ The mobile and verification parts of the shell take their texts as props too:
 | Component | Required texts |
 | --- | --- |
 | `MobileTopBar` | `title`; `backLabel` with `backHref` (unless `leading` replaces the back link). |
-| `NavigationDrawer` | `navigationLabel` names the navigation landmark; `closeLabel` names the close button. |
+| `NavigationDrawer` | `navigationLabel` names the navigation landmark; `closeLabel` names the close button. Items are `NavigationDrawerItem` (`id`, `label`, `href?`, `icon?`, `current?`, `disabled?`, `expanded?`, `children?`); the group holding the current page and groups with `expanded: true` render open. The list is the one `SideNavigation` renders. |
 | `SiteVerification` | `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel`, `httpsDescription`; `registrationLabel` with `registrationHref`; `externalLabel` when that link opens in a new window (`registrationExternal`, on by default). No `locale` prop: the application supplies every text. |
 | `FileUploadList` | `labels`: `selected`, `uploading`, `complete`, `error`, `remove`, `getProgressLabel(name)` and `getRemoveLabel(name)`. |
 
@@ -512,6 +512,8 @@ Links render as `#id` on the server and on the first client render; once mounted
 document under a `<base href>`. Skip links in `AppShell`, `PortalHeader` and
 `PortalLayout` are bound the same way. Modified anchor clicks retain browser behavior. Disabled entries
 remain noninteractive text links; no section content is created or hidden.
+An activation reports one change: the marker goes to the chosen section and does
+not step through the sections a smooth scroll passes.
 
 ```tsx
 import {ContentNavigation} from '@hawiyah/react';
@@ -519,3 +521,93 @@ import {ContentNavigation} from '@hawiyah/react';
 <ContentNavigation label="في هذه الصفحة" items={[{id: 'requirements', label: 'المتطلبات'}]} />
 <section id="requirements"><h2>المتطلبات</h2></section>
 ```
+
+### Copy button
+
+`CopyButton` copies a value on activation and reports the outcome in a polite
+status beside the button. Place it beside the visible value it copies.
+
+```tsx
+import {CopyButton} from '@hawiyah/react';
+
+<code id="install">pnpm add @hawiyah/react</code>
+<CopyButton text="pnpm add @hawiyah/react" label="نسخ أمر التثبيت" copiedMessage="تم النسخ" failedMessage="تعذّر النسخ. حدّد النص وانسخه يدويًا." onCopyResult={({status}) => { if (status !== 'copied') selectInstallCommand(); }} />
+```
+
+| Input | Notes |
+| --- | --- |
+| `text` | Required. `string`, or `() => string` called at activation and never before. An empty or white-space value ends in the failed state (`empty`). |
+| `label` | Required text. The constant accessible name (`aria-label` on the icon button), or the visible text after the icon with `display="text"`. It does not change with the state. |
+| `copiedMessage` | Required text. Status text after a successful copy. |
+| `failedMessage` | Required text. Status text after any failure; shown as visible text until the next activation. |
+| `display` | `'icon'` (default) or `'text'`. |
+| `variant`, `size` | The `Button` variants (default `'ghost'`) and sizes (default `'md'`), written to `data-variant` and `data-size`. |
+| `feedbackDuration` | Milliseconds the copied state lasts (3000; any value that is not a finite number above zero means 3000). |
+| `disabled` | The native `disabled` attribute. |
+| `onCopyResult` | `(result: CopyResult) => void`, once per activation that still counts, with `{status, text}`; `status` is `copied`, `denied`, `unavailable`, `failed` or `empty`. |
+
+`className` and `style` go to the root `span.hw-copy` (with `data-state` `idle`,
+`copied` or `failed`); the ref and every other native attribute go to the button.
+An `onClick` is called first and cannot cancel the copy. The icon follows the
+state (`copy-01`, `tick-02`, `alert-02`) and the status (`role="status"`) is
+emptied before each activation, so a repeated result is announced again. Focus
+stays on the button. Only the latest activation reports; a result that arrives
+after unmount is ignored. Nothing reads the clipboard, and nothing touches it
+during render, mount or hydration. The application may offer manual copying
+(for example, select the value) when the status is not `copied`. Missing texts
+render nothing in their place and warn once in development under `CopyButton`.
+
+### Side navigation
+
+`SideNavigation` renders the `NavigationDrawer` list outside a drawer: page
+links and native group disclosures in a `nav.hw-side-navigation`. Feed the same
+array to `NavigationDrawer` for phones.
+
+```tsx
+import {NavigationDrawer, SideNavigation} from '@hawiyah/react';
+import type {SideNavigationItem} from '@hawiyah/react';
+
+const items: SideNavigationItem[] = [
+  {id: 'start', label: 'البدء', href: '/start'},
+  {id: 'components', label: 'المكونات', expanded: true, children: [{id: 'button', label: 'الزر', href: '/components/button', current: true}]},
+];
+<SideNavigation label="أقسام الدليل" items={items} sticky />
+<NavigationDrawer title="القائمة" navigationLabel="أقسام الدليل" closeLabel="إغلاق القائمة" items={items} trigger={<button type="button">القائمة</button>} />
+```
+
+`items` (`SideNavigationItem`, the same type as `NavigationDrawerItem`) are
+required: `id`, `label`, `href?`, `icon?`, `current?`, `disabled?`, `expanded?`,
+`children?`. The required `label` names the landmark; an `aria-label` or
+`aria-labelledby` passed to the component names it instead. `sticky` writes
+`data-sticky="true"`: from 64rem the navigation sticks and scrolls in its own box,
+placed with `--hw-side-navigation-top` and `--hw-side-navigation-bottom-reserve`.
+The application marks the current page through `current` on each route change.
+A group renders open when `expanded` is true or when it holds the current link;
+`open` is written again only when that value changes, so the reader's own toggles
+stand. After mount and whenever the current item changes, the current link is
+scrolled into the centre of the navigation's own box (never the page, never focus).
+There is no click handler, no roving focus and no arrow-key handling: Tab moves
+through summaries and links, and disabled entries are text without a tab stop.
+
+### Client-side routing
+
+Packaged links keep real `href`s. To route them in the application, bind
+`bindLinkNavigation` from `@hawiyah/core` once in the browser:
+
+```tsx
+import {useEffect} from 'react';
+import {bindLinkNavigation} from '@hawiyah/core';
+
+useEffect(() => {
+  const links = bindLinkNavigation(document, {navigate: ({path}) => { navigate(path); }});
+  return () => links.destroy();
+}, [navigate]);
+```
+
+With a router basename and no `<base href>`, pass `base`. The browser keeps
+modified and middle clicks, prevented clicks, `download`, a `target` other than
+`_self`, `rel="external"`, other origins, links outside the base path, and
+fragment links to the current document; `navigate` returning `false` also leaves
+the click to the browser. `NavigationDrawer` closes after a click handed to the
+router. Focus after navigation, route announcements, scroll restoration and
+`current` remain the application's.

@@ -158,6 +158,11 @@ while keeping its controls focusable and its enabled values available to forms.
 Changing that attribute restores editing. `disabled` fieldsets and disabled
 options do not submit values; multiple mode uses `data-hw-name` for repeated
 entries. Use `.hw-toggle-group` with `data-variant="segmented|outline"` for styles.
+`labelHidden` in the framework adapters is authored markup here: write
+`<legend class="hw-label hw-sr-only">` to hide the legend visually. The legend
+stays the first child and the accessible name of the group, and the controller
+leaves it as written. Hide it only where the option texts make the purpose
+visible, as in a toolbar.
 Use `.hw-button-group` with `data-variant="attached"` and optional
 `data-orientation="vertical"` for independent joined actions; it needs no controller.
 
@@ -339,6 +344,9 @@ The navigation is named by its own `aria-label`/`aria-labelledby`, else `label`
 `bindFragmentLink`: on interaction the href resolves to the current document
 under any `<base href>`. The URL fragment is not written unless `updateHash`
 (`data-hw-update-hash="true"`) is set, which writes it with `history.replaceState`.
+An activation reports one change: while the scroll it started is in progress the
+target stays current, so the marker does not step through the sections a smooth
+scroll passes. Wheel, touch or a scrolling key hands the marker back to measurement.
 
 The controller preserves authored list/anchor structure, derives destinations
 from `data-hw-section` or decoded fragment-only hrefs, and marks the current link

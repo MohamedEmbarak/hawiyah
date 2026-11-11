@@ -66,6 +66,10 @@ compiler, or CSS-in-JS runtime.
 | Avatar options | `hw-avatar`; `data-size="40|64|80|120|sm|md|lg|xl"`, `data-variant="circle|square"`; [geometry and theme notes](../../docs/nic-avatars.md) |
 | Workflow | `hw-toolbar`, `hw-chip`, `hw-empty`, `hw-stepper`, `hw-step`, `hw-timeline`, `hw-upload`, `hw-tooltip` |
 | Layout | `hw-stack`, `hw-cluster`, `hw-container`, `hw-sr-only` |
+| Code | `hw-code-block` (`figure`; `data-wrap="true"` wraps lines), `hw-code-block-header`, `hw-code-block-title`, `hw-code-block-actions`, `hw-code-block-content` (`pre`), `hw-code`, `hw-kbd`; syntax roles `hw-code-token-comment`, `-punctuation`, `-keyword`, `-property`, `-string`, `-constant`, `-attribute`, `-tag`, `-type`, `-function`; [contract and accessibility notes](../../docs/code-and-prose.md) |
+| Prose | `hw-prose` on a container styles class-less content inside it and leaves classed elements and their contents alone; [mapping and limits](../../docs/code-and-prose.md#prose) |
+| Text tone | `hw-type` with `data-tone="muted|subtle"` |
+| Portal header actions | `hw-portal-header-actions` in every adapter; shrinks and wraps its controls. The earlier `hw-portal-actions` is still styled for one release |
 
 Defaults are primary/medium buttons, comfortable density, light mode, and the
 DGA reference theme. Select `data-hw-theme="hawiyah"` for the original palette. Use `data-hw-density="compact"` to reduce control and
@@ -110,6 +114,25 @@ New visual recipes should use existing semantic tokens, retain native semantics,
 respect hidden/disabled/invalid states, and be checked in Arabic/English,
 RTL/LTR, light/dark, both densities, keyboard and forced-colors modes. The reset
 stays a separate opt-in entry point.
+
+## Opt-in fonts
+
+`fonts.css` loads IBM Plex Sans Arabic (400, 500, 600, 700) and IBM Plex Mono
+(400), the families the tokens name. It is never part of `styles.css`:
+
+```ts
+import '@hawiyah/styles/fonts.css';
+```
+
+```html
+<link rel="stylesheet" href="/vendor/hawiyah/fonts.css">
+```
+
+The files are IBM's published files, unchanged, under the SIL Open Font License
+1.1; the licence text and a provenance record with file hashes ship in
+`dist/assets/fonts`. The file also gives Arabic text inside code a joined Arabic
+face without making Latin code proportional. Details, sizes and open items:
+[docs/fonts.md](../../docs/fonts.md).
 
 ## Self-contained branding assets
 

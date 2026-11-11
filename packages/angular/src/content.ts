@@ -68,6 +68,7 @@ export interface HwPortalNavItem extends HwLinkItem {
 }
 @Component({selector: 'hw-portal-header', standalone: true, template: `<header class="hw-portal-header">
   @if (mainId) {<a class="hw-skip-link" [attr.href]="fragment(mainId)">{{ texts.need('skipLabel', skipLabel, 'mainId is set') }}</a>}
+  <div class="hw-portal-notice"><ng-content select="[hwPortalNotice]" /></div>
   <a #brandElement class="hw-portal-brand" [attr.href]="homeHref || null" [attr.aria-label]="brandLabel || null"><ng-content select="[hwBrand]" />@if (brand) {<span>{{ brand }}</span>}</a>
   @if (links.length) {
     <button #menuToggle class="hw-button hw-portal-menu-toggle" type="button" [attr.aria-expanded]="menuOpen" [attr.aria-controls]="navigationId" (click)="toggleMenu()"><span class="hw-icon" [attr.data-icon]="menuOpen ? 'cancel-01' : 'menu-01'" aria-hidden="true"></span>{{ texts.need('menuLabel', menuLabel) }}</button>

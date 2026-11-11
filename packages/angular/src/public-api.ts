@@ -11,6 +11,8 @@ export * from './portal';
 export type { CalendarSystem, Responsive, LayoutProps } from '@hawiyah/core';
 export * from './mobile-top-bar';
 export * from './navigation-drawer';
+export * from './side-navigation';
+export * from './copy-button';
 
 export * from './site-verification';
 export * from './content-navigation';

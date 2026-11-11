@@ -5,6 +5,7 @@ import {PasswordField as PasswordFieldBase, SearchField as SearchFieldBase, Numb
 import {Combobox as ComboboxBase} from './interactive.js';
 import {DatePicker as DatePickerBase} from './calendar.js';
 import {NavigationDrawer as NavigationDrawerBase} from './navigation-drawer.js';
+import {CopyButton as CopyButtonBase} from './copy-button.js';
 
 // Vue forwards $attrs at runtime. Describe those native attributes to template
 // checkers without turning them into runtime props or consuming DOM listeners.
@@ -44,3 +45,6 @@ export const Combobox = ComboboxBase as WithNativeAttributes<typeof ComboboxBase
 export const DatePicker = DatePickerBase as WithNativeAttributes<typeof DatePickerBase, Pick<InputHTMLAttributes, 'id' | 'name' | 'form' | 'autocomplete'>>;
 
 export const NavigationDrawer = NavigationDrawerBase as WithNativeAttributes<typeof NavigationDrawerBase, Pick<HTMLAttributes, 'id'>>;
+
+// class and style go to the root span; every other native attribute and listener goes to the button.
+export const CopyButton = CopyButtonBase as WithNativeAttributes<typeof CopyButtonBase, Omit<ButtonHTMLAttributes, 'type' | 'aria-label'>>;

@@ -68,6 +68,44 @@ describe('Angular hydration of server-rendered components', () => {
     });
   }
 
+  it('[cb-server] hydrates the copy button without changing its markup or touching the clipboard, and it then copies', async () => {
+    const clipboard = { writeText: vi.fn(async (_text: string) => {}), readText: vi.fn(), read: vi.fn() };
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: clipboard });
+    try {
+      const page = pages.find(entry => entry.name === 'copy button')!;
+      const server = [...page.html.matchAll(/<hw-copy-button[^>]*>(.*?)<\/hw-copy-button>/g)].map(match => match[1]!.replace(/<!--.*?-->/g, ''));
+      const { host } = await hydrate(scenarios.find(scenario => scenario.name === 'copy button')!);
+      const buttons = [...host.querySelectorAll<HTMLElement>('hw-copy-button')];
+      expect(errors).toEqual([]); expect(buttons.map(button => button.innerHTML.replace(/<!--.*?-->/g, ''))).toEqual(server);
+      expect(buttons.map(button => [button.className, button.getAttribute('data-state'), button.querySelector('.hw-copy-message')!.textContent])).toEqual(Array.from({ length: 3 }, () => ['hw-copy', 'idle', '']));
+      expect(clipboard.writeText).not.toHaveBeenCalled(); expect(clipboard.readText).not.toHaveBeenCalled(); expect(clipboard.read).not.toHaveBeenCalled();
+      buttons[1]!.querySelector('button')!.click(); for (let turn = 0; turn < 12; turn++) await Promise.resolve();
+      expect(clipboard.writeText.mock.calls).toEqual([['pnpm add @hawiyah/angular']]); expect(buttons[1]!.getAttribute('data-state')).toBe('copied'); expect(buttons[1]!.querySelector('.hw-copy-message')!.textContent).toBe('Copied');
+    } finally { delete (navigator as { clipboard?: unknown }).clipboard; }
+  });
+
+  it('[sn-server] hydrates the side navigation in place: the server list, its open groups and the current page stay', async () => {
+    const { host, before } = await hydrate(scenarios.find(scenario => scenario.name === 'side navigation')!);
+    expect(errors).toEqual([]); expect(before.filter(element => !element.isConnected)).toEqual([]);
+    const side = host.querySelector('hw-side-navigation')!, native = host.querySelector('nav[hwSideNavigation]')!;
+    expect(side.getAttribute('role')).toBe('navigation'); expect(native.hasAttribute('role')).toBe(false); expect(side.getAttribute('data-sticky')).toBe('true');
+    expect([...side.querySelectorAll('details')].map(details => details.hasAttribute('open'))).toEqual([true, false, true]);
+    expect([...side.querySelectorAll('[aria-current]')].map(link => link.getAttribute('href'))).toEqual(['https://example.org/guides/install']);
+    expect(side.innerHTML.replace(/<!--.*?-->/g, '')).toBe(native.innerHTML.replace(/<!--.*?-->/g, ''));
+    expect(host.querySelector('hw-toggle-group legend')!.className).toBe('hw-label hw-sr-only');
+  });
+
+  it('[al-server-hydration] hydrates the layout hosts in place, with the class and the custom properties on the host', async () => {
+    const { host, before } = await hydrate(scenarios.find(scenario => scenario.name === 'layout primitives')!);
+    expect(errors).toEqual([]); expect(before.filter(element => !element.isConnected)).toEqual([]);
+    for (const name of ['container', 'stack', 'inline', 'grid', 'columns', 'sidebar', 'center', 'spacer', 'aspect-ratio', 'section', 'app-shell']) { const box = host.querySelector(`hw-${name}`)!; expect(box.classList.contains(`hw-${name}`), name).toBe(true); expect(box.firstElementChild?.classList.contains(`hw-${name}`) ?? false, name).toBe(false); }
+    expect(host.querySelector('hw-page-header > header.hw-page-header h1')!.textContent).toBe('Services');
+    expect((host.querySelector('ul[hwStack]') as HTMLElement).style.getPropertyValue('--hw-layout-gap')).toContain('--hw-space-2'); expect(host.querySelector('section[hwSection]')!.getAttribute('aria-label')).toBe('Native section');
+    expect([...host.querySelector('hw-sidebar')!.children].map(child => child.localName)).toEqual(['nav', 'div']);
+    const shells = [...host.querySelectorAll('hw-app-shell')];
+    expect([...shells[0]!.children].map(child => child.localName)).toEqual(['a', 'div', 'aside', 'main', 'div']); expect(shells[1]!.querySelector('.hw-app-shell-sidebar')!.childElementCount).toBe(0); expect(shells[1]!.getAttribute('data-side')).toBe('end');
+  });
+
   it('keeps hydrated tabs interactive', async () => {
     const { host } = await hydrate(scenarios.find(scenario => scenario.name === 'tabs')!);
     const tabs = [...host.querySelector('hw-tabs')!.querySelectorAll<HTMLButtonElement>('[role="tab"]')];

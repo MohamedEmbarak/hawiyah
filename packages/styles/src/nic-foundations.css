@@ -91,6 +91,10 @@
   --_hw-type-spacing: 0rem;
 }
 
+/* Tone for short secondary text outside prose, such as captions and status lines. */
+.hw-type[data-tone='muted'] { color: var(--hw-color-text-muted); }
+.hw-type[data-tone='subtle'] { color: var(--hw-color-text-subtle); }
+
 .hw-line-clamp {
   display: -webkit-box;
   -webkit-box-orient: vertical;
