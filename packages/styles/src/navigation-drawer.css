@@ -64,8 +64,10 @@
 .hw-navigation-drawer-row .hw-icon { --hw-icon-size: 1rem; }
 :is(a,summary).hw-navigation-drawer-row { cursor: pointer; }
 :is(a,summary).hw-navigation-drawer-row:hover { background: var(--hw-color-surface-muted); }
+/* The current row keeps the text colour: primary-text on surface-muted is 4.32:1 in the default light
+   theme, below WCAG 1.4.3. The marker carries the primary colour as a non-text indicator (3:1). */
 .hw-navigation-drawer-row[aria-current='page'] {
-  color: var(--hw-color-primary-text);
+  color: var(--hw-color-text);
   background: var(--hw-color-surface-muted);
   font-weight: var(--hw-weight-semibold);
 }
@@ -78,7 +80,7 @@
   inline-size: 0.375rem;
   block-size: 2rem;
   border-radius: var(--hw-radius-full);
-  background: currentColor;
+  background: var(--hw-color-primary-text);
 }
 .hw-navigation-drawer-row:focus-visible { outline: 2px solid var(--hw-color-focus); outline-offset: -2px; }
 .hw-navigation-drawer-row[aria-disabled='true'] { color: var(--hw-color-on-disabled); cursor: not-allowed; }
@@ -110,6 +112,7 @@ summary.hw-navigation-drawer-row::after {
   .hw-side-navigation[data-sticky='true'] {
     position: sticky; align-self: start; inset-block-start: var(--hw-side-navigation-top, var(--hw-space-4));
     max-block-size: calc(100dvh - var(--hw-side-navigation-top, var(--hw-space-4)) - var(--hw-side-navigation-bottom-reserve, var(--hw-space-4)));
-    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+    /* overflow-y is the fallback for engines without the logical longhand; both name the block axis here. */
+    overflow-y: auto; overflow-block: auto; overscroll-behavior: contain; scrollbar-width: thin;
   }
 }

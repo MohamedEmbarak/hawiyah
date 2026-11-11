@@ -68,7 +68,10 @@ has a muted background and selector `538:296411` is 6×32px; title
 Hawiyah uses a 327px preferred maximum constrained by viewport width, 16px insets,
 44px minimum row heights, 40px nested leading padding and a 6×32px logical
 leading indicator. Labels wrap and rows grow. Semantic colors preserve dark,
-original Hawiyah and custom themes. Top/bottom/side safe areas are accommodated;
+original Hawiyah and custom themes. The selected row keeps the text colour on the
+muted background, because `primary-text` on `surface-muted` measures 4.32:1 in the
+default light theme, below WCAG 1.4.3; the selector carries the primary colour as a
+non-text indicator. Top/bottom/side safe areas are accommodated;
 the source's fixed 840px height and 80px bottom example padding are not copied.
 The optional user content area does not embed source sample identities or assets.
 

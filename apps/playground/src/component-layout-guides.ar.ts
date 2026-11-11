@@ -309,7 +309,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     lifecycle: ['وفّر عنصرين مباشرين بالضبط: الشريط الجانبي أولًا، ثم المحتوى الرئيسي.', 'تنقل CSS العنصر الأول إلى النهاية المنطقية عند طلب ذلك. ودون collapseAt يعود العنصران إلى ترتيب المستند الأصلي.', 'الترتيب الرأسي لا يخفي التنقل ولا يحوّله إلى درج؛ أضف عنصر إظهار وإخفاء صريحًا إذا احتجت هذا السلوك.', noLayoutController],
     accessibility: ['سمِّ aside أو منطقة التنقل عند الحاجة، واختر ترتيبًا منطقيًا للمصدر قبل إعادة الترتيب البصري.', 'يتبع التركيز بلوحة المفاتيح ترتيب المستند حتى عندما يغيّر side=end الموضع على الحاسوب.'],
     variants: ['عند البداية أو النهاية', 'طيّ عند sm أو md أو lg'],
-    frameworkNotes: 'يستخدم Sidebar في React وVue عنصرين مباشرين. ويسقط hw-sidebar في Angular العنصر السياقي عبر [hwSidebar]، ثم يعرض المحتوى المتبقي بجانبه. تشترك الأطر في side وcollapseAt وsidebarWidth.',
+    frameworkNotes: 'يستخدم Sidebar في React وVue عنصرين مباشرين. أما hw-sidebar في Angular فهو الشبكة نفسها: العنصر الموسوم بـ[hwSidebar] وعنصر المحتوى الواحد هما ابناه المباشران، ولا يضاف عنصر aside. تشترك الأطر في side وcollapseAt وsidebarWidth.',
   }),
   center: localize('center', {
     summary: 'وسّط محتوى موجزًا داخل المساحة المتاحة، باستخدام عمود مرن ونص محاذى إلى الوسط.',
@@ -351,7 +351,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     lifecycle: ['اعرض قسمًا دلاليًا؛ وحشوه الافتراضي يساوي رمز التباعد 6.', 'حدّث اللون أو الحشو المتجاوب من دون تغيير بنية المستند.', noLayoutController],
     accessibility: ['اختر مستوى العنوان بحسب تسلسل المستند، وليس حجمه البصري.', 'لا تنشئ مناطق مسمّاة كثيرة من دون حاجة؛ واستخدم div للتجميع الزخرفي فقط.'],
     variants: ['سطح افتراضي', 'سطح هادئ', 'لون الهوية'],
-    frameworkNotes: 'يعرض Section في React عنصر section ويقبل سماته الأصلية مع خصائص التخطيط. يمكن تغيير وسم Section في Vue عبر as. ويوفّر hw-section في Angular المدخل label لضبط aria-label إلى جانب مدخلات التخطيط.',
+    frameworkNotes: 'يعرض Section في React عنصر section ويقبل سماته الأصلية مع خصائص التخطيط. يمكن تغيير وسم Section في Vue عبر as. أما hw-section في Angular فهو صندوق التخطيط نفسه؛ يضبط المدخل label السمة aria-label والدور region، ويبقي section[hwSection] العنصر الأصلي.',
   }),
   'app-shell': localize('app-shell', {
     summary: 'ركّب الإطار المستمر للصفحة حول محتواها الرئيسي: ترويسة وشريطًا جانبيًا سياقيًا اختياريًا وتذييلًا.',
@@ -366,7 +366,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     lifecycle: ['ركّب الإطار المستمر مرة واحدة حول محتوى المسارات؛ وتوفّر CSS ارتفاعًا منطقيًا أدنى يساوي 100dvh.', 'تترتب الترويسة والشريط الجانبي والمحتوى والتذييل رأسيًا عند ضيق العرض. يظهر العمود الجانبي في العرض المكتبي، ويملأ المحتوى العرض عند غيابه في البنى التي تدعم حذفه.', 'حدّث محتوى main وأدر التركيز عبر الموجّه عند تغيير المسار، من دون استبدال التنقل المستمر بلا داعٍ.', noLayoutController],
     accessibility: ['اعرض معلم main واحدًا في المستند واربط به رابطًا يعمل لتجاوز التنقل.', 'لا تضع هيكل التطبيق داخل main موجود؛ فهو ينشئ واحدًا بالفعل.', 'حافظ على تسميات واضحة للتنقل وترتيب منطقي للمصدر في اتجاهَي RTL وLTR.'],
     variants: ['مع شريط جانبي سياقي', 'دون شريط جانبي في React أو Vue أو HTML الاختياري', 'شريط جانبي عند النهاية المنطقية'],
-    frameworkNotes: 'يستخدم AppShell في React عقد header وsidebar وfooter ويعرض رابط تجاوز وعنصر main. يستخدم Vue فتحات header وsidebar وfooter والفتحة الافتراضية. ويستخدم Angular الإسقاط [hwShellHeader] و[hwShellSidebar] و[hwShellFooter] وينشئ مناطق المعالم الأربع، بما فيها الشريط الجانبي حتى عندما يكون فارغًا.',
+    frameworkNotes: 'يستخدم AppShell في React عقد header وsidebar وfooter ويعرض رابط تجاوز وعنصر main. يستخدم Vue فتحات header وsidebar وfooter والفتحة الافتراضية. ويستخدم Angular الإسقاط [hwShellHeader] و[hwShellSidebar] و[hwShellFooter]؛ منطقتا الترويسة والتذييل حاويتان عاديتان، فأسقط عنصر header وعنصر footer، وتُخفى المنطقة الفارغة.',
     limitations: ['لا ينفّذ AppShell التوجيه أو درج التنقل على الهاتف. نقطة توقف الشريط الجانبي ثابتة عند 64rem؛ استخدم Sidebar عندما تحتاج إلى ضبط حد الطيّ بصورة مستقلة.'],
   }),
   'page-header': localize('page-header', {

@@ -63,6 +63,9 @@ a .hw-code,
 :where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-tag) { color: var(--hw-color-code-tag); }
 :where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-type) { color: var(--hw-color-code-type); }
 :where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where(.hw-code-token-function) { color: var(--hw-color-code-function); }
+/* Each role span is its own bidi run. Without this, the neutral characters between two Arabic
+   tokens on one line join the right-to-left run and the tokens change places. */
+:where(.hw-code-block, .hw-code-block-content, .hw-code, .hw-prose) :where([class*='hw-code-token-']) { unicode-bidi: isolate; }
 
 @media (forced-colors: active) {
   .hw-code-block, .hw-code-block-header, .hw-code-block-content, .hw-code, .hw-kbd,

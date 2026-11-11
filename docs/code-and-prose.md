@@ -51,6 +51,11 @@ the mapping is new.
   `direction: ltr` and `unicode-bidi: isolate` on the listing, on inline code and
   on keys, and the author writes `dir="ltr"` on the `pre`. No component sets
   `dir`. The header row is ordinary content and follows the nearest `dir`.
+  Each syntax role span is isolated as well (`unicode-bidi: isolate`), so two
+  Arabic strings on one line, or an Arabic string followed by an Arabic comment,
+  keep their source order. A line that holds more than one Arabic run therefore
+  needs the role spans, or a `bdi` element around each run when the listing is
+  not highlighted.
 - **Focus.** `:focus-visible` on the listing draws `--hw-focus-width` in
   `--hw-color-focus` at `--hw-focus-offset`, outside the listing.
 - **Forced colours.** Syntax colours and borders become `CanvasText`; the focus

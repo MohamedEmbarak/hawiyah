@@ -58,6 +58,7 @@ export const codeBody=`
   ${listing({id:'wrap',title:'app.ts',wrap:true,code:`${samples.ts}\n${longLine}`})}
   ${listing({id:'bare',label:'Request form markup',code:samples.html})}
   ${listing({id:'css',title:'theme.css',code:samples.css})}
+  ${listing({id:'bidi',label:'Arabic strings',code:`${K('const')} options ${U('=')} ${U('[')}<span class="hw-code-token-string" id="bidi-first">'فاتح'</span>${U(',')} <span class="hw-code-token-string" id="bidi-second">'داكن'</span>${U('];')}\n<span class="hw-code-token-string" id="bidi-string">"مرحبا"</span>${U(';')} <span class="hw-code-token-comment" id="bidi-comment">// تعليق</span>`})}
   <figure class="hw-code-block" id="override"><pre class="hw-code-block-content" dir="ltr" tabindex="0" role="group" aria-label="Highlighter theme"><code><b class="hw-code-token-keyword" id="themed">let</b></code></pre></figure>`;
 
 // Class-less content as a Markdown renderer emits it, with components between.

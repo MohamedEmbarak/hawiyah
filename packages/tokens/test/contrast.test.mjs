@@ -65,6 +65,14 @@ for (const [name, theme] of Object.entries(source.themes)) {
         assert.ok(measured >= 3, `focus/${background}: ${measured.toFixed(2)}:1`);
       }
     });
+    test(`${name} ${mode}: the current navigation row and its marker`, () => {
+      // navigation-drawer.css: text on surface-muted for the label, primary-text for the marker (non-text, 3:1).
+      for (const surface of ['canvas', 'surface']) {
+        const label = ratio(color.text, color['surface-muted'], color[surface]), marker = ratio(color['primary-text'], color['surface-muted'], color[surface]);
+        assert.ok(label >= 4.5, `text/surface-muted: ${label.toFixed(2)}:1`);
+        assert.ok(marker >= 3, `primary-text/surface-muted: ${marker.toFixed(2)}:1`);
+      }
+    });
     test(`${name} ${mode}: control and focus boundaries meet 3:1`, () => {
       for (const foreground of ['border-strong', 'focus', 'carousel-dot-border', 'rating-outline', 'rating-fill', 'search-clear']) {
         for (const background of ['canvas', 'surface', ...(foreground === 'carousel-dot-border' ? ['carousel-dot', 'carousel-dot-hover'] : [])]) {

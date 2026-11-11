@@ -24,6 +24,18 @@ for(const lang of ['ar','en'] as const)
     const words=await page.locator('#inline-code-ar').evaluate(node=>{const range=document.createRange();const text=node.firstChild!;const x=(start:number)=>{range.setStart(text,start);range.setEnd(text,start+1);return range.getBoundingClientRect().x;};return [x(0),x(5)];});
     expect(words[0]).toBeLessThan(words[1]);
   });
+for(const lang of ['ar','en'] as const)
+  test(`Arabic tokens on one line keep their source order (${lang})`,async({page})=>{
+    await openFixture(page,codeBody,{lang});
+    // The rectangle of the Arabic letters themselves, without the quotes or the comment marker.
+    const arabic=(id:string)=>page.locator(id).evaluate(node=>{const text=node.firstChild as Text;const range=document.createRange();const start=text.data.search(/[\u0600-\u06ff]/);range.setStart(text,start);range.setEnd(text,text.data.search(/[\u0600-\u06ff][^\u0600-\u06ff]*$/)+1);const box=range.getBoundingClientRect();return {left:box.left,right:box.right};});
+    const [first,second,string,comment]=[await arabic('#bidi-first'),await arabic('#bidi-second'),await arabic('#bidi-string'),await arabic('#bidi-comment')];
+    expect(first.right,'first string is left of the second').toBeLessThanOrEqual(second.left);
+    expect(string.right,'string is left of the comment').toBeLessThanOrEqual(comment.left);
+    expect(await computed(page,'#bidi-first',['unicode-bidi'])).toEqual({'unicode-bidi':'isolate'});
+    // The rule stays at zero specificity: a highlighter's own theme still replaces the colour.
+    expect((await computed(page,'#themed',['color'])).color).not.toBe('');
+  });
 test('a scrolling listing is one named tab stop with a visible ring and scrolls with the arrow keys',async({page})=>{
   await page.setViewportSize({width:480,height:800});
   await openFixture(page,codeBody);

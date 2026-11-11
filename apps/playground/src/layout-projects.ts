@@ -82,7 +82,7 @@ export function layoutProjectMarkup(id: LayoutId, framework: Framework, locale: 
       const support = t('Service hours and contact information', 'أوقات الخدمة ومعلومات التواصل');
       const asideContent = `<h2>${aside}</h2><p>${support}</p>`;
       const rail = framework === 'angular'
-        ? `<div hwSidebar data-layout-slot="sidebar" ${classAttr}="layout-panel">${asideContent}</div>`
+        ? `<aside hwSidebar data-layout-slot="sidebar" ${classAttr}="layout-panel">${asideContent}</aside>`
         : `<aside data-layout-slot="sidebar" ${classAttr}="layout-panel">${asideContent}</aside>`;
       return render({ side: 'end', collapseAt: 'md', sidebarWidth: '10rem', gap: 3 }, `${rail}\n  <div data-layout-slot="content">${summary}</div>`);
     }
@@ -98,7 +98,9 @@ export function layoutProjectMarkup(id: LayoutId, framework: Framework, locale: 
     case 'section': {
       const title = t('Before you apply', 'قبل التقديم');
       const text = t('Prepare your identity details and supporting documents.', 'جهّز بيانات الهوية والمستندات الداعمة.');
-      return render({ padding: { base: 3, md: 6 } }, `<h2>${title}</h2><p>${text}</p>`, `${framework === 'angular' ? 'label' : 'aria-label'}="${title}"`);
+      // The Angular host is the layout box, so the attribute selector keeps the native section element.
+      if (framework === 'angular') return `<section hwSection ${nativeAttributes(framework, { padding: { base: 3, md: 6 } })} label="${title}">\n  <h2>${title}</h2><p>${text}</p>\n</section>`;
+      return render({ padding: { base: 3, md: 6 } }, `<h2>${title}</h2><p>${text}</p>`, `aria-label="${title}"`);
     }
     case 'app-shell': {
       const skip = t('Skip to workspace', 'انتقل إلى مساحة العمل');
@@ -108,7 +110,7 @@ export function layoutProjectMarkup(id: LayoutId, framework: Framework, locale: 
       const main = `<section data-layout-slot="content"><h1>${requests}</h1><p>${t('Track the progress of your requests here.', 'تابع تقدم طلباتك هنا.')}</p></section>`;
       if (framework === 'react') return `<AppShell\n  mainId="service-workspace"\n  skipLabel="${skip}"\n  header={<header data-layout-slot="header"><strong>${header}</strong></header>}\n  sidebar={<p data-layout-slot="sidebar">${aside}</p>}\n  footer={<footer data-layout-slot="footer"><small>${footer}</small></footer>}\n>\n  ${main}\n</AppShell>`;
       if (framework === 'vue') return `<AppShell main-id="service-workspace" skip-label="${skip}">\n  <template #header><header data-layout-slot="header"><strong>${header}</strong></header></template>\n  <template #sidebar><p data-layout-slot="sidebar">${aside}</p></template>\n  ${main}\n  <template #footer><footer data-layout-slot="footer"><small>${footer}</small></footer></template>\n</AppShell>`;
-      return `<hw-app-shell mainId="service-workspace" skipLabel="${skip}">\n  <strong hwShellHeader data-layout-slot="header">${header}</strong>\n  <p hwShellSidebar data-layout-slot="sidebar">${aside}</p>\n  ${main}\n  <small hwShellFooter data-layout-slot="footer">${footer}</small>\n</hw-app-shell>`;
+      return `<hw-app-shell mainId="service-workspace" skipLabel="${skip}">\n  <header hwShellHeader data-layout-slot="header"><strong>${header}</strong></header>\n  <p hwShellSidebar data-layout-slot="sidebar">${aside}</p>\n  ${main}\n  <footer hwShellFooter data-layout-slot="footer"><small>${footer}</small></footer>\n</hw-app-shell>`;
     }
     case 'page-header': {
       const description = t('Track submitted requests and review their status.', 'تابع الطلبات المقدمة وراجع حالتها.');
