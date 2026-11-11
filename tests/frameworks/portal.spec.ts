@@ -6,7 +6,9 @@ test('native portal shell supports Arabic/English, disclosure and skip focus',as
   await page.setViewportSize({width:390,height:844});
   await page.goto('/?preview=portal');
   const shell=page.locator('.hw-portal-layout');
-  await expect(shell).toHaveAttribute('lang','ar');await expect(shell).toHaveAttribute('dir','rtl');
+  // lang is a native attribute the application sets: on the layout root in React and Vue, on the host element in Angular.
+  const language=page.locator('.hw-portal-layout[lang], hw-portal-layout[lang]');await expect(language).toHaveCount(1);
+  await expect(language).toHaveAttribute('lang','ar');await expect(shell).toHaveAttribute('dir','rtl');
   await expect(page.locator('header img')).toBeVisible();
   expect(await page.locator('header img').evaluate(image=>image.getBoundingClientRect().width)).toBeGreaterThan(80);
   const menu=page.locator('.hw-portal-menu-toggle');
@@ -20,7 +22,7 @@ test('native portal shell supports Arabic/English, disclosure and skip focus',as
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('portal-ar-mobile.png'),fullPage:true});
   await page.getByRole('button',{name:'English',exact:true}).click();
-  await expect(shell).toHaveAttribute('lang','en');await expect(shell).toHaveAttribute('dir','ltr');
+  await expect(language).toHaveAttribute('lang','en');await expect(shell).toHaveAttribute('dir','ltr');
   await page.setViewportSize({width:1440,height:1000});
   await expect(menu).toBeHidden();await expect(nav).toBeVisible();
   expect((await new AxeBuilder({page}).include('.hw-portal-layout').analyze()).violations).toEqual([]);

@@ -145,16 +145,25 @@ function previewBootstrap(payload: {
   const customStyles = document.createElement('style');
   customStyles.textContent = payload.css;
   document.head.append(customStyles);
+  // Packaged in-page links keep "#id" in markup and resolve it against the document URL
+  // on interaction ("about:srcdoc#id" in this frame); both forms are the same document.
+  const fragmentOf = (anchor: Element): string | null => {
+    const href = anchor.getAttribute('href') ?? '';
+    const page = location.href.split('#')[0] ?? '';
+    const fragment = href.startsWith('#') ? href.slice(1) : href.startsWith(page + '#') ? href.slice(page.length + 1) : null;
+    if (fragment === null) return null;
+    try { return decodeURIComponent(fragment); } catch { return fragment; }
+  };
   document.addEventListener('click', event => {
     const anchor = (event.target as Element | null)?.closest?.('a[href]');
     if (!anchor) return;
+    const fragment = fragmentOf(anchor);
     if (anchor.matches('.hw-content-nav-link[data-hw-section]') && anchor.closest('.hw-content-nav') &&
-        anchor.getAttribute('href')?.startsWith('#') && event.button === 0 &&
+        fragment !== null && event.button === 0 &&
         !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) return;
     event.preventDefault();
-    const href = anchor.getAttribute('href') ?? '';
-    if (href.startsWith('#')) {
-      const target = document.getElementById(href.slice(1));
+    if (fragment !== null) {
+      const target = document.getElementById(fragment);
       if (target) {
         if (anchor.matches('.hw-skip-link') && event.button === 0 && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
           target.focus({ preventScroll: true });
