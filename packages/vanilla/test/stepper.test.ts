@@ -10,7 +10,7 @@ function setup() {
 }
 it('keeps direct list item state, aria-current and original DOM synchronized and restores on destroy', () => {
   const list = setup(); const before = list.cloneNode(true); const labels = [...list.querySelectorAll('span')];
-  const controller = createStepper(list);
+  const controller = createStepper(list, { label: 'التقدم' });
   const states = () => [...list.querySelectorAll<HTMLElement>('li')].map(step => step.dataset.state);
   expect(controller.activeIndex).toBe(1); expect(states()).toEqual(['complete', 'current', 'upcoming']);
   expect(list.getAttribute('aria-label')).toBe('التقدم');

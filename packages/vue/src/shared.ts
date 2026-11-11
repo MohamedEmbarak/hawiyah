@@ -46,6 +46,8 @@ export type RenderContent = VNodeChild;
 export function needText<T>(component: string, name: string, value: T, when?: string): T | undefined { return requireText(component, name, value, when) ? value : undefined; }
 /** Optional text: the value when it is usable, otherwise undefined, with no warning. */
 export function optionalText<T>(value: T): T | undefined { return hasText(value) ? value : undefined; }
+/** Custom validity for a failed constraint. A missing message warns once and still blocks submission (a single-space validity). */
+export function validity(component: string, name: string, invalid: boolean, message: string | undefined, when?: string): string { return invalid ? needText(component, name, message, when) ?? ' ' : ''; }
 /** Accessible name of a component root. An aria-label or aria-labelledby from the application satisfies the requirement. */
 export function rootLabel(component: string, value: string | undefined, attrs: Record<string, unknown>, name = 'label'): string | undefined {
   if (hasText(attrs['aria-label'])) return String(attrs['aria-label']);

@@ -23,13 +23,14 @@ export function validity(component: string, name: string, invalid: boolean, mess
   return text(component, name, message) ?? ' ';
 }
 /** Binds a packaged in-page link once mounted. The rendered href stays the bare "#id". */
-export function useFragmentLink(id: string | undefined, options?: Omit<FragmentLinkOptions, 'id'>) {
-  const latest = useRef(id); latest.current = id;
+export function useFragmentLink(id: string | undefined, options: Omit<FragmentLinkOptions, 'id'> = {}) {
+  const latest = useRef({ id, options }); latest.current = { id, options };
+  const { updateHash } = options; const custom = Boolean(options.navigate);
   const callback = useCallback((link: HTMLAnchorElement | null) => {
     if (!link) return;
-    const binding = bindFragmentLink(link, { ...options, id: () => latest.current ?? '' });
+    const binding = bindFragmentLink(link, { id: () => latest.current.id ?? '', updateHash, navigate: custom ? (target, element) => latest.current.options.navigate?.(target, element) : undefined });
     return () => binding.destroy();
-  }, []);
+  }, [updateHash, custom]);
   return { ref: callback, href: id ? getFragmentHref(id) : undefined };
 }
 /** Warns in development, after mount, when an application brand has no accessible text. */

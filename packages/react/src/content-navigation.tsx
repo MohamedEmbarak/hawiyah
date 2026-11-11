@@ -1,24 +1,35 @@
 import {useEffect, useImperativeHandle, useRef, useState} from 'react';
-import type {ComponentPropsWithRef, MouseEvent, ReactNode} from 'react';
+import type {ComponentPropsWithRef, ReactNode, RefObject} from 'react';
 import {observeContentNavigation} from '@hawiyah/core';
 import type {ContentNavigationItem} from '@hawiyah/core';
-import {cx} from './shared.js';
+import {cx, text, useFragmentLink} from './shared.js';
 
 export type {ContentNavigationItem} from '@hawiyah/core';
 export interface ContentNavigationProps extends Omit<ComponentPropsWithRef<'nav'>, 'children'> {
   items: readonly ContentNavigationItem[];
-  label?: string;
+  /** Name of the navigation landmark and text of its heading. */
+  label: string;
   showHeading?: boolean;
   sticky?: boolean;
   scrollRoot?: HTMLElement | null;
   offset?: number;
+  /** Also writes the section URL to the address bar with history.replaceState. Off by default. */
+  updateHash?: boolean;
   onCurrentChange?: (id: string) => void;
+}
+type Observer = ReturnType<typeof observeContentNavigation>;
+
+function ContentNavigationLink({item, current, observer, updateHash}: {item: ContentNavigationItem; current: boolean; observer: RefObject<Observer | undefined>; updateHash: boolean}) {
+  const pointer = useRef(0);
+  const link = useFragmentLink(item.id, {updateHash, navigate: id => observer.current?.navigate(id, {focus: pointer.current === 0}) ?? false});
+  return <a className="hw-content-nav-link" ref={link.ref} href={link.href} data-hw-section={item.id} aria-current={current ? 'location' : undefined} onClickCapture={event => {pointer.current = event.detail;}}><span className="hw-content-nav-marker" aria-hidden="true" /><span className="hw-content-nav-label">{item.label}</span></a>;
 }
 
 /** Local section navigation; the application owns section elements and their IDs. */
-export function ContentNavigation({items, label = 'في هذه الصفحة', showHeading = true, sticky = false, scrollRoot = null, offset = 80, onCurrentChange, className, ref, ...props}: ContentNavigationProps) {
+export function ContentNavigation({items, label, showHeading = true, sticky = false, scrollRoot = null, offset = 80, updateHash = false, onCurrentChange, className, ref, ...props}: ContentNavigationProps) {
+  const name = text('ContentNavigation', 'label', label);
   const navigation = useRef<HTMLElement>(null);
-  const observer = useRef<ReturnType<typeof observeContentNavigation> | undefined>(undefined);
+  const observer = useRef<Observer | undefined>(undefined);
   const latest = useRef({items, scrollRoot, offset, onCurrentChange}); latest.current = {items, scrollRoot, offset, onCurrentChange};
   const [current, setCurrent] = useState('');
   useImperativeHandle(ref, () => navigation.current!, []);
@@ -28,15 +39,11 @@ export function ContentNavigation({items, label = 'في هذه الصفحة', sh
     return () => observer.current?.destroy();
   }, []);
   useEffect(() => {observer.current?.refresh();}, [items, scrollRoot, offset]);
-  const activate = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
-    if (event.defaultPrevented || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-    event.preventDefault(); observer.current?.navigate(id, {focus: event.detail === 0});
-  };
   const renderItems = (entries: readonly ContentNavigationItem[], nested = false): ReactNode => <ul className={nested ? 'hw-content-nav-sublist' : 'hw-content-nav-list'}>{entries.map(item => <li key={item.id}>
-    {item.disabled ? <span className="hw-content-nav-link" role="link" aria-disabled="true" data-hw-section={item.id}><span className="hw-content-nav-marker" aria-hidden="true" /><span className="hw-content-nav-label">{item.label}</span></span> : <a className="hw-content-nav-link" href={`#${encodeURIComponent(item.id)}`} data-hw-section={item.id} aria-current={current === item.id ? 'location' : undefined} onClick={event => activate(event, item.id)}><span className="hw-content-nav-marker" aria-hidden="true" /><span className="hw-content-nav-label">{item.label}</span></a>}
+    {item.disabled ? <span className="hw-content-nav-link" role="link" aria-disabled="true" data-hw-section={item.id}><span className="hw-content-nav-marker" aria-hidden="true" /><span className="hw-content-nav-label">{item.label}</span></span> : <ContentNavigationLink item={item} current={current === item.id} observer={observer} updateHash={updateHash} />}
     {!!item.children?.length && renderItems(item.children, true)}
   </li>)}</ul>;
-  return <nav {...props} ref={navigation} className={cx('hw-content-nav', className)} aria-label={label} data-sticky={sticky || undefined}>
-    {showHeading && <h2 className="hw-content-nav-heading">{label}</h2>}{renderItems(items)}
+  return <nav {...props} ref={navigation} className={cx('hw-content-nav', className)} aria-label={name} data-sticky={sticky || undefined}>
+    {showHeading && name && <h2 className="hw-content-nav-heading">{name}</h2>}{renderItems(items)}
   </nav>;
 }

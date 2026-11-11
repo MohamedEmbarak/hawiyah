@@ -3,14 +3,14 @@ import type { PropType, VNodeChild } from 'vue';
 import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow, restoreFocus, transitionCombobox } from '@hawiyah/core';
 import type { ComboboxEvent, Option, Orientation } from '@hawiyah/core';
 import { Button, decorate } from './forms.js';
-import { decorationProps, joinIds, useField, useFormReset, useValue } from './shared.js';
+import { decorationProps, joinIds, needText, optionalText, useField, useFormReset, useValue, validity } from './shared.js';
 
 export interface TabItem { value: string; label: string; content?: VNodeChild; disabled?: boolean }
 export const Tabs = defineComponent({
   name: 'HwTabs', inheritAttrs: false,
   props: { items: { type: Array as PropType<readonly TabItem[]>, required: true }, label: { type: String, required: true }, modelValue: String, defaultValue: String,
     orientation: { type: String as PropType<Orientation>, default: 'horizontal' }, activationMode: { type: String as PropType<'automatic' | 'manual'>, default: 'automatic' },
-    overflow: {type: String as PropType<'menu' | 'scroll'>, default: 'menu'}, overflowLabel: {type: String, default: 'المزيد من التبويبات'} },
+    overflow: {type: String as PropType<'menu' | 'scroll'>, default: 'menu'}, overflowLabel: String },
   emits: { 'update:modelValue': (_value: string) => true },
   setup(props, { attrs, slots, emit }) {
     const id = `hw-${useId()}`;
@@ -65,7 +65,7 @@ export const Tabs = defineComponent({
         },
       }, slots[`tab:${item.value}`]?.({ item }) ?? item.label))),
       h('details', {class: 'hw-tabs-overflow', ref: disclosure, hidden: !hidden.value.length, onKeydown: (event: KeyboardEvent) => {if (event.key === 'Escape' && disclosure.value?.open) {event.preventDefault(); close(); disclosure.value.querySelector('summary')?.focus();}}}, [
-        h('summary', {class: 'hw-tab-overflow-trigger', 'aria-label': props.overflowLabel, 'data-active': hidden.value.some(index => props.items[index]?.value === active.value) ? 'true' : undefined}, '…'),
+        h('summary', {class: 'hw-tab-overflow-trigger', 'aria-label': props.overflow === 'menu' ? needText('Tabs', 'overflowLabel', props.overflowLabel, "overflow is 'menu'") : optionalText(props.overflowLabel), 'data-active': hidden.value.some(index => props.items[index]?.value === active.value) ? 'true' : undefined}, '…'),
         h('div', {class: 'hw-tab-overflow-menu'}, hidden.value.map(index => {const item = props.items[index]; return item && h('button', {key: item.value, type: 'button', class: 'hw-tab-overflow-item', 'data-hw-overflow-value': item.value, disabled: item.disabled, 'aria-pressed': item.value === active.value, onClick: () => {if (item.disabled) return; model.set(item.value); close(); disclosure.value?.querySelector('summary')?.focus();}}, slots[`tab:${item.value}`]?.({item}) ?? item.label);})),
       ]),
       ]),
@@ -76,7 +76,7 @@ export const Tabs = defineComponent({
 
 export const Dialog = defineComponent({
   name: 'HwDialog', inheritAttrs: false,
-  props: { open: { type: Boolean, default: undefined }, defaultOpen: Boolean, title: { type: String, required: true }, description: String, closeLabel: { type: String, default: 'Close' }, closeOnBackdrop: { type: Boolean, default: true } },
+  props: { open: { type: Boolean, default: undefined }, defaultOpen: Boolean, title: { type: String, required: true }, description: String, closeLabel: { type: String, required: true }, closeOnBackdrop: { type: Boolean, default: true } },
   emits: { 'update:open': (_open: boolean) => true },
   setup(props, { attrs, slots, emit, expose }) {
     const id = `hw-${useId()}`;
@@ -114,7 +114,7 @@ export const Dialog = defineComponent({
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
       },
     }), [
-      h('header', { class: 'hw-dialog-header' }, [h('h2', { id: `${id}-title` }, props.title), h(Button, { variant: 'ghost', 'aria-label': props.closeLabel, onClick: close }, () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }))]),
+      h('header', { class: 'hw-dialog-header' }, [h('h2', { id: `${id}-title` }, props.title), h(Button, { variant: 'ghost', 'aria-label': needText('Dialog', 'closeLabel', props.closeLabel), onClick: close }, () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }))]),
       h('div', { class: 'hw-dialog-body' }, [props.description && h('p', { id: `${id}-description` }, props.description), slots.default?.({ close })]),
       slots.footer && h('footer', { class: 'hw-dialog-footer' }, slots.footer({ close })),
     ])];
@@ -124,10 +124,11 @@ export const Dialog = defineComponent({
 export const Combobox = defineComponent({
   name: 'HwCombobox', inheritAttrs: false,
   props: { ...decorationProps, options: { type: Array as PropType<readonly Option[]>, required: true }, modelValue: String, defaultValue: { type: String, default: '' }, disabled: Boolean, readonly: Boolean,
-    emptyMessage: { type: String, default: 'No options found' }, resultsMessage: { type: Function as PropType<(count: number) => string>, default: (count: number) => `${count} results available` }, requiredMessage: { type: String, default: 'Choose an option from the list.' } },
+    emptyMessage: { type: String, required: true }, getResultsMessage: { type: Function as PropType<(count: number) => string>, required: true }, requiredMessage: String },
   emits: { 'update:modelValue': (_value: string) => true, 'update:open': (_open: boolean) => true, 'update:query': (_query: string) => true },
   setup(props, { attrs, emit, expose }) {
     const field = useField(props, attrs);
+    const resultsText = (count: number) => { const get = needText('Combobox', 'getResultsMessage', props.getResultsMessage); return get ? optionalText(get(count)) : undefined; };
     const element = ref<HTMLInputElement>();
     const root = ref<HTMLElement>();
     const state = ref(createComboboxState(props.options, props.modelValue ?? props.defaultValue));
@@ -170,7 +171,7 @@ export const Combobox = defineComponent({
     watch(() => props.options, options => {
       if (effective.value.value) state.value = { ...createComboboxState(options, effective.value.value), open: state.value.open };
     });
-    watchEffect(() => element.value?.setCustomValidity(field.controlAttrs.value.required && !effective.value.value ? props.requiredMessage : ''));
+    watchEffect(() => element.value?.setCustomValidity(validity('Combobox', 'requiredMessage', Boolean(field.controlAttrs.value.required && !effective.value.value), props.requiredMessage, 'required is set')));
     useFormReset(element, () => dispatch({ type: 'reset', value: props.defaultValue }));
     const outside = (event: Event) => { if (!root.value?.contains(event.target as Node)) dispatch({ type: 'close' }); };
     onMounted(() => element.value?.ownerDocument.addEventListener('pointerdown', outside));
@@ -203,9 +204,9 @@ export const Combobox = defineComponent({
           ...results.value.map((option, index) => h('li', { key: option.value, id: `${field.id.value}-option-${index}`, role: 'option', class: 'hw-option', 'aria-selected': effective.value.value === option.value, 'aria-disabled': option.disabled || undefined,
             'data-active': state.value.activeIndex === index ? 'true' : undefined, 'data-state': state.value.activeIndex === index ? 'active' : undefined,
             onPointerdown: (event: PointerEvent) => event.preventDefault(), onClick: () => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); element.value?.focus(); } },
-          }, option.label)), !results.value.length && h('li', { role: 'presentation', class: 'hw-hint' }, props.emptyMessage),
+          }, option.label)), !results.value.length && h('li', { role: 'presentation', class: 'hw-hint' }, needText('Combobox', 'emptyMessage', props.emptyMessage)),
         ]),
-        h('span', { class: 'hw-sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, open ? props.resultsMessage(results.value.length) : ''),
+        h('span', { class: 'hw-sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, open ? resultsText(results.value.length) : ''),
       ]));
     };
   },

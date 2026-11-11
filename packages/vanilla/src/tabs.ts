@@ -76,7 +76,8 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
       else { tab.removeAttribute('data-hw-overflow-hidden'); tab.removeAttribute('aria-hidden'); }
       panels[index]!.hidden = index !== selected;
       const button = overflowButtons[index]!;
-      const label = tab.getAttribute('aria-label') || tab.textContent?.trim() || values[index]!;
+      // The overflow entry repeats the tab's own name; a value or generated id is never shown as text.
+      const label = tab.getAttribute('aria-label') || tab.textContent?.trim() || '';
       if (button.textContent !== label) button.textContent = label;
       button.disabled = isDisabled(tab) || isDisabled(root);
       button.setAttribute('aria-pressed', String(index === selected));

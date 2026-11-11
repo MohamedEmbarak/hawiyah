@@ -11,7 +11,7 @@ it('enhances native navigation, guards disabled entries, respects prevention and
   dialog.close = () => { dialog.open = false; dialog.dispatchEvent(new Event('close')); };
   let prevent = false;
   dialog.addEventListener('click', event => { if (prevent) event.preventDefault(); });
-  const controller = createNavigationDrawer(dialog);
+  const controller = createNavigationDrawer(dialog, { navigationLabel: 'التنقل الرئيسي' });
   trigger.focus(); controller.show(trigger);
   expect(dialog.dataset.side).toBe('start'); expect(dialog.querySelector('nav')!.getAttribute('aria-label')).toBe('التنقل الرئيسي');
   const disabled = dialog.querySelector<HTMLAnchorElement>('a[aria-disabled]')!;
