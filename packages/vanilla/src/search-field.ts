@@ -1,11 +1,13 @@
-import { createCleanup, getSearchSuggestions, isDisabled, observeFieldValue, requestSearchDialogClose, type SearchSuggestionMatch } from '@hawiyah/core';
-import { emit, ensureId, eventElement, nativeChange, readOnly, remember, required, translated } from './dom.js';
+import { createCleanup, getSearchSuggestions, requireText, isDisabled, observeFieldValue, requestSearchDialogClose, type SearchSuggestionMatch } from '@hawiyah/core';
+import { emit, ensureId, eventElement, nativeChange, readOnly, remember, required, templated, text, writeText } from './dom.js';
 
 export interface SearchFieldOptions {
+  /** Accessible name of the clear button: the option, else its authored aria-label, else data-hw-clear-label. Required. */
   clearLabel?: string;
   suggestions?: readonly string[];
   maxSuggestions?: number;
-  resultsMessage?: (count: number) => string;
+  /** Live-region announcement of the suggestion count (data-hw-results-message="{count} …"). Required when suggestions are given. */
+  getResultsMessage?: (count: number) => string;
   onValueChange?: (value: string) => void;
   onSearch?: (query: string) => void;
 }
@@ -26,7 +28,8 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   remember(scope, button, ['type', 'class', 'hidden', 'disabled', 'aria-label', 'aria-controls']);
   scope.add(() => button.replaceChildren(...children));
   button.type = 'button'; button.classList.add('hw-search-clear');
-  button.setAttribute('aria-label', options.clearLabel ?? button.getAttribute('aria-label') ?? translated(root, 'Clear search', 'مسح البحث'));
+  writeText(button, 'aria-label', 'SearchField', 'clearLabel', options.clearLabel ?? button.getAttribute('aria-label') ?? text(root, 'clearLabel'));
+  const resultsMessage = templated(root, 'getResultsMessage', options.getResultsMessage, (count: number) => ({ count }));
   button.setAttribute('aria-controls', ensureId(scope, input, 'search'));
   const icon = input.ownerDocument.createElement('span'); icon.className = 'hw-search-clear-icon'; icon.setAttribute('aria-hidden', 'true'); button.replaceChildren(icon);
   const aria = ['role', 'aria-autocomplete', 'aria-expanded', 'aria-controls', 'aria-activedescendant', 'autocomplete'].map(name => [name, input.getAttribute(name)] as const);
@@ -58,7 +61,12 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
     }
     if (!list) {
       list = input.ownerDocument.createElement('div'); list.className = 'hw-search-suggestions'; list.hidden = true;
-      list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', translated(root, 'Search suggestions', 'اقتراحات البحث')); ensureId(scope, list, 'search-suggestions');
+      list.setAttribute('role', 'listbox'); ensureId(scope, list, 'search-suggestions');
+      // The suggestion list is named like the input; it adds no name of its own.
+      const labelledBy = input.getAttribute('aria-labelledby'); const label = input.getAttribute('aria-label');
+      if (labelledBy) list.setAttribute('aria-labelledby', labelledBy); else if (label) list.setAttribute('aria-label', label);
+      else if (input.labels?.length) list.setAttribute('aria-labelledby', [...input.labels].map(node => ensureId(scope, node, 'search-label')).join(' '));
+      requireText('SearchField', 'getResultsMessage', options.getResultsMessage ?? root.getAttribute('data-hw-results-message'), 'suggestions are given');
       status = input.ownerDocument.createElement('div'); status.className = 'hw-sr-only'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
       popupHost.append(list); root.append(status);
     }
@@ -85,7 +93,8 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
       return option;
     }));
     open = matches.length > 0; list.hidden = !open; input.setAttribute('aria-expanded', String(open));
-    status.textContent = input.value.trim() ? (options.resultsMessage?.(matches.length) ?? translated(root, `${matches.length} suggestions available`, `${matches.length} اقتراحات متاحة`)) : '';
+    const message = input.value.trim() ? resultsMessage(matches.length) : '';
+    status.textContent = message && requireText('SearchField', 'getResultsMessage', message, 'suggestions are given') ? message : '';
   };
   const updateActive = () => {
     if (!list) return;

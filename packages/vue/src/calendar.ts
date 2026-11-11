@@ -10,7 +10,6 @@ import {
 } from "vue";
 import type { PropType } from "vue";
 import {
-  getCalendarLabels,
   formatCalendarDate,
   getCalendarMonth,
   getDirection,
@@ -27,6 +26,9 @@ import { Dialog, Tooltip } from "./interactive.js";
 import {
   decorationProps,
   joinIds,
+  needText,
+  optionalText,
+  rootLabel,
   useField,
   useFormReset,
   useValue,
@@ -43,15 +45,17 @@ const calendarProps = {
   month: String,
   min: String,
   max: String,
-  locale: { type: String, default: "ar-SA" },
+  locale: { type: String, required: true },
   calendar: { type: String as PropType<CalendarSystem>, default: "gregory" },
   weekStartsOn: { type: Number, default: 0 },
   disabled: Boolean,
   readonly: Boolean,
-  label: String,
-  previousLabel: String,
-  nextLabel: String,
+  label: { type: String, required: true },
+  previousLabel: { type: String, required: true },
+  nextLabel: { type: String, required: true },
   unsupportedMessage: String,
+  rangeLabel: String,
+  getDayLabel: Function as PropType<(value: string) => string>,
   isDateDisabled: Function as PropType<(value: string) => boolean>,
 } as const;
 export const Calendar = defineComponent({
@@ -63,7 +67,6 @@ export const Calendar = defineComponent({
     "update:month": (_value: string) => true,
   },
   setup(props, { attrs, emit, expose }) {
-    const copy = computed(() => getCalendarLabels(props.locale));
     const model = useValue(
       () => props.modelValue,
       props.defaultValue,
@@ -153,6 +156,7 @@ export const Calendar = defineComponent({
       }
     }
     function dateLabel(day: CalendarDay) {
+      if (props.getDayLabel) return optionalText(props.getDayLabel(day.value));
       return isCalendarDateSupported(day.value, props.calendar)
         ? formatCalendarDate(day.value, {
             locale: props.locale,
@@ -218,6 +222,7 @@ export const Calendar = defineComponent({
           min: props.min,
           max: props.max,
           calendar: props.calendar,
+          locale: props.locale,
         }).days.some((day) => !day.outside && !blocked(day.value));
       const nextAllowed =
         page.value.next !== monthStart &&
@@ -226,6 +231,7 @@ export const Calendar = defineComponent({
           min: props.min,
           max: props.max,
           calendar: props.calendar,
+          locale: props.locale,
         }).days.some((day) => !day.outside && !blocked(day.value));
       return h("div", mergeProps(attrs, { class: "hw-calendar" }), [
         h("input", {
@@ -241,37 +247,37 @@ export const Calendar = defineComponent({
             Button,
             {
               variant: "ghost",
-              "aria-label": (props.previousLabel ?? copy.value.previous),
+              "aria-label": needText("Calendar", "previousLabel", props.previousLabel),
               class: "hw-calendar-prev",
               disabled: props.disabled || !previousAllowed,
               onClick: () => changeMonth(page.value.previous),
             },
-            () => (props.previousLabel ?? copy.value.previous),
+            () => optionalText(props.previousLabel),
           ),
           h("div", { class: "hw-calendar-heading" }, [
             h("span", { "aria-live": "polite", "aria-atomic": "true" }, page.value.label),
-            props.calendar === "islamic-umalqura" && h(Tooltip, { class: "hw-calendar-info", content: `${copy.value.range}: \u2066${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}\u2069` }, () => h("span", { tabindex: 0, role: "img", class: "hw-calendar-info-icon hw-tooltip-trigger", "aria-label": copy.value.range }, "i")),
+            props.calendar === "islamic-umalqura" && h(Tooltip, { class: "hw-calendar-info", content: [needText("Calendar", "rangeLabel", props.rangeLabel, "calendar is 'islamic-umalqura'"), `\u2066${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}\u2069`].filter(Boolean).join(" ") }, () => h("span", { tabindex: 0, role: "img", class: "hw-calendar-info-icon hw-tooltip-trigger", "aria-label": optionalText(props.rangeLabel) }, h("span", { "aria-hidden": "true" }, "i"))),
           ]),
           h(
             Button,
             {
               variant: "ghost",
-              "aria-label": (props.nextLabel ?? copy.value.next),
+              "aria-label": needText("Calendar", "nextLabel", props.nextLabel),
               class: "hw-calendar-next",
               disabled: props.disabled || !nextAllowed,
               onClick: () => changeMonth(page.value.next),
             },
-            () => (props.nextLabel ?? copy.value.next),
+            () => optionalText(props.nextLabel),
           ),
         ]),
         model.value.value &&
           !isCalendarDateSupported(model.value.value, props.calendar) &&
-          h("p", { role: "status", class: "hw-sr-only" }, dateMessage((props.unsupportedMessage ?? copy.value.unsupported))),
+          h("p", { role: "status", class: "hw-sr-only" }, dateMessage(needText("Calendar", "unsupportedMessage", props.unsupportedMessage, "calendar is 'islamic-umalqura'") ?? "")),
         h(
           "table",
           {
             role: "grid",
-            "aria-label": `${props.label ?? copy.value.calendar}: ${page.value.label}`,
+            "aria-label": rootLabel("Calendar", props.label, attrs),
             "aria-readonly": props.readonly || undefined,
           },
           [
@@ -365,20 +371,24 @@ export const DatePicker = defineComponent({
     ...decorationProps,
     calendar: { type: String as PropType<CalendarSystem>, default: undefined },
     calendarSwitchable: { type: Boolean, default: true },
-    calendarSystemLabel: String,
-    gregoryLabel: String,
-    hijriLabel: String,
-    calendarLabel: String,
-    openLabel: String,
-    closeLabel: String,
-    invalidMessage: String,
+    label: String,
+    unsupportedMessage: { type: String, required: true },
+    rangeLabel: { type: String, required: true },
+    calendarSystemLabel: { type: String, required: true },
+    gregorianLabel: { type: String, required: true },
+    hijriLabel: { type: String, required: true },
+    calendarLabel: { type: String, required: true },
+    openLabel: { type: String, required: true },
+    closeLabel: { type: String, required: true },
+    invalidMessage: { type: String, required: true },
+    unavailableMessage: String,
+    placeholder: String,
   },
   emits: {
     "update:modelValue": (_value: string) => true,
     "update:calendar": (_value: CalendarSystem) => true,
   },
   setup(props, { attrs, emit, expose }) {
-    const copy = computed(() => getCalendarLabels(props.locale));
     const field = useField(props, attrs);
     const element = ref<HTMLInputElement>();
     const calendar = ref<{ focus: () => void }>();
@@ -422,20 +432,17 @@ export const DatePicker = defineComponent({
         ? formatCalendarDate(value, { locale: props.locale, calendar: calendarSystem.value.value, dateStyle: "full" })
         : "";
     });
-    const validationMessage = computed(() => {
+    const validationProblem = computed((): "invalidMessage" | "unsupportedMessage" | "unavailableMessage" | "" => {
       const value = draft.value;
       if (!value) return "";
-      if (!isDateInRange(value)) return (props.invalidMessage ?? copy.value.invalid);
-      if (!isCalendarDateSupported(value, calendarSystem.value.value)) {
-        return calendarSystem.value.value === "islamic-umalqura"
-          ? (props.unsupportedMessage ?? copy.value.unsupported)
-          : (props.invalidMessage ?? copy.value.invalid);
-      }
-      return !isDateInRange(value, minimum.value, maximum.value) ||
-        props.isDateDisabled?.(value)
-        ? (props.invalidMessage ?? copy.value.invalid)
-        : "";
+      if (!isDateInRange(value)) return "invalidMessage";
+      if (!isCalendarDateSupported(value, calendarSystem.value.value)) return calendarSystem.value.value === "islamic-umalqura" ? "unsupportedMessage" : "invalidMessage";
+      if (!isDateInRange(value, minimum.value, maximum.value)) return "invalidMessage";
+      return props.isDateDisabled?.(value) ? "unavailableMessage" : "";
     });
+    // The application supplies every message. A missing one still blocks submission (a single-space custom validity).
+    const validationText = computed(() => validationProblem.value ? needText("DatePicker", validationProblem.value, props[validationProblem.value], validationProblem.value === "unavailableMessage" ? "isDateDisabled is given" : undefined) : undefined);
+    const validationMessage = computed(() => validationProblem.value ? validationText.value ?? " " : "");
     watchEffect(() =>
       element.value?.setCustomValidity(validationMessage.value),
     );
@@ -447,7 +454,7 @@ export const DatePicker = defineComponent({
     expose({ element, focus: () => element.value?.focus() });
     return () =>
       decorate(
-        {...props, label: props.label ?? (attrs['aria-label'] || attrs['aria-labelledby'] ? undefined : copy.value.date)},
+        {...props, label: optionalText(attrs['aria-label']) || optionalText(attrs['aria-labelledby']) || (!props.label && field.controlAttrs.value['aria-labelledby']) ? optionalText(props.label) : needText("DatePicker", "label", props.label)},
         field.id.value,
         h("div", { class: "hw-date-picker" }, [
           h("div", { class: "hw-date-picker-control" }, [
@@ -457,7 +464,7 @@ export const DatePicker = defineComponent({
                 ref: element,
                 type: "text",
                 name: undefined,
-                placeholder: attrs.placeholder ?? "YYYY-MM-DD",
+                placeholder: optionalText(props.placeholder),
                 "aria-haspopup": "dialog",
                 "aria-controls": `${field.id.value}-dialog`,
                 class: "hw-input",
@@ -472,7 +479,7 @@ export const DatePicker = defineComponent({
                 "aria-describedby": joinIds(
                   field.controlAttrs.value["aria-describedby"],
                   formattedDate.value && `${field.id.value}-formatted`,
-                  validationMessage.value &&
+                  validationText.value &&
                     `${field.id.value}-validation-error`,
                 ),
                 onKeydown: (event: KeyboardEvent) => {
@@ -491,7 +498,7 @@ export const DatePicker = defineComponent({
                 variant: "ghost",
                 class: "hw-date-picker-trigger",
                 disabled: props.disabled || props.readonly,
-                "aria-label": (props.openLabel ?? copy.value.open),
+                "aria-label": needText("DatePicker", "openLabel", props.openLabel),
                 "aria-expanded": open.value,
                 "aria-haspopup": "dialog",
                 "aria-controls": `${field.id.value}-dialog`,
@@ -509,7 +516,7 @@ export const DatePicker = defineComponent({
             "aria-atomic": "true",
             hidden: !formattedDate.value,
           }, formattedDate.value),
-          validationMessage.value &&
+          validationText.value &&
             h(
               "p",
               {
@@ -517,7 +524,7 @@ export const DatePicker = defineComponent({
                 class: "hw-error",
                 role: "alert",
               },
-              dateMessage(validationMessage.value),
+              dateMessage(validationText.value),
             ),
           h(
             Dialog,
@@ -527,25 +534,25 @@ export const DatePicker = defineComponent({
               "onUpdate:open": (value: boolean) => {
                 open.value = value;
               },
-              title: (props.calendarLabel ?? copy.value.choose),
-              closeLabel: (props.closeLabel ?? copy.value.close),
+              title: needText("DatePicker", "calendarLabel", props.calendarLabel) as string,
+              closeLabel: needText("DatePicker", "closeLabel", props.closeLabel) as string,
             },
             () => [
-              h("div", { class: "hw-calendar-options" }, [props.calendarSwitchable && h("div", { class: "hw-calendar-system hw-calendar-switch", role: "radiogroup", "aria-label": (props.calendarSystemLabel ?? copy.value.system), "data-calendar": calendarSystem.value.value },
+              h("div", { class: "hw-calendar-options" }, [props.calendarSwitchable && h("div", { class: "hw-calendar-system hw-calendar-switch", role: "radiogroup", "aria-label": needText("DatePicker", "calendarSystemLabel", props.calendarSystemLabel), "data-calendar": calendarSystem.value.value },
                 (["gregory", "islamic-umalqura"] as const).map(system => h("label", { key: system }, [
                   h("input", { type: "radio", name: `${field.id.value}-calendar-system`, form: "", value: system, checked: calendarSystem.value.value === system, disabled: props.disabled || props.readonly, onChange: async (event: Event) => { const group = (event.target as HTMLInputElement).closest('.hw-calendar-switch'); calendarSystem.set(system); await nextTick(); group?.querySelectorAll<HTMLInputElement>('input[type=radio]').forEach(radio => { radio.checked = radio.value === calendarSystem.value.value; }); } }),
-                  h("span", {}, system === "gregory" ? (props.gregoryLabel ?? copy.value.gregorian) : (props.hijriLabel ?? copy.value.hijri)),
+                  h("span", {}, system === "gregory" ? needText("DatePicker", "gregorianLabel", props.gregorianLabel) : needText("DatePicker", "hijriLabel", props.hijriLabel)),
                 ]))),
 
               ]),
               h(Calendar, {
-                ...props,
+                ...(Object.fromEntries(Object.keys(calendarProps).map(key => [key, props[key as keyof typeof calendarProps]])) as { locale: string; label: string; previousLabel: string; nextLabel: string }),
                 calendar: calendarSystem.value.value,
                 month:
                   open.value && isDateInRange(model.value.value)
                     ? model.value.value
                     : props.month,
-                label: (props.calendarLabel ?? copy.value.choose),
+                label: props.calendarLabel as string,
                 ref: calendar,
                 modelValue: model.value.value,
                 "onUpdate:modelValue": (value: string) => {

@@ -30,7 +30,7 @@ describe('toggle groups and feedback', () => {
   });
 
   it('announces feedback once, submits its hidden value, and restores authored status on cleanup', async () => {
-    const form = mount(`<form><div data-hw="feedback" lang="en"><button data-hw-value="yes" aria-pressed="false">Yes</button><button data-hw-value="no" aria-pressed="false">No</button><input type="hidden" name="helpful" data-hw-feedback-value><span data-hw-feedback-status role="status">Choose an answer</span></div></form>`) as HTMLFormElement;
+    const form = mount(`<form><div data-hw="feedback" data-hw-success-message="Thank you for your feedback."><button data-hw-value="yes" aria-pressed="false">Yes</button><button data-hw-value="no" aria-pressed="false">No</button><input type="hidden" name="helpful" data-hw-feedback-value><span data-hw-feedback-status role="status">Choose an answer</span></div></form>`) as HTMLFormElement;
     const root = form.firstElementChild as HTMLElement; const before = root.outerHTML; const changed = vi.fn(); root.addEventListener('hw:change', changed); const controller = createFeedback(root);
     root.querySelector<HTMLButtonElement>('button')!.click(); expect(controller.value).toBe('yes'); expect(new FormData(form).get('helpful')).toBe('yes'); expect(root.querySelector('[data-hw-feedback-status]')!.textContent).toContain('Thank you');
     controller.select('yes'); expect(changed).toHaveBeenCalledTimes(1);
@@ -88,7 +88,7 @@ describe('tree navigation', () => {
 
 describe('carousel', () => {
   it('bounds navigation, announces position, and preserves slide content and authored state', () => {
-    const root = mount(`<section data-hw="carousel" lang="en" aria-label="Featured"><div><article data-hw-slide><a href="#one">First</a></article><article data-hw-slide hidden><a href="#two">Second</a></article></div><button data-hw-previous>Previous</button><span data-hw-carousel-status role="status">Ready</span><button data-hw-next>Next</button></section>`); const before = root.outerHTML; const changed = vi.fn(); const controller = createCarousel(root, {onValueChange: changed});
+    const root = mount(`<section data-hw="carousel" data-hw-slide-label="{position} of {total}" data-hw-empty-label="No slides" aria-label="Featured"><div><article data-hw-slide><a href="#one">First</a></article><article data-hw-slide hidden><a href="#two">Second</a></article></div><button data-hw-previous>Previous</button><span data-hw-carousel-status role="status">Ready</span><button data-hw-next>Next</button></section>`); const before = root.outerHTML; const changed = vi.fn(); const controller = createCarousel(root, {onValueChange: changed});
     const previous = root.querySelector<HTMLButtonElement>('[data-hw-previous]')!; const next = root.querySelector<HTMLButtonElement>('[data-hw-next]')!;
     expect(previous.disabled).toBe(true); expect(root.querySelector('[data-hw-carousel-status]')!.textContent).toBe('1 of 2');
     next.click(); expect(controller.index).toBe(1); expect(next.disabled).toBe(true); expect(root.querySelector<HTMLElement>('[data-hw-slide]')!.hidden).toBe(true); expect(changed).toHaveBeenCalledWith(1);
@@ -99,7 +99,7 @@ describe('carousel', () => {
 
 describe('data table sorting', () => {
   it('sorts native row nodes numerically and stably, exposes aria-sort, and restores original order', () => {
-    const root = mount(`<table data-hw="data-table" lang="en"><caption>Requests</caption><thead><tr><th data-hw-key="name"><button data-hw-sort="name">Name</button></th><th data-hw-key="count" data-hw-type="number"><button data-hw-sort="count">Count</button></th></tr></thead><tbody>\n<tr id="a"><td>Item 10</td><td>١٠</td></tr><!-- retain --><tr id="b"><td>Item 2</td><td data-hw-sort-value="2">two</td></tr><tr id="c"><td>Item 2</td><td>٢</td></tr>\n</tbody></table>`); const before = root.outerHTML; const callback = vi.fn(); const controller = createDataTable(root, {onSortChange: callback}); const rowB = root.querySelector('#b');
+    const root = mount(`<table data-hw="data-table" data-hw-locale="en"><caption>Requests</caption><thead><tr><th data-hw-key="name"><button data-hw-sort="name">Name</button></th><th data-hw-key="count" data-hw-type="number"><button data-hw-sort="count">Count</button></th></tr></thead><tbody>\n<tr id="a"><td>Item 10</td><td>١٠</td></tr><!-- retain --><tr id="b"><td>Item 2</td><td data-hw-sort-value="2">two</td></tr><tr id="c"><td>Item 2</td><td>٢</td></tr>\n</tbody></table>`); const before = root.outerHTML; const callback = vi.fn(); const controller = createDataTable(root, {onSortChange: callback}); const rowB = root.querySelector('#b');
     const ids = () => [...root.querySelectorAll('tbody tr')].map(row => row.id);
     controller.sort('count'); expect(ids()).toEqual(['b', 'c', 'a']); expect(root.querySelector('[data-hw-key="count"]')!.getAttribute('aria-sort')).toBe('ascending'); expect(root.querySelector('#b')).toBe(rowB);
     controller.sort('count'); expect(ids()).toEqual(['a', 'b', 'c']); expect(controller.sortDirection).toBe('descending');

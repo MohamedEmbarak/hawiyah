@@ -1,10 +1,11 @@
 import { createCleanup, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow } from '@hawiyah/core';
-import { emit, ensureId, eventElement, remember, required, translated } from './dom.js';
+import { emit, ensureId, eventElement, remember, required, text, writeOptional, writeText } from './dom.js';
 
 export interface TabsOptions {
   value?: string;
   activationMode?: 'automatic' | 'manual';
   overflow?: 'menu' | 'scroll';
+  /** Accessible name of the overflow disclosure (data-hw-overflow-label). Required when overflow is 'menu', the default. */
   overflowLabel?: string;
   onValueChange?: (value: string) => void;
 }
@@ -62,7 +63,8 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
   const blocked = () => isDisabled(root) || tabs.every(isDisabled);
   const firstVisible = () => tabs.findIndex((tab, index) => !hidden.has(index) && !isDisabled(tab));
   const render = (focusIndex = selected) => {
-    summary.setAttribute('aria-label', options.overflowLabel ?? root.dataset.hwOverflowLabel ?? translated(root, 'More tabs', 'المزيد من التبويبات'));
+    const overflowLabel = text(root, 'overflowLabel', options.overflowLabel);
+    if (overflowMode() === 'menu') writeText(summary, 'aria-label', 'Tabs', 'overflowLabel', overflowLabel, "overflow is 'menu'"); else writeOptional(summary, 'aria-label', overflowLabel);
     if (selected < 0 || isDisabled(tabs[selected]!)) selected = tabs.findIndex(tab => !isDisabled(tab));
     if (hidden.has(focusIndex) || focusIndex < 0 || isDisabled(tabs[focusIndex]!)) focusIndex = firstVisible();
     bar.dataset.hwOverflow = overflowMode(); list.dataset.hwOverflow = overflowMode();

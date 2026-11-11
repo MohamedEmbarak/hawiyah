@@ -1,6 +1,7 @@
 import { computed, defineComponent, h, ref } from 'vue';
 import type { PropType, VNodeChild } from 'vue';
 import { Drawer } from './expansion-interactive.js';
+import { needText } from './shared.js';
 
 export interface NavigationDrawerItem {
   id: string; label: string; href?: string; icon?: string; current?: boolean;
@@ -28,7 +29,7 @@ export const NavigationDrawer = defineComponent({
   name: 'HwNavigationDrawer', inheritAttrs: false,
   props: {
     title: { type: String, required: true }, items: { type: Array as PropType<readonly NavigationDrawerItem[]>, required: true },
-    navigationLabel: { type: String, default: 'التنقل الرئيسي' }, closeLabel: { type: String, default: 'إغلاق القائمة' },
+    navigationLabel: { type: String, required: true }, closeLabel: { type: String, required: true },
     open: { type: Boolean, default: undefined }, defaultOpen: Boolean, closeOnBackdrop: { type: Boolean, default: true },
     side: { type: String as PropType<'start' | 'end'>, default: 'start' }, description: String,
   },
@@ -38,13 +39,13 @@ export const NavigationDrawer = defineComponent({
     expose({ show: () => drawer.value?.show(), close: () => drawer.value?.close(), element: computed(() => drawer.value?.element) });
     return () => h(Drawer, { ...attrs,
       ref: drawer, title: props.title, description: props.description, open: props.open, defaultOpen: props.defaultOpen,
-      closeLabel: props.closeLabel, closeOnBackdrop: props.closeOnBackdrop, side: props.side, class: ['hw-navigation-drawer', attrs.class],
+      closeLabel: needText('NavigationDrawer', 'closeLabel', props.closeLabel) as string, closeOnBackdrop: props.closeOnBackdrop, side: props.side, class: ['hw-navigation-drawer', attrs.class],
       'onUpdate:open': (value: boolean) => emit('update:open', value),
     }, {
       trigger: slots.trigger, footer: slots.footer,
       default: ({ close }: { close: () => void }) => [
         slots.user && h('div', { class: 'hw-navigation-drawer-user' }, slots.user()),
-        h('nav', { class: 'hw-navigation-drawer-nav', 'aria-label': props.navigationLabel, onClick: (event: MouseEvent) => {
+        h('nav', { class: 'hw-navigation-drawer-nav', 'aria-label': needText('NavigationDrawer', 'navigationLabel', props.navigationLabel), onClick: (event: MouseEvent) => {
           const link = (event.target as Element).closest<HTMLAnchorElement>('a[href]');
           if (!link || !(event.currentTarget as Element).contains(link) || link.closest('[aria-disabled="true"], [inert]')) return;
           if (event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;

@@ -4,9 +4,10 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { getDirection, getNextEnabledIndex, observeReadonlyChoice, prepareToastDismissFocus, type Direction, type Option } from '@hawiyah/core';
 import { HwExpandedValueControl } from './advanced-controls';
 import { HwDialogComponent } from './overlays';
-import { injectIsBrowser } from './platform';
+import { HwObservedEmitter, injectIsBrowser } from './platform';
+import { injectId } from './ids';
+import { HwTexts } from './text';
 
-let nextId = 0;
 @Component({selector: 'hw-toggle-group', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwToggleGroupComponent), multi: true}], template: `<fieldset #group class="hw-toggle-group" [disabled]="disabled" [attr.data-hw-readonly]="readOnly || null" [attr.data-variant]="variant" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null"><legend class="hw-label">{{ label }}</legend>@for (option of options; track option.value) {@if (multiple) {<button type="button" class="hw-button" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [attr.aria-pressed]="selected(option.value)" (click)="toggle(option)" (blur)="touch()">{{ option.label }}</button>} @else {<label><input type="radio" [name]="name || controlId" [value]="option.value" [checked]="selected(option.value)" [readOnly]="readOnly" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [required]="required" (change)="toggle(option)" (blur)="touch()"><span>{{ option.label }}</span></label>}}@if (hint) {<p class="hw-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="hw-error" [id]="controlId + '-error'">{{ error }}</p>}</fieldset>@if (multiple) {@for (selected of submittedValues; track selected) {<input type="hidden" [name]="name" [value]="selected" [disabled]="disabled">}}`})
 export class HwToggleGroupComponent extends HwExpandedValueControl<string | string[]> {
   override value: string | string[] = ''; @Input() options: readonly Option[] = []; @Input({transform: booleanAttribute}) multiple = false; @Input() variant: 'segmented' | 'outline' = 'segmented'; protected emptyValue() { return this.multiple ? [] : ''; }
@@ -21,9 +22,14 @@ export class HwToggleGroupComponent extends HwExpandedValueControl<string | stri
   toggle(option: Option) { if (option.disabled) return; this.update(this.multiple ? this.selected(option.value) ? this.selectedValues.filter(value => value !== option.value) : [...this.selectedValues, option.value] : option.value); }
 }
 
-@Component({selector: 'hw-popover', standalone: true, template: `<div class="hw-popover"><button #trigger class="hw-button" type="button" [disabled]="disabled" [attr.aria-expanded]="open" [attr.aria-controls]="id" (click)="toggle()">{{ triggerLabel }}</button><div #panel class="hw-popover-panel" role="region" [id]="id" [attr.aria-label]="label" [hidden]="!open"><ng-content /></div></div>`})
+@Component({selector: 'hw-popover', standalone: true, template: `<div class="hw-popover"><button #trigger class="hw-button" type="button" [disabled]="disabled" [attr.aria-expanded]="open" [attr.aria-controls]="panelId" (click)="toggle()">{{ texts.need('triggerLabel', triggerLabel) }}</button><div #panel class="hw-popover-panel" role="region" [id]="panelId" [attr.aria-label]="texts.need('label', label)" [hidden]="!open"><ng-content /></div></div>`})
 export class HwPopoverComponent {
-  @Input() id = `hw-popover-${++nextId}`; @Input({required: true}) label = ''; @Input() triggerLabel = 'Open'; @Input({transform: booleanAttribute}) disabled = false; @Input({transform: booleanAttribute}) open = false; @Output() readonly openChange = new EventEmitter<boolean>(); @ViewChild('trigger') trigger?: ElementRef<HTMLButtonElement>; @ViewChild('panel') panel?: ElementRef<HTMLElement>;
+  /** Id of the panel. Named panelId so that no id attribute is left on the wrapper element. */
+  @Input() panelId = injectId('hw-popover'); @Input({required: true}) label = '';
+  /** Visible text of the trigger button, which this component always renders. */
+  @Input({required: true}) triggerLabel = '';
+  protected readonly texts = new HwTexts('hw-popover');
+  @Input({transform: booleanAttribute}) disabled = false; @Input({transform: booleanAttribute}) open = false; @Output() readonly openChange = new EventEmitter<boolean>(); @ViewChild('trigger') trigger?: ElementRef<HTMLButtonElement>; @ViewChild('panel') panel?: ElementRef<HTMLElement>;
   protected readonly host: ElementRef<HTMLElement> = inject(ElementRef); protected readonly changeDetector = inject(ChangeDetectorRef);
   ngOnChanges() { if (this.disabled) this.close(); }
   toggle() { if (this.open) this.close(); else this.show(); }
@@ -34,9 +40,10 @@ export class HwPopoverComponent {
 }
 
 export interface HwMenuItem { id: string; label: string; disabled?: boolean; }
-@Component({selector: 'hw-menu', standalone: true, template: `<div class="hw-menu"><button #trigger type="button" class="hw-button" aria-haspopup="menu" [disabled]="disabled" [attr.aria-expanded]="open" [attr.aria-controls]="id" (click)="toggle()" (keydown)="triggerKey($event)">{{ triggerLabel }}</button><div #panel class="hw-menu-panel" role="menu" [id]="id" [attr.aria-label]="label" [hidden]="!open" (keydown)="keydown($event)">@for (item of items; track item.id; let index = $index) {<button type="button" role="menuitem" class="hw-menu-item" [disabled]="item.disabled" [tabIndex]="index === active ? 0 : -1" (focus)="active = index" (click)="choose(item)">{{ item.label }}</button>}</div></div>`})
+@Component({selector: 'hw-menu', standalone: true, template: `<div class="hw-menu"><button #trigger type="button" class="hw-button" aria-haspopup="menu" [disabled]="disabled" [attr.aria-expanded]="open" [attr.aria-controls]="panelId" (click)="toggle()" (keydown)="triggerKey($event)">{{ texts.need('triggerLabel', triggerLabel) }}</button><div #panel class="hw-menu-panel" role="menu" [id]="panelId" [attr.aria-label]="texts.need('label', label)" [hidden]="!open" (keydown)="keydown($event)">@for (item of items; track item.id; let index = $index) {<button type="button" role="menuitem" class="hw-menu-item" [disabled]="item.disabled" [tabIndex]="index === active ? 0 : -1" (focus)="active = index" (click)="choose(item)">{{ item.label }}</button>}</div></div>`})
 export class HwMenuComponent extends HwPopoverComponent {
   @Input() items: readonly HwMenuItem[] = []; @Output() readonly action = new EventEmitter<string>(); active = -1;
+  protected override readonly texts = new HwTexts('hw-menu');
   override show() { if (this.disabled) return; super.show(); this.active = getNextEnabledIndex(-1, 'Home', this.items, 'ltr', 'vertical'); this.focusActive(); }
   private focusActive() { this.changeDetector.detectChanges(); this.panel?.nativeElement.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')[this.active]?.focus(); }
   triggerKey(event: KeyboardEvent) { if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); this.show(); if (event.key === 'ArrowUp') { this.active = getNextEnabledIndex(-1, 'End', this.items, 'ltr', 'vertical'); this.focusActive(); } } }
@@ -49,23 +56,12 @@ export class HwMenuComponent extends HwPopoverComponent {
   choose(item: HwMenuItem) { if (this.disabled || item.disabled) return; this.action.emit(item.id); this.close(true); }
 }
 
-@Component({selector: 'hw-drawer', standalone: true, template: `<dialog #dialog class="hw-dialog hw-drawer" [attr.data-side]="side" [attr.aria-labelledby]="titleId" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button type="button" class="hw-button" data-variant="ghost" [attr.aria-label]="closeLabel" (click)="close()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[hwDrawerFooter]" /></footer></dialog>`})
-export class HwDrawerComponent extends HwDialogComponent { @Input() side: 'start' | 'end' | 'bottom' = 'end'; }
+@Component({selector: 'hw-drawer', standalone: true, host: {'[attr.title]': 'null'}, template: `<dialog #dialog class="hw-dialog hw-drawer" [attr.data-side]="side" [attr.aria-labelledby]="titleId" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button type="button" class="hw-button" data-variant="ghost" [attr.aria-label]="texts.need('closeLabel', closeLabel)" (click)="close()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[hwDrawerFooter]" /></footer></dialog>`})
+export class HwDrawerComponent extends HwDialogComponent { @Input() side: 'start' | 'end' | 'bottom' = 'end'; protected override readonly texts = new HwTexts('hw-drawer'); }
 
 export interface HwToast { id: string; title?: string; message: string; tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean; }
-// Angular output subscriptions are independent of component inputs. Notify the
-// template when their presence changes, including an imperative unsubscription.
-class ToastDismissEmitter extends EventEmitter<string> {
-  constructor(private readonly changed: (observed: boolean) => void) { super(); }
-  override subscribe(...args: Parameters<EventEmitter<string>['subscribe']>) {
-    const subscription = super.subscribe(...args);
-    this.changed(this.observed);
-    subscription.add(() => this.changed(this.observed));
-    return subscription;
-  }
-}
 @Component({selector: 'hw-toast-region', standalone: true, template: `
-  <section #region class="hw-toast-region" tabindex="-1" [attr.data-variant]="variant" [attr.data-position]="position || null" [attr.aria-label]="label">
+  <section #region class="hw-toast-region" tabindex="-1" [attr.data-variant]="variant" [attr.data-position]="position || null" [attr.aria-label]="texts.need('label', label)">
     @for (group of groups; track group) {
       <div [attr.role]="group === 'polite' ? 'status' : 'alert'" [attr.aria-live]="group" [attr.data-hw-live]="group" aria-relevant="additions text">
         @for (toast of group === 'polite' ? polite : urgent; track toast.id) {
@@ -73,7 +69,7 @@ class ToastDismissEmitter extends EventEmitter<string> {
             @if (variant === 'banner') {<span class="hw-toast-icon" aria-hidden="true"></span>}
             <div class="hw-toast-content">@if (toast.title) {<strong>{{toast.title}}</strong>}<p>{{toast.message}}</p></div>
             @if (toast.dismissible !== false && hasDismissListener()) {
-              <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss [attr.aria-label]="dismissLabel + ': ' + (toast.title || toast.message)" (click)="requestDismiss(toast, $event)"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>
+              <button type="button" class="hw-button hw-toast-dismiss" data-variant="ghost" data-hw-dismiss [attr.aria-label]="texts.call('getDismissLabel', getDismissLabel, [toast], 'a message can be dismissed')" (click)="requestDismiss(toast, $event)"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>
             }
           </article>
         }
@@ -83,11 +79,13 @@ class ToastDismissEmitter extends EventEmitter<string> {
 export class HwToastRegionComponent {
   @Input() variant: 'default' | 'inline' | 'banner' = 'default';
   @Input() position?: 'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
-  @Input() label = 'الإشعارات';
+  @Input({required: true}) label = '';
   @Input() messages: readonly HwToast[] = [];
-  @Input() dismissLabel = 'إغلاق الإشعار';
+  /** Accessible name of a toast's dismiss button. Required when (dismissed) is handled and a message is dismissible. */
+  @Input() getDismissLabel?: (message: HwToast) => string;
+  protected readonly texts = new HwTexts('hw-toast-region');
   protected readonly hasDismissListener = signal(false);
-  @Output() readonly dismissed: EventEmitter<string> = new ToastDismissEmitter(observed => this.hasDismissListener.set(observed));
+  @Output() readonly dismissed: EventEmitter<string> = new HwObservedEmitter<string>(observed => this.hasDismissListener.set(observed));
   @ViewChild('region') private region?: ElementRef<HTMLElement>;
   readonly groups = ['polite', 'assertive'] as const;
   private pending?: () => void;
@@ -107,7 +105,7 @@ export class HwCollapsibleComponent { @Input({required: true}) label = ''; @Inpu
 
 export interface HwTreeNode { id: string; label: string; disabled?: boolean; children?: readonly HwTreeNode[]; }
 interface HwVisibleTreeNode { node: HwTreeNode; level: number; parent?: string; position: number; total: number; disabled?: boolean; }
-@Component({selector: 'hw-tree-view', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwTreeViewComponent), multi: true}], template: `<ul class="hw-tree-view" role="tree" [attr.aria-label]="label" [attr.aria-disabled]="disabled" [attr.aria-describedby]="descriptionIds" [attr.dir]="direction || null">@for (entry of visible; track entry.node.id) {<li role="treeitem" class="hw-tree-item" [attr.data-node]="entry.node.id" [attr.aria-level]="entry.level" [attr.aria-posinset]="entry.position" [attr.aria-setsize]="entry.total" [attr.aria-expanded]="entry.node.children?.length ? isExpanded(entry.node.id) : null" [attr.aria-selected]="value === entry.node.id" [attr.aria-disabled]="disabled || entry.node.disabled || null" [style.padding-inline-start]="(entry.level - 1) + 'rem'" [tabIndex]="!disabled && !entry.node.disabled && focusId === entry.node.id ? 0 : -1" (focus)="focused = entry.node.id" (click)="select(entry.node)" (keydown)="keydown($event, entry)" (blur)="touch()">@if (entry.node.children?.length) {<span class="hw-tree-toggle" aria-hidden="true" (click)="$event.stopPropagation(); toggleNode(entry.node)"><span class="hw-icon" data-size="sm" aria-hidden="true" [attr.data-icon]="isExpanded(entry.node.id) ? 'minus-sign' : 'add-01'"></span></span>}<span>{{ entry.node.label }}</span></li>}</ul><input type="hidden" [name]="name" [value]="value" [disabled]="disabled">@if (hint) {<p class="hw-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="hw-error" [id]="controlId + '-error'">{{ error }}</p>}`})
+@Component({selector: 'hw-tree-view', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwTreeViewComponent), multi: true}], template: `<ul class="hw-tree-view" role="tree" [attr.aria-label]="label || null" [attr.aria-disabled]="disabled" [attr.aria-describedby]="descriptionIds" [attr.dir]="direction || null">@for (entry of visible; track entry.node.id) {<li role="treeitem" class="hw-tree-item" [attr.data-node]="entry.node.id" [attr.aria-level]="entry.level" [attr.aria-posinset]="entry.position" [attr.aria-setsize]="entry.total" [attr.aria-expanded]="entry.node.children?.length ? isExpanded(entry.node.id) : null" [attr.aria-selected]="value === entry.node.id" [attr.aria-disabled]="disabled || entry.node.disabled || null" [style.padding-inline-start]="(entry.level - 1) + 'rem'" [tabIndex]="!disabled && !entry.node.disabled && focusId === entry.node.id ? 0 : -1" (focus)="focused = entry.node.id" (click)="select(entry.node)" (keydown)="keydown($event, entry)" (blur)="touch()">@if (entry.node.children?.length) {<span class="hw-tree-toggle" aria-hidden="true" (click)="$event.stopPropagation(); toggleNode(entry.node)"><span class="hw-icon" data-size="sm" aria-hidden="true" [attr.data-icon]="isExpanded(entry.node.id) ? 'minus-sign' : 'add-01'"></span></span>}<span>{{ entry.node.label }}</span></li>}</ul><input type="hidden" [name]="name" [value]="value" [disabled]="disabled">@if (hint) {<p class="hw-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="hw-error" [id]="controlId + '-error'">{{ error }}</p>}`})
 export class HwTreeViewComponent extends HwExpandedValueControl<string> {
   override value = ''; protected emptyValue() { return ''; } @Input() nodes: readonly HwTreeNode[] = []; @Input() expandedIds: readonly string[] = []; @Input() direction?: Direction; @Output() readonly expandedIdsChange = new EventEmitter<readonly string[]>(); private readonly host: ElementRef<HTMLElement> = inject(ElementRef); focused = '';
   get visible(): HwVisibleTreeNode[] { const entries: HwVisibleTreeNode[] = []; const visit = (nodes: readonly HwTreeNode[], level: number, parent?: string) => nodes.forEach((node, index) => { entries.push({node, level, parent, position: index + 1, total: nodes.length, disabled: node.disabled}); if (node.children && this.isExpanded(node.id)) visit(node.children, level + 1, node.id); }); visit(this.nodes, 1); return entries; }
@@ -128,20 +126,20 @@ export class HwTreeViewComponent extends HwExpandedValueControl<string> {
 
 export interface HwSlide { id?: string; title?: string; content?: string; src?: string; alt?: string; }
 @Component({selector: 'hw-carousel', standalone: true, imports: [NgTemplateOutlet], styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `
-  <section class="hw-carousel" data-hw-carousel-ready [style.--hw-carousel-index]="indexValue" role="region" [attr.aria-label]="label" [attr.aria-roledescription]="carouselDescription">
+  <section class="hw-carousel" data-hw-carousel-ready [style.--hw-carousel-index]="indexValue" role="region" [attr.aria-label]="texts.need('label', label)" [attr.aria-roledescription]="carouselDescription || null">
     <div class="hw-carousel-viewport hw-carousel-slides"><div class="hw-carousel-track">
       @for (slide of slides; track slide.id || $index; let index = $index) {
-        <div class="hw-carousel-slide" role="group" [attr.aria-roledescription]="slideDescription" [attr.aria-label]="slideLabel(index + 1, slides.length)" [hidden]="index !== indexValue" [inert]="index !== indexValue" [attr.aria-hidden]="index !== indexValue ? 'true' : null">
+        <div class="hw-carousel-slide" role="group" [attr.aria-roledescription]="slideDescription || null" [attr.aria-label]="texts.call('getSlideLabel', getSlideLabel, [index + 1, slides.length])" [hidden]="index !== indexValue" [inert]="index !== indexValue" [attr.aria-hidden]="index !== indexValue ? 'true' : null">
           @if (slideTemplate) {<ng-container [ngTemplateOutlet]="slideTemplate" [ngTemplateOutletContext]="{$implicit: slide, index: index}" />} @else {
             @if (slide.src) {<img [src]="slide.src" [alt]="slide.alt || ''">}@if (slide.title) {<h3>{{ slide.title }}</h3>}@if (slide.content) {<p>{{ slide.content }}</p>}
           }
         </div>
       }
-    </div>@if (!slides.length) {<p class="hw-carousel-empty">{{ emptyLabel }}</p>}</div>
+    </div>@if (!slides.length) {<p class="hw-carousel-empty">{{ texts.need('emptyLabel', emptyLabel) }}</p>}</div>
     <div class="hw-carousel-controls">
-      @if (showIndicators && slides.length) {<div class="hw-carousel-pagination" role="group" [attr.aria-label]="indicatorsLabel">@for (slide of slides; track slide.id || $index; let index = $index) {<button class="hw-carousel-dot" type="button" [attr.aria-label]="slideLabel(index + 1, slides.length)" [attr.aria-current]="index === indexValue ? 'true' : null" (click)="select(index)"></button>}</div>}
-      <div class="hw-carousel-arrows"><button class="hw-button hw-carousel-arrow" type="button" data-hw-previous [attr.aria-label]="previousLabel" [disabled]="slides.length < 2 || (!loop && indexValue === 0)" (click)="move(-1)"></button><button class="hw-button hw-carousel-arrow" type="button" data-hw-next [attr.aria-label]="nextLabel" [disabled]="slides.length < 2 || (!loop && indexValue === slides.length - 1)" (click)="move(1)"></button></div>
-      <span class="hw-carousel-status hw-sr-only" role="status" aria-live="polite">{{ slides.length ? slideLabel(indexValue + 1, slides.length) : emptyLabel }}</span>
+      @if (showIndicators && slides.length) {<div class="hw-carousel-pagination" role="group" [attr.aria-label]="texts.need('indicatorsLabel', indicatorsLabel, 'showIndicators is on')">@for (slide of slides; track slide.id || $index; let index = $index) {<button class="hw-carousel-dot" type="button" [attr.aria-label]="texts.call('getSlideLabel', getSlideLabel, [index + 1, slides.length])" [attr.aria-current]="index === indexValue ? 'true' : null" (click)="select(index)"></button>}</div>}
+      <div class="hw-carousel-arrows"><button class="hw-button hw-carousel-arrow" type="button" data-hw-previous [attr.aria-label]="texts.need('previousLabel', previousLabel)" [disabled]="slides.length < 2 || (!loop && indexValue === 0)" (click)="move(-1)"></button><button class="hw-button hw-carousel-arrow" type="button" data-hw-next [attr.aria-label]="texts.need('nextLabel', nextLabel)" [disabled]="slides.length < 2 || (!loop && indexValue === slides.length - 1)" (click)="move(1)"></button></div>
+      <span class="hw-carousel-status hw-sr-only" role="status" aria-live="polite">{{ slides.length ? texts.call('getSlideLabel', getSlideLabel, [indexValue + 1, slides.length]) : texts.need('emptyLabel', emptyLabel) }}</span>
     </div>
   </section>`})
 export class HwCarouselComponent {
@@ -151,13 +149,19 @@ export class HwCarouselComponent {
   @Input() current = 0;
   @Input({transform: booleanAttribute}) loop = false;
   @Input({transform: booleanAttribute}) showIndicators = true;
-  @Input() indicatorsLabel = 'اختيار الشريحة';
-  @Input() previousLabel = 'الشريحة السابقة';
-  @Input() nextLabel = 'الشريحة التالية';
-  @Input() emptyLabel = 'لا توجد شرائح';
-  @Input() carouselDescription = 'عرض شرائح';
-  @Input() slideDescription = 'شريحة';
-  @Input() slideLabel = (current: number, total: number) => `${current} من ${total}`;
+  /** Accessible name of the indicator group. Required unless showIndicators is off. */
+  @Input() indicatorsLabel = '';
+  @Input({required: true}) previousLabel = '';
+  @Input({required: true}) nextLabel = '';
+  /** Status text when there are no slides. */
+  @Input({required: true}) emptyLabel = '';
+  /** Optional aria-roledescription of the root; the attribute is omitted without it. */
+  @Input() carouselDescription = '';
+  /** Optional aria-roledescription of each slide; the attribute is omitted without it. */
+  @Input() slideDescription = '';
+  /** Accessible name of a slide and of its indicator, and the live status text; position is one-based. */
+  @Input({required: true}) getSlideLabel!: (position: number, total: number) => string;
+  protected readonly texts = new HwTexts('hw-carousel');
   @Output() readonly currentChange = new EventEmitter<number>();
   get indexValue() { return Math.max(0, Math.min(this.slides.length - 1, Number.isFinite(this.current) ? Math.floor(this.current) : 0)); }
   select(requested: number) {

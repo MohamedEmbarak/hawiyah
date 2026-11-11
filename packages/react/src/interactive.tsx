@@ -7,7 +7,7 @@ import type { FieldDecoration } from './shared.js';
 import { Button } from './forms.js';
 
 export interface TabItem { value: string; label: ReactNode; content: ReactNode; disabled?: boolean }
-export interface TabsProps extends Omit<ComponentPropsWithRef<'div'>, 'defaultValue' | 'onChange'> {
+interface TabsBaseProps extends Omit<ComponentPropsWithRef<'div'>, 'defaultValue' | 'onChange'> {
   items: readonly TabItem[];
   value?: string;
   defaultValue?: string;
@@ -15,10 +15,10 @@ export interface TabsProps extends Omit<ComponentPropsWithRef<'div'>, 'defaultVa
   label: string;
   orientation?: Orientation;
   activationMode?: 'automatic' | 'manual';
-  overflow?: 'menu' | 'scroll';
-  overflowLabel?: string;
 }
-export function Tabs({ items, value, defaultValue, onValueChange, label, orientation = 'horizontal', activationMode = 'automatic', overflow = 'menu', overflowLabel = 'المزيد من التبويبات', className, ...props }: TabsProps) {
+/** With the default `overflow="menu"`, `overflowLabel` names the overflow disclosure. */
+export type TabsProps = TabsBaseProps & ({ overflow: 'scroll'; overflowLabel?: string } | { overflow?: 'menu' | 'scroll'; overflowLabel: string });
+export function Tabs({ items, value, defaultValue, onValueChange, label, orientation = 'horizontal', activationMode = 'automatic', overflow = 'menu', overflowLabel, className, ...props }: TabsProps) {
   const id = useId();
   const [selected, select] = useControllable(value, defaultValue ?? items.find(item => !item.disabled)?.value ?? '', onValueChange);
   const [focused, setFocused] = useState<string | undefined>();
@@ -82,7 +82,7 @@ export function Tabs({ items, value, defaultValue, onValueChange, label, orienta
         }}>{item.label}</button>)}
     </div>
     <details ref={disclosure} className="hw-tabs-overflow" hidden={!hidden.length} onKeyDown={event => { if (event.key === 'Escape' && event.currentTarget.open) { event.preventDefault(); close(); event.currentTarget.querySelector('summary')?.focus(); } }}>
-      <summary className="hw-tab-overflow-trigger" aria-label={overflowLabel} data-active={hidden.some(index => items[index]?.value === active) || undefined}>…</summary>
+      <summary className="hw-tab-overflow-trigger" aria-label={overflow === 'menu' ? text('Tabs', 'overflowLabel', overflowLabel, "overflow is 'menu'") : undefined} data-active={hidden.some(index => items[index]?.value === active) || undefined}>…</summary>
       <div className="hw-tab-overflow-menu">{hidden.map(index => { const item = items[index]; return item && <button key={item.value} type="button" className="hw-tab-overflow-item" data-hw-overflow-value={item.value} disabled={item.disabled} aria-pressed={item.value === active} onClick={() => { if (item.disabled) return; select(item.value); close(); disclosure.current?.querySelector('summary')?.focus(); }}>{item.label}</button>; })}</div>
     </details>
     </div>
@@ -100,9 +100,10 @@ export interface DialogProps extends Omit<ComponentPropsWithRef<'dialog'>, 'open
   children?: ReactNode | ((context: { close: () => void }) => ReactNode);
   footer?: ReactNode | ((context: { close: () => void }) => ReactNode);
   closeOnBackdrop?: boolean;
-  closeLabel?: string;
+  /** Name of the header close button, which is always rendered. */
+  closeLabel: string;
 }
-export function Dialog({ open: controlled, defaultOpen = false, onOpenChange, title, description, trigger, children, footer, closeOnBackdrop = true, closeLabel = 'Close', ref, className, onCancel, onClose, onClick, onPointerDown, onPointerCancel, ...props }: DialogProps) {
+export function Dialog({ open: controlled, defaultOpen = false, onOpenChange, title, description, trigger, children, footer, closeOnBackdrop = true, closeLabel, ref, className, onCancel, onClose, onClick, onPointerDown, onPointerCancel, ...props }: DialogProps) {
   const id = useId();
   const [open, setOpen] = useControllable(controlled, defaultOpen, onOpenChange);
   const [nativeCloseVersion, setNativeCloseVersion] = useState(0);
@@ -160,14 +161,14 @@ export function Dialog({ open: controlled, defaultOpen = false, onOpenChange, ti
         const bounds = event.currentTarget.getBoundingClientRect();
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
       }}>
-      <header className="hw-dialog-header"><h2 id={`${id}-title`}>{title}</h2><Button variant="ghost" aria-label={closeLabel} onClick={close}><span className="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true" /></Button></header>
+      <header className="hw-dialog-header"><h2 id={`${id}-title`}>{title}</h2><Button variant="ghost" aria-label={text('Dialog', 'closeLabel', closeLabel)} onClick={close}><span className="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true" /></Button></header>
       <div className="hw-dialog-body">{description && <p id={`${id}-description`}>{description}</p>}{typeof children === 'function' ? children(context) : children}</div>
       {footer && <footer className="hw-dialog-footer">{typeof footer === 'function' ? footer(context) : footer}</footer>}
     </dialog>
   </>;
 }
 
-export interface ComboboxProps extends Omit<ComponentPropsWithRef<'input'>, 'value' | 'defaultValue' | 'onChange' | 'type' | 'children'>, FieldDecoration {
+interface ComboboxBaseProps extends Omit<ComponentPropsWithRef<'input'>, 'value' | 'defaultValue' | 'onChange' | 'type' | 'children' | 'required'>, FieldDecoration {
   options: readonly Option[];
   value?: string;
   defaultValue?: string;
@@ -176,11 +177,14 @@ export interface ComboboxProps extends Omit<ComponentPropsWithRef<'input'>, 'val
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  emptyMessage?: string;
-  getResultsMessage?: (count: number) => string;
-  requiredMessage?: string;
+  /** Shown in the list when nothing matches. */
+  emptyMessage: string;
+  /** Live-region announcement of the number of matches. */
+  getResultsMessage: (count: number) => string;
 }
-function ComboboxControl({ options, value, defaultValue = '', onValueChange, onInputChange, open: controlledOpen, defaultOpen = false, onOpenChange, emptyMessage = 'No options found', getResultsMessage = count => `${count} results available`, requiredMessage = 'Choose an option from the list.', className, ref, onKeyDown, onFocus, onBlur, onClick, name, form, disabled, ...props }: Omit<ComboboxProps, keyof FieldDecoration>) {
+/** `requiredMessage` is the custom validity message of a required combobox without a selected option. */
+export type ComboboxProps = ComboboxBaseProps & ({ required?: false; requiredMessage?: string } | { required?: boolean; requiredMessage: string });
+function ComboboxControl({ options, value, defaultValue = '', onValueChange, onInputChange, open: controlledOpen, defaultOpen = false, onOpenChange, emptyMessage, getResultsMessage, requiredMessage, className, ref, onKeyDown, onFocus, onBlur, onClick, name, form, disabled, ...props }: Omit<ComboboxProps, keyof FieldDecoration>) {
   const field = useFieldControl(props);
   const [state, setState] = useState(() => ({ ...createComboboxState(options, value ?? defaultValue), open: controlledOpen ?? defaultOpen }));
   const input = useRef<HTMLInputElement | null>(null);
@@ -233,7 +237,7 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
       ? { ...current, query: nextLabel, activeIndex: -1 } : current);
   }, [options, selected]);
   useEffect(() => {
-    input.current?.setCustomValidity(field.required && !selected ? requiredMessage : '');
+    input.current?.setCustomValidity(validity('Combobox', 'requiredMessage', Boolean(field.required && !selected), requiredMessage));
   }, [field.required, selected, requiredMessage]);
   useEffect(() => {
     const formElement = input.current?.form;
@@ -281,9 +285,9 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
     <ul className="hw-listbox" id={listId} role="listbox" aria-label={props['aria-label']} aria-labelledby={field['aria-labelledby']} hidden={!open}>
       {results.map((option, index) => <li key={option.value} id={`${field.id}-option-${index}`} className="hw-option" role="option" aria-selected={selected === option.value} aria-disabled={option.disabled || undefined} data-active={state.activeIndex === index ? 'true' : undefined} data-state={state.activeIndex === index ? 'active' : undefined}
         onPointerDown={event => event.preventDefault()} onClick={() => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); input.current?.focus(); } }}>{option.label}</li>)}
-      {!results.length && <li role="presentation" className="hw-hint">{emptyMessage}</li>}
+      {!results.length && <li role="presentation" className="hw-hint">{copy.empty}</li>}
     </ul>
-    <span id={statusId} className="hw-sr-only" role="status" aria-live="polite" aria-atomic="true">{open ? getResultsMessage(results.length) : ''}</span>
+    <span id={statusId} className="hw-sr-only" role="status" aria-live="polite" aria-atomic="true">{open ? copy.results?.(results.length) : ''}</span>
   </div>;
 }
 export function Combobox({ label, hint, error, ...props }: ComboboxProps) {

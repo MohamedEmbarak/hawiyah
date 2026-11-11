@@ -1,6 +1,6 @@
-import { createCleanup, getNextEnabledIndex, isDisabled, normalizeSearch, restoreFocus, prepareToastDismissFocus } from '@hawiyah/core';
+import { createCleanup, requireText, getNextEnabledIndex, isDisabled, normalizeSearch, restoreFocus, prepareToastDismissFocus } from '@hawiyah/core';
 import { createDialog, type DialogController, type DialogOptions } from './dialog.js';
-import { emit, ensureId, eventElement, remember, required, translated } from './dom.js';
+import { emit, ensureId, eventElement, named, remember, required, templated, text, writeText } from './dom.js';
 
 export interface PopoverOptions { onOpenChange?: (open: boolean) => void; focusOnOpen?: boolean }
 export interface PopoverController { readonly open: boolean; show(): void; close(restore?: boolean): void; destroy(): void }
@@ -58,10 +58,17 @@ export function createMenu(root: HTMLElement, options: MenuOptions = {}): Popove
 
 export function createDrawer(dialog: HTMLDialogElement, options: DialogOptions = {}): DialogController { return createDialog(dialog, options); }
 
+/** Title of a toast for the `{title}` placeholder of data-hw-dismiss-label. */
+function toastTitle(toast: HTMLElement): string {
+  const heading = toast.querySelector('[data-hw-toast-title], strong, h2, h3, h4');
+  return (heading ?? toast.querySelector('.hw-toast-content, p'))?.textContent?.trim() ?? '';
+}
 export interface ToastRegionOptions {
   variant?: 'default' | 'inline' | 'banner';
   position?: 'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+  /** Accessible name of the region (data-hw-label), unless the markup names it. Required. */
   label?: string;
+  /** Accessible name of a toast's dismiss button that has no authored name (data-hw-dismiss-label="… {title}"). Required when a message can be dismissed. */
   getDismissLabel?: (toast: HTMLElement) => string;
   onDismiss?: (id: string) => void;
 }
@@ -76,7 +83,8 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
   };
   if (options.variant) root.dataset.variant = options.variant;
   if (options.position) root.dataset.position = options.position;
-  if (options.label || (!root.hasAttribute('aria-label') && !root.hasAttribute('aria-labelledby'))) root.setAttribute('aria-label', options.label ?? translated(root, 'Notifications', 'الإشعارات'));
+  if (options.label !== undefined || !named(root)) writeText(root, 'aria-label', 'ToastRegion', 'label', text(root, 'label', options.label));
+  const dismissLabel = templated(root, 'getDismissLabel', options.getDismissLabel, (toast: HTMLElement) => ({ title: toastTitle(toast) }));
   if (!root.hasAttribute('tabindex')) root.tabIndex = -1;
 
   const grouped = root.querySelectorAll<HTMLElement>(':scope > :is([data-hw-live="polite"], [data-hw-live="assertive"], [role="status"], [role="alert"], [aria-live="polite"], [aria-live="assertive"]):not([data-hw-toast], .hw-toast)');
@@ -127,12 +135,10 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
         if (generated !== undefined) restoreLabel(button);
         continue;
       }
-      const heading = toast.querySelector('[data-hw-toast-title], strong, h2, h3, h4');
-      const title = (heading ?? toast.querySelector('.hw-toast-content, p'))?.textContent?.trim();
-      const prefix = translated(root, 'Dismiss notification', 'إغلاق الإشعار');
-      const label = options.getDismissLabel?.(toast) ?? (title ? `${prefix}: ${title}` : prefix);
-      button.setAttribute('aria-label', label);
-      generatedLabels.set(button, label);
+      const label = dismissLabel(toast);
+      if (!requireText('ToastRegion', 'getDismissLabel', label, 'a message can be dismissed')) { if (generated !== undefined) restoreLabel(button); continue; }
+      button.setAttribute('aria-label', label!);
+      generatedLabels.set(button, label!);
     }
   };
   sync();

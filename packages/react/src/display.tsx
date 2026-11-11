@@ -2,7 +2,8 @@ import { createElement, useEffect, useId, useLayoutEffect, useRef, useState } fr
 import { createAccordionMotion, getPaginationItems, normalizePaginationPage, normalizePaginationTotal } from '@hawiyah/core';
 import type { AccordionMotion } from '@hawiyah/core';
 import type { ComponentPropsWithRef, HTMLAttributes, Key, ReactNode } from 'react';
-import { assignRef, cx, useControllable, useFieldValueRef } from './shared.js';
+import { assignRef, cx, rootLabel, text, useControllable, useFieldValueRef } from './shared.js';
+import type { RootName } from './shared.js';
 import { Button } from './forms.js';
 
 export interface AccordionItem { value: string; title: ReactNode; content: ReactNode; open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void }
@@ -73,23 +74,23 @@ export function Alert({ tone = 'info', variant, title, children, className, role
   return <div {...props} {...(variant ? { 'data-variant': variant } : {})} className={cx('hw-alert', className)} data-tone={tone} role={role ?? (tone === 'danger' ? 'alert' : 'status')}><div className="hw-alert-content">{title && <strong>{title}</strong>}{children}</div></div>;
 }
 export interface TableColumn<Row> { key: string; header: ReactNode; cell: (row: Row, index: number) => ReactNode; rowHeader?: boolean }
-export interface TableProps<Row = unknown> extends Omit<ComponentPropsWithRef<'table'>, 'children'> {
+interface TableBaseProps<Row> extends Omit<ComponentPropsWithRef<'table'>, 'children'> {
   variant?: 'default' | 'striped' | 'bordered';
   size?: 'sm' | 'md' | 'lg';
   'data-variant'?: string;
   'data-size'?: string;
-  emptyMessage?: ReactNode;
-  columns?: readonly TableColumn<Row>[];
   rows?: readonly Row[];
   rowKey?: (row: Row, index: number) => Key;
   caption?: ReactNode;
   children?: ReactNode;
   wrapperProps?: HTMLAttributes<HTMLDivElement>;
 }
+/** With `columns`, `emptyMessage` is the text of the single cell rendered when there are no rows. */
+export type TableProps<Row = unknown> = TableBaseProps<Row> & ({ columns?: undefined; emptyMessage?: ReactNode } | { columns: readonly TableColumn<Row>[]; emptyMessage: ReactNode });
 /** Either provide columns/rows or compose native thead/tbody children. */
-export function Table<Row>({ columns, rows = [], rowKey = (_, index) => index, caption, children, className, wrapperProps, variant, size, emptyMessage = 'لا توجد سجلات', ...props }: TableProps<Row>) {
-  const captionId = useId();
-  return <div tabIndex={0} role={caption ? 'region' : undefined} aria-labelledby={caption ? captionId : undefined} {...wrapperProps} className={cx('hw-table-wrap', wrapperProps?.className)}><table {...props} data-variant={variant ?? props['data-variant']} data-size={size ?? props['data-size']} className={cx('hw-table', className)}>{caption && <caption id={captionId}>{caption}</caption>}{columns ? <><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.header}</th>)}</tr></thead><tbody>{rows.length ? rows.map((row, index) => <tr key={rowKey(row, index)}>{columns.map(column => column.rowHeader ? <th key={column.key} scope="row">{column.cell(row, index)}</th> : <td key={column.key}>{column.cell(row, index)}</td>)}</tr>) : <tr><td colSpan={columns.length || 1}>{emptyMessage}</td></tr>}</tbody></> : children}</table></div>;
+export function Table<Row>({ columns, rows = [], rowKey = (_, index) => index, caption, children, className, wrapperProps, variant, size, emptyMessage, ...props }: TableProps<Row>) {
+  const captionId = useId(); const empty = columns ? text('Table', 'emptyMessage', emptyMessage, 'columns are given') : undefined;
+  return <div tabIndex={0} role={caption ? 'region' : undefined} aria-labelledby={caption ? captionId : undefined} {...wrapperProps} className={cx('hw-table-wrap', wrapperProps?.className)}><table {...props} data-variant={variant ?? props['data-variant']} data-size={size ?? props['data-size']} className={cx('hw-table', className)}>{caption && <caption id={captionId}>{caption}</caption>}{columns ? <><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.header}</th>)}</tr></thead><tbody>{rows.length ? rows.map((row, index) => <tr key={rowKey(row, index)}>{columns.map(column => column.rowHeader ? <th key={column.key} scope="row">{column.cell(row, index)}</th> : <td key={column.key}>{column.cell(row, index)}</td>)}</tr>) : <tr><td colSpan={columns.length || 1}>{empty}</td></tr>}</tbody></> : children}</table></div>;
 }
 function PaginationJumpInput({start, end}: {start: number; end: number}) {
   const ref = useFieldValueRef<HTMLInputElement>(undefined);
@@ -98,19 +99,19 @@ function PaginationJumpInput({start, end}: {start: number; end: number}) {
     if(input.dataset.hwJumpTouched === 'true') {if(input.checkValidity()) input.removeAttribute('aria-invalid'); else input.setAttribute('aria-invalid','true');}
   }} />;
 }
-export interface PaginationProps extends Omit<ComponentPropsWithRef<'nav'>, 'onChange'> {
+interface PaginationBaseProps extends Omit<ComponentPropsWithRef<'nav'>, 'onChange'> {
   page?: number; defaultPage?: number; totalPages: number; onPageChange?: (page: number) => void;
-  label?: string; previousLabel?: string; nextLabel?: string;
-  getPageLabel?: (page: number) => string; formatPage?: (page: number) => ReactNode;
+  previousLabel: string; nextLabel: string;
+  getPageLabel: (page: number) => string; formatPage?: (page: number) => ReactNode;
   siblingCount?: number; disabled?: boolean; hideOnSinglePage?: boolean;
-  getGapLabel?: (start: number, end: number) => string; jumpLabel?: string; goLabel?: string;
+  getGapLabel: (start: number, end: number) => string; jumpLabel: string; goLabel: string;
 }
+export type PaginationProps = PaginationBaseProps & RootName;
 export function Pagination({ page, defaultPage = 1, totalPages, onPageChange,
-  label = 'ترقيم الصفحات', previousLabel = 'الصفحة السابقة', nextLabel = 'الصفحة التالية',
-  getPageLabel = number => 'الصفحة ' + number, formatPage = String, siblingCount = 1,
-  disabled = false, hideOnSinglePage = false, getGapLabel = (start, end) => 'الصفحات ' + start + ' إلى ' + end,
-  jumpLabel = 'الانتقال إلى صفحة', goLabel = 'انتقال', className, ref, ...props
+  label, previousLabel, nextLabel, getPageLabel, formatPage = String, siblingCount = 1,
+  disabled = false, hideOnSinglePage = false, getGapLabel, jumpLabel, goLabel, className, ref, ...props
 }: PaginationProps) {
+  const copy = { label: rootLabel('Pagination', props, label), previous: text('Pagination', 'previousLabel', previousLabel), next: text('Pagination', 'nextLabel', nextLabel), page: text('Pagination', 'getPageLabel', getPageLabel), gap: text('Pagination', 'getGapLabel', getGapLabel), jump: text('Pagination', 'jumpLabel', jumpLabel), go: text('Pagination', 'goLabel', goLabel) };
   const total = normalizePaginationTotal(totalPages);
   const [stored, setPage] = useControllable(page, defaultPage, onPageChange);
   const current = normalizePaginationPage(stored, total), items = getPaginationItems(current, total, siblingCount);
@@ -154,37 +155,39 @@ export function Pagination({ page, defaultPage = 1, totalPages, onPageChange,
     if (input.checkValidity() && Number.isInteger(input.valueAsNumber) && input.valueAsNumber >= start && input.valueAsNumber <= end) {input.removeAttribute('aria-invalid');select(input.valueAsNumber, node.closest('details'));}
     else {input.setAttribute('aria-invalid','true');input.reportValidity();}
   };
-  return <nav {...props} ref={node => {root.current = node; assignRef(ref, node);}} className={cx('hw-pagination', className)} aria-label={props['aria-label'] ?? label} data-disabled={disabled || undefined} hidden={props.hidden || hideOnSinglePage && total === 1} onClickCapture={event => {props.onClickCapture?.(event);if(blocked()) {event.preventDefault();event.stopPropagation();syncInherited();}}} onKeyDown={event => {
+  return <nav {...props} ref={node => {root.current = node; assignRef(ref, node);}} className={cx('hw-pagination', className)} aria-label={copy.label} data-disabled={disabled || undefined} hidden={props.hidden || hideOnSinglePage && total === 1} onClickCapture={event => {props.onClickCapture?.(event);if(blocked()) {event.preventDefault();event.stopPropagation();syncInherited();}}} onKeyDown={event => {
     props.onKeyDown?.(event);
     if(blocked() && ['Enter',' '].includes(event.key)) {event.preventDefault();syncInherited();return;}
     if (event.defaultPrevented || event.key !== 'Escape') return;
     const details = (event.target as HTMLElement).closest<HTMLDetailsElement>('.hw-pagination-gap[open]');
     if (details) {event.preventDefault(); details.open = false; details.querySelector<HTMLElement>('summary')?.focus();}
   }}>
-    <button className="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous="" type="button" aria-label={previousLabel} disabled={disabled || current === 1} onClick={() => select(current - 1)} />
-    {items.map(item => typeof item === 'number' ? <button key={item} className="hw-button hw-pagination-item" data-variant="ghost" data-hw-page={item} type="button" disabled={disabled} aria-label={getPageLabel(item)} aria-current={item === current ? 'page' : undefined} onClick={() => select(item)}>{formatPage(item)}</button> :
+    <button className="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous="" type="button" aria-label={copy.previous} disabled={disabled || current === 1} onClick={() => select(current - 1)} />
+    {items.map(item => typeof item === 'number' ? <button key={item} className="hw-button hw-pagination-item" data-variant="ghost" data-hw-page={item} type="button" disabled={disabled} aria-label={copy.page?.(item) || undefined} aria-current={item === current ? 'page' : undefined} onClick={() => select(item)}>{formatPage(item)}</button> :
       disabled ? <span key={'gap-' + item.start} className="hw-pagination-ellipsis" aria-hidden="true">…</span> :
       <details key={'gap-' + item.start} className="hw-pagination-gap" onToggle={event => {if(blocked()) syncInherited();else if(event.currentTarget.open) close(event.currentTarget);}}>
-        <summary className="hw-pagination-gap-trigger" aria-label={getGapLabel(item.start, item.end)}>…</summary>
+        <summary className="hw-pagination-gap-trigger" aria-label={copy.gap?.(item.start, item.end) || undefined}>…</summary>
         <div className="hw-pagination-menu">
-          {item.end - item.start < 100 ? Array.from({length: item.end - item.start + 1}, (_, index) => item.start + index).map(number => <button key={number} type="button" className="hw-button hw-pagination-item" data-variant="ghost" data-hw-page={number} aria-label={getPageLabel(number)} onClick={event => select(number, event.currentTarget.closest('details'))}>{formatPage(number)}</button>) :
-          <div className="hw-pagination-jump" onKeyDown={event => {if(event.key === 'Enter') {event.preventDefault(); jump(event.currentTarget, item.start, item.end);}}}><label className="hw-label">{jumpLabel}<PaginationJumpInput start={item.start} end={item.end} /></label><button type="button" className="hw-button" data-hw-jump-submit="" onClick={event => jump(event.currentTarget.parentElement!, item.start, item.end)}>{goLabel}</button></div>}
+          {item.end - item.start < 100 ? Array.from({length: item.end - item.start + 1}, (_, index) => item.start + index).map(number => <button key={number} type="button" className="hw-button hw-pagination-item" data-variant="ghost" data-hw-page={number} aria-label={copy.page?.(number) || undefined} onClick={event => select(number, event.currentTarget.closest('details'))}>{formatPage(number)}</button>) :
+          <div className="hw-pagination-jump" onKeyDown={event => {if(event.key === 'Enter') {event.preventDefault(); jump(event.currentTarget, item.start, item.end);}}}><label className="hw-label">{copy.jump}<PaginationJumpInput start={item.start} end={item.end} /></label><button type="button" className="hw-button" data-hw-jump-submit="" onClick={event => jump(event.currentTarget.parentElement!, item.start, item.end)}>{copy.go}</button></div>}
         </div>
       </details>)}
-    <button className="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next="" type="button" aria-label={nextLabel} disabled={disabled || current === total} onClick={() => select(current + 1)} />
+    <button className="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next="" type="button" aria-label={copy.next} disabled={disabled || current === total} onClick={() => select(current + 1)} />
   </nav>;
 }
 export interface BreadcrumbItem { label: ReactNode; href?: string; current?: boolean; disabled?: boolean }
-export interface BreadcrumbProps extends ComponentPropsWithRef<'nav'> { items: readonly BreadcrumbItem[]; label?: string }
-export function Breadcrumb({ items, label = 'مسار التنقل', className, ...props }: BreadcrumbProps) {
-  return <nav {...props} className={cx('hw-breadcrumb', className)} aria-label={props['aria-label'] ?? label}><ol>{items.map((item, index) => <li key={index}>{item.href && !item.disabled ? <a href={item.href} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</a> : <span role={item.disabled ? 'link' : undefined} aria-disabled={item.disabled || undefined} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</span>}</li>)}</ol></nav>;
+export type BreadcrumbProps = ComponentPropsWithRef<'nav'> & { items: readonly BreadcrumbItem[] } & RootName;
+export function Breadcrumb({ items, label, className, ...props }: BreadcrumbProps) {
+  return <nav {...props} className={cx('hw-breadcrumb', className)} aria-label={rootLabel('Breadcrumb', props, label)}><ol>{items.map((item, index) => <li key={index}>{item.href && !item.disabled ? <a href={item.href} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</a> : <span role={item.disabled ? 'link' : undefined} aria-disabled={item.disabled || undefined} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</span>}</li>)}</ol></nav>;
 }
 export interface ProgressProps extends ComponentPropsWithRef<'progress'> { label: string }
 export function Progress({ label, className, max = 100, ...props }: ProgressProps) { return <progress {...props} max={max} className={cx('hw-progress', className)} aria-label={label} />; }
 export interface SkeletonProps extends ComponentPropsWithRef<'span'> {}
 export function Skeleton({ className, ...props }: SkeletonProps) { return <span aria-hidden="true" {...props} className={cx('hw-skeleton', className)} />; }
-export interface SpinnerProps extends ComponentPropsWithRef<'span'> { label?: string }
-export function Spinner({ label = 'Loading', className, children, ...props }: SpinnerProps) { return <span {...props} role="status" className={cx('hw-spinner', className)}><span className="hw-sr-only">{label}</span>{children}</span>; }
+/** A spinner marked aria-hidden by the application is decorative and needs no name. */
+export type SpinnerProps = ComponentPropsWithRef<'span'> & (RootName | { label?: string; 'aria-hidden': true | 'true' });
+export function Spinner({ label, className, children, ...props }: SpinnerProps) { const decorative = props['aria-hidden'] === true || props['aria-hidden'] === 'true'; const name = decorative ? undefined : hasTextOrAria(props) ? label : text('Spinner', 'label', label); return <span {...props} role="status" className={cx('hw-spinner', className)}>{name && <span className="hw-sr-only">{name}</span>}{children}</span>; }
+const hasTextOrAria = (props: { 'aria-label'?: string; 'aria-labelledby'?: string }) => Boolean(props['aria-label']?.trim() || props['aria-labelledby']?.trim());
 export interface AvatarProps extends Omit<ComponentPropsWithRef<'span'>, 'children'> {
   src?: string; name: string; initials?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | '40' | '64' | '80' | '120'; variant?: 'circle' | 'square';
@@ -205,15 +208,16 @@ export function Divider({ className, tone, orientation, ...props }: DividerProps
   return <hr data-tone={tone} aria-orientation={orientation} {...props} className={cx('hw-divider', className)} />;
 }
 export interface StepItem { value: string; label: ReactNode; description?: ReactNode; status?: 'complete' | 'current' | 'upcoming' }
-export interface StepperProps extends ComponentPropsWithRef<'ol'> {
-  items: readonly StepItem[]; current?: string; label?: string;
+interface StepperBaseProps extends ComponentPropsWithRef<'ol'> {
+  items: readonly StepItem[]; current?: string;
   /** Zero-based active step; -1 means not started, items.length means complete. Overrides current. */
   activeIndex?: number;
 }
-export function Stepper({ items, current, activeIndex, label = 'التقدم', className, ...props }: StepperProps) {
+export type StepperProps = StepperBaseProps & RootName;
+export function Stepper({ items, current, activeIndex, label, className, ...props }: StepperProps) {
   const requested = activeIndex ?? items.findIndex(item => item.value === current);
   const index = Number.isInteger(requested) && requested >= -1 && requested <= items.length ? requested : -1;
-  return <ol {...props} className={cx('hw-stepper', className)} aria-label={props['aria-label'] ?? label}>{items.map((item, itemIndex) => {
+  return <ol {...props} className={cx('hw-stepper', className)} aria-label={rootLabel('Stepper', props, label)}>{items.map((item, itemIndex) => {
     const status = item.status ?? (itemIndex === index ? 'current' : index > itemIndex ? 'complete' : 'upcoming');
     return <li key={item.value} className="hw-step" data-state={status} aria-current={status === 'current' ? 'step' : undefined}><span>{item.label}</span>{item.description && <p className="hw-hint">{item.description}</p>}</li>;
   })}</ol>;

@@ -146,7 +146,7 @@ describe('combobox', () => {
   it('requires a committed option, reacts to required changes, and restores custom validity', async () => {
     const root = mount(comboMarkup);
     const input = root.querySelector<HTMLInputElement>('input')!;
-    const controller = createCombobox(root, { invalidSelectionMessage: 'Choose an option.' });
+    const controller = createCombobox(root, { requiredMessage: 'Choose an option.' });
     input.value = 'Unmatched city';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     expect(input.checkValidity()).toBe(true);

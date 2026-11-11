@@ -1,8 +1,9 @@
 import { createCleanup } from '@hawiyah/core';
 import { createDrawer } from './disclosures.js';
 import type { DialogController, DialogOptions } from './dialog.js';
-import { eventElement, remember } from './dom.js';
+import { eventElement, named, remember, text, writeText } from './dom.js';
 
+/** navigationLabel names the nav landmark: the option, else the nav's authored aria-label, else data-hw-navigation-label on the dialog. Required. */
 export interface NavigationDrawerOptions extends DialogOptions { navigationLabel?: string }
 export type NavigationDrawerController = DialogController;
 
@@ -15,7 +16,7 @@ export function createNavigationDrawer(dialog: HTMLDialogElement, options: Navig
   remember(scope, navigation, ['aria-label']);
   dialog.classList.add('hw-dialog', 'hw-drawer', 'hw-navigation-drawer');
   if (!dialog.hasAttribute('data-side')) dialog.dataset.side = 'start';
-  if (options.navigationLabel || !navigation.hasAttribute('aria-label')) navigation.setAttribute('aria-label', options.navigationLabel ?? 'التنقل الرئيسي');
+  if (options.navigationLabel !== undefined || !named(navigation)) writeText(navigation, 'aria-label', 'NavigationDrawer', 'navigationLabel', text(dialog, 'navigationLabel', options.navigationLabel));
   // Disabled native links cannot be disabled with ARIA alone. Preserve their
   // original attributes for cleanup, then remove them from navigation/tab order.
   for (const disabled of navigation.querySelectorAll<HTMLElement>('[aria-disabled="true"]')) {

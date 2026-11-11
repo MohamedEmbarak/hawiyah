@@ -4,6 +4,8 @@ import { createAccordionMotion } from '@hawiyah/core';
 import type { AccordionMotion } from '@hawiyah/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { injectIsBrowser } from './platform';
+import { injectId } from './ids';
+import { HwTexts } from './text';
 
 /** Native button keeps native form, keyboard, disabled and event semantics. */
 @Directive({selector: 'button[hwButton],a[hwButton]', standalone: true, host: {'class': 'hw-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}})
@@ -31,18 +33,20 @@ export class HwCardComponent {
 @Component({selector: 'hw-badge', standalone: true, template: `<span class="hw-badge" [attr.data-tone]="tone" [attr.data-variant]="variant"><ng-content /></span>`})
 export class HwBadgeComponent { @Input() variant: 'soft' | 'outline' | 'dot' = 'soft'; @Input() tone: 'neutral' | 'success' | 'warning' | 'danger' | 'info' = 'neutral'; }
 
-@Component({selector: 'hw-alert', standalone: true, template: `<div class="hw-alert" [attr.data-tone]="tone" [attr.data-variant]="variant" [attr.role]="role"><div class="hw-alert-content">@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>@if (dismissible) {<button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="dismissed.emit()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>}</div>`})
+// The inputs named title and role are not native attributes of the wrapper element.
+@Component({selector: 'hw-alert', standalone: true, host: {'[attr.title]': 'null', '[attr.role]': 'null'}, template: `<div class="hw-alert" [attr.data-tone]="tone" [attr.data-variant]="variant" [attr.role]="role"><div class="hw-alert-content">@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>@if (dismissible) {<button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="texts.need('closeLabel', closeLabel, 'the alert is dismissible')" (click)="dismissed.emit()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>}</div>`})
 export class HwAlertComponent {
   @Input() tone: 'neutral' | 'info' | 'success' | 'warning' | 'danger' = 'info';
   @Input() variant: 'default' | 'outline' | 'minimal' = 'default';
   @Input() title = '';
   @Input() role: 'alert' | 'status' | 'region' | 'group' = 'status';
   @Input({transform: booleanAttribute}) dismissible = false;
-  @Input() closeLabel = 'Dismiss';
+  /** Accessible name of the dismiss button. Required when the alert is dismissible. */
+  @Input() closeLabel = '';
   @Output() readonly dismissed = new EventEmitter<void>();
+  protected readonly texts = new HwTexts('hw-alert');
 }
 
-let nextAccordionId = 0;
 export interface HwAccordionItem { id: string; title: string; content: string; open?: boolean }
 @Directive({selector: 'details[hwAccordionOpen]', standalone: true, host: { '[attr.open]': 'initialOpen ? "" : null' }})
 export class HwAccordionMotionDirective implements AfterViewInit, OnChanges, OnDestroy {
@@ -88,23 +92,25 @@ export class HwAccordionMotionDirective implements AfterViewInit, OnChanges, OnD
 export class HwAccordionComponent {
   @Input() items: readonly HwAccordionItem[] = [];
   @Input({transform: booleanAttribute}) exclusive = false;
-  @Input() groupName = `hw-accordion-${++nextAccordionId}`;
+  @Input() groupName = injectId('hw-accordion');
   @Output() readonly toggled = new EventEmitter<{id: string; open: boolean}>();
 }
 
 export interface HwTableColumn { key: string; label: string; rowHeader?: boolean }
 export type HwTableRow = Record<string, string | number | null | undefined>;
-@Component({selector: 'hw-table', standalone: true, styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `<div class="hw-table-wrap" tabindex="0" role="region" [attr.aria-label]="caption"><table class="hw-table" [attr.data-variant]="variant" [attr.data-size]="size"><caption>{{ caption }}</caption><thead><tr>@for (column of columns; track column.key) {<th scope="col">{{ column.label }}</th>}</tr></thead><tbody>@for (row of rows; track $index) {<tr>@for (column of columns; track column.key) {@if (column.rowHeader) {<th scope="row">{{ row[column.key] }}</th>} @else {<td>{{ row[column.key] }}</td>}}</tr>}@empty {<tr><td [attr.colspan]="columns.length || 1">{{ emptyMessage }}</td></tr>}</tbody></table></div>`})
+@Component({selector: 'hw-table', standalone: true, styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }'], template: `<div class="hw-table-wrap" tabindex="0" role="region" [attr.aria-label]="caption || null"><table class="hw-table" [attr.data-variant]="variant" [attr.data-size]="size"><caption>{{ caption }}</caption><thead><tr>@for (column of columns; track column.key) {<th scope="col">{{ column.label }}</th>}</tr></thead><tbody>@for (row of rows; track $index) {<tr>@for (column of columns; track column.key) {@if (column.rowHeader) {<th scope="row">{{ row[column.key] }}</th>} @else {<td>{{ row[column.key] }}</td>}}</tr>}@empty {<tr><td [attr.colspan]="columns.length || 1">{{ texts.need('emptyMessage', emptyMessage) }}</td></tr>}</tbody></table></div>`})
 export class HwTableComponent {
   @Input({required: true}) caption = '';
   @Input() columns: readonly HwTableColumn[] = [];
   @Input() rows: readonly HwTableRow[] = [];
   @Input() variant?: 'default' | 'striped' | 'bordered';
   @Input() size?: 'sm' | 'md' | 'lg';
-  @Input() emptyMessage = 'لا توجد سجلات';
+  /** Text of the single cell rendered when there are no rows. */
+  @Input({required: true}) emptyMessage = '';
+  protected readonly texts = new HwTexts('hw-table');
 }
 
-@Component({selector: 'hw-progress', standalone: true, template: `<label class="hw-stack"><span>{{ label }}</span><progress class="hw-progress" [attr.value]="value === null ? null : boundedValue" [max]="safeMax" [attr.aria-label]="label"></progress></label>`})
+@Component({selector: 'hw-progress', standalone: true, template: `<label class="hw-stack"><span>{{ label }}</span><progress class="hw-progress" [attr.value]="value === null ? null : boundedValue" [max]="safeMax" [attr.aria-label]="label || null"></progress></label>`})
 export class HwProgressComponent {
   @Input({required: true}) label = '';
   @Input() value: number | null = null;
@@ -119,8 +125,13 @@ export class HwSkeletonComponent {
   @Input() height = '1rem';
 }
 
-@Component({selector: 'hw-spinner', standalone: true, template: `<span role="status"><span class="hw-spinner" aria-hidden="true"></span><span class="hw-sr-only">{{ label }}</span></span>`})
-export class HwSpinnerComponent { @Input() label = 'Loading'; }
+@Component({selector: 'hw-spinner', standalone: true, template: `<span role="status"><span class="hw-spinner" aria-hidden="true"></span><span class="hw-sr-only">{{ decorative ? label : texts.need('label', label) }}</span></span>`})
+export class HwSpinnerComponent {
+  /** Accessible name. A spinner that the application marks aria-hidden="true" is decorative and needs none. */
+  @Input({required: true}) label = '';
+  protected readonly decorative = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement.getAttribute('aria-hidden') === 'true';
+  protected readonly texts = new HwTexts('hw-spinner');
+}
 
 @Component({selector: 'hw-avatar', standalone: true, template: `<span class="hw-avatar" [attr.data-size]="size" [attr.data-variant]="variant" [attr.role]="src && !imageFailed ? null : 'img'" [attr.aria-label]="src && !imageFailed ? null : name">@if (src && !imageFailed) {<img [src]="src" [alt]="name" (error)="imageFailed = true">} @else {<span aria-hidden="true">{{ initials }}</span>}</span>`})
 export class HwAvatarComponent {
@@ -142,7 +153,7 @@ export class HwDividerComponent {
   @Input() orientation?: 'horizontal' | 'vertical';
 }
 
-@Component({selector: 'hw-empty-state', standalone: true, template: `<section class="hw-empty"><h3>{{ title }}</h3>@if (description) {<p>{{ description }}</p>}<ng-content /></section>`})
+@Component({selector: 'hw-empty-state', standalone: true, host: {'[attr.title]': 'null'}, template: `<section class="hw-empty"><h3>{{ title }}</h3>@if (description) {<p>{{ description }}</p>}<ng-content /></section>`})
 export class HwEmptyStateComponent {
   @Input({required: true}) title = '';
   @Input() description = '';

@@ -1,5 +1,5 @@
-import { createCleanup, getPaginationItems, isDisabled } from '@hawiyah/core';
-import { emit, eventElement, remember, translated } from './dom.js';
+import { createCleanup, getPaginationItems, isDisabled, requireText } from '@hawiyah/core';
+import { emit, eventElement, nameRoot, remember, templated, text, writeContent, writeText } from './dom.js';
 
 export interface PaginationOptions {
   page?: number;
@@ -7,10 +7,16 @@ export interface PaginationOptions {
   siblingCount?: number;
   disabled?: boolean;
   hideOnSinglePage?: boolean;
+  /** Accessible name of the root, unless the authored nav is named (data-hw-label). */
+  label?: string;
+  /** Accessible name of a generated page button (data-hw-page-label="… {page}"). Required with an items container. */
   getPageLabel?: (page: number) => string;
   formatPage?: (page: number) => string;
+  /** Accessible name of a gap disclosure (data-hw-gap-label="… {start} … {end}"). Required with an items container. */
   getGapLabel?: (start: number, end: number) => string;
+  /** Label of the page-number input inside a large gap (data-hw-jump-label). Required with an items container. */
   jumpLabel?: string;
+  /** Text of the jump button (data-hw-go-label). Required with an items container. */
   goLabel?: string;
   onPageChange?: (page: number) => void;
 }
@@ -38,8 +44,14 @@ export function createPagination(root: HTMLElement, options: PaginationOptions =
     scope.add(() => container.replaceChildren(...children));
   }
   const blocked = () => !!options.disabled || isDisabled(root) || !!root.closest('fieldset[disabled]');
-  const pageLabel = options.getPageLabel ?? ((value: number) => translated(root, `Page ${value}`, `الصفحة ${value}`));
-  const gapLabel = options.getGapLabel ?? ((start: number, end: number) => translated(root, `Pages ${start} to ${end}`, `الصفحات ${start} إلى ${end}`));
+  const pageLabel = templated(root, 'getPageLabel', options.getPageLabel, (page: number) => ({ page }));
+  const gapLabel = templated(root, 'getGapLabel', options.getGapLabel, (start: number, end: number) => ({ start, end }));
+  remember(scope, root, ['aria-label']); nameRoot(root, 'Pagination', text(root, 'label', options.label));
+  if (container) {
+    requireText('Pagination', 'getPageLabel', options.getPageLabel ?? root.getAttribute('data-hw-page-label'));
+    requireText('Pagination', 'getGapLabel', options.getGapLabel ?? root.getAttribute('data-hw-gap-label'));
+    requireText('Pagination', 'jumpLabel', text(root, 'jumpLabel', options.jumpLabel)); requireText('Pagination', 'goLabel', text(root, 'goLabel', options.goLabel));
+  }
   const close = (except?: HTMLDetailsElement) => {
     for (const details of root.querySelectorAll<HTMLDetailsElement>('details.hw-pagination-gap[open]')) {
       if (owns(details) && details !== except) details.open = false;
@@ -50,7 +62,7 @@ export function createPagination(root: HTMLElement, options: PaginationOptions =
     button.type = 'button'; button.className = 'hw-button hw-pagination-item';
     button.dataset.variant = 'ghost'; button.dataset.hwPage = String(value);
     button.textContent = options.formatPage?.(value) ?? String(value);
-    button.setAttribute('aria-label', pageLabel(value));
+    writeText(button, 'aria-label', 'Pagination', 'getPageLabel', pageLabel(value));
     return button;
   };
   const render = () => {
@@ -65,14 +77,14 @@ export function createPagination(root: HTMLElement, options: PaginationOptions =
         }
         const details = root.ownerDocument.createElement('details'); details.className = 'hw-pagination-gap';
         const summary = root.ownerDocument.createElement('summary'); summary.className = 'hw-pagination-gap-trigger';
-        summary.setAttribute('aria-label', gapLabel(item.start, item.end)); summary.textContent = '…';
+        writeText(summary, 'aria-label', 'Pagination', 'getGapLabel', gapLabel(item.start, item.end)); summary.textContent = '…';
         const menu = root.ownerDocument.createElement('div'); menu.className = 'hw-pagination-menu';
         if (item.end - item.start + 1 <= 100) {
           for (let value = item.start; value <= item.end; value++) menu.append(pageButton(value));
         } else {
           const jump = root.ownerDocument.createElement('div'); jump.className = 'hw-pagination-jump';
           const label = root.ownerDocument.createElement('label'); label.className = 'hw-label';
-          label.textContent = options.jumpLabel ?? translated(root, 'Go to page', 'الانتقال إلى صفحة');
+          writeContent(label, 'Pagination', 'jumpLabel', text(root, 'jumpLabel', options.jumpLabel));
           const input = root.ownerDocument.createElement('input');
           input.className = 'hw-input'; input.type = 'number'; input.inputMode = 'numeric';
           // Page jumping is navigation, not a field in a surrounding application form.
@@ -81,7 +93,7 @@ export function createPagination(root: HTMLElement, options: PaginationOptions =
           input.value = String(item.start); input.dataset.hwJumpInput = ''; input.dataset.hwFilled = 'true'; label.append(input);
           const submit = root.ownerDocument.createElement('button');
           submit.type = 'button'; submit.className = 'hw-button'; submit.dataset.hwJumpSubmit = '';
-          submit.textContent = options.goLabel ?? translated(root, 'Go', 'انتقال');
+          writeContent(submit, 'Pagination', 'goLabel', text(root, 'goLabel', options.goLabel));
           jump.append(label, submit); menu.append(jump);
         }
         details.append(summary, menu); fragment.append(details);

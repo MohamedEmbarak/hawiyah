@@ -1,15 +1,18 @@
 import { booleanAttribute, AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, PLATFORM_ID, ViewChild, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { restoreFocus } from '@hawiyah/core';
+import { injectId } from './ids';
+import { HwTexts } from './text';
 
-let nextId = 0;
-@Component({ selector: 'hw-dialog', standalone: true, template: `<dialog #dialog class="hw-dialog" [attr.aria-labelledby]="titleId" [attr.aria-describedby]="describedBy || null" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="closeLabel" (click)="close()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[hwDialogFooter]" /></footer></dialog>` })
+// The input named title is not a native tooltip on the wrapper element.
+@Component({ selector: 'hw-dialog', standalone: true, host: {'[attr.title]': 'null'}, template: `<dialog #dialog class="hw-dialog" [attr.aria-labelledby]="titleId" [attr.aria-describedby]="describedBy || null" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="texts.need('closeLabel', closeLabel)" (click)="close()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[hwDialogFooter]" /></footer></dialog>` })
 export class HwDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input({required: true}) title = '';
   @Input() describedBy = '';
-  @Input() titleId = `hw-dialog-title-${++nextId}`;
+  @Input() titleId = injectId('hw-dialog-title');
   @Input({transform: booleanAttribute}) open = false;
-  @Input() closeLabel = 'Close dialog';
+  /** Accessible name of the header close button. */
+  @Input({required: true}) closeLabel = '';
   @Input({transform: booleanAttribute}) closeOnBackdrop = true;
   @Output() readonly openChange = new EventEmitter<boolean>();
   @Output() readonly cancelled = new EventEmitter<void>();
@@ -20,6 +23,7 @@ export class HwDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   private trigger: HTMLElement | null = null;
   private ready = false;
   private backdropStarted = false;
+  protected readonly texts = new HwTexts('hw-dialog');
   ngAfterViewInit(): void { this.ready = true; this.sync(); }
   ngOnChanges(): void { this.sync(); }
   private sync(): void {
@@ -53,12 +57,14 @@ export class HwDialogComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngOnDestroy(): void { if (this.dialog?.nativeElement.open) this.dialog.nativeElement.close(); restoreFocus(this.trigger); }
 }
 
-@Component({ selector: 'hw-tooltip', standalone: true, template: `<span class="hw-tooltip-anchor hw-tooltip-trigger" tabindex="0" [attr.aria-describedby]="id" (focusin)="focusEntered()" (focusout)="focusLeft($event)" (mouseenter)="pointerEntered()" (mouseleave)="pointerLeft()" (keydown)="escape($event)"><ng-content /><span class="hw-tooltip" role="tooltip" [id]="id" [attr.data-placement]="placement" [attr.data-align]="align" [hidden]="!visible">{{ text }}</span></span>` })
+// The input named align is not the legacy presentational attribute of the wrapper element.
+@Component({ selector: 'hw-tooltip', standalone: true, host: {'[attr.align]': 'null'}, template: `<span class="hw-tooltip-anchor hw-tooltip-trigger" tabindex="0" [attr.aria-describedby]="tooltipId" (focusin)="focusEntered()" (focusout)="focusLeft($event)" (mouseenter)="pointerEntered()" (mouseleave)="pointerLeft()" (keydown)="escape($event)"><ng-content /><span class="hw-tooltip" role="tooltip" [id]="tooltipId" [attr.data-placement]="placement" [attr.data-align]="align" [hidden]="!visible">{{ text }}</span></span>` })
 export class HwTooltipComponent implements OnDestroy {
   @Input() placement: 'top' | 'bottom' | 'start' | 'end' = 'top';
   @Input() align: 'start' | 'center' | 'end' = 'start';
   @Input({required: true}) text = '';
-  @Input() id = `hw-tooltip-${++nextId}`;
+  /** Id of the tooltip element. Named tooltipId so that no id attribute is left on the wrapper element. */
+  @Input() tooltipId = injectId('hw-tooltip');
   visible = false;
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly changeDetector = inject(ChangeDetectorRef);

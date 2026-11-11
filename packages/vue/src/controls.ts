@@ -57,10 +57,10 @@ function actionField(kind: "password" | "search") {
     inheritAttrs: false,
     props: {
       ...textProps,
-      showLabel: { type: String, default: "Show password" },
-      hideLabel: { type: String, default: "Hide password" },
+      showLabel: { type: String, required: true },
+      hideLabel: { type: String, required: true },
       toggleVariant: { type: String as PropType<'icon' | 'text'>, default: 'icon' },
-      clearLabel: { type: String, default: "Clear search" },
+      clearLabel: String,
     },
     emits: {
       "update:modelValue": (_value: string) => true,
@@ -130,15 +130,15 @@ function actionField(kind: "password" | "search") {
                       "data-toggle-variant": props.toggleVariant,
                       disabled: props.disabled,
                       "aria-label": visible.value
-                        ? props.hideLabel
-                        : props.showLabel,
+                        ? needText("PasswordField", "hideLabel", props.hideLabel)
+                        : needText("PasswordField", "showLabel", props.showLabel),
                       "aria-pressed": visible.value,
                       "aria-controls": field.id.value,
                       onClick: () => {
                         if (element.value && !isDisabled(element.value)) visible.value = !visible.value;
                       },
                     },
-                    () => props.toggleVariant === 'text' ? (visible.value ? props.hideLabel : props.showLabel) : h('span', { class: 'hw-password-icon', 'aria-hidden': 'true' }),
+                    () => props.toggleVariant === 'text' ? (visible.value ? optionalText(props.hideLabel) : optionalText(props.showLabel)) : h('span', { class: 'hw-password-icon', 'aria-hidden': 'true' }),
                   )
                 : h(
                     Button,
@@ -148,7 +148,7 @@ function actionField(kind: "password" | "search") {
                       hidden: !model.value.value || props.readonly,
                       disabled: props.disabled,
                       "aria-controls": field.id.value,
-                      "aria-label": props.clearLabel,
+                      "aria-label": needText("SearchField", "clearLabel", props.clearLabel),
                       onClick: () => {
                         if (element.value && !props.readonly && !isDisabled(element.value)) { model.set(""); element.value.focus(); }
                       },

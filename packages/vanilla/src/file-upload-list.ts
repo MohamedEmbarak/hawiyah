@@ -1,8 +1,10 @@
-import { fileUploadLabels, fileUploadProgress, type FileUploadItem, type FileUploadLabels } from '@hawiyah/core';
+import { fileUploadProgress, requireText, type FileUploadItem, type FileUploadLabels } from '@hawiyah/core';
+import { writeContent, writeText } from './dom.js';
 
 export interface FileUploadListOptions {
   items: readonly FileUploadItem[];
-  labels?: FileUploadLabels;
+  /** All text of the list, supplied by the application. Required. */
+  labels: FileUploadLabels;
   disabled?: boolean;
   onRemove?: (id: string) => void;
 }
@@ -12,7 +14,8 @@ export function createFileUploadList(root: HTMLElement, options: FileUploadListO
   const list = root.ownerDocument.createElement('ul');
   list.className = 'hw-upload-list';
   root.replaceChildren(list);
-  const labels = options.labels ?? fileUploadLabels;
+  requireText('FileUploadList', 'labels', options.labels);
+  const labels: Partial<FileUploadLabels> = options.labels ?? {};
   let destroyed = false;
   let disabled = !!options.disabled;
   const render = (items: readonly FileUploadItem[]) => {
@@ -25,19 +28,19 @@ export function createFileUploadList(root: HTMLElement, options: FileUploadListO
       name.className = 'hw-upload-name'; name.textContent = item.name;
       const status = root.ownerDocument.createElement('span');
       status.className = 'hw-upload-status'; status.setAttribute('role', 'status');
-      status.textContent = item.message || labels[item.status]; row.append(name, status);
+      if (item.message) status.textContent = item.message; else writeContent(status, 'FileUploadList', `labels.${item.status}`, labels[item.status]); row.append(name, status);
       if (item.status === 'uploading') {
         const progress = root.ownerDocument.createElement('progress');
         progress.max = 100;
         const value = fileUploadProgress(item.progress);
         if (value !== undefined) progress.value = value;
-        progress.setAttribute('aria-label', `${labels.uploading} ${item.name}`); row.append(progress);
+        writeText(progress, 'aria-label', 'FileUploadList', 'labels.getProgressLabel', labels.getProgressLabel?.(item.name)); row.append(progress);
       }
       if (options.onRemove && item.removable !== false) {
         const button = root.ownerDocument.createElement('button');
         button.type = 'button'; button.className = 'hw-button'; button.dataset.variant = 'subtle';
-        button.textContent = labels.remove; button.disabled = disabled;
-        button.setAttribute('aria-label', `${labels.remove} ${item.name}`);
+        writeContent(button, 'FileUploadList', 'labels.remove', labels.remove); button.disabled = disabled;
+        writeText(button, 'aria-label', 'FileUploadList', 'labels.getRemoveLabel', labels.getRemoveLabel?.(item.name));
         button.addEventListener('click', () => {
           if (!destroyed && !disabled && list.contains(button)) options.onRemove?.(item.id);
         }); row.append(button);

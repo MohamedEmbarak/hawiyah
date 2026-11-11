@@ -1,7 +1,16 @@
-import { createCleanup, isDisabled } from '@hawiyah/core';
-import { emit, ensureId, eventElement, remember, required } from './dom.js';
+import { createCleanup, hasText, isDisabled, requireText } from '@hawiyah/core';
+import { emit, ensureId, eventElement, named, remember, required, text, writeText } from './dom.js';
+import { createSkipLink } from './skip-link.js';
 
-export interface PortalHeaderOptions { onOpenChange?: (open: boolean) => void }
+export interface PortalHeaderOptions {
+  onOpenChange?: (open: boolean) => void;
+  /** Name of the menu toggle (data-hw-menu-label), used when the toggle has no aria-label and no text. Required. */
+  menuLabel?: string;
+  /** Name of the primary nav landmark (data-hw-navigation-label), used when the nav has no aria-label or aria-labelledby. Required. */
+  navigationLabel?: string;
+  /** Accessible name of `.hw-portal-brand` (data-hw-brand-label), for artwork without visible text. Optional. */
+  brandLabel?: string;
+}
 export interface PortalHeaderController { readonly open: boolean; show(): void; close(restoreFocus?: boolean): void; destroy(): void }
 /** Enhances a disclosure navigation. CSS keeps the links visible on desktop. */
 export function createPortalHeader(root: HTMLElement, options: PortalHeaderOptions = {}): PortalHeaderController {
@@ -9,7 +18,19 @@ export function createPortalHeader(root: HTMLElement, options: PortalHeaderOptio
   const navigation = required<HTMLElement>(root, '[data-hw-portal-navigation]');
   const scope = createCleanup();
   remember(scope, trigger, ['aria-expanded', 'aria-controls']);
-  remember(scope, navigation, ['data-open']);
+  remember(scope, navigation, ['data-open', 'aria-label']); remember(scope, trigger, ['aria-label']);
+  if (!named(trigger) && !hasText(trigger.textContent)) writeText(trigger, 'aria-label', 'PortalHeader', 'menuLabel', text(root, 'menuLabel', options.menuLabel));
+  if (!named(navigation)) writeText(navigation, 'aria-label', 'PortalHeader', 'navigationLabel', text(root, 'navigationLabel', options.navigationLabel));
+  const brand = [...root.querySelectorAll<HTMLElement>('.hw-portal-brand')].find(node => node.closest('[data-hw="portal-header"]') === root || !node.closest('[data-hw="portal-header"]'));
+  if (brand) {
+    remember(scope, brand, ['aria-label']);
+    const brandLabel = text(root, 'brandLabel', options.brandLabel);
+    if (hasText(brandLabel) && (options.brandLabel !== undefined || !named(brand))) brand.setAttribute('aria-label', brandLabel!);
+    // An artwork-only brand needs a name; checked once mounted in a browser, never during server rendering.
+    const alternative = [...brand.querySelectorAll('img[alt], [role="img"][aria-label]')].some(node => hasText(node.getAttribute('alt') ?? node.getAttribute('aria-label')));
+    if (root.ownerDocument.defaultView && !hasText(brand.textContent) && !named(brand) && !alternative) requireText('PortalHeader', 'brandLabel', undefined, 'the brand has no text');
+  }
+  for (const link of root.querySelectorAll<HTMLAnchorElement>('a.hw-skip-link')) { const skip = createSkipLink(link); scope.add(() => skip.destroy()); }
   trigger.setAttribute('aria-controls', ensureId(scope, navigation, 'portal-navigation'));
   const branches = [...navigation.querySelectorAll<HTMLDetailsElement>('details[data-hw-portal-branch]')]
     .filter(branch => branch.closest('[data-hw-portal-navigation]') === navigation);

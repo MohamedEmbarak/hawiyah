@@ -1,7 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { Drawer } from './expanded-interactive.js';
 import type { DrawerProps } from './expanded-interactive.js';
-import { cx } from './shared.js';
+import { cx, text } from './shared.js';
 
 export interface NavigationDrawerItem {
   id: string; label: string; href?: string; icon?: string; current?: boolean;
@@ -9,7 +9,8 @@ export interface NavigationDrawerItem {
 }
 export interface NavigationDrawerProps extends Omit<DrawerProps, 'children' | 'side'> {
   items: readonly NavigationDrawerItem[];
-  navigationLabel?: string;
+  /** Name of the navigation landmark. `closeLabel` names the close button. */
+  navigationLabel: string;
   userContent?: ReactNode;
   side?: 'start' | 'end';
 }
@@ -45,10 +46,11 @@ function routeActivation(event: MouseEvent<HTMLElement>, close: () => void) {
 }
 
 /** Page navigation in an existing modal Drawer; groups are native disclosures. */
-export function NavigationDrawer({ items, navigationLabel = 'التنقل الرئيسي', userContent, side = 'start', closeLabel = 'إغلاق القائمة', className, ...props }: NavigationDrawerProps) {
+export function NavigationDrawer({ items, navigationLabel, userContent, side = 'start', closeLabel, className, ...props }: NavigationDrawerProps) {
+  const name = text('NavigationDrawer', 'navigationLabel', navigationLabel);
   return <Drawer {...props} side={side} closeLabel={closeLabel} className={cx('hw-navigation-drawer', className)}>
     {({ close }) => <>{userContent && <div className="hw-navigation-drawer-user">{userContent}</div>}
-      <nav className="hw-navigation-drawer-nav" aria-label={navigationLabel} onClick={event => routeActivation(event, close)}>{entries(items)}</nav>
+      <nav className="hw-navigation-drawer-nav" aria-label={name} onClick={event => routeActivation(event, close)}>{entries(items)}</nav>
     </>}
   </Drawer>;
 }

@@ -47,8 +47,9 @@ describe('calendar', () => {
 });
 
 describe('date picker', () => {
+  const texts = 'data-hw-locale="en" data-hw-previous-label="Previous month" data-hw-next-label="Next month" data-hw-calendar-system-label="Calendar" data-hw-gregorian-label="Gregorian" data-hw-hijri-label="Hijri" data-hw-range-label="Supported range" data-hw-invalid-message="Enter a valid date." data-hw-unsupported-message="Choose a date between 1924-08-01 and 2077-11-16." data-hw-unavailable-message="This date is unavailable."';
   function picker(value = '2029-08-11') {
-    const root = mount(`<div data-hw="date-picker"><label>Appointment<input type="date" data-hw-date-input name="date" value="${value}"></label><button type="button" data-hw-date-trigger>Choose date</button><dialog data-hw-date-dialog aria-label="Choose date"><button type="button" data-hw-date-close>Close</button><div data-hw-date-calendar></div></dialog></div>`);
+    const root = mount(`<div data-hw="date-picker" ${texts}><label>Appointment<input type="date" data-hw-date-input name="date" value="${value}"></label><button type="button" data-hw-date-trigger>Choose date</button><dialog data-hw-date-dialog aria-label="Choose date"><button type="button" data-hw-date-close>Close</button><div data-hw-date-calendar></div></dialog></div>`);
     const dialog = root.querySelector('dialog')!;
     dialog.showModal = vi.fn(() => { dialog.open = true; dialog.querySelector<HTMLButtonElement>('button')!.focus(); });
     dialog.close = vi.fn(() => { dialog.open = false; dialog.dispatchEvent(new Event('close')); });

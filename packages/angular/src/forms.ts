@@ -1,22 +1,23 @@
 import { observeAngularFieldPresence } from './field-presence';
-import { setCustomValidity } from './platform';
+import { setConstraintValidity } from './platform';
+import { injectId } from './ids';
+import { HwTexts } from './text';
 import { InputValueSync } from './input-value';
 import { booleanAttribute, ChangeDetectorRef, Component, Directive, EventEmitter, forwardRef, HostListener, inject, Input, Output, ViewChild, ElementRef, type AfterViewInit, type OnChanges, type SimpleChanges } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
-import { createComboboxState, getComboboxOptions, isDisabled, transitionCombobox, type ComboboxEvent, type Option } from '@hawiyah/core';
+import { createComboboxState, getComboboxOptions, hasText, isDisabled, transitionCombobox, type ComboboxEvent, type Option } from '@hawiyah/core';
 
-let nextId = 0;
 function fieldDescriptionIds(id: string, hint: string, error: string, external?: string | null): string | null {
   const ids = (external ?? '').trim().split(/\s+/).filter(Boolean);
   if (hint) ids.push(`${id}-hint`);
   if (error) ids.push(`${id}-error`);
   return [...new Set(ids)].join(' ') || null;
 }
-/** Pass controlId for stable application-owned identifiers, especially with SSR. */
+/** Generated ids are the same on the server and after hydration; pass controlId for an application-owned identifier. */
 @Directive()
 export abstract class HwValueControl<T> implements ControlValueAccessor {
   constructor() { observeAngularFieldPresence(); }
-  @Input() controlId = `hw-control-${++nextId}`;
+  @Input() controlId = injectId('hw-control');
   @Input() label = '';
   @Input() name = '';
   @Input() hint = '';
@@ -54,7 +55,7 @@ export class HwFieldComponent {
 
 @Component({ selector: 'hw-text-field', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwTextFieldComponent), multi: true }],
-  template: `<div class="hw-field">${fieldLabel}<input #input class="hw-input" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [type]="type" [name]="name" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [placeholder]="placeholder" [attr.autocomplete]="autocomplete" [attr.inputmode]="inputmode || null" [attr.min]="min" [attr.max]="max" [attr.step]="step" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.pattern]="pattern" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="typed($any($event.target).value)" (blur)="touch()">${fieldEnd}</div>` })
+  template: `<div class="hw-field">${fieldLabel}<input #input class="hw-input" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [type]="type" [name]="name" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [attr.placeholder]="placeholder || null" [attr.autocomplete]="autocomplete" [attr.inputmode]="inputmode || null" [attr.min]="min" [attr.max]="max" [attr.step]="step" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.pattern]="pattern" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="typed($any($event.target).value)" (blur)="touch()">${fieldEnd}</div>` })
 export class HwTextFieldComponent extends HwValueControl<string> {
   override value = '';
   @ViewChild('input') input?: ElementRef<HTMLInputElement>;
@@ -81,7 +82,7 @@ export class HwTextFieldComponent extends HwValueControl<string> {
 
 @Component({ selector: 'hw-textarea', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwTextareaComponent), multi: true }],
-  template: `<div class="hw-field">${fieldLabel}<textarea class="hw-textarea" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [rows]="rows" [placeholder]="placeholder" [attr.maxlength]="maxLength" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()"></textarea>${fieldEnd}</div>` })
+  template: `<div class="hw-field">${fieldLabel}<textarea class="hw-textarea" [attr.data-size]="size" [attr.data-variant]="visualVariant" [id]="controlId" [name]="name" [value]="value || ''" [disabled]="disabled" [required]="required" [readOnly]="readOnly" [rows]="rows" [attr.placeholder]="placeholder || null" [attr.maxlength]="maxLength" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="update($any($event.target).value)" (blur)="touch()"></textarea>${fieldEnd}</div>` })
 export class HwTextareaComponent extends HwValueControl<string> {
   override value = '';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
@@ -100,7 +101,8 @@ export class HwSelectComponent extends HwValueControl<string> {
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() visualVariant: 'outline' | 'filled' = 'outline';
   @Input() options: readonly Option[] = [];
-  @Input() placeholder = 'اختر خيارًا';
+  /** Text of the empty prompt option. Without it no prompt is rendered and the first option is selected, as in a native select. */
+  @Input() placeholder = '';
   get showPrompt(): boolean { return Boolean(this.placeholder) && !this.options.some(option => option.value === ''); }
 }
 
@@ -129,15 +131,19 @@ export class HwRadioComponent extends HwValueControl<string> {
 
 @Component({ selector: 'hw-combobox', standalone: true,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwComboboxComponent), multi: true }],
-  template: `<div class="hw-field hw-combobox"><label class="hw-label" [for]="controlId">{{ label }}</label><input #input class="hw-input" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" [id]="controlId" [value]="state.query" [disabled]="disabled" [readOnly]="readOnly" [attr.aria-readonly]="readOnly || null" [required]="required" [placeholder]="placeholder" [attr.aria-expanded]="state.open" [attr.aria-controls]="controlId + '-list'" [attr.aria-activedescendant]="state.open && state.activeIndex >= 0 ? controlId + '-option-' + state.activeIndex : null" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null" (input)="inputChanged($event)" (compositionstart)="composing = true" (compositionend)="compositionEnded($event)" (focus)="dispatch({type: 'open'})" (click)="dispatch({type: 'open'})" (keydown)="keydown($event)" (blur)="blur()"><input type="hidden" [name]="name" [value]="state.value" [disabled]="disabled"><ul class="hw-listbox" role="listbox" [id]="controlId + '-list'" [attr.aria-label]="label" [hidden]="!state.open">@for (option of visibleOptions; track option.value; let i = $index) {<li class="hw-option" role="option" [id]="controlId + '-option-' + i" [attr.aria-selected]="state.value === option.value" [attr.aria-disabled]="option.disabled || null" [attr.data-active]="state.activeIndex === i ? '' : null" (mousedown)="$event.preventDefault()" (click)="select(option)">{{ option.label }}</li>}@if (visibleOptions.length === 0) {<li class="hw-hint" role="presentation">{{ emptyMessage }}</li>}</ul><span class="hw-sr-only" role="status" aria-live="polite">{{ state.open ? resultsMessage(visibleOptions.length) : '' }}</span>${fieldEnd}</div>` })
+  template: `<div class="hw-field hw-combobox"><label class="hw-label" [for]="controlId">{{ label }}</label><input #input class="hw-input" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" autocomplete="off" [id]="controlId" [value]="state.query" [disabled]="disabled" [readOnly]="readOnly" [attr.aria-readonly]="readOnly || null" [required]="required" [attr.placeholder]="placeholder || null" [attr.aria-expanded]="state.open" [attr.aria-controls]="controlId + '-list'" [attr.aria-activedescendant]="state.open && state.activeIndex >= 0 ? controlId + '-option-' + state.activeIndex : null" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error || unnamedConstraint ? true : null" (input)="inputChanged($event)" (compositionstart)="composing = true" (compositionend)="compositionEnded($event)" (focus)="dispatch({type: 'open'})" (click)="dispatch({type: 'open'})" (keydown)="keydown($event)" (blur)="blur()"><input type="hidden" [name]="name" [value]="state.value" [disabled]="disabled"><ul class="hw-listbox" role="listbox" [id]="controlId + '-list'" [attr.aria-label]="label || null" [hidden]="!state.open">@for (option of visibleOptions; track option.value; let i = $index) {<li class="hw-option" role="option" [id]="controlId + '-option-' + i" [attr.aria-selected]="state.value === option.value" [attr.aria-disabled]="option.disabled || null" [attr.data-active]="state.activeIndex === i ? '' : null" (mousedown)="$event.preventDefault()" (click)="select(option)">{{ option.label }}</li>}@if (visibleOptions.length === 0) {<li class="hw-hint" role="presentation">{{ texts.need('emptyMessage', emptyMessage) }}</li>}</ul><span class="hw-sr-only" role="status" aria-live="polite">{{ state.open ? texts.call('getResultsMessage', getResultsMessage, [visibleOptions.length]) : '' }}</span>${fieldEnd}</div>` })
 export class HwComboboxComponent extends HwValueControl<string> implements OnChanges, AfterViewInit {
   override value = '';
   @Input({transform: booleanAttribute}) readOnly = false;
   @Input() options: readonly Option[] = [];
   @Input() placeholder = '';
-  @Input() emptyMessage = 'No results';
-  @Input() validationMessage = 'Select an option from the list.';
-  @Input() resultsMessage: (count: number) => string = count => `${count} results available`;
+  /** Shown in the list when nothing matches. */
+  @Input({required: true}) emptyMessage = '';
+  /** Custom validity message while a required combobox has no selected option. Required when required is set. */
+  @Input() requiredMessage = '';
+  /** Live-region announcement of the number of matches. */
+  @Input({required: true}) getResultsMessage!: (count: number) => string;
+  protected readonly texts = new HwTexts('hw-combobox');
   @ViewChild('input') input?: ElementRef<HTMLInputElement>;
   state = createComboboxState([]);
   composing = false;
@@ -164,7 +170,10 @@ export class HwComboboxComponent extends HwValueControl<string> implements OnCha
     }
   }
   ngOnDestroy(): void { this.disabledObserver?.disconnect(); }
-  private syncValidity(): void { setCustomValidity(this.input?.nativeElement, this.required && !this.disabled && !this.state.value ? this.validationMessage : ''); }
+  private get constrained(): boolean { return this.required && !this.disabled && !this.state.value; }
+  /** A violated constraint without a message still blocks submission and is exposed as invalid. */
+  get unnamedConstraint(): boolean { return this.constrained && !hasText(this.requiredMessage); }
+  private syncValidity(): void { if (this.constrained) this.texts.need('requiredMessage', this.requiredMessage, 'required is set'); setConstraintValidity(this.input?.nativeElement, this.constrained, this.requiredMessage); }
   override writeValue(value: string): void { super.writeValue(value ?? ''); this.state = createComboboxState(this.options, value ?? ''); this.syncValidity(); }
   override setDisabledState(disabled: boolean): void { super.setDisabledState(disabled); if (disabled) this.dispatch({type: 'close'}); this.syncValidity(); }
   dispatch(event: ComboboxEvent): void { if (this.blocked && event.type !== 'close' && event.type !== 'reset') return; this.state = transitionCombobox(this.state, event, this.options); this.syncValidity(); }

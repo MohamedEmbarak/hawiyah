@@ -1,10 +1,14 @@
-import { createCleanup, isDisabled, observeContentNavigation, type ContentNavigationItem } from '@hawiyah/core';
-import { emit, eventElement, remember } from './dom.js';
+import { bindFragmentLink, createCleanup, getFragmentId, isDisabled, observeContentNavigation, type ContentNavigationItem, type FragmentLink } from '@hawiyah/core';
+import { emit, eventElement, nameRoot, remember, text } from './dom.js';
 
 export interface ContentNavigationOptions {
   scrollRoot?: HTMLElement | null;
   offset?: number;
   onCurrentChange?: (id: string) => void;
+  /** Name of the nav landmark (data-hw-label), unless the authored nav has aria-label or aria-labelledby. Required. */
+  label?: string;
+  /** Also write the resolved URL with the fragment to the address bar (data-hw-update-hash="true"). Off by default. */
+  updateHash?: boolean;
 }
 export interface ContentNavigationController {
   readonly current: string;
@@ -22,11 +26,25 @@ export function createContentNavigation(root: HTMLElement, options: ContentNavig
     const owner = link.closest('[data-hw="content-navigation"]');
     return owner ? owner === root : (root.localName !== 'nav' || link.closest('nav') === root);
   };
-  const links = () => [...root.querySelectorAll<HTMLAnchorElement>('a[data-hw-section], a[href^="#"]')].filter(owns);
-  const fromHref = (link: HTMLAnchorElement) => {
-    const href = link.getAttribute('href');
-    if (!href?.startsWith('#') || href.length < 2) return '';
-    try { return decodeURIComponent(href.slice(1)); } catch { return ''; }
+  // Bound links keep "#id" in markup; their href is resolved against the document URL on interaction.
+  const links = () => [...root.querySelectorAll<HTMLAnchorElement>('a[data-hw-section], a[href]')].filter(link => (tracked.has(link) || link.hasAttribute('data-hw-section') || link.getAttribute('href')?.startsWith('#')) && owns(link));
+  const fromHref = (link: HTMLAnchorElement) => getFragmentId(link.getAttribute('href'));
+  const navigation = root.localName === 'nav' ? root : root.querySelector<HTMLElement>('nav');
+  if (navigation) { remember(scope, navigation, ['aria-label']); nameRoot(navigation, 'ContentNavigation', text(root, 'label', options.label)); }
+  const bindings = new Map<HTMLAnchorElement, FragmentLink>();
+  let keyboard = false;
+  scope.add(() => { for (const binding of bindings.values()) binding.destroy(); bindings.clear(); });
+  const bind = () => {
+    const current = new Set(links());
+    for (const [link, binding] of bindings) if (!current.has(link)) { binding.destroy(); bindings.delete(link); }
+    for (const link of current) {
+      if (bindings.has(link)) continue;
+      bindings.set(link, bindFragmentLink(link, {
+        id: () => idFor(link),
+        updateHash: options.updateHash ?? root.dataset.hwUpdateHash === 'true',
+        navigate: id => !isDisabled(root) && !isDisabled(link) && !link.hasAttribute('download') && observer.navigate(id, { focus: keyboard }),
+      }));
+    }
   };
   const idFor = (link: HTMLAnchorElement) => {
     let entry = tracked.get(link);
@@ -63,21 +81,18 @@ export function createContentNavigation(root: HTMLElement, options: ContentNavig
     },
   });
   scope.add(observer.destroy);
+  // Keyboard activation (detail 0) moves focus to the section; the fragment binding on each link handles the click.
+  scope.listen(root, 'click', event => { keyboard = (event as MouseEvent).detail === 0; }, { capture: true });
   scope.listen(root, 'click', event => {
-    const click = event as MouseEvent;
     const link = eventElement(event)?.closest<HTMLAnchorElement>('a');
-    if (!link || !root.contains(link) || !owns(link)) return;
-    if (isDisabled(root) || isDisabled(link)) { event.preventDefault(); return; }
-    if (event.defaultPrevented || click.button !== 0 || click.altKey || click.ctrlKey || click.metaKey || click.shiftKey || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
-    const id = idFor(link);
-    if (id) { event.preventDefault(); observer.navigate(id, { focus: click.detail === 0 }); }
+    if (link && root.contains(link) && owns(link) && (isDisabled(root) || isDisabled(link))) event.preventDefault();
   });
   const MutationObserver = root.ownerDocument.defaultView?.MutationObserver;
   if (MutationObserver) {
-    const mutations = new MutationObserver(() => { render(); observer.refresh(); });
+    const mutations = new MutationObserver(() => { bind(); render(); observer.refresh(); });
     mutations.observe(root, {subtree: true, childList: true, attributes: true, attributeFilter: ['href', 'data-hw-section', 'data-hw-offset', 'data-hw-scroll-root', 'disabled', 'aria-disabled']});
     scope.add(() => mutations.disconnect());
   }
-  render();
+  bind(); render();
   return { get current() { return current; }, refresh: observer.refresh, navigate: observer.navigate, destroy: () => scope.destroy() };
 }

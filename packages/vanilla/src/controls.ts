@@ -1,7 +1,9 @@
-import { observeFieldValue, clampRange, createCleanup, formatNumber, isDisabled, normalizeDigits, normalizeSearch } from '@hawiyah/core';
-import { emit, ensureId, eventElement, localeOf, nativeChange, readOnly, remember, required, translated } from './dom.js';
+import { observeFieldValue, clampRange, createCleanup, formatNumber, isDisabled, normalizeDigits, normalizeSearch, requireText } from '@hawiyah/core';
+import { emit, ensureId, eventElement, nativeChange, readOnly, remember, required, templated, text, validityMessage, writeText } from './dom.js';
 
 export interface ValueController<T> { readonly value: T; destroy(): void }
+/** showLabel and hideLabel are required: the option, else data-hw-show-label / data-hw-hide-label on the toggle or the root.
+ * The toggle's authored aria-label or text is used as showLabel when no option is given. */
 export interface PasswordFieldOptions { showLabel?: string; hideLabel?: string; toggleVariant?: 'icon' | 'text' }
 export function createPasswordField(root: HTMLElement, options: PasswordFieldOptions = {}): { toggle(): void; destroy(): void } {
   const input = required<HTMLInputElement>(root, '[data-hw-password-input]');
@@ -10,26 +12,29 @@ export function createPasswordField(root: HTMLElement, options: PasswordFieldOpt
   const presence = observeFieldValue(input); scope.add(() => presence.destroy());
   remember(scope, input, ['type']); remember(scope, button, ['aria-pressed', 'aria-label', 'aria-controls', 'type', 'disabled', 'class', 'data-toggle-variant']);
   const children = [...button.childNodes]; scope.add(() => button.replaceChildren(...children));
-  const show = options.showLabel || button.dataset.hwShowLabel || button.getAttribute('aria-label') || translated(root, 'Show password', 'إظهار كلمة المرور');
-  const hide = options.hideLabel || button.dataset.hwHideLabel || translated(root, 'Hide password', 'إخفاء كلمة المرور');
+  const authored = button.getAttribute('aria-label')?.trim() || button.textContent?.trim() || undefined;
+  const show = options.showLabel ?? button.dataset.hwShowLabel ?? authored ?? text(root, 'showLabel');
+  const hide = options.hideLabel ?? button.dataset.hwHideLabel ?? text(root, 'hideLabel');
   const variant = options.toggleVariant ?? button.dataset.hwToggleVariant ?? root.dataset.hwToggleVariant ?? 'icon';
   button.type = 'button'; button.classList.add('hw-password-toggle'); button.setAttribute('aria-controls', ensureId(scope, input, 'password'));
   button.dataset.toggleVariant = variant === 'text' ? 'text' : 'icon';
   const render = () => {
     const visible = input.type === 'text'; button.setAttribute('aria-pressed', String(visible));
-    if (variant === 'text') button.textContent = visible ? hide : show;
+    const label = visible ? hide : show; const present = requireText('PasswordField', visible ? 'hideLabel' : 'showLabel', label);
+    if (variant === 'text') button.textContent = present ? label! : '';
     else { const icon = input.ownerDocument.createElement('span'); icon.className = 'hw-password-icon'; icon.setAttribute('aria-hidden', 'true'); button.replaceChildren(icon); }
-    button.setAttribute('aria-label', visible ? hide : show); button.disabled = isDisabled(input);
+    if (present) button.setAttribute('aria-label', label!); else button.removeAttribute('aria-label'); button.disabled = isDisabled(input);
   };
   const toggle = () => { if (scope.destroyed || isDisabled(input)) return; input.type = input.type === 'password' ? 'text' : 'password'; render(); emit(root, { visible: input.type === 'text' }); };
   scope.listen(button, 'click', toggle);
   if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { input.type = 'password'; render(); } }));
   const Observer = input.ownerDocument.defaultView?.MutationObserver;
   if (Observer) { const observer = new Observer(render); observer.observe(input, { attributes: true, attributeFilter: ['disabled'] }); scope.add(() => observer.disconnect()); }
-  render(); return { toggle, destroy: () => scope.destroy() };
+  requireText('PasswordField', 'hideLabel', hide); render(); return { toggle, destroy: () => scope.destroy() };
 }
 
-export interface RangeSliderOptions { min?: number; max?: number; onValueChange?: (value: [number, number]) => void }
+/** The thumbs are named in markup (label or aria-label). `locale` (or data-hw-locale) only affects digit grouping. */
+export interface RangeSliderOptions { min?: number; max?: number; locale?: string; onValueChange?: (value: [number, number]) => void }
 export function createRangeSlider(root: HTMLElement, options: RangeSliderOptions = {}): ValueController<[number, number]> {
   const lower = required<HTMLInputElement>(root, '[data-hw-lower]');
   const upper = required<HTMLInputElement>(root, '[data-hw-upper]');
@@ -46,7 +51,8 @@ export function createRangeSlider(root: HTMLElement, options: RangeSliderOptions
     upper.min = String(value[0]);
     lower.value = String(value[0]);
     upper.value = String(value[1]);
-    if (output) output.textContent = `${formatNumber(value[0], { locale: localeOf(root) })} – ${formatNumber(value[1], { locale: localeOf(root) })}`;
+    const locale = options.locale ?? (root.dataset.hwLocale || undefined);
+    if (output) output.textContent = `${formatNumber(value[0], { locale })} – ${formatNumber(value[1], { locale })}`;
   };
   const update = (changed: 'lower' | 'upper') => {
     if (readOnly(root) || isDisabled(changed === 'lower' ? lower : upper)) { render(); return; }
@@ -126,7 +132,13 @@ export function createPinInput(root: HTMLElement, options: PinInputOptions = {})
   render(); return { get value() { return input.value; }, destroy: () => scope.destroy() };
 }
 
-export interface TagInputOptions { value?: readonly string[]; name?: string; onValueChange?: (values: string[]) => void; getRemoveLabel?: (value: string) => string; requiredMessage?: string }
+export interface TagInputOptions {
+  value?: readonly string[]; name?: string; onValueChange?: (values: string[]) => void;
+  /** Accessible name of a tag's remove button (data-hw-remove-label="… {tag}"). Required. */
+  getRemoveLabel?: (tag: string) => string;
+  /** Custom validity message while a required tag input is empty (data-hw-required-message). Required when the input is required. */
+  requiredMessage?: string;
+}
 export function createTagInput(root: HTMLElement, options: TagInputOptions = {}): ValueController<string[]> & { add(value: string): void; remove(value: string): void } {
   const input = required<HTMLInputElement>(root, '[data-hw-tag-input]');
   const host = required<HTMLElement>(root, '[data-hw-tags]');
@@ -141,6 +153,9 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   remember(scope, host, ['role']); remember(scope, input, ['name', 'required', 'aria-required']);
   scope.add(() => { host.replaceChildren(...children); input.value = originalInput; input.setCustomValidity(originalValidity); });
   host.setAttribute('role', 'list'); input.removeAttribute('name'); input.required = false; if (requiredValue) input.setAttribute('aria-required', 'true');
+  const removeLabel = templated(root, 'getRemoveLabel', options.getRemoveLabel, (tag: string) => ({ tag }));
+  requireText('TagInput', 'getRemoveLabel', options.getRemoveLabel ?? root.getAttribute('data-hw-remove-label'));
+  if (requiredValue) requireText('TagInput', 'requiredMessage', text(root, 'requiredMessage', options.requiredMessage), 'required is set');
   const render = () => {
     host.replaceChildren();
     presence.refresh();
@@ -155,12 +170,12 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
       host.append(chip);
       const remove = root.ownerDocument.createElement('button'); remove.type = 'button'; remove.dataset.hwRemoveTag = String(index);
       const glyph = root.ownerDocument.createElement('span'); glyph.className = 'hw-icon'; glyph.dataset.icon = 'cancel-01'; glyph.dataset.size = 'md'; glyph.setAttribute('aria-hidden', 'true'); remove.append(glyph);
-      remove.setAttribute('aria-label', options.getRemoveLabel?.(tag) ?? translated(root, `Remove ${tag}`, `إزالة ${tag}`));
+      writeText(remove, 'aria-label', 'TagInput', 'getRemoveLabel', removeLabel(tag));
       chip.append(remove); syncDisabled(remove);
       if (readOnly(root, input)) remove.disabled = true;
       if (name) { const hidden = root.ownerDocument.createElement('input'); hidden.type = 'hidden'; hidden.name = name; hidden.value = tag; const form = input.getAttribute('form'); if (form) hidden.setAttribute('form', form); chip.append(hidden); syncDisabled(hidden); }
     });
-    input.setCustomValidity(requiredValue && !value.length && input.getAttribute('aria-disabled') !== 'true' ? options.requiredMessage ?? translated(root, 'Add at least one tag.', 'أضف وسمًا واحدًا على الأقل.') : originalValidity);
+    input.setCustomValidity(requiredValue && !value.length && input.getAttribute('aria-disabled') !== 'true' ? validityMessage('TagInput', 'requiredMessage', text(root, 'requiredMessage', options.requiredMessage), 'required is set') : originalValidity);
   };
   const notify = () => { render(); emit(root, { value: [...value] }); options.onValueChange?.([...value]); };
   const add = (tag: string) => { if (scope.destroyed || isDisabled(input) || readOnly(root, input)) return; const next = tag.trim(); if (!next || value.some(existing => normalizeSearch(existing) === normalizeSearch(next))) return; value.push(next); input.value = ''; notify(); };
@@ -186,7 +201,13 @@ export function createTagInput(root: HTMLElement, options: TagInputOptions = {})
   render(); return { get value() { return [...value]; }, add, remove, destroy: () => scope.destroy() };
 }
 
-export interface MultiSelectOptions { required?: boolean; requiredMessage?: string; onValueChange?: (values: string[]) => void; getResultsMessage?: (count: number) => string }
+export interface MultiSelectOptions {
+  required?: boolean; onValueChange?: (values: string[]) => void;
+  /** Custom validity message while a required multi-select has no selection (data-hw-required-message). Required when required is set. */
+  requiredMessage?: string;
+  /** Live-region text with the filtered count (data-hw-results-message="{count} …"). Required when [data-hw-status] exists. */
+  getResultsMessage?: (count: number) => string;
+}
 export function createMultiSelect(root: HTMLElement, options: MultiSelectOptions = {}): ValueController<string[]> {
   const search = required<HTMLInputElement>(root, '[data-hw-multiselect-search]');
   const items = [...root.querySelectorAll<HTMLElement>('[data-hw-option]')];
@@ -204,10 +225,12 @@ export function createMultiSelect(root: HTMLElement, options: MultiSelectOptions
     const requiredSelection = options.required ?? root.dataset.hwRequired === 'true';
     if (requiredSelection) search.setAttribute('aria-required', 'true'); else search.removeAttribute('aria-required');
     inputs.forEach((input, index) => { const value = readOnly(root) ? 'true' : originalDisabled[index]; if (value != null) input.setAttribute('aria-disabled', value); else input.removeAttribute('aria-disabled'); });
-    search.setCustomValidity(requiredSelection && !isDisabled(search) && !values().length ? options.requiredMessage ?? translated(root, 'Choose at least one option.', 'اختر خيارًا واحدًا على الأقل.') : originalValidity);
+    search.setCustomValidity(requiredSelection && !isDisabled(search) && !values().length ? validityMessage('MultiSelect', 'requiredMessage', text(root, 'requiredMessage', options.requiredMessage), 'required is set') : originalValidity);
   };
   let selected = inputs.map(input => input.checked);
-  const filter = () => { const query = normalizeSearch(search.value); let count = 0; items.forEach(item => { item.hidden = !normalizeSearch(item.textContent || '').includes(query); if (!item.hidden) count++; }); if (status) status.textContent = options.getResultsMessage?.(count) ?? translated(root, `${count} options`, `${count} خيارات`); validate(); };
+  const resultsMessage = templated(root, 'getResultsMessage', options.getResultsMessage, (count: number) => ({ count }));
+  if (options.required ?? root.dataset.hwRequired === 'true') requireText('MultiSelect', 'requiredMessage', text(root, 'requiredMessage', options.requiredMessage), 'required is set');
+  const filter = () => { const query = normalizeSearch(search.value); let count = 0; items.forEach(item => { item.hidden = !normalizeSearch(item.textContent || '').includes(query); if (!item.hidden) count++; }); if (status) { const message = resultsMessage(count); status.textContent = requireText('MultiSelect', 'getResultsMessage', message, 'the filtered count is announced') ? message! : ''; } validate(); };
   scope.listen(search, 'input', filter);
   scope.listen(root, 'click', event => { const target = eventElement(event); if (readOnly(root) && target?.matches('input[type="checkbox"], label')) event.preventDefault(); });
   scope.listen(root, 'change', event => { const index = inputs.indexOf(event.target as HTMLInputElement); if (index < 0) return; if (readOnly(root) || isDisabled(inputs[index]!)) { inputs[index]!.checked = selected[index]!; return; } selected = inputs.map(input => input.checked); validate(); const value = values(); emit(root, { value }); options.onValueChange?.(value); });
@@ -222,7 +245,15 @@ export function createMultiSelect(root: HTMLElement, options: MultiSelectOptions
   filter(); return { get value() { return values(); }, destroy: () => scope.destroy() };
 }
 
-export interface FileDropzoneOptions { maxSize?: number; onValueChange?: (files: File[]) => void; getStatusMessage?: (files: File[], rejected: boolean) => string }
+export interface FileDropzoneOptions {
+  maxSize?: number; onValueChange?: (files: File[]) => void;
+  /** Status text after a selection (data-hw-selected-message="{count} …"). Required when [data-hw-file-status] exists. */
+  getSelectedMessage?: (files: readonly File[]) => string;
+  /** Error text when files are rejected (data-hw-rejected-message="{count} …"). Required when accept or maxSize is set. */
+  getRejectedMessage?: (rejected: readonly File[]) => string;
+  /** Status when the browser cannot assign dropped files to the input (data-hw-unsupported-drop-message). Without it the status is left unchanged. */
+  unsupportedDropMessage?: string;
+}
 export function createFileDropzone(root: HTMLElement, options: FileDropzoneOptions = {}): ValueController<File[]> {
   const input = required<HTMLInputElement>(root, '[data-hw-file-input]');
   const scope = createCleanup(); const status = root.querySelector<HTMLElement>('[data-hw-file-status]'); const initialText = status?.textContent;
@@ -230,16 +261,28 @@ export function createFileDropzone(root: HTMLElement, options: FileDropzoneOptio
   remember(scope, root, ['data-dragover']); if (status) scope.add(() => { status.textContent = initialText ?? ''; });
   const maxSize = options.maxSize ?? Number(root.dataset.hwMaxSize || Infinity);
   const accepted = (file: File) => file.size <= maxSize && (!input.accept || input.accept.split(',').some(pattern => { const rule = pattern.trim().toLowerCase(); return rule.startsWith('.') ? file.name.toLowerCase().endsWith(rule) : rule.endsWith('/*') ? file.type.toLowerCase().startsWith(rule.slice(0, -1)) : file.type.toLowerCase() === rule; }));
-  const announce = (rejected: boolean) => { const value = [...(input.files || [])]; if (status) status.textContent = options.getStatusMessage?.(value, rejected) ?? (rejected ? translated(root, 'Choose files matching the allowed type and size.', 'اختر ملفات توافق النوع والحجم المسموح.') : value.map(file => file.name).join('، ')); emit(root, { value, rejected }); options.onValueChange?.(value); };
-  scope.listen(input, 'change', () => { const rejected = [...(input.files || [])].some(file => !accepted(file)); if (rejected) input.value = ''; announce(rejected); });
+  const selectedMessage = templated(root, 'getSelectedMessage', options.getSelectedMessage, (files: readonly File[]) => ({ count: files.length }));
+  const rejectedMessage = templated(root, 'getRejectedMessage', options.getRejectedMessage, (files: readonly File[]) => ({ count: files.length }));
+  const restricted = () => !!input.accept || Number.isFinite(maxSize);
+  if (status) requireText('FileDropzone', 'getSelectedMessage', options.getSelectedMessage ?? root.getAttribute('data-hw-selected-message'), 'a selection status is rendered');
+  if (status && restricted()) requireText('FileDropzone', 'getRejectedMessage', options.getRejectedMessage ?? root.getAttribute('data-hw-rejected-message'), 'accept or maxSize is set');
+  const announce = (rejectedFiles: readonly File[]) => {
+    const value = [...(input.files || [])]; const rejected = rejectedFiles.length > 0;
+    if (status) {
+      const message = rejected ? rejectedMessage(rejectedFiles) : value.length ? selectedMessage(value) : '';
+      status.textContent = (rejected || value.length > 0) && requireText('FileDropzone', rejected ? 'getRejectedMessage' : 'getSelectedMessage', message, rejected ? 'accept or maxSize is set' : 'a selection status is rendered') ? message! : '';
+    }
+    emit(root, { value, rejected }); options.onValueChange?.(value);
+  };
+  scope.listen(input, 'change', () => { const rejected = [...(input.files || [])].filter(file => !accepted(file)); if (rejected.length) input.value = ''; announce(rejected); });
   scope.listen(input, 'click', event => { if (readOnly(root)) event.preventDefault(); });
   scope.listen(root, 'dragover', event => { if (!isDisabled(input) && !readOnly(root)) { event.preventDefault(); root.setAttribute('data-dragover', ''); } });
   scope.listen(root, 'dragleave', event => { if (!root.contains((event as DragEvent).relatedTarget as Node | null)) root.removeAttribute('data-dragover'); });
   scope.listen(root, 'drop', event => {
     event.preventDefault(); root.removeAttribute('data-dragover'); if (isDisabled(input) || readOnly(root)) return;
     const files = [...((event as DragEvent).dataTransfer?.files || [])]; const selected = input.multiple ? files : files.slice(0, 1);
-    if (selected.some(file => !accepted(file))) { input.value = ''; announce(true); return; }
-    const Transfer = input.ownerDocument.defaultView?.DataTransfer; if (!Transfer) { if (status) status.textContent = translated(root, 'Use the file chooser to attach documents.', 'استخدم اختيار الملفات لإرفاق المستندات.'); return; }
+    const rejected = selected.filter(file => !accepted(file)); if (rejected.length) { input.value = ''; announce(rejected); return; }
+    const Transfer = input.ownerDocument.defaultView?.DataTransfer; if (!Transfer) { const message = text(root, 'unsupportedDropMessage', options.unsupportedDropMessage); if (status && requireText('FileDropzone', 'unsupportedDropMessage', message, 'a selection status is rendered')) status.textContent = message!; return; }
     const transfer = new Transfer(); selected.forEach(file => transfer.items.add(file)); input.files = transfer.files; nativeChange(input);
   });
   if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented && status) status.textContent = ''; }));

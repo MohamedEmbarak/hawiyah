@@ -1,12 +1,14 @@
-import { observeFieldValue, createCleanup, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox } from '@hawiyah/core';
+import { observeFieldValue, createCleanup, requireText, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox } from '@hawiyah/core';
 import type { ComboboxEvent, Option } from '@hawiyah/core';
-import { emit, ensureId, eventElement, nativeChange, remember, required } from './dom.js';
+import { emit, ensureId, eventElement, nativeChange, remember, required, templated, text, validityMessage } from './dom.js';
 
 export interface ComboboxOptions {
   value?: string;
   onValueChange?: (value: string) => void;
+  /** Live-region announcement of the number of matches (data-hw-results-message="{count} …"). Required. */
   getResultsMessage?: (count: number) => string;
-  invalidSelectionMessage?: string;
+  /** Custom validity message while a required combobox has no selected option (data-hw-required-message). Required when the input is required. */
+  requiredMessage?: string;
 }
 
 export interface ComboboxController {
@@ -85,6 +87,9 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
   if (!state.value && originalInputValue && options.value === undefined) state = { ...state, query: originalInputValue };
   let composing = false;
   const refreshDisabled = () => nodes.forEach((node, index) => { items[index]!.disabled = isDisabled(node); });
+  const resultsMessage = templated(root, 'getResultsMessage', options.getResultsMessage, (count: number) => ({ count }));
+  requireText('Combobox', 'getResultsMessage', options.getResultsMessage ?? root.getAttribute('data-hw-results-message'));
+  if (input.required) requireText('Combobox', 'requiredMessage', text(root, 'requiredMessage', options.requiredMessage), 'required is set');
   const render = (announce = false) => {
     const visible = getComboboxOptions(state, items);
     const visibleValues = new Set(visible.map(item => item.value));
@@ -93,7 +98,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     presence.refresh();
     if (input.readOnly) input.setAttribute('aria-readonly', 'true'); else input.removeAttribute('aria-readonly');
     input.setCustomValidity(input.required && !state.value && !isDisabled(input)
-      ? options.invalidSelectionMessage ?? 'اختر خيارًا من القائمة.'
+      ? validityMessage('Combobox', 'requiredMessage', text(root, 'requiredMessage', options.requiredMessage), 'required is set')
       : originalCustomValidity);
     input.setAttribute('aria-expanded', String(state.open));
     list.hidden = !state.open;
@@ -115,7 +120,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
       hidden.disabled = originalHiddenDisabled || isDisabled(input);
     }
     if (!state.open) status!.textContent = '';
-    else if (announce) status!.textContent = (options.getResultsMessage ?? (count => `${count} نتيجة`))(visible.length);
+    else if (announce) { const message = resultsMessage(visible.length); status!.textContent = requireText('Combobox', 'getResultsMessage', message) ? message! : ''; }
   };
   const send = (event: ComboboxEvent) => {
     if (scope.destroyed) return;

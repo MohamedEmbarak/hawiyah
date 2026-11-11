@@ -2,14 +2,14 @@ import {computed, defineComponent, h, mergeProps, nextTick, onBeforeUnmount, onM
 import type {PropType} from 'vue';
 import {getSearchSuggestions, isDisabled, requestSearchDialogClose} from '@hawiyah/core';
 import {Button, decorate} from './forms.js';
-import {decorationProps, useField, useFormReset, useValue} from './shared.js';
+import {decorationProps, needText, optionalText, useField, useFormReset, useValue} from './shared.js';
 
 export const SearchField = defineComponent({
   name: 'HwSearchField', inheritAttrs: false,
   props: {...decorationProps, modelValue: String, defaultValue:{type:String,default:''}, disabled:Boolean, readonly:Boolean,
-    clearLabel:{type:String,default:'مسح البحث'}, suggestions:Array as PropType<readonly string[]>, maxSuggestions:{type:Number,default:8},
-    resultsMessage:{type:Function as PropType<(count:number)=>string>,default:(count:number)=>`${count} اقتراحات متاحة`},
-    showSearchButton:Boolean,searchLabel:{type:String,default:'بحث'},
+    clearLabel:{type:String,required:true}, suggestions:Array as PropType<readonly string[]>, maxSuggestions:{type:Number,default:8},
+    getResultsMessage:Function as PropType<(count:number)=>string>,
+    showSearchButton:Boolean,searchLabel:String,
   },
   emits:{'update:modelValue':(_value:string)=>true,search:(_value:string)=>true},
   setup(props,{attrs,emit,expose}) {
@@ -21,6 +21,7 @@ export const SearchField = defineComponent({
     const matches=computed(()=>getSearchSuggestions(model.value.value,props.suggestions??[],props.maxSuggestions));
     const expanded=computed(()=>opened.value && props.suggestions!==undefined && !props.readonly && !props.disabled && !composing.value && matches.value.length>0);
     const listId=computed(()=>`${field.id.value}-suggestions`);
+    const resultsMessage=(count:number)=>{const get=needText('SearchField','getResultsMessage',props.getResultsMessage,'suggestions are given');return get?optionalText(get(count)):undefined;};
     const write=(value:string)=>{expectedValue=value;model.set(value);};
     const search=()=>{if(!element.value || isDisabled(element.value) || composing.value)return;const query=model.value.value.trim();if(query)emit('search',query);close();};
     const choose=(index:number)=>{if(!editable() || composing.value)return;const match=matches.value[index];if(!match)return;write(match.value);element.value?.focus();close();};
@@ -62,12 +63,12 @@ export const SearchField = defineComponent({
               if(event.key==='Enter'){if(expanded.value && active.value>=0){event.preventDefault();choose(active.value);}else search();}
             },
           })),
-          h(Button,{class:'hw-search-clear',variant:'ghost',hidden:!model.value.value || props.readonly,disabled:props.disabled,'aria-label':props.clearLabel,'aria-controls':field.id.value,onPointerdown:(event:PointerEvent)=>{if(event.button===0)event.preventDefault();},onMousedown:(event:MouseEvent)=>{if(event.button===0)event.preventDefault();},onClick:()=>{if(editable()){write('');element.value?.focus();close();}}},()=>h('span',{class:'hw-search-clear-icon','aria-hidden':'true'})),
-          props.suggestions!==undefined?h('div',{class:'hw-search-suggestions',id:listId.value,role:'listbox','aria-label':props.label??attrs['aria-label']??props.searchLabel,hidden:!expanded.value},matches.value.map((match,index)=>h('div',{class:'hw-search-option',dir:'auto',key:match.value,id:`${listId.value}-${index}`,role:'option','aria-selected':index===active.value,onPointerdown:(event:PointerEvent)=>{if(event.button===0)event.preventDefault();},onMousedown:(event:MouseEvent)=>{if(event.button===0)event.preventDefault();},onClick:()=>choose(index)},match.segments.map(segment=>segment.match?h('strong',segment.text):segment.text)))):null,
+          h(Button,{class:'hw-search-clear',variant:'ghost',hidden:!model.value.value || props.readonly,disabled:props.disabled,'aria-label':needText('SearchField','clearLabel',props.clearLabel),'aria-controls':field.id.value,onPointerdown:(event:PointerEvent)=>{if(event.button===0)event.preventDefault();},onMousedown:(event:MouseEvent)=>{if(event.button===0)event.preventDefault();},onClick:()=>{if(editable()){write('');element.value?.focus();close();}}},()=>h('span',{class:'hw-search-clear-icon','aria-hidden':'true'})),
+          props.suggestions!==undefined?h('div',{class:'hw-search-suggestions',id:listId.value,role:'listbox','aria-label':optionalText(props.label)??optionalText(attrs['aria-label'] as string|undefined),'aria-labelledby':optionalText(props.label)||optionalText(attrs['aria-label'])?undefined:attrs['aria-labelledby'],hidden:!expanded.value},matches.value.map((match,index)=>h('div',{class:'hw-search-option',dir:'auto',key:match.value,id:`${listId.value}-${index}`,role:'option','aria-selected':index===active.value,onPointerdown:(event:PointerEvent)=>{if(event.button===0)event.preventDefault();},onMousedown:(event:MouseEvent)=>{if(event.button===0)event.preventDefault();},onClick:()=>choose(index)},match.segments.map(segment=>segment.match?h('strong',segment.text):segment.text)))):null,
         ]),
-        props.showSearchButton?h(Button,{class:'hw-search-submit',disabled:props.disabled,'aria-label':props.searchLabel,onClick:search},()=>h('span',{class:'hw-search-submit-icon','aria-hidden':'true'})):null,
+        props.showSearchButton?h(Button,{class:'hw-search-submit',disabled:props.disabled,'aria-label':needText('SearchField','searchLabel',props.searchLabel,'showSearchButton is on'),onClick:search},()=>h('span',{class:'hw-search-submit-icon','aria-hidden':'true'})):null,
       ]),
-      props.suggestions!==undefined?h('span',{class:'hw-sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},opened.value && !props.readonly && !props.disabled && !composing.value && model.value.value.trim()?props.resultsMessage(matches.value.length):''):null,
+      props.suggestions!==undefined?h('span',{class:'hw-sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},opened.value && !props.readonly && !props.disabled && !composing.value && model.value.value.trim()?resultsMessage(matches.value.length):undefined):null,
     ],'hw-search-field');
   },
 });

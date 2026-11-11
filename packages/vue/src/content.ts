@@ -3,7 +3,7 @@ import type { PropType, VNodeChild } from "vue";
 import { formatNumber, sortRows } from "@hawiyah/core";
 import { Button } from "./forms.js";
 import { Avatar } from "./display.js";
-import { useValue } from "./shared.js";
+import { needText, optionalText, rootLabel, useValue } from "./shared.js";
 
 export const Link = defineComponent({
   name: 'HwLink', inheritAttrs: false,
@@ -73,7 +73,7 @@ export const Chip = defineComponent({
     label: String,
     removable: Boolean,
     disabled: Boolean,
-    removeLabel: { type: String, default: "Remove" },
+    removeLabel: String,
     tone: {
       type: String as PropType<
         "neutral" | "success" | "warning" | "danger" | "info"
@@ -96,7 +96,7 @@ export const Chip = defineComponent({
                 variant: "ghost",
                 size: "sm",
                 disabled: props.disabled,
-                "aria-label": props.removeLabel,
+                "aria-label": needText("Chip", "removeLabel", props.removeLabel, "the chip is removable"),
                 onClick: () => emit("remove"),
               },
               () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),
@@ -188,7 +188,7 @@ export const Timeline = defineComponent({
     return () =>
       h(
         "ol",
-        mergeProps(attrs, { class: "hw-timeline", "aria-label": props.label }),
+        mergeProps(attrs, { class: "hw-timeline", "aria-label": rootLabel("Timeline", props.label, attrs) }),
         props.items.map((item) =>
           h(
             "li",
@@ -251,21 +251,22 @@ export const AvatarGroup = defineComponent({
     items: { type: Array as PropType<readonly AvatarItem[]>, required: true },
     max: { type: Number, default: 5 },
     label: { type: String, required: true },
-    remainingLabel: {
+    getOverflowLabel: {
       type: Function as PropType<(count: number) => string>,
-      default: (count: number) => `${count} more people`,
+      required: true,
     },
   },
   setup(props, { attrs }) {
     return () => {
       const rounded = Math.floor(props.max);
       const max = Number.isNaN(rounded) ? 5 : Math.max(0, rounded);
+      const overflowLabel = (count: number) => { const get = needText("AvatarGroup", "getOverflowLabel", props.getOverflowLabel); return get ? optionalText(get(count)) : undefined; };
       return h(
         "div",
         mergeProps(attrs, {
           class: "hw-avatar-group",
           role: "group",
-          "aria-label": props.label,
+          "aria-label": rootLabel("AvatarGroup", props.label, attrs),
         }),
         [
           ...props.items
@@ -277,7 +278,7 @@ export const AvatarGroup = defineComponent({
               {
                 class: "hw-avatar",
                 role: "img",
-                "aria-label": props.remainingLabel(props.items.length - max),
+                "aria-label": overflowLabel(props.items.length - max),
               },
               `+${props.items.length - max}`,
             ),
@@ -299,7 +300,7 @@ export const DataTable = defineComponent({
     variant: String as PropType<'default' | 'striped' | 'bordered'>,
     size: String as PropType<'sm' | 'md' | 'lg'>,
     wrapperProps: Object as PropType<Record<string, unknown>>,
-    emptyMessage: {type: String, default: 'لا توجد سجلات'},
+    emptyMessage: {type: String, required: true},
     columns: { type: Array as PropType<readonly DataColumn[]>, required: true },
     rows: {
       type: Array as PropType<readonly Record<string, unknown>[]>,
@@ -317,13 +318,9 @@ export const DataTable = defineComponent({
     rowKey: Function as PropType<
       (row: Record<string, unknown>, index: number) => string | number
     >,
-    sortLabel: {
-      type: Function as PropType<
-        (column: DataColumn, direction: "ascending" | "descending") => string
-      >,
-      default: (column: DataColumn, direction: string) =>
-        `ترتيب ${column.label} ${direction === 'ascending' ? 'تصاعديًا' : 'تنازليًا'}`,
-    },
+    getSortLabel: Function as PropType<
+      (column: DataColumn, direction: "ascending" | "descending") => string
+    >,
   },
   emits: {
     "update:sortKey": (_value: string) => true,
@@ -381,7 +378,7 @@ export const DataTable = defineComponent({
                         "button",
                         {
                           type: "button",
-                          "aria-label": props.sortLabel(column, next),
+                          "aria-label": optionalText(props.getSortLabel?.(column, next)),
                           onClick: () => {
                             key.set(column.key);
                             direction.set(next);
@@ -425,7 +422,7 @@ export const DataTable = defineComponent({
                   ),
                 ),
               ),
-            ) : h("tr", {}, h("td", {colspan: props.columns.length || 1}, props.emptyMessage)),
+            ) : h("tr", {}, h("td", {colspan: props.columns.length || 1}, needText("DataTable", "emptyMessage", props.emptyMessage))),
           ),
         ]),
       ]);

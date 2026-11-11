@@ -1,5 +1,5 @@
-import { createCleanup, getDirection, getNextEnabledIndex, isDisabled, observeReadonlyChoice, normalizeDigits, normalizeSearch, sortRows } from '@hawiyah/core';
-import { emit, eventElement, localeOf, nativeChange, readOnly, remember, translated } from './dom.js';
+import { createCleanup, getDirection, getNextEnabledIndex, isDisabled, observeReadonlyChoice, normalizeDigits, normalizeSearch, requireText, sortRows } from '@hawiyah/core';
+import { emit, eventElement, nameRoot, nativeChange, readOnly, remember, templated, text, writeOptional, writeText } from './dom.js';
 import type { ValueController } from './controls.js';
 
 function blocked(root: HTMLElement): boolean { return isDisabled(root) || root.dataset.hwDisabled === 'true'; }
@@ -59,7 +59,13 @@ export function createToggleGroup(root: HTMLElement, options: ToggleGroupOptions
   watchDisabled(scope, root, render); render(); return { get value() { return getValue(); }, select, destroy: () => scope.destroy() };
 }
 
-export interface FeedbackOptions { value?: string; onValueChange?: (value: string) => void; getStatusMessage?: (value: string) => string }
+export interface FeedbackOptions {
+  value?: string; onValueChange?: (value: string) => void;
+  /** Status text after an answer (data-hw-success-message). Required. */
+  successMessage?: string;
+  /** Optional override of successMessage for one answer. */
+  getStatusMessage?: (value: string) => string;
+}
 export interface FeedbackController extends ValueController<string> { select(value: string): void }
 export function createFeedback(root: HTMLElement, options: FeedbackOptions = {}): FeedbackController {
   const scope = createCleanup(); const buttons = ownItems<HTMLElement>(root, 'button[data-hw-value]');
@@ -69,8 +75,9 @@ export function createFeedback(root: HTMLElement, options: FeedbackOptions = {})
   if (input) { remember(scope, input, ['value', 'disabled']); scope.add(() => { input.value = originalInput ?? ''; }); }
   if (status) scope.add(() => { status.textContent = originalStatus ?? ''; });
   let value = options.value ?? (input?.value || buttons.find(button => button.getAttribute('aria-pressed') === 'true')?.dataset.hwValue || '');
-  const initial = value;
-  const render = () => { buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.hwValue === value))); if (input) { input.value = value; input.disabled = originalDisabled || blocked(root); } if (status) status.textContent = value ? options.getStatusMessage?.(value) ?? translated(root, 'Thank you for your feedback.', 'شكرًا لملاحظاتك.') : originalStatus ?? ''; };
+  const initial = value; const success = () => text(root, 'successMessage', options.successMessage);
+  if (!options.getStatusMessage) requireText('Feedback', 'successMessage', success());
+  const render = () => { buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.hwValue === value))); if (input) { input.value = value; input.disabled = originalDisabled || blocked(root); } if (status) status.textContent = value ? (options.getStatusMessage?.(value) ?? (requireText('Feedback', 'successMessage', success()) ? success()! : '')) : originalStatus ?? ''; };
   const select = (next: string) => {
     const button = buttons.find(button => button.dataset.hwValue === next);
     if (scope.destroyed || !button || blocked(root) || isDisabled(button) || readOnly(root) || value === next) return;
@@ -159,7 +166,17 @@ export function createTreeView(root: HTMLElement, options: TreeViewOptions = {})
   watchDisabled(scope, root, render); render(); return { get value() { return value; }, get expandedValues() { return [...expanded]; }, select, toggle, focus, destroy: () => scope.destroy() };
 }
 
-export interface CarouselOptions { index?: number; loop?: boolean; onValueChange?: (index: number) => void; getSlideLabel?: (index: number, total: number) => string; carouselDescription?: string; slideDescription?: string }
+export interface CarouselOptions {
+  index?: number; loop?: boolean; onValueChange?: (index: number) => void;
+  /** Accessible name of the root, unless the markup names it (data-hw-label). */
+  label?: string;
+  /** Name of each slide and indicator, and the live status text; position is one-based (data-hw-slide-label="{position} / {total}"). Required. */
+  getSlideLabel?: (position: number, total: number) => string;
+  /** Status text when there are no slides (data-hw-empty-label). Required. */
+  emptyLabel?: string;
+  /** Optional aria-roledescription of the root and of each slide; nothing is rendered without them. */
+  carouselDescription?: string; slideDescription?: string;
+}
 export interface CarouselController { readonly index: number; select(index: number): void; previous(): void; next(): void; destroy(): void }
 export function createCarousel(root: HTMLElement, options: CarouselOptions = {}): CarouselController {
   const slides = ownItems<HTMLElement>(root, '[data-hw-slide]');
@@ -172,25 +189,29 @@ export function createCarousel(root: HTMLElement, options: CarouselOptions = {})
   const scope = createCleanup(); const initialText = status?.textContent;
   const previousDisabled = !!previous && isDisabled(previous), nextDisabled = !!next && isDisabled(next);
   const dotDisabled = dots.map(isDisabled), loop = options.loop ?? root.dataset.hwLoop === 'true';
-  remember(scope, root, ['role', 'aria-roledescription']);
+  remember(scope, root, ['role', 'aria-roledescription', 'aria-label']);
   if (!root.hasAttribute('role')) root.setAttribute('role', 'region');
-  root.setAttribute('aria-roledescription', options.carouselDescription ?? translated(root, 'carousel', 'عرض شرائح'));
+  nameRoot(root, 'Carousel', text(root, 'label', options.label));
+  writeOptional(root, 'aria-roledescription', text(root, 'carouselDescription', options.carouselDescription));
   if (track) {remember(scope, root, ['style', 'data-hw-carousel-ready']); root.setAttribute('data-hw-carousel-ready', '');}
-  slides.forEach(slide => {remember(scope, slide, ['hidden', 'inert', 'aria-hidden', 'role', 'aria-label', 'aria-roledescription']); if (!slide.hasAttribute('role') && slide.tagName !== 'ARTICLE') slide.setAttribute('role', 'group'); slide.setAttribute('aria-roledescription', options.slideDescription ?? translated(root, 'slide', 'شريحة'));});
+  slides.forEach(slide => {remember(scope, slide, ['hidden', 'inert', 'aria-hidden', 'role', 'aria-label', 'aria-roledescription']); if (!slide.hasAttribute('role') && slide.tagName !== 'ARTICLE') slide.setAttribute('role', 'group'); writeOptional(slide, 'aria-roledescription', text(root, 'slideDescription', options.slideDescription));});
   [previous, next, ...dots].forEach(button => {if(button){remember(scope, button, ['disabled', 'aria-disabled']); buttonType(scope, button);}});
   dots.forEach(dot => remember(scope, dot, ['aria-label', 'aria-current']));
   if(status){remember(scope, status, ['role', 'aria-live']); status.setAttribute('role','status');status.setAttribute('aria-live','polite');scope.add(()=>{status.textContent=initialText??'';});}
   const start=options.index ?? Number(root.dataset.hwIndex || 0);
   let index=Number.isFinite(start)?Math.max(0, Math.min(slides.length-1, Math.floor(start))):0;
-  const label=(position:number)=>options.getSlideLabel?.(position+1,slides.length)??translated(root,`${position+1} of ${slides.length}`,`${position+1} من ${slides.length}`);
+  const slideLabel=templated(root,'getSlideLabel',options.getSlideLabel,(position:number,total:number)=>({position,total}));
+  const label=(position:number)=>slideLabel(position+1,slides.length);
+  const authored=new Set([...slides,...dots].filter(node=>node.hasAttribute('aria-label')));
+  requireText('Carousel','getSlideLabel',options.getSlideLabel??root.getAttribute('data-hw-slide-label'));requireText('Carousel','emptyLabel',text(root,'emptyLabel',options.emptyLabel));
   const disable=(button:HTMLElement|null,disabled:boolean)=>{if(!button)return;if(button.tagName==='BUTTON')(button as HTMLButtonElement).disabled=disabled;button.setAttribute('aria-disabled',String(disabled));};
   const render=()=>{
-    slides.forEach((slide,position)=>{const inactive=position!==index;slide.hidden=inactive;slide.toggleAttribute('inert',inactive);slide.setAttribute('aria-hidden',String(inactive));if(!slide.hasAttribute('aria-label'))slide.setAttribute('aria-label',label(position));});
+    slides.forEach((slide,position)=>{const inactive=position!==index;slide.hidden=inactive;slide.toggleAttribute('inert',inactive);slide.setAttribute('aria-hidden',String(inactive));if(!authored.has(slide))writeText(slide,'aria-label','Carousel','getSlideLabel',label(position));});
     if(track)root.style.setProperty('--hw-carousel-index',String(index));
     disable(previous,previousDisabled||blocked(root)||slides.length<2||(!loop&&index===0));
     disable(next,nextDisabled||blocked(root)||slides.length<2||(!loop&&index===slides.length-1));
-    dots.forEach((dot,position)=>{const target=dotIndexes[position] ?? -1;const valid=Number.isInteger(target)&&target>=0&&target<slides.length;disable(dot,dotDisabled[position]||blocked(root)||!valid);if(target===index&&valid)dot.setAttribute('aria-current','true');else dot.removeAttribute('aria-current');if(!dot.hasAttribute('aria-label'))dot.setAttribute('aria-label',label(target));});
-    if(status)status.textContent=slides.length?label(index):translated(root,'No slides','لا توجد شرائح');
+    dots.forEach((dot,position)=>{const target=dotIndexes[position] ?? -1;const valid=Number.isInteger(target)&&target>=0&&target<slides.length;disable(dot,dotDisabled[position]||blocked(root)||!valid);if(target===index&&valid)dot.setAttribute('aria-current','true');else dot.removeAttribute('aria-current');if(!authored.has(dot)){if(valid)writeText(dot,'aria-label','Carousel','getSlideLabel',label(target));else dot.removeAttribute('aria-label');}});
+    if(status){const message=slides.length?label(index):text(root,'emptyLabel',options.emptyLabel);status.textContent=requireText('Carousel',slides.length?'getSlideLabel':'emptyLabel',message)?message!:'';}
   };
   const select=(nextIndex:number)=>{if(scope.destroyed||blocked(root)||!slides.length||!Number.isFinite(nextIndex))return;const rounded=Math.floor(nextIndex);const bounded=loop?((rounded%slides.length)+slides.length)%slides.length:Math.max(0,Math.min(slides.length-1,rounded));if(bounded===index)return;index=bounded;render();emit(root,{value:index,index});options.onValueChange?.(index);};
   if(previous)scope.listen(previous,'click',event=>{event.preventDefault();if(!isDisabled(previous))select(index-1);});
@@ -220,7 +241,7 @@ export function createDataTable(root: HTMLElement, options: DataTableOptions = {
     bodies.forEach(({body, rows}) => {
       const currentRows = [...body.rows]; const ordered = [...rows.filter(row => currentRows.includes(row)), ...currentRows.filter(row => !rows.includes(row))];
       const records = ordered.map(row => { const cell = row.cells[header.cellIndex]; const raw = cell?.dataset.hwSortValue ?? cell?.textContent?.trim() ?? ''; const numeric = Number(normalizeDigits(raw).replace(/[,٬\s]/gu, '').replace(/٫/gu, '.')); return { row, value: header.dataset.hwType === 'number' ? raw && Number.isFinite(numeric) ? numeric : null : raw }; });
-      sortRows(records, 'value', sortDirection!, options.locale ?? localeOf(root)).forEach(record => body.append(record.row));
+      sortRows(records, 'value', sortDirection!, options.locale ?? (root.dataset.hwLocale || undefined)).forEach(record => body.append(record.row));
     });
     const state = {key, direction: sortDirection}; emit(root, { value: state, ...state }); options.onSortChange?.(state);
   };

@@ -11,6 +11,9 @@ import { createAccordion } from './accordion.js';
 export { createAccordion };
 export type { AccordionOptions, AccordionController } from './accordion.js';
 import { createPortalHeader } from './portal.js';
+import { createSkipLink } from './skip-link.js';
+export { createSkipLink };
+export type { SkipLinkController } from './skip-link.js';
 import { createNavigationDrawer } from './navigation-drawer.js';
 export { createNavigationDrawer };
 export type { NavigationDrawerOptions, NavigationDrawerController } from './navigation-drawer.js';
@@ -49,6 +52,7 @@ const factories: Record<string, (element: HTMLElement) => Controller> = {
   accordion: createAccordion,
   'navigation-drawer': element => createNavigationDrawer(element as HTMLDialogElement),
   'portal-header': createPortalHeader,
+  'skip-link': element => createSkipLink(element as HTMLAnchorElement),
   tabs: createTabs, dialog: element => createDialog(element as HTMLDialogElement), combobox: createCombobox,
   'search-field': createSearchField, tooltip: createTooltip, pagination: createPagination, 'password-field': createPasswordField,
   'range-slider': createRangeSlider, rating: createRating, 'pin-input': createPinInput, 'tag-input': createTagInput,

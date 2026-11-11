@@ -1,7 +1,9 @@
+import { nameRoot, text } from './dom.js';
+
 export interface StepperOptions {
   /** Zero-based active step. -1 = not started; step count = complete. */
   activeIndex?: number;
-  /** Used only when the existing list has no accessible name. */
+  /** Accessible name of the list (data-hw-label), used only when the list has no aria-label or aria-labelledby. Required. */
   label?: string;
 }
 export interface StepperController {
@@ -28,7 +30,7 @@ export function createStepper(element: HTMLOListElement, options: StepperOptions
     const items = steps();
     activeIndex = Number.isInteger(activeIndex) && activeIndex >= -1 && activeIndex <= items.length ? activeIndex : -1;
     element.dataset.activeIndex = String(activeIndex);
-    if (!element.hasAttribute('aria-label') && !element.hasAttribute('aria-labelledby')) element.setAttribute('aria-label', options.label ?? 'التقدم');
+    nameRoot(element, 'Stepper', text(element, 'label', options.label));
     items.forEach((step, index) => {
       remember(step, ['data-state', 'aria-current']);
       const explicit = step.dataset.status;

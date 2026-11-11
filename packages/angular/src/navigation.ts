@@ -1,9 +1,10 @@
 import { booleanAttribute, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, ViewChild, ViewChildren, inject, signal } from '@angular/core';
 import { observeAngularFieldPresence } from './field-presence';
 import { injectIsBrowser } from './platform';
+import { injectId } from './ids';
+import { HwTexts } from './text';
 import { getDirection, getNextEnabledIndex, getPaginationItems, normalizePaginationPage, normalizePaginationTotal, observeTabOverflow, type Direction, type Orientation } from '@hawiyah/core';
 
-let nextId = 0;
 /** Renders its own panel, so projected content stays in the view that declares it and
  * the tabset can be hydrated after server rendering. */
 @Component({ selector: 'hw-tab', standalone: true, template: `<section class="hw-tab-panel" role="tabpanel" tabindex="0" [attr.id]="panelId() || null" [attr.aria-labelledby]="tabId() || null" [hidden]="!active()"><ng-content /></section>` })
@@ -22,18 +23,19 @@ export class HwTabComponent {
 
 @Component({ selector: 'hw-tabs', standalone: true,
   template: `<div class="hw-tabs"><div #tabBar class="hw-tab-bar" [attr.data-hw-overflow]="overflow" [attr.data-orientation]="orientation">
-  <div class="hw-tab-list" [attr.data-hw-overflow]="overflow" role="tablist" [attr.aria-label]="label" [attr.aria-orientation]="orientation" [attr.aria-hidden]="hiddenTabs.length === tabs?.length || null">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="hw-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [attr.data-hw-overflow-hidden]="hiddenTabs.includes(i) ? 'true' : null" [attr.aria-hidden]="hiddenTabs.includes(i) || null" [disabled]="tab.disabled" [tabIndex]="!hiddenTabs.includes(i) && focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>
-  <details #overflowDetails class="hw-tabs-overflow" [hidden]="!hiddenTabs.length" (keydown)="overflowKey($event)"><summary class="hw-tab-overflow-trigger" [attr.aria-label]="overflowLabel" [attr.data-active]="overflowActive || null">…</summary><div class="hw-tab-overflow-menu">@for (i of hiddenTabs; track i) {@if (tabs.get(i); as tab) {<button type="button" class="hw-tab-overflow-item" [attr.data-hw-overflow-value]="tab.value" [disabled]="tab.disabled" [attr.aria-pressed]="tab.value === activeValue" (click)="overflowSelect(tab.value)">{{ tab.label }}</button>}}</div></details>
+  <div class="hw-tab-list" [attr.data-hw-overflow]="overflow" role="tablist" [attr.aria-label]="texts.need('label', label)" [attr.aria-orientation]="orientation" [attr.aria-hidden]="hiddenTabs.length === tabs?.length || null">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="hw-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [attr.data-hw-overflow-hidden]="hiddenTabs.includes(i) ? 'true' : null" [attr.aria-hidden]="hiddenTabs.includes(i) || null" [disabled]="tab.disabled" [tabIndex]="!hiddenTabs.includes(i) && focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>
+  <details #overflowDetails class="hw-tabs-overflow" [hidden]="!hiddenTabs.length" (keydown)="overflowKey($event)"><summary class="hw-tab-overflow-trigger" [attr.aria-label]="overflow === 'menu' ? texts.need('overflowLabel', overflowLabel, 'overflow is menu') : null" [attr.data-active]="overflowActive || null">…</summary><div class="hw-tab-overflow-menu">@for (i of hiddenTabs; track i) {@if (tabs.get(i); as tab) {<button type="button" class="hw-tab-overflow-item" [attr.data-hw-overflow-value]="tab.value" [disabled]="tab.disabled" [attr.aria-pressed]="tab.value === activeValue" (click)="overflowSelect(tab.value)">{{ tab.label }}</button>}}</div></details>
   </div><ng-content /></div>` })
 export class HwTabsComponent {
-  @Input() id = `hw-tabs-${++nextId}`;
+  @Input() id = injectId('hw-tabs');
   @Input({required: true}) label = '';
   @Input() value = '';
   @Input() orientation: Orientation = 'horizontal';
   @Input() direction?: Direction;
   @Input() activationMode: 'automatic' | 'manual' = 'automatic';
   @Input() overflow: 'menu' | 'scroll' = 'menu';
-  @Input() overflowLabel = 'المزيد من التبويبات';
+  /** Accessible name of the overflow disclosure. Required unless overflow is 'scroll'. */
+  @Input() overflowLabel = '';
   @Output() readonly valueChange = new EventEmitter<string>();
   @ContentChildren(HwTabComponent) tabs!: QueryList<HwTabComponent>;
   @ViewChildren('tabButton') buttons!: QueryList<ElementRef<HTMLButtonElement>>;
@@ -42,6 +44,7 @@ export class HwTabsComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly browser = injectIsBrowser();
+  protected readonly texts = new HwTexts('hw-tabs');
   private overflowObserver?: ReturnType<typeof observeTabOverflow>;
   private pendingFocus?: {kind: 'summary' | 'tab' | 'menu'; value?: string};
   private previousActive = '';
@@ -115,39 +118,45 @@ export class HwTabsComponent {
 }
 
 export interface HwBreadcrumbItem { label: string; href?: string; disabled?: boolean }
-@Component({ selector: 'hw-breadcrumb', standalone: true, template: `<nav class="hw-breadcrumb" [attr.aria-label]="label"><ol>@for (item of items; track $index; let last = $last) {<li>@if (item.href && !item.disabled && !last) {<a [href]="item.href">{{ item.label }}</a>} @else {<span [attr.role]="item.disabled ? 'link' : null" [attr.aria-disabled]="item.disabled || null" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>}</li>}</ol></nav>` })
+@Component({ selector: 'hw-breadcrumb', standalone: true, template: `<nav class="hw-breadcrumb" [attr.aria-label]="texts.need('label', label)"><ol>@for (item of items; track $index; let last = $last) {<li>@if (item.href && !item.disabled && !last) {<a [href]="item.href">{{ item.label }}</a>} @else {<span [attr.role]="item.disabled ? 'link' : null" [attr.aria-disabled]="item.disabled || null" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>}</li>}</ol></nav>` })
 export class HwBreadcrumbComponent {
-  @Input() label = 'مسار التنقل';
+  @Input({required: true}) label = '';
   @Input() items: readonly HwBreadcrumbItem[] = [];
+  protected readonly texts = new HwTexts('hw-breadcrumb');
 }
 
-@Component({ selector: 'hw-pagination', standalone: true, template: `<nav #root class="hw-pagination" [attr.aria-label]="label" [attr.data-disabled]="disabled || null" [hidden]="hideOnSinglePage && total === 1" (keydown)="key($event)" (click)="guardClick($event)">
-<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous type="button" [attr.aria-label]="previousLabel" [disabled]="disabled || current === 1" (click)="select(current - 1)"></button>
+@Component({ selector: 'hw-pagination', standalone: true, template: `<nav #root class="hw-pagination" [attr.aria-label]="texts.need('label', label)" [attr.data-disabled]="disabled || null" [hidden]="hideOnSinglePage && total === 1" (keydown)="key($event)" (click)="guardClick($event)">
+<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous type="button" [attr.aria-label]="texts.need('previousLabel', previousLabel)" [disabled]="disabled || current === 1" (click)="select(current - 1)"></button>
 @for (item of entries; track item.page || -item.start) {
-  @if (item.page) {<button class="hw-button hw-pagination-item" data-variant="ghost" [attr.data-hw-page]="item.page" type="button" [disabled]="disabled" [attr.aria-current]="item.page === current ? 'page' : null" [attr.aria-label]="pageLabel(item.page)" (click)="select(item.page)">{{ formatPage(item.page) }}</button>}
+  @if (item.page) {<button class="hw-button hw-pagination-item" data-variant="ghost" [attr.data-hw-page]="item.page" type="button" [disabled]="disabled" [attr.aria-current]="item.page === current ? 'page' : null" [attr.aria-label]="texts.call('getPageLabel', getPageLabel, [item.page])" (click)="select(item.page)">{{ formatPage(item.page) }}</button>}
   @else if (disabled) {<span class="hw-pagination-ellipsis" aria-hidden="true">…</span>}
-  @else {<details class="hw-pagination-gap" (toggle)="toggled($event)"><summary class="hw-pagination-gap-trigger" [attr.aria-label]="gapLabel(item.start, item.end)">…</summary><div class="hw-pagination-menu">
-    @if (item.end - item.start < 100) {@for (number of gapPages(item); track number) {<button class="hw-button hw-pagination-item" data-variant="ghost" [attr.data-hw-page]="number" type="button" [attr.aria-label]="pageLabel(number)" (click)="gapSelect($event, number)">{{ formatPage(number) }}</button>}}
-    @else {<div #jumpGroup class="hw-pagination-jump" (keydown.enter)="jumpKey($event, jumpGroup, item)"><label class="hw-label">{{ jumpLabel }}<input class="hw-input" data-hw-jump-input data-hw-filled="true" form="" type="number" inputmode="numeric" required [min]="item.start" [max]="item.end" step="1" [value]="item.start" (input)="jumpInput($event)"></label><button type="button" class="hw-button" data-hw-jump-submit (click)="jump(jumpGroup, item)">{{ goLabel }}</button></div>}
+  @else {<details class="hw-pagination-gap" (toggle)="toggled($event)"><summary class="hw-pagination-gap-trigger" [attr.aria-label]="texts.call('getGapLabel', getGapLabel, [item.start, item.end])">…</summary><div class="hw-pagination-menu">
+    @if (item.end - item.start < 100) {@for (number of gapPages(item); track number) {<button class="hw-button hw-pagination-item" data-variant="ghost" [attr.data-hw-page]="number" type="button" [attr.aria-label]="texts.call('getPageLabel', getPageLabel, [number])" (click)="gapSelect($event, number)">{{ formatPage(number) }}</button>}}
+    @else {<div #jumpGroup class="hw-pagination-jump" (keydown.enter)="jumpKey($event, jumpGroup, item)"><label class="hw-label">{{ texts.need('jumpLabel', jumpLabel) }}<input class="hw-input" data-hw-jump-input data-hw-filled="true" form="" type="number" inputmode="numeric" required [min]="item.start" [max]="item.end" step="1" [value]="item.start" (input)="jumpInput($event)"></label><button type="button" class="hw-button" data-hw-jump-submit (click)="jump(jumpGroup, item)">{{ texts.need('goLabel', goLabel) }}</button></div>}
   </div></details>}
 }
-<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next type="button" [attr.aria-label]="nextLabel" [disabled]="disabled || current === total" (click)="select(current + 1)"></button>
+<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next type="button" [attr.aria-label]="texts.need('nextLabel', nextLabel)" [disabled]="disabled || current === total" (click)="select(current + 1)"></button>
 </nav>` })
 export class HwPaginationComponent {
   constructor() { observeAngularFieldPresence(); }
-  @Input() label = 'ترقيم الصفحات';
+  @Input({required: true}) label = '';
   @Input() page = 1;
   @Input() totalPages = 1;
-  @Input() previousLabel = 'الصفحة السابقة';
-  @Input() nextLabel = 'الصفحة التالية';
-  @Input() pageLabel: (page: number) => string = page => 'الصفحة ' + page;
+  @Input({required: true}) previousLabel = '';
+  @Input({required: true}) nextLabel = '';
+  /** Accessible name of a page button. */
+  @Input({required: true}) getPageLabel!: (page: number) => string;
   @Input() formatPage: (page: number) => string = String;
   @Input() siblingCount = 1;
   @Input({transform: booleanAttribute}) disabled = false;
   @Input({transform: booleanAttribute}) hideOnSinglePage = false;
-  @Input() gapLabel = (start: number, end: number) => 'الصفحات ' + start + ' إلى ' + end;
-  @Input() jumpLabel = 'الانتقال إلى صفحة';
-  @Input() goLabel = 'انتقال';
+  /** Accessible name of a gap disclosure; start and end are the first and last hidden page. */
+  @Input({required: true}) getGapLabel!: (start: number, end: number) => string;
+  /** Label of the page-number input inside a long gap. */
+  @Input({required: true}) jumpLabel = '';
+  /** Text of the button that submits the page number. */
+  @Input({required: true}) goLabel = '';
+  protected readonly texts = new HwTexts('hw-pagination');
   @Output() readonly pageChange = new EventEmitter<number>();
   @ViewChild('root') root?: ElementRef<HTMLElement>;
   private pendingFocus = false;
@@ -206,9 +215,10 @@ export class HwPaginationComponent {
 }
 
 export interface HwStep { label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
-@Component({ selector: 'hw-stepper', standalone: true, template: `<ol class="hw-stepper" [attr.aria-label]="label">@for (step of steps; track $index; let i = $index) {<li class="hw-step" [attr.aria-current]="state(i) === 'current' ? 'step' : null" [attr.data-state]="state(i)"><span>{{ step.label }}@if (step.description) {<small class="hw-hint">{{ step.description }}</small>}</span></li>}</ol>` })
+@Component({ selector: 'hw-stepper', standalone: true, template: `<ol class="hw-stepper" [attr.aria-label]="texts.need('label', label)">@for (step of steps; track $index; let i = $index) {<li class="hw-step" [attr.aria-current]="state(i) === 'current' ? 'step' : null" [attr.data-state]="state(i)"><span>{{ step.label }}@if (step.description) {<small class="hw-hint">{{ step.description }}</small>}</span></li>}</ol>` })
 export class HwStepperComponent {
-  @Input() label = 'التقدم';
+  @Input({required: true}) label = '';
+  protected readonly texts = new HwTexts('hw-stepper');
   @Input() steps: readonly HwStep[] = [];
   /** Zero-based current step. This is a progress indicator, not navigation. */
   @Input() current = 0;
