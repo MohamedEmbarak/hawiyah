@@ -127,7 +127,7 @@ export class HwSkeletonComponent {
 
 @Component({selector: 'hw-spinner', standalone: true, template: `<span role="status"><span class="hw-spinner" aria-hidden="true"></span><span class="hw-sr-only">{{ decorative ? label : texts.need('label', label) }}</span></span>`})
 export class HwSpinnerComponent {
-  /** Accessible name. A spinner that the application marks aria-hidden="true" is decorative and needs none. */
+  /** Accessible name. A spinner that the application marks aria-hidden="true" is decorative: it passes label="" and nothing is reported. */
   @Input({required: true}) label = '';
   protected readonly decorative = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement.getAttribute('aria-hidden') === 'true';
   protected readonly texts = new HwTexts('hw-spinner');

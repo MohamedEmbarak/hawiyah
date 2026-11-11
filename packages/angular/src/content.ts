@@ -59,8 +59,8 @@ export class HwDataTableComponent {
 }
 
 // The input named title is not a native tooltip on the wrapper element.
-@Component({selector: 'hw-service-card', standalone: true, host: {'[attr.title]': 'null'}, template: `<article class="hw-card hw-service-card" [attr.data-variant]="variant"><div class="hw-service-card-icon" aria-hidden="true"><ng-content select="[hwServiceIcon]" /></div>@if (category) {<p class="hw-badge">{{ category }}</p>}<h3><a class="hw-link" [href]="href">{{ title }}</a></h3><p>{{ description }}</p><div class="hw-service-card-meta">@if (duration) {<span>{{ duration }}</span>}@if (fee) {<span>{{ fee }}</span>}</div><ng-content /><ng-content select="[hwServiceAction]"><a class="hw-button" data-variant="secondary" [href]="href">{{ texts.need('actionLabel', actionLabel, 'no [hwServiceAction] content is projected') }}<span class="hw-sr-only"> {{ title }}</span></a></ng-content></article>`})
-export class HwServiceCardComponent { @Input({required: true}) title = ''; @Input({required: true}) href = ''; @Input() description = ''; @Input() category = ''; @Input() duration = ''; @Input() fee = ''; /** Visible text of the action link. Required unless [hwServiceAction] content replaces the link. */ @Input() actionLabel = ''; @Input() variant = 'default'; protected readonly texts = new HwTexts('hw-service-card'); }
+@Component({selector: 'hw-service-card', standalone: true, host: {'[attr.title]': 'null'}, template: `<article class="hw-card hw-service-card" [attr.data-variant]="variant"><div class="hw-service-card-icon" aria-hidden="true"><ng-content select="[hwServiceIcon]" /></div>@if (category) {<p class="hw-badge">{{ category }}</p>}<h3><a class="hw-link" [href]="href">{{ title }}</a></h3><p>{{ description }}</p><div class="hw-service-card-meta">@if (duration) {<span>{{ duration }}</span>}@if (fee) {<span>{{ fee }}</span>}</div><ng-content /><ng-content select="[hwServiceAction]"><a class="hw-button" data-variant="secondary" [href]="href">{{ texts.need('actionLabel', actionLabel, 'no [hwServiceAction] content is projected') }}</a></ng-content></article>`})
+export class HwServiceCardComponent { @Input({required: true}) title = ''; @Input({required: true}) href = ''; @Input() description = ''; @Input() category = ''; @Input() duration = ''; @Input() fee = ''; /** The whole text and accessible name of the action link; nothing is appended to it. Required unless [hwServiceAction] content replaces the link. */ @Input() actionLabel = ''; @Input() variant = 'default'; protected readonly texts = new HwTexts('hw-service-card'); }
 @Component({selector: 'hw-service-details', standalone: true, imports: [HwDescriptionListComponent], host: {'[attr.title]': 'null'}, template: `<section class="hw-service-details"><header><h2>{{ title }}</h2><p>{{ description }}</p></header><hw-description-list [items]="details" variant="horizontal" />@if (requirements.length) {<h3>{{ texts.need('requirementsLabel', requirementsLabel, 'requirements are given') }}</h3><ul>@for (requirement of requirements; track $index) {<li>{{ requirement }}</li>}</ul>}<ng-content /></section>`})
 export class HwServiceDetailsComponent { @Input({required: true}) title = ''; @Input() description = ''; @Input() details: readonly HwDescription[] = []; @Input() requirements: readonly string[] = []; /** Heading of the requirements list. Required when requirements are given. */ @Input() requirementsLabel = ''; protected readonly texts = new HwTexts('hw-service-details'); }
 export interface HwPortalNavItem extends HwLinkItem {
@@ -70,7 +70,7 @@ export interface HwPortalNavItem extends HwLinkItem {
   @if (mainId) {<a class="hw-skip-link" [attr.href]="fragment(mainId)">{{ texts.need('skipLabel', skipLabel, 'mainId is set') }}</a>}
   <a #brandElement class="hw-portal-brand" [attr.href]="homeHref || null" [attr.aria-label]="brandLabel || null"><ng-content select="[hwBrand]" />@if (brand) {<span>{{ brand }}</span>}</a>
   @if (links.length) {
-    <button #menuToggle class="hw-button hw-portal-menu-toggle" type="button" [attr.aria-expanded]="menuOpen" [attr.aria-controls]="navigationId" (click)="branch = undefined; menuOpen = !menuOpen"><span class="hw-icon" [attr.data-icon]="menuOpen ? 'cancel-01' : 'menu-01'" aria-hidden="true"></span>{{ texts.need('menuLabel', menuLabel) }}</button>
+    <button #menuToggle class="hw-button hw-portal-menu-toggle" type="button" [attr.aria-expanded]="menuOpen" [attr.aria-controls]="navigationId" (click)="toggleMenu()"><span class="hw-icon" [attr.data-icon]="menuOpen ? 'cancel-01' : 'menu-01'" aria-hidden="true"></span>{{ texts.need('menuLabel', menuLabel) }}</button>
     <nav [id]="navigationId" [attr.aria-label]="texts.need('navigationLabel', navigationLabel)" [attr.data-open]="menuOpen"><ul>
       @for (item of links; track item.href) {<li>
         @if (hasGroups(item)) {
@@ -120,6 +120,8 @@ export class HwPortalHeaderComponent {
     this.branch = this.branch === details ? undefined : details;
   }
   close() { this.branch = undefined; this.menuOpen = false; }
+  /** Returns nothing: Angular cancels an event whose template listener returns false. */
+  protected toggleMenu(): void { this.branch = undefined; this.menuOpen = !this.menuOpen; }
   @HostListener('keydown', ['$event']) keydown(event: KeyboardEvent) {
     if (event.defaultPrevented || event.key !== 'Escape') return;
     if (this.branch?.isConnected) {
@@ -145,7 +147,7 @@ export interface HwPortalFooterLink extends HwLinkItem { external?: boolean }
 export interface HwPortalFooterGroup { title: string; links: readonly HwPortalFooterLink[] }
 @Component({selector: 'hw-portal-footer', standalone: true, template: `<footer class="hw-portal-footer">
   <div class="hw-portal-footer-main">
-    <div class="hw-portal-footer-brand" [attr.role]="brandLabel ? 'group' : null" [attr.aria-label]="brandLabel || null"><div #brandMarks class="hw-portal-footer-brand-marks"><ng-content select="[hwFooterBrand]" /></div>@if (brand) {<strong>{{ brand }}</strong>}@if (description) {<p>{{ description }}</p>}</div>
+    <div class="hw-portal-footer-brand" [attr.role]="brandName ? 'group' : null" [attr.aria-label]="brandName"><div #brandMarks class="hw-portal-footer-brand-marks"><ng-content select="[hwFooterBrand]" /></div>@if (brand) {<strong>{{ brand }}</strong>}@if (description) {<p>{{ description }}</p>}</div>
     @if (links.length) {<nav class="hw-portal-footer-group" [attr.aria-label]="texts.need('navigationLabel', navigationLabel, 'links are given')"><h2>{{ texts.need('navigationLabel', navigationLabel, 'links are given') }}</h2><ul class="hw-portal-footer-links">@for (link of links; track $index) {<li><a class="hw-link" [href]="link.href" [attr.target]="link.external ? '_blank' : null" [attr.rel]="link.external ? 'noopener noreferrer' : null">{{ link.label }}@if (link.external) {<span class="hw-portal-footer-external hw-icon" data-icon="link-square-02" data-size="sm" aria-hidden="true"></span>@if (texts.need('externalLabel', externalLabel); as external) {<span class="hw-sr-only"> {{ external }}</span>}}</a></li>}</ul></nav>}
     @for (group of groups; track $index) {@if (group.links.length) {<nav class="hw-portal-footer-group" [attr.aria-label]="group.title"><h2>{{ group.title }}</h2><ul class="hw-portal-footer-links">@for (link of group.links; track $index) {<li><a class="hw-link" [href]="link.href" [attr.target]="link.external ? '_blank' : null" [attr.rel]="link.external ? 'noopener noreferrer' : null">{{ link.label }}@if (link.external) {<span class="hw-portal-footer-external hw-icon" data-icon="link-square-02" data-size="sm" aria-hidden="true"></span>@if (texts.need('externalLabel', externalLabel); as external) {<span class="hw-sr-only"> {{ external }}</span>}}</a></li>}</ul></nav>}}
     <section class="hw-portal-footer-support" [attr.hidden]="hasSupport ? null : ''" [attr.aria-label]="hasSupport ? texts.need('supportLabel', supportLabel, 'support content is projected') : null">@if (hasSupport) {<h2>{{ texts.need('supportLabel', supportLabel, 'support content is projected') }}</h2>}<div #supportContent class="hw-portal-footer-support-content"><ng-content select="[hwFooterSupport]" /></div></section>
@@ -155,7 +157,7 @@ export interface HwPortalFooterGroup { title: string; links: readonly HwPortalFo
 </footer>`})
 export class HwPortalFooterComponent {
   @Input() brand = ''; @Input() description = ''; @Input() copyright = '';
-  /** Accessible name of the brand block, for projected [hwFooterBrand] artwork without text. */
+  /** Accessible name of the brand block, for projected [hwFooterBrand] artwork without text. Written only while the block has brand text or artwork. */
   @Input() brandLabel = '';
   /** Name and heading of the links landmark. Required when links are given. */
   @Input() navigationLabel = ''; @Input() links: readonly HwPortalFooterLink[] = [];
@@ -167,15 +169,17 @@ export class HwPortalFooterComponent {
   protected readonly texts = new HwTexts('hw-portal-footer');
   /** The support heading and its section are shown only while the application projects support content. */
   protected hasSupport = false;
+  protected hasBrandMarks = false;
+  protected get brandName(): string | null { return this.brandLabel.trim() && (this.brand.trim() || this.hasBrandMarks) ? this.brandLabel : null; }
   @ViewChild('supportContent', {static: true}) private supportContent?: ElementRef<HTMLElement>;
   @ViewChild('brandMarks', {static: true}) private brandMarks?: ElementRef<HTMLElement>;
   constructor() { afterNextRender(() => { const marks = this.brandMarks?.nativeElement; if (marks?.childElementCount && !this.brand.trim() && !this.brandLabel.trim()) reportUnnamedBrand('hw-portal-footer', marks); }); }
   private readonly changeDetector = inject(ChangeDetectorRef);
   /** Projected nodes are in place before this component's own bindings are checked. */
   ngAfterContentChecked(): void {
-    const nodes = this.supportContent?.nativeElement.childNodes;
-    const hasSupport = !!nodes && Array.from(nodes).some(node => node.nodeType === 1 || (node.nodeType === 3 && !!node.textContent?.trim()));
-    if (hasSupport !== this.hasSupport) { this.hasSupport = hasSupport; this.changeDetector.markForCheck(); }
+    const filled = (element?: HTMLElement): boolean => !!element && Array.from(element.childNodes).some(node => node.nodeType === 1 || (node.nodeType === 3 && !!node.textContent?.trim()));
+    const hasSupport = filled(this.supportContent?.nativeElement), hasBrandMarks = filled(this.brandMarks?.nativeElement);
+    if (hasSupport !== this.hasSupport || hasBrandMarks !== this.hasBrandMarks) { this.hasSupport = hasSupport; this.hasBrandMarks = hasBrandMarks; this.changeDetector.markForCheck(); }
   }
 }
 @Component({selector: 'hw-feedback', standalone: true, template: `<section class="hw-feedback" [attr.aria-label]="texts.need('label', label)" [attr.data-choice-variant]="choiceVariant"><p>{{ texts.need('label', label) }}</p><div class="hw-button-group hw-feedback-actions" role="group" [attr.aria-label]="texts.need('label', label)"><button class="hw-button" data-variant="secondary" type="button" [disabled]="disabled" [attr.aria-pressed]="value === true" (click)="choose(true)"><span class="hw-icon hw-feedback-icon" data-icon="thumbs-up" aria-hidden="true"></span><span class="hw-feedback-label">{{ texts.need('yesLabel', yesLabel) }}</span></button><button class="hw-button" data-variant="secondary" type="button" [disabled]="disabled" [attr.aria-pressed]="value === false" (click)="choose(false)"><span class="hw-icon hw-feedback-icon" data-icon="thumbs-down" aria-hidden="true"></span><span class="hw-feedback-label">{{ texts.need('noLabel', noLabel) }}</span></button></div><p role="status">{{ value !== null ? texts.need('successMessage', successMessage) : '' }}</p><ng-content /></section>`})

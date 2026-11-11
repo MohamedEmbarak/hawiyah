@@ -109,6 +109,9 @@ Inputs renamed in this release, without aliases: Combobox `validationMessage` �
 `getDismissLabel(item)`; Feedback `positiveLabel`, `negativeLabel`, `thanksMessage` →
 `yesLabel`, `noLabel`, `successMessage`; Tooltip `id` → `tooltipId`; Popover and
 Menu `id` → `panelId`. SiteVerification `locale` and PortalLayout `lang` are removed.
+ServiceCard no longer appends the card title to its action link: `actionLabel` is the
+whole accessible name. PortalLayout passes `brandLabel` and projected `[hwFooterBrand]`
+artwork to its footer.
 
 ## Inputs and outputs
 
@@ -143,7 +146,7 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
 | Breadcrumb — `HwBreadcrumbComponent` | `hw-breadcrumb`; `items: {label,href?}[]`, required `label`. Last item is current. |
 | Progress — `HwProgressComponent` | `hw-progress`; `label`, `value: number\|null`, `max`; null is indeterminate. |
 | Skeleton — `HwSkeletonComponent` | `hw-skeleton`; `width`, `height`; decorative, hidden from assistive technology. Announce surrounding loading state once. |
-| Spinner — `HwSpinnerComponent` | `hw-spinner`; required `label`; status announcement. A spinner the application marks `aria-hidden="true"` is decorative and needs none. |
+| Spinner — `HwSpinnerComponent` | `hw-spinner`; required `label`; status announcement. A spinner the application marks `aria-hidden="true"` is decorative: it passes `label=""`, which satisfies the required input, and nothing is reported. |
 | Avatar — `HwAvatarComponent` | Required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"`. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
 | Divider — `HwDividerComponent` | `hw-divider`; native horizontal rule. |
 | Tooltip — `HwTooltipComponent` | `hw-tooltip`; `text`, `tooltipId` (the id of the tooltip element; no id is left on the wrapper); project short noninteractive trigger content. Focusable trigger, hover/focus opening, Escape/outside closing. Do not project buttons or links into this focusable wrapper. |
@@ -282,10 +285,10 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Meter | `label`, `value`, `min`, `max`, `low`, `high`, `optimum`; native meter for bounded measurements. |
 | AvatarGroup | Required `label` and `getOverflowLabel(count)` (count is the number of hidden avatars); `avatars: {name,src?}[]`, `max`; named image/initials with overflow count. |
 | DataTable | `caption`, `columns: {key,label,sortable?,rowHeader?}[]`, `rows: Record<string,string\|number\|boolean\|null\|undefined>[]`, `locale`, required `emptyMessage`, `sortKey`, `sortDirection`, optional `getSortLabel(column,direction)` (the name of a sort button; direction is the order it will apply); `sortChange({key,direction})`. Stable localized sorting, native headers and aria-sort; text cells. |
-| ServiceCard | `title`, `href`, `description`, `category`, `duration`, `fee`, `variant`; `actionLabel` is the text of the action link and is required unless `[hwServiceAction]` content replaces the link; project `[hwServiceIcon]` and supplemental body. |
+| ServiceCard | `title`, `href`, `description`, `category`, `duration`, `fee`, `variant`; `actionLabel` is the whole text and accessible name of the action link (the card appends nothing to it, so include the service name where several cards share a page) and is required unless `[hwServiceAction]` content replaces the link; project `[hwServiceIcon]` and supplemental body. |
 | ServiceDetails | `title`, `description`, `details: {term,description}[]`, `requirements: string[]`; `requirementsLabel` is required with requirements; projected actions/content. |
 | PortalHeader | Required `menuLabel` and `navigationLabel`; optional `brand` text, `brandLabel`, `homeHref`, `mainId`, `skipLabel`, `navigationId`, `links: {label,href,current?}[]`; project `[hwBrand]` artwork and header actions. The brand may be artwork alone: no brand text is printed unless `brand` is supplied, and `brandLabel` gives artwork its accessible name (`aria-label` on the brand). An empty `homeHref` renders the brand without an `href`. The skip link is rendered only when `mainId` is set, and then needs `skipLabel`. Mobile menu is CSS-responsive; provide unique navigationId if repeated. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
-| PortalFooter | Required `externalLabel` (screen-reader text added to links marked external); `brand`, `brandLabel`, `description`, `copyright`, `links`, `groups`, `legalLinks`; `navigationLabel` is required with `links`, `legalLinksLabel` with `legalLinks`, and `supportLabel` with projected `[hwFooterSupport]` content, the only case in which the support section is shown. Project `[hwFooterBrand]`, `[hwFooterSupport]`, `[hwFooterPartners]` and supplementary content. |
+| PortalFooter | Required `externalLabel` (screen-reader text added to links marked external); `brand`, `brandLabel`, `description`, `copyright`, `links`, `groups`, `legalLinks`; `navigationLabel` is required with `links`, `legalLinksLabel` with `legalLinks`, and `supportLabel` with projected `[hwFooterSupport]` content, the only case in which the support section is shown (otherwise it stays in the document with the `hidden` attribute, no heading and no name). `brandLabel` is written only while the brand block has brand text or `[hwFooterBrand]` artwork. Project `[hwFooterBrand]`, `[hwFooterSupport]`, `[hwFooterPartners]` and supplementary content. |
 | Feedback | Required `label`, `yesLabel`, `noLabel` and `successMessage`; `disabled`, `[(value)]` (boolean or null initially). Emits local feedback choice; caller handles storage. |
 | CookieConsent | Required `title`, `acceptLabel` and `rejectLabel`; `description`, `[(visible)]`; `consent(accepted/rejected)` and `preferences`. The preferences button is rendered while a `(preferences)` listener is bound and then needs `preferencesLabel`; a policy link is rendered with `policyHref` and then needs `policyLabel`. Application decides persistence and script gating; this UI does not imply consent has been stored. |
 | NotificationList | Required `label`, `emptyMessage` and `unreadLabel`; `items: {id,title,description?,time?,href?,unread?}[]`; `dismissed(id)`. The dismiss button is rendered while a `(dismissed)` listener is bound and is named by `getDismissLabel(item)`. Caller owns read/dismiss state. |
@@ -329,7 +332,7 @@ Breakpoints live in CSS (40/48/64/80rem), so server/client layout markup matches
       <hw-grid [columns]="{base: 1, md: 2, xl: 3}" [gap]="4">
         @for (service of services; track service.href) {
           <hw-service-card [title]="service.title" [href]="service.href"
-            [description]="service.description" actionLabel="عرض الخدمة" />
+            [description]="service.description" [actionLabel]="service.actionLabel" />
         }
       </hw-grid>
       <hw-date-picker name="date" label="التاريخ" [(ngModel)]="date"

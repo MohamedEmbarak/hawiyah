@@ -175,10 +175,14 @@ describe('brand', () => {
 
   it('passes through the layout and names footer artwork the same way', () => {
     const warnings = missingTextWarnings();
-    const { root } = page(`<hw-portal-layout brandLabel="Hawiyah home" skipLabel="Skip to content" menuLabel="Menu" navigationLabel="Main" externalLabel="opens in a new window"><svg hwBrand viewBox="0 0 8 8" aria-hidden="true"><path d="M0 0h8v8H0z" /></svg><p>Content</p></hw-portal-layout><hw-portal-footer brandLabel="Hawiyah" externalLabel="opens in a new window"><svg hwFooterBrand viewBox="0 0 8 8" aria-hidden="true"><path d="M0 0h8v8H0z" /></svg></hw-portal-footer>`);
+    const { root } = page(`<hw-portal-layout brandLabel="Hawiyah home" skipLabel="Skip to content" menuLabel="Menu" navigationLabel="Main" externalLabel="opens in a new window"><svg hwBrand viewBox="0 0 8 8" aria-hidden="true"><path d="M0 0h8v8H0z" /></svg><p>Content</p></hw-portal-layout><hw-portal-layout id="both" brandLabel="Hawiyah home" skipLabel="Skip to content" menuLabel="Menu" navigationLabel="Main" externalLabel="opens in a new window"><svg hwBrand viewBox="0 0 8 8" aria-hidden="true"><path d="M0 0h8v8H0z" /></svg><svg hwFooterBrand viewBox="0 0 8 8" aria-hidden="true"><path d="M0 0h4v4H0z" /></svg><p>Content</p></hw-portal-layout><hw-portal-footer brandLabel="Hawiyah" externalLabel="opens in a new window"><svg hwFooterBrand viewBox="0 0 8 8" aria-hidden="true"><path d="M0 0h8v8H0z" /></svg></hw-portal-footer>`);
     TestBed.tick();
     const brand = root.querySelector('hw-portal-layout .hw-portal-brand')!; expect(brand.getAttribute('aria-label')).toBe('Hawiyah home'); expect(brand.textContent).toBe(''); expect(brand.querySelector('svg')).not.toBeNull();
-    expect(root.querySelector('hw-portal-layout .hw-portal-footer-brand')!.textContent).toBe('');
+    // Angular projects a node once: without its own [hwFooterBrand] copy the layout's footer brand block stays empty, and an empty block is not named.
+    const empty = root.querySelector('hw-portal-layout:not(#both) .hw-portal-footer-brand')!; expect(empty.textContent).toBe(''); expect(empty.querySelector('svg')).toBeNull(); expect(empty.hasAttribute('role')).toBe(false); expect(empty.hasAttribute('aria-label')).toBe(false);
+    // With that copy the layout hands the artwork and brandLabel to its footer, and the header keeps its own.
+    const both = root.querySelector('#both')!; expect(both.querySelector('.hw-portal-brand svg path')!.getAttribute('d')).toBe('M0 0h8v8H0z'); expect(both.querySelector('.hw-portal-brand')!.getAttribute('aria-label')).toBe('Hawiyah home');
+    const passed = both.querySelector('.hw-portal-footer-brand')!; expect(passed.querySelector('.hw-portal-footer-brand-marks svg path')!.getAttribute('d')).toBe('M0 0h4v4H0z'); expect(passed.getAttribute('role')).toBe('group'); expect(passed.getAttribute('aria-label')).toBe('Hawiyah home');
     const footer = root.querySelector(':scope > hw-portal-footer .hw-portal-footer-brand')!; expect(footer.getAttribute('role')).toBe('group'); expect(footer.getAttribute('aria-label')).toBe('Hawiyah'); expect(footer.textContent).toBe('');
     expect(warnings).toEqual([]);
   });
@@ -204,6 +208,16 @@ describe('packaged in-page links', () => {
     fixture.destroy(); expect(shell!.getAttribute('href')).toBe('#main-content');
   });
 
+  it('leaves a click alone unless the component handles it, and appends no text of its own to application text', () => {
+    const warnings = missingTextWarnings();
+    const { fixture, root } = page(`<hw-portal-header brand="Hawiyah" menuLabel="Menu" navigationLabel="Main" [links]="[{label: 'Services', href: '/services'}]" /><hw-service-card title="Event permit" href="/permit" actionLabel="View the event permit service" />`);
+    const toggle = root.querySelector<HTMLButtonElement>('.hw-portal-menu-toggle')!;
+    // Opening and closing: the second click evaluates to false inside the component, which must not cancel the event.
+    for (const expanded of ['true', 'false']) { const click = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }); toggle.dispatchEvent(click); fixture.detectChanges(); expect(toggle.getAttribute('aria-expanded')).toBe(expanded); expect(click.defaultPrevented).toBe(false); }
+    const action = root.querySelector('hw-service-card a.hw-button')!; expect(action.textContent).toBe('View the event permit service'); expect(action.querySelector('.hw-sr-only')).toBeNull();
+    expect(warnings).toEqual([]);
+  });
+
   it('binds content navigation links, hands activation to the observer and writes the hash only on request', () => {
     base('/other/app/');
     const items = [{ id: 'intro', label: 'Intro' }, { id: 'usage', label: 'Usage', children: [{ id: 'api', label: 'API' }] }, { id: 'missing', label: 'Missing' }];
@@ -215,8 +229,18 @@ describe('packaged in-page links', () => {
     links[1]!.dispatchEvent(new Event('focus')); expect(links[1]!.getAttribute('href')).toBe(`${location.pathname}#usage`); expect(links[0]!.getAttribute('href')).toBe('#intro');
     const click = new MouseEvent('click', { bubbles: true, cancelable: true }); links[1]!.dispatchEvent(click); fixture.detectChanges();
     expect(click.defaultPrevented).toBe(true); expect(location.hash).toBe('');
-    // A link whose target is not in the document is left to the browser.
+    // A click without a pointer (detail 0, the Enter key) also moves focus to the section it reached.
+    expect(state.current).toBe('usage'); expect(links[1]!.getAttribute('aria-current')).toBe('location'); expect(document.activeElement).toBe(root.querySelector('#usage'));
+    // A pointer click (detail 1 or more) reaches the observer as well: the template listener returns nothing, so Angular
+    // does not cancel the event before core handles it. The page scrolls, the current link moves and focus stays where it was.
+    const scrolled = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const pointer = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }); links[0]!.dispatchEvent(pointer); fixture.detectChanges();
+    expect(scrolled).toHaveBeenCalledTimes(1); expect(pointer.defaultPrevented).toBe(true); expect(state.current).toBe('intro');
+    expect(links[0]!.getAttribute('aria-current')).toBe('location'); expect(links[1]!.hasAttribute('aria-current')).toBe(false); expect(document.activeElement).toBe(root.querySelector('#usage'));
+    scrolled.mockRestore();
+    // A link whose target is not in the document is left to the browser, from the keyboard and from a pointer.
     const missing = new MouseEvent('click', { bubbles: true, cancelable: true }); links[3]!.dispatchEvent(missing); expect(missing.defaultPrevented).toBe(false);
+    const missingPointer = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }); links[3]!.dispatchEvent(missingPointer); expect(missingPointer.defaultPrevented).toBe(false);
     state.updateHash = true; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges();
     const replaced = vi.spyOn(history, 'replaceState');
     links[2]!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
