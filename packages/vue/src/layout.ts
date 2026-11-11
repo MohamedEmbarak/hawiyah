@@ -1,8 +1,9 @@
 import type {WithNativeAttributes} from './native-attributes.js';
 import type {HTMLAttributes} from 'vue';
-import { defineComponent, h, mergeProps, useId } from "vue";
+import { defineComponent, h, mergeProps, ref, useId } from "vue";
 import type { PropType } from "vue";
-import { layoutStyles } from "@hawiyah/core";
+import { getFragmentHref, layoutStyles } from "@hawiyah/core";
+import { needText, useFragmentLinks } from "./shared.js";
 import type { LayoutProps } from "@hawiyah/core";
 
 const layoutProps = {
@@ -60,10 +61,12 @@ export const AppShell = defineComponent({
   props: {
     ...layoutProps,
     mainId: String,
-    skipLabel: { type: String, default: 'انتقل إلى المحتوى' },
+    skipLabel: { type: String, required: true },
   },
   setup(props, { attrs, slots }) {
     const defaultMainId = `hw-shell-${useId()}-main`;
+    const skip = ref<HTMLAnchorElement>();
+    useFragmentLinks(() => [skip.value]);
     return () =>
       h(
         props.as,
@@ -74,7 +77,7 @@ export const AppShell = defineComponent({
           "data-collapse-at": props.collapseAt,
         }),
         [
-          h('a', { class: 'hw-skip-link', href: `#${props.mainId ?? defaultMainId}` }, props.skipLabel),
+          h('a', { ref: skip, class: 'hw-skip-link', href: getFragmentHref(props.mainId ?? defaultMainId) }, needText('AppShell', 'skipLabel', props.skipLabel)),
           slots.header &&
             h("div", { class: "hw-app-shell-header" }, slots.header()),
           slots.sidebar &&
