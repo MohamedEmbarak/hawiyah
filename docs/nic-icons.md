@@ -9,6 +9,27 @@ This task uses the hashed NIC `global.css` snapshot in the
 script. The shipped artwork remains the unchanged licensed SVG set described in
 [icon provenance](../packages/styles/src/assets/icons/provenance.json).
 
+## Icon catalogue
+
+`@hawiyah/styles` ships 62 unchanged Hugeicons Stroke Rounded files from the
+commit pinned in the provenance file, each with its upstream URL and SHA-256,
+and every file has a `.hw-icon[data-icon]` rule; the
+[styles README](../packages/styles/README.md#curated-interface-icons) lists the
+names by group. The set covers the icons the guide renders (including
+`copy-01`, `download-01`, `upload-01`, `source-code`, `code`, `file-01`,
+`folder-01`, `play`, `reload`, `sun-03`, `moon-02`, `globe-02`,
+`translate` and `github`) and the previously unmapped `calendar-03`, `view`
+and `view-off-slash`. Text direction uses `left-to-right-list-bullet` and
+`right-to-left-list-bullet`: the pinned commit has no dedicated
+left-to-right or right-to-left text icon, so the nearest names that show the
+start edge were chosen. No icon was drawn or edited.
+
+Mirroring stays opt-in through `data-directional="true"` and is limited to the
+icons whose provenance sets `directionalOptIn`: the horizontal arrows and
+`arrow-up-right-01`. Text-direction, media and brand icons keep their physical
+orientation. `tests/browser/icon-catalog.spec.ts` checks the hashes, a rule per
+file, colour inheritance and that only opted-in icons mirror.
+
 | Source | Observed value | Implementation / adaptation | Confidence |
 | --- | --- | --- | --- |
 | CSS 1388–1396 | Default icon button 40×40px, padding 0, radius 4px, centered flex | Shared IconButton and legacy data-icon-only markers use square density targets and centered artwork | High; default source dimensions reproduced in an isolated Chromium fixture |

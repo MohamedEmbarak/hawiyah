@@ -150,6 +150,42 @@
       "directionalOptIn": true
     },
     {
+      "name": "book-open-01",
+      "file": "book-open-01.svg",
+      "sha256": "2c7892d8b9dc3f0ba8eb48a949cb9955fe4bb4fa6f89a930c3f8e778f6cc168b",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/book-open-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "briefcase-01",
+      "file": "briefcase-01.svg",
+      "sha256": "57510969f25555c457afe4485662229583ddf867e077ede4801f4f195655af7a",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/briefcase-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "building-03",
+      "file": "building-03.svg",
+      "sha256": "24907cfa31a294c769f9bcd043140d1a29d633461d1fa62a32791b4df9af4466",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/building-03.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
       "name": "calendar-03",
       "file": "calendar-03.svg",
       "sha256": "8f610b15dda166c356bedb794b85532940e0d4a7c6ccbd4c3acba598ba1c4357",
@@ -181,6 +217,18 @@
       "directionalOptIn": false
     },
     {
+      "name": "certificate-01",
+      "file": "certificate-01.svg",
+      "sha256": "be4906215867022c024f75a76b3ff49944f26b4899360fc493bc4a3b747ea4c8",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/certificate-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
       "name": "checkmark-circle-02",
       "file": "checkmark-circle-02.svg",
       "sha256": "14fe877a7f71a3704c36927093149c2f7a882f09f3616650bb7bafd5251ddce3",
@@ -190,6 +238,54 @@
       "dgaStyle": "Stroke",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
+    },
+    {
+      "name": "clock-01",
+      "file": "clock-01.svg",
+      "sha256": "dc35ce841ee4a091dc2c73d854f86384c07a7944bf77d63dac7344775fdd8450",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/clock-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "code",
+      "file": "code.svg",
+      "sha256": "3fec966e79a239272bb9f761ae9f8cebab9a49fbefdcebf65095c09a1a02b29a",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/code.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "copy-01",
+      "file": "copy-01.svg",
+      "sha256": "2ae8e1855dc51e863332bbabeaf54ac9e590a1978389e35fb11fe60bb3cb6eb1",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/copy-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "download-01",
+      "file": "download-01.svg",
+      "sha256": "08ae353c6a6b0e0dda842bcb72c414a46cf93aad1a6f8550f6651bf921d30179",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/download-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
     },
     {
       "name": "exclamation-mark",
@@ -203,6 +299,18 @@
       "directionalOptIn": false
     },
     {
+      "name": "file-01",
+      "file": "file-01.svg",
+      "sha256": "e279ee3ca7457e49c2f4482c68f3893559e4ccded72bb80c44ea735f90de0960",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/file-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
       "name": "filter-horizontal",
       "file": "filter-horizontal.svg",
       "sha256": "d2ccdb2ad0fef7c7d1c18bb316c4922a6b3f20654b91655f38f11c4868ea7236",
@@ -212,6 +320,54 @@
       "dgaStyle": "Stroke",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
+    },
+    {
+      "name": "folder-01",
+      "file": "folder-01.svg",
+      "sha256": "985eb257fd9e12ecf33628607dbccd47090d9c9f9e87d2a7ced5f3f369d1ade1",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/folder-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "github",
+      "file": "github.svg",
+      "sha256": "b4b970903f063b4de30e6cbfe5f20116891a0855fd990c2787cb5f1df5ec2cc5",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/github.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "globe-02",
+      "file": "globe-02.svg",
+      "sha256": "9f028209b687dff77036d70d19fbe2815be83eab852381dd76e6a6a92ea03d3b",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/globe-02.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "grid-view",
+      "file": "grid-view.svg",
+      "sha256": "b0340effa24272ac6b329133155af882c7e03e1fd0659e70e9b4d8f28017e94b",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/grid-view.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
     },
     {
       "name": "home-01",
@@ -236,6 +392,30 @@
       "directionalOptIn": false
     },
     {
+      "name": "layers-01",
+      "file": "layers-01.svg",
+      "sha256": "c6117b063b9c278860370bf2cdfcccd3cf6b5d87b33864df63b4af96ee7b9b11",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/layers-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "left-to-right-list-bullet",
+      "file": "left-to-right-list-bullet.svg",
+      "sha256": "a935847f27e96048f52b28f6e9de454d6220adcd482afa36960704304493f0fc",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/left-to-right-list-bullet.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
       "name": "link-04",
       "file": "link-04.svg",
       "sha256": "302bce03d2913e3dba573a902a328cc2c293d5ffd670d2d1d9275951849f429d",
@@ -257,6 +437,18 @@
       "directionalOptIn": false
     },
     {
+      "name": "location-01",
+      "file": "location-01.svg",
+      "sha256": "c9505307a7c0eba06494f6a14f5bf3b0ddfa44bf0662ab55ed01429d577a831d",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/location-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
       "name": "lock-password",
       "file": "lock-password.svg",
       "sha256": "536689a044a686d81ad91a16ec6c3337ffb070bbf67f0e57aca1bdb54b9048b1",
@@ -276,6 +468,18 @@
       "dgaStyle": "Stroke",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
+    },
+    {
+      "name": "message-01",
+      "file": "message-01.svg",
+      "sha256": "27babbce98d134215b1c6c1ac17b29974843bae45f3270597a2ea1d462ff0126",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/message-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
     },
     {
       "name": "minus-sign",
@@ -300,6 +504,66 @@
       "directionalOptIn": false
     },
     {
+      "name": "moon-02",
+      "file": "moon-02.svg",
+      "sha256": "571cb4b43be9deadf100e8238f08523c9c14ff911fc04f56009fadc5483d584e",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/moon-02.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "paint-board",
+      "file": "paint-board.svg",
+      "sha256": "81fe5e841ed13323bb85186e2ae6c2a78b0becd2b331e7624269fb8077f3da10",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/paint-board.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "play",
+      "file": "play.svg",
+      "sha256": "ae3f0232ac432e762f37069faae150fe6f97c8f46e4e8499e6986a7a10551f2c",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/play.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "reload",
+      "file": "reload.svg",
+      "sha256": "fe07a0bb7a570eaa210bd2a7d83d5cc60790bc39da2af84a1d2203d9918bbb8b",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/reload.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "right-to-left-list-bullet",
+      "file": "right-to-left-list-bullet.svg",
+      "sha256": "2a6faeee791dae7c64d634b504c43ffd5e51004716f52f64fd53b469f4629acb",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/right-to-left-list-bullet.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
       "name": "search-01",
       "file": "search-01.svg",
       "sha256": "6ea6a84c2d51424070720491f7abae005258e9e114078ef10a9022b91cbcfecb",
@@ -309,6 +573,18 @@
       "dgaStyle": "Stroke",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
+    },
+    {
+      "name": "shield-01",
+      "file": "shield-01.svg",
+      "sha256": "abe5eea12c8d38f0dab4f5c92bbcde20245032c26ff98382f534a90ae76f2841",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/shield-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
     },
     {
       "name": "sorting-05",
@@ -322,6 +598,30 @@
       "directionalOptIn": false
     },
     {
+      "name": "source-code",
+      "file": "source-code.svg",
+      "sha256": "0af6af5c9012ae59406a99cfd9851a23c8c6342433aa3d5f1ffc0c2a38e5c5c9",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/source-code.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "sparkles",
+      "file": "sparkles.svg",
+      "sha256": "385eec7a944f18e2e112bbcacdbe080d22a058045ceae024322ef0eae5b132f1",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/sparkles.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
       "name": "star",
       "file": "star.svg",
       "sha256": "85032965d036761a70e84e03eb125516b247a668fc5f5e99490719e59cf9b208",
@@ -331,6 +631,18 @@
       "dgaStyle": "Stroke",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
+    },
+    {
+      "name": "sun-03",
+      "file": "sun-03.svg",
+      "sha256": "b7a6771c56864adab35257597df8d195bab7dbec061f3e141e6cd0cdb7a0be7d",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/sun-03.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
     },
     {
       "name": "thumbs-down",
@@ -366,6 +678,30 @@
       "dgaStyle": "Stroke",
       "viewBox": "0 0 24 24",
       "directionalOptIn": false
+    },
+    {
+      "name": "translate",
+      "file": "translate.svg",
+      "sha256": "9efe01b50e7c5dba10b69435f4983be2b9aa1fcd633aba9574b84d97b5701013",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/translate.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
+    },
+    {
+      "name": "upload-01",
+      "file": "upload-01.svg",
+      "sha256": "71164510e5ced3a07089a64376e391b706381b8423481ab75a319d5dfef8c091",
+      "upstreamUrl": "https://raw.githubusercontent.com/hugeicons/hugeicons/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6/icons/upload-01.svg",
+      "dgaComponentId": null,
+      "dgaComponentSetId": null,
+      "dgaStyle": "Stroke",
+      "viewBox": "0 0 24 24",
+      "directionalOptIn": false,
+      "retrieved": "2026-11-11"
     },
     {
       "name": "view",

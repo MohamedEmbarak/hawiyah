@@ -68,5 +68,8 @@
 .hw-icon[data-size='2xl'] { --hw-icon-context-size:3rem; }
 @media (forced-colors:active) {
   .hw-button:is(.hw-icon-button,[data-icon-only]):is(:disabled,[aria-disabled='true']) { color:GrayText; }
+  /* Pressed takes the system selection colours, as selected segments do. */
+  .hw-button:is(.hw-icon-button,[data-icon-only])[aria-pressed='true']:not(:disabled,[aria-disabled='true']) { forced-color-adjust:none; background:Highlight; color:HighlightText; border-color:Highlight; outline-color:CanvasText; }
+  .hw-button:is(.hw-icon-button,[data-icon-only])[aria-pressed='true']:not(:disabled,[aria-disabled='true']) .hw-icon { background-color:HighlightText; }
   .hw-icon-background, .hw-icon-background[data-variant='featured'], .hw-icon-background[data-variant='featured'][data-style] { background:Canvas; color:CanvasText; border-color:CanvasText; outline:1px solid CanvasText; }
 }

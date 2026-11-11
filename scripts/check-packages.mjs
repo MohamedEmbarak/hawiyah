@@ -218,9 +218,19 @@ for (const html of dateHtml) {
   assert.ok(html.includes('type="hidden"')); assert.ok(html.includes('name="appointment"')); assert.ok(html.includes('value="2026-10-28"'));
 }
 const cssEntry = new URL(import.meta.resolve('@hawiyah/styles/styles.css'));
-for (const [file,marker] of [['components.css','.hw-button'],['extended.css','.hw-calendar'],['layout.css','.hw-grid'],['password-field.css','.hw-password-icon'],['stepper.css','--hw-step-current'],['riyal.css','U+20C1']]) {
-  assert.ok(fs.readFileSync(cssEntry,'utf8').includes(file));
-  assert.ok(fs.readFileSync(new URL(file,cssEntry),'utf8').includes(marker));
+const flatCss = fs.readFileSync(cssEntry,'utf8');
+// The entry is one flat file a page can link directly: no @import, tokens and
+// component rules included, every relative url() present in the tarball.
+assert.ok(!flatCss.includes('@import'), 'styles.css must not contain @import');
+assert.ok(flatCss.includes('--hw-color-primary:'), 'styles.css must define --hw-color-primary');
+assert.ok(flatCss.includes('.hw-button'), 'styles.css must contain .hw-button rules');
+assert.ok(!flatCss.includes('Optional application reset'), 'reset.css must stay opt-in');
+assert.equal(new URL(import.meta.resolve('@hawiyah/styles')).href,cssEntry.href);
+for (const [,,url] of flatCss.matchAll(/url\\(\\s*(['"]?)([^'")]+)\\1\\s*\\)/g))
+  if (!/^(?:[a-z][a-z0-9+.-]*:|\\/|#)/i.test(url)) assert.ok(fs.existsSync(new URL(url.replace(/[?#].*$/,''),cssEntry)),'styles.css references missing '+url);
+for (const [file,marker] of [['components.css','.hw-button'],['extended.css','.hw-calendar'],['layout.css','.hw-grid'],['password-field.css','.hw-password-icon'],['stepper.css','--hw-step-current'],['riyal.css','U+20C1'],['reset.css','box-sizing']]) {
+  if (file !== 'reset.css') assert.ok(flatCss.includes(marker));
+  assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/'+file)),'utf8').includes(marker));
 }
 assert.ok(fs.readFileSync(new URL('../third-party/hijridate-LICENSE.txt',import.meta.resolve('@hawiyah/core')),'utf8').includes('MIT License'));
 assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/tokens/tokens.css')),'utf8').includes('--hw-color-primary'));

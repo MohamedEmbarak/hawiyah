@@ -21,7 +21,7 @@
   --hw-profile-segment-mobile-height: 3rem;
   --hw-profile-segment-mobile-padding: 1.25rem;
   --hw-profile-segment-mobile-width: 100%;
-  --hw-profile-segment-mobile-flex: 1 1 auto;
+  --hw-profile-segment-mobile-flex: 1 1 0;
 }
 :where([data-hw-theme]:not([data-hw-theme='dga'], [data-hw-theme='custom'])) {
   --hw-profile-segment-gap: initial;
@@ -72,17 +72,28 @@
 .hw-toggle-group:not([data-variant='outline']) > :is(button,label):active:not(:disabled,[aria-disabled='true'],:has(input:disabled,input[readonly])) { background:var(--hw-color-segment-selected); color:var(--hw-color-on-segment-selected); box-shadow:none; }
 .hw-toggle-group:not([data-variant='outline']) > :is([aria-pressed='true'],label:has(input:checked),:active)::before,
 .hw-toggle-group:not([data-variant='outline']) > :is([aria-pressed='true'],label:has(input:checked),:active) + :is(button,label)::before { opacity:0; }
-/* A focus ring stays visible on selected and read-only choices. */
+/* A focus ring stays visible on selected and read-only choices. Focus never
+   paints the selected colours by itself: in multiple mode an unpressed focused
+   button keeps its own background, so its state stays visible. */
 .hw-toggle-group:not([data-variant='outline']) > :is(button:focus-visible,label:has(input:focus-visible)) {
-  background:var(--hw-color-segment-selected); color:var(--hw-color-on-segment-selected);
-  outline:var(--hw-profile-segment-focus-width,var(--hw-focus-width)) solid var(--hw-dga-on,var(--hw-color-focus)) var(--hw-dga-off,var(--hw-color-on-segment-selected));
+  outline:var(--hw-profile-segment-focus-width,var(--hw-focus-width)) solid var(--hw-dga-on,var(--hw-color-focus)) var(--hw-dga-off,var(--hw-color-segment-selected));
   outline-offset:var(--hw-profile-segment-focus-offset,1px); z-index:1;
+}
+.hw-toggle-group:not([data-variant='outline']) > :is(button[aria-pressed='true']:focus-visible,label:has(input:checked:focus-visible)) {
+  background:var(--hw-color-segment-selected); color:var(--hw-color-on-segment-selected);
+  outline-color:var(--hw-dga-on,var(--hw-color-focus)) var(--hw-dga-off,var(--hw-color-on-segment-selected));
 }
 .hw-toggle-group:not([data-variant='outline']) > :is(button:disabled,label:has(input:disabled)) { background:var(--hw-color-disabled); color:var(--hw-color-on-disabled); box-shadow:none; cursor:not-allowed; }
 .hw-toggle-group:not([data-variant='outline']) > :is(button:disabled[aria-pressed='true'],label:has(input:disabled:checked)) { outline:1px solid var(--hw-color-border-strong); outline-offset:-1px; }
+/* Narrow screens keep every segment on one row: segments share the width from
+   a zero basis, may shrink below the desktop minimum and wrap their own label,
+   so the group never breaks into a second row. Hints and errors still take a
+   row of their own. Four or more segments use 14px text and a 4px inline
+   padding so that common labels fit whole at 320px. */
 @media (max-width:576px) {
   .hw-toggle-group:not([data-variant='outline']) { inline-size:var(--hw-profile-segment-mobile-width,auto); }
-  .hw-toggle-group:not([data-variant='outline']) > :is(button,label) { flex:var(--hw-profile-segment-mobile-flex,0 1 auto); min-block-size:var(--hw-profile-segment-mobile-height,var(--hw-control-height-sm)); padding-inline:var(--hw-profile-segment-mobile-padding,var(--hw-space-3)); }
+  .hw-toggle-group:not([data-variant='outline']) > :is(button,label) { flex:var(--hw-profile-segment-mobile-flex,1 1 0); min-inline-size:0; min-block-size:var(--hw-profile-segment-mobile-height,var(--hw-control-height-sm)); padding-inline:var(--hw-profile-segment-mobile-padding,var(--hw-space-3)); overflow-wrap:anywhere; }
+  .hw-toggle-group:not([data-variant='outline']):has(> :is(button,label):nth-of-type(4)) > :is(button,label) { padding-inline:var(--hw-space-1); font-size:var(--hw-text-sm); hyphens:auto; }
 }
 @media (prefers-reduced-motion:reduce) { .hw-toggle-group > :is(button,label) { transition:none; } }
 @media (forced-colors:active) {
@@ -109,6 +120,11 @@
 .hw-button-group[data-variant='attached'][data-orientation='vertical'] > .hw-button:last-child,
 .hw-button-group[data-variant='attached'][data-orientation='vertical'] > hw-icon-button:last-child > .hw-button { border-end-start-radius:var(--hw-profile-control-radius,var(--hw-radius-md)); border-end-end-radius:var(--hw-profile-control-radius,var(--hw-radius-md)); }
 .hw-button-group > hw-icon-button:has(:focus-visible) { position:relative; z-index:1; }
+
+/* Outline groups own their option states, so generic .hw-button hover, focus
+   and active backgrounds cannot lower the label contrast in multiple mode. */
+.hw-toggle-group[data-variant='outline'] > .hw-button:not(:disabled,[aria-disabled='true']):is(:hover,:focus-visible,:active) { background:transparent; box-shadow:none; }
+.hw-toggle-group[data-variant='outline'] > .hw-button[aria-pressed='true']:not(:disabled,[aria-disabled='true']):is(:hover,:focus-visible,:active) { background:var(--hw-color-primary-subtle); }
 
 /* Read-only pressed buttons remain keyboard stops, including outline mode. */
 .hw-toggle-group[data-hw-readonly='true'][data-variant='outline'] > button[aria-disabled='true']:focus-visible:not(:disabled) {

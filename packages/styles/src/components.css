@@ -276,23 +276,42 @@
 .hw-timeline time { display: block; color: var(--hw-color-text-muted); font-size: var(--hw-text-xs); }
 .hw-empty { display: grid; justify-items: center; gap: var(--hw-space-3); padding: var(--hw-space-12) var(--hw-space-6); border: 1px solid var(--hw-color-border); border-radius: var(--hw-radius-lg); background: var(--hw-color-surface); color: var(--hw-color-text); text-align: center; }
 .hw-empty > svg { inline-size: 2.5rem; block-size: 2.5rem; padding: var(--hw-space-4); border-radius: var(--hw-radius-xl); background: var(--hw-color-surface-muted); color: var(--hw-color-text-muted); box-sizing: content-box; }
+/* React and Vue wrap the icon in a decorative span; that wrapper becomes the same tile. */
+.hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child) { display: grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; padding: var(--hw-space-4); border-radius: var(--hw-radius-xl); background: var(--hw-color-surface-muted); color: var(--hw-color-text-muted); box-sizing: content-box; }
+.hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child) > :is(svg, .hw-icon) { inline-size: 100%; block-size: 100%; }
 .hw-empty :where(h2, h3, p) { max-inline-size: 34rem; margin: 0; }
 .hw-empty :where(h2, h3) { font-size: var(--hw-text-lg); font-weight: var(--hw-weight-semibold); }
 .hw-empty p { color: var(--hw-color-text-muted); font-size: var(--hw-text-sm); }
-.hw-upload { display: grid; justify-items: center; gap: var(--hw-space-3); padding: var(--hw-space-8) var(--hw-space-5); border: 1.5px dashed var(--hw-color-border-strong); border-radius: var(--hw-radius-lg); background: var(--hw-color-surface); color: var(--hw-color-text); text-align: center; }
+.hw-upload { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: var(--hw-space-3); padding: var(--hw-space-8) var(--hw-space-5); border: 1.5px dashed var(--hw-color-border-strong); border-radius: var(--hw-radius-lg); background: var(--hw-color-surface); color: var(--hw-color-text); text-align: center; }
 .hw-upload:focus-within, .hw-upload[data-state='dragging'] { border-color: var(--hw-color-primary); background: var(--hw-color-primary-subtle); }
 .hw-upload[data-state='error'] { border-color: var(--hw-color-danger); }
-.hw-upload input[type='file'] { max-inline-size: 100%; color: var(--hw-color-text-muted); font: inherit; font-size: var(--hw-text-sm); }
+.hw-upload input[type='file'] { min-inline-size: 0; max-inline-size: 100%; color: var(--hw-color-text-muted); font: inherit; font-size: var(--hw-text-sm); }
 .hw-upload input[type='file']::file-selector-button { min-block-size: var(--hw-control-height-sm); margin-inline-end: var(--hw-space-3); padding-inline: var(--hw-space-4); border: 1px solid var(--hw-color-border-strong); border-radius: var(--hw-radius-md); background: var(--hw-color-surface); color: var(--hw-color-text); font: inherit; font-weight: var(--hw-weight-medium); cursor: pointer; }
 
 /* Loading and progress */
-.hw-progress { display: block; inline-size: 100%; block-size: 0.5rem; overflow: hidden; border: 0; border-radius: var(--hw-radius-full); background: var(--hw-color-surface-muted); accent-color: var(--hw-color-primary); }
+/* Tracks and skeletons step away from the surface in dark mode, where the DGA
+   palette gives surface and surface-muted the same value; light mode keeps
+   surface-muted. */
+.hw-progress, .hw-skeleton, .hw-meter meter, meter.hw-meter { --_hw-track: var(--hw-color-surface-muted); }
+@supports (color: light-dark(white, black)) {
+  .hw-progress, .hw-skeleton, .hw-meter meter, meter.hw-meter { --_hw-track: light-dark(var(--hw-color-surface-muted), color-mix(in srgb, var(--hw-color-text) 20%, var(--hw-color-surface))); }
+}
+@supports not (color: light-dark(white, black)) {
+  :where([data-hw-mode='dark']) :is(.hw-progress, .hw-skeleton, .hw-meter meter, meter.hw-meter) { --_hw-track: color-mix(in srgb, var(--hw-color-text) 20%, var(--hw-color-surface)); }
+}
+.hw-progress { display: block; inline-size: 100%; block-size: 0.5rem; overflow: hidden; border: 0; border-radius: var(--hw-radius-full); background: var(--_hw-track); accent-color: var(--hw-color-primary); }
 progress.hw-progress { appearance: none; }
-.hw-progress::-webkit-progress-bar { border-radius: var(--hw-radius-full); background: var(--hw-color-surface-muted); }
+.hw-progress::-webkit-progress-bar { border-radius: var(--hw-radius-full); background: var(--_hw-track); }
 .hw-progress::-webkit-progress-value { border-radius: var(--hw-radius-full); background: var(--hw-color-primary); transition: width var(--hw-duration-slow); }
 .hw-progress::-moz-progress-bar { border-radius: var(--hw-radius-full); background: var(--hw-color-primary); }
 .hw-progress > span { display: block; block-size: 100%; border-radius: inherit; background: var(--hw-color-primary); }
-.hw-skeleton { display: block; min-block-size: 1rem; border-radius: var(--hw-radius-sm); background: var(--hw-color-surface-muted); animation: hw-pulse 1.8s ease-in-out infinite; }
+/* Without a value the bar shows a segment moving along the inline axis. */
+progress.hw-progress:indeterminate { background: linear-gradient(var(--hw-color-primary), var(--hw-color-primary)) no-repeat, var(--_hw-track); background-size: 40% 100%, auto; animation: hw-progress-indeterminate 1.4s ease-in-out infinite; }
+progress.hw-progress:indeterminate:dir(rtl) { animation-direction: reverse; }
+progress.hw-progress:indeterminate::-webkit-progress-bar { background: transparent; }
+progress.hw-progress:indeterminate::-moz-progress-bar { background: transparent; }
+@keyframes hw-progress-indeterminate { from { background-position: -67% 0, 0 0; } to { background-position: 167% 0, 0 0; } }
+.hw-skeleton { display: block; min-block-size: 1rem; border-radius: var(--hw-radius-sm); background: var(--_hw-track); animation: hw-pulse 1.8s ease-in-out infinite; }
 .hw-spinner { display: inline-block; box-sizing: border-box; inline-size: 1.25rem; block-size: 1.25rem; flex: none; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; color: inherit; vertical-align: middle; animation: hw-spin var(--hw-duration-spinner, 0.7s) linear infinite; }
 @keyframes hw-spin { to { transform: rotate(360deg); } }
 @keyframes hw-pulse { 50% { opacity: 0.45; } }
@@ -320,6 +339,8 @@ progress.hw-progress { appearance: none; }
   .hw-button, .hw-input, .hw-textarea, .hw-select, .hw-switch, .hw-switch::before, .hw-progress > span { transition: none; }
   .hw-dialog[open], .hw-skeleton, .hw-spinner { animation: none; }
   .hw-progress::-webkit-progress-value { transition: none; }
+  /* Static stripes keep indeterminate distinct from 0% without motion. */
+  progress.hw-progress:indeterminate { animation: none; background: repeating-linear-gradient(-45deg, var(--hw-color-primary) 0 0.25rem, transparent 0.25rem 0.5rem), var(--_hw-track); }
 }
 @media (forced-colors: active) {
   .hw-button, .hw-badge, .hw-chip, .hw-avatar { border: 1px solid ButtonText; }
@@ -330,6 +351,18 @@ progress.hw-progress { appearance: none; }
   .hw-switch::before { display: none; }
   .hw-spinner { border-color: CanvasText; border-inline-end-color: transparent; }
   .hw-progress, .hw-skeleton { border: 1px solid CanvasText; }
+  /* System colours keep the value visible: Highlight on Canvas. */
+  .hw-progress { forced-color-adjust: none; background: Canvas; }
+  .hw-progress::-webkit-progress-bar { background: Canvas; }
+  .hw-progress::-webkit-progress-value { background: Highlight; }
+  .hw-progress::-moz-progress-bar { background: Highlight; }
+  .hw-progress > span { background: Highlight; }
+  progress.hw-progress:indeterminate { background: linear-gradient(Highlight, Highlight) no-repeat, Canvas; background-size: 40% 100%, auto; }
+  progress.hw-progress:indeterminate::-webkit-progress-bar { background: transparent; }
+  progress.hw-progress:indeterminate::-moz-progress-bar { background: transparent; }
+}
+@media (forced-colors: active) and (prefers-reduced-motion: reduce) {
+  progress.hw-progress:indeterminate { background: repeating-linear-gradient(-45deg, Highlight 0 0.25rem, Canvas 0.25rem 0.5rem); }
   .hw-step[aria-current='step']::before { border: 3px solid Highlight; }
   .hw-dialog::backdrop { background: Canvas; opacity: 0.7; }
 }
