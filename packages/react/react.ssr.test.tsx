@@ -11,17 +11,17 @@ describe('React server rendering', () => {
       <Hawiyah.Field label="Reference"><Hawiyah.TextField name="reference" /></Hawiyah.Field>
       <Hawiyah.Textarea label="Notes" /><Hawiyah.Select label="Service" options={[{ value: 'permit', label: 'Permit' }]} />
       <Hawiyah.Checkbox label="Agree" /><Hawiyah.Radio name="kind" label="Person" /><Hawiyah.Switch label="Alerts" />
-      <Hawiyah.Tabs label="Details" items={[{ value: 'one', label: 'One', content: 'First' }]} />
-      <Hawiyah.Dialog title="Confirm" defaultOpen>Ready</Hawiyah.Dialog>
-      <Hawiyah.Combobox label="City" options={[{ value: 'riyadh', label: 'Riyadh' }]} />
+      <Hawiyah.Tabs label="Details" overflowLabel="More tabs" items={[{ value: 'one', label: 'One', content: 'First' }]} />
+      <Hawiyah.Dialog title="Confirm" closeLabel="Close" defaultOpen>Ready</Hawiyah.Dialog>
+      <Hawiyah.Combobox label="City" emptyMessage="No options found" getResultsMessage={count => `${count} results available`} options={[{ value: 'riyadh', label: 'Riyadh' }]} />
       <Hawiyah.Accordion items={[{ value: 'faq', title: 'Question', content: 'Answer' }]} />
       <Hawiyah.Card header="Card">Body</Hawiyah.Card><Hawiyah.Badge>New</Hawiyah.Badge><Hawiyah.Alert>Update</Hawiyah.Alert>
       <Hawiyah.Table caption="Requests"><tbody><tr><td>One</td></tr></tbody></Hawiyah.Table>
-      <Hawiyah.Pagination totalPages={2} /><Hawiyah.Breadcrumb items={[{ label: 'Home' }]} />
-      <Hawiyah.Progress label="Complete" value={50} /><Hawiyah.Skeleton /><Hawiyah.Spinner />
+      <Hawiyah.Pagination label="Pages" previousLabel="Previous page" nextLabel="Next page" getPageLabel={page => `Page ${page}`} getGapLabel={(start, end) => `Pages ${start} to ${end}`} jumpLabel="Go to page" goLabel="Go" totalPages={2} /><Hawiyah.Breadcrumb label="Breadcrumb" items={[{ label: 'Home' }]} />
+      <Hawiyah.Progress label="Complete" value={50} /><Hawiyah.Skeleton /><Hawiyah.Spinner label="Loading" />
       <Hawiyah.Avatar name="Demo User" /><Hawiyah.Divider />
       <Hawiyah.Tooltip content="Help"><Hawiyah.Button>Info</Hawiyah.Button></Hawiyah.Tooltip>
-      <Hawiyah.FileUpload label="Attachment" /><Hawiyah.Stepper current="start" items={[{ value: 'start', label: 'Start' }]} />
+      <Hawiyah.FileUpload label="Attachment" /><Hawiyah.Stepper label="Progress" current="start" items={[{ value: 'start', label: 'Start' }]} />
       <Hawiyah.EmptyState title="No requests" />
     </>);
     expect(html).toContain('role="combobox"');

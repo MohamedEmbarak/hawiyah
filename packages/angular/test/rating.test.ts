@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import './fixtures/texts';
+import { text, withText } from './fixtures/application-text';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
@@ -9,7 +11,7 @@ beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowse
 afterEach(() => TestBed.resetTestingModule());
 function mount(readOnly = false) {
   class Host { rating = new FormControl(3, { nonNullable: true }); readOnly = readOnly; }
-  Component({ standalone: true, imports: [ReactiveFormsModule, HwRatingComponent], template: '<form><hw-rating label="التقييم" name="rating" [formControl]="rating" [readOnly]="readOnly" /></form>' })(Host);
+  Component({ standalone: true, imports: [ReactiveFormsModule, HwRatingComponent], template: `<form><hw-rating ${withText.rating} label="التقييم" name="rating" [formControl]="rating" [readOnly]="readOnly" /></form>` })(Host); Object.assign(Host.prototype, { text });
   const fixture = TestBed.createComponent(Host); fixture.detectChanges(); return fixture;
 }
 it('uses one native radio value and reflects reactive form reset and disabling', async () => {

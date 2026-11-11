@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import { supplyText } from './fixtures/texts';
+import { text } from './fixtures/application-text';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, test, vi } from 'vitest';
@@ -6,7 +8,7 @@ import { HwFileUploadListComponent } from '@hawiyah/angular';
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => TestBed.resetTestingModule());
 test('Angular renders live transfer states and leaves removal to the owner', () => {
-  const fixture = TestBed.createComponent(HwFileUploadListComponent);
+  const fixture = TestBed.createComponent(HwFileUploadListComponent); supplyText(fixture, text.fileUploadList);
   fixture.componentRef.setInput('items', [{id:'a',name:'document.pdf',status:'uploading'}]);
   fixture.componentRef.setInput('removable', true);
   fixture.detectChanges();

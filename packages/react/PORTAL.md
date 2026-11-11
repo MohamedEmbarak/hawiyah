@@ -1,39 +1,52 @@
 # Portal layout
 
 `PortalLayout` composes `PortalHeader`, optional `SecondaryNav`, `Breadcrumb`,
-a focusable main container and `PortalFooter`. It defaults to Arabic and RTL.
+a focusable main container and `PortalFooter`. It sets no `lang` or `dir` of its
+own: pass them like any attribute, or set them on an ancestor.
 It is a public portal shell; keep application routing and page content in the app.
 
 ```tsx
 import { PortalLayout } from '@hawiyah/react';
 import '@hawiyah/styles/styles.css';
 
-<PortalLayout brand="هوية"
+<PortalLayout lang="ar" dir="rtl" brand="هوية"
+  skipLabel="انتقل إلى المحتوى" menuLabel="القائمة" navigationLabel="التنقل الرئيسي"
   headerProps={{ brandHref: '/', navigation: [{ label: 'الخدمات', href: '/services', current: true }] }}
-  secondaryNavigation={[{ label: 'دليل الخدمات', href: '/services', current: true }]}
-  breadcrumbs={[{ label: 'الرئيسية', href: '/' }, { label: 'الخدمات', current: true }]}
-  footerProps={{ links: [{ label: 'الخصوصية', href: '/privacy' }] }}>
+  secondaryNavigation={[{ label: 'دليل الخدمات', href: '/services', current: true }]} secondaryLabel="التنقل الثانوي"
+  breadcrumbs={[{ label: 'الرئيسية', href: '/' }, { label: 'الخدمات', current: true }]} breadcrumbLabel="مسار التنقل"
+  footerLabel="روابط التذييل"
+  footerProps={{ externalLabel: 'يفتح في نافذة جديدة', links: [{ label: 'الخصوصية', href: '/privacy' }] }}>
   <h1>الخدمات</h1>
 </PortalLayout>
 ```
 
-`headerProps` accepts the existing header API plus `menuLabel`, `navigationId`,
-and `navigationLabel`. `actions`/`notice` remain composable React nodes. Supply
-your actual brand SVG as `brand`; no government artwork is inferred. `footerProps`
-accepts the existing footer's brand, description, links, linksLabel and legal.
-`mainId` is generated with React `useId` unless supplied. `skipLabel`,
-`breadcrumbLabel` and `secondaryLabel` override the Arabic accessible labels.
+Every text is application content; nothing defaults to a language. `skipLabel`,
+`menuLabel` and `navigationLabel` are required (the layout always renders its skip
+link). `secondaryLabel` is required with `secondaryNavigation`, `breadcrumbLabel`
+with `breadcrumbs`, and `footerLabel` (passed to the footer as `navigationLabel`)
+with `footerProps.links`. `footerProps` carries the footer content and its texts
+under the `PortalFooter` names: the required `externalLabel`, and `legalLinksLabel`
+or `supportLabel` with `legalLinks` or `support`. `headerProps` accepts the
+remaining header API (`brandHref`, `navigation`, `navigationId`, `actions`,
+`notice`). `mainId` is generated with React `useId` unless supplied.
 
-For English, set `lang="en" dir="ltr"` and translate the content and labels,
-including `skipLabel`, `breadcrumbLabel`, `secondaryLabel`,
-`headerProps.navigationLabel`, `headerProps.menuLabel`, `footerProps.linksLabel`.
-Language and direction are independent props.
+`brand` is text, artwork or both and is passed to the header and footer. Supply
+your actual brand SVG as `brand`; no government artwork is inferred. Artwork alone
+takes its accessible name from `brandLabel`, which is written as `aria-label` on
+the brand link (or on the brand container, as an image, when there is no
+`brandHref`). In development, a mounted brand with no text, no `aria-label` and no
+image `alt` warns once through `console.warn`; server rendering never warns.
+
+For English, set `lang="en" dir="ltr"` and pass English texts. Language and
+direction are independent attributes.
 
 Standalone `PortalHeader` adds a mobile disclosure when `navigation` has items;
-set `mainId` to render its skip link. Escape closes and focuses the toggle;
+set `mainId` (with the then-required `skipLabel`) to render its skip link. Skip
+links render as `#id` on the server and on the first client render and are kept
+pointing at the current document under a `<base href>` once mounted. Escape closes and focuses the toggle;
 selection, outside press and focus leaving close it. Tab is not trapped. The
 links stay visible at desktop widths. Multiple headers receive separate IDs.
-`SecondaryNav` takes `items` and `label`; these are ordinary page links with
+`SecondaryNav` takes `items` and a required `label`; these are ordinary page links with
 `aria-current`, not tabs or menus.
 
 The 48rem disclosure breakpoint is an intentional Hawiyah policy. The layout uses

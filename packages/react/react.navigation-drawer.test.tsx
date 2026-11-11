@@ -20,7 +20,7 @@ afterEach(async () => { for (const root of roots.splice(0)) await act(() => root
 it('renders page links and native groups, suppresses disabled actions, closes routes and restores focus', async () => {
   const container = document.createElement('div'); document.body.append(container);
   const root = createRoot(container); roots.push(root);
-  await act(() => root.render(<NavigationDrawer title="القائمة" items={items} trigger={<button>Open</button>} userContent={<p>حساب المستخدم</p>} footer={<p>Footer</p>} />));
+  await act(() => root.render(<NavigationDrawer title="القائمة" navigationLabel="التنقل الرئيسي" closeLabel="إغلاق القائمة" items={items} trigger={<button>Open</button>} userContent={<p>حساب المستخدم</p>} footer={<p>Footer</p>} />));
   const trigger = container.querySelector('button')!; trigger.focus();
   await act(() => trigger.click());
   const dialog = container.querySelector('dialog')!;
@@ -42,7 +42,7 @@ it('respects a consumer prevented route and preserves modifier-click navigation'
   const container = document.createElement('div'); document.body.append(container);
   const root = createRoot(container); roots.push(root);
   let prevent = true;
-  await act(() => root.render(<NavigationDrawer title="القائمة" defaultOpen items={items} onClick={event => { if (prevent) event.preventDefault(); }} />));
+  await act(() => root.render(<NavigationDrawer title="القائمة" navigationLabel="التنقل الرئيسي" closeLabel="إغلاق القائمة" defaultOpen items={items} onClick={event => { if (prevent) event.preventDefault(); }} />));
   const dialog = container.querySelector('dialog')!; const link = dialog.querySelector('a')!;
   await act(() => link.click()); expect(dialog.open).toBe(true);
   prevent = false;

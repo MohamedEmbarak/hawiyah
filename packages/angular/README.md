@@ -27,7 +27,8 @@ import { HwTextFieldComponent, HwComboboxComponent, HwButtonDirective } from '@h
   template: `
     <form #form="ngForm" (ngSubmit)="save()">
       <hw-text-field controlId="name" label="Name" name="name" [(ngModel)]="name" [required]="true" />
-      <hw-combobox controlId="city" label="City" name="city" [(ngModel)]="city" [options]="cities" />
+      <hw-combobox controlId="city" label="City" name="city" [(ngModel)]="city" [options]="cities"
+        emptyMessage="No matching city" [getResultsMessage]="results" />
       <button hwButton type="submit">Save</button>
       <button hwButton variant="secondary" type="button" (click)="form.resetForm()">Reset</button>
     </form>
@@ -36,6 +37,7 @@ import { HwTextFieldComponent, HwComboboxComponent, HwButtonDirective } from '@h
 export class Example {
   name = ''; city = '';
   cities = [{value: 'riyadh', label: 'الرياض · Riyadh'}];
+  results = (count: number) => `${count} cities match`;
   save() { /* application action */ }
 }
 ```
@@ -51,8 +53,62 @@ Load `@hawiyah/styles/styles.css` once in the host application. The optional
 ```
 
 Theme, locale and text direction are independent. Use `dga` for the Platforms Code
-palette or `custom` with your own documented CSS token overrides. Supply Arabic
-labels, messages, tooltips, navigation labels, and result announcements explicitly.
+palette or `custom` with your own documented CSS token overrides.
+
+## Text is supplied by the application
+
+Hawiyah ships no user-visible or accessible-name strings, in any language. The
+components do not read `lang`, the document language or a locale to choose text,
+and none of them has a default label. The application passes every string:
+
+- Primary content (button and link text, dialog bodies, option and item labels)
+  is projected content or data, as before.
+- Text that a component places itself is a named input. Strings are named
+  `...Label` (names and visible labels) or `...Message` (status, live-region and
+  validation text). Templated text is a function input named `get...Label` or
+  `get...Message`; it receives the data and returns the whole string, and the
+  component adds no words or punctuation to it.
+- Text needed in every use is `@Input({ required: true })`, so a missing one is a
+  template type error. Text needed only when a feature is switched on (a
+  dismissible alert, a required combobox, a header with `mainId`) is an optional
+  input that is required under that condition. The tables below say which.
+- When a required text is missing at run time, the component renders nothing in
+  its place and omits the attribute; it does not invent a name or hide the
+  control. In development it warns once per component and input through
+  `console.warn`, with the prefix `Hawiyah:`. Production builds (`ngDevMode` false)
+  stay silent.
+- A constraint with a missing message (`requiredMessage`, `invalidMessage`,
+  `unsupportedMessage`) still blocks submission and sets `aria-invalid`.
+- `locale` is a formatting argument only: a BCP 47 tag handed to `Intl`. Calendar
+  and DatePicker require it because month names, weekday names and the era come
+  from `Intl`. `dir` is rendered only where the application supplies it.
+
+```html
+<hw-pagination label="صفحات النتائج" previousLabel="الصفحة السابقة" nextLabel="الصفحة التالية"
+  jumpLabel="الانتقال إلى صفحة" goLabel="انتقال" [getPageLabel]="pageLabel" [getGapLabel]="gapLabel"
+  [totalPages]="20" [(page)]="page" />
+```
+
+```ts
+pageLabel = (page: number) => `الصفحة ${page}`;
+gapLabel = (start: number, end: number) => `الصفحات من ${start} إلى ${end}`;
+```
+
+Inputs renamed in this release, without aliases: Combobox `validationMessage` →
+`requiredMessage` and `resultsMessage` → `getResultsMessage`; SearchField
+`resultsMessage` → `getResultsMessage`; Pagination `pageLabel` → `getPageLabel` and
+`gapLabel` → `getGapLabel`; Carousel `slideLabel` → `getSlideLabel`; Rating
+`ratingLabel` → `getRatingLabel`; RatingDisplay `valueLabel` → `getValueLabel` (and
+`label` is removed); TagInput `removeLabel` → `getRemoveLabel(tag)` and
+`validationMessage` → `requiredMessage`; MultiSelect `validationMessage` →
+`requiredMessage` and `selectedMessage` → `getSelectedMessage`; DatePicker
+`dialogTitle` → `calendarLabel` and the former `calendarLabel` →
+`calendarSystemLabel`; FileDropzone `instruction` → `dropLabel` and
+`selectedMessage(count)` → `getSelectedMessage(files)`; AvatarGroup `overflowLabel` →
+`getOverflowLabel`; ToastRegion and NotificationList `dismissLabel` →
+`getDismissLabel(item)`; Feedback `positiveLabel`, `negativeLabel`, `thanksMessage` →
+`yesLabel`, `noLabel`, `successMessage`; Tooltip `id` → `tooltipId`; Popover and
+Menu `id` → `panelId`. SiteVerification `locale` and PortalLayout `lang` are removed.
 
 ## Inputs and outputs
 
@@ -71,28 +127,28 @@ Use Angular's `resetForm()` / `FormGroup.reset()` to reset custom control values
 | Field — `HwFieldComponent` | `hw-field`; required `controlId`, `label`; optional `hint`, `error`. Project a native control with that ID and explicitly connect description IDs. |
 | TextField — `HwTextFieldComponent` | `hw-text-field`; string value, `type`, `placeholder`, `autocomplete`, `inputmode`, `readOnly`; `size: sm/md/lg` (default md), `visualVariant: outline/filled` (default outline) style the native input. The native number input still emits a string; parse at your domain boundary. Text being typed is never rewritten: while a number or date is incomplete the value is `''`, and the input keeps what the user typed. |
 | Textarea — `HwTextareaComponent` | `hw-textarea`; string value, `rows`, `maxLength`, `placeholder`, `readOnly`; `size: sm/md/lg`, `visualVariant: outline/filled` style the native textarea. |
-| Select — `HwSelectComponent` | `hw-select`; string value, `options: readonly Option[]`, `placeholder`; `size: sm/md/lg`, `visualVariant: outline/filled` style the native select. Native single select. |
+| Select — `HwSelectComponent` | `hw-select`; string value, `options: readonly Option[]`, optional `placeholder` (without it no prompt option is rendered); `size: sm/md/lg`, `visualVariant: outline/filled` style the native select. Native single select. |
 | Checkbox — `HwCheckboxComponent` | `hw-checkbox`; boolean value, `indeterminate`. |
 | Radio — `HwRadioComponent` | `hw-radio`; a named native radio group with a fieldset/legend, string value, `options`. |
 | Switch — `HwSwitchComponent` | `hw-switch`; boolean value, native checkbox with switch role. |
-| Combobox — `HwComboboxComponent` | `hw-combobox`; string value, `options`, `placeholder`, `emptyMessage`, `validationMessage`, `resultsMessage(count)`. Editable single selection; no async or virtualization. |
-| Tabs — `HwTabsComponent`, `HwTabComponent` | `hw-tabs` contains `hw-tab`; tabs `label`, `id`, `[(value)]`, `orientation`, optional `direction`, `activationMode: automatic/manual`, `overflow: menu/scroll` (default menu), configurable `overflowLabel`. Each tab takes `value`, `label`, `disabled` and renders its projected content in its own panel: `<hw-tab>` contains the `<section class="hw-tab-panel" role="tabpanel">`, and the shared stylesheet gives `hw-tab` `display: contents`. Compact horizontal containers disclose excess labels; vertical tabs remain visible. |
-| Dialog — `HwDialogComponent` | `hw-dialog`; `title`, `titleId`, `[(open)]`, `closeLabel`, `closeOnBackdrop`; outputs `cancelled`, `returnValue`; methods `show(trigger?)`, `close(value?)`. Project content and `[hwDialogFooter]`. |
+| Combobox — `HwComboboxComponent` | `hw-combobox`; string value, `options`, `placeholder`; required `emptyMessage` and `getResultsMessage(count)`; `requiredMessage` is required with `required`. Editable single selection; no async or virtualization. |
+| Tabs — `HwTabsComponent`, `HwTabComponent` | `hw-tabs` contains `hw-tab`; tabs `label`, `id`, `[(value)]`, `orientation`, optional `direction`, `activationMode: automatic/manual`, `overflow: menu/scroll` (default menu); `overflowLabel` is required unless `overflow="scroll"`. Each tab takes `value`, `label`, `disabled` and renders its projected content in its own panel: `<hw-tab>` contains the `<section class="hw-tab-panel" role="tabpanel">`, and the shared stylesheet gives `hw-tab` `display: contents`. Compact horizontal containers disclose excess labels; vertical tabs remain visible. |
+| Dialog — `HwDialogComponent` | `hw-dialog`; required `title` and `closeLabel`; `titleId`, `[(open)]`, `closeOnBackdrop`; outputs `cancelled`, `returnValue`; methods `show(trigger?)`, `close(value?)`. Project content and `[hwDialogFooter]`. |
 | Accordion — `HwAccordionComponent` | `hw-accordion`; `items: {id,title,content,open?}[]`, `exclusive`, `groupName`; `toggled: {id,open}`. Native details/summary. Project custom native details for richer content. |
 | Card — `HwCardComponent` | `hw-card`; project `[hwCardHeader]`, body, `[hwCardFooter]`. |
 | Badge — `HwBadgeComponent` | Static label; `tone="neutral\|success\|warning\|danger\|info"`, `variant="soft\|outline\|dot"`; [source and adaptations](../../docs/nic-badges.md). |
-| Alert — `HwAlertComponent` | `hw-alert`; `title`, `tone: info/success/warning/danger`, `role: status/alert/region`, `dismissible`, `closeLabel`; `dismissed` asks the parent to remove it. |
-| Table — `HwTableComponent` | `hw-table`; `caption`, `columns: {key,label,rowHeader?}[]`, `rows: Record<string,string\|number\|null\|undefined>[]`, `emptyMessage`. Values render as escaped text. |
-| Pagination — `HwPaginationComponent` | `hw-pagination`; `[(page)]`, `totalPages`, Arabic default `label`, `previousLabel`, `nextLabel`, `pageLabel(page)`, `formatPage(page)`, `siblingCount=1`, `disabled`, `hideOnSinglePage=false`. Ellipsis disclosures use `gapLabel(start,end)`, `jumpLabel`, `goLabel`; gaps above 100 pages use bounded integer entry. Parent fetches/slices data; no navigation or scrolling is imposed. |
-| Breadcrumb — `HwBreadcrumbComponent` | `hw-breadcrumb`; `items: {label,href?}[]`, `label`. Last item is current. |
+| Alert — `HwAlertComponent` | `hw-alert`; `title`, `tone: info/success/warning/danger`, `role: status/alert/region`, `dismissible`; `closeLabel` is required with `dismissible`; `dismissed` asks the parent to remove it. |
+| Table — `HwTableComponent` | `hw-table`; `caption`, `columns: {key,label,rowHeader?}[]`, `rows: Record<string,string\|number\|null\|undefined>[]`, required `emptyMessage`. Values render as escaped text. |
+| Pagination — `HwPaginationComponent` | `hw-pagination`; `[(page)]`, `totalPages`; required `label`, `previousLabel`, `nextLabel`, `getPageLabel(page)`, `getGapLabel(start,end)`, `jumpLabel` and `goLabel`; `formatPage(page)`, `siblingCount=1`, `disabled`, `hideOnSinglePage=false`. Ellipsis disclosures are named by `getGapLabel`; gaps above 100 pages use bounded integer entry. Parent fetches/slices data; no navigation or scrolling is imposed. |
+| Breadcrumb — `HwBreadcrumbComponent` | `hw-breadcrumb`; `items: {label,href?}[]`, required `label`. Last item is current. |
 | Progress — `HwProgressComponent` | `hw-progress`; `label`, `value: number\|null`, `max`; null is indeterminate. |
 | Skeleton — `HwSkeletonComponent` | `hw-skeleton`; `width`, `height`; decorative, hidden from assistive technology. Announce surrounding loading state once. |
-| Spinner — `HwSpinnerComponent` | `hw-spinner`; localized `label`; status announcement. |
+| Spinner — `HwSpinnerComponent` | `hw-spinner`; required `label`; status announcement. A spinner the application marks `aria-hidden="true"` is decorative and needs none. |
 | Avatar — `HwAvatarComponent` | Required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"`. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
 | Divider — `HwDividerComponent` | `hw-divider`; native horizontal rule. |
-| Tooltip — `HwTooltipComponent` | `hw-tooltip`; `text`, `id`; project short noninteractive trigger content. Focusable trigger, hover/focus opening, Escape/outside closing. Do not project buttons or links into this focusable wrapper. |
+| Tooltip — `HwTooltipComponent` | `hw-tooltip`; `text`, `tooltipId` (the id of the tooltip element; no id is left on the wrapper); project short noninteractive trigger content. Focusable trigger, hover/focus opening, Escape/outside closing. Do not project buttons or links into this focusable wrapper. |
 | FileUpload — `HwFileUploadComponent` | `hw-file-upload`; readonly `File[]` value, `accept`, `multiple`. Selects local files only; no upload occurs. Forms can clear, but browsers forbid programmatically populating file pickers. |
-| Stepper — `HwStepperComponent` | `hw-stepper`; `steps: {label,description?}[]`, zero-based `current`, `label`. Noninteractive progress list. |
+| Stepper — `HwStepperComponent` | `hw-stepper`; `steps: {label,description?}[]`, zero-based `current`, required `label`. Noninteractive progress list. |
 | EmptyState — `HwEmptyStateComponent` | `hw-empty-state`; `title`, `description`, projected actions. |
 
 ## Interaction guarantees
@@ -138,10 +194,25 @@ with `provideClientHydration()`. On the server the components emit markup only:
 - Each `hw-tab` renders its own panel, so projected tab content stays in the
   view that declares it. Angular can therefore hydrate a tabset in place.
 
-Generated identifiers come from counters, so the server and the browser can
-assign different values to the same control; associations are rewritten
-together and remain valid. Pass `controlId`, `id`, `titleId`, `mainId` or
-`navigationId` wherever markup, tests or fragment links depend on an identifier.
+Generated identifiers come from one injectable source per application
+(`HwIdSource`, provided in the root injector). The server render and the
+hydration of a page create their components in the same order and therefore
+produce the same identifiers, and two server renders of a page produce identical
+markup. Applications that share a document set Angular's `APP_ID`, which becomes
+part of every generated identifier. An identifier the application passes always
+wins: `controlId`, `id` (Tabs), `titleId` (Dialog, Drawer, NavigationDrawer),
+`tooltipId` (Tooltip), `panelId` (Popover, Menu), `rangeTooltipId` (Calendar),
+`mainId` and `navigationId` (PortalHeader, PortalLayout), `groupName` (Accordion).
+Inputs named like a native attribute (`title`, `role` on Alert, `align` on
+Tooltip) are not left as attributes on the wrapper element.
+
+Packaged in-page links (the AppShell, PortalHeader and PortalLayout skip links
+and the ContentNavigation links) are rendered as the bare `#id`, on the server
+and on the first client render. In the browser each link is bound with core
+`bindFragmentLink`: from the reader's first interaction its `href` resolves to
+the current document under any `<base href>`, a plain activation scrolls to and
+focuses the target without writing the URL, and modified clicks keep browser
+behaviour with the corrected address.
 `NgModel` delivers its value in a microtask after the first render, so a
 calendar bound through `ngModel` rebuilds its day grid once after hydration;
 `[(value)]` and reactive forms do not.
@@ -180,44 +251,48 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Component | Inputs, outputs and composition |
 | --- | --- |
 | InputGroup | Project `[hwPrefix]`, a labeled native/control input, and `[hwSuffix]`; `size: sm/md/lg`. Addons remain ordinary content, so label decorative icons appropriately. |
-| PasswordField | String value; `autocomplete`, `placeholder`, `showLabel`, `hideLabel`. Reveal button keeps the same input and resets to hidden with forms. |
-| SearchField | String value/CVA; `placeholder`, `autocomplete`, `autofocus`, `searchLabel`, `clearLabel`; optional `suggestions`, `maxSuggestions` (8), `resultsMessage(count)`, `showSearchButton` (true for compatibility); `searched(query)` output and public `focus()`. |
+| PasswordField | String value; `autocomplete`, `placeholder`; required `showLabel` and `hideLabel`. Reveal button keeps the same input and resets to hidden with forms. |
+| SearchField | String value/CVA; `placeholder`, `autocomplete`, `autofocus`; required `clearLabel`; `searchLabel` names the search button and is required while `showSearchButton` is on (the default); optional `suggestions`, `maxSuggestions` (8), and with suggestions `getResultsMessage(count)`. The input and the suggestion list are named by `label`; `searched(query)` output and public `focus()`. |
 | NumberField | `number \| null` value; `min`, `max`, `step` (number or `any`). Empty/invalid native numeric input maps to null. Text that is not yet a number (`-`, `1e`) emits null and stays in the input, so `-5` and `1e2` commit -5 and 100. Native step/min/max validation remains active. |
 | Slider | Number value; `min`, `max`, `step`; native range plus value output. |
-| RangeSlider | `[lower,upper]`; `min`, `max`, `step`, `lowerLabel`, `upperLabel`, `lowerName`, `upperName`. Crossing thumbs stop at the other value; absent distinct names, `name` submits two ordered values. |
-| Rating | Numeric value, `max` (1–20), `ratingLabel(value,max)`; named native radio choices. |
-| `HwRatingDisplayComponent / hw-rating-display` | Required `label`, numeric `value=0`, `max=5` (1–20), `showValue=true`, `valueLabel(value,max)`; noninteractive fractional aggregate score with one accessible image name. |
+| RangeSlider | `[lower,upper]`; `min`, `max`, `step`, required `lowerLabel` and `upperLabel`, `lowerName`, `upperName`. Crossing thumbs stop at the other value; absent distinct names, `name` submits two ordered values. |
+| Rating | Numeric value, `max` (1–20), required `getRatingLabel(value,max)`; named native radio choices. |
+| `HwRatingDisplayComponent / hw-rating-display` | Numeric `value=0`, `max=5` (1–20), `showValue=true`, required `getValueLabel(value,max)`, which returns the whole text alternative (for example the subject and its score); noninteractive fractional aggregate score with one accessible image name. |
 | PinInput | String value, `length`; one numeric input with `one-time-code` autocomplete, Arabic-Indic/Eastern Arabic digit normalization, paste support. |
-| TagInput | `string[]`; `placeholder`, `addLabel`, `removeLabel`. Enter/comma or Add commits unique trimmed tags; repeated hidden form values. |
-| MultiSelect | `string[]`; `options: Option[]`, `searchLabel`, `emptyMessage`, `selectedMessage(count)`, `validationMessage`. Searchable checkbox list; selected values remain in FormData when search hides their checkboxes. |
-| Calendar | ISO Gregorian string value; `month`, `min`, `max`, `locale`, `calendar: gregory/islamic-umalqura`, `weekStartsOn`, `direction`, `previousLabel`, `nextLabel`; `monthChange`. Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year). Bounds restrict selection/focus. |
-| DatePicker | ISO Gregorian value, a custom text field and modal calendar. Accepts Calendar localization and range inputs, `dialogTitle`, `openLabel`, `closeLabel`, `calendarLabel`, `gregorianLabel`, `hijriLabel` and `unsupportedMessage`. Switching emits `calendarChange` and preserves the selected ISO date. Opening returns to its month and day. |
-| FileDropzone | `File[]`; `accept`, `multiple`, `instruction`, `selectedMessage(count)`; `rejected` emits rejected files. Without `label`, the visible `instruction` is the input's label and accessible name; with `label`, the instruction is a paragraph below it. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
+| TagInput | `string[]`; `placeholder`; required `addLabel` and `getRemoveLabel(tag)`; `requiredMessage` is required with `required`. Enter/comma or Add commits unique trimmed tags; repeated hidden form values. |
+| MultiSelect | `string[]`; `options: Option[]`; required `searchLabel` (the accessible name of the filter input, not a placeholder), `emptyMessage` and `getSelectedMessage(count)`; optional `placeholder`; `requiredMessage` is required with `required`. Searchable checkbox list; selected values remain in FormData when search hides their checkboxes. |
+| Calendar | ISO Gregorian string value; `month`, `min`, `max`, `calendar: gregory/islamic-umalqura`, `weekStartsOn`, `direction`; required `label`, `locale`, `previousLabel` and `nextLabel`; `rangeLabel` is required with `calendar="islamic-umalqura"` and names the supported-range information, whose tooltip id is `rangeTooltipId`; optional `getDayLabel(isoDate)` replaces the Intl day name; `monthChange`. Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year). Bounds restrict selection/focus. |
+| DatePicker | ISO Gregorian value, a custom text field and modal calendar. Accepts Calendar range inputs. Required: `label`, `locale`, `calendarLabel` (dialog title and name of the calendar), `openLabel`, `closeLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel` (name of the Gregorian/Hijri switch), `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage` and `unsupportedMessage`. `placeholder` is optional and has no default. Switching emits `calendarChange` and preserves the selected ISO date. Opening returns to its month and day. |
+| FileDropzone | `File[]`; `accept`, `multiple`; required `label`, `dropLabel` (the visible instruction, a paragraph below the label) and `getSelectedMessage(files)`; `rejected` emits rejected files. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
 | ToggleGroup | String value for single or `string[]` for `multiple`; `options`, `variant: segmented/outline`. Single uses native radios; multiple uses pressed buttons. |
-| Popover | `label`, `triggerLabel`, `id`, `disabled`, `[(open)]`; project interactive content. Disclosure region with ordinary Tab order, outside press/Escape closing. |
+| Popover | Required `label` and `triggerLabel`; `panelId` (the id of the panel; no id is left on the wrapper), `disabled`, `[(open)]`; project interactive content. Disclosure region with ordinary Tab order, outside press/Escape closing. |
 | Menu | Popover inputs plus `items: {id,label,disabled?}[]`, `action(id)`. ArrowUp/Down/Home/End navigation skips disabled items; Escape/activation returns focus. |
-| Drawer | Dialog inputs/outputs/methods plus `side: start/end/bottom`; project body and `[hwDrawerFooter]`. Native modal dialog. |
-| ToastRegion | `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, `label`, `dismissLabel`, `(dismissed)="remove($event)"`. Set `variant="banner"` and optionally `position="inline"` or a corner. A dismissal listener enables the button. Defaults are Arabic. |
+| Drawer | Dialog inputs/outputs/methods (including the required `closeLabel`) plus `side: start/end/bottom`; project body and `[hwDrawerFooter]`. Native modal dialog. |
+| ToastRegion | `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, required `label`, `(dismissed)="remove($event)"`. Set `variant="banner"` and optionally `position="inline"` or a corner. A dismissal listener enables the button, which is named by `getDismissLabel(message)`, required while messages can be dismissed. |
 | Collapsible | `label`, `[(open)]`; native details/summary and projected body. |
 | TreeView | String selection; `nodes: {id,label,disabled?,children?}[]`, `[(expandedIds)]`, `direction`. Roving focus, RTL arrows, Home/End, Enter/Space selection. Caller supplies unique IDs. |
-| Carousel | Required label/slides; `[(current)]`, `loop=false`, `slides` and optional `slideTemplate` with `{ $implicit: HwSlide, index }`, one-based `slideLabel(index,total)`. `showIndicators=true`, localized control/indicator/description/empty labels, inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
+| Carousel | Required label/slides; `[(current)]`, `loop=false`, `slides` and optional `slideTemplate` with `{ $implicit: HwSlide, index }`, required one-based `getSlideLabel(position,total)`, `previousLabel`, `nextLabel` and `emptyLabel`. `showIndicators=true` needs `indicatorsLabel`; `carouselDescription` and `slideDescription` (`aria-roledescription`) are optional and rendered only when supplied. Inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
 | Link | `href`, `target`, `rel`, `current`, `variant: default/subtle`; projected link text. `_blank` defaults to `noopener noreferrer`. |
 | IconButton | Required accessible `label`; `type`, `disabled`, `pressed`, `variant`, `size`; `activated(MouseEvent)`. Project a decorative icon. |
 | ButtonGroup | `label`, `orientation: horizontal/vertical`; project native buttons or IconButtons. |
-| Chip | `tone`, `variant`, `removable`, `disabled`, `removeLabel`; `removed` asks the caller to remove it. |
+| Chip | `tone`, `variant`, `removable`, `disabled`; `removeLabel` is required with `removable`; `removed` asks the caller to remove it. |
 | DescriptionList | `items: {term,description}[]`, `variant: stacked/horizontal`; project richer native dt/dd if needed. |
 | Stat | `label`, `value`, `description`, `tone`; projected supplemental content. |
-| Timeline | `label`, `items: {title,description?,time?,dateTime?,state?}[]`; state is complete/current/pending. |
+| Timeline | Required `label`, `items: {title,description?,time?,dateTime?,state?}[]`; state is complete/current/pending. |
 | Meter | `label`, `value`, `min`, `max`, `low`, `high`, `optimum`; native meter for bounded measurements. |
-| AvatarGroup | `label`, `avatars: {name,src?}[]`, `max`, `overflowLabel(count)`; named image/initials with overflow count. |
-| DataTable | `caption`, `columns: {key,label,sortable?,rowHeader?}[]`, `rows: Record<string,string\|number\|boolean\|null\|undefined>[]`, `locale`, `emptyMessage`, `sortKey`, `sortDirection`; `sortChange({key,direction})`. Stable localized sorting, native headers and aria-sort; text cells. |
-| ServiceCard | `title`, `href`, `description`, `category`, `duration`, `fee`, `actionLabel`, `variant`; project `[hwServiceIcon]` and supplemental body. |
-| ServiceDetails | `title`, `description`, `details: {term,description}[]`, `requirements: string[]`, `requirementsLabel`; projected actions/content. |
-| PortalHeader | `brand`, `homeHref`, `mainId`, `skipLabel`, `menuLabel`, `navigationLabel`, `navigationId`, `links: {label,href,current?}[]`; project `[hwBrand]` and header actions. Mobile menu is CSS-responsive; provide unique navigationId if repeated. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
-| PortalFooter | `brand`, `copyright`, `navigationLabel`, `links`; projected supporting content. |
-| Feedback | `label`, `positiveLabel`, `negativeLabel`, `thanksMessage`, `disabled`, `[(value)]` (boolean or null initially). Emits local feedback choice; caller handles storage. |
-| CookieConsent | `title`, `description`, `acceptLabel`, `rejectLabel`, `preferencesLabel`, `[(visible)]`; `consent(accepted/rejected)` and `preferences`. Application decides persistence and script gating; this UI does not imply consent has been stored. |
-| NotificationList | `label`, `items: {id,title,description?,time?,href?,unread?}[]`, `emptyMessage`, `unreadLabel`, `dismissLabel`; `dismissed(id)`. Caller owns read/dismiss state. |
+| AvatarGroup | Required `label` and `getOverflowLabel(count)` (count is the number of hidden avatars); `avatars: {name,src?}[]`, `max`; named image/initials with overflow count. |
+| DataTable | `caption`, `columns: {key,label,sortable?,rowHeader?}[]`, `rows: Record<string,string\|number\|boolean\|null\|undefined>[]`, `locale`, required `emptyMessage`, `sortKey`, `sortDirection`, optional `getSortLabel(column,direction)` (the name of a sort button; direction is the order it will apply); `sortChange({key,direction})`. Stable localized sorting, native headers and aria-sort; text cells. |
+| ServiceCard | `title`, `href`, `description`, `category`, `duration`, `fee`, `variant`; `actionLabel` is the text of the action link and is required unless `[hwServiceAction]` content replaces the link; project `[hwServiceIcon]` and supplemental body. |
+| ServiceDetails | `title`, `description`, `details: {term,description}[]`, `requirements: string[]`; `requirementsLabel` is required with requirements; projected actions/content. |
+| PortalHeader | Required `menuLabel` and `navigationLabel`; optional `brand` text, `brandLabel`, `homeHref`, `mainId`, `skipLabel`, `navigationId`, `links: {label,href,current?}[]`; project `[hwBrand]` artwork and header actions. The brand may be artwork alone: no brand text is printed unless `brand` is supplied, and `brandLabel` gives artwork its accessible name (`aria-label` on the brand). An empty `homeHref` renders the brand without an `href`. The skip link is rendered only when `mainId` is set, and then needs `skipLabel`. Mobile menu is CSS-responsive; provide unique navigationId if repeated. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
+| PortalFooter | Required `externalLabel` (screen-reader text added to links marked external); `brand`, `brandLabel`, `description`, `copyright`, `links`, `groups`, `legalLinks`; `navigationLabel` is required with `links`, `legalLinksLabel` with `legalLinks`, and `supportLabel` with projected `[hwFooterSupport]` content, the only case in which the support section is shown. Project `[hwFooterBrand]`, `[hwFooterSupport]`, `[hwFooterPartners]` and supplementary content. |
+| Feedback | Required `label`, `yesLabel`, `noLabel` and `successMessage`; `disabled`, `[(value)]` (boolean or null initially). Emits local feedback choice; caller handles storage. |
+| CookieConsent | Required `title`, `acceptLabel` and `rejectLabel`; `description`, `[(visible)]`; `consent(accepted/rejected)` and `preferences`. The preferences button is rendered while a `(preferences)` listener is bound and then needs `preferencesLabel`; a policy link is rendered with `policyHref` and then needs `policyLabel`. Application decides persistence and script gating; this UI does not imply consent has been stored. |
+| NotificationList | Required `label`, `emptyMessage` and `unreadLabel`; `items: {id,title,description?,time?,href?,unread?}[]`; `dismissed(id)`. The dismiss button is rendered while a `(dismissed)` listener is bound and is named by `getDismissLabel(item)`. Caller owns read/dismiss state. |
+| FileUploadList | `items: FileUploadItem[]`, `removable`, `disabled`; required `labels: FileUploadLabels` from `@hawiyah/core`: the status words `selected`, `uploading`, `complete`, `error`, the visible `remove` text, and `getProgressLabel(name)` and `getRemoveLabel(name)` for the progress bar and the remove button. `remove(id)` asks the owner to remove an item. |
+| SiteVerification | Required `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel` (include the protocol name in it) and `httpsDescription`; `domain`, `[(open)]`; `registrationHref` needs `registrationLabel`, and `externalLabel` while `registrationExternal` is on; `registrationNumber`. There is no `locale` input. |
+| MobileTopBar | Required `title`; `subtitle`, `variant`, `headingLevel`; `backHref` needs `backLabel`. Project `[hwTopBarLeading]` and `[hwTopBarActions]`. |
+| NavigationDrawer | Required `title`, `navigationLabel` and `closeLabel`; `titleId`, `items`, `side`, `[(open)]`, `closeOnBackdrop`. |
 
 The national platform patterns are configurable ordinary application content. They
 provide no seals, government endorsement, identity verification or connected
@@ -237,16 +312,16 @@ Breakpoints live in CSS (40/48/64/80rem), so server/client layout markup matches
   `[hwSidebar]` and main content. The main pane follows in DOM reading order.
 - AspectRatio: numeric `ratio`, default 16/9. Spacer is decorative.
 - Section: optional accessible `label`.
-- AppShell accepts `mainId`, `skipLabel`, `sidebarWidth` and `side`. Project
+- AppShell accepts `mainId`, the required `skipLabel`, `sidebarWidth` and `side`. Project
   `[hwShellHeader]`, `[hwShellSidebar]`, default main content and `[hwShellFooter]`.
-  The Arabic skip link focuses the main landmark, whose default ID is `main-content`.
+  The skip link focuses the main landmark, whose default ID is `main-content`.
   Omitted regions leave the main area at full width.
 - PageHeader: `title` (h1), `description`; `[hwBreadcrumb]` and default actions.
 
 ```html
-<hw-app-shell mainId="services" sidebarWidth="18rem">
-  <hw-portal-header hwShellHeader brand="بوابة الخدمات" mainId="services"
-    skipLabel="انتقل إلى المحتوى" menuLabel="القائمة" [links]="navigation" />
+<hw-app-shell mainId="services" skipLabel="انتقل إلى المحتوى" sidebarWidth="18rem">
+  <hw-portal-header hwShellHeader brand="بوابة الخدمات"
+    menuLabel="القائمة" navigationLabel="التنقل الرئيسي" [links]="navigation" />
   <nav hwShellSidebar aria-label="خدماتي"><!-- native links --></nav>
   <hw-container maxWidth="80rem" [padding]="{base: 4, lg: 8}">
     <hw-stack [gap]="6">
@@ -259,12 +334,13 @@ Breakpoints live in CSS (40/48/64/80rem), so server/client layout markup matches
       </hw-grid>
       <hw-date-picker name="date" label="التاريخ" [(ngModel)]="date"
         [(calendar)]="calendar" locale="ar-SA" direction="rtl"
-        calendarLabel="التقويم" gregorianLabel="ميلادي" hijriLabel="هجري (أم القرى)"
-        openLabel="فتح التقويم" closeLabel="إغلاق التقويم"
-        previousLabel="الشهر السابق" nextLabel="الشهر التالي" />
+        calendarLabel="اختر التاريخ" calendarSystemLabel="التقويم" gregorianLabel="ميلادي" hijriLabel="هجري (أم القرى)"
+        rangeLabel="النطاق المدعوم" openLabel="فتح التقويم" closeLabel="إغلاق التقويم"
+        previousLabel="الشهر السابق" nextLabel="الشهر التالي"
+        invalidMessage="أدخل تاريخًا صحيحًا" [unsupportedMessage]="unsupportedDate" />
     </hw-stack>
   </hw-container>
-  <hw-portal-footer hwShellFooter brand="بوابة الخدمات" />
+  <hw-portal-footer hwShellFooter brand="بوابة الخدمات" externalLabel="يفتح في نافذة جديدة" />
 </hw-app-shell>
 ```
 
@@ -277,11 +353,12 @@ type supports them. File, checkbox/radio, and form-action inputs have their own
 purpose-built controls/native buttons. Use NumberField for `number | null` forms,
 and DatePicker for switchable Gregorian/Umm al-Qura display with ISO storage.
 
-The default Arabic locale supplies calendar navigation, picker control labels and validation messages. Set `locale="en"` for English or use individual label inputs for application-specific wording.
+Calendar navigation names, picker control labels and validation messages are inputs; there are no defaults in any language. `locale` selects how `Intl` writes month names, weekday names, the era and day names, and nothing else. `unsupportedDate` above is an application string, which may be built from `UMALQURA_MIN_DATE` and `UMALQURA_MAX_DATE` exported by `@hawiyah/core`; ISO dates inside a message are isolated left-to-right.
 
 Calendar arithmetic comes from the shared core, `@internationalized/date`, and
 the table-backed Saudi Umm al-Qura provider. Numeric Hijri dates, including
-accessible day labels, come from that table rather than browser ICU conversion.
+accessible day labels, come from that table rather than browser ICU conversion;
+a day is named by `Intl`'s full date for `locale` through core `formatCalendarDate`.
 Umm al-Qura supports AH 1343–1500 (1924-08-01 through 2077-11-16); outside this
 interval DatePicker retains the ISO value and presents `unsupportedMessage`,
 while Gregorian entry remains available. Calendar edge navigation stays bounded. Locale and calendar do not determine
@@ -297,7 +374,8 @@ drag/drop; these APIs make no claim to supply those larger engines.
 ## Portal shell
 
 [`HwPortalLayoutComponent` and `HwSecondaryNavComponent`](PORTAL.md) provide a
-complete Arabic-default portal shell with responsive navigation and footer.
+complete portal shell with responsive navigation and footer. Its text, language
+and direction are supplied by the application.
 Run the Angular example with `?preview=portal` to use the native composed shell.
 
 ## NIC card composition
@@ -333,12 +411,12 @@ a separate native state. See [NIC states](../../docs/nic-choices.md).
 40px/56px alternate sizes and striped/bordered variants are Hawiyah extensions.
 Captions name keyboard-focusable horizontal scroll containers; row-header
 columns render native `th scope="row"`. Empty data spans the column count and
-uses an Arabic message by default. Sorting does not mutate caller records.
+shows the required `emptyMessage`. Sorting does not mutate caller records.
 The default sort locale is `ar-SA`. Both component hosts shrink inside grid/flex
 layouts so overflow stays inside the table wrapper.
 See [table evidence and adaptations](../../docs/nic-tables.md).
 
-Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Arabic labels and Latin digits are the defaults.
+Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. The option names come from `getRatingLabel(value,max)`.
 
 
 ### Search suggestions
@@ -351,7 +429,8 @@ no active suggestion emits `searched` with a trimmed, nonempty query and keeps
 native form submission available. Choose either the search callback or the
 form's submit handler for the application request; wiring both duplicates it.
 The optional icon search action is a non-submit button and uses the callback.
-Arabic clear/search labels are defaults and can be localized.
+The clear and search buttons are named by `clearLabel` and `searchLabel`, and
+the result count is announced with `getResultsMessage(count)`.
 
 Escape dismisses an open list before reaching an enclosing dialog; another
 Escape can dismiss the dialog. Composition/modifier keys do not commit matches.
@@ -362,15 +441,19 @@ configuration clear active-option state. No remote search service is called.
 ### Content navigation
 
 `HwContentNavigationComponent` (`hw-content-navigation`) follows application-owned section IDs using nested
-`items: {id, label, disabled?, children?}[]`. Options are `label` (Arabic default),
-`showHeading` (true), `sticky` (false), `scrollRoot` (null/window) and `offset`
-(80px). `(currentChange)="onCurrentChange($event)"` reports the current section ID. Ordinary
-activation scrolls without changing the URL; keyboard activation also focuses
-the target. Modified anchor clicks retain browser behavior. Disabled entries
+`items: {id, label, disabled?, children?}[]`. Options are the required `label`
+(the name of the landmark and the text of its heading), `showHeading` (true),
+`sticky` (false), `scrollRoot` (null/window), `offset` (80px) and `updateHash`
+(false). `(currentChange)="onCurrentChange($event)"` reports the current section ID. Each
+link is rendered as `#id` and keeps resolving to the current document under a
+`<base href>`. Ordinary activation scrolls without changing the URL, unless
+`updateHash` asks for `history.replaceState`; keyboard activation also focuses
+the target. Modified anchor clicks retain browser behavior, and a link whose
+target is not in the document is left to the browser. Disabled entries
 remain noninteractive text links; no section content is created or hidden.
 
 ```html
 <!-- Add HwContentNavigationComponent to the host component's imports. -->
-<hw-content-navigation [items]="[{id: 'requirements', label: 'المتطلبات'}]" />
+<hw-content-navigation label="في هذه الصفحة" [items]="[{id: 'requirements', label: 'المتطلبات'}]" />
 <section id="requirements"><h2>المتطلبات</h2></section>
 ```

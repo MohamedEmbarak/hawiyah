@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import { supplyText } from './fixtures/texts';
+import { text, withText } from './fixtures/application-text';
 import { formatCalendarDate } from '@hawiyah/core';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -21,7 +23,7 @@ beforeAll(() => {
 afterEach(() => TestBed.resetTestingModule());
 const imports = [FormsModule, ReactiveFormsModule, HwCalendarComponent, HwDataTableComponent, HwDatePickerComponent, HwGridComponent, HwMenuComponent, HwMultiSelectComponent, HwNumberFieldComponent, HwPinInputComponent, HwRangeSliderComponent, HwTagInputComponent, HwTreeViewComponent];
 function host<T extends object>(type: new () => T, template: string) {
-  Component({standalone: true, changeDetection: ChangeDetectionStrategy.Default, imports, template})(type);
+  Component({standalone: true, changeDetection: ChangeDetectionStrategy.Default, imports, template})(type); Object.assign(type.prototype, { text });
   const fixture = TestBed.createComponent(type); fixture.detectChanges(); return fixture;
 }
 function key(element: Element, key: string) { element.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true, cancelable: true})); }
@@ -30,7 +32,7 @@ function input(element: HTMLInputElement, value: string) { element.value = value
 describe('Angular expansion behavior', () => {
   it('normalizes pasted Arabic digits and resets numeric, pin and array CVAs through ngForm', async () => {
     class Host { pin = '123456'; count: number | null = 3; tags = ['first']; disabled = false; }
-    const fixture = host(Host, `<form #form="ngForm"><hw-pin-input label="Code" name="pin" [(ngModel)]="pin" [disabled]="disabled" /><hw-number-field label="Count" name="count" [(ngModel)]="count" /><hw-tag-input label="Tags" name="tags" [(ngModel)]="tags" /><button type="button" (click)="form.resetForm()">Reset</button></form>`);
+    const fixture = host(Host, `<form #form="ngForm"><hw-pin-input label="Code" name="pin" [(ngModel)]="pin" [disabled]="disabled" /><hw-number-field label="Count" name="count" [(ngModel)]="count" /><hw-tag-input ${withText.tagInput} label="Tags" name="tags" [(ngModel)]="tags" /><button type="button" (click)="form.resetForm()">Reset</button></form>`);
     await fixture.whenStable(); fixture.detectChanges();
     const pin = fixture.nativeElement.querySelector('[autocomplete="one-time-code"]') as HTMLInputElement;
     input(pin, '١٢۳۴٥۶'); fixture.detectChanges();
@@ -65,7 +67,7 @@ describe('Angular expansion behavior', () => {
 
   it('constrains crossing range thumbs and submits distinct named values', () => {
     class Host { range: [number, number] = [20, 70]; }
-    const fixture = host(Host, `<form><hw-range-slider label="Budget" lowerName="from" upperName="to" [(value)]="range" /></form>`);
+    const fixture = host(Host, `<form><hw-range-slider ${withText.rangeSlider} label="Budget" lowerName="from" upperName="to" [(value)]="range" /></form>`);
     const ranges = fixture.nativeElement.querySelectorAll('input[type="range"]') as NodeListOf<HTMLInputElement>;
     expect(ranges[0]!.max).toBe('70');
     expect(ranges[1]!.min).toBe('20');
@@ -81,7 +83,7 @@ describe('Angular expansion behavior', () => {
 
   it('keeps multi-select values in FormData while filtering and enforces required selection', () => {
     class Host { selected: string[] = []; options = [{value: 'riyadh', label: 'الرياض'}, {value: 'jeddah', label: 'جدة'}, {value: 'blocked', label: 'Unavailable', disabled: true}]; }
-    const fixture = host(Host, `<form><hw-multi-select label="Cities" name="city" [options]="options" [(value)]="selected" required /></form>`);
+    const fixture = host(Host, `<form><hw-multi-select ${withText.multiSelect} label="Cities" name="city" [options]="options" [(value)]="selected" required /></form>`);
     const search = fixture.nativeElement.querySelector('input[type="search"]') as HTMLInputElement;
     expect(search.checkValidity()).toBe(false);
     fixture.nativeElement.querySelector('input[type="checkbox"]').click(); fixture.detectChanges();
@@ -92,7 +94,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('navigates calendar dates in RTL, clamps at min/max, and switches display calendar without changing ISO selection', () => {
-    const fixture = TestBed.createComponent(HwCalendarComponent);
+    const fixture = TestBed.createComponent(HwCalendarComponent); supplyText(fixture, text.calendar);
     fixture.componentRef.setInput('label', 'Choose date'); fixture.componentRef.setInput('value', '2026-10-15'); fixture.componentRef.setInput('locale', 'en'); fixture.componentRef.setInput('direction', 'rtl'); fixture.componentRef.setInput('min', '2026-10-14'); fixture.componentRef.setInput('max', '2026-10-16'); fixture.detectChanges();
     const date = fixture.nativeElement.querySelector('[data-date="2026-10-15"]') as HTMLButtonElement;
     date.focus(); key(date, 'ArrowLeft'); fixture.detectChanges();
@@ -106,7 +108,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('preserves selected ISO date when switching DatePicker calendars and reopens on that selected month', () => {
-    const fixture = TestBed.createComponent(HwDatePickerComponent); fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('value', '2026-10-15'); fixture.componentRef.setInput('locale', 'en'); fixture.detectChanges();
+    const fixture = TestBed.createComponent(HwDatePickerComponent); supplyText(fixture, text.datePicker); fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('value', '2026-10-15'); fixture.componentRef.setInput('locale', 'en'); fixture.detectChanges();
     const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
     dialog.showModal = function() { this.open = true; }; dialog.close = function() { this.open = false; this.dispatchEvent(new Event('close')); };
     const opener = fixture.nativeElement.querySelector('button[aria-haspopup="dialog"]') as HTMLButtonElement;
@@ -123,17 +125,18 @@ describe('Angular expansion behavior', () => {
   });
 
   it('bounds Saudi calendar keyboard navigation and labels historical dates from the Saudi table', () => {
-    const fixture = TestBed.createComponent(HwCalendarComponent);
+    const fixture = TestBed.createComponent(HwCalendarComponent); supplyText(fixture, text.calendar);
     fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('value', '1924-08-01'); fixture.componentRef.setInput('calendar', 'islamic-umalqura'); fixture.componentRef.setInput('locale', 'en'); fixture.componentRef.setInput('direction', 'ltr'); fixture.detectChanges();
     const first = fixture.nativeElement.querySelector('[data-date="1924-08-01"]') as HTMLButtonElement;
-    expect(first.getAttribute('aria-label')).toContain('1 Muharram 1343 AH');
+    // The day name is Intl's full date for the locale; the adapter adds no words or punctuation of its own.
+    expect(first.getAttribute('aria-label')).toBe(formatCalendarDate('1924-08-01', { calendar: 'islamic-umalqura', locale: 'en', dateStyle: 'full' })); expect(first.getAttribute('aria-label')).toContain('Muharram 1, 1343');
     expect((fixture.nativeElement.querySelector('[aria-label="Previous month"]') as HTMLButtonElement).disabled).toBe(true);
     first.focus(); key(first, 'ArrowLeft'); fixture.detectChanges(); expect(document.activeElement).toBe(first);
     key(first, 'PageUp'); fixture.detectChanges(); expect(document.activeElement).toBe(first);
   });
 
   it('keeps calendar month arrows within min/max months', () => {
-    const fixture = TestBed.createComponent(HwCalendarComponent);
+    const fixture = TestBed.createComponent(HwCalendarComponent); supplyText(fixture, text.calendar);
     fixture.componentRef.setInput('locale', 'en');
     fixture.componentRef.setInput('value', '2026-10-15');
     fixture.componentRef.setInput('min', '2026-09-14');
@@ -156,7 +159,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('invalidates unsupported Hijri dates without rewriting ISO values and restores native validity in Gregorian mode', () => {
-    const fixture = TestBed.createComponent(HwDatePickerComponent);
+    const fixture = TestBed.createComponent(HwDatePickerComponent); supplyText(fixture, text.datePicker);
     fixture.componentRef.setInput('label', 'Historic date');
     fixture.componentRef.setInput('value', '1900-01-01');
     fixture.componentRef.setInput('calendar', 'islamic-umalqura');
@@ -182,7 +185,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('shows an associated canonical selected date in the closed picker field', () => {
-    const fixture = TestBed.createComponent(HwDatePickerComponent);
+    const fixture = TestBed.createComponent(HwDatePickerComponent); supplyText(fixture, text.datePicker);
     fixture.componentRef.setInput('label', 'Date'); fixture.componentRef.setInput('hint', 'Original day'); fixture.componentRef.setInput('value', '2029-08-11'); fixture.componentRef.setInput('calendar', 'islamic-umalqura'); fixture.componentRef.setInput('locale', 'en-SA'); fixture.detectChanges();
     const control = fixture.nativeElement.querySelector('input[type=text]') as HTMLInputElement;
     const output = fixture.nativeElement.querySelector('.hw-date-picker-value') as HTMLOutputElement;
@@ -201,7 +204,7 @@ describe('Angular expansion behavior', () => {
 
   it('updates reactive-form calendar validation on switching, value writes, disable and reset', () => {
     class Host { date = new FormControl<string | null>('1900-01-01'); system = 'islamic-umalqura'; }
-    const fixture = host(Host, `<form><hw-date-picker label="Date" name="date" [formControl]="date" [calendar]="system" /></form>`);
+    const fixture = host(Host, `<form><hw-date-picker ${withText.datePicker} label="Date" name="date" [formControl]="date" [calendar]="system" /></form>`);
     const native = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
     const control = fixture.componentInstance.date;
     expect(control.hasError('calendarUnsupported')).toBe(true);
@@ -222,7 +225,7 @@ describe('Angular expansion behavior', () => {
 
   it('exposes unsupported calendar errors through ngModel and respects disabled fieldsets', async () => {
     class Host { date: string | null = '1900-01-01'; fieldsetDisabled = false; }
-    const fixture = host(Host, `<form><fieldset [disabled]="fieldsetDisabled"><hw-date-picker label="Date" name="date" [(ngModel)]="date" calendar="islamic-umalqura" /></fieldset></form>`);
+    const fixture = host(Host, `<form><fieldset [disabled]="fieldsetDisabled"><hw-date-picker ${withText.datePicker} label="Date" name="date" [(ngModel)]="date" calendar="islamic-umalqura" /></fieldset></form>`);
     await fixture.whenStable(); fixture.detectChanges();
     const form = fixture.debugElement.query(By.directive(NgForm)).injector.get(NgForm);
     const native = fixture.nativeElement.querySelector('input[type="text"]') as HTMLInputElement;
@@ -238,7 +241,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('skips disabled menu items, invokes an action, and returns focus', () => {
-    const fixture = TestBed.createComponent(HwMenuComponent); fixture.componentRef.setInput('label', 'Actions'); fixture.componentRef.setInput('items', [{id: 'first', label: 'First'}, {id: 'blocked', label: 'Blocked', disabled: true}, {id: 'last', label: 'Last'}]); fixture.detectChanges();
+    const fixture = TestBed.createComponent(HwMenuComponent); supplyText(fixture, text.popover); fixture.componentRef.setInput('label', 'Actions'); fixture.componentRef.setInput('items', [{id: 'first', label: 'First'}, {id: 'blocked', label: 'Blocked', disabled: true}, {id: 'last', label: 'Last'}]); fixture.detectChanges();
     const trigger = fixture.nativeElement.querySelector('button') as HTMLButtonElement; trigger.click(); fixture.detectChanges();
     expect(document.activeElement?.textContent).toBe('First');
     key(document.activeElement!, 'ArrowDown'); fixture.detectChanges();
@@ -259,7 +262,7 @@ describe('Angular expansion behavior', () => {
 
   it('sorts data stably with aria-sort and emits responsive CSS variables', () => {
     class Host { rows = [{name: 'Item 10'}, {name: 'Item 2'}, {name: 'Item 2'}]; columns = [{key: 'name', label: 'Name', sortable: true}]; }
-    const fixture = host(Host, `<hw-grid [columns]="{base: 1, md: 3}" [gap]="{base: 2, lg: 6}"><hw-data-table caption="Results" [rows]="rows" [columns]="columns" /></hw-grid>`);
+    const fixture = host(Host, `<hw-grid [columns]="{base: 1, md: 3}" [gap]="{base: 2, lg: 6}"><hw-data-table ${withText.table} caption="Results" [rows]="rows" [columns]="columns" /></hw-grid>`);
     fixture.nativeElement.querySelector('th button').click(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('th').getAttribute('aria-sort')).toBe('ascending');
     expect(fixture.nativeElement.querySelector('tbody td').textContent).toBe('Item 2');

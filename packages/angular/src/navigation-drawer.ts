@@ -1,15 +1,18 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { booleanAttribute, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { HwDrawerComponent } from './interactions';
+import { injectId } from './ids';
+import { HwTexts } from './text';
 
 export interface HwNavigationDrawerItem {
   id: string; label: string; href?: string; icon?: string; current?: boolean;
   disabled?: boolean; children?: readonly HwNavigationDrawerItem[];
 }
-@Component({ selector: 'hw-navigation-drawer', standalone: true, imports: [HwDrawerComponent, NgTemplateOutlet], host: { class: 'hw-navigation-drawer-host' }, template: `
-  <hw-drawer #drawer [title]="title" [open]="open" [side]="side" [closeLabel]="closeLabel" [closeOnBackdrop]="closeOnBackdrop" (openChange)="changed($event)">
+// The input named title is not a native tooltip on the wrapper element.
+@Component({ selector: 'hw-navigation-drawer', standalone: true, imports: [HwDrawerComponent, NgTemplateOutlet], host: { class: 'hw-navigation-drawer-host', '[attr.title]': 'null' }, template: `
+  <hw-drawer #drawer [title]="title" [titleId]="titleId" [open]="open" [side]="side" [closeLabel]="closeLabel" [closeOnBackdrop]="closeOnBackdrop" (openChange)="changed($event)">
     <div class="hw-navigation-drawer-user"><ng-content select="[hwNavigationDrawerUser]" /></div>
-    <nav class="hw-navigation-drawer-nav" [attr.aria-label]="navigationLabel" (click)="routeActivation($event)"><ng-container [ngTemplateOutlet]="list" [ngTemplateOutletContext]="{ $implicit: items }" /></nav>
+    <nav class="hw-navigation-drawer-nav" [attr.aria-label]="texts.need('navigationLabel', navigationLabel)" (click)="routeActivation($event)"><ng-container [ngTemplateOutlet]="list" [ngTemplateOutletContext]="{ $implicit: items }" /></nav>
     <div hwDrawerFooter><ng-content select="[hwNavigationDrawerFooter]" /></div>
   </hw-drawer>
   <ng-template #label let-item>@if (item.icon) {<span class="hw-icon" [attr.data-icon]="item.icon" aria-hidden="true"></span>}<span class="hw-navigation-drawer-label">{{ item.label }}</span></ng-template>
@@ -22,8 +25,13 @@ export interface HwNavigationDrawerItem {
 export class HwNavigationDrawerComponent {
   @Input({ required: true }) title = '';
   @Input() items: readonly HwNavigationDrawerItem[] = [];
-  @Input() navigationLabel = 'التنقل الرئيسي';
-  @Input() closeLabel = 'إغلاق القائمة';
+  /** Id of the drawer title, which names the dialog. Generated when omitted. */
+  @Input() titleId = injectId('hw-navigation-drawer-title');
+  /** Name of the navigation landmark. */
+  @Input({ required: true }) navigationLabel = '';
+  /** Accessible name of the close button. */
+  @Input({ required: true }) closeLabel = '';
+  protected readonly texts = new HwTexts('hw-navigation-drawer');
   @Input() side: 'start' | 'end' = 'start';
   @Input({ transform: booleanAttribute }) open = false;
   @Input({ transform: booleanAttribute }) closeOnBackdrop = true;

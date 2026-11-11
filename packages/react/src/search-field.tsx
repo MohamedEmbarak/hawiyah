@@ -2,16 +2,23 @@ import {useCallback, useEffect, useId, useRef, useState} from 'react';
 import {getSearchSuggestions, isDisabled, requestSearchDialogClose} from '@hawiyah/core';
 import {Button, TextField} from './forms.js';
 import type {TextFieldProps} from './forms.js';
-import {assignRef, Field, useControllable} from './shared.js';
+import {assignRef, Field, text as copy, useControllable} from './shared.js';
+import type {FieldName} from './shared.js';
 import {useFormReset} from './expanded-shared.js';
 
-export interface SearchFieldProps extends Omit<TextFieldProps, 'type' | 'value' | 'defaultValue' | 'onSearch'> {
+interface SearchFieldBaseProps extends Omit<TextFieldProps, 'type' | 'value' | 'defaultValue' | 'onSearch' | 'label'> {
   value?: string; defaultValue?: string; onValueChange?: (value: string) => void;
-  clearLabel?: string; suggestions?: readonly string[]; maxSuggestions?: number;
-  resultsMessage?: (count: number) => string; onSearch?: (query: string) => void;
-  showSearchButton?: boolean; searchLabel?: string;
+  clearLabel: string; maxSuggestions?: number; onSearch?: (query: string) => void;
 }
-export function SearchField({value, defaultValue = '', onValueChange, clearLabel = 'مسح البحث', suggestions, maxSuggestions = 8, resultsMessage = count => `${count} اقتراحات متاحة`, onSearch, showSearchButton = false, searchLabel = 'بحث', label, hint, error, ref, onChange, onKeyDown, onFocus, onBlur, onCompositionStart, onCompositionEnd, ...props}: SearchFieldProps) {
+/** The field and its suggestion list are named by `label` (or aria-label / aria-labelledby).
+ * `searchLabel` names the search button and is required with `showSearchButton`;
+ * `getResultsMessage` announces the suggestion count and is required with `suggestions`. */
+export type SearchFieldProps = SearchFieldBaseProps & FieldName
+  & ({ showSearchButton?: false; searchLabel?: string } | { showSearchButton?: boolean; searchLabel: string })
+  & ({ suggestions?: undefined; getResultsMessage?: (count: number) => string } | { suggestions?: readonly string[]; getResultsMessage: (count: number) => string });
+export function SearchField({value, defaultValue = '', onValueChange, clearLabel, suggestions, maxSuggestions = 8, getResultsMessage, onSearch, showSearchButton = false, searchLabel, label, hint, error, ref, onChange, onKeyDown, onFocus, onBlur, onCompositionStart, onCompositionEnd, ...props}: SearchFieldProps) {
+  const names = {clear: copy('SearchField', 'clearLabel', clearLabel), search: showSearchButton ? copy('SearchField', 'searchLabel', searchLabel, 'showSearchButton is on') : undefined, results: suggestions !== undefined ? copy('SearchField', 'getResultsMessage', getResultsMessage, 'suggestions are given') : undefined};
+  if (!props['aria-label'] && !props['aria-labelledby']) copy('SearchField', 'label', label);
   const id = useId(), input = useRef<HTMLInputElement | null>(null), root = useRef<HTMLDivElement>(null);
   const [text, setText] = useControllable(value, defaultValue, onValueChange);
   const [opened, setOpened] = useState(false), [active, setActive] = useState(-1);
@@ -65,9 +72,9 @@ export function SearchField({value, defaultValue = '', onValueChange, clearLabel
           if(canEdit() && matches.length && (event.key==='ArrowDown' || event.key==='ArrowUp')){event.preventDefault();setOpened(true);setActive(index=>event.key==='ArrowDown'?(index+1)%matches.length:(index<=0?matches.length-1:index-1));return;}
           if(event.key==='Enter'){if(expanded && active>=0){event.preventDefault();choose(active);}else search();}
         }}/>
-      <Button className="hw-search-clear" variant="ghost" hidden={!text || props.readOnly} disabled={props.disabled} aria-label={clearLabel} aria-controls={props.id ?? id} onPointerDown={event=>{if(event.button===0)event.preventDefault();}} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>{if(canEdit()){write('');input.current?.focus();close();}}}><span className="hw-search-clear-icon" aria-hidden="true" /></Button>
-      {suggestions !== undefined && <div className="hw-search-suggestions" id={listId} role="listbox" aria-label={props['aria-label'] ?? (typeof label === 'string' ? label : searchLabel)} hidden={!expanded}>{matches.map((match,index)=><div className="hw-search-option" dir="auto" key={match.value} id={`${listId}-${index}`} role="option" aria-selected={index===active} onPointerDown={event=>{if(event.button===0)event.preventDefault();}} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>choose(index)}>{match.segments.map((segment,i)=>segment.match?<strong key={i}>{segment.text}</strong>:segment.text)}</div>)}</div>}
-    </div>{showSearchButton && <Button className="hw-search-submit" disabled={props.disabled} aria-label={searchLabel} onClick={search}><span className="hw-search-submit-icon" aria-hidden="true" /></Button>}</div>
-    {suggestions !== undefined && <span className="hw-sr-only" role="status" aria-live="polite" aria-atomic="true">{opened && !props.readOnly && !props.disabled && !composing.current && text.trim() ? resultsMessage(matches.length) : ''}</span>}
+      <Button className="hw-search-clear" variant="ghost" hidden={!text || props.readOnly} disabled={props.disabled} aria-label={names.clear} aria-controls={props.id ?? id} onPointerDown={event=>{if(event.button===0)event.preventDefault();}} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>{if(canEdit()){write('');input.current?.focus();close();}}}><span className="hw-search-clear-icon" aria-hidden="true" /></Button>
+      {suggestions !== undefined && <div className="hw-search-suggestions" id={listId} role="listbox" aria-label={props['aria-label'] || undefined} aria-labelledby={props['aria-label'] ? undefined : props['aria-labelledby'] ?? (label != null ? `${props.id ?? id}-label` : undefined)} hidden={!expanded}>{matches.map((match,index)=><div className="hw-search-option" dir="auto" key={match.value} id={`${listId}-${index}`} role="option" aria-selected={index===active} onPointerDown={event=>{if(event.button===0)event.preventDefault();}} onMouseDown={event=>{if(event.button===0)event.preventDefault();}} onClick={()=>choose(index)}>{match.segments.map((segment,i)=>segment.match?<strong key={i}>{segment.text}</strong>:segment.text)}</div>)}</div>}
+    </div>{showSearchButton && <Button className="hw-search-submit" disabled={props.disabled} aria-label={names.search} onClick={search}><span className="hw-search-submit-icon" aria-hidden="true" /></Button>}</div>
+    {suggestions !== undefined && <span className="hw-sr-only" role="status" aria-live="polite" aria-atomic="true">{opened && !props.readOnly && !props.disabled && !composing.current && text.trim() ? names.results?.(matches.length) : ''}</span>}
   </Field>;
 }

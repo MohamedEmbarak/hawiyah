@@ -1,4 +1,5 @@
 import '@angular/compiler';
+import './fixtures/texts';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';

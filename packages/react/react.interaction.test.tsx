@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import { Button, Checkbox, Combobox, Dialog, Field, Pagination, Tabs, TextField, Tooltip } from './src/index.js';
+const comboTexts = { emptyMessage: 'No options found', getResultsMessage: (count: number) => `${count} results available`, requiredMessage: 'Choose an option from the list.' };
+const pageTexts = { label: 'Pages', previousLabel: 'Previous page', nextLabel: 'Next page', getPageLabel: (page: number) => `Page ${page}`, getGapLabel: (start: number, end: number) => `Pages ${start} to ${end}`, jumpLabel: 'Go to page', goLabel: 'Go' };
 
 // JSDOM has dialog elements but no modal lifecycle; browser checks exercise the native implementation.
 if (!HTMLDialogElement.prototype.showModal) Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, writable: true, value() {} });
@@ -42,7 +44,7 @@ describe('tabs', () => {
   const items = [{ value: 'a', label: 'First', content: 'A' }, { value: 'disabled', label: 'Unavailable', content: 'Disabled', disabled: true }, { value: 'c', label: 'Last', content: 'C' }];
   it('follows RTL arrow direction, skips disabled tabs and maintains roving focus', async () => {
     const changed = vi.fn();
-    await render(<Tabs dir="rtl" label="Sections" items={items} onValueChange={changed} />);
+    await render(<Tabs dir="rtl" label="Sections" overflowLabel="More tabs" items={items} onValueChange={changed} />);
     const tabs = [...container.querySelectorAll<HTMLButtonElement>('[role=tab]')];
     await act(async () => tabs[0]!.focus());
     await key(tabs[0]!, 'ArrowLeft');
@@ -55,7 +57,7 @@ describe('tabs', () => {
   });
   it('manual activation moves focus before selecting, and controlled selection stays with the caller', async () => {
     const changed = vi.fn();
-    await render(<Tabs label="Sections" items={items} activationMode="manual" value="a" onValueChange={changed} />);
+    await render(<Tabs label="Sections" overflowLabel="More tabs" items={items} activationMode="manual" value="a" onValueChange={changed} />);
     const tabs = [...container.querySelectorAll<HTMLButtonElement>('[role=tab]')];
     await key(tabs[0]!, 'End');
     expect(document.activeElement).toBe(tabs[2]);
@@ -71,7 +73,7 @@ describe('combobox', () => {
   const options = [{ value: 'riyadh', label: 'الرِّياض' }, { value: 'jeddah', label: 'جدة', disabled: true }, { value: 'abha', label: 'أبها' }];
   it('filters Arabic, commits enabled options by keyboard, and submits the selected value', async () => {
     const changed = vi.fn();
-    await render(<form><Combobox label="City" name="city" options={options} onValueChange={changed} required /></form>);
+    await render(<form><Combobox {...comboTexts} label="City" name="city" options={options} onValueChange={changed} required /></form>);
     const control = container.querySelector<HTMLInputElement>('[role=combobox]')!;
     await input(control, 'ابها');
     expect(container.querySelectorAll('[role=option]')).toHaveLength(1);
@@ -92,7 +94,7 @@ describe('combobox', () => {
   it('retains the first typed character when controlled selection is cleared and leaves arbitrary queries uncommitted', async () => {
     function Controlled() {
       const [value, setValue] = useState('riyadh');
-      return <form><Combobox name="city" aria-label="City" options={options} value={value} onValueChange={setValue} required /></form>;
+      return <form><Combobox {...comboTexts} name="city" aria-label="City" options={options} value={value} onValueChange={setValue} required /></form>;
     }
     await render(<Controlled />);
     const control = container.querySelector<HTMLInputElement>('[role=combobox]')!;
@@ -106,7 +108,7 @@ describe('combobox', () => {
   });
   it('keeps a controlled committed selection when the caller rejects a new option', async () => {
     const changed = vi.fn();
-    await render(<form><Combobox label="City" name="city" options={options} value="riyadh" onValueChange={changed} /></form>);
+    await render(<form><Combobox {...comboTexts} label="City" name="city" options={options} value="riyadh" onValueChange={changed} /></form>);
     const control = container.querySelector<HTMLInputElement>('[role=combobox]')!;
     await key(control, 'ArrowDown'); await key(control, 'End'); await key(control, 'Enter');
     expect(changed).toHaveBeenLastCalledWith('abha', options[2]);
@@ -114,25 +116,25 @@ describe('combobox', () => {
     expect(new FormData(container.querySelector('form')!).get('city')).toBe('riyadh');
   });
   it('does not treat a disabled controlled option as a valid form value', async () => {
-    await render(<form><Combobox label="City" name="city" options={options} value="jeddah" required /></form>);
+    await render(<form><Combobox {...comboTexts} label="City" name="city" options={options} value="jeddah" required /></form>);
     expect(new FormData(container.querySelector('form')!).get('city')).toBe('');
     expect(container.querySelector<HTMLInputElement>('[role=combobox]')!.checkValidity()).toBe(false);
   });
   it('reconciles changed option labels without erasing a query and honors canceled resets', async () => {
     const updated = options.map(option => ({ ...option, label: option.value === 'riyadh' ? 'Riyadh' : option.label }));
-    await render(<form onReset={event => event.preventDefault()}><Combobox name="city" label="City" options={options} defaultValue="riyadh" /></form>);
+    await render(<form onReset={event => event.preventDefault()}><Combobox {...comboTexts} name="city" label="City" options={options} defaultValue="riyadh" /></form>);
     const control = container.querySelector<HTMLInputElement>('[role=combobox]')!;
-    await render(<form onReset={event => event.preventDefault()}><Combobox name="city" label="City" options={updated} defaultValue="riyadh" /></form>);
+    await render(<form onReset={event => event.preventDefault()}><Combobox {...comboTexts} name="city" label="City" options={updated} defaultValue="riyadh" /></form>);
     expect(control.value).toBe('Riyadh');
     await input(control, 'Ab');
-    await render(<form onReset={event => event.preventDefault()}><Combobox name="city" label="City" options={options} defaultValue="riyadh" /></form>);
+    await render(<form onReset={event => event.preventDefault()}><Combobox {...comboTexts} name="city" label="City" options={options} defaultValue="riyadh" /></form>);
     expect(control.value).toBe('Ab');
     await act(async () => container.querySelector('form')!.reset());
     expect(control.value).toBe('Ab');
     expect(new FormData(container.querySelector('form')!).get('city')).toBe('');
   });
   it('resets uncontrolled selection with its owning native form', async () => {
-    await render(<form id="combo-form"><Combobox name="city" label="City" options={options} defaultValue="riyadh" /></form>);
+    await render(<form id="combo-form"><Combobox {...comboTexts} name="city" label="City" options={options} defaultValue="riyadh" /></form>);
     const control = container.querySelector<HTMLInputElement>('[role=combobox]')!;
     await input(control, 'ابها');
     await key(control, 'ArrowDown'); await key(control, 'Enter');
@@ -148,7 +150,7 @@ describe('dialog and tooltip', () => {
     const showModal = vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function (this: HTMLDialogElement) { this.open = true; });
     const close = vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (this: HTMLDialogElement) { this.open = false; this.dispatchEvent(new Event('close')); });
     const changed = vi.fn();
-    await render(<Dialog title="Review" trigger={<Button>Open</Button>} onOpenChange={changed}>Details</Dialog>);
+    await render(<Dialog title="Review" closeLabel="Close" trigger={<Button>Open</Button>} onOpenChange={changed}>Details</Dialog>);
     const trigger = container.querySelector<HTMLButtonElement>('button')!;
     trigger.focus(); await click(trigger);
     const dialog = container.querySelector('dialog')!;
@@ -167,7 +169,7 @@ describe('dialog and tooltip', () => {
       queueMicrotask(() => this.dispatchEvent(new Event('close')));
     });
     const changed = vi.fn();
-    await render(<StrictMode><Dialog title="Review" defaultOpen onOpenChange={changed}>Details</Dialog></StrictMode>);
+    await render(<StrictMode><Dialog title="Review" closeLabel="Close" defaultOpen onOpenChange={changed}>Details</Dialog></StrictMode>);
     expect(container.querySelector('dialog')!.open).toBe(true);
     expect(changed).not.toHaveBeenCalled();
   });
@@ -175,7 +177,7 @@ describe('dialog and tooltip', () => {
     vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function (this: HTMLDialogElement) { this.open = true; });
     vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (this: HTMLDialogElement) { this.open = false; this.dispatchEvent(new Event('close')); });
     const changed = vi.fn();
-    await render(<Dialog title="Review" open onOpenChange={changed}>Details</Dialog>);
+    await render(<Dialog title="Review" closeLabel="Close" open onOpenChange={changed}>Details</Dialog>);
     const dialog = container.querySelector('dialog')!;
     await act(async () => dialog.close());
     expect(changed).toHaveBeenCalledWith(false);
@@ -196,7 +198,7 @@ describe('dialog and tooltip', () => {
 
 it('keeps pagination bounded, including large result sets', async () => {
   const changed = vi.fn();
-  await render(<Pagination totalPages={10000} defaultPage={1} onPageChange={changed} />);
+  await render(<Pagination {...pageTexts} totalPages={10000} defaultPage={1} onPageChange={changed} />);
   expect(container.querySelectorAll('button').length).toBeLessThan(10);
   expect(container.querySelector<HTMLButtonElement>('button')!.disabled).toBe(true);
   await click([...container.querySelectorAll('button')].at(-1)!);

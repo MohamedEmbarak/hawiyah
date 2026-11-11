@@ -3,23 +3,28 @@ import {NgTemplateOutlet} from '@angular/common';
 import {observeContentNavigation} from '@hawiyah/core';
 import type {ContentNavigationItem} from '@hawiyah/core';
 import {injectIsBrowser} from './platform';
+import {bindAngularFragmentLinks} from './fragment-links';
+import {HwTexts} from './text';
 
 export type {ContentNavigationItem} from '@hawiyah/core';
 @Component({selector: 'hw-content-navigation', standalone: true, imports: [NgTemplateOutlet], template: `
-<nav #navigation class="hw-content-nav" [attr.aria-label]="label" [attr.data-sticky]="sticky || null">
-  @if (showHeading) {<h2 class="hw-content-nav-heading">{{ label }}</h2>}
+<nav #navigation class="hw-content-nav" [attr.aria-label]="texts.need('label', label)" [attr.data-sticky]="sticky || null">
+  @if (showHeading) {<h2 class="hw-content-nav-heading">{{ texts.need('label', label) }}</h2>}
   <ng-container [ngTemplateOutlet]="list" [ngTemplateOutletContext]="{items: items, nested: false}" />
 </nav>
 <ng-template #list let-entries="items" let-nested="nested"><ul [class]="nested ? 'hw-content-nav-sublist' : 'hw-content-nav-list'">
   @for (item of entries; track item.id) {<li>
     @if (item.disabled) {<span class="hw-content-nav-link" role="link" aria-disabled="true" [attr.data-hw-section]="item.id"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">{{ item.label }}</span></span>}
-    @else {<a class="hw-content-nav-link" [href]="fragment(item.id)" [attr.data-hw-section]="item.id" [attr.aria-current]="current === item.id ? 'location' : null" (click)="activate($event, item.id)"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">{{ item.label }}</span></a>}
+    @else {<a class="hw-content-nav-link" [attr.href]="fragment(item.id)" [attr.data-hw-section]="item.id" [attr.aria-current]="current === item.id ? 'location' : null" (click)="keyboard = $event.detail === 0"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">{{ item.label }}</span></a>}
     @if (item.children?.length) {<ng-container [ngTemplateOutlet]="list" [ngTemplateOutletContext]="{items: item.children, nested: true}" />}
   </li>}
 </ul></ng-template>`})
 export class HwContentNavigationComponent {
   @Input({required: true}) items: readonly ContentNavigationItem[] = [];
-  @Input() label = 'في هذه الصفحة';
+  /** Name of the navigation landmark and text of its heading when the heading is shown. */
+  @Input({required: true}) label = '';
+  /** Also write the reached section to the address bar with history.replaceState. Off by default, so hash-routed applications keep their route. */
+  @Input({transform: booleanAttribute}) updateHash = false;
   @Input({transform: booleanAttribute}) showHeading = true;
   @Input({transform: booleanAttribute}) sticky = false;
   @Input() scrollRoot: HTMLElement | null = null;
@@ -30,12 +35,16 @@ export class HwContentNavigationComponent {
   private readonly browser = injectIsBrowser();
   private observer?: ReturnType<typeof observeContentNavigation>;
   current = '';
+  protected keyboard = false;
+  protected readonly texts = new HwTexts('hw-content-navigation');
+  /** The links keep the bare "#id" a server can know; in the browser core keeps each one resolving to the
+   * current document under any <base href> and hands a plain activation to the section observer. */
+  constructor() {
+    const component = this;
+    bindAngularFragmentLinks('a.hw-content-nav-link', () => ({navigate: id => component.observer?.navigate(id, {focus: component.keyboard}) ?? false, get updateHash() {return component.updateHash;}}));
+  }
   fragment(id: string): string {return `#${encodeURIComponent(id)}`;}
   ngAfterViewInit(): void {if (!this.browser) return; this.observer = observeContentNavigation({navigation: this.navigation!.nativeElement, getItems: () => this.items, getScrollRoot: () => this.scrollRoot, offset: () => this.offset, onCurrentChange: id => {this.current = id; this.currentChange.emit(id); this.changeDetector.markForCheck();}});}
   ngOnChanges(): void {this.observer?.refresh();}
   ngOnDestroy(): void {this.observer?.destroy();}
-  activate(event: MouseEvent, id: string): void {
-    if (event.defaultPrevented || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-    event.preventDefault(); this.observer?.navigate(id, {focus: event.detail === 0});
-  }
 }

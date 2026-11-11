@@ -12,7 +12,7 @@ const items: StepItem[] = [{ value: 'one', label: 'البيانات' }, { value:
 it('keeps completed, current and upcoming states synchronized when controlled progress changes', async () => {
   const container = document.createElement('div'); document.body.append(container);
   const root = createRoot(container); roots.push(root);
-  const render = async (activeIndex?: number) => act(() => root.render(<Stepper items={items} current="two" activeIndex={activeIndex} className="custom" />));
+  const render = async (activeIndex?: number) => act(() => root.render(<Stepper label="التقدم" items={items} current="two" activeIndex={activeIndex} className="custom" />));
   const states = () => [...container.querySelectorAll<HTMLElement>('li')].map(step => step.dataset.state);
   await render(); expect(states()).toEqual(['complete', 'current', 'upcoming']);
   expect(container.querySelector('ol')!.getAttribute('aria-label')).toBe('التقدم');

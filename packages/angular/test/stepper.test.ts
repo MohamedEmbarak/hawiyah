@@ -1,4 +1,5 @@
 import '@angular/compiler';
+import './fixtures/texts';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it } from 'vitest';
@@ -9,7 +10,7 @@ afterEach(() => TestBed.resetTestingModule());
 it('preserves numeric current and updates activeIndex forward, backward, complete and not started', () => {
   const fixture = TestBed.createComponent(HwStepperComponent);
   fixture.componentRef.setInput('steps', [{ label: 'البيانات' }, { label: 'المراجعة' }, { label: 'الإرسال' }]);
-  fixture.componentRef.setInput('current', 1); fixture.detectChanges();
+  fixture.componentRef.setInput('current', 1); fixture.componentRef.setInput('label', 'التقدم'); fixture.detectChanges();
   const list = fixture.nativeElement.querySelector('ol') as HTMLOListElement;
   const states = () => [...list.querySelectorAll<HTMLElement>('li')].map(step => step.dataset.state);
   expect(states()).toEqual(['complete', 'current', 'upcoming']); expect(list.getAttribute('aria-label')).toBe('التقدم');

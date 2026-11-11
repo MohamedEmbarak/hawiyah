@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import './fixtures/texts';
+import { text, withText } from './fixtures/application-text';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
@@ -10,7 +12,7 @@ beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowse
 afterEach(() => TestBed.resetTestingModule());
 
 function host<T extends object>(type: new () => T, template: string) {
-  Component({standalone: true, imports: [FormsModule, HwCheckboxComponent, HwComboboxComponent, HwSelectComponent, HwTabComponent, HwTabsComponent, HwTextareaComponent, HwTextFieldComponent], template})(type);
+  Component({standalone: true, imports: [FormsModule, HwCheckboxComponent, HwComboboxComponent, HwSelectComponent, HwTabComponent, HwTabsComponent, HwTextareaComponent, HwTextFieldComponent], template})(type); Object.assign(type.prototype, { text });
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
   return fixture;
@@ -47,7 +49,7 @@ describe('Angular native component behavior', () => {
 
   it('uses explicit combobox selection, skips disabled options, and does not select on blur', async () => {
     class Host { city = ''; options = [{value: 'riyadh', label: 'الرياض'}, {value: 'disabled', label: 'Unavailable', disabled: true}, {value:'jeddah', label:'جدة'}]; }
-    const fixture = host(Host, `<hw-combobox label="City" controlId="city" [(value)]="city" [options]="options" />`);
+    const fixture = host(Host, `<hw-combobox ${withText.combobox} label="City" controlId="city" [(value)]="city" [options]="options" />`);
     const input = fixture.nativeElement.querySelector('[role="combobox"]') as HTMLInputElement;
     input.focus(); key(input, 'ArrowDown'); fixture.detectChanges();
     expect(input.getAttribute('aria-activedescendant')).toBe('city-option-0');
@@ -66,7 +68,7 @@ describe('Angular native component behavior', () => {
 
   it('resets the combobox through ngForm without a stale committed value', async () => {
     class Host { city = 'riyadh'; options = [{value:'riyadh', label:'Riyadh'}]; }
-    const fixture = host(Host, `<form #form="ngForm"><hw-combobox label="City" name="city" [(ngModel)]="city" [options]="options" /><button type="button" (click)="form.resetForm()">Reset</button></form>`);
+    const fixture = host(Host, `<form #form="ngForm"><hw-combobox ${withText.combobox} label="City" name="city" [(ngModel)]="city" [options]="options" /><button type="button" (click)="form.resetForm()">Reset</button></form>`);
     await fixture.whenStable(); fixture.detectChanges();
     expect((fixture.nativeElement.querySelector('[role="combobox"]') as HTMLInputElement).value).toBe('Riyadh');
     fixture.nativeElement.querySelector('button').click();
@@ -77,7 +79,7 @@ describe('Angular native component behavior', () => {
 
   it('preserves editing shortcuts and IME, closes outside, and validates required selection', () => {
     class Host { city = 'riyadh'; options = [{value:'riyadh', label:'Riyadh'}]; }
-    const fixture = host(Host, `<hw-combobox label="City" controlId="required-city" [(value)]="city" [options]="options" required />`);
+    const fixture = host(Host, `<hw-combobox ${withText.combobox} label="City" controlId="required-city" [(value)]="city" [options]="options" required />`);
     const input = fixture.nativeElement.querySelector('[role="combobox"]') as HTMLInputElement;
     const home = new KeyboardEvent('keydown', {key:'Home', bubbles:true, cancelable:true});
     input.dispatchEvent(home); expect(home.defaultPrevented).toBe(false);
@@ -96,7 +98,7 @@ describe('Angular native component behavior', () => {
 
   it('navigates RTL tabs with disabled skipping and manual activation', () => {
     class Host { tab = 'one'; }
-    const fixture = host(Host, `<hw-tabs label="Sections" direction="rtl" activationMode="manual" [(value)]="tab"><hw-tab value="one" label="One">First</hw-tab><hw-tab value="two" label="Two" [disabled]="true">Second</hw-tab><hw-tab value="three" label="Three">Third</hw-tab></hw-tabs>`);
+    const fixture = host(Host, `<hw-tabs ${withText.tabs} label="Sections" direction="rtl" activationMode="manual" [(value)]="tab"><hw-tab value="one" label="One">First</hw-tab><hw-tab value="two" label="Two" [disabled]="true">Second</hw-tab><hw-tab value="three" label="Three">Third</hw-tab></hw-tabs>`);
     const tabs = fixture.nativeElement.querySelectorAll('[role="tab"]') as NodeListOf<HTMLButtonElement>;
     tabs[0]!.focus(); key(tabs[0]!, 'ArrowLeft'); fixture.detectChanges();
     expect(fixture.nativeElement.ownerDocument.activeElement).toBe(tabs[2]);

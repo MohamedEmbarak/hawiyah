@@ -7,7 +7,7 @@ import { PortalHeader, PortalLayout } from './src/index.js';
 it('closes the responsive disclosure on Escape, link, outside press and focus leaving', async () => {
   const container = document.createElement('div'); document.body.append(container); const root = createRoot(container);
   try {
-    await act(async () => root.render(<><PortalHeader brand="هوية" navigation={[{ label: 'الخدمات', href: '#main' }]} /><button id="outside">خارج</button></>));
+    await act(async () => root.render(<><PortalHeader brand="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" navigation={[{ label: 'الخدمات', href: '#main' }]} /><button id="outside">خارج</button></>));
     const trigger = container.querySelector<HTMLButtonElement>('.hw-portal-menu-toggle')!;
     const nav = container.querySelector('nav')!; const link = nav.querySelector('a')!;
     expect(trigger.getAttribute('aria-controls')).toBe(nav.id);
@@ -20,7 +20,7 @@ it('closes the responsive disclosure on Escape, link, outside press and focus le
   } finally { await act(async () => root.unmount()); container.remove(); }
 });
 it('renders an Arabic portal shell with matching skip target and page landmarks during SSR', () => {
-  const html = renderToString(<PortalLayout brand="هوية" mainId="services" breadcrumbs={[{ label: 'الخدمات', current: true }]} secondaryNavigation={[{ label: 'دليل', href: '/guide', current: true }]}><h1>الخدمات</h1></PortalLayout>);
+  const html = renderToString(<PortalLayout lang="ar" dir="rtl" brand="هوية" skipLabel="انتقل إلى المحتوى" menuLabel="القائمة" navigationLabel="التنقل الرئيسي" footerProps={{ externalLabel: 'يفتح في نافذة جديدة' }} breadcrumbLabel="مسار التنقل" secondaryLabel="التنقل الثانوي" mainId="services" breadcrumbs={[{ label: 'الخدمات', current: true }]} secondaryNavigation={[{ label: 'دليل', href: '/guide', current: true }]}><h1>الخدمات</h1></PortalLayout>);
   expect(html).toContain('lang="ar" dir="rtl"'); expect(html).toContain('href="#services"'); expect(html).toContain('<main id="services" tabindex="-1"');
   expect(html).toContain('hw-secondary-nav'); expect(html).toContain('hw-breadcrumb'); expect(html).toContain('hw-portal-footer');
 });

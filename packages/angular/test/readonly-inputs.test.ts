@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import { supplyText } from './fixtures/texts';
+import { text } from './fixtures/application-text';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
@@ -22,7 +24,7 @@ it('keeps a readonly slider focusable, named and immutable without swallowing Es
   input.value = '80'; input.dispatchEvent(new Event('input', { bubbles: true })); expect(input.value).toBe('50'); expect(changed).toHaveBeenCalledOnce(); expect([...new FormData(form).entries()]).toEqual([]);
 });
 it('keeps both readonly range endpoints focusable and submits each native value once', () => {
-  const fixture = TestBed.createComponent(HwRangeSliderComponent);
+  const fixture = TestBed.createComponent(HwRangeSliderComponent); supplyText(fixture, text.rangeSlider);
   fixture.componentRef.setInput('value', [20, 80]); fixture.componentRef.setInput('lowerName', 'lower'); fixture.componentRef.setInput('upperName', 'upper'); fixture.componentRef.setInput('readOnly', true); fixture.detectChanges();
   const form = document.createElement('form'); form.append(fixture.nativeElement); document.body.append(form);
   const changed = vi.fn(); fixture.componentInstance.valueChange.subscribe(changed);

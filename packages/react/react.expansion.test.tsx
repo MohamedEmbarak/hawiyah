@@ -5,6 +5,8 @@ import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import { formatCalendarDate, moveCalendarDate, UMALQURA_MIN_DATE, UMALQURA_MAX_DATE } from '@hawiyah/core';
 import { Button, Calendar, CookieConsent, DataTable, DatePicker, Feedback, Menu, MultiSelect, PinInput, Popover, RangeSlider, SearchField, TagInput, ToastRegion, ToggleGroup, TreeView } from './src/index.js';
+const calendarTexts = { label: 'Calendar', previousLabel: 'Previous month', nextLabel: 'Next month', rangeLabel: 'Supported Hijri dates' };
+const pickerTexts = { locale: 'en-SA', calendarLabel: 'Choose date', openLabel: 'Open calendar', closeLabel: 'Close calendar', previousLabel: 'Previous month', nextLabel: 'Next month', calendarSystemLabel: 'Calendar system', gregorianLabel: 'Gregorian', hijriLabel: 'Hijri · Umm al-Qura', rangeLabel: 'Supported Hijri dates', invalidMessage: 'Enter an available Gregorian date as YYYY-MM-DD.', unsupportedMessage: `Hijri dates are available from ${UMALQURA_MIN_DATE} to ${UMALQURA_MAX_DATE}.` };
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let container: HTMLDivElement; let root: Root;
@@ -30,7 +32,7 @@ it('normalizes Arabic PIN digits in one native input and honors canceled and nat
   expect(control.value).toBe('123456');
 });
 it('keeps tag and multiple-option form values explicit across filtering and reset', async () => {
-  await render(<form><TagInput name="tags" label="Tags" defaultValue={['initial']} /><MultiSelect name="cities" label="Cities" defaultValue={['riyadh']} options={[{ value: 'riyadh', label: 'الرياض' }, { value: 'abha', label: 'أبها' }]} /></form>);
+  await render(<form><TagInput name="tags" label="Tags" getRemoveLabel={tag => `Remove ${tag}`} defaultValue={['initial']} /><MultiSelect name="cities" label="Cities" searchLabel="Search cities" emptyMessage="No cities found" defaultValue={['riyadh']} options={[{ value: 'riyadh', label: 'الرياض' }, { value: 'abha', label: 'أبها' }]} /></form>);
   const tag = container.querySelector<HTMLInputElement>('.hw-tag-input input[type=text]')!;
   await input(tag, 'new'); await key(tag, 'Enter');
   const search = container.querySelector<HTMLInputElement>('input[type=search]')!;
@@ -44,7 +46,7 @@ it('keeps tag and multiple-option form values explicit across filtering and rese
   expect(search.value).toBe('');
 });
 it('keeps range handles ordered and resets custom controls with an external form', async () => {
-  await render(<><form id="outside" /><RangeSlider form="outside" lowerName="from" upperName="to" label="Range" lowerLabel="From" upperLabel="To" defaultValue={[20, 70]} /><SearchField form="outside" name="query" label="Search" defaultValue="start" /><ToggleGroup form="outside" name="modes" label="Modes" multiple defaultValue={['a']} options={[{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }]} /></>);
+  await render(<><form id="outside" /><RangeSlider form="outside" lowerName="from" upperName="to" label="Range" lowerLabel="From" upperLabel="To" defaultValue={[20, 70]} /><SearchField form="outside" name="query" label="Search" clearLabel="Clear search" defaultValue="start" /><ToggleGroup form="outside" name="modes" label="Modes" multiple defaultValue={['a']} options={[{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }]} /></>);
   const ranges = [...container.querySelectorAll<HTMLInputElement>('input[type=range]')];
   await input(ranges[0]!, '90');
   expect(Number(ranges[0]!.value)).toBeLessThanOrEqual(Number(ranges[1]!.value));
@@ -56,7 +58,7 @@ it('keeps range handles ordered and resets custom controls with an external form
   expect(form.get('from')).toBe('20'); expect(form.get('to')).toBe('70'); expect(form.get('query')).toBe('start'); expect(form.getAll('modes')).toEqual(['a']);
 });
 it('navigates calendar dates in RTL, skips disabled days, and uses Hijri month arithmetic', async () => {
-  await render(<Calendar dir="rtl" locale="en-SA" calendar="islamic-umalqura" defaultValue="2026-10-28" min="2026-01-01" max="2027-12-31" isDateDisabled={date => date === '2026-10-29'} />);
+  await render(<Calendar {...calendarTexts} dir="rtl" locale="en-SA" calendar="islamic-umalqura" defaultValue="2026-10-28" min="2026-01-01" max="2027-12-31" isDateDisabled={date => date === '2026-10-29'} />);
   const selected = container.querySelector<HTMLButtonElement>('[data-date="2026-10-28"]')!;
   await act(async () => selected.focus()); await key(selected, 'ArrowLeft');
   expect((document.activeElement as HTMLElement).dataset.date).toBe('2026-10-30');
@@ -67,21 +69,21 @@ it('navigates calendar dates in RTL, skips disabled days, and uses Hijri month a
   expect(document.activeElement?.closest('td')?.cellIndex).toBe(0);
 });
 it('recenters externally updated calendar selection while respecting an explicit month', async () => {
-  await render(<Calendar value="2026-01-15" locale="en-SA" />);
-  await render(<Calendar value="2026-06-15" locale="en-SA" />);
+  await render(<Calendar {...calendarTexts} value="2026-01-15" locale="en-SA" />);
+  await render(<Calendar {...calendarTexts} value="2026-06-15" locale="en-SA" />);
   expect(container.querySelector('.hw-calendar-header h3')?.textContent).toContain('June');
   expect(container.querySelector('[data-date="2026-06-15"]')?.closest('td')?.getAttribute('aria-selected')).toBe('true');
   expect(container.querySelector('.hw-calendar-day[tabindex="0"]')?.getAttribute('data-date')).toBe('2026-06-15');
-  await render(<Calendar value="2026-08-15" month="2026-03-01" locale="en-SA" />);
+  await render(<Calendar {...calendarTexts} value="2026-08-15" month="2026-03-01" locale="en-SA" />);
   expect(container.querySelector('.hw-calendar-header h3')?.textContent).toContain('March');
 });
 it('stops Hijri month and keyboard navigation at the authoritative table boundaries', async () => {
-  await render(<Calendar value={UMALQURA_MIN_DATE} month={UMALQURA_MIN_DATE} calendar="islamic-umalqura" locale="en-SA" />);
+  await render(<Calendar {...calendarTexts} value={UMALQURA_MIN_DATE} month={UMALQURA_MIN_DATE} calendar="islamic-umalqura" locale="en-SA" />);
   const first = container.querySelector<HTMLButtonElement>(`[data-date="${UMALQURA_MIN_DATE}"]`)!;
   expect(container.querySelector<HTMLButtonElement>('[aria-label="Previous month"]')!.disabled).toBe(true);
   expect(first.getAttribute('aria-label')).toContain('1343');
   await act(async () => first.focus()); await key(first, 'PageUp'); expect(document.activeElement).toBe(first);
-  await render(<Calendar value={UMALQURA_MAX_DATE} month={UMALQURA_MAX_DATE} calendar="islamic-umalqura" locale="en-SA" />);
+  await render(<Calendar {...calendarTexts} value={UMALQURA_MAX_DATE} month={UMALQURA_MAX_DATE} calendar="islamic-umalqura" locale="en-SA" />);
   const last = container.querySelector<HTMLButtonElement>(`[data-date="${UMALQURA_MAX_DATE}"]`)!;
   expect(container.querySelector<HTMLButtonElement>('[aria-label="Next month"]')!.disabled).toBe(true);
   expect(last.getAttribute('aria-label')).toContain('1500');
@@ -93,7 +95,7 @@ it('switches picker calendar systems without changing the ISO date and reopens a
   vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function (this: HTMLDialogElement) { this.open = true; });
   vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function (this: HTMLDialogElement) { this.open = false; this.dispatchEvent(new Event('close')); });
   const changed = vi.fn();
-  await render(<form><DatePicker label="Appointment" name="date" defaultValue="2026-10-28" locale="en-SA" onValueChange={changed} /></form>);
+  await render(<form><DatePicker {...pickerTexts} label="Appointment" name="date" defaultValue="2026-10-28" locale="en-SA" onValueChange={changed} /></form>);
   const opener = container.querySelector<HTMLButtonElement>('[aria-label="Open calendar"]')!; await click(opener);
   const dateInput = container.querySelector<HTMLInputElement>('input[type=text]')!; const calendar = container.querySelector('.hw-calendar')!;
   const before = container.querySelector('.hw-calendar-header h3')!.textContent;
@@ -108,7 +110,7 @@ it('switches picker calendar systems without changing the ISO date and reopens a
   expect(container.querySelector('.hw-calendar-header h3')!.textContent).toBe(before);
 });
 it('preserves an unsupported ISO date while explicitly limiting its Hijri display', async () => {
-  await render(<form><DatePicker label="Historical date" name="date" defaultValue="1900-01-01" defaultCalendar="islamic-umalqura" locale="en-SA" /></form>);
+  await render(<form><DatePicker {...pickerTexts} label="Historical date" name="date" defaultValue="1900-01-01" defaultCalendar="islamic-umalqura" locale="en-SA" /></form>);
   const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
   expect(date.value).toBe('1900-01-01');
   expect(date.checkValidity()).toBe(false);
@@ -127,7 +129,7 @@ it('preserves an unsupported ISO date while explicitly limiting its Hijri displa
 });
 it('rejects unsupported Hijri form submission and keeps application bounds after calendar changes', async () => {
   const submitted = vi.fn();
-  await render(<form onSubmit={event => { event.preventDefault(); submitted(); }}><DatePicker label="Historical date" name="date" defaultValue="1900-01-01" defaultCalendar="islamic-umalqura" min="1890-01-01" max="1910-12-31" unsupportedCalendarMessage="خارج نطاق أم القرى" /><Button type="submit">Submit</Button></form>);
+  await render(<form onSubmit={event => { event.preventDefault(); submitted(); }}><DatePicker {...pickerTexts} label="Historical date" name="date" defaultValue="1900-01-01" defaultCalendar="islamic-umalqura" min="1890-01-01" max="1910-12-31" locale="ar-SA" unsupportedMessage="خارج نطاق أم القرى" /><Button type="submit">Submit</Button></form>);
   const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
   const button = [...container.querySelectorAll('button')].find(item => item.textContent === 'Submit')!;
   await click(button); expect(submitted).not.toHaveBeenCalled(); expect(date.validationMessage).toBe('خارج نطاق أم القرى');
@@ -140,7 +142,7 @@ it('rejects unsupported Hijri form submission and keeps application bounds after
 });
 it('shows and associates the selected calendar date outside the closed picker dialog', async () => {
   const supported = '2029-08-11';
-  await render(<DatePicker id="visible-date" label="Date" hint="Original day" value={supported} calendar="islamic-umalqura" locale="en-SA" />);
+  await render(<DatePicker {...pickerTexts} id="visible-date" label="Date" hint="Original day" value={supported} calendar="islamic-umalqura" locale="en-SA" />);
   const date = container.querySelector<HTMLInputElement>('input[type=text]')!;
   const output = container.querySelector<HTMLOutputElement>('.hw-date-picker-value')!;
   expect(container.querySelector('dialog')!.open).toBe(false);
@@ -149,12 +151,12 @@ it('shows and associates the selected calendar date outside the closed picker di
   expect(output.htmlFor.value).toBe(date.id);
   expect(output.getAttribute('aria-live')).toBe('polite');
   expect(date.getAttribute('aria-describedby')!.split(' ')).toEqual(expect.arrayContaining([output.id, 'visible-date-hint']));
-  await render(<DatePicker id="visible-date" label="Date" value={supported} calendar="gregory" locale="en-SA" />);
+  await render(<DatePicker {...pickerTexts} id="visible-date" label="Date" value={supported} calendar="gregory" locale="en-SA" />);
   expect(date.value).toBe(formatCalendarDate(supported, { calendar: 'gregory', locale: 'en-SA', dateStyle: 'medium' }));
   expect(output.textContent).toBe(formatCalendarDate(supported, { calendar: 'gregory', locale: 'en-SA', dateStyle: 'full' }));
-  await render(<DatePicker id="visible-date" label="Date" value="" calendar="islamic-umalqura" />);
+  await render(<DatePicker {...pickerTexts} id="visible-date" label="Date" value="" calendar="islamic-umalqura" />);
   expect(output.hidden).toBe(true); expect(output.textContent).toBe('');
-  await render(<DatePicker id="visible-date" label="Date" value="1900-01-01" calendar="islamic-umalqura" />);
+  await render(<DatePicker {...pickerTexts} id="visible-date" label="Date" value="1900-01-01" calendar="islamic-umalqura" />);
   expect(output.hidden).toBe(true); expect(output.textContent).toBe(''); expect(date.checkValidity()).toBe(false);
 });
 it('supports menu roving focus, disabled skipping, actions and focus return', async () => {
@@ -170,21 +172,21 @@ it('closes popovers outside and with Escape without trapping ordinary Tab order'
   await click(buttons[0]!); await act(async () => buttons[2]!.dispatchEvent(new Event('pointerdown', { bubbles: true }))); expect(container.querySelector<HTMLElement>('[role=region]')!.hidden).toBe(true);
 });
 it('expands a flattened RTL tree and selects with keyboard', async () => {
-  const changed = vi.fn(); await render(<TreeView dir="rtl" label="Services" onValueChange={changed} items={[{ id: 'parent', label: 'Parent', children: [{ id: 'disabled', label: 'Unavailable', disabled: true }, { id: 'child', label: 'Child' }] }, { id: 'last', label: 'Last' }]} />);
+  const changed = vi.fn(); await render(<TreeView dir="rtl" label="Services" getExpandLabel={node => `Expand ${node.id}`} getCollapseLabel={node => `Collapse ${node.id}`} onValueChange={changed} items={[{ id: 'parent', label: 'Parent', children: [{ id: 'disabled', label: 'Unavailable', disabled: true }, { id: 'child', label: 'Child' }] }, { id: 'last', label: 'Last' }]} />);
   const parent = container.querySelector<HTMLElement>('[role=treeitem]')!; await act(async () => parent.focus()); await key(parent, 'ArrowLeft'); expect(parent.getAttribute('aria-expanded')).toBe('true'); await key(parent, 'ArrowLeft'); expect(document.activeElement?.getAttribute('aria-level')).toBe('2'); await key(document.activeElement!, 'Enter'); expect(changed).toHaveBeenCalledWith('child'); await key(document.activeElement!, 'ArrowRight'); expect(document.activeElement).toBe(parent);
 });
 it('sorts a native data table stably and exposes direction on headers', async () => {
-  await render(<DataTable caption="Requests" locale="en" rows={[{ id: 'b', name: 'Same', score: 20 }, { id: 'a', name: 'Same', score: 10 }, { id: 'c', name: 'Other', score: 30 }]} columns={[{ key: 'id', label: 'ID' }, { key: 'name', label: 'Name', sortable: true }, { key: 'score', label: 'Score', sortable: true }]} />);
+  await render(<DataTable caption="Requests" locale="en" emptyMessage="No records" rows={[{ id: 'b', name: 'Same', score: 20 }, { id: 'a', name: 'Same', score: 10 }, { id: 'c', name: 'Other', score: 30 }]} columns={[{ key: 'id', label: 'ID' }, { key: 'name', label: 'Name', sortable: true }, { key: 'score', label: 'Score', sortable: true }]} />);
   const name = [...container.querySelectorAll('button')].find(button => button.textContent?.includes('Name'))!; await click(name);
   expect(name.closest('th')?.getAttribute('aria-sort')).toBe('ascending'); expect([...container.querySelectorAll('tbody tr')].map(row => row.firstElementChild?.textContent)).toEqual(['c', 'b', 'a']);
   await click(name); expect(name.closest('th')?.getAttribute('aria-sort')).toBe('descending'); expect([...container.querySelectorAll('tbody tr')].map(row => row.firstElementChild?.textContent)).toEqual(['b', 'a', 'c']);
 });
 it('keeps toasts caller owned, with only urgent messages in the assertive region', async () => {
-  const dismiss = vi.fn(); await render(<ToastRegion messages={[{ id: 'saved', description: 'Saved', tone: 'success' }, { id: 'urgent', description: 'Connection lost', urgent: true }]} onDismiss={dismiss} />);
+  const dismiss = vi.fn(); await render(<ToastRegion label="Notifications" getDismissLabel={message => `Dismiss ${message.id}`} messages={[{ id: 'saved', description: 'Saved', tone: 'success' }, { id: 'urgent', description: 'Connection lost', urgent: true }]} onDismiss={dismiss} />);
   expect(container.querySelector('[role=status]')?.textContent).toContain('Saved'); expect(container.querySelector('[role=alert]')?.textContent).toContain('Connection lost'); await click(container.querySelector('button')!); expect(dismiss).toHaveBeenCalledWith('saved'); expect(container.querySelectorAll('.hw-toast')).toHaveLength(2);
 });
 it('reports configurable consent and feedback without implied persistence or network requests', async () => {
-  const consent = vi.fn(); const feedback = vi.fn(); await render(<><CookieConsent title="Optional cookies" description="Choose a preference" onValueChange={consent} /><Feedback label="Was this helpful?" onFeedback={feedback} /></>);
+  const consent = vi.fn(); const feedback = vi.fn(); await render(<><CookieConsent title="Optional cookies" description="Choose a preference" acceptLabel="Accept optional cookies" rejectLabel="Reject optional cookies" onValueChange={consent} /><Feedback label="Was this helpful?" yesLabel="Yes" noLabel="No" commentLabel="Tell us more (optional)" submitLabel="Send feedback" successMessage="Thank you for your feedback." onFeedback={feedback} /></>);
   await click([...container.querySelectorAll('button')].find(button => button.textContent === 'Reject optional cookies')!); expect(consent).toHaveBeenCalledWith('rejected'); expect(container.querySelector<HTMLElement>('.hw-cookie-consent')!.hidden).toBe(true);
   await click(container.querySelector<HTMLInputElement>('input[value=yes]')!); await click([...container.querySelectorAll('button')].find(button => button.textContent === 'Send feedback')!); expect(feedback).toHaveBeenCalledWith({ helpful: 'yes', comment: '' }); expect(container.querySelector('[role=status]')?.textContent).toContain('Thank you');
 });

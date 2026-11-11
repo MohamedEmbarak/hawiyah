@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import './fixtures/texts';
+import { text, withText } from './fixtures/application-text';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
@@ -21,7 +23,7 @@ it('exposes switch errors to assistive technology and clears invalid state when 
 
 it('filters unknown and disabled selections for validation and submission without rewriting the parent control', () => {
   class Host { choices = new FormControl(['missing', 'disabled'], { nonNullable: true }); options = signal([{ value: 'available', label: 'Available' }, { value: 'disabled', label: 'Disabled', disabled: true }]); }
-  Component({ standalone: true, imports: [ReactiveFormsModule, HwMultiSelectComponent], template: '<form><hw-multi-select label="الخيارات" name="choices" required [options]="options()" [formControl]="choices" /></form>' })(Host);
+  Component({ standalone: true, imports: [ReactiveFormsModule, HwMultiSelectComponent], template: `<form><hw-multi-select ${withText.multiSelect} label="الخيارات" name="choices" required [options]="options()" [formControl]="choices" /></form>` })(Host); Object.assign(Host.prototype, { text });
   const fixture = TestBed.createComponent(Host); fixture.detectChanges(); const form: HTMLFormElement = fixture.nativeElement.querySelector('form');
   const changed = vi.fn(); const subscription = fixture.componentInstance.choices.valueChanges.subscribe(changed);
   expect(form.checkValidity()).toBe(false); expect(new FormData(form).getAll('choices')).toEqual([]);
@@ -34,7 +36,7 @@ it('filters unknown and disabled selections for validation and submission withou
 
 it('normalizes externally supplied PIN digits and reactive reset while validating exact length', () => {
   class Host { pin = new FormControl('١٢٣٤٥٦٧', { nonNullable: true }); }
-  Component({ standalone: true, imports: [ReactiveFormsModule, HwPinInputComponent], template: '<form><hw-pin-input label="الرمز" name="pin" [formControl]="pin" /></form>' })(Host);
+  Component({ standalone: true, imports: [ReactiveFormsModule, HwPinInputComponent], template: `<form><hw-pin-input label="الرمز" name="pin" [formControl]="pin" /></form>` })(Host); Object.assign(Host.prototype, { text });
   const fixture = TestBed.createComponent(Host); fixture.detectChanges(); const form: HTMLFormElement = fixture.nativeElement.querySelector('form');
   expect(new FormData(form).get('pin')).toBe('123456'); expect(form.checkValidity()).toBe(true); expect(fixture.componentInstance.pin.value).toBe('١٢٣٤٥٦٧');
   fixture.componentInstance.pin.setValue('۱۲'); fixture.detectChanges(); expect(new FormData(form).get('pin')).toBe('12'); expect(form.checkValidity()).toBe(false);
@@ -44,7 +46,7 @@ it('normalizes externally supplied PIN digits and reactive reset while validatin
 
 it('requires committed tags and exposes required semantics with an empty draft', () => {
   class Host { tags = new FormControl(['هوية'], { nonNullable: true }); }
-  Component({ standalone: true, imports: [ReactiveFormsModule, HwTagInputComponent], template: '<form><hw-tag-input label="الوسوم" name="tags" required [formControl]="tags" /></form>' })(Host);
+  Component({ standalone: true, imports: [ReactiveFormsModule, HwTagInputComponent], template: `<form><hw-tag-input ${withText.tagInput} label="الوسوم" name="tags" required [formControl]="tags" /></form>` })(Host); Object.assign(Host.prototype, { text });
   const fixture = TestBed.createComponent(Host); fixture.detectChanges(); const form: HTMLFormElement = fixture.nativeElement.querySelector('form'); const input = form.querySelector<HTMLInputElement>('input:not([type=hidden])')!;
   expect(input.required).toBe(false); expect(input.getAttribute('aria-required')).toBe('true'); expect(form.checkValidity()).toBe(true); expect(new FormData(form).getAll('tags')).toEqual(['هوية']);
   fixture.componentInstance.tags.setValue([]); fixture.detectChanges(); expect(form.checkValidity()).toBe(false);

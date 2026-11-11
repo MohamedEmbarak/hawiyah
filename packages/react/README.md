@@ -23,6 +23,9 @@ function Application() {
         value={city}
         onValueChange={setCity}
         required
+        emptyMessage="لا توجد مدن مطابقة"
+        getResultsMessage={count => `عدد النتائج: ${count}`}
+        requiredMessage="اختر مدينة من القائمة."
       />
       <Button type="submit">متابعة</Button>
     </form>
@@ -61,9 +64,28 @@ are CSS attributes on an ancestor:
      data-hw-mode="dark" data-hw-density="comfortable">…</div>
 ```
 
-Default auxiliary labels are English; provide Arabic or another language through
-label/message props. Business dates and numbers can use `@hawiyah/core` formatters
-with explicit locale, calendar and time zone. No component infers locale from RTL.
+## Text is supplied by the application
+
+Hawiyah ships no built-in strings and no translations. Every word a component
+places on its own elements (accessible names, labels of internal controls,
+headings it renders, live-region and validation messages) is a prop, and the
+primary content (button text, bodies, item labels) is children or data. Props for
+text that is always needed are required in the types; text needed only with a
+feature (for example `skipLabel` with `PortalHeader` `mainId`, or
+`requiredMessage` with `required`) is required through a union on that prop.
+Texts that depend on data are functions named `get…Label` / `get…Message`; they
+receive the data and return the complete string, and the component adds no words.
+
+When a required text is missing or empty, the component renders nothing in its
+place (no text node, no empty attribute) and warns once per component and prop
+through `console.warn` with the `Hawiyah:` prefix in development builds
+(`process.env.NODE_ENV !== 'production'`). A constraint whose message is missing
+still blocks form submission: the control keeps a single-space custom validity and
+`aria-invalid="true"`. No component reads `lang`, the document language or
+`navigator.language`; `dir` is read only from the DOM. `locale` is a formatting
+argument handed to `Intl` (required for Calendar and DatePicker, which print
+month, weekday and date names); business dates and numbers can use the
+`@hawiyah/core` formatters with explicit locale, calendar and time zone.
 
 ## Catalog
 
@@ -77,24 +99,24 @@ with explicit locale, calendar and time zone. No component infers locale from RT
 | `Checkbox` | Native checkbox plus label/hint/error and `indeterminate`. |
 | `Radio` | Native radio plus label/hint/error; supply a shared `name` for a native group. |
 | `Switch` | Native checkbox with `role="switch"`, label/hint/error. |
-| `Tabs` | `items: {value,label,content,disabled?}[]`, required `label`, `value`/`defaultValue`, `onValueChange`, `orientation`, `activationMode`, `overflow: menu/scroll` (default menu), configurable `overflowLabel`. Horizontal compact containers move excess labels into a keyboard-accessible disclosure; vertical tabs remain visible. |
-| `Dialog` | Required `title`; `description`, `trigger`, `open`/`defaultOpen`, `onOpenChange`, `closeLabel`, `closeOnBackdrop`; children/footer can render from `{close}`. |
-| `Combobox` | Single selection from `Option[]`; label/hint/error, `value`/`defaultValue`, `onValueChange(value, option?)`, `onInputChange(query)`, `open`/`defaultOpen`, `onOpenChange`, native form attributes. |
+| `Tabs` | `items: {value,label,content,disabled?}[]`, required `label`, `value`/`defaultValue`, `onValueChange`, `orientation`, `activationMode`, `overflow: menu/scroll` (default menu); `overflowLabel` names the overflow disclosure and is required unless `overflow="scroll"`. Horizontal compact containers move excess labels into a keyboard-accessible disclosure; vertical tabs remain visible. |
+| `Dialog` | Required `title` and `closeLabel` (name of the close button); `description`, `trigger`, `open`/`defaultOpen`, `onOpenChange`, `closeOnBackdrop`; children/footer can render from `{close}`. |
+| `Combobox` | Single selection from `Option[]`; label/hint/error, required `emptyMessage` and `getResultsMessage(count)`, `requiredMessage` with `required`, `value`/`defaultValue`, `onValueChange(value, option?)`, `onInputChange(query)`, `open`/`defaultOpen`, `onOpenChange`, native form attributes. |
 | `Accordion` | `items: {value,title,content,open?,defaultOpen?,onOpenChange?}[]`; `exclusive` uses a native details name group. |
 | `Card` | Native article; header/footer slots and body children. |
 | `Badge` | Static label; `tone="neutral\|success\|warning\|danger\|info"`, `variant="soft\|outline\|dot"`; [source and adaptations](../../docs/nic-badges.md). |
 | `Alert` | `tone="info\|success\|warning\|danger"`, optional text `title`, children. Default role is status (danger: alert); override role for static content. |
-| `Table<Row>` | `caption`, `columns: {key,header,cell(row,index),rowHeader?}[]`, `rows`, `rowKey`, `wrapperProps`; alternatively native table children. |
-| `Pagination` | `totalPages`, `page`/`defaultPage`, `onPageChange`; Arabic default `label`, `previousLabel`, `nextLabel`, `getPageLabel`, `formatPage`; `siblingCount` (default 1), `disabled`, `hideOnSinglePage` (default false). Ellipsis disclosures use `getGapLabel(start,end)`, `jumpLabel`, `goLabel`; gaps above 100 pages use bounded integer entry. Parent fetches/slices data; no navigation or scrolling is imposed. |
-| `Breadcrumb` | `items: {label,href?,current?}[]`, localized `label`; last item is current. |
+| `Table<Row>` | `caption`, `columns: {key,header,cell(row,index),rowHeader?}[]`, `rows`, `rowKey`, `wrapperProps`, `emptyMessage` (required with `columns`); alternatively native table children. |
+| `Pagination` | `totalPages`, `page`/`defaultPage`, `onPageChange`; required `label`, `previousLabel`, `nextLabel`, `getPageLabel(page)`; optional `formatPage`; `siblingCount` (default 1), `disabled`, `hideOnSinglePage` (default false). Ellipsis disclosures use the required `getGapLabel(start,end)`, `jumpLabel`, `goLabel`; gaps above 100 pages use bounded integer entry. Parent fetches/slices data; no navigation or scrolling is imposed. |
+| `Breadcrumb` | `items: {label,href?,current?}[]`, required `label`; last item is current. |
 | `Progress` | Native progress with required accessible `label`, `value`, `max` (100); omit value for indeterminate. |
 | `Skeleton` | Decorative span, hidden from assistive technology; set dimensions via className/style. |
-| `Spinner` | Status span; localized `label` (default “Loading”). |
+| `Spinner` | Status span; required `label` unless the application marks it `aria-hidden="true"`. |
 | `Avatar` | Required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"`. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
 | `Divider` | Native horizontal rule. |
 | `Tooltip` | Plain string `content`; one focusable React element as children. |
 | `FileUpload` | Native file input with label/hint/error; `accept`, `multiple`, native `onChange`, `onFilesChange(File[])`, optional supplementary children. |
-| `Stepper` | `items: {value,label,description?,status?}[]`, `current`, accessible `label`. Status: complete/current/upcoming. Static progress, not navigation. |
+| `Stepper` | `items: {value,label,description?,status?}[]`, `current`, required accessible `label`. Status: complete/current/upcoming. Static progress, not navigation. |
 | `EmptyState` | Required `title`; optional `description`, decorative `icon`, `action`, children. |
 
 All prop interfaces, `TabItem`, `AccordionItem`, `TableColumn<Row>`,
@@ -108,6 +130,7 @@ are exported. Option values and item values must be unique stable strings.
 ```tsx
 <Tabs
   label="Application sections"
+  overflowLabel="More sections"
   value={section}
   onValueChange={setSection}
   activationMode="manual"
@@ -127,7 +150,7 @@ is the default and the fallback if the supplied selection is unavailable.
 ### Dialog
 
 ```tsx
-<Dialog title="Review request" trigger={<Button>Review</Button>}
+<Dialog title="Review request" closeLabel="Close" trigger={<Button>Review</Button>}
   footer={({ close }) => <Button onClick={close}>Done</Button>}>
   {({ close }) => <p>Review your details before continuing.</p>}
 </Dialog>
@@ -158,14 +181,14 @@ blur keeps the query without silently selecting.
 
 `name` belongs to a hidden native input containing the selected option value.
 Arbitrary text does not become a submitted value. `required` uses custom validity
-to require a committed choice; localize its message with `requiredMessage`.
+to require a committed choice; its message is `requiredMessage`.
 `disabled`, `readOnly`, `form`, forwarded input refs, and native form resets are
 supported. A reset restores an uncontrolled `defaultValue`; controlled state
 continues to belong to the caller. When controlled, apply `onValueChange`, including
 its empty string when the user edits the selection.
 
-Use `getResultsMessage(count)` for the live region and `emptyMessage` for the
-empty list. There is no multiselect, remote fetching, option virtualization, or
+`getResultsMessage(count)` supplies the live region and `emptyMessage` the
+empty list; both are required. There is no multiselect, remote fetching, option virtualization, or
 custom option rendering in this version. The caller can supply updated options.
 
 ### Tooltip and file upload
@@ -202,19 +225,19 @@ Controlled values remain owned by the application.
 | Added control | API and behavior |
 | --- | --- |
 | `InputGroup` | `start`/`end` adornments and control children; surrounding `Field` supplies the accessible label. |
-| `PasswordField` | TextField props plus `visible`/`defaultVisible`, `onVisibleChange`, `showLabel`, `hideLabel`. Reveal preserves the native input and its value. |
-| `SearchField` | String `value/defaultValue`, `onValueChange`, native `onChange`, `clearLabel`; optional `suggestions`, `maxSuggestions` (8), `resultsMessage(count)`, `onSearch(query)`, `showSearchButton` (false), `searchLabel`. Native input props/ref and field decoration are preserved. |
+| `PasswordField` | TextField props plus `visible`/`defaultVisible`, `onVisibleChange`, required `showLabel` and `hideLabel` (toggle name, and its text with `toggleVariant="text"`). Reveal preserves the native input and its value. |
+| `SearchField` | String `value/defaultValue`, `onValueChange`, native `onChange`, required `clearLabel`; optional `suggestions` (then `getResultsMessage(count)` is required), `maxSuggestions` (8), `onSearch(query)`, `showSearchButton` (false; then `searchLabel`, the button name, is required). The input and its suggestion list are named by `label` or aria-label/aria-labelledby. Native input props/ref and field decoration are preserved. |
 | `NumberField` | Native number input with label/hint/error, min/max/step and normal React input events. Empty remains empty; it is not coerced to zero. |
 | `Slider` | Numeric value/defaultValue, `onValueChange`, min/max/step, `showValue`, `formatValue`; one labelled native range. |
 | `RangeSlider` | Numeric `[lower,upper]`, `onValueChange`, min/max/step; required `lowerLabel`/`upperLabel`, optional group `label`. `lowerName`/`upperName` or repeated `name` submit both values. Native handles cannot cross. |
-| `Rating` | Numeric value/defaultValue, `onValueChange`, max (1–20, default 5), label/name/required, `getRatingLabel`; one native radio group. |
-| `RatingDisplay` | Required `label`, numeric `value=0`, `max=5` (1–20), `showValue=true`, `getValueLabel(value,max)`; noninteractive fractional aggregate score with one accessible image name. |
+| `Rating` | Numeric value/defaultValue, `onValueChange`, max (1–20, default 5), label/name/required, required `getRatingLabel(value,max)`; one native radio group. |
+| `RatingDisplay` | Numeric `value=0`, `max=5` (1–20), `showValue=true`, required `getValueLabel(value,max)`, which returns the complete accessible image name (for example the subject and the score); noninteractive fractional aggregate score. |
 | `PinInput` | String value/defaultValue, `onValueChange`, `length` (default 6), optional decorative `showSlots`; one accessible OTP input normalizes Arabic-Indic and Eastern Arabic digits, including pasted input. |
-| `TagInput` | String array value/defaultValue, `onValueChange`, name, required, `getRemoveLabel`, `requiredMessage`; Enter/comma commits a unique tag, empty Backspace removes the last tag. Each committed tag produces a native form value. |
-| `MultiSelect` | Required label and options; string array value/defaultValue, `onValueChange`, name, required, `searchLabel`, `emptyMessage`, `requiredMessage`. Searchable native checkboxes; filtered-out selections retain repeated form values. |
-| `Calendar` | ISO Gregorian value/defaultValue, `onValueChange`; month/defaultMonth, `onMonthChange`; locale/calendar/weekStartsOn, min/max, `isDateDisabled`, disabled/readOnly, optional form/name and localized toolbar/day labels. |
-| `DatePicker` | Typed ISO text input plus Calendar in a native modal. Adds calendar/defaultCalendar, `onCalendarChange`, localized calendar selector labels, calendar button/dialog labels and unsupported-range message. |
-| `FileDropzone` | Native file input props plus `onFilesChange(File[])`, `dropLabel`, `getRejectedMessage`; accepted dropped files populate the actual native input. The picker and dropped selection participate in forms. No upload occurs automatically. |
+| `TagInput` | String array value/defaultValue, `onValueChange`, name, required, required `getRemoveLabel(tag)`, `requiredMessage` with `required`; Enter/comma commits a unique tag, empty Backspace removes the last tag. Each committed tag produces a native form value. |
+| `MultiSelect` | Required label and options; string array value/defaultValue, `onValueChange`, name, required, required `searchLabel` (name of the filter input) and `emptyMessage`, optional `placeholder`, `requiredMessage` with `required`. Searchable native checkboxes; filtered-out selections retain repeated form values. |
+| `Calendar` | ISO Gregorian value/defaultValue, `onValueChange`; month/defaultMonth, `onMonthChange`; required `locale`, `label`, `previousLabel`, `nextLabel` (and `rangeLabel` with `calendar="islamic-umalqura"`); calendar/weekStartsOn, min/max, `isDateDisabled`, disabled/readOnly, optional form/name and `getDayLabel(value)`. |
+| `DatePicker` | Typed ISO text input plus Calendar in a native modal. Adds calendar/defaultCalendar, `onCalendarChange` and the required texts `locale`, `calendarLabel`, `openLabel`, `closeLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage`, `unsupportedMessage` (and `unavailableMessage` with `isDateDisabled`); optional `placeholder`. |
+| `FileDropzone` | Native file input props plus `onFilesChange(File[])`, field `label`, required visible instruction `dropLabel`, `getRejectedMessage(rejected)` with `accept`; accepted dropped files populate the actual native input. The picker and dropped selection participate in forms. No upload occurs automatically. |
 
 Native `TextField` input types retain their platform semantics: text/search/tel/url
 are strings; email uses native validation; number uses native numeric constraints
@@ -241,18 +264,21 @@ const [calendar, setCalendar] = useState<'gregory' | 'islamic-umalqura'>('islami
   calendarSystemLabel="التقويم"
   gregorianLabel="ميلادي"
   hijriLabel="هجري — أم القرى"
+  rangeLabel="التواريخ الهجرية المدعومة"
   calendarLabel="اختر تاريخ الموعد"
-  buttonLabel="فتح التقويم"
+  openLabel="فتح التقويم"
   previousLabel="الشهر السابق"
   nextLabel="الشهر التالي"
   closeLabel="إغلاق"
+  invalidMessage="أدخل تاريخًا صحيحًا بصيغة YYYY-MM-DD."
+  unsupportedMessage={`التقويم الهجري متاح من ${UMALQURA_MIN_DATE} إلى ${UMALQURA_MAX_DATE}.`}
   required
 />
 ```
 
 The picker includes a Gregorian/Umm al-Qura selector. Switching display systems
 preserves the exact ISO day, and reopening returns to the selected date's month.
-Calendar names, navigation, picker controls and validation messages default to Arabic. Set `locale="en"` for English copy or pass a label prop to override a particular control.
+Month, weekday and date names come from `Intl` for the required `locale`; every control name and validation message is a prop. `UMALQURA_MIN_DATE` and `UMALQURA_MAX_DATE` are exported by `@hawiyah/core`.
 
 Direction and locale remain independent of calendar. Calendar's arrows follow
 visual RTL/LTR direction; Up/Down move a week, Home/End move within the week,
@@ -264,9 +290,8 @@ table through `@hawiyah/core`, including `formatCalendarDate`; they do not rely 
 ICU's differing historical/future numeric Hijri fields. The supported table spans
 **1924-08-01 through 2077-11-16 (AH 1343–1500)**. Navigation stops at these
 boundaries. When a Gregorian selected date lies outside this range, switching to
-Hijri preserves the ISO input, shows a localized unsupported-range message, and
-renders no fabricated Hijri selection, and blocks native form submission with custom validity and `aria-invalid`. Switching back to Gregorian clears the calendar-range error while keeping application min/max constraints. Use `unsupportedCalendarMessage` to
-translate that explanation. Read the workspace calendar evidence for provenance
+Hijri preserves the ISO input, shows the `unsupportedMessage` text, and
+renders no fabricated Hijri selection, and blocks native form submission with custom validity and `aria-invalid`. Switching back to Gregorian clears the calendar-range error while keeping application min/max constraints. `unsupportedMessage` supplies that explanation. Read the workspace calendar evidence for provenance
 and verification; this interface is not an official service or certification.
 
 `getDayLabel` customizes Calendar date announcements. Supply stable initial
@@ -274,7 +299,7 @@ and verification; this interface is not an official service or certification.
 the current date. Standalone Calendar submits its selected supported date through
 an optional hidden `name`; use DatePicker when native required/date validation is
 needed. `isDateDisabled` applies to both the calendar and the DatePicker's native
-input validation. `unavailableMessage` localizes custom date validation.
+input validation; `unavailableMessage`, required with it, is the custom date validation message.
 
 | Added interaction | API and behavior |
 | --- | --- |
@@ -282,10 +307,10 @@ input validation. `unavailableMessage` localizes custom date validation.
 | `Popover` | Required title/trigger, open/defaultOpen/onOpenChange and region children. Trigger toggles a labelled disclosure; outside press and Escape close. Interactive content uses ordinary Tab. |
 | `Menu` | Required trigger/label and `items: {value,label,disabled?,href?,onSelect?}[]`; open/defaultOpen/onOpenChange and `onAction(value)`. Up/Down/Home/End skip disabled entries; Escape/action return focus. |
 | `Drawer` | Dialog props plus `side="start\|end\|bottom"`; same native modal and focus behavior as Dialog. |
-| `ToastRegion` | `messages: {id,title?,description,tone?,urgent?,dismissible?}[]`, `onDismiss(id)`, `label`, `getDismissLabel(message)`. Choose `variant="banner"` and optionally `position="inline"` or a corner. Buttons require an `onDismiss` handler. Arabic labels default to الإشعارات and إغلاق الإشعار with available message text. |
+| `ToastRegion` | `messages: {id,title?,description,tone?,urgent?,dismissible?}[]`, required `label`, `onDismiss(id)` with the then-required `getDismissLabel(message)`. Choose `variant="banner"` and optionally `position="inline"` or a corner. Dismiss buttons require an `onDismiss` handler. |
 | `Collapsible` | Native details with title, open/defaultOpen/onOpenChange, disabled and children. |
-| `TreeView` | Required label and `items: {id,label,disabled?,children?}[]`; value/defaultValue/onValueChange and expanded/defaultExpanded/onExpandedChange. Visible nodes have tree levels, positions and roving focus; horizontal expansion follows RTL. |
-| `Carousel` | Required label/slides; `index/defaultIndex/onIndexChange`, `loop=false`, renderable `slides`, zero-based `getSlideLabel(index,total)`. `showIndicators=true`, localized control/indicator/description/empty labels, inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
+| `TreeView` | Required label, `getExpandLabel(node)`, `getCollapseLabel(node)` and `items: {id,label,disabled?,children?}[]`; value/defaultValue/onValueChange and expanded/defaultExpanded/onExpandedChange. Visible nodes have tree levels, positions and roving focus; horizontal expansion follows RTL. |
+| `Carousel` | Required label/slides, `previousLabel`, `nextLabel`, `emptyLabel` and one-based `getSlideLabel(position,total)`; `index/defaultIndex/onIndexChange`, `loop=false`, renderable `slides`. `showIndicators=true` requires `indicatorsLabel`; optional `carouselDescription`/`slideDescription` set aria-roledescription only when given. Inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
 
 ```tsx
 // Toast state is ordinary application state. There is no global singleton.
@@ -293,7 +318,7 @@ const [messages, setMessages] = useState([
   { id: 'saved', description: 'تم حفظ المسودة', tone: 'success' as const },
 ]);
 <ToastRegion label="الإشعارات" messages={messages}
-  getDismissLabel={() => 'إغلاق الإشعار'}
+  getDismissLabel={message => `إغلاق الإشعار ${message.id}`}
   onDismiss={id => setMessages(current => current.filter(item => item.id !== id))} />
 ```
 
@@ -307,20 +332,20 @@ applies a callback.
 | `Link` | Native anchor with optional `external` (new tab and noopener/noreferrer). |
 | `IconButton` | Button props plus required accessible `label`; icon children are decorative. |
 | `ButtonGroup` | Native group with required accessible `label` and button children. |
-| `Chip` | Text children, optional tone/onRemove/removeLabel/disabled. |
+| `Chip` | Text children, optional tone/disabled, `onRemove` with the then-required `removeLabel`. |
 | `DescriptionList` | `items: {term,description,key?}[]`; native dl/dt/dd. |
 | `Stat` | Required label/value; optional description/trend content. Values are formatted by the caller. |
-| `Timeline` | `items: {id,title,description?,dateTime?,dateLabel?,status?}[]`; status complete/active/upcoming and optional label. |
+| `Timeline` | `items: {id,title,description?,dateTime?,dateLabel?,status?}[]`; status complete/active/upcoming and required `label`. |
 | `Meter` | Native meter attributes with required accessible label. |
-| `AvatarGroup` | Required items/label, max (default 5), getOverflowLabel. Items use AvatarProps. |
-| `DataTable<Row>` | Required caption/rows/columns; columns have key/label/sortable/render/rowHeader. Optional rowKey, sort/defaultSort/onSortChange, locale, emptyMessage, getSortLabel. Stable immutable localized sorting and native aria-sort headers. |
-| `ServiceCard` | Required title; description/category/icon/metadata, href/actionLabel or action slot, body children. |
-| `ServiceDetails` | Required title; description/metadata/requirements/requirementsLabel/action and children. |
-| `PortalHeader` | Required brand slot, optional brandHref/navigation/navigationLabel/actions/notice and children. Navigation items are label/href/current. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
-| `PortalFooter` | Optional brand/description/links/linksLabel/legal and children. |
-| `Feedback` | Required question label; value/defaultValue/onValueChange for `{helpful:'yes'\|'no'\|'',comment}` and `onFeedback` on native submit; translated yes/no/comment/submit/success labels. |
-| `CookieConsent` | Required title/description; value/defaultValue/onValueChange (`accepted`/`rejected`/null), translated buttons and optional policy link. Null displays the notice. Persistence and cookie activation belong to the application. |
-| `NotificationList` | Required label/items; items id/title/description/href/dateTime/dateLabel/read. Optional emptyMessage, onMarkRead, getMarkReadLabel, unreadLabel. |
+| `AvatarGroup` | Required items/label and `getOverflowLabel(count)`, max (default 5). Items use AvatarProps. |
+| `DataTable<Row>` | Required caption/rows/columns; columns have key/label/sortable/render/rowHeader. Required `emptyMessage`; optional rowKey, sort/defaultSort/onSortChange, locale, `getSortLabel(column,direction)` (without it the button is named by the column label). Stable immutable localized sorting and native aria-sort headers. |
+| `ServiceCard` | Required title; description/category/icon/metadata, `href` with `actionLabel` or an `action` slot, body children. |
+| `ServiceDetails` | Required title; description/metadata/action and children; `requirements` with the then-required `requirementsLabel`. |
+| `PortalHeader` | Required `brand` (text, artwork or both), `navigationLabel` and `menuLabel`; optional `brandLabel` (accessible name of an artwork-only brand), brandHref/navigation/actions/notice and children; `mainId` adds a skip link and requires `skipLabel`. Navigation items are label/href/current. Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
+| `PortalFooter` | Required `externalLabel` (screen-reader text of external links); optional brand/brandLabel/description/legal and children; `links` require `navigationLabel` (formerly `linksLabel`), `legalLinks` require `legalLinksLabel`, `support` requires `supportLabel`. |
+| `Feedback` | Required question label; value/defaultValue/onValueChange for `{helpful:'yes'\|'no'\|'',comment}` and `onFeedback` on native submit; required `yesLabel`, `noLabel`, `commentLabel`, `submitLabel`, `successMessage`. |
+| `CookieConsent` | Required title/description; value/defaultValue/onValueChange (`accepted`/`rejected`/null), required `acceptLabel`/`rejectLabel`, optional `policyHref` with the then-required `policyLabel`. Null displays the notice. Persistence and cookie activation belong to the application. |
+| `NotificationList` | Required label/items; items id/title/description/href/dateTime/dateLabel/read. Required `emptyMessage` and `unreadLabel`; `onMarkRead` with the then-required `getMarkReadLabel(item)`. |
 
 Platform patterns are configurable ordinary content. Supply your own brand,
 service facts, legal text and links. They do not provide government seals, verified
@@ -344,7 +369,7 @@ composable for those integrations.
 | `Spacer` | Flexible space div. |
 | `AspectRatio` | Div with positive numeric ratio. |
 | `Section` | Semantic section with common layout props. |
-| `AppShell` | Supply `header`, `sidebar` and `footer` content around the main landmark. The Arabic skip link focuses main. Set `mainId` to choose its target ID and `skipLabel` to localize the link. |
+| `AppShell` | Supply `header`, `sidebar` and `footer` content around the main landmark. The skip link, whose text is the required `skipLabel`, focuses main. Set `mainId` to choose its target ID. |
 | `PageHeader` | Native header with title h1, description/breadcrumb/actions and children. |
 
 The first ten primitives accept shared `LayoutProps` and native attributes/refs.
@@ -392,8 +417,17 @@ of complete assistive-technology testing for every new pattern.
 ## Portal shell
 
 [`PortalLayout`, `PortalHeader` and `SecondaryNav`](PORTAL.md) provide a complete
-Arabic-default portal shell with responsive navigation, breadcrumbs and footer.
+portal shell with responsive navigation, breadcrumbs and footer; all of its texts are props.
 Run the React example with `?preview=portal` to use the native composed shell.
+
+The mobile and verification parts of the shell take their texts as props too:
+
+| Component | Required texts |
+| --- | --- |
+| `MobileTopBar` | `title`; `backLabel` with `backHref` (unless `leading` replaces the back link). |
+| `NavigationDrawer` | `navigationLabel` names the navigation landmark; `closeLabel` names the close button. |
+| `SiteVerification` | `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel`, `httpsDescription`; `registrationLabel` with `registrationHref`; `externalLabel` when that link opens in a new window (`registrationExternal`, on by default). No `locale` prop: the application supplies every text. |
+| `FileUploadList` | `labels`: `selected`, `uploading`, `complete`, `error`, `remove`, `getProgressLabel(name)` and `getRemoveLabel(name)`. |
 
 ## NIC card composition
 
@@ -418,12 +452,12 @@ alert/notification tones, header/footer composition and guide-only navigation co
 40px/56px alternate sizes and striped/bordered variants are Hawiyah extensions.
 Captions name keyboard-focusable horizontal scroll containers; row-header
 columns render native `th scope="row"`. Empty data spans the column count and
-uses an Arabic message by default. Sorting does not mutate caller records.
+shows the required `emptyMessage`. Sorting does not mutate caller records.
 React/Vue native `data-variant` and `data-size` attributes remain supported;
 typed props take precedence. `wrapperProps` customizes the scroll container.
 See [table evidence and adaptations](../../docs/nic-tables.md).
 
-Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Arabic labels and Latin digits are the defaults.
+Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Option and display names come from `getRatingLabel` and `getValueLabel`.
 
 
 ### Search suggestions
@@ -436,7 +470,7 @@ no active suggestion emits `onSearch` with a trimmed, nonempty query and keeps
 native form submission available. Choose either the search callback or the
 form's submit handler for the application request; wiring both duplicates it.
 The optional icon search action is a non-submit button and uses the callback.
-Arabic clear/search labels are defaults and can be localized.
+`clearLabel`, `searchLabel` and `getResultsMessage` are application text.
 
 Escape dismisses an open list before reaching an enclosing dialog; another
 Escape can dismiss the dialog. Composition/modifier keys do not commit matches.
@@ -447,16 +481,21 @@ configuration clear active-option state. No remote search service is called.
 ### Content navigation
 
 `ContentNavigation` follows application-owned section IDs using nested
-`items: {id, label, disabled?, children?}[]`. Options are `label` (Arabic default),
-`showHeading` (true), `sticky` (false), `scrollRoot` (null/window) and `offset`
-(80px). `onCurrentChange(id)` reports the current section ID. Ordinary
-activation scrolls without changing the URL; keyboard activation also focuses
-the target. Modified anchor clicks retain browser behavior. Disabled entries
+`items: {id, label, disabled?, children?}[]`. The required `label` names the
+landmark and is the heading text; options are `showHeading` (true), `sticky`
+(false), `scrollRoot` (null/window), `offset` (80px) and `updateHash` (false).
+`onCurrentChange(id)` reports the current section ID. Ordinary activation
+scrolls without changing the URL (with `updateHash` the resolved URL is written
+with `history.replaceState`); keyboard activation also focuses the target.
+Links render as `#id` on the server and on the first client render; once mounted,
+`bindFragmentLink` from `@hawiyah/core` keeps them pointing at the current
+document under a `<base href>`. Skip links in `AppShell`, `PortalHeader` and
+`PortalLayout` are bound the same way. Modified anchor clicks retain browser behavior. Disabled entries
 remain noninteractive text links; no section content is created or hidden.
 
 ```tsx
 import {ContentNavigation} from '@hawiyah/react';
 
-<ContentNavigation items={[{id: 'requirements', label: 'المتطلبات'}]} />
+<ContentNavigation label="في هذه الصفحة" items={[{id: 'requirements', label: 'المتطلبات'}]} />
 <section id="requirements"><h2>المتطلبات</h2></section>
 ```

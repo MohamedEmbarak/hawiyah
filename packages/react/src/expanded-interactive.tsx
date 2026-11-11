@@ -5,7 +5,8 @@ import type { Option } from '@hawiyah/core';
 import { Button } from './forms.js';
 import { Dialog } from './interactive.js';
 import type { DialogProps } from './interactive.js';
-import { assignRef, cx, useControllable } from './shared.js';
+import { assignRef, cx, rootLabel, text, useControllable } from './shared.js';
+import type { RootName } from './shared.js';
 import { useFormReset } from './expanded-shared.js';
 
 interface ToggleBase extends Omit<ComponentPropsWithRef<'fieldset'>, 'defaultValue' | 'onChange'> { options: readonly Option[]; label: ReactNode; name?: string; form?: string; readOnly?: boolean; variant?: 'segmented' | 'outline' }
@@ -45,20 +46,15 @@ export function Menu({ items, label, trigger, open: controlled, defaultOpen = fa
 export interface DrawerProps extends DialogProps { side?: 'start' | 'end' | 'bottom' }
 export function Drawer({ side = 'end', className, ...props }: DrawerProps) { return <Dialog {...props} className={cx('hw-drawer', className)} data-side={side} />; }
 export interface ToastMessage { id: string; title?: ReactNode; description: ReactNode; tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger'; urgent?: boolean; dismissible?: boolean }
-export interface ToastRegionProps extends ComponentPropsWithRef<'section'> {
+interface ToastRegionBaseProps extends ComponentPropsWithRef<'section'> {
   messages: readonly ToastMessage[];
-  onDismiss?: (id: string) => void;
-  label?: string;
-  getDismissLabel?: (message: ToastMessage) => string;
   variant?: 'default' | 'inline' | 'banner';
   position?: 'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
 }
-function dismissName(message: ToastMessage) {
-  const text = (typeof message.title === 'string' && message.title.trim()) ||
-    (typeof message.description === 'string' && message.description.trim());
-  return text ? `إغلاق الإشعار: ${text}` : 'إغلاق الإشعار';
-}
-export function ToastRegion({ messages, onDismiss, label = 'الإشعارات', getDismissLabel = dismissName, variant, position, className, ref, ...props }: ToastRegionProps) {
+/** `getDismissLabel` names a toast's dismiss button and is required with `onDismiss`. */
+export type ToastRegionProps = ToastRegionBaseProps & RootName & ({ onDismiss?: undefined; getDismissLabel?: (message: ToastMessage) => string } | { onDismiss?: (id: string) => void; getDismissLabel: (message: ToastMessage) => string });
+export function ToastRegion({ messages, onDismiss, label, getDismissLabel, variant, position, className, ref, ...props }: ToastRegionProps) {
+  const name = rootLabel('ToastRegion', props, label); const dismissLabel = onDismiss ? text('ToastRegion', 'getDismissLabel', getDismissLabel, 'onDismiss is given') : undefined;
   const region = useRef<HTMLElement | null>(null);
   const pending = useRef<(() => void) | undefined>(undefined);
   const [request, setRequest] = useState(0);
@@ -71,7 +67,7 @@ export function ToastRegion({ messages, onDismiss, label = 'الإشعارات',
   const render = (message: ToastMessage) => <article key={message.id} className="hw-toast" data-hw-toast={message.id} data-tone={message.tone ?? 'info'}>
     {presentation === 'banner' && <span className="hw-toast-icon" aria-hidden="true" />}
     <div className="hw-toast-content">{message.title && <strong>{message.title}</strong>}<div>{message.description}</div></div>
-    {onDismiss && message.dismissible !== false && <Button type="button" variant="ghost" className="hw-toast-dismiss" data-hw-dismiss="" aria-label={getDismissLabel(message)} onClick={event => {
+    {onDismiss && message.dismissible !== false && <Button type="button" variant="ghost" className="hw-toast-dismiss" data-hw-dismiss="" aria-label={dismissLabel?.(message) || undefined} onClick={event => {
       const notice = event.currentTarget.closest<HTMLElement>('[data-hw-toast]');
       if (region.current && notice) pending.current = prepareToastDismissFocus(region.current, notice);
       try { onDismiss(message.id); } finally {
@@ -80,7 +76,7 @@ export function ToastRegion({ messages, onDismiss, label = 'الإشعارات',
       }
     }}><span className="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true" /></Button>}
   </article>;
-  return <section {...props} ref={element => {region.current = element; assignRef(ref, element);}} className={cx('hw-toast-region', className)} tabIndex={props.tabIndex ?? -1} aria-label={props['aria-label'] ?? label} data-variant={presentation} data-position={position ?? data['data-position']}>
+  return <section {...props} ref={element => {region.current = element; assignRef(ref, element);}} className={cx('hw-toast-region', className)} tabIndex={props.tabIndex ?? -1} aria-label={name} data-variant={presentation} data-position={position ?? data['data-position']}>
     <div role="status" aria-live="polite" aria-relevant="additions text" data-hw-live="polite">{messages.filter(message => !message.urgent).map(render)}</div>
     <div role="alert" aria-live="assertive" aria-relevant="additions text" data-hw-live="assertive">{messages.filter(message => message.urgent).map(render)}</div>
   </section>;
@@ -91,8 +87,9 @@ export function Collapsible({ title, open: controlled, defaultOpen = false, onOp
   return <details {...props} className={cx('hw-collapsible', className)} open={open} onToggle={event => { if (!disabled) setOpen(event.currentTarget.open); }}><summary aria-disabled={disabled || undefined} aria-controls={`${id}-content`} onClick={event => { event.preventDefault(); if (!disabled) setOpen(!open); }}>{title}</summary><div id={`${id}-content`}>{children}</div></details>;
 }
 export interface TreeNode { id: string; label: ReactNode; disabled?: boolean; children?: readonly TreeNode[] }
-export interface TreeViewProps extends Omit<ComponentPropsWithRef<'ul'>, 'onChange' | 'defaultValue'> { items: readonly TreeNode[]; label: string; value?: string; defaultValue?: string; onValueChange?: (value: string) => void; expanded?: readonly string[]; defaultExpanded?: readonly string[]; onExpandedChange?: (expanded: string[]) => void; disabled?: boolean }
-export function TreeView({ items, label, value, defaultValue = '', onValueChange, expanded, defaultExpanded = [], onExpandedChange, disabled, className, ...props }: TreeViewProps) {
+export interface TreeViewProps extends Omit<ComponentPropsWithRef<'ul'>, 'onChange' | 'defaultValue'> { items: readonly TreeNode[]; label: string; value?: string; defaultValue?: string; onValueChange?: (value: string) => void; expanded?: readonly string[]; defaultExpanded?: readonly string[]; onExpandedChange?: (expanded: string[]) => void; disabled?: boolean; getExpandLabel: (node: TreeNode) => string; getCollapseLabel: (node: TreeNode) => string }
+export function TreeView({ items, label, value, getExpandLabel, getCollapseLabel, defaultValue = '', onValueChange, expanded, defaultExpanded = [], onExpandedChange, disabled, className, ...props }: TreeViewProps) {
+  const toggleLabel = { expand: text('TreeView', 'getExpandLabel', getExpandLabel), collapse: text('TreeView', 'getCollapseLabel', getCollapseLabel) };
   const id = useId(); const [selected, select] = useControllable(value, defaultValue, onValueChange); const [opened, setOpened] = useControllable<readonly string[]>(expanded, defaultExpanded, next => onExpandedChange?.([...next])); const [focused, setFocused] = useState<string | undefined>(selected || undefined); const nodes = useRef(new Map<string, HTMLLIElement>());
   const visible: { node: TreeNode; level: number; parent?: string; index: number; count: number }[] = [];
   const walk = (children: readonly TreeNode[], level: number, parent?: string) => children.forEach((node, index) => { visible.push({ node, level, parent, index, count: children.length }); if (opened.includes(node.id) && node.children?.length) walk(node.children, level + 1, node.id); }); walk(items, 1);
@@ -102,21 +99,23 @@ export function TreeView({ items, label, value, defaultValue = '', onValueChange
     if (disabled || node.disabled) return; const position = enabled.findIndex(item => item.node.id === node.id); const forward = getDirection(event.currentTarget) === 'rtl' ? 'ArrowLeft' : 'ArrowRight'; const backward = forward === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
     if (['ArrowUp', 'ArrowDown', 'Home', 'End', forward, backward, 'Enter', ' '].includes(event.key)) event.preventDefault();
     if (event.key === 'ArrowDown') focus(enabled[Math.min(enabled.length - 1, position + 1)]?.node.id); else if (event.key === 'ArrowUp') focus(enabled[Math.max(0, position - 1)]?.node.id); else if (event.key === 'Home') focus(enabled[0]?.node.id); else if (event.key === 'End') focus(enabled.at(-1)?.node.id); else if (event.key === forward && node.children?.length) { if (!opened.includes(node.id)) expand(node, true); else focus(node.children.find(child => !child.disabled)?.id); } else if (event.key === backward) { if (node.children?.length && opened.includes(node.id)) expand(node, false); else if (parent) focus(parent); } else if (event.key === 'Enter' || event.key === ' ') select(node.id);
-  }}>{node.children?.length ? <button type="button" tabIndex={-1} disabled={disabled || node.disabled} aria-label={`${opened.includes(node.id) ? 'Collapse' : 'Expand'} ${typeof node.label === 'string' ? node.label : ''}`} onClick={event => { event.stopPropagation(); expand(node, !opened.includes(node.id)); focus(node.id); }}><span className="hw-icon" data-size="sm" aria-hidden="true" data-icon={opened.includes(node.id) ? 'minus-sign' : 'add-01'} /></button> : null}<span id={`${id}-${encodeURIComponent(node.id)}`}>{node.label}</span></li>)}</ul>;
+  }}>{node.children?.length ? <button type="button" tabIndex={-1} disabled={disabled || node.disabled} aria-label={(opened.includes(node.id) ? toggleLabel.collapse : toggleLabel.expand)?.(node) || undefined} onClick={event => { event.stopPropagation(); expand(node, !opened.includes(node.id)); focus(node.id); }}><span className="hw-icon" data-size="sm" aria-hidden="true" data-icon={opened.includes(node.id) ? 'minus-sign' : 'add-01'} /></button> : null}<span id={`${id}-${encodeURIComponent(node.id)}`}>{node.label}</span></li>)}</ul>;
 }
-export interface CarouselProps extends Omit<ComponentPropsWithRef<'section'>, 'onChange'> {
-  slides: readonly ReactNode[]; label: string; index?: number; defaultIndex?: number;
-  onIndexChange?: (index: number) => void; previousLabel?: string; nextLabel?: string;
-  getSlideLabel?: (index: number, count: number) => string; loop?: boolean;
-  showIndicators?: boolean; indicatorsLabel?: string; emptyLabel?: string;
-  carouselDescription?: string; slideDescription?: string;
+interface CarouselBaseProps extends Omit<ComponentPropsWithRef<'section'>, 'onChange'> {
+  slides: readonly ReactNode[]; index?: number; defaultIndex?: number;
+  onIndexChange?: (index: number) => void; previousLabel: string; nextLabel: string;
+  /** Name of each slide and indicator and the live status; `position` is one-based. */
+  getSlideLabel: (position: number, total: number) => string; loop?: boolean;
+  emptyLabel: string; carouselDescription?: string; slideDescription?: string;
 }
+/** `indicatorsLabel` names the indicator group and is required unless `showIndicators` is false. */
+export type CarouselProps = CarouselBaseProps & RootName & ({ showIndicators: false; indicatorsLabel?: string } | { showIndicators?: boolean; indicatorsLabel: string });
 export function Carousel({ slides, label, index, defaultIndex = 0, onIndexChange,
-  previousLabel = 'الشريحة السابقة', nextLabel = 'الشريحة التالية',
-  getSlideLabel = (current, count) => `${current + 1} من ${count}`, loop = false,
-  showIndicators = true, indicatorsLabel = 'اختيار الشريحة', emptyLabel = 'لا توجد شرائح',
-  carouselDescription = 'عرض شرائح', slideDescription = 'شريحة', className, style, ...props
+  previousLabel, nextLabel, getSlideLabel, loop = false, showIndicators = true, indicatorsLabel, emptyLabel,
+  carouselDescription, slideDescription, className, style, ...props
 }: CarouselProps) {
+  const copy = { label: rootLabel('Carousel', props, label), previous: text('Carousel', 'previousLabel', previousLabel), next: text('Carousel', 'nextLabel', nextLabel), slide: text('Carousel', 'getSlideLabel', getSlideLabel), empty: text('Carousel', 'emptyLabel', emptyLabel), indicators: showIndicators ? text('Carousel', 'indicatorsLabel', indicatorsLabel, 'showIndicators is on') : undefined };
+  const slideLabel = (number: number) => copy.slide?.(number + 1, total) || undefined;
   const [stored, setIndex] = useControllable(index, defaultIndex, onIndexChange);
   const total = slides.length;
   const current = Math.max(0, Math.min(total - 1, Number.isFinite(stored) ? Math.floor(stored) : 0));
@@ -126,12 +125,12 @@ export function Carousel({ slides, label, index, defaultIndex = 0, onIndexChange
     const next = loop ? ((rounded % total) + total) % total : Math.max(0, Math.min(total - 1, rounded));
     if (next !== current) setIndex(next);
   };
-  return <section {...props} className={cx('hw-carousel', className)} data-hw-carousel-ready="" style={{...style, '--hw-carousel-index': current} as CSSProperties} role="region" aria-roledescription={carouselDescription} aria-label={props['aria-label'] ?? label}>
-    <div className="hw-carousel-viewport hw-carousel-slides"><div className="hw-carousel-track">{slides.map((slide, number) => <div className="hw-carousel-slide" key={number} role="group" aria-roledescription={slideDescription} aria-label={getSlideLabel(number, total)} hidden={current !== number} inert={current !== number} aria-hidden={current !== number ? 'true' : undefined}>{slide}</div>)}</div>{!total && <p className="hw-carousel-empty">{emptyLabel}</p>}</div>
+  return <section {...props} className={cx('hw-carousel', className)} data-hw-carousel-ready="" style={{...style, '--hw-carousel-index': current} as CSSProperties} role="region" aria-roledescription={carouselDescription || undefined} aria-label={copy.label}>
+    <div className="hw-carousel-viewport hw-carousel-slides"><div className="hw-carousel-track">{slides.map((slide, number) => <div className="hw-carousel-slide" key={number} role="group" aria-roledescription={slideDescription || undefined} aria-label={slideLabel(number)} hidden={current !== number} inert={current !== number} aria-hidden={current !== number ? 'true' : undefined}>{slide}</div>)}</div>{!total && copy.empty && <p className="hw-carousel-empty">{copy.empty}</p>}</div>
     <div className="hw-carousel-controls hw-inline">
-      {showIndicators && total > 0 && <div className="hw-carousel-pagination" role="group" aria-label={indicatorsLabel}>{slides.map((_, number) => <button className="hw-carousel-dot" key={number} type="button" aria-label={getSlideLabel(number, total)} aria-current={number === current ? 'true' : undefined} onClick={() => select(number)} />)}</div>}
-      <div className="hw-carousel-arrows"><Button className="hw-carousel-arrow" variant="secondary" type="button" data-hw-previous="" aria-label={previousLabel} disabled={total < 2 || !loop && current === 0} onClick={() => select(current - 1)} /><Button className="hw-carousel-arrow" variant="secondary" type="button" data-hw-next="" aria-label={nextLabel} disabled={total < 2 || !loop && current === total - 1} onClick={() => select(current + 1)} /></div>
-      <span className="hw-carousel-status hw-sr-only" role="status" aria-live="polite">{total ? getSlideLabel(current, total) : emptyLabel}</span>
+      {showIndicators && total > 0 && <div className="hw-carousel-pagination" role="group" aria-label={copy.indicators}>{slides.map((_, number) => <button className="hw-carousel-dot" key={number} type="button" aria-label={slideLabel(number)} aria-current={number === current ? 'true' : undefined} onClick={() => select(number)} />)}</div>}
+      <div className="hw-carousel-arrows"><Button className="hw-carousel-arrow" variant="secondary" type="button" data-hw-previous="" aria-label={copy.previous} disabled={total < 2 || !loop && current === 0} onClick={() => select(current - 1)} /><Button className="hw-carousel-arrow" variant="secondary" type="button" data-hw-next="" aria-label={copy.next} disabled={total < 2 || !loop && current === total - 1} onClick={() => select(current + 1)} /></div>
+      <span className="hw-carousel-status hw-sr-only" role="status" aria-live="polite">{total ? slideLabel(current) : copy.empty}</span>
     </div>
   </section>;
 }

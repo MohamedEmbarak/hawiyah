@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import './fixtures/texts';
+import { text, withText } from './fixtures/application-text';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
@@ -10,7 +12,7 @@ beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowse
 afterEach(() => TestBed.resetTestingModule());
 
 function host<T extends object>(type: new () => T, template: string, changeDetection = ChangeDetectionStrategy.Default) {
-  Component({ standalone: true, imports: [HwTabComponent, HwTabsComponent], template, changeDetection })(type);
+  Component({ standalone: true, imports: [HwTabComponent, HwTabsComponent], template, changeDetection })(type); Object.assign(type.prototype, { text });
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
   return fixture;
@@ -26,7 +28,7 @@ const state = (root: HTMLElement) => {
 describe('Angular tab panels', () => {
   it('renders each panel inside its hw-tab, linked to its tab in both directions', () => {
     class Host { tab = 'two'; }
-    const fixture = host(Host, `<hw-tabs id="steps" label="Steps" [(value)]="tab"><hw-tab value="one" label="One"><p>First</p></hw-tab><hw-tab value="two" label="Two"><p>Second</p></hw-tab><p class="note">Note</p></hw-tabs>`);
+    const fixture = host(Host, `<hw-tabs ${withText.tabs} id="steps" label="Steps" [(value)]="tab"><hw-tab value="one" label="One"><p>First</p></hw-tab><hw-tab value="two" label="Two"><p>Second</p></hw-tab><p class="note">Note</p></hw-tabs>`);
     const root = fixture.nativeElement as HTMLElement, { tabs, panels, visible, selected } = state(root);
     expect(panels.map(panel => panel.parentElement!.localName)).toEqual(['hw-tab', 'hw-tab']);
     expect(panels.map(panel => panel.parentElement!.parentElement!.className)).toEqual(['hw-tabs', 'hw-tabs']);
@@ -41,7 +43,7 @@ describe('Angular tab panels', () => {
 
   it('follows clicks under OnPush and programmatic value changes', () => {
     class Host { tab = 'one'; }
-    const fixture = host(Host, `<hw-tabs label="Steps" [(value)]="tab"><hw-tab value="one" label="One">First</hw-tab><hw-tab value="two" label="Two">Second</hw-tab></hw-tabs>`, ChangeDetectionStrategy.OnPush);
+    const fixture = host(Host, `<hw-tabs ${withText.tabs} label="Steps" [(value)]="tab"><hw-tab value="one" label="One">First</hw-tab><hw-tab value="two" label="Two">Second</hw-tab></hw-tabs>`, ChangeDetectionStrategy.OnPush);
     const root = fixture.nativeElement as HTMLElement;
     expect(state(root).visible).toEqual(['First']);
     state(root).tabs[1]!.click(); fixture.detectChanges();
@@ -53,7 +55,7 @@ describe('Angular tab panels', () => {
 
   it('keeps identifiers and selection correct when tabs are added, disabled and removed', () => {
     class Host { tab = 'b'; items = [{ value: 'a', label: 'A', disabled: false }, { value: 'b', label: 'B', disabled: false }]; }
-    const fixture = host(Host, `<hw-tabs id="list" label="List" [value]="tab">@for (item of items; track item.value) {<hw-tab [value]="item.value" [label]="item.label" [disabled]="item.disabled">{{ item.label }} panel</hw-tab>}</hw-tabs>`);
+    const fixture = host(Host, `<hw-tabs ${withText.tabs} id="list" label="List" [value]="tab">@for (item of items; track item.value) {<hw-tab [value]="item.value" [label]="item.label" [disabled]="item.disabled">{{ item.label }} panel</hw-tab>}</hw-tabs>`);
     const root = fixture.nativeElement as HTMLElement;
     expect(state(root).visible).toEqual(['B panel']);
     expect(state(root).panels.map(panel => panel.id)).toEqual(['list-panel-0', 'list-panel-1']);

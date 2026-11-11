@@ -10,7 +10,7 @@ function mount() { const host = document.createElement('div'); document.body.app
 
 it('validates chooser and dropped files with the same accept policy and clears rejected selections', async () => {
   const { host, root } = mount(); const changed = vi.fn();
-  await act(async () => root.render(<form><FileDropzone name="files" label="المرفقات" accept=".pdf" onFilesChange={changed} getRejectedMessage={() => 'PDF only'} /></form>));
+  await act(async () => root.render(<form><FileDropzone name="files" label="المرفقات" dropLabel="أفلت الملفات هنا" accept=".pdf" onFilesChange={changed} getRejectedMessage={() => 'PDF only'} /></form>));
   const input = host.querySelector<HTMLInputElement>('input[type=file]')!;
   const choose = async (file: File) => { Object.defineProperty(input, 'files', { configurable: true, value: [file] }); await act(async () => input.dispatchEvent(new Event('change', { bubbles: true }))); };
   const accepted = new File(['pdf'], 'document.pdf', { type: 'application/pdf' });
@@ -26,7 +26,7 @@ it('validates chooser and dropped files with the same accept policy and clears r
 
 it('requires committed tags, announces required, and permits an empty draft with existing tags', async () => {
   const { host, root } = mount();
-  await act(async () => root.render(<form><TagInput label="الوسوم" name="tags" required defaultValue={['هوية']} /></form>));
+  await act(async () => root.render(<form><TagInput label="الوسوم" name="tags" required requiredMessage="أضف وسمًا واحدًا على الأقل." getRemoveLabel={tag => `إزالة ${tag}`} defaultValue={['هوية']} /></form>));
   const form = host.querySelector('form')!; const input = host.querySelector<HTMLInputElement>('input[type=text]')!;
   expect(input.required).toBe(false); expect(input.getAttribute('aria-required')).toBe('true'); expect(form.checkValidity()).toBe(true);
   expect(new FormData(form).getAll('tags')).toEqual(['هوية']);

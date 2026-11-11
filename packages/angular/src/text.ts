@@ -8,6 +8,14 @@ const usable = (component: string, name: string, value: unknown, when?: string):
  * A template asks here for the text it is about to render and receives null where a required
  * one is missing, so Angular writes no text and removes the attribute. The missing input is
  * reported once per component and input, in development only. */
+/** Development only, after the first render in a browser: a brand that is artwork alone needs
+ * `brandLabel` unless the artwork already carries text, an accessible name or an image alt. */
+export function reportUnnamedBrand(component: string, brand: Element | null | undefined): void {
+  if (!brand || (typeof ngDevMode !== 'undefined' && ngDevMode === false)) return;
+  if (brand.textContent?.trim() || brand.matches('[aria-label], [aria-labelledby]') || brand.querySelector('[aria-label], [aria-labelledby], img[alt]:not([alt=""])')) return;
+  requireText(component, 'brandLabel', '', 'the brand has no text');
+}
+
 export class HwTexts {
   constructor(private readonly component: string) {}
   /** A required string: `value` when it is usable text, otherwise null. */

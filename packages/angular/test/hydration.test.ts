@@ -1,4 +1,5 @@
 import '@angular/compiler';
+import './fixtures/texts';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { type ApplicationRef } from '@angular/core';
@@ -38,6 +39,7 @@ async function hydrate(scenario: Scenario) {
   document.documentElement.innerHTML = page.html.slice(page.html.indexOf('<head>'), page.html.lastIndexOf('</html>'));
   const host = document.querySelector('ssr-host')!;
   const before = [...host.querySelectorAll('*')];
+  const serverIds = [...host.querySelectorAll('[id]')].map(element => element.id);
   expect(before.length).toBeGreaterThan(0);
   expect(document.querySelectorAll('[ngh]').length).toBeGreaterThan(0);
   errors.length = 0;
@@ -45,7 +47,7 @@ async function hydrate(scenario: Scenario) {
   vi.spyOn(console, 'log').mockImplementation(() => {});
   application = await bootstrapApplication(createHost(scenario), { providers: [provideClientHydration()] });
   await application.whenStable();
-  return { host, before };
+  return { host, before, serverIds };
 }
 
 describe('Angular hydration of server-rendered components', () => {
@@ -53,8 +55,10 @@ describe('Angular hydration of server-rendered components', () => {
 
   for (const scenario of scenarios) {
     it(`hydrates ${scenario.name} in place`, async () => {
-      const { before } = await hydrate(scenario);
+      const { host, before, serverIds } = await hydrate(scenario);
       expect(errors).toEqual([]);
+      // The client generates the ids the server generated: one id source per application, in creation order.
+      expect([...host.querySelectorAll('[id]')].map(element => element.id)).toEqual(serverIds);
       // Angular removes the marker from every component it hydrated; a leftover marks a subtree it gave up on.
       expect([...document.querySelectorAll('[ngh]')].map(element => element.localName)).toEqual([]);
       // Hydration adopts the server nodes instead of rendering them again. NgModel is the exception:

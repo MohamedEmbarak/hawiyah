@@ -8,7 +8,8 @@ import { createHost, hydrationDocument, scenarios } from './scenarios.ts';
 
 const errors: string[] = [];
 const record = (...values: unknown[]) => { errors.push(values.map(value => value instanceof Error ? value.stack ?? value.message : String(value)).join(' ')); };
-console.error = record;
+// A missing required text is a development warning; a scenario that omits one is a broken page.
+console.error = console.warn = record;
 // Standard output carries only the JSON result; Angular announces development mode there.
 console.log = console.info = () => {};
 process.on('uncaughtException', record); process.on('unhandledRejection', record);

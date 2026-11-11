@@ -1,4 +1,6 @@
 import '@angular/compiler';
+import { supplyText } from './fixtures/texts';
+import { text } from './fixtures/application-text';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
@@ -7,7 +9,7 @@ import { HwFileDropzoneComponent } from '@hawiyah/angular';
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => { TestBed.resetTestingModule(); document.body.replaceChildren(); vi.unstubAllGlobals(); });
 function fixture(firstLegend = false) {
-  const component = TestBed.createComponent(HwFileDropzoneComponent); component.componentRef.setInput('label', 'Upload'); component.detectChanges();
+  const component = TestBed.createComponent(HwFileDropzoneComponent); supplyText(component, text.fileDropzone); component.componentRef.setInput('label', 'Upload'); component.detectChanges();
   const fieldset = document.createElement('fieldset'); fieldset.disabled = true; document.body.append(fieldset);
   if (firstLegend) { const legend = document.createElement('legend'); fieldset.append(legend); legend.append(component.nativeElement); } else fieldset.append(component.nativeElement);
   const input = component.nativeElement.querySelector('input') as HTMLInputElement; const zone = component.nativeElement.querySelector('.hw-file-dropzone') as HTMLElement;

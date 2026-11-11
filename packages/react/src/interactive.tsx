@@ -2,7 +2,7 @@ import { cloneElement, useEffect, useId, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, ComponentPropsWithRef, HTMLAttributes, ReactElement, ReactNode } from 'react';
 import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow, transitionCombobox } from '@hawiyah/core';
 import type { ComboboxEvent, Option, Orientation } from '@hawiyah/core';
-import { assignRef, cx, Field, useControllable, useFieldControl, useFieldValueRef } from './shared.js';
+import { assignRef, cx, Field, text, useControllable, useFieldControl, useFieldValueRef, validity } from './shared.js';
 import type { FieldDecoration } from './shared.js';
 import { Button } from './forms.js';
 
@@ -185,7 +185,9 @@ interface ComboboxBaseProps extends Omit<ComponentPropsWithRef<'input'>, 'value'
 /** `requiredMessage` is the custom validity message of a required combobox without a selected option. */
 export type ComboboxProps = ComboboxBaseProps & ({ required?: false; requiredMessage?: string } | { required?: boolean; requiredMessage: string });
 function ComboboxControl({ options, value, defaultValue = '', onValueChange, onInputChange, open: controlledOpen, defaultOpen = false, onOpenChange, emptyMessage, getResultsMessage, requiredMessage, className, ref, onKeyDown, onFocus, onBlur, onClick, name, form, disabled, ...props }: Omit<ComboboxProps, keyof FieldDecoration>) {
+  const copy = { empty: text('Combobox', 'emptyMessage', emptyMessage), results: text('Combobox', 'getResultsMessage', getResultsMessage) };
   const field = useFieldControl(props);
+  const requiredText = field.required ? text('Combobox', 'requiredMessage', requiredMessage, 'required is set') : undefined;
   const [state, setState] = useState(() => ({ ...createComboboxState(options, value ?? defaultValue), open: controlledOpen ?? defaultOpen }));
   const input = useRef<HTMLInputElement | null>(null);
   const presenceRef = useFieldValueRef((node: HTMLInputElement | null) => { input.current = node; assignRef(ref, node); });
@@ -264,7 +266,7 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
     if (next.open !== open) onOpenChange?.(next.open);
   }
   return <div className="hw-combobox" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); }}>
-    <input {...props} {...field} ref={presenceRef} form={form} disabled={disabled} className={cx('hw-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-readonly={props.readOnly || undefined} aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
+    <input {...props} {...field} aria-invalid={field.required && !selected && !requiredText ? true : field['aria-invalid']} ref={presenceRef} form={form} disabled={disabled} className={cx('hw-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-readonly={props.readOnly || undefined} aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
       value={query} onChange={event => { if (blocked()) { event.currentTarget.value = query; return; } dispatch({ type: 'input', query: event.currentTarget.value }); onInputChange?.(event.currentTarget.value); }}
       onFocus={event => { onFocus?.(event); if (!event.defaultPrevented) dispatch({ type: 'open' }); }} onBlur={onBlur}
       onClick={event => { onClick?.(event); if (!event.defaultPrevented && !open) dispatch({ type: 'open' }); }}
@@ -285,7 +287,7 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
     <ul className="hw-listbox" id={listId} role="listbox" aria-label={props['aria-label']} aria-labelledby={field['aria-labelledby']} hidden={!open}>
       {results.map((option, index) => <li key={option.value} id={`${field.id}-option-${index}`} className="hw-option" role="option" aria-selected={selected === option.value} aria-disabled={option.disabled || undefined} data-active={state.activeIndex === index ? 'true' : undefined} data-state={state.activeIndex === index ? 'active' : undefined}
         onPointerDown={event => event.preventDefault()} onClick={() => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); input.current?.focus(); } }}>{option.label}</li>)}
-      {!results.length && <li role="presentation" className="hw-hint">{copy.empty}</li>}
+      {!results.length && copy.empty && <li role="presentation" className="hw-hint">{copy.empty}</li>}
     </ul>
     <span id={statusId} className="hw-sr-only" role="status" aria-live="polite" aria-atomic="true">{open ? copy.results?.(results.length) : ''}</span>
   </div>;

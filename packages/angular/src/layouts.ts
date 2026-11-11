@@ -1,4 +1,6 @@
 import { Component, Directive, Input } from '@angular/core';
+import { bindAngularFragmentLinks } from './fragment-links';
+import { HwTexts } from './text';
 import { NgStyle } from '@angular/common';
 import { layoutStyles, type LayoutSpacing, type Responsive } from '@hawiyah/core';
 
@@ -38,7 +40,16 @@ export class HwSpacerComponent extends HwLayout {}
 export class HwAspectRatioComponent extends HwLayout { override ratio = 16 / 9; }
 @Component({selector: 'hw-section', standalone: true, imports: [NgStyle], template: `<section class="hw-section" [ngStyle]="styles" [attr.aria-label]="label || null"><ng-content /></section>`})
 export class HwSectionComponent extends HwLayout { @Input() label = ''; }
-@Component({selector: 'hw-app-shell', standalone: true, imports: [NgStyle], template: `<div class="hw-app-shell" [ngStyle]="styles" [attr.data-side]="side"><a class="hw-skip-link" [href]="'#' + mainId">{{ skipLabel }}</a><header class="hw-app-shell-header"><ng-content select="[hwShellHeader]" /></header><aside class="hw-app-shell-sidebar"><ng-content select="[hwShellSidebar]" /></aside><main class="hw-app-shell-main" [id]="mainId" tabindex="-1"><ng-content /></main><footer class="hw-app-shell-footer"><ng-content select="[hwShellFooter]" /></footer></div>`})
-export class HwAppShellComponent extends HwLayout { @Input() mainId = 'main-content'; @Input() skipLabel = 'انتقل إلى المحتوى'; @Input() side: 'start' | 'end' = 'start'; }
-@Component({selector: 'hw-page-header', standalone: true, imports: [NgStyle], template: `<header class="hw-page-header" [ngStyle]="styles"><ng-content select="[hwBreadcrumb]" /><div class="hw-page-header-main"><div><h1>{{ title }}</h1>@if (description) {<p>{{ description }}</p>}</div><div class="hw-page-header-actions"><ng-content /></div></div></header>`})
+@Component({selector: 'hw-app-shell', standalone: true, imports: [NgStyle], template: `<div class="hw-app-shell" [ngStyle]="styles" [attr.data-side]="side"><a class="hw-skip-link" [attr.href]="fragment(mainId)">{{ texts.need('skipLabel', skipLabel) }}</a><header class="hw-app-shell-header"><ng-content select="[hwShellHeader]" /></header><aside class="hw-app-shell-sidebar"><ng-content select="[hwShellSidebar]" /></aside><main class="hw-app-shell-main" [id]="mainId" tabindex="-1"><ng-content /></main><footer class="hw-app-shell-footer"><ng-content select="[hwShellFooter]" /></footer></div>`})
+export class HwAppShellComponent extends HwLayout {
+  @Input() mainId = 'main-content';
+  /** Visible text of the skip link, which is always rendered. */
+  @Input({required: true}) skipLabel = '';
+  @Input() side: 'start' | 'end' = 'start';
+  protected readonly texts = new HwTexts('hw-app-shell');
+  constructor() { super(); bindAngularFragmentLinks(':scope > .hw-app-shell > a.hw-skip-link'); }
+  protected fragment(id: string): string { return `#${encodeURIComponent(id)}`; }
+}
+// The input named title is not a native tooltip on the wrapper element.
+@Component({selector: 'hw-page-header', standalone: true, imports: [NgStyle], host: {'[attr.title]': 'null'}, template: `<header class="hw-page-header" [ngStyle]="styles"><ng-content select="[hwBreadcrumb]" /><div class="hw-page-header-main"><div><h1>{{ title }}</h1>@if (description) {<p>{{ description }}</p>}</div><div class="hw-page-header-actions"><ng-content /></div></div></header>`})
 export class HwPageHeaderComponent extends HwLayout { @Input({required: true}) title = ''; @Input() description = ''; }
