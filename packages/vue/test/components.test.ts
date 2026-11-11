@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createApp, defineComponent, h, nextTick, ref } from 'vue';
 import type { App, Component } from 'vue';
 import { Checkbox, Combobox, Dialog, Field, Pagination, Tabs, TextField, Tooltip } from '../src/index.js';
+import { comboboxText, dialogText, paginationText, tabsText } from './texts.js';
 
 const apps: App[] = [];
 function mount(component: Component) {
@@ -27,7 +28,7 @@ describe('Vue controls', () => {
   it('commits only enabled combobox options, retains typed query, and restores form defaults', async () => {
     const value = ref('r');
     const options = [{ value: 'r', label: 'الرياض' }, { value: 'j', label: 'جدة', disabled: true }, { value: 'd', label: 'الدمام' }];
-    const host = mount(defineComponent(() => () => h('form', {}, h(Combobox, { label: 'City', name: 'city', modelValue: value.value, defaultValue: 'r', options, required: true, 'onUpdate:modelValue': v => { value.value = v; } }))));
+    const host = mount(defineComponent(() => () => h('form', {}, h(Combobox, { ...comboboxText, label: 'City', name: 'city', modelValue: value.value, defaultValue: 'r', options, required: true, 'onUpdate:modelValue': v => { value.value = v; } }))));
     const input = host.querySelector<HTMLInputElement>('input[role=combobox]')!;
     input.focus(); await nextTick();
     expect(host.querySelectorAll('[role=option]')).toHaveLength(3);
@@ -50,8 +51,8 @@ describe('Vue controls', () => {
     const options = [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }];
     const change = vi.fn();
     const host = mount(defineComponent(() => () => h('div', {}, [
-      h(Combobox, { label: 'Readonly', name: 'readonly', readonly: true, defaultValue: 'a', options }),
-      h(Combobox, { label: 'Controlled', name: 'controlled', modelValue: 'a', options, 'onUpdate:modelValue': change }),
+      h(Combobox, { ...comboboxText, label: 'Readonly', name: 'readonly', readonly: true, defaultValue: 'a', options }),
+      h(Combobox, { ...comboboxText, label: 'Controlled', name: 'controlled', modelValue: 'a', options, 'onUpdate:modelValue': change }),
     ])));
     const inputs = host.querySelectorAll<HTMLInputElement>('[role=combobox]');
     inputs[0]!.focus(); await key(inputs[0]!, 'ArrowDown'); await key(inputs[0]!, 'End'); await key(inputs[0]!, 'Enter');
@@ -64,7 +65,7 @@ describe('Vue controls', () => {
   });
 
   it('makes tabs follow RTL, skip disabled items and preserve manual activation', async () => {
-    const host = mount(defineComponent(() => () => h('div', { dir: 'rtl' }, [h(Tabs, { label: 'Details', activationMode: 'manual', items: [{ value: 'a', label: 'First', content: 'A' }, { value: 'b', label: 'Disabled', disabled: true }, { value: 'c', label: 'Last', content: 'C' }] })])));
+    const host = mount(defineComponent(() => () => h('div', { dir: 'rtl' }, [h(Tabs, { ...tabsText, label: 'Details', activationMode: 'manual', items: [{ value: 'a', label: 'First', content: 'A' }, { value: 'b', label: 'Disabled', disabled: true }, { value: 'c', label: 'Last', content: 'C' }] })])));
     const tabs = host.querySelectorAll<HTMLButtonElement>('[role=tab]');
     tabs[0]!.focus(); await key(tabs[0]!, 'ArrowLeft');
     expect(document.activeElement).toBe(tabs[2]); expect(tabs[0]!.getAttribute('aria-selected')).toBe('true');
@@ -77,7 +78,7 @@ describe('Vue controls', () => {
     Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, value: function(this: HTMLDialogElement) { this.open = true; } });
     Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value: function(this: HTMLDialogElement) { this.open = false; this.dispatchEvent(new Event('close')); } });
     const open = ref(false);
-    const host = mount(defineComponent(() => () => h('div', {}, [h('button', { onClick: () => { open.value = true; } }, 'Review'), h(Dialog, { title: 'Review request', open: open.value, 'onUpdate:open': v => { open.value = v; } }, () => h('input', { 'aria-label': 'Note' }))])));
+    const host = mount(defineComponent(() => () => h('div', {}, [h('button', { onClick: () => { open.value = true; } }, 'Review'), h(Dialog, { ...dialogText, title: 'Review request', open: open.value, 'onUpdate:open': v => { open.value = v; } }, () => h('input', { 'aria-label': 'Note' }))])));
     const trigger = host.querySelector('button')!; trigger.focus(); trigger.click(); await nextTick();
     const dialog = host.querySelector('dialog')!; expect(dialog.open).toBe(true);
     dialog.dispatchEvent(new Event('cancel', { cancelable: true })); await nextTick();
@@ -86,7 +87,7 @@ describe('Vue controls', () => {
 
   it('bounds pagination and updates boolean v-model', async () => {
     const page = ref(1); const checked = ref(false);
-    const host = mount(defineComponent(() => () => h('div', {}, [h(Pagination, { totalPages: 100, modelValue: page.value, 'onUpdate:modelValue': v => { page.value = v; } }), h(Checkbox, { label: 'Confirm', modelValue: checked.value, 'onUpdate:modelValue': v => { checked.value = Boolean(v); } })])));
+    const host = mount(defineComponent(() => () => h('div', {}, [h(Pagination, { ...paginationText, totalPages: 100, modelValue: page.value, 'onUpdate:modelValue': v => { page.value = v; } }), h(Checkbox, { label: 'Confirm', modelValue: checked.value, 'onUpdate:modelValue': v => { checked.value = Boolean(v); } })])));
     const buttons = host.querySelectorAll<HTMLButtonElement>('.hw-pagination > button'); expect(buttons[0]!.disabled).toBe(true); expect(buttons.length).toBeLessThan(10);
     const gap = host.querySelector<HTMLDetailsElement>('.hw-pagination-gap')!;
     expect(gap.open).toBe(false);

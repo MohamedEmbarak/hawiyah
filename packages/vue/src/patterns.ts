@@ -5,7 +5,7 @@ import { Badge, Card } from "./display.js";
 import { DescriptionList, Link } from "./content.js";
 import type { DescriptionItem } from "./content.js";
 import { getFragmentHref } from "@hawiyah/core";
-import { needText, optionalText, rootLabel, useBrandName, useFragmentLinks, useValue } from "./shared.js";
+import { listener, listens, needText, optionalText, rootLabel, useBrandName, useFragmentLinks, useValue } from "./shared.js";
 
 export const ServiceCard = defineComponent({
   name: "HwServiceCard",
@@ -316,6 +316,8 @@ export const CookieConsent = defineComponent({
     acceptLabel: { type: String, required: true },
     rejectLabel: { type: String, required: true },
     preferencesLabel: String,
+    // The preferences action is rendered only while @preferences is bound.
+    onPreferences: listener<[]>(),
   },
   emits: {
     "update:open": (_value: boolean) => true,
@@ -364,10 +366,10 @@ export const CookieConsent = defineComponent({
               },
               () => needText("CookieConsent", "rejectLabel", props.rejectLabel),
             ),
-            h(
+            listens(props.onPreferences) && h(
               Button,
               { variant: "ghost", onClick: () => emit("preferences") },
-              () => needText("CookieConsent", "preferencesLabel", props.preferencesLabel, "the preferences action is rendered"),
+              () => needText("CookieConsent", "preferencesLabel", props.preferencesLabel, "a preferences listener is bound"),
             ),
           ]),
         ],
@@ -395,8 +397,9 @@ export const NotificationList = defineComponent({
     emptyMessage: { type: String, required: true },
     getMarkReadLabel: Function as PropType<(item: NotificationItem) => string>,
     getDismissLabel: Function as PropType<(item: NotificationItem) => string>,
+    // A listener is also a rendering input: the mark-read and dismiss actions are rendered only while @read / @dismiss is bound.
+    onRead: listener<[id: string]>(), onDismiss: listener<[id: string]>(),
   },
-  emits: { read: (_id: string) => true, dismiss: (_id: string) => true },
   setup(props, { attrs, emit, slots }) {
     const itemLabel = (name: "getMarkReadLabel" | "getDismissLabel", item: NotificationItem, when: string) => { const get = needText("NotificationList", name, props[name], when); return get ? optionalText(get(item)) : undefined; };
     return () =>
@@ -431,20 +434,20 @@ export const NotificationList = defineComponent({
                           item.dateLabel ?? item.date,
                         ),
                       slots[item.id]?.({ item }),
-                      !item.read &&
+                      !item.read && listens(props.onRead) &&
                         h(
                           Button,
                           {
                             variant: "ghost",
                             onClick: () => emit("read", item.id),
                           },
-                          () => itemLabel("getMarkReadLabel", item, "a mark-read action is rendered"),
+                          () => itemLabel("getMarkReadLabel", item, "a read listener is bound"),
                         ),
-                      h(
+                      listens(props.onDismiss) && h(
                         Button,
                         {
                           variant: "ghost",
-                          "aria-label": itemLabel("getDismissLabel", item, "a dismiss action is rendered"),
+                          "aria-label": itemLabel("getDismissLabel", item, "a dismiss listener is bound"),
                           onClick: () => emit("dismiss", item.id),
                         },
                         () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),

@@ -15,7 +15,7 @@ import { getDirection, getNextEnabledIndex, restoreFocus, observeReadonlyChoice,
 import type { Option } from "@hawiyah/core";
 import { Button } from "./forms.js";
 import { Dialog } from "./interactive.js";
-import { useFormReset, useValue } from "./shared.js";
+import { needText, optionalText, rootLabel, textOf, useFormReset, useValue } from "./shared.js";
 
 export const ToggleGroup = defineComponent({
   name: "HwToggleGroup",
@@ -370,7 +370,7 @@ export const Drawer = defineComponent({
     defaultOpen: Boolean,
     title: { type: String, required: true },
     description: String,
-    closeLabel: { type: String, default: "Close" },
+    closeLabel: { type: String, required: true },
     side: {
       type: String as PropType<"start" | "end" | "bottom">,
       default: "end",
@@ -395,6 +395,7 @@ export const Drawer = defineComponent({
         {
           ...attrs,
           ...props,
+          closeLabel: needText("Drawer", "closeLabel", props.closeLabel) as string,
           ref: dialog,
           class: ["hw-drawer", attrs.class],
           "data-side": props.side,
@@ -421,8 +422,8 @@ export const ToastRegion = defineComponent({
   name: 'HwToastRegion', inheritAttrs: false,
   props: {
     messages: {type: Array as PropType<readonly ToastMessage[]>, required: true},
-    label: {type: String, default: 'الإشعارات'},
-    dismissLabel: {type: Function as PropType<(message: ToastMessage) => string>, default: (message: ToastMessage) => `إغلاق الإشعار: ${message.title || message.message}`},
+    label: {type: String, required: true},
+    getDismissLabel: Function as PropType<(message: ToastMessage) => string>,
     variant: String as PropType<'default' | 'inline' | 'banner'>,
     position: String as PropType<'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'>,
     // A listener is also a rendering input: adding/removing it must update the action.
@@ -438,7 +439,7 @@ export const ToastRegion = defineComponent({
         banner && h('span', {class: 'hw-toast-icon', 'aria-hidden': 'true'}),
         h('div', {class: 'hw-toast-content'}, [message.title && h('strong', message.title), h('p', message.message)]),
         message.dismissible !== false && (listens(props.onDismiss) || (!onceUsed.value && listens(props.onDismissOnce))) && h(Button, {
-          type: 'button', variant: 'ghost', class: 'hw-toast-dismiss', 'data-hw-dismiss': '', 'aria-label': props.dismissLabel(message),
+          type: 'button', variant: 'ghost', class: 'hw-toast-dismiss', 'data-hw-dismiss': '', 'aria-label': textOf('ToastRegion', 'getDismissLabel', props.getDismissLabel, [message], 'a message can be dismissed'),
           onClick: (event: MouseEvent) => {
             const notice = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-hw-toast]');
             const recover = region.value && notice ? prepareToastDismissFocus(region.value, notice) : undefined;
@@ -451,7 +452,7 @@ export const ToastRegion = defineComponent({
       ]));
     return () => {
       const variant = props.variant ?? attrs['data-variant'];
-      return h('section', mergeProps(attrs, {ref: region, class: 'hw-toast-region', tabindex: attrs.tabindex ?? -1, 'aria-label': attrs['aria-label'] ?? props.label, 'data-variant': variant, 'data-position': props.position ?? attrs['data-position']}), [
+      return h('section', mergeProps(attrs, {ref: region, class: 'hw-toast-region', tabindex: attrs.tabindex ?? -1, 'aria-label': rootLabel('ToastRegion', props.label, attrs), 'data-variant': variant, 'data-position': props.position ?? attrs['data-position']}), [
         h('div', {role: 'status', 'aria-live': 'polite', 'aria-relevant': 'additions text', 'data-hw-live': 'polite'}, render(false, variant === 'banner')),
         h('div', {role: 'alert', 'aria-live': 'assertive', 'aria-relevant': 'additions text', 'data-hw-live': 'assertive'}, render(true, variant === 'banner')),
       ]);
@@ -522,14 +523,8 @@ export const TreeView = defineComponent({
       default: () => [],
     },
     disabled: Boolean,
-    expandLabel: {
-      type: Function as PropType<(node: TreeNode) => string>,
-      default: (node: TreeNode) => `Expand ${node.label}`,
-    },
-    collapseLabel: {
-      type: Function as PropType<(node: TreeNode) => string>,
-      default: (node: TreeNode) => `Collapse ${node.label}`,
-    },
+    getExpandLabel: { type: Function as PropType<(node: TreeNode) => string>, required: true },
+    getCollapseLabel: { type: Function as PropType<(node: TreeNode) => string>, required: true },
   },
   emits: {
     "update:modelValue": (_value: string) => true,
@@ -683,8 +678,8 @@ export const TreeView = defineComponent({
                     tabindex: -1,
                     disabled: props.disabled || row.node.disabled,
                     "aria-label": isOpen
-                      ? props.collapseLabel(row.node)
-                      : props.expandLabel(row.node),
+                      ? textOf("TreeView", "getCollapseLabel", props.getCollapseLabel, [row.node])
+                      : textOf("TreeView", "getExpandLabel", props.getExpandLabel, [row.node]),
                     onClick: (event: MouseEvent) => {
                       event.stopPropagation();
                       toggle(row.node.id);
@@ -702,7 +697,6 @@ export const TreeView = defineComponent({
 });
 export interface CarouselSlide {
   id: string;
-  label: string;
   content?: VNodeChild;
 }
 export const Carousel = defineComponent({
@@ -716,17 +710,14 @@ export const Carousel = defineComponent({
     label: { type: String, required: true },
     modelValue: Number,
     defaultValue: { type: Number, default: 0 },
-    previousLabel: { type: String, default: "الشريحة السابقة" },
-    nextLabel: { type: String, default: "الشريحة التالية" },
+    previousLabel: { type: String, required: true },
+    nextLabel: { type: String, required: true },
     showIndicators: { type: Boolean, default: true },
-    indicatorsLabel: { type: String, default: "اختيار الشريحة" },
-    emptyLabel: { type: String, default: "لا توجد شرائح" },
-    carouselDescription: { type: String, default: "عرض شرائح" },
-    slideDescription: { type: String, default: "شريحة" },
-    slideMessage: {
-      type: Function as PropType<(index: number, total: number) => string>,
-      default: (index: number, total: number) => `${index} من ${total}`,
-    },
+    indicatorsLabel: String,
+    emptyLabel: { type: String, required: true },
+    carouselDescription: String,
+    slideDescription: String,
+    getSlideLabel: { type: Function as PropType<(position: number, total: number) => string>, required: true },
     wrap: { type: Boolean, default: true },
   },
   emits: { "update:modelValue": (_value: number) => true },
@@ -736,6 +727,7 @@ export const Carousel = defineComponent({
       props.defaultValue,
       (v) => emit("update:modelValue", v),
     );
+    const slideLabel = (position: number, total: number) => textOf("Carousel", "getSlideLabel", props.getSlideLabel, [position, total]);
     return () => {
       const total = props.slides.length;
       const stored = model.value.value;
@@ -753,8 +745,8 @@ export const Carousel = defineComponent({
           "data-hw-carousel-ready": "",
           style: { "--hw-carousel-index": current },
           role: "region",
-          "aria-roledescription": props.carouselDescription,
-          "aria-label": props.label,
+          "aria-roledescription": optionalText(props.carouselDescription),
+          "aria-label": rootLabel("Carousel", props.label, attrs),
         }),
         [
           h("div", { class: "hw-carousel-viewport hw-carousel-slides" }, [h("div", { class: "hw-carousel-track" }, props.slides.map((slide, index) =>
@@ -764,25 +756,25 @@ export const Carousel = defineComponent({
                 key: slide.id,
                 class: "hw-carousel-slide",
                 role: "group",
-                "aria-roledescription": props.slideDescription,
-                "aria-label": `${props.slideMessage(index + 1, total)}: ${slide.label}`,
+                "aria-roledescription": optionalText(props.slideDescription),
+                "aria-label": slideLabel(index + 1, total),
                 hidden: index !== current,
                 inert: index !== current ? true : undefined,
                 "aria-hidden": index !== current ? "true" : undefined,
               },
               [slots[slide.id]?.() ?? slide.content],
             ),
-          )), !total && h("p", {class: "hw-carousel-empty"}, props.emptyLabel)]),
+          )), !total && h("p", {class: "hw-carousel-empty"}, needText("Carousel", "emptyLabel", props.emptyLabel))]),
           h("div", { class: "hw-carousel-controls" }, [
-            props.showIndicators && total > 0 && h("div", {class: "hw-carousel-pagination", role: "group", "aria-label": props.indicatorsLabel}, props.slides.map((slide, index) => h("button", {class: "hw-carousel-dot", key: slide.id, type: "button", "aria-label": `${props.slideMessage(index + 1, total)}: ${slide.label}`, "aria-current": index === current ? "true" : undefined, onClick: () => select(index)}))),
+            props.showIndicators && total > 0 && h("div", {class: "hw-carousel-pagination", role: "group", "aria-label": needText("Carousel", "indicatorsLabel", props.indicatorsLabel, "showIndicators is on")}, props.slides.map((slide, index) => h("button", {class: "hw-carousel-dot", key: slide.id, type: "button", "aria-label": slideLabel(index + 1, total), "aria-current": index === current ? "true" : undefined, onClick: () => select(index)}))),
             h("div", {class: "hw-carousel-arrows"}, [
-              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-previous": "", "aria-label": props.previousLabel, disabled: total < 2 || (!props.wrap && current === 0), onClick: () => select(current - 1)}),
-              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-next": "", "aria-label": props.nextLabel, disabled: total < 2 || (!props.wrap && current === total - 1), onClick: () => select(current + 1)}),
+              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-previous": "", "aria-label": needText("Carousel", "previousLabel", props.previousLabel), disabled: total < 2 || (!props.wrap && current === 0), onClick: () => select(current - 1)}),
+              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-next": "", "aria-label": needText("Carousel", "nextLabel", props.nextLabel), disabled: total < 2 || (!props.wrap && current === total - 1), onClick: () => select(current + 1)}),
             ]),
             h(
               "span",
               { class: "hw-carousel-status hw-sr-only", role: "status", "aria-live": "polite" },
-              total ? props.slideMessage(current + 1, total) : props.emptyLabel,
+              total ? slideLabel(current + 1, total) : needText("Carousel", "emptyLabel", props.emptyLabel),
             ),
           ]),
         ],

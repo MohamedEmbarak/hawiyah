@@ -10,7 +10,7 @@ const items: StepItem[] = [{ value: 'one', label: 'البيانات' }, { value:
 it('updates controlled progress in either direction while preserving the legacy value API', async () => {
   const activeIndex = ref<number>();
   const container = document.createElement('div'); document.body.append(container);
-  const app = createApp({ render: () => h(Stepper, { items, current: 'two', activeIndex: activeIndex.value, class: 'custom' }) }); apps.push(app); app.mount(container);
+  const app = createApp({ render: () => h(Stepper, { items, current: 'two', activeIndex: activeIndex.value, class: 'custom', label: 'التقدم' }) }); apps.push(app); app.mount(container);
   const states = () => [...container.querySelectorAll<HTMLElement>('li')].map(step => step.dataset.state);
   expect(states()).toEqual(['complete', 'current', 'upcoming']);
   expect(container.querySelector('ol')!.getAttribute('aria-label')).toBe('التقدم');

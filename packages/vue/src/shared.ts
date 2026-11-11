@@ -1,6 +1,6 @@
 import { computed, inject, onBeforeUnmount, onMounted, onUpdated, provide, ref, useId } from 'vue';
 import { bindFragmentLink, hasText, observeFieldValue, requireText, type FieldValueObserver, type FragmentLink, type FragmentLinkOptions } from '@hawiyah/core';
-import type { ComputedRef, InjectionKey, Ref, VNodeChild } from 'vue';
+import type { ComputedRef, InjectionKey, PropType, Ref, VNodeChild } from 'vue';
 
 export interface FieldDecoration { label?: string; hint?: string; error?: string; required?: boolean }
 export const decorationProps = { label: String, hint: String, error: String, required: { type: Boolean, default: undefined } } as const;
@@ -46,8 +46,14 @@ export type RenderContent = VNodeChild;
 export function needText<T>(component: string, name: string, value: T, when?: string): T | undefined { return requireText(component, name, value, when) ? value : undefined; }
 /** Optional text: the value when it is usable, otherwise undefined, with no warning. */
 export function optionalText<T>(value: T): T | undefined { return hasText(value) ? value : undefined; }
+/** Required templated text: calls the application's function with the documented arguments; nothing when the function or its result is missing. */
+export function textOf<A extends unknown[]>(component: string, name: string, get: ((...args: A) => string) | undefined, args: A, when?: string): string | undefined { const fn = needText(component, name, get, when); return fn ? optionalText(fn(...args)) : undefined; }
 /** Custom validity for a failed constraint. A missing message warns once and still blocks submission (a single-space validity). */
 export function validity(component: string, name: string, invalid: boolean, message: string | undefined, when?: string): string { return invalid ? needText(component, name, message, when) ?? ' ' : ''; }
+/** A listener declared as a prop, so that binding or removing it re-renders the action it switches on. */
+export function listener<A extends unknown[]>() { return [Function, Array] as PropType<((...args: A) => void) | ((...args: A) => void)[]>; }
+/** Whether a listener declared with listener() is bound. */
+export function listens(handler: unknown): boolean { return typeof handler === 'function' || (Array.isArray(handler) && handler.length > 0); }
 /** Accessible name of a component root. An aria-label or aria-labelledby from the application satisfies the requirement. */
 export function rootLabel(component: string, value: string | undefined, attrs: Record<string, unknown>, name = 'label'): string | undefined {
   if (hasText(attrs['aria-label'])) return String(attrs['aria-label']);

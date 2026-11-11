@@ -34,6 +34,7 @@ import {
   Carousel,
   Stack,
 } from "../src/index.js";
+import { calendarText, datePickerText } from "./texts.js";
 const applications: App[] = [];
 function mount(component: Component) {
   const root = document.createElement("div");
@@ -129,6 +130,8 @@ describe("expanded Vue controls", () => {
             h(MultiSelect, {
               label: "Cities",
               searchLabel: "Find city",
+              emptyMessage: "No matching city",
+              requiredMessage: "Choose at least one city.",
               name: "city",
               modelValue: values.value,
               defaultValue: ["r"],
@@ -173,7 +176,7 @@ describe("expanded Vue controls", () => {
           h(
             "form",
             {},
-            h(TagInput, { label: "Tags", name: "tag", required: true }),
+            h(TagInput, { label: "Tags", name: "tag", required: true, requiredMessage: "Add at least one tag.", getRemoveLabel: (tag: string) => `Remove ${tag}` }),
           ),
       ),
     );
@@ -205,6 +208,8 @@ describe("expanded Vue controls", () => {
             {},
             h(RangeSlider, {
               label: "Budget",
+              lowerLabel: "Minimum",
+              upperLabel: "Maximum",
               lowerName: "min",
               upperName: "max",
               modelValue: values.value,
@@ -235,7 +240,7 @@ describe("expanded Vue controls", () => {
       defineComponent(
         () => () =>
           h("form", {}, [
-            h(PasswordField, { label: "Password", defaultValue: "secret" }),
+            h(PasswordField, { label: "Password", defaultValue: "secret", showLabel: "Show password", hideLabel: "Hide password" }),
             h(SearchField, { label: "Search", clearLabel: "Clear search", defaultValue: "query" }),
           ]),
       ),
@@ -310,6 +315,7 @@ describe("expanded Vue controls", () => {
         () => () =>
           h(FileDropzone, {
             label: "Upload",
+            dropLabel: "Choose files or drop them here",
             accept: ".pdf",
             onReject: reject,
             "onUpdate:files": files,
@@ -336,8 +342,8 @@ describe("Vue calendars and interactions", () => {
             "div",
             { dir: "rtl" },
             h(Calendar, {
+              ...calendarText,
               label: "Dates",
-              locale: "en-US",
               modelValue: value.value,
               min: "2024-02-28",
               max: "2024-03-05",
@@ -380,8 +386,8 @@ describe("Vue calendars and interactions", () => {
       defineComponent(
         () => () =>
           h(DatePicker, {
+            ...datePickerText,
             label: "Date",
-            locale: "en-US",
             modelValue: value.value,
             calendar: system.value,
             "onUpdate:modelValue": (next) => {
@@ -436,7 +442,7 @@ describe("Vue calendars and interactions", () => {
       defineComponent(
         () => () =>
           h(Calendar, {
-            locale: "en-US",
+            ...calendarText,
             calendar: "islamic-umalqura",
             modelValue: value.value,
           }),
@@ -471,6 +477,8 @@ describe("Vue calendars and interactions", () => {
       defineComponent(
         () => () =>
           h(DatePicker, {
+            ...datePickerText,
+            locale: "ar-SA",
             label: "Historic date",
             calendar: "islamic-umalqura",
             defaultValue: "1900-01-01",
@@ -537,6 +545,8 @@ describe("Vue calendars and interactions", () => {
             { dir: "rtl" },
             h(TreeView, {
               label: "Services",
+              getExpandLabel: (node: { label: string }) => `Expand ${node.label}`,
+              getCollapseLabel: (node: { label: string }) => `Collapse ${node.label}`,
               items: [
                 {
                   id: "parent",
@@ -585,6 +595,7 @@ describe("Vue calendars and interactions", () => {
               Drawer,
               {
                 title: "Navigation",
+                closeLabel: "Close",
                 side: "start",
                 open: open.value,
                 "onUpdate:open": (value) => {
@@ -594,6 +605,8 @@ describe("Vue calendars and interactions", () => {
               () => h("a", { href: "#section" }, "Section"),
             ),
             h(ToastRegion, {
+              label: "Notifications",
+              getDismissLabel: (message: { message: string }) => `Dismiss notification: ${message.message}`,
               messages: [
                 { id: "one", message: "Saved" },
                 { id: "two", message: "Urgent", urgent: true },
@@ -615,7 +628,7 @@ describe("Vue calendars and interactions", () => {
     await nextTick();
     expect(document.activeElement).toBe(trigger);
     root
-      .querySelector<HTMLButtonElement>('[aria-label="إغلاق الإشعار: Saved"]')!
+      .querySelector<HTMLButtonElement>('[aria-label="Dismiss notification: Saved"]')!
       .click();
     await nextTick();
     expect(dismiss).toHaveBeenCalledWith("one");
@@ -635,6 +648,7 @@ describe("Vue content and layouts", () => {
         () => () =>
           h(DataTable, {
             caption: "Requests",
+            emptyMessage: "No requests",
             rows,
             columns: [
               { key: "id", label: "ID" },
@@ -667,19 +681,25 @@ describe("Vue content and layouts", () => {
       defineComponent(
         () => () =>
           h("div", {}, [
-            h(Feedback, { onSubmit: feedback }),
+            h(Feedback, { label: "Was this page helpful?", yesLabel: "Yes", noLabel: "No", commentLabel: "Tell us more", submitLabel: "Send feedback", successMessage: "Thank you for your feedback.", onSubmit: feedback }),
             h(CookieConsent, {
+              title: "Cookie preferences",
               description: "Optional analytics.",
+              acceptLabel: "Accept optional cookies",
+              rejectLabel: "Reject optional cookies",
+              preferencesLabel: "Manage preferences",
               onReject: reject,
             }),
             h(Carousel, {
               label: "Highlights",
               previousLabel: "Previous slide",
               nextLabel: "Next slide",
-              slideMessage: (index: number, total: number) => `Slide ${index} of ${total}`,
+              indicatorsLabel: "Choose a slide",
+              emptyLabel: "No slides",
+              getSlideLabel: (position: number, total: number) => `Slide ${position} of ${total}`,
               slides: [
-                { id: "a", label: "First", content: "One" },
-                { id: "b", label: "Second", content: "Two" },
+                { id: "a", content: "One" },
+                { id: "b", content: "Two" },
               ],
             }),
           ]),

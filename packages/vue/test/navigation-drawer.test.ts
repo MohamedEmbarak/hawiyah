@@ -12,7 +12,7 @@ afterEach(() => { apps.splice(0).forEach(app => app.unmount()); document.body.re
 it('composes native drawer/groups with disabled entries, route cancellation and focus return', async () => {
   const container = document.createElement('div'); document.body.append(container);
   let prevent = false;
-  const app = createApp({ render: () => h(NavigationDrawer, { title: 'القائمة', items: [
+  const app = createApp({ render: () => h(NavigationDrawer, { title: 'القائمة', navigationLabel: 'التنقل الرئيسي', closeLabel: 'إغلاق القائمة', items: [
     { id: 'group', label: 'الخدمات', children: [{ id: 'route', label: 'طلب خدمة', href: '#service', current: true, icon: 'home-06' }] },
     { id: 'disabled', label: 'غير متاح', href: '#blocked', disabled: true },
     { id: 'disabled-group', label: 'Disabled group', disabled: true, children: [{ id: 'hidden', label: 'Hidden', href: '#hidden' }] },

@@ -15,15 +15,15 @@ it('hydrates stable accessible IDs without mismatches and retains working contro
         })),
         h('output', { 'data-name-output': '' }, name.value),
         h(Combobox, {
-          label: 'المدينة', name: 'city', modelValue: city.value,
+          label: 'المدينة', name: 'city', modelValue: city.value, emptyMessage: 'لا توجد خيارات', getResultsMessage: (count: number) => `${count} نتائج`,
           options: [{ value: 'riyadh', label: 'الرياض' }, { value: 'dammam', label: 'الدمام' }],
           'onUpdate:modelValue': value => { city.value = value; },
         }),
-        h(Tabs, { label: 'تفاصيل الطلب', items: [
+        h(Tabs, { label: 'تفاصيل الطلب', overflowLabel: 'المزيد من التبويبات', items: [
           { value: 'overview', label: 'نظرة عامة', content: 'تفاصيل' },
           { value: 'history', label: 'السجل', content: 'سجل الطلب' },
         ] }),
-        h(Dialog, { title: 'مراجعة الطلب', open: false }, () => 'تأكيد التفاصيل'),
+        h(Dialog, { title: 'مراجعة الطلب', closeLabel: 'إغلاق', open: false }, () => 'تأكيد التفاصيل'),
       ]);
     },
   });

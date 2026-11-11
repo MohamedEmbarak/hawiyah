@@ -2,12 +2,13 @@ import { createApp, h, nextTick } from 'vue';
 import type { App } from 'vue';
 import { afterEach, expect, it, vi } from 'vitest';
 import { FileDropzone } from '../src/controls.js';
+import { dropzoneText } from './texts.js';
 
 const apps: App[] = [];
 afterEach(() => { apps.splice(0).forEach(app => app.unmount()); document.body.replaceChildren(); });
 function fixture(firstLegend = false) {
   const container = document.createElement('div'); document.body.append(container); const changed = vi.fn(); const rejected = vi.fn();
-  const app = createApp({ render() { const picker = h(FileDropzone, { label: 'Upload', 'onUpdate:files': changed, onReject: rejected }); return h('fieldset', { disabled: true }, firstLegend ? h('legend', {}, picker) : picker); } });
+  const app = createApp({ render() { const picker = h(FileDropzone, { ...dropzoneText, label: 'Upload', 'onUpdate:files': changed, onReject: rejected }); return h('fieldset', { disabled: true }, firstLegend ? h('legend', {}, picker) : picker); } });
   apps.push(app); app.mount(container);
   const input = container.querySelector('input')!; const zone = container.querySelector('.hw-file-dropzone')!;
   // JSDOM has no DataTransfer; retain the actual native :disabled computation.

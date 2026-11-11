@@ -3,7 +3,7 @@ import type { PropType } from 'vue';
 import { Breadcrumb } from './display.js';
 import type { BreadcrumbItem } from './display.js';
 import { PortalHeader, PortalFooter } from './patterns.js';
-import { rootLabel } from './shared.js';
+import { needText, rootLabel } from './shared.js';
 import type { PortalLink } from './patterns.js';
 
 export interface SecondaryNavItem extends PortalLink { icon?: string }
@@ -32,9 +32,9 @@ export const PortalLayout = defineComponent({
     const id = useId();
     return () => { const mainId = props.mainId ?? `${id}-main`; return h('div', mergeProps(attrs, { class: 'hw-portal-layout', dir: props.dir }), [
       h(PortalHeader, { brand: props.brand, brandLabel: props.brandLabel, homeHref: props.homeHref, links: props.links, mainId, skipLabel: props.skipLabel, menuLabel: props.menuLabel, navigationLabel: props.navigationLabel }, { brand: slots.brand, actions: slots.actions }),
-      props.secondaryNavigation.length > 0 && h(SecondaryNav, { items: props.secondaryNavigation, label: props.secondaryLabel as string }),
-      h('main', { id: mainId, tabindex: -1, class: 'hw-portal-layout-main hw-container' }, [props.breadcrumbs.length > 0 && h(Breadcrumb, { items: props.breadcrumbs, label: props.breadcrumbLabel as string }), slots.default?.()]),
-      h(PortalFooter, { ...props.footerProps, externalLabel: props.footerProps.externalLabel as string, brand: props.brand, brandLabel: props.brandLabel, links: props.footerLinks, copyright: props.copyright, navigationLabel: props.footerLabel }, { brand: slots.brand, default: slots.footer }),
+      props.secondaryNavigation.length > 0 && h(SecondaryNav, { items: props.secondaryNavigation, label: needText('PortalLayout', 'secondaryLabel', props.secondaryLabel, 'secondaryNavigation is given') as string }),
+      h('main', { id: mainId, tabindex: -1, class: 'hw-portal-layout-main hw-container' }, [props.breadcrumbs.length > 0 && h(Breadcrumb, { items: props.breadcrumbs, label: needText('PortalLayout', 'breadcrumbLabel', props.breadcrumbLabel, 'breadcrumbs are given') as string }), slots.default?.()]),
+      h(PortalFooter, { ...props.footerProps, externalLabel: needText('PortalLayout', 'footerProps.externalLabel', props.footerProps.externalLabel) as string, brand: props.brand, brandLabel: props.brandLabel, links: props.footerLinks, copyright: props.copyright, navigationLabel: props.footerLinks.length > 0 ? needText('PortalLayout', 'footerLabel', props.footerLabel, 'footerLinks are given') : props.footerLabel }, { brand: slots.brand, default: slots.footer }),
     ]); };
   },
 });

@@ -4,6 +4,7 @@ import type { App } from "vue";
 import { DatePicker } from "../src/index.js";
 import { formatCalendarDate } from "@hawiyah/core";
 import type { CalendarSystem } from "@hawiyah/core";
+import { datePickerText } from './texts.js';
 
 let application: App | undefined;
 afterEach(() => {
@@ -34,7 +35,7 @@ it("restores a rejected calendar selection and applies an accepted selection to 
   application = createApp(
     defineComponent(
       () => () =>
-        h(DatePicker, {
+        h(DatePicker, { ...datePickerText,
           label: "Appointment",
           calendar: mode.value,
           defaultValue: "2026-10-15",
@@ -85,7 +86,7 @@ it("associates unsupported-date errors and clears them when switching back witho
       () => () =>
         h("div", {}, [
           h("p", { id: "date-context" }, "Original historical date."),
-          h(DatePicker, {
+          h(DatePicker, { ...datePickerText, locale: 'ar-SA',
             label: "Historic date",
             hint: "Keep the original day.",
             "aria-describedby": "date-context",
@@ -127,7 +128,7 @@ it("shows the canonical selected calendar in the closed field and preserves its 
   const value = ref("2029-08-11");
   const mode = ref<CalendarSystem>("islamic-umalqura");
   const root = document.createElement("div"); document.body.append(root);
-  application = createApp(defineComponent(() => () => h(DatePicker, { label: "Date", hint: "Original day", modelValue: value.value, calendar: mode.value, locale: "en-SA" })));
+  application = createApp(defineComponent(() => () => h(DatePicker, { ...datePickerText, label: "Date", hint: "Original day", modelValue: value.value, calendar: mode.value, locale: "en-SA" })));
   application.mount(root); await nextTick();
   const input = root.querySelector<HTMLInputElement>("input[type=text]")!;
   const output = root.querySelector<HTMLOutputElement>(".hw-date-picker-value")!;
@@ -147,7 +148,7 @@ it("shows the canonical selected calendar in the closed field and preserves its 
 it("isolates ISO endpoints in visible validation prose without changing the native message", async () => {
   const root = document.createElement("div"); document.body.append(root);
   const message = "خارج النطاق 1924-08-01 إلى 2077-11-16.";
-  application = createApp(defineComponent(() => () => h(DatePicker, { label: "Date", defaultValue: "1900-01-01", calendar: "islamic-umalqura", unsupportedMessage: message })));
+  application = createApp(defineComponent(() => () => h(DatePicker, { ...datePickerText, locale: 'ar-SA', label: "Date", defaultValue: "1900-01-01", calendar: "islamic-umalqura", unsupportedMessage: message })));
   application.mount(root); await nextTick();
   const error = root.querySelector(".hw-date-picker > .hw-error")!;
   expect(error.textContent).toBe(message);

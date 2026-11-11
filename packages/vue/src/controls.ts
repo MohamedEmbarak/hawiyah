@@ -10,7 +10,7 @@ import type { PropType } from "vue";
 import { clampRange, filterOptions, isDisabled, normalizeDigits, normalizeRatingMax, normalizeRatingValue } from "@hawiyah/core";
 import type { Option } from "@hawiyah/core";
 import { Button, TextField, decorate } from "./forms.js";
-import { decorationProps, useField, useFormReset, useValue } from "./shared.js";
+import { decorationProps, joinIds, needText, optionalText, textOf, useField, useFormReset, useValue, validity } from "./shared.js";
 
 const textProps = {
   ...decorationProps,
@@ -51,117 +51,77 @@ export const InputGroup = defineComponent({
       ]);
   },
 });
-function actionField(kind: "password" | "search") {
-  return defineComponent({
-    name: kind === "password" ? "HwPasswordField" : "HwSearchField",
-    inheritAttrs: false,
-    props: {
-      ...textProps,
-      showLabel: { type: String, required: true },
-      hideLabel: { type: String, required: true },
-      toggleVariant: { type: String as PropType<'icon' | 'text'>, default: 'icon' },
-      clearLabel: String,
-    },
-    emits: {
-      "update:modelValue": (_value: string) => true,
-      search: (_value: string) => true,
-    },
-    setup(props, { attrs, emit, expose }) {
-      const field = useField(props, attrs);
-      const element = ref<HTMLInputElement>();
-      const visible = ref(false);
-      let composing = false;
-      const model = useValue(
-        () => props.modelValue,
-        props.defaultValue,
-        (value) => emit("update:modelValue", value),
+export const PasswordField = defineComponent({
+  name: "HwPasswordField",
+  inheritAttrs: false,
+  props: {
+    ...textProps,
+    showLabel: { type: String, required: true },
+    hideLabel: { type: String, required: true },
+    toggleVariant: { type: String as PropType<'icon' | 'text'>, default: 'icon' },
+  },
+  emits: {
+    "update:modelValue": (_value: string) => true,
+  },
+  setup(props, { attrs, emit, expose }) {
+    const field = useField(props, attrs);
+    const element = ref<HTMLInputElement>();
+    const visible = ref(false);
+    const model = useValue(
+      () => props.modelValue,
+      props.defaultValue,
+      (value) => emit("update:modelValue", value),
+    );
+    useFormReset(element, () => { model.set(props.defaultValue); visible.value = false; });
+    expose({ element, focus: () => element.value?.focus() });
+    return () =>
+      decorate(
+        props,
+        field.id.value,
+        h(
+          "div",
+          {
+            class: ["hw-password-control", "hw-password-field"],
+          },
+          [
+            h(
+              "input",
+              mergeProps(attrs, field.controlAttrs.value, {
+                ref: element,
+                class: "hw-input",
+                type: visible.value ? "text" : "password",
+                value: model.value.value,
+                disabled: props.disabled,
+                readonly: props.readonly,
+                onInput: (event: Event) => {
+                  if (!props.disabled && !props.readonly)
+                    model.set((event.target as HTMLInputElement).value);
+                },
+              }),
+            ),
+            h(
+                  Button,
+                  {
+                    variant: "ghost",
+                    class: "hw-password-toggle",
+                    "data-toggle-variant": props.toggleVariant,
+                    disabled: props.disabled,
+                    "aria-label": visible.value
+                      ? needText("PasswordField", "hideLabel", props.hideLabel)
+                      : needText("PasswordField", "showLabel", props.showLabel),
+                    "aria-pressed": visible.value,
+                    "aria-controls": field.id.value,
+                    onClick: () => {
+                      if (element.value && !isDisabled(element.value)) visible.value = !visible.value;
+                    },
+                  },
+                  () => props.toggleVariant === 'text' ? (visible.value ? optionalText(props.hideLabel) : optionalText(props.showLabel)) : h('span', { class: 'hw-password-icon', 'aria-hidden': 'true' }),
+                )
+          ],
+        ),
       );
-      useFormReset(element, () => { model.set(props.defaultValue); if (kind === 'password') visible.value = false; });
-      expose({ element, focus: () => element.value?.focus() });
-      return () =>
-        decorate(
-          props,
-          field.id.value,
-          h(
-            "div",
-            {
-              class: [
-                kind === 'password' ? "hw-password-control" : "hw-input-group hw-search-control",
-                `hw-${kind === "password" ? "password-field" : "search-field"}`,
-              ],
-            },
-            [
-              h(
-                "input",
-                mergeProps(attrs, field.controlAttrs.value, {
-                  ref: element,
-                  class: "hw-input",
-                  type:
-                    kind === "password"
-                      ? visible.value
-                        ? "text"
-                        : "password"
-                      : "search",
-                  value: model.value.value,
-                  disabled: props.disabled,
-                  readonly: props.readonly,
-                  onInput: (event: Event) => {
-                    if (!props.disabled && !props.readonly)
-                      model.set((event.target as HTMLInputElement).value);
-                  },
-                  onCompositionstart: () => { composing = true; },
-                  onCompositionend: () => { composing = false; },
-                  onKeydown: (event: KeyboardEvent) => {
-                    if (
-                      kind === "search" &&
-                      event.key === "Enter" &&
-                      !event.defaultPrevented && !composing && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.altKey && !!element.value && !isDisabled(element.value)
-                    )
-                      emit("search", model.value.value);
-                  },
-                }),
-              ),
-              kind === "password"
-                ? h(
-                    Button,
-                    {
-                      variant: "ghost",
-                      class: "hw-password-toggle",
-                      "data-toggle-variant": props.toggleVariant,
-                      disabled: props.disabled,
-                      "aria-label": visible.value
-                        ? needText("PasswordField", "hideLabel", props.hideLabel)
-                        : needText("PasswordField", "showLabel", props.showLabel),
-                      "aria-pressed": visible.value,
-                      "aria-controls": field.id.value,
-                      onClick: () => {
-                        if (element.value && !isDisabled(element.value)) visible.value = !visible.value;
-                      },
-                    },
-                    () => props.toggleVariant === 'text' ? (visible.value ? optionalText(props.hideLabel) : optionalText(props.showLabel)) : h('span', { class: 'hw-password-icon', 'aria-hidden': 'true' }),
-                  )
-                : h(
-                    Button,
-                    {
-                      variant: "ghost",
-                      class: "hw-search-clear",
-                      hidden: !model.value.value || props.readonly,
-                      disabled: props.disabled,
-                      "aria-controls": field.id.value,
-                      "aria-label": needText("SearchField", "clearLabel", props.clearLabel),
-                      onClick: () => {
-                        if (element.value && !props.readonly && !isDisabled(element.value)) { model.set(""); element.value.focus(); }
-                      },
-                    },
-                    () => h("span", { class: "hw-search-clear-icon", "aria-hidden": "true" }),
-                  ),
-            ],
-          ),
-        );
-    },
-  });
-}
-export const PasswordField = actionField("password");
+  },
+});
 export {SearchField} from './search-field.js';
 export const NumberField = defineComponent({
   name: "HwNumberField",
@@ -270,8 +230,8 @@ export const RangeSlider = defineComponent({
       type: Array as unknown as PropType<readonly [number, number]>,
       default: () => [0, 100],
     },
-    lowerLabel: { type: String, default: "Minimum" },
-    upperLabel: { type: String, default: "Maximum" },
+    lowerLabel: { type: String, required: true },
+    upperLabel: { type: String, required: true },
     lowerName: String,
     upperName: String,
   },
@@ -304,7 +264,7 @@ export const RangeSlider = defineComponent({
           props.label && h("legend", { class: "hw-label" }, props.label),
           ...(["lower", "upper"] as const).map((side, index) =>
             h("label", { class: "hw-label" }, [
-              side === "lower" ? props.lowerLabel : props.upperLabel,
+              side === "lower" ? needText("RangeSlider", "lowerLabel", props.lowerLabel) : needText("RangeSlider", "upperLabel", props.upperLabel),
               h("input", {
                 ref: index === 0 ? element : undefined,
                 type: "range",
@@ -360,10 +320,7 @@ export const Rating = defineComponent({
   props: {
     ...numberProps,
     max: { type: Number, default: 5 },
-    optionLabel: {
-      type: Function as PropType<(value: number, max: number) => string>,
-      default: (value: number, max: number) => `${value} من ${max}`,
-    },
+    getRatingLabel: { type: Function as PropType<(value: number, max: number) => string>, required: true },
   },
   emits: { "update:modelValue": (_value: number) => true },
   setup(props, { attrs, emit }) {
@@ -405,7 +362,7 @@ export const Rating = defineComponent({
                   checked: current === index + 1,
                   required: props.required,
                   disabled: props.disabled,
-                  "aria-label": props.optionLabel(index + 1, count),
+                  "aria-label": textOf("Rating", "getRatingLabel", props.getRatingLabel, [index + 1, count]),
                   "aria-disabled": props.readonly || undefined,
                   onClick: (event: MouseEvent) => {
                     if (props.readonly) {
@@ -449,14 +406,14 @@ export const Rating = defineComponent({
 export const RatingDisplay = defineComponent({
   name: 'HwRatingDisplay', inheritAttrs: false,
   props: {
-    label: {type: String, required: true}, value: {type: Number, default: 0},
+    value: {type: Number, default: 0},
     max: {type: Number, default: 5}, showValue: {type: Boolean, default: true},
-    valueLabel: {type: Function as PropType<(value: number, max: number) => string>, default: (value: number, max: number) => `${value} من ${max}`},
+    getValueLabel: {type: Function as PropType<(value: number, max: number) => string>, required: true},
   },
   setup(props, {attrs}) {
     return () => {
       const total = normalizeRatingMax(props.max), score = normalizeRatingValue(props.value, total);
-      return h('div', mergeProps(attrs, {class: 'hw-rating-display', role: 'img', 'aria-label': attrs['aria-label'] ?? `${props.label}: ${props.valueLabel(score, total)}`}), [
+      return h('div', mergeProps(attrs, {class: 'hw-rating-display', role: 'img', 'aria-label': optionalText(attrs['aria-label']) ?? textOf('RatingDisplay', 'getValueLabel', props.getValueLabel, [score, total])}), [
         h('span', {class: 'hw-rating-stars', 'aria-hidden': 'true'}, Array.from({length: total}, (_, index) => h('span', {class: 'hw-rating-star', key: index}, ['★', h('span', {class: 'hw-rating-fill', style: {'--hw-rating-fill': `${Math.min(1, Math.max(0, score - index)) * 100}%`}})]))),
         props.showValue && h('span', {class: 'hw-rating-score', 'aria-hidden': 'true'}, `${score}/${total}`),
       ]);
@@ -521,11 +478,8 @@ export const TagInput = defineComponent({
   inheritAttrs: false,
   props: {
     ...arrayProps,
-    requiredMessage: { type: String, default: "Add at least one item." },
-    removeLabel: {
-      type: Function as PropType<(value: string) => string>,
-      default: (value: string) => `Remove ${value}`,
-    },
+    requiredMessage: String,
+    getRemoveLabel: { type: Function as PropType<(tag: string) => string>, required: true },
   },
   emits: { "update:modelValue": (_value: readonly string[]) => true },
   setup(props, { attrs, emit, expose }) {
@@ -545,9 +499,7 @@ export const TagInput = defineComponent({
     });
     watchEffect(() =>
       element.value?.setCustomValidity(
-        field.controlAttrs.value.required && !model.value.value.length
-          ? props.requiredMessage
-          : "",
+        validity("TagInput", "requiredMessage", Boolean(field.controlAttrs.value.required && !model.value.value.length), props.requiredMessage, "required is set"),
       ),
     );
     expose({ element, focus: () => element.value?.focus() });
@@ -572,7 +524,7 @@ export const TagInput = defineComponent({
                     variant: "ghost",
                     size: "sm",
                     disabled: props.disabled || props.readonly,
-                    "aria-label": props.removeLabel(value),
+                    "aria-label": textOf("TagInput", "getRemoveLabel", props.getRemoveLabel, [value]),
                     onClick: () => remove(value),
                   },
                   () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),
@@ -632,9 +584,9 @@ export const MultiSelect = defineComponent({
   props: {
     ...arrayProps,
     options: { type: Array as PropType<readonly Option[]>, required: true },
-    searchLabel: { type: String, default: "Search options" },
-    emptyMessage: { type: String, default: "No options found" },
-    requiredMessage: { type: String, default: "Choose at least one option." },
+    searchLabel: { type: String, required: true },
+    emptyMessage: { type: String, required: true },
+    requiredMessage: String,
   },
   emits: { "update:modelValue": (_value: readonly string[]) => true },
   setup(props, { attrs, emit }) {
@@ -654,9 +606,7 @@ export const MultiSelect = defineComponent({
     });
     watchEffect(() =>
       element.value?.setCustomValidity(
-        field.controlAttrs.value.required && !props.disabled && !selected.value.length
-          ? props.requiredMessage
-          : "",
+        validity("MultiSelect", "requiredMessage", Boolean(field.controlAttrs.value.required && !props.disabled && !selected.value.length), props.requiredMessage, "required is set"),
       ),
     );
     return () => {
@@ -678,7 +628,7 @@ export const MultiSelect = defineComponent({
               name: undefined,
               type: "search",
               class: "hw-input",
-              "aria-label": props.searchLabel,
+              "aria-label": needText("MultiSelect", "searchLabel", props.searchLabel),
               "aria-required": field.controlAttrs.value.required || undefined,
               "aria-describedby": field.controlAttrs.value["aria-describedby"],
               "aria-invalid": field.controlAttrs.value["aria-invalid"],
@@ -715,7 +665,7 @@ export const MultiSelect = defineComponent({
               ]),
             ),
           ),
-          !options.length && h("p", { role: "status" }, props.emptyMessage),
+          !options.length && h("p", { role: "status" }, needText("MultiSelect", "emptyMessage", props.emptyMessage)),
           ...selected.value.map((value) =>
             h("input", {
               type: "hidden",
@@ -752,7 +702,8 @@ export const FileDropzone = defineComponent({
     accept: String,
     multiple: Boolean,
     maxSize: Number,
-    dropLabel: { type: String, default: "Choose files or drop them here" },
+    dropLabel: { type: String, required: true },
+    getSelectedMessage: Function as PropType<(files: readonly File[]) => string>,
   },
   emits: {
     "update:files": (_files: File[]) => true,
@@ -762,9 +713,9 @@ export const FileDropzone = defineComponent({
     const field = useField(props, attrs);
     const element = ref<HTMLInputElement>();
     const dragging = ref(false);
-    const names = ref<string[]>([]);
+    const selection = ref<File[]>([]);
     useFormReset(element, () => {
-      names.value = [];
+      selection.value = [];
       emit("update:files", []);
     });
     expose({ element, focus: () => element.value?.focus() });
@@ -791,13 +742,13 @@ export const FileDropzone = defineComponent({
         (!props.multiple && files.length > 1)
       ) {
         if (element.value) element.value.value = "";
-        names.value = [];
+        selection.value = [];
         emit("update:files", []);
         emit("reject", files);
         return;
       }
       if (drop && element.value) element.value.files = list;
-      names.value = files.map((file) => file.name);
+      selection.value = files;
       emit("update:files", files);
     };
     return () =>
@@ -823,27 +774,16 @@ export const FileDropzone = defineComponent({
             },
           },
           [
-            // Without a label of its own, of a parent Field or from ARIA attributes,
-            // the visible instruction names the input.
-            props.label ||
-            field.controlAttrs.value["aria-labelledby"] ||
-            attrs["aria-label"]
-              ? h("p", {}, props.dropLabel)
-              : h("label", { class: "hw-label", for: field.id.value }, [
-                  props.dropLabel,
-                  props.required &&
-                    h(
-                      "span",
-                      { class: "hw-required-marker", "aria-hidden": "true" },
-                      " *",
-                    ),
-                ]),
+            // The instruction describes the input; the field label (label, a parent Field or ARIA attributes) names it.
+            !field.controlAttrs.value["aria-labelledby"] && !optionalText(attrs["aria-label"]) && needText("FileDropzone", "label", props.label) && null,
+            h("p", { id: `${field.id.value}-instruction`, class: "hw-file-dropzone-instruction" }, needText("FileDropzone", "dropLabel", props.dropLabel)),
             h(
               "input",
               mergeProps(attrs, field.controlAttrs.value, {
                 ref: element,
                 class: "hw-input",
                 type: "file",
+                "aria-describedby": joinIds(`${field.id.value}-instruction`, field.controlAttrs.value["aria-describedby"]),
                 accept: props.accept,
                 multiple: props.multiple,
                 disabled: props.disabled,
@@ -855,7 +795,7 @@ export const FileDropzone = defineComponent({
                   select((event.target as HTMLInputElement).files),
               }),
             ),
-            h("p", { role: "status" }, names.value.join(", ")),
+            props.getSelectedMessage && h("p", { role: "status" }, selection.value.length ? textOf("FileDropzone", "getSelectedMessage", props.getSelectedMessage, [selection.value]) : undefined),
             slots.default?.(),
           ],
         ),

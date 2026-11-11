@@ -28,7 +28,7 @@ const cities = [{ value: "riyadh", label: "الرياض" }];
       required
       empty-message="لا توجد نتائج"
       required-message="اختر مدينة من القائمة."
-      :results-message="(count) => `${count} نتائج متاحة`"
+      :get-results-message="(count) => `${count} نتائج متاحة`"
     />
     <Button type="submit">مراجعة</Button>
   </form>
@@ -66,8 +66,34 @@ without a checked default resets to an empty string.
 Locale, direction, theme, mode and density are independent application choices.
 Set `lang`, `dir`, `data-hw-theme="hawiyah|dga|custom"`,
 `data-hw-mode="light|dark"` and `data-hw-density="comfortable|compact|mobile"` on an
-ancestor. Provide translated labels, status messages, pagination labels and
-close labels; the library never infers text language from layout direction.
+ancestor. Components read direction from `dir` and never read `lang`, the
+document language or `navigator.language`.
+
+## Text is supplied by the application
+
+Hawiyah ships no built-in strings. Every text a component places itself
+(accessible names, labels of internal controls, headings it renders,
+live-region and validation messages, templated text) is a prop, and none has a
+default. Props that are always needed are declared `required: true`; props
+needed only when a feature is switched on (for example `requiredMessage` when
+`required` is set) are optional and checked at render time. Templated text is a
+function prop named `get…Label` or `get…Message`; it receives the data and
+returns the whole string, and the component adds nothing to it.
+
+When required text is missing the component renders nothing in its place: no
+text node, and the attribute is omitted rather than rendered empty. Structure
+and behaviour are unchanged, a failed constraint still blocks submission, and
+core `requireText` warns once per component and prop in development
+(`Hawiyah: <Component> requires "<prop>"…`). Production builds do not warn.
+`label` on a component names its root; an `aria-label` or `aria-labelledby`
+passed to the root satisfies it. `locale` is only a formatting argument.
+
+Packaged in-page links (the `AppShell`, `PortalHeader` and `PortalLayout` skip
+links and `ContentNavigation` links) render `href="#id"` on the server and on
+first render. After mounting they are bound with core `bindFragmentLink`, so
+from the first interaction they resolve against the current document under any
+`<base href>`; a plain activation scrolls to the target and focuses it without
+writing the URL fragment.
 
 ## Catalog
 
@@ -79,24 +105,24 @@ close labels; the library never infers text language from layout direction.
 | `Select`                | String `v-model`, `options: Option[]`; native option children also accepted                                                                                           |
 | `Checkbox`, `Switch`    | Boolean `v-model`, `defaultValue`, label/hint/error; checkbox supports `indeterminate`                                                                                |
 | `Radio`                 | String `v-model`, `value`, shared native `name`; group inside a fieldset with a legend                                                                                |
-| `Combobox`              | String `v-model`, `options`, `disabled`, `readonly`, `emptyMessage`, `resultsMessage(count)`, `requiredMessage`; emits `update:query`, `update:open`                  |
-| `Tabs`                  | `items`, required `label`, string `v-model`, `orientation`, `activationMode`, `overflow: menu/scroll` (default menu), configurable `overflowLabel`; item content or named value slots, optional `tab:value` label slots. Compact horizontal containers move excess labels into a keyboard-accessible disclosure; vertical tabs remain visible. |
-| `Dialog`                | `title`, `description`, `closeLabel`, `closeOnBackdrop`; default/footer slots receive `{close}`, trigger slot receives `{open}`                                       |
+| `Combobox`              | String `v-model`, `options`, `disabled`, `readonly`; required `emptyMessage` and `getResultsMessage(count)`; `requiredMessage` when `required` is set; emits `update:query`, `update:open` |
+| `Tabs`                  | `items`, required `label`, string `v-model`, `orientation`, `activationMode`, `overflow: menu/scroll` (default menu), `overflowLabel` (required when `overflow` is `menu`); item content or named value slots, optional `tab:value` label slots. Compact horizontal containers move excess labels into a keyboard-accessible disclosure; vertical tabs remain visible. |
+| `Dialog`                | Required `title` and `closeLabel`, `description`, `closeOnBackdrop`; default/footer slots receive `{close}`, trigger slot receives `{open}`                                       |
 | `Accordion`             | `items: {value,title,content?,open?}[]`, `exclusive`; native details, named value content slots; emits `toggle(value,open)`                                           |
 | `Card`                  | `header`, default and `footer` slots                                                                                                                                  |
 | `Badge` | Static label; `tone="neutral\|success\|warning\|danger\|info"`, `variant="soft\|outline\|dot"`; [source and adaptations](../../docs/nic-badges.md). |
 | `Alert`                 | `tone: info                                                                                                                                                           | success | warning | danger`, `title`; defaults to status, or alert for danger; native role can override |
-| `Table`                 | `columns`, `rows`, `rowKey`, `caption`; column `{key,header,cell?,rowHeader?}`; named `cell:key` slots receive `{row,index}`; omit columns to compose native children |
-| `Pagination` | Numeric `v-model`/`defaultValue`, `totalPages`, Arabic default `label`, `previousLabel`, `nextLabel`, `pageLabel(page)`, `formatPage(page)`, `siblingCount=1`, `disabled`, `hideOnSinglePage=false`. Ellipsis disclosures use `gapLabel(start,end)`, `jumpLabel`, `goLabel`; gaps above 100 pages use bounded integer entry. Parent fetches/slices data; no navigation or scrolling is imposed. |
-| `Breadcrumb`            | `items: {label,href?,current?}[]`, `label`                                                                                                                            |
+| `Table`                 | `columns`, `rows`, `rowKey`, `caption`, required `emptyMessage`; column `{key,header,cell?,rowHeader?}`; named `cell:key` slots receive `{row,index}`; omit columns to compose native children |
+| `Pagination` | Numeric `v-model`/`defaultValue`, `totalPages`, required `label`, `previousLabel`, `nextLabel`, `getPageLabel(page)`, `formatPage(page)`, `siblingCount=1`, `disabled`, `hideOnSinglePage=false`. Ellipsis disclosures use required `getGapLabel(start,end)`, `jumpLabel`, `goLabel`; gaps above 100 pages use bounded integer entry. Parent fetches/slices data; no navigation or scrolling is imposed. |
+| `Breadcrumb`            | `items: {label,href?,current?}[]`, required `label`                                                                                                                   |
 | `Progress`              | Required `label`, optional value for determinate mode, `max=100`                                                                                                      |
 | `Skeleton`              | Decorative hidden span, size using native style/class                                                                                                                 |
-| `Spinner`               | Status with localized `label`                                                                                                                                         |
+| `Spinner`               | Status with required `label` (not needed when the application marks it `aria-hidden="true"`)                                                                       |
 | `Avatar` | Required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"`. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
 | `Divider`               | Native `hr`                                                                                                                                                           |
 | `Tooltip`               | Plain `content`, one focusable trigger in default slot; description IDs merge with the trigger                                                                        |
 | `FileUpload`            | Native input attributes plus field decoration; emits `update:files(File[])`; optional default slot                                                                    |
-| `Stepper`               | `items: {value,label,description?,status?}[]`, `current`, `label`                                                                                                     |
+| `Stepper`               | `items: {value,label,description?,status?}[]`, `current`, required `label`                                                                                            |
 | `EmptyState`            | `title`, `description`; `icon`, default, `action` slots                                                                                                               |
 
 `Field` associates one control; use a native fieldset and legend for groups.
@@ -123,23 +149,23 @@ All use native Vue rendering, shared CSS, and the same attrs/slots conventions.
 | Component       | Props, models and events                                                                                                                                                                                                                                                                                                                       |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `InputGroup`    | `prefix`, default and `suffix` slots; the consuming field supplies its label                                                                                                                                                                                                                                                                   |
-| `PasswordField` | String `v-model`, `defaultValue`, field decoration, `disabled`, `readonly`; `showLabel`, `hideLabel` localize the reveal button; input and button form one input group                                                                                                                                                                         |
-| `SearchField`   | String `v-model`, `defaultValue`, field decoration, `clearLabel`; optional `suggestions`, `maxSuggestions` (8), `resultsMessage(count)`, `showSearchButton` (false), `searchLabel`; emits `search(query)`. Input attributes and exposed `element`/`focus()` remain supported. |
+| `PasswordField` | String `v-model`, `defaultValue`, field decoration, `disabled`, `readonly`; required `showLabel`, `hideLabel` name the reveal button (and are its text with `toggleVariant="text"`); input and button form one input group                                                                                                                                                                         |
+| `SearchField`   | String `v-model`, `defaultValue`, field decoration, required `clearLabel`; optional `suggestions`, `maxSuggestions` (8), `getResultsMessage(count)` (required when `suggestions` are given), `showSearchButton` (false), `searchLabel` (required when `showSearchButton` is on; it names the button only, the input is named by `label`); emits `search(query)`. Input attributes and exposed `element`/`focus()` remain supported. |
 | `NumberField`   | `v-model: number \| ''`; native `min`, `max`, `step` and `required`; clearing preserves an empty value instead of inventing zero                                                                                                                                                                                                               |
 | `Slider`        | Numeric `v-model`, `defaultValue`, `min=0`, `max=100`, `step=1`, field decoration, `disabled`, `readonly`; native range keyboard behavior                                                                                                                                                                                                      |
-| `RangeSlider`   | Tuple `v-model: readonly [number,number]`, `defaultValue`, `min`, `max`, `step`; `label`, `lowerLabel`, `upperLabel`, `lowerName`, `upperName`; two native ranges enforce lower ≤ upper                                                                                                                                                        |
-| `Rating`        | Numeric `v-model`, `defaultValue`, `max=5` (1–20), native `name`, `required`, `label`, `hint`, `error`, `disabled`, `readonly`; `optionLabel(value,max)` localizes each native radio                                                                                                                                                           |
-| `RatingDisplay` | Required `label`, numeric `value=0`, `max=5` (1–20), `showValue=true`, `valueLabel(value,max)`; noninteractive fractional aggregate score with one accessible image name. |
+| `RangeSlider`   | Tuple `v-model: readonly [number,number]`, `defaultValue`, `min`, `max`, `step`; `label`, required `lowerLabel` and `upperLabel`, `lowerName`, `upperName`; two native ranges enforce lower ≤ upper                                                                                                                                                        |
+| `Rating`        | Numeric `v-model`, `defaultValue`, `max=5` (1–20), native `name`, `required`, `label`, `hint`, `error`, `disabled`, `readonly`; required `getRatingLabel(value,max)` names each native radio                                                                                                                                                           |
+| `RatingDisplay` | Numeric `value=0`, `max=5` (1–20), `showValue=true`, required `getValueLabel(value,max)`, which returns the whole text alternative (an `aria-label` passed by the application wins); noninteractive fractional aggregate score with one accessible image name. |
 | `PinInput`      | String `v-model`, `length=6`, field decoration; one input with `one-time-code`, numeric keyboard, native length/pattern; normalizes Arabic-Indic/Eastern digits; emits `complete(value)`                                                                                                                                                       |
-| `TagInput`      | String-array `v-model`, `defaultValue`, `name`, `required`, field decoration; Enter/comma adds unique trimmed tags; Backspace on an empty draft removes the last tag; `removeLabel(value)`, `requiredMessage`                                                                                                                                  |
-| `MultiSelect`   | String-array `v-model`, `defaultValue`, `options`, `label`, `searchLabel`, `emptyMessage`, `requiredMessage`; normalized search and native checkboxes, repeated hidden values for `name`; no combobox role                                                                                                                                     |
-| `Calendar`      | ISO-string `v-model`, `defaultValue`, `month`, `min`, `max`, `locale`, `calendar`, `weekStartsOn`, `isDateDisabled(value)`; `label`, `previousLabel`, `nextLabel`, `unsupportedMessage`; emits `update:month` when browsing                                                                                                                    |
-| `DatePicker`    | Calendar props plus field decoration and string `v-model`; custom ISO text input and modal Calendar; `v-model:calendar` switches `gregory` / `islamic-umalqura` while preserving ISO value; `calendarSwitchable=true`, `calendarSystemLabel`, `gregoryLabel`, `hijriLabel`, `calendarLabel`, `openLabel`, `closeLabel`, `invalidMessage` |
-| `FileDropzone`  | Field decoration, native `name`/`form`, `accept`, `multiple`, `maxSize` in bytes, `disabled`, `readonly`, `dropLabel`; emits `update:files(File[])` and `reject(File[])`; valid drops populate the native file input, invalid batches clear it. Without a `label`, a parent `Field` label, `aria-label` or `aria-labelledby`, the visible `dropLabel` is rendered as the input's label and gives it its accessible name                                                                                                 |
+| `TagInput`      | String-array `v-model`, `defaultValue`, `name`, `required`, field decoration; Enter/comma adds unique trimmed tags; Backspace on an empty draft removes the last tag; required `getRemoveLabel(tag)`; `requiredMessage` when `required` is set                                                                                                                                  |
+| `MultiSelect`   | String-array `v-model`, `defaultValue`, `options`, `label`, required `searchLabel` (names the filter input) and `emptyMessage`; `requiredMessage` when `required` is set; normalized search and native checkboxes, repeated hidden values for `name`; no combobox role                                                                                                                                     |
+| `Calendar`      | ISO-string `v-model`, `defaultValue`, `month`, `min`, `max`, `locale`, `calendar`, `weekStartsOn`, `isDateDisabled(value)`; required `locale` (month and weekday names come from Intl), `label`, `previousLabel`, `nextLabel`; `unsupportedMessage` and `rangeLabel` when `calendar` is `islamic-umalqura`; optional `getDayLabel(value)` overrides the Intl day name; emits `update:month` when browsing                                                                                                                    |
+| `DatePicker`    | Calendar props plus field decoration and string `v-model`; custom ISO text input and modal Calendar; `v-model:calendar` switches `gregory` / `islamic-umalqura` while preserving ISO value; `calendarSwitchable=true`; required `locale`, `label` (or `aria-label` / `aria-labelledby`), `calendarLabel`, `openLabel`, `closeLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage`, `unsupportedMessage`; `unavailableMessage` when `isDateDisabled` is given; optional `placeholder` (no default) |
+| `FileDropzone`  | Field decoration, native `name`/`form`, `accept`, `multiple`, `maxSize` in bytes, `disabled`, `readonly`, required `dropLabel` (the visible instruction, which describes the input); optional `getSelectedMessage(files)` renders a selection status; emits `update:files(File[])` and `reject(File[])`; valid drops populate the native file input, invalid batches clear it. The input is named by `label`, a parent `Field` label, `aria-label` or `aria-labelledby`; `dropLabel` no longer doubles as the field label                                                                                                 |
 
 Value controls support form reset. Arrays reset to `defaultValue`; native file
 controls reset to no files. `TagInput` and `MultiSelect` validate committed
-selection rather than draft/search text. Supply localized validity messages.
+selection rather than draft/search text. A missing validity message still blocks submission.
 Native attributes such as `name`, `form`, `autocomplete` and `inputmode` pass to
 the control, except that compound controls explicitly manage successful values.
 
@@ -174,7 +200,8 @@ const system = ref<CalendarSystem>("islamic-umalqura");
     required
     calendar-label="اختر تاريخ الموعد"
     calendar-system-label="نوع التقويم"
-    gregory-label="ميلادي"
+    range-label="نطاق تقويم أم القرى المدعوم"
+    gregorian-label="ميلادي"
     hijri-label="أم القرى"
     open-label="فتح التقويم"
     close-label="إغلاق"
@@ -186,7 +213,7 @@ const system = ref<CalendarSystem>("islamic-umalqura");
 </template>
 ```
 
-The default Arabic locale supplies calendar navigation, picker control labels and validation messages. Set `locale="en"` for English or override individual labels through props.
+Every control label and message is application text. `locale` is required and only selects Intl formatting for month names, weekday names, the era and day names; it chooses no text.
 
 The stored/submitted value stays Gregorian `YYYY-MM-DD` when switching display
 calendars. Reopening shows the selected date's month. Calendar supports arrows
@@ -214,11 +241,11 @@ endorsement or a claim about religious moon-sighting determinations.
 | `ToggleGroup` | `options`, `label`, `variant: segmented\|outline`; string `v-model` uses native radio selection; `multiple` uses string-array `v-model` and pressed buttons; `defaultValue`, native `name`/`form`, `disabled`, `readonly`                                                              |
 | `Popover`     | `label`, `triggerLabel`, `v-model:open` / `defaultOpen`, `disabled`; optional trigger content slot; default slot `{close}`; labelled region, ordinary Tab navigation, outside press and Escape dismissal                                                                               |
 | `Menu`        | `label`, `items: {value,label,disabled?,href?}[]`; optional trigger content slot; emits `select(value)`; Home/End/ArrowUp/ArrowDown skip disabled items, Escape returns focus, Tab exits normally                                                                                      |
-| `Drawer`      | Dialog API with `side: start\|end\|bottom`; modal native dialog and preserved trigger focus; default/footer/trigger scoped slots inherited                                                                                                                                             |
-| `ToastRegion` | `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, `label`, `dismissLabel(message)`, `@dismiss="remove"`. Set `variant="banner"` and optionally `position="inline"` or a corner. A dismissal listener enables the close action. Defaults are Arabic. |
+| `Drawer`      | Dialog API (required `title` and `closeLabel`) with `side: start\|end\|bottom`; modal native dialog and preserved trigger focus; default/footer/trigger scoped slots inherited                                                                                                                                             |
+| `ToastRegion` | `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, required `label`, `getDismissLabel(message)` (required when a message can be dismissed), `@dismiss="remove"`. Set `variant="banner"` and optionally `position="inline"` or a corner. A dismissal listener enables the close action. |
 | `Collapsible` | `label`, boolean `v-model`, `defaultValue`, `disabled`; native details/summary with default content slot                                                                                                                                                                               |
-| `TreeView`    | `items: {id,label,disabled?,children?}[]`, `label`, selected-id `v-model`, `defaultValue`, `v-model:expanded`, `defaultExpanded`, `disabled`; localized `expandLabel(node)` / `collapseLabel(node)`; flattened visible tree with level/position, roving focus and RTL expansion arrows |
-| `Carousel` | Required label/slides; `v-model/defaultValue`, `wrap=true`, `slides` and named slide-ID slots, one-based `slideMessage(index,total)`. `showIndicators=true`, localized control/indicator/description/empty labels, inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
+| `TreeView`    | `items: {id,label,disabled?,children?}[]`, `label`, selected-id `v-model`, `defaultValue`, `v-model:expanded`, `defaultExpanded`, `disabled`; required `getExpandLabel(node)` / `getCollapseLabel(node)`; flattened visible tree with level/position, roving focus and RTL expansion arrows |
+| `Carousel` | Required `label`, `slides: {id,content?}[]`, `previousLabel`, `nextLabel`, `emptyLabel` and one-based `getSlideLabel(position,total)`, which names each slide and indicator and is the live status; `v-model/defaultValue`, `wrap=true`, named slide-ID slots. `showIndicators=true` with `indicatorsLabel` required while indicators are shown; optional `carouselDescription` / `slideDescription` (`aria-roledescription`, omitted when absent); inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
 
 Popover is a disclosure, not a focus trap. Menu is for commands/navigation;
 TreeView does not claim drag-and-drop. Toast and notification dismissal is
@@ -231,20 +258,20 @@ caller-owned: update the supplied message array in response to the emitted ID.
 | `Link`             | Native anchor attrs, `href`, `disabled`, `external`; external links use `noopener noreferrer`                                                                                                                                                                                              |
 | `IconButton`       | Required accessible `label`, `variant`, `size`, `disabled`, `loading`; default decorative icon slot                                                                                                                                                                                        |
 | `ButtonGroup`      | Required `label`; default buttons slot; native `data-variant` / `data-orientation` for shared CSS variants                                                                                                                                                                                 |
-| `Chip`             | `label` or default slot, `tone`, `removable`, `removeLabel`, `disabled`; emits `remove`                                                                                                                                                                                                    |
+| `Chip`             | `label` or default slot, `tone`, `removable`, `removeLabel` (required when removable), `disabled`; emits `remove`                                                                                                                                                                                                    |
 | `DescriptionList`  | `items: {term,description}[]`, `variant: stacked\|horizontal\|compact`; `item:index` slots receive `{item}`                                                                                                                                                                                |
 | `Stat`             | `label`, string/number `value`, `locale`, `description`, `trend`; numeric values format with Intl                                                                                                                                                                                          |
-| `Timeline`         | `label`, `items: {id,title,description?,date?,dateLabel?,status?}[]`; named item-ID slots; machine-readable native time, optional current step                                                                                                                                             |
+| `Timeline`         | Required `label`, `items: {id,title,description?,date?,dateLabel?,status?}[]`; named item-ID slots; machine-readable native time, optional current step                                                                                                                                             |
 | `Meter`            | Required `label`, `value`; native `min`, `max`, `low`, `high`, `optimum` semantics                                                                                                                                                                                                         |
-| `AvatarGroup`      | `label`, `items: {name,src?,initials?}[]`, `max`, `remainingLabel(count)`                                                                                                                                                                                                                  |
-| `DataTable`        | `caption`, `rows: Record<string,unknown>[]`, `columns: {key,label,sortable?,rowHeader?}[]`, `rowKey`, `locale`; `v-model:sort-key`, `v-model:sort-direction`, initial `defaultSortKey` / `defaultSortDirection`; `sortLabel(column,nextDirection)`; `cell:key` slots receive `{row,index}` |
-| `ServiceCard`      | `title`, `description`, `href`, `actionLabel`, `badge`, `metadata`; `icon`, default and `action` slots                                                                                                                                                                                     |
+| `AvatarGroup`      | Required `label` and `getOverflowLabel(count)`, `items: {name,src?,initials?}[]`, `max`                                                                                                                                                                                                                  |
+| `DataTable`        | `caption`, `rows: Record<string,unknown>[]`, `columns: {key,label,sortable?,rowHeader?}[]`, `rowKey`, `locale`, required `emptyMessage`; `v-model:sort-key`, `v-model:sort-direction`, initial `defaultSortKey` / `defaultSortDirection`; optional `getSortLabel(column,nextDirection)` (without it a sort button is named by the column label and `aria-sort` carries the state); `cell:key` slots receive `{row,index}` |
+| `ServiceCard`      | `title`, `description`, `href`, `actionLabel` (required when `href` is set and no `action` slot is given), `badge`, `metadata`; `icon`, default and `action` slots                                                                                                                                                                                     |
 | `ServiceDetails`   | `title`, `description`, DescriptionList `items`; default and `action` slots                                                                                                                                                                                                                |
-| `PortalHeader`     | `brand`, `homeHref`, `links: {label,href,current?}[]`, `navLabel`; `logo`, `actions`, default slots Optional top-level `groups` contain a label and child links. See [grouped navigation](../../docs/nic-portal-navigation.md). |
-| `PortalFooter`     | `brand`, `copyright`, `links`, `navLabel`; default content slot                                                                                                                                                                                                                            |
-| `Feedback`         | `label`, selected answer string `v-model` (`yes`/`no`), `defaultValue`, `yesLabel`, `noLabel`, `commentLabel`, `submitLabel`, `thanks`, `disabled`, `readonly`; emits `submit({value,comment})`                                                                                            |
-| `CookieConsent`    | `v-model:open`, `defaultOpen=true`, `label`, required `description`, `acceptLabel`, `rejectLabel`, `preferencesLabel`; emits `accept`, `reject`, `preferences`; no hidden storage or third-party initialization                                                                            |
-| `NotificationList` | `label`, `items: {id,title,description?,date?,dateLabel?,read?,href?}[]`, `emptyMessage`, `readLabel(item)`, `dismissLabel(item)`; emits `read(id)`, `dismiss(id)`; named ID slots                                                                                                         |
+| `PortalHeader`     | `brand` and/or `brand` slot artwork, `brandLabel`, `homeHref`, `links: {label,href,current?}[]`, required `navigationLabel` and `menuLabel`, `mainId` with `skipLabel`; `brand`, `actions` slots. Optional top-level `groups` contain a label and child links. See [portal layout](PORTAL.md). See [grouped navigation](../../docs/nic-portal-navigation.md). |
+| `PortalFooter`     | `brand` and/or `brand` slot, `brandLabel`, `copyright`, `links`, `groups`, `legalLinks`, `description`; required `externalLabel`; `navigationLabel` when `links` are given, `legalLinksLabel` when `legalLinks` are given, `supportLabel` with the `support` slot; default content slot                                                                                                                                                                                                                            |
+| `Feedback`         | Required `label`, `yesLabel`, `noLabel`, `successMessage`; `commentLabel` and `submitLabel` when the comment field is rendered; selected answer string `v-model` (`yes`/`no`), `defaultValue`, `disabled`, `readonly`; emits `submit({value,comment})`                                                                                            |
+| `CookieConsent`    | `v-model:open`, `defaultOpen=true`, required `title`, `description`, `acceptLabel`, `rejectLabel`; `preferencesLabel` when `@preferences` is bound (the preferences action is rendered only then); emits `accept`, `reject`, `preferences`; no hidden storage or third-party initialization                                                                            |
+| `NotificationList` | `label`, `items: {id,title,description?,date?,dateLabel?,read?,href?}[]`, required `label` and `emptyMessage`, `getMarkReadLabel(item)` when `@read` is bound and `getDismissLabel(item)` when `@dismiss` is bound (each action is rendered only while its listener is bound); emits `read(id)`, `dismiss(id)`; named ID slots                                                                                                         |
 
 DataTable sorting is immutable, stable and localized. It remains a native table;
 use the existing Table component for unrestricted table composition. Platform
@@ -278,7 +305,7 @@ All layout primitives forward native HTML attributes and accept `as` (default
 | `Spacer`      | Flexible empty space; keep decorative                                                                                 |
 | `AspectRatio` | Media frame with positive `ratio`, e.g. `16 / 9`                                                                      |
 | `Section`     | Semantic section; name it with native `aria-label` or a heading                                                       |
-| `AppShell`    | Use `header`, `sidebar`, default main content and `footer` slots. The Arabic skip link focuses main. Set `mainId` to choose its target ID and `skipLabel` to localize the link. |
+| `AppShell`    | Use `header`, `sidebar`, default main content and `footer` slots. The skip link (required `skipLabel`) focuses main; set `mainId` to choose its target ID. |
 | `PageHeader`  | `title`, `description`, heading `level=1`; `breadcrumb`, `actions`, default slots; outer element is always header     |
 
 ```vue
@@ -305,10 +332,19 @@ integration boundaries. Mount the chosen provider in a named Section/Card or
 AspectRatio with its own accessible fallback and documented data contract. Hawiyah
 does not simulate these engines or handle provider credentials or transactions.
 
+## Navigation, verification and upload patterns
+
+| Component          | API |
+| ------------------ | --- |
+| `MobileTopBar`     | Required `title`; `subtitle`, `variant="main|internal"`, `headingLevel` (1); `backHref` with `backLabel` (required when `backHref` is set); `leading`, `title`, `subtitle`, `actions` slots |
+| `NavigationDrawer` | Drawer API: `v-model:open`, `defaultOpen`, `closeOnBackdrop`, `side="start|end"`, `description`; required `title`, `items`, `navigationLabel` and `closeLabel`; `trigger`, `user` and `footer` slots |
+| `SiteVerification` | `v-model:open`, `defaultOpen`; required `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel`, `httpsDescription`; `domain`; `registrationHref` with `registrationNumber` and `registrationLabel` (required when `registrationHref` is set) and `externalLabel` (required when `registrationExternal`, default on, applies); `mark` and default slots |
+| `FileUploadList`   | `items`, `disabled`, `removable`; required `labels` (core `FileUploadLabels`: `selected`, `uploading`, `complete`, `error`, `remove`, `getProgressLabel(name)`, `getRemoveLabel(name)`); emits `remove(id)` |
+
 ## Portal shell
 
 [`PortalLayout`, `PortalHeader` and `SecondaryNav`](PORTAL.md) provide a complete
-Arabic-default portal shell with responsive navigation, breadcrumbs and footer.
+portal shell with responsive navigation, breadcrumbs and footer; the application supplies every label.
 Run the Vue example with `?preview=portal` to use the native composed shell.
 
 ## NIC card composition
@@ -336,17 +372,17 @@ a separate native state. See [NIC states](../../docs/nic-choices.md).
 ### Table presentation and empty results
 
 `Table` and `DataTable` expose `variant="default|striped|bordered"`,
-`size="sm|md|lg"` and `emptyMessage`. DGA cells have a 48px default minimum;
+`size="sm|md|lg"` and a required `emptyMessage`. DGA cells have a 48px default minimum;
 40px/56px alternate sizes and striped/bordered variants are Hawiyah extensions.
 Captions name keyboard-focusable horizontal scroll containers; row-header
 columns render native `th scope="row"`. Empty data spans the column count and
-uses an Arabic message by default. Sorting does not mutate caller records.
+shows the application's `emptyMessage`. Sorting does not mutate caller records.
 React/Vue native `data-variant` and `data-size` attributes remain supported;
 typed props take precedence. `wrapperProps` customizes the scroll container.
-The default sort-action label is Arabic; pass `sortLabel` for another language.
+Pass `getSortLabel` to name sort buttons; without it they are named by the column label.
 See [table evidence and adaptations](../../docs/nic-tables.md).
 
-Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Arabic labels and Latin digits are the defaults.
+Rating inputs select whole numbers; finite prefilled values are clamped to the normalized maximum and floored. Fractional averages belong in `RatingDisplay`. Nonfinite maxima fall back to 5 and nonfinite values to 0. Labels come from `getRatingLabel` / `getValueLabel`.
 
 
 ### Search suggestions
@@ -359,7 +395,7 @@ no active suggestion emits `search` with a trimmed, nonempty query and keeps
 native form submission available. Choose either the search callback or the
 form's submit handler for the application request; wiring both duplicates it.
 The optional icon search action is a non-submit button and uses the callback.
-Arabic clear/search labels are defaults and can be localized.
+`clearLabel` and, with the search button, `searchLabel` are application text.
 
 Escape dismisses an open list before reaching an enclosing dialog; another
 Escape can dismiss the dialog. Composition/modifier keys do not commit matches.
@@ -370,10 +406,11 @@ configuration clear active-option state. No remote search service is called.
 ### Content navigation
 
 `ContentNavigation` follows application-owned section IDs using nested
-`items: {id, label, disabled?, children?}[]`. Options are `label` (Arabic default),
-`showHeading` (true), `sticky` (false), `scrollRoot` (null/window) and `offset`
-(80px). `@current-change="onCurrentChange"` reports the current section ID. Ordinary
-activation scrolls without changing the URL; keyboard activation also focuses
+`items: {id, label, disabled?, children?}[]`. Options are a required `label` (the
+landmark name and heading text), `showHeading` (true), `sticky` (false),
+`scrollRoot` (null/window), `offset` (80px) and `updateHash` (false; when true the
+resolved URL is written with `history.replaceState`). `@current-change="onCurrentChange"` reports the current section ID. Links render `href="#id"` and are bound with core `bindFragmentLink`. Ordinary
+activation scrolls without changing the URL by default; keyboard activation also focuses
 the target. Modified anchor clicks retain browser behavior. Disabled entries
 remain noninteractive text links; no section content is created or hidden.
 
@@ -383,7 +420,7 @@ import {ContentNavigation} from '@hawiyah/vue';
 const sections = [{id: 'requirements', label: 'المتطلبات'}];
 </script>
 <template>
-  <ContentNavigation :items="sections" />
+  <ContentNavigation label="في هذه الصفحة" :items="sections" />
   <section id="requirements"><h2>المتطلبات</h2></section>
 </template>
 ```

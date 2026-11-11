@@ -1,13 +1,14 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { createApp, defineComponent, h, nextTick, ref, type App } from 'vue';
 import { MultiSelect, PinInput, TagInput } from '../src/controls.js';
+import { multiSelectText, tagInputText } from './texts.js';
 let app: App | undefined;
 afterEach(() => { app?.unmount(); document.body.replaceChildren(); });
 function mount(render: () => ReturnType<typeof h>) { const host = document.createElement('div'); document.body.append(host); app = createApp(defineComponent(() => render)); app.mount(host); return host; }
 
 it('ignores unknown and disabled multiselect values for required validity and submission without changing the model', async () => {
   const value = ref(['missing', 'disabled']); const options = ref([{ value: 'available', label: 'Available' }, { value: 'disabled', label: 'Disabled', disabled: true }]); const changed = vi.fn();
-  const host = mount(() => h('form', [h(MultiSelect, { name: 'choices', label: 'الخيارات', required: true, options: options.value, modelValue: value.value, 'onUpdate:modelValue': changed })]));
+  const host = mount(() => h('form', [h(MultiSelect, { ...multiSelectText, name: 'choices', label: 'الخيارات', required: true, options: options.value, modelValue: value.value, 'onUpdate:modelValue': changed })]));
   await nextTick();
   const form = host.querySelector('form')!; expect(form.checkValidity()).toBe(false); expect(new FormData(form).getAll('choices')).toEqual([]);
   options.value = [...options.value, { value: 'missing', label: 'Restored' }]; await nextTick();
@@ -30,7 +31,7 @@ it('restores a normalized default PIN on native form reset', async () => {
 });
 
 it('announces required tags without requiring a nonempty draft', () => {
-  const host = mount(() => h('form', [h(TagInput, { name: 'tags', label: 'الوسوم', required: true, defaultValue: ['هوية'] })]));
+  const host = mount(() => h('form', [h(TagInput, { ...tagInputText, name: 'tags', label: 'الوسوم', required: true, defaultValue: ['هوية'] })]));
   const form = host.querySelector('form')!; const input = host.querySelector<HTMLInputElement>('input:not([type=hidden])')!;
   expect(input.required).toBe(false); expect(input.getAttribute('aria-required')).toBe('true'); expect(form.checkValidity()).toBe(true); expect(new FormData(form).getAll('tags')).toEqual(['هوية']);
 });
