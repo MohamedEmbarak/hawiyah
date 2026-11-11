@@ -114,7 +114,7 @@ required `preferencesLabel`; `FileDropzone` takes an optional
 | `Checkbox` | Native checkbox plus label/hint/error and `indeterminate`. |
 | `Radio` | Native radio plus label/hint/error; supply a shared `name` for a native group. |
 | `Switch` | Native checkbox with `role="switch"`, label/hint/error. |
-| `Tabs` | `items: {value,label,content,disabled?}[]`, required `label`, `value`/`defaultValue`, `onValueChange`, `orientation`, `activationMode`, `overflow: menu/scroll` (default menu); `overflowLabel` names the overflow disclosure and is required unless `overflow="scroll"`. Horizontal compact containers move excess labels into a keyboard-accessible disclosure; vertical tabs remain visible. |
+| `Tabs` | `items: {value,label,content,disabled?}[]`, required `label` (the name of the tab list; a missing one warns in development), `value`/`defaultValue`, `onValueChange`, `orientation`, `activationMode`, `overflow: menu/scroll` (default menu); `overflowLabel` names the overflow disclosure and is required unless `overflow="scroll"`. Horizontal compact containers move excess labels into a keyboard-accessible disclosure; vertical tabs remain visible. |
 | `Dialog` | Required `title` and `closeLabel` (name of the close button); `description`, `trigger`, `open`/`defaultOpen`, `onOpenChange`, `closeOnBackdrop`; children/footer can render from `{close}`. |
 | `Combobox` | Single selection from `Option[]`; label/hint/error, required `emptyMessage` and `getResultsMessage(count)`, `requiredMessage` with `required`, `value`/`defaultValue`, `onValueChange(value, option?)`, `onInputChange(query)`, `open`/`defaultOpen`, `onOpenChange`, native form attributes. |
 | `Accordion` | `items: {value,title,content,open?,defaultOpen?,onOpenChange?}[]`; `exclusive` uses a native details name group. |
@@ -433,6 +433,9 @@ of complete assistive-technology testing for every new pattern.
 
 [`PortalLayout`, `PortalHeader` and `SecondaryNav`](PORTAL.md) provide a complete
 portal shell with responsive navigation, breadcrumbs and footer; all of its texts are props.
+`PortalLayout` requires `skipLabel`, `menuLabel` and `navigationLabel` in every use,
+`secondaryLabel` with `secondaryNavigation`, `breadcrumbLabel` with `breadcrumbs` and
+`footerLabel` with `footerProps.links`.
 Run the React example with `?preview=portal` to use the native composed shell.
 
 The mobile and verification parts of the shell take their texts as props too:
@@ -497,7 +500,9 @@ configuration clear active-option state. No remote search service is called.
 
 `ContentNavigation` follows application-owned section IDs using nested
 `items: {id, label, disabled?, children?}[]`. The required `label` names the
-landmark and is the heading text; options are `showHeading` (true), `sticky`
+landmark and is the heading text; an `aria-label` or `aria-labelledby` passed to
+the component names the landmark instead, and no heading is printed without
+`label`. Options are `showHeading` (true), `sticky`
 (false), `scrollRoot` (null/window), `offset` (80px) and `updateHash` (false).
 `onCurrentChange(id)` reports the current section ID. Ordinary activation
 scrolls without changing the URL (with `updateHash` the resolved URL is written

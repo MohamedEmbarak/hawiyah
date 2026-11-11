@@ -84,7 +84,11 @@ for (const adapter of ['vue', 'angular']) it(`${adapter}: search callbacks ignor
 it('vanilla restores owned markup on destroy and does not erase an edited query', () => {
   const root = document.createElement('div'); root.innerHTML = '<input data-hw-search-input type="search" value="before"><button hidden data-hw-search-clear>Clear</button>';
   const originalButton = root.querySelector('button')!.cloneNode(true);
-  const controller = createSearchField(root, { clearLabel: 'مسح البحث' }); controller.setValue('after'); controller.destroy(); controller.destroy();
+  // The authored text names the button before the icon replaces it; an explicit option wins.
+  const authored = createSearchField(root); expect(root.querySelector('button')!.getAttribute('aria-label')).toBe('Clear'); expect(root.querySelector('button')!.textContent).toBe('');
+  authored.destroy(); expect(root.querySelector('button')!.isEqualNode(originalButton)).toBe(true);
+  const controller = createSearchField(root, { clearLabel: 'مسح البحث' }); expect(root.querySelector('button')!.getAttribute('aria-label')).toBe('مسح البحث');
+  controller.setValue('after'); controller.destroy(); controller.destroy();
   expect(root.querySelector('button')!.isEqualNode(originalButton)).toBe(true);
   expect(root.querySelector('input')!.id).toBe(''); expect(root.querySelector('input')!.value).toBe('after');
 });

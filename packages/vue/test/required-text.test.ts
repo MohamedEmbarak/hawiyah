@@ -8,7 +8,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Breadcrumb, Calendar, DataTable, DatePicker, FileDropzone, PortalFooter, SiteVerification, Spinner, Stat, Table } from '../src/index.js';
 import { calendarText, datePickerText, dropzoneText, paginationText } from './texts.js';
-import { AppShell, Carousel, ContentNavigation, CookieConsent, Dialog, Drawer, NotificationList, Pagination, PortalHeader, PortalLayout, Rating, RatingDisplay, TagInput, ToastRegion, TreeView } from '../src/index.js';
+import { AppShell, Carousel, ContentNavigation, CookieConsent, Dialog, Drawer, Feedback, Field, NotificationList, Pagination, PortalHeader, PortalLayout, Rating, RatingDisplay, SearchField, Tabs, TagInput, ToastRegion, TreeView } from '../src/index.js';
 
 const apps: App[] = [];
 function mount(component: Component) { const root = document.createElement('div'); document.body.append(root); const app = createApp(component); apps.push(app); app.mount(root); return root; }
@@ -210,6 +210,46 @@ it('accepts aria-label in place of a root label and warns once for an unnamed ro
   expect(root.querySelector('.hw-breadcrumb')!.hasAttribute('aria-label')).toBe(false);
   expect(root.querySelector('.hw-pagination')!.hasAttribute('aria-label')).toBe(false);
   expect(root.querySelector('.hw-spinner')!.hasAttribute('aria-label')).toBe(false);
+});
+
+it('requires the Feedback comment texts in every use, before a reader answers', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const props = (Feedback as unknown as { props: Record<string, { required?: boolean }> }).props;
+  expect(props.commentLabel!.required).toBe(true); expect(props.submitLabel!.required).toBe(true);
+  const root = mount({ render: () => h(loose(Feedback), { label: 'Was this page helpful?', yesLabel: 'Yes', noLabel: 'No', successMessage: 'Thank you' }) });
+  // Vue reports the missing props at mount; no answer has been chosen yet.
+  const vue = warn.mock.calls.map(call => String(call[0]));
+  for (const name of ['commentLabel', 'submitLabel']) expect(vue.some(message => message.includes(`Missing required prop: "${name}"`))).toBe(true);
+  expect(hawiyahWarnings(warn).map(message => message.split('.')[0])).toEqual(['Hawiyah: Feedback requires "commentLabel"', 'Hawiyah: Feedback requires "submitLabel"']);
+  // Choosing an answer shows the field and the button with nothing in place of the missing texts.
+  root.querySelector<HTMLButtonElement>('.hw-feedback-actions button')!.click(); await nextTick();
+  expect(root.querySelector('textarea')).not.toBeNull(); expect(root.querySelector('label')).toBeNull();
+  expect(hawiyahWarnings(warn)).toHaveLength(2);
+});
+
+it('reports a SearchField that has no field name and accepts a label, an aria-label, an aria-labelledby or a parent Field', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  mount({ render: () => h('div', [
+    h(SearchField, { clearLabel: 'Clear', label: 'Search' }),
+    h(SearchField, { clearLabel: 'Clear', 'aria-label': 'Search' }),
+    h('span', { id: 'search-heading' }, 'Search'), h(SearchField, { clearLabel: 'Clear', 'aria-labelledby': 'search-heading' }),
+    h(Field, { label: 'Search' }, () => h(SearchField, { clearLabel: 'Clear' })),
+  ]) });
+  expect(warn).not.toHaveBeenCalled();
+  const root = mount({ render: () => h('div', [h(SearchField, { clearLabel: 'Clear' }), h(SearchField, { clearLabel: 'Clear' })]) });
+  expect(hawiyahWarnings(warn)).toEqual([expect.stringMatching(/^Hawiyah: SearchField requires "label"\./)]);
+  const input = root.querySelector('input')!;
+  expect(input.hasAttribute('aria-label')).toBe(false); expect(input.hasAttribute('aria-labelledby')).toBe(false); expect(root.querySelector('label')).toBeNull();
+});
+
+it('reports a tab list without a label and writes no empty name', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const items = [{ value: 'a', label: 'First', content: 'One' }, { value: 'b', label: 'Second', content: 'Two' }];
+  const named = mount({ render: () => h(Tabs, { items, label: 'Sections', overflowLabel: 'More tabs' }) });
+  expect(named.querySelector('[role=tablist]')!.getAttribute('aria-label')).toBe('Sections'); expect(hawiyahWarnings(warn)).toEqual([]);
+  const unnamed = mount({ render: () => h(loose(Tabs), { items, overflowLabel: 'More tabs' }) });
+  expect(unnamed.querySelector('[role=tablist]')!.hasAttribute('aria-label')).toBe(false);
+  expect(hawiyahWarnings(warn)).toEqual([expect.stringMatching(/^Hawiyah: Tabs requires "label"\./)]);
 });
 
 it('keeps the space before externalLabel inside the visually hidden span', async () => {

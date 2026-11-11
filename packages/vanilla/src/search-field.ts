@@ -2,7 +2,7 @@ import { createCleanup, getSearchSuggestions, requireText, isDisabled, observeFi
 import { emit, ensureId, eventElement, nativeChange, readOnly, remember, required, templated, text, writeText } from './dom.js';
 
 export interface SearchFieldOptions {
-  /** Accessible name of the clear button: the option, else its authored aria-label, else data-hw-clear-label. Required. */
+  /** Accessible name of the clear button: the option, else its authored aria-label or text, else data-hw-clear-label. Required. */
   clearLabel?: string;
   suggestions?: readonly string[];
   maxSuggestions?: number;
@@ -28,7 +28,9 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   remember(scope, button, ['type', 'class', 'hidden', 'disabled', 'aria-label', 'aria-controls']);
   scope.add(() => button.replaceChildren(...children));
   button.type = 'button'; button.classList.add('hw-search-clear');
-  writeText(button, 'aria-label', 'SearchField', 'clearLabel', options.clearLabel ?? button.getAttribute('aria-label') ?? text(root, 'clearLabel'));
+  // The icon replaces the button's children below, so authored text is read first and kept as the name.
+  const authored = button.getAttribute('aria-label')?.trim() || button.textContent?.trim() || undefined;
+  writeText(button, 'aria-label', 'SearchField', 'clearLabel', options.clearLabel ?? authored ?? text(root, 'clearLabel'));
   const resultsMessage = templated(root, 'getResultsMessage', options.getResultsMessage, (count: number) => ({ count }));
   button.setAttribute('aria-controls', ensureId(scope, input, 'search'));
   const icon = input.ownerDocument.createElement('span'); icon.className = 'hw-search-clear-icon'; icon.setAttribute('aria-hidden', 'true'); button.replaceChildren(icon);

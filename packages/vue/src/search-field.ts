@@ -46,7 +46,10 @@ export const SearchField = defineComponent({
       if(!list || !option)return;const outer=list.getBoundingClientRect(),inner=option.getBoundingClientRect();
       if(inner.top<outer.top)list.scrollTop-=outer.top-inner.top;else if(inner.bottom>outer.bottom)list.scrollTop+=inner.bottom-outer.bottom;
     },{flush:'post'});
-    return()=>decorate(props,field.id.value,[
+    return()=>{
+      // The field name: `label`, an aria-label or aria-labelledby on the input, or a parent Field label.
+      if(!field.controlAttrs.value['aria-labelledby'] && !optionalText(attrs['aria-label']))needText('SearchField','label',props.label);
+      return decorate(props,field.id.value,[
       h('div',{class:'hw-input-group',ref:container},[
         h('div',{class:'hw-search-control'},[
           h('input',mergeProps(attrs,field.controlAttrs.value,{ref:element,class:'hw-input',type:'search',value:model.value.value,disabled:props.disabled,readonly:props.readonly,
@@ -70,5 +73,6 @@ export const SearchField = defineComponent({
       ]),
       props.suggestions!==undefined?h('span',{class:'hw-sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},opened.value && !props.readonly && !props.disabled && !composing.value && model.value.value.trim()?resultsMessage(matches.value.length):undefined):null,
     ],'hw-search-field');
+    };
   },
 });

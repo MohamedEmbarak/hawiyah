@@ -41,8 +41,33 @@ replaces it.
   prop, slot, handler or attribute switches a feature on is required under
   that condition. A missing text renders nothing in its place and warns once
   in development through `requireText` ("Hawiyah: ..."); production builds
-  stay silent. A constraint whose validation message is missing still blocks
-  submission, and `aria-invalid` does not depend on the message.
+  stay silent, in the browser as well: development is read from
+  `process.env.NODE_ENV` alone, which a bundler replaces, and a page without a
+  bundler counts as development unless it sets `globalThis.__HAWIYAH_DEV__`.
+  The warning names the component as its adapter exposes it (the selector in
+  Angular: `hw-file-dropzone`). A constraint whose validation message is
+  missing still blocks submission, and `aria-invalid` does not depend on the
+  message.
+- **Names are required alike in every adapter.** A SearchField needs a field
+  name: `label`, or an `aria-label` or `aria-labelledby` on the input in React
+  and Vue (Vue also accepts a parent `Field`); a field without one now warns
+  in Vue and Angular as it does in React. Angular `hw-search-field`,
+  `hw-toggle-group` and `hw-tree-view` take `label` as a required input, so a
+  template without it no longer compiles (NG8008). A Tabs list without
+  `label` warns in React and Vue as it does in Angular. Vue `Feedback`
+  requires `commentLabel` and `submitLabel` in every use, as React does,
+  because the comment field appears once the reader answers. React
+  `ContentNavigation` accepts an `aria-label` or `aria-labelledby` in place of
+  `label`, as Vue does; the heading is printed only from `label`.
+- **Nothing in place of absent optional text (Angular).** Field components
+  render no empty `<label>` or `<legend>` and no empty `placeholder` attribute
+  when `label` or `placeholder` is not supplied.
+- **Vanilla.** `createSearchField` names the clear button from its authored
+  `aria-label` or text before the icon replaces that text; `clearLabel` still
+  wins when it is passed. `createPortalHeader` gives a brand that is not a
+  link and has no role `role="img"` together with `brandLabel`, as React
+  does, and removes both on `destroy()`.
+- Core `layoutStyles` errors carry the `Hawiyah:` prefix.
 - **No default locale.** Core `formatNumber`, `formatDate` and `sortRows` take
   a required locale; the `ar-SA` default is removed. These helpers,
   `getCalendarMonth` and `formatCalendarDate` throw a `TypeError` without a
@@ -156,8 +181,8 @@ The names were checked against the built type declarations of each package.
 | Feedback | `'Was this page helpful?'` | `label` | always |
 | Feedback | `'Yes'`; Angular `positiveLabel` | `yesLabel` | always |
 | Feedback | `'No'`; Angular `negativeLabel` | `noLabel` | always |
-| Feedback | `'Tell us more (optional)'` | `commentLabel` | always in React; when the comment field is rendered in Vue; not in Angular |
-| Feedback | `'Send feedback'` | `submitLabel` | always in React; when the comment field is rendered in Vue; not in Angular |
+| Feedback | `'Tell us more (optional)'` | `commentLabel` | always in React and Vue; not in Angular |
+| Feedback | `'Send feedback'` | `submitLabel` | always in React and Vue; not in Angular |
 | Feedback | `'Thank you for your feedback.'`; Vue `thanks`, Angular `thanksMessage` | `successMessage` | always |
 | FileDropzone | `dropLabel` used as the input name; Angular optional `label` | `label` (or `aria-label`, `aria-labelledby`, a parent Field) | always |
 | FileDropzone | `'Drop files here or choose files'`; Vue `'Choose files or drop them here'`; Angular `instruction` | `dropLabel` | always |
@@ -213,7 +238,8 @@ The names were checked against the built type declarations of each package.
 | RangeSlider (vanilla) | the document language | `locale` | when a `[data-hw-range-output]` element exists |
 | Rating | `'n من t'`; Vue `optionLabel`, Angular `ratingLabel` | `getRatingLabel(value, max)` | always |
 | RatingDisplay | `label` joined with `'n من t'`; Vue and Angular `valueLabel` | `getValueLabel(value, max)`; `label` removed | always |
-| SearchField | `'مسح البحث'` / `'Clear search'` | `clearLabel` | always |
+| SearchField | none; the field could be left unnamed without a warning in Vue and Angular | `label` (or `aria-label`, `aria-labelledby`; in Vue a parent Field) | always; a required input in Angular |
+| SearchField | `'مسح البحث'` / `'Clear search'` | `clearLabel` | always (vanilla: unless the clear button has an `aria-label` or text) |
 | SearchField | `'بحث'` | `searchLabel` | when the search button is shown |
 | SearchField | `` `${count} اقتراحات متاحة` ``; `resultsMessage` | `getResultsMessage(count)` | when suggestions are given |
 | SecondaryNav | `'التنقل الثانوي'` | `label` | always |
@@ -226,6 +252,7 @@ The names were checked against the built type declarations of each package.
 | Stat (Vue) | `locale` and number formatting | removed; pass the formatted value | — |
 | Stepper | `'التقدم'` | `label` | always |
 | Table | `'لا توجد سجلات'` | `emptyMessage` | when `columns` is given |
+| Tabs | none | `label` | always; a missing one now warns in React and Vue too |
 | Tabs | `'المزيد من التبويبات'` / `'More tabs'` | `overflowLabel` | when overflow uses a menu |
 | TagInput | `` `Remove ${tag}` ``; Vue and Angular `removeLabel` | `getRemoveLabel(tag)` | always |
 | TagInput | `'Add at least one tag.'`; Angular `validationMessage` | `requiredMessage` | when `required` is set |
@@ -233,6 +260,7 @@ The names were checked against the built type declarations of each package.
 | Timeline | `'Timeline'` | `label` | always |
 | ToastRegion | `'الإشعارات'` / `'Notifications'` | `label` | always |
 | ToastRegion | `'إغلاق الإشعار'`; Vue and Angular `dismissLabel` | `getDismissLabel(message)` | when a message can be dismissed |
+| ToggleGroup, TreeView (Angular) | optional `label` | `label` | always; a required input |
 | Tooltip (Angular) | `id` | `tooltipId` | optional |
 | TreeView | `'Expand ' + label`; Vue `expandLabel` | `getExpandLabel(node)` | always (React, Vue) |
 | TreeView | `'Collapse ' + label`; Vue `collapseLabel` | `getCollapseLabel(node)` | always (React, Vue) |
@@ -347,8 +375,11 @@ Found by server-rendering and hydrating every component of the published
   keep their glyph, and a pressed icon button takes the selection colours.
 - Segmented toggle groups: keyboard focus no longer gives an unpressed button
   in multiple mode the pressed colours. Outline groups keep 4.5:1 label
-  contrast on hover and focus. At 576px and below the segments share one row,
-  so a four-option group no longer wraps to a second row at 390px or 320px.
+  contrast on hover and focus. At 576px and below a segment starts from the
+  width of its label and may be narrower than the 76px desktop minimum, and
+  four or more segments use 14px text with 4px inline padding, so a
+  four-option group no longer wraps to a second row at 390px or 320px and a
+  label that fits stays on one line.
 - The upload-list remove action no longer turns green on hover or focus, where
   its glyph had 2.74:1 contrast.
 - The file upload and dropzone native inputs shrink inside a narrow card

@@ -62,10 +62,15 @@ strings.
   `get<Thing>Message(...)` with one signature in every adapter, returning the
   whole string. Adapters never join texts with words or language-specific
   punctuation.
-- Vanilla reads text, in order, from authored markup, from `data-hw-<name>` on the
-  controller root (for a function input, a template such as
-  `data-hw-page-label="… {page}"`, filled by `formatTextTemplate`), then from the
-  controller option of the same name.
+- Vanilla uses authored markup as written; otherwise the controller option of the
+  same name; otherwise `data-hw-<name>` on the controller root (for a function
+  input, a template such as `data-hw-page-label="… {page}"`, filled by
+  `formatTextTemplate`). The option wins over the attribute. An authored name of
+  a root or landmark (`aria-label`, `aria-labelledby`) is never replaced. In three
+  controllers an option that is passed explicitly replaces the authored name of
+  an inner control: SearchField `clearLabel`, PasswordField `showLabel` and
+  PortalHeader `brandLabel`; without the option the authored `aria-label` or text
+  of that control is its name.
 - Text needed in every use is required: a required prop in React types,
   `@Input({ required: true })` in Angular, `required: true` in Vue. Text needed
   only when a prop, slot, handler or attribute switches a feature on is required
@@ -83,7 +88,10 @@ strings.
 - Adapters call `requireText(component, name, value, when?)` from `@hawiyah/core`
   where a required text would be rendered. It warns once per component and input
   in development and does nothing in production builds; it is safe during server
-  rendering.
+  rendering. The warning names the component as its adapter exposes it: the
+  component name in vanilla, React and Vue (`Hawiyah: FileDropzone requires
+  "label"`) and the selector in Angular (`Hawiyah: hw-file-dropzone requires
+  "label"`).
 - When required text is missing the component renders nothing in its place and
   omits the attribute. It does not invent a name, reuse another input or hide the
   control. A constraint with a missing validation message still blocks submission

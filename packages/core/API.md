@@ -344,8 +344,10 @@ complete, error, remove, getProgressLabel(name), getRemoveLabel(name)}`.
   text is missing it warns once per component and input with `console.warn` in
   development and returns `false`. It never substitutes a string: the caller
   renders nothing in its place. Development means `process.env.NODE_ENV` is not
-  `'production'`; a bundler replaces that expression, and a page without a
-  bundler can set `globalThis.__HAWIYAH_DEV__` to `true` or `false`. Nothing runs
+  `'production'`. A bundler replaces that expression, so a production bundle is
+  silent in the browser; where nothing replaced it and `process` does not exist
+  (a page without a bundler) the build counts as development, and such a page
+  can set `globalThis.__HAWIYAH_DEV__` to `true` or `false`. Nothing runs
   at module evaluation and no browser global is read, so it is safe during server
   rendering. `resetTextWarnings()` clears the once-only memory for tests.
 - `formatTextTemplate(template, values)` replaces `{name}` placeholders in an

@@ -89,7 +89,7 @@ core `requireText` warns once per component and prop in development
 passed to the root satisfies it. Such root names (`AvatarGroup`, `Breadcrumb`,
 `Calendar`, `Carousel`, `ContentNavigation`, `NotificationList`, `Pagination`,
 `SecondaryNav`, `Spinner`, `Stepper`, `Timeline`, `ToastRegion`, `TreeView`, and
-the field label of `DatePicker` and `FileDropzone`) are declared without
+the field label of `DatePicker`, `FileDropzone` and `SearchField`) are declared without
 `required: true` and checked at render: `requireText` warns only when `label`,
 `aria-label`, `aria-labelledby` and (for fields) a parent `Field` label are all
 absent, and no empty `aria-label` is written. A `Spinner` marked
@@ -292,7 +292,7 @@ caller-owned: update the supplied message array in response to the emitted ID.
 | `ServiceDetails`   | `title`, `description`, DescriptionList `items`; default and `action` slots                                                                                                                                                                                                                |
 | `PortalHeader`     | `brand` and/or `brand` slot artwork, `brandLabel`, `homeHref`, `links: {label,href,current?}[]`, required `navigationLabel` and `menuLabel`, `mainId` with `skipLabel`; `brand`, `actions` slots. Optional top-level `groups` contain a label and child links. See [portal layout](PORTAL.md). See [grouped navigation](../../docs/nic-portal-navigation.md). |
 | `PortalFooter`     | `brand` and/or `brand` slot, `brandLabel`, `copyright`, `links`, `groups`, `legalLinks`, `description`; required `externalLabel`; `navigationLabel` when `links` are given, `legalLinksLabel` when `legalLinks` are given, `supportLabel` with the `support` slot; default content slot                                                                                                                                                                                                                            |
-| `Feedback`         | Required `label`, `yesLabel`, `noLabel`, `successMessage`; `commentLabel` and `submitLabel` when the comment field is rendered; selected answer string `v-model` (`yes`/`no`), `defaultValue`, `disabled`, `readonly`; emits `submit({value,comment})`                                                                                            |
+| `Feedback`         | Required `label`, `yesLabel`, `noLabel`, `successMessage`; required `commentLabel` and `submitLabel` (the comment field appears once the reader answers); selected answer string `v-model` (`yes`/`no`), `defaultValue`, `disabled`, `readonly`; emits `submit({value,comment})`                                                                                            |
 | `CookieConsent`    | `v-model:open`, `defaultOpen=true`, required `title`, `description`, `acceptLabel`, `rejectLabel`; `preferencesLabel` when `@preferences` is bound (the preferences action is rendered only then); `policyHref` renders a policy link after the description, and `policyLabel` is required then; emits `accept`, `reject`, `preferences`; no hidden storage or third-party initialization                                                                            |
 | `NotificationList` | `label`, `items: {id,title,description?,date?,dateLabel?,read?,href?}[]`, required `label` and `emptyMessage`, `getMarkReadLabel(item)` when `@read` is bound and `getDismissLabel(item)` when `@dismiss` is bound (each action is rendered only while its listener is bound); emits `read(id)`, `dismiss(id)`; named ID slots                                                                                                         |
 
@@ -368,6 +368,9 @@ does not simulate these engines or handle provider credentials or transactions.
 
 [`PortalLayout`, `PortalHeader` and `SecondaryNav`](PORTAL.md) provide a complete
 portal shell with responsive navigation, breadcrumbs and footer; the application supplies every label.
+`PortalLayout` requires `skipLabel`, `menuLabel` and `navigationLabel` in every use,
+`secondaryLabel` with `secondaryNavigation`, `breadcrumbLabel` with `breadcrumbs` and
+`footerLabel` with `footerLinks`.
 Run the Vue example with `?preview=portal` to use the native composed shell.
 
 ## NIC card composition

@@ -74,6 +74,24 @@ describe('portal brand', () => {
     fromAttribute.destroy();
   });
 
+  it('gives a labelled brand that is not a link the image role, as React does, and removes it on destroy', () => {
+    const plain = (tag: string, attributes = '') => mount(`<header class="hw-portal-header" data-hw="portal-header"><${tag} class="hw-portal-brand"${attributes}><img src="data:," alt=""></${tag}><button type="button" data-hw-portal-toggle aria-label="Menu"></button><nav data-hw-portal-navigation aria-label="Main"><a href="#a">A</a></nav></header>`);
+    for (const tag of ['span', 'a']) {
+      const root = plain(tag); const brand = root.querySelector('.hw-portal-brand')!;
+      const controller = createPortalHeader(root, { brandLabel: 'Hawiyah' });
+      expect(brand.getAttribute('aria-label')).toBe('Hawiyah'); expect(brand.getAttribute('role')).toBe('img');
+      controller.destroy(); expect(brand.hasAttribute('aria-label')).toBe(false); expect(brand.hasAttribute('role')).toBe(false);
+    }
+    // A link keeps its link role, an authored role is kept, and no label means no role.
+    const link = header('<img src="data:," alt="">'); const linked = createPortalHeader(link, { brandLabel: 'Hawiyah home' });
+    expect(link.querySelector('.hw-portal-brand')!.hasAttribute('role')).toBe(false); linked.destroy();
+    const grouped = plain('span', ' role="group"'); const group = createPortalHeader(grouped, { brandLabel: 'Hawiyah' });
+    expect(grouped.querySelector('.hw-portal-brand')!.getAttribute('role')).toBe('group'); group.destroy(); expect(grouped.querySelector('.hw-portal-brand')!.getAttribute('role')).toBe('group');
+    const unnamed = plain('span'); const none = createPortalHeader(unnamed);
+    expect(unnamed.querySelector('.hw-portal-brand')!.hasAttribute('role')).toBe(false); none.destroy();
+    expect(warnings('brandLabel')).toBe(1);
+  });
+
   it('adds nothing to a brand with visible text and warns for unnamed artwork', () => {
     const text = createPortalHeader(header('هوية'));
     expect(document.querySelector('.hw-portal-brand')!.hasAttribute('aria-label')).toBe(false); expect(warn).not.toHaveBeenCalled();

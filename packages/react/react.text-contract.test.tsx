@@ -8,7 +8,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import ts from 'typescript';
 import { getCalendarMonth, resetTextWarnings, sortRows } from '@hawiyah/core';
-import { AppShell, Calendar, Carousel, Combobox, ContentNavigation, CookieConsent, DataTable, DatePicker, Feedback, FileDropzone, FileUploadList, MultiSelect, NotificationList, Pagination, PortalFooter, PortalHeader, PortalLayout, RangeSlider, Rating, SearchField, TagInput } from './src/index.js';
+import { AppShell, Calendar, Carousel, Combobox, ContentNavigation, CookieConsent, DataTable, DatePicker, Feedback, FileDropzone, FileUploadList, MultiSelect, NotificationList, Pagination, PortalFooter, PortalHeader, PortalLayout, RangeSlider, Rating, SearchField, Tabs, TagInput } from './src/index.js';
+import type { TabsProps } from './src/index.js';
 import type { PaginationProps } from './src/index.js';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -131,6 +132,32 @@ it('makes a missing locale and a preferences action without its label type error
   // An accepted element under @ts-expect-error is reported as an unused directive, so an empty list proves all four are rejected.
   expect(diagnostics).toEqual([]);
   expect(readFileSync(fixture, 'utf8').match(/{\/\* @ts-expect-error/g)).toHaveLength(4);
+}, 60_000);
+
+it('reports a tab list without a label and writes no empty name', async () => {
+  const items = [{ value: 'a', label: 'First', content: 'One' }, { value: 'b', label: 'Second', content: 'Two' }];
+  await render(<Tabs items={items} label="Sections" overflowLabel="More tabs" />);
+  expect(container.querySelector('[role=tablist]')!.getAttribute('aria-label')).toBe('Sections'); expect(warnings()).toEqual([]);
+  await render(<Tabs {...({ items, overflowLabel: 'More tabs' } as unknown as TabsProps)} />);
+  expect(container.querySelector('[role=tablist]')!.hasAttribute('aria-label')).toBe(false);
+  expect(warnings()).toEqual([expect.stringMatching(/^Hawiyah: Tabs requires "label"\./)]);
+});
+
+it('names ContentNavigation by its label, or by an aria-label or aria-labelledby that the application passes', async () => {
+  const items = [{ id: 'intro', label: 'Introduction' }];
+  await render(<><ContentNavigation items={items} label="On this page" /><ContentNavigation items={items} aria-label="Contents" /><h2 id="contents-heading">Contents</h2><ContentNavigation items={items} aria-labelledby="contents-heading" /></>);
+  const [labelled, named, referenced] = [...container.querySelectorAll('nav')];
+  expect(labelled!.getAttribute('aria-label')).toBe('On this page'); expect(labelled!.querySelector('h2')!.textContent).toBe('On this page');
+  // The heading is the label: an aria-label names the landmark and prints nothing.
+  expect(named!.getAttribute('aria-label')).toBe('Contents'); expect(named!.querySelector('h2')).toBeNull();
+  expect(referenced!.getAttribute('aria-labelledby')).toBe('contents-heading'); expect(referenced!.hasAttribute('aria-label')).toBe(false); expect(referenced!.querySelector('h2')).toBeNull();
+  expect(warnings()).toEqual([]);
+  // jsdom gives import.meta.url no file scheme; Vitest runs from the repository root.
+  const fixture = resolve('packages/react/fixtures/root-names.tsx');
+  const program = ts.createProgram([fixture], { strict: true, noEmit: true, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'], skipLibCheck: true, isolatedModules: true });
+  const diagnostics = ts.getPreEmitDiagnostics(program).map(diagnostic => `${diagnostic.file?.fileName.split('/').pop() ?? ''}:${diagnostic.file && diagnostic.start !== undefined ? diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start).line + 1 : 0} ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')}`);
+  expect(diagnostics).toEqual([]);
+  expect(readFileSync(fixture, 'utf8').match(/{\/\* @ts-expect-error/g)).toHaveLength(1);
 }, 60_000);
 
 it('renders Calendar and DatePicker without Intl output and without throwing when locale is missing, and as core formats it when given', async () => {

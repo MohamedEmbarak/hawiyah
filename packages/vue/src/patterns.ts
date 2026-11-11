@@ -224,8 +224,9 @@ export const Feedback = defineComponent({
     defaultValue: { type: String, default: "" },
     yesLabel: { type: String, required: true },
     noLabel: { type: String, required: true },
-    commentLabel: String,
-    submitLabel: String,
+    // The comment field appears once a reader answers (run-time data), so both texts are needed in every use.
+    commentLabel: { type: String, required: true },
+    submitLabel: { type: String, required: true },
     successMessage: { type: String, required: true },
     disabled: Boolean,
     readonly: Boolean,
@@ -244,6 +245,8 @@ export const Feedback = defineComponent({
     const submitted = ref(false);
     return () => {
       const label = needText("Feedback", "label", props.label);
+      const commentLabel = needText("Feedback", "commentLabel", props.commentLabel);
+      const submitLabel = needText("Feedback", "submitLabel", props.submitLabel);
       return h(
         "section",
         mergeProps(attrs, { class: "hw-feedback", "aria-label": attrs["aria-label"] ?? label, "data-choice-variant": props.choiceVariant }),
@@ -275,7 +278,7 @@ export const Feedback = defineComponent({
           model.value.value &&
             h("div", {}, [
               h(Textarea, {
-                label: needText("Feedback", "commentLabel", props.commentLabel, "the comment field is rendered"),
+                label: commentLabel,
                 modelValue: comment.value,
                 "onUpdate:modelValue": (value: string) => {
                   comment.value = value;
@@ -295,7 +298,7 @@ export const Feedback = defineComponent({
                     submitted.value = true;
                   },
                 },
-                () => needText("Feedback", "submitLabel", props.submitLabel, "the comment field is rendered"),
+                () => submitLabel,
               ),
             ]),
           h("p", { role: "status" }, submitted.value ? needText("Feedback", "successMessage", props.successMessage) : undefined),

@@ -64,7 +64,10 @@ The brand is the application's content: text, artwork, or both, authored inside
 with visible text needs nothing more. An artwork-only brand is named by
 `brandLabel`, by an `aria-label` already on the brand, or by an image with a
 non-empty `alt`; otherwise a development warning asks for `brandLabel`. The
-option overrides an authored `aria-label`; the attribute does not.
+option overrides an authored `aria-label`; the attribute does not. When the
+controller writes the label on a brand that is not a link (`a[href]`) and has no
+`role`, it also sets `role="img"`, as the React adapter does, and removes both on
+`destroy()`.
 
 ```html
 <header class="hw-portal-header" data-hw="portal-header" data-hw-brand-label="هوية، الصفحة الرئيسية">

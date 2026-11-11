@@ -39,16 +39,22 @@ The package contains no built-in words in any language and never reads `lang`,
 the document language or `navigator.language` to choose text. Every text that a
 controller places on an element it creates (accessible names, labels of internal
 controls, live-region, status and validation messages) comes from the
-application, from these sources in order:
+application. The first source that has text is used:
 
 1. Authored markup: the text or `aria-label` already on the element the
    controller would otherwise name is used as written.
-2. An attribute on the controller root: `data-hw-<kebab-name>` for a string input
+2. The controller option of the same name.
+3. An attribute on the controller root: `data-hw-<kebab-name>` for a string input
    (`overflowLabel` → `data-hw-overflow-label`) and, for a function input, a
    template attribute named after the input without `get`, whose `{placeholders}`
    are filled with core `formatTextTemplate` (`getPageLabel` →
    `data-hw-page-label="Page {page}"`).
-3. The controller option of the same name, which wins over the attribute.
+
+An authored name of a root or landmark is never replaced. Three options replace
+the authored name of an inner control when they are passed explicitly:
+`createSearchField` `clearLabel`, `createPasswordField` `showLabel` and
+`createPortalHeader` `brandLabel`. The search field's clear button takes its
+name from its authored `aria-label` or text before the icon replaces that text.
 
 `enhance()` therefore works from markup alone. When a required text is missing
 the controller renders nothing in its place (no text node, the attribute is

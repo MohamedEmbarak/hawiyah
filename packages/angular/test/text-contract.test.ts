@@ -155,6 +155,30 @@ describe('text is supplied by the application', () => {
     expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-file-dropzone requires "label"', 'Hawiyah: hw-date-picker requires "label"']);
   });
 
+  it('renders no empty label, legend or placeholder where optional field text is absent', () => {
+    const warnings = missingTextWarnings();
+    const fields = `<hw-text-field controlId="text" /><hw-textarea controlId="area" /><hw-select controlId="select" [options]="[]" /><hw-combobox controlId="combo" [options]="[]" ${withText.combobox} /><hw-password-field controlId="password" ${withText.passwordField} /><hw-number-field controlId="number" /><hw-pin-input controlId="pin" /><hw-tag-input controlId="tags" ${withText.tagInput} /><hw-search-field controlId="search" label="Find" ${withText.searchField} /><hw-radio controlId="radio" [options]="[{value: 'a', label: 'A'}]" /><hw-range-slider controlId="range" ${withText.rangeSlider} /><hw-rating controlId="rating" ${withText.rating} /><hw-multi-select controlId="multi" [options]="[]" ${withText.multiSelect} />`;
+    const { root } = page(fields);
+    expect([...root.querySelectorAll('label, legend')].filter(label => !label.textContent!.trim())).toEqual([]);
+    expect(root.querySelectorAll('label.hw-label, legend.hw-label')).toHaveLength(1); expect(root.querySelector('hw-search-field label.hw-label')!.textContent).toBe('Find');
+    expect([...root.querySelectorAll('[placeholder]')].map(node => node.getAttribute('placeholder'))).toEqual([]);
+    expect(warnings).toEqual([]);
+    // The same fields with their text: one label or legend each, and the placeholder as written.
+    const named = page(fields.replace(/ controlId="(\w+)"/g, ' controlId="named-$1" label="Field $1" placeholder="Hint $1"').replace(' label="Find"', '')).root;
+    expect([...named.querySelectorAll('label.hw-label, legend.hw-label')].map(label => label.textContent!.trim())).toEqual(['text', 'area', 'select', 'combo', 'password', 'number', 'pin', 'tags', 'search', 'radio', 'range', 'rating', 'multi'].map(name => `Field ${name}`));
+    expect(named.querySelector('hw-search-field input')!.getAttribute('placeholder')).toBe('Hint search'); expect(named.querySelector('hw-password-field input')!.getAttribute('placeholder')).toBe('Hint password'); expect(named.querySelector('hw-tag-input input')!.getAttribute('placeholder')).toBe('Hint tags');
+  });
+
+  it('requires the name of a search field, a toggle group and a tree view, and renders nothing in place of a missing one', () => {
+    const warnings = missingTextWarnings();
+    const { root } = page(`<hw-search-field controlId="search" clearLabel="Clear" [showSearchButton]="false" /><hw-toggle-group controlId="view" [options]="[{value: 'list', label: 'List'}]" /><hw-tree-view [nodes]="[{id: 'a', label: 'A'}]" /><hw-search-field controlId="named" label="Find" clearLabel="Clear" [showSearchButton]="false" /><hw-toggle-group label="View" [options]="[{value: 'list', label: 'List'}]" /><hw-tree-view label="Sections" [nodes]="[{id: 'a', label: 'A'}]" />`);
+    expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-search-field requires "label"', 'Hawiyah: hw-toggle-group requires "label"', 'Hawiyah: hw-tree-view requires "label"']);
+    const [search, named] = [...root.querySelectorAll('hw-search-field')]; const [group, namedGroup] = [...root.querySelectorAll('hw-toggle-group')]; const [tree, namedTree] = [...root.querySelectorAll('hw-tree-view')];
+    expect(search!.querySelector('label')).toBeNull(); expect(named!.querySelector('label')!.textContent).toBe('Find');
+    expect(group!.querySelector('legend')).toBeNull(); expect(namedGroup!.querySelector('legend')!.textContent).toBe('View');
+    expect(tree!.querySelector('[role=tree]')!.hasAttribute('aria-label')).toBe(false); expect(namedTree!.querySelector('[role=tree]')!.getAttribute('aria-label')).toBe('Sections');
+  });
+
   it('renders the file dropzone status only when the application supplies getSelectedMessage', () => {
     const selected = vi.fn((files: readonly File[]) => `${files.length}: ${files.map(file => file.name).join(', ')}`);
     const { fixture, root } = page(`<hw-file-dropzone id="silent" label="Documents" dropLabel="Drop files here" [(value)]="files" /><hw-file-dropzone id="spoken" label="Documents" dropLabel="Drop files here" [getSelectedMessage]="selected" [(value)]="files" />`, { selected, files: [] as File[] });

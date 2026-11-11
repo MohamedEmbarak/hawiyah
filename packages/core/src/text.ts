@@ -1,16 +1,19 @@
 // Hawiyah ships no user-visible or accessible-name strings. Every such string is
 // supplied by the application; these helpers report a missing one during development.
-declare const process: { env: { NODE_ENV?: string } } | undefined;
+declare const process: { env: { NODE_ENV?: string } };
 
 type Console = { warn(message: string): void };
 const reported = new Set<string>();
 
-/** Development unless a bundler replaced `process.env.NODE_ENV` with 'production'.
+/** Development unless `process.env.NODE_ENV` is 'production'. A bundler replaces that
+ * expression as a whole, so it is read without first testing for `process`: a production
+ * bundle folds it to false in a browser, where `process` does not exist. Without a
+ * bundler the read throws there, which means development.
  * `globalThis.__HAWIYAH_DEV__` (boolean) overrides the check for pages without a bundler. */
 function development(): boolean {
   const flag = (globalThis as { __HAWIYAH_DEV__?: unknown }).__HAWIYAH_DEV__;
   if (typeof flag === 'boolean') return flag;
-  try { return typeof process === 'undefined' || process.env.NODE_ENV !== 'production'; } catch { return true; }
+  try { return process.env.NODE_ENV !== 'production'; } catch { return true; }
 }
 
 /** True for text that can be rendered: a string with a non-space character, a finite

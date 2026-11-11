@@ -1,14 +1,13 @@
 import {useEffect, useImperativeHandle, useRef, useState} from 'react';
 import type {ComponentPropsWithRef, ReactNode, RefObject} from 'react';
-import {observeContentNavigation} from '@hawiyah/core';
+import {hasText, observeContentNavigation} from '@hawiyah/core';
 import type {ContentNavigationItem} from '@hawiyah/core';
-import {cx, text, useFragmentLink} from './shared.js';
+import {cx, rootLabel, useFragmentLink} from './shared.js';
+import type {RootName} from './shared.js';
 
 export type {ContentNavigationItem} from '@hawiyah/core';
-export interface ContentNavigationProps extends Omit<ComponentPropsWithRef<'nav'>, 'children'> {
+interface ContentNavigationBaseProps extends Omit<ComponentPropsWithRef<'nav'>, 'children'> {
   items: readonly ContentNavigationItem[];
-  /** Name of the navigation landmark and text of its heading. */
-  label: string;
   showHeading?: boolean;
   sticky?: boolean;
   scrollRoot?: HTMLElement | null;
@@ -17,6 +16,9 @@ export interface ContentNavigationProps extends Omit<ComponentPropsWithRef<'nav'
   updateHash?: boolean;
   onCurrentChange?: (id: string) => void;
 }
+/** `label` names the navigation landmark and is the text of its heading. An aria-label or
+ * aria-labelledby from the application names the landmark instead; no heading is printed then. */
+export type ContentNavigationProps = ContentNavigationBaseProps & RootName;
 type Observer = ReturnType<typeof observeContentNavigation>;
 
 function ContentNavigationLink({item, current, observer, updateHash}: {item: ContentNavigationItem; current: boolean; observer: RefObject<Observer | undefined>; updateHash: boolean}) {
@@ -27,7 +29,7 @@ function ContentNavigationLink({item, current, observer, updateHash}: {item: Con
 
 /** Local section navigation; the application owns section elements and their IDs. */
 export function ContentNavigation({items, label, showHeading = true, sticky = false, scrollRoot = null, offset = 80, updateHash = false, onCurrentChange, className, ref, ...props}: ContentNavigationProps) {
-  const name = text('ContentNavigation', 'label', label);
+  const name = rootLabel('ContentNavigation', props, label);
   const navigation = useRef<HTMLElement>(null);
   const observer = useRef<Observer | undefined>(undefined);
   const latest = useRef({items, scrollRoot, offset, onCurrentChange}); latest.current = {items, scrollRoot, offset, onCurrentChange};
@@ -44,6 +46,6 @@ export function ContentNavigation({items, label, showHeading = true, sticky = fa
     {!!item.children?.length && renderItems(item.children, true)}
   </li>)}</ul>;
   return <nav {...props} ref={navigation} className={cx('hw-content-nav', className)} aria-label={name} data-sticky={sticky || undefined}>
-    {showHeading && name && <h2 className="hw-content-nav-heading">{name}</h2>}{renderItems(items)}
+    {showHeading && hasText(label) && <h2 className="hw-content-nav-heading">{label}</h2>}{renderItems(items)}
   </nav>;
 }

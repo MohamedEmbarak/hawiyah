@@ -65,7 +65,7 @@ export function Tabs({ items, value, defaultValue, onValueChange, label, orienta
   }, [hidden, focusValue]);
   return <div {...props} className={cx('hw-tabs', className)}>
     <div className="hw-tab-bar" ref={bar} data-hw-overflow={overflow} data-orientation={orientation}>
-    <div className="hw-tab-list" data-hw-overflow={overflow} role="tablist" aria-label={label} aria-orientation={orientation} aria-hidden={hidden.length === items.length || undefined}>
+    <div className="hw-tab-list" data-hw-overflow={overflow} role="tablist" aria-label={text('Tabs', 'label', label)} aria-orientation={orientation} aria-hidden={hidden.length === items.length || undefined}>
       {items.map((item, index) => <button key={item.value} type="button" role="tab" className="hw-tab" id={`${id}-tab-${index}`} aria-controls={`${id}-panel-${index}`} aria-selected={active === item.value} aria-hidden={hidden.includes(index) || undefined} data-hw-overflow-hidden={hidden.includes(index) || undefined} tabIndex={!hidden.includes(index) && focusValue === item.value ? 0 : -1} disabled={item.disabled}
         ref={node => { if (node) buttons.current.set(item.value, node); else buttons.current.delete(item.value); }}
         onFocus={() => setFocused(item.value)} onClick={() => { if (!item.disabled) select(item.value); }}

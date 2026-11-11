@@ -57,7 +57,7 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('emptyMessage', text, ['Required where the adapter renders the empty row (React, Vue, Angular)', 'مطلوب دائمًا حيث يعرض المحوّل صف «لا نتائج» (React وVue وAngular)']),
     input('requiredMessage', text, when('the input is required', 'يكون الحقل مطلوبًا')),
   ],
-  'content-navigation': [input('label', text, ['Required, unless the navigation is named in markup', 'مطلوب دائمًا ما لم يُسمَّ التنقل في البنية'])],
+  'content-navigation': [input('label', text, ['Required, or aria-label / aria-labelledby on the navigation; it is also the text of the heading', 'مطلوب دائمًا، أو aria-label / aria-labelledby على التنقل؛ وهو نص العنوان كذلك'])],
   'cookie-consent': [
     input('title', text, always),
     input('acceptLabel', text, always),
@@ -95,8 +95,8 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('yesLabel', text, always),
     input('noLabel', text, always),
     input('successMessage', text, always),
-    input('commentLabel', text, when('the comment field is rendered (React, Vue)', 'يُعرض حقل التعليق (React وVue)')),
-    input('submitLabel', text, when('the comment field is rendered (React, Vue)', 'يُعرض حقل التعليق (React وVue)')),
+    input('commentLabel', text, ['Required in React and Vue; the comment field appears once the reader answers', 'مطلوب دائمًا في React وVue؛ يظهر حقل التعليق بعد أن يجيب القارئ']),
+    input('submitLabel', text, ['Required in React and Vue; the button appears with the comment field', 'مطلوب دائمًا في React وVue؛ يظهر الزر مع حقل التعليق']),
     input('getStatusMessage', '(value: string) => string', ['Optional, vanilla only; replaces successMessage for one answer', 'اختياري، في Vanilla فقط؛ يحل محل successMessage لإجابة بعينها']),
   ],
   'file-dropzone': [
@@ -164,7 +164,8 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('getValueLabel', '(value: number, max: number) => string', ['Required for the rating display; the whole text alternative', 'مطلوب دائمًا لعرض التقييم؛ وهو النص البديل كاملًا']),
   ],
   'search-field': [
-    input('clearLabel', text, ['Required (vanilla: when the clear button has no aria-label)', 'مطلوب دائمًا (في Vanilla: عندما لا يحمل زر المسح aria-label)']),
+    input('label', text, ['Required, or aria-label / aria-labelledby on the input (Vue: or a parent Field; vanilla: a label in markup)', 'مطلوب دائمًا، أو aria-label / aria-labelledby على الحقل (في Vue: أو مكوّن Field يحيط به؛ في Vanilla: تسمية في البنية)']),
+    input('clearLabel', text, ['Required (vanilla: when the clear button has no aria-label or text)', 'مطلوب دائمًا (في Vanilla: عندما لا يحمل زر المسح aria-label أو نصًا)']),
     input('searchLabel', text, when('showSearchButton is on', 'يُفعَّل showSearchButton')),
     input('getResultsMessage', count, when('suggestions are given', 'تُمرَّر اقتراحات')),
   ],
@@ -183,7 +184,7 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
   ],
   spinner: [input('label', text, ['Required, unless the spinner is decorative (aria-hidden="true")', 'مطلوب دائمًا ما لم يكن المؤشر زخرفيًا (aria-hidden="true")'])],
   stepper: [input('label', text, ['Required, or aria-label / aria-labelledby on the list', 'مطلوب دائمًا، أو aria-label / aria-labelledby على القائمة'])],
-  tabs: [input('overflowLabel', text, when("overflow is 'menu', the default", "يكون overflow هو 'menu'، وهو الافتراضي"))],
+  tabs: [input('label', text, always), input('overflowLabel', text, when("overflow is 'menu', the default", "يكون overflow هو 'menu'، وهو الافتراضي"))],
   'tag-input': [
     input('getRemoveLabel', '(tag: string) => string', ['Required (vanilla: data-hw-remove-label="… {tag}")', 'مطلوب دائمًا (في Vanilla: data-hw-remove-label="… {tag}")']),
     input('requiredMessage', text, when('required is set', 'يُضبط required')),
@@ -194,7 +195,9 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('label', text, ['Required, or aria-label on the region', 'مطلوب دائمًا، أو aria-label على المنطقة']),
     input('getDismissLabel', '(toast) => string', when('a message can be dismissed (vanilla: data-hw-dismiss-label="… {title}", unless the button is named)', 'يمكن إغلاق الرسالة (في Vanilla: data-hw-dismiss-label="… {title}" ما لم يُسمَّ الزر)')),
   ],
+  'toggle-group': [input('label', text, always)],
   'tree-view': [
+    input('label', text, ['Required, or aria-label / aria-labelledby on the tree in Vue', 'مطلوب دائمًا، أو aria-label / aria-labelledby على الشجرة في Vue']),
     input('getExpandLabel', '(node) => string', when('the toggle is exposed as a control (React, Vue)', 'يُعرض زر التوسيع عنصر تحكم (React وVue)')),
     input('getCollapseLabel', '(node) => string', when('the toggle is exposed as a control (React, Vue)', 'يُعرض زر التوسيع عنصر تحكم (React وVue)')),
   ],

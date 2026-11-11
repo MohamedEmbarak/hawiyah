@@ -47,7 +47,7 @@ export const Tabs = defineComponent({
     onBeforeUnmount(() => {alive = false; observer?.destroy(); bar.value?.ownerDocument.removeEventListener('click', outside);});
     return () => h('div', mergeProps(attrs, { class: 'hw-tabs' }), [
       h('div', {class: 'hw-tab-bar', ref: bar, 'data-hw-overflow': props.overflow, 'data-orientation': props.orientation}, [
-      h('div', { class: 'hw-tab-list', 'data-hw-overflow': props.overflow, role: 'tablist', 'aria-label': props.label, 'aria-orientation': props.orientation, 'aria-hidden': hidden.value.length === props.items.length || undefined }, props.items.map((item, index) => h('button', {
+      h('div', { class: 'hw-tab-list', 'data-hw-overflow': props.overflow, role: 'tablist', 'aria-label': needText('Tabs', 'label', props.label), 'aria-orientation': props.orientation, 'aria-hidden': hidden.value.length === props.items.length || undefined }, props.items.map((item, index) => h('button', {
         key: item.value, ref: (element: unknown) => { if (element) buttons.set(item.value, element as HTMLButtonElement); else buttons.delete(item.value); },
         class: 'hw-tab', type: 'button', role: 'tab', id: `${id}-tab-${index}`, 'aria-controls': `${id}-panel-${index}`, 'aria-selected': active.value === item.value,
         'data-hw-overflow-hidden': hidden.value.includes(index) ? 'true' : undefined, 'aria-hidden': hidden.value.includes(index) || undefined,

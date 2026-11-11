@@ -4,8 +4,8 @@ const cleanups:Array<()=>void>=[];
 afterEach(()=>{for(const cleanup of cleanups.splice(0))cleanup();document.body.replaceChildren();});
 // The application's copy as root attributes; a test that checks missing text passes copy=''.
 const copy='data-hw-clear-label="مسح البحث" data-hw-results-message="{count} اقتراحات متاحة"';
-function setup(options:SearchFieldOptions={},attrs='',value='',texts=copy){
- document.body.innerHTML=`<form><fieldset><div class="hw-search-field" ${texts} ${attrs}><label for="query">Search</label><div class="hw-search-control"><input id="query" type="search" name="query" value="${value}" data-hw-search-input><button hidden data-hw-search-clear>Clear</button></div></div></fieldset></form><button id="outside">Outside</button>`;
+function setup(options:SearchFieldOptions={},attrs='',value='',texts=copy,clearText='Clear'){
+ document.body.innerHTML=`<form><fieldset><div class="hw-search-field" ${texts} ${attrs}><label for="query">Search</label><div class="hw-search-control"><input id="query" type="search" name="query" value="${value}" data-hw-search-input><button hidden data-hw-search-clear>${clearText}</button></div></div></fieldset></form><button id="outside">Outside</button>`;
  const root=document.querySelector<HTMLElement>('.hw-search-field')!,input=root.querySelector<HTMLInputElement>('input')!,clear=root.querySelector<HTMLButtonElement>('button')!,form=document.querySelector('form')!,before=root.outerHTML;
  const controller=createSearchField(root,options);cleanups.push(controller.destroy);
  return {root,input,clear,form,controller,before};
@@ -66,10 +66,22 @@ it('leaves no-suggestion search fields unchanged and restores generated semantic
 it('announces zero matches without displaying a popup and removes optional semantics when its declaration is removed',async()=>{
  const {root,input}=setup({},'data-hw-suggestions="[]"');type(input,'nothing');expect(list(root).hidden).toBe(true);expect(root.querySelector('[role="status"]')!.textContent).toBe('0 اقتراحات متاحة');root.removeAttribute('data-hw-suggestions');await Promise.resolve();expect(root.querySelector('[role="listbox"]')).toBeNull();expect(input.hasAttribute('role')).toBe(false);expect(input.hasAttribute('autocomplete')).toBe(false);
 });
+it('names the clear button from its authored text, which the icon then replaces',()=>{
+ const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+ try{
+  // Authored text wins over data-hw-clear-label on the root and needs no other source.
+  const authored=setup();expect(authored.clear.getAttribute('aria-label')).toBe('Clear');expect(authored.clear.textContent).toBe('');expect(authored.clear.querySelector('.hw-search-clear-icon')).not.toBeNull();
+  authored.controller.destroy();expect(authored.clear.hasAttribute('aria-label')).toBe(false);expect(authored.clear.textContent).toBe('Clear');
+  const alone=setup({},'','','');expect(alone.clear.getAttribute('aria-label')).toBe('Clear');
+  const attribute=setup({},'','',copy,'');expect(attribute.clear.getAttribute('aria-label')).toBe('مسح البحث');
+  const option=setup({clearLabel:'Clear the query'});expect(option.clear.getAttribute('aria-label')).toBe('Clear the query');
+  expect(warn).not.toHaveBeenCalled();
+ }finally{warn.mockRestore();}
+});
 it('renders no invented clear name or announcement when the application supplies no texts',()=>{
  const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
  try{
-  const {root,input,clear}=setup({suggestions:['Search first','Search second']},'','','');
+  const {root,input,clear}=setup({suggestions:['Search first','Search second']},'','','','');
   type(input,'search');expect(options(root)).toHaveLength(2);expect(root.querySelector('[role="status"]')!.textContent).toBe('');
   expect(clear.hasAttribute('aria-label')).toBe(false);
   expect(root.textContent).not.toMatch(/اقتراحات|suggestions available|مسح البحث|Clear search/u);

@@ -9,8 +9,9 @@ const page=(links:string)=>`<!doctype html><html lang="ar" dir="rtl"><head><meta
   <button class="hw-button" data-variant="primary" type="button">متابعة</button>
   <span class="hw-icon" data-icon="search-01" aria-hidden="true"></span>
   <span class="hw-riyal" id="riyal">&#x20C1;</span></body></html>`;
-test.skip(!existsSync(`${dist}styles.css`),'Build the styles package first: node scripts/build.mjs --only styles');
 test('the published styles.css loads directly in a browser as one request with tokens and assets',async({page:browser})=>{
+  // A missing build fails: a skipped spec would report success without checking the published file.
+  expect(existsSync(`${dist}styles.css`),'packages/styles/dist/styles.css is missing. Build the styles package first: node scripts/build.mjs --only styles').toBe(true);
   const requests:string[]=[];const missing:string[]=[];
   await browser.route(`${origin}/**`,async route=>{
     const path=new URL(route.request().url()).pathname.replace(/^\/+/,'');

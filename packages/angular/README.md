@@ -275,7 +275,11 @@ CSS classes with native Angular templates rather than injecting HTML strings.
 Every component below is standalone, exported as `Hw{Name}Component`, and uses
 `hw-kebab-case` selectors. Value controls support both `[(ngModel)]`/reactive forms
 and `[(value)]` (choose one), with inherited `controlId`, `label`, `name`, `hint`,
-`error`, `required`, `disabled`, and `readOnly`. Angular form reset clears string
+`error`, `required`, `disabled`, and `readOnly`. An optional `label` or
+`placeholder` that is absent renders nothing: no empty `<label>` or `<legend>` and
+no empty `placeholder` attribute. `label` is a required input of Calendar,
+DatePicker, FileDropzone, SearchField, ToggleGroup and TreeView; a template
+without it does not compile (NG8008). Angular form reset clears string
 and array controls, empties NumberField, restores Slider to `min`, and RangeSlider
 to `[min,max]`. Native range, radio, and checkbox controls retain browser keyboard
 behavior. Readonly controls retain submitted values where HTML permits it.
@@ -284,7 +288,7 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | --- | --- |
 | InputGroup | Project `[hwPrefix]`, a labeled native/control input, and `[hwSuffix]`; `size: sm/md/lg`. Addons remain ordinary content, so label decorative icons appropriately. |
 | PasswordField | String value; `autocomplete`, `placeholder`; required `showLabel` and `hideLabel`. Reveal button keeps the same input and resets to hidden with forms. |
-| SearchField | String value/CVA; `placeholder`, `autocomplete`, `autofocus`; required `clearLabel`; `searchLabel` names the search button and is required while `showSearchButton` is on (the default); optional `suggestions`, `maxSuggestions` (8), and with suggestions `getResultsMessage(count)`. The input and the suggestion list are named by `label`; `searched(query)` output and public `focus()`. |
+| SearchField | String value/CVA; required `label` (the host forwards no `aria-label` to the input, so it is the only name); `placeholder`, `autocomplete`, `autofocus`; required `clearLabel`; `searchLabel` names the search button and is required while `showSearchButton` is on (the default); optional `suggestions`, `maxSuggestions` (8), and with suggestions `getResultsMessage(count)`. The input and the suggestion list are named by `label`; `searched(query)` output and public `focus()`. |
 | NumberField | `number \| null` value; `min`, `max`, `step` (number or `any`). Empty/invalid native numeric input maps to null. Text that is not yet a number (`-`, `1e`) emits null and stays in the input, so `-5` and `1e2` commit -5 and 100. Native step/min/max validation remains active. |
 | Slider | Number value; `min`, `max`, `step`; native range plus value output. |
 | RangeSlider | `[lower,upper]`; `min`, `max`, `step`, required `lowerLabel` and `upperLabel`, `lowerName`, `upperName`. Crossing thumbs stop at the other value; absent distinct names, `name` submits two ordered values. |
@@ -296,13 +300,13 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Calendar | ISO Gregorian string value; `month`, `min`, `max`, `calendar: gregory/islamic-umalqura`, `weekStartsOn`, `direction`; required `label`, `locale`, `previousLabel` and `nextLabel`; `rangeLabel` is required with `calendar="islamic-umalqura"` and names the supported-range information, whose tooltip id is `rangeTooltipId`; optional `getDayLabel(isoDate)` replaces the Intl day name; `monthChange`. `locale` has no default: while it is empty the toolbar and the grid are not rendered. Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year). Bounds restrict selection/focus. |
 | DatePicker | ISO Gregorian value, a custom text field and modal calendar. Accepts Calendar range inputs. Required: `label`, `locale`, `calendarLabel` (dialog title and name of the calendar), `openLabel`, `closeLabel`, `previousLabel`, `nextLabel`, `calendarSystemLabel` (name of the Gregorian/Hijri switch), `gregorianLabel`, `hijriLabel`, `rangeLabel`, `invalidMessage` and `unsupportedMessage`. `placeholder` is optional and has no default. `locale` has no default: while it is empty the typed ISO date is shown as typed, no formatted date is announced and the calendar in the dialog is empty; the value and validation are unaffected. Switching emits `calendarChange` and preserves the selected ISO date. Opening returns to its month and day. |
 | FileDropzone | `File[]`; `accept`, `multiple`; required `label` (it names the input) and `dropLabel` (the visible instruction: `<p class="hw-file-dropzone-instruction" id="{controlId}-instruction">` before the input, listed first in its `aria-describedby`); optional `getSelectedMessage(files)`, which when bound renders one visible `<p role="status">` after the input, empty until files are selected and then the returned string; without it no status element is rendered. Selected file names are listed as data. `rejected` emits rejected files. Native picker and local drop handling; no upload/network side effect. Browser `DataTransfer` support is needed to mirror dropped files into native FormData. Forms can clear files but cannot populate a picker from a stored path. |
-| ToggleGroup | String value for single or `string[]` for `multiple`; `options`, `variant: segmented/outline`. Single uses native radios; multiple uses pressed buttons. |
+| ToggleGroup | Required `label` (the legend); string value for single or `string[]` for `multiple`; `options`, `variant: segmented/outline`. Single uses native radios; multiple uses pressed buttons. |
 | Popover | Required `label` and `triggerLabel`; `panelId` (the id of the panel; no id is left on the wrapper), `disabled`, `[(open)]`; project interactive content. Disclosure region with ordinary Tab order, outside press/Escape closing. |
 | Menu | Popover inputs plus `items: {id,label,disabled?}[]`, `action(id)`. ArrowUp/Down/Home/End navigation skips disabled items; Escape/activation returns focus. |
 | Drawer | Dialog inputs/outputs/methods (including the required `closeLabel`) plus `side: start/end/bottom`; project body and `[hwDrawerFooter]`. Native modal dialog. |
 | ToastRegion | `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, required `label`, `(dismissed)="remove($event)"`. Set `variant="banner"` and optionally `position="inline"` or a corner. A dismissal listener enables the button, which is named by `getDismissLabel(message)`, required while messages can be dismissed. |
 | Collapsible | `label`, `[(open)]`; native details/summary and projected body. |
-| TreeView | String selection; `nodes: {id,label,disabled?,children?}[]`, `[(expandedIds)]`, `direction`. Roving focus, RTL arrows, Home/End, Enter/Space selection. Caller supplies unique IDs. |
+| TreeView | Required `label` (the name of the tree); string selection; `nodes: {id,label,disabled?,children?}[]`, `[(expandedIds)]`, `direction`. Roving focus, RTL arrows, Home/End, Enter/Space selection. Caller supplies unique IDs. |
 | Carousel | Required label/slides; `[(current)]`, `loop=false`, `slides` and optional `slideTemplate` with `{ $implicit: HwSlide, index }`, required one-based `getSlideLabel(position,total)`, `previousLabel`, `nextLabel` and `emptyLabel`. `showIndicators=true` needs `indicatorsLabel`; `carouselDescription` and `slideDescription` (`aria-roledescription`) are optional and rendered only when supplied. Inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
 | Link | `href`, `target`, `rel`, `current`, `variant: default/subtle`; projected link text. `_blank` defaults to `noopener noreferrer`. |
 | IconButton | Required accessible `label`; `type`, `disabled`, `pressed`, `variant`, `size`; `activated(MouseEvent)`. Project a decorative icon. |
@@ -407,7 +411,10 @@ drag/drop; these APIs make no claim to supply those larger engines.
 
 [`HwPortalLayoutComponent` and `HwSecondaryNavComponent`](PORTAL.md) provide a
 complete portal shell with responsive navigation and footer. Its text, language
-and direction are supplied by the application.
+and direction are supplied by the application. `hw-portal-layout` requires
+`skipLabel`, `menuLabel`, `navigationLabel` and `externalLabel` in every use,
+`secondaryLabel` with `secondaryNavigation`, `breadcrumbLabel` with `breadcrumbs`
+and `footerLabel` with `footerLinks`.
 Run the Angular example with `?preview=portal` to use the native composed shell.
 
 ## NIC card composition

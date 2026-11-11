@@ -52,8 +52,10 @@ for(const adapter of ['react','vue','angular'])it(`${adapter}: a FileDropzone is
     const plain=host.querySelector<HTMLInputElement>('#plain input[type="file"]')!;
     expect(plain.hasAttribute('aria-label')).toBe(false);
     expect(plain.hasAttribute('aria-labelledby')).toBe(false);
-    expect(warn.mock.calls.some(call=>/^Hawiyah: (FileDropzone|hw-file-dropzone) requires "label"/.test(String(call[0])))).toBe(true);
-    // No label is left empty (Angular renders an empty <label> today: recorded finding).
+    // A warning names the component as its adapter exposes it: the selector in Angular (CONTRACT.md).
+    const component=adapter==='angular'?'hw-file-dropzone':'FileDropzone';
+    expect(warn.mock.calls.map(call=>String(call[0])).filter(message=>message.includes('requires "label"')).map(message=>message.split('.')[0])).toEqual([`Hawiyah: ${component} requires "label"`]);
+    // No label is left empty.
     expect([...plain.labels??[]].map(text)).toEqual([]);
     expect([...host.querySelectorAll('label')].filter(label=>!text(label))).toEqual([]);
   }finally{warn.mockRestore();}

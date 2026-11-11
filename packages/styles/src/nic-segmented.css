@@ -21,7 +21,7 @@
   --hw-profile-segment-mobile-height: 3rem;
   --hw-profile-segment-mobile-padding: 1.25rem;
   --hw-profile-segment-mobile-width: 100%;
-  --hw-profile-segment-mobile-flex: 1 1 0;
+  --hw-profile-segment-mobile-flex: 1 1 auto;
 }
 :where([data-hw-theme]:not([data-hw-theme='dga'], [data-hw-theme='custom'])) {
   --hw-profile-segment-gap: initial;
@@ -85,14 +85,17 @@
 }
 .hw-toggle-group:not([data-variant='outline']) > :is(button:disabled,label:has(input:disabled)) { background:var(--hw-color-disabled); color:var(--hw-color-on-disabled); box-shadow:none; cursor:not-allowed; }
 .hw-toggle-group:not([data-variant='outline']) > :is(button:disabled[aria-pressed='true'],label:has(input:disabled:checked)) { outline:1px solid var(--hw-color-border-strong); outline-offset:-1px; }
-/* Narrow screens keep every segment on one row: segments share the width from
-   a zero basis, may shrink below the desktop minimum and wrap their own label,
-   so the group never breaks into a second row. Hints and errors still take a
-   row of their own. Four or more segments use 14px text and a 4px inline
-   padding so that common labels fit whole at 320px. */
+/* Narrow screens: segments start from the width of their label and share the
+   room that is left, so a label that fits stays on one line and a long label
+   takes the room its shorter neighbours do not need. The desktop minimum
+   width is dropped, and four or more segments use 14px text and a 4px inline
+   padding, so that four common labels stay on one row at 320px. Segments
+   that still do not fit continue on a second row; a label wraps inside its
+   segment only as a last resort, when it is wider than the row. Hints and
+   errors take a row of their own. */
 @media (max-width:576px) {
   .hw-toggle-group:not([data-variant='outline']) { inline-size:var(--hw-profile-segment-mobile-width,auto); }
-  .hw-toggle-group:not([data-variant='outline']) > :is(button,label) { flex:var(--hw-profile-segment-mobile-flex,1 1 0); min-inline-size:0; min-block-size:var(--hw-profile-segment-mobile-height,var(--hw-control-height-sm)); padding-inline:var(--hw-profile-segment-mobile-padding,var(--hw-space-3)); overflow-wrap:anywhere; }
+  .hw-toggle-group:not([data-variant='outline']) > :is(button,label) { flex:var(--hw-profile-segment-mobile-flex,0 1 auto); min-inline-size:0; min-block-size:var(--hw-profile-segment-mobile-height,var(--hw-control-height-sm)); padding-inline:var(--hw-profile-segment-mobile-padding,var(--hw-space-3)); overflow-wrap:anywhere; }
   .hw-toggle-group:not([data-variant='outline']):has(> :is(button,label):nth-of-type(4)) > :is(button,label) { padding-inline:var(--hw-space-1); font-size:var(--hw-text-sm); hyphens:auto; }
 }
 @media (prefers-reduced-motion:reduce) { .hw-toggle-group > :is(button,label) { transition:none; } }

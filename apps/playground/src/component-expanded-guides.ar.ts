@@ -242,7 +242,7 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
   'file-dropzone': localized('file-dropzone', {
     summary: 'إضافة سحب الملفات وإفلاتها إلى حقل ملفات حقيقي، مع فحص الأنواع المقبولة والإبقاء على اختيار الملف متاحًا للجميع.',
     usage: `<label class="hw-file-dropzone" data-hw="file-dropzone" data-hw-max-size="5242880"
-  data-hw-selected-message="تم اختيار {count} من الملفات" data-hw-rejected-message="اختر ملفات توافق النوع والحجم المسموح."
+  data-hw-selected-message="عدد الملفات المختارة {count}" data-hw-rejected-message="اختر ملفات توافق النوع والحجم المسموح."
   data-hw-unsupported-drop-message="استخدم اختيار الملفات لإرفاق المستندات.">
   <strong>اختر المستندات أو أفلتها هنا</strong><span>PDF أو PNG، حتى 5 ميبيبايت للملف</span>
   <input type="file" data-hw-file-input name="documents" accept=".pdf,.png" multiple>

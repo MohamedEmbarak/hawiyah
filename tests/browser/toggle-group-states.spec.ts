@@ -55,3 +55,25 @@ for(const width of [320,390]) for(const lang of ['en','ar'] as const) for(const 
     }
     for(const label of await labels.all()) {await label.click();await expect(label.locator('input')).toBeChecked();}
   });
+// Labels wrap only as a last resort: segments start from their content width,
+// so a long label takes the room that its shorter neighbours do not need.
+const uneven=(lang:'ar'|'en')=>{
+  const names=lang==='en'?['All','Open','In progress']:['الكل','مفتوح','قيد التنفيذ'];
+  return `<fieldset class="hw-toggle-group" data-variant="segmented" id="group"><legend class="hw-label">${lang==='en'?'Requests':'الطلبات'}</legend>
+    ${names.map((name,index)=>`<label class="hw-choice"><input class="hw-radio" type="radio" name="state" value="${index}" ${index===0?'checked':''}>${name}</label>`).join('')}</fieldset>`;
+};
+for(const width of [320,390]) for(const lang of ['en','ar'] as const)
+  test(`uneven labels that fit stay on one line at ${width}px (${lang})`,async({page})=>{
+    await page.setViewportSize({width,height:700});
+    await openFixture(page,uneven(lang),{lang});
+    const labels=page.locator('#group > label');
+    const boxes=await labels.evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().toJSON()));
+    for(const box of boxes) {
+      expect(Math.abs(box.top-boxes[0].top)).toBeLessThan(1);
+      expect(box.height).toBe(48);
+    }
+    // The segments fill the row, and the longest label is the widest segment.
+    expect(Math.max(...boxes.map(box=>box.right))-Math.min(...boxes.map(box=>box.left))).toBeGreaterThan(width-32-16-2);
+    expect(boxes[2].width).toBeGreaterThan(boxes[0].width);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  });

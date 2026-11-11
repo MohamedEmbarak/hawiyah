@@ -8,7 +8,8 @@ export interface PortalHeaderOptions {
   menuLabel?: string;
   /** Name of the primary nav landmark (data-hw-navigation-label), used when the nav has no aria-label or aria-labelledby. Required. */
   navigationLabel?: string;
-  /** Accessible name of `.hw-portal-brand` (data-hw-brand-label), for artwork without visible text. Optional. */
+  /** Accessible name of `.hw-portal-brand` (data-hw-brand-label), for artwork without visible text. Optional.
+   * A brand that is not a link and has no role also receives role="img", so that the name is exposed. */
   brandLabel?: string;
 }
 export interface PortalHeaderController { readonly open: boolean; show(): void; close(restoreFocus?: boolean): void; destroy(): void }
@@ -23,9 +24,13 @@ export function createPortalHeader(root: HTMLElement, options: PortalHeaderOptio
   if (!named(navigation)) writeText(navigation, 'aria-label', 'PortalHeader', 'navigationLabel', text(root, 'navigationLabel', options.navigationLabel));
   const brand = [...root.querySelectorAll<HTMLElement>('.hw-portal-brand')].find(node => node.closest('[data-hw="portal-header"]') === root || !node.closest('[data-hw="portal-header"]'));
   if (brand) {
-    remember(scope, brand, ['aria-label']);
+    remember(scope, brand, ['aria-label', 'role']);
     const brandLabel = text(root, 'brandLabel', options.brandLabel);
-    if (hasText(brandLabel) && (options.brandLabel !== undefined || !named(brand))) brand.setAttribute('aria-label', brandLabel!);
+    if (hasText(brandLabel) && (options.brandLabel !== undefined || !named(brand))) {
+      brand.setAttribute('aria-label', brandLabel!);
+      // aria-label is not exposed reliably on an element without a role.
+      if (!brand.matches('a[href], [role]')) brand.setAttribute('role', 'img');
+    }
     // An artwork-only brand needs a name; checked once mounted in a browser, never during server rendering.
     const alternative = [...brand.querySelectorAll('img[alt], [role="img"][aria-label]')].some(node => hasText(node.getAttribute('alt') ?? node.getAttribute('aria-label')));
     if (root.ownerDocument.defaultView && !hasText(brand.textContent) && !named(brand) && !alternative) requireText('PortalHeader', 'brandLabel', undefined, 'the brand has no text');
