@@ -20,6 +20,7 @@ export function portalShellProject(id: ShellId, framework: ProjectFramework, lan
   const close = t('Close navigation','إغلاق قائمة التنقل'), mainNav = t('Main navigation','التنقل الرئيسي');
   const sections = t('Service sections','أقسام الخدمات'), shortcuts = t('Mobile shortcuts','اختصارات الجوال');
   const skip = t('Skip to page content','انتقل إلى محتوى الصفحة'), trail = t('Breadcrumb','مسار التنقل'), footer = t('Support links','روابط المساعدة');
+  const external = t('opens in a new window','يفتح في نافذة جديدة');
   const account = t('Guest account','حساب زائر'), group = t('Service directory','دليل الخدمات'), upcoming = t('Appointments (coming soon)','المواعيد (قريبًا)');
   const env = `data-portal-project="${id}" data-project-format="${framework}-${language}" lang="${locale}" dir="${dir}"`;
   const ts = (type: string) => typed ? ': ' + type : '';
@@ -128,11 +129,12 @@ window.addEventListener('pagehide', () => {listeners.abort(); ${drawer ? 'drawer
   if (framework === 'react') {
     const trigger = `<button className="${triggerClass}" type="button" data-drawer-open aria-haspopup="dialog" aria-controls="service-menu" aria-expanded={open} onClick={() => setOpen(true)}${triggerLabel}>${triggerContent}</button>`;
     const panel = `<NavigationDrawer id="service-menu" title="${mainNav}" navigationLabel="${mainNav}" closeLabel="${close}" items={drawerItems(page.id)} open={open} onOpenChange={setOpen} userContent={<span>${account}</span>} />`;
-    const content = shell ? `<PortalLayout brand="${portal}" lang="${locale}" dir="${dir}" mainId="service-content" skipLabel="${skip}"
-      headerProps={{brandHref: pages[0].href, navigation: links, menuLabel:'${menu}', navigationLabel:'${mainNav}', actions:<span>${account}</span>}}
+    const content = shell ? `<PortalLayout brand="${portal}" dir="${dir}" mainId="service-content" skipLabel="${skip}"
+      menuLabel="${menu}" navigationLabel="${mainNav}"
+      headerProps={{brandHref: pages[0].href, navigation: links, actions:<span>${account}</span>}}
       secondaryNavigation={links} secondaryLabel="${sections}" breadcrumbLabel="${trail}"
       breadcrumbs={[{label:'${portal}', href:pages[0].href}, {label:page.label, current:true}]}
-      footerProps={{links:[pages[2]], linksLabel:'${footer}'}}>
+      footerLabel="${footer}" footerProps={{links:[pages[2]], externalLabel:'${external}'}}>
       ${markup.react.replaceAll('h2','h1')}
     </PortalLayout>` : secondary ? `<SecondaryNav items={links} label="${sections}" />
     <SecondaryNav items={links} label="${shortcuts}" variant="mobile" />
@@ -160,7 +162,7 @@ export default function App() {
   if (framework === 'vue') {
     const trigger = `<button class="${triggerClass}" type="button" data-drawer-open aria-haspopup="dialog" aria-controls="service-menu" :aria-expanded="open" @click="open = true"${triggerLabel}>${triggerContent}</button>`;
     const panel = `<NavigationDrawer id="service-menu" title="${mainNav}" navigation-label="${mainNav}" close-label="${close}" :items="drawerItems(page.id)" v-model:open="open"><template #user>${account}</template></NavigationDrawer>`;
-    const content = shell ? `<PortalLayout brand="${portal}" lang="${locale}" dir="${dir}" main-id="service-content" skip-label="${skip}" :home-href="pages[0].href" :links="links" menu-label="${menu}" navigation-label="${mainNav}" :secondary-navigation="links" secondary-label="${sections}" breadcrumb-label="${trail}" :breadcrumbs="[{label:'${portal}',href:pages[0].href},{label:page.label,current:true}]" :footer-links="[pages[2]]" footer-label="${footer}">
+    const content = shell ? `<PortalLayout brand="${portal}" dir="${dir}" main-id="service-content" skip-label="${skip}" :home-href="pages[0].href" :links="links" menu-label="${menu}" navigation-label="${mainNav}" :secondary-navigation="links" secondary-label="${sections}" breadcrumb-label="${trail}" :breadcrumbs="[{label:'${portal}',href:pages[0].href},{label:page.label,current:true}]" :footer-links="[pages[2]]" footer-label="${footer}" :footer-props="{externalLabel:'${external}'}">
       <template #actions><span>${account}</span></template>
       ${markup.vue.replaceAll('h2','h1')}
     </PortalLayout>` : secondary ? `<SecondaryNav :items="links" label="${sections}" />
@@ -194,7 +196,7 @@ function route(event${ts('MouseEvent')}) {
   const native = imports.split(', ').map(name => `Hw${name}Component`).join(', ');
   const trigger = `<button #trigger class="${triggerClass}" type="button" data-drawer-open aria-haspopup="dialog" aria-controls="service-menu" [attr.aria-expanded]="open" (click)="drawer.show(trigger)"${bar ? ' hwTopBarLeading' : ''}${triggerLabel}>${triggerContent}</button>`;
   const panel = `<hw-navigation-drawer #drawer id="service-menu" title="${mainNav}" navigationLabel="${mainNav}" closeLabel="${close}" [items]="items" [(open)]="open"><span hwNavigationDrawerUser>${account}</span></hw-navigation-drawer>`;
-  const content = shell ? `<hw-portal-layout brand="${portal}" lang="${locale}" dir="${dir}" mainId="service-content" skipLabel="${skip}" [homeHref]="pages[0].href" [links]="links" menuLabel="${menu}" navigationLabel="${mainNav}" [secondaryNavigation]="links" secondaryLabel="${sections}" breadcrumbLabel="${trail}" [breadcrumbs]="[{label:'${portal}',href:pages[0].href},{label:page.label}]" [footerLinks]="[pages[2]]" footerLabel="${footer}">
+  const content = shell ? `<hw-portal-layout brand="${portal}" dir="${dir}" mainId="service-content" skipLabel="${skip}" [homeHref]="pages[0].href" [links]="links" menuLabel="${menu}" navigationLabel="${mainNav}" [secondaryNavigation]="links" secondaryLabel="${sections}" breadcrumbLabel="${trail}" [breadcrumbs]="[{label:'${portal}',href:pages[0].href},{label:page.label}]" [footerLinks]="[pages[2]]" footerLabel="${footer}" externalLabel="${external}">
       <span hwPortalActions>${account}</span>
       ${markup.angular.replaceAll('h2','h1')}
     </hw-portal-layout>` : secondary ? `<hw-secondary-nav [items]="links" label="${sections}" />

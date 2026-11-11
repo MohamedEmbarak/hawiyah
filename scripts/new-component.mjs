@@ -17,7 +17,7 @@ if (existsSync(dest)) {
 mkdirSync(dest, { recursive: true });
 writeFileSync(
   resolve(dest, "index.html"),
-  `<!-- Hawiyah 0.2 application block. Customize layout; keep primitive contracts. -->\n<section class="hw-card ${name}" aria-labelledby="${name}-title">\n  <div class="hw-card-body">\n    <h2 id="${name}-title">Your title</h2>\n    <p>Your content.</p>\n    <button type="button" class="hw-button">Continue</button>\n  </div>\n</section>\n`,
+  `<!-- Hawiyah 0.2 application block. Customize layout; keep primitive contracts.\n     All text below is application content: replace each placeholder in every\n     language the application supports. lang and dir come from the page. -->\n<section class="hw-card ${name}" aria-labelledby="${name}-title">\n  <div class="hw-card-body">\n    <h2 id="${name}-title">Your title</h2>\n    <p>Your content.</p>\n    <button type="button" class="hw-button">Continue</button>\n  </div>\n</section>\n`,
 );
 writeFileSync(
   resolve(dest, "styles.css"),
@@ -25,6 +25,6 @@ writeFileSync(
 );
 writeFileSync(
   resolve(dest, "README.md"),
-  `# ${name}\n\nApplication-owned block generated from Hawiyah 0.2.\n\nCheck Arabic/English, RTL/LTR, keyboard focus, reduced motion, contrast,\nmobile overflow, and all applicable loading/empty/error states.\nUse documented primitives; do not reach into private component internals.\n`,
+  `# ${name}\n\nApplication-owned block generated from Hawiyah 0.2.\n\nCheck Arabic/English, RTL/LTR, keyboard focus, reduced motion, contrast,\nmobile overflow, and all applicable loading/empty/error states.\nUse documented primitives; do not reach into private component internals.\n\nHawiyah components contain no text of their own. Supply every label, message\nand accessible name the block shows, and the locale where a component formats\ndates or numbers or sorts text. See CONTRACT.md "Text and localisation".\n`,
 );
 console.log(`Created blocks/${name}`);

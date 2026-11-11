@@ -90,6 +90,11 @@ for(const adapter of ['react','vue','angular']){
   });
 }
 it('React/Vue SSR render real fragments and no assumed active location before observation',async()=>{
-  const renders=[renderToStaticMarkup(r(ReactNavigation,{items:items()})),await renderToString(createSSRApp({render:()=>h(VueNavigation,{items:items()})}))];
-  for(const html of renders){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelector('nav')!.getAttribute('aria-label')).toBe('في هذه الصفحة');expect(host.querySelectorAll('a[href]')).toHaveLength(3);expect(host.querySelectorAll('[aria-current]')).toHaveLength(0);expect(host.querySelectorAll('.hw-content-nav-sublist')).toHaveLength(1);}
+  const label='في هذه الصفحة';
+  const renders=[renderToStaticMarkup(r(ReactNavigation,{items:items(),label})),await renderToString(createSSRApp({render:()=>h(VueNavigation,{items:items(),label})}))];
+  for(const html of renders){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelector('nav')!.getAttribute('aria-label')).toBe(label);expect(host.querySelectorAll('a[href]')).toHaveLength(3);expect(host.querySelectorAll('[aria-current]')).toHaveLength(0);expect(host.querySelectorAll('.hw-content-nav-sublist')).toHaveLength(1);}
+  const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+  try{
+    for(const html of [renderToStaticMarkup(r(ReactNavigation,{items:items()} as Parameters<typeof ReactNavigation>[0])),await renderToString(createSSRApp({render:()=>h(VueNavigation,{items:items()})}))]){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelector('nav')!.hasAttribute('aria-label')).toBe(false);expect(host.querySelectorAll('a[href]')).toHaveLength(3);}
+  }finally{warn.mockRestore();}
 });

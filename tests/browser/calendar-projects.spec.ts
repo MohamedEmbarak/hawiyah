@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { getCalendarLabels } from '../../packages/core/src/calendar-labels';
+import { calendarTexts } from '../../apps/playground/src/project-texts';
 import { getCalendarDateParts } from '../../packages/core/src/saudi-calendar';
 
 const projects = [
@@ -23,13 +23,14 @@ for (const [framework, language, locale] of projects) {
       if (window === window.top) localStorage.setItem('hawiyah-locale', language);
     }, locale);
     await page.setViewportSize({width: 1543, height: 1000});
-    const copy = getCalendarLabels(locale);
+    // The projects pass the guide's own texts; the packages hold no wording.
+    const copy = calendarTexts(locale);
     const calendars = await openProject(page, 'calendar', framework, language);
     const gregorian = calendars.locator('[data-calendar-case="gregory"]');
     const hijri = calendars.locator('[data-calendar-case="islamic-umalqura"]');
     for (const example of [gregorian, hijri]) {
-      await expect(example.locator('.hw-calendar-prev')).toHaveAccessibleName(copy.previous);
-      await expect(example.locator('.hw-calendar-next')).toHaveAccessibleName(copy.next);
+      await expect(example.locator('.hw-calendar-prev')).toHaveAccessibleName(copy.previousLabel);
+      await expect(example.locator('.hw-calendar-next')).toHaveAccessibleName(copy.nextLabel);
       await expect(example.getByRole('grid').locator('tbody tr')).toHaveCount(6);
     }
     await gregorian.locator('button.hw-calendar-day:not([data-outside="true"])').filter({hasText: /^30$/}).click();
@@ -40,16 +41,16 @@ for (const [framework, language, locale] of projects) {
     const input = picker.locator('.hw-date-picker-control input[type="text"]');
     const opener = picker.locator('.hw-date-picker-trigger');
     await expect(picker.locator('input[type="date"]')).toHaveCount(0);
-    await expect(opener).toHaveAccessibleName(copy.open);
+    await expect(opener).toHaveAccessibleName(copy.openLabel);
     const before = await input.inputValue();
     await opener.click();
     const dialog = picker.locator('dialog[open]');
     await expect(dialog).toBeVisible();
-    const switcher = dialog.getByRole('radiogroup', {name: copy.system});
-    await switcher.locator('label').filter({hasText: copy.hijri}).click();
+    const switcher = dialog.getByRole('radiogroup', {name: copy.calendarSystemLabel});
+    await switcher.locator('label').filter({hasText: copy.hijriLabel}).click();
     await expect(switcher.locator('input[value="islamic-umalqura"]')).toBeChecked();
     await expect(picker.locator('[data-calendar-model]')).toHaveText('2026-10-28');
-    await dialog.getByRole('button', {name: copy.close}).click();
+    await dialog.getByRole('button', {name: copy.closeLabel}).click();
     await expect(opener).toBeFocused();
     await expect(input).not.toHaveValue(before);
     expect(await input.inputValue()).not.toMatch(/[٠-٩۰-۹]/u);
@@ -57,7 +58,7 @@ for (const [framework, language, locale] of projects) {
     await expect(input).toHaveValue('2026-10-28');
     await input.fill('2026-02-30');
     await expect(input).toHaveAttribute('aria-invalid', 'true');
-    expect(await input.evaluate((el: HTMLInputElement) => el.validationMessage)).toBe(copy.invalid);
+    expect(await input.evaluate((el: HTMLInputElement) => el.validationMessage)).toBe(copy.invalidMessage);
     await expect(picker.locator('[data-calendar-model]')).toHaveText('2026-10-28');
     await input.fill('2026-11-05');
     await expect(picker.locator('[data-calendar-model]')).toHaveText('2026-11-05');

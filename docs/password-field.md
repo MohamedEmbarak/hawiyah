@@ -1,8 +1,9 @@
 # Password visibility
 
 PasswordField defaults to an integrated eye toggle at the logical end of the
-input. The concealed state offers “Show password”; the revealed state offers
-“Hide password” with a slashed eye. The decorative 24px mask follows the text
+input. The concealed state offers the application's `showLabel`; the revealed
+state offers its `hideLabel` with a slashed eye. Both texts are required in
+every adapter; the component has no wording of its own. The decorative 24px mask follows the text
 color, including forced colors. It does not mirror in RTL. The input retains its
 comfortable/compact/mobile density height; space reserved inside the input keeps
 the password text clear of the toggle.
@@ -11,8 +12,8 @@ All adapters accept `toggleVariant: 'icon' | 'text'`, defaulting to `icon`.
 React uses `toggleVariant="text"`; Vue accepts `toggle-variant="text"`; Angular
 accepts `toggleVariant="text"`. Vanilla accepts the option on
 `createPasswordField`, or `data-hw-toggle-variant="text"` on the picker root or
-toggle. The text variant retains localized visible labels and may wrap or grow
-as needed. `showLabel` and `hideLabel` remain the accessible action names in
+toggle. The text variant shows the same texts visibly and may wrap or grow as
+needed. `showLabel` and `hideLabel` remain the accessible action names in
 both variants; the toggle also exposes `aria-pressed` and `aria-controls`.
 
 Use a shared wrapper for vanilla markup:

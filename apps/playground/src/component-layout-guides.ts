@@ -37,7 +37,7 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
 </article>`,
     api: [
       { name: 'title / description', type: 'heading and descriptive content', description: 'Describe one service. Adapter title props render an h3; vanilla markup may use the appropriate heading level.' },
-      { name: 'href / actionLabel', type: 'string', description: 'Native destination and localized action text. Navigation and route loading belong to the application.' },
+      { name: 'href / actionLabel', type: 'string', description: 'Native destination and its action text; actionLabel is required when the card renders its own action link. Navigation and route loading belong to the application.' },
       { name: 'data-variant', type: 'featured | compact', description: 'Featured adds emphasis; compact reduces spacing. Pass as a data attribute where the adapter does not expose this as a typed prop.' },
       { name: 'React metadata', type: 'DescriptionItem[]', description: 'Uses term/description pairs. Vue metadata is a string array; Angular exposes duration and fee strings.' },
     ],
@@ -56,8 +56,8 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   <footer><a class="hw-button" href="./apply/license">Start renewal</a></footer>
 </article>`,
     api: [
-      { name: 'title / description', type: 'content', description: 'Service heading and a concise introduction. Localize both alongside any requirements labels.' },
-      { name: 'React metadata / requirements', type: 'DescriptionItem[] / ReactNode[]', description: 'Paired service facts and an optional requirements list; requirementsLabel defaults to English.' },
+      { name: 'title / description', type: 'content', description: 'Service heading and a concise introduction, supplied by the application like every other text.' },
+      { name: 'React metadata / requirements', type: 'DescriptionItem[] / ReactNode[]', description: 'Paired service facts and an optional requirements list; requirementsLabel is required when requirements are given.' },
       { name: 'Vue items / Angular details', type: 'description-item arrays', description: 'Equivalent service facts use adapter-specific prop names. Angular also accepts requirements and requirementsLabel.' },
       { name: 'action', type: 'React node / Vue slot / Angular projected content', description: 'Place the journey entry action after the information users need to decide.' },
     ],
@@ -83,13 +83,13 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
       { name: 'brand / home destination', type: 'content / URL', description: 'Use an accessible home link. React names the URL brandHref; Vue and Angular use homeHref.' },
       { name: 'navigation / links', type: '{ label, href, current? }[]', description: 'React calls the collection navigation; Vue and Angular call it links. Current links receive aria-current="page".' },
       { name: 'data-variant="sticky"', type: 'CSS variant', description: 'Keeps the header at the block-start edge. Ensure sticky content does not obscure focused controls or anchor destinations.' },
-      { name: 'navigationId / mainId / menuLabel / skipLabel', type: 'string', description: 'All framework headers support these props. Navigation IDs are generated unless supplied; mainId connects the optional skip link to a real focusable content target. Defaults are Arabic.' },
-      { name: 'createPortalHeader(root, options)', type: 'vanilla controller', description: 'Options: onOpenChange(open). Returns open, show(), close(restoreFocus?), destroy(). enhance() discovers data-hw="portal-header" with data-hw-portal-toggle and data-hw-portal-navigation.' },
+      { name: 'navigationId / mainId / menuLabel / skipLabel', type: 'string', description: 'All framework headers support these props. Navigation IDs are generated unless supplied; mainId connects the optional skip link to a real focusable content target. menuLabel and navigationLabel are required, and skipLabel is required when mainId is set; vanilla reads them from the authored toggle text and nav aria-label, then data-hw-menu-label and data-hw-navigation-label.' },
+      { name: 'createPortalHeader(root, options)', type: 'vanilla controller', description: 'Options: onOpenChange(open), menuLabel, navigationLabel, brandLabel. Returns open, show(), close(restoreFocus?), destroy(). enhance() discovers data-hw="portal-header" with data-hw-portal-toggle and data-hw-portal-navigation.' },
     ],
     lifecycle: ['Render navigation from route state and update aria-current when the route changes. Framework adapters own their disclosure state and DOM.', 'For vanilla, call enhance() or createPortalHeader() after mounting. Do not pre-hide the navigation; links remain available without JavaScript.', 'Escape closes and returns focus to the toggle. Link selection, outside press and focus leaving close the disclosure. Tab remains native.', 'Release enhance() or call destroy() before replacing vanilla markup; it removes listeners and restores original attributes. Framework unmount handles its own cleanup.'],
-    accessibility: ['Name primary navigation and provide a working skip link to a content target with tabindex="-1".', 'The brand link needs a name even when it contains only an outlined logo image.', 'The built-in toggle maintains aria-expanded and aria-controls. Navigation remains ordinary links, not a menu or a modal focus trap.'],
+    accessibility: ['Name primary navigation and provide a working skip link to a content target with tabindex="-1".', 'The brand link needs a name even when it contains only an outlined logo image: supply brandLabel (data-hw-brand-label in vanilla) or image alternative text; otherwise a development warning names brandLabel.', 'The built-in toggle maintains aria-expanded and aria-controls. Navigation remains ordinary links, not a menu or a modal focus trap.'],
     variants: ['Responsive disclosure below 48rem', 'Desktop navigation', 'Sticky via data-variant'], related: ['site-verification', 'portal-footer', 'portal-layout', 'secondary-nav'],
-    frameworkNotes: 'React uses brand, brandHref, navigation, navigationLabel, actions and notice. Vue uses brand, homeHref, links and navLabel with logo/actions slots. Angular hw-portal-header uses brand, homeHref, links, navigationLabel and projected actions/[hwBrand]. All expose menuLabel, navigationId, mainId and skipLabel. Supply explicit stable Angular IDs for independently serialized roots.',
+    frameworkNotes: 'React uses brand, brandHref, navigation, navigationLabel, actions and notice. Vue uses brand, homeHref, links and navigationLabel with logo/actions slots. Angular hw-portal-header uses brand, homeHref, links, navigationLabel and projected actions/[hwBrand]. All expose menuLabel, navigationId, mainId, skipLabel and the optional brandLabel; brand text is rendered only when the application supplies it. Supply explicit stable Angular IDs for independently serialized roots.',
     limitations: ['The 48rem breakpoint is a Hawiyah adaptation, not an asserted Figma breakpoint.', 'No authentication, language routing or account state is provided by the header.'], source: contentSource,
   },
   'secondary-nav': {
@@ -100,7 +100,7 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
 </ul></nav>`,
     api: [
       { name: 'items', type: 'readonly { label, href, current?, icon? }[]', description: 'React/Vue SecondaryNav and Angular hw-secondary-nav accept items. React labels may be ReactNode; Vue/Angular labels are strings.' },
-      { name: 'label', type: 'localized string', description: 'Names this navigation landmark; defaults to Arabic. Distinguish it from the primary and footer navigation.' },
+      { name: 'label', type: 'string', description: 'Required name of this navigation landmark. Distinguish it from the primary and footer navigation.' },
       { name: 'variant', type: 'default | mobile', description: 'Mobile uses equal-width icon-over-label links, a top current-page indicator and 300 ms ease-out color transitions. Pass a decorative icon name on each item. Normal link semantics remain.' },
       { name: 'hw-secondary-nav / aria-current', type: 'semantic HTML', description: 'Vanilla uses a nav with a list of links. aria-current="page" marks the current destination. No JavaScript controller is needed.' },
     ],
@@ -127,14 +127,14 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   <footer class="hw-portal-footer"><strong>هوية</strong><nav aria-label="روابط التذييل"><ul><li><a href="./privacy">الخصوصية</a></li></ul></nav></footer>
 </div>`,
     api: [
-      { name: 'brand / lang / dir / mainId', type: 'content / string', description: 'Brand is required. lang defaults to ar and dir to rtl independently. Generated mainId connects the skip link to the focusable main; explicit IDs must be unique.' },
-      { name: 'React headerProps / footerProps', type: 'PortalHeaderProps / PortalFooterProps', description: 'headerProps configures navigation, brandHref, actions, notice and navigation/menu labels. footerProps configures links, linksLabel, legal and other existing footer props. Top-level skipLabel names the skip link.' },
+      { name: 'brand / lang / dir / mainId', type: 'content / string', description: 'Brand content is required; brandLabel names an artwork-only brand. lang and dir are rendered only when the application supplies them. Generated mainId connects the skip link to the focusable main; explicit IDs must be unique.' },
+      { name: 'React headerProps / footerProps', type: 'PortalHeaderProps / PortalFooterProps', description: 'headerProps configures navigation, brandHref, actions and notice. footerProps configures links, navigationLabel, legalLinksLabel, supportLabel, externalLabel and other footer props. Top-level skipLabel, menuLabel and navigationLabel are required.' },
       { name: 'Vue / Angular links / footerLinks', type: 'readonly { label, href, current?, icon? }[]', description: 'These adapters expose homeHref, links, footerLinks, copyright, skipLabel, menuLabel, navigationLabel and footerLabel directly. Vue slots: logo/actions/footer/default. Angular projection: [hwBrand]/[hwPortalActions]/[hwPortalFooter]/default.' },
-      { name: 'secondaryNavigation / breadcrumbs', type: 'readonly item arrays', description: 'Optional navigation and breadcrumb collections. secondaryLabel and breadcrumbLabel override their Arabic labels. Breadcrumb items use label/href; React/Vue also accept current.' },
+      { name: 'secondaryNavigation / breadcrumbs', type: 'readonly item arrays', description: 'Optional navigation and breadcrumb collections. secondaryLabel and breadcrumbLabel are required when their collections are given. Breadcrumb items use label/href; React/Vue also accept current.' },
       { name: 'Vanilla .hw-portal-layout', type: 'semantic HTML', description: 'Compose the shared classes with one main landmark and enhance only the marked header. The embedded gallery substitutes a section for main to avoid nesting page landmarks.' },
     ],
     lifecycle: ['Render one shell around application content; the application supplies a page heading, routes and data.', 'Enhance vanilla header markup after mounting and release it before replacement. Framework components own their DOM and event cleanup.', 'Update current links, breadcrumb and title together on route changes. Route focus and document.title remain application responsibilities.'],
-    accessibility: ['The skip target is programmatically focusable. Keep one main landmark per document.', 'Name the primary, secondary, breadcrumb and footer landmarks distinctly.', 'For English, set lang="en" and dir="ltr" and translate all content and accessible labels. Direction may be configured independently.'],
+    accessibility: ['The skip target is programmatically focusable. Keep one main landmark per document.', 'Name the primary, secondary, breadcrumb and footer landmarks distinctly.', 'Set lang and dir for the active language, and supply all content and accessible labels in that language. Direction may be configured independently.'],
     variants: ['Header and footer', 'Secondary navigation and breadcrumb', 'Arabic/RTL or English/LTR'], related: ['portal-header', 'secondary-nav', 'portal-footer', 'breadcrumb', 'app-shell'],
     frameworkNotes: 'React/Vue export PortalLayout. Angular exports HwPortalLayoutComponent with selector hw-portal-layout. See each package PORTAL.md and run its native example with ?preview=portal. Supply stable explicit mainId/navigationId values when independently serializing Angular app roots; Angular SSR/hydration is not claimed verified.',
     limitations: ['48rem disclosure breakpoint is Hawiyah policy. Layout uses semantic theme tokens and adds no animation.', 'No route loader, authentication, government asset entitlement or DGA certification is implied.'], source: 'packages/styles/src/portal.css',
@@ -149,31 +149,32 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
     api: [
       { name: 'brand / description', type: 'content', description: 'Optional identity and context; avoid duplicating a long navigation or application form in the footer.' },
       { name: 'links', type: '{ label, href }[]', description: 'Native supporting links. Provide a real destination rather than placeholder policy URLs in production.' },
-      { name: 'navigation label', type: 'localized string', description: 'React linksLabel, Vue navLabel, and Angular navigationLabel name the footer navigation.' },
+      { name: 'navigationLabel', type: 'string', description: 'Names the footer navigation in every adapter; required when links are given.' },
       { name: 'legal / copyright', type: 'content', description: 'React exposes legal; Vue and Angular expose copyright. Add other legal content through normal children or projection.' },
     ],
     lifecycle: ['Render after the page content. Footer links continue to use ordinary browser or router navigation.', 'Update policy or support links from platform configuration; there is no component selection state.', 'No enhancement or cleanup is required for static footer content.'],
     accessibility: ['Use footer and a named nav landmark; distinguish its label from primary navigation.', 'Ensure link text describes the policy or destination and remains visible in high contrast mode.'],
     variants: ['Grouped navigation', 'Support and policy links', 'Brand and partner slots', 'Legacy flat links'], related: ['portal-header', 'app-shell', 'link'],
-    frameworkNotes: 'All adapters accept groups (title and links) and legalLinks. React adds support and partners nodes; Vue uses logo/support/partners slots; Angular uses hwFooterBrand/hwFooterSupport/hwFooterPartners projection. Existing flat links, descriptions, legal/copyright and default content remain supported. External links accept external=true and an accessible externalLabel. See docs/nic-footer.md.',
+    frameworkNotes: 'All adapters accept groups (title and links) and legalLinks. React adds support and partners nodes; Vue uses logo/support/partners slots; Angular uses hwFooterBrand/hwFooterSupport/hwFooterPartners projection. Existing flat links, descriptions, legal/copyright and default content remain supported. External links accept external=true and require an accessible externalLabel. legalLinksLabel and supportLabel are required when legal links or support content are given; the support section is rendered only with support content. See docs/nic-footer.md.',
     source: contentSource,
   },
   feedback: {
     summary: 'Collect an explicit helpful/not-helpful choice and connect it to an application-owned feedback workflow.',
-    usage: `<div class="hw-feedback" data-hw="feedback" role="group" aria-label="Was this page helpful?">
+    usage: `<div class="hw-feedback" data-hw="feedback" role="group" aria-label="Was this page helpful?"
+  data-hw-success-message="Thank you for your feedback.">
   <p>Was this page helpful?</p>
   <div class="hw-inline"><button class="hw-button" type="button" data-hw-value="yes" aria-pressed="false">Yes</button><button class="hw-button" type="button" data-hw-value="no" aria-pressed="false">No</button></div>
   <input type="hidden" data-hw-feedback-value name="helpful">
   <span data-hw-feedback-status role="status"></span>
 </div>`,
     api: [
-      { name: 'createFeedback(root, options)', type: 'vanilla controller', description: 'Options: value, onValueChange(value), getStatusMessage(value). The returned controller exposes value, select(value), destroy().' },
+      { name: 'createFeedback(root, options)', type: 'vanilla controller', description: 'Options: value, onValueChange(value), successMessage (required; data-hw-success-message) and the optional getStatusMessage(value), which replaces it for one answer. The returned controller exposes value, select(value), destroy().' },
       { name: 'data-hw-value', type: 'string', description: 'Stable button values, commonly yes/no. The selected button gets aria-pressed="true" and the optional hidden input receives its value.' },
       { name: 'hw:change', type: 'CustomEvent<{ value: string }>', description: 'Bubbles when the selection changes. Re-selecting the same value does not emit another value event.' },
       { name: 'data-hw-disabled / data-hw-readonly', type: '"true"', description: 'Stops user changes; also respect native disabled on individual buttons.' },
     ],
     lifecycle: ['Call enhance() after mounting vanilla markup, or own a createFeedback() controller directly.', 'A selection updates button state, the hidden field and the polite status. Form reset restores the initial choice.', 'Before replacing the markup, release enhance() or call controller.destroy(); original attributes, field value and status are restored.', 'Send feedback to your backend in the callback. The displayed acknowledgment alone is not proof that a server stored anything.'],
-    accessibility: ['Give the choice group a visible question and accessible name; use real buttons or native radio controls.', 'Keep acknowledgment in a polite status region and localize its message.'],
+    accessibility: ['Give the choice group a visible question and accessible name; use real buttons or native radio controls.', 'Keep acknowledgment in a polite status region; successMessage supplies its text.'],
     variants: ['Text choices (default)', 'Thumbs with text', 'Thumbs only with accessible labels', 'React or Vue choice plus comment'], related: ['radio', 'textarea', 'alert'],
     frameworkNotes: 'All adapters support choiceVariant="text"|"icon-text"|"icon" (vanilla data-choice-variant with hw-feedback-actions, hw-feedback-icon and hw-feedback-label). Keep yes/no labels for icon-only accessible names. APIs differ: React Feedback value is {helpful:"yes"|"no"|"",comment:string} with onValueChange/onFeedback. Vue v-model is a string and submit emits {value,comment}. Angular [(value)] is boolean|null and emits valueChange; its base component does not include a comment field.',
     limitations: ['No network transport, analytics or moderation is included. React/Vue submission acknowledgment is local UI state.'], source: 'packages/vanilla/src/content.ts',
@@ -207,12 +208,12 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
 </section>`,
     api: [
       { name: 'items', type: 'notification array with stable IDs', description: 'React/Vue use read; Angular uses unread. Supply a title, optional description and an actual destination when navigation is available.' },
-      { name: 'label / emptyMessage', type: 'localized text', description: 'Name the collection and explain the empty state without implying a loading failure.' },
+      { name: 'label / emptyMessage', type: 'string', description: 'Required. Name the collection and explain the empty state without implying a loading failure.' },
       { name: 'data-state="unread"', type: 'CSS state', description: 'Vanilla unread styling also accepts data-unread="true" or data-read="false". Add a textual unread cue.' },
       { name: 'React onMarkRead / Angular dismissed', type: 'callback or event carrying item ID', description: 'The application changes the item collection after the action. The list does not synchronize with a notification service.' },
     ],
     lifecycle: ['Render from the notification collection, using stable IDs across updates.', 'Fetch or subscribe to data outside the component; reconcile read/dismiss actions into application state.', 'Preserve focus when an item is removed. Unsubscribe from application-owned polling or sockets when the owning view is destroyed; this static list has no vanilla enhancement controller.'],
-    accessibility: ['Expose unread in text as well as background color.', 'Use time with a machine-readable datetime when an actual timestamp is known; localize the visible label.', 'Avoid making an entire continually changing inbox an assertive live region. Announce meaningful new arrivals separately.'],
+    accessibility: ['Expose unread in text as well as background color.', 'Use time with a machine-readable datetime when an actual timestamp is known; supply the visible label as text.', 'Avoid making an entire continually changing inbox an assertive live region. Announce meaningful new arrivals separately.'],
     variants: ['Read and unread items', 'Empty state', 'Application-owned actions'], related: ['badge', 'toast-region', 'empty'],
     frameworkNotes: 'React items use dateTime/dateLabel/read and onMarkRead(id); Vue uses date/dateLabel/read with read(id) and dismiss(id) events. Angular items use time/unread and its dismissed event asks the parent to remove an item.',
     limitations: ['No push service, unread-count persistence or background subscription is supplied.'], source: contentSource,

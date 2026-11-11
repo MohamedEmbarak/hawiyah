@@ -38,7 +38,7 @@ background once a pointer-pressed tab receives focus; this precedence is retaine
 
 React, Vue and Angular retain controlled/uncontrolled selection and manual/
 automatic activation. They add `overflow: 'menu' | 'scroll'` (default `menu`)
-and `overflowLabel` (Arabic default). Vanilla accepts these options plus
+and `overflowLabel`, required when overflow uses the menu. Vanilla accepts these options plus
 `data-hw-overflow` / `data-hw-overflow-label`; destroy restores authored DOM and
 attributes. No vanilla controller owns native framework trees.
 

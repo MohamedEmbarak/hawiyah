@@ -17,18 +17,22 @@ const cleanup: Array<() => void | Promise<void>> = [];
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(async () => {for(const fn of cleanup.splice(0))await fn();TestBed.resetTestingModule();document.body.replaceChildren();});
 
-async function mount(adapter: string, options: {count?: number; current?: number; loop?: boolean; controlled?: boolean} = {}) {
+// The application's copy: the strings the adapters used to supply.
+const texts={previousLabel:'الشريحة السابقة',nextLabel:'الشريحة التالية',indicatorsLabel:'اختيار الشريحة',getSlideLabel:(position:number,total:number)=>`${position} من ${total}`,emptyLabel:'لا توجد شرائح',carouselDescription:'عرض شرائح',slideDescription:'شريحة'};
+
+async function mount(adapter: string, options: {count?: number; current?: number; loop?: boolean; controlled?: boolean; texts?: Partial<typeof texts>} = {}) {
+  const copy=options.texts??texts;
   const host=document.createElement('div');document.body.append(host);
   const state={count:options.count??3,current:options.current??0,loop:options.loop??false,showIndicators:true};
   const changed=vi.fn(),ref={current:null as HTMLElement|null};let sync:()=>Promise<void>;
   const attrs={id:'carousel-example',class:'consumer-class',title:'Example',style:{color:'red','--hw-carousel-index':99}};
   if(adapter==='react') {
-    const root=createRoot(host);sync=async()=>{await act(()=>root.render(r(ReactCarousel,{id:attrs.id,className:attrs.class,title:attrs.title,style:attrs.style,label:'المحتوى',ref,slides:Array.from({length:state.count},(_,index)=>r('a',{href:`#slide-${index}`},`Content ${index+1}`)),index:options.controlled?state.current:undefined,defaultIndex:state.current,loop:state.loop,showIndicators:state.showIndicators,onIndexChange:changed})));};cleanup.push(async()=>{await act(()=>root.unmount());});
+    const root=createRoot(host);sync=async()=>{await act(()=>root.render(r(ReactCarousel,{...copy,id:attrs.id,className:attrs.class,title:attrs.title,style:attrs.style,label:'المحتوى',ref,slides:Array.from({length:state.count},(_,index)=>r('a',{href:`#slide-${index}`},`Content ${index+1}`)),index:options.controlled?state.current:undefined,defaultIndex:state.current,loop:state.loop,showIndicators:state.showIndicators,onIndexChange:changed})));};cleanup.push(async()=>{await act(()=>root.unmount());});
   } else if(adapter==='vue') {
-    const model=reactive({...state});const app=createApp({render:()=>h(VueCarousel,{...attrs,label:'المحتوى',slides:Array.from({length:model.count},(_,index)=>({id:`slide-${index}`,label:`Item ${index+1}`,content:h('a',{href:`#slide-${index}`},`Content ${index+1}`)})),modelValue:options.controlled?model.current:undefined,defaultValue:model.current,wrap:model.loop,showIndicators:model.showIndicators,'onUpdate:modelValue':changed})});app.mount(host);sync=async()=>{Object.assign(model,state);await nextTick();};cleanup.push(()=>app.unmount());
+    const model=reactive({...state});const app=createApp({render:()=>h(VueCarousel,{...attrs,...copy,label:'المحتوى',slides:Array.from({length:model.count},(_,index)=>({id:`slide-${index}`,content:h('a',{href:`#slide-${index}`},`Content ${index+1}`)})),modelValue:options.controlled?model.current:undefined,defaultValue:model.current,wrap:model.loop,showIndicators:model.showIndicators,'onUpdate:modelValue':changed})});app.mount(host);sync=async()=>{Object.assign(model,state);await nextTick();};cleanup.push(()=>app.unmount());
   } else {
     const fixture=TestBed.createComponent(HwCarouselComponent);host.append(fixture.nativeElement);fixture.componentInstance.currentChange.subscribe(changed);
-    sync=async()=>{fixture.componentRef.setInput('label','المحتوى');fixture.componentRef.setInput('slides',Array.from({length:state.count},(_,index)=>({id:`slide-${index}`,title:`Item ${index+1}`,content:`Content ${index+1}`})));fixture.componentRef.setInput('current',state.current);fixture.componentRef.setInput('loop',state.loop);fixture.componentRef.setInput('showIndicators',state.showIndicators);fixture.detectChanges();};cleanup.push(()=>fixture.destroy());
+    sync=async()=>{for(const [key,value] of Object.entries(copy))fixture.componentRef.setInput(key,value);fixture.componentRef.setInput('label','المحتوى');fixture.componentRef.setInput('slides',Array.from({length:state.count},(_,index)=>({id:`slide-${index}`,title:`Item ${index+1}`,content:`Content ${index+1}`})));fixture.componentRef.setInput('current',state.current);fixture.componentRef.setInput('loop',state.loop);fixture.componentRef.setInput('showIndicators',state.showIndicators);fixture.detectChanges();};cleanup.push(()=>fixture.destroy());
   }
   await sync();const root=host.querySelector<HTMLElement>('.hw-carousel')!;
   return {host,root,state,changed,ref,sync,click:async(selector:string)=>{await act(async()=>{root.querySelector<HTMLButtonElement>(selector)!.click();await nextTick();});await sync();}};
@@ -69,10 +73,21 @@ for(const adapter of ['react','vue','angular']) {
     await m.click('.hw-carousel-dot:last-child');expect(m.changed).toHaveBeenLastCalledWith(2);checkExposure(m.root,0,3);
     m.state.current=2;await m.sync();checkExposure(m.root,2,3);
   });
+  it(`${adapter}: missing texts render no names, descriptions or status text`,async()=>{
+    const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+    try{
+      const m=await mount(adapter,{texts:{}});
+      expect(m.root.hasAttribute('aria-roledescription')).toBe(false);
+      for(const node of m.root.querySelectorAll('.hw-carousel-arrow, .hw-carousel-dot, .hw-carousel-pagination, .hw-carousel-slide'))expect(node.hasAttribute('aria-label')).toBe(false);
+      expect(m.root.querySelector('.hw-carousel-slide')?.hasAttribute('aria-roledescription')).toBe(false);
+      expect(m.root.querySelector('[role="status"]')?.textContent??'').toBe('');
+      expect(m.root.textContent).not.toMatch(/الشريحة|شريحة|من 3/u);
+    }finally{warn.mockRestore();}
+  });
 }
 
 it('vue: SSR omits inert on the active slide and protects inactive content',async()=>{
-  const html=await renderToString(createSSRApp({render:()=>h(VueCarousel,{label:'المحتوى',slides:[{id:'first',label:'First',content:h('a',{href:'#first'},'First')},{id:'second',label:'Second',content:h('a',{href:'#second'},'Second')}],defaultValue:1})}));
+  const html=await renderToString(createSSRApp({render:()=>h(VueCarousel,{...texts,label:'المحتوى',slides:[{id:'first',content:h('a',{href:'#first'},'First')},{id:'second',content:h('a',{href:'#second'},'Second')}],defaultValue:1})}));
   const container=document.createElement('div');container.innerHTML=html;
   const slides=[...container.querySelectorAll<HTMLElement>('.hw-carousel-slide')];expect(slides).toHaveLength(2);
   expect(slides[0].hasAttribute('inert')).toBe(true);expect(slides[0].hasAttribute('hidden')).toBe(true);expect(slides[0].getAttribute('aria-hidden')).toBe('true');
@@ -84,11 +99,12 @@ it('angular: custom slide templates retain context, actions and inactive-slide p
   class TemplateHost {
     slides=[{id:'first',title:'First',content:'Default first body'},{id:'second',title:'Second',content:'Default second body'}];
     current=0;
+    slideLabel=(position:number,total:number)=>`${position} of ${total}`;
     activated=vi.fn();
   }
   Component({standalone:true,imports:[HwCarouselComponent],template:`
     <ng-template #slide let-item let-index="index"><article class="custom-card"><strong>{{ item.title }} / {{ index }}</strong><button type="button" class="slide-action" (click)="activated(item.id, index)">Open {{ item.title }}</button></article></ng-template>
-    <hw-carousel label="Featured cards" [slides]="slides" [slideTemplate]="slide" [(current)]="current" />
+    <hw-carousel label="Featured cards" previousLabel="Previous slide" nextLabel="Next slide" indicatorsLabel="Choose slide" emptyLabel="No slides" [getSlideLabel]="slideLabel" [slides]="slides" [slideTemplate]="slide" [(current)]="current" />
   `})(TemplateHost);
   const fixture=TestBed.createComponent(TemplateHost);document.body.append(fixture.nativeElement);cleanup.push(()=>fixture.destroy());fixture.detectChanges();
   const root=fixture.nativeElement.querySelector('.hw-carousel') as HTMLElement;

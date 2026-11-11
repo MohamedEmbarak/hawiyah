@@ -155,7 +155,7 @@ function dismissLabel(message${typed ? ': ToastMessage' : ''}) {
 <template>
   <main class="demo" data-toast-demo lang="${locale}" dir="${dir}">
     <p class="hw-hint">${copy.hint}</p>
-    <ToastRegion label="${copy.label}" variant="banner" position="inline" :messages="messages" :dismiss-label="dismissLabel" @dismiss="dismiss" />
+    <ToastRegion label="${copy.label}" variant="banner" position="inline" :messages="messages" :get-dismiss-label="dismissLabel" @dismiss="dismiss" />
     <div class="hw-inline">
       <Button type="button" variant="secondary" data-toast-restore @click="messages = initial">${copy.restore}</Button>
       <span class="hw-hint">${copy.count} <output aria-live="off" data-toast-count>{{ messages.length }}</output></span>
@@ -176,7 +176,7 @@ import { HwButtonDirective, HwToastRegionComponent, type HwToast } from '@hawiya
   selector: 'app-root', standalone: true, imports: [HwToastRegionComponent, HwButtonDirective],
   template: \`<main class="demo" data-toast-demo lang="${locale}" dir="${dir}">
     <p class="hw-hint">${copy.hint}</p>
-    <hw-toast-region label="${copy.label}" variant="banner" position="inline" [messages]="messages" dismissLabel="${copy.dismiss}" (dismissed)="dismiss($event)" />
+    <hw-toast-region label="${copy.label}" variant="banner" position="inline" [messages]="messages" [getDismissLabel]="dismissLabel" (dismissed)="dismiss($event)" />
     <div class="hw-inline">
       <button hwButton type="button" variant="secondary" data-toast-restore (click)="messages = initial">${copy.restore}</button>
       <span class="hw-hint">${copy.count} <output aria-live="off" data-toast-count>{{ messages.length }}</output></span>
@@ -186,6 +186,7 @@ import { HwButtonDirective, HwToastRegionComponent, type HwToast } from '@hawiya
 export class AppComponent {
   readonly initial: HwToast[] = ${source};
   messages = this.initial;
+  dismissLabel = (message: HwToast) => ${titlePrefix} + (message.title ?? message.id);
   dismiss(id: string) {
     this.messages = this.messages.filter(message => message.id !== id || message.dismissible === false);
   }

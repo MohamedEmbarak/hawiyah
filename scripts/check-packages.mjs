@@ -192,6 +192,10 @@ import React from 'react';
 import {renderToString} from 'react-dom/server';
 import {createSSRApp,h} from 'vue';
 import {renderToString as renderVue} from '@vue/server-renderer';
+// The packages hold no wording: this consumer supplies every text and the locale, and no warning may remain.
+const warnings = []; console.warn = (...args) => { warnings.push(args.join(' ')); };
+const layoutText = {skipLabel:'انتقل إلى المحتوى',menuLabel:'القائمة',navigationLabel:'التنقل الرئيسي',footerProps:{externalLabel:'يفتح في نافذة جديدة'}};
+const dateText = {locale:'en',calendarLabel:'Choose date',previousLabel:'Previous month',nextLabel:'Next month',openLabel:'Open calendar',closeLabel:'Close calendar',calendarSystemLabel:'Calendar system',gregorianLabel:'Gregorian',hijriLabel:'Hijri · Umm al-Qura',rangeLabel:'Supported Hijri dates',invalidMessage:'Enter an available Gregorian date in YYYY-MM-DD format.',unsupportedMessage:'Umm al-Qura is available from '+core.UMALQURA_MIN_DATE+' through '+core.UMALQURA_MAX_DATE+'. The selected ISO date is unchanged.'};
 assert.equal(core.normalizeSearch('الرِّيَاض'),'الرياض');
 assert.equal(typeof vanilla.enhance,'function');
 assert.ok(tokens.tokens);
@@ -205,13 +209,13 @@ assert.equal(typeof vanilla.createCalendar,'function');
 assert.equal(typeof vanilla.createTreeView,'function');
 assert.equal(typeof vanilla.createPortalHeader,'function');
 for (const name of ['createNavigationDrawer','createStepper','createRating','createPasswordField','createSearchField']) assert.equal(typeof vanilla[name],'function');
-assert.ok(renderToString(React.createElement(react.PortalLayout,{brand:'هوية',mainId:'portal-main'},React.createElement('h1',null,'الخدمات'))).includes('href="#portal-main"'));
-assert.ok((await renderVue(createSSRApp({render:()=>h(vue.PortalLayout,{brand:'هوية',mainId:'portal-main'},()=>h('h1',{},'الخدمات'))}))).includes('href="#portal-main"'));
+assert.ok(renderToString(React.createElement(react.PortalLayout,{brand:'هوية',mainId:'portal-main',...layoutText},React.createElement('h1',null,'الخدمات'))).includes('href="#portal-main"'));
+assert.ok((await renderVue(createSSRApp({render:()=>h(vue.PortalLayout,{brand:'هوية',mainId:'portal-main',...layoutText},()=>h('h1',{},'الخدمات'))}))).includes('href="#portal-main"'));
 assert.deepEqual(core.getCalendarDateParts('2029-08-11','islamic-umalqura'),{year:1451,month:4,day:1});
 assert.equal(core.convertCalendarDate({year:1451,month:4,day:1},'islamic-umalqura'),'2029-08-11');
 const dateHtml = [
-  renderToString(React.createElement(react.Grid,{columns:{base:1,md:2}},React.createElement(react.DatePicker,{label:'Appointment',name:'appointment',defaultValue:'2026-10-28'}))),
-  await renderVue(createSSRApp({render:()=>h(vue.Grid,{columns:{base:1,md:2}},()=>h(vue.DatePicker,{label:'Appointment',name:'appointment',defaultValue:'2026-10-28'}))}))
+  renderToString(React.createElement(react.Grid,{columns:{base:1,md:2}},React.createElement(react.DatePicker,{label:'Appointment',name:'appointment',defaultValue:'2026-10-28',...dateText}))),
+  await renderVue(createSSRApp({render:()=>h(vue.Grid,{columns:{base:1,md:2}},()=>h(vue.DatePicker,{label:'Appointment',name:'appointment',defaultValue:'2026-10-28',...dateText}))}))
 ];
 for (const html of dateHtml) {
   assert.ok(html.includes('type="text"')); assert.ok(!html.includes('type="date"'));
@@ -240,6 +244,7 @@ assert.ok(wordmark.includes('<path')); assert.ok(!wordmark.includes('<text'));
 assert.equal(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/hawiyah-loader.gif'))).subarray(0,6).toString(),'GIF89a');
 assert.ok(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/fonts/riyal-LICENSE.txt')),'utf8').includes('SIL OPEN FONT LICENSE'));
 assert.equal(fs.readFileSync(new URL(import.meta.resolve('@hawiyah/styles/assets/fonts/riyal.woff2'))).subarray(0,4).toString(),'wOF2');
+assert.deepEqual(warnings,[],'The consumer left a required text or locale unsupplied');
 console.log('Clean tarball consumer: ESM, SSR, Angular APF, CSS exports passed.');
 `,
 );

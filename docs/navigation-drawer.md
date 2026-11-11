@@ -1,9 +1,11 @@
 # Navigation drawer
 
 `NavigationDrawer` composes the existing modal `Drawer` with ordinary page
-navigation. It defaults to the logical start side and Arabic navigation/close
-labels. Applications supply the drawer title and their own navigation content;
-language and direction remain independent.
+navigation. It defaults to the logical start side. Applications supply the
+drawer `title`, the required `navigationLabel` and `closeLabel`, and their own
+navigation content; the component has no text of its own, and language and
+direction remain independent. Angular also accepts `titleId` for the drawer
+title.
 
 Each item has `{ id, label, href?, icon?, current?, disabled?, children? }`.
 Use a unique stable `id` and a text `label`. Icons are decorative names from

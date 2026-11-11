@@ -4124,7 +4124,7 @@
       "name": "DataTable",
       "labelAr": "جدول بيانات",
       "category": "content",
-      "description": "Semantic table with stable localized sorting and aria-sort headers.",
+      "description": "Semantic table with aria-sort headers and stable sorting in the locale the application supplies.",
       "cssClasses": [
         "hw-data-table"
       ],
@@ -5384,7 +5384,7 @@
       "name": "PortalLayout",
       "labelAr": "هيكل البوابة",
       "category": "platforms",
-      "description": "Arabic-default portal shell composing responsive header, optional secondary navigation and breadcrumb, main container and footer.",
+      "description": "Portal shell composing responsive header, optional secondary navigation and breadcrumb, main container and footer.",
       "cssClasses": [
         "hw-portal-layout",
         "hw-portal-layout-main"
@@ -5478,8 +5478,8 @@
       },
       "notes": [
         "Reuses PortalHeader behavior; vanilla composes semantic HTML and enhances only its header.",
-        "Generated main target IDs connect the skip link; use explicit stable IDs for independently serialized Angular roots. Angular SSR/hydration remains unverified.",
-        "Arabic and RTL are independent defaults; localize all labels when selecting English."
+        "Generated main target IDs connect the skip link. Angular generates ids from one HwIdSource per application; pass explicit stable IDs for independently serialized Angular roots. Angular SSR/hydration remains unverified.",
+        "The layout has no text, language or direction of its own: the application supplies every label, sets dir where it wants one, and sets lang on its own container."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/portal-layout"
     },
@@ -5785,7 +5785,7 @@
       },
       "notes": [
         "Native details/summary works without a JavaScript controller.",
-        "Default wording does not claim government status or registration. Applications supply verified wording, certificate links and authorized artwork."
+        "The component has no wording of its own and does not claim government status or registration. Applications supply every label, verified certificate links and authorized artwork."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/site-verification"
     },
@@ -5909,9 +5909,10 @@
   ],
   "limitations": [
     "Pre-1.0 npm release; minor versions may change APIs. No official DGA certification.",
+    "Components contain no user-visible strings and choose no locale. Applications supply every text and, where a component formats or sorts, the locale; see CONTRACT.md \"Text and localisation\".",
     "The 82-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
     "Combobox is local and single-select. MultiSelect is a separate searchable checkbox list; async data and virtualization are application concerns.",
-    "DataTable provides stable localized sorting, not virtualization or cell editing.",
+    "DataTable sorts stably in the locale the application supplies; it does not provide virtualization or cell editing.",
     "FileUpload and FileDropzone select local files; application code owns transport, storage, and server validation.",
     "Calendar/DatePicker use Gregorian ISO date-only values and Gregorian/Umm al-Qura display. Pinned reference data, supported range, and official-source limits are documented in docs/date-calendars.md. General Intl formatDate is not the canonical converter for persisted dual-calendar records.",
     "Phone, IBAN, identity, and address recipes collect data; they do not verify identity, ownership, or government-service access.",

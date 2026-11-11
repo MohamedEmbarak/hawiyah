@@ -145,9 +145,10 @@ function tree(t: Translate, typed: boolean): Markup {
   </li>
   ${leaf(personal)}
 </ul>`,
-    react: `<TreeView label="${label}" items={${data}} value={value} onValueChange={setValue} />`,
+    react: `<TreeView label="${label}" items={${data}} value={value} onValueChange={setValue}
+  getExpandLabel={node => '${t('Expand', 'توسيع')} ' + node.label} getCollapseLabel={node => '${t('Collapse', 'طي')} ' + node.label} />`,
     vue: `<TreeView label="${label}" :items='${data}' v-model="value"
-  :expand-label="node => '${t('Expand', 'توسيع')} ' + node.label" :collapse-label="node => '${t('Collapse', 'طي')} ' + node.label" />`,
+  :get-expand-label="node => '${t('Expand', 'توسيع')} ' + node.label" :get-collapse-label="node => '${t('Collapse', 'طي')} ' + node.label" />`,
     angular: `<hw-tree-view label="${label}" [nodes]="documents" [(value)]="value" />`,
     angularMember: `\n  readonly documents = ${data};`,
   }, t('Selected document ID', 'معرّف المستند المحدد'), typed);

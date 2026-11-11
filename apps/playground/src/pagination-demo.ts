@@ -22,6 +22,7 @@ export function paginationCopy(locale: Locale,kind: PaginationDemoKind) {
     previous:t('Previous page','الصفحة السابقة'),next:t('Next page','الصفحة التالية'),
     pageLabel:t('Page','الصفحة'),jumpLabel:t('Go to page','الانتقال إلى صفحة'),goLabel:t('Go','انتقال'),
     gapExpression:locale==='ar'?"'الصفحات من ' + start + ' إلى ' + end":"'Pages ' + start + ' to ' + end",
+    gapTemplate:t('Pages {start} to {end}','الصفحات من {start} إلى {end}'),
   };
 }
 
@@ -30,8 +31,8 @@ export function paginationNativeMarkup(locale: Locale,kind: PaginationDemoKind='
   const common=`label="${copy.label}" previousLabel="${copy.previous}" nextLabel="${copy.next}" jumpLabel="${copy.jumpLabel}" goLabel="${copy.goLabel}"${kind==='disabled'?' disabled':''}`;
   return {
     react:`<Pagination ${common} totalPages={${copy.total}} ${controlled?'page={value} onPageChange={setValue}':`defaultPage={${copy.page}}`} getPageLabel={page => '${copy.pageLabel} ' + page} getGapLabel={(start, end) => ${copy.gapExpression}} />`,
-    vue:`<Pagination ${common} :total-pages="${copy.total}" ${controlled?'v-model="value"':`:default-value="${copy.page}"`} :page-label="page => '${copy.pageLabel} ' + page" :gap-label="(start, end) => ${copy.gapExpression}" />`,
-    angular:`<hw-pagination ${common} [totalPages]="${copy.total}" ${controlled?'[(page)]="value"':`[page]="${copy.page}"`} [pageLabel]="pageLabel" [gapLabel]="gapLabel" />`,
+    vue:`<Pagination ${common} :total-pages="${copy.total}" ${controlled?'v-model="value"':`:default-value="${copy.page}"`} :get-page-label="page => '${copy.pageLabel} ' + page" :get-gap-label="(start, end) => ${copy.gapExpression}" />`,
+    angular:`<hw-pagination ${common} [totalPages]="${copy.total}" ${controlled?'[(page)]="value"':`[page]="${copy.page}"`} [getPageLabel]="pageLabel" [getGapLabel]="gapLabel" />`,
     angularMember:`\n  pageLabel = (page: number) => '${copy.pageLabel} ' + page;\n  gapLabel = (start: number, end: number) => ${copy.gapExpression};`,
   };
 }
@@ -39,5 +40,5 @@ export function paginationNativeMarkup(locale: Locale,kind: PaginationDemoKind='
 export function paginationDemoMarkup(locale: Locale,kind?: PaginationDemoKind) {
   const copy=paginationCopy(locale,kind??'first');
   const label=kind?copy.label:locale==='ar'?'صفحات النتائج':'Results pages';
-  return `<nav class="hw-pagination" data-hw="pagination" data-hw-total="${copy.total}" data-hw-current="${copy.page}" aria-label="${label}"${kind==='disabled'?' aria-disabled="true"':''}><button class="hw-button hw-pagination-arrow" data-variant="ghost" type="button" data-hw-page="previous" data-hw-previous aria-label="${copy.previous}"></button><span class="hw-pagination-items" data-hw-pagination-items></span><button class="hw-button hw-pagination-arrow" data-variant="ghost" type="button" data-hw-page="next" data-hw-next aria-label="${copy.next}"></button></nav>`;
+  return `<nav class="hw-pagination" data-hw="pagination" data-hw-total="${copy.total}" data-hw-current="${copy.page}" aria-label="${label}" data-hw-page-label="${copy.pageLabel} {page}" data-hw-gap-label="${copy.gapTemplate}" data-hw-jump-label="${copy.jumpLabel}" data-hw-go-label="${copy.goLabel}"${kind==='disabled'?' aria-disabled="true"':''}><button class="hw-button hw-pagination-arrow" data-variant="ghost" type="button" data-hw-page="previous" data-hw-previous aria-label="${copy.previous}"></button><span class="hw-pagination-items" data-hw-pagination-items></span><button class="hw-button hw-pagination-arrow" data-variant="ghost" type="button" data-hw-page="next" data-hw-next aria-label="${copy.next}"></button></nav>`;
 }

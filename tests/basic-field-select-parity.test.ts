@@ -124,13 +124,13 @@ it('Vue serializes a preselected option for a server-rendered Select', async () 
   expect(host.querySelector('select')!.selectedOptions[0]!.textContent).toBe('Region');
 });
 
-it('Angular Select localizes its default prompt and connects external and changing field helpers', () => {
+it('Angular Select renders the supplied prompt and connects external and changing field helpers', () => {
   const {host} = createForm();
   const fixture = TestBed.createComponent(HwSelectComponent);
   host.append(fixture.nativeElement);
   const set = (key: string, value: unknown) => fixture.componentRef.setInput(key, value);
   set('options', choices); set('controlId', 'place'); set('label', 'المنطقة'); set('required', true);
-  set('hint', 'Hint'); set('error', 'Error'); set('describedBy', 'external external'); fixture.detectChanges();
+  set('placeholder', 'اختر خيارًا'); set('hint', 'Hint'); set('error', 'Error'); set('describedBy', 'external external'); fixture.detectChanges();
   const select = host.querySelector('select')!;
   expect(select.selectedOptions[0]!.textContent).toBe('اختر خيارًا');
   expect(select.validity.valueMissing).toBe(true);
@@ -142,6 +142,8 @@ it('Angular Select localizes its default prompt and connects external and changi
   expect(descriptions(select)).toEqual(['External instructions', 'Hint']);
   set('options', [{value: '', label: 'Authored prompt'}, ...choices]); fixture.detectChanges();
   expect([...select.options].filter(option => option.value === '').map(option => option.textContent)).toEqual(['Authored prompt']);
+  set('options', choices); set('placeholder', undefined); fixture.detectChanges();
+  expect([...select.options].map(option => option.value)).toEqual(choices.map(choice => choice.value));
 });
 
 it('Angular projected controls can bind to the Field helper IDs and required state', () => {

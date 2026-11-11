@@ -8,6 +8,7 @@ import {iconButtonMarkup} from './icon-button-demo';
 import {toggleGroupMarkup} from './segmented-demo';
 import {portalFooterMarkup} from './portal-footer-demo';
 import {siteVerificationMarkup} from './site-verification-demo';
+import {datePickerTexts, projectLocale, textDataAttributes, vanillaCalendarTexts} from './project-texts';
 import { statusMarkup } from "./ready-examples";
 import { feedbackMarkup } from './feedback-demo';
 import { escape as e, icon, type Locale } from "./data";
@@ -55,26 +56,26 @@ export function expandedSample(
         '<input class="hw-slider" type="range" min="0" max="100" value="40">',
       );
     case "range-slider":
-      return `<div class="hw-range-slider" data-hw="range-slider">${label(t("Minimum budget", "الحد الأدنى للميزانية"), '<input class="hw-slider" type="range" min="0" max="100" value="20" data-hw-lower>')}${label(t("Maximum budget", "الحد الأعلى للميزانية"), '<input class="hw-slider" type="range" min="0" max="100" value="80" data-hw-upper>')}<output data-hw-range-output></output></div>`;
+      return `<div class="hw-range-slider" data-hw="range-slider" data-hw-locale="${projectLocale(locale)}">${label(t("Minimum budget", "الحد الأدنى للميزانية"), '<input class="hw-slider" type="range" min="0" max="100" value="20" data-hw-lower>')}${label(t("Maximum budget", "الحد الأعلى للميزانية"), '<input class="hw-slider" type="range" min="0" max="100" value="80" data-hw-upper>')}<output data-hw-range-output></output></div>`;
     case "rating":
       return ratingDemoMarkup(locale,'selected',uid);
     case "pin-input":
       return `<div class="hw-pin-input" data-hw="pin-input">${label(t("One-time code", "رمز التحقق"), '<input class="hw-input" name="code" data-hw-pin-input maxlength="6" autocomplete="one-time-code" inputmode="numeric" placeholder="000000">')}<span class="hw-hint">${t("Paste Arabic or Latin digits.", "الصق أرقامًا عربية أو لاتينية.")}</span></div>`;
     case "tag-input":
-      return `<div class="hw-tag-input" data-hw="tag-input" data-hw-name="topics" data-hw-value='["${t("Design", "تصميم")}"]'>${label(t("Add a topic", "أضف موضوعًا"), `<input class="hw-input" data-hw-tag-input placeholder="${t("Type and press Enter", "اكتب ثم اضغط Enter")}">`)}<div data-hw-tags></div></div>`;
+      return `<div class="hw-tag-input" data-hw="tag-input" data-hw-remove-label="${t("Remove {tag}", "إزالة {tag}")}" data-hw-name="topics" data-hw-value='["${t("Design", "تصميم")}"]'>${label(t("Add a topic", "أضف موضوعًا"), `<input class="hw-input" data-hw-tag-input placeholder="${t("Type and press Enter", "اكتب ثم اضغط Enter")}">`)}<div data-hw-tags></div></div>`;
     case "multi-select":
-      return `<fieldset class="hw-multi-select" data-hw="multi-select"><legend class="hw-label">${t("Service interests", "الخدمات المفضّلة")}</legend>${label(t("Filter options", "تصفية الخيارات"), '<input class="hw-input" type="search" data-hw-multiselect-search>')}${[t("Business", "الأعمال"), t("Municipal", "البلدية"), t("Education", "التعليم")].map((v, i) => `<div data-hw-option><label class="hw-inline"><input class="hw-checkbox" type="checkbox" name="interest" value="${i}" ${i === 0 ? "checked" : ""}>${v}</label></div>`).join("")}<span class="hw-hint" data-hw-status role="status"></span></fieldset>`;
+      return `<fieldset class="hw-multi-select" data-hw="multi-select" data-hw-results-message="${t("{count} options", "{count} خيارات")}"><legend class="hw-label">${t("Service interests", "الخدمات المفضّلة")}</legend>${label(t("Filter options", "تصفية الخيارات"), '<input class="hw-input" type="search" data-hw-multiselect-search>')}${[t("Business", "الأعمال"), t("Municipal", "البلدية"), t("Education", "التعليم")].map((v, i) => `<div data-hw-option><label class="hw-inline"><input class="hw-checkbox" type="checkbox" name="interest" value="${i}" ${i === 0 ? "checked" : ""}>${v}</label></div>`).join("")}<span class="hw-hint" data-hw-status role="status"></span></fieldset>`;
     case "calendar":
-      return `<div class="hw-calendar" role="group" data-hw="calendar" data-hw-month="2026-10-01" data-hw-value="2026-10-28" data-hw-min="2026-01-01" data-hw-max="2027-12-31" data-hw-locale="${locale === "ar" ? "ar-SA" : "en-GB"}" aria-label="${t("Appointment calendar", "تقويم المواعيد")}"></div>`;
+      return `<div class="hw-calendar" role="group" data-hw="calendar" data-hw-month="2026-10-01" data-hw-value="2026-10-28" data-hw-min="2026-01-01" data-hw-max="2027-12-31" data-hw-locale="${locale === "ar" ? "ar-SA" : "en-GB"}" ${textDataAttributes(vanillaCalendarTexts(locale))} aria-label="${t("Appointment calendar", "تقويم المواعيد")}"></div>`;
     case "date-picker":
-      return `<div class="hw-field hw-date-picker" data-hw="date-picker" data-hw-calendar="islamic-umalqura" data-hw-locale="${locale === "ar" ? "ar-SA" : "en-GB"}">
+      return `<div class="hw-field hw-date-picker" data-hw="date-picker" data-hw-calendar="islamic-umalqura" data-hw-locale="${locale === "ar" ? "ar-SA" : "en-GB"}" ${textDataAttributes(datePickerTexts(locale))}>
       <label class="hw-label" for="${uid}">${t("Appointment · Umm al-Qura picker", "الموعد · تقويم أم القرى")}</label>
       <div class="hw-date-picker-control"><input id="${uid}" class="hw-input" type="text" placeholder="YYYY-MM-DD" data-hw-date-input value="2026-10-28" name="appointment" aria-describedby="${uid}-format">
       <button type="button" class="hw-button hw-date-picker-trigger" data-variant="ghost" data-hw-date-trigger aria-label="${t("Choose date", "اختيار التاريخ")}"><span class="hw-date-picker-icon" aria-hidden="true"></span></button></div>
       <span class="hw-hint" id="${uid}-format">${t("When editing, type a Gregorian ISO date: YYYY-MM-DD.", "عند التحرير، اكتب تاريخًا ميلاديًا بصيغة ISO: YYYY-MM-DD.")}</span>
       <dialog class="hw-dialog" data-hw-date-dialog aria-label="${t("Choose appointment date", "اختر تاريخ الموعد")}"><header class="hw-dialog-header"><h2>${t("Choose appointment date", "اختر تاريخ الموعد")}</h2>${b(t("Close", "إغلاق"), "data-hw-date-close", "ghost")}</header><div class="hw-dialog-body"><div data-hw-date-calendar class="hw-calendar"></div></div></dialog></div>`;
     case "file-dropzone":
-      return `<label class="hw-file-dropzone" data-hw="file-dropzone" data-hw-max-size="5242880">${icon("upload", 24)}<strong>${t("Choose or drop documents", "اختر المستندات أو أفلتها")}</strong><span class="hw-hint">${t("PDF, PNG · 5 MB", "PDF، PNG · 5 ميغابايت")}</span><input type="file" data-hw-file-input name="documents" accept=".pdf,.png" multiple><span data-hw-file-status role="status"></span></label>`;
+      return `<label class="hw-file-dropzone" data-hw="file-dropzone" data-hw-max-size="5242880" data-hw-selected-message="${t("Selected files {count}", "عدد الملفات المختارة {count}")}" data-hw-rejected-message="${t("Choose files matching the allowed type and size.", "اختر ملفات توافق النوع والحجم المسموح.")}" data-hw-unsupported-drop-message="${t("Use the file chooser to attach documents.", "استخدم اختيار الملفات لإرفاق المستندات.")}">${icon("upload", 24)}<strong>${t("Choose or drop documents", "اختر المستندات أو أفلتها")}</strong><span class="hw-hint">${t("PDF, PNG · 5 MB", "PDF، PNG · 5 ميغابايت")}</span><input type="file" data-hw-file-input name="documents" accept=".pdf,.png" multiple><span data-hw-file-status role="status"></span></label>`;
     case "toggle-group":
       return toggleGroupMarkup(locale,'segmented',uid);
     case "popover":

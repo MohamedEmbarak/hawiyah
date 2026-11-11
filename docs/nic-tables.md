@@ -33,7 +33,7 @@ Hawiyah extensions. Content, wrapping and controls may require taller cells.
 The original Hawiyah profile retains its typography and spacing. Custom themes
 can override `--hw-color-table-row-hover` and `--hw-color-table-row-hover-odd`.
 Selection remains visible on hover, including striped rows; applications own
-selection behavior. Sorting is still stable, localized, and adapter-owned.
+selection behavior. Sorting is still stable, uses the application's `locale`, and is adapter-owned.
 Active/hovered sort headings use the contrast-tested link color: the previous
 green measured only 4.31:1 on the gray header. Angular hosts explicitly shrink
 inside grid/flex layouts, keeping horizontal overflow within their wrappers.
@@ -51,10 +51,12 @@ Vue DataTable now renders an `emptyMessage` cell spanning all columns.
 Plain Table data-driven empty states use the same pattern; fully composed
 native children remain caller-owned.
 
-Arabic is the default empty message and Angular's default sort locale is now
-`ar-SA`. Vue's default sort-action label is Arabic. English applications should
-pass their localized labels, messages and locale; the guide's English recipes
-do so. Values and numeric output remain unchanged.
+The tables have no text and no locale of their own. DataTable requires
+`emptyMessage` and `locale` (vanilla: the `locale` option or `data-hw-locale`
+when a column is sortable); `getSortLabel(column, direction)` is optional. Table
+requires `emptyMessage` when it renders rows from `columns`. Without a locale,
+DataTable keeps rows in their source order and warns in development. Values
+and numeric output remain unchanged.
 
 The guide shows default, striped, bordered, small, large and empty examples,
 with native React/Vue/Angular imports and a working DataTable project recipe.

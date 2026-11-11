@@ -1,5 +1,6 @@
 import type { Locale } from './data';
 import type { ProjectFramework, ProjectLanguage } from './project-compiler';
+import { calendarMonthTexts, calendarTexts, datePickerTexts, textAttributes } from './project-texts.ts';
 
 export type CalendarProjectId = 'calendar' | 'date-picker';
 
@@ -29,12 +30,18 @@ export function calendarProject(
     ['gregory', t('Gregorian appointments', 'المواعيد بالتقويم الميلادي')],
     ['islamic-umalqura', t('Umm al-Qura appointments', 'المواعيد بتقويم أم القرى')],
   ] as const;
+  const monthTexts = (system: string, syntax: 'react' | 'vue' | 'angular') => textAttributes({
+    ...calendarMonthTexts(locale, system === 'islamic-umalqura'),
+    // Only the Vue Calendar shows the unsupported-range status by itself.
+    ...(syntax === 'vue' && system === 'islamic-umalqura' ? {unsupportedMessage: calendarTexts(locale).unsupportedMessage} : {}),
+  }, syntax);
+  const pickerTexts = (syntax: 'react' | 'vue' | 'angular') => textAttributes(datePickerTexts(locale), syntax);
   const css = `@import '@hawiyah/styles/styles.css';\n\n.demo, .demo form { display:grid; gap:1rem; min-inline-size:0; }\n.calendar-comparison { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap:1rem; }\n.demo form > button { justify-self:start; }\n`;
 
   if (framework === 'react') {
     const content = calendar
-      ? `<div className="calendar-comparison">\n${calendars.map(([system, title]) => `    <section data-calendar-case="${system}"><h2>${title}</h2>\n      <Calendar label="${title}" ${dateProps} calendar="${system}" value={date} onValueChange={setDate} />\n    </section>`).join('\n')}\n  </div>`
-      : `<form onSubmit={event => {\n    event.preventDefault();\n    setSubmitted(String(new FormData(event.currentTarget).get('appointment') ?? ''));\n  }}>\n    <label><input type="checkbox" checked={locked} onChange={event => setLocked(event.currentTarget.checked)} /> ${readOnly}</label>\n    <DatePicker name="appointment" label="${dateLabel}" hint="${hint}" ${dateProps}\n      value={date} onValueChange={setDate} calendar={system} onCalendarChange={setSystem} readOnly={locked} required />\n    <button className="hw-button" type="submit">${action}</button>\n    <p>${submitted}: <output data-calendar-submitted dir="ltr">{submitted}</output></p>\n  </form>`;
+      ? `<div className="calendar-comparison">\n${calendars.map(([system, title]) => `    <section data-calendar-case="${system}"><h2>${title}</h2>\n      <Calendar label="${title}" ${dateProps} ${monthTexts(system, 'react')} calendar="${system}" value={date} onValueChange={setDate} />\n    </section>`).join('\n')}\n  </div>`
+      : `<form onSubmit={event => {\n    event.preventDefault();\n    setSubmitted(String(new FormData(event.currentTarget).get('appointment') ?? ''));\n  }}>\n    <label><input type="checkbox" checked={locked} onChange={event => setLocked(event.currentTarget.checked)} /> ${readOnly}</label>\n    <DatePicker name="appointment" label="${dateLabel}" hint="${hint}" ${dateProps}\n      ${pickerTexts('react')}\n      value={date} onValueChange={setDate} calendar={system} onCalendarChange={setSystem} readOnly={locked} required />\n    <button className="hw-button" type="submit">${action}</button>\n    <p>${submitted}: <output data-calendar-submitted dir="ltr">{submitted}</output></p>\n  </form>`;
     const systemImport = typed && !calendar ? "import type { CalendarSystem } from '@hawiyah/core';\n" : '';
     const state = calendar ? '' : `\n  const [system, setSystem] = useState${typed ? '<CalendarSystem>' : ''}('gregory');\n  const [locked, setLocked] = useState(false);\n  const [submitted, setSubmitted] = useState('');`;
     const extension = typed ? 'tsx' : 'jsx';
@@ -50,8 +57,8 @@ export function calendarProject(
 
   if (framework === 'vue') {
     const content = calendar
-      ? `<div class="calendar-comparison">\n${calendars.map(([system, title]) => `    <section data-calendar-case="${system}"><h2>${title}</h2>\n      <Calendar label="${title}" ${dateProps} calendar="${system}" v-model="date" />\n    </section>`).join('\n')}\n  </div>`
-      : `<form @submit.prevent="submit">\n    <label><input type="checkbox" v-model="locked" /> ${readOnly}</label>\n    <DatePicker name="appointment" label="${dateLabel}" hint="${hint}" ${dateProps}\n      v-model="date" v-model:calendar="system" :readonly="locked" required />\n    <button class="hw-button" type="submit">${action}</button>\n    <p>${submitted}: <output data-calendar-submitted dir="ltr">{{ submitted }}</output></p>\n  </form>`;
+      ? `<div class="calendar-comparison">\n${calendars.map(([system, title]) => `    <section data-calendar-case="${system}"><h2>${title}</h2>\n      <Calendar label="${title}" ${dateProps} ${monthTexts(system, 'vue')} calendar="${system}" v-model="date" />\n    </section>`).join('\n')}\n  </div>`
+      : `<form @submit.prevent="submit">\n    <label><input type="checkbox" v-model="locked" /> ${readOnly}</label>\n    <DatePicker name="appointment" label="${dateLabel}" hint="${hint}" ${dateProps}\n      ${pickerTexts('vue')}\n      v-model="date" v-model:calendar="system" :readonly="locked" required />\n    <button class="hw-button" type="submit">${action}</button>\n    <p>${submitted}: <output data-calendar-submitted dir="ltr">{{ submitted }}</output></p>\n  </form>`;
     const systemImport = typed && !calendar ? "import type { CalendarSystem } from '@hawiyah/core';\n" : '';
     const state = calendar ? '' : `\nconst system = ref${typed ? '<CalendarSystem>' : ''}('gregory');\nconst locked = ref(false);\nconst submitted = ref('');\nfunction submit(event${typed ? ': Event' : ''}) {\n  const form = event.currentTarget;\n  if (form instanceof HTMLFormElement) submitted.value = String(new FormData(form).get('appointment') ?? '');\n}`;
     const extension = typed ? 'ts' : 'js';
@@ -66,8 +73,8 @@ export function calendarProject(
   }
 
   const content = calendar
-    ? `<div class="calendar-comparison">\n${calendars.map(([system, title]) => `    <section data-calendar-case="${system}"><h2>${title}</h2>\n      <hw-calendar label="${title}" ${dateProps} calendar="${system}" [(value)]="date" />\n    </section>`).join('\n')}\n  </div>`
-    : `<form (submit)="submit($event)">\n    <label><input #lock type="checkbox" [checked]="locked" (change)="locked = lock.checked" /> ${readOnly}</label>\n    <hw-date-picker name="appointment" label="${dateLabel}" hint="${hint}" ${dateProps}\n      [(value)]="date" [(calendar)]="system" [readOnly]="locked" required />\n    <button class="hw-button" type="submit">${action}</button>\n    <p>${submitted}: <output data-calendar-submitted dir="ltr">{{ submitted }}</output></p>\n  </form>`;
+    ? `<div class="calendar-comparison">\n${calendars.map(([system, title]) => `    <section data-calendar-case="${system}"><h2>${title}</h2>\n      <hw-calendar label="${title}" ${dateProps} ${monthTexts(system, 'angular')} calendar="${system}" [(value)]="date" />\n    </section>`).join('\n')}\n  </div>`
+    : `<form (submit)="submit($event)">\n    <label><input #lock type="checkbox" [checked]="locked" (change)="locked = lock.checked" /> ${readOnly}</label>\n    <hw-date-picker name="appointment" label="${dateLabel}" hint="${hint}" ${dateProps}\n      ${pickerTexts('angular')}\n      [(value)]="date" [(calendar)]="system" [readOnly]="locked" required />\n    <button class="hw-button" type="submit">${action}</button>\n    <p>${submitted}: <output data-calendar-submitted dir="ltr">{{ submitted }}</output></p>\n  </form>`;
   const native = `Hw${component}Component`;
   const imports = calendar ? '' : "import type { CalendarSystem } from '@hawiyah/core';\n";
   const state = calendar ? '' : `\n  system: CalendarSystem = 'gregory';\n  locked = false;\n  submitted = '';\n  submit(event: Event) {\n    event.preventDefault();\n    const form = event.currentTarget;\n    if (form instanceof HTMLFormElement) this.submitted = String(new FormData(form).get('appointment') ?? '');\n  }`;

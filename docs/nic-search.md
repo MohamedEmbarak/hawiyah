@@ -21,8 +21,10 @@ Bootstrap, remote dictionary and navigation integrations were not executed.
 
 `SearchField` remains a free-text field. Optional `suggestions` enable autocomplete;
 they do not restrict the submitted value to an option. `maxSuggestions` defaults
-to 8 and is bounded to 0–100. Supply localized `resultsMessage`, `clearLabel` and
-`searchLabel` when needed; new search defaults are Arabic. Numbers remain Latin.
+to 8 and is bounded to 0–100. The application supplies `clearLabel` (always),
+`searchLabel` (when the search button is shown) and `getResultsMessage(count)`
+(when suggestions are given); the field has no text of its own. Numbers remain
+Latin.
 
 React uses `value`/`onValueChange`, Vue uses `v-model`, and Angular retains its
 value-control and forms integration. Vanilla accepts options or a local JSON

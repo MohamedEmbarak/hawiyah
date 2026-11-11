@@ -146,6 +146,15 @@ describe('text is supplied by the application', () => {
     expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-file-dropzone requires "dropLabel"']);
   });
 
+  it('renders no empty label element when a field label is missing', () => {
+    const warnings = missingTextWarnings();
+    const { root } = page(`<hw-file-dropzone controlId="files" dropLabel="Drop files here" /><hw-date-picker controlId="date" ${withText.datePicker.replace(/(^|\s)label="[^"]*"/, '')} /><hw-file-dropzone controlId="named" label="Documents" dropLabel="Drop files here" />`);
+    expect(root.querySelectorAll('hw-file-dropzone label')).toHaveLength(1); expect(root.querySelector('hw-date-picker label.hw-label')).toBeNull();
+    expect(root.querySelector<HTMLInputElement>('#files')!.labels).toHaveLength(0); expect(root.querySelector<HTMLInputElement>('#date')!.labels).toHaveLength(0);
+    expect(root.querySelector<HTMLInputElement>('#named')!.labels![0]!.textContent).toBe('Documents');
+    expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-file-dropzone requires "label"', 'Hawiyah: hw-date-picker requires "label"']);
+  });
+
   it('renders the file dropzone status only when the application supplies getSelectedMessage', () => {
     const selected = vi.fn((files: readonly File[]) => `${files.length}: ${files.map(file => file.name).join(', ')}`);
     const { fixture, root } = page(`<hw-file-dropzone id="silent" label="Documents" dropLabel="Drop files here" [(value)]="files" /><hw-file-dropzone id="spoken" label="Documents" dropLabel="Drop files here" [getSelectedMessage]="selected" [(value)]="files" />`, { selected, files: [] as File[] });

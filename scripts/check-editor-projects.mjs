@@ -1,14 +1,27 @@
 // Verify exported project files against the same installed tarball consumers.
 import { mkdirSync, readFileSync, writeFileSync, symlinkSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { createRequire } from 'node:module';
+import { createRequire, registerHooks } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import * as ts from 'typescript';
 import { readConfiguration, performCompilation, formatDiagnostics } from '@angular/compiler-cli';
 import { build } from 'vite';
-import { projectExample, nativeProjectComponents } from '../apps/playground/src/project-examples.ts';
-import { projectDownloadFiles } from '../apps/playground/src/project-download.ts';
+// The guide's sources use bundler-style relative imports without extensions.
+registerHooks({resolve(specifier,context,next){
+  try{return next(specifier,context);}catch(error){
+    if(/^\.\.?\//.test(specifier)&&!/\.[cm]?[jt]s$/.test(specifier)&&context.parentURL?.includes('/apps/playground/'))return next(specifier+'.ts',context);
+    throw error;
+  }
+},load(url,context,next){
+  // Vite-style JSON modules: a default export plus one named export per key.
+  if(!url.endsWith('.json')||!url.includes('/apps/playground/'))return next(url,context);
+  const data=JSON.parse(readFileSync(new URL(url),'utf8'));
+  const names=Object.keys(data).filter(key=>{try{new Function(`'use strict';let ${key};`);return true;}catch{return false;}});
+  return {format:'module',shortCircuit:true,source:`const data=${JSON.stringify(data)};export default data;export const {${names.join(',')}}=data;`};
+}});
+const { projectExample, nativeProjectComponents } = await import('../apps/playground/src/project-examples.ts');
+const { projectDownloadFiles } = await import('../apps/playground/src/project-download.ts');
 const root=fileURLToPath(new URL('../',import.meta.url));
 const consumer=resolve(root,'.artifacts/package-check/consumer/node_modules');
 if(!existsSync(consumer))throw new Error('Run pnpm check:packages before checking editor exports.');

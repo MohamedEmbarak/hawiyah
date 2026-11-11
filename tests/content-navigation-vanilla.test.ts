@@ -34,10 +34,14 @@ it('resolves encoded fragment IDs without selectors and observes changed href an
  const {navigation,two}=setup();two.id='two: quoted " section';const target=links(navigation)[1]!;target.removeAttribute('data-hw-section');target.href='#'+encodeURIComponent(two.id);const handle=controller(navigation);await frame();expect(click(target).defaultPrevented).toBe(true);expect(handle.current).toBe(two.id);expect(target.dataset.hwSection).toBe(two.id);
  target.setAttribute('href','#one');await frame();expect(target.dataset.hwSection).toBe('one');target.setAttribute('aria-disabled','true');await frame();expect(target.hasAttribute('aria-current')).toBe(false);expect(click(target).defaultPrevented).toBe(true);
 });
-it('does not process nested navigation, or scroll the host for a missing configured root',async()=>{
+it('does not process nested navigation, and leaves links to missing targets and other documents to the browser',async()=>{
  const {navigation}=setup();navigation.insertAdjacentHTML('beforeend','<nav data-hw="content-navigation"><a href="#two">Nested navigation</a></nav>');const handle=controller(navigation);await frame();const nested=navigation.querySelector<HTMLAnchorElement>(':scope > nav a')!;expect(click(nested).defaultPrevented).toBe(false);expect(handle.current).toBe('one');
+ // Fragment-link contract: a click whose target does not exist is not intercepted.
+ navigation.insertAdjacentHTML('beforeend','<a href="#missing">Missing</a><a href="https://example.test/path">External</a>');await frame();expect(click(navigation.querySelector<HTMLAnchorElement>('[href="#missing"]')!).defaultPrevented).toBe(false);expect(click(navigation.querySelector<HTMLAnchorElement>('[href="https://example.test/path"]')!).defaultPrevented).toBe(false);
+});
+it('does not scroll the host for a missing configured root',async()=>{
+ const {navigation}=setup();const handle=controller(navigation);await frame();
  navigation.dataset.hwScrollRoot='not-mounted';await frame();expect(handle.current).toBe('');expect(handle.navigate('one')).toBe(false);expect(click(links(navigation)[0]!).defaultPrevented).toBe(true);expect(window.scrollTo).not.toHaveBeenCalled();
- navigation.insertAdjacentHTML('beforeend','<a href="#missing">Missing</a><a href="https://example.test/path">External</a>');await frame();expect(click(navigation.querySelector<HTMLAnchorElement>('[href="#missing"]')!).defaultPrevented).toBe(true);expect(click(navigation.querySelector<HTMLAnchorElement>('[href="https://example.test/path"]')!).defaultPrevented).toBe(false);
 });
 it('restores original attributes and focus overrides and stops controller work on destroy',async()=>{
  const {navigation,two}=setup(),html=navigation.outerHTML,onCurrentChange=vi.fn();const handle=controller(navigation,{onCurrentChange});await frame();handle.navigate('two',{focus:true});expect(two.hasAttribute('tabindex')).toBe(true);handle.destroy();handle.destroy();expect(navigation.outerHTML).toBe(html);expect(two.hasAttribute('tabindex')).toBe(false);

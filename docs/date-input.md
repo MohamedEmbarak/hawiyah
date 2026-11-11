@@ -23,10 +23,14 @@ must use native form submission or `reportValidity()`/framework validation first
 Required, readonly, disabled, reset and focus return remain supported. A malformed
 external value is shown as invalid text and never used as a calendar anchor.
 
-React, Vue and Angular expose `invalidMessage` for localized ISO/bounds errors.
-Vanilla accepts it in `DatePickerOptions`, alongside `isDateDisabled`. Other
-existing unavailable/provider labels remain adapter-specific. The guide explains
-the ISO format in Arabic and English. The pinned Umm al-Qura provider, range and
+Every adapter requires `invalidMessage` for ISO and bounds errors and
+`unsupportedMessage` for dates outside the Umm al-Qura range; vanilla accepts them
+in `DatePickerOptions` or as `data-hw-invalid-message` and
+`data-hw-unsupported-message`, alongside `isDateDisabled`. `unavailableMessage` is
+required when `isDateDisabled` is given (not available in Angular). A missing
+message still keeps the field invalid. The picker also requires `locale`; it has
+no text or locale of its own. The guide explains the ISO format in Arabic and
+English. The pinned Umm al-Qura provider, range and
 calendar arithmetic are unchanged.
 
 Vanilla markup should use `type="text" data-hw-date-input` with a format hint.

@@ -69,11 +69,11 @@ Vanilla uses `data-hw` markers and `enhance(root)`, which returns cleanup. Consu
 
 Public controls must distinguish user actions from external value updates. Shared behavior should not assume a particular form library. Each adapter documents its value/change contract, validation, disabled state, focus access, and integration with native or framework forms. SSR-safe imports, stable identifiers, and hydration behavior are separate verification concerns.
 
-React inputs preserve native input props and events. Angular form controls implement `ControlValueAccessor` and also expose a value/change interface; pass application-owned stable control identifiers for server-rendered forms. Consult each adapter's implementation and examples for the supported API instead of translating props mechanically between frameworks.
+React inputs preserve native input props and events. Angular form controls implement `ControlValueAccessor` and also expose a value/change interface. Generated Angular ids come from one `HwIdSource` per application, so a server render and its hydration produce the same ids; an explicit `controlId` or id input still wins. Consult each adapter's implementation and examples for the supported API instead of translating props mechanically between frameworks.
 
 ## Internationalization
 
-The core uses `Intl` for general number and timestamp formatting with explicit locale, calendar, numbering system, and time-zone options. Direction is supplied separately from locale. Consumers own translations and domain copy; components provide clear places to supply accessible text.
+The packages contain no user-visible strings and choose no locale. Every text a component places itself is an input the application supplies, with the same name in every adapter; see [CONTRACT.md](../CONTRACT.md#text-and-localisation). The core uses `Intl` for general number and timestamp formatting with the locale the caller passes, and explicit calendar, numbering system, and time-zone options. There is no default locale: `formatNumber`, `formatDate`, `sortRows`, `getCalendarMonth`, and `formatCalendarDate` throw a `TypeError` without one. Direction is supplied separately from locale.
 
 ```ts
 import { formatDate, formatNumber } from '@hawiyah/core';

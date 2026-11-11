@@ -31,7 +31,7 @@ The guide opens in Arabic, with a persistent English switch and keyboard search 
 ## What the system is designed to provide
 
 - A source-mapped DGA default foundation, an opt-in Hawiyah theme, and explicit custom-theme overrides.
-- Arabic and English content, independent locale and text direction, and logical CSS for RTL/LTR layouts.
+- Components without built-in text: the application supplies every label, message and accessible name, in Arabic, English or any other language, and the locale used for formatting. Direction is independent of locale, and logical CSS supports RTL/LTR layouts.
 - Native component APIs in each framework, built on shared tokens, styles, and behavior helpers.
 - Vanilla HTML/CSS that remains useful without JavaScript, with explicit enhancement for interactive controls.
 - Reusable primitives, editable blocks, and full service discovery, application, review, and request-management examples.
@@ -45,7 +45,7 @@ The guide opens in Arabic, with a persistent English switch and keyboard search 
 |---|---|
 | `@hawiyah/tokens` | Design values and semantic theme variables |
 | `@hawiyah/styles` | Component CSS, layout helpers, and a separately imported reset |
-| `@hawiyah/core` | Framework-independent behavior and internationalization helpers |
+| `@hawiyah/core` | Framework-independent behavior, text-requirement checks, and formatting helpers that take the application's locale |
 | `@hawiyah/vanilla` | HTML enhancement controllers with cleanup |
 | `@hawiyah/react` | React components using the shared foundation |
 | `@hawiyah/vue` | Vue components using the shared foundation |
@@ -101,13 +101,13 @@ Load the styles through the consuming application's package setup:
 import '@hawiyah/styles/styles.css';
 ```
 
-The reset is optional; import `@hawiyah/styles/reset.css` before the component stylesheet if the application needs it. The [behavior contract](packages/core/API.md) and [vanilla expansion guide](packages/vanilla/EXPANSION-API.md) document enhancement APIs and markup. A framework adapter owns its rendered DOM; do not run vanilla enhancement over React, Vue, or Angular component trees.
+`styles.css` is one flat file that includes the tokens, so a page can also link it directly without a bundler. The reset is optional; import `@hawiyah/styles/reset.css` before the component stylesheet if the application needs it. The [behavior contract](packages/core/API.md) and [vanilla expansion guide](packages/vanilla/EXPANSION-API.md) document enhancement APIs and markup. A framework adapter owns its rendered DOM; do not run vanilla enhancement over React, Vue, or Angular component trees.
 
-The React adapter uses ordinary controlled inputs:
+The React adapter uses ordinary controlled inputs. Components contain no text of their own, so the application passes the label and every other text, and the locale where a component formats dates or numbers or sorts text:
 
 ```tsx
 import { useState } from 'react';
-import { TextField } from '@hawiyah/react';
+import { Pagination, TextField } from '@hawiyah/react';
 import '@hawiyah/styles/styles.css';
 
 export function RequestName() {
@@ -115,19 +115,29 @@ export function RequestName() {
   return <TextField label="اسم الطلب" value={name}
     onChange={event => setName(event.currentTarget.value)} />;
 }
+
+export function ResultPages({ page, onPageChange }: { page: number; onPageChange: (page: number) => void }) {
+  return <Pagination page={page} totalPages={12} onPageChange={onPageChange}
+    label="ترقيم الصفحات" previousLabel="الصفحة السابقة" nextLabel="الصفحة التالية"
+    getPageLabel={value => `الصفحة ${value}`}
+    getGapLabel={(start, end) => `الصفحات ${start} إلى ${end}`}
+    jumpLabel="الانتقال إلى صفحة" goLabel="انتقال" />;
+}
 ```
 
-Set `lang` and `dir` on the application container, and load the fonts appropriate to the product. Styles declare font families; consumers control font loading.
+A missing required text is a type error in React and Angular; in every adapter the component renders nothing in its place and warns once in development. [CONTRACT.md](CONTRACT.md#text-and-localisation) defines the text and locale rules, and each adapter README lists its inputs. The [changelog](CHANGELOG.md) maps every former built-in text to the input that replaces it.
+
+Set `lang` and `dir` on the application container, and load the fonts appropriate to the product. No component reads `lang` or sets a default `dir`. Styles declare font families; consumers control font loading.
 
 ## Modify and extend
 
 Use a theme override for visual changes, a documented variant for component appearance, and composition for application-specific behavior. Start from an [editable block](blocks/README.md), or run `pnpm new:component request-summary` to generate a new application-owned block. This command scaffolds HTML, CSS, and guidance under `blocks/`; it does not generate a new framework library primitive. [The extension guide](docs/extension.md) explains the boundaries and contribution workflow.
 
-For coding assistants, begin with [AGENTS.md](AGENTS.md), [CONTRACT.md](CONTRACT.md), [EXPANSION.md](EXPANSION.md), [llms.txt](llms.txt), and the catalog. Generate code against actual exports and examples, and retain labels, keyboard behavior, error messages, and direction support when customizing.
+For coding assistants, begin with [AGENTS.md](AGENTS.md), [CONTRACT.md](CONTRACT.md), [EXPANSION.md](EXPANSION.md), [llms.txt](llms.txt), and the catalog. Generate code against actual exports and examples, supply every required text and locale, and retain labels, keyboard behavior, error messages, and direction support when customizing.
 
 ## Current boundaries
 
-Combobox is local and single-select; MultiSelect is a separate searchable checkbox list. DataTable supports stable localized sorting; virtualization and editing need a specialist engine. FileUpload/FileDropzone select files; transport and storage belong to the application. Phone, IBAN, and national-identifier recipes collect data without claiming identity or account verification. [Coverage](docs/coverage.md) defines the component and input scope; [integrations](docs/integrations.md) explains maps, charts, editors, authentication, and payment boundaries.
+Combobox is local and single-select; MultiSelect is a separate searchable checkbox list. DataTable sorts stably with the locale the application supplies; virtualization and editing need a specialist engine. FileUpload/FileDropzone select files; transport and storage belong to the application. Phone, IBAN, and national-identifier recipes collect data without claiming identity or account verification. [Coverage](docs/coverage.md) defines the component and input scope; [integrations](docs/integrations.md) explains maps, charts, editors, authentication, and payment boundaries.
 
 Calendar/DatePicker store Gregorian ISO `YYYY-MM-DD` values and can display Gregorian or Umm al-Qura dates. Hijri conversion uses a pinned reference table with explicit limits. Read [calendar reliability](docs/date-calendars.md) before using derived dates in official records. The examples use fictional data and simulate service submission and request tracking.
 

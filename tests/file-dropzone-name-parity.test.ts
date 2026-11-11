@@ -6,7 +6,8 @@ import {HwFileDropzoneComponent} from '../packages/angular/dist/fesm2022/hawiyah
 import {act,createElement as r} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp,h} from 'vue';
-import {afterEach,beforeAll,expect,it} from 'vitest';
+import {afterEach,beforeAll,expect,it,vi} from 'vitest';
+import {resetTextWarnings} from '../packages/core/dist/index.js';
 import {FileDropzone as ReactFileDropzone} from '../packages/react/src/expanded-controls';
 import {FileDropzone as VueFileDropzone} from '../packages/vue/src/controls';
 import {Field as VueField} from '../packages/vue/src/forms';
@@ -16,7 +17,7 @@ const cleanups:Array<()=>void|Promise<void>>=[];
 afterEach(async()=>{for(const cleanup of cleanups.splice(0))await cleanup();TestBed.resetTestingModule();document.body.replaceChildren();});
 const instruction='Drop the signed form here or choose a file';
 class Host { instruction=instruction; }
-Component({standalone:true,imports:[HwFileDropzoneComponent],template:`<section id="plain"><hw-file-dropzone name="plain" accept=".pdf" [instruction]="instruction" /></section><section id="labelled"><hw-file-dropzone label="Signed form" name="labelled" [instruction]="instruction" /></section>`})(Host);
+Component({standalone:true,imports:[HwFileDropzoneComponent],template:`<section id="plain"><hw-file-dropzone name="plain" accept=".pdf" [dropLabel]="instruction" /></section><section id="labelled"><hw-file-dropzone label="Signed form" name="labelled" [dropLabel]="instruction" /></section>`})(Host);
 async function mount(adapter:string){
   const host=document.createElement('div');document.body.append(host);
   if(adapter==='react'){
@@ -31,17 +32,31 @@ async function mount(adapter:string){
   return host;
 }
 const text=(element:Element)=>element.textContent!.replace(/\s+/g,' ').trim();
-for(const adapter of ['react','vue','angular'])it(`${adapter}: a FileDropzone without a label takes its accessible name from the visible instruction`,async()=>{
-  const host=await mount(adapter);
-  const plain=host.querySelector<HTMLInputElement>('#plain input[type="file"]')!;
-  expect(plain.id).not.toBe('');
-  expect([...plain.labels!].map(text)).toEqual([instruction]);
-  expect(plain.hasAttribute('aria-labelledby')&&!plain.getAttribute('aria-labelledby')!.split(/\s+/).every(id=>host.ownerDocument.getElementById(id))).toBe(false);
-  // The instruction appears once, and no label is left empty.
-  expect(text(host.querySelector('#plain')!).split(instruction)).toHaveLength(2);
-  expect([...host.querySelectorAll('label')].filter(label=>!text(label))).toEqual([]);
-  const labelled=host.querySelector<HTMLInputElement>('#labelled input[type="file"]')!;
-  expect([...labelled.labels!].map(text)).toEqual(['Signed form']);
+// Decision D03: the input is named by `label` (or aria-label / a parent Field); dropLabel is the visible
+// instruction that describes it and is never the fallback name.
+for(const adapter of ['react','vue','angular'])it(`${adapter}: a FileDropzone is named by its label and described by its visible instruction, never named by it`,async()=>{
+  resetTextWarnings();const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+  try{
+    const host=await mount(adapter);
+    const labelled=host.querySelector<HTMLInputElement>('#labelled input[type="file"]')!;
+    expect(labelled.id).not.toBe('');
+    expect([...labelled.labels!].map(text)).toEqual(['Signed form']);
+    const described=labelled.getAttribute('aria-describedby')!.split(/\s+/).map(id=>host.ownerDocument.getElementById(id));
+    expect(described.every(Boolean)).toBe(true);
+    expect(described[0]!.classList.contains('hw-file-dropzone-instruction')).toBe(true);
+    expect(text(described[0]!)).toBe(instruction);
+    // The instruction appears once.
+    expect(text(host.querySelector('#labelled')!).split(instruction)).toHaveLength(2);
+    expect(text(host.querySelector('#plain')!).split(instruction)).toHaveLength(2);
+    // Without a label the instruction does not become the name, and the missing name is reported.
+    const plain=host.querySelector<HTMLInputElement>('#plain input[type="file"]')!;
+    expect(plain.hasAttribute('aria-label')).toBe(false);
+    expect(plain.hasAttribute('aria-labelledby')).toBe(false);
+    expect(warn.mock.calls.some(call=>/^Hawiyah: (FileDropzone|hw-file-dropzone) requires "label"/.test(String(call[0])))).toBe(true);
+    // No label is left empty (Angular renders an empty <label> today: recorded finding).
+    expect([...plain.labels??[]].map(text)).toEqual([]);
+    expect([...host.querySelectorAll('label')].filter(label=>!text(label))).toEqual([]);
+  }finally{warn.mockRestore();}
 });
 it('vue: a parent Field or aria-label keeps naming the dropzone, and the instruction stays a paragraph',async()=>{
   const host=document.createElement('div');document.body.append(host);

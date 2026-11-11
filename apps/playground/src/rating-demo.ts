@@ -24,6 +24,8 @@ function ratingCopy(locale: Locale,kind: RatingDemoKind) {
     valueLabel:(value:number,total:number)=>t(`${value} of ${total}`,`${value} من ${total}`),
     valueExpression:locale==='ar'?"value + ' من ' + total":"value + ' of ' + total",
     scoreLabel:(value:number)=>t(`Average experience score ${value}`,`متوسط تقييم التجربة ${value}`),
+    // The display's whole text alternative: the score heading and its value, as the markup names it.
+    scoreExpression:`'${t('Average experience score','متوسط تقييم التجربة')} ' + value + ': ' + ${locale==='ar'?"value + ' من ' + total":"value + ' of ' + total"}`,
   };
 }
 
@@ -43,16 +45,16 @@ export function ratingNativeMarkup(locale: Locale,kind: RatingDemoKind='selected
   const copy=ratingCopy(locale,kind);
   const expression=copy.valueExpression;
   if(kind==='scores')return {
-    react:`<div className="hw-stack">${[0,3.5,5].map(value=>`<RatingDisplay label="${copy.scoreLabel(value)}" value={${value}} getValueLabel={(value, total) => ${expression}} />`).join('')}</div>`,
-    vue:`<div class="hw-stack">${[0,3.5,5].map(value=>`<RatingDisplay label="${copy.scoreLabel(value)}" :value="${value}" :value-label="(value, total) => ${expression}" />`).join('')}</div>`,
-    angular:`<div class="hw-stack">${[0,3.5,5].map(value=>`<hw-rating-display label="${copy.scoreLabel(value)}" [value]="${value}" [valueLabel]="ratingLabel" />`).join('')}</div>`,
-    angularMember:`\n  ratingLabel = (value: number, total: number) => ${expression};`,
+    react:`<div className="hw-stack">${[0,3.5,5].map(value=>`<RatingDisplay value={${value}} getValueLabel={(value, total) => ${copy.scoreExpression}} />`).join('')}</div>`,
+    vue:`<div class="hw-stack">${[0,3.5,5].map(value=>`<RatingDisplay :value="${value}" :get-value-label="(value, total) => ${copy.scoreExpression}" />`).join('')}</div>`,
+    angular:`<div class="hw-stack">${[0,3.5,5].map(value=>`<hw-rating-display [value]="${value}" [getValueLabel]="scoreLabel" />`).join('')}</div>`,
+    angularMember:`\n  scoreLabel = (value: number, total: number) => ${copy.scoreExpression};`,
   };
   const common=`label="${copy.label}"${kind==='empty'?` hint="${copy.hint}"`:kind==='invalid'?` required error="${copy.error}"`:''}${kind==='disabled'?' disabled':''}`;
   return {
     react:`<Rating ${common} ${controlled?'value={value} onValueChange={setValue}':`defaultValue={${copy.value}}`} ${kind==='readonly'?'readOnly ':''}getRatingLabel={(value, total) => ${expression}} />`,
-    vue:`<Rating ${common} ${controlled?'v-model="value"':`:default-value="${copy.value}"`} ${kind==='readonly'?'readonly ':''}:option-label="(value, total) => ${expression}" />`,
-    angular:`<hw-rating ${common} ${controlled?'[(value)]="value"':`[value]="${copy.value}"`} ${kind==='readonly'?'[readOnly]="true" ':''}[ratingLabel]="ratingLabel" />`,
+    vue:`<Rating ${common} ${controlled?'v-model="value"':`:default-value="${copy.value}"`} ${kind==='readonly'?'readonly ':''}:get-rating-label="(value, total) => ${expression}" />`,
+    angular:`<hw-rating ${common} ${controlled?'[(value)]="value"':`[value]="${copy.value}"`} ${kind==='readonly'?'[readOnly]="true" ':''}[getRatingLabel]="ratingLabel" />`,
     angularMember:`\n  ratingLabel = (value: number, total: number) => ${expression};`,
   };
 }

@@ -4,7 +4,8 @@ import {isServicePatternId, servicePatternIds, servicePatternProject} from './se
 import {dividerProjectMarkup} from './divider-demo.ts';
 import {isPortalShellId, portalShellIds, portalShellProject} from './portal-shell-projects.ts';
 import {disclosureProjectIds, disclosureProjectRecipe, isDisclosureProjectId} from './disclosure-projects.ts';
-import {siteVerificationMarkup} from './site-verification-demo.ts';
+import {siteVerificationMarkup,siteVerificationTextAttributes} from './site-verification-demo.ts';
+import {portalHeaderTexts,portalTexts,textAttributes} from './project-texts.ts';
 import {portalMenuItems, portalMenuMarkup} from './portal-navigation-demo.ts';
 import {choiceInputIds, choiceInputProject, isChoiceInput} from './choice-input-projects.ts';
 import {notificationDialogProject} from './notification-dialog-demo.ts';
@@ -211,20 +212,20 @@ export function projectExample(
     state = booleanState = id === 'page-header';
   } else if (["site-verification","portal-header"].includes(id)) {
     state=true;booleanState=true;
-    const copy={label:t('Verification banner — demonstration','شريط التحقق — مثال توضيحي'),registrationLabel:t('Example platform-registration link','مثال على رابط تسجيل المنصة')},brand=t('Example service portal','بوابة خدمات توضيحية');
+    const brand=t('Example service portal','بوابة خدمات توضيحية');
     const links=JSON.stringify(id === 'portal-header' ? portalMenuItems(locale) : [{label:t('Services','الخدمات'),href:'#services',current:true},{label:t('Contact','تواصل معنا'),href:'#contact'}]);
-    react=`<div className="hw-portal-masthead"><SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" open={value} onOpenChange={setValue} /><PortalHeader brand="${brand}" brandHref="#home" navigation={${links}} /></div><output>{String(value)}</output>`;
-    vue=`<div class="hw-portal-masthead"><SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registration-href="#example-registration" registration-label="${copy.registrationLabel}" v-model:open="value" /><PortalHeader brand="${brand}" home-href="#home" :links='${links}' /></div><output>{{value}}</output>`;
+    react=`<div className="hw-portal-masthead"><SiteVerification ${siteVerificationTextAttributes(locale,'react')} domain="example.test" registrationHref="#example-registration" open={value} onOpenChange={setValue} /><PortalHeader brand="${brand}" brandHref="#home" ${textAttributes(portalHeaderTexts(locale),'react')} navigation={${links}} /></div><output>{String(value)}</output>`;
+    vue=`<div class="hw-portal-masthead"><SiteVerification ${siteVerificationTextAttributes(locale,'vue')} domain="example.test" registration-href="#example-registration" v-model:open="value" /><PortalHeader brand="${brand}" home-href="#home" ${textAttributes(portalHeaderTexts(locale),'vue')} :links='${links}' /></div><output>{{value}}</output>`;
     angularMember=`\n  links = ${links};`;
-    angular=`<div class="hw-portal-masthead"><hw-site-verification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" [(open)]="value" /><hw-portal-header brand="${brand}" homeHref="#home" [links]="links" /></div><output>{{value}}</output>`;
+    angular=`<div class="hw-portal-masthead"><hw-site-verification ${siteVerificationTextAttributes(locale,'angular')} domain="example.test" registrationHref="#example-registration" [(open)]="value" /><hw-portal-header brand="${brand}" homeHref="#home" ${textAttributes(portalHeaderTexts(locale),'angular')} [links]="links" /></div><output>{{value}}</output>`;
   } else if (id === "portal-footer") {
     const groups=JSON.stringify([{title:t('Explore the platform','استكشف المنصة'),links:[{label:t('Services','الخدمات'),href:'#services'},{label:t('About us','عن المنصة'),href:'#about'}]},{title:t('Useful links','روابط مفيدة'),links:[{label:t('Service guide','دليل الخدمات'),href:'#guide'},{label:t('Contact us','تواصل معنا'),href:'#contact'}]}]);
     const legalLinks=JSON.stringify([{label:t('Privacy policy','سياسة الخصوصية'),href:'#privacy'},{label:t('Accessibility','إمكانية الوصول'),href:'#accessibility'}]);
     const description=t('Find services, track requests and get support in one place.','تعرّف على الخدمات، وتابع طلباتك، واحصل على الدعم من مكان واحد.'),support=t('Help and contact','المساعدة والتواصل'),help=t('Help centre','مركز المساعدة'),legal=t('Example platform · 2026','منصة توضيحية · 2026'),policies=t('Policies and accessibility','السياسات وإمكانية الوصول');
-    react=`<PortalFooter brand={<span className="hw-portal-footer-wordmark" role="img" aria-label="هوية" />} description="${description}" groups={${groups}} legalLinks={${legalLinks}} legalLinksLabel="${policies}" legal="${legal}" supportLabel="${support}" support={<div className="hw-portal-footer-actions"><a className="hw-button" data-variant="outline-white" href="#help">${help}</a></div>} />`;
-    vue=`<PortalFooter description="${description}" :groups='${groups}' :legal-links='${legalLinks}' legal-links-label="${policies}" copyright="${legal}" support-label="${support}"><template #logo><span class="hw-portal-footer-wordmark" role="img" aria-label="هوية"></span></template><template #support><div class="hw-portal-footer-actions"><a class="hw-button" data-variant="outline-white" href="#help">${help}</a></div></template></PortalFooter>`;
+    react=`<PortalFooter brand={<span className="hw-portal-footer-wordmark" role="img" aria-label="هوية" />} description="${description}" groups={${groups}} legalLinks={${legalLinks}} legalLinksLabel="${policies}" legal="${legal}" supportLabel="${support}" externalLabel="${portalTexts(locale).externalLabel}" support={<div className="hw-portal-footer-actions"><a className="hw-button" data-variant="outline-white" href="#help">${help}</a></div>} />`;
+    vue=`<PortalFooter description="${description}" :groups='${groups}' :legal-links='${legalLinks}' legal-links-label="${policies}" copyright="${legal}" support-label="${support}" external-label="${portalTexts(locale).externalLabel}"><template #brand><span class="hw-portal-footer-wordmark" role="img" aria-label="هوية"></span></template><template #support><div class="hw-portal-footer-actions"><a class="hw-button" data-variant="outline-white" href="#help">${help}</a></div></template></PortalFooter>`;
     angularMember=`\n  groups = ${groups};\n  policies = ${legalLinks};`;
-    angular=`<hw-portal-footer description="${description}" [groups]="groups" [legalLinks]="policies" legalLinksLabel="${policies}" copyright="${legal}" supportLabel="${support}"><span hwFooterBrand class="hw-portal-footer-wordmark" role="img" aria-label="هوية"></span><div hwFooterSupport class="hw-portal-footer-actions"><a class="hw-button" data-variant="outline-white" href="#help">${help}</a></div></hw-portal-footer>`;
+    angular=`<hw-portal-footer description="${description}" [groups]="groups" [legalLinks]="policies" legalLinksLabel="${policies}" copyright="${legal}" supportLabel="${support}" externalLabel="${portalTexts(locale).externalLabel}"><span hwFooterBrand class="hw-portal-footer-wordmark" role="img" aria-label="هوية"></span><div hwFooterSupport class="hw-portal-footer-actions"><a class="hw-button" data-variant="outline-white" href="#help">${help}</a></div></hw-portal-footer>`;
   } else if (id === "button") {
     state = true;
     react = `<Button onClick={() => setValue(value + '!')}>${t("Click me", "اضغط هنا")}</Button><output>{value}</output>`;
@@ -301,19 +302,20 @@ export function projectExample(
   } else if (id === "table") {
     const caption = t("Applications", "الطلبات"),
       heading = t("Reference", "المرجع"),
-      status = t("Status", "الحالة");
+      status = t("Status", "الحالة"),
+      empty = t("No records", "لا توجد سجلات");
     const rows = JSON.stringify([
       { reference: "HW-101", status: t("Submitted", "مقدم") },
       { reference: "HW-102", status: t("Draft", "مسودة") },
     ]);
-    react = `<Table caption="${caption}" rows={${rows}} rowKey={row => row.reference} columns={[{key:'reference',header:'${heading}',rowHeader:true,cell:row => row.reference},{key:'status',header:'${status}',cell:row => row.status}]} />`;
-    vue = `<Table caption="${caption}" :rows='${rows}' :columns='${JSON.stringify(
+    react = `<Table caption="${caption}" emptyMessage="${empty}" rows={${rows}} rowKey={row => row.reference} columns={[{key:'reference',header:'${heading}',rowHeader:true,cell:row => row.reference},{key:'status',header:'${status}',cell:row => row.status}]} />`;
+    vue = `<Table caption="${caption}" empty-message="${empty}" :rows='${rows}' :columns='${JSON.stringify(
       [
         { key: "reference", header: heading, rowHeader: true },
         { key: "status", header: status },
       ],
     )}' />`;
-    angular = `<hw-table caption="${caption}" [rows]="rows" [columns]="columns" />`;
+    angular = `<hw-table caption="${caption}" emptyMessage="${empty}" [rows]="rows" [columns]="columns" />`;
     angularMember = `\n  rows = ${rows};\n  columns = ${JSON.stringify([
       { key: "reference", label: heading, rowHeader: true },
       { key: "status", label: status },
@@ -331,10 +333,11 @@ export function projectExample(
       {name: t("Certificate", "الشهادة"), days: 1},
       {name: t("Permit", "التصريح"), days: 5},
     ]);
-    react = `<DataTable caption="${caption}" variant="striped" columns={${columns}} rows={${rows}} locale="${locale}" rowKey={row => row.name} onSortChange={sort => setValue(sort.direction)} /><output>{value}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" columns={${columns}} rows={[]} emptyMessage="${empty}" />`;
-    vue = `<DataTable caption="${caption}" variant="striped" :columns='${columns}' :rows='${rows}' locale="${locale}" :sort-label="(column, direction) => column.label + ': ' + (direction === 'ascending' ? '${t("ascending", "تصاعدي")}' : '${t("descending", "تنازلي")}')" @update:sort-direction="value = $event" /><output>{{ value }}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" :columns='${columns}' :rows="[]" empty-message="${empty}" />`;
-    angular = `<hw-data-table caption="${caption}" variant="striped" [columns]="columns" [rows]="rows" locale="${locale}" (sortChange)="value = $event.direction" /><output>{{ value }}</output><hw-data-table caption="${t("Empty results", "نتائج فارغة")}" [columns]="columns" [rows]="[]" emptyMessage="${empty}" />`;
-    angularMember = `\n  columns = ${columns};\n  rows = ${rows};`;
+    const sortLabel = `(column, direction) => column.label + ': ' + (direction === 'ascending' ? '${t("ascending", "تصاعدي")}' : '${t("descending", "تنازلي")}')`;
+    react = `<DataTable caption="${caption}" variant="striped" columns={${columns}} rows={${rows}} locale="${locale}" emptyMessage="${empty}" getSortLabel={${sortLabel}} rowKey={row => row.name} onSortChange={sort => setValue(sort.direction)} /><output>{value}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" columns={${columns}} rows={[]} locale="${locale}" emptyMessage="${empty}" />`;
+    vue = `<DataTable caption="${caption}" variant="striped" :columns='${columns}' :rows='${rows}' locale="${locale}" empty-message="${empty}" :get-sort-label="${sortLabel}" @update:sort-direction="value = $event" /><output>{{ value }}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" :columns='${columns}' :rows="[]" locale="${locale}" empty-message="${empty}" />`;
+    angular = `<hw-data-table caption="${caption}" variant="striped" [columns]="columns" [rows]="rows" locale="${locale}" emptyMessage="${empty}" [getSortLabel]="sortLabel" (sortChange)="value = $event.direction" /><output>{{ value }}</output><hw-data-table caption="${t("Empty results", "نتائج فارغة")}" [columns]="columns" [rows]="[]" locale="${locale}" emptyMessage="${empty}" />`;
+    angularMember = `\n  columns = ${columns};\n  rows = ${rows};\n  sortLabel = ${sortLabel.replace("(column, direction)", typed ? "(column: { label: string }, direction: 'ascending' | 'descending')" : "(column, direction)")};`;
   } else if (id === "breadcrumb") {
     const items = JSON.stringify([
       { label: t("Home", "الرئيسية"), href: "#home" },
@@ -385,7 +388,7 @@ export function projectExample(
     react = cases.map(item => `<section className="hw-stack"><h2>${item.title}</h2>${item.react}${item.kind==='selected'?'<output>{value}</output>':''}</section>`).join('');
     vue = cases.map(item => `<section class="hw-stack"><h2>${item.title}</h2>${item.vue}${item.kind==='selected'?'<output>{{value}}</output>':''}</section>`).join('');
     angular = cases.map(item => `<section class="hw-stack"><h2>${item.title}</h2>${item.angular}${item.kind==='selected'?'<output>{{value}}</output>':''}</section>`).join('');
-    angularMember = cases[0]!.angularMember;
+    angularMember = [...new Set(cases.map(item => item.angularMember))].join('');
   } else if (id === "carousel") {
     state = true; numberState = true; initialValue = "0";
     const cases = carouselDemoCases(locale).map(item => ({...item, ...carouselNativeMarkup(locale,item.kind,item.kind==='bounded')}));
@@ -426,14 +429,14 @@ export function projectExample(
       (["text", "icon-text", "icon"] as const)
         .map(
           (variant) =>
-            `<Feedback label="${question}" choice-variant="${variant}" yes-label="${yes}" no-label="${no}" comment-label="${comment}" submit-label="${submit}" thanks="${thanks}" @update:model-value="value = $event" @submit="feedback => console.log(feedback)" />`,
+            `<Feedback label="${question}" choice-variant="${variant}" yes-label="${yes}" no-label="${no}" comment-label="${comment}" submit-label="${submit}" success-message="${thanks}" @update:model-value="value = $event" @submit="feedback => console.log(feedback)" />`,
         )
         .join("") + "<output>{{ value }}</output>";
     angular =
       (["text", "icon-text", "icon"] as const)
         .map(
           (variant) =>
-            `<hw-feedback label="${question}" choiceVariant="${variant}" positiveLabel="${yes}" negativeLabel="${no}" thanksMessage="${thanks}" (valueChange)="value = $event ? 'yes' : 'no'" />`,
+            `<hw-feedback label="${question}" choiceVariant="${variant}" yesLabel="${yes}" noLabel="${no}" successMessage="${thanks}" (valueChange)="value = $event ? 'yes' : 'no'" />`,
         )
         .join("") + "<output>{{ value }}</output>";
   } else if (id === "badge") {

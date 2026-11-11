@@ -6,10 +6,10 @@ const english = ref(false); const t = (ar: string, en: string) => english.value 
 const links = computed(() => [{ label: t('الخدمات', 'Services'), href: '#services', current: true }, { label: t('تواصل معنا', 'Contact us'), href: '#contact' }]);
 </script>
 <template>
-  <PortalLayout brand="هوية" :lang="english ? 'en' : 'ar'" :dir="english ? 'ltr' : 'rtl'" :links="links" :secondary-navigation="[links[0]!]" main-id="portal-content"
-    :skip-label="t('انتقل إلى المحتوى', 'Skip to content')" :menu-label="t('القائمة', 'Menu')" :navigation-label="t('التنقل الرئيسي', 'Main navigation')" :secondary-label="t('التنقل الثانوي', 'Secondary navigation')" :breadcrumb-label="t('مسار التنقل', 'Breadcrumb')" :footer-label="t('روابط التذييل', 'Footer links')"
+  <PortalLayout :lang="english ? 'en' : 'ar'" :dir="english ? 'ltr' : 'rtl'" :links="links" :secondary-navigation="[links[0]!]" main-id="portal-content"
+    :skip-label="t('انتقل إلى المحتوى', 'Skip to content')" :menu-label="t('القائمة', 'Menu')" :navigation-label="t('التنقل الرئيسي', 'Main navigation')" :secondary-label="t('التنقل الثانوي', 'Secondary navigation')" :breadcrumb-label="t('مسار التنقل', 'Breadcrumb')" :footer-label="t('روابط التذييل', 'Footer links')" :footer-props="{ externalLabel: t('يفتح في نافذة جديدة', 'opens in a new window') }"
     :breadcrumbs="[{ label: t('الرئيسية', 'Home'), href: '/' }, { label: t('الخدمات', 'Services'), current: true }]" :footer-links="[{ label: t('الخصوصية', 'Privacy'), href: '#privacy' }]">
-    <template #logo><img :src="logo" alt="هوية" width="96" height="40" /></template>
+    <template #brand><img :src="logo" alt="هوية" width="96" height="40" /></template>
     <template #actions><Button variant="ghost" @click="english = !english">{{ english ? 'العربية' : 'English' }}</Button></template>
     <section id="services" class="hw-stack"><h1>{{ t('الخدمات', 'Services') }}</h1><h2>{{ t('الخدمات المتاحة', 'Available services') }}</h2><ServiceCard :title="t('دليل الخدمات', 'Service directory')" :description="t('اكتشف خدمات الجهة ومتطلبات التقديم.', 'Explore services and application requirements.')" href="#contact" :action-label="t('عرض الخدمة', 'View service')" /></section>
     <section id="contact"><h2>{{ t('تواصل معنا', 'Contact us') }}</h2><p>{{ t('مثال توضيحي بدون إرسال بيانات.', 'Demonstration only; no data is submitted.') }}</p></section>

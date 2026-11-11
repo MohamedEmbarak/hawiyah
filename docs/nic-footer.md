@@ -29,22 +29,26 @@ dark footer would reduce normal-text contrast below the required threshold.
 
 ## Adapter APIs
 
-- React adds `groups`, `legalLinks`, `legalLinksLabel`, `support`, `supportLabel`,
-  `partners` and `externalLabel`. Existing `brand`, `description`, `links`,
-  `linksLabel`, `legal` and children remain available.
-- Vue adds `groups`, `legalLinks`, `legalLinksLabel`, `description`, `supportLabel`
-  and `externalLabel`, plus `logo`, `support` and `partners` slots. Existing
-  `brand`, `copyright`, `links`, `navLabel` and default content remain available.
-- Angular adds the same data inputs with projected `[hwFooterBrand]`,
-  `[hwFooterSupport]` and `[hwFooterPartners]`. Existing default content remains
-  in an extra content region; `navigationLabel` and `copyright` retain their APIs.
+- React accepts `brand` (text, artwork or both), `brandLabel`, `description`,
+  `links` with `navigationLabel`, `groups`, `legalLinks` with `legalLinksLabel`,
+  `support` with `supportLabel`, `partners`, `legal`, children and the required
+  `externalLabel`.
+- Vue accepts the same props, with `brand`, `support` and `partners` slots and
+  default content; the former `logo` slot and `navLabel` prop are replaced by
+  the `brand` slot and `navigationLabel`.
+- Angular accepts the same data inputs with projected `[hwFooterBrand]`,
+  `[hwFooterSupport]` and `[hwFooterPartners]`. Default content remains in an
+  extra content region. Without projected support content the support section
+  stays hidden with no name or heading.
 - Vanilla uses ordinary footer/nav/list markup with the same public classes;
   no controller or DOM enhancement is required.
 
 A group has `title: string` and ordered `links`. Each footer link accepts `label`,
 `href` and optional `external`. External links open a new window with
-`noopener noreferrer`, an indicator and a localizable accessible suffix.
-Empty groups are omitted. New labels default to Arabic. Applications own all
+`noopener noreferrer`, an indicator and the screen-reader-only `externalLabel`.
+Empty groups are omitted. Each label is required when its section is rendered;
+the footer has no text of its own. `brandLabel` names an artwork-only brand.
+Applications own all
 destinations, support actions, cookie preferences, contact details and analytics.
 
 The example uses Hawiyah's existing outlined Arabic wordmark as an alpha mask that

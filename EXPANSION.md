@@ -75,7 +75,8 @@ boundary, not a simulated implementation.
   the host route; disabled items, keyboard focus and reduced motion are preserved.
   Framework adapters own their DOM and observer cleanup.
 - DataTable: native table with sortable column headers and aria-sort. Columns
-  {key,label,sortable?}; rows record values. Sorting stable and localized. No
+  {key,label,sortable?}; rows record values. Sorting is stable and uses the
+  required `locale`; `emptyMessage` is required. No
   virtualization/editing claim. Existing Table remains fully composable.
 - National patterns are configurable ordinary content. Do not invent government
   seals, trust verification, actual identity verification or backend integrations.
@@ -88,7 +89,8 @@ boundary, not a simulated implementation.
   main target and footer. It has no default strings and sets no direction of
   its own: the application supplies every label and, where it wants one, `dir`.
   Its skip link follows the in-page link contract in CONTRACT.md. Follow the
-  adapter PORTAL.md for exact props and stable explicit Angular SSR IDs.
+  adapter PORTAL.md for exact props. Angular generates ids from one `HwIdSource`
+  per application, so server and hydrated ids match; explicit id inputs win.
 - All controls: disabled/readonly where meaningful, form values/reset, accessible
   names, error/hint associations, no unsafe HTML, SSR-safe imports, RTL.
 - All locales: no component in this expansion chooses a locale. Calendar,

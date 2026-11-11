@@ -2,8 +2,10 @@ import {afterEach,expect,it,vi} from 'vitest';
 import {createSearchField,type SearchFieldOptions} from '../packages/vanilla/src/search-field';
 const cleanups:Array<()=>void>=[];
 afterEach(()=>{for(const cleanup of cleanups.splice(0))cleanup();document.body.replaceChildren();});
-function setup(options:SearchFieldOptions={},attrs='',value=''){
- document.body.innerHTML=`<form><fieldset><div class="hw-search-field" ${attrs}><label for="query">Search</label><div class="hw-search-control"><input id="query" type="search" name="query" value="${value}" data-hw-search-input><button hidden data-hw-search-clear>Clear</button></div></div></fieldset></form><button id="outside">Outside</button>`;
+// The application's copy as root attributes; a test that checks missing text passes copy=''.
+const copy='data-hw-clear-label="مسح البحث" data-hw-results-message="{count} اقتراحات متاحة"';
+function setup(options:SearchFieldOptions={},attrs='',value='',texts=copy){
+ document.body.innerHTML=`<form><fieldset><div class="hw-search-field" ${texts} ${attrs}><label for="query">Search</label><div class="hw-search-control"><input id="query" type="search" name="query" value="${value}" data-hw-search-input><button hidden data-hw-search-clear>Clear</button></div></div></fieldset></form><button id="outside">Outside</button>`;
  const root=document.querySelector<HTMLElement>('.hw-search-field')!,input=root.querySelector<HTMLInputElement>('input')!,clear=root.querySelector<HTMLButtonElement>('button')!,form=document.querySelector('form')!,before=root.outerHTML;
  const controller=createSearchField(root,options);cleanups.push(controller.destroy);
  return {root,input,clear,form,controller,before};
@@ -15,7 +17,7 @@ const options=(root:HTMLElement)=>[...root.querySelectorAll<HTMLElement>('[role=
 const matchesMarkup=(root:HTMLElement,html:string)=>{const template=document.createElement('template');template.innerHTML=html;return root.isEqualNode(template.content.firstElementChild);};
 
 it('exposes optional labeled combobox semantics and highlights source-safe text without HTML injection',()=>{
- const {root,input}=setup({suggestions:['😀 إِدَارَةُ البيانات','<img src=x onerror=alert(1)>'],resultsMessage:count=>`${count} local results`});
+ const {root,input}=setup({suggestions:['😀 إِدَارَةُ البيانات','<img src=x onerror=alert(1)>'],getResultsMessage:count=>`${count} local results`});
  expect(input.getAttribute('role')).toBe('combobox');expect(input.getAttribute('aria-controls')).toBe(list(root).id);expect(input.getAttribute('autocomplete')).toBe('off');expect(list(root).hidden).toBe(true);expect(list(root).parentElement).toBe(root.querySelector('.hw-search-control'));
  type(input,'ادارة');expect(options(root)).toHaveLength(1);expect(options(root)[0]!.querySelector('strong')!.textContent).toBe('إِدَارَةُ');expect(options(root)[0]!.textContent).toBe('😀 إِدَارَةُ البيانات');expect(root.querySelector('[role="status"]')!.textContent).toBe('1 local results');
  type(input,'img');expect(root.querySelector('img')).toBeNull();expect(options(root)[0]!.textContent).toBe('<img src=x onerror=alert(1)>');
@@ -62,7 +64,16 @@ it('leaves no-suggestion search fields unchanged and restores generated semantic
  const {root,input,controller,before}=setup({suggestions:['Search first']});type(input,'search');key(input,'ArrowDown');controller.destroy();controller.destroy();expect(matchesMarkup(root,before)).toBe(true);expect(input.value).toBe('search');input.dispatchEvent(new Event('focus'));expect(root.querySelector('[role="listbox"]')).toBeNull();
 });
 it('announces zero matches without displaying a popup and removes optional semantics when its declaration is removed',async()=>{
- const {root,input}=setup({},'data-hw-suggestions="[]"');type(input,'nothing');expect(list(root).hidden).toBe(true);expect(root.querySelector('[role="status"]')!.textContent).toContain('0');root.removeAttribute('data-hw-suggestions');await Promise.resolve();expect(root.querySelector('[role="listbox"]')).toBeNull();expect(input.hasAttribute('role')).toBe(false);expect(input.hasAttribute('autocomplete')).toBe(false);
+ const {root,input}=setup({},'data-hw-suggestions="[]"');type(input,'nothing');expect(list(root).hidden).toBe(true);expect(root.querySelector('[role="status"]')!.textContent).toBe('0 اقتراحات متاحة');root.removeAttribute('data-hw-suggestions');await Promise.resolve();expect(root.querySelector('[role="listbox"]')).toBeNull();expect(input.hasAttribute('role')).toBe(false);expect(input.hasAttribute('autocomplete')).toBe(false);
+});
+it('renders no invented clear name or announcement when the application supplies no texts',()=>{
+ const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+ try{
+  const {root,input,clear}=setup({suggestions:['Search first','Search second']},'','','');
+  type(input,'search');expect(options(root)).toHaveLength(2);expect(root.querySelector('[role="status"]')!.textContent).toBe('');
+  expect(clear.hasAttribute('aria-label')).toBe(false);
+  expect(root.textContent).not.toMatch(/اقتراحات|suggestions available|مسح البحث|Clear search/u);
+ }finally{warn.mockRestore();}
 });
 it('routes the second Escape to an open native modal without clearing the chosen search text',()=>{
  const {root,input,form}=setup({suggestions:['Search first']});const dialog=document.createElement('dialog');dialog.open=true;form.before(dialog);dialog.append(form);vi.spyOn(dialog,'matches').mockImplementation(selector=>selector===':modal');const request=vi.fn();Object.defineProperty(dialog,'requestClose',{configurable:true,value:request});

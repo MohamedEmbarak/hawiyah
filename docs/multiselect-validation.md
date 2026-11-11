@@ -5,20 +5,25 @@ required-selection API is enabled. Search text does not satisfy the requirement.
 Filtering never removes selected form values. This is a Hawiyah form contract;
 decoded DGA styling evidence does not establish native validation behavior.
 
-| Adapter | Required selection | Localized validation message | Readonly selection |
+| Adapter | Required selection | Validation message | Readonly selection |
 | --- | --- | --- | --- |
-| Vanilla | Root `data-hw-required="true"` or controller `required: true` | Controller `requiredMessage`; default follows `data-hw-locale`/nearest `lang`, Arabic by default | Root `data-hw-readonly="true"` |
+| Vanilla | Root `data-hw-required="true"` or controller `required: true` | Root `data-hw-required-message` or controller `requiredMessage`; no default | Root `data-hw-readonly="true"` |
 | React | `required` | `requiredMessage` | `readOnly` |
 | Vue | `required` (including provided Field context) | `requiredMessage` | `readonly` |
-| Angular | `required` | `validationMessage` | `readOnly` |
+| Angular | `required` | `requiredMessage` | `readOnly` |
 
 Vanilla explicit `required` takes precedence over markup, including `false`.
-Pass messages explicitly in framework adapters for the application's locale.
+The message is application text in every adapter and is required when the
+required-selection API is enabled; without it the constraint still blocks
+submission and a development warning names the missing input. `searchLabel`
+and `emptyMessage` are required in every framework adapter.
 Use a fieldset/legend to name the group and a separate visible or accessible
 label for search. Explain the minimum selection in visible help text.
 
 ```html
-<fieldset data-hw="multi-select" data-hw-required="true" lang="ar">
+<fieldset data-hw="multi-select" data-hw-required="true"
+          data-hw-required-message="اختر خيارًا واحدًا على الأقل."
+          data-hw-results-message="{count} خيارات">
   <legend>الخدمات المطلوبة — اختر خدمة واحدة على الأقل</legend>
   <label>تصفية الخيارات<input type="search" data-hw-multiselect-search></label>
   <label data-hw-option><input type="checkbox" name="service" value="business">الأعمال</label>
@@ -68,6 +73,6 @@ on `control.valid` rather than native form submission validity.
 `multiselect-validation` tests in all four adapters cover required/readonly/
 disabled states, focusability, selection values, filtering and reset. The
 existing `input-contracts` suites cover unknown values and dynamic option lists.
-Vanilla tests also verify localized defaults, configuration precedence,
+Vanilla tests also verify text sources, configuration precedence,
 cancelled reset and cleanup. Angular tests import the built APF package and must
 run after rebuilding it. These tests do not claim visual or screen-reader parity.

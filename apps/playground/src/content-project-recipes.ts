@@ -148,8 +148,8 @@ function avatarsRecipe(locale: Locale, typed: boolean): ContentProjectRecipe {
     angularMember: `${data.angularMember}\n  readonly overflowLabel = (count: number) => ${remaining};`,
     vanilla: `<div class="hw-avatar-group" role="group" aria-label="${label}">\n${members.slice(0, 2).map(({name}) => `  <span class="hw-avatar" role="img" aria-label="${name}">${name.split(' ').map(word => Array.from(word)[0]).join('')}</span>`).join('\n')}\n  <span class="hw-avatar" role="img" aria-label="${ar ? 'أعضاء إضافيون (2)' : '2 more members'}">+2</span>\n</div>`,
     react: `<AvatarGroup label="${label}" items={members} max={2} getOverflowLabel={overflowLabel} />`,
-    vue: `<AvatarGroup label="${label}" :items="members" :max="2" :remaining-label="overflowLabel" />`,
-    angular: `<hw-avatar-group label="${label}" [avatars]="members" [max]="2" [overflowLabel]="overflowLabel" />`,
+    vue: `<AvatarGroup label="${label}" :items="members" :max="2" :get-overflow-label="overflowLabel" />`,
+    angular: `<hw-avatar-group label="${label}" [avatars]="members" [max]="2" [getOverflowLabel]="overflowLabel" />`,
   };
 }
 

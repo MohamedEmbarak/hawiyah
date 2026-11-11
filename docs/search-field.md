@@ -17,7 +17,8 @@ React uses `value/defaultValue/onValueChange`; Vue uses
 `value/valueChange` or ControlValueAccessor. Vue `search` and Angular `searched`
 Enter callbacks ignore composition and Ctrl/Alt/Meta-modified keys. React and
 vanilla retain native form submission. Angular also retains its Search button.
-Supply localized `clearLabel` (and Angular `searchLabel`).
+Supply `clearLabel` in every adapter, `searchLabel` when the search button is
+shown and `getResultsMessage(count)` when suggestions are given.
 
 Vanilla `createSearchField(root, { clearLabel, onValueChange })`, or
 `enhance` with `data-hw="search-field"`, connects `data-hw-search-input` and

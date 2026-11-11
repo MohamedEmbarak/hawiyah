@@ -38,8 +38,9 @@ substitutions have received official approval.
 - Vanilla uses `<a class="hw-link" role="link" aria-disabled="true"
   tabindex="-1">Unavailable</a>`. Do not add a destination or navigation handler
   to this disabled recipe. No controller is required.
-- Breadcrumb items accept `disabled?: boolean` in all native adapters. Their
-  default landmark label is Arabic (override `label` for English); the
+- Breadcrumb items accept `disabled?: boolean` in all native adapters. The
+  landmark is named by the required `label` (or an `aria-label` /
+  `aria-labelledby` where the adapter forwards it); the
   last item remains the current page; disabled destinations render as text with
   a disabled link role and no href.
 - The guide displays all four principal variants and includes project imports

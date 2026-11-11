@@ -17,25 +17,27 @@ const disposers: (() => void | Promise<void>)[] = [];
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(async () => { for (const dispose of disposers.splice(0)) await dispose(); TestBed.resetTestingModule(); document.body.replaceChildren(); });
 
+// The application's copy: the strings the adapters used to supply (English was the only former wording of addLabel).
+const texts = { getRemoveLabel: (tag: string) => `Remove ${tag}`, requiredMessage: 'Add at least one tag.' };
 async function mount(adapter: string) {
   const host = document.createElement('div'); document.body.append(host);
   let run = async (action: () => void) => { action(); await Promise.resolve(); };
   let reset: () => void;
   if (adapter === 'react') {
     const root = createRoot(host); run = async action => { await act(action); };
-    await run(() => root.render(createElement('form', {}, createElement('fieldset', {}, createElement(ReactTags, { label: 'الوسوم', name: 'tags', required: true, defaultValue: ['هوية'] })))));
+    await run(() => root.render(createElement('form', {}, createElement('fieldset', {}, createElement(ReactTags, { ...texts, label: 'الوسوم', name: 'tags', required: true, defaultValue: ['هوية'] })))));
     disposers.push(async () => { await act(() => root.unmount()); });
   } else if (adapter === 'vue') {
-    const app = createApp({ render: () => h('form', [h('fieldset', [h(VueTags, { label: 'الوسوم', name: 'tags', required: true, defaultValue: ['هوية'] })])]) });
+    const app = createApp({ render: () => h('form', [h('fieldset', [h(VueTags, { ...texts, label: 'الوسوم', name: 'tags', required: true, defaultValue: ['هوية'] })])]) });
     app.mount(host); run = async action => { action(); await nextTick(); await nextTick(); }; disposers.push(() => app.unmount());
   } else if (adapter === 'angular') {
-    class Host { tags = new FormControl(['هوية'], { nonNullable: true }); }
-    Component({ standalone: true, imports: [ReactiveFormsModule, HwTagInputComponent], template: '<form><fieldset><hw-tag-input label="الوسوم" name="tags" required [formControl]="tags" /></fieldset></form>' })(Host);
+    class Host { tags = new FormControl(['هوية'], { nonNullable: true }); removeLabel = texts.getRemoveLabel; }
+    Component({ standalone: true, imports: [ReactiveFormsModule, HwTagInputComponent], template: '<form><fieldset><hw-tag-input label="الوسوم" name="tags" addLabel="Add" [getRemoveLabel]="removeLabel" requiredMessage="Add at least one tag." required [formControl]="tags" /></fieldset></form>' })(Host);
     const fixture = TestBed.createComponent(Host); host.append(fixture.nativeElement); fixture.detectChanges();
     run = async action => { action(); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges(); };
     reset = () => fixture.componentInstance.tags.reset(); disposers.push(() => fixture.destroy());
   } else {
-    host.innerHTML = '<form><fieldset><div class="hw-tag-input" data-hw-value=\'["هوية"]\' data-hw-name="tags"><label>الوسوم<input type="text" required data-hw-tag-input></label><div data-hw-tags></div></div></fieldset></form>';
+    host.innerHTML = '<form><fieldset><div class="hw-tag-input" data-hw-value=\'["هوية"]\' data-hw-name="tags" data-hw-remove-label="Remove {tag}" data-hw-required-message="Add at least one tag."><label>الوسوم<input type="text" required data-hw-tag-input></label><div data-hw-tags></div></div></fieldset></form>';
     const controller = createTagInput(host.querySelector('.hw-tag-input')!); disposers.push(() => controller.destroy());
   }
   const form = host.querySelector('form')!; const input = host.querySelector<HTMLInputElement>('.hw-tag-input input:not([type=hidden])')!;
@@ -55,7 +57,9 @@ for (const adapter of ['vanilla', 'react', 'vue', 'angular']) it(`${adapter}: ta
   await key('Backspace', { ctrlKey: true }); expect(values()).toHaveLength(2);
   expect((await key('Backspace')).defaultPrevented).toBe(true); expect(values()).toEqual(['هوية']);
   const remove = host.querySelector<HTMLButtonElement>('.hw-chip button')!;
+  expect(remove.getAttribute('aria-label')).toBe('Remove هوية');
   await run(() => { remove.focus(); remove.click(); }); expect(document.activeElement).toBe(input); expect(form.checkValidity()).toBe(false);
+  expect(input.validationMessage).toBe('Add at least one tag.');
   await edit('uncommitted'); await run(reset); expect(values()).toEqual(['هوية']); expect(input.value).toBe(''); expect(form.checkValidity()).toBe(true);
   await edit('blocked'); host.querySelector('fieldset')!.disabled = true;
   expect((await key('Enter')).defaultPrevented).toBe(false);

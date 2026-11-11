@@ -31,6 +31,7 @@ export function createContentNavigation(root: HTMLElement, options: ContentNavig
   const fromHref = (link: HTMLAnchorElement) => getFragmentId(link.getAttribute('href'));
   const navigation = root.localName === 'nav' ? root : root.querySelector<HTMLElement>('nav');
   if (navigation) { remember(scope, navigation, ['aria-label']); nameRoot(navigation, 'ContentNavigation', text(root, 'label', options.label)); }
+  const rootMissing = () => options.scrollRoot === undefined && !!root.dataset.hwScrollRoot && !scrollRoot();
   const bindings = new Map<HTMLAnchorElement, FragmentLink>();
   let keyboard = false;
   scope.add(() => { for (const binding of bindings.values()) binding.destroy(); bindings.clear(); });
@@ -42,7 +43,8 @@ export function createContentNavigation(root: HTMLElement, options: ContentNavig
       bindings.set(link, bindFragmentLink(link, {
         id: () => idFor(link),
         updateHash: options.updateHash ?? root.dataset.hwUpdateHash === 'true',
-        navigate: id => !isDisabled(root) && !isDisabled(link) && !link.hasAttribute('download') && observer.navigate(id, { focus: keyboard }),
+        // A configured scroll root that is not mounted handles the click without scrolling: the browser must not jump in the host page.
+        navigate: id => !isDisabled(root) && !isDisabled(link) && !link.hasAttribute('download') && (rootMissing() || observer.navigate(id, { focus: keyboard })),
       }));
     }
   };
@@ -60,7 +62,7 @@ export function createContentNavigation(root: HTMLElement, options: ContentNavig
   const scrollRoot = () => options.scrollRoot !== undefined ? options.scrollRoot : root.dataset.hwScrollRoot ? root.ownerDocument.getElementById(root.dataset.hwScrollRoot) : null;
   const items = (): ContentNavigationItem[] => {
     // A configured but not-yet-mounted container must not fall back to scrolling the host page.
-    if (options.scrollRoot === undefined && root.dataset.hwScrollRoot && !scrollRoot()) return [];
+    if (rootMissing()) return [];
     return links().map(link => ({ id: idFor(link), label: link.getAttribute('aria-label') || link.textContent?.trim() || '', disabled: isDisabled(root) || isDisabled(link) }));
   };
   const render = () => {

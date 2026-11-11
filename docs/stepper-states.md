@@ -3,8 +3,9 @@
 Stepper is a progress indicator: an ordered list with `hw-stepper` on the list,
 `hw-step` on each item and `aria-current="step"` on the current item. It adds no
 buttons, tab stops or step navigation. The application owns progress and decides
-when a previous step is complete. Arabic is the default accessible list name
-(`التقدم`); pass `label="Progress"` for English.
+when a previous step is complete. The list name is application text: pass
+`label` (for example `label="التقدم"`), or an `aria-label` / `aria-labelledby`
+where the adapter forwards it. The component has no default name.
 
 The same three public state values work across the native adapters and static
 HTML: `complete` (previous), `current` (active), and `upcoming` (pending).
@@ -37,8 +38,8 @@ const items = [
   { value: 'review', label: 'المراجعة' },
   { value: 'send', label: 'الإرسال' },
 ];
-// React; use :items="items" :active-index="activeIndex" in Vue.
-<Stepper items={items} activeIndex={1} />
+// React; use :items="items" :active-index="activeIndex" label="التقدم" in Vue.
+<Stepper items={items} activeIndex={1} label="التقدم" />
 ```
 
 Angular:

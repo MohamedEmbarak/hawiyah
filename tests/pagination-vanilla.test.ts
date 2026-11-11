@@ -3,8 +3,10 @@ import {createPagination} from '../packages/vanilla/src/pagination';
 
 const cleanups:Array<()=>void>=[];
 afterEach(()=>{for(const cleanup of cleanups.splice(0))cleanup();document.body.replaceChildren();});
-function mount(total=20,page=10,extra=''){
- document.body.innerHTML=`<nav class="hw-pagination" data-hw="pagination" data-hw-total="${total}" data-hw-current="${page}" ${extra}><button data-hw-page="previous">Previous</button><span data-hw-pagination-items><i>Authored fallback</i></span><button data-hw-page="next">Next</button></nav><button id="outside">Outside</button>`;
+// The application's copy as template attributes: the strings the controller used to supply.
+const copy='aria-label="ترقيم الصفحات" data-hw-page-label="الصفحة {page}" data-hw-gap-label="الصفحات {start} إلى {end}" data-hw-jump-label="الانتقال إلى صفحة" data-hw-go-label="انتقال"';
+function mount(total=20,page=10,extra='',texts=copy){
+ document.body.innerHTML=`<nav class="hw-pagination" data-hw="pagination" data-hw-total="${total}" data-hw-current="${page}" ${texts} ${extra}><button data-hw-page="previous">Previous</button><span data-hw-pagination-items><i>Authored fallback</i></span><button data-hw-page="next">Next</button></nav><button id="outside">Outside</button>`;
  return document.querySelector<HTMLElement>('nav')!;
 }
 function enhance(root:HTMLElement,options:Parameters<typeof createPagination>[1]={}){const controller=createPagination(root,options);cleanups.push(controller.destroy);return controller;}
@@ -16,10 +18,22 @@ it('generates bounded windows and jumps to omitted pages with one event and focu
  expect(root.querySelectorAll('details')).toHaveLength(2);
  expect(root.querySelector('summary')?.getAttribute('aria-label')).toBe('الصفحات 2 إلى 8');
  expect(root.querySelector('[aria-current="page"]')?.textContent).toBe('10');
+ expect(root.querySelector('[aria-current="page"]')?.getAttribute('aria-label')).toBe('الصفحة 10');
  const gap=root.querySelector('details')!;gap.open=true;const destination=button(root,5);destination.focus();destination.click();
  expect(controller.page).toBe(5);expect(callback).toHaveBeenCalledExactlyOnceWith(5);expect(event).toHaveBeenCalledTimes(1);
  expect(document.activeElement).toBe(button(root,5));expect(root.querySelector('details[open]')).toBeNull();
  controller.select(5);controller.select(NaN);controller.select(21);controller.select(1.5);expect(callback).toHaveBeenCalledTimes(1);
+});
+it('renders no invented names when the application supplies no texts',()=>{
+ const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+ try{
+  const root=mount(20,10,'','');enhance(root);
+  expect(root.querySelectorAll('details')).toHaveLength(2);
+  expect(root.querySelector('summary')?.hasAttribute('aria-label')).toBe(false);
+  expect(root.querySelector('[aria-current="page"]')?.hasAttribute('aria-label')).toBe(false);
+  expect(root.querySelector('[aria-current="page"]')?.textContent).toBe('10');
+  expect(root.textContent).not.toMatch(/الصفح|انتقال|Page|Go to/u);
+ }finally{warn.mockRestore();}
 });
 it('closes disclosures with Escape, outside click and another opening',()=>{
  const root=mount();enhance(root);const gaps=[...root.querySelectorAll<HTMLDetailsElement>('details')];

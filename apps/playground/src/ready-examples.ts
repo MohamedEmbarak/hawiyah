@@ -15,7 +15,8 @@ import {ratingDemoCases,ratingDemoMarkup,ratingNativeMarkup} from './rating-demo
 import {carouselDemoCases,carouselDemoMarkup,carouselNativeMarkup} from './carousel-demo';
 import {iconButtonCases,iconButtonLabel,iconBackgroundMarkup} from './icon-button-demo';
 import {toggleGroupMarkup} from './segmented-demo';
-import {siteVerificationMarkup,siteVerificationDemoLabels} from './site-verification-demo';
+import {siteVerificationMarkup,siteVerificationTextAttributes} from './site-verification-demo';
+import {portalHeaderTexts,portalTexts,textAttributes,type TextSyntax} from './project-texts';
 import {portalFooterMarkup,portalFooterExampleData} from './portal-footer-demo';
 import { escape as e, icon, type ComponentId, type Locale } from './data';
 import {feedbackMarkup} from './feedback-demo';
@@ -140,7 +141,7 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
         title: item.title,
         markup: `<div class="hw-table-wrap" tabindex="0" role="region" aria-label="${caption}"><table class="hw-table${sortable ? ' hw-data-table' : ''}" ${sortable ? `data-hw="data-table" data-hw-locale="${language}"` : ''} data-variant="${item.variant}" data-size="${item.size}"><caption>${caption}</caption><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table></div>`,
         react: `import { ${component} } from '@hawiyah/react';\n\nconst rows = ${reactRows};\n\n<${component} caption="${caption}" rows={rows} columns={${reactColumns}} variant="${item.variant}" size="${item.size}" emptyMessage="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
-        vue: `<!-- import { ${component} } from '@hawiyah/vue' -->\n<${component} caption="${caption}" :rows='${data}' :columns='${JSON.stringify(vueColumns)}' variant="${item.variant}" size="${item.size}" empty-message="${emptyMessage}" ${sortable ? `locale="${language}"${locale === 'en' ? ` :sort-label="(column, direction) => 'Sort ' + column.label + ' ' + direction"` : ''}` : ''} />`,
+        vue: `<!-- import { ${component} } from '@hawiyah/vue' -->\n<${component} caption="${caption}" :rows='${data}' :columns='${JSON.stringify(vueColumns)}' variant="${item.variant}" size="${item.size}" empty-message="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
         angular: `<!-- import { Hw${component}Component } from '@hawiyah/angular'; add to imports -->\n<hw-${sortable ? 'data-table' : 'table'} caption="${caption}" [rows]='${data}' [columns]='${JSON.stringify(columns)}' variant="${item.variant}" size="${item.size}" emptyMessage="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
       };
     });
@@ -186,18 +187,17 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
     angular: `<!-- imports: [HwLinkComponent] -->\n<hw-link href="https://example.test/reference" target="_blank">${t('External reference','مرجع خارجي')}<span class="hw-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></hw-link>`,
   }]);
   if (id === 'site-verification') {
-    const copy=siteVerificationDemoLabels(locale);
     return [false,true].map(open=>({title:open?t('Expanded verification','تفاصيل التحقق'):t('Collapsed verification','شريط التحقق المطوي'),markup:siteVerificationMarkup(locale,open),
-      react:`import { SiteVerification } from '@hawiyah/react';\n\n<SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" defaultOpen={${open}} />`,
-      vue:`<!-- import { SiteVerification } from '@hawiyah/vue' -->\n<SiteVerification locale="${locale}" label="${copy.label}" domain="example.test" registration-href="#example-registration" registration-label="${copy.registrationLabel}" :default-open="${open}" />`,
-      angular:`<!-- import { HwSiteVerificationComponent } from '@hawiyah/angular'; add to imports -->\n<hw-site-verification locale="${locale}" label="${copy.label}" domain="example.test" registrationHref="#example-registration" registrationLabel="${copy.registrationLabel}" [open]="${open}" />`,
+      react:`import { SiteVerification } from '@hawiyah/react';\n\n<SiteVerification ${siteVerificationTextAttributes(locale,'react')} domain="example.test" registrationHref="#example-registration" defaultOpen={${open}} />`,
+      vue:`<!-- import { SiteVerification } from '@hawiyah/vue' -->\n<SiteVerification ${siteVerificationTextAttributes(locale,'vue')} domain="example.test" registration-href="#example-registration" :default-open="${open}" />`,
+      angular:`<!-- import { HwSiteVerificationComponent } from '@hawiyah/angular'; add to imports -->\n<hw-site-verification ${siteVerificationTextAttributes(locale,'angular')} domain="example.test" registrationHref="#example-registration" [open]="${open}" />`,
     }));
   }
   if(id==='feedback')return (['text','icon-text','icon'] as const).map(variant=>({
     title:t(`Feedback · ${variant}`,`تقييم الصفحة · ${variant}`), markup:feedbackMarkup(locale,variant),
     react:`import { Feedback } from '@hawiyah/react';\n\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" yesLabel="${t('Yes','نعم')}" noLabel="${t('No','لا')}" commentLabel="${t('Tell us more','أخبرنا بالمزيد')}" submitLabel="${t('Send feedback','إرسال التقييم')}" successMessage="${t('Thank you for your feedback.','شكراً على تقييمك.')}" onFeedback={value => console.log(value)} />`,
-    vue:`<!-- import { Feedback } from '@hawiyah/vue' -->\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choice-variant="${variant}" yes-label="${t('Yes','نعم')}" no-label="${t('No','لا')}" comment-label="${t('Tell us more','أخبرنا بالمزيد')}" submit-label="${t('Send feedback','إرسال التقييم')}" thanks="${t('Thank you for your feedback.','شكراً على تقييمك.')}" @submit="value => console.log(value)" />`,
-    angular:`<!-- imports: [HwFeedbackComponent] -->\n<hw-feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" positiveLabel="${t('Yes','نعم')}" negativeLabel="${t('No','لا')}" />`,
+    vue:`<!-- import { Feedback } from '@hawiyah/vue' -->\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choice-variant="${variant}" yes-label="${t('Yes','نعم')}" no-label="${t('No','لا')}" comment-label="${t('Tell us more','أخبرنا بالمزيد')}" submit-label="${t('Send feedback','إرسال التقييم')}" success-message="${t('Thank you for your feedback.','شكراً على تقييمك.')}" @submit="value => console.log(value)" />`,
+    angular:`<!-- imports: [HwFeedbackComponent] -->\n<hw-feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" yesLabel="${t('Yes','نعم')}" noLabel="${t('No','لا')}" successMessage="${t('Thank you for your feedback.','شكراً على تقييمك.')}" />`,
   }));
   if (id === 'checkbox' || id === 'radio') {
     const component = id === 'checkbox' ? 'Checkbox' : 'Radio';
@@ -247,21 +247,23 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
   if (id === 'portal-header') {
     const services = t('Services','الخدمات'), requests = t('My requests','طلباتي'), signIn = t('Sign in','تسجيل الدخول');
     const links = JSON.stringify([{label:services,href:'/services',current:true},{label:requests,href:'/requests'}]);
+    // The same texts as the markup below: its skip link, menu toggle and navigation name.
+    const headerTexts = (syntax: TextSyntax) => textAttributes({...portalHeaderTexts(locale, true), navigationLabel: t('Example navigation','تنقل المثال')}, syntax);
     const brand = `<img src="${import.meta.env.BASE_URL}brand/assets/hawiyah-wordmark.svg" width="80" height="50" alt="هوية">`;
     return [{ title: t('Header with identity, navigation and actions', 'ترويسة بالهوية والتنقل والإجراءات'),
       markup: `<header class="hw-portal-header" data-hw="portal-header"><a class="hw-skip-link" href="#ready-header-main">${t('Skip to content','انتقل إلى المحتوى')}</a><a class="hw-portal-brand" href="/">${brand}</a><button class="hw-button hw-portal-menu-toggle" type="button" data-hw-portal-toggle>${t('Menu','القائمة')}</button><nav data-hw-portal-navigation aria-label="${t('Example navigation','تنقل المثال')}"><ul><li><a href="/services" aria-current="page">${services}</a></li><li><a href="/requests">${requests}</a></li></ul></nav><div class="hw-portal-header-actions"><a class="hw-button" href="/login">${signIn}</a></div></header><section id="ready-header-main" tabindex="-1"><h3>${services}</h3><p>${t('Your page content goes here.','يوضع محتوى صفحتك هنا.')}</p></section>`,
-      react: `import { PortalHeader } from '@hawiyah/react';\n\n<PortalHeader brand={<img src="/brand/hawiyah-wordmark.svg" alt="هوية" width={80} height={50} />} brandHref="/" mainId="main-content" navigation={${links}} actions={<a className="hw-button" href="/login">${signIn}</a>} />\n<main id="main-content" tabIndex={-1}>...</main>`,
-      vue: `<!-- import { PortalHeader } from '@hawiyah/vue' -->\n<PortalHeader brand="هوية" home-href="/" main-id="main-content" :links='${links}'><template #logo><img src="/brand/hawiyah-wordmark.svg" alt="هوية" width="80" height="50"></template><template #actions><a class="hw-button" href="/login">${signIn}</a></template></PortalHeader>\n<main id="main-content" tabindex="-1">...</main>`,
-      angular: `<!-- imports: [HwPortalHeaderComponent]; links = ${links} -->\n<hw-portal-header brand="" homeHref="/" mainId="main-content" [links]="links"><img hwBrand src="/brand/hawiyah-wordmark.svg" alt="هوية" width="80" height="50"><a class="hw-button" href="/login">${signIn}</a></hw-portal-header>\n<main id="main-content" tabindex="-1">...</main>`,
+      react: `import { PortalHeader } from '@hawiyah/react';\n\n<PortalHeader brand={<img src="/brand/hawiyah-wordmark.svg" alt="هوية" width={80} height={50} />} brandHref="/" mainId="main-content" ${headerTexts('react')} navigation={${links}} actions={<a className="hw-button" href="/login">${signIn}</a>} />\n<main id="main-content" tabIndex={-1}>...</main>`,
+      vue: `<!-- import { PortalHeader } from '@hawiyah/vue' -->\n<PortalHeader home-href="/" main-id="main-content" ${headerTexts('vue')} :links='${links}'><template #brand><img src="/brand/hawiyah-wordmark.svg" alt="هوية" width="80" height="50"></template><template #actions><a class="hw-button" href="/login">${signIn}</a></template></PortalHeader>\n<main id="main-content" tabindex="-1">...</main>`,
+      angular: `<!-- imports: [HwPortalHeaderComponent]; links = ${links} -->\n<hw-portal-header homeHref="/" mainId="main-content" ${headerTexts('angular')} [links]="links"><img hwBrand src="/brand/hawiyah-wordmark.svg" alt="هوية" width="80" height="50"><a class="hw-button" href="/login">${signIn}</a></hw-portal-header>\n<main id="main-content" tabindex="-1">...</main>`,
     }, portalMenuRecipe(locale)];
   }
   if (id === 'portal-footer') {
     const d=portalFooterExampleData(locale),groups=JSON.stringify(d.groups),policies=JSON.stringify(d.legalLinks);
     const support=`<p>${d.supportDescription}</p><div class="hw-portal-footer-actions"><a class="hw-button" data-variant="outline-white" href="/help">${d.helpLabel}</a><a class="hw-button" data-variant="outline-white" href="/contact">${d.contactLabel}</a></div>`;
     return [{title:t('Grouped footer with identity, support and policies','تذييل بالهوية ومجموعات الروابط والدعم والسياسات'),markup:portalFooterMarkup(locale,'ready-footer'),
-      react:`import { PortalFooter } from '@hawiyah/react';\n\n<PortalFooter brand={<span className="hw-portal-footer-wordmark" role="img" aria-label="هوية" />} description="${d.description}" groups={${groups}} legalLinks={${policies}} legalLinksLabel="${d.legalLinksLabel}" legal="${d.legal}" supportLabel="${d.supportLabel}" support={<>${support.replaceAll('class=','className=')}</>} />`,
-      vue:`<!-- import { PortalFooter } from '@hawiyah/vue' -->\n<PortalFooter description="${d.description}" :groups='${groups}' :legal-links='${policies}' legal-links-label="${d.legalLinksLabel}" copyright="${d.legal}" support-label="${d.supportLabel}"><template #logo><span class="hw-portal-footer-wordmark" role="img" aria-label="هوية"></span></template><template #support>${support}</template></PortalFooter>`,
-      angular:`<!-- import { HwPortalFooterComponent } from '@hawiyah/angular'; add to imports; groups = ${groups}; policies = ${policies} -->\n<hw-portal-footer description="${d.description}" [groups]="groups" [legalLinks]="policies" legalLinksLabel="${d.legalLinksLabel}" copyright="${d.legal}" supportLabel="${d.supportLabel}"><span hwFooterBrand class="hw-portal-footer-wordmark" role="img" aria-label="هوية"></span><div hwFooterSupport>${support}</div></hw-portal-footer>`,
+      react:`import { PortalFooter } from '@hawiyah/react';\n\n<PortalFooter brand={<span className="hw-portal-footer-wordmark" role="img" aria-label="هوية" />} description="${d.description}" groups={${groups}} legalLinks={${policies}} legalLinksLabel="${d.legalLinksLabel}" legal="${d.legal}" supportLabel="${d.supportLabel}" externalLabel="${portalTexts(locale).externalLabel}" support={<>${support.replaceAll('class=','className=')}</>} />`,
+      vue:`<!-- import { PortalFooter } from '@hawiyah/vue' -->\n<PortalFooter description="${d.description}" :groups='${groups}' :legal-links='${policies}' legal-links-label="${d.legalLinksLabel}" copyright="${d.legal}" support-label="${d.supportLabel}" external-label="${portalTexts(locale).externalLabel}"><template #brand><span class="hw-portal-footer-wordmark" role="img" aria-label="هوية"></span></template><template #support>${support}</template></PortalFooter>`,
+      angular:`<!-- import { HwPortalFooterComponent } from '@hawiyah/angular'; add to imports; groups = ${groups}; policies = ${policies} -->\n<hw-portal-footer description="${d.description}" [groups]="groups" [legalLinks]="policies" legalLinksLabel="${d.legalLinksLabel}" copyright="${d.legal}" supportLabel="${d.supportLabel}" externalLabel="${portalTexts(locale).externalLabel}"><span hwFooterBrand class="hw-portal-footer-wordmark" role="img" aria-label="هوية"></span><div hwFooterSupport>${support}</div></hw-portal-footer>`,
     }];
   }
   if (id === 'portal-layout') return [{ title:t('Header, page and footer together','الترويسة والصفحة والتذييل معًا'),markup:preview(id).replaceAll('reference-', 'ready-reference-') }];

@@ -95,7 +95,7 @@ scope.signal.addEventListener('abort', () => consent.destroy(), {once:true});`,
   }} />
   <Button variant="secondary" data-review-choice onClick={() => {setChoice(null); setStatus('—');}}>${reopen}</Button>`,
     vueState:'const open = ref(true);',
-    vue: `<CookieConsent label="${title}" ${attrs} accept-label="${accept}" reject-label="${reject}" preferences-label="${prefs}" v-model:open="open"
+    vue: `<CookieConsent title="${title}" ${attrs} accept-label="${accept}" reject-label="${reject}" preferences-label="${prefs}" v-model:open="open"
     @accept="status = '${accepted}'" @reject="status = '${rejected}'" @preferences="status = '${description}'" />
   <Button variant="secondary" data-review-choice @click="open = true; status = '—'">${reopen}</Button>`,
     angularState:'open = true;',
@@ -146,12 +146,13 @@ function markRead(id${typed ? '?: string' : ''}) {
   status.value = '${marked}';
 }
 function dismiss(id${typed ? ': string' : ''}) { items.value = items.value.filter(item => item.id !== id); }`,
-    vue:`<NotificationList label="${label}" :items="items" empty-message="${empty}" :read-label="item => '${mark} — ' + item.title" :dismiss-label="item => '${dismiss} — ' + item.title" @read="markRead" @dismiss="dismiss" />
+    vue:`<NotificationList label="${label}" :items="items" empty-message="${empty}" :get-mark-read-label="item => '${mark} — ' + item.title" :get-dismiss-label="item => '${dismiss} — ' + item.title" @read="markRead" @dismiss="dismiss" />
   <div class="hw-inline"><Button data-mark-all @click="markRead()">${all}</Button><Button variant="secondary" data-clear-list @click="items = []; status = '${cleared}'">${clear}</Button></div>`,
     angularState: `items = ${JSON.stringify(items.map(({read,...item})=>({...item,unread:!read})))};
   markRead() { this.items = this.items.map(item => ({...item, unread:false})); this.status = '${marked}'; }
+  dismissLabel = (item: {title: string}) => '${dismiss} — ' + item.title;
   dismiss(id: string) { this.items = this.items.filter(item => item.id !== id); }`,
-    angular:`<hw-notification-list label="${label}" [items]="items" emptyMessage="${empty}" unreadLabel="${unread}" dismissLabel="${dismiss}" (dismissed)="dismiss($event)" />
+    angular:`<hw-notification-list label="${label}" [items]="items" emptyMessage="${empty}" unreadLabel="${unread}" [getDismissLabel]="dismissLabel" (dismissed)="dismiss($event)" />
   <div class="hw-inline"><button hwButton type="button" data-mark-all (click)="markRead()">${all}</button><button hwButton type="button" variant="secondary" data-clear-list (click)="items = []; status = '${cleared}'">${clear}</button></div>`,
   };
 }

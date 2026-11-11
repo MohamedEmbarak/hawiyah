@@ -16,6 +16,227 @@ APIs in a minor release; read the notes before upgrading.
 - The release script reports when every package was already on npm instead of
   claiming it published them.
 
+### Breaking: the application supplies every text and the locale
+
+The seven packages no longer contain a user-visible string and no longer
+choose a locale. Every text a component places itself (accessible names,
+labels of internal controls, headings, live-region, status, empty and
+validation messages, templated text) is an input that the application
+supplies, under the same name in vanilla, React, Vue and Angular. The rules
+are in CONTRACT.md, "Text and localisation"; each adapter README lists its
+inputs. Applications that relied on the former Arabic or English defaults now
+pass them; the table below lists each former default with the input that
+replaces it.
+
+- **No built-in strings.** Primary content stays children, slots, projected
+  content or authored markup. Strings are named `<thing>Label` or
+  `<thing>Message`; templated text is a function `get<Thing>Label(...)` or
+  `get<Thing>Message(...)` that returns the whole string. No adapter joins two
+  texts with words or punctuation. Vanilla uses authored markup as written;
+  otherwise it reads the controller option of the same name or
+  `data-hw-<kebab-name>` on the controller root (a template such as
+  `data-hw-page-label="… {page}"` for a function input), and the option wins.
+- **Required text.** Text needed in every use is a required prop (React), a
+  required input (Angular) or `required: true` (Vue). Text needed only when a
+  prop, slot, handler or attribute switches a feature on is required under
+  that condition. A missing text renders nothing in its place and warns once
+  in development through `requireText` ("Hawiyah: ..."); production builds
+  stay silent. A constraint whose validation message is missing still blocks
+  submission, and `aria-invalid` does not depend on the message.
+- **No default locale.** Core `formatNumber`, `formatDate` and `sortRows` take
+  a required locale; the `ar-SA` default is removed. These helpers,
+  `getCalendarMonth` and `formatCalendarDate` throw a `TypeError` without a
+  locale. Calendar, DatePicker and DataTable take a required `locale` in all
+  adapters (vanilla: the `locale` option or `data-hw-locale` on the root);
+  the vanilla RangeSlider takes one when it has a `[data-hw-range-output]`
+  element. Without it the component warns and leaves out what Intl would
+  have produced; it does not throw. No adapter reads `lang`,
+  `document.documentElement.lang` or `navigator.language`, and no component
+  writes `lang` or a default `dir`.
+- **Removed core exports.** `getCalendarLabels`, `fileUploadLabels` and
+  `getSiteVerificationLabels` are removed; importing them is a build error.
+  `SiteVerificationOptions` now requires every `SiteVerificationLabels` field
+  and has no `locale`. `FileUploadLabels` gains `getProgressLabel(name)` and
+  `getRemoveLabel(name)`. New core exports: `requireText`, `hasText`,
+  `resetTextWarnings`, `formatTextTemplate`, `getFragmentHref`,
+  `getFragmentId`, `bindFragmentLink` and the types `FragmentLink` and
+  `FragmentLinkOptions`.
+- **Brand as artwork.** PortalHeader, PortalFooter and PortalLayout render
+  brand text only when the application supplies it, so a logo can stand
+  alone: React `brand` accepts a node, Vue has a `brand` slot (the `logo` slot
+  is removed), Angular projects `[hwBrand]` content (`brand` becomes
+  optional), vanilla uses the markup inside `.hw-portal-brand`. The optional
+  `brandLabel` names an artwork-only brand. A brand without a home address is
+  not a link.
+- **Fragment links.** Skip links and ContentNavigation links render
+  `href="#id"` on the server and on the first client render. In the browser
+  core `bindFragmentLink` keeps them on the current document under any
+  `<base href>`, moves focus to the target and does not write the URL
+  fragment; ContentNavigation gains `updateHash` to write it. Vanilla adds
+  `createSkipLink(link)`, registered with `enhance()` for
+  `data-hw="skip-link"`.
+- **Angular ids.** Generated ids come from one `HwIdSource` per application
+  instead of module-level counters, so a server render and its hydration
+  produce the same ids. Explicit id inputs still win. `hw-popover` and
+  `hw-menu` take `panelId` and `hw-tooltip` takes `tooltipId` instead of
+  `id`, so the host no longer repeats the inner element's id. New id inputs:
+  `rangeTooltipId` on `hw-calendar`, `titleId` on `hw-navigation-drawer` and
+  `navigationId` on `hw-portal-layout`. Wrappers no longer leave a native
+  `title`, `role` or `align` attribute on their host element.
+- **Other behaviour.** RatingDisplay has no `label`; `getValueLabel(value,
+  max)` returns the whole text alternative. Carousel slides are named by
+  `getSlideLabel(position, total)` alone; the Vue slide `label` field is
+  removed. The Vue Stat no longer formats numbers and has no `locale`; pass
+  the formatted string. Vanilla Calendar and DatePicker warn instead of
+  throwing without a locale. The Angular FileDropzone `getSelectedMessage` is
+  optional and its status is visible when supplied. React no longer sets
+  `aria-invalid` because a `requiredMessage` is missing.
+- The flat `styles.css` that includes the tokens and the 28 added icons are
+  described under "One flat stylesheet, more icons and style-only fixes"
+  below.
+
+#### Migration
+
+The left column is the former default text or input name; where the adapters
+differed, the variants are listed. "Required" uses the terms of CONTRACT.md.
+The names were checked against the built type declarations of each package.
+
+| Component | Former default or name | Input now | Required |
+|---|---|---|---|
+| Alert | Angular `'Dismiss'` | `closeLabel` | when the alert is dismissible (Angular; React and Vue render no dismiss button) |
+| AppShell | `'انتقل إلى المحتوى'` | `skipLabel` | always |
+| AvatarGroup | Angular `'People'` | `label` | always |
+| AvatarGroup | `` `${count} more people` ``; Vue `remainingLabel`, Angular `overflowLabel` | `getOverflowLabel(count)` | always |
+| Breadcrumb | `'مسار التنقل'` | `label` | always |
+| Calendar | `'ar-SA'` (Angular), the document language (vanilla), a default (React, Vue) | `locale` | always |
+| Calendar | `'التقويم'` / `'Calendar'` | `label` | always |
+| Calendar | `'الشهر السابق'` / `'Previous month'` | `previousLabel` | always |
+| Calendar | `'الشهر التالي'` / `'Next month'` | `nextLabel` | always |
+| Calendar | `'التواريخ الهجرية المدعومة'` / `'Supported Hijri dates'` | `rangeLabel` | when `calendar` is `islamic-umalqura`; always in vanilla |
+| Calendar (vanilla) | `'نظام التقويم'` / `'Calendar system'`; `'ميلادي'` / `'Gregorian'`; `'هجري · أم القرى'` / `'Hijri · Umm al-Qura'` | `calendarSystemLabel`, `gregorianLabel`, `hijriLabel` | always |
+| Calendar (vanilla, Vue) | the Umm al-Qura range sentence | `unsupportedMessage` | always (vanilla); when `calendar` is `islamic-umalqura` (Vue) |
+| Calendar | Intl day name (Angular: a day name joined with a comma) | `getDayLabel(value)` | optional |
+| Calendar (Angular) | module counter | `rangeTooltipId` | optional |
+| Carousel | `'الشريحة السابقة'` | `previousLabel` | always |
+| Carousel | `'الشريحة التالية'` | `nextLabel` | always |
+| Carousel | `'اختيار الشريحة'` | `indicatorsLabel` | when indicators are shown |
+| Carousel | `'n من t'`; Vue `slideMessage`, Angular `slideLabel`; Vue slide `label` | `getSlideLabel(position, total)` | always |
+| Carousel | `'لا توجد شرائح'` / `'No slides'` | `emptyLabel` | always |
+| Carousel | `'عرض شرائح'` / `'carousel'` | `carouselDescription` | optional |
+| Carousel | `'شريحة'` / `'slide'` | `slideDescription` | optional |
+| Chip | `'Remove'` | `removeLabel` | when the chip is removable |
+| Combobox | `'No options found'`; Angular `'No results'` | `emptyMessage` | always |
+| Combobox | `` `${count} results available` ``; vanilla `` `${count} نتيجة` ``; Vue and Angular `resultsMessage` | `getResultsMessage(count)` | always |
+| Combobox | `'Choose an option from the list.'`; Angular `validationMessage`; vanilla `invalidSelectionMessage` | `requiredMessage` | when `required` is set |
+| ContentNavigation | `'في هذه الصفحة'` | `label` | always |
+| ContentNavigation | the controller rewrote link addresses | `updateHash` | optional |
+| CookieConsent | `'Cookie preferences'`; Vue `label` | `title` | always |
+| CookieConsent | `'Accept optional cookies'` | `acceptLabel` | always |
+| CookieConsent | `'Reject optional cookies'` | `rejectLabel` | always |
+| CookieConsent | `'Manage preferences'` | `preferencesLabel` | when a preferences handler is bound |
+| CookieConsent | `'Cookie policy'` | `policyLabel` | when `policyHref` is set (React, Angular) |
+| DataTable | `'ar-SA'` | `locale` | always |
+| DataTable | `'لا توجد سجلات'`; Angular `'لا توجد نتائج'` | `emptyMessage` | always |
+| DataTable | Vue `sortLabel` (`'ترتيب … تصاعديًا'`) | `getSortLabel(column, direction)` | optional |
+| DatePicker | `'ar-SA'` (Angular), the document language (vanilla), a default (React, Vue) | `locale` | always |
+| DatePicker | `'التاريخ'` / `'Date'` | `label` | always |
+| DatePicker | `'اختر التاريخ'` / `'Choose date'`; Angular `dialogTitle` | `calendarLabel` (dialog name) | always |
+| DatePicker | `'فتح التقويم'` / `'Open calendar'`; React `buttonLabel` | `openLabel` | always |
+| DatePicker | `'إغلاق التقويم'` / `'Close calendar'` | `closeLabel` | always |
+| DatePicker | `'الشهر السابق'` / `'Previous month'`, `'الشهر التالي'` / `'Next month'` | `previousLabel`, `nextLabel` | always |
+| DatePicker | `'نظام التقويم'` / `'Calendar system'`; Angular `calendarLabel` | `calendarSystemLabel` | always |
+| DatePicker | `'ميلادي'` / `'Gregorian'`; Vue `gregoryLabel` | `gregorianLabel` | always |
+| DatePicker | `'هجري · أم القرى'` / `'Hijri · Umm al-Qura'` | `hijriLabel` | always |
+| DatePicker | `'التواريخ الهجرية المدعومة'` / `'Supported Hijri dates'` | `rangeLabel` | always |
+| DatePicker | `'أدخل تاريخًا ميلاديًا متاحًا بصيغة YYYY-MM-DD.'` / `'Enter an available Gregorian date in YYYY-MM-DD format.'` | `invalidMessage` | always |
+| DatePicker | the Umm al-Qura range sentence; React `unsupportedCalendarMessage` | `unsupportedMessage` | always |
+| DatePicker | `'هذا التاريخ غير متاح.'` / `'This date is unavailable.'` | `unavailableMessage` | when `isDateDisabled` is given (not in Angular) |
+| DatePicker | `'YYYY-MM-DD'` | `placeholder` | optional |
+| Dialog, Drawer | `'Close'`; Angular `'Close dialog'` | `closeLabel` | always |
+| Feedback | `'Was this page helpful?'` | `label` | always |
+| Feedback | `'Yes'`; Angular `positiveLabel` | `yesLabel` | always |
+| Feedback | `'No'`; Angular `negativeLabel` | `noLabel` | always |
+| Feedback | `'Tell us more (optional)'` | `commentLabel` | always in React; when the comment field is rendered in Vue; not in Angular |
+| Feedback | `'Send feedback'` | `submitLabel` | always in React; when the comment field is rendered in Vue; not in Angular |
+| Feedback | `'Thank you for your feedback.'`; Vue `thanks`, Angular `thanksMessage` | `successMessage` | always |
+| FileDropzone | `dropLabel` used as the input name; Angular optional `label` | `label` (or `aria-label`, `aria-labelledby`, a parent Field) | always |
+| FileDropzone | `'Drop files here or choose files'`; Vue `'Choose files or drop them here'`; Angular `instruction` | `dropLabel` | always |
+| FileDropzone | `` `${count} files selected` ``; Angular `selectedMessage`; vanilla file names joined with `'، '` | `getSelectedMessage(files)` | optional; the status is rendered only when it is supplied |
+| FileDropzone | `'Some files do not match the accepted file types.'` | `getRejectedMessage(rejected)` | when `accept` is set (React) or the vanilla status element exists with `accept` or a maximum size |
+| FileDropzone (vanilla) | `'Use the file chooser to attach documents.'` / `'استخدم اختيار الملفات لإرفاق المستندات.'` | `unsupportedDropMessage` | while the status element exists |
+| FileUploadList | core `fileUploadLabels` (`'جاهز للرفع'`, `'جارٍ الرفع'`, `'اكتمل الرفع'`, `'تعذر الرفع'`, `'إزالة الملف'`) | `labels: FileUploadLabels` with `getProgressLabel(name)` and `getRemoveLabel(name)` | always |
+| Menu, Popover | Angular `'Open'` | `triggerLabel` | where the adapter renders the trigger (Vue Popover, Angular) |
+| Menu, Popover (Angular) | `id` | `panelId` | optional |
+| MobileTopBar | `'رجوع'` | `backLabel` | when a back address or action is given |
+| MultiSelect | `'Search options'` | `searchLabel` | always |
+| MultiSelect | `'No options found'`; Angular `'No options'` | `emptyMessage` | always |
+| MultiSelect | `'Choose at least one option.'`; Angular `validationMessage` | `requiredMessage` | when `required` is set |
+| MultiSelect (vanilla) | `` `${count} options` `` / `` `${count} خيارات` `` | `getResultsMessage(count)` | when a `[data-hw-status]` element exists |
+| MultiSelect (Angular) | `` `${count} selected` ``; `selectedMessage` | `getSelectedMessage(count)` | always |
+| NavigationDrawer | `'التنقل الرئيسي'` | `navigationLabel` | always |
+| NavigationDrawer | `'إغلاق القائمة'` | `closeLabel` | always |
+| NavigationDrawer (Angular) | not settable | `titleId` | optional |
+| NotificationList | `'Notifications'` | `label` | always |
+| NotificationList | `'No notifications'` | `emptyMessage` | always |
+| NotificationList | `'Unread'` | `unreadLabel` | always (React, Angular) |
+| NotificationList | `'Mark as read'`; Vue `readLabel` | `getMarkReadLabel(item)` | when a mark-read handler is bound (React, Vue) |
+| NotificationList | `'Dismiss'`; Vue and Angular `dismissLabel` | `getDismissLabel(item)` | when a dismiss handler is bound (Vue, Angular) |
+| Pagination | `'ترقيم الصفحات'` | `label` | always |
+| Pagination | `'الصفحة السابقة'` | `previousLabel` | always |
+| Pagination | `'الصفحة التالية'` | `nextLabel` | always |
+| Pagination | `'الصفحة ' + page`; Vue and Angular `pageLabel` | `getPageLabel(page)` | always |
+| Pagination | `'الصفحات … إلى …'`; Vue and Angular `gapLabel` | `getGapLabel(start, end)` | always |
+| Pagination | `'الانتقال إلى صفحة'` / `'Go to page'` | `jumpLabel` | always |
+| Pagination | `'انتقال'` / `'Go'` | `goLabel` | always |
+| PasswordField | `'Show password'` / `'إظهار كلمة المرور'` | `showLabel` | always |
+| PasswordField | `'Hide password'` / `'إخفاء كلمة المرور'` | `hideLabel` | always |
+| PasswordField (Vue) | `clearLabel` `'Clear search'` | removed; PasswordField renders no clear button | — |
+| PortalHeader | `'انتقل إلى المحتوى'`; Angular `mainId` default `'main-content'` | `skipLabel` | when `mainId` is set |
+| PortalHeader | `'القائمة'` | `menuLabel` | always |
+| PortalHeader | `'التنقل الرئيسي'`; Vue `navLabel` | `navigationLabel` | always |
+| PortalHeader, PortalFooter, PortalLayout | brand text always printed; Vue `logo` slot | `brand` (node, `brand` slot or `[hwBrand]`), `brandLabel` | `brandLabel` when the brand has no text |
+| PortalFooter | `'روابط التذييل'`; React `linksLabel`, Vue `navLabel` | `navigationLabel` | when links are given |
+| PortalFooter | `'السياسات وإمكانية الوصول'` | `legalLinksLabel` | when legal links are given |
+| PortalFooter | `'المساعدة والتواصل'` | `supportLabel` | when support content is given |
+| PortalFooter | `'يفتح في نافذة جديدة'` | `externalLabel` | always |
+| PortalLayout | `lang="ar"`, `dir="rtl"` | `dir` (no default); `lang` removed | optional |
+| PortalLayout | `'انتقل إلى المحتوى'` | `skipLabel` | always |
+| PortalLayout | `'القائمة'` | `menuLabel` | always |
+| PortalLayout | `'التنقل الرئيسي'` | `navigationLabel` | always |
+| PortalLayout | `'التنقل الثانوي'` | `secondaryLabel` | when secondary navigation is given |
+| PortalLayout | `'مسار التنقل'` | `breadcrumbLabel` | when breadcrumbs are given |
+| PortalLayout | `'روابط التذييل'` | `footerLabel` | when footer links are given |
+| PortalLayout | `'يفتح في نافذة جديدة'` | `externalLabel` (React, Vue: `footerProps.externalLabel`) | always |
+| PortalLayout (Angular) | not settable | `navigationId` | optional |
+| RangeSlider | `'Minimum'` | `lowerLabel` | always |
+| RangeSlider | `'Maximum'` | `upperLabel` | always |
+| RangeSlider (vanilla) | the document language | `locale` | when a `[data-hw-range-output]` element exists |
+| Rating | `'n من t'`; Vue `optionLabel`, Angular `ratingLabel` | `getRatingLabel(value, max)` | always |
+| RatingDisplay | `label` joined with `'n من t'`; Vue and Angular `valueLabel` | `getValueLabel(value, max)`; `label` removed | always |
+| SearchField | `'مسح البحث'` / `'Clear search'` | `clearLabel` | always |
+| SearchField | `'بحث'` | `searchLabel` | when the search button is shown |
+| SearchField | `` `${count} اقتراحات متاحة` ``; `resultsMessage` | `getResultsMessage(count)` | when suggestions are given |
+| SecondaryNav | `'التنقل الثانوي'` | `label` | always |
+| Select | Angular `'اختر خيارًا'` | `placeholder` | optional |
+| ServiceCard | `'View service'`; Vue `'Start service'` | `actionLabel` | when the card renders its own action link |
+| ServiceDetails | `'Requirements'` | `requirementsLabel` | when requirements are given (React, Angular) |
+| SiteVerification | core `getSiteVerificationLabels(locale)` and the `locale` prop | `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel`, `httpsDescription` | always |
+| SiteVerification | as above | `registrationLabel`, `externalLabel` | when `registrationHref` is set (`externalLabel` when the link opens a new window) |
+| Spinner | `'Loading'` | `label` | always, unless the spinner is decorative |
+| Stat (Vue) | `locale` and number formatting | removed; pass the formatted value | — |
+| Stepper | `'التقدم'` | `label` | always |
+| Table | `'لا توجد سجلات'` | `emptyMessage` | when `columns` is given |
+| Tabs | `'المزيد من التبويبات'` / `'More tabs'` | `overflowLabel` | when overflow uses a menu |
+| TagInput | `` `Remove ${tag}` ``; Vue and Angular `removeLabel` | `getRemoveLabel(tag)` | always |
+| TagInput | `'Add at least one tag.'`; Angular `validationMessage` | `requiredMessage` | when `required` is set |
+| TagInput (Angular) | `'Add'` | `addLabel` | always |
+| Timeline | `'Timeline'` | `label` | always |
+| ToastRegion | `'الإشعارات'` / `'Notifications'` | `label` | always |
+| ToastRegion | `'إغلاق الإشعار'`; Vue and Angular `dismissLabel` | `getDismissLabel(message)` | when a message can be dismissed |
+| Tooltip (Angular) | `id` | `tooltipId` | optional |
+| TreeView | `'Expand ' + label`; Vue `expandLabel` | `getExpandLabel(node)` | always (React, Vue) |
+| TreeView | `'Collapse ' + label`; Vue `collapseLabel` | `getCollapseLabel(node)` | always (React, Vue) |
+
 ### Angular server rendering and hydration
 
 Found by server-rendering and hydrating every component of the published

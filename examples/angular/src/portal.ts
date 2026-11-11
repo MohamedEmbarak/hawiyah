@@ -4,7 +4,7 @@ import logo from '../../../brand/assets/hawiyah-wordmark.svg';
 
 @Component({selector: 'app-root', standalone: true, imports: [HwAccordionComponent, HwButtonDirective, HwMobileTopBarComponent, HwNavigationDrawerComponent, HwPortalLayoutComponent, HwSecondaryNavComponent, HwServiceCardComponent], template: `
   <hw-portal-layout brand="هوية" [lang]="english ? 'en' : 'ar'" [dir]="english ? 'ltr' : 'rtl'" [links]="links" [secondaryNavigation]="[links[0]]" mainId="portal-content"
-    [skipLabel]="t('انتقل إلى المحتوى', 'Skip to content')" [menuLabel]="t('القائمة', 'Menu')" [navigationLabel]="t('التنقل الرئيسي', 'Main navigation')" [secondaryLabel]="t('التنقل الثانوي', 'Secondary navigation')" [breadcrumbLabel]="t('مسار التنقل', 'Breadcrumb')" [footerLabel]="t('روابط التذييل', 'Footer links')"
+    [skipLabel]="t('انتقل إلى المحتوى', 'Skip to content')" [menuLabel]="t('القائمة', 'Menu')" [navigationLabel]="t('التنقل الرئيسي', 'Main navigation')" [secondaryLabel]="t('التنقل الثانوي', 'Secondary navigation')" [breadcrumbLabel]="t('مسار التنقل', 'Breadcrumb')" [footerLabel]="t('روابط التذييل', 'Footer links')" [externalLabel]="t('يفتح في نافذة جديدة', 'opens in a new window')"
     [breadcrumbs]="[{ label: t('الرئيسية', 'Home'), href: '/' }, { label: t('الخدمات', 'Services') }]" [footerLinks]="[{ label: t('الخصوصية', 'Privacy'), href: '#privacy' }]">
     <img hwBrand [src]="logo" alt="" width="96" height="40" />
     <button hwPortalActions hwButton variant="ghost" type="button" (click)="english = !english">{{ english ? 'العربية' : 'English' }}</button>

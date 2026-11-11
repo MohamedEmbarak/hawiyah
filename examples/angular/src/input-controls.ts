@@ -11,7 +11,7 @@ import { HwCheckboxComponent, HwSearchFieldComponent, HwPasswordFieldComponent, 
       <hw-search-field name="query" [label]="t('بحث', 'Search')" [clearLabel]="t('مسح البحث', 'Clear search')" [searchLabel]="t('بحث', 'Search')" value="Hawiyah" />
       <hw-password-field name="password" [label]="t('كلمة المرور', 'Password')" [showLabel]="t('إظهار كلمة المرور', 'Show password')" [hideLabel]="t('إخفاء كلمة المرور', 'Hide password')" autocomplete="new-password" />
       <hw-password-field name="text-password" [label]="t('كلمة المرور مع زر نصي', 'Password with text toggle')" toggleVariant="text" [showLabel]="t('إظهار', 'Show')" [hideLabel]="t('إخفاء', 'Hide')" autocomplete="new-password" />
-      <hw-rating name="rating" [label]="t('التقييم', 'Rating')" [value]="3" [ratingLabel]="ratingLabel" />
+      <hw-rating name="rating" [label]="t('التقييم', 'Rating')" [value]="3" [getRatingLabel]="ratingLabel" />
       <hw-slider name="readonly-slider" [label]="t('نطاق للقراءة فقط', 'Read-only range')" [value]="30" [readOnly]="true" />
       <hw-checkbox name="consent" [label]="t('أوافق على الشروط', 'I agree to the terms')" />
       <button class="hw-button" type="reset">{{ t('إعادة ضبط', 'Reset') }}</button>

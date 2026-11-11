@@ -32,7 +32,7 @@ async function mount(adapter: string, readonly = false) {
     app.mount(host); run = async action => { action(); await nextTick(); await nextTick(); }; disposers.push(() => app.unmount());
   } else if (adapter === 'angular') {
     class Host { query = new FormControl('هوية', { nonNullable: true }); readonly = readonly; changed(value: string) { changes.push(value); } search(value: string) { searches.push(value); } }
-    Component({ standalone: true, imports: [ReactiveFormsModule, HwSearchFieldComponent], template: '<form><fieldset><hw-search-field label="بحث" name="query" clearLabel="مسح البحث" required [readOnly]="readonly" [formControl]="query" (valueChange)="changed($event)" (searched)="search($event)" /></fieldset></form>' })(Host);
+    Component({ standalone: true, imports: [ReactiveFormsModule, HwSearchFieldComponent], template: '<form><fieldset><hw-search-field label="بحث" name="query" clearLabel="مسح البحث" searchLabel="بحث" required [readOnly]="readonly" [formControl]="query" (valueChange)="changed($event)" (searched)="search($event)" /></fieldset></form>' })(Host);
     const fixture = TestBed.createComponent(Host); host.append(fixture.nativeElement); fixture.detectChanges();
     run = async action => { action(); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges(); };
     reset = () => fixture.componentInstance.query.reset(); disposers.push(() => fixture.destroy());
@@ -84,7 +84,7 @@ for (const adapter of ['vue', 'angular']) it(`${adapter}: search callbacks ignor
 it('vanilla restores owned markup on destroy and does not erase an edited query', () => {
   const root = document.createElement('div'); root.innerHTML = '<input data-hw-search-input type="search" value="before"><button hidden data-hw-search-clear>Clear</button>';
   const originalButton = root.querySelector('button')!.cloneNode(true);
-  const controller = createSearchField(root); controller.setValue('after'); controller.destroy(); controller.destroy();
+  const controller = createSearchField(root, { clearLabel: 'مسح البحث' }); controller.setValue('after'); controller.destroy(); controller.destroy();
   expect(root.querySelector('button')!.isEqualNode(originalButton)).toBe(true);
   expect(root.querySelector('input')!.id).toBe(''); expect(root.querySelector('input')!.value).toBe('after');
 });

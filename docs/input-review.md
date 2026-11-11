@@ -33,9 +33,9 @@ testing. Rating, date and readonly choice fixes have separate coverage.
 - PIN values use ASCII digits for application/form data while Arabic labels and
   surrounding direction remain supported. This does not change date values or
   calendar conversion.
-- Validation/removal/search strings remain caller-configurable. English adapter
-  fallback strings do not imply that the guide's Arabic default is changed;
-  applications must supply localized copy for their chosen locale.
+- Validation, removal and search strings are inputs the application supplies;
+  the adapters have no fallback strings. A missing validation message still
+  blocks submission and warns in development.
 - File acceptance is not a security boundary and does not replace application
   upload limits or content validation. This change aligns the two client input
   paths without adding upload behavior.

@@ -26,10 +26,14 @@ section navigation as a tab panel switch or another horizontal site navigation.
 
 Items are `{id, label, disabled?, children?}`. IDs identify unique, existing
 sections supplied by the application. The component renders nested semantic
-lists, links and a configurable navigation label. Disabled destinations are
+lists, links and the navigation landmark named by the required `label`. Disabled destinations are
 noninteractive. Heading display and desktop sticky layout are optional.
 
-Normal activation scrolls to the section without changing the URL or history.
+Links render `href="#id"` on the server and on the first client render. In the
+browser core `bindFragmentLink` keeps each address on the current document under
+any `<base href>`; see CONTRACT.md "In-page links". Normal activation scrolls to
+the section without changing the URL or history; the optional `updateHash` writes
+the fragment with `history.replaceState`.
 Keyboard/assistive activation also focuses the target. Non-focusable sections
 temporarily receive `tabindex="-1"`, restored on blur or cleanup. Modified links
 retain browser behavior in applications; guide demos additionally block all

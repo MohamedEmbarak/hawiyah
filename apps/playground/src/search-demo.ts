@@ -28,6 +28,7 @@ export function searchDemoCopy(locale: Locale) {
     suggestions:['إصدار رخصة','إصْدار شهادة','أفراد','افراد','تجديد الرخصة','License renewal','Application status','<img src=x onerror=alert(1)>'],
     terms:[t('License renewal','تجديد الرخصة'),t('Application status','حالة الطلب'),t('Support','الدعم')],
     resultsExpression:locale==='ar'?"count + ' اقتراحات متاحة'":"count + ' suggestions available'",
+    resultsTemplate:locale==='ar'?'{count} اقتراحات متاحة':'{count} suggestions available',
   };
 }
 
@@ -39,7 +40,7 @@ export function searchFieldMarkup(locale: Locale, id: string, name: string, opti
   const d = searchDemoCopy(locale);
   const {label = d.label, value = '', state = '', suggestions = false, autofocus = false} = options;
   const hint = state === 'invalid' ? `${id}-error` : '';
-  return `<div class="hw-field hw-search-field" data-hw="search-field"${suggestions?` data-hw-suggestions="${e(JSON.stringify(d.suggestions))}" data-hw-max-suggestions="8"`:''}><label class="hw-label" for="${id}">${e(label)}</label><div class="hw-search-control"><input id="${id}" class="hw-input" type="search" name="${e(name)}" autocomplete="off" placeholder="${e(d.placeholder)}" value="${e(value)}" data-hw-search-input${autofocus?' autofocus':''}${state==='readonly'?' readonly':state==='disabled'?' disabled':state==='invalid'?' aria-invalid="true"':''}${hint?` aria-describedby="${hint}"`:''}><button type="button" class="hw-button hw-search-clear" data-variant="ghost" data-hw-search-clear aria-label="${e(d.clear)}"></button></div>${state==='invalid'?`<p class="hw-error" id="${id}-error">${e(d.error)}</p>`:''}</div>`;
+  return `<div class="hw-field hw-search-field" data-hw="search-field"${suggestions?` data-hw-suggestions="${e(JSON.stringify(d.suggestions))}" data-hw-max-suggestions="8" data-hw-results-message="${e(d.resultsTemplate)}"`:''}><label class="hw-label" for="${id}">${e(label)}</label><div class="hw-search-control"><input id="${id}" class="hw-input" type="search" name="${e(name)}" autocomplete="off" placeholder="${e(d.placeholder)}" value="${e(value)}" data-hw-search-input${autofocus?' autofocus':''}${state==='readonly'?' readonly':state==='disabled'?' disabled':state==='invalid'?' aria-invalid="true"':''}${hint?` aria-describedby="${hint}"`:''}><button type="button" class="hw-button hw-search-clear" data-variant="ghost" data-hw-search-clear aria-label="${e(d.clear)}"></button></div>${state==='invalid'?`<p class="hw-error" id="${id}-error">${e(d.error)}</p>`:''}</div>`;
 }
 
 export function searchDemoMarkup(locale: Locale,kind: SearchDemoKind='plain',prefix=`ready-search-${kind}`) {
@@ -91,9 +92,9 @@ export function searchProject(framework: ProjectFramework,language: ProjectLangu
   };
   const modal=kinds.includes('modal'),interactive=cases.filter(item=>item.kind!=='states');
   const result=`query.trim() ? ${JSON.stringify(d.resultPrefix)} + query.trim() : ${JSON.stringify(d.empty)}`;
-  const reactField=(key:string,suggest=false,props='')=>`<SearchField label="${d.label}" name="query" value={value${key}} onValueChange={setValue${key}} clearLabel="${d.clear}" searchLabel="${d.submit}" placeholder="${d.placeholder}" showSearchButton={false}${suggest?' suggestions={suggestions} maxSuggestions={8} resultsMessage={resultsMessage}':''} ${props} />`;
-  const vueField=(key:string,suggest=false,props='')=>`<SearchField label="${d.label}" name="query" v-model="value${key}" clear-label="${d.clear}" search-label="${d.submit}" placeholder="${d.placeholder}" :show-search-button="false"${suggest?' :suggestions="suggestions" :max-suggestions="8" :results-message="resultsMessage"':''} ${props} />`;
-  const angularField=(key:string,suggest=false,props='')=>`<hw-search-field label="${d.label}" name="query" [(value)]="value${key}" clearLabel="${d.clear}" searchLabel="${d.submit}" placeholder="${d.placeholder}" [showSearchButton]="false"${suggest?' [suggestions]="suggestions" [maxSuggestions]="8" [resultsMessage]="resultsMessage"':''} ${props} />`;
+  const reactField=(key:string,suggest=false,props='')=>`<SearchField label="${d.label}" name="query" value={value${key}} onValueChange={setValue${key}} clearLabel="${d.clear}" searchLabel="${d.submit}" placeholder="${d.placeholder}" showSearchButton={false}${suggest?' suggestions={suggestions} maxSuggestions={8} getResultsMessage={resultsMessage}':''} ${props} />`;
+  const vueField=(key:string,suggest=false,props='')=>`<SearchField label="${d.label}" name="query" v-model="value${key}" clear-label="${d.clear}" search-label="${d.submit}" placeholder="${d.placeholder}" :show-search-button="false"${suggest?' :suggestions="suggestions" :max-suggestions="8" :get-results-message="resultsMessage"':''} ${props} />`;
+  const angularField=(key:string,suggest=false,props='')=>`<hw-search-field label="${d.label}" name="query" [(value)]="value${key}" clearLabel="${d.clear}" searchLabel="${d.submit}" placeholder="${d.placeholder}" [showSearchButton]="false"${suggest?' [suggestions]="suggestions" [maxSuggestions]="8" [getResultsMessage]="resultsMessage"':''} ${props} />`;
   const submit=(react=false)=>`<button type="submit" ${react?'className':'class'}="hw-button hw-search-submit" ${react?'aria-label':'aria-label'}="${d.submit}"><span ${react?'className':'class'}="hw-search-submit-icon" aria-hidden="true"></span></button>`;
   const reactForm=(key:string,suggest=false,props='')=>`${suggest?`<p className="hw-hint">{${JSON.stringify(d.hint)}}</p>`:''}<form className="hw-search-form" data-search-demo-form onSubmit={event => {event.preventDefault(); setStatus${key}(result(value${key}));}}>${reactField(key,suggest,props)}${submit(true)}</form>`;
   const vueForm=(key:string,suggest=false,props='')=>`${suggest?`<p class="hw-hint">${e(d.hint)}</p>`:''}<form class="hw-search-form" data-search-demo-form @submit.prevent="status${key} = result(value${key})">${vueField(key,suggest,props)}${submit()}</form>`;

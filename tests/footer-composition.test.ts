@@ -10,6 +10,8 @@ import {portalFooterMarkup} from '../apps/playground/src/portal-footer-demo';
 const groups=[{title:'Explore',links:[{label:'Services',href:'/services'},{label:'Partner',href:'https://example.test',external:true}]},{title:'Empty',links:[]}];
 const legacy=[{label:'Contact',href:'/contact'}];
 const legal=[{label:'Privacy',href:'/privacy'}];
+// The application's names for the footer regions (formerly built-in Arabic defaults).
+const names={navigationLabel:'روابط التذييل',legalLinksLabel:'السياسات وإمكانية الوصول',supportLabel:'المساعدة والتواصل'};
 function inspect(html:string) {
   const root=document.createElement('div');root.innerHTML=html;
   expect(root.querySelectorAll('footer')).toHaveLength(1);
@@ -27,12 +29,15 @@ function inspect(html:string) {
   expect(root.querySelector('.hw-portal-footer-extra')?.textContent).toBe('Legacy content');
   expect(root.querySelector('.hw-portal-footer-partners img')?.getAttribute('alt')).toBe('Example partner');
   expect(root.querySelectorAll('[id]')).toHaveLength(0);
+  expect(root.querySelector('nav[aria-label="روابط التذييل"] a[href="/contact"]')).not.toBeNull();
+  expect(root.querySelector('nav[aria-label="السياسات وإمكانية الوصول"] a[href="/privacy"]')).not.toBeNull();
+  expect(root.textContent).toContain('المساعدة والتواصل');
 }
 it('React footer preserves legacy content while server-rendering named groups, support and legal links',()=>{
-  inspect(renderReact(r(ReactFooter,{brand:r('span',null,'هوية'),description:'Example',links:legacy,groups,legalLinks:legal,legal:'2026',externalLabel:'New window',support:r('button',{type:'button'},'Help'),partners:r('img',{src:'/example.svg',alt:'Example partner'})},'Legacy content')));
+  inspect(renderReact(r(ReactFooter,{...names,brand:r('span',null,'هوية'),description:'Example',links:legacy,groups,legalLinks:legal,legal:'2026',externalLabel:'New window',support:r('button',{type:'button'},'Help'),partners:r('img',{src:'/example.svg',alt:'Example partner'})},'Legacy content')));
 });
 it('Vue footer preserves legacy content and slots with the same grouped navigation semantics',async()=>{
-  inspect(await renderVue(createSSRApp({render:()=>h(VueFooter,{brand:'هوية',description:'Example',links:legacy,groups,legalLinks:legal,copyright:'2026',externalLabel:'New window'}, {default:()=> 'Legacy content',support:()=>h('button',{type:'button'},'Help'),partners:()=>h('img',{src:'/example.svg',alt:'Example partner'})})})));
+  inspect(await renderVue(createSSRApp({render:()=>h(VueFooter,{...names,brand:'هوية',description:'Example',links:legacy,groups,legalLinks:legal,copyright:'2026',externalLabel:'New window'}, {default:()=> 'Legacy content',support:()=>h('button',{type:'button'},'Help'),partners:()=>h('img',{src:'/example.svg',alt:'Example partner'})})})));
 });
 it.each(['ar','en'] as const)('vanilla %s footer has complete groups, actions and policies with unique instance labels',locale=>{
   const root=document.createElement('div');root.innerHTML=portalFooterMarkup(locale,'one')+portalFooterMarkup(locale,'two');

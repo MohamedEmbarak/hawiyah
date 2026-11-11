@@ -77,7 +77,7 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
 </article>`,
     apiDescriptions: [
       'صف خدمة واحدة. تعرض خصائص title في الأطر عنوان h3؛ ويمكن في HTML المباشر اختيار مستوى العنوان المناسب.',
-      'وجهة الرابط ونص الإجراء المترجم. يتولى التطبيق التنقل وتحميل المسار.',
+      'وجهة الرابط ونص الإجراء؛ actionLabel مطلوب عندما تعرض البطاقة رابط الإجراء بنفسها. يتولى التطبيق التنقل وتحميل المسار.',
       'يضيف featured إبرازًا بصريًا؛ ويقلّل compact التباعد. استخدم سمة data في الأطر التي تمرّر السمات ولا توفّر خاصية مخصّصة لهذا التنويع.',
       'يستخدم React أزواج term وdescription. وتكون metadata في Vue مصفوفة نصوص؛ بينما يوفّر Angular النصين duration وfee.',
     ],
@@ -96,8 +96,8 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
   <footer><a class="hw-button" href="./apply/license">بدء التجديد</a></footer>
 </article>`,
     apiDescriptions: [
-      'عنوان الخدمة ومقدمة موجزة. ترجم كليهما مع تسميات قسم المتطلبات.',
-      'معلومات الخدمة في أزواج، مع قائمة متطلبات اختيارية. القيمة الافتراضية لـ requirementsLabel بالإنجليزية، لذا مرّر ترجمتها.',
+      'عنوان الخدمة ومقدمة موجزة، يقدّمهما التطبيق مثل كل النصوص الأخرى.',
+      'معلومات الخدمة في أزواج، مع قائمة متطلبات اختيارية؛ requirementsLabel مطلوب عند تمرير المتطلبات.',
       'تختلف أسماء خصائص معلومات الخدمة بين الأطر. يقبل Angular أيضًا requirements وrequirementsLabel.',
       'ضع إجراء بدء الرحلة بعد المعلومات التي يحتاجها المستخدم لاتخاذ القرار.',
     ],
@@ -123,13 +123,13 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
       'استخدم رابطًا للصفحة الرئيسية له اسم ميسّر. يسمّي React الرابط brandHref؛ ويستخدم Vue وAngular الاسم homeHref.',
       'يسمّي React مجموعة الروابط navigation؛ ويستخدم Vue وAngular الاسم links. يحصل الرابط الحالي على aria-current="page".',
       'يثبّت الترويسة عند بداية الصفحة. تأكد من أنها لا تحجب العناصر المركّز عليها أو الوجهات الداخلية للروابط.',
-      'تدعم الأطر الأربعة هذه الخصائص. يُنشأ معرّف التنقل تلقائيًا، ويربط mainId رابط التجاوز بهدف محتوى قابل للتركيز. التسميات الافتراضية عربية.',
-      'الخيارات: onOpenChange(open). يعيد المتحكّم open وshow() وclose(restoreFocus?) وdestroy(). يكتشف enhance() ترويسة data-hw="portal-header" وعلامتي data-hw-portal-toggle وdata-hw-portal-navigation.',
+      'تدعم الأطر الأربعة هذه الخصائص. يُنشأ معرّف التنقل تلقائيًا، ويربط mainId رابط التجاوز بهدف محتوى قابل للتركيز. menuLabel وnavigationLabel مطلوبان، وskipLabel مطلوب عند ضبط mainId؛ وتقرأ نسخة Vanilla نص زر القائمة وaria-label التنقل المكتوبين، ثم data-hw-menu-label وdata-hw-navigation-label.',
+      'الخيارات: onOpenChange(open) وmenuLabel وnavigationLabel وbrandLabel. يعيد المتحكّم open وshow() وclose(restoreFocus?) وdestroy(). يكتشف enhance() ترويسة data-hw="portal-header" وعلامتي data-hw-portal-toggle وdata-hw-portal-navigation.',
     ],
     lifecycle: ['اعرض التنقل من حالة المسار وحدّث aria-current. يملك كل إطار عناصره وحالة إظهار التنقل.', 'في Vanilla استدعِ enhance() أو createPortalHeader() بعد التركيب. لا تُخفِ التنقل في HTML الأولي كي تبقى الروابط متاحة دون JavaScript.', 'يغلق Escape التنقل ويعيد التركيز إلى الزر. يغلقه أيضًا اختيار رابط أو الضغط خارج الترويسة أو مغادرة التركيز. يبقى Tab طبيعيًا.', 'قبل استبدال HTML حرّر enhance() أو استدعِ destroy() لإزالة المستمعين واستعادة السمات الأصلية. تنهي الأطر مستمعيها تلقائيًا.'],
-    accessibility: ['سمِّ التنقل ووفّر رابط تجاوز إلى هدف محتوى يحمل tabindex="-1".', 'يحتاج رابط الهوية إلى اسم حتى عندما يحتوي على صورة شعار مرسومة بالمسارات فقط.', 'يحدّث الزر aria-expanded وaria-controls. تبقى العناصر روابط تنقل عادية دون أدوار menu أو حجز التركيز.'],
+    accessibility: ['سمِّ التنقل ووفّر رابط تجاوز إلى هدف محتوى يحمل tabindex="-1".', 'يحتاج رابط الهوية إلى اسم حتى عندما يحتوي على صورة شعار مرسومة بالمسارات فقط: قدّم brandLabel (data-hw-brand-label في Vanilla) أو نصًا بديلًا للصورة، وإلا ظهر تحذير في وضع التطوير يذكر brandLabel.', 'يحدّث الزر aria-expanded وaria-controls. تبقى العناصر روابط تنقل عادية دون أدوار menu أو حجز التركيز.'],
     variants: ['تنقل قابل للطي تحت 48rem', 'تنقل سطح المكتب', 'ترويسة ثابتة عبر data-variant'],
-    frameworkNotes: 'يستخدم React الخصائص brand وbrandHref وnavigation وnavigationLabel وactions وnotice. يستخدم Vue الخصائص brand وhomeHref وlinks وnavLabel مع فتحتي logo وactions. يستخدم Angular الخصائص brand وhomeHref وlinks وnavigationLabel مع إسقاط [hwBrand] والإجراءات. تدعم الأطر menuLabel وnavigationId وmainId وskipLabel. وفّر معرّفات ثابتة صريحة لجذور Angular المسلسلة بصورة مستقلة.',
+    frameworkNotes: 'يستخدم React الخصائص brand وbrandHref وnavigation وnavigationLabel وactions وnotice. يستخدم Vue الخصائص brand وhomeHref وlinks وnavigationLabel مع فتحتي logo وactions. يستخدم Angular الخصائص brand وhomeHref وlinks وnavigationLabel مع إسقاط [hwBrand] والإجراءات. تدعم الأطر menuLabel وnavigationId وmainId وskipLabel وbrandLabel الاختياري؛ ولا يُعرض نص العلامة إلا إذا قدّمه التطبيق. وفّر معرّفات ثابتة صريحة لجذور Angular المسلسلة بصورة مستقلة.',
     limitations: ['حد 48rem قرار تكييف في هوية وليس حدًا مؤكدًا من Figma.', 'لا تنفّذ الترويسة المصادقة أو تغيير مسارات اللغة أو إدارة حالة الحساب.'],
   }),
   'secondary-nav': localize('secondary-nav', {
@@ -140,12 +140,12 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
 </ul></nav>`,
     apiDescriptions: [
       'يقبل SecondaryNav في React وVue وhw-secondary-nav في Angular الخاصية items. يقبل عنوان React عقدة ReactNode، وتكون العناوين في Vue وAngular نصوصًا.',
-      'يسمّي معلم التنقل وتكون قيمته الافتراضية عربية. ميّزه عن التنقل الرئيسي وروابط التذييل.',
+      'اسم مطلوب لمعلم التنقل. ميّزه عن التنقل الرئيسي وروابط التذييل.',
       'اختر variant=mobile لروابط متساوية العرض بأيقونة فوق النص وخط علوي للصفحة الحالية وانتقال لوني 300 مللي ثانية. مرّر اسم الأيقونة الزخرفية في icon؛ تبقى الروابط عادية.',
       'تستخدم Vanilla عنصر nav وقائمة روابط. تحدد aria-current="page" الوجهة الحالية، ولا يلزم متحكّم JavaScript.',
     ],
     lifecycle: ['اعرض الروابط بحسب تسلسل الصفحات الحالي.', 'حدّث current عند تغيّر المسار؛ يبقى التنقل وتحميل البيانات من مسؤوليات التطبيق.', 'لا يلزم تحسين أو اشتراك أو إنهاء خاص.'],
-    accessibility: ['استخدم الروابط الأصلية وترتيب Tab؛ لا تضف أدوار tablist أو menu.', 'تعرض الحالة الحالية خطًا ووزنًا مختلفًا إلى جانب اللون. يبقى التركيز مرئيًا في الألوان الإجبارية.', 'ترجم تسمية المعلم مستقلة عن اتجاه النص.'],
+    accessibility: ['استخدم الروابط الأصلية وترتيب Tab؛ لا تضف أدوار tablist أو menu.', 'تعرض الحالة الحالية خطًا ووزنًا مختلفًا إلى جانب اللون. يبقى التركيز مرئيًا في الألوان الإجبارية.', 'قدّم تسمية المعلم بلغة الصفحة مستقلة عن اتجاه النص.'],
     variants: ['روابط قابلة للالتفاف', 'رابط الصفحة الحالية', 'شريط أيقونات الجوال (variant=mobile)'],
     frameworkNotes: 'استورد SecondaryNav من @hawiyah/react أو @hawiyah/vue، أو HwSecondaryNavComponent من @hawiyah/angular بمحدّد hw-secondary-nav. تستخدم جميعها items وlabel. يمرّر React وVue سمات nav الأصلية، وتضبط مدخلات Angular عنصر nav الداخلي.',
     limitations: ['هذا تنقل بين الصفحات، وليس محرّك توجيه أو متحكّم تبويبات محتوى.'],
@@ -154,14 +154,14 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     summary: 'ابدأ بوابة خدمات بترويسة متجاوبة وتنقل ثانوي ومسار تنقل وحاوية محتوى رئيسي وتذييل مركّبة معًا.',
     usage: layoutPlatformGuides['portal-layout']!.usage,
     apiDescriptions: [
-      'الهوية مطلوبة. القيمة الافتراضية للغة ar وللاتجاه rtl بصورة مستقلة. يربط mainId رابط التجاوز بالمحتوى القابل للتركيز؛ يجب أن تكون المعرّفات الصريحة فريدة.',
-      'تضبط headerProps التنقل وbrandHref والإجراءات والإشعار وتسميات التنقل والقائمة. تضبط footerProps الروابط وlinksLabel وlegal وخصائص التذييل الأخرى. تسمّي skipLabel رابط التجاوز.',
+      'محتوى العلامة مطلوب، وتسمّي brandLabel العلامة المرسومة دون نص. لا تُعرض lang وdir إلا إذا قدّمهما التطبيق. يربط mainId رابط التجاوز بالمحتوى القابل للتركيز؛ يجب أن تكون المعرّفات الصريحة فريدة.',
+      'تضبط headerProps التنقل وbrandHref والإجراءات والإشعار. تضبط footerProps الروابط وnavigationLabel وlegalLinksLabel وsupportLabel وexternalLabel وخصائص التذييل الأخرى. وskipLabel وmenuLabel وnavigationLabel في المستوى الأعلى مطلوبة.',
       'يعرض هذان الإطاران homeHref وlinks وfooterLinks وcopyright وskipLabel وmenuLabel وnavigationLabel وfooterLabel مباشرة. فتحات Vue: ‏logo/actions/footer/default. إسقاط Angular: ‏[hwBrand]/[hwPortalActions]/[hwPortalFooter]/default.',
-      'مجموعتان اختياريتان للتنقل ومسار الصفحة. تتجاوز secondaryLabel وbreadcrumbLabel التسميات العربية. تستخدم عناصر المسار label وhref؛ ويقبل React وVue أيضًا current.',
+      'مجموعتان اختياريتان للتنقل ومسار الصفحة. secondaryLabel وbreadcrumbLabel مطلوبتان عند تمرير مجموعتيهما. تستخدم عناصر المسار label وhref؛ ويقبل React وVue أيضًا current.',
       'ركّب الأصناف المشتركة مع معلم main واحد، وحسّن الترويسة المحددة فقط. يستبدل المعرض المضمّن main بعنصر section لتجنب تداخل معالم الصفحات.',
     ],
     lifecycle: ['اعرض هيكلًا واحدًا حول محتوى التطبيق؛ يوفّر التطبيق عنوان الصفحة والمسارات والبيانات.', 'حسّن ترويسة Vanilla بعد التركيب وحرّرها قبل الاستبدال. يملك كل إطار عناصره وتنظيف أحداثه.', 'حدّث الروابط الحالية ومسار الصفحة والعنوان مع تغيّر المسار. يبقى تركيز الموجّه وdocument.title من مسؤوليات التطبيق.'],
-    accessibility: ['هدف تجاوز التنقل قابل للتركيز برمجيًا. احتفظ بمعلم main واحد في المستند.', 'سمِّ التنقل الرئيسي والثانوي ومسار الصفحة والتذييل بأسماء متميزة.', 'للإنجليزية اضبط lang="en" وdir="ltr" وترجم المحتوى والتسميات الميسّرة كلها. يمكن ضبط الاتجاه مستقلًا عن اللغة.'],
+    accessibility: ['هدف تجاوز التنقل قابل للتركيز برمجيًا. احتفظ بمعلم main واحد في المستند.', 'سمِّ التنقل الرئيسي والثانوي ومسار الصفحة والتذييل بأسماء متميزة.', 'اضبط lang وdir للغة الحالية، وقدّم المحتوى والتسميات الميسّرة كلها بتلك اللغة. يمكن ضبط الاتجاه مستقلًا عن اللغة.'],
     variants: ['ترويسة وتذييل', 'تنقل ثانوي ومسار صفحة', 'عربي RTL أو إنجليزي LTR'],
     frameworkNotes: 'يصدّر React وVue المكوّن PortalLayout. يصدّر Angular المكوّن HwPortalLayoutComponent بمحدّد hw-portal-layout. راجع PORTAL.md في الحزمة وشغّل المثال الأصلي مع ?preview=portal. وفّر mainId ومعرّفات التنقل الصريحة عند تسلسل جذور Angular بصورة مستقلة؛ لا يُدّعى تحقق SSR أو hydration في Angular.',
     limitations: ['حد طي التنقل عند 48rem قرار في هوية. يستخدم الهيكل رموز السمة الدلالية ولا يضيف حركة.', 'لا يتضمن محرّك توجيه أو مصادقة أو حقوقًا لأصول حكومية أو شهادة اعتماد من الهيئة.'],
@@ -176,30 +176,31 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
     apiDescriptions: [
       'هوية وسياق اختياريان؛ تجنّب تكرار قائمة تنقل طويلة أو نموذج الطلب داخل التذييل.',
       'روابط مساندة عادية. استخدم وجهات فعلية بدل روابط سياسات مؤقتة في المنتج المنشور.',
-      'تسمّي منطقة التنقل الخصائص linksLabel في React، وnavLabel في Vue، وnavigationLabel في Angular.',
+      'تسمّي navigationLabel منطقة تنقل التذييل في كل المحوّلات، وهي مطلوبة عند تمرير روابط.',
       'يوفّر React الخاصية legal؛ ويوفّر Vue وAngular الخاصية copyright. أضف المحتوى القانوني الآخر عبر المحتوى العادي أو الإسقاط.',
     ],
     lifecycle: ['اعرض التذييل بعد محتوى الصفحة. تستخدم روابطه تنقل المتصفح أو الموجّه المعتاد.', 'حدّث روابط السياسات والدعم من إعدادات المنصة؛ فلا يملك المكوّن حالة اختيار.', 'لا يحتاج محتوى التذييل الثابت إلى تحسين بجافاسكربت أو تنظيف.'],
     accessibility: ['استخدم footer ومنطقة nav مسمّاة، واجعل تسميتها مختلفة عن التنقل الرئيسي.', 'اختر نصوص روابط تصف السياسة أو الوجهة وتظل واضحة في وضع التباين العالي.'],
     variants: ['هوية وروابط', 'معلومات قانونية أو دعم إضافية'],
-    frameworkNotes: 'تقبل الأطر groups بعنوان وروابط وlegalLinks للسياسات. يدعم React حقول support وpartners، وVue فتحات logo/support/partners، وAngular إسقاط hwFooterBrand/hwFooterSupport/hwFooterPartners. تظل الواجهات السابقة مدعومة. يقبل PortalFooter في React الخصائص brand وdescription وlinks وlinksLabel وlegal. ويقبل Vue الخصائص brand وcopyright وlinks وnavLabel مع محتوى الفتحة الافتراضية. يوفّر hw-portal-footer في Angular الخصائص brand وlinks وnavigationLabel وcopyright.',
+    frameworkNotes: 'تقبل الأطر groups بعنوان وروابط وlegalLinks للسياسات. يدعم React حقول support وpartners، وVue فتحات logo/support/partners، وAngular إسقاط hwFooterBrand/hwFooterSupport/hwFooterPartners. تظل الروابط المسطحة والأوصاف وlegal/copyright والمحتوى الافتراضي مدعومة. تقبل الروابط الخارجية external=true وتتطلب externalLabel ميسّرًا. legalLinksLabel وsupportLabel مطلوبتان عند تمرير روابط قانونية أو محتوى دعم، ولا يُعرض قسم الدعم إلا مع محتواه. راجع docs/nic-footer.md.',
   }),
   feedback: localize('feedback', {
     summary: 'اجمع اختيارًا صريحًا حول فائدة الصفحة، واربطه بمسار الملاحظات الذي يديره التطبيق.',
-    usage: `<div class="hw-feedback" data-hw="feedback" role="group" aria-label="هل كانت هذه الصفحة مفيدة؟" lang="ar" dir="rtl">
+    usage: `<div class="hw-feedback" data-hw="feedback" role="group" aria-label="هل كانت هذه الصفحة مفيدة؟" lang="ar" dir="rtl"
+  data-hw-success-message="شكرًا لملاحظاتك.">
   <p>هل كانت هذه الصفحة مفيدة؟</p>
   <div class="hw-inline"><button class="hw-button" type="button" data-hw-value="yes" aria-pressed="false">نعم</button><button class="hw-button" type="button" data-hw-value="no" aria-pressed="false">لا</button></div>
   <input type="hidden" data-hw-feedback-value name="helpful">
   <span data-hw-feedback-status role="status"></span>
 </div>`,
     apiDescriptions: [
-      'الخيارات: value وonValueChange(value) وgetStatusMessage(value). يوفّر المتحكّم الناتج value وselect(value) وdestroy().',
+      'الخيارات: value وonValueChange(value) وsuccessMessage (مطلوبة؛ data-hw-success-message) وgetStatusMessage(value) الاختيارية التي تحل محلها لإجابة بعينها. يوفّر المتحكّم الناتج value وselect(value) وdestroy().',
       'قيم ثابتة للأزرار، وعادةً yes وno. يحصل الزر المحدّد على aria-pressed="true" وتنتقل قيمته إلى الحقل المخفي الاختياري.',
       'حدث يتصاعد عند تغيّر الاختيار. لا يصدر اختيار القيمة نفسها مرة أخرى حدثًا جديدًا لتغيير القيمة.',
       'يمنع تغيير الاختيار؛ ويُحترم أيضًا disabled الأصلي في كل زر.',
     ],
     lifecycle: ['استدعِ enhance() بعد تركيب HTML الخاص بوصفة Vanilla، أو أنشئ متحكّم createFeedback() تديره مباشرة.', 'يحدّث الاختيار حالة الأزرار والحقل المخفي ورسالة الحالة الهادئة. وتعيد إعادة ضبط النموذج الاختيار الأولي.', 'قبل استبدال العناصر، حرّر enhance() أو استدعِ controller.destroy()؛ فتُستعاد السمات الأصلية وقيمة الحقل ورسالة الحالة.', 'أرسل الملاحظات إلى خادم التطبيق في دالة الاستدعاء. ظهور الشكر وحده لا يعني أن الخادم حفظ البيانات.'],
-    accessibility: ['ضع سؤالًا مرئيًا واسمًا ميسّرًا لمجموعة الاختيارات، واستخدم أزرارًا حقيقية أو عناصر اختيار مفرد أصلية.', 'اعرض رسالة التأكيد في منطقة حالة هادئة وترجم نصها.'],
+    accessibility: ['ضع سؤالًا مرئيًا واسمًا ميسّرًا لمجموعة الاختيارات، واستخدم أزرارًا حقيقية أو عناصر اختيار مفرد أصلية.', 'اعرض رسالة التأكيد في منطقة حالة هادئة؛ وتقدّم successMessage نصها.'],
     variants: ['نص فقط (افتراضي)', 'أيقونة مع النص', 'أيقونة فقط مع اسم ميسّر', 'اختيار وتعليق في React أو Vue'],
     frameworkNotes: 'تدعم الأطر choiceVariant بالقيم text وicon-text وicon؛ وفي Vanilla استخدم data-choice-variant مع hw-feedback-actions وhw-feedback-icon وhw-feedback-label. احتفظ بتسميات نعم ولا للأسماء الميسّرة. تختلف الواجهات: قيمة Feedback في React هي {helpful:"yes"|"no"|"",comment:string} مع onValueChange وonFeedback. قيمة v-model في Vue نص، ويصدر submit كائنًا {value,comment}. أما [(value)] في Angular فهي boolean|null، ويصدر valueChange؛ ولا يتضمن المكوّن الأساسي حقل تعليق.',
     limitations: ['لا يتضمن المكوّن إرسالًا شبكيًا أو تحليلات أو مراجعة للمحتوى. تأكيد الإرسال في React وVue حالة محلية للواجهة.'],
@@ -233,12 +234,12 @@ export const arabicLayoutPlatformGuides: Record<string, GuideInput> = {
 </section>`,
     apiDescriptions: [
       'يستخدم React وVue الحقل read؛ ويستخدم Angular الحقل unread. وفّر عنوانًا ووصفًا اختياريًا ووجهة فعلية عندما يكون التنقل متاحًا.',
-      'سمِّ المجموعة واشرح حالتها الفارغة من دون الإيحاء بحدوث خطأ في التحميل.',
+      'مطلوبان. سمِّ المجموعة واشرح حالتها الفارغة من دون الإيحاء بحدوث خطأ في التحميل.',
       'يقبل تنسيق Vanilla أيضًا data-unread="true" أو data-read="false". أضف نصًا يدل على أن الإشعار غير مقروء.',
       'يحدّث التطبيق مجموعة العناصر بعد الإجراء. لا تزامن القائمة نفسها مع خدمة إشعارات.',
     ],
     lifecycle: ['اعرض مجموعة الإشعارات مستخدمًا معرّفات ثابتة عبر التحديثات.', 'اجلب البيانات أو اشترك في مصدرها خارج المكوّن، وطبّق القراءة أو الحذف على حالة التطبيق.', 'حافظ على التركيز عند إزالة عنصر. ألغِ الاستقصاء الدوري أو اتصالات المقابس التي أنشأها التطبيق عند إنهاء العرض؛ فلا تملك هذه القائمة الثابتة متحكّم تحسين في Vanilla.'],
-    accessibility: ['وضّح عدم القراءة بالنص إلى جانب لون الخلفية.', 'استخدم time مع datetime قابل للمعالجة عند معرفة الوقت الفعلي، وترجم النص الظاهر للمستخدم.', 'تجنّب جعل صندوق إشعارات يتغيّر باستمرار منطقة إعلان عاجلة؛ وأعلن وصول الإشعارات المهمة بصورة منفصلة.'],
+    accessibility: ['وضّح عدم القراءة بالنص إلى جانب لون الخلفية.', 'استخدم time مع datetime قابل للمعالجة عند معرفة الوقت الفعلي، وقدّم النص الظاهر للمستخدم نصًا.', 'تجنّب جعل صندوق إشعارات يتغيّر باستمرار منطقة إعلان عاجلة؛ وأعلن وصول الإشعارات المهمة بصورة منفصلة.'],
     variants: ['عناصر مقروءة وغير مقروءة', 'حالة فارغة', 'إجراءات يملكها التطبيق'],
     frameworkNotes: 'تستخدم عناصر React الحقول dateTime وdateLabel وread مع onMarkRead(id). ويستخدم Vue الحقول date وdateLabel وread مع الحدثين read(id) وdismiss(id). وتستخدم عناصر Angular الحقلين time وunread؛ ويطلب الحدث dismissed من المكوّن الأب إزالة العنصر.',
     limitations: ['لا يوفّر المكوّن خدمة دفع إشعارات أو حفظ عدد غير المقروء أو اشتراكًا في الخلفية.'],

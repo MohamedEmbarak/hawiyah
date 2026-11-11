@@ -60,7 +60,9 @@ export function choiceInputProject(id: ChoiceInputId, framework: ProjectFramewor
     ${options.map(o => `<label class="hw-choice" data-hw-option><input type="checkbox" class="hw-checkbox" name="${name}" value="${o.value}"${o.value === 'riyadh' ? ' checked' : ''}${o.disabled ? ' disabled' : ''}>${o.label}</label>`).join('\n    ')}
     <span class="hw-sr-only" role="status" data-hw-status></span>${hints}</fieldset>`,
     };
-    const config = combo ? `, { getResultsMessage: count => count + ' ${results}', invalidSelectionMessage: '${required}' }` : '';
+    const config = combo ? `, { getResultsMessage: count => count + ' ${results}', requiredMessage: '${required}' }`
+      : tags ? `, { getRemoveLabel: tag => '${remove} ' + tag, requiredMessage: '${required}' }`
+      : pin ? '' : `, { getResultsMessage: count => count + ' ${results}', requiredMessage: '${required}' }`;
     const html = `<!doctype html>
 <html lang="${locale}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${label}</title></head>
 <body><form class="demo" ${attrs}>
@@ -123,7 +125,7 @@ export default function App() {
     return {names:{html:`App.${jsx}`, css:'style.css', js:`main.${jsx}`}, files:{html,css,js}, entry:`main.${jsx}`, host:'<div id="app"></div>'};
   }
   if (framework === 'vue') {
-    const props = combo ? `:options="offices" empty-message="${empty}" :results-message="count => count + ' ${results}'" required-message="${required}"` : pin ? ':length="4"' : tags ? `:remove-label="tag => '${remove} ' + tag" required-message="${required}"` : `:options="offices" search-label="${search}" empty-message="${empty}" required-message="${required}"`;
+    const props = combo ? `:options="offices" empty-message="${empty}" :get-results-message="count => count + ' ${results}'" required-message="${required}"` : pin ? ':length="4"' : tags ? `:get-remove-label="tag => '${remove} ' + tag" required-message="${required}"` : `:options="offices" search-label="${search}" empty-message="${empty}" required-message="${required}"`;
     const html = `<script setup${typed ? ' lang="ts"' : ''}>
 import { ref } from 'vue';
 import { ${component} } from '@hawiyah/vue';
@@ -153,9 +155,10 @@ function reset() { value.value = initial; locked.value = false; submitted.value 
     const js = "import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n";
     return {names:{html:'App.vue',css:'style.css',js:`main.${ext}`}, files:{html,css,js}, entry:`main.${ext}`, host:'<div id="app"></div>'};
   }
-  const props = combo ? `[options]="offices" emptyMessage="${empty}" [resultsMessage]="resultsMessage" validationMessage="${required}"` : pin ? '[length]="4"' : tags ? `addLabel="${add}" removeLabel="${remove}" validationMessage="${required}"` : `[options]="offices" searchLabel="${search}" emptyMessage="${empty}" [selectedMessage]="selectedMessage" validationMessage="${required}"`;
+  const props = combo ? `[options]="offices" emptyMessage="${empty}" [getResultsMessage]="resultsMessage" requiredMessage="${required}"` : pin ? '[length]="4"' : tags ? `addLabel="${add}" [getRemoveLabel]="removeLabel" requiredMessage="${required}"` : `[options]="offices" searchLabel="${search}" emptyMessage="${empty}" [getSelectedMessage]="selectedMessage" requiredMessage="${required}"`;
   const members = combo ? `
-  resultsMessage = (count: number) => count + ' ${results}';` : id === 'multi-select' ? `
+  resultsMessage = (count: number) => count + ' ${results}';` : tags ? `
+  removeLabel = (tag: string) => '${remove} ' + tag;` : id === 'multi-select' ? `
   selectedMessage = (count: number) => count + ' ${selected}';` : '';
   const html = `import { Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';

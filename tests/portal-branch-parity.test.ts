@@ -7,8 +7,10 @@ import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createApp, createSSRApp, h, nextTick } from 'vue';
 import { renderToString } from 'vue/server-renderer';
-import { afterEach, beforeAll, expect, it } from 'vitest';
+import { afterEach, beforeAll, expect, it, vi } from 'vitest';
 import { PortalHeader as ReactHeader } from '../packages/react/src/expanded-content';
+import { PortalLayout as ReactLayout } from '../packages/react/src/portal';
+import { PortalLayout as VueLayout } from '../packages/vue/src/portal';
 import { PortalHeader as VueHeader } from '../packages/vue/src/patterns';
 
 const items = [
@@ -21,7 +23,9 @@ const items = [
   { label: 'الأخبار', href: '#news', groups: [{ links: [] }] },
 ];
 type Adapter = 'react' | 'vue' | 'angular';
-const props = { brand: 'هوية', links: items };
+// The application's copy: the strings the adapters used to supply.
+const texts = { navigationLabel: 'التنقل الرئيسي', menuLabel: 'القائمة' };
+const props = { brand: 'هوية', links: items, ...texts };
 const cleanups: Array<() => void | Promise<void>> = [];
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
@@ -39,7 +43,7 @@ async function mount(adapter: Adapter) {
     const root = createRoot(host);
     const ref = createRef<HTMLElement>();
     run = async action => { await act(action); };
-    await run(() => root.render(createElement(ReactHeader, { brand: 'هوية', navigation: items, ref })));
+    await run(() => root.render(createElement(ReactHeader, { brand: 'هوية', navigation: items, ...texts, ref })));
     expect(ref.current).toBe(host.querySelector('header'));
     cleanups.push(() => run(() => root.unmount()));
   } else if (adapter === 'vue') {
@@ -72,6 +76,9 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
     expect(Array.from(host.querySelectorAll('[aria-current]'), link => link.getAttribute('href'))).toEqual(['#requests']);
     expect(host.querySelector('nav > ul > li:last-child > a')?.getAttribute('href')).toBe('#news');
     expect(host.querySelectorAll('[role="menu"],[role="menuitem"]')).toHaveLength(0);
+    expect(host.querySelector('nav')?.getAttribute('aria-label')).toBe('التنقل الرئيسي');
+    const toggle = host.querySelector('.hw-portal-menu-toggle')!;
+    expect(toggle.getAttribute('aria-label') ?? toggle.textContent?.trim()).toBe('القائمة');
   });
 
   it(adapter + ' opens one branch and dismisses one disclosure level per Escape', async () => {
@@ -132,7 +139,7 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
 
 it('renders initially collapsed, navigable group markup on the React and Vue server', async () => {
   const markup = [
-    renderToStaticMarkup(createElement(ReactHeader, { brand: 'هوية', navigation: items })),
+    renderToStaticMarkup(createElement(ReactHeader, { brand: 'هوية', navigation: items, ...texts })),
     await renderToString(createSSRApp({ render: () => h(VueHeader, props) })),
   ];
   for (const html of markup) {
@@ -140,4 +147,21 @@ it('renders initially collapsed, navigable group markup on the React and Vue ser
     expect(parsed.querySelectorAll('details:not([open])')).toHaveLength(2);
     expect(parsed.querySelector('.hw-portal-branch-overview')?.getAttribute('href')).toBe('#services');
   }
+});
+
+it('renders the React and Vue layout without footerProps: the footer text is reported missing and nothing throws', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  try {
+    const layout = { brand: 'هوية', mainId: 'portal-main', skipLabel: 'انتقل إلى المحتوى', menuLabel: 'القائمة', navigationLabel: 'التنقل الرئيسي' };
+    const markup = [
+      renderToStaticMarkup(createElement(ReactLayout, layout as never, createElement('h1', null, 'الخدمات'))),
+      await renderToString(createSSRApp({ render: () => h(VueLayout, layout, () => h('h1', {}, 'الخدمات')) })),
+    ];
+    for (const html of markup) {
+      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      expect(parsed.querySelector('.hw-skip-link')?.getAttribute('href')).toBe('#portal-main');
+      expect(parsed.querySelectorAll('footer.hw-portal-footer')).toHaveLength(1);
+      expect(parsed.querySelector('main h1')?.textContent).toBe('الخدمات');
+    }
+  } finally { warn.mockRestore(); }
 });

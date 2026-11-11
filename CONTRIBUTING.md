@@ -8,7 +8,9 @@ For a visual change, prefer semantic token overrides or an existing variant.
 For application-specific UI, compose the primitives or use
 `pnpm new:component your-block`. A new reusable primitive needs shared styling,
 framework-native APIs, accessible behavior, RTL support, cleanup, examples and
-component documentation. Read AGENTS.md and the implementation contracts first.
+component documentation. It contains no user-visible string and chooses no
+locale: every text it places is an input with the same name in all four
+adapters, as CONTRACT.md "Text and localisation" describes. Read AGENTS.md and the implementation contracts first.
 
 Run focused tests while editing. Before submitting changes affecting public
 behavior or packaging, run `pnpm build`, `pnpm test`, `pnpm test:browser`, and

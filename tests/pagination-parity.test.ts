@@ -15,22 +15,24 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const cleanup: Array<() => void | Promise<void>> = [];
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(async () => {for (const fn of cleanup.splice(0)) await fn(); TestBed.resetTestingModule(); document.body.replaceChildren();});
+// The application's copy: the strings the adapters used to supply.
+const texts = {label: 'ترقيم الصفحات', previousLabel: 'الصفحة السابقة', nextLabel: 'الصفحة التالية', getPageLabel: (page: number) => 'الصفحة ' + page, getGapLabel: (start: number, end: number) => 'الصفحات ' + start + ' إلى ' + end, jumpLabel: 'الانتقال إلى صفحة', goLabel: 'انتقال'};
 type State = {page: number; totalPages: number; disabled: boolean; siblingCount: number; hideOnSinglePage: boolean};
-async function mount(adapter: string, initial: Partial<State> = {}, controlled = false) {
+async function mount(adapter: string, initial: Partial<State> = {}, controlled = false, copy: Partial<typeof texts> = texts) {
   const host = document.createElement('div'), ancestor = document.createElement('fieldset'); document.body.append(ancestor);ancestor.append(host);
   const state: State = {page: 1, totalPages: 10, disabled: false, siblingCount: 1, hideOnSinglePage: false, ...initial};
   const changed = vi.fn(); let sync: () => Promise<void>, flush: () => Promise<void>;
   if(adapter === 'react') {
     const root = createRoot(host); cleanup.push(async () => {await act(() => root.unmount());});
-    sync = async () => {await act(() => root.render(r(ReactPagination, {...state, page: controlled ? state.page : undefined, defaultPage: state.page, onPageChange: changed, id: 'consumer-pages', className: 'consumer-pages'})));};
+    sync = async () => {await act(() => root.render(r(ReactPagination, {...copy, ...state, page: controlled ? state.page : undefined, defaultPage: state.page, onPageChange: changed, id: 'consumer-pages', className: 'consumer-pages'})));};
     flush = async () => {await act(async () => {await Promise.resolve();});};
   } else if(adapter === 'vue') {
-    const model = reactive({...state}); const app = createApp({render: () => h(VuePagination, {...model, modelValue: controlled ? model.page : undefined, defaultValue: model.page, 'onUpdate:modelValue': changed, id: 'consumer-pages', class: 'consumer-pages'})});
+    const model = reactive({...state}); const app = createApp({render: () => h(VuePagination, {...copy, ...model, modelValue: controlled ? model.page : undefined, defaultValue: model.page, 'onUpdate:modelValue': changed, id: 'consumer-pages', class: 'consumer-pages'})});
     app.mount(host); cleanup.push(() => app.unmount());
     sync = async () => {Object.assign(model,state);await nextTick();}; flush = async () => {await nextTick();};
   } else {
     const fixture = TestBed.createComponent(HwPaginationComponent); host.append(fixture.nativeElement); cleanup.push(() => fixture.destroy()); fixture.componentInstance.pageChange.subscribe(changed);
-    sync = async () => {for(const [key,value] of Object.entries(state)) fixture.componentRef.setInput(key,value); fixture.detectChanges();};
+    sync = async () => {for(const [key,value] of Object.entries({...copy, ...state})) fixture.componentRef.setInput(key,value); fixture.detectChanges();};
     flush = async () => {fixture.detectChanges();};
   }
   await sync();
@@ -49,6 +51,21 @@ for(const adapter of ['react','vue','angular']) {
     await m.click('[aria-current="page"]');expect(m.changed).toHaveBeenCalledTimes(1);
     expect([...m.root().querySelectorAll('button')].every(node=>node.type==='button')).toBe(true);
     if(adapter!=='angular')expect(m.root().id).toBe('consumer-pages');
+    expect(m.root().querySelector('[data-hw-previous]')?.getAttribute('aria-label')).toBe('الصفحة السابقة');expect(m.root().querySelector('[data-hw-next]')?.getAttribute('aria-label')).toBe('الصفحة التالية');
+    expect(m.root().querySelector('[aria-current="page"]')?.getAttribute('aria-label')).toBe('الصفحة 2');
+  });
+  it(`${adapter}: missing texts render no names or invented words`,async()=>{
+    const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+    try{
+      const m=await mount(adapter,{page:10,totalPages:20},false,{});
+      expect(topPages(m.root())).toEqual([1,9,10,11,20]);
+      for(const node of m.root().querySelectorAll('[aria-label]'))expect(node.getAttribute('aria-label')).not.toBe('');
+      expect(m.root().hasAttribute('aria-label')).toBe(false);
+      expect(m.root().querySelector('[data-hw-previous]')?.hasAttribute('aria-label')).toBe(false);
+      expect(m.root().querySelector('[aria-current="page"]')?.hasAttribute('aria-label')).toBe(false);
+      expect(m.root().querySelector('summary')?.hasAttribute('aria-label')).toBe(false);
+      expect(m.root().textContent).not.toMatch(/الصفح|انتقال/u);
+    }finally{warn.mockRestore();}
   });
   it(`${adapter}: gap selection closes its disclosure and returns focus to the newly current page`,async()=>{
     const m=await mount(adapter,{page:10,totalPages:20});expect(topPages(m.root())).toEqual([1,9,10,11,20]);
@@ -107,6 +124,6 @@ for(const adapter of ['react','vue'])it(`${adapter}: a rejected controlled gap s
 });
 
 it('React and Vue SSR render closed, named disclosures and bounded controls',async()=>{
-  const renders=[renderToStaticMarkup(r(ReactPagination,{totalPages:10000,defaultPage:5000})),await renderToString(createSSRApp({render:()=>h(VuePagination,{totalPages:10000,defaultValue:5000})}))];
+  const renders=[renderToStaticMarkup(r(ReactPagination,{...texts,totalPages:10000,defaultPage:5000})),await renderToString(createSSRApp({render:()=>h(VuePagination,{...texts,totalPages:10000,defaultValue:5000})}))];
   for(const html of renders){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelectorAll('button').length).toBeLessThan(15);expect(host.querySelectorAll('details:not([open])')).toHaveLength(2);expect(host.querySelector('summary')?.getAttribute('aria-label')).toBe('الصفحات 2 إلى 4998');expect(host.querySelector('a[href]')).toBeNull();}
 });

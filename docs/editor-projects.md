@@ -134,7 +134,8 @@ Rating adds the 33rd native recipe. Its controlled integer selection appears
 alongside unselected, read-only, disabled and required/error examples. The
 separate RatingDisplay shows zero, fractional (3.5) and full scores without
 creating form controls. Examples use actual native imports in React JSX/TSX,
-Vue JS/TS and Angular TypeScript; Arabic/English labels use Latin digits.
+Vue JS/TS and Angular TypeScript; the Arabic and English labels are supplied by
+each example through `getRatingLabel` and `getValueLabel` and use Latin digits.
 All five native editor combinations pass focused rating browser tests. All 33
 React recipes pass TypeScript checking, all 33 Angular recipes pass strict
 template checking, and all seven exported framework/language projects build.

@@ -60,14 +60,16 @@ default is preserved for compatibility; examples set it explicitly.
 indicator group. All controls have accessible names and native Enter/Space
 activation. Indicators use `aria-current`, not tab semantics. Previous/next
 disable at bounds unless looping is enabled. A polite position announcement is
-separate from the visible indicators; empty collections show a localized message.
+separate from the visible indicators; empty collections show `emptyLabel`.
 Many indicators wrap and controls move into normal flow on narrow viewports.
 The root does not clip keyboard focus rings, unlike the source wrapper.
 
-Arabic labels and Latin digits are the default. Label/description props remain
-localizable. React `getSlideLabel` receives a zero-based index; vanilla
-`getSlideLabel`, Vue `slideMessage` and Angular `slideLabel` receive a one-based
-position. React accepts renderable slide content; Vue supports named slide-ID
+The carousel has no text of its own. The application supplies `label`,
+`previousLabel`, `nextLabel`, `emptyLabel`, `indicatorsLabel` (when indicators are
+shown), the optional `carouselDescription` and `slideDescription`, and
+`getSlideLabel(position, total)`, which receives a one-based position in every
+adapter and returns the whole slide name. Vanilla also reads
+`data-hw-slide-label="{position} / {total}"`. Digits remain Latin. React accepts renderable slide content; Vue supports named slide-ID
 slots; Angular adds optional `slideTemplate: TemplateRef<{$implicit: HwSlide;
 index: number}>`, retaining the existing image/title/content renderer as fallback.
 This API types the supplied context; it does not promise automatic type inference

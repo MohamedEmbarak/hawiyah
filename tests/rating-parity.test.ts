@@ -18,18 +18,21 @@ const cleanup: Array<() => void | Promise<void>> = [];
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(async () => {for (const fn of cleanup.splice(0)) await fn(); TestBed.resetTestingModule(); document.body.replaceChildren();});
 
+// The application's copy: the root name is the whole text alternative (decision D: no separate label).
+const getValueLabel = (value: number, max: number) => `تقييم الخدمة: ${value} من ${max}`;
+const getRatingLabel = (value: number, max: number) => `${value} من ${max}`;
 async function display(adapter: string) {
   const host = document.createElement('div'); document.body.append(host);
   const state = {value: 3.5, max: 5, showValue: true}; let sync: () => Promise<void>;
   if (adapter === 'react') {
     const root = createRoot(host); cleanup.push(async () => {await act(() => root.unmount());});
-    sync = async () => {await act(() => root.render(r(ReactRatingDisplay, {...state, label: 'تقييم الخدمة', id: 'score', className: 'consumer-score', dir: 'rtl'})));};
+    sync = async () => {await act(() => root.render(r(ReactRatingDisplay, {...state, getValueLabel, id: 'score', className: 'consumer-score', dir: 'rtl'})));};
   } else if (adapter === 'vue') {
-    const model = reactive({...state}); const app = createApp({render: () => h(VueRatingDisplay, {...model, label: 'تقييم الخدمة', id: 'score', class: 'consumer-score', dir: 'rtl'})}); app.mount(host); cleanup.push(() => app.unmount());
+    const model = reactive({...state}); const app = createApp({render: () => h(VueRatingDisplay, {...model, getValueLabel, id: 'score', class: 'consumer-score', dir: 'rtl'})}); app.mount(host); cleanup.push(() => app.unmount());
     sync = async () => {Object.assign(model, state); await nextTick();};
   } else {
     const fixture = TestBed.createComponent(HwRatingDisplayComponent); host.append(fixture.nativeElement); cleanup.push(() => fixture.destroy());
-    sync = async () => {fixture.componentRef.setInput('label', 'تقييم الخدمة'); for (const [key, value] of Object.entries(state)) fixture.componentRef.setInput(key, value); fixture.detectChanges();};
+    sync = async () => {fixture.componentRef.setInput('getValueLabel', getValueLabel); for (const [key, value] of Object.entries(state)) fixture.componentRef.setInput(key, value); fixture.detectChanges();};
   }
   await sync(); return {host, state, sync};
 }
@@ -47,16 +50,18 @@ async function input(adapter: string, controlled = false) {
   const state = {value: 3.9, max: 5, readOnly: false, disabled: false}; const changed = vi.fn(); let sync: () => Promise<void>;
   if (adapter === 'react') {
     const root = createRoot(host); cleanup.push(async () => {await act(() => root.unmount());});
-    sync = async () => {await act(() => root.render(r(ReactRating, {label: 'التقييم', value: controlled ? state.value : undefined, defaultValue: state.value, max: state.max, readOnly: state.readOnly, disabled: state.disabled, name: 'score', required: true, onValueChange: changed})));};
+    sync = async () => {await act(() => root.render(r(ReactRating, {label: 'التقييم', getRatingLabel, value: controlled ? state.value : undefined, defaultValue: state.value, max: state.max, readOnly: state.readOnly, disabled: state.disabled, name: 'score', required: true, onValueChange: changed})));};
   } else if (adapter === 'vue') {
-    const model = reactive({...state}); const app = createApp({render: () => h(VueRating, {label: 'التقييم', modelValue: controlled ? model.value : undefined, defaultValue: model.value, max: model.max, readonly: model.readOnly, disabled: model.disabled, name: 'score', required: true, 'onUpdate:modelValue': changed})}); app.mount(host); cleanup.push(() => app.unmount());
+    const model = reactive({...state}); const app = createApp({render: () => h(VueRating, {label: 'التقييم', getRatingLabel, modelValue: controlled ? model.value : undefined, defaultValue: model.value, max: model.max, readonly: model.readOnly, disabled: model.disabled, name: 'score', required: true, 'onUpdate:modelValue': changed})}); app.mount(host); cleanup.push(() => app.unmount());
     sync = async () => {Object.assign(model, state); await nextTick();};
   } else {
     const fixture = TestBed.createComponent(HwRatingComponent); host.append(fixture.nativeElement); cleanup.push(() => fixture.destroy()); fixture.componentInstance.valueChange.subscribe(changed);
-    sync = async () => {fixture.componentRef.setInput('label', 'التقييم'); fixture.componentRef.setInput('name', 'score'); fixture.componentRef.setInput('required', true); for (const [key, value] of Object.entries(state)) fixture.componentRef.setInput(key, value); fixture.detectChanges();};
+    sync = async () => {fixture.componentRef.setInput('label', 'التقييم'); fixture.componentRef.setInput('getRatingLabel', getRatingLabel); fixture.componentRef.setInput('name', 'score'); fixture.componentRef.setInput('required', true); for (const [key, value] of Object.entries(state)) fixture.componentRef.setInput(key, value); fixture.detectChanges();};
   }
   await sync(); return {host, state, sync, changed, click: async (value: number) => {await act(async () => {host.querySelector<HTMLInputElement>(`input[value="${value}"]`)!.click(); await nextTick();}); await sync();}};
 }
+// React and Vue name each radio with aria-label, Angular with visually hidden text inside its label.
+const optionName = (node: HTMLInputElement) => node.getAttribute('aria-label') ?? node.closest('label')?.querySelector('.hw-sr-only')?.textContent ?? null;
 function selected(host: HTMLElement) {return host.querySelector<HTMLInputElement>('input:checked')?.value ?? '';}
 
 for (const adapter of ['react', 'vue', 'angular']) {
@@ -78,6 +83,7 @@ for (const adapter of ['react', 'vue', 'angular']) {
       m.state.value = value; m.state.max = max; await m.sync(); expect(selected(m.host)).toBe(expected); expect(m.host.querySelectorAll('input')).toHaveLength(count);
     }
     expect(m.changed).not.toHaveBeenCalled(); expect(new FormData(m.host).get('score')).toBe('3');
+    expect([...m.host.querySelectorAll('input')].map(optionName)).toEqual(['1 من 3', '2 من 3', '3 من 3']);
   });
   it(`${adapter}: selection emits an integer and readonly or inherited disabled controls reject changes`, async () => {
     const m = await input(adapter); await m.click(4); expect(selected(m.host)).toBe('4'); expect(m.changed).toHaveBeenLastCalledWith(4);
@@ -95,8 +101,8 @@ for (const adapter of ['react', 'vue']) it(`${adapter}: uncontrolled radio input
 });
 
 it('angular: rating CVA preserves touch, reset and disabled behavior', () => {
-  class Host {score = new FormControl(3);}
-  Component({standalone: true, imports: [ReactiveFormsModule, HwRatingComponent], template: '<hw-rating label="التقييم" name="score" [formControl]="score" />'})(Host);
+  class Host {score = new FormControl(3); ratingLabel = getRatingLabel;}
+  Component({standalone: true, imports: [ReactiveFormsModule, HwRatingComponent], template: '<hw-rating label="التقييم" name="score" [getRatingLabel]="ratingLabel" [formControl]="score" />'})(Host);
   const fixture = TestBed.createComponent(Host); document.body.append(fixture.nativeElement); cleanup.push(() => fixture.destroy()); fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement; const control = fixture.componentInstance.score;
   host.querySelector<HTMLInputElement>('input[value="4"]')!.click(); fixture.detectChanges(); expect(control.value).toBe(4);
@@ -105,7 +111,21 @@ it('angular: rating CVA preserves touch, reset and disabled behavior', () => {
   control.disable(); fixture.detectChanges(); host.querySelector<HTMLInputElement>('input[value="2"]')!.click(); fixture.detectChanges(); expect(control.value).toBeNull(); expect(selected(host)).toBe('');
 });
 
-it('React and Vue SSR retain fractional fills and the default accessible Arabic score', async () => {
-  const renderings = [renderToStaticMarkup(r(ReactRatingDisplay, {label: 'تقييم الخدمة', value: 2.5})), await renderToString(createSSRApp({render: () => h(VueRatingDisplay, {label: 'تقييم الخدمة', value: 2.5})}))];
+it('React and Vue SSR retain fractional fills and the supplied accessible Arabic score', async () => {
+  const renderings = [renderToStaticMarkup(r(ReactRatingDisplay, {getValueLabel, value: 2.5})), await renderToString(createSSRApp({render: () => h(VueRatingDisplay, {getValueLabel, value: 2.5})}))];
   for (const html of renderings) {const host = document.createElement('div'); host.innerHTML = html; expectScore(host, 2.5, 5); expect(host.querySelector('.hw-rating-score')?.textContent).toBe('2.5/5');}
+});
+
+it('React and Vue render no invented score name or option names when the texts are missing', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  try {
+    const renderings = [renderToStaticMarkup(r(ReactRatingDisplay, {value: 2.5} as Parameters<typeof ReactRatingDisplay>[0])), await renderToString(createSSRApp({render: () => h(VueRatingDisplay, {value: 2.5})})),
+      renderToStaticMarkup(r(ReactRating, {label: 'التقييم', name: 'score'} as Parameters<typeof ReactRating>[0])), await renderToString(createSSRApp({render: () => h(VueRating, {label: 'التقييم', name: 'score'})}))];
+    for (const html of renderings) {
+      const host = document.createElement('div'); host.innerHTML = html;
+      expect(host.querySelector('.hw-rating-display')?.hasAttribute('aria-label') ?? false).toBe(false);
+      expect([...host.querySelectorAll('input')].some(node => node.hasAttribute('aria-label'))).toBe(false);
+      expect(host.textContent).not.toMatch(/ من /u);
+    }
+  } finally { warn.mockRestore(); }
 });

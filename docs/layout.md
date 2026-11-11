@@ -136,6 +136,7 @@ import { Container, Grid, ServiceCard } from '@hawiyah/react';
 
 <Container maxWidth="72rem">
   <Grid columns={{ base: 1, sm: 2, lg: 3 }} gap={{ base: 4, lg: 6 }}>
+    {/* Each service supplies title, href and actionLabel, the text of its link. */}
     {services.map(service => <ServiceCard key={service.id} {...service} />)}
   </Grid>
 </Container>
@@ -146,6 +147,7 @@ Vue:
 ```vue
 <Container max-width="72rem">
   <Grid :columns="{ base: 1, sm: 2, lg: 3 }" :gap="{ base: 4, lg: 6 }">
+    <!-- Each service supplies title, href and actionLabel, the text of its link. -->
     <ServiceCard v-for="service in services" :key="service.id" v-bind="service" />
   </Grid>
 </Container>
