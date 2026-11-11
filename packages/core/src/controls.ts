@@ -1,3 +1,5 @@
+import { requireLocale } from './locale.js';
+
 export function normalizeDigits(value: string): string {
   return value.replace(/[\u0660-\u0669\u06f0-\u06f9]/gu, digit =>
     String(digit.charCodeAt(0) - (digit.charCodeAt(0) <= 0x669 ? 0x660 : 0x6f0)));
@@ -12,8 +14,10 @@ export function clampRange(values: readonly [number, number], min: number, max: 
   return [lower, upper];
 }
 
-/** Immutable, stable, locale-aware sort. Missing values sort last in either direction. */
-export function sortRows<T extends object>(rows: readonly T[], key: keyof T | string, direction: 'ascending' | 'descending', locale = 'ar-SA'): T[] {
+/** Immutable, stable, locale-aware sort. Missing values sort last in either direction.
+ * `locale` is the caller's BCP 47 tag for Intl.Collator; there is no default and a missing one throws a TypeError. */
+export function sortRows<T extends object>(rows: readonly T[], key: keyof T | string, direction: 'ascending' | 'descending', locale: string | string[]): T[] {
+  requireLocale('sortRows', locale);
   const collator = new Intl.Collator(locale, { numeric: true, sensitivity: 'base' });
   return rows.map((row, index) => ({ row, index })).sort((a, b) => {
     const left = a.row[key as keyof T];

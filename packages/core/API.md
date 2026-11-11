@@ -18,13 +18,23 @@ build and consume these APIs through the workspace until an npm release is annou
   orientation='horizontal')` wraps arrows, skips disabled options, supports
   Home/End, and returns -1 if none are enabled. Horizontal arrows follow visual
   direction; vertical arrows do not change with RTL. Unhandled keys keep current.
-- `formatNumber(value, { locale='ar-SA', ...Intl.NumberFormatOptions })`.
-- `formatDate(Date|number|string, { locale='ar-SA', calendar='gregory',
-  timeZone='Asia/Riyadh', ...Intl.DateTimeFormatOptions })`. Use ISO date strings
-  with an explicit offset for instants. Calendar, numbering system, locale and
+- `formatNumber(value, { locale, ...Intl.NumberFormatOptions })`. `locale` is a
+  required BCP 47 tag or priority list of tags (`string | string[]`).
+- `formatDate(Date|number|string, { locale, calendar='gregory',
+  timeZone='Asia/Riyadh', ...Intl.DateTimeFormatOptions })`. `locale` is
+  required. The calendar and time zone defaults are not locale choices. Use ISO
+  date strings with an explicit offset for instants. Calendar, numbering system, locale and
   direction are independent. This general formatter uses the runtime's Intl
   calendar data; use `formatCalendarDate` below for canonical picker-compatible
   Hijri date-only formatting.
+- No default locale: `formatNumber`, `formatDate`, `sortRows`,
+  `getCalendarMonth` and `formatCalendarDate` have no built-in locale and never
+  fall back to the locale of the host. The options argument is required, a
+  missing `locale` is a type error, and at run time a missing, empty or
+  non-string locale throws `TypeError: Hawiyah: <helper> requires a locale from
+  the application. There is no default locale.` Adapters test for a missing
+  locale with `requireText(component, 'locale', locale)` before they call a
+  helper, so a component warns in development and never throws.
 - `createCleanup()` returns `{ add(fn), listen(target,type,listener,options?),
   destroy(), destroyed }`; destroy is idempotent, listeners are removed, and
   adding after destruction immediately cleans up.
@@ -58,9 +68,10 @@ build and consume these APIs through the workspace until an npm release is annou
 - `normalizeDigits(value)` converts Arabic-Indic/Eastern Arabic digits to ASCII.
 - `clampRange([lower,upper], min, max, changed:'lower'|'upper')` clamps the moved
   thumb to its peer; finite ordered bounds are required.
-- `sortRows(rows, key, 'ascending'|'descending', locale='ar-SA')` returns a stable
-  immutable sort; numbers compare numerically, strings use Intl.Collator, and
-  missing values remain last in either direction.
+- `sortRows(rows, key, 'ascending'|'descending', locale)` returns a stable
+  immutable sort; numbers compare numerically, strings use Intl.Collator for the
+  required `locale` (`string | string[]`, no default), and missing values remain
+  last in either direction.
 - `CalendarSystem = 'gregory'|'islamic-umalqura'`.
 - `getCalendarDateParts(iso, calendar?)` returns `{year,month,day}`;
   `convertCalendarDate(parts, calendar?)` returns Gregorian `YYYY-MM-DD`.
@@ -211,7 +222,7 @@ Hawiyah-generated numeric and calendar text always uses Latin digits (0–9), in
 Arabic locales. formatNumber, formatDate, and formatCalendarDate enforce latn after
 caller options; locale extensions or a conflicting numberingSystem option do not
 change this policy. Locale still controls language, month/day names and formatting
-order. Arabic remains the default language and RTL remains supported. Caller-provided
+order. No language is the default: the application passes the locale. Caller-provided
 prose is not rewritten. normalizeDigits continues to accept Arabic and Persian
 digits for input normalization.
 # Read-only native choices
@@ -317,10 +328,9 @@ focus deliberately placed elsewhere leaves focus with its owner.
 
 Core holds no user-visible or accessible-name strings and no language registry.
 The registries `getCalendarLabels`, `fileUploadLabels` and
-`getSiteVerificationLabels` are removed. Their names stay exported from
-`src/removed.ts` for the transition only: they hold no text (every value is an
-empty string), are typed `RemovedExport` so that source still using them fails
-to type-check, and are deleted once no adapter imports them. The types
+`getSiteVerificationLabels` are removed, together with the transitional
+`RemovedExport` placeholders that kept their names for one step: importing any
+of them is now a build error. The types
 `FileUploadLabels` and `SiteVerificationLabels` remain as the shapes the
 application fills. `FileUploadLabels` is `{selected, uploading,
 complete, error, remove, getProgressLabel(name), getRemoveLabel(name)}`.

@@ -45,9 +45,9 @@ boundary, not a simulated implementation.
   delegates native input number semantics (step/min/max/empty).
 - Calendar: labelled month toolbar, weekday headings, focusable date grid;
   arrows/Home/End/PageUp/PageDown; min/max and disabled selection; locale and
-  calendar independent of direction. `locale` is required and only formats:
-  month names, weekday names and the era come from Intl, every other label from
-  the application. Values are ISO Gregorian dates.
+  calendar independent of direction. `locale` is required, has no default and
+  only formats: month names, weekday names and the era come from Intl, every
+  other label from the application. Values are ISO Gregorian dates.
 - DatePicker: editable Gregorian ISO text plus accessible labelled dialog Calendar;
   display calendar can be gregory or islamic-umalqura. No handwritten conversions.
   The custom calendar is the only picker popup. Malformed drafts stay visible and
@@ -91,6 +91,11 @@ boundary, not a simulated implementation.
   adapter PORTAL.md for exact props and stable explicit Angular SSR IDs.
 - All controls: disabled/readonly where meaningful, form values/reset, accessible
   names, error/hint associations, no unsafe HTML, SSR-safe imports, RTL.
+- All locales: no component in this expansion chooses a locale. Calendar,
+  DatePicker and DataTable take a required `locale` (vanilla: the option or
+  `data-hw-locale`); the vanilla RangeSlider takes one when it has an output
+  element. A missing locale warns through `requireText` in development and
+  the Intl-derived output is left out; see CONTRACT.md "Text and localisation".
 - All text: no component in this expansion ships a string. Accessible names,
   labels of internal controls, status, empty and validation messages and
   templated text (page, slide, count and remove labels) are inputs the
@@ -111,7 +116,10 @@ Gregorian date strings. Weeks contain seven days. weekStartsOn defaults Sunday 0
 Use pinned @internationalized/date for date-only arithmetic with Hawiyah’s published-reference Umm al-Qura provider. Month starts come from the versioned HijriDate table, never hand-written astronomical approximations or implicit runtime fallback. See docs/date-calendars.md for provenance and limits.
 `normalizeDigits(value)` converts Arabic-Indic and Eastern Arabic digits.
 `clampRange([lower,upper],min,max,changed:'lower'|'upper')` returns numeric pair.
-`sortRows(rows,key,direction:'ascending'|'descending',locale?)` immutable stable sort.
+`sortRows(rows,key,direction:'ascending'|'descending',locale)` immutable stable sort;
+`locale` (`string | string[]`) is required and has no default. `formatNumber(value,
+{locale,...})` and `formatDate(value,{locale,...})` likewise require `locale`; a
+missing locale is a type error and throws a TypeError at run time.
 `requireText(component,name,value,when?)` and `hasText(value)` report missing
 application text in development; `formatTextTemplate(template,values)` fills
 `{name}` placeholders in application templates. `getFragmentHref(id,documentUrl?,

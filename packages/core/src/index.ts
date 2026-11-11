@@ -1,3 +1,5 @@
+import { requireLocale } from './locale.js';
+
 export { getCalendarMonth, moveCalendarDate, isDateInRange, formatCalendarDate } from './calendar.js';
 export type { CalendarSystem, CalendarDay, CalendarMonth, CalendarMonthOptions, CalendarDateFormatOptions } from './calendar.js';
 export { normalizeDigits, clampRange, sortRows } from './controls.js';
@@ -63,20 +65,27 @@ export function getNextEnabledIndex(
 }
 
 export interface NumberFormatOptions extends Intl.NumberFormatOptions {
-  locale?: string | string[];
+  /** BCP 47 tag, or a priority list of tags, handed to Intl. There is no default. */
+  locale: string | string[];
 }
 
 export interface DateFormatOptions extends Intl.DateTimeFormatOptions {
-  locale?: string | string[];
+  /** BCP 47 tag, or a priority list of tags, handed to Intl. There is no default. */
+  locale: string | string[];
 }
 
-export function formatNumber(value: number | bigint, options: NumberFormatOptions = {}): string {
-  const { locale = 'ar-SA', ...format } = options;
+/** Formats with the caller's locale and Latin digits. Throws a TypeError without a locale. */
+export function formatNumber(value: number | bigint, options: NumberFormatOptions): string {
+  const { locale, ...format } = options ?? {};
+  requireLocale('formatNumber', locale);
   return new Intl.NumberFormat(locale, { ...format, numberingSystem: 'latn' }).format(value);
 }
 
-export function formatDate(value: Date | number | string, options: DateFormatOptions = {}): string {
-  const { locale = 'ar-SA', calendar = 'gregory', timeZone = 'Asia/Riyadh', ...format } = options;
+/** Formats an instant with the caller's locale and Latin digits. Throws a TypeError without a locale.
+ * The Gregorian calendar and the Asia/Riyadh time zone are defaults of the helper, not locale choices. */
+export function formatDate(value: Date | number | string, options: DateFormatOptions): string {
+  const { locale, calendar = 'gregory', timeZone = 'Asia/Riyadh', ...format } = options ?? {};
+  requireLocale('formatDate', locale);
   const date = typeof value === 'string' ? new Date(value) : value;
   return new Intl.DateTimeFormat(locale, { calendar, timeZone, ...format, numberingSystem: 'latn' }).format(date);
 }
@@ -206,8 +215,6 @@ export { getSearchSuggestions, requestSearchDialogClose } from './search-suggest
 export type { SearchSuggestionMatch, SearchSuggestionSegment } from './search-suggestions.js';
 export { prepareToastDismissFocus } from './toast-focus.js';
 export { hasText, requireText, resetTextWarnings, formatTextTemplate } from './text.js';
-export { getCalendarLabels, getSiteVerificationLabels, fileUploadLabels } from './removed.js';
-export type { RemovedExport } from './removed.js';
 export { getFragmentHref, getFragmentId, bindFragmentLink } from './fragment-link.js';
 export type { FragmentLink, FragmentLinkOptions } from './fragment-link.js';
 

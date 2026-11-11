@@ -15,7 +15,7 @@ describe('expanded shared controls', () => {
     const rows = [{ id: 1, value: 'Item 10' }, { id: 2, value: 'Item 2' }, { id: 3, value: 'item 2' }];
     expect(sortRows(rows, 'value', 'ascending', 'en').map(row => row.id)).toEqual([2, 3, 1]);
     expect(rows.map(row => row.id)).toEqual([1, 2, 3]);
-    expect(sortRows([{ value: null }, { value: 1 }, { value: 3 }], 'value', 'descending')).toEqual([{ value: 3 }, { value: 1 }, { value: null }]);
+    expect(sortRows([{ value: null }, { value: 1 }, { value: 3 }], 'value', 'descending', 'ar-SA')).toEqual([{ value: 3 }, { value: 1 }, { value: null }]);
   });
 });
 

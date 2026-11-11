@@ -37,8 +37,10 @@ must be separately importable; base components do not globally reset application
 `normalizeSearch(value: string): string`, `filterOptions(options, query): Option[]`.
 `getNextEnabledIndex(current, key, items, direction?, orientation?): number` where
 items have optional disabled, key is KeyboardEvent.key, orientation horizontal|vertical.
-`formatNumber(value, options?)`, `formatDate(value, options?)` using Intl, explicit
-locale/calendar/numberingSystem/timeZone; never hand-code Hijri conversion.
+`formatNumber(value, options)`, `formatDate(value, options)` using Intl with a
+required `options.locale` and explicit calendar/numberingSystem/timeZone;
+`sortRows(rows, key, direction, locale)` with a required locale; never hand-code
+Hijri conversion.
 `requireText`, `hasText`, `formatTextTemplate` report and format application text;
 `getFragmentHref`, `getFragmentId`, `bindFragmentLink` serve in-page links (both below).
 DOM utilities may be invoked by adapters but may not render into framework trees.
@@ -79,10 +81,27 @@ strings.
 - Direction is read from `dir` and never from `lang`. No component sets `dir`
   unless the application supplies it. No adapter reads `lang`, the document
   language or a locale to choose a string, a default or a behaviour.
-- `locale` is a formatting argument only: a BCP 47 tag handed to Intl. Calendar
+- `locale` is a formatting argument only: a BCP 47 tag (or a priority list of
+  tags) handed to Intl. Formatting adds no words of its own.
+- There is no default locale. Core `formatNumber`, `formatDate`, `sortRows`,
+  `getCalendarMonth` and `formatCalendarDate` take a required locale; none falls
+  back to a built-in locale or to the locale of the host. A missing locale is a
+  type error and throws a `TypeError` ("Hawiyah: <helper> requires a locale from
+  the application.") at run time. The `formatDate` defaults for calendar
+  (`gregory`) and time zone (`Asia/Riyadh`) are not locale choices and remain.
+- No adapter chooses a locale, and nothing under `packages/*/src` calls `Intl` or
+  `toLocaleString` without a locale that came from the application. A component
+  that formats a number or a date, or sorts text, takes a `locale` input with the
+  same name in every adapter (vanilla: the `locale` option or `data-hw-locale` on
+  the controller root), or a formatter function from the application. Calendar
   and DatePicker, which print month names, weekday names and the era from Intl,
-  require it; core `getCalendarMonth` and `formatCalendarDate` have no default
-  locale. Formatting adds no words of its own.
+  and DataTable, which collates text, require it; the vanilla RangeSlider
+  requires it when it has an output element.
+- A missing locale is treated like missing text: a type error in React and
+  Angular, and in every adapter `requireText(component, 'locale', locale)` warns
+  in development before a helper would be called. The component then renders
+  nothing that Intl would have produced (no month grid, no formatted value, rows
+  in their source order) and does not throw.
 - Thrown errors and console warnings are developer diagnostics in English. They
   never reach the document.
 

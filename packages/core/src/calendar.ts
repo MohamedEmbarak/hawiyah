@@ -1,4 +1,5 @@
 import { GregorianCalendar, parseDate, startOfMonth, today, toCalendar, type CalendarDate } from '@internationalized/date';
+import { requireLocale } from './locale.js';
 import { convertCalendarDate, getCalendarDateParts, isCalendarDateSupported, SaudiUmalquraCalendar, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE } from './saudi-calendar.js';
 
 export type CalendarSystem = 'gregory' | 'islamic-umalqura';
@@ -38,7 +39,8 @@ export interface CalendarDateFormatOptions extends Pick<Intl.DateTimeFormatOptio
 
 /** Canonical date-only formatting using the same numeric fields as the picker. */
 export function formatCalendarDate(value: string, options: CalendarDateFormatOptions): string {
-  const { locale, calendar = 'gregory', ...requested } = options;
+  const { locale, calendar = 'gregory', ...requested } = options ?? {};
+  requireLocale('formatCalendarDate', locale);
   const fields = getCalendarDateParts(value, calendar);
   const format = Object.keys(requested).some(key => ['dateStyle', 'year', 'month', 'day', 'weekday', 'era'].includes(key)) ? requested : { ...requested, year: 'numeric' as const, month: 'long' as const, day: 'numeric' as const };
   const formatter = new Intl.DateTimeFormat(locale, { ...format, calendar, timeZone: 'UTC', numberingSystem: 'latn' });
@@ -92,7 +94,8 @@ export function moveCalendarDate(value: string, amount: number, unit: 'day' | 'm
 }
 
 export function getCalendarMonth(options: CalendarMonthOptions): CalendarMonth {
-  const { locale, calendar = 'gregory', weekStartsOn = 0 } = options;
+  const { locale, calendar = 'gregory', weekStartsOn = 0 } = options ?? {};
+  requireLocale('getCalendarMonth', locale);
   if (!Number.isInteger(weekStartsOn) || weekStartsOn < 0 || weekStartsOn > 6) throw new RangeError('Hawiyah: weekStartsOn must be 0 through 6.');
   const system = calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar();
   const currentDay = today('Asia/Riyadh');

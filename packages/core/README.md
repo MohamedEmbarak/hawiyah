@@ -9,12 +9,28 @@ Framework-independent behavior utilities for Hawiyah. No browser globals
 are accessed at import, so pure helpers and package imports work in SSR.
 
 See [API.md](./API.md) for the complete API and behavior contract. Locale, text
-direction, numbering system and calendar are independent settings. General
-`formatDate` uses runtime Intl for instants and defaults to Arabic Saudi locale,
-Gregorian calendar, and Asia/Riyadh time zone. It is not the canonical Hijri
+direction, numbering system and calendar are independent settings.
+
+Core chooses no locale and holds no strings. Every helper that calls Intl
+(`formatNumber`, `formatDate`, `sortRows`, `getCalendarMonth`,
+`formatCalendarDate`) takes a required `locale`, a BCP 47 tag or a priority list
+of tags from the application. There is no default and no fallback to a built-in
+locale or to the locale of the host: a missing locale is a type error and throws
+a `TypeError` at run time.
+
+```ts
+formatNumber(1250, { locale: 'ar-SA' });
+formatDate('2026-10-28T09:00:00+03:00', { locale: 'ar-SA', dateStyle: 'medium' });
+sortRows(rows, 'name', 'ascending', 'ar-SA');
+```
+
+General `formatDate` uses runtime Intl for instants. Its Gregorian calendar and
+Asia/Riyadh time zone are defaults of the helper, not locale choices; pass
+`calendar` or `timeZone` to change them. It is not the canonical Hijri
 conversion API: an operating system's ICU data can differ from the date picker.
 
-`getCalendarLabels(locale)` returns read-only Arabic or English UI strings for navigation, calendar selection and validation. The default locale is `ar-SA`.
+Calendar, date picker, site verification and file upload text is supplied by the
+application; core has no label registry.
 
 For date-only values, use `getCalendarDateParts`, `convertCalendarDate`,
 `formatCalendarDate`, `getCalendarMonth`, and `moveCalendarDate`. Their Saudi

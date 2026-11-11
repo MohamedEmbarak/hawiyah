@@ -67,14 +67,8 @@ describe('text templates', () => {
 });
 
 describe('no built-in strings in core', () => {
-  it('keeps the removed registries only as exports without any text', () => {
-    const removed = core as unknown as { getCalendarLabels(locale?: string): Record<string, string>; getSiteVerificationLabels(locale?: string): Record<string, string>; fileUploadLabels: Record<string, unknown> };
-    const texts = [...Object.values(removed.getCalendarLabels('ar-SA')), ...Object.values(removed.getCalendarLabels('en')), ...Object.values(removed.getSiteVerificationLabels('ar')), ...Object.values(removed.getSiteVerificationLabels('en'))];
-    expect(texts).toHaveLength(44);
-    expect(texts.every(text => text === '')).toBe(true);
-    const { getProgressLabel, getRemoveLabel, ...statuses } = removed.fileUploadLabels as { getProgressLabel(name: string): string; getRemoveLabel(name: string): string } & Record<string, string>;
-    expect(Object.values(statuses)).toEqual(['', '', '', '', '']);
-    expect(getProgressLabel('a.pdf') + getRemoveLabel('a.pdf')).toBe('');
+  it('exports no label registry and no transitional placeholder', () => {
+    for (const name of ['getCalendarLabels', 'getSiteVerificationLabels', 'fileUploadLabels']) expect(core, name).not.toHaveProperty(name);
   });
 
   it('holds no Arabic text and no language switch in source', async () => {
