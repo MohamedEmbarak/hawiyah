@@ -200,7 +200,7 @@ it('keeps pagination bounded, including large result sets', async () => {
   const changed = vi.fn();
   await render(<Pagination {...pageTexts} totalPages={10000} defaultPage={1} onPageChange={changed} />);
   expect(container.querySelectorAll('button').length).toBeLessThan(10);
-  expect(container.querySelector<HTMLButtonElement>('button')!.disabled).toBe(true);
+  expect(container.querySelector<HTMLButtonElement>('button')!.getAttribute('aria-disabled')).toBe('true');
   await click([...container.querySelectorAll('button')].at(-1)!);
   expect(changed).toHaveBeenLastCalledWith(2);
 });

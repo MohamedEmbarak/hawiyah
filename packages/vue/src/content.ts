@@ -1,9 +1,9 @@
-import { defineComponent, h, mergeProps, ref, useId } from "vue";
+import { defineComponent, h, mergeProps, onUnmounted, ref, useId } from "vue";
 import type { PropType, VNodeChild } from "vue";
-import { sortRows } from "@hawiyah/core";
+import { prepareRemovalFocus, sortRows } from "@hawiyah/core";
 import { Button } from "./forms.js";
 import { Avatar } from "./display.js";
-import { needText, optionalText, rootLabel, useValue } from "./shared.js";
+import { listener, listens, needText, optionalText, rootLabel, useValue } from "./shared.js";
 
 export const Link = defineComponent({
   name: 'HwLink', inheritAttrs: false,
@@ -15,7 +15,7 @@ export const Link = defineComponent({
         if(unavailable){event.preventDefault();event.stopPropagation();return;}
         const handlers=attrs[name];for(const handler of Array.isArray(handlers)?handlers:[handlers])if(typeof handler==='function')handler(event);
       };
-      return h('a',{...mergeProps(attrs,{class:'hw-link',href:unavailable?undefined:props.href,role:unavailable?'link':attrs.role,'data-variant':props.variant ?? attrs['data-variant'],target:props.external?'_blank':attrs.target,rel:props.external?'noopener noreferrer':attrs.rel,'aria-disabled':unavailable || undefined,tabindex:unavailable?-1:attrs.tabindex}),onClick:activation('onClick'),onAuxclick:activation('onAuxclick')},slots.default?.());
+      return h('a',{...mergeProps(attrs,{class:'hw-link',href:unavailable?undefined:props.href,role:unavailable?'link':attrs.role,'data-variant':props.variant ?? attrs['data-variant'],target:props.external?'_blank':attrs.target,rel:props.external?[attrs.rel,'noopener','noreferrer'].filter(Boolean).join(' '):attrs.rel,'aria-disabled':unavailable || undefined,tabindex:unavailable?-1:attrs.tabindex}),onClick:activation('onClick'),onAuxclick:activation('onAuxclick')},slots.default?.());
     };
   },
 });
@@ -52,7 +52,7 @@ export const IconButton = defineComponent({
 export const ButtonGroup = defineComponent({
   name: "HwButtonGroup",
   inheritAttrs: false,
-  props: { label: { type: String, required: true }, variant:String as PropType<'default'|'attached'>, orientation:String as PropType<'horizontal'|'vertical'> },
+  props: { label: String, variant:String as PropType<'default'|'attached'>, orientation:String as PropType<'horizontal'|'vertical'> },
   setup(props, { attrs, slots }) {
     return () =>
       h(
@@ -60,7 +60,7 @@ export const ButtonGroup = defineComponent({
         mergeProps(attrs, {
           class: "hw-button-group", "data-variant":props.variant ?? attrs["data-variant"], "data-orientation":props.orientation ?? attrs["data-orientation"],
           role: "group",
-          "aria-label": props.label,
+          "aria-label": rootLabel("ButtonGroup", props.label, attrs),
         }),
         slots.default?.(),
       );
@@ -71,7 +71,6 @@ export const Chip = defineComponent({
   inheritAttrs: false,
   props: {
     label: String,
-    removable: Boolean,
     disabled: Boolean,
     removeLabel: String,
     tone: {
@@ -80,26 +79,35 @@ export const Chip = defineComponent({
       >,
       default: "neutral",
     },
+    variant: String as PropType<"soft" | "outline">,
+    size: String as PropType<"sm" | "lg">,
+    onRemove: listener<[]>(),
   },
-  emits: { remove: () => true },
   setup(props, { attrs, slots, emit }) {
+    // Focus hand-over prepared at activation and run once the application has removed the chip.
+    let pending: (() => void) | undefined;
+    onUnmounted(() => pending?.());
     return () =>
       h(
         "span",
-        mergeProps(attrs, { class: "hw-chip", "data-tone": props.tone }),
+        mergeProps(attrs, { class: "hw-chip", "data-tone": props.tone, "data-variant": props.variant ?? attrs["data-variant"], "data-size": props.size ?? attrs["data-size"] }),
         [
           props.label ?? slots.default?.(),
-          props.removable &&
+          listens(props.onRemove) &&
             h(
-              Button,
+              "button",
               {
-                variant: "ghost",
-                size: "sm",
+                type: "button",
                 disabled: props.disabled,
-                "aria-label": needText("Chip", "removeLabel", props.removeLabel, "the chip is removable"),
-                onClick: () => emit("remove"),
+                "aria-label": needText("Chip", "removeLabel", props.removeLabel, "a remove listener is bound"),
+                onClick: (event: MouseEvent) => {
+                  const button = event.currentTarget as HTMLElement;
+                  const parent = button.parentElement?.parentElement;
+                  pending = parent ? prepareRemovalFocus(parent, button, { item: ":scope > .hw-chip", control: ":scope > button" }) : undefined;
+                  emit("remove");
+                },
               },
-              () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),
+              h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),
             ),
         ],
       );
@@ -117,10 +125,7 @@ export const DescriptionList = defineComponent({
       type: Array as PropType<readonly DescriptionItem[]>,
       required: true,
     },
-    variant: {
-      type: String as PropType<"stacked" | "horizontal" | "compact">,
-      default: "horizontal",
-    },
+    variant: String as PropType<"stacked" | "horizontal" | "compact">,
   },
   setup(props, { attrs, slots }) {
     return () =>
@@ -128,7 +133,7 @@ export const DescriptionList = defineComponent({
         "dl",
         mergeProps(attrs, {
           class: "hw-description-list",
-          "data-variant": props.variant,
+          "data-variant": props.variant ?? attrs["data-variant"],
         }),
         props.items.map((item, index) =>
           h("div", { key: index }, [
@@ -146,22 +151,26 @@ export const Stat = defineComponent({
   inheritAttrs: false,
   props: {
     label: { type: String, required: true },
-    value: { type: [String, Number], required: true },
+    value: [String, Number],
     description: String,
     trend: String,
+    tone: String as PropType<"neutral" | "success" | "warning" | "danger" | "info">,
+    variant: String as PropType<"plain">,
+    trendTone: String as PropType<"neutral" | "success" | "warning" | "danger" | "info">,
   },
   setup(props, { attrs, slots }) {
+    // #value and #trend replace what is displayed; numbers are printed as given.
     return () =>
-      h("div", mergeProps(attrs, { class: "hw-stat" }), [
+      h("div", mergeProps(attrs, { class: "hw-stat", "data-tone": props.tone ?? attrs["data-tone"], "data-variant": props.variant ?? attrs["data-variant"] }), [
         h("span", { class: "hw-stat-label" }, props.label),
         h(
           "strong",
           { class: "hw-stat-value" },
-          String(props.value),
+          slots.value?.() ?? (props.value === undefined ? undefined : String(props.value)),
         ),
         props.description &&
           h("p", { class: "hw-stat-description" }, props.description),
-        props.trend && h("span", { class: "hw-stat-trend" }, props.trend),
+        (slots.trend || props.trend) && h("span", { class: "hw-stat-trend", "data-tone": props.trendTone }, slots.trend?.() ?? props.trend),
         slots.default?.(),
       ]);
   },
@@ -170,7 +179,8 @@ export interface TimelineItem {
   id: string;
   title: string;
   description?: string;
-  date?: string;
+  /** Machine-readable ISO value of the date; shown only through dateLabel. */
+  dateTime?: string;
   dateLabel?: string;
   status?: "complete" | "current" | "upcoming";
 }
@@ -197,8 +207,8 @@ export const Timeline = defineComponent({
             },
             [
               h("h3", {}, item.title),
-              item.date &&
-                h("time", { datetime: item.date }, item.dateLabel ?? item.date),
+              item.dateLabel &&
+                h("time", { datetime: item.dateTime }, item.dateLabel),
               item.description && h("p", {}, item.description),
               slots[item.id]?.({ item }),
             ],
@@ -211,8 +221,8 @@ export const Meter = defineComponent({
   name: "HwMeter",
   inheritAttrs: false,
   props: {
-    label: { type: String, required: true },
-    value: { type: Number, required: true },
+    label: String,
+    value: { type: Number, default: 0 },
     min: { type: Number, default: 0 },
     max: { type: Number, default: 100 },
     low: Number,
@@ -225,7 +235,7 @@ export const Meter = defineComponent({
         "meter",
         mergeProps(attrs, {
           class: "hw-meter",
-          "aria-label": props.label,
+          "aria-label": rootLabel("Meter", props.label, attrs),
           value: props.value,
           min: props.min,
           max: props.max,
@@ -240,6 +250,8 @@ export interface AvatarItem {
   name: string;
   src?: string;
   initials?: string;
+  size?: "sm" | "md" | "lg" | "xl" | "40" | "64" | "80" | "120";
+  variant?: "circle" | "square";
 }
 export const AvatarGroup = defineComponent({
   name: "HwAvatarGroup",
@@ -289,6 +301,7 @@ export interface DataColumn {
   label: string;
   sortable?: boolean;
   rowHeader?: boolean;
+  cell?: (row: Record<string, unknown>, index: number) => VNodeChild;
 }
 export const DataTable = defineComponent({
   name: "HwDataTable",
@@ -416,7 +429,8 @@ export const DataTable = defineComponent({
                       key: column.key,
                       scope: column.rowHeader ? "row" : undefined,
                     },
-                    slots[`cell:${column.key}`]?.({ row, index }) ??
+                    slots[`cell-${column.key}`]?.({ row, index, column }) ??
+                      column.cell?.(row, index) ??
                       String(row[column.key] ?? ""),
                   ),
                 ),

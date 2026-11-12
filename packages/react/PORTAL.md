@@ -11,7 +11,7 @@ import '@hawiyah/styles/styles.css';
 
 <PortalLayout lang="ar" dir="rtl" brand="هوية"
   skipLabel="انتقل إلى المحتوى" menuLabel="القائمة" navigationLabel="التنقل الرئيسي"
-  headerProps={{ brandHref: '/', navigation: [{ label: 'الخدمات', href: '/services', current: true }] }}
+  headerProps={{ homeHref: '/', links: [{ label: 'الخدمات', href: '/services', current: true }] }}
   secondaryNavigation={[{ label: 'دليل الخدمات', href: '/services', current: true }]} secondaryLabel="التنقل الثانوي"
   breadcrumbs={[{ label: 'الرئيسية', href: '/' }, { label: 'الخدمات', current: true }]} breadcrumbLabel="مسار التنقل"
   footerLabel="روابط التذييل"
@@ -27,8 +27,8 @@ with `breadcrumbs`, and `footerLabel` (passed to the footer as `navigationLabel`
 with `footerProps.links`. `footerProps` carries the footer content and its texts
 under the `PortalFooter` names: the required `externalLabel`, and `legalLinksLabel`
 or `supportLabel` with `legalLinks` or `support`. `headerProps` accepts the
-remaining header API (`brandHref`, `navigation`, `navigationId`, `actions`,
-`notice`). `mainId` is generated with React `useId` unless supplied.
+remaining header API (`homeHref`, `links`, `navigationId`, `actions`,
+`notice`, `open` / `defaultOpen` / `onOpenChange`). `mainId` is generated with React `useId` unless supplied.
 `headerProps.notice` renders in `div.hw-portal-notice`, a direct child of the header
 between the skip link and the brand; it is application content with no role and no
 text requirement. Actions render in `div.hw-portal-header-actions`, which replaces
@@ -37,18 +37,32 @@ text requirement. Actions render in `div.hw-portal-header-actions`, which replac
 `brand` is text, artwork or both and is passed to the header and footer. Supply
 your actual brand SVG as `brand`; no government artwork is inferred. Artwork alone
 takes its accessible name from `brandLabel`, which is written as `aria-label` on
-the header brand link (or on the header brand container, as an image, when there
-is no `brandHref`) and, with `role="group"`, on the footer brand marks. In development, a mounted brand with no text, no `aria-label` and no
+the header brand link (or on the header brand container, a div with `role="img"`, when
+`homeHref` is an empty string; it defaults to `'/'`) and, with `role="group"`, on the footer brand marks. In development, a mounted brand with no text, no `aria-label` and no
 image `alt` warns once through `console.warn`; server rendering never warns.
 
 For English, set `lang="en" dir="ltr"` and pass English texts. Language and
 direction are independent attributes.
 
-Standalone `PortalHeader` adds a mobile disclosure when `navigation` has items;
+Standalone `PortalHeader` adds a mobile disclosure when `links` has items;
 set `mainId` (with the then-required `skipLabel`) to render its skip link. Skip
 links render as `#id` on the server and on the first client render and are kept
 pointing at the current document under a `<base href>` once mounted. Escape closes and focuses the toggle;
-selection, outside press and focus leaving close it. Tab is not trapped. The
+selection, outside press and focus leaving close it. Tab is not trapped. Below 48rem
+one press on another group heading opens it and closes the open one. The brand,
+the menu toggle, the nav and `div.hw-portal-header-actions` are direct children of
+`header.hw-portal-header`.
+
+The menu state is `open` / `defaultOpen` / `onOpenChange`: every closing path
+notifies `false` once, and a controlled header follows the application only, for
+example to close the menu after a client-side route change:
+
+```tsx
+const [open, setOpen] = useState(false);
+useEffect(() => setOpen(false), [pathname]);
+<PortalHeader brand="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" links={links} open={open} onOpenChange={setOpen} />
+```
+ The
 links stay visible at desktop widths. Multiple headers receive separate IDs.
 `SecondaryNav` takes `items` and a required `label`; these are ordinary page links with
 `aria-current`, not tabs or menus.
@@ -56,6 +70,11 @@ links stay visible at desktop widths. Multiple headers receive separate IDs.
 The 48rem disclosure breakpoint is an intentional Hawiyah policy. The layout uses
 shared tokens in DGA, Hawiyah and custom themes, and introduces no animation.
 Source-informed composition does not claim pixel parity or DGA certification.
+
+Migration from 0.2: `navigation` -> `links`, `brandHref` -> `homeHref` (in
+`headerProps` too; add `homeHref=""` to keep a brand that is not a link);
+selectors on `.hw-portal-header-main > x` -> `.hw-portal-header > x`;
+`footerLabel` with `footerProps.links` is now required by the types.
 
 ## Mobile navigation bar
 

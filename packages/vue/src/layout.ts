@@ -94,7 +94,7 @@ export const PageHeader = defineComponent({
   inheritAttrs: false,
   props: {
     ...layoutProps,
-    title: { type: String, required: true },
+    title: String,
     description: String,
     level: { type: Number, default: 1 },
   },
@@ -110,7 +110,7 @@ export const PageHeader = defineComponent({
           slots.breadcrumb?.(),
           h("div", { class: "hw-page-header-main" }, [
             h("div", {}, [
-              h(`h${Math.min(6, Math.max(1, props.level))}`, {}, props.title),
+              h(`h${Math.min(6, Math.max(1, Math.trunc(Number(props.level)) || 1))}`, {}, slots.title?.() ?? needText("PageHeader", "title", props.title)),
               props.description && h("p", {}, props.description),
             ]),
             slots.actions &&

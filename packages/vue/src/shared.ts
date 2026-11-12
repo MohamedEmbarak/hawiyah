@@ -1,6 +1,6 @@
-import { computed, inject, onBeforeUnmount, onMounted, onUpdated, provide, ref, useId } from 'vue';
-import { bindFragmentLink, hasText, observeFieldValue, requireText, type FieldValueObserver, type FragmentLink, type FragmentLinkOptions } from '@hawiyah/core';
-import type { ComputedRef, InjectionKey, PropType, Ref, VNodeChild } from 'vue';
+import { computed, h, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, provide, ref, useId } from 'vue';
+import { bindFragmentLink, hasText, observeFieldValue, observeFormReset, requireText, sameValue, type FieldValueObserver, type FormResetObserver, type FragmentLink, type FragmentLinkOptions } from '@hawiyah/core';
+import type { ComputedRef, InjectionKey, PropType, Ref, VNode, VNodeChild } from 'vue';
 
 export interface FieldDecoration { label?: string; hint?: string; error?: string; required?: boolean }
 export const decorationProps = { label: String, hint: String, error: String, required: { type: Boolean, default: undefined } } as const;
@@ -29,17 +29,27 @@ export function useValue<T>(read: () => T | undefined, initial: T, emit: (value:
   const local = ref(initial) as Ref<T>;
   const value = computed(() => read() === undefined ? local.value : read() as T);
   const sync = (next: T) => { local.value = next; };
-  const set = (next: T) => { sync(next); emit(next); };
+  // Notifies only for a change: arrays and tuples are compared by content (core sameValue).
+  const set = (next: T) => { const changed = !sameValue(next, value.value); sync(next); if (changed) emit(next); };
   return { value, set, sync };
 }
-export function useFormReset(element: Ref<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | undefined>, reset: () => void) {
+/** Native form reset (CONTRACT.md "Native form reset"): `reset` sets the reset target after the browser has
+ * reset the form's controls, and `show` writes the held value back to the native controls on the next tick,
+ * so that a bound modelValue whose update was ignored is shown and submitted again. Nothing runs on the server. */
+export function useFormReset(element: Ref<Element | undefined>, reset: () => void, show?: () => void) {
   let presence: FieldValueObserver | undefined;
-  let form: HTMLFormElement | null | undefined;
-  const listener = (event: Event) => queueMicrotask(() => { if (!event.defaultPrevented) reset(); });
-  onMounted(() => { form = element.value?.form; form?.addEventListener('reset', listener); if (element.value) presence = observeFieldValue(element.value); });
+  let resets: FormResetObserver | undefined;
+  onMounted(() => {
+    const control = element.value;
+    if (!control) return;
+    resets = observeFormReset(control, () => { reset(); void nextTick(() => show?.()); });
+    if (control.matches('input, textarea, select')) presence = observeFieldValue(control as HTMLInputElement);
+  });
   onUpdated(() => presence?.refresh());
-  onBeforeUnmount(() => { form?.removeEventListener('reset', listener); presence?.destroy(); });
+  onBeforeUnmount(() => { resets?.destroy(); presence?.destroy(); });
 }
+/** The one required marker of a label.hw-label or legend.hw-label (convention required-marker). */
+export function requiredMarker(): VNode { return h('span', { class: 'hw-required-marker', 'aria-hidden': 'true' }, ' *'); }
 export type RenderContent = VNodeChild;
 // Hawiyah ships no built-in strings: every text below comes from the application.
 /** Required text: the value when it is usable, otherwise undefined after a one-time development warning. */
@@ -59,6 +69,11 @@ export function rootLabel(component: string, value: string | undefined, attrs: R
   if (hasText(attrs['aria-label'])) return String(attrs['aria-label']);
   if (hasText(attrs['aria-labelledby'])) return optionalText(value);
   return needText(component, name, value);
+}
+/** The attributes of a component root without aria-label and aria-labelledby, which name an inner element instead. */
+export function withoutName(attrs: Record<string, unknown>): Record<string, unknown> {
+  const { 'aria-label': _label, 'aria-labelledby': _labelledby, ...rest } = attrs;
+  return rest;
 }
 /** Binds packaged in-page links with core bindFragmentLink once mounted. The rendered "#id" is left as written
  * (identical on the server and on hydration) until the reader interacts with the link. */

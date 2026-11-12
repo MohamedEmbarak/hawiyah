@@ -106,7 +106,7 @@ it('accepts artwork alone as the brand and names it with brandLabel', async () =
   const [link, plain] = root.querySelectorAll<HTMLElement>('.hw-portal-brand');
   expect(link!.tagName).toBe('A'); expect(link!.getAttribute('aria-label')).toBe('Hawiyah home'); expect(link!.textContent).toBe('');
   expect(link!.querySelector('span')).toBeNull(); expect(link!.querySelector('svg')).not.toBeNull();
-  expect(plain!.tagName).toBe('SPAN'); expect(plain!.hasAttribute('href')).toBe(false); expect(plain!.getAttribute('role')).not.toBe('link');
+  expect(plain!.tagName).toBe('DIV'); expect(plain!.hasAttribute('href')).toBe(false); expect(plain!.getAttribute('role')).toBe('img');
   expect(hawiyahWarnings(warn)).toEqual([]);
   mount({ render: () => h(loose(PortalHeader), { homeHref: '/', menuLabel: 'Menu', navigationLabel: 'Main' }, { brand: artwork }) });
   await nextTick();
@@ -139,9 +139,9 @@ it('renders listener-switched actions only while the listener is bound', async (
   const items = [{ id: 'n1', title: 'Saved' }];
   const read = vi.fn(); const dismiss = vi.fn(); const preferences = vi.fn();
   const root = mount({ render: () => h('div', [
-    h('div', { class: 'without' }, [h(NotificationList, { label: 'Notifications', emptyMessage: 'None', items }), h(CookieConsent, { title: 'Cookies', description: 'Choose', acceptLabel: 'Accept', rejectLabel: 'Reject' })]),
+    h('div', { class: 'without' }, [h(NotificationList, { label: 'Notifications', emptyMessage: 'None', unreadLabel: 'Unread', items }), h(CookieConsent, { title: 'Cookies', description: 'Choose', acceptLabel: 'Accept', rejectLabel: 'Reject' })]),
     h('div', { class: 'with' }, [
-      h(NotificationList, { label: 'Notifications', emptyMessage: 'None', items, getMarkReadLabel: item => `Mark ${item.title} as read`, getDismissLabel: item => `Dismiss ${item.title}`, onRead: read, onDismiss: dismiss }),
+      h(NotificationList, { label: 'Notifications', emptyMessage: 'None', unreadLabel: 'Unread', items, getMarkReadLabel: item => `Mark ${item.title} as read`, getDismissLabel: item => `Dismiss ${item.title}`, onRead: read, onDismiss: dismiss }),
       h(CookieConsent, { title: 'Cookies', description: 'Choose', acceptLabel: 'Accept', rejectLabel: 'Reject', preferencesLabel: 'Preferences', onPreferences: preferences }),
     ]),
   ]) });
@@ -284,7 +284,7 @@ it('requires Table emptyMessage only when columns is given', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   mount({ render: () => h(Table, { caption: 'Slots' }, () => h('tbody')) });
   expect(warn).not.toHaveBeenCalled();
-  const root = mount({ render: () => h(Table, { caption: 'Requests', columns: [{ key: 'id', header: 'ID' }], rows: [] }) });
+  const root = mount({ render: () => h(Table, { caption: 'Requests', columns: [{ key: 'id', label: 'ID' }], rows: [] }) });
   expect(root.querySelector('tbody td')!.textContent).toBe('');
   expect(hawiyahWarnings(warn).filter(message => message.includes('Table requires "emptyMessage" when columns is given'))).toHaveLength(1);
 });
@@ -344,4 +344,29 @@ it('chooses no locale: no Intl, toLocaleString, localeCompare or locale literal 
     const source = readFileSync(join(directory, file), 'utf8');
     expect(source, file).not.toMatch(/\bIntl\.|toLocale\w*\(|localeCompare|resolvedOptions|\b[a-z]{2}-[A-Z]{2}\b|navigator\.language/);
   }
+});
+
+it('[NAME-01][NAME-02][NAME-03][NAME-04][E05] Tabs and TreeView are named by label, aria-label or aria-labelledby on the tablist or tree; none warns once', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const tabs = [{ value: 'a', label: 'A', content: 'First' }];
+  const nodes = [{ id: 'a', label: 'A' }];
+  const tree = { items: nodes, getExpandLabel: () => 'Expand', getCollapseLabel: () => 'Collapse' };
+  const root = mount({ render: () => h('div', [
+    h('h2', { id: 'heading' }, 'Sections'),
+    h(Tabs, { items: tabs, overflowLabel: 'More tabs', label: 'By label' }),
+    h(Tabs, { items: tabs, overflowLabel: 'More tabs', 'aria-label': 'By attribute' }),
+    h(Tabs, { items: tabs, overflowLabel: 'More tabs', 'aria-labelledby': 'heading' }),
+    h(TreeView, { ...tree, label: 'By label' }),
+    h(TreeView, { ...tree, 'aria-label': 'By attribute' }),
+    h(TreeView, { ...tree, 'aria-labelledby': 'heading' }),
+  ]) });
+  await nextTick();
+  const names = [...root.querySelectorAll('[role=tablist], [role=tree]')].map(node => [node.getAttribute('aria-label'), node.getAttribute('aria-labelledby')]);
+  expect(names).toEqual([['By label', null], ['By attribute', null], [null, 'heading'], ['By label', null], ['By attribute', null], [null, 'heading']]);
+  for (const wrapper of root.querySelectorAll('.hw-tabs')) { expect(wrapper.hasAttribute('aria-label')).toBe(false); expect(wrapper.hasAttribute('aria-labelledby')).toBe(false); }
+  expect(hawiyahWarnings(warn)).toEqual([]);
+  const unnamed = mount({ render: () => h('div', [h(loose(Tabs), { items: tabs, overflowLabel: 'More tabs' }), h(loose(TreeView), tree)]) });
+  await nextTick();
+  expect(unnamed.querySelectorAll('[role=tablist][aria-label], [role=tree][aria-label]')).toHaveLength(0);
+  expect(hawiyahWarnings(warn)).toEqual([expect.stringMatching(/^Hawiyah: Tabs requires "label"/), expect.stringMatching(/^Hawiyah: TreeView requires "label"/)]);
 });

@@ -25,7 +25,7 @@ export const SearchField = defineComponent({
     const write=(value:string)=>{expectedValue=value;model.set(value);};
     const search=()=>{if(!element.value || isDisabled(element.value) || composing.value)return;const query=model.value.value.trim();if(query)emit('search',query);close();};
     const choose=(index:number)=>{if(!editable() || composing.value)return;const match=matches.value[index];if(!match)return;write(match.value);element.value?.focus();close();};
-    useFormReset(element,()=>{close();composing.value=false;model.set(props.defaultValue);});
+    useFormReset(element,()=>{close();composing.value=false;model.set(props.defaultValue);},()=>{if(element.value)element.value.value=model.value.value;});
     expose({element,focus:()=>{if(element.value && !isDisabled(element.value))element.value.focus();}});
     watch(model.value,()=>{active.value=-1;});
     watch(()=>props.modelValue,value=>{if(value!==expectedValue)close();expectedValue=undefined;});

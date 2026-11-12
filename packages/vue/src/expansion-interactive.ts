@@ -9,25 +9,31 @@ import {
   onUpdated,
   ref,
   useId,
+  watch,
 } from "vue";
 import type { PropType, VNodeChild } from "vue";
-import { getDirection, getNextEnabledIndex, restoreFocus, observeReadonlyChoice, prepareToastDismissFocus } from "@hawiyah/core";
+import { createTypeahead, getDirection, getNextEnabledIndex, isTypeaheadKey, restoreFocus, observeReadonlyChoice, prepareToastDismissFocus } from "@hawiyah/core";
 import type { Option } from "@hawiyah/core";
-import { Button } from "./forms.js";
+import { Button, type ButtonVariant } from "./forms.js";
 import { Dialog } from "./interactive.js";
-import { needText, optionalText, rootLabel, textOf, useFormReset, useValue } from "./shared.js";
+import { joinIds, needText, optionalText, requiredMarker, rootLabel, textOf, useFormReset, useValue, withoutName } from "./shared.js";
 
 export const ToggleGroup = defineComponent({
   name: "HwToggleGroup",
   inheritAttrs: false,
   props: {
     options: { type: Array as PropType<readonly Option[]>, required: true },
-    label: { type: String, required: true },
+    /** Legend text; optional only when aria-label or aria-labelledby names the group. */
+    label: String,
+    hint: String,
+    error: String,
+    /** Single selection: every radio is required. Not enforced in multiple mode. */
+    required: Boolean,
+    name: String,
+    form: String,
     modelValue: [String, Array] as PropType<string | readonly string[]>,
-    defaultValue: {
-      type: [String, Array] as PropType<string | readonly string[]>,
-      default: "",
-    },
+    /** No declared default: the empty value is '' in single mode and [] in multiple mode. */
+    defaultValue: [String, Array] as PropType<string | readonly string[]>,
     multiple: Boolean,
     disabled: Boolean,
     readonly: Boolean,
@@ -43,27 +49,39 @@ export const ToggleGroup = defineComponent({
     const id = `hw-${useId()}`;
     const element = ref<HTMLInputElement>();
     const group = ref<HTMLFieldSetElement>();
+    // A submission failed on the group (the invalid event of a radio); cleared by a choice or a reset.
+    const failed = ref(false);
     let guards: ReturnType<typeof observeReadonlyChoice>[]=[];
     const bindGuards=()=>{guards.forEach(guard=>guard.destroy());guards=Array.from(group.value?.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? [],observeReadonlyChoice);};
     onMounted(bindGuards);onUpdated(bindGuards);onBeforeUnmount(()=>guards.forEach(guard=>guard.destroy()));
+    const empty = (): string | readonly string[] => props.multiple ? [] : "";
     const model = useValue(
       () => props.modelValue,
-      props.defaultValue,
+      props.defaultValue ?? empty(),
       (v) => emit("update:modelValue", v),
     );
-    useFormReset(element, () => model.set(props.defaultValue));
-    return () =>
-      h(
+    useFormReset(element, () => { failed.value = false; model.set(props.defaultValue ?? empty()); }, () => {
+      group.value?.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach(radio => {
+        radio.checked = radio.value === model.value.value;
+      });
+    });
+    return () => {
+      // A forwarded aria-label or aria-labelledby names the group; otherwise `label` is required text.
+      const legend = optionalText(attrs["aria-label"]) || optionalText(attrs["aria-labelledby"])
+        ? optionalText(props.label) : needText("ToggleGroup", "label", props.label);
+      return h(
         "fieldset",
         mergeProps(attrs, {
           class: "hw-toggle-group",ref:group,"data-hw-readonly":props.readonly || undefined,
           "data-variant": props.variant,
           disabled: props.disabled,
+          "aria-describedby": joinIds(attrs["aria-describedby"], props.hint && `${id}-hint`, props.error && `${id}-error`),
+          "aria-invalid": props.error || failed.value ? true : attrs["aria-invalid"],
         }),
         [
-          h("legend", { class: props.labelHidden ? "hw-label hw-sr-only" : "hw-label" }, props.label),
+          legend ? h("legend", { class: props.labelHidden ? "hw-label hw-sr-only" : "hw-label" }, [legend, props.required && !props.multiple && requiredMarker()]) : null,
           props.multiple
-            ? h("input", { ref: element, type: "hidden", form:attrs.form, disabled: true })
+            ? h("input", { ref: element, type: "hidden", form: props.form, disabled: true })
             : null,
           ...props.options.map((option, index) => {
             const selected = props.multiple
@@ -96,37 +114,40 @@ export const ToggleGroup = defineComponent({
                 )
               : h(
                   "label",
-                  {
-                    key: option.value,
-                    "data-selected": selected ? "true" : undefined,
-                  },
+                  { key: option.value },
                   [
                     h("input", {
                       ref: index === 0 ? element : undefined,
                       type: "radio",
-                      name: attrs.name ?? id,
-                      form: attrs.form,
+                      name: props.name ?? id,
+                      form: props.form,
                       value: option.value,
+                      required: props.required || undefined,
                       checked: selected,readOnly:props.readonly,"aria-disabled":props.readonly || undefined,
                       disabled,
                       onClick: (event: MouseEvent) => {
                         if (props.readonly) event.preventDefault();
                       },
+                      onInvalid: () => { failed.value = true; },
                       onChange: () => {
-                        if (!disabled && !props.readonly)
+                        if (!disabled && !props.readonly) {
+                          failed.value = false;
                           model.set(option.value);
+                        }
                       },
                     }),
                     option.label,
                   ],
                 );
           }),
+          props.hint && h("p", { class: "hw-hint", id: `${id}-hint` }, props.hint),
+          props.error && h("p", { class: "hw-error", id: `${id}-error` }, props.error),
           ...(props.multiple && Array.isArray(model.value.value)
             ? model.value.value.filter(value=>props.options.some(option=>option.value===value && !option.disabled)).map((value) =>
                 h("input", {
                   type: "hidden",
-                  name: attrs.name,
-                  form: attrs.form,
+                  name: props.name,
+                  form: props.form,
                   value,
                   disabled: props.disabled,
                 }),
@@ -134,14 +155,18 @@ export const ToggleGroup = defineComponent({
             : []),
         ],
       );
+    };
   },
 });
 export const Popover = defineComponent({
   name: "HwPopover",
   inheritAttrs: false,
   props: {
-    label: { type: String, required: true },
-    triggerLabel: { type: String, required: true },
+    /** Accessible name of the panel; not required when aria-label or aria-labelledby names it. Prints nothing. */
+    label: String,
+    /** Text of the packaged trigger; required unless the `trigger` slot is given. */
+    triggerLabel: String,
+    triggerVariant: { type: String as PropType<ButtonVariant>, default: "secondary" },
     open: { type: Boolean, default: undefined },
     defaultOpen: Boolean,
     disabled: Boolean,
@@ -164,6 +189,7 @@ export const Popover = defineComponent({
       if (model.value.value && !root.value?.contains(event.target as Node))
         close();
     };
+    watch(() => props.disabled, (disabled) => { if (disabled && model.value.value) close(); });
     onMounted(() =>
       root.value?.ownerDocument.addEventListener("pointerdown", outside),
     );
@@ -179,15 +205,21 @@ export const Popover = defineComponent({
     return () =>
       h(
         "div",
-        mergeProps(attrs, {
+        mergeProps(withoutName(attrs), {
           ref: root,
           class: "hw-popover",
           onKeydown: (event: KeyboardEvent) => {
-            if (event.key === "Escape" && model.value.value) {
+            if (event.key === "Escape" && model.value.value && !event.defaultPrevented) {
               event.preventDefault();
               event.stopPropagation();
               close(true);
             }
+          },
+          // Focus moving to an element outside closes the popover and stays where it went; a focusout
+          // without a target (the window lost focus) leaves it open.
+          onFocusout: (event: FocusEvent) => {
+            const next = event.relatedTarget as Node | null;
+            if (model.value.value && next && !root.value?.contains(next)) close();
           },
         }),
         [
@@ -197,21 +229,22 @@ export const Popover = defineComponent({
               ref: trigger,
               type: "button",
               class: "hw-button",
-              "data-variant": "secondary",
+              "data-variant": props.triggerVariant,
               disabled: props.disabled,
               "aria-expanded": model.value.value,
               "aria-controls": id,
               onClick: () => model.set(!model.value.value),
             },
-            slots.trigger?.() ?? props.triggerLabel,
+            slots.trigger?.() ?? needText("Popover", "triggerLabel", props.triggerLabel, "no trigger slot is given"),
           ),
           h(
             "div",
             {
               id,
-              class: "hw-popover-content",
+              class: "hw-popover-panel",
               role: "region",
-              "aria-label": props.label,
+              "aria-label": rootLabel("Popover", props.label, attrs),
+              "aria-labelledby": attrs["aria-labelledby"],
               hidden: !model.value.value,
             },
             slots.default?.({ close: () => close(true) }),
@@ -230,50 +263,66 @@ export const Menu = defineComponent({
   name: "HwMenu",
   inheritAttrs: false,
   props: {
-    label: { type: String, required: true },
+    /** Accessible name of the menu; not required when aria-label or aria-labelledby names it. Not printed on the trigger. */
+    label: String,
+    /** Text of the packaged trigger; required unless the `trigger` slot is given. */
+    triggerLabel: String,
+    triggerVariant: { type: String as PropType<ButtonVariant>, default: "secondary" },
     items: { type: Array as PropType<readonly MenuItem[]>, required: true },
+    open: { type: Boolean, default: undefined },
+    defaultOpen: Boolean,
     disabled: Boolean,
   },
-  emits: { select: (_value: string) => true },
+  emits: { "update:open": (_value: boolean) => true, action: (_value: string) => true },
   setup(props, { attrs, emit, slots }) {
     const id = `hw-${useId()}`;
     const root = ref<HTMLElement>();
     const trigger = ref<HTMLButtonElement>();
-    const open = ref(false);
+    const open = useValue(() => props.open, props.defaultOpen, (v) => emit("update:open", v));
     const focused = ref(0);
     const items = new Map<number, HTMLElement>();
+    const typeahead = createTypeahead();
+    let openOnLast = false;
     const close = (focus = true) => {
-      open.value = false;
+      typeahead.reset();
+      open.set(false);
       if (focus) restoreFocus(trigger.value);
     };
     const show = (last = false) => {
       if (props.disabled) return;
-      open.value = true;
-      focused.value = getNextEnabledIndex(
-        -1,
-        last ? "End" : "Home",
-        props.items,
-      );
-      void nextTick(() => items.get(focused.value)?.focus());
+      openOnLast = last;
+      open.set(true);
     };
+    // Whenever the menu opens (a press, a key or the application's state) the first enabled item, or the
+    // last one after ArrowUp, becomes active and takes focus after the render; nothing runs on the server.
+    watch(() => open.value.value, (isOpen) => {
+      if (!isOpen) { typeahead.reset(); return; }
+      focused.value = getNextEnabledIndex(-1, openOnLast ? "End" : "Home", props.items);
+      openOnLast = false;
+      items.get(focused.value)?.focus();
+    }, { flush: "post" });
+    watch(() => props.disabled, (disabled) => { if (disabled && open.value.value) close(false); });
+    const active = computed(() => props.items[focused.value] && !props.items[focused.value]!.disabled ? focused.value : getNextEnabledIndex(-1, "Home", props.items));
     const outside = (event: Event) => {
-      if (open.value && !root.value?.contains(event.target as Node))
+      if (open.value.value && !root.value?.contains(event.target as Node))
         close(false);
     };
     onMounted(() =>
       root.value?.ownerDocument.addEventListener("pointerdown", outside),
     );
-    onBeforeUnmount(() =>
-      root.value?.ownerDocument.removeEventListener("pointerdown", outside),
-    );
+    onBeforeUnmount(() => {
+      typeahead.reset();
+      root.value?.ownerDocument.removeEventListener("pointerdown", outside);
+    });
     return () =>
       h(
         "div",
-        mergeProps(attrs, {
+        mergeProps(withoutName(attrs), {
           ref: root,
           class: "hw-menu",
           onFocusout: (event: FocusEvent) => {
-            if (!root.value?.contains(event.relatedTarget as Node | null))
+            const next = event.relatedTarget as Node | null;
+            if (open.value.value && next && !root.value?.contains(next))
               close(false);
           },
         }),
@@ -284,12 +333,12 @@ export const Menu = defineComponent({
               ref: trigger,
               class: "hw-button",
               type: "button",
-              "data-variant": "secondary",
+              "data-variant": props.triggerVariant,
               disabled: props.disabled,
               "aria-haspopup": "menu",
-              "aria-expanded": open.value,
+              "aria-expanded": open.value.value,
               "aria-controls": id,
-              onClick: () => (open.value ? close() : show()),
+              onClick: () => (open.value.value ? close() : show()),
               onKeydown: (event: KeyboardEvent) => {
                 if (event.key === "ArrowDown" || event.key === "ArrowUp") {
                   event.preventDefault();
@@ -297,16 +346,19 @@ export const Menu = defineComponent({
                 }
               },
             },
-            slots.trigger?.() ?? props.label,
+            slots.trigger?.() ?? needText("Menu", "triggerLabel", props.triggerLabel, "no trigger slot is given"),
           ),
           h(
-            "ul",
+            "div",
             {
               id,
+              class: "hw-menu-content",
               role: "menu",
-              "aria-label": props.label,
-              hidden: !open.value,
+              "aria-label": rootLabel("Menu", props.label, attrs),
+              "aria-labelledby": attrs["aria-labelledby"],
+              hidden: !open.value.value,
               onKeydown: (event: KeyboardEvent) => {
+                if (event.isComposing) return;
                 if (
                   ["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)
                 ) {
@@ -325,39 +377,47 @@ export const Menu = defineComponent({
                   close();
                 } else if (event.key === "Tab") {
                   close(false);
+                } else if (isTypeaheadKey(event)) {
+                  const labels = props.items.map((_, index) => items.get(index)?.textContent ?? "");
+                  const next = typeahead.next(event.key, labels, focused.value, (index) => Boolean(props.items[index]?.disabled));
+                  if (next >= 0) {
+                    event.preventDefault();
+                    focused.value = next;
+                    items.get(next)?.focus();
+                  }
                 }
               },
             },
             props.items.map((item, index) =>
-              h("li", { role: "none", key: item.value }, [
-                h(
-                  item.href ? "a" : "button",
-                  {
-                    ref: (element: unknown) => {
-                      if (element) items.set(index, element as HTMLElement);
-                      else items.delete(index);
-                    },
-                    type: item.href ? undefined : "button",
-                    href: item.disabled ? undefined : item.href,
-                    role: "menuitem",
-                    "aria-disabled": item.disabled || undefined,
-                    tabindex:
-                      focused.value === index && !item.disabled ? 0 : -1,
-                    onFocus: () => {
-                      focused.value = index;
-                    },
-                    onClick: (event: MouseEvent) => {
-                      if (item.disabled) {
-                        event.preventDefault();
-                        return;
-                      }
-                      emit("select", item.value);
-                      close();
-                    },
+              h(
+                item.href ? "a" : "button",
+                {
+                  key: item.value,
+                  ref: (element: unknown) => {
+                    if (element) items.set(index, element as HTMLElement);
+                    else items.delete(index);
                   },
-                  item.label,
-                ),
-              ]),
+                  class: "hw-menu-item",
+                  type: item.href ? undefined : "button",
+                  href: item.disabled ? undefined : item.href,
+                  role: "menuitem",
+                  disabled: item.href ? undefined : item.disabled,
+                  "aria-disabled": item.href && item.disabled ? "true" : undefined,
+                  tabindex: active.value === index ? 0 : -1,
+                  onFocus: () => {
+                    focused.value = index;
+                  },
+                  onClick: (event: MouseEvent) => {
+                    if (item.disabled) {
+                      event.preventDefault();
+                      return;
+                    }
+                    emit("action", item.value);
+                    close();
+                  },
+                },
+                item.label,
+              ),
             ),
           ),
         ],
@@ -545,6 +605,11 @@ export const TreeView = defineComponent({
     );
     const focused = ref("");
     const elements = new Map<string, HTMLElement>();
+    const typeahead = createTypeahead();
+    onBeforeUnmount(() => typeahead.reset());
+    // Each tree item is named by its label span alone, so the toggle's name is not part of it.
+    const base = `hw-${useId()}`;
+    const labelId = (node: TreeNode) => `${base}-${encodeURIComponent(node.id)}`;
     type Visible = {
       node: TreeNode;
       depth: number;
@@ -614,7 +679,7 @@ export const TreeView = defineComponent({
               key: row.node.id,
               role: "treeitem",
               class: "hw-tree-item",
-              "aria-label": row.node.label,
+              "aria-labelledby": labelId(row.node),
               "aria-level": row.depth,
               "aria-posinset": row.position,
               "aria-setsize": row.count,
@@ -633,7 +698,7 @@ export const TreeView = defineComponent({
                 }
               },
               onKeydown: (event: KeyboardEvent) => {
-                if (props.disabled || row.node.disabled) return;
+                if (props.disabled || row.node.disabled || event.isComposing) return;
                 const forward =
                   getDirection(event.currentTarget as Element) === "rtl"
                     ? "ArrowLeft"
@@ -668,6 +733,14 @@ export const TreeView = defineComponent({
                 } else if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
                   model.set(row.node.id);
+                } else if (isTypeaheadKey(event)) {
+                  // Type-ahead over the visible (expanded) nodes only.
+                  const labels = visible.value.map((item) => elements.get(item.node.id)?.lastElementChild?.textContent ?? "");
+                  const next = typeahead.next(event.key, labels, index, (position) => Boolean(visible.value[position]!.node.disabled));
+                  if (next >= 0) {
+                    event.preventDefault();
+                    focus(visible.value[next]!.node.id);
+                  }
                 }
               },
             },
@@ -677,6 +750,7 @@ export const TreeView = defineComponent({
                   "button",
                   {
                     type: "button",
+                    class: "hw-tree-toggle",
                     tabindex: -1,
                     disabled: props.disabled || row.node.disabled,
                     "aria-label": isOpen
@@ -690,7 +764,7 @@ export const TreeView = defineComponent({
                   },
                   h('span', { class: 'hw-icon', 'data-icon': isOpen ? 'minus-sign' : 'add-01', 'data-size': 'sm', 'aria-hidden': 'true' }),
                 ),
-              h("span", {}, row.node.label),
+              h("span", { id: labelId(row.node) }, row.node.label),
             ],
           );
         }),
@@ -770,8 +844,8 @@ export const Carousel = defineComponent({
           h("div", { class: "hw-carousel-controls" }, [
             props.showIndicators && total > 0 && h("div", {class: "hw-carousel-pagination", role: "group", "aria-label": needText("Carousel", "indicatorsLabel", props.indicatorsLabel, "showIndicators is on")}, props.slides.map((slide, index) => h("button", {class: "hw-carousel-dot", key: slide.id, type: "button", "aria-label": slideLabel(index + 1, total), "aria-current": index === current ? "true" : undefined, onClick: () => select(index)}))),
             h("div", {class: "hw-carousel-arrows"}, [
-              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-previous": "", "aria-label": needText("Carousel", "previousLabel", props.previousLabel), disabled: total < 2 || (!props.wrap && current === 0), onClick: () => select(current - 1)}),
-              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-next": "", "aria-label": needText("Carousel", "nextLabel", props.nextLabel), disabled: total < 2 || (!props.wrap && current === total - 1), onClick: () => select(current + 1)}),
+              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-previous": "", "aria-label": needText("Carousel", "previousLabel", props.previousLabel), disabled: total < 2, "aria-disabled": total > 1 && !props.wrap && current === 0 ? "true" : undefined, onClick: () => select(current - 1)}),
+              h(Button, {class: "hw-carousel-arrow", variant: "secondary", type: "button", "data-hw-next": "", "aria-label": needText("Carousel", "nextLabel", props.nextLabel), disabled: total < 2, "aria-disabled": total > 1 && !props.wrap && current === total - 1 ? "true" : undefined, onClick: () => select(current + 1)}),
             ]),
             h(
               "span",

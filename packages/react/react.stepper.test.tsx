@@ -12,7 +12,7 @@ const items: StepItem[] = [{ value: 'one', label: 'البيانات' }, { value:
 it('keeps completed, current and upcoming states synchronized when controlled progress changes', async () => {
   const container = document.createElement('div'); document.body.append(container);
   const root = createRoot(container); roots.push(root);
-  const render = async (activeIndex?: number) => act(() => root.render(<Stepper label="التقدم" items={items} current="two" activeIndex={activeIndex} className="custom" />));
+  const render = async (activeIndex?: number) => act(() => root.render(<Stepper label="التقدم" completeLabel="مكتملة" upcomingLabel="قادمة" items={items} current="two" activeIndex={activeIndex} className="custom" />));
   const states = () => [...container.querySelectorAll<HTMLElement>('li')].map(step => step.dataset.state);
   await render(); expect(states()).toEqual(['complete', 'current', 'upcoming']);
   expect(container.querySelector('ol')!.getAttribute('aria-label')).toBe('التقدم');
@@ -27,7 +27,7 @@ it('keeps completed, current and upcoming states synchronized when controlled pr
   expect(container.querySelector('button, a, [tabindex], [activeindex]')).toBeNull();
 });
 it('preserves explicit status, English names and static server rendering', () => {
-  const html = renderToStaticMarkup(<Stepper items={[{ ...items[0]!, status: 'upcoming' }, { ...items[1]!, status: 'current' }, items[2]!]} activeIndex={3} label="Progress" aria-label="Application progress" />);
+  const html = renderToStaticMarkup(<Stepper items={[{ ...items[0]!, status: 'upcoming' }, { ...items[1]!, status: 'current' }, items[2]!]} activeIndex={3} completeLabel="Complete" upcomingLabel="Upcoming" label="Progress" aria-label="Application progress" />);
   const container = document.createElement('div'); container.innerHTML = html;
   expect([...container.querySelectorAll<HTMLElement>('li')].map(step => step.dataset.state)).toEqual(['upcoming', 'current', 'complete']);
   expect(container.querySelectorAll('[aria-current="step"]')).toHaveLength(1);

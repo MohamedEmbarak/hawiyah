@@ -31,7 +31,7 @@ describe('hw-toggle-group labelHidden', () => {
     const [single, many] = [...root.querySelectorAll('fieldset.hw-toggle-group')];
     for (const [fieldset, text] of [[single!, 'View'], [many!, 'Filters']] as const) { expect(fieldset.hasAttribute('aria-label')).toBe(false); expect(fieldset.hasAttribute('aria-labelledby')).toBe(false); expect(fieldset.querySelector('legend')!.textContent).toBe(text); }
     const radios = [...single!.querySelectorAll<HTMLInputElement>('input[type="radio"]')];
-    expect(radios.map(radio => radio.value)).toEqual(['list', 'grid', 'map']); expect(radios.map(radio => radio.checked)).toEqual([true, false, false]); expect([...single!.querySelectorAll('label > span')].map(label => label.textContent)).toEqual(['List', 'Grid', 'Map']);
+    expect(radios.map(radio => radio.value)).toEqual(['list', 'grid', 'map']); expect(radios.map(radio => radio.checked)).toEqual([true, false, false]); expect([...single!.querySelectorAll('label')].map(label => label.textContent)).toEqual(['List', 'Grid', 'Map']);
     radios[1]!.click(); fixture.detectChanges(); expect(state.single).toBe('grid');
     const buttons = [...many!.querySelectorAll<HTMLButtonElement>('button.hw-button')];
     expect(buttons.map(button => button.textContent)).toEqual(['List', 'Grid', 'Map']); expect(buttons.map(button => button.getAttribute('aria-pressed'))).toEqual(['false', 'false', 'false']);

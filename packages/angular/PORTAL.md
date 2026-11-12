@@ -44,8 +44,9 @@ optional plain text for the header and the footer; projected `[hwBrand]` artwork
 can stand without it, and no brand text is printed unless `brand` is supplied.
 `brandLabel` is written as `aria-label` on the brand link, which is how artwork
 without text gets its accessible name; with visible brand text and no
-`brandLabel`, nothing is added. An empty `homeHref` renders the brand without an
-`href`, so it is not a link. In development, a brand with no text, no accessible
+`brandLabel`, nothing is added. An empty `homeHref` renders the brand as a
+`div.hw-portal-brand`, not a link; `brandLabel` then gives it `role="img"` and
+its name. In development, a brand with no text, no accessible
 name and no image `alt` is reported after the first render in a browser.
 
 The layout passes `brand` and `brandLabel` to its footer as well. Angular
@@ -94,7 +95,9 @@ actions container has one class in every adapter, `hw-portal-header-actions`;
 it replaces `hw-portal-actions`, which the stylesheet still styles for one
 release. The header is not sticky, and its actions may wrap onto a second row
 on a narrow screen. `HwSecondaryNavComponent` is independently available with
-`items` and the required `label`. It uses ordinary links with `aria-current`, not tab/menu roles.
+`items` and `label`, which is required unless `aria-label` or `aria-labelledby` is
+written on the element (both are forwarded to its `nav`). It uses ordinary links
+with `aria-current`, not tab/menu roles.
 
 Standalone `HwPortalHeaderComponent` requires `menuLabel` and `navigationLabel`,
 takes the same `brand`, `brandLabel` and `homeHref`, and renders its skip link
@@ -110,7 +113,26 @@ artwork or the brand text: it is written as `aria-label` with `role="group"` on
 text, and only while that group has either. The outer `.hw-portal-footer-brand`
 and the description inside it carry no role and no name. Escape closes the mobile
 disclosure and focuses its toggle; link selection, outside press and focus
-leaving close it. Tab remains native and desktop links stay visible. Each header
+leaving close it. One press on another group heading opens that group and closes
+the open one, with mouse, touch and pen. Tab remains native and desktop links stay
+visible.
+
+The open state of the mobile menu is `[(open)]` on `hw-portal-header`:
+`(openChange)` reports each change the reader makes, once, and a value the
+application writes is not reported back. Close the menu after a client-side route
+change by setting it to false, or call `close()` on a template reference, which
+also closes the open group:
+
+```html
+<hw-portal-header #header [(open)]="menuOpen" menuLabel="القائمة" navigationLabel="التنقل الرئيسي" [links]="links" />
+```
+
+```ts
+router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => { this.menuOpen = false; });
+```
+
+`hw-portal-layout` does not pass `open` to its header in 0.3.0; compose
+`hw-portal-header` directly where the state is needed. Each header
 gets a distinct navigation ID unless supplied explicitly. No vanilla controller
 is attached to Angular-owned DOM.
 

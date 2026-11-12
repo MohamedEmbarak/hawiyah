@@ -121,7 +121,10 @@ list. For a grouped panel, give each list a visible heading.
 
 Opening a sibling summary closes the previous branch. Escape closes the innermost open
 branch and focuses its summary. A subsequent Escape closes the mobile navigation when
-its toggle is expanded. Moving focus or pressing outside a branch dismisses it. Links
+its toggle is expanded. Moving focus or pressing outside a branch dismisses it. One
+press (mouse, touch or pen) on another group heading opens that group and closes the
+open one at every width: the press itself closes nothing, so the heading does not move
+away below 48rem before its click; a keyboard focus move keeps the ordinary rule. Links
 retain their native activation. Set `aria-current="page"` on the destination selected by
 your router. Group order, labels, URL normalization and any optional artwork belong to
 the host application.

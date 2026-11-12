@@ -3,6 +3,7 @@ import { observeAngularFieldPresence } from './field-presence';
 import { injectIsBrowser } from './platform';
 import { injectId } from './ids';
 import { HwTexts } from './text';
+import { HwNamedRoot } from './root-name';
 import { getDirection, getNextEnabledIndex, getPaginationItems, normalizePaginationPage, normalizePaginationTotal, observeTabOverflow, type Direction, type Orientation } from '@hawiyah/core';
 
 /** Renders its own panel, so projected content stays in the view that declares it and
@@ -23,12 +24,11 @@ export class HwTabComponent {
 
 @Component({ selector: 'hw-tabs', standalone: true,
   template: `<div class="hw-tabs"><div #tabBar class="hw-tab-bar" [attr.data-hw-overflow]="overflow" [attr.data-orientation]="orientation">
-  <div class="hw-tab-list" [attr.data-hw-overflow]="overflow" role="tablist" [attr.aria-label]="texts.need('label', label)" [attr.aria-orientation]="orientation" [attr.aria-hidden]="hiddenTabs.length === tabs?.length || null">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="hw-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [attr.data-hw-overflow-hidden]="hiddenTabs.includes(i) ? 'true' : null" [attr.aria-hidden]="hiddenTabs.includes(i) || null" [disabled]="tab.disabled" [tabIndex]="!hiddenTabs.includes(i) && focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>
+  <div class="hw-tab-list" [attr.data-hw-overflow]="overflow" role="tablist" [attr.aria-label]="rootName" [attr.aria-labelledby]="ariaLabelledby" [attr.aria-describedby]="ariaDescribedby" [attr.aria-orientation]="orientation" [attr.aria-hidden]="hiddenTabs.length === tabs?.length || null">@for (tab of tabs; track tab.value; let i = $index) {<button #tabButton class="hw-tab" type="button" role="tab" [id]="tabId(i)" [attr.aria-controls]="panelId(i)" [attr.aria-selected]="activeValue === tab.value" [attr.data-hw-overflow-hidden]="hiddenTabs.includes(i) ? 'true' : null" [attr.aria-hidden]="hiddenTabs.includes(i) || null" [disabled]="tab.disabled" [tabIndex]="!hiddenTabs.includes(i) && focusValue === tab.value ? 0 : -1" (click)="select(tab.value)" (focus)="focusedValue = tab.value" (keydown)="keydown($event, i)">{{ tab.label }}</button>}</div>
   <details #overflowDetails class="hw-tabs-overflow" [hidden]="!hiddenTabs.length" (keydown)="overflowKey($event)"><summary class="hw-tab-overflow-trigger" [attr.aria-label]="overflow === 'menu' ? texts.need('overflowLabel', overflowLabel, 'overflow is menu') : null" [attr.data-active]="overflowActive || null">…</summary><div class="hw-tab-overflow-menu">@for (i of hiddenTabs; track i) {@if (tabs.get(i); as tab) {<button type="button" class="hw-tab-overflow-item" [attr.data-hw-overflow-value]="tab.value" [disabled]="tab.disabled" [attr.aria-pressed]="tab.value === activeValue" (click)="overflowSelect(tab.value)">{{ tab.label }}</button>}}</div></details>
   </div><ng-content /></div>` })
-export class HwTabsComponent {
+export class HwTabsComponent extends HwNamedRoot {
   @Input() id = injectId('hw-tabs');
-  @Input({required: true}) label = '';
   @Input() value = '';
   @Input() orientation: Orientation = 'horizontal';
   @Input() direction?: Direction;
@@ -117,16 +117,18 @@ export class HwTabsComponent {
   }
 }
 
-export interface HwBreadcrumbItem { label: string; href?: string; disabled?: boolean }
-@Component({ selector: 'hw-breadcrumb', standalone: true, template: `<nav class="hw-breadcrumb" [attr.aria-label]="texts.need('label', label)"><ol>@for (item of items; track $index; let last = $last) {<li>@if (item.href && !item.disabled && !last) {<a [href]="item.href">{{ item.label }}</a>} @else {<span [attr.role]="item.disabled ? 'link' : null" [attr.aria-disabled]="item.disabled || null" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>}</li>}</ol></nav>` })
-export class HwBreadcrumbComponent {
-  @Input({required: true}) label = '';
+/** `current` marks the page the reader is on; without it the last item is the current one. */
+export interface HwBreadcrumbItem { label: string; href?: string; current?: boolean; disabled?: boolean }
+@Component({ selector: 'hw-breadcrumb', standalone: true, template: `<nav class="hw-breadcrumb" [attr.aria-label]="rootName" [attr.aria-labelledby]="ariaLabelledby" [attr.aria-describedby]="ariaDescribedby"><ol>@for (item of items; track $index; let i = $index) {<li>@if (i === currentIndex) {<span aria-current="page">{{ item.label }}</span>} @else if (item.href && !item.disabled) {<a [href]="item.href">{{ item.label }}</a>} @else {<span [attr.role]="item.disabled ? 'link' : null" [attr.aria-disabled]="item.disabled || null">{{ item.label }}</span>}</li>}</ol></nav>` })
+export class HwBreadcrumbComponent extends HwNamedRoot {
   @Input() items: readonly HwBreadcrumbItem[] = [];
   protected readonly texts = new HwTexts('hw-breadcrumb');
+  /** The first item flagged current, else the last item. It is text: never a link and never a tab stop. */
+  get currentIndex(): number { const flagged = this.items.findIndex(item => item.current); return flagged === -1 ? this.items.length - 1 : flagged; }
 }
 
-@Component({ selector: 'hw-pagination', standalone: true, template: `<nav #root class="hw-pagination" [attr.aria-label]="texts.need('label', label)" [attr.data-disabled]="disabled || null" [hidden]="hideOnSinglePage && total === 1" (keydown)="key($event)" (click)="guardClick($event)">
-<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous type="button" [attr.aria-label]="texts.need('previousLabel', previousLabel)" [disabled]="disabled || current === 1" (click)="select(current - 1)"></button>
+@Component({ selector: 'hw-pagination', standalone: true, template: `<nav #root class="hw-pagination" [attr.aria-label]="rootName" [attr.aria-labelledby]="ariaLabelledby" [attr.aria-describedby]="ariaDescribedby" [attr.data-disabled]="disabled || null" [hidden]="hideOnSinglePage && total === 1" (keydown)="key($event)" (click)="guardClick($event)">
+<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous type="button" [attr.aria-label]="texts.need('previousLabel', previousLabel)" [disabled]="disabled" [attr.aria-disabled]="!disabled && current === 1 ? 'true' : null" (click)="select(current - 1)"></button>
 @for (item of entries; track item.page || -item.start) {
   @if (item.page) {<button class="hw-button hw-pagination-item" data-variant="ghost" [attr.data-hw-page]="item.page" type="button" [disabled]="disabled" [attr.aria-current]="item.page === current ? 'page' : null" [attr.aria-label]="texts.call('getPageLabel', getPageLabel, [item.page])" (click)="select(item.page)">{{ formatPage(item.page) }}</button>}
   @else if (disabled) {<span class="hw-pagination-ellipsis" aria-hidden="true">…</span>}
@@ -135,11 +137,10 @@ export class HwBreadcrumbComponent {
     @else {<div #jumpGroup class="hw-pagination-jump" (keydown.enter)="jumpKey($event, jumpGroup, item)"><label class="hw-label">{{ texts.need('jumpLabel', jumpLabel) }}<input class="hw-input" data-hw-jump-input data-hw-filled="true" form="" type="number" inputmode="numeric" required [min]="item.start" [max]="item.end" step="1" [value]="item.start" (input)="jumpInput($event)"></label><button type="button" class="hw-button" data-hw-jump-submit (click)="jump(jumpGroup, item)">{{ texts.need('goLabel', goLabel) }}</button></div>}
   </div></details>}
 }
-<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next type="button" [attr.aria-label]="texts.need('nextLabel', nextLabel)" [disabled]="disabled || current === total" (click)="select(current + 1)"></button>
+<button class="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next type="button" [attr.aria-label]="texts.need('nextLabel', nextLabel)" [disabled]="disabled" [attr.aria-disabled]="!disabled && current === total ? 'true' : null" (click)="select(current + 1)"></button>
 </nav>` })
-export class HwPaginationComponent {
-  constructor() { observeAngularFieldPresence(); }
-  @Input({required: true}) label = '';
+export class HwPaginationComponent extends HwNamedRoot {
+  constructor() { super(); observeAngularFieldPresence(); }
   @Input() page = 1;
   @Input() totalPages = 1;
   @Input({required: true}) previousLabel = '';
@@ -214,19 +215,23 @@ export class HwPaginationComponent {
   jumpKey(event: Event, node: HTMLElement, item: {start: number; end: number}) { event.preventDefault(); this.jump(node, item); }
 }
 
-export interface HwStep { label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
-@Component({ selector: 'hw-stepper', standalone: true, template: `<ol class="hw-stepper" [attr.aria-label]="texts.need('label', label)">@for (step of steps; track $index; let i = $index) {<li class="hw-step" [attr.aria-current]="state(i) === 'current' ? 'step' : null" [attr.data-state]="state(i)"><span>{{ step.label }}@if (step.description) {<small class="hw-hint">{{ step.description }}</small>}</span></li>}</ol>` })
-export class HwStepperComponent {
-  @Input({required: true}) label = '';
+/** `value` keys the step; `current` of the stepper names the current step by it. */
+export interface HwStep { value: string; label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }
+@Component({ selector: 'hw-stepper', standalone: true, template: `<ol class="hw-stepper" [attr.aria-label]="rootName" [attr.aria-labelledby]="ariaLabelledby" [attr.aria-describedby]="ariaDescribedby">@for (step of items; track step.value; let i = $index) {<li class="hw-step" [attr.aria-current]="state(i) === 'current' ? 'step' : null" [attr.data-state]="state(i)"><span>{{ step.label }}</span>@if (stateText(i); as text) {<span class="hw-sr-only" data-hw-step-status>{{ text }}</span>}@if (step.description) {<p class="hw-hint">{{ step.description }}</p>}</li>}</ol>` })
+export class HwStepperComponent extends HwNamedRoot {
   protected readonly texts = new HwTexts('hw-stepper');
-  @Input() steps: readonly HwStep[] = [];
-  /** Zero-based current step. This is a progress indicator, not navigation. */
-  @Input() current = 0;
-  /** Overrides current. -1 means not started; steps.length means complete. */
+  @Input() items: readonly HwStep[] = [];
+  /** Value of the current step. This is a progress indicator, not navigation. Without it and without activeIndex no step is current. */
+  @Input() current?: string;
+  /** Overrides current. -1 means not started; items.length means complete. */
   @Input() activeIndex?: number;
+  /** State text of a complete step and of an upcoming step, for readers who do not see the check mark and the colour. */
+  @Input({required: true}) completeLabel = ''; @Input({required: true}) upcomingLabel = '';
   state(index: number): 'complete' | 'current' | 'upcoming' {
-    const requested = this.activeIndex ?? this.current;
-    const active = Number.isInteger(requested) && requested >= -1 && requested <= this.steps.length ? requested : -1;
-    return this.steps[index]?.status ?? (index === active ? 'current' : index < active ? 'complete' : 'upcoming');
+    const requested = this.activeIndex ?? this.items.findIndex(item => item.value === this.current);
+    const active = Number.isInteger(requested) && requested >= -1 && requested <= this.items.length ? requested : -1;
+    return this.items[index]?.status ?? (index === active ? 'current' : index < active ? 'complete' : 'upcoming');
   }
+  /** The current step is exposed by aria-current; the other two states by their text. */
+  stateText(index: number): string | null { const state = this.state(index); return state === 'complete' ? this.texts.need('completeLabel', this.completeLabel) : state === 'upcoming' ? this.texts.need('upcomingLabel', this.upcomingLabel) : null; }
 }

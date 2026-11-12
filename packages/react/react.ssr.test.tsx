@@ -21,12 +21,17 @@ describe('React server rendering', () => {
       <Hawiyah.Progress label="Complete" value={50} /><Hawiyah.Skeleton /><Hawiyah.Spinner label="Loading" />
       <Hawiyah.Avatar name="Demo User" /><Hawiyah.Divider />
       <Hawiyah.Tooltip content="Help"><Hawiyah.Button>Info</Hawiyah.Button></Hawiyah.Tooltip>
-      <Hawiyah.FileUpload label="Attachment" /><Hawiyah.Stepper label="Progress" current="start" items={[{ value: 'start', label: 'Start' }]} />
+      <Hawiyah.FileUpload label="Attachment" /><Hawiyah.Stepper label="Progress" completeLabel="Complete" upcomingLabel="Upcoming" current="start" items={[{ value: 'start', label: 'Start' }]} />
       <Hawiyah.EmptyState title="No requests" />
     </>);
     expect(html).toContain('role="combobox"');
     expect(html).toContain('role="tablist"');
     expect(html).toContain('type="file"');
     expect(html).not.toMatch(/<dialog[^>]*\sopen(?:=|\s|>)/u);
+  });
+  it('[LAYOUT-01][E06] AppShell renders sidebar and main as direct children, without a body wrapper', () => {
+    const html = renderToString(<Hawiyah.AppShell skipLabel="Skip to content" header="Header" sidebar="Side" footer="Footer">Main</Hawiyah.AppShell>);
+    expect(html).not.toContain('hw-app-shell-body');
+    expect(html).toMatch(/^<div class="hw-app-shell"><a [^>]*class="hw-skip-link"[^>]*>Skip to content<\/a><div class="hw-app-shell-header">Header<\/div><aside class="hw-app-shell-sidebar">Side<\/aside><main [^>]*class="hw-app-shell-main">Main<\/main><div class="hw-app-shell-footer">Footer<\/div><\/div>$/u);
   });
 });

@@ -74,5 +74,10 @@ export class HwAppShellComponent extends HwLayout {
 }
 // The host cannot be a header element, so the page header keeps its inner header; the stylesheet makes the host a block.
 // The input named title is not a native tooltip on the wrapper element.
-@Component({selector: 'hw-page-header', standalone: true, imports: [NgStyle], host: {'[attr.title]': 'null'}, template: `<header class="hw-page-header" [ngStyle]="styles"><ng-content select="[hwBreadcrumb]" /><div class="hw-page-header-main"><div><h1>{{ title }}</h1>@if (description) {<p>{{ description }}</p>}</div><div class="hw-page-header-actions"><ng-content /></div></div></header>`})
-export class HwPageHeaderComponent extends HwLayout { @Input({required: true}) title = ''; @Input() description = ''; }
+@Component({selector: 'hw-page-header', standalone: true, imports: [NgStyle], host: {'[attr.title]': 'null'}, template: `<header class="hw-page-header" [ngStyle]="styles"><ng-content select="[hwBreadcrumb]" /><div class="hw-page-header-main"><div>@switch (heading) {@case (2) {<h2>{{ title }}</h2>}@case (3) {<h3>{{ title }}</h3>}@case (4) {<h4>{{ title }}</h4>}@case (5) {<h5>{{ title }}</h5>}@case (6) {<h6>{{ title }}</h6>}@default {<h1>{{ title }}</h1>}}@if (description) {<p>{{ description }}</p>}</div><div class="hw-page-header-actions"><ng-content /></div></div></header>`})
+export class HwPageHeaderComponent extends HwLayout {
+  @Input({required: true}) title = ''; @Input() description = '';
+  /** Heading level of the title, 1 to 6. A page header inside a page that already has its h1 takes 2 or lower. */
+  @Input() level = 1;
+  get heading(): number { return Math.min(6, Math.max(1, Math.trunc(Number(this.level)) || 1)); }
+}

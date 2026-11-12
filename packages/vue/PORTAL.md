@@ -32,6 +32,15 @@ props such as `externalLabel`, `legalLinksLabel`, `supportLabel`). Required text
 `mainId` uses Vue `useId` by default. Slots: `brand`, `notice`, `actions`, `footer`, default
 (page content). `notice` and `actions` are forwarded to the header.
 
+`PortalHeader` alone also takes `v-model:open` / `defaultOpen`: the open state of
+the navigation below 48rem. The toggle, Escape (focus returns to the toggle), an
+outside press, focus leaving the header and a navigation link each change it
+once, and a controlled value is followed as given, so an application can close
+the menu after a client-side route change. `PortalLayout` does not pass `open`
+to its header in 0.3.0; compose `PortalHeader` directly where the state is
+needed. In the menu, one press on another group heading opens it and closes the
+open one; the press itself closes nothing.
+
 ## Text is supplied by the application
 
 The shell ships no built-in strings and does not read `lang` or a locale. Every
@@ -43,9 +52,10 @@ its place (the attribute is omitted) and warns once in development with a
 
 The brand is application content. Pass plain text with `brand`, artwork through
 the `brand` slot, or both. A brand made of artwork alone takes its accessible
-name from `brandLabel`, which is written as `aria-label` on the brand link (or on
-the brand container when `homeHref` is empty, in which case no link, `href` or
-link role is rendered). When visible brand text is supplied and `brandLabel` is
+name from `brandLabel`, which is written as `aria-label` on the brand link. When
+`homeHref` is empty the brand is a `div` (no link, `href` or link role), and
+`brandLabel` gives it `role="img"` and its `aria-label`; without `brandLabel` it
+has neither. When visible brand text is supplied and `brandLabel` is
 absent, nothing is added. In development, after mounting in a browser, a brand
 with no text, no `aria-label` and no image with a non-empty `alt` warns that it
 needs `brandLabel`. `PortalFooter` follows the same rules, and renders its

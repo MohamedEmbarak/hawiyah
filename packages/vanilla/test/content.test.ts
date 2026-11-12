@@ -32,11 +32,25 @@ describe('toggle groups and feedback', () => {
   it('announces feedback once, submits its hidden value, and restores authored status on cleanup', async () => {
     const form = mount(`<form><div data-hw="feedback" data-hw-success-message="Thank you for your feedback."><button data-hw-value="yes" aria-pressed="false">Yes</button><button data-hw-value="no" aria-pressed="false">No</button><input type="hidden" name="helpful" data-hw-feedback-value><span data-hw-feedback-status role="status">Choose an answer</span></div></form>`) as HTMLFormElement;
     const root = form.firstElementChild as HTMLElement; const before = root.outerHTML; const changed = vi.fn(); root.addEventListener('hw:change', changed); const controller = createFeedback(root);
-    root.querySelector<HTMLButtonElement>('button')!.click(); expect(controller.value).toBe('yes'); expect(new FormData(form).get('helpful')).toBe('yes'); expect(root.querySelector('[data-hw-feedback-status]')!.textContent).toContain('Thank you');
-    controller.select('yes'); expect(changed).toHaveBeenCalledTimes(1);
-    root.setAttribute('aria-disabled', 'true'); controller.select('no'); expect(controller.value).toBe('yes'); await Promise.resolve(); expect(new FormData(form).has('helpful')).toBe(false); root.removeAttribute('aria-disabled'); await Promise.resolve();
-    form.reset(); await Promise.resolve(); expect(controller.value).toBe('');
-    controller.select('no'); controller.destroy(); controller.destroy(); expect(root.outerHTML).toBe(before);
+    root.querySelector<HTMLButtonElement>('button')!.click(); expect(controller.value).toEqual({ helpful: true, comment: '' }); expect(new FormData(form).get('helpful')).toBe('yes'); expect(root.querySelector('[data-hw-feedback-status]')!.textContent).toContain('Thank you');
+    controller.select(true); expect(changed).toHaveBeenCalledTimes(2);
+    root.setAttribute('aria-disabled', 'true'); controller.select(false); expect(controller.value.helpful).toBe(true); await Promise.resolve(); expect(new FormData(form).has('helpful')).toBe(false); root.removeAttribute('aria-disabled'); await Promise.resolve();
+    form.reset(); await Promise.resolve(); expect(controller.value).toEqual({ helpful: null, comment: '' });
+    controller.select(false); controller.destroy(); controller.destroy(); expect(root.outerHTML).toBe(before);
+  });
+  it('[FEEDBACK-05] a form reset restores the authored choice, comment, hidden input and empty status; without a submit button the choice reports feedback', async () => {
+    const form = mount(`<form><div class="hw-feedback" data-hw="feedback" role="group" aria-label="Helpful?" data-hw-success-message="Thanks."><div class="hw-feedback-actions"><button type="button" class="hw-button" data-variant="secondary" data-hw-value="yes" aria-pressed="true">Yes</button><button type="button" class="hw-button" data-variant="secondary" data-hw-value="no" aria-pressed="false">No</button></div><div class="hw-feedback-comment" data-hw-feedback-comment hidden><label for="c">Comment</label><textarea id="c">Clear</textarea><button type="button" class="hw-button" data-hw-feedback-submit>Send</button></div><p role="status" data-hw-feedback-status></p><input type="hidden" name="helpful" value="yes" data-hw-feedback-value></div></form>`) as HTMLFormElement;
+    const root = form.firstElementChild as HTMLElement; const changed = vi.fn(); const controller = createFeedback(root, { onValueChange: changed });
+    expect(controller.value).toEqual({ helpful: true, comment: 'Clear' }); const textarea = root.querySelector('textarea')!;
+    controller.select(false); textarea.value = 'Late'; textarea.dispatchEvent(new Event('input', { bubbles: true })); controller.submit();
+    expect(root.querySelector('[data-hw-feedback-status]')!.textContent).toBe('Thanks.'); changed.mockClear();
+    form.reset(); await Promise.resolve();
+    expect(controller.value).toEqual({ helpful: true, comment: 'Clear' }); expect(textarea.value).toBe('Clear'); expect(new FormData(form).get('helpful')).toBe('yes');
+    expect(root.querySelector('[data-hw-feedback-status]')!.textContent).toBe(''); expect(root.querySelector('[data-hw-value="yes"]')!.getAttribute('aria-pressed')).toBe('true'); expect(changed.mock.calls).toEqual([[{ helpful: true, comment: 'Clear' }]]);
+    controller.destroy();
+    const plain = mount('<div data-hw="feedback" role="group" aria-label="Helpful?" data-hw-success-message="Thanks."><button type="button" data-hw-value="yes" aria-pressed="false">Yes</button><button type="button" data-hw-value="no" aria-pressed="false">No</button><p role="status" data-hw-feedback-status></p></div>');
+    const sent = vi.fn(); const quick = createFeedback(plain, { onFeedback: sent }); plain.querySelector<HTMLButtonElement>('[data-hw-value="no"]')!.click();
+    expect(sent.mock.calls).toEqual([[{ helpful: false, comment: '' }]]); expect(plain.querySelector('[data-hw-feedback-status]')!.textContent).toBe('Thanks.'); quick.destroy();
   });
 });
 
@@ -45,16 +59,16 @@ describe('cookie consent', () => {
     const root = mount(`<section data-hw="cookie-consent"><button data-hw-consent="accepted">Accept optional</button><button data-hw-consent="rejected">Reject optional</button></section>`);
     const before = root.outerHTML; const writes = vi.spyOn(Storage.prototype, 'setItem'); const changed = vi.fn(); root.addEventListener('hw:change', changed);
     const controller = createCookieConsent(root); root.querySelector<HTMLButtonElement>('button')!.click();
-    expect(controller.value).toBe('accepted'); expect(root.hidden).toBe(true); expect(writes).not.toHaveBeenCalled(); expect(changed).toHaveBeenCalledTimes(1);
+    expect(controller.open).toBe(false); expect(root.hidden).toBe(true); expect(writes).not.toHaveBeenCalled(); expect(changed).toHaveBeenCalledTimes(2);
     controller.destroy(); controller.destroy(); expect(root.outerHTML).toBe(before);
     const persistent = createCookieConsent(root, {storageKey: 'hawiyah-test-consent'}); persistent.choose('rejected'); expect(localStorage.getItem('hawiyah-test-consent')).toBe('rejected'); persistent.destroy();
-    const restored = createCookieConsent(root, {storageKey: 'hawiyah-test-consent'}); expect(restored.value).toBe('rejected'); expect(root.hidden).toBe(true); restored.destroy(); expect(root.outerHTML).toBe(before);
+    const restored = createCookieConsent(root, {storageKey: 'hawiyah-test-consent'}); expect(restored.open).toBe(false); expect(root.hidden).toBe(true); restored.destroy(); expect(root.outerHTML).toBe(before);
   });
 
   it('still emits a choice when the browser denies persistence', () => {
     const root = mount(`<section><button data-hw-consent="accepted">Accept</button></section>`); const changed = vi.fn();
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('Blocked'); }); vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('Blocked'); });
-    const controller = createCookieConsent(root, {storageKey: 'denied', onValueChange: changed}); controller.choose('accepted'); expect(changed).toHaveBeenCalledWith('accepted'); expect(root.hidden).toBe(true); controller.destroy();
+    const controller = createCookieConsent(root, {storageKey: 'denied', onConsent: changed}); controller.choose('accepted'); expect(changed).toHaveBeenCalledWith('accepted'); expect(root.hidden).toBe(true); controller.destroy();
   });
 });
 
@@ -90,8 +104,8 @@ describe('carousel', () => {
   it('bounds navigation, announces position, and preserves slide content and authored state', () => {
     const root = mount(`<section data-hw="carousel" data-hw-slide-label="{position} of {total}" data-hw-empty-label="No slides" aria-label="Featured"><div><article data-hw-slide><a href="#one">First</a></article><article data-hw-slide hidden><a href="#two">Second</a></article></div><button data-hw-previous>Previous</button><span data-hw-carousel-status role="status">Ready</span><button data-hw-next>Next</button></section>`); const before = root.outerHTML; const changed = vi.fn(); const controller = createCarousel(root, {onValueChange: changed});
     const previous = root.querySelector<HTMLButtonElement>('[data-hw-previous]')!; const next = root.querySelector<HTMLButtonElement>('[data-hw-next]')!;
-    expect(previous.disabled).toBe(true); expect(root.querySelector('[data-hw-carousel-status]')!.textContent).toBe('1 of 2');
-    next.click(); expect(controller.index).toBe(1); expect(next.disabled).toBe(true); expect(root.querySelector<HTMLElement>('[data-hw-slide]')!.hidden).toBe(true); expect(changed).toHaveBeenCalledWith(1);
+    expect(previous.disabled).toBe(false); expect(previous.getAttribute('aria-disabled')).toBe('true'); expect(root.querySelector('[data-hw-carousel-status]')!.textContent).toBe('1 of 2');
+    next.click(); expect(controller.index).toBe(1); expect(next.getAttribute('aria-disabled')).toBe('true'); expect(root.querySelector<HTMLElement>('[data-hw-slide]')!.hidden).toBe(true); expect(changed).toHaveBeenCalledWith(1);
     controller.next(); expect(changed).toHaveBeenCalledTimes(1); controller.destroy(); controller.destroy(); expect(root.outerHTML).toBe(before);
     const looping = createCarousel(root, {loop: true}); looping.previous(); expect(looping.index).toBe(1); looping.next(); expect(looping.index).toBe(0); looping.destroy();
   });
@@ -99,11 +113,11 @@ describe('carousel', () => {
 
 describe('data table sorting', () => {
   it('sorts native row nodes numerically and stably, exposes aria-sort, and restores original order', () => {
-    const root = mount(`<table data-hw="data-table" data-hw-locale="en"><caption>Requests</caption><thead><tr><th data-hw-key="name"><button data-hw-sort="name">Name</button></th><th data-hw-key="count" data-hw-type="number"><button data-hw-sort="count">Count</button></th></tr></thead><tbody>\n<tr id="a"><td>Item 10</td><td>١٠</td></tr><!-- retain --><tr id="b"><td>Item 2</td><td data-hw-sort-value="2">two</td></tr><tr id="c"><td>Item 2</td><td>٢</td></tr>\n</tbody></table>`); const before = root.outerHTML; const callback = vi.fn(); const controller = createDataTable(root, {onSortChange: callback}); const rowB = root.querySelector('#b');
+    const root = mount(`<table data-hw="data-table" data-hw-locale="en"><caption>Requests</caption><thead><tr><th data-hw-key="name"><button data-hw-sort="name">Name</button></th><th data-hw-key="count" data-hw-type="number"><button data-hw-sort="count">Count</button></th></tr></thead><tbody>\n<tr id="a"><td>Item 10</td><td>١٠</td></tr><!-- retain --><tr id="b"><td>Item 2</td><td data-hw-sort-value="2">two</td></tr><tr id="c"><td>Item 2</td><td>٢</td></tr>\n</tbody></table>`); const before = root.outerHTML; const callback = vi.fn(); const controller = createDataTable(root, {onSortKeyChange: callback}); const rowB = root.querySelector('#b');
     const ids = () => [...root.querySelectorAll('tbody tr')].map(row => row.id);
     controller.sort('count'); expect(ids()).toEqual(['b', 'c', 'a']); expect(root.querySelector('[data-hw-key="count"]')!.getAttribute('aria-sort')).toBe('ascending'); expect(root.querySelector('#b')).toBe(rowB);
     controller.sort('count'); expect(ids()).toEqual(['a', 'b', 'c']); expect(controller.sortDirection).toBe('descending');
-    root.querySelector<HTMLButtonElement>('[data-hw-sort="name"]')!.click(); expect(ids()).toEqual(['b', 'c', 'a']); expect(root.querySelector('[data-hw-key="count"]')!.getAttribute('aria-sort')).toBe('none'); expect(callback).toHaveBeenLastCalledWith({key: 'name', direction: 'ascending'});
+    root.querySelector<HTMLButtonElement>('[data-hw-sort="name"]')!.click(); expect(ids()).toEqual(['b', 'c', 'a']); expect(root.querySelector('[data-hw-key="count"]')!.getAttribute('aria-sort')).toBe('none'); expect(callback).toHaveBeenLastCalledWith('name');
     controller.destroy(); controller.destroy(); expect(root.outerHTML).toBe(before); controller.sort('count'); expect(ids()).toEqual(['a', 'b', 'c']);
   });
 });

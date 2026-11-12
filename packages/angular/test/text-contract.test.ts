@@ -25,7 +25,7 @@ const about = (warnings: string[], component: string, name: string) => warnings.
 describe('text is supplied by the application', () => {
   it('renders nothing in place of a missing required text and warns once per component and input', () => {
     const warnings = missingTextWarnings();
-    const { fixture, root } = page(`<hw-dialog title="Review"><p>Body</p></hw-dialog><hw-dialog title="Second"><p>Body</p></hw-dialog><hw-table caption="Requests" [columns]="[{key: 'id', label: 'Id'}]" [rows]="[]" /><hw-spinner /><hw-stepper [steps]="[{label: 'One'}]" />`);
+    const { fixture, root } = page(`<hw-dialog title="Review"><p>Body</p></hw-dialog><hw-dialog title="Second"><p>Body</p></hw-dialog><hw-table caption="Requests" [columns]="[{key: 'id', label: 'Id'}]" [rows]="[]" /><hw-spinner /><hw-stepper [items]="[{value: 'one', label: 'One'}]" [activeIndex]="0" />`);
     fixture.detectChanges(); fixture.detectChanges();
     for (const close of root.querySelectorAll('.hw-dialog-header button')) { expect(close.hasAttribute('aria-label')).toBe(false); expect(close.querySelector('.hw-icon')).not.toBeNull(); }
     expect(root.querySelector('hw-table td')!.textContent).toBe(''); expect(root.querySelector('hw-table td')!.getAttribute('colspan')).toBe('1');
@@ -54,16 +54,29 @@ describe('text is supplied by the application', () => {
     expect(root.querySelector('hw-alert button')!.hasAttribute('aria-label')).toBe(false); expect(root.querySelector('hw-chip button')!.hasAttribute('aria-label')).toBe(false);
   });
 
-  it('keeps a constraint blocking when its message is missing', () => {
+  it('[INV-02][E01] keeps a constraint blocking when its message is missing, without exposing it as invalid before a submission', () => {
     const warnings = missingTextWarnings();
-    const { root } = page(`<form><hw-tag-input label="Tags" name="tags" addLabel="Add" [getRemoveLabel]="text.tagInput.getRemoveLabel" required /><hw-combobox label="City" name="city" emptyMessage="None" [getResultsMessage]="text.combobox.getResultsMessage" [options]="[]" required /><hw-date-picker ${withText.datePicker.replace(/invalidMessage="[^"]*"/, '')} name="date" value="not-a-date" /></form>`);
+    const { root, fixture } = page(`<form><hw-tag-input label="Tags" name="tags" [getRemoveLabel]="text.tagInput.getRemoveLabel" required /><hw-combobox label="City" name="city" emptyMessage="None" [getResultsMessage]="text.combobox.getResultsMessage" [options]="[]" required /><hw-date-picker ${withText.datePicker.replace(/invalidMessage="[^"]*"/, '')} name="date" value="not-a-date" /></form>`);
     const form = root.querySelector('form')!;
     for (const selector of ['hw-tag-input input.hw-input', 'hw-combobox input[role=combobox]', 'hw-date-picker input[type=text]']) {
       const input = form.querySelector<HTMLInputElement>(selector)!;
-      expect(input.validity.customError, selector).toBe(true); expect(input.validationMessage, selector).toBe(' '); expect(input.getAttribute('aria-invalid'), selector).toBe('true');
+      expect(input.validity.customError, selector).toBe(true); expect(input.validationMessage, selector).toBe(' ');
+      // A missing message is never a reason for aria-invalid; the date picker's malformed value is one.
+      expect(input.getAttribute('aria-invalid'), selector).toBe(selector.startsWith('hw-date-picker') ? 'true' : null);
     }
     expect(form.checkValidity()).toBe(false); expect(root.querySelector('hw-date-picker .hw-error')).toBeNull();
+    fixture.detectChanges();
+    for (const selector of ['hw-tag-input input.hw-input', 'hw-combobox input[role=combobox]']) expect(form.querySelector(selector)!.getAttribute('aria-invalid'), selector).toBe('true');
     expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-tag-input requires "requiredMessage" when required is set', 'Hawiyah: hw-combobox requires "requiredMessage" when required is set', 'Hawiyah: hw-date-picker requires "invalidMessage"']);
+  });
+
+  it('[TEXT-01][R09] leaves the results status of a multi-select empty when getResultsMessage is missing, and warns once', () => {
+    const warnings = missingTextWarnings();
+    const { root, fixture } = page(`<hw-multi-select label="Cities" searchLabel="Filter" emptyMessage="None" [options]="[{value: 'r', label: 'Riyadh'}]" />`);
+    expect(warnings).toEqual([]);
+    const filter = root.querySelector<HTMLInputElement>('input[type=search]')!;
+    for (const query of ['r', 'ri']) { filter.value = query; filter.dispatchEvent(new Event('input', { bubbles: true })); fixture.detectChanges(); }
+    expect(root.querySelector('span[role=status]')!.textContent).toBe(''); expect(about(warnings, 'hw-multi-select', 'getResultsMessage')).toHaveLength(1); expect(warnings).toHaveLength(1);
   });
 
   it('stays silent outside development', () => {
@@ -76,7 +89,7 @@ describe('text is supplied by the application', () => {
   it('hands every templated text function its documented arguments and renders exactly what it returns', () => {
     const calls: Record<string, unknown[][]> = {};
     const record = (name: string) => (...args: unknown[]) => { (calls[name] ??= []).push(args); return `${name}(${args.map(arg => typeof arg === 'object' && arg ? (arg as { id?: string; key?: string; name?: string }).id ?? (arg as { key?: string }).key ?? (arg as { name?: string }).name : arg).join(',')})`; };
-    const state = { record: Object.fromEntries(['page', 'gap', 'slide', 'rating', 'value', 'overflow', 'toast', 'notice', 'results', 'selected', 'remove', 'sort', 'day', 'progress', 'removeFile', 'suggestions'].map(name => [name, record(name)])), dismissed: [] as string[] };
+    const state = { record: Object.fromEntries(['page', 'gap', 'slide', 'rating', 'value', 'overflow', 'toast', 'notice', 'results', 'selected', 'matching', 'remove', 'sort', 'day', 'progress', 'removeFile', 'suggestions'].map(name => [name, record(name)])), dismissed: [] as string[] };
     const { fixture, root } = page(`
       <hw-pagination label="Pages" previousLabel="Previous" nextLabel="Next" jumpLabel="Jump" goLabel="Go" [getPageLabel]="record.page" [getGapLabel]="record.gap" [totalPages]="20" [page]="10" />
       <hw-carousel label="News" previousLabel="Previous" nextLabel="Next" indicatorsLabel="Slides" emptyLabel="None" [getSlideLabel]="record.slide" [slides]="[{id: 'a', title: 'A', content: 'First'}, {id: 'b', title: 'B', content: 'Second'}]" />
@@ -85,8 +98,8 @@ describe('text is supplied by the application', () => {
       <hw-toast-region label="Messages" [getDismissLabel]="record.toast" [messages]="[{id: 't1', message: 'Saved'}]" (dismissed)="dismissed.push($event)" />
       <hw-notification-list label="Inbox" emptyMessage="None" unreadLabel="Unread" [getDismissLabel]="record.notice" [items]="[{id: 'n1', title: 'Approved'}]" (dismissed)="dismissed.push($event)" />
       <hw-combobox label="City" emptyMessage="None" [getResultsMessage]="record.results" [options]="[{value: 'r', label: 'Riyadh'}, {value: 'j', label: 'Jeddah'}]" />
-      <hw-multi-select label="Cities" searchLabel="Filter" emptyMessage="None" [getSelectedMessage]="record.selected" [options]="[{value: 'r', label: 'Riyadh'}]" [value]="['r']" />
-      <hw-tag-input label="Tags" addLabel="Add" [getRemoveLabel]="record.remove" [value]="['alpha']" />
+      <hw-multi-select label="Cities" searchLabel="Filter" emptyMessage="None" [getSelectedMessage]="record.selected" [getResultsMessage]="record.matching" [options]="[{value: 'r', label: 'Riyadh'}]" [value]="['r']" />
+      <hw-tag-input label="Tags" [getRemoveLabel]="record.remove" [value]="['alpha']" />
       <hw-data-table caption="Requests" emptyMessage="None" locale="en" [getSortLabel]="record.sort" sortKey="title" [columns]="[{key: 'title', label: 'Title', sortable: true}, {key: 'date', label: 'Date', sortable: true}]" [rows]="[{title: 'B', date: '2'}]" />
       <hw-calendar label="Date" locale="en" previousLabel="Previous" nextLabel="Next" value="2026-10-15" [getDayLabel]="record.day" />
       <hw-file-upload-list [labels]="{selected: 'Selected', uploading: 'Uploading', complete: 'Done', error: 'Failed', remove: 'Remove', getProgressLabel: record.progress, getRemoveLabel: record.removeFile}" [items]="[{id: 'f1', name: 'plan.pdf', status: 'uploading', progress: 40}]" removable />
@@ -108,7 +121,7 @@ describe('text is supplied by the application', () => {
     expect(calls['toast']![0]).toEqual([{ id: 't1', message: 'Saved' }]); expect(label('hw-toast-region [data-hw-dismiss]')).toBe('toast(t1)');
     expect(calls['notice']![0]).toEqual([{ id: 'n1', title: 'Approved' }]); expect(label('hw-notification-list li button')).toBe('notice(n1)');
     // Counts.
-    expect(calls['selected']![0]).toEqual([1]); expect(root.querySelector('hw-multi-select [role=status]')!.textContent).toBe('selected(1)');
+    expect(calls['selected']![0]).toEqual([1]); expect(root.querySelector('hw-multi-select p.hw-multi-select-selected[role=status]')!.textContent).toBe('selected(1)');
     expect(calls['remove']![0]).toEqual(['alpha']); expect(label('hw-tag-input .hw-chip button')).toBe('remove(alpha)');
     // DataTable: the column and the direction the button will apply.
     expect(calls['sort']).toContainEqual([{ key: 'title', label: 'Title', sortable: true }, 'descending']); expect(calls['sort']).toContainEqual([{ key: 'date', label: 'Date', sortable: true }, 'ascending']);
@@ -121,6 +134,10 @@ describe('text is supplied by the application', () => {
     // Live regions: the number of matches, once the list is open.
     const combobox = root.querySelector<HTMLInputElement>('hw-combobox input[role=combobox]')!; combobox.dispatchEvent(new Event('focus')); fixture.detectChanges();
     expect(calls['results']!.at(-1)).toEqual([2]); expect(root.querySelector('hw-combobox [role=status]')!.textContent).toBe('results(2)');
+    // MultiSelect: the number of options that match the filter, only after the reader filters.
+    expect(calls['matching']).toBeUndefined(); expect(root.querySelector('hw-multi-select span[role=status]')!.textContent).toBe('');
+    const filter = root.querySelector<HTMLInputElement>('hw-multi-select input[type=search]')!; filter.value = 'zzz'; filter.dispatchEvent(new Event('input', { bubbles: true })); fixture.detectChanges();
+    expect(calls['matching']!.at(-1)).toEqual([0]); expect(root.querySelector('hw-multi-select span[role=status]')!.textContent).toBe('matching(0)');
     const search = root.querySelector<HTMLInputElement>('hw-search-field input')!; search.dispatchEvent(new Event('focus')); fixture.detectChanges();
     expect(calls['suggestions']!.at(-1)).toEqual([2]); expect(root.querySelector('hw-search-field [role=status]')!.textContent).toBe('suggestions(2)');
   });
@@ -157,21 +174,22 @@ describe('text is supplied by the application', () => {
 
   it('renders no empty label, legend or placeholder where optional field text is absent', () => {
     const warnings = missingTextWarnings();
-    const fields = `<hw-text-field controlId="text" /><hw-textarea controlId="area" /><hw-select controlId="select" [options]="[]" /><hw-combobox controlId="combo" [options]="[]" ${withText.combobox} /><hw-password-field controlId="password" ${withText.passwordField} /><hw-number-field controlId="number" /><hw-pin-input controlId="pin" /><hw-tag-input controlId="tags" ${withText.tagInput} /><hw-search-field controlId="search" label="Find" ${withText.searchField} /><hw-radio controlId="radio" [options]="[{value: 'a', label: 'A'}]" /><hw-range-slider controlId="range" ${withText.rangeSlider} /><hw-rating controlId="rating" ${withText.rating} /><hw-multi-select controlId="multi" [options]="[]" ${withText.multiSelect} />`;
+    const fields = `<hw-text-field controlId="text" /><hw-textarea controlId="area" /><hw-select controlId="select" [options]="[]" /><hw-combobox controlId="combo" [options]="[]" ${withText.combobox} /><hw-password-field controlId="password" ${withText.passwordField} /><hw-number-field controlId="number" /><hw-pin-input controlId="pin" /><hw-tag-input controlId="tags" ${withText.tagInput} /><hw-search-field controlId="search" label="Find" ${withText.searchField} /><hw-radio-group controlId="radio" [options]="[{value: 'a', label: 'A'}]" /><hw-range-slider controlId="range" ${withText.rangeSlider} /><hw-rating controlId="rating" ${withText.rating} /><hw-multi-select controlId="multi" [options]="[]" ${withText.multiSelect} />`;
     const { root } = page(fields);
     expect([...root.querySelectorAll('label, legend')].filter(label => !label.textContent!.trim())).toEqual([]);
-    expect(root.querySelectorAll('label.hw-label, legend.hw-label')).toHaveLength(1); expect(root.querySelector('hw-search-field label.hw-label')!.textContent).toBe('Find');
+    // What remains is required text: the search field label, the two thumb labels and the visible label of the filter input.
+    expect([...root.querySelectorAll('label.hw-label, legend.hw-label')].map(label => label.textContent)).toEqual(['Find', 'Minimum', 'Maximum', 'Search options']);
     expect([...root.querySelectorAll('[placeholder]')].map(node => node.getAttribute('placeholder'))).toEqual([]);
     expect(warnings).toEqual([]);
     // The same fields with their text: one label or legend each, and the placeholder as written.
     const named = page(fields.replace(/ controlId="(\w+)"/g, ' controlId="named-$1" label="Field $1" placeholder="Hint $1"').replace(' label="Find"', '')).root;
-    expect([...named.querySelectorAll('label.hw-label, legend.hw-label')].map(label => label.textContent!.trim())).toEqual(['text', 'area', 'select', 'combo', 'password', 'number', 'pin', 'tags', 'search', 'radio', 'range', 'rating', 'multi'].map(name => `Field ${name}`));
+    expect([...named.querySelectorAll('label.hw-label, legend.hw-label')].map(label => label.textContent!.trim())).toEqual(['Field text', 'Field area', 'Field select', 'Field combo', 'Field password', 'Field number', 'Field pin', 'Field tags', 'Field search', 'Field radio', 'Field range', 'Minimum', 'Maximum', 'Field rating', 'Field multi', 'Search options']);
     expect(named.querySelector('hw-search-field input')!.getAttribute('placeholder')).toBe('Hint search'); expect(named.querySelector('hw-password-field input')!.getAttribute('placeholder')).toBe('Hint password'); expect(named.querySelector('hw-tag-input input')!.getAttribute('placeholder')).toBe('Hint tags');
   });
 
   it('requires the name of a search field, a toggle group and a tree view, and renders nothing in place of a missing one', () => {
     const warnings = missingTextWarnings();
-    const { root } = page(`<hw-search-field controlId="search" clearLabel="Clear" [showSearchButton]="false" /><hw-toggle-group controlId="view" [options]="[{value: 'list', label: 'List'}]" /><hw-tree-view [nodes]="[{id: 'a', label: 'A'}]" /><hw-search-field controlId="named" label="Find" clearLabel="Clear" [showSearchButton]="false" /><hw-toggle-group label="View" [options]="[{value: 'list', label: 'List'}]" /><hw-tree-view label="Sections" [nodes]="[{id: 'a', label: 'A'}]" />`);
+    const { root } = page(`<hw-search-field controlId="search" clearLabel="Clear" [showSearchButton]="false" /><hw-toggle-group controlId="view" [options]="[{value: 'list', label: 'List'}]" /><hw-tree-view [items]="[{id: 'a', label: 'A'}]" /><hw-search-field controlId="named" label="Find" clearLabel="Clear" [showSearchButton]="false" /><hw-toggle-group label="View" [options]="[{value: 'list', label: 'List'}]" /><hw-tree-view label="Sections" [items]="[{id: 'a', label: 'A'}]" />`);
     expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-search-field requires "label"', 'Hawiyah: hw-toggle-group requires "label"', 'Hawiyah: hw-tree-view requires "label"']);
     const [search, named] = [...root.querySelectorAll('hw-search-field')]; const [group, namedGroup] = [...root.querySelectorAll('hw-toggle-group')]; const [tree, namedTree] = [...root.querySelectorAll('hw-tree-view')];
     expect(search!.querySelector('label')).toBeNull(); expect(named!.querySelector('label')!.textContent).toBe('Find');
@@ -190,13 +208,13 @@ describe('text is supplied by the application', () => {
     expect(root.querySelector('#spoken input')!.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const files = [new File(['a'], 'plan.pdf'), new File(['b'], 'id.png')]; show(files);
     expect(selected).toHaveBeenLastCalledWith(files); expect(root.querySelector('#spoken [role=status]')!.textContent).toBe('2: plan.pdf, id.png'); expect(root.querySelector('#silent [role=status]')).toBeNull();
-    // The file names are listed as data; the status is the application's whole string, and empties again when the selection does.
-    expect([...root.querySelectorAll('#silent li')].map(item => item.textContent)).toEqual(['plan.pdf (1)', 'id.png (1)']);
+    // [FILEDROPZONE-06][R08] No list of names and no byte counts: the status is the application's whole string, and empties again when the selection does.
+    expect(root.querySelector('#silent ul, #spoken ul')).toBeNull(); expect(root.querySelector('#silent')!.textContent).toBe('DocumentsDrop files here');
     show([]); expect(root.querySelector('#spoken [role=status]')!.textContent).toBe('');
   });
 
   it('never leaves an input named like a native attribute on the wrapper element', () => {
-    const { root } = page(`<hw-alert title="Check" role="alert">Body</hw-alert><hw-tooltip text="Hint" align="end" tooltipId="hint"><span>Target</span></hw-tooltip><hw-empty-state title="Nothing" /><hw-page-header title="Services" /><hw-mobile-top-bar title="Home" /><hw-service-details title="Permit" /><hw-dialog title="Review" closeLabel="Close" /><hw-popover label="Filters" triggerLabel="Filters" panelId="filters" /><hw-menu label="Actions" triggerLabel="Actions" panelId="actions" [items]="[]" />`);
+    const { root } = page(`<hw-alert title="Check" role="alert">Body</hw-alert><hw-tooltip text="Hint" align="end" tooltipId="hint"><span hwTooltipTrigger tabindex="0">Target</span></hw-tooltip><hw-empty-state title="Nothing" /><hw-page-header title="Services" /><hw-mobile-top-bar title="Home" /><hw-service-details title="Permit" /><hw-dialog title="Review" closeLabel="Close" /><hw-popover label="Filters" triggerLabel="Filters" panelId="filters" /><hw-menu label="Actions" triggerLabel="Actions" panelId="actions" [items]="[]" />`);
     for (const host of root.children) { for (const name of ['title', 'role', 'align', 'id']) expect(host.hasAttribute(name), `${host.localName} ${name}`).toBe(false); }
     expect(root.querySelector('.hw-alert')!.getAttribute('role')).toBe('alert'); expect(root.querySelector('.hw-alert strong')!.textContent).toBe('Check');
     expect(root.querySelector('[role=tooltip]')!.id).toBe('hint'); expect(root.querySelector('[role=tooltip]')!.getAttribute('data-align')).toBe('end'); expect(root.querySelector('.hw-tooltip-trigger')!.getAttribute('aria-describedby')).toBe('hint');
@@ -291,7 +309,7 @@ describe('packaged in-page links', () => {
     const toggle = root.querySelector<HTMLButtonElement>('.hw-portal-menu-toggle')!;
     // Opening and closing: the second click evaluates to false inside the component, which must not cancel the event.
     for (const expanded of ['true', 'false']) { const click = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }); toggle.dispatchEvent(click); fixture.detectChanges(); expect(toggle.getAttribute('aria-expanded')).toBe(expanded); expect(click.defaultPrevented).toBe(false); }
-    const action = root.querySelector('hw-service-card a.hw-button')!; expect(action.textContent).toBe('View the event permit service'); expect(action.querySelector('.hw-sr-only')).toBeNull();
+    const action = root.querySelector('hw-service-card footer a.hw-link')!; expect(action.textContent).toBe('View the event permit service'); expect(action.querySelector('.hw-sr-only')).toBeNull();
     expect(warnings).toEqual([]);
   });
 
@@ -369,7 +387,7 @@ describe('locale is supplied by the application', () => {
   it('sorts the data table with the application locale and keeps the source order without one', () => {
     const warnings = missingTextWarnings();
     const rows = [{ name: 'Item 10' }, { name: 'ب' }, { name: 'Item 2' }, { name: 'أ' }], columns = [{ key: 'name', label: 'Name', sortable: true }];
-    const { fixture, root, state } = page(`<hw-data-table id="sorted" caption="Sorted" emptyMessage="None" locale="ar-SA" sortKey="name" [sortDirection]="'descending'" [columns]="columns" [rows]="rows" /><hw-data-table id="plain" caption="Plain" emptyMessage="None" locale="" [getSortLabel]="label" [columns]="columns" [rows]="rows" (sortChange)="sorted = $event" />`, { rows, columns, sorted: null as unknown, label: (column: { label: string }, direction: string) => `${column.label}: ${direction}` });
+    const { fixture, root, state } = page(`<hw-data-table id="sorted" caption="Sorted" emptyMessage="None" locale="ar-SA" sortKey="name" [sortDirection]="'descending'" [columns]="columns" [rows]="rows" /><hw-data-table id="plain" caption="Plain" emptyMessage="None" locale="" [getSortLabel]="label" [columns]="columns" [rows]="rows" (sortKeyChange)="sorted = $event" (sortDirectionChange)="direction = $event" />`, { rows, columns, sorted: null as unknown, direction: null as unknown, label: (column: { label: string }, direction: string) => `${column.label}: ${direction}` });
     const names = (id: string) => [...root.querySelectorAll(`#${id} tbody td`)].map(cell => cell.textContent);
     const expected = sortRows(rows, 'name', 'descending', 'ar-SA').map(row => row.name);
     expect(names('sorted')).toEqual(expected); expect(expected).not.toEqual(rows.map(row => row.name)); expect(names('plain')).toEqual(rows.map(row => row.name));
@@ -377,7 +395,7 @@ describe('locale is supplied by the application', () => {
     expect(warnings).toEqual([]);
     const button = root.querySelector<HTMLButtonElement>('#plain th button')!; button.click(); fixture.detectChanges(); fixture.detectChanges();
     // Sort state, aria-sort, the event and getSortLabel behave as usual; the rows stay in their source order.
-    expect(root.querySelector('#plain th')!.getAttribute('aria-sort')).toBe('ascending'); expect(state.sorted).toEqual({ key: 'name', direction: 'ascending' }); expect(button.getAttribute('aria-label')).toBe('Name: descending');
+    expect(root.querySelector('#plain th')!.getAttribute('aria-sort')).toBe('ascending'); expect(state.sorted).toBe('name'); expect(state.direction).toBeNull(); expect(button.getAttribute('aria-label')).toBe('Name: descending');
     expect(names('plain')).toEqual(rows.map(row => row.name));
     button.click(); fixture.detectChanges(); expect(root.querySelector('#plain th')!.getAttribute('aria-sort')).toBe('descending'); expect(names('plain')).toEqual(rows.map(row => row.name));
     expect(warnings).toEqual(['Hawiyah: hw-data-table requires "locale". Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.']);

@@ -28,9 +28,9 @@ describe('text is supplied by the application', () => {
   });
 
   it('does not warn when the text comes from markup, the root attribute or the option', () => {
-    const named = mount('<ol class="hw-stepper" aria-label="التقدم"><li class="hw-step"><span>أ</span></li></ol>') as HTMLOListElement;
-    const attribute = mount('<ol class="hw-stepper" data-hw-label="Progress"><li class="hw-step"><span>A</span></li></ol>') as HTMLOListElement;
-    const option = mount('<ol class="hw-stepper" data-hw-label="ignored"><li class="hw-step"><span>A</span></li></ol>') as HTMLOListElement;
+    const named = mount('<ol class="hw-stepper" aria-label="التقدم" data-hw-upcoming-label="قادمة" data-hw-complete-label="مكتملة"><li class="hw-step"><span>أ</span></li></ol>') as HTMLOListElement;
+    const attribute = mount('<ol class="hw-stepper" data-hw-label="Progress" data-hw-upcoming-label="Upcoming" data-hw-complete-label="Complete"><li class="hw-step"><span>A</span></li></ol>') as HTMLOListElement;
+    const option = mount('<ol class="hw-stepper" data-hw-label="ignored" data-hw-upcoming-label="Upcoming" data-hw-complete-label="Complete"><li class="hw-step"><span>A</span></li></ol>') as HTMLOListElement;
     const controllers = [createStepper(named), createStepper(attribute), createStepper(option, { label: 'Steps' })];
     expect(named.getAttribute('aria-label')).toBe('التقدم'); expect(attribute.getAttribute('aria-label')).toBe('Progress'); expect(option.getAttribute('aria-label')).toBe('Steps');
     expect(warn).not.toHaveBeenCalled();
@@ -144,7 +144,7 @@ describe('fragment links', () => {
 });
 
 describe('locale is supplied by the application', () => {
-  const calendarTexts = 'data-hw-label="Calendar" data-hw-previous-label="Previous month" data-hw-next-label="Next month" data-hw-calendar-system-label="Calendar system" data-hw-gregorian-label="Gregorian" data-hw-hijri-label="Hijri" data-hw-range-label="Supported range" data-hw-unsupported-message="Unsupported date."';
+  const calendarTexts = 'data-hw-label="Calendar" data-hw-previous-label="Previous month" data-hw-next-label="Next month" data-hw-range-label="Supported range" data-hw-unsupported-message="Unsupported date."';
   const pickerMarkup = (locale = '') => `<div data-hw="date-picker" ${locale} data-hw-open-label="Open" data-hw-previous-label="Previous month" data-hw-next-label="Next month" data-hw-calendar-system-label="Calendar system" data-hw-gregorian-label="Gregorian" data-hw-hijri-label="Hijri" data-hw-range-label="Supported range" data-hw-invalid-message="Invalid date." data-hw-unsupported-message="Unsupported date."><input type="date" data-hw-date-input aria-label="Date" value="2026-11-11"><button type="button" data-hw-date-trigger></button><dialog data-hw-date-dialog aria-label="Choose date"><div data-hw-date-calendar></div></dialog></div>`;
   const tableMarkup = (locale = '') => `<table data-hw="data-table" ${locale}><thead><tr><th data-hw-key="name"><button type="button" data-hw-sort="name">Name</button></th></tr></thead><tbody><tr id="b"><td>باء</td></tr><tr id="a"><td>ألف</td></tr><tr id="c"><td>جيم</td></tr></tbody></table>`;
   const ids = (root: HTMLElement) => [...root.querySelectorAll('tbody tr')].map(row => row.id);
@@ -191,14 +191,35 @@ describe('locale is supplied by the application', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it('leaves the range output empty without a locale and formats it with the application locale', () => {
-    const markup = (attributes = '', output = '<output data-hw-range-output></output>') => `<div ${attributes}><input type="range" data-hw-lower aria-label="Minimum" max="5000" value="1000"><input type="range" data-hw-upper aria-label="Maximum" max="5000" value="2500">${output}</div>`;
-    const bare = mount(markup()); let slider!: ReturnType<typeof createRangeSlider>; expect(() => { slider = createRangeSlider(bare); }).not.toThrow();
-    expect(warnings('locale')).toBe(1); expect(bare.querySelector('output')!.textContent).toBe(''); expect(slider.value).toEqual([1000, 2500]); slider.destroy();
+  const rangeMarkup = (attributes = '', output = '<output data-hw-range-output></output>') => `<div ${attributes}><input type="range" data-hw-lower aria-label="Minimum" max="5000" value="1000"><input type="range" data-hw-upper aria-label="Maximum" max="5000" value="2500">${output}</div>`;
+  it('[TEXT-01] leaves an authored range output empty without getRangeLabel and no longer asks for a locale', () => {
+    const bare = mount(rangeMarkup()); let slider!: ReturnType<typeof createRangeSlider>; expect(() => { slider = createRangeSlider(bare); }).not.toThrow();
+    expect(warn).toHaveBeenCalledTimes(1); expect(String(warn.mock.calls[0]![0])).toMatch(/^Hawiyah: RangeSlider requires "getRangeLabel"/); expect(warnings('locale')).toBe(0);
+    expect(bare.querySelector('output')!.textContent).toBe(''); expect(slider.value).toEqual([1000, 2500]); slider.destroy();
     warn.mockClear(); resetTextWarnings();
-    createRangeSlider(mount(markup('', ''))).destroy(); expect(warn).not.toHaveBeenCalled();
-    const localized = mount(markup('data-hw-locale="ar-SA"')); const controller = createRangeSlider(localized);
-    expect(localized.querySelector('output')!.textContent).toBe(`${formatNumber(1000, { locale: 'ar-SA' })} – ${formatNumber(2500, { locale: 'ar-SA' })}`); expect(warn).not.toHaveBeenCalled(); controller.destroy();
+    createRangeSlider(mount(rangeMarkup('', ''))).destroy(); expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('[RANGE-SLIDER-02] fills the output from data-hw-range-label with formatValue, else the locale, else String; the option wins', () => {
+    const plain = mount(rangeMarkup('data-hw-range-label="{lower} – {upper}"')); const a = createRangeSlider(plain);
+    expect(plain.querySelector('output')!.textContent).toBe('1000 – 2500');
+    const localized = mount(rangeMarkup('data-hw-locale="ar-SA" data-hw-range-label="{lower} – {upper}"')); const b = createRangeSlider(localized);
+    expect(localized.querySelector('output')!.textContent).toBe(`${formatNumber(1000, { locale: 'ar-SA' })} – ${formatNumber(2500, { locale: 'ar-SA' })}`);
+    const formatted = mount(rangeMarkup('data-hw-locale="ar-SA" data-hw-range-label="from {lower} to {upper}"')); const c = createRangeSlider(formatted, { formatValue: value => `${value} SAR` });
+    expect(formatted.querySelector('output')!.textContent).toBe('from 1000 SAR to 2500 SAR');
+    const option = mount(rangeMarkup('data-hw-range-label="{lower} – {upper}"')); const d = createRangeSlider(option, { getRangeLabel: (lower, upper) => `${lower}..${upper}` });
+    expect(option.querySelector('output')!.textContent).toBe('1000..2500');
+    expect(warn).not.toHaveBeenCalled(); [a, b, c, d].forEach(controller => controller.destroy());
+  });
+
+  it('[FMT-02] [FMT-04] writes aria-valuetext only with formatValue and an output only with getRangeLabel, following the thumbs', () => {
+    const bare = mount(rangeMarkup('', '')); const a = createRangeSlider(bare);
+    expect([...bare.querySelectorAll('input')].some(input => input.hasAttribute('aria-valuetext'))).toBe(false); a.destroy();
+    const root = mount(rangeMarkup('', '<output data-hw-range-output></output>')); const b = createRangeSlider(root, { formatValue: value => `${value} SAR`, getRangeLabel: (lower, upper) => `${lower}/${upper}` });
+    const [lower, upper] = root.querySelectorAll('input');
+    expect([lower!.getAttribute('aria-valuetext'), upper!.getAttribute('aria-valuetext')]).toEqual(['1000 SAR', '2500 SAR']); expect(root.querySelector('output')!.textContent).toBe('1000/2500');
+    lower!.value = '1500'; lower!.dispatchEvent(new Event('input')); expect(lower!.getAttribute('aria-valuetext')).toBe('1500 SAR'); expect(root.querySelector('output')!.textContent).toBe('1500/2500');
+    b.destroy(); expect(lower!.hasAttribute('aria-valuetext')).toBe(false); expect(root.querySelector('output')!.textContent).toBe(''); expect(warn).not.toHaveBeenCalled();
   });
 
   it('calls no Intl formatter and names no locale in the vanilla sources', () => {

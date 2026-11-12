@@ -12,7 +12,7 @@ export type { MenuItem, ToastMessage, TreeNode, CarouselSlide } from './expansio
 export { Link, ButtonGroup, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, DataTable } from './content.js';
 export type { DescriptionItem, TimelineItem, AvatarItem, DataColumn } from './content.js';
 export { ServiceCard, ServiceDetails, PortalHeader, PortalFooter, Feedback, CookieConsent, NotificationList } from './patterns.js';
-export type { PortalLink, PortalFooterLink, PortalFooterGroup, FeedbackValue, NotificationItem } from './patterns.js';
+export type { PortalLink, PortalFooterLink, PortalFooterGroup, FeedbackValue, ConsentChoice, NotificationItem } from './patterns.js';
 export { Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer, AspectRatio, Section, AppShell, PageHeader } from './layout.js';
 export { SecondaryNav, PortalLayout } from './portal.js';
 export type { LayoutProps, Responsive } from '@hawiyah/core';

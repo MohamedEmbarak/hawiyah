@@ -8,7 +8,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import ts from 'typescript';
 import { getCalendarMonth, resetTextWarnings, sortRows } from '@hawiyah/core';
-import { AppShell, Calendar, Carousel, Combobox, ContentNavigation, CookieConsent, DataTable, DatePicker, Feedback, FileDropzone, FileUploadList, MultiSelect, NotificationList, Pagination, PortalFooter, PortalHeader, PortalLayout, RangeSlider, Rating, SearchField, Tabs, TagInput } from './src/index.js';
+import { AppShell, Button, Calendar, Carousel, Combobox, ContentNavigation, CookieConsent, DataTable, DatePicker, Feedback, FileDropzone, FileUploadList, Menu, MultiSelect, NotificationList, Pagination, Popover, PortalFooter, PortalHeader, PortalLayout, RangeSlider, Rating, SearchField, Tabs, TagInput, TreeView } from './src/index.js';
 import type { TabsProps } from './src/index.js';
 import type { PaginationProps } from './src/index.js';
 
@@ -60,18 +60,18 @@ it('passes the documented arguments to templated texts and adds nothing to the r
 
 it('accepts artwork alone as the brand and names it with brandLabel', async () => {
   const artwork = <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 0h10v10H0z" /></svg>;
-  await render(<><PortalHeader brand={artwork} brandHref="/" brandLabel="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" /><PortalFooter brand={artwork} brandLabel="هوية" externalLabel="يفتح في نافذة جديدة" /></>);
+  await render(<><PortalHeader brand={artwork} homeHref="/" brandLabel="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" /><PortalFooter brand={artwork} brandLabel="هوية" externalLabel="يفتح في نافذة جديدة" /></>);
   const link = container.querySelector<HTMLAnchorElement>('a.hw-portal-brand')!;
   expect(link.getAttribute('aria-label')).toBe('هوية'); expect(link.textContent).toBe(''); expect(link.querySelector('svg')).not.toBeNull();
   expect(container.querySelector('.hw-portal-footer-brand-marks')!.getAttribute('aria-label')).toBe('هوية'); expect(container.querySelector('.hw-portal-footer-brand-marks')!.getAttribute('role')).toBe('group');
   expect(container.querySelector('.hw-portal-footer-brand')!.hasAttribute('role')).toBe(false); expect(container.querySelector('.hw-portal-footer-brand')!.hasAttribute('aria-label')).toBe(false);
   expect(container.querySelector('.hw-portal-footer-support')).toBeNull();
   expect(warnings()).toEqual([]);
-  await render(<PortalHeader brand={artwork} navigationLabel="التنقل الرئيسي" menuLabel="القائمة" />);
+  await render(<PortalHeader brand={artwork} homeHref="" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" />);
   const brand = container.querySelector('.hw-portal-brand')!;
   expect(brand.localName).toBe('div'); expect(brand.hasAttribute('href')).toBe(false); expect(brand.hasAttribute('role')).toBe(false);
   expect(warnings()).toEqual([expect.stringContaining('PortalHeader requires "brandLabel" when the brand has no text')]);
-  await render(<PortalHeader brand="هوية" brandHref="/" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" />);
+  await render(<PortalHeader brand="هوية" homeHref="/" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" />);
   expect(container.querySelector('a.hw-portal-brand')!.hasAttribute('aria-label')).toBe(false);
 });
 
@@ -105,13 +105,14 @@ it('warns for missing always-texts that the types already require and renders no
   expect(container.querySelector('.hw-cookie-consent')!.hasAttribute('aria-labelledby')).toBe(false);
   expect(container.querySelector('.hw-notification-list')!.hasAttribute('aria-labelledby')).toBe(false);
   expect(container.querySelector('.hw-notification-list > p')).toBeNull();
-  expect(container.querySelector('.hw-feedback legend')!.textContent).toBe('');
+  expect(container.querySelector('.hw-feedback > p:not([role])')).toBeNull(); expect(container.querySelector('.hw-feedback')!.hasAttribute('aria-labelledby')).toBe(false);
+  expect(container.querySelector('.hw-cookie-consent h2')).toBeNull();
   container.querySelectorAll('.hw-range-slider input[type="range"]').forEach(input => { expect(input.hasAttribute('aria-label')).toBe(false); expect(input.getAttribute('aria-labelledby') ?? '').toBe(''); });
 });
 
 it('omits names that application functions return empty and keeps required controls without a message blocking without marking them invalid', async () => {
   const options = [{ value: 'a', label: 'أ' }]; const [Tags, Multi, Combo] = [untyped(TagInput), untyped(MultiSelect), untyped(Combobox)];
-  await render(<><Rating label="التقييم" getRatingLabel={() => ''} /><TagInput label="الوسوم" defaultValue={['x']} getRemoveLabel={() => ''} /><form id="f"><Tags label="وسوم مطلوبة" required getRemoveLabel={(tag: string) => tag} /><Multi label="اختيارات" options={options} searchLabel="بحث" emptyMessage="لا نتائج" required /><Combo label="خيار" options={options} emptyMessage="لا نتائج" getResultsMessage={(count: number) => String(count)} required /></form></>);
+  await render(<><Rating label="التقييم" getRatingLabel={() => ''} /><TagInput label="الوسوم" defaultValue={['x']} getRemoveLabel={() => ''} /><form id="f"><Tags label="وسوم مطلوبة" required getRemoveLabel={(tag: string) => tag} /><Multi label="اختيارات" options={options} searchLabel="بحث" getResultsMessage={(count: number) => `${count}`} emptyMessage="لا نتائج" required /><Combo label="خيار" options={options} emptyMessage="لا نتائج" getResultsMessage={(count: number) => String(count)} required /></form></>);
   container.querySelectorAll('.hw-rating input[type="radio"]').forEach(input => expect(input.hasAttribute('aria-label')).toBe(false));
   expect(container.querySelector('.hw-chip button')!.hasAttribute('aria-label')).toBe(false);
   const controls = Array.from(container.querySelectorAll<HTMLInputElement>('#f input:not([type="hidden"]):not([type="checkbox"])'));
@@ -143,6 +144,32 @@ it('reports a tab list without a label and writes no empty name', async () => {
   expect(warnings()).toEqual([expect.stringMatching(/^Hawiyah: Tabs requires "label"\./)]);
 });
 
+it('[NAME-01][NAME-02][NAME-03][NAME-04][E05][nav-b-9][nav-b-2] names the tablist, tree, popover panel and menu, never their roots', async () => {
+  const tabs = [{ value: 'a', label: 'First', content: 'One' }];
+  const tree = { items: [{ id: 'a', label: 'A' }], getExpandLabel: () => 'Expand', getCollapseLabel: () => 'Collapse' };
+  const cases: [string, string, (name: Record<string, string>) => ReactNode][] = [
+    ['Tabs', '[role=tablist]', name => <Tabs items={tabs} overflow="scroll" {...(name as { label: string })} />],
+    ['TreeView', '[role=tree]', name => <TreeView {...tree} {...(name as { label: string })} />],
+    ['Popover', '.hw-popover-panel', name => <Popover trigger={<Button>Open</Button>} {...(name as { label: string })}><h3 id="heading">Heading</h3></Popover>],
+    ['Menu', '[role=menu]', name => <Menu items={[{ value: 'a', label: 'A' }]} trigger={<Button>Open</Button>} {...(name as { label: string })} />],
+  ];
+  for (const [component, selector, make] of cases) {
+    const named = () => container.querySelector(selector)!;
+    const outer = () => container.querySelector('.hw-tabs, .hw-popover, .hw-menu');
+    await render(<><h3 id="heading">Heading</h3>{make({ label: 'Label' })}</>);
+    expect(named().getAttribute('aria-label')).toBe('Label'); expect(outer()?.hasAttribute('aria-label') ?? false).toBe(false);
+    await render(<><h3 id="heading">Heading</h3>{make({ 'aria-label': 'Given' })}</>);
+    expect(named().getAttribute('aria-label')).toBe('Given'); expect(outer()?.hasAttribute('aria-label') ?? false).toBe(false);
+    await render(<><h3 id="heading">Heading</h3>{make({ 'aria-labelledby': 'heading' })}</>);
+    expect(named().getAttribute('aria-labelledby')).toBe('heading'); expect(named().hasAttribute('aria-label')).toBe(false); expect(outer()?.hasAttribute('aria-labelledby') ?? false).toBe(false);
+    expect(warnings()).toEqual([]);
+    await render(<>{make({})}</>);
+    expect(named().hasAttribute('aria-label')).toBe(false);
+    expect(warnings()).toEqual([expect.stringMatching(new RegExp(`^Hawiyah: ${component} requires "label"`))]);
+    warn.mockClear(); resetTextWarnings();
+  }
+});
+
 it('names ContentNavigation by its label, or by an aria-label or aria-labelledby that the application passes', async () => {
   const items = [{ id: 'intro', label: 'Introduction' }];
   await render(<><ContentNavigation items={items} label="On this page" /><ContentNavigation items={items} aria-label="Contents" /><h2 id="contents-heading">Contents</h2><ContentNavigation items={items} aria-labelledby="contents-heading" /></>);
@@ -157,7 +184,7 @@ it('names ContentNavigation by its label, or by an aria-label or aria-labelledby
   const program = ts.createProgram([fixture], { strict: true, noEmit: true, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'], skipLibCheck: true, isolatedModules: true });
   const diagnostics = ts.getPreEmitDiagnostics(program).map(diagnostic => `${diagnostic.file?.fileName.split('/').pop() ?? ''}:${diagnostic.file && diagnostic.start !== undefined ? diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start).line + 1 : 0} ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')}`);
   expect(diagnostics).toEqual([]);
-  expect(readFileSync(fixture, 'utf8').match(/{\/\* @ts-expect-error/g)).toHaveLength(2);
+  expect(readFileSync(fixture, 'utf8').match(/{\/\* @ts-expect-error/g)).toHaveLength(12);
 }, 60_000);
 
 it('renders Calendar and DatePicker without Intl output and without throwing when locale is missing, and as core formats it when given', async () => {
@@ -189,7 +216,7 @@ it('keeps DataTable rows in source order when locale is missing and sorts as cor
   expect(container.querySelector('th')!.getAttribute('aria-sort')).toBe('ascending');
   expect(names()).toEqual(['ياسر', 'أحمد', 'باسم']);
   expect(warnings()).toEqual([expect.stringMatching(/^Hawiyah: DataTable requires "locale"/)]);
-  await render(<DataTable caption="الطلبات" emptyMessage="لا توجد سجلات" locale="ar-SA" columns={columns} rows={rows} defaultSort={{ key: 'name', direction: 'ascending' }} key="sorted" />);
+  await render(<DataTable caption="الطلبات" emptyMessage="لا توجد سجلات" locale="ar-SA" columns={columns} rows={rows} defaultSortKey="name" key="sorted" />);
   expect(names()).toEqual(sortRows(rows, 'name', 'ascending', 'ar-SA').map(row => row.name));
   expect(names()).toEqual(['أحمد', 'باسم', 'ياسر']);
   expect(warnings()).toHaveLength(1);

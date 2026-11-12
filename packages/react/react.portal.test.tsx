@@ -7,7 +7,7 @@ import { PortalHeader, PortalLayout } from './src/index.js';
 it('closes the responsive disclosure on Escape, link, outside press and focus leaving', async () => {
   const container = document.createElement('div'); document.body.append(container); const root = createRoot(container);
   try {
-    await act(async () => root.render(<><PortalHeader brand="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" navigation={[{ label: 'الخدمات', href: '#main' }]} /><button id="outside">خارج</button></>));
+    await act(async () => root.render(<><PortalHeader brand="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" links={[{ label: 'الخدمات', href: '#main' }]} /><button id="outside">خارج</button></>));
     const trigger = container.querySelector<HTMLButtonElement>('.hw-portal-menu-toggle')!;
     const nav = container.querySelector('nav')!; const link = nav.querySelector('a')!;
     expect(trigger.getAttribute('aria-controls')).toBe(nav.id);

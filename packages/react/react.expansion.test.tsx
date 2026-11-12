@@ -32,7 +32,7 @@ it('normalizes Arabic PIN digits in one native input and honors canceled and nat
   expect(control.value).toBe('123456');
 });
 it('keeps tag and multiple-option form values explicit across filtering and reset', async () => {
-  await render(<form><TagInput name="tags" label="Tags" getRemoveLabel={tag => `Remove ${tag}`} defaultValue={['initial']} /><MultiSelect name="cities" label="Cities" searchLabel="Search cities" emptyMessage="No cities found" defaultValue={['riyadh']} options={[{ value: 'riyadh', label: 'الرياض' }, { value: 'abha', label: 'أبها' }]} /></form>);
+  await render(<form><TagInput name="tags" label="Tags" getRemoveLabel={tag => `Remove ${tag}`} defaultValue={['initial']} /><MultiSelect name="cities" label="Cities" searchLabel="Search cities" getResultsMessage={(count: number) => `${count}`} emptyMessage="No cities found" defaultValue={['riyadh']} options={[{ value: 'riyadh', label: 'الرياض' }, { value: 'abha', label: 'أبها' }]} /></form>);
   const tag = container.querySelector<HTMLInputElement>('.hw-tag-input input[type=text]')!;
   await input(tag, 'new'); await key(tag, 'Enter');
   const search = container.querySelector<HTMLInputElement>('input[type=search]')!;
@@ -123,7 +123,7 @@ it('preserves an unsupported ISO date while explicitly limiting its Hijri displa
   await act(async () => { (container.querySelector('.hw-calendar-switch input[value="gregory"]') as HTMLInputElement).click(); });
   expect(container.querySelector('[data-date="1900-01-01"]')?.closest('td')?.getAttribute('aria-selected')).toBe('true');
   expect(new FormData(container.querySelector('form')!).get('date')).toBe('1900-01-01');
-  expect(container.querySelector('[role=status]')).toBeNull();
+  expect(container.querySelector('[role=status]')!.textContent).toBe('');
   expect(date.checkValidity()).toBe(true);
   expect(date.getAttribute('aria-invalid')).not.toBe('true');
 });
@@ -166,7 +166,7 @@ it('supports menu roving focus, disabled skipping, actions and focus return', as
   expect(action).toHaveBeenCalledWith('last'); expect(document.activeElement).toBe(trigger); expect(trigger.getAttribute('aria-expanded')).toBe('false');
 });
 it('closes popovers outside and with Escape without trapping ordinary Tab order', async () => {
-  await render(<><Popover title="Help" trigger={<Button>Open</Button>}><Button>Inside</Button></Popover><Button>Outside</Button></>);
+  await render(<><Popover label="Help" trigger={<Button>Open</Button>}><Button>Inside</Button></Popover><Button>Outside</Button></>);
   const buttons = [...container.querySelectorAll('button')]; await click(buttons[0]!); expect(container.querySelector<HTMLElement>('[role=region]')!.hidden).toBe(false);
   await key(buttons[1]!, 'Escape'); expect(container.querySelector<HTMLElement>('[role=region]')!.hidden).toBe(true); expect(document.activeElement).toBe(buttons[0]);
   await click(buttons[0]!); await act(async () => buttons[2]!.dispatchEvent(new Event('pointerdown', { bubbles: true }))); expect(container.querySelector<HTMLElement>('[role=region]')!.hidden).toBe(true);
@@ -182,11 +182,11 @@ it('sorts a native data table stably and exposes direction on headers', async ()
   await click(name); expect(name.closest('th')?.getAttribute('aria-sort')).toBe('descending'); expect([...container.querySelectorAll('tbody tr')].map(row => row.firstElementChild?.textContent)).toEqual(['b', 'a', 'c']);
 });
 it('keeps toasts caller owned, with only urgent messages in the assertive region', async () => {
-  const dismiss = vi.fn(); await render(<ToastRegion label="Notifications" getDismissLabel={message => `Dismiss ${message.id}`} messages={[{ id: 'saved', description: 'Saved', tone: 'success' }, { id: 'urgent', description: 'Connection lost', urgent: true }]} onDismiss={dismiss} />);
+  const dismiss = vi.fn(); await render(<ToastRegion label="Notifications" getDismissLabel={message => `Dismiss ${message.id}`} messages={[{ id: 'saved', message: 'Saved', tone: 'success' }, { id: 'urgent', message: 'Connection lost', urgent: true }]} onDismiss={dismiss} />);
   expect(container.querySelector('[role=status]')?.textContent).toContain('Saved'); expect(container.querySelector('[role=alert]')?.textContent).toContain('Connection lost'); await click(container.querySelector('button')!); expect(dismiss).toHaveBeenCalledWith('saved'); expect(container.querySelectorAll('.hw-toast')).toHaveLength(2);
 });
 it('reports configurable consent and feedback without implied persistence or network requests', async () => {
-  const consent = vi.fn(); const feedback = vi.fn(); await render(<><CookieConsent title="Optional cookies" description="Choose a preference" acceptLabel="Accept optional cookies" rejectLabel="Reject optional cookies" onValueChange={consent} /><Feedback label="Was this helpful?" yesLabel="Yes" noLabel="No" commentLabel="Tell us more (optional)" submitLabel="Send feedback" successMessage="Thank you for your feedback." onFeedback={feedback} /></>);
+  const consent = vi.fn(); const feedback = vi.fn(); await render(<><CookieConsent title="Optional cookies" description="Choose a preference" acceptLabel="Accept optional cookies" rejectLabel="Reject optional cookies" onConsent={consent} /><Feedback label="Was this helpful?" yesLabel="Yes" noLabel="No" commentLabel="Tell us more (optional)" submitLabel="Send feedback" successMessage="Thank you for your feedback." onFeedback={feedback} /></>);
   await click([...container.querySelectorAll('button')].find(button => button.textContent === 'Reject optional cookies')!); expect(consent).toHaveBeenCalledWith('rejected'); expect(container.querySelector<HTMLElement>('.hw-cookie-consent')!.hidden).toBe(true);
-  await click(container.querySelector<HTMLInputElement>('input[value=yes]')!); await click([...container.querySelectorAll('button')].find(button => button.textContent === 'Send feedback')!); expect(feedback).toHaveBeenCalledWith({ helpful: 'yes', comment: '' }); expect(container.querySelector('[role=status]')?.textContent).toContain('Thank you');
+  await click(container.querySelector('.hw-feedback-actions button')!); await click([...container.querySelectorAll('button')].find(button => button.textContent === 'Send feedback')!); expect(feedback).toHaveBeenCalledWith({ helpful: true, comment: '' }); expect(container.querySelector('[role=status]')?.textContent).toContain('Thank you');
 });

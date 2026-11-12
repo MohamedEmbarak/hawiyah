@@ -1,12 +1,19 @@
-import { defineComponent, h, mergeProps, onMounted, onBeforeUnmount, ref, useId } from "vue";
-import type { PropType } from "vue";
+import { defineComponent, h, mergeProps, nextTick, onMounted, onBeforeUnmount, ref, useId } from "vue";
+import type { PropType, VNodeArrayChildren } from "vue";
 import { Button, Textarea } from "./forms.js";
 import { Badge, Card } from "./display.js";
-import { DescriptionList, Link } from "./content.js";
+import { Link } from "./content.js";
 import type { DescriptionItem } from "./content.js";
-import { getFragmentHref } from "@hawiyah/core";
+import { getFragmentHref, getPortalBranchSummary, prepareRemovalFocus } from "@hawiyah/core";
+import type { ConsentChoice, FeedbackValue } from "@hawiyah/core";
 import { listener, listens, needText, optionalText, rootLabel, useBrandName, useFragmentLinks, useValue } from "./shared.js";
 
+/** Service facts as a stacked description list; written inline so the markup does not follow DescriptionList's default variant. */
+function serviceFacts(metadata: readonly DescriptionItem[] | undefined) {
+  return metadata?.length
+    ? h("dl", { class: "hw-description-list" }, metadata.map((item, index) => h("div", { key: index }, [h("dt", {}, item.term), h("dd", {}, [item.description] as VNodeArrayChildren)])))
+    : null;
+}
 export const ServiceCard = defineComponent({
   name: "HwServiceCard",
   inheritAttrs: false,
@@ -15,32 +22,27 @@ export const ServiceCard = defineComponent({
     description: String,
     href: String,
     actionLabel: String,
-    badge: String,
-    metadata: Array as PropType<readonly string[]>,
+    category: String,
+    metadata: Array as PropType<readonly DescriptionItem[]>,
   },
   setup(props, { attrs, slots }) {
     return () =>
       h(Card, mergeProps(attrs, { class: "hw-service-card" }), {
         header: () => [
-          slots.icon?.(),
-          h("h3", {}, props.title),
-          props.badge && h(Badge, { tone: "info" }, () => props.badge),
+          slots.icon && h("div", { class: "hw-service-card-icon", "aria-hidden": "true" }, slots.icon()),
+          h("div", {}, [
+            props.category && h(Badge, {}, () => props.category),
+            h("h3", {}, props.title),
+          ]),
         ],
         default: () => [
           props.description && h("p", {}, props.description),
-          props.metadata?.length &&
-            h(
-              "ul",
-              {},
-              props.metadata.map((item) => h("li", {}, item)),
-            ),
+          serviceFacts(props.metadata),
           slots.default?.(),
         ],
-        footer: () =>
+        footer: slots.action || props.href ? () =>
           slots.action?.() ??
-          (props.href
-            ? h(Link, { href: props.href }, () => needText("ServiceCard", "actionLabel", props.actionLabel, "href is set and no action slot is given"))
-            : undefined),
+          h(Link, { href: props.href }, () => needText("ServiceCard", "actionLabel", props.actionLabel, "href is set and no action slot is given")) : undefined,
       });
   },
 });
@@ -50,22 +52,31 @@ export const ServiceDetails = defineComponent({
   props: {
     title: { type: String, required: true },
     description: String,
-    items: {
+    metadata: {
       type: Array as PropType<readonly DescriptionItem[]>,
       default: () => [],
     },
+    requirements: {
+      type: Array as PropType<readonly string[]>,
+      default: () => [],
+    },
+    /** Heading of the requirements; required when requirements has entries. */
+    requirementsLabel: String,
   },
   setup(props, { attrs, slots }) {
     return () =>
-      h("section", mergeProps(attrs, { class: "hw-service-details" }), [
+      h("article", mergeProps(attrs, { class: "hw-service-details" }), [
         h("header", {}, [
           h("h2", {}, props.title),
           props.description && h("p", {}, props.description),
         ]),
-        h(DescriptionList, { items: props.items }),
+        serviceFacts(props.metadata),
+        props.requirements.length > 0 && h("section", {}, [
+          needText("ServiceDetails", "requirementsLabel", props.requirementsLabel, "requirements are given") && h("h3", {}, props.requirementsLabel),
+          h("ul", {}, props.requirements.map((item, index) => h("li", { key: index }, slots.requirement?.({ item, index }) ?? item))),
+        ]),
         slots.default?.(),
-        slots.action &&
-          h("div", { class: "hw-service-details-action" }, slots.action()),
+        slots.action && h("footer", {}, slots.action()),
       ]);
   },
 });
@@ -91,21 +102,31 @@ export const PortalHeader = defineComponent({
     navigationId: String,
     mainId: String,
     skipLabel: String,
+    /** Open state of the navigation below 48rem (v-model:open); `defaultOpen` is the uncontrolled start. */
+    open: { type: Boolean, default: undefined },
+    defaultOpen: Boolean,
   },
-  setup(props, { attrs, slots }) {
-    const id = useId(); const open = ref(false);
+  emits: { "update:open": (_value: boolean) => true },
+  setup(props, { attrs, slots, emit }) {
+    const id = useId(); const open = useValue(() => props.open, props.defaultOpen, value => emit("update:open", value));
     const root = ref<HTMLElement>(); const trigger = ref<HTMLButtonElement>();
     const branch = ref<HTMLDetailsElement>(); const skip = ref<HTMLAnchorElement>(); const brand = ref<HTMLElement>();
     useFragmentLinks(() => [skip.value]);
     useBrandName("PortalHeader", () => brand.value);
-    const close = () => { branch.value = undefined; open.value = false; };
+    const close = () => { branch.value = undefined; open.set(false); };
+    // A press on a branch heading closes nothing by itself: the click on that heading opens it and closes
+    // the others, so the heading does not move away between the press and the click.
+    let pressed: HTMLElement | null = null;
     const outside = (event: PointerEvent) => {
       const target = event.target as Node;
+      pressed = getPortalBranchSummary(event.target, root.value);
+      if (pressed) return;
       if (!branch.value?.contains(target)) branch.value = undefined;
-      if (!root.value?.contains(target)) open.value = false;
+      if (!root.value?.contains(target)) open.set(false);
     };
-    onMounted(() => root.value?.ownerDocument.addEventListener('pointerdown', outside));
-    onBeforeUnmount(() => root.value?.ownerDocument.removeEventListener('pointerdown', outside));
+    const cancel = () => { pressed = null; };
+    onMounted(() => { root.value?.ownerDocument.addEventListener('pointerdown', outside); root.value?.ownerDocument.addEventListener('pointercancel', cancel); });
+    onBeforeUnmount(() => { root.value?.ownerDocument.removeEventListener('pointerdown', outside); root.value?.ownerDocument.removeEventListener('pointercancel', cancel); });
     const link = (item: PortalNavLink, className?: string) => h('a', {
       href: item.href, class: className,
       'aria-current': item.current ? 'page' : undefined, onClick: close,
@@ -123,6 +144,7 @@ export const PortalHeader = defineComponent({
           event.preventDefault();
           const details = (event.currentTarget as HTMLElement).parentElement as HTMLDetailsElement;
           branch.value = details === branch.value ? undefined : details;
+          pressed = null;
         } }, item.label),
         h('div', { class: 'hw-portal-branch-panel' }, [
           link({...item, current: item.current && !childCurrent}, 'hw-link hw-portal-branch-overview'),
@@ -136,19 +158,20 @@ export const PortalHeader = defineComponent({
     return () =>
       h("header", mergeProps(attrs, { class: "hw-portal-header", ref: root,
         onKeydown: (event: KeyboardEvent) => {
+          pressed = null;
           if (event.defaultPrevented || event.key !== 'Escape') return;
           if (branch.value?.isConnected) {
             event.preventDefault(); event.stopPropagation();
             const summary = branch.value.querySelector<HTMLElement>(':scope > summary');
             branch.value = undefined; summary?.focus();
-          } else if (open.value) {
+          } else if (open.value.value) {
             event.preventDefault(); event.stopPropagation(); close(); trigger.value?.focus();
           }
         },
         onFocusout: (event: FocusEvent) => {
           const target = (event.relatedTarget ?? root.value?.ownerDocument.activeElement) as Node | null;
-          if (!branch.value?.contains(target)) branch.value = undefined;
-          if (!root.value?.contains(target)) open.value = false;
+          if (!pressed?.contains(target) && !branch.value?.contains(target)) branch.value = undefined;
+          if (!root.value?.contains(target)) open.set(false);
         },
       }), [
         props.mainId && h('a', { ref: skip, class: 'hw-skip-link', href: getFragmentHref(props.mainId) }, needText("PortalHeader", "skipLabel", props.skipLabel, "mainId is set")),
@@ -156,20 +179,20 @@ export const PortalHeader = defineComponent({
         slots.notice && h("div", { class: "hw-portal-notice" }, slots.notice()),
         // The brand is application content: artwork in the brand slot, text in the brand prop, or both.
         h(
-          props.homeHref ? "a" : "span",
+          props.homeHref ? "a" : "div",
           {
             ref: brand,
             href: props.homeHref || undefined,
             class: "hw-portal-brand",
-            role: !props.homeHref && optionalText(props.brandLabel) ? "group" : undefined,
+            role: !props.homeHref && optionalText(props.brandLabel) ? "img" : undefined,
             "aria-label": optionalText(props.brandLabel),
           },
           [slots.brand?.(), optionalText(props.brand) && h("span", {}, props.brand)],
         ),
-        props.links.length > 0 && h('button', { ref: trigger, type: 'button', class: 'hw-button hw-portal-menu-toggle', 'aria-expanded': open.value, 'aria-controls': props.navigationId ?? `${id}-navigation`, onClick: () => { branch.value = undefined; open.value = !open.value; } }, [h('span', { class: 'hw-icon', 'data-icon': open.value ? 'cancel-01' : 'menu-01', 'aria-hidden': 'true' }), needText('PortalHeader', 'menuLabel', props.menuLabel)]),
+        props.links.length > 0 && h('button', { ref: trigger, type: 'button', class: 'hw-button hw-portal-menu-toggle', 'aria-expanded': open.value.value, 'aria-controls': props.navigationId ?? `${id}-navigation`, onClick: () => { branch.value = undefined; open.set(!open.value.value); } }, [h('span', { class: 'hw-icon', 'data-icon': open.value.value ? 'cancel-01' : 'menu-01', 'aria-hidden': 'true' }), needText('PortalHeader', 'menuLabel', props.menuLabel)]),
         props.links.length > 0 && h(
           "nav",
-          { id: props.navigationId ?? `${id}-navigation`, "aria-label": needText("PortalHeader", "navigationLabel", props.navigationLabel), 'data-open': String(open.value) },
+          { id: props.navigationId ?? `${id}-navigation`, "aria-label": needText("PortalHeader", "navigationLabel", props.navigationLabel), 'data-open': String(open.value.value) },
           h('ul', props.links.map(navigationItem)),
         ),
         slots.actions &&
@@ -212,18 +235,16 @@ export const PortalFooter = defineComponent({
     ]);
   },
 });
-export interface FeedbackValue {
-  value: string;
-  comment: string;
-}
+export type { ConsentChoice, FeedbackValue };
 export const Feedback = defineComponent({
   name: "HwFeedback",
   inheritAttrs: false,
   props: {
     choiceVariant: { type: String as PropType<'text' | 'icon' | 'icon-text'>, default: 'text' },
-    label: { type: String, required: true },
-    modelValue: String,
-    defaultValue: { type: String, default: "" },
+    // The visible question that names the group; an application aria-label or aria-labelledby replaces it.
+    label: String,
+    modelValue: Object as PropType<FeedbackValue>,
+    defaultValue: { type: Object as PropType<FeedbackValue>, default: () => ({ helpful: null, comment: "" }) },
     yesLabel: { type: String, required: true },
     noLabel: { type: String, required: true },
     // The comment field appears once a reader answers (run-time data), so both texts are needed in every use.
@@ -231,79 +252,63 @@ export const Feedback = defineComponent({
     submitLabel: { type: String, required: true },
     successMessage: { type: String, required: true },
     disabled: Boolean,
-    readonly: Boolean,
   },
   emits: {
-    "update:modelValue": (_value: string) => true,
-    submit: (_value: FeedbackValue) => true,
+    "update:modelValue": (_value: FeedbackValue) => true,
+    feedback: (_value: FeedbackValue) => true,
   },
   setup(props, { attrs, emit, slots }) {
-    const model = useValue(
+    const id = useId();
+    const model = useValue<FeedbackValue>(
       () => props.modelValue,
       props.defaultValue,
       (v) => emit("update:modelValue", v),
     );
-    const comment = ref("");
-    const submitted = ref(false);
+    const sent = ref(false);
+    const change = (next: FeedbackValue) => { sent.value = false; model.set(next); };
     return () => {
-      const label = needText("Feedback", "label", props.label);
-      const commentLabel = needText("Feedback", "commentLabel", props.commentLabel);
-      const submitLabel = needText("Feedback", "submitLabel", props.submitLabel);
+      const named = !!optionalText(attrs["aria-label"]) || !!optionalText(attrs["aria-labelledby"]);
+      const question = named ? optionalText(props.label) : needText("Feedback", "label", props.label);
+      const copy = { yes: needText("Feedback", "yesLabel", props.yesLabel), no: needText("Feedback", "noLabel", props.noLabel), comment: needText("Feedback", "commentLabel", props.commentLabel), submit: needText("Feedback", "submitLabel", props.submitLabel), success: needText("Feedback", "successMessage", props.successMessage) };
+      const current = model.value.value;
+      const choice = (helpful: boolean) => h(
+        Button,
+        {
+          variant: "secondary",
+          disabled: props.disabled,
+          "aria-pressed": current.helpful === helpful,
+          onClick: () => { if (props.disabled || model.value.value.helpful === helpful) return; change({ ...model.value.value, helpful }); },
+        },
+        () => [h('span', { class: 'hw-icon hw-feedback-icon', 'data-icon': helpful ? 'thumbs-up' : 'thumbs-down', 'aria-hidden': 'true' }), h('span', { class: 'hw-feedback-label' }, helpful ? copy.yes : copy.no)],
+      );
       return h(
-        "section",
-        mergeProps(attrs, { class: "hw-feedback", "aria-label": attrs["aria-label"] ?? label, "data-choice-variant": props.choiceVariant }),
+        "div",
+        mergeProps(attrs, { class: "hw-feedback", role: "group", "aria-labelledby": attrs["aria-labelledby"] ?? (question && !optionalText(attrs["aria-label"]) ? `${id}-label` : undefined), "data-choice-variant": props.choiceVariant }),
         [
-          h("h2", {}, label),
-          h(
-            "div",
-            {
-              class: "hw-button-group hw-feedback-actions",
-              role: "group",
-              "aria-label": label,
-            },
-            (["yes", "no"] as const).map((value) =>
-              h(
-                Button,
-                {
-                  variant: "secondary",
-                  disabled: props.disabled || props.readonly,
-                  "aria-pressed": model.value.value === value,
-                  onClick: () => {
-                    model.set(value);
-                    submitted.value = false;
-                  },
-                },
-                () => [h('span', {class:'hw-icon hw-feedback-icon', 'data-icon':value==='yes'?'thumbs-up':'thumbs-down', 'aria-hidden':'true'}), h('span', {class:'hw-feedback-label'}, value==='yes'?needText("Feedback", "yesLabel", props.yesLabel):needText("Feedback", "noLabel", props.noLabel))],
-              ),
-            ),
-          ),
-          model.value.value &&
-            h("div", {}, [
+          question && h("p", { id: `${id}-label` }, question),
+          h("div", { class: "hw-feedback-actions" }, [choice(true), choice(false)]),
+          current.helpful !== null &&
+            h("div", { class: "hw-feedback-comment" }, [
               h(Textarea, {
-                label: commentLabel,
-                modelValue: comment.value,
-                "onUpdate:modelValue": (value: string) => {
-                  comment.value = value;
-                },
+                label: copy.comment,
+                modelValue: current.comment,
+                "onUpdate:modelValue": (comment: string) => change({ ...model.value.value, comment }),
                 disabled: props.disabled,
-                readonly: props.readonly,
               }),
               h(
                 Button,
                 {
-                  disabled: props.disabled || props.readonly,
+                  disabled: props.disabled,
                   onClick: () => {
-                    emit("submit", {
-                      value: model.value.value,
-                      comment: comment.value,
-                    });
-                    submitted.value = true;
+                    if (props.disabled) return;
+                    emit("feedback", model.value.value);
+                    sent.value = true;
                   },
                 },
-                () => submitLabel,
+                () => copy.submit,
               ),
             ]),
-          h("p", { role: "status" }, submitted.value ? needText("Feedback", "successMessage", props.successMessage) : undefined),
+          h("p", { role: "status" }, sent.value ? copy.success : undefined),
           slots.default?.(),
         ],
       );
@@ -323,57 +328,43 @@ export const CookieConsent = defineComponent({
     preferencesLabel: String,
     policyHref: String,
     policyLabel: String,
+    variant: String as PropType<"banner">,
     // The preferences action is rendered only while @preferences is bound.
     onPreferences: listener<[]>(),
   },
   emits: {
     "update:open": (_value: boolean) => true,
-    accept: () => true,
-    reject: () => true,
+    consent: (_choice: ConsentChoice) => true,
     preferences: () => true,
   },
   setup(props, { attrs, slots, emit }) {
+    const id = useId();
     const model = useValue(
       () => props.open,
       props.defaultOpen,
       (v) => emit("update:open", v),
     );
-    return () =>
-      h(
+    // Nothing is stored; the application places focus once the region closes.
+    const choose = (choice: ConsentChoice) => { emit("consent", choice); model.set(false); };
+    return () => {
+      const title = needText("CookieConsent", "title", props.title);
+      const description = needText("CookieConsent", "description", props.description);
+      return h(
         "section",
         mergeProps(attrs, {
           class: "hw-cookie-consent",
-          role: "region",
-          "aria-label": attrs["aria-label"] ?? needText("CookieConsent", "title", props.title),
+          "aria-labelledby": attrs["aria-labelledby"] ?? (title && !optionalText(attrs["aria-label"]) ? `${id}-title` : undefined),
+          "data-variant": props.variant ?? attrs["data-variant"],
           hidden: !model.value.value,
         }),
         [
-          h("h2", {}, optionalText(props.title)),
-          h("p", {}, props.description),
+          title && h("h2", { id: `${id}-title` }, title),
+          description && h("p", {}, description),
           props.policyHref && h(Link, { href: props.policyHref }, () => needText("CookieConsent", "policyLabel", props.policyLabel, "policyHref is set")),
           slots.default?.(),
           h("div", { class: "hw-button-group" }, [
-            h(
-              Button,
-              {
-                onClick: () => {
-                  emit("accept");
-                  model.set(false);
-                },
-              },
-              () => needText("CookieConsent", "acceptLabel", props.acceptLabel),
-            ),
-            h(
-              Button,
-              {
-                variant: "secondary",
-                onClick: () => {
-                  emit("reject");
-                  model.set(false);
-                },
-              },
-              () => needText("CookieConsent", "rejectLabel", props.rejectLabel),
-            ),
+            h(Button, { onClick: () => choose("accepted") }, () => needText("CookieConsent", "acceptLabel", props.acceptLabel)),
+            h(Button, { variant: "secondary", onClick: () => choose("rejected") }, () => needText("CookieConsent", "rejectLabel", props.rejectLabel)),
             listens(props.onPreferences) && h(
               Button,
               { variant: "ghost", onClick: () => emit("preferences") },
@@ -382,13 +373,15 @@ export const CookieConsent = defineComponent({
           ]),
         ],
       );
+    };
   },
 });
 export interface NotificationItem {
   id: string;
   title: string;
   description?: string;
-  date?: string;
+  /** Machine-readable ISO value of the date; shown only through dateLabel. */
+  dateTime?: string;
   dateLabel?: string;
   read?: boolean;
   href?: string;
@@ -401,71 +394,81 @@ export const NotificationList = defineComponent({
       type: Array as PropType<readonly NotificationItem[]>,
       required: true,
     },
+    // The visible heading that names the list; an application aria-label or aria-labelledby replaces it.
     label: String,
     emptyMessage: { type: String, required: true },
+    unreadLabel: { type: String, required: true },
     getMarkReadLabel: Function as PropType<(item: NotificationItem) => string>,
     getDismissLabel: Function as PropType<(item: NotificationItem) => string>,
     // A listener is also a rendering input: the mark-read and dismiss actions are rendered only while @read / @dismiss is bound.
     onRead: listener<[id: string]>(), onDismiss: listener<[id: string]>(),
   },
   setup(props, { attrs, emit, slots }) {
+    const id = useId();
+    const region = ref<HTMLElement>();
     const itemLabel = (name: "getMarkReadLabel" | "getDismissLabel", item: NotificationItem, when: string) => { const get = needText("NotificationList", name, props[name], when); return get ? optionalText(get(item)) : undefined; };
-    return () =>
-      h(
+    // After an action, focus goes to the same control of the next item, else the previous one, else the list.
+    const act = (event: MouseEvent, control: string, notify: () => void) => {
+      const recover = region.value ? prepareRemovalFocus(region.value, event.currentTarget as HTMLElement, { item: ":scope > ul > li", control, fallback: region.value }) : undefined;
+      try { notify(); } finally { if (recover) void nextTick(recover); }
+    };
+    return () => {
+      const named = !!optionalText(attrs["aria-label"]) || !!optionalText(attrs["aria-labelledby"]);
+      const heading = named ? optionalText(props.label) : needText("NotificationList", "label", props.label);
+      const unread = needText("NotificationList", "unreadLabel", props.unreadLabel);
+      const actions = listens(props.onRead) || listens(props.onDismiss);
+      return h(
         "section",
         mergeProps(attrs, {
+          ref: region,
           class: "hw-notification-list",
-          "aria-label": rootLabel("NotificationList", props.label, attrs),
+          tabindex: attrs.tabindex ?? (actions ? -1 : undefined),
+          "aria-labelledby": attrs["aria-labelledby"] ?? (heading && !optionalText(attrs["aria-label"]) ? `${id}-title` : undefined),
         }),
         [
+          heading && h("h2", { id: `${id}-title` }, heading),
           props.items.length
             ? h(
                 "ul",
                 {},
-                props.items.map((item) =>
-                  h(
+                props.items.map((item) => {
+                  const markRead = !item.read && listens(props.onRead) ? itemLabel("getMarkReadLabel", item, "a read listener is bound") : undefined;
+                  return h(
                     "li",
-                    { key: item.id, "data-read": String(Boolean(item.read)) },
+                    { key: item.id, "data-state": item.read ? "read" : "unread" },
                     [
-                      h(
-                        "h3",
-                        {},
-                        item.href
-                          ? h("a", { href: item.href }, item.title)
-                          : item.title,
-                      ),
+                      h("h3", {}, item.href ? h(Link, { href: item.href }, () => item.title) : item.title),
+                      !item.read && unread && h(Badge, { tone: "info" }, () => unread),
                       item.description && h("p", {}, item.description),
-                      item.date &&
-                        h(
-                          "time",
-                          { datetime: item.date },
-                          item.dateLabel ?? item.date,
-                        ),
+                      item.dateLabel && h("time", { datetime: item.dateTime }, item.dateLabel),
                       slots[item.id]?.({ item }),
-                      !item.read && listens(props.onRead) &&
+                      markRead &&
                         h(
                           Button,
                           {
                             variant: "ghost",
-                            onClick: () => emit("read", item.id),
+                            "data-hw-mark-read": "",
+                            onClick: (event: MouseEvent) => act(event, "[data-hw-mark-read]", () => emit("read", item.id)),
                           },
-                          () => itemLabel("getMarkReadLabel", item, "a read listener is bound"),
+                          () => markRead,
                         ),
                       listens(props.onDismiss) && h(
                         Button,
                         {
                           variant: "ghost",
+                          "data-hw-dismiss": "",
                           "aria-label": itemLabel("getDismissLabel", item, "a dismiss listener is bound"),
-                          onClick: () => emit("dismiss", item.id),
+                          onClick: (event: MouseEvent) => act(event, "[data-hw-dismiss]", () => emit("dismiss", item.id)),
                         },
                         () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }),
                       ),
                     ],
-                  ),
-                ),
+                  );
+                }),
               )
-            : h("p", { role: "status" }, needText("NotificationList", "emptyMessage", props.emptyMessage)),
+            : h("p", {}, needText("NotificationList", "emptyMessage", props.emptyMessage)),
         ],
       );
+    };
   },
 });

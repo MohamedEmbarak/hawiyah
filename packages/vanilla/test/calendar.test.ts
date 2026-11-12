@@ -68,7 +68,7 @@ describe('date picker', () => {
   it('does not silently convert or clear an unsupported selection on switching to Hijri', () => {
     const { root, input, dialog, trigger } = picker('1800-01-01'); const controller = createDatePicker(root, { locale: 'en' });
     controller.setCalendar('islamic-umalqura'); expect(input.value).toBe('1800-01-01'); expect(input.checkValidity()).toBe(false);
-    expect(root.querySelector('[data-hw-date-display]')!.textContent).toContain('1924-08-01');
+    expect(root.querySelector('[data-hw-date-display]')!.textContent).toBe(''); expect(root.querySelector('.hw-error[role=alert]')!.textContent).toContain('1924-08-01');
     expect(input.validationMessage).toContain('1924-08-01'); controller.setCalendar('gregory'); expect(input.checkValidity()).toBe(true);
     input.readOnly = true; trigger.click(); expect(dialog.open).toBe(false); controller.destroy();
   });

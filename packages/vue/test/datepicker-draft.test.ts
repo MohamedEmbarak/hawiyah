@@ -1,6 +1,7 @@
 import { createApp, h, nextTick } from 'vue';
 import type { App } from 'vue';
 import { afterEach, expect, it } from 'vitest';
+import { formatCalendarDate } from '@hawiyah/core';
 import { DatePicker } from '../src/calendar.js';
 import { datePickerText } from './texts.js';
 
@@ -17,5 +18,5 @@ it('retains malformed drafts without publishing them and validates ranges on a f
   await edit('2026-10-20'); expect(input.checkValidity()).toBe(false);
   await edit('2026-10-21'); expect(input.checkValidity()).toBe(true); expect(new FormData(form).getAll('date')).toEqual(['2026-10-21']);
   await edit(''); expect(values.at(-1)).toBe(''); expect(input.validity.valueMissing).toBe(true);
-  form.reset(); await Promise.resolve(); await nextTick(); expect(input.value).toBe('2026-10-15'); expect(new FormData(form).get('date')).toBe('2026-10-15'); expect(container.querySelector<HTMLInputElement>('.hw-calendar-switch input:checked')!.value).toBe('islamic-umalqura');
+  form.reset(); await Promise.resolve(); await nextTick(); await nextTick(); expect(input.value).toBe(formatCalendarDate('2026-10-15', { locale: 'ar-SA', calendar: 'islamic-umalqura', dateStyle: 'medium' })); expect(new FormData(form).get('date')).toBe('2026-10-15'); expect(container.querySelector<HTMLInputElement>('.hw-calendar-switch input:checked')!.value).toBe('islamic-umalqura');
 });

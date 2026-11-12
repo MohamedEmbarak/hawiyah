@@ -1,4 +1,4 @@
-import { createCleanup, hasText, isDisabled, requireText } from '@hawiyah/core';
+import { createCleanup, getPortalBranchSummary, hasText, isDisabled, requireText } from '@hawiyah/core';
 import { emit, ensureId, eventElement, named, remember, required, text, writeText } from './dom.js';
 import { createSkipLink } from './skip-link.js';
 
@@ -44,6 +44,7 @@ export function createPortalHeader(root: HTMLElement, options: PortalHeaderOptio
     for (const branch of branches) if (branch.open && !branch.contains(inside)) branch.open = false;
   };
   let open = false;
+  let pressed: HTMLElement | null = null;
   const render = () => { trigger.setAttribute('aria-expanded', String(open)); navigation.dataset.open = String(open); };
   const change = (next: boolean, restore = false) => {
     if (scope.destroyed || open === next) return;
@@ -65,8 +66,10 @@ export function createPortalHeader(root: HTMLElement, options: PortalHeaderOptio
     if (target?.closest('[data-hw-portal-navigation]') !== navigation) return;
     if (target.closest('a[href]')) close();
     else if (target.closest('summary')) closeBranchesOutside(target);
+    pressed = null;
   });
   scope.listen(root, 'keydown', event => {
+    pressed = null;
     if ((event as KeyboardEvent).key !== 'Escape' || event.defaultPrevented) return;
     const target = eventElement(event);
     const owner = target?.closest<HTMLDetailsElement>('details[data-hw-portal-branch][open]');
@@ -87,11 +90,14 @@ export function createPortalHeader(root: HTMLElement, options: PortalHeaderOptio
     if (!root.contains(next)) close();
     else closeBranchesOutside(next);
   };
-  scope.listen(root.ownerDocument, 'pointerdown', event => leave(event.target as Node | null));
+  // A press on a branch heading closes nothing by itself: below 48rem the open panel is in normal flow, and
+  // closing it before the click would move the heading away. The click on the heading opens it and closes the others.
+  scope.listen(root.ownerDocument, 'pointerdown', event => { pressed = getPortalBranchSummary(event.target, navigation); if (!pressed) leave(event.target as Node | null); });
+  scope.listen(root.ownerDocument, 'pointercancel', () => { pressed = null; });
   scope.listen(root, 'focusout', event => {
     const next = (event as FocusEvent).relatedTarget as Node | null;
-    if (next) leave(next);
-    else queueMicrotask(() => leave(root.ownerDocument.activeElement));
+    if (next) { if (!pressed?.contains(next)) leave(next); }
+    else queueMicrotask(() => { const active = root.ownerDocument.activeElement; if (!pressed?.contains(active)) leave(active); });
   });
   render();
   return { get open() { return open; }, show() { if (!isDisabled(trigger)) change(true); }, close, destroy() { scope.destroy(); } };

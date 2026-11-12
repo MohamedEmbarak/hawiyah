@@ -217,8 +217,9 @@ it('[INV-01][INV-03][INV-04][INV-05][actions-9] a required single ToggleGroup is
   expect(group.hasAttribute('aria-invalid')).toBe(false);
 });
 
-it('[SSR-01] server HTML of a field, a slider and toggle groups equals the first client render', async () => {
+it('[SSR-01][SELECT-04] server HTML of a field, a slider, a select with option children and toggle groups equals the first client render', async () => {
   const node = <form>
+    <Select name="s" label="م" options={options} defaultValue="c"><option value="c">ج</option><optgroup label="مجموعة"><option value="d">د</option></optgroup></Select>
     <Field controlId="f" label="حقل" required error="خطأ"><TextField /></Field>
     <Slider id="l" label="م" showValue formatValue={value => `${value}٪`} />
     <ToggleGroup name="v" label="ع" options={options} hint="تلميح" error="خطأ" required />

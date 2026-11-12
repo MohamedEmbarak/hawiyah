@@ -90,7 +90,7 @@ describe('combobox', () => {
     expect(controller.value).toBe('abha');
     expect(input.value).toBe('أبها');
     expect(root.querySelector<HTMLInputElement>('[name="city"]')!.value).toBe('abha');
-    expect(changed).toHaveBeenCalledTimes(1);
+    expect(changed.mock.calls.filter(([event]) => 'value' in (event as CustomEvent).detail)).toHaveLength(1);
     controller.show();
     expect([...root.querySelectorAll<HTMLElement>('[role="option"]')].every(node => !node.hidden)).toBe(true);
     input.value = 'الريا'; input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -253,11 +253,11 @@ describe('tooltip and pagination', () => {
     const root = mount(`<nav data-hw-total="3"><button data-hw-page="previous">Previous</button><button data-hw-page="1">1</button><button data-hw-page="2">2</button><button data-hw-page="3">3</button><button data-hw-page="next">Next</button></nav>`);
     const before = root.outerHTML;
     const controller = createPagination(root);
-    expect(root.querySelector<HTMLButtonElement>('[data-hw-page="previous"]')!.disabled).toBe(true);
+    expect(root.querySelector('[data-hw-page="previous"]')!.getAttribute('aria-disabled')).toBe('true');
     root.querySelector<HTMLButtonElement>('[data-hw-page="3"]')!.click();
     expect(controller.page).toBe(3);
     expect(root.querySelector('[aria-current="page"]')!.textContent).toBe('3');
-    expect(root.querySelector<HTMLButtonElement>('[data-hw-page="next"]')!.disabled).toBe(true);
+    expect(root.querySelector('[data-hw-page="next"]')!.getAttribute('aria-disabled')).toBe('true');
     controller.select(4);
     expect(controller.page).toBe(3);
     controller.destroy();

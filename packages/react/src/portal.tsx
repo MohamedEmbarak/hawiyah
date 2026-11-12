@@ -17,12 +17,12 @@ interface PortalLayoutBaseProps extends ComponentPropsWithRef<'div'> {
   /** Application brand for the header and footer: text, artwork or both. Artwork alone is named by `brandLabel`. */
   brand: ReactNode; brandLabel?: string;
   headerProps?: Omit<PortalHeaderBaseProps, 'brand' | 'brandLabel' | 'navigationLabel' | 'menuLabel'>;
-  /** Footer content and texts under the PortalFooter names; the name of `footerProps.links` is `footerLabel`. */
-  footerProps: PortalFooterContentProps; footerLabel?: string;
   mainId?: string; skipLabel: string; menuLabel: string; navigationLabel: string;
 }
-/** `secondaryLabel` names the secondary navigation and `breadcrumbLabel` the breadcrumb when they are given. */
+/** `secondaryLabel` names the secondary navigation and `breadcrumbLabel` the breadcrumb when they are given.
+ * Footer content and texts go under the PortalFooter names in `footerProps`; `footerLabel` names `footerProps.links` and is required with them. */
 export type PortalLayoutProps = PortalLayoutBaseProps
+  & ({ footerProps: PortalFooterContentProps & { links?: undefined }; footerLabel?: string } | { footerProps: PortalFooterContentProps; footerLabel: string })
   & ({ secondaryNavigation?: undefined; secondaryLabel?: string } | { secondaryNavigation?: readonly PortalNavItem[]; secondaryLabel: string })
   & ({ breadcrumbs?: undefined; breadcrumbLabel?: string } | { breadcrumbs?: readonly BreadcrumbItem[]; breadcrumbLabel: string });
 /** Complete public portal shell; application content supplies its own page heading. */

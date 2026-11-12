@@ -1,12 +1,14 @@
 import { onMounted, onUpdated, onBeforeUnmount, computed, defineComponent, h, mergeProps, nextTick, ref, useId, watchEffect } from 'vue';
-import type { PropType, VNodeChild } from 'vue';
+import type { PropType, VNodeArrayChildren, VNodeChild } from 'vue';
 import { observeReadonlyChoice, type Option } from '@hawiyah/core';
-import { decorationProps, joinIds, provideField, useField, useFormReset, useValue } from './shared.js';
+import { decorationProps, joinIds, provideField, requiredMarker, useField, useFormReset, useValue } from './shared.js';
 import type { FieldDecoration } from './shared.js';
 
+/** The look of a Button, also used by the packaged triggers of Menu and Popover. */
+export type ButtonVariant = 'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link';
 export const Button = defineComponent({
   name: 'HwButton', inheritAttrs: false,
-  props: { variant: { type: String as PropType<'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link'>, default: 'primary' }, size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'md' }, loading: Boolean, disabled: Boolean, type: { type: String as PropType<'button' | 'submit' | 'reset'>, default: 'button' } },
+  props: { variant: { type: String as PropType<ButtonVariant>, default: 'primary' }, size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'md' }, loading: Boolean, disabled: Boolean, type: { type: String as PropType<'button' | 'submit' | 'reset'>, default: 'button' } },
   setup(props, { attrs, slots, expose }) {
     const element = ref<HTMLButtonElement>();
     expose({ element, focus: () => element.value?.focus() });
@@ -22,20 +24,22 @@ export const Field = defineComponent({
       describedby: joinIds(props.hint && `${props.controlId ?? generated}-hint`, props.error && `${props.controlId ?? generated}-error`), invalid: Boolean(props.error), required: props.required }));
     provideField(context);
     return () => h('div', mergeProps(attrs, { class: 'hw-field' }), [
-      props.label && h('label', { class: 'hw-label', id: context.value.labelId, for: context.value.id }, [props.label, props.required && h('span', { class: 'hw-required-marker', 'aria-hidden': 'true' }, ' *')]),
+      props.label && h('label', { class: 'hw-label', id: context.value.labelId, for: context.value.id }, [props.label, props.required && requiredMarker()]),
       slots.default?.(context.value),
-      props.hint && h('span', { class: 'hw-hint', id: `${context.value.id}-hint` }, props.hint),
-      props.error && h('span', { class: 'hw-error', id: `${context.value.id}-error` }, props.error),
+      props.hint && h('p', { class: 'hw-hint', id: `${context.value.id}-hint` }, props.hint),
+      props.error && h('p', { class: 'hw-error', id: `${context.value.id}-error` }, props.error),
     ]);
   },
 });
 
-export function decorate(props: FieldDecoration, id: string, content: VNodeChild, extraClass?: string, decorationId = id) {
-  if (!props.label && !props.hint && !props.error && !extraClass) return content;
+/** `produced` is a message the component itself produces (a violated constraint): it fills the one p.hw-error
+ * with role=alert when the application gives no `error`, whose text always wins and has no role. */
+export function decorate(props: FieldDecoration, id: string, content: VNodeChild, extraClass?: string, decorationId = id, produced?: VNodeChild) {
+  if (!props.label && !props.hint && !props.error && !extraClass && !produced) return content;
   return h('div', { class: ['hw-field', extraClass] }, [
-    props.label && h('label', { class: 'hw-label', id: `${decorationId}-label`, for: id }, [props.label, props.required && h('span', { class: 'hw-required-marker', 'aria-hidden': 'true' }, ' *')]), content,
-    props.hint && h('span', { class: 'hw-hint', id: `${decorationId}-hint` }, props.hint),
-    props.error && h('span', { class: 'hw-error', id: `${decorationId}-error` }, props.error),
+    props.label && h('label', { class: 'hw-label', id: `${decorationId}-label`, for: id }, [props.label, props.required && requiredMarker()]), content,
+    props.hint && h('p', { class: 'hw-hint', id: `${decorationId}-hint` }, props.hint),
+    (props.error || produced) && h('p', { class: 'hw-error', id: `${decorationId}-error`, role: props.error ? undefined : 'alert' }, [props.error || produced] as VNodeArrayChildren),
   ]);
 }
 const valueProps = { ...decorationProps, modelValue: String, defaultValue: String, placeholder: String } as const;
@@ -55,9 +59,15 @@ function textControl(tag: 'input' | 'textarea' | 'select', className: string, na
       const syncSelect = () => nextTick(() => {
         if (element.value && model.value.value !== undefined) element.value.value = model.value.value;
       });
+      // Reset target: defaultValue, else what a native control shows without a default: '' for a text
+      // control and the first option that is not disabled for a select.
       useFormReset(element, () => {
-        model.set(props.defaultValue ?? (tag === 'select' ? element.value?.value : '') ?? '');
+        const select = tag === 'select' ? element.value as HTMLSelectElement | undefined : undefined;
+        const first = select ? Array.from(select.options).find(option => !option.disabled)?.value : undefined;
+        model.set(props.defaultValue ?? first ?? '');
+      }, () => {
         if (tag === 'select') void syncSelect();
+        else if (element.value) element.value.value = model.value.value ?? '';
       });
       expose({ element, focus: () => element.value?.focus() });
       return () => {
@@ -88,7 +98,7 @@ export const Select = textControl('select', 'hw-select', 'HwSelect');
 function choice<Value extends boolean | string>(kind: 'checkbox' | 'radio' | 'switch', normalize: (value: boolean | string) => Value) {
   return defineComponent({
     name: `Hw${kind[0]!.toUpperCase()}${kind.slice(1)}`, inheritAttrs: false,
-    props: { ...decorationProps, modelValue: { type: [Boolean, String] as PropType<boolean | string>, default: undefined }, defaultValue: { type: [Boolean, String] as PropType<boolean | string>, default: false }, value: { type: String, default: 'on' }, readOnly: Boolean, indeterminate: Boolean },
+    props: { ...decorationProps, modelValue: { type: [Boolean, String] as PropType<boolean | string>, default: undefined }, defaultValue: { type: [Boolean, String] as PropType<boolean | string>, default: false }, value: { type: String, default: 'on' }, readonly: Boolean, indeterminate: Boolean },
     emits: { 'update:modelValue': (_value: Value) => true },
     setup(props, { attrs, slots, emit, expose }) {
       const field = useField(props, attrs);
@@ -111,6 +121,8 @@ function choice<Value extends boolean | string>(kind: 'checkbox' | 'radio' | 'sw
         // so an unchecked sibling cannot replace the selected default.
         if ((checked ?? peers[0]) === input) model.set(restored);
         else model.sync(restored);
+      }, () => {
+        if (element.value) element.value.checked = kind === 'radio' ? model.value.value === props.value : Boolean(model.value.value);
       });
       let readonlyGuard: ReturnType<typeof observeReadonlyChoice> | undefined;
       onMounted(() => { if (element.value) readonlyGuard = observeReadonlyChoice(element.value); syncDefault(); });
@@ -121,12 +133,12 @@ function choice<Value extends boolean | string>(kind: 'checkbox' | 'radio' | 'sw
       return () => h('div', { class: 'hw-field' }, [
         h('label', { class: 'hw-choice', for: field.id.value, id: props.label ? `${field.id.value}-label` : undefined }, [
           h('input', mergeProps(attrs, field.controlAttrs.value, { ref: element, class: `hw-${kind}`, type: kind === 'radio' ? 'radio' : 'checkbox', role: kind === 'switch' ? 'switch' : attrs.role,
-            readOnly: props.readOnly, 'aria-disabled': props.readOnly || attrs['aria-disabled'], value: props.value, checked: kind === 'radio' ? model.value.value === props.value : Boolean(model.value.value),
-            onChange: (event: Event) => { if (!props.readOnly) model.set(kind === 'radio' ? props.value : (event.target as HTMLInputElement).checked); } })),
+            readOnly: props.readonly, 'aria-disabled': props.readonly || attrs['aria-disabled'], value: props.value, checked: kind === 'radio' ? model.value.value === props.value : Boolean(model.value.value),
+            onChange: (event: Event) => { if (!props.readonly) model.set(kind === 'radio' ? props.value : (event.target as HTMLInputElement).checked); } })),
           props.label ?? slots.default?.(),
         ]),
-        props.hint && h('span', { class: 'hw-hint', id: `${field.id.value}-hint` }, props.hint),
-        props.error && h('span', { class: 'hw-error', id: `${field.id.value}-error` }, props.error),
+        props.hint && h('p', { class: 'hw-hint', id: `${field.id.value}-hint` }, props.hint),
+        props.error && h('p', { class: 'hw-error', id: `${field.id.value}-error` }, props.error),
       ]);
     },
   });
@@ -141,8 +153,12 @@ export const FileUpload = defineComponent({
   setup(props, { attrs, slots, emit, expose }) {
     const field = useField(props, attrs);
     const element = ref<HTMLInputElement>();
-    useFormReset(element, () => emit('update:files', []));
+    // Files held after the last change: a reset notifies [] only when there were some.
+    let held = 0;
+    useFormReset(element, () => { if (held) emit('update:files', []); held = 0; });
     expose({ element, focus: () => element.value?.focus() });
-    return () => decorate(props, field.id.value, [h('input', mergeProps(attrs, field.controlAttrs.value, { ref: element, class: 'hw-input', type: 'file', onChange: (event: Event) => emit('update:files', Array.from((event.target as HTMLInputElement).files ?? [])) })), slots.default?.()], 'hw-upload');
+    return () => decorate(props, field.id.value, [h('input', mergeProps(attrs, field.controlAttrs.value, { ref: element, class: 'hw-input', type: 'file', onChange: (event: Event) => {
+      const files = Array.from((event.target as HTMLInputElement).files ?? []); held = files.length; emit('update:files', files);
+    } })), slots.default?.()], 'hw-upload');
   },
 });

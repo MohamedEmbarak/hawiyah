@@ -2,8 +2,8 @@ import { cloneElement, useEffect, useId, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, ComponentPropsWithRef, HTMLAttributes, ReactElement, ReactNode } from 'react';
 import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow, transitionCombobox } from '@hawiyah/core';
 import type { ComboboxEvent, Option, Orientation } from '@hawiyah/core';
-import { assignRef, cx, Field, text, useControllable, useFieldControl, useFieldValueRef, validity } from './shared.js';
-import type { FieldDecoration } from './shared.js';
+import { assignRef, cx, Field, rootLabel, text, useControllable, useFieldControl, useFieldValueRef, validity } from './shared.js';
+import type { FieldDecoration, RootName } from './shared.js';
 import { Button } from './forms.js';
 import { useFormReset } from './expanded-shared.js';
 
@@ -13,13 +13,12 @@ interface TabsBaseProps extends Omit<ComponentPropsWithRef<'div'>, 'defaultValue
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
-  label: string;
   orientation?: Orientation;
   activationMode?: 'automatic' | 'manual';
 }
-/** With the default `overflow="menu"`, `overflowLabel` names the overflow disclosure. */
-export type TabsProps = TabsBaseProps & ({ overflow: 'scroll'; overflowLabel?: string } | { overflow?: 'menu' | 'scroll'; overflowLabel: string });
-export function Tabs({ items, value, defaultValue, onValueChange, label, orientation = 'horizontal', activationMode = 'automatic', overflow = 'menu', overflowLabel, className, ...props }: TabsProps) {
+/** With the default `overflow="menu"`, `overflowLabel` names the overflow disclosure. `label`, aria-label or aria-labelledby name the tablist. */
+export type TabsProps = TabsBaseProps & RootName & ({ overflow: 'scroll'; overflowLabel?: string } | { overflow?: 'menu' | 'scroll'; overflowLabel: string });
+export function Tabs({ items, value, defaultValue, onValueChange, label, orientation = 'horizontal', activationMode = 'automatic', overflow = 'menu', overflowLabel, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledby, className, ...props }: TabsProps) {
   const id = useId();
   const [selected, select] = useControllable(value, defaultValue ?? items.find(item => !item.disabled)?.value ?? '', onValueChange);
   const [focused, setFocused] = useState<string | undefined>();
@@ -66,7 +65,7 @@ export function Tabs({ items, value, defaultValue, onValueChange, label, orienta
   }, [hidden, focusValue]);
   return <div {...props} className={cx('hw-tabs', className)}>
     <div className="hw-tab-bar" ref={bar} data-hw-overflow={overflow} data-orientation={orientation}>
-    <div className="hw-tab-list" data-hw-overflow={overflow} role="tablist" aria-label={text('Tabs', 'label', label)} aria-orientation={orientation} aria-hidden={hidden.length === items.length || undefined}>
+    <div className="hw-tab-list" data-hw-overflow={overflow} role="tablist" aria-label={rootLabel('Tabs', { 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledby }, label)} aria-labelledby={ariaLabelledby} aria-orientation={orientation} aria-hidden={hidden.length === items.length || undefined}>
       {items.map((item, index) => <button key={item.value} type="button" role="tab" className="hw-tab" id={`${id}-tab-${index}`} aria-controls={`${id}-panel-${index}`} aria-selected={active === item.value} aria-hidden={hidden.includes(index) || undefined} data-hw-overflow-hidden={hidden.includes(index) || undefined} tabIndex={!hidden.includes(index) && focusValue === item.value ? 0 : -1} disabled={item.disabled}
         ref={node => { if (node) buttons.current.set(item.value, node); else buttons.current.delete(item.value); }}
         onFocus={() => setFocused(item.value)} onClick={() => { if (!item.disabled) select(item.value); }}

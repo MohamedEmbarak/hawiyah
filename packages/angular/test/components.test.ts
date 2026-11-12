@@ -7,6 +7,8 @@ import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-
 import { FormsModule } from '@angular/forms';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { HwCheckboxComponent, HwComboboxComponent, HwSelectComponent, HwTabComponent, HwTabsComponent, HwTextareaComponent, HwTextFieldComponent } from '@hawiyah/angular';
+import * as hawiyah from '@hawiyah/angular';
+import { attributesOf, page } from './fixtures/page';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => TestBed.resetTestingModule());
@@ -106,5 +108,67 @@ describe('Angular native component behavior', () => {
     tabs[2]!.click(); fixture.detectChanges();
     expect(fixture.componentInstance.tab).toBe('three');
     expect(fixture.nativeElement.querySelectorAll('[role="tabpanel"]')[0].hidden).toBe(true);
+  });
+
+  it('[RADIO-GROUP-01][choices-5] hw-radio-group renders the documented fieldset and submits the chosen value; the package exports no HwRadioComponent', () => {
+    expect((hawiyah as Record<string, unknown>)['HwRadioComponent']).toBeUndefined(); expect(typeof hawiyah.HwRadioGroupComponent).toBe('function');
+    class Host { branch = 'jeddah'; cities = [{ value: 'riyadh', label: 'Riyadh' }, { value: 'jeddah', label: 'Jeddah' }]; }
+    Component({standalone: true, imports: [hawiyah.HwRadioGroupComponent], template: `<form><hw-radio-group controlId="branch" label="Branch" name="branch" hint="Hint" error="Error" required [options]="cities" [(value)]="branch" /></form>`})(Host);
+    const fixture = TestBed.createComponent(Host); fixture.detectChanges();
+    const form: HTMLFormElement = fixture.nativeElement.querySelector('form'), fieldset = form.querySelector('hw-radio-group > fieldset.hw-field')!;
+    expect([...fieldset.children].map(child => `${child.localName}.${child.className}`)).toEqual(['legend.hw-label', 'label.hw-choice', 'label.hw-choice', 'p.hw-hint', 'p.hw-error']);
+    expect(fieldset.querySelector('legend')!.textContent).toBe('Branch *'); expect(fieldset.getAttribute('aria-describedby')).toBe('branch-hint branch-error'); expect(fieldset.getAttribute('aria-invalid')).toBe('true');
+    const radios = [...fieldset.querySelectorAll<HTMLInputElement>('label.hw-choice > input.hw-radio[type=radio]')];
+    expect(radios.map(radio => [radio.id, radio.name, radio.required, radio.checked])).toEqual([['branch-0', 'branch', true, false], ['branch-1', 'branch', true, true]]);
+    expect(fieldset.querySelector('label.hw-choice span')).toBeNull(); expect(new FormData(form).get('branch')).toBe('jeddah');
+    radios[0]!.click(); fixture.detectChanges(); expect(fixture.componentInstance.branch).toBe('riyadh'); expect(new FormData(form).get('branch')).toBe('riyadh');
+    expect(form.querySelector('hw-radio')).toBeNull();
+  });
+
+  it('[FILEUPLOAD-01][FILEUPLOAD-02][files-10] hw-file-upload projects its content after the input, and capture and form reach the input; no accept attribute without accept', () => {
+    class Host {}
+    Component({standalone: true, imports: [hawiyah.HwFileUploadComponent], template: `<form id="outer"></form><hw-file-upload label="Documents" name="documents" capture="environment" form="outer" hint="Hint" required aria-describedby="note"><p class="mine">Projected</p></hw-file-upload><hw-file-upload accept=".pdf" /><p id="note">Note</p>`})(Host);
+    const fixture = TestBed.createComponent(Host); fixture.detectChanges();
+    const [upload, plain] = [...fixture.nativeElement.querySelectorAll('hw-file-upload')] as HTMLElement[];
+    expect([...upload!.querySelector('div.hw-field.hw-upload')!.children].map(child => `${child.localName}.${child.className}`)).toEqual(['label.hw-label', 'input.hw-input', 'p.mine', 'p.hw-hint']);
+    const input = upload!.querySelector('input')!;
+    expect(input.getAttribute('capture')).toBe('environment'); expect(input.getAttribute('form')).toBe('outer'); expect(input.hasAttribute('accept')).toBe(false); expect(input.required).toBe(true);
+    expect(input.getAttribute('aria-describedby')).toBe(`note ${input.id}-hint`); expect(upload!.hasAttribute('aria-describedby')).toBe(false); expect(upload!.querySelector('label')!.textContent).toBe('Documents *');
+    const bare = plain!.querySelector('input')!; expect(bare.getAttribute('accept')).toBe('.pdf'); expect(bare.hasAttribute('capture')).toBe(false); expect(bare.hasAttribute('form')).toBe(false);
+  });
+});
+
+describe('Angular button and link directives', () => {
+  afterEach(() => document.body.replaceChildren());
+
+  it('[BUTTON-03][actions-6] disabled written statically or bound disables the button; an authored aria-busy stays while loading is false', () => {
+    const { root, update } = page(`<button hwButton id="static" disabled>Static</button><button hwButton id="bound" [disabled]="disabled">Bound</button><button hwButton id="busy" aria-busy="true" [loading]="loading">Busy</button><button hwButton id="own" [attr.aria-busy]="busy" [loading]="loading">Own</button>`, { disabled: true, loading: false, busy: 'true' });
+    const button = (id: string) => root.querySelector<HTMLButtonElement>(`#${id}`)!;
+    expect(button('static').disabled).toBe(true); expect(button('bound').disabled).toBe(true); expect(button('static').hasAttribute('aria-busy')).toBe(false);
+    update({ disabled: false }); expect(button('bound').hasAttribute('disabled')).toBe(false);
+    for (const id of ['busy', 'own']) { expect(button(id).getAttribute('aria-busy'), id).toBe('true'); expect(button(id).disabled, id).toBe(false); }
+    update({ loading: true }); for (const id of ['busy', 'own']) { expect(button(id).getAttribute('aria-busy'), id).toBe('true'); expect(button(id).disabled, id).toBe(true); }
+    update({ loading: false, busy: 'false' }); expect(button('busy').getAttribute('aria-busy')).toBe('true'); expect(button('own').getAttribute('aria-busy')).toBe('false'); expect(button('busy').disabled).toBe(false);
+  });
+
+  it('[BUTTON-04] a[hwButton]: no type and no disabled attribute; loading writes aria-busy only', () => {
+    const { root, update } = page(`<a hwButton id="link" href="/next" variant="secondary" [loading]="loading" [disabled]="true">Next</a><a hwButton id="typed" href="/file.pdf" type="application/pdf">File</a>`, { loading: false });
+    const link = root.querySelector('#link')!;
+    expect(attributesOf(link)).toEqual({ class: 'hw-button', 'data-size': 'md', 'data-variant': 'secondary', href: '/next', hwbutton: '', id: 'link', variant: 'secondary' });
+    update({ loading: true }); expect(link.getAttribute('aria-busy')).toBe('true'); expect(link.hasAttribute('disabled')).toBe(false); expect(link.hasAttribute('type')).toBe(false);
+    update({ loading: false }); expect(link.hasAttribute('aria-busy')).toBe(false);
+    expect(root.querySelector('#typed')!.getAttribute('type')).toBe('application/pdf');
+  });
+
+  it('[LINK-04][actions-7] an application aria-current, rel, target, role and tabindex survive while current, external and disabled are false', () => {
+    const { root, update } = page(`<a hwLink id="step" href="/step" aria-current="step" rel="author" target="help" role="tab" tabindex="0" [current]="current" [external]="external" [disabled]="disabled">Step</a><a hwLink id="bound" href="/step" [attr.aria-current]="own" [current]="current">Bound</a>`, { current: false, external: false, disabled: false, own: 'location' });
+    const link = root.querySelector('#step')!, bound = root.querySelector('#bound')!;
+    const authored = { 'aria-current': 'step', rel: 'author', target: 'help', role: 'tab', tabindex: '0' };
+    const read = () => Object.fromEntries(Object.keys(authored).map(name => [name, link.getAttribute(name)]));
+    expect(read()).toEqual(authored); expect(bound.getAttribute('aria-current')).toBe('location');
+    update({ current: true, external: true, disabled: true });
+    expect(read()).toEqual({ 'aria-current': 'page', rel: 'author noopener noreferrer', target: '_blank', role: 'link', tabindex: '-1' }); expect(bound.getAttribute('aria-current')).toBe('page'); expect(link.hasAttribute('href')).toBe(false);
+    update({ current: false, external: false, disabled: false });
+    expect(read()).toEqual(authored); expect(bound.getAttribute('aria-current')).toBe('location'); expect(link.getAttribute('href')).toBe('/step'); expect(link.hasAttribute('aria-disabled')).toBe(false);
   });
 });

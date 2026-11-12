@@ -183,13 +183,13 @@ it('[ln-prevented] does not route a click the application already prevented', as
 });
 it('[ln-no-handler-prevents] packaged link handlers never prevent a plain navigation', async () => {
   const prevented = recordClicks();
-  await render(<><PortalHeader brand="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" navigation={[{ label: 'الخدمات', href: '/services' }]} /><NavigationDrawer title="القائمة" navigationLabel="أقسام" closeLabel="إغلاق" defaultOpen items={items} /></>);
+  await render(<><PortalHeader brand="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" links={[{ label: 'الخدمات', href: '/services' }]} /><NavigationDrawer title="القائمة" navigationLabel="أقسام" closeLabel="إغلاق" defaultOpen items={items} /></>);
   await act(async () => { container.querySelector<HTMLAnchorElement>('.hw-portal-header a[href="/services"]')!.click(); });
   await act(async () => { container.querySelector<HTMLAnchorElement>('dialog a[href="/home"]')!.click(); });
   expect(prevented).toEqual([false, false]);
 });
 it('[ln-server] server rendering the routed components touches no document listener', () => {
   const add = vi.spyOn(document, 'addEventListener'); const windowAdd = vi.spyOn(window, 'addEventListener');
-  const html = renderToString(<><Breadcrumb label="مسار التنقل" items={[{ label: 'الرئيسية', href: '/home' }]} /><SideNavigation label="أقسام" items={items} /><NavigationDrawer title="القائمة" navigationLabel="أقسام" closeLabel="إغلاق" items={items} /><PortalHeader brand="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" navigation={[{ label: 'الخدمات', href: '/services' }]} /></>);
+  const html = renderToString(<><Breadcrumb label="مسار التنقل" items={[{ label: 'الرئيسية', href: '/home' }]} /><SideNavigation label="أقسام" items={items} /><NavigationDrawer title="القائمة" navigationLabel="أقسام" closeLabel="إغلاق" items={items} /><PortalHeader brand="هوية" navigationLabel="التنقل الرئيسي" menuLabel="القائمة" links={[{ label: 'الخدمات', href: '/services' }]} /></>);
   expect(html).toContain('href="/home"'); expect(add).not.toHaveBeenCalled(); expect(windowAdd).not.toHaveBeenCalled();
 });

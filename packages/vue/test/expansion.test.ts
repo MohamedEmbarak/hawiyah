@@ -131,6 +131,7 @@ describe("expanded Vue controls", () => {
               label: "Cities",
               searchLabel: "Find city",
               emptyMessage: "No matching city",
+              getResultsMessage: (count: number) => `${count} cities shown`,
               requiredMessage: "Choose at least one city.",
               name: "city",
               modelValue: values.value,
@@ -160,9 +161,14 @@ describe("expanded Vue controls", () => {
     ]);
     readonly.value = true;
     await nextTick();
-    expect(
-      root.querySelector<HTMLInputElement>("input[type=checkbox]")!.disabled,
-    ).toBe(true);
+    // [RO-01][RO-04][rich-inputs-6] read-only checkboxes stay enabled and focusable with aria-disabled.
+    const readonlyBox = root.querySelector<HTMLInputElement>("input[type=checkbox]")!;
+    expect(readonlyBox.disabled).toBe(false);
+    expect(readonlyBox.getAttribute("aria-disabled")).toBe("true");
+    readonlyBox.click();
+    await nextTick();
+    expect(readonlyBox.checked).toBe(true);
+    expect(new FormData(root.querySelector("form")!).getAll("city")).toEqual(["r", "j"]);
     root.querySelector("form")!.reset();
     await Promise.resolve();
     await nextTick();
@@ -316,6 +322,7 @@ describe("expanded Vue controls", () => {
           h(FileDropzone, {
             label: "Upload",
             dropLabel: "Choose files or drop them here",
+            getRejectedMessage: (rejected: readonly File[]) => `${rejected.length} file not accepted`,
             accept: ".pdf",
             onReject: reject,
             "onUpdate:files": files,
@@ -329,7 +336,9 @@ describe("expanded Vue controls", () => {
     root.querySelector(".hw-file-dropzone")!.dispatchEvent(drop);
     await nextTick();
     expect(reject).toHaveBeenCalledOnce();
-    expect(files).toHaveBeenCalledWith([]);
+    expect(reject.mock.calls[0]![0].map((file: File) => file.name)).toEqual(["image.png"]);
+    // [RESET-03][files-2] nothing was held, so the value is not notified.
+    expect(files).not.toHaveBeenCalled();
   });
 });
 describe("Vue calendars and interactions", () => {
@@ -500,12 +509,13 @@ describe("Vue calendars and interactions", () => {
           h("div", {}, [
             h(Menu, {
               label: "Actions",
+              triggerLabel: "Actions",
               items: [
                 { value: "a", label: "First" },
                 { value: "b", label: "Disabled", disabled: true },
                 { value: "c", label: "Last" },
               ],
-              onSelect: selected,
+              onAction: selected,
             }),
             h(Popover, { label: "Help details", triggerLabel: "Help" }, () =>
               h("a", { href: "#help" }, "Read more"),
@@ -526,12 +536,12 @@ describe("Vue calendars and interactions", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     root.querySelector<HTMLButtonElement>(".hw-popover button")!.click();
     await nextTick();
-    expect(root.querySelector<HTMLElement>(".hw-popover-content")!.hidden).toBe(
+    expect(root.querySelector<HTMLElement>(".hw-popover-panel")!.hidden).toBe(
       false,
     );
     document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
     await nextTick();
-    expect(root.querySelector<HTMLElement>(".hw-popover-content")!.hidden).toBe(
+    expect(root.querySelector<HTMLElement>(".hw-popover-panel")!.hidden).toBe(
       true,
     );
   });
@@ -568,7 +578,7 @@ describe("Vue calendars and interactions", () => {
     await key(parent, "ArrowLeft");
     expect(parent.getAttribute("aria-expanded")).toBe("true");
     await key(parent, "ArrowLeft");
-    expect(document.activeElement?.getAttribute("aria-label")).toBe("Child");
+    expect(document.getElementById(document.activeElement!.getAttribute("aria-labelledby")!)?.textContent).toBe("Child");
     await key(document.activeElement!, "Enter");
     expect(selected).toHaveBeenCalledWith("child");
     await key(document.activeElement!, "ArrowRight");
@@ -682,14 +692,14 @@ describe("Vue content and layouts", () => {
       defineComponent(
         () => () =>
           h("div", {}, [
-            h(Feedback, { label: "Was this page helpful?", yesLabel: "Yes", noLabel: "No", commentLabel: "Tell us more", submitLabel: "Send feedback", successMessage: "Thank you for your feedback.", onSubmit: feedback }),
+            h(Feedback, { label: "Was this page helpful?", yesLabel: "Yes", noLabel: "No", commentLabel: "Tell us more", submitLabel: "Send feedback", successMessage: "Thank you for your feedback.", onFeedback: feedback }),
             h(CookieConsent, {
               title: "Cookie preferences",
               description: "Optional analytics.",
               acceptLabel: "Accept optional cookies",
               rejectLabel: "Reject optional cookies",
               preferencesLabel: "Manage preferences",
-              onReject: reject,
+              onConsent: reject,
             }),
             h(Carousel, {
               label: "Highlights",
@@ -712,12 +722,12 @@ describe("Vue content and layouts", () => {
     [...root.querySelectorAll<HTMLButtonElement>("button")]
       .find((button) => button.textContent === "Send feedback")!
       .click();
-    expect(feedback).toHaveBeenCalledWith({ value: "yes", comment: "" });
+    expect(feedback).toHaveBeenCalledWith({ helpful: true, comment: "" });
     buttons
       .find((button) => button.textContent === "Reject optional cookies")!
       .click();
     await nextTick();
-    expect(reject).toHaveBeenCalledOnce();
+    expect(reject).toHaveBeenCalledExactlyOnceWith("rejected");
     expect(root.querySelector<HTMLElement>(".hw-cookie-consent")!.hidden).toBe(
       true,
     );

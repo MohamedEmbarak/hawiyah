@@ -4,7 +4,7 @@ import { text } from './fixtures/application-text';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
-import { HwSliderComponent, HwRangeSliderComponent } from '@hawiyah/angular';
+import { HwFileDropzoneComponent, HwSliderComponent, HwRangeSliderComponent } from '@hawiyah/angular';
 
 beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting()));
 afterEach(() => { TestBed.resetTestingModule(); document.body.replaceChildren(); });
@@ -32,4 +32,27 @@ it('keeps both readonly range endpoints focusable and submits each native value 
   inputs.forEach((input, index) => { input.focus(); expect(document.activeElement).toBe(input); expect(input.disabled).toBe(false); expect(input.getAttribute('aria-readonly')).toBe('true'); input.value = '60'; input.dispatchEvent(new Event('input', { bubbles: true })); expect(input.value).toBe(index === 0 ? '20' : '80'); });
   expect(changed).not.toHaveBeenCalled(); expect([...new FormData(form).entries()]).toEqual([['lower', '20'], ['upper', '80']]); expect(form.querySelector('input[type="hidden"]')).toBeNull();
   fixture.componentRef.setInput('disabled', true); fixture.detectChanges(); expect([...new FormData(form).entries()]).toEqual([]);
+});
+it('[RO-01][RO-02][RO-03][RO-04][RO-05][files-9] keeps a read-only file dropzone focusable and submitted, without a chooser, a drop or a notification', () => {
+  const fixture = TestBed.createComponent(HwFileDropzoneComponent); supplyText(fixture, text.fileDropzone);
+  fixture.componentRef.setInput('label', 'Documents'); fixture.componentRef.setInput('name', 'documents'); fixture.detectChanges();
+  const form = document.createElement('form'); form.append(fixture.nativeElement); document.body.append(form);
+  const zone = form.querySelector<HTMLElement>('.hw-file-dropzone')!, input = form.querySelector<HTMLInputElement>('input[type=file]')!;
+  // jsdom has no file chooser: the test owns the input's file list.
+  let held: File[] = []; Object.defineProperty(input, 'files', { configurable: true, get: () => held, set: (value: ArrayLike<File>) => { held = Array.from(value); } });
+  const chosen = new File(['a'], 'plan.pdf'); held = [chosen]; input.dispatchEvent(new Event('change', { bubbles: true })); fixture.detectChanges();
+  const changed = vi.fn(), rejected = vi.fn(); fixture.componentInstance.valueChange.subscribe(changed); fixture.componentInstance.rejected.subscribe(rejected);
+  fixture.componentRef.setInput('readOnly', true); fixture.detectChanges();
+  expect(input.disabled).toBe(false); expect(input.name).toBe('documents'); expect(input.getAttribute('aria-disabled')).toBe('true'); expect(input.hasAttribute('aria-readonly')).toBe(false); expect(zone.getAttribute('data-hw-readonly')).toBe('true'); expect(zone.hasAttribute('aria-disabled')).toBe(false);
+  input.focus(); expect(document.activeElement).toBe(input);
+  const click = new MouseEvent('click', { bubbles: true, cancelable: true }); input.dispatchEvent(click); expect(click.defaultPrevented).toBe(true);
+  const drop = new Event('drop', { bubbles: true, cancelable: true }); Object.defineProperty(drop, 'dataTransfer', { value: { files: [new File(['b'], 'other.pdf')], types: ['Files'] } }); zone.dispatchEvent(drop); fixture.detectChanges();
+  expect(drop.defaultPrevented).toBe(true); expect(changed).not.toHaveBeenCalled(); expect(rejected).not.toHaveBeenCalled();
+  // The files chosen before stay the selection and stay submitted (the input is not disabled).
+  expect(held).toEqual([chosen]); expect(fixture.componentInstance.value).toEqual([chosen]);
+  fixture.componentRef.setInput('readOnly', false); fixture.detectChanges(); expect(input.hasAttribute('aria-disabled')).toBe(false); expect(zone.hasAttribute('data-hw-readonly')).toBe(false); expect(held).toEqual([chosen]);
+  const open = new MouseEvent('click', { bubbles: true, cancelable: true }); input.dispatchEvent(open); expect(open.defaultPrevented).toBe(false);
+  fixture.componentRef.setInput('readOnly', true); fixture.detectChanges(); expect(input.getAttribute('aria-disabled')).toBe('true'); expect(fixture.componentInstance.value).toEqual([chosen]);
+  // Disabled wins over read-only.
+  fixture.componentRef.setInput('disabled', true); fixture.detectChanges(); expect(input.disabled).toBe(true);
 });

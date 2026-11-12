@@ -1,4 +1,4 @@
-import { createCleanup, getSearchSuggestions, requireText, isDisabled, observeFieldValue, requestSearchDialogClose, type SearchSuggestionMatch } from '@hawiyah/core';
+import { createCleanup, observeFormReset, getSearchSuggestions, requireText, isDisabled, observeFieldValue, requestSearchDialogClose, type SearchSuggestionMatch } from '@hawiyah/core';
 import { emit, ensureId, eventElement, nativeChange, readOnly, remember, required, templated, text, writeText } from './dom.js';
 
 export interface SearchFieldOptions {
@@ -170,9 +170,12 @@ export function createSearchField(root: HTMLElement, options: SearchFieldOptions
   });
   scope.listen(input.ownerDocument, 'pointerdown', event => { if (event.target && !root.contains(event.target as Node)) close(); });
   scope.listen(input.ownerDocument, 'click', event => { if (event.target && !root.contains(event.target as Node)) close(); });
-  if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => {
-    if (!scope.destroyed && !event.defaultPrevented) { previous = input.value; composing = false; close(); renderBase(); }
-  }));
+  const reset = observeFormReset(input, () => {
+    if (scope.destroyed) return;
+    const changedValue = input.value !== previous; previous = input.value; composing = false; close(); renderBase();
+    if (changedValue) { emit(root, { value: input.value }); options.onValueChange?.(input.value); }
+  });
+  scope.add(() => reset.destroy());
   const Observer = input.ownerDocument.defaultView?.MutationObserver;
   if (Observer) {
     const observer = new Observer(() => { renderBase(); renderSuggestions(); });

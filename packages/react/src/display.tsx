@@ -64,16 +64,20 @@ export function Card({ header, footer, children, className, variant, href, disab
 }
 export interface BadgeProps extends ComponentPropsWithRef<'span'> { tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'info'; variant?: 'soft' | 'outline' | 'dot' }
 export function Badge({ tone = 'neutral', variant, className, ...props }: BadgeProps) { return <span {...props} className={cx('hw-badge', className)} data-tone={tone} data-variant={variant ?? (props as Record<string, unknown>)['data-variant']} />; }
-export interface AlertProps extends ComponentPropsWithRef<'div'> {
+interface AlertBaseProps extends ComponentPropsWithRef<'div'> {
   tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger';
   variant?: 'default' | 'outline' | 'minimal';
   title?: string;
 }
+/** `onDismiss` renders a close button named by `closeLabel`; the application removes the alert and places focus. */
+export type AlertProps = AlertBaseProps & ({ onDismiss?: undefined; closeLabel?: string } | { onDismiss: () => void; closeLabel: string });
 /** Informational messages use status; urgent errors use alert. Override role when static. */
-export function Alert({ tone = 'info', variant, title, children, className, role, ...props }: AlertProps) {
-  return <div {...props} {...(variant ? { 'data-variant': variant } : {})} className={cx('hw-alert', className)} data-tone={tone} role={role ?? (tone === 'danger' ? 'alert' : 'status')}><div className="hw-alert-content">{title && <strong>{title}</strong>}{children}</div></div>;
+export function Alert({ tone = 'info', variant, title, onDismiss, closeLabel, children, className, role, ...props }: AlertProps) {
+  return <div {...props} {...(variant ? { 'data-variant': variant } : {})} className={cx('hw-alert', className)} data-tone={tone} role={role ?? (tone === 'danger' ? 'alert' : 'status')}><div className="hw-alert-content">{title && <strong>{title}</strong>}{children}</div>{onDismiss && <Button variant="ghost" className="hw-alert-dismiss" aria-label={text('Alert', 'closeLabel', closeLabel, 'onDismiss is given')} onClick={() => onDismiss()}><span className="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true" /></Button>}</div>;
 }
-export interface TableColumn<Row> { key: string; header: ReactNode; cell: (row: Row, index: number) => ReactNode; rowHeader?: boolean }
+/** Without `cell` a column shows the row's value under `key` as text. */
+export interface TableColumn<Row> { key: string; label: ReactNode; cell?: (row: Row, index: number) => ReactNode; rowHeader?: boolean }
+const cellContent = <Row,>(column: { key: string; cell?: (row: Row, index: number) => ReactNode }, row: Row, index: number): ReactNode => column.cell ? column.cell(row, index) : String((row as Record<string, unknown>)[column.key] ?? '');
 interface TableBaseProps<Row> extends Omit<ComponentPropsWithRef<'table'>, 'children'> {
   variant?: 'default' | 'striped' | 'bordered';
   size?: 'sm' | 'md' | 'lg';
@@ -90,7 +94,7 @@ export type TableProps<Row = unknown> = TableBaseProps<Row> & ({ columns?: undef
 /** Either provide columns/rows or compose native thead/tbody children. */
 export function Table<Row>({ columns, rows = [], rowKey = (_, index) => index, caption, children, className, wrapperProps, variant, size, emptyMessage, ...props }: TableProps<Row>) {
   const captionId = useId(); const empty = columns ? text('Table', 'emptyMessage', emptyMessage, 'columns are given') : undefined;
-  return <div tabIndex={0} role={caption ? 'region' : undefined} aria-labelledby={caption ? captionId : undefined} {...wrapperProps} className={cx('hw-table-wrap', wrapperProps?.className)}><table {...props} data-variant={variant ?? props['data-variant']} data-size={size ?? props['data-size']} className={cx('hw-table', className)}>{caption && <caption id={captionId}>{caption}</caption>}{columns ? <><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.header}</th>)}</tr></thead><tbody>{rows.length ? rows.map((row, index) => <tr key={rowKey(row, index)}>{columns.map(column => column.rowHeader ? <th key={column.key} scope="row">{column.cell(row, index)}</th> : <td key={column.key}>{column.cell(row, index)}</td>)}</tr>) : <tr><td colSpan={columns.length || 1}>{empty}</td></tr>}</tbody></> : children}</table></div>;
+  return <div tabIndex={0} role={caption ? 'region' : undefined} aria-labelledby={caption ? captionId : undefined} {...wrapperProps} className={cx('hw-table-wrap', wrapperProps?.className)}><table {...props} data-variant={variant ?? props['data-variant']} data-size={size ?? props['data-size']} className={cx('hw-table', className)}>{caption && <caption id={captionId}>{caption}</caption>}{columns ? <><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.label}</th>)}</tr></thead><tbody>{rows.length ? rows.map((row, index) => <tr key={rowKey(row, index)}>{columns.map(column => column.rowHeader ? <th key={column.key} scope="row">{cellContent(column, row, index)}</th> : <td key={column.key}>{cellContent(column, row, index)}</td>)}</tr>) : <tr><td colSpan={columns.length || 1}>{empty}</td></tr>}</tbody></> : children}</table></div>;
 }
 function PaginationJumpInput({start, end}: {start: number; end: number}) {
   const ref = useFieldValueRef<HTMLInputElement>(undefined);
@@ -162,7 +166,7 @@ export function Pagination({ page, defaultPage = 1, totalPages, onPageChange,
     const details = (event.target as HTMLElement).closest<HTMLDetailsElement>('.hw-pagination-gap[open]');
     if (details) {event.preventDefault(); details.open = false; details.querySelector<HTMLElement>('summary')?.focus();}
   }}>
-    <button className="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous="" type="button" aria-label={copy.previous} disabled={disabled || current === 1} onClick={() => select(current - 1)} />
+    <button className="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-previous="" type="button" aria-label={copy.previous} disabled={disabled} aria-disabled={!disabled && current === 1 ? true : undefined} onClick={() => select(current - 1)} />
     {items.map(item => typeof item === 'number' ? <button key={item} className="hw-button hw-pagination-item" data-variant="ghost" data-hw-page={item} type="button" disabled={disabled} aria-label={copy.page?.(item) || undefined} aria-current={item === current ? 'page' : undefined} onClick={() => select(item)}>{formatPage(item)}</button> :
       disabled ? <span key={'gap-' + item.start} className="hw-pagination-ellipsis" aria-hidden="true">…</span> :
       <details key={'gap-' + item.start} className="hw-pagination-gap" onToggle={event => {if(blocked()) syncInherited();else if(event.currentTarget.open) close(event.currentTarget);}}>
@@ -172,21 +176,25 @@ export function Pagination({ page, defaultPage = 1, totalPages, onPageChange,
           <div className="hw-pagination-jump" onKeyDown={event => {if(event.key === 'Enter') {event.preventDefault(); jump(event.currentTarget, item.start, item.end);}}}><label className="hw-label">{copy.jump}<PaginationJumpInput start={item.start} end={item.end} /></label><button type="button" className="hw-button" data-hw-jump-submit="" onClick={event => jump(event.currentTarget.parentElement!, item.start, item.end)}>{copy.go}</button></div>}
         </div>
       </details>)}
-    <button className="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next="" type="button" aria-label={copy.next} disabled={disabled || current === total} onClick={() => select(current + 1)} />
+    <button className="hw-button hw-pagination-arrow" data-variant="ghost" data-hw-next="" type="button" aria-label={copy.next} disabled={disabled} aria-disabled={!disabled && current === total ? true : undefined} onClick={() => select(current + 1)} />
   </nav>;
 }
 export interface BreadcrumbItem { label: ReactNode; href?: string; current?: boolean; disabled?: boolean }
 export type BreadcrumbProps = ComponentPropsWithRef<'nav'> & { items: readonly BreadcrumbItem[] } & RootName;
+/** The current item (the first with `current`, else the last) is text with aria-current="page", never a link. */
 export function Breadcrumb({ items, label, className, ...props }: BreadcrumbProps) {
-  return <nav {...props} className={cx('hw-breadcrumb', className)} aria-label={rootLabel('Breadcrumb', props, label)}><ol>{items.map((item, index) => <li key={index}>{item.href && !item.disabled ? <a href={item.href} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</a> : <span role={item.disabled ? 'link' : undefined} aria-disabled={item.disabled || undefined} aria-current={item.current || index === items.length - 1 ? 'page' : undefined}>{item.label}</span>}</li>)}</ol></nav>;
+  const flagged = items.findIndex(item => item.current); const currentIndex = flagged === -1 ? items.length - 1 : flagged;
+  return <nav {...props} className={cx('hw-breadcrumb', className)} aria-label={rootLabel('Breadcrumb', props, label)}><ol>{items.map((item, index) => <li key={index}>{index === currentIndex ? <span aria-current="page">{item.label}</span> : item.href && !item.disabled ? <a href={item.href}>{item.label}</a> : <span role={item.disabled ? 'link' : undefined} aria-disabled={item.disabled || undefined}>{item.label}</span>}</li>)}</ol></nav>;
 }
-export interface ProgressProps extends ComponentPropsWithRef<'progress'> { label: string }
-export function Progress({ label, className, max = 100, ...props }: ProgressProps) { return <progress {...props} max={max} className={cx('hw-progress', className)} aria-label={label} />; }
-export interface SkeletonProps extends ComponentPropsWithRef<'span'> {}
-export function Skeleton({ className, ...props }: SkeletonProps) { return <span aria-hidden="true" {...props} className={cx('hw-skeleton', className)} />; }
+/** A native progress named by `label` (or aria-label / aria-labelledby); without `value` it is indeterminate. */
+export type ProgressProps = ComponentPropsWithRef<'progress'> & { size?: 'sm' | 'lg' } & RootName;
+export function Progress({ label, size, className, max = 100, ...props }: ProgressProps) { return <progress {...props} max={max} data-size={size ?? (props as Record<string, unknown>)['data-size']} className={cx('hw-progress', className)} aria-label={rootLabel('Progress', props, label)} />; }
+/** Decorative placeholder; size it with style or className. */
+export interface SkeletonProps extends ComponentPropsWithRef<'span'> { variant?: 'text' | 'circle' }
+export function Skeleton({ variant, className, ...props }: SkeletonProps) { return <span aria-hidden="true" {...props} data-variant={variant ?? (props as Record<string, unknown>)['data-variant']} className={cx('hw-skeleton', className)} />; }
 /** A spinner marked aria-hidden by the application is decorative and needs no name. */
-export type SpinnerProps = ComponentPropsWithRef<'span'> & (RootName | { label?: string; 'aria-hidden': true | 'true' });
-export function Spinner({ label, className, children, ...props }: SpinnerProps) { const decorative = props['aria-hidden'] === true || props['aria-hidden'] === 'true'; const name = decorative ? undefined : hasTextOrAria(props) ? label : text('Spinner', 'label', label); return <span {...props} role="status" className={cx('hw-spinner', className)}>{name && <span className="hw-sr-only">{name}</span>}{children}</span>; }
+export type SpinnerProps = ComponentPropsWithRef<'span'> & { size?: 'sm' | 'lg' } & (RootName | { label?: string; 'aria-hidden': true | 'true' });
+export function Spinner({ label, size, className, children, ...props }: SpinnerProps) { const decorative = props['aria-hidden'] === true || props['aria-hidden'] === 'true'; const name = decorative ? undefined : hasTextOrAria(props) ? label : text('Spinner', 'label', label); return <span {...props} role="status" data-size={size ?? (props as Record<string, unknown>)['data-size']} className={cx('hw-spinner', className)}>{name && <span className="hw-sr-only">{name}</span>}{children}</span>; }
 const hasTextOrAria = (props: { 'aria-label'?: string; 'aria-labelledby'?: string }) => Boolean(props['aria-label']?.trim() || props['aria-labelledby']?.trim());
 export interface AvatarProps extends Omit<ComponentPropsWithRef<'span'>, 'children'> {
   src?: string; name: string; initials?: string;
@@ -212,15 +220,20 @@ interface StepperBaseProps extends ComponentPropsWithRef<'ol'> {
   items: readonly StepItem[]; current?: string;
   /** Zero-based active step; -1 means not started, items.length means complete. Overrides current. */
   activeIndex?: number;
+  /** Visually hidden state text after the label of a complete step. */
+  completeLabel: string;
+  /** Visually hidden state text after the label of an upcoming step. */
+  upcomingLabel: string;
 }
 export type StepperProps = StepperBaseProps & RootName;
-export function Stepper({ items, current, activeIndex, label, className, ...props }: StepperProps) {
+export function Stepper({ items, current, activeIndex, completeLabel, upcomingLabel, label, className, ...props }: StepperProps) {
+  const stateText = { complete: text('Stepper', 'completeLabel', completeLabel), upcoming: text('Stepper', 'upcomingLabel', upcomingLabel), current: undefined };
   const requested = activeIndex ?? items.findIndex(item => item.value === current);
   const index = Number.isInteger(requested) && requested >= -1 && requested <= items.length ? requested : -1;
   return <ol {...props} className={cx('hw-stepper', className)} aria-label={rootLabel('Stepper', props, label)}>{items.map((item, itemIndex) => {
     const status = item.status ?? (itemIndex === index ? 'current' : index > itemIndex ? 'complete' : 'upcoming');
-    return <li key={item.value} className="hw-step" data-state={status} aria-current={status === 'current' ? 'step' : undefined}><span>{item.label}</span>{item.description && <p className="hw-hint">{item.description}</p>}</li>;
+    return <li key={item.value} className="hw-step" data-state={status} aria-current={status === 'current' ? 'step' : undefined}><span>{item.label}</span>{stateText[status] && <span className="hw-sr-only" data-hw-step-status="">{stateText[status]}</span>}{item.description && <p className="hw-hint">{item.description}</p>}</li>;
   })}</ol>;
 }
 export interface EmptyStateProps extends Omit<ComponentPropsWithRef<'div'>, 'title'> { title: ReactNode; description?: ReactNode; icon?: ReactNode; action?: ReactNode }
-export function EmptyState({ title, description, icon, action, children, className, ...props }: EmptyStateProps) { return <div {...props} className={cx('hw-empty', className)}>{icon && <span aria-hidden="true">{icon}</span>}<h3>{title}</h3>{description && <p>{description}</p>}{children}{action}</div>; }
+export function EmptyState({ title, description, icon, action, children, className, ...props }: EmptyStateProps) { return <div {...props} className={cx('hw-empty', className)}>{icon && <span className="hw-empty-icon" aria-hidden="true">{icon}</span>}<h3>{title}</h3>{description && <p>{description}</p>}{children}{action}</div>; }

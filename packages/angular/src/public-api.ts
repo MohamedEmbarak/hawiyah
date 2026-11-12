@@ -19,3 +19,4 @@ export * from './content-navigation';
 
 export * from './file-upload-list';
 export { HwIdSource } from './ids';
+export { HwNamedRoot } from './root-name';

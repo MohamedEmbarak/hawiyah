@@ -11,7 +11,7 @@ let container: HTMLDivElement; let root: Root; let warn: ReturnType<typeof vi.sp
 const warnings = () => (warn.mock.calls as unknown[][]).map(call => String(call[0])).filter(message => message.startsWith('Hawiyah:'));
 async function render(node: ReactNode) { await act(async () => root.render(node)); }
 const options = [{ value: 'light', label: 'فاتح' }, { value: 'dark', label: 'داكن' }];
-const header = { brand: 'هوية', navigationLabel: 'التنقل الرئيسي', menuLabel: 'القائمة', navigation: [{ label: 'الخدمات', href: '#services' }] };
+const header = { brand: 'هوية', navigationLabel: 'التنقل الرئيسي', menuLabel: 'القائمة', links: [{ label: 'الخدمات', href: '#services' }] };
 const before = (first: Node, second: Node) => Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
 
 beforeEach(() => { resetTextWarnings(); warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined); container = document.createElement('div'); document.body.append(container); root = createRoot(container); });

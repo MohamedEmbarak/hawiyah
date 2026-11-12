@@ -103,9 +103,11 @@ export function createPagination(root: HTMLElement, options: PaginationOptions =
     for (const node of [...root.querySelectorAll<HTMLElement>('[data-hw-page]')].filter(owns)) {
       const target = node.dataset.hwPage;
       if (Number(target) === page) node.setAttribute('aria-current', 'page'); else node.removeAttribute('aria-current');
-      const disabled = blocked() || !!initiallyDisabled.get(node) || (target === 'previous' ? page === 1 : target === 'next' ? page === total : false);
-      node.setAttribute('aria-disabled', String(disabled));
-      if (node.localName === 'button') node.toggleAttribute('disabled', disabled);
+      // At the first or last page the arrow keeps focus: aria-disabled only.
+      const unavailable = blocked() || !!initiallyDisabled.get(node);
+      const bound = target === 'previous' ? page === 1 : target === 'next' ? page === total : false;
+      node.setAttribute('aria-disabled', String(unavailable || bound));
+      if (node.localName === 'button') node.toggleAttribute('disabled', unavailable);
     }
     if (options.hideOnSinglePage ?? root.dataset.hwHideSingle === 'true') root.hidden = total === 1;
   };

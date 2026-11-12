@@ -5,10 +5,11 @@ import { HwBreadcrumbComponent } from './navigation';
 import type { HwBreadcrumbItem } from './navigation';
 import { injectId } from './ids';
 import { HwTexts } from './text';
+import { HwNamedRoot } from './root-name';
 
 export interface HwSecondaryNavItem extends HwLinkItem { icon?: string }
-@Component({selector: 'hw-secondary-nav', standalone: true, template: `<nav class="hw-secondary-nav" [attr.aria-label]="texts.need('label', label)" [attr.data-variant]="variant"><ul>@for (item of items; track $index) {<li><a [href]="item.href" [attr.aria-current]="item.current ? 'page' : null">@if (variant === 'mobile' && item.icon) {<span class="hw-icon" [attr.data-icon]="item.icon" aria-hidden="true"></span>}<span>{{ item.label }}</span></a></li>}</ul></nav>`})
-export class HwSecondaryNavComponent { @Input() variant: 'default' | 'mobile' = 'default'; @Input() items: readonly HwSecondaryNavItem[] = []; /** Accessible name of the navigation landmark. */ @Input({required: true}) label = ''; protected readonly texts = new HwTexts('hw-secondary-nav'); }
+@Component({selector: 'hw-secondary-nav', standalone: true, template: `<nav class="hw-secondary-nav" [attr.aria-label]="rootName" [attr.aria-labelledby]="ariaLabelledby" [attr.aria-describedby]="ariaDescribedby" [attr.data-variant]="variant"><ul>@for (item of items; track $index) {<li><a [href]="item.href" [attr.aria-current]="item.current ? 'page' : null">@if (variant === 'mobile' && item.icon) {<span class="hw-icon" [attr.data-icon]="item.icon" aria-hidden="true"></span>}<span>{{ item.label }}</span></a></li>}</ul></nav>`})
+export class HwSecondaryNavComponent extends HwNamedRoot { @Input() variant: 'default' | 'mobile' = 'default'; @Input() items: readonly HwSecondaryNavItem[] = []; protected readonly texts = new HwTexts('hw-secondary-nav'); }
 @Component({selector: 'hw-portal-layout', standalone: true, imports: [HwPortalHeaderComponent, HwPortalFooterComponent, HwBreadcrumbComponent, HwSecondaryNavComponent], template: `
   <div class="hw-portal-layout" [attr.dir]="dir || null">
     <hw-portal-header [brand]="brand" [brandLabel]="brandLabel" [homeHref]="homeHref" [links]="links" [mainId]="mainId" [navigationId]="navigationId" [skipLabel]="skipLabel" [menuLabel]="menuLabel" [navigationLabel]="navigationLabel"><ng-content select="[hwPortalNotice]" ngProjectAs="[hwPortalNotice]" /><ng-content select="[hwBrand]" ngProjectAs="[hwBrand]" /><ng-content select="[hwPortalActions]" /></hw-portal-header>

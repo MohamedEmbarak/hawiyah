@@ -1,5 +1,8 @@
 import './fixtures/texts';
+import '@angular/compiler';
+import { ChangeDetectionStrategy, Component, Directive } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { HwLinkDirective } from '@hawiyah/angular';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { bindLinkNavigation, type LinkNavigation } from '@hawiyah/core';
@@ -61,11 +64,39 @@ describe('client-side routing with core bindLinkNavigation', () => {
 
   it('[ln-no-handler-prevents] no component handler prevents a plain navigation', async () => {
     const portal = [{ label: 'Home', href: '/home' }, { label: 'Services', href: '/services', groups: [{ label: 'Popular', links: [{ label: 'Permits', href: '/services/permits' }] }] }];
-    const { root, fixture } = page(`<hw-portal-header brand="Portal" menuLabel="Menu" navigationLabel="Main navigation" [links]="portal" /><hw-navigation-drawer title="Menu" navigationLabel="Pages" closeLabel="Close" open [items]="items" /><hw-link href="/policy">Policy</hw-link><hw-card href="/card"><p>Card</p></hw-card>`, { portal, items });
+    const { root, fixture } = page(`<hw-portal-header brand="Portal" menuLabel="Menu" navigationLabel="Main navigation" [links]="portal" /><hw-navigation-drawer title="Menu" navigationLabel="Pages" closeLabel="Close" open [items]="items" /><a hwLink href="/policy">Policy</a><hw-card href="/card"><p>Card</p></hw-card>`, { portal, items });
     const header = [...root.querySelectorAll('hw-portal-header nav a')], drawer = [...root.querySelectorAll('hw-navigation-drawer nav a')];
     // The plain link, the overview link of a branch and a link of its group; the drawer's top-level link, its group's own page and a child.
     expect(header.map(link => link.getAttribute('href'))).toEqual(['/home', '/services', '/services/permits']); expect(drawer.map(link => link.getAttribute('href'))).toEqual(['/start', '/guides', '/guides/install']);
-    for (const link of [...header, ...drawer, root.querySelector('hw-link a')!, root.querySelector('hw-card a')!]) { const event = click(link); await Promise.resolve(); fixture.detectChanges(); expect(event.cancelable).toBe(true); }
+    for (const link of [...header, ...drawer, root.querySelector('a[hwLink]')!, root.querySelector('hw-card a')!]) { const event = click(link); await Promise.resolve(); fixture.detectChanges(); expect(event.cancelable).toBe(true); }
     expect(seen).toEqual(Array.from({ length: 8 }, () => false)); expect(paths).toEqual([]);
+  });
+
+  // The workspace has no router package: StandInRouterLink does what RouterLink does on an anchor, a host click listener
+  // that navigates inside the application and prevents the document load.
+  it('[LINK-03][actions-7] a[hwLink] with a router directive navigates inside the application without a document load; with disabled it does not navigate', () => {
+    class StandInRouterLink { routerLink = ''; go(event: Event) { paths.push(this.routerLink); event.preventDefault(); } }
+    Directive({ selector: 'a[routerLink]', standalone: true, inputs: ['routerLink'], host: { '[attr.href]': 'routerLink', '(click)': 'go($event)' } })(StandInRouterLink);
+    class Host { disabled = false; }
+    Component({ standalone: true, changeDetection: ChangeDetectionStrategy.Default, imports: [HwLinkDirective, StandInRouterLink], template: `<a hwLink routerLink="/next" [disabled]="disabled" variant="standalone">Next</a>` })(Host);
+    const fixture = TestBed.createComponent(Host); document.body.append(fixture.nativeElement); fixture.detectChanges();
+    const link = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
+    expect(link.className).toBe('hw-link'); expect(link.getAttribute('href')).toBe('/next'); expect(link.getAttribute('data-variant')).toBe('standalone');
+    expect(click(link).defaultPrevented).toBe(true); expect(paths).toEqual(['/next']); expect(seen).toEqual([true]);
+    const set = (disabled: boolean) => { fixture.componentInstance.disabled = disabled; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges(); };
+    set(true);
+    expect(link.hasAttribute('href')).toBe(false); expect(link.getAttribute('aria-disabled')).toBe('true');
+    expect(click(link).defaultPrevented).toBe(true); expect(paths).toEqual(['/next']);
+    // The capture guard stops the event at the anchor: nothing after it sees the click, the window included.
+    expect(seen).toEqual([true]);
+    set(false);
+    expect(link.getAttribute('href')).toBe('/next'); click(link); expect(paths).toEqual(['/next', '/next']);
+  });
+
+  it('[LINK-03] core bindLinkNavigation routes a click on a[hwLink] and leaves a disabled one alone', () => {
+    const { root, update } = page(`<a hwLink href="/guides" [disabled]="disabled">Guides</a>`, { disabled: false }); route();
+    const link = root.querySelector('a')!;
+    expect(click(link).defaultPrevented).toBe(true); expect(paths).toEqual(['/guides']);
+    update({ disabled: true }); click(link); expect(paths).toEqual(['/guides']);
   });
 });

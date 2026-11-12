@@ -117,9 +117,9 @@ it("associates unsupported-date errors and clears them when switching back witho
   expect(input.checkValidity()).toBe(true);
   expect(input.getAttribute("aria-invalid")).toBeNull();
   expect(input.getAttribute("aria-describedby")).not.toContain(
-    "validation-error",
+    `${input.id}-error`,
   );
-  expect(root.querySelector(".hw-date-picker > .hw-error")).toBeNull();
+  expect(root.querySelector(".hw-field > .hw-error")).toBeNull();
   expect(input.value).toBe(formatCalendarDate('1900-01-01', { calendar: 'gregory', locale: 'ar-SA', dateStyle: 'medium' }));
 });
 
@@ -150,7 +150,7 @@ it("isolates ISO endpoints in visible validation prose without changing the nati
   const message = "خارج النطاق 1924-08-01 إلى 2077-11-16.";
   application = createApp(defineComponent(() => () => h(DatePicker, { ...datePickerText, locale: 'ar-SA', label: "Date", defaultValue: "1900-01-01", calendar: "islamic-umalqura", unsupportedMessage: message })));
   application.mount(root); await nextTick();
-  const error = root.querySelector(".hw-date-picker > .hw-error")!;
+  const error = root.querySelector(".hw-field > p.hw-error[role=alert]")!;
   expect(error.textContent).toBe(message);
   expect([...error.querySelectorAll('bdi[dir="ltr"]')].map(node => node.textContent)).toEqual(["1924-08-01", "2077-11-16"]);
   const input = root.querySelector<HTMLInputElement>('input[type="text"]')!;

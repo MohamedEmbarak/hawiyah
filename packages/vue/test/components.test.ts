@@ -88,7 +88,7 @@ describe('Vue controls', () => {
   it('bounds pagination and updates boolean v-model', async () => {
     const page = ref(1); const checked = ref(false);
     const host = mount(defineComponent(() => () => h('div', {}, [h(Pagination, { ...paginationText, totalPages: 100, modelValue: page.value, 'onUpdate:modelValue': v => { page.value = v; } }), h(Checkbox, { label: 'Confirm', modelValue: checked.value, 'onUpdate:modelValue': v => { checked.value = Boolean(v); } })])));
-    const buttons = host.querySelectorAll<HTMLButtonElement>('.hw-pagination > button'); expect(buttons[0]!.disabled).toBe(true); expect(buttons.length).toBeLessThan(10);
+    const buttons = host.querySelectorAll<HTMLButtonElement>('.hw-pagination > button'); expect(buttons[0]!.getAttribute('aria-disabled')).toBe('true'); expect(buttons[0]!.disabled).toBe(false); expect(buttons.length).toBeLessThan(10);
     const gap = host.querySelector<HTMLDetailsElement>('.hw-pagination-gap')!;
     expect(gap.open).toBe(false);
     expect([...gap.querySelectorAll<HTMLElement>('[data-hw-page]')].map(node => Number(node.dataset.hwPage))).toEqual(Array.from({length: 94}, (_, index) => index + 6));

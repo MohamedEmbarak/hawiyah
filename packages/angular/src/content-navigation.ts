@@ -5,11 +5,12 @@ import type {ContentNavigationItem} from '@hawiyah/core';
 import {injectIsBrowser} from './platform';
 import {bindAngularFragmentLinks} from './fragment-links';
 import {HwTexts} from './text';
+import {HwNamedRoot} from './root-name';
 
 export type {ContentNavigationItem} from '@hawiyah/core';
 @Component({selector: 'hw-content-navigation', standalone: true, imports: [NgTemplateOutlet], template: `
-<nav #navigation class="hw-content-nav" [attr.aria-label]="texts.need('label', label)" [attr.data-sticky]="sticky || null">
-  @if (showHeading) {<h2 class="hw-content-nav-heading">{{ texts.need('label', label) }}</h2>}
+<nav #navigation class="hw-content-nav" [attr.aria-label]="rootName" [attr.aria-labelledby]="ariaLabelledby" [attr.aria-describedby]="ariaDescribedby" [attr.data-sticky]="sticky || null">
+  @if (showHeading && label) {<h2 class="hw-content-nav-heading">{{ label }}</h2>}
   <ng-container [ngTemplateOutlet]="list" [ngTemplateOutletContext]="{items: items, nested: false}" />
 </nav>
 <ng-template #list let-entries="items" let-nested="nested"><ul [class]="nested ? 'hw-content-nav-sublist' : 'hw-content-nav-list'">
@@ -19,10 +20,8 @@ export type {ContentNavigationItem} from '@hawiyah/core';
     @if (item.children?.length) {<ng-container [ngTemplateOutlet]="list" [ngTemplateOutletContext]="{items: item.children, nested: true}" />}
   </li>}
 </ul></ng-template>`})
-export class HwContentNavigationComponent {
+export class HwContentNavigationComponent extends HwNamedRoot {
   @Input({required: true}) items: readonly ContentNavigationItem[] = [];
-  /** Name of the navigation landmark and text of its heading when the heading is shown. */
-  @Input({required: true}) label = '';
   /** Also write the reached section to the address bar with history.replaceState. Off by default, so hash-routed applications keep their route. */
   @Input({transform: booleanAttribute}) updateHash = false;
   @Input({transform: booleanAttribute}) showHeading = true;
@@ -40,6 +39,7 @@ export class HwContentNavigationComponent {
   /** The links keep the bare "#id" a server can know; in the browser core keeps each one resolving to the
    * current document under any <base href> and hands a plain activation to the section observer. */
   constructor() {
+    super();
     const component = this;
     bindAngularFragmentLinks('a.hw-content-nav-link', () => ({navigate: id => component.observer?.navigate(id, {focus: component.keyboard}) ?? false, get updateHash() {return component.updateHash;}}));
   }

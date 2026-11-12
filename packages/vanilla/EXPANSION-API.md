@@ -38,24 +38,61 @@ See [search field behavior](../../docs/search-field.md).
 
 ```html
 <div data-hw="password-field"><label>Password <input type="password" data-hw-password-input name="password"></label><button type="button" data-hw-password-toggle aria-label="Show password" data-hw-hide-label="Hide password"></button></div>
-<div data-hw="range-slider" data-hw-locale="en"><label>Minimum <input type="range" data-hw-lower name="minimum" min="0" max="100" value="20"></label><label>Maximum <input type="range" data-hw-upper name="maximum" min="0" max="100" value="80"></label><output data-hw-range-output></output></div>
+<fieldset class="hw-field hw-range-slider" data-hw="range-slider" data-hw-range-label="{lower} – {upper}"><legend class="hw-label">Price</legend><label class="hw-label">Minimum <input class="hw-slider" type="range" data-hw-lower name="price" min="0" max="100" value="20"></label><label class="hw-label">Maximum <input class="hw-slider" type="range" data-hw-upper name="price" min="0" max="100" value="80"></label><output class="hw-range-slider-value" data-hw-range-output></output></fieldset>
 <div data-hw="pin-input"><label>One-time code <input data-hw-pin-input name="code" maxlength="6"></label></div>
-<div data-hw="tag-input" data-hw-name="tags" data-hw-value='["Design"]' data-hw-remove-label="Remove {tag}"><label>Add a tag <input data-hw-tag-input></label><div data-hw-tags></div></div>
-<fieldset data-hw="multi-select" data-hw-results-message="{count} options"><legend>Services</legend><label>Search options <input type="search" data-hw-multiselect-search></label><div data-hw-option><label><input type="checkbox" name="services" value="a">Service A</label></div><div data-hw-option><label><input type="checkbox" name="services" value="b">Service B</label></div><span data-hw-status role="status"></span></fieldset>
+<div class="hw-field">
+  <label class="hw-label" for="tags">Tags</label>
+  <div class="hw-tag-input" data-hw="tag-input" data-hw-name="tags" data-hw-value='["Design"]' data-hw-remove-label="Remove {tag}"><ul data-hw-tags></ul><input class="hw-input" id="tags" data-hw-tag-input aria-describedby="tags-hint"></div>
+  <p class="hw-hint" id="tags-hint">Press Enter or comma to add a tag.</p>
+</div>
+<fieldset class="hw-field hw-multi-select" data-hw="multi-select" data-hw-results-message="{count} options" data-hw-selected-message="{count} selected">
+  <legend class="hw-label">Services</legend>
+  <label class="hw-label" for="services-search">Search options</label>
+  <input class="hw-input" id="services-search" type="search" data-hw-multiselect-search>
+  <div class="hw-multi-select-options">
+    <label class="hw-choice" data-hw-option><input class="hw-checkbox" type="checkbox" name="services" value="a">Service A</label>
+    <label class="hw-choice" data-hw-option><input class="hw-checkbox" type="checkbox" name="services" value="b">Service B</label>
+  </div>
+  <span class="hw-sr-only" data-hw-status role="status"></span>
+  <p class="hw-multi-select-selected" data-hw-selected-status role="status"></p>
+</fieldset>
 ```
 
-Tag input generates removable chips and repeated hidden form inputs. Enter or
-comma commits trimmed unique tags; Backspace on an empty query removes the final
-tag. Each chip's remove button is named by `getRemoveLabel(tag)` (or
+Tag input generates removable chips and repeated hidden form inputs. Each chip is
+an `li.hw-chip` when `[data-hw-tags]` is a `ul` or `ol` (the documented markup),
+else a `span.hw-chip` with `role="listitem"`. Enter or comma commits trimmed unique
+tags; there is no Add button. Backspace on an empty query removes the final tag
+and keeps focus in the input. Activating a remove button moves focus to the
+remove button of the next chip, else of the previous chip, else to the text
+input. Each chip's remove button is named by `getRemoveLabel(tag)` (or
 `data-hw-remove-label="… {tag}"`), and a required tag input takes
-`requiredMessage`. `data-hw-readonly="true"` prevents edits. Pin input normalizes Arabic-Indic
-and Eastern Arabic digits into ASCII, keeps one focus stop and uses native
-maxlength/required. MultiSelect uses actual checkboxes; filtered selections remain
-checked and submitted. Native fieldset disabled works normally. PasswordField
-names its toggle from `showLabel` (the toggle's own `aria-label` or text, else
-`data-hw-show-label`) and `hideLabel` (`data-hw-hide-label`); MultiSelect
-announces the filtered count through `getResultsMessage(count)` when
-`[data-hw-status]` exists.
+`requiredMessage` and explains the requirement in its hint.
+`data-hw-readonly="true"` prevents edits; read-only and disabled remove buttons
+stay rendered and are disabled. Keep hint and error outside `.hw-tag-input`.
+
+Pin input normalizes Arabic-Indic and Eastern Arabic digits into ASCII and drops
+every other character before the length applies, so a pasted `123 456`,
+`12-34-56` or `٤٥٦-١٢٣` keeps all six digits; a typed character beyond a full
+code is ignored. The length is `length`, else an authored `maxlength`, else 6;
+the controller removes `maxlength` while it is active (restored by `destroy()`)
+and keeps `pattern`, `inputmode` and `required`. An incomplete code is
+`aria-invalid="true"` after focus leaves it, until it is empty or complete.
+
+MultiSelect uses actual checkboxes; filtered selections remain checked and
+submitted. Native fieldset disabled works normally. The search input is named by
+its visible label. `getResultsMessage(count)` (or `data-hw-results-message`) is
+required: the controller creates the polite `span.hw-sr-only[data-hw-status]` at
+the end of the root when none is authored and writes the count only after the
+reader filters (empty at first and after a reset). The optional
+`getSelectedMessage(count)` (or `data-hw-selected-message`) fills an authored
+`[data-hw-selected-status]` with the number of selected options. Read-only
+checkboxes keep focus and their submitted values and get `aria-disabled="true"`.
+
+PasswordField names its toggle from `showLabel` (the toggle's own `aria-label` or
+text, else `data-hw-show-label`) and `hideLabel` (`data-hw-hide-label`).
+`createPasswordField` returns `visible`, `toggle()` and `destroy()` and takes
+`onVisibleChange(visible)`; `hw:change` carries `{ visible }`. A form reset hides
+the value and notifies `false` when it was visible.
 
 For required MultiSelect selection, set `data-hw-required="true"` on its root or
 pass `{ required: true, requiredMessage: 'Choose at least one service.' }` to
@@ -65,10 +102,16 @@ after changes/reset/disabled attributes. Do not put native `required` on the
 search text or each checkbox. Readonly selection keeps search usable and selected
 values submitted. See [validation contracts](../../docs/multiselect-validation.md).
 
-RangeSlider writes the formatted lower and upper values into an optional
-`[data-hw-range-output]`; `locale` (or `data-hw-locale`) is required when that
-element is present, and without it the output stays empty and a development
-warning is logged. RangeSlider's `data-hw-readonly="true"` prevents pointer and value-changing
+RangeSlider fills an optional `[data-hw-range-output]` with `getRangeLabel(lower,
+upper)`, else with the template `data-hw-range-label="{lower} – {upper}"` on the
+root, whose `{lower}` and `{upper}` are written by `formatValue(value)`, else by
+core `formatNumber` with the optional `locale` (or `data-hw-locale`), else as
+plain numbers. The text is required when the output is present: without it the
+output stays empty and one development warning names `getRangeLabel`. The
+controller adds no separator of its own. `formatValue(value)` also gives each
+thumb its `aria-valuetext`; without it the inputs have none. Both thumbs may
+share one `name` (submitted in lower, upper order). `required` is not written on
+range inputs; a required range shows the marker in its legend. RangeSlider's `data-hw-readonly="true"` prevents pointer and value-changing
 keyboard input while preserving Tab/Shift+Tab navigation and other native keys.
 Its two labelled thumbs remain focusable; read-only values still submit normally.
 
@@ -77,28 +120,33 @@ Its two labelled thumbs remain focusable; read-only values still submit normally
   data-hw-month="2026-10-01" data-hw-min="2026-01-01" data-hw-max="2027-12-31"
   data-hw-calendar="gregory" data-hw-locale="en-GB" data-hw-name="date"
   aria-label="Choose an appointment date" data-hw-previous-label="Previous month"
-  data-hw-next-label="Next month" data-hw-calendar-system-label="Calendar system"
-  data-hw-gregorian-label="Gregorian" data-hw-hijri-label="Hijri"
-  data-hw-range-label="Supported Hijri range"
+  data-hw-next-label="Next month" data-hw-range-label="Supported Hijri range"
   data-hw-unsupported-message="This date is outside the supported Hijri range."></div>
 <div class="hw-date-picker" data-hw="date-picker" data-hw-calendar="islamic-umalqura" data-hw-locale="ar-SA"
   data-hw-calendar-label="اختر موعدًا" data-hw-previous-label="الشهر السابق" data-hw-next-label="الشهر التالي"
   data-hw-calendar-system-label="نظام التقويم" data-hw-gregorian-label="ميلادي" data-hw-hijri-label="هجري"
   data-hw-range-label="النطاق الهجري المدعوم" data-hw-invalid-message="أدخل تاريخًا صحيحًا."
   data-hw-unsupported-message="هذا التاريخ خارج النطاق الهجري المدعوم.">
-  <label>Appointment <input type="text" placeholder="YYYY-MM-DD" data-hw-date-input name="appointment" required></label>
-  <button type="button" data-hw-date-trigger aria-label="Choose date">Calendar</button>
+  <label class="hw-label" for="appointment">Appointment</label>
+  <div class="hw-date-picker-control"><input class="hw-input" id="appointment" type="text" placeholder="YYYY-MM-DD" data-hw-date-input name="appointment" required aria-describedby="appointment-hint">
+  <button type="button" data-hw-date-trigger aria-label="Choose date">Calendar</button></div>
+  <p class="hw-hint" id="appointment-hint">YYYY-MM-DD</p>
+  <p class="hw-error" data-hw-error></p>
   <dialog class="hw-dialog" data-hw-date-dialog aria-label="Choose appointment date">
     <header class="hw-dialog-header"><h2>Choose appointment date</h2><button class="hw-button" data-variant="ghost" type="button" data-hw-date-close>Close</button></header>
     <div class="hw-dialog-body"><div class="hw-calendar" data-hw-date-calendar></div></div>
   </dialog>
 </div>
-<label class="hw-file-dropzone" data-hw="file-dropzone" data-hw-selected-message="{count} files selected"
+<div class="hw-field hw-file-dropzone" data-hw="file-dropzone" data-hw-max-size="5242880"
+  data-hw-selected-message="{count} files selected"
   data-hw-rejected-message="{count} files do not match the allowed type and size"
-  data-hw-unsupported-drop-message="Use the file chooser to attach documents.">Choose or drop documents
-  <input type="file" data-hw-file-input name="documents" multiple accept=".pdf,.png">
-  <span data-hw-file-status role="status"></span>
-</label>
+  data-hw-unsupported-drop-message="Use the file chooser to attach documents.">
+  <label class="hw-label" for="documents">Documents</label>
+  <p class="hw-file-dropzone-instruction" id="documents-instruction">Choose or drop documents</p>
+  <input class="hw-input" type="file" id="documents" data-hw-file-input name="documents" accept=".pdf,.png" multiple aria-describedby="documents-instruction documents-hint">
+  <p data-hw-file-status role="status"></p>
+  <p class="hw-hint" id="documents-hint">PDF or PNG, up to 5 MiB each</p>
+</div>
 ```
 
 Calendar generates its toolbar, labelled grid, localized weekdays/day buttons and
@@ -109,50 +157,90 @@ RTL-aware horizontal arrows, vertical weeks, Home/End within the week,
 PageUp/PageDown by display month, Shift+PageUp/PageDown by display year. Disabled
 dates cannot be selected. DatePicker composes a native input and native modal;
 the nested `[data-hw-date-calendar]` must NOT separately have `data-hw="calendar"`.
-Dropzone preserves native file input. Optional `data-hw-max-size` is bytes;
-accept/multiple/disabled come from input. Only accepted files become its value.
-With a `[data-hw-file-status]` region it announces `getSelectedMessage(files)`,
-`getRejectedMessage(rejected)` (when `accept` or a maximum size is set) and
-`unsupportedDropMessage`; the template attributes receive `{count}`.
+Dropzone preserves the native file input, which is named by its label and
+described by the instruction. Optional `maxSize` (or `data-hw-max-size`) is bytes;
+accept/multiple/disabled come from the input. Each chosen or dropped batch is
+checked with core `evaluateFileSelection`: a batch with any file of another type,
+above the size limit, or with more than one file on an input without `multiple`
+is rejected as a whole. The input is then emptied, `onReject(files)` is called
+once and `hw:change` carries `{ value, rejected: true, rejectedFiles }`;
+`onValueChange` fires only when the held files changed. An accepted drop assigns
+the drop's own file list to the input. Server-side validation stays the
+application's task. `[data-hw-file-status]` carries only `getSelectedMessage(files)`
+and `unsupportedDropMessage`. A rejection is written with
+`getRejectedMessage(rejected)` (required when `accept` or a maximum size is set)
+into an empty authored `[data-hw-error]`, else into a created `p.hw-error` after
+the hint, with `role="alert"`; its id joins the input's `aria-describedby`, the
+input gets `aria-invalid="true"` and the root `data-state="error"` until the next
+accepted batch or a reset. An authored `[data-hw-error]` that already holds text
+is the application's error: it is shown as written, without a role. Rejection
+sets no custom validity. A file drag over an available zone sets
+`data-state="dragging"`; drags without files are left to the browser. Over a
+disabled or read-only zone a file drag is cancelled with `dropEffect="none"` and
+a drop changes nothing. `data-hw-readonly="true"` keeps the input focusable,
+writes `aria-disabled="true"` on it and blocks the chooser; the chosen files
+still submit. The dropzone renders no file list; compose FileUploadList inside
+it. The template attributes receive `{count}`.
 
-Calendar and DatePicker include a labelled Gregorian/Hijri selector. Switching
-display systems preserves the ISO selection and keeps an open picker open.
+DatePicker includes a labelled Gregorian/Hijri selector, rendered directly before
+the calendar root in the dialog body; a standalone Calendar has none (call
+`controller.setCalendar(system)` from your own control). Switching display
+systems preserves the ISO selection and keeps an open picker open.
 Numeric Hijri fields come from the pinned published HijriDate reference, with
 supported Gregorian range 1924-08-01 through 2077-11-16. The UI shows this range
-after `rangeLabel`; unsupported selections are preserved, `unsupportedMessage` is
-shown, and DatePicker reports native invalidity.
+after `rangeLabel`; unsupported selections are preserved. A Calendar has one
+`p.hw-sr-only[role=status]` after its grid, empty from the first render, that holds
+`unsupportedMessage` (required while the calendar is `islamic-umalqura`) while the
+value cannot be shown. DatePicker writes the message for a malformed,
+out-of-range, unsupported or unavailable typed date into the optional authored
+`[data-hw-error]` slot (role `alert` while it applies; its authored text and role
+are restored after), else into a created `p.hw-error[role=alert]` after the
+root's `.hw-hint`; the same text is the input's custom validity and the field gets
+`aria-invalid="true"`. An authored `.hw-error` with text is the application's
+error and wins. A failed submission keeps `aria-invalid="true"` until the date is
+valid or the form resets.
 There is no civil arithmetic fallback or claim of current official-service parity.
 
 Direct Calendar options include `value`, `month`, `min`, `max`, `locale`, `calendar`,
 `weekStartsOn`, `disabled`, `readOnly`, `name`, `isDateDisabled`, `onValueChange`,
 `onSelect`, and `onCalendarChange`, plus the texts `label`, `previousLabel`,
-`nextLabel`, `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`, `rangeLabel`,
-`unsupportedMessage` and the optional `getDayLabel(value)`. `locale` (or
+`nextLabel`, `rangeLabel`, `unsupportedMessage` and the optional `getDayLabel(value)`. `locale` (or
 `data-hw-locale`) is required; month and weekday names come from Intl for it.
 Without it the controller does not throw: it warns in development and renders
 no switch, toolbar or grid (DatePicker keeps its input, validation and trigger
 and shows no formatted date).
-DatePicker takes the same texts except `label`, and adds `calendarLabel`,
+DatePicker takes the same texts except `label`, and adds `calendarSystemLabel`,
+`gregorianLabel`, `hijriLabel` (its switch), `calendarLabel`,
 `openLabel` (unless the trigger has its own text or `aria-label`),
 `invalidMessage` and, with `isDateDisabled`, `unavailableMessage`. Its controller has `value`, `calendar`,
 `select`, silent `setValue`, `setMonth`, `setCalendar`, and `destroy`. DatePicker
 adds `show`/`close` and uses its native input for bounds, names and form validation.
-It generates `[data-hw-date-display].hw-date-picker-value`, a polite live output
-associated through `aria-describedby`, showing the selected date in the chosen
-calendar while the native input retains Gregorian ISO editing. Blank hides it;
-unsupported Hijri values show `unsupportedMessage` without clearing the input.
+It generates `[data-hw-date-display].hw-date-picker-value`, a polite atomic live
+output associated through `aria-describedby` (after the application's ids, before
+the hint and error), announcing the full date with the weekday in the chosen
+calendar while the native input retains Gregorian ISO editing. Blank values and
+values the calendar cannot show hide it; it never carries a message. Opening the
+dialog moves focus to the selected day, or today. A native reset restores the
+input's `defaultValue`, closes the dialog, clears the message and notifies once
+when the value changed.
 `onSelect` fires even when confirming the current date; value callbacks fire only
 when the value changes. The composed picker emits one public value event.
 
 ```html
-<fieldset data-hw="toggle-group"><legend>View</legend><label><input type="radio" name="view" value="list" checked>List</label><label><input type="radio" name="view" value="grid">Grid</label></fieldset>
-<div data-hw="toggle-group" data-hw-multiple="true" role="group" aria-label="Text style"><button type="button" data-hw-value="bold" aria-pressed="false">Bold</button><button type="button" data-hw-value="italic" aria-pressed="false">Italic</button></div>
-<div data-hw="popover"><button type="button" data-hw-trigger>Open information</button><div data-hw-panel role="region" aria-label="Information" hidden><p>Useful information</p><button type="button" data-hw-close>Close</button></div></div>
-<div data-hw="menu"><button type="button" data-hw-trigger>Actions</button><div data-hw-panel role="menu" aria-label="Actions" hidden><button type="button" role="menuitem" data-hw-value="edit">Edit</button><button type="button" role="menuitem" data-hw-value="archive">Archive</button></div></div>
+<fieldset class="hw-toggle-group" data-hw="toggle-group" aria-describedby="view-hint"><legend class="hw-label">View<span class="hw-required-marker" aria-hidden="true"> *</span></legend><label><input type="radio" name="view" value="list" required>List</label><label><input type="radio" name="view" value="grid" required>Grid</label><p class="hw-hint" id="view-hint">Choose how results are shown.</p></fieldset>
+<div class="hw-toggle-group" data-hw="toggle-group" data-hw-multiple="true" role="group" aria-label="Text style"><button type="button" class="hw-button" data-variant="secondary" data-size="md" data-hw-value="bold" aria-pressed="false">Bold</button><button type="button" class="hw-button" data-variant="secondary" data-size="md" data-hw-value="italic" aria-pressed="false">Italic</button></div>
+<div class="hw-popover" data-hw="popover"><button class="hw-button" type="button" data-hw-trigger>Open information</button><div class="hw-popover-panel" data-hw-panel role="region" aria-label="Information" hidden><p>Useful information</p><button type="button" data-hw-close>Close</button></div></div>
+<div class="hw-menu" data-hw="menu"><button class="hw-button" type="button" data-hw-trigger>Actions</button><div class="hw-menu-content" data-hw-panel role="menu" aria-label="Actions" hidden><button class="hw-menu-item" type="button" role="menuitem" data-hw-value="edit">Edit</button><button class="hw-menu-item" type="button" role="menuitem" data-hw-value="archive" disabled>Archive</button><a class="hw-menu-item" role="menuitem" data-hw-value="help" href="#help">Help</a></div></div>
 <button type="button" data-hw-dialog-open="drawer">Open drawer</button><dialog id="drawer" class="hw-drawer" data-hw="drawer" data-side="end" aria-label="Request filters"><button type="button" data-hw-dialog-close>Close</button>…</dialog>
 <div data-hw="toast-region" class="hw-toast-region" aria-label="Notifications" data-hw-dismiss-label="Dismiss: {title}"><div data-hw-toast class="hw-toast"><p>Changes saved</p><button type="button" data-hw-dismiss><span aria-hidden="true">×</span></button></div></div>
 ```
 
+A single group's empty value is `''`, a multiple group's `[]`. In single mode
+`required` on the radios applies; a failed submission sets `aria-invalid="true"`
+on the root until an option is chosen or the form resets. `required` is not
+enforced in multiple mode; use MultiSelect or the application's own error.
+Hint and error are `p` elements after the options, referenced by the root's
+`aria-describedby`.
 Set `data-hw-readonly="true"` on the group to prevent pointer/keyboard selection
 while keeping its controls focusable and its enabled values available to forms.
 Changing that attribute restores editing. `disabled` fieldsets and disabled
@@ -167,36 +255,90 @@ Use `.hw-button-group` with `data-variant="attached"` and optional
 `data-orientation="vertical"` for independent joined actions; it needs no controller.
 
 
-Popover uses normal Tab and closes on outside press/Escape; Menu adds roving
-ArrowUp/Down/Home/End and printable typeahead. Drawer reuses native Dialog.
+Popover uses normal Tab and closes on outside press, on Escape with focus inside
+it (focus returns to the trigger) and when focus leaves it (focus is not moved).
+Menu adds roving ArrowUp/Down/Home/End over enabled items and type-ahead (core
+`createTypeahead`): one printable character without Ctrl, Meta or Alt moves to
+the next enabled item whose label starts with the typed text, which is forgotten
+500 ms after the last key or when the menu closes; a repeated letter cycles, and a
+key without a match keeps its default action. `createMenu(root, { onAction,
+onOpenChange })`: `onAction(value)` reports an activated item's `data-hw-value`
+once (a link item then navigates natively; a disabled item reports nothing) and
+`hw:change` carries `{ value }`; `onOpenChange(open)` and `hw:change` `{ open }`
+report the state. Drawer reuses native Dialog.
 Toast messages are caller-owned and have no automatic expiration; each dismiss
 button hides its closest `[data-hw-toast]`. Urgent messages can have role=alert;
 the region defaults to polite status.
 
 ```html
-<ul data-hw="tree-view" role="tree" aria-label="Documents"><li role="treeitem" data-hw-value="business" aria-expanded="true"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="Toggle business documents">▾</button><span data-hw-tree-label>Business</span><ul role="group"><li role="treeitem" data-hw-value="license"><span data-hw-tree-label>License</span></li></ul></li></ul>
+<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="Documents" data-hw-expand-label="Expand {label}" data-hw-collapse-label="Collapse {label}"><li class="hw-tree-item" role="treeitem" data-hw-value="business" aria-expanded="true"><button class="hw-tree-toggle" type="button" data-hw-tree-toggle tabindex="-1"><span class="hw-icon" data-icon="add-01" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>Business</span><ul role="group"><li role="treeitem" data-hw-value="license"><span data-hw-tree-label>License</span></li></ul></li></ul>
 <section data-hw="carousel" aria-label="Featured services" data-hw-slide-label="{position} of {total}" data-hw-empty-label="No services to show"><div><article data-hw-slide>First service</article><article data-hw-slide>Second service</article></div><button type="button" data-hw-previous>Previous slide</button><span data-hw-carousel-status role="status"></span><button type="button" data-hw-next>Next slide</button></section>
 <table data-hw="data-table" class="hw-table" data-hw-locale="en"><caption>Requests</caption><thead><tr><th data-hw-key="name"><button type="button" data-hw-sort="name">Name</button></th><th data-hw-key="count" data-hw-type="number"><button type="button" data-hw-sort="count">Count</button></th></tr></thead><tbody><tr><td>Alpha</td><td>2</td></tr><tr><td>Beta</td><td>1</td></tr></tbody></table>
-<div data-hw="feedback" role="group" aria-label="Was this page helpful?" data-hw-success-message="Thank you for your feedback."><button type="button" data-hw-value="yes" aria-pressed="false">Yes</button><button type="button" data-hw-value="no" aria-pressed="false">No</button><input type="hidden" data-hw-feedback-value name="helpful"><span data-hw-feedback-status role="status"></span></div>
-<section data-hw="cookie-consent" aria-label="Cookie preferences"><p>Choose optional cookie preferences.</p><button type="button" data-hw-consent="accepted">Accept optional cookies</button><button type="button" data-hw-consent="rejected">Reject optional cookies</button></section>
+<div class="hw-feedback" data-hw="feedback" role="group" aria-labelledby="feedback-label" data-choice-variant="icon-text" data-hw-success-message="Thank you for your feedback."><p id="feedback-label">Was this page helpful?</p><div class="hw-feedback-actions"><button type="button" class="hw-button" data-variant="secondary" data-hw-value="yes" aria-pressed="false"><span class="hw-icon hw-feedback-icon" data-icon="thumbs-up" aria-hidden="true"></span><span class="hw-feedback-label">Yes</span></button><button type="button" class="hw-button" data-variant="secondary" data-hw-value="no" aria-pressed="false"><span class="hw-icon hw-feedback-icon" data-icon="thumbs-down" aria-hidden="true"></span><span class="hw-feedback-label">No</span></button></div><div class="hw-feedback-comment" data-hw-feedback-comment hidden><div class="hw-field"><label class="hw-label" for="feedback-comment">Comment</label><textarea class="hw-textarea" id="feedback-comment"></textarea></div><button type="button" class="hw-button" data-hw-feedback-submit>Send</button></div><p role="status" data-hw-feedback-status></p><input type="hidden" data-hw-feedback-value name="helpful"></div>
+<section class="hw-cookie-consent" data-hw="cookie-consent" aria-labelledby="cookies-title"><h2 id="cookies-title">Cookie preferences</h2><p>Choose optional cookie preferences.</p><div class="hw-button-group"><button type="button" class="hw-button" data-variant="primary" data-hw-consent="accepted">Accept optional cookies</button><button type="button" class="hw-button" data-variant="secondary" data-hw-consent="rejected">Reject optional cookies</button></div></section>
 ```
 
 Tree items use stable `data-hw-value`, optional `aria-disabled="true"`, nested
-role=group, and a label part. Arrows follow RTL expansion direction and visible
-nodes; Enter/Space selects. Carousel protects inactive slides with hidden/inert
+role=group, and a label part (`[data-hw-tree-label]`); the controller names an
+unnamed item with `aria-labelledby` to its label. The branch toggle
+`button.hw-tree-toggle[data-hw-tree-toggle]` is not a tab stop and is named by
+`getExpandLabel(node)` while collapsed and `getCollapseLabel(node)` while expanded
+(`node` is `{ id, label }`; or the templates `data-hw-expand-label` and
+`data-hw-collapse-label` with `{label}` and `{id}`); they are required unless the
+toggle has an authored `aria-label`, which stays when neither is given. Its
+`.hw-icon` shows `add-01` collapsed and `minus-sign` expanded. Pressing it expands
+or collapses without selecting, also in a read-only tree, and focuses the item.
+The `expanded` option (`readonly string[]`) sets the initial expansion; the
+controller exposes `expanded`, `onExpandedChange(expanded)` reports changes and
+`hw:change` carries `{ value, expanded }`. Arrows follow RTL expansion direction and visible
+nodes; Enter/Space selects. Type-ahead follows the Menu rules over the visible
+nodes. Carousel protects inactive slides with hidden/inert
 state and announces position with `getSlideLabel(position, total)` (one-based;
 `data-hw-slide-label`), which also names each slide and indicator; `emptyLabel`
 is the status without slides. `carouselDescription` and `slideDescription` are
-optional `aria-roledescription` texts with no default. Optional `[data-hw-carousel-track]` and
+optional `aria-roledescription` texts with no default. On the first or last slide
+of a carousel that does not loop, the arrow gets `aria-disabled="true"` instead of
+`disabled`: it keeps focus and its name and ignores activation; `disabled` stays
+for fewer than two slides, an authored `disabled` or a disabled root. Optional `[data-hw-carousel-track]` and
 `[data-hw-carousel-dot="0"]` markers enable the shared sliding track and authored
 position buttons; see [carousel source/API notes](../../docs/nic-carousel.md);
 there is no autoplay. DataTable sorts existing tbody rows immutably and restores
 their original order on cleanup. `locale` (or `data-hw-locale`) controls collation and is required when a
 column is sortable; without it the controller warns in development, updates
-`aria-sort` and emits as usual, and keeps the source order. Optional
-cell `data-hw-sort-value` overrides displayed text. CookieConsent emits choice and
-hides itself; it does not enable scripts or persist consent without application
-code. Optional direct-controller storageKey explicitly enables local persistence.
+`aria-sort` and emits as usual, and keeps the source order. A header activation
+sorts ascending, or descending when that column is already ascending;
+`onSortKeyChange(key)` fires when the column changed, then
+`onSortDirectionChange(direction)` when the direction changed, and `hw:change`
+carries `{ sortKey, sortDirection }`. Optional
+cell `data-hw-sort-value` overrides displayed text.
+
+Feedback is a named group (`role="group"` labelled by its question) with two
+choices, `button[data-hw-value="yes|no"]` with `aria-pressed`; other values are
+ignored. Its value is `{ helpful, comment }` (`helpful` is true, false or null
+before a choice). Choosing notifies `onValueChange(value)` and `hw:change`
+`{ value }` once; the pressed choice again changes nothing. The authored
+`[data-hw-feedback-comment]` region (written `hidden`, shown after the first
+choice) holds a labelled textarea and `button[data-hw-feedback-submit]`; typing
+notifies the value with the comment. Submit reports `onFeedback(value)` and
+`hw:change` `{ feedback: value }` once and fills `[data-hw-feedback-status]` with
+`successMessage` (required); any later change empties the status. Without a
+submit button the choice itself reports feedback. No focus is moved. The
+optional `input[type=hidden][data-hw-feedback-value]` receives `yes`, `no` or
+`''`; a reset of its form restores the authored choice, comment and empty status.
+The controller exposes `value`, `select(helpful)`, `setComment(comment)`,
+`submit()` and `destroy()`; `options.value` is the initial value. Nothing is sent
+anywhere by the package.
+
+CookieConsent is a section labelled by its h2 with Accept (primary), Reject
+(secondary) and an optional Preferences button (ghost, handled by the
+application) inside `div.hw-button-group`. Accept or Reject reports
+`onConsent(choice)` and `hw:change` `{ consent }`, then closes: the root gets
+`hidden`, `onOpenChange(false)` and `hw:change` `{ open: false }`. The controller
+has `open`, `setOpen(open)`, `choose(choice)` and `destroy()`; `options.open`
+(default true) is the initial state. It does not enable scripts or persist
+consent without application code; the optional `storageKey` enables local
+persistence and a stored choice starts it closed. After it closes, send focus to
+the element the page continues with, such as the main heading.
 
 DataTable header buttons can include `<span class="hw-table-sort-icon" aria-hidden="true"></span>`
 for a visible unsorted/ascending/descending indicator. CSS follows the native
@@ -211,6 +353,9 @@ Real anchors retain their URL and modifier-key behavior; buttons update the
 controller and emit `hw:change` with `{page}`. `totalPages` (or `data-hw-total`)
 must be a positive safe integer. Invalid, out-of-range and unchanged selections
 do not emit. `destroy()` restores authored attributes and child-node identities.
+On the first or last page the previous / next arrow gets `aria-disabled="true"`
+and keeps focus and its name; `disabled` is written only when the pagination is
+disabled or the arrow was authored disabled.
 
 Add a `[data-hw-pagination-items]` container to opt into generated page windows:
 

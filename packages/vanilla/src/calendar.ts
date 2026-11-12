@@ -1,4 +1,4 @@
-import { hasText, requireText, observeFieldValue, createCleanup, formatCalendarDate, getCalendarMonth, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarMonth, type CalendarSystem } from '@hawiyah/core';
+import { hasText, requireText, observeFieldValue, observeFormReset, createCleanup, formatCalendarDate, getCalendarMonth, getDateViolation, getDirection, isCalendarDateSupported, isDateInRange, isDisabled, moveCalendarDate, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE, type CalendarMonth, type CalendarSystem } from '@hawiyah/core';
 import { createTooltip } from './tooltip.js';
 import { createDialog } from './dialog.js';
 import { emit, ensureId, eventElement, named, nameRoot, nativeChange, readOnly, remember, required, text, validityMessage, writeContent, writeOptional, writeText } from './dom.js';
@@ -17,9 +17,9 @@ function appendDateMessage(node: HTMLElement, message: string) {
 export interface CalendarTexts {
   /** Accessible name of the root, unless the markup names it with aria-label or aria-labelledby. */
   label?: string; previousLabel?: string; nextLabel?: string;
-  /** Status text when the value cannot be shown in the Umm al-Qura calendar. The calendar-system switch is always rendered, so it is required. */
+  /** Status text when the value cannot be shown in the Umm al-Qura calendar. Required while the calendar is 'islamic-umalqura'. */
   unsupportedMessage?: string;
-  calendarSystemLabel?: string; gregorianLabel?: string; hijriLabel?: string; rangeLabel?: string;
+  rangeLabel?: string;
 }
 /** A BCP 47 `locale` (options.locale or data-hw-locale) is required: month and weekday names come from Intl. Without it the controller warns in development and renders nothing that Intl would produce. */
 // Month and weekday names come from Intl, so a locale is required; the document language is never read and nothing falls back to a built-in or host locale.
@@ -74,18 +74,16 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   const host = document.createElement('div'); host.className = 'hw-calendar-content'; root.append(host); scope.add(() => host.remove());
   const hidden = document.createElement('input'); hidden.type = 'hidden'; hidden.name = options.name ?? root.dataset.hwName ?? ''; if (hidden.name) { root.append(hidden); scope.add(() => hidden.remove()); }
   const titleId = ensureId(scope, host, 'calendar') + '-title';
-  const systemGroup = document.createElement('div'); systemGroup.className = 'hw-calendar-system hw-calendar-switch'; systemGroup.setAttribute('role', 'radiogroup'); writeText(systemGroup, 'aria-label', 'Calendar', 'calendarSystemLabel', say('calendarSystemLabel'));
-  for (const [id, name] of [['gregory', 'gregorianLabel'], ['islamic-umalqura', 'hijriLabel']] as const) {
-    const label = document.createElement('label'); const radio = document.createElement('input'); radio.type = 'radio'; radio.name = `${titleId}-system`; radio.setAttribute('form', ''); radio.value = id!; radio.dataset.hwCalendarSystem = ''; const caption = document.createElement('span'); writeContent(caption, 'Calendar', name, say(name)); label.append(radio, caption); systemGroup.append(label);
-  }
-  const optionsRow = document.createElement('div'); optionsRow.className = 'hw-calendar-options';
+  // One status for a value the Umm al-Qura calendar cannot show: present and empty from the first render, rewritten only when its text changes.
+  const status = document.createElement('p'); status.className = 'hw-sr-only'; status.setAttribute('role', 'status'); host.after(status); scope.add(() => status.remove());
+  let statusText = '';
   const info = document.createElement('div'); info.className = 'hw-calendar-info';
   const infoButton = document.createElement('span'); infoButton.tabIndex = 0; infoButton.className = 'hw-calendar-info-icon hw-tooltip-trigger'; infoButton.dataset.hwTooltipTrigger = ''; infoButton.setAttribute('role', 'img'); const range = say('rangeLabel'); writeContent(infoButton, 'Calendar', 'rangeLabel', range);
   writeOptional(infoButton, 'aria-label', range); const infoPanel = document.createElement('span'); infoPanel.className = 'hw-tooltip hw-calendar-range'; infoPanel.setAttribute('role', 'tooltip'); infoPanel.hidden = true; writeOptional(infoPanel, 'aria-label', range);
   const infoLabel = document.createElement('span'); infoLabel.textContent = range ?? '';
   const infoRange = document.createElement('bdi'); infoRange.dir = 'ltr'; infoRange.textContent = `${UMALQURA_MIN_DATE} – ${UMALQURA_MAX_DATE}`;
-  if (hasText(range)) infoPanel.append(infoLabel, ' ', infoRange); else infoPanel.append(infoRange); info.append(infoButton, infoPanel); optionsRow.append(systemGroup); root.insertBefore(optionsRow, host);
-  const infoTooltip = createTooltip(info); scope.add(() => { infoTooltip.destroy(); optionsRow.remove(); });
+  if (hasText(range)) infoPanel.append(infoLabel, ' ', infoRange); else infoPanel.append(infoRange); info.append(infoButton, infoPanel);
+  const infoTooltip = createTooltip(info); scope.add(() => infoTooltip.destroy());
   scope.listen(info, 'keydown', event => { if ((event as KeyboardEvent).key === 'Escape' && !infoPanel.hidden) { event.preventDefault(); event.stopPropagation(); infoTooltip.hide(); } });
   let model: CalendarMonth;
   const button = (name: 'previousLabel' | 'nextLabel', action: string) => { const node = document.createElement('button'); node.type = 'button'; node.className = `hw-button hw-calendar-${action === 'previous' ? 'prev' : 'next'}`; const label = say(name); writeText(node, 'aria-label', 'Calendar', name, label); node.dataset.variant = 'ghost'; node.dataset.hwCalendarAction = action; node.textContent = hasText(label) ? label! : ''; return node; };
@@ -96,6 +94,7 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
     month = first.value;
     const active = model.days.find(day => day.value === (focusDate || focused) && !day.disabled && selectable(day.value))
       ?? model.days.find(day => day.selected && !day.disabled && selectable(day.value))
+      ?? model.days.find(day => day.today && !day.disabled && selectable(day.value))
       ?? model.days.find(day => !day.outside && !day.disabled && selectable(day.value))
       ?? model.days.find(day => !day.disabled && selectable(day.value));
     focused = active?.value || '';
@@ -107,8 +106,6 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
     previous.disabled = disabled() || model.previous === month || !!min && getCalendarMonth({ month: model.previous, locale, calendar, min, max }).days.filter(day => !day.outside).every(day => day.disabled);
     next.disabled = disabled() || model.next === month || !!max && getCalendarMonth({ month: model.next, locale, calendar, min, max }).days.filter(day => !day.outside).every(day => day.disabled);
     const headingGroup = document.createElement('div'); headingGroup.className = 'hw-calendar-heading'; headingGroup.append(heading, info); header.append(previous, headingGroup, next); host.append(header);
-    systemGroup.dataset.calendar = calendar;
-    systemGroup.querySelectorAll<HTMLInputElement>('input').forEach(radio => { radio.checked = radio.value === calendar; radio.disabled = disabled() || readonly(); });
     const grid = document.createElement('table'); grid.className = 'hw-calendar-grid'; grid.setAttribute('role', 'grid'); grid.setAttribute('aria-labelledby', titleId); grid.setAttribute('aria-readonly', String(readonly()));
     const head = document.createElement('thead'); const headings = document.createElement('tr');
     model.weekdays.forEach(label => { const cell = document.createElement('th'); cell.scope = 'col'; cell.className = 'hw-calendar-weekday'; cell.textContent = label; headings.append(cell); }); head.append(headings); grid.append(head);
@@ -130,12 +127,16 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
     }
     grid.append(body); host.append(grid);
     info.hidden = calendar !== 'islamic-umalqura'; infoTooltip.hide();
-    const unsupported = say('unsupportedMessage');
-    if (requireText('Calendar', 'unsupportedMessage', unsupported, "the calendar-system switch is rendered") && value && !isCalendarDateSupported(value, calendar)) {
-      const message = document.createElement('p'); message.className = 'hw-sr-only'; message.setAttribute('role', 'status'); message.textContent = unsupported!; host.append(message);
+    let wanted = '';
+    if (calendar === 'islamic-umalqura') {
+      const unsupported = say('unsupportedMessage');
+      // A DatePicker reports its own missing unsupportedMessage.
+      const present = pickerCalendars.has(root) ? hasText(unsupported) : requireText('Calendar', 'unsupportedMessage', unsupported, "the calendar is 'islamic-umalqura'");
+      if (present && value && !isCalendarDateSupported(value, calendar)) wanted = unsupported!;
     }
+    if (wanted !== statusText) { statusText = wanted; appendDateMessage(status, wanted); }
     hidden.value = value; hidden.disabled = disabled();
-    if (focusAction === 'system') systemGroup.querySelector<HTMLInputElement>('input:checked')?.focus(); else if (focusAction) host.querySelector<HTMLElement>(`[data-hw-calendar-action="${focusAction}"]`)?.focus();
+    if (focusAction) host.querySelector<HTMLElement>(`[data-hw-calendar-action="${focusAction}"]`)?.focus();
     else if (focusDate) [...host.querySelectorAll<HTMLElement>('[data-hw-date]')].find(node => node.dataset.hwDate === focused)?.focus();
   };
   const select = (date: string) => {
@@ -146,8 +147,7 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   };
   const setMonth = (date: string) => { if (scope.destroyed || !isDateInRange(date)) return; month = date; render(); };
   const setValue = (date: string) => { if (scope.destroyed || date && !isDateInRange(date)) return; value = date; if (date) month = date; render(); };
-  const setCalendar = (system: CalendarSystem) => { if (scope.destroyed || calendar === system) return; calendar = system; month = value || month; render(undefined, host.contains(document.activeElement) ? 'system' : undefined); emit(root, { calendar }); options.onCalendarChange?.(calendar); };
-  scope.listen(systemGroup, 'change', event => { const target = eventElement(event) as HTMLInputElement | null; if (target?.checked && !disabled() && !readonly()) setCalendar(target.value as CalendarSystem); });
+  const setCalendar = (system: CalendarSystem) => { if (scope.destroyed || calendar === system) return; calendar = system; month = value || month; render(); emit(root, { calendar }); options.onCalendarChange?.(calendar); };
   scope.listen(host, 'click', event => {
     const target = eventElement(event)?.closest<HTMLElement>('button'); if (!target || isDisabled(target)) return;
     if (target.dataset.hwDate) select(target.dataset.hwDate);
@@ -173,13 +173,24 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
       if (!selectable(candidate)) return; month = candidate; focused = candidate; render(candidate);
     } catch (error) { if (!(error instanceof RangeError)) throw error; }
   });
-  const form = root.closest('form'); if (form) scope.listen(form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { value = isDateInRange(initial, min, max) ? initial : ''; month = value || options.month; render(); } }));
+  // The calendar of a DatePicker is no control of the surrounding form; the picker resets it.
+  if (!pickerCalendars.has(root)) {
+    const resets = observeFormReset(hidden.name ? hidden : root, () => {
+      if (scope.destroyed) return; refreshBounds();
+      const target = isDateInRange(initial, min, max) ? initial : ''; const changed = value !== target;
+      value = target; month = value || options.month || root.dataset.hwMonth; focused = value; render();
+      if (changed) { emit(root, { value }); options.onValueChange?.(value); }
+    });
+    scope.add(() => resets.destroy());
+  }
   const Observer = document.defaultView?.MutationObserver; if (Observer) { const observer = new Observer(() => { if (!scope.destroyed) render(); }); observer.observe(root, { attributes: true, attributeFilter: ['data-hw-disabled', 'aria-disabled', 'data-hw-readonly', 'aria-readonly'] }); scope.add(() => observer.disconnect()); }
   render(); return { get value() { return value; }, get calendar() { return calendar; }, select, setValue, setMonth, setCalendar, destroy: () => scope.destroy() };
 }
 
 /** Text the date picker places on the elements it creates. Each is also read from `data-hw-<kebab-name>` on the root. */
 export interface DatePickerTexts extends Omit<CalendarTexts, 'label'> {
+  /** Accessible name of the Gregorian / Hijri switch that the picker renders in its dialog. */
+  calendarSystemLabel?: string; gregorianLabel?: string; hijriLabel?: string;
   /** Dialog title and accessible name of the calendar, unless the dialog is named in markup. */
   calendarLabel?: string;
   /** Accessible name of the trigger, unless the trigger has its own aria-label or text. */
@@ -216,10 +227,41 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
   if (control && control === trigger.parentElement && control !== root) { remember(scope, control, ['class']); control.classList.add('hw-date-picker-control'); }
   input.setAttribute('aria-haspopup', 'dialog'); input.setAttribute('aria-controls', dialogId); input.removeAttribute('aria-expanded'); trigger.setAttribute('aria-expanded', 'false');
   scope.add(() => { input.setCustomValidity(validity); input.value = originalValue; });
-  const display = root.ownerDocument.createElement('output'); display.className = 'hw-sr-only hw-date-picker-value'; display.dataset.hwDateDisplay = ''; display.setAttribute('aria-live', 'polite');
+  const display = root.ownerDocument.createElement('output'); display.className = 'hw-sr-only hw-date-picker-value'; display.dataset.hwDateDisplay = ''; display.setAttribute('aria-live', 'polite'); display.setAttribute('aria-atomic', 'true'); if (input.id) display.setAttribute('for', input.id);
   root.append(display); scope.add(() => display.remove());
   const displayId = ensureId(scope, display, 'date-display');
-  input.setAttribute('aria-describedby', [...new Set((input.getAttribute('aria-describedby') || '').split(/\s+/u).filter(Boolean).concat(displayId))].join(' '));
+  // aria-describedby: the application's ids, the formatted date while it shows one, the authored hint and error ids, the produced message.
+  const authoredIds = [...new Set((input.getAttribute('aria-describedby') || '').split(/\s+/u).filter(Boolean))];
+  const fieldPart = (id: string) => { const node = input.ownerDocument.getElementById(id); return !!node && root.contains(node) && node.matches('.hw-hint, .hw-error, [data-hw-error]'); };
+  // The message the picker produces: written into an authored [data-hw-error], else into a p.hw-error it creates after the hint.
+  const slot = root.querySelector<HTMLElement>('[data-hw-error]'); const slotContent = slot ? [...slot.childNodes] : []; const slotRole = slot?.getAttribute('role') ?? null;
+  const applicationError = [...root.querySelectorAll<HTMLElement>('.hw-error')].find(node => node !== slot && hasText(node.textContent));
+  let created: HTMLElement | undefined; let messageId = ''; let shownMessage = '';
+  if (slot) { remember(scope, slot, ['role', 'id']); scope.add(() => slot.replaceChildren(...slotContent)); }
+  scope.add(() => created?.remove());
+  const showMessage = (message?: string) => {
+    if (applicationError) return;
+    if (message === undefined) {
+      if (!messageId) return;
+      if (slot) { slot.replaceChildren(...slotContent); if (slotRole === null) slot.removeAttribute('role'); else slot.setAttribute('role', slotRole); } else { created?.remove(); created = undefined; }
+      messageId = ''; shownMessage = ''; return;
+    }
+    let target = slot ?? created;
+    if (!target) {
+      target = created = input.ownerDocument.createElement('p'); target.className = 'hw-error';
+      const hint = root.querySelector('.hw-hint'); if (hint) hint.after(target); else root.append(target);
+    }
+    if (!target.id) target.id = input.id && !input.ownerDocument.getElementById(`${input.id}-error`) ? `${input.id}-error` : ensureId(scope, target, 'date-error');
+    target.setAttribute('role', 'alert'); messageId = target.id;
+    if (shownMessage !== message) { shownMessage = message; appendDateMessage(target, message); }
+  };
+  const describe = (formatted: boolean) => {
+    const ids = [...authoredIds.filter(id => !fieldPart(id)), ...(formatted ? [displayId] : []), ...authoredIds.filter(fieldPart), ...(messageId ? [messageId] : [])];
+    const next = [...new Set(ids)].join(' ');
+    if (next) input.setAttribute('aria-describedby', next); else input.removeAttribute('aria-describedby');
+  };
+  // A failed submission marks the field until it is valid again or the form resets.
+  let failed = false; scope.listen(input, 'invalid', () => { failed = true; validate(); });
   remember(scope, dialog, ['aria-label']); remember(scope, host, ['aria-labelledby']);
   if (!named(dialog)) writeText(dialog, 'aria-label', 'DatePicker', 'calendarLabel', say('calendarLabel'));
   else if (!named(host) && dialog.hasAttribute('aria-labelledby')) host.setAttribute('aria-labelledby', dialog.getAttribute('aria-labelledby')!);
@@ -228,18 +270,27 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
   const modal = createDialog(dialog); scope.add(() => modal.destroy());
   const system = options.calendar ?? (root.dataset.hwCalendar === 'islamic-umalqura' ? 'islamic-umalqura' : 'gregory');
   const blocked = () => isDisabled(input) || input.readOnly;
+  // The Gregorian / Hijri switch belongs to the picker: directly before the calendar root in the dialog body.
+  const optionsRow = input.ownerDocument.createElement('div'); optionsRow.className = 'hw-calendar-options';
+  const systemGroup = input.ownerDocument.createElement('div'); systemGroup.className = 'hw-calendar-system hw-calendar-switch'; systemGroup.setAttribute('role', 'radiogroup'); writeText(systemGroup, 'aria-label', 'DatePicker', 'calendarSystemLabel', say('calendarSystemLabel'));
+  for (const [id, name] of [['gregory', 'gregorianLabel'], ['islamic-umalqura', 'hijriLabel']] as const) {
+    const label = input.ownerDocument.createElement('label'); const radio = input.ownerDocument.createElement('input'); radio.type = 'radio'; radio.name = `${dialogId}-system`; radio.setAttribute('form', ''); radio.value = id; radio.dataset.hwCalendarSystem = ''; const caption = input.ownerDocument.createElement('span'); writeContent(caption, 'DatePicker', name, say(name)); label.append(radio, caption); systemGroup.append(label);
+  }
+  optionsRow.append(systemGroup); host.before(optionsRow); scope.add(() => optionsRow.remove());
+  const syncSystem = () => { systemGroup.dataset.calendar = calendar.calendar; systemGroup.querySelectorAll<HTMLInputElement>('input').forEach(radio => { radio.checked = radio.value === calendar.calendar; radio.disabled = blocked(); }); };
+  scope.listen(systemGroup, 'change', event => { const target = eventElement(event) as HTMLInputElement | null; if (target?.checked && !blocked()) calendar.setCalendar(target.value as CalendarSystem); });
   const validate = () => {
-    const supported = !draft || isDateInRange(draft, input.min || undefined, input.max || undefined) && isCalendarDateSupported(draft, calendar.calendar) && !options.isDateDisabled?.(draft);
-    const unsupportedRange = draft && isDateInRange(draft) && calendar.calendar === 'islamic-umalqura' && !isCalendarDateSupported(draft, calendar.calendar);
-    const unavailable = draft && options.isDateDisabled && isDateInRange(draft, input.min || undefined, input.max || undefined) && isCalendarDateSupported(draft, calendar.calendar) && options.isDateDisabled(draft);
-    input.setCustomValidity(supported ? validity : unsupportedRange ? validityMessage('DatePicker', 'unsupportedMessage', say('unsupportedMessage')) : unavailable ? validityMessage('DatePicker', 'unavailableMessage', say('unavailableMessage'), 'isDateDisabled is given') : validityMessage('DatePicker', 'invalidMessage', say('invalidMessage')));
-    if (!supported) input.setAttribute('aria-invalid', 'true'); else if (originalInvalid === null) input.removeAttribute('aria-invalid'); else input.setAttribute('aria-invalid', originalInvalid);
-    trigger.disabled = blocked(); synchronizeSubmission();
-    display.hidden = !value;
-    if (!value) display.textContent = '';
-    else if (isCalendarDateSupported(value, calendar.calendar)) display.textContent = locale === undefined ? '' : formatCalendarDate(value, { locale, calendar: calendar.calendar });
-    else display.textContent = (calendar.calendar === 'islamic-umalqura' ? say('unsupportedMessage') : say('invalidMessage')) ?? '';
-    appendDateMessage(display, display.textContent || '');
+    const violation = getDateViolation(draft, { min: input.min || undefined, max: input.max || undefined, calendar: calendar.calendar, isDateDisabled: options.isDateDisabled });
+    const supported = violation === '';
+    const message = violation === 'unsupported' ? say('unsupportedMessage') : violation === 'unavailable' ? say('unavailableMessage') : violation === 'invalid' ? say('invalidMessage') : undefined;
+    input.setCustomValidity(violation === '' ? validity : violation === 'unsupported' ? validityMessage('DatePicker', 'unsupportedMessage', message) : violation === 'unavailable' ? validityMessage('DatePicker', 'unavailableMessage', message, 'isDateDisabled is given') : validityMessage('DatePicker', 'invalidMessage', message));
+    if (failed && input.validity.valid) failed = false;
+    showMessage(violation !== '' && hasText(message) ? message : undefined);
+    if (!supported || failed) input.setAttribute('aria-invalid', 'true'); else if (originalInvalid === null) input.removeAttribute('aria-invalid'); else input.setAttribute('aria-invalid', originalInvalid);
+    trigger.disabled = blocked(); synchronizeSubmission(); syncSystem();
+    const formatted = value && locale !== undefined && isCalendarDateSupported(value, calendar.calendar) ? formatCalendarDate(value, { locale, calendar: calendar.calendar, dateStyle: 'full' }) : '';
+    display.hidden = !formatted; if (display.textContent !== formatted) display.textContent = formatted;
+    describe(!!formatted);
     renderedValue = !editing && draft && supported && locale !== undefined ? formatCalendarDate(draft, { locale, calendar: calendar.calendar, dateStyle: 'medium' }) : draft;
     input.value = renderedValue;
     presence.refresh();
@@ -248,7 +299,7 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
   const calendar = createCalendar(host, {
     value, get min() { return input.min || undefined; }, get max() { return input.max || undefined; }, locale, calendar: system, isDateDisabled: options.isDateDisabled, getDayLabel: options.getDayLabel,
     get label() { return dialog.getAttribute('aria-label') ?? undefined; }, get previousLabel() { return say('previousLabel'); }, get nextLabel() { return say('nextLabel'); }, get unsupportedMessage() { return say('unsupportedMessage'); },
-    get calendarSystemLabel() { return say('calendarSystemLabel'); }, get gregorianLabel() { return say('gregorianLabel'); }, get hijriLabel() { return say('hijriLabel'); }, get rangeLabel() { return say('rangeLabel'); },
+    get rangeLabel() { return say('rangeLabel'); },
     onSelect(date) { if (blocked() || !isDateInRange(date, input.min || undefined, input.max || undefined)) return; input.value = date; nativeChange(input); modal.close(); },
     onCalendarChange(next) { validate(); emit(root, { calendar: next }); options.onCalendarChange?.(next); },
   });
@@ -263,7 +314,7 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
     validate();
     if (lastNotifiedValue !== value) { lastNotifiedValue = value; emit(root, { value }); options.onValueChange?.(value); }
   };
-  const show = (origin: HTMLElement = trigger) => { if (scope.destroyed || blocked()) return; calendar.setValue(value); modal.show(origin); trigger.setAttribute('aria-expanded', 'true'); };
+  const show = (origin: HTMLElement = trigger) => { if (scope.destroyed || blocked()) return; calendar.setValue(value); modal.show(origin); trigger.setAttribute('aria-expanded', 'true'); host.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')?.focus(); };
   scope.listen(trigger, 'click', event => { event.preventDefault(); show(); });
   scope.listen(input, 'keydown', event => { const key = event as KeyboardEvent; if (!key.defaultPrevented && !key.isComposing && !key.ctrlKey && !key.metaKey && !key.shiftKey && key.key === 'ArrowDown' && !blocked()) { key.preventDefault(); show(input); } });
   scope.listen(dialog, 'click', event => { if (eventElement(event)?.closest('[data-hw-date-close]')) { event.preventDefault(); modal.close(); } });
@@ -271,7 +322,13 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
   scope.listen(input, 'input', acceptDraft); scope.listen(input, 'change', acceptDraft);
   scope.listen(input, 'focus', () => { if (!blocked()) { editing = true; validate(); input.select(); } });
   scope.listen(input, 'blur', () => { editing = false; validate(); });
-  if (input.form) scope.listen(input.form, 'reset', event => queueMicrotask(() => { if (!scope.destroyed && !event.defaultPrevented) { draft = input.defaultValue; value = isDateInRange(draft) ? draft : ''; lastNotifiedValue = value; calendar.setValue(value); validate(); modal.close(); } }));
+  const resets = observeFormReset(input, () => {
+    if (scope.destroyed) return;
+    draft = input.defaultValue; value = isDateInRange(draft) ? draft : ''; failed = false;
+    calendar.setValue(value); validate(); modal.close();
+    if (lastNotifiedValue !== value) { lastNotifiedValue = value; emit(root, { value }); options.onValueChange?.(value); }
+  });
+  scope.add(() => resets.destroy());
   const Observer = input.ownerDocument.defaultView?.MutationObserver;
   if (Observer) {
     const observer = new Observer(records => {

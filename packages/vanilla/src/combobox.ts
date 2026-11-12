@@ -1,4 +1,4 @@
-import { observeFieldValue, createCleanup, requireText, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox } from '@hawiyah/core';
+import { observeFieldValue, observeFormReset, createCleanup, requireText, createComboboxState, getComboboxOptions, isDisabled, transitionCombobox } from '@hawiyah/core';
 import type { ComboboxEvent, Option } from '@hawiyah/core';
 import { emit, ensureId, eventElement, nativeChange, remember, required, templated, text, validityMessage } from './dom.js';
 
@@ -9,6 +9,10 @@ export interface ComboboxOptions {
   getResultsMessage?: (count: number) => string;
   /** Custom validity message while a required combobox has no selected option (data-hw-required-message). Required when the input is required. */
   requiredMessage?: string;
+  /** Called with the new open state whenever the popup opens or closes (also as hw:change detail {open}). */
+  onOpenChange?: (open: boolean) => void;
+  /** Called with the input text for every accepted input event (also as hw:change detail {query}). */
+  onQueryChange?: (query: string) => void;
 }
 
 export interface ComboboxController {
@@ -50,7 +54,10 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
   status.setAttribute('aria-atomic', 'true');
-  remember(scope, input, ['role', 'aria-autocomplete', 'aria-expanded', 'aria-controls', 'aria-activedescendant', 'aria-readonly', 'autocomplete']);
+  remember(scope, input, ['role', 'aria-autocomplete', 'aria-expanded', 'aria-controls', 'aria-activedescendant', 'aria-readonly', 'autocomplete', 'aria-invalid']);
+  // A failed submission marks the input invalid until its validity is valid again or the form resets.
+  const authoredInvalid = input.getAttribute('aria-invalid'); let failed = false;
+  const applyInvalid = () => { if (failed) input.setAttribute('aria-invalid', 'true'); else if (authoredInvalid === null) input.removeAttribute('aria-invalid'); else input.setAttribute('aria-invalid', authoredInvalid); };
   remember(scope, list, ['role', 'hidden', 'aria-label', 'aria-labelledby']);
   const originalInputValue = input.value;
   const originalHiddenValue = hidden?.value;
@@ -100,6 +107,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     input.setCustomValidity(input.required && !state.value && !isDisabled(input)
       ? validityMessage('Combobox', 'requiredMessage', text(root, 'requiredMessage', options.requiredMessage), 'required is set')
       : originalCustomValidity);
+    if (failed && input.validity.valid) { failed = false; applyInvalid(); }
     input.setAttribute('aria-expanded', String(state.open));
     list.hidden = !state.open;
     let activeNode: HTMLElement | undefined;
@@ -125,9 +133,10 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
   const send = (event: ComboboxEvent) => {
     if (scope.destroyed) return;
     refreshDisabled();
-    const previousValue = state.value;
+    const previousValue = state.value; const previousOpen = state.open;
     state = transitionCombobox(state, event, items);
     render(event.type === 'input' || event.type === 'open');
+    if (previousOpen !== state.open) { emit(root, { open: state.open }); options.onOpenChange?.(state.open); }
     if (previousValue !== state.value) {
       if (hidden) nativeChange(hidden);
       emit(root, { value: state.value, label: state.value ? state.query : '' });
@@ -138,14 +147,15 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
   const show = () => { if (canOpen()) send({ type: 'open' }); };
   const close = () => send({ type: 'close' });
   const select = (value: string) => { if (canOpen()) send({ type: 'select', value }); };
+  const query = () => { const text = input.value; send({ type: 'input', query: text }); if (!scope.destroyed) { emit(root, { query: text }); options.onQueryChange?.(text); } };
   scope.listen(input, 'input', event => {
     if (!canOpen()) { render(); return; }
-    if (!composing && !(event as InputEvent).isComposing && canOpen()) send({ type: 'input', query: input.value });
+    if (!composing && !(event as InputEvent).isComposing && canOpen()) query();
   });
   scope.listen(input, 'compositionstart', () => { composing = true; });
   scope.listen(input, 'compositionend', () => {
     composing = false;
-    if (canOpen()) send({ type: 'input', query: input.value }); else render();
+    if (canOpen()) query(); else render();
   });
   scope.listen(input, 'click', () => { if (!state.open) show(); });
   scope.listen(input, 'keydown', event => {
@@ -182,10 +192,9 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     const target = event.target as Node | null;
     if (!target || !root.contains(target)) close();
   });
-  if (input.form) scope.listen(input.form, 'reset', event => {
-    // Run after the native reset; preventDefault must still be respected.
-    queueMicrotask(() => { if (!event.defaultPrevented) send({ type: 'reset', value: initialValue }); });
-  });
+  scope.listen(input, 'invalid', () => { failed = true; applyInvalid(); });
+  const reset = observeFormReset(input, () => { failed = false; applyInvalid(); send({ type: 'reset', value: initialValue }); });
+  scope.add(() => reset.destroy());
   const Observer = input.ownerDocument.defaultView?.MutationObserver;
   if (Observer) {
     const observer = new Observer(() => {

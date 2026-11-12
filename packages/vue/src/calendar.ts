@@ -12,6 +12,7 @@ import type { PropType } from "vue";
 import {
   formatCalendarDate,
   getCalendarMonth,
+  getDateViolation,
   getDirection,
   hasText,
   isDateInRange,
@@ -101,6 +102,8 @@ export const Calendar = defineComponent({
           (day) => day.value === focused.value && !blocked(day.value),
         )?.value ??
         page.value.days.find((day) => day.selected && !blocked(day.value))
+          ?.value ??
+        page.value.days.find((day) => day.today && !blocked(day.value))
           ?.value ??
         page.value.days.find((day) => !day.outside && !blocked(day.value))
           ?.value ??
@@ -217,6 +220,7 @@ export const Calendar = defineComponent({
     return () => {
       // No built-in locale: without the application's locale nothing that Intl would produce is rendered (no toolbar, weekdays or grid).
       if (!needText("Calendar", "locale", props.locale)) return h("div", mergeProps(attrs, { class: "hw-calendar" }), [h("input", { ref: hidden, type: "hidden", name: attrs.name, form: attrs.form, value: model.value.value, disabled: props.disabled })]);
+      const unsupportedText = props.calendar === "islamic-umalqura" ? needText("Calendar", "unsupportedMessage", props.unsupportedMessage, "calendar is 'islamic-umalqura'") : undefined;
       const monthStart = page.value.days.find((day) => !day.outside)?.value;
       const previousAllowed =
         page.value.previous !== monthStart &&
@@ -273,12 +277,10 @@ export const Calendar = defineComponent({
             () => optionalText(props.nextLabel),
           ),
         ]),
-        model.value.value &&
-          !isCalendarDateSupported(model.value.value, props.calendar) &&
-          h("p", { role: "status", class: "hw-sr-only" }, dateMessage(needText("Calendar", "unsupportedMessage", props.unsupportedMessage, "calendar is 'islamic-umalqura'") ?? "")),
         h(
           "table",
           {
+            class: "hw-calendar-grid",
             role: "grid",
             "aria-label": rootLabel("Calendar", props.label, attrs),
             "aria-readonly": props.readonly || undefined,
@@ -362,6 +364,8 @@ export const Calendar = defineComponent({
             ),
           ],
         ),
+        // One status element from the first render, so a later message is announced and a month change repeats nothing.
+        h("p", { role: "status", class: "hw-sr-only" }, unsupportedText && model.value.value && !isCalendarDateSupported(model.value.value, props.calendar) ? dateMessage(unsupportedText) : undefined),
       ]);
     };
   },
@@ -435,13 +439,10 @@ export const DatePicker = defineComponent({
         ? formatCalendarDate(value, { locale: props.locale, calendar: calendarSystem.value.value, dateStyle: "full" })
         : "";
     });
+    // One violation order in the four adapters (core getDateViolation).
     const validationProblem = computed((): "invalidMessage" | "unsupportedMessage" | "unavailableMessage" | "" => {
-      const value = draft.value;
-      if (!value) return "";
-      if (!isDateInRange(value)) return "invalidMessage";
-      if (!isCalendarDateSupported(value, calendarSystem.value.value)) return calendarSystem.value.value === "islamic-umalqura" ? "unsupportedMessage" : "invalidMessage";
-      if (!isDateInRange(value, minimum.value, maximum.value)) return "invalidMessage";
-      return props.isDateDisabled?.(value) ? "unavailableMessage" : "";
+      const violation = getDateViolation(draft.value, { min: props.min, max: props.max, calendar: calendarSystem.value.value, isDateDisabled: props.isDateDisabled });
+      return violation ? `${violation}Message` : "";
     });
     // The application supplies every message. A missing one still blocks submission (a single-space custom validity).
     const validationText = computed(() => validationProblem.value ? needText("DatePicker", validationProblem.value, props[validationProblem.value], validationProblem.value === "unavailableMessage" ? "isDateDisabled is given" : undefined) : undefined);
@@ -449,13 +450,22 @@ export const DatePicker = defineComponent({
     watchEffect(() =>
       element.value?.setCustomValidity(validationMessage.value),
     );
+    // A failed submission (the input's invalid event) marks the input until it is valid again or the form resets.
+    const failed = ref(false);
+    watch([validationMessage, draft], () => {
+      if (failed.value && element.value?.validity.valid) failed.value = false;
+    }, { flush: "post" });
+    const shown = computed(() => !editing.value && draft.value && !validationMessage.value && hasText(props.locale) && isCalendarDateSupported(draft.value, calendarSystem.value.value) ? formatCalendarDate(draft.value, { locale: props.locale, calendar: calendarSystem.value.value, dateStyle: "medium" }) : draft.value);
     useFormReset(element, () => {
       model.set(props.defaultValue);
       draft.value = props.modelValue ?? props.defaultValue;
+      editing.value = false;
+      failed.value = false;
       open.value = false;
-    });
+    }, () => { if (element.value) element.value.value = shown.value; });
     expose({ element, focus: () => element.value?.focus() });
     return () => (needText("DatePicker", "locale", props.locale),
+      props.isDateDisabled && needText("DatePicker", "unavailableMessage", props.unavailableMessage, "isDateDisabled is given"),
       decorate(
         {...props, label: optionalText(attrs['aria-label']) || optionalText(attrs['aria-labelledby']) || (!props.label && field.controlAttrs.value['aria-labelledby']) ? optionalText(props.label) : needText("DatePicker", "label", props.label)},
         field.id.value,
@@ -471,20 +481,21 @@ export const DatePicker = defineComponent({
                 "aria-haspopup": "dialog",
                 "aria-controls": `${field.id.value}-dialog`,
                 class: "hw-input",
-                value: !editing.value && draft.value && !validationMessage.value && hasText(props.locale) && isCalendarDateSupported(draft.value, calendarSystem.value.value) ? formatCalendarDate(draft.value, { locale: props.locale, calendar: calendarSystem.value.value, dateStyle: "medium" }) : draft.value,
+                value: shown.value,
                 min: minimum.value,
                 max: maximum.value,
                 disabled: props.disabled,
                 readonly: props.readonly,
-                "aria-invalid": validationMessage.value
+                "aria-invalid": props.error || failed.value || validationMessage.value
                   ? true
                   : field.controlAttrs.value["aria-invalid"],
                 "aria-describedby": joinIds(
-                  field.controlAttrs.value["aria-describedby"],
+                  attrs["aria-describedby"],
                   formattedDate.value && `${field.id.value}-formatted`,
-                  validationText.value &&
-                    `${field.id.value}-validation-error`,
+                  field.controlAttrs.value["aria-describedby"],
+                  !props.error && validationText.value && `${field.id.value}-error`,
                 ),
+                onInvalid: () => { failed.value = true; },
                 onKeydown: (event: KeyboardEvent) => {
                   if (!event.defaultPrevented && !event.isComposing && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key === "ArrowDown" && !blocked()) { event.preventDefault(); show(); }
                 },
@@ -519,16 +530,6 @@ export const DatePicker = defineComponent({
             "aria-atomic": "true",
             hidden: !formattedDate.value,
           }, formattedDate.value),
-          validationText.value &&
-            h(
-              "p",
-              {
-                id: `${field.id.value}-validation-error`,
-                class: "hw-error",
-                role: "alert",
-              },
-              dateMessage(validationText.value),
-            ),
           h(
             Dialog,
             {
@@ -556,6 +557,8 @@ export const DatePicker = defineComponent({
                     ? model.value.value
                     : props.month,
                 label: props.calendarLabel as string,
+                // Not a control of the surrounding form: only the picker resets it.
+                form: "",
                 ref: calendar,
                 modelValue: model.value.value,
                 "onUpdate:modelValue": (value: string) => {
@@ -565,6 +568,9 @@ export const DatePicker = defineComponent({
             ],
           ),
         ]),
+        undefined,
+        field.id.value,
+        props.error || !validationText.value ? undefined : dateMessage(validationText.value),
       ));
   },
 });

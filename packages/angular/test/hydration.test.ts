@@ -119,4 +119,57 @@ describe('Angular hydration of server-rendered components', () => {
     expect(panels.every((panel, index) => panel.id === tabs[index]!.getAttribute('aria-controls') && panel.getAttribute('aria-labelledby') === tabs[index]!.id)).toBe(true);
     expect(errors).toEqual([]);
   });
+
+  // Server markup and hydrated markup of the same host, without Angular's comment anchors and hydration markers and
+  // without the value-presence attribute that the browser adds after the first render.
+  const plain = (html: string) => html.replace(/<!--.*?-->/gs, '').replace(/ (?:ngh|data-hw-filled)="[^"]*"/g, '');
+  for (const name of ['forwarded aria attributes', 'field with Hawiyah controls', 'select with projected options', 'checkbox and switch with submitted value and projected label', 'slider and range slider with formatted values', 'toggle group with hint, error and required', 'combobox open and password visible', 'required rich inputs before any submission', 'file upload and dropzone with projected content']) {
+    it(`[ATTR-05][SSR-01][SELECT-04][STATE-05][RICH-04] the first client render of ${name} is the server markup`, async () => {
+      const page = pages.find(entry => entry.name === name)!;
+      const server = plain(/<ssr-host[^>]*>(.*)<\/ssr-host>/s.exec(page.html)![1]!);
+      const { host, before } = await hydrate(scenarios.find(scenario => scenario.name === name)!);
+      expect(errors).toEqual([]); expect(before.filter(element => !element.isConnected)).toEqual([]);
+      expect(plain(host.innerHTML)).toBe(server);
+      for (const wrapper of host.querySelectorAll('hw-text-field, hw-textarea, hw-select, hw-checkbox, hw-switch, hw-radio-group, hw-number-field, hw-slider, hw-range-slider, hw-rating, hw-toggle-group, hw-combobox, hw-password-field, hw-search-field, hw-pin-input, hw-tag-input, hw-multi-select, hw-file-upload, hw-file-dropzone, hw-field')) for (const attribute of ['aria-label', 'aria-labelledby', 'aria-describedby', 'aria-invalid']) expect(wrapper.hasAttribute(attribute), `${wrapper.localName} ${attribute}`).toBe(false);
+    });
+  }
+
+  // Milestone 3: dates, overlays, disclosure, data, navigation, menus and shell.
+  for (const name of ['calendar and date picker with predicate, status and names', 'tables with cell templates', 'named roots, menu links and tree toggles', 'portal header open, brand without a link and page header level', 'dialog and drawer, closed and open', 'tooltip, popover and menu', 'accordion and collapsible', 'service content, feedback and consent']) {
+    it(`[ATTR-05][SSR-01][SSR-02][SSR-03][SSR-04][STATE-05][RICH-04] the first client render of ${name} is the server markup`, async () => {
+      const page = pages.find(entry => entry.name === name)!;
+      const server = plain(/<ssr-host[^>]*>(.*)<\/ssr-host>/s.exec(page.html)![1]!);
+      const { host, before, serverIds } = await hydrate(scenarios.find(scenario => scenario.name === name)!);
+      expect(errors).toEqual([]); expect(before.filter(element => !element.isConnected)).toEqual([]);
+      // What only a browser does after hydration is not part of the comparison: a dialog bound open is shown, and the
+      // accordion motion exposes its state on the summary, takes collapsed content out of reach and coordinates an
+      // exclusive group itself, in place of the native name attribute.
+      const grouped = (html: string) => html.replace(/(<details[^>]*?) name="[^"]*"/g, '$1');
+      const settled = plain(host.innerHTML).replace(/(<dialog[^>]*?) open=""/g, '$1').replace(/ data-hw-expanded="[^"]*"| inert="" aria-hidden="true"|(?<=<summary class="hw-accordion-trigger") aria-expanded="[^"]*"/g, '');
+      expect(grouped(settled)).toBe(grouped(server)); expect([...host.querySelectorAll('[id]')].map(element => element.id)).toEqual(serverIds);
+      for (const wrapper of host.querySelectorAll('hw-calendar, hw-date-picker, hw-table, hw-data-table, hw-dialog, hw-drawer, hw-popover, hw-menu, hw-tabs, hw-secondary-nav, hw-tree-view, hw-content-navigation, hw-carousel, hw-accordion, hw-breadcrumb, hw-pagination, hw-stepper, hw-tooltip')) for (const attribute of ['aria-label', 'aria-labelledby', 'aria-describedby', 'aria-invalid']) expect(wrapper.hasAttribute(attribute), `${wrapper.localName} ${attribute}`).toBe(false);
+    });
+  }
+
+  it('[SSR-02][TREE-04][TOOLTIP-03] a hydrated tree toggles through its button and a hydrated tooltip opens on focus', async () => {
+    const { host } = await hydrate(scenarios.find(scenario => scenario.name === 'named roots, menu links and tree toggles')!);
+    const tree = host.querySelector('hw-tree-view')!, branch = tree.querySelector<HTMLElement>('li[data-node="a"]')!;
+    expect(tree.querySelectorAll('li[role=treeitem]')).toHaveLength(5); expect(document.getElementById(branch.getAttribute('aria-labelledby')!)!.textContent).toBe('Services');
+    branch.querySelector<HTMLButtonElement>('button.hw-tree-toggle')!.click(); await application!.whenStable();
+    expect(branch.getAttribute('aria-expanded')).toBe('false'); expect(tree.querySelectorAll('li[role=treeitem]')).toHaveLength(2); expect(branch.querySelector('button')!.getAttribute('aria-label')).toBe('Expand Services');
+    expect(errors).toEqual([]);
+    application!.destroy(); application = undefined;
+    const tips = await hydrate(scenarios.find(scenario => scenario.name === 'tooltip, popover and menu')!);
+    const trigger = tips.host.querySelector<HTMLButtonElement>('hw-tooltip button[hwTooltipTrigger]')!, tooltip = tips.host.querySelector<HTMLElement>('hw-tooltip [role=tooltip]')!;
+    expect(trigger.getAttribute('aria-describedby')).toBe(`more ${tooltip.id}`); expect(tooltip.hidden).toBe(true);
+    trigger.focus(); await application!.whenStable(); expect(tooltip.hidden).toBe(false); expect(errors).toEqual([]);
+  });
+
+  it('[SELECT-04][RESET-01] a hydrated select shows its bound projected option, and hydrated controls answer a native reset', async () => {
+    const { host } = await hydrate(scenarios.find(scenario => scenario.name === 'select with projected options')!);
+    const select = host.querySelector<HTMLSelectElement>('select')!;
+    expect(select.value).toBe('abha'); expect([...select.options].map(option => option.value)).toEqual(['riyadh', 'jeddah', 'dammam', 'abha', 'tabuk']);
+    select.value = 'tabuk'; select.dispatchEvent(new Event('change', { bubbles: true })); await application!.whenStable(); expect(select.value).toBe('tabuk');
+    expect(errors).toEqual([]);
+  });
 });

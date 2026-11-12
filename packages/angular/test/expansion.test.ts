@@ -241,7 +241,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('skips disabled menu items, invokes an action, and returns focus', () => {
-    const fixture = TestBed.createComponent(HwMenuComponent); supplyText(fixture, text.popover); fixture.componentRef.setInput('label', 'Actions'); fixture.componentRef.setInput('items', [{id: 'first', label: 'First'}, {id: 'blocked', label: 'Blocked', disabled: true}, {id: 'last', label: 'Last'}]); fixture.detectChanges();
+    const fixture = TestBed.createComponent(HwMenuComponent); supplyText(fixture, text.popover); fixture.componentRef.setInput('label', 'Actions'); fixture.componentRef.setInput('items', [{value: 'first', label: 'First'}, {value: 'blocked', label: 'Blocked', disabled: true}, {value: 'last', label: 'Last'}]); fixture.detectChanges();
     const trigger = fixture.nativeElement.querySelector('button') as HTMLButtonElement; trigger.click(); fixture.detectChanges();
     expect(document.activeElement?.textContent).toBe('First');
     key(document.activeElement!, 'ArrowDown'); fixture.detectChanges();
@@ -252,7 +252,7 @@ describe('Angular expansion behavior', () => {
   });
 
   it('expands RTL trees, skips disabled children and supports keyboard selection', () => {
-    const fixture = TestBed.createComponent(HwTreeViewComponent); fixture.componentRef.setInput('label', 'Services'); fixture.componentRef.setInput('direction', 'rtl'); fixture.componentRef.setInput('nodes', [{id: 'parent', label: 'Parent', children: [{id: 'blocked', label: 'Blocked', disabled: true}, {id: 'child', label: 'Child'}]}]); fixture.detectChanges();
+    const fixture = TestBed.createComponent(HwTreeViewComponent); supplyText(fixture, text.treeView); fixture.componentRef.setInput('label', 'Services'); fixture.componentRef.setInput('direction', 'rtl'); fixture.componentRef.setInput('items', [{id: 'parent', label: 'Parent', children: [{id: 'blocked', label: 'Blocked', disabled: true}, {id: 'child', label: 'Child'}]}]); fixture.detectChanges();
     const parent = fixture.nativeElement.querySelector('[role="treeitem"]') as HTMLElement; parent.focus(); key(parent, 'ArrowLeft'); fixture.detectChanges();
     expect(parent.getAttribute('aria-expanded')).toBe('true'); key(parent, 'ArrowLeft'); fixture.detectChanges();
     expect(document.activeElement?.getAttribute('data-node')).toBe('child'); key(document.activeElement!, ' '); fixture.detectChanges();

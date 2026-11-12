@@ -1,4 +1,4 @@
-import { createCleanup, requireText, getNextEnabledIndex, isDisabled, normalizeSearch, restoreFocus, prepareToastDismissFocus } from '@hawiyah/core';
+import { createCleanup, createTypeahead, requireText, getNextEnabledIndex, isDisabled, isTypeaheadKey, restoreFocus, prepareToastDismissFocus } from '@hawiyah/core';
 import { createDialog, type DialogController, type DialogOptions } from './dialog.js';
 import { emit, ensureId, eventElement, named, remember, required, templated, text, writeText } from './dom.js';
 
@@ -28,17 +28,16 @@ export function createPopover(root: HTMLElement, options: PopoverOptions = {}): 
   return { get open() { return open; }, show, close, destroy() { if (scope.destroyed) return; if (open && panel.contains(root.ownerDocument.activeElement)) restoreFocus(trigger); scope.destroy(); } };
 }
 
-export interface MenuOptions { onSelect?: (value: string) => void }
+export interface MenuOptions { onAction?: (value: string) => void; onOpenChange?: (open: boolean) => void }
 export function createMenu(root: HTMLElement, options: MenuOptions = {}): PopoverController {
   const trigger = required<HTMLElement>(root, '[data-hw-trigger]'); const panel = required<HTMLElement>(root, '[data-hw-panel]');
   const items = [...panel.querySelectorAll<HTMLElement>('[role="menuitem"]')]; const scope = createCleanup();
   remember(scope, trigger, ['aria-haspopup']); remember(scope, panel, ['role']); trigger.setAttribute('aria-haspopup', 'menu'); panel.setAttribute('role', 'menu');
   items.forEach(item => { remember(scope, item, ['tabindex']); item.tabIndex = -1; });
-  const disclosure = createPopover(root);
+  const typeahead = createTypeahead(); scope.add(() => typeahead.reset());
+  const disclosure = createPopover(root, { onOpenChange: open => { if (!open) typeahead.reset(); options.onOpenChange?.(open); } });
   const focus = (index: number) => { if (index < 0) return; items.forEach((item, position) => { item.tabIndex = position === index ? 0 : -1; }); items[index]!.focus(); };
   const navigate = (current: number, key: string) => focus(getNextEnabledIndex(current, key, items.map(item => ({ disabled: isDisabled(item) })), 'ltr', 'vertical'));
-  let query = ''; let timer: ReturnType<typeof setTimeout> | undefined;
-  scope.add(() => { if (timer !== undefined) clearTimeout(timer); });
   scope.listen(trigger, 'keydown', event => { const key = event as KeyboardEvent; if (isDisabled(trigger) || key.altKey || key.ctrlKey || key.metaKey) return; if (['ArrowDown', 'ArrowUp'].includes(key.key)) { event.preventDefault(); disclosure.show(); navigate(-1, key.key); } });
   scope.listen(trigger, 'click', () => { if (disclosure.open) navigate(-1, 'ArrowDown'); });
   scope.listen(panel, 'keydown', event => {
@@ -47,12 +46,9 @@ export function createMenu(root: HTMLElement, options: MenuOptions = {}): Popove
     if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(key.key)) { event.preventDefault(); navigate(current, key.key); }
     else if ((key.key === 'Enter' || key.key === ' ') && current >= 0 && !isDisabled(items[current]!)) { event.preventDefault(); items[current]!.click(); }
     else if (key.key === 'Tab') disclosure.close();
-    else if (key.key.length === 1 && key.key !== ' ') {
-      query += normalizeSearch(key.key); if (timer !== undefined) clearTimeout(timer); timer = setTimeout(() => { query = ''; }, 500);
-      for (let offset = 1; offset <= items.length; offset++) { const index = (current + offset + items.length) % items.length; if (!isDisabled(items[index]!) && normalizeSearch(items[index]!.textContent || '').startsWith(query)) { event.preventDefault(); focus(index); break; } }
-    }
+    else if (isTypeaheadKey(key)) { const next = typeahead.next(key.key, items.map(item => item.textContent ?? ''), current, index => isDisabled(items[index]!)); if (next >= 0) { event.preventDefault(); focus(next); } }
   });
-  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; disclosure.close(true); emit(root, { value }); options.onSelect?.(value); });
+  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; disclosure.close(true); emit(root, { value }); options.onAction?.(value); });
   return { get open() { return disclosure.open; }, show() { disclosure.show(); navigate(-1, 'ArrowDown'); }, close: disclosure.close, destroy() { disclosure.destroy(); scope.destroy(); } };
 }
 

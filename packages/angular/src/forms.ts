@@ -5,7 +5,7 @@ import { HwTexts } from './text';
 import { InputValueSync } from './input-value';
 import { controlAria, controlFocus, fieldDescriptionIds, fieldEnd, fieldLabel, fieldLegend, groupFocus } from './field-templates';
 import { forwardedAriaHost } from './host-attributes';
-import { afterNextRender, booleanAttribute, ChangeDetectorRef, Component, DestroyRef, Directive, EventEmitter, forwardRef, HostListener, inject, InjectionToken, Input, Output, ViewChild, ElementRef, type AfterViewInit, type OnChanges, type OnInit, type SimpleChanges } from '@angular/core';
+import { afterNextRender, booleanAttribute, ChangeDetectorRef, Component, DestroyRef, Directive, EventEmitter, forwardRef, HostListener, inject, InjectionToken, Input, Output, ViewChild, ElementRef, type AfterViewInit, type DoCheck, type OnChanges, type OnInit, type SimpleChanges } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { createComboboxState, getComboboxOptions, isDisabled, observeFormReset, sameValue, transitionCombobox, type ComboboxEvent, type FormResetObserver, type Option } from '@hawiyah/core';
 
@@ -19,7 +19,7 @@ const copy = <T>(value: T): T => (Array.isArray(value) ? [...value] : value) as 
  * aria-label, aria-labelledby, aria-describedby and aria-invalid written on the host are inputs: they reach the
  * native control (the fieldset of a group) and are removed from the wrapper element. */
 @Directive({host: forwardedAriaHost})
-export abstract class HwValueControl<T> implements ControlValueAccessor, OnInit {
+export abstract class HwValueControl<T> implements ControlValueAccessor, OnInit, DoCheck {
   constructor() {
     observeAngularFieldPresence();
     // No listener on the server: the form is observed after the first render in a browser.
@@ -74,6 +74,15 @@ export abstract class HwValueControl<T> implements ControlValueAccessor, OnInit 
   get named(): boolean { return Boolean(this.ariaLabel || this.ariaLabelledby || this.field?.label); }
   /** The value held after the first inputs is what a native reset restores while no Angular Forms directive is attached. */
   ngOnInit(): void { this.initial = copy(this.value); }
+  private fieldState = '';
+  // The control reads the surrounding field while it renders, but is checked only when it is marked: a change of the
+  // field's id, label, descriptions, required or invalid state marks it. Runs in every pass of the parent view.
+  ngDoCheck(): void {
+    const field = this.field;
+    if (!field) return;
+    const state = [field.controlId, field.label, field.labelId, field.descriptionIds, field.required, field.invalid].join('\n');
+    if (state !== this.fieldState) { this.fieldState = state; this.changeDetector.markForCheck(); }
+  }
   writeValue(value: T): void { this.value = value; this.settle(); this.changeDetector.markForCheck(); }
   registerOnChange(fn: (value: T) => void): void { this.onChange = fn; this.formsBound = true; }
   registerOnTouched(fn: () => void): void { this.onTouched = fn; }
@@ -275,7 +284,8 @@ export class HwComboboxComponent extends HwValueControl<string> implements OnCha
   private syncValidity(): void {
     if (this.constrained) this.texts.need('requiredMessage', this.requiredMessage, 'required is set');
     setConstraintValidity(this.input?.nativeElement, this.constrained, this.requiredMessage);
-    if (this.submissionInvalid && this.input?.nativeElement.validity?.valid) this.submissionInvalid = false;
+    // The text of a new selection is rendered after this call, so the native required state of the input is not read here.
+    if (this.submissionInvalid && !this.constrained) this.submissionInvalid = false;
   }
   override writeValue(value: string): void { super.writeValue(value ?? ''); this.state = { ...createComboboxState(this.options, value ?? ''), open: this.state.open }; this.syncValidity(); }
   override setDisabledState(disabled: boolean): void { super.setDisabledState(disabled); if (disabled) this.dispatch({type: 'close'}, false); this.syncValidity(); }

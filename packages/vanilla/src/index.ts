@@ -41,9 +41,9 @@ export type { SearchFieldOptions, SearchFieldController } from './search-field.j
 export { createPasswordField, createRangeSlider, createRating, createPinInput, createTagInput, createMultiSelect, createFileDropzone, createPopover, createMenu, createDrawer, createToastRegion };
 export { createCalendar, createDatePicker };
 export { createToggleGroup, createFeedback, createCookieConsent, createTreeView, createCarousel, createDataTable };
-export type { ToggleGroupOptions, ToggleGroupController, FeedbackOptions, FeedbackController, ConsentChoice, CookieConsentOptions, CookieConsentController, TreeViewOptions, TreeViewController, CarouselOptions, CarouselController, SortDirection, DataTableOptions, DataTableController } from './content.js';
+export type { ToggleGroupOptions, ToggleGroupController, FeedbackOptions, FeedbackController, FeedbackValue, ConsentChoice, CookieConsentOptions, CookieConsentController, TreeViewOptions, TreeViewController, TreeViewNode, CarouselOptions, CarouselController, SortDirection, DataTableOptions, DataTableController } from './content.js';
 export type { CalendarOptions, CalendarController, DatePickerOptions, DatePickerController } from './calendar.js';
-export type { ValueController, PasswordFieldOptions, RangeSliderOptions, RatingOptions, PinInputOptions, TagInputOptions, MultiSelectOptions, FileDropzoneOptions } from './controls.js';
+export type { ValueController, PasswordFieldOptions, PasswordFieldController, RangeSliderOptions, RatingOptions, PinInputOptions, TagInputOptions, MultiSelectOptions, FileDropzoneOptions } from './controls.js';
 export type { PopoverOptions, PopoverController, MenuOptions, ToastRegionOptions } from './disclosures.js';
 export type { TabsOptions, TabsController } from './tabs.js';
 export type { DialogOptions, DialogController } from './dialog.js';

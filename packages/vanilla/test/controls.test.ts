@@ -42,7 +42,7 @@ describe('native control enhancements', () => {
     expect(root.querySelector('[data-hw-pin-slot]')!.getAttribute('aria-hidden')).toBe('true'); controller.destroy();
   });
   it('clamps only the moved range thumb, resets, and restores narrower overridden bounds', async () => {
-    const form = mount('<form><div><input type="range" data-hw-lower min="0" max="100" value="10"><input type="range" data-hw-upper min="0" max="100" value="80"><output data-hw-range-output></output></div></form>') as HTMLFormElement;
+    const form = mount('<form><div data-hw-range-label="{lower} – {upper}"><input type="range" data-hw-lower min="0" max="100" value="10"><input type="range" data-hw-upper min="0" max="100" value="80"><output data-hw-range-output></output></div></form>') as HTMLFormElement;
     const root = form.firstElementChild as HTMLElement; const controller = createRangeSlider(root, { min: 20, locale: 'ar-SA' }); const lower = root.querySelector<HTMLInputElement>('[data-hw-lower]')!;
     lower.value = '90'; lower.dispatchEvent(new Event('input', { bubbles: true })); expect(controller.value).toEqual([80, 80]);
     form.reset(); await Promise.resolve(); expect(controller.value).toEqual([20, 80]); controller.destroy(); expect(lower.value).toBe('10'); expect(lower.min).toBe('0');
@@ -105,10 +105,11 @@ describe('native control enhancements', () => {
     form.reset(); await Promise.resolve(); expect(controller.value).toEqual(['a']); expect(input.value).toBe(''); controller.destroy();
   });
   it('rejects oversized or mismatched dropped files without pretending to upload them', () => {
-    const root = mount('<label><input type="file" data-hw-file-input accept=".pdf"><span data-hw-file-status role="status"></span></label>');
-    const changed = vi.fn(); const rejectedMessage = vi.fn((files: readonly File[]) => `Not attached: ${files.map(file => file.name).join(' ')}`); const controller = createFileDropzone(root, { maxSize: 2, onValueChange: changed, getRejectedMessage: rejectedMessage, getSelectedMessage: files => `${files.length} attached`, unsupportedDropMessage: 'Use the file chooser.' });
+    const root = mount('<div class="hw-field hw-file-dropzone"><input type="file" data-hw-file-input accept=".pdf"><p data-hw-file-status role="status"></p></div>');
+    const changed = vi.fn(); const rejectedFiles = vi.fn(); const rejectedMessage = vi.fn((files: readonly File[]) => `Not attached: ${files.map(file => file.name).join(' ')}`); const controller = createFileDropzone(root, { maxSize: 2, onValueChange: changed, onReject: rejectedFiles, getRejectedMessage: rejectedMessage, getSelectedMessage: files => `${files.length} attached`, unsupportedDropMessage: 'Use the file chooser.' });
     const event = new Event('drop', { bubbles: true, cancelable: true }); Object.defineProperty(event, 'dataTransfer', { value: { files: [new File(['four'], 'sample.pdf', { type: 'application/pdf' })] } }); root.dispatchEvent(event);
-    expect(controller.value).toEqual([]); expect(changed).toHaveBeenCalledWith([]); expect(rejectedMessage).toHaveBeenCalledWith([expect.objectContaining({ name: 'sample.pdf' })]); expect(root.querySelector('[role=status]')!.textContent).toBe('Not attached: sample.pdf'); controller.destroy();
+    expect(controller.value).toEqual([]); expect(changed).not.toHaveBeenCalled(); expect(rejectedFiles).toHaveBeenCalledWith([expect.objectContaining({ name: 'sample.pdf' })]); expect(rejectedMessage).toHaveBeenCalledWith([expect.objectContaining({ name: 'sample.pdf' })]);
+    expect(root.querySelector('[role=status]')!.textContent).toBe(''); expect(root.querySelector('.hw-error[role=alert]')!.textContent).toBe('Not attached: sample.pdf'); controller.destroy(); expect(root.querySelector('.hw-error')).toBeNull();
   });
 });
 
@@ -122,7 +123,7 @@ describe('nonmodal disclosures and notifications', () => {
   });
   it('navigates menu enabled items, activates with keyboard and removes typeahead timers', () => {
     vi.useFakeTimers(); const root = mount('<div><button data-hw-trigger>Actions</button><div data-hw-panel role="menu" aria-label="Actions" hidden><button role="menuitem" data-hw-value="edit">Edit</button><button role="menuitem" disabled>Delete</button><button role="menuitem" data-hw-value="print">Print</button></div></div>');
-    const selected = vi.fn(); const controller = createMenu(root, { onSelect: selected }); const trigger = root.querySelector<HTMLButtonElement>('[data-hw-trigger]')!;
+    const selected = vi.fn(); const controller = createMenu(root, { onAction: selected }); const trigger = root.querySelector<HTMLButtonElement>('[data-hw-trigger]')!;
     key(trigger, 'ArrowDown'); expect(document.activeElement?.textContent).toBe('Edit'); key(document.activeElement as HTMLElement, 'ArrowDown'); expect(document.activeElement?.textContent).toBe('Print');
     key(document.activeElement as HTMLElement, 'Enter'); expect(selected).toHaveBeenCalledWith('print'); expect(document.activeElement).toBe(trigger); expect(controller.open).toBe(false);
     controller.show(); const scheduled = vi.spyOn(globalThis, 'setTimeout'); const cleared = vi.spyOn(globalThis, 'clearTimeout'); key(document.activeElement as HTMLElement, 'p');

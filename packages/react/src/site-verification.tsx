@@ -3,16 +3,15 @@ import type { ComponentPropsWithRef, ReactNode } from 'react';
 import type { SiteVerificationOptions } from '@hawiyah/core';
 import { cx, text } from './shared.js';
 
-interface SiteVerificationBaseProps extends ComponentPropsWithRef<'aside'>, Omit<SiteVerificationOptions, 'registrationHref' | 'registrationLabel' | 'externalLabel'> {
+interface SiteVerificationBaseProps extends ComponentPropsWithRef<'aside'>, Omit<SiteVerificationOptions, 'registrationHref' | 'registrationLabel' | 'externalLabel' | 'registrationExternal'> {
   mark?: ReactNode;
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Screen-reader text of a registration link that opens in a new window (registrationExternal, on by default). */
-  externalLabel?: string;
 }
-/** `registrationLabel` is required with `registrationHref`. */
-export type SiteVerificationProps = SiteVerificationBaseProps & ({ registrationHref?: undefined; registrationLabel?: string } | { registrationHref?: string; registrationLabel: string });
+/** `registrationLabel` is required with `registrationHref`; `externalLabel`, the screen-reader text of a registration link
+ * that opens in a new window, is required with it too unless `registrationExternal` (on by default) is false. */
+export type SiteVerificationProps = SiteVerificationBaseProps & ({ registrationHref?: undefined; registrationLabel?: string; registrationExternal?: boolean; externalLabel?: string } | { registrationHref?: string; registrationLabel: string; registrationExternal: false; externalLabel?: string } | { registrationHref?: string; registrationLabel: string; registrationExternal?: true; externalLabel: string });
 export function SiteVerification({label, detailsLabel, domainLabel, domainDescription, httpsLabel, httpsDescription, registrationLabel, externalLabel, registrationExternal=true, domain, registrationHref, registrationNumber, mark, open, defaultOpen=false, onOpenChange, children, className, ...props}: SiteVerificationProps) {
   const name=(key:string,value:string|undefined,when?:string)=>text('SiteVerification',key,value,when),[localOpen,setLocalOpen]=useState(defaultOpen);
   const copy={label:name('label',label),detailsLabel:name('detailsLabel',detailsLabel),domainLabel:name('domainLabel',domainLabel),domainDescription:name('domainDescription',domainDescription),httpsLabel:name('httpsLabel',httpsLabel),httpsDescription:name('httpsDescription',httpsDescription),registrationLabel:registrationHref?name('registrationLabel',registrationLabel,'registrationHref is set'):undefined,externalLabel:registrationHref&&registrationExternal?name('externalLabel',externalLabel,'registrationHref is set and registrationExternal is on'):undefined};

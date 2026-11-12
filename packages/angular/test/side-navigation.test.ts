@@ -132,6 +132,28 @@ describe('hw-side-navigation', () => {
     expect(page).not.toHaveBeenCalled(); expect(intoView).not.toHaveBeenCalled(); expect(document.activeElement).toBe(outside);
   });
 
+  it('[ATTR-01][E08] class, id, data- and aria-label written on the element are on the navigation landmark itself, for both selectors', () => {
+    const { root } = page(`<hw-side-navigation class="docs" id="pages" data-x="1" aria-label="Documentation" [items]="items" /><nav hwSideNavigation class="docs" id="more" data-x="2" aria-labelledby="heading" [items]="items"></nav><h2 id="heading">More</h2>`, { items });
+    const [element, native] = [...root.querySelectorAll<HTMLElement>('.hw-side-navigation')];
+    expect([element!.localName, element!.id, element!.getAttribute('data-x'), element!.getAttribute('aria-label'), element!.getAttribute('role'), element!.classList.contains('docs')]).toEqual(['hw-side-navigation', 'pages', '1', 'Documentation', 'navigation', true]);
+    expect([native!.localName, native!.id, native!.getAttribute('data-x'), native!.getAttribute('aria-labelledby'), native!.hasAttribute('aria-label'), native!.hasAttribute('role')]).toEqual(['nav', 'more', '2', 'heading', false, false]);
+    expect(root.querySelector('.hw-side-navigation .hw-side-navigation')).toBeNull();
+  });
+
+  it('[ATTR-02][E08] label is written as aria-label while it is given; without it the application\'s own aria-label returns', () => {
+    const { root, update } = page(`<hw-side-navigation aria-label="From the application" [label]="label" [items]="items" /><hw-side-navigation [attr.aria-label]="bound" [label]="label" [items]="items" />`, { items, label: 'From label', bound: 'Bound by the application' });
+    const [authored, bound] = [...root.querySelectorAll('hw-side-navigation')];
+    expect(authored!.getAttribute('aria-label')).toBe('From label'); expect(bound!.getAttribute('aria-label')).toBe('From label');
+    update({ label: '' }); expect(authored!.getAttribute('aria-label')).toBe('From the application'); expect(bound!.getAttribute('aria-label')).toBe('Bound by the application');
+    update({ label: 'Again' }); expect(authored!.getAttribute('aria-label')).toBe('Again'); expect(bound!.getAttribute('aria-label')).toBe('Again');
+  });
+
+  it('[NAME-02][NAME-03][E08] an aria-label or aria-labelledby on the element alone names it without a warning', () => {
+    const warnings = missingTextWarnings();
+    const { update } = page(`<hw-side-navigation aria-label="Documentation" [items]="items" /><nav hwSideNavigation aria-labelledby="heading" [items]="items"></nav><h2 id="heading">More</h2>`, { items });
+    update(); expect(warnings).toEqual([]);
+  });
+
   it('[sn-missing-label] omits aria-label and warns once when label is missing, and is silent when it is given', () => {
     const warnings = missingTextWarnings();
     const named = page(`<hw-side-navigation label="Documentation" [items]="items" />`, { items }); named.update();

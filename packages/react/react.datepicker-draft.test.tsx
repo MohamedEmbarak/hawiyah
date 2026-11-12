@@ -1,6 +1,7 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
+import { formatCalendarDate } from '@hawiyah/core';
 import { DatePicker } from './src/calendar.js';
 const pickerTexts = { locale: 'ar-SA', calendarLabel: 'اختر التاريخ', openLabel: 'فتح التقويم', closeLabel: 'إغلاق التقويم', previousLabel: 'الشهر السابق', nextLabel: 'الشهر التالي', calendarSystemLabel: 'نظام التقويم', gregorianLabel: 'ميلادي', hijriLabel: 'هجري · أم القرى', rangeLabel: 'التواريخ الهجرية المدعومة', invalidMessage: 'أدخل تاريخًا ميلاديًا متاحًا بصيغة YYYY-MM-DD.', unsupportedMessage: 'خارج نطاق أم القرى' };
 
@@ -20,7 +21,7 @@ it('keeps malformed drafts focusable and submits only canonical ISO while enforc
   await edit(input, '2026-10-20'); expect(input.checkValidity()).toBe(false);
   await edit(input, '2026-10-21'); expect(input.checkValidity()).toBe(true); expect(new FormData(form).getAll('date')).toEqual(['2026-10-21']);
   await edit(input, ''); expect(changed).toHaveBeenLastCalledWith(''); expect(input.validity.valueMissing).toBe(true); expect(new FormData(form).get('date')).toBe('');
-  await act(async () => { form.reset(); await Promise.resolve(); }); expect(input.value).toBe('2026-10-15'); expect(input.checkValidity()).toBe(true); expect(new FormData(form).get('date')).toBe('2026-10-15'); expect(container.querySelector<HTMLInputElement>('.hw-calendar-switch input:checked')!.value).toBe('islamic-umalqura');
+  await act(async () => { form.reset(); await Promise.resolve(); }); expect(input.value).toBe(formatCalendarDate('2026-10-15', { locale: 'ar-SA', calendar: 'islamic-umalqura', dateStyle: 'medium' })); expect(input.checkValidity()).toBe(true); expect(new FormData(form).get('date')).toBe('2026-10-15'); expect(container.querySelector<HTMLInputElement>('.hw-calendar-switch input:checked')!.value).toBe('islamic-umalqura');
 });
 
 it('opens only the custom dialog from ArrowDown and leaves click/Enter editing semantics intact', async () => {
