@@ -10,9 +10,20 @@ All native adapters accept `choiceVariant="text" | "icon-text" | "icon"`.
 Vanilla uses `data-choice-variant` on `hw-feedback`, an `hw-feedback-actions`
 row, decorative `hw-feedback-icon` spans and `hw-feedback-label` text spans.
 Text is the default. Icon-only presentation hides labels visually but keeps
-accessible names. React retains native radio selection and comment submission;
-Vue retains its string model and comment submission; Angular retains its boolean
-choice contract. No network persistence is implied.
+accessible names.
+
+Feedback has one contract in the four adapters: a `div[role=group]` named by
+its question (a first-child `p` from `label`) with two pressed-state buttons
+(`yesLabel`, `noLabel`), then a comment field (`commentLabel`) and a submit
+button (`submitLabel`) once a choice exists, and `successMessage` after the
+submit. The value is `{helpful: boolean | null, comment: string}` (core
+`FeedbackValue`): React `value` / `defaultValue` / `onValueChange`, Vue
+`v-model`, Angular `[(value)]`, vanilla the `value` option and
+`onValueChange`. Submitting reports the value through the feedback action
+(React `onFeedback`, Vue `@feedback`, Angular `(feedback)`, vanilla
+`onFeedback`). Vanilla reports on the choice when the authored
+`[data-hw-feedback-comment]` block is left out. Nothing is sent anywhere; the
+application stores or transmits the answer.
 
 These presentation options implement user-requested variants, not a claim of
 official certification. Thumbs are unchanged MIT Hugeicons assets from the

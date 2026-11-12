@@ -37,8 +37,11 @@ appearance; omitting the prop still selects primary. IconButton shares the CSS; 
 DGA keyboard focus uses a 2px black outline (white for outline-white and in
 dark mode). Focus remains visible while holding Space. Disabled/loading buttons
 use native disabled semantics; outline variants keep transparent backgrounds.
-React/Vue loading sets disabled and aria-busy. In Angular/vanilla set disabled
-and aria-busy explicitly. Preserve a useful label while an operation is pending.
+`loading` is an input in React, Vue and Angular (`button[hwButton]` takes
+`[loading]` and `[disabled]`); it sets disabled and aria-busy. Vanilla writes
+`disabled` and `aria-busy="true"` itself. A native button defaults to
+`type="button"` in every adapter, so a button submits its form only with
+`type="submit"`. Preserve a useful label while an operation is pending.
 
 Use light and outline-white on a suitably dark surface. Color contrast depends
 on that backdrop; they are not substitutes for primary on a white page.

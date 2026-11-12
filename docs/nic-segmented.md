@@ -24,8 +24,24 @@ vanilla uses `data-hw-readonly="true"`. Readonly does not disable the fieldset:
 users can focus the selected control, inspect it, and submit its enabled value,
 but cannot change it with clicks or selection keys. Removing readonly restores
 editing. Disabled groups submit nothing. Multiple values exclude missing or
-disabled options. React/Vue external-form reset restores defaults; Angular
-retains its existing value/CVA model.
+disabled options. A native form reset, including one from an external form,
+returns the group to its reset target in all four adapters and notifies once,
+only when the selection changed; with Angular Forms attached the model keeps
+ownership. The empty value is `''` in single mode and `[]` in multiple mode.
+
+Recorded decisions for 0.3.0:
+
+- Option markup is `label > input[type=radio]` followed by the text, without a
+  class, span or `data-selected`; multiple-mode buttons are
+  `button.hw-button[data-variant="secondary"][data-size="md"]` in every adapter.
+- `label`, `hint`, `error`, `required`, `name`, `form`, read-only, `options`,
+  `variant` and `labelHidden` are inputs in React, Vue and Angular. `required`
+  applies to single selection; a multiple group explains a minimum in its hint
+  or through `error`.
+- Without `label` no legend is rendered and one development warning is
+  given, unless `aria-label` or `aria-labelledby` names the group.
+- The Angular `hw-toggle-group` host generates no box (`display: contents`),
+  so its fieldset is the flex or grid item, as in React and Vue.
 
 ButtonGroup accepts `variant="default|attached"` and
 `orientation="horizontal|vertical"` in React, Vue and Angular. Vanilla uses

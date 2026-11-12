@@ -72,16 +72,12 @@ for (const [framework, language, locale] of formats) {
       await expectSubmitted(form, chosen);
 
       if (id === 'file-dropzone') {
-        const mixedPolicy = framework === 'angular'
-          ? (locale === 'ar' ? 'ويُستبعد سواها' : 'excludes the other files')
-          : (locale === 'ar' ? 'يُرفض الاختيار بالكامل' : 'the entire selection is cleared');
-        await expect(form).toContainText(mixedPolicy);
+        // Every adapter rejects a batch that holds a file of another type as a whole.
+        await expect(form).toContainText(locale === 'ar' ? 'يُرفض الاختيار بالكامل' : 'the entire selection is cleared');
         await drop(form, ['<new>.PDF', 'ignored.exe']);
-        const mixed = framework === 'angular' ? ['<new>.PDF'] : [];
-        await expectSelection(form, mixed);
-        await expectSubmitted(form, mixed);
-        const error = framework === 'angular' ? 'ignored.exe' : locale === 'ar' ? 'رُفضت ملفات' : 'did not match';
-        await expect(form).toContainText(error);
+        await expectSelection(form, []);
+        await expectSubmitted(form, []);
+        await expect(form).toContainText(locale === 'ar' ? 'رُفضت ملفات' : 'did not match');
         await drop(form, ['new.png']);
         await expectSelection(form, ['new.png']);
         await drop(form, ['only.exe']);

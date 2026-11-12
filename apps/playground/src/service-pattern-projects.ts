@@ -23,7 +23,7 @@ function service(id: 'service-card'|'service-details', t: Translate, typed: bool
   const message = id === 'service-card' ? t('Service selected locally.','تم اختيار الخدمة محليًا.') : t('Draft started locally.','تم بدء المسودة محليًا.');
   const meta = JSON.stringify([{term,description:duration}]);
   const details = `<dl class="hw-description-list"><div><dt>${term}</dt><dd>${duration}</dd></div></dl>`;
-  const list = `<h3>${requirements}</h3><ul><li>${document}</li></ul>`;
+  const list = `<section><h3>${requirements}</h3><ul><li>${document}</li></ul></section>`;
   if (id === 'service-card') return {
     vanilla: `<article class="hw-card hw-service-card"><span class="hw-badge">${category}</span><h3>${title}</h3><p>${description}</p>${details}<a class="hw-link" href="${href}">${action}</a></article>`,
     vanillaState: `root.querySelector('a')?.addEventListener('click', event => {
@@ -33,31 +33,31 @@ function service(id: 'service-card'|'service-details', t: Translate, typed: bool
     react: `<div onClick={event => { if (event.target instanceof Element && event.target.closest('a[href]')) {event.preventDefault(); setStatus('${message}');} }}>
     <ServiceCard title="${title}" description="${description}" category="${category}" metadata={${meta}} href="${href}" actionLabel="${action}" />
   </div>`,
-    vue: `<div @click="openService"><ServiceCard title="${title}" description="${description}" badge="${category}" :metadata="['${term} — ${duration}']" href="${href}" action-label="${action}" /></div>`,
+    vue: `<div @click="openService"><ServiceCard title="${title}" description="${description}" category="${category}" :metadata='${meta}' href="${href}" action-label="${action}" /></div>`,
     vueState: `function openService(event${typed ? ': Event' : ''}) {
   if (event.target instanceof Element && event.target.closest('a[href]')) {
     event.preventDefault();
     status.value = '${message}';
   }
 }`,
-    angular: `<hw-service-card title="${title}" description="${description}" category="${category}" duration="${term} — ${duration}" href="${href}" actionLabel="${action}" (click)="openService($event)" />`,
+    angular: `<hw-service-card title="${title}" description="${description}" category="${category}" [metadata]="details" href="${href}" actionLabel="${action}" (click)="openService($event)" />`,
     angularState: `openService(event: Event) {
     if (event.target instanceof Element && event.target.closest('a[href]')) {
       event.preventDefault();
       this.status = '${message}';
     }
-  }`,
+  }
+  readonly details = ${meta};`,
   };
   return {
-    vanilla: `<article class="hw-service-details"><header><h2>${title}</h2><p>${description}</p></header>${details}${list}<button class="hw-button" type="button">${start}</button></article>`,
+    vanilla: `<article class="hw-service-details"><header><h2>${title}</h2><p>${description}</p></header>${details}${list}<footer><button class="hw-button" type="button">${start}</button></footer></article>`,
     vanillaState: `root.querySelector('button')?.addEventListener('click', () => {output.textContent = '${message}';}, events);`,
     react: `<ServiceDetails title="${title}" description="${description}" metadata={${meta}} requirements={['${document}']} requirementsLabel="${requirements}" action={<Button onClick={() => setStatus('${message}')}>${start}</Button>} />`,
-    vue: `<ServiceDetails title="${title}" description="${description}" :items='${meta}'>
-    <section>${list}</section>
+    vue: `<ServiceDetails title="${title}" description="${description}" :metadata='${meta}' :requirements="['${document}']" requirements-label="${requirements}">
     <template #action><Button @click="status = '${message}'">${start}</Button></template>
   </ServiceDetails>`,
-    angular: `<hw-service-details title="${title}" description="${description}" [details]="details" [requirements]="['${document}']" requirementsLabel="${requirements}">
-    <button hwButton type="button" (click)="status = '${message}'">${start}</button>
+    angular: `<hw-service-details title="${title}" description="${description}" [metadata]="details" [requirements]="['${document}']" requirementsLabel="${requirements}">
+    <button hwButton hwServiceAction type="button" (click)="status = '${message}'">${start}</button>
   </hw-service-details>`,
     angularState:`readonly details = ${meta};`,
   };
@@ -71,35 +71,33 @@ function consent(t: Translate, typed: boolean): Recipe {
   const reopen = t('Review choice','مراجعة الخيار'), prefs = t('About these choices','حول هذه الخيارات');
   const attrs = `description="${description}"`;
   return {
-    vanilla: `<section class="hw-cookie-consent" data-hw="cookie-consent" aria-label="${title}"><h2>${title}</h2><p>${description}</p><div class="hw-inline">
+    vanilla: `<section class="hw-cookie-consent" data-hw="cookie-consent" aria-label="${title}"><h2>${title}</h2><p>${description}</p><div class="hw-button-group">
     <button type="button" class="hw-button" data-hw-consent="accepted">${accept}</button>
     <button type="button" class="hw-button" data-variant="secondary" data-hw-consent="rejected">${reject}</button>
+    <button type="button" class="hw-button" data-variant="ghost" data-preferences>${prefs}</button>
   </div></section>
   <button type="button" class="hw-button" data-variant="secondary" data-review-choice>${reopen}</button>`,
     vanillaState: `const banner = root.querySelector('[data-hw="cookie-consent"]');
 if (!(banner instanceof HTMLElement)) throw new Error('Missing consent region');
-const connect = () => createCookieConsent(banner, {onValueChange: choice => {
+const consent = createCookieConsent(banner, {onConsent: choice => {
   output.textContent = choice === 'accepted' ? '${accepted}' : '${rejected}';
 }});
-let consent = connect();
+banner.querySelector('[data-preferences]')?.addEventListener('click', () => {output.textContent = '${description}';}, events);
 root.querySelector('[data-review-choice]')?.addEventListener('click', () => {
-  consent.destroy();
-  consent = connect();
+  consent.setOpen(true);
   output.textContent = '—';
 }, events);
 scope.signal.addEventListener('abort', () => consent.destroy(), {once:true});`,
-    reactState: `const [choice, setChoice] = useState${typed ? "<'accepted'|'rejected'|null>" : ''}(null);`,
-    react: `<CookieConsent title="${title}" ${attrs} acceptLabel="${accept}" rejectLabel="${reject}" value={choice} onValueChange={next => {
-    setChoice(next);
-    setStatus(next === 'accepted' ? '${accepted}' : '${rejected}');
-  }} />
-  <Button variant="secondary" data-review-choice onClick={() => {setChoice(null); setStatus('—');}}>${reopen}</Button>`,
+    reactState: 'const [open, setOpen] = useState(true);',
+    react: `<CookieConsent title="${title}" ${attrs} acceptLabel="${accept}" rejectLabel="${reject}" preferencesLabel="${prefs}" open={open} onOpenChange={setOpen}
+    onConsent={choice => setStatus(choice === 'accepted' ? '${accepted}' : '${rejected}')} onPreferences={() => setStatus('${description}')} />
+  <Button variant="secondary" data-review-choice onClick={() => {setOpen(true); setStatus('—');}}>${reopen}</Button>`,
     vueState:'const open = ref(true);',
     vue: `<CookieConsent title="${title}" ${attrs} accept-label="${accept}" reject-label="${reject}" preferences-label="${prefs}" v-model:open="open"
-    @accept="status = '${accepted}'" @reject="status = '${rejected}'" @preferences="status = '${description}'" />
+    @consent="choice => status = choice === 'accepted' ? '${accepted}' : '${rejected}'" @preferences="status = '${description}'" />
   <Button variant="secondary" data-review-choice @click="open = true; status = '—'">${reopen}</Button>`,
     angularState:'open = true;',
-    angular: `<hw-cookie-consent title="${title}" ${attrs} acceptLabel="${accept}" rejectLabel="${reject}" preferencesLabel="${prefs}" [(visible)]="open"
+    angular: `<hw-cookie-consent title="${title}" ${attrs} acceptLabel="${accept}" rejectLabel="${reject}" preferencesLabel="${prefs}" [(open)]="open"
     (consent)="status = $event === 'accepted' ? '${accepted}' : '${rejected}'" (preferences)="status = '${description}'" />
   <button hwButton type="button" variant="secondary" data-review-choice (click)="open = true; status = '—'">${reopen}</button>`,
   };
@@ -113,7 +111,7 @@ function notifications(t: Translate, typed: boolean): Recipe {
   const items = [{id:'review',title:t('Review complete','اكتملت المراجعة'),read:false},{id:'received',title:t('Request received','تم استلام الطلب'),read:true}];
   const initial = JSON.stringify(items);
   return {
-    vanilla: `<section class="hw-notification-list" aria-label="${label}"><h2>${label}</h2><ul>${items.map(item=>`<li data-state="${item.read ? 'read':'unread'}"><h3>${item.title}</h3>${item.read ? '' : `<span class="hw-badge">${unread}</span><button class="hw-button" type="button" data-mark-read>${mark}</button>`}</li>`).join('')}</ul><p hidden data-empty>${empty}</p></section>
+    vanilla: `<section class="hw-notification-list" aria-label="${label}"><h2>${label}</h2><ul>${items.map(item=>`<li data-state="${item.read ? 'read':'unread'}"><h3>${item.title}</h3>${item.read ? '' : `<span class="hw-badge">${unread}</span><button class="hw-button" type="button" data-mark-read>${mark}</button>`}<button class="hw-button" data-variant="ghost" type="button" data-dismiss>${dismiss}</button></li>`).join('')}</ul><p hidden data-empty>${empty}</p></section>
   <div class="hw-inline"><button class="hw-button" type="button" data-mark-all>${all}</button><button class="hw-button" type="button" data-clear-list>${clear}</button></div>`,
     vanillaState: `root.addEventListener('click', event => {
   if (!(event.target instanceof Element)) return;
@@ -127,6 +125,7 @@ function notifications(t: Translate, typed: boolean): Recipe {
     }
     output.textContent = '${marked}';
   }
+  if (event.target.closest('[data-dismiss]')) event.target.closest('li')?.remove();
   if (event.target.closest('[data-clear-list]')) {
     root.querySelector('ul')?.replaceChildren();
     root.querySelector('[data-empty]')?.removeAttribute('hidden');
@@ -137,8 +136,9 @@ function notifications(t: Translate, typed: boolean): Recipe {
   function markRead(id${typed ? '?: string' : ''}) {
     setItems(current => current.map(item => !id || item.id === id ? {...item, read:true} : item));
     setStatus('${marked}');
-  }`,
-    react: `<NotificationList label="${label}" items={items} emptyMessage="${empty}" unreadLabel="${unread}" onMarkRead={markRead} getMarkReadLabel={item => '${mark} — ' + item.title} />
+  }
+  function dismiss(id${typed ? ': string' : ''}) { setItems(current => current.filter(item => item.id !== id)); }`,
+    react: `<NotificationList label="${label}" items={items} emptyMessage="${empty}" unreadLabel="${unread}" onRead={markRead} getMarkReadLabel={item => '${mark} — ' + item.title} onDismiss={dismiss} getDismissLabel={item => '${dismiss} — ' + item.title} />
   <div className="hw-inline"><Button data-mark-all onClick={() => markRead()}>${all}</Button><Button variant="secondary" data-clear-list onClick={() => {setItems([]); setStatus('${cleared}');}}>${clear}</Button></div>`,
     vueState:`const items = ref(${initial});
 function markRead(id${typed ? '?: string' : ''}) {
@@ -146,13 +146,14 @@ function markRead(id${typed ? '?: string' : ''}) {
   status.value = '${marked}';
 }
 function dismiss(id${typed ? ': string' : ''}) { items.value = items.value.filter(item => item.id !== id); }`,
-    vue:`<NotificationList label="${label}" :items="items" empty-message="${empty}" :get-mark-read-label="item => '${mark} — ' + item.title" :get-dismiss-label="item => '${dismiss} — ' + item.title" @read="markRead" @dismiss="dismiss" />
+    vue:`<NotificationList label="${label}" :items="items" empty-message="${empty}" unread-label="${unread}" :get-mark-read-label="item => '${mark} — ' + item.title" :get-dismiss-label="item => '${dismiss} — ' + item.title" @read="markRead" @dismiss="dismiss" />
   <div class="hw-inline"><Button data-mark-all @click="markRead()">${all}</Button><Button variant="secondary" data-clear-list @click="items = []; status = '${cleared}'">${clear}</Button></div>`,
-    angularState: `items = ${JSON.stringify(items.map(({read,...item})=>({...item,unread:!read})))};
-  markRead() { this.items = this.items.map(item => ({...item, unread:false})); this.status = '${marked}'; }
+    angularState: `items = ${initial};
+  markRead(id?: string) { this.items = this.items.map(item => !id || item.id === id ? {...item, read:true} : item); this.status = '${marked}'; }
+  markReadLabel = (item: {title: string}) => '${mark} — ' + item.title;
   dismissLabel = (item: {title: string}) => '${dismiss} — ' + item.title;
   dismiss(id: string) { this.items = this.items.filter(item => item.id !== id); }`,
-    angular:`<hw-notification-list label="${label}" [items]="items" emptyMessage="${empty}" unreadLabel="${unread}" [getDismissLabel]="dismissLabel" (dismissed)="dismiss($event)" />
+    angular:`<hw-notification-list label="${label}" [items]="items" emptyMessage="${empty}" unreadLabel="${unread}" [getMarkReadLabel]="markReadLabel" (read)="markRead($event)" [getDismissLabel]="dismissLabel" (dismissed)="dismiss($event)" />
   <div class="hw-inline"><button hwButton type="button" data-mark-all (click)="markRead()">${all}</button><button hwButton type="button" variant="secondary" data-clear-list (click)="items = []; status = '${cleared}'">${clear}</button></div>`,
   };
 }

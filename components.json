@@ -92,7 +92,8 @@
         }
       ],
       "notes": [
-        "Use a link for navigation and a button for an action."
+        "Use a link for navigation and a button for an action.",
+        "Native buttons default to type=\"button\"; loading sets disabled and aria-busy (Angular button[hwButton] takes loading and disabled inputs)."
       ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/button"
@@ -1101,7 +1102,8 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Choose announcement semantics according to urgency and timing."
+        "Choose announcement semantics according to urgency and timing.",
+        "Without an explicit role a danger alert is role=\"alert\" and other tones role=\"status\". The dismiss button, named by closeLabel, is rendered only while the application binds the dismiss action (React onDismiss, Vue @dismiss, Angular (dismissed), vanilla an authored .hw-alert-dismiss button); the application removes the alert and places focus."
       ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/alert"
@@ -1132,7 +1134,8 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Filtering, sorting, pagination, and fetching remain explicit application behavior."
+        "Filtering, sorting, pagination, and fetching remain explicit application behavior.",
+        "Columns {key, label, cell?, rowHeader?}; the scroll region is named by the caption through aria-labelledby."
       ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/table"
@@ -1288,7 +1291,8 @@
         }
       ],
       "notes": [
-        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations."
+        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations.",
+        "The current item is one span[aria-current=page], never a link; current chooses it and the last item is the default."
       ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/breadcrumb"
@@ -1317,7 +1321,9 @@
       ],
       "verified": [],
       "evidence": [],
-      "notes": [],
+      "notes": [
+        "A native progress element named by label, aria-label or aria-labelledby; no visible label is rendered and values are written as given."
+      ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/progress"
     },
@@ -1346,7 +1352,7 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Announce the containing loading state rather than every decorative placeholder."
+        "Wrap skeletons in a role=\"status\" container with a visually hidden loading text; the skeletons stay aria-hidden. Size with style or class; variant text or circle."
       ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/skeleton"
@@ -1376,7 +1382,8 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Supply understandable status text in context."
+        "Supply understandable status text in context.",
+        "One element with role=\"status\" that holds its visually hidden label; use aria-hidden=\"true\" for a decorative spinner beside visible text."
       ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/spinner"
@@ -1517,7 +1524,8 @@
         }
       ],
       "notes": [
-        "Do not place essential or interactive content solely in a tooltip."
+        "Do not place essential or interactive content solely in a tooltip.",
+        "In Angular, hw-tooltip wraps one focusable element marked hwTooltipTrigger."
       ],
       "sourceType": "interactive",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tooltip"
@@ -1578,7 +1586,8 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Journey navigation and validation belong to the application."
+        "Journey navigation and validation belong to the application.",
+        "Complete and upcoming steps carry visually hidden state text from the required completeLabel and upcomingLabel."
       ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/stepper"
@@ -1725,7 +1734,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Visibility is the state visible in every adapter (React visible / defaultVisible / onVisibleChange, Vue v-model:visible, Angular [(visible)], vanilla controller and hw:change); a native form reset conceals the value."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/password-field"
     },
     {
@@ -1968,7 +1979,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "The value output is rendered only with showValue; aria-valuetext is written only with formatValue."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/slider"
     },
     {
@@ -2066,7 +2079,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "The optional output shows getRangeLabel(lower, upper); formatValue gives each thumb its aria-valuetext. No adapter writes a separator."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/range-slider"
     },
     {
@@ -2307,7 +2322,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Enter or comma commits; there is no Add button. After a remove button is activated, focus moves to the next remove button, else the previous one, else the text input."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tag-input"
     },
     {
@@ -2406,7 +2423,8 @@
         ]
       },
       "notes": [
-        "Uses native checkboxes; it is not an ARIA single-select combobox."
+        "Uses native checkboxes; it is not an ARIA single-select combobox.",
+        "The filter has a visible label from searchLabel; getResultsMessage(count) is required and fills a polite status after filtering; read-only checkboxes stay focusable with aria-disabled=\"true\"."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/multi-select"
     },
@@ -2769,7 +2787,8 @@
         ]
       },
       "notes": [
-        "Local selection is not upload transport; application code owns storage, server validation, and authoritative progress."
+        "Local selection is not upload transport; application code owns storage, server validation, and authoritative progress.",
+        "A batch with any rejected file (type, maxSize, count) leaves the selection empty and is reported through getRejectedMessage(rejected) with role=\"alert\". No built-in file list: compose FileUploadList."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/file-dropzone"
     },
@@ -2994,7 +3013,8 @@
         ]
       },
       "notes": [
-        "Interactive children use normal Tab navigation; use Menu for action-menu keyboard semantics."
+        "Interactive children use normal Tab navigation; use Menu for action-menu keyboard semantics.",
+        "label is the accessible name of the panel and prints nothing; a visible heading goes in the content with aria-labelledby. Closes when focus moves outside."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/popover"
     },
@@ -3093,7 +3113,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Items {value, label, disabled?, href?}; type-ahead; closes when focus moves outside. React takes the application's trigger element; Vue and Angular render a trigger named by triggerLabel and styled by triggerVariant (default secondary)."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/menu"
     },
     {
@@ -3436,7 +3458,8 @@
         ]
       },
       "notes": [
-        "No drag-and-drop or virtualization claim."
+        "No drag-and-drop or virtualization claim.",
+        "items and expanded in every adapter; the expand and collapse toggle is button.hw-tree-toggle, outside the tab order, named by getExpandLabel(node) and getCollapseLabel(node); type-ahead on visible nodes."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tree-view"
     },
@@ -3610,7 +3633,8 @@
         ]
       },
       "notes": [
-        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations."
+        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations.",
+        "Angular uses the a[hwLink] directive on the application's own anchor."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/link"
     },
@@ -3901,7 +3925,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "The remove button, named by removeLabel, is rendered only while a remove handler is bound; removing a focused chip moves focus to the neighbouring chip's remove button."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/chip"
     },
     {
@@ -3987,7 +4013,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Label, value, description and trend; value and trend accept rich content, such as an amount with its hidden currency name."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/stat"
     },
     {
@@ -4030,7 +4058,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Items {id, title, description, dateTime, dateLabel, status}; status complete, current or upcoming; a date is shown only from dateLabel."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/timeline"
     },
     {
@@ -4073,7 +4103,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "A native meter named by label, aria-label or aria-labelledby; min 0, max 100, value 0, and low, high and optimum only when given."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/meter"
     },
     {
@@ -4215,7 +4247,8 @@
         ]
       },
       "notes": [
-        "Sorting only: virtualization, cell editing, remote data, and advanced grid selection require application integrations."
+        "Sorting only: virtualization, cell editing, remote data, and advanced grid selection require application integrations.",
+        "Columns {key, label, cell?, sortable?, rowHeader?}; the sort state is sortKey and sortDirection in every adapter."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/data-table"
     },
@@ -4260,7 +4293,8 @@
         ]
       },
       "notes": [
-        "No official identity, endorsement, or government-service connection is implied."
+        "No official identity, endorsement, or government-service connection is implied.",
+        "Facts are metadata {term, description}[] rendered as a description list; the packaged action is a link rendered only with href."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/service-card"
     },
@@ -4305,7 +4339,8 @@
         ]
       },
       "notes": [
-        "Requirements and actions are application-owned content."
+        "Requirements and actions are application-owned content.",
+        "Facts are metadata {term, description}[]; requirements need requirementsLabel; the action is in a footer."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/service-details"
     },
@@ -4538,7 +4573,8 @@
         ]
       },
       "notes": [
-        "Recording feedback on a server requires an application integration."
+        "Recording feedback on a server requires an application integration.",
+        "One contract in every adapter: value {helpful, comment}, two pressed-state choices, a comment step after a choice and a feedback action on submit; nothing is sent anywhere."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/feedback"
     },
@@ -4626,7 +4662,8 @@
         ]
       },
       "notes": [
-        "Preference UI does not gate scripts. Persistence and policy/version handling must be explicitly configured by the application."
+        "Preference UI does not gate scripts. Persistence and policy/version handling must be explicitly configured by the application.",
+        "State open and action consent('accepted' | 'rejected'), an optional preferences action; Accept, Reject and Preferences in a button group; the region is named by its heading."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/cookie-consent"
     },
@@ -4671,7 +4708,8 @@
         ]
       },
       "notes": [
-        "Data and actions belong to the application; the vanilla recipe needs application listeners for custom actions."
+        "Data and actions belong to the application; the vanilla recipe needs application listeners for custom actions.",
+        "Items {id, title, description, href, dateTime, dateLabel, read}; a visible h2 names the region; unread items show a badge from the required unreadLabel; read and dismiss actions are rendered while their handlers are bound."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/notification-list"
     },

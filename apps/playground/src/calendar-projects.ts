@@ -32,8 +32,8 @@ export function calendarProject(
   ] as const;
   const monthTexts = (system: string, syntax: 'react' | 'vue' | 'angular') => textAttributes({
     ...calendarMonthTexts(locale, system === 'islamic-umalqura'),
-    // Only the Vue Calendar shows the unsupported-range status by itself.
-    ...(syntax === 'vue' && system === 'islamic-umalqura' ? {unsupportedMessage: calendarTexts(locale).unsupportedMessage} : {}),
+    // Every Umm al-Qura Calendar shows the unsupported-range status by itself.
+    ...(system === 'islamic-umalqura' ? {unsupportedMessage: calendarTexts(locale).unsupportedMessage} : {}),
   }, syntax);
   const pickerTexts = (syntax: 'react' | 'vue' | 'angular') => textAttributes(datePickerTexts(locale), syntax);
   const css = `@import '@hawiyah/styles/styles.css';\n\n.demo, .demo form { display:grid; gap:1rem; min-inline-size:0; }\n.calendar-comparison { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap:1rem; }\n.demo form > button { justify-self:start; }\n`;

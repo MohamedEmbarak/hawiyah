@@ -49,9 +49,11 @@ it('suppresses edits and popups while disabled or readonly but allows searching 
  fieldset.disabled=false;clear.click();expect(input.value).toBe('');await Promise.resolve();type(input,'search');expect(list(root).hidden).toBe(false);
  input.setAttribute('aria-disabled','true');await Promise.resolve();expect(list(root).hidden).toBe(true);input.removeAttribute('aria-disabled');await Promise.resolve();expect(list(root).hidden).toBe(false);
 });
-it('closes on clear, silent setValue and form reset, preserving canonical input/change events',async()=>{
+it('closes on clear, silent setValue and form reset, preserving canonical input/change events and reporting a reset that changed the value once',async()=>{
  const changed=vi.fn(),{root,input,clear,controller,form}=setup({suggestions:['Search first','Second search'],onValueChange:changed},'','Search first');const native=vi.fn();input.addEventListener('change',native);type(input,'second');const down=new MouseEvent('pointerdown',{button:0,bubbles:true,cancelable:true});clear.dispatchEvent(down);expect(down.defaultPrevented).toBe(true);clear.click();expect(input.value).toBe('');expect(list(root).hidden).toBe(true);expect(native).toHaveBeenCalledTimes(1);
- controller.setValue('second');expect(list(root).hidden).toBe(true);expect(changed.mock.calls.map(call=>call[0])).toEqual(['second','']);type(input,'second');form.reset();await Promise.resolve();expect(input.value).toBe('Search first');expect(list(root).hidden).toBe(true);expect(changed.mock.calls.map(call=>call[0])).toEqual(['second','']);
+ controller.setValue('second');expect(list(root).hidden).toBe(true);expect(changed.mock.calls.map(call=>call[0])).toEqual(['second','']);type(input,'second');form.reset();await Promise.resolve();expect(input.value).toBe('Search first');expect(list(root).hidden).toBe(true);
+ // A native reset is a value change made by the form: it is reported once, because it changed the value.
+ expect(changed.mock.calls.map(call=>call[0])).toEqual(['second','','Search first']);form.reset();await Promise.resolve();expect(changed).toHaveBeenCalledTimes(3);
 });
 it('supports safe declarative dictionaries, option precedence and replacement dictionaries',async()=>{
  const {root,input,controller}=setup({},'data-hw-suggestions="not-json" data-hw-max-suggestions="1"');type(input,'search');expect(options(root)).toHaveLength(0);expect(list(root).hidden).toBe(true);

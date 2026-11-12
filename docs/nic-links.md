@@ -28,9 +28,13 @@ substitutions have received official approval.
 
 ## APIs and examples
 
-- React/Vue `Link` and Angular `HwLinkComponent` accept `disabled` and
-  `variant="default|neutral|subtle|standalone"`. Existing `data-variant` usage in
-  React/Vue, including caller-defined strings, remains supported. Angular binds `variant` on its native anchor.
+- React/Vue `Link` and the Angular directive `a[hwLink]` (`HwLinkDirective`) accept
+  `disabled` and `variant="default|neutral|subtle|standalone"`. Existing
+  `data-variant` usage in React/Vue, including caller-defined strings, remains
+  supported. The Angular directive sits on the application's own anchor, so
+  `routerLink` and every native attribute apply to the real element; `external`
+  adds `target="_blank"` and `rel="noopener noreferrer"` (in Vue, added to an
+  authored `rel`).
 - React/Vue preserve enabled application click handlers. Disabled links omit
   href, expose `role=link` / `aria-disabled=true`, use tabindex -1 and stop
   primary/auxiliary activation before application callbacks. Angular likewise
@@ -40,9 +44,12 @@ substitutions have received official approval.
   to this disabled recipe. No controller is required.
 - Breadcrumb items accept `disabled?: boolean` in all native adapters. The
   landmark is named by the required `label` (or an `aria-label` /
-  `aria-labelledby` where the adapter forwards it); the
-  last item remains the current page; disabled destinations render as text with
-  a disabled link role and no href.
+  `aria-labelledby`, which Angular forwards to the landmark); disabled
+  destinations render as text with a disabled link role and no href.
+- Decision for 0.3.0: the current breadcrumb item is one
+  `span[aria-current="page"]` in every adapter and never a link, even when it
+  has an address. `current: true` on an item chooses it; the last item is the
+  default. Style the current item with `[aria-current]`.
 - The guide displays all four principal variants and includes project imports
   and actual adapter APIs. Demo destinations remain inside the preview.
 

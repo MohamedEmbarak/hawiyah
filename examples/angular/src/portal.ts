@@ -20,8 +20,8 @@ import logo from '../../../brand/assets/hawiyah-wordmark.svg';
       {label:t('الخدمات','Services'),href:'#services',icon:'search-01'},
       {label:t('المزيد','More'),href:'#contact',icon:'menu-01'}]" />
     <section data-testid="accordion-showcase"><h2>{{ t('أسئلة شائعة','Frequently asked questions') }}</h2><hw-accordion [exclusive]="true" [items]="[
-      {id:'one',title:t('كيف أبدأ؟','How do I start?'),content:t('اختر الخدمة وراجع المتطلبات ثم ابدأ الطلب.','Choose a service, review the requirements, then start your application.')},
-      {id:'two',title:t('هل يمكنني حفظ الطلب؟','Can I save my application?'),content:t('نعم، يدير التطبيق حفظ مسودة الطلب.','Yes, draft saving is managed by your application.')}]" /></section>
+      {value:'one',title:t('كيف أبدأ؟','How do I start?'),content:t('اختر الخدمة وراجع المتطلبات ثم ابدأ الطلب.','Choose a service, review the requirements, then start your application.')},
+      {value:'two',title:t('هل يمكنني حفظ الطلب؟','Can I save my application?'),content:t('نعم، يدير التطبيق حفظ مسودة الطلب.','Yes, draft saving is managed by your application.')}]" /></section>
     <p hwPortalFooter>{{ t('نموذج محلي لهيكل البوابة', 'Local portal shell example') }}</p>
   </hw-portal-layout>`})
 export class PortalExampleComponent {

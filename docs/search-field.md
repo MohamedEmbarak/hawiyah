@@ -16,12 +16,13 @@ React uses `value/defaultValue/onValueChange`; Vue uses
 `modelValue/defaultValue/update:modelValue`; Angular uses its existing
 `value/valueChange` or ControlValueAccessor. Vue `search` and Angular `searched`
 Enter callbacks ignore composition and Ctrl/Alt/Meta-modified keys. React and
-vanilla retain native form submission. Angular also retains its Search button.
+vanilla retain native form submission. The Search button is off by default in
+every framework adapter; `showSearchButton` shows it.
 Supply `clearLabel` in every adapter, `searchLabel` when the search button is
 shown and `getResultsMessage(count)` when suggestions are given. The field is
-named by `label`, or by an `aria-label` or `aria-labelledby` on the input in React
-and Vue (Vue also accepts a parent `Field`); Angular requires `label`, and
-vanilla uses the label in the markup. A field without a name is reported once
+named by `label`, or by an `aria-label` or `aria-labelledby` (on the input in
+React and Vue; on `hw-search-field` in Angular, which forwards it to the input),
+or by a parent Field; vanilla uses the label in the markup. A field without a name is reported once
 in development. In vanilla the clear button's authored `aria-label` or text is
 its name when `clearLabel` is not passed; the icon then replaces the text.
 

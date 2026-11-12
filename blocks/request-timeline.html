@@ -2,10 +2,10 @@
 <section class="hw-card" dir="rtl" lang="ar" aria-labelledby="request-progress">
   <div class="hw-card-body">
     <h2 id="request-progress">تقدّم الطلب</h2>
-    <ol class="hw-timeline">
-      <li><strong>تم استلام الطلب</strong><p>اكتملت مراجعة المعلومات الأساسية.</p></li>
-      <li aria-current="step"><strong>قيد المراجعة</strong><p>الخطوة التالية: إرفاق المستند المحدّث.</p></li>
-      <li><strong>النتيجة</strong><p>سنُعلمك عند اكتمال المراجعة.</p></li>
+    <ol class="hw-timeline" aria-labelledby="request-progress">
+      <li class="hw-timeline-item" data-state="complete"><h3>تم استلام الطلب</h3><p>اكتملت مراجعة المعلومات الأساسية.</p></li>
+      <li class="hw-timeline-item" data-state="current" aria-current="step"><h3>قيد المراجعة</h3><p>الخطوة التالية: إرفاق المستند المحدّث.</p></li>
+      <li class="hw-timeline-item" data-state="upcoming"><h3>النتيجة</h3><p>سنُعلمك عند اكتمال المراجعة.</p></li>
     </ol>
     <button type="button" class="hw-button">إرفاق المستند</button>
   </div>

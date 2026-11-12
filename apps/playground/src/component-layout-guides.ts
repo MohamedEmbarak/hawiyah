@@ -23,7 +23,7 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
     lifecycle: ['Render the list from the current record. It has no selection state or JavaScript initialization.', 'Update term/value pairs when the application record changes. Preserve stable framework keys for rows that contain interactive controls.', 'Removing the list needs no component cleanup.'],
     accessibility: ['Use dl, dt and dd rather than visually spaced paragraphs so the relationship survives styling changes.', 'Apply dir="ltr" to an individual reference or IBAN when surrounding content is Arabic; retain normal direction for its label.'],
     variants: ['Default stacked terms', 'Horizontal', 'Compact'], related: ['service-details', 'stat', 'table'],
-    frameworkNotes: 'React and Vue accept items. Angular hw-description-list accepts items plus variant; Angular item fields are term and description.',
+    frameworkNotes: 'React, Vue and Angular accept items with term and description, plus variant. Without a variant every adapter renders the stacked layout and writes no data-variant; pass variant="horizontal" for terms beside values.',
     source: contentSource,
   },
   'service-card': {
@@ -32,19 +32,19 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   <span class="hw-badge" data-tone="info">Business</span>
   <h3>Renew a commercial license</h3>
   <p>Check requirements and renew an existing license.</p>
-  <div class="hw-service-card-meta"><span><bdi><span class="hw-riyal" aria-hidden="true">⃁</span><span class="hw-sr-only">Saudi riyals</span> 150</bdi></span><span>1 working day</span></div>
+  <dl class="hw-description-list"><div><dt>Service fee</dt><dd><bdi><span class="hw-riyal" aria-hidden="true">⃁</span><span class="hw-sr-only">Saudi riyals</span> 150</bdi></dd></div><div><dt>Expected processing time</dt><dd>1 working day</dd></div></dl>
   <a class="hw-button" href="./services/license">View license renewal</a>
 </article>`,
     api: [
       { name: 'title / description', type: 'heading and descriptive content', description: 'Describe one service. Adapter title props render an h3; vanilla markup may use the appropriate heading level.' },
       { name: 'href / actionLabel', type: 'string', description: 'Native destination and its action text; actionLabel is required when the card renders its own action link. Navigation and route loading belong to the application.' },
       { name: 'data-variant', type: 'featured | compact', description: 'Featured adds emphasis; compact reduces spacing. Pass as a data attribute where the adapter does not expose this as a typed prop.' },
-      { name: 'React metadata', type: 'DescriptionItem[]', description: 'Uses term/description pairs. Vue metadata is a string array; Angular exposes duration and fee strings.' },
+      { name: 'metadata', type: '{ term, description }[]', description: 'Service facts as term/description pairs in every adapter, rendered as dl.hw-description-list.' },
     ],
     lifecycle: ['Render a card for each known service; use a stable service ID when rendering a collection.', 'Links navigate normally. Changing availability, fees or processing estimates is an application data update.', 'There is no fetch or submission controller to initialize or destroy.'],
     accessibility: ['Give the action a specific accessible name when multiple cards repeat “View service”.', 'Keep nested links and buttons separate; do not wrap the whole card in a link when it already contains interactive controls.', 'Mark purely decorative service icons aria-hidden="true".'],
     variants: ['Default', 'Featured', 'Compact'], related: ['service-details', 'grid', 'badge'],
-    frameworkNotes: 'React uses title, description, category, metadata, icon and action; Vue uses title, description, badge, metadata plus icon/action slots. Angular hw-service-card requires title and href, with category, duration, fee and variant inputs.',
+    frameworkNotes: 'React, Vue and Angular use title, description, category and metadata; the category badge precedes the h3 and the icon sits in div.hw-service-card-icon. React passes icon and action, Vue uses icon/action slots, and Angular projects an element marked hwServiceAction. The packaged action is a link rendered only with href.',
     limitations: ['Displays caller-supplied information; it does not check eligibility or guarantee service completion times.'], source: contentSource,
   },
   'service-details': {
@@ -57,14 +57,14 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
 </article>`,
     api: [
       { name: 'title / description', type: 'content', description: 'Service heading and a concise introduction, supplied by the application like every other text.' },
-      { name: 'React metadata / requirements', type: 'DescriptionItem[] / ReactNode[]', description: 'Paired service facts and an optional requirements list; requirementsLabel is required when requirements are given.' },
-      { name: 'Vue items / Angular details', type: 'description-item arrays', description: 'Equivalent service facts use adapter-specific prop names. Angular also accepts requirements and requirementsLabel.' },
+      { name: 'metadata / requirements', type: '{ term, description }[] / content[]', description: 'Paired service facts and an optional requirements list in every adapter; requirementsLabel is required when requirements are given.' },
+      { name: 'description-list layout', type: 'composition', description: 'Facts render as a stacked dl.hw-description-list; compose DescriptionList with variant="horizontal" in the content for terms beside values.' },
       { name: 'action', type: 'React node / Vue slot / Angular projected content', description: 'Place the journey entry action after the information users need to decide.' },
     ],
     lifecycle: ['Render the current service record and its requirements before collecting application data.', 'Replace content when a route or service changes; maintain a coherent heading structure and focus the new page heading through the router.', 'This content composition registers no observers or DOM controllers.'],
     accessibility: ['Use real lists for requirements and description lists for labeled facts.', 'Keep help links descriptive and identify required documents in text, not only icons or color.'],
     variants: ['Description-list facts', 'Requirements with action', 'Application-owned additional sections'], related: ['service-card', 'description-list', 'page-header'],
-    frameworkNotes: 'React renders article with metadata/requirements/action. Vue renders section with items and an action slot. Angular hw-service-details accepts details and requirements; project custom actions through its content.',
+    frameworkNotes: 'Every adapter renders article.hw-service-details with metadata, an optional requirements section and the action in its footer. React passes action, Vue uses the action slot and Angular projects an element marked hwServiceAction.',
     limitations: ['Eligibility checks, current policy and authoritative service data must come from the service owner.'], source: contentSource,
   },
   'portal-header': {
@@ -80,8 +80,8 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   <div class="hw-portal-header-actions"><button class="hw-button" type="button">العربية</button></div>
 </header>`,
     api: [
-      { name: 'brand / home destination', type: 'content / URL', description: 'Use an accessible home link. React names the URL brandHref; Vue and Angular use homeHref.' },
-      { name: 'navigation / links', type: '{ label, href, current? }[]', description: 'React calls the collection navigation; Vue and Angular call it links. Current links receive aria-current="page".' },
+      { name: 'brand / home destination', type: 'content / URL', description: 'Use an accessible home link named homeHref in every adapter; React defaults it to "/". With an empty homeHref the brand is a div with role=img named by brandLabel.' },
+      { name: 'navigation / links', type: '{ label, href, current? }[]', description: 'The collection is links in every adapter. Current links receive aria-current="page".' },
       { name: 'data-variant="sticky"', type: 'CSS variant', description: 'Keeps the header at the block-start edge. Ensure sticky content does not obscure focused controls or anchor destinations.' },
       { name: 'navigationId / mainId / menuLabel / skipLabel', type: 'string', description: 'All framework headers support these props. Navigation IDs are generated unless supplied; mainId connects the optional skip link to a real focusable content target. menuLabel and navigationLabel are required, and skipLabel is required when mainId is set; vanilla reads them from the authored toggle text and nav aria-label, then data-hw-menu-label and data-hw-navigation-label.' },
       { name: 'createPortalHeader(root, options)', type: 'vanilla controller', description: 'Options: onOpenChange(open), menuLabel, navigationLabel, brandLabel. Returns open, show(), close(restoreFocus?), destroy(). enhance() discovers data-hw="portal-header" with data-hw-portal-toggle and data-hw-portal-navigation.' },
@@ -89,7 +89,7 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
     lifecycle: ['Render navigation from route state and update aria-current when the route changes. Framework adapters own their disclosure state and DOM.', 'For vanilla, call enhance() or createPortalHeader() after mounting. Do not pre-hide the navigation; links remain available without JavaScript.', 'Escape closes and returns focus to the toggle. Link selection, outside press and focus leaving close the disclosure. Tab remains native.', 'Release enhance() or call destroy() before replacing vanilla markup; it removes listeners and restores original attributes. Framework unmount handles its own cleanup.'],
     accessibility: ['Name primary navigation and provide a working skip link to a content target with tabindex="-1".', 'The brand link needs a name even when it contains only an outlined logo image: supply brandLabel (data-hw-brand-label in vanilla) or image alternative text; otherwise a development warning names brandLabel.', 'The built-in toggle maintains aria-expanded and aria-controls. Navigation remains ordinary links, not a menu or a modal focus trap.'],
     variants: ['Responsive disclosure below 48rem', 'Desktop navigation', 'Sticky via data-variant'], related: ['site-verification', 'portal-footer', 'portal-layout', 'secondary-nav'],
-    frameworkNotes: 'React uses brand, brandHref, navigation, navigationLabel, actions and notice. Vue uses brand, homeHref, links and navigationLabel with logo/actions slots. Angular hw-portal-header uses brand, homeHref, links, navigationLabel and projected actions/[hwBrand]. All expose menuLabel, navigationId, mainId, skipLabel and the optional brandLabel; brand text is rendered only when the application supplies it. Supply explicit stable Angular IDs for independently serialized roots.',
+    frameworkNotes: 'React uses brand, homeHref, links, navigationLabel, actions and notice. Vue uses brand, homeHref, links and navigationLabel with logo/actions slots. Angular hw-portal-header uses brand, homeHref, links, navigationLabel and projected actions/[hwBrand]. All expose menuLabel, navigationId, mainId, skipLabel and the optional brandLabel; brand text is rendered only when the application supplies it. The menu state is open with onOpenChange in React, v-model:open in Vue and [(open)] in Angular. Supply explicit stable Angular IDs for independently serialized roots.',
     limitations: ['The 48rem breakpoint is a Hawiyah adaptation, not an asserted Figma breakpoint.', 'No authentication, language routing or account state is provided by the header.'], source: contentSource,
   },
   'secondary-nav': {
@@ -128,7 +128,7 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
 </div>`,
     api: [
       { name: 'brand / lang / dir / mainId', type: 'content / string', description: 'Brand content is required; brandLabel names an artwork-only brand. lang and dir are rendered only when the application supplies them. Generated mainId connects the skip link to the focusable main; explicit IDs must be unique.' },
-      { name: 'React headerProps / footerProps', type: 'PortalHeaderProps / PortalFooterProps', description: 'headerProps configures navigation, brandHref, actions and notice. footerProps configures links, navigationLabel, legalLinksLabel, supportLabel, externalLabel and other footer props. Top-level skipLabel, menuLabel and navigationLabel are required.' },
+      { name: 'React headerProps / footerProps', type: 'PortalHeaderProps / PortalFooterProps', description: 'headerProps configures links, homeHref, actions and notice. footerProps configures links, navigationLabel, legalLinksLabel, supportLabel, externalLabel and other footer props. Top-level skipLabel, menuLabel and navigationLabel are required; the types also require footerLabel when footerProps.links is given.' },
       { name: 'Vue / Angular links / footerLinks', type: 'readonly { label, href, current?, icon? }[]', description: 'These adapters expose homeHref, links, footerLinks, copyright, skipLabel, menuLabel, navigationLabel and footerLabel directly. Vue slots: logo/actions/footer/default. Angular projection: [hwBrand]/[hwPortalActions]/[hwPortalFooter]/default.' },
       { name: 'secondaryNavigation / breadcrumbs', type: 'readonly item arrays', description: 'Optional navigation and breadcrumb collections. secondaryLabel and breadcrumbLabel are required when their collections are given. Breadcrumb items use label/href; React/Vue also accept current.' },
       { name: 'Vanilla .hw-portal-layout', type: 'semantic HTML', description: 'Compose the shared classes with one main landmark and enhance only the marked header. The embedded gallery substitutes a section for main to avoid nesting page landmarks.' },
@@ -168,16 +168,17 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   <span data-hw-feedback-status role="status"></span>
 </div>`,
     api: [
-      { name: 'createFeedback(root, options)', type: 'vanilla controller', description: 'Options: value, onValueChange(value), successMessage (required; data-hw-success-message) and the optional getStatusMessage(value), which replaces it for one answer. The returned controller exposes value, select(value), destroy().' },
+      { name: 'createFeedback(root, options)', type: 'vanilla controller', description: 'Options: value ({ helpful: boolean | null, comment: string }), onValueChange(value), onFeedback(value) and successMessage (required; data-hw-success-message), shown once the answer is sent. The returned controller exposes value, select(helpful), setComment(comment), submit() and destroy().' },
       { name: 'data-hw-value', type: 'string', description: 'Stable button values, commonly yes/no. The selected button gets aria-pressed="true" and the optional hidden input receives its value.' },
-      { name: 'hw:change', type: 'CustomEvent<{ value: string }>', description: 'Bubbles when the selection changes. Re-selecting the same value does not emit another value event.' },
+      { name: 'hw:change', type: 'CustomEvent<{ value: FeedbackValue }>', description: 'Bubbles when the answer changes; read event.detail.value.helpful. Re-selecting the same choice does not emit another event.' },
+      { name: '[data-hw-feedback-comment] / [data-hw-feedback-submit]', type: 'optional authored markup', description: 'An optional comment step, revealed after a choice, with a textarea and a submit button. Without it the answer is sent on the choice.' },
       { name: 'data-hw-disabled / data-hw-readonly', type: '"true"', description: 'Stops user changes; also respect native disabled on individual buttons.' },
     ],
-    lifecycle: ['Call enhance() after mounting vanilla markup, or own a createFeedback() controller directly.', 'A selection updates button state, the hidden field and the polite status. Form reset restores the initial choice.', 'Before replacing the markup, release enhance() or call controller.destroy(); original attributes, field value and status are restored.', 'Send feedback to your backend in the callback. The displayed acknowledgment alone is not proof that a server stored anything.'],
+    lifecycle: ['Call enhance() after mounting vanilla markup, or own a createFeedback() controller directly.', 'A selection updates button state and the hidden field. The polite status shows successMessage after the answer is sent: on submit, or on the choice when no submit button is authored. Form reset restores the initial choice.', 'Before replacing the markup, release enhance() or call controller.destroy(); original attributes, field value and status are restored.', 'Send feedback to your backend in the callback. The displayed acknowledgment alone is not proof that a server stored anything.'],
     accessibility: ['Give the choice group a visible question and accessible name; use real buttons or native radio controls.', 'Keep acknowledgment in a polite status region; successMessage supplies its text.'],
     variants: ['Text choices (default)', 'Thumbs with text', 'Thumbs only with accessible labels', 'React or Vue choice plus comment'], related: ['radio', 'textarea', 'alert'],
-    frameworkNotes: 'All adapters support choiceVariant="text"|"icon-text"|"icon" (vanilla data-choice-variant with hw-feedback-actions, hw-feedback-icon and hw-feedback-label). Keep yes/no labels for icon-only accessible names. APIs differ: React Feedback value is {helpful:"yes"|"no"|"",comment:string} with onValueChange/onFeedback. Vue v-model is a string and submit emits {value,comment}. Angular [(value)] is boolean|null and emits valueChange; its base component does not include a comment field.',
-    limitations: ['No network transport, analytics or moderation is included. React/Vue submission acknowledgment is local UI state.'], source: 'packages/vanilla/src/content.ts',
+    frameworkNotes: 'All adapters support choiceVariant="text"|"icon-text"|"icon" (vanilla data-choice-variant with hw-feedback-actions, hw-feedback-icon and hw-feedback-label). Keep yes/no labels for icon-only accessible names. Every adapter uses the value {helpful: boolean | null, comment: string}: React value/onValueChange and onFeedback, Vue v-model and @feedback, Angular [(value)] and (feedback). React, Vue and Angular show the comment step after a choice and require commentLabel and submitLabel; disabled stops changes.',
+    limitations: ['No network transport, analytics or moderation is included. The submission acknowledgment is local UI state.'], source: 'packages/vanilla/src/content.ts',
   },
   'cookie-consent': {
     summary: 'Present an explicit accept/reject choice for optional cookies and hand the result to the application’s privacy implementation.',
@@ -187,15 +188,15 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   <div class="hw-button-group"><button class="hw-button" type="button" data-hw-consent="accepted">Accept optional cookies</button><button class="hw-button" type="button" data-hw-consent="rejected">Reject optional cookies</button></div>
 </section>`,
     api: [
-      { name: 'createCookieConsent(root, options)', type: 'vanilla controller', description: 'Options: storageKey? and onValueChange(choice). Returns value, choose(choice), destroy().' },
-      { name: 'choice', type: '"accepted" | "rejected"', description: 'A valid choice hides the panel and emits bubbling hw:change with {value: choice}.' },
+      { name: 'createCookieConsent(root, options)', type: 'vanilla controller', description: 'Options: open?, onOpenChange(open), onConsent(choice) and storageKey?. Returns open, setOpen(open), choose(choice), destroy().' },
+      { name: 'choice', type: '"accepted" | "rejected"', description: 'A valid choice hides the panel and emits bubbling hw:change with {consent: choice}, then with {open: false}.' },
       { name: 'storageKey', type: 'optional string', description: 'Direct vanilla-controller option enabling localStorage persistence. Without it no choice is persisted; unavailable storage does not prevent choosing.' },
       { name: 'data-variant="banner"', type: 'CSS variant', description: 'Positions the panel at the bottom of the viewport. Verify it does not cover essential actions or focused controls.' },
     ],
     lifecycle: ['Mount before optional tracking starts. Vanilla enhancement begins without persistence; direct initialization can opt into storageKey.', 'Accept or reject reports the choice and hides the UI. Connect that event to application-owned script loading and preference storage.', 'Provide a persistent “Cookie preferences” action so users can revisit their choice; the base controller does not supply a complete preference center.', 'Destroy removes listeners and restores the initial hidden attribute. It deliberately does not erase stored application consent.'],
     accessibility: ['Keep both choices explicit, named and reachable by keyboard.', 'Use a labeled section or region. It is a nonmodal panel and does not trap focus.'],
     variants: ['Inline panel', 'Fixed banner'], related: ['dialog', 'button-group', 'portal-footer'],
-    frameworkNotes: 'React uses value: accepted|rejected|null and onValueChange. Vue controls open with v-model:open and emits accept/reject/preferences. Angular controls visible/visibleChange and emits consent/preferences. Framework adapters do not persist preferences automatically.',
+    frameworkNotes: 'Every adapter separates visibility from the choice: React open/defaultOpen/onOpenChange and onConsent, Vue v-model:open and @consent, Angular [(open)] and (consent), each with "accepted" | "rejected"; preferences remains a separate action. The accept button precedes the reject button. Framework adapters do not persist preferences automatically.',
     limitations: ['This is a preference UI, not a consent-management platform or legal-compliance guarantee. Blocking scripts, recording policy versions and revoking consent remain application responsibilities.'], source: 'packages/vanilla/src/content.ts',
   },
   'notification-list': {
@@ -207,15 +208,15 @@ export const layoutPlatformGuides: Record<string, GuideInput> = {
   </ul>
 </section>`,
     api: [
-      { name: 'items', type: 'notification array with stable IDs', description: 'React/Vue use read; Angular uses unread. Supply a title, optional description and an actual destination when navigation is available.' },
-      { name: 'label / emptyMessage', type: 'string', description: 'Required. Name the collection and explain the empty state without implying a loading failure.' },
-      { name: 'data-state="unread"', type: 'CSS state', description: 'Vanilla unread styling also accepts data-unread="true" or data-read="false". Add a textual unread cue.' },
-      { name: 'React onMarkRead / Angular dismissed', type: 'callback or event carrying item ID', description: 'The application changes the item collection after the action. The list does not synchronize with a notification service.' },
+      { name: 'items', type: 'notification array with stable IDs', description: 'Every adapter uses read, dateTime and dateLabel; the date is shown only with dateLabel. Supply a title, optional description and an actual destination when navigation is available.' },
+      { name: 'label / emptyMessage / unreadLabel', type: 'string', description: 'Required. Name the collection, explain the empty state without implying a loading failure, and supply the text of the visible unread badge.' },
+      { name: 'data-state="unread"', type: 'CSS state', description: 'The only unread styling hook in vanilla and the adapters. Add a textual unread cue.' },
+      { name: 'onRead / onDismiss', type: 'callback or event carrying item ID', description: 'The application changes the item collection after the action. The list does not synchronize with a notification service.' },
     ],
     lifecycle: ['Render from the notification collection, using stable IDs across updates.', 'Fetch or subscribe to data outside the component; reconcile read/dismiss actions into application state.', 'Preserve focus when an item is removed. Unsubscribe from application-owned polling or sockets when the owning view is destroyed; this static list has no vanilla enhancement controller.'],
     accessibility: ['Expose unread in text as well as background color.', 'Use time with a machine-readable datetime when an actual timestamp is known; supply the visible label as text.', 'Avoid making an entire continually changing inbox an assertive live region. Announce meaningful new arrivals separately.'],
     variants: ['Read and unread items', 'Empty state', 'Application-owned actions'], related: ['badge', 'toast-region', 'empty'],
-    frameworkNotes: 'React items use dateTime/dateLabel/read and onMarkRead(id); Vue uses date/dateLabel/read with read(id) and dismiss(id) events. Angular items use time/unread and its dismissed event asks the parent to remove an item.',
+    frameworkNotes: 'Items use id, title, description, href, read, dateTime and dateLabel in every adapter. React reports onRead(id) and onDismiss(id), Vue emits read and dismiss, Angular emits (read) and (dismissed); getMarkReadLabel and getDismissLabel name the actions. The parent updates the collection.',
     limitations: ['No push service, unread-count persistence or background subscription is supplied.'], source: contentSource,
   },
   container: {

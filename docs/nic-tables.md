@@ -44,12 +44,23 @@ existing indicator markup. This is a Hawiyah sorting extension, not an inferred
 NIC JavaScript requirement.
 
 Use a caption and native `scope="col"`/`scope="row"`. Every native adapter
-now supplies a named focusable overflow wrapper when given a caption;
+now supplies a focusable overflow wrapper with `role="region"` named by the
+caption through `aria-labelledby` when given a caption (decision for 0.3.0: the
+Angular wrapper used `aria-label` and rendered an empty caption);
 React/Vue `wrapperProps` can customize its attributes. Vanilla authors the
 wrapper explicitly. Angular DataTable now supports `rowHeader` columns, and
 Vue DataTable now renders an `emptyMessage` cell spanning all columns.
 Plain Table data-driven empty states use the same pattern; fully composed
 native children remain caller-owned.
+
+Decision for 0.3.0: React, Vue and Angular share one column shape,
+`{key, label, cell?, sortable?, rowHeader?}`. `cell` is a function of the row in
+React (`cell(row, index)`), a `cell-<key>` scoped slot with `{row, index,
+column}` in Vue, and a template on the column in Angular, which also takes
+`rowKey`. DataTable keeps its sort state in `sortKey` and `sortDirection` in
+every adapter, and the class `hw-data-table` is on the wrapper
+`div.hw-table-wrap`. Angular `hw-table` ignores projected rows: write a table
+with authored rows as a native `table.hw-table`.
 
 The tables have no text and no locale of their own. DataTable requires
 `emptyMessage` and `locale` (vanilla: the `locale` option or `data-hw-locale`

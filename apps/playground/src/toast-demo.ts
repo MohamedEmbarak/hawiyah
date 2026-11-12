@@ -105,7 +105,7 @@ export function toastProject(framework: ProjectFramework, language: ProjectLangu
     }};
   }
   const entry = framework === 'react' ? `main.${jsx}` : framework === 'angular' ? 'main.ts' : `main.${ext}`;
-  const source = JSON.stringify(framework === 'react' ? copy.messages.map(({message, ...rest}) => ({...rest, description: message})) : copy.messages, null, 2);
+  const source = JSON.stringify(copy.messages, null, 2);
   const titlePrefix = JSON.stringify(copy.dismiss + ': ');
   if (framework === 'react') return {
     names: {html: `App.${jsx}`, css: 'style.css', js: entry}, host: '<div id="app"></div>', entry,

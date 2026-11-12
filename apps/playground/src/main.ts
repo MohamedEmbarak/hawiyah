@@ -193,7 +193,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "switch":
       return `<label class="choice-line"><input type="checkbox" role="switch" class="hw-switch" checked>${t("Enable notifications", "تفعيل الإشعارات")}</label>`;
     case "combobox":
-      return `<div class="hw-field hw-combobox" data-hw="combobox" data-hw-results-message="${t("{count} results available", "{count} نتيجة")}"><label class="hw-label" for="${uid}">${t("Find a city", "ابحث عن مدينة")}</label><input id="${uid}" class="hw-input" data-hw-combobox-input autocomplete="off" placeholder="${t("Search cities…", "ابحث عن المدن…")}"><input type="hidden" data-hw-combobox-value name="city"><ul class="hw-listbox" data-hw-combobox-list hidden>${[
+      return `<div class="hw-field"><label class="hw-label" for="${uid}">${t("Find a city", "ابحث عن مدينة")}</label><div class="hw-combobox" data-hw="combobox" data-hw-results-message="${t("{count} results available", "{count} نتيجة")}"><input id="${uid}" class="hw-input" data-hw-combobox-input autocomplete="off" placeholder="${t("Search cities…", "ابحث عن المدن…")}"><input type="hidden" data-hw-combobox-value name="city"><ul class="hw-listbox" data-hw-combobox-list hidden>${[
         ["riyadh", "Riyadh", "الرياض"],
         ["jeddah", "Jeddah", "جدة"],
         ["dammam", "Dammam", "الدمام"],
@@ -205,7 +205,7 @@ function sample(id: ComponentId, p = "sample"): string {
         )
         .join(
           "",
-        )}</ul><span class="hw-sr-only" data-hw-combobox-status role="status"></span></div>`;
+        )}</ul><span class="hw-sr-only" data-hw-combobox-status role="status"></span></div></div>`;
     case "tabs":
       return `<div class="hw-tabs" data-hw="tabs" data-hw-overflow-label="${t("More tabs", "المزيد من التبويبات")}"><div class="hw-tab-list" role="tablist" aria-label="${t("Example sections", "أقسام المثال")}">${["overview", "details", "history"].map((v, i) => `<button class="hw-tab" role="tab" id="${uid}-t${i}" data-hw-value="${v}" aria-controls="${uid}-p${i}" aria-selected="${i === 0}">${[t("Overview", "نظرة عامة"), t("Details", "التفاصيل"), t("History", "السجل")][i]}</button>`).join("")}</div>${["overview", "details", "history"].map((v, i) => `<section class="hw-tab-panel" role="tabpanel" id="${uid}-p${i}" aria-labelledby="${uid}-t${i}" ${i ? "hidden" : ""}>${[t("Everything you need, in one place.", "كل ما تحتاجه في مكان واحد."), t("Clear information for your next step.", "معلومات واضحة لخطوتك القادمة."), t("Your latest updates appear here.", "تظهر آخر تحديثاتك هنا.")][i]}</section>`).join("")}</div>`;
     case "dialog":
@@ -827,6 +827,8 @@ app.addEventListener("submit", (event) => {
     ?.focus();
 });
 window.addEventListener("hashchange", () => {
+  // A page that replaced the guide's document (a test fixture) keeps its own fragment links.
+  if (!app.isConnected) return;
   captureDraft();
   state.view = location.hash.slice(1) || "overview";
   state.mobileNav = false;

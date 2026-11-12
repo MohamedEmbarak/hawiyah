@@ -94,10 +94,13 @@ for (const adapter of ['react', 'vue', 'angular']) {
   });
 }
 
-for (const adapter of ['react', 'vue']) it(`${adapter}: uncontrolled radio input resets to its original normalized score`, async () => {
-  const m = await input(adapter); await m.click(5); expect(selected(m.host)).toBe('5');
+// A native reset is a value change made by the form, in the three adapters (Angular without Angular Forms).
+for (const adapter of ['react', 'vue', 'angular']) it(`${adapter}: uncontrolled radio input resets to its original normalized score`, async () => {
+  const m = await input(adapter); await m.click(5); expect(selected(m.host)).toBe('5'); const before = m.changed.mock.calls.length;
   await act(async () => {m.host.reset(); await new Promise(resolve => queueMicrotask(resolve)); await nextTick();}); await m.sync();
-  expect(selected(m.host)).toBe('3'); expect(new FormData(m.host).get('score')).toBe('3');
+  expect(selected(m.host)).toBe('3'); expect(new FormData(m.host).get('score')).toBe('3'); expect(m.changed).toHaveBeenCalledTimes(before + 1); expect(m.changed).toHaveBeenLastCalledWith(3.9);
+  await act(async () => {m.host.reset(); await new Promise(resolve => queueMicrotask(resolve)); await nextTick();}); await m.sync();
+  expect(m.changed).toHaveBeenCalledTimes(before + 1);
 });
 
 it('angular: rating CVA preserves touch, reset and disabled behavior', () => {

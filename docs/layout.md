@@ -210,7 +210,8 @@ drawer when collapsed navigation is required.
 
 AppShell accepts direct `header`, `aside` / `nav`, `main`, and `footer` landmarks,
 or the equivalent `.hw-app-shell-header`, `-sidebar`, `-main`, and `-footer`
-classes. A `.hw-app-shell-body` wrapper is supported. Without a sidebar, the main
+classes. A `.hw-app-shell-body` wrapper is supported in authored markup; no
+adapter renders one (React placed sidebar and main in it before 0.3.0). Without a sidebar, the main
 area spans the available width. The default sidebar becomes a second column at
 `64rem`; use Sidebar for a separately configurable collapse breakpoint.
 

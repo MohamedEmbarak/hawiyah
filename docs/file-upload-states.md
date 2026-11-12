@@ -1,7 +1,9 @@
 # File transfer state and removal
 
-`FileUploadList` composes with FileUpload and FileDropzone in React and Vue.
-Angular exposes `HwFileUploadListComponent` with `hw-file-upload-list`. Vanilla
+`FileUploadList` composes with FileUpload and FileDropzone in React, Vue and
+Angular (`HwFileUploadListComponent`, `hw-file-upload-list`, projected into
+`hw-file-dropzone` or `hw-file-upload`). No dropzone renders a file list of its
+own. Vanilla
 exposes `createFileUploadList(host, options)` with `update(items)`, `setDisabled(value)` and `destroy()`.
 
 Each `FileUploadItem` has a stable `id`, a filename and a status of `selected`,

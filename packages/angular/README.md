@@ -69,8 +69,8 @@ and none of them has a default label. The application passes every string:
   `get...Message`; it receives the data and returns the whole string, and the
   component adds no words or punctuation to it.
 - Text needed in every use is `@Input({ required: true })`, so a missing one is a
-  template type error. Text needed only when a feature is switched on (a
-  dismissible alert, a required combobox, a header with `mainId`) is an optional
+  template type error. Text needed only when a feature is switched on (an
+  alert with a bound `(dismissed)`, a required combobox, a header with `mainId`) is an optional
   input that is required under that condition. The tables below say which.
 - When a required text is missing at run time, the component renders nothing in
   its place and omits the attribute; it does not invent a name or hide the
@@ -186,6 +186,10 @@ Write them as attributes or bind them as `[aria-label]="expr"`;
 control lists the application's ids, the ids of a surrounding field, the hint id
 and the error id, in that order and without duplicates. `id`, `class` and `style`
 stay on the host, and the inner control keeps `controlId`, so no id is duplicated.
+Wrapper components that are not value controls (`hw-progress`, `hw-meter`,
+`hw-timeline`, `hw-icon-button`, `hw-card`, `hw-notification-list`, `hw-feedback`
+and the components under Names) forward `aria-label`, `aria-labelledby` and
+`aria-describedby` in the same way: see "Where attributes land".
 The hosts of form controls are block boxes; `hw-toggle-group` generates no box
 (`display: contents`), so its fieldset is the flex or grid item. Both rules leave
 `hidden` on a host working.
@@ -330,7 +334,7 @@ Changed defaults and markup:
 
 | Catalog entry / standalone export | Selector and specific API |
 | --- | --- |
-| Button — `HwButtonDirective` | `button[hwButton]`, `a[hwButton]`; `variant: primary/secondary/ghost/danger`, `size: sm/md/lg`. Native attributes/events/form semantics are preserved. Set button `type` explicitly; anchors require `href` and do not support disabled semantics. |
+| Button — `HwButtonDirective` | `button[hwButton]`, `a[hwButton]`; `variant` (default `primary`), `size: sm/md/lg` (default `md`), `type`, `disabled`, `loading`. A native button is `type="button"` unless a type is written: the button that submits a form is `<button hwButton type="submit">`. `loading` disables the button natively and writes `aria-busy="true"`: it leaves the tab order and ignores click, Enter and Space and does not submit, so keep its label and return focus to it, or to the result, when the operation ends. `type`, `disabled` and `loading` are inputs, written statically or bound (`[disabled]="x"`, `[loading]="x"`); `[attr.type]`, `[attr.disabled]` and `[attr.aria-busy]` bound on the element are not supported. An `aria-busy` the application wrote stays while `loading` is false. On `a[hwButton]` no `type` and no `disabled` attribute is written and `loading` writes `aria-busy` only; anchors require `href` and have no disabled state. Other native attributes, events and form semantics are preserved. See [button notes](../../docs/nic-buttons.md). |
 | Field — `HwFieldComponent` | `hw-field`; optional `controlId` (generated), `label`, `hint`, `error`, `required`, `aria-describedby`. Wraps a Hawiyah value control, which takes its id and state, or a native control bound through a template reference (`#f`: `f.controlId`, `f.labelId`, `f.descriptionIds`, `f.required`, `f.invalid`). See "Field". |
 | TextField — `HwTextFieldComponent` | `hw-text-field`; string value, `type`, `placeholder`, `autocomplete`, `inputmode`, `readOnly`; `size: sm/md/lg` (default md), `visualVariant: outline/filled` (default outline) style the native input. The native number input still emits a string; parse at your domain boundary. Text being typed is never rewritten: while a number or date is incomplete the value is `''`, and the input keeps what the user typed. |
 | Textarea — `HwTextareaComponent` | `hw-textarea`; string value, `maxLength`, `placeholder`, `readOnly`; `rows` is optional and has no default (the height comes from the stylesheet); `size: sm/md/lg`, `visualVariant: outline/filled` style the native textarea. |
@@ -342,21 +346,21 @@ Changed defaults and markup:
 | Tabs — `HwTabsComponent`, `HwTabComponent` | `hw-tabs` contains `hw-tab`; tabs `label` (the name of the tab list; required unless `aria-label` or `aria-labelledby` is written on `hw-tabs`, see Names), `id`, `[(value)]`, `orientation`, optional `direction`, `activationMode: automatic/manual`, `overflow: menu/scroll` (default menu); `overflowLabel` is required unless `overflow="scroll"`. Each tab takes `value`, `label`, `disabled` and renders its projected content in its own panel: `<hw-tab>` contains the `<section class="hw-tab-panel" role="tabpanel">`, and the shared stylesheet gives `hw-tab` `display: contents`. Compact horizontal containers disclose excess labels; vertical tabs remain visible. |
 | Dialog — `HwDialogComponent` | `hw-dialog`; required `title` (the visible heading) and `closeLabel`; `titleId`, `[(open)]`, `closeOnBackdrop`; outputs `cancelled`, `returnValue`; methods `show(trigger?)`, `close(value?)`. `aria-describedby`, `aria-labelledby` (replaces the title as the name) and `aria-label` written on `hw-dialog` are inputs forwarded to the native dialog and removed from the host, static or bound (`[aria-describedby]="id"`); `[attr.aria-*]` on the host is not supported. Describe a dialog by projecting a paragraph with an id and pointing `aria-describedby` at it. Project content and `[hwDialogFooter]`: the footer region is always rendered and the stylesheet hides it while nothing is projected; for a conditional footer wrap the marked element, `@if (canSave) {<div hwDialogFooter>…</div>}`. |
 | Accordion — `HwAccordionComponent` | `hw-accordion`; `items: {value,title,content?,open?}[]` (`value` keys the item), `exclusive`, `groupName`; `toggled: {value,open}`. Optional `titleTemplate` and `contentTemplate` (`TemplateRef<{$implicit: HwAccordionItem; index: number}>`) display the title inside the summary and the content inside `div.hw-accordion-content`; `title` stays plain text, and a title template must render text because it names the summary. A click on a link, button or form control inside a rich title does not toggle the item. `aria-label`, `aria-labelledby` and `aria-describedby` written on `hw-accordion` reach `div.hw-accordion`, which then has `role="group"`. Native details/summary. |
-| Card — `HwCardComponent` | `hw-card`; project `[hwCardHeader]`, body, `[hwCardFooter]`. |
-| Badge — `HwBadgeComponent` | Static label; `tone="neutral\|success\|warning\|danger\|info"`, `variant="soft\|outline\|dot"`; [source and adaptations](../../docs/nic-badges.md). |
-| Alert — `HwAlertComponent` | `hw-alert`; `title`, `tone: info/success/warning/danger`, `role: status/alert/region`, `dismissible`; `closeLabel` is required with `dismissible`; `dismissed` asks the parent to remove it. |
+| Card — `HwCardComponent` | `hw-card`; project `[hwCardHeader]`, body, `[hwCardFooter]`; `variant: default/flat/elevated/outlined/ghost` (no `data-variant` unless given); with `href` the card is one link (`a.hw-card.hw-card-action`, with `target`, `rel`, `disabled`), else an `article.hw-card`. `aria-label`, `aria-labelledby` and `aria-describedby` written on `hw-card`, static or bound, reach the article or the anchor; `id`, `class` and `style` stay on the host. See "Where attributes land". |
+| Badge — `HwBadgeComponent` | `hw-badge`; static label; `tone="neutral\|success\|warning\|danger\|info"` (default `neutral`), `variant="soft\|outline\|dot"` (no `data-variant` unless given). The host is the badge (`hw-badge.hw-badge`): class, id and attributes written on it are on the styled element. [Source and adaptations](../../docs/nic-badges.md). |
+| Alert — `HwAlertComponent` | `hw-alert`; `title`, `tone: neutral/info/success/warning/danger` (default `info`), `variant: default/outline/minimal` (no `data-variant` unless given), `role: alert/status/region/group`. The host is the alert (`hw-alert.hw-alert > div.hw-alert-content`): class, id and aria attributes written on it are on the styled element. Without `role` a danger alert is `role="alert"` and every other tone `role="status"`; set `role="status"` on a danger message that is rendered with the page. `role` and `variant` are inputs, static or bound; `[attr.role]` and `[attr.data-variant]` on `hw-alert` are not supported. Dismiss: while a `(dismissed)` listener is bound a ghost icon button (`button.hw-button.hw-alert-dismiss`) follows the content, named by `closeLabel`, which is required then and not otherwise. The alert never hides itself: the application removes it and moves focus to the element the message was about or to the heading of the surrounding region, never leaving it on the body. |
 | Table — `HwTableComponent` | `hw-table`; `caption` (required unless `aria-label` or `aria-labelledby` is written on `hw-table`; both reach the table), `columns: {key,label,rowHeader?,cell?}[]`, `rows: Record<string, unknown>[]`, optional `rowKey(row, index)`, required `emptyMessage`. A column without `cell` prints the row value as text (nothing for null and undefined); `cell` is a `TemplateRef<{$implicit: Row; index: number; column}>` rendered inside the `td` or `th[scope=row]`. Rows are tracked by `rowKey`, else by index. With a caption the scroll wrapper is `div.hw-table-wrap[role=region][aria-labelledby={caption id}]`; without one it has neither attribute. A row type must be assignable to `Record<string, unknown>`: declare it as a type alias, not an interface. `hw-table` ignores projected `thead` / `tbody`: a table with authored rows is a native table with the `hw-` classes. |
 | Pagination — `HwPaginationComponent` | `hw-pagination`; `[(page)]`, `totalPages`; `label` (required unless `aria-label` or `aria-labelledby` is written on `hw-pagination`, see Names) and required `previousLabel`, `nextLabel`, `getPageLabel(page)`, `getGapLabel(start,end)`, `jumpLabel` and `goLabel`; `formatPage(page)`, `siblingCount=1`, `disabled`, `hideOnSinglePage=false`. Ellipsis disclosures are named by `getGapLabel`; gaps above 100 pages use bounded integer entry. On the first and the last page the previous / next arrow has `aria-disabled="true"`, keeps focus and its name and ignores activation; the native `disabled` attribute is used only while the whole control is disabled. Parent fetches/slices data; no navigation or scrolling is imposed. |
 | Breadcrumb — `HwBreadcrumbComponent` | `hw-breadcrumb`; `items: {label,href?,current?,disabled?}[]`; `label` (required unless `aria-label` or `aria-labelledby` is written on `hw-breadcrumb`, see Names). The current item is the first item with `current: true`, else the last item; it is `span[aria-current=page]`, never a link and never a tab stop, also when it has an `href`. A disabled item is `span[role=link][aria-disabled=true]` without an `href`. |
-| Progress — `HwProgressComponent` | `hw-progress`; `label`, `value: number\|null`, `max`; null is indeterminate. |
-| Skeleton — `HwSkeletonComponent` | `hw-skeleton`; `width`, `height`; decorative, hidden from assistive technology. Announce surrounding loading state once. |
-| Spinner — `HwSpinnerComponent` | `hw-spinner`; required `label`; status announcement. A spinner the application marks `aria-hidden="true"` is decorative: it passes `label=""`, which satisfies the required input, and nothing is reported. |
-| Avatar — `HwAvatarComponent` | Required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"`. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
+| Progress — `HwProgressComponent` | `hw-progress`; `value: number\|null` (null, the default, is indeterminate), `max` (100), `size: sm/lg`. One `progress.hw-progress` inside the host, named through `aria-label`: `label` is the accessible name, required unless `aria-label` or `aria-labelledby` is written on `hw-progress` (see Names). No visible label is rendered: write one yourself and reference it, `<span id="p">Upload</span><hw-progress aria-labelledby="p" [value]="v" />`. `value` and `max` are written as given; the browser clamps the position. |
+| Skeleton — `HwSkeletonComponent` | `hw-skeleton`; `variant: text/circle`. The host is the skeleton (`hw-skeleton.hw-skeleton[aria-hidden=true]`, no inner element): size it with `style` or `class` on the element, `<hw-skeleton style="inline-size: 60%; block-size: 2rem" />`; the default is a full-width block of 1rem. Decorative and never focusable. Announce loading with a `role="status"` container that holds an `hw-sr-only` text and the skeletons: see "Loading skeletons". |
+| Spinner — `HwSpinnerComponent` | `hw-spinner`; `size: sm/lg`. The host is the spinner (`hw-spinner.hw-spinner[role=status]`) and contains its name as `span.hw-sr-only`. The name is, in this order, an `aria-label` or `aria-labelledby` written on the host (no inner span is rendered for those unless `label` is also given), else `label`, which is required when neither is there. A spinner the application marks `aria-hidden="true"` is decorative, for use beside visible text: no name is required and none is reported. |
+| Avatar — `HwAvatarComponent` | `hw-avatar`; required `name`; optional `src`, `initials`, `size="40\|64\|80\|120\|sm\|md\|lg\|xl"`, `variant="circle\|square"` (no `data-size` and no `data-variant` unless given). The host is the avatar (`hw-avatar.hw-avatar`) and holds the `img` or the initials in `span[aria-hidden]`. While no image is shown the host is `role="img"` named by `name`; while the image is shown a role and an `aria-label` the application wrote on the host are back. Failed images fall back to initials; changing `src` retries. [Source notes](../../docs/nic-avatars.md). |
 | Divider — `HwDividerComponent` | `hw-divider`; native horizontal rule. |
 | Tooltip — `HwTooltipComponent`, `HwTooltipTriggerDirective` | `hw-tooltip`; required `text`, `placement`, `align`, `tooltipId` (the id of the tooltip element; no id is left on the wrapper). The host is the positioned wrapper (class `hw-tooltip-anchor`) and renders no focusable element of its own. It wraps exactly one focusable element marked `hwTooltipTrigger`: a button, a link, or text with `tabindex="0"`: `<hw-tooltip text="…"><button hwButton hwTooltipTrigger>…</button></hw-tooltip>`, `<hw-tooltip text="…"><span hwTooltipTrigger tabindex="0">term</span></hw-tooltip>`. The trigger gets the class `hw-tooltip-trigger` and `aria-describedby` with its own ids first, then the tooltip id. Focus or hover shows the tooltip; it hides when focus leaves, 120 ms after the pointer leaves, on Escape (focus stays on the trigger) and on a press outside. Without a marked trigger nothing is described; `hwTooltipTrigger` on a Hawiyah wrapper component such as `hw-text-field` is not supported in 0.3.0: mark a native element. |
 | FileUpload — `HwFileUploadComponent` | `hw-file-upload`; readonly `File[]` value, `accept` (no attribute without it), `multiple`, `capture: user/environment`, `form`. Projected content follows the input, for example an `hw-file-upload-list`. Selects local files only; no upload occurs. Forms can clear, but browsers forbid programmatically populating file pickers; a native reset empties it and emits `[]` once when files were held. |
 | Stepper — `HwStepperComponent` | `hw-stepper`; `items: {value,label,description?,status?}[]`, `current` (the `value` of the current step), `activeIndex` (an index, overrides `current`; -1 not started, `items.length` complete); `label` (required unless `aria-label` or `aria-labelledby` is written on `hw-stepper`, see Names); required `completeLabel` and `upcomingLabel`, rendered as `span.hw-sr-only[data-hw-step-status]` after the label of each complete and each upcoming step (the current step has `aria-current="step"`). With neither `current` nor `activeIndex` no step is current. `li.hw-step > span {label}, span.hw-sr-only, p.hw-hint {description}`. Noninteractive progress list. |
-| EmptyState — `HwEmptyStateComponent` | `hw-empty-state`; `title`, `description`, projected actions. |
+| EmptyState — `HwEmptyStateComponent` | `hw-empty-state`; required `title` (an `h3`), `description`. The host is the empty state (`hw-empty-state.hw-empty`, no inner section): `span.hw-empty-icon[aria-hidden=true]`, `h3`, `p`, the default content, the action. Project a decorative icon with `[hwEmptyIcon]`, rendered before the title, and the action with `[hwEmptyAction]`, rendered last and without a wrapper: `<hw-empty-state title="…"><span hwEmptyIcon class="hw-icon" data-icon="search-01"></span><button hwButton hwEmptyAction>…</button></hw-empty-state>`. The icon region is always rendered and the stylesheet hides it while it is empty. |
 
 ### Names
 
@@ -384,6 +388,12 @@ none on the host, on the server too. Write them as attributes or bind them as
 | `hw-table`, `hw-data-table` | the `table` (the caption is the visible name) |
 | `hw-dialog`, `hw-drawer` | the native `dialog` (`title` is the default name) |
 | `hw-tree-view`, `hw-calendar` | `ul[role=tree]`, `table.hw-calendar-grid`; also named by a surrounding `hw-field` |
+| `hw-progress`, `hw-meter` | the native `progress` / `meter` element |
+| `hw-timeline` | `ol.hw-timeline` |
+| `hw-icon-button` | `button.hw-icon-button` |
+| `hw-notification-list` | `section.hw-notification-list` (`label` is its visible `h2`, which names it through `aria-labelledby`) |
+| `hw-feedback` | `div.hw-feedback[role=group]` (`label` is the visible question, which names it through `aria-labelledby`) |
+| `hw-card` | `article.hw-card` or `a.hw-card` (no `label` input) |
 
 ```html
 <h2 id="results-heading">النتائج</h2>
@@ -396,6 +406,88 @@ itself is the landmark, so `aria-label` and `aria-labelledby` written on it, als
 with `[attr.aria-label]`, stay on it and name it. While `label` is given it is
 written as the `aria-label` of the element and the application's own value
 returns when `label` is removed: give one source of the name.
+
+### Where attributes land
+
+An Angular component is an element of its own. Two kinds exist, and the kind
+decides where `class`, `id`, `style` and ARIA attributes written on the element
+end up.
+
+The host is the root: the element is the styled, named element itself and its
+template is only the content. Class, id, `data-*` and aria attributes written on
+it, also with `[attr.…]`, are on the element the stylesheet and assistive
+technology see, and there is no inner element with the component's class.
+
+| Host | Class and what the component writes on it |
+| --- | --- |
+| `hw-alert` | `hw-alert`, `data-tone`, `data-variant`, `role` (from the `role` input or the tone) |
+| `hw-badge`, `hw-chip` | `hw-badge` / `hw-chip`, `data-tone`, `data-variant`, `data-size` (chip) |
+| `hw-skeleton` | `hw-skeleton`, `aria-hidden="true"`, `data-variant` |
+| `hw-spinner` | `hw-spinner`, `role="status"`, `data-size` |
+| `hw-avatar` | `hw-avatar`, `data-size`, `data-variant`; `role="img"` and `aria-label` only while no image is shown |
+| `hw-avatar-group`, `hw-button-group` | `hw-avatar-group` / `hw-button-group`, `role="group"`; `aria-label` only while `label` is given |
+| `hw-empty-state` | `hw-empty` |
+| `hw-stat` | `hw-stat`, `data-tone`, `data-variant` |
+| `hw-cookie-consent` | `hw-cookie-consent`, `role="region"`, `hidden` while closed, `data-variant`; `aria-labelledby` unless the application names the host |
+| `a[hwLink]`, `button[hwButton]`, `a[hwButton]` | directives on the application's own element |
+| layout hosts, `hw-side-navigation` | see Responsive composition and Side navigation |
+
+An attribute such a host writes only at times (`role` and `aria-label` of
+`hw-avatar`, `aria-label` of the two groups, `aria-labelledby` of
+`hw-cookie-consent`, `aria-busy` of `hwButton`, the link attributes of `hwLink`)
+is written while the component has a value for it, and what the application
+wrote comes back otherwise. The attributes in the table that are always written
+belong to the component: use the input of the same purpose (`role`, `variant`,
+`tone`, `size`, `type`, `disabled`).
+
+The host is a wrapper: the component renders a native element inside the host,
+and `aria-label`, `aria-labelledby` and `aria-describedby` written on the host
+are inputs of those names that reach that element; the host keeps none of them,
+on the server too, and keeps `id`, `class` and `style`. These are the value
+controls (see "Attributes on wrapper hosts"), the components listed under Names,
+and `hw-card`. Write the attributes statically or bind them as
+`[aria-label]="expr"`; `[attr.aria-label]`, `[attr.aria-labelledby]` and
+`[attr.aria-describedby]` on a wrapper host are not supported. The wrapper hosts
+`hw-progress`, `hw-meter`, `hw-description-list`, `hw-timeline`,
+`hw-notification-list` and `hw-feedback` are block boxes. `hw-divider` renders
+its `hr` inside the host.
+
+```html
+<hw-badge class="mine" id="state" tone="success">مقبول</hw-badge>        <!-- hw-badge.hw-badge.mine#state -->
+<hw-card aria-labelledby="summary-title" id="summary">…</hw-card>         <!-- hw-card#summary > article.hw-card[aria-labelledby] -->
+<hw-progress aria-label="رفع الملف" [value]="40" />                        <!-- hw-progress > progress.hw-progress[aria-label] -->
+```
+
+### Loading skeletons
+
+Skeletons are decorative. Announce the loading state once, with a container
+that has `role="status"` and holds a visually hidden text followed by the
+skeletons. The text is application text. When the content arrives, replace the
+whole container with it.
+
+```html
+<div role="status">
+  <span class="hw-sr-only">جارٍ تحميل الطلبات</span>
+  <hw-skeleton variant="text" style="inline-size: 70%" />
+  <hw-skeleton style="block-size: 4rem" />
+</div>
+```
+
+`aria-busy="true"` may be added to the region that is being filled; it is never
+combined with `aria-label` on an element that has no role.
+
+### Stat with a currency value
+
+`value` and `trend` are text inputs. Rich content is projected with
+`[hwStatValue]` and `[hwStatTrend]`, so a currency value can carry the currency
+name for assistive technology, as [Saudi riyal display](../../docs/saudi-riyal.md)
+describes:
+
+```html
+<hw-stat label="الرسوم" trend="12%" trendTone="success">
+  <bdi hwStatValue>120 <span class="hw-riyal" aria-hidden="true">⃁</span><span class="hw-sr-only">ريال سعودي</span></bdi>
+</hw-stat>
+```
 
 ### Trigger
 
@@ -431,6 +523,37 @@ Renamed and removed, without aliases:
 - ServiceCard: `duration="3 days" fee="Free"` → `[metadata]="[{term, description}, …]"`.
   ServiceDetails: `[details]` → `[metadata]`.
 - Calendar with `calendar="islamic-umalqura"`: add `unsupportedMessage="…"`.
+- Link: the component `hw-link` / `HwLinkComponent` is removed; the link is the
+  directive `a[hwLink]` / `HwLinkDirective` on your own anchor:
+  `<hw-link href="/x" variant="neutral">Text</hw-link>` →
+  `<a hwLink href="/x" variant="neutral">Text</a>`; `target="_blank"` →
+  `external` (or keep `target` and write `rel` yourself); import
+  `HwLinkDirective` in place of `HwLinkComponent`.
+- Alert: the input `dismissible` is removed; the button is rendered while
+  `(dismissed)` is bound: `<hw-alert dismissible closeLabel="Close"
+  (dismissed)="hide()">` → `<hw-alert closeLabel="Close" (dismissed)="hide()">`.
+- Chip: the input `removable` is removed in the same way: `<hw-chip removable
+  removeLabel="Remove" (removed)="fn()">` → `<hw-chip removeLabel="Remove"
+  (removed)="fn()">`.
+- Skeleton: the inputs `width` and `height` are removed: `width="X"` →
+  `style="inline-size: X"`, `height="Y"` → `style="block-size: Y"` (or
+  `[style.inline-size]="x"`).
+- IconButton: `describedBy="id"` → `aria-describedby="id"`;
+  `[describedBy]="id"` → `[aria-describedby]="id"`.
+- AvatarGroup: `[avatars]="people"` → `[items]="people"`; the items are
+  `HwAvatarItem` and may carry `initials`, `size` and `variant`.
+- Timeline: the items are `HwTimelineItem`: `state` → `status`; `'pending'` →
+  `'upcoming'`; `time` → `dateLabel`; add a unique `id` to every item.
+- NotificationList: `HwNotification`: `{unread: true}` → `{read: false}`, items
+  without `unread` → `{read: true}`; `time` → `dateLabel` (with `dateTime` for
+  the machine-readable value).
+- Feedback: `[(value)]` is `HwFeedbackValue` instead of `boolean | null`:
+  `[(value)]="helpful"` → `[(value)]="feedback"` with
+  `feedback = {helpful: null, comment: ''}`; read `$event.helpful` in
+  `(valueChange)`; add `commentLabel="…"` and `submitLabel="…"`. The success text
+  is shown after the submit, which emits `(feedback)`, no longer on the choice.
+- CookieConsent: `[(visible)]="x"` → `[(open)]="x"`; `(visibleChange)` →
+  `(openChange)`; `description` is required.
 
 Changed defaults and markup:
 
@@ -470,6 +593,63 @@ Changed defaults and markup:
   description list; actions go into the footer:
   `<button hwButton>Start</button>` → `<button hwButton hwServiceAction>Start</button>`.
 - Dialog and Drawer: an empty footer region is hidden by the stylesheet.
+- Button: `<button hwButton>` without a type is `type="button"` and no longer
+  submits its form: `<button hwButton>` that submits → `<button hwButton
+  type="submit">`. `[attr.disabled]="x ? '' : null"` → `[disabled]="x"`;
+  `[attr.aria-busy]` → `[loading]`.
+- The host is the root, where it used to wrap an element with the class: Alert,
+  Badge, Chip, Skeleton, Spinner, Avatar, AvatarGroup, ButtonGroup, EmptyState,
+  Stat and CookieConsent. Selectors: `hw-alert > .hw-alert` → `hw-alert.hw-alert`
+  (or `.hw-alert`), and the same for `hw-badge > .hw-badge`, `hw-chip > .hw-chip`,
+  `hw-skeleton > .hw-skeleton`, `hw-spinner .hw-spinner`, `hw-avatar > .hw-avatar`,
+  `hw-button-group > .hw-button-group`, `hw-stat > .hw-stat`,
+  `hw-cookie-consent > .hw-cookie-consent`; `.hw-avatar-group > hw-avatar >
+  .hw-avatar` → `.hw-avatar-group > .hw-avatar`; `section.hw-empty` → `.hw-empty`.
+- Default values are no longer written as attributes: `data-variant="soft"`
+  (Badge, Chip), `data-variant="default"` (Alert, Card, ButtonGroup),
+  `data-size="md"` and `data-variant="circle"` (Avatar),
+  `data-orientation="horizontal"` (ButtonGroup), `data-variant="stacked"`
+  (DescriptionList) and `data-tone="neutral"` (Stat) appear only when the input
+  is given: selectors on those values → `:not([data-variant])` and so on.
+- Alert: without `role` a danger alert is `role="alert"` (was `status` for every
+  tone): `<hw-alert tone="danger">` that must stay polite → `<hw-alert
+  tone="danger" role="status">`.
+- Card and IconButton: `aria-label`, `aria-labelledby` and `aria-describedby` on
+  the host are forwarded to the article, anchor or button:
+  `[attr.aria-label]="x"` on `hw-card` → `[aria-label]="x"`.
+- Progress: one `progress.hw-progress` named by `aria-label`, where it rendered
+  `label.hw-stack > span + progress`; render a visible label yourself where it is
+  wanted: `<span id="p">Upload</span><hw-progress aria-labelledby="p" [value]="v" />`.
+  `value` and `max` are written as given (were clamped; a `max` that was not
+  positive became 100): clamp in the application if the raw attribute matters.
+- Meter: one `meter.hw-meter` named by `aria-label`, where it rendered
+  `label.hw-meter > span + meter`; `low`, `high` and `optimum` have no defaults
+  (were 25, 75, 100): add `[low]="25" [high]="75" [optimum]="100"` to keep the
+  coloured regions.
+- Spinner: `hw-spinner.hw-spinner[role=status] > span.hw-sr-only`, where it
+  rendered `span[role=status] > span.hw-spinner + span.hw-sr-only`; `label` is
+  no longer a required input, so `label=""` on a decorative spinner can go.
+- EmptyState: an icon projected as plain content moves to
+  `<span hwEmptyIcon>…</span>` and the action to an element with `hwEmptyAction`.
+- Stat: the trend is the `trend` input or `[hwStatTrend]` inside the packaged
+  `span.hw-stat-trend`: `<span class="hw-stat-trend" data-tone="success">12%</span>`
+  inside `hw-stat` → `trend="12%" trendTone="success"`.
+- NotificationList: the section is labelled by a visible `h2`
+  (`aria-labelledby`), where it had `aria-label`; items are
+  `li[data-state] > h3, hw-badge, p, time, buttons`, where they were
+  `li.hw-notification[data-unread] > div`; an empty list is a `p`, where it was
+  an `li`: `[data-unread='true']` → `[data-state='unread']`; `.hw-notification`
+  → `.hw-notification-list > ul > li`. `unreadLabel` is a visible badge, where it
+  was screen-reader-only text. `(read)` with `getMarkReadLabel(item)` is new.
+- Feedback: `div.hw-feedback[role=group]` with a comment step and a submit
+  button; see the Feedback row.
+- CookieConsent: the region stays in the document with `hidden` when closed
+  (was removed); the buttons are in `div.hw-button-group` in the order Accept,
+  Reject, Preferences; the region is named by its heading through
+  `aria-labelledby`.
+- `label` is optional with `aria-label` or `aria-labelledby` on `hw-progress`,
+  `hw-meter`, `hw-timeline`, `hw-icon-button`, `hw-notification-list`,
+  `hw-feedback`, `hw-spinner`, `hw-button-group` and `hw-avatar-group`.
 
 ## Interaction guarantees
 
@@ -526,6 +706,19 @@ with `provideClientHydration()`. On the server the components emit markup only:
   on the current link, so a prerendered page shows the right group open before
   hydration. Nothing is measured or scrolled on the server.
 - The layout hosts carry their class and custom properties in the server markup.
+- The hosts that are the root (see "Where attributes land") carry their class,
+  role, name and `data-*` attributes in the server markup: the role of an alert,
+  `role="img"` and the name of an avatar without an image, `role="group"` and
+  the name of a button group, `role="region"`, `aria-labelledby` and `hidden` of
+  a closed CookieConsent. `type`, `disabled` and `aria-busy` of `hwButton` and
+  the attributes of `hwLink` (a disabled link has no `href`) are in the server
+  markup; the capturing listeners of a disabled link are added in the browser.
+- A dismiss, remove, read or preferences button is in the server markup when
+  its listener is bound in the template. Feedback renders its comment step on
+  the server when the value already has an answer, and its status element empty.
+  The icon region of EmptyState and the value and trend regions of Stat are
+  rendered without whitespace on both sides, so an empty one stays `:empty`.
+  No focus hand-over, timer or listener runs on the server.
 - An accordion item that is open is rendered as `<details open>`, and an
   exclusive group keeps its native `name`; `aria-expanded`, `inert` and motion
   are added when the browser takes over.
@@ -541,8 +734,11 @@ part of every generated identifier. An identifier the application passes always
 wins: `controlId`, `id` (Tabs), `titleId` (Dialog, Drawer, NavigationDrawer),
 `tooltipId` (Tooltip), `panelId` (Popover, Menu), `rangeTooltipId` (Calendar),
 `mainId` and `navigationId` (PortalHeader, PortalLayout), `groupName` (Accordion).
-Inputs named like a native attribute (`title`, `role` on Alert, `align` on
-Tooltip) are not left as attributes on the wrapper element.
+Inputs named like a native attribute (`title` on Alert, EmptyState and
+CookieConsent, `align` on Tooltip) are not left as attributes on the element;
+the `role` of `hw-alert` is on the host, which is the alert. Generated ids of
+this family: `{id}-title` (NotificationList, CookieConsent) and `{id}-label`
+(Feedback).
 
 Packaged in-page links (the AppShell, PortalHeader and PortalLayout skip links
 and the ContentNavigation links) are rendered as the bare `#id`, on the server
@@ -621,27 +817,27 @@ behavior. Readonly controls retain submitted values where HTML permits it.
 | Popover | Required `triggerLabel`; `label` is the accessible name of the panel and prints nothing (required unless `aria-label` or `aria-labelledby` is written on `hw-popover`, see Names; a visible heading is written in the content and referenced with `aria-labelledby`); `triggerVariant` (default `secondary`), `panelId` (the id of the panel; no id is left on the wrapper), `disabled`, `[(open)]` (a value written once is the initial state); project interactive content into `div.hw-popover-panel[role=region]`. The content closes it through a template reference: `<hw-popover #p …><button (click)="p.close(true)">…`. Ordinary Tab order; closes on Escape pressed inside it (focus returns to the trigger), on an outside press and when focus moves outside (focus stays where it went). See Trigger. |
 | Menu | Popover inputs plus `items: {value,label,disabled?,href?}[]` and `(action)`, which emits `item.value` once. `div.hw-menu > button, div.hw-menu-content[role=menu] > button.hw-menu-item[role=menuitem]`, or `a.hw-menu-item[role=menuitem][href]` for an item with `href` (a disabled link item has no `href` and `aria-disabled="true"`); no list wrapper. Trigger: click, Enter or Space toggles and focuses the first enabled item; ArrowDown opens on the first, ArrowUp on the last enabled item. Menu: ArrowDown/ArrowUp/Home/End move over enabled items; a typed letter moves to the next enabled item that starts with it (letters typed within 500 ms form a prefix, a repeated letter cycles, an unmatched key keeps its default action); Escape closes and focuses the trigger; Tab, an outside press and focus moving outside close without moving focus. Activation closes the menu and focuses the trigger; a link item then navigates. When the application sets `open`, the first enabled item becomes the tab stop and takes focus after the render. See Trigger. |
 | Drawer | Dialog inputs/outputs/methods (including the required `closeLabel` and the forwarded `aria-describedby`, `aria-labelledby` and `aria-label`) plus `side: start/end/bottom`; project body and `[hwDrawerFooter]`, whose region is hidden while nothing is projected. Native modal dialog with the markup of Dialog and the classes `hw-dialog hw-drawer`. |
-| ToastRegion | `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, required `label`, `(dismissed)="remove($event)"`. Set `variant="banner"` and optionally `position="inline"` or a corner. A dismissal listener enables the button, which is named by `getDismissLabel(message)`, required while messages can be dismissed. |
+| ToastRegion | `messages: {id,title?,message,tone?,urgent?,dismissible?}[]`, required `label`, `(dismissed)="remove($event)"`. Each toast renders `div.hw-toast-content > strong {title}, p {message}`. Set `variant="banner"` and optionally `position="inline"` or a corner. A dismissal listener enables the button, which is named by `getDismissLabel(message)`, required while messages can be dismissed. |
 | Collapsible | `label`, `[(open)]`, `disabled`; native details/summary and projected body. While disabled the summary has `aria-disabled="true"`, stays in the tab order and keeps its name; click, Enter and Space change nothing and notify nothing, and `open` still follows the application. |
 | TreeView | String selection; `items: {id,label,disabled?,children?}[]`, `[(expanded)]` (ids of the expanded branches; a value written once is the initial state), `direction`; `label` names the tree and is required unless `aria-label`, `aria-labelledby` or a surrounding `hw-field` names it. Required `getExpandLabel(node)` and `getCollapseLabel(node)` name `button.hw-tree-toggle`, the first child of a branch item: it is for pointer and screen-reader activation, has `tabindex="-1"`, expands or collapses without selecting and leaves focus on the tree item; it also works in a read-only tree. Each item is named by its label element (`aria-labelledby`) and carries `--hw-tree-depth` for its indentation. Roving focus, RTL arrows, Home/End, Enter/Space selection, and type-ahead over the visible nodes (as in Menu). `name`, `form`, `readOnly`, `hint`, `error` and the native reset exist in Angular only in 0.3.0. Caller supplies unique IDs. |
 | Carousel | Required slides; `label` names the region (required unless `aria-label` or `aria-labelledby` is written on `hw-carousel`; both and `aria-describedby` reach `section.hw-carousel`); `[(current)]`, `loop=false`, `slides` and optional `slideTemplate` with `{ $implicit: HwSlide, index }`, required one-based `getSlideLabel(position,total)`, `previousLabel`, `nextLabel` and `emptyLabel`. `showIndicators=true` needs `indicatorsLabel`; `carouselDescription` and `slideDescription` (`aria-roledescription`) are optional and rendered only when supplied. On the first and the last slide of a carousel that does not loop the previous / next arrow has `aria-disabled="true"`, keeps focus and ignores activation; both arrows are natively disabled only with fewer than two slides. Inert inactive slides, explicit navigation and no autoplay. [Source and motion notes](../../docs/nic-carousel.md). |
-| Link | `href`, `target`, `rel`, `current`, `variant: default/subtle`; projected link text. `_blank` defaults to `noopener noreferrer`. |
-| IconButton | Required accessible `label`; `type`, `disabled`, `pressed`, `variant`, `size`; `activated(MouseEvent)`. Project a decorative icon. |
-| ButtonGroup | `label`, `orientation: horizontal/vertical`; project native buttons or IconButtons. |
-| Chip | `tone`, `variant`, `removable`, `disabled`; `removeLabel` is required with `removable`; `removed` asks the caller to remove it. |
-| DescriptionList | `items: {term,description}[]`, `variant: stacked/horizontal`; project richer native dt/dd if needed. |
-| Stat | `label`, `value`, `description`, `tone`; projected supplemental content. |
-| Timeline | Required `label`, `items: {title,description?,time?,dateTime?,state?}[]`; state is complete/current/pending. |
-| Meter | `label`, `value`, `min`, `max`, `low`, `high`, `optimum`; native meter for bounded measurements. |
-| AvatarGroup | Required `label` and `getOverflowLabel(count)` (count is the number of hidden avatars); `avatars: {name,src?}[]`, `max`; named image/initials with overflow count. |
+| `HwLinkDirective / a[hwLink]` | The link is the application's own anchor: `<a hwLink href="/x">Text</a>`. `href`, `routerLink`, `hreflang`, `download`, ARIA and every other native attribute and event stay on the real element, which gets the class `hw-link`. Inputs: `variant: default/subtle/neutral/standalone` (no `data-variant` unless given), `current` (writes `aria-current="page"`), `external` (writes `target="_blank"` and adds `noopener noreferrer` to the `rel` the anchor was written with), `disabled`. A disabled link has no `href`, `role="link"`, `aria-disabled="true"` and `tabindex="-1"`; click and auxclick are cancelled before the browser, a router directive or a listener of the application sees them, and the `href` the application last wrote is put back when `disabled` ends. Without these inputs the directive writes none of the attributes: an `aria-current="step"`, `target`, `rel`, `role` or `tabindex` of the application stays. Works with `routerLink` and with core `bindLinkNavigation` (see Client-side routing). The link is a directive only; the former link component is removed (migration under "Changed in 0.3.0 outside form controls"). [States](../../docs/nic-links.md). |
+| IconButton | `hw-icon-button`; `label` is the accessible name, required unless `aria-label` or `aria-labelledby` is written on the host (see Names); `aria-describedby` is forwarded as well and the host keeps none of the three. `type` (button), `disabled`, `loading`, `pressed`, `expanded`, `controls`, `hasPopup`, `variant` (ghost), `size` (md), `shape: square/circle`, `form`, `name`, `value`; `activated(MouseEvent)`; public `focus()`. Project a decorative icon. |
+| ButtonGroup | `hw-button-group`; the host is the group (`hw-button-group.hw-button-group[role=group]`); `variant: default/attached`, `orientation: horizontal/vertical` (no `data-variant` and no `data-orientation` unless given); project native buttons or IconButtons. `label` is written as the `aria-label` of the host and is required unless the host itself carries `aria-label` or `aria-labelledby`; while `label` is given it wins over an application `aria-label`, which returns when `label` is removed: give one source of the name. |
+| Chip | `hw-chip`; the host is the chip (`hw-chip.hw-chip`); `tone: neutral/success/warning/danger/info` (default `neutral`), `variant: soft/outline` (no `data-variant` unless given), `size: sm/lg`, `disabled`. Remove: while a `(removed)` listener is bound the chip ends with a plain `button[type=button]` (no `hw-button` class; 24px square from the chip rule) that holds the `cancel-01` icon and is named by `removeLabel`, required then and not otherwise; `disabled` disables it. `(removed)` has no payload and asks the application to remove the chip. A chip removed while its button had focus hands focus to the remove button of the next chip beside it, else of the previous one; when the last chip goes the application places focus, for example on the control that adds chips. |
+| DescriptionList | `hw-description-list`; `items: {term,description}[]`, `variant: stacked/horizontal/compact` (stacked is the default and writes no `data-variant`); `dl.hw-description-list > div > dt, dd` inside the host; project richer native dt/dd if needed. |
+| Stat | `hw-stat`; the host is the stat (`hw-stat.hw-stat`): `span.hw-stat-label`, `strong.hw-stat-value`, `p.hw-stat-description` (when given), `span.hw-stat-trend`, default content. Required `label`; `value: string \| number` (printed as given), `description`, `trend`, `trendTone: success/danger` (`data-tone` on the trend), `tone: neutral/success/danger`, `variant: plain`. Rich content: project `[hwStatValue]` into the value and `[hwStatTrend]` into the trend; it is rendered after the string input, so pass one of the two. Both regions are always rendered and an empty trend is hidden by the stylesheet. A currency value carries its hidden currency name: see "Stat with a currency value". |
+| Timeline | `hw-timeline`; `items: HwTimelineItem[]` = `{id,title,description?,dateTime?,dateLabel?,status?}` with `status: complete/current/upcoming`; items are keyed by `id`. `ol.hw-timeline > li.hw-timeline-item[data-state={status}] > h3, time, p`; the current item has `aria-current="step"`. `dateLabel` is the visible date and `dateTime` its machine-readable value (`<time datetime>`); a `dateTime` without `dateLabel` renders no date. `label` names the list and is required unless `aria-label` or `aria-labelledby` is written on `hw-timeline` (see Names). |
+| Meter | `hw-meter`; `value` (0), `min` (0), `max` (100); `low`, `high` and `optimum` have no default and are attributes only when given, so without them the bar has the optimum colour at every value. One `meter.hw-meter` inside the host, without fallback text and without a visible label: `label` is the accessible name, required unless `aria-label` or `aria-labelledby` is written on `hw-meter` (see Names). There is no size option. |
+| AvatarGroup | `hw-avatar-group`; the host is the group (`hw-avatar-group.hw-avatar-group[role=group]`) and each member an `hw-avatar`. `items: HwAvatarItem[]` = `{name,src?,initials?,size?,variant?}` (the inputs of Avatar), `max` (5); required `getOverflowLabel(count)`, the name of the `+N` marker (count is the number of hidden avatars). `label` is written as the `aria-label` of the host and is required unless the host itself carries `aria-label` or `aria-labelledby`. |
 | DataTable | Required `caption`, `columns: {key,label,sortable?,rowHeader?,cell?}[]`, `rows: Record<string, unknown>[]`, optional `rowKey(row, index)`, required `locale` (BCP 47 tag for sorting; no default) and `emptyMessage`; `[(sortKey)]` and `[(sortDirection)]` (`ascending` / `descending`; values written once are the initial state), optional `getSortLabel(column,direction)` (the name of a sort button; direction is the order it will apply). Activating a sortable header reports `(sortKeyChange)` when the key changed, then `(sortDirectionChange)` when the direction changed. `cell` is a `TemplateRef<{$implicit: Row; index: number; column}>` rendered inside the `td` or `th[scope=row]`; without it the value is text. `div.hw-table-wrap.hw-data-table[role=region][aria-labelledby={caption id}] > table.hw-table > caption#{id}`; `aria-label`, `aria-labelledby` and `aria-describedby` written on `hw-data-table` reach the table. Stable sorting in the application's locale, native headers and aria-sort. Row types as for Table. |
 | ServiceCard | Required `title`; `description`, `category`, `metadata: {term,description}[]` (service facts, one stacked `dl.hw-description-list`), `variant`, `href`. `article.hw-card.hw-service-card > header.hw-card-header { div.hw-service-card-icon, div { span.hw-badge, h3 } }, div.hw-card-body { p, dl, default content }, footer.hw-card-footer`. The title is text, not a link. One action per card: content projected with `[hwServiceAction]`, or, with `href` and no projected action, a packaged `a.hw-link` whose whole text and accessible name is `actionLabel` (required in that case only; the card appends nothing to it, so include the service name where several cards share a page). Without `href` and without an action the footer is empty and hidden. Project `[hwServiceIcon]` and supplemental body. |
 | ServiceDetails | Required `title`; `description`, `metadata: {term,description}[]`, `requirements: string[]`, optional `requirementTemplate` (`TemplateRef<{$implicit: string; index: number}>`) for rich entries; `requirementsLabel` is required with requirements. `article.hw-service-details > header { h2, p }, dl.hw-description-list, section { h3, ul }, default content, footer`. The action is projected with `[hwServiceAction]` into the footer, which is hidden while empty and keeps a button at its own width. For horizontal facts compose `hw-description-list variant="horizontal"` in the default content. |
 | PortalHeader | Required `menuLabel` and `navigationLabel`; optional `brand` text, `brandLabel`, `homeHref`, `mainId`, `skipLabel`, `navigationId`, `links: {label,href,current?}[]`; `[(open)]` is the disclosure of the navigation below 48rem (`(openChange)` once per change by the reader, none when the application changes it; `close()` closes it and the open branch); project `[hwBrand]` artwork and header actions. The brand may be artwork alone: no brand text is printed unless `brand` is supplied, and `brandLabel` gives artwork its accessible name (`aria-label` on the brand). An empty `homeHref` renders the brand as `div.hw-portal-brand`, with `role="img"` and the name while `brandLabel` is given. The skip link is rendered only when `mainId` is set, and then needs `skipLabel`. Mobile menu is CSS-responsive; provide unique navigationId if repeated. Optional top-level `groups` contain a label and child links; one press on another group heading opens it and closes the open one. See [grouped navigation](../../docs/nic-portal-navigation.md). |
 | PortalFooter | Required `externalLabel` (screen-reader text added to links marked external); `brand`, `brandLabel`, `description`, `copyright`, `links`, `groups`, `legalLinks`; `navigationLabel` is required with `links`, `legalLinksLabel` with `legalLinks`, and `supportLabel` with projected `[hwFooterSupport]` content, the only case in which the support section is shown (otherwise it stays in the document with the `hidden` attribute, no heading and no name). `brandLabel` is written, as `aria-label` with `role="group"`, on `.hw-portal-footer-brand-marks`, which holds the `[hwFooterBrand]` artwork followed by the `brand` text, and only while that group has either; the description is outside the group, and without `brandLabel` no role and no name are rendered. Project `[hwFooterBrand]`, `[hwFooterSupport]`, `[hwFooterPartners]` and supplementary content. |
-| Feedback | Required `label`, `yesLabel`, `noLabel` and `successMessage`; `disabled`, `[(value)]` (boolean or null initially). Emits local feedback choice; caller handles storage. |
-| CookieConsent | Required `title`, `acceptLabel` and `rejectLabel`; `description`, `[(visible)]`; `consent(accepted/rejected)` and `preferences`. The preferences button is rendered while a `(preferences)` listener is bound and then needs `preferencesLabel`; a policy link is rendered with `policyHref` and then needs `policyLabel`. Application decides persistence and script gating; this UI does not imply consent has been stored. |
-| NotificationList | Required `label`, `emptyMessage` and `unreadLabel`; `items: {id,title,description?,time?,href?,unread?}[]`; `dismissed(id)`. The dismiss button is rendered while a `(dismissed)` listener is bound and is named by `getDismissLabel(item)`. Caller owns read/dismiss state. |
+| Feedback | `hw-feedback`; one contract in the four adapters. `div.hw-feedback[role=group]` inside the host, named by the visible question `label` (`p#{id}-label`; required unless `aria-label` or `aria-labelledby` is written on `hw-feedback`, which then replace the reference): `div.hw-feedback-actions` with two secondary buttons carrying `aria-pressed`, then, once an answer exists, `div.hw-feedback-comment` with an `hw-textarea` labelled `commentLabel` and a submit button, then `p[role=status]` and the default content. `[(value)]` is `HwFeedbackValue` = `{helpful: boolean \| null, comment: string}` (default `{helpful: null, comment: ''}`); `(valueChange)` fires once per change of answer or comment and never for the pressed answer again; `(feedback)` emits the value when the reader submits, after which the status shows `successMessage` until the answer or the comment changes. Required texts: `yesLabel`, `noLabel`, `commentLabel`, `submitLabel`, `successMessage`. `disabled` disables both answers, the textarea and submit; `choiceVariant: text/icon/icon-text`. No focus is moved: the new controls follow the answers in the tab order. Nothing is sent anywhere: the component carries no name and takes no part in form submission or reset; the application stores the value. |
+| CookieConsent | `hw-cookie-consent`; the host is the consent region (`hw-cookie-consent.hw-cookie-consent[role=region]`, `hidden` while closed), labelled by its `h2` through `aria-labelledby`; an `aria-label` or `aria-labelledby` the application writes on the host replaces that reference. Required `title`, `description`, `acceptLabel` and `rejectLabel`. Content order: `h2`, `p`, the policy link (`a.hw-link`, rendered with `policyHref`, which then needs `policyLabel`), the default content, `div.hw-button-group` with Accept (primary), Reject (secondary) and Preferences (ghost): this order and emphasis are the packaged presentation in every adapter. The preferences button is rendered while a `(preferences)` listener is bound and then needs `preferencesLabel`; it only notifies. `[(open)]` (true; a value written once is the initial state): Accept or Reject emits `(consent)` with `'accepted'` or `'rejected'` (`HwConsentChoice`) once, then closes the region and emits `(openChange)` false; a change of `open` by the application emits nothing. `variant="banner"` fixes the region at the block end of the viewport: it must not cover focused controls (WCAG 2.4.11), so give the page matching end padding while it is open. Non-modal, no focus trap; the region moves no focus when it closes, so send focus to the main heading or to the control that reopens the preferences. Nothing is persisted and no script is gated: the application decides both, and this UI does not imply that consent has been stored. |
+| NotificationList | `hw-notification-list`; `items: HwNotification[]` = `{id,title,description?,href?,dateTime?,dateLabel?,read?}`; an item is unread until `read` is true and items are keyed by `id`. `section.hw-notification-list` inside the host, labelled by its visible `h2` from `label` (required unless `aria-label` or `aria-labelledby` is written on the host; with either no heading is needed and they name the section). `ul > li[data-state=unread\|read] > h3` (the title, an `a.hw-link` with `href`), on unread items an info badge with the required `unreadLabel` (visible, so the state does not rest on colour), `p` description, `time[datetime={dateTime}]` showing `dateLabel` (no date without `dateLabel`), then the action buttons. An empty list renders `p` with the required `emptyMessage` in place of the list. Actions, each rendered only while its listener is bound: `(read)` emits the item id from a text button on unread items whose text is `getMarkReadLabel(item)` (required then; no button without the text); `(dismissed)` emits the item id from an icon button named by `getDismissLabel(item)` (required then). The list is application state: update `items` in the handler. After an action focus moves to the same control of the next item, else of the previous one, else to the section itself, which has `tabindex="-1"` while a listener is bound; nothing moves while the item stays. |
 | FileUploadList | `items: FileUploadItem[]`, `removable`, `disabled`; required `labels: FileUploadLabels` from `@hawiyah/core`: the status words `selected`, `uploading`, `complete`, `error`, the visible `remove` text, and `getProgressLabel(name)` and `getRemoveLabel(name)` for the progress bar and the remove button. `remove(id)` asks the owner to remove an item. |
 | SiteVerification | Required `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel` (include the protocol name in it) and `httpsDescription`; `domain`, `[(open)]`; `registrationHref` needs `registrationLabel`, and `externalLabel` while `registrationExternal` is on; `registrationNumber`. There is no `locale` input. |
 | MobileTopBar | Required `title`; `subtitle`, `variant`, `headingLevel`; `backHref` needs `backLabel`. Project `[hwTopBarLeading]` and `[hwTopBarActions]`. |
@@ -752,9 +948,10 @@ depended on the wrappers:
 - `hw-app-shell` renders `div.hw-app-shell-header` and `div.hw-app-shell-footer`
   where it rendered `header` and `footer`, so a projected `header` is the
   banner instead of sitting inside one. Its skip link is a child of the host.
-- `@hawiyah/styles` makes `hw-container`, `hw-section`, `hw-aspect-ratio`,
-  `hw-page-header` and `hw-alert` blocks and `hw-card` and `hw-service-card`
-  grids, with zero specificity, so a card fills its grid row.
+- `@hawiyah/styles` makes `hw-container`, `hw-section`, `hw-aspect-ratio` and
+  `hw-page-header` blocks and `hw-card` and `hw-service-card` grids, with zero
+  specificity, so a card fills its grid row. `hw-alert` is the alert itself and
+  takes its layout from the class `hw-alert`.
 - NavigationDrawer groups no longer all start closed: the group that holds the
   current page is open.
 - The public method `HwNavigationDrawerComponent.groupEntries(item)` is removed;

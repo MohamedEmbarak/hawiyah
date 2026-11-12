@@ -52,9 +52,10 @@ replaces it.
   name: `label`, or an `aria-label` or `aria-labelledby` on the input in React
   and Vue (Vue also accepts a parent `Field`); a field without one now warns
   in Vue and Angular as it does in React. Angular `hw-search-field`,
-  `hw-toggle-group` and `hw-tree-view` take `label` as a required input, so a
-  template without it no longer compiles (NG8008). A Tabs list without
-  `label` warns in React and Vue as it does in Angular. Vue `Feedback`
+  `hw-toggle-group` and `hw-tree-view` warn without `label` unless an
+  `aria-label` or `aria-labelledby` names them (see "Parity, accessibility and
+  behaviour fixes" below). A Tabs list without `label`, `aria-label` or
+  `aria-labelledby` warns in React and Vue as it does in Angular. Vue `Feedback`
   requires `commentLabel` and `submitLabel` in every use, as React does,
   because the comment field appears once the reader answers. React
   `ContentNavigation` accepts an `aria-label` or `aria-labelledby` in place of
@@ -73,8 +74,8 @@ replaces it.
   `getCalendarMonth` and `formatCalendarDate` throw a `TypeError` without a
   locale. Calendar, DatePicker and DataTable take a required `locale` in all
   adapters (vanilla: the `locale` option or `data-hw-locale` on the root);
-  the vanilla RangeSlider takes one when it has a `[data-hw-range-output]`
-  element. Without it the component warns and leaves out what Intl would
+  the vanilla RangeSlider no longer formats its output and takes the text from
+  `getRangeLabel` instead. Without it the component warns and leaves out what Intl would
   have produced; it does not throw. No adapter reads `lang`,
   `document.documentElement.lang` or `navigator.language`, and no component
   writes `lang` or a default `dir`.
@@ -128,7 +129,7 @@ The names were checked against the built type declarations of each package.
 
 | Component | Former default or name | Input now | Required |
 |---|---|---|---|
-| Alert | Angular `'Dismiss'` | `closeLabel` | when the alert is dismissible (Angular; React and Vue render no dismiss button) |
+| Alert | Angular `'Dismiss'` | `closeLabel` | when a dismiss handler is bound (React `onDismiss`, Vue `@dismiss`, Angular `(dismissed)`) |
 | AppShell | `'انتقل إلى المحتوى'` | `skipLabel` | always |
 | AvatarGroup | Angular `'People'` | `label` | always |
 | AvatarGroup | `` `${count} more people` ``; Vue `remainingLabel`, Angular `overflowLabel` | `getOverflowLabel(count)` | always |
@@ -138,8 +139,8 @@ The names were checked against the built type declarations of each package.
 | Calendar | `'الشهر السابق'` / `'Previous month'` | `previousLabel` | always |
 | Calendar | `'الشهر التالي'` / `'Next month'` | `nextLabel` | always |
 | Calendar | `'التواريخ الهجرية المدعومة'` / `'Supported Hijri dates'` | `rangeLabel` | when `calendar` is `islamic-umalqura`; always in vanilla |
-| Calendar (vanilla) | `'نظام التقويم'` / `'Calendar system'`; `'ميلادي'` / `'Gregorian'`; `'هجري · أم القرى'` / `'Hijri · Umm al-Qura'` | `calendarSystemLabel`, `gregorianLabel`, `hijriLabel` | always |
-| Calendar (vanilla, Vue) | the Umm al-Qura range sentence | `unsupportedMessage` | always (vanilla); when `calendar` is `islamic-umalqura` (Vue) |
+| Calendar (vanilla) | `'نظام التقويم'` / `'Calendar system'`; `'ميلادي'` / `'Gregorian'`; `'هجري · أم القرى'` / `'Hijri · Umm al-Qura'` | none: the standalone Calendar renders no Gregorian / Hijri switch; the three texts belong to DatePicker | — |
+| Calendar | the Umm al-Qura range sentence (vanilla, Vue); nothing (React, Angular) | `unsupportedMessage` | when `calendar` is `islamic-umalqura` |
 | Calendar | Intl day name (Angular: a day name joined with a comma) | `getDayLabel(value)` | optional |
 | Calendar (Angular) | module counter | `rangeTooltipId` | optional |
 | Carousel | `'الشريحة السابقة'` | `previousLabel` | always |
@@ -149,7 +150,7 @@ The names were checked against the built type declarations of each package.
 | Carousel | `'لا توجد شرائح'` / `'No slides'` | `emptyLabel` | always |
 | Carousel | `'عرض شرائح'` / `'carousel'` | `carouselDescription` | optional |
 | Carousel | `'شريحة'` / `'slide'` | `slideDescription` | optional |
-| Chip | `'Remove'` | `removeLabel` | when the chip is removable |
+| Chip | `'Remove'` | `removeLabel` | when a remove handler is bound |
 | Combobox | `'No options found'`; Angular `'No results'` | `emptyMessage` | always |
 | Combobox | `` `${count} results available` ``; vanilla `` `${count} نتيجة` ``; Vue and Angular `resultsMessage` | `getResultsMessage(count)` | always |
 | Combobox | `'Choose an option from the list.'`; Angular `validationMessage`; vanilla `invalidSelectionMessage` | `requiredMessage` | when `required` is set |
@@ -175,37 +176,37 @@ The names were checked against the built type declarations of each package.
 | DatePicker | `'التواريخ الهجرية المدعومة'` / `'Supported Hijri dates'` | `rangeLabel` | always |
 | DatePicker | `'أدخل تاريخًا ميلاديًا متاحًا بصيغة YYYY-MM-DD.'` / `'Enter an available Gregorian date in YYYY-MM-DD format.'` | `invalidMessage` | always |
 | DatePicker | the Umm al-Qura range sentence; React `unsupportedCalendarMessage` | `unsupportedMessage` | always |
-| DatePicker | `'هذا التاريخ غير متاح.'` / `'This date is unavailable.'` | `unavailableMessage` | when `isDateDisabled` is given (not in Angular) |
+| DatePicker | `'هذا التاريخ غير متاح.'` / `'This date is unavailable.'` | `unavailableMessage` | when `isDateDisabled` is given |
 | DatePicker | `'YYYY-MM-DD'` | `placeholder` | optional |
 | Dialog, Drawer | `'Close'`; Angular `'Close dialog'` | `closeLabel` | always |
 | Feedback | `'Was this page helpful?'` | `label` | always |
 | Feedback | `'Yes'`; Angular `positiveLabel` | `yesLabel` | always |
 | Feedback | `'No'`; Angular `negativeLabel` | `noLabel` | always |
-| Feedback | `'Tell us more (optional)'` | `commentLabel` | always in React and Vue; not in Angular |
-| Feedback | `'Send feedback'` | `submitLabel` | always in React and Vue; not in Angular |
+| Feedback | `'Tell us more (optional)'` | `commentLabel` | always |
+| Feedback | `'Send feedback'` | `submitLabel` | always |
 | Feedback | `'Thank you for your feedback.'`; Vue `thanks`, Angular `thanksMessage` | `successMessage` | always |
 | FileDropzone | `dropLabel` used as the input name; Angular optional `label` | `label` (or `aria-label`, `aria-labelledby`, a parent Field) | always |
 | FileDropzone | `'Drop files here or choose files'`; Vue `'Choose files or drop them here'`; Angular `instruction` | `dropLabel` | always |
 | FileDropzone | `` `${count} files selected` ``; Angular `selectedMessage`; vanilla file names joined with `'، '` | `getSelectedMessage(files)` | optional; the status is rendered only when it is supplied |
-| FileDropzone | `'Some files do not match the accepted file types.'` | `getRejectedMessage(rejected)` | when `accept` is set (React) or the vanilla status element exists with `accept` or a maximum size |
+| FileDropzone | `'Some files do not match the accepted file types.'` | `getRejectedMessage(rejected)` | when `accept` or `maxSize` is set |
 | FileDropzone (vanilla) | `'Use the file chooser to attach documents.'` / `'استخدم اختيار الملفات لإرفاق المستندات.'` | `unsupportedDropMessage` | while the status element exists |
 | FileUploadList | core `fileUploadLabels` (`'جاهز للرفع'`, `'جارٍ الرفع'`, `'اكتمل الرفع'`, `'تعذر الرفع'`, `'إزالة الملف'`) | `labels: FileUploadLabels` with `getProgressLabel(name)` and `getRemoveLabel(name)` | always |
-| Menu, Popover | Angular `'Open'` | `triggerLabel` | where the adapter renders the trigger (Vue Popover, Angular) |
+| Menu, Popover | Angular `'Open'`; Vue Menu printed `label` on its trigger | `triggerLabel` | where the adapter renders the trigger (Vue, Angular) |
 | Menu, Popover (Angular) | `id` | `panelId` | optional |
 | MobileTopBar | `'رجوع'` | `backLabel` | when a back address or action is given |
 | MultiSelect | `'Search options'` | `searchLabel` | always |
 | MultiSelect | `'No options found'`; Angular `'No options'` | `emptyMessage` | always |
 | MultiSelect | `'Choose at least one option.'`; Angular `validationMessage` | `requiredMessage` | when `required` is set |
-| MultiSelect (vanilla) | `` `${count} options` `` / `` `${count} خيارات` `` | `getResultsMessage(count)` | when a `[data-hw-status]` element exists |
-| MultiSelect (Angular) | `` `${count} selected` ``; `selectedMessage` | `getSelectedMessage(count)` | always |
+| MultiSelect | `` `${count} options` `` / `` `${count} خيارات` `` (vanilla); nothing (React, Vue, Angular) | `getResultsMessage(count)` | always |
+| MultiSelect | `` `${count} selected` ``; Angular `selectedMessage` | `getSelectedMessage(count)` | optional; the selected-count line is rendered only when it is supplied |
 | NavigationDrawer | `'التنقل الرئيسي'` | `navigationLabel` | always |
 | NavigationDrawer | `'إغلاق القائمة'` | `closeLabel` | always |
 | NavigationDrawer (Angular) | not settable | `titleId` | optional |
 | NotificationList | `'Notifications'` | `label` | always |
 | NotificationList | `'No notifications'` | `emptyMessage` | always |
-| NotificationList | `'Unread'` | `unreadLabel` | always (React, Angular) |
-| NotificationList | `'Mark as read'`; Vue `readLabel` | `getMarkReadLabel(item)` | when a mark-read handler is bound (React, Vue) |
-| NotificationList | `'Dismiss'`; Vue and Angular `dismissLabel` | `getDismissLabel(item)` | when a dismiss handler is bound (Vue, Angular) |
+| NotificationList | `'Unread'` | `unreadLabel` | always |
+| NotificationList | `'Mark as read'`; Vue `readLabel` | `getMarkReadLabel(item)` | when a read handler is bound |
+| NotificationList | `'Dismiss'`; Vue and Angular `dismissLabel` | `getDismissLabel(item)` | when a dismiss handler is bound |
 | Pagination | `'ترقيم الصفحات'` | `label` | always |
 | Pagination | `'الصفحة السابقة'` | `previousLabel` | always |
 | Pagination | `'الصفحة التالية'` | `nextLabel` | always |
@@ -235,35 +236,36 @@ The names were checked against the built type declarations of each package.
 | PortalLayout (Angular) | not settable | `navigationId` | optional |
 | RangeSlider | `'Minimum'` | `lowerLabel` | always |
 | RangeSlider | `'Maximum'` | `upperLabel` | always |
-| RangeSlider (vanilla) | the document language | `locale` | when a `[data-hw-range-output]` element exists |
+| RangeSlider | a built-in `lower – upper` text (vanilla in the document language, Angular) or one output per thumb (React) | `getRangeLabel(lower, upper)` (vanilla: also `data-hw-range-label="… {lower} … {upper}"`) | optional; the range output is rendered only with it (vanilla: required when a `[data-hw-range-output]` element exists) |
 | Rating | `'n من t'`; Vue `optionLabel`, Angular `ratingLabel` | `getRatingLabel(value, max)` | always |
 | RatingDisplay | `label` joined with `'n من t'`; Vue and Angular `valueLabel` | `getValueLabel(value, max)`; `label` removed | always |
-| SearchField | none; the field could be left unnamed without a warning in Vue and Angular | `label` (or `aria-label`, `aria-labelledby`; in Vue a parent Field) | always; a required input in Angular |
+| SearchField | none; the field could be left unnamed without a warning in Vue and Angular | `label` (or `aria-label`, `aria-labelledby`; a parent Field) | always |
 | SearchField | `'مسح البحث'` / `'Clear search'` | `clearLabel` | always (vanilla: unless the clear button has an `aria-label` or text) |
 | SearchField | `'بحث'` | `searchLabel` | when the search button is shown |
 | SearchField | `` `${count} اقتراحات متاحة` ``; `resultsMessage` | `getResultsMessage(count)` | when suggestions are given |
 | SecondaryNav | `'التنقل الثانوي'` | `label` | always |
 | Select | Angular `'اختر خيارًا'` | `placeholder` | optional |
 | ServiceCard | `'View service'`; Vue `'Start service'` | `actionLabel` | when the card renders its own action link |
-| ServiceDetails | `'Requirements'` | `requirementsLabel` | when requirements are given (React, Angular) |
+| ServiceDetails | `'Requirements'` | `requirementsLabel` | when requirements are given |
 | SiteVerification | core `getSiteVerificationLabels(locale)` and the `locale` prop | `label`, `detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel`, `httpsDescription` | always |
 | SiteVerification | as above | `registrationLabel`, `externalLabel` | when `registrationHref` is set (`externalLabel` when the link opens a new window) |
 | Spinner | `'Loading'` | `label` | always, unless the spinner is decorative |
 | Stat (Vue) | `locale` and number formatting | removed; pass the formatted value | — |
 | Stepper | `'التقدم'` | `label` | always |
+| Stepper | none: complete and upcoming steps had no text equivalent | `completeLabel`, `upcomingLabel` | always |
 | Table | `'لا توجد سجلات'` | `emptyMessage` | when `columns` is given |
-| Tabs | none | `label` | always; a missing one now warns in React and Vue too |
+| Tabs | none | `label` (or `aria-label`, `aria-labelledby`) | always; a missing name now warns in React and Vue too |
 | Tabs | `'المزيد من التبويبات'` / `'More tabs'` | `overflowLabel` | when overflow uses a menu |
 | TagInput | `` `Remove ${tag}` ``; Vue and Angular `removeLabel` | `getRemoveLabel(tag)` | always |
 | TagInput | `'Add at least one tag.'`; Angular `validationMessage` | `requiredMessage` | when `required` is set |
-| TagInput (Angular) | `'Add'` | `addLabel` | always |
+| TagInput (Angular) | `'Add'` | removed with the Add button; Enter or comma commits | — |
 | Timeline | `'Timeline'` | `label` | always |
 | ToastRegion | `'الإشعارات'` / `'Notifications'` | `label` | always |
 | ToastRegion | `'إغلاق الإشعار'`; Vue and Angular `dismissLabel` | `getDismissLabel(message)` | when a message can be dismissed |
-| ToggleGroup, TreeView (Angular) | optional `label` | `label` | always; a required input |
+| ToggleGroup, TreeView | optional `label` (Angular) | `label` (or `aria-label`, `aria-labelledby`) | always |
 | Tooltip (Angular) | `id` | `tooltipId` | optional |
-| TreeView | `'Expand ' + label`; Vue `expandLabel` | `getExpandLabel(node)` | always (React, Vue) |
-| TreeView | `'Collapse ' + label`; Vue `collapseLabel` | `getCollapseLabel(node)` | always (React, Vue) |
+| TreeView | `'Expand ' + label`; Vue `expandLabel`; a hidden glyph (Angular); an authored `aria-label` (vanilla) | `getExpandLabel(node)` (vanilla: also `data-hw-expand-label="… {label}"`) | always |
+| TreeView | `'Collapse ' + label`; Vue `collapseLabel`; a hidden glyph (Angular); an authored `aria-label` (vanilla) | `getCollapseLabel(node)` (vanilla: also `data-hw-collapse-label="… {label}"`) | always |
 
 ### Angular server rendering and hydration
 
@@ -383,8 +385,9 @@ Found by server-rendering and hydrating every component of the published
 - The upload-list remove action no longer turns green on hover or focus, where
   its glyph had 2.74:1 contrast.
 - The file upload and dropzone native inputs shrink inside a narrow card
-  instead of widening the page at 320px. The vanilla dropzone's
-  `data-dragover` marker now shows the drag-over state.
+  instead of widening the page at 320px. The vanilla dropzone now shows the
+  drag-over state (marked `data-state="dragging"` in every adapter, see
+  below).
 - A calendar month button that contains icon markup (React and Angular) shows
   one chevron, not two. An empty-state icon wrapped in a decorative span
   (React and Vue) gets the icon tile.
@@ -410,7 +413,8 @@ input of the application, as described above; nothing here ships wording.
   `hw-side-navigation` and `nav[hwSideNavigation]`, vanilla
   `createSideNavigation` and `data-hw="side-navigation"`). It renders the list
   of NavigationDrawer outside a drawer, from the same `items`, with the same
-  markup and classes. Required: `items` and `label`; `sticky` makes it stick
+  markup and classes. Required: `items` and a name (`label`, `aria-label` or
+  `aria-labelledby`); `sticky` makes it stick
   from 64rem and scroll in its own box, placed with
   `--hw-side-navigation-top` and `--hw-side-navigation-bottom-reserve`.
 - **NavigationDrawer.** Items accept `expanded`. A group is open when it holds
@@ -502,6 +506,423 @@ Migration:
   grids, with zero specificity.
 - The public method `HwNavigationDrawerComponent.groupEntries(item)` is
   removed; core `getNavigationGroupEntries(item)` returns the same entries.
+
+### Parity, accessibility and behaviour fixes
+
+This part closes the findings that remained open from the audit of 0.2.1 and
+from the later reviews. Where the adapters differed, one rule now applies in
+vanilla, React, Vue and Angular; the rules are recorded in CONTRACT.md and in
+each adapter README. Every rename and removal is made outright, without a
+deprecated alias; the table "Breaking: renamed and removed" below lists each
+one with its migration, and the adapter READMEs repeat the rows of their
+adapter.
+
+#### The same in the four adapters
+
+- **Native form reset.** A `reset` of the surrounding form that is not
+  default-prevented returns every control to its reset target, shows it,
+  submits it and reports it once through the ordinary value notification, and
+  only when the value changed (arrays compared by content). The control acts
+  after the browser has applied the reset: in the microtask that follows the
+  event for a scripted reset, before the next paint for a reset button. The
+  reset target is `defaultValue` (React, Vue), the value after the first
+  inputs (Angular without Angular Forms; with Angular Forms the model keeps
+  ownership), or the authored default (vanilla); without one it is the empty
+  value of the control (`''`, `[]`, `false`, `null`, the slider midpoint). A
+  controlled React control shows and submits its prop again when the
+  application ignores the notification. Secondary state returns as well:
+  password visibility, a date draft and visible month, a dropzone rejection,
+  a combobox query. This reverses the earlier record that a native reset
+  leaves application state alone (docs/input-review.md, docs/nic-segmented.md).
+- **Angular attributes on wrapper hosts.** `aria-label`, `aria-labelledby`,
+  `aria-describedby` and `aria-invalid` are inputs of those names on every
+  Angular value control, on `hw-dialog`, `hw-drawer`, `hw-card`,
+  `hw-icon-button` and on the named landmarks and groups; they land on the
+  native control, fieldset, dialog or landmark and are removed from the host.
+  `[attr.aria-*]` on a wrapper host is not supported. Badge, Avatar,
+  ButtonGroup, Alert, Chip, Skeleton, Spinner, EmptyState, Stat, AvatarGroup
+  and CookieConsent render on the host element, so `class`, `id` and ARIA
+  attributes written there sit on the styled element. `@hawiyah/styles` gives
+  the form-control and content hosts a block box; `hw-toggle-group` and
+  `hw-content-navigation` generate no box (`display: contents`).
+- **Names without a visible label.** A control, group or landmark is named by
+  `label`, `aria-label` or `aria-labelledby`; `label` is required only when
+  neither attribute is given (React types this as a union, Vue and Angular
+  warn at render). This applies to ToggleGroup, Tabs, TreeView, Calendar,
+  DatePicker, Carousel, Table, Progress, Meter, ButtonGroup, Menu, Popover and
+  the Angular navigation components. A missing label renders no empty legend.
+- **Fields.** Hint and error are `p.hw-hint` and `p.hw-error` in every adapter.
+  A message the component produces (DatePicker validation, FileDropzone
+  rejection) is the one `p.hw-error` of the field, after the hint, with
+  `role="alert"`; an `error` from the application wins. Angular `hw-field`
+  provides its id, label, descriptions, required and invalid state to a
+  Hawiyah control placed in it (`HW_FIELD`), as React and Vue already did.
+- **Required marker.** Every required control with a visible label shows one
+  `span.hw-required-marker` as the last child of its `label.hw-label` or
+  `legend.hw-label`, including composite controls and fieldset groups. The
+  marker is never the only carrier of the requirement and takes no text input.
+- **`aria-invalid`** is set from `error`, from an explicit `aria-invalid`, or
+  after the control's `invalid` event (a failed submission) until its value is
+  valid again or the form resets. It never depends on a missing message;
+  Angular no longer sets it because `requiredMessage` is missing.
+- **Controlled and observable state** has one name per state in every
+  adapter: Combobox `open` and `query`, PasswordField `visible`, DataTable
+  `sortKey` and `sortDirection`, TreeView `expanded`, Menu and Popover
+  `open`, PortalHeader `open`, CookieConsent `open`, Feedback `value`. React
+  has `x`, `defaultX` and `onXChange`; Vue `v-model:x`; Angular `[(x)]`;
+  vanilla the option, `onXChange`, `hw:change` and a controller method.
+- **Read-only** keeps a control in the tab order, named, submitted and showing
+  its value. Checkboxes, toggle buttons and file inputs carry
+  `aria-disabled="true"` instead of `disabled`; this now holds for MultiSelect
+  rows and FileDropzone, which React now also offers. Vue Checkbox, Radio and
+  Switch spell the prop `readonly`, as every other Vue control.
+- **Values are shown and formatted by the application.** Slider shows its
+  value only with `showValue` and formats it only through `formatValue`;
+  `aria-valuetext` is written only with `formatValue`. RangeSlider renders the
+  documented vanilla structure (two `label.hw-label` wrapping their input) and
+  one output only with `getRangeLabel(lower, upper)`; no adapter writes a
+  separator. Timeline and NotificationList items show a date only from
+  `dateLabel`, with `dateTime` as the machine-readable value. The vanilla
+  DatePicker announces the full date with the weekday, as the frameworks do.
+- **One item shape per component**: Menu and Accordion items are keyed by
+  `value`; TreeView takes `items` and `expanded`; Stepper takes `items` with a
+  `value` each; Table and DataTable columns are `{key, label, cell?,
+  sortable?, rowHeader?}`; ServiceCard and ServiceDetails take
+  `metadata: {term, description}[]`; Timeline items are `{id, title,
+  description, dateTime, dateLabel, status}`; NotificationList items are
+  `{id, title, description, href, dateTime, dateLabel, read}`; toast messages
+  are `{id, title?, message, tone?, urgent?, dismissible?}`.
+- **Rich content where text was the only option**: Angular `titleTemplate` and
+  `contentTemplate` on `hw-accordion`, a `cell` template and `rowKey` on
+  `hw-table` and `hw-data-table`, `[hwStatValue]` and `[hwStatTrend]` on
+  `hw-stat`, `[hwEmptyIcon]` and `[hwEmptyAction]` on `hw-empty-state`,
+  `[hwServiceAction]` on the service components; Vue `#title` and `#content`
+  scoped slots on Accordion, `cell-<key>` slots on the tables and `#value` and
+  `#trend` on Stat.
+- **One DOM per component.** The frameworks render the documented vanilla
+  markup for Combobox, MultiSelect, TagInput, FileDropzone, RangeSlider,
+  ToggleGroup, Menu, Popover, TreeView, Stepper, Stat, Timeline,
+  NotificationList, Feedback, CookieConsent, ServiceCard and ServiceDetails;
+  the changes are listed in the table below.
+
+#### Accessibility and behaviour fixes
+
+- **Forms.** Angular value controls gain `(focused)`, `(blurred)` and `form`;
+  `hw-select` projects native `option` and `optgroup` children; `hw-checkbox`
+  and `hw-switch` take `submitValue` and projected label content; `hw-textarea`
+  sets no `rows` by default. Vue RangeSlider submits both thumbs under `name`
+  and no longer leaves `name` and `form` on the fieldset. A multiple
+  ToggleGroup's empty value is `[]`; the pressed buttons carry
+  `class="hw-button"`, `data-variant="secondary"` and `data-size="md"` in
+  every adapter.
+- **Combobox.** In Angular the listbox opens below the input again instead of
+  below the hint and error: `div.hw-combobox` wraps only the input, the
+  hidden input, the listbox and the status. Angular `(valueChange)` fires only
+  when the value changed, and a value written by the application no longer
+  closes the list.
+- **MultiSelect** has a visible filter label and announces the number of
+  matching options after the reader filters, through the new required
+  `getResultsMessage(count)` and a polite status present from the first
+  render.
+- **TagInput.** After a remove button is activated, focus moves to the next
+  remove button, else the previous one, else the text input. Angular no
+  longer renders an Add button: Enter or comma commits, as in the other
+  adapters.
+- **PinInput.** A pasted or autofilled code such as `123 456` is normalised
+  before its length is applied; the input carries no `maxlength`, and an
+  incomplete code is `aria-invalid` after blur.
+- **SearchField.** The Angular search button is off by default, as in React
+  and Vue.
+- **FileDropzone.** A batch replaces the selection; a batch with any rejected
+  file leaves the dropzone empty and reports every rejected file, also when
+  several files are dropped on a single-file dropzone. `maxSize` (bytes)
+  works in the four adapters. The rejection is rendered as
+  `getRejectedMessage(rejected)` with `role="alert"`. The zone cancels
+  `dragover` for file drags only, with `dropEffect` `'none'` while it is
+  unavailable. No adapter renders a file list: compose FileUploadList.
+  `data-state="dragging"` marks a drag.
+- **Calendar and DatePicker.** Angular gains `isDateDisabled`,
+  `unavailableMessage` and `getDayLabel`; React gains `getDayLabel` on
+  DatePicker. A typed date that breaks several constraints gets the same
+  message in every adapter (core `getDateViolation`: malformed, unsupported,
+  out of range, unavailable). Opening the picker moves focus to the selected
+  day, else today; an empty calendar's tab stop is today when it is shown and
+  available. A standalone Calendar announces a value outside the supported
+  Umm al-Qura range through a status element and `unsupportedMessage` in
+  every adapter. The Gregorian / Hijri switch belongs to DatePicker; the
+  vanilla standalone Calendar no longer renders it.
+- **Dialog and Drawer.** An empty `.hw-dialog-footer` is hidden; Angular
+  `hw-drawer` now passes its description to the native dialog.
+- **Tooltip (Angular).** The host is the positioned wrapper and the
+  application's element marked `hwTooltipTrigger` is described, so a tooltip
+  on a button no longer adds a second tab stop.
+- **Collapsible (Angular)** takes `disabled`; the stylesheet shows the
+  disabled state.
+- **Carousel and Pagination.** At the first or last slide or page the arrow
+  that was just used is `aria-disabled="true"`, keeps focus and ignores
+  activation; it no longer drops focus to the document body.
+- **Table and DataTable (Angular).** The scroll region is named by the caption
+  through `aria-labelledby` and exists as a region only with a caption.
+- **PageHeader** takes `level` (1 to 6, default 1) in React and Angular, as in
+  Vue, so an embedded page header no longer creates a second `h1`.
+- **Breadcrumb.** The current item is one `span[aria-current="page"]`, never a
+  link; Angular gains the `current` field.
+- **Stepper.** Complete and upcoming steps carry a visually hidden state text
+  from the required `completeLabel` and `upcomingLabel`. The Angular
+  description is a sibling `p.hw-hint`.
+- **Menu and TreeView** move focus by type-ahead in the four adapters (core
+  `createTypeahead`: 500 ms buffer, a repeated letter cycles, visible nodes
+  only). Menu and Popover close when focus moves outside them, without moving
+  focus; the React Popover handles Escape on its own root only.
+- **TreeView.** The expand and collapse control is `button.hw-tree-toggle` in
+  every adapter, outside the tab order and named by `getExpandLabel(node)` and
+  `getCollapseLabel(node)`; Angular hid it from assistive technology. Nested
+  levels are indented through `--hw-tree-depth` and `--hw-tree-indent`.
+- **PortalHeader.** Below 48rem one press on another branch heading opens it
+  and closes the open one; the click is no longer lost. A brand without a home
+  link is `div.hw-portal-brand`, with `role="img"` exactly when `brandLabel`
+  is given.
+- **ServiceCard and ServiceDetails** render the card anatomy of React in
+  every adapter (header with category and `h3`, body, footer with the
+  action); the packaged action is `a.hw-link` and exists only with `href`.
+  ServiceDetails is an `article` with an optional requirements section and
+  its action in a footer.
+- **Alert.** Without an explicit role, a `danger` alert is `role="alert"` and
+  every other tone `role="status"`, also in Angular. Every adapter offers the
+  same dismiss action, rendered while a dismiss handler is bound; the alert
+  never removes itself, and the application moves focus after removing it.
+- **Progress, Meter, Skeleton, Spinner.** Progress and Meter are one native
+  element named through `aria-label`, with raw values; Meter defaults to min
+  0, max 100, value 0 and no regions. Skeleton takes `variant` (`text`,
+  `circle`) and is sized with `style` or `class`. Spinner is one element with
+  `role="status"` that holds its hidden name. The documented loading pattern
+  is a `role="status"` container with a visually hidden text around
+  `aria-hidden` skeletons.
+- **Chip.** The remove control is a plain button, rendered while a remove
+  handler is bound; removing a focused chip moves focus to the neighbouring
+  chip's remove button (core `prepareRemovalFocus`).
+- **NotificationList.** A visible `h2` names the region; unread items show a
+  visible badge from `unreadLabel`, so the state does not depend on colour;
+  the read and dismiss actions exist in every adapter and move focus to the
+  same control of the next item, then the previous one, then the list.
+- **Feedback** has one contract: a named group with two pressed-state
+  buttons, then a comment field and a submit button once a choice exists, a
+  value `{helpful, comment}` and a `feedback` action on submit. Nothing is
+  sent anywhere.
+- **CookieConsent** has one contract: the state `open`, the action
+  `consent('accepted' | 'rejected')`, an optional preferences action, a
+  region named by its heading, and the buttons Accept, Reject, Preferences in
+  a button group. `variant="banner"` is a typed input in every framework.
+- **Button and Link (Angular).** `button[hwButton]` defaults to
+  `type="button"` and takes `loading` and `disabled` inputs. The link is the
+  directive `a[hwLink]` on the application's own anchor, so `routerLink` and
+  every native attribute apply to the real element. The Vue `external` link
+  adds `noopener noreferrer` to an authored `rel` instead of replacing it.
+
+#### Core and styles
+
+- New in `@hawiyah/core`: `observeFormReset(control, onReset)` with the type
+  `FormResetObserver`, and `sameValue(a, b)`; `createTypeahead(options?)` and
+  `isTypeaheadKey(event)` with the types `Typeahead` and `TypeaheadOptions`;
+  `evaluateFileSelection(files, rules?)`, `matchesFileAccept(file, accept)`
+  and `isFileDrag(transfer)` with the types `FileSelectionRules`,
+  `FileRejectionReason` and `FileSelectionResult`;
+  `prepareRemovalFocus(container, control, options)` with
+  `RemovalFocusOptions`; `getDateViolation(draft, options)` with
+  `DateViolation` and `DateViolationOptions`; `normalizePinInput(raw, length,
+  previous?, inputType?)`; `getPortalBranchSummary(target, scope)`; the types
+  `FeedbackValue` and `ConsentChoice`. `observeFieldValue` and
+  `observeReadonlyChoice` keep their signatures and read a reset through
+  `observeFormReset`.
+- New in `@hawiyah/styles`: `.hw-slider-value`, `.hw-alert-dismiss`,
+  `button.hw-tree-toggle` with `--hw-tree-depth` and `--hw-tree-indent`, the
+  read-only FileDropzone, the disabled Collapsible, MultiSelect read-only
+  rows and status, `:empty` rules for dialog footers, service-details footers,
+  stat trends and empty-state icons, the focus ring of an
+  `aria-disabled` button, and `Highlight` for the pressed Feedback choice in
+  forced colours. Removed hooks are listed in the table below.
+
+#### Breaking: renamed and removed
+
+Each row names the component, the adapter, the former name, markup or default,
+and what replaces it; a search-and-replace form is given where one exists.
+"Frameworks" means React, Vue and Angular. The names were checked against the
+built type declarations of each package.
+
+| Component | Adapter | Old | New |
+|---|---|---|---|
+| Every value control, `hw-field` | Angular | `describedBy` | `aria-describedby`: `[describedBy]="id"` -> `[aria-describedby]="id"` |
+| Every value control | Angular | `aria-label`, `aria-labelledby`, `aria-describedby`, `aria-invalid` stayed on the host | on the native control or fieldset; `[attr.aria-label]` on a host -> `[aria-label]` |
+| Every form control | Angular | a native reset without Angular Forms emptied the DOM and kept the value | the initial value returns and `(valueChange)` emits it when it changed; remove handlers that copied the model back |
+| Every form control | Vue | `update:modelValue` on every reset | only for a control whose value the reset changed |
+| Every form control | React | controlled controls ignored a native reset or showed the browser default | `onValueChange(target)` (`onFilesChange([])`) once when the target differs; the prop is shown again |
+| Every form control | vanilla | RangeSlider, ToggleGroup, Rating and the composite controls reset silently | `hw:change` and the `on…Change` option fire once when the reset changed the state |
+| Field and decorated controls | React | `div.hw-hint` / `div.hw-error`; `span.hw-hint` / `span.hw-error` (Checkbox, Radio, Switch) | `p.hw-hint` / `p.hw-error`; pass phrasing content |
+| Field and decorated controls | Vue | `span.hw-hint` / `span.hw-error` | `p.hw-hint` / `p.hw-error` |
+| Field | Angular | `controlId` and `label` required; a control inside repeated its own id and wiring | both optional; the control takes the field's id, label, descriptions and state |
+| Labelled controls | Angular, Vue | no required marker on several controls and legends | `span.hw-required-marker`; remove asterisks written into `label` |
+| Checkbox, Radio, Switch | Vue | `readOnly` (`:read-only`) | `readonly` |
+| Checkbox, Switch, radio group | Angular | `label.hw-choice > input + span` | `label.hw-choice > input` + text: `.hw-choice > span` -> `.hw-choice` |
+| Radio group | Angular | `hw-radio` / `HwRadioComponent` | `hw-radio-group` / `HwRadioGroupComponent` |
+| Textarea | Angular | `rows` = 4 | no default; add `[rows]="4"` to keep the height |
+| Slider | React | `showValue` = true; `aria-valuetext` always set | `showValue` = false; `aria-valuetext` only with `formatValue`; add `showValue` to keep the output |
+| Slider | Angular | `<output>` always rendered | `output.hw-slider-value` only with `showValue` |
+| Slider | Vue | `defaultValue` = 0 | no default: `(min + max) / 2`; add `:default-value="0"` to keep the start |
+| RangeSlider | React, Vue | `defaultValue` = `[0, 100]` | `[min, max]`; pass `[0, 100]` where wanted |
+| RangeSlider | React | `div.hw-field` per thumb with an output; `formatValue` = `String` | `fieldset.hw-field.hw-range-slider > label.hw-label` ×2, one output only with `getRangeLabel`: `.hw-range-slider > .hw-field` -> `.hw-range-slider > label` |
+| RangeSlider | Angular | `label[for]` beside the input; output `lower – upper` always | `label.hw-label` wrapping each input; output only with `[getRangeLabel]` |
+| RangeSlider | Vue | `name` and `form` fell onto the fieldset | both thumbs submitted under `name` |
+| RangeSlider | vanilla | `[data-hw-range-output]` filled with `lower – upper`; `locale` required | `data-hw-range-label="{lower} – {upper}"` or `getRangeLabel`; `locale` optional |
+| ToggleGroup | Vue | `defaultValue` = `''` in both modes | no default; `[]` in multiple mode |
+| ToggleGroup | React | `label.hw-choice > input.hw-radio`; empty legend without `label` | `label > input[type=radio]`: `.hw-toggle-group .hw-choice` -> `.hw-toggle-group > label`, `.hw-toggle-group .hw-radio` -> `.hw-toggle-group input[type='radio']` |
+| ToggleGroup | Vue | `name` and `form` on the fieldset; `data-selected` on the label | neither: `[data-selected='true']` -> `:has(input:checked)` |
+| ToggleGroup | Angular | `options` optional; a span around each option; hidden inputs beside the fieldset | `options` required; text in the label; `hw-toggle-group > input[type=hidden]` -> `hw-toggle-group fieldset > input[type=hidden]`; the host has no box |
+| ToggleGroup | Vue, Angular | `label` required | optional with `aria-label` or `aria-labelledby` |
+| Combobox | React | `onInputChange` | `onQueryChange` |
+| Combobox | Angular | `div.hw-field.hw-combobox`; list id `{controlId}-list`; `aria-haspopup`; `(valueChange)` per keystroke | `div.hw-field > div.hw-combobox`; `{controlId}-listbox`; no `aria-haspopup`; `(queryChange)` for the typed text |
+| Combobox | vanilla | `hw:change` always carried `detail.value`; hint inside `[data-hw=combobox]` | also `{open}` and `{query}`: test `'value' in event.detail`; hint and error after `.hw-combobox` |
+| Combobox, TagInput, MultiSelect | Angular | `unnamedConstraint` and `aria-invalid` while `requiredMessage` was missing | removed; `aria-invalid` from `error` or a failed submission |
+| MultiSelect | frameworks | filter named by `aria-label` or a hidden label; read-only rows `disabled` | visible `label.hw-label` with `searchLabel`; rows enabled with `aria-disabled="true"`; new required `getResultsMessage(count)` |
+| MultiSelect | React | `fieldset.hw-multi-select > div.hw-stack`; bare marker span | `fieldset.hw-field.hw-multi-select > div.hw-multi-select-options`: `.hw-multi-select .hw-stack` -> `.hw-multi-select-options` |
+| MultiSelect | Vue | `p[role=status]` with `emptyMessage` after the options | `p.hw-hint` inside `div.hw-multi-select-options` |
+| MultiSelect | Angular | `getSelectedMessage` required; option text in a span | optional, `p.hw-multi-select-selected` only with it; `label.hw-choice` with a text node |
+| MultiSelect | vanilla | status written at creation, only with an authored `[data-hw-status]` | created when missing, written after filtering; `data-hw-results-message` required |
+| TagInput | Angular | Add button and its required text input | removed: delete the attribute; Enter or comma commits |
+| TagInput | Angular | `div.hw-field.hw-tag-input` with `div.hw-input-group` | `div.hw-field > label, div.hw-tag-input > ul, input; hint` |
+| TagInput | React | `div.hw-field.hw-tag-input > div.hw-inline > span.hw-chip` with `button.hw-button` | `div.hw-tag-input > ul[role=list] > li.hw-chip` with a bare button: `.hw-inline > .hw-chip` -> `.hw-tag-input li.hw-chip` |
+| TagInput | Vue | remove button `.hw-button`; hidden inputs after the text input | bare button in the chip; hidden input in its `li`: `.hw-tag-input .hw-button` -> `.hw-chip button` |
+| TagInput | vanilla | `label.hw-field` inside `.hw-tag-input`, `div[data-hw-tags]` | `div.hw-field > label.hw-label, div.hw-tag-input > ul[data-hw-tags], input[data-hw-tag-input]` |
+| PinInput | all | `maxlength="N"` | no `maxlength`; `pattern="[0-9]{N}"` |
+| PasswordField | Angular | public field `revealed` | `[(visible)]` / `visible`, `(visibleChange)` |
+| PasswordField | Angular | every value written by Angular Forms hid the password | only the toggle, the input and a native reset change visibility |
+| PasswordField | React | a reset returned to `defaultVisible` | a reset hides the value and calls `onVisibleChange(false)` |
+| SearchField | Angular | `showSearchButton` = true | false; add `showSearchButton` and `searchLabel` where the button is wanted |
+| FileDropzone | Angular | a mixed batch kept the accepted files; `readOnly` rendered `disabled` | any rejected file empties the selection, `(rejected)` carries it; read-only stays focusable and submitted |
+| FileDropzone | Vue | `@reject` received the whole batch; `aria-readonly` on the input | only the rejected files; `aria-disabled="true"` and `data-hw-readonly="true"` on the root |
+| FileDropzone | React, vanilla | several files on a single dropzone kept the first | the batch is rejected (reason `count`) and reported |
+| FileDropzone | React | `maxSize` ignored; the rejection replaced the application error | `maxSize` limits the size; the application error wins, the rejection is `p.hw-error[role=alert]` |
+| FileDropzone | Vue, Angular | no rejection text | `getRejectedMessage(rejected)` required with `accept` or `maxSize`; remove the hand-written message |
+| FileDropzone | frameworks | built-in file list (React, Angular); label, hint and error outside the zone (Vue); `data-dragging` | `div.hw-field.hw-file-dropzone` with label, instruction, input, status, content, hint and error; compose FileUploadList; `[data-dragging='true']` -> `[data-state='dragging']` |
+| FileDropzone | vanilla | `data-dragover`; root `label.hw-file-dropzone`; rejection in `[data-hw-file-status]` | `data-state="dragging"`; root `div.hw-field.hw-file-dropzone` with `label[for]`; rejection in `[data-hw-error]` or a created `p.hw-error[role=alert]` |
+| FileUpload | Angular | no marker; `accept=""` always; projected content dropped | shared label with marker; `accept` only when given; content after the input |
+| Calendar | React, Angular | no `unsupportedMessage` | required with `calendar="islamic-umalqura"` |
+| Calendar | vanilla | standalone switch with `data-hw-calendar-system-label`, `data-hw-gregorian-label`, `data-hw-hijri-label` | removed from the standalone Calendar; call `controller.setCalendar(system)` from your own control |
+| Calendar | Vue, Angular, vanilla | tab stop of an empty calendar: first day of the month | today when shown and available |
+| DatePicker | Vue | `p#{id}-validation-error` before the hint | `p#{id}-error.hw-error[role=alert]` after the hint: `#<id>-validation-error` -> `#<id>-error` |
+| DatePicker | Angular | `p#{controlId}-date-error` before the hint; `describedBy`; `label` always required | `p#{controlId}-error[role=alert]` after the hint; `aria-describedby`; `label` optional with `aria-label` / `aria-labelledby` |
+| DatePicker | React | outside min/max and outside the Umm al-Qura range showed `invalidMessage` | `unsupportedMessage` |
+| DatePicker | vanilla | `div.hw-calendar-options` inside `.hw-calendar`; output showed a message or the long date | before the calendar in the dialog body: `.hw-calendar > .hw-calendar-options` -> `.hw-dialog-body > .hw-calendar-options`; output shows the full date; message in `[data-hw-error]` or a created `p.hw-error` |
+| Dialog, Drawer | Angular | `describedBy` | `aria-describedby` |
+| Tooltip | Angular | `span.hw-tooltip-anchor.hw-tooltip-trigger[tabindex=0]` inside the host | the host is the wrapper: `<hw-tooltip text="T">term</hw-tooltip>` -> `<hw-tooltip text="T"><span hwTooltipTrigger tabindex="0">term</span></hw-tooltip>` |
+| Accordion | Angular | `HwAccordionItem.id`; `(toggled)` emits `{id, open}` | `value`; `{value, open}`: `$event.id` -> `$event.value` |
+| Accordion | Vue | a slot per item value (`<template #faq-1>`) | scoped slots `#title` and `#content="{item, index}"` |
+| Collapsible | React | `title` | `label` |
+| Carousel, Pagination | all | arrow at a bound `disabled` | `aria-disabled="true"`: `[data-hw-next]:disabled` -> `[data-hw-next]:is(:disabled, [aria-disabled='true'])` |
+| Table | React, Vue | `TableColumn.header` | `label`: `{header: 'Name'}` -> `{label: 'Name'}` |
+| Table, DataTable | Vue | slot `cell:<key>` with `{row, index}` | `cell-<key>` with `{row, index, column}`: `#cell:name` -> `#cell-name` |
+| Table, DataTable | Angular | wrapper `aria-label`; caption always rendered; text cells | `aria-labelledby` the caption id, only with a caption; `cell` template, `rowKey`; caption optional with `aria-label` / `aria-labelledby` |
+| DataTable | React | `sort` / `defaultSort` / `onSortChange({key, direction})` | `sortKey`, `sortDirection`, `defaultSortKey`, `defaultSortDirection`, `onSortKeyChange`, `onSortDirectionChange` |
+| DataTable | React | `DataTableColumn.render(value, row)`; `table.hw-table.hw-data-table` | `cell(row, index)`; `div.hw-table-wrap.hw-data-table > table`: `table.hw-data-table` -> `.hw-data-table > table` |
+| DataTable | Angular | `(sortChange)` | `[(sortKey)]`, `[(sortDirection)]`, `(sortKeyChange)`, `(sortDirectionChange)` |
+| DataTable | vanilla | `onSortChange`; `detail.key`, `detail.direction` | `onSortKeyChange`, `onSortDirectionChange`; `detail.sortKey`, `detail.sortDirection` |
+| PageHeader | Vue | a fractional `level` gave an invalid tag | truncated and clamped to 1..6 |
+| Breadcrumb | React, Vue | the current item with `href` was a link | `span[aria-current=page]`: style `[aria-current]` |
+| Breadcrumb | Angular | the last item was always current | `HwBreadcrumbItem.current`; the last item by default |
+| Stepper | all | no state text | required `completeLabel` and `upcomingLabel` (vanilla `data-hw-complete-label`, `data-hw-upcoming-label`); remove hand-written state suffixes |
+| Stepper | Angular | `[steps]`; `current` a zero-based index; `small.hw-hint` in the label | `[items]` with `value`; `current` is a value, `[activeIndex]` an index; `p.hw-hint` after the label |
+| Carousel, Calendar and navigation components | Angular | `label` required; `aria-label` stayed on the host | `label` optional with `aria-label` / `aria-labelledby`, forwarded to the named element |
+| Menu | Vue | `@select`; `label` printed on the trigger | `@action`; `trigger-label` is the trigger text: `<Menu label="Actions">` -> `<Menu label="Actions" trigger-label="Actions">` |
+| Menu | Vue | `ul[role=menu] > li[role=none] > button\|a` | `div.hw-menu-content[role=menu] > .hw-menu-item` |
+| Menu | React | `ul.hw-menu-list > li[role=none]` | `div.hw-menu-content > .hw-menu-item`: `.hw-menu-list` -> `.hw-menu-content` |
+| Menu | Angular | `HwMenuItem.id`; `div.hw-menu-panel`; primary trigger | `value`; `div.hw-menu-content`; `triggerVariant` default `'secondary'` (add `triggerVariant="primary"` for the old look) |
+| Popover | Angular | primary trigger | `triggerVariant` default `'secondary'` |
+| Menu | vanilla | `createMenu(root, {onSelect})` | `{onAction}` |
+| Popover | React | `title` rendered as an `h3`; `section.hw-popover-panel` | `label` (accessible name, nothing printed); `div.hw-popover-panel[aria-label]`; write a heading in the content |
+| Popover | Vue, styles | `div.hw-popover-content` | `div.hw-popover-panel`: `.hw-popover-content` -> `.hw-popover-panel` |
+| Tabs | React, Vue | `aria-label` / `aria-labelledby` on `div.hw-tabs` | on the tablist: `.hw-tabs[aria-label]` -> `.hw-tab-list[aria-label]` |
+| TreeView | Angular | `nodes`, `expandedIds`, `(expandedIdsChange)`; `span.hw-tree-toggle[aria-hidden]` | `items`, `expanded`, `(expandedChange)`; `button.hw-tree-toggle`; required `getExpandLabel`, `getCollapseLabel` |
+| TreeView | React, Vue | toggle button without class; Vue `li[aria-label]` | `button.hw-tree-toggle`; `li[aria-labelledby]` |
+| TreeView | vanilla | `expandedValues` (option, controller, `detail`); toggle with a fixed `aria-label` | `expanded`; `button.hw-tree-toggle` with `data-hw-expand-label` / `data-hw-collapse-label` on the root |
+| PortalHeader | React | `navigation`, `brandHref`; no home link by default; `div.hw-portal-header-main` | `links`, `homeHref` (default `'/'`, `""` for no link); brand, toggle, nav and actions are children of the header |
+| PortalHeader | Angular | public field `menuOpen`; `a.hw-portal-brand` without `href` | `[(open)]`; `div.hw-portal-brand` |
+| PortalHeader | Vue | `span.hw-portal-brand[role=group]` | `div.hw-portal-brand[role=img]` |
+| AppShell | React | `div.hw-app-shell-body` | sidebar and main are children of `.hw-app-shell` |
+| PortalLayout, SiteVerification | React | `footerLabel`, `externalLabel` optional in the types | required with `footerProps.links`; with `registrationHref` unless `registrationExternal={false}` |
+| ServiceCard | Vue | `metadata: string[]`; `badge` | `metadata: {term, description}[]`; `category` |
+| ServiceCard | Angular | `duration`, `fee`; `href` required; title link and a secondary button | `[metadata]`; `href` optional; `a.hw-link` action only with `href` (project `<a hwButton variant="secondary" hwServiceAction>` for a button) |
+| ServiceDetails | Vue | `items`; `section`; `div.hw-service-details-action` | `metadata`; `article`; `footer` |
+| ServiceDetails | Angular | `[details]`; `section` root; projected actions | `[metadata]`; `article`; `<button hwButton hwServiceAction>` in the footer |
+| Service facts | styles | `.hw-service-card-meta` | `dl.hw-description-list` |
+| Alert | Angular | `dismissible`; role `status` for every tone; `hw-alert > div.hw-alert`; `data-variant="default"` | removed (the button follows `(dismissed)`); `alert` for `danger`; the host is `.hw-alert`; no default `data-variant` |
+| Progress | Angular | visible label wrapper; values clamped | `progress.hw-progress` named by `aria-label`; raw values |
+| Meter | React | native 0..1 | min 0, max 100: `<Meter value={0.4}>` -> `<Meter value={0.4} max={1}>` |
+| Meter | Angular | `low` 25, `high` 75, `optimum` 100; visible label | no regions unless given; `meter.hw-meter` named by `aria-label` |
+| Skeleton | Angular | `width`, `height`; `hw-skeleton > span.hw-skeleton` | `style="inline-size: …; block-size: …"`; the host is `.hw-skeleton` |
+| Spinner | Angular | `span[role=status] > span.hw-spinner` inside the host | the host is `.hw-spinner[role=status]` |
+| EmptyState | Angular | `hw-empty-state > section.hw-empty` | the host is `.hw-empty`; icon in `[hwEmptyIcon]`, action in `[hwEmptyAction]` |
+| EmptyState | React, Vue | `span[aria-hidden]` around the icon | `span.hw-empty-icon[aria-hidden]` |
+| Chip | Vue, Angular | `removable` | removed; the button follows `@remove` / `(removed)` |
+| Chip | React, Vue | `button.hw-button` in the chip | plain button: `.hw-chip .hw-button` -> `.hw-chip button` |
+| Badge, Avatar, ButtonGroup, Chip | Angular | inner `span` / `div` carried the class; default `data-*` always written | the host carries the class; `data-*` only when the input is given |
+| Card, IconButton | Angular | ARIA on the host; IconButton `describedBy` | forwarded to the native element; `aria-describedby` |
+| AvatarGroup | Angular | `[avatars]` | `[items]` of `HwAvatarItem` |
+| DescriptionList | Vue | `variant` = `'horizontal'` | stacked; pass `variant="horizontal"` |
+| Stat | React | `dl > dt + dd`, `p`, `div.hw-stat-trend` | `span.hw-stat-label`, `strong.hw-stat-value`, `p.hw-stat-description`, `span.hw-stat-trend` |
+| Stat | Angular | `hw-stat > div.hw-stat`; trend as a projected span | the host is `.hw-stat`; `trend`, `trendTone` or `[hwStatTrend]` |
+| Timeline | React | `status: 'active'`; `li` without class | `'current'`; `li.hw-timeline-item > h3, time, p` |
+| Timeline | Vue | item `date` | `dateTime` with `dateLabel` |
+| Timeline | Angular | `state`, `'pending'`, `time`; no `id` | `status`, `'upcoming'`, `dateLabel` + `dateTime`; a unique `id` |
+| Timeline | vanilla, styles | `data-state="active"` | `data-state="current"` |
+| NotificationList | React | `onMarkRead` | `onRead` |
+| NotificationList | Vue | item `date`; `li[data-read]`; `aria-label` on the section | `dateTime` with `dateLabel`; `li[data-state]`; a visible `h2`; required `unreadLabel` |
+| NotificationList | Angular | `unread`, `time`; `li.hw-notification[data-unread]`; hidden unread text | `read` (inverted), `dateLabel` + `dateTime`; `li[data-state]`; a visible badge |
+| NotificationList | vanilla, styles | `data-unread="true"`, `data-read="false"` | `data-state="unread"` |
+| ToastRegion | React | `ToastMessage.description` | `message`, rendered in a `p` |
+| Feedback | React | `helpful: 'yes' \| 'no' \| ''`; a form with radios; `onSubmit` / `onReset` | `true \| false \| null`; `div[role=group]` with pressed buttons; `onFeedback` |
+| Feedback | Vue | string `v-model`; `@submit({value, comment})`; `readonly` | `v-model` of `FeedbackValue`; `@feedback`; `disabled` |
+| Feedback | Angular | `[(value)]` `boolean \| null`; success on the choice | `HwFeedbackValue`; required `commentLabel` and `submitLabel`; `(feedback)` on submit |
+| Feedback | vanilla | string value; `getStatusMessage` | `FeedbackValue`; `onFeedback`; `successMessage` |
+| Feedback | styles | `.hw-feedback > h2`, `fieldset` and choice rules | a first-child `p` and pressed buttons |
+| CookieConsent | React | `value` / `defaultValue: CookieChoice`, `onValueChange`; Reject before Accept in `div.hw-inline` | `open` / `defaultOpen` / `onOpenChange`, `onConsent(choice)`, `ConsentChoice`; Accept, Reject in `div.hw-button-group` |
+| CookieConsent | Vue | `@accept`, `@reject`; `section[role=region][aria-label]` | `@consent` with `'accepted' \| 'rejected'`; named by its `h2` |
+| CookieConsent | Angular | `[(visible)]`; removed from the DOM when closed | `[(open)]`; the host is the region, hidden when closed |
+| CookieConsent | vanilla | `onValueChange`, `controller.value`, `detail.value` | `onConsent`, `onOpenChange`, `controller.open`, `setOpen`, `detail.consent`; Reject carries `data-variant="secondary"` |
+| Button | Angular | `<button hwButton>` submitted its form; `[attr.disabled]`, `[attr.aria-busy]` | `type="button"` unless written; `[disabled]`, `[loading]` |
+| Link | Angular | `hw-link` / `HwLinkComponent` | `<a hwLink>` / `HwLinkDirective`; `target="_blank"` -> `external` |
+| Link | Vue | `external` replaced an authored `rel` | adds to it |
+
+#### Left for a later release
+
+- RadioGroup and CheckboxGroup for React, Vue and vanilla, and a
+  single-option Angular radio; a radio group is composed with a fieldset.
+- A general pass-through of native attributes (`enterkeyhint`,
+  `autocapitalize`, `spellcheck`, `list` and the rest) on Angular value
+  controls, and `autofocus` or `webkitdirectory` on `hw-file-upload`; use a
+  native input with the `hw-` classes inside `hw-field`.
+- `multiple` on the Angular select; use `hw-multi-select` or a native select.
+- `required` on a multiple ToggleGroup is not enforced; explain the minimum in
+  the hint or through `error`.
+- Native composition of `hw-table` (authored rows are ignored); write a native
+  table with the `hw-` classes.
+- Form participation (`name`, read-only, hint, error) of TreeView in React and
+  Vue.
+- A packaged trigger in React and a projected trigger in Angular for Menu and
+  Popover; the Angular trigger stays a text button.
+- `as` on the React layout primitives and attribute selectors for
+  `hw-sidebar` and `hw-app-shell`; header and footer options passed through
+  PortalLayout in Vue and Angular (compose PortalHeader and PortalFooter);
+  rich tab labels in Angular.
+- A Gregorian / Hijri switch on the standalone Calendar; the Calendar hidden
+  input of Angular, Vue and vanilla still submits a date that `isDateDisabled`
+  rejects.
+- `hwTooltipTrigger` on a Hawiyah wrapper component (mark a native element),
+  a `description` input on the Angular dialog, focus hand-over when an alert,
+  the last chip or the cookie region is removed, a rich title for the Angular
+  PageHeader, rich per-item content for Timeline and NotificationList in Vue
+  and Angular, and an opt-out of the Feedback comment step.
+- The browser suite cases of this milestone (computed styles, geometry and
+  forced colours) are run in a separate step; the behaviour cases run in each
+  package's tests with the same case ids.
 
 ## 0.2.1 — 2026-11-10
 

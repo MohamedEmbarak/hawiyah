@@ -46,7 +46,7 @@ const topPages = (root: HTMLElement) => [...root.querySelectorAll<HTMLElement>('
 for(const adapter of ['react','vue','angular']) {
   it(`${adapter}: bounded window and native buttons preserve selection, boundaries and no-op callbacks`,async()=>{
     const m=await mount(adapter);expect(topPages(m.root())).toEqual([1,2,3,4,5,10]);expect(current(m.root())).toBe(1);
-    expect(m.root().getAttribute('aria-label')).toBe('ترقيم الصفحات');expect(m.root().querySelector<HTMLButtonElement>('[data-hw-previous]')!.disabled).toBe(true);
+    expect(m.root().getAttribute('aria-label')).toBe('ترقيم الصفحات');expect(m.root().querySelector<HTMLButtonElement>('[data-hw-previous]')!.getAttribute('aria-disabled')).toBe('true');expect(m.root().querySelector<HTMLButtonElement>('[data-hw-previous]')!.disabled).toBe(false);
     await m.click('[data-hw-next]');expect(current(m.root())).toBe(2);expect(m.changed).toHaveBeenLastCalledWith(2);
     await m.click('[aria-current="page"]');expect(m.changed).toHaveBeenCalledTimes(1);
     expect([...m.root().querySelectorAll('button')].every(node=>node.type==='button')).toBe(true);

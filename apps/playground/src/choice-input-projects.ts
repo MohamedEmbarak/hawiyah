@@ -24,7 +24,7 @@ export function choiceInputProject(id: ChoiceInputId, framework: ProjectFramewor
   const options = [{value: 'riyadh', label: t('Riyadh', 'الرياض')}, {value: 'jeddah', label: t('Jeddah', 'جدة')}, {value: 'dammam', label: t('Dammam', 'الدمام'), disabled: true}];
   const search = t('Filter offices', 'تصفية المكاتب'), empty = t('No matching offices', 'لا توجد مكاتب مطابقة');
   const required = combo ? t('Choose an office from the list.', 'اختر مكتبًا من القائمة.') : tags ? t('Add at least one topic.', 'أضف موضوعًا واحدًا على الأقل.') : t('Choose at least one office.', 'اختر مكتبًا واحدًا على الأقل.');
-  const remove = t('Remove', 'إزالة'), add = t('Add', 'إضافة');
+  const remove = t('Remove', 'إزالة');
   const results = t('matching offices', 'مكاتب مطابقة'), selected = t('selected offices', 'مكاتب محددة');
   const disable = t('Disable field', 'تعطيل الحقل'), submit = t('Inspect form values', 'عرض قيم النموذج'), reset = t('Reset', 'إعادة الضبط');
   const modelLabel = t('Current value', 'القيمة الحالية'), formLabel = t('Submitted values', 'القيم المرسلة');
@@ -46,23 +46,28 @@ export function choiceInputProject(id: ChoiceInputId, framework: ProjectFramewor
     const hints = `<p class="hw-hint" id="choice-hint">${hint}</p>`;
     const inputAttrs = 'id="choice-input" class="hw-input" aria-describedby="choice-hint"';
     const fields = {
-      combobox: `<div class="hw-field hw-combobox" data-control>${inputLabel}
-    <input ${inputAttrs} required data-hw-combobox-input autocomplete="off">
-    <input type="hidden" name="${name}" value="riyadh" data-hw-combobox-value>
-    <ul class="hw-listbox" hidden data-hw-combobox-list>${options.map(o => `<li class="hw-option" data-hw-value="${o.value}"${o.disabled ? ' aria-disabled="true"' : ''}>${o.label}</li>`).join('')}</ul>
+      combobox: `<div class="hw-field">${inputLabel}
+    <div class="hw-combobox" data-control>
+      <input ${inputAttrs} required data-hw-combobox-input autocomplete="off">
+      <input type="hidden" name="${name}" value="riyadh" data-hw-combobox-value>
+      <ul class="hw-listbox" hidden data-hw-combobox-list>${options.map(o => `<li class="hw-option" data-hw-value="${o.value}"${o.disabled ? ' aria-disabled="true"' : ''}>${o.label}</li>`).join('')}</ul>
+      <span class="hw-sr-only" data-hw-combobox-status role="status"></span>
+    </div>
     ${hints}</div>`,
       'pin-input': `<div class="hw-field" data-control>${inputLabel}
     <input ${inputAttrs} data-hw-pin-input name="${name}" value="0123" maxlength="4" required>${hints}</div>`,
-      'tag-input': `<div class="hw-field hw-tag-input" data-control data-hw-value='${initialCode}'>${inputLabel}
-    <div class="hw-tags" data-hw-tags></div><input ${inputAttrs} data-hw-tag-input name="${name}" required>${hints}</div>`,
-      'multi-select': `<fieldset class="hw-multi-select" data-control data-hw-required="true" aria-describedby="choice-hint"><legend class="hw-label">${label}</legend>
-    <label for="choice-input">${search}</label><input ${inputAttrs} type="search" data-hw-multiselect-search>
+      'tag-input': `<div class="hw-field">${inputLabel}
+    <div class="hw-tag-input" data-control data-hw-value='${initialCode}'><ul data-hw-tags></ul><input ${inputAttrs} data-hw-tag-input name="${name}" required></div>${hints}</div>`,
+      'multi-select': `<fieldset class="hw-field hw-multi-select" data-control data-hw-required="true" aria-describedby="choice-hint"><legend class="hw-label">${label}</legend>
+    <label class="hw-label" for="choice-input">${search}</label><input ${inputAttrs} type="search" data-hw-multiselect-search>
+    <div class="hw-multi-select-options">
     ${options.map(o => `<label class="hw-choice" data-hw-option><input type="checkbox" class="hw-checkbox" name="${name}" value="${o.value}"${o.value === 'riyadh' ? ' checked' : ''}${o.disabled ? ' disabled' : ''}>${o.label}</label>`).join('\n    ')}
+    </div>
     <span class="hw-sr-only" role="status" data-hw-status></span>${hints}</fieldset>`,
     };
     const config = combo ? `, { getResultsMessage: count => count + ' ${results}', requiredMessage: '${required}' }`
       : tags ? `, { getRemoveLabel: tag => '${remove} ' + tag, requiredMessage: '${required}' }`
-      : pin ? '' : `, { getResultsMessage: count => count + ' ${results}', requiredMessage: '${required}' }`;
+      : pin ? '' : `, { getResultsMessage: count => count + ' ${results}', getSelectedMessage: count => count + ' ${selected}', requiredMessage: '${required}' }`;
     const html = `<!doctype html>
 <html lang="${locale}" dir="${direction}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${label}</title></head>
 <body><form class="demo" ${attrs}>
@@ -99,7 +104,7 @@ window.addEventListener('pagehide', () => { listeners.abort(); controller.destro
   const common = `name="${name}" label="${label}" hint="${hint}" required`;
   if (framework === 'react') {
     const jsx = typed ? 'tsx' : 'jsx';
-    const props = combo ? `options={offices} emptyMessage="${empty}" getResultsMessage={count => count + ' ${results}'} requiredMessage="${required}"` : pin ? 'length={4}' : tags ? `getRemoveLabel={tag => '${remove} ' + tag} requiredMessage="${required}"` : `options={offices} searchLabel="${search}" emptyMessage="${empty}" requiredMessage="${required}"`;
+    const props = combo ? `options={offices} emptyMessage="${empty}" getResultsMessage={count => count + ' ${results}'} requiredMessage="${required}"` : pin ? 'length={4}' : tags ? `getRemoveLabel={tag => '${remove} ' + tag} requiredMessage="${required}"` : `options={offices} searchLabel="${search}" emptyMessage="${empty}" getResultsMessage={count => count + ' ${results}'} getSelectedMessage={count => count + ' ${selected}'} requiredMessage="${required}"`;
     const html = `import { useState } from 'react';
 import { ${component} } from '@hawiyah/react';
 
@@ -113,7 +118,7 @@ export default function App() {
     onSubmit={event => { event.preventDefault(); setSubmitted(submittedValues(event.currentTarget)); }}
     onReset={() => { setValue(${initialCode}); setLocked(false); setSubmitted('—'); }}>
     <${component} ${common} ${props}
-      disabled={locked} value={value} onValueChange={setValue} />
+      disabled={locked} defaultValue={${initialCode}} value={value} onValueChange={setValue} />
     <label><input type="checkbox" data-disable checked={locked} onChange={event => setLocked(event.currentTarget.checked)} /> ${disable}</label>
     <p>${modelLabel} <output data-model>{JSON.stringify(value)}</output></p>
     ${buttons.replaceAll('class=', 'className=')}
@@ -125,7 +130,7 @@ export default function App() {
     return {names:{html:`App.${jsx}`, css:'style.css', js:`main.${jsx}`}, files:{html,css,js}, entry:`main.${jsx}`, host:'<div id="app"></div>'};
   }
   if (framework === 'vue') {
-    const props = combo ? `:options="offices" empty-message="${empty}" :get-results-message="count => count + ' ${results}'" required-message="${required}"` : pin ? ':length="4"' : tags ? `:get-remove-label="tag => '${remove} ' + tag" required-message="${required}"` : `:options="offices" search-label="${search}" empty-message="${empty}" required-message="${required}"`;
+    const props = combo ? `:options="offices" empty-message="${empty}" :get-results-message="count => count + ' ${results}'" required-message="${required}"` : pin ? ':length="4"' : tags ? `:get-remove-label="tag => '${remove} ' + tag" required-message="${required}"` : `:options="offices" search-label="${search}" empty-message="${empty}" :get-results-message="count => count + ' ${results}'" :get-selected-message="count => count + ' ${selected}'" required-message="${required}"`;
     const html = `<script setup${typed ? ' lang="ts"' : ''}>
 import { ref } from 'vue';
 import { ${component} } from '@hawiyah/vue';
@@ -155,10 +160,11 @@ function reset() { value.value = initial; locked.value = false; submitted.value 
     const js = "import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n";
     return {names:{html:'App.vue',css:'style.css',js:`main.${ext}`}, files:{html,css,js}, entry:`main.${ext}`, host:'<div id="app"></div>'};
   }
-  const props = combo ? `[options]="offices" emptyMessage="${empty}" [getResultsMessage]="resultsMessage" requiredMessage="${required}"` : pin ? '[length]="4"' : tags ? `addLabel="${add}" [getRemoveLabel]="removeLabel" requiredMessage="${required}"` : `[options]="offices" searchLabel="${search}" emptyMessage="${empty}" [getSelectedMessage]="selectedMessage" requiredMessage="${required}"`;
+  const props = combo ? `[options]="offices" emptyMessage="${empty}" [getResultsMessage]="resultsMessage" requiredMessage="${required}"` : pin ? '[length]="4"' : tags ? `[getRemoveLabel]="removeLabel" requiredMessage="${required}"` : `[options]="offices" searchLabel="${search}" emptyMessage="${empty}" [getResultsMessage]="resultsMessage" [getSelectedMessage]="selectedMessage" requiredMessage="${required}"`;
   const members = combo ? `
   resultsMessage = (count: number) => count + ' ${results}';` : tags ? `
   removeLabel = (tag: string) => '${remove} ' + tag;` : id === 'multi-select' ? `
+  resultsMessage = (count: number) => count + ' ${results}';
   selectedMessage = (count: number) => count + ' ${selected}';` : '';
   const html = `import { Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';

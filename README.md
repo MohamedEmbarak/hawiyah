@@ -125,7 +125,7 @@ export function ResultPages({ page, onPageChange }: { page: number; onPageChange
 }
 ```
 
-A missing required text is a type error in React and Angular; in every adapter the component renders nothing in its place and warns once in development. [CONTRACT.md](CONTRACT.md#text-and-localisation) defines the text and locale rules, and each adapter README lists its inputs. The [changelog](CHANGELOG.md) maps every former built-in text to the input that replaces it.
+A missing required text is a type error in React and Angular; in every adapter the component renders nothing in its place and warns once in development. [CONTRACT.md](CONTRACT.md#text-and-localisation) defines the text and locale rules, and each adapter README lists its inputs. The [changelog](CHANGELOG.md) maps every former built-in text to the input that replaces it, and lists per component and adapter each name and markup that 0.3.0 renames or removes, with its migration. In 0.3.0 the four adapters share one behaviour for native form reset, accessible names, validation messages, read-only state and controlled state.
 
 Set `lang` and `dir` on the application container, and load the fonts appropriate to the product. No component reads `lang` or sets a default `dir`. Styles declare font families; consumers control font loading. `@hawiyah/styles/fonts.css` is an opt-in stylesheet with IBM Plex Sans Arabic (400 to 700) and IBM Plex Mono (400), which `styles.css` never imports; see [docs/fonts.md](docs/fonts.md).
 

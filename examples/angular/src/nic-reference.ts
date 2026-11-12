@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { HwCheckboxComponent, HwRadioComponent, HwCardComponent, HwButtonDirective, HwIconButtonComponent, HwInputGroupComponent, HwAlertComponent, HwBadgeComponent, HwToastRegionComponent, HwPortalHeaderComponent, HwPortalFooterComponent } from '@hawiyah/angular';
+import { HwCheckboxComponent, HwRadioGroupComponent, HwCardComponent, HwButtonDirective, HwIconButtonComponent, HwInputGroupComponent, HwAlertComponent, HwBadgeComponent, HwToastRegionComponent, HwPortalHeaderComponent, HwPortalFooterComponent } from '@hawiyah/angular';
 @Component({
-  selector: 'app-root', standalone: true, imports: [HwCheckboxComponent, HwRadioComponent, HwCardComponent, HwButtonDirective, HwIconButtonComponent, HwInputGroupComponent, HwAlertComponent, HwBadgeComponent, HwToastRegionComponent, HwPortalHeaderComponent, HwPortalFooterComponent],
+  selector: 'app-root', standalone: true, imports: [HwCheckboxComponent, HwRadioGroupComponent, HwCardComponent, HwButtonDirective, HwIconButtonComponent, HwInputGroupComponent, HwAlertComponent, HwBadgeComponent, HwToastRegionComponent, HwPortalHeaderComponent, HwPortalFooterComponent],
   template: `<main class="hw-container hw-stack" data-testid="nic-showcase" data-hw-theme="dga" [attr.lang]="english ? 'en' : 'ar'" [attr.dir]="english ? 'ltr' : 'rtl'" style="padding-block:2rem;background:var(--hw-color-canvas);color:var(--hw-color-text)">
     <h1>{{ t('مرجع واجهة المركز', 'NIC UI reference') }}</h1>
     <button class="hw-button" (click)="english = !english">{{ english ? 'العربية' : 'English' }}</button>
@@ -21,8 +21,8 @@ import { HwCheckboxComponent, HwRadioComponent, HwCardComponent, HwButtonDirecti
       <hw-checkbox controlId="nic-check" label="Checkbox" /><hw-checkbox controlId="nic-mixed" label="Mixed" indeterminate />
       <hw-checkbox controlId="nic-disabled" label="Disabled" disabled [value]="true" />
       <hw-checkbox controlId="nic-readonly" label="Read only" readOnly [value]="true" />
-      <hw-radio controlId="nic-radio" name="nic-radio" label="Radio group" [options]="[{value:'a',label:'First radio'},{value:'b',label:'Second radio'}]" value="a" />
-      <hw-radio controlId="nic-radio-readonly" name="nic-radio" label="Read only radio" [options]="[{value:'locked',label:'Read only radio'}]" readOnly />
+      <hw-radio-group controlId="nic-radio" name="nic-radio" label="Radio group" [options]="[{value:'a',label:'First radio'},{value:'b',label:'Second radio'}]" value="a" />
+      <hw-radio-group controlId="nic-radio-readonly" name="nic-radio" label="Read only radio" [options]="[{value:'locked',label:'Read only radio'}]" readOnly />
     </section><section class="hw-field" data-testid="group-example"><label class="hw-label" for="group-email">{{ t('البريد الإلكتروني','Email') }}</label><hw-input-group data-testid="group-field"><span hwPrefix>@</span><input class="hw-input" id="group-email" name="group-email" type="email" [value]="groupEmail" (input)="groupEmail = $any($event.target).value" required></hw-input-group></section>
     <section class="hw-grid" style="--hw-layout-columns:1;--hw-layout-columns-md:2">
       <hw-card data-testid="base-card"><h2 hwCardHeader class="hw-card-title">{{ t('بطاقة معلومات', 'Information card') }}</h2><p class="hw-card-description">{{ t('محتوى واضح بمسافات موحدة.', 'Clear content with consistent spacing.') }}</p><span hwCardFooter>{{ t('تفاصيل إضافية', 'Additional details') }}</span></hw-card>

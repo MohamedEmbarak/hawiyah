@@ -43,7 +43,7 @@ attributes for exclusive groups. The controller exposes `setOpen(value, open)`
 and `destroy()`; callbacks and `hw:change` describe logical state, not delayed
 physical attribute changes. Destroy before removing enhanced markup.
 
-Vue's `toggle(value, open)` and Angular's `toggled({ id, open })` fire once for
+Vue's `toggle(value, open)` and Angular's `toggled({ value, open })` fire once for
 logical user/exclusive-group changes. Their optional item `open` value initializes
 the native disclosure and subsequent value changes update it; user toggles keep
 working without an event listener, preserving the existing native-details

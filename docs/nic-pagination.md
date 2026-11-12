@@ -33,7 +33,11 @@ React keeps `page/defaultPage/onPageChange`, Vue keeps `v-model/defaultValue`,
 and Angular keeps `page/pageChange`. The application supplies `label`,
 `previousLabel`, `nextLabel`, `getPageLabel(page)`, `getGapLabel(start, end)`,
 `jumpLabel` and `goLabel`; `formatPage` optionally formats visible numbers.
-Digits remain Latin by default. `disabled` blocks selection. `hideOnSinglePage` defaults to false
+Digits remain Latin by default. `disabled` blocks selection. Decision for
+0.3.0: at the first or last page the previous or next arrow carries
+`aria-disabled="true"`, stays focusable and ignores activation, so focus stays
+on it; the native `disabled` attribute marks only a pagination the
+application disables. `hideOnSinglePage` defaults to false
 for compatibility; true matches the source's single-page hiding behavior.
 
 Page numbers are ordinary buttons with `aria-current="page"` on the current

@@ -53,8 +53,17 @@ describe('Feedback', () => {
     expect(root.querySelector('[role=status]')!.textContent).toBe(''); expect(state.sent).toHaveLength(2);
   });
 
-  // STATE-02 (a controlled value that the application does not update) is not asserted for Angular: convention
-  // controlled-and-observable-state, a written value is the initial state and the component then updates its own field.
+  // Convention controlled-and-observable-state for Angular: a written value is the initial state and the component then
+  // updates its own field, so a value that the application does not write back still follows the reader.
+  it('[STATE-02] a bound value that the application does not update is the initial state: the choice is reported once and the component follows it', () => {
+    const { root, state, update } = page(`<hw-feedback ${texts} [value]="value" (valueChange)="values.push($event)" />`, { value: { helpful: null, comment: '' } as Value, values: [] as Value[] });
+    root.querySelector<HTMLButtonElement>('.hw-feedback-actions button')!.click(); update();
+    expect(state.values).toEqual([{ helpful: true, comment: '' }]); expect(state.value).toEqual({ helpful: null, comment: '' });
+    expect(pressed(root)).toEqual(['true', 'false']); expect(root.querySelector('.hw-feedback-comment')).not.toBeNull();
+    // A later write of the application is followed without a notification.
+    update({ value: { helpful: null, comment: '' } }); expect(pressed(root)).toEqual(['false', 'false']); expect(root.querySelector('.hw-feedback-comment')).toBeNull(); expect(state.values).toHaveLength(1);
+  });
+
   it('[STATE-03][STATE-04] a value written by the application does not notify; [(value)] round-trips', () => {
     const { root, state, update } = page(`<hw-feedback ${texts} [(value)]="value" (valueChange)="values.push($event)" />`, { value: { helpful: false, comment: 'Unclear' } as Value, values: [] as Value[] });
     expect(pressed(root)).toEqual(['false', 'true']); expect(root.querySelector('textarea')!.value).toBe('Unclear'); expect(state.values).toEqual([]);
@@ -72,6 +81,13 @@ describe('Feedback', () => {
     update({ disabled: false }); expect(controls.map(control => control.disabled)).toEqual([false, false, false, false]);
     // Native controls in document order and none with a tabindex: Tab visits yes, no, the textarea, submit.
     expect(controls.every(control => !control.hasAttribute('tabindex'))).toBe(true);
+  });
+
+  it('[FEEDBACK-04] focus stays on the pressed choice when the comment step appears', () => {
+    const { root, update } = page(`<hw-feedback ${texts} />`);
+    const no = root.querySelectorAll<HTMLButtonElement>('.hw-feedback-actions button')[1]!;
+    no.focus(); no.click(); update();
+    expect(root.querySelector('.hw-feedback-comment textarea')).not.toBeNull(); expect(document.activeElement).toBe(no); expect(no.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('[TEXT-01] each missing text renders nothing in its place and warns once under hw-feedback', () => {

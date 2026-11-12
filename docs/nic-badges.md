@@ -35,7 +35,10 @@ visual parity. A named medium source font maps to Hawiyah's bundled medium weigh
 React/Vue `Badge` and Angular `hw-badge` accept `tone` and
 `variant="soft|outline|dot"`. Vanilla uses the corresponding `data-tone` and
 `data-variant` attributes on a `span`. React/Vue continue accepting native data
-attributes; a typed `variant` takes precedence. Badge is static content: it
+attributes; a typed `variant` takes precedence. In Angular the `hw-badge` host is
+the badge itself (`hw-badge.hw-badge`), so `class`, `id` and ARIA attributes
+written on it sit on the styled element, and `data-tone` / `data-variant` are
+written only when the input is given. Badge is static content: it
 does not add a button role, keyboard stop, live region or hover/click effect.
 For changing status announcements, applications can supply a separate live
 region. Never communicate status by color or a dot alone.

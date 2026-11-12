@@ -5,7 +5,14 @@ Stepper is a progress indicator: an ordered list with `hw-stepper` on the list,
 buttons, tab stops or step navigation. The application owns progress and decides
 when a previous step is complete. The list name is application text: pass
 `label` (for example `label="التقدم"`), or an `aria-label` / `aria-labelledby`
-where the adapter forwards it. The component has no default name.
+(Angular forwards both to the list). The component has no default name.
+
+Complete and upcoming steps also carry a visually hidden state text, so the
+state does not depend on the check mark or colour: the required texts
+`completeLabel` and `upcomingLabel` (vanilla: options or
+`data-hw-complete-label` / `data-hw-upcoming-label` on the list) are rendered as
+`span.hw-sr-only` after each step's label; the current step has none, because
+`aria-current="step"` exposes it. Do not write the state into the step label.
 
 The same three public state values work across the native adapters and static
 HTML: `complete` (previous), `current` (active), and `upcoming` (pending).
@@ -19,8 +26,8 @@ there is no hidden history or automatic advancement on field edits.
 | --- | --- | --- |
 | React | `items`, string `current` matching `item.value`, optional `item.status` | `activeIndex?: number` |
 | Vue | `items`, string `current` matching `item.value`, optional `item.status` | `activeIndex?: number` |
-| Angular | `steps`, numeric `current` (default `0`) | `activeIndex?: number`, optional `step.status` |
-| Vanilla | Semantic static list markup | `createStepper(list, { activeIndex, label })`, `setActiveIndex(index)`, `refresh()`, `destroy()` |
+| Angular | `items`, string `current` matching `item.value`, optional `item.status` | `activeIndex?: number` |
+| Vanilla | Semantic static list markup | `createStepper(list, { activeIndex, label, completeLabel, upcomingLabel })`, `setActiveIndex(index)`, `refresh()`, `destroy()` |
 
 `activeIndex` is zero-based and takes precedence over the adapter's existing
 `current` prop/input. `-1` means not started (all upcoming); the item count means
@@ -38,20 +45,22 @@ const items = [
   { value: 'review', label: 'المراجعة' },
   { value: 'send', label: 'الإرسال' },
 ];
-// React; use :items="items" :active-index="activeIndex" label="التقدم" in Vue.
-<Stepper items={items} activeIndex={1} label="التقدم" />
+// React; use :items="items" :active-index="activeIndex" label="التقدم"
+// complete-label="مكتملة" upcoming-label="قادمة" in Vue.
+<Stepper items={items} activeIndex={1} label="التقدم" completeLabel="مكتملة" upcomingLabel="قادمة" />
 ```
 
 Angular:
 
 ```html
-<hw-stepper [steps]="steps" [activeIndex]="1" label="التقدم" />
+<hw-stepper [items]="items" [activeIndex]="1" label="التقدم" completeLabel="مكتملة" upcomingLabel="قادمة" />
 ```
 
 Vanilla:
 
 ```html
-<ol class="hw-stepper" data-hw="stepper" data-active-index="1" aria-label="التقدم">
+<ol class="hw-stepper" data-hw="stepper" data-active-index="1" aria-label="التقدم"
+    data-hw-complete-label="مكتملة" data-hw-upcoming-label="قادمة">
   <li class="hw-step"><span>البيانات</span></li>
   <li class="hw-step"><span>المراجعة</span></li>
   <li class="hw-step"><span>الإرسال</span></li>
@@ -63,7 +72,7 @@ the controller directly when the application needs to change progress:
 
 ```ts
 import { createStepper } from '@hawiyah/vanilla';
-const progress = createStepper(list, { activeIndex: 1 });
+const progress = createStepper(list, { activeIndex: 1, completeLabel: 'مكتملة', upcomingLabel: 'قادمة' });
 progress.setActiveIndex(2);
 // After changing direct list items or their data-status overrides:
 progress.refresh();
@@ -123,7 +132,7 @@ the selected theme:
 
 The existing `data-state` selectors also support application CSS for individual
 states. Keep contrast sufficient in all themes; retain numbers/check marks and
-`aria-current` so color is not the only distinction. Forced-colors mode uses a
+`aria-current` and the rendered state text so color is not the only distinction. Forced-colors mode uses a
 system-color current marker. Layout remains logical for RTL/LTR and follows the
 existing responsive rules. State changes introduce no animation. This is an
 API/style extension, not evidence of official DGA certification or a new visual

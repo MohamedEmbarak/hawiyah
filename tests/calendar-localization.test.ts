@@ -123,7 +123,8 @@ it('vanilla navigation renders the supplied copy independently of the explicit l
     const api = createCalendar(root, {locale, value: initial, calendar: 'islamic-umalqura', ...texts});
     expect(root.querySelector('.hw-calendar-prev')?.getAttribute('aria-label')).toBe(texts.previousLabel);
     expect(root.querySelector('.hw-calendar-next')?.getAttribute('aria-label')).toBe(texts.nextLabel);
-    expect(root.querySelector('.hw-calendar-switch')?.getAttribute('aria-label')).toBe(texts.calendarSystemLabel);
+    // The Gregorian / Hijri switch and its three texts belong to DatePicker, never to a standalone Calendar.
+    expect(root.querySelector('.hw-calendar-switch, .hw-calendar-options')).toBeNull();
     expect(root.querySelector('.hw-calendar-info-icon')?.getAttribute('aria-label')).toBe(texts.rangeLabel);
     expect(api.value).toBe(initial); api.destroy();
   }
@@ -137,7 +138,7 @@ it('removes the built-in calendar copy: a missing text renders nothing and warns
   try {
     const root = document.createElement('div'); root.lang = 'ar'; root.dir = 'rtl'; document.body.append(root);
     const api = createCalendar(root, {locale: 'ar-SA', value: initial, calendar: 'islamic-umalqura'});
-    for (const selector of ['.hw-calendar-prev', '.hw-calendar-next', '.hw-calendar-switch', '.hw-calendar-info-icon']) {
+    for (const selector of ['.hw-calendar-prev', '.hw-calendar-next', '.hw-calendar-info-icon']) {
       const node = root.querySelector(selector);
       expect(node?.hasAttribute('aria-label')).toBe(false);
     }

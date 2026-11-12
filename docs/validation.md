@@ -317,7 +317,11 @@ All packages, the guide and native consumers built; React was recompiled and its
 consumer rebuilt after the final dragover change. JSDOM tests use real `:disabled`
 matching but stub DataTransfer/file-list assignment; they do not establish an
 OS-level file-drag or upload-transport audit. Vanilla already used effective
-disabled checks and is unchanged. Calendar logic and public APIs are unchanged.
+disabled checks. Calendar logic and public APIs are unchanged. Superseded in
+0.3.0: every adapter, vanilla included, cancels `dragover` for file drags
+whether or not the zone is available, sets `dropEffect` to `'none'` while it is
+disabled or read-only and leaves other drags alone, so a file dropped on an
+unavailable zone is neither accepted nor opened by the browser.
 
 ## 2026-11-01 modal backdrop gestures
 

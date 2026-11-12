@@ -43,7 +43,7 @@ async function mount(adapter: Adapter) {
     const root = createRoot(host);
     const ref = createRef<HTMLElement>();
     run = async action => { await act(action); };
-    await run(() => root.render(createElement(ReactHeader, { brand: 'هوية', navigation: items, ...texts, ref })));
+    await run(() => root.render(createElement(ReactHeader, { brand: 'هوية', links: items, ...texts, ref })));
     expect(ref.current).toBe(host.querySelector('header'));
     cleanups.push(() => run(() => root.unmount()));
   } else if (adapter === 'vue') {
@@ -139,7 +139,7 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
 
 it('renders initially collapsed, navigable group markup on the React and Vue server', async () => {
   const markup = [
-    renderToStaticMarkup(createElement(ReactHeader, { brand: 'هوية', navigation: items, ...texts })),
+    renderToStaticMarkup(createElement(ReactHeader, { brand: 'هوية', links: items, ...texts })),
     await renderToString(createSSRApp({ render: () => h(VueHeader, props) })),
   ];
   for (const html of markup) {

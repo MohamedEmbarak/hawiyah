@@ -59,7 +59,10 @@ default is preserved for compatibility; examples set it explicitly.
 `showIndicators` is configurable in native adapters; vanilla omits the authored
 indicator group. All controls have accessible names and native Enter/Space
 activation. Indicators use `aria-current`, not tab semantics. Previous/next
-disable at bounds unless looping is enabled. A polite position announcement is
+are unavailable at bounds unless looping is enabled. Decision for 0.3.0: at a
+bound the arrow carries `aria-disabled="true"`, stays focusable and ignores
+activation, so focus stays on the arrow just used; the native `disabled`
+attribute is kept for a carousel the application disables. A polite position announcement is
 separate from the visible indicators; empty collections show `emptyLabel`.
 Many indicators wrap and controls move into normal flow on narrow viewports.
 The root does not clip keyboard focus rings, unlike the source wrapper.

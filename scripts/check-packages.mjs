@@ -228,7 +228,9 @@ assert.equal(typeof vanilla.createCalendar,'function');
 assert.equal(typeof vanilla.createTreeView,'function');
 assert.equal(typeof vanilla.createPortalHeader,'function');
 for (const name of ['createNavigationDrawer','createStepper','createRating','createPasswordField','createSearchField','createCopyButton','createSideNavigation']) assert.equal(typeof vanilla[name],'function');
-for (const name of ['copyText','createCopyFeedback','bindLinkNavigation','isLinkNavigationHandled','getNavigationItemKind','getNavigationGroupEntries','isNavigationGroupOpen','getNavigationCurrentId','revealNavigationCurrent','observeContentNavigation']) assert.equal(typeof core[name],'function','core missing '+name);
+for (const name of ['copyText','createCopyFeedback','bindLinkNavigation','isLinkNavigationHandled','getNavigationItemKind','getNavigationGroupEntries','isNavigationGroupOpen','getNavigationCurrentId','revealNavigationCurrent','observeContentNavigation','getDateViolation','observeFormReset','sameValue','prepareRemovalFocus','createTypeahead','isTypeaheadKey','getPortalBranchSummary','evaluateFileSelection']) assert.equal(typeof core[name],'function','core missing '+name);
+for (const name of ['HwTooltipTriggerDirective','HwLinkDirective']) assert.equal(typeof angular[name],'function','Angular missing '+name);
+assert.ok(angular.HW_FIELD, 'Angular missing HW_FIELD');
 assert.deepEqual(core.copyFeedbackIcons,{idle:'copy-01',copied:'tick-02',failed:'alert-02'});
 // Nothing touches the clipboard on a server: no Clipboard API there, so a copy reports that and writes nothing.
 assert.equal(await core.copyText('نص'),'unavailable');

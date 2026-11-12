@@ -1,6 +1,6 @@
 <!-- Hawiyah 0.2.1 · Connect submission and conditional display in your application. -->
 <fieldset class="hw-stack" dir="rtl" lang="ar">
   <legend>معلومات المنشأة</legend>
-  <label class="hw-field"><span class="hw-label">اسم المنشأة *</span><input class="hw-input" name="businessName" required minlength="2" autocomplete="organization"></label>
-  <label class="hw-field"><span class="hw-label">البريد الإلكتروني *</span><input class="hw-input" name="email" type="email" dir="ltr" required autocomplete="email" aria-describedby="email-help"><span class="hw-hint" id="email-help">نستخدمه لإرسال تحديثات الطلب.</span></label>
+  <div class="hw-field"><label class="hw-label" for="business-name">اسم المنشأة<span class="hw-required-marker" aria-hidden="true"> *</span></label><input class="hw-input" id="business-name" name="businessName" required minlength="2" autocomplete="organization"></div>
+  <div class="hw-field"><label class="hw-label" for="business-email">البريد الإلكتروني<span class="hw-required-marker" aria-hidden="true"> *</span></label><input class="hw-input" id="business-email" name="email" type="email" dir="ltr" required autocomplete="email" aria-describedby="email-help"><p class="hw-hint" id="email-help">نستخدمه لإرسال تحديثات الطلب.</p></div>
 </fieldset>

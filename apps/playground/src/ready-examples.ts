@@ -36,7 +36,7 @@ export function statusMarkup(id: 'alert' | 'badge' | 'chip' | 'toast-region', lo
   const items = statusExamples.map(item => {
     const label = t(item.en, item.ar), body = t(item.bodyEn, item.bodyAr);
     if (id === 'badge' || id === 'chip') return `<span class="hw-${id}" data-tone="${item.tone}" data-variant="${variant}">${label}</span>`;
-    return `<div class="hw-alert" data-tone="${item.tone}" data-variant="${variant}"><div class="hw-alert-content"><strong>${label}</strong><p>${body}</p></div></div>`;
+    return `<div class="hw-alert" data-tone="${item.tone}" data-variant="${variant}" role="group"><div class="hw-alert-content"><strong>${label}</strong><p>${body}</p></div></div>`;
   }).join('\n');
   return `<div class="${id === 'alert' ? 'hw-stack' : id === 'badge' ? 'hw-cluster hw-badges' : 'hw-cluster'}">${items}</div>`;
 }
@@ -135,13 +135,13 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
         : `<th scope="col">${service}</th><th scope="col">${days}</th>`;
       const columns = [{ key: 'service', label: service, rowHeader: true, ...(sortable ? { sortable: true } : {}) }, { key: 'days', label: days, ...(sortable ? { sortable: true } : {}) }];
       const reactColumns = sortable ? JSON.stringify(columns)
-        : `[{key:'service',header:'${service}',rowHeader:true,cell:row => row.service},{key:'days',header:'${days}',cell:row => row.days}]`;
-      const vueColumns = sortable ? columns : columns.map(({ key, label, ...rest }) => ({ key, header: label, ...rest }));
+        : `[{key:'service',label:'${service}',rowHeader:true,cell:row => row.service},{key:'days',label:'${days}',cell:row => row.days}]`;
+      const captionId = `ready-${id}-${item.variant}-${item.size}${item.empty ? '-empty' : ''}-caption`;
       return {
         title: item.title,
-        markup: `<div class="hw-table-wrap" tabindex="0" role="region" aria-label="${caption}"><table class="hw-table${sortable ? ' hw-data-table' : ''}" ${sortable ? `data-hw="data-table" data-hw-locale="${language}"` : ''} data-variant="${item.variant}" data-size="${item.size}"><caption>${caption}</caption><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table></div>`,
+        markup: `<div class="hw-table-wrap${sortable ? ' hw-data-table' : ''}" tabindex="0" role="region" aria-labelledby="${captionId}"><table class="hw-table" ${sortable ? `data-hw="data-table" data-hw-locale="${language}"` : ''} data-variant="${item.variant}" data-size="${item.size}"><caption id="${captionId}">${caption}</caption><thead><tr>${headings}</tr></thead><tbody>${body}</tbody></table></div>`,
         react: `import { ${component} } from '@hawiyah/react';\n\nconst rows = ${reactRows};\n\n<${component} caption="${caption}" rows={rows} columns={${reactColumns}} variant="${item.variant}" size="${item.size}" emptyMessage="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
-        vue: `<!-- import { ${component} } from '@hawiyah/vue' -->\n<${component} caption="${caption}" :rows='${data}' :columns='${JSON.stringify(vueColumns)}' variant="${item.variant}" size="${item.size}" empty-message="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
+        vue: `<!-- import { ${component} } from '@hawiyah/vue' -->\n<${component} caption="${caption}" :rows='${data}' :columns='${JSON.stringify(columns)}' variant="${item.variant}" size="${item.size}" empty-message="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
         angular: `<!-- import { Hw${component}Component } from '@hawiyah/angular'; add to imports -->\n<hw-${sortable ? 'data-table' : 'table'} caption="${caption}" [rows]='${data}' [columns]='${JSON.stringify(columns)}' variant="${item.variant}" size="${item.size}" emptyMessage="${emptyMessage}" ${sortable ? `locale="${language}"` : ''} />`,
       };
     });
@@ -177,14 +177,14 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
     return {title:t(`Link · ${variant}`,`رابط · ${variant}`),markup:`<a class="hw-link" ${disabled?'role="link" aria-disabled="true" tabindex="-1"':`href="#guide" data-variant="${variant}"`}>${label}${variant==='standalone'?'<span class="hw-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true"></span>':''}</a>`,
       react:`import { Link } from '@hawiyah/react';\n\n<Link href="#guide" ${disabled?'disabled':`variant="${variant}"`}>${label}</Link>`,
       vue:`<!-- import { Link } from '@hawiyah/vue' -->\n<Link href="#guide" ${disabled?'disabled':`variant="${variant}"`}>${label}</Link>`,
-      angular:`<!-- import { HwLinkComponent } from '@hawiyah/angular'; add to imports -->\n<hw-link href="#guide" ${disabled?'[disabled]="true"':`variant="${variant}"`}>${label}</hw-link>`,
+      angular:`<!-- import { HwLinkDirective } from '@hawiyah/angular'; add to imports -->\n<a hwLink href="#guide" ${disabled?'[disabled]="true"':`variant="${variant}"`}>${label}</a>`,
     };
   }).concat([{
     title: t('External destination', 'وجهة خارجية'),
     markup: `<a class="hw-link" href="https://example.test/reference" target="_blank" rel="noopener noreferrer">${t('External reference','مرجع خارجي')}<span class="hw-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></a>`,
     react: `import { Link } from '@hawiyah/react';\n<Link href="https://example.test/reference" external>${t('External reference','مرجع خارجي')}<span className="hw-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></Link>`,
     vue: `<!-- import { Link } from '@hawiyah/vue' -->\n<Link href="https://example.test/reference" external>${t('External reference','مرجع خارجي')}<span class="hw-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></Link>`,
-    angular: `<!-- imports: [HwLinkComponent] -->\n<hw-link href="https://example.test/reference" target="_blank">${t('External reference','مرجع خارجي')}<span class="hw-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></hw-link>`,
+    angular: `<!-- imports: [HwLinkDirective] -->\n<a hwLink href="https://example.test/reference" external>${t('External reference','مرجع خارجي')}<span class="hw-sr-only"> · ${t('opens in a new window','يفتح في نافذة جديدة')}</span></a>`,
   }]);
   if (id === 'site-verification') {
     return [false,true].map(open=>({title:open?t('Expanded verification','تفاصيل التحقق'):t('Collapsed verification','شريط التحقق المطوي'),markup:siteVerificationMarkup(locale,open),
@@ -194,10 +194,10 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
     }));
   }
   if(id==='feedback')return (['text','icon-text','icon'] as const).map(variant=>({
-    title:t(`Feedback · ${variant}`,`تقييم الصفحة · ${variant}`), markup:feedbackMarkup(locale,variant),
+    title:t(`Feedback · ${variant}`,`تقييم الصفحة · ${variant}`), markup:feedbackMarkup(locale,variant,`ready-feedback-${variant}`),
     react:`import { Feedback } from '@hawiyah/react';\n\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" yesLabel="${t('Yes','نعم')}" noLabel="${t('No','لا')}" commentLabel="${t('Tell us more','أخبرنا بالمزيد')}" submitLabel="${t('Send feedback','إرسال التقييم')}" successMessage="${t('Thank you for your feedback.','شكراً على تقييمك.')}" onFeedback={value => console.log(value)} />`,
-    vue:`<!-- import { Feedback } from '@hawiyah/vue' -->\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choice-variant="${variant}" yes-label="${t('Yes','نعم')}" no-label="${t('No','لا')}" comment-label="${t('Tell us more','أخبرنا بالمزيد')}" submit-label="${t('Send feedback','إرسال التقييم')}" success-message="${t('Thank you for your feedback.','شكراً على تقييمك.')}" @submit="value => console.log(value)" />`,
-    angular:`<!-- imports: [HwFeedbackComponent] -->\n<hw-feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" yesLabel="${t('Yes','نعم')}" noLabel="${t('No','لا')}" successMessage="${t('Thank you for your feedback.','شكراً على تقييمك.')}" />`,
+    vue:`<!-- import { Feedback } from '@hawiyah/vue' -->\n<Feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choice-variant="${variant}" yes-label="${t('Yes','نعم')}" no-label="${t('No','لا')}" comment-label="${t('Tell us more','أخبرنا بالمزيد')}" submit-label="${t('Send feedback','إرسال التقييم')}" success-message="${t('Thank you for your feedback.','شكراً على تقييمك.')}" @feedback="value => console.log(value)" />`,
+    angular:`<!-- imports: [HwFeedbackComponent]; report(value: HwFeedbackValue) { console.log(value); } -->\n<hw-feedback label="${t('Was this page helpful?','هل كانت هذه الصفحة مفيدة؟')}" choiceVariant="${variant}" yesLabel="${t('Yes','نعم')}" noLabel="${t('No','لا')}" commentLabel="${t('Tell us more','أخبرنا بالمزيد')}" submitLabel="${t('Send feedback','إرسال التقييم')}" successMessage="${t('Thank you for your feedback.','شكراً على تقييمك.')}" (feedback)="report($event)" />`,
   }));
   if (id === 'checkbox' || id === 'radio') {
     const component = id === 'checkbox' ? 'Checkbox' : 'Radio';
@@ -210,8 +210,8 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
     return [{ title:t('Interactive, selected, disabled and read-only states','الحالات التفاعلية والمحددة والمعطلة وللقراءة فقط'),
       markup:`<div class="hw-stack">${states.map((s,i)=>`<label class="hw-choice"><input class="hw-${id}" type="${id}" name="ready-${id}-${i}" ${s.checked?'checked':''} ${s.disabled?'disabled':''} ${s.readonly?'readonly aria-disabled="true"':''}>${s.label}</label>`).join('')}</div>`,
       react:`import { ${component} } from '@hawiyah/react';\n\n${states.map((s,i)=>`<${component} label="${s.label}" name="example-${i}" ${s.checked?'defaultChecked ':''}${s.disabled?'disabled ':''}${s.readonly?'readOnly ':''}/>`).join('\n')}`,
-      vue:`<script setup>\nimport { ${component} } from '@hawiyah/vue';\n</script>\n<template>\n${states.map((s,i)=>`  <${component} label="${s.label}" name="example-${i}" ${id==='radio'?`value="on" ${s.checked?'default-value="on" ':''}`:s.checked?':default-value="true" ':''}${s.disabled?'disabled ':''}${s.readonly?'read-only ':''}/>`).join('\n')}\n</template>`,
-      angular:`<!-- Import Hw${component}Component from @hawiyah/angular into the standalone component. -->\n${states.map((s,i)=>`<hw-${id} label="${s.label}" name="example-${i}" ${id==='radio'?`[options]="[{value:'on',label:'${s.label}'}]" ${s.checked?'value="on" ':''}`:s.checked?'[value]="true" ':''}${s.disabled?'disabled ':''}${s.readonly?'readOnly ':''}/>`).join('\n')}`,
+      vue:`<script setup>\nimport { ${component} } from '@hawiyah/vue';\n</script>\n<template>\n${states.map((s,i)=>`  <${component} label="${s.label}" name="example-${i}" ${id==='radio'?`value="on" ${s.checked?'default-value="on" ':''}`:s.checked?':default-value="true" ':''}${s.disabled?'disabled ':''}${s.readonly?'readonly ':''}/>`).join('\n')}\n</template>`,
+      angular:`<!-- Import ${id==='radio'?'HwRadioGroupComponent':`Hw${component}Component`} from @hawiyah/angular into the standalone component. -->\n${states.map((s,i)=>`<hw-${id==='radio'?'radio-group':id} label="${s.label}" name="example-${i}" ${id==='radio'?`[options]="[{value:'on',label:'${s.label}'}]" ${s.checked?'value="on" ':''}`:s.checked?'[value]="true" ':''}${s.disabled?'disabled ':''}${s.readonly?'readOnly ':''}/>`).join('\n')}`,
     }];
   }
   if (id === 'alert' || id === 'badge' || id === 'chip') {
@@ -252,7 +252,7 @@ function recipes(id: ComponentId, locale: Locale, preview: (id: ComponentId) => 
     const brand = `<img src="${import.meta.env.BASE_URL}brand/assets/hawiyah-wordmark.svg" width="80" height="50" alt="هوية">`;
     return [{ title: t('Header with identity, navigation and actions', 'ترويسة بالهوية والتنقل والإجراءات'),
       markup: `<header class="hw-portal-header" data-hw="portal-header"><a class="hw-skip-link" href="#ready-header-main">${t('Skip to content','انتقل إلى المحتوى')}</a><a class="hw-portal-brand" href="/">${brand}</a><button class="hw-button hw-portal-menu-toggle" type="button" data-hw-portal-toggle>${t('Menu','القائمة')}</button><nav data-hw-portal-navigation aria-label="${t('Example navigation','تنقل المثال')}"><ul><li><a href="/services" aria-current="page">${services}</a></li><li><a href="/requests">${requests}</a></li></ul></nav><div class="hw-portal-header-actions"><a class="hw-button" href="/login">${signIn}</a></div></header><section id="ready-header-main" tabindex="-1"><h3>${services}</h3><p>${t('Your page content goes here.','يوضع محتوى صفحتك هنا.')}</p></section>`,
-      react: `import { PortalHeader } from '@hawiyah/react';\n\n<PortalHeader brand={<img src="/brand/hawiyah-wordmark.svg" alt="هوية" width={80} height={50} />} brandHref="/" mainId="main-content" ${headerTexts('react')} navigation={${links}} actions={<a className="hw-button" href="/login">${signIn}</a>} />\n<main id="main-content" tabIndex={-1}>...</main>`,
+      react: `import { PortalHeader } from '@hawiyah/react';\n\n<PortalHeader brand={<img src="/brand/hawiyah-wordmark.svg" alt="هوية" width={80} height={50} />} homeHref="/" mainId="main-content" ${headerTexts('react')} links={${links}} actions={<a className="hw-button" href="/login">${signIn}</a>} />\n<main id="main-content" tabIndex={-1}>...</main>`,
       vue: `<!-- import { PortalHeader } from '@hawiyah/vue' -->\n<PortalHeader home-href="/" main-id="main-content" ${headerTexts('vue')} :links='${links}'><template #brand><img src="/brand/hawiyah-wordmark.svg" alt="هوية" width="80" height="50"></template><template #actions><a class="hw-button" href="/login">${signIn}</a></template></PortalHeader>\n<main id="main-content" tabindex="-1">...</main>`,
       angular: `<!-- imports: [HwPortalHeaderComponent]; links = ${links} -->\n<hw-portal-header homeHref="/" mainId="main-content" ${headerTexts('angular')} [links]="links"><img hwBrand src="/brand/hawiyah-wordmark.svg" alt="هوية" width="80" height="50"><a class="hw-button" href="/login">${signIn}</a></hw-portal-header>\n<main id="main-content" tabindex="-1">...</main>`,
     }, portalMenuRecipe(locale)];

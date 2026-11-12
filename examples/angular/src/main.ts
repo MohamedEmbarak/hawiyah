@@ -28,7 +28,7 @@ import { InputControlsExampleComponent } from './input-controls';
           <hw-tab value="apply" [label]="arabic() ? 'طلب جديد' : 'New application'">
             <div class="hw-form-layout">
               <div class="hw-stepper-responsive">
-                <hw-stepper [label]="arabic() ? 'مراحل الطلب' : 'Application stages'" [current]="currentStep" [steps]="applicationSteps" />
+                <hw-stepper [label]="arabic() ? 'مراحل الطلب' : 'Application stages'" [completeLabel]="arabic() ? 'مكتملة' : 'Complete'" [upcomingLabel]="arabic() ? 'قادمة' : 'Upcoming'" [activeIndex]="currentStep" [items]="applicationSteps" />
                 <div class="hw-stepper-mobile" role="group" [attr.aria-label]="stepProgressLabel">
                   <span class="hw-stepper-ring" aria-hidden="true" [style.--hw-step-progress]="((currentStep + 1) / 3 * 100) + '%'">{{ stepCount }}</span>
                   <div class="hw-stepper-summary"><strong>{{ applicationSteps[currentStep]?.label }}</strong><p>{{ nextStepLabel }}</p></div>
@@ -76,7 +76,7 @@ class AppComponent {
   readonly submitted = signal(false);
   theme = 'dga'; mode = 'light'; density = 'comfortable'; tab = 'apply'; page = 1;
   get currentStep(): number { return this.submitted() ? 2 : this.reviewOpen ? 1 : 0; }
-  get applicationSteps(): {label: string}[] { return this.arabic() ? [{label:'التفاصيل'}, {label:'المراجعة'}, {label:'التأكيد'}] : [{label:'Your details'}, {label:'Review'}, {label:'Confirmation'}]; }
+  get applicationSteps(): {value: string; label: string}[] { return this.arabic() ? [{value:'details',label:'التفاصيل'}, {value:'review',label:'المراجعة'}, {value:'confirmation',label:'التأكيد'}] : [{value:'details',label:'Your details'}, {value:'review',label:'Review'}, {value:'confirmation',label:'Confirmation'}]; }
   get stepCount(): string { const locale = this.arabic() ? 'ar-SA' : 'en-SA'; return `${formatNumber(this.currentStep + 1, {locale})} / ${formatNumber(3, {locale})}`; }
   get stepProgressLabel(): string { return this.arabic() ? `مراحل الطلب: الخطوة ${this.stepCount}` : `Application progress: step ${this.stepCount}`; }
   get nextStepLabel(): string { const next = this.applicationSteps[this.currentStep + 1]; return next ? `${this.arabic() ? 'التالي:' : 'Next:'} ${next.label}` : this.arabic() ? 'تم تأكيد الطلب التجريبي.' : 'Your demo request is confirmed.'; }

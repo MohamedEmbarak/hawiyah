@@ -130,3 +130,13 @@ describe('NotificationList', () => {
     expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-notification-list requires "label"']);
   });
 });
+
+// The Angular side of the toast case of tests/toast-banner-parity.test.ts.
+describe('ToastRegion', () => {
+  it('[SHAPE-01][R20] one message fixture and one getDismissLabel passed unchanged render the title in strong, the message in a paragraph and the dismiss name', () => {
+    const { root } = page(`<hw-toast-region label="Messages" [messages]="messages" [getDismissLabel]="name" (dismissed)="seen.push($event)" />`, { messages: [{ id: 'saved', title: 'Draft saved', message: 'You can return later.', tone: 'success' }], name: (message: { title?: string }) => `Dismiss ${message.title}`, seen: [] as string[] });
+    const toast = root.querySelector('.hw-toast')!, content = toast.querySelector('.hw-toast-content')!;
+    expect(toast.getAttribute('data-tone')).toBe('success'); expect(contentOf(content).map(node => (node as Element).outerHTML)).toEqual(['<strong>Draft saved</strong>', '<p>You can return later.</p>']);
+    expect(toast.querySelector('[data-hw-dismiss]')!.getAttribute('aria-label')).toBe('Dismiss Draft saved');
+  });
+});

@@ -68,8 +68,9 @@ technology.
 Angular now forwards `form`, `name`, `value` and `type` onto the actual button.
 An explicit empty form value is preserved, so it can detach a submit button
 from an ancestor form; omission restores native association.
-Its `controls`, `expanded`, `describedBy` and `hasPopup` inputs set the respective
-ARIA attributes there; putting attributes only on an Angular host does not
+Its `controls`, `expanded` and `hasPopup` inputs set the respective ARIA
+attributes there, and `aria-label`, `aria-labelledby` and `aria-describedby`
+written on `hw-icon-button` are inputs forwarded to the button; putting attributes only on an Angular host does not
 establish the button's relationships. React/Vue/HTML use native ARIA attributes.
 Vue and Angular expose `focus()`; React and HTML use the native button ref.
 Angular's existing `activated` output remains unchanged.

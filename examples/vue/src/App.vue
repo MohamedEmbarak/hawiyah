@@ -31,11 +31,11 @@ const filtered = computed(() => requests.value.filter(row => (status.value === '
 const visible = computed(() => filtered.value.slice((page.value - 1) * 3, page.value * 3));
 watchEffect(() => { void search.value; void status.value; page.value = 1; });
 const columns = computed<TableColumn[]>(() => [
-  { key: 'id', header: t('رقم الطلب', 'Request'), rowHeader: true }, { key: 'applicant', header: t('مقدم الطلب', 'Applicant') },
-  { key: 'service', header: t('الخدمة', 'Service'), cell: row => services.value.find(item => item.value === row.service)?.label },
-  { key: 'date', header: t('تاريخ التقديم', 'Submitted'), cell: row => formatDate(String(row.date), { locale: locale.value === 'ar' ? 'ar-SA' : 'en-SA', dateStyle: 'medium' }) },
-  { key: 'status', header: t('الحالة', 'Status'), cell: row => h(Badge, { tone: row.status === 'complete' ? 'success' : 'warning' }, () => statusLabel(row.status)) },
-  { key: 'action', header: t('التفاصيل', 'Details'), cell: row => h(Button, { variant: 'ghost', size: 'sm', 'aria-label': `${t('عرض الطلب', 'View request')} ${row.id}`, onClick: () => { selectedRequest.value = row; detailsOpen.value = true; } }, () => t('عرض', 'View')) },
+  { key: 'id', label: t('رقم الطلب', 'Request'), rowHeader: true }, { key: 'applicant', label: t('مقدم الطلب', 'Applicant') },
+  { key: 'service', label: t('الخدمة', 'Service'), cell: row => services.value.find(item => item.value === row.service)?.label },
+  { key: 'date', label: t('تاريخ التقديم', 'Submitted'), cell: row => formatDate(String(row.date), { locale: locale.value === 'ar' ? 'ar-SA' : 'en-SA', dateStyle: 'medium' }) },
+  { key: 'status', label: t('الحالة', 'Status'), cell: row => h(Badge, { tone: row.status === 'complete' ? 'success' : 'warning' }, () => statusLabel(row.status)) },
+  { key: 'action', label: t('التفاصيل', 'Details'), cell: row => h(Button, { variant: 'ghost', size: 'sm', 'aria-label': `${t('عرض الطلب', 'View request')} ${row.id}`, onClick: () => { selectedRequest.value = row; detailsOpen.value = true; } }, () => t('عرض', 'View')) },
 ]);
 const completion = computed(() => Math.round([applicant.value, email.value, city.value, details.value, consent.value].filter(Boolean).length / 5 * 100));
 const serviceLabel = computed(() => services.value.find(item => item.value === service.value)?.label);
@@ -73,7 +73,7 @@ function submit() {
       <template #apply>
         <div class="hw-form-layout">
             <div class="hw-stepper-responsive">
-              <Stepper :label="t('مراحل الطلب', 'Application steps')" :current="reviewOpen ? 'review' : 'details'" :items="[{value:'details',label:t('التفاصيل','Details')},{value:'review',label:t('المراجعة','Review')},{value:'send',label:t('الإرسال','Submit')}]" />
+              <Stepper :label="t('مراحل الطلب', 'Application steps')" :complete-label="t('مكتملة', 'Complete')" :upcoming-label="t('قادمة', 'Upcoming')" :current="reviewOpen ? 'review' : 'details'" :items="[{value:'details',label:t('التفاصيل','Details')},{value:'review',label:t('المراجعة','Review')},{value:'send',label:t('الإرسال','Submit')}]" />
               <div class="hw-stepper-mobile" role="group" :aria-label="t(`الخطوة ${number(reviewOpen ? 2 : 1)} من ${number(3)}`, `Step ${reviewOpen ? 2 : 1} of 3`)">
                 <span class="hw-stepper-ring" :style="{'--hw-step-progress': reviewOpen ? '66.667%' : '33.333%'}" aria-hidden="true">{{ number(reviewOpen ? 2 : 1) }} / {{ number(3) }}</span>
                 <div class="hw-stepper-summary"><strong>{{ reviewOpen ? t('المراجعة', 'Review') : t('التفاصيل', 'Details') }}</strong><p>{{ t('التالي: ', 'Next: ') }}{{ reviewOpen ? t('الإرسال', 'Submit') : t('المراجعة', 'Review') }}</p></div>

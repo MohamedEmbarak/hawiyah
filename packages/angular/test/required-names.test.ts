@@ -71,16 +71,21 @@ it('[ATTR-03][rich-inputs-1] aria-label and aria-labelledby written on hw-combob
 
 // Wrapper components whose inner landmark, list or group takes the name (HwNamedRoot): the element that is named.
 const tabs = '<hw-tab value="one" label="One">Panel</hw-tab>';
-const roots: [tag: string, attributes: string, named: string, content?: string][] = [
+const roots: [tag: string, attributes: string, named: string, content?: string, finding?: string][] = [
   ['hw-tabs', `overflowLabel="More"`, '[role=tablist]', tabs],
   ['hw-breadcrumb', `[items]="[{label: 'Home', href: '/'}, {label: 'Here'}]"`, 'nav.hw-breadcrumb'],
   ['hw-pagination', withText.pagination.replace(/(^|\s)label="[^"]*"/, ''), 'nav.hw-pagination'],
   ['hw-stepper', `${withText.stepper} [items]="[{value: 'a', label: 'A'}]"`, 'ol.hw-stepper'],
   ['hw-secondary-nav', `[items]="[{label: 'Home', href: '/'}]"`, 'nav.hw-secondary-nav'],
   ['hw-content-navigation', `[items]="[{id: 'intro', label: 'Intro'}]"`, 'nav.hw-content-nav'],
+  // Feedback and content: one native element, list or button inside the host takes the name.
+  ['hw-progress', `[value]="40"`, 'progress.hw-progress', '', 'feedback-status-7'],
+  ['hw-meter', `[value]="10"`, 'meter.hw-meter', '', 'feedback-status-8'],
+  ['hw-timeline', `[items]="[{id: 'sent', title: 'Sent'}]"`, 'ol.hw-timeline', '', 'content-display-16'],
+  ['hw-icon-button', '', 'button.hw-icon-button', '<span class="hw-icon" data-icon="search-01"></span>', 'content-display-1'],
 ];
-for (const [tag, attributes, named, content = ''] of roots) {
-  it(`[NAME-01][NAME-02][NAME-03][ATTR-03][E08][R22] ${tag}: label, aria-label or aria-labelledby names ${named}; the host keeps none of the attributes`, () => {
+for (const [tag, attributes, named, content = '', finding] of roots) {
+  it(`[NAME-01][NAME-02][NAME-03][ATTR-03]${finding ? `[${finding}]` : '[E08][R22]'} ${tag}: label, aria-label or aria-labelledby names ${named}; the host keeps none of the attributes`, () => {
     const { root, update } = page(`<h2 id="heading">Heading</h2><p id="note">Note</p>
       <${tag} label="By label" ${attributes}>${content}</${tag}><${tag} aria-label="Static name" aria-describedby="note" ${attributes}>${content}</${tag}>
       <${tag} aria-labelledby="heading" ${attributes}>${content}</${tag}><${tag} [aria-label]="name" [aria-describedby]="'note'" ${attributes}>${content}</${tag}>
@@ -94,7 +99,7 @@ for (const [tag, attributes, named, content = ''] of roots) {
     expect(targets[4]!.getAttribute('aria-labelledby')).toBe('heading'); expect(targets[4]!.getAttribute('aria-label')).toBe('Both');
   });
 
-  it(`[NAME-04][E08] ${tag} without any name writes no aria-label and warns once under its selector`, () => {
+  it(`[NAME-04]${finding ? `[${finding}]` : '[E08]'} ${tag} without any name writes no aria-label and warns once under its selector`, () => {
     const warnings = missingTextWarnings();
     const { root, update } = page(`<${tag} ${attributes}>${content}</${tag}>`, { text });
     update();

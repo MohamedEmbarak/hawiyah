@@ -30,7 +30,7 @@ function tooltip(t: Translate): Markup {
     vanilla: wrap(variants.map(([placement, align]) => `<span class="hw-tooltip-anchor" data-hw="tooltip"><span tabindex="0" data-hw-tooltip-trigger>${term} (${placement}/${align})</span><span class="hw-tooltip" role="tooltip" data-placement="${placement}" data-align="${align}" hidden>${tip}</span></span>`)),
     react: wrap(variants.map(([placement, align]) => `<Tooltip content="${tip}" placement="${placement}" align="${align}"><span tabIndex={0}>${term} (${placement}/${align})</span></Tooltip>`)).replace('class=', 'className=').replace('style="gap:4rem;padding:4rem;justify-content:center"', 'style={{gap:"4rem",padding:"4rem",justifyContent:"center"}}'),
     vue: wrap(variants.map(([placement, align]) => `<Tooltip content="${tip}" placement="${placement}" align="${align}"><span tabindex="0">${term} (${placement}/${align})</span></Tooltip>`)),
-    angular: wrap(variants.map(([placement, align]) => `<hw-tooltip text="${tip}" placement="${placement}" align="${align}">${term} (${placement}/${align})</hw-tooltip>`)),
+    angular: wrap(variants.map(([placement, align]) => `<hw-tooltip text="${tip}" placement="${placement}" align="${align}"><span hwTooltipTrigger tabindex="0">${term} (${placement}/${align})</span></hw-tooltip>`)),
   };
 }
 
@@ -39,9 +39,9 @@ function popover(t: Translate): Markup {
   const label = t('Service requirements', 'متطلبات الخدمة');
   const checkbox = `<label><input type="checkbox" class="hw-checkbox"> ${t('I have the supporting documents', 'لدي المستندات الداعمة')}</label>`;
   return {
-    vanilla: `<div class="hw-popover" data-hw="popover"><button type="button" class="hw-button" data-hw-trigger>${trigger}</button>
-  <section class="hw-popover-panel" data-hw-panel role="region" aria-labelledby="requirements-title" hidden><h3 id="requirements-title">${label}</h3>${checkbox}</section></div>`,
-    react: `<Popover title="${label}" trigger={<button type="button" className="hw-button">${trigger}</button>}>
+    vanilla: `<div class="hw-popover" data-hw="popover"><button type="button" class="hw-button" data-variant="secondary" data-hw-trigger>${trigger}</button>
+  <div class="hw-popover-panel" data-hw-panel role="region" aria-label="${label}" hidden>${checkbox}</div></div>`,
+    react: `<Popover label="${label}" trigger={<button type="button" className="hw-button" data-variant="secondary">${trigger}</button>}>
   ${checkbox.replace('class="hw-checkbox">', 'className="hw-checkbox" />')}
 </Popover>`,
     vue: `<Popover label="${label}" trigger-label="${trigger}">${checkbox}</Popover>`,
@@ -83,15 +83,15 @@ function menu(t: Translate, typed: boolean): Markup {
   ];
   const data = JSON.stringify(items);
   return withSelection({
-    vanilla: `<div class="hw-menu" data-hw="menu"><button class="hw-button" type="button" data-hw-trigger>${label}</button>
+    vanilla: `<div class="hw-menu" data-hw="menu"><button class="hw-button" data-variant="secondary" type="button" data-hw-trigger>${label}</button>
   <div class="hw-menu-content" data-hw-panel role="menu" aria-label="${label}" hidden>
     ${items.map(item => `<button class="hw-menu-item" type="button" role="menuitem" data-hw-value="${item.value}"${item.disabled ? ' disabled' : ''}>${item.label}</button>`).join('\n    ')}
   </div></div>`,
     react: `<Menu label="${label}" items={${data}} onAction={setValue}
-  trigger={<button className="hw-button" type="button">${label}</button>} />`,
-    vue: `<Menu label="${label}" :items='${data}' @select="value = $event" />`,
+  trigger={<button className="hw-button" data-variant="secondary" type="button">${label}</button>} />`,
+    vue: `<Menu label="${label}" trigger-label="${label}" :items='${data}' @action="value = $event" />`,
     angular: `<hw-menu label="${label}" triggerLabel="${label}" [items]="actions" (action)="value = $event" />`,
-    angularMember: `\n  readonly actions = ${JSON.stringify(items.map(({value, ...item}) => ({id: value, ...item})))};`,
+    angularMember: `\n  readonly actions = ${data};`,
   }, t('Last action ID', 'معرّف آخر إجراء'), typed);
 }
 
@@ -125,7 +125,7 @@ function collapsible(t: Translate): Markup {
   const body = `<ul><li>${t('Prepare your identification.', 'جهّز وثيقة الهوية.')}</li><li>${t('Check your contact details.', 'تحقق من بيانات التواصل.')}</li></ul>`;
   return {
     vanilla: `<details class="hw-collapsible"><summary>${label}</summary>${body}</details>`,
-    react: `<Collapsible title="${label}">${body}</Collapsible>`,
+    react: `<Collapsible label="${label}">${body}</Collapsible>`,
     vue: `<Collapsible label="${label}">${body}</Collapsible>`,
     angular: `<hw-collapsible label="${label}">${body}</hw-collapsible>`,
   };
@@ -139,8 +139,8 @@ function tree(t: Translate, typed: boolean): Markup {
   const data = JSON.stringify([{id: 'business', label: business, children}, personal]);
   const leaf = (item: {id: string; label: string}) => `<li role="treeitem" data-hw-value="${item.id}"><span data-hw-tree-label>${item.label}</span></li>`;
   return withSelection({
-    vanilla: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="${label}">
-  <li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="${t('Toggle business documents','تبديل عرض مستندات المنشأة')}"><span class="hw-icon" data-icon="arrow-right-01" data-directional="true" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>${business}</span>
+    vanilla: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="${label}" data-hw-expand-label="${t('Expand', 'توسيع')} {label}" data-hw-collapse-label="${t('Collapse', 'طي')} {label}">
+  <li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" class="hw-tree-toggle" data-hw-tree-toggle tabindex="-1"><span class="hw-icon" data-icon="arrow-right-01" data-directional="true" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>${business}</span>
     <ul role="group" hidden>${children.map(leaf).join('\n      ')}</ul>
   </li>
   ${leaf(personal)}
@@ -149,8 +149,9 @@ function tree(t: Translate, typed: boolean): Markup {
   getExpandLabel={node => '${t('Expand', 'توسيع')} ' + node.label} getCollapseLabel={node => '${t('Collapse', 'طي')} ' + node.label} />`,
     vue: `<TreeView label="${label}" :items='${data}' v-model="value"
   :get-expand-label="node => '${t('Expand', 'توسيع')} ' + node.label" :get-collapse-label="node => '${t('Collapse', 'طي')} ' + node.label" />`,
-    angular: `<hw-tree-view label="${label}" [nodes]="documents" [(value)]="value" />`,
-    angularMember: `\n  readonly documents = ${data};`,
+    angular: `<hw-tree-view label="${label}" [items]="documents" [(value)]="value"
+  [getExpandLabel]="expandLabel" [getCollapseLabel]="collapseLabel" />`,
+    angularMember: `\n  readonly documents = ${data};\n  readonly expandLabel = (node${typed ? ': {label: string}' : ''}) => '${t('Expand', 'توسيع')} ' + node.label;\n  readonly collapseLabel = (node${typed ? ': {label: string}' : ''}) => '${t('Collapse', 'طي')} ' + node.label;`,
   }, t('Selected document ID', 'معرّف المستند المحدد'), typed);
 }
 

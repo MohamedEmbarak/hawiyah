@@ -138,7 +138,7 @@ import { HwButtonDirective, HwDialogComponent } from '@hawiyah/angular';
     <h2>${heading}</h2>
     @for (notice of notices; track notice.tone) {
       <button #trigger hwButton type="button" variant="secondary" [attr.data-notice-open]="notice.tone" aria-haspopup="dialog" (click)="dialog.show(trigger)">{{ notice.title }}</button>
-      <hw-dialog #dialog data-variant="notification" [attr.data-tone]="notice.tone" [title]="notice.title" [describedBy]="'notice-message-' + notice.tone" closeLabel="${close}">
+      <hw-dialog #dialog data-variant="notification" [attr.data-tone]="notice.tone" [title]="notice.title" [aria-describedby]="'notice-message-' + notice.tone" closeLabel="${close}">
         <p [id]="'notice-message-' + notice.tone">{{ notice.message }}</p>
         <ng-container hwDialogFooter>
           @if (notice.primary) {<button hwButton type="button" data-notice-action (click)="outcome = notice.primary; dialog.close()">{{ notice.primary }}</button>}

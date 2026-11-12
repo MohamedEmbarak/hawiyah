@@ -50,9 +50,18 @@ labels or component DOM:
 Visibility changes preserve the input node, value, form submission and current
 button focus. Read-only passwords can still be revealed because visibility does
 not edit their value. Disabled inputs, including those inside disabled fieldsets,
-cannot be toggled. Reset returns Vue, Angular and vanilla to concealed mode;
-React resets uncontrolled visibility to `defaultVisible` and leaves controlled
-visibility with the parent. Paste and password-manager behavior remain native.
+cannot be toggled. A native form reset conceals the value in every adapter and
+reports `false` once when it was visible. Paste and password-manager behavior
+remain native.
+
+Visibility is the state `visible` in every adapter:
+
+- React: `visible`, `defaultVisible` and `onVisibleChange(visible)`.
+- Vue: `v-model:visible` (`visible`, `defaultVisible`, `update:visible`).
+- Angular: `[(visible)]` (`visible` and `(visibleChange)`); a value written by
+  Angular Forms does not change visibility.
+- Vanilla: `createPasswordField` returns `visible`, `toggle()` and `destroy()`,
+  takes `onVisibleChange(visible)`, and `hw:change` carries `{ visible }`.
 
 The two unchanged SVGs, `view.svg` and `view-off-slash.svg`, come from the same
 pinned [MIT-licensed Hugeicons commit](https://github.com/hugeicons/hugeicons/tree/35c0b0b6ca286617b581e3383e5cbe2232ddb7d6)

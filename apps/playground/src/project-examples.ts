@@ -190,7 +190,8 @@ export function projectExample(
     state = false,
     booleanState = false,
     numberState = false,
-    initialValue: string | undefined;
+    initialValue: string | undefined,
+    customStateType: string | undefined;
   const label = t("Example", "مثال");
   if (disclosure) {
     ({react, vue, angular, initialValue} = disclosure);
@@ -214,7 +215,7 @@ export function projectExample(
     state=true;booleanState=true;
     const brand=t('Example service portal','بوابة خدمات توضيحية');
     const links=JSON.stringify(id === 'portal-header' ? portalMenuItems(locale) : [{label:t('Services','الخدمات'),href:'#services',current:true},{label:t('Contact','تواصل معنا'),href:'#contact'}]);
-    react=`<div className="hw-portal-masthead"><SiteVerification ${siteVerificationTextAttributes(locale,'react')} domain="example.test" registrationHref="#example-registration" open={value} onOpenChange={setValue} /><PortalHeader brand="${brand}" brandHref="#home" ${textAttributes(portalHeaderTexts(locale),'react')} navigation={${links}} /></div><output>{String(value)}</output>`;
+    react=`<div className="hw-portal-masthead"><SiteVerification ${siteVerificationTextAttributes(locale,'react')} domain="example.test" registrationHref="#example-registration" open={value} onOpenChange={setValue} /><PortalHeader brand="${brand}" homeHref="#home" ${textAttributes(portalHeaderTexts(locale),'react')} links={${links}} /></div><output>{String(value)}</output>`;
     vue=`<div class="hw-portal-masthead"><SiteVerification ${siteVerificationTextAttributes(locale,'vue')} domain="example.test" registration-href="#example-registration" v-model:open="value" /><PortalHeader brand="${brand}" home-href="#home" ${textAttributes(portalHeaderTexts(locale),'vue')} :links='${links}' /></div><output>{{value}}</output>`;
     angularMember=`\n  links = ${links};`;
     angular=`<div class="hw-portal-masthead"><hw-site-verification ${siteVerificationTextAttributes(locale,'angular')} domain="example.test" registrationHref="#example-registration" [(open)]="value" /><hw-portal-header brand="${brand}" homeHref="#home" ${textAttributes(portalHeaderTexts(locale),'angular')} [links]="links" /></div><output>{{value}}</output>`;
@@ -272,7 +273,7 @@ export function projectExample(
     initialValue = "'first'";
     react = `<fieldset><legend>${label}</legend>{${options}.map(option => <Radio key={option.value} name="choice" label={option.label} value={option.value} checked={value === option.value} onChange={event => setValue(event.currentTarget.value)} />)}</fieldset><output>{value}</output>`;
     vue = `<fieldset><legend>${label}</legend><Radio v-for='option in ${options}' :key="option.value" name="choice" :label="option.label" :value="option.value" v-model="value" /></fieldset><output>{{ value }}</output>`;
-    angular = `<hw-radio label="${label}" name="choice" [options]="options" [(value)]="value" /><output>{{ value }}</output>`;
+    angular = `<hw-radio-group label="${label}" name="choice" [options]="options" [(value)]="value" /><output>{{ value }}</output>`;
     angularMember = `\n  options = ${options};`;
   } else if (id === "card") {
     react = cardActionMarkup(locale, 'react');
@@ -296,9 +297,9 @@ export function projectExample(
       },
     ];
     react = `<Accordion exclusive items={${JSON.stringify(items)}.map(item => ({...item, onOpenChange: open => setValue(item.value + ':' + open)}))} /><output>{value}</output>`;
-    vue = `<Accordion exclusive :items='${JSON.stringify(items)}' @toggle="(item, open) => value = item + ':' + open" /><output>{{ value }}</output>`;
-    angular = `<hw-accordion exclusive [items]="items" (toggled)="value = $event.id + ':' + $event.open" /><output>{{ value }}</output>`;
-    angularMember = `\n  items = ${JSON.stringify(items.map(({ value, ...item }) => ({ id: value, ...item })))};`;
+    vue = `<Accordion exclusive :items='${JSON.stringify(items)}' @toggle="(itemValue, open) => value = itemValue + ':' + open" /><output>{{ value }}</output>`;
+    angular = `<hw-accordion exclusive [items]="items" (toggled)="value = $event.value + ':' + $event.open" /><output>{{ value }}</output>`;
+    angularMember = `\n  items = ${JSON.stringify(items)};`;
   } else if (id === "table") {
     const caption = t("Applications", "الطلبات"),
       heading = t("Reference", "المرجع"),
@@ -308,11 +309,11 @@ export function projectExample(
       { reference: "HW-101", status: t("Submitted", "مقدم") },
       { reference: "HW-102", status: t("Draft", "مسودة") },
     ]);
-    react = `<Table caption="${caption}" emptyMessage="${empty}" rows={${rows}} rowKey={row => row.reference} columns={[{key:'reference',header:'${heading}',rowHeader:true,cell:row => row.reference},{key:'status',header:'${status}',cell:row => row.status}]} />`;
+    react = `<Table caption="${caption}" emptyMessage="${empty}" rows={${rows}} rowKey={row => row.reference} columns={[{key:'reference',label:'${heading}',rowHeader:true,cell:row => row.reference},{key:'status',label:'${status}',cell:row => row.status}]} />`;
     vue = `<Table caption="${caption}" empty-message="${empty}" :rows='${rows}' :columns='${JSON.stringify(
       [
-        { key: "reference", header: heading, rowHeader: true },
-        { key: "status", header: status },
+        { key: "reference", label: heading, rowHeader: true },
+        { key: "status", label: status },
       ],
     )}' />`;
     angular = `<hw-table caption="${caption}" emptyMessage="${empty}" [rows]="rows" [columns]="columns" />`;
@@ -334,9 +335,9 @@ export function projectExample(
       {name: t("Permit", "التصريح"), days: 5},
     ]);
     const sortLabel = `(column, direction) => column.label + ': ' + (direction === 'ascending' ? '${t("ascending", "تصاعدي")}' : '${t("descending", "تنازلي")}')`;
-    react = `<DataTable caption="${caption}" variant="striped" columns={${columns}} rows={${rows}} locale="${locale}" emptyMessage="${empty}" getSortLabel={${sortLabel}} rowKey={row => row.name} onSortChange={sort => setValue(sort.direction)} /><output>{value}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" columns={${columns}} rows={[]} locale="${locale}" emptyMessage="${empty}" />`;
+    react = `<DataTable caption="${caption}" variant="striped" columns={${columns}} rows={${rows}} locale="${locale}" emptyMessage="${empty}" getSortLabel={${sortLabel}} rowKey={row => row.name} onSortDirectionChange={setValue} /><output>{value}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" columns={${columns}} rows={[]} locale="${locale}" emptyMessage="${empty}" />`;
     vue = `<DataTable caption="${caption}" variant="striped" :columns='${columns}' :rows='${rows}' locale="${locale}" empty-message="${empty}" :get-sort-label="${sortLabel}" @update:sort-direction="value = $event" /><output>{{ value }}</output><DataTable caption="${t("Empty results", "نتائج فارغة")}" :columns='${columns}' :rows="[]" locale="${locale}" empty-message="${empty}" />`;
-    angular = `<hw-data-table caption="${caption}" variant="striped" [columns]="columns" [rows]="rows" locale="${locale}" emptyMessage="${empty}" [getSortLabel]="sortLabel" (sortChange)="value = $event.direction" /><output>{{ value }}</output><hw-data-table caption="${t("Empty results", "نتائج فارغة")}" [columns]="columns" [rows]="[]" locale="${locale}" emptyMessage="${empty}" />`;
+    angular = `<hw-data-table caption="${caption}" variant="striped" [columns]="columns" [rows]="rows" locale="${locale}" emptyMessage="${empty}" [getSortLabel]="sortLabel" (sortDirectionChange)="value = $event" /><output>{{ value }}</output><hw-data-table caption="${t("Empty results", "نتائج فارغة")}" [columns]="columns" [rows]="[]" locale="${locale}" emptyMessage="${empty}" />`;
     angularMember = `\n  columns = ${columns};\n  rows = ${rows};\n  sortLabel = ${sortLabel.replace("(column, direction)", typed ? "(column: { label: string }, direction: 'ascending' | 'descending')" : "(column, direction)")};`;
   } else if (id === "breadcrumb") {
     const items = JSON.stringify([
@@ -363,10 +364,11 @@ export function projectExample(
       { value: "review", label: t("Review", "المراجعة") },
       { value: "done", label: t("Complete", "الإكمال") },
     ];
-    react = `<Stepper label="${t("Progress", "التقدم")}" items={${JSON.stringify(steps)}} activeIndex={value} /><button type="button" className="hw-button" onClick={() => setValue((value + 1) % 4)}>${t("Next step", "الخطوة التالية")}</button><output>{value}</output>`;
-    vue = `<Stepper label="${t("Progress", "التقدم")}" :items='${JSON.stringify(steps)}' :active-index="value" /><button type="button" class="hw-button" @click="value = (value + 1) % 4">${t("Next step", "الخطوة التالية")}</button><output>{{ value }}</output>`;
-    angular = `<hw-stepper label="${t("Progress", "التقدم")}" [steps]="steps" [activeIndex]="value" /><button type="button" class="hw-button" (click)="value = (value + 1) % 4">${t("Next step", "الخطوة التالية")}</button><output>{{ value }}</output>`;
-    angularMember = `\n  steps = ${JSON.stringify(steps.map(({ label }) => ({ label })))};`;
+    const stepTexts = (syntax: "react" | "vue" | "angular") => textAttributes({completeLabel: t("Complete", "مكتملة"), upcomingLabel: t("Upcoming", "قادمة")}, syntax);
+    react = `<Stepper label="${t("Progress", "التقدم")}" ${stepTexts("react")} items={${JSON.stringify(steps)}} activeIndex={value} /><button type="button" className="hw-button" onClick={() => setValue((value + 1) % 4)}>${t("Next step", "الخطوة التالية")}</button><output>{value}</output>`;
+    vue = `<Stepper label="${t("Progress", "التقدم")}" ${stepTexts("vue")} :items='${JSON.stringify(steps)}' :active-index="value" /><button type="button" class="hw-button" @click="value = (value + 1) % 4">${t("Next step", "الخطوة التالية")}</button><output>{{ value }}</output>`;
+    angular = `<hw-stepper label="${t("Progress", "التقدم")}" ${stepTexts("angular")} [items]="steps" [activeIndex]="value" /><button type="button" class="hw-button" (click)="value = (value + 1) % 4">${t("Next step", "الخطوة التالية")}</button><output>{{ value }}</output>`;
+    angularMember = `\n  steps = ${JSON.stringify(steps)};`;
   } else if (id === "tabs") {
     state = true;
     initialValue = "'first'";
@@ -379,9 +381,9 @@ export function projectExample(
     vue = `<Progress label="${t("Upload progress", "تقدم الرفع")}" :value="65" :max="100" />`;
     angular = `<hw-progress label="${t("Upload progress", "تقدم الرفع")}" [value]="65" [max]="100" />`;
   } else if (id === "skeleton") {
-    react = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style={{width:'100%',height:'4rem'}} /></div>`;
-    vue = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style="width:100%;height:4rem" /></div>`;
-    angular = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><hw-skeleton width="100%" height="4rem" /></div>`;
+    react = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style={{inlineSize:'100%',blockSize:'4rem'}} /></div>`;
+    vue = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style="inline-size:100%;block-size:4rem" /></div>`;
+    angular = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><hw-skeleton style="inline-size:100%;block-size:4rem" /></div>`;
   } else if (id === "rating") {
     state = true; numberState = true; initialValue = "4";
     const cases = ratingDemoCases(locale).map(item => ({...item, ...ratingNativeMarkup(locale,item.kind,item.kind==='selected')}));
@@ -409,9 +411,11 @@ export function projectExample(
     const externalText=t("External reference", "مرجع خارجي"), windowText=t("opens in a new window", "يفتح في نافذة جديدة");
     react = `<div className="hw-stack"><Link href="#guide">${text}</Link><Link href="#services" variant="neutral">${neutral}</Link><Link href="#details" variant="standalone">${text}<span className="hw-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true" /></Link><Link href="#unavailable" disabled>${unavailable}</Link><Link href="https://example.test/reference" external>${externalText}<span className="hw-sr-only"> · ${windowText}</span></Link></div>`;
     vue = `<div class="hw-stack"><Link href="#guide">${text}</Link><Link href="#services" variant="neutral">${neutral}</Link><Link href="#details" variant="standalone">${text}<span class="hw-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true" /></Link><Link href="#unavailable" disabled>${unavailable}</Link><Link href="https://example.test/reference" external>${externalText}<span class="hw-sr-only"> · ${windowText}</span></Link></div>`;
-    angular = `<div class="hw-stack"><hw-link href="#guide">${text}</hw-link><hw-link href="#services" variant="neutral">${neutral}</hw-link><hw-link href="#details" variant="standalone">${text}<span class="hw-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true"></span></hw-link><hw-link href="#unavailable" [disabled]="true">${unavailable}</hw-link><hw-link href="https://example.test/reference" target="_blank">${externalText}<span class="hw-sr-only"> · ${windowText}</span></hw-link></div>`;
+    angular = `<div class="hw-stack"><a hwLink href="#guide">${text}</a><a hwLink href="#services" variant="neutral">${neutral}</a><a hwLink href="#details" variant="standalone">${text}<span class="hw-icon" data-icon="arrow-right-01" data-directional="true" aria-hidden="true"></span></a><a hwLink href="#unavailable" [disabled]="true">${unavailable}</a><a hwLink href="https://example.test/reference" external>${externalText}<span class="hw-sr-only"> · ${windowText}</span></a></div>`;
   } else if (id === "feedback") {
     state = true;
+    initialValue = "null";
+    customStateType = "boolean | null";
     const question = t("Was this page helpful?", "هل كانت هذه الصفحة مفيدة؟"),
       yes = t("Yes", "نعم"),
       no = t("No", "لا"),
@@ -424,21 +428,22 @@ export function projectExample(
           (variant) =>
             `<Feedback label="${question}" choiceVariant="${variant}" yesLabel="${yes}" noLabel="${no}" commentLabel="${comment}" submitLabel="${submit}" successMessage="${thanks}" onValueChange={feedback => setValue(feedback.helpful)} onFeedback={feedback => console.log(feedback)} />`,
         )
-        .join("") + "<output>{value}</output>";
+        .join("") + "<output>{value === null ? '' : String(value)}</output>";
     vue =
       (["text", "icon-text", "icon"] as const)
         .map(
           (variant) =>
-            `<Feedback label="${question}" choice-variant="${variant}" yes-label="${yes}" no-label="${no}" comment-label="${comment}" submit-label="${submit}" success-message="${thanks}" @update:model-value="value = $event" @submit="feedback => console.log(feedback)" />`,
+            `<Feedback label="${question}" choice-variant="${variant}" yes-label="${yes}" no-label="${no}" comment-label="${comment}" submit-label="${submit}" success-message="${thanks}" @update:model-value="value = $event.helpful" @feedback="feedback => console.log(feedback)" />`,
         )
         .join("") + "<output>{{ value }}</output>";
     angular =
       (["text", "icon-text", "icon"] as const)
         .map(
           (variant) =>
-            `<hw-feedback label="${question}" choiceVariant="${variant}" yesLabel="${yes}" noLabel="${no}" successMessage="${thanks}" (valueChange)="value = $event ? 'yes' : 'no'" />`,
+            `<hw-feedback label="${question}" choiceVariant="${variant}" yesLabel="${yes}" noLabel="${no}" commentLabel="${comment}" submitLabel="${submit}" successMessage="${thanks}" (valueChange)="value = $event.helpful" (feedback)="report($event)" />`,
         )
         .join("") + "<output>{{ value }}</output>";
+    angularMember = `\n  report(feedback: HwFeedbackValue) { console.log(feedback); }`;
   } else if (id === "badge") {
     const statuses = [
       { tone: "neutral", text: t("Scheduled", "مجدول") },
@@ -468,7 +473,7 @@ export function projectExample(
   const initial =
     initialValue ??
     (booleanState ? "false" : id === "toggle-group" ? "'first'" : "''");
-  const stateType = basicInput?.stateType ?? (booleanState
+  const stateType = basicInput?.stateType ?? customStateType ?? (booleanState
     ? "boolean"
     : numberState
       ? "number"
@@ -499,14 +504,14 @@ export function projectExample(
         js: `import { createApp } from 'vue';\nimport App from './App.vue';\nimport './style.css';\n\ncreateApp(App).mount('#app');\n`,
       },
     };
-  const angularClass = basicInput?.angularImports ?? `Hw${component}${id === "button" ? "Directive" : "Component"}${id === "button-group" ? ", HwButtonDirective, HwIconButtonComponent" : id === "rating" ? ", HwRatingDisplayComponent" : id === "tabs" ? ", HwTabComponent" : id === "site-verification" ? ", HwPortalHeaderComponent" : id === "portal-header" ? ", HwSiteVerificationComponent" : ""}`;
+  const angularClass = basicInput?.angularImports ?? (id === "radio" ? "HwRadioGroupComponent" : id === "link" ? "HwLinkDirective" : `Hw${component}${id === "button" ? "Directive" : "Component"}`) + `${id === "button-group" ? ", HwButtonDirective, HwIconButtonComponent" : id === "rating" ? ", HwRatingDisplayComponent" : id === "tabs" ? ", HwTabComponent" : id === "tooltip" ? ", HwTooltipTriggerDirective" : id === "site-verification" ? ", HwPortalHeaderComponent" : id === "portal-header" ? ", HwSiteVerificationComponent" : ""}`;
   return {
     names: { html: "app.component.ts", css: "style.css", js: "main.ts" },
     entry: "main.ts",
     host: "<app-root></app-root>",
     files: {
       css,
-      html: `import { Component } from '@angular/core';\nimport { ${angularClass} } from '@hawiyah/angular';\n\n@Component({\n  selector: 'app-root',\n  standalone: true,\n  imports: [${angularClass}],\n  template: \`<${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${angular}</${wrapperTag}>\`,\n})\nexport class AppComponent {${state ? `\n  value: ${basicInput?.angularStateType ?? (id === "toggle-group" ? "string | string[]" : stateType)} = ${initial};` : ""}${angularMember}\n}\n`,
+      html: `import { Component } from '@angular/core';\nimport { ${angularClass} } from '@hawiyah/angular';\n${id === "feedback" ? "import type { HwFeedbackValue } from '@hawiyah/angular';\n" : ""}\n@Component({\n  selector: 'app-root',\n  standalone: true,\n  imports: [${angularClass}],\n  template: \`<${wrapperTag} class="demo"${layoutMarker} lang="${locale}" dir="${ar ? "rtl" : "ltr"}">${angular}</${wrapperTag}>\`,\n})\nexport class AppComponent {${state ? `\n  value: ${basicInput?.angularStateType ?? (id === "toggle-group" ? "string | string[]" : stateType)} = ${initial};` : ""}${angularMember}\n}\n`,
       js: "import '@angular/compiler';\nimport { bootstrapApplication } from '@angular/platform-browser';\nimport { AppComponent } from './app.component';\nimport './style.css';\n\nbootstrapApplication(AppComponent).catch(error => console.error(error));\n",
     },
   };

@@ -14,6 +14,18 @@ The previous canonical value is retained until the user repairs or clears the
 draft. A valid date outside min/max, the provider's range or `isDateDisabled`
 still has a canonical ISO representation but is invalid for submission.
 
+When a typed date breaks several constraints, every adapter chooses the message
+in one order (core `getDateViolation`): malformed, outside the supported Umm
+al-Qura range, outside min/max, unavailable. The message is rendered once, in
+the field's `p.hw-error` (id `{id}-error`) after the hint, with `role="alert"`
+because the component produces it; an `error` from the application wins. The
+vanilla controller fills an authored `[data-hw-error]` element or creates
+`p.hw-error`. `aria-invalid` follows the shared rule: `error`, an explicit
+`aria-invalid`, a rejected typed date, or a failed submission until the value is
+valid again or the form resets. A native form reset returns the value, draft,
+visible month and dialog to their initial state and notifies once when the
+value changed.
+
 The visible text input is the focusable validation control. A hidden input owns
 the original `name`, optional `form` association and canonical submission value;
 it has no validation responsibility. A ref to the visible input reads localized
@@ -27,7 +39,7 @@ Every adapter requires `invalidMessage` for ISO and bounds errors and
 `unsupportedMessage` for dates outside the Umm al-Qura range; vanilla accepts them
 in `DatePickerOptions` or as `data-hw-invalid-message` and
 `data-hw-unsupported-message`, alongside `isDateDisabled`. `unavailableMessage` is
-required when `isDateDisabled` is given (not available in Angular). A missing
+required when `isDateDisabled` is given. A missing
 message still keeps the field invalid. The picker also requires `locale`; it has
 no text or locale of its own. The guide explains the ISO format in Arabic and
 English. The pinned Umm al-Qura provider, range and

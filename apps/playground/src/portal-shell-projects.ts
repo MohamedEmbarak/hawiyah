@@ -131,7 +131,7 @@ window.addEventListener('pagehide', () => {listeners.abort(); ${drawer ? 'drawer
     const panel = `<NavigationDrawer id="service-menu" title="${mainNav}" navigationLabel="${mainNav}" closeLabel="${close}" items={drawerItems(page.id)} open={open} onOpenChange={setOpen} userContent={<span>${account}</span>} />`;
     const content = shell ? `<PortalLayout brand="${portal}" dir="${dir}" mainId="service-content" skipLabel="${skip}"
       menuLabel="${menu}" navigationLabel="${mainNav}"
-      headerProps={{brandHref: pages[0].href, navigation: links, actions:<span>${account}</span>}}
+      headerProps={{homeHref: pages[0].href, links, actions:<span>${account}</span>}}
       secondaryNavigation={links} secondaryLabel="${sections}" breadcrumbLabel="${trail}"
       breadcrumbs={[{label:'${portal}', href:pages[0].href}, {label:page.label, current:true}]}
       footerLabel="${footer}" footerProps={{links:[pages[2]], externalLabel:'${external}'}}>

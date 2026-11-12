@@ -12,7 +12,7 @@ import { HwCheckboxComponent, HwSearchFieldComponent, HwPasswordFieldComponent, 
       <hw-password-field name="password" [label]="t('كلمة المرور', 'Password')" [showLabel]="t('إظهار كلمة المرور', 'Show password')" [hideLabel]="t('إخفاء كلمة المرور', 'Hide password')" autocomplete="new-password" />
       <hw-password-field name="text-password" [label]="t('كلمة المرور مع زر نصي', 'Password with text toggle')" toggleVariant="text" [showLabel]="t('إظهار', 'Show')" [hideLabel]="t('إخفاء', 'Hide')" autocomplete="new-password" />
       <hw-rating name="rating" [label]="t('التقييم', 'Rating')" [value]="3" [getRatingLabel]="ratingLabel" />
-      <hw-slider name="readonly-slider" [label]="t('نطاق للقراءة فقط', 'Read-only range')" [value]="30" [readOnly]="true" />
+      <hw-slider name="readonly-slider" [label]="t('نطاق للقراءة فقط', 'Read-only range')" [value]="30" [readOnly]="true" [showValue]="true" />
       <hw-checkbox name="consent" [label]="t('أوافق على الشروط', 'I agree to the terms')" />
       <button class="hw-button" type="reset">{{ t('إعادة ضبط', 'Reset') }}</button>
     </form>
@@ -22,7 +22,7 @@ import { HwCheckboxComponent, HwSearchFieldComponent, HwPasswordFieldComponent, 
       <div data-hw-density="comfortable"><hw-switch name="desktop-switch" [label]="t('تبديل مريح', 'Comfortable switch')" /></div>
       <div data-hw-density="compact"><hw-switch name="compact-switch" [label]="t('تبديل مضغوط', 'Compact switch')" /></div>
     </section>
-    <hw-stepper [label]="t('التقدم', 'Progress')" [activeIndex]="1" style="--hw-step-current-background:#4f378b" [steps]="[{label:t('البيانات','Details')}, {label:t('المراجعة','Review')}, {label:t('الإرسال','Submit')}]" />
+    <hw-stepper [label]="t('التقدم', 'Progress')" [completeLabel]="t('مكتملة', 'Complete')" [upcomingLabel]="t('قادمة', 'Upcoming')" [activeIndex]="1" style="--hw-step-current-background:#4f378b" [items]="[{value:'details', label:t('البيانات','Details')}, {value:'review', label:t('المراجعة','Review')}, {value:'send', label:t('الإرسال','Submit')}]" />
   </main>`,
 })
 export class InputControlsExampleComponent {

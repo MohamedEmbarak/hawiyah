@@ -75,8 +75,8 @@ export function portalHeaderTexts(locale: Locale, skip = false) {
   const {skipLabel, menuLabel, navigationLabel} = portalTexts(locale);
   return {...(skip ? {skipLabel} : {}), menuLabel, navigationLabel};
 }
-/** Texts of the vanilla calendar, which always renders the calendar-system switch. */
+/** Texts of a standalone vanilla calendar; the calendar-system switch belongs to DatePicker. */
 export function vanillaCalendarTexts(locale: Locale) {
-  const {previousLabel, nextLabel, calendarSystemLabel, gregorianLabel, hijriLabel, rangeLabel, unsupportedMessage} = calendarTexts(locale);
-  return {previousLabel, nextLabel, calendarSystemLabel, gregorianLabel, hijriLabel, rangeLabel, unsupportedMessage};
+  const {previousLabel, nextLabel, rangeLabel, unsupportedMessage} = calendarTexts(locale);
+  return {previousLabel, nextLabel, rangeLabel, unsupportedMessage};
 }

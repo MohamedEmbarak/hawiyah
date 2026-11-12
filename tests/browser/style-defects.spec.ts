@@ -50,12 +50,13 @@ for(const lang of ['en','ar'] as const)
       expect(await page.locator(zone).evaluate(node=>node.scrollWidth<=node.clientWidth+1)).toBe(true);
     }
   });
-test('the vanilla data-dragover marker shows the drag-over state',async({page})=>{
-  await openFixture(page,`<div class="hw-file-dropzone" id="zone"><p>Drop files</p><input type="file" aria-label="Files"></div><div class="hw-file-dropzone" id="ref" data-state="dragging"><p>Reference</p></div>`);
+test('the vanilla data-state="dragging" marker shows the drag-over state',async({page})=>{
+  // The controller writes data-state="dragging" (data-dragover before 0.3.0); the state uses the primary colours.
+  await openFixture(page,`<div class="hw-file-dropzone" id="zone"><p>Drop files</p><input type="file" aria-label="Files"></div><div id="ref" style="border:1px solid var(--hw-color-primary);background:var(--hw-color-primary-subtle)"><p>Reference</p></div>`);
   const reference=await page.locator('#ref').evaluate(node=>[getComputedStyle(node).borderTopColor,getComputedStyle(node).backgroundColor]);
   const rest=await page.locator('#zone').evaluate(node=>getComputedStyle(node).borderTopColor);
   expect(rest).not.toBe(reference[0]);
-  await page.locator('#zone').evaluate(node=>node.setAttribute('data-dragover',''));
+  await page.locator('#zone').evaluate(node=>node.setAttribute('data-state','dragging'));
   // The zone transitions its colours, so wait for the settled values.
   await expect(page.locator('#zone')).toHaveCSS('border-top-color',reference[0]);
   await expect(page.locator('#zone')).toHaveCSS('background-color',reference[1]);

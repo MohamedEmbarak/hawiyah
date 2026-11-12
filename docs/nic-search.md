@@ -37,9 +37,9 @@ An active suggestion consumes Enter and updates the field. Enter without an
 active suggestion leaves native form submission available and can emit the
 adapter's search notification. Use either the form submit handler or that
 notification for the same search operation, to avoid handling it twice.
-The optional icon search action uses `showSearchButton`; React/Vue default to
-false and Angular retains its earlier true default. Cross-adapter compositions
-set false explicitly and provide one external submit button.
+The optional icon search action uses `showSearchButton`, which defaults to false
+in React, Vue and Angular; pass it with `searchLabel` where the button is wanted.
+Cross-adapter compositions leave it off and provide one external submit button.
 
 The popup closes on blur, outside interaction, clear, reset or unavailable state.
 Escape dismisses an open suggestion list before an enclosing dialog; a later

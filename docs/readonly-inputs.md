@@ -12,7 +12,8 @@ allowing keyboard focus. Consumer click/key handlers still run. For uncontrolled
 radio groups, the last committed selection is restored when a canceled activation
 would clear a checked peer. Switching between editable and read-only states keeps
 the current selection. Normal form resets and editable radio changes remain
-native.
+native. Vue spells the prop `readonly` on Checkbox, Radio and Switch, as on its
+other controls; Angular and React use `readOnly`.
 
 React and Angular `Slider`/`RangeSlider`, and Vue's existing read-only ranges, use
 `aria-readonly="true"`. Read-only pointer gestures and Arrow/Home/End/Page keys
@@ -20,6 +21,16 @@ cannot change their values. Tab, Escape and unrelated keys retain their normal
 behavior. The range input keeps its name and form value; Angular no longer needs
 duplicate hidden inputs to submit read-only values. Guards also check effective
 disabled state before accepting input events.
+
+MultiSelect rows follow the same rule in every adapter: read-only checkboxes
+stay enabled and focusable with `aria-disabled="true"`, and their values submit.
+
+FileDropzone is read-only through `readOnly` (React, Angular), `readonly` (Vue)
+or `data-hw-readonly="true"` on the root (vanilla). The file input stays enabled,
+focusable and submitted with `aria-disabled="true"`; the file chooser and drops
+are blocked, and the root carries `data-hw-readonly="true"` for styling. Use
+`disabled` to leave the files out of the submission. FileUpload has no read-only
+state.
 
 The vanilla `createRangeSlider` retains its existing gesture guards and now
 synchronizes `aria-readonly` on both handles with `data-hw-readonly="true"` or

@@ -10,7 +10,7 @@ testing. Rating, date and readonly choice fixes have separate coverage.
 
 | Control | Observed defect | Corrected contract | Evidence |
 | --- | --- | --- | --- |
-| React FileDropzone | A `.txt` selected through the native picker reached `onFilesChange` when `accept=".pdf"`; drop validation rejected the same file. | Picker and drop use one acceptance check. A rejected selection clears the selected list/native value, reports the rejection and emits an empty accepted-file list. Native `accept` remains a picker hint; server validation is still the application's responsibility. | `packages/react/src/expanded-controls.tsx`, `react.input-contracts.test.tsx` |
+| React FileDropzone | A `.txt` selected through the native picker reached `onFilesChange` when `accept=".pdf"`; drop validation rejected the same file. | Picker and drop use one acceptance check (core `evaluateFileSelection`) in all four adapters. A batch with any rejected file, including several files on a single-file dropzone, clears the selected list/native value, reports every rejected file through `getRejectedMessage(rejected)` with `role="alert"` and emits an empty accepted-file list. Native `accept` remains a picker hint; server validation is still the application's responsibility. | `packages/react/src/expanded-controls.tsx`, `react.input-contracts.test.tsx` |
 | Vue/Angular MultiSelect | A required control containing only an unknown value passed native validity and submitted that invisible value. Disabled options could also be submitted. | Only known, enabled values count toward required validity, checked state, summary and hidden form values. Option-list changes do not destructively rewrite or emit the parent's model. Restoring an option restores its externally held selection. User changes produce the currently valid selection. | `packages/vue/src/controls.ts`, `packages/angular/src/advanced-controls.ts`, their `input-contracts.test.ts` files |
 | Vue/Angular PinInput | Arabic-digit defaults and external values bypassed input-event normalization. Angular also accepted optional partial codes. | Display and native submission normalize Arabic and Eastern Arabic digits to ASCII, remove nondigits and truncate to configured length. A nonempty PIN must have that exact length. External values are rendered canonically without emitting a parent update; input events emit canonical values. Native/Angular form reset restores the canonical default. | Same adapter files and tests; React's existing external-value contract is also tested |
 | React/Angular TagInput | React's required group did not expose `aria-required` on its draft editor. Angular's editor used conditional native required instead of a consistent committed-tag contract. | `aria-required` exposes the requirement. Custom validity checks committed tags; an empty editor is valid when tags exist, and an uncommitted draft cannot satisfy an empty required group. Hidden values submit committed tags. Vue and vanilla already followed this model. | React/Angular adapter files and tests; Vue existing behavior is covered |
@@ -26,10 +26,15 @@ testing. Rating, date and readonly choice fixes have separate coverage.
   controls retain their value and focus; readonly choice behavior is covered by
   the separate readonly-control tests. A native select or file input does not
   acquire readonly semantics merely from an unsupported HTML attribute.
-- React/Vue uncontrolled defaults and vanilla markup use native form reset.
-  Angular uses its ControlValueAccessor and Angular Forms reset. This is an
-  intentional integration difference, not a requirement to mutate the Angular
-  model from an unrelated native reset event.
+- A native form reset is a value change made by the form, in all four
+  adapters. After a reset that is not default-prevented, every control holds,
+  shows and submits its reset target (React and Vue `defaultValue`, the Angular
+  value after the first inputs, the authored vanilla default, else the empty
+  value) and reports it once through its ordinary value notification when the
+  value changed. A controlled React control shows its prop again when the
+  application ignores the notification. With Angular Forms attached, Angular
+  Forms keeps ownership of the value. This replaces the earlier record that
+  Angular ignored an unrelated native reset event.
 - PIN values use ASCII digits for application/form data while Arabic labels and
   surrounding direction remain supported. This does not change date values or
   calendar conversion.

@@ -16,9 +16,7 @@ export function fileProject(id: FileProjectId, framework: ProjectFramework, lang
   const label = ar ? 'أرفق المستندات' : 'Attach documents';
   const help = !drop
     ? (ar ? 'يقترح منتقي الملفات مستندات PDF وصور PNG.' : 'The file chooser suggests PDF documents and PNG images.')
-    : framework === 'angular'
-      ? (ar ? 'إذا ضمّت الدفعة أنواعًا مختلفة، تبقى ملفات PDF وPNG ويُستبعد سواها.' : 'A mixed batch keeps the PDF and PNG files and excludes the other files.')
-      : (ar ? 'إذا احتوت الدفعة على ملف بغير صيغة PDF أو PNG، يُرفض الاختيار بالكامل.' : 'If any file is outside PDF or PNG, the entire selection is cleared.');
+    : (ar ? 'إذا احتوت الدفعة على ملف بغير صيغة PDF أو PNG، يُرفض الاختيار بالكامل.' : 'If any file is outside PDF or PNG, the entire selection is cleared.');
   const disabled = ar ? 'تعطيل اختيار الملفات' : 'Disable file selection';
   const rejected = ar ? 'رُفضت ملفات لا تطابق الأنواع المسموحة.' : 'Some files did not match the permitted types.';
   const count = ar ? 'عدد الملفات المختارة' : 'Selected files';
@@ -183,20 +181,20 @@ ${formDataHelper}
 const files = ref${typed ? '<File[]>' : ''}([]);
 const selectedItems = computed(() => files.value.map((file, index) => ({id: String(index), name: file.name, status: 'selected'${typed ? ' as const' : ''}})));
 const disabled = ref(false);
-const submitted = ref('—');${drop ? "\nconst rejection = ref('');" : ''}
+const submitted = ref('—');
 function inspect(event${typed ? ': Event' : ''}) {
   if (event.currentTarget instanceof HTMLFormElement) submitted.value = submittedNames(event.currentTarget);
 }
 function reset() {
   files.value = [];
   disabled.value = false;
-  submitted.value = '—';${drop ? "\n  rejection.value = '';" : ''}
+  submitted.value = '—';
 }
 </script>
 
 <template>
   <form ${formAttrs} @submit.prevent="inspect" @reset="reset">
-    <${component} label="${label}" hint="${help}" ${inputAttrs} :disabled="disabled" @update:files="files = $event${drop ? "; rejection = ''" : ''}"${drop ? ` drop-label="${label}" :get-selected-message="${selectedMessage}" @reject="rejection = '${rejected}'"` : ''} />${drop ? '\n    <p role="status">{{ rejection }}</p>' : ''}
+    <${component} label="${label}" hint="${help}" ${inputAttrs} :disabled="disabled" @update:files="files = $event"${drop ? ` drop-label="${label}" :get-selected-message="${selectedMessage}" :get-rejected-message="${rejectedMessage.replaceAll('"', "'")}"` : ''} />
     <label><input class="hw-checkbox" type="checkbox" v-model="disabled"> ${disabled}</label>
     <div>${count} <output data-file-count>{{ files.length }}</output><div data-file-names><FileUploadList :items="selectedItems" :labels="transferLabels" :disabled="disabled" removable @remove="removeSelectedFile" /></div></div>
     <div class="hw-inline"><Button type="submit">${submit}</Button><Button type="reset" variant="secondary">${reset}</Button></div>
@@ -218,7 +216,7 @@ ${formDataHelper}
 @Component({
   selector: 'app-root', standalone: true, imports: [HwButtonDirective, HwFileUploadListComponent, Hw${component}Component],
   template: \`<form ${formAttrs} (submit)="inspect($event)" (reset)="reset()">
-    <${selector} label="${label}" hint="${help}" ${inputAttrs} [disabled]="disabled" [value]="files" (valueChange)="files = $event"${drop ? ` dropLabel="${label}" [getSelectedMessage]="selectionMessage" (rejected)="setRejected($event)"` : ''} />${drop ? '\n    <p role="status">{{ rejection }}</p>' : ''}
+    <${selector} label="${label}" hint="${help}" ${inputAttrs} [disabled]="disabled" [value]="files" (valueChange)="files = $event"${drop ? ` dropLabel="${label}" [getSelectedMessage]="selectionMessage" [getRejectedMessage]="rejectionMessage"` : ''} />
     <label><input class="hw-checkbox" type="checkbox" [checked]="disabled" (change)="disabled = $any($event.target).checked"> ${disabled}</label>
     <div>${count} <output data-file-count>{{ files.length }}</output><div data-file-names><hw-file-upload-list [items]="selectedItems" [labels]="transferLabels" [disabled]="disabled" removable (remove)="removeSelectedFile($event)" /></div></div>
     <div class="hw-inline"><button hwButton type="submit">${submit}</button><button hwButton type="reset" variant="secondary">${reset}</button></div>
@@ -235,11 +233,8 @@ export class AppComponent {
   get selectedItems(): FileUploadItem[] { return this.files.map((file, index) => ({id: String(index), name: file.name, status: 'selected'})); }
   disabled = false;
   submitted = '—';${drop ? `
-  rejection = '';
   selectionMessage = ${selectedMessage};
-  setRejected(files: readonly File[]) {
-    this.rejection = ${JSON.stringify(rejected)} + ' — ' + files.map(file => file.name).join(', ');
-  }` : ''}
+  rejectionMessage = ${rejectedMessage};` : ''}
   inspect(event: Event) {
     event.preventDefault();
     if (event.currentTarget instanceof HTMLFormElement) this.submitted = submittedNames(event.currentTarget);
@@ -247,7 +242,7 @@ export class AppComponent {
   reset() {
     this.files = [];
     this.disabled = false;
-    this.submitted = '—';${drop ? "\n    this.rejection = '';" : ''}
+    this.submitted = '—';
   }
 }
 `;

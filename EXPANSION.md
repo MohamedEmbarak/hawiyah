@@ -37,12 +37,16 @@ boundary, not a simulated implementation.
 - InputGroup uses `.hw-input-group` and `.hw-input-addon`.
 - ToggleGroup: native radio group for single selection; buttons with aria-pressed
   for multiple selection. `.hw-toggle-group`; data-variant=segmented|outline.
-- MultiSelect: searchable checkbox list, explicit label, checked values; name
-  produces repeated native form values. Do not pretend it is a single combobox.
+- MultiSelect: searchable checkbox list, explicit label, a visible filter label,
+  checked values; name produces repeated native form values. The required
+  `getResultsMessage(count)` fills a polite status after the reader filters.
+  Do not pretend it is a single combobox.
 - PinInput: one accessible native input with autocomplete=one-time-code and
   numeric keyboard; optional visual slots are decorative. Support paste and
-  Arabic-Indic digits. No six-field focus trap.
-- RangeSlider: two labelled native ranges, enforce lower <= upper. NumberField
+  Arabic-Indic digits, normalised before the length applies (no native
+  `maxlength`). No six-field focus trap.
+- RangeSlider: two labelled native ranges, enforce lower <= upper; the optional
+  output shows `getRangeLabel(lower, upper)` and no adapter writes a separator. NumberField
   delegates native input number semantics (step/min/max/empty).
 - Calendar: labelled month toolbar, weekday headings, focusable date grid;
   arrows/Home/End/PageUp/PageDown; min/max and disabled selection; locale and
@@ -57,10 +61,16 @@ boundary, not a simulated implementation.
   ancestor disabled fieldset and its first-legend exception. A blocked drop must
   not change files, report a selection or reject files; clear transient dragging
   and prevent the drop's browser default. Check state at event time so a fieldset
-  can be disabled while a drag is in progress. File selection is not upload transport.
+  can be disabled while a drag is in progress. Cancel `dragover` for file drags
+  only, with `dropEffect` `'none'` while unavailable. A batch replaces the
+  selection; a batch with any rejected file (type, `maxSize`, count) leaves it
+  empty and is reported through `getRejectedMessage(rejected)`. No dropzone
+  renders a file list; compose FileUploadList. File selection is not upload transport.
 - Popover: a disclosure with a trigger, labelled region, outside press/Escape;
-  interactive children use normal Tab. Menu: menu/menuitem keyboard semantics,
-  Home/End/ArrowUp/ArrowDown, focus return. Drawer composes native modal dialog
+  interactive children use normal Tab; `label` names the panel and prints
+  nothing. Menu: items {value,label,disabled?,href?}, menu/menuitem keyboard
+  semantics, Home/End/ArrowUp/ArrowDown, type-ahead, focus return. Both close
+  when focus moves outside them. Drawer composes native modal dialog
   with data-side=start|end|bottom and proper focus behavior. Dialog/Drawer backdrop
   dismissal requires a primary pointer gesture that starts and ends outside the
   panel. Content drags, cancelled gestures and prevented events do not dismiss it;
@@ -68,15 +78,20 @@ boundary, not a simulated implementation.
 - ToastRegion: stable live region, caller-owned messages, dismiss buttons,
   no automatic expiry by default. Alert tone only assertive for urgent messages.
 - TreeView: flattened visible nodes, roving focus, RTL-aware arrows, expansion,
-  selection; items {id,label,disabled?,children?}. No drag/drop claim.
-- Carousel: previous/next buttons and current slide status, no autoplay by default.
+  selection, type-ahead; `items` {id,label,disabled?,children?} and `expanded`
+  in every adapter; the toggle is `button.hw-tree-toggle` named by
+  `getExpandLabel(node)` / `getCollapseLabel(node)` and is not a tab stop. No
+  drag/drop claim.
+- Carousel: previous/next buttons and current slide status, no autoplay by
+  default. At a bound the arrow is `aria-disabled="true"` and keeps focus.
 - ContentNavigation: semantic nested section links with scroll-following current
   state, a configurable offset and an optional bounded scroll root. Keep IDs and
   content application-owned. Ordinary selection scrolls locally without changing
   the host route; disabled items, keyboard focus and reduced motion are preserved.
   Framework adapters own their DOM and observer cleanup.
 - DataTable: native table with sortable column headers and aria-sort. Columns
-  {key,label,sortable?}; rows record values. Sorting is stable and uses the
+  {key,label,cell?,sortable?,rowHeader?}; rows record values; the sort state is
+  `sortKey` and `sortDirection`. Sorting is stable and uses the
   required `locale`; `emptyMessage` is required. No
   virtualization/editing claim. Existing Table remains fully composable.
 - National patterns are configurable ordinary content. Do not invent government
@@ -93,11 +108,12 @@ boundary, not a simulated implementation.
   adapter PORTAL.md for exact props. Angular generates ids from one `HwIdSource`
   per application, so server and hydrated ids match; explicit id inputs win.
 - All controls: disabled/readonly where meaningful, form values/reset, accessible
-  names, error/hint associations, no unsafe HTML, SSR-safe imports, RTL.
+  names, error/hint associations, no unsafe HTML, SSR-safe imports, RTL. A
+  native form reset returns each control to its reset target and notifies once
+  when the value changed; read-only keeps a control focusable and submitted.
 - All locales: no component in this expansion chooses a locale. Calendar,
   DatePicker and DataTable take a required `locale` (vanilla: the option or
-  `data-hw-locale`); the vanilla RangeSlider takes one when it has an output
-  element. A missing locale warns through `requireText` in development and
+  `data-hw-locale`). A missing locale warns through `requireText` in development and
   the Intl-derived output is left out; see CONTRACT.md "Text and localisation".
 - All text: no component in this expansion ships a string. Accessible names,
   labels of internal controls, status, empty and validation messages and

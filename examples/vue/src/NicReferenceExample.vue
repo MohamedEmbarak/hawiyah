@@ -26,10 +26,10 @@ const t = (ar: string, en: string) => english.value ? en : ar;
     <section data-testid="choices-showcase" class="hw-stack">
       <Checkbox id="nic-check" label="Checkbox" /><Checkbox id="nic-mixed" label="Mixed" indeterminate />
       <Checkbox id="nic-disabled" label="Disabled" disabled :default-value="true" />
-      <Checkbox id="nic-readonly" label="Read only" read-only :default-value="true" />
+      <Checkbox id="nic-readonly" label="Read only" readonly :default-value="true" />
       <Radio id="nic-radio-a" name="nic-radio" value="a" label="First radio" v-model="choiceRadio" />
       <Radio id="nic-radio-b" name="nic-radio" value="b" label="Second radio" v-model="choiceRadio" />
-      <Radio id="nic-radio-readonly" name="nic-radio" value="locked" label="Read only radio" read-only v-model="choiceRadio" />
+      <Radio id="nic-radio-readonly" name="nic-radio" value="locked" label="Read only radio" readonly v-model="choiceRadio" />
     </section><section class="hw-field" data-testid="group-example"><label class="hw-label" for="group-email">{{ t('البريد الإلكتروني','Email') }}</label><InputGroup data-testid="group-field"><template #prefix>@</template><TextField id="group-email" name="group-email" type="email" default-value="ready@example.test" required /></InputGroup></section>
     <section class="hw-grid" style="--hw-layout-columns:1;--hw-layout-columns-md:2">
       <Card data-testid="base-card"><template #header><h2 class="hw-card-title">{{ t('بطاقة معلومات', 'Information card') }}</h2></template><p class="hw-card-description">{{ t('محتوى واضح بمسافات موحدة.', 'Clear content with consistent spacing.') }}</p><template #footer><span>{{ t('تفاصيل إضافية', 'Additional details') }}</span></template></Card>

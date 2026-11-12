@@ -52,7 +52,7 @@ for(const adapter of ['react','vue','angular']) {
     expect(m.root.getAttribute('aria-roledescription')).toBe('عرض شرائح');expect(m.root.querySelector('.hw-carousel-pagination')?.getAttribute('aria-label')).toBe('اختيار الشريحة');
     for(const button of m.root.querySelectorAll<HTMLButtonElement>('.hw-carousel-arrow')){expect(button.type).toBe('button');expect(button.getAttribute('aria-label')).toMatch(/الشريحة/);}
     await m.click('.hw-carousel-dot');expect(m.changed).not.toHaveBeenCalled();
-    await m.click('.hw-carousel-dot:last-child');checkExposure(m.root,2,3);expect(m.changed).toHaveBeenLastCalledWith(2);expect(m.root.querySelector<HTMLButtonElement>('[data-hw-next]')!.disabled).toBe(true);
+    await m.click('.hw-carousel-dot:last-child');checkExposure(m.root,2,3);expect(m.changed).toHaveBeenLastCalledWith(2);expect(m.root.querySelector<HTMLButtonElement>('[data-hw-next]')!.getAttribute('aria-disabled')).toBe('true');expect(m.root.querySelector<HTMLButtonElement>('[data-hw-next]')!.disabled).toBe(false);
     await m.click('[data-hw-next]');expect(m.changed).toHaveBeenCalledTimes(1);
     await m.click('[data-hw-previous]');checkExposure(m.root,1,3);expect(m.changed).toHaveBeenLastCalledWith(1);expect([...m.root.querySelectorAll('.hw-carousel-slide')]).toEqual(slides);
     expect(m.root.querySelector('[role="status"]')?.textContent).toBe('2 من 3');

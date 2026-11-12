@@ -41,7 +41,7 @@ async function mountGroup(adapter: string, host: HTMLElement, texts: {getOverflo
   const fixture = TestBed.createComponent(HwAvatarGroupComponent);
   host.append(fixture.nativeElement);
   fixture.componentRef.setInput('label', label);
-  fixture.componentRef.setInput('avatars', members);
+  fixture.componentRef.setInput('items', members);
   fixture.componentRef.setInput('getOverflowLabel', getOverflowLabel);
   cleanups.push(() => fixture.destroy());
   return async (max: number) => { fixture.componentRef.setInput('max', max); fixture.detectChanges(); };
@@ -89,7 +89,7 @@ it('Angular announces the current timeline step and moves that marker when the s
   fixture.componentRef.setInput('label', 'Application stages');
   const update = (current: number) => {
     fixture.componentRef.setInput('items', ['Received', 'Review', 'Decision'].map((title, index) => ({
-      title, state: index === current ? 'current' : index < current ? 'complete' : 'pending',
+      id: `stage-${index}`, title, status: index === current ? 'current' : index < current ? 'complete' : 'upcoming',
     })));
     fixture.detectChanges();
   };

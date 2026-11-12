@@ -46,8 +46,15 @@ describe('CookieConsent', () => {
     button('Accept').click(); update(); expect(state.events).toEqual(['preferences', 'accepted', false]); expect(region.hasAttribute('hidden')).toBe(true);
   });
 
-  // STATE-02 (an open that the application keeps true) is not asserted for Angular: convention controlled-and-observable-state,
-  // a written value is the initial state and the component then updates its own field.
+  // Convention controlled-and-observable-state for Angular: a written value is the initial state and the component then
+  // updates its own field, so an open that the application does not write back still closes with the choice.
+  it('[STATE-02] a bound open that the application keeps is the initial state: consent and open false are each reported once and the region closes', () => {
+    const { root, state, update } = page(`<hw-cookie-consent ${texts} [open]="open" (openChange)="events.push($event)" (consent)="events.push($event)" />`, { open: true, events: [] as unknown[] });
+    const region = root.querySelector<HTMLElement>('hw-cookie-consent')!;
+    region.querySelectorAll('button')[1]!.click(); update();
+    expect(state.events).toEqual(['rejected', false]); expect(state.open).toBe(true); expect(region.hasAttribute('hidden')).toBe(true);
+  });
+
   it('[STATE-03][STATE-04] setting open from the application does not notify; [(open)] round-trips', () => {
     const { root, state, update } = page(`<hw-cookie-consent ${texts} [(open)]="open" (openChange)="events.push($event)" (consent)="events.push($event)" />`, { open: false, events: [] as unknown[] });
     const region = root.querySelector<HTMLElement>('hw-cookie-consent')!;

@@ -15,13 +15,7 @@ const text = 'string';
 const count = '(count: number) => string';
 const locale = (en: string, ar: string) => input('locale', 'string (BCP 47)', [en, ar]);
 
-const calendarSwitch = (en: string, ar: string) => [
-  input('calendarSystemLabel', text, when(en, ar)),
-  input('gregorianLabel', text, when(en, ar)),
-  input('hijriLabel', text, when(en, ar)),
-  input('rangeLabel', text, when(en, ar)),
-  input('unsupportedMessage', text, when(en, ar)),
-];
+const ummAlQura = when("calendar is 'islamic-umalqura'", "يكون calendar هو 'islamic-umalqura'");
 const portalHeader = [
   input('menuLabel', text, ['Required (vanilla: when the menu toggle has no text or aria-label)', 'مطلوب دائمًا (في Vanilla: عندما لا يحمل زر القائمة نصًا أو aria-label)']),
   input('navigationLabel', text, ['Required (vanilla: when the navigation has no aria-label)', 'مطلوب دائمًا (في Vanilla: عندما لا يحمل التنقل aria-label)']),
@@ -38,7 +32,8 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     locale('Required; month and weekday names come from Intl in this locale', 'مطلوب دائمًا؛ تأتي أسماء الأشهر والأيام من Intl بهذه اللغة'),
     input('previousLabel', text, always),
     input('nextLabel', text, always),
-    ...calendarSwitch("calendar is 'islamic-umalqura' (React, Vue, Angular); always in vanilla, which renders the calendar-system switch", "يكون calendar هو 'islamic-umalqura' (React وVue وAngular)؛ ومطلوب دائمًا في Vanilla لأنه يعرض مبدّل نظام التقويم"),
+    input('rangeLabel', text, ummAlQura),
+    input('unsupportedMessage', text, ummAlQura),
     input('getDayLabel', '(value: string) => string', optional),
   ],
   carousel: [
@@ -51,7 +46,7 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('carouselDescription', text, optional),
     input('slideDescription', text, optional),
   ],
-  chip: [input('removeLabel', text, when('the chip is removable', 'تكون الشريحة قابلة للإزالة'))],
+  chip: [input('removeLabel', text, when('a remove handler is bound (React onRemove, Vue @remove, Angular (removed))', 'يُربط معالج للإزالة (onRemove في React و@remove في Vue و(removed) في Angular)'))],
   combobox: [
     input('getResultsMessage', count, ['Required (vanilla: data-hw-results-message="{count} …")', 'مطلوب دائمًا (في Vanilla: data-hw-results-message="{count} …")']),
     input('emptyMessage', text, ['Required where the adapter renders the empty row (React, Vue, Angular)', 'مطلوب دائمًا حيث يعرض المحوّل صف «لا نتائج» (React وVue وAngular)']),
@@ -72,7 +67,7 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('getSortLabel', "(column, direction: 'ascending' | 'descending') => string", optional),
   ],
   'date-picker': [
-    input('label', text, ['Required (vanilla: the authored label)', 'مطلوب دائمًا (في Vanilla: التسمية المكتوبة في البنية)']),
+    input('label', text, ['Required, or aria-label / aria-labelledby on the input (vanilla: the authored label)', 'مطلوب دائمًا، أو aria-label / aria-labelledby على الحقل (في Vanilla: التسمية المكتوبة في البنية)']),
     locale('Required; formatted dates come from Intl in this locale', 'مطلوب دائمًا؛ تأتي التواريخ المنسّقة من Intl بهذه اللغة'),
     input('calendarLabel', text, always),
     input('openLabel', text, always),
@@ -95,27 +90,26 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('yesLabel', text, always),
     input('noLabel', text, always),
     input('successMessage', text, always),
-    input('commentLabel', text, ['Required in React and Vue; the comment field appears once the reader answers', 'مطلوب دائمًا في React وVue؛ يظهر حقل التعليق بعد أن يجيب القارئ']),
-    input('submitLabel', text, ['Required in React and Vue; the button appears with the comment field', 'مطلوب دائمًا في React وVue؛ يظهر الزر مع حقل التعليق']),
-    input('getStatusMessage', '(value: string) => string', ['Optional, vanilla only; replaces successMessage for one answer', 'اختياري، في Vanilla فقط؛ يحل محل successMessage لإجابة بعينها']),
+    input('commentLabel', text, ['Required in React, Vue and Angular; the comment field appears once the reader answers (vanilla: the authored comment step)', 'مطلوب دائمًا في React وVue وAngular؛ يظهر حقل التعليق بعد أن يجيب القارئ (في Vanilla: خطوة التعليق المكتوبة في البنية)']),
+    input('submitLabel', text, ['Required in React, Vue and Angular; the button appears with the comment field (vanilla: the authored submit button)', 'مطلوب دائمًا في React وVue وAngular؛ يظهر الزر مع حقل التعليق (في Vanilla: زر الإرسال المكتوب في البنية)']),
   ],
   'file-dropzone': [
     input('label', text, ['Required, or aria-label / aria-labelledby / a parent field label', 'مطلوب دائمًا، أو aria-label / aria-labelledby / تسمية الحقل الأب']),
     input('dropLabel', text, ['Required; the visible instruction (vanilla: authored text)', 'مطلوب دائمًا؛ وهو الإرشاد الظاهر (في Vanilla: النص المكتوب في البنية)']),
     input('getSelectedMessage', '(files: readonly File[]) => string', ['Optional in React, Vue and Angular, where it turns on the selection status; vanilla: required when [data-hw-file-status] exists (data-hw-selected-message="{count} …")', 'اختياري في React وVue وAngular ويفعّل حالة الاختيار؛ وفي Vanilla مطلوب عند وجود [data-hw-file-status] (data-hw-selected-message="{count} …")']),
-    input('getRejectedMessage', '(rejected: readonly File[]) => string', when('accept is set (React); vanilla: when [data-hw-file-status] exists and accept or a maximum size is set', 'يُضبط accept (React)؛ وفي Vanilla: عند وجود [data-hw-file-status] مع accept أو حد أقصى للحجم')),
-    input('unsupportedDropMessage', text, when('[data-hw-file-status] exists (vanilla only)', 'يوجد [data-hw-file-status] (في Vanilla فقط)')),
+    input('getRejectedMessage', '(rejected: readonly File[]) => string', when('accept or a maximum size (maxSize) is set (vanilla: data-hw-rejected-message="{count} …")', 'يُضبط accept أو حد أقصى للحجم maxSize (في Vanilla: data-hw-rejected-message="{count} …")')),
+    input('unsupportedDropMessage', text, ['Optional, vanilla only; without it the status is left unchanged when the browser cannot assign dropped files', 'اختياري، في Vanilla فقط؛ وبدونه تبقى الحالة دون تغيير عندما يتعذر على المتصفح إسناد الملفات المُفلتة']),
   ],
   upload: [input('labels', 'FileUploadLabels { selected, uploading, complete, error, remove, getProgressLabel(name), getRemoveLabel(name) }', ['Required for the file upload list', 'مطلوب دائمًا لقائمة رفع الملفات'])],
-  menu: [input('triggerLabel', text, when('the adapter renders the trigger itself (Vue, Angular)', 'يعرض المحوّل زر الفتح بنفسه (Vue وAngular)'))],
-  popover: [input('triggerLabel', text, when('the adapter renders the trigger itself (Vue, Angular)', 'يعرض المحوّل زر الفتح بنفسه (Vue وAngular)'))],
+  menu: [input('label', text, ['Required, or aria-label / aria-labelledby on the menu', 'مطلوب دائمًا، أو aria-label / aria-labelledby على القائمة']), input('triggerLabel', text, when('the adapter renders the trigger itself (Vue, Angular)', 'يعرض المحوّل زر الفتح بنفسه (Vue وAngular)'))],
+  popover: [input('label', text, ['Required, or aria-label / aria-labelledby on the panel', 'مطلوب دائمًا، أو aria-label / aria-labelledby على اللوحة']), input('triggerLabel', text, when('the adapter renders the trigger itself (Vue, Angular)', 'يعرض المحوّل زر الفتح بنفسه (Vue وAngular)'))],
   'mobile-top-bar': [input('backLabel', text, when('a back destination or back action is given', 'تُمرَّر وجهة رجوع أو إجراء رجوع'))],
   'multi-select': [
     input('searchLabel', text, ['Required (vanilla: the authored search label)', 'مطلوب دائمًا (في Vanilla: تسمية حقل البحث المكتوبة)']),
     input('emptyMessage', text, ['Required (vanilla: authored markup)', 'مطلوب دائمًا (في Vanilla: البنية المكتوبة)']),
     input('requiredMessage', text, when('required is set', 'يُضبط required')),
-    input('getResultsMessage', count, when('[data-hw-status] exists (vanilla only)', 'يوجد [data-hw-status] (في Vanilla فقط)')),
-    input('getSelectedMessage', count, when('the adapter renders the selected count (Angular)', 'يعرض المحوّل عدد العناصر المختارة (Angular)')),
+    input('getResultsMessage', count, ['Required; announced after the reader filters (vanilla: data-hw-results-message="{count} …")', 'مطلوب دائمًا؛ يُعلن بعد أن يصفّي القارئ القائمة (في Vanilla: data-hw-results-message="{count} …")']),
+    input('getSelectedMessage', count, optional),
   ],
   'copy-button': [
     input('label', text, ['Required (vanilla: when the button has no text or aria-label)', 'مطلوب دائمًا (في Vanilla: عندما لا يحمل الزر نصًا أو aria-label)']),
@@ -165,7 +159,8 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
   'range-slider': [
     input('lowerLabel', text, ['Required (vanilla: the authored label of the lower input)', 'مطلوب دائمًا (في Vanilla: تسمية الحقل الأدنى المكتوبة)']),
     input('upperLabel', text, ['Required (vanilla: the authored label of the upper input)', 'مطلوب دائمًا (في Vanilla: تسمية الحقل الأعلى المكتوبة)']),
-    locale('Required in vanilla when [data-hw-range-output] exists; without it the output stays empty', 'مطلوب في Vanilla عند وجود [data-hw-range-output]؛ وبدونه يبقى الناتج فارغًا'),
+    input('getRangeLabel', '(lower: number, upper: number) => string', ['Optional; without it no range output is rendered (vanilla: required when [data-hw-range-output] exists, data-hw-range-label="{lower} – {upper}")', 'اختياري؛ وبدونه لا يُعرض مخرج النطاق (في Vanilla: مطلوب عند وجود [data-hw-range-output]، data-hw-range-label="{lower} – {upper}")']),
+    locale('Optional, vanilla only; formats the numbers of the range label when formatValue is not given', 'اختياري، في Vanilla فقط؛ ينسّق أعداد نص النطاق عند غياب formatValue'),
   ],
   rating: [
     input('getRatingLabel', '(value: number, max: number) => string', always),
@@ -191,23 +186,26 @@ export const componentTextInputs: Partial<Record<string, readonly TextInput[]>> 
     input('externalLabel', text, when('registrationHref is set and the link opens in a new window', 'يُضبط registrationHref ويفتح الرابط في نافذة جديدة')),
   ],
   spinner: [input('label', text, ['Required, unless the spinner is decorative (aria-hidden="true")', 'مطلوب دائمًا ما لم يكن المؤشر زخرفيًا (aria-hidden="true")'])],
-  stepper: [input('label', text, ['Required, or aria-label / aria-labelledby on the list', 'مطلوب دائمًا، أو aria-label / aria-labelledby على القائمة'])],
+  stepper: [
+    input('label', text, ['Required, or aria-label / aria-labelledby on the list', 'مطلوب دائمًا، أو aria-label / aria-labelledby على القائمة']),
+    input('completeLabel', text, always),
+    input('upcomingLabel', text, always),
+  ],
   tabs: [input('label', text, always), input('overflowLabel', text, when("overflow is 'menu', the default", "يكون overflow هو 'menu'، وهو الافتراضي"))],
   'tag-input': [
     input('getRemoveLabel', '(tag: string) => string', ['Required (vanilla: data-hw-remove-label="… {tag}")', 'مطلوب دائمًا (في Vanilla: data-hw-remove-label="… {tag}")']),
     input('requiredMessage', text, when('required is set', 'يُضبط required')),
-    input('addLabel', text, when('the adapter renders an add button (Angular)', 'يعرض المحوّل زر الإضافة (Angular)')),
   ],
   timeline: [input('label', text, always)],
   'toast-region': [
     input('label', text, ['Required, or aria-label on the region', 'مطلوب دائمًا، أو aria-label على المنطقة']),
     input('getDismissLabel', '(toast) => string', when('a message can be dismissed (vanilla: data-hw-dismiss-label="… {title}", unless the button is named)', 'يمكن إغلاق الرسالة (في Vanilla: data-hw-dismiss-label="… {title}" ما لم يُسمَّ الزر)')),
   ],
-  'toggle-group': [input('label', text, always)],
+  'toggle-group': [input('label', text, ['Required, or aria-label / aria-labelledby on the group', 'مطلوب دائمًا، أو aria-label / aria-labelledby على المجموعة'])],
   'tree-view': [
-    input('label', text, ['Required, or aria-label / aria-labelledby on the tree in Vue', 'مطلوب دائمًا، أو aria-label / aria-labelledby على الشجرة في Vue']),
-    input('getExpandLabel', '(node) => string', when('the toggle is exposed as a control (React, Vue)', 'يُعرض زر التوسيع عنصر تحكم (React وVue)')),
-    input('getCollapseLabel', '(node) => string', when('the toggle is exposed as a control (React, Vue)', 'يُعرض زر التوسيع عنصر تحكم (React وVue)')),
+    input('label', text, ['Required, or aria-label / aria-labelledby on the tree', 'مطلوب دائمًا، أو aria-label / aria-labelledby على الشجرة']),
+    input('getExpandLabel', '(node) => string', ['Required (vanilla: data-hw-expand-label="… {label}", unless the toggle has an authored aria-label)', 'مطلوب دائمًا (في Vanilla: data-hw-expand-label="… {label}" ما لم يحمل زر التوسيع aria-label مكتوبًا)']),
+    input('getCollapseLabel', '(node) => string', ['Required (vanilla: data-hw-collapse-label="… {label}", unless the toggle has an authored aria-label)', 'مطلوب دائمًا (في Vanilla: data-hw-collapse-label="… {label}" ما لم يحمل زر التوسيع aria-label مكتوبًا)']),
   ],
 };
 

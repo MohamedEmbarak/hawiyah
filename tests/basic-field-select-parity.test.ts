@@ -130,7 +130,7 @@ it('Angular Select renders the supplied prompt and connects external and changin
   host.append(fixture.nativeElement);
   const set = (key: string, value: unknown) => fixture.componentRef.setInput(key, value);
   set('options', choices); set('controlId', 'place'); set('label', 'المنطقة'); set('required', true);
-  set('placeholder', 'اختر خيارًا'); set('hint', 'Hint'); set('error', 'Error'); set('describedBy', 'external external'); fixture.detectChanges();
+  set('placeholder', 'اختر خيارًا'); set('hint', 'Hint'); set('error', 'Error'); set('aria-describedby', 'external external'); fixture.detectChanges();
   const select = host.querySelector('select')!;
   expect(select.selectedOptions[0]!.textContent).toBe('اختر خيارًا');
   expect(select.validity.valueMissing).toBe(true);
@@ -148,7 +148,7 @@ it('Angular Select renders the supplied prompt and connects external and changin
 
 it('Angular projected controls can bind to the Field helper IDs and required state', () => {
   class Host {error = 'Error';}
-  Component({standalone: true, imports: [HwFieldComponent], template: `<hw-field #field controlId="place" label="Place" hint="Hint" [error]="error" describedBy="external external" required><select id="place" [required]="field.required" [attr.aria-describedby]="field.descriptionIds"><option value="">Choose a place</option></select></hw-field>`})(Host);
+  Component({standalone: true, imports: [HwFieldComponent], template: `<hw-field #field controlId="place" label="Place" hint="Hint" [error]="error" aria-describedby="external external" required><select id="place" [required]="field.required" [attr.aria-describedby]="field.descriptionIds"><option value="">Choose a place</option></select></hw-field>`})(Host);
   const {host} = createForm();
   const fixture = TestBed.createComponent(Host);
   host.append(fixture.nativeElement); fixture.detectChanges();

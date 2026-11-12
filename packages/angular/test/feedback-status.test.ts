@@ -93,6 +93,18 @@ describe('Skeleton, Spinner and EmptyState', () => {
     expect([...root.querySelectorAll('.hw-spinner')].map(spinner => spinner.getAttribute('data-size'))).toEqual(['sm', 'lg', null]);
   });
 
+  it('[NAME-02][NAME-03][NAME-04][SPINNER-03] a spinner named on its host, or hidden with aria-hidden="true", needs no label and renders no inner span; one with neither warns once', () => {
+    const warnings = missingTextWarnings();
+    const { root, update } = page(`<span id="busy">Loading results</span><hw-spinner id="named" aria-label="Loading" /><hw-spinner id="by" aria-labelledby="busy" /><hw-spinner id="hidden" aria-hidden="true" /><hw-spinner id="both" aria-label="Loading" label="Loading results" />`);
+    update();
+    expect([...root.querySelectorAll('hw-spinner')].map(spinner => [spinner.id, spinner.childElementCount, spinner.textContent])).toEqual([['named', 0, ''], ['by', 0, ''], ['hidden', 0, ''], ['both', 1, 'Loading results']]);
+    expect(root.querySelector('#named')!.getAttribute('aria-label')).toBe('Loading'); expect(root.querySelector('#by')!.getAttribute('aria-labelledby')).toBe('busy'); expect(root.querySelector('#hidden')!.getAttribute('aria-hidden')).toBe('true');
+    expect(warnings).toEqual([]);
+    const bare = page(`<hw-spinner /><hw-spinner />`); bare.update();
+    expect([...bare.root.querySelectorAll('hw-spinner')].map(spinner => [spinner.childElementCount, spinner.hasAttribute('aria-label')])).toEqual([[0, false], [0, false]]);
+    expect(warnings.map(warning => warning.split('.')[0])).toEqual(['Hawiyah: hw-spinner requires "label"']);
+  });
+
   it('[RICH-01][feedback-status-11] hw-empty-state: the icon is inside span.hw-empty-icon[aria-hidden=true] before the h3 and the action is the last child', () => {
     const { root } = page(`<hw-empty-state title="No requests" description="Start a request."><button hwEmptyAction type="button">New request</button><span hwEmptyIcon class="hw-icon" data-icon="search-01"></span><p>More</p></hw-empty-state>`);
     const empty = root.querySelector('.hw-empty')!;

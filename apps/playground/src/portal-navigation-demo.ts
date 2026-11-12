@@ -58,7 +58,7 @@ export function portalMenuRecipe(locale: Locale) {
     title: ar ? 'روابط تنقل مجمّعة' : 'Grouped navigation links',
     markup: portalMenuMarkup(locale),
     vanillaScript: `import { createPortalHeader } from '@hawiyah/vanilla';\nconst header = createPortalHeader(document.querySelector('[data-hw="portal-header"]'));\nwindow.addEventListener('pagehide', () => header.destroy(), { once: true });`,
-    react: `import { PortalHeader } from '@hawiyah/react';\nconst links = ${links};\nexport default function SiteHeader() {\n  return <PortalHeader brand="هوية" brandHref="#home" navigation={links} navigationLabel="${label}" menuLabel="${menu}" />;\n}`,
+    react: `import { PortalHeader } from '@hawiyah/react';\nconst links = ${links};\nexport default function SiteHeader() {\n  return <PortalHeader brand="هوية" homeHref="#home" links={links} navigationLabel="${label}" menuLabel="${menu}" />;\n}`,
     vue: `<script setup>\nimport { PortalHeader } from '@hawiyah/vue';\nconst links = ${links};\n</script>\n<template><PortalHeader brand="هوية" home-href="#home" :links="links" navigation-label="${label}" menu-label="${menu}" /></template>`,
     angular: `import { Component } from '@angular/core';\nimport { HwPortalHeaderComponent } from '@hawiyah/angular';\n@Component({ selector: 'app-site-header', standalone: true, imports: [HwPortalHeaderComponent], template: \`<hw-portal-header brand="هوية" homeHref="#home" [links]="links" navigationLabel="${label}" menuLabel="${menu}" />\` })\nexport class SiteHeader { readonly links = ${links}; }`,
   };
