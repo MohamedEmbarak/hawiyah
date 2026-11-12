@@ -29,7 +29,7 @@ describe('text is supplied by the application', () => {
     fixture.detectChanges(); fixture.detectChanges();
     for (const close of root.querySelectorAll('.hw-dialog-header button')) { expect(close.hasAttribute('aria-label')).toBe(false); expect(close.querySelector('.hw-icon')).not.toBeNull(); }
     expect(root.querySelector('hw-table td')!.textContent).toBe(''); expect(root.querySelector('hw-table td')!.getAttribute('colspan')).toBe('1');
-    expect(root.querySelector('hw-spinner .hw-sr-only')!.textContent).toBe(''); expect(root.querySelector('hw-stepper ol')!.hasAttribute('aria-label')).toBe(false);
+    expect(root.querySelector('hw-spinner')!.childElementCount).toBe(0); expect(root.querySelector('hw-spinner')!.textContent).toBe(''); expect(root.querySelector('hw-stepper ol')!.hasAttribute('aria-label')).toBe(false);
     expect(about(warnings, 'hw-dialog', 'closeLabel')).toHaveLength(1); expect(about(warnings, 'hw-table', 'emptyMessage')).toHaveLength(1);
     expect(about(warnings, 'hw-spinner', 'label')).toHaveLength(1); expect(about(warnings, 'hw-stepper', 'label')).toHaveLength(1);
     expect(warnings).toHaveLength(4);
@@ -40,18 +40,22 @@ describe('text is supplied by the application', () => {
 
   it('asks for conditional text only while its condition holds, and never for optional text', () => {
     const warnings = missingTextWarnings();
-    const { fixture, root, state } = page(`<hw-alert [dismissible]="dismissible">Saved</hw-alert><hw-chip [removable]="dismissible">Tag</hw-chip><hw-select label="City" [options]="[{value: 'r', label: 'Riyadh'}]" /><hw-carousel label="News" ${withText.carousel} [slides]="[{id: 'a', title: 'A', content: 'First'}]" /><hw-search-field label="Find" clearLabel="Clear" [showSearchButton]="false" /><hw-mobile-top-bar title="Home" /><hw-service-details title="Permit" /><hw-site-verification label="Official site" detailsLabel="Verify" domainLabel="Domain" domainDescription="Ends with gov.sa" httpsLabel="Uses HTTPS" httpsDescription="Encrypted" />`, { dismissible: false });
+    const { root } = page(`<hw-alert>Saved</hw-alert><hw-chip>Tag</hw-chip><hw-select label="City" [options]="[{value: 'r', label: 'Riyadh'}]" /><hw-carousel label="News" ${withText.carousel} [slides]="[{id: 'a', title: 'A', content: 'First'}]" /><hw-search-field label="Find" clearLabel="Clear" [showSearchButton]="false" /><hw-mobile-top-bar title="Home" /><hw-service-details title="Permit" /><hw-site-verification label="Official site" detailsLabel="Verify" domainLabel="Domain" domainDescription="Ends with gov.sa" httpsLabel="Uses HTTPS" httpsDescription="Encrypted" />`, { dismissible: false });
     expect(warnings).toEqual([]);
     expect(root.querySelector('hw-select option')!.textContent).toBe('Riyadh'); expect(root.querySelectorAll('hw-select option')).toHaveLength(1);
     expect(root.querySelector('.hw-carousel')!.hasAttribute('aria-roledescription')).toBe(false); expect(root.querySelector('hw-search-field input')!.hasAttribute('placeholder') && root.querySelector('hw-search-field input')!.getAttribute('placeholder') !== '').toBe(false);
     // The site verification prints only the application's words: no protocol token is appended.
     expect(root.querySelector('hw-site-verification')!.textContent).not.toMatch(/HTTPS\s*HTTPS/); expect(root.querySelectorAll('hw-site-verification h2')[0]!.textContent).toBe('Uses HTTPS');
-    state.dismissible = true; fixture.changeDetectorRef.markForCheck(); fixture.detectChanges(); fixture.detectChanges();
+    // [TEXT-02] Without a listener there is no action and its text is not asked for.
+    expect(root.querySelector('hw-alert button, hw-chip button')).toBeNull();
+    // [TEXT-01][TEXT-03][R00] The bound output is the switch: the button is rendered, without a name, and the missing text is reported once.
+    const bound = page(`<hw-alert (dismissed)="dismissible = true">Saved</hw-alert><hw-alert (dismissed)="dismissible = true">Again</hw-alert><hw-chip (removed)="dismissible = true">Tag</hw-chip>`, { dismissible: false });
+    bound.fixture.detectChanges(); bound.fixture.detectChanges();
     expect(warnings).toEqual([
-      'Hawiyah: hw-alert requires "closeLabel" when the alert is dismissible. Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.',
-      'Hawiyah: hw-chip requires "removeLabel" when the chip is removable. Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.',
+      'Hawiyah: hw-alert requires "closeLabel" when a dismissed listener is bound. Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.',
+      'Hawiyah: hw-chip requires "removeLabel" when a removed listener is bound. Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.',
     ]);
-    expect(root.querySelector('hw-alert button')!.hasAttribute('aria-label')).toBe(false); expect(root.querySelector('hw-chip button')!.hasAttribute('aria-label')).toBe(false);
+    expect(bound.root.querySelectorAll('hw-alert button.hw-alert-dismiss')).toHaveLength(2); for (const button of bound.root.querySelectorAll('hw-alert button, hw-chip button')) expect(button.hasAttribute('aria-label')).toBe(false);
   });
 
   it('[INV-02][E01] keeps a constraint blocking when its message is missing, without exposing it as invalid before a submission', () => {
@@ -89,14 +93,14 @@ describe('text is supplied by the application', () => {
   it('hands every templated text function its documented arguments and renders exactly what it returns', () => {
     const calls: Record<string, unknown[][]> = {};
     const record = (name: string) => (...args: unknown[]) => { (calls[name] ??= []).push(args); return `${name}(${args.map(arg => typeof arg === 'object' && arg ? (arg as { id?: string; key?: string; name?: string }).id ?? (arg as { key?: string }).key ?? (arg as { name?: string }).name : arg).join(',')})`; };
-    const state = { record: Object.fromEntries(['page', 'gap', 'slide', 'rating', 'value', 'overflow', 'toast', 'notice', 'results', 'selected', 'matching', 'remove', 'sort', 'day', 'progress', 'removeFile', 'suggestions'].map(name => [name, record(name)])), dismissed: [] as string[] };
+    const state = { record: Object.fromEntries(['page', 'gap', 'slide', 'rating', 'value', 'overflow', 'toast', 'notice', 'markRead', 'results', 'selected', 'matching', 'remove', 'sort', 'day', 'progress', 'removeFile', 'suggestions'].map(name => [name, record(name)])), dismissed: [] as string[] };
     const { fixture, root } = page(`
       <hw-pagination label="Pages" previousLabel="Previous" nextLabel="Next" jumpLabel="Jump" goLabel="Go" [getPageLabel]="record.page" [getGapLabel]="record.gap" [totalPages]="20" [page]="10" />
       <hw-carousel label="News" previousLabel="Previous" nextLabel="Next" indicatorsLabel="Slides" emptyLabel="None" [getSlideLabel]="record.slide" [slides]="[{id: 'a', title: 'A', content: 'First'}, {id: 'b', title: 'B', content: 'Second'}]" />
       <hw-rating label="Rate" [max]="3" [getRatingLabel]="record.rating" /><hw-rating-display [value]="2.5" [max]="4" [getValueLabel]="record.value" />
-      <hw-avatar-group label="Team" [max]="1" [getOverflowLabel]="record.overflow" [avatars]="[{name: 'Sara Ali'}, {name: 'Omar Hassan'}, {name: 'Lina Saleh'}]" />
+      <hw-avatar-group label="Team" [max]="1" [getOverflowLabel]="record.overflow" [items]="[{name: 'Sara Ali'}, {name: 'Omar Hassan'}, {name: 'Lina Saleh'}]" />
       <hw-toast-region label="Messages" [getDismissLabel]="record.toast" [messages]="[{id: 't1', message: 'Saved'}]" (dismissed)="dismissed.push($event)" />
-      <hw-notification-list label="Inbox" emptyMessage="None" unreadLabel="Unread" [getDismissLabel]="record.notice" [items]="[{id: 'n1', title: 'Approved'}]" (dismissed)="dismissed.push($event)" />
+      <hw-notification-list label="Inbox" emptyMessage="None" unreadLabel="Unread" [getDismissLabel]="record.notice" [getMarkReadLabel]="record.markRead" (read)="dismissed.push($event)" [items]="[{id: 'n1', title: 'Approved'}]" (dismissed)="dismissed.push($event)" />
       <hw-combobox label="City" emptyMessage="None" [getResultsMessage]="record.results" [options]="[{value: 'r', label: 'Riyadh'}, {value: 'j', label: 'Jeddah'}]" />
       <hw-multi-select label="Cities" searchLabel="Filter" emptyMessage="None" [getSelectedMessage]="record.selected" [getResultsMessage]="record.matching" [options]="[{value: 'r', label: 'Riyadh'}]" [value]="['r']" />
       <hw-tag-input label="Tags" [getRemoveLabel]="record.remove" [value]="['alpha']" />
@@ -119,7 +123,8 @@ describe('text is supplied by the application', () => {
     expect(calls['overflow']![0]).toEqual([2]); expect(label('.hw-avatar-group > span.hw-avatar')).toBe('overflow(2)');
     // ToastRegion and NotificationList: the message or item itself.
     expect(calls['toast']![0]).toEqual([{ id: 't1', message: 'Saved' }]); expect(label('hw-toast-region [data-hw-dismiss]')).toBe('toast(t1)');
-    expect(calls['notice']![0]).toEqual([{ id: 'n1', title: 'Approved' }]); expect(label('hw-notification-list li button')).toBe('notice(n1)');
+    expect(calls['notice']![0]).toEqual([{ id: 'n1', title: 'Approved' }]); expect(label('hw-notification-list li button[data-hw-dismiss]')).toBe('notice(n1)');
+    expect(calls['markRead']![0]).toEqual([{ id: 'n1', title: 'Approved' }]); expect(root.querySelector('hw-notification-list li button[data-hw-mark-read]')!.textContent).toBe('markRead(n1)');
     // Counts.
     expect(calls['selected']![0]).toEqual([1]); expect(root.querySelector('hw-multi-select p.hw-multi-select-selected[role=status]')!.textContent).toBe('selected(1)');
     expect(calls['remove']![0]).toEqual(['alpha']); expect(label('hw-tag-input .hw-chip button')).toBe('remove(alpha)');
@@ -215,7 +220,8 @@ describe('text is supplied by the application', () => {
 
   it('never leaves an input named like a native attribute on the wrapper element', () => {
     const { root } = page(`<hw-alert title="Check" role="alert">Body</hw-alert><hw-tooltip text="Hint" align="end" tooltipId="hint"><span hwTooltipTrigger tabindex="0">Target</span></hw-tooltip><hw-empty-state title="Nothing" /><hw-page-header title="Services" /><hw-mobile-top-bar title="Home" /><hw-service-details title="Permit" /><hw-dialog title="Review" closeLabel="Close" /><hw-popover label="Filters" triggerLabel="Filters" panelId="filters" /><hw-menu label="Actions" triggerLabel="Actions" panelId="actions" [items]="[]" />`);
-    for (const host of root.children) { for (const name of ['title', 'role', 'align', 'id']) expect(host.hasAttribute(name), `${host.localName} ${name}`).toBe(false); }
+    // hw-alert is the alert itself: its role is the input, written on the host; its title input is still no tooltip.
+    for (const host of root.children) { for (const name of ['title', 'role', 'align', 'id']) if (!(host.localName === 'hw-alert' && name === 'role')) expect(host.hasAttribute(name), `${host.localName} ${name}`).toBe(false); }
     expect(root.querySelector('.hw-alert')!.getAttribute('role')).toBe('alert'); expect(root.querySelector('.hw-alert strong')!.textContent).toBe('Check');
     expect(root.querySelector('[role=tooltip]')!.id).toBe('hint'); expect(root.querySelector('[role=tooltip]')!.getAttribute('data-align')).toBe('end'); expect(root.querySelector('.hw-tooltip-trigger')!.getAttribute('aria-describedby')).toBe('hint');
     expect(root.querySelector('.hw-popover-panel')!.id).toBe('filters'); expect(document.querySelectorAll('#filters, #actions, #hint')).toHaveLength(3);

@@ -135,7 +135,7 @@ describe('Angular hydration of server-rendered components', () => {
   }
 
   // Milestone 3: dates, overlays, disclosure, data, navigation, menus and shell.
-  for (const name of ['calendar and date picker with predicate, status and names', 'tables with cell templates', 'named roots, menu links and tree toggles', 'portal header open, brand without a link and page header level', 'dialog and drawer, closed and open', 'tooltip, popover and menu', 'accordion and collapsible', 'service content, feedback and consent']) {
+  for (const name of ['calendar and date picker with predicate, status and names', 'tables with cell templates', 'named roots, menu links and tree toggles', 'portal header open, brand without a link and page header level', 'dialog and drawer, closed and open', 'tooltip, popover and menu', 'accordion and collapsible', 'service content, feedback and consent', 'button, link and icon button', 'cards, badges and feedback', 'avatars and rating display', 'tables and lists']) {
     it(`[ATTR-05][SSR-01][SSR-02][SSR-03][SSR-04][STATE-05][RICH-04] the first client render of ${name} is the server markup`, async () => {
       const page = pages.find(entry => entry.name === name)!;
       const server = plain(/<ssr-host[^>]*>(.*)<\/ssr-host>/s.exec(page.html)![1]!);
@@ -147,7 +147,7 @@ describe('Angular hydration of server-rendered components', () => {
       const grouped = (html: string) => html.replace(/(<details[^>]*?) name="[^"]*"/g, '$1');
       const settled = plain(host.innerHTML).replace(/(<dialog[^>]*?) open=""/g, '$1').replace(/ data-hw-expanded="[^"]*"| inert="" aria-hidden="true"|(?<=<summary class="hw-accordion-trigger") aria-expanded="[^"]*"/g, '');
       expect(grouped(settled)).toBe(grouped(server)); expect([...host.querySelectorAll('[id]')].map(element => element.id)).toEqual(serverIds);
-      for (const wrapper of host.querySelectorAll('hw-calendar, hw-date-picker, hw-table, hw-data-table, hw-dialog, hw-drawer, hw-popover, hw-menu, hw-tabs, hw-secondary-nav, hw-tree-view, hw-content-navigation, hw-carousel, hw-accordion, hw-breadcrumb, hw-pagination, hw-stepper, hw-tooltip')) for (const attribute of ['aria-label', 'aria-labelledby', 'aria-describedby', 'aria-invalid']) expect(wrapper.hasAttribute(attribute), `${wrapper.localName} ${attribute}`).toBe(false);
+      for (const wrapper of host.querySelectorAll('hw-calendar, hw-date-picker, hw-table, hw-data-table, hw-dialog, hw-drawer, hw-popover, hw-menu, hw-tabs, hw-secondary-nav, hw-tree-view, hw-content-navigation, hw-carousel, hw-accordion, hw-breadcrumb, hw-pagination, hw-stepper, hw-tooltip, hw-card, hw-icon-button, hw-progress, hw-meter, hw-timeline, hw-notification-list, hw-feedback')) for (const attribute of ['aria-label', 'aria-labelledby', 'aria-describedby', 'aria-invalid']) expect(wrapper.hasAttribute(attribute), `${wrapper.localName} ${attribute}`).toBe(false);
     });
   }
 

@@ -359,4 +359,110 @@ describe('Angular server rendering', () => {
     expect(details!.content).toMatch(/^<article class="hw-service-details"><header><h2>Event permit<\/h2><p>Details\.<\/p><\/header><dl class="hw-description-list"><div><dt>Fee<\/dt><dd>No fee<\/dd><\/div><\/dl><section><h3>Requirements<\/h3><ul><li>National ID<\/li><\/ul><\/section><footer><\/footer><\/article>$/);
     expect(withAction!.content).toMatch(/<li>1\. <a href="https:\/\/example.org\/id">National ID<\/a><\/li><li>2\. <a href="https:\/\/example.org\/id">Address<\/a><\/li>/); expect(withAction!.content).toMatch(/<p>Body<\/p><footer><button[^>]*>Start<\/button><\/footer><\/article>$/);
   });
+  // Milestone 3: feedback, content and service patterns.
+  it('[SSR-01][feedback-status-1][actions-6][actions-7] renders alerts, buttons and links with the attributes of the first client render', async () => {
+    const { html, errors } = await render(named('cards, badges and feedback'));
+    expect(errors).toEqual([]);
+    const alerts = hostsOf(html, 'hw-alert');
+    expect(alerts.map(alert => /\srole="([^"]+)"/.exec(alert.attributes)![1])).toEqual(['status', 'alert', 'status', 'status']); expect(alerts.map(alert => /\sdata-tone="([^"]+)"/.exec(alert.attributes)![1])).toEqual(['warning', 'danger', 'danger', 'info']);
+    for (const alert of alerts) { expect(alert.attributes).toContain(' class="hw-alert"'); expect(alert.attributes).not.toMatch(/\stitle=/); }
+    expect(alerts.map(alert => /\sdata-variant="([^"]+)"/.exec(alert.attributes)?.[1])).toEqual([undefined, undefined, 'outline', undefined]);
+    expect(alerts[0]!.content).toBe('<div class="hw-alert-content"><strong>Check</strong>Message</div><button aria-label="Dismiss" class="hw-button hw-alert-dismiss" data-size="md" data-variant="ghost" type="button"><span aria-hidden="true" class="hw-icon" data-icon="cancel-01" data-size="md"></span></button>');
+    expect(alerts[1]!.content).toBe('<div class="hw-alert-content">Failed</div>');
+    const actions = canonical((await render(named('button, link and icon button'))).html);
+    expect(actions).toContain('<button class="hw-button" data-size="md" data-variant="primary" hwbutton="" type="button">Save</button>');
+    expect(actions).toContain('<button aria-busy="true" class="hw-button" data-size="md" data-variant="primary" disabled="" hwbutton="" loading="" type="submit">Send</button>');
+    expect(actions).toContain('<a aria-busy="true" class="hw-button" data-size="md" data-variant="link" href="https://example.org/" hwbutton="" loading="" variant="link">Open</a>');
+    expect(actions).toContain('<button aria-busy="false" class="hw-button" data-size="md" data-variant="primary" disabled="" hwbutton="" type="button">Archive</button>');
+    expect(actions).toContain('<a class="hw-link" data-variant="standalone" external="" href="https://example.org/" hwlink="" rel="author noopener noreferrer" target="_blank" variant="standalone">External</a>');
+    expect(actions).toContain('<a aria-current="page" class="hw-link" current="" href="https://example.org/here" hwlink="">Here</a>');
+    expect(actions).toContain('<a aria-disabled="true" class="hw-link" disabled="" hwlink="" role="link" tabindex="-1">Unavailable</a>'); expect(actions).not.toContain('<hw-link');
+  });
+
+  it('[SSR-04][ATTR-05][feedback-status-7][content-display-1] forwards the name to the inner element of the wrapper hosts on the server and writes role and name on the hosts that are the root', async () => {
+    const cards = await render(named('cards, badges and feedback')), lists = await render(named('tables and lists')), actions = await render(named('button, link and icon button')), people = await render(named('avatars and rating display')), service = await render(named('service content, feedback and consent'));
+    expect([...cards.errors, ...lists.errors, ...actions.errors, ...people.errors, ...service.errors]).toEqual([]);
+    const forwarded = /\saria-(label|labelledby|describedby)=/;
+    for (const [html, tags] of [[cards.html, ['hw-card', 'hw-progress', 'hw-meter']], [lists.html, ['hw-timeline', 'hw-notification-list']], [actions.html, ['hw-icon-button']], [service.html, ['hw-feedback']]] as const) for (const tag of tags) { const hosts = hostsOf(html, tag); expect(hosts.length, tag).toBeGreaterThan(1); for (const host of hosts) expect(host.attributes, tag).not.toMatch(forwarded); }
+    const [card, linkCard] = hostsOf(cards.html, 'hw-card');
+    expect(card!.attributes).toContain(' id="summary-card"'); expect(card!.content).toMatch(/^<article aria-label="Summary" class="hw-card" data-variant="elevated">/); expect(linkCard!.content).toMatch(/^<a aria-labelledby="card-heading" class="hw-card hw-card-action" href="https:\/\/example.org\/">/);
+    expect(hostsOf(cards.html, 'hw-progress').map(host => host.content)).toEqual(['<progress aria-label="Upload" class="hw-progress" data-size="sm" max="100" value="40"></progress>', '<progress aria-label="Loading" class="hw-progress" max="100"></progress>']);
+    expect(hostsOf(cards.html, 'hw-meter').map(host => host.content)).toEqual(['<meter aria-label="Storage" class="hw-meter" high="80" low="30" max="100" min="0" optimum="20" value="60"></meter>', '<meter aria-labelledby="card-heading" class="hw-meter" max="100" min="0" value="10"></meter>']);
+    expect(hostsOf(lists.html, 'hw-timeline').map(host => /^<ol[^>]*>/.exec(host.content)![0])).toEqual(['<ol aria-label="History" class="hw-timeline">', '<ol aria-label="Short history" class="hw-timeline">']);
+    expect(hostsOf(lists.html, 'hw-timeline')[0]!.content).toContain('<li class="hw-timeline-item" data-state="complete"><h3>Submitted</h3><time datetime="2024-03-11">11 March 2024</time></li><li aria-current="step" class="hw-timeline-item" data-state="current"><h3>Review</h3><p>With the reviewer</p></li>');
+    expect(hostsOf(actions.html, 'hw-icon-button').map(host => /^<button[^>]*>/.exec(host.content)![0])).toEqual(['<button aria-label="Search" aria-pressed="false" class="hw-button hw-icon-button" data-shape="square" data-size="md" data-variant="ghost" type="button" value="">', '<button aria-describedby="actions-note" aria-label="Filter" class="hw-button hw-icon-button" data-shape="square" data-size="md" data-variant="ghost" type="button" value="">']);
+    // Hosts that are the root carry what the component writes beside what the application wrote.
+    const groups = hostsOf(actions.html, 'hw-button-group').map(host => host.attributes);
+    expect(groups[0]).toMatch(/ aria-label="Actions" class="hw-button-group" data-variant="attached" label="Actions" role="group"/); expect(groups[1]).toMatch(/ aria-labelledby="actions-heading" class="hw-button-group" data-orientation="vertical" orientation="vertical" role="group"/); expect(groups[1]).not.toMatch(/\saria-label=/);
+    const avatars = hostsOf(people.html, 'hw-avatar');
+    expect(avatars[0]!.attributes).toMatch(/ aria-label="Sara Ali" class="hw-avatar" data-size="lg" name="Sara Ali" role="img"/); expect(avatars[0]!.content).toBe('<span aria-hidden="true">SA</span>');
+    expect(avatars[1]!.attributes).toMatch(/ aria-label="Portrait of Omar Hassan" class="hw-avatar"/); expect(avatars[1]!.attributes).not.toMatch(/\srole=/); expect(avatars[1]!.content).toBe('<img alt="Omar Hassan" src="https://example.org/omar.png">');
+    const group = /<hw-avatar-group([^>]*)>(.*?)<\/hw-avatar-group>/s.exec(canonical(people.html))!;
+    expect(group[1]).toMatch(/ aria-label="Team" class="hw-avatar-group"/); expect(group[1]).toMatch(/ role="group"/);
+    expect(group[2]).toBe('<hw-avatar aria-label="Sara Ali" class="hw-avatar" data-size="64" data-variant="square" role="img"><span aria-hidden="true">SA</span></hw-avatar><hw-avatar aria-label="Omar Hassan" class="hw-avatar" role="img"><span aria-hidden="true">OH</span></hw-avatar><span aria-label="1 more people" class="hw-avatar" role="img">+1</span>');
+  });
+
+  it('[RICH-04][feedback-status-11][content-display-14] renders the icon region of an empty state and the value and trend regions of a stat without whitespace', async () => {
+    const { html, errors } = await render(named('cards, badges and feedback'));
+    expect(errors).toEqual([]);
+    const [filled, empty] = hostsOf(html, 'hw-empty-state');
+    expect(filled!.attributes).toContain(' class="hw-empty"'); expect(filled!.attributes).not.toMatch(/\stitle=/);
+    expect(filled!.content).toBe('<span aria-hidden="true" class="hw-empty-icon"><span class="hw-icon" data-icon="search-01" hwemptyicon=""></span></span><h3>No requests</h3><p>Start a request.</p><button class="hw-button" data-size="md" data-variant="primary" hwbutton="" hwemptyaction="" type="button">New</button>');
+    expect(empty!.content).toBe('<span aria-hidden="true" class="hw-empty-icon"></span><h3>Nothing here</h3>');
+    const [stat, rich] = hostsOf(html, 'hw-stat');
+    expect(stat!.attributes).toMatch(/ class="hw-stat" data-tone="success"/); expect(stat!.content).toBe('<span class="hw-stat-label">Requests</span><strong class="hw-stat-value">128</strong><p class="hw-stat-description">This month</p><span class="hw-stat-trend" data-tone="success">12%</span>');
+    expect(rich!.content).toBe('<span class="hw-stat-label">Fee</span><strong class="hw-stat-value"><bdi hwstatvalue=""><span aria-hidden="true" class="hw-riyal"></span>120 <span class="hw-sr-only">riyals</span></bdi></strong><span class="hw-stat-trend"></span>');
+    // The other presentational hosts are the styled element on the server too.
+    for (const [tag, name] of [['hw-badge', 'hw-badge'], ['hw-chip', 'hw-chip'], ['hw-skeleton', 'hw-skeleton'], ['hw-spinner', 'hw-spinner']]) for (const host of hostsOf(html, tag)) { expect(host.attributes, tag).toContain(` class="${name}"`); expect(host.content, tag).not.toContain(`class="${name}"`); }
+    expect(hostsOf(html, 'hw-spinner').map(host => host.content)).toEqual(['<span class="hw-sr-only">Loading</span>', '']); expect(hostsOf(html, 'hw-skeleton').map(host => host.content)).toEqual(['', '']);
+    expect(hostsOf(html, 'hw-chip')[1]!.content).toBe('Removable<button aria-label="Remove" type="button"><span aria-hidden="true" class="hw-icon" data-icon="cancel-01" data-size="md"></span></button>');
+  });
+
+  it('[SSR-03][feedback-status-12][actions-7] a removable chip, a dismissible alert, a notification list and a disabled link start no timer and add no capturing or global listener on the server', async () => {
+    const captured: string[] = []; const delays: unknown[] = [];
+    let restore = () => {};
+    const listened = vi.fn(); const global = globalThis.addEventListener; (globalThis as { addEventListener?: unknown }).addEventListener = listened;
+    const timeout = globalThis.setTimeout;
+    const timers = vi.spyOn(globalThis, 'setTimeout').mockImplementation(((handler: () => void, delay?: number, ...rest: unknown[]) => { delays.push(delay); return timeout(handler, delay, ...rest); }) as typeof setTimeout);
+    // What a page without these components queues is the measure: none of them adds a microtask of its own.
+    const microtasks = vi.spyOn(globalThis, 'queueMicrotask');
+    await render({ name: 'plain', covers: [], template: `<p>Plain</p>` }); const baseline = microtasks.mock.calls.length, plainDelays = delays.splice(0); microtasks.mockClear();
+    const { html, errors } = await render({ name: 'removal', covers: [], state: () => {
+      let owner: object | null = inject(DOCUMENT);
+      while (owner && !Object.prototype.hasOwnProperty.call(owner, 'addEventListener')) owner = Object.getPrototypeOf(owner) as object | null;
+      const target = owner as { addEventListener: (...args: unknown[]) => unknown }, original = target.addEventListener;
+      target.addEventListener = function (this: unknown, ...args: unknown[]) { if (args[2] === true || (args[2] as { capture?: boolean } | undefined)?.capture) captured.push(String(args[0])); return original.apply(this, args); };
+      restore = () => { target.addEventListener = original; };
+      return { seen: [] as unknown[], dismiss: text.dismissNotification };
+    }, template: `<hw-chip removeLabel="Remove" (removed)="seen.push(1)">Riyadh</hw-chip><hw-chip removeLabel="Remove" (removed)="seen.push(2)">Jeddah</hw-chip><hw-alert closeLabel="Dismiss" (dismissed)="seen.push(3)">Saved</hw-alert><a hwLink href="/off" disabled>Unavailable</a><hw-notification-list label="Notifications" emptyMessage="None" unreadLabel="Unread" [getDismissLabel]="dismiss" (dismissed)="seen.push($event)" [items]="[{id: 'a', title: 'Ready'}]" />` });
+    restore(); (globalThis as { addEventListener?: unknown }).addEventListener = global; timers.mockRestore();
+    const queued = microtasks.mock.calls.length; microtasks.mockRestore();
+    expect(errors).toEqual([]); expect(captured).toEqual([]); expect(listened).not.toHaveBeenCalled(); expect(queued).toBe(baseline);
+    // The only timers are those of Angular and of the page that keeps the application pending in these tests.
+    expect(delays).toEqual(plainDelays);
+    expect(hostsOf(html, 'hw-chip')).toHaveLength(2); expect(canonical(html)).toContain('<section aria-labelledby="hw-notification-list-1-title" class="hw-notification-list" tabindex="-1">');
+  });
+
+  it('[SSR-01][STATE-05][service-patterns-12][R04][R14] renders feedback with and without a choice, the notification list and the consent region open, named and closed', async () => {
+    const service = await render(named('service content, feedback and consent')), lists = await render(named('tables and lists'));
+    expect([...service.errors, ...lists.errors]).toEqual([]);
+    const [first, chosen] = hostsOf(service.html, 'hw-feedback');
+    const choice = (icon: string, label: string, pressed: boolean) => `<button aria-pressed="${pressed}" class="hw-button" data-size="md" data-variant="secondary" type="button"><span aria-hidden="true" class="hw-icon hw-feedback-icon" data-icon="${icon}"></span><span class="hw-feedback-label">${label}</span></button>`;
+    expect(first!.content).toBe(`<div aria-labelledby="hw-feedback-1-label" class="hw-feedback" data-choice-variant="icon-text" role="group"><p id="hw-feedback-1-label">Was this page helpful?</p><div class="hw-feedback-actions">${choice('thumbs-up', 'Yes', false)}${choice('thumbs-down', 'No', false)}</div><p role="status"></p></div>`);
+    expect(chosen!.content).toMatch(new RegExp(`^<div aria-label="Page feedback" class="hw-feedback" data-choice-variant="text" role="group"><div class="hw-feedback-actions">${choice('thumbs-up', 'Yes', false)}${choice('thumbs-down', 'No', true)}</div><div class="hw-feedback-comment"><hw-textarea[^>]*>`));
+    expect(chosen!.content).toMatch(/<label class="hw-label" for="([^"]+)" id="[^"]+">Tell us more<\/label><textarea class="hw-textarea"[^>]* id="\1"[^>]*>x<\/textarea>/); expect(chosen!.content).toMatch(/<\/hw-textarea><button class="hw-button" data-size="md" data-variant="primary" type="button">Send<\/button><\/div><p role="status"><\/p><\/div>$/);
+    const regions = hostsOf(service.html, 'hw-cookie-consent');
+    expect(regions.map(region => / hidden=""/.test(region.attributes))).toEqual([false, false, true]); for (const region of regions) { expect(region.attributes).toContain(' class="hw-cookie-consent"'); expect(region.attributes).toContain(' role="region"'); expect(region.attributes).not.toMatch(/\stitle=/); }
+    const heading = /^<h2 id="([^"]+)">Cookies<\/h2><p>Optional cookies\.<\/p>/.exec(regions[0]!.content)!;
+    expect(regions[0]!.attributes).toContain(` aria-labelledby="${heading[1]}"`); expect(regions[0]!.attributes).not.toMatch(/\sdata-variant=/);
+    expect(regions[0]!.content).toMatch(/<div class="hw-button-group"><button class="hw-button" data-size="md" data-variant="primary" type="button">Accept optional cookies<\/button><button class="hw-button" data-size="md" data-variant="secondary" type="button">Reject optional cookies<\/button><\/div>$/);
+    expect(regions[1]!.attributes).toContain(' aria-label="Cookie choices"'); expect(regions[1]!.attributes).not.toMatch(/\saria-labelledby=/); expect(regions[1]!.attributes).toContain(' data-variant="banner"');
+    expect(regions[1]!.content).toMatch(/<a class="hw-link" href="https:\/\/example.org\/cookies">Cookie policy<\/a><div class="hw-button-group">.*<button class="hw-button" data-size="md" data-variant="ghost" type="button">Manage preferences<\/button><\/div>$/);
+    const [list, archive] = hostsOf(lists.html, 'hw-notification-list');
+    const title = /^<section aria-labelledby="([^"]+)" class="hw-notification-list" tabindex="-1"><h2 id="\1">Notifications<\/h2><ul>/.exec(list!.content);
+    expect(title).not.toBeNull();
+    expect(list!.content).toContain('<li data-state="unread"><h3>Approved</h3><hw-badge class="hw-badge" data-tone="info">Unread</hw-badge><p>R-1</p><time datetime="2026-10-28T09:00:00+03:00">Today</time><button class="hw-button" data-hw-mark-read="" data-size="md" data-variant="ghost" type="button">Mark as read: Approved</button><button aria-label="Dismiss: Approved" class="hw-button" data-hw-dismiss="" data-size="md" data-variant="ghost" type="button">');
+    expect(list!.content).toContain('<li data-state="read"><h3><a class="hw-link" href="https://example.org/r">Reminder</a></h3><button aria-label="Dismiss: Reminder"');
+    expect(archive!.content).toBe('<section aria-label="Archive" class="hw-notification-list"><p>No notifications</p></section>');
+  });
 });
