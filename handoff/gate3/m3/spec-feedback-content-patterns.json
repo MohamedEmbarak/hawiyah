@@ -1,0 +1,2683 @@
+{
+  "cluster": "feedback-content-patterns",
+  "about": "Milestone 3 specification of the feedback, content and service-pattern family, read from the tree at commit a0ed9b0. 24 work items for 33 finding ids (plus content-display-13, merged by the corrections). ownerDecision is a 0-based index into conventions.json ownerDecisions. The `migration` list of each item is this cluster's `renames` list (adapter, kind, old = from, new = to, migration). In `tests`, `file` uses the keys of the top-level `testFiles` map. Paths without a packages/ prefix in perAdapter are relative to packages/<adapter>/src.",
+  "items": [
+    {
+      "ids": [
+        "feedback-status-1",
+        "spike-G3"
+      ],
+      "component": "Alert (default role; Angular host becomes the root)",
+      "summary": "An alert without an explicit role is role=alert when tone is danger and role=status otherwise, in the four adapters. The Angular hw-alert host becomes the alert itself, so class, id and aria attributes written on it sit on the styled element.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "hw-alert / HwAlertComponent: `@Input() role?: 'alert' | 'status' | 'region' | 'group'` (default undefined; was 'status'); `@Input() variant?: 'default' | 'outline' | 'minimal'` (default undefined; was 'default'). `[attr.role]` and `[attr.data-variant]` written by the application on hw-alert are not supported; use the inputs.",
+          "vanilla": "authored markup: role=\"alert\" on a danger alert, role=\"status\" otherwise"
+        },
+        "dom": "<{root} class=\"hw-alert\" data-tone=\"{tone}\" [data-variant=\"{variant}\"] role=\"{role ?? (tone === 'danger' ? 'alert' : 'status')}\"><div class=\"hw-alert-content\">[<strong>{title}</strong>]{content}</div>[dismiss button, see feedback-status-2]</{root}>. Root is div in React, Vue and vanilla and the hw-alert host in Angular (no inner div.hw-alert). data-variant is omitted when variant is not given, in every adapter.",
+        "behaviour": "No keyboard behaviour. Server rendering: role, data-tone and class are host bindings and therefore present in the server HTML; hydration reuses them."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/layout.css:133",
+          "change": "Remove `hw-alert` from the selector list: `:where(hw-container, hw-section, hw-aspect-ratio, hw-page-header) { display: block; }`. The host now has class hw-alert, which sets display: flex (components.css:234)."
+        }
+      ],
+      "perAdapter": {
+        "react": "none (display.tsx:73-74 already derives the role)",
+        "vue": "none (display.ts:71 already derives the role)",
+        "angular": "presentation.ts:36-48: `host: {class: 'hw-alert', '[attr.title]': 'null', '[attr.data-tone]': 'tone', '[attr.data-variant]': 'variant', '[attr.role]': \"role ?? (tone === 'danger' ? 'alert' : 'status')\"}`; template becomes `<div class=\"hw-alert-content\">@if (title) {<strong>{{ title }}</strong>}<ng-content /></div>` followed by the dismiss block of feedback-status-2; :40 `variant?:` without default; :42 `@Input() role?: 'alert' | 'status' | 'region' | 'group';`. The comment at :36 is rewritten: title is an input and is removed from the host; role stays an input so that static role=\"status\" and [role] both reach the binding.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "ALERT-01",
+          "what": "[feedback-status-1] tone=danger without role renders role=alert; every other tone renders role=status",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "ALERT-02",
+          "what": "an explicit role=\"status\" on a danger alert is kept (prop, attribute, static and bound input)",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "ATTR-01",
+          "what": "class, id, data-x and aria-describedby written on hw-alert are on the element with class hw-alert; there is no inner .hw-alert",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML of a danger and an info alert equals the first client render",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "SSR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "role defaults to 'status' for every tone",
+          "new": "role defaults to 'alert' for tone=\"danger\", 'status' otherwise",
+          "migration": "<hw-alert tone=\"danger\"> that must stay polite -> <hw-alert tone=\"danger\" role=\"status\">"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-alert > div.hw-alert",
+          "new": "hw-alert.hw-alert (the host is the alert)",
+          "migration": "hw-alert > .hw-alert -> hw-alert.hw-alert (or .hw-alert)"
+        },
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "variant = 'default' writes data-variant=\"default\"",
+          "new": "variant unset writes no data-variant",
+          "migration": "none; [data-variant='default'] selectors -> :not([data-variant])"
+        }
+      ],
+      "readme": "Angular README, Alert row: the host is the alert; role defaults by tone (danger: alert, otherwise status); set role=\"status\" for a danger message that is rendered with the page. React and Vue rows already say this.",
+      "ownerDecision": 1,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "feedback-status-2",
+        "R00"
+      ],
+      "component": "Alert (dismiss action)",
+      "summary": "Every adapter offers the same optional dismiss action: a ghost icon button named by closeLabel, rendered only while a dismiss handler is bound. The alert never removes itself; the application removes it and places focus.",
+      "endState": {
+        "surface": {
+          "react": "Alert: `onDismiss?: () => void`; `closeLabel: string` required when onDismiss is given (union on onDismiss, as ChipProps at expanded-content.tsx:22).",
+          "vue": "Alert: prop `closeLabel?: string` (needText while a dismiss listener is bound); event `dismiss` declared as prop `onDismiss: listener<[]>()` and tested with listens().",
+          "angular": "hw-alert: `closeLabel` stays; `(dismissed)` becomes an HwObservedEmitter<void>; input `dismissible` is removed.",
+          "vanilla": "authored button; no controller and no option. The application's own click listener removes or hides the alert."
+        },
+        "dom": "After div.hw-alert-content, only while the handler is bound: <button type=\"button\" class=\"hw-button hw-alert-dismiss\" data-variant=\"ghost\" data-size=\"md\" aria-label=\"{closeLabel}\"><span class=\"hw-icon\" data-icon=\"cancel-01\" data-size=\"md\" aria-hidden=\"true\"></span></button>. A missing closeLabel omits aria-label and warns once (requireText, condition 'a dismiss handler is bound').",
+        "behaviour": "Native button: Enter and Space activate, one notification per activation, no payload. The component keeps rendering until the application removes it. Focus: see conventionConflicts (the alert has no sibling and no container of its own); the README tells the application where to send focus. Server rendering: the button is present when the handler is bound on the server render (React prop, Vue listener, Angular output subscription made by the template)."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/components.css (after line 240)",
+          "change": "Add `.hw-alert > .hw-alert-dismiss { flex: none; margin-block: calc(-1 * var(--hw-space-2)); margin-inline-end: calc(-1 * var(--hw-space-2)); }` so the button does not shrink and does not make a one-line alert taller."
+        }
+      ],
+      "perAdapter": {
+        "react": "display.tsx:67-75: `interface AlertBaseProps extends ComponentPropsWithRef<'div'> { tone?; variant?; title? }`; `export type AlertProps = AlertBaseProps & ({ onDismiss?: undefined; closeLabel?: string } | { onDismiss: () => void; closeLabel: string })`; destructure onDismiss and closeLabel; after div.hw-alert-content render `{onDismiss && <Button variant=\"ghost\" className=\"hw-alert-dismiss\" aria-label={text('Alert', 'closeLabel', closeLabel, 'onDismiss is given')} onClick={onDismiss}><span className=\"hw-icon\" data-icon=\"cancel-01\" data-size=\"md\" aria-hidden=\"true\" /></Button>}`. Import Button from './forms.js' (check for an import cycle: forms.tsx does not import display.tsx).",
+        "vue": "display.ts:69-72: props add `closeLabel: String, onDismiss: listener<[]>()`; render adds `listens(props.onDismiss) && h(Button, { variant: 'ghost', class: 'hw-alert-dismiss', 'aria-label': needText('Alert', 'closeLabel', props.closeLabel, 'a dismiss listener is bound'), onClick: () => emit('dismiss') }, () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }))`. Import Button from './forms.js', listener and listens from './shared.js'.",
+        "angular": "presentation.ts:37,43-46: delete `dismissible`; `protected readonly hasDismissListener = signal(false); @Output() readonly dismissed: EventEmitter<void> = new HwObservedEmitter<void>(observed => this.hasDismissListener.set(observed));` template: `@if (hasDismissListener()) {<button hwButton variant=\"ghost\" class=\"hw-alert-dismiss\" [attr.aria-label]=\"texts.need('closeLabel', closeLabel, 'a dismissed listener is bound')\" (click)=\"dismissed.emit()\"><span class=\"hw-icon\" data-icon=\"cancel-01\" data-size=\"md\" aria-hidden=\"true\"></span></button>}`; imports: [HwButtonDirective] (same file; gives type=button, data-variant, data-size). text-contract.test.ts:43-54 is rewritten for the bound output.",
+        "vanilla": "No source change. README shows the authored button and a six-line listener."
+      },
+      "tests": [
+        {
+          "caseId": "TEXT-03",
+          "what": "[R00] no button without a dismiss handler; one button with it, with the documented classes and icon",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "handler bound and closeLabel missing: button without aria-label, one warning naming Alert / hw-alert and closeLabel",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "TEXT-02",
+          "what": "closeLabel is not required and not reported while no handler is bound",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "ALERT-03",
+          "what": "[feedback-status-2] click, Enter and Space on the button notify once each; the alert is still in the DOM afterwards",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "ALERT-04",
+          "what": "the dismiss button is at least 24 by 24 CSS px, does not shrink in a 320px wide alert, and has a visible focus ring in forced colours; RTL puts it at the inline end",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "BR"
+        },
+        {
+          "caseId": "RENAME-02",
+          "what": "the Angular input dismissible is not accepted by the template compiler",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/components.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "removed",
+          "old": "<hw-alert dismissible closeLabel=\"Close\" (dismissed)=\"hide()\">",
+          "new": "<hw-alert closeLabel=\"Close\" (dismissed)=\"hide()\">",
+          "migration": "delete dismissible; the button is rendered while (dismissed) is bound"
+        }
+      ],
+      "readme": "All four READMEs, Alert: the dismiss action (React onDismiss + closeLabel, Vue @dismiss + close-label, Angular (dismissed) + closeLabel, vanilla authored button.hw-button.hw-alert-dismiss with its own aria-label); the alert does not hide itself; after removing it the application moves focus to the element the message was about or to the heading of the surrounding region, never leaves it on the body. Vanilla README adds the authored markup. components.json alert note: 'closeable when the application binds dismiss' (docs/dga-checklist-review.md row 75).",
+      "ownerDecision": null,
+      "notDone": "No vanilla controller and no automatic focus hand-over (see conventionConflicts)."
+    },
+    {
+      "ids": [
+        "feedback-status-7"
+      ],
+      "component": "Progress",
+      "summary": "Progress is one native progress element in every adapter, named through aria-label, with the same size option and raw values. Angular loses its visible label wrapper and its clamping.",
+      "endState": {
+        "surface": {
+          "react": "Progress: `size?: 'sm' | 'lg'`; `label` becomes the RootName union (label, or aria-label / aria-labelledby).",
+          "vue": "Progress: `size?: 'sm' | 'lg'`; `label` loses `required: true` and is checked with rootLabel.",
+          "angular": "hw-progress: `@Input() size?: 'sm' | 'lg'`; `label` loses {required: true}; forwarded `aria-label`, `aria-labelledby`, `aria-describedby` inputs (kind B). `value: number | null = null` and `max = 100` stay; safeMax and boundedValue are deleted.",
+          "vanilla": "authored <progress class=\"hw-progress\" aria-label=\"...\" [data-size]>"
+        },
+        "dom": "<progress class=\"hw-progress\" [value=\"{value}\"] max=\"{max}\" [data-size=\"{size}\"] aria-label=\"{name}\" [aria-labelledby] [aria-describedby]></progress>. No label element and no visible text. value absent (null / undefined) leaves the element indeterminate. name = application aria-label, else none when aria-labelledby is given, else label. In Angular the element sits inside the hw-progress host, which is a block box and carries none of the forwarded attributes.",
+        "behaviour": "Values are written as given; the browser clamps the position. Missing name: no aria-label, one warning (Progress / hw-progress, label). Server rendering: attributes only; Angular binds [attr.value] and [attr.max], never the DOM property."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/layout.css (wrapper-host list added by forms-core after line 134)",
+          "change": "Append this cluster's wrapper hosts to the selector list of the `display: block` rule: `hw-progress, hw-meter, hw-description-list, hw-timeline, hw-notification-list, hw-feedback`."
+        }
+      ],
+      "perAdapter": {
+        "react": "display.tsx:183-184: `export type ProgressProps = ComponentPropsWithRef<'progress'> & { size?: 'sm' | 'lg' } & RootName;` `<progress {...props} max={max} data-size={size ?? (props as Record<string, unknown>)['data-size']} className={cx('hw-progress', className)} aria-label={rootLabel('Progress', props, label)} />`.",
+        "vue": "display.ts:182-185: props `{ label: String, value: Number, max: { type: Number, default: 100 }, size: String as PropType<'sm' | 'lg'> }`; `h('progress', mergeProps(attrs, { class: 'hw-progress', 'aria-label': rootLabel('Progress', props.label, attrs), 'data-size': props.size ?? attrs['data-size'], value: props.value, max: props.max }))`.",
+        "angular": "presentation.ts:113-120: `host: forwardedAriaHost`; template `<progress class=\"hw-progress\" [attr.value]=\"value\" [attr.max]=\"max\" [attr.data-size]=\"size\" [attr.aria-label]=\"ariaLabel || (ariaLabelledby ? label || null : texts.need('label', label))\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\"></progress>`; add the three alias inputs of convention angular-host-attributes, `@Input() label = ''`, `@Input() size?: 'sm' | 'lg'`, `protected readonly texts = new HwTexts('hw-progress')`; delete safeMax and boundedValue.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "PROGRESS-01",
+          "what": "[feedback-status-7] label alone: one progress.hw-progress with aria-label, no label element and no visible text; value 150 and max 100 are written unchanged; no value attribute when value is not given",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "PROGRESS-02",
+          "what": "size=sm and size=lg write data-size on the progress element",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "aria-label from the application alone: no warning; NAME-03 aria-labelledby alone; NAME-04 neither: one warning, no aria-label",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "aria-label, aria-labelledby and aria-describedby written statically and bound on hw-progress reach the progress element; the host has none",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "SSR-04",
+          "what": "server HTML: forwarded aria-label on the progress element, absent from the host; hydration without mismatch",
+          "adapters": [
+            "angular"
+          ],
+          "file": "SSR"
+        },
+        {
+          "caseId": "PROGRESS-03",
+          "what": "block size 4 / 8 / 12 px for sm / default / lg and the same host height as the bare element",
+          "adapters": [
+            "vanilla",
+            "angular"
+          ],
+          "file": "BR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "label.hw-stack > span (visible label) + progress",
+          "new": "progress.hw-progress named by aria-label",
+          "migration": "render a visible label yourself where it is wanted: <span id=\"p\">Upload</span><hw-progress aria-labelledby=\"p\" [value]=\"v\" />"
+        },
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "value clamped to 0..max; a max that is not positive replaced by 100",
+          "new": "value and max written as given",
+          "migration": "clamp in the application if the raw attribute matters"
+        }
+      ],
+      "readme": "Three framework READMEs, Progress row: label is the accessible name (or aria-label / aria-labelledby), size sm | lg, value omitted = indeterminate, no visible label is rendered. Angular README 'Attributes on wrapper hosts' lists hw-progress.",
+      "ownerDecision": 1,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "feedback-status-8"
+      ],
+      "component": "Meter",
+      "summary": "Meter has one set of defaults (min 0, max 100, value 0, no low, high or optimum) and one DOM, a native meter named through aria-label. The same value therefore renders the same bar in every adapter.",
+      "endState": {
+        "surface": {
+          "react": "Meter: `min` defaults to 0 and `max` to 100 (was the native 0 and 1); `label` becomes the RootName union.",
+          "vue": "Meter: `value` loses `required: true` (default 0); `label` loses `required: true` and is checked with rootLabel.",
+          "angular": "hw-meter: `low`, `high`, `optimum` become `number | undefined` without defaults (were 25, 75, 100); `label` loses {required: true}; forwarded `aria-label`, `aria-labelledby`, `aria-describedby` inputs (kind B).",
+          "vanilla": "authored <meter class=\"hw-meter\" aria-label=\"...\" min=\"0\" max=\"100\" value=\"...\">"
+        },
+        "dom": "<meter class=\"hw-meter\" aria-label=\"{name}\" [aria-labelledby] [aria-describedby] min=\"{min}\" max=\"{max}\" value=\"{value}\" [low] [high] [optimum]></meter> with no fallback text and no label element. low, high and optimum are attributes only when given. In Angular the element sits inside the hw-meter host (block box).",
+        "behaviour": "Without low / high / optimum the bar uses the optimum colour at every value. Values are written as given. Missing name: no aria-label, one warning. There is no size option: the stylesheet defines none for .hw-meter. Server rendering: Angular binds attributes ([attr.value] and so on), not properties."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "expanded-content.tsx:32-33: `export type MeterProps = ComponentPropsWithRef<'meter'> & RootName;` `export function Meter({ label, className, min = 0, max = 100, ...props }: MeterProps) { return <meter {...props} min={min} max={max} aria-label={rootLabel('Meter', props, label)} className={cx('hw-meter', className)} />; }`.",
+        "vue": "content.ts:210-238: `label: String`, `value: { type: Number, default: 0 }`; 'aria-label': rootLabel('Meter', props.label, attrs).",
+        "angular": "content.ts:41-42: `host: forwardedAriaHost`; template `<meter class=\"hw-meter\" [attr.aria-label]=\"ariaLabel || (ariaLabelledby ? label || null : texts.need('label', label))\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\" [attr.min]=\"min\" [attr.max]=\"max\" [attr.value]=\"value\" [attr.low]=\"low ?? null\" [attr.high]=\"high ?? null\" [attr.optimum]=\"optimum ?? null\"></meter>`; inputs `label = ''`, `value = 0`, `min = 0`, `max = 100`, `low?: number`, `high?: number`, `optimum?: number`, the three alias inputs; `protected readonly texts = new HwTexts('hw-meter')`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "METER-01",
+          "what": "[feedback-status-8] label and value 10 only: meter.hw-meter has min 0, max 100, value 10 and no low, high or optimum attribute; no label element, no text content",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "METER-02",
+          "what": "low, high and optimum are written when given",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "NAME-02 / NAME-03 / NAME-04 as for Progress",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "forwarded aria attributes reach the meter element",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "METER-03",
+          "what": "value 10 of 100 paints the same colour and the same filled width in the vanilla markup and in the Angular markup",
+          "adapters": [
+            "vanilla",
+            "angular"
+          ],
+          "file": "BR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "default",
+          "old": "no min / max (native 0..1)",
+          "new": "min 0, max 100",
+          "migration": "<Meter value={0.4}> -> <Meter value={0.4} max={1}> (or value={40})"
+        },
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "low 25, high 75, optimum 100",
+          "new": "no low, high or optimum",
+          "migration": "add [low]=\"25\" [high]=\"75\" [optimum]=\"100\" to keep the coloured regions"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "label.hw-meter > span (visible label) + meter",
+          "new": "meter.hw-meter named by aria-label",
+          "migration": "render a visible label yourself and pass aria-labelledby"
+        }
+      ],
+      "readme": "Three framework READMEs, Meter row: defaults min 0, max 100, value 0; low / high / optimum only when given; label is the accessible name; no visible label and no size option.",
+      "ownerDecision": 1,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "feedback-status-9"
+      ],
+      "component": "Skeleton",
+      "summary": "Skeleton takes a variant (text or circle) in every adapter and is sized with style or class on the element itself. The Angular host becomes the skeleton, so its width and height inputs are removed.",
+      "endState": {
+        "surface": {
+          "react": "Skeleton: `variant?: 'text' | 'circle'`.",
+          "vue": "Skeleton: `variant?: 'text' | 'circle'`.",
+          "angular": "hw-skeleton: `@Input() variant?: 'text' | 'circle'`; inputs `width` and `height` are removed.",
+          "vanilla": "authored data-variant"
+        },
+        "dom": "<{root} class=\"hw-skeleton\" aria-hidden=\"true\" [data-variant=\"text|circle\"]></{root}>; root is span in React, Vue and vanilla and the hw-skeleton host in Angular (empty template). Size comes from style or class on that element; the default is a full-width block with min-block-size 1rem (components.css:314).",
+        "behaviour": "Decorative, never focusable. Server rendering: static host attributes."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "display.tsx:185-186: `export interface SkeletonProps extends ComponentPropsWithRef<'span'> { variant?: 'text' | 'circle' }`; `<span aria-hidden=\"true\" {...props} data-variant={variant ?? (props as Record<string, unknown>)['data-variant']} className={cx('hw-skeleton', className)} />`.",
+        "vue": "display.ts:186: `props: { variant: String as PropType<'text' | 'circle'> }`; `h('span', mergeProps(attrs, { class: 'hw-skeleton', 'aria-hidden': 'true', 'data-variant': props.variant ?? attrs['data-variant'] }))`.",
+        "angular": "presentation.ts:122-126: `@Component({selector: 'hw-skeleton', standalone: true, host: {class: 'hw-skeleton', 'aria-hidden': 'true', '[attr.data-variant]': 'variant'}, template: ''}) export class HwSkeletonComponent { @Input() variant?: 'text' | 'circle'; }`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "SKELETON-01",
+          "what": "[feedback-status-9] variant=circle and variant=text write data-variant on the element with class hw-skeleton, which is aria-hidden",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "ATTR-01",
+          "what": "style=\"inline-size: 40%\" and class written on hw-skeleton are on the .hw-skeleton element; no inner element",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "SKELETON-02",
+          "what": "default host is a block of the container width and 16px height; circle with inline-size 3rem is 48 by 48px",
+          "adapters": [
+            "vanilla",
+            "angular"
+          ],
+          "file": "BR"
+        },
+        {
+          "caseId": "RENAME-02",
+          "what": "width and height are not accepted inputs",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/components.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "removed",
+          "old": "<hw-skeleton width=\"60%\" height=\"2rem\" />",
+          "new": "<hw-skeleton style=\"inline-size: 60%; block-size: 2rem\" />",
+          "migration": "width=\"X\" -> style=\"inline-size: X\"; height=\"Y\" -> style=\"block-size: Y\" (or [style.inline-size]=\"x\")"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-skeleton > span.hw-skeleton",
+          "new": "hw-skeleton.hw-skeleton",
+          "migration": "hw-skeleton > .hw-skeleton -> .hw-skeleton"
+        }
+      ],
+      "readme": "Three framework READMEs, Skeleton row: variant text | circle; size with style or class on the component; decorative. The loading pattern is feedback-status-13.",
+      "ownerDecision": 1,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "feedback-status-10"
+      ],
+      "component": "Spinner",
+      "summary": "Spinner is one element with role=status and class hw-spinner that contains its visually hidden name, with a size option in every adapter. The Angular host becomes that element.",
+      "endState": {
+        "surface": {
+          "react": "Spinner: `size?: 'sm' | 'lg'`.",
+          "vue": "Spinner: `size?: 'sm' | 'lg'`; the empty span.hw-sr-only is no longer rendered when there is no label.",
+          "angular": "hw-spinner: `@Input() size?: 'sm' | 'lg'`; `label` loses {required: true}: required unless the host has aria-label, aria-labelledby or aria-hidden=\"true\".",
+          "vanilla": "authored <span class=\"hw-spinner\" role=\"status\" [data-size]><span class=\"hw-sr-only\">...</span></span>"
+        },
+        "dom": "<{root} class=\"hw-spinner\" role=\"status\" [data-size=\"sm|lg\"]>[<span class=\"hw-sr-only\">{label}</span>]</{root}>; root is span in React, Vue and vanilla and the hw-spinner host in Angular. The inner span exists only when label has text.",
+        "behaviour": "Name order: application aria-label, application aria-labelledby, label. aria-hidden=\"true\" from the application makes the spinner decorative: no name is required and none is reported. Otherwise a missing name warns once and renders no span. Server rendering: static host attributes; hostHasName reads the host attributes, which the server DOM has."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "display.tsx:188-189: SpinnerProps adds `{ size?: 'sm' | 'lg' }`; write `data-size={size ?? (props as Record<string, unknown>)['data-size']}`.",
+        "vue": "display.ts:187: props `{ label: String, size: String as PropType<'sm' | 'lg'> }`; compute `const name = decorative || named ? optionalText(props.label) : needText('Spinner', 'label', props.label)` and render `name ? [h('span', { class: 'hw-sr-only' }, name)] : undefined`; add 'data-size': props.size ?? attrs['data-size'].",
+        "angular": "presentation.ts:128-134: `@Component({selector: 'hw-spinner', standalone: true, host: {class: 'hw-spinner', role: 'status', '[attr.data-size]': 'size'}, template: `@if (name; as text) {<span class=\"hw-sr-only\">{{ text }}</span>}`})`; `@Input() label = ''; @Input() size?: 'sm' | 'lg'; private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement; protected get name(): string | null { return this.host.getAttribute('aria-hidden') === 'true' || hostHasName(this.host) ? this.label || null : this.texts.need('label', this.label); }` (hostHasName from host-attributes.ts).",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "SPINNER-01",
+          "what": "[feedback-status-10] the element with class hw-spinner has role=status and contains span.hw-sr-only with the label; no other wrapper",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "SPINNER-02",
+          "what": "size=sm / lg write data-size on that element",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "aria-label alone: no warning and no inner span; NAME-04 neither: one warning and no inner span; SPINNER-03 aria-hidden=true: no warning without label",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "ATTR-01",
+          "what": "class and aria-label written on hw-spinner are on .hw-spinner",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "SPINNER-04",
+          "what": "16 / 20 / 32px box for sm / default / lg; animation stopped under prefers-reduced-motion",
+          "adapters": [
+            "vanilla",
+            "angular"
+          ],
+          "file": "BR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-spinner > span[role=status] > span.hw-spinner[aria-hidden] + span.hw-sr-only",
+          "new": "hw-spinner.hw-spinner[role=status] > span.hw-sr-only",
+          "migration": "hw-spinner .hw-spinner -> hw-spinner (or .hw-spinner)"
+        },
+        {
+          "adapter": "vue",
+          "kind": "markup",
+          "old": "an empty span.hw-sr-only when there is no label",
+          "new": "no span",
+          "migration": "none"
+        }
+      ],
+      "readme": "Three framework READMEs, Spinner row: size sm | lg; label, or aria-label / aria-labelledby, or aria-hidden=\"true\" for a decorative spinner beside visible text.",
+      "ownerDecision": 1,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "feedback-status-11"
+      ],
+      "component": "EmptyState",
+      "summary": "The icon wrapper gets the class the stylesheet styles, and Angular gains an icon region before the title and an action region after the content. The Angular host becomes the root, which is a generic element as in React and Vue.",
+      "endState": {
+        "surface": {
+          "react": "none (icon and action props stay)",
+          "vue": "none (#icon and #action slots stay)",
+          "angular": "hw-empty-state: projection markers `[hwEmptyIcon]` (decorative icon, rendered before the title) and `[hwEmptyAction]` (rendered after the default content).",
+          "vanilla": "authored: <span class=\"hw-empty-icon\" aria-hidden=\"true\">icon</span> as the first child"
+        },
+        "dom": "<{root} class=\"hw-empty\">[<span class=\"hw-empty-icon\" aria-hidden=\"true\">{icon}</span>]<h3>{title}</h3>[<p>{description}</p>]{default content}{action}</{root}>. Root is div in React and Vue and the hw-empty-state host in Angular (no inner section). Angular always renders span.hw-empty-icon, without whitespace, and the stylesheet hides it while it is empty. The action has no wrapper element in any adapter.",
+        "behaviour": "No behaviour of its own. Server rendering: the Angular icon span is present and empty on both sides."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/components.css (after line 281)",
+          "change": "Add `.hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child):empty { display: none; }`: the tile rule at line 280 sets `display: grid` through the same :is() list, whose specificity (0,3,1) is above `.hw-empty > .hw-empty-icon:empty` (0,3,0), so the shorter selector would not hide the region."
+        }
+      ],
+      "perAdapter": {
+        "react": "display.tsx:226: `{icon && <span className=\"hw-empty-icon\" aria-hidden=\"true\">{icon}</span>}`.",
+        "vue": "display.ts:219: `slots.icon && h('span', { class: 'hw-empty-icon', 'aria-hidden': 'true' }, slots.icon())`.",
+        "angular": "presentation.ts:156-160: `host: {class: 'hw-empty', '[attr.title]': 'null'}`; template (one line, no whitespace inside the span) `<span class=\"hw-empty-icon\" aria-hidden=\"true\"><ng-content select=\"[hwEmptyIcon]\" /></span><h3>{{ title }}</h3>@if (description) {<p>{{ description }}</p>}<ng-content /><ng-content select=\"[hwEmptyAction]\" />`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "RICH-01",
+          "what": "[feedback-status-11] an icon and a button given as icon and action: the icon is inside span.hw-empty-icon[aria-hidden=true] before the h3, the button is the last child",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "RICH-03",
+          "what": "Angular without a projected icon: span.hw-empty-icon computes display none; with one it is the 72px muted tile",
+          "adapters": [
+            "angular"
+          ],
+          "file": "BR"
+        },
+        {
+          "caseId": "ATTR-01",
+          "what": "class, id and aria-labelledby on hw-empty-state are on .hw-empty; there is no section",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "RICH-04",
+          "what": "server render with and without icon equals the first client render",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "SSR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-empty-state > section.hw-empty",
+          "new": "hw-empty-state.hw-empty",
+          "migration": "section.hw-empty -> .hw-empty; an icon projected as plain content moves to <span hwEmptyIcon>...</span>, the action to an element with hwEmptyAction"
+        },
+        {
+          "adapter": "react, vue",
+          "kind": "markup",
+          "old": "span[aria-hidden=true] around the icon",
+          "new": "span.hw-empty-icon[aria-hidden=true]",
+          "migration": "none"
+        }
+      ],
+      "readme": "Angular README, EmptyState row: [hwEmptyIcon] and [hwEmptyAction]; the icon is decorative. React and Vue rows unchanged.",
+      "ownerDecision": 1,
+      "notDone": "The heading level stays h3 in the three frameworks (no finding)."
+    },
+    {
+      "ids": [
+        "feedback-status-12"
+      ],
+      "component": "Chip",
+      "summary": "The remove control is a plain button styled by the chip rule (24px square) in every adapter, rendered only while a remove handler is bound. The Angular host becomes the chip, and removing a focused chip hands focus to the neighbouring chip's remove button.",
+      "endState": {
+        "surface": {
+          "react": "Chip: `variant?: 'soft' | 'outline'`, `size?: 'sm' | 'lg'` (new, written as data- attributes).",
+          "vue": "Chip: prop `removable` is removed; the button is rendered while `@remove` is bound (`onRemove: listener<[]>()`); `removeLabel` required under that condition; new `variant?: 'soft' | 'outline'`, `size?: 'sm' | 'lg'`.",
+          "angular": "hw-chip: input `removable` is removed; `(removed)` becomes an HwObservedEmitter<void>; `tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'info'` (default 'neutral'), `variant?: 'soft' | 'outline'` (no default; was the string 'soft'), new `size?: 'sm' | 'lg'`.",
+          "vanilla": "authored <button type=\"button\" aria-label=\"...\"> inside span.hw-chip"
+        },
+        "dom": "<{root} class=\"hw-chip\" data-tone=\"{tone}\" [data-variant] [data-size]>{content}[<button type=\"button\" [disabled] aria-label=\"{removeLabel}\"><span class=\"hw-icon\" data-icon=\"cancel-01\" data-size=\"md\" aria-hidden=\"true\"></span></button>]</{root}>. The button has no hw-button class. Root is span in React, Vue and vanilla and the hw-chip host in Angular.",
+        "behaviour": "Enter and Space activate the native button; one remove notification, no payload; `disabled` disables the button. Focus (convention focus-when-a-control-becomes-unavailable, b): when the chip is removed while its button had focus and focus fell to the body, focus goes to the remove button of the next sibling chip, else of the previous one; with no sibling chip the application places focus (see conventionConflicts). Server rendering: no listener and no timer on the server."
+      },
+      "core": [
+        {
+          "export": "prepareRemovalFocus (new packages/core/src/removal-focus.ts, exported from index.ts with the type RemovalFocusOptions)",
+          "signature": "prepareRemovalFocus(container: HTMLElement, control: HTMLElement, options: { item: string; control: string; fallback?: HTMLElement | null }): () => void",
+          "behaviour": "Generalises toast-focus.ts, which stays as it is. Call at activation: returns a no-op unless `control` is or contains document.activeElement and `container` contains it. It records the item (control.closest of the elements matched by container.querySelectorAll(options.item)) and its neighbours, following items first, then preceding ones nearest first. Call the result once after the render that removes the control: it does nothing when the control is still connected and enabled, or when focus is on any element other than body, documentElement or a node inside the removed item. Otherwise it focuses, with preventScroll, the first neighbour still inside the container whose `item.querySelector(options.control)` is connected, not disabled, not aria-disabled and not inside [hidden] or [inert]; else `options.fallback` when it is connected; else nothing. Never throws and touches no global at import."
+        }
+      ],
+      "styles": [
+        {
+          "file": "packages/styles/src/components.css:243",
+          "change": "Replace with `.hw-chip button:hover:not(:disabled) { background: var(--hw-color-border); }` and add `.hw-chip button:disabled { color: var(--hw-color-on-disabled); cursor: not-allowed; }`; under the existing forced-colors block add `.hw-chip button:disabled { color: GrayText; }`."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-content.tsx:20-23: ChipBaseProps adds variant and size; replace <Button ...> by `<button type=\"button\" disabled={disabled} aria-label={text('Chip', 'removeLabel', removeLabel, 'onRemove is given')} onClick={event => { const chip = event.currentTarget.parentElement!; pending.current = chip.parentElement ? prepareRemovalFocus(chip.parentElement, event.currentTarget, { item: ':scope > .hw-chip', control: ':scope > button' }) : undefined; onRemove(); }}>`; `const pending = useRef<() => void>(undefined); useLayoutEffect(() => () => { const run = pending.current; if (run) queueMicrotask(run); }, []);` (the cleanup runs before React detaches the node, hence the microtask). Remove the Button import if unused.",
+        "vue": "content.ts:69-107: delete `removable`; add `onRemove: listener<[]>()`, variant, size; render `listens(props.onRemove) && h('button', { type: 'button', disabled: props.disabled, 'aria-label': needText('Chip', 'removeLabel', props.removeLabel, 'a remove listener is bound'), onClick: (event: MouseEvent) => { const button = event.currentTarget as HTMLElement; const parent = button.parentElement?.parentElement; pending = parent ? prepareRemovalFocus(parent, button, { item: ':scope > .hw-chip', control: ':scope > button' }) : undefined; emit('remove'); } }, icon)`; `onUnmounted(() => pending?.())`. Remove `emits` (the listener is a prop).",
+        "angular": "content.ts:33-34: `host: {class: 'hw-chip', '[attr.data-tone]': 'tone', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}`; template `<ng-content />@if (hasRemoveListener()) {<button type=\"button\" [disabled]=\"disabled\" [attr.aria-label]=\"texts.need('removeLabel', removeLabel, 'a removed listener is bound')\" (click)=\"remove($event)\">...icon...</button>}`; `@Output() readonly removed: EventEmitter<void> = new HwObservedEmitter<void>(observed => this.hasRemoveListener.set(observed))`; `remove(event)` prepares with host.parentElement and emits; `ngOnDestroy() { const run = this.pending; if (run) queueMicrotask(run); }`.",
+        "vanilla": "No source change. README: authored plain button; the application may call prepareRemovalFocus from @hawiyah/core before it removes the chip."
+      },
+      "tests": [
+        {
+          "caseId": "CHIP-01",
+          "what": "[feedback-status-12] the remove control is a button without class hw-button, type=button, with the icon span; a removable and a plain chip in one row have the same height",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS; heights in BR (24 by 24px button, 32px chip)"
+        },
+        {
+          "caseId": "TEXT-03",
+          "what": "no button without a remove handler, one with it; TEXT-01 handler without removeLabel: no aria-label, one warning",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS and TC"
+        },
+        {
+          "caseId": "FOCUS-04",
+          "what": "three chips, the application removes the chip on remove: activating the middle button moves focus to the third chip's button, then to the first chip's; removing the last remaining chip leaves focus to the application",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FS"
+        },
+        {
+          "caseId": "REMOVAL-FOCUS-01",
+          "what": "core (unit test, no adapter): no-op when focus was elsewhere, when the control stays, or when focus moved before the call; next, then previous, then fallback; disabled and hidden candidates skipped",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "packages/core/test/removal-focus.test.ts (new; cases REMOVAL-FOCUS-01 to -05)"
+        },
+        {
+          "caseId": "ATTR-01",
+          "what": "class, id and data-x on hw-chip are on .hw-chip",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "SSR-03",
+          "what": "no listener and no timer during the server render of a removable chip",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "SSR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "kind": "removed",
+          "old": "<Chip removable remove-label=\"Remove\" @remove=\"fn\">",
+          "new": "<Chip remove-label=\"Remove\" @remove=\"fn\">",
+          "migration": "delete removable"
+        },
+        {
+          "adapter": "angular",
+          "kind": "removed",
+          "old": "<hw-chip removable removeLabel=\"Remove\" (removed)=\"fn()\">",
+          "new": "<hw-chip removeLabel=\"Remove\" (removed)=\"fn()\">",
+          "migration": "delete removable"
+        },
+        {
+          "adapter": "react, vue",
+          "kind": "markup",
+          "old": "button.hw-button[data-variant=ghost][data-size=sm] inside the chip",
+          "new": "plain button",
+          "migration": ".hw-chip .hw-button -> .hw-chip button"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-chip > span.hw-chip; data-variant=\"soft\" always written",
+          "new": "hw-chip.hw-chip; no data-variant unless variant is given",
+          "migration": "hw-chip > .hw-chip -> .hw-chip"
+        }
+      ],
+      "readme": "Four READMEs, Chip: remove action (React onRemove, Vue @remove, Angular (removed), vanilla authored button) with removeLabel; tone, variant soft | outline, size sm | lg; focus moves to the neighbouring chip, and the application places it when the last chip goes. Core README lists prepareRemovalFocus.",
+      "ownerDecision": 1,
+      "notDone": "No focus target when the last chip is removed (see conventionConflicts)."
+    },
+    {
+      "ids": [
+        "feedback-status-13"
+      ],
+      "component": "Skeleton (documented loading pattern)",
+      "summary": "The package documentation shows one valid way to announce loading around skeletons: a container with role=status that holds a visually hidden text and the aria-hidden skeletons. The invalid div with aria-busy and aria-label is removed from every example.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "Documented pattern, the same in the four adapters: <div role=\"status\"><span class=\"hw-sr-only\">{loading text}</span><span class=\"hw-skeleton\" aria-hidden=\"true\" data-variant=\"text\" style=\"inline-size: 70%\"></span><span class=\"hw-skeleton\" aria-hidden=\"true\" style=\"block-size: 4rem\"></span></div>. When the content arrives the application replaces the whole container with it. aria-busy=\"true\" may be added to the region that is being filled, never together with aria-label on an element without a role.",
+        "behaviour": "The loading text is application text (not a packaged string). Nothing is focusable. The status container is rendered with the skeletons, so a screen reader meets the text in reading order; an application that starts loading after the page is shown inserts the container then and the text is announced politely."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "No source change. packages/react/README.md:128 Skeleton row and a short 'Loading' example: <div role=\"status\"><span className=\"hw-sr-only\">{loadingText}</span><Skeleton variant=\"text\" />...</div>.",
+        "vue": "No source change. packages/vue/README.md:142, same example with <Skeleton variant=\"text\" />.",
+        "angular": "No source change. packages/angular/README.md:177, same example with <hw-skeleton variant=\"text\" />; the sentence 'Announce surrounding loading state once' is replaced by the pattern.",
+        "vanilla": "No source change. packages/vanilla/README.md gains the markup above. Also corrected in the same change, because they are the only pattern shown today: apps/playground/src/component-native-guides.ts:181 and apps/playground/src/project-examples.ts:382-384 (both languages)."
+      },
+      "tests": [
+        {
+          "caseId": "SKELETON-03",
+          "what": "[feedback-status-13] documentation check: no example in components.json, llms.txt, packages/*/README.md, docs/ or apps/playground/src/*guides*.ts and project-examples.ts combines aria-busy with aria-label on an element without a role; every README Skeleton section contains role=\"status\" and hw-sr-only",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/text-contract-docs.test.ts (extended)"
+        },
+        {
+          "caseId": "SKELETON-04",
+          "what": "the documented markup has the accessibility tree 'status' with the loading text and no other named node (Playwright aria snapshot)",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "BR"
+        }
+      ],
+      "migration": [],
+      "readme": "As in perAdapter. components.json skeleton note: 'Wrap skeletons in a role=\"status\" container with a visually hidden loading text; the skeletons stay aria-hidden.' llms.txt Skeleton line likewise.",
+      "ownerDecision": null,
+      "notDone": "No packaged loading wrapper component is added (additive; the pattern is four lines of markup)."
+    },
+    {
+      "ids": [
+        "feedback-status-14",
+        "content-display-1"
+      ],
+      "component": "Angular hosts of Badge, Avatar, ButtonGroup, IconButton and Card (the rule for the presentational family)",
+      "summary": "Angular presentational components stop hiding their root: hw-badge, hw-avatar and hw-button-group become the styled element, and hw-card and hw-icon-button forward the naming attributes to the native element they render. Alert, Chip, Skeleton, Spinner, EmptyState, Stat, AvatarGroup, CookieConsent (kind A) and Progress, Meter, Timeline, NotificationList, Feedback (kind B) follow the same rule in their own items.",
+      "endState": {
+        "surface": {
+          "react": "ButtonGroup: `label` becomes the RootName union (an aria-label or aria-labelledby from the application is no longer overwritten).",
+          "vue": "ButtonGroup: `label` loses `required: true` and is checked with rootLabel.",
+          "angular": "hw-badge: `variant?: 'soft' | 'outline' | 'dot'` (no default; was 'soft'). hw-avatar: `size?` and `variant?` without defaults (were 'md', 'circle'). hw-button-group: `label` loses {required: true} (required unless the host has aria-label or aria-labelledby); `variant?` and `orientation?` without defaults. hw-card: forwarded `aria-label`, `aria-labelledby`, `aria-describedby` inputs; `variant?` without default. hw-icon-button: forwarded `aria-label`, `aria-labelledby`, `aria-describedby` inputs; input `describedBy` is removed; `label` loses {required: true}.",
+          "vanilla": "none"
+        },
+        "dom": "Kind A (host is the root, template is the content): <hw-badge class=\"hw-badge\" data-tone [data-variant]>, <hw-avatar class=\"hw-avatar\" [data-size] [data-variant] [role=\"img\" aria-label=\"{name}\" while no image is shown]> containing img or span[aria-hidden], <hw-button-group class=\"hw-button-group\" role=\"group\" aria-label=\"{label}\" [data-variant] [data-orientation]>. Kind B (host is a wrapper): hw-card > article.hw-card | a.hw-card.hw-card-action carrying the forwarded aria attributes; hw-icon-button > button.hw-button.hw-icon-button with aria-label = application aria-label, else label, plus aria-labelledby and aria-describedby. A wrapper host keeps id, class and style and none of the forwarded attributes. Unset variant, size and orientation write no data- attribute, as in React and Vue.",
+        "behaviour": "Kind A attributes that the application may also write (role and aria-label of hw-avatar and hw-button-group) are written with HwHostAttribute in ngDoCheck: only while the component has a value, and the application's value is put back otherwise; an application aria-label or aria-labelledby on hw-button-group wins over label. [attr.aria-label] on a wrapper host is not supported. Server rendering: HwHostAttribute writes through Renderer2 and reads static values through HostAttributeToken, so the server HTML and the hydrated DOM agree."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/layout.css:130-134",
+          "change": "Rewrite the comment: presentational hosts carry their class and need no rule; wrapper hosts are in the block list. `:where(hw-card, hw-service-card) { display: grid; }` stays. Add `hw-icon-button` nowhere: nic-segmented.css:110 already sets its box inside a button group."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-content.tsx:18-19: `export type ButtonGroupProps = ComponentPropsWithRef<'div'> & { variant?; orientation?; 'data-variant'?: string; 'data-orientation'?: string } & RootName;` aria-label={rootLabel('ButtonGroup', props, label)}.",
+        "vue": "content.ts:55-64: `label: String`; 'aria-label': rootLabel('ButtonGroup', props.label, attrs).",
+        "angular": "presentation.ts:33-34 hw-badge: `host: {class: 'hw-badge', '[attr.data-tone]': 'tone', '[attr.data-variant]': 'variant'}, template: `<ng-content />``. presentation.ts:136-148 hw-avatar: `host: {class: 'hw-avatar', '[attr.data-size]': 'size', '[attr.data-variant]': 'variant'}`, template `@if (src && !imageFailed) {<img [src]=\"src\" [alt]=\"name\" (error)=\"imageFailed = true\">} @else {<span aria-hidden=\"true\">{{ initials }}</span>}`, `private readonly roleAttribute = injectHostAttribute('role'); private readonly nameAttribute = injectHostAttribute('aria-label'); ngDoCheck() { const image = !!this.src && !this.imageFailed; this.roleAttribute.set(image ? null : 'img'); this.nameAttribute.set(image ? null : this.name); }`. content.ts:31-32 hw-button-group: `host: {class: 'hw-button-group', '[attr.data-variant]': 'variant', '[attr.data-orientation]': 'orientation'}`, template `<ng-content />`, ngDoCheck: `this.role.set('group'); this.name.set(this.label || null); if (!this.label && !hostHasName(host)) this.texts.need('label', this.label);` where role and name come from injectHostAttribute: the mechanism of hw-side-navigation (navigation specification, E08) and of HwSectionComponent. hostHasName is asked only while the component has written no name, so it never sees the component's own value. presentation.ts:17-31 hw-card: `host: forwardedAriaHost`, the three alias inputs, `[attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\"` on both the a and the article. content.ts:21-30 hw-icon-button: `host: forwardedAriaHost`, alias inputs, `[attr.aria-label]=\"ariaLabel || (ariaLabelledby ? label || null : texts.need('label', label))\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\"`, delete describedBy.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "ATTR-01",
+          "what": "[feedback-status-14] hw-badge, hw-avatar, hw-button-group: class, id, data-x and aria-label written on the host are on the element with the hw- class and no inner element has that class",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "ATTR-02",
+          "what": "hw-button-group: label writes aria-label, also over an application aria-label; removing label puts the application's value back. hw-avatar: role=img and aria-label=name appear when the image fails and disappear when a new src loads",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "[content-display-1] hw-card and hw-icon-button: aria-label, aria-labelledby and aria-describedby, static and bound, are on the article / anchor / button; the host has none",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "ATTR-04",
+          "what": "host id stays on the host of hw-card; no duplicate id in the document",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "ATTR-05",
+          "what": "server render and hydration of a named hw-card, hw-avatar without image and hw-button-group: same DOM, no mismatch",
+          "adapters": [
+            "angular"
+          ],
+          "file": "SSR"
+        },
+        {
+          "caseId": "BADGE-01",
+          "what": "three badges in .hw-badges form a 24px row with the Angular hosts as with spans; badge with data attributes equal to the React output for the same inputs",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CD (DOM) and BR (row height)"
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "ButtonGroup: application aria-label alone gives no warning and is kept; NAME-04 neither: one warning",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-badge > span.hw-badge; hw-avatar > span.hw-avatar; hw-button-group > div.hw-button-group",
+          "new": "the host carries the class",
+          "migration": "hw-badge > .hw-badge -> hw-badge.hw-badge (or .hw-badge); the same for avatar and button group"
+        },
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "data-variant=\"soft\" (badge), data-size=\"md\" data-variant=\"circle\" (avatar), data-variant=\"default\" (card, button group), data-orientation=\"horizontal\" always written",
+          "new": "written only when the input is given",
+          "migration": "selectors on those default values -> :not([data-variant]) and so on"
+        },
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "hw-icon-button describedBy",
+          "new": "aria-describedby",
+          "migration": "describedBy=\"id\" -> aria-describedby=\"id\"; [describedBy]=\"id\" -> [aria-describedby]=\"id\""
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "aria-label / aria-labelledby / aria-describedby on hw-card stayed on the host",
+          "new": "forwarded to the article or anchor",
+          "migration": "[attr.aria-label]=\"x\" on hw-card -> [aria-label]=\"x\""
+        }
+      ],
+      "readme": "Angular README: one section 'Where attributes land' with the two lists (hosts that are the root; wrapper hosts with the forwarded attributes) covering this cluster's components, and the statement that [attr.aria-*] on a wrapper host is not supported. Badge, Avatar, ButtonGroup, Card and IconButton rows updated. docs/nic-badges.md:41-43 gains the line that the Angular host is the badge.",
+      "ownerDecision": 1,
+      "notDone": "hw-divider keeps its inner hr (no finding; an hr cannot be a custom element host). Empty Card header and footer regions are not part of these findings."
+    },
+    {
+      "ids": [
+        "content-display-7"
+      ],
+      "component": "AvatarGroup",
+      "summary": "Each member of an Angular avatar group takes the full avatar shape (name, src, initials, size, variant), as in React and Vue. The Angular input is renamed to items and the host becomes the group.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "AvatarItem gains `size?` and `variant?` (type only; the item is already spread).",
+          "angular": "hw-avatar-group: input `avatars` is renamed `items: readonly HwAvatarItem[]`; new exported `interface HwAvatarItem { name: string; src?: string; initials?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | '40' | '64' | '80' | '120'; variant?: 'circle' | 'square' }`; `label` loses {required: true} (required unless the host has aria-label or aria-labelledby).",
+          "vanilla": "none"
+        },
+        "dom": "<{root} class=\"hw-avatar-group\" role=\"group\" aria-label=\"{name}\">{one avatar per visible item with its own data-size / data-variant and initials}[<span class=\"hw-avatar\" role=\"img\" aria-label=\"{getOverflowLabel(count)}\">+{count}</span>]</{root}>; root is div in React and Vue and the hw-avatar-group host in Angular; each Angular member is an hw-avatar host (itself the avatar).",
+        "behaviour": "No behaviour change. The group name follows convention name-without-visible-label; role and aria-label are written with HwHostAttribute."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "content.ts:239-243: `export interface AvatarItem { name: string; src?: string; initials?: string; size?: 'sm' | 'md' | 'lg' | 'xl' | '40' | '64' | '80' | '120'; variant?: 'circle' | 'square' }`.",
+        "angular": "content.ts:43-47: `host: {class: 'hw-avatar-group'}`; template `@for (item of visibleItems; track $index) {<hw-avatar [name]=\"item.name\" [src]=\"item.src || ''\" [initials]=\"item.initials\" [size]=\"item.size\" [variant]=\"item.variant\" />}@if (remaining > 0) {<span class=\"hw-avatar\" role=\"img\" [attr.aria-label]=\"texts.call('getOverflowLabel', getOverflowLabel, [remaining])\">+{{ remaining }}</span>}`; `@Input() items: readonly HwAvatarItem[] = []`; rename visibleAvatars to visibleItems; ngDoCheck writes role=group and aria-label as hw-button-group does. Export HwAvatarItem from public-api.ts.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "SHAPE-01",
+          "what": "[content-display-7] one fixture [{name: 'Rana Cole', initials: 'RC', size: '64', variant: 'square'}, {name: 'Sami'}] renders 'RC' with data-size=64 and data-variant=square, and 'S' with neither attribute",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/avatar-parity.test.ts (extended)"
+        },
+        {
+          "caseId": "ATTR-01",
+          "what": "class and aria-label on hw-avatar-group are on .hw-avatar-group",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH"
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "the Angular input avatars is not accepted",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/components.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "[avatars]=\"people\"",
+          "new": "[items]=\"people\"",
+          "migration": "[avatars]= -> [items]="
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-avatar-group > div.hw-avatar-group > hw-avatar > span.hw-avatar",
+          "new": "hw-avatar-group.hw-avatar-group > hw-avatar.hw-avatar",
+          "migration": ".hw-avatar-group > hw-avatar > .hw-avatar -> .hw-avatar-group > .hw-avatar"
+        }
+      ],
+      "readme": "Angular README, AvatarGroup row: items of HwAvatarItem (name, src, initials, size, variant). Vue README: AvatarItem fields.",
+      "ownerDecision": 1,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "content-display-11"
+      ],
+      "component": "DescriptionList",
+      "summary": "The default layout is stacked in every adapter and the three variants (stacked, horizontal, compact) are a typed input everywhere. Vue loses its horizontal default.",
+      "endState": {
+        "surface": {
+          "react": "DescriptionList: `variant?: 'stacked' | 'horizontal' | 'compact'`.",
+          "vue": "DescriptionList: `variant` default changes from 'horizontal' to undefined.",
+          "angular": "hw-description-list: `variant?: 'stacked' | 'horizontal' | 'compact'` (adds 'compact'; no default, was 'stacked').",
+          "vanilla": "authored data-variant"
+        },
+        "dom": "<dl class=\"hw-description-list\" [data-variant=\"{variant}\"]><div><dt>{term}</dt><dd>{description}</dd></div>...</dl>; no data-variant when variant is not given. In Angular the dl sits inside the hw-description-list host (block box, see the layout.css list in feedback-status-7).",
+        "behaviour": "none"
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "expanded-content.tsx:25-26: `export interface DescriptionListProps extends ComponentPropsWithRef<'dl'> { items: readonly DescriptionItem[]; variant?: 'stacked' | 'horizontal' | 'compact' }`; write `data-variant={variant ?? (props as Record<string, unknown>)['data-variant']}`.",
+        "vue": "content.ts:120-123: `variant: String as PropType<'stacked' | 'horizontal' | 'compact'>`; content.ts:131: `'data-variant': props.variant ?? attrs['data-variant']`.",
+        "angular": "content.ts:36: `@Input() variant?: 'stacked' | 'horizontal' | 'compact';`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "DESCRIPTION-LIST-01",
+          "what": "[content-display-11] without variant the dl has no data-variant; each of the three values is written",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CD"
+        },
+        {
+          "caseId": "DESCRIPTION-LIST-02",
+          "what": "default rows are stacked (dt above dd) and horizontal rows are two columns above 40rem, in LTR and RTL",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "BR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "kind": "default",
+          "old": "variant defaults to 'horizontal'",
+          "new": "stacked (no data-variant)",
+          "migration": "<DescriptionList :items=\"x\" /> -> <DescriptionList :items=\"x\" variant=\"horizontal\" /> to keep the old layout"
+        },
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "data-variant=\"stacked\" always written",
+          "new": "no data-variant unless variant is given",
+          "migration": "none"
+        }
+      ],
+      "readme": "Three framework READMEs, DescriptionList row: variant stacked (default) | horizontal | compact.",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "content-display-14",
+        "content-display-13"
+      ],
+      "component": "Stat",
+      "summary": "Stat has one DOM (label, value, description, trend) and accepts rich content for the value and the trend in every adapter, so a currency value can carry its hidden currency name. The Angular host becomes the stat and gains a trend.",
+      "endState": {
+        "surface": {
+          "react": "Stat: new `tone?: 'neutral' | 'success' | 'danger'`, `variant?: 'plain'`, `trendTone?: 'success' | 'danger'`.",
+          "vue": "Stat: slots `#value` and `#trend`; `value` loses `required: true`; new props `tone`, `variant`, `trendTone` as in React.",
+          "angular": "hw-stat: projection markers `[hwStatValue]` and `[hwStatTrend]`; new inputs `trend = ''`, `trendTone?: 'success' | 'danger'`, `variant?: 'plain'`; `tone?: 'neutral' | 'success' | 'danger'` (no default; was the string 'neutral').",
+          "vanilla": "authored markup as in dom"
+        },
+        "dom": "<{root} class=\"hw-stat\" [data-tone] [data-variant=\"plain\"]><span class=\"hw-stat-label\">{label}</span><strong class=\"hw-stat-value\">{value}</strong>[<p class=\"hw-stat-description\">{description}</p>][<span class=\"hw-stat-trend\" [data-tone=\"{trendTone}\"]>{trend}</span>]{default content}</{root}>. Root is div in React, Vue and vanilla and the hw-stat host in Angular. Angular always renders strong.hw-stat-value and span.hw-stat-trend, each holding the string input followed by the projected region; an empty trend span is hidden by the stylesheet.",
+        "behaviour": "Rich value and trend replace only what is displayed: React node props, Vue slots (the slot wins over the prop), Angular projection (rendered after the string input, so pass one of the two). Numbers are printed as given (String(value)). Currency: the riyal pattern of docs/saudi-riyal.md:8-12 is written by the application inside the rich value. Server rendering: the Angular template has no whitespace inside the two regions."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/extended.css:315",
+          "change": "Append `.hw-stat-trend:empty { display: none; }`."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-content.tsx:27-28: add tone, variant, trendTone to StatProps; `<div {...props} data-tone={tone ?? data['data-tone']} data-variant={variant ?? data['data-variant']} className={cx('hw-stat', className)}><span className=\"hw-stat-label\">{label}</span><strong className=\"hw-stat-value\">{value}</strong>{description && <p className=\"hw-stat-description\">{description}</p>}{trend && <span className=\"hw-stat-trend\" data-tone={trendTone}>{trend}</span>}{children}</div>` (the dl, dt and dd are gone; children are rendered last).",
+        "vue": "content.ts:144-168: `value: [String, Number]`, `tone`, `variant`, `trendTone` props; value: `h('strong', { class: 'hw-stat-value' }, slots.value?.() ?? (props.value === undefined ? undefined : String(props.value)))`; trend: `(slots.trend || props.trend) && h('span', { class: 'hw-stat-trend', 'data-tone': props.trendTone }, slots.trend?.() ?? props.trend)`; root gains 'data-tone': props.tone ?? attrs['data-tone'], 'data-variant': props.variant ?? attrs['data-variant'].",
+        "angular": "content.ts:37-38: `host: {class: 'hw-stat', '[attr.data-tone]': 'tone', '[attr.data-variant]': 'variant'}`; template (no whitespace between tags) `<span class=\"hw-stat-label\">{{ label }}</span><strong class=\"hw-stat-value\">@if (value !== '') {<ng-container>{{ value }}</ng-container>}<ng-content select=\"[hwStatValue]\" /></strong>@if (description) {<p class=\"hw-stat-description\">{{ description }}</p>}<span class=\"hw-stat-trend\" [attr.data-tone]=\"trendTone\">@if (trend) {<ng-container>{{ trend }}</ng-container>}<ng-content select=\"[hwStatTrend]\" /></span><ng-content />`; inputs as listed.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "STAT-01",
+          "what": "[content-display-13] label, value 1284, description and trend given as strings render span.hw-stat-label, strong.hw-stat-value, p.hw-stat-description and span.hw-stat-trend in that order with the same text; no dl",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CD"
+        },
+        {
+          "caseId": "RICH-01",
+          "what": "[content-display-14] a value given as <bdi><span class=\"hw-riyal\" aria-hidden=\"true\"></span>120 <span class=\"hw-sr-only\">riyals</span></bdi> and a trend containing an icon are inside strong.hw-stat-value and span.hw-stat-trend",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CD"
+        },
+        {
+          "caseId": "RICH-03",
+          "what": "Angular without trend: span.hw-stat-trend computes display none; with a projected trend it is visible",
+          "adapters": [
+            "angular"
+          ],
+          "file": "BR"
+        },
+        {
+          "caseId": "STAT-02",
+          "what": "trendTone=success writes data-tone on the trend element; tone=danger on the root",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CD"
+        },
+        {
+          "caseId": "RICH-04",
+          "what": "server render of a rich value equals the first client render; ATTR-01 for hw-stat",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "SSR; AH"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": "div.hw-stat > dl > dt + dd.hw-stat-value, p, div.hw-stat-trend",
+          "new": "span.hw-stat-label, strong.hw-stat-value, p.hw-stat-description, span.hw-stat-trend",
+          "migration": ".hw-stat dt -> .hw-stat-label; .hw-stat dd -> .hw-stat-value; .hw-stat > p -> .hw-stat-description"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-stat > div.hw-stat; trend projected as <span class=\"hw-stat-trend\">",
+          "new": "hw-stat.hw-stat; trend input or [hwStatTrend] inside the packaged span.hw-stat-trend",
+          "migration": "<span class=\"hw-stat-trend\" data-tone=\"success\">12%</span> inside hw-stat -> trend=\"12%\" trendTone=\"success\""
+        }
+      ],
+      "readme": "Three framework READMEs, Stat row: value and trend accept rich content (React nodes, Vue #value / #trend, Angular [hwStatValue] / [hwStatTrend]); tone, variant plain, trendTone; one example of the riyal pattern per adapter with a link to docs/saudi-riyal.md. docs/saudi-riyal.md gains one line naming the three mechanisms.",
+      "ownerDecision": 1,
+      "notDone": "The rules for an authored dl inside .hw-stat (extended.css:243) stay for hand-written markup; no adapter renders it any more."
+    },
+    {
+      "ids": [
+        "content-display-16"
+      ],
+      "component": "Timeline",
+      "summary": "Timeline items have one shape (id, title, description, dateTime, dateLabel, status) and one markup with the class the stylesheet styles. React gains the item class, and React, Vue and Angular each lose their own field names.",
+      "endState": {
+        "surface": {
+          "react": "TimelineItem.status: 'complete' | 'current' | 'upcoming' ('active' is removed).",
+          "vue": "TimelineItem.date is renamed dateTime; the date is shown only when dateLabel is given (the raw ISO value is no longer printed).",
+          "angular": "New exported `interface HwTimelineItem { id: string; title: string; description?: string; dateTime?: string; dateLabel?: string; status?: 'complete' | 'current' | 'upcoming' }`; `items: readonly HwTimelineItem[]` (state -> status, 'pending' -> 'upcoming', time -> dateLabel, id required). `label` loses {required: true}; forwarded `aria-label`, `aria-labelledby`, `aria-describedby` inputs (kind B).",
+          "vanilla": "authored data-state=\"complete|current|upcoming\" and aria-current=\"step\" on the current item"
+        },
+        "dom": "<ol class=\"hw-timeline\" aria-label=\"{name}\" [aria-labelledby]><li class=\"hw-timeline-item\" [data-state=\"{status}\"] [aria-current=\"step\" when status is current]><h3>{title}</h3>[<time [datetime=\"{dateTime}\"]>{dateLabel}</time>][<p>{description}</p>]</li>...</ol>. Order inside an item: title, date, description. Items are keyed by id.",
+        "behaviour": "No interaction. Name order as convention name-without-visible-label. A dateTime without dateLabel renders no time element."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/components.css:275",
+          "change": "Remove `, .hw-timeline > li[data-state='active']::before` from the selector; the current item is styled by extended.css:207 and :314."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-content.tsx:29-31: status type; `<li key={item.id} className=\"hw-timeline-item\" data-state={item.status} aria-current={item.status === 'current' ? 'step' : undefined}><h3>{item.title}</h3>{item.dateLabel && <time dateTime={item.dateTime}>{item.dateLabel}</time>}{item.description && <p>{item.description}</p>}</li>`.",
+        "vue": "content.ts:169-176: `dateTime?: string` replaces date; content.ts:200-201: `item.dateLabel && h('time', { datetime: item.dateTime }, item.dateLabel)`.",
+        "angular": "content.ts:39-40: `host: forwardedAriaHost`; template `<ol class=\"hw-timeline\" [attr.aria-label]=\"ariaLabel || (ariaLabelledby ? label || null : texts.need('label', label))\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\">@for (item of items; track item.id) {<li class=\"hw-timeline-item\" [attr.data-state]=\"item.status || null\" [attr.aria-current]=\"item.status === 'current' ? 'step' : null\"><h3>{{ item.title }}</h3>@if (item.dateLabel) {<time [attr.datetime]=\"item.dateTime || null\">{{ item.dateLabel }}</time>}@if (item.description) {<p>{{ item.description }}</p>}</li>}</ol>`; `@Input() label = ''`; export HwTimelineItem from public-api.ts.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "TIMELINE-01",
+          "what": "[content-display-16] every li has class hw-timeline-item; children are h3, time, p in that order",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CD"
+        },
+        {
+          "caseId": "SHAPE-01",
+          "what": "one fixture [{id, title, description, dateTime: '2026-10-27', dateLabel: '27 October 2026', status: 'complete'}, {id, title, status: 'current'}, {id, title, status: 'upcoming'}] passed unchanged renders the same text, data-state values, aria-current on the second item and datetime",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CD"
+        },
+        {
+          "caseId": "TIMELINE-02",
+          "what": "dateTime without dateLabel renders no time element and no raw date",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CD"
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "type tests: status 'active', Vue date, Angular state / time are not accepted",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TY"
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "NAME-02 / NAME-03 / NAME-04 and ATTR-03 for hw-timeline",
+          "adapters": [
+            "angular"
+          ],
+          "file": "TC, AH"
+        },
+        {
+          "caseId": "TIMELINE-03",
+          "what": "item heading is 16px / medium and the React markup has the same height as the vanilla markup",
+          "adapters": [
+            "vanilla",
+            "react"
+          ],
+          "file": "BR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "field",
+          "old": "status: 'active'",
+          "new": "status: 'current'",
+          "migration": "'active' -> 'current'"
+        },
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": "li without class; description in a div; date after the description",
+          "new": "li.hw-timeline-item > h3, time, p",
+          "migration": "description must be phrasing content"
+        },
+        {
+          "adapter": "vue",
+          "kind": "field",
+          "old": "date",
+          "new": "dateTime (shown only with dateLabel)",
+          "migration": "{date: '2026-01-01'} -> {dateTime: '2026-01-01', dateLabel: '1 January 2026'}"
+        },
+        {
+          "adapter": "angular",
+          "kind": "field",
+          "old": "state ('complete' | 'current' | 'pending'), time, no id",
+          "new": "status ('complete' | 'current' | 'upcoming'), dateLabel + dateTime, id",
+          "migration": "state -> status; 'pending' -> 'upcoming'; time -> dateLabel; add a unique id to every item"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "markup",
+          "old": "data-state=\"active\" styled as current",
+          "new": "data-state=\"current\"",
+          "migration": "data-state=\"active\" -> data-state=\"current\""
+        }
+      ],
+      "readme": "Three framework READMEs, Timeline row: the item shape; dateLabel is the visible text, dateTime the ISO value; status values. Angular README: HwTimelineItem and the forwarded name.",
+      "ownerDecision": 1,
+      "notDone": "Rich per-item content (Vue #title scoped slot, Angular titleTemplate) is not added: no finding asks for it. The Vue per-item slot named by the item id stays."
+    },
+    {
+      "ids": [
+        "R14",
+        "content-display-22"
+      ],
+      "component": "NotificationList (item shape and markup)",
+      "summary": "One item shape (id, title, description, href, dateTime, dateLabel, read) and one markup: a section named by its visible h2, h3 titles, a time element with a machine-readable value, data-state for read and unread, and a paragraph instead of the list when it is empty. Vue and Angular change markup and field names; React changes only the name rule.",
+      "endState": {
+        "surface": {
+          "react": "NotificationList: `label` is required unless aria-label or aria-labelledby is passed (the union shape of FieldName, shared.tsx:13). Item type unchanged.",
+          "vue": "NotificationItem.date is renamed dateTime; the date is shown only with dateLabel. `label` stays optional and is checked with rootLabel.",
+          "angular": "HwNotification becomes `{ id: string; title: string; description?: string; href?: string; dateTime?: string; dateLabel?: string; read?: boolean }` (unread -> read, inverted; time -> dateLabel). hw-notification-list: `label` loses {required: true}; forwarded `aria-label`, `aria-labelledby`, `aria-describedby` inputs (kind B).",
+          "vanilla": "authored markup as in dom (no controller)"
+        },
+        "dom": "<section class=\"hw-notification-list\" [aria-label=\"{application}\"] aria-labelledby=\"{id}-title\" [tabindex=\"-1\" while a read or dismiss handler is bound]><h2 id=\"{id}-title\">{label}</h2><ul><li data-state=\"unread|read\"><h3>{title} | <a class=\"hw-link\" href=\"{href}\">{title}</a></h3>[<span class=\"hw-badge\" data-tone=\"info\">{unreadLabel}</span> on unread items][<p>{description}</p>][<time [datetime=\"{dateTime}\"]>{dateLabel}</time>][mark-read button][dismiss button]</li>...</ul> | <p>{emptyMessage}</p></section> The li has no class. The h2 is rendered only when label has text; then the section is labelled by it unless the application passes aria-label or aria-labelledby, which win. The empty paragraph has no role. Angular: the section is inside the hw-notification-list host (block box); the title id comes from injectId('hw-notification-list'); the link is a[hwLink] and the badge an hw-badge host.",
+        "behaviour": "Items are keyed by id. A dateTime without dateLabel renders no time element. Missing name: no h2, no aria-labelledby, one warning. Server rendering: ids from useId / injectId; no browser access."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/extended.css:269-270",
+          "change": "Replace `:is([data-unread='true'], [data-read='false'], [data-state='unread'])` by `[data-state='unread']` in both rules."
+        },
+        {
+          "file": "packages/styles/src/extended.css:226, :271, :307",
+          "change": "Replace `.hw-notification[data-unread='true']` by `.hw-notification[data-state='unread']` (four occurrences) for hand-written li.hw-notification markup; no adapter renders that class."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-content.tsx:180-183: NotificationListBaseProps drops `label`; `export type NotificationListProps = NotificationListBaseProps & FieldName & ...` (import type FieldName); `const named = hasText(props['aria-label']) || hasText(props['aria-labelledby']); const heading = named ? (hasText(label) ? label : undefined) : text('NotificationList', 'label', label);` root: `aria-labelledby={props['aria-labelledby'] ?? (heading && !hasText(props['aria-label']) ? `${id}-title` : undefined)}`; `{heading && <h2 id={`${id}-title`}>{heading}</h2>}`. Item markup already matches.",
+        "vue": "patterns.ts:387-395: `dateTime?: string` replaces date. patterns.ts:413-468: `const id = useId()`; root `mergeProps(attrs, { class: 'hw-notification-list', 'aria-labelledby': attrs['aria-labelledby'] ?? (heading && !optionalText(attrs['aria-label']) ? `${id}-title` : undefined) })` (no aria-label of its own); first child `heading && h('h2', { id: `${id}-title` }, heading)` with heading computed as in React through needText; li `{ key: item.id, 'data-state': item.read ? 'read' : 'unread' }`; `item.dateLabel && h('time', { datetime: item.dateTime }, item.dateLabel)`; empty state `h('p', {}, needText(...))` without role.",
+        "angular": "content.ts:11 HwNotification as above. content.ts:190-199: `host: forwardedAriaHost`; template `<section class=\"hw-notification-list\" [attr.tabindex]=\"hasReadListener() || hasDismissListener() ? -1 : null\" [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby ?? (!ariaLabel && label ? titleId : null)\" [attr.aria-describedby]=\"ariaDescribedby\">@if (heading; as text) {<h2 [id]=\"titleId\">{{ text }}</h2>}@if (items.length) {<ul>@for (item of items; track item.id) {<li [attr.data-state]=\"item.read ? 'read' : 'unread'\"><h3>@if (item.href) {<a hwLink [href]=\"item.href\">{{ item.title }}</a>} @else {<ng-container>{{ item.title }}</ng-container>}</h3>...badge, p, time, actions...</li>}</ul>} @else {@if (texts.need('emptyMessage', emptyMessage); as text) {<p>{{ text }}</p>}}</section>`; `get heading() { return this.ariaLabel || this.ariaLabelledby ? this.label || null : this.texts.need('label', this.label); }`; `readonly titleId = injectId('hw-notification-list') + '-title'`; imports [HwLinkDirective, HwBadgeComponent, HwButtonDirective].",
+        "vanilla": "No source change; README documents the markup and data-state."
+      },
+      "tests": [
+        {
+          "caseId": "SHAPE-01",
+          "what": "[R14] one fixture [{id: 'a', title: 'Ready', href: '/x', description: 'D', dateTime: '2026-10-28T09:00:00+03:00', dateLabel: '28 October', read: false}, {id: 'b', title: 'Received', read: true}] passed unchanged renders the same text, data-state unread / read, one a.hw-link, one time with datetime",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "NL"
+        },
+        {
+          "caseId": "NOTIFICATION-01",
+          "what": "[content-display-22] the section is labelled by a visible h2 (aria-labelledby = its id, no aria-label); titles are h3; no li has a class",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "NL"
+        },
+        {
+          "caseId": "NOTIFICATION-02",
+          "what": "items = []: no ul, one p with emptyMessage and no role",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "NL"
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "application aria-label alone: no h2, no warning; NAME-03 aria-labelledby alone; NAME-04 neither: one warning, no h2 and no aria-labelledby",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "forwarded aria attributes reach the section; SSR-04 in the server HTML",
+          "adapters": [
+            "angular"
+          ],
+          "file": "AH, ssr.test.ts"
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "type tests: Vue date, Angular unread and time are not accepted",
+          "adapters": [
+            "vue",
+            "angular"
+          ],
+          "file": "TY"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "kind": "field",
+          "old": "date",
+          "new": "dateTime (shown only with dateLabel)",
+          "migration": "{date: '2026-01-01'} -> {dateTime: '2026-01-01', dateLabel: '1 January'}"
+        },
+        {
+          "adapter": "angular",
+          "kind": "field",
+          "old": "unread, time",
+          "new": "read (inverted), dateLabel + dateTime",
+          "migration": "{unread: true} -> {read: false}; items without unread -> {read: true}; time -> dateLabel"
+        },
+        {
+          "adapter": "vue",
+          "kind": "markup",
+          "old": "aria-label on the section, li[data-read], p[role=status] when empty",
+          "new": "h2 + aria-labelledby, li[data-state], plain p",
+          "migration": "[data-read='false'] -> [data-state='unread']; [data-read='true'] -> [data-state='read']"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "aria-label on the section, li.hw-notification[data-unread] > div with a or strong and span, li when empty",
+          "new": "h2 + aria-labelledby, li[data-state] > h3, badge, p, time, buttons; p when empty",
+          "migration": "[data-unread='true'] -> [data-state='unread']; .hw-notification -> .hw-notification-list > ul > li"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "markup",
+          "old": "data-unread=\"true\" or data-read=\"false\" styled as unread",
+          "new": "data-state=\"unread\" only",
+          "migration": "data-unread=\"true\" -> data-state=\"unread\""
+        }
+      ],
+      "readme": "Four READMEs, NotificationList: the item shape, the visible heading from label (or aria-label / aria-labelledby without one), data-state, dateLabel + dateTime, emptyMessage. docs/nic-notifications.md is not affected (toasts).",
+      "ownerDecision": 1,
+      "notDone": "Rich per-item content for Vue and Angular (scoped slot, template) is not added; the Vue slot named by the item id stays."
+    },
+    {
+      "ids": [
+        "content-display-21",
+        "R11",
+        "R12"
+      ],
+      "component": "NotificationList (read and dismiss actions)",
+      "summary": "Both actions exist in every adapter, each rendered only while its handler is bound: a text button that marks an unread item read and an icon button that dismisses an item. Focus moves to the same control of the next item, then the previous one, then the list itself.",
+      "endState": {
+        "surface": {
+          "react": "NotificationList: `onMarkRead` is renamed `onRead?: (id: string) => void` (getMarkReadLabel required with it); new `onDismiss?: (id: string) => void` with `getDismissLabel: (item: NotificationItem) => string` required when onDismiss is given.",
+          "vue": "none (`@read`, `@dismiss`, getMarkReadLabel, getDismissLabel exist)",
+          "angular": "hw-notification-list: new `(read)` output (HwObservedEmitter<string>, emits the item id) and `@Input() getMarkReadLabel?: (item: HwNotification) => string`, required while (read) is bound. `(dismissed)` and getDismissLabel stay.",
+          "vanilla": "authored buttons with the marker attributes; the application handles them"
+        },
+        "dom": "Last children of the li, in this order: on unread items while a read handler is bound and the text exists <button type=\"button\" class=\"hw-button\" data-variant=\"ghost\" data-size=\"md\" data-hw-mark-read>{getMarkReadLabel(item)}</button>; while a dismiss handler is bound <button type=\"button\" class=\"hw-button\" data-variant=\"ghost\" data-size=\"md\" data-hw-dismiss aria-label=\"{getDismissLabel(item)}\"><span class=\"hw-icon\" data-icon=\"cancel-01\" data-size=\"md\" aria-hidden=\"true\"></span></button>. The section has tabindex=\"-1\" while either handler is bound.",
+        "behaviour": "Each activation notifies once with the item id; the application updates items. A mark-read button whose text is missing is not rendered and warns once; a dismiss button whose label is missing is rendered without aria-label and warns once. Focus: at activation the component calls core prepareRemovalFocus(section, button, {item: ':scope > ul > li', control: '[data-hw-dismiss]' or '[data-hw-mark-read]', fallback: section}) and runs the result after the render that follows; nothing moves while the button stays. Keyboard: native buttons, DOM order. Server rendering: buttons present when the handlers are bound; no listener or timer on the server."
+      },
+      "core": [
+        {
+          "export": "prepareRemovalFocus",
+          "signature": "see feedback-status-12",
+          "behaviour": "Used with fallback = the section."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "expanded-content.tsx:180-183: props union as in surface; `const region = useRef<HTMLElement | null>(null); const pending = useRef<(() => void) | undefined>(undefined); const [request, setRequest] = useState(0); useLayoutEffect(() => { pending.current?.(); pending.current = undefined; }, [request]);` (the pattern of ToastRegion, expanded-interactive.tsx:58-66); `const act = (notify: (id: string) => void, control: string) => (event: React.MouseEvent<HTMLButtonElement>, id: string) => { if (region.current) pending.current = prepareRemovalFocus(region.current, event.currentTarget, { item: ':scope > ul > li', control, fallback: region.current }); try { notify(id); } finally { setRequest(value => value + 1); } }`; mark-read: `!item.read && onRead && copy.markRead?.(item) && <Button variant=\"ghost\" data-hw-mark-read=\"\" ...>`; dismiss: `onDismiss && <Button variant=\"ghost\" data-hw-dismiss=\"\" aria-label={dismissLabel?.(item) || undefined} ...>` with the icon span; root gets `tabIndex={props.tabIndex ?? (onRead || onDismiss ? -1 : undefined)}` and the merged ref.",
+        "vue": "patterns.ts:445-462: add 'data-hw-mark-read': '' and 'data-hw-dismiss': '' to the two buttons; render the mark-read button only when itemLabel(...) returns text; onClick: `const recover = region.value ? prepareRemovalFocus(region.value, event.currentTarget as HTMLElement, {...}) : undefined; try { emit('read', item.id); } finally { if (recover) void nextTick(recover); }` (the pattern of expansion-interactive.ts:445-451); root `ref: region`, `tabindex: attrs.tabindex ?? (listens(props.onRead) || listens(props.onDismiss) ? -1 : undefined)`.",
+        "angular": "content.ts:190-199: `protected readonly hasReadListener = signal(false); @Output() readonly read: EventEmitter<string> = new HwObservedEmitter<string>(observed => this.hasReadListener.set(observed)); @Input() getMarkReadLabel?: (item: HwNotification) => string;` template inside the li: `@if (!item.read && hasReadListener()) {@if (texts.call('getMarkReadLabel', getMarkReadLabel, [item], 'a read listener is bound'); as text) {<button hwButton variant=\"ghost\" data-hw-mark-read (click)=\"act(read, item, $event)\">{{ text }}</button>}}@if (hasDismissListener()) {<button hwButton variant=\"ghost\" data-hw-dismiss [attr.aria-label]=\"texts.call('getDismissLabel', getDismissLabel, [item], 'a dismissed listener is bound')\" (click)=\"act(dismissed, item, $event)\">...icon...</button>}`; `act(output, item, event)` prepares with the #region section and emits item.id; `ngAfterViewChecked() { this.pending?.(); this.pending = undefined; }` (as interactions.ts:96-102).",
+        "vanilla": "No source change. README: authored buttons carry data-hw-mark-read / data-hw-dismiss; the application may call prepareRemovalFocus from @hawiyah/core before it re-renders."
+      },
+      "tests": [
+        {
+          "caseId": "TEXT-03",
+          "what": "[content-display-21][R11][R12] without handlers no button; with a read handler one text button per unread item and none on read items; with a dismiss handler one icon button per item",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "NL"
+        },
+        {
+          "caseId": "NOTIFICATION-03",
+          "what": "activating each button notifies once with the item id; nothing changes until the application updates items",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "NL"
+        },
+        {
+          "caseId": "FOCUS-04",
+          "what": "three items, the application removes on dismiss: dismissing the second by keyboard focuses the third item's dismiss button, then the first's, then the section (document.activeElement is the section, which has tabindex -1). Marking the first unread item read focuses the next unread item's mark-read button, and the section when none is left",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "NL"
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "read handler without getMarkReadLabel: no mark-read button, one warning; dismiss handler without getDismissLabel: button without aria-label, one warning; TEXT-02 neither text is required without its handler",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "NOTIFICATION-04",
+          "what": "at 320px in LTR and RTL the title, badge, text and the two buttons of an unread item do not overlap, and both buttons are at least 24 by 24 CSS px with a visible focus ring",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "BR"
+        },
+        {
+          "caseId": "RENAME-02",
+          "what": "React onMarkRead is not an accepted prop",
+          "adapters": [
+            "react"
+          ],
+          "file": "TY"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "input",
+          "old": "onMarkRead={fn}",
+          "new": "onRead={fn}",
+          "migration": "onMarkRead -> onRead (getMarkReadLabel keeps its name)"
+        }
+      ],
+      "readme": "Four READMEs, NotificationList actions: read (React onRead, Vue @read, Angular (read)) with getMarkReadLabel(item); dismiss (onDismiss, @dismiss, (dismissed)) with getDismissLabel(item); the list is application state; where focus goes after an action.",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "content-display-23"
+      ],
+      "component": "NotificationList (Vue title link)",
+      "summary": "The Vue title link is rendered with the Link component, so it has class hw-link and the theme link colours as in the other adapters. It is closed by the markup of R14.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none (the title link becomes a[hwLink], see R14 and actions-7)",
+          "vanilla": "none"
+        },
+        "dom": "<h3><a class=\"hw-link\" href=\"{href}\">{title}</a></h3> in every adapter.",
+        "behaviour": "Native link."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "patterns.ts:433-435: `item.href ? h(Link, { href: item.href }, () => item.title) : item.title` (Link is already imported at patterns.ts:5).",
+        "angular": "none beyond R14",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "NOTIFICATION-05",
+          "what": "[content-display-23] an item with href renders exactly one a.hw-link inside the h3; its computed colour equals that of a standalone .hw-link in light and dark mode",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "NL (class) and BR (colour, vanilla markup)"
+        }
+      ],
+      "migration": [],
+      "readme": "none",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "R13"
+      ],
+      "component": "NotificationList (unread cue)",
+      "summary": "Every adapter shows unread items with a visible info badge whose text is the required unreadLabel, so the state does not depend on colour. Vue gains the text and Angular replaces its screen-reader-only text by the badge.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "NotificationList: new prop `unreadLabel: { type: String, required: true }`.",
+          "angular": "none (unreadLabel exists and stays required)",
+          "vanilla": "authored <span class=\"hw-badge\" data-tone=\"info\">...</span>"
+        },
+        "dom": "On every item with read not true, directly after the h3: <span class=\"hw-badge\" data-tone=\"info\">{unreadLabel}</span> (Angular: <hw-badge class=\"hw-badge\" data-tone=\"info\">). No visually hidden duplicate. With unreadLabel missing: no badge, one warning.",
+        "behaviour": "Decision basis accessibility: a visible text cue serves sighted readers and assistive technology alike (WCAG 1.4.1); the screen-reader-only variant left sighted readers with background colour alone."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none (expanded-content.tsx:183 already renders the Badge)",
+        "vue": "patterns.ts:399-410: add the prop; after the h3: `!item.read && unread && h(Badge, { tone: 'info' }, () => unread)` with `const unread = needText('NotificationList', 'unreadLabel', props.unreadLabel)` (Badge is already imported at patterns.ts:4).",
+        "angular": "content.ts:190: replace `@if (item.unread) {<span class=\"hw-sr-only\">...</span>}` by `@if (!item.read && texts.need('unreadLabel', unreadLabel); as text) {<hw-badge tone=\"info\">{{ text }}</hw-badge>}`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "NOTIFICATION-06",
+          "what": "[R13] an unread item contains one .hw-badge[data-tone=info] with the unreadLabel text and no .hw-sr-only; a read item contains none",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "NL"
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "unreadLabel missing with an unread item: no badge, one warning naming NotificationList / hw-notification-list and unreadLabel",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "kind": "input",
+          "old": "no unread text",
+          "new": "required unreadLabel",
+          "migration": "add unread-label=\"Unread\" (your text) to every NotificationList"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "span.hw-sr-only with unreadLabel",
+          "new": "visible hw-badge with unreadLabel",
+          "migration": "none; the text is now visible"
+        }
+      ],
+      "readme": "Vue README: unreadLabel is required. All READMEs: unread items show the badge.",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "R20"
+      ],
+      "component": "ToastRegion (message shape)",
+      "summary": "The body of a toast is the field message in every adapter, rendered in a paragraph. React renames description, so one getDismissLabel function fits the three adapters.",
+      "endState": {
+        "surface": {
+          "react": "ToastMessage: `description: ReactNode` is renamed `message: ReactNode`.",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "<div class=\"hw-toast-content\">[<strong>{title}</strong>]<p>{message}</p></div> in every adapter (React rendered a div).",
+        "behaviour": "none; the message must be phrasing content in React."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "expanded-interactive.tsx:48: `export interface ToastMessage { id: string; title?: ReactNode; message: ReactNode; tone?; urgent?; dismissible? }`; expanded-interactive.tsx:69: `<div className=\"hw-toast-content\">{message.title && <strong>{message.title}</strong>}<p>{message.message}</p></div>`.",
+        "vue": "none",
+        "angular": "none",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "SHAPE-01",
+          "what": "[R20] one fixture {id: 'saved', title: 'Draft saved', message: 'You can return later.', tone: 'success'} and one getDismissLabel = m => `Dismiss ${m.title}` passed unchanged render the same text in strong and p and the same dismiss name",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toast-banner-parity.test.ts (extended)"
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "type test: description is not a field of the React ToastMessage",
+          "adapters": [
+            "react"
+          ],
+          "file": "TY"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "field",
+          "old": "ToastMessage.description",
+          "new": "ToastMessage.message",
+          "migration": "{description: node} -> {message: node}"
+        },
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": ".hw-toast-content > div",
+          "new": ".hw-toast-content > p",
+          "migration": "none"
+        }
+      ],
+      "readme": "React README, ToastRegion: messages are {id, title?, message, tone?, urgent?, dismissible?}.",
+      "ownerDecision": null,
+      "notDone": "The React title stays a node; Vue and Angular titles stay strings."
+    },
+    {
+      "ids": [
+        "actions-6"
+      ],
+      "component": "Button (Angular directive)",
+      "summary": "The Angular button directive defaults a native button to type=button and gains loading and disabled inputs, as the React and Vue Button. A button inside a form therefore submits only when type=\"submit\" is written.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "button[hwButton], a[hwButton] / HwButtonDirective: new `@Input({transform: booleanAttribute}) loading = false`, `@Input({transform: booleanAttribute}) disabled = false`, `@Input() type: string | null = null`. `[attr.type]`, `[attr.disabled]` and `[attr.aria-busy]` bound by the application on the element are not supported; use the inputs (static type=\"submit\" and disabled are inputs too).",
+          "vanilla": "authored type=\"button\"; loading is disabled plus aria-busy=\"true\" written by the application"
+        },
+        "dom": "<button class=\"hw-button\" data-variant data-size type=\"{type ?? 'button'}\" [disabled while disabled or loading] [aria-busy=\"true\" while loading]>. On a[hwButton] no type is written unless given, disabled is not written, and loading writes aria-busy only.",
+        "behaviour": "A loading button is natively disabled: it leaves the tab order, ignores click, Enter and Space and does not submit. Focus that was on the button when loading starts is released by the browser; the README tells the application to keep the label and to return focus when the operation ends. aria-busy is written with HwHostAttribute so an authored aria-busy survives when loading is false. Server rendering: all three are attributes in the server HTML."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "presentation.ts:11-15: `host: {class: 'hw-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size', '[attr.type]': \"type ?? (native ? 'button' : null)\", '[attr.disabled]': \"native && (disabled || loading) ? '' : null\"}`; `private readonly native = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement.tagName === 'BUTTON'; private readonly busy = injectHostAttribute('aria-busy'); ngDoCheck() { this.busy.set(this.loading ? 'true' : null); }`. Buttons that the package renders with hwButton (hw-alert, hw-notification-list, hw-feedback, hw-cookie-consent in this cluster) need no type attribute any more.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "BUTTON-01",
+          "what": "[actions-6] a button without type inside a form has type=button and does not submit on click or Enter; type=\"submit\" submits",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/button-parity.test.ts (new)"
+        },
+        {
+          "caseId": "BUTTON-02",
+          "what": "loading: disabled attribute and aria-busy=true; click handler and form submit do not run; clearing loading removes both",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/button-parity.test.ts"
+        },
+        {
+          "caseId": "BUTTON-03",
+          "what": "disabled bound through [disabled] and written statically both disable the button; an authored aria-busy=\"true\" stays while loading is false",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/components.test.ts"
+        },
+        {
+          "caseId": "BUTTON-04",
+          "what": "a[hwButton]: no type and no disabled attribute; loading writes aria-busy",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/components.test.ts"
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML of a default, a submit and a loading button equals the first client render; no hydration mismatch",
+          "adapters": [
+            "angular"
+          ],
+          "file": "SSR"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "<button hwButton> without type submits its form",
+          "new": "type=\"button\" unless a type is written",
+          "migration": "<button hwButton> that submits -> <button hwButton type=\"submit\">"
+        },
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "[attr.disabled] / [attr.aria-busy] on button[hwButton]",
+          "new": "[disabled] / [loading] inputs",
+          "migration": "[attr.disabled]=\"x ? '' : null\" -> [disabled]=\"x\""
+        }
+      ],
+      "readme": "Angular README, Button row: type defaults to button; loading disables and sets aria-busy; disabled is an input. docs/nic-buttons.md:39-40 is rewritten: loading is an input in React, Vue and Angular; vanilla writes disabled and aria-busy.",
+      "ownerDecision": null,
+      "notDone": "A disabled state for a[hwButton] is not added (React and Vue Button render a button only)."
+    },
+    {
+      "ids": [
+        "actions-7"
+      ],
+      "component": "Link (Angular)",
+      "summary": "The Angular link is an attribute directive on the application's own anchor, so routerLink, ARIA and every native attribute apply to the real element. The hw-link component is removed.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "Link: with `external`, an authored rel is kept and noopener noreferrer are added (was replaced).",
+          "angular": "New `a[hwLink]` / HwLinkDirective (exported): `@Input() variant?: 'default' | 'subtle' | 'neutral' | 'standalone'`, `@Input({transform: booleanAttribute}) current = false`, `@Input({transform: booleanAttribute}) disabled = false`, `@Input({transform: booleanAttribute}) external = false`. `hw-link` / HwLinkComponent and its href, target and rel inputs are removed.",
+          "vanilla": "none"
+        },
+        "dom": "<a class=\"hw-link\" href [data-variant] [aria-current=\"page\" with current] [target=\"_blank\" rel=\"{authored rel} noopener noreferrer\" with external]>. Disabled: no href attribute, role=\"link\", aria-disabled=\"true\", tabindex=\"-1\" (the DOM of React expanded-content.tsx:14 and Vue content.ts:18). Without disabled the directive writes none of these and the application's own aria-current, target, rel and tabindex stay.",
+        "behaviour": "Disabled: click and auxclick are cancelled in the capture phase on the anchor (preventDefault and stopImmediatePropagation), so neither the browser nor RouterLink navigates and no application listener runs; the anchor is not focusable. While disabled the href is taken off in ngDoCheck and the value the application last wrote is put back when disabled ends. aria-current, target, rel, role, aria-disabled and tabindex are written with HwHostAttribute (written only while the directive has a value; the application's value put back otherwise). Server rendering: the same attributes on the server; the capture listeners are added only in the browser (injectIsBrowser)."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "content.ts:18: `rel: props.external ? [attrs.rel, 'noopener', 'noreferrer'].filter(Boolean).join(' ') : attrs.rel`.",
+        "angular": "content.ts:15-20: delete HwLinkComponent; add `@Directive({selector: 'a[hwLink]', standalone: true, host: {class: 'hw-link', '[attr.data-variant]': 'variant'}}) export class HwLinkDirective implements DoCheck, OnDestroy` with the four inputs; fields from injectHostAttribute for 'aria-current', 'target', 'rel', 'role', 'aria-disabled', 'tabindex'; `private readonly authoredRel = inject(new HostAttributeToken('rel'), {optional: true})`; ngDoCheck: `current.set(this.current ? 'page' : null); target.set(this.external ? '_blank' : null); rel.set(this.external ? [authoredRel, 'noopener', 'noreferrer'].filter(Boolean).join(' ') : null); role.set(this.disabled ? 'link' : null); ariaDisabled.set(this.disabled ? 'true' : null); tabindex.set(this.disabled ? '-1' : null);` then the href rule: `if (this.disabled) { const href = host.getAttribute('href'); if (href !== null) { this.savedHref = href; renderer.removeAttribute(host, 'href'); } } else if (this.savedHref !== null) { if (!host.hasAttribute('href')) renderer.setAttribute(host, 'href', this.savedHref); this.savedHref = null; }`; constructor, in the browser: `host.addEventListener('click', guard, true); host.addEventListener('auxclick', guard, true)`, removed in ngOnDestroy. public-api.ts exports HwLinkDirective instead of HwLinkComponent. Package templates that need a styled link use `<a hwLink ...>` (hw-notification-list, hw-cookie-consent).",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "LINK-01",
+          "what": "[actions-7] aria-label, hreflang, download and class written on the anchor are on a.hw-link; variant writes data-variant; current writes aria-current=page; external writes target and the merged rel",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/link-parity.test.ts (rewritten for a[hwLink])"
+        },
+        {
+          "caseId": "LINK-02",
+          "what": "disabled: no href, role=link, aria-disabled=true, tabindex=-1, click and auxclick cancelled and no click listener of the application runs; enabling restores the href the application wrote, including one changed while disabled",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/link-parity.test.ts"
+        },
+        {
+          "caseId": "LINK-03",
+          "what": "<a hwLink routerLink=\"/next\"> navigates inside the application without a document load; with disabled it does not navigate",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/link-navigation.test.ts (extended; replaces the hw-link a case at :68)"
+        },
+        {
+          "caseId": "LINK-04",
+          "what": "an application aria-current=\"step\" and rel=\"author\" survive while current and external are false",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/components.test.ts"
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML of a default, an external and a disabled link equals the hydrated DOM; no mismatch",
+          "adapters": [
+            "angular"
+          ],
+          "file": "SSR"
+        },
+        {
+          "caseId": "RENAME-01",
+          "what": "hw-link and HwLinkComponent appear in no README, components.json, llms.txt or docs page",
+          "adapters": [
+            "angular"
+          ],
+          "file": "tests/text-contract-docs.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "removed",
+          "old": "<hw-link href=\"/x\" variant=\"neutral\">Text</hw-link>; import HwLinkComponent",
+          "new": "<a hwLink href=\"/x\" variant=\"neutral\">Text</a>; import HwLinkDirective",
+          "migration": "<hw-link -> <a hwLink; </hw-link> -> </a>; target=\"_blank\" -> external (or keep target and write rel yourself)"
+        },
+        {
+          "adapter": "vue",
+          "kind": "default",
+          "old": "external replaced an authored rel by noopener noreferrer",
+          "new": "external adds them to the authored rel",
+          "migration": "none"
+        }
+      ],
+      "readme": "Angular README, Link row: a[hwLink] with variant, current, disabled, external; works with routerLink; the note that hw-link is removed, with the migration line. packages/angular/test/fixtures/scenarios.ts:78 covers HwLinkDirective.",
+      "ownerDecision": 1,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "service-patterns-12",
+        "R05",
+        "service-patterns-13"
+      ],
+      "component": "Feedback",
+      "summary": "Feedback has one contract and one markup in the four adapters: a named group with two pressed-state choice buttons, then a comment field and a submit button once a choice exists, a value of {helpful, comment}, and a feedback action on submit. Every adapter changes; Angular gains the comment step and two required texts.",
+      "endState": {
+        "surface": {
+          "react": "Feedback: `value?: FeedbackValue`, `defaultValue?: FeedbackValue` (default {helpful: null, comment: ''}), `onValueChange?(value)`, `onFeedback?(value)`; FeedbackValue is the core type (helpful: boolean | null; was 'yes' | 'no' | ''). Props extend ComponentPropsWithRef<'div'> (was 'form'; onReset and other form props are gone). `label` required unless aria-label / aria-labelledby is passed.",
+          "vue": "Feedback: `modelValue?: FeedbackValue`, `defaultValue: FeedbackValue`, `update:modelValue(value: FeedbackValue)` (was a string); event `submit` is renamed `feedback(value: FeedbackValue)`; prop `readonly` is removed; `label` loses `required: true` (rootLabel rule).",
+          "angular": "hw-feedback: `@Input() value: HwFeedbackValue = {helpful: null, comment: ''}`, `(valueChange)` emits HwFeedbackValue (were boolean | null and boolean); new `(feedback)` output; new required inputs `commentLabel`, `submitLabel`; `label` loses {required: true}; forwarded `aria-label`, `aria-labelledby`, `aria-describedby` inputs (kind B). `export type HwFeedbackValue = FeedbackValue`.",
+          "vanilla": "createFeedback options: `value?: FeedbackValue`, `onValueChange?(value: FeedbackValue)`, `onFeedback?(value: FeedbackValue)`, `successMessage?`; `getStatusMessage` is removed. Controller: `{ readonly value: FeedbackValue; select(helpful: boolean): void; setComment(comment: string): void; submit(): void; destroy(): void }`. hw:change detail is `{value}` on a change and `{feedback: value}` on submit."
+        },
+        "dom": "<div class=\"hw-feedback\" role=\"group\" aria-labelledby=\"{id}-label\" data-choice-variant=\"text|icon|icon-text\"><p id=\"{id}-label\">{label}</p><div class=\"hw-feedback-actions\"><button type=\"button\" class=\"hw-button\" data-variant=\"secondary\" aria-pressed=\"true|false\" [disabled]><span class=\"hw-icon hw-feedback-icon\" data-icon=\"thumbs-up\" aria-hidden=\"true\"></span><span class=\"hw-feedback-label\">{yesLabel}</span></button><button ... data-icon=\"thumbs-down\" ...>{noLabel}</button></div>[after a choice: <div class=\"hw-feedback-comment\">{the adapter's Textarea labelled commentLabel}<button type=\"button\" class=\"hw-button\" [disabled]>{submitLabel}</button></div>]<p role=\"status\">{successMessage after a submit, otherwise empty}</p>{default content}</div>. The actions row has no role and no name of its own (the root is the group). An application aria-label or aria-labelledby replaces the reference to the p, which is still rendered when label is given. Vanilla marks the parts: button[data-hw-value=\"yes|no\"], [data-hw-feedback-comment] (authored with hidden) containing a textarea and button[data-hw-feedback-submit], [data-hw-feedback-status], and the optional input[type=hidden][data-hw-feedback-value] that receives yes, no or the empty string. Angular: the div is inside the hw-feedback host (block box) and the textarea is an hw-textarea.",
+        "behaviour": "Choosing sets helpful (true for yes) and notifies value once; pressing the pressed choice again changes nothing. The comment step appears after the first choice and stays; typing notifies value with the new comment. Submit sends feedback(value) once and fills the status; any later change of choice or comment empties the status. No focus is moved: the new controls follow the choices in the tab order. disabled disables both choices, the textarea and submit. Controlled value: the DOM follows the application's value only. The framework components carry no name and take no part in form submission or reset; vanilla resets the authored hidden input, the choice, the comment and the status through core observeFormReset when that input belongs to a form. Vanilla without an authored [data-hw-feedback-submit] reports feedback on the choice itself and fills the status then. Server rendering: ids from useId / injectId; the comment step is rendered on the server when the value already has a choice; the status is present and empty."
+      },
+      "core": [
+        {
+          "export": "FeedbackValue (type, packages/core/src/index.ts)",
+          "signature": "export interface FeedbackValue { helpful: boolean | null; comment: string }",
+          "behaviour": "Type only. helpful null means no choice yet. Re-exported by React and Vue under the same name and by Angular as HwFeedbackValue."
+        }
+      ],
+      "styles": [
+        {
+          "file": "packages/styles/src/feedback.css",
+          "change": "Line 1 comment becomes `/* Feedback choices: one row of pressed-state buttons in every adapter. */`. Delete lines 10-28 (the fieldset and legend rules, `.hw-feedback-actions > .hw-field` and every `.hw-choice` rule), the selector `.hw-feedback-actions .hw-radio,` at line 29 (the visually hidden block then applies to `.hw-feedback[data-choice-variant='icon'] .hw-feedback-label` alone) and the forced-colours block at lines 44-48; in line 43 replace `:is(.hw-button, .hw-choice)` by `.hw-button`. No adapter renders radios in Feedback any more."
+        },
+        {
+          "file": "packages/styles/src/extended.css:259",
+          "change": "Delete `.hw-feedback > h2 { ... }`; the question is the first-child p styled at :224. The rule at :260 gives div.hw-feedback-comment its full-width grid unchanged."
+        },
+        {
+          "file": "packages/styles/src/extended.css (forced-colours block near :306)",
+          "change": "Add `.hw-feedback [aria-pressed='true'] { outline-color: Highlight; }`."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-content.tsx:164-170: delete the local FeedbackValue, `export type { FeedbackValue } from '@hawiyah/core'`; `const empty: FeedbackValue = { helpful: null, comment: '' }`; root `<div {...props} role=\"group\" className={cx('hw-feedback', className)} data-choice-variant={choiceVariant} aria-labelledby={props['aria-labelledby'] ?? (question && !hasText(props['aria-label']) ? `${id}-label` : undefined)}>`; `{question && <p id={`${id}-label`}>{question}</p>}` (question computed as the NotificationList heading in R14); two `<Button variant=\"secondary\" disabled={disabled} aria-pressed={current.helpful === true} onClick={() => choose(true)}>` with the icon and label spans; `{current.helpful !== null && <div className=\"hw-feedback-comment\"><Textarea label={copy.comment} value={current.comment} disabled={disabled} onChange={...} /><Button disabled={disabled} onClick={() => { onFeedback?.(current); setSent(true); }}>{copy.submit}</Button></div>}`; `<p role=\"status\">{sent ? copy.success : null}</p>{children}`. choose() returns when the choice is unchanged. Remove the Radio import, the form handlers and the queueMicrotask reset.",
+        "vue": "patterns.ts:215-312: delete the local FeedbackValue and re-export the core type; `modelValue: Object as PropType<FeedbackValue>`, `defaultValue: { type: Object as PropType<FeedbackValue>, default: () => ({ helpful: null, comment: '' }) }`, `label: String`, delete readonly and the local comment ref; emits `'update:modelValue'` and `feedback`; root `h('div', mergeProps(attrs, { class: 'hw-feedback', role: 'group', 'aria-labelledby': ..., 'data-choice-variant': props.choiceVariant }))`; `h('p', { id })` replaces the h2; actions `h('div', { class: 'hw-feedback-actions' }, ...)` with 'aria-pressed': model.value.value.helpful === (value === 'yes'); comment step wrapped in `h('div', { class: 'hw-feedback-comment' })`, Textarea bound to model.value.value.comment through model.set({...}); submit emits 'feedback'.",
+        "angular": "content.ts:186-187: `host: forwardedAriaHost`; imports [HwButtonDirective, HwTextareaComponent]; template `<div class=\"hw-feedback\" role=\"group\" [attr.data-choice-variant]=\"choiceVariant\" [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby ?? (!ariaLabel && label ? id + '-label' : null)\" [attr.aria-describedby]=\"ariaDescribedby\">@if (question; as text) {<p [id]=\"id + '-label'\">{{ text }}</p>}<div class=\"hw-feedback-actions\"><button hwButton variant=\"secondary\" [disabled]=\"disabled\" [attr.aria-pressed]=\"value.helpful === true\" (click)=\"choose(true)\">...</button><button hwButton variant=\"secondary\" [disabled]=\"disabled\" [attr.aria-pressed]=\"value.helpful === false\" (click)=\"choose(false)\">...</button></div>@if (value.helpful !== null) {<div class=\"hw-feedback-comment\"><hw-textarea [label]=\"texts.need('commentLabel', commentLabel) ?? ''\" [value]=\"value.comment\" [disabled]=\"disabled\" (valueChange)=\"comment($event)\" /><button hwButton [disabled]=\"disabled\" (click)=\"submit()\">{{ texts.need('submitLabel', submitLabel) }}</button></div>}<p role=\"status\">{{ sent ? texts.need('successMessage', successMessage) : '' }}</p><ng-content /></div>`; `@Input({required: true}) commentLabel = ''; @Input({required: true}) submitLabel = ''; @Output() readonly feedback = new EventEmitter<HwFeedbackValue>(); readonly id = injectId('hw-feedback'); protected sent = false;` choose, comment and submit replace `value` by a new object and emit.",
+        "vanilla": "content.ts:62-89: options and controller as in surface; `const yes = buttons.find(b => b.dataset.hwValue === 'yes'), no = ...` (other data-hw-value values are ignored); comment region `root.querySelector('[data-hw-feedback-comment]')`, its textarea and `[data-hw-feedback-submit]`; remember 'hidden' on the region and 'value' on the textarea; render(): aria-pressed, region.hidden = helpful === null, hidden input value, status text only after submit; listeners: click on choices, input on the textarea, click on submit; `emit(root, { value })` + onValueChange on a change, `emit(root, { feedback: value })` + onFeedback on submit (or on the choice when no submit button is authored); replace the reset listener at :87 by `observeFormReset(input, reset)` when the hidden input exists; delete getStatusMessage."
+      },
+      "tests": [
+        {
+          "caseId": "FEEDBACK-01",
+          "what": "[service-patterns-13] first render: div[role=group] labelled by the p with the question, two button.hw-button[data-variant=secondary] with aria-pressed=false inside .hw-feedback-actions, no textarea, an empty p[role=status]; no form, fieldset, legend, radio or h2",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FB"
+        },
+        {
+          "caseId": "FEEDBACK-02",
+          "what": "[service-patterns-12][R05] choosing yes sets aria-pressed, notifies {helpful: true, comment: ''} once, shows the labelled textarea and the submit button and leaves the status empty; choosing yes again notifies nothing",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FB"
+        },
+        {
+          "caseId": "FEEDBACK-03",
+          "what": "typing 'Thanks' then submit: feedback notified once with {helpful: true, comment: 'Thanks'}, status shows successMessage; choosing no afterwards empties the status and notifies {helpful: false, comment: 'Thanks'}",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FB"
+        },
+        {
+          "caseId": "STATE-02",
+          "what": "controlled value that the application does not update: the pressed state and the comment step do not change, the notification still fires; STATE-03 changing the controlled value does not notify; STATE-04 v-model and [(value)] round-trip; STATE-06 vanilla hw:change details {value} and {feedback}",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FB"
+        },
+        {
+          "caseId": "FEEDBACK-04",
+          "what": "disabled: both choices, the textarea and submit are disabled and nothing notifies; keyboard: Tab order yes, no, textarea, submit; Enter and Space activate the buttons; focus stays on the pressed choice when the comment step appears",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "FB"
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "each of label, yesLabel, noLabel, commentLabel, submitLabel, successMessage missing: nothing rendered in its place and one warning naming Feedback / hw-feedback; NAME-02 application aria-label alone needs no label",
+          "adapters": [
+            "react",
+            "vue",
+            "angular",
+            "vanilla"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "FEEDBACK-05",
+          "what": "vanilla: a form reset restores the authored choice, comment, hidden input and empty status (RESET-01 wording of forms-core); markup without [data-hw-feedback-submit] reports feedback on the choice",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "packages/vanilla/test/content.test.ts"
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML without a choice and with value {helpful: false, comment: 'x'} equals the first client render; ATTR-03 / SSR-04 for the forwarded name on hw-feedback",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "SSR"
+        },
+        {
+          "caseId": "FEEDBACK-06",
+          "what": "choices stay in one row and the comment step takes the full width below them, text / icon / icon-text, LTR and RTL, 320px and desktop; pressed outline visible in forced colours",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "tests/browser/feedback-composition.spec.ts (rewritten against a static fixture)"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "field",
+          "old": "FeedbackValue.helpful: 'yes' | 'no' | ''",
+          "new": "boolean | null",
+          "migration": "'yes' -> true; 'no' -> false; '' -> null"
+        },
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": "form > fieldset > legend, radios, textarea[name=comment], submit button; props of a form",
+          "new": "div[role=group] > p, pressed buttons, comment step after a choice; props of a div",
+          "migration": "onSubmit / onReset handlers on Feedback -> onFeedback; a surrounding form no longer receives helpful and comment fields"
+        },
+        {
+          "adapter": "vue",
+          "kind": "input",
+          "old": "v-model string 'yes' | 'no' | ''; @submit {value, comment}; readonly",
+          "new": "v-model FeedbackValue; @feedback FeedbackValue; disabled",
+          "migration": "v-model=\"choice\" -> v-model=\"value\" with value = {helpful: null, comment: ''}; @submit=\"fn\" -> @feedback=\"fn\" (payload.value -> payload.helpful); readonly -> disabled"
+        },
+        {
+          "adapter": "vue",
+          "kind": "markup",
+          "old": "section[aria-label] > h2, div.hw-button-group[role=group][aria-label]",
+          "new": "div[role=group][aria-labelledby] > p, div.hw-feedback-actions",
+          "migration": ".hw-feedback > h2 -> .hw-feedback > p"
+        },
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "[(value)]: boolean | null; success shown on the choice",
+          "new": "[(value)]: HwFeedbackValue; required commentLabel and submitLabel; (feedback) on submit; success shown after submit",
+          "migration": "[(value)]=\"helpful\" -> [(value)]=\"feedback\" with feedback = {helpful: null, comment: ''}; add commentLabel=\"...\" submitLabel=\"...\"; read $event.helpful"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "input",
+          "old": "value: string; onValueChange(string); getStatusMessage; status on the choice",
+          "new": "value: FeedbackValue; onValueChange(FeedbackValue); onFeedback; authored comment step; status after submit",
+          "migration": "detail.value === 'yes' -> detail.value.helpful === true; getStatusMessage -> set successMessage; add the [data-hw-feedback-comment] block to keep parity, or leave it out to report on the choice"
+        }
+      ],
+      "readme": "Four READMEs, Feedback: the contract table (value, feedback action, six texts), the markup, the statement that nothing is sent anywhere, and for vanilla the marker attributes. docs/feedback-presentation.md:12-15 is rewritten in place (one contract; choiceVariant unchanged). components.json feedback notes and llms.txt likewise. apps/playground/src/component-layout-guides.ts:163-179 usage and frameworkNotes are corrected in the same change.",
+      "ownerDecision": 7,
+      "notDone": "No opt-out of the comment step in the framework adapters; no form participation (name) for the framework components."
+    },
+    {
+      "ids": [
+        "R04",
+        "service-patterns-19"
+      ],
+      "component": "CookieConsent",
+      "summary": "CookieConsent has one contract: the state open and the action consent('accepted' | 'rejected'), an optional preferences action, and a region named by its heading. The buttons are Accept, Reject, Preferences in that order inside a button group in every adapter.",
+      "endState": {
+        "surface": {
+          "react": "CookieConsent: `open?: boolean`, `defaultOpen?: boolean` (default true), `onOpenChange?(open: boolean)`, `onConsent?(choice: ConsentChoice)`; `value`, `defaultValue`, `onValueChange` and the type CookieChoice are removed; children are rendered after the policy link.",
+          "vue": "CookieConsent: events `accept` and `reject` are replaced by `consent(choice: ConsentChoice)`; `open`, `defaultOpen`, `update:open` stay.",
+          "angular": "hw-cookie-consent: `visible` / `(visibleChange)` are renamed `open` / `(openChange)`; `(consent)` stays; `description` becomes {required: true}.",
+          "vanilla": "createCookieConsent options: `open?: boolean`, `onOpenChange?(open)`, `onConsent?(choice)`, `storageKey?`; `onValueChange` is removed. Controller `{ readonly open: boolean; setOpen(open: boolean): void; choose(choice: ConsentChoice): void; destroy(): void }` (`value` is removed). hw:change details: `{consent: choice}` then `{open: false}`."
+        },
+        "dom": "<section class=\"hw-cookie-consent\" aria-labelledby=\"{id}-title\" [data-variant=\"banner\"] [hidden while closed]><h2 id=\"{id}-title\">{title}</h2><p>{description}</p>[<a class=\"hw-link\" href=\"{policyHref}\">{policyLabel}</a>]{default content}<div class=\"hw-button-group\"><button type=\"button\" class=\"hw-button\" data-variant=\"primary\">{acceptLabel}</button><button type=\"button\" class=\"hw-button\" data-variant=\"secondary\">{rejectLabel}</button>[<button type=\"button\" class=\"hw-button\" data-variant=\"ghost\">{preferencesLabel}</button> while a preferences handler is bound]</div></section>. No explicit role on a section. An application aria-label or aria-labelledby replaces the reference to the h2. Angular: the hw-cookie-consent host is the root (kind A) and therefore carries role=\"region\", aria-labelledby and hidden itself; that is the one difference, because a custom element has no implicit landmark role. Vanilla buttons keep data-hw-consent=\"accepted|rejected\".",
+        "behaviour": "Accept or Reject notifies consent(choice) once, then closes: uncontrolled the region gets hidden and open notifies false; controlled it stays until the application sets open. Preferences only notifies. Tab order: policy link, Accept, Reject, Preferences. Non-modal: no focus trap. Focus after closing: see conventionConflicts; the README tells the application where to send it. Nothing is persisted by the frameworks; vanilla storageKey is unchanged and a stored choice starts the controller closed. Server rendering: open and controlled-closed render the same DOM as the first client render (hidden attribute)."
+      },
+      "core": [
+        {
+          "export": "ConsentChoice (type, packages/core/src/index.ts)",
+          "signature": "export type ConsentChoice = 'accepted' | 'rejected'",
+          "behaviour": "Type only; moved from vanilla/src/content.ts:91, re-exported by vanilla, React and Vue and by Angular as HwConsentChoice."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "expanded-content.tsx:171-178: delete CookieChoice; base props `Omit<ComponentPropsWithRef<'section'>, 'title'>` with open, defaultOpen, onOpenChange, onConsent, variant (see service-patterns-21); `const [open, setOpen] = useControllable(openProp, defaultOpen, onOpenChange); const choose = (choice: ConsentChoice) => { onConsent?.(choice); setOpen(false); };` root `hidden={!open}`, `aria-labelledby={props['aria-labelledby'] ?? (heading && !hasText(props['aria-label']) ? `${id}-title` : undefined)}`, `{heading && <h2 id=...>}`; after the policy link `{children}`; `<div className=\"hw-button-group\"><Button onClick={() => choose('accepted')}>...</Button><Button variant=\"secondary\" onClick={() => choose('rejected')}>...</Button>{onPreferences && <Button variant=\"ghost\" ...>}</div>`.",
+        "vue": "patterns.ts:313-386: emits `'update:open'`, `consent: (_choice: ConsentChoice) => true`, `preferences`; `const id = useId()`; root: remove role and aria-label, add 'aria-labelledby': attrs['aria-labelledby'] ?? (title && !optionalText(attrs['aria-label']) ? `${id}-title` : undefined) with title = needText('CookieConsent', 'title', props.title); `title && h('h2', { id: `${id}-title` }, title)`; handlers `emit('consent', 'accepted'); model.set(false);` and the same for 'rejected'.",
+        "angular": "content.ts:188-189: `host: {class: 'hw-cookie-consent', '[attr.title]': 'null', '[attr.hidden]': \"open ? null : ''\", '[attr.data-variant]': 'variant'}`; template `@if (texts.need('title', title); as text) {<h2 [id]=\"titleId\">{{ text }}</h2>}<p>{{ texts.need('description', description) }}</p>@if (policyHref) {<a hwLink [href]=\"policyHref\">{{ texts.need('policyLabel', policyLabel, 'policyHref is set') }}</a>}<ng-content /><div class=\"hw-button-group\"><button hwButton (click)=\"choose('accepted')\">...</button><button hwButton variant=\"secondary\" (click)=\"choose('rejected')\">...</button>@if (hasPreferencesListener()) {<button hwButton variant=\"ghost\" (click)=\"preferences.emit()\">...</button>}</div>`; `@Input({transform: booleanAttribute}) open = true; @Output() readonly openChange = new EventEmitter<boolean>();` `choose(choice) { this.consent.emit(choice); this.open = false; this.openChange.emit(false); }`; ngDoCheck: `const named = !!host.getAttribute('aria-label')?.trim() || (!!host.getAttribute('aria-labelledby')?.trim() && host.getAttribute('aria-labelledby') !== this.written); this.written = named || !this.title ? null : this.titleId; this.role.set('region'); this.labelledby.set(this.written);` (role and labelledby from injectHostAttribute).",
+        "vanilla": "content.ts:91-108: options and controller as in surface; `let open = options.open ?? true` (false when storageKey holds a choice); `remember(scope, root, ['hidden'])`; `setOpen(next)` writes root.hidden, emits `{open}` and calls onOpenChange only on a change; `choose(choice)` stores when storageKey is set, emits `{consent: choice}`, calls onConsent, then setOpen(false); ConsentChoice imported from core."
+      },
+      "tests": [
+        {
+          "caseId": "CONSENT-01",
+          "what": "[service-patterns-19] the buttons are inside div.hw-button-group in the order Accept (primary), Reject (secondary), Preferences (ghost, only with a handler); Tab order follows it",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CC"
+        },
+        {
+          "caseId": "CONSENT-02",
+          "what": "[R04] the region is labelled by its h2 (aria-labelledby = the h2 id, no aria-label); an application aria-label replaces it",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CC"
+        },
+        {
+          "caseId": "STATE-01",
+          "what": "uncontrolled: Reject notifies consent('rejected') once, then open false once, and the root is hidden; STATE-02 controlled open=true that the application keeps: consent fires, the root stays visible; STATE-03 setting open from the application does not notify; STATE-04 v-model:open and [(open)] round-trip; STATE-06 vanilla details {consent} then {open: false}",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CC"
+        },
+        {
+          "caseId": "TEXT-03",
+          "what": "no Preferences button without a handler; TEXT-01 title, description, acceptLabel, rejectLabel missing: nothing in their place, one warning each; policyLabel and preferencesLabel only under their condition",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TC"
+        },
+        {
+          "caseId": "STATE-05",
+          "what": "server render open and closed equals the first client render; ATTR-01 / ATTR-02 for hw-cookie-consent (class, id on the host; role and aria-labelledby written, an application aria-label wins)",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "SSR; AH"
+        },
+        {
+          "caseId": "CONSENT-03",
+          "what": "below 40rem the three buttons are a full-width stacked grid in every direction; the same geometry for the React-shaped markup as for the vanilla markup",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "BR"
+        },
+        {
+          "caseId": "RENAME-02",
+          "what": "React value / onValueChange, Vue @accept / @reject listeners (type level), Angular visible are not accepted",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "TY"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "input",
+          "old": "value / defaultValue: CookieChoice; onValueChange(choice)",
+          "new": "open / defaultOpen / onOpenChange(open); onConsent(choice)",
+          "migration": "onValueChange={fn} -> onConsent={fn}; value={choice} -> open={choice === null}; defaultValue={null} -> delete"
+        },
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": "div.hw-inline with Reject then Accept",
+          "new": "div.hw-button-group with Accept then Reject",
+          "migration": ".hw-cookie-consent > .hw-inline -> .hw-cookie-consent > .hw-button-group"
+        },
+        {
+          "adapter": "vue",
+          "kind": "output",
+          "old": "@accept, @reject",
+          "new": "@consent with 'accepted' | 'rejected'",
+          "migration": "@accept=\"a\" @reject=\"r\" -> @consent=\"choice => choice === 'accepted' ? a() : r()\""
+        },
+        {
+          "adapter": "vue",
+          "kind": "markup",
+          "old": "section[role=region][aria-label]",
+          "new": "section[aria-labelledby] named by its h2",
+          "migration": "none"
+        },
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "[(visible)], (visibleChange)",
+          "new": "[(open)], (openChange)",
+          "migration": "[(visible)]=\"x\" -> [(open)]=\"x\"; (visibleChange) -> (openChange)"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-cookie-consent > section.hw-cookie-consent, removed from the DOM when closed",
+          "new": "hw-cookie-consent.hw-cookie-consent[role=region], hidden when closed",
+          "migration": "hw-cookie-consent > .hw-cookie-consent -> .hw-cookie-consent"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "input",
+          "old": "onValueChange(choice); controller.value; hw:change {value}",
+          "new": "onConsent(choice), onOpenChange(open); controller.open, setOpen; hw:change {consent} and {open}",
+          "migration": "onValueChange -> onConsent; event.detail.value -> event.detail.consent"
+        }
+      ],
+      "readme": "Four READMEs, CookieConsent: the contract (open, consent, preferences), the button order and emphasis (Accept primary, Reject secondary, stated once as the packaged presentation), named by title, nothing persisted by the frameworks, where to send focus after the choice. Vanilla README markup: Reject carries data-variant=\"secondary\". components.json and llms.txt likewise; apps/playground/src/component-layout-guides.ts:184-197 corrected in the same change.",
+      "ownerDecision": 7,
+      "notDone": "No focus hand-over when the region closes (see conventionConflicts). Equal emphasis of Accept and Reject is a question for the owner."
+    },
+    {
+      "ids": [
+        "service-patterns-21"
+      ],
+      "component": "CookieConsent (banner variant)",
+      "summary": "The fixed banner is a typed variant input in every adapter. In Angular it is written on the host, which is the consent region.",
+      "endState": {
+        "surface": {
+          "react": "CookieConsent: `variant?: 'banner'`.",
+          "vue": "CookieConsent: `variant?: 'banner'`.",
+          "angular": "hw-cookie-consent: `@Input() variant?: 'banner'`.",
+          "vanilla": "authored data-variant=\"banner\""
+        },
+        "dom": "data-variant=\"banner\" on the element with class hw-cookie-consent; absent when variant is not given.",
+        "behaviour": "The banner is position: fixed at the block end (extended.css:225). The README repeats that it must not cover focused controls (WCAG 2.4.11) and that the page needs matching end padding while it is open."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "expanded-content.tsx:172-177: `variant?: 'banner'`; `data-variant={variant ?? (props as Record<string, unknown>)['data-variant']}`.",
+        "vue": "patterns.ts:316-328: `variant: String as PropType<'banner'>`; 'data-variant': props.variant ?? attrs['data-variant'].",
+        "angular": "content.ts:189: `@Input() variant?: 'banner';` bound by the host binding listed in R04.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "CONSENT-04",
+          "what": "[service-patterns-21] variant=banner writes data-variant on .hw-cookie-consent; no attribute without it",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "CC"
+        },
+        {
+          "caseId": "CONSENT-05",
+          "what": "the Angular-shaped markup (hw-cookie-consent.hw-cookie-consent[data-variant=banner]) computes position fixed at the block end, in LTR and RTL",
+          "adapters": [
+            "angular"
+          ],
+          "file": "BR"
+        }
+      ],
+      "migration": [],
+      "readme": "Three framework READMEs, CookieConsent: variant=\"banner\".",
+      "ownerDecision": 1,
+      "notDone": "none"
+    }
+  ],
+  "conventionConflicts": [
+    {
+      "convention": "angular-host-attributes (index 3): a kind-A host that writes role uses HwHostAttribute, never a host binding",
+      "component": "hw-alert",
+      "ids": [
+        "feedback-status-1",
+        "spike-G3"
+      ],
+      "conflict": "HwHostAttribute writes the component's value while it has one. The alert always has one (derived from tone), so an application role on the host could never win.",
+      "closest": "`role` stays an input and the host binding writes `role ?? (tone === 'danger' ? 'alert' : 'status')`. Static role=\"status\" and [role] both reach the input, so nothing of the application is removed; [attr.role] on hw-alert is documented as unsupported, like [attr.aria-label] on wrapper hosts. The same reasoning gives button[hwButton] its type and disabled inputs."
+    },
+    {
+      "convention": "focus-when-a-control-becomes-unavailable (index 14), rule (b)",
+      "component": "Alert dismiss, CookieConsent accept / reject, the last Chip",
+      "ids": [
+        "feedback-status-2",
+        "R00",
+        "R04",
+        "feedback-status-12"
+      ],
+      "conflict": "The rule needs a next or previous item or a container of the component. A dismissed alert and a closed consent region are themselves the container and are removed or hidden by the application; a single chip has no sibling and its parent belongs to the application.",
+      "closest": "Chip hands focus to the neighbouring chip's remove button through core prepareRemovalFocus and does nothing when there is none. Alert and CookieConsent move no focus; their READMEs state that the application sends focus to the element the message concerned, the main heading, or the control that reopens the preferences. FOCUS-04 is asserted for Chip (with siblings) and NotificationList only."
+    },
+    {
+      "convention": "angular-host-attributes (index 3): default assignment and 'size input' for hw-progress and hw-meter (renames list)",
+      "component": "hw-meter, hw-timeline, hw-description-list, hw-icon-button, hw-divider",
+      "ids": [
+        "feedback-status-8",
+        "content-display-16",
+        "content-display-11",
+        "feedback-status-14"
+      ],
+      "conflict": "The assignment does not list hw-timeline, hw-description-list, hw-icon-button or hw-divider, and the renames entry gives hw-meter a size input although the stylesheet defines sizes for .hw-progress only (extended.css:279).",
+      "closest": "hw-timeline, hw-description-list and hw-icon-button are kind B (their roots are ol, dl and button inside the component); hw-divider is left as it is. hw-meter gets no size input; hw-progress does."
+    },
+    {
+      "convention": "name-without-visible-label (index 4), Angular kind A: 'asks texts.need only when !hostHasName(host)'",
+      "component": "hw-button-group, hw-avatar-group, hw-cookie-consent",
+      "ids": [
+        "feedback-status-14",
+        "content-display-7",
+        "R04"
+      ],
+      "conflict": "These hosts write their own aria-label or aria-labelledby on the host. hostHasName then also sees the component's own value from the previous pass, and the attribute would be written and removed in alternate passes.",
+      "closest": "hw-button-group and hw-avatar-group write `label` through injectHostAttribute while it is given and ask hostHasName only when it is not, as hw-side-navigation does, so hostHasName never sees a value of the component. hw-cookie-consent, whose own value is aria-labelledby, compares the attribute with the id it wrote last in place."
+    },
+    {
+      "convention": "controlled-and-observable-state (index 8): an action is named by its verb (dismiss, remove, read)",
+      "component": "Angular outputs of Alert, Chip, NotificationList",
+      "ids": [
+        "feedback-status-2",
+        "feedback-status-12",
+        "content-display-21"
+      ],
+      "conflict": "The rule reads as (dismiss) and (remove) for Angular, while the renames list of the same file fixes '(dismissed)' for hw-alert and the existing outputs are participles ((dismissed), (removed), (toggled)).",
+      "closest": "Existing Angular outputs keep their names; the new ones are (read) and (feedback). React renames onMarkRead to onRead so the action is `read` in the three frameworks. If the owner wants verbs in Angular too, it is a rename of (dismissed) and (removed) across four clusters."
+    },
+    {
+      "convention": "native-form-reset (index 2): every Hawiyah control",
+      "component": "Feedback",
+      "ids": [
+        "service-patterns-12"
+      ],
+      "conflict": "The unified Feedback carries no name and submits nothing in the framework adapters, so there is no reset target; React's former onReset handling goes with the form element.",
+      "closest": "The framework components take no part in form reset. The vanilla controller keeps its optional authored hidden input and resets through core observeFormReset when that input belongs to a form."
+    },
+    {
+      "convention": "reference-adapter-and-recording (index 0), rule (1): documented vanilla markup is the reference DOM",
+      "component": "Stat, Timeline, CookieConsent",
+      "ids": [
+        "content-display-14",
+        "content-display-16",
+        "service-patterns-19"
+      ],
+      "conflict": "The only authored vanilla markup for these is in apps/playground guides, which rule (1) does not name and which will be replaced; it contradicts itself (Stat as span/strong and as dl; Timeline titles as strong and as h3; both consent buttons primary).",
+      "closest": "Decided by rule (2) where accessibility differs (NotificationList badge and heading) and by rule (3) otherwise; each choice is in `decisions`. The guide snippets are corrected with the change."
+    }
+  ],
+  "closedAlready": [
+    {
+      "id": "feedback-status-11",
+      "part": "stylesheet half (React and Vue icon wrapper is styled)",
+      "evidence": "packages/styles/src/components.css:280-281 styles `.hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child)`; react/src/display.tsx:226 and vue/src/display.ts:219 render that span first. Remaining: the class on the wrapper and the Angular regions (item feedback-status-11)."
+    },
+    {
+      "id": "content-display-21",
+      "part": "Vue dead buttons",
+      "evidence": "packages/vue/src/patterns.ts:445 and :454 render the buttons only while listens(props.onRead) / listens(props.onDismiss). Remaining: React dismiss, Angular read (item content-display-21)."
+    },
+    {
+      "id": "content-display-13",
+      "part": "number formatting in Stat",
+      "evidence": "No adapter formats the value: react/src/expanded-content.tsx:28, vue/src/content.ts:160 (String(value)), angular/src/content.ts:37. Remaining: the DOM, merged into content-display-14."
+    }
+  ],
+  "questions": [
+    "Reading note: ownerDecision is the 0-based index into conventions.json ownerDecisions (1 = Angular wrapper hosts and a[hwLink], 7 = Feedback and CookieConsent).",
+    "Owner, CookieConsent: Accept stays primary and Reject secondary because all three frameworks render it so today. Equal emphasis (both secondary) is the more defensible consent pattern and would be a one-attribute change per adapter; it is a product decision and is not made here.",
+    "Owner or conventions: Angular action outputs keep the participle form ((dismissed), (removed)) while new ones are (read) and (feedback); see conventionConflicts entry 5. React NotificationList onMarkRead -> onRead is added to the renames list by this specification.",
+    "forms-core: this specification assumes host-attributes.ts exports forwardedAriaHost, injectHostAttribute(name) returning an object with set(value: string | null), and hostHasName(host), as its sharedApi lists. hw-icon-button (content.ts:21-30) is not in any finding; its describedBy input is renamed to aria-describedby here so that no describedBy input survives, and its label follows the name rule. If forms-core or the navigation cluster also specifies hw-icon-button, theirs wins.",
+    "forms-core / layout.css: this cluster appends hw-progress, hw-meter, hw-description-list, hw-timeline, hw-notification-list and hw-feedback to the wrapper-host block list and removes hw-alert from layout.css:133. hw-feedback renders an hw-textarea and vanilla Feedback calls observeFormReset, both defined by forms-core (dependsOn).",
+    "rich-inputs-files: TagInput renders its own span.hw-chip markup (angular/src/advanced-controls.ts:188) and does not use the Chip component, so the focus hand-over of Chip and of TagInput cannot meet; the stylesheet change to `.hw-chip button` (hover only while enabled, disabled colour) applies to its chips too.",
+    "navigation-menus-shell: ServiceCard and ServiceDetails use DescriptionList and Card; the DescriptionList default (stacked, no data-variant) and the forwarded aria inputs of hw-card apply to them unchanged.",
+    "Not verified by running code in this step (read-only): the grid placement of two action buttons plus badge in a notification item (NOTIFICATION-04), and the order in which React runs a layout-effect cleanup relative to detaching the node (the Chip uses a microtask for that reason). The first test written for each must run before the implementation is finished."
+  ],
+  "decisions": [
+    {
+      "component": "Alert",
+      "question": "Default role of a danger alert in Angular",
+      "choice": "role by tone (danger: alert, otherwise status)",
+      "basis": "repository",
+      "source": "packages/react/README.md:86; react/src/display.tsx:74; vue/src/display.ts:71",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Alert",
+      "question": "How dismiss is switched on",
+      "choice": "by the bound handler alone; Angular `dismissible` removed; vanilla is the authored button",
+      "basis": "repository",
+      "source": "conventions.json text-contract-for-new-text; docs/dga-checklist-review.md:54 (row 75)",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Progress, Meter",
+      "question": "Visible label and value policy",
+      "choice": "native element named by aria-label, raw values, Meter defaults min 0 / max 100 / no regions",
+      "basis": "majority",
+      "source": "React and Vue render the bare element; the browser clamps (audit verifier note on feedback-status-7); packages/vue/README.md:238 and packages/angular/README.md:170 promise native meter semantics",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Meter",
+      "question": "Is value required",
+      "choice": "optional, default 0",
+      "basis": "majority",
+      "source": "React and Angular optional, Vue required; the smaller public change",
+      "changedAdapters": [
+        "vue"
+      ]
+    },
+    {
+      "component": "Skeleton",
+      "question": "Sizing API",
+      "choice": "style or class on the element; Angular width / height removed; variant input everywhere",
+      "basis": "majority",
+      "source": "react/src/display.tsx:186; vue/src/display.ts:186; the Angular host is now the styled element",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Chip",
+      "question": "Markup of the remove control",
+      "choice": "plain button styled by `.hw-chip button` (24px square)",
+      "basis": "repository",
+      "source": "packages/styles/src/components.css:242; apps/playground/src/component-expanded-guides.ts:246",
+      "changedAdapters": [
+        "react",
+        "vue"
+      ]
+    },
+    {
+      "component": "Stat",
+      "question": "dl / dt / dd (React) or label span and strong value (Vue, Angular, guide markup)",
+      "choice": "span.hw-stat-label, strong.hw-stat-value, p.hw-stat-description, span.hw-stat-trend",
+      "basis": "majority",
+      "source": "vue/src/content.ts:155-164; angular/src/content.ts:37; guide usage component-expanded-guides.ts:253. The guide markup is not one of the documents rule (1) names and contradicts itself (content-project-recipes.ts:93 uses dl), and neither structure is clearly better for assistive technology",
+      "changedAdapters": [
+        "react",
+        "angular"
+      ]
+    },
+    {
+      "component": "Timeline",
+      "question": "Order and elements inside an item",
+      "choice": "h3 title, time, p description; li.hw-timeline-item",
+      "basis": "majority",
+      "source": "vue/src/content.ts:194-203; the stylesheet styles .hw-timeline-item h3 and p (extended.css:207)",
+      "changedAdapters": [
+        "react",
+        "angular"
+      ]
+    },
+    {
+      "component": "Timeline, NotificationList",
+      "question": "A dateTime without dateLabel",
+      "choice": "nothing is shown; the raw ISO value is never printed",
+      "basis": "repository",
+      "source": "conventions.json value-display-and-formatting",
+      "changedAdapters": [
+        "vue"
+      ]
+    },
+    {
+      "component": "NotificationList",
+      "question": "Unread cue: visible badge, screen-reader-only text, or none",
+      "choice": "visible Badge tone info with the required unreadLabel",
+      "basis": "accessibility",
+      "source": "WCAG 1.4.1: the state must not depend on background colour; react/src/expanded-content.tsx:183",
+      "changedAdapters": [
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "NotificationList",
+      "question": "Heading and empty state",
+      "choice": "visible h2 with aria-labelledby; plain p when empty",
+      "basis": "accessibility",
+      "source": "a visible name for the region; react/src/expanded-content.tsx:183",
+      "changedAdapters": [
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "NotificationList",
+      "question": "Name of the mark-read action",
+      "choice": "read: React onRead, Vue @read, Angular (read); the text stays getMarkReadLabel",
+      "basis": "repository",
+      "source": "conventions.json controlled-and-observable-state ('dismiss, remove, read') and text-contract-for-new-text",
+      "changedAdapters": [
+        "react",
+        "angular"
+      ]
+    },
+    {
+      "component": "ToastRegion",
+      "question": "Body field and element",
+      "choice": "message, rendered in a p",
+      "basis": "majority",
+      "source": "vue/src/expansion-interactive.ts:410-417,442; angular/src/interactions.ts:64,72",
+      "changedAdapters": [
+        "react"
+      ]
+    },
+    {
+      "component": "Feedback",
+      "question": "Choice control and question element",
+      "choice": "pressed-state buttons inside a div[role=group] labelled by a p",
+      "basis": "repository",
+      "source": "docs/feedback-presentation.md:9-12 (hw-feedback-actions row, buttons); vanilla, Vue and Angular already use buttons",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular",
+        "vanilla"
+      ]
+    },
+    {
+      "component": "Feedback",
+      "question": "Contract",
+      "choice": "value {helpful: boolean | null, comment}, comment step after a choice, feedback action on submit",
+      "basis": "repository",
+      "source": "conventions.json ownerDecisions[7]",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular",
+        "vanilla"
+      ]
+    },
+    {
+      "component": "CookieConsent",
+      "question": "Contract, order and container",
+      "choice": "open + consent(choice); Accept, Reject, Preferences in div.hw-button-group; named by the h2",
+      "basis": "repository",
+      "source": "conventions.json ownerDecisions[7]; Vue, Angular and the guide markup agree on order and container",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular",
+        "vanilla"
+      ]
+    },
+    {
+      "component": "CookieConsent",
+      "question": "Emphasis of Accept and Reject",
+      "choice": "unchanged: Accept primary, Reject secondary",
+      "basis": "majority",
+      "source": "all three frameworks render it so today (react/src/expanded-content.tsx:177, vue/src/patterns.ts:356-376, angular/src/content.ts:188); see questions",
+      "changedAdapters": []
+    },
+    {
+      "component": "Angular outputs",
+      "question": "Verb or participle for actions",
+      "choice": "existing outputs keep their names ((dismissed), (removed)); new ones are (read) and (feedback); (consent) stays",
+      "basis": "repository",
+      "source": "conventions.json renames (hw-alert: 'rendered while (dismissed) is bound'); the other specifications keep (toggled), (rejected)",
+      "changedAdapters": [
+        "angular"
+      ]
+    }
+  ],
+  "testFiles": {
+    "FS": "tests/feedback-status-parity.test.ts (new)",
+    "CD": "tests/content-display-parity.test.ts (extended)",
+    "NL": "tests/notification-list-parity.test.ts (new)",
+    "FB": "tests/feedback-parity.test.ts (new)",
+    "CC": "tests/cookie-consent-parity.test.ts (new)",
+    "BR": "tests/browser/feedback-status.spec.ts (new; static fixtures that load only the package stylesheet)",
+    "AH": "packages/angular/test/presentation-hosts.test.ts (new, modelled on layout-hosts.test.ts)",
+    "TC": "the package text-contract tests: packages/react/react.text-contract.test.tsx, packages/vue/test/required-text.test.ts, packages/angular/test/text-contract.test.ts and required-names.test.ts, packages/vanilla/test/text.test.ts",
+    "SSR": "the package server-rendering and hydration tests: packages/react/react.ssr.test.tsx and react.hydration.test.tsx, packages/vue/test/ssr.test.ts and hydration.test.ts, packages/angular/test/ssr.test.ts and hydration.test.ts",
+    "TY": "type and compile tests: a // @ts-expect-error case in the package's test file for the component (React, Vue) and a template that must fail to compile in packages/angular/test/components.test.ts"
+  },
+  "docs": [
+    "CHANGELOG.md Unreleased: every entry of `renames` in the 'Breaking: renamed and removed' table, every entry of `decisions`, and the additions (Alert dismiss in React and Vue, size / variant props, a[hwLink], hwButton loading, prepareRemovalFocus, FeedbackValue, ConsentChoice).",
+    "CONTRACT.md:83-87: Angular hosts (written by forms-core) names the two kinds once; this cluster adds no cross-component rule.",
+    "components.json: notes of alert, chip, skeleton, spinner, progress, meter, stat, timeline, notification-list, feedback, cookie-consent, link, button; llms.txt lines for the same components.",
+    "docs/feedback-presentation.md:12-15, docs/nic-buttons.md:39-40, docs/nic-badges.md:41-43, docs/saudi-riyal.md (one line on Stat): rewritten in place.",
+    "packages/core/README.md: prepareRemovalFocus, FeedbackValue, ConsentChoice.",
+    "apps/playground guides that state the old contracts (component-layout-guides.ts:163-209, component-native-guides.ts:181, component-expanded-guides.ts:246-260, project-examples.ts:382-384, content-project-recipes.ts:93-118) are corrected with the change because tests/text-contract-docs.test.ts and the guide build read them."
+  ]
+}

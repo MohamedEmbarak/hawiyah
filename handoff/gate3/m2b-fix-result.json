@@ -1,0 +1,237 @@
+{
+ "date": "2026-11-11",
+ "branch": "claude/zen-rubin-wtib31",
+ "base": "f7d7f3f (maintainer WIP commits c0cb2f0 and f7d7f3f hold the reviewed state and the first fixes; nothing was committed by this step)",
+ "fixed": [
+  {
+   "id": "B1",
+   "verified": "The playground Angular projects still used the old markup (hw-section expected to be a section, strong/small projected as shell header and footer).",
+   "files": [
+    "apps/playground/src/layout-projects.ts",
+    "apps/playground/src/component-layout-guides.ts",
+    "apps/playground/src/component-layout-guides.ar.ts"
+   ],
+   "test": "tests/browser/native-layout-projects.spec.ts: 6 passed, including \"twelve angular typescript layout projects render and reflow in ar\", which failed on the reviewed tree. The spec itself needed no change: the Angular project now writes <section hwSection label>, a projected header and footer, and <aside hwSidebar>."
+  },
+  {
+   "id": "M1",
+   "verified": "primary-text on surface-muted is 4.32:1 in DGA light.",
+   "files": [
+    "packages/styles/src/navigation-drawer.css",
+    "packages/tokens/test/contrast.test.mjs",
+    "packages/styles/test/navigation-current.test.ts",
+    "tests/browser/side-navigation.spec.ts",
+    "docs/navigation-drawer.md"
+   ],
+   "test": "packages/styles/test/navigation-current.test.ts reads the pair the stylesheet uses and measures it in every theme and mode (5 of 6 failed before, 6 pass); tests/browser/side-navigation.spec.ts: contrast of the label and marker plus an axe WCAG 2.2 AA scan of SideNavigation and the NavigationDrawer list in DGA and Hawiyah, light and dark, ar and en, and forced colours (9 passed). The current row now uses --hw-color-text; the marker keeps --hw-color-primary-text (non-text, 3:1)."
+  },
+  {
+   "id": "M2",
+   "verified": "Two Arabic string tokens on one line were drawn in reverse order.",
+   "files": [
+    "packages/styles/src/code.css",
+    "docs/code-and-prose.md",
+    "tests/browser/code-prose-fixture.ts",
+    "tests/browser/code-block.spec.ts"
+   ],
+   "test": "tests/browser/code-block.spec.ts \"Arabic tokens on one line keep their source order (ar|en)\": failed without the rule (first string right of the second: 285.95 against 184.77), passes with unicode-bidi: isolate on the role spans at zero specificity."
+  },
+  {
+   "id": "M3",
+   "verified": "<hw-section [attr.aria-label]> rendered without aria-label.",
+   "files": [
+    "packages/angular/src/layouts.ts",
+    "packages/angular/test/layout-hosts.test.ts",
+    "packages/angular/README.md"
+   ],
+   "test": "packages/angular/test/layout-hosts.test.ts \"[al-section-bound-attributes]\": failed before (expected null to be \"Bound name\"), passes. aria-label and role are no longer host bindings; the component writes them in ngDoCheck only while label is set and puts back what the application wrote or bound. SSR and hydration tests pass (196 tests in the three Angular layout files)."
+  },
+  {
+   "id": "M4",
+   "verified": "Counts were stated as 77, 82, 83 and 85; the two components were missing from the catalogue and the guide.",
+   "files": [
+    "see integration"
+   ],
+   "test": "tests/browser/project-editor.spec.ts \"every public catalog entry has a native project\" and the seven-format catalogue tests of the two new entries (15 passed); tests/browser/guide.spec.ts and expansion.spec.ts over 85 entries (in the 144 passed)."
+  },
+  {
+   "id": "m1",
+   "verified": "With the microtask a real click prevented by a document listener still closed the drawer.",
+   "files": [
+    "packages/react/src/navigation-drawer.tsx",
+    "packages/vue/src/navigation-drawer.ts",
+    "packages/angular/src/navigation-drawer.ts",
+    "packages/vanilla/src/navigation-drawer.ts",
+    "packages/react/react.navigation-drawer.test.tsx",
+    "packages/react/react.side-navigation.test.tsx",
+    "packages/vue/test/navigation-drawer.test.ts",
+    "packages/vue/test/guide-support.test.ts",
+    "packages/angular/test/navigation-drawer.test.ts",
+    "packages/vanilla/test/navigation-drawer.test.ts",
+    "packages/vanilla/test/guide-support.test.ts",
+    "tests/browser/navigation-drawer.spec.ts",
+    "docs/navigation-drawer.md"
+   ],
+   "test": "tests/browser/navigation-drawer.spec.ts \"a user click that an ancestor listener prevents leaves the drawer open; an unprevented one closes it\" (real pointer click, vanilla): failed with queueMicrotask (open=false), passes with the timer. Unit tests in the four adapters now assert that the drawer is still open after the microtasks and closed after the timer. Note: the specification says \"the queueMicrotask stays as it is\"; the browser evidence contradicts the documented behaviour, so the timer replaces it in all four adapters."
+  },
+  {
+   "id": "m4",
+   "verified": "The vanilla drawer applied the group rule once.",
+   "files": [
+    "packages/vanilla/src/navigation-drawer.ts",
+    "packages/vanilla/test/side-navigation.test.ts",
+    "packages/vanilla/README.md",
+    "docs/navigation-drawer.md"
+   ],
+   "test": "packages/vanilla/test/side-navigation.test.ts \"[nd-current-moves] follows a moved current page when the drawer is shown and on refresh()\": failed before, passes. The controller gains refresh() and recomputes the groups each time the drawer is shown."
+  },
+  {
+   "id": "m5",
+   "verified": "renderToString gave <span class=\"hw-copy\" style=\"\" ...>.",
+   "files": [
+    "packages/vue/src/copy-button.ts",
+    "packages/vue/test/copy-button.test.ts"
+   ],
+   "test": "packages/vue/test/copy-button.test.ts \"[cb-server]\": new assertions failed before (markup contained style=\"\"), pass; a supplied class and style still reach the root."
+  },
+  {
+   "id": "m7",
+   "verified": "check-packages.mjs had no reference to fonts.css or the new exports.",
+   "files": [
+    "scripts/check-packages.mjs"
+   ],
+   "test": "pnpm check:packages: the tarball step requires every recorded font file, the licence and the provenance record, resolves every url() of fonts.css to a packed file and fails when styles.css declares a font other than HawiyahRiyal or names the opt-in fonts; the clean consumer resolves @hawiyah/styles/fonts.css and its files, checks the new core, vanilla, React, Vue and Angular exports and renders CopyButton and SideNavigation on the server."
+  },
+  {
+   "id": "m8",
+   "verified": "overflow-y in the sticky rule.",
+   "files": [
+    "packages/styles/src/navigation-drawer.css"
+   ],
+   "test": "none (style only). The rule now declares overflow-block: auto after overflow-y: auto, which stays as the fallback for engines without the logical longhand; without either the sticky navigation could not scroll."
+  },
+  {
+   "id": "m9",
+   "verified": "groupEntries is absent from packages/angular/src and was public at d544169.",
+   "files": [
+    "packages/angular/README.md",
+    "CHANGELOG.md"
+   ],
+   "test": "none (documentation)."
+  },
+  {
+   "id": "parity: Vue SideNavigation native attributes",
+   "verified": "SideNavigation was exported without WithNativeAttributes.",
+   "files": [
+    "packages/vue/src/native-attributes.ts",
+    "packages/vue/src/index.ts"
+   ],
+   "test": "No type test exists in the Vue package; checked once with tsc --strict in the clean tarball consumer (id, aria-labelledby and onClick accepted on SideNavigation props, a wrong attribute type rejected), file not kept."
+  }
+ ],
+ "disputed": [],
+ "deferred": [
+  {
+   "id": "m2",
+   "reason": "A 100 ms gap between the emptied status and an immediate result was tried in core createCopyFeedback and withdrawn: it broke 25 tests in five packages that assert the specified sequence (a failure has no timer), and the benefit is unverified without a screen reader. The four adapter READMEs and the guide page now state the limit. Needs a screen-reader check before the sequence is changed."
+  },
+  {
+   "id": "m3",
+   "reason": "The class-less pre in prose scrolls as specified and docs/code-and-prose.md records the limit. Wrapping by default would change the specified styles; the Markdown pipeline of the new guide should add tabindex, role and a name (milestone 4), after which the axe exclusion in prose.spec.ts can go."
+  },
+  {
+   "id": "m4 (second half)",
+   "reason": "A data attribute for an expanded group was not added: the specification says an authored open attribute is the expanded flag in vanilla."
+  },
+  {
+   "id": "m6",
+   "reason": "ToggleGroup with a missing label in React and Vue is older than this milestone and the specification keeps it unchanged per adapter; it belongs to the milestone 3 parity work."
+  },
+  {
+   "id": "m7 (prepare-demo)",
+   "reason": "The current guide does not import @hawiyah/styles/fonts.css, so scripts/prepare-demo.mjs has nothing to copy yet; copy ibm-plex-LICENSE.txt and the provenance record when the new guide imports the fonts."
+  },
+  {
+   "id": "m10",
+   "reason": "Still not verified: screen readers, engines other than Chromium, an Angular CLI ahead-of-time consumer build of the two new components, and the complete browser suite (the maintainer runs it)."
+  },
+  {
+   "id": "parity (older)",
+   "reason": "PortalHeader prop names in React (navigation, brandHref), the React hw-portal-header-main and hw-app-shell-body wrappers, the Vue class order and the older ToggleGroup markup differences are recorded by the review as specified or older; not changed here."
+  }
+ ],
+ "integration": [
+  "components.json",
+  "README.md",
+  "README.ar.md",
+  "llms.txt",
+  "docs/coverage.md",
+  "docs/architecture.md",
+  "docs/roadmap.md",
+  "docs/editor-projects.md",
+  "docs/navigation-drawer.md",
+  "docs/code-and-prose.md",
+  "CONTRIBUTING.md",
+  "CHANGELOG.md",
+  "packages/react/README.md",
+  "packages/vue/README.md",
+  "packages/angular/README.md",
+  "packages/vanilla/README.md",
+  "scripts/check-packages.mjs",
+  "apps/playground/src/expansion-catalog.ts",
+  "apps/playground/src/component-support-guides.ts",
+  "apps/playground/src/component-guides.ts",
+  "apps/playground/src/component-guides.ar.ts",
+  "apps/playground/src/expanded-samples.ts",
+  "apps/playground/src/content-project-recipes.ts",
+  "apps/playground/src/component-text-inputs.ts",
+  "apps/playground/src/layout-projects.ts",
+  "apps/playground/src/component-layout-guides.ts",
+  "apps/playground/src/component-layout-guides.ar.ts"
+ ],
+ "integrationNotes": [
+  "CONTRACT.md and EXPANSION.md already stated 85 entries and name both components; not changed.",
+  "The catalogue is 85 in components.json (85 records, scope.components 85, addedComponents 58), README.md, README.ar.md, llms.txt, docs/coverage.md, docs/architecture.md, docs/roadmap.md, docs/editor-projects.md, CONTRIBUTING.md and the three adapter READMEs. Dated verification snapshots (components.json verificationSnapshot and documentationVerification, docs/validation.md, docs/quality-*.md) keep their original numbers.",
+  "The current guide gained a reference page, a live sample, text inputs and a project recipe in seven formats for CopyButton and SideNavigation, because its tests require a project and a complete page for every catalogue record.",
+  "Measured: nine IBM WOFF2 files 366,128 bytes; packed @hawiyah/styles 275,524 bytes and 154 files without the opt-in fonts, 647,257 bytes and 166 files with them. Tree-shaking budgets unchanged: React Button 382 bytes gzip of 4,096; vanilla Tabs 4,474 of 6,144.",
+  "The three examples build inside pnpm build; their browser suite passes (81)."
+ ],
+ "commands": [
+  {
+   "command": "pnpm build",
+   "result": "exit 0 (packages, guide, three examples)"
+  },
+  {
+   "command": "pnpm test",
+   "result": "exit 0: token contrast 16 of 16; vitest 157 files, 1295 tests passed; no \"Hawiyah:\" warning in the output"
+  },
+  {
+   "command": "pnpm typecheck:playground",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm check:packages",
+   "result": "exit 0: tokens 56 kB, styles 632 kB (166 files), core 76 kB, vanilla 109 kB, react 107 kB, vue 116 kB, angular 191 kB packed; clean consumer ESM, SSR, Angular package format, CSS exports and declarations passed; React Button 382 bytes gzip of 4096, vanilla Tabs 4474 of 6144"
+  },
+  {
+   "command": "playwright test tests/browser/native-layout-projects.spec.ts",
+   "result": "6 passed (4.2 min)"
+  },
+  {
+   "command": "playwright test code-block prose fonts side-navigation navigation-drawer portal-layout portal-branches portal-identity portal-shell-projects nic-content-navigation toggle-group-states published-stylesheet style-defects mobile-navigation nic-links guide expansion (tests/browser)",
+   "result": "144 passed (7.0 min)"
+  },
+  {
+   "command": "playwright test tests/browser/project-editor.spec.ts -g \"copy-button|side-navigation|every public catalog entry\"",
+   "result": "15 passed: the catalogue equals the project registry, and both new entries render in vanilla JS/TS, React JS/TS, Vue JS/TS and Angular"
+  },
+  {
+   "command": "playwright test --config playwright.portals.config.ts",
+   "result": "81 passed (4.2 min)"
+  },
+  {
+   "command": "complete browser suite (pnpm test:browser)",
+   "result": "not run; left to the maintainer. Playwright output of the runs above went outside the repository (HAWIYAH_CHROMIUM=<chromium>)."
+  }
+ ]
+}

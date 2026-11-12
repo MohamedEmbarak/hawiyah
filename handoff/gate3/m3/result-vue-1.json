@@ -1,0 +1,144 @@
+{
+ "implemented": [
+  "fields-basic-8",
+  "actions-2",
+  "choices-2",
+  "actions-11",
+  "actions-v1",
+  "fields-basic-9",
+  "fields-basic-2",
+  "choices-3",
+  "fields-basic-10",
+  "fields-basic-3",
+  "fields-basic-5",
+  "fields-basic-6",
+  "choices-4",
+  "choices-5",
+  "choices-6",
+  "choices-8",
+  "choices-9",
+  "R16",
+  "actions-5",
+  "actions-8",
+  "actions-9",
+  "E02",
+  "rich-inputs-20",
+  "fields-basic-7",
+  "rich-inputs-1",
+  "rich-inputs-2",
+  "rich-inputs-5",
+  "files-5",
+  "rich-inputs-6",
+  "R10",
+  "R09",
+  "rich-inputs-8",
+  "R19",
+  "rich-inputs-12",
+  "rich-inputs-14",
+  "R27",
+  "E01",
+  "files-2",
+  "files-3",
+  "R07",
+  "files-4",
+  "R06",
+  "files-6",
+  "R08",
+  "files-8",
+  "files-9",
+  "files-10"
+ ],
+ "deviations": [
+  {
+   "item": "fields-basic-8",
+   "what": "useFormReset(element, reset, show) attaches observeFieldValue presence only when the element is an input, textarea or select; ToggleGroup keeps passing its first radio / hidden probe (not the fieldset) so the presence attribute stays where it was",
+   "why": "observeFieldValue accepts only native value elements; same reset timing and rendered result"
+  },
+  {
+   "item": "fields-basic-8",
+   "what": "Rating (Vue) also writes its radios back after a reset (show) and keeps defaultValue 0 as its own declared default; numberProps.formatValue is not spread into Rating",
+   "why": "convention native-form-reset covers every control; Rating is not specified to gain formatValue or lose its default"
+  },
+  {
+   "item": "actions-9 / E02 and rich-inputs-6",
+   "what": "ToggleGroup and MultiSelect legends use optionalText/needText instead of rootLabel",
+   "why": "rootLabel returns the aria-label text, which would render a legend; the spec DOM (NAME-02) requires no legend when only aria-label is given"
+  },
+  {
+   "item": "rich-inputs-6",
+   "what": "the MultiSelect filter input keeps form=\"{form}\" (name stays only on the hidden inputs)",
+   "why": "the filter input owns the custom validity and is the element observeFormReset follows; without it a MultiSelect associated with an external form through `form` was not reset (RESET-08)"
+  },
+  {
+   "item": "E01",
+   "what": "the watchEffects that set the custom validity of Combobox, TagInput and MultiSelect run with flush 'post'",
+   "why": "the cleared state must read validity after the input shows the new value (native required on Combobox); it also sets the validity right after mount"
+  },
+  {
+   "item": "rich-inputs-12",
+   "what": "PinInput emits `complete` only when the value changed and is complete",
+   "why": "one more typed character into a full code keeps the previous value and must notify nothing (PININPUT-02)"
+  },
+  {
+   "item": "files-9",
+   "what": "a read-only FileDropzone also prevents Space and Enter keydown on the file input",
+   "why": "RO-02 asks Space to be default-prevented; the click guard alone covers the chooser in browsers"
+  },
+  {
+   "item": "tests",
+   "what": "cross-adapter case ids live in packages/vue/test/form-reset.test.ts, forms-core.test.ts, rich-inputs.test.ts (plus updated expansion.test.ts and file-dropzone-disabled.test.ts); SSR-03 is in forms-core.test.ts (jsdom, spy on EventTarget.prototype.addEventListener) instead of ssr.test.ts; INV-03 uses form.checkValidity() because jsdom's requestSubmit fires no invalid event",
+   "why": "this step owns packages/vue/** only; same ids can be lifted into tests/*-parity.test.ts"
+  }
+ ],
+ "files": [
+  "packages/vue/README.md",
+  "packages/vue/src/controls.ts",
+  "packages/vue/src/expansion-interactive.ts",
+  "packages/vue/src/forms.ts",
+  "packages/vue/src/interactive.ts",
+  "packages/vue/src/search-field.ts",
+  "packages/vue/src/shared.ts",
+  "packages/vue/test/expansion.test.ts",
+  "packages/vue/test/file-dropzone-disabled.test.ts",
+  "packages/vue/test/form-reset.test.ts",
+  "packages/vue/test/forms-core.test.ts",
+  "packages/vue/test/rich-inputs.test.ts",
+  "packages/vue/test/texts.ts"
+ ],
+ "commands": [
+  {
+   "command": "pnpm exec vitest run packages/vue/test/form-reset.test.ts",
+   "result": "55 passed; 25 of them fail against HEAD sources"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vue",
+   "result": "216 passed (rich-inputs code in, its tests pending)"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vue",
+   "result": "293 passed, no Hawiyah warning"
+  },
+  {
+   "command": "tsc -p packages/vue/tsconfig.json --noEmit",
+   "result": "ok"
+  },
+  {
+   "command": "node scripts/build.mjs --only vue",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vue",
+   "result": "25 files, 293 tests passed; no Hawiyah: warning"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "browser cases RESET-12, COMBOBOX-02, TOGGLE-GROUP-02, TEXTAREA-02, MULTISELECT-03, TAGINPUT-03, PININPUT-03, FILEDROPZONE-08",
+   "why": "tests/browser/*.spec.ts are outside packages/vue"
+  },
+  {
+   "item": "tests/*-parity.test.ts entries and docs outside the package (CHANGELOG.md, CONTRACT.md, components.json, llms.txt, docs/*.md, apps/playground samples using readOnly/data-dragging on Vue)",
+   "why": "outside packages/vue; the README carries the migration table and the case ids exist in the package tests"
+  }
+ ]
+}

@@ -1,0 +1,699 @@
+{
+  "decisions": [
+    {
+      "id": "D01-rating-display-name",
+      "component": "RatingDisplay",
+      "question": "Is the accessible name label + \": \" + getValueLabel(...), or getValueLabel alone?",
+      "decision": "getValueLabel(value, max) returns the whole text alternative. RatingDisplay has no `label` input. An aria-label or aria-labelledby that the application passes to the root wins where the adapter forwards attributes; when either is present getValueLabel is not asked for and no second aria-label is written.",
+      "reason": "Rule 14 forbids the adapter joining label and value with \": \". The three framework adapters already removed `label` (verified: react expanded-controls.tsx:58-61, vue controls.ts:406-420, angular advanced-controls.ts:170); only the aria-labelledby case differs.",
+      "perAdapter": {
+        "vanilla": "none (no controller; the display is authored markup)",
+        "react": "none",
+        "vue": "packages/vue/src/controls.ts RatingDisplay (line ~416): when attrs['aria-labelledby'] has text, do not call textOf('RatingDisplay','getValueLabel',…) and do not write aria-label (today both attributes are written). Keep: attrs['aria-label'] wins. Change the prop to getValueLabel: Function as PropType<(value: number, max: number) => string> without required: true (rule D06). Test in packages/vue/test/required-text.test.ts: with aria-labelledby the root has no aria-label and nothing warns; with neither, one \"RatingDisplay requires \\\"getValueLabel\\\"\" warning and no aria-label.",
+        "angular": "none (host attributes are not forwarded, so getValueLabel stays @Input({required: true}))"
+      }
+    },
+    {
+      "id": "D02-carousel-slide-label",
+      "component": "Carousel",
+      "question": "May a slide carry its own `label` that is appended to the slide and indicator names?",
+      "decision": "No. A slide and its indicator are named by getSlideLabel(position, total) alone (position is one-based); the slide data has no `label` field that the adapter reads for a name. In vanilla an aria-label authored on a slide element is used as written (rule 7) and the template attribute is data-hw-slide-label=\"{position} / {total}\".",
+      "reason": "The specified signature cannot see a slide title and rule 14 forbids composing \"<label>, <position of total>\". All three framework adapters already name slides from getSlideLabel only (vue removed CarouselSlide.label; angular interactions.ts:132; react expanded-interactive.tsx:113).",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D03-file-dropzone-label-and-instruction",
+      "component": "FileDropzone",
+      "question": "What names the file input, and how is dropLabel rendered?",
+      "decision": "The input is named by `label` (or aria-label / aria-labelledby / a parent Field where the adapter supports them); dropLabel is never the fallback name. dropLabel (required always) is the visible instruction: <p class=\"hw-file-dropzone-instruction\" id=\"<controlId>-instruction\">dropLabel</p> placed before the input, and the input lists that id first in aria-describedby. When dropLabel is missing the paragraph is not rendered and its id is not added to aria-describedby. A missing name warns as requireText('FileDropzone', 'label', …).",
+      "reason": "Specification: \"dropLabel no longer doubles as the field label: label is supplied separately\". Rule 12: no fallback from another input and no empty element. React and Vue already use the class and the describedby reference; Angular renders a bare <p> that nothing references, and Vue renders an empty <p> when dropLabel is missing.",
+      "perAdapter": {
+        "vanilla": "none (authored markup; the application writes the label and the instruction)",
+        "react": "none",
+        "vue": "packages/vue/src/controls.ts FileDropzone (render, lines ~777-786): render the instruction paragraph only when needText('FileDropzone','dropLabel',props.dropLabel) returns text, and add `${field.id.value}-instruction` to aria-describedby only then. Test in packages/vue/test/required-text.test.ts: without dropLabel there is no .hw-file-dropzone-instruction element, the input's aria-describedby does not contain \"-instruction\", one warning.",
+        "angular": "packages/angular/src/advanced-controls.ts hw-file-dropzone template (line 355): replace <p>{{ texts.need('dropLabel', dropLabel) }}</p> by @if (texts.need('dropLabel', dropLabel); as instruction) {<p class=\"hw-file-dropzone-instruction\" [id]=\"controlId + '-instruction'\">{{ instruction }}</p>} and put controlId + '-instruction' first in the input's aria-describedby only while dropLabel has text (extend descriptionIds for this component). Test in packages/angular/test/text-contract.test.ts: the paragraph has the class and id, the input's aria-describedby starts with that id; with dropLabel=\"\" neither exists."
+      }
+    },
+    {
+      "id": "D04-file-dropzone-selection-status",
+      "component": "FileDropzone",
+      "question": "Is the selection status always rendered (getSelectedMessage required), or only when the application supplies getSelectedMessage?",
+      "decision": "getSelectedMessage?: (files: readonly File[]) => string is optional (\"when wanted\") in the framework adapters and is itself the switch: when it is supplied the adapter renders one visible <p role=\"status\"> after the input (no hw-sr-only class; empty until files are selected, then the complete returned string, and empty again after a reset or a rejected selection); when it is omitted no status element is rendered and nothing warns. The adapter never lists or joins file names itself as a status. In vanilla the switch is the authored [data-hw-file-status] element, and getSelectedMessage (option or data-hw-selected-message=\"{count} …\") is required while that element exists.",
+      "reason": "Vue treated the function as the switch, Angular made it required and always rendered a visually hidden status, React rendered none. The function-as-switch form asks the least text from the application, needs no new input, and is expressible in all adapters; the styles package already styles .hw-file-dropzone [role=status] as visible muted text. The React addition is two lines.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "packages/react/src/expanded-controls.tsx FileDropzone: add optional prop getSelectedMessage?: (files: readonly File[]) => string to FileDropzoneBaseProps and render, directly after the <TextField type=\"file\"> and before the <ul> of file names, {getSelectedMessage && <p role=\"status\">{files.length ? getSelectedMessage(files) || undefined : undefined}</p>}. No requireText call (optional). Document in packages/react/README.md. Test in packages/react/test/react.text-contract.test.tsx: no [role=status] without the prop; with it the paragraph exists empty, shows the returned string after a change event with one file, and is empty after form reset.",
+        "vue": "none (controls.ts already renders <p role=\"status\"> only when getSelectedMessage is supplied)",
+        "angular": "packages/angular/src/advanced-controls.ts hw-file-dropzone: change getSelectedMessage from @Input({required: true}) to an optional @Input() getSelectedMessage?: (files: readonly File[]) => string; render @if (getSelectedMessage) {<p role=\"status\">{{ value.length ? getSelectedMessage(value) : '' }}</p>} (remove class hw-sr-only, remove the texts.call warning). Update README. Test in packages/angular/test/text-contract.test.ts: no [role=status] when the input is not bound; bound: empty, then the returned text after a selection."
+      }
+    },
+    {
+      "id": "D05-file-dropzone-rejection-and-unsupported-drop",
+      "component": "FileDropzone",
+      "question": "Which adapters take getRejectedMessage and unsupportedDropMessage, and under which condition?",
+      "decision": "getRejectedMessage(rejected: readonly File[]) is required where the adapter itself renders the rejection text: React when `accept` is set (union on accept), vanilla when [data-hw-file-status] exists and accept or data-hw-max-size/options.maxSize is set. Vue and Angular render no rejection text (they hand the files to the application through the reject event / (rejected) output) and take no such input until they do. unsupportedDropMessage stays vanilla only and is required while [data-hw-file-status] exists (it depends on the browser at run time, so rule 9 makes it \"always\" under that static switch). Vanilla template attributes expose {count} only; file names need the function option.",
+      "reason": "The specification allows an adapter that does not render a text to take no input for it, and names unsupportedDropMessage vanilla only. Rendering a rejection message in Vue and Angular needs new error state and wiring, which is a feature (see parityGaps).",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D06-root-and-field-names",
+      "component": "every component whose `label` names its root or its field (Breadcrumb, Pagination, Stepper, Spinner, Timeline, AvatarGroup, Carousel, Calendar, SecondaryNav, ContentNavigation, ToastRegion, NotificationList, TreeView, Tabs lists, DatePicker and the other field controls, FileDropzone, RatingDisplay.getValueLabel)",
+      "question": "Rules 8 and 10 clash: a root or field name is \"always\" (rule 10: required in the type) but an aria-label, an aria-labelledby or a parent Field label satisfies it (rule 8). Which wins, per adapter?",
+      "decision": "Rule 8 defines the requirement: the element must have a name from `label`, aria-label, aria-labelledby or (field controls) the parent Field label. Enforcement follows what each adapter can express. React: a union type, RootName / FieldName from packages/react/src/shared.tsx ({label} | {aria-label} | {aria-labelledby}); a missing name is a type error and text(Component, 'label', …) warns only when all are absent. Vue: these names are declared without required: true and without a default (label: String), and are enforced at run time only: requireText(Component, 'label', …) is called at render unless attrs['aria-label'], attrs['aria-labelledby'] or a parent Field label has text. Every other \"always\" text in Vue stays required: true. Angular: host attributes are not forwarded to the inner root, so `label` is the only source and stays @Input({required: true}). Vanilla: authored markup first (rule 7), requireText only when the markup leaves the element unnamed. DatePicker.label follows the same rule as every other field control.",
+      "reason": "With required: true Vue prints \"Missing required prop: label\" (and vue-tsc reports an error) for <HwBreadcrumb aria-label=\"…\">, which rule 8 and the README explicitly allow; the Vue DatePicker already had to stay optional for the documented Field composition. One rule for all names that ARIA can satisfy removes the false warning and still reports a truly unnamed component once. React already implements exactly this as a union.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "packages/vue/src: for every component that names its root through rootLabel(…) (shared.ts:58; today AvatarGroup, Calendar, Carousel, NotificationList, Timeline, Breadcrumb, ContentNavigation, Pagination, SecondaryNav, Stepper, ToastRegion) and for Spinner, TreeView and any other root whose `label` is satisfied by aria-label/aria-labelledby, change the prop from label: { type: String, required: true } to label: String. Do not change labels that are visible content (Feedback.label, CookieConsent.title, Field labels of components without attrs forwarding). DatePicker.label and FileDropzone.label stay as they are (optional, run-time checked). Document the rule once in packages/vue/README.md. Test in packages/vue/test/required-text.test.ts: mounting Breadcrumb, Pagination and Spinner with only aria-label produces no console.warn at all (neither Vue's \"Missing required prop\" nor Hawiyah's); mounting them with no name produces exactly one Hawiyah warning each and no aria-label attribute.",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D07-calendar-range-label",
+      "component": "Calendar, DatePicker",
+      "question": "When is rangeLabel required on Calendar, and what is the text of the supported-range tooltip?",
+      "decision": "DatePicker: rangeLabel is required always (the picker always renders the Gregorian/Hijri switch). Calendar in React, Vue and Angular: required when calendar is 'islamic-umalqura' (the only case in which the calendar renders the information control; the calendar prop is the static switch). Vanilla createCalendar renders the switch itself, so rangeLabel, calendarSystemLabel, gregorianLabel, hijriLabel and unsupportedMessage are required always there. The information control is named by rangeLabel alone (role=\"img\", aria-label=rangeLabel, the letter \"i\" is not part of the name). The tooltip text is rangeLabel, one U+0020, then the ISO range \"UMALQURA_MIN_DATE – UMALQURA_MAX_DATE\" isolated as left-to-right data; no colon or other punctuation is added. With rangeLabel missing the tooltip holds the range alone and the control has no aria-label.",
+      "reason": "The specification condition (\"when the calendar-system switch is rendered\") only fits vanilla; the three framework calendars render the range information themselves in Umm al-Qura mode and all three already use the calendar prop as the condition and the same space-joined text (react calendar.tsx:27,64; vue calendar.ts:259; angular advanced-controls.ts:232). Vanilla puts the label and the range in adjacent elements with no white space, so their text runs together.",
+      "perAdapter": {
+        "vanilla": "packages/vanilla/src/calendar.ts (lines 74-76): when rangeLabel has text, append a single space text node between infoLabel and infoRange (infoPanel.append(infoLabel, ' ', infoRange)); when it has none, append infoRange only (no empty span). Test in packages/vanilla/test/text.test.ts: the tooltip textContent equals rangeLabel + ' ' + '1924-08-01 – 2077-11-16'.",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D08-toast-get-dismiss-label",
+      "component": "ToastRegion",
+      "question": "One signature (message: ToastMessage) => string, but vanilla toasts are authored elements.",
+      "decision": "The name (getDismissLabel), the requiredness (when a message can be dismissed) and the result (the complete accessible name of the dismiss button, nothing added) are the same in all four adapters. The argument is the toast as the adapter holds it: the message object in React, Vue and Angular, and the authored toast element in vanilla ((toast: HTMLElement) => string). Vanilla source order: the dismiss button's authored aria-label or text, then data-hw-dismiss-label=\"… {title}\" on the region, then options.getDismissLabel.",
+      "reason": "Vanilla has no message data to pass, and inventing a message object would be new public API. Markup versus data is an adapter mechanism; the template placeholder {title} gives markup-only pages the same information.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D09-feedback-get-status-message",
+      "component": "Feedback",
+      "question": "Vanilla keeps an extra optional getStatusMessage(value) beside successMessage. Keep, remove or add everywhere?",
+      "decision": "Keep it in vanilla only, optional, with no default and no warning; successMessage stays the required text in all four adapters. It is not added to React, Vue or Angular.",
+      "reason": "The specification says so explicitly (\"options.getStatusMessage(value) stays as an optional override with no default\"). It is a vanilla mechanism, not a missing feature elsewhere: controller options are not reactive, whereas a framework application changes successMessage itself when the answer changes.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D10-validation-aria-invalid",
+      "component": "Combobox, MultiSelect, TagInput (requiredMessage); DatePicker (invalidMessage, unsupportedMessage, unavailableMessage)",
+      "question": "Rule 13 says a constraint with a missing message keeps \"a single-space custom validity and aria-invalid=true\". Is aria-invalid set because a message is missing?",
+      "decision": "No. A missing message changes the validation message only: the adapter sets a single-space custom validity so the constraint still blocks submission, and warns. aria-invalid is exactly what it would be with the message present: Combobox, MultiSelect and TagInput do not set it for an empty required control (they expose it only from `error` / the field state / an application attribute), and DatePicker keeps setting it for an actually invalid, unsupported or unavailable value whether or not the message exists.",
+      "reason": "The parenthesis in rule 13 contradicts its own title (\"Validation never depends on text\") and rule 12 (behaviour stays the same; the warning is the only signal): with the message present no adapter marks an untouched empty required field invalid, so marking it only when a string is missing makes an ARIA state depend on text and announces an error on a field the user has not touched. Vanilla, Vue and Angular already behave this way; only React added it after review.",
+      "perAdapter": {
+        "vanilla": "none",
+        "vue": "none",
+        "angular": "none",
+        "react": "Revert the review change in three places so aria-invalid no longer depends on the missing message: packages/react/src/expanded-controls.tsx line 79 (TagInput) aria-invalid={props['aria-invalid']}; line 89 (MultiSelect search field) aria-invalid={error ? true : undefined}; packages/react/src/interactive.tsx line 269 (Combobox) aria-invalid={field['aria-invalid']}. Keep the single-space setCustomValidity. Update the sentence in packages/react/README.md \"Text is supplied by the application\". Change the test in packages/react/test/react.text-contract.test.tsx (\"TagInput/MultiSelect/Combobox without requiredMessage …\"): assert validationMessage === ' ', form.checkValidity() === false, one warning each, and that the control has NO aria-invalid attribute."
+      }
+    },
+    {
+      "id": "D11-separators-and-joins",
+      "component": "PortalFooter, SiteVerification, ServiceCard, Calendar tooltip, FileUploadList and every place that puts two texts side by side",
+      "question": "Spoken separators (\" · \", \": \", \"، \") were replaced by a space in some adapters; is a literal space a forbidden fixed token, and where is it written?",
+      "decision": "No adapter renders \" · \", \": \", \"، \", \", \" or any other punctuation between application texts or between text and data (verified: none remains in packages/*/src). A single U+0020 between two inline runs is kept, because it is white space and not a word or punctuation, and without it assistive technology reads the two runs as one word. Rules: (1) the screen-reader-only externalLabel after a link is <span class=\"hw-sr-only\"> externalLabel</span>, with the space inside the span so the visible link has no trailing space; (2) a data value after a label is written as label, one space, <bdi>value</bdi> (SiteVerification: domainLabel + space + <bdi>domain</bdi>; registrationLabel + space + <bdi>registrationNumber</bdi>); (3) the calendar range tooltip follows D07; (4) nothing is appended to httpsLabel; (5) decorative glyphs that carry no language (★, ×, /, –, …, +N, the letter i of the information icon) stay only inside aria-hidden elements or where a function input supplies the name.",
+      "reason": "Rule 14 forbids words, language-specific punctuation and fixed tokens; a single space is neither, and all three framework adapters already converge on it. The only difference left is where Vue writes the space.",
+      "perAdapter": {
+        "vanilla": "none (authored markup; see D07 for the tooltip)",
+        "react": "none",
+        "vue": "Move the space inside the visually hidden span in two places: packages/vue/src/site-verification.ts line 23 and packages/vue/src/patterns.ts line 196 (PortalFooter): replace [' ', h('span', {class: 'hw-sr-only'}, props.externalLabel)] by h('span', {class: 'hw-sr-only'}, ' ' + props.externalLabel) (apply the same to legal links if they share the code). Test in packages/vue/test/required-text.test.ts: link.textContent ends with ' ' + externalLabel and link.querySelector('.hw-sr-only').textContent === ' ' + externalLabel; link.lastChild is the span.",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D12-optional-actions-and-cookie-consent",
+      "component": "CookieConsent, NotificationList, ToastRegion and every optional action button",
+      "question": "Do optional buttons render only while a handler is bound, and which texts does CookieConsent take?",
+      "decision": "An optional action is rendered only while the application has bound its handler, and its text is required under exactly that condition: React a handler prop with a union type (handler given => label required); Vue the declared listener prop (onPreferences, onRead, onDismiss; helpers listener()/listens() in shared.ts) with an optional label prop and requireText(…, 'a <name> listener is bound'); Angular an observed output with an optional input and the same requireText condition; vanilla the authored button. A button is never rendered inert. CookieConsent takes title (always), acceptLabel (always), rejectLabel (always), preferencesLabel (when a preferences handler is bound; the button only notifies the application and does not close the banner) and policyLabel (when policyHref is set; a plain link after the description). The preferences button is the last button of the button group, data-variant=\"ghost\".",
+      "reason": "The specification conditions are \"when a mark-read/dismiss handler is given\" and \"when the preferences action is rendered\"; binding the handler is the only static switch all frameworks share, and Vue and Angular already implemented it. React lacks the preferences action and Vue lacks the policy link; each is a few lines with no new state.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "packages/react/src/expanded-content.tsx CookieConsent (lines 172-177): extend the props union with ({ onPreferences?: undefined; preferencesLabel?: string } | { onPreferences: () => void; preferencesLabel: string }) and render, after the accept button inside the button container, {onPreferences && <Button variant=\"ghost\" onClick={onPreferences}>{text('CookieConsent', 'preferencesLabel', preferencesLabel, 'onPreferences is given')}</Button>}; the click does not change the choice. README row. Test in packages/react/test/react.text-contract.test.tsx: no third button without onPreferences; with it the button text is preferencesLabel, a click calls the handler once and the section stays visible; omitting preferencesLabel with onPreferences is a type error (@ts-expect-error in the typed cases) and warns once at run time.",
+        "vue": "packages/vue/src/patterns.ts CookieConsent (line ~309): add props policyHref: String and policyLabel: String; render, after the description <p> and before the default slot, props.policyHref && h(Link, { href: props.policyHref }, () => needText('CookieConsent', 'policyLabel', props.policyLabel, 'policyHref is set')). README row. Test in packages/vue/test/required-text.test.ts: no link without policyHref; with policyHref and policyLabel an <a> with that href and text; with policyHref only, one warning and a link without text.",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D13-service-card-action",
+      "component": "ServiceCard",
+      "question": "Is the packaged action link named actionLabel + hidden title, or actionLabel alone?",
+      "decision": "actionLabel alone is the whole visible text and accessible name of the packaged action link; the adapter appends nothing (no hidden title, no \": \"). It is required when the card renders its own link, that is when an address is given and the application supplies no action of its own (React `action` node, Vue `action` slot, Angular projected [hwServiceAction] content). An application that wants the service name in the link puts it in actionLabel.",
+      "reason": "Rule 14: an adapter does not compose an accessible name from two application texts. React and Vue rendered actionLabel alone; Angular removed its hidden suffix in the review round (verified at content.ts:62).",
+      "perAdapter": {
+        "vanilla": "none (authored link)",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D14-duplicate-warnings-in-composites",
+      "component": "PortalLayout, DatePicker, Drawer, NavigationDrawer and every component that passes a text to an inner Hawiyah component",
+      "question": "One missing text can be reported twice (once by the composite, once by the inner component). Silence it?",
+      "decision": "Accepted as development-only noise, with one ordering rule: the composite calls requireText under its own name and its own input name before it delegates, so the first warning names the input the application has to set; the inner component may then report the same missing text once under its own name. No adapter adds a public input, a context or other cross-component state to suppress the second line. A module-private suppression that needs no API (the vanilla WeakSet for the calendar nested in a DatePicker) may stay.",
+      "reason": "Each component must still warn for applications that use it directly (rule 11); requireText already limits every pair of component and input to one line per page. Warnings are diagnostics, not rendered output, so adapters need not match line for line.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "packages/react/src/portal.tsx PortalLayout: call text('PortalLayout', 'menuLabel', menuLabel) and text('PortalLayout', 'navigationLabel', navigationLabel) before passing them to PortalHeader, as is already done for secondaryLabel and breadcrumbLabel (today those two warn only as PortalHeader). Test in packages/react/test/react.text-contract.test.tsx: a PortalLayout without menuLabel logs a warning that starts with 'Hawiyah: PortalLayout requires \"menuLabel\"'.",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D15-angular-footer-support-section",
+      "component": "PortalFooter",
+      "question": "Addendum A6 says the support section is rendered only with support content; Angular keeps an empty <section hidden>.",
+      "decision": "Accepted for Angular. Without projected [hwFooterSupport] content the section stays in the DOM as the projection target with the `hidden` attribute, no aria-label and no heading, so it is neither displayed nor exposed to assistive technology; with content it has aria-label=supportLabel and the heading, as in React and Vue, which omit the element. supportLabel is required when support content is given, in all adapters.",
+      "reason": "Angular cannot know whether content was projected before it renders the <ng-content> that receives it, and removing the node would need a public directive (new API) or hand-editing framework-owned DOM. The result for users and assistive technology is the same; only the inert node differs, which is an adapter mechanism.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "none",
+        "angular": "none (keep the README and PORTAL.md note)"
+      }
+    },
+    {
+      "id": "D16-footer-brand-label",
+      "component": "PortalFooter",
+      "question": "Where is the footer brandLabel written? React uses role=\"img\" on .hw-portal-footer-brand-marks, Vue role=\"group\" on the same element, Angular role=\"group\" on the outer .hw-portal-footer-brand.",
+      "decision": "brandLabel is written as aria-label together with role=\"group\" on .hw-portal-footer-brand-marks (the container of the brand artwork or brand text), only while brandLabel has text and the brand block has content. Nothing is written on the outer .hw-portal-footer-brand, which also holds the description. Without brandLabel no role and no aria-label are rendered.",
+      "reason": "Addendum A3 puts brandLabel on the brand link or brand container. role=\"img\" makes everything inside presentational, which hides brand text or several linked marks; group keeps them reachable. The description paragraph is not part of the brand and must not sit inside the named group.",
+      "perAdapter": {
+        "vanilla": "none (no footer controller)",
+        "react": "packages/react/src/expanded-content.tsx line 155: on .hw-portal-footer-brand-marks change role={brandName ? 'img' : undefined} to role={brandName ? 'group' : undefined}. Update the assertion in packages/react/test/react.text-contract.test.tsx (or the portal test that checks the footer brand) to role=\"group\".",
+        "vue": "none",
+        "angular": "packages/angular/src/content.ts line 150: move [attr.role]=\"brandName ? 'group' : null\" and [attr.aria-label]=\"brandName\" from <div class=\"hw-portal-footer-brand\"> to the inner <div #brandMarks class=\"hw-portal-footer-brand-marks\">, and render the plain-text <strong>{{ brand }}</strong> inside that inner div after the projected artwork, so brand text and artwork are both inside the named group and the description stays outside. Update PORTAL.md/README and the footer brand test in packages/angular/test/text-contract.test.ts."
+      }
+    },
+    {
+      "id": "D17-texts-the-adapter-always-renders",
+      "component": "Popover and Menu (triggerLabel), TagInput (addLabel), MultiSelect (getSelectedMessage, getResultsMessage), TreeView (getExpandLabel, getCollapseLabel), Feedback (commentLabel, submitLabel), Calendar system switch texts",
+      "question": "Texts the specification marks \"when the adapter renders …\": required or optional where an adapter always renders the part?",
+      "decision": "The requiredness follows what the adapter renders. Where the adapter always renders the part, the text is required always in that adapter (React required prop, Vue required: true, Angular @Input({required: true})). Where a prop, slot, handler or attribute switches the part on, it is a \"when\" text (React union, optional in Vue and Angular, requireText with the condition). Where the adapter does not render the part, it takes no input of that name, and the name stays reserved for the day it does.",
+      "reason": "This is what the specification conditions mean and what all four adapters did; the Angular reviewer recorded the required inputs for parity tracking only. The differences that remain are missing features, listed under parityGaps.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D18-table-empty-message",
+      "component": "Table",
+      "question": "emptyMessage is \"always\", but React and Vue Table also accept a native table as children/slot without `columns`, where no empty row exists.",
+      "decision": "emptyMessage is required when `columns` is given (the static switch that makes the component render rows itself). React: union on columns (already). Vue: optional prop, requireText('Table', 'emptyMessage', …, 'columns is given') at render when columns is given. Angular hw-table always takes columns, so it stays @Input({required: true}). DataTable.emptyMessage stays required always in all adapters.",
+      "reason": "Rule 9 allows \"when\" for a static prop switch, and demanding a text that can never be rendered contradicts rule 12. Vue required: true warns for the documented slot-only use.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "angular": "none",
+        "vue": "packages/vue/src/display.ts line 76: change emptyMessage: {type: String, required: true} to emptyMessage: String and call needText('Table', 'emptyMessage', props.emptyMessage, 'columns is given') only in the props.columns branch, and render no text in the empty row when it is missing. README row. Test in packages/vue/test/required-text.test.ts: slot-only Table without emptyMessage logs nothing; Table with columns, no rows and no emptyMessage logs one warning and renders no empty cell text."
+      }
+    },
+    {
+      "id": "D19-spinner-decorative",
+      "component": "Spinner",
+      "question": "A decorative spinner (aria-hidden=\"true\") needs no label; how is `label` typed?",
+      "decision": "React: RootName | { aria-hidden: true } union (as implemented). Vue: optional prop, run-time check skipped when attrs['aria-hidden'] is true/\"true\" (rule D06). Angular: `label` stays @Input({required: true}); a decorative spinner sets aria-hidden=\"true\" on the host and passes label=\"\", and nothing is reported. Vanilla: authored markup.",
+      "reason": "The specification marks the text \"always\" with a stated exception; Angular cannot type a conditional requirement, and the compile-time error for the normal case is worth more than sparing label=\"\" in the rare decorative case.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "covered by D06 (make sure Spinner does not warn when aria-hidden is \"true\" or true)",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D20-portal-layout-footer-texts",
+      "component": "PortalLayout",
+      "question": "How do externalLabel, legalLinksLabel and supportLabel reach the footer through the layout, and is the container required?",
+      "decision": "The names are those of PortalFooter in every adapter; the container follows how each adapter already passes footer content, as the specification says: React and Vue footerProps.externalLabel / legalLinksLabel / supportLabel, Angular top-level inputs of hw-portal-layout (externalLabel; legalLinksLabel and supportLabel only on hw-portal-footer because the Angular layout passes no legal links and no support content). externalLabel is required always: React types footerProps as required with a required externalLabel; Vue cannot type a nested key, so PortalLayout calls needText('PortalLayout', 'footerProps.externalLabel', …) at render (already done); Angular @Input({required: true}) externalLabel. menuLabel and navigationLabel are top-level layout inputs in all three.",
+      "reason": "Explicit in the specification (\"reach the footer the way each adapter already passes footer content\"). No change needed.",
+      "perAdapter": {
+        "vanilla": "none (no layout controller)",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D21-brand-without-home-address",
+      "component": "PortalHeader, PortalFooter",
+      "question": "Angular keeps the brand as an <a> without href when there is no home address; other adapters render a non-link element.",
+      "decision": "Accepted. Addendum A5 asks that a brand without a home address has no link role and no href; an <a> without href has neither and is not focusable. The element name may differ between adapters; the class (.hw-portal-brand), the absence of href and role, and brandLabel handling may not.",
+      "reason": "Adapter mechanism with the same result for users and assistive technology.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D22-locale-calendar-and-date-picker",
+      "component": "Calendar, DatePicker",
+      "question": "Addendum D: what happens when `locale` is missing? Vanilla throws (which aborts enhance() for the whole page); core now throws a TypeError when a helper is called without a locale.",
+      "decision": "`locale: string` is required always in all four adapters (React required prop; Angular @Input({required: true}); Vue required: true; vanilla options.locale, else data-hw-locale on the controller root, never a `lang` attribute) and has no default anywhere. No adapter throws for a missing locale and none calls a core helper without one: before any call of getCalendarMonth or formatCalendarDate the adapter evaluates requireText('Calendar' | 'DatePicker', 'locale', locale). When it is false the component renders nothing that Intl would have produced: Calendar renders its root element with its name and attributes but no toolbar, no weekday row, no grid and no status; DatePicker renders its field, text input (which keeps the ISO value as typed; ISO dates are data), hidden input, trigger and dialog as usual, shows no formatted-date output, and its nested calendar is empty. Value, form participation and events are unchanged. The DatePicker passes its locale to the nested Calendar; the nested calendar may warn once more under its own name (D14).",
+      "reason": "Addendum D2 names the requireText warning as the mechanism for a missing locale in Vue and vanilla, and rule 12 (renders nothing in its place, structure stays) is the model. A throw in one controller makes enhance() release every controller on the page. Core throws only as a backstop so that nothing can fall back to the host locale.",
+      "perAdapter": {
+        "vanilla": "packages/vanilla/src/calendar.ts: replace calendarLocale() (lines 26-30, which throws) by a function that returns options.locale ?? root.dataset.hwLocale when it has text and otherwise undefined after requireText(factory === 'createDatePicker' ? 'DatePicker' : 'Calendar', 'locale', value). In createCalendar, when there is no locale do not build the switch, toolbar or grid and do not call core; return a controller whose value getter/setter and destroy() still work and that leaves the authored root untouched. In createDatePicker, when there is no locale keep the input, validation of typed ISO dates and the trigger working, leave the formatted display empty and the dialog calendar empty. Update the JSDoc at lines 24 and 181 and the README/EXPANSION-API rows. Tests in packages/vanilla/test/text.test.ts: replace the \"throws without a locale\" assertions by: createCalendar and createDatePicker without locale do not throw, log exactly 'Hawiyah: Calendar requires \"locale\"' / 'Hawiyah: DatePicker requires \"locale\"', render no [role=grid]; enhance() on a page with such a calendar and a second component still enhances the second component; with data-hw-locale=\"ar-SA\" the month heading equals core getCalendarMonth({locale: 'ar-SA', …}).label (unchanged output).",
+        "react": "packages/react/src/calendar.tsx: keep locale as a required prop on Calendar and DatePicker (no default). After the hooks, const hasLocale = requireText('Calendar', 'locale', locale) (in DatePicker: 'DatePicker'); guard every getCalendarMonth / formatCalendarDate call (lines 45, 84, 92 and the model) with it; without a locale return the root element with no children (Calendar) and no formatted output, the ISO draft in the input (DatePicker). Tests in packages/react/test/react.text-contract.test.tsx: // @ts-expect-error cases for <Calendar> and <DatePicker> without locale in the typed cases; at run time (props cast) no throw, one warning each, no [role=grid]; with locale=\"ar-SA\" the heading equals core getCalendarMonth({locale:'ar-SA',…}).label.",
+        "vue": "packages/vue/src/calendar.ts: keep locale: { type: String, required: true } on both components. Compute const hasLocale = needText('Calendar' | 'DatePicker', 'locale', props.locale) at render and guard every getCalendarMonth / formatCalendarDate call (lines 432, 471 and the month model) with it; without a locale render the root with no toolbar/grid, formattedDate '' and the ISO draft in the input. Tests in packages/vue/test/required-text.test.ts: mounting without locale does not throw, logs 'Hawiyah: Calendar requires \"locale\"' (and DatePicker), renders no grid; with locale 'ar-SA' output equals the core helper output.",
+        "angular": "packages/angular/src/advanced-controls.ts: keep @Input({required: true}) locale on hw-calendar and hw-date-picker with no initial tag (initialise to ''). Add a getter hasLocale that returns texts.need('locale', this.locale) under the usual ngDevMode guard (and hasText in production) and guard the month model (line 238), dayLabel (257), formattedDate (309) and the draft display (310) with it; wrap the toolbar/grid in @if (hasLocale). Tests in packages/angular/test/text-contract.test.ts: a template without [locale] fails compilation with NG8008 (existing AOT check); a component created with locale '' does not throw on server render or in the browser, warns once and renders no grid; with 'ar-SA' the heading equals the core helper output."
+      }
+    },
+    {
+      "id": "D23-locale-data-table",
+      "component": "DataTable",
+      "question": "Addendum D: DataTable sorts text with core sortRows and defaulted its locale to 'ar-SA' in React, Vue and Angular (vanilla fell through to the core default).",
+      "decision": "`locale: string` is a required input of DataTable with no default, under the same name in all four adapters: React required prop; Angular @Input({required: true}); Vue { type: String, required: true }; vanilla options.locale, else data-hw-locale on the controller root, required when the table has at least one [data-hw-sort] button. Every adapter evaluates requireText('DataTable', 'locale', locale) (vanilla with when = 'a column is sortable') and calls sortRows(rows, key, direction, locale) only when it is true. With the locale missing, sort state, aria-sort, the sort event and getSortLabel behave as usual, and the rows stay in their source order. Numbers in cells are rendered as given; the adapter formats nothing.",
+      "reason": "Addendum D2 and D4: required input with one name, a type error in React and Angular, a warning in Vue and vanilla, and unchanged output when the application passes the former default. Sortable columns are data, so rule 9 makes the requirement \"always\" in the frameworks; in vanilla the sort buttons are authored markup, a static switch.",
+      "perAdapter": {
+        "vanilla": "packages/vanilla/src/content.ts createDataTable (lines 224-246): const locale = () => { const value = options.locale ?? root.dataset.hwLocale; return hasText(value) ? value : undefined; }; when buttons.length > 0 call requireText('DataTable', 'locale', locale(), 'a column is sortable') at creation; in sort() reorder rows only when locale() is defined (sortRows(records, 'value', sortDirection!, locale()!)), still update aria-sort and emit. Update DataTableOptions JSDoc, README and EXPANSION-API. Tests in packages/vanilla/test/text.test.ts (or content tests): without locale one warning, clicking a sort button sets aria-sort and keeps the row order; with data-hw-locale=\"ar-SA\" the order equals core sortRows(…, 'ar-SA'); a table without sort buttons logs nothing. Add data-hw-locale / locale to the existing DataTable tests that sort.",
+        "react": "packages/react/src/expanded-content.tsx lines 48-51: change locale?: string to locale: string in the DataTable props, remove the `locale = 'ar-SA'` default, add const collation = text('DataTable', 'locale', locale); and use const sorted = sorting && collation ? sortRows(rows, sorting.key, sorting.direction, collation) : rows. README row and migration note (\"pass locale; 'ar-SA' gives the previous order\"). Tests in packages/react/test/react.text-contract.test.tsx: // @ts-expect-error <DataTable> without locale; at run time one warning and source order after a sort click; with locale=\"ar-SA\" the order equals core sortRows(…, 'ar-SA'). Add locale to the existing DataTable tests.",
+        "vue": "packages/vue/src/content.ts DataTable (lines 317, 343-347): change locale: { type: String, default: \"ar-SA\" } to locale: { type: String, required: true }; sort only when needText('DataTable', 'locale', props.locale) returns a value, else keep props.rows order. README row and migration note. Tests in packages/vue/test/required-text.test.ts: without locale 'Hawiyah: DataTable requires \"locale\"' is logged and the order stays; with 'ar-SA' the order equals core sortRows(…, 'ar-SA'). Add locale to the existing DataTable tests.",
+        "angular": "packages/angular/src/content.ts lines 50 and 57: change @Input() locale = 'ar-SA' to @Input({required: true}) locale = ''; get sortedRows() { return this.sortKey && this.texts.need('locale', this.locale) ? sortRows(this.rows, this.sortKey, this.sortDirection, this.locale) : this.rows; } (keep the ngDevMode rule of HwTexts; in production use hasText). README row and migration note. Tests in packages/angular/test/text-contract.test.ts: template without [locale] is an NG8008 error in the AOT check; locale '' warns once and keeps the order; 'ar-SA' equals core sortRows(…, 'ar-SA'). Add locale to the existing data-table tests and the Arabic example."
+      }
+    },
+    {
+      "id": "D24-locale-range-slider-output",
+      "component": "RangeSlider",
+      "question": "Addendum D: the vanilla RangeSlider writes \"a – b\" into [data-hw-range-output] with core formatNumber and no locale of its own.",
+      "decision": "Vanilla: `locale` (options.locale, else data-hw-locale on the controller root) is required when the root contains a [data-hw-range-output] element. With a locale the output text is formatNumber(lower, {locale}) + \" – \" + formatNumber(upper, {locale}) as today (the en dash is a glyph); without one the controller calls requireText('RangeSlider', 'locale', locale, 'a [data-hw-range-output] element is present'), does not call formatNumber and leaves the output empty. Thumb values, clamping and events are unchanged. React keeps its application formatter formatValue (default String, which chooses no locale); Vue and Angular render no formatted value and take no locale.",
+      "reason": "Addendum D2: a component that formats a number takes a required locale whenever that feature is used, or a formatter from the application where one already exists (React). The output element is authored markup, a static switch.",
+      "perAdapter": {
+        "vanilla": "packages/vanilla/src/controls.ts createRangeSlider (lines 36-56): resolve const locale = options.locale ?? root.dataset.hwLocale; if (output) { if (requireText('RangeSlider', 'locale', locale, 'a [data-hw-range-output] element is present')) output.textContent = `${formatNumber(value[0], { locale: locale! })} – ${formatNumber(value[1], { locale: locale! })}`; else output.textContent = ''; }. Update the JSDoc on RangeSliderOptions.locale, README and EXPANSION-API. Tests: packages/vanilla/test/controls.test.ts:46 (\"clamps only the moved range thumb …\", currently failing with the core TypeError) passes locale: 'ar-SA' or data-hw-locale and keeps its expected output; add in packages/vanilla/test/text.test.ts: with an output and no locale one warning, empty output, no throw; without an output element no warning.",
+        "react": "none",
+        "vue": "none",
+        "angular": "none"
+      }
+    },
+    {
+      "id": "D25-locale-stat",
+      "component": "Stat",
+      "question": "Addendum D: only the Vue Stat formats a numeric value (formatNumber with a default 'ar-SA' locale prop); React and Angular render `value` as given and vanilla is authored markup.",
+      "decision": "Stat renders `value` exactly as the application gives it in every adapter and takes no `locale`. The Vue-only number formatting and its `locale` prop are removed; an application that wants grouping formats the number itself (core formatNumber(value, { locale })) and passes the string.",
+      "reason": "Same input names and the same rendered result in all four adapters with no new public API; adding a locale input to React and Angular for a Vue-only convenience would be a new feature. Breaking for Vue: a number such as 1234567 is now printed without grouping.",
+      "perAdapter": {
+        "vanilla": "none",
+        "react": "none",
+        "angular": "none",
+        "vue": "packages/vue/src/content.ts Stat (lines 145-166): delete the locale prop and render props.value as given (h(\"strong\", { class: \"hw-stat-value\" }, String(props.value)) or the value itself); remove the formatNumber import if it becomes unused. README and migration note: \"Stat no longer formats numbers; pass formatNumber(value, { locale }) from @hawiyah/core\". Record breaking: true in the changes file. Test in packages/vue/test/required-text.test.ts (or the content test): <Stat :value=\"1234567\"> renders \"1234567\"; a locale attribute is not a prop any more."
+      }
+    },
+    {
+      "id": "D26-no-intl-in-adapters",
+      "component": "all adapters",
+      "question": "Addendum D3: may any adapter call Intl or toLocaleString itself?",
+      "decision": "No. After D22 to D25 the only Intl calls in packages/*/src are inside @hawiyah/core, each with the caller's locale. Adapters render numbers that are data (page numbers, counts, ratings, sizes) with String(), which uses no locale, and never call toLocaleString, localeCompare, Intl.* or resolvedOptions().",
+      "reason": "Verified by search: no adapter source calls Intl or toLocale* today; the remaining built-in tags are the four 'ar-SA' defaults removed by D23 and D25.",
+      "perAdapter": {
+        "vanilla": "Add to packages/vanilla/test/text.test.ts a source scan (same shape as packages/core/test/required-locale.test.ts, last test): no file under packages/vanilla/src matches /new Intl\\.|toLocale(String|DateString|TimeString)\\(|localeCompare\\(|['\"][a-z]{2,3}-[A-Z]{2}['\"]/.",
+        "react": "Add the same source scan for packages/react/src to packages/react/test/react.text-contract.test.tsx.",
+        "vue": "Add the same source scan for packages/vue/src to packages/vue/test/required-text.test.ts.",
+        "angular": "Add the same source scan for packages/angular/src to packages/angular/test/text-contract.test.ts."
+      }
+    }
+  ],
+  "parityGaps": [
+    {
+      "component": "Alert",
+      "missingIn": [
+        "react",
+        "vue"
+      ],
+      "what": "Dismiss button (closeLabel, when the alert is dismissible). Angular has it; vanilla is authored markup."
+    },
+    {
+      "component": "Calendar",
+      "missingIn": [
+        "react",
+        "angular"
+      ],
+      "what": "Unsupported-range status on the standalone Calendar (unsupportedMessage). Vanilla createCalendar renders it with its calendar-system switch (packages/vanilla/src/calendar.ts:21,133-134) and the Vue Calendar takes the prop and renders an sr-only status when calendar is 'islamic-umalqura' (packages/vue/src/calendar.ts:57,278). React Calendar (packages/react/src/calendar.tsx:23-28) and Angular hw-calendar (packages/angular/src/advanced-controls.ts:218-287) have neither the input nor the status. The calendar-system switch itself (calendarSystemLabel, gregorianLabel, hijriLabel) is rendered on the standalone Calendar by vanilla only; React, Vue and Angular render it in DatePicker only. Corrected after the final review (m10): the entry said that only vanilla rendered any of these."
+    },
+    {
+      "component": "DatePicker",
+      "missingIn": [
+        "angular"
+      ],
+      "what": "isDateDisabled and its validation text unavailableMessage."
+    },
+    {
+      "component": "DatePicker",
+      "missingIn": [
+        "vanilla"
+      ],
+      "what": "The formatted value of the selected date uses the default long date in vanilla (calendar.ts:229) and dateStyle \"full\" (with the weekday) in React, Vue and Angular."
+    },
+    {
+      "component": "CookieConsent",
+      "missingIn": [
+        "react",
+        "vue",
+        "angular"
+      ],
+      "what": "After D12 the texts match, but the three components still differ in state API (React value/CookieChoice, Vue open + accept/reject events, Angular visible/choose), naming (aria-labelledby heading in React, aria-label in Vue and Angular), button order and container class (hw-inline versus hw-button-group)."
+    },
+    {
+      "component": "Feedback",
+      "missingIn": [
+        "angular"
+      ],
+      "what": "Comment field and submit button (commentLabel, submitLabel)."
+    },
+    {
+      "component": "FileDropzone",
+      "missingIn": [
+        "vue",
+        "angular"
+      ],
+      "what": "Rejection text rendered by the component (getRejectedMessage). They only emit reject / (rejected)."
+    },
+    {
+      "component": "FileDropzone",
+      "missingIn": [
+        "react",
+        "angular"
+      ],
+      "what": "maxSize restriction. Vanilla has data-hw-max-size / options.maxSize (packages/vanilla/src/controls.ts:249,262-266) and Vue has the maxSize prop (packages/vue/src/controls.ts:704,723); React FileDropzone (packages/react/src/expanded-controls.tsx) and Angular hw-file-dropzone (packages/angular/src/advanced-controls.ts:362-363) have no size limit. Corrected after the final review (m10): the entry said vanilla only. Deferred to milestone 3."
+    },
+    {
+      "component": "FileDropzone",
+      "missingIn": [
+        "vue"
+      ],
+      "what": "List of selected file names (<ul>) that React and Angular render; Angular also prints the raw byte size in parentheses, which React does not."
+    },
+    {
+      "component": "MultiSelect",
+      "missingIn": [
+        "react",
+        "vue",
+        "angular"
+      ],
+      "what": "Live announcement of the filtered count (getResultsMessage); vanilla only."
+    },
+    {
+      "component": "MultiSelect",
+      "missingIn": [
+        "react",
+        "vue",
+        "vanilla"
+      ],
+      "what": "Selected-count text (getSelectedMessage); only Angular renders it."
+    },
+    {
+      "component": "NotificationList",
+      "missingIn": [
+        "react"
+      ],
+      "what": "Dismiss action (getDismissLabel with a dismiss handler)."
+    },
+    {
+      "component": "NotificationList",
+      "missingIn": [
+        "angular"
+      ],
+      "what": "Mark-read action (getMarkReadLabel with a read handler)."
+    },
+    {
+      "component": "NotificationList",
+      "missingIn": [
+        "vue"
+      ],
+      "what": "Unread badge text (unreadLabel)."
+    },
+    {
+      "component": "NotificationList",
+      "missingIn": [
+        "react",
+        "vue",
+        "angular"
+      ],
+      "what": "Item shape and markup differ: read (React, Vue) versus unread (Angular); dateTime/dateLabel (React), date/dateLabel (Vue), time (Angular); heading with aria-labelledby (React) versus aria-label (Vue, Angular); empty state as <p>, <p role=status> or <li>."
+    },
+    {
+      "component": "Popover, Menu",
+      "missingIn": [
+        "react"
+      ],
+      "what": "Packaged trigger button (triggerLabel). React takes the trigger element from the application; Angular hw-popover and hw-menu render it and require triggerLabel (packages/angular/src/interactions.ts:26-31,44); the Vue Popover renders it from triggerLabel or the trigger slot (packages/vue/src/expansion-interactive.ts:142,204). The Vue Menu has no triggerLabel: see the separate Menu entry. Mechanism difference to confirm, not necessarily to remove. Corrected after the final review (m10): the entry said that Vue rendered the trigger of both from triggerLabel."
+    },
+    {
+      "component": "RangeSlider",
+      "missingIn": [
+        "vue",
+        "angular"
+      ],
+      "what": "Visible value output (vanilla [data-hw-range-output] with locale; React formatValue/showValue on the thumbs)."
+    },
+    {
+      "component": "ServiceDetails",
+      "missingIn": [
+        "vue"
+      ],
+      "what": "Requirements list and its heading (requirementsLabel)."
+    },
+    {
+      "component": "ServiceCard",
+      "missingIn": [
+        "angular"
+      ],
+      "what": "Packaged action link markup: Angular renders <a class=\"hw-button\" data-variant=\"secondary\">, React and Vue render the Link component; Angular renders the fallback link whenever nothing is projected, React and Vue only when href is given."
+    },
+    {
+      "component": "TagInput",
+      "missingIn": [
+        "react",
+        "vue",
+        "vanilla"
+      ],
+      "what": "Add button (addLabel); only Angular renders one."
+    },
+    {
+      "component": "ToastRegion",
+      "missingIn": [
+        "react"
+      ],
+      "what": "One message shape: React ToastMessage has description (and a node title) where Vue ToastMessage and Angular HwToast have message (and a string title). getDismissLabel receives whichever shape the adapter has, so one label function cannot be shared as written."
+    },
+    {
+      "component": "TreeView",
+      "missingIn": [
+        "angular"
+      ],
+      "what": "Expand/collapse toggle exposed as a named control (getExpandLabel, getCollapseLabel). React and Vue expose it; Angular hides the toggle from assistive technology and relies on aria-expanded and the keyboard. See ownerQuestions."
+    },
+    {
+      "component": "Root names (all landmark and group components)",
+      "missingIn": [
+        "angular"
+      ],
+      "what": "Forwarding of aria-label / aria-labelledby from the host to the inner root, so a visible heading can name the component (rule 8). Angular accepts only the `label` input."
+    },
+    {
+      "component": "Stat",
+      "missingIn": [
+        "react",
+        "vue",
+        "angular"
+      ],
+      "what": "Built-in number formatting is removed from Vue by D25 and exists nowhere; listed so that a later \"format with locale\" feature is added to all adapters at once, if wanted."
+    },
+    {
+      "component": "Menu",
+      "missingIn": [
+        "vue"
+      ],
+      "what": "triggerLabel. The Vue Menu prints the trigger text from the trigger slot or else from `label`, which is also the aria-label of the menu, so one input serves two texts (packages/vue/src/expansion-interactive.ts:227,298; rule 12 forbids reusing another input). Angular hw-menu takes triggerLabel (required) and label (packages/angular/src/interactions.ts:44); React takes the trigger element. Deferred to milestone 3: add triggerLabel to the Vue Menu, required unless the trigger slot is given. Recorded by the final review (parityDifferences, major)."
+    },
+    {
+      "component": "DatePicker",
+      "missingIn": [
+        "react",
+        "angular"
+      ],
+      "what": "getDayLabel. The Vue DatePicker (packages/vue/src/calendar.ts:59,160, shared with Calendar) and the vanilla DatePicker (packages/vanilla/src/calendar.ts:193,249) accept it and pass it to the nested calendar; React and Angular expose it on Calendar only (packages/react/src/calendar.tsx:23,47 against the DatePicker props at :72-75; packages/angular/src/advanced-controls.ts:234,258 against hw-date-picker at :288-289). Deferred to milestone 3. Recorded by the final review."
+    },
+    {
+      "component": "Collapsible, Popover",
+      "missingIn": [
+        "react"
+      ],
+      "what": "One name per text (rule 6): the same text is `title` in React (packages/react/src/expanded-interactive.tsx:26,84) and `label` in Vue (packages/vue/src/expansion-interactive.ts:137,463) and Angular (packages/angular/src/interactions.ts:26,104). Present before the milestone; neither component is in the specification. Deferred to milestone 3 as a naming decision. Recorded by the final review."
+    },
+    {
+      "component": "SearchField",
+      "missingIn": [
+        "angular"
+      ],
+      "what": "showSearchButton defaults to true in Angular (packages/angular/src/advanced-controls.ts:60) and to false in React (packages/react/src/search-field.tsx) and Vue (packages/vue/src/search-field.ts:12), so searchLabel is needed by default in Angular only and the same markup renders a search button there. Present before the milestone. Deferred to milestone 3: change the Angular default to false (breaking, CHANGELOG entry). Recorded by the final review (m3)."
+    }
+  ],
+  "ownerQuestions": [
+    {
+      "question": "core formatDate keeps timeZone = 'Asia/Riyadh' and calendar = 'gregory' as defaults, and getCalendarMonth takes \"today\" in Asia/Riyadh. They are not locale choices, but they are a regional default inside an otherwise neutral package. Keep, or make the time zone a required argument too?",
+      "recommendation": "Keep for 0.3.0 and document it (done in CONTRACT.md and packages/core/README.md): the calendar is defined for Saudi civil use, the Umm al-Qura day boundary is a Riyadh boundary, and an explicit timeZone already overrides it. Revisit before 1.0 together with a `today`/`timeZone` option on getCalendarMonth, because a host-zone default would be worse (server and client could disagree)."
+    },
+    {
+      "question": "Intl itself falls back to the locale of the host when the application passes a well-formed tag the runtime has no data for (for example \"xx-YY\"). Should core detect this (Intl.*.supportedLocalesOf) and warn or throw?",
+      "recommendation": "Do not throw. The application chose the tag, and data availability belongs to the runtime. If wanted, add a development-only warning in a later step; it is not part of addendum D."
+    },
+    {
+      "question": "Rule 13 text: D10 decides that aria-invalid is not set merely because a validation message is missing. Should the controls that use a custom required validity (Combobox, MultiSelect, TagInput) expose aria-invalid=\"true\" after a failed submission attempt (the invalid event), with or without a message?",
+      "recommendation": "Yes, in milestone 3, in all four adapters at once and independent of the text; then reword rule 13 to \"the control stays invalid and blocks submission\". Until then no adapter sets it."
+    },
+    {
+      "question": "D25 removes number formatting from the Vue Stat (1234567 is printed without grouping unless the application formats it). Accept this breaking change?",
+      "recommendation": "Accept and list it in the 0.3.0 migration notes. The alternative (an optional locale input on Stat in all adapters, formatting only when supplied) is a new feature for three adapters and can follow later."
+    },
+    {
+      "question": "D23 makes DataTable.locale required even for a table that has no sortable column (React, Vue, Angular), because sortable columns are data.",
+      "recommendation": "Accept: DataTable exists for sorting (plain tables use Table), and addendum D4 asks for a type error. The alternative is an optional input that warns only when a column is sortable, which loses the type error."
+    },
+    {
+      "question": "D08 keeps the vanilla getDismissLabel argument as the toast element, which differs from the specified (message: ToastMessage) signature.",
+      "recommendation": "Accept as an adapter mechanism (authored markup versus data). If one shared label function across adapters matters, a later step can pass { id, title, element } in vanilla; that adds a public type."
+    },
+    {
+      "question": "TreeView: which is the reference behaviour, the toggle exposed as a named button (React, Vue; needs getExpandLabel/getCollapseLabel) or hidden from assistive technology (Angular)?",
+      "recommendation": "Take the exposed toggle as the reference: touch screen-reader users cannot press arrow keys, and activating the treeitem selects instead of expanding. Bring Angular to it in milestone 3; it then takes the two function inputs as required."
+    },
+    {
+      "question": "Carousel: should slide names be able to include a slide title (getSlideLabel(position, total, slide))? D02 keeps (position, total).",
+      "recommendation": "No change. A slide title is visible content of the slide; the name \"position of total\" is what the pattern needs. Extending the signature later is additive."
+    },
+    {
+      "question": "Scripts that do not separate words with spaces (Chinese, Japanese, Thai): D11 keeps one U+0020 between a link text and its screen-reader-only externalLabel and between a label and a data value.",
+      "recommendation": "Keep. The space is not visible in the first case, and in the second it separates text from data (a domain name, a number), where a space is correct in every script."
+    },
+    {
+      "question": "Angular host attributes: should the Angular wrappers forward aria-label / aria-labelledby to the inner root so that rule 8 holds there too?",
+      "recommendation": "Yes, in milestone 3 as a parity fix (it changes the public surface of many components); until then `label` is the only source in Angular and is documented as such."
+    }
+  ],
+  "core": {
+    "summary": "Addendum D in @hawiyah/core. Every helper that calls Intl takes a required locale; the 'ar-SA' default is gone; nothing falls back to a built-in locale or to the locale of the host. packages/core/src/removed.ts and its exports are deleted.",
+    "signatures": [
+      {
+        "name": "NumberFormatOptions",
+        "before": "interface NumberFormatOptions extends Intl.NumberFormatOptions { locale?: string | string[] }",
+        "after": "interface NumberFormatOptions extends Intl.NumberFormatOptions { locale: string | string[] }"
+      },
+      {
+        "name": "DateFormatOptions",
+        "before": "interface DateFormatOptions extends Intl.DateTimeFormatOptions { locale?: string | string[] }",
+        "after": "interface DateFormatOptions extends Intl.DateTimeFormatOptions { locale: string | string[] }"
+      },
+      {
+        "name": "formatNumber",
+        "before": "formatNumber(value: number | bigint, options: NumberFormatOptions = {}): string  // locale defaulted to 'ar-SA'",
+        "after": "formatNumber(value: number | bigint, options: NumberFormatOptions): string  // options and options.locale required"
+      },
+      {
+        "name": "formatDate",
+        "before": "formatDate(value: Date | number | string, options: DateFormatOptions = {}): string  // locale defaulted to 'ar-SA'",
+        "after": "formatDate(value: Date | number | string, options: DateFormatOptions): string  // options and options.locale required; calendar = 'gregory' and timeZone = 'Asia/Riyadh' defaults unchanged"
+      },
+      {
+        "name": "sortRows",
+        "before": "sortRows<T extends object>(rows: readonly T[], key: keyof T | string, direction: 'ascending' | 'descending', locale = 'ar-SA'): T[]",
+        "after": "sortRows<T extends object>(rows: readonly T[], key: keyof T | string, direction: 'ascending' | 'descending', locale: string | string[]): T[]"
+      },
+      {
+        "name": "getCalendarMonth",
+        "before": "getCalendarMonth(options: CalendarMonthOptions): CalendarMonth  // locale: string already required in the type; undefined at run time fell back to the host locale",
+        "after": "unchanged signature; now throws the TypeError below when options.locale is missing"
+      },
+      {
+        "name": "formatCalendarDate",
+        "before": "formatCalendarDate(value: string, options: CalendarDateFormatOptions): string  // locale: string already required in the type; undefined at run time fell back to the host locale",
+        "after": "unchanged signature; now throws the TypeError below when options.locale is missing"
+      },
+      {
+        "name": "getCalendarLabels, getSiteVerificationLabels, fileUploadLabels, type RemovedExport",
+        "before": "exported from packages/core/src/removed.ts (empty values, typed RemovedExport)",
+        "after": "deleted; importing any of them is a build error"
+      }
+    ],
+    "runtime": "A missing, empty, blank or non-string locale (also an empty array or an array with an empty entry) throws TypeError(\"Hawiyah: <helper> requires a locale from the application. There is no default locale.\") from formatNumber, formatDate, sortRows, getCalendarMonth and formatCalendarDate. The check lives in the internal module packages/core/src/locale.ts (requireLocale); it is not exported from the package. Adapters must not rely on the throw: they test the locale with requireText(component, 'locale', locale) (or hasText) before calling a helper, as decisions D22 to D24 describe. Output is byte-for-byte unchanged when the caller passes 'ar-SA' (asserted against literals recorded from the previous build). Latin digits are still enforced. The Umm al-Qura provider, its data and the oracle test are untouched.",
+    "adapterTyping": "Adapter inputs stay `locale: string` (one tag); core also accepts string[] as Intl does.",
+    "filesChanged": [
+      "packages/core/src/locale.ts (new, internal)",
+      "packages/core/src/index.ts",
+      "packages/core/src/controls.ts",
+      "packages/core/src/calendar.ts",
+      "packages/core/src/removed.ts (deleted)",
+      "packages/core/test/required-locale.test.ts (new)",
+      "packages/core/test/fixtures/required-locale.ts (new, type fixture)",
+      "packages/core/test/expansion.test.ts",
+      "packages/core/test/text.test.ts",
+      "packages/core/README.md",
+      "packages/core/API.md",
+      "CONTRACT.md",
+      "EXPANSION.md"
+    ],
+    "adapterCallSitesToUpdate": [
+      "packages/vanilla/src/controls.ts:54-55 createRangeSlider: formatNumber(value, { locale }) with a possibly undefined locale (type error now; throws at run time; D24)",
+      "packages/vanilla/src/content.ts:244 createDataTable: sortRows(…, options.locale ?? (root.dataset.hwLocale || undefined)) (type error now; D23)",
+      "packages/vanilla/src/calendar.ts:26-30 calendarLocale throws instead of warning (D22)",
+      "packages/react/src/expanded-content.tsx:48-51 DataTable: locale?: string with default 'ar-SA' (D23)",
+      "packages/vue/src/content.ts:151,162 Stat: locale default 'ar-SA' + formatNumber (D25)",
+      "packages/vue/src/content.ts:317,343-347 DataTable: locale default 'ar-SA' (D23)",
+      "packages/angular/src/content.ts:50,57 hw-data-table: @Input() locale = 'ar-SA' (D23)",
+      "Calendar and DatePicker in react (calendar.tsx:45,84,92), vue (calendar.ts:432,471), angular (advanced-controls.ts:238,257,309,310): guard the core calls with the locale check (D22)"
+    ],
+    "tests": "packages/core/test/required-locale.test.ts: (1) compiles the fixture with the TypeScript API; 13 calls without a locale carry @ts-expect-error and an accepted call would surface as an unused directive (proved by temporarily making the sortRows locale optional: the test failed with two unused directives); (2) every helper throws TypeError for undefined, null, '', blank, [], [''], 0 and {}; (3) literal outputs recorded from the previous build with its built-in default equal the outputs with locale 'ar-SA'; (4) a priority list is accepted; (5) source scan: no locale literal, no default locale parameter, no host-locale read, and every `new Intl.X(` in core takes `locale` as its first argument.",
+    "commands": [
+      {
+        "command": "node scripts/build.mjs --only core",
+        "result": "exit 0"
+      },
+      {
+        "command": "pnpm exec vitest run packages/core",
+        "result": "12 files, 77 tests passed (72 before; +5 in required-locale.test.ts; the removed-registry test in text.test.ts was replaced by an absence check)"
+      },
+      {
+        "command": "pnpm exec vitest run packages/vanilla packages/react packages/vue packages/angular (information only, adapters not yet migrated)",
+        "result": "78 files: 469 passed, 1 failed: packages/vanilla/test/controls.test.ts:46 (createRangeSlider calls formatNumber without a locale; fixed by D24). Vitest does not type-check, so the type errors at the call sites above appear only in the adapter builds."
+      }
+    ]
+  },
+  "integrationNotes": [
+    "Still importing the deleted registries (outside packages/*/src; migrate in the integration step): tests/browser/calendar-projects.spec.ts:2 and tests/calendar-localization.test.ts:9 import getCalendarLabels from ../packages/core/src/calendar-labels (a module that no longer exists; both files fail to load); apps/playground/src/site-verification-demo.ts:1 imports getSiteVerificationLabels from @hawiyah/core; apps/playground/src/generated/preview-runtime.ts, project-react-runtime.ts, project-vue-runtime.ts and project-angular-runtime.ts embed the old names (regenerate); docs/site-verification.md documents getSiteVerificationLabels(locale) and Arabic defaults.",
+    "No file under packages/*/src imports getCalendarLabels, fileUploadLabels, getSiteVerificationLabels or RemovedExport (searched before deleting). packages/vanilla/README.md:85-86 only states that the registries no longer provide text; it may now say they are removed.",
+    "Callers of formatNumber / formatDate outside the packages already pass a locale (examples/react/src/main.tsx, examples/vue/src/App.vue:14,36, examples/angular/src/main.ts:80, docs/architecture.md:81-82, packages/vanilla/test/ssr.test.ts:8). The generated playground runtimes and apps/playground/src/main.ts must be checked after regeneration.",
+    "Consumers of DataTable in examples/, apps/playground and the root tests must pass locale after D23; consumers of the Vue Stat that relied on grouping must format the number (D25); consumers of the vanilla RangeSlider output must set data-hw-locale (D24).",
+    "Stale shared documents noted by the adapter reviews and still open: docs/site-verification.md, docs/navigation-drawer.md, docs/file-upload-states.md (Arabic defaults, locale=\"en\", removed registries); examples/vue, examples/angular, apps/playground and tests/browser/nic-content-navigation.spec.ts still use the old input names listed in the adapters' changes files.",
+    "packages/core/API.md, packages/core/README.md, CONTRACT.md (\"Text and localisation\", \"Core intended exports\") and EXPANSION.md were updated for the required locale; the adapter READMEs, EXPANSION-API.md and PORTAL.md must be updated by the adapter agents for the decisions they apply.",
+    ".artifacts/package-check/staging/core/README.md is a generated copy of the old README; it is refreshed by pnpm check:packages and is not source.",
+    "CHANGELOG entries needed for 0.3.0: required locale in core helpers (breaking); removal of the transitional registry exports (breaking); DataTable.locale required in all adapters (breaking); Vue Stat no longer formats numbers (breaking); vanilla Calendar/DatePicker warn instead of throwing without a locale; Angular FileDropzone getSelectedMessage optional and its status visible; React aria-invalid no longer set for a missing requiredMessage.",
+    "Rule 13 of m2-spec.json should be reworded after D10 (\"…keeps the control invalid with a single-space custom validity and warns in development\"); CONTRACT.md already says only that the constraint still blocks submission.",
+    "Final review (gate3/m2-final-review/review.json), resolved in gate3/m2-review-fixes.json. Angular development warnings name the selector (hw-file-dropzone), not the component name used by React, Vue and vanilla (FileDropzone): accepted and documented in CONTRACT.md; D22 and D23 quote requireText('DataTable', …) for every adapter and read 'hw-data-table' in Angular. D06 now also covers the SearchField field name (Vue: run-time check; Angular: required input), the Angular hw-toggle-group and hw-tree-view label (required inputs), the Tabs label (warned in React and Vue) and React ContentNavigation (RootName union). Vue Feedback commentLabel and submitLabel are required: true (rule 9)."
+  ]
+}

@@ -1,0 +1,684 @@
+{
+ "bucket": "dates-files-overlays",
+ "items": [
+  {
+   "id": "dates-2",
+   "subject": "calendar",
+   "title": "Angular Calendar and DatePicker have no isDateDisabled",
+   "status": "open",
+   "evidence": "packages/angular/src/advanced-controls.ts:218-286 (HwCalendarComponent inputs at :221-239) and :288-360 (HwDatePickerComponent inputs at :290-312): no isDateDisabled or unavailableMessage; grep isDateDisabled in packages/angular/src returns nothing. React packages/react/src/calendar.tsx:22,74; Vue packages/vue/src/calendar.ts:60,387; vanilla packages/vanilla/src/calendar.ts:37,193 have it.",
+   "remaining": {
+    "angular": "Add @Input isDateDisabled to hw-calendar (packages/angular/src/advanced-controls.ts:239) and apply it in tabbable (:244), select (:266), keydown (:282) and day [disabled] (:218); add isDateDisabled + unavailableMessage (required when isDateDisabled is given) to hw-date-picker (:290-310), include an \"unavailable\" violation in violation/validationMessage/validate (:326-342) and pass [isDateDisabled] to the nested hw-calendar (:288)."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "validation-message"
+   ],
+   "sameAs": "dates-2",
+   "note": null
+  },
+  {
+   "id": "dates-3",
+   "subject": "calendar",
+   "title": "Previous/next month buttons show two chevrons in React and Angular",
+   "status": "fixed",
+   "evidence": "packages/styles/src/extended.css:104 \".hw-calendar :is(.hw-calendar-prev, .hw-calendar-next):has(> :is(.hw-icon, svg))::before { content: none; }\" removes the mask arrow when an inner icon is present, so React (packages/react/src/calendar.tsx:67) and Angular (packages/angular/src/advanced-controls.ts:218) show only their .hw-icon; vanilla (packages/vanilla/src/calendar.ts:91, text content, font-size 0) and Vue keep the ::before arrow. One arrow per button.",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": "Verified by reading the selector; no browser run."
+  },
+  {
+   "id": "dates-4",
+   "subject": "date-picker",
+   "title": "Vanilla DatePicker shows no visible validation message",
+   "status": "open",
+   "evidence": "packages/vanilla/src/calendar.ts:231-246 validate() only sets setCustomValidity and aria-invalid; no visible message element is created. node scratchpad/gate3/m3/tmp-dates-files-overlays/check.mjs (jsdom against packages/vanilla/dist): after typing 2026-13-45 \"aria-invalid = true visible .hw-error count = 0\".",
+   "remaining": {
+    "vanilla": "In createDatePicker (packages/vanilla/src/calendar.ts:219-246) render a .hw-error element (id added to the input aria-describedby) with the active invalid/unsupported/unavailable message, using appendDateMessage for ISO dates, or let the author supply [data-hw-date-error]; remove it on reset/destroy."
+   },
+   "kind": "a11y",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "validation-message"
+   ],
+   "sameAs": "dates-7",
+   "note": "Grouped with dates-7: one DatePicker validation-message contract (element, position, live behaviour) for all four adapters."
+  },
+  {
+   "id": "dates-5",
+   "subject": "date-picker",
+   "title": "Native form reset desynchronizes Angular DatePicker and Calendar",
+   "status": "open",
+   "evidence": "packages/angular/src/advanced-controls.ts:218-360: hw-calendar and hw-date-picker register no form \"reset\" listener (grep reset in that file finds only password-field :37-38 and search :101-102); HwExpandedValueControl (:13-19) handles only Angular forms writeValue(null). React packages/react/src/calendar.tsx:42,87 and vanilla packages/vanilla/src/calendar.ts:176,274 and Vue packages/vue/src/calendar.ts:452 restore the default.",
+   "remaining": {
+    "angular": "Add a native form reset listener (queueMicrotask, respect defaultPrevented) to hw-calendar and hw-date-picker (packages/angular/src/advanced-controls.ts:219, :289) that restores the initial value, draft and month and closes the dialog; best in a shared helper on HwExpandedValueControl (:13-19) so hw-file-dropzone (:363) and hw-file-upload (packages/angular/src/forms.ts:203) use it too."
+   },
+   "kind": "behaviour",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "form-reset"
+   ],
+   "sameAs": "dates-5",
+   "note": null
+  },
+  {
+   "id": "dates-6",
+   "subject": "date-picker",
+   "title": "Initial focus when the dialog opens differs: close button vs selected day",
+   "status": "open",
+   "evidence": "React packages/react/src/calendar.tsx:99 show() only sets open; Dialog (packages/react/src/interactive.tsx:117-120) calls showModal() without moving focus into the grid. Vanilla packages/vanilla/src/calendar.ts:266 show() calls modal.show(origin) and calendar.setValue only. Vue packages/vue/src/calendar.ts:418 and Angular packages/angular/src/advanced-controls.ts:354 (focusSelected, :247) focus the selected/tabbable day.",
+   "remaining": {
+    "react": "After opening (packages/react/src/calendar.tsx:99) focus the tabbable day of the nested Calendar (expose a focus handle or an initialFocus on Dialog).",
+    "vanilla": "In show() (packages/vanilla/src/calendar.ts:266) focus host.querySelector('.hw-calendar-day[tabindex=\"0\"]') after modal.show."
+   },
+   "kind": "keyboard",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "open-state"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "dates-7",
+   "subject": "date-picker",
+   "title": "Validation message order, size and live role differ between adapters",
+   "status": "open",
+   "evidence": "React: Field (packages/react/src/shared.tsx:108-111) label with marker, hint then error as div.hw-error, no role. Vue: packages/vue/src/calendar.ts:522-531 renders p.hw-error role=\"alert\" inside .hw-date-picker, before the hint that decorate adds after the content (packages/vue/src/forms.ts:36-38). Angular: packages/angular/src/advanced-controls.ts:288 label without hw-required-marker, validation p.hw-error placed before fieldEnd hint (:11), no role.",
+   "remaining": {
+    "react": "Decide the shared order (hint then error) and live behaviour; React already matches the Field layout.",
+    "vue": "Render the validation message through the field error slot (after the hint, same element/typography as Field) and align the live role (packages/vue/src/calendar.ts:522-531).",
+    "angular": "Use the shared fieldLabel with required marker (packages/angular/src/forms.ts:43) in hw-date-picker (packages/angular/src/advanced-controls.ts:288) and move the validation error after the hint, same element as fieldEnd.",
+    "vanilla": "See dates-4."
+   },
+   "kind": "visual",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "validation-message",
+    "required-marker",
+    "layout-difference"
+   ],
+   "sameAs": "dates-7",
+   "note": "Order change only; no input is renamed."
+  },
+  {
+   "id": "files-2",
+   "subject": "file-dropzone",
+   "title": "Batch validation differs per adapter: mixed-type batches and several files on a single-file dropzone produce three different outcomes",
+   "status": "open",
+   "evidence": "No shared selection helper in packages/core/src. React packages/react/src/expanded-controls.tsx:101-108: any rejected file clears the whole selection; extra files on a single-file drop are silently dropped (slice(0,1)). Vue packages/vue/src/controls.ts:737-748: rejects the whole batch (including too many files) and emits reject. Angular packages/angular/src/advanced-controls.ts:370-376: keeps accepted files and emits rejected for the rest. Vanilla packages/vanilla/src/controls.ts:278,284-285: slices to one file silently, rejects the batch on any invalid file.",
+   "remaining": {
+    "core": "Add evaluateFileSelection(files, {accept, multiple, maxSize}) -> {accepted, rejected, reason}.",
+    "react": "packages/react/src/expanded-controls.tsx:100-108 use it; report extra files as rejected.",
+    "vue": "packages/vue/src/controls.ts:722-753 use it.",
+    "angular": "packages/angular/src/advanced-controls.ts:368-376 use it.",
+    "vanilla": "packages/vanilla/src/controls.ts:263,278,284-285 use it."
+   },
+   "kind": "behaviour",
+   "breaking": true,
+   "size": "L",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": "Breaking: the kept/rejected files change in at least three adapters."
+  },
+  {
+   "id": "files-3",
+   "subject": "file-dropzone",
+   "title": "React and Angular FileDropzone have no size limit (maxSize); Vue and vanilla do",
+   "status": "open",
+   "evidence": "React FileDropzoneProps (packages/react/src/expanded-controls.tsx:91-93) and Angular hw-file-dropzone inputs (packages/angular/src/advanced-controls.ts:364) have no maxSize; Vue packages/vue/src/controls.ts:704,723 and vanilla packages/vanilla/src/controls.ts:249,262-263 have it.",
+   "remaining": {
+    "react": "Add maxSize (bytes) to FileDropzoneProps and the accept check (packages/react/src/expanded-controls.tsx:91,100); getRejectedMessage becomes required when maxSize is set (:93).",
+    "angular": "Add @Input maxSize and apply it in accepts() (packages/angular/src/advanced-controls.ts:364,368)."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "validation-message"
+   ],
+   "sameAs": "files-3",
+   "note": "Do together with the core helper of files-2."
+  },
+  {
+   "id": "files-4",
+   "subject": "file-dropzone",
+   "title": "Rejection feedback is not announced in React and absent in Vue and Angular",
+   "status": "open",
+   "evidence": "React: rejection goes to Field error (packages/react/src/expanded-controls.tsx:97,108) rendered as div.hw-error without a live role (packages/react/src/shared.tsx:111). Vue: packages/vue/src/controls.ts:740-748 only emits reject; no getRejectedMessage prop (:698-707) and no invalid state. Angular: packages/angular/src/advanced-controls.ts:372 only emits rejected; no message input (:364). Vanilla writes the rejection into [data-hw-file-status] (packages/vanilla/src/controls.ts:270-275).",
+   "remaining": {
+    "react": "Render the rejection in a persistent live region (role=status or alert) tied by aria-describedby (packages/react/src/expanded-controls.tsx:108).",
+    "vue": "Add getRejectedMessage (required with accept/maxSize), render it in a live region with aria-invalid (packages/vue/src/controls.ts:698-800).",
+    "angular": "Add getRejectedMessage input (required with accept/maxSize), keep rejected state, render it in a live region with aria-invalid (packages/angular/src/advanced-controls.ts:362-376)."
+   },
+   "kind": "a11y",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "validation-message"
+   ],
+   "sameAs": "files-4",
+   "note": "Breaking: a new required text input in Vue and Angular when accept or maxSize is set."
+  },
+  {
+   "id": "files-5",
+   "subject": "file-dropzone",
+   "title": "Angular FileDropzone keeps showing files after a native form reset while the input is empty",
+   "status": "open",
+   "evidence": "packages/angular/src/advanced-controls.ts:362-381 hw-file-dropzone and packages/angular/src/forms.ts:200-213 hw-file-upload have no native form reset listener; React packages/react/src/expanded-controls.tsx:98 and Vue packages/vue/src/controls.ts:717-720 clear their selection.",
+   "remaining": {
+    "angular": "Listen to the owning form reset and call update([]) when not defaultPrevented (packages/angular/src/advanced-controls.ts:363; packages/angular/src/forms.ts:203), shared with dates-5."
+   },
+   "kind": "behaviour",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "form-reset"
+   ],
+   "sameAs": "dates-5",
+   "note": null
+  },
+  {
+   "id": "files-6",
+   "subject": "file-dropzone",
+   "title": "Dropzone layout differs visibly between adapters (label outside the zone in Vue, duplicated instruction in Vue/Angular, narrow input in React, raw byte sizes in Angular)",
+   "status": "open",
+   "evidence": "Vue: decorate wraps the .hw-file-dropzone (packages/vue/src/controls.ts:755-761) so label/hint/error are outside the zone. Angular: label and hw-file-dropzone-instruction inside the zone and an always-rendered <ul> with \"name (size)\" raw bytes (packages/angular/src/advanced-controls.ts:362). React: Field inside the zone, selected names as <ul> (packages/react/src/expanded-controls.tsx:108). Vanilla: authored markup, no list. The duplicated instruction of the audit no longer exists (dropLabel is now the single required instruction in all adapters).",
+   "remaining": {
+    "vue": "Put label, instruction, input, status, hint and error inside one .hw-file-dropzone root (packages/vue/src/controls.ts:754-801).",
+    "angular": "Drop raw byte sizes or format them; render the list only when chosen, same element as React (packages/angular/src/advanced-controls.ts:362).",
+    "react": "Remove the inner Field grid that narrows the input or match it everywhere (packages/react/src/expanded-controls.tsx:108).",
+    "all": "Document one DOM contract (root, label, instruction, input, status, list?, hint, error)."
+   },
+   "kind": "visual",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "layout-difference",
+    "value-display"
+   ],
+   "sameAs": "files-6",
+   "note": "Breaking: rendered markup changes in Vue and Angular."
+  },
+  {
+   "id": "files-7",
+   "subject": "file-dropzone",
+   "title": "Vanilla dropzone has no visible drag-over state",
+   "status": "fixed",
+   "evidence": "packages/styles/src/extended.css:89 now includes .hw-file-dropzone[data-dragover] alongside [data-dragging=true] and [data-state=dragging]; vanilla sets data-dragover (packages/vanilla/src/controls.ts:280).",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "files-8",
+   "subject": "file-dropzone",
+   "title": "Vanilla dropzone does not cancel dragover while disabled or read-only, so a blocked drop keeps the browser default",
+   "status": "open",
+   "evidence": "packages/vanilla/src/controls.ts:280 calls preventDefault on dragover only when the input is enabled and not read-only. node scratchpad/gate3/m3/tmp-dates-files-overlays/check.mjs (jsdom against packages/vanilla/dist): \"files-8 disabled dragover defaultPrevented = false\".",
+   "remaining": {
+    "vanilla": "In the dragover listener (packages/vanilla/src/controls.ts:280) always preventDefault for file drags and set dataTransfer.dropEffect=\"none\" when unavailable; keep the availability check in drop (:283)."
+   },
+   "kind": "behaviour",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "files-9",
+   "subject": "file-dropzone",
+   "title": "Read-only differs: React has none, Angular renders it as disabled, Vue keeps a focusable aria-readonly input",
+   "status": "open",
+   "evidence": "React FileDropzoneBaseProps omits readOnly (packages/react/src/expanded-controls.tsx:91). Angular binds [disabled]=\"disabled || readOnly\" (packages/angular/src/advanced-controls.ts:362). Vue keeps the input enabled with aria-readonly and blocks the chooser (packages/vue/src/controls.ts:790-793); vanilla uses data-hw-readonly (packages/vanilla/src/controls.ts:279-283).",
+   "remaining": {
+    "react": "Add readOnly: aria-readonly on the input, block click/drop, keep submission (packages/react/src/expanded-controls.tsx:91-108).",
+    "angular": "Bind [disabled]=\"disabled\" only, add aria-readonly, prevent click when readOnly, keep drop blocked (packages/angular/src/advanced-controls.ts:362,369)."
+   },
+   "kind": "behaviour",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "read-only"
+   ],
+   "sameAs": null,
+   "note": "Breaking for Angular: read-only input becomes focusable and submitted."
+  },
+  {
+   "id": "files-10",
+   "subject": "file-upload",
+   "title": "Angular FileUpload lacks content projection, the required marker and most native passthrough",
+   "status": "open",
+   "evidence": "packages/angular/src/forms.ts:200-213: hw-file-upload template has no <ng-content>, uses a plain label without the hw-required-marker of fieldLabel (packages/angular/src/forms.ts:43), and binds only name/accept/multiple/disabled/required.",
+   "remaining": {
+    "angular": "Use fieldLabel, add <ng-content /> after the input and capture/form inputs (packages/angular/src/forms.ts:202-207)."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "required-marker"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "files-11",
+   "subject": "file-upload",
+   "title": "FileUploadList remove button turns into a green primary button on hover; the light-mode glyph has 2.74:1 contrast",
+   "status": "fixed",
+   "evidence": "packages/styles/src/file-upload-list.css:50-55 gives the remove button its own hover/focus/active state (\".hw-upload-item > button:not(:disabled, [aria-disabled='true']):is(:hover, :focus-visible, :active)\", specificity 0,3,1) with surface-muted background and text colour, which beats the generic .hw-button hover (packages/styles/src/components.css:73, 0,3,0).",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": "Verified by specificity reading; adapters still set data-variant=\"subtle\" on the button, which has no rule."
+  },
+  {
+   "id": "overlays-1",
+   "subject": "dialog",
+   "title": "Angular hw-dialog and hw-drawer always render the footer, so a dialog without footer content shows an empty 33px shaded band",
+   "status": "open",
+   "evidence": "packages/angular/src/overlays.ts:8 (hw-dialog) and packages/angular/src/interactions.ts:61 (hw-drawer) render <footer class=\"hw-dialog-footer\"> unconditionally; packages/styles/src/components.css:211 has no general :empty rule (only date-picker.css:35, nic-notification-dialog.css:93, navigation-drawer.css:37).",
+   "remaining": {
+    "angular": "Render the footer only when content is projected, or add \".hw-dialog-footer:empty { display: none }\" in packages/styles/src/components.css:211 (Angular projects no nodes when nothing matches)."
+   },
+   "kind": "visual",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "overlays-10",
+   "subject": "drawer",
+   "title": "Angular hw-drawer silently drops describedBy: the native dialog gets no aria-describedby",
+   "status": "open",
+   "evidence": "packages/angular/src/interactions.ts:61 hw-drawer template binds aria-labelledby only; HwDialogComponent declares describedBy (packages/angular/src/overlays.ts:11) and binds it in its own template (:8).",
+   "remaining": {
+    "angular": "Add [attr.aria-describedby]=\"describedBy || null\" to the hw-drawer <dialog> (packages/angular/src/interactions.ts:61)."
+   },
+   "kind": "a11y",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "overlays-13",
+   "subject": "tooltip",
+   "title": "A static id on hw-tooltip is duplicated on the host and the tooltip, and aria-describedby then resolves to the host",
+   "status": "fixed",
+   "evidence": "packages/angular/src/overlays.ts:66-67: the input is now tooltipId (\"Named tooltipId so that no id attribute is left on the wrapper element\"); the span uses [id]=\"tooltipId\" (:61); packages/angular/README.md:122 lists the rename.",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "overlays-14",
+   "subject": "tooltip",
+   "title": "Angular Tooltip cannot describe a button or link: it adds its own focusable wrapper, giving two tab stops and describing the wrapper instead of the control",
+   "status": "open",
+   "evidence": "packages/angular/src/overlays.ts:61: hw-tooltip still renders span.hw-tooltip-anchor tabindex=\"0\" carrying aria-describedby with content projected inside; no directive form exists (no hwTooltip selector in packages/angular/src); README:181 still says project short noninteractive content.",
+   "remaining": {
+    "angular": "Add an attribute directive ([hwTooltip] on the authored button/link) that sets aria-describedby on that element and renders the tooltip, or detect a projected focusable child and move tabindex/aria-describedby to it (packages/angular/src/overlays.ts:61-70)."
+   },
+   "kind": "a11y",
+   "breaking": false,
+   "size": "L",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "disclosure-data-3",
+   "subject": "accordion",
+   "title": "Angular accordion items are text-only and keyed by id; Vue titles are strings; React accepts nodes",
+   "status": "open",
+   "evidence": "Angular HwAccordionItem is {id, title: string, content: string} (packages/angular/src/presentation.ts:50) interpolated as text (packages/angular/src/presentation.ts:91); no item template; extra groupName input (:95). Vue titles remain strings.",
+   "remaining": {
+    "angular": "Add title/content TemplateRef (or an hw-accordion-item child) and align the key name with React/Vue value (packages/angular/src/presentation.ts:50,91-96).",
+    "vue": "Allow a title slot for rich titles."
+   },
+   "kind": "api",
+   "breaking": true,
+   "size": "L",
+   "themes": [
+    "rich-content",
+    "item-shape"
+   ],
+   "sameAs": null,
+   "note": "Breaking if the Angular key is renamed from id to value."
+  },
+  {
+   "id": "disclosure-data-5",
+   "subject": "collapsible",
+   "title": "Angular hw-collapsible has no disabled state",
+   "status": "open",
+   "evidence": "packages/angular/src/interactions.ts:105-106: HwCollapsibleComponent has only label, open, openChange.",
+   "remaining": {
+    "angular": "Add @Input({transform: booleanAttribute}) disabled, aria-disabled on the summary, prevent click/keyboard toggling (packages/angular/src/interactions.ts:105-106)."
+   },
+   "kind": "behaviour",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "disclosure-data-9",
+   "subject": "carousel",
+   "title": "Carousel previous/next arrows render as empty circles in forced-colours mode",
+   "status": "fixed",
+   "evidence": "packages/styles/src/nic-carousel.css:76-77 in the forced-colors block: \".hw-carousel-arrow::before { forced-color-adjust: none; background: ButtonText; }\" and GrayText when disabled.",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "disclosure-data-10",
+   "subject": "carousel",
+   "title": "Keyboard focus is dropped when Previous/Next disables itself at a bound",
+   "status": "open",
+   "evidence": "All adapters still set native disabled on the bound arrow: React packages/react/src/expanded-interactive.tsx:132, Vue packages/vue/src/expansion-interactive.ts:773-774, Angular packages/angular/src/interactions.ts:131-146 template ([disabled] on data-hw-previous/next), vanilla packages/vanilla/src/content.ts:207 (disable helper sets button.disabled).",
+   "remaining": {
+    "react": "packages/react/src/expanded-interactive.tsx:132",
+    "vue": "packages/vue/src/expansion-interactive.ts:773-774",
+    "angular": "packages/angular/src/interactions.ts (hw-carousel arrows template)",
+    "vanilla": "packages/vanilla/src/content.ts:207",
+    "all": "Keep the bound arrow focusable with aria-disabled and ignore activation, or move focus to the other arrow."
+   },
+   "kind": "keyboard",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "disclosure-data-13",
+   "subject": "table",
+   "title": "Angular hw-table cannot compose native rows or render custom cells; projected content is silently dropped",
+   "status": "open",
+   "evidence": "packages/angular/src/presentation.ts:99-110: HwTableColumn {key, label, rowHeader}, HwTableRow string|number only, template without <ng-content> or cell template, rows tracked by $index, fixed wrapper.",
+   "remaining": {
+    "angular": "Add a cell TemplateRef, a trackBy/rowKey input and native composition (ng-content or table[hwTable] directive) (packages/angular/src/presentation.ts:99-110)."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "L",
+   "themes": [
+    "rich-content",
+    "item-shape"
+   ],
+   "sameAs": null,
+   "note": "Column key label vs React/Vue header remains a naming difference."
+  },
+  {
+   "id": "disclosure-data-15",
+   "subject": "data-table",
+   "title": "Angular hw-data-table has no cell renderer, row key, wrapper or sort-label inputs",
+   "status": "partly",
+   "evidence": "Fixed: Angular has getSortLabel (packages/angular/src/content.ts:54-55). Remaining in packages/angular/src/content.ts:48-58: text-only cells (\"{{ row[column.key] }}\"), track $index, fixed wrapper, single sortChange output (no sortKeyChange/sortDirectionChange).",
+   "remaining": {
+    "angular": "Add per-column cell TemplateRef, trackBy/rowKey, wrapper attributes, and sortKeyChange/sortDirectionChange outputs for [(sortKey)]/[(sortDirection)] (packages/angular/src/content.ts:48-58)."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "L",
+   "themes": [
+    "rich-content",
+    "item-shape"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "layout-1",
+   "subject": "container",
+   "title": "Angular layout components drop host attributes, so documented data-variant/data-fit/data-tone and aria-label never reach the styled element",
+   "status": "fixed",
+   "evidence": "packages/angular/src/layouts.ts:24-46: every layout primitive except page-header and app-shell regions now puts the hw-* class and layout styles on the host (host: {class, [style]}), so data-variant, data-fit, data-tone, id and aria-* written on the element reach the styled box; hw-section handles label/aria-label/role (:46-73).",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": "hw-page-header keeps an inner header (:86-88), documented in source."
+  },
+  {
+   "id": "layout-2",
+   "subject": "stack",
+   "title": "Polymorphic element (as) exists only in Vue; React renders an invalid as=\"...\" attribute and Angular has no equivalent",
+   "status": "partly",
+   "evidence": "Angular: attribute selectors [hwContainer], [hwStack], [hwInline], [hwGrid], [hwColumns], [hwCenter], [hwAspectRatio], [hwSection] (packages/angular/src/layouts.ts:27-46) let the application choose the native element. Remaining: React nativeLayout fixes the tag and has no as (packages/react/src/expanded-layout.tsx:8-20); Angular hw-sidebar (:38), hw-spacer (:42) and hw-app-shell (:76) have no attribute form.",
+   "remaining": {
+    "react": "Add a typed as prop to nativeLayout and strip it from DOM props (packages/react/src/expanded-layout.tsx:8-20).",
+    "angular": "Add attribute selectors for sidebar and app-shell or document the limit (packages/angular/src/layouts.ts:38,76)."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "layout-3",
+   "subject": "page-header",
+   "title": "PageHeader heading level is configurable only in Vue; React and Angular always render h1",
+   "status": "open",
+   "evidence": "React PageHeader renders <h1> (packages/react/src/expanded-layout.tsx:28); Angular hw-page-header renders <h1> (packages/angular/src/layouts.ts:88-89, inputs title and description). Vue has level (packages/vue/src/layout.ts:99,113); Vue title is String only.",
+   "remaining": {
+    "react": "Add level (1-6 clamp) (packages/react/src/expanded-layout.tsx:27-28).",
+    "angular": "Add @Input level (packages/angular/src/layouts.ts:88-89).",
+    "vue": "Optional title slot."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "E07",
+   "subject": "Layout primitives",
+   "title": "Vue writes the application class before hw-stack; React and Angular write hw-stack first.",
+   "status": "open",
+   "evidence": "Vue: mergeProps(attrs, {class}) (packages/vue/src/layout.ts:36-37) writes the application class first; React cx(`hw-${name}`, className) (packages/react/src/expanded-layout.tsx:10) writes hw-* first; Angular host class merging (packages/angular/src/layouts.ts:27-46) not verified.",
+   "remaining": {
+    "vue": "Use mergeProps({class}, attrs) (packages/vue/src/layout.ts:36,73,105).",
+    "angular": "Check the merged class order of host class with an authored class."
+   },
+   "kind": "visual",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": "Class order has no effect on the cascade; Angular part not verified."
+  },
+  {
+   "id": "R01",
+   "subject": "Calendar",
+   "title": "Unsupported-range status on the standalone Calendar (unsupportedMessage). Vanilla createCalendar renders it with its calendar-system switch (packages/vanilla/src/calendar.ts:21,133-134) and the Vue Calendar takes the prop and renders an sr-only status when calendar is 'islamic-umalqura' (packages/vue/src/calendar.ts:57,278). React Calendar (packages/react/src/calendar.tsx:23-28) and Angular hw-calendar (packages/angular/src/advanced-controls.ts:218-287) have neither the input nor the status. The calendar-system switch itself (calendarSystemLabel, gregorianLabel, hijriLabel) is rendered on the standalone Calendar by vanilla only; React, Vue and Angular render it in DatePicker only. Corrected after the final review (m10): the entry said that only vanilla rendered any of these.",
+   "status": "open",
+   "evidence": "React Calendar props (packages/react/src/calendar.tsx:17-27) and Angular hw-calendar (packages/angular/src/advanced-controls.ts:218-239) have no unsupportedMessage and no status; Vue Calendar has it (packages/vue/src/calendar.ts:57,278); vanilla createCalendar renders the status and the calendar-system switch (packages/vanilla/src/calendar.ts:77-87,133-136). React, Vue and Angular render the switch in DatePicker only.",
+   "remaining": {
+    "react": "Add unsupportedMessage (required when calendar is islamic-umalqura) and an sr-only role=status (packages/react/src/calendar.tsx:17-27,66-70).",
+    "angular": "Same for hw-calendar (packages/angular/src/advanced-controls.ts:218,229-239).",
+    "vanilla": "Decide whether the standalone Calendar renders the switch (packages/vanilla/src/calendar.ts:77-88); either remove it there or add it to the other three."
+   },
+   "kind": "api",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": "Breaking: a new required text input on React and Angular Calendar, or a removed switch in vanilla."
+  },
+  {
+   "id": "R02",
+   "subject": "DatePicker",
+   "title": "isDateDisabled and its validation text unavailableMessage.",
+   "status": "open",
+   "evidence": "Same as dates-2: packages/angular/src/advanced-controls.ts:290-312 has no isDateDisabled or unavailableMessage.",
+   "remaining": {
+    "angular": "See dates-2."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "validation-message"
+   ],
+   "sameAs": "dates-2",
+   "note": null
+  },
+  {
+   "id": "R03",
+   "subject": "DatePicker",
+   "title": "The formatted value of the selected date uses the default long date in vanilla (calendar.ts:229) and dateStyle \"full\" (with the weekday) in React, Vue and Angular.",
+   "status": "open",
+   "evidence": "packages/vanilla/src/calendar.ts:240 formatCalendarDate(value, {locale, calendar}) without dateStyle, so core uses year/month/day long (packages/core/src/calendar.ts:45); React packages/react/src/calendar.tsx:88, Vue packages/vue/src/calendar.ts:435 and Angular packages/angular/src/advanced-controls.ts:316 use dateStyle \"full\". node scratchpad/gate3/m3/tmp-dates-files-overlays/check.mjs (jsdom against packages/vanilla/dist): \"R03 formatted output = October 28, 2026\".",
+   "remaining": {
+    "vanilla": "Pass dateStyle: \"full\" at packages/vanilla/src/calendar.ts:240."
+   },
+   "kind": "a11y",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "value-display"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "R06",
+   "subject": "FileDropzone",
+   "title": "Rejection text rendered by the component (getRejectedMessage). They only emit reject / (rejected).",
+   "status": "open",
+   "evidence": "Same as files-4: Vue packages/vue/src/controls.ts:740-748 and Angular packages/angular/src/advanced-controls.ts:372 only emit reject/rejected.",
+   "remaining": {
+    "vue": "See files-4.",
+    "angular": "See files-4."
+   },
+   "kind": "a11y",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "validation-message"
+   ],
+   "sameAs": "files-4",
+   "note": null
+  },
+  {
+   "id": "R07",
+   "subject": "FileDropzone",
+   "title": "maxSize restriction. Vanilla has data-hw-max-size / options.maxSize (packages/vanilla/src/controls.ts:249,262-266) and Vue has the maxSize prop (packages/vue/src/controls.ts:704,723); React FileDropzone (packages/react/src/expanded-controls.tsx) and Angular hw-file-dropzone (packages/angular/src/advanced-controls.ts:362-363) have no size limit. Corrected after the final review (m10): the entry said vanilla only. Deferred to milestone 3.",
+   "status": "open",
+   "evidence": "Same as files-3: React packages/react/src/expanded-controls.tsx:91-93 and Angular packages/angular/src/advanced-controls.ts:364 have no maxSize.",
+   "remaining": {
+    "react": "See files-3.",
+    "angular": "See files-3."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "validation-message"
+   ],
+   "sameAs": "files-3",
+   "note": null
+  },
+  {
+   "id": "R08",
+   "subject": "FileDropzone",
+   "title": "List of selected file names (<ul>) that React and Angular render; Angular also prints the raw byte size in parentheses, which React does not.",
+   "status": "open",
+   "evidence": "React renders <ul> of names (packages/react/src/expanded-controls.tsx:108); Angular always renders <ul> with \"name (size)\" (packages/angular/src/advanced-controls.ts:362); Vue (packages/vue/src/controls.ts:776-800) and vanilla render no list.",
+   "remaining": {
+    "vue": "See files-6.",
+    "angular": "See files-6."
+   },
+   "kind": "visual",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "layout-difference",
+    "value-display"
+   ],
+   "sameAs": "files-6",
+   "note": null
+  },
+  {
+   "id": "R25",
+   "subject": "DatePicker",
+   "title": "getDayLabel. The Vue DatePicker (packages/vue/src/calendar.ts:59,160, shared with Calendar) and the vanilla DatePicker (packages/vanilla/src/calendar.ts:193,249) accept it and pass it to the nested calendar; React and Angular expose it on Calendar only (packages/react/src/calendar.tsx:23,47 against the DatePicker props at :72-75; packages/angular/src/advanced-controls.ts:234,258 against hw-date-picker at :288-289). Deferred to milestone 3. Recorded by the final review.",
+   "status": "open",
+   "evidence": "React DatePickerBaseProps has no getDayLabel (packages/react/src/calendar.tsx:72) and the nested Calendar is called without it (:108); Angular hw-date-picker has no getDayLabel input (:290-312) and does not bind it on the nested hw-calendar (packages/angular/src/advanced-controls.ts:288). Vue packages/vue/src/calendar.ts:59,552 and vanilla packages/vanilla/src/calendar.ts:193,249 pass it.",
+   "remaining": {
+    "react": "Add getDayLabel to DatePickerBaseProps and pass it at packages/react/src/calendar.tsx:108.",
+    "angular": "Add @Input getDayLabel to hw-date-picker and bind [getDayLabel] on hw-calendar (packages/angular/src/advanced-controls.ts:288,290)."
+   },
+   "kind": "api",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": null
+  }
+ ]
+}

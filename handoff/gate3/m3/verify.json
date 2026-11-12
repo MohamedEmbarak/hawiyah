@@ -1,0 +1,97 @@
+{
+ "commands": [
+  {
+   "command": "pnpm build",
+   "result": "pass",
+   "counts": "re-run on the committed tree"
+  },
+  {
+   "command": "pnpm typecheck:playground",
+   "result": "pass",
+   "counts": ""
+  },
+  {
+   "command": "pnpm test",
+   "result": "pass",
+   "counts": "vitest 217 files / 2574 tests; contrast node test passed"
+  },
+  {
+   "command": "pnpm check:packages",
+   "result": "pass",
+   "counts": "7 tarballs verified, consumers ESM/SSR/APF/CSS/types; tree shaking React Button 427 B gzip (budget 4096, unchanged), Vanilla Tabs 4474 B gzip (budget 6144, unchanged)"
+  },
+  {
+   "command": "HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs",
+   "result": "pass",
+   "counts": "one NG8107 warning in apps navigation.ts, present before the milestone"
+  },
+  {
+   "command": "pnpm test:browser (first full run, before fixes)",
+   "result": "fail",
+   "counts": "617 passed, 18 failed"
+  },
+  {
+   "command": "pnpm test:browser (re-run of the 10 failing files after fixes)",
+   "result": "fail",
+   "counts": "85 passed, 1 failed"
+  },
+  {
+   "command": "pnpm test:browser (full run on the committed tree, Chromium wrapped to log the page console)",
+   "result": "fail",
+   "counts": "634 passed, 1 failed (33.9m); 1386 console lines captured, 0 'Hawiyah:' warnings"
+  },
+  {
+   "command": "pnpm test:portals",
+   "result": "pass",
+   "counts": "81 passed (3.3m)"
+  }
+ ],
+ "fixed": [
+  {
+   "file": "scripts/check-packages.mjs",
+   "what": "smoke consumer asserts the milestone-3 core exports (getDateViolation, observeFormReset, sameValue, prepareRemovalFocus, createTypeahead, isTypeaheadKey, getPortalBranchSummary, evaluateFileSelection) and Angular HwTooltipTriggerDirective, HwLinkDirective, HW_FIELD"
+  },
+  {
+   "file": "apps/playground/src/basic-input-projects.ts",
+   "what": "React range-slider project passes defaultValue={[20, 80]}: a form reset now restores defaultValue (default [min, max]) through onValueChange, like the Vue project's default-value"
+  },
+  {
+   "file": "apps/playground/src/choice-input-projects.ts",
+   "what": "vanilla pin-input project authors maxlength=\"4\" again (the documented length source; the migration had replaced it by pattern=\"[0-9]{4}\", so the controller fell back to 6 digits and blocked submission)"
+  },
+  {
+   "file": "apps/playground/src/choice-input-projects.ts",
+   "what": "React structured-input projects pass defaultValue (the initial value): a form reset now notifies onValueChange with defaultValue, else the empty value"
+  },
+  {
+   "file": "tests/browser/feedback-composition.spec.ts",
+   "what": "Feedback asserts the agreed result in React, Vue and Angular: two toggle buttons with aria-pressed (React no longer renders radios) and value.helpful shown as true/false"
+  },
+  {
+   "file": "tests/browser/native-file-projects.spec.ts",
+   "what": "file-dropzone asserts the agreed result in Angular too: a mixed batch is rejected as a whole, the selection is empty and the rejection message shows"
+  },
+  {
+   "file": "apps/playground/src/main.ts",
+   "what": "the hashchange handler does nothing once #app is detached: browser fixtures that replace the guide's body (nic-cards fragment link) no longer make the guide render into a detached tree, which threw 'Hawiyah: each tab requires aria-controls...' as an unhandled error"
+  },
+  {
+   "file": "tests/browser/style-defects.spec.ts",
+   "what": "drag-over test uses the renamed marker data-state=\"dragging\" (data-dragover is gone without alias) and compares with the primary colour tokens instead of a second element carrying the same marker"
+  }
+ ],
+ "packageDefects": [
+  {
+   "package": "@hawiyah/vanilla (and by the same specification React, Vue, Angular)",
+   "what": "An expanded tree item is named by aria-labelledby pointing at its label span (spec-navigation-menus-shell: the treeitem is named by its label alone, so the toggle's aria-label stays out of the name). axe-core 4.14 rule label-content-name-mismatch (WCAG 2.5.3) then fails, because the visible text of the li includes the nested group's child items, which are not in the name. Before the milestone vanilla wrote no aria-labelledby and the check passed. The specification and the axe rule conflict; the resolution (e.g. keep aria-labelledby and treat the hit as a false positive with owner sign-off, or drop aria-labelledby and remove the toggle from the name computation another way) is a design decision across the four adapters, not a small certain fix.",
+   "reproduction": "pnpm test:browser tests/browser/playground.spec.ts -g 'components, en, light' : violation label-content-name-mismatch on li[data-hw-value=\"business\"] (apps/playground/src/expanded-samples.ts tree, controller packages/vanilla/src/content.ts:203-204). Arabic run passes only because axe returns 'incomplete' for the Arabic text.",
+   "fixedHere": false
+  }
+ ],
+ "stillFailing": [
+  {
+   "test": "tests/browser/playground.spec.ts:257 WCAG 2.2 AA automated checks: components, en, light",
+   "why": "label-content-name-mismatch on the expanded vanilla tree item, caused by the specified aria-labelledby; left failing for an owner decision (see packageDefects)."
+  }
+ ]
+}

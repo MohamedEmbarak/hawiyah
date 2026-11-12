@@ -1,0 +1,125 @@
+{
+ "implemented": [
+  "fields-basic-8",
+  "actions-2",
+  "choices-2",
+  "actions-11",
+  "actions-v1",
+  "fields-basic-9",
+  "fields-basic-2",
+  "choices-3",
+  "fields-basic-10",
+  "fields-basic-3",
+  "fields-basic-5",
+  "fields-basic-6",
+  "choices-4",
+  "choices-5",
+  "choices-6",
+  "choices-8",
+  "choices-9",
+  "R16",
+  "actions-5",
+  "actions-8",
+  "actions-9",
+  "E02",
+  "rich-inputs-20",
+  "fields-basic-7",
+  "rich-inputs-1",
+  "rich-inputs-2",
+  "rich-inputs-5",
+  "files-5",
+  "rich-inputs-6",
+  "R10",
+  "R09",
+  "rich-inputs-8",
+  "R19",
+  "rich-inputs-12",
+  "rich-inputs-14",
+  "R27",
+  "E01",
+  "files-2",
+  "files-3",
+  "R07",
+  "files-4",
+  "R06",
+  "files-6",
+  "R08",
+  "files-8",
+  "files-9",
+  "files-10"
+ ],
+ "deviations": [
+  {
+   "item": "cross-adapter case ids (RESET, SELECT-02, MSG, INV, CHECKBOX, RANGE-SLIDER-03, TOGGLE-GROUP-01/04)",
+   "what": "vanilla cases live in packages/vanilla/test/form-reset.test.ts and forms-parity.test.ts with the same case ids",
+   "why": "tests/*.test.ts are outside packages/vanilla"
+  },
+  {
+   "item": "files-4 (MSG-05)",
+   "what": "An authored [data-hw-error] that already holds text is treated as the application error: it wins over a rejection, keeps no role and is referenced by aria-describedby; an empty authored [data-hw-error] receives the rejection text with role=alert",
+   "why": "vanilla has no error input; this keeps one element and the application text as in the frameworks"
+  },
+  {
+   "item": "rich-inputs-5 (TagInput, MultiSelect reset)",
+   "what": "the reset also empties the draft / filter text explicitly (input.value = \"\") instead of leaving the authored value attribute",
+   "why": "end state says draft and filter empty after reset"
+  },
+  {
+   "item": "rich-inputs-8 (FOCUS-04)",
+   "what": "TagInput now keeps one chip element per tag and reorders instead of rebuilding all chips",
+   "why": "core prepareRemovalFocus needs the neighbouring chip elements to survive the render"
+  },
+  {
+   "item": "rich-inputs-14",
+   "what": "the return type is the exported interface PasswordFieldController { readonly visible; toggle(); destroy() }",
+   "why": "same members as specified, named for reuse"
+  }
+ ],
+ "files": [
+  "packages/vanilla/src/controls.ts",
+  "packages/vanilla/src/content.ts",
+  "packages/vanilla/test/form-reset.test.ts",
+  "packages/vanilla/test/forms-parity.test.ts",
+  "packages/vanilla/test/text.test.ts",
+  "packages/vanilla/test/controls.test.ts",
+  "packages/vanilla/src/combobox.ts",
+  "packages/vanilla/src/search-field.ts",
+  "packages/vanilla/src/index.ts",
+  "packages/vanilla/test/vanilla.test.ts",
+  "packages/vanilla/test/rich-inputs.test.ts",
+  "packages/vanilla/README.md",
+  "packages/vanilla/EXPANSION-API.md"
+ ],
+ "commands": [
+  {
+   "command": "node scripts/build.mjs --only vanilla",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vanilla",
+   "result": "23 files, 188 tests passed, no Hawiyah: warning in output"
+  },
+  {
+   "command": "pnpm exec tsc -p packages/vanilla/tsconfig.json --noEmit",
+   "result": "no errors"
+  },
+  {
+   "command": "pnpm exec vitest run tests/text-contract-docs.test.ts",
+   "result": "3 passed"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "RESET-12, TEXTAREA-02, TOGGLE-GROUP-02, COMBOBOX-02, MULTISELECT-03, TAGINPUT-03, PININPUT-03, FILEDROPZONE-08, FILEDROPZONE-12 (browser suite) and the tests/*-parity.test.ts files",
+   "why": "outside packages/vanilla; the vanilla cases with the same ids are in packages/vanilla/test"
+  },
+  {
+   "item": "FILEDROPZONE-03 and RO-03 FormData checks for files",
+   "why": "jsdom cannot build a FileList; the tests check the held value through a stub"
+  },
+  {
+   "item": "docs outside the package (CONTRACT.md, docs/*.md, components.json, core API.md, playground samples, CHANGELOG)",
+   "why": "not owned by this step"
+  }
+ ]
+}

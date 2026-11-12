@@ -1,0 +1,16 @@
+[
+ {
+  "id": "R22",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "Root names (all landmark and group components)",
+  "missingIn": [
+   "angular"
+  ],
+  "title": "Forwarding of aria-label / aria-labelledby from the host to the inner root, so a visible heading can name the component (rule 8). Angular accepts only the `label` input."
+ },
+ {
+  "id": "E08",
+  "subject": "SideNavigation and every landmark or group component",
+  "title": "Owner decision: Angular forwards aria-label / aria-labelledby written on the host to the inner root, so a visible heading can name the component; today label is the only source in Angular."
+ }
+]

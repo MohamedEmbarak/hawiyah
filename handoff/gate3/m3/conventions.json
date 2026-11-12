@@ -1,0 +1,1574 @@
+{
+ "about": "Milestone 3 conventions and plan for Hawiyah 0.3.0, written at commit a0ed9b0. File and line references were read in this step unless marked as taken from triage.",
+ "conventions": [
+  {
+   "theme": "reference-adapter-and-recording",
+   "rule": "When adapters differ, the choice is made in this order and recorded with its basis. (1) Guidance recorded in this repository decides: CONTRACT.md, components.json, docs/*.md (docs/dga-checklist-review.md for Platforms Code checklist rows, the docs/nic-*.md measurement records, docs/readonly-inputs.md, docs/multiselect-validation.md, docs/tag-input-interaction.md) and the authored vanilla markup those documents show. The documented vanilla markup is the reference DOM: element names, hw- classes, data- attributes and child order; the three frameworks render that DOM. (2) If the repository is silent, the behaviour with the better accessibility result wins (a name for every control and landmark, focus never lost, state exposed to assistive technology, announcements not duplicated). (3) Only then the majority of adapters; on a tie the smaller public change. A majority never overrides (1) or (2). Recording: every specification carries a `decisions` list of {component, question, choice, basis: 'repository' | 'accessibility' | 'majority', source: file:line or the reason, changedAdapters}. The implementer copies each entry into CHANGELOG.md under Unreleased (Breaking when a public name, default or rendered DOM changes) and, where a docs/<component>.md record exists, adds one line there; CONTRACT.md is edited only for rules that hold across components. A recorded decision that is reversed (for example docs/input-review.md:29-32 on reset) is rewritten in place, not left beside the new rule.",
+   "perAdapter": {
+    "react": "Changes follow the decision; no behaviour is kept 'because React does it'.",
+    "vue": "Same.",
+    "angular": "Same. Angular is not the reference merely because the guide is written in it.",
+    "vanilla": "Authored markup in docs and components.json is the reference DOM; a controller never rewrites authored names (CONTRACT.md:69-77)."
+   },
+   "evidence": [
+    "CONTRACT.md:54-135 (text contract is already one rule for four adapters)",
+    "docs/dga-checklist-review.md:66 (row 127: the current breadcrumb page is disabled and non-interactive; decides nav-a-11 against React/Vue)",
+    "docs/input-review.md:29-32 and docs/multiselect-validation.md:58-60 (recorded reset decision that the reset convention replaces)",
+    "docs/tag-input-interaction.md:3 (all four adapters commit with Enter or comma; decides the TagInput Add button)",
+    "examples, blocks, docs and playground markup: p.hw-hint 67 uses and p.hw-error 33 uses against span 27 and 3 (grep of authored markup)"
+   ],
+   "tests": [
+    "Every parity test title starts with the adapter and a case id (see theme tests). A decision with basis 'repository' cites the line in the test file header comment."
+   ]
+  },
+  {
+   "theme": "renames-and-removals",
+   "rule": "0.3.0 is a breaking release: a rename or removal is made outright in every adapter in the same commit, with no deprecated alias, no second selector kept for compatibility and no runtime shim. Triage remainders that say 'alias for one release' (nav-b-2, nav-b-17, E06, R26, service-patterns-1, choices-5) are overridden by this rule. Every specification lists its renames in `renames`: {adapter, component, kind: 'input' | 'output' | 'field' | 'selector' | 'default' | 'markup' | 'removed', from, to, migration} where migration is one line a reader can apply by search and replace, written as before -> after. The implementer adds them to CHANGELOG.md Unreleased under a heading 'Breaking: renamed and removed' as a table (adapter, component, from, to, migration), updates components.json, llms.txt, the package READMEs and docs/ in the same change, and tests/text-contract-docs.test.ts must still pass. A changed default or changed rendered DOM is listed the same way with kind 'default' or 'markup'. The renames this document already fixes are in the top-level `renames` list; a specifier may add to it but may not choose a different target name for a meaning listed there.",
+   "perAdapter": {
+    "react": "TypeScript removes the old prop; no runtime warning for the old name.",
+    "vue": "The old prop is removed from `props`; it would fall through to attrs, so the specifier checks that an old prop name cannot land on the DOM as an attribute that changes behaviour.",
+    "angular": "Old inputs, outputs and selectors are deleted; the template compiler reports the old name.",
+    "vanilla": "Old data-hw-* names and option names are removed; a controller does not read both."
+   },
+   "evidence": [
+    "CHANGELOG.md:471-499 (milestone 2b breaking entry for layout hosts is the model for a migration entry)",
+    "triage-navigation-shell.json nav-b-2, nav-b-17, E06, R26 and triage-forms.json choices-5 propose aliases"
+   ],
+   "tests": [
+    "RENAME-01 (tests/text-contract-docs.test.ts, extended): no old name from the `renames` list appears in components.json, llms.txt, packages/*/README.md or docs/.",
+    "RENAME-02 (per adapter type test or compile test): the old React prop, Vue prop or Angular input is not accepted."
+   ]
+  },
+  {
+   "theme": "native-form-reset",
+   "rule": "A native reset is a value change made by the form. One microtask after a `reset` event that was not default-prevented, every Hawiyah control (a) holds its reset target, (b) shows it, (c) submits it in FormData, and (d) has reported it once through its ordinary value notification if and only if its value changed (arrays and tuples compared by content). After the microtask the three of (a)-(c) always agree, also when the application controls the value and ignores the notification: then the control shows and submits the application's value again. Reset target: React and Vue: `defaultValue` (or the matching default prop), else the component's documented empty value ('' , [], false, null, the slider midpoint). Angular: when Angular Forms is attached (registerOnChange was called) Angular Forms owns the value and the component changes nothing by itself (FormGroupDirective and NgForm already write null on a native reset, which the component maps to its empty value); otherwise the target is the value the component held after its first ngOnInit. Vanilla: the values authored in the markup, captured when the controller is created. Read-only does not exempt a control (docs/readonly-inputs.md:13, docs/combobox-readonly.md:29); a read-only control that was never changed therefore keeps its value. A disabled control is reset too. Secondary state returns to its initial state in the same microtask without a notification of its own unless it changed: popups close, the query and any draft are cleared, PasswordField returns to hidden, file lists are emptied, DatePicker restores draft and month, custom validity is recomputed and aria-invalid set by a failed submission is cleared. One shared listener: core `observeFormReset(control, onReset): {destroy()}` (new, packages/core/src/form-reset.ts) resolves `control.form` (so the `form` attribute is honoured), listens for `reset`, waits one microtask, skips when default-prevented or destroyed. This reverses docs/input-review.md:29-32 and docs/nic-segmented.md:27 for Angular (owner decision 1).",
+   "perAdapter": {
+    "react": "Composite components (everything with `onValueChange`): `useFormReset(ref, reset, form)` (react/src/expanded-shared.ts:3) calls a reset that goes through `useControllable`'s setter, so uncontrolled state moves to `defaultValue ?? empty` and `onValueChange(target)` fires only when the value differs; ToggleGroup's `if (value === undefined) setInternal(...)` (react/src/expanded-interactive.tsx:22) is replaced by that setter. Controlled (`value` given): `onValueChange(target)` fires when target differs from the prop; the component then bumps a reset counter in state so that the next render rewrites `checked`/`value`/hidden inputs from the prop the application renders (fixes actions-v1). Native pass-through controls (TextField, Textarea, Select, Checkbox, Radio, Switch: react/src/forms.tsx:16-60) keep React's own behaviour: uncontrolled returns to `defaultValue` with no `onChange`, controlled keeps the application's value; the only addition is that a controlled Select and controlled choices rewrite the DOM from the prop after the reset. This exception is documented in the React README.",
+    "vue": "`useFormReset(element, reset)` (vue/src/shared.ts:35) stays the hook. `reset` calls `model.set(target)` only when target differs from `model.value.value`, otherwise `model.sync(target)`; `useValue.set` (vue/src/shared.ts:28-34) gains that comparison once so every control gets it. `update:modelValue(target)` is therefore emitted once per changed control and never for an unchanged one (fixes actions-11); a multiple ToggleGroup's empty value is [] (vue/src/expansion-interactive.ts:27-30). Select without `defaultValue` resets to the option the browser selects after the reset, read from the element (vue/src/forms.ts:58-61, fixes fields-basic-9). With `modelValue` bound and the update ignored, the next tick rewrites the DOM from `modelValue`.",
+    "angular": "`HwValueControl` (angular/src/forms.ts:17-40) owns the mechanism for every value control, including those extending `HwExpandedValueControl` (angular/src/advanced-controls.ts:13-19): fields `private formsBound = false` (set in registerOnChange), `private initial!: T` (set in ngOnInit, after the first inputs), and, in the browser only (afterNextRender), `observeFormReset(firstFormControlOf(host) ?? host, () => this.resetFromForm())`. `resetFromForm()`: if (!formsBound) { const target = this.initial; if (!sameValue(this.value, target)) { this.value = target; this.valueChange.emit(target); } } then `this.afterReset()` (protected hook: close popups, clear query/draft/files, revealed = false) then `this.syncDom()` then `markForCheck()`. `syncDom()` is a protected method each component implements to write the held value to its native controls as properties (`checked`, `value`, `selected`, hidden inputs); the text field uses `InputValueSync.force()` (angular/src/input-value.ts:11). It bypasses the `disabled` guard of `update()` (forms.ts:38). No `defaultValue` input is added in Angular. The private reset listeners in hw-password-field (advanced-controls.ts:37-38) and hw-search-field (:101-102) move into `afterReset()`.",
+    "vanilla": "Each controller captures `initial` at creation and already listens with the same microtask pattern (vanilla/src/controls.ts:30,69,108,131,191,237,289; content.ts:57,87; combobox.ts:185-187; calendar.ts:176,274). They switch to core `observeFormReset` and, new, call `emit(root, {value})` and `options.onValueChange` when the reset changed the value. Native inputs inside the root are reset by the browser; the controller re-renders derived DOM (pressed buttons, chips, slots, outputs)."
+   },
+   "evidence": [
+    "react/src/expanded-shared.ts:3-11",
+    "react/src/expanded-controls.tsx:30-31 (Slider resets through useControllable and so already notifies only on change)",
+    "react/src/expanded-interactive.tsx:22 (ToggleGroup: uncontrolled only, no notification, controlled untouched)",
+    "react/src/shared.tsx:67-73 (useControllable notifies only when the value differs)",
+    "vue/src/shared.ts:28-42",
+    "vue/src/forms.ts:58-61 and :100-112 (model.set on every reset)",
+    "angular/src/forms.ts:17-40 (no reset listener; update() returns when disabled)",
+    "angular/src/interactions.ts:11 (radios bound with [checked] only)",
+    "angular/src/advanced-controls.ts:12,37-38,101-102",
+    "vanilla/src/content.ts:57 and vanilla/src/controls.ts:191 (restore initial, no event)",
+    "core/src/field-value.ts:22-27 and core/src/readonly-choice.ts:27 (same microtask pattern in core)",
+    "docs/input-review.md:29-32, docs/multiselect-validation.md:58-60, docs/combobox-readonly.md:26-29, docs/readonly-inputs.md:13"
+   ],
+   "tests": [
+    "Case ids, same in the four adapters, in tests/<component>-parity.test.ts inside `for (const adapter of ['vanilla','react','vue','angular'])`: RESET-01 uncontrolled: change, reset -> shown value, FormData and held value equal the reset target; RESET-02 exactly one notification with the target after a reset that changed the value; RESET-03 no notification when the value already equals the target; RESET-04 controlled, application applies the notification -> all three agree on the target; RESET-05 controlled, application ignores it -> shown value and FormData equal the application's value; RESET-06 default-prevented reset changes nothing and notifies nothing; RESET-07 a read-only control and a disabled control reset like an editable one and a never-changed read-only control keeps its value; RESET-08 external form through the `form` attribute; RESET-09 secondary state (popup closed, query cleared, password hidden, file list empty, submission aria-invalid cleared); RESET-10 (Angular only) with a FormControl the component writes nothing itself and shows what Angular Forms wrote; RESET-11 (React only) native pass-through controls: documented React behaviour. tests/toggle-group-parity.test.ts:58 loses its ['react','vue'] restriction."
+   ]
+  },
+  {
+   "theme": "angular-host-attributes",
+   "rule": "An Angular component is one of two kinds, chosen in this order. (A) Host is the root: when the root needs no particular native element (div, span, section with a role), the host element carries the hw- class and state attributes through `host: {class: 'hw-x', ...}` and the template is the content only; class, id, style, aria-* and data-* that the application writes on the element are then on the element the stylesheet styles, with nothing to forward. When the root must be a native element that an application can write itself (a, button, nav, article, table), the component is an attribute selector on that element (`button[hwButton]` at presentation.ts:11, `nav[hwSideNavigation]` at side-navigation.ts:11) and the element selector is kept only if it can also be a valid root. (B) Host is a wrapper: when the root must be a native element inside a structure the component renders (input, select, textarea inside a field; fieldset; dialog; progress; meter; details) the host stays a wrapper and exactly these attributes are forwarded as inputs under their attribute names: `@Input({alias: 'aria-label'}) ariaLabel: string | null = null`, `@Input({alias: 'aria-labelledby'}) ariaLabelledby: string | null = null`, `@Input({alias: 'aria-describedby'}) ariaDescribedby: string | null = null`, and on form controls `@Input({alias: 'aria-invalid', transform: booleanAttribute}) ariaInvalid = false`; the component adds `host: {'[attr.aria-label]': 'null', '[attr.aria-labelledby]': 'null', '[attr.aria-describedby]': 'null', '[attr.aria-invalid]': 'null'}` (shared constant `forwardedAriaHost` in new packages/angular/src/host-attributes.ts) so the attribute never stays on the role-less wrapper, and binds the values on the element that needs them. The application writes `aria-label=\"...\"` or `[aria-label]=\"expr\"`; `[attr.aria-label]` on a wrapper host is not supported and is documented as such. The existing `describedBy` input is renamed to this `aria-describedby` input (owner decision 2). Nothing else is forwarded from a wrapper: `id` stays on the host and the inner control keeps `controlId` (tooltip: `tooltipId`), so no id is ever duplicated; `class` and `style` stay on the host, which is a block box through the zero-specificity list in styles/src/layout.css:133 (add each wrapper there instead of component `styles`); every documented data-variant / data-size / data-tone value is an input (`variant`, `size`, `tone`) that the component writes on the root, and an authored data- attribute of the same name is not a second way to set it. Rule for a kind-A host that also writes an attribute the application may write (aria-label from `label`, role): never a host binding, which would remove the application's value; use the mechanism of HwSectionComponent (layouts.ts:53-70), moved to `HwHostAttribute` in host-attributes.ts: written in ngDoCheck only while the component has a value, the application's value put back otherwise. Default assignment for the open items (a specifier may deviate only with a recorded reason): kind A host-root: hw-badge, hw-chip, hw-spinner, hw-skeleton, hw-avatar, hw-avatar-group, hw-button-group, hw-empty-state, hw-alert, hw-stat, hw-cookie-consent, hw-side-navigation (already); kind A attribute selector: `a[hwLink]` replaces the hw-link component (removed), `button[hwButton], a[hwButton]` stay; kind B wrapper with forwarded ARIA: every HwValueControl, hw-toggle-group, hw-radio group, hw-progress, hw-meter, hw-card, hw-table, hw-data-table, hw-dialog, hw-drawer, hw-popover, hw-menu, hw-tree-view, hw-tabs, hw-breadcrumb, hw-pagination, hw-stepper, hw-notification-list, hw-content-navigation, hw-feedback, hw-carousel, hw-accordion.",
+   "perAdapter": {
+    "react": "Not applicable: props spread onto the root (`{...props}` with className merged through cx, react/src/shared.tsx:5).",
+    "vue": "Not applicable: `inheritAttrs: false` and `mergeProps(attrs, {class: 'hw-x'})` on the root or the control (vue/src/forms.ts:24,70; vue/src/shared.ts:14-26). Application class and hw- class are both present; their order is not part of the contract (E07 is closed as no defect).",
+    "angular": "As in the rule. New file packages/angular/src/host-attributes.ts exports `forwardedAriaHost`, `HwHostAttribute` (constructor(host, renderer, name, authoredStatic); `set(value: string | null)` called from ngDoCheck) and `hostHasName(host): boolean` (true when the host carries a non-empty aria-label or aria-labelledby). The forms-core cluster writes this file; the other clusters only use it.",
+    "vanilla": "Not applicable: authored markup. A controller remembers and restores every attribute it writes (vanilla/src/dom.ts:5-13)."
+   },
+   "evidence": [
+    "angular/src/layouts.ts:24-46 (layout hosts are the root) and :47-70 (hw-section writes aria-label and role without owning them)",
+    "angular/src/side-navigation.ts:11 (host is the nav, but the host binding [attr.aria-label] removes an application aria-label: must move to HwHostAttribute)",
+    "angular/src/presentation.ts:11 (attribute selector on the native button), :33 (hw-badge renders an inner span), :37 (hw-alert nulls title and role on the host)",
+    "angular/src/forms.ts:25 (describedBy input), :59 (inner input has no aria-label binding)",
+    "angular/src/overlays.ts:66-67 (tooltipId so that no id is left on the wrapper)",
+    "styles/src/layout.css:130-134 (zero-specificity display rules for hosts)",
+    "CONTRACT.md:83-87 (to be rewritten: Angular hosts now forward the name)",
+    "CHANGELOG.md:471-499"
+   ],
+   "tests": [
+    "packages/angular/test/layout-hosts.test.ts is the model. ATTR-01 kind A: class, id, data-x and aria-label written on the host are on the element that has the hw- class, and there is no inner element with that class; ATTR-02 kind A with `label`: label writes aria-label, removing label restores the application's aria-label; ATTR-03 kind B: aria-label, aria-labelledby, aria-describedby written statically and bound with [aria-label] reach the inner control and the host has none of them; ATTR-04 kind B: host id stays on the host, the inner control has controlId, document has no duplicate id; ATTR-05 server render and hydration of ATTR-03 produce the same DOM and no hydration mismatch (packages/angular/test/hydration.test.ts)."
+   ]
+  },
+  {
+   "theme": "name-without-visible-label",
+   "rule": "Every control, group and landmark gets its accessible name from, in this order: an `aria-label` from the application, an `aria-labelledby` from the application, the surrounding Field label, the component's `label`. `label` is required only when none of the others is present, and a missing name is reported once through requireText under the component's own name; an optional `label` renders no empty label, legend or attribute. The rule is the same in the four adapters; only the declaration differs.",
+   "perAdapter": {
+    "react": "Types: `RootName` and `FieldName` unions (react/src/shared.tsx:10-13); runtime: `rootLabel(component, props, label)` (shared.tsx:15-19) for roots and `useFieldControl` (shared.tsx:115-125) for controls. E05: TreeView and ContentNavigation switch from a plain required `label` to RootName + rootLabel; E02: ToggleGroup routes `label` through text() and omits the legend when it is missing; E03: `footerLabel` and `externalLabel` become unions on the prop that switches them on.",
+    "vue": "`label` is declared without `required: true` and checked at render with `rootLabel(component, props.label, attrs)` (vue/src/shared.ts:58-62) or `useField` (shared.ts:14-26). E05: TreeView `label` becomes optional + rootLabel; E02: ToggleGroup uses needText and omits the legend.",
+    "angular": "`label` loses `{required: true}` on every component that takes the forwarded ARIA inputs (kind B) or is a kind A host; the template asks `texts.need('label', label)` only when `!ariaLabel && !ariaLabelledby` (kind B) or `!hostHasName(host)` (kind A). HwValueControl binds on the native control: `[attr.aria-label]=\"ariaLabel\"`, `[attr.aria-labelledby]=\"ariaLabelledby ?? (field ? field.labelId : null)\"`, and renders its own `<label>` only when `label` is given (forms.ts:43 already does). Group roots (fieldset, role=group, nav, section, dialog) bind the same two attributes and fall back to `label`. This closes fields-basic-2, choices-3, E08 and R22 with one mechanism.",
+    "vanilla": "Authored markup names everything; a controller never replaces an authored aria-label or aria-labelledby (CONTRACT.md:73)."
+   },
+   "evidence": [
+    "react/src/shared.tsx:10-19,115-125",
+    "vue/src/shared.ts:14-26,58-62",
+    "angular/src/forms.ts:22,43,59",
+    "angular/src/side-navigation.ts:11,16",
+    "CONTRACT.md:83-87",
+    "input-cross.json R22 and E08 (owner decision: forward the name)"
+   ],
+   "tests": [
+    "NAME-01 `label` alone names the root or control; NAME-02 application aria-label alone: no warning, no label element, the attribute is on the named element; NAME-03 aria-labelledby alone pointing at a visible heading: no warning; NAME-04 neither: one development warning naming the component as the adapter exposes it, no empty label or legend, no aria-label attribute; NAME-05 inside a Field the control is labelled by the Field label. Angular cases live in packages/angular/test/required-names.test.ts, the others in the package text-contract tests."
+   ]
+  },
+  {
+   "theme": "required-marker",
+   "rule": "A required control with a visible label shows one marker: `<span class=\"hw-required-marker\" aria-hidden=\"true\"> *</span>` as the last child of its `label.hw-label` or `legend.hw-label`, in every adapter and for every control, including composite ones and fieldset groups. It is present exactly when the control is required (its own `required` or the one inherited from Field) and absent otherwise; it is never the only carrier of the requirement: the native control keeps `required`, a role=radiogroup group gets `aria-required=\"true\"`, and a group that only has a custom constraint (MultiSelect, TagInput) explains it in its hint as docs/multiselect-validation.md:23 says. The glyph is not application text and gets no input. No other marker markup is allowed (React MultiSelect's bare span is replaced).",
+   "perAdapter": {
+    "react": "Field already renders it (react/src/shared.tsx:108). MultiSelect legend (react/src/expanded-controls.tsx:89) and every other legend-labelled control use the same span with the class.",
+    "vue": "decorate() and Field render it (vue/src/forms.ts:25,37). Add it to the legends of MultiSelect, ToggleGroup, RangeSlider and Rating when required.",
+    "angular": "One shared template constant for labels and one for legends in forms.ts (`fieldLabel` at forms.ts:43 exists; add `fieldLegend`), exported inside the package and used by every template that today writes `<label class=\"hw-label\">{{ label }}</label>` by hand: combobox (forms.ts:135), password, search, number, pin, tag, multi-select, date picker, file upload, file dropzone (advanced-controls.ts:24,44,113,185,188,191,288,362; forms.ts:200).",
+    "vanilla": "Authored: the documented markup shows the span inside the label. No controller adds or removes it."
+   },
+   "evidence": [
+    "react/src/shared.tsx:108",
+    "react/src/expanded-controls.tsx:89 (span without the class)",
+    "vue/src/forms.ts:25,37",
+    "angular/src/forms.ts:43 (fieldLabel) and :135 (combobox label written by hand, no marker)",
+    "styles/src/nic-select.css:53 (.hw-label > .hw-required-marker)",
+    "docs/multiselect-validation.md:22-23"
+   ],
+   "tests": [
+    "REQ-01 required with a label: exactly one .hw-required-marker, aria-hidden, last child of the label or legend, text ' *'; REQ-02 not required: none; REQ-03 required inherited from Field; REQ-04 the native control has `required` (or the radiogroup aria-required). Run for every form control in the three frameworks; vanilla fixtures assert the documented markup."
+   ]
+  },
+  {
+   "theme": "hint-error-validation-message",
+   "rule": "Order inside `.hw-field` (and inside a fieldset group after its options): label or legend, control, hint, error. Elements: `<p class=\"hw-hint\" id=\"{controlId}-hint\">` and `<p class=\"hw-error\" id=\"{controlId}-error\">` in every adapter (the documented vanilla markup; React changes from div, Vue from span); hint and error content is phrasing content. The control's aria-describedby lists, in this order, the application's ids, the Field's ids, the hint id, the error id, without duplicates. There is at most one `.hw-error` per control. Two sources fill it: the application's `error` (static text: no role, it is read with the control through aria-describedby), and a message the component itself produces after the reader acted (a constraint from a `...Message` input such as requiredMessage, invalidMessage, unsupportedMessage, unavailableMessage, or a file rejection from getRejectedMessage): that one is rendered in the same element with `role=\"alert\"`, inserted only while it applies and removed when the value becomes valid or the form resets. The application's `error` wins when both exist. The same message is also the control's custom validity (`setCustomValidity`), with the single-space rule of CONTRACT.md:99-103 when the text is missing; a missing text renders no `.hw-error` at all. Status that is not an error (results count, selected count, formatted date, copy feedback) is never in `.hw-error`: it is a `role=\"status\"` element that exists, empty, from the first render (CONTRACT.md:183-185). Every Field-like component offers the same four inputs with these names: `label`, `hint`, `error`, `required`; ToggleGroup, RadioGroup, MultiSelect, TagInput, Rating, Slider, RangeSlider, DatePicker, FileUpload and FileDropzone take all four in every adapter (closes the capability part of actions-9).",
+   "perAdapter": {
+    "react": "FieldLayout (react/src/shared.tsx:110-111): div -> p for hint and error. Component-produced messages are passed as the Field `error` with a flag that adds role=alert (DatePicker: react/src/calendar.tsx:103 `error ?? dateMessage(message)`). ToggleGroup gains hint, error, required.",
+    "vue": "Field and decorate (vue/src/forms.ts:27-28,37-38,128-129): span -> p. DatePicker's separate `p#{id}-validation-error` (vue/src/calendar.ts:522-531) becomes the single `p.hw-error#{id}-error` after the hint. ToggleGroup gains hint, error, required and stops forwarding name/form to the fieldset.",
+    "angular": "`fieldEnd` (forms.ts:44) is the one template for hint and error; components that write their own (toggle group interactions.ts:11, date picker, dropzone) use it. A component-produced message uses a getter `shownError` = error || validation message and `[attr.role]=\"error ? null : 'alert'\"`.",
+    "vanilla": "Authored `p.hw-hint` / `p.hw-error`. A controller that produces a message (DatePicker dates-4, FileDropzone) writes it into an authored `[data-hw-error]` element if present, else creates `p.hw-error` after the hint, adds its id to aria-describedby, and removes what it created on destroy."
+   },
+   "evidence": [
+    "react/src/shared.tsx:110-111 (div)",
+    "vue/src/forms.ts:27-28,37-38,128-129 (span)",
+    "angular/src/forms.ts:43-44 (p)",
+    "vue/src/calendar.ts:522-531 (second error element with role=alert)",
+    "react/src/calendar.tsx:103",
+    "styles/src/components.css:118-120, styles/src/nic-select.css:46-47, styles/src/extended.css:122,231,234 (rules are element-agnostic)",
+    "CONTRACT.md:99-103,183-185"
+   ],
+   "tests": [
+    "MSG-01 DOM order label, control, hint, error and both are p elements with ids {id}-hint / {id}-error; MSG-02 aria-describedby order and no duplicate id; MSG-03 application `error`: no role; MSG-04 component message after an invalid commit: one p.hw-error with role=alert, custom validity equals its text; MSG-05 application error and component message together: one element, the application's text; MSG-06 missing message text: constraint still blocks submission, no .hw-error, one development warning; MSG-07 message disappears when the value becomes valid and on reset."
+   ]
+  },
+  {
+   "theme": "aria-invalid",
+   "rule": "`aria-invalid=\"true\"` is on the native control (on the fieldset for a group) exactly when one of these holds, and the attribute is absent otherwise: (1) the application passes a non-empty `error`; (2) the application passes an explicit aria-invalid (React and Vue: the attribute; Angular: the forwarded `aria-invalid` input); (3) a submission failed on this control: its `invalid` event fired (checkValidity, reportValidity or requestSubmit), and the state stays until the control's validity becomes valid after a value change, or the form resets; (4) the reader committed a non-empty value that violates a constraint the component checks itself (DatePicker: malformed, out of range, unsupported, unavailable; PinInput: wrong length once complete; FileDropzone: a rejected file). It is never set because a required control is still empty before any submission, and never because a message text is missing: Angular's `unnamedConstraint` (forms.ts:176, advanced-controls.ts:211) is removed. (3) applies to every Hawiyah control that sets a custom validity (Combobox, MultiSelect, TagInput, DatePicker, PinInput, ToggleGroup and Rating when required); plain native controls keep the browser's own invalid state and :user-invalid styling. The `invalid` event is not default-prevented.",
+   "perAdapter": {
+    "react": "`const [failed, setFailed] = useState(false)`; `onInvalid={() => setFailed(true)}` on the element that owns the validity (after calling the application's onInvalid); cleared in the value setter when `element.validity.valid` and in the reset callback. `aria-invalid = props['aria-invalid'] ?? ((error || failed || violated) ? true : undefined)` (extends shared.tsx:123).",
+    "vue": "`const failed = ref(false)`; `onInvalid` on the control; cleared in a watch on the value after validity is recomputed and in useFormReset. `'aria-invalid': props.error || parent.invalid || failed.value || violated ? true : attrs['aria-invalid']` (extends shared.ts:24).",
+    "angular": "`protected submissionInvalid = false`; `(invalid)=\"submissionInvalid = true\"` on the native control in the template; cleared in update(), writeValue() and afterReset() once `setConstraintValidity` (platform.ts:8-17) reports valid. `[attr.aria-invalid]=\"error || ariaInvalid || submissionInvalid || violation ? true : null\"`.",
+    "vanilla": "`scope.listen(control, 'invalid', ...)` sets the attribute; the controller remembers the authored aria-invalid (vanilla/src/calendar.ts:204,236 is the model) and restores it when the state clears and on destroy."
+   },
+   "evidence": [
+    "react/src/shared.tsx:123",
+    "vue/src/shared.ts:24",
+    "angular/src/forms.ts:135 (`error || unnamedConstraint`), :176; angular/src/advanced-controls.ts:211",
+    "vanilla/src/calendar.ts:204,236",
+    "styles/src/components.css:106-108, styles/src/extended.css:70,90 (styles key on [aria-invalid='true'])",
+    "CONTRACT.md:101-103",
+    "triage-forms.json E01 (owner decision)"
+   ],
+   "tests": [
+    "INV-01 required, empty, untouched: no aria-invalid; INV-02 required with a missing message text: no aria-invalid before submission; INV-03 form.requestSubmit() fails: aria-invalid=true on the control; INV-04 a valid value clears it; INV-05 reset clears it; INV-06 `error` sets it; INV-07 explicit aria-invalid from the application sets it; INV-08 committed violating value sets it without a submission (DatePicker, PinInput, FileDropzone)."
+   ]
+  },
+  {
+   "theme": "controlled-and-observable-state",
+   "rule": "One pattern per adapter for every piece of state other than the value (`open`, `visible`, `expanded`, `query`, `index`, `page`, `month`, `calendar`, `sort`): the state has one name, the same in the four adapters, and three members derived from it. React: `<state>?`, `default<State>?`, `on<State>Change?(value)`; controlled when `<state>` is not undefined (useControllable, react/src/shared.tsx:67-73). Vue: prop `<state>` with `default: undefined`, prop `default<State>`, event `update:<state>` so `v-model:<state>` works (useValue, vue/src/shared.ts:28-34). Angular: `@Input() <state>` and `@Output() <state>Change`, so `[(<state>)]` works; there is no `default<State>` input in Angular: a value written once is the initial value and the component then updates its own field (triage remainders asking for an Angular defaultOpen are dropped). Vanilla: option `on<State>Change(value)`, the event `hw:change` on the controller root with `detail.<state>` (vanilla/src/dom.ts:30-33), and controller methods to set it. A state that is only observable has the notification member alone, with the same name (React `onQueryChange`, Vue `update:query`, Angular `(queryChange)`, vanilla `onQueryChange`). The value itself stays `value` / `defaultValue` / `onValueChange` (React), `modelValue` / `defaultValue` / `update:modelValue` (Vue), `value` / `valueChange` plus ControlValueAccessor (Angular). The notification fires once per change with the new value, after the state changed, and not when a controlled prop is changed by the application. Uncontrolled and controlled render the same DOM on the server. Fixed names for the open items: Combobox `open` (controlled) and `query` (observable): React renames `onInputChange` to `onQueryChange`; PasswordField `visible`; Popover and Menu `open`; PortalHeader mobile menu `open`; TreeView `expanded` (Angular renames expandedIds / expandedIdsChange); DataTable `sortKey` + `sortDirection`; CookieConsent `open`. An action is not state and is named by its verb with the payload the others use: Menu `onAction(value)` / `@action` / `(action)` (Vue renames `select`), dismiss, remove, read.",
+   "perAdapter": {
+    "react": "As in the rule; add `open` / `defaultOpen` / `onOpenChange` to PortalHeader (expanded-content.tsx:67-74); rename Combobox onInputChange (interactive.tsx:176).",
+    "vue": "Add `open` + `defaultOpen` props to Combobox (interactive.ts:126; `update:open` and `update:query` are already emitted at :164,:189), `visible` + `defaultVisible` + `update:visible` to PasswordField (controls.ts:57-75), `open` to Menu (expansion-interactive.ts:229-237) and PortalHeader (patterns.ts:81-104); Menu event `select` -> `action`.",
+    "angular": "Add `open` / `openChange` and `queryChange` to hw-combobox (forms.ts:136-146), `visible` / `visibleChange` to hw-password-field (advanced-controls.ts:24-42, today the private `revealed`), `open` / `openChange` to hw-portal-header (content.ts:113-125, today `menuOpen`), `sortKeyChange` / `sortDirectionChange` to hw-data-table; hw-tree-view `expandedIds` -> `expanded`, `expandedIdsChange` -> `expandedChange`. hw-popover already has `open` / `openChange` (interactions.ts:27-43).",
+    "vanilla": "Controllers that lack it add `on<State>Change` and the hw:change detail (combobox open: vanilla/src/combobox.ts; password visible already emits {visible} at controls.ts:28)."
+   },
+   "evidence": [
+    "react/src/shared.tsx:67-73; react/src/interactive.tsx:172-178 (Combobox value, open, onInputChange)",
+    "vue/src/shared.ts:28-34; vue/src/interactive.ts:79-84 (Dialog open/defaultOpen/update:open), :128 (Combobox emits update:open and update:query but has no open prop)",
+    "angular/src/interactions.ts:27-43 (open/openChange), angular/src/advanced-controls.ts:32 (revealed is private)",
+    "vanilla/src/dom.ts:30-33, vanilla/src/disclosures.ts:5,16,20 (onOpenChange + hw:change {open}), vanilla/src/portal.ts:6,51",
+    "grep of notification names: React onValueChange 50, onOpenChange 22; Vue update:open 9; Angular openChange in four files"
+   ],
+   "tests": [
+    "STATE-01 uncontrolled: interaction changes the state and notifies once with the new value; STATE-02 controlled: interaction notifies and the DOM follows the application's value only; STATE-03 changing the controlled prop does not notify; STATE-04 two-way form (v-model:<state>, [(<state>)]) round-trips; STATE-05 server render with the default and with the controlled value gives the same DOM as the first client render; STATE-06 vanilla: hw:change detail carries the state name."
+   ]
+  },
+  {
+   "theme": "value-display-and-formatting",
+   "rule": "No adapter formats a value with a locale it chose. Where a component shows or announces a value, the application passes a function or the finished text, with the same name and signature in the four adapters. Slider: `formatValue?: (value: number) => string` and `showValue?: boolean` (default false in every adapter; React's default changes from true): with showValue the component renders `<output class=\"hw-slider-value\" for=\"{id}\">` after the input containing `formatValue(value)` or, without a formatter, `String(value)`; `aria-valuetext` is set to `formatValue(value)` only when formatValue is given. RangeSlider: `formatValue?` gives each thumb its aria-valuetext; the visible range is one templated text, `getRangeLabel?: (lower: number, upper: number) => string`, rendered in `<output class=\"hw-range-slider-value\" for=\"{lowerId} {upperId}\">` only when the function is given, because an adapter may not write a separator between two values (CONTRACT.md:104-107); the vanilla controller's built-in en dash (controls.ts:55) is removed. Status texts with a number are functions that receive the number and return the whole string: MultiSelect `getResultsMessage(count)` (required, role=status, all adapters) and `getSelectedMessage(count)` (optional in all four, rendered only when supplied: CONTRACT.md:88-91, so Angular's becomes optional); FileDropzone `getSelectedMessage(files)` and `getRejectedMessage(files)`. File sizes, dates and counts are never printed raw next to text: either the application's function prints them or they are not shown (Angular FileDropzone's raw byte size is removed). Components that must call Intl themselves (Calendar, DatePicker, DataTable collation) keep the required `locale` input (CONTRACT.md:121-133); DatePicker's formatted value uses dateStyle 'full' in the four adapters. Stat, Meter, Progress and DescriptionList print what they are given.",
+   "perAdapter": {
+    "react": "Slider: default of showValue becomes false and aria-valuetext conditional (expanded-controls.tsx:29-35); RangeSlider: add getRangeLabel; MultiSelect: add optional getSelectedMessage and required getResultsMessage with a polite status element.",
+    "vue": "Slider: add showValue, formatValue (controls.ts:173-221); RangeSlider: add formatValue, getRangeLabel, and the missing `name` / `form` props (controls.ts:223-316); MultiSelect: add getResultsMessage, getSelectedMessage.",
+    "angular": "hw-slider: showValue, formatValue (advanced-controls.ts:126-137); hw-range-slider: formatValue, getRangeLabel, class hw-label on the handle labels (:139-153); hw-multi-select: getSelectedMessage optional, getResultsMessage added (:191-216); hw-file-dropzone: no raw sizes (:362).",
+    "vanilla": "Options `formatValue`, `getRangeLabel`, `getSelectedMessage`; template attributes `data-hw-range-label=\"{lower} ... {upper}\"` and `data-hw-selected-message=\"{count} ...\"` filled by formatTextTemplate (vanilla/src/dom.ts:54-60). In the template the two numbers are formatted by `formatValue`, else by `formatNumber` with `locale` / data-hw-locale when given, else `String`. The output element stays the authored `[data-hw-range-output]`. DatePicker passes dateStyle 'full' (calendar.ts:243 uses 'medium' for the input text and no full value text)."
+   },
+   "evidence": [
+    "react/src/expanded-controls.tsx:29-35 (showValue = true, formatValue = String, aria-valuetext always)",
+    "vanilla/src/controls.ts:36,47,55 (locale-formatted output joined with an en dash)",
+    "CONTRACT.md:88-91,104-107,121-133",
+    "angular/src/advanced-controls.ts:316 and react/src/calendar.tsx:88 (dateStyle full) against vanilla/src/calendar.ts:243",
+    "triage-forms.json choices-6, choices-9, R09, R10, R16; triage-dates-files-overlays.json R03, files-6"
+   ],
+   "tests": [
+    "FMT-01 no formatter: the output shows String(value), no aria-valuetext; FMT-02 formatter: output and aria-valuetext carry its result; FMT-03 showValue false: no output element; FMT-04 RangeSlider without getRangeLabel renders no output and no separator; FMT-05 MultiSelect: status element exists empty on first render, shows getResultsMessage(count) after filtering, getSelectedMessage only when supplied; FMT-06 source check (extends tests/core-production-text.test.ts): no `Intl.` or `toLocale` call under packages/*/src without an application locale."
+   ]
+  },
+  {
+   "theme": "read-only",
+   "rule": "Read-only means: the control keeps its place in the tab order, keeps its accessible name, keeps its named value in FormData, shows its value, and cannot be changed by pointer, keyboard, paste or drop; it is never rendered as `disabled` and never replaced by text. It is still reset by a form reset and still written by the application. Exposure: native `readonly` on text inputs and textareas; `aria-readonly=\"true\"` on roles that define it (combobox, slider, spinbutton, searchbox, the DatePicker text input); `aria-disabled=\"true\"` on checkbox, radio, switch, toggle buttons and the file input, guarded by core `observeReadonlyChoice` (docs/readonly-inputs.md:8-10); a group root carries `data-hw-readonly=\"true\"` for styling. Notifications never fire for a blocked change. Navigation that changes no value stays available (opening a read-only tree branch, moving focus, scrolling a list). Prop name: `readOnly` in React and Angular, `readonly` in Vue (Vue Checkbox, Radio and Switch rename `readOnly`), the native `readonly` attribute or `data-hw-readonly=\"true\"` on the root in vanilla. Components that take it in every adapter: TextField, Textarea, NumberField, PasswordField, SearchField, Checkbox, Radio, Switch, ToggleGroup, Slider, RangeSlider, Rating, Combobox, MultiSelect, TagInput, PinInput, DatePicker, FileDropzone. FileDropzone (files-9): the file input stays enabled and focusable with aria-disabled=\"true\", activation and drop are prevented (`dragover` is always cancelled for file drags with dropEffect 'none' while unavailable, files-8), already chosen files stay submitted. Select has no read-only state (docs/input-review.md:27).",
+   "perAdapter": {
+    "react": "`readOnly` prop; choices use observeReadonlyChoice (react/src/forms.tsx:56, expanded-interactive.tsx:19); sliders prevent pointer and value keys (expanded-controls.tsx:32-34). Add readOnly to FileDropzone.",
+    "vue": "`readonly` prop (controls.ts, interactive.ts, calendar.ts, expansion-interactive.ts, patterns.ts); forms.ts:91 choice components rename `readOnly` to `readonly`.",
+    "angular": "`@Input({transform: booleanAttribute}) readOnly` (forms.ts:81,94,114,122,128,138). hw-file-dropzone stops binding read-only as [disabled] (advanced-controls.ts:362,369).",
+    "vanilla": "`readonly` on native text controls, `data-hw-readonly=\"true\"` or `aria-readonly=\"true\"` on roots, observed for changes (docs/readonly-inputs.md:23-26)."
+   },
+   "evidence": [
+    "docs/readonly-inputs.md:3-26",
+    "docs/combobox-readonly.md:26-29",
+    "docs/input-review.md:25-28",
+    "react/src/forms.tsx:56",
+    "vue/src/forms.ts:91 (readOnly) against vue/src/controls.ts, interactive.ts, calendar.ts (readonly: 9 declarations)",
+    "angular/src/forms.ts:112 ([readOnly] and aria-disabled on the checkbox)",
+    "core/src/readonly-choice.ts:27-40"
+   ],
+   "tests": [
+    "RO-01 focusable and named; RO-02 pointer, keys, paste and drop do not change the value and fire no notification; RO-03 FormData still carries the value; RO-04 the exposure attribute for the role as listed; RO-05 switching read-only off and on keeps the value; RO-06 reset behaves as for an editable control (shared with RESET-07). Existing files: packages/*/test/readonly-inputs.test.ts, tests/toggle-group-parity.test.ts."
+   ]
+  },
+  {
+   "theme": "rich-content",
+   "rule": "Where React accepts a ReactNode, the other adapters must accept rich content for the same part, by one mechanism each. (1) The single primary content of a component: React `children`, Vue default slot, Angular `<ng-content />`, vanilla authored children. (2) A named region that appears once: React a prop holding a node, named after the region (`footer`, `actions`, `icon`, `trend`); Vue a slot with that name; Angular `<ng-content select=\"[hw<Component><Region>]\" />` with the marker attribute named hw + component + region in camel case (hwCardFooter, hwDialogFooter, hwEmptyIcon, hwEmptyAction, hwStatValue, hwStatTrend, hwServiceAction); the region's wrapper element is always rendered in Angular and hidden by the stylesheet with `:empty` when nothing is projected, because projection cannot be detected (layouts.ts:74), so the wrapper must contain no whitespace or comment-only text. (3) Content repeated per item of an `items` / `columns` array: React the item field is a ReactNode; Vue a scoped slot named after the field with props `{item, index}` (`#title`, `#content`, `#label`, and for columns `#cell-<key>` with `{row, index, column}`) in addition to the plain field; Angular an input `<field>Template?: TemplateRef<{$implicit: Item; index: number}>` on the list component (the existing `slideTemplate` at interactions.ts:151 is the model: titleTemplate, contentTemplate, labelTemplate) and for columns a `cell?: TemplateRef<{$implicit: Row; index: number; column: Column}>` field on the column. In every adapter the plain string field stays required and is what type-ahead, accessible names and development warnings read; rich content only replaces what is displayed. Rich content never replaces a control's accessible name: where the name was the visible text, the string field becomes the aria-label only when the rich content has no text. An Angular component never accepts an HTML string and never uses innerHTML. Strings that are text inputs under CONTRACT.md stay strings in every adapter.",
+   "perAdapter": {
+    "react": "Nothing to add for parts that are already nodes; ToastMessage, TreeNode, MenuItem, TabItem, AccordionItem keep ReactNode fields. Where a ReactNode label is used for type-ahead the element's textContent is read.",
+    "vue": "Add the scoped slots: Accordion `#title` (display.ts:41), Stat `#value` and `#trend` (content.ts:144-167), PageHeader `#title`; Table keeps `cell` on the column (display.ts:73).",
+    "angular": "Accordion: titleTemplate, contentTemplate (presentation.ts:50,91-96); Table and DataTable: `cell` on the column plus `rowKey` (presentation.ts:99-110, content.ts:48-58); Stat: [hwStatValue], [hwStatTrend] (content.ts:37); EmptyState: [hwEmptyIcon], [hwEmptyAction] (presentation.ts:156-160); Checkbox and Switch: `<ng-content />` inside the label after the label text (forms.ts:110-122); Select: `<ng-content />` inside the select for authored option and optgroup (forms.ts:99); FileUpload: `<ng-content />` after the input (forms.ts:200-207); ServiceDetails: [hwServiceAction] inside the footer. Tabs label templates are deferred (nav-a-3).",
+    "vanilla": "Authored markup is the rich content; a controller keeps authored children and reads text with textContent or a `[data-hw-<part>-label]` child (vanilla/src/content.ts:162)."
+   },
+   "evidence": [
+    "react/src/display.tsx:9 (AccordionItem title/content are nodes), react/src/expanded-content.tsx:24,29,179",
+    "vue/src/display.ts:8,73 (title string, content VNodeChild, column cell function)",
+    "angular/src/presentation.ts:50 (HwAccordionItem strings only), angular/src/interactions.ts:151 (slideTemplate TemplateRef input), angular/src/layouts.ts:74-76 (regions always rendered, hidden when empty)",
+    "angular projection markers in use: hwCardHeader, hwCardFooter, hwDialogFooter, hwDrawerFooter, hwServiceAction, hwServiceIcon, hwPortalNotice (grep of ng-content select)",
+    "vue slots in use: default 35, footer 8, actions 7, trigger 4, header 4, action 4, icon 3 (grep of slots.)"
+   ],
+   "tests": [
+    "RICH-01 a link and an inline icon given as rich content for the part are rendered inside the documented element; RICH-02 with rich content the plain field still supplies the accessible name and type-ahead text; RICH-03 Angular: an empty named region takes no space (computed display none) and a filled one is visible; RICH-04 server render of rich content equals the first client render."
+   ]
+  },
+  {
+   "theme": "item-shapes",
+   "rule": "One field name per meaning in every adapter; the type name may differ (Hw prefix in Angular). `value`: the key of an entry that the component's own value, selection or open notification carries (Option, TabItem, AccordionItem, MenuItem, StepItem, ToggleGroup option). `id`: the identity of a record the component reports in an action or uses as a key (NotificationItem, ToastMessage, TimelineItem, NavigationItem, TreeNode, upload item). `label`: the short name of an entry (option, tab, menu item, step, tree node, breadcrumb, link, column). `title`: the heading of an entry that has a body (accordion item, notification, toast, timeline item). `description`: secondary text under a label or title. `message`: the body of a toast. `content`: the body of a tab or accordion item. `href`, `current`, `disabled`, `children`, `icon`: as in core NavigationItem (CONTRACT.md:189-190). `dateTime`: machine-readable ISO value for `<time datetime>`; `dateLabel`: the visible date text from the application. `read`: boolean, true when read (never `unread`); rendered as data-state=\"read|unread\". `status`: 'complete' | 'current' | 'upcoming' for steps and timeline items (never `state`, 'active' or 'pending'). `term` + `description`: description list and metadata entries; service facts are `metadata: DescriptionItem[]` rendered as a dl (never separate duration / fee inputs). Columns: `{key, label, cell?, sortable?, rowHeader?}` for Table and DataTable alike. Avatars: `{name, src?, initials?, size?, variant?}`. Array inputs are named `items` (TreeView: Angular `nodes` -> `items`), except `options` for choices, `columns` + `rows` for tables, `messages` for ToastRegion and `slides` for Carousel. Resulting changes: Angular HwAccordionItem.id -> value; Angular HwMenuItem.id -> value, add `href`; React MenuItem keeps `onSelect` out of the shared shape (React only convenience) and gains nothing else; React ToastMessage.description -> message; React TimelineItem status 'active' -> 'current'; Vue TimelineItem.date and NotificationItem.date -> dateTime; Angular timeline `state` -> `status`, 'pending' -> 'upcoming', `time` -> `dateLabel` plus `dateTime`; Angular HwNotification.unread -> read (inverted), `time` -> `dateLabel` plus `dateTime`; React and Vue TableColumn.header -> label; React DataTableColumn.render(value, row) -> cell(row, index); Angular HwBreadcrumbItem gains `current`; Angular HwStep gains `value`.",
+   "perAdapter": {
+    "react": "Types in display.tsx:9,76,178,210; expanded-content.tsx:24,29,46,179; expanded-interactive.tsx:35,48,89; interactive.tsx:9.",
+    "vue": "Types in display.ts:8,73,177,207; content.ts:169,239,287; patterns.ts:386; expansion-interactive.ts:410.",
+    "angular": "Types in presentation.ts:50,99; content.ts:9-12; interactions.ts:44,64,108,130; navigation.ts:120,217.",
+    "vanilla": "The same meanings as data attributes on authored items: data-hw-value for `value` keys (accordion, tabs, menu, tree, toggle group), data-state for read/unread and step status. Controller event details use the field names above."
+   },
+   "evidence": [
+    "react/src/display.tsx:9 `AccordionItem {value, title, content}` against angular/src/presentation.ts:50 `HwAccordionItem {id, title, content}`",
+    "react/src/expanded-interactive.tsx:35 `MenuItem {value, label, disabled, href, onSelect}` against angular/src/interactions.ts:44 `HwMenuItem {id, label, disabled}`",
+    "react/src/expanded-interactive.tsx:48 `ToastMessage {description}` against vue/src/expansion-interactive.ts:410-417 and angular/src/interactions.ts:64 `{message}`",
+    "react/src/expanded-content.tsx:29 status 'active', vue/src/content.ts:169-176 `date`, status 'current'",
+    "react/src/expanded-content.tsx:179 `{dateTime, dateLabel, read}`, vue/src/patterns.ts:386-394 `{date, dateLabel, read}`, angular/src/content.ts:11 `{time, unread}`",
+    "react/src/display.tsx:76 and vue/src/display.ts:73 `TableColumn.header`; react/src/expanded-content.tsx:46, vue/src/content.ts:287-292, angular/src/content.ts:12, angular/src/presentation.ts:99 `label`",
+    "angular/src/interactions.ts:113 (`nodes`, `expandedIds`)",
+    "core/src/navigation-list.ts:4-8"
+   ],
+   "tests": [
+    "SHAPE-01 one fixture object per component, written once in tests/helpers and passed unchanged to the React, Vue and Angular component, renders the same text content and the same data- attributes as the vanilla fixture; SHAPE-02 the key reported by each notification is the item's `value` or `id` as listed; SHAPE-03 type tests: the removed field names are not accepted."
+   ]
+  },
+  {
+   "theme": "type-ahead",
+   "rule": "Type-ahead is one core helper used by Menu and TreeView in the four adapters (and by any later list with roving focus). New packages/core/src/typeahead.ts, exported from core index: `createTypeahead(options?: {timeout?: number}): {next(key: string, labels: readonly string[], current: number, isDisabled?: (index: number) => boolean): number; reset(): void}` and `isTypeaheadKey(event: {key: string; ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean}): boolean`. Behaviour, taken from the two vanilla implementations: a key counts when it is one character, not a space, with no Ctrl, Meta or Alt; it is passed through core `normalizeSearch` and appended to a buffer that clears 500 ms after the last key; when every character of the buffer is the same the search uses that single character, so repeating a letter cycles; the search starts at the entry after `current`, wraps, skips disabled entries and returns the first whose normalised label starts with the buffer, or -1. The caller moves focus to the returned index and calls preventDefault only when an entry was found. `labels` are the visible texts in visual order: in a tree, the visible (expanded) nodes only. The helper holds no DOM reference, starts its timer only inside `next`, and so is safe to create during server rendering; adapters create one per component instance and call `reset()` when the list closes or unmounts.",
+   "perAdapter": {
+    "react": "`const typeahead = useRef(createTypeahead())`; in onKeyDown after the arrow and activation keys; labels from the item elements' textContent because labels are nodes (expanded-interactive.tsx:42 Menu, :99-101 TreeView).",
+    "vue": "One instance in setup; labels from the item elements' textContent (expansion-interactive.ts:308-326 Menu, :640-672 TreeView); reset in onBeforeUnmount.",
+    "angular": "One instance as a field; labels from `item.label` strings (interactions.ts:52-56 Menu, :121-127 TreeView); reset in ngOnDestroy.",
+    "vanilla": "The inline buffers are replaced by the helper (vanilla/src/disclosures.ts:50-52 Menu, vanilla/src/content.ts:160-163 TreeView, which reads `[data-hw-tree-label]` or the item's own text nodes)."
+   },
+   "evidence": [
+    "vanilla/src/disclosures.ts:50-52 (buffer, 500 ms, startsWith, skips disabled, excludes space)",
+    "vanilla/src/content.ts:160-163 (same, plus the repeated-character rule)",
+    "no type-ahead under packages/react/src, packages/vue/src, packages/angular/src or packages/core/src (grep for typeahead and type-ahead is empty)",
+    "CONTRACT.md:36-39 (normalizeSearch, getNextEnabledIndex are core)"
+   ],
+   "tests": [
+    "packages/core/test/typeahead.test.ts: TYPE-01 first match after current, wrapping; TYPE-02 disabled entries skipped; TYPE-03 two different letters within 500 ms match a prefix; TYPE-04 the same letter repeated cycles; TYPE-05 buffer clears after the timeout (fake timers); TYPE-06 space, modifier keys and multi-character keys are ignored; TYPE-07 Arabic and Latin input through normalizeSearch. Parity, four adapters: TYPE-10 Menu focus moves to the matching item; TYPE-11 TreeView matches visible nodes only; TYPE-12 no match leaves focus and does not prevent default."
+   ]
+  },
+  {
+   "theme": "focus-when-a-control-becomes-unavailable",
+   "rule": "Keyboard focus is never dropped to the document body by a control's own activation. (a) A control that stays in the DOM but becomes unavailable because of the activation (Carousel and Pagination previous / next at a bound, a step button at the last step) is not given the `disabled` attribute for that reason: it gets `aria-disabled=\"true\"`, stays focusable, keeps its accessible name, and ignores click, Enter and Space; the stylesheet already styles `.hw-button[aria-disabled='true']` like a disabled button. The `disabled` attribute remains for unavailability that the reader did not cause on that control (the whole component disabled, fewer than two slides, a disabled form). (b) A control that is removed by its own activation (tag remove, toast or alert dismiss, notification dismiss, file remove, chip remove) hands focus, in the same render, to the same control of the next item, else of the previous item, else to the component's primary control or its container made focusable with tabindex=\"-1\" (TagInput: the text input; lists: the list root). Core `toast-focus.ts` is the model and is reused. (c) A popup that closes returns focus to its trigger only when focus was inside it (Popover Escape: nav-b-8); when focus leaves a non-modal popup it closes without moving focus (nav-b-7).",
+   "perAdapter": {
+    "react": "Carousel arrows (expanded-interactive.tsx:132) and Pagination arrows (display.tsx:165,175): `aria-disabled` + guarded onClick instead of `disabled` for the bound case.",
+    "vue": "Same (expansion-interactive.ts:773-774; display.ts:159).",
+    "angular": "Same (interactions.ts:144; navigation.ts:129): `[attr.aria-disabled]=\"atBound || null\"`, `[disabled]` only for the other reasons, the handler returns early.",
+    "vanilla": "Controllers already remember `disabled` and `aria-disabled` on the arrows (vanilla/src/content.ts:198); they write aria-disabled for the bound case and restore on destroy."
+   },
+   "evidence": [
+    "react/src/expanded-interactive.tsx:132 and angular/src/interactions.ts:144 (`disabled` at the bound)",
+    "react/src/display.tsx:165, vue/src/display.ts:159, angular/src/navigation.ts:129 (Pagination previous disabled on page 1)",
+    "styles/src/nic-buttons.css:60-70, styles/src/components.css:73-76, styles/src/nic-pagination.css:26-34 (aria-disabled already styled)",
+    "core/src/toast-focus.ts",
+    "triage-dates-files-overlays.json disclosure-data-10; triage-navigation-shell.json nav-b-7, nav-b-8"
+   ],
+   "tests": [
+    "FOCUS-01 activate Next with the keyboard until the bound: document.activeElement is still the Next button, it has aria-disabled=true and no disabled attribute; FOCUS-02 a further activation changes nothing and notifies nothing; FOCUS-03 moving back clears aria-disabled; FOCUS-04 removing the focused item moves focus to the next, previous, then primary control; FOCUS-05 Escape in a popover that does not contain focus does not move focus; FOCUS-06 tabbing out of a non-modal popover closes it and leaves focus where it went."
+   ]
+  },
+  {
+   "theme": "text-contract-for-new-text",
+   "rule": "Every text this milestone adds follows CONTRACT.md 'Text and localisation' unchanged: no default, the same name and shape in the four adapters, `<thing>Label` for names, `<thing>Message` for status and validation, `get<Thing>Label(...)` / `get<Thing>Message(...)` for templated text returning the whole string, required always when its need depends on runtime data, required under a condition when a prop or handler switches the feature on, rendered nothing and one development warning through requireText when missing. An optional action is rendered only while its handler is bound (React: the on<Action> prop; Vue: a listener declared with listener() and tested with listens(), vue/src/shared.ts:54-56; Angular: an HwObservedEmitter, angular/src/platform.ts:21; vanilla: the authored button), and its text is required under that condition; an Angular boolean such as `dismissible` is not a second switch and is removed. Names fixed here so that separate specifications agree: Alert `closeLabel` (with dismiss); NotificationList `getDismissLabel(item)`, `getMarkReadLabel(item)`, `unreadLabel`; ToastRegion `getDismissLabel(message)`; Stepper `completeLabel`, `upcomingLabel` (visually hidden state text per step, required always); TreeView `getExpandLabel(node)`, `getCollapseLabel(node)`; Menu and Popover `triggerLabel` (where the adapter renders the trigger); MultiSelect `getResultsMessage(count)`, `getSelectedMessage(count)`; RangeSlider `getRangeLabel(lower, upper)`; FileDropzone `getRejectedMessage(files)` (required when accept or maxSize is set); Calendar `unsupportedMessage`; DatePicker `unavailableMessage` (required when isDateDisabled is given); Feedback `commentLabel`, `submitLabel`; ServiceDetails `requirementsLabel` (required when requirements are given). Vanilla reads each from the option, else `data-hw-<kebab-name>` on the root, templated ones as `data-hw-<thing>-label=\"... {placeholder}\"` (vanilla/src/dom.ts:49-60). New text is added to tests/text-contract-docs.test.ts fixtures, components.json and the four READMEs.",
+   "perAdapter": {
+    "react": "Required text is a required prop or a union on the switching prop (react/src/shared.tsx:6-13; search-field.tsx:17 is the model for a conditional union).",
+    "vue": "Declared with `required: true` when always needed, otherwise checked with needText(component, name, value, when) (vue/src/shared.ts:46).",
+    "angular": "`@Input({required: true})` when always needed, otherwise `texts.need(name, value, when)` in the template (angular/src/text.ts).",
+    "vanilla": "text(root, name, option) and templated(root, name, option, values) (vanilla/src/dom.ts:49-60)."
+   },
+   "evidence": [
+    "CONTRACT.md:54-135",
+    "react/src/shared.tsx:6-23",
+    "vue/src/shared.ts:44-56",
+    "angular/src/text.ts, angular/src/platform.ts:19-27",
+    "angular/src/presentation.ts:37-47 (hw-alert has both `dismissible` and (dismissed))",
+    "vanilla/src/dom.ts:44-60"
+   ],
+   "tests": [
+    "TEXT-01 each new text missing: nothing rendered in its place, attribute omitted, one warning naming component and input as the adapter exposes them; TEXT-02 conditional text is not required while the feature is off; TEXT-03 an optional action is absent without a bound handler and present with one; TEXT-04 no string literal reaches the DOM from packages/*/src (tests/core-production-text.test.ts and the per-package text-contract tests)."
+   ]
+  },
+  {
+   "theme": "tests",
+   "rule": "Every behaviour in a specification is a numbered case with an id `<THEME>-<nn>` from the themes above (RESET, ATTR, NAME, REQ, MSG, INV, STATE, FMT, RO, RICH, SHAPE, TYPE, FOCUS, TEXT, SSR) or, for component-specific behaviour, `<COMPONENT>-<nn>` in upper snake case (CAROUSEL-01). The same id means the same assertion in the four adapters. Cross-adapter cases live in tests/<component>-parity.test.ts in the existing form: one `mount(adapter, ...)` helper returning the same handles for all adapters and `for (const adapter of ['vanilla','react','vue','angular']) it(`${adapter}: [RESET-01] ...`)`; an adapter is left out of a case only with a comment that names the reason and the convention that allows it. Assertions are made on the DOM, FormData, document.activeElement and the recorded notifications, never on component internals, so one assertion body serves the four adapters. Adapter-only cases (types, hydration, Angular Forms) live in the package's own test files with the same id scheme. The Angular side of a parity test imports the built package (tests/toggle-group-parity.test.ts:5), so the Angular package is rebuilt before the parity run. A specification lists, per case id, the file it goes in. A fixed defect keeps a regression case whose title also carries the audit id, for example `[RESET-05][actions-v1]`. Browser-only facts (layout, computed style, focus rings, forced colours) go to tests/browser/*.spec.ts with the same ids and load only the package stylesheet in a static fixture.",
+   "perAdapter": {
+    "react": "packages/react/react.<topic>.test.tsx (flat in the package root).",
+    "vue": "packages/vue/test/<topic>.test.ts.",
+    "angular": "packages/angular/test/<topic>.test.ts (built package where the file already does so).",
+    "vanilla": "packages/vanilla/test/<topic>.test.ts."
+   },
+   "evidence": [
+    "tests/toggle-group-parity.test.ts:1-70 (shape of a parity test; :58 restricts the reset case to react and vue today)",
+    "packages/angular/test/layout-hosts.test.ts, hydration.test.ts, required-names.test.ts",
+    "packages/react/react.hydration.test.tsx, packages/vue/test/hydration.test.ts",
+    "docs/validation.md (record of each verification run)"
+   ],
+   "tests": [
+    "TESTS-01 a script check: every case id that appears for one adapter in a parity file appears for the other three or has the documented exclusion comment."
+   ]
+  },
+  {
+   "theme": "server-rendering-and-hydration",
+   "rule": "For every component a specification changes: (1) the server HTML equals the first client render, attribute for attribute; anything that depends on the browser (the owning form, validity, focus, the location, measurements, clipboard) is read only after mount: React in effects, Vue in onMounted, Angular in afterNextRender or behind injectIsBrowser, and core helpers are created lazily. (2) No module evaluates a browser global, and no listener (reset, invalid, focusout, pointerdown, keydown on document) is attached during server rendering. (3) Ids are deterministic: React useId, Vue useId, Angular injectId / HwIdSource; ids of hint and error derive from the control id. (4) State that only an interaction can produce starts in its initial value on both sides: aria-invalid from a failed submission is absent, popups are closed unless the application opens them, status elements exist and are empty, component-produced `.hw-error` is absent. (5) Controlled and default values render the same DOM on the server as after hydration, including `checked`, `selected`, `open` and hidden inputs. (6) Angular forwarded attributes: on the server the inner element carries the value and the host does not; hydration reuses that DOM without a mismatch; `HwHostAttribute` writes through Renderer2 and reads static values through HostAttributeToken so that it does not depend on the hydrated DOM. (7) Angular templates that hide empty projection regions with `:empty` emit no whitespace inside the region. (8) Vanilla modules import without a DOM and controllers are created only in the browser.",
+   "perAdapter": {
+    "react": "renderToString then hydrateRoot with no hydration warning (packages/react/react.ssr.test.tsx, react.hydration.test.tsx).",
+    "vue": "renderToString then createSSRApp(...).mount with no hydration mismatch warning (packages/vue/test/ssr.test.ts, hydration.test.ts).",
+    "angular": "renderApplication then hydration with provideClientHydration, no NG05xx mismatch, ids unchanged (packages/angular/test/ssr.test.ts, hydration.test.ts:54-57).",
+    "vanilla": "packages/vanilla/test/ssr.test.ts: importing every entry in Node without a DOM does not throw."
+   },
+   "evidence": [
+    "AGENTS.md (keep core framework-independent and browser globals out of module evaluation)",
+    "CONTRACT.md:139-149 (rendered on the server as on the first client render; adapters do not read the location during server rendering)",
+    "angular/src/ids.ts:8-13, angular/src/platform.ts:8-17 (setCustomValidity guarded for the server DOM)",
+    "angular/src/layouts.ts:56 (HostAttributeToken)",
+    "react/src/expanded-shared.ts:5-10, vue/src/shared.ts:39 (reset listener attached after mount)"
+   ],
+   "tests": [
+    "SSR-01 server HTML of the default, controlled and required-with-error variants equals the client's first render (string compare after normalising ids where the framework requires); SSR-02 hydration emits no warning; SSR-03 no listener is registered and no timer started during the server render (spy on addEventListener and setTimeout); SSR-04 Angular kind B host: forwarded aria-label present on the inner control and absent from the host in the server HTML; SSR-05 importing the vanilla and core entries without a DOM does not throw."
+   ]
+  }
+ ],
+ "renames": [
+  {
+   "adapter": "angular",
+   "component": "all value controls, hw-field, hw-dialog, hw-drawer",
+   "kind": "input",
+   "from": "describedBy",
+   "to": "aria-describedby (property ariaDescribedby)",
+   "migration": "[describedBy]=\"id\" -> [aria-describedby]=\"id\"; describedBy=\"id\" -> aria-describedby=\"id\"",
+   "needs": "owner decision 2"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-radio",
+   "kind": "selector",
+   "from": "hw-radio / HwRadioComponent",
+   "to": "hw-radio-group / HwRadioGroupComponent",
+   "migration": "<hw-radio ...> -> <hw-radio-group ...>; import HwRadioGroupComponent",
+   "needs": "owner decision 3"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-link",
+   "kind": "removed",
+   "from": "<hw-link href>",
+   "to": "a[hwLink] attribute directive (HwLinkDirective) with variant, current, disabled, external",
+   "migration": "<hw-link href=\"/x\">Text</hw-link> -> <a hwLink href=\"/x\">Text</a>"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-accordion",
+   "kind": "field",
+   "from": "HwAccordionItem.id",
+   "to": "HwAccordionItem.value",
+   "migration": "{id: 'a', ...} -> {value: 'a', ...}"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-menu",
+   "kind": "field",
+   "from": "HwMenuItem.id",
+   "to": "HwMenuItem.value",
+   "migration": "{id: 'edit', ...} -> {value: 'edit', ...}; (action) still emits the key"
+  },
+  {
+   "adapter": "vue",
+   "component": "Menu",
+   "kind": "output",
+   "from": "@select",
+   "to": "@action",
+   "migration": "@select=\"fn\" -> @action=\"fn\""
+  },
+  {
+   "adapter": "vue",
+   "component": "Menu",
+   "kind": "input",
+   "from": "label (also printed on the trigger)",
+   "to": "label names the menu; triggerLabel is the trigger text, required unless the trigger slot is used",
+   "migration": "<Menu label=\"Actions\"> -> <Menu label=\"Actions\" trigger-label=\"Actions\">"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-tree-view",
+   "kind": "input",
+   "from": "nodes, expandedIds, (expandedIdsChange)",
+   "to": "items, expanded, (expandedChange)",
+   "migration": "[nodes]=\"x\" -> [items]=\"x\"; [(expandedIds)]=\"e\" -> [(expanded)]=\"e\""
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-tree-view",
+   "kind": "input",
+   "from": "toggle hidden from assistive technology",
+   "to": "required getExpandLabel(node), getCollapseLabel(node); toggle is button.hw-tree-toggle tabindex=-1",
+   "migration": "add [getExpandLabel]=\"fn\" [getCollapseLabel]=\"fn\"",
+   "needs": "owner decision 5"
+  },
+  {
+   "adapter": "react",
+   "component": "Combobox",
+   "kind": "input",
+   "from": "onInputChange",
+   "to": "onQueryChange",
+   "migration": "onInputChange={fn} -> onQueryChange={fn}"
+  },
+  {
+   "adapter": "react",
+   "component": "Collapsible",
+   "kind": "input",
+   "from": "title",
+   "to": "label",
+   "migration": "<Collapsible title=...> -> <Collapsible label=...>"
+  },
+  {
+   "adapter": "react",
+   "component": "Popover",
+   "kind": "input",
+   "from": "title (rendered as a heading)",
+   "to": "label (accessible name; no packaged heading)",
+   "migration": "<Popover title=\"T\"> -> <Popover label=\"T\"> and, for a visible heading, put it in the content",
+   "needs": "owner decision 6"
+  },
+  {
+   "adapter": "react",
+   "component": "PortalHeader",
+   "kind": "input",
+   "from": "navigation, brandHref",
+   "to": "links, homeHref",
+   "migration": "navigation={x} -> links={x}; brandHref=\"/\" -> homeHref=\"/\""
+  },
+  {
+   "adapter": "react",
+   "component": "ToastRegion",
+   "kind": "field",
+   "from": "ToastMessage.description",
+   "to": "ToastMessage.message",
+   "migration": "{description: node} -> {message: node}"
+  },
+  {
+   "adapter": "react",
+   "component": "Timeline",
+   "kind": "field",
+   "from": "status: 'active'",
+   "to": "status: 'current'",
+   "migration": "'active' -> 'current'"
+  },
+  {
+   "adapter": "vue",
+   "component": "Timeline, NotificationList",
+   "kind": "field",
+   "from": "date",
+   "to": "dateTime",
+   "migration": "{date: '2026-01-01'} -> {dateTime: '2026-01-01'}"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-timeline",
+   "kind": "field",
+   "from": "state ('complete'|'current'|'pending'), time",
+   "to": "status ('complete'|'current'|'upcoming'), dateLabel + dateTime",
+   "migration": "state -> status; 'pending' -> 'upcoming'; time -> dateLabel (visible text) and dateTime (ISO)"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-notification-list",
+   "kind": "field",
+   "from": "unread, time",
+   "to": "read (inverted), dateLabel + dateTime",
+   "migration": "{unread: true} -> {read: false}; time -> dateLabel"
+  },
+  {
+   "adapter": "vue, angular",
+   "component": "NotificationList",
+   "kind": "markup",
+   "from": "data-read / data-unread",
+   "to": "data-state=\"read|unread\"; h2 + aria-labelledby; h3 titles; <time datetime>",
+   "migration": "[data-read] -> [data-state='read']; [data-unread='true'] -> [data-state='unread']"
+  },
+  {
+   "adapter": "vue",
+   "component": "Checkbox, Radio, Switch",
+   "kind": "input",
+   "from": "readOnly",
+   "to": "readonly",
+   "migration": ":read-only=\"x\" -> :readonly=\"x\""
+  },
+  {
+   "adapter": "vue",
+   "component": "ServiceCard, ServiceDetails",
+   "kind": "input",
+   "from": "badge; items",
+   "to": "category; metadata",
+   "migration": "badge=\"x\" -> category=\"x\"; :items=\"x\" -> :metadata=\"x\""
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-service-card, hw-service-details",
+   "kind": "input",
+   "from": "duration, fee; details",
+   "to": "metadata: HwDescription[]",
+   "migration": "duration=\"3 days\" fee=\"Free\" -> [metadata]=\"[{term, description}, ...]\"; [details] -> [metadata]"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-tag-input",
+   "kind": "removed",
+   "from": "Add button and required addLabel",
+   "to": "none (Enter or comma commits, as in the other adapters)",
+   "migration": "delete addLabel=\"...\"",
+   "needs": "owner decision 4"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-search-field",
+   "kind": "default",
+   "from": "showSearchButton = true",
+   "to": "showSearchButton = false",
+   "migration": "add showSearchButton where the button is wanted"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-textarea",
+   "kind": "default",
+   "from": "rows = 4",
+   "to": "rows unset (no rows attribute)",
+   "migration": "add [rows]=\"4\" to keep the old height"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-alert",
+   "kind": "default",
+   "from": "role = 'status'; dismissible input",
+   "to": "role by tone (danger: alert, otherwise status); dismiss button rendered while (dismissed) is bound",
+   "migration": "delete dismissible; set role=\"status\" on a danger alert that must stay polite"
+  },
+  {
+   "adapter": "angular",
+   "component": "button[hwButton]",
+   "kind": "default",
+   "from": "no type (submits inside a form)",
+   "to": "type=\"button\" unless a type is authored; new loading input",
+   "migration": "add type=\"submit\" to submit buttons"
+  },
+  {
+   "adapter": "vue",
+   "component": "DescriptionList",
+   "kind": "default",
+   "from": "variant horizontal",
+   "to": "stacked (no data-variant)",
+   "migration": "add variant=\"horizontal\" to keep the old layout"
+  },
+  {
+   "adapter": "react",
+   "component": "Slider",
+   "kind": "default",
+   "from": "showValue = true, aria-valuetext always",
+   "to": "showValue = false, aria-valuetext only with formatValue",
+   "migration": "add showValue to keep the output"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-multi-select",
+   "kind": "input",
+   "from": "getSelectedMessage required",
+   "to": "optional; status rendered only when supplied",
+   "migration": "none"
+  },
+  {
+   "adapter": "react, vue",
+   "component": "Table",
+   "kind": "field",
+   "from": "TableColumn.header",
+   "to": "TableColumn.label",
+   "migration": "{header: 'Name'} -> {label: 'Name'}"
+  },
+  {
+   "adapter": "react",
+   "component": "DataTable",
+   "kind": "field",
+   "from": "DataTableColumn.render(value, row)",
+   "to": "DataTableColumn.cell(row, index)",
+   "migration": "render: (v, row) => x -> cell: row => x"
+  },
+  {
+   "adapter": "react, vue",
+   "component": "Field and every decorated control",
+   "kind": "markup",
+   "from": "div.hw-hint / div.hw-error (React), span (Vue)",
+   "to": "p.hw-hint / p.hw-error",
+   "migration": "selectors on div.hw-hint or span.hw-error -> .hw-hint / .hw-error"
+  },
+  {
+   "adapter": "react, vue",
+   "component": "Breadcrumb",
+   "kind": "markup",
+   "from": "current item rendered as a link",
+   "to": "span[aria-current=page], never a link",
+   "migration": "none; styles that targeted a[aria-current] -> [aria-current]"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-badge, hw-chip, hw-spinner, hw-skeleton, hw-avatar, hw-avatar-group, hw-button-group, hw-empty-state, hw-alert, hw-stat, hw-cookie-consent",
+   "kind": "markup",
+   "from": "inner element carries the hw- class",
+   "to": "the host carries it; no inner root",
+   "migration": "hw-badge > .hw-badge -> hw-badge.hw-badge (or .hw-badge)"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-combobox",
+   "kind": "markup",
+   "from": "div.hw-field.hw-combobox",
+   "to": "div.hw-field > div.hw-combobox around input, hidden input and listbox",
+   "migration": ".hw-field.hw-combobox -> .hw-field > .hw-combobox"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-progress, hw-meter",
+   "kind": "markup",
+   "from": "visible label wrapper; meter low/high/optimum defaults",
+   "to": "progress.hw-progress / meter.hw-meter named by label through aria-label; no low/high/optimum unless given; size input",
+   "migration": "render a visible label yourself where it is wanted"
+  },
+  {
+   "adapter": "vanilla",
+   "component": "RangeSlider",
+   "kind": "markup",
+   "from": "[data-hw-range-output] filled with 'lower – upper' by the controller",
+   "to": "filled from data-hw-range-label=\"{lower} ... {upper}\" or options.getRangeLabel",
+   "migration": "add data-hw-range-label=\"{lower} – {upper}\" to the root"
+  },
+  {
+   "adapter": "angular",
+   "component": "hw-menu, hw-popover",
+   "kind": "default",
+   "from": "packaged trigger is a primary button",
+   "to": "triggerVariant input, default 'secondary' (also added to Vue, where secondary is hard-coded today)",
+   "migration": "add triggerVariant=\"primary\" to keep the old look",
+   "needs": "owner decision 7"
+  },
+  {
+   "adapter": "react, vue, angular",
+   "component": "Feedback, CookieConsent",
+   "kind": "input",
+   "from": "three contracts",
+   "to": "see owner decision 8",
+   "migration": "written by the specification once the decision is taken",
+   "needs": "owner decision 8"
+  }
+ ],
+ "wronglyTriaged": [
+  {
+   "id": "E07",
+   "triaged": "open",
+   "shouldBe": "obsolete",
+   "evidence": "The triage note itself says class order has no effect on the cascade and the Angular part was not verified; vue/src/layout.ts:36 uses mergeProps(attrs, {class}) so both classes are present. No reader-visible or assistive-technology difference exists, so there is nothing to close."
+  },
+  {
+   "id": "content-display-13",
+   "triaged": "fixed",
+   "shouldBe": "partly",
+   "evidence": "Number formatting is gone, but the Stat DOM still differs: React renders dl/dt/dd with hw-stat-value and hw-stat-trend (react/src/expanded-content.tsx:28), Vue hw-stat-label, hw-stat-value, hw-stat-description, hw-stat-trend (vue/src/content.ts:155-164), Angular hw-stat-label, hw-stat-value, hw-stat-description and no trend (angular/src/content.ts:37). No open item owns this; it is merged into content-display-14."
+  },
+  {
+   "id": "rich-inputs-2",
+   "triaged": "open",
+   "shouldBe": "partly",
+   "evidence": "Vue Combobox already emits update:open (vue/src/interactive.ts:164) and update:query (:189) and exposes close(); only the open / defaultOpen props are missing. React already has open, defaultOpen, onOpenChange and onInputChange (react/src/interactive.tsx:172-178). Remaining: Vue props, Angular open/openChange/queryChange, vanilla onOpenChange, and the React rename to onQueryChange."
+  },
+  {
+   "id": "E08",
+   "triaged": "open, navigation-shell bucket only",
+   "shouldBe": "open, cross-cutting",
+   "evidence": "It is the same record as R22 in input-cross.json and concerns every Angular landmark and group component in all five clusters. It is closed by the conventions angular-host-attributes and name-without-visible-label, whose helper file the forms-core cluster writes; each cluster applies it to its own components."
+  },
+  {
+   "id": "nav-b-2, nav-b-17, E06, R26, service-patterns-1, choices-5",
+   "triaged": "remaining asks for an alias kept for one release",
+   "shouldBe": "rename without alias",
+   "evidence": "0.3.0 is already breaking; see convention renames-and-removals. The statuses are right, the proposed remedy is not."
+  },
+  {
+   "id": "nav-b-2, nav-b-9",
+   "triaged": "remaining asks for an Angular defaultOpen input",
+   "shouldBe": "no Angular default<State> input",
+   "evidence": "No Angular component has a default* input (grep of @Input default* under packages/angular/src is empty); hw-popover takes `open` once as the initial value and emits openChange (angular/src/interactions.ts:27-43). See convention controlled-and-observable-state."
+  },
+  {
+   "id": "R15",
+   "triaged": "open (api)",
+   "shouldBe": "owner decision, not a defect",
+   "evidence": "The triage note says the mechanism difference is to be confirmed, not necessarily removed. It is owner decision 7; only its documentation and triggerVariant stay in 0.3.0."
+  },
+  {
+   "id": "actions-8",
+   "triaged": "open, one item",
+   "shouldBe": "split",
+   "evidence": "The hw-link half is closed by actions-7 (a[hwLink] replaces the wrapper); only the hw-toggle-group host box remains, which the wrapper-host display rule in styles/src/layout.css:133 closes."
+  },
+  {
+   "id": "fields-basic-8 (React part), actions-v1, portal-shell-1",
+   "triaged": "open, not verified",
+   "shouldBe": "open; verify before specifying",
+   "evidence": "react/src/expanded-interactive.tsx:22 confirms by reading that a controlled ToggleGroup does nothing on reset; the controlled React Select and the portal-header double press were not re-run by triage or by this review. The first test written for each (RESET-05, PORTAL-HEADER-01) must fail on the current tree before the fix is specified in detail."
+  }
+ ],
+ "duplicates": [
+  {
+   "canonical": "fields-basic-8",
+   "merged": [
+    "actions-2",
+    "choices-2",
+    "rich-inputs-5",
+    "dates-5",
+    "files-5"
+   ],
+   "note": "One Angular reset mechanism in HwValueControl; the other ids are its application to toggle group, choices and sliders, multi-select and tag input, date picker and calendar, file dropzone. The owning clusters apply afterReset()/syncDom() to their components."
+  },
+  {
+   "canonical": "actions-11",
+   "merged": [
+    "actions-v1"
+   ],
+   "note": "One rule for what a reset notifies; actions-v1 is its controlled React case."
+  },
+  {
+   "canonical": "fields-basic-2",
+   "merged": [
+    "choices-3"
+   ]
+  },
+  {
+   "canonical": "rich-inputs-20",
+   "merged": [
+    "fields-basic-7"
+   ]
+  },
+  {
+   "canonical": "choices-9",
+   "merged": [
+    "R16"
+   ]
+  },
+  {
+   "canonical": "rich-inputs-6",
+   "merged": [
+    "R10"
+   ]
+  },
+  {
+   "canonical": "rich-inputs-8",
+   "merged": [
+    "R19"
+   ]
+  },
+  {
+   "canonical": "actions-9",
+   "merged": [
+    "E02"
+   ],
+   "note": "E02 is its missing-label part."
+  },
+  {
+   "canonical": "dates-2",
+   "merged": [
+    "R02"
+   ]
+  },
+  {
+   "canonical": "dates-7",
+   "merged": [
+    "dates-4"
+   ],
+   "note": "dates-4 is the vanilla half of the one DatePicker validation message."
+  },
+  {
+   "canonical": "files-3",
+   "merged": [
+    "R07"
+   ]
+  },
+  {
+   "canonical": "files-4",
+   "merged": [
+    "R06"
+   ]
+  },
+  {
+   "canonical": "files-6",
+   "merged": [
+    "R08"
+   ]
+  },
+  {
+   "canonical": "nav-b-1",
+   "merged": [
+    "nav-b-15"
+   ],
+   "note": "One core type-ahead helper for Menu and TreeView."
+  },
+  {
+   "canonical": "nav-b-13",
+   "merged": [
+    "R21"
+   ]
+  },
+  {
+   "canonical": "nav-b-2",
+   "merged": [
+    "R24"
+   ]
+  },
+  {
+   "canonical": "nav-b-9",
+   "merged": [
+    "R26"
+   ]
+  },
+  {
+   "canonical": "service-patterns-2",
+   "merged": [
+    "R18"
+   ]
+  },
+  {
+   "canonical": "service-patterns-7",
+   "merged": [
+    "R17"
+   ]
+  },
+  {
+   "canonical": "service-patterns-12",
+   "merged": [
+    "R05",
+    "service-patterns-13"
+   ],
+   "note": "One Feedback contract; R05 is its Angular half and service-patterns-13 its markup."
+  },
+  {
+   "canonical": "R04",
+   "merged": [
+    "service-patterns-19"
+   ],
+   "note": "One CookieConsent contract; service-patterns-19 is its button order."
+  },
+  {
+   "canonical": "feedback-status-1",
+   "merged": [
+    "spike-G3"
+   ]
+  },
+  {
+   "canonical": "feedback-status-2",
+   "merged": [
+    "R00"
+   ]
+  },
+  {
+   "canonical": "feedback-status-14",
+   "merged": [
+    "content-display-1"
+   ],
+   "note": "One host rule for Angular presentational components; content-display-1 is hw-card. feedback-status-7, -9, -10 and service-patterns-21 are solved by the same rule (inputs for size and variant) but stay separate items."
+  },
+  {
+   "canonical": "content-display-21",
+   "merged": [
+    "R11",
+    "R12"
+   ],
+   "note": "R11 is its React half, R12 its Angular half."
+  },
+  {
+   "canonical": "R14",
+   "merged": [
+    "content-display-22"
+   ],
+   "note": "content-display-22 is the same markup and item shape."
+  },
+  {
+   "canonical": "E08",
+   "merged": [
+    "R22"
+   ],
+   "note": "R22 (input-cross.json) is the same record."
+  },
+  {
+   "canonical": "content-display-14",
+   "merged": [
+    "content-display-13 (Stat markup, after correction)"
+   ],
+   "note": "One Stat DOM and its rich value and trend."
+  },
+  {
+   "canonical": "nav-b-2",
+   "merged": [
+    "R15 (documentation and triggerVariant part)",
+    "nav-b-3"
+   ],
+   "note": "One Menu and Popover trigger rule."
+  }
+ ],
+ "clusters": [
+  {
+   "name": "forms-core",
+   "ids": [
+    "fields-basic-2",
+    "choices-3",
+    "fields-basic-3",
+    "fields-basic-5",
+    "fields-basic-6",
+    "fields-basic-8",
+    "choices-2",
+    "fields-basic-9",
+    "fields-basic-10",
+    "choices-4",
+    "choices-5",
+    "choices-6",
+    "choices-8",
+    "choices-9",
+    "R16",
+    "actions-2",
+    "actions-5",
+    "actions-8",
+    "actions-9",
+    "E02",
+    "actions-11",
+    "actions-v1",
+    "rich-inputs-20",
+    "fields-basic-7"
+   ],
+   "canonicalIds": [
+    "fields-basic-2",
+    "fields-basic-3",
+    "fields-basic-5",
+    "fields-basic-6",
+    "fields-basic-8",
+    "fields-basic-9",
+    "fields-basic-10",
+    "choices-4",
+    "choices-5",
+    "choices-6",
+    "choices-8",
+    "choices-9",
+    "actions-5",
+    "actions-8",
+    "actions-9",
+    "actions-11",
+    "rich-inputs-20"
+   ],
+   "distinctItems": 17,
+   "weight": 32,
+   "files": {
+    "react": [
+     "src/forms.tsx (TextField, Textarea, Select, Checkbox, Radio, Switch)",
+     "src/shared.tsx (Field, useFieldControl, useControllable)",
+     "src/expanded-shared.ts (useFormReset)",
+     "src/expanded-controls.tsx (Slider, RangeSlider, NumberField)",
+     "src/expanded-interactive.tsx:18-25 (ToggleGroup only)"
+    ],
+    "vue": [
+     "src/forms.ts (Field, decorate, text controls, choices)",
+     "src/shared.ts (useField, useValue, useFormReset)",
+     "src/controls.ts:139-316 (NumberField, Slider, RangeSlider)",
+     "src/expansion-interactive.ts:27-70 (ToggleGroup only)"
+    ],
+    "angular": [
+     "src/forms.ts:1-131 (HwValueControl, field templates, hw-field, text field, textarea, select, checkbox, switch, radio)",
+     "src/advanced-controls.ts:12-19,113-170 (HwExpandedValueControl, number field, slider, range slider, rating reset)",
+     "src/interactions.ts:11-24 (hw-toggle-group only)",
+     "src/host-attributes.ts (new, owned here)",
+     "src/input-value.ts",
+     "src/public-api.ts"
+    ],
+    "vanilla": [
+     "src/controls.ts:36-110 (range slider)",
+     "src/content.ts:35-60 (toggle group)"
+    ],
+    "core": [
+     "src/form-reset.ts (new: observeFormReset)",
+     "src/index.ts",
+     "src/field-value.ts, src/readonly-choice.ts (switch to the shared listener)"
+    ],
+    "styles": [
+     "src/layout.css:130-134 (wrapper host display list)",
+     "src/components.css:118-120 (hint, error)",
+     "src/nic-segmented.css",
+     "src/extended.css:231 (toggle group hint and error)",
+     "src/nic-select.css:46-53"
+    ]
+   },
+   "owns": "observeFormReset (core), host-attributes.ts (Angular), the field label / legend / hint / error templates, the reset, aria-invalid and required-marker cases",
+   "dependsOn": [],
+   "note": "Specified first or with the conventions frozen: the other four clusters only call what this one defines. choices-5 is limited to the Angular rename; fields-basic-10 to focused/blurred outputs, the `form` input and the forwarded ARIA inputs; fields-basic-5 to option projection."
+  },
+  {
+   "name": "rich-inputs-files",
+   "ids": [
+    "rich-inputs-1",
+    "rich-inputs-2",
+    "rich-inputs-5",
+    "rich-inputs-6",
+    "R10",
+    "R09",
+    "rich-inputs-8",
+    "R19",
+    "rich-inputs-12",
+    "rich-inputs-14",
+    "R27",
+    "E01",
+    "files-2",
+    "files-3",
+    "R07",
+    "files-4",
+    "R06",
+    "files-5",
+    "files-6",
+    "R08",
+    "files-8",
+    "files-9",
+    "files-10"
+   ],
+   "canonicalIds": [
+    "rich-inputs-1",
+    "rich-inputs-2",
+    "rich-inputs-6",
+    "R09",
+    "rich-inputs-8",
+    "rich-inputs-12",
+    "rich-inputs-14",
+    "R27",
+    "E01",
+    "files-2",
+    "files-3",
+    "files-4",
+    "files-6",
+    "files-8",
+    "files-9",
+    "files-10"
+   ],
+   "distinctItems": 16,
+   "weight": 29,
+   "files": {
+    "react": [
+     "src/interactive.tsx:170-290 (Combobox)",
+     "src/expanded-controls.tsx:42-108 (PinInput, TagInput, MultiSelect, FileDropzone, PasswordField)",
+     "src/search-field.tsx",
+     "src/forms.tsx (FileUpload)"
+    ],
+    "vue": [
+     "src/interactive.ts:124-230 (Combobox)",
+     "src/controls.ts:57-135,440-800 (PasswordField, PinInput, TagInput, MultiSelect, FileDropzone)",
+     "src/search-field.ts",
+     "src/forms.ts:140 (FileUpload)"
+    ],
+    "angular": [
+     "src/forms.ts:133-207 (hw-combobox, hw-file-upload)",
+     "src/advanced-controls.ts:24-111,185-216,362-380 (password, search, pin, tag, multi-select, file dropzone)"
+    ],
+    "vanilla": [
+     "src/combobox.ts",
+     "src/controls.ts:20-33,115-290 (password, pin, tag, multi-select, file dropzone)",
+     "src/search-field.ts"
+    ],
+    "core": [
+     "src/file-selection.ts (new: evaluateFileSelection)",
+     "src/index.ts"
+    ],
+    "styles": [
+     "src/extended.css:70,88-90,234",
+     "src/nic-select.css",
+     "src/nic-search.css",
+     "src/password-field.css"
+    ]
+   },
+   "owns": "core evaluateFileSelection; E01 on Combobox, MultiSelect, TagInput",
+   "dependsOn": [
+    "forms-core"
+   ],
+   "note": "Shares angular/src/advanced-controls.ts, vue/src/controls.ts and react/src/expanded-controls.tsx with forms-core and the dates cluster, on different components."
+  },
+  {
+   "name": "dates-overlays-disclosure-data",
+   "ids": [
+    "dates-2",
+    "R02",
+    "dates-4",
+    "dates-7",
+    "dates-5",
+    "dates-6",
+    "R01",
+    "R03",
+    "R25",
+    "overlays-1",
+    "overlays-10",
+    "overlays-14",
+    "disclosure-data-3",
+    "disclosure-data-5",
+    "disclosure-data-10",
+    "disclosure-data-13",
+    "disclosure-data-15",
+    "layout-3",
+    "nav-a-11",
+    "nav-a-14",
+    "nav-a-15"
+   ],
+   "canonicalIds": [
+    "dates-2",
+    "dates-7",
+    "dates-6",
+    "R01",
+    "R03",
+    "R25",
+    "overlays-1",
+    "overlays-10",
+    "overlays-14",
+    "disclosure-data-3",
+    "disclosure-data-5",
+    "disclosure-data-10",
+    "disclosure-data-13",
+    "disclosure-data-15",
+    "layout-3",
+    "nav-a-11",
+    "nav-a-14",
+    "nav-a-15"
+   ],
+   "distinctItems": 18,
+   "weight": 35,
+   "files": {
+    "react": [
+     "src/calendar.tsx",
+     "src/interactive.tsx (Dialog, Drawer)",
+     "src/display.tsx (Accordion, Table, Breadcrumb, Stepper)",
+     "src/expanded-interactive.tsx (Collapsible, Carousel, Tooltip)",
+     "src/expanded-content.tsx:46-60 (DataTable)",
+     "src/expanded-layout.tsx:27-28 (PageHeader)"
+    ],
+    "vue": [
+     "src/calendar.ts",
+     "src/interactive.ts:79-120 (Dialog)",
+     "src/display.ts (Accordion, Table, Breadcrumb, Stepper)",
+     "src/expansion-interactive.ts (Collapsible, Carousel)",
+     "src/content.ts:287-360 (DataTable)",
+     "src/layout.ts (PageHeader)"
+    ],
+    "angular": [
+     "src/advanced-controls.ts:218-360 (hw-calendar, hw-date-picker)",
+     "src/overlays.ts (hw-dialog, hw-tooltip, new [hwTooltip] directive)",
+     "src/interactions.ts:61-63,105-106,130-153 (drawer, collapsible, carousel)",
+     "src/presentation.ts:50-110 (accordion, table)",
+     "src/content.ts:48-58 (data table)",
+     "src/navigation.ts:120-126,217-220 (breadcrumb, stepper)",
+     "src/layouts.ts:88-89 (page header)"
+    ],
+    "vanilla": [
+     "src/calendar.ts",
+     "src/content.ts:180-250 (carousel, data table)",
+     "src/stepper.ts",
+     "src/accordion.ts",
+     "src/dialog.ts"
+    ],
+    "core": [
+     "src/calendar.ts (only if a shared violation helper is needed)"
+    ],
+    "styles": [
+     "src/components.css:211 (dialog footer)",
+     "src/date-picker.css",
+     "src/extended.css:104,122",
+     "src/nic-carousel.css",
+     "src/stepper.css",
+     "src/nic-tables.css",
+     "src/tooltip-placement.css"
+    ]
+   },
+   "owns": "Angular per-item templates (accordion, table, data table), the [hwTooltip] directive, the aria-disabled bound rule on Carousel and Pagination",
+   "dependsOn": [
+    "forms-core"
+   ],
+   "note": "disclosure-data-13 is limited to cell templates and rowKey."
+  },
+  {
+   "name": "navigation-menus-shell",
+   "ids": [
+    "nav-b-1",
+    "nav-b-15",
+    "nav-b-2",
+    "R24",
+    "nav-b-3",
+    "nav-b-7",
+    "nav-b-8",
+    "nav-b-9",
+    "R26",
+    "nav-b-12",
+    "nav-b-13",
+    "R21",
+    "nav-b-17",
+    "portal-shell-1",
+    "portal-shell-4",
+    "E03",
+    "E04",
+    "E05",
+    "E06",
+    "E08",
+    "R15",
+    "service-patterns-1",
+    "service-patterns-2",
+    "R18",
+    "service-patterns-7",
+    "R17"
+   ],
+   "canonicalIds": [
+    "nav-b-1",
+    "nav-b-2",
+    "nav-b-3",
+    "nav-b-7",
+    "nav-b-8",
+    "nav-b-9",
+    "nav-b-12",
+    "nav-b-13",
+    "nav-b-17",
+    "portal-shell-1",
+    "portal-shell-4",
+    "E03",
+    "E04",
+    "E05",
+    "E06",
+    "E08",
+    "R15",
+    "service-patterns-1",
+    "service-patterns-2",
+    "service-patterns-7"
+   ],
+   "distinctItems": 20,
+   "weight": 37,
+   "files": {
+    "react": [
+     "src/expanded-interactive.tsx:26-46,84,89-104 (Popover, Menu, Collapsible label, TreeView)",
+     "src/expanded-content.tsx:62-110 (PortalHeader, AppShell) and the ServiceCard / ServiceDetails block",
+     "src/portal.tsx",
+     "src/site-verification.tsx",
+     "src/content-navigation.tsx"
+    ],
+    "vue": [
+     "src/expansion-interactive.ts:137-330,517-700 (Popover, Menu, TreeView)",
+     "src/patterns.ts:19-170 (ServiceCard, ServiceDetails, PortalHeader)",
+     "src/portal.ts",
+     "src/content-navigation.ts"
+    ],
+    "angular": [
+     "src/interactions.ts:26-58,108-128 (popover, menu, tree view)",
+     "src/content.ts:62-147 (service card, service details, portal header)",
+     "src/portal.ts",
+     "src/side-navigation.ts",
+     "src/navigation.ts:24 (tabs root name)",
+     "src/content-navigation.ts",
+     "src/advanced-controls.ts:44 (search field root name, with rich-inputs-files)"
+    ],
+    "vanilla": [
+     "src/disclosures.ts:5-60 (popover, menu)",
+     "src/content.ts:135-170 (tree view)",
+     "src/portal.ts"
+    ],
+    "core": [
+     "src/typeahead.ts (new, owned here)",
+     "src/index.ts"
+    ],
+    "styles": [
+     "src/extended.css:185 (tree indentation)",
+     "src/portal.css",
+     "src/portal-branches.css",
+     "src/nic-cards.css",
+     "src/dga.css:192",
+     "src/layout.css:123"
+    ]
+   },
+   "owns": "core createTypeahead; Menu, Popover and TreeView item shapes and state names; landmark names in Angular navigation components",
+   "dependsOn": [
+    "forms-core"
+   ],
+   "note": "nav-b-17 is limited to the renames and the root name; R15 to documentation and triggerVariant."
+  },
+  {
+   "name": "feedback-content-patterns",
+   "ids": [
+    "feedback-status-1",
+    "spike-G3",
+    "feedback-status-2",
+    "R00",
+    "feedback-status-7",
+    "feedback-status-8",
+    "feedback-status-9",
+    "feedback-status-10",
+    "feedback-status-11",
+    "feedback-status-12",
+    "feedback-status-13",
+    "feedback-status-14",
+    "content-display-1",
+    "content-display-7",
+    "content-display-11",
+    "content-display-14",
+    "content-display-16",
+    "content-display-21",
+    "R11",
+    "R12",
+    "content-display-22",
+    "R14",
+    "content-display-23",
+    "R13",
+    "R20",
+    "actions-6",
+    "actions-7",
+    "service-patterns-12",
+    "R05",
+    "service-patterns-13",
+    "service-patterns-19",
+    "R04",
+    "service-patterns-21"
+   ],
+   "canonicalIds": [
+    "feedback-status-1",
+    "feedback-status-2",
+    "feedback-status-7",
+    "feedback-status-8",
+    "feedback-status-9",
+    "feedback-status-10",
+    "feedback-status-11",
+    "feedback-status-12",
+    "feedback-status-13",
+    "feedback-status-14",
+    "content-display-7",
+    "content-display-11",
+    "content-display-14",
+    "content-display-16",
+    "content-display-21",
+    "R14",
+    "content-display-23",
+    "R13",
+    "R20",
+    "actions-6",
+    "actions-7",
+    "service-patterns-12",
+    "R04",
+    "service-patterns-21"
+   ],
+   "distinctItems": 24,
+   "weight": 36,
+   "files": {
+    "react": [
+     "src/display.tsx:67-75,184-190 (Alert, Progress, Skeleton, Spinner, EmptyState)",
+     "src/expanded-content.tsx:23-33,165-183 (Chip, DescriptionList, Stat, Timeline, Meter, Feedback, CookieConsent, NotificationList)",
+     "src/expanded-interactive.tsx:48 (ToastMessage)"
+    ],
+    "vue": [
+     "src/display.ts:69-72,184-190",
+     "src/content.ts:84-285 (Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup)",
+     "src/patterns.ts:215-470 (Feedback, CookieConsent, NotificationList)",
+     "src/expansion-interactive.ts:410 (ToastMessage)"
+    ],
+    "angular": [
+     "src/presentation.ts:11-48,113-160 (button, card, badge, alert, progress, skeleton, spinner, avatar, divider, empty state)",
+     "src/content.ts:15-44,186-198 (link directive, chip, description list, stat, timeline, meter, avatar group, feedback, cookie consent, notification list)",
+     "src/host-attributes.ts (uses, does not own)"
+    ],
+    "vanilla": [
+     "src/content.ts:95-105 (feedback, consent)",
+     "README.md (authored alert dismiss button, loading pattern)"
+    ],
+    "core": [
+     "src/index.ts (FeedbackValue type, if decision 8 is accepted)"
+    ],
+    "styles": [
+     "src/components.css:242 (chip remove button)",
+     "src/feedback.css",
+     "src/nic-notifications.css",
+     "src/nic-badges.css",
+     "src/layout.css:133-134 (remove hosts that become roots)"
+    ]
+   },
+   "owns": "Angular host-root conversions; Notification, Timeline, Toast and Stat shapes; Feedback and CookieConsent contracts",
+   "dependsOn": [
+    "forms-core"
+   ],
+   "note": "Largest by count, mostly size S. Shares angular/src/content.ts, vue/src/patterns.ts and react/src/expanded-content.tsx with navigation-menus-shell on different components."
+  }
+ ],
+ "notIn030": [
+  {
+   "id": "layout-2",
+   "part": "whole item",
+   "reason": "Purely additive: a typed `as` prop for the React layout primitives and attribute selectors for hw-sidebar and hw-app-shell. No rendered defect exists unless an application passes an undeclared prop, and Angular already has attribute selectors on the other primitives (angular/src/layouts.ts:27-46).",
+   "lost": "React layout primitives stay div elements and the Angular sidebar and app shell stay custom elements until 0.4; an application that needs another element writes the hw- class on its own element."
+  },
+  {
+   "id": "portal-shell-8",
+   "part": "whole item",
+   "reason": "Additive pass-through of header and footer options through PortalLayout in Vue and Angular. Both adapters can already compose PortalHeader and PortalFooter directly or project a footer (ng-content select=[hwPortalFooter], angular/src/portal.ts).",
+   "lost": "Vue and Angular applications that want footer groups or legal links inside PortalLayout compose the footer themselves for one more release."
+  },
+  {
+   "id": "nav-a-3",
+   "part": "whole item",
+   "reason": "Additive and not small: a tab label is rendered twice (tab button and overflow menu item, angular/src/navigation.ts:26-27), so a label template needs two outlets and an accessible-name rule. Whether the guide needs it was not checked in this step.",
+   "lost": "Angular tabs keep text-only labels (no icon or badge inside a tab) until 0.4."
+  },
+  {
+   "id": "choices-5",
+   "part": "RadioGroup and CheckboxGroup for React, Vue and vanilla, and a single-option Angular radio",
+   "reason": "Needs new components in three adapters and a second Angular component. Only the breaking half belongs in 0.3.0: renaming Angular hw-radio to hw-radio-group so the name hw-radio is free.",
+   "lost": "React and Vue applications keep composing a fieldset by hand; Angular has no single radio. Without the rename now, fixing the name later breaks Angular applications a second time."
+  },
+  {
+   "id": "fields-basic-10",
+   "part": "arbitrary native attributes (enterkeyhint, autocapitalize, spellcheck, list and the rest) on Angular value controls",
+   "reason": "A general pass-through needs directives on native controls (input[hwInput] and so on), which is a new component family. 0.3.0 closes the accessibility and behaviour half: forwarded aria-label / aria-labelledby / aria-describedby / aria-invalid, the `form` input, and focused / blurred outputs.",
+   "lost": "Angular applications cannot set the remaining native attributes on Hawiyah text controls; they use a native input with the hw- classes where they need one."
+  },
+  {
+   "id": "fields-basic-5",
+   "part": "`multiple` on the Angular select",
+   "reason": "Changes the value type from string to string[] in a ControlValueAccessor; additive. Option and optgroup projection is done in 0.3.0.",
+   "lost": "An Angular multi-selection list uses hw-multi-select or a native select with the hw- class."
+  },
+  {
+   "id": "disclosure-data-13",
+   "part": "native composition (table[hwTable] with authored rows)",
+   "reason": "Additive. A native table with the documented hw- classes already works in Angular without a component. Cell templates and rowKey are done in 0.3.0, shared with disclosure-data-15.",
+   "lost": "hw-table still ignores projected rows; the README must say so."
+  },
+  {
+   "id": "nav-b-17",
+   "part": "form participation of TreeView (name, readOnly, hint, error) in React and Vue",
+   "reason": "Additive in two adapters. The breaking half (Angular nodes -> items, expandedIds -> expanded) and the root-name rule are done in 0.3.0.",
+   "lost": "A tree selection cannot be submitted with a native form from React or Vue; Angular keeps its value accessor."
+  },
+  {
+   "id": "R15",
+   "part": "a packaged trigger in React and trigger projection in Angular",
+   "reason": "A mechanism difference, not a defect; removing it means a second trigger API in two adapters. 0.3.0 documents the two mechanisms and adds triggerVariant.",
+   "lost": "An Angular Menu or Popover trigger stays a text button (no icon-only trigger) until 0.4."
+  }
+ ],
+ "ownerDecisions": [
+  {
+   "question": "Reset: may a native form reset change a Hawiyah control's value and notify the application, in Angular (without Angular Forms) and for controlled React components? This reverses docs/input-review.md:29-32 and docs/nic-segmented.md:27.",
+   "recommendation": "Yes: adopt the native-form-reset convention.",
+   "why": "Today a reset leaves Angular showing an empty control while the model and, for multi-select, the submitted hidden inputs keep the old value (triage actions-2, fields-basic-8, rich-inputs-5, dates-5, files-5). 'Model wins, reset does nothing' would be consistent but makes a reset button silently skip Hawiyah controls beside native ones."
+  },
+  {
+   "question": "Angular wrapper hosts: forward four attributes as inputs under their own names (aria-label, aria-labelledby, aria-describedby, aria-invalid), rename `describedBy` to `aria-describedby`, replace hw-link by a[hwLink], and state that [attr.aria-label] on a wrapper host is not supported?",
+   "recommendation": "Yes to all four.",
+   "why": "The approved decision covers label and labelledby; an aria-describedby left on a role-less wrapper is the same silent defect. Input aliases work for static and bound values and under hydration. hw-link cannot carry routerLink or ARIA to its anchor."
+  },
+  {
+   "question": "choices-5: rename Angular hw-radio to hw-radio-group in 0.3.0 and leave the new group components for React, Vue and vanilla to 0.4?",
+   "recommendation": "Rename now, add later.",
+   "why": "The rename is the only breaking half and 0.3.0 is the breaking release; the new components are additive."
+  },
+  {
+   "question": "TagInput: remove Angular's Add button and its required addLabel, or add an opt-in Add button to all four adapters?",
+   "recommendation": "Remove it.",
+   "why": "docs/tag-input-interaction.md:3 records that all four adapters commit with Enter or comma; three adapters have no button and the layouts then match."
+  },
+  {
+   "question": "TreeView expand and collapse (nav-b-13, R21): a named button inside the tree item in every adapter, or a decorative glyph everywhere?",
+   "recommendation": "Named button (button.hw-tree-toggle, tabindex -1, getExpandLabel / getCollapseLabel), so Angular gains two required texts.",
+   "why": "A touch screen-reader user cannot press ArrowRight; without a named control a branch cannot be opened when activating the item selects it. React and Vue already do this."
+  },
+  {
+   "question": "Popover and Collapsible text (nav-b-9, R26): `label` as the accessible name with no packaged heading, or `title` rendered as a visible heading?",
+   "recommendation": "`label` in all adapters; React renames title to label and stops rendering the Popover heading; a visible heading goes in the content with aria-labelledby.",
+   "why": "Vue and Angular already use label; small popovers often have no heading; the name rule (aria-label, aria-labelledby, label) then is the same as for every other root."
+  },
+  {
+   "question": "Menu and Popover trigger (R15, nav-b-3): keep the application's own element in React and a packaged button in Vue and Angular, with triggerVariant defaulting to 'secondary'?",
+   "recommendation": "Keep both mechanisms for 0.3.0, add triggerVariant with default 'secondary' to Vue and Angular, defer trigger projection.",
+   "why": "A disclosure trigger is rarely the primary action of a view; Angular's primary default is the outlier. Unifying the mechanism is additive and can wait."
+  },
+  {
+   "question": "Feedback and CookieConsent (service-patterns-12, R04, R05): adopt one contract based on React's? Feedback: value {helpful: boolean, comment: string}, a comment step and submit in all four, state `value`, action `feedback`. CookieConsent: state `open`, action `consent('accepted' | 'rejected')`, optional `preferences`, named by its h2.",
+   "recommendation": "Yes; Angular gains commentLabel and submitLabel as required texts, Vue renames accept / reject to consent, React replaces value / CookieChoice by open + onConsent.",
+   "why": "Three incompatible contracts cannot be documented as one component; this is the largest breaking change of the milestone and touches public events in three adapters, so it needs the owner's word."
+  }
+ ],
+ "counts": {
+  "open": 116,
+  "partly": 15,
+  "fixed": 26,
+  "obsolete": 3
+ },
+ "countsDetail": {
+  "triageRecords": 160,
+  "crossRecordsNotInTriage": [
+   "R22 (same as E08)"
+  ],
+  "afterCorrections": {
+   "open": 114,
+   "partly": 17,
+   "fixed": 25,
+   "obsolete": 4
+  },
+  "corrections": "E07 open -> obsolete; rich-inputs-2 open -> partly; content-display-13 fixed -> partly",
+  "openOrPartlyRecords": 131,
+  "distinctWorkItemsAfterMerging": 95,
+  "deferredWhole": [
+   "layout-2",
+   "portal-shell-8",
+   "nav-a-3"
+  ],
+  "closedAsNoDefect": [
+   "E07"
+  ]
+ }
+}

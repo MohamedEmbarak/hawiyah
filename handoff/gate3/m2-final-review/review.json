@@ -1,0 +1,289 @@
+{
+ "verdict": "changes required",
+ "scope": "git diff 6b3185b..working tree (323 files, +7652 -2174); packages rebuilt by this review before the checks",
+ "blocking": [
+  {
+   "id": "B1",
+   "title": "The diff leaves three browser tests failing (segmented ToggleGroup on narrow frames)",
+   "file": "packages/styles/src/nic-segmented.css:24,95; tests/browser/nic-segmented.spec.ts:44",
+   "evidence": "HAWIYAH_CHROMIUM=<chromium> HAWIYAH_TEST_PORT=4395 pnpm test:browser --trace off tests/browser/nic-search.spec.ts tests/browser/nic-segmented.spec.ts tests/browser/native-layout-projects.spec.ts tests/browser/calendar-projects.spec.ts -> 21 passed, 3 failed: nic-segmented.spec.ts:44 react|vue|angular \"native segmented selection, readonly and attached groups\", Expected 48, Received 60 (log: browser-suite.log). The same three tests passed before the milestone (scratchpad gate3/browser.log lines 304-308, run of 2026-11-10). Commit 0c44d34, the first commit of the diff, changed --hw-profile-segment-mobile-flex from \"1 1 auto\" to \"1 1 0\" and added min-inline-size:0, so three segments share a 316px frame equally and one label wraps; the spec file is unchanged in the diff. docs/nic-segmented.md was reworded in the same commit to allow wrapping, so the test and the style now state different intentions.",
+   "suggestedFix": "Owner decision, then one change: either keep a content basis on narrow screens (flex: 1 1 auto with min-inline-size:0, so labels that fit stay on one line and segments stay 48px) or, if equal-width segments with wrapped labels are intended, update geometry() in tests/browser/nic-segmented.spec.ts to the new rule. The browser suite must be green before the milestone is accepted."
+  }
+ ],
+ "major": [
+  {
+   "id": "M1",
+   "title": "requireText is not silent in production browser bundles (React, Vue, vanilla)",
+   "file": "packages/core/src/text.ts:13",
+   "evidence": "development() returns `typeof process === 'undefined' || process.env.NODE_ENV !== 'production'`. A bundler replaces only process.env.NODE_ENV; in a browser `process` does not exist, so the first operand is true. The repository's own production builds contain `try{return typeof process>`u`||!1}` (examples/react/dist/assets/index-*.js, examples/vue/dist/assets/index-*.js, apps/playground/dist/assets/index-*.js). Chromium, esbuild bundle with process.env.NODE_ENV=\"production\" (browser/results.json, scenario missing-production): react 17 \"Hawiyah:\" warnings, vue 13, vanilla 12, angular 0 (Angular is guarded by ngDevMode). packages/core/test/text.test.ts:34-36 covers only Node with a stubbed NODE_ENV, where process exists. CONTRACT.md:84-86, CHANGELOG.md:43-44 (\"production builds stay silent\") and packages/core/API.md:346-348 state the opposite.",
+   "suggestedFix": "Drop the typeof guard and rely on the existing try/catch: `try { return process.env.NODE_ENV !== 'production'; } catch { return true; }` (a bundler folds it to false; without a bundler the ReferenceError means development; __HAWIYAH_DEV__ still overrides). Add a test that evaluates the built core module with NODE_ENV replaced and no `process` global, and keep check:packages tree-shaking budgets."
+  },
+  {
+   "id": "M2",
+   "title": "Vanilla SearchField discards authored clear-button text and leaves the button unnamed (open point b)",
+   "file": "packages/vanilla/src/search-field.ts:31,34",
+   "evidence": "Line 31 reads only options.clearLabel, the button's aria-label and data-hw-clear-label; line 34 replaces the button children with an icon. Chromium (browser/results.json, vanillaPrecedence.s1): `<button data-hw-search-clear>Clear authored</button>` becomes `<button … class=\"hw-search-clear\" aria-controls=\"hw-search-1\"><span class=\"hw-search-clear-icon\" aria-hidden=\"true\"></span></button>`, aria-label null, text \"\", one warning \"SearchField requires \\\"clearLabel\\\"\". Rule 7(1) of m2-spec.json and packages/vanilla/README.md:44-45 say the text or aria-label already on the element is used as written. Before the milestone the control always had a name (built-in default). tests/search-field-parity.test.ts:85 and tests/search-suggestions-vanilla.test.ts mount exactly this markup and do not assert a name.",
+   "suggestedFix": "Before replacing the children, take the name from the authored text when there is no aria-label: clearLabel = options.clearLabel ?? aria-label ?? trimmed textContent ?? data-hw-clear-label (the order used by PasswordField in controls.ts:16), write it as aria-label, and restore the text on destroy (already done). Add an assertion to the two tests."
+  }
+ ],
+ "minor": [
+  {
+   "id": "m1",
+   "title": "Open point (a): CONTRACT.md states the vanilla precedence in the wrong order; the code is right",
+   "file": "CONTRACT.md:65-68; packages/vanilla/src/dom.ts:46-50",
+   "evidence": "m2-spec.json rule 7: \"(3) the controller option of the same name, which wins over the attribute\"; packages/vanilla/README.md:51 and CHANGELOG.md:35-38 say the same; dom.ts:49 is `value ?? root.getAttribute(dataName(name))`. Chromium (results.json vanillaPrecedence): option + data-hw-label -> aria-label \"OPTION\" and page button \"OPTION 1\"; authored aria-label + attribute + option -> \"MARKUP\". Only CONTRACT.md lists \"authored markup, data-hw-<name>, then the controller option\" as one order, which reads as attribute before option. Secondary: an explicit option overrides authored markup in SearchField (search-field.ts:31, measured \"OPTION\" over aria-label=\"MARKUP\"), PasswordField (controls.ts:16) and PortalHeader brandLabel (portal.ts:28), while root names (dom.ts nameRoot) and PortalHeader menu/navigation (portal.ts:22-23) keep the markup.",
+   "suggestedFix": "Change the contract, not the code: \"Vanilla uses authored markup as written; otherwise the controller option of the same name; otherwise data-hw-<name> on the controller root.\" State in the same sentence whether an explicit option may replace an authored name, and make the three controllers above follow it."
+  },
+  {
+   "id": "m2",
+   "title": "Open point (c): Angular warnings name the selector; documented for Angular only",
+   "file": "packages/angular/src/text.ts:19-22 (new HwTexts('hw-…') in every component); tests/file-dropzone-name-parity.test.ts:55",
+   "evidence": "Chromium: \"Hawiyah: hw-file-dropzone requires \\\"label\\\"\" against \"Hawiyah: FileDropzone requires \\\"label\\\"\" in React, Vue and vanilla. packages/angular/README.md:88 documents the selector form and packages/angular/test/text-contract.test.ts pins it; CONTRACT.md:83-86 describes one format and m2-reconcile.json D22/D23 quote requireText('DataTable', 'locale', …) for \"every adapter\". The parity test accepts both with /(FileDropzone|hw-file-dropzone)/.",
+   "suggestedFix": "Keep the selector (it is the name an Angular developer writes; the class is HwFileDropzoneComponent, not FileDropzone) and record it: one sentence in CONTRACT.md (\"the component is named as the adapter exposes it: the selector in Angular\"), a note in m2-reconcile.json, and an exact per-adapter expectation in the parity test."
+  },
+  {
+   "id": "m3",
+   "title": "Open point (d): Angular SearchField shows the search button by default, so searchLabel is needed by default there",
+   "file": "packages/angular/src/advanced-controls.ts:59",
+   "evidence": "`showSearchButton = true` (same at 6b3185b); React search-field.tsx:19 and Vue search-field.ts:12 default to false. Chromium: `<hw-search-field label clearLabel>` renders an unnamed button and warns \"hw-search-field requires \\\"searchLabel\\\" when showSearchButton is on\"; the input is typed optional, so there is no compile error. Documented in packages/angular/README.md:287 and docs/nic-search.md:40-41, absent from m2-reconcile.json parityGaps.",
+   "suggestedFix": "Not a regression of this milestone. Record it as a parity gap now; in milestone 3 change the Angular default to false (breaking, CHANGELOG entry) so that the same markup behaves the same in three adapters. If the default must stay, make searchLabel @Input({required: true}) in Angular so the type reports it."
+  },
+  {
+   "id": "m4",
+   "title": "Open point (e): one invented Arabic sentence, and three wordings for the same dropzone message in the guide",
+   "file": "apps/playground/src/component-expanded-guides.ar.ts:245; apps/playground/src/component-expanded-guides.ts:140; apps/playground/src/expanded-samples.ts:78; apps/playground/src/file-projects.ts:38",
+   "evidence": "The specification records no Arabic former string for getSelectedMessage (Angular `${count} files selected`; vanilla joined file names). The guide already had \"Selected files\" / \"عدد الملفات المختارة\" (file-projects.ts:24 at 6b3185b), reused by expanded-samples.ts:78 (\"Selected files {count}\" / \"عدد الملفات المختارة {count}\") and file-projects.ts:38. Only the usage snippet differs: \"{count} files selected\" (the former Angular default) and \"تم اختيار {count} من الملفات\" (new wording).",
+   "suggestedFix": "Use the existing guide wording in the Arabic snippet: data-hw-selected-message=\"عدد الملفات المختارة {count}\", and \"Selected files {count}\" in the English one, so the guide shows one wording."
+  },
+  {
+   "id": "m5",
+   "title": "Angular field templates render an empty <label> and placeholder=\"\" when the optional text is absent",
+   "file": "packages/angular/src/forms.ts:42; packages/angular/src/advanced-controls.ts:24,46,187",
+   "evidence": "fieldLabel is `<label class=\"hw-label\" [for]=\"controlId\">{{ label }}…</label>` without a condition, used by nine templates; only hw-file-dropzone (advanced-controls.ts:361) and hw-date-picker (:287) were guarded. Chromium, hw-search-field without label: empty label.hw-label and placeholder=\"\" on the input (results.json angular.missing emptyNamed, badAttr). Rule 12: a missing text renders nothing and the attribute is omitted.",
+   "suggestedFix": "Wrap fieldLabel in @if (label) and bind [attr.placeholder]=\"placeholder || null\" in the three templates, as forms.ts:58 already does."
+  },
+  {
+   "id": "m6",
+   "title": "PortalLayout secondaryLabel, breadcrumbLabel and footerLabel are in no adapter README",
+   "file": "packages/react/README.md; packages/vue/README.md; packages/angular/README.md; PORTAL.md",
+   "evidence": "All three are declared (packages/*/dist) and listed in CHANGELOG.md:206-208, but grep finds none of them in the READMEs, PORTAL.md, EXPANSION-API.md, docs/ or llms.txt, while CHANGELOG.md:25-26 says each adapter README lists its inputs. The other 143 names of the CHANGELOG table match the built declarations.",
+   "suggestedFix": "Add the three inputs with their conditions to the PortalLayout rows of the three READMEs and to PORTAL.md."
+  },
+  {
+   "id": "m7",
+   "title": "Vanilla writes brandLabel as aria-label on a brand element without a role when the brand is not a link",
+   "file": "packages/vanilla/src/portal.ts:28",
+   "evidence": "Chromium: `<span class=\"hw-portal-brand\" aria-label=\"T:brandLabel\"><img alt=\"\"></span>` (results.json vanilla.brand.h4); React renders role=\"img\" for the same case (packages/react/src/expanded-content.tsx:110). aria-label on an element with no role is not exposed reliably.",
+   "suggestedFix": "Set role=\"img\" together with the label when the brand is not a link and has no role, and remove both on destroy."
+  },
+  {
+   "id": "m8",
+   "title": "New spec skips itself when the styles build is missing",
+   "file": "tests/browser/published-stylesheet.spec.ts:12",
+   "evidence": "test.skip(!existsSync(`${dist}styles.css`), …) is the only skip added by the diff. No test file was deleted or renamed, no changed test file has fewer tests or fewer expect() calls than at 6b3185b, and the two flipped assertions follow recorded decisions (content-navigation-vanilla.test.ts:40 missing target not intercepted: m2-spec.json fragmentLinks; nic-select.spec.ts hint 12px: CHANGELOG.md:360-361).",
+   "suggestedFix": "Fail instead of skipping when CI is set, or build styles in the web-server step."
+  },
+  {
+   "id": "m9",
+   "title": "Uncommitted change in the working tree",
+   "file": "tests/browser/nic-search.spec.ts:36",
+   "evidence": "git status: \" M tests/browser/nic-search.spec.ts\" (the verification step replaced a hard-coded http://127.0.0.1:4173 by the configured baseURL). The spec passes with HAWIYAH_TEST_PORT=4395.",
+   "suggestedFix": "The maintainer commits it with the milestone."
+  },
+  {
+   "id": "m10",
+   "title": "Recorded parity gaps that no longer match the code",
+   "file": "scratchpad gate3/m2-reconcile.json parityGaps",
+   "evidence": "\"Calendar … Only vanilla createCalendar renders them\" but the Vue Calendar takes and renders unsupportedMessage (packages/vue/src/calendar.ts:57,278); \"FileDropzone maxSize (vanilla only)\" but the Vue FileDropzone has maxSize (packages/vue/src/controls.ts:704,723); \"Popover, Menu … Vue and Angular render it\" but the Vue Menu has no triggerLabel.",
+   "suggestedFix": "Correct the three entries when the differences below are recorded."
+  },
+  {
+   "id": "m11",
+   "title": "Four thrown errors in core lack the \"Hawiyah:\" prefix (not changed by this diff)",
+   "file": "packages/core/src/layout.ts:36,43,50,91",
+   "evidence": "new RangeError/TypeError(\"Layout …\") without the prefix that rule 15 asks for; the file is unchanged since 6b3185b.",
+   "suggestedFix": "Prefix them in a later clean-up."
+  }
+ ],
+ "parityDifferences": [
+  {
+   "component": "Menu",
+   "severity": "major",
+   "difference": "Vue has no triggerLabel: the trigger text is `slots.trigger?.() ?? props.label`, and the same `label` is the menu's aria-label. Angular takes triggerLabel (required) and label; React takes the trigger element.",
+   "file": "packages/vue/src/expansion-interactive.ts:231,298,305; packages/angular/src/interactions.ts:43",
+   "evidence": "built declarations: vue Menu {label!, items!, disabled?}; angular hw-menu {label!, triggerLabel!, panelId?}. m2-spec.json: triggerLabel \"when the adapter renders the trigger itself\"; rule 12 forbids reusing another input. CHANGELOG.md:168 says \"(Vue Popover, Angular)\"; not in parityGaps and not in m2-vue-changes.json.",
+   "suggestedFix": "Add triggerLabel to the Vue Menu (required unless the trigger slot is given) and stop using label for the trigger; or record the gap."
+  },
+  {
+   "component": "Calendar",
+   "severity": "minor",
+   "difference": "unsupportedMessage exists on the Vue Calendar only among the frameworks (sr-only status when calendar is islamic-umalqura); React and Angular Calendar have neither the input nor the status.",
+   "file": "packages/vue/src/calendar.ts:57,278",
+   "evidence": "declarations: R missing, V optional, A missing, vanilla option. Stated in CHANGELOG.md (row \"Calendar (vanilla, Vue)\"), contradicted by the recorded gap.",
+   "suggestedFix": "Record it, then align in milestone 3."
+  },
+  {
+   "component": "DatePicker",
+   "severity": "minor",
+   "difference": "getDayLabel is accepted by the Vue and vanilla DatePicker only; React and Angular expose it on Calendar but not on DatePicker.",
+   "file": "packages/react/src/calendar.tsx:73-75; packages/angular/src/advanced-controls.ts:287; packages/vanilla/src/calendar.ts:193",
+   "evidence": "declarations: R missing, V optional, A missing, N optional. Not recorded.",
+   "suggestedFix": "Pass getDayLabel through in React and Angular, or record the gap."
+  },
+  {
+   "component": "Feedback",
+   "severity": "minor",
+   "difference": "commentLabel and submitLabel are required props in React and optional in Vue, although the Vue comment field appears as soon as the reader chooses an answer (run-time data, rule 9: required always).",
+   "file": "packages/vue/src/patterns.ts:227-228,275-298",
+   "evidence": "declarations: R REQ, V optional. A missing string is found in Vue only after an interaction.",
+   "suggestedFix": "Make both `required: true` in Vue."
+  },
+  {
+   "component": "SearchField (field name)",
+   "severity": "minor",
+   "difference": "React types the field name as a union (label | aria-label | aria-labelledby) and warns \"SearchField requires \\\"label\\\"\"; Vue and Angular take an optional label and render an unnamed input without a warning.",
+   "file": "packages/react/src/search-field.tsx:17-20; packages/vue/src/search-field.ts; packages/angular/src/advanced-controls.ts:44",
+   "evidence": "Chromium missing scenario: the warning appears in React only (results.json).",
+   "suggestedFix": "Apply decision D06 to SearchField in Vue (run-time check) and decide the Angular rule for optional field labels."
+  },
+  {
+   "component": "ContentNavigation",
+   "severity": "minor",
+   "difference": "label is a plain required prop in React (an aria-label does not satisfy the type), optional in Vue, required in Angular; it is also the visible heading while showHeading is on.",
+   "file": "packages/react/src/content-navigation.tsx:11; packages/vue/src/content-navigation.ts:12",
+   "evidence": "declarations: R REQ string, V optional, A REQ.",
+   "suggestedFix": "Either the React RootName union or `required: true` in Vue; one rule for a label that is also visible."
+  },
+  {
+   "component": "PortalLayout, SiteVerification (React types)",
+   "severity": "minor",
+   "difference": "footerLabel and SiteVerification externalLabel are plain optional props in React; their sibling \"when\" texts (secondaryLabel, breadcrumbLabel, registrationLabel) are unions on the switching prop.",
+   "file": "packages/react/src/portal.tsx:21,32; packages/react/src/site-verification.tsx:18",
+   "evidence": "declarations: footerLabel optional, secondaryLabel/breadcrumbLabel conditional; run-time warning exists.",
+   "suggestedFix": "Add the union where the switch is a prop (footerProps.links cannot be typed simply: record it)."
+  },
+  {
+   "component": "TreeView, ToggleGroup",
+   "severity": "minor",
+   "difference": "label is required in React (and in Vue for ToggleGroup) and optional in Angular, where D06 says a root name stays a required input.",
+   "file": "packages/angular/dist/types/hawiyah-angular.d.ts (hw-tree-view, hw-toggle-group inherit label? from HwValueControl)",
+   "evidence": "declarations: hw-tree-view label?, hw-toggle-group label?; React TreeView label!, ToggleGroup label!.",
+   "suggestedFix": "Record, then decide with the Angular host-attribute question (owner question 10)."
+  },
+  {
+   "component": "Tabs",
+   "severity": "minor",
+   "difference": "A missing label warns in Angular (\"hw-tabs requires \\\"label\\\"\") and not in React or Vue, which render the tab list unnamed for JavaScript callers.",
+   "file": "packages/react/src/interactive.tsx:21-85; packages/vue/src/interactive.ts",
+   "evidence": "Chromium missing scenario, results.json.",
+   "suggestedFix": "Call the text helper for Tabs.label in React and Vue."
+  },
+  {
+   "component": "SearchField",
+   "severity": "minor",
+   "difference": "showSearchButton defaults to true in Angular and false in React and Vue (see m3).",
+   "file": "packages/angular/src/advanced-controls.ts:59",
+   "evidence": "see m3",
+   "suggestedFix": "see m3"
+  },
+  {
+   "component": "Collapsible, Popover",
+   "severity": "minor",
+   "difference": "The same text is `title` in React and `label` in Vue and Angular (present before the milestone; neither component is in the specification).",
+   "file": "packages/react/dist/expanded-interactive.d.ts; packages/vue/dist/expansion-interactive.d.ts",
+   "evidence": "declarations: R Collapsible title!, V/A label!; R Popover title!, V/A label!.",
+   "suggestedFix": "Record as a naming gap for milestone 3 (rule 6: one name per text)."
+  },
+  {
+   "component": "FileDropzone",
+   "severity": "minor",
+   "difference": "maxSize exists in vanilla and Vue, not in React or Angular (the recorded gap says vanilla only).",
+   "file": "packages/vue/src/controls.ts:704",
+   "evidence": "declarations.",
+   "suggestedFix": "Correct the record."
+  },
+  {
+   "component": "all Angular components",
+   "severity": "minor",
+   "difference": "Development warnings name the selector instead of the component name (see m2).",
+   "file": "packages/angular/src/text.ts:19",
+   "evidence": "see m2",
+   "suggestedFix": "see m2"
+  }
+ ],
+ "openPoints": {
+  "a": "Code is right, contract wording must change (m1): option wins over data-hw-<name>; authored markup wins for root names. Measured in Chromium.",
+  "b": "Defect, confirmed in Chromium (M2): authored text is dropped and the clear button has no name.",
+  "c": "Accept the selector in Angular warnings and document it in CONTRACT.md; tighten the one loosened test (m2).",
+  "d": "Pre-existing parity gap made visible by the milestone; record now, align the default (false) in milestone 3 (m3).",
+  "e": "One invented Arabic sentence in a usage snippet; replace it by the wording the guide already had (m4)."
+ },
+ "checks": {
+  "1 no built-in strings / no locale default": "pass. AST scan of 98 source files (9708 literals with letters), 108 Angular templates, stylesheets and the built bundles: no natural-language string reaches the DOM; the only non-ASCII literals are the Arabic alef used by core text normalisation (core/src/index.ts:25, search-suggestions.ts:20) and CSS content \"★\". None of the 168 former default strings of the specification is left in packages/*/src or packages/*/dist. Intl is called only in packages/core (index.ts:81,90; controls.ts:21; calendar.ts:46-116), each call after requireLocale. No 'ar-SA', no toLocale*, no localeCompare, no navigator.*, no read of lang. The letter \"i\" of the Calendar information control is a glyph inside a named or aria-hidden element (decision D07).",
+  "2 parity of text inputs": "Extracted from packages/*/dist declarations with the TypeScript checker (api.json; parity-compact.txt). All 460 recorded renames resolve to a declared input. 13 differences are not recorded parity gaps (parityDifferences).",
+  "3 behaviour in Chromium": "pass for Pagination, Tabs, SearchField, FileDropzone and PortalHeader in the four adapters: with texts missing, two instances of each produce one warning per component and input (react 17/17 unique, vue 13/13, angular 14/14, vanilla 12/12), no empty or \"undefined\" attribute and no invented text (exceptions m5); with texts supplied every text renders and nothing warns. Skip links and ContentNavigation links render href=\"#id\" with and without <base href=\"/elsewhere/\">; activation keeps the document, moves focus to the target and afterwards keeps the href on the current document, as the specification describes. Production bundle: M1.",
+  "4 addendum A and B": "A holds in the four adapters (artwork-only brand, brandLabel as aria-label, no added label beside text, one development warning for an unnamed brand, footer support section only with content; Angular keeps a hidden unlabeled section as decided in D15; m7). B holds: three server renders of a 12-component page are byte-identical with 28 ids, no duplicate and no unresolved reference, no id on a host element; after hydration in Chromium the 27 ids in the host are identical, 0 of 350 server nodes were replaced, no ngh marker is left.",
+  "5 tests not weakened": "pass (m8).",
+  "6 documentation": "CHANGELOG table: 146 names in 134 rows match the built declarations; old names appear only in migration notes. Formal register kept; no claim of DGA endorsement or certification in added text. Gaps: m1, m6, and the production claim of M1.",
+  "7 commands": "see commands",
+  "8 hygiene": "pass: no /tmp/, /home/, /root/ or /Users/ path, no credential pattern and no artefact file among the added lines and files; pnpm build left no tracked file modified."
+ },
+ "commands": [
+  {
+   "command": "pnpm build",
+   "result": "pass",
+   "detail": "exit 0 (build.log)"
+  },
+  {
+   "command": "pnpm test",
+   "result": "pass",
+   "detail": "contrast test passed; vitest 131 files, 958 tests passed; 0 \"Hawiyah:\" lines in the output (test.log)"
+  },
+  {
+   "command": "pnpm typecheck:playground",
+   "result": "pass",
+   "detail": "exit 0"
+  },
+  {
+   "command": "pnpm check:packages",
+   "result": "pass",
+   "detail": "7 tarballs; clean consumer ESM, SSR, Angular APF, CSS and declarations passed; tree-shaking budgets passed; nothing published"
+  },
+  {
+   "command": "HAWIYAH_CHROMIUM=<chromium> HAWIYAH_TEST_PORT=4395 pnpm test:browser --trace off tests/browser/nic-search.spec.ts tests/browser/nic-segmented.spec.ts tests/browser/native-layout-projects.spec.ts tests/browser/calendar-projects.spec.ts",
+   "result": "fail",
+   "detail": "24 tests: 21 passed, 3 failed (nic-segmented.spec.ts:44 react, vue, angular: Expected 48, Received 60)"
+  },
+  {
+   "command": "HAWIYAH_CHROMIUM=<chromium> pnpm test:portals --trace off",
+   "result": "pass",
+   "detail": "81 passed"
+  },
+  {
+   "command": "node tools/scan-strings.cjs; node tools/analyse-strings.cjs; node tools/ng-templates.cjs; node tools/former.cjs (src and dist)",
+   "result": "pass",
+   "detail": "check 1"
+  },
+  {
+   "command": "node tools/extract-dts.cjs; node tools/ng-inherit.cjs; node tools/parity.cjs",
+   "result": "differences listed",
+   "detail": "check 2"
+  },
+  {
+   "command": "node browser/build.mjs; node browser/server.mjs; node browser/run.cjs (Chromium, 4 adapters x 6 scenarios)",
+   "result": "pass with findings M1, M2, m5, m7",
+   "detail": "browser/results.json"
+  },
+  {
+   "command": "node browser/out-ssr/ng-ssr.mjs; node browser/hydrate.cjs",
+   "result": "pass",
+   "detail": "addendum B"
+  },
+  {
+   "command": "git diff 6b3185b | grep -nE \"^\\+.*(/tmp/|/home/|/root/|/Users/)\"",
+   "result": "pass",
+   "detail": "no match"
+  }
+ ],
+ "evidenceDirectory": "<scratch>/gate3/m2-final-review"
+}

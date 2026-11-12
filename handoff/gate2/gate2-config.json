@@ -1,0 +1,13 @@
+{
+ "lede": "Three landing directions and four editor directions, each a working Angular prototype on the published 0.2.1 packages, captured in Arabic and English, light and dark, at desktop and phone widths. All 64 captures show no horizontal overflow, no axe violations, no console errors and nothing animating under reduced motion. Select any capture to see it at full size.",
+ "prototypes": [
+  {"id": "landing-a", "short": "Landing A", "kind": "Landing direction A", "title": "Install first", "workspace": "landing-a", "shots": "final/landing-a", "file": "home", "route": "/", "showGaps": true},
+  {"id": "landing-b", "short": "Landing B", "kind": "Landing direction B", "title": "From tokens to a page", "workspace": "landing-b", "shots": "final/landing-b", "file": "home", "route": "/", "showGaps": true},
+  {"id": "landing-c", "short": "Landing C", "kind": "Landing direction C", "title": "Two languages, one system", "workspace": "landing-c", "shots": "final/landing-c", "file": "home", "route": "/", "showGaps": true},
+  {"id": "editor-a", "short": "Editor A", "kind": "Editor direction A", "title": "One toolbar", "workspace": "editor", "shots": "final/editor", "file": "editor-a", "route": "/editor/a", "sharedReview": true},
+  {"id": "editor-b", "short": "Editor B", "kind": "Editor direction B", "title": "Preview first", "workspace": "editor", "shots": "final/editor", "file": "editor-b", "route": "/editor/b", "sharedReview": true},
+  {"id": "editor-c", "short": "Editor C", "kind": "Editor direction C", "title": "Workspace", "workspace": "editor", "shots": "final/editor", "file": "editor-c", "route": "/editor/c", "sharedReview": true},
+  {"id": "editor-d", "short": "Editor D", "kind": "Editor direction D, page block", "title": "Result and source on the page", "workspace": "editor", "shots": "final/editor", "file": "editor-d", "route": "/editor/d", "sharedReview": true},
+  {"id": "editor-d-workspace", "short": "Editor D, full editor", "kind": "Editor direction D, full editor", "title": "Full-page editor opened from the page", "workspace": "editor", "shots": "final/editor", "file": "editor-d-workspace", "route": "/editor/d/workspace", "sharedReview": true, "showGaps": true}
+ ]
+}

@@ -1,0 +1,233 @@
+[
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-5 / files-5 (core observeFormReset)",
+    "was": "control: HTMLElement",
+    "now": "control: Element",
+    "why": "forms-core defines the helper and types the control as Element; one signature for the one export."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-5 / files-5 (core observeFormReset)",
+    "was": "resolves control.form, runs onReset one microtask after a reset that was not default-prevented.",
+    "now": "behaviour as specified by forms-core (fields-basic-8): the owning form is resolved at event time, and onReset runs in the microtask when the dispatch is over, otherwise before the next paint; never after a default-prevented reset or after destroy().",
+    "why": "The short description contradicted the measured timing rule recorded by forms-core (conventionConflicts 0 there)."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-5 / files-5 (React)",
+    "was": "`useFormReset(input, reset, form)`",
+    "now": "`useFormReset(input, reset)`",
+    "why": "forms-core removes the third argument `form` of the React hook; core resolves the form from the control."
+  },
+  {
+    "spec": "spec-forms-core.json",
+    "item": "sharedApi.react",
+    "was": "(no name for the React flag that adds role=alert to a component-produced error)",
+    "now": "Field / FieldLayout / ControlField prop `errorRole?: 'alert'`",
+    "why": "dates-7 and files-4 both assume this name and forms-core, which owns the Field, named none; one name for the one flag."
+  },
+  {
+    "spec": "spec-forms-core.json",
+    "item": "fields-basic-3 (React Field)",
+    "was": "(no such sentence at items.5.perAdapter.react)",
+    "now": "FieldLayout also takes `errorRole?: 'alert'` and writes it as `role` on p.hw-error (used by DatePicker and FileDropzone for component-produced messages; absent for the application's `error`).",
+    "why": "Same amendment as sharedApi.react: the two other specifications call this prop."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "feedback-status-7, feedback-status-8, feedback-status-14, content-display-16 (Angular kind B name)",
+    "was": "ariaLabel ?? (ariaLabelledby ? null : texts.need('label', label))",
+    "now": "ariaLabel || (ariaLabelledby ? label || null : texts.need('label', label)) (4 places)",
+    "why": "Three expressions for one rule. The repository rule is rootLabel of React and Vue (react/src/shared.tsx:15-19): an empty aria-label does not count, and `label` stays the aria-label next to an aria-labelledby. HwNamedRoot of the navigation specification already matches it."
+  },
+  {
+    "spec": "spec-dates-overlays-disclosure-data.json",
+    "item": "E08 (hw-carousel, hw-calendar)",
+    "was": "ariaLabel || (ariaLabelledby ? null : texts.need('label', label))",
+    "now": "ariaLabel || (ariaLabelledby ? label || null : texts.need('label', label)) (1 places)",
+    "why": "Same rule as rootLabel in React and Vue and HwNamedRoot in the navigation specification."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "feedback-status-14 (hw-button-group)",
+    "was": "ngDoCheck: `const named = applicationAttribute(host, 'aria-label', this.written) !== null || !!host.getAttribute('aria-labelledby')?.trim(); this.written = named ? null : this.texts.need('label', this.label); this.role.set('group'); this.name.set(this.written);` where role and name come from injectHostAttribute and `export function applicationAttribute(host: Element, name: string, written: string | null): string | null { const current = host.getAttribute(name); return current !== null && current !== written && current.trim() ? current : null; }` is a new internal helper in presentation.ts (not exported from public-api.ts): hostHasName alone would also see the label the component wrote in the previous pass.",
+    "now": "ngDoCheck: `this.role.set('group'); this.name.set(this.label || null); if (!this.label && !hostHasName(host)) this.texts.need('label', this.label);` where role and name come from injectHostAttribute: the mechanism of hw-side-navigation (navigation specification, E08) and of HwSectionComponent. hostHasName is asked only while the component has written no name, so it never sees the component's own value.",
+    "why": "Convention angular-host-attributes and its case ATTR-02 (label is written while given, the application's value is put back otherwise); the navigation specification follows it for hw-side-navigation and the existing hw-section behaves so. A second helper for the same job is dropped."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "feedback-status-14, case ATTR-02",
+    "was": "label writes aria-label; an application aria-label wins; removing label puts the application's value back.",
+    "now": "label writes aria-label, also over an application aria-label; removing label puts the application's value back.",
+    "why": "ATTR-02 means one assertion: the wording of conventions.json and of the navigation specification."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "R04 (hw-cookie-consent)",
+    "was": "applicationAttribute(host, 'aria-labelledby', this.written) !== null",
+    "now": "(!!host.getAttribute('aria-labelledby')?.trim() && host.getAttribute('aria-labelledby') !== this.written)",
+    "why": "The helper applicationAttribute no longer exists; the one comparison it made here is written in place."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "R04 (hw-cookie-consent)",
+    "was": "(role and labelledby from injectHostAttribute; applicationAttribute is the helper defined in feedback-status-14)",
+    "now": "(role and labelledby from injectHostAttribute)",
+    "why": "Follows the removal of the helper."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "conventionConflicts[3]",
+    "was": "A local helper applicationAttribute(host, name, written) in angular/src/presentation.ts compares the attribute with the value the component wrote last; hostHasName is used unchanged where the component writes no name on the host (hw-spinner).",
+    "now": "hw-button-group and hw-avatar-group write `label` through injectHostAttribute while it is given and ask hostHasName only when it is not, as hw-side-navigation does, so hostHasName never sees a value of the component. hw-cookie-consent, whose own value is aria-labelledby, compares the attribute with the id it wrote last in place.",
+    "why": "Reconciled with the navigation specification: one mechanism for a kind A host that writes its name."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-1 (Combobox listbox name)",
+    "was": "(2) the listbox is named by aria-labelledby = label id in React and Vue and by aria-label = label in Angular (the Angular field label carries no id); the computed name is the same;",
+    "now": "(2) the listbox is named by aria-labelledby = label id in the three frameworks (the Angular fieldLabel of forms-core carries the id {decorationId}-label);",
+    "why": "forms-core's fieldLabel has `[id]=\"decorationId + '-label'\"`, the condition this specification stated in its question 3; the stated difference between adapters disappears."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-1 (Combobox listbox name)",
+    "was": "listbox name [attr.aria-label]=\"ariaLabel || (ariaLabelledby ? null : label || null)\" [attr.aria-labelledby]=\"ariaLabelledby\"",
+    "now": "listbox name [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby ?? (ariaLabel || !label ? null : decorationId + '-label')\"",
+    "why": "Same amendment: named by the label element as in React and Vue."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "R27 (SearchField suggestion list name)",
+    "was": "the suggestion list is named `[attr.aria-label]=\"ariaLabel || (ariaLabelledby ? null : label || null)\" [attr.aria-labelledby]=\"ariaLabelledby\"`",
+    "now": "the suggestion list is named `[attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby ?? (ariaLabel || !label ? null : decorationId + '-label')\"`",
+    "why": "Same amendment as Combobox."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "questions[3]",
+    "was": "forms-core: the Angular fieldLabel carries no id, so",
+    "now": "Answered by the reconciliation (fieldLabel carries `[id]=\"decorationId + '-label'\"`; both lists use aria-labelledby). Original question: forms-core: the Angular fieldLabel carries no id, so",
+    "why": "Closed by the forms-core template."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-8 / R19 (TagInput focus)",
+    "was": "(no such sentence at items.5.endState.behaviour)",
+    "now": "The hand-over is core prepareRemovalFocus (defined by the feedback specification, feedback-status-12) with item '.hw-chip', control 'button' and fallback = the text input, so it happens when the activated button held focus; a pointer activation that left focus elsewhere moves nothing.",
+    "why": "The feedback specification defines one core helper for convention focus-when-a-control-becomes-unavailable (b) and Chip and NotificationList use it; four inline index computations here were a second implementation of the same rule."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-8 / R19 (TagInput focus, react)",
+    "was": "(no such sentence at items.5.perAdapter.react)",
+    "now": "Reconciled: instead of the index arithmetic above, the remove handler calls `const restore = prepareRemovalFocus(box, button, { item: '.hw-chip', control: 'button', fallback: input })` from @hawiyah/core before the value changes (box = div.hw-tag-input) and calls `restore()` after the render that removed the chip (a layout effect); the Backspace path does not call it.",
+    "why": "Same amendment as endState: one core helper."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-8 / R19 (TagInput focus, vue)",
+    "was": "(no such sentence at items.5.perAdapter.vue)",
+    "now": "Reconciled: instead of the index arithmetic above, the remove handler calls `const restore = prepareRemovalFocus(box, button, { item: '.hw-chip', control: 'button', fallback: input })` from @hawiyah/core before the value changes (box = div.hw-tag-input) and calls `restore()` after the render that removed the chip (nextTick); the Backspace path does not call it.",
+    "why": "Same amendment as endState: one core helper."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-8 / R19 (TagInput focus, angular)",
+    "was": "(no such sentence at items.5.perAdapter.angular)",
+    "now": "Reconciled: instead of the index arithmetic above, the remove handler calls `const restore = prepareRemovalFocus(box, button, { item: '.hw-chip', control: 'button', fallback: input })` from @hawiyah/core before the value changes (box = div.hw-tag-input) and calls `restore()` after the render that removed the chip (after changeDetector.detectChanges()); the Backspace path does not call it.",
+    "why": "Same amendment as endState: one core helper."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-8 / R19 (TagInput focus, vanilla)",
+    "was": "(no such sentence at items.5.perAdapter.vanilla)",
+    "now": "Reconciled: instead of the index arithmetic above, the remove handler calls `const restore = prepareRemovalFocus(box, button, { item: '.hw-chip', control: 'button', fallback: input })` from @hawiyah/core before the value changes (box = div.hw-tag-input) and calls `restore()` after the render that removed the chip (after render()); the Backspace path does not call it.",
+    "why": "Same amendment as endState: one core helper."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "rich-inputs-8, case FOCUS-04",
+    "was": "removing the focused chip of three moves focus to the remove button now at that index, removing the last chip to the previous one, removing the only chip to the text input;",
+    "now": "removing the focused chip of three moves focus to the next chip's remove button, removing the last chip to the previous one, removing the only chip to the text input;",
+    "why": "FOCUS-04 is the same assertion as for Chip and NotificationList in the feedback specification."
+  },
+  {
+    "spec": "spec-rich-inputs-files.json",
+    "item": "files-6 (layout.css host list)",
+    "was": "Line 133: the zero-specificity list `:where(hw-container, …) { display: block; }` gains hw-combobox",
+    "now": "The wrapper-host list that forms-core adds after line 134 (`:where(hw-field, …):where(:not([hidden])) { display: block; }`), not the layout-primitive list at line 133, gains hw-combobox",
+    "why": "forms-core, dates, navigation and feedback all append to the new list that excludes [hidden]; this specification named the older list, which does not exclude it."
+  },
+  {
+    "spec": "spec-forms-core.json",
+    "item": "actions-8, browser case of the host boxes",
+    "was": "ATTR-04",
+    "now": "ATTR-06",
+    "why": "ATTR-04 is 'the host id stays on the host' in conventions.json and in forms-core's own fields-basic-2 item; the dates and navigation specifications use ATTR-06 for the browser check of host boxes."
+  },
+  {
+    "spec": "spec-dates-overlays-disclosure-data.json",
+    "item": "overlays-1 (nic-notification-dialog.css)",
+    "was": "Delete line 93 (`& > .hw-dialog-footer:empty { display: none; }`), now covered. navigation-drawer.css:37 stays (a different case).",
+    "now": "Line 93 (`& > .hw-dialog-footer:empty { display: none; }`) stays: the notification variant sets `display: flex` on its footer with a selector of higher specificity than the new general rule, so without line 93 its empty footer would be shown again. navigation-drawer.css:37 stays (a different case).",
+    "why": "Found while building: `:is(dialog.hw-dialog[data-variant='notification'], ...) > .hw-dialog-footer { display: flex }` out-ranks `.hw-dialog-footer:empty`."
+  },
+  {
+    "spec": "spec-dates-overlays-disclosure-data.json",
+    "item": "disclosure-data-10 (nic-pagination.css)",
+    "was": "after line 34 add `.hw-pagination .hw-pagination-arrow[aria-disabled='true']:focus-visible { outline: 2px solid var(--hw-color-focus-contrast); outline-offset: 2px; }` (line 34 excludes aria-disabled from the focus style).",
+    "now": "after line 34 add `.hw-pagination :is(.hw-pagination-arrow, .hw-pagination-gap-trigger)[aria-disabled='true']:focus-visible { outline: 2px solid var(--hw-color-focus-contrast); outline-offset: 2px; opacity: 1; }` (line 34 excludes aria-disabled from the focus style, and line 32 fades an unavailable control to 50%, which would fade the ring below 3:1), and in the forced-colours block the same selector with `outline-color: Highlight`.",
+    "why": "Measured while building: the ring colour at 50% opacity is about 2:1 on the surface in the hawiyah light theme. At full opacity it is 4.6:1 or more on every surface in the four theme and mode pairs (packages/styles/test/unavailable-and-hosts.test.ts)."
+  },
+  {
+    "spec": "spec-dates-overlays-disclosure-data.json",
+    "item": "disclosure-data-10 (nic-carousel.css, nic-buttons.css)",
+    "was": "line 77 becomes `.hw-carousel-arrow:is(:disabled, [aria-disabled='true'])::before { background: GrayText; }`.",
+    "now": "line 77 becomes `.hw-carousel-arrow:is(:disabled, [aria-disabled='true'])::before { background: GrayText; }`. Added: `.hw-button.hw-carousel-arrow[aria-disabled='true']:focus-visible { opacity: 1; background: var(--hw-color-disabled); color: var(--hw-color-on-disabled); }`, and in nic-buttons.css the general rule `.hw-button[aria-disabled='true']:focus-visible { outline: 2px solid var(--hw-button-focus-color); outline-offset: 2px; }` with `outline: 2px solid Highlight` in forced colours, because `.hw-button:focus-visible:not(:disabled, [aria-disabled='true'])` gives an aria-disabled button no focus indicator and the arrow's 30% opacity would fade one.",
+    "why": "The specification gave a focus style to the pagination arrow only; a carousel arrow at a bound stays focusable (convention focus-when-a-control-becomes-unavailable a) and needs a visible focus indicator at 3:1."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "feedback-status-11 (components.css)",
+    "was": "Add `.hw-empty > .hw-empty-icon:empty { display: none; }`.",
+    "now": "Add `.hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child):empty { display: none; }`: the tile rule at line 280 sets `display: grid` through the same :is() list, whose specificity (0,3,1) is above `.hw-empty > .hw-empty-icon:empty` (0,3,0), so the shorter selector would not hide the region.",
+    "why": "Found while building: specificity of the existing tile rule."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "feedback-status-12, case REMOVAL-FOCUS-01",
+    "was": "tests/removal-focus-core.test.ts (new)",
+    "now": "packages/core/test/removal-focus.test.ts (new; cases REMOVAL-FOCUS-01 to -05)",
+    "why": "Unit tests of a core helper live in packages/core/test like those of the other four specifications; written with the helper."
+  },
+  {
+    "spec": "spec-feedback-content-patterns.json",
+    "item": "feedback-status-12, case REMOVAL-FOCUS-01",
+    "was": "core: no-op when focus was elsewhere",
+    "now": "core (unit test, no adapter): no-op when focus was elsewhere",
+    "why": "The case is a core unit test; its `adapters` value 'vanilla' is read as 'core'."
+  },
+  {
+    "spec": "spec-forms-core.json",
+    "item": "fields-basic-8 (core observeFormReset)",
+    "was": "Adds one capture listener for `reset` on the control's shadow root when it is inside one, else on control.ownerDocument; returns a no-op observer when the document has no addEventListener.",
+    "now": "Adds one capture listener for `reset` on the control's root (control.getRootNode(), else the owner document): the document, the shadow root when the control is inside one, or, for a tree that is not connected yet, that tree's root together with the owner document (one event is handled once). Returns a no-op observer when the root cannot listen.",
+    "why": "Found while building: a control observed before its form is connected (packages/core/test/field-value.test.ts does so) never hears a listener on the document, because the reset event of a detached form does not reach it."
+  },
+  {
+    "spec": "spec-forms-core.json",
+    "item": "actions-8 (layout.css)",
+    "was": "`:where(hw-toggle-group):where(:not([hidden])) { display: contents; }`",
+    "now": "`:where(hw-toggle-group, hw-content-navigation):where(:not([hidden])) { display: contents; }` (one rule for the two hosts that generate no box; the block list is one rule for the hosts of the five specifications)",
+    "why": "forms-core and the navigation specification each wrote a `display: contents` rule and four specifications append to the block list; the stylesheet holds one rule for each display."
+  },
+  {
+    "spec": "spec-navigation-menus-shell.json",
+    "item": "E08 (layout.css)",
+    "was": "and `:where(hw-content-navigation):where(:not([hidden])) { display: contents; }`",
+    "now": "and hw-content-navigation joins hw-toggle-group in the one rule `:where(hw-toggle-group, hw-content-navigation):where(:not([hidden])) { display: contents; }`",
+    "why": "Same amendment as forms-core actions-8: one rule per display value."
+  }
+]

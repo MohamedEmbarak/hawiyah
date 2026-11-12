@@ -1,0 +1,2229 @@
+{
+ "rules": [
+  "No built-in strings. No file under packages/*/src may contain a natural-language string that can reach the DOM: text nodes, aria-label, aria-roledescription, aria-valuetext, aria-description, title, placeholder, alt, live-region text, setCustomValidity messages, option labels, link text or text templates. Every such string is supplied by the application.",
+  "No language registry and no translations. No adapter or core function reads lang, the document language or navigator.language, and none selects a string, a default or a behaviour from a locale. The vanilla helpers localeOf() and translated() are removed, and so are the core registries getCalendarLabels, fileUploadLabels and getSiteVerificationLabels (see the transition rule below).",
+  "Direction is read from dir (core getDirection: computed direction, then the closest [dir]) and never from lang or a locale. A component renders a dir attribute only when the application supplies one; no component defaults to rtl or ltr.",
+  "Locale is only a formatting argument: a BCP 47 tag handed to Intl through core formatNumber, formatDate, formatCalendarDate, getCalendarMonth and sortRows. Existing `locale` inputs keep their name. Where the component prints words that Intl generates (Calendar and DatePicker: month names, weekday names, era, formatted dates) `locale` is required in every adapter and core has no default for it. Where it only affects digit grouping or collation (Pagination, RangeSlider, DataTable) it stays optional with today's default. In vanilla the locale comes from options.locale or data-hw-locale on the root, never from an ancestor lang attribute. Formatting adds no words: the Hijri era in month headings now comes from Intl's own era field.",
+  "Children before props. The primary visible content of a component (button and link text, alert and dialog bodies, panel and card content, option and item labels in data arrays) is passed as children (React), the default or a named slot (Vue), projected content (Angular) or authored markup (vanilla), and is never defaulted. Text that the component places itself on elements it creates (accessible names, labels of internal controls, headings it renders, live-region and validation messages, templated text) is a named input.",
+  "One name per text. A named input has the same name and shape as a React prop, a Vue prop, an Angular @Input and a vanilla controller option. String inputs are named <thing>Label (names and visible labels), <thing>Message (live-region, status and validation text) or keep an established name (label, title, placeholder). Function inputs are named get<Thing>Label / get<Thing>Message and keep one signature in every adapter; they return the complete string and the adapter adds nothing to it.",
+  "Vanilla sources, in order: (1) authored markup: the text or aria-label already on the element the controller would otherwise name is used as written; (2) an attribute on the controller root, data-hw-<kebab-name> for string inputs (overflowLabel -> data-hw-overflow-label) and, for function inputs, a template attribute named after the input without \"get\" whose {placeholders} are filled with core formatTextTemplate (getPageLabel -> data-hw-page-label=\"… {page}\"); (3) the controller option of the same name, which wins over the attribute. enhance() therefore works from markup alone.",
+  "Root names. `label` on a component means the accessible name of its root. An aria-label or aria-labelledby that the application passes to the root satisfies the requirement in adapters that forward attributes; a component never invents a name when both are absent.",
+  "Required always versus required when. \"always\" means the text is needed in every use. \"when <condition>\" is used only for a static switch (a prop, slot, handler or attribute that turns the feature on). Text whose need depends on runtime data (an empty list, overflow, a gap, a failed validation, an unread item) is required always, so a missing string is found at build time rather than in production. \"when wanted\" marks optional text with no default: when omitted, nothing is rendered for it and no warning is given.",
+  "Enforcement in types. React: \"always\" texts are required props; \"when\" texts are required through a union on the switching prop where the switch is a prop, otherwise optional. Angular: \"always\" texts are @Input({ required: true }); \"when\" texts are optional inputs. Vue: \"always\" texts are props with required: true; \"when\" texts are optional props with no default. No prop, input or option may carry a natural-language default, including function-valued ones.",
+  "Enforcement at run time. Every adapter calls core requireText(component, name, value, when?) for each \"always\" text and for each \"when\" text whose condition holds, at the point where the text would be rendered. Vue and vanilla always call it; React and Angular call it too, for JavaScript callers and for conditional texts the types cannot express. Angular calls it only when ngDevMode is not false. requireText warns once per component and input in development and does nothing in production builds.",
+  "Missing text renders nothing. When required text is missing or empty the component renders nothing in its place: no text node, and the attribute is omitted rather than rendered empty. It does not invent a name, reuse another input as a fallback, read the document, or hide the control; structure and behaviour stay the same, and the development warning is the only signal.",
+  "Validation never depends on text. A constraint that sets a custom validity message (requiredMessage, invalidMessage, unsupportedMessage, unavailableMessage) still blocks submission when its message is missing: the adapter keeps the control invalid (a single-space custom validity and aria-invalid=\"true\") and warns in development.",
+  "No composed sentences. An adapter does not join texts with words or with language-specific punctuation (for example the Arabic comma), and does not prefix or suffix application text with fixed tokens. Where the accessible name depends on data, a function input receives the data and returns the whole string. Glyphs and separators that carry no language (★, ×, /, –, chevron icons) may stay as decoration and are aria-hidden wherever they are not the content itself. Numbers, ISO dates and Intl output are data, not strings.",
+  "Developer diagnostics are not user-visible strings: thrown Error messages and console warnings stay in English with the \"Hawiyah:\" prefix and must never be written to the DOM.",
+  "Core API changes that adapters must follow: getCalendarLabels, fileUploadLabels and getSiteVerificationLabels no longer provide text; FileUploadLabels gains getProgressLabel(name) and getRemoveLabel(name); SiteVerificationOptions requires all SiteVerificationLabels and loses locale; getCalendarMonth and formatCalendarDate require locale; new exports hasText, requireText, resetTextWarnings, formatTextTemplate, getFragmentHref, getFragmentId and bindFragmentLink.",
+  "Transition. So that adapter builds made before this change still load, core keeps the three registry names exported from packages/core/src/removed.ts with no text in them (every value is an empty string) and typed RemovedExport, which is not callable and not assignable to a label shape: adapter source that still imports them fails to type-check. No adapter may import getCalendarLabels, fileUploadLabels, getSiteVerificationLabels or RemovedExport after this milestone; packages/core/src/removed.ts and its exports are deleted once all four adapters are migrated.",
+  "Components that are not listed under \"components\" contain no built-in strings today (their text is already children, slots, projected content, data or required inputs) and must not gain any.",
+  "Open point for the owner: core formatNumber, formatDate and sortRows keep their \"ar-SA\" formatting default (Latin digits, no words in component use). Removing that default is a separate decision and is not part of this specification."
+ ],
+ "helpers": [
+  {
+   "name": "requireText",
+   "module": "@hawiyah/core (packages/core/src/text.ts)",
+   "signature": "requireText(component: string, name: string, value: unknown, when?: string): boolean",
+   "behaviour": "Returns hasText(value). When the text is missing it warns once per component+name through console.warn in development (\"Hawiyah: <component> requires \\\"<name>\\\"[ when <when>]. …\") and returns false; it never substitutes a string. Development means process.env.NODE_ENV is not \"production\" (bundlers replace it statically; a missing process counts as development); globalThis.__HAWIYAH_DEV__ = true|false overrides the check for pages without a bundler. No browser global is read, nothing runs at module evaluation, and it works during server rendering and without a console."
+  },
+  {
+   "name": "hasText",
+   "module": "@hawiyah/core (packages/core/src/text.ts)",
+   "signature": "hasText(value: unknown): boolean",
+   "behaviour": "True for a string with a non-space character, a finite number, a function (templated text), a non-empty array with usable text and any other rendered value (element, VNode, TemplateRef). False for null, undefined, booleans, empty or whitespace-only strings, NaN and empty arrays. Adapters use it to decide whether to render the element or attribute."
+  },
+  {
+   "name": "resetTextWarnings",
+   "module": "@hawiyah/core (packages/core/src/text.ts)",
+   "signature": "resetTextWarnings(): void",
+   "behaviour": "Clears the once-per-input memory of requireText. For tests."
+  },
+  {
+   "name": "formatTextTemplate",
+   "module": "@hawiyah/core (packages/core/src/text.ts)",
+   "signature": "formatTextTemplate(template: string, values: Readonly<Record<string, string | number>>): string",
+   "behaviour": "Replaces {name} placeholders in an application-supplied template with the given values and leaves unknown placeholders as written. Used by the vanilla adapter to turn template attributes (data-hw-page-label=\"Page {page}\") into the same function-valued texts the frameworks receive. It adds no words."
+  },
+  {
+   "name": "getFragmentHref",
+   "module": "@hawiyah/core (packages/core/src/fragment-link.ts)",
+   "signature": "getFragmentHref(id: string, documentUrl?: string | null, baseUrl?: string | null): string",
+   "behaviour": "Pure. Returns \"#\" + encodeURIComponent(id) when no document URL is known (server rendering) or when the base URL equals the document URL without its fragment. When the base differs and has the same origin it returns the document path + query + fragment (\"/hawiyah/components/button#main-content\"); when the origin differs it returns the absolute document URL + fragment. Reads no globals."
+  },
+  {
+   "name": "getFragmentId",
+   "module": "@hawiyah/core (packages/core/src/fragment-link.ts)",
+   "signature": "getFragmentId(href: string | null | undefined): string",
+   "behaviour": "Returns the decoded fragment of \"#id\" or \"path#id\", or \"\" when there is none. Tolerates malformed escapes."
+  },
+  {
+   "name": "bindFragmentLink",
+   "module": "@hawiyah/core (packages/core/src/fragment-link.ts)",
+   "signature": "bindFragmentLink(link: HTMLAnchorElement, options?: { id?: () => string; navigate?: (id: string, target: HTMLElement) => boolean | void; updateHash?: boolean }): { refresh(): void; activate(): boolean; destroy(): void }",
+   "behaviour": "Browser-side binding for one packaged in-page link. It does not touch the href when called. On focus, pointerenter, pointerdown, touchstart, contextmenu, auxclick and click it rewrites the href with getFragmentHref(id, location.href, document.baseURI), so keyboard activation, modified clicks, \"open in new tab\" and \"copy link\" all resolve to the current document, including after client-side route changes. On a plain primary click (no modifier, no target other than _self, not already prevented) it finds the target by id in the link's document; if found it prevents the default and either calls options.navigate(id, target) or scrolls the target into view without animation and moves focus to it (adding tabindex=\"-1\" until blur when the target is not focusable). The address bar is left alone unless updateHash is true, in which case history.replaceState writes the resolved URL. When the target is missing or navigate returns false the click is left to the browser. The target id comes from options.id, then data-hw-section, then the href fragment. destroy() removes the listeners and restores \"#id\" only if the href is still the value it wrote. Returns an inert object on a server DOM (no defaultView); reads globals only through link.ownerDocument."
+  }
+ ],
+ "components": [
+  {
+   "id": "alert",
+   "texts": [
+    {
+     "name": "closeLabel",
+     "shape": "string",
+     "required": "when the alert is dismissible",
+     "replaces": {
+      "react": "not rendered by this adapter today (no dismiss button)",
+      "vue": "not rendered by this adapter today (no dismiss button)",
+      "angular": "'Dismiss' — packages/angular/src/presentation.ts:41",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the dismiss button. Adapters that add a dismiss button use this name."
+    }
+   ]
+  },
+  {
+   "id": "app-shell",
+   "texts": [
+    {
+     "name": "skipLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'انتقل إلى المحتوى' — packages/react/src/expanded-layout.tsx:24",
+      "vue": "'انتقل إلى المحتوى' — packages/vue/src/layout.ts:63",
+      "angular": "'انتقل إلى المحتوى' — packages/angular/src/layouts.ts:42",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Visible text of the skip link, which is always rendered. The link is a packaged fragment link (see fragmentLinks)."
+    }
+   ]
+  },
+  {
+   "id": "avatar-group",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "no default today (already supplied by the application)",
+      "vue": "no default today (already supplied by the application)",
+      "angular": "'People' — packages/angular/src/content.ts:41",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it."
+    },
+    {
+     "name": "getOverflowLabel",
+     "shape": "(count: number) => string",
+     "required": "always",
+     "replaces": {
+      "react": "getOverflowLabel = count => `${count} more people` — packages/react/src/expanded-content.tsx:32",
+      "vue": "remainingLabel = count => `${count} more people` — packages/vue/src/content.ts:256",
+      "angular": "overflowLabel = count => `${count} more people` — packages/angular/src/content.ts:41",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the \"+N\" marker; count is the number of hidden avatars. Vue renames remainingLabel and Angular renames overflowLabel to getOverflowLabel."
+    }
+   ]
+  },
+  {
+   "id": "breadcrumb",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'مسار التنقل' — packages/react/src/display.tsx:179",
+      "vue": "'مسار التنقل' — packages/vue/src/display.ts:177",
+      "angular": "'مسار التنقل' — packages/angular/src/navigation.ts:120",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it."
+    }
+   ]
+  },
+  {
+   "id": "calendar",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "core getCalendarLabels(locale).calendar ('التقويم' / 'Calendar') — packages/react/src/calendar.tsx:59",
+      "vue": "core getCalendarLabels(locale).calendar — packages/vue/src/calendar.ts:274",
+      "angular": "core getCalendarLabels(locale).calendar — packages/angular/src/advanced-controls.ts:191",
+      "vanilla": "no default: aria-label on the calendar root"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it. Month and weekday names, the era and the default day name come from Intl for the required `locale`; they are formatting, not built-in strings."
+    },
+    {
+     "name": "previousLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.previous ('الشهر السابق' / 'Previous month') — packages/react/src/calendar.tsx:60",
+      "vue": "copy.previous — packages/vue/src/calendar.ts:244",
+      "angular": "copy.previous — packages/angular/src/advanced-controls.ts:191",
+      "vanilla": "copy.previous (chosen from the document language) — packages/vanilla/src/calendar.ts:73"
+     },
+     "notes": "Accessible name of the previous-month button. Vanilla: data-hw-previous-label or options.previousLabel."
+    },
+    {
+     "name": "nextLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.next ('الشهر التالي' / 'Next month') — packages/react/src/calendar.tsx:60",
+      "vue": "copy.next — packages/vue/src/calendar.ts:259",
+      "angular": "copy.next — packages/angular/src/advanced-controls.ts:191",
+      "vanilla": "copy.next (chosen from the document language) — packages/vanilla/src/calendar.ts:74"
+     },
+     "notes": "Accessible name of the next-month button. Vanilla: data-hw-next-label or options.nextLabel."
+    },
+    {
+     "name": "unsupportedMessage",
+     "shape": "string",
+     "required": "when calendar is 'islamic-umalqura'",
+     "replaces": {
+      "react": "not rendered by this adapter today in Calendar (see date-picker)",
+      "vue": "copy.unsupported — packages/vue/src/calendar.ts:269",
+      "angular": "not rendered by this adapter today in Calendar (see date-picker)",
+      "vanilla": "copy.unsupported — packages/vanilla/src/calendar.ts:103"
+     },
+     "notes": "Status text shown when the displayed date is outside the supported Umm al-Qura range. The application may build it from UMALQURA_MIN_DATE and UMALQURA_MAX_DATE exported by core."
+    },
+    {
+     "name": "calendarSystemLabel",
+     "shape": "string",
+     "required": "when the calendar-system switch is rendered",
+     "replaces": {
+      "react": "not rendered by this adapter today in Calendar (see date-picker)",
+      "vue": "not rendered by this adapter today in Calendar (see date-picker)",
+      "angular": "not rendered by this adapter today in Calendar (see date-picker)",
+      "vanilla": "copy.system — packages/vanilla/src/calendar.ts:46"
+     },
+     "notes": "Vanilla createCalendar renders the switch itself; the names and conditions are those of date-picker. Same for gregorianLabel, hijriLabel and rangeLabel below."
+    },
+    {
+     "name": "gregorianLabel",
+     "shape": "string",
+     "required": "when the calendar-system switch is rendered",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "not rendered by this adapter today",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "copy.gregorian — packages/vanilla/src/calendar.ts:47"
+     },
+     "notes": ""
+    },
+    {
+     "name": "hijriLabel",
+     "shape": "string",
+     "required": "when the calendar-system switch is rendered",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "not rendered by this adapter today",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "copy.hijri — packages/vanilla/src/calendar.ts:47"
+     },
+     "notes": ""
+    },
+    {
+     "name": "rangeLabel",
+     "shape": "string",
+     "required": "when the calendar-system switch is rendered",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "not rendered by this adapter today",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "copy.range — packages/vanilla/src/calendar.ts:52"
+     },
+     "notes": ""
+    },
+    {
+     "name": "getDayLabel",
+     "shape": "(value: string) => string",
+     "required": "when wanted (optional override of Intl formatting; no warning when omitted)",
+     "replaces": {
+      "react": "formatCalendarDate(value, { locale, calendar, dateStyle: \"full\" }) — packages/react/src/calendar.tsx:41",
+      "vue": "formatCalendarDate(value, { locale, calendar, dateStyle: \"full\" }) — packages/vue/src/calendar.ts",
+      "angular": "hand-built day name with a Latin comma — packages/angular/src/advanced-controls.ts:191",
+      "vanilla": "formatCalendarDate(value, { locale, calendar, dateStyle: \"full\" }) — packages/vanilla/src/calendar.ts"
+     },
+     "notes": "Accessible name of a day button; value is the ISO date. The default is Intl formatting through core formatCalendarDate in every adapter (Angular stops concatenating parts by hand). No words are added around it."
+    }
+   ]
+  },
+  {
+   "id": "carousel",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "no default today (already supplied by the application)",
+      "vue": "no default today (already supplied by the application)",
+      "angular": "no default today (already supplied by the application)",
+      "vanilla": "no default: aria-label on the carousel root"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it."
+    },
+    {
+     "name": "previousLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'الشريحة السابقة' — packages/react/src/expanded-interactive.tsx:115",
+      "vue": "'الشريحة السابقة' — packages/vue/src/expansion-interactive.ts:719",
+      "angular": "'الشريحة السابقة' — packages/angular/src/interactions.ts:155",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the previous button."
+    },
+    {
+     "name": "nextLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'الشريحة التالية' — packages/react/src/expanded-interactive.tsx:115",
+      "vue": "'الشريحة التالية' — packages/vue/src/expansion-interactive.ts:720",
+      "angular": "'الشريحة التالية' — packages/angular/src/interactions.ts:156",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the next button."
+    },
+    {
+     "name": "indicatorsLabel",
+     "shape": "string",
+     "required": "when showIndicators is on",
+     "replaces": {
+      "react": "'اختيار الشريحة' — packages/react/src/expanded-interactive.tsx:117",
+      "vue": "'اختيار الشريحة' — packages/vue/src/expansion-interactive.ts:722",
+      "angular": "'اختيار الشريحة' — packages/angular/src/interactions.ts:154",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the indicator group. showIndicators defaults to true, so the text is required unless indicators are switched off."
+    },
+    {
+     "name": "getSlideLabel",
+     "shape": "(position: number, total: number) => string",
+     "required": "always",
+     "replaces": {
+      "react": "getSlideLabel = (current, count) => `${current + 1} من ${count}` (zero-based) — packages/react/src/expanded-interactive.tsx:116",
+      "vue": "slideMessage = (index, total) => `${index} من ${total}` — packages/vue/src/expansion-interactive.ts:728",
+      "angular": "slideLabel = (current, total) => `${current} من ${total}` — packages/angular/src/interactions.ts:160",
+      "vanilla": "getSlideLabel ?? translated('n of t', 'n من t') — packages/vanilla/src/content.ts:185"
+     },
+     "notes": "Accessible name of each slide and of its indicator, and the live status text. position is one-based in every adapter (React changes from zero-based). Vanilla template attribute: data-hw-slide-label=\"{position} / {total}\"."
+    },
+    {
+     "name": "emptyLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'لا توجد شرائح' — packages/react/src/expanded-interactive.tsx:117",
+      "vue": "'لا توجد شرائح' — packages/vue/src/expansion-interactive.ts:723",
+      "angular": "'لا توجد شرائح' — packages/angular/src/interactions.ts:157",
+      "vanilla": "translated('No slides', 'لا توجد شرائح') — packages/vanilla/src/content.ts:193"
+     },
+     "notes": "Status text when there are no slides. Vanilla: data-hw-empty-label or options.emptyLabel."
+    },
+    {
+     "name": "carouselDescription",
+     "shape": "string",
+     "required": "when wanted (optional: no default, and no warning when omitted)",
+     "replaces": {
+      "react": "'عرض شرائح' — packages/react/src/expanded-interactive.tsx:118",
+      "vue": "'عرض شرائح' — packages/vue/src/expansion-interactive.ts:724",
+      "angular": "'عرض شرائح' — packages/angular/src/interactions.ts:158",
+      "vanilla": "translated('carousel', 'عرض شرائح') — packages/vanilla/src/content.ts:177"
+     },
+     "notes": "aria-roledescription of the root. When omitted the attribute is not rendered and no warning is given."
+    },
+    {
+     "name": "slideDescription",
+     "shape": "string",
+     "required": "when wanted (optional: no default, and no warning when omitted)",
+     "replaces": {
+      "react": "'شريحة' — packages/react/src/expanded-interactive.tsx:118",
+      "vue": "'شريحة' — packages/vue/src/expansion-interactive.ts:725",
+      "angular": "'شريحة' — packages/angular/src/interactions.ts:159",
+      "vanilla": "translated('slide', 'شريحة') — packages/vanilla/src/content.ts:179"
+     },
+     "notes": "aria-roledescription of each slide. When omitted the attribute is not rendered and no warning is given."
+    }
+   ]
+  },
+  {
+   "id": "chip",
+   "texts": [
+    {
+     "name": "removeLabel",
+     "shape": "string",
+     "required": "when the chip is removable",
+     "replaces": {
+      "react": "'Remove' — packages/react/src/expanded-content.tsx:20",
+      "vue": "'Remove' — packages/vue/src/content.ts:76",
+      "angular": "'Remove' — packages/angular/src/content.ts:31",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the remove button (React: onRemove given; Vue: remove listener or removable; Angular: removable)."
+    }
+   ]
+  },
+  {
+   "id": "combobox",
+   "texts": [
+    {
+     "name": "emptyMessage",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'No options found' — packages/react/src/interactive.tsx:183",
+      "vue": "'No options found' — packages/vue/src/interactive.ts:127",
+      "angular": "'No results' — packages/angular/src/forms.ts:138",
+      "vanilla": "not rendered by this adapter today (the list is simply empty)"
+     },
+     "notes": "Shown in the list when nothing matches. An adapter that adds the empty row uses this name."
+    },
+    {
+     "name": "getResultsMessage",
+     "shape": "(count: number) => string",
+     "required": "always",
+     "replaces": {
+      "react": "getResultsMessage = count => `${count} results available` — packages/react/src/interactive.tsx:183",
+      "vue": "resultsMessage = count => `${count} results available` — packages/vue/src/interactive.ts:127",
+      "angular": "resultsMessage = count => `${count} results available` — packages/angular/src/forms.ts:140",
+      "vanilla": "getResultsMessage ?? (count => `${count} نتيجة`) — packages/vanilla/src/combobox.ts:118"
+     },
+     "notes": "Live-region announcement of the number of matches. Vue and Angular rename resultsMessage. Vanilla template attribute: data-hw-results-message=\"{count} …\"."
+    },
+    {
+     "name": "requiredMessage",
+     "shape": "string",
+     "required": "when required is set",
+     "replaces": {
+      "react": "'Choose an option from the list.' — packages/react/src/interactive.tsx:183",
+      "vue": "'Choose an option from the list.' — packages/vue/src/interactive.ts:127",
+      "angular": "validationMessage = 'Select an option from the list.' — packages/angular/src/forms.ts:139",
+      "vanilla": "invalidSelectionMessage ?? 'اختر خيارًا من القائمة.' — packages/vanilla/src/combobox.ts:96"
+     },
+     "notes": "Custom validity message while a required combobox has no selected option. Angular renames validationMessage; vanilla renames invalidSelectionMessage (data-hw-required-message)."
+    }
+   ]
+  },
+  {
+   "id": "content-navigation",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'في هذه الصفحة' — packages/react/src/content-navigation.tsx:19",
+      "vue": "'في هذه الصفحة' — packages/vue/src/content-navigation.ts:11",
+      "angular": "'في هذه الصفحة' — packages/angular/src/content-navigation.ts:22",
+      "vanilla": "no default: aria-label or aria-labelledby on the authored nav"
+     },
+     "notes": "Name of the navigation landmark and text of its heading when the heading is shown. Item labels are application data. Links are packaged fragment links (see fragmentLinks)."
+    }
+   ]
+  },
+  {
+   "id": "cookie-consent",
+   "texts": [
+    {
+     "name": "title",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "no default today (already supplied by the application)",
+      "vue": "label = 'Cookie preferences' — packages/vue/src/patterns.ts:303",
+      "angular": "'Cookie preferences' — packages/angular/src/content.ts:143",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Heading and accessible name of the region. Vue renames label to title."
+    },
+    {
+     "name": "acceptLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Accept optional cookies' — packages/react/src/expanded-content.tsx:145",
+      "vue": "'Accept optional cookies' — packages/vue/src/patterns.ts:305",
+      "angular": "'Accept optional cookies' — packages/angular/src/content.ts:143",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "rejectLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Reject optional cookies' — packages/react/src/expanded-content.tsx:145",
+      "vue": "'Reject optional cookies' — packages/vue/src/patterns.ts:306",
+      "angular": "'Reject optional cookies' — packages/angular/src/content.ts:143",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "preferencesLabel",
+     "shape": "string",
+     "required": "when the preferences action is rendered",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "'Manage preferences' — packages/vue/src/patterns.ts:307",
+      "angular": "'Manage preferences' — packages/angular/src/content.ts:143",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "policyLabel",
+     "shape": "string",
+     "required": "when policyHref is set",
+     "replaces": {
+      "react": "'Cookie policy' — packages/react/src/expanded-content.tsx:145",
+      "vue": "not rendered by this adapter today",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    }
+   ]
+  },
+  {
+   "id": "table",
+   "texts": [
+    {
+     "name": "emptyMessage",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'لا توجد سجلات' — packages/react/src/display.tsx:90",
+      "vue": "'لا توجد سجلات' — packages/vue/src/display.ts:76",
+      "angular": "'لا توجد سجلات' — packages/angular/src/presentation.ts:104",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Text of the single cell rendered when there are no rows."
+    }
+   ]
+  },
+  {
+   "id": "data-table",
+   "texts": [
+    {
+     "name": "emptyMessage",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'لا توجد سجلات' — packages/react/src/expanded-content.tsx:44",
+      "vue": "'لا توجد سجلات' — packages/vue/src/content.ts:302",
+      "angular": "'لا توجد نتائج' — packages/angular/src/content.ts:47",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Text of the single cell rendered when there are no rows."
+    },
+    {
+     "name": "getSortLabel",
+     "shape": "(column: DataColumn, direction: 'ascending' | 'descending') => string",
+     "required": "when wanted (optional: no default, and no warning when omitted)",
+     "replaces": {
+      "react": "no default; signature (columnLabel, direction) — packages/react/src/expanded-content.tsx:47",
+      "vue": "sortLabel = (column, direction) => `ترتيب ${column.label} تصاعديًا|تنازليًا` — packages/vue/src/content.ts:325",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Optional accessible name of a sort button; direction is the order the button will apply. Without it the button is named by the column label and the state is carried by aria-sort. React changes its first argument to the column; Vue renames sortLabel and drops the Arabic default."
+    }
+   ]
+  },
+  {
+   "id": "date-picker",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string (ReactNode / slot where the field label accepts it)",
+     "required": "always",
+     "replaces": {
+      "react": "copy.date ('التاريخ' / 'Date') — packages/react/src/calendar.tsx:89",
+      "vue": "copy.date — packages/vue/src/calendar.ts:450",
+      "angular": "copy.date — packages/angular/src/advanced-controls.ts:248",
+      "vanilla": "no default: authored markup (the element's own text or aria-label) (label element)"
+     },
+     "notes": "Field label. An aria-label or aria-labelledby on the input satisfies it. Month and weekday names, the era and the default day name come from Intl for the required `locale`; they are formatting, not built-in strings."
+    },
+    {
+     "name": "calendarLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.choose ('اختر التاريخ' / 'Choose date') — packages/react/src/calendar.tsx:92",
+      "vue": "copy.choose — packages/vue/src/calendar.ts:530",
+      "angular": "dialogTitle || label || copy.choose — packages/angular/src/advanced-controls.ts:248",
+      "vanilla": "no default: authored markup (the element's own text or aria-label) (dialog title)"
+     },
+     "notes": "Dialog title and accessible name of the calendar inside it. Angular renames dialogTitle and stops falling back to the field label."
+    },
+    {
+     "name": "openLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "buttonLabel ?? copy.open ('فتح التقويم' / 'Open calendar') — packages/react/src/calendar.tsx:92",
+      "vue": "copy.open — packages/vue/src/calendar.ts:494",
+      "angular": "copy.open — packages/angular/src/advanced-controls.ts:248",
+      "vanilla": "trigger text or aria-label, else copy.open — packages/vanilla/src/calendar.ts:167"
+     },
+     "notes": "Accessible name of the trigger. React renames buttonLabel. Vanilla: the trigger's own aria-label or text, else data-hw-open-label."
+    },
+    {
+     "name": "closeLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.close ('إغلاق التقويم' / 'Close calendar') — packages/react/src/calendar.tsx:92",
+      "vue": "copy.close — packages/vue/src/calendar.ts:531",
+      "angular": "copy.close — packages/angular/src/advanced-controls.ts:248",
+      "vanilla": "no default: authored markup (the element's own text or aria-label) (dialog close button)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "previousLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.previous (through Calendar) — packages/react/src/calendar.tsx:60",
+      "vue": "copy.previous — packages/vue/src/calendar.ts:249",
+      "angular": "copy.previous (through hw-calendar) — packages/angular/src/advanced-controls.ts:191",
+      "vanilla": "copy.previous — packages/vanilla/src/calendar.ts:73"
+     },
+     "notes": "Passed to the inner calendar."
+    },
+    {
+     "name": "nextLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.next (through Calendar) — packages/react/src/calendar.tsx:60",
+      "vue": "copy.next — packages/vue/src/calendar.ts:264",
+      "angular": "copy.next (through hw-calendar) — packages/angular/src/advanced-controls.ts:191",
+      "vanilla": "copy.next — packages/vanilla/src/calendar.ts:74"
+     },
+     "notes": "Passed to the inner calendar."
+    },
+    {
+     "name": "calendarSystemLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.system ('نظام التقويم' / 'Calendar system') — packages/react/src/calendar.tsx:93",
+      "vue": "copy.system — packages/vue/src/calendar.ts:534",
+      "angular": "calendarLabel ?? copy.system — packages/angular/src/advanced-controls.ts:248",
+      "vanilla": "copy.system — packages/vanilla/src/calendar.ts:46"
+     },
+     "notes": "Accessible name of the Gregorian/Hijri switch, which the picker always renders. Angular renames calendarLabel (which now means the dialog title, as in the other adapters)."
+    },
+    {
+     "name": "gregorianLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "gregorianLabel ?? copy.gregorian ('ميلادي' / 'Gregorian') — packages/react/src/calendar.tsx:93",
+      "vue": "gregoryLabel ?? copy.gregorian — packages/vue/src/calendar.ts:537",
+      "angular": "gregorianLabel ?? copy.gregorian — packages/angular/src/advanced-controls.ts:248",
+      "vanilla": "copy.gregorian — packages/vanilla/src/calendar.ts:47"
+     },
+     "notes": "Vue renames gregoryLabel."
+    },
+    {
+     "name": "hijriLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "hijriLabel ?? copy.hijri ('هجري · أم القرى' / 'Hijri · Umm al-Qura') — packages/react/src/calendar.tsx:93",
+      "vue": "copy.hijri — packages/vue/src/calendar.ts:537",
+      "angular": "copy.hijri — packages/angular/src/advanced-controls.ts:248",
+      "vanilla": "copy.hijri — packages/vanilla/src/calendar.ts:47"
+     },
+     "notes": ""
+    },
+    {
+     "name": "rangeLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.range ('التواريخ الهجرية المدعومة' / 'Supported Hijri dates') — packages/react/src/calendar.tsx:60",
+      "vue": "copy.range — packages/vue/src/calendar.ts:253",
+      "angular": "copy.range — packages/angular/src/advanced-controls.ts:194",
+      "vanilla": "copy.range — packages/vanilla/src/calendar.ts:52"
+     },
+     "notes": "Name of the information control beside the switch and lead-in of its tooltip. The ISO range after it (UMALQURA_MIN_DATE – UMALQURA_MAX_DATE) is data and stays."
+    },
+    {
+     "name": "invalidMessage",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "copy.invalid ('أدخل تاريخًا ميلاديًا متاحًا بصيغة YYYY-MM-DD.' / English) — packages/react/src/calendar.tsx:83",
+      "vue": "copy.invalid — packages/vue/src/calendar.ts:428",
+      "angular": "copy.invalid — packages/angular/src/advanced-controls.ts:267",
+      "vanilla": "options.invalidMessage ?? copy.invalid — packages/vanilla/src/calendar.ts:184"
+     },
+     "notes": "Validation message for malformed or out-of-range typed input. Vanilla: data-hw-invalid-message or options.invalidMessage."
+    },
+    {
+     "name": "unsupportedMessage",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "unsupportedCalendarMessage ?? copy.unsupported — packages/react/src/calendar.tsx:83",
+      "vue": "copy.unsupported — packages/vue/src/calendar.ts:431",
+      "angular": "copy.unsupported — packages/angular/src/advanced-controls.ts:262",
+      "vanilla": "copy.unsupported — packages/vanilla/src/calendar.ts:184"
+     },
+     "notes": "Message when the date cannot be shown in the Umm al-Qura calendar; the reader can switch to it at any time, so it is always required. React renames unsupportedCalendarMessage. The application may build it from UMALQURA_MIN_DATE and UMALQURA_MAX_DATE."
+    },
+    {
+     "name": "unavailableMessage",
+     "shape": "string",
+     "required": "when isDateDisabled is given",
+     "replaces": {
+      "react": "copy.unavailable ('هذا التاريخ غير متاح.' / 'This date is unavailable.') — packages/react/src/calendar.tsx:83",
+      "vue": "not rendered by this adapter today",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": "Validation message for a date the application disabled. Adapters that validate typed dates against isDateDisabled use this name."
+    },
+    {
+     "name": "placeholder",
+     "shape": "string",
+     "required": "when wanted (optional: no default, and no warning when omitted)",
+     "replaces": {
+      "react": "'YYYY-MM-DD' — packages/react/src/calendar.tsx:91",
+      "vue": "'YYYY-MM-DD' — packages/vue/src/calendar.ts:460",
+      "angular": "'YYYY-MM-DD' (fixed) — packages/angular/src/advanced-controls.ts:248",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "The format hint is application text. Without it no placeholder attribute is rendered."
+    }
+   ]
+  },
+  {
+   "id": "dialog",
+   "texts": [
+    {
+     "name": "closeLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Close' — packages/react/src/interactive.tsx:105",
+      "vue": "'Close' — packages/vue/src/interactive.ts:79",
+      "angular": "'Close dialog' — packages/angular/src/overlays.ts:12",
+      "vanilla": "no default: authored markup (the element's own text or aria-label) (the authored [data-hw-dialog-close] button)"
+     },
+     "notes": "Accessible name of the header close button, which is always rendered. `title` is already required."
+    }
+   ]
+  },
+  {
+   "id": "drawer",
+   "texts": [
+    {
+     "name": "closeLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Close' (inherited from Dialog) — packages/react/src/interactive.tsx:105",
+      "vue": "'Close' — packages/vue/src/expansion-interactive.ts:373",
+      "angular": "'Close dialog' (inherited from hw-dialog) — packages/angular/src/overlays.ts:12",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    }
+   ]
+  },
+  {
+   "id": "feedback",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "no default today (already supplied by the application)",
+      "vue": "'Was this page helpful?' — packages/vue/src/patterns.ts:213",
+      "angular": "'Was this page helpful?' — packages/angular/src/content.ts:141",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "The question; also names the group."
+    },
+    {
+     "name": "yesLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Yes' — packages/react/src/expanded-content.tsx:139",
+      "vue": "'Yes' — packages/vue/src/patterns.ts:216",
+      "angular": "positiveLabel = 'Yes' — packages/angular/src/content.ts:141",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Angular renames positiveLabel."
+    },
+    {
+     "name": "noLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'No' — packages/react/src/expanded-content.tsx:139",
+      "vue": "'No' — packages/vue/src/patterns.ts:217",
+      "angular": "negativeLabel = 'No' — packages/angular/src/content.ts:141",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Angular renames negativeLabel."
+    },
+    {
+     "name": "commentLabel",
+     "shape": "string",
+     "required": "when the comment field is rendered",
+     "replaces": {
+      "react": "'Tell us more (optional)' — packages/react/src/expanded-content.tsx:139",
+      "vue": "'Tell us more' — packages/vue/src/patterns.ts:218",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "submitLabel",
+     "shape": "string",
+     "required": "when the comment field is rendered",
+     "replaces": {
+      "react": "'Send feedback' — packages/react/src/expanded-content.tsx:139",
+      "vue": "'Send feedback' — packages/vue/src/patterns.ts:219",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "successMessage",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Thank you for your feedback.' — packages/react/src/expanded-content.tsx:139",
+      "vue": "thanks = 'Thank you for your feedback.' — packages/vue/src/patterns.ts:220",
+      "angular": "thanksMessage = 'Thank you for your feedback' — packages/angular/src/content.ts:141",
+      "vanilla": "getStatusMessage?.(value) ?? translated('Thank you for your feedback.', 'شكرًا لملاحظاتك.') — packages/vanilla/src/content.ts:73"
+     },
+     "notes": "Status text after an answer. Vue renames thanks, Angular renames thanksMessage. Vanilla: data-hw-success-message or options.successMessage; options.getStatusMessage(value) stays as an optional override with no default."
+    }
+   ]
+  },
+  {
+   "id": "file-dropzone",
+   "texts": [
+    {
+     "name": "dropLabel",
+     "shape": "string (ReactNode / slot where accepted today)",
+     "required": "always",
+     "replaces": {
+      "react": "'Drop files here or choose files' — packages/react/src/expanded-controls.tsx:86",
+      "vue": "'Choose files or drop them here' — packages/vue/src/controls.ts:755",
+      "angular": "instruction = 'Drop files here or choose files' — packages/angular/src/advanced-controls.ts:298",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Visible instruction inside the drop area. Angular renames instruction. It no longer doubles as the field label: `label` is supplied separately."
+    },
+    {
+     "name": "getRejectedMessage",
+     "shape": "(rejected: readonly File[]) => string",
+     "required": "when accept or maxSize is set",
+     "replaces": {
+      "react": "getRejectedMessage = () => 'Some files do not match the accepted file types.' — packages/react/src/expanded-controls.tsx:86",
+      "vue": "not rendered by this adapter today",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "getStatusMessage?.(files, rejected) ?? translated('Choose files matching the allowed type and size.', …) — packages/vanilla/src/controls.ts:233"
+     },
+     "notes": "Error text announced when files are rejected. Vanilla template attribute: data-hw-rejected-message=\"… {count} …\"."
+    },
+    {
+     "name": "getSelectedMessage",
+     "shape": "(files: readonly File[]) => string",
+     "required": "when a selection status is rendered",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "not rendered by this adapter today",
+      "angular": "selectedMessage = count => `${count} files selected` — packages/angular/src/advanced-controls.ts:298",
+      "vanilla": "file names joined with the Arabic comma '، ' — packages/vanilla/src/controls.ts:233"
+     },
+     "notes": "Status text after a selection (Angular always renders it; vanilla when [data-hw-file-status] exists). Angular renames selectedMessage and receives the files. Vanilla options.getStatusMessage(files, rejected) is replaced by getSelectedMessage and getRejectedMessage; template attribute data-hw-selected-message=\"{count} …\"."
+    },
+    {
+     "name": "unsupportedDropMessage",
+     "shape": "string",
+     "required": "when a selection status is rendered (vanilla only)",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "not rendered by this adapter today",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "translated('Use the file chooser to attach documents.', 'استخدم اختيار الملفات لإرفاق المستندات.') — packages/vanilla/src/controls.ts:242"
+     },
+     "notes": "Vanilla-only status for browsers that cannot assign dropped files to the input. data-hw-unsupported-drop-message or options.unsupportedDropMessage; without it the status is left unchanged."
+    }
+   ]
+  },
+  {
+   "id": "file-upload",
+   "texts": [
+    {
+     "name": "labels",
+     "shape": "FileUploadLabels { selected: string; uploading: string; complete: string; error: string; remove: string; getProgressLabel: (name: string) => string; getRemoveLabel: (name: string) => string }",
+     "required": "always",
+     "replaces": {
+      "react": "core fileUploadLabels ('جاهز للرفع', 'جارٍ الرفع', 'اكتمل الرفع', 'تعذر الرفع', 'إزالة الملف') — packages/react/src/file-upload-list.tsx:12",
+      "vue": "core fileUploadLabels — packages/vue/src/file-upload-list.ts:8",
+      "angular": "core fileUploadLabels — packages/angular/src/file-upload-list.ts:17",
+      "vanilla": "core fileUploadLabels — packages/vanilla/src/file-upload-list.ts:15"
+     },
+     "notes": "FileUploadList. The type is exported by core; the value fileUploadLabels is removed. getProgressLabel replaces `${labels.uploading} ${item.name}` and getRemoveLabel replaces `${labels.remove} ${item.name}`: adapters no longer join words. item.message stays application data."
+    }
+   ]
+  },
+  {
+   "id": "menu",
+   "texts": [
+    {
+     "name": "triggerLabel",
+     "shape": "string",
+     "required": "when the adapter renders the trigger itself",
+     "replaces": {
+      "react": "no default: the application passes the trigger element",
+      "vue": "no default: #trigger slot",
+      "angular": "'Open' — packages/angular/src/interactions.ts:26",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Visible text of the trigger button. `label` (menu name) is already required."
+    }
+   ]
+  },
+  {
+   "id": "popover",
+   "texts": [
+    {
+     "name": "triggerLabel",
+     "shape": "string",
+     "required": "when the adapter renders the trigger itself",
+     "replaces": {
+      "react": "no default: the application passes the trigger element",
+      "vue": "no default (already required)",
+      "angular": "'Open' — packages/angular/src/interactions.ts:26",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Visible text of the trigger button."
+    }
+   ]
+  },
+  {
+   "id": "mobile-top-bar",
+   "texts": [
+    {
+     "name": "backLabel",
+     "shape": "string",
+     "required": "when backHref or a back action is given",
+     "replaces": {
+      "react": "'رجوع' — packages/react/src/mobile-top-bar.tsx:10",
+      "vue": "'رجوع' — packages/vue/src/mobile-top-bar.ts:10",
+      "angular": "'رجوع' — packages/angular/src/mobile-top-bar.ts:12",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the back link."
+    }
+   ]
+  },
+  {
+   "id": "multi-select",
+   "texts": [
+    {
+     "name": "searchLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Search options' — packages/react/src/expanded-controls.tsx:79",
+      "vue": "'Search options' — packages/vue/src/controls.ts:635",
+      "angular": "'Search options' — packages/angular/src/advanced-controls.ts:181",
+      "vanilla": "no default: authored markup (the element's own text or aria-label) (label or aria-label of the search input)"
+     },
+     "notes": "Accessible name of the filter input. It is not reused as a placeholder; `placeholder` is separate, optional and has no default."
+    },
+    {
+     "name": "emptyMessage",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'No options found' — packages/react/src/expanded-controls.tsx:79",
+      "vue": "'No options found' — packages/vue/src/controls.ts:636",
+      "angular": "'No options' — packages/angular/src/advanced-controls.ts:181",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "requiredMessage",
+     "shape": "string",
+     "required": "when required is set",
+     "replaces": {
+      "react": "'Choose at least one option.' — packages/react/src/expanded-controls.tsx:79",
+      "vue": "'Choose at least one option.' — packages/vue/src/controls.ts:637",
+      "angular": "validationMessage = 'Select at least one option.' — packages/angular/src/advanced-controls.ts:181",
+      "vanilla": "requiredMessage ?? translated('Choose at least one option.', 'اختر خيارًا واحدًا على الأقل.') — packages/vanilla/src/controls.ts:207"
+     },
+     "notes": "Angular renames validationMessage. Vanilla: data-hw-required-message."
+    },
+    {
+     "name": "getResultsMessage",
+     "shape": "(count: number) => string",
+     "required": "when the adapter announces the filtered count",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "not rendered by this adapter today",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "getResultsMessage ?? translated('${count} options', '${count} خيارات') — packages/vanilla/src/controls.ts:210"
+     },
+     "notes": "Live-region text. Vanilla template attribute: data-hw-results-message=\"{count} …\"."
+    },
+    {
+     "name": "getSelectedMessage",
+     "shape": "(count: number) => string",
+     "required": "when the adapter renders the selected count",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "not rendered by this adapter today",
+      "angular": "selectedMessage = count => `${count} selected` — packages/angular/src/advanced-controls.ts:181",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": "Angular renames selectedMessage."
+    }
+   ]
+  },
+  {
+   "id": "navigation-drawer",
+   "texts": [
+    {
+     "name": "navigationLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'التنقل الرئيسي' — packages/react/src/navigation-drawer.tsx:48",
+      "vue": "'التنقل الرئيسي' — packages/vue/src/navigation-drawer.ts:31",
+      "angular": "'التنقل الرئيسي' — packages/angular/src/navigation-drawer.ts:25",
+      "vanilla": "options.navigationLabel ?? 'التنقل الرئيسي' — packages/vanilla/src/navigation-drawer.ts:18"
+     },
+     "notes": "Name of the nav landmark. Vanilla: aria-label on the authored nav, else data-hw-navigation-label."
+    },
+    {
+     "name": "closeLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'إغلاق القائمة' — packages/react/src/navigation-drawer.tsx:48",
+      "vue": "'إغلاق القائمة' — packages/vue/src/navigation-drawer.ts:31",
+      "angular": "'إغلاق القائمة' — packages/angular/src/navigation-drawer.ts:26",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    }
+   ]
+  },
+  {
+   "id": "notification-list",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "no default today (already supplied by the application)",
+      "vue": "'Notifications' — packages/vue/src/patterns.ts:383",
+      "angular": "'Notifications' — packages/angular/src/content.ts:145",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Heading and name of the list."
+    },
+    {
+     "name": "emptyMessage",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'No notifications' — packages/react/src/expanded-content.tsx:151",
+      "vue": "'No notifications' — packages/vue/src/patterns.ts:384",
+      "angular": "'No notifications' — packages/angular/src/content.ts:145",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "unreadLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Unread' — packages/react/src/expanded-content.tsx:151",
+      "vue": "not rendered by this adapter today",
+      "angular": "'Unread' — packages/angular/src/content.ts:145",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Badge text on unread items."
+    },
+    {
+     "name": "getMarkReadLabel",
+     "shape": "(item: NotificationItem) => string",
+     "required": "when a mark-read handler is given",
+     "replaces": {
+      "react": "getMarkReadLabel = () => 'Mark as read' — packages/react/src/expanded-content.tsx:151",
+      "vue": "readLabel = item => `Mark ${item.title} as read` — packages/vue/src/patterns.ts:387",
+      "angular": "not rendered by this adapter today",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Vue renames readLabel."
+    },
+    {
+     "name": "getDismissLabel",
+     "shape": "(item: NotificationItem) => string",
+     "required": "when a dismiss handler is given",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "dismissLabel = item => `Dismiss ${item.title}` — packages/vue/src/patterns.ts:391",
+      "angular": "dismissLabel = 'Dismiss' (string) — packages/angular/src/content.ts:145",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Vue renames dismissLabel; Angular changes dismissLabel from a string to this function."
+    }
+   ]
+  },
+  {
+   "id": "pagination",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'ترقيم الصفحات' — packages/react/src/display.tsx:109",
+      "vue": "'ترقيم الصفحات' — packages/vue/src/display.ts:99",
+      "angular": "'ترقيم الصفحات' — packages/angular/src/navigation.ts:138",
+      "vanilla": "no default: aria-label on the authored nav"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it."
+    },
+    {
+     "name": "previousLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'الصفحة السابقة' — packages/react/src/display.tsx:109",
+      "vue": "'الصفحة السابقة' — packages/vue/src/display.ts:99",
+      "angular": "'الصفحة السابقة' — packages/angular/src/navigation.ts:141",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "nextLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'الصفحة التالية' — packages/react/src/display.tsx:109",
+      "vue": "'الصفحة التالية' — packages/vue/src/display.ts:99",
+      "angular": "'الصفحة التالية' — packages/angular/src/navigation.ts:142",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "getPageLabel",
+     "shape": "(page: number) => string",
+     "required": "always",
+     "replaces": {
+      "react": "getPageLabel = page => 'الصفحة ' + page — packages/react/src/display.tsx:110",
+      "vue": "pageLabel = page => 'الصفحة ' + page — packages/vue/src/display.ts:100",
+      "angular": "pageLabel = page => 'الصفحة ' + page — packages/angular/src/navigation.ts:143",
+      "vanilla": "getPageLabel ?? translated('Page ${value}', 'الصفحة ${value}') — packages/vanilla/src/pagination.ts:41"
+     },
+     "notes": "Accessible name of a page button. Vue and Angular rename pageLabel. Vanilla template attribute: data-hw-page-label=\"… {page}\"."
+    },
+    {
+     "name": "getGapLabel",
+     "shape": "(start: number, end: number) => string",
+     "required": "always",
+     "replaces": {
+      "react": "getGapLabel = (start, end) => 'الصفحات ' + start + ' إلى ' + end — packages/react/src/display.tsx:111",
+      "vue": "gapLabel (same Arabic template) — packages/vue/src/display.ts:103",
+      "angular": "gapLabel (same Arabic template) — packages/angular/src/navigation.ts:148",
+      "vanilla": "getGapLabel ?? translated('Pages ${start} to ${end}', 'الصفحات ${start} إلى ${end}') — packages/vanilla/src/pagination.ts:42"
+     },
+     "notes": "Accessible name of a gap disclosure. Vue and Angular rename gapLabel. Vanilla template attribute: data-hw-gap-label=\"… {start} … {end}\"."
+    },
+    {
+     "name": "jumpLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'الانتقال إلى صفحة' — packages/react/src/display.tsx:112",
+      "vue": "'الانتقال إلى صفحة' — packages/vue/src/display.ts:104",
+      "angular": "'الانتقال إلى صفحة' — packages/angular/src/navigation.ts:149",
+      "vanilla": "jumpLabel ?? translated('Go to page', 'الانتقال إلى صفحة') — packages/vanilla/src/pagination.ts:75"
+     },
+     "notes": "Label of the page-number input inside a gap. Vanilla: data-hw-jump-label."
+    },
+    {
+     "name": "goLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'انتقال' — packages/react/src/display.tsx:112",
+      "vue": "'انتقال' — packages/vue/src/display.ts:104",
+      "angular": "'انتقال' — packages/angular/src/navigation.ts:150",
+      "vanilla": "goLabel ?? translated('Go', 'انتقال') — packages/vanilla/src/pagination.ts:84"
+     },
+     "notes": "Text of the jump button. Vanilla: data-hw-go-label."
+    }
+   ]
+  },
+  {
+   "id": "password-field",
+   "texts": [
+    {
+     "name": "showLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Show password' — packages/react/src/expanded-controls.tsx:14",
+      "vue": "'Show password' — packages/vue/src/controls.ts:60",
+      "angular": "'Show password' — packages/angular/src/advanced-controls.ts:26",
+      "vanilla": "button aria-label || translated('Show password', 'إظهار كلمة المرور') — packages/vanilla/src/controls.ts:13"
+     },
+     "notes": "Name (and, with toggleVariant=\"text\", visible text) of the toggle while the value is hidden. Vanilla: the toggle's authored aria-label or text, else data-hw-show-label."
+    },
+    {
+     "name": "hideLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Hide password' — packages/react/src/expanded-controls.tsx:14",
+      "vue": "'Hide password' — packages/vue/src/controls.ts:61",
+      "angular": "'Hide password' — packages/angular/src/advanced-controls.ts:26",
+      "vanilla": "data-hw-hide-label || translated('Hide password', 'إخفاء كلمة المرور') — packages/vanilla/src/controls.ts:14"
+     },
+     "notes": "Vanilla: data-hw-hide-label on the toggle."
+    }
+   ]
+  },
+  {
+   "id": "portal-header",
+   "texts": [
+    {
+     "name": "skipLabel",
+     "shape": "string",
+     "required": "when mainId is set",
+     "replaces": {
+      "react": "'انتقل إلى المحتوى' — packages/react/src/expanded-content.tsx:56",
+      "vue": "'انتقل إلى المحتوى' — packages/vue/src/patterns.ts:91",
+      "angular": "'انتقل إلى المحتوى' — packages/angular/src/content.ts:88",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Text of the skip link (a packaged fragment link). The link is rendered only when mainId names a target; Angular drops its default mainId of \"main-content\"."
+    },
+    {
+     "name": "menuLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'القائمة' — packages/react/src/expanded-content.tsx:56",
+      "vue": "'القائمة' — packages/vue/src/patterns.ts:88",
+      "angular": "'القائمة' — packages/angular/src/content.ts:88",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Name of the menu toggle shown at narrow widths."
+    },
+    {
+     "name": "navigationLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'التنقل الرئيسي' — packages/react/src/expanded-content.tsx:56",
+      "vue": "navLabel = 'التنقل الرئيسي' — packages/vue/src/patterns.ts:87",
+      "angular": "'التنقل الرئيسي' — packages/angular/src/content.ts:88",
+      "vanilla": "no default: aria-label on the authored nav"
+     },
+     "notes": "Name of the primary nav landmark. Vue renames navLabel."
+    }
+   ]
+  },
+  {
+   "id": "portal-footer",
+   "texts": [
+    {
+     "name": "navigationLabel",
+     "shape": "string",
+     "required": "when links are given",
+     "replaces": {
+      "react": "linksLabel = 'روابط التذييل' — packages/react/src/expanded-content.tsx:124",
+      "vue": "navLabel = 'روابط التذييل' — packages/vue/src/patterns.ts:181",
+      "angular": "'روابط التذييل' — packages/angular/src/content.ts:136",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Name of the footer links landmark. React renames linksLabel, Vue renames navLabel."
+    },
+    {
+     "name": "legalLinksLabel",
+     "shape": "string",
+     "required": "when legalLinks are given",
+     "replaces": {
+      "react": "'السياسات وإمكانية الوصول' — packages/react/src/expanded-content.tsx:124",
+      "vue": "'السياسات وإمكانية الوصول' — packages/vue/src/patterns.ts:182",
+      "angular": "'السياسات وإمكانية الوصول' — packages/angular/src/content.ts:138",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "supportLabel",
+     "shape": "string",
+     "required": "when support content is given",
+     "replaces": {
+      "react": "'المساعدة والتواصل' — packages/react/src/expanded-content.tsx:124",
+      "vue": "'المساعدة والتواصل' — packages/vue/src/patterns.ts:183",
+      "angular": "'المساعدة والتواصل' — packages/angular/src/content.ts:138",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "externalLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'يفتح في نافذة جديدة' — packages/react/src/expanded-content.tsx:124",
+      "vue": "'يفتح في نافذة جديدة' — packages/vue/src/patterns.ts:184",
+      "angular": "'يفتح في نافذة جديدة' — packages/angular/src/content.ts:138",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Screen-reader text appended to links marked external. Links are data, so the text is required whenever the footer is used."
+    }
+   ]
+  },
+  {
+   "id": "portal-layout",
+   "texts": [
+    {
+     "name": "skipLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'انتقل إلى المحتوى' — packages/react/src/portal.tsx:22",
+      "vue": "'انتقل إلى المحتوى' — packages/vue/src/portal.ts:24",
+      "angular": "'انتقل إلى المحتوى' — packages/angular/src/portal.ts:22",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "The layout always has a main target, so its skip link (a packaged fragment link) is always rendered."
+    },
+    {
+     "name": "menuLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "PortalHeader default through headerProps — packages/react/src/expanded-content.tsx",
+      "vue": "'القائمة' — packages/vue/src/portal.ts:25",
+      "angular": "'القائمة' — packages/angular/src/portal.ts:22",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Passed to the header. React exposes it on PortalLayout like the other adapters."
+    },
+    {
+     "name": "navigationLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "PortalHeader default through headerProps — packages/react/src/expanded-content.tsx",
+      "vue": "'التنقل الرئيسي' — packages/vue/src/portal.ts:25",
+      "angular": "'التنقل الرئيسي' — packages/angular/src/portal.ts:22",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Passed to the header."
+    },
+    {
+     "name": "secondaryLabel",
+     "shape": "string",
+     "required": "when secondary navigation items are given",
+     "replaces": {
+      "react": "SecondaryNav default 'التنقل الثانوي' — packages/react/src/portal.tsx:12",
+      "vue": "'التنقل الثانوي' — packages/vue/src/portal.ts:26",
+      "angular": "'التنقل الثانوي' — packages/angular/src/portal.ts:23",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "breadcrumbLabel",
+     "shape": "string",
+     "required": "when breadcrumbs are given",
+     "replaces": {
+      "react": "'مسار التنقل' — packages/react/src/portal.tsx:22",
+      "vue": "'مسار التنقل' — packages/vue/src/portal.ts:26",
+      "angular": "'مسار التنقل' — packages/angular/src/portal.ts:23",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": ""
+    },
+    {
+     "name": "footerLabel",
+     "shape": "string",
+     "required": "when footer links are given",
+     "replaces": {
+      "react": "fixed linksLabel=\"روابط التذييل\" passed to PortalFooter — packages/react/src/portal.tsx:30",
+      "vue": "'روابط التذييل' — packages/vue/src/portal.ts:26",
+      "angular": "'روابط التذييل' — packages/angular/src/portal.ts:23",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Passed to the footer as navigationLabel. React adds the prop in place of the fixed string. The remaining footer texts (legalLinksLabel, supportLabel, externalLabel) reach the footer the way each adapter already passes footer content (footerProps, footer props or inputs), under the portal-footer names and conditions. The layout renders no dir attribute unless `dir` is supplied (the \"rtl\" default goes), and the dedicated `lang` input is removed in Vue and Angular: lang is an ordinary attribute the application sets on the host."
+    }
+   ]
+  },
+  {
+   "id": "secondary-nav",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'التنقل الثانوي' — packages/react/src/portal.tsx:12",
+      "vue": "'التنقل الثانوي' — packages/vue/src/portal.ts:11",
+      "angular": "'التنقل الثانوي' — packages/angular/src/portal.ts:9",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it."
+    }
+   ]
+  },
+  {
+   "id": "range-slider",
+   "texts": [
+    {
+     "name": "lowerLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "no default today (already supplied by the application)",
+      "vue": "'Minimum' — packages/vue/src/controls.ts:273",
+      "angular": "'Minimum' — packages/angular/src/advanced-controls.ts:134",
+      "vanilla": "no default: authored markup (the element's own text or aria-label) (label or aria-label of the lower input)"
+     },
+     "notes": "Accessible name of the lower thumb."
+    },
+    {
+     "name": "upperLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "no default today (already supplied by the application)",
+      "vue": "'Maximum' — packages/vue/src/controls.ts:274",
+      "angular": "'Maximum' — packages/angular/src/advanced-controls.ts:134",
+      "vanilla": "no default: authored markup (the element's own text or aria-label) (label or aria-label of the upper input)"
+     },
+     "notes": "Accessible name of the upper thumb. The vanilla output keeps \"a – b\" from formatNumber with an en dash; the locale comes from data-hw-locale or options.locale, never from lang."
+    }
+   ]
+  },
+  {
+   "id": "rating",
+   "texts": [
+    {
+     "name": "getRatingLabel",
+     "shape": "(value: number, max: number) => string",
+     "required": "always",
+     "replaces": {
+      "react": "getRatingLabel = (number, total) => `${number} من ${total}` — packages/react/src/expanded-controls.tsx:46",
+      "vue": "optionLabel = (value, max) => `${value} من ${max}` — packages/vue/src/controls.ts:365",
+      "angular": "ratingLabel = (value, max) => `${value} من ${max}` — packages/angular/src/advanced-controls.ts:150",
+      "vanilla": "no default: authored markup (the element's own text or aria-label) (each radio is labelled in the markup)"
+     },
+     "notes": "Accessible name of each rating option. Vue renames optionLabel, Angular renames ratingLabel."
+    },
+    {
+     "name": "getValueLabel",
+     "shape": "(value: number, max: number) => string",
+     "required": "always",
+     "replaces": {
+      "react": "getValueLabel = (score, total) => `${score} من ${total}` — packages/react/src/expanded-controls.tsx:57",
+      "vue": "valueLabel = (value, max) => `${value} من ${max}` — packages/vue/src/controls.ts:454",
+      "angular": "valueLabel = (value, max) => `${value} من ${max}` — packages/angular/src/advanced-controls.ts:166",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "RatingDisplay only: text alternative of the read-only rating display. Vue and Angular rename valueLabel."
+    }
+   ]
+  },
+  {
+   "id": "search-field",
+   "texts": [
+    {
+     "name": "clearLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'مسح البحث' — packages/react/src/search-field.tsx:14",
+      "vue": "'مسح البحث' — packages/vue/src/search-field.ts:10",
+      "angular": "'مسح البحث' — packages/angular/src/advanced-controls.ts:49",
+      "vanilla": "options.clearLabel ?? button aria-label ?? translated('Clear search', 'مسح البحث') — packages/vanilla/src/search-field.ts:29"
+     },
+     "notes": "Accessible name of the clear button. Vanilla: the clear button's own aria-label, else data-hw-clear-label. The legacy Vue default clearLabel \"Clear search\" on the shared password/search component (packages/vue/src/controls.ts:63) is removed as well."
+    },
+    {
+     "name": "searchLabel",
+     "shape": "string",
+     "required": "when showSearchButton is on",
+     "replaces": {
+      "react": "'بحث' — packages/react/src/search-field.tsx:14",
+      "vue": "'بحث' — packages/vue/src/search-field.ts:12",
+      "angular": "'بحث' — packages/angular/src/advanced-controls.ts:49",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the search button only. It is no longer the fallback name of the input or of the suggestion list: those are named by `label` (or aria-label / aria-labelledby), which stays required content of the field."
+    },
+    {
+     "name": "getResultsMessage",
+     "shape": "(count: number) => string",
+     "required": "when suggestions are given",
+     "replaces": {
+      "react": "resultsMessage = count => `${count} اقتراحات متاحة` — packages/react/src/search-field.tsx:14",
+      "vue": "resultsMessage (same Arabic template) — packages/vue/src/search-field.ts:11",
+      "angular": "resultsMessage (same Arabic template) — packages/angular/src/advanced-controls.ts:51",
+      "vanilla": "resultsMessage ?? translated('${n} suggestions available', '${n} اقتراحات متاحة') — packages/vanilla/src/search-field.ts:88"
+     },
+     "notes": "Live-region announcement of the suggestion count. All four adapters rename resultsMessage to getResultsMessage. Vanilla template attribute: data-hw-results-message=\"{count} …\". The vanilla suggestion list loses its fixed aria-label (\"Search suggestions\" / \"اقتراحات البحث\", packages/vanilla/src/search-field.ts:61) and is named like the input."
+    }
+   ]
+  },
+  {
+   "id": "select",
+   "texts": [
+    {
+     "name": "placeholder",
+     "shape": "string",
+     "required": "when wanted (optional: no default, and no warning when omitted)",
+     "replaces": {
+      "react": "no default",
+      "vue": "no default",
+      "angular": "'اختر خيارًا' — packages/angular/src/forms.ts:103",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Without it no prompt option is rendered, and the first option is selected as in a native select."
+    }
+   ]
+  },
+  {
+   "id": "service-card",
+   "texts": [
+    {
+     "name": "actionLabel",
+     "shape": "string",
+     "required": "when the card renders its action link",
+     "replaces": {
+      "react": "'View service' — packages/react/src/expanded-content.tsx:50",
+      "vue": "'Start service' — packages/vue/src/patterns.ts:16",
+      "angular": "'View service' — packages/angular/src/content.ts:55",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Visible text of the action. An application-supplied `action` node or slot replaces it."
+    }
+   ]
+  },
+  {
+   "id": "service-details",
+   "texts": [
+    {
+     "name": "requirementsLabel",
+     "shape": "string",
+     "required": "when requirements are given",
+     "replaces": {
+      "react": "'Requirements' — packages/react/src/expanded-content.tsx:52",
+      "vue": "not rendered by this adapter today",
+      "angular": "'Requirements' — packages/angular/src/content.ts:57",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Heading of the requirements list."
+    }
+   ]
+  },
+  {
+   "id": "site-verification",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "core getSiteVerificationLabels(locale).label ('معلومات الموقع' / English) — packages/react/src/site-verification.tsx:15",
+      "vue": "core getSiteVerificationLabels(locale).label — packages/vue/src/site-verification.ts:14",
+      "angular": "core getSiteVerificationLabels(locale).label — packages/angular/src/site-verification.ts:5",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": "Visible summary text and name of the region. The `locale` prop/input, which only selected a language, is removed from every adapter."
+    },
+    {
+     "name": "detailsLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "core getSiteVerificationLabels(locale).detailsLabel ('كيف تتحقق؟' / English) — packages/react/src/site-verification.tsx:17",
+      "vue": "core getSiteVerificationLabels(locale).detailsLabel — packages/vue/src/site-verification.ts:17",
+      "angular": "core getSiteVerificationLabels(locale).detailsLabel — packages/angular/src/site-verification.ts:7",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": ""
+    },
+    {
+     "name": "domainLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "core getSiteVerificationLabels(locale).domainLabel ('تحقق من نطاق الموقع' / English) — packages/react/src/site-verification.tsx:20",
+      "vue": "core getSiteVerificationLabels(locale).domainLabel — packages/vue/src/site-verification.ts:20",
+      "angular": "core getSiteVerificationLabels(locale).domainLabel — packages/angular/src/site-verification.ts:9",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": ""
+    },
+    {
+     "name": "domainDescription",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "core getSiteVerificationLabels(locale).domainDescription ('تأكد من تطابق العنوان مع النطاق الرسمي للجهة.' / English) — packages/react/src/site-verification.tsx:20",
+      "vue": "core getSiteVerificationLabels(locale).domainDescription — packages/vue/src/site-verification.ts:20",
+      "angular": "core getSiteVerificationLabels(locale).domainDescription — packages/angular/src/site-verification.ts:9",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": ""
+    },
+    {
+     "name": "httpsLabel",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "core getSiteVerificationLabels(locale).httpsLabel ('تحقق من الاتصال الآمن' / English) — packages/react/src/site-verification.tsx:21",
+      "vue": "core getSiteVerificationLabels(locale).httpsLabel — packages/vue/src/site-verification.ts:21",
+      "angular": "core getSiteVerificationLabels(locale).httpsLabel — packages/angular/src/site-verification.ts:10",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": "The fixed \"HTTPS\" token the adapters append after this heading is removed (packages/react/src/site-verification.tsx:21, packages/angular/src/site-verification.ts:10 and the Vue equivalent); the application includes the protocol name in its own text."
+    },
+    {
+     "name": "httpsDescription",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "core getSiteVerificationLabels(locale).httpsDescription ('تأكد من أن العنوان يبدأ بـ HTTPS قبل مشاركة بياناتك.' / English) — packages/react/src/site-verification.tsx:21",
+      "vue": "core getSiteVerificationLabels(locale).httpsDescription — packages/vue/src/site-verification.ts:21",
+      "angular": "core getSiteVerificationLabels(locale).httpsDescription — packages/angular/src/site-verification.ts:10",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": ""
+    },
+    {
+     "name": "registrationLabel",
+     "shape": "string",
+     "required": "when registrationHref is set",
+     "replaces": {
+      "react": "core getSiteVerificationLabels(locale).registrationLabel ('التحقق من تسجيل المنصة' / English) — packages/react/src/site-verification.tsx:23",
+      "vue": "core getSiteVerificationLabels(locale).registrationLabel — packages/vue/src/site-verification.ts:23",
+      "angular": "core getSiteVerificationLabels(locale).registrationLabel — packages/angular/src/site-verification.ts:12",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": ""
+    },
+    {
+     "name": "externalLabel",
+     "shape": "string",
+     "required": "when registrationHref is set and registrationExternal is on",
+     "replaces": {
+      "react": "core getSiteVerificationLabels(locale).externalLabel ('يفتح في نافذة جديدة' / English) — packages/react/src/site-verification.tsx:23",
+      "vue": "core getSiteVerificationLabels(locale).externalLabel — packages/vue/src/site-verification.ts:23",
+      "angular": "core getSiteVerificationLabels(locale).externalLabel — packages/angular/src/site-verification.ts:12",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": ""
+    }
+   ]
+  },
+  {
+   "id": "spinner",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Loading' — packages/react/src/display.tsx:187",
+      "vue": "'Loading' — packages/vue/src/display.ts:185",
+      "angular": "'Loading' — packages/angular/src/presentation.ts:123",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it. A spinner marked aria-hidden=\"true\" by the application is decorative and needs none."
+    }
+   ]
+  },
+  {
+   "id": "stepper",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'التقدم' — packages/react/src/display.tsx:213",
+      "vue": "'التقدم' — packages/vue/src/display.ts:207",
+      "angular": "'التقدم' — packages/angular/src/navigation.ts:211",
+      "vanilla": "options.label ?? 'التقدم' when the list has no name — packages/vanilla/src/stepper.ts:31"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it. Vanilla: aria-label / aria-labelledby on the list, else data-hw-label or options.label."
+    }
+   ]
+  },
+  {
+   "id": "tabs",
+   "texts": [
+    {
+     "name": "overflowLabel",
+     "shape": "string",
+     "required": "when overflow is 'menu'",
+     "replaces": {
+      "react": "'المزيد من التبويبات' — packages/react/src/interactive.tsx:21",
+      "vue": "'المزيد من التبويبات' — packages/vue/src/interactive.ts:13",
+      "angular": "'المزيد من التبويبات' — packages/angular/src/navigation.ts:36",
+      "vanilla": "options.overflowLabel ?? data-hw-overflow-label ?? translated('More tabs', 'المزيد من التبويبات') — packages/vanilla/src/tabs.ts:65"
+     },
+     "notes": "Accessible name of the overflow disclosure. overflow defaults to 'menu', so the text is required unless overflow is 'scroll'. `label` is already required."
+    }
+   ]
+  },
+  {
+   "id": "tag-input",
+   "texts": [
+    {
+     "name": "getRemoveLabel",
+     "shape": "(tag: string) => string",
+     "required": "always",
+     "replaces": {
+      "react": "getRemoveLabel = tag => `Remove ${tag}` — packages/react/src/expanded-controls.tsx:72",
+      "vue": "removeLabel = value => `Remove ${value}` — packages/vue/src/controls.ts:527",
+      "angular": "removeLabel = 'Remove' (string) — packages/angular/src/advanced-controls.ts:177",
+      "vanilla": "getRemoveLabel ?? translated('Remove ${tag}', 'إزالة ${tag}') — packages/vanilla/src/controls.ts:158"
+     },
+     "notes": "Accessible name of a tag's remove button. Vue renames removeLabel; Angular changes removeLabel from a string to this function. Vanilla template attribute: data-hw-remove-label=\"… {tag}\"."
+    },
+    {
+     "name": "requiredMessage",
+     "shape": "string",
+     "required": "when required is set",
+     "replaces": {
+      "react": "'Add at least one tag.' — packages/react/src/expanded-controls.tsx:72",
+      "vue": "'Add at least one item.' — packages/vue/src/controls.ts:524",
+      "angular": "validationMessage = 'Add at least one tag.' — packages/angular/src/advanced-controls.ts:177",
+      "vanilla": "requiredMessage ?? translated('Add at least one tag.', 'أضف وسمًا واحدًا على الأقل.') — packages/vanilla/src/controls.ts:163"
+     },
+     "notes": "Angular renames validationMessage. Vanilla: data-hw-required-message."
+    },
+    {
+     "name": "addLabel",
+     "shape": "string",
+     "required": "when the adapter renders an add button",
+     "replaces": {
+      "react": "not rendered by this adapter today",
+      "vue": "not rendered by this adapter today",
+      "angular": "'Add' — packages/angular/src/advanced-controls.ts:177",
+      "vanilla": "not rendered by this adapter today"
+     },
+     "notes": ""
+    }
+   ]
+  },
+  {
+   "id": "timeline",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'Timeline' — packages/react/src/expanded-content.tsx:28",
+      "vue": "no default today (already supplied by the application)",
+      "angular": "'Timeline' — packages/angular/src/content.ts:37",
+      "vanilla": "no default: authored markup (the element's own text or aria-label)"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it."
+    }
+   ]
+  },
+  {
+   "id": "toast-region",
+   "texts": [
+    {
+     "name": "label",
+     "shape": "string",
+     "required": "always",
+     "replaces": {
+      "react": "'الإشعارات' — packages/react/src/expanded-interactive.tsx:61",
+      "vue": "'الإشعارات' — packages/vue/src/expansion-interactive.ts:424",
+      "angular": "'الإشعارات' — packages/angular/src/interactions.ts:86",
+      "vanilla": "options.label ?? translated('Notifications', 'الإشعارات') — packages/vanilla/src/disclosures.ts:79"
+     },
+     "notes": "Accessible name of the root. An aria-label or aria-labelledby passed by the application satisfies it. Vanilla: aria-label on the region, else data-hw-label or options.label."
+    },
+    {
+     "name": "getDismissLabel",
+     "shape": "(message: ToastMessage) => string",
+     "required": "when a message can be dismissed",
+     "replaces": {
+      "react": "text ? `إغلاق الإشعار: ${text}` : 'إغلاق الإشعار' — packages/react/src/expanded-interactive.tsx:59",
+      "vue": "dismissLabel = message => `إغلاق الإشعار: …` — packages/vue/src/expansion-interactive.ts:425",
+      "angular": "dismissLabel = 'إغلاق الإشعار' (string) — packages/angular/src/interactions.ts:88",
+      "vanilla": "translated('Dismiss notification', 'إغلاق الإشعار') + ': ' + title — packages/vanilla/src/disclosures.ts:132"
+     },
+     "notes": "Accessible name of a toast's dismiss button. Dismissal is the default (a dismiss handler is given and message.dismissible is not false), so most uses need it. Vue renames dismissLabel; Angular changes dismissLabel from a string to this function. Vanilla: the authored dismiss button's aria-label, else template attribute data-hw-dismiss-label=\"… {title}\" or options.getDismissLabel."
+    }
+   ]
+  },
+  {
+   "id": "tree-view",
+   "texts": [
+    {
+     "name": "getExpandLabel",
+     "shape": "(node: TreeNode) => string",
+     "required": "when the toggle is exposed as a control",
+     "replaces": {
+      "react": "'Expand ' + node.label (fixed English) — packages/react/src/expanded-interactive.tsx:105",
+      "vue": "expandLabel = node => `Expand ${node.label}` — packages/vue/src/expansion-interactive.ts:527",
+      "angular": "not rendered by this adapter today (the toggle is aria-hidden)",
+      "vanilla": "not rendered by this adapter today (the toggle is aria-hidden or authored)"
+     },
+     "notes": "Accessible name of a collapsed node's toggle. Adapters whose toggle is hidden from assistive technology (the treeitem carries aria-expanded) take no text. React adds the prop; Vue renames expandLabel."
+    },
+    {
+     "name": "getCollapseLabel",
+     "shape": "(node: TreeNode) => string",
+     "required": "when the toggle is exposed as a control",
+     "replaces": {
+      "react": "'Collapse ' + node.label (fixed English) — packages/react/src/expanded-interactive.tsx:105",
+      "vue": "collapseLabel = node => `Collapse ${node.label}` — packages/vue/src/expansion-interactive.ts:531",
+      "angular": "not rendered by this adapter today (the toggle is aria-hidden)",
+      "vanilla": "not rendered by this adapter today (the toggle is aria-hidden or authored)"
+     },
+     "notes": "React adds the prop; Vue renames collapseLabel."
+    }
+   ]
+  }
+ ],
+ "fragmentLinks": {
+  "behaviour": "Rendered markup: every packaged in-page link is rendered with the bare fragment, href = \"#\" + encodeURIComponent(id), on the server and on the first client render. That is the only form a server can know, it is identical on both sides of hydration, and it works without JavaScript wherever the page has no <base>. In the browser each adapter binds the link once it is mounted (React: effect; Vue: onMounted; Angular: afterNextRender or an equivalent browser-only hook; vanilla: controller creation) with core bindFragmentLink, and destroys the binding on unmount. Nothing is changed at bind time, so hydration sees the server markup; from the reader's first interaction the href is kept resolving to the current document under any <base href> (same origin: path + query + \"#id\"; other origin: absolute URL), and it follows client-side route changes because it is recomputed on every interaction. A plain activation (click, Enter) is handled in the page: the default is prevented, the target is scrolled into view and receives focus (tabindex=\"-1\" is added until blur when needed). Skip links scroll without animation; ContentNavigation passes navigate so its observer keeps its existing offset, reduced-motion handling and aria-current update. The URL fragment is not written by default, so hash-routed applications are unaffected; ContentNavigation gains an updateHash option (prop, input, data-hw-update-hash / option) that writes the resolved URL with history.replaceState. Modified clicks, middle clicks, the context menu and target=\"_blank\" are left to the browser with the corrected href. If the target does not exist the click is not intercepted. Adapters must not compute the href during server rendering, must not read location or document outside the mount hook, and must not render an absolute or path-qualified href in server output. An adapter that already handles the click itself (ContentNavigation) may keep its handler and use getFragmentHref for the href on the same events, provided the result matches bindFragmentLink. A skip link is rendered only when its target id is known (AppShell and PortalLayout always have one; PortalHeader only when mainId is supplied). Vanilla: createContentNavigation binds every link it owns; skip links in authored markup (a.hw-skip-link, including those inside [data-hw=\"portal-header\"]) are bound by a new createSkipLink(link) controller that is also registered with enhance() for [data-hw=\"skip-link\"].",
+  "components": [
+   "app-shell",
+   "portal-header",
+   "portal-layout",
+   "content-navigation"
+  ]
+ },
+ "migration": [
+  "alert (angular): 'Dismiss' -> closeLabel [when the alert is dismissible] (packages/angular/src/presentation.ts:41)",
+  "app-shell (react): 'انتقل إلى المحتوى' -> skipLabel [always] (packages/react/src/expanded-layout.tsx:24)",
+  "app-shell (vue): 'انتقل إلى المحتوى' -> skipLabel [always] (packages/vue/src/layout.ts:63)",
+  "app-shell (angular): 'انتقل إلى المحتوى' -> skipLabel [always] (packages/angular/src/layouts.ts:42)",
+  "avatar-group (angular): 'People' -> label [always] (packages/angular/src/content.ts:41)",
+  "avatar-group (react): getOverflowLabel = count => `${count} more people` -> getOverflowLabel [always] (packages/react/src/expanded-content.tsx:32)",
+  "avatar-group (vue): remainingLabel = count => `${count} more people` -> getOverflowLabel [always] (packages/vue/src/content.ts:256)",
+  "avatar-group (angular): overflowLabel = count => `${count} more people` -> getOverflowLabel [always] (packages/angular/src/content.ts:41)",
+  "breadcrumb (react): 'مسار التنقل' -> label [always] (packages/react/src/display.tsx:179)",
+  "breadcrumb (vue): 'مسار التنقل' -> label [always] (packages/vue/src/display.ts:177)",
+  "breadcrumb (angular): 'مسار التنقل' -> label [always] (packages/angular/src/navigation.ts:120)",
+  "calendar (react): core getCalendarLabels(locale).calendar ('التقويم' / 'Calendar') -> label [always] (packages/react/src/calendar.tsx:59)",
+  "calendar (vue): core getCalendarLabels(locale).calendar -> label [always] (packages/vue/src/calendar.ts:274)",
+  "calendar (angular): core getCalendarLabels(locale).calendar -> label [always] (packages/angular/src/advanced-controls.ts:191)",
+  "calendar (react): copy.previous ('الشهر السابق' / 'Previous month') -> previousLabel [always] (packages/react/src/calendar.tsx:60)",
+  "calendar (vue): copy.previous -> previousLabel [always] (packages/vue/src/calendar.ts:244)",
+  "calendar (angular): copy.previous -> previousLabel [always] (packages/angular/src/advanced-controls.ts:191)",
+  "calendar (vanilla): copy.previous (chosen from the document language) -> previousLabel [always] (packages/vanilla/src/calendar.ts:73)",
+  "calendar (react): copy.next ('الشهر التالي' / 'Next month') -> nextLabel [always] (packages/react/src/calendar.tsx:60)",
+  "calendar (vue): copy.next -> nextLabel [always] (packages/vue/src/calendar.ts:259)",
+  "calendar (angular): copy.next -> nextLabel [always] (packages/angular/src/advanced-controls.ts:191)",
+  "calendar (vanilla): copy.next (chosen from the document language) -> nextLabel [always] (packages/vanilla/src/calendar.ts:74)",
+  "calendar (vue): copy.unsupported -> unsupportedMessage [when calendar is 'islamic-umalqura'] (packages/vue/src/calendar.ts:269)",
+  "calendar (vanilla): copy.unsupported -> unsupportedMessage [when calendar is 'islamic-umalqura'] (packages/vanilla/src/calendar.ts:103)",
+  "calendar (vanilla): copy.system -> calendarSystemLabel [when the calendar-system switch is rendered] (packages/vanilla/src/calendar.ts:46)",
+  "calendar (vanilla): copy.gregorian -> gregorianLabel [when the calendar-system switch is rendered] (packages/vanilla/src/calendar.ts:47)",
+  "calendar (vanilla): copy.hijri -> hijriLabel [when the calendar-system switch is rendered] (packages/vanilla/src/calendar.ts:47)",
+  "calendar (vanilla): copy.range -> rangeLabel [when the calendar-system switch is rendered] (packages/vanilla/src/calendar.ts:52)",
+  "calendar (angular): hand-built day name with a Latin comma -> getDayLabel [when wanted (optional override of Intl formatting; no warning when omitted)] (packages/angular/src/advanced-controls.ts:191)",
+  "carousel (react): 'الشريحة السابقة' -> previousLabel [always] (packages/react/src/expanded-interactive.tsx:115)",
+  "carousel (vue): 'الشريحة السابقة' -> previousLabel [always] (packages/vue/src/expansion-interactive.ts:719)",
+  "carousel (angular): 'الشريحة السابقة' -> previousLabel [always] (packages/angular/src/interactions.ts:155)",
+  "carousel (react): 'الشريحة التالية' -> nextLabel [always] (packages/react/src/expanded-interactive.tsx:115)",
+  "carousel (vue): 'الشريحة التالية' -> nextLabel [always] (packages/vue/src/expansion-interactive.ts:720)",
+  "carousel (angular): 'الشريحة التالية' -> nextLabel [always] (packages/angular/src/interactions.ts:156)",
+  "carousel (react): 'اختيار الشريحة' -> indicatorsLabel [when showIndicators is on] (packages/react/src/expanded-interactive.tsx:117)",
+  "carousel (vue): 'اختيار الشريحة' -> indicatorsLabel [when showIndicators is on] (packages/vue/src/expansion-interactive.ts:722)",
+  "carousel (angular): 'اختيار الشريحة' -> indicatorsLabel [when showIndicators is on] (packages/angular/src/interactions.ts:154)",
+  "carousel (react): getSlideLabel = (current, count) => `${current + 1} من ${count}` (zero-based) -> getSlideLabel [always] (packages/react/src/expanded-interactive.tsx:116)",
+  "carousel (vue): slideMessage = (index, total) => `${index} من ${total}` -> getSlideLabel [always] (packages/vue/src/expansion-interactive.ts:728)",
+  "carousel (angular): slideLabel = (current, total) => `${current} من ${total}` -> getSlideLabel [always] (packages/angular/src/interactions.ts:160)",
+  "carousel (vanilla): getSlideLabel ?? translated('n of t', 'n من t') -> getSlideLabel [always] (packages/vanilla/src/content.ts:185)",
+  "carousel (react): 'لا توجد شرائح' -> emptyLabel [always] (packages/react/src/expanded-interactive.tsx:117)",
+  "carousel (vue): 'لا توجد شرائح' -> emptyLabel [always] (packages/vue/src/expansion-interactive.ts:723)",
+  "carousel (angular): 'لا توجد شرائح' -> emptyLabel [always] (packages/angular/src/interactions.ts:157)",
+  "carousel (vanilla): translated('No slides', 'لا توجد شرائح') -> emptyLabel [always] (packages/vanilla/src/content.ts:193)",
+  "carousel (react): 'عرض شرائح' -> carouselDescription [when wanted (optional: no default, and no warning when omitted)] (packages/react/src/expanded-interactive.tsx:118)",
+  "carousel (vue): 'عرض شرائح' -> carouselDescription [when wanted (optional: no default, and no warning when omitted)] (packages/vue/src/expansion-interactive.ts:724)",
+  "carousel (angular): 'عرض شرائح' -> carouselDescription [when wanted (optional: no default, and no warning when omitted)] (packages/angular/src/interactions.ts:158)",
+  "carousel (vanilla): translated('carousel', 'عرض شرائح') -> carouselDescription [when wanted (optional: no default, and no warning when omitted)] (packages/vanilla/src/content.ts:177)",
+  "carousel (react): 'شريحة' -> slideDescription [when wanted (optional: no default, and no warning when omitted)] (packages/react/src/expanded-interactive.tsx:118)",
+  "carousel (vue): 'شريحة' -> slideDescription [when wanted (optional: no default, and no warning when omitted)] (packages/vue/src/expansion-interactive.ts:725)",
+  "carousel (angular): 'شريحة' -> slideDescription [when wanted (optional: no default, and no warning when omitted)] (packages/angular/src/interactions.ts:159)",
+  "carousel (vanilla): translated('slide', 'شريحة') -> slideDescription [when wanted (optional: no default, and no warning when omitted)] (packages/vanilla/src/content.ts:179)",
+  "chip (react): 'Remove' -> removeLabel [when the chip is removable] (packages/react/src/expanded-content.tsx:20)",
+  "chip (vue): 'Remove' -> removeLabel [when the chip is removable] (packages/vue/src/content.ts:76)",
+  "chip (angular): 'Remove' -> removeLabel [when the chip is removable] (packages/angular/src/content.ts:31)",
+  "combobox (react): 'No options found' -> emptyMessage [always] (packages/react/src/interactive.tsx:183)",
+  "combobox (vue): 'No options found' -> emptyMessage [always] (packages/vue/src/interactive.ts:127)",
+  "combobox (angular): 'No results' -> emptyMessage [always] (packages/angular/src/forms.ts:138)",
+  "combobox (react): getResultsMessage = count => `${count} results available` -> getResultsMessage [always] (packages/react/src/interactive.tsx:183)",
+  "combobox (vue): resultsMessage = count => `${count} results available` -> getResultsMessage [always] (packages/vue/src/interactive.ts:127)",
+  "combobox (angular): resultsMessage = count => `${count} results available` -> getResultsMessage [always] (packages/angular/src/forms.ts:140)",
+  "combobox (vanilla): getResultsMessage ?? (count => `${count} نتيجة`) -> getResultsMessage [always] (packages/vanilla/src/combobox.ts:118)",
+  "combobox (react): 'Choose an option from the list.' -> requiredMessage [when required is set] (packages/react/src/interactive.tsx:183)",
+  "combobox (vue): 'Choose an option from the list.' -> requiredMessage [when required is set] (packages/vue/src/interactive.ts:127)",
+  "combobox (angular): validationMessage = 'Select an option from the list.' -> requiredMessage [when required is set] (packages/angular/src/forms.ts:139)",
+  "combobox (vanilla): invalidSelectionMessage ?? 'اختر خيارًا من القائمة.' -> requiredMessage [when required is set] (packages/vanilla/src/combobox.ts:96)",
+  "content-navigation (react): 'في هذه الصفحة' -> label [always] (packages/react/src/content-navigation.tsx:19)",
+  "content-navigation (vue): 'في هذه الصفحة' -> label [always] (packages/vue/src/content-navigation.ts:11)",
+  "content-navigation (angular): 'في هذه الصفحة' -> label [always] (packages/angular/src/content-navigation.ts:22)",
+  "cookie-consent (vue): label = 'Cookie preferences' -> title [always] (packages/vue/src/patterns.ts:303)",
+  "cookie-consent (angular): 'Cookie preferences' -> title [always] (packages/angular/src/content.ts:143)",
+  "cookie-consent (react): 'Accept optional cookies' -> acceptLabel [always] (packages/react/src/expanded-content.tsx:145)",
+  "cookie-consent (vue): 'Accept optional cookies' -> acceptLabel [always] (packages/vue/src/patterns.ts:305)",
+  "cookie-consent (angular): 'Accept optional cookies' -> acceptLabel [always] (packages/angular/src/content.ts:143)",
+  "cookie-consent (react): 'Reject optional cookies' -> rejectLabel [always] (packages/react/src/expanded-content.tsx:145)",
+  "cookie-consent (vue): 'Reject optional cookies' -> rejectLabel [always] (packages/vue/src/patterns.ts:306)",
+  "cookie-consent (angular): 'Reject optional cookies' -> rejectLabel [always] (packages/angular/src/content.ts:143)",
+  "cookie-consent (vue): 'Manage preferences' -> preferencesLabel [when the preferences action is rendered] (packages/vue/src/patterns.ts:307)",
+  "cookie-consent (angular): 'Manage preferences' -> preferencesLabel [when the preferences action is rendered] (packages/angular/src/content.ts:143)",
+  "cookie-consent (react): 'Cookie policy' -> policyLabel [when policyHref is set] (packages/react/src/expanded-content.tsx:145)",
+  "table (react): 'لا توجد سجلات' -> emptyMessage [always] (packages/react/src/display.tsx:90)",
+  "table (vue): 'لا توجد سجلات' -> emptyMessage [always] (packages/vue/src/display.ts:76)",
+  "table (angular): 'لا توجد سجلات' -> emptyMessage [always] (packages/angular/src/presentation.ts:104)",
+  "data-table (react): 'لا توجد سجلات' -> emptyMessage [always] (packages/react/src/expanded-content.tsx:44)",
+  "data-table (vue): 'لا توجد سجلات' -> emptyMessage [always] (packages/vue/src/content.ts:302)",
+  "data-table (angular): 'لا توجد نتائج' -> emptyMessage [always] (packages/angular/src/content.ts:47)",
+  "data-table (vue): sortLabel = (column, direction) => `ترتيب ${column.label} تصاعديًا|تنازليًا` -> getSortLabel [when wanted (optional: no default, and no warning when omitted)] (packages/vue/src/content.ts:325)",
+  "date-picker (react): copy.date ('التاريخ' / 'Date') -> label [always] (packages/react/src/calendar.tsx:89)",
+  "date-picker (vue): copy.date -> label [always] (packages/vue/src/calendar.ts:450)",
+  "date-picker (angular): copy.date -> label [always] (packages/angular/src/advanced-controls.ts:248)",
+  "date-picker (react): copy.choose ('اختر التاريخ' / 'Choose date') -> calendarLabel [always] (packages/react/src/calendar.tsx:92)",
+  "date-picker (vue): copy.choose -> calendarLabel [always] (packages/vue/src/calendar.ts:530)",
+  "date-picker (angular): dialogTitle || label || copy.choose -> calendarLabel [always] (packages/angular/src/advanced-controls.ts:248)",
+  "date-picker (react): buttonLabel ?? copy.open ('فتح التقويم' / 'Open calendar') -> openLabel [always] (packages/react/src/calendar.tsx:92)",
+  "date-picker (vue): copy.open -> openLabel [always] (packages/vue/src/calendar.ts:494)",
+  "date-picker (angular): copy.open -> openLabel [always] (packages/angular/src/advanced-controls.ts:248)",
+  "date-picker (vanilla): trigger text or aria-label, else copy.open -> openLabel [always] (packages/vanilla/src/calendar.ts:167)",
+  "date-picker (react): copy.close ('إغلاق التقويم' / 'Close calendar') -> closeLabel [always] (packages/react/src/calendar.tsx:92)",
+  "date-picker (vue): copy.close -> closeLabel [always] (packages/vue/src/calendar.ts:531)",
+  "date-picker (angular): copy.close -> closeLabel [always] (packages/angular/src/advanced-controls.ts:248)",
+  "date-picker (react): copy.previous (through Calendar) -> previousLabel [always] (packages/react/src/calendar.tsx:60)",
+  "date-picker (vue): copy.previous -> previousLabel [always] (packages/vue/src/calendar.ts:249)",
+  "date-picker (angular): copy.previous (through hw-calendar) -> previousLabel [always] (packages/angular/src/advanced-controls.ts:191)",
+  "date-picker (vanilla): copy.previous -> previousLabel [always] (packages/vanilla/src/calendar.ts:73)",
+  "date-picker (react): copy.next (through Calendar) -> nextLabel [always] (packages/react/src/calendar.tsx:60)",
+  "date-picker (vue): copy.next -> nextLabel [always] (packages/vue/src/calendar.ts:264)",
+  "date-picker (angular): copy.next (through hw-calendar) -> nextLabel [always] (packages/angular/src/advanced-controls.ts:191)",
+  "date-picker (vanilla): copy.next -> nextLabel [always] (packages/vanilla/src/calendar.ts:74)",
+  "date-picker (react): copy.system ('نظام التقويم' / 'Calendar system') -> calendarSystemLabel [always] (packages/react/src/calendar.tsx:93)",
+  "date-picker (vue): copy.system -> calendarSystemLabel [always] (packages/vue/src/calendar.ts:534)",
+  "date-picker (angular): calendarLabel ?? copy.system -> calendarSystemLabel [always] (packages/angular/src/advanced-controls.ts:248)",
+  "date-picker (vanilla): copy.system -> calendarSystemLabel [always] (packages/vanilla/src/calendar.ts:46)",
+  "date-picker (react): gregorianLabel ?? copy.gregorian ('ميلادي' / 'Gregorian') -> gregorianLabel [always] (packages/react/src/calendar.tsx:93)",
+  "date-picker (vue): gregoryLabel ?? copy.gregorian -> gregorianLabel [always] (packages/vue/src/calendar.ts:537)",
+  "date-picker (angular): gregorianLabel ?? copy.gregorian -> gregorianLabel [always] (packages/angular/src/advanced-controls.ts:248)",
+  "date-picker (vanilla): copy.gregorian -> gregorianLabel [always] (packages/vanilla/src/calendar.ts:47)",
+  "date-picker (react): hijriLabel ?? copy.hijri ('هجري · أم القرى' / 'Hijri · Umm al-Qura') -> hijriLabel [always] (packages/react/src/calendar.tsx:93)",
+  "date-picker (vue): copy.hijri -> hijriLabel [always] (packages/vue/src/calendar.ts:537)",
+  "date-picker (angular): copy.hijri -> hijriLabel [always] (packages/angular/src/advanced-controls.ts:248)",
+  "date-picker (vanilla): copy.hijri -> hijriLabel [always] (packages/vanilla/src/calendar.ts:47)",
+  "date-picker (react): copy.range ('التواريخ الهجرية المدعومة' / 'Supported Hijri dates') -> rangeLabel [always] (packages/react/src/calendar.tsx:60)",
+  "date-picker (vue): copy.range -> rangeLabel [always] (packages/vue/src/calendar.ts:253)",
+  "date-picker (angular): copy.range -> rangeLabel [always] (packages/angular/src/advanced-controls.ts:194)",
+  "date-picker (vanilla): copy.range -> rangeLabel [always] (packages/vanilla/src/calendar.ts:52)",
+  "date-picker (react): copy.invalid ('أدخل تاريخًا ميلاديًا متاحًا بصيغة YYYY-MM-DD.' / English) -> invalidMessage [always] (packages/react/src/calendar.tsx:83)",
+  "date-picker (vue): copy.invalid -> invalidMessage [always] (packages/vue/src/calendar.ts:428)",
+  "date-picker (angular): copy.invalid -> invalidMessage [always] (packages/angular/src/advanced-controls.ts:267)",
+  "date-picker (vanilla): options.invalidMessage ?? copy.invalid -> invalidMessage [always] (packages/vanilla/src/calendar.ts:184)",
+  "date-picker (react): unsupportedCalendarMessage ?? copy.unsupported -> unsupportedMessage [always] (packages/react/src/calendar.tsx:83)",
+  "date-picker (vue): copy.unsupported -> unsupportedMessage [always] (packages/vue/src/calendar.ts:431)",
+  "date-picker (angular): copy.unsupported -> unsupportedMessage [always] (packages/angular/src/advanced-controls.ts:262)",
+  "date-picker (vanilla): copy.unsupported -> unsupportedMessage [always] (packages/vanilla/src/calendar.ts:184)",
+  "date-picker (react): copy.unavailable ('هذا التاريخ غير متاح.' / 'This date is unavailable.') -> unavailableMessage [when isDateDisabled is given] (packages/react/src/calendar.tsx:83)",
+  "date-picker (react): 'YYYY-MM-DD' -> placeholder [when wanted (optional: no default, and no warning when omitted)] (packages/react/src/calendar.tsx:91)",
+  "date-picker (vue): 'YYYY-MM-DD' -> placeholder [when wanted (optional: no default, and no warning when omitted)] (packages/vue/src/calendar.ts:460)",
+  "date-picker (angular): 'YYYY-MM-DD' (fixed) -> placeholder [when wanted (optional: no default, and no warning when omitted)] (packages/angular/src/advanced-controls.ts:248)",
+  "dialog (react): 'Close' -> closeLabel [always] (packages/react/src/interactive.tsx:105)",
+  "dialog (vue): 'Close' -> closeLabel [always] (packages/vue/src/interactive.ts:79)",
+  "dialog (angular): 'Close dialog' -> closeLabel [always] (packages/angular/src/overlays.ts:12)",
+  "drawer (react): 'Close' (inherited from Dialog) -> closeLabel [always] (packages/react/src/interactive.tsx:105)",
+  "drawer (vue): 'Close' -> closeLabel [always] (packages/vue/src/expansion-interactive.ts:373)",
+  "drawer (angular): 'Close dialog' (inherited from hw-dialog) -> closeLabel [always] (packages/angular/src/overlays.ts:12)",
+  "feedback (vue): 'Was this page helpful?' -> label [always] (packages/vue/src/patterns.ts:213)",
+  "feedback (angular): 'Was this page helpful?' -> label [always] (packages/angular/src/content.ts:141)",
+  "feedback (react): 'Yes' -> yesLabel [always] (packages/react/src/expanded-content.tsx:139)",
+  "feedback (vue): 'Yes' -> yesLabel [always] (packages/vue/src/patterns.ts:216)",
+  "feedback (angular): positiveLabel = 'Yes' -> yesLabel [always] (packages/angular/src/content.ts:141)",
+  "feedback (react): 'No' -> noLabel [always] (packages/react/src/expanded-content.tsx:139)",
+  "feedback (vue): 'No' -> noLabel [always] (packages/vue/src/patterns.ts:217)",
+  "feedback (angular): negativeLabel = 'No' -> noLabel [always] (packages/angular/src/content.ts:141)",
+  "feedback (react): 'Tell us more (optional)' -> commentLabel [when the comment field is rendered] (packages/react/src/expanded-content.tsx:139)",
+  "feedback (vue): 'Tell us more' -> commentLabel [when the comment field is rendered] (packages/vue/src/patterns.ts:218)",
+  "feedback (react): 'Send feedback' -> submitLabel [when the comment field is rendered] (packages/react/src/expanded-content.tsx:139)",
+  "feedback (vue): 'Send feedback' -> submitLabel [when the comment field is rendered] (packages/vue/src/patterns.ts:219)",
+  "feedback (react): 'Thank you for your feedback.' -> successMessage [always] (packages/react/src/expanded-content.tsx:139)",
+  "feedback (vue): thanks = 'Thank you for your feedback.' -> successMessage [always] (packages/vue/src/patterns.ts:220)",
+  "feedback (angular): thanksMessage = 'Thank you for your feedback' -> successMessage [always] (packages/angular/src/content.ts:141)",
+  "feedback (vanilla): getStatusMessage?.(value) ?? translated('Thank you for your feedback.', 'شكرًا لملاحظاتك.') -> successMessage [always] (packages/vanilla/src/content.ts:73)",
+  "file-dropzone (react): 'Drop files here or choose files' -> dropLabel [always] (packages/react/src/expanded-controls.tsx:86)",
+  "file-dropzone (vue): 'Choose files or drop them here' -> dropLabel [always] (packages/vue/src/controls.ts:755)",
+  "file-dropzone (angular): instruction = 'Drop files here or choose files' -> dropLabel [always] (packages/angular/src/advanced-controls.ts:298)",
+  "file-dropzone (react): getRejectedMessage = () => 'Some files do not match the accepted file types.' -> getRejectedMessage [when accept or maxSize is set] (packages/react/src/expanded-controls.tsx:86)",
+  "file-dropzone (vanilla): getStatusMessage?.(files, rejected) ?? translated('Choose files matching the allowed type and size.', …) -> getRejectedMessage [when accept or maxSize is set] (packages/vanilla/src/controls.ts:233)",
+  "file-dropzone (angular): selectedMessage = count => `${count} files selected` -> getSelectedMessage [when a selection status is rendered] (packages/angular/src/advanced-controls.ts:298)",
+  "file-dropzone (vanilla): file names joined with the Arabic comma '، ' -> getSelectedMessage [when a selection status is rendered] (packages/vanilla/src/controls.ts:233)",
+  "file-dropzone (vanilla): translated('Use the file chooser to attach documents.', 'استخدم اختيار الملفات لإرفاق المستندات.') -> unsupportedDropMessage [when a selection status is rendered (vanilla only)] (packages/vanilla/src/controls.ts:242)",
+  "file-upload (react): core fileUploadLabels ('جاهز للرفع', 'جارٍ الرفع', 'اكتمل الرفع', 'تعذر الرفع', 'إزالة الملف') -> labels [always] (packages/react/src/file-upload-list.tsx:12)",
+  "file-upload (vue): core fileUploadLabels -> labels [always] (packages/vue/src/file-upload-list.ts:8)",
+  "file-upload (angular): core fileUploadLabels -> labels [always] (packages/angular/src/file-upload-list.ts:17)",
+  "file-upload (vanilla): core fileUploadLabels -> labels [always] (packages/vanilla/src/file-upload-list.ts:15)",
+  "menu (angular): 'Open' -> triggerLabel [when the adapter renders the trigger itself] (packages/angular/src/interactions.ts:26)",
+  "popover (angular): 'Open' -> triggerLabel [when the adapter renders the trigger itself] (packages/angular/src/interactions.ts:26)",
+  "mobile-top-bar (react): 'رجوع' -> backLabel [when backHref or a back action is given] (packages/react/src/mobile-top-bar.tsx:10)",
+  "mobile-top-bar (vue): 'رجوع' -> backLabel [when backHref or a back action is given] (packages/vue/src/mobile-top-bar.ts:10)",
+  "mobile-top-bar (angular): 'رجوع' -> backLabel [when backHref or a back action is given] (packages/angular/src/mobile-top-bar.ts:12)",
+  "multi-select (react): 'Search options' -> searchLabel [always] (packages/react/src/expanded-controls.tsx:79)",
+  "multi-select (vue): 'Search options' -> searchLabel [always] (packages/vue/src/controls.ts:635)",
+  "multi-select (angular): 'Search options' -> searchLabel [always] (packages/angular/src/advanced-controls.ts:181)",
+  "multi-select (react): 'No options found' -> emptyMessage [always] (packages/react/src/expanded-controls.tsx:79)",
+  "multi-select (vue): 'No options found' -> emptyMessage [always] (packages/vue/src/controls.ts:636)",
+  "multi-select (angular): 'No options' -> emptyMessage [always] (packages/angular/src/advanced-controls.ts:181)",
+  "multi-select (react): 'Choose at least one option.' -> requiredMessage [when required is set] (packages/react/src/expanded-controls.tsx:79)",
+  "multi-select (vue): 'Choose at least one option.' -> requiredMessage [when required is set] (packages/vue/src/controls.ts:637)",
+  "multi-select (angular): validationMessage = 'Select at least one option.' -> requiredMessage [when required is set] (packages/angular/src/advanced-controls.ts:181)",
+  "multi-select (vanilla): requiredMessage ?? translated('Choose at least one option.', 'اختر خيارًا واحدًا على الأقل.') -> requiredMessage [when required is set] (packages/vanilla/src/controls.ts:207)",
+  "multi-select (vanilla): getResultsMessage ?? translated('${count} options', '${count} خيارات') -> getResultsMessage [when the adapter announces the filtered count] (packages/vanilla/src/controls.ts:210)",
+  "multi-select (angular): selectedMessage = count => `${count} selected` -> getSelectedMessage [when the adapter renders the selected count] (packages/angular/src/advanced-controls.ts:181)",
+  "navigation-drawer (react): 'التنقل الرئيسي' -> navigationLabel [always] (packages/react/src/navigation-drawer.tsx:48)",
+  "navigation-drawer (vue): 'التنقل الرئيسي' -> navigationLabel [always] (packages/vue/src/navigation-drawer.ts:31)",
+  "navigation-drawer (angular): 'التنقل الرئيسي' -> navigationLabel [always] (packages/angular/src/navigation-drawer.ts:25)",
+  "navigation-drawer (vanilla): options.navigationLabel ?? 'التنقل الرئيسي' -> navigationLabel [always] (packages/vanilla/src/navigation-drawer.ts:18)",
+  "navigation-drawer (react): 'إغلاق القائمة' -> closeLabel [always] (packages/react/src/navigation-drawer.tsx:48)",
+  "navigation-drawer (vue): 'إغلاق القائمة' -> closeLabel [always] (packages/vue/src/navigation-drawer.ts:31)",
+  "navigation-drawer (angular): 'إغلاق القائمة' -> closeLabel [always] (packages/angular/src/navigation-drawer.ts:26)",
+  "notification-list (vue): 'Notifications' -> label [always] (packages/vue/src/patterns.ts:383)",
+  "notification-list (angular): 'Notifications' -> label [always] (packages/angular/src/content.ts:145)",
+  "notification-list (react): 'No notifications' -> emptyMessage [always] (packages/react/src/expanded-content.tsx:151)",
+  "notification-list (vue): 'No notifications' -> emptyMessage [always] (packages/vue/src/patterns.ts:384)",
+  "notification-list (angular): 'No notifications' -> emptyMessage [always] (packages/angular/src/content.ts:145)",
+  "notification-list (react): 'Unread' -> unreadLabel [always] (packages/react/src/expanded-content.tsx:151)",
+  "notification-list (angular): 'Unread' -> unreadLabel [always] (packages/angular/src/content.ts:145)",
+  "notification-list (react): getMarkReadLabel = () => 'Mark as read' -> getMarkReadLabel [when a mark-read handler is given] (packages/react/src/expanded-content.tsx:151)",
+  "notification-list (vue): readLabel = item => `Mark ${item.title} as read` -> getMarkReadLabel [when a mark-read handler is given] (packages/vue/src/patterns.ts:387)",
+  "notification-list (vue): dismissLabel = item => `Dismiss ${item.title}` -> getDismissLabel [when a dismiss handler is given] (packages/vue/src/patterns.ts:391)",
+  "notification-list (angular): dismissLabel = 'Dismiss' (string) -> getDismissLabel [when a dismiss handler is given] (packages/angular/src/content.ts:145)",
+  "pagination (react): 'ترقيم الصفحات' -> label [always] (packages/react/src/display.tsx:109)",
+  "pagination (vue): 'ترقيم الصفحات' -> label [always] (packages/vue/src/display.ts:99)",
+  "pagination (angular): 'ترقيم الصفحات' -> label [always] (packages/angular/src/navigation.ts:138)",
+  "pagination (react): 'الصفحة السابقة' -> previousLabel [always] (packages/react/src/display.tsx:109)",
+  "pagination (vue): 'الصفحة السابقة' -> previousLabel [always] (packages/vue/src/display.ts:99)",
+  "pagination (angular): 'الصفحة السابقة' -> previousLabel [always] (packages/angular/src/navigation.ts:141)",
+  "pagination (react): 'الصفحة التالية' -> nextLabel [always] (packages/react/src/display.tsx:109)",
+  "pagination (vue): 'الصفحة التالية' -> nextLabel [always] (packages/vue/src/display.ts:99)",
+  "pagination (angular): 'الصفحة التالية' -> nextLabel [always] (packages/angular/src/navigation.ts:142)",
+  "pagination (react): getPageLabel = page => 'الصفحة ' + page -> getPageLabel [always] (packages/react/src/display.tsx:110)",
+  "pagination (vue): pageLabel = page => 'الصفحة ' + page -> getPageLabel [always] (packages/vue/src/display.ts:100)",
+  "pagination (angular): pageLabel = page => 'الصفحة ' + page -> getPageLabel [always] (packages/angular/src/navigation.ts:143)",
+  "pagination (vanilla): getPageLabel ?? translated('Page ${value}', 'الصفحة ${value}') -> getPageLabel [always] (packages/vanilla/src/pagination.ts:41)",
+  "pagination (react): getGapLabel = (start, end) => 'الصفحات ' + start + ' إلى ' + end -> getGapLabel [always] (packages/react/src/display.tsx:111)",
+  "pagination (vue): gapLabel (same Arabic template) -> getGapLabel [always] (packages/vue/src/display.ts:103)",
+  "pagination (angular): gapLabel (same Arabic template) -> getGapLabel [always] (packages/angular/src/navigation.ts:148)",
+  "pagination (vanilla): getGapLabel ?? translated('Pages ${start} to ${end}', 'الصفحات ${start} إلى ${end}') -> getGapLabel [always] (packages/vanilla/src/pagination.ts:42)",
+  "pagination (react): 'الانتقال إلى صفحة' -> jumpLabel [always] (packages/react/src/display.tsx:112)",
+  "pagination (vue): 'الانتقال إلى صفحة' -> jumpLabel [always] (packages/vue/src/display.ts:104)",
+  "pagination (angular): 'الانتقال إلى صفحة' -> jumpLabel [always] (packages/angular/src/navigation.ts:149)",
+  "pagination (vanilla): jumpLabel ?? translated('Go to page', 'الانتقال إلى صفحة') -> jumpLabel [always] (packages/vanilla/src/pagination.ts:75)",
+  "pagination (react): 'انتقال' -> goLabel [always] (packages/react/src/display.tsx:112)",
+  "pagination (vue): 'انتقال' -> goLabel [always] (packages/vue/src/display.ts:104)",
+  "pagination (angular): 'انتقال' -> goLabel [always] (packages/angular/src/navigation.ts:150)",
+  "pagination (vanilla): goLabel ?? translated('Go', 'انتقال') -> goLabel [always] (packages/vanilla/src/pagination.ts:84)",
+  "password-field (react): 'Show password' -> showLabel [always] (packages/react/src/expanded-controls.tsx:14)",
+  "password-field (vue): 'Show password' -> showLabel [always] (packages/vue/src/controls.ts:60)",
+  "password-field (angular): 'Show password' -> showLabel [always] (packages/angular/src/advanced-controls.ts:26)",
+  "password-field (vanilla): button aria-label || translated('Show password', 'إظهار كلمة المرور') -> showLabel [always] (packages/vanilla/src/controls.ts:13)",
+  "password-field (react): 'Hide password' -> hideLabel [always] (packages/react/src/expanded-controls.tsx:14)",
+  "password-field (vue): 'Hide password' -> hideLabel [always] (packages/vue/src/controls.ts:61)",
+  "password-field (angular): 'Hide password' -> hideLabel [always] (packages/angular/src/advanced-controls.ts:26)",
+  "password-field (vanilla): data-hw-hide-label || translated('Hide password', 'إخفاء كلمة المرور') -> hideLabel [always] (packages/vanilla/src/controls.ts:14)",
+  "portal-header (react): 'انتقل إلى المحتوى' -> skipLabel [when mainId is set] (packages/react/src/expanded-content.tsx:56)",
+  "portal-header (vue): 'انتقل إلى المحتوى' -> skipLabel [when mainId is set] (packages/vue/src/patterns.ts:91)",
+  "portal-header (angular): 'انتقل إلى المحتوى' -> skipLabel [when mainId is set] (packages/angular/src/content.ts:88)",
+  "portal-header (react): 'القائمة' -> menuLabel [always] (packages/react/src/expanded-content.tsx:56)",
+  "portal-header (vue): 'القائمة' -> menuLabel [always] (packages/vue/src/patterns.ts:88)",
+  "portal-header (angular): 'القائمة' -> menuLabel [always] (packages/angular/src/content.ts:88)",
+  "portal-header (react): 'التنقل الرئيسي' -> navigationLabel [always] (packages/react/src/expanded-content.tsx:56)",
+  "portal-header (vue): navLabel = 'التنقل الرئيسي' -> navigationLabel [always] (packages/vue/src/patterns.ts:87)",
+  "portal-header (angular): 'التنقل الرئيسي' -> navigationLabel [always] (packages/angular/src/content.ts:88)",
+  "portal-footer (react): linksLabel = 'روابط التذييل' -> navigationLabel [when links are given] (packages/react/src/expanded-content.tsx:124)",
+  "portal-footer (vue): navLabel = 'روابط التذييل' -> navigationLabel [when links are given] (packages/vue/src/patterns.ts:181)",
+  "portal-footer (angular): 'روابط التذييل' -> navigationLabel [when links are given] (packages/angular/src/content.ts:136)",
+  "portal-footer (react): 'السياسات وإمكانية الوصول' -> legalLinksLabel [when legalLinks are given] (packages/react/src/expanded-content.tsx:124)",
+  "portal-footer (vue): 'السياسات وإمكانية الوصول' -> legalLinksLabel [when legalLinks are given] (packages/vue/src/patterns.ts:182)",
+  "portal-footer (angular): 'السياسات وإمكانية الوصول' -> legalLinksLabel [when legalLinks are given] (packages/angular/src/content.ts:138)",
+  "portal-footer (react): 'المساعدة والتواصل' -> supportLabel [when support content is given] (packages/react/src/expanded-content.tsx:124)",
+  "portal-footer (vue): 'المساعدة والتواصل' -> supportLabel [when support content is given] (packages/vue/src/patterns.ts:183)",
+  "portal-footer (angular): 'المساعدة والتواصل' -> supportLabel [when support content is given] (packages/angular/src/content.ts:138)",
+  "portal-footer (react): 'يفتح في نافذة جديدة' -> externalLabel [always] (packages/react/src/expanded-content.tsx:124)",
+  "portal-footer (vue): 'يفتح في نافذة جديدة' -> externalLabel [always] (packages/vue/src/patterns.ts:184)",
+  "portal-footer (angular): 'يفتح في نافذة جديدة' -> externalLabel [always] (packages/angular/src/content.ts:138)",
+  "portal-layout (react): 'انتقل إلى المحتوى' -> skipLabel [always] (packages/react/src/portal.tsx:22)",
+  "portal-layout (vue): 'انتقل إلى المحتوى' -> skipLabel [always] (packages/vue/src/portal.ts:24)",
+  "portal-layout (angular): 'انتقل إلى المحتوى' -> skipLabel [always] (packages/angular/src/portal.ts:22)",
+  "portal-layout (vue): 'القائمة' -> menuLabel [always] (packages/vue/src/portal.ts:25)",
+  "portal-layout (angular): 'القائمة' -> menuLabel [always] (packages/angular/src/portal.ts:22)",
+  "portal-layout (vue): 'التنقل الرئيسي' -> navigationLabel [always] (packages/vue/src/portal.ts:25)",
+  "portal-layout (angular): 'التنقل الرئيسي' -> navigationLabel [always] (packages/angular/src/portal.ts:22)",
+  "portal-layout (react): SecondaryNav default 'التنقل الثانوي' -> secondaryLabel [when secondary navigation items are given] (packages/react/src/portal.tsx:12)",
+  "portal-layout (vue): 'التنقل الثانوي' -> secondaryLabel [when secondary navigation items are given] (packages/vue/src/portal.ts:26)",
+  "portal-layout (angular): 'التنقل الثانوي' -> secondaryLabel [when secondary navigation items are given] (packages/angular/src/portal.ts:23)",
+  "portal-layout (react): 'مسار التنقل' -> breadcrumbLabel [when breadcrumbs are given] (packages/react/src/portal.tsx:22)",
+  "portal-layout (vue): 'مسار التنقل' -> breadcrumbLabel [when breadcrumbs are given] (packages/vue/src/portal.ts:26)",
+  "portal-layout (angular): 'مسار التنقل' -> breadcrumbLabel [when breadcrumbs are given] (packages/angular/src/portal.ts:23)",
+  "portal-layout (react): fixed linksLabel=\"روابط التذييل\" passed to PortalFooter -> footerLabel [when footer links are given] (packages/react/src/portal.tsx:30)",
+  "portal-layout (vue): 'روابط التذييل' -> footerLabel [when footer links are given] (packages/vue/src/portal.ts:26)",
+  "portal-layout (angular): 'روابط التذييل' -> footerLabel [when footer links are given] (packages/angular/src/portal.ts:23)",
+  "secondary-nav (react): 'التنقل الثانوي' -> label [always] (packages/react/src/portal.tsx:12)",
+  "secondary-nav (vue): 'التنقل الثانوي' -> label [always] (packages/vue/src/portal.ts:11)",
+  "secondary-nav (angular): 'التنقل الثانوي' -> label [always] (packages/angular/src/portal.ts:9)",
+  "range-slider (vue): 'Minimum' -> lowerLabel [always] (packages/vue/src/controls.ts:273)",
+  "range-slider (angular): 'Minimum' -> lowerLabel [always] (packages/angular/src/advanced-controls.ts:134)",
+  "range-slider (vue): 'Maximum' -> upperLabel [always] (packages/vue/src/controls.ts:274)",
+  "range-slider (angular): 'Maximum' -> upperLabel [always] (packages/angular/src/advanced-controls.ts:134)",
+  "rating (react): getRatingLabel = (number, total) => `${number} من ${total}` -> getRatingLabel [always] (packages/react/src/expanded-controls.tsx:46)",
+  "rating (vue): optionLabel = (value, max) => `${value} من ${max}` -> getRatingLabel [always] (packages/vue/src/controls.ts:365)",
+  "rating (angular): ratingLabel = (value, max) => `${value} من ${max}` -> getRatingLabel [always] (packages/angular/src/advanced-controls.ts:150)",
+  "rating (react): getValueLabel = (score, total) => `${score} من ${total}` -> getValueLabel [always] (packages/react/src/expanded-controls.tsx:57)",
+  "rating (vue): valueLabel = (value, max) => `${value} من ${max}` -> getValueLabel [always] (packages/vue/src/controls.ts:454)",
+  "rating (angular): valueLabel = (value, max) => `${value} من ${max}` -> getValueLabel [always] (packages/angular/src/advanced-controls.ts:166)",
+  "search-field (react): 'مسح البحث' -> clearLabel [always] (packages/react/src/search-field.tsx:14)",
+  "search-field (vue): 'مسح البحث' -> clearLabel [always] (packages/vue/src/search-field.ts:10)",
+  "search-field (angular): 'مسح البحث' -> clearLabel [always] (packages/angular/src/advanced-controls.ts:49)",
+  "search-field (vanilla): options.clearLabel ?? button aria-label ?? translated('Clear search', 'مسح البحث') -> clearLabel [always] (packages/vanilla/src/search-field.ts:29)",
+  "search-field (react): 'بحث' -> searchLabel [when showSearchButton is on] (packages/react/src/search-field.tsx:14)",
+  "search-field (vue): 'بحث' -> searchLabel [when showSearchButton is on] (packages/vue/src/search-field.ts:12)",
+  "search-field (angular): 'بحث' -> searchLabel [when showSearchButton is on] (packages/angular/src/advanced-controls.ts:49)",
+  "search-field (react): resultsMessage = count => `${count} اقتراحات متاحة` -> getResultsMessage [when suggestions are given] (packages/react/src/search-field.tsx:14)",
+  "search-field (vue): resultsMessage (same Arabic template) -> getResultsMessage [when suggestions are given] (packages/vue/src/search-field.ts:11)",
+  "search-field (angular): resultsMessage (same Arabic template) -> getResultsMessage [when suggestions are given] (packages/angular/src/advanced-controls.ts:51)",
+  "search-field (vanilla): resultsMessage ?? translated('${n} suggestions available', '${n} اقتراحات متاحة') -> getResultsMessage [when suggestions are given] (packages/vanilla/src/search-field.ts:88)",
+  "select (angular): 'اختر خيارًا' -> placeholder [when wanted (optional: no default, and no warning when omitted)] (packages/angular/src/forms.ts:103)",
+  "service-card (react): 'View service' -> actionLabel [when the card renders its action link] (packages/react/src/expanded-content.tsx:50)",
+  "service-card (vue): 'Start service' -> actionLabel [when the card renders its action link] (packages/vue/src/patterns.ts:16)",
+  "service-card (angular): 'View service' -> actionLabel [when the card renders its action link] (packages/angular/src/content.ts:55)",
+  "service-details (react): 'Requirements' -> requirementsLabel [when requirements are given] (packages/react/src/expanded-content.tsx:52)",
+  "service-details (angular): 'Requirements' -> requirementsLabel [when requirements are given] (packages/angular/src/content.ts:57)",
+  "site-verification (react): core getSiteVerificationLabels(locale).label ('معلومات الموقع' / English) -> label [always] (packages/react/src/site-verification.tsx:15)",
+  "site-verification (vue): core getSiteVerificationLabels(locale).label -> label [always] (packages/vue/src/site-verification.ts:14)",
+  "site-verification (angular): core getSiteVerificationLabels(locale).label -> label [always] (packages/angular/src/site-verification.ts:5)",
+  "site-verification (react): core getSiteVerificationLabels(locale).detailsLabel ('كيف تتحقق؟' / English) -> detailsLabel [always] (packages/react/src/site-verification.tsx:17)",
+  "site-verification (vue): core getSiteVerificationLabels(locale).detailsLabel -> detailsLabel [always] (packages/vue/src/site-verification.ts:17)",
+  "site-verification (angular): core getSiteVerificationLabels(locale).detailsLabel -> detailsLabel [always] (packages/angular/src/site-verification.ts:7)",
+  "site-verification (react): core getSiteVerificationLabels(locale).domainLabel ('تحقق من نطاق الموقع' / English) -> domainLabel [always] (packages/react/src/site-verification.tsx:20)",
+  "site-verification (vue): core getSiteVerificationLabels(locale).domainLabel -> domainLabel [always] (packages/vue/src/site-verification.ts:20)",
+  "site-verification (angular): core getSiteVerificationLabels(locale).domainLabel -> domainLabel [always] (packages/angular/src/site-verification.ts:9)",
+  "site-verification (react): core getSiteVerificationLabels(locale).domainDescription ('تأكد من تطابق العنوان مع النطاق الرسمي للجهة.' / English) -> domainDescription [always] (packages/react/src/site-verification.tsx:20)",
+  "site-verification (vue): core getSiteVerificationLabels(locale).domainDescription -> domainDescription [always] (packages/vue/src/site-verification.ts:20)",
+  "site-verification (angular): core getSiteVerificationLabels(locale).domainDescription -> domainDescription [always] (packages/angular/src/site-verification.ts:9)",
+  "site-verification (react): core getSiteVerificationLabels(locale).httpsLabel ('تحقق من الاتصال الآمن' / English) -> httpsLabel [always] (packages/react/src/site-verification.tsx:21)",
+  "site-verification (vue): core getSiteVerificationLabels(locale).httpsLabel -> httpsLabel [always] (packages/vue/src/site-verification.ts:21)",
+  "site-verification (angular): core getSiteVerificationLabels(locale).httpsLabel -> httpsLabel [always] (packages/angular/src/site-verification.ts:10)",
+  "site-verification (react): core getSiteVerificationLabels(locale).httpsDescription ('تأكد من أن العنوان يبدأ بـ HTTPS قبل مشاركة بياناتك.' / English) -> httpsDescription [always] (packages/react/src/site-verification.tsx:21)",
+  "site-verification (vue): core getSiteVerificationLabels(locale).httpsDescription -> httpsDescription [always] (packages/vue/src/site-verification.ts:21)",
+  "site-verification (angular): core getSiteVerificationLabels(locale).httpsDescription -> httpsDescription [always] (packages/angular/src/site-verification.ts:10)",
+  "site-verification (react): core getSiteVerificationLabels(locale).registrationLabel ('التحقق من تسجيل المنصة' / English) -> registrationLabel [when registrationHref is set] (packages/react/src/site-verification.tsx:23)",
+  "site-verification (vue): core getSiteVerificationLabels(locale).registrationLabel -> registrationLabel [when registrationHref is set] (packages/vue/src/site-verification.ts:23)",
+  "site-verification (angular): core getSiteVerificationLabels(locale).registrationLabel -> registrationLabel [when registrationHref is set] (packages/angular/src/site-verification.ts:12)",
+  "site-verification (react): core getSiteVerificationLabels(locale).externalLabel ('يفتح في نافذة جديدة' / English) -> externalLabel [when registrationHref is set and registrationExternal is on] (packages/react/src/site-verification.tsx:23)",
+  "site-verification (vue): core getSiteVerificationLabels(locale).externalLabel -> externalLabel [when registrationHref is set and registrationExternal is on] (packages/vue/src/site-verification.ts:23)",
+  "site-verification (angular): core getSiteVerificationLabels(locale).externalLabel -> externalLabel [when registrationHref is set and registrationExternal is on] (packages/angular/src/site-verification.ts:12)",
+  "spinner (react): 'Loading' -> label [always] (packages/react/src/display.tsx:187)",
+  "spinner (vue): 'Loading' -> label [always] (packages/vue/src/display.ts:185)",
+  "spinner (angular): 'Loading' -> label [always] (packages/angular/src/presentation.ts:123)",
+  "stepper (react): 'التقدم' -> label [always] (packages/react/src/display.tsx:213)",
+  "stepper (vue): 'التقدم' -> label [always] (packages/vue/src/display.ts:207)",
+  "stepper (angular): 'التقدم' -> label [always] (packages/angular/src/navigation.ts:211)",
+  "stepper (vanilla): options.label ?? 'التقدم' when the list has no name -> label [always] (packages/vanilla/src/stepper.ts:31)",
+  "tabs (react): 'المزيد من التبويبات' -> overflowLabel [when overflow is 'menu'] (packages/react/src/interactive.tsx:21)",
+  "tabs (vue): 'المزيد من التبويبات' -> overflowLabel [when overflow is 'menu'] (packages/vue/src/interactive.ts:13)",
+  "tabs (angular): 'المزيد من التبويبات' -> overflowLabel [when overflow is 'menu'] (packages/angular/src/navigation.ts:36)",
+  "tabs (vanilla): options.overflowLabel ?? data-hw-overflow-label ?? translated('More tabs', 'المزيد من التبويبات') -> overflowLabel [when overflow is 'menu'] (packages/vanilla/src/tabs.ts:65)",
+  "tag-input (react): getRemoveLabel = tag => `Remove ${tag}` -> getRemoveLabel [always] (packages/react/src/expanded-controls.tsx:72)",
+  "tag-input (vue): removeLabel = value => `Remove ${value}` -> getRemoveLabel [always] (packages/vue/src/controls.ts:527)",
+  "tag-input (angular): removeLabel = 'Remove' (string) -> getRemoveLabel [always] (packages/angular/src/advanced-controls.ts:177)",
+  "tag-input (vanilla): getRemoveLabel ?? translated('Remove ${tag}', 'إزالة ${tag}') -> getRemoveLabel [always] (packages/vanilla/src/controls.ts:158)",
+  "tag-input (react): 'Add at least one tag.' -> requiredMessage [when required is set] (packages/react/src/expanded-controls.tsx:72)",
+  "tag-input (vue): 'Add at least one item.' -> requiredMessage [when required is set] (packages/vue/src/controls.ts:524)",
+  "tag-input (angular): validationMessage = 'Add at least one tag.' -> requiredMessage [when required is set] (packages/angular/src/advanced-controls.ts:177)",
+  "tag-input (vanilla): requiredMessage ?? translated('Add at least one tag.', 'أضف وسمًا واحدًا على الأقل.') -> requiredMessage [when required is set] (packages/vanilla/src/controls.ts:163)",
+  "tag-input (angular): 'Add' -> addLabel [when the adapter renders an add button] (packages/angular/src/advanced-controls.ts:177)",
+  "timeline (react): 'Timeline' -> label [always] (packages/react/src/expanded-content.tsx:28)",
+  "timeline (angular): 'Timeline' -> label [always] (packages/angular/src/content.ts:37)",
+  "toast-region (react): 'الإشعارات' -> label [always] (packages/react/src/expanded-interactive.tsx:61)",
+  "toast-region (vue): 'الإشعارات' -> label [always] (packages/vue/src/expansion-interactive.ts:424)",
+  "toast-region (angular): 'الإشعارات' -> label [always] (packages/angular/src/interactions.ts:86)",
+  "toast-region (vanilla): options.label ?? translated('Notifications', 'الإشعارات') -> label [always] (packages/vanilla/src/disclosures.ts:79)",
+  "toast-region (react): text ? `إغلاق الإشعار: ${text}` : 'إغلاق الإشعار' -> getDismissLabel [when a message can be dismissed] (packages/react/src/expanded-interactive.tsx:59)",
+  "toast-region (vue): dismissLabel = message => `إغلاق الإشعار: …` -> getDismissLabel [when a message can be dismissed] (packages/vue/src/expansion-interactive.ts:425)",
+  "toast-region (angular): dismissLabel = 'إغلاق الإشعار' (string) -> getDismissLabel [when a message can be dismissed] (packages/angular/src/interactions.ts:88)",
+  "toast-region (vanilla): translated('Dismiss notification', 'إغلاق الإشعار') + ': ' + title -> getDismissLabel [when a message can be dismissed] (packages/vanilla/src/disclosures.ts:132)",
+  "tree-view (react): 'Expand ' + node.label (fixed English) -> getExpandLabel [when the toggle is exposed as a control] (packages/react/src/expanded-interactive.tsx:105)",
+  "tree-view (vue): expandLabel = node => `Expand ${node.label}` -> getExpandLabel [when the toggle is exposed as a control] (packages/vue/src/expansion-interactive.ts:527)",
+  "tree-view (react): 'Collapse ' + node.label (fixed English) -> getCollapseLabel [when the toggle is exposed as a control] (packages/react/src/expanded-interactive.tsx:105)",
+  "tree-view (vue): collapseLabel = node => `Collapse ${node.label}` -> getCollapseLabel [when the toggle is exposed as a control] (packages/vue/src/expansion-interactive.ts:531)",
+  "core: getCalendarLabels(locale) (Arabic/English calendar copy, packages/core/src/calendar-labels.ts) removed -> calendar and date-picker texts (a text-free RemovedExport of the same name stays in packages/core/src/removed.ts until the adapters are migrated)",
+  "core: fileUploadLabels (Arabic defaults, packages/core/src/file-upload-state.ts) removed -> file-upload labels; type FileUploadLabels gains getProgressLabel and getRemoveLabel (text-free RemovedExport kept for the transition)",
+  "core: getSiteVerificationLabels(locale) (Arabic/English copy, packages/core/src/site-verification.ts) removed -> site-verification texts; SiteVerificationOptions.locale removed (text-free RemovedExport kept for the transition)",
+  "core: getCalendarMonth label suffix ' هـ' / ' AH' chosen with locale.startsWith('ar') (packages/core/src/calendar.ts) -> era part from Intl for the required locale",
+  "core: default locale 'ar-SA' of getCalendarMonth and formatCalendarDate removed -> locale is a required option",
+  "vanilla: translated(root, english, arabic) and localeOf(root) (packages/vanilla/src/dom.ts:45-49) removed -> texts above; formatting locale from options.locale or data-hw-locale",
+  "site-verification (react, vue, angular): fixed 'HTTPS' token after the heading removed -> part of httpsLabel",
+  "site-verification (react, vue, angular): locale prop/input (default 'ar') removed -> no replacement",
+  "search-field (vanilla): fixed suggestion-list aria-label 'Search suggestions' / 'اقتراحات البحث' (packages/vanilla/src/search-field.ts:61) removed -> list named by the field label",
+  "search-field (react, vue, angular): searchLabel as fallback name of the input and suggestion list removed -> label",
+  "password-field / legacy search (vue): clearLabel default 'Clear search' (packages/vue/src/controls.ts:63) removed -> clearLabel",
+  "file-dropzone (react): dropLabel used as the field label when label is missing (packages/react/src/expanded-controls.tsx:98) removed -> label",
+  "file-upload (all adapters): `${labels.uploading} ${item.name}` and `${labels.remove} ${item.name}` joins removed -> labels.getProgressLabel(name), labels.getRemoveLabel(name)",
+  "portal-layout (react, vue, angular): dir default 'rtl' removed -> dir rendered only when supplied; (vue, angular) lang input removed -> native lang attribute on the host",
+  "portal-header (angular): mainId default 'main-content' removed -> skip link only when mainId is supplied",
+  "date-picker (angular): dialog title falling back to the field label removed -> calendarLabel"
+ ]
+}

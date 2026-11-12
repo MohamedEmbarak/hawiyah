@@ -1,0 +1,102 @@
+{
+ "implemented": [
+  "feedback-status-1",
+  "spike-G3",
+  "feedback-status-2",
+  "R00",
+  "feedback-status-7",
+  "feedback-status-8",
+  "feedback-status-9",
+  "feedback-status-10",
+  "feedback-status-11",
+  "feedback-status-12",
+  "feedback-status-14",
+  "content-display-1",
+  "content-display-7",
+  "content-display-11",
+  "content-display-14",
+  "content-display-13",
+  "content-display-16",
+  "R14",
+  "content-display-22",
+  "content-display-21",
+  "R11",
+  "R12",
+  "content-display-23",
+  "R13",
+  "R20",
+  "actions-6",
+  "actions-7",
+  "service-patterns-12",
+  "R05",
+  "service-patterns-13",
+  "R04",
+  "service-patterns-19",
+  "service-patterns-21"
+ ],
+ "deviations": [
+  {
+   "item": "tests",
+   "what": "case ids live in packages/vue/test/{feedback-status,content-display,notification-list,feedback,cookie-consent}-parity.test.ts, including the TC (TEXT/NAME), SSR, TY and BR-free cases of these components, the toast SHAPE-01 (R20) and BUTTON-01/02 (actions-6), instead of tests/*.test.ts, required-text.test.ts and ssr.test.ts",
+   "why": "this step owns packages/vue/** only"
+  },
+  {
+   "item": "service-patterns-13 SSR-01",
+   "what": "the hydration comparison ignores data-hw-filled=\"true\", which the comment Textarea adds after mount (observeFieldValue presence marker); no hydration warning is emitted",
+   "why": "a post-mount enhancement of the existing Textarea, not a server/client mismatch"
+  },
+  {
+   "item": "feedback-status-2 ALERT-03, CHIP-01 heights, NOTIFICATION-05 colour",
+   "what": "Enter/Space are asserted as native button activation (jsdom does not synthesize the click); the 24px/32px heights and link colours are browser (BR) cases and not run in the Vue package",
+   "why": "jsdom has no layout or default key activation"
+  },
+  {
+   "item": "R13",
+   "what": "unreadLabel is declared required: true as specified, so a missing value also yields Vue's own missing-prop dev warning besides the one Hawiyah: warning",
+   "why": "text-contract convention for Vue: always-needed text is required: true"
+  },
+  {
+   "item": "service-patterns-12",
+   "what": "existing tests updated to the new contract: expansion.test.ts (Feedback @feedback payload, CookieConsent @consent) and required-text.test.ts (NotificationList unreadLabel)",
+   "why": "breaking renames of this specification"
+  }
+ ],
+ "files": [
+  "packages/vue/src/display.ts",
+  "packages/vue/src/content.ts",
+  "packages/vue/src/patterns.ts",
+  "packages/vue/src/index.ts",
+  "packages/vue/README.md",
+  "packages/vue/test/expansion.test.ts",
+  "packages/vue/test/required-text.test.ts",
+  "packages/vue/test/feedback-status-parity.test.ts",
+  "packages/vue/test/content-display-parity.test.ts",
+  "packages/vue/test/notification-list-parity.test.ts",
+  "packages/vue/test/feedback-parity.test.ts",
+  "packages/vue/test/cookie-consent-parity.test.ts"
+ ],
+ "commands": [
+  {
+   "command": "node scripts/build.mjs --only vue",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vue",
+   "result": "38 files, 484 tests passed; no Hawiyah: warning in output"
+  },
+  {
+   "command": "pnpm exec vitest run tests/text-contract-docs.test.ts",
+   "result": "3 passed"
+  },
+  {
+   "command": "tsc on vue src + new test files (scratch tsconfig)",
+   "result": "no errors in the changed files (@ts-expect-error cases hold)"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "feedback-status-13 SKELETON-03, BR cases, AH, Angular/React/vanilla halves",
+   "why": "root tests/ and other packages are outside packages/vue; Vue README carries the role=status skeleton pattern"
+  }
+ ]
+}

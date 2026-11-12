@@ -1,0 +1,2483 @@
+{
+  "cluster": "navigation-menus-shell",
+  "about": "Specification of the navigation-menus-shell cluster of milestone 3, written against commit a0ed9b0. Paths are relative to packages/ unless they start with tests/, docs/, apps/ or a root file name; line numbers were read in this step. ownerDecision is a zero-based index into conventions.json ownerDecisions; null means none. 26 finding ids of the cluster plus R22 (the same record as E08), 18 items after the duplicates. Each item carries its own `decisions` (convention reference-adapter-and-recording) and `migration` entries; `renames` at the end repeats the migrations in the form of convention renames-and-removals (from, to). This cluster calls what forms-core defines (observeFormReset, HwValueControl members, forwardedAriaHost, injectHostAttribute, hostHasName, the wrapper-host list in layout.css) and defines core createTypeahead, core getPortalBranchSummary and Angular HwNamedRoot.",
+  "items": [
+    {
+      "ids": [
+        "nav-b-1",
+        "nav-b-15"
+      ],
+      "component": "Menu, TreeView (type-ahead)",
+      "summary": "Only the vanilla controllers move focus when a letter is typed; the React, Vue and Angular menus and trees ignore printable keys. One core helper, createTypeahead, serves Menu and TreeView in the four adapters and replaces the two inline vanilla buffers.",
+      "endState": {
+        "surface": {
+          "core": "New exports createTypeahead, isTypeaheadKey and the type Typeahead.",
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "No change.",
+        "behaviour": "In an open Menu and in a TreeView, a key that is one character, not a space, pressed without Ctrl, Meta or Alt and not during composition, moves focus to the next entry after the focused one (wrapping, disabled entries skipped) whose normalised label starts with the typed buffer. The buffer clears 500 ms after the last key; repeating one letter cycles through the entries that start with it. preventDefault is called only when an entry was found, so an unmatched key keeps its default action. TreeView searches the visible (expanded) nodes only and works in a read-only tree (focus is not a value). The buffer is cleared when the menu closes and when the component is destroyed. Space and Enter keep their meaning (activate, select). Server rendering: the helper is created with the component, holds no DOM reference and starts its timer only inside next(), so no timer exists on the server."
+      },
+      "core": [
+        {
+          "export": "createTypeahead",
+          "signature": "createTypeahead(options?: {timeout?: number}): Typeahead; interface Typeahead { next(key: string, labels: readonly string[], current: number, isDisabled?: (index: number) => boolean): number; reset(): void }",
+          "behaviour": "New file core/src/typeahead.ts, exported from core/src/index.ts. next(): appends normalizeSearch(key) to the buffer (an empty normalised key returns -1 and leaves the buffer), restarts the timeout (default 500 ms) that clears the buffer, takes search = the single character when every character of the buffer is the same, else the buffer, then for offset 1..labels.length tests index (current + offset) mod length and returns the first index that is not disabled and whose normalizeSearch(label) starts with search; -1 when none. current = -1 starts at index 0. reset() clears buffer and timer. No DOM access, no global read at module evaluation."
+        },
+        {
+          "export": "isTypeaheadKey",
+          "signature": "isTypeaheadKey(event: {key: string; ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean}): boolean",
+          "behaviour": "true when [...event.key].length === 1, event.key !== ' ' and none of ctrlKey, metaKey, altKey is set. Callers return before calling it while event.isComposing."
+        },
+        {
+          "export": "normalizeSearch (moved)",
+          "signature": "unchanged",
+          "behaviour": "Moved from core/src/index.ts:22-30 to the new core/src/search.ts and re-exported from index.ts, so that typeahead.ts does not import index.ts (no import cycle). No behaviour change."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "react/src/expanded-interactive.tsx. Menu (:37): `const typeahead = useRef(createTypeahead())`; `useEffect(() => { if (!open) typeahead.current.reset(); return () => typeahead.current.reset(); }, [open])`. Menu keydown on the role=menu element (:42), after the Tab branch: `else if (!event.nativeEvent.isComposing && isTypeaheadKey(event)) { const next = typeahead.current.next(event.key, items.map((_, index) => entries.current.get(index)?.textContent ?? ''), active, index => Boolean(items[index]?.disabled)); if (next >= 0) { event.preventDefault(); setActive(next); } }` (labels are nodes, so the text of the item elements is read). TreeView (:91): one instance in a ref, reset on unmount; in the treeitem keydown (:99-101) after the Enter / Space branch the same test, with labels = visible.map(item => text of that item's label span), current = index of the node in `visible`, isDisabled = index => Boolean(disabled || visible[index].node.disabled), and on a match `event.preventDefault(); focus(visible[next].node.id)`. The printable key is not added to the list at :100 that always prevents default.",
+        "vue": "vue/src/expansion-interactive.ts. Menu (:238): `const typeahead = createTypeahead()` in setup; `typeahead.reset()` in close() (:245) and in onBeforeUnmount (:269). Menu keydown (:309-329) gets the branch after Tab: labels = props.items.map((_, index) => items.get(index)?.textContent ?? ''), current = focused.value, isDisabled from props.items; on a match `event.preventDefault(); focused.value = next; items.get(next)?.focus()`. TreeView (:536): one instance, reset in onBeforeUnmount; keydown (:635-672) after the Enter / Space branch: labels = text of each visible row's label span (elements.get(id)?.lastElementChild?.textContent), current = index, isDisabled = i => Boolean(visible.value[i]!.node.disabled); on a match `event.preventDefault(); focus(visible.value[next]!.node.id)`. Both handlers return first when event.isComposing.",
+        "angular": "angular/src/interactions.ts. HwMenuComponent (:46): `private readonly typeahead = createTypeahead()`; keydown (:52-56) after the Tab branch: `else if (!event.isComposing && isTypeaheadKey(event)) { const next = this.typeahead.next(event.key, this.items.map(item => item.label), this.active, index => Boolean(this.items[index]?.disabled)); if (next >= 0) { event.preventDefault(); this.active = next; this.focusActive(); } }`; `override close(restore = false) { this.typeahead.reset(); super.close(restore); }`; ngOnDestroy resets. HwTreeViewComponent (:111): one instance; keydown (:120-127) after the Enter / Space branch with labels = entries.map(item => item.node.label), current = index, isDisabled = i => Boolean(entries[i]!.node.disabled); on a match `event.preventDefault(); this.focus(entries[next]!.node.id)`; ngOnDestroy resets. Labels are strings in Angular, so no DOM read.",
+        "vanilla": "vanilla/src/disclosures.ts:46-47: delete `query`, `timer` and their cleanup; `const typeahead = createTypeahead(); scope.add(() => typeahead.reset());`; :38 `createPopover(root, {onOpenChange: open => { if (!open) typeahead.reset(); options.onOpenChange?.(open); }})`; :50-53 the printable-key branch becomes `else if (isTypeaheadKey(key)) { const next = typeahead.next(key.key, items.map(item => item.textContent ?? ''), current, index => isDisabled(items[index]!)); if (next >= 0) { event.preventDefault(); focus(next); } }`. vanilla/src/content.ts:150-151: delete `query`, `timer`; one instance with the same cleanup; :160-164 the branch becomes `else if (isTypeaheadKey(key)) { const next = typeahead.next(key.key, current.map(labelOf), index, i => isDisabled(current[i]!)); if (next >= 0) { key.preventDefault(); focus(current[next]!.dataset.hwValue!); } }` where labelOf is today's expression ([data-hw-tree-label] text, else the item's own text nodes). Two visible changes: the Menu now cycles on a repeated letter, and the TreeView no longer cancels a printable key that matched nothing."
+      },
+      "tests": [
+        {
+          "caseId": "TYPE-01..07",
+          "what": "core/test/typeahead.test.ts (new), as listed in convention type-ahead: first match after current with wrapping; disabled skipped; two letters within 500 ms match a prefix; a repeated letter cycles; buffer clears after the timeout (fake timers); space, modifier and multi-character keys rejected by isTypeaheadKey; Arabic and Latin labels through normalizeSearch.",
+          "adapters": [
+            "core"
+          ]
+        },
+        {
+          "caseId": "TYPE-10",
+          "what": "[nav-b-1] Menu open on the first item, key 'd': focus on the first enabled item starting with d; tests/menu-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TYPE-11",
+          "what": "[nav-b-15] TreeView: a letter matches visible nodes only; a node inside a collapsed branch is not reached; tests/tree-view-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TYPE-12",
+          "what": "A key with no match leaves focus where it was and the keydown event is not default-prevented (Menu and TreeView).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TYPE-13",
+          "what": "The same letter pressed twice within 500 ms moves to the second entry starting with it (Menu and TreeView).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TYPE-14",
+          "what": "Closing the menu clears the buffer: 'a', close, open, 'b' matches an entry starting with b (fake timers not advanced).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "Server render of Menu and TreeView leaves no pending timer (vi.getTimerCount() === 0) and the HTML equals the first client render; packages/react/react.expansion.ssr.test.tsx, packages/vue/test/ssr.test.ts, packages/angular/test/ssr.test.ts.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "The four READMEs and vanilla/EXPANSION-API.md:170 state type-ahead for Menu and TreeView with the rules above (500 ms, repeated letter cycles, visible nodes only). components.json: add the TYPE cases as evidence for react, vue and angular on menu and tree-view. core README: createTypeahead and isTypeaheadKey.",
+      "decisions": [
+        {
+          "component": "Menu, TreeView",
+          "question": "Does an unmatched printable key keep its default action?",
+          "choice": "yes; preventDefault only on a match",
+          "basis": "repository",
+          "source": "convention type-ahead; vanilla/src/disclosures.ts:52 (Menu already behaves so)",
+          "changedAdapters": [
+            "vanilla (TreeView)"
+          ]
+        },
+        {
+          "component": "Menu",
+          "question": "Does a repeated letter cycle?",
+          "choice": "yes, as in TreeView",
+          "basis": "repository",
+          "source": "vanilla/src/content.ts:162",
+          "changedAdapters": [
+            "vanilla (Menu)"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "Type-ahead for Tabs, Select-like lists and Combobox is not added; the helper is available for them."
+    },
+    {
+      "ids": [
+        "nav-b-2",
+        "R24",
+        "nav-b-3",
+        "R15"
+      ],
+      "component": "Menu (contract) and the packaged trigger of Menu and Popover",
+      "summary": "The Menu differs in item shape, action name, open control, trigger text, trigger look and rendered structure. One item shape {value, label, disabled?, href?}, one action name, controlled and uncontrolled `open` in every framework, the documented vanilla markup as the DOM, and one trigger rule: the application's element in React, a packaged button named by `triggerLabel` with `triggerVariant` (default 'secondary') in Vue and Angular.",
+      "endState": {
+        "surface": {
+          "react": "Menu: `disabled?: boolean` (default false, new). `label` follows RootName: `MenuProps = MenuBaseProps & RootName`; an `aria-label` or `aria-labelledby` prop names the menu and is not written on the root. MenuItem unchanged: {value: string; label: ReactNode; disabled?: boolean; href?: string; onSelect?: () => void} (onSelect stays a React-only convenience). onAction(value), open / defaultOpen / onOpenChange unchanged. No triggerLabel and no triggerVariant: `trigger` is the application's element.",
+          "vue": "Menu: `triggerLabel?: string` (new; required unless the `trigger` slot is given: needText('Menu', 'triggerLabel', value, 'no trigger slot is given')); `triggerVariant?: ButtonVariant` (new, default 'secondary'); `open?: boolean` (default undefined), `defaultOpen?: boolean` (default false), event `update:open(open: boolean)` (new, so v-model:open works); event `action(value: string)` replaces `select`; `label?: string` names the menu only (no longer printed on the trigger; not required when aria-label or aria-labelledby is passed). Popover: `triggerVariant?: ButtonVariant` (new, default 'secondary'); `triggerLabel` is declared without `required: true` and required unless the `trigger` slot is given. ButtonVariant is the union of Button's `variant` prop, exported from vue/src/forms.ts.",
+          "angular": "hw-menu: `HwMenuItem {value: string; label: string; disabled?: boolean; href?: string}` (`id` renamed to `value`, `href` new); `(action)` emits item.value. hw-popover and hw-menu: `@Input() triggerVariant: HwButtonDirective['variant'] = 'secondary'` (new). `[(open)]` and required `triggerLabel` unchanged; no defaultOpen input (convention controlled-and-observable-state). The name inputs change with E08.",
+          "vanilla": "createMenu options: `onAction?: (value: string) => void` replaces `onSelect`; `onOpenChange?: (open: boolean) => void` (new, passed to the popover). hw:change detail {value} for an action and {open} for the state, unchanged."
+        },
+        "dom": "div.hw-menu > trigger , div.hw-menu-content[role=menu][id][aria-label={label} or aria-labelledby={application ids}][hidden while closed] > one element per item, with no list wrapper: button.hw-menu-item[type=button][role=menuitem][tabindex][disabled when item.disabled], or for an item with href a.hw-menu-item[role=menuitem][href (absent when disabled)][aria-disabled=true when disabled][tabindex]. Exactly the active item has tabindex=0, the others -1. Trigger in Vue and Angular: button.hw-button[type=button][data-variant={triggerVariant}][aria-haspopup=menu][aria-expanded=true|false][aria-controls={menu id}][disabled when the menu is disabled] containing triggerLabel (Vue: the trigger slot instead when given). Popover trigger: the same button without aria-haspopup. Stated difference: in React the trigger is the application's element, to which the component adds aria-haspopup, aria-expanded, aria-controls and, when the menu is disabled, disabled. The root div carries no aria-label. The controller hooks of the vanilla markup (data-hw-trigger, data-hw-panel, data-hw-value) are not rendered by the frameworks (conventionConflicts).",
+        "behaviour": "Trigger: click, Enter or Space toggles and focuses the first enabled item; ArrowDown opens on the first, ArrowUp on the last enabled item. Menu: ArrowDown / ArrowUp / Home / End move a roving focus over enabled items, type-ahead as in nav-b-1, Escape closes and focuses the trigger, Tab closes without moving focus, an outside press or focus leaving closes without moving focus. Activating an item notifies the action once with item.value, closes the menu and focuses the trigger; a link item then navigates natively; a disabled item is skipped by the keys and ignores a click. `open` follows convention controlled-and-observable-state: one notification per change, none when the application changes the controlled value, the DOM follows the application's value when controlled. When the application opens the menu, the first enabled item becomes the active one and is focused after the render, in the browser only. A disabled menu has a disabled trigger and is closed (an open one closes and notifies false once). Server rendering: closed unless `open` or `defaultOpen` (Angular: `open`) says otherwise; no focus call and no document listener on the server."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css",
+          "change": "none: :150-160 already style .hw-menu > :is([role='menu'], [data-hw-panel], .hw-menu-content) and .hw-menu-item / .hw-menu [role='menuitem']; no rule names .hw-menu-list or .hw-menu-panel."
+        }
+      ],
+      "perAdapter": {
+        "react": "react/src/expanded-interactive.tsx:36-44. :36 split into `interface MenuBaseProps` (adds `disabled?: boolean`, drops `label`) and `export type MenuProps = MenuBaseProps & RootName`. :37 take `disabled = false`, `'aria-label'` and `'aria-labelledby'` out of props; `const name = rootLabel('Menu', {'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledby}, label)`; `useEffect(() => { if (disabled && open) setOpen(false); }, [disabled, open])`; the trigger clone (:42) adds `disabled: trigger.props.disabled || disabled || undefined`. :42-44 `<ul role=\"menu\" className=\"hw-menu-list\">` with `<li role=\"none\">` becomes `<div role=\"menu\" id className=\"hw-menu-content\" aria-label={ariaLabelledby ? undefined : name} aria-labelledby={ariaLabelledby} hidden={!open || disabled}>` whose children are the items themselves, each with className=\"hw-menu-item\" and key={item.value}; handlers unchanged. The focus-leaving rule changes with nav-b-7.",
+        "vue": "vue/src/expansion-interactive.ts. forms.ts:9: export the variant union as `ButtonVariant`. Menu :232-236 props: `label: String`, `triggerLabel: String`, `triggerVariant: {type: String as PropType<ButtonVariant>, default: 'secondary'}`, `open: {type: Boolean, default: undefined}`, `defaultOpen: Boolean`; :237 `emits: {'update:open': (_v: boolean) => true, action: (_v: string) => true}`; :242 `open` becomes `useValue(() => props.open, props.defaultOpen, v => emit('update:open', v))`; close() and show() call set(); a `watch` on the state (flush 'post') sets `focused` to the first enabled item (the last one after ArrowUp) and focuses it whenever the menu opens, and a watch on props.disabled closes it. :271 the root receives attrs without aria-label and aria-labelledby. :287 `'data-variant': props.triggerVariant`; :300 `slots.trigger?.() ?? needText('Menu', 'triggerLabel', props.triggerLabel, 'no trigger slot is given')`. :302-361 `ul` > `li[role=none]` becomes `h('div', {id, class: 'hw-menu-content', role: 'menu', 'aria-label': attrs['aria-labelledby'] ? undefined : rootLabel('Menu', props.label, attrs), 'aria-labelledby': attrs['aria-labelledby'], hidden, onKeydown}, items)` with each item `h(item.href ? 'a' : 'button', {key: item.value, class: 'hw-menu-item', disabled: item.href ? undefined : item.disabled, 'aria-disabled': item.href && item.disabled ? 'true' : undefined, ...})`; :354 `emit('action', item.value)`. Popover :144 `triggerLabel: String`, new `triggerVariant` prop, :200 `'data-variant': props.triggerVariant`, :206 needText('Popover', 'triggerLabel', props.triggerLabel, 'no trigger slot is given') unless the slot is given.",
+        "angular": "angular/src/interactions.ts. :32 HwPopoverComponent: `@Input() triggerVariant: HwButtonDirective['variant'] = 'secondary'` (type import from './presentation'); :27 and :45 trigger buttons get `[attr.data-variant]=\"triggerVariant\"`. :44 `export interface HwMenuItem { value: string; label: string; disabled?: boolean; href?: string; }`. :45 template: panel class `hw-menu-content`; `@for (item of items; track item.value; let index = $index) {@if (item.href) {<a class=\"hw-menu-item\" role=\"menuitem\" [attr.href]=\"item.disabled ? null : item.href\" [attr.aria-disabled]=\"item.disabled || null\" [tabIndex]=\"index === active ? 0 : -1\" (focus)=\"active = index\" (click)=\"choose(item, $event)\">{{ item.label }}</a>} @else {<button type=\"button\" role=\"menuitem\" class=\"hw-menu-item\" ...>}}`. :57 `choose(item: HwMenuItem, event?: Event) { if (this.disabled || item.disabled) { event?.preventDefault(); return; } this.action.emit(item.value); this.close(true); }`. When `[open]` turns true through the binding (ngOnChanges with a changed `open` that is not the first change), set `active` to the first enabled item and focus it in the next ngAfterViewChecked, behind injectIsBrowser.",
+        "vanilla": "vanilla/src/disclosures.ts:32 `export interface MenuOptions { onAction?: (value: string) => void; onOpenChange?: (open: boolean) => void }`; :38 pass onOpenChange to createPopover (with the type-ahead reset of nav-b-1); :56 `options.onAction?.(value)`. vanilla/EXPANSION-API.md:151 shows the classes of the guide sample (hw-menu, hw-button, hw-menu-content, hw-menu-item), which is the reference markup."
+      },
+      "tests": [
+        {
+          "caseId": "SHAPE-01",
+          "what": "One fixture [{value:'edit',label:'Edit'},{value:'archive',label:'Archive',disabled:true},{value:'help',label:'Help',href:'#help'}] passed unchanged to React, Vue and Angular renders the documented vanilla structure: div.hw-menu-content[role=menu] with three direct .hw-menu-item children (button, disabled button, a[href]); tests/menu-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-02",
+          "what": "[nav-b-2] Activating 'edit' reports 'edit' once through onAction / @action / (action) / onAction + hw:change; the link item reports 'help' and keeps its href; the disabled item reports nothing.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "Type tests: Angular HwMenuItem rejects `id`; Vue Menu declares no `select` event; vanilla MenuOptions rejects onSelect.",
+          "adapters": [
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "STATE-01..05",
+          "what": "`open`: uncontrolled notifies once per change; controlled follows the application only; changing the controlled value does not notify; v-model:open and [(open)] round-trip; server render with open true equals the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-06",
+          "what": "vanilla: hw:change detail carries {open} and options.onOpenChange is called by createMenu.",
+          "adapters": [
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "MENU-01",
+          "what": "Keyboard: ArrowDown / ArrowUp on the trigger open on the first / last enabled item; arrows, Home, End skip the disabled item; Escape closes and focuses the trigger; Tab closes and leaves focus where Tab put it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MENU-02",
+          "what": "A disabled menu has a disabled trigger; disabling an open menu closes it and notifies false once.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MENU-03",
+          "what": "[nav-b-3][R15] The packaged trigger of Menu and Popover has data-variant=secondary by default and the given value with triggerVariant.",
+          "adapters": [
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "[R24] Vue Menu without triggerLabel and without a trigger slot: empty trigger, one warning naming Menu and triggerLabel; `label` alone is not printed on the trigger.",
+          "adapters": [
+            "vue"
+          ]
+        },
+        {
+          "caseId": "TEXT-02",
+          "what": "triggerLabel is not required (no warning) when the trigger slot is given, for Menu and Popover.",
+          "adapters": [
+            "vue"
+          ]
+        },
+        {
+          "caseId": "NAME-01..04",
+          "what": "The menu element is named by label, by an application aria-label, or by aria-labelledby; none gives one warning and no aria-label; the root div never carries the name.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MENU-04",
+          "what": "Browser: with the default examples the Vue and Angular triggers of Menu and Popover have the same computed background; tests/browser/disclosure-projects.spec.ts.",
+          "adapters": [
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "component": "Menu",
+          "kind": "output",
+          "old": "@select",
+          "new": "@action",
+          "migration": "@select=\"fn\" -> @action=\"fn\""
+        },
+        {
+          "adapter": "vue",
+          "component": "Menu",
+          "kind": "input",
+          "old": "label (also printed on the trigger)",
+          "new": "label names the menu; triggerLabel is the trigger text",
+          "migration": "<Menu label=\"Actions\"> -> <Menu label=\"Actions\" trigger-label=\"Actions\">"
+        },
+        {
+          "adapter": "vue",
+          "component": "Menu",
+          "kind": "markup",
+          "old": "ul[role=menu] > li[role=none] > button|a; disabled buttons carry aria-disabled",
+          "new": "div.hw-menu-content[role=menu] > .hw-menu-item; disabled buttons carry disabled",
+          "migration": ".hw-menu > ul li > [role=menuitem] -> .hw-menu-content > .hw-menu-item"
+        },
+        {
+          "adapter": "react",
+          "component": "Menu",
+          "kind": "markup",
+          "old": "ul.hw-menu-list > li[role=none] > button|a",
+          "new": "div.hw-menu-content > .hw-menu-item",
+          "migration": ".hw-menu-list -> .hw-menu-content"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-menu",
+          "kind": "field",
+          "old": "HwMenuItem.id",
+          "new": "HwMenuItem.value",
+          "migration": "{id: 'edit', ...} -> {value: 'edit', ...}; (action) still emits the key"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-menu",
+          "kind": "markup",
+          "old": "div.hw-menu-panel",
+          "new": "div.hw-menu-content",
+          "migration": ".hw-menu-panel -> .hw-menu-content"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-menu, hw-popover",
+          "kind": "default",
+          "old": "packaged trigger is a primary button",
+          "new": "triggerVariant, default 'secondary'",
+          "migration": "add triggerVariant=\"primary\" to keep the old look"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "Menu",
+          "kind": "input",
+          "old": "createMenu(root, {onSelect})",
+          "new": "createMenu(root, {onAction})",
+          "migration": "onSelect: fn -> onAction: fn"
+        }
+      ],
+      "readme": "Each README, Menu: the item shape {value, label, disabled?, href?}, the action notification and its payload, `open` in the adapter's form, the keyboard table above. A paragraph 'Trigger' under Menu and Popover: React takes the application's own element through `trigger` (any button, including an icon-only one with its own aria-label; pass a secondary Button to match the packaged look); Vue and Angular render the button, named by `triggerLabel`, styled by `triggerVariant` (default 'secondary'); Vue also takes a `trigger` slot for the content of that button; the Angular trigger is text only in 0.3.0. vanilla README: onAction. llms.txt and components.json follow.",
+      "decisions": [
+        {
+          "component": "Menu",
+          "question": "Rendered structure",
+          "choice": "div.hw-menu-content[role=menu] with .hw-menu-item children and no list wrapper",
+          "basis": "repository",
+          "source": "apps/playground/src/component-expanded-guides.ts:161 (documented vanilla markup); convention reference-adapter-and-recording",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "component": "Menu",
+          "question": "How is a disabled item exposed?",
+          "choice": "`disabled` on a button item, aria-disabled=true without href on a link item",
+          "basis": "repository",
+          "source": "apps/playground/src/disclosure-projects.ts:88",
+          "changedAdapters": [
+            "vue"
+          ]
+        },
+        {
+          "component": "Menu",
+          "question": "Name of the action",
+          "choice": "onAction / @action / (action) / onAction, payload item.value",
+          "basis": "repository",
+          "source": "convention controlled-and-observable-state",
+          "changedAdapters": [
+            "vue",
+            "vanilla"
+          ]
+        },
+        {
+          "component": "Menu, Popover",
+          "question": "Look of the packaged trigger",
+          "choice": "triggerVariant, default 'secondary'",
+          "basis": "repository",
+          "source": "owner decision 7 (index 6)",
+          "changedAdapters": [
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": 6,
+      "notDone": "R15, deferred half (notIn030): no packaged trigger in React and no trigger projection in Angular, so an Angular trigger cannot be icon-only until 0.4. Not added: menuitemcheckbox / menuitemradio, separators as items, submenus."
+    },
+    {
+      "ids": [
+        "nav-b-7"
+      ],
+      "component": "Popover (and Menu): focus leaving",
+      "summary": "Only the vanilla popover closes when focus moves out of it; in React, Vue and Angular tabbing past the panel leaves it open over later content. Every adapter closes a non-modal popup when focus moves to an element outside its root, without moving focus.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "No change.",
+        "behaviour": "While open, a focusout whose relatedTarget is an element outside the component root (trigger and panel together) closes the popup, notifies open=false once and leaves focus on the element that received it. A focusout without a relatedTarget (the window lost focus, or a press on something that cannot take focus) does not close it; an outside press is handled by the pointerdown rule. The same rule holds for Menu in the four adapters: React and Vue menus today also close when relatedTarget is null, which changes to the vanilla rule. The listener is on the component's own root, so nothing is attached on the server."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "react/src/expanded-interactive.tsx:27 take `onBlur` out of props; :33 root div: `onBlur={event => { onBlur?.(event); const next = event.relatedTarget as Node | null; if (open && next && !event.currentTarget.contains(next)) setOpen(false); }}`. Menu :42: the role=menu onBlur moves to the root div with the same test and `close(false)` (today it also closes when relatedTarget is null); the application's onBlur is called first.",
+        "vue": "vue/src/expansion-interactive.ts:182-192 Popover root mergeProps gains `onFocusout: (event: FocusEvent) => { const next = event.relatedTarget as Node | null; if (model.value.value && next && !root.value?.contains(next)) close(); }`. Menu :275-278: add the `next &&` test.",
+        "angular": "angular/src/interactions.ts:40 HwPopoverComponent: `@HostListener('focusout', ['$event']) left(event: FocusEvent) { const next = event.relatedTarget as Node | null; if (next && !this.host.nativeElement.contains(next)) this.close(); }`. HwMenuComponent inherits it (it has no focus-leaving rule today).",
+        "vanilla": "none (vanilla/src/disclosures.ts:26 is this rule; createMenu uses createPopover)."
+      },
+      "tests": [
+        {
+          "caseId": "FOCUS-06",
+          "what": "[nav-b-7] Popover with a checkbox inside and a button after it: open, Tab, Tab: the popover is closed (aria-expanded=false, panel hidden), document.activeElement is the button after it, one open=false notification; tests/popover-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FOCUS-07",
+          "what": "Menu: focus moved by script to an element outside closes the menu and does not move focus back; tests/menu-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FOCUS-08",
+          "what": "A focusout with relatedTarget null leaves Popover and Menu open and notifies nothing.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "Each README, Popover and Menu: closes on Escape (focus returns to the trigger), on an outside press and when focus moves outside (focus stays where it went).",
+      "decisions": [
+        {
+          "component": "Popover, Menu",
+          "question": "Does a focusout without relatedTarget close the popup?",
+          "choice": "no",
+          "basis": "repository",
+          "source": "vanilla/src/disclosures.ts:26",
+          "changedAdapters": [
+            "react (Menu)",
+            "vue (Menu)"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "nav-b-8"
+      ],
+      "component": "Popover (React): Escape",
+      "summary": "The React popover listens for Escape on the document, so Escape pressed anywhere closes it and pulls focus to its trigger. Escape is handled on the popover root only, as in Vue, Angular and vanilla.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "No change.",
+        "behaviour": "Escape closes the popover, stops propagation, prevents the default and focuses the trigger only when the key event comes from inside the root (trigger or panel) and was not default-prevented. Escape pressed while focus is elsewhere does nothing to the popover and never moves focus. Focus returns to the trigger also when the popover was opened by `open` / `defaultOpen` and the trigger was never pressed."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "react/src/expanded-interactive.tsx:29-31: delete the `escape` listener and its add/removeEventListener on the document; the effect keeps the pointerdown listener only. :27 take `onKeyDown` out of props; :33 root div: `onKeyDown={event => { onKeyDown?.(event); if (event.key !== 'Escape' || !open || event.defaultPrevented) return; event.preventDefault(); event.stopPropagation(); setOpen(false); (opener.current ?? root.current?.querySelector<HTMLElement>('[aria-expanded][aria-controls]'))?.focus(); }}`.",
+        "vue": "none (vue/src/expansion-interactive.ts:185-191 is a root keydown).",
+        "angular": "none (angular/src/interactions.ts:41 tests host.contains(event.target)).",
+        "vanilla": "none (vanilla/src/disclosures.ts:24)."
+      },
+      "tests": [
+        {
+          "caseId": "FOCUS-05",
+          "what": "[nav-b-8] Popover open, focus on a button outside it, Escape: the popover stays open, focus stays on that button, no notification; tests/popover-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "POPOVER-01",
+          "what": "Escape with focus in the panel, and with focus on the trigger, closes the popover and focuses the trigger; also when it was opened by the open state and never by a press.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "none beyond nav-b-7.",
+      "decisions": [],
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "nav-b-9",
+        "R26"
+      ],
+      "component": "Popover (name, panel, disabled) and Collapsible (React text name)",
+      "summary": "The same text is `title` in React, rendered as an h3, and `label` in Vue and Angular, used as the accessible name only; the panel class and element differ. `label` is the accessible name of the panel in every adapter, no heading is packaged, the panel is div.hw-popover-panel, and React Collapsible renames `title` to `label`.",
+      "endState": {
+        "surface": {
+          "react": "Popover: `title: ReactNode` removed; `label?: string` under RootName (`PopoverProps = PopoverBaseProps & RootName`): the accessible name of the panel, satisfied by an `aria-label` or `aria-labelledby` prop, which is written on the panel and not on the root. `disabled?: boolean` (default false, new). Collapsible: `title: ReactNode` renamed to `label: ReactNode` (required, the content of the summary); the native `title` attribute is no longer omitted from its props.",
+          "vue": "Popover: `label?: string`, declared without `required: true`; an `aria-label` or `aria-labelledby` attribute names the panel instead and is moved from the root to the panel. The slot prop `close` and the exposed show() / close() stay. Trigger props: see nav-b-2.",
+          "angular": "hw-popover: `label` loses `required: true` and the forwarded `aria-label` / `aria-labelledby` inputs name the panel (E08). No defaultOpen input: `[open]` written once is the initial value. show() and close(restore?) stay public for a template reference.",
+          "vanilla": "none"
+        },
+        "dom": "div.hw-popover > trigger[aria-expanded][aria-controls={panel id}] , div.hw-popover-panel[role=region][id][aria-label={label} or aria-labelledby={application ids}][hidden while closed] > the application's content. No element is added by the component inside the panel: React stops rendering h3 and section. Vue renames the class hw-popover-content to hw-popover-panel. A visible heading is application content: `<h3 id=\"x\">` inside the panel with aria-labelledby=\"x\" on the component.",
+        "behaviour": "Opening does not move focus; the panel follows the trigger in the tab order. Closing from the content: React through the controlled `open`, Vue through the slot prop close(), Angular through a template reference (`#p`, `p.close(true)`), vanilla through [data-hw-close]. React `disabled`: the trigger is disabled and the popover is closed; an open one closes and notifies false once. Server rendering unchanged: closed unless the open state says otherwise."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css",
+          "change": ":151, :152, :153: remove `.hw-popover-content` from the three selector lists; delete :154 (`.hw-popover-content > :first-child { margin-block-start: 0; }.hw-popover-content > :last-child { margin-block-end: 0; }`), which :229 repeats for .hw-popover-panel. :230 `.hw-popover-panel > :is(h2, h3)` stays for a heading the application writes."
+        }
+      ],
+      "perAdapter": {
+        "react": "react/src/expanded-interactive.tsx:26 `interface PopoverBaseProps extends ComponentPropsWithRef<'div'> { trigger: ...; open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void; disabled?: boolean }` and `export type PopoverProps = PopoverBaseProps & RootName`. :27 take `label`, `disabled = false`, `'aria-label'`, `'aria-labelledby'` out of props; `const name = rootLabel('Popover', {'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledby}, label)`; `useEffect(() => { if (disabled && open) setOpen(false); }, [disabled, open])`; the trigger clone adds `disabled: trigger.props.disabled || disabled || undefined`. :33 the panel becomes `<div id={`${id}-panel`} className=\"hw-popover-panel\" role=\"region\" aria-label={ariaLabelledby ? undefined : name} aria-labelledby={ariaLabelledby} hidden={!open || disabled}>{children}</div>`. Collapsible :84 `label: ReactNode` instead of `title`, Omit list `'open' | 'onToggle'`; :85-86 `{label}` in the summary.",
+        "vue": "vue/src/expansion-interactive.ts:143 `label: String`. :179-181 the root receives attrs without aria-label and aria-labelledby. :208-216 panel: `class: 'hw-popover-panel'`, `'aria-label': attrs['aria-labelledby'] ? undefined : rootLabel('Popover', props.label, attrs)`, `'aria-labelledby': attrs['aria-labelledby']`.",
+        "angular": "angular/src/interactions.ts:27,30: the name bindings of E08 on div.hw-popover-panel; nothing else (the class is already hw-popover-panel).",
+        "vanilla": "none. The documented markup (apps/playground/src/component-expanded-guides.ts:154) is this DOM."
+      },
+      "tests": [
+        {
+          "caseId": "NAME-01..04",
+          "what": "[nav-b-9] Popover panel named by label; by an application aria-label; by aria-labelledby pointing at a heading inside the content; none gives one warning and no aria-label. The root div has neither attribute; packages/react/react.text-contract.test.tsx, packages/vue/test/required-text.test.ts, packages/angular/test/required-names.test.ts.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "POPOVER-02",
+          "what": "The panel is div.hw-popover-panel[role=region] and holds exactly the application's content (no heading from the component) for the same example; tests/popover-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "POPOVER-03",
+          "what": "React `disabled`: trigger disabled, panel hidden, an open popover closes with one notification; same assertion on the existing Vue and Angular input.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "[R26] Type fixture packages/react/fixtures/root-names.tsx: `title` is rejected on Popover; Collapsible requires `label`.",
+          "adapters": [
+            "react"
+          ]
+        },
+        {
+          "caseId": "POPOVER-04",
+          "what": "Browser: panel padding, first and last child margins are the same in the four adapters (the Vue panel now matches .hw-popover-panel); tests/browser/disclosure-projects.spec.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "Popover",
+          "kind": "input",
+          "old": "title (rendered as an h3)",
+          "new": "label (accessible name; no packaged heading)",
+          "migration": "<Popover title=\"T\"> -> <Popover label=\"T\"> and, for a visible heading, put it in the content with aria-labelledby"
+        },
+        {
+          "adapter": "react",
+          "component": "Popover",
+          "kind": "markup",
+          "old": "section.hw-popover-panel[aria-labelledby] > h3",
+          "new": "div.hw-popover-panel[aria-label]",
+          "migration": "selectors on .hw-popover-panel > h3 -> a heading of your own"
+        },
+        {
+          "adapter": "react",
+          "component": "Collapsible",
+          "kind": "input",
+          "old": "title",
+          "new": "label",
+          "migration": "<Collapsible title=...> -> <Collapsible label=...>"
+        },
+        {
+          "adapter": "vue",
+          "component": "Popover",
+          "kind": "markup",
+          "old": "div.hw-popover-content",
+          "new": "div.hw-popover-panel",
+          "migration": ".hw-popover-content -> .hw-popover-panel"
+        },
+        {
+          "adapter": "styles",
+          "component": "Popover",
+          "kind": "removed",
+          "old": ".hw-popover-content",
+          "new": ".hw-popover-panel",
+          "migration": "class=\"hw-popover-content\" -> class=\"hw-popover-panel\""
+        }
+      ],
+      "readme": "Each README, Popover: `label` is the accessible name of the panel and prints nothing; a visible heading is written in the content and referenced with aria-labelledby; how the content closes the popover in that adapter. React README: `disabled`, Collapsible `label`.",
+      "decisions": [
+        {
+          "component": "Popover, Collapsible",
+          "question": "title or label?",
+          "choice": "label",
+          "basis": "repository",
+          "source": "owner decision 6 (index 5); vue/src/expansion-interactive.ts:143, angular/src/interactions.ts:30",
+          "changedAdapters": [
+            "react"
+          ]
+        },
+        {
+          "component": "Popover",
+          "question": "Panel element and class",
+          "choice": "div.hw-popover-panel[role=region]",
+          "basis": "repository",
+          "source": "apps/playground/src/component-expanded-guides.ts:154",
+          "changedAdapters": [
+            "react",
+            "vue"
+          ]
+        }
+      ],
+      "ownerDecision": 5,
+      "notDone": "Not added: focusOnOpen in the frameworks, a close callback for React content, an Angular defaultOpen (rejected by convention controlled-and-observable-state). The Vue Collapsible keeps its open state in modelValue / defaultValue; Collapsible belongs to the dates-overlays-disclosure-data cluster (see questions)."
+    },
+    {
+      "ids": [
+        "nav-b-12"
+      ],
+      "component": "TreeView (indentation)",
+      "summary": "Vue sets --hw-tree-depth on each tree item but no rule reads it, so nested levels are not indented; React and Angular write an inline padding instead. The stylesheet reads --hw-tree-depth and the three frameworks set only that variable.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "li.hw-tree-item[role=treeitem] carries style=\"--hw-tree-depth: {aria-level - 1}\" in React, Vue and Angular and no inline padding. The vanilla markup nests ul[role=group] and sets no variable.",
+        "behaviour": "A level-n item starts var(--hw-space-2) + (n - 1) x --hw-tree-indent from the inline start of the tree, in both directions. --hw-tree-indent is the step the nested vanilla markup produces (item padding + group margin + group border + group padding = 0.5rem + 0.75rem + 1px + 0.75rem), so the flat framework list and the nested vanilla list put the same level at the same offset. Level 1 gets the item's own padding in React and Angular too (today 0)."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css",
+          "change": ":183 add the custom property to the existing rule: `.hw-tree-view { --hw-tree-indent: calc(var(--hw-space-2) + 2 * var(--hw-space-3) + 1px); padding: var(--hw-space-2); ... }`. :185 after `padding: var(--hw-space-2);` add `padding-inline-start: calc(var(--hw-space-2) + var(--hw-tree-depth, 0) * var(--hw-tree-indent));`."
+        }
+      ],
+      "perAdapter": {
+        "react": "react/src/expanded-interactive.tsx:98 on the li: `style={{ paddingInlineStart: `${level - 1}rem` }}` becomes `style={{ '--hw-tree-depth': level - 1 } as CSSProperties}`.",
+        "vue": "none (vue/src/expansion-interactive.ts:625 already sets the variable).",
+        "angular": "angular/src/interactions.ts:110 `[style.padding-inline-start]=\"(entry.level - 1) + 'rem'\"` becomes `[style.--hw-tree-depth]=\"entry.level - 1\"`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "TREE-01",
+          "what": "[nav-b-12] Every treeitem at aria-level n has the inline custom property --hw-tree-depth = n - 1 and no inline padding; tests/tree-view-parity.test.ts.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TREE-02",
+          "what": "Browser, static fixture with the package stylesheet (tests/browser/tree-view.spec.ts, new): a three-level tree in the flat framework markup and in the nested vanilla markup, in ar/rtl and en/ltr: the inline-start offset of the label grows by the same step per level, and each level is at the same offset in both markups within 1px.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "styles README, TreeView: --hw-tree-indent (step per level) and --hw-tree-depth (set by the framework adapters).",
+      "decisions": [
+        {
+          "component": "TreeView",
+          "question": "Indentation step of the flat list",
+          "choice": "the step of the nested vanilla markup (33px at the default tokens)",
+          "basis": "repository",
+          "source": "styles/src/extended.css:184-185",
+          "changedAdapters": [
+            "react",
+            "angular",
+            "vue"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "The flat list shows no guide line; the nested vanilla markup keeps the border of [role=group] (conventionConflicts)."
+    },
+    {
+      "ids": [
+        "nav-b-13",
+        "R21"
+      ],
+      "component": "TreeView (expand and collapse control)",
+      "summary": "React and Vue render an unstyled button with user-agent chrome, Angular a span hidden from assistive technology, so a touch screen-reader user cannot open a branch in Angular. Every adapter renders button.hw-tree-toggle, outside the tab order, named by getExpandLabel(node) / getCollapseLabel(node); Angular gains the two required texts.",
+      "endState": {
+        "surface": {
+          "react": "none (getExpandLabel and getCollapseLabel are already required).",
+          "vue": "none (already required).",
+          "angular": "hw-tree-view: `@Input({required: true}) getExpandLabel!: (node: HwTreeNode) => string` and `@Input({required: true}) getCollapseLabel!: (node: HwTreeNode) => string` (new; required always, because the need depends on the data).",
+          "vanilla": "createTreeView options `getExpandLabel?: (node: {id: string; label: string}) => string` and `getCollapseLabel?` (new), or the templates `data-hw-expand-label=\"... {label}\"` and `data-hw-collapse-label=\"... {label}\"` on the root. Required when a toggle has no authored aria-label; an authored aria-label stays when neither is supplied."
+        },
+        "dom": "For a node with children, inside li.hw-tree-item[role=treeitem][aria-labelledby={label id}]: first child button.hw-tree-toggle[type=button][tabindex=-1][aria-label={getCollapseLabel(node) while expanded, getExpandLabel(node) while collapsed}][disabled when the tree or the node is disabled] > span.hw-icon[data-icon=minus-sign while expanded, add-01 while collapsed][data-size=sm][aria-hidden=true]; then span[id={label id}] with the label. A leaf has the label span only. The treeitem is named by its label span alone, so the name of the button is not part of it (Vue changes from aria-label on the li, Angular had none). Vanilla documented markup: the same button with data-hw-tree-toggle and the label in span[data-hw-tree-label]; the controller writes aria-labelledby on the li when the li has no authored name.",
+        "behaviour": "The toggle is not a tab stop and is not reached by the arrow keys; the keyboard path stays ArrowRight / ArrowLeft by direction. Pressing it (pointer, touch, a screen reader's activate gesture) expands or collapses the branch without selecting the node, notifies `expanded` once and puts focus on the tree item. It works in a read-only tree, because expansion is not a value. A missing label function renders the button without aria-label and warns once. Ids: React useId, Vue useId, Angular controlId (HwIdSource), each followed by encodeURIComponent(node.id); the server HTML equals the first client render."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css",
+          "change": ":236 replace by `.hw-tree-toggle { display: inline-grid; flex: none; place-items: center; min-inline-size: 1.75rem; min-block-size: 1.75rem; padding: 0; border: 0; border-radius: var(--hw-radius-sm); background: transparent; color: var(--hw-color-text-muted); font: inherit; cursor: pointer; }` and add `.hw-tree-toggle:hover:not(:disabled) { background: var(--hw-color-surface-muted); }` `.hw-tree-toggle:disabled { cursor: not-allowed; }`. In the forced-colors block (:300-310) add `.hw-tree-toggle { color: ButtonText; }` `.hw-tree-toggle:disabled { color: GrayText; }`. The 1.75rem box meets WCAG 2.5.8."
+        }
+      ],
+      "perAdapter": {
+        "react": "react/src/expanded-interactive.tsx:102: add `className=\"hw-tree-toggle\"` to the button. Nothing else: the li already has aria-labelledby and the label span its id.",
+        "vue": "vue/src/expansion-interactive.ts:676-692: add `class: 'hw-tree-toggle'`. :536 `const base = `hw-${useId()}`; const labelId = (node: TreeNode) => `${base}-${encodeURIComponent(node.id)}``; :617 `'aria-label': row.node.label` becomes `'aria-labelledby': labelId(row.node)`; :693 `h('span', {id: labelId(row.node)}, row.node.label)`.",
+        "angular": "angular/src/interactions.ts:110: `<span class=\"hw-tree-toggle\" aria-hidden=\"true\" (click)=...>` becomes `<button type=\"button\" class=\"hw-tree-toggle\" tabindex=\"-1\" [disabled]=\"disabled || entry.node.disabled\" [attr.aria-label]=\"isExpanded(entry.node.id) ? texts.call('getCollapseLabel', getCollapseLabel, [entry.node]) : texts.call('getExpandLabel', getExpandLabel, [entry.node])\" (click)=\"$event.stopPropagation(); toggleNode(entry.node)\">` with the same icon span; the li gets `[attr.aria-labelledby]=\"labelId(entry.node)\"` and the label span `[id]=\"labelId(entry.node)\"`; `labelId(node: HwTreeNode) { return this.controlId + '-' + encodeURIComponent(node.id); }`. :113 the two required inputs.",
+        "vanilla": "vanilla/src/content.ts:110 TreeViewOptions gains the two functions. :124-125 per toggle also `remember(scope, toggle, ['aria-label'])` and, for a `.hw-icon` child whose data-icon is add-01 or minus-sign, remember data-icon. In render() (:136): for each toggle, text = templated(root, expanded ? 'getCollapseLabel' : 'getExpandLabel', option, node => ({label: node.label, id: node.id}))(node); when it has text write it as aria-label, otherwise leave the authored one, and when the toggle then has no name call requireText('TreeView', name, undefined) once; write data-icon minus-sign / add-01 on the remembered icon. Per item: when it has neither aria-label nor aria-labelledby and a direct [data-hw-tree-label] child, remember aria-labelledby and set it to ensureId(scope, label, 'tree-label'). Documented markup (EXPANSION-API.md:177, apps/playground/src/component-expanded-guides.ts:199 and .ar.ts:338-342, disclosure-projects.ts:143): button.hw-tree-toggle[data-hw-tree-toggle] > span.hw-icon[data-icon=add-01][data-size=sm][aria-hidden=true], root data-hw-expand-label / data-hw-collapse-label."
+      },
+      "tests": [
+        {
+          "caseId": "TREE-03",
+          "what": "[nav-b-13][R21] A branch node renders button.hw-tree-toggle[tabindex=-1] whose aria-label is getExpandLabel(node) when collapsed and getCollapseLabel(node) when expanded, with icon add-01 / minus-sign; a leaf renders no button; tests/tree-view-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TREE-04",
+          "what": "Clicking the toggle expands without changing the value, notifies expanded once, and document.activeElement is the tree item; Tab from the tree never lands on a toggle.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TREE-05",
+          "what": "The tree item's aria-labelledby resolves to an element whose text is exactly the node label.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "Missing getExpandLabel: the button has no aria-label and one warning names the component and the input (hw-tree-view in Angular); vanilla keeps an authored aria-label and warns only when the toggle has no name.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RO-04",
+          "what": "A read-only tree (Angular readOnly, vanilla data-hw-readonly) still expands and collapses through the toggle and the arrow keys and selects nothing.",
+          "adapters": [
+            "vanilla",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TREE-06",
+          "what": "Browser, static fixture: the toggle has a transparent background and no border in light, dark and forced colours, a 28px box, and the same icon in the four markups; tests/browser/tree-view.spec.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-02",
+          "what": "Angular server render and hydration of a tree: label ids and aria-labelledby are equal on both sides, no mismatch; packages/angular/test/hydration.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-tree-view",
+          "kind": "input",
+          "old": "toggle hidden from assistive technology",
+          "new": "required getExpandLabel(node), getCollapseLabel(node); toggle is button.hw-tree-toggle tabindex=-1",
+          "migration": "add [getExpandLabel]=\"fn\" [getCollapseLabel]=\"fn\""
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-tree-view",
+          "kind": "markup",
+          "old": "span.hw-tree-toggle[aria-hidden]",
+          "new": "button.hw-tree-toggle",
+          "migration": "span.hw-tree-toggle -> button.hw-tree-toggle"
+        },
+        {
+          "adapter": "react, vue",
+          "component": "TreeView",
+          "kind": "markup",
+          "old": "button without a class; Vue li[aria-label]",
+          "new": "button.hw-tree-toggle; li[aria-labelledby]",
+          "migration": ".hw-tree-item > button -> .hw-tree-toggle"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "TreeView",
+          "kind": "markup",
+          "old": "button[data-hw-tree-toggle] with a fixed authored aria-label",
+          "new": "button.hw-tree-toggle[data-hw-tree-toggle]; data-hw-expand-label / data-hw-collapse-label on the root",
+          "migration": "add class=\"hw-tree-toggle\" and data-hw-expand-label=\"... {label}\" data-hw-collapse-label=\"... {label}\""
+        }
+      ],
+      "readme": "Each README, TreeView: getExpandLabel(node) and getCollapseLabel(node) are required texts in the four adapters (vanilla: option or root template); the toggle is for pointer and screen-reader activation and is not a tab stop. tests/text-contract-docs.test.ts fixtures and components.json list the two texts for Angular and vanilla.",
+      "decisions": [
+        {
+          "component": "TreeView",
+          "question": "Named button or decorative glyph?",
+          "choice": "named button.hw-tree-toggle, tabindex -1",
+          "basis": "accessibility",
+          "source": "owner decision 5 (index 4); react/src/expanded-interactive.tsx:102, vue/src/expansion-interactive.ts:676-692",
+          "changedAdapters": [
+            "angular",
+            "vanilla"
+          ]
+        },
+        {
+          "component": "TreeView",
+          "question": "Icon of the toggle",
+          "choice": "add-01 collapsed, minus-sign expanded",
+          "basis": "majority",
+          "source": "react, vue and angular render it; the vanilla samples used two different arrows",
+          "changedAdapters": [
+            "vanilla"
+          ]
+        },
+        {
+          "component": "TreeView",
+          "question": "Name of a tree item",
+          "choice": "aria-labelledby to its label span",
+          "basis": "accessibility",
+          "source": "a named button inside the item would otherwise be read as part of its name",
+          "changedAdapters": [
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": 4,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "nav-b-17"
+      ],
+      "component": "TreeView (input and state names)",
+      "summary": "Angular names the data `nodes` and the expansion `expandedIds`, vanilla `expandedValues`, React and Vue `items` and `expanded`. The names become `items` and `expanded` everywhere; form participation in React and Vue is not part of 0.3.0.",
+      "endState": {
+        "surface": {
+          "react": "none here (`label` becomes a RootName union with E05).",
+          "vue": "none",
+          "angular": "hw-tree-view: `@Input() items: readonly HwTreeNode[]` (was `nodes`); `@Input() expanded: readonly string[]` with `@Output() expandedChange` (were `expandedIds`, `expandedIdsChange`), so `[(expanded)]` works. `label` loses `required: true` and follows the forwarded-name rule of HwValueControl (E08). `[attr.form]`, the `focused` / `blurred` outputs and the reset come from HwValueControl as specified by forms-core.",
+          "vanilla": "createTreeView: option `expanded?: readonly string[]` (was `expandedValues`); controller getter `expanded` (was `expandedValues`); hw:change detail `{value, expanded}` (was `expandedValues`). onExpandedChange(expanded) unchanged."
+        },
+        "dom": "No change beyond nav-b-12 and nav-b-13.",
+        "behaviour": "`expanded` follows convention controlled-and-observable-state in each adapter: React expanded / defaultExpanded / onExpandedChange, Vue expanded / defaultExpanded / update:expanded, Angular [(expanded)] with the written value as the initial one, vanilla option + onExpandedChange + hw:change. Angular after a native form reset: the value follows HwValueControl; `focused` is cleared in afterReset(); expanded branches are left as they are. The hidden input of hw-tree-view is its form control and carries the `form` attribute."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "angular/src/interactions.ts:113 `@Input() items: readonly HwTreeNode[] = []; @Input() expanded: readonly string[] = []; @Output() readonly expandedChange = new EventEmitter<readonly string[]>();`; :114 `visit(this.items, 1)`; :116 `isExpanded(id) { return this.expanded.includes(id); }`; :117 toggleNode writes `this.expanded` and emits expandedChange. :110 hidden input gets `[attr.form]=\"form\"`; the ul gets `(focusin)` / `(focusout)` handlers that emit focusEvents / blurEvents when focus enters or leaves the tree (relatedTarget outside the ul); `protected override afterReset() { this.focused = ''; }`; hint and error through the forms-core fieldEnd constant.",
+        "vanilla": "vanilla/src/content.ts:110 `expanded?: readonly string[]` in TreeViewOptions; :111 `readonly expanded: string[]` in TreeViewController; :130 `options.expanded`; :143 `emit(root, { value, expanded: [...expanded] })`; :165 the getter."
+      },
+      "tests": [
+        {
+          "caseId": "SHAPE-01",
+          "what": "[nav-b-17] One `items` array and one `expanded` array passed unchanged to React, Vue and Angular render the same visible nodes with the same aria-level, aria-posinset, aria-setsize and aria-expanded as the vanilla fixture; tests/tree-view-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-01..04",
+          "what": "`expanded`: uncontrolled notifies once per toggle with the new array; controlled follows the application; changing the controlled value does not notify; v-model:expanded and [(expanded)] round-trip.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-06",
+          "what": "vanilla: hw:change detail carries `expanded`; the controller exposes `expanded`.",
+          "adapters": [
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "Angular template with [nodes] or [(expandedIds)] does not compile (packages/angular/test/fixtures); vanilla TreeViewOptions rejects expandedValues.",
+          "adapters": [
+            "angular",
+            "vanilla"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-tree-view",
+          "kind": "input",
+          "old": "nodes, expandedIds, (expandedIdsChange)",
+          "new": "items, expanded, (expandedChange)",
+          "migration": "[nodes]=\"x\" -> [items]=\"x\"; [(expandedIds)]=\"e\" -> [(expanded)]=\"e\""
+        },
+        {
+          "adapter": "vanilla",
+          "component": "TreeView",
+          "kind": "input",
+          "old": "option expandedValues, controller.expandedValues, hw:change detail.expandedValues",
+          "new": "expanded in the three places",
+          "migration": "expandedValues -> expanded"
+        }
+      ],
+      "readme": "Each README, TreeView: `items` of {id, label, disabled?, children?}, `expanded` in the adapter's form. Angular README states that name, readOnly, hint and error exist in Angular only in 0.3.0; React and Vue READMEs state that the tree does not submit a value with a native form.",
+      "decisions": [
+        {
+          "component": "TreeView",
+          "question": "Name of the expansion state in vanilla",
+          "choice": "expanded",
+          "basis": "repository",
+          "source": "convention controlled-and-observable-state (one state name in the four adapters)",
+          "changedAdapters": [
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "notIn030: name, readOnly, hint and error for React and Vue TreeView (a tree selection cannot be submitted with a native form from React or Vue). The Angular-only `direction` input stays."
+    },
+    {
+      "ids": [
+        "portal-shell-1"
+      ],
+      "component": "PortalHeader (branch disclosure below 48rem)",
+      "summary": "With one branch open in the mobile menu, a press on another branch heading closes the open branch before the click is dispatched; the panel is in normal flow there, the heading moves away and the click is lost. A press on a branch heading no longer closes anything by itself: the click on that heading opens it and closes the others.",
+      "verifiedBeforeSpecifying": "Chromium, static model of the four handlers (scratch file tmp-spec-navigation-menus-shell/branch.cjs): today both a mouse click and a touch tap on the second heading leave both branches closed. Ignoring the press in pointerdown alone is not enough: with a mouse the heading takes focus before pointerup, with touch after pointerup, and the focusout handler closes the open branch in both cases. With the rule below the second branch opens on one mouse click and on one tap, and Tab from an open branch to the next heading still closes it.",
+      "endState": {
+        "surface": {
+          "core": "New export getPortalBranchSummary.",
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "No change.",
+        "behaviour": "Each header keeps one private value `pressed` (an element or null). Document pointerdown: pressed = getPortalBranchSummary(event.target, header); when it is an element nothing is closed by this handler; otherwise today's rule (close branches that do not contain the target, close the menu when the target is outside the header). focusout on the header: when the element receiving focus is `pressed` or inside it, the branch state is left alone; otherwise today's rule. Click on a branch heading: that branch toggles and every other branch closes, as today, then pressed = null. pressed is also set to null on document pointercancel and on any keydown inside the header, so keyboard navigation after a press follows the ordinary rule. Result: one press with mouse, touch or pen on a sibling heading opens it and closes the previous one at every width; Escape, Tab, outside press and link activation behave as before. No listener is attached on the server."
+      },
+      "core": [
+        {
+          "export": "getPortalBranchSummary",
+          "signature": "getPortalBranchSummary(target: EventTarget | null, scope: Element | null | undefined): HTMLElement | null",
+          "behaviour": "New file core/src/portal-branch.ts, exported from index.ts. Returns the summary element that is or contains `target`, when its parent is details[data-hw-portal-branch] and it lies inside `scope`; null otherwise (also for a text-node target without a parent element). Uses nodeType and closest only; reads no global."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "react/src/expanded-content.tsx. :76 `const pressed = useRef<HTMLElement | null>(null)`. :82-86 outside(): `pressed.current = getPortalBranchSummary(event.target, root)`; `if (!pressed.current && !branch?.contains(target)) setBranch(null)`; the menu line unchanged; the same effect adds and removes a `pointercancel` listener that clears pressed. :93 first statement of onKeyDown after the application's handler: `pressed.current = null`. :101-105 onBlur: `if (!pressed.current?.contains(target as Node | null) && !branch?.contains(target as Node | null)) setBranch(null)`. :118-122 summary onClick: after setBranch, `pressed.current = null`. `root` is the header element (see E06).",
+        "vue": "vue/src/patterns.ts. :100 `let pressed: HTMLElement | null = null`. :102-106 outside(): `pressed = getPortalBranchSummary(event.target, root.value)`; `if (!pressed && !branch.value?.contains(target)) branch.value = undefined`. :107-108 also add and remove a document `pointercancel` listener that clears it. :122-126 summary click: `pressed = null` after the assignment. :138 onKeydown: `pressed = null` first. :148-152 onFocusout: `if (!pressed?.contains(target) && !branch.value?.contains(target)) branch.value = undefined`.",
+        "angular": "angular/src/content.ts. :115 `private pressed: HTMLElement | null = null`. :136-140 outside(): `this.pressed = getPortalBranchSummary(event.target, this.host.nativeElement)`; `if (!this.pressed && !this.branch?.contains(target)) this.branch = undefined`. New `@HostListener('document:pointercancel') released() { this.pressed = null; }`. :119-122 toggleBranch(): `this.pressed = null` at the end. :126 keydown(): `this.pressed = null` first. :141-145 focusout(): `if (!this.pressed?.contains(target) && !this.branch?.contains(target)) this.branch = undefined`.",
+        "vanilla": "vanilla/src/portal.ts. :85 `let pressed: HTMLElement | null = null`. :90 pointerdown: `pressed = getPortalBranchSummary(event.target, navigation); if (!pressed) leave(event.target as Node | null)`; listen for `pointercancel` on the document to clear it. :91-95 focusout: both paths (relatedTarget, and the microtask that reads activeElement) call leave(next) only when `!pressed?.contains(next)`. :63-68 navigation click: `pressed = null` after closeBranchesOutside(target). :69 keydown: `pressed = null` first."
+      },
+      "tests": [
+        {
+          "caseId": "PORTAL-01",
+          "what": "[portal-shell-1] Branch 1 open; pointerdown on the heading of branch 2, then focusout of the header with relatedTarget = that heading: branch 1 is still open; then click on the heading: branch 2 open, branch 1 closed. tests/portal-branch-parity.test.ts (vanilla added to its adapters).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PORTAL-02",
+          "what": "Without a preceding pointerdown, focus moving from inside branch 1 to the heading of branch 2 closes branch 1 (keyboard path unchanged).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PORTAL-03",
+          "what": "pointerdown on a heading followed by pointercancel, or by a keydown, clears the press: the next focus move out of branch 1 closes it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PORTAL-04",
+          "what": "Browser at 390px with the menu open, mouse click with a 120 ms hold and touchscreen tap: one press on the second heading opens it and closes the first, in ar and en; tests/browser/portal-branches.spec.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PORTAL-00",
+          "what": "core/test/portal-branch.test.ts (new): summary itself, a child of the summary, a summary of a details without the attribute, a summary outside scope, null and text-node targets.",
+          "adapters": [
+            "core"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "vanilla/PORTAL.md:53-58 and the framework PORTAL.md files: one press on another group heading opens it and closes the open one. docs/mobile-navigation.md gets one line with the decision.",
+      "decisions": [
+        {
+          "component": "PortalHeader",
+          "question": "What closes the open branch when another heading is pressed?",
+          "choice": "the click on that heading, not the pointerdown or the focus change that precede it",
+          "basis": "accessibility",
+          "source": "vanilla/PORTAL.md:53-58; measured event order in Chromium",
+          "changedAdapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "portal-shell-4"
+      ],
+      "component": "PortalHeader (menu open state)",
+      "summary": "The vanilla header reports and controls the open state of the menu; React, Vue and Angular keep it private, so an application cannot close the menu after a route change or observe it. The three frameworks expose `open` in the form of convention controlled-and-observable-state.",
+      "endState": {
+        "surface": {
+          "react": "PortalHeaderBaseProps: `open?: boolean`, `defaultOpen?: boolean` (default false), `onOpenChange?: (open: boolean) => void` (new). Reachable through PortalLayout `headerProps`.",
+          "vue": "PortalHeader: props `open` ({type: Boolean, default: undefined}) and `defaultOpen` (Boolean), event `update:open(open: boolean)` (new), so v-model:open works.",
+          "angular": "hw-portal-header: `@Input({transform: booleanAttribute}) open = false` and `@Output() readonly openChange = new EventEmitter<boolean>()` (new), so [(open)] works; the public field `menuOpen` is renamed to `open`; `close()` stays public and now notifies.",
+          "vanilla": "none (open, show(), close(restoreFocus?), onOpenChange and hw:change {open} exist: vanilla/src/portal.ts:5,15,51-56)."
+        },
+        "dom": "No new element: button.hw-portal-menu-toggle[aria-expanded] and nav[data-open=true|false] show the state.",
+        "behaviour": "`open` is the disclosure of the navigation below 48rem; above it the links are always visible and the state has no visual effect. The toggle, Escape (focus returns to the toggle), an outside press, focus leaving the header and the activation of a navigation link all change it through one setter: one notification per change with the new value, none when the application changes a controlled value, and when controlled the DOM follows the application's value only. The open branch stays private. Server rendering: closed by default; `open` or `defaultOpen` true renders aria-expanded=true and data-open=true on the server and on the first client render alike."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "react/src/expanded-content.tsx:64-68 add the three props to PortalHeaderBaseProps; :71 take `open: controlled, defaultOpen = false, onOpenChange` out of props; :74 `const [open, setOpen] = useControllable(controlled, defaultOpen, onOpenChange)`. Every existing setOpen call stays (useControllable notifies only on a change).",
+        "vue": "vue/src/patterns.ts:80-93 add the props and `emits: {'update:open': (_value: boolean) => true}`; setup takes `emit`; :96 `const model = useValue(() => props.open, props.defaultOpen, value => emit('update:open', value))`; `open.value = x` becomes `model.set(x)` at :101, :105, :151, :169 and reads become `model.value.value` at :144, :169, :172.",
+        "angular": "angular/src/content.ts:113 `menuOpen = false` becomes the `open` input and the `openChange` output; `private setOpen(next: boolean) { if (this.open === next) return; this.open = next; this.openChange.emit(next); }` used by close() (:123), toggleMenu() (:125), keydown() (:132), outside() (:139) and focusout() (:144); template :73-74 binds `open` in aria-expanded, data-icon and data-open.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "STATE-01..05",
+          "what": "[portal-shell-4] PortalHeader `open`: uncontrolled toggle notifies once; controlled follows the application; changing the controlled value does not notify; v-model:open and [(open)] round-trip; server render with open true equals the first client render. tests/portal-header-parity.test.ts (new).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-06",
+          "what": "vanilla: hw:change detail {open} and onOpenChange for the same interactions.",
+          "adapters": [
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "PORTAL-05",
+          "what": "Each closing path (Escape, outside press, focus leaving the header, link activation) notifies false exactly once; Escape puts focus on the toggle.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-portal-header",
+          "kind": "field",
+          "old": "public field menuOpen",
+          "new": "open input with openChange",
+          "migration": "header.menuOpen -> header.open, or bind [(open)]"
+        }
+      ],
+      "readme": "Framework PORTAL.md / README, PortalHeader: `open` in the adapter's form, with the example of closing the menu after a client-side route change. The guide sentence 'Framework adapters own their disclosure state' (apps/playground/src/component-layout-guides.ts:88) is rewritten.",
+      "decisions": [],
+      "ownerDecision": null,
+      "notDone": "PortalLayout in Vue and Angular does not pass `open` to its header (portal-shell-8 is not in 0.3.0); compose PortalHeader directly where the state is needed. React passes it through headerProps."
+    },
+    {
+      "ids": [
+        "E03"
+      ],
+      "component": "PortalLayout, SiteVerification (React types)",
+      "summary": "footerLabel and externalLabel are plain optional props in React although each is required when another prop switches its use on; sibling texts are typed as unions on the switching prop. Both become such unions; the runtime warnings stay as they are.",
+      "endState": {
+        "surface": {
+          "react": "PortalLayoutProps: `footerProps` and `footerLabel` leave the base interface and become `({ footerProps: PortalFooterContentProps & { links?: undefined }; footerLabel?: string } | { footerProps: PortalFooterContentProps; footerLabel: string })`. SiteVerificationProps: `registrationExternal` and `externalLabel` leave the base interface; the union becomes `({ registrationHref?: undefined; registrationLabel?: string; registrationExternal?: boolean; externalLabel?: string } | { registrationHref?: string; registrationLabel: string; registrationExternal: false; externalLabel?: string } | { registrationHref?: string; registrationLabel: string; registrationExternal?: true; externalLabel: string })`.",
+          "vue": "none (needText at render with the same conditions).",
+          "angular": "none (texts.need with the same conditions: angular/src/portal.ts:19, angular/src/site-verification.ts:22-24).",
+          "vanilla": "none"
+        },
+        "dom": "No change.",
+        "behaviour": "Type level only. A PortalLayout with footerProps.links and no footerLabel, and a SiteVerification with registrationHref, registrationExternal not false and no externalLabel, no longer compile. Runtime: the same development warnings as today."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "react/src/portal.tsx:21 remove `footerProps: PortalFooterContentProps; footerLabel?: string;` from PortalLayoutBaseProps; :25-27 add the union as a third intersection member. react/src/site-verification.tsx:6 add 'registrationExternal' to the Omit list; :11-12 remove externalLabel from the base; :15 the three-member union. Function bodies unchanged.",
+        "vue": "none",
+        "angular": "none",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "TEXT-05",
+          "what": "[E03] Type fixture packages/react/fixtures/root-names.tsx (compiled by the React typecheck): @ts-expect-error for PortalLayout with footerProps.links and no footerLabel, and for SiteVerification with registrationHref and no externalLabel; no error with registrationExternal={false}, and none without links / without registrationHref.",
+          "adapters": [
+            "react"
+          ]
+        },
+        {
+          "caseId": "TEXT-02",
+          "what": "Runtime, unchanged: footerLabel and externalLabel are not asked for while their feature is off; packages/react/react.text-contract.test.tsx.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "PortalLayout, SiteVerification",
+          "kind": "input",
+          "old": "footerLabel?: string; externalLabel?: string (always optional in the types)",
+          "new": "required by the types when footerProps.links is given; when registrationHref is given and registrationExternal is not false",
+          "migration": "add footerLabel=\"...\" / externalLabel=\"...\", or registrationExternal={false}"
+        }
+      ],
+      "readme": "React README text table: footerLabel 'required with footerProps.links', externalLabel 'required with registrationHref unless registrationExternal is false'.",
+      "decisions": [],
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "E04"
+      ],
+      "component": "PortalHeader (brand that is not a link)",
+      "summary": "A labelled brand without a home link has role=img in vanilla and React, role=group in Vue, and in Angular an anchor without href and without a role, on which aria-label is not exposed reliably. Every adapter renders div.hw-portal-brand with role=img exactly when brandLabel is given.",
+      "endState": {
+        "surface": {
+          "react": "none (prop names change with E06).",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "With a home link: a.hw-portal-brand[href][aria-label={brandLabel} when given]. Without one (homeHref empty): div.hw-portal-brand, with role=img and aria-label={brandLabel} when brandLabel has text, and with neither attribute otherwise. Content: the brand text and artwork as today. Vanilla: the authored element; the controller writes role=img with the label on a brand that is not a[href] and has no role (unchanged).",
+        "behaviour": "No interaction. The development check for an artwork-only brand without a name stays. Server rendering: the element name depends on homeHref only, so server and client agree."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none (react/src/expanded-content.tsx:110 renders this).",
+        "vue": "vue/src/patterns.ts:159 `props.homeHref ? \"a\" : \"div\"`; :164 `role: !props.homeHref && optionalText(props.brandLabel) ? \"img\" : undefined`.",
+        "angular": "angular/src/content.ts:72: `<ng-template #brandContent><ng-content select=\"[hwBrand]\" />@if (brand) {<span>{{ brand }}</span>}</ng-template>@if (homeHref) {<a #brandElement class=\"hw-portal-brand\" [attr.href]=\"homeHref\" [attr.aria-label]=\"brandLabel || null\"><ng-container [ngTemplateOutlet]=\"brandContent\" /></a>} @else {<div #brandElement class=\"hw-portal-brand\" [attr.role]=\"brandLabel ? 'img' : null\" [attr.aria-label]=\"brandLabel || null\"><ng-container [ngTemplateOutlet]=\"brandContent\" /></div>}` with `imports: [NgTemplateOutlet]` (the pattern of hw-card, presentation.ts:18, so the projected artwork exists once). :102 the comment on homeHref: an empty value renders a div.",
+        "vanilla": "none (vanilla/src/portal.ts:28-33)."
+      },
+      "tests": [
+        {
+          "caseId": "PORTAL-08",
+          "what": "[E04] No home link and brandLabel: .hw-portal-brand is a div with role=img and the label; without brandLabel no role and no aria-label; with a home link an a[href] without role. tests/portal-header-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-03",
+          "what": "Angular: projected [hwBrand] artwork is rendered once in both branches and hydrates without a mismatch; packages/angular/test/portal-header-regions.test.ts and hydration.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "component": "PortalHeader",
+          "kind": "markup",
+          "old": "span.hw-portal-brand[role=group] without a home link",
+          "new": "div.hw-portal-brand[role=img]",
+          "migration": "span.hw-portal-brand -> div.hw-portal-brand"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-portal-header",
+          "kind": "markup",
+          "old": "a.hw-portal-brand without href when homeHref is empty",
+          "new": "div.hw-portal-brand, role=img with brandLabel",
+          "migration": "a.hw-portal-brand:not([href]) -> div.hw-portal-brand"
+        }
+      ],
+      "readme": "Framework PORTAL.md: an empty homeHref renders the brand as a div; brandLabel then gives it role=img and its name.",
+      "decisions": [
+        {
+          "component": "PortalHeader",
+          "question": "Role of a labelled brand that is not a link",
+          "choice": "img, on a div",
+          "basis": "repository",
+          "source": "packages/vanilla/PORTAL.md:79-81; vanilla/src/portal.ts:32; react/src/expanded-content.tsx:110",
+          "changedAdapters": [
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "The footer brand keeps role=group in the three frameworks (it holds several marks); it was not part of the finding."
+    },
+    {
+      "ids": [
+        "E05"
+      ],
+      "component": "TreeView, Tabs (root names in React and Vue)",
+      "summary": "The React TreeView takes `label` as a plain required string and does not warn when it is empty, and Tabs cannot be named by a visible heading in React and Vue because aria-label and aria-labelledby land on the wrapper. TreeView and Tabs follow the root-name rule: aria-label, aria-labelledby or `label`, typed as a union in React and checked at render in Vue.",
+      "endState": {
+        "surface": {
+          "react": "TreeView: `TreeViewProps = TreeViewBaseProps & RootName` (label optional when aria-label or aria-labelledby is passed). Tabs: `TabsProps = TabsBaseProps & RootName & (overflow union)`; `aria-label` and `aria-labelledby` props name the tablist and are no longer written on div.hw-tabs.",
+          "vue": "Tabs: `label: String` without `required: true`; `aria-label` / `aria-labelledby` attributes name the tablist and are no longer written on the root. TreeView: none (label optional, rootLabel at :592).",
+          "angular": "The same rule through forwarded inputs: see E08.",
+          "vanilla": "none (authored names; a controller never replaces them)."
+        },
+        "dom": "ul.hw-tree-view[role=tree][aria-label | aria-labelledby]. div.hw-tabs > div.hw-tab-bar > div.hw-tab-list[role=tablist][aria-label={application aria-label, else label} or aria-labelledby={application ids}]; div.hw-tabs itself carries neither attribute. No attribute is written when no name is given.",
+        "behaviour": "A missing name (no label, no aria-label, no aria-labelledby) gives one development warning under the component's name and renders no aria-label. Declared requiredness, to be written once in CONTRACT.md:83-87 with the forms-core rewrite: React a RootName union, Vue `label` without `required: true` checked by rootLabel, Angular `label` without `required: true` checked in the template when no forwarded name is present, vanilla authored markup."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "react/src/expanded-interactive.tsx:90 rename the interface to TreeViewBaseProps without `label`, add `export type TreeViewProps = TreeViewBaseProps & RootName`; :98 `aria-label={rootLabel('TreeView', props, label)}`. react/src/interactive.tsx:15 remove `label: string` from TabsBaseProps; :20 `& RootName`; :21 take `'aria-label'` and `'aria-labelledby'` out of props; :68 tablist `aria-label={rootLabel('Tabs', {'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledby}, label)} aria-labelledby={ariaLabelledby}`.",
+        "vue": "vue/src/interactive.ts:11 `label: String`; :48 the root receives attrs without aria-label and aria-labelledby; :50 tablist `'aria-label': rootLabel('Tabs', props.label, attrs)`, `'aria-labelledby': attrs['aria-labelledby']`.",
+        "angular": "none here (E08).",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "NAME-01..04",
+          "what": "[E05] TreeView and Tabs: label alone; application aria-label alone (no warning); aria-labelledby alone pointing at a visible heading (no warning, no aria-label); none: one warning naming the component, no aria-label attribute. For Tabs the attributes are on the tablist and not on div.hw-tabs. packages/react/react.text-contract.test.tsx, packages/vue/test/required-text.test.ts.",
+          "adapters": [
+            "react",
+            "vue"
+          ]
+        },
+        {
+          "caseId": "NAME-06",
+          "what": "Type fixture packages/react/fixtures/root-names.tsx: TreeView and Tabs without any name do not compile; with aria-labelledby and no label they do.",
+          "adapters": [
+            "react"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react, vue",
+          "component": "Tabs",
+          "kind": "markup",
+          "old": "aria-label / aria-labelledby passed to Tabs were written on div.hw-tabs",
+          "new": "written on the tablist",
+          "migration": "none; selectors on .hw-tabs[aria-label] -> .hw-tab-list[aria-label]"
+        }
+      ],
+      "readme": "React and Vue READMEs, TreeView and Tabs: named by `label`, or by aria-label / aria-labelledby. CONTRACT.md:83-87 states the declared requiredness per adapter.",
+      "decisions": [],
+      "ownerDecision": null,
+      "notDone": "SearchField's field name is specified by the rich-inputs-files cluster (R27)."
+    },
+    {
+      "ids": [
+        "E06"
+      ],
+      "component": "PortalHeader, AppShell (React names and wrappers)",
+      "summary": "React calls the links `navigation` and the home link `brandHref` where Vue and Angular say `links` and `homeHref`, and it wraps the header content in div.hw-portal-header-main and the shell body in div.hw-app-shell-body, which the documented markup and the other adapters do not have. React takes the shared names and renders the documented structure.",
+      "endState": {
+        "surface": {
+          "react": "PortalHeaderBaseProps: `navigation` renamed to `links?: readonly PortalNavItem[]`; `brandHref` renamed to `homeHref?: string` with default '/' (an empty string renders the brand as a div), the default Vue and Angular have. The same two names inside PortalLayout `headerProps`.",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "header.hw-portal-header > [a.hw-skip-link] , [div.hw-portal-notice] , .hw-portal-brand , [button.hw-button.hw-portal-menu-toggle , nav[id][aria-label][data-open]] , [div.hw-portal-header-actions] as direct children, in this order (packages/vanilla/PORTAL.md:10-21,44-45). React no longer renders div.hw-portal-header-main. .hw-app-shell > a.hw-skip-link , [.hw-app-shell-header] , [aside.hw-app-shell-sidebar] , main.hw-app-shell-main , [.hw-app-shell-footer] as direct children; React no longer renders div.hw-app-shell-body. Stated difference kept: Angular always renders the notice, actions, shell header, sidebar and footer regions and the stylesheet hides an empty one (projection cannot be detected).",
+        "behaviour": "No behaviour change. The header element itself is the root for the outside-press and focus-leaving rules in React."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/layout.css, dga.css, extended.css, portal.css",
+          "change": "No rule changes: .hw-portal-header-main, .hw-portal-header-inner and .hw-app-shell-body stay supported for authored markup (docs/layout.md:213; apps/playground/src/portal-shell-projects.ts:81), and the direct-child rules already exist (extended.css:284-287, layout.css:63-66). layout.css:121 comment 'Adapters may group the body' becomes 'Authored markup may group the body'."
+        }
+      ],
+      "perAdapter": {
+        "react": "react/src/expanded-content.tsx:66-67 `brand: ReactNode; homeHref?: string; brandLabel?: string; links?: readonly PortalNavItem[]`; :71 `homeHref = '/'`, `links`, and `ref` taken out of props; :75 `container` becomes `const root = useRef<HTMLElement>(null)` set on the header with `ref={node => { root.current = node; assignRef(ref, node); }}`; :109 and its closing tag: delete the wrapper div; :110 `homeHref ?`; :111-112 `links`. react/src/expanded-layout.tsx:27 delete `<div className=\"hw-app-shell-body\">` and its closing tag. react/PORTAL.md and README examples.",
+        "vue": "none",
+        "angular": "none",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "SHAPE-01",
+          "what": "[E06] One props object {brand, brandLabel, homeHref, links, navigationLabel, menuLabel} passed unchanged to React, Vue and Angular renders the same links, branches and brand element; tests/portal-branch-parity.test.ts (its React mapping of links to navigation is deleted).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PORTAL-06",
+          "what": "The brand, the menu toggle, the nav and the actions container are direct children of header.hw-portal-header, in the documented order; no .hw-portal-header-main.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "LAYOUT-01",
+          "what": "AppShell: main.hw-app-shell-main and aside.hw-app-shell-sidebar are direct children of .hw-app-shell; no .hw-app-shell-body. packages/react/react.ssr.test.tsx and the Vue and Angular counterparts.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PORTAL-07",
+          "what": "Browser: the React header at 390px hides nav[data-open=false] and puts the open nav on its own row, at 1280px shows the links in one row; the authored fixture with .hw-portal-header-main (tests/browser/portal-layout.spec.ts:25) still passes.",
+          "adapters": [
+            "react",
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "Type fixture: `navigation` and `brandHref` are rejected on PortalHeader.",
+          "adapters": [
+            "react"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "PortalHeader",
+          "kind": "input",
+          "old": "navigation, brandHref",
+          "new": "links, homeHref",
+          "migration": "navigation={x} -> links={x}; brandHref=\"/\" -> homeHref=\"/\""
+        },
+        {
+          "adapter": "react",
+          "component": "PortalHeader",
+          "kind": "default",
+          "old": "no home link unless brandHref is given",
+          "new": "homeHref defaults to '/'",
+          "migration": "add homeHref=\"\" to keep a brand that is not a link"
+        },
+        {
+          "adapter": "react",
+          "component": "PortalHeader",
+          "kind": "markup",
+          "old": "header > div.hw-portal-header-main > brand, toggle, nav, actions",
+          "new": "header > brand, toggle, nav, actions",
+          "migration": ".hw-portal-header-main > x -> .hw-portal-header > x"
+        },
+        {
+          "adapter": "react",
+          "component": "AppShell",
+          "kind": "markup",
+          "old": "div.hw-app-shell-body around sidebar and main",
+          "new": "sidebar and main are direct children",
+          "migration": ".hw-app-shell-body > x -> .hw-app-shell > x"
+        }
+      ],
+      "readme": "React README and PORTAL.md: links, homeHref (default '/', empty for no link), the header and shell structure. docs/layout.md:213 keeps the sentence that the body wrapper is supported in authored markup.",
+      "decisions": [
+        {
+          "component": "PortalHeader",
+          "question": "Prop names",
+          "choice": "links, homeHref",
+          "basis": "majority",
+          "source": "vue/src/patterns.ts:84-85, angular/src/content.ts:101-105",
+          "changedAdapters": [
+            "react"
+          ]
+        },
+        {
+          "component": "PortalHeader",
+          "question": "Default of homeHref",
+          "choice": "'/'",
+          "basis": "majority",
+          "source": "vue/src/patterns.ts:84, angular/src/content.ts:103; the repository gives no rule",
+          "changedAdapters": [
+            "react"
+          ]
+        },
+        {
+          "component": "PortalHeader, AppShell",
+          "question": "Do the wrappers exist?",
+          "choice": "no",
+          "basis": "repository",
+          "source": "packages/vanilla/PORTAL.md:10-21; docs/layout.md:211-213 (direct landmarks, wrapper only supported)",
+          "changedAdapters": [
+            "react"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "The type names differ and stay (React PortalNavItem, Vue PortalLink, Angular HwPortalNavItem). The class hw-link on the brand and on navigation links differs between adapters and is not changed (questions)."
+    },
+    {
+      "ids": [
+        "E08",
+        "R22"
+      ],
+      "component": "Angular root names in this cluster: hw-side-navigation, hw-secondary-nav, hw-tabs, hw-content-navigation, hw-pagination, hw-breadcrumb, hw-stepper, hw-popover, hw-menu, hw-tree-view",
+      "summary": "In Angular `label` is the only source of a root name, so a visible heading cannot name a landmark and an aria-label written on the element stays on a wrapper without a role. The landmark and group components of this cluster take the name from aria-label, aria-labelledby or `label`, by the two mechanisms of convention angular-host-attributes.",
+      "endState": {
+        "surface": {
+          "angular": "Kind B (wrapper) components hw-secondary-nav, hw-tabs, hw-content-navigation, hw-pagination, hw-breadcrumb, hw-stepper, hw-popover, hw-menu: inputs `aria-label` (ariaLabel: string | null = null), `aria-labelledby` (ariaLabelledby: string | null = null), `aria-describedby` (ariaDescribedby: string | null = null), written as attributes or bound as `[aria-label]=\"expr\"`; `label` loses `required: true` and is required only when neither aria-label nor aria-labelledby is given. `[attr.aria-label]` on these hosts is not supported. hw-tree-view gets the same inputs from HwValueControl (forms-core). Kind A hw-side-navigation / nav[hwSideNavigation]: `label` loses `required: true`; an aria-label or aria-labelledby written on the element (static or bound, also [attr.aria-label]) names it. New public abstract class HwNamedRoot.",
+          "react": "none (rootLabel exists; Tabs, Popover and Menu in E05, nav-b-9, nav-b-2).",
+          "vue": "none (same).",
+          "vanilla": "none"
+        },
+        "dom": "Kind B: the host carries none of aria-label, aria-labelledby, aria-describedby; the named inner element (nav, the tablist, ol.hw-stepper, the popover panel, the menu, ul[role=tree]) carries aria-label = the application's aria-label, else `label` (omitted when only aria-labelledby is given and label is empty), aria-labelledby = the application's ids, aria-describedby = the application's ids. hw-content-navigation prints its h2 only when showHeading is on and `label` has text. Kind A hw-side-navigation: the host is the nav; aria-label on it is `label` while label is given, otherwise what the application wrote; aria-labelledby stays as written.",
+        "behaviour": "A component with no name at all (no label, no aria-label, no aria-labelledby) writes no aria-label and warns once in development under its selector name. Server rendering and hydration: kind B uses template and host bindings only; kind A writes through HwHostAttribute (Renderer2, static value from HostAttributeToken), so the server HTML equals the client's and no mismatch is reported."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/layout.css",
+          "change": "Append to the forms-core wrapper-host block list (`:where(hw-field, ...):where(:not([hidden])) { display: block; }`): hw-tree-view, hw-tabs, hw-secondary-nav, hw-pagination, hw-breadcrumb, hw-stepper, hw-service-details. Add `:where(hw-popover, hw-menu):where(:not([hidden])) { display: inline-block; max-inline-size: 100%; }` (the display of .hw-popover and .hw-menu, extended.css:150) and hw-content-navigation joins hw-toggle-group in the one rule `:where(hw-toggle-group, hw-content-navigation):where(:not([hidden])) { display: contents; }` (a block host would become the containing block of the sticky nav and stop it from sticking). hw-portal-header and hw-portal-layout are not added, for the same sticky reason."
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "New angular/src/root-name.ts, exported from public-api.ts (exported components extend it): `@Directive({host: forwardedAriaHost}) export abstract class HwNamedRoot { @Input({alias: 'aria-label'}) ariaLabel: string | null = null; @Input({alias: 'aria-labelledby'}) ariaLabelledby: string | null = null; @Input({alias: 'aria-describedby'}) ariaDescribedby: string | null = null; @Input() label = ''; protected abstract readonly texts: HwTexts; get rootName(): string | null { return this.ariaLabel || (this.ariaLabelledby ? this.label || null : this.texts.need('label', this.label)); } }`. These classes extend it, delete their own `@Input({required: true}) label`, and bind on the named element `[attr.aria-label]=\"rootName\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\"` in place of `[attr.aria-label]=\"texts.need('label', label)\"`: portal.ts:10-11 (hw-secondary-nav), navigation.ts:26,31 (hw-tabs, on the tablist), :121,123 (hw-breadcrumb), :128,142 (hw-pagination), :218,220 (hw-stepper), content-navigation.ts:11,25 (hw-content-navigation; :12 becomes `@if (showHeading && label) {<h2 class=\"hw-content-nav-heading\">{{ label }}</h2>}`), interactions.ts:27,30 (hw-popover, on the panel; hw-menu inherits, :45 on the menu). interactions.ts:110,112 hw-tree-view: `@Input() override label = ''`, ul `[attr.aria-label]=\"ariaLabel || (named ? label || null : texts.need('label', label))\" [attr.aria-labelledby]=\"labelledBy\"` with the HwValueControl members of forms-core. side-navigation.ts:11 remove `'[attr.aria-label]'` from host; :16 `@Input() label = ''`; `private readonly name = injectHostAttribute('aria-label')`; in ngDoCheck (:28) `this.name.set(this.label || null); if (!this.label && !hostHasName(this.host)) this.texts.need('label', this.label);`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "ATTR-01",
+          "what": "hw-side-navigation and nav[hwSideNavigation]: class, id, data-x and aria-label written on the host are on the nav element; packages/angular/test/side-navigation.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-02",
+          "what": "hw-side-navigation with `label` and an application aria-label: label is written; removing label restores the application's value.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "[E08][R22] For each kind B component above: aria-label, aria-labelledby and aria-describedby written statically and bound with [aria-label] reach the named inner element and the host has none of them; packages/angular/test/required-names.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-05",
+          "what": "Server render and hydration of ATTR-03 for hw-tabs, hw-popover and hw-secondary-nav: same DOM, no mismatch; packages/angular/test/hydration.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "NAME-01..04",
+          "what": "Per component: label alone; aria-label alone (no warning); aria-labelledby alone pointing at a visible heading (no warning, no aria-label on the named element); none (one warning with the selector name, no aria-label).",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-06",
+          "what": "Browser: a sticky hw-content-navigation still sticks inside its column, and hw-popover flows inline like the React root; tests/browser/nic-content-navigation.spec.ts and disclosure-projects.spec.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "the ten components above",
+          "kind": "input",
+          "old": "label is a required input and the only name; aria-label on the host stays on the wrapper",
+          "new": "label optional; aria-label / aria-labelledby / aria-describedby are inputs forwarded to the named element",
+          "migration": "none needed; [attr.aria-label]=\"x\" on a wrapper host -> [aria-label]=\"x\""
+        }
+      ],
+      "readme": "Angular README, one section 'Names': the three sources, the list of wrapper components with the element that receives the name, `[attr.aria-label]` unsupported on wrapper hosts, hw-side-navigation as the host-root case. CONTRACT.md:83-87 is rewritten by forms-core; this cluster adds its components to the list there.",
+      "decisions": [
+        {
+          "component": "Angular landmark and group components",
+          "question": "Can a visible heading or an aria-label name them?",
+          "choice": "yes, forwarded as inputs (wrapper hosts) or left on the host (host-root)",
+          "basis": "accessibility",
+          "source": "owner decision 2 (index 1); convention angular-host-attributes",
+          "changedAdapters": [
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": 1,
+      "notDone": "hw-portal-header and hw-navigation-drawer name inner landmarks through navigationLabel and are unchanged. hw-search-field is specified by rich-inputs-files; the Angular components of other clusters by those clusters (they can extend HwNamedRoot)."
+    },
+    {
+      "ids": [
+        "service-patterns-1"
+      ],
+      "component": "ServiceCard, ServiceDetails (service facts)",
+      "summary": "React renders service facts as a description list; Vue accepts strings and renders a plain list, Angular two fixed strings as spans, so term and value are not related and further facts cannot be given. Facts are `metadata: {term, description}[]` rendered as dl.hw-description-list in every adapter.",
+      "endState": {
+        "surface": {
+          "react": "none (metadata?: readonly DescriptionItem[] on both).",
+          "vue": "ServiceCard `metadata?: readonly DescriptionItem[]` (was readonly string[]). ServiceDetails `items` renamed to `metadata?: readonly DescriptionItem[]` (default []).",
+          "angular": "hw-service-card: `duration` and `fee` removed; `@Input() metadata: readonly HwDescription[] = []` (new). hw-service-details: `details` renamed to `metadata`.",
+          "vanilla": "none (authored markup); the documented samples change, see perAdapter."
+        },
+        "dom": "dl.hw-description-list > div > dt {term} , dd {description}, one div per entry, without data-variant (stacked). In ServiceCard it follows the description inside div.hw-card-body; in ServiceDetails it follows the header. It is rendered only when metadata has at least one entry.",
+        "behaviour": "Static content. Numbers, dates and fees are printed as the application wrote them (convention value-display-and-formatting)."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css",
+          "change": ":217 delete the rule `.hw-service-card-meta { ... }` and its `> span + span` continuation on that line; :249 delete `.hw-service-card .hw-card-body > ul { ... }`. No adapter and no documented markup renders either after this change."
+        }
+      ],
+      "perAdapter": {
+        "react": "react/src/expanded-content.tsx:57 and :61: `metadata && <DescriptionList .../>` becomes `!!metadata?.length && <DescriptionList items={metadata} />` (no empty dl).",
+        "vue": "vue/src/patterns.ts:19 `metadata: Array as PropType<readonly DescriptionItem[]>`; :30-35 the ul becomes `props.metadata?.length && h('dl', {class: 'hw-description-list'}, props.metadata.map((item, index) => h('div', {key: index}, [h('dt', {}, item.term), h('dd', {}, item.description)])))` (written inline so that the markup does not depend on the default variant of DescriptionList). :53-56 prop `metadata`; :65 the same dl, only when it has entries.",
+        "angular": "angular/src/content.ts:62 replace div.hw-service-card-meta by `@if (metadata.length) {<dl class=\"hw-description-list\">@for (item of metadata; track $index) {<div><dt>{{ item.term }}</dt><dd>{{ item.description }}</dd></div>}</dl>}`; :63 remove the duration and fee inputs, add metadata. :64 hw-service-details: the same dl in place of `<hw-description-list [items]=\"details\" variant=\"horizontal\" />` (no nested host element), `imports` without HwDescriptionListComponent; :65 `metadata` in place of `details`.",
+        "vanilla": "Documented samples rewritten to the dl: apps/playground/src/component-layout-guides.ts:35 and .ar.ts:75, expanded-samples.ts:122 (div.hw-service-card-meta > span becomes dl.hw-description-list > div > dt + dd)."
+      },
+      "tests": [
+        {
+          "caseId": "SHAPE-01",
+          "what": "[service-patterns-1] One metadata array [{term, description} x2] passed unchanged to React, Vue and Angular renders dl.hw-description-list with two dt/dd pairs in ServiceCard and in ServiceDetails, as the vanilla fixture; tests/service-patterns-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SERVICE-00",
+          "what": "No dl element when metadata is absent or empty.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "Type and template checks: Vue ServiceCard rejects a string array and ServiceDetails has no `items` prop; Angular has no duration, fee or details input.",
+          "adapters": [
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "component": "ServiceCard",
+          "kind": "input",
+          "old": "metadata: string[] (rendered as ul)",
+          "new": "metadata: {term, description}[] (rendered as dl)",
+          "migration": ":metadata=\"['Duration: 3 days']\" -> :metadata=\"[{term: 'Duration', description: '3 days'}]\""
+        },
+        {
+          "adapter": "vue",
+          "component": "ServiceDetails",
+          "kind": "input",
+          "old": "items",
+          "new": "metadata",
+          "migration": ":items=\"x\" -> :metadata=\"x\""
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-service-card, hw-service-details",
+          "kind": "input",
+          "old": "duration, fee; details",
+          "new": "metadata: HwDescription[]",
+          "migration": "duration=\"3 days\" fee=\"Free\" -> [metadata]=\"[{term, description}, ...]\"; [details] -> [metadata]"
+        },
+        {
+          "adapter": "vue, angular",
+          "component": "ServiceDetails",
+          "kind": "markup",
+          "old": "dl[data-variant=horizontal] (Angular inside a hw-description-list element)",
+          "new": "dl.hw-description-list, stacked, direct child of the article",
+          "migration": "compose DescriptionList with variant=\"horizontal\" in the default content to keep the old layout"
+        },
+        {
+          "adapter": "styles",
+          "component": "ServiceCard",
+          "kind": "removed",
+          "old": ".hw-service-card-meta",
+          "new": "dl.hw-description-list",
+          "migration": "<div class=\"hw-service-card-meta\"><span>x</span></div> -> <dl class=\"hw-description-list\"><div><dt>term</dt><dd>x</dd></div></dl>"
+        }
+      ],
+      "readme": "Vue and Angular READMEs: metadata on both components; the guide lines 'React metadata ... Vue metadata is a string array; Angular exposes duration and fee' (apps/playground/src/component-layout-guides.ts:41,47,60,67 and the .ar file) are rewritten to one contract.",
+      "decisions": [
+        {
+          "component": "ServiceCard, ServiceDetails",
+          "question": "Shape and markup of facts",
+          "choice": "metadata of {term, description} as a stacked dl",
+          "basis": "repository",
+          "source": "convention item-shapes; apps/playground/src/component-layout-guides.ts:54,63",
+          "changedAdapters": [
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "service-patterns-2",
+        "R18"
+      ],
+      "component": "ServiceCard (one layout and one action)",
+      "summary": "The same card renders four layouts: the badge after the heading in Vue, a second link on the title and a secondary button as the action in Angular, different fact markup. Every adapter renders the Card anatomy that React has (header with category and h3, body, footer with the action), the packaged action is a.hw-link and exists only when href is given.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "`badge` renamed to `category?: string`. The `icon` and `action` slots stay.",
+          "angular": "hw-service-card: `href` is optional (`@Input() href = ''`); the title is no longer a link; the packaged action is rendered only when href is given and nothing is projected into [hwServiceAction]; `actionLabel` is required under that condition only. [hwServiceIcon] and [hwServiceAction] stay.",
+          "vanilla": "none (authored markup; documented sample rewritten)."
+        },
+        "dom": "article.hw-card.hw-service-card[data-variant] > header.hw-card-header > [div.hw-service-card-icon[aria-hidden=true] {icon}] , div > [span.hw-badge[data-tone=neutral] {category}] , h3 {title} ; div.hw-card-body > [p {description}] , [dl.hw-description-list] , default content ; [footer.hw-card-footer > the application's action, or a.hw-link[href] {actionLabel}]. The h3 contains text only. Stated difference: Angular always renders div.hw-service-card-icon and footer.hw-card-footer and the stylesheet hides an empty one (extended.css:215, nic-cards.css:45), because projection cannot be detected; both templates contain no white space.",
+        "behaviour": "One tab stop per card: the action. Without href and without an action there is no footer content and no warning. actionLabel is required when href is given without an action (React union, Vue needText, Angular texts.need inside the fallback content, which is evaluated only when nothing is projected). Static otherwise."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css",
+          "change": "none beyond service-patterns-1: :244-248 already lay out .hw-service-card > .hw-card-header / .hw-card-body / .hw-card-footer and :215 styles and hides .hw-service-card-icon. The rules for the flat authored form (:216-217 `.hw-service-card > p`, `> .hw-badge`, `h3 a`) stay for existing authored markup."
+        }
+      ],
+      "perAdapter": {
+        "react": "react/src/expanded-content.tsx:57: the icon wrapper `<span aria-hidden=\"true\">` becomes `<div className=\"hw-service-card-icon\" aria-hidden=\"true\">`. Nothing else.",
+        "vue": "vue/src/patterns.ts:18 `category: String`; :24-28 header: `[slots.icon && h('div', {class: 'hw-service-card-icon', 'aria-hidden': 'true'}, slots.icon()), h('div', {}, [props.category && h(Badge, {}, () => props.category), h('h3', {}, props.title)])]` (badge before the heading, default tone neutral).",
+        "angular": "angular/src/content.ts:62 template: `<article class=\"hw-card hw-service-card\" [attr.data-variant]=\"variant\"><header class=\"hw-card-header\"><div class=\"hw-service-card-icon\" aria-hidden=\"true\"><ng-content select=\"[hwServiceIcon]\" /></div><div>@if (category) {<span class=\"hw-badge\" data-tone=\"neutral\">{{ category }}</span>}<h3>{{ title }}</h3></div></header><div class=\"hw-card-body\">@if (description) {<p>{{ description }}</p>}` + the dl of service-patterns-1 + `<ng-content /></div><footer class=\"hw-card-footer\"><ng-content select=\"[hwServiceAction]\">@if (href) {<a class=\"hw-link\" [href]=\"href\">{{ texts.need('actionLabel', actionLabel, 'href is set and no [hwServiceAction] content is projected') }}</a>}</ng-content></footer></article>`. :63 `@Input() href = ''` (no longer required).",
+        "vanilla": "Documented samples (apps/playground/src/component-layout-guides.ts:31-37 and .ar.ts:71-77, service-pattern-projects.ts:28, expanded-samples.ts:122) rewritten to the DOM above with a.hw-link as the action."
+      },
+      "tests": [
+        {
+          "caseId": "SERVICE-01",
+          "what": "[service-patterns-2] The same title, description, category, metadata, href and actionLabel render the same outline: header with span.hw-badge before the h3, an h3 without a link, body with p and dl, footer with one a.hw-link; tests/service-patterns-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SERVICE-02",
+          "what": "[R18] Action: no a.hw-link without href; a.hw-link with href and actionLabel; replaced by the application's action (prop, slot, [hwServiceAction]); the card has exactly one focusable element in each case with an action.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-02",
+          "what": "actionLabel is not asked for without href, and not when an action is given; with href alone a missing actionLabel renders an empty link text and warns once.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "Vue: `badge` is not a prop (it would fall through as an attribute; the type fixture rejects it).",
+          "adapters": [
+            "vue"
+          ]
+        },
+        {
+          "caseId": "RICH-03",
+          "what": "Browser, Angular: the empty icon region and the empty footer have display none; filled ones are visible. tests/browser/service-pattern-projects.spec.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SERVICE-03",
+          "what": "Browser: for the same content at 386px the card height and the badge and heading positions agree within 2px in the four adapters, in ar and en.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "component": "ServiceCard",
+          "kind": "input",
+          "old": "badge",
+          "new": "category",
+          "migration": "badge=\"x\" -> category=\"x\""
+        },
+        {
+          "adapter": "vue",
+          "component": "ServiceCard",
+          "kind": "markup",
+          "old": "h3 then an info-toned badge; icon slot unwrapped",
+          "new": "neutral badge before the h3; icon inside div.hw-service-card-icon",
+          "migration": "none"
+        },
+        {
+          "adapter": "react",
+          "component": "ServiceCard",
+          "kind": "markup",
+          "old": "span[aria-hidden] around the icon",
+          "new": "div.hw-service-card-icon[aria-hidden]",
+          "migration": "none"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-service-card",
+          "kind": "markup",
+          "old": "article > p.hw-badge, h3 > a.hw-link, p, meta, a.hw-button[data-variant=secondary]",
+          "new": "article > header.hw-card-header, div.hw-card-body, footer.hw-card-footer; h3 without a link; a.hw-link as the packaged action",
+          "migration": "project <a hwButton variant=\"secondary\" hwServiceAction href=\"...\"> to keep a button as the action"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-service-card",
+          "kind": "default",
+          "old": "href required; a fallback action is always rendered",
+          "new": "href optional; the packaged action only with href",
+          "migration": "none"
+        }
+      ],
+      "readme": "Each README, ServiceCard: the anatomy above, category, metadata, the action rule (own action, or href with actionLabel). vanilla README and the guide usage show the same markup.",
+      "decisions": [
+        {
+          "component": "ServiceCard",
+          "question": "Flat article or Card anatomy?",
+          "choice": "Card anatomy (header, body, footer)",
+          "basis": "repository",
+          "source": "docs/nic-cards.md:28-38 (measured card anatomy); react/src/expanded-content.tsx:57, vue/src/patterns.ts:23-44; the two vanilla samples disagree with each other",
+          "changedAdapters": [
+            "angular",
+            "vanilla"
+          ]
+        },
+        {
+          "component": "ServiceCard",
+          "question": "Packaged action",
+          "choice": "a.hw-link, only with href",
+          "basis": "majority",
+          "source": "react/src/expanded-content.tsx:57, vue/src/patterns.ts:38-43",
+          "changedAdapters": [
+            "angular"
+          ]
+        },
+        {
+          "component": "ServiceCard",
+          "question": "Is the title a link?",
+          "choice": "no",
+          "basis": "accessibility",
+          "source": "two tab stops to one destination in Angular (audit service-patterns-2)",
+          "changedAdapters": [
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "title, description and category stay strings in Vue and Angular while React accepts nodes (conventionConflicts). A typed `variant` ('featured' | 'compact') is not added to React and Vue; it stays a data-variant attribute there."
+    },
+    {
+      "ids": [
+        "service-patterns-7",
+        "R17"
+      ],
+      "component": "ServiceDetails",
+      "summary": "Vue has no requirements list, wraps its action in a class without a rule and renders a section; Angular renders a section without an action region, so a projected button stretches across the grid. Every adapter renders article.hw-service-details with the header, the facts, an optional requirements section and the action in a footer.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "`requirements?: readonly string[]` and `requirementsLabel?: string` (new; requirementsLabel required when requirements has entries: needText('ServiceDetails', 'requirementsLabel', value, 'requirements are given')); scoped slot `requirement` with {item, index} for rich entries (new); the `action` slot is rendered in a footer.",
+          "angular": "hw-service-details: `<ng-content select=\"[hwServiceAction]\" />` inside a footer (new region); `@Input() requirementTemplate?: TemplateRef<{$implicit: string; index: number}>` for rich entries (new). requirements and requirementsLabel unchanged.",
+          "vanilla": "none"
+        },
+        "dom": "article.hw-service-details > header > h2 {title} , [p {description}] ; [dl.hw-description-list] ; [section > [h3 {requirementsLabel}] , ul > li per requirement] ; default content ; [footer > the action]. The section is rendered only when requirements has entries; the h3 only when requirementsLabel has text. Stated difference: Angular always renders the footer and the stylesheet hides it while empty.",
+        "behaviour": "Static. A missing requirementsLabel with requirements renders the list without a heading and warns once. The action keeps its own width (the footer is the grid item, not the button)."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css",
+          "change": "Add after :250: `.hw-service-details > footer:empty { display: none; }`. Nothing is deleted: the `.hw-service-details > h3` and `> ul` rules on :219 stay for authored markup."
+        }
+      ],
+      "perAdapter": {
+        "react": "react/src/expanded-content.tsx:61: `requirements && <section>` becomes `!!requirements?.length && <section>`. Nothing else: this is the reference markup.",
+        "vue": "vue/src/patterns.ts:50-57 props: `metadata` (service-patterns-1), `requirements: {type: Array as PropType<readonly string[]>, default: () => []}`, `requirementsLabel: String`. :60 `h('article', ...)`. :61-69 children: header (p only when description), the dl, `props.requirements.length > 0 && h('section', {}, [needText('ServiceDetails', 'requirementsLabel', props.requirementsLabel, 'requirements are given') && h('h3', {}, props.requirementsLabel), h('ul', {}, props.requirements.map((item, index) => h('li', {key: index}, slots.requirement?.({item, index}) ?? item)))])`, the default slot, `slots.action && h('footer', {}, slots.action())` in place of div.hw-service-details-action.",
+        "angular": "angular/src/content.ts:64 template: `<article class=\"hw-service-details\"><header><h2>{{ title }}</h2>@if (description) {<p>{{ description }}</p>}</header>` + the dl of service-patterns-1 + `@if (requirements.length) {<section>@if (texts.need('requirementsLabel', requirementsLabel, 'requirements are given')) {<h3>{{ requirementsLabel }}</h3>}<ul>@for (requirement of requirements; track $index) {<li>@if (requirementTemplate) {<ng-container [ngTemplateOutlet]=\"requirementTemplate\" [ngTemplateOutletContext]=\"{$implicit: requirement, index: $index}\" />} @else {{{ requirement }}}</li>}</ul></section>}<ng-content /><footer><ng-content select=\"[hwServiceAction]\" /></footer></article>`; `imports: [NgTemplateOutlet]`; :65 the requirementTemplate input.",
+        "vanilla": "none: apps/playground/src/component-layout-guides.ts:52-57 is this markup. service-pattern-projects.ts:52 puts its button in a footer."
+      },
+      "tests": [
+        {
+          "caseId": "SERVICE-04",
+          "what": "[service-patterns-7] The same title, description, metadata, requirements, requirementsLabel and action render: an article root, header, dl, a section with h3 and ul, and the action inside a footer as the last child; tests/service-patterns-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "[R17] requirements without requirementsLabel: the list without h3 and one warning naming the component and requirementsLabel.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-02",
+          "what": "requirementsLabel is not asked for without requirements; no section is rendered.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SERVICE-05",
+          "what": "Vue: `requirements` and `requirements-label` no longer fall through as HTML attributes on the root.",
+          "adapters": [
+            "vue"
+          ]
+        },
+        {
+          "caseId": "RICH-01",
+          "what": "A link inside one requirement entry is rendered inside its li (React node, Vue #requirement slot, Angular requirementTemplate); RICH-02 the plain strings are still what is listed without the slot or template.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RICH-03",
+          "what": "Browser: the empty Angular footer takes no space (display none) and a projected button keeps its intrinsic width instead of the full root width; tests/browser/service-pattern-projects.spec.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "component": "ServiceDetails",
+          "kind": "markup",
+          "old": "section.hw-service-details; div.hw-service-details-action",
+          "new": "article.hw-service-details; footer",
+          "migration": ".hw-service-details-action -> .hw-service-details > footer"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-service-details",
+          "kind": "markup",
+          "old": "section root; h3 and ul as direct children; an always rendered p; actions as direct children",
+          "new": "article root; section > h3 + ul; p only with description; actions in footer through [hwServiceAction]",
+          "migration": "<button hwButton>Start</button> -> <button hwButton hwServiceAction>Start</button>; .hw-service-details > ul -> .hw-service-details > section > ul"
+        }
+      ],
+      "readme": "Each README, ServiceDetails: the anatomy, requirements with requirementsLabel (required when requirements are given), the action region in that adapter (prop, slot, [hwServiceAction]). tests/text-contract-docs.test.ts fixture: requirementsLabel for Vue.",
+      "decisions": [
+        {
+          "component": "ServiceDetails",
+          "question": "Root element",
+          "choice": "article",
+          "basis": "repository",
+          "source": "apps/playground/src/component-layout-guides.ts:52 (documented vanilla markup); react/src/expanded-content.tsx:61",
+          "changedAdapters": [
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "component": "ServiceDetails",
+          "question": "Where is the action?",
+          "choice": "in a footer, last child",
+          "basis": "repository",
+          "source": "apps/playground/src/component-layout-guides.ts:56",
+          "changedAdapters": [
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "title and description stay strings in Vue and Angular (conventionConflicts)."
+    }
+  ],
+  "conventionConflicts": [
+    {
+      "convention": "reference-adapter-and-recording (index 0)",
+      "component": "TreeView",
+      "ids": [
+        "nav-b-12",
+        "nav-b-13"
+      ],
+      "conflict": "The documented vanilla markup nests ul[role=group] inside each tree item; React, Vue and Angular render one flat list with aria-level, aria-posinset and aria-setsize. Rendering the nested markup would mean rewriting selection, focus and click handling in three adapters, because a nested item contains its descendants.",
+      "closest": "The flat list stays (valid ARIA, and the vanilla controller writes the same three attributes). What can be equal is made equal: the toggle button, its class, name and icon, the label span that names the item, and the indentation step (--hw-tree-indent equals the nested step). The flat list has no guide line."
+    },
+    {
+      "convention": "reference-adapter-and-recording (index 0)",
+      "component": "Menu, Popover, TreeView, PortalHeader",
+      "ids": [
+        "nav-b-2",
+        "nav-b-9",
+        "nav-b-13"
+      ],
+      "conflict": "The rule makes data- attributes of the vanilla markup part of the reference DOM. data-hw-trigger, data-hw-panel, data-hw-value, data-hw-close, data-hw-tree-toggle and data-hw-tree-label are hooks that only a vanilla controller reads, and AGENTS.md forbids enhancing a framework tree with vanilla.",
+      "closest": "Frameworks render the elements, hw- classes, roles, ARIA and state attributes (data-variant, data-open) of the reference markup, not the controller hooks. The parity cases select by class and role."
+    },
+    {
+      "convention": "reference-adapter-and-recording (index 0) against item-shapes (index 12)",
+      "component": "ServiceCard",
+      "ids": [
+        "service-patterns-1",
+        "service-patterns-2",
+        "R18"
+      ],
+      "conflict": "The two documented vanilla samples disagree (guide: flat article with div.hw-service-card-meta spans and a.hw-button; editor project: article.hw-card with dl and a.hw-link) and the first contradicts convention item-shapes, which makes facts a dl.",
+      "closest": "The Card anatomy recorded in docs/nic-cards.md:28-38, which React and Vue render, is the one DOM; both vanilla samples are rewritten to it and .hw-service-card-meta is removed from the stylesheet."
+    },
+    {
+      "convention": "angular-host-attributes (index 3) against name-without-visible-label (index 4)",
+      "component": "hw-side-navigation (kind A)",
+      "ids": [
+        "E08"
+      ],
+      "conflict": "Convention 4 puts an application aria-label before `label`; the kind A mechanism of convention 3 (HwHostAttribute, case ATTR-02) writes `label` while it is given and restores the application's value afterwards, so with both present `label` wins in Angular while the application's aria-label wins in React and Vue (rootLabel).",
+      "closest": "hw-side-navigation follows the mechanism and ATTR-02 as written. The README says to give one source. The cases NAME-01..03 hold in all adapters; only the both-given case differs."
+    },
+    {
+      "convention": "angular-host-attributes (index 3): host-attributes.ts is written by forms-core only",
+      "component": "Angular kind B roots of this cluster",
+      "ids": [
+        "E08"
+      ],
+      "conflict": "Eight wrapper components need the same three alias inputs, host nulling and name rule; the shared file may not be extended by this cluster.",
+      "closest": "A new file angular/src/root-name.ts with the abstract directive HwNamedRoot, which only uses forwardedAriaHost. It is exported from public-api.ts because exported components extend it. If forms-core ships an equivalent base, keep one of the two."
+    },
+    {
+      "convention": "name-without-visible-label (index 4): React and Vue spread the application's attributes on the root",
+      "component": "Popover, Menu, Tabs (React, Vue)",
+      "ids": [
+        "nav-b-2",
+        "nav-b-9",
+        "E05"
+      ],
+      "conflict": "The named element of these three is not the root (panel, menu, tablist); an aria-label spread on the root div names nothing.",
+      "closest": "React and Vue take aria-label and aria-labelledby out of the root attributes and write them on the named element, which is what the Angular forwarded inputs do. Every other attribute still lands on the root."
+    },
+    {
+      "convention": "controlled-and-observable-state (index 8) and renames-and-removals (index 1)",
+      "component": "vanilla Menu and TreeView",
+      "ids": [
+        "nav-b-2",
+        "nav-b-17"
+      ],
+      "conflict": "The top-level renames list has no vanilla entry for Menu onSelect or TreeView expandedValues, but the rule gives each state and action one name in the four adapters.",
+      "closest": "Two renames are added: createMenu onSelect -> onAction, and TreeView expandedValues -> expanded (option, controller getter, event detail)."
+    },
+    {
+      "convention": "focus-when-a-control-becomes-unavailable (index 14, c)",
+      "component": "Popover, Menu",
+      "ids": [
+        "nav-b-7"
+      ],
+      "conflict": "'When focus leaves a non-modal popup it closes' does not say what happens when focus goes nowhere (relatedTarget null: the window lost focus).",
+      "closest": "The vanilla rule: only a focus move to an element outside closes. React and Vue Menu, which closed on any blur, change to it."
+    },
+    {
+      "convention": "rich-content (index 11)",
+      "component": "ServiceCard, ServiceDetails",
+      "ids": [
+        "service-patterns-2",
+        "service-patterns-7"
+      ],
+      "conflict": "React takes nodes for title, description and category; the rule would add a slot and a projection marker for each in Vue and Angular.",
+      "closest": "Only the parts the findings name get rich content: the action region and the requirement entries (Vue #requirement, Angular requirementTemplate). title, description and category stay strings in Vue and Angular in 0.3.0."
+    },
+    {
+      "convention": "type-ahead (index 13)",
+      "component": "core",
+      "ids": [
+        "nav-b-1"
+      ],
+      "conflict": "typeahead.ts needs normalizeSearch, which is defined in core/src/index.ts, the file that must export typeahead.ts.",
+      "closest": "normalizeSearch moves to core/src/search.ts and is re-exported unchanged."
+    }
+  ],
+  "closedAlready": [
+    {
+      "ids": [
+        "E05"
+      ],
+      "part": "Tabs, SearchField and ContentNavigation warn for a missing name in every adapter",
+      "evidence": "react/src/interactive.tsx:68 text('Tabs', 'label', label), vue/src/interactive.ts:50 needText, angular/src/navigation.ts:26 texts.need; react/src/content-navigation.tsx:21,32 (RootName + rootLabel), vue/src/content-navigation.ts:30 (rootLabel); SearchField: react/src/search-field.tsx:21, vue/src/search-field.ts:51, angular/src/advanced-controls.ts:45. What stays open is in the E05 and E08 items."
+    },
+    {
+      "ids": [
+        "nav-b-2",
+        "nav-b-9"
+      ],
+      "part": "the English 'Open' default of the Angular trigger",
+      "evidence": "angular/src/interactions.ts:32 `@Input({required: true}) triggerLabel = ''` and :27, :45 `texts.need('triggerLabel', triggerLabel)`; vue/src/expansion-interactive.ts:144,206 has no default either."
+    },
+    {
+      "ids": [
+        "portal-shell-4"
+      ],
+      "part": "vanilla",
+      "evidence": "vanilla/src/portal.ts:6 onOpenChange, :15 controller {open, show, close}, :51 emit(root, {open})."
+    },
+    {
+      "ids": [
+        "E04"
+      ],
+      "part": "React and vanilla",
+      "evidence": "react/src/expanded-content.tsx:110 role={brandName ? 'img' : undefined} on div.hw-portal-brand; vanilla/src/portal.ts:32."
+    }
+  ],
+  "questions": [
+    "E06: homeHref keeps the default '/' of Vue and Angular and React adopts it (majority; the repository has no rule). If the owner prefers no default (the brand is a link only when homeHref is given, as packages/vanilla/PORTAL.md:74 words it and as a site under a base path needs), Vue and Angular change their default instead of React; the rest of the item is unaffected.",
+    "Not in any finding, left unchanged: the class hw-link on PortalHeader links differs (React: brand and every navigation link through Link; Angular: every navigation link; Vue: branch links only; documented vanilla markup: none). Say if milestone 3 should align it; it changes link colours and visited states.",
+    "Not in any finding of this cluster: the Vue Collapsible holds its open state in modelValue / defaultValue while React and Angular use open (convention controlled-and-observable-state names it open). Collapsible is in the dates-overlays-disclosure-data cluster; this specification only renames the React text.",
+    "E08 edits one binding and one input in hw-breadcrumb, hw-stepper and hw-pagination (angular/src/navigation.ts:121-142, 218-220), which the dates-overlays-disclosure-data cluster also edits for other findings. The two edits do not overlap in meaning; the implementer applies E08 after that cluster's changes.",
+    "service-patterns-1 makes the facts of ServiceDetails a stacked dl in Vue and Angular (they were horizontal there; React and the documented markup are stacked). An application that wants the horizontal layout composes DescriptionList itself; no variant input is added."
+  ],
+  "renames": [
+    {
+      "adapter": "vue",
+      "component": "Menu",
+      "kind": "output",
+      "from": "@select",
+      "to": "@action",
+      "migration": "@select=\"fn\" -> @action=\"fn\""
+    },
+    {
+      "adapter": "vue",
+      "component": "Menu",
+      "kind": "input",
+      "from": "label (also printed on the trigger)",
+      "to": "label names the menu; triggerLabel is the trigger text",
+      "migration": "<Menu label=\"Actions\"> -> <Menu label=\"Actions\" trigger-label=\"Actions\">"
+    },
+    {
+      "adapter": "vue",
+      "component": "Menu",
+      "kind": "markup",
+      "from": "ul[role=menu] > li[role=none] > button|a; disabled buttons carry aria-disabled",
+      "to": "div.hw-menu-content[role=menu] > .hw-menu-item; disabled buttons carry disabled",
+      "migration": ".hw-menu > ul li > [role=menuitem] -> .hw-menu-content > .hw-menu-item"
+    },
+    {
+      "adapter": "react",
+      "component": "Menu",
+      "kind": "markup",
+      "from": "ul.hw-menu-list > li[role=none] > button|a",
+      "to": "div.hw-menu-content > .hw-menu-item",
+      "migration": ".hw-menu-list -> .hw-menu-content"
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-menu",
+      "kind": "field",
+      "from": "HwMenuItem.id",
+      "to": "HwMenuItem.value",
+      "migration": "{id: 'edit', ...} -> {value: 'edit', ...}; (action) still emits the key"
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-menu",
+      "kind": "markup",
+      "from": "div.hw-menu-panel",
+      "to": "div.hw-menu-content",
+      "migration": ".hw-menu-panel -> .hw-menu-content"
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-menu, hw-popover",
+      "kind": "default",
+      "from": "packaged trigger is a primary button",
+      "to": "triggerVariant, default 'secondary'",
+      "migration": "add triggerVariant=\"primary\" to keep the old look"
+    },
+    {
+      "adapter": "vanilla",
+      "component": "Menu",
+      "kind": "input",
+      "from": "createMenu(root, {onSelect})",
+      "to": "createMenu(root, {onAction})",
+      "migration": "onSelect: fn -> onAction: fn"
+    },
+    {
+      "adapter": "react",
+      "component": "Popover",
+      "kind": "input",
+      "from": "title (rendered as an h3)",
+      "to": "label (accessible name; no packaged heading)",
+      "migration": "<Popover title=\"T\"> -> <Popover label=\"T\"> and, for a visible heading, put it in the content with aria-labelledby"
+    },
+    {
+      "adapter": "react",
+      "component": "Popover",
+      "kind": "markup",
+      "from": "section.hw-popover-panel[aria-labelledby] > h3",
+      "to": "div.hw-popover-panel[aria-label]",
+      "migration": "selectors on .hw-popover-panel > h3 -> a heading of your own"
+    },
+    {
+      "adapter": "react",
+      "component": "Collapsible",
+      "kind": "input",
+      "from": "title",
+      "to": "label",
+      "migration": "<Collapsible title=...> -> <Collapsible label=...>"
+    },
+    {
+      "adapter": "vue",
+      "component": "Popover",
+      "kind": "markup",
+      "from": "div.hw-popover-content",
+      "to": "div.hw-popover-panel",
+      "migration": ".hw-popover-content -> .hw-popover-panel"
+    },
+    {
+      "adapter": "styles",
+      "component": "Popover",
+      "kind": "removed",
+      "from": ".hw-popover-content",
+      "to": ".hw-popover-panel",
+      "migration": "class=\"hw-popover-content\" -> class=\"hw-popover-panel\""
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-tree-view",
+      "kind": "input",
+      "from": "toggle hidden from assistive technology",
+      "to": "required getExpandLabel(node), getCollapseLabel(node); toggle is button.hw-tree-toggle tabindex=-1",
+      "migration": "add [getExpandLabel]=\"fn\" [getCollapseLabel]=\"fn\""
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-tree-view",
+      "kind": "markup",
+      "from": "span.hw-tree-toggle[aria-hidden]",
+      "to": "button.hw-tree-toggle",
+      "migration": "span.hw-tree-toggle -> button.hw-tree-toggle"
+    },
+    {
+      "adapter": "react, vue",
+      "component": "TreeView",
+      "kind": "markup",
+      "from": "button without a class; Vue li[aria-label]",
+      "to": "button.hw-tree-toggle; li[aria-labelledby]",
+      "migration": ".hw-tree-item > button -> .hw-tree-toggle"
+    },
+    {
+      "adapter": "vanilla",
+      "component": "TreeView",
+      "kind": "markup",
+      "from": "button[data-hw-tree-toggle] with a fixed authored aria-label",
+      "to": "button.hw-tree-toggle[data-hw-tree-toggle]; data-hw-expand-label / data-hw-collapse-label on the root",
+      "migration": "add class=\"hw-tree-toggle\" and data-hw-expand-label=\"... {label}\" data-hw-collapse-label=\"... {label}\""
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-tree-view",
+      "kind": "input",
+      "from": "nodes, expandedIds, (expandedIdsChange)",
+      "to": "items, expanded, (expandedChange)",
+      "migration": "[nodes]=\"x\" -> [items]=\"x\"; [(expandedIds)]=\"e\" -> [(expanded)]=\"e\""
+    },
+    {
+      "adapter": "vanilla",
+      "component": "TreeView",
+      "kind": "input",
+      "from": "option expandedValues, controller.expandedValues, hw:change detail.expandedValues",
+      "to": "expanded in the three places",
+      "migration": "expandedValues -> expanded"
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-portal-header",
+      "kind": "field",
+      "from": "public field menuOpen",
+      "to": "open input with openChange",
+      "migration": "header.menuOpen -> header.open, or bind [(open)]"
+    },
+    {
+      "adapter": "react",
+      "component": "PortalLayout, SiteVerification",
+      "kind": "input",
+      "from": "footerLabel?: string; externalLabel?: string (always optional in the types)",
+      "to": "required by the types when footerProps.links is given; when registrationHref is given and registrationExternal is not false",
+      "migration": "add footerLabel=\"...\" / externalLabel=\"...\", or registrationExternal={false}"
+    },
+    {
+      "adapter": "vue",
+      "component": "PortalHeader",
+      "kind": "markup",
+      "from": "span.hw-portal-brand[role=group] without a home link",
+      "to": "div.hw-portal-brand[role=img]",
+      "migration": "span.hw-portal-brand -> div.hw-portal-brand"
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-portal-header",
+      "kind": "markup",
+      "from": "a.hw-portal-brand without href when homeHref is empty",
+      "to": "div.hw-portal-brand, role=img with brandLabel",
+      "migration": "a.hw-portal-brand:not([href]) -> div.hw-portal-brand"
+    },
+    {
+      "adapter": "react, vue",
+      "component": "Tabs",
+      "kind": "markup",
+      "from": "aria-label / aria-labelledby passed to Tabs were written on div.hw-tabs",
+      "to": "written on the tablist",
+      "migration": "none; selectors on .hw-tabs[aria-label] -> .hw-tab-list[aria-label]"
+    },
+    {
+      "adapter": "react",
+      "component": "PortalHeader",
+      "kind": "input",
+      "from": "navigation, brandHref",
+      "to": "links, homeHref",
+      "migration": "navigation={x} -> links={x}; brandHref=\"/\" -> homeHref=\"/\""
+    },
+    {
+      "adapter": "react",
+      "component": "PortalHeader",
+      "kind": "default",
+      "from": "no home link unless brandHref is given",
+      "to": "homeHref defaults to '/'",
+      "migration": "add homeHref=\"\" to keep a brand that is not a link"
+    },
+    {
+      "adapter": "react",
+      "component": "PortalHeader",
+      "kind": "markup",
+      "from": "header > div.hw-portal-header-main > brand, toggle, nav, actions",
+      "to": "header > brand, toggle, nav, actions",
+      "migration": ".hw-portal-header-main > x -> .hw-portal-header > x"
+    },
+    {
+      "adapter": "react",
+      "component": "AppShell",
+      "kind": "markup",
+      "from": "div.hw-app-shell-body around sidebar and main",
+      "to": "sidebar and main are direct children",
+      "migration": ".hw-app-shell-body > x -> .hw-app-shell > x"
+    },
+    {
+      "adapter": "angular",
+      "component": "the ten components above",
+      "kind": "input",
+      "from": "label is a required input and the only name; aria-label on the host stays on the wrapper",
+      "to": "label optional; aria-label / aria-labelledby / aria-describedby are inputs forwarded to the named element",
+      "migration": "none needed; [attr.aria-label]=\"x\" on a wrapper host -> [aria-label]=\"x\""
+    },
+    {
+      "adapter": "vue",
+      "component": "ServiceCard",
+      "kind": "input",
+      "from": "metadata: string[] (rendered as ul)",
+      "to": "metadata: {term, description}[] (rendered as dl)",
+      "migration": ":metadata=\"['Duration: 3 days']\" -> :metadata=\"[{term: 'Duration', description: '3 days'}]\""
+    },
+    {
+      "adapter": "vue",
+      "component": "ServiceDetails",
+      "kind": "input",
+      "from": "items",
+      "to": "metadata",
+      "migration": ":items=\"x\" -> :metadata=\"x\""
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-service-card, hw-service-details",
+      "kind": "input",
+      "from": "duration, fee; details",
+      "to": "metadata: HwDescription[]",
+      "migration": "duration=\"3 days\" fee=\"Free\" -> [metadata]=\"[{term, description}, ...]\"; [details] -> [metadata]"
+    },
+    {
+      "adapter": "vue, angular",
+      "component": "ServiceDetails",
+      "kind": "markup",
+      "from": "dl[data-variant=horizontal] (Angular inside a hw-description-list element)",
+      "to": "dl.hw-description-list, stacked, direct child of the article",
+      "migration": "compose DescriptionList with variant=\"horizontal\" in the default content to keep the old layout"
+    },
+    {
+      "adapter": "styles",
+      "component": "ServiceCard",
+      "kind": "removed",
+      "from": ".hw-service-card-meta",
+      "to": "dl.hw-description-list",
+      "migration": "<div class=\"hw-service-card-meta\"><span>x</span></div> -> <dl class=\"hw-description-list\"><div><dt>term</dt><dd>x</dd></div></dl>"
+    },
+    {
+      "adapter": "vue",
+      "component": "ServiceCard",
+      "kind": "input",
+      "from": "badge",
+      "to": "category",
+      "migration": "badge=\"x\" -> category=\"x\""
+    },
+    {
+      "adapter": "vue",
+      "component": "ServiceCard",
+      "kind": "markup",
+      "from": "h3 then an info-toned badge; icon slot unwrapped",
+      "to": "neutral badge before the h3; icon inside div.hw-service-card-icon",
+      "migration": "none"
+    },
+    {
+      "adapter": "react",
+      "component": "ServiceCard",
+      "kind": "markup",
+      "from": "span[aria-hidden] around the icon",
+      "to": "div.hw-service-card-icon[aria-hidden]",
+      "migration": "none"
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-service-card",
+      "kind": "markup",
+      "from": "article > p.hw-badge, h3 > a.hw-link, p, meta, a.hw-button[data-variant=secondary]",
+      "to": "article > header.hw-card-header, div.hw-card-body, footer.hw-card-footer; h3 without a link; a.hw-link as the packaged action",
+      "migration": "project <a hwButton variant=\"secondary\" hwServiceAction href=\"...\"> to keep a button as the action"
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-service-card",
+      "kind": "default",
+      "from": "href required; a fallback action is always rendered",
+      "to": "href optional; the packaged action only with href",
+      "migration": "none"
+    },
+    {
+      "adapter": "vue",
+      "component": "ServiceDetails",
+      "kind": "markup",
+      "from": "section.hw-service-details; div.hw-service-details-action",
+      "to": "article.hw-service-details; footer",
+      "migration": ".hw-service-details-action -> .hw-service-details > footer"
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-service-details",
+      "kind": "markup",
+      "from": "section root; h3 and ul as direct children; an always rendered p; actions as direct children",
+      "to": "article root; section > h3 + ul; p only with description; actions in footer through [hwServiceAction]",
+      "migration": "<button hwButton>Start</button> -> <button hwButton hwServiceAction>Start</button>; .hw-service-details > ul -> .hw-service-details > section > ul"
+    }
+  ]
+}

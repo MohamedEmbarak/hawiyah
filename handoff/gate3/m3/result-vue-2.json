@@ -1,0 +1,147 @@
+{
+ "implemented": [
+  "dates-2",
+  "R02",
+  "dates-7",
+  "dates-4",
+  "dates-5",
+  "dates-6",
+  "R01",
+  "R03",
+  "R25",
+  "overlays-1",
+  "overlays-10",
+  "overlays-14",
+  "disclosure-data-3",
+  "disclosure-data-5",
+  "disclosure-data-10",
+  "disclosure-data-13",
+  "disclosure-data-15",
+  "layout-3",
+  "nav-a-11",
+  "nav-a-14",
+  "nav-a-15",
+  "E08",
+  "nav-b-1",
+  "nav-b-15",
+  "nav-b-2",
+  "R24",
+  "nav-b-3",
+  "R15",
+  "nav-b-7",
+  "nav-b-8",
+  "nav-b-9",
+  "R26",
+  "nav-b-12",
+  "nav-b-13",
+  "R21",
+  "nav-b-17",
+  "portal-shell-1",
+  "portal-shell-4",
+  "E03",
+  "E04",
+  "E05",
+  "E06",
+  "E08/R22",
+  "service-patterns-1",
+  "service-patterns-2",
+  "R18",
+  "service-patterns-7",
+  "R17"
+ ],
+ "deviations": [
+  {
+   "item": "dates-7",
+   "what": "DatePicker warns for a missing unavailableMessage at render whenever isDateDisabled is given (as React), not only once a typed date is rejected",
+   "why": "TEXT-02: with the predicate and no text one warning"
+  },
+  {
+   "item": "R01",
+   "what": "the Vue Calendar table gains class hw-calendar-grid",
+   "why": "the specified DOM places the status directly after table.hw-calendar-grid; React, vanilla and Angular already use the class"
+  },
+  {
+   "item": "nav-b-2 / nav-b-9 (Menu, Popover)",
+   "what": "the menu and panel take aria-label from rootLabel(...) without the `attrs[\"aria-labelledby\"] ? undefined :` guard written in perAdapter.vue, so with both aria-labelledby and label the label is also written as aria-label (as Tabs E05 is specified)",
+   "why": "spec-amendments E08 fixes the rule as rootLabel of React and Vue (ariaLabel || (ariaLabelledby ? label || null : need)); the guard would make Vue differ from Angular kind B and React when both are given; NAME-01..04 hold either way"
+  },
+  {
+   "item": "dates-5 / RESET (datepicker-draft.test.ts)",
+   "what": "after a reset the text input shows the formatted reset target even while it has focus (editing is cleared by the reset, as specified); the existing test expected the ISO text and now expects the formatted date",
+   "why": "endState dates-5: the text input shows the formatted reset target"
+  },
+  {
+   "item": "tests",
+   "what": "case ids live in packages/vue/test/{dates,overlays,disclosure,data-layout,navigation-a,menus,portal-header,service-patterns}-parity.test.ts and required-text.test.ts (Tabs/TreeView NAME-01..04) instead of the tests/*-parity.test.ts files named in the specs; menu/tree SSR-01 is in menus-parity.test.ts rather than ssr.test.ts",
+   "why": "this step owns packages/vue/** only"
+  }
+ ],
+ "files": [
+  "packages/vue/PORTAL.md",
+  "packages/vue/README.md",
+  "packages/vue/src/calendar.ts",
+  "packages/vue/src/content.ts",
+  "packages/vue/src/display.ts",
+  "packages/vue/src/expansion-interactive.ts",
+  "packages/vue/src/forms.ts",
+  "packages/vue/src/interactive.ts",
+  "packages/vue/src/layout.ts",
+  "packages/vue/src/patterns.ts",
+  "packages/vue/src/shared.ts",
+  "packages/vue/test/components.test.ts",
+  "packages/vue/test/data-layout-parity.test.ts",
+  "packages/vue/test/datepicker-draft.test.ts",
+  "packages/vue/test/datepicker-policy.test.ts",
+  "packages/vue/test/dates-parity.test.ts",
+  "packages/vue/test/disclosure-parity.test.ts",
+  "packages/vue/test/expansion.test.ts",
+  "packages/vue/test/menus-parity.test.ts",
+  "packages/vue/test/navigation-a-parity.test.ts",
+  "packages/vue/test/overlays-parity.test.ts",
+  "packages/vue/test/portal-header-parity.test.ts",
+  "packages/vue/test/required-text.test.ts",
+  "packages/vue/test/service-patterns-parity.test.ts",
+  "packages/vue/test/stepper.test.ts",
+  "packages/vue/test/texts.ts"
+ ],
+ "commands": [
+  {
+   "command": "pnpm exec vitest run packages/vue/test/dates-parity.test.ts",
+   "result": "32 passed; 9 fail against HEAD calendar.ts"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vue/test/{dates,overlays,disclosure,data-layout}-parity.test.ts",
+   "result": "all passed"
+  },
+  {
+   "command": "tsc on packages/vue/src and test/*-parity.test.ts (scratch tsconfig, noEmit)",
+   "result": "ok; SHAPE-03 @ts-expect-error holds"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vue",
+   "result": "405 passed (through E06)"
+  },
+  {
+   "command": "tsc -p packages/vue/tsconfig.json --noEmit; tsc on src + test/*-parity.test.ts (scratch config)",
+   "result": "ok"
+  },
+  {
+   "command": "node scripts/build.mjs --only vue",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vue",
+   "result": "33 files, 416 tests passed; no Hawiyah: warning in the output"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "browser cases MENU-04, POPOVER-04, TREE-02, TREE-06, PORTAL-04, SERVICE-03",
+   "why": "tests/browser/*.spec.ts are outside packages/vue"
+  },
+  {
+   "item": "docs outside the package (CHANGELOG.md, components.json, llms.txt, docs/*.md, guide pages, tests/text-contract-docs.test.ts fixtures for Stepper completeLabel/upcomingLabel and ServiceDetails requirementsLabel)",
+   "why": "outside packages/vue; the README carries the migration table"
+  }
+ ]
+}

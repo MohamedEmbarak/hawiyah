@@ -1,0 +1,316 @@
+{
+ "title": "Milestone 2b: package additions for the first guide release (judge's decision)",
+ "writtenAt": "2026-11-11",
+ "repositoryHead": "9f1593a (working tree being edited by other agents; nothing was built or tested)",
+ "recommended": [
+  {
+   "name": "Code colour tokens and code styles (--hw-color-code-*, .hw-code-block, .hw-code, .hw-kbd)",
+   "kind": "style utility (tokens and one stylesheet; no adapter code)",
+   "why": "Every guide surface shows code: the install chooser, component-page source, fenced code in reference pages and the editor theme. PG-01 (P1, confirmed) and all four prototypes: no adapter has a code block. I confirmed that packages/styles/src has no rule for pre, code or kbd and that --hw-font-mono is the only code token. The prototypes' hand-made listings used raw focus widths and borrowed badge and field-error tokens for syntax colours (review/editor). Guide CSS may not set type or colour, so this cannot be composed. A class contract is chosen over a CodeBlock component: the component would add no behaviour beyond CopyButton and about a dozen inputs to keep equal in four adapters.",
+   "api": "No inputs and no shipped text; identical in every adapter by construction, on the same footing as .hw-type and .hw-toolbar. Tokens, added to tokens.json under each theme's light and dark colour group so that they reach tokens.css and generated.ts: --hw-color-code-surface, --hw-color-code-text, --hw-color-code-border and ten syntax roles, --hw-color-code-comment, -keyword, -string, -constant, -function, -type, -tag, -attribute, -property and -punctuation. Values are aliases of existing semantic colours, with no new colour values (owner decision 4). Starting map: surface = surface-muted, text = text, border = border, comment = text-subtle, punctuation = text-muted, keyword and property = info, string = success, constant and attribute = warning, tag = danger; function and type are settled with the contrast test and the owner's look at a rendered sample. Classes: hw-code-block (figure; data-wrap='true' wraps lines), hw-code-block-header, hw-code-block-title, hw-code-block-actions, hw-code-block-content (pre), hw-code (inline code), hw-kbd (keyboard key), and one class per syntax role on spans, hw-code-token-comment to hw-code-token-punctuation. The syntax hooks are classes, not data attributes, because Angular's built-in HTML sanitizer keeps class and removes every data-* attribute (allowlist read in @angular/core 22.2.3), so highlighted markup bound through innerHTML would lose its colours. The application supplies the title and the accessible name of a scrolling listing (aria-labelledby the title, or aria-label). Documented, not shipped: a CodeMirror HighlightStyle uses color: var(--hw-color-code-keyword); a highlighter that emits CSS variables is mapped onto these variables by the application; a table maps Prism, highlight.js and Lezer class names to the ten roles.",
+   "markup": "<figure class='hw-code-block'><figcaption class='hw-code-block-header'><span class='hw-code-block-title' id='c1'><bdi dir='ltr'>app.ts</bdi></span><div class='hw-code-block-actions'>(CopyButton, link buttons)</div></figcaption><pre class='hw-code-block-content' dir='ltr' translate='no' tabindex='0' role='group' aria-labelledby='c1'><code><span class='hw-code-token-keyword'>import</span> ...</code></pre></figure>. The header is optional. New file packages/styles/src/code.css, included in the flat styles.css. It uses --hw-font-mono, --hw-text-sm, --hw-radius-md, space tokens, --hw-focus-width, --hw-focus-offset and --hw-color-focus, logical properties and tab-size 2. Syntax rules sit inside :where(.hw-code-block, .hw-code) at zero specificity.",
+   "behaviour": "No script. The default is a scrolling listing: the pre is the only tab stop, has a name and scrolls with the arrow keys. With data-wrap='true' (white-space: pre-wrap; overflow-wrap: anywhere) nothing scrolls and the author omits tabindex, role and the name. Code is always left to right: the stylesheet sets direction: ltr and unicode-bidi: isolate on the pre and on inline code, the device it already uses for the PIN input and the rating score, and the author writes dir='ltr' in the markup. No component sets dir, so CONTRACT.md needs no exception. The header row follows the page direction. Every syntax role reaches 4.5:1 on the code surface in light and dark in both themes, and the pairs join the token contrast test. Forced colours: syntax colours and the border become CanvasText and the focus ring Highlight. Print wraps lines. Static markup, so server rendering and hydration are unaffected. Before the contract is frozen: an axe run and a screen-reader check of the focusable pre with role='group'.",
+   "size": "M",
+   "dga": "Not covered by in-repo references: docs/dga-reference.md line 20 records that no standalone components library was supplied, and packages/tokens/reference/dga-foundations.json holds 40 selected variables, none for code or a monospace role. Hawiyah design choice. The syntax tokens alias colours that already carry a Platforms Code source, so only the mapping is new; record it in tokens.json as a Hawiyah mapping, as PG-10 asks for unsourced tokens."
+  },
+  {
+   "name": "Prose container and text tone (.hw-prose, .hw-type[data-tone])",
+   "kind": "style utility (one stylesheet; no adapter code)",
+   "why": "One reference page per component is rendered from Markdown. PG-14 (corrected): classes exist per element, but nothing styles class-less content, and inline code, kbd, pre and blockquote have no style at all. landing-a and landing-c set muted colour and heading sizes in private classes and both reviews said to file that against the package. Guide CSS may space but may not set type or colour. The alternative, a Markdown renderer that puts hw-type and data-scale on every node, was weighed and kept only as a fallback: it works for the guide, but adopters with CMS content cannot add classes, and Angular's sanitizer removes data-scale. Style-only, so the cost is one file, not four adapters.",
+   "api": "No inputs and no text. The class hw-prose on any container, used directly in every adapter; no Prose component or directive. Separately, hw-type takes data-tone='muted' or 'subtle' (--hw-color-text-muted, --hw-color-text-subtle) for short muted text outside prose such as captions and the status line.",
+   "markup": "<article class='hw-prose'><h2 id='api'>...</h2><p>...</p><ul><li>...</li></ul><div class='hw-table-wrap' tabindex='0' role='region' aria-label='...'><table class='hw-table'>...</table></div><div class='hw-alert' data-tone='info' role='note'>...</div><figure class='hw-code-block'>...</figure></article>. New file packages/styles/src/prose.css. It styles an element only when the element has no class attribute and no ancestor inside the container has one; selector shape :where(.hw-prose) :where(h2:not([class])):not(:where(.hw-prose [class] *)), zero specificity. A component placed in prose, and everything inside it, is therefore untouched; prose nested inside such a component is not supported. One documented mapping: h1 display-sm, h2 display-xs, h3 heading-lg, h4 heading-md, h5 and h6 heading-sm; p, li and dd body-md; small body-sm; ul and ol with native markers and logical padding; dl; blockquote with a border-inline-start; hr as the divider; a as hw-link; code and kbd as hw-code and hw-kbd; pre as hw-code-block-content; a bare table as hw-table kept to the container width; img, figure and figcaption. Flow spacing through .hw-prose > * + * from space tokens, larger before headings. Text blocks are limited to --hw-width-paragraph; tables, pre, figures and classed children are not. Headings with an id get scroll-margin-block-start from a space token.",
+   "behaviour": "Static. Direction comes from the nearest dir; spacing, list padding and the blockquote rule are logical; code stays left to right. Light and dark through tokens; forced colours keep LinkText for links and CanvasText for borders. Heading levels stay the author's; the class changes metrics only, as hw-type does. No role or text is added. Notes and wide tables are the existing Alert and table-wrap markup, which prose only spaces. To test: each shipped component nested in prose keeps its own look, in both directions and both modes. Known limit: a class added by a framework to a plain element opts that element out.",
+   "size": "M",
+   "dga": "docs/nic-foundations.md supplies the display, heading and body scales and the 720px paragraph measure behind --hw-width-paragraph; docs/nic-lists.md, docs/nic-links.md and docs/nic-tables.md cover lists, links and tables; checklist rows 11 to 13 cover typography variables. Mapping heading levels to scales, and blockquote, definition list, inline code, keyboard key and the tone attribute: not covered by in-repo references; Hawiyah design choices."
+  },
+  {
+   "name": "Angular: layout primitives render on the host element; AppShell regions match React and Vue",
+   "kind": "fix to existing components (Angular adapter, with host rules in styles)",
+   "why": "layout-1 (P1): every Angular layout primitive except Spacer puts its hw- class on an inner div (packages/angular/src/layouts.ts lines 23 to 41, checked at 9f1593a), so class, id, aria-label, data-variant, data-fit and data-tone written on the element do nothing and the element is an inline box. All four prototypes hit it: landing-c wrote about 20 private grid classes and its review counted that against an honest render; landing-a and landing-b could not get equal-height cards. layout-10: Angular AppShell wraps header and footer content in header and footer elements where React and Vue use divs, so hw-portal-header inside it nests one banner landmark in another on every guide page (and the footer likewise). This is milestone 3 parity work pulled forward because every guide page is laid out with these primitives.",
+   "api": "No input changes. Each primitive whose name is free also gets an attribute selector, so it can sit on a native element: hw-container and [hwContainer], hw-stack and [hwStack], hw-inline and [hwInline], hw-grid and [hwGrid], hw-columns and [hwColumns], hw-center and [hwCenter], hw-aspect-ratio and [hwAspectRatio], hw-section and [hwSection]. Sidebar and Spacer keep the element selector only, because hwSidebar already marks the projected sidebar content. This is Angular's form of the as prop that Vue has (layout-2). React and Vue already render one element.",
+   "markup": "The host carries the class and the layout custom properties (host: {class: 'hw-stack', '[style]': 'styles'}, as HwSpacerComponent already does) and the template is the projected content alone, with no inner wrapper. Section: the host takes role='region' and aria-label when label is given; on a native section through [hwSection] nothing is added. Sidebar: the [hwSidebar] content and the default content are projected straight into the host grid, with no forced aside (layout-11). AppShell: the host is .hw-app-shell and holds the skip link, div.hw-app-shell-header, aside.hw-app-shell-sidebar, main.hw-app-shell-main and div.hw-app-shell-footer, the same elements React and Vue render; the banner and contentinfo landmarks come from what the application projects. Styles: zero-specificity host rules, :where(hw-container, hw-section, hw-aspect-ratio, hw-page-header, hw-alert) {display: block} for hosts whose class sets no display, and :where(hw-card, hw-service-card) {display: grid} so a card fills its grid row and cards in a row are equal height.",
+   "behaviour": "No behaviour change. In the same edit, give wrap a boolean transform so that <hw-inline wrap> no longer turns wrapping off (layout-4). Static host bindings are safe for server rendering and hydration; extend the server-render and hydration tests to the twelve primitives. It is a markup change for consumers whose CSS selects .hw-stack inside hw-stack, and for the AppShell region elements: one changelog and migration entry for 0.3.0, as the tabs change has.",
+   "size": "M",
+   "dga": "Not covered by in-repo references (an adapter defect). docs/layout.md states that data attributes select layout variants, which Angular cannot honour today, and that AppShell accepts the application's own header, aside or nav, main and footer landmarks."
+  },
+  {
+   "name": "CopyButton, with copyText in core",
+   "kind": "new component (catalogue entry 84)",
+   "why": "Copy sits on every code sample and on the install command, the landing page's first action. PG-02: copy exists only as a recipe, and the old guide implemented it three times. Each prototype wrote it again; review/landing-c (major) found its version failing silently when the clipboard is denied or missing, against docs/nic-copy-action.md, and review/landing-a found three buttons with the same name and silent failure. The state handling (latest activation wins, timed reset, announcement, failure outcome) is behaviour that would otherwise live as guide-only code and be repeated in every framework example. Beyond the guide: request references, IBANs and service-desk addresses, the two recipes the Button guide already documents.",
+   "api": "Core: copyText(text: string): Promise<CopyStatus>, with CopyStatus = 'copied' | 'denied' | 'unavailable' | 'failed' | 'empty'. It calls navigator.clipboard.writeText inside the call only, never reads the clipboard and has no execCommand fallback. Component, same names everywhere: React CopyButton, Vue CopyButton, Angular hw-copy-button (HwCopyButtonComponent), vanilla createCopyButton(root, options) and data-hw='copy-button'. Inputs: text: string | (() => string), required, the function form read at activation; label: string, required, the constant accessible name and the visible text when display is 'text'; copiedMessage: string, required; failedMessage: string, required (a runtime outcome, so always required under CONTRACT.md); display: 'icon' | 'text' = 'icon' (the values PasswordField uses for toggleVariant); variant: any Button variant = 'ghost'; size: 'sm' | 'md' | 'lg' = 'md'; feedbackDuration: number = 3000, the milliseconds the copied state lasts; disabled: boolean. Output: React onCopyResult, Vue copyResult, Angular (copyResult), vanilla option onCopyResult plus that adapter's usual bubbling hw:change event; payload {status: CopyStatus; text: string}. It is not named copy, which is a native clipboard event. Vanilla reads the label from the authored button, data-hw-copied-message and data-hw-failed-message from the root, and the value from data-hw-text or from data-hw-target, the id of an element whose text content is read at activation; that is the markup form of the function input and keeps a listing from being repeated in an attribute.",
+   "markup": "<span class='hw-copy' data-state='idle'><button type='button' class='hw-button hw-icon-button' data-variant='ghost' data-size='md' aria-label='(label)'><span class='hw-icon' data-icon='copy-01' aria-hidden='true'></span></button><span class='hw-copy-message' role='status' aria-live='polite' aria-atomic='true'></span></span>. data-state is idle, copied or failed, and the icon is copy-01, tick-02 or alert-02, all in the packaged set. With display 'text' the button is an ordinary .hw-button holding the icon and the label text, without aria-label. New file copy.css: .hw-copy is an inline-flex row with a space-token gap; .hw-copy-message is visually hidden except in the failed state, where it is visible text in --hw-color-danger at --hw-text-sm, like .hw-error. No new tokens. The Angular host is display: inline-flex.",
+   "behaviour": "Click, Enter or Space writes the text. Nothing touches the clipboard on mount and nothing is read from it. The status element is rendered empty from the first render, server included. Success: the state is copied, the icon is the tick, and the status receives copiedMessage (emptied first, so a repeat is announced again); after feedbackDuration the state returns to idle and the status is emptied. Failure (denied, unavailable, failed or empty): the state is failed, the icon is the alert, and failedMessage stays as visible text until the next activation, with no timer. The button's name never changes, so nothing is announced twice. Only the latest activation updates the state; a result that arrives after unmount is ignored; the timer is cleared on destroy. Focus stays on the button. copyResult carries the reason so that the application can offer manual copying; guidance: place the button beside the visible value. Missing required text follows the contract (requireText warning, nothing rendered in its place). navigator is used only in the handler, so server rendering and hydration render the idle state. Icons use currentColor in forced colours. No animation. The sm size stays above the 24px target minimum.",
+   "size": "M",
+   "dga": "docs/nic-copy-action.md: the NIC master.js (JS 1584 to 1603) copies on a copy icon and shows a success banner for 3 seconds or an error banner for 4 seconds; the Hawiyah recipe uses a labelled native button, a polite status per instance and outcomes for denied, unavailable, failed and empty. The component packages that recipe, and the 3000 ms default follows the NIC success duration. Recorded Hawiyah adaptations: announcing in place instead of a toast (checklist row 71 asks for a toast for temporary notifications), keeping the failure text until the next activation, and leaving the recipe's read-only manual-copy field to the application."
+  },
+  {
+   "name": "SideNavigation (inline page tree sharing its list with NavigationDrawer)",
+   "kind": "new component (catalogue entry 85)",
+   "why": "The guide's sidebar: grouped links to about 100 pages with the current page marked. PG-03 (P1, confirmed): NavigationDrawer always renders inside a modal hw-drawer (confirmed in all four adapters), SecondaryNav is a flat bar, TreeView is an ARIA tree and form value with open parity defects (nav-b-12 to nav-b-17), and ContentNavigation takes section ids only (nav-b-22). The old guide built its own details sidebar (shell-home-2). The row, group and current-marker rules in navigation-drawer.css are not scoped to the dialog (checked), so the list already styles correctly outside a drawer; only the adapters cannot render it there. Rebuilding the list in the guide would imitate it. Beyond the guide: any portal with more pages than a header can hold.",
+   "api": "React SideNavigation, Vue SideNavigation, Angular hw-side-navigation (HwSideNavigationComponent), vanilla authored markup with createSideNavigation(nav, options) and data-hw='side-navigation'. Inputs: items, required, the existing NavigationDrawerItem model {id, label, href?, icon?, current?, disabled?, children?} with one new optional field, expanded?: boolean; label: string, required, the accessible name of the nav landmark (the name ContentNavigation and SecondaryNav use); sticky: boolean = false. No outputs: entries are links. NavigationDrawer is refactored to render the same list function, accepts the same expanded field and follows the same group-opening rule, so one array feeds the sidebar and the phone drawer and nothing is implemented twice. Two custom properties the application may set as placement: --hw-side-navigation-top and --hw-side-navigation-bottom-reserve, named after the ContentNavigation pair.",
+   "markup": "<nav class='hw-side-navigation hw-navigation-drawer-nav' aria-label='(label)' data-sticky='true'><ul><li data-hw-value='forms'><details class='hw-navigation-drawer-group' open><summary class='hw-navigation-drawer-row'><span class='hw-navigation-drawer-label'>Forms</span></summary><ul><li data-hw-value='select'><a class='hw-navigation-drawer-row' href='/components/select' aria-current='page'><span class='hw-navigation-drawer-label'>Select</span></a></li></ul></details></li></ul></nav>. The existing row, group, current-marker, focus, disabled and forced-colours rules are reused unchanged. New CSS is limited to .hw-side-navigation (no top padding, inline size 100%) and, from 64rem, .hw-side-navigation[data-sticky='true']: position: sticky; align-self: start; inset-block-start: var(--hw-side-navigation-top, var(--hw-space-4)); a max-block-size of the viewport minus the top and the bottom reserve; overflow-y: auto; overscroll-behavior: contain, the shape of .hw-content-nav[data-sticky]. No new tokens. The Angular host is display: block.",
+   "behaviour": "Native links and native disclosure: Tab moves in document order, Enter or Space on a summary toggles its group; no roving focus and no tree role. A group's open attribute is a pure function of the items: open when expanded is true or the group contains the current item. It is rendered on the server, and the adapter writes it again only when that value changes, so the reader's own toggles stand in between. A group with its own href repeats itself as the first link inside, as the drawer does. The current page is aria-current='page' with the existing inline-start marker and weight, not colour alone. Disabled rows are non-focusable text with aria-disabled. In the browser only: when the list scrolls, the current link is brought into view inside the nav's own scroll box after the first render and when the current item changes, without scrolling the page or moving focus (one core helper used by every adapter and the vanilla controller). Stickiness lives on the component, as it does on ContentNavigation, not on a shell region: in Chromium 153 a sticky item of the AppShell grid is confined by the whole grid, so a sticky sidebar region slides over the footer at the end of the page (checked with a standalone page), while a sticky nav inside its column stops where the column ends. Logical properties; the disclosure mark does not mirror. Apart from the reveal it works without script, so a prerendered page shows the right group open before hydration.",
+   "size": "M",
+   "dga": "Checklist row 177 (Nav Drawer, Partial, docs/dga-checklist-review.md) and the Mobile Nav Drawer nodes 1679:30949 and 538:296406 cited in navigation-drawer.css supply the row metrics reused here. docs/nic-content-navigation.md records the only sticky values in the references, for in-page navigation; the sticky rule follows that shape. A persistent side navigation for pages is not covered by in-repo references; Hawiyah design choice. docs/navigation-drawer.md says groups start collapsed; opening the group that holds the current page changes that and must be recorded there."
+  },
+  {
+   "name": "bindLinkNavigation in core: packaged links handed to the application's router",
+   "kind": "core helper (no component input changes)",
+   "why": "PG-04 (P2, corrected): Breadcrumb, NavigationDrawer, SecondaryNav, PortalHeader, PortalFooter, Card, ServiceCard and Link render plain href anchors and the Angular package has no router dependency; landing-b lists the same gap, and SideNavigation adds about 100 more such links. In a prerendered, hydrated Angular guide every click on them is a full document load that starts the application again and drops editor drafts and the sidebar's scroll position, unless the guide intercepts clicks itself. That interception meets component internals: NavigationDrawer closes on a link activation only when the event was not prevented (routeActivation in all four adapters, documented in docs/navigation-drawer.md). So the rule belongs in the package, with tests, and serves every adopter with React Router, Vue Router or Angular Router. One function is chosen over a provider per adapter, which would touch every link template in three adapters for the same result.",
+   "api": "@hawiyah/core: bindLinkNavigation(root: Document | HTMLElement, options: {navigate(target: {url: URL; path: string; link: HTMLAnchorElement; event: MouseEvent}): boolean | void}): {destroy(): void}. path is the pathname, search and hash relative to the document base URL, starting with '/', which is what a router expects under a base path such as /hawiyah/. Imported from @hawiyah/core in every adapter, as formatCalendarDate is; the adapters re-export only types today and @hawiyah/core is one of the seven published packages. No component input changes and no text. Each adapter README documents the wiring for its router, for example in an Angular root component: afterNextRender(() => bindLinkNavigation(document, {navigate: ({path}) => { void router.navigateByUrl(path); }})).",
+   "markup": "No markup or style change. Links keep their href, so prerendered pages, crawlers, open in new tab and copy link keep working.",
+   "behaviour": "One delegated click listener on the root in the bubble phase, so component handlers and application guards run first. It acts only on a plain primary activation (no modifier keys, button 0, not already prevented; Enter on a link arrives as a click) of an a[href] that is same-origin and inside the document base path, with no target other than _self, no download attribute, no rel external, not aria-disabled or inert, and not a link to the current document that differs only by fragment (those stay with bindFragmentLink). It calls navigate and prevents the default unless navigate returns false. A handled event is recorded in core, and the navigation drawers treat it as a navigation that went ahead: their existing check becomes not prevented, or handled by bindLinkNavigation, so the drawer closes after a routed click as it does after a native one. Without a DOM it returns an inert handle, so it is safe to call during server rendering. Focus after navigation, route announcements, scroll restoration and aria-current remain the application's job (shell-home-12). Tests: one per adapter with a memory router, covering routed navigation, a modified click passing through, a prevented click left alone and the drawer closing; and a check that no template listener on a packaged link returns false, which Angular treats as preventDefault.",
+   "size": "S",
+   "dga": "Not covered by in-repo references. docs/nic-portal-navigation.md states that routing belongs to the application; this helper keeps it there and only passes the click on."
+  },
+  {
+   "name": "ToggleGroup: labelHidden",
+   "kind": "input on an existing component",
+   "why": "The editor's single toolbar holds the framework and language controls, and a legend printed above each group does not fit a toolbar. PG-16; landing-a and landing-c gave up on the component for compact controls, and the editor prototype wrapped it in a second named group. review/editor found the result: a fieldset with an empty legend inside a labelled wrapper, two groups with one unnamed, to be fixed upstream. Confirmed: all four adapters always render legend.hw-label. The four-option phone layout needs nothing more: the fix in commit 0c44d34 keeps the segments on one row at 576px and below.",
+   "api": "labelHidden: boolean = false on ToggleGroup in React, Vue and Angular; label stays required. Vanilla: the authored legend carries hw-sr-only, documented, with no controller change. The name hideLabel is not available: PasswordField uses showLabel and hideLabel for the text of its toggle.",
+   "markup": "<fieldset class='hw-toggle-group'><legend class='hw-label hw-sr-only'>(label)</legend>...</fieldset>. The legend keeps its text and its place in the document and gains the existing class; no new class and no token.",
+   "behaviour": "The accessible name, the radio-group or pressed-button semantics and the hint and error associations are unchanged; only the visible legend goes. Guidance in the component page: hide the label only where the option texts make the purpose visible. No effect on direction, forced colours or server rendering. Test at 320px with four options in Arabic and English.",
+   "size": "S",
+   "dga": "Not covered by in-repo references: docs/nic-segmented.md records geometry, states and the 576px rule and says nothing about a group label; checklist rows 65 to 68 cover the Content Switcher's look and states. Hawiyah design choice."
+  },
+  {
+   "name": "PortalHeader: notice in Vue and Angular; actions that shrink and wrap",
+   "kind": "fix to an existing component",
+   "why": "The shell has a top attribution line, which the owner wants kept in both languages, and a navbar with search, language and colour-mode controls. portal-shell-3 (P1, confirmed): only React renders the notice row (confirmed; the styles exist for all). landing-a and landing-c: three controls overflowed a 320px viewport in Arabic because the actions area cannot shrink (dga.css sets flex-shrink: 0). React names the container hw-portal-actions, which has flex, wrap and gap rules; Vue and Angular name it hw-portal-header-actions, which has none; Angular always renders it, empty or not (portal-shell-6). The artwork-only brand with brandLabel is already in the tree.",
+   "api": "notice in all four adapters: React notice prop (exists), Vue notice slot, Angular [hwPortalNotice] projection, vanilla authored div.hw-portal-notice. No text input: the notice is application content. Actions: no API change; one class name, hw-portal-header-actions, in every adapter, with the old selector kept in the stylesheet for one release.",
+   "markup": "<header class='hw-portal-header'>(skip link)<div class='hw-portal-notice'>...</div>(brand)(menu toggle)(nav)<div class='hw-portal-header-actions'>...</div></header>. CSS: the actions container gets display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--hw-space-2); margin-inline-start: auto; flex: 0 1 auto; min-inline-size: 0, in place of flex-shrink: 0; the rule that hides an empty container moves out of the phone media query, or the container is rendered only when it has content.",
+   "behaviour": "No behaviour change. At 320px the actions wrap to a second row instead of overflowing the viewport (WCAG 1.4.10 Reflow); reading and tab order stay brand, menu toggle, navigation, actions. The notice is ordinary content before the main row and follows dir. Browser test at 320px in Arabic and English with three actions: no horizontal scroll.",
+   "size": "S",
+   "dga": "Checklist rows 119 to 124 (Nav Header; row 123 asks for a bar that stays usable on all screen sizes) and docs/dga-reference.md line 73 (detaching the header must preserve its structure, colours and fonts): nothing here restyles the header. The notice row and the wrap rule are not covered by in-repo references; the 48rem disclosure is Hawiyah policy (EXPANSION.md)."
+  },
+  {
+   "name": "ContentNavigation: one steady current item during a scroll it started",
+   "kind": "fix to an existing component (core)",
+   "why": "The on-page table of contents on every reference and component page. nav-b-19: with smooth scrolling, one click from the top to a late section reports the target, then every section in between, and the marker jumps back before it moves forward. Confirmed in packages/core/src/content-navigation.ts: navigate() starts the scroll and sets the target, then the scroll listener measures on every frame. Everything else the two designers asked of this component is already in the tree at 9f1593a: a required label with no default and updateHash in all four adapters, a browser-only observer in Angular, and the sticky top and bottom reserve as custom properties the guide can set. The component serves as the table of contents; it cannot be the page sidebar.",
+   "api": "No new inputs.",
+   "markup": "No markup or style change.",
+   "behaviour": "While a scroll started by navigate() is in progress, the target stays current and measured updates are held back, so the change is reported once (React and vanilla onCurrentChange, Vue and Angular currentChange). The hold ends on scrollend from the scroll root or the window, when the target position is reached, after a short fallback timeout where scrollend is missing, or as soon as the reader scrolls by wheel, touch or keyboard. Reduced motion (an instant scroll), focus on keyboard activation and disabled items are unchanged. Test: one click from the first section to the last yields exactly one change.",
+   "size": "S",
+   "dga": "docs/nic-content-navigation.md records smooth local scrolling with an 80px offset, the active marker and the sticky values (top 145px from 1200px, maximum height the viewport minus 165px). Holding the current item during the scroll is not covered by in-repo references; Hawiyah adaptation to add to that file."
+  },
+  {
+   "name": "Opt-in fonts stylesheet (@hawiyah/styles/fonts.css) with an Arabic face for code",
+   "kind": "style utility (font files and one token change); built only if the owner chooses it in decision 3",
+   "why": "PG-12 and PG-13: the tokens name IBM Plex Sans Arabic and IBM Plex Mono, but the packages ship only the riyal font (confirmed: assets/fonts holds riyal.woff2 with its licence and provenance), so a guide limited to the packages falls back to system fonts, synthesises weight 700 and never loads the mono face; checklist row 12 names the approved font. Arabic string literals inside code render in the platform's monospace with poor joining (landing-a, editor prototype), and the Arabic guide has them on most pages. Both designers proposed adding IBM Plex Sans Arabic to --hw-font-mono before the generic family; on a device that has the sans face but none of the listed mono faces that would render Latin code in a proportional face, so the fix is a face limited to Arabic by unicode-range.",
+   "api": "Styles only: import '@hawiyah/styles/fonts.css', or link dist/fonts.css. Never part of styles.css, so the component stylesheet still fetches no font. No inputs. The existing export map (./*.css and ./assets/*) already covers the file.",
+   "markup": "fonts.css holds @font-face rules for IBM Plex Sans Arabic 400, 500, 600 and 700 and IBM Plex Mono 400, with font-display: swap and files under dist/assets/fonts. The files are IBM's published woff2 files, unchanged, with the OFL text and a provenance.json (source, version, sha256) beside them, as the riyal font has; unchanged because the OFL reserved-name rule applies to modified files, which re-subsetting would produce. One more @font-face gives the Arabic regular file a second family name limited by unicode-range to the Arabic blocks, and --hw-font-mono lists that family after IBM Plex Mono, so only Arabic characters in code use it and nothing changes when fonts.css is not loaded.",
+   "behaviour": "No script. Text shows in the fallback face until the font loads. Nothing changes for applications that do not import the file. check:packages gains two rules: every url() in fonts.css resolves inside the tarball, and styles.css still declares no font other than the riyal face. Measure the tarball growth before release.",
+   "size": "M",
+   "dga": "docs/dga-reference.md line 61: Typography 4422:6 and 4422:7 set the display and text families to IBM Plex Sans Arabic, and font loading is recorded as an application choice, which an opt-in file keeps. Checklist rows 11 to 13, row 12 naming the approved font. The monospace family and the Arabic face inside code are not covered by in-repo references."
+  }
+ ],
+ "deferred": [
+  {
+   "name": "AppShell: stickyHeader (S)",
+   "why": "Additive and small: data-sticky-header on the shell makes the header region sticky (a sticky header region stays within the shell grid in Chromium 153; other engines still to check), with z-index from --hw-z-sticky and a root scroll-padding taken from --hw-app-shell-header-size. Left out of the first release because the application must then keep that height variable in step with a header that changes height (notice line, wrapped actions), and because focus must not be hidden under the header (WCAG 2.2 Focus Not Obscured). It joins the first release if the owner answers decision 5 that way."
+  },
+  {
+   "name": "AppShell: narrowSidebar and sidebarLabel; React side and sidebarWidth (PG-22, layout-5, layout-22)",
+   "why": "Not needed once the guide places its page tree with its own grid CSS or the Sidebar primitive and hides its own wrapper below 64rem; docs/layout.md already tells applications to use an explicit drawer at narrow widths. Parity items for milestone 3."
+  },
+  {
+   "name": "PortalHeader: controlled menu state, actions that move into the menu below 48rem, hand-off to NavigationDrawer (portal-shell-4, portal-shell-5)",
+   "why": "Milestone 3 parity work. It would give phones one navigation control instead of the header menu plus a separate button for the page tree. Depends on owner decision 5."
+  },
+  {
+   "name": "Tabs: icon on a tab item (S)",
+   "why": "No first-release use: framework marks are not in the packaged icon set and file tabs read well as text. Do it in milestone 3 with nav-a-3 (Vue and Angular tabs take a string where React takes a node): icon?: string on the item, decorative, shown in the overflow menu too."
+  },
+  {
+   "name": "Card: padding 'none' (S)",
+   "why": "Lets a code block, table or pane reach the card's edge. Cosmetic for the first release: the full-page editor needs no card frame and the component-page block works with the default padding."
+  },
+  {
+   "name": "labelHidden on field controls (SearchField, Select) through the shared field",
+   "why": "Only the toolbar ToggleGroup needs a hidden label at first release; the header search is a button that opens a dialog whose SearchField keeps its visible label. Hidden field labels are easy to overuse."
+  },
+  {
+   "name": "Angular Tooltip on an interactive control (overlays-14)",
+   "why": "Milestone 3 P1: the Angular tooltip wraps its content in a focusable span (confirmed), which gives two tab stops. Icon buttons already have accessible names, so the guide ships without visible hints."
+  },
+  {
+   "name": "Alert: role 'note' in every adapter with one default",
+   "why": "The Angular role union lacks 'note' and Vue derives the role from the tone. Markdown notes use the Alert class contract directly, so the guide is not blocked; fix with milestone 3 parity."
+  },
+  {
+   "name": "SearchField: structured suggestions with group, description and href (PG-15)",
+   "why": "An adopter feature for palette-style search. The first release composes search from Dialog, SearchField and a results route, which is also what checklist rows 38 to 42 describe."
+  },
+  {
+   "name": "SideNavigation size 'sm'; CopyButton manualCopyLabel or getFailedMessage(status)",
+   "why": "Add when a need shows. Rows keep the drawer's 44px height, and the copyResult event already lets the application show a manual-copy field or a message per reason."
+  },
+  {
+   "name": "Code extras: tokens for inserted and deleted lines and for selection; line numbers and line highlighting",
+   "why": "No first-release use. Line features are behaviour and would be the reason to add a CodeBlock component later."
+  },
+  {
+   "name": "ContentNavigation: narrower observer scope (nav-b-23)",
+   "why": "Performance on long pages, P3. Measure in the real guide first."
+  }
+ ],
+ "rejected": [
+  {
+   "name": "CodeBlock component in four adapters (documentation-shell proposal)",
+   "why": "No behaviour beyond CopyButton. Highlighted code would need a tokens-as-data input and about a dozen inputs kept equal in four adapters, because the contract forbids unsafe HTML input.",
+   "instead": "The code class contract with CopyButton in its actions row, written the way a vanilla consumer writes it."
+  },
+  {
+   "name": "Prose as a component or directive per adapter (Prose, [hwProse]) with size and measure inputs",
+   "why": "A class needs no adapter code, and the two inputs have no first-release use.",
+   "instead": "The class hw-prose on any element."
+  },
+  {
+   "name": "AppShell: sticky sidebar region, third aside region, header height measured by script",
+   "why": "Both designers put position: sticky on the shell's sidebar region. In Chromium 153 a sticky item of the shell grid is confined by the whole grid, so that region slides over the footer at the end of every page (checked with a standalone page). The table of contents already lays out beside the content (layout-14), and a measuring script goes against the layout contract in EXPANSION.md.",
+   "instead": "sticky on SideNavigation and ContentNavigation themselves; the three page regions placed by the guide's own grid CSS or the Sidebar primitive."
+  },
+  {
+   "name": "Link navigation providers per adapter (React context, Vue provide, Angular injection token) honoured by every link-rendering component",
+   "why": "Touches every link template in three adapters and needs a fourth mechanism for vanilla, for the same result as one delegated listener.",
+   "instead": "bindLinkNavigation in core."
+  },
+  {
+   "name": "PortalHeader: utilities region, mobileNavigation 'external', compact size and input renames in milestone 2b",
+   "why": "A second phone-navigation model and a set of renames that overlap portal-shell-4 and portal-shell-5 in milestone 3. The first release works with the wrap fix and a separate button for the page-tree drawer.",
+   "instead": "The notice slot and the wrap fix now; controlled menu state with milestone 3 (see deferred)."
+  },
+  {
+   "name": "ToggleGroup: option icons, overflow 'scroll', size 'sm'",
+   "why": "Framework marks are not in the packaged icon set, so option icons have no first-release use; four segments already stay on one row at 320px (commit 0c44d34); a smaller size would go below the 48px phone height recorded in docs/nic-segmented.md.",
+   "instead": "labelHidden only."
+  },
+  {
+   "name": "Tabs: panelPadding, panelTabStop, focusTab",
+   "why": "The install chooser now uses ToggleGroups, so nothing needs to move focus to a tab; the panel tab stop is the same in every adapter and the tabs pattern allows it; panel padding is cosmetic.",
+   "instead": "Tabs as shipped."
+  },
+  {
+   "name": "Search dialog or command palette, hero, previous/next pager, selectable chips, swatch and Icon components (PG-15, PG-26, PG-24, PG-17, PG-28, PG-09)",
+   "why": "Each composes from existing components without imitating one.",
+   "instead": "See compositions."
+  },
+  {
+   "name": "Toolbar, status bar and resizable split-pane components",
+   "why": "One user each, in the guide's editor. The hw-toolbar class exists, the status line is Inline with a Badge, and a draggable separator is a large pattern (separator role, arrow keys, pointer capture, direction, persistence) for a split that can be fixed.",
+   "instead": "See compositions."
+  },
+  {
+   "name": "Example frame, Markdown renderer, code editor, language switch and colour-mode switch components",
+   "why": "Application concerns. A language or mode switch would make the package know languages, storage or strings, which the text contract forbids; EXPANSION.md treats code editors as an integration boundary.",
+   "instead": "Card, Tabs, the code classes, IconButton and link buttons in the guide; CodeMirror themed from the code tokens."
+  },
+  {
+   "name": "Toast expiry (PG-18)",
+   "why": "CopyButton announces in place, so the guide needs no timed toast, and EXPANSION.md keeps toast lifetime with the caller.",
+   "instead": "Nothing."
+  },
+  {
+   "name": "Proposed again but already in the tree: PortalFooter support region only when supplied, ContentNavigation required label and updateHash in all four adapters, artwork-only brand with brandLabel, four segments on one row",
+   "why": "Landed in milestone 2a; confirmed in source at 9f1593a. The second proposal read an earlier state.",
+   "instead": "No 2b work; covered by the 2a review."
+  },
+  {
+   "name": "ContentNavigation: collapseAt toggle",
+   "why": "A new control with its own state for something the guide does by hiding its wrapper or placing the same component in a Collapsible.",
+   "instead": "Composition."
+  },
+  {
+   "name": "SideNavigation extras: its own hw-side-nav class family, badge, static group headings, controlled expandedIds",
+   "why": "The drawer's rows already carry the recorded geometry, and controlled disclosure over native details adds state for no first-release need.",
+   "instead": "The shared list and the expanded field on items."
+  },
+  {
+   "name": "CopyButton extras: built-in manual-copy field, visible-success option, one message input per failure reason",
+   "why": "Each widens an API that four adapters must keep equal; the event already carries the reason.",
+   "instead": "copyResult."
+  },
+  {
+   "name": "A dir='ltr' exception in CONTRACT.md for code",
+   "why": "Not needed. No component sets dir: the stylesheet sets CSS direction, as it already does for the PIN input and the rating score, and the author writes dir in the markup.",
+   "instead": "direction: ltr and unicode-bidi: isolate in code.css."
+  },
+  {
+   "name": "Token prefix --hw-code-* and data-token hooks",
+   "why": "The prefix breaks the --hw-color-* convention for a highlighter mapping its proposer could not confirm, and data attributes do not survive Angular's sanitizer.",
+   "instead": "--hw-color-code-* tokens and hw-code-token-* classes."
+  },
+  {
+   "name": "IBM Plex Sans Arabic added to --hw-font-mono before the generic family (both proposals)",
+   "why": "On a device that has the sans face but none of the listed mono faces, Latin code would render in the proportional sans face.",
+   "instead": "A face limited to Arabic by unicode-range, in fonts.css."
+  },
+  {
+   "name": "Re-exporting core helpers from every adapter",
+   "why": "Its premise, that the guide may depend only on the adapter, does not hold: @hawiyah/core is one of the seven published packages, and the adapters re-export only types today.",
+   "instead": "Import copyText and bindLinkNavigation from @hawiyah/core."
+  }
+ ],
+ "compositions": [
+  "Shell frame: AppShell for the canvas, the skip link, the header region, the main target and the footer region. Inside main the guide places the page tree, the content and the table of contents with its own grid CSS (placement with tokens) or the Sidebar primitive. No third shell region and no sticky shell region is needed.",
+  "Navbar: PortalHeader with the projected wordmark artwork and brandLabel (no brand text), the links, and the actions slot holding the search button, the language link and the colour-mode button. Top attribution line: the PortalHeader notice row; SiteVerification is not used, since Hawiyah is not a government site. The dark-mode filter AGENTS.md prescribes for the NIC logo stays in guide CSS: it is artwork, not a component.",
+  "Colour-mode switch: IconButton, variant ghost, icon sun-03 or moon-02, a constant label and pressed for dark (the pressed style exists in nic-icons.css). The application sets data-hw-mode and stores the choice.",
+  "Language switch: a link with hwButton (ghost) to the same page in the other language, its text in that language with lang and hreflang on the anchor, and optionally the translate icon. The application sets lang and dir together; there is no direction control.",
+  "Search: IconButton (search-01) in the header opens Dialog with SearchField, whose suggestions are page titles; submitting leads to a results route built from SearchField, Cards with href or Link rows, EmptyState and Pagination, which is what checklist rows 38 to 42 describe. The Ctrl or Cmd+K handler is application code and its hint uses hw-kbd.",
+  "Sidebar on phones: NavigationDrawer fed the same items array as SideNavigation, opened by a Button that guide CSS shows below 64rem while it hides the guide's own wrapper around SideNavigation. PortalHeader's own disclosure keeps the top-level links.",
+  "Table of contents: ContentNavigation with items from the build-time heading list, updateHash and sticky. The guide sets --hw-content-nav-top and hides its wrapper on narrow screens, or places the same component in a Collapsible.",
+  "Page title and trail: PageHeader with Breadcrumb. Footer: PortalFooter with brand artwork. Previous and next page: a Grid of two Cards with href and directional arrow icons (PG-24).",
+  "Landing page: Section, hw-type display scales, Columns and Card for the hero and the two language panes; each pane wrapper carries its own lang and dir and holds the real form components (PG-26).",
+  "Install chooser: two ToggleGroups with visible legends (framework, package manager), the three steps as an ordered list in prose, a code block with CopyButton per step, and the live result in a Card. Stepper is not used: landing-b found it overflows below about 700px with descriptions.",
+  "Component-page block: a Card with the live result first; below it Tabs with one tab per framework, each panel a code block whose actions row holds CopyButton, a download link and an open-in-the-editor link (hwButton links with the download-01 and source-code icons).",
+  "Reference pages: one hw-prose article per page. Props tables are div.hw-table-wrap (tabindex 0, role region, a name from the application) around table.hw-table; notes are the Alert class contract with role='note'; fenced code is the code-block markup with a try-it link button (play icon) to the editor route. Angular's sanitizer removes id and data-* from innerHTML, so the guide renders its build-time Markdown as trusted HTML or as templates; that is a guide pipeline matter, not a package gap.",
+  "Editor toolbar: the hw-toolbar class on an element with role='group' and a name from the application, holding ToggleGroups with labelHidden (framework, language) or Select on phones, Buttons and IconButtons with packaged icons (play, reload, download-01) and ButtonGroup for grouped actions.",
+  "Editor file tabs: Tabs with overflow 'scroll' or 'menu' and text labels, one panel per file.",
+  "Editor panes: Columns with columns {base: 1, lg: 2} and a vertical Divider, code on one side and the sandboxed result frame on the other, stacked on phones with the result first; a fixed split. The CodeMirror theme takes its colours from the code tokens.",
+  "Editor log: Collapsible holding an application-owned list with role='log', lines in hw-code and a Badge per level; the count Badge sits beside the Collapsible.",
+  "Editor status bar: Inline with a Badge for the run state and hw-type body-sm with data-tone='muted' for the package version. The application wraps the changing part in its own role='status' element and updates it only when a run finishes or fails.",
+  "Catalogue with filtering: SearchField, ToggleGroup multiple with the outline variant for categories (PG-17), a Grid of Cards with href and Badge, EmptyState and an application-owned status count.",
+  "Token swatches, foundation and brand specimens: DescriptionList or Table, Card, Grid and AspectRatio with token-coloured spans (PG-28).",
+  "Live examples of page-level components (AppShell, PortalLayout, PortalHeader, PageHeader): rendered in the sandboxed result frame, so their main landmark, skip link and h1 stay out of the guide's outline.",
+  "Icons: span.hw-icon with data-icon. The 62 packaged glyphs cover the shell and the editor; framework marks, a terminal glyph and an expand glyph are not in the set, so those controls keep text labels.",
+  "Focus and announcement after a route change, page titles and scroll restoration: application code with the router (shell-home-12, shell-home-13).",
+  "The 13 page templates and the brand pages: expected to render from existing components (forms, Card, Grid, Table, DescriptionList, PortalLayout). Neither proposal walked them element by element, so a gap found there is a later addition, not part of this set; the chatbot template stays out (PG-27)."
+ ],
+ "ownerDecisions": [
+  {
+   "question": "Two new public components, CopyButton and SideNavigation, raise the catalogue from 83 to 85 entries (README.md, llms.txt, CONTRACT.md, docs/coverage.md, components.json and the guide's own count). Accept?",
+   "recommendation": "Accept both. They are the only additions that multiply across four adapters, and each packages behaviour the guide would otherwise re-implement: the copy state handling that a prototype already got wrong, and a navigation list the drawer already renders.",
+   "tradeoff": "Two more components to keep equal in four adapters, and every 83 in the repository and the guide changes. Keeping 83 means core copyText plus the documented recipe and a sidebar list built in the guide, which puts state handling and an imitation of the drawer's list into guide code."
+  },
+  {
+   "question": "May a delegated click listener in core (bindLinkNavigation) hand packaged links to the application's router, given the AGENTS.md rule that frameworks own their DOM and are never enhanced with vanilla?",
+   "recommendation": "Yes. It adds one listener on the document, changes no node and renders nothing; CONTRACT.md already lets adapters invoke core DOM utilities that do not render, and bindFragmentLink is the precedent.",
+   "tradeoff": "Without it the first guide release does a full page load on every internal link (correct on a prerendered site, as the PG-04 verifier notes, but each click starts Angular again and drops editor drafts and sidebar scroll), or the guide carries interception the packages do not test. Providers per adapter are the stricter reading of the rule at several times the work."
+  },
+  {
+   "question": "Fonts: may @hawiyah/styles ship IBM Plex Sans Arabic (400, 500, 600, 700) and IBM Plex Mono (400) as an opt-in fonts.css, or does the guide get a standing exception to depend on a font package?",
+   "recommendation": "Ship the opt-in file in @hawiyah/styles: IBM's files unchanged, with the OFL text and provenance, never imported by styles.css. It is the only way to meet checklist row 12 under the packages-only rule, and it is what fixes Arabic text inside code.",
+   "tradeoff": "A larger styles tarball (to be measured; several hundred kilobytes) and a third-party licence to keep in order, against a permanent exception to the packages-only rule. An eighth package for fonts would break the rule that seven packages share one version."
+  },
+  {
+   "question": "Syntax colours have no in-repo reference. Alias the ten syntax roles to existing Platforms Code colours (info, success, warning, danger, text-muted, text-subtle), or define a dedicated palette?",
+   "recommendation": "Aliases. On the code surface of the default theme they measure 4.9:1 to 9.3:1 in light and 5.2:1 to 13.2:1 in dark (primary-text is excluded: 4.32:1 in light). Review one rendered TypeScript, HTML and CSS sample in both modes before the names are frozen.",
+   "tradeoff": "Only four hues, and code borrows the status colours (red tags, amber constants). A dedicated palette reads better but brings colour values with no Platforms Code source, to be recorded as open items."
+  },
+  {
+   "question": "Shell at first release: is it acceptable that the header is not sticky and that at 320px its search, language and mode controls wrap to a second row?",
+   "recommendation": "Accept both for the first release and decide again with the real header in front of you. The sidebar and the table of contents do stick. If not accepted, AppShell stickyHeader (small) and header actions that move into the menu with a controlled menu state (medium, milestone 3 work brought forward) join the first release.",
+   "tradeoff": "On long pages search and the header links are reachable only at the top, and phones get a two-row header. In return milestone 2b avoids a header height the application must keep in step by hand (the layout contract rules out a measuring script) and a second phone-navigation model."
+  }
+ ],
+ "totalEffort": "Ten items: six medium and four small (five medium if the fonts stylesheet is not chosen). Only CopyButton and SideNavigation multiply across four adapters. Three items are style-only (code, prose and tone, fonts), one is core-only apart from a one-line check in the drawers (bindLinkNavigation), one is Angular-only with host rules in styles (layout hosts), and three are small edits (ToggleGroup labelHidden in three adapters, the PortalHeader notice in Vue and Angular with a style fix, ContentNavigation in core). Taking small as up to one day and medium as two to three days of one maintainer's time, including tests, examples and docs, that is roughly 14 to 22 working days. Build order as listed; start after milestone 2a is green, since other agents were still changing core and the adapters while this was written. The catalogue becomes 85 entries.",
+ "premiseChecks": [
+  "Confirmed in source at 9f1593a: --hw-font-mono is the only code token and no pre, code or kbd rule exists; every Angular layout primitive except Spacer renders an inner div; NavigationDrawer renders its list only inside a drawer in all four adapters and its row rules are not scoped to the dialog; ToggleGroup always renders its legend in all four adapters; only React renders the PortalHeader notice; the Angular tooltip wrapper is a tab stop; assets/fonts holds only the riyal font; 62 icons are packaged, including copy-01, tick-02, alert-02, sun-03, moon-02, translate, search-01, play, reload, download-01, file-01, source-code and github.",
+  "Stale in the second proposal: ContentNavigation label and updateHash, the PortalFooter support region and the artwork-only brand are already implemented in all adapters.",
+  "Wrong in both proposals: position: sticky on the AppShell sidebar region. Standalone check in Chromium 153.0.8010.12 (gate3/judge-m2b/sticky-check.cjs): at the end of the page the sticky grid item stays at its top offset (60px) while the footer has scrolled to 400px, so a 700px sidebar overlaps the footer; the same item inside a wrapper around sidebar and main scrolls away with the wrapper.",
+  "Wrong in both proposals: adding IBM Plex Sans Arabic to --hw-font-mono before the generic family makes Latin code proportional where the sans face is present and no listed mono face is.",
+  "New fact: the Angular sanitizer allowlist (@angular/core 22.2.3, HTML_ATTRS) has class, dir, lang, role, tabindex and translate but neither id nor any data-* attribute. It decides the class hooks for syntax spans and means the guide must treat its build-time Markdown as trusted HTML or as templates (heading ids).",
+  "Doubtful premise in the first proposal: that the guide may depend only on the adapter. @hawiyah/core is a published package and adapters re-export only types.",
+  "Contrast of existing semantic colours on surface-muted, default theme, computed from tokens.css. Light: text-muted 9.25, text-subtle 6.69, danger 5.97, info 5.44, success 5.17, warning 4.93, primary-text 4.32. Dark: text-muted 13.21, text-subtle 11.74, warning 7.90, success 7.17, primary-text 6.43, info 6.28, danger 5.22."
+ ]
+}

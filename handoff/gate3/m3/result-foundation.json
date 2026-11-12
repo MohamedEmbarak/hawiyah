@@ -1,0 +1,180 @@
+{
+  "amendments": 33,
+  "coreExports": [
+    {
+      "name": "observeFormReset",
+      "signature": "observeFormReset(control: Element, onReset: () => void): FormResetObserver  // { destroy(): void }"
+    },
+    {
+      "name": "sameValue",
+      "signature": "sameValue(a: unknown, b: unknown): boolean"
+    },
+    {
+      "name": "FormResetObserver (type)",
+      "signature": "interface FormResetObserver { destroy(): void }"
+    },
+    {
+      "name": "createTypeahead",
+      "signature": "createTypeahead(options?: TypeaheadOptions): Typeahead  // { next(key: string, labels: readonly string[], current: number, isDisabled?: (index: number) => boolean): number; reset(): void }"
+    },
+    {
+      "name": "isTypeaheadKey",
+      "signature": "isTypeaheadKey(event: { key: string; ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean }): boolean"
+    },
+    {
+      "name": "Typeahead, TypeaheadOptions (types)",
+      "signature": "interface TypeaheadOptions { timeout?: number }"
+    },
+    {
+      "name": "normalizeSearch (moved to search.ts, re-exported unchanged)",
+      "signature": "normalizeSearch(value: string): string"
+    },
+    {
+      "name": "evaluateFileSelection",
+      "signature": "evaluateFileSelection<F extends { name: string; type: string; size: number }>(files: readonly F[], rules?: FileSelectionRules): FileSelectionResult<F>  // { accepted: F[]; rejected: F[]; reasons: FileRejectionReason[] }"
+    },
+    {
+      "name": "matchesFileAccept",
+      "signature": "matchesFileAccept(file: { name: string; type: string }, accept: string | null | undefined): boolean"
+    },
+    {
+      "name": "isFileDrag",
+      "signature": "isFileDrag(transfer: { types?: ArrayLike<string> | null } | null | undefined): boolean"
+    },
+    {
+      "name": "FileSelectionRules, FileRejectionReason, FileSelectionResult (types)",
+      "signature": "interface FileSelectionRules { accept?: string | null; multiple?: boolean; maxSize?: number | null }; type FileRejectionReason = 'count' | 'type' | 'size'"
+    },
+    {
+      "name": "prepareRemovalFocus",
+      "signature": "prepareRemovalFocus(container: HTMLElement, control: HTMLElement, options: RemovalFocusOptions): () => void"
+    },
+    {
+      "name": "RemovalFocusOptions (type)",
+      "signature": "interface RemovalFocusOptions { item: string; control: string; fallback?: HTMLElement | null }"
+    },
+    {
+      "name": "getDateViolation",
+      "signature": "getDateViolation(draft: string, options: DateViolationOptions): DateViolation"
+    },
+    {
+      "name": "DateViolation, DateViolationOptions (types)",
+      "signature": "type DateViolation = '' | 'invalid' | 'unsupported' | 'unavailable'; interface DateViolationOptions { min?: string; max?: string; calendar: CalendarSystem; isDateDisabled?: (value: string) => boolean }"
+    },
+    {
+      "name": "normalizePinInput",
+      "signature": "normalizePinInput(raw: string, length: number, previous?: string, inputType?: string): string"
+    },
+    {
+      "name": "getPortalBranchSummary",
+      "signature": "getPortalBranchSummary(target: EventTarget | null, scope: Element | null | undefined): HTMLElement | null"
+    },
+    {
+      "name": "FeedbackValue (type)",
+      "signature": "interface FeedbackValue { helpful: boolean | null; comment: string }"
+    },
+    {
+      "name": "ConsentChoice (type)",
+      "signature": "type ConsentChoice = 'accepted' | 'rejected'"
+    },
+    {
+      "name": "observeFieldValue, observeReadonlyChoice (changed inside, signature unchanged)",
+      "signature": "both now read a reset through observeFormReset"
+    }
+  ],
+  "classes": [
+    "NEW .hw-slider-value (output of Slider); .hw-range-slider-value is styled by the existing `.hw-range-slider output`",
+    "NEW .hw-alert > .hw-alert-dismiss",
+    "NEW .hw-tree-toggle is a button (padding 0, border 0, hover, :disabled; forced colours); NEW custom properties --hw-tree-depth (set per item by adapters) and --hw-tree-indent on .hw-tree-view",
+    "NEW .hw-file-dropzone[data-hw-readonly='true'] and .hw-file-dropzone input[type='file'][aria-disabled='true']; CHANGED dragging hook is [data-state='dragging'] only ([data-dragging='true'] and [data-dragover] removed)",
+    "NEW .hw-collapsible > :is(summary, .hw-collapsible-trigger, [data-hw-trigger])[aria-disabled='true']",
+    "NEW .hw-multi-select-options > .hw-hint and > label:has(input[aria-disabled='true'])",
+    "CHANGED .hw-tag-input > :is(ul, ol, [data-hw-tags]) (was > ul); REMOVED .hw-tag-input.hw-field > …, .hw-tag-input > .hw-inline",
+    "NEW :empty rules: .hw-dialog-footer:empty, .hw-service-details > footer:empty, .hw-stat-trend:empty, .hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child):empty",
+    "CHANGED .hw-chip button:hover:not(:disabled); NEW .hw-chip button:disabled (forced colours GrayText)",
+    "CHANGED carousel and pagination arrows: [aria-disabled='true'] styled like :disabled; NEW .hw-button.hw-carousel-arrow[aria-disabled='true']:focus-visible, .hw-pagination :is(.hw-pagination-arrow, .hw-pagination-gap-trigger)[aria-disabled='true']:focus-visible, and the general .hw-button[aria-disabled='true']:focus-visible (nic-buttons.css)",
+    "CHANGED notification state hook: [data-state='unread'] only ([data-unread='true'], [data-read='false'] removed) on .hw-notification-list items and .hw-notification",
+    "REMOVED .hw-popover-content (use .hw-popover-panel), .hw-service-card-meta and .hw-service-card .hw-card-body > ul (facts are dl.hw-description-list), .hw-feedback > h2, .hw-feedback > fieldset and every .hw-choice / .hw-radio rule of feedback.css, .hw-timeline > li[data-state='active'], extended.css duplicate of .hw-tooltip-anchor, .hw-calendar-info > .hw-tooltip-anchor, .hw-date-picker .hw-dialog-footer:empty",
+    "NEW forced-colours: .hw-feedback [aria-pressed='true'] { outline-color: Highlight }",
+    "CHANGED .hw-page-header title typography also for :where(.hw-page-header-main > div, .hw-page-header-content) > :is(h3, h4, h5, h6)",
+    "NEW Angular host element rules in layout.css, all :where(...):where(:not([hidden])): display block for hw-field, hw-text-field, hw-textarea, hw-select, hw-checkbox, hw-switch, hw-radio-group, hw-number-field, hw-slider, hw-range-slider, hw-combobox, hw-password-field, hw-search-field, hw-pin-input, hw-tag-input, hw-multi-select, hw-file-dropzone, hw-file-upload, hw-calendar, hw-date-picker, hw-accordion, hw-collapsible, hw-tree-view, hw-tabs, hw-secondary-nav, hw-pagination, hw-breadcrumb, hw-stepper, hw-service-details, hw-progress, hw-meter, hw-description-list, hw-timeline, hw-notification-list, hw-feedback; block with min-inline-size 0 for hw-table, hw-data-table, hw-carousel; inline-block for hw-popover, hw-menu; display contents for hw-toggle-group, hw-content-navigation; hw-alert removed from the older block list"
+  ],
+  "files": [
+    "CONTRACT.md",
+    "packages/core/src/form-reset.ts (new)",
+    "packages/core/src/typeahead.ts (new)",
+    "packages/core/src/search.ts (new)",
+    "packages/core/src/file-selection.ts (new)",
+    "packages/core/src/removal-focus.ts (new)",
+    "packages/core/src/portal-branch.ts (new)",
+    "packages/core/src/index.ts",
+    "packages/core/src/calendar.ts",
+    "packages/core/src/controls.ts",
+    "packages/core/src/field-value.ts",
+    "packages/core/src/readonly-choice.ts",
+    "packages/core/test/form-reset.test.ts (new)",
+    "packages/core/test/typeahead.test.ts (new)",
+    "packages/core/test/file-selection.test.ts (new)",
+    "packages/core/test/removal-focus.test.ts (new)",
+    "packages/core/test/portal-branch.test.ts (new)",
+    "packages/core/test/calendar-violation.test.ts (new)",
+    "packages/core/test/expansion.test.ts",
+    "packages/core/test/server-dom.test.ts",
+    "packages/core/README.md",
+    "packages/core/API.md",
+    "packages/styles/src/extended.css",
+    "packages/styles/src/components.css",
+    "packages/styles/src/layout.css",
+    "packages/styles/src/feedback.css",
+    "packages/styles/src/date-picker.css",
+    "packages/styles/src/nic-carousel.css",
+    "packages/styles/src/nic-pagination.css",
+    "packages/styles/src/nic-buttons.css",
+    "packages/styles/test/unavailable-and-hosts.test.ts (new)",
+    "packages/styles/README.md",
+    "scratchpad gate3/m3: spec-forms-core.json, spec-rich-inputs-files.json, spec-dates-overlays-disclosure-data.json, spec-navigation-menus-shell.json, spec-feedback-content-patterns.json (amended; originals in backup-specs/), spec-amendments.json, amend.js"
+  ],
+  "commands": [
+    {
+      "command": "node scripts/build.mjs --only core",
+      "result": "exit 0"
+    },
+    {
+      "command": "node scripts/build.mjs --only tokens",
+      "result": "exit 0 (250 semantic variables; tokens unchanged)"
+    },
+    {
+      "command": "node scripts/build.mjs --only styles",
+      "result": "exit 0"
+    },
+    {
+      "command": "pnpm exec vitest run packages/core packages/styles packages/tokens",
+      "result": "27 files, 236 tests passed (core 23 files / 189 tests incl. 6 new files; styles 3 files / 40 tests incl. 1 new file)"
+    },
+    {
+      "command": "node --test packages/tokens/test/contrast.test.mjs",
+      "result": "16 passed, 0 failed"
+    },
+    {
+      "command": "pnpm exec vitest run (whole repository)",
+      "result": "164 files, 1351 tests passed; no adapter or root test fails on the new foundation"
+    },
+    {
+      "command": "tsc --noEmit in packages/vanilla, packages/react, packages/vue",
+      "result": "no errors"
+    },
+    {
+      "command": "contrast measured for the pairs introduced (four theme/mode pairs)",
+      "result": "focus ring (focus-contrast) on surface, canvas, surface-muted, surface-raised: min 4.60:1 (hawiyah light on surface-muted); tree toggle glyph and slider value (text-muted) on surface, canvas, surface-muted, surface-raised, primary-subtle: min 4.92:1 (hawiyah light on primary-subtle). Asserted in packages/styles/test/unavailable-and-hosts.test.ts"
+    }
+  ],
+  "notDone": [
+    "Not edited because not owned: CHANGELOG.md, components.json, llms.txt, docs/, adapter READMEs. The changelog needs the core additions and these stylesheet migrations: .hw-popover-content -> .hw-popover-panel; [data-unread='true'] / [data-read='false'] -> data-state=\"unread\"; [data-dragging='true'] / [data-dragover] -> data-state=\"dragging\"; .hw-service-card-meta -> dl.hw-description-list; .hw-timeline > li[data-state='active'] -> data-state=\"current\"; Feedback radios (.hw-choice in .hw-feedback-actions, fieldset, h2) -> pressed buttons and a first-child p.",
+    "Adapters still render hooks the stylesheet no longer styles; no vitest case fails, the look regresses until the adapters follow: packages/vue/src/expansion-interactive.ts (hw-popover-content), packages/vue/src/patterns.ts (data-read), packages/vue/src/controls.ts (data-dragging), packages/angular/src/content.ts (data-unread, hw-service-card-meta), packages/angular/src/advanced-controls.ts (data-dragging, 'hw-field hw-tag-input'), packages/vanilla/src/controls.ts (data-dragover), React Feedback (fieldset and radios), and the samples apps/playground/src/expanded-samples.ts, component-layout-guides.ts, component-layout-guides.ar.ts, choice-input-projects.ts.",
+    "Browser suite (tests/browser, Playwright) not run. tests/browser/style-defects.spec.ts (data-dragover) and tests/browser/service-pattern-projects.spec.ts (data-unread, data-read) use removed hooks and are expected to fail until adapters and specs are updated. Browser-only cases of the specifications (ATTR-06 host boxes, RICH-03 empty regions, TAGINPUT-03, focus ring and forced-colours rendering) are covered here only by source-level style tests.",
+    "Adapters do not yet call the new core helpers (observeFormReset in framework hooks, createTypeahead, evaluateFileSelection, prepareRemovalFocus, getDateViolation, normalizePinInput, getPortalBranchSummary); vanilla still declares its own ConsentChoice and React and Vue their own FeedbackValue.",
+    "Deviations from the specifications, each recorded in spec-amendments.json: nic-notification-dialog.css line 93 kept (the general :empty rule is out-ranked there); empty-icon rule uses the tile's selector; pagination and carousel focus rules set opacity 1, plus a general .hw-button[aria-disabled='true']:focus-visible rule; observeFormReset listens at the control's root, not only at the document.",
+    "Reconciliation left as it is on purpose: DatePicker writes hint and error by hand in Angular (its recorded reason: bdi in the message); HwNamedRoot is used by the navigation cluster only while the dates and feedback clusters declare the same three alias inputs by hand (same public inputs, same name expression after amendment); numbered SSR-, RICH- and SHAPE- case ids are reused per component across specifications and were not renumbered; Angular action outputs keep the participle form ((dismissed), (removed)) beside (read), (feedback), (action), as the feedback specification asks the owner.",
+    "The amended specification files were re-serialised with two-space indentation."
+  ]
+}

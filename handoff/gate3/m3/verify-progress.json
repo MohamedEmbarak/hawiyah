@@ -1,0 +1,96 @@
+{
+ "commands": [
+  {
+   "command": "pnpm build",
+   "result": "pass",
+   "counts": ""
+  },
+  {
+   "command": "pnpm typecheck:playground",
+   "result": "pass",
+   "counts": ""
+  },
+  {
+   "command": "pnpm test",
+   "result": "pass",
+   "counts": "vitest 217 files / 2574 tests passed; contrast node test passed"
+  },
+  {
+   "command": "pnpm check:packages",
+   "result": "pass",
+   "counts": "7 tarballs; consumers ESM/SSR/APF/CSS/types passed; tree-shaking React Button 427 B, Vanilla Tabs 4474 B"
+  },
+  {
+   "command": "pnpm check:packages (after adding exports)",
+   "result": "pass",
+   "counts": ""
+  },
+  {
+   "command": "HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs",
+   "result": "pass",
+   "counts": "one pre-existing NG8107 warning (navigation.ts tabs?.length), unchanged from before the milestone"
+  },
+  {
+   "command": "pnpm test:browser (full run 1)",
+   "result": "fail",
+   "counts": "617 passed, 18 failed (38.2m)"
+  },
+  {
+   "command": "pnpm test:browser (re-run of the 10 failing files)",
+   "result": "fail",
+   "counts": "85 passed, 1 failed: playground.spec.ts WCAG components en light (axe label-content-name-mismatch on the expanded vanilla tree item)"
+  },
+  {
+   "command": "pnpm test:portals",
+   "result": "pass",
+   "counts": "81 passed (3.3m)"
+  },
+  {
+   "command": "re-verify on committed tree: pnpm build / typecheck:playground / test / check:packages / build:docs",
+   "result": "pass",
+   "counts": "217 files / 2574 tests; React Button 427 B, Vanilla Tabs 4474 B gzip"
+  },
+  {
+   "command": "pnpm test:browser (full run on the committed tree, Chromium wrapped to log the page console)",
+   "result": "fail",
+   "counts": "634 passed, 1 failed (33.9m); 1386 console lines captured, 0 'Hawiyah:' warnings"
+  }
+ ],
+ "fixed": [
+  {
+   "file": "scripts/check-packages.mjs",
+   "what": "smoke consumer asserts the milestone-3 core exports (getDateViolation, observeFormReset, sameValue, prepareRemovalFocus, createTypeahead, isTypeaheadKey, getPortalBranchSummary, evaluateFileSelection) and Angular HwTooltipTriggerDirective, HwLinkDirective, HW_FIELD"
+  },
+  {
+   "file": "apps/playground/src/basic-input-projects.ts",
+   "what": "React range-slider project passes defaultValue={[20, 80]}: a form reset now restores defaultValue (default [min, max]) through onValueChange, like the Vue project's default-value"
+  },
+  {
+   "file": "apps/playground/src/choice-input-projects.ts",
+   "what": "vanilla pin-input project authors maxlength=\"4\" again (the documented length source; the migration had replaced it by pattern=\"[0-9]{4}\", so the controller fell back to 6 digits and blocked submission)"
+  },
+  {
+   "file": "apps/playground/src/choice-input-projects.ts",
+   "what": "React structured-input projects pass defaultValue (the initial value): a form reset now notifies onValueChange with defaultValue, else the empty value"
+  },
+  {
+   "file": "tests/browser/feedback-composition.spec.ts",
+   "what": "Feedback asserts the agreed result in React, Vue and Angular: two toggle buttons with aria-pressed (React no longer renders radios) and value.helpful shown as true/false"
+  },
+  {
+   "file": "tests/browser/native-file-projects.spec.ts",
+   "what": "file-dropzone asserts the agreed result in Angular too: a mixed batch is rejected as a whole, the selection is empty and the rejection message shows"
+  },
+  {
+   "file": "apps/playground/src/main.ts",
+   "what": "the hashchange handler does nothing once #app is detached: browser fixtures that replace the guide's body (nic-cards fragment link) no longer make the guide render into a detached tree, which threw 'Hawiyah: each tab requires aria-controls...' as an unhandled error"
+  },
+  {
+   "file": "tests/browser/style-defects.spec.ts",
+   "what": "drag-over test uses the renamed marker data-state=\"dragging\" (data-dragover is gone without alias) and compares with the primary colour tokens instead of a second element carrying the same marker"
+  }
+ ],
+ "remaining": [
+  "owner decision on the tree-item axe failure"
+ ]
+}

@@ -1,0 +1,148 @@
+{
+ "implemented": [
+  "fields-basic-8",
+  "actions-2",
+  "choices-2",
+  "actions-11",
+  "actions-v1",
+  "fields-basic-9",
+  "fields-basic-2",
+  "choices-3",
+  "fields-basic-10",
+  "fields-basic-3",
+  "fields-basic-5",
+  "fields-basic-6",
+  "choices-4",
+  "choices-5",
+  "choices-6",
+  "choices-8",
+  "choices-9",
+  "R16",
+  "actions-5",
+  "actions-8",
+  "actions-9",
+  "E02",
+  "rich-inputs-20",
+  "fields-basic-7",
+  "rich-inputs-1",
+  "rich-inputs-2",
+  "rich-inputs-5",
+  "files-5",
+  "rich-inputs-6",
+  "R10",
+  "R09",
+  "rich-inputs-8",
+  "R19",
+  "rich-inputs-12",
+  "rich-inputs-14",
+  "R27",
+  "E01",
+  "files-2",
+  "files-3",
+  "R07",
+  "files-4",
+  "R06",
+  "files-6",
+  "R08",
+  "files-8",
+  "files-9",
+  "files-10"
+ ],
+ "deviations": [
+  {
+   "item": "fields-basic-8",
+   "what": "calendar.tsx: the two useFormReset calls only lose the removed third `form` argument; their reset bodies (uncontrolled-only guard) are unchanged",
+   "why": "calendar.tsx belongs to the dates cluster; the new useFormReset signature forced the call sites to compile"
+  },
+  {
+   "item": "fields-basic-8",
+   "what": "Rating reset made unconditional: useFormReset(input, () => setCurrent(defaultValue)) (notifies a controlled Rating, re-renders checked)",
+   "why": "the old call passed the removed `form` argument; convention native-form-reset is binding for every composite control"
+  },
+  {
+   "item": "rich-inputs-6",
+   "what": "read-only MultiSelect checkboxes are guarded by core observeReadonlyChoice (as ToggleGroup and Checkbox) instead of an onClick preventDefault",
+   "why": "with React controlled checkboxes a prevented click left the box unchecked (jsdom and React restore order); same DOM and ARIA as specified"
+  },
+  {
+   "item": "fields-basic-3",
+   "what": "errorRole?: \"alert\" is declared on the exported FieldProps type, marked @internal and not documented",
+   "why": "Field / ControlField / FieldLayout share FieldProps; spec names it a Field prop"
+  },
+  {
+   "item": "files-2",
+   "what": "accepted drop: input.files = event.dataTransfer.files inside try/catch and verified by length before the change event; a refused assignment notifies nothing",
+   "why": "spec behaviour for a browser that refuses the assignment"
+  },
+  {
+   "item": "tests",
+   "what": "cross-adapter case ids are implemented in packages/react/react.form-reset.test.tsx, react.forms-core.test.tsx, react.rich-inputs.test.tsx and the type fixture fixtures/rich-inputs-types.tsx, not in tests/*-parity.test.ts",
+   "why": "this step owns packages/react/** only; the same ids can be lifted into the parity files"
+  },
+  {
+   "item": "files-6 / files-9 / files-2",
+   "what": "FormData of file inputs (FILEDROPZONE-03, RO-03) is asserted through input.files and the selection status, not FormData",
+   "why": "jsdom cannot build a FileList, so FormData never carries test files"
+  }
+ ],
+ "files": [
+  "packages/react/src/shared.tsx",
+  "packages/react/src/expanded-shared.ts",
+  "packages/react/src/forms.tsx",
+  "packages/react/src/expanded-controls.tsx",
+  "packages/react/src/expanded-interactive.tsx",
+  "packages/react/src/interactive.tsx",
+  "packages/react/src/search-field.tsx",
+  "packages/react/src/calendar.tsx",
+  "packages/react/README.md",
+  "packages/react/react.form-reset.test.tsx",
+  "packages/react/react.forms-core.test.tsx",
+  "packages/react/react.rich-inputs.test.tsx",
+  "packages/react/fixtures/rich-inputs-types.tsx",
+  "packages/react/react.input-contracts.test.tsx",
+  "packages/react/react.combobox-readonly.test.tsx",
+  "packages/react/react.expansion.test.tsx",
+  "packages/react/react.multiselect-validation.test.tsx",
+  "packages/react/react.text-contract.test.tsx"
+ ],
+ "commands": [
+  {
+   "command": "pnpm exec vitest run packages/react (baseline)",
+   "result": "22 files, 134 tests passed"
+  },
+  {
+   "command": "tsc -p packages/react/tsconfig.json --noEmit",
+   "result": "no errors"
+  },
+  {
+   "command": "new test files against packages/react/src of a0ed9b0 (temporary copy, removed)",
+   "result": "37 of 49 fail before the change; the 12 that pass guard end states the spec marks none or regression cases"
+  },
+  {
+   "command": "node scripts/build.mjs --only react",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm exec vitest run packages/react",
+   "result": "25 files, 183 tests passed, no Hawiyah: warning printed"
+  },
+  {
+   "command": "vitest run tests/{toggle-group,tag-input,file-dropzone-name,basic-field-select,search-field,rating}-parity + text-contract-docs",
+   "result": "react cases pass; 2 Angular cases of basic-field-select-parity fail (Angular adapter in progress elsewhere)"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "browser cases RESET-12, COMBOBOX-02, TOGGLE-GROUP-02, TOGGLE-GROUP-03, TEXTAREA-02, MULTISELECT-03, TAGINPUT-03, PININPUT-03, FILEDROPZONE-08",
+   "why": "tests/browser/*.spec.ts with static fixtures are outside packages/react"
+  },
+  {
+   "item": "docs outside the package (CHANGELOG.md, CONTRACT.md, components.json, llms.txt, docs/*.md, tests/text-contract-docs fixtures)",
+   "why": "outside packages/react; README carries the migration table"
+  },
+  {
+   "item": "tests/*-parity.test.ts entries for the react adapter",
+   "why": "outside packages/react; the case ids exist in the package tests"
+  }
+ ]
+}

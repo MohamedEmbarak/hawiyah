@@ -1,0 +1,1167 @@
+[
+ {
+  "id": "feedback-status-1",
+  "group": "feedback-status",
+  "subject": "alert",
+  "adapters": [
+   "angular",
+   "react",
+   "vue"
+  ],
+  "dimension": "a11y",
+  "title": "Angular Alert never defaults danger to role=alert; React and Vue do",
+  "description": "The same usage (tone=danger, no role) is an assertive live region in React, Vue and the vanilla recipe, but a polite role=status in Angular, because the Angular role input has a fixed default instead of being derived from tone.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 38,
+    "quote": "@Input() role: 'alert' | 'status' | 'region' | 'group' = 'status';"
+   },
+   {
+    "file": "packages/react/src/display.tsx",
+    "line": 73,
+    "quote": "role={role ?? (tone === 'danger' ? 'alert' : 'status')}"
+   },
+   {
+    "file": "packages/vue/src/display.ts",
+    "line": 71,
+    "quote": "mergeProps({ role: props.tone === 'danger' ? 'alert' : 'status' }, attrs,"
+   }
+  ],
+  "expected": "Same default announcement urgency in every adapter (packages/react/README.md:86: 'Default role is status (danger: alert)').",
+  "fix": "Make the Angular role input optional and compute tone === 'danger' ? 'alert' : 'status' when it is not set.",
+  "repro": "<scratch>/audit/work/feedback-status/02-probe.js then 03-compare.js en-ltr.light printed for #a2 (tone=danger, no role): 'role: va=alert ; re=alert ; vu=alert ; an=status'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/presentation.ts:38, packages/react/src/display.tsx:72-73, packages/vue/src/display.ts:71; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) Angular `@Input() role: 'alert' | 'status' | 'region' | 'group' = 'status';` vs React `role={role ?? (tone === 'danger' ? 'alert' : 'status')}`. Same usage tone=danger, no role (#a1): role va=alert ; re=alert ; vu=alert ; an=status. Angular aria snapshot shows '- status:' where the others show '- alert:'. Expectation is backed by packages/react/README.md:86 'Default role is status (danger: alert)'."
+ },
+ {
+  "id": "feedback-status-2",
+  "group": "feedback-status",
+  "subject": "alert",
+  "adapters": [
+   "react",
+   "vue",
+   "vanilla",
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Dismissible alerts exist only in Angular",
+  "description": "Angular exposes dismissible, closeLabel and a dismissed output and renders a close button. React and Vue Alert have no dismiss prop, event or slot, and vanilla has no alert dismiss controller (createToastRegion only handles [data-hw-dismiss] inside [data-hw-toast]). The in-repo DGA checklist row 75 asks for closeable interactive alerts.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 33,
+    "quote": "@if (dismissible) {<button class=\"hw-button\" data-variant=\"ghost\" type=\"button\" [attr.aria-label]=\"closeLabel\" (click)=\"dismissed.emit()\">"
+   },
+   {
+    "file": "packages/react/src/display.tsx",
+    "line": 66,
+    "quote": "export interface AlertProps extends ComponentPropsWithRef<'div'> {"
+   },
+   {
+    "file": "packages/vue/src/display.ts",
+    "line": 70,
+    "quote": "props: { tone: { type: String as PropType<Tone>, default: 'info' }, title: String, variant: String as PropType<'default' | 'outline' | 'minimal'> },"
+   },
+   {
+    "file": "docs/dga-checklist-review.md",
+    "line": 54,
+    "quote": "75 — Follow recommended notification behavior (e.g., closeable interactive alerts)."
+   }
+  ],
+  "expected": "The same dismiss capability (prop, localized label, event) in all four adapters.",
+  "fix": "Add dismissible/closeLabel/onDismiss (React), dismissible/closeLabel/@dismiss (Vue) and a documented vanilla recipe or controller.",
+  "repro": "02-probe.js: Angular probe renders '<button data-variant=\"ghost\" type=\"button\" class=\"hw-button\" aria-label=\"Dismiss\">' for #a7; the React/Vue/vanilla alert HTML contains no button. 07-interact.js (angular): Enter and Space on the button produced 'dismissed;dismissed;'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/presentation.ts:33,39-41; React AlertProps display.tsx:66-70; Vue Alert props display.ts:70; grep data-hw-dismiss in packages/vanilla/src (only disclosures.ts toast region lines 116,162); docs/dga-checklist-review.md:54 Only Angular has dismissible/closeLabel/dismissed. React AlertProps has only tone/variant/title; Vue props are tone/title/variant with no emits; vanilla handles [data-hw-dismiss] only in the toast region. Checklist row 75 text quoted correctly ('closeable interactive alerts'). Angular dismiss works by keyboard (05-dismiss-focus.js: Enter on the button removed the alert)."
+ },
+ {
+  "id": "feedback-status-3",
+  "group": "feedback-status",
+  "subject": "alert",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "a11y",
+  "title": "Angular Alert inputs named role and title leak onto the host: nested role=alert and a native tooltip",
+  "description": "hw-alert declares inputs called role and title. With static attributes (the form used by the guide and README) Angular also leaves them on the <hw-alert> host. role=\"alert\" therefore yields an alert nested in an alert, role=\"group\" with aria-label yields a named outer group and an unnamed inner group, and title=\"...\" gives the whole alert a native browser tooltip repeating the heading. The same title collision applies to hw-empty-state.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 37,
+    "quote": "@Input() title = '';"
+   },
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 33,
+    "quote": "<div class=\"hw-alert\" [attr.data-tone]=\"tone\" [attr.data-variant]=\"variant\" [attr.role]=\"role\">"
+   },
+   {
+    "file": "apps/playground/src/project-examples.ts",
+    "line": 455,
+    "quote": "angular = `<hw-alert tone=\"success\" title=\"${label}\">"
+   }
+  ],
+  "expected": "One live region / one role per alert and no native title tooltip (WAI-ARIA: live regions should not be nested; React and Vue render a single div with one role and no title attribute).",
+  "fix": "Rename the inputs (for example heading / liveRole) or apply role on the host via host bindings and render no inner role; strip the host title attribute.",
+  "repro": "07-interact.js (angular) aria snapshot: '- alert:\\n  - alert:\\n    - strong: Bound title' and '- group \"Static error\":\\n  - group: Body text'. 12-edge.js printed for Angular: 'host title property=\"Title\" host tag=HW-ALERT' (React/Vue: 'host title property=\"\" host tag=DIV'). Bound [role]/[title] do not leak: '<hw-alert id=\"x7\" tone=\"danger\"><div class=\"hw-alert\" ... role=\"alert\">'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read presentation.ts:33,37-38 and apps/playground/src/project-examples.ts:455; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) with <hw-alert id=\"a2\" role=\"alert\" title=\"Static title\"> Static role/title stay on the host as well as feeding the inputs. Angular #a2: hostRole=alert, hostTitle='Static title', nested roles inside host ['alert']; aria snapshot: '- alert \"Static title\":\\n    - alert:' i.e. a nested alert, and the host title also becomes the outer alert's accessible name. Angular #a1/#a3 (title only) carry host title='Danger title'/'Para title' (native tooltip). React/Vue: single div, hostTitle null. The guide's own Angular example uses static title= (project-examples.ts:455). Did not re-check the hw-empty-state title collision separately (same pattern: presentation.ts:143 `@Input({required: true}) title`)."
+ },
+ {
+  "id": "feedback-status-4",
+  "group": "feedback-status",
+  "subject": "progress",
+  "adapters": [
+   "styles",
+   "vanilla",
+   "react",
+   "vue",
+   "angular"
+  ],
+  "dimension": "visual",
+  "title": "Indeterminate progress has no visual indication; it is pixel-identical to 0%",
+  "description": "progress.hw-progress sets appearance:none, which removes the browser's animated indeterminate bar, and the stylesheet has no :indeterminate rule. An indeterminate hw-progress is a static empty track in every adapter, although the guide and READMEs document indeterminate as a supported variant.",
+  "evidence": [
+   {
+    "file": "packages/styles/src/components.css",
+    "line": 290,
+    "quote": "progress.hw-progress { appearance: none; }"
+   },
+   {
+    "file": "apps/playground/src/component-native-guides.ts",
+    "line": 170,
+    "quote": "variants: ['determinate', 'indeterminate', 'data-size=sm / lg']"
+   },
+   {
+    "file": "packages/react/README.md",
+    "line": 90,
+    "quote": "omit value for indeterminate."
+   }
+  ],
+  "expected": "A visible, distinguishable indeterminate state (native <progress> without the class animates; guide lists indeterminate as a variant), with a reduced-motion fallback.",
+  "fix": "Add .hw-progress:indeterminate styling (moving segment, static striped fallback under prefers-reduced-motion).",
+  "repro": "<scratch>/audit/work/feedback-status/10-static.js printed in light, dark and forced colours: 'hw-progress indeterminate: frame A == frame B (no motion): true | identical pixels to value=0 bar: true'; grep ':indeterminate' in packages/styles/src finds only checkbox rules.",
+  "verdict": "confirmed",
+  "verifierNote": "grep :indeterminate in packages/styles/src (only checkbox rules in nic-choices.css); components.css:289-293; ran <scratch>/audit/verify/feedback-status/04-indeterminate.js in the guide vanilla editor Printed: 'hw-progress indeterminate vs value=0: 4/3537 px differ', 'hw-progress indeterminate frame A vs B (500ms): 0/3537 px differ', 'native progress (no class) indeterminate frame A vs B (500ms): 698/6817 px differ'. So the styled indeterminate bar is static and visually the same as 0% (not byte-identical: 4 edge pixels differ), while an unstyled native progress animates. Same in all four adapters (02-probe _px p2_static=true for va/re/vu/an). Guide lists 'indeterminate' as a variant (component-native-guides.ts:170)."
+ },
+ {
+  "id": "feedback-status-5",
+  "group": "feedback-status",
+  "subject": "skeleton",
+  "adapters": [
+   "styles",
+   "tokens",
+   "vanilla",
+   "react",
+   "vue",
+   "angular"
+  ],
+  "dimension": "visual",
+  "title": "DGA dark mode: skeletons and progress/meter tracks are invisible on surface backgrounds",
+  "description": "In the DGA dark palette surface and surface-muted are the same colour. Skeleton, progress track and meter track all use surface-muted, so on any surface-coloured background (cards, dialogs, the guide preview) the skeleton disappears completely and progress/meter show only the filled part. On canvas (#111927) the difference is about 1.27:1.",
+  "evidence": [
+   {
+    "file": "packages/tokens/src/tokens.css",
+    "line": 230,
+    "quote": "--hw-palette-dark-surface: #1F2A37;"
+   },
+   {
+    "file": "packages/tokens/src/tokens.css",
+    "line": 232,
+    "quote": "--hw-palette-dark-surface-muted: #1F2A37;"
+   },
+   {
+    "file": "packages/styles/src/components.css",
+    "line": 295,
+    "quote": ".hw-skeleton { display: block; min-block-size: 1rem; border-radius: var(--hw-radius-sm); background: var(--hw-color-surface-muted);"
+   }
+  ],
+  "expected": "Loading placeholders and tracks perceivable in dark mode (WCAG 1.4.11 for the progress/meter track that conveys the remaining range; light mode uses #F3F4F6 on #FFFFFF).",
+  "fix": "Give the dark DGA palette a distinct surface-muted, or use a dedicated track/skeleton token with contrast against both surface and canvas.",
+  "repro": "10-static.js dark: 'body bg rgb(31, 42, 55)' and 'sk 476x16 bg=rgb(31, 42, 55) ... px@50%=30,41,55', 'zero 476x8 bg=rgb(31, 42, 55)'. Probe JSON (out/probe.react.en-rtl.dark.json): 's1 rgb(31, 42, 55)', 'p1 track rgb(31, 42, 55)', html bg 'rgb(31, 42, 55)'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/tokens/src/tokens.css:230-232 (and 1040-1042, 1276-1278), components.css:289,295; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) with MODES=dark Dark DGA: --hw-palette-dark-surface and -surface-muted are both #1F2A37. Probe dark (va/re/an): html bg rgb(31, 42, 55); skeleton s1 bg rgb(31, 42, 55); progress track bg rgb(31, 42, 55); pixel samples of s1 and of the empty part of p0/p1 all '31,42,55' - the skeleton and the tracks are invisible on the guide preview surface. Light: track #F3F4F6 on #FFFFFF. Expectation: WCAG 1.4.11 applies to the track that shows the remaining range; the skeleton is a visual-only loading cue that disappears."
+ },
+ {
+  "id": "feedback-status-6",
+  "group": "feedback-status",
+  "subject": "progress",
+  "adapters": [
+   "styles",
+   "vanilla",
+   "react",
+   "vue",
+   "angular"
+  ],
+  "dimension": "a11y",
+  "title": "Forced colours: the progress value is invisible",
+  "description": "In forced-colors mode the progress element only gets a CanvasText border; the ::-webkit-progress-value background is forced to the canvas colour, so 30%, 65% and 100% bars all render as identical empty outlines. The meter keeps a visible fill.",
+  "evidence": [
+   {
+    "file": "packages/styles/src/components.css",
+    "line": 332,
+    "quote": ".hw-progress, .hw-skeleton { border: 1px solid CanvasText; }"
+   },
+   {
+    "file": "packages/styles/src/components.css",
+    "line": 292,
+    "quote": ".hw-progress::-webkit-progress-value { border-radius: var(--hw-radius-full); background: var(--hw-color-primary);"
+   }
+  ],
+  "expected": "Progress value perceivable in forced colours (e.g. background: Highlight or forced-color-adjust on the value pseudo-element), as the meter already is.",
+  "fix": "Inside @media (forced-colors: active) set the value pseudo-elements to background: Highlight (or CanvasText).",
+  "repro": "10-static.js forced: 'v65 476x8 bg=rgb(255, 255, 255) ... px@10%=255,255,255 px@50%=255,255,255' (light mode gives px@10%=27,131,84); meter in the same run: 'mt ... px@10%=5,0,73'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read components.css:292,331-332; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) with forcedColors=active Forced colours (va/re/an): p1 (value 65) pixel samples at 2/10/50/90% = '255,255,255' everywhere, identical to p0 (0%) and p2 (indeterminate) (p2_eq_p0=true). The meter keeps a fill ('5,0,73' at 2%). The library explicitly styles forced-colours mode (components.css:325-332) but the progress value disappears."
+ },
+ {
+  "id": "feedback-status-7",
+  "group": "feedback-status",
+  "subject": "progress",
+  "adapters": [
+   "angular",
+   "react",
+   "vue"
+  ],
+  "dimension": "visual",
+  "title": "Angular Progress renders a visible label, clamps values and cannot be sized; React and Vue differ on all three",
+  "description": "The same call renders only a bar in React/Vue (label becomes aria-label) but a wrapping <label class=\"hw-stack\"> with visible text plus a duplicate aria-label in Angular (48 px tall instead of 8 px). Angular clamps value to 0..max and replaces an invalid max with 100; React and Vue pass raw values. data-size=sm|lg reaches the <progress> in React/Vue/vanilla but stays on the Angular host, and there is no size input.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 103,
+    "quote": "<label class=\"hw-stack\"><span>{{ label }}</span><progress class=\"hw-progress\" [attr.value]=\"value === null ? null : boundedValue\" [max]=\"safeMax\" [attr.aria-label]=\"label\"></progress></label>"
+   },
+   {
+    "file": "packages/react/src/display.tsx",
+    "line": 183,
+    "quote": "<progress {...props} max={max} className={cx('hw-progress', className)} aria-label={label} />"
+   },
+   {
+    "file": "packages/vue/src/display.ts",
+    "line": 182,
+    "quote": "h('progress', mergeProps(attrs, { class: 'hw-progress', 'aria-label': props.label, value: props.value, max: props.max }))"
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 272,
+    "quote": ".hw-progress[data-size='sm'] { block-size: 0.25rem; }"
+   }
+  ],
+  "expected": "Identical rendering and the same size option for the same inputs in every adapter.",
+  "fix": "Agree on one contract (visible label optional, size input, shared clamping) and implement it in all three adapters.",
+  "repro": "02-probe.js / 03-compare.js: Angular '<hw-progress id=\"p3\" label=\"Over\"><label class=\"hw-stack\"><span>Over</span><progress class=\"hw-progress\" max=\"100\" value=\"100\" ...' versus React '<progress id=\"p3\" value=\"150\" max=\"100\" class=\"hw-progress\" aria-label=\"Over\">'; '-- p4 ... h: va=4 ; re=4 ; vu=4 ; an=8'; host 'hw-progress 276x48'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read presentation.ts:103-110, display.tsx:182-183, vue display.ts:180-182, extended.css:272; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) Angular wraps in <label class=\"hw-stack\"><span>label</span><progress>: host height 48 vs 8 px (va/re/vu); labelWrap an=true others false. data-size=sm: ds va=sm re=sm vu=sm an=null, height 4/4/4/8. Value 150: attribute an=100 vs 150 elsewhere - but note the browser clamps progress.position to 1 in every adapter, so the clamping has no visible or accessible effect; the visible label and missing size are the real divergences."
+ },
+ {
+  "id": "feedback-status-8",
+  "group": "feedback-status",
+  "subject": "meter",
+  "adapters": [
+   "react",
+   "vue",
+   "angular"
+  ],
+  "dimension": "behavior",
+  "title": "Meter defaults differ in every adapter: the same value renders full, 10% green, or 10% red",
+  "description": "React sets no defaults, so the browser's max=1 applies and value=10 is a full bar. Vue defaults min=0, max=100 and leaves low/high/optimum unset (10%, optimum colour). Angular defaults low=25, high=75, optimum=100, which puts value 10 in the worst region and paints it with the danger colour. Angular also renders a visible label inside label.hw-meter and puts no class on the <meter>, while React/Vue render only meter.hw-meter with aria-label. Vue requires value; React does not.",
+  "evidence": [
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 30,
+    "quote": "return <meter {...props} aria-label={label} className={cx('hw-meter', className)} />;"
+   },
+   {
+    "file": "packages/vue/src/content.ts",
+    "line": 220,
+    "quote": "max: { type: Number, default: 100 },"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 39,
+    "quote": "@Input() low = 25; @Input() high = 75; @Input() optimum = 100;"
+   }
+  ],
+  "expected": "One documented set of defaults across adapters (packages/vue/README.md:238 and packages/angular/README.md:170 both describe 'native' meter semantics).",
+  "fix": "Default min=0/max=100 in React, remove the Angular low/high/optimum defaults, and align the visible-label behaviour.",
+  "repro": "02-probe.js with <Meter label=\"Plain\" value=10> in each adapter printed: react '\"m1\":{\"value\":1,\"min\":0,\"max\":1,...', vue '\"m1\":{\"value\":10,\"min\":0,\"max\":100,\"low\":0,\"high\":100,\"optimum\":50', angular '\"m1\":{\"value\":10,\"min\":0,\"max\":100,\"low\":25,\"high\":75,\"optimum\":100'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read react expanded-content.tsx:29-30, vue content.ts:213-239, angular content.ts:38-39; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) with Meter label=Plain value=10 Measured meter m1: React value=1 min=0 max=1 high=1 optimum=0.5 (no default max, native max=1: full bar, sample '6,118,71' at 2/10/50%); Vue value=10 max=100 low=0 high=100 optimum=50 (green 10%); Angular low=25 high=75 optimum=100 -> 10% bar painted '180,35,24' (danger red). Angular also renders a visible label inside label.hw-meter (height 41 vs 12) and the meter has no hw-meter class. Vue requires value (content.ts `value: { type: Number, required: true }`), React does not."
+ },
+ {
+  "id": "feedback-status-9",
+  "group": "feedback-status",
+  "subject": "skeleton",
+  "adapters": [
+   "angular",
+   "react",
+   "vue"
+  ],
+  "dimension": "api",
+  "title": "Skeleton API differs: Angular has width/height inputs but cannot use the circle/text variants; React and Vue are the reverse",
+  "description": "Angular sizes through width/height inputs (defaults 100% and 1rem, written as inline styles) and has no variant input; data-variant placed on <hw-skeleton> stays on the host, so the documented circle and text variants are unreachable. React and Vue have no size props (style/class only) but forward data-variant to the span.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 112,
+    "quote": "<span class=\"hw-skeleton\" aria-hidden=\"true\" [style.inline-size]=\"width\" [style.block-size]=\"height\"></span>"
+   },
+   {
+    "file": "packages/react/src/display.tsx",
+    "line": 185,
+    "quote": "return <span aria-hidden=\"true\" {...props} className={cx('hw-skeleton', className)} />;"
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 272,
+    "quote": ".hw-skeleton[data-variant='circle'] { aspect-ratio: 1; border-radius: 50%; }"
+   }
+  ],
+  "expected": "Same sizing and variant options in all adapters (guide lists variants 'Default block', 'data-variant=text / circle').",
+  "fix": "Add a variant input to Angular and width/height (or a shared size contract) to React and Vue.",
+  "repro": "02-probe.js: Angular '<hw-skeleton id=\"s2\" width=\"4rem\" height=\"4rem\" data-variant=\"circle\"><span aria-hidden=\"true\" class=\"hw-skeleton\" style=\"inline-size: 4rem; block-size: 4rem;\">'; 03-compare.js '-- s2 ... radius: va=50% ; re=50% ; vu=50% ; an=4px'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read presentation.ts:112-115, display.tsx:184-185, vue display.ts:184, extended.css:272; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) s2 data-variant=circle: dv va/re/vu=circle, an=null (stays on host); radius va=50% re=50% vu=50% an=4px. Angular has width/height inputs and no variant input; React/Vue have no size props (style only)."
+ },
+ {
+  "id": "feedback-status-10",
+  "group": "feedback-status",
+  "subject": "spinner",
+  "adapters": [
+   "angular",
+   "react",
+   "vue"
+  ],
+  "dimension": "api",
+  "title": "Angular Spinner cannot be sized and renders a different DOM",
+  "description": "React, Vue and vanilla put role=status on span.hw-spinner and forward data-size (sm/lg). Angular renders span[role=status] > span.hw-spinner[aria-hidden] + sr-only text, has no size input, and data-size on <hw-spinner> never reaches .hw-spinner, so the lg and sm sizes are unavailable.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 118,
+    "quote": "<span role=\"status\"><span class=\"hw-spinner\" aria-hidden=\"true\"></span><span class=\"hw-sr-only\">{{ label }}</span></span>"
+   },
+   {
+    "file": "packages/vue/src/display.ts",
+    "line": 185,
+    "quote": "h('span', mergeProps(attrs, { class: 'hw-spinner', role: 'status' }), [h('span', { class: 'hw-sr-only' }, props.label)])"
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 272,
+    "quote": ".hw-spinner[data-size='lg'] { inline-size: 2rem; block-size: 2rem; border-width: 3px; }"
+   }
+  ],
+  "expected": "Same structure and size options in each adapter (guide variants: 'data-size=sm / lg for the CSS spinner').",
+  "fix": "Add a size input to hw-spinner and align the DOM with the other adapters.",
+  "repro": "02-probe.js / 03-compare.js for data-size=lg: '-- sp2 ... border: va=3px ... ; re=3px ... ; vu=3px ... ; an=2px' and Angular HTML '<hw-spinner id=\"sp2\" label=\"Loading requests\" data-size=\"lg\"><span role=\"status\"><span aria-hidden=\"true\" class=\"hw-spinner\"></span>'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read presentation.ts:118-119, vue display.ts:185, display.tsx:186-187; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) Angular renders span[role=status] > span.hw-spinner[aria-hidden] + sr-only; no size input. sp2 data-size=lg: ds va/re/vu=lg an=null; border 3px vs 2px; inner scroll box 26x26 vs 16x16. (Bounding widths vary because the ring is rotating; border width is the reliable measure.)"
+ },
+ {
+  "id": "feedback-status-11",
+  "group": "feedback-status",
+  "subject": "empty-state",
+  "adapters": [
+   "react",
+   "vue",
+   "angular",
+   "styles"
+  ],
+  "dimension": "visual",
+  "title": "EmptyState icon: unstyled in React and Vue, misplaced in Angular",
+  "description": "The stylesheet styles the icon only as a direct child svg of .hw-empty. React and Vue wrap the icon in <span aria-hidden>, so the rule never matches and the icon renders at its raw size without the 72 px rounded muted tile. Angular has no icon or action slot; projected content always lands after the description, so an icon appears below the text (and is not aria-hidden unless the author adds it), although there it does receive the styling.",
+  "evidence": [
+   {
+    "file": "packages/styles/src/components.css",
+    "line": 278,
+    "quote": ".hw-empty > svg { inline-size: 2.5rem; block-size: 2.5rem; padding: var(--hw-space-4);"
+   },
+   {
+    "file": "packages/react/src/display.tsx",
+    "line": 222,
+    "quote": "{icon && <span aria-hidden=\"true\">{icon}</span>}<h3>{title}</h3>"
+   },
+   {
+    "file": "packages/vue/src/display.ts",
+    "line": 217,
+    "quote": "[slots.icon && h('span', { 'aria-hidden': 'true' }, slots.icon()), h('h3', {}, props.title),"
+   },
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 141,
+    "quote": "<section class=\"hw-empty\"><h3>{{ title }}</h3>@if (description) {<p>{{ description }}</p>}<ng-content /></section>"
+   }
+  ],
+  "expected": "Icon above the heading with the stylesheet's icon treatment in every adapter (vanilla markup with a direct-child svg gets it).",
+  "fix": "Give the wrapper a class styled by the stylesheet (e.g. .hw-empty-icon) and add [hwEmptyIcon]/[hwEmptyAction] projection slots to Angular.",
+  "repro": "02-probe.js / 03-compare.js: '-- e1 svg ... w: va=72 ; re=24 ; vu=24 ; an=72' and 'bg: va=rgb(243, 244, 246) ; re=rgba(0, 0, 0, 0) ; vu=rgba(0, 0, 0, 0) ; an=rgb(243, 244, 246)'; Angular HTML order '<h3>No requests</h3><p>Try another search.</p><svg ...><button ...>'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read components.css:278, display.tsx:222, vue display.ts:217, presentation.ts:141; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) e1 svg: vanilla 72x72 bg rgb(243,244,246) parent div; React/Vue 24x24 transparent inside span[aria-hidden]; Angular 72x72 styled but child order 'h3,p,svg,button' (icon below text) and not aria-hidden. Vanilla order 'svg,h3,p,button'."
+ },
+ {
+  "id": "feedback-status-12",
+  "group": "feedback-status",
+  "subject": "chip",
+  "adapters": [
+   "angular",
+   "react",
+   "vue",
+   "vanilla"
+  ],
+  "dimension": "visual",
+  "title": "Removable chips look different: Angular uses a plain button, React/Vue/guide vanilla use .hw-button",
+  "description": "React and Vue render the remove control through Button (class hw-button, ghost, sm); the guide's vanilla recipe does the same. Angular renders a bare <button>. Result: removable chips are 38 px tall in React/Vue/vanilla and 32 px in Angular, the button is 24x32 versus 24x24, and a disabled remove button gets the grey disabled-button fill only outside Angular. In React/Vue a removable chip is taller than a non-removable one in the same row.",
+  "evidence": [
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 20,
+    "quote": "{onRemove && <Button variant=\"ghost\" size=\"sm\" disabled={disabled} aria-label={removeLabel} onClick={onRemove}>"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 30,
+    "quote": "@if (removable) {<button type=\"button\" [disabled]=\"disabled\" [attr.aria-label]=\"removeLabel\" (click)=\"removed.emit()\">"
+   },
+   {
+    "file": "packages/styles/src/components.css",
+    "line": 242,
+    "quote": ".hw-chip button { display: inline-grid; place-items: center; inline-size: 1.5rem; block-size: 1.5rem; padding: 0;"
+   }
+  ],
+  "expected": "Same geometry in all adapters; the stylesheet's own rule targets a 1.5rem square button (apps/playground/src/component-expanded-guides.ts:246 documents a plain button).",
+  "fix": "Use one remove-button structure everywhere (plain button styled by .hw-chip button) and update the vanilla recipe.",
+  "repro": "03-compare.js en-ltr.light: '-- c2 ... h: va=38 ; re=38 ; vu=38 ; an=32', '-- c2 button ... h: va=32 ; re=32 ; vu=32 ; an=24', '-- c3 button ... bg: va=rgb(229, 231, 235) ; re=rgb(229, 231, 235) ; vu=rgb(229, 231, 235) ; an=rgba(0, 0, 0, 0)'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read expanded-content.tsx:20, angular content.ts:30, vue content.ts:85-100, components.css:242; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) Removable chip c2 height va(plain button)=32 ; re=38 ; vu=38 ; an=32; button React/Vue class hw-button 24x32, Angular plain 24x24. Disabled c3 button bg React/Vue rgb(229,231,235), Angular transparent. Vanilla with .hw-button (c2b, as the editor's default vanilla project uses) = 38. The guide's usage snippet (component-expanded-guides.ts:246) uses a plain button, matching Angular and the .hw-chip button rule."
+ },
+ {
+  "id": "feedback-status-13",
+  "group": "feedback-status",
+  "subject": "skeleton",
+  "adapters": [
+   "guide",
+   "vanilla",
+   "react",
+   "vue",
+   "angular"
+  ],
+  "dimension": "a11y",
+  "title": "The documented skeleton loading pattern uses a prohibited aria-label and announces nothing",
+  "description": "Every skeleton example in the guide (usage snippet and all four editor projects) wraps the skeleton in <div aria-busy=\"true\" aria-label=\"...\"> with no role. aria-label is prohibited on a generic div, so the name is not exposed, and aria-busy alone produces no announcement. No adapter provides a loading/busy wrapper, so this is the only pattern consumers are given.",
+  "evidence": [
+   {
+    "file": "apps/playground/src/project-examples.ts",
+    "line": 379,
+    "quote": "react = `<div aria-busy=\"true\" aria-label=\"${t(\"Loading content\", \"تحميل المحتوى\")}\"><Skeleton style={{width:'100%',height:'4rem'}} /></div>`;"
+   },
+   {
+    "file": "apps/playground/src/component-native-guides.ts",
+    "line": 181,
+    "quote": "<div aria-busy=\"true\" aria-label=\"Loading request details\">"
+   }
+  ],
+  "expected": "A valid loading announcement (role=status with visible or sr-only text, or a named region) per WCAG 4.1.2 / 4.1.3 and components.json note 'Announce the containing loading state'.",
+  "fix": "Change the recipe to role=\"status\" with a visually hidden label (or add role=\"region\"), and consider a shared loading wrapper in the adapters.",
+  "repro": "<scratch>/audit/work/feedback-status/11-defaults.js (IDS=skeleton) printed for vanilla, react, vue and angular: 'axe=[\"aria-prohibited-attr (serious, 1) <div aria-busy=\\\"true\\\" aria-label=...'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read project-examples.ts:379-381, component-native-guides.ts:181, components.json skeleton notes; ran <scratch>/audit/verify/feedback-status/03-skeleton-axe.js (axe-core 4.14 injected into each default skeleton example) All four default examples: axe 'aria-prohibited-attr (serious) <div aria-busy=\"true\" aria-label=\"Loading content\">' (vanilla: 'Loading request details'). Accessibility tree of the preview root is just '- main' (React/Vue/Angular) or empty (vanilla): nothing is exposed while loading. components.json note: 'Announce the containing loading state rather than every decorative placeholder.' The defect is in the documented pattern rather than the Skeleton component, but it is the only loading pattern offered."
+ },
+ {
+  "id": "feedback-status-14",
+  "group": "feedback-status",
+  "subject": "badge",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular wrapper components do not forward class, id, aria-* or data-* to the rendered element",
+  "description": "All eight Angular components in this family render an extra unstyled inline host (<hw-badge>, <hw-alert>, <hw-chip>, <hw-progress>, <hw-meter>, <hw-skeleton>, <hw-spinner>, <hw-empty-state>) around the real element. Attributes written on the host stay there. React and Vue forward native attributes and refs to the styled element. Consequences verified: an aria-label or extra class on a badge is not on .hw-badge, data-variant/data-size on the host are ignored, and hosts become block flex items in .hw-cluster/.hw-badges (badge row 25.6 px instead of 24 px).",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 30,
+    "quote": "template: `<span class=\"hw-badge\" [attr.data-tone]=\"tone\" [attr.data-variant]=\"variant\"><ng-content /></span>`"
+   },
+   {
+    "file": "packages/react/src/display.tsx",
+    "line": 65,
+    "quote": "return <span {...props} className={cx('hw-badge', className)} data-tone={tone}"
+   },
+   {
+    "file": "packages/vue/src/display.ts",
+    "line": 67,
+    "quote": "h('span', mergeProps(attrs, { class: 'hw-badge', 'data-tone': props.tone, 'data-variant': props.variant ?? attrs['data-variant'] }), slots.default?.())"
+   }
+  ],
+  "expected": "Equivalent attribute passthrough (docs/nic-badges.md:41-43: 'React/Vue continue accepting native data attributes'); in Angular this needs attribute-selector directives or host-level classes.",
+  "fix": "Apply the hw- class and data attributes on the host (host bindings with display set by the stylesheet) or offer attribute directives such as span[hwBadge].",
+  "repro": "02-probe.js: Angular '<hw-badge id=\"b4\" aria-label=\"Three unread\" data-variant=\"outline\" class=\"extra\"><span class=\"hw-badge\" data-tone=\"neutral\" data-variant=\"soft\">3</span></hw-badge>' versus React '<span id=\"b4\" aria-label=\"Three unread\" data-variant=\"outline\" class=\"hw-badge extra\" data-tone=\"neutral\">'. 12-edge.js: Angular '.hw-badges row h=25.625 children: hw-badge block 24px, hw-badge block 25.625px' versus React 'row h=24'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read presentation.ts:30, display.tsx:65, vue display.ts:67; ran <scratch>/audit/verify/feedback-status/02-probe.js (sources.js; output <scratch>/audit/verify/feedback-status/out/probe.light.json, probe.media.json, compared with cmp.js) b1 with class=extra aria-label='Three unread' data-variant=outline: React/Vue/vanilla .hw-badge carries all three; Angular .hw-badge has aria-label=null, class 'hw-badge', data-variant 'soft' (host keeps them, background differs rgb(249,250,251) vs transparent). Same for progress/skeleton/spinner/chip data-size/data-variant (see findings 7, 9, 10, 15). The '.hw-badges row 25.6 px' sub-claim was not re-checked."
+ },
+ {
+  "id": "content-display-1",
+  "group": "content-display",
+  "subject": "card",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular hw-card cannot forward id, aria-* or class to the rendered article/link; the article loses its accessible name",
+  "description": "The Angular card renders its <article>/<a> inside the <hw-card> host. Attributes a consumer puts on <hw-card> (id, aria-label, aria-labelledby, class, data-*) stay on the custom host element. React spreads ...props onto the root element and Vue merges attrs onto it, so in those adapters the article is named; in Angular it is an unnamed article and aria-label sits on a generic custom element where it is not exposed.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 19,
+    "quote": "<article class=\"hw-card\" [attr.data-variant]=\"variant\" [attr.data-disabled]=\"disabled || null\" (click)=\"guard($event)\">"
+   },
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 21,
+    "quote": "export class HwCardComponent"
+   },
+   {
+    "file": "packages/react/src/display.tsx",
+    "line": 54,
+    "quote": "...props, className: cx('hw-card', action && 'hw-card-action', className),"
+   },
+   {
+    "file": "packages/vue/src/display.ts",
+    "line": 53,
+    "quote": "return h(action ? 'a' : 'article', mergeProps(rest, {"
+   }
+  ],
+  "expected": "Same as React (display.tsx:54) and Vue (display.ts:53): native attributes reach the article/anchor, or Angular exposes explicit inputs (ariaLabel, ariaLabelledby, id) forwarded to the inner element.",
+  "fix": "Make the host the card (attribute selector such as article[hwCard], a[hwCard]) or add forwarded inputs for id/aria-label/aria-labelledby/aria-describedby; document which attributes land where.",
+  "repro": "node <scratch>/audit/work/content-display/v2/check.js (scenario <scratch>/audit/work/content-display/scenarios/angular.ts, section card-attrs: <hw-card id=\"c5\" aria-label=\"Labelled card\" class=\"extra\" data-foo=\"1\">). Output facts.cardAttrsIdOn: vanilla/react/vue \"article.hw-card extra\", angular \"hw-card.extra\"; aria snapshot card-attrs: react/vue \"- article \\\"Labelled card\\\"\", angular \"- article:\" (no name).",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/presentation.ts:14-29 (hw-card template renders <article class=\"hw-card\"> / <a class=\"hw-card hw-card-action\"> inside the host; inputs only variant, href, target, rel, disabled; no host bindings or aria inputs), react/src/display.tsx:51-54 (...props spread onto the element), vue/src/display.ts:46-53 (inheritAttrs:false + mergeProps(rest,...)). Ran node <scratch>/audit/verify/content-display/check.js (sources <scratch>/audit/verify/content-display/react.jsx, vue.vue, angular.ts run in the guide editor; output <scratch>/audit/verify/content-display/check.json) Same markup <Card id=\"c5\" aria-label=\"Labelled card\" class=\"extra\"> in each adapter. Printed cardIdOn: react \"article.hw-card extra\", vue \"article.extra hw-card\", angular \"hw-card.extra\"; cardInner angular \"article aria-label=null id=\". Aria snapshot: react/vue \"- article \\\"Labelled card\\\"\", angular \"- article:\" (unnamed). Expectation (attribute forwarding to the rendered element) is what React and Vue do; the Angular README only documents \"hw-card; project [hwCardHeader], body, [hwCardFooter]\" and does not say where attributes land."
+ },
+ {
+  "id": "content-display-7",
+  "group": "content-display",
+  "subject": "avatar-group",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular hw-avatar-group drops member initials, size and variant",
+  "description": "Angular types members as {name; src?} and binds only [name] and [src] on each hw-avatar, so explicit initials, size and variant are ignored. React spreads each item into Avatar and Vue spreads it into Avatar, so the same data renders \"RC\" and a 64px avatar there but \"Rc\" and 40px in Angular.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 40,
+    "quote": "<hw-avatar [name]=\"avatar.name\" [src]=\"avatar.src || ''\" />"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 41,
+    "quote": "@Input() avatars: readonly {name: string; src?: string}[] = [];"
+   },
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 37,
+    "quote": "{visible.map((item, index) => <Avatar key={index} {...item} />)}"
+   },
+   {
+    "file": "packages/vue/src/content.ts",
+    "line": 273,
+    "quote": ".map((item, index) => h(Avatar, { ...item, key: index })),"
+   }
+  ],
+  "expected": "Same member rendering as React expanded-content.tsx:37 and Vue content.ts:273.",
+  "fix": "Type avatars as the full avatar input set and bind initials/size/variant.",
+  "repro": "node <scratch>/audit/work/content-display/v2/check.js with members [{name:'Request coordinator', initials:'RC'},{name:'Service reviewer', size:'64'},...]: facts.group react \"RC/40x40,Sr/64x64,+2/40x40\", vue same, angular \"Rc/40x40,Sr/40x40,+2/40x40\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/content.ts:40-41 (template binds only [name] and [src]; avatars typed {name; src?}) against angular/src/presentation.ts:122-127 (HwAvatarComponent does have size, variant and initials inputs, so the group simply does not pass them), react/src/expanded-content.tsx:37 ({...item}) and vue/src/content.ts:273 ({...item}). Ran node <scratch>/audit/verify/content-display/check.js (sources <scratch>/audit/verify/content-display/react.jsx, vue.vue, angular.ts run in the guide editor; output <scratch>/audit/verify/content-display/check.json) members [{name:\"Request coordinator\", initials:\"RC\"},{name:\"Service reviewer\", size:\"64\"},...], max 3. Printed group: react \"RC/40,Sr/64,Dl/40,+1/40\", vue identical, angular \"Rc/40,Sr/40,Dl/40,+1/40\". Explicit initials and size are dropped in Angular."
+ },
+ {
+  "id": "content-display-11",
+  "group": "content-display",
+  "subject": "description-list",
+  "adapters": [
+   "vue",
+   "angular",
+   "react"
+  ],
+  "dimension": "visual",
+  "title": "Description list default layout differs: Vue defaults to horizontal, Angular to stacked, React has no variant prop",
+  "description": "The same items render as a two-column grid in Vue (variant defaults to \"horizontal\") and as stacked rows in React, Angular and vanilla. React can only set data-variant through a raw attribute.",
+  "evidence": [
+   {
+    "file": "packages/vue/src/content.ts",
+    "line": 122,
+    "quote": "default: \"horizontal\","
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 33,
+    "quote": "@Input() variant: 'stacked' | 'horizontal' = 'stacked';"
+   },
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 22,
+    "quote": "export interface DescriptionListProps extends ComponentPropsWithRef<'dl'> { items: readonly DescriptionItem[] }"
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 202,
+    "quote": ".hw-description-list[data-variant='horizontal'] > div { display: grid; grid-template-columns: minmax(7rem, 1fr) minmax(0, 2fr);"
+   }
+  ],
+  "expected": "Same default in every adapter (vanilla markup without data-variant is stacked; guide component-layout-guides.ts:25 lists \"Default stacked terms\").",
+  "fix": "Default Vue to stacked (undefined), add a typed variant prop to React.",
+  "repro": "node <scratch>/audit/work/content-display/v2/check.js (760px): facts.dl vanilla/react \"variant=null display=block h=164\", angular \"variant=stacked display=block h=164\", vue \"variant=horizontal gridcols=233.328px 466.672px display=grid h=114\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/vue/src/content.ts:120-123 (variant default \"horizontal\"), angular/src/content.ts:33 (variant = \"stacked\"), react/src/expanded-content.tsx:22-23 (no variant prop; data-variant only via ...props passthrough), styles/src/extended.css:202 (horizontal grid) and :284-285 (horizontal collapses to one column below 40rem). Ran node <scratch>/audit/verify/content-display/dl.js (iframe widened to 800px because the guide preview iframe is 540px wide, under the 40rem breakpoint). Same items, no variant. At 540px all three are visually stacked (h=164) although Vue already emits data-variant=\"horizontal\". At 800px printed: react \"variant=null display=block cols=none h=164\", vue \"variant=horizontal display=grid cols=246px 492px h=114\". Angular emits data-variant=\"stacked\" (renders stacked). Guide lists \"Default stacked terms\" (apps/playground/src/component-layout-guides.ts:25). React can still set data-variant=\"horizontal\" as a raw attribute, so the React gap is a missing typed prop, not a missing capability."
+ },
+ {
+  "id": "content-display-13",
+  "group": "content-display",
+  "subject": "stat",
+  "adapters": [
+   "react",
+   "angular",
+   "vue"
+  ],
+  "dimension": "behavior",
+  "title": "Stat number formatting differs: Vue formats numeric values, React and Angular print them raw",
+  "description": "Vue passes numeric values through core formatNumber (locale prop, default ar-SA, Latin digits): 1234567.5 shows as \"1,234,567.5\". React renders value as given and Angular interpolates it, showing \"1234567.5\". Angular has no locale input. The guide describes React only (\"caller-formatted value\").",
+  "evidence": [
+   {
+    "file": "packages/vue/src/content.ts",
+    "line": 162,
+    "quote": "? formatNumber(props.value, { locale: props.locale })"
+   },
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 25,
+    "quote": "<dd className=\"hw-stat-value\">{value}</dd>"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 34,
+    "quote": "<strong class=\"hw-stat-value\">{{ value }}</strong>"
+   },
+   {
+    "file": "apps/playground/src/component-expanded-guides.ts",
+    "line": 255,
+    "quote": "api: api(['label / value', 'React required content', 'Metric name and caller-formatted value.']"
+   }
+  ],
+  "expected": "Identical output for the same input in every adapter.",
+  "fix": "Either format numbers in all adapters (with a locale input) or in none, and document it.",
+  "repro": "node <scratch>/audit/work/content-display/v2/check.js with value 1234567.5: facts.statValue react \"dd:1234567.5\", vue \"strong:1,234,567.5\", angular \"strong:1234567.5\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/vue/src/content.ts:151,160-163 (locale default \"ar-SA\"; numbers go through formatNumber), core/src/index.ts:73-75 (Intl.NumberFormat with numberingSystem latn), react/src/expanded-content.tsx:24-25 ({value} in dd), angular/src/content.ts:34-35 ({{ value }}, no locale input). Ran node <scratch>/audit/verify/content-display/check.js (sources <scratch>/audit/verify/content-display/react.jsx, vue.vue, angular.ts run in the guide editor; output <scratch>/audit/verify/content-display/check.json) value 1234567.5: printed stat react \"dd:1234567.5\", vue \"strong:1,234,567.5\", angular \"strong:1234567.5\". Same input, different visible output; only Vue has a locale prop."
+ },
+ {
+  "id": "content-display-14",
+  "group": "content-display",
+  "subject": "stat",
+  "adapters": [
+   "vue",
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Vue and Angular Stat cannot render the documented Saudi riyal amount pattern or rich trend content",
+  "description": "docs/saudi-riyal.md requires the decorative ⃁ symbol plus a localized currency name for assistive technology inside <bdi>. React value/trend accept ReactNode. Vue value is String|Number and trend is String; Angular value is string|number interpolated as text and Angular has no trend input at all (only projected content). A currency stat with a screen-reader currency name is therefore only possible in React.",
+  "evidence": [
+   {
+    "file": "packages/vue/src/content.ts",
+    "line": 149,
+    "quote": "value: { type: [String, Number], required: true },"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 35,
+    "quote": "export class HwStatComponent { @Input({required: true}) label = ''; @Input() value: string | number = ''; @Input() description = ''; @Input() tone = 'neutral'; }"
+   },
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 24,
+    "quote": "label: ReactNode; value: ReactNode; description?: ReactNode; trend?: ReactNode"
+   },
+   {
+    "file": "docs/saudi-riyal.md",
+    "line": 8,
+    "quote": "<bdi>200 <span class=\"hw-riyal\" aria-hidden=\"true\">⃁</span><span class=\"hw-sr-only\">ريال سعودي</span></bdi>"
+   }
+  ],
+  "expected": "Currency values per docs/saudi-riyal.md:8-12 in every adapter.",
+  "fix": "Add a value slot (Vue) / ng-template input or [hwStatValue] projection (Angular), or a currency option that renders the riyal pattern.",
+  "repro": "Source reading.",
+  "verdict": "corrected",
+  "verifierNote": "Read packages/vue/src/content.ts:145-170, angular/src/content.ts:34-35, react/src/expanded-content.tsx:24-25, docs/saudi-riyal.md:7-15. In the Vue scenario (<scratch>/audit/verify/content-display/vue.vue) passed a VNode (<bdi>200 <span class=\"hw-riyal\" aria-hidden>...<span class=\"hw-sr-only\">Saudi riyals</span></bdi>) as :value; ran node <scratch>/audit/verify/content-display/check.js (sources <scratch>/audit/verify/content-display/react.jsx, vue.vue, angular.ts run in the guide editor; output <scratch>/audit/verify/content-display/check.json) Accurate statement: Angular Stat cannot place rich content in the value (value: string | number is interpolated as text into <strong class=\"hw-stat-value\">; <ng-content> is projected after the description, outside the value) and has no trend input. Vue declares value as [String, Number] and trend as String, so the riyal pattern is not supported by its typed API, but at runtime a VNode value does render inside .hw-stat-value (printed statRiyal vue: <bdi>200 <span class=\"hw-riyal\" aria-hidden=\"true\">⃁</span><span class=\"hw-sr-only\">Saudi riyals</span></bdi>; no console warning was shown by the guide). So Vue can do it only by violating its declared prop type (vue-tsc would reject it); Angular cannot. docs/saudi-riyal.md describes the amount pattern generally (\"Keep a localized currency name available to assistive technology\"); it does not name Stat specifically."
+ },
+ {
+  "id": "content-display-16",
+  "group": "content-display",
+  "subject": "timeline",
+  "adapters": [
+   "react"
+  ],
+  "dimension": "visual",
+  "title": "React Timeline items lack the hw-timeline-item class, so item headings render larger and bolder than in other adapters",
+  "description": "Heading styles are scoped to .hw-timeline-item h3. Vue, Angular and vanilla add the class; React renders a bare <li>, so its h3 falls back to 18.72px/700 instead of 16px/500 and the timeline is markedly taller (guide capture: 435px vs 318px).",
+  "evidence": [
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 28,
+    "quote": "<li key={item.id} data-state={item.status} aria-current={item.status === 'active' ? 'step' : undefined}><h3>{item.title}</h3>"
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 204,
+    "quote": ".hw-timeline-item h3 { margin-block: 0 var(--hw-space-1); font-size: var(--hw-text-md); font-weight: var(--hw-weight-medium); }"
+   },
+   {
+    "file": "packages/vue/src/content.ts",
+    "line": 197,
+    "quote": "class: \"hw-timeline-item\","
+   }
+  ],
+  "expected": "Same rendering as Vue content.ts:197 and Angular content.ts:36.",
+  "fix": "Add className=\"hw-timeline-item\" to the React li.",
+  "repro": "node <scratch>/audit/work/content-display/v2/check.js: facts.timeline react \"null|...|h3fs=18.72px|h3fw=700\", vanilla/vue/angular \"hw-timeline-item|...|h3fs=16px|h3fw=500\". Evidence summary.json timeline ar.light heights: vanilla 318, react 435.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/react/src/expanded-content.tsx:28 (<li key data-state aria-current> with no class; description rendered as <div>), vue/src/content.ts:197, angular/src/content.ts:36, styles/src/extended.css:204 (.hw-timeline-item h3 / p rules) and :308 (.hw-timeline-item[aria-current=step]::before ring). Ran node <scratch>/audit/verify/content-display/check.js (sources <scratch>/audit/verify/content-display/react.jsx, vue.vue, angular.ts run in the guide editor; output <scratch>/audit/verify/content-display/check.json) Printed tl: react \"null|h3fs=18.72px|fw=700 ... h=178\"; vue and angular \"hw-timeline-item|h3fs=16px|fw=500 ... h=122\". Same two items, React timeline 56px taller with browser-default h3. The same missing class also means React descriptions miss the muted .hw-timeline-item p style (React uses <div>) and the current-step ring at extended.css:308 (not separately measured)."
+ },
+ {
+  "id": "content-display-21",
+  "group": "content-display",
+  "subject": "notification-list",
+  "adapters": [
+   "react",
+   "vue",
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "NotificationList actions differ: React has only mark-read, Angular only dismiss, Vue always renders both",
+  "description": "React: onMarkRead(id), button only for unread items and only when the callback is supplied; no dismiss. Vue: emits read and dismiss and always renders a mark-read button for unread items and a dismiss button for every item, even with no listener (dead buttons). Angular: dismissed output only; no way to mark an item read. Item fields also differ (read vs unread, dateTime/dateLabel vs date/dateLabel vs time).",
+  "evidence": [
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 151,
+    "quote": "{!item.read && onMarkRead && <Button variant=\"ghost\" onClick={() => onMarkRead(item.id)}>{getMarkReadLabel(item)}</Button>}"
+   },
+   {
+    "file": "packages/vue/src/patterns.ts",
+    "line": 394,
+    "quote": "emits: { read: (_id: string) => true, dismiss: (_id: string) => true },"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 145,
+    "quote": "@Output() readonly dismissed = new EventEmitter<string>();"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 7,
+    "quote": "export interface HwNotification { id: string; title: string; description?: string; time?: string; href?: string; unread?: boolean; }"
+   }
+  ],
+  "expected": "Same optional actions in every adapter, rendered only when the application handles them (React expanded-content.tsx:151 pattern).",
+  "fix": "Offer markRead and dismiss in all adapters, each opt-in.",
+  "repro": "node <scratch>/audit/work/content-display/v2/check.js: notifButtons react \"Mark as read(134x40)\", vue \"Mark Review complete as read(192x50), Dismiss Review complete(192x40), Dismiss Request received(54x40)\", angular \"Dismiss: Review complete(54x40), Dismiss: Request received(54x40)\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/react/src/expanded-content.tsx:149-151 (onMarkRead only, button rendered only for unread items when onMarkRead is passed; no dismiss), vue/src/patterns.ts:394 and :428-447 (emits read and dismiss; both buttons rendered unconditionally, no check for listeners), angular/src/content.ts:7,144-145 (dismissed output only; item uses unread/time). Ran node <scratch>/audit/verify/content-display/check.js (sources <scratch>/audit/verify/content-display/react.jsx, vue.vue, angular.ts run in the guide editor; output <scratch>/audit/verify/content-display/check.json) with no listeners in Vue/Angular and onMarkRead in React. Printed nlButtons: react \"[Mark as read]\"; vue \"Mark Review complete as read, Dismiss Review complete, Dismiss Request received\" (rendered although the scenario binds no @read/@dismiss listener, so they do nothing); angular \"Dismiss: Review complete, Dismiss: Request received\". Angular cannot offer mark-read, React cannot offer dismiss."
+ },
+ {
+  "id": "content-display-22",
+  "group": "content-display",
+  "subject": "notification-list",
+  "adapters": [
+   "vue",
+   "angular"
+  ],
+  "dimension": "a11y",
+  "title": "NotificationList structure differs: no visible heading in Vue/Angular, Angular titles are not headings, dates are not <time>, empty state is a list item",
+  "description": "React and vanilla render a visible h2 label (aria-labelledby). Vue and Angular use aria-label only, so there is no visible title. Item titles: React/Vue h3, Angular strong/a. Dates: React/Vue <time datetime>, Angular a plain <span> with no machine-readable value. Empty state: React <p>, Vue <p role=\"status\">, Angular <li> inside an otherwise empty <ul>.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 144,
+    "quote": "@if (item.href) {<a class=\"hw-link\" [href]=\"item.href\">{{ item.title }}</a>} @else {<strong>{{ item.title }}</strong>}"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 144,
+    "quote": "@empty {<li>{{ emptyMessage }}</li>}"
+   },
+   {
+    "file": "packages/vue/src/patterns.ts",
+    "line": 401,
+    "quote": "\"aria-label\": props.label,"
+   },
+   {
+    "file": "packages/vue/src/patterns.ts",
+    "line": 451,
+    "quote": ": h(\"p\", { role: \"status\" }, props.emptyMessage),"
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 254,
+    "quote": ".hw-notification-list > :is(h2, p) { margin: 0; padding: var(--hw-space-4); }"
+   }
+  ],
+  "expected": "Guide usage contract component-layout-guides.ts:202-209 (h2, h3 titles, time datetime) in every adapter.",
+  "fix": "Render the documented structure in Vue and Angular.",
+  "repro": "node <scratch>/audit/work/content-display/v2/check.js aria snapshots: react \"region | heading \\\"Request updates\\\" [level=2] | list | heading \\\"Review complete\\\" [level=3] ... time\"; angular \"region | list | link ... | text: 29 Oct 2026\"; empty: react \"paragraph\", vue \"status\", angular \"list | listitem: No notifications\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/content.ts:144 (aria-label section, title as <a class=\"hw-link\"> or <strong>, time as <span>, @empty <li>), vue/src/patterns.ts:398-451 (aria-label only, h3 titles, <time>, empty <p role=\"status\">), react/src/expanded-content.tsx:151 (aria-labelledby + visible <h2>), guide contract apps/playground/src/component-layout-guides.ts:202-207 and :215. Ran node <scratch>/audit/verify/content-display/check.js (sources <scratch>/audit/verify/content-display/react.jsx, vue.vue, angular.ts run in the guide editor; output <scratch>/audit/verify/content-display/check.json) Printed nlHeadings: react \"H2:Request updates, H3:Review complete, H3:Request received\"; vue \"H3:..., H3:...\" (no visible list title); angular \"\" (no headings). nlTime: react/vue \"2026-10-29\", angular \"\" (date in a plain span; the item type has no machine-readable field). Empty: react \"heading [level=2] | paragraph: No notifications\", vue \"status: No notifications\", angular \"list | listitem: No notifications\"."
+ },
+ {
+  "id": "content-display-23",
+  "group": "content-display",
+  "subject": "notification-list",
+  "adapters": [
+   "vue"
+  ],
+  "dimension": "visual",
+  "title": "Vue notification links render as unstyled browser links",
+  "description": "Vue renders h(\"a\", { href }) without hw-link, and its li has no hw-notification class, so neither .hw-link nor .hw-notification a styles apply: the link is browser blue (rgb(0,0,238) light, rgb(158,158,255) dark) while React/Angular/vanilla use the theme link colour rgb(22,106,69) / rgb(84,192,138).",
+  "evidence": [
+   {
+    "file": "packages/vue/src/patterns.ts",
+    "line": 417,
+    "quote": "? h(\"a\", { href: item.href }, item.title)"
+   },
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 151,
+    "quote": "<h3>{item.href ? <Link href={item.href}>{item.title}</Link> : item.title}</h3>"
+   }
+  ],
+  "expected": "Same link component as React (Link -> a.hw-link).",
+  "fix": "Use the Vue Link component or class hw-link.",
+  "repro": "node <scratch>/audit/work/content-display/v2/visual.js (framework DOM + published styles.css): notifLink react \"rgb(22, 106, 69):6.31\" light, \"rgb(84, 192, 138):5.83\" dark; vue \"rgb(0, 0, 238):8.98\" light, \"rgb(158, 158, 255):5.52\" dark.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/vue/src/patterns.ts:411 and :417 (li without hw-notification, <a href> without hw-link), react/src/expanded-content.tsx:151 (<Link> -> a.hw-link), angular/src/content.ts:144 (a.hw-link), styles/src/extended.css:22,307 (only .hw-notification a and .hw-notification-list > li > a are styled). Ran node <scratch>/audit/verify/content-display/check.js (sources <scratch>/audit/verify/content-display/react.jsx, vue.vue, angular.ts run in the guide editor; output <scratch>/audit/verify/content-display/check.json) Printed nlLink (light): react \"hw-link color=rgb(22, 106, 69)\", angular \"hw-link color=rgb(22, 106, 69)\", vue \" color=rgb(0, 0, 238)\" (browser default blue, visible in the screenshot). Dark-mode colour not re-measured here."
+ },
+ {
+  "id": "PG-01",
+  "group": "package-gaps",
+  "subject": "package-gap",
+  "adapters": [],
+  "dimension": "package-gap",
+  "title": "No code block / code snippet component and no code colour tokens in any adapter",
+  "description": "Every guide page shows code, but no adapter (vanilla, React, Vue, Angular) exports a code block, and tokens define only the --hw-font-mono family, with no surface or syntax roles. The current guide uses its own .code-block/.code-label markup, a terminal block on the home page and a hard-coded editor theme. Under the owner rule the new guide cannot style code without guide-only CSS.",
+  "evidence": [
+   {
+    "file": "apps/playground/src/main.ts",
+    "line": 110,
+    "quote": "const codeBlock = (code: string) =>"
+   },
+   {
+    "file": "apps/playground/src/component-ide.css",
+    "line": 50,
+    "quote": "--hw-ide-code: #111927;"
+   },
+   {
+    "file": "packages/tokens/src/tokens.css",
+    "line": 5,
+    "quote": "--hw-font-mono: \"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace;"
+   }
+  ],
+  "expected": null,
+  "fix": "Add hw-code-block (language label, optional filename, copy action, wrap/scroll, dir=\"ltr\" content, focusable region with a name) in styles and all four adapters, plus semantic code tokens (surface, text, comment, keyword, string, number, tag, attribute) for light and dark. Highlighting runs at build time and emits token classes. Size M/L.",
+  "repro": null,
+  "verdict": "confirmed",
+  "verifierNote": "All three quotes exist at the cited lines. In my own npm pack of @hawiyah/*@0.2.1, no adapter exports a code block (85 Angular component selectors, none code-related; no code/clipboard symbols in any .d.ts), no package stylesheet has any rule for code/pre/kbd/samp elements, and the only code-related token is --hw-font-mono (used only by pin-input). Styling code samples in the guide therefore needs guide-only CSS."
+ },
+ {
+  "id": "PG-03",
+  "group": "package-gaps",
+  "subject": "package-gap",
+  "adapters": [],
+  "dimension": "package-gap",
+  "title": "No persistent sidebar navigation tree; the existing navigation components do not fit",
+  "description": "Documentation needs a non-modal, grouped, collapsible link tree that shows the current page. hw-navigation-drawer always renders inside a modal hw-drawer. hw-secondary-nav is a flat list. hw-tree-view is an ARIA tree selection control and a form value, which is the wrong pattern for site links. The guide builds its own sidebar with details/summary groups and counts.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/navigation-drawer.ts",
+    "line": 10,
+    "quote": "<hw-drawer #drawer [title]=\"title\""
+   },
+   {
+    "file": "packages/angular/src/interactions.ts",
+    "line": 108,
+    "quote": "<ul class=\"hw-tree-view\" role=\"tree\""
+   },
+   {
+    "file": "apps/playground/src/main.ts",
+    "line": 129,
+    "quote": "<details class=\"sidebar-category\""
+   }
+  ],
+  "expected": null,
+  "fix": "Add hw-side-navigation to all four adapters. Reuse the HwNavigationDrawerItem model (id, label, href, icon, current, children) and add group headings, optional counts and expanded state. On narrow screens the same items feed hw-navigation-drawer. Size M.",
+  "repro": null,
+  "verdict": "confirmed",
+  "verifierNote": "navigation-drawer.ts:10 wraps its list in <hw-drawer>, so it has no inline mode. hw-secondary-nav (portal.ts:8) is a flat list with no children; its CSS is a horizontal flex-wrap bar with a bottom border (.hw-secondary-nav ul { display:flex; flex-wrap:wrap }). hw-tree-view is role=tree. hw-sidebar is only a two-column layout. No 0.2.1 component renders a persistent grouped link tree."
+ },
+ {
+  "id": "PG-05",
+  "group": "package-gaps",
+  "subject": "accessibility",
+  "adapters": [],
+  "dimension": "accessibility",
+  "title": "Packaged skip links and content-navigation links go to the site root under <base href=\"/hawiyah/\">",
+  "description": "Verified in Chromium with a page at /hawiyah/components/button that declares <base href=\"/hawiyah/\">. Pressing Enter on the packaged skip-link markup (href=\"#main-content\") loaded /hawiyah/#main-content, the home page. hw-app-shell, hw-portal-header and hw-portal-layout build their skip links as \"#\" + mainId. hw-content-navigation fragments resolve the same way when a click is not intercepted (modified click, open in new tab, copy link). This fails WCAG 2.4.1 (Bypass Blocks) in the documented GitHub Pages deployment shape.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/layouts.ts",
+    "line": 41,
+    "quote": "<a class=\"hw-skip-link\" [href]=\"'#' + mainId\">"
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 62,
+    "quote": "@if (mainId) {<a class=\"hw-skip-link\" [href]=\"'#' + mainId\">"
+   },
+   {
+    "file": "packages/angular/src/content-navigation.ts",
+    "line": 31,
+    "quote": "fragment(id: string): string {return `#${encodeURIComponent(id)}`;}"
+   }
+  ],
+  "expected": null,
+  "fix": "In the package, build fragment hrefs from the current document path, or handle activation by focusing the target, and test it under a non-root base href. Until that ships, the guide must provide APP_BASE_HREF without a <base> element. Size S.",
+  "repro": null,
+  "verdict": "corrected",
+  "verifierNote": "Confirmed in Chromium (Playwright, routed pages): a page at /hawiyah/components/button with <base href=\"/hawiyah/\"> and the packaged skip-link markup href=\"#main-content\". Tab focused the link with href http://verify.local/hawiyah/#main-content, and Enter loaded the HOME page. Without <base>, the link stayed on the page. The scope is broader than stated: with <base href=\"/\"> (the Angular CLI default) on /components/button, Enter also went to /#main-content (HOME). So every routed Angular app at a non-root route is affected, not only the /hawiyah/ deployment. hw-content-navigation (content-navigation.ts:53-56) preventDefaults plain and keyboard clicks, so only modified clicks, open-in-new-tab and copied links are wrong there."
+ },
+ {
+  "id": "PG-06",
+  "group": "package-gaps",
+  "subject": "icons",
+  "adapters": [],
+  "dimension": "icons",
+  "title": "22 icons the guide renders are not shipped by @hawiyah/styles",
+  "description": "The guide inlines 38 Hugeicons Stroke Rounded glyphs. All 38 matched the pinned upstream commit after whitespace normalisation, so they do not violate the icon rule. Of those 38, 22 are not shipped by the package: book-open-01, briefcase-01, building-03, certificate-01, clock-01, copy-01, download-01, file-01, github, globe-02, grid-view, layers-01, location-01, message-01, moon-02, paint-board, play, shield-01, source-code, sparkles, sun-03 and upload-01. An Angular guide limited to the published packages cannot render them.",
+  "evidence": [
+   {
+    "file": "packages/styles/src/assets/icons/provenance.json",
+    "line": 5,
+    "quote": "\"commit\": \"35c0b0b6ca286617b581e3383e5cbe2232ddb7d6\","
+   },
+   {
+    "file": "apps/playground/src/guide-icons.ts",
+    "line": 1,
+    "quote": "// Generated from Hugeicons Stroke Rounded (MIT) at commit 35c0b0b6ca286617b581e3383e5cbe2232ddb7d6,"
+   }
+  ],
+  "expected": null,
+  "fix": "Add the needed glyphs to packages/styles/src/assets/icons from the same commit, unchanged, with sha256 and provenance entries and an icons.css rule each. Drop any glyph the new guide no longer needs. Size S.",
+  "repro": null,
+  "verdict": "confirmed",
+  "verifierNote": "guide-icons.ts maps 38 distinct Hugeicons sources. Published styles 0.2.1 ships 35 SVGs. comm gives exactly the 22 listed names as not shipped, and none of them has a data-icon rule in any package CSS. I did not re-check the claim that all 38 glyphs match the upstream commit."
+ },
+ {
+  "id": "GV-01",
+  "group": "package-gaps",
+  "subject": "rule-violation",
+  "adapters": [],
+  "dimension": "rule-violation",
+  "title": "Guide CSS restyles package components, so demos are not honest renders",
+  "description": "87 live guide rules select package classes, and 47 of them change visual properties: 40 font-size, plus radius, background, border, shadow and filter. They resize buttons, inputs, tabs, badges, tables and cards inside the guide, so readers see components that differ from the published defaults.",
+  "evidence": [
+   {
+    "file": "apps/playground/src/guide-home.css",
+    "line": 3,
+    "quote": ".home-request.hw-card{inline-size:100%;max-inline-size:340px;padding:24px;border:1px solid"
+   },
+   {
+    "file": "apps/playground/src/guide.css",
+    "line": 7,
+    "quote": ".guide-table-wrap .hw-table th{font-size:.8rem;font-weight:500;background:var(--hw-color-canvas)}"
+   },
+   {
+    "file": "apps/playground/src/guide-home.css",
+    "line": 28,
+    "quote": ".home-install-tabs .hw-tab-list{padding-inline:12px;background:var(--hw-color-surface)}"
+   }
+  ],
+  "expected": null,
+  "fix": "The new guide must contain no selector that targets an hw- class. Where a different look is needed, add a documented variant to the package. Add a lint check to the guide build.",
+  "repro": null,
+  "verdict": "confirmed",
+  "verifierNote": "Quotes exist (guide-home.css:3,28; guide.css:7). I measured in the running guide at 127.0.0.1:4173 with Playwright. Guide stylesheets (identified by data-vite-dev-id) hold 106 rules selecting a class defined in published styles 0.2.1, and 67 of them set typography or box properties (58 font-size). On 13 routes, 25 of those rules matched rendered elements, including component demos. A stepper in the #components preview computed 10px versus 14px for the same markup outside it. A button in .foundation-preview on #foundations computed 11px versus 16px. My counts differ from the audit's 87/47 (different live-rule definition), but the claim holds."
+ },
+ {
+  "id": "GV-02",
+  "group": "package-gaps",
+  "subject": "rule-violation",
+  "adapters": [],
+  "dimension": "rule-violation",
+  "title": "Guide reimplements components that the packages already ship",
+  "description": "252 live rules, plus the TypeScript behind them, imitate shipped components: tabs (preview/code/editor and editor file tabs), table of contents (hw-content-navigation), toggle group, search field, toast, stepper, stat, description list, timeline, alert, page header, breadcrumb, icon button, select, switch, collapsible, badge, card and service card, footer and the skip link.",
+  "evidence": [
+   {
+    "file": "apps/playground/src/guide.ts",
+    "line": 223,
+    "quote": "<div class=\"guide-demo-tabs\" role=\"tablist\""
+   },
+   {
+    "file": "apps/playground/src/playground.css",
+    "line": 151,
+    "quote": ".toast { position: fixed; z-index: 100;"
+   },
+   {
+    "file": "apps/playground/src/main.ts",
+    "line": 308,
+    "quote": "<ol class=\"app-stepper\""
+   },
+   {
+    "file": "apps/playground/src/playground.css",
+    "line": 21,
+    "quote": ".skip-link { position: fixed; z-index: 100;"
+   }
+  ],
+  "expected": null,
+  "fix": "Replace each with the named @hawiyah/angular component (see the REPORT.md table). If one cannot do the job, record the missing input as a package gap.",
+  "repro": null,
+  "verdict": "confirmed",
+  "verifierNote": "All four quotes exist. In the running guide: #component/button renders a custom .guide-demo-tabs[role=tablist] with no .hw-tab-list. Every route renders the guide's own .skip-link and .toast, and none renders .hw-skip-link. #apply renders .app-stepper and no .hw-stepper. Published 0.2.1 ships hw-tabs, hw-toast-region, hw-stepper and the .hw-skip-link class (extended.css, portal.css). I did not reproduce the '252 live rules' count."
+ },
+ {
+  "id": "spike-GAP-6",
+  "group": "angular-guide",
+  "subject": "@hawiyah/angular",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "ssr",
+  "title": "generated ids differ between server and client and between builds; three composites have no id override",
+  "description": "26 of 88 en pages have id attributes rewritten by hydration, e.g. server hw-control-27 -> client hw-control-1 (out/hydration-prod-honest-final.json, logs/50-hydration-prod-honest-final.log); no IDREF is broken after hydration. Source: module-level counters at packages/angular/src/forms.ts:6,17; interactions.ts:8,24; navigation.ts:6,24; overlays.ts:5,10,61; content.ts:10,89; portal.ts:10,20; presentation.ts:44.",
+  "evidence": [],
+  "expected": null,
+  "fix": "Replace the module-level counters (forms.ts:6, interactions.ts:8, navigation.ts:6, overlays.ts:5, content.ts:10, portal.ts:10, presentation.ts:44) with one injectable per-application id service; expose id inputs for the nested tooltip (advanced-controls.ts:179), drawer title (navigation-drawer.ts:10) and header navigation (portal.ts:13).",
+  "repro": null,
+  "verdict": "unverified",
+  "verifierNote": ""
+ },
+ {
+  "id": "spike-G1",
+  "group": "editor-runtime",
+  "subject": "@hawiyah/styles",
+  "adapters": [
+   "styles"
+  ],
+  "dimension": "editor",
+  "title": "Published stylesheet entry is not loadable by a browser: bare @import of @hawiyah/tokens, and an index of 47 @imports (48 requests)",
+  "description": "<repo>/packages/styles/src/styles.css:1 (published dist/styles.css:1): @import '@hawiyah/tokens/tokens.css'. Loaded from its tarball location the browser requests .../@hawiyah/styles@0.2.1/dist/@hawiyah/tokens/tokens.css -> 404; --hw-color-primary \"(not defined)\", primary button background rgba(0, 0, 0, 0) (<scratch>/spikes/editor-runtime/project/out/styles-as-published.json). As published the entry is 47 @imports: 48 CSS requests / 73.4 kB gzip, against 1 request / 53.9 kB gzip for a plain concatenation of the same files (<scratch>/spikes/editor-runtime/project/site/hawiyah/editor/b/flat/styles.concat.json; <scratch>/spikes/editor-runtime/project/out/sizes.json). Concatenation verified pixel-identical to the published chain over 331 previews apart from one unstable component (<scratch>/spikes/editor-runtime/project/out/styles-experiment.md).",
+  "evidence": [],
+  "expected": null,
+  "fix": "Publish a flat stylesheet with the tokens included (for example @hawiyah/styles/hawiyah.css), produced by concatenation rather than by a CSS minifier, and export it; keep styles.css for bundlers.",
+  "repro": null,
+  "verdict": "unverified",
+  "verifierNote": ""
+ },
+ {
+  "id": "spike-G2",
+  "group": "editor-runtime",
+  "subject": "@hawiyah/angular",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "editor",
+  "title": "hw-select has a hardcoded Arabic default placeholder: extra first option and different default form value than React/Vue",
+  "description": "<repo>/packages/angular/src/forms.ts:94-95 (placeholder = 'اختر خيارًا', showPrompt) vs <repo>/packages/react/src/forms.tsx:40 and <repo>/packages/vue/src/forms.ts:66 (prompt only when a placeholder is passed). Observed for the same English LTR Select without placeholder: React/Vue 2 options, value \"riyadh\"; Angular 3 options [\"\":اختر خيارًا, riyadh, jeddah], FormData city = \"\" (<scratch>/spikes/editor-runtime/project/out/extra-probes.json, key drift).",
+  "evidence": [],
+  "expected": null,
+  "fix": "Default the Angular placeholder to empty (match React/Vue), or add the same localized default prompt to all adapters.",
+  "repro": null,
+  "verdict": "unverified",
+  "verifierNote": ""
+ },
+ {
+  "id": "spike-G3",
+  "group": "editor-runtime",
+  "subject": "@hawiyah/angular",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "editor",
+  "title": "Alert with tone=\"danger\" gets role=\"status\" in Angular but role=\"alert\" in React and Vue",
+  "description": "<repo>/packages/angular/src/presentation.ts:38 (role default 'status', bound at :33) vs <repo>/packages/react/src/display.tsx:73 and <repo>/packages/vue/src/display.ts:71 (role derived from tone). Observed: react {\"role\":\"alert\"}, vue {\"role\":\"alert\"}, angular {\"role\":\"status\"} (<scratch>/spikes/editor-runtime/project/out/danger-alert-probe.json).",
+  "evidence": [],
+  "expected": null,
+  "fix": "Derive the default role from the tone in the Angular alert, as the other adapters do.",
+  "repro": null,
+  "verdict": "unverified",
+  "verifierNote": ""
+ },
+ {
+  "id": "R00",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "Alert",
+  "missingIn": [
+   "react",
+   "vue"
+  ],
+  "title": "Dismiss button (closeLabel, when the alert is dismissible). Angular has it; vanilla is authored markup."
+ },
+ {
+  "id": "R11",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "NotificationList",
+  "missingIn": [
+   "react"
+  ],
+  "title": "Dismiss action (getDismissLabel with a dismiss handler)."
+ },
+ {
+  "id": "R12",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "NotificationList",
+  "missingIn": [
+   "angular"
+  ],
+  "title": "Mark-read action (getMarkReadLabel with a read handler)."
+ },
+ {
+  "id": "R13",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "NotificationList",
+  "missingIn": [
+   "vue"
+  ],
+  "title": "Unread badge text (unreadLabel)."
+ },
+ {
+  "id": "R14",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "NotificationList",
+  "missingIn": [
+   "react",
+   "vue",
+   "angular"
+  ],
+  "title": "Item shape and markup differ: read (React, Vue) versus unread (Angular); dateTime/dateLabel (React), date/dateLabel (Vue), time (Angular); heading with aria-labelledby (React) versus aria-label (Vue, Angular); empty state as <p>, <p role=status> or <li>."
+ },
+ {
+  "id": "R20",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "ToastRegion",
+  "missingIn": [
+   "react"
+  ],
+  "title": "One message shape: React ToastMessage has description (and a node title) where Vue ToastMessage and Angular HwToast have message (and a string title). getDismissLabel receives whichever shape the adapter has, so one label function cannot be shared as written."
+ },
+ {
+  "id": "R23",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "Stat",
+  "missingIn": [
+   "react",
+   "vue",
+   "angular"
+  ],
+  "title": "Built-in number formatting is removed from Vue by D25 and exists nowhere; listed so that a later \"format with locale\" feature is added to all adapters at once, if wanted."
+ }
+]

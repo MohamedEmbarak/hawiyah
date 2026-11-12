@@ -1,0 +1,193 @@
+{
+ "status": "complete: step 1 of 3 (spec-forms-core.json and spec-rich-inputs-files.json) implemented in packages/angular with tests; build and whole package test run pass",
+ "implemented": [
+  "fields-basic-8",
+  "actions-2",
+  "choices-2",
+  "actions-11",
+  "actions-v1",
+  "fields-basic-9 (none for angular)",
+  "fields-basic-2",
+  "choices-3",
+  "fields-basic-10",
+  "fields-basic-3",
+  "fields-basic-5",
+  "fields-basic-6",
+  "choices-4",
+  "choices-5",
+  "choices-6",
+  "choices-8 (none for angular)",
+  "choices-9",
+  "R16",
+  "actions-5",
+  "actions-8 (styles only; no angular source change)",
+  "actions-9",
+  "E02",
+  "rich-inputs-20",
+  "fields-basic-7",
+  "rich-inputs-1",
+  "rich-inputs-2",
+  "rich-inputs-5",
+  "files-5",
+  "rich-inputs-6",
+  "R10",
+  "R09",
+  "rich-inputs-8",
+  "R19",
+  "rich-inputs-12",
+  "rich-inputs-14",
+  "R27",
+  "E01",
+  "files-2",
+  "files-3",
+  "R07",
+  "files-4",
+  "R06",
+  "files-6",
+  "R08",
+  "files-8",
+  "files-9",
+  "files-10"
+ ],
+ "deviations": [
+  {
+   "item": "rich-inputs-6 / files-9",
+   "what": "(click)=\"guardClick($event)\", a method that prevents the default only while read-only, instead of the inline (click)=\"readOnly && $event.preventDefault()\"",
+   "why": "An Angular listener whose expression returns false cancels the event: the inline form cancelled every click on an editable checkbox and file input. Rendered result and behaviour are as specified."
+  },
+  {
+   "item": "fields-basic-3",
+   "what": "HwValueControl.ngDoCheck marks the control for check when the state of its hw-field changed (subclasses with their own ngDoCheck call super)",
+   "why": "Angular 22 components are OnPush by default: a control that reads the field in getters is otherwise not rendered again when only the field changes (error, required, hint, label)."
+  },
+  {
+   "item": "fields-basic-2 / E02 / R27 / files-6",
+   "what": "The name check (texts.need(label) unless named) runs in ngDoCheck of hw-toggle-group, hw-search-field and hw-file-dropzone, not through a getter read by the template",
+   "why": "fieldLabel reads `label` directly; the check runs once per pass either way and the rendered result is the same."
+  },
+  {
+   "item": "E01 (hw-combobox)",
+   "what": "syncValidity clears submissionInvalid when the required constraint no longer applies (!constrained), not when input.validity.valid",
+   "why": "The input is also natively required and the text of a new selection is rendered after syncValidity runs, so validity.valid is still false at that moment and aria-invalid would stay after a valid selection. Tag input and multi-select use validity.valid as specified."
+  },
+  {
+   "item": "rich-inputs-2, case STATE-02",
+   "what": "With a one-way [open] the list closes after Escape and openChange(false) is emitted once; the case text \"the list stays open\" is not asserted for Angular",
+   "why": "perAdapter.angular and convention controlled-and-observable-state: Angular has no controlled mode, a written value is the initial state and the component then updates its own field (the same exception forms-core records for RESET-05)."
+  },
+  {
+   "item": "rich-inputs-1, E01, R27, files-10, files-6 (templates of the rich inputs)",
+   "what": "The inputs use the shared controlAria constant (aria-label, labelledBy, descriptionIds, invalid) instead of the hand-written [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby\" and error || ariaInvalid || submissionInvalid; hw-pin-input and hw-file-dropzone override get invalid() to add incomplete / rejectedFiles",
+   "why": "forms-core sharedApi.forOtherClusters tells the other clusters to use the constants; outside an hw-field the rendered attributes are identical, inside one the control is also labelled and invalid through the field."
+  },
+  {
+   "item": "fields-basic-8 (syncDom)",
+   "what": "Text field and number field syncDom call shown.force() and apply the value at once; range slider syncDom narrows lower.max / upper.min again after writing both values",
+   "why": "Held, shown and submitted value then agree in the reset callback itself, without waiting for the next render; Angular does not rewrite an unchanged [max] binding."
+  },
+  {
+   "item": "rich-inputs-8 / R19",
+   "what": "remove(tag, button?) takes the activated remove button as its optional second argument (the reconciled prepareRemovalFocus mechanism), not an index",
+   "why": "The amendment replaced the index arithmetic by prepareRemovalFocus(box, button, ...); the public name remove and its first argument are unchanged."
+  },
+  {
+   "item": "rich-inputs-12",
+   "what": "inputChanged calls update only when the normalised code changed",
+   "why": "PININPUT-02 requires that one more typed character on a full code notifies nothing; the spec text calls update unconditionally."
+  },
+  {
+   "item": "actions-11 / actions-v1",
+   "what": "hw-toggle-group.ngOnInit turns a non-array value of a multiple group into an array before the initial value is captured",
+   "why": "The reset target of a multiple group without an initial value must be [] and never the default \"\"."
+  },
+  {
+   "item": "fields-basic-10",
+   "what": "hw-multi-select reports (focused)/(blurred) as a group (focusin/focusout on its fieldset)",
+   "why": "It is a fieldset of several controls; forms-core lists the group rule for fieldset controls and the rich-inputs spec names no rule for it."
+  },
+  {
+   "item": "rich-inputs-8, case RENAME-01 and readme",
+   "what": "packages/angular/README.md states the removal of the TagInput Add button and of the input for its text without the literal input name",
+   "why": "RENAME-01 requires that addLabel does not appear in the Angular README, while the readme note asks for the removal line; the exact name belongs in CHANGELOG.md (not owned here): hw-tag-input addLabel removed, delete the attribute."
+  },
+  {
+   "item": "tests listed under tests/*.test.ts and tests/browser/*.spec.ts",
+   "what": "The Angular side of every listed case id is in packages/angular/test (same ids); the root parity files and the browser suite were not edited",
+   "why": "Only packages/angular/** is owned by this step. Two existing root cases still bind the removed input describedBy and fail until it is renamed there: tests/basic-field-select-parity.test.ts:133 (set(\"describedBy\", ...)) and :151 (describedBy=\"external\" on hw-field) -> aria-describedby."
+  },
+  {
+   "item": "internal helpers not named in sharedApi",
+   "what": "Added HwValueControl.hostElement (protected), HwValueControl.settle() (protected: clears submissionInvalid in update()/writeValue() once the native controls are valid), controlFocus and groupFocus in field-templates.ts, writeFiles() in platform.ts and HwTexts.has() in text.ts",
+   "why": "Needed by several components; none is exported from public-api.ts except through the class members."
+  }
+ ],
+ "files": [
+  "packages/angular/src/host-attributes.ts (new)",
+  "packages/angular/src/field-templates.ts (new)",
+  "packages/angular/src/forms.ts",
+  "packages/angular/src/advanced-controls.ts",
+  "packages/angular/src/interactions.ts",
+  "packages/angular/src/layouts.ts",
+  "packages/angular/src/platform.ts",
+  "packages/angular/src/text.ts",
+  "packages/angular/README.md",
+  "packages/angular/test/form-reset.test.ts (new)",
+  "packages/angular/test/forwarded-aria.test.ts (new)",
+  "packages/angular/test/basic-fields.test.ts (new)",
+  "packages/angular/test/toggle-group.test.ts (new)",
+  "packages/angular/test/sliders.test.ts (new)",
+  "packages/angular/test/required-marker.test.ts (new)",
+  "packages/angular/test/rich-inputs.test.ts (new)",
+  "packages/angular/test/file-dropzone.test.ts (new)",
+  "packages/angular/test/required-names.test.ts",
+  "packages/angular/test/input-contracts.test.ts",
+  "packages/angular/test/components.test.ts",
+  "packages/angular/test/text-contract.test.ts",
+  "packages/angular/test/toggle-group-label.test.ts",
+  "packages/angular/test/multiselect-validation.test.ts",
+  "packages/angular/test/file-dropzone-disabled.test.ts",
+  "packages/angular/test/readonly-inputs.test.ts",
+  "packages/angular/test/ssr.test.ts",
+  "packages/angular/test/hydration.test.ts",
+  "packages/angular/test/fixtures/scenarios.ts",
+  "packages/angular/test/fixtures/application-text.ts",
+  "packages/angular/test/fixtures/required-names.ts"
+ ],
+ "commands": [
+  {
+   "command": "node scripts/build.mjs --only angular",
+   "result": "Built Angular Package (one NG8107 warning in src/navigation.ts:26 that is already in commit a0ed9b0)"
+  },
+  {
+   "command": "pnpm exec vitest run packages/angular",
+   "result": "39 files, 575 tests passed; no Hawiyah: warning in the output (baseline before this step: 31 files, 335 tests)"
+  },
+  {
+   "command": "pnpm exec vitest run tests (informational, files not owned)",
+   "result": "41 files passed, 1 failed: tests/basic-field-select-parity.test.ts, the two Angular cases that still bind describedBy"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "Browser cases TEXTAREA-02, TOGGLE-GROUP-02, TOGGLE-GROUP-03, ATTR-06, COMBOBOX-02, MULTISELECT-03, TAGINPUT-03, PININPUT-03, FILEDROPZONE-08, RESET-12",
+   "why": "They live in tests/browser/*.spec.ts with static fixtures and the package stylesheet, outside packages/angular."
+  },
+  {
+   "item": "Root parity files tests/*-parity.test.ts, components.json, llms.txt, CHANGELOG.md, CONTRACT.md, docs/, apps/playground",
+   "why": "Outside packages/angular; the Angular fixtures there need describedBy -> aria-describedby, hw-radio -> hw-radio-group, no addLabel, getResultsMessage on hw-multi-select, getRejectedMessage on a dropzone with accept, showSearchButton where the button is expected."
+  },
+  {
+   "item": "hw-date-picker, hw-calendar, hw-tree-view",
+   "why": "Their clusters (steps 2 and 3) apply controlAria, fieldLabel and the reset hooks. Until then their hosts already drop the four aria attributes (inherited host bindings) without forwarding them, and they keep their own label and aria bindings."
+  }
+ ],
+ "changelog": [
+  "angular input: describedBy (all value controls, hw-field) -> aria-describedby; [describedBy]=\"id\" -> [aria-describedby]=\"id\"",
+  "angular selector: hw-radio / HwRadioComponent -> hw-radio-group / HwRadioGroupComponent",
+  "angular removed: hw-tag-input addLabel and the Add button; delete the attribute",
+  "angular field: HwPasswordFieldComponent.revealed -> [(visible)] / visible, (visibleChange)",
+  "angular removed: unnamedConstraint getter of hw-combobox, hw-tag-input, hw-multi-select",
+  "angular default: hw-search-field showSearchButton false; hw-textarea rows unset; hw-multi-select getSelectedMessage optional, getResultsMessage required; hw-toggle-group options required, label optional with a forwarded name; hw-search-field and hw-file-dropzone label optional with a forwarded name",
+  "angular new: HW_FIELD, HwFieldContext; value controls: aria-label, aria-labelledby, aria-describedby, aria-invalid, form, (focused), (blurred); hw-checkbox / hw-switch submitValue and projected label; hw-select projected options; hw-slider showValue, formatValue; hw-range-slider formatValue, getRangeLabel; hw-combobox open, (openChange), (queryChange); hw-file-dropzone maxSize, capture, getRejectedMessage; hw-file-upload capture and projected content"
+ ]
+}

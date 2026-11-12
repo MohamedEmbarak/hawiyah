@@ -1,0 +1,1209 @@
+[
+ {
+  "id": "actions-2",
+  "group": "actions",
+  "subject": "toggle-group",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "behavior",
+  "title": "Angular ToggleGroup loses its selection on native form reset while the model keeps the old value",
+  "description": "The Angular radios are checked through a property binding only and the component does not listen for the form reset event. After clicking a type=reset button, every single-select group in the form shows no checked radio, including read-only and untouched groups, and FormData no longer contains their values. The bound model still holds the previous value ('model=second'). Multiple-mode groups keep their changed values instead of returning to the initial ones. React, Vue and vanilla restore the defaults in the same test.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/interactions.ts",
+    "line": 9,
+    "quote": "<input type=\"radio\" [name]=\"name || controlId\" [value]=\"option.value\" [checked]=\"selected(option.value)\""
+   },
+   {
+    "file": "docs/nic-segmented.md",
+    "line": 27,
+    "quote": "React/Vue external-form reset restores defaults; Angular"
+   }
+  ],
+  "expected": "After a reset the visible selection, the submitted value and the component value agree. docs/nic-segmented.md:27-28 says Angular 'retains its existing value/CVA model'; React (packages/react/src/expanded-interactive.tsx:21 useFormReset) and Vue (packages/vue/src/expansion-interactive.ts:52) restore defaults.",
+  "fix": "Listen for the owning form's reset in the browser and either re-apply the current value to the radios or restore the initial value and emit valueChange/onChange, matching React and Vue; also reflect the checked attribute so defaultChecked is right.",
+  "repro": "node <scratch>/audit/work/actions/test-e.cjs printed: after choosing Second: 'model=second ... second=checked ... FormData: view=second&style=first&ro=first&om=first&os=first&rtl=first&err=first'; after native reset: 'model=second | #g-single radios: first second blocked third | FormData: style=first&om=first'. React and Vue afterReset FormData in out/test-b.react.light.log and out/test-b.vue.light.log: 'view=first&style=first&ro=first&om=first&os=first&rtl=first'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/interactions.ts:9 (radios bound with [checked]=\"selected(option.value)\", no reset listener) and docs/nic-segmented.md:26-27. Ran <scratch>/audit/verify/actions/t1.cjs: one form with single groups (static value and [(value)]), outline and segmented multiple groups, then a type=reset button, in React, Vue and Angular via the guide editor. Angular before reset: 'single[fir sec* thi] ctrl[fir sec* thi] model=second multi[Fir* Sec* Thi] ... FormData=view=second&ctrl=second&multi=first&multi=second&seg=first'; after reset: 'single[fir sec thi] ctrl[fir sec thi] model=second multi[Fir* Sec* Thi] seg[Fir* Sec Thi] FormData=multi=first&multi=second&seg=first'. No radio is checked, the single-group values disappear from FormData, the bound model still says 'second', and the multiple group keeps its changed value. React uncontrolled after reset: 'single[fir* sec thi] ... FormData=view=first&ctrl=first&multi=first&seg=first'. docs/nic-segmented.md:27 says Angular 'retains its existing value/CVA model', but the rendered radios do not keep that value, so view, submission and model disagree. React controlled and Vue v-model groups have their own reset defects (see missed items)."
+ },
+ {
+  "id": "actions-3",
+  "group": "actions",
+  "subject": "toggle-group",
+  "adapters": [
+   "styles",
+   "vanilla",
+   "react",
+   "vue",
+   "angular"
+  ],
+  "dimension": "a11y",
+  "title": "Segmented multiple mode: a focused button looks pressed whether or not it is",
+  "description": "The segmented focus rule gives any keyboard-focused segment the selected background and text colour. In multiple mode, a focused button with aria-pressed=false and one with aria-pressed=true have identical computed styles, so a sighted keyboard user cannot tell whether the focused option is on, including immediately after toggling it with Space. Single mode is not affected in practice because arrow keys move selection with focus.",
+  "evidence": [
+   {
+    "file": "packages/styles/src/nic-segmented.css",
+    "line": 76,
+    "quote": ".hw-toggle-group:not([data-variant='outline']) > :is(button:focus-visible,label:has(input:focus-visible)) {"
+   },
+   {
+    "file": "packages/styles/src/nic-segmented.css",
+    "line": 77,
+    "quote": "background:var(--hw-color-segment-selected); color:var(--hw-color-on-segment-selected);"
+   }
+  ],
+  "expected": "The pressed state stays visually distinguishable while focused (WCAG 2.2 SC 1.4.11, visual information required to identify states; WAI-ARIA APG toggle button pattern). docs/nic-segmented.md records focused = selected colour as NIC source behaviour for a single-select switcher; multiple mode is a Hawiyah addition.",
+  "fix": "Limit the selected-colour focus treatment to checked radios and pressed buttons; give unpressed focused buttons a ring only.",
+  "repro": "node <scratch>/audit/work/actions/test-c.cjs states printed: 'focused + pressed: First aria-pressed=true bg=rgb(12, 17, 27) color=rgb(255, 255, 255) outline=solid 2px rgb(255, 255, 255) offset -3px' and 'focused + NOT pressed: Second aria-pressed=false bg=rgb(12, 17, 27) color=rgb(255, 255, 255) outline=solid 2px rgb(255, 255, 255) offset -3px'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/styles/src/nic-segmented.css:76-77. Ran <scratch>/audit/verify/actions/t1.cjs: Tab into a segmented multiple group (First pressed), Tab to Second (unpressed), press Space; computed styles of document.activeElement in React, Vue and Angular. All three adapters printed identical styles: 'seg-multi focus First: pressed=true ... bg=rgb(12, 17, 27) color=rgb(255, 255, 255) outline=solid 2px rgb(255, 255, 255)' and 'seg-multi focus Second: pressed=false ... bg=rgb(12, 17, 27) color=rgb(255, 255, 255) outline=solid 2px rgb(255, 255, 255)'; after Space (pressed=true) the style was again identical. A sighted keyboard user cannot see whether the focused toggle is on or whether Space changed it. docs/nic-segmented.md:12 records 'selected/pressed/focused Neutral 950' from the NIC single-select switcher; the multiple mode is Hawiyah's own and the conflation hides state (WCAG 2.2 SC 1.4.11 / 1.4.1 state cue; APG toggle button)."
+ },
+ {
+  "id": "actions-4",
+  "group": "actions",
+  "subject": "toggle-group",
+  "adapters": [
+   "styles",
+   "react",
+   "vue"
+  ],
+  "dimension": "a11y",
+  "title": "Outline multiple mode: hover text contrast is below 4.5:1 in light and dark",
+  "description": "In variant=outline with multiple, the options are .hw-button elements. On hover the toggle-group rule turns the label green (primary-text) while the generic secondary button hover background applies. Measured on an unpressed option in React (Vue output is identical): light rgb(27,131,84) on rgb(229,231,235) is 3.84:1; dark rgb(84,192,138) on rgb(77,87,97) is 3.26:1. Text is 14px medium.",
+  "evidence": [
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 141,
+    "quote": ".hw-toggle-group > :is(button, label):hover:not(:disabled, :has(input:disabled)) { color: var(--hw-color-primary-text); }"
+   },
+   {
+    "file": "packages/styles/src/components.css",
+    "line": 73,
+    "quote": ".hw-button:not(:disabled, [aria-disabled='true']):hover { background: var(--hw-button-hover); }"
+   }
+  ],
+  "expected": "WCAG 2.2 SC 1.4.3: 4.5:1 for normal-size text in every state, including hover.",
+  "fix": "Add explicit outline-variant hover, focus and active rules for buttons so generic .hw-button state backgrounds do not leak into the toggle group.",
+  "repro": "out/test-b.react.light.log: 'om.hoverSecond(unpressed): hover=true bg=rgb(229, 231, 235) color=rgb(27, 131, 84) data-variant=secondary'; out/test-b.react.dark.log: 'hover=true bg=rgb(77, 87, 97) color=rgb(84, 192, 138)'. node <scratch>/audit/work/actions/contrast.cjs printed 3.84:1 and 3.26:1.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/styles/src/extended.css:141 and components.css:73. Ran <scratch>/audit/verify/actions/t1.cjs (hover over unpressed 'Third' in outline multiple, light) and <scratch>/audit/verify/actions/contrast.cjs. React and Vue both printed 'outline-multi hover Third: pressed=false variant=secondary bg=rgb(229, 231, 235) color=rgb(27, 131, 84)'; contrast.cjs: '27,131,84 on 229,231,235: 3.84:1', below the 4.5:1 of WCAG 2.2 SC 1.4.3 for 14px text. Dark mode (<scratch>/audit/verify/actions/t2.cjs, t2.out): React 'dark hover Third: pressed=false variant=secondary bg=rgb(77, 87, 97) color=rgb(84, 192, 138)' = 3.26:1. Both modes fail."
+ },
+ {
+  "id": "actions-5",
+  "group": "actions",
+  "subject": "toggle-group",
+  "adapters": [
+   "angular",
+   "styles",
+   "guide"
+  ],
+  "dimension": "visual",
+  "title": "Angular multiple-mode buttons have no data-variant, so hover and focus turn primary green with unreadable text",
+  "description": "React and Vue render multiple-mode options through Button with variant=secondary. The Angular template renders a bare class=\"hw-button\", which the stylesheet treats as primary. In the outline variant an unpressed option becomes: on hover, green text on dark green (1.39:1 light, 2.92:1 dark); on keyboard focus, dark grey text on primary green (2.14:1 light), or 4.32:1 in dark. React and Vue show grey backgrounds in the same states (focus 9.25:1). The guide's vanilla demo markup has the same omission and behaves the same way.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/interactions.ts",
+    "line": 9,
+    "quote": "<button type=\"button\" class=\"hw-button\" [disabled]=\"disabled || option.disabled\" [attr.aria-disabled]=\"readOnly || null\" [attr.aria-pressed]=\"selected(option.value)\""
+   },
+   {
+    "file": "packages/react/src/expanded-interactive.tsx",
+    "line": 23,
+    "quote": "<Button key={option.value} variant=\"secondary\" aria-pressed={values.includes(option.value)}"
+   },
+   {
+    "file": "apps/playground/src/segmented-demo.ts",
+    "line": 6,
+    "quote": "<button class=\"hw-button\" type=\"button\" data-hw-value=\"${index}\" aria-pressed=\"${index===0}\""
+   }
+  ],
+  "expected": "Same rendering as React and Vue (data-variant=\"secondary\"), and readable text in every state (WCAG 1.4.3).",
+  "fix": "Render data-variant=\"secondary\" data-size=\"md\" on the Angular buttons and in the vanilla demo markup; better, make the toggle-group CSS independent of the button variant (see actions-4).",
+  "repro": "out/test-b.angular.light.log: 'om.focusSecond(unpressed): ... bg=rgb(27, 131, 84) color=rgb(56, 66, 80)' and 'om.hoverSecond(unpressed): hover=true bg=rgb(22, 106, 69) color=rgb(27, 131, 84) data-variant=null'. React printed 'bg=rgb(243, 244, 246) color=rgb(56, 66, 80)' and 'bg=rgb(229, 231, 235) ... data-variant=secondary'. out/test-b.vanilla.light.log matches Angular. Ratios in out/contrast.out. All under <scratch>/audit/work/actions/.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/interactions.ts:9 ('<button type=\"button\" class=\"hw-button\" ...' with no data-variant) versus packages/react/src/expanded-interactive.tsx:23 and packages/vue/src/expansion-interactive.ts:76 (variant: \"secondary\"). Ran <scratch>/audit/verify/actions/t1.cjs and <scratch>/audit/verify/actions/contrast.cjs. Angular: 'outline-multi hover Third: pressed=false variant=null bg=rgb(22, 106, 69) color=rgb(27, 131, 84)' (1.39:1) and keyboard focus 'pressed=false variant=null bg=rgb(27, 131, 84) color=rgb(56, 66, 80)' (2.14:1). React and Vue focus: 'variant=secondary bg=rgb(243, 244, 246) color=rgb(56, 66, 80)' (9.25:1). Visible divergence between adapters and a WCAG 1.4.3 failure. Vanilla: apps/playground/src/segmented-demo.ts:6 emits '<button class=\"hw-button\" type=\"button\" data-hw-value=...' with no data-variant and the createToggleGroup enhancer (packages/vanilla/src/content.ts:19-31) adds none; running that markup in the guide's vanilla editor (t2.cjs) printed 'hover Map: pressed=false variant=null bg=rgb(22, 106, 69) color=rgb(27, 131, 84)', same as Angular. Dark Angular hover: 'bg=rgb(22, 106, 69) color=rgb(84, 192, 138)' = 2.92:1."
+ },
+ {
+  "id": "actions-6",
+  "group": "actions",
+  "subject": "button",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular Button is a directive with no loading input and no type default",
+  "description": "Angular exposes only HwButtonDirective with variant and size. (1) React and Vue default type to 'button'; the directive leaves the native default, so <button hwButton> inside a form submits it. (2) React and Vue have loading (native disabled plus aria-busy); Angular has none, and a loading attribute on <button hwButton loading> is silently ignored: the button stayed enabled, had no aria-busy, was a Tab stop, and its click handler and the form submit both ran. docs/nic-buttons.md:40-41 does say to set disabled and aria-busy by hand in Angular. The guide's own Angular button-group example omits type on its buttons.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/presentation.ts",
+    "line": 8,
+    "quote": "@Directive({selector: 'button[hwButton],a[hwButton]', standalone: true, host: {'class': 'hw-button', '[attr.data-variant]': 'variant', '[attr.data-size]': 'size'}})"
+   },
+   {
+    "file": "packages/react/src/forms.tsx",
+    "line": 12,
+    "quote": "export function Button({ variant = 'primary', size = 'md', loading, disabled, type = 'button', className, children, ...props }: ButtonProps) {"
+   },
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 9,
+    "quote": "loading: Boolean, disabled: Boolean, type: { type: String as PropType<'button' | 'submit' | 'reset'>, default: 'button' } },"
+   },
+   {
+    "file": "apps/playground/src/project-examples.ts",
+    "line": 261,
+    "quote": "<button hwButton variant=\"secondary\" (click)=\"value='preview'\">${g.preview}</button>"
+   }
+  ],
+  "expected": "The same defaults and states as React (forms.tsx:12-13) and Vue (forms.ts:9,13): type=button unless stated, and a loading input that disables and sets aria-busy.",
+  "fix": "Add a loading input (host disabled and aria-busy) and default host type to 'button' when the host is a <button> without an explicit type.",
+  "repro": "node <scratch>/audit/work/actions/test-a.cjs angular printed 'b-default<button>button[type attr=null prop=submit]', 'b-loading<button>button[type attr=null prop=submit] 96.11x40' (not disabled, no busy) and 'log after: default= click-default,submit | loading= click-default,submit,click-loading,submit'. React and Vue printed 'b-default<button>button[type attr=button prop=button]', 'b-loading ... disabled busy=true' and 'default= click-default | loading= click-default'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/presentation.ts:8-12 (directive with only variant and size inputs), packages/react/src/forms.tsx:12-13, packages/vue/src/forms.ts:9-13. Ran <scratch>/audit/verify/actions/t1.cjs: '<button hwButton>' and '<button hwButton loading>' inside a form whose submit is logged, and the React/Vue equivalents. Angular: '#b-default type=submit attr=null disabled=false busy=null | #b-loading type=submit attr=null disabled=false busy=null' and 'log: click-default,submit,click-loading,submit'. React and Vue: '#b-default type=button attr=button ... | #b-loading type=button attr=button disabled=true busy=true' and 'log: click-default'. Angular cannot express loading and its default submits the form; docs/nic-buttons.md:40-41 documents setting disabled/aria-busy manually, which mitigates but does not remove the adapter gap."
+ },
+ {
+  "id": "actions-7",
+  "group": "actions",
+  "subject": "link",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular hw-link hides its anchor: attributes are not forwarded and RouterLink causes a full page reload",
+  "description": "HwLinkComponent renders the anchor inside its template and binds only href, target, rel, variant, current and disabled. (1) aria-label, hreflang, download and class written on <hw-link> stay on the host; the anchor's accessible name stayed 'Attrs' where React and Vue expose 'Named link'. (2) There is no external input (React and Vue have one). (3) routerLink on <hw-link> attaches to the host: the host receives tabindex=0, and clicking the inner anchor reloaded the document, while a native <a class=\"hw-link\" routerLink> navigated client-side. In an Angular application such as the new guide, hw-link cannot be used for in-app navigation.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 12,
+    "quote": "@Component({selector: 'hw-link', standalone: true, template: `<a class=\"hw-link\" [attr.href]=\"disabled ? null : href\" [attr.role]=\"disabled ? 'link' : null\""
+   },
+   {
+    "file": "packages/angular/src/content.ts",
+    "line": 14,
+    "quote": "@Input({required: true}) href = ''; @Input() target = ''; @Input() rel = ''; @Input() variant: 'default' | 'subtle' | 'neutral' | 'standalone' = 'default';"
+   },
+   {
+    "file": "packages/react/src/expanded-content.tsx",
+    "line": 13,
+    "quote": "return <a {...props} className={cx('hw-link', className)} data-variant={variant ?? dataVariant} href={unavailable ? undefined : href}"
+   }
+  ],
+  "expected": "Parity with React (ComponentPropsWithRef<'a'> spread, expanded-content.tsx:10-13) and Vue (mergeProps(attrs, ...), content.ts:18): native anchor attributes reach the anchor, and the link can take part in router navigation.",
+  "fix": "Offer an attribute directive on the native anchor (a[hwLink], like a[hwButton]) so routerLink, ARIA and native attributes apply to the real element; keep hw-link as a thin wrapper or deprecate it.",
+  "repro": "test-a.cjs angular printed '<hw-link id=\"l-attrs\" href=\"#a\" aria-label=\"Named link\" hreflang=\"ar\" download=\"file.txt\" class=\"extra\"><a class=\"hw-link\" href=\"#a\" data-variant=\"default\">Attrs</a></hw-link>'; React printed '<a id=\"l-attrs\" aria-label=\"Named link\" hreflang=\"ar\" download=\"file.txt\" class=\"hw-link extra\" href=\"#a\">'. node ng/hyd/check.cjs (published 0.2.1 with @angular/router 22.2.3) printed 'native a[routerLink]: ... document reloaded: false | marker kept: true', '<hw-link id=\"hw-router\" routerlink=\"/other\" href=\"/other\" tabindex=\"0\" ...>' and 'hw-link[routerLink]: ... document reloaded: true | marker kept: false'. Paths under <scratch>/audit/work/actions/.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/content.ts:12-16 (template binds only href, role, aria-disabled, tabindex, target, rel, aria-current, data-variant; inputs href, target, rel, variant, current, disabled; no external input) against packages/react/src/expanded-content.tsx:9-13 and packages/vue/src/content.ts:10-18. Ran <scratch>/audit/verify/actions/t1.cjs with aria-label, hreflang and class on the link in each adapter. RouterLink: the guide editor refuses '@angular/router' ('Unsupported preview import: @angular/router', t2.cjs), so this part was checked in @angular/router 22.2.3 source (_router_module-chunk.mjs:321 isAnchorElement = tagName === 'a' || ..., :352 setTabIndexIfNotOnNativeEl('0'), :355-381 onClick ... 'return !this.isAnchorElement;'). Angular printed '#l-attrs host=hw-link a.aria-label=null a.hreflang=null a.class=hw-link' and accessibility tree 'link \"Attrs\"'; React and Vue printed 'a.aria-label=Named link a.hreflang=ar a.class=hw-link extra' and 'link \"Named link\"'. From the router source: on <hw-link routerLink> the directive sits on a non-anchor host, so it adds tabindex=0 to the host (an extra tab stop around the inner anchor) and its click handler navigates through the router but returns true, so the inner anchor's default navigation is not prevented and the document reloads. The full-reload observation itself was not reproduced by me (router not importable in the guide editor); the mechanism is shown by the code."
+ },
+ {
+  "id": "actions-8",
+  "group": "actions",
+  "subject": "toggle-group",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "visual",
+  "title": "Angular host wrappers change layout: outline ToggleGroup shrink-wraps where React and Vue stretch",
+  "description": "In React and Vue the fieldset is itself the grid or flex item, so in the guide's default example (.hw-stack) the outline group spans the full width. In Angular the grid item is the <hw-toggle-group> host and the inline-flex fieldset inside it shrinks to its content. The same wrapper effect makes the standalone Link row 2px taller under <hw-link>, shifting the following rows. Button, IconButton and ButtonGroup default examples are pixel-identical across React, Vue and Angular.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/interactions.ts",
+    "line": 9,
+    "quote": "@Component({selector: 'hw-toggle-group', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR"
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 135,
+    "quote": ".hw-toggle-group { display: inline-flex; flex-wrap: wrap; gap: var(--hw-space-1); max-inline-size: 100%;"
+   }
+  ],
+  "expected": "The same example renders the same in every adapter; React and Vue render the fieldset as the root element (expanded-interactive.tsx:23, expansion-interactive.ts:54-56).",
+  "fix": "Give the Angular hosts display: contents (or put the classes on the host element) so the styled element takes part in the parent layout as in React and Vue.",
+  "repro": "node <scratch>/audit/work/actions/pixdiff.cjs printed 'toggle-group en react vs vue: ... differing px 0', 'toggle-group en react vs angular: ... differing px 957 bbox 248,406,438,518', 'toggle-group ar react vs angular: differing px 1153', 'link en react vs angular: differing px 3249 bbox 21,106,196,204', and 0 for button, icon-button and button-group.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/styles/src/extended.css:135 ('.hw-toggle-group { display: inline-flex; ...') and the Angular host selector at interactions.ts:9. Ran <scratch>/audit/verify/actions/t3.cjs on the guide's default examples, measuring each fieldset.hw-toggle-group width and each link's top. toggle-group: React 'toggleWidths=[384,384,384,384,384,384]', Vue identical, Angular 'toggleWidths=[384,384,384,384,234,234]': the two outline groups shrink-wrap inside the <hw-toggle-group> host. link: React 'linkTops=[20,60,100,140,180]', Angular 'linkTops=[22,62,102,144,184]' - a 2px offset from the first row and a further 2px before the fourth; small. The toggle-group divergence is clearly visible."
+ },
+ {
+  "id": "actions-9",
+  "group": "actions",
+  "subject": "toggle-group",
+  "adapters": [
+   "angular",
+   "react",
+   "vue"
+  ],
+  "dimension": "api",
+  "title": "ToggleGroup capabilities differ between adapters (hint/error/required, form attribute, label type)",
+  "description": "From source: (1) hint, error, describedBy and required exist only in Angular; React and Vue have no way to attach a described error to the group. (2) A form attribute for an external form exists in React (prop) and Vue ($attrs.form) but not in Angular. (3) label is ReactNode in React and string-only in Vue and Angular. (4) The read-only prop is readOnly in React and Angular and readonly in Vue. (5) options and label are required in React and Vue but plain optional inputs in Angular. (6) Vue forwards name and form onto the <fieldset> as well as the radios. (7) React puts hw-choice and hw-radio classes on its radios; Vue and Angular do not (no rendered difference was measured).",
+  "evidence": [
+   {
+    "file": "packages/angular/src/interactions.ts",
+    "line": 9,
+    "quote": "@if (hint) {<p class=\"hw-hint\" [id]=\"controlId + '-hint'\">{{ hint }}</p>}@if (error) {<p class=\"hw-error\" [id]=\"controlId + '-error'\">{{ error }}</p>}"
+   },
+   {
+    "file": "packages/react/src/expanded-interactive.tsx",
+    "line": 11,
+    "quote": "interface ToggleBase extends Omit<ComponentPropsWithRef<'fieldset'>, 'defaultValue' | 'onChange'> { options: readonly Option[]; label: ReactNode; name?: string; form?: string; readOnly?: boolean; variant?: 'segmented' | 'outline' }"
+   },
+   {
+    "file": "packages/vue/src/expansion-interactive.ts",
+    "line": 32,
+    "quote": "readonly: Boolean,"
+   },
+   {
+    "file": "packages/angular/src/interactions.ts",
+    "line": 11,
+    "quote": "@Input() options: readonly Option[] = []; @Input({transform: booleanAttribute}) multiple = false;"
+   }
+  ],
+  "expected": "One documented prop set across adapters; the task rubric counts a prop available in one adapter and missing in another as P1.",
+  "fix": "Agree one surface: hint/error/required in all three or none, a form input in Angular, one read-only spelling per framework convention documented side by side, and required options/label in Angular.",
+  "repro": "Source comparison recorded in <scratch>/audit/api/toggle-group.json. Rendered confirmation in out/test-b.vue.light.log: 'host=<fieldset id=\"g-single\" name=\"view\" class=\"hw-toggle-group\" ...'; in out/test-c.axe.log: 'angular g-error fieldset: ... aria-describedby=\"hw-control-8-hint hw-control-8-error\" aria-invalid=\"true\"'.",
+  "verdict": "corrected",
+  "verifierNote": "Read packages/angular/src/interactions.ts:9-11, packages/angular/src/forms.ts:17-23 (label, name, hint, error, describedBy, required inherited from HwValueControl), packages/react/src/expanded-interactive.tsx:11-23, packages/vue/src/expansion-interactive.ts:20-117. Observed Vue attribute placement in <scratch>/audit/verify/actions/t1.cjs. Accurate statement: (1) Built-in hint/error text with aria-describedby and aria-invalid, and 'required' on the radios, exist only in Angular. React (fieldset props spread, expanded-interactive.tsx:11,23) and Vue (attrs merged onto the fieldset, expansion-interactive.ts:56) can still pass aria-describedby/aria-invalid to the fieldset, so 'no way to attach a described error' is overstated; what React/Vue cannot do is mark the radios required (React radios get no required prop; a Vue required attr lands on the fieldset). (2) Angular radios have no form binding (interactions.ts:9) while React has form (line 11) and Vue forwards attrs.form (line 105): confirmed. (3) label ReactNode vs String: confirmed. (4) readOnly vs readonly: confirmed but documented in docs/nic-segmented.md:21-22 (P2 naming). (5) options/label not required in Angular: confirmed ('@Input() options: readonly Option[] = []', label = '' in forms.ts:18). (6)/(7) confirmed from source, no visible effect. P1 for the missing required/form capabilities; the rest is P2."
+ },
+ {
+  "id": "actions-11",
+  "group": "actions",
+  "subject": "toggle-group",
+  "adapters": [
+   "vue",
+   "react"
+  ],
+  "dimension": "behavior",
+  "title": "Vue emits update:modelValue for every group on form reset, with '' for a multiple group; React emits nothing",
+  "description": "On a native form reset Vue calls model.set(props.defaultValue), which emits update:modelValue for every ToggleGroup in the form, changed or not. defaultValue defaults to '' even when multiple is set, so a multiple group without default-value emits the string '' where an array is expected. React resets its internal state without calling onValueChange. Listeners therefore see different events for the same action.",
+  "evidence": [
+   {
+    "file": "packages/vue/src/expansion-interactive.ts",
+    "line": 52,
+    "quote": "useFormReset(element, () => model.set(props.defaultValue));"
+   },
+   {
+    "file": "packages/vue/src/expansion-interactive.ts",
+    "line": 29,
+    "quote": "default: \"\","
+   },
+   {
+    "file": "packages/react/src/expanded-interactive.tsx",
+    "line": 21,
+    "quote": "useFormReset(input, () => { if (value === undefined) setInternal(defaultValue ?? (multiple ? [] : '')); }, form);"
+   }
+  ],
+  "expected": "Consistent reset semantics, and a string[] payload in multiple mode (React default for multiple is [], expanded-interactive.tsx:19).",
+  "fix": "Default defaultValue to [] when multiple, and decide in the contract whether a reset notifies listeners; apply the same in React and Vue.",
+  "repro": "out/test-b.vue.light.log afterReset log ends with 'single=\"first\" multi=[\"first\"] ro=\"first\" om=[\"first\"] nd=\"\" os=\"first\" rtl=\"first\"'; the React afterReset log has no entries added by the reset. Files under <scratch>/audit/work/actions/.",
+  "verdict": "corrected",
+  "verifierNote": "Read packages/vue/src/expansion-interactive.ts:27-30 (defaultValue default \"\"), :47-52 ('useFormReset(element, () => model.set(props.defaultValue));') and packages/vue/src/shared.ts:28-41 (set() always emits); packages/react/src/expanded-interactive.tsx:21. Ran <scratch>/audit/verify/actions/t1.cjs with a Vue v-model group (initial 'first', no default-value) and a type=reset button. Confirmed that Vue emits update:modelValue with defaultValue for every group on reset and React emits nothing. More serious than reported: a Vue v-model ToggleGroup without default-value is cleared on reset. t1 Vue printed before reset 'ctrl[fir sec* thi] model=second ... FormData=view=second&ctrl=second&...' and after reset 'ctrl[fir sec thi] model= ... FormData=view=first&multi=first&seg=first': the bound value becomes '' and nothing is selected or submitted, instead of returning to the initial 'first'. For multiple mode without default-value the emitted payload is the string '' where string[] is expected (types allow it via the shared prop type). Form-integration bug: P1."
+ },
+ {
+  "id": "actions-v1",
+  "group": "actions",
+  "subject": "toggle-group",
+  "adapters": [],
+  "dimension": "added by verifier",
+  "title": "React controlled ToggleGroup shows and submits a different option than its state after a native form reset",
+  "description": "useFormReset only resets uncontrolled groups ('if (value === undefined)'), but the browser still resets the controlled radios to their initial checked state and React does not re-render. In <scratch>/audit/verify/actions/t1.cjs (React, value={ctrl} onValueChange={setCtrl}, initial 'first', user picks 'second', then a type=reset button) the output was before reset 'ctrl[fir sec* thi] model=second ... ctrl=second' and after reset 'ctrl[fir* sec thi] model=second ... FormData=view=first&ctrl=first&...': the visible selection and the submitted value say 'first' while the application state still says 'second'. Expected (docs/nic-segmented.md:26-27 'React/Vue external-form reset restores defaults'): view, submission and state agree after reset, either by re-asserting the controlled value or by reporting the reset through onValueChange. Screenshot: <scratch>/audit/verify/actions/shots/t1.react.after-reset.png.",
+  "evidence": [
+   {
+    "file": "packages/react/src/expanded-interactive.tsx",
+    "line": 21,
+    "quote": "useFormReset(input, () => { if (value === undefined) setInternal(defaultValue ?? (multiple ? [] : '')); }, form);"
+   }
+  ],
+  "expected": null,
+  "fix": null,
+  "repro": null,
+  "verdict": "unverified",
+  "verifierNote": "Raised by the verifier; not re-checked by a third agent."
+ },
+ {
+  "id": "fields-basic-2",
+  "group": "fields-basic",
+  "subject": "text-field",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "a11y",
+  "title": "Angular value controls cannot be named without a visible label; an empty label is always rendered",
+  "description": "hw-text-field, hw-textarea, hw-select and hw-number-field always render <label class=\"hw-label\"> and expose no ariaLabel/ariaLabelledby input. An aria-label written on the host stays on the <hw-text-field> element and never reaches the input, so the control is exposed as an unnamed textbox. With label omitted the empty label still occupies a grid row (section height 48px instead of 40px). React and Vue forward aria-label to the input and render no label element. Only hw-text-field was run in the browser; the other three share the same label template.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 39,
+    "quote": "const fieldLabel = `<label class=\"hw-label\" [for]=\"controlId\">{{ label }}"
+   },
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 18,
+    "quote": "@Input() label = '';"
+   },
+   {
+    "file": "packages/react/src/shared.tsx",
+    "line": 78,
+    "quote": "'aria-labelledby': props['aria-labelledby'] ?? (props['aria-label'] ? undefined : field?.labelId),"
+   }
+  ],
+  "expected": "A control can be given an accessible name without a visible label (WCAG 2.2 SC 4.1.2), as in React (packages/react/src/forms.tsx:19 spreads props on the input) and Vue (packages/vue/src/forms.ts:71 merges attrs on the input); no empty label element.",
+  "fix": "Add ariaLabel and ariaLabelledby inputs to HwValueControl, bind them on the native control, and render the label only when label is non-empty.",
+  "repro": "node .../work/fields-basic/run-matrix.cjs (case tf-aria). print-matrix.cjs output: react/vue 'ctl input ... labels=[] aria-label=Search term', H=40; angular 'hosts: hw-text-field(inline; aria-label=Search term name=q)', 'ctl input ... labels=[\"\"] aria-label=null', 'lbl <label.hw-label> ... text=\"\" h=0', H=48. Aria snapshot out/matrix.angular.en-ltr.light.aria.yml line 7: '- textbox' (no name); react/vue: '- textbox \"Search term\"'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:15-39 (inputs list has no aria inputs; fieldLabel always emitted). Ran <scratch>/audit/verify/fields-basic/ng.cjs case c-aria: <hw-text-field controlId=\"tfa\" aria-label=\"Search term\" name=\"q\" />. <scratch>/audit/verify/fields-basic/out/ng.json: hostAria \"Search term\", inputAria null, labels [\"\"] (one empty label, height 0), section height 48 vs 40 for a bare input; ariaSnapshot of the section: \"- textbox\" (no name). React useFieldControl (packages/react/src/shared.tsx:78) and Vue useField (packages/vue/src/shared.ts:23) honour aria-label/aria-labelledby on the control. Angular therefore cannot name a control without a visible label (e.g. inside an input group or a search row)."
+ },
+ {
+  "id": "fields-basic-3",
+  "group": "fields-basic",
+  "subject": "field",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular hw-field cannot wrap Hawiyah controls; hint, error and required are not connected to the projected control",
+  "description": "React and Vue Field provide a context that gives a nested TextField/Select/NumberField its id, aria-labelledby, aria-describedby, aria-invalid and required. Angular hw-field only projects content. Wrapping an hw-text-field in hw-field leaves the input without required, aria-describedby and aria-invalid although the Field shows a required marker and an error, adds a second empty label, and produces a duplicate id when both carry a hint (fn2-hint). The Angular README documents that hw-field takes a native control and that description ids must be connected by hand, so this is a documented limitation, but it means the Field + TextField composition used in the React and Vue guide examples has no Angular equivalent (the Angular example uses a raw <input> with manual bindings).",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 42,
+    "quote": "template: `<div class=\"hw-field\">${fieldLabel}<ng-content />@if (hint) {<p class=\"hw-hint\" [id]=\"controlId + '-hint'\">{{ hint }}</p>}"
+   },
+   {
+    "file": "packages/react/src/shared.tsx",
+    "line": 63,
+    "quote": "<FieldContext.Provider value={{ id, labelId, description, invalid: Boolean(error || parent?.invalid), required: isRequired }}>"
+   },
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 23,
+    "quote": "provideField(context);"
+   },
+   {
+    "file": "packages/angular/README.md",
+    "line": 71,
+    "quote": "Project a native control with that ID and explicitly connect description IDs."
+   }
+  ],
+  "expected": "Same composition as React (packages/react/src/shared.tsx:72-82 useFieldControl) and Vue (packages/vue/src/shared.ts:14-27 useField): a Hawiyah control inside Field inherits label, description, invalid and required.",
+  "fix": "Provide the field state through an injection token from HwFieldComponent and let HwValueControl read it (skip its own label, merge description ids, inherit required/invalid).",
+  "repro": "run-matrix.cjs, case field-nested. react/vue: 'ctl input ... req=true ... lblby=[\"Outer *\"] desc=[\"Outer hint\",\"Outer error\"] invalid=true'. angular (<hw-field controlId=\"fn1\" ... required><hw-text-field controlId=\"fn1\"/></hw-field>): 'ctl input ... req=false ... labels=[\"Outer *\",\"\"] desc=[] invalid=null', H=122.3 vs 114.3. Case field-nested-both: angular 'dup ids: [\"fn2-hint\"]'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:42-51 (hw-field only projects ng-content, provides no context), packages/react/src/shared.tsx:56-82, packages/vue/src/shared.ts:14-27, packages/angular/README.md:71. Ran <scratch>/audit/verify/fields-basic/ng.cjs case c-nest: <hw-field controlId=\"fn1\" label=\"Outer\" hint=\"Outer hint\" error=\"Outer error\" required><hw-text-field controlId=\"fn1\" /></hw-field>. Observed: input required=false, aria-describedby=null, aria-invalid=null, labels [\"Outer *\", \"\"] although the field shows a required marker, a hint and an error. The README documents that hw-field takes a projected native control, so this is a documented limitation, but the natural composition (as in React/Vue) silently yields an inaccessible field, and the guide's Field example cannot be written the same way in Angular. The duplicate-id part (both carrying a hint) was not re-run by me."
+ },
+ {
+  "id": "fields-basic-5",
+  "group": "fields-basic",
+  "subject": "select",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular Select has no option/optgroup projection and no multiple; projected children are dropped silently",
+  "description": "React Select accepts native option/optgroup children and native multiple/size; Vue Select accepts option/optgroup in its default slot. Angular hw-select renders only the options input: its template has no ng-content, so projected <optgroup>/<option> disappear without an error, and there is no multiple input. Grouped options are therefore impossible with the Angular component; the guide's accessibility guidance recommends optgroup for related choices.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 88,
+    "quote": "@for (option of options; track option.value) {<option [value]=\"option.value\" [disabled]=\"option.disabled ?? false\" [selected]=\"option.value === value\">{{ option.label }}</option>}</select>"
+   },
+   {
+    "file": "packages/react/src/forms.tsx",
+    "line": 40,
+    "quote": "{option.label}</option>)}{children}</select>"
+   },
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 64,
+    "quote": "const slotOptions = tag === 'select' ? slots.default?.() : undefined;"
+   }
+  ],
+  "expected": "Parity with React (packages/react/README.md:76 \"`options: Option[]` or native option/optgroup children. Native `multiple` is supported\") and Vue (packages/vue/README.md:79 \"native option children also accepted\").",
+  "fix": "Add <ng-content /> inside the select (or an Option-group model) and document the scalar-model limit for multiple.",
+  "repro": "run-matrix.cjs, case sel-children (<optgroup label=\"G\"><option value=\"x\">X</option><option value=\"y\">Y</option></optgroup>, default y): react/vue 'val=\"y\" ... opts=[\"x|X|\",\"y|Y|s\"]' with structure '<select.hw-select><optgroup>'; angular 'val=\"\" ... opts=[\"|اختر خيارًا|s\"]'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:88 (select template: prompt + @for options, no <ng-content>), packages/react/src/forms.tsx:40 ({children} inside select), packages/vue/src/forms.ts:64-70 (default slot options), packages/react/README.md:76, packages/vue/README.md:79, packages/angular/README.md (\"Native single select.\"). Ran <scratch>/audit/verify/fields-basic/ng.cjs case c-selg with projected <optgroup>. Angular: value \"\" options [\"|اختر خيارًا\"], 0 optgroup elements anywhere in the section: projected options are dropped silently; there is no multiple input. Single-select limitation is stated in the Angular README, but grouped options and multiple are available in React (and grouped options in Vue) and not in Angular."
+ },
+ {
+  "id": "fields-basic-6",
+  "group": "fields-basic",
+  "subject": "textarea",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "visual",
+  "title": "Angular Textarea is 122px tall by default; the other adapters render the documented 96px",
+  "description": "HwTextareaComponent defaults rows to 4 and always binds [rows], which makes the textarea 122px high. Vanilla, React and Vue set no rows and get the min-block-size from --hw-profile-textarea-height (6rem = 96px), the height recorded in dga.css as the source measurement. The default Angular textarea therefore differs visibly from the other three adapters and from the documented reference height.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 80,
+    "quote": "@Input() rows = 4;"
+   },
+   {
+    "file": "packages/styles/src/dga.css",
+    "line": 169,
+    "quote": "/* Textarea form5:47724:96px high, padding12/16. User resizing remains native. */"
+   },
+   {
+    "file": "packages/styles/src/dga.css",
+    "line": 27,
+    "quote": "--hw-profile-textarea-height: 6rem;"
+   }
+  ],
+  "expected": "96px default height in every adapter (packages/styles/src/dga.css:169-170).",
+  "fix": "Default rows to null and bind [attr.rows] only when set.",
+  "repro": "run-matrix.cjs, case ta-plain: vanilla/react/vue 'ctl textarea ... rows=null ... 335x96', section H=126.8; angular 'rows=4 ... 335x122', H=152.8. Same in ar-rtl and dark runs.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:75,80 ([rows]=\"rows\", rows = 4), packages/styles/src/dga.css:27,169-170. Ran <scratch>/audit/verify/fields-basic/ng.cjs case c-ta and <scratch>/audit/verify/fields-basic/heights.cjs for React/Vue. Angular textarea rows=\"4\", height 122px, computed min-block-size 96px. React and Vue (ar/rtl run, <scratch>/audit/verify/fields-basic/out/heights.txt): textarea rows null, height 96px. Angular is 26px taller than the documented 6rem reference and than the other adapters."
+ },
+ {
+  "id": "fields-basic-7",
+  "group": "fields-basic",
+  "subject": "number-field",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "visual",
+  "title": "Angular NumberField shows no required marker",
+  "description": "hw-number-field writes its own label instead of the shared fieldLabel template, so a required number field has no asterisk. React and Vue show 'Seats *'. The native required attribute is still set, so the state is exposed programmatically, but sighted users get no indication. The guide's own number-field example shows the marker in React and Vue and not in Angular.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 103,
+    "quote": "<div class=\"hw-field hw-number-field\"><label class=\"hw-label\" [for]=\"controlId\">{{ label }}</label><input class=\"hw-input\" type=\"number\""
+   },
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 39,
+    "quote": "@if (required) {<span class=\"hw-required-marker\" aria-hidden=\"true\"> *</span>}</label>"
+   },
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 36,
+    "quote": "props.required && h('span', { class: 'hw-required-marker', 'aria-hidden': 'true' }, ' *')"
+   }
+  ],
+  "expected": "Required marker as in Angular's own TextField (packages/angular/src/forms.ts:39), React (packages/react/src/shared.tsx:65) and Vue (packages/vue/src/forms.ts:36).",
+  "fix": "Use the shared fieldLabel template in the expanded Angular controls.",
+  "repro": "run-matrix.cjs, case nf-basic (required): react/vue 'lbl ... text=\"Seats *\" marker=true/true'; angular 'lbl ... text=\"Seats\" marker=false/null'. Default guide example: out/default.number-field.{react,vue}.json contain 1 hw-required-marker, angular 0.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/advanced-controls.ts:103 (own <label> without the required-marker block used by fieldLabel at forms.ts:39). Ran <scratch>/audit/verify/fields-basic/ng.cjs case c-nf (required). Angular label text \"Seats\", no .hw-required-marker; React/Vue render \" *\" (packages/react/src/shared.tsx:65, packages/vue/src/forms.ts:36). Native required is set, so this is a visible-indication gap (WCAG 3.3.2) and a visual divergence between adapters."
+ },
+ {
+  "id": "fields-basic-8",
+  "group": "fields-basic",
+  "subject": "text-field",
+  "adapters": [
+   "angular",
+   "react",
+   "vue"
+  ],
+  "dimension": "behavior",
+  "title": "A native form reset leaves each adapter in a different state; Angular keeps a stale model behind an emptied input",
+  "description": "Clicking a <button type=\"reset\">: Vue controls reset themselves and emit update:modelValue. Angular hw-text-field, hw-textarea and hw-select are emptied by the browser (even one created with value=\"init\" becomes '', not 'init') while the component value and the bound parent state keep the old text and no valueChange is emitted; hw-number-field instead keeps the last typed number because [attr.value] mirrors the model. React controlled inputs keep their state, but a controlled React Select shows the prompt while state still holds the old value. docs/input-review.md records the Angular behaviour as an intentional difference (use Angular Forms reset), but the visible result is an input that shows empty while the application still holds a value. Angular Forms reset (FormGroup.reset, ngForm.resetForm) works correctly.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 55,
+    "quote": "[value]=\"value || ''\" [disabled]=\"disabled\" [required]=\"required\" [readOnly]=\"readOnly\""
+   },
+   {
+    "file": "packages/vue/src/shared.ts",
+    "line": 38,
+    "quote": "const listener = (event: Event) => queueMicrotask(() => { if (!event.defaultPrevented) reset(); });"
+   },
+   {
+    "file": "docs/input-review.md",
+    "line": 30,
+    "quote": "Angular uses its ControlValueAccessor and Angular Forms reset. This is an"
+   }
+  ],
+  "expected": "After a native reset the displayed value and the adapter's reported value agree, in every adapter (Vue behaviour at packages/vue/src/forms.ts:58-61; guide text apps/playground/src/component-native-guides.ts:27 \"Native reset restores the initial value for an uncontrolled input\").",
+  "fix": "In Angular, listen for the owning form's reset (after the browser has applied it) and either restore the DOM from the model or write the empty value and emit; document which one.",
+  "repro": "run-beh.cjs, 'after native reset': angular tf dom.value \"\" with state {\"v\":\"hello\",\"t\":\"a\\nb\",\"s\":\"a\"} and no new log entries; angular unc (value=\"init\") dom.value \"\" (vanilla/react/vue \"init\"); angular uncn dom.value \"2.5\" (vanilla/react/vue \"5\"); react sel dom.value \"\" with state s:\"a\"; vue state {\"v\":\"\",\"t\":\"\"} with log ...[\"text\",\"\"],[\"area\",\"\"]. run-ngforms.cjs: after group.reset() all DOM values '' and model null; after ngForm.resetForm() m = {text:null,num:null,sel:null}.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:55, docs/input-review.md:29-32, apps/playground/src/component-native-guides.ts:41. Ran <scratch>/audit/verify/fields-basic/ng.cjs (form with two-way bound text, uncontrolled value=\"init\", select, number; real click on <button type=reset>) and <scratch>/audit/verify/fields-basic/vr.cjs (React/Vue). Angular after click reset: DOM rt=\"\" ru=\"\" rs=\"\" rn=\"7\" while model stays {t:\"hello\", s:\"b\", rn:7}; no valueChange. value=\"init\" resets to \"\" (not init). React controlled Select: dom \"\" while state s \"c\"; uncontrolled TextField restored to \"init\". Vue: TextField emits \"\" and DOM agrees. docs/input-review.md:29-32 declares the Angular behaviour intentional and the select guide says \"Keep controlled application state synchronized when handling form reset\", so it is documented; it is still a form-integration hazard (a user sees cleared fields and submits stale model values)."
+ },
+ {
+  "id": "fields-basic-9",
+  "group": "fields-basic",
+  "subject": "select",
+  "adapters": [
+   "vue"
+  ],
+  "dimension": "behavior",
+  "title": "Vue Select without defaultValue is not reset by a form reset",
+  "description": "For a select the Vue reset handler uses the element's current value when no defaultValue is given. A Select with a placeholder and a chosen option therefore keeps the chosen option after the form is reset and re-emits it, while the vanilla markup, React (uncontrolled) and Angular DOM return to the prompt, and Vue's own TextField returns to ''. The result is the same for a user click on the reset button and for form.reset() called from script.",
+  "evidence": [
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 59,
+    "quote": "model.set(props.defaultValue ?? (tag === 'select' ? element.value?.value : '') ?? '');"
+   }
+  ],
+  "expected": "After reset the select returns to its authored default (the empty prompt here), as the native control does (vanilla run) and as the guide states: apps/playground/src/component-native-guides.ts:41 \"Native reset restores authored defaults.\"",
+  "fix": "Remember the initial selection at mount (or use the option carrying defaultSelected) instead of reading the live element value at reset time.",
+  "repro": "run-beh2.cjs: Select with placeholder 'Choose', press End (value 'c'), click reset. 'after reset button click': vanilla sel value \"\", react \"\", angular \"\", vue sel {\"value\":\"c\",\"filled\":\"true\"} with log ...[\"selreset\",\"c\"] emitted again. 'after form.reset() from script': vue sel value \"c\" again; others \"\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/vue/src/forms.ts:58-61 (reset uses element.value?.value for a select without defaultValue) and packages/vue/src/shared.ts:38. Ran <scratch>/audit/verify/fields-basic/vr.cjs vue: Select placeholder \"Choose\", End -> \"c\", click reset; then form.reset() from script. <scratch>/audit/verify/fields-basic/out/vr.txt: 'vue after click reset: s=\"c\"/true ... log s:c,s:c' and 'after script reset: s=\"c\"/true ... s:c,s:c,s:c'. Vue Select keeps and re-emits the chosen option on reset, whereas the TextField in the same form returns to \"\" and the native/vanilla select returns to the prompt."
+ },
+ {
+  "id": "fields-basic-10",
+  "group": "fields-basic",
+  "subject": "text-field",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular TextField/Textarea/Select/NumberField forward no native attributes or focus events; (blur) and (focus) on the host never fire",
+  "description": "React spreads every native attribute, handler and ref on the control and Vue merges $attrs and listeners on it. The Angular components expose a fixed input list: anything else (aria-*, data-*, list, form, enterkeyhint, autocapitalize, spellcheck, tabindex, title; class lands on the host) cannot be set on the native control, and the only output is valueChange. Because blur and focus do not bubble, (blur)=\"...\" and (focus)=\"...\" written on <hw-text-field> never run; only focusout/focusin, keydown, input and change reach the host. The guide's Field example needs a blur handler to show validation, which is why the Angular version falls back to a raw input. dir and lang on the host do reach the input by inheritance (computed direction ltr confirmed).",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 55,
+    "quote": "(input)=\"update($any($event.target).value)\" (blur)=\"touch()\">"
+   },
+   {
+    "file": "packages/react/src/forms.tsx",
+    "line": 19,
+    "quote": "return <input {...props} {...field} ref={ref} className={cx('hw-input', props.className)} />;"
+   },
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 71,
+    "quote": "const control = h(tag, mergeProps(attrs, field.controlAttrs.value, {"
+   }
+  ],
+  "expected": "Equivalent reach to the native control as React (packages/react/README.md:43 \"are passed to the component's principal native element\") and Vue (packages/vue/README.md:51).",
+  "fix": "Add blurred/focused outputs (or re-emit), an attribute pass-through mechanism (e.g. a directive-on-native-input form of the components), and at minimum aria-label/aria-labelledby inputs.",
+  "repro": "node .../work/fields-basic/run-misc.cjs printed: 'angular host event counts after focus, type \"ab\", Tab: {\"blur\":0,\"focus\":0,\"focusout\":1,\"keydown\":3,\"input\":2,\"change\":1,\"valueChange\":2}'. run-matrix.cjs case tf-class: react/vue input class 'hw-input extra'; angular 'hw-text-field.extra' host with input class 'hw-input'.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:15-26,55 (fixed inputs, only valueChange output, (blur)=\"touch()\" internal). Ran <scratch>/audit/verify/fields-basic/ng.cjs case c-ev with (blur) (focus) (focusin) (focusout) on <hw-text-field>, clicked, typed, Tab. Logged events: \"focusin,focusout\" only; (blur) and (focus) never ran. aria-label on the host did not reach the input (case c-aria). React spreads props on the input (packages/react/src/forms.tsx:19), Vue merges attrs (packages/vue/src/forms.ts:71)."
+ },
+ {
+  "id": "choices-2",
+  "group": "choices",
+  "subject": "checkbox",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "behavior",
+  "title": "Angular choice and range controls desynchronise from their model on native form reset; read-only values are changed",
+  "description": "Angular binds only the checked/value DOM properties ([checked]=\"value\", [value]=\"value\"), never the default attribute, and has no reset listener for these components. A native reset (button type=reset in a form without Angular forms directives) therefore unchecks every hw-checkbox, hw-switch and hw-radio (including read-only ones), moves every hw-slider/hw-range-slider thumb to the HTML default (midpoint) and clears hw-rating, while the component value, the bound model and the visible <output> keep the old values and no valueChange is emitted. Form data after reset was empty for choices/rating and contained values the model does not hold for sliders (ro=50 while the read-only slider value is 30). React, Vue and vanilla restore their defaults on the same reset. Affects checkbox, switch, radio, slider, range-slider and rating.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 100,
+    "quote": "<input class=\"hw-checkbox\" type=\"checkbox\" [id]=\"controlId\" [name]=\"name\" [checked]=\"value\" ..."
+   },
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 106,
+    "quote": "<input class=\"hw-slider\" type=\"range\" [id]=\"controlId\" [name]=\"name\" [value]=\"value\" ..."
+   },
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 31,
+    "quote": "writeValue(value: T): void { this.value = value; this.changeDetector.markForCheck(); }"
+   },
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 103,
+    "quote": "useFormReset(element, () => {"
+   }
+  ],
+  "expected": "Same reset semantics as React/Vue (packages/vue/src/forms.ts:103 restores defaults; docs/rating.md says native radios keep reset semantics), or at minimum DOM and model stay in sync and read-only values are not altered.",
+  "fix": "Bind the default too ([attr.checked]/[defaultChecked], [attr.value]) or listen for the owning form's reset event (as Vue useFormReset does) and re-apply the current or initial value, emitting valueChange only when it changes. Document behaviour with and without NgForm.",
+  "repro": "<scratch>/audit/work/choices/choices-test.cjs (log <scratch>/audit/work/choices/rerun/choices.v2.log): angular \"after reset => ctl#1:0 unc#1:0 ... ro#1:0 ... r#1:0 ... q#1:0 | form= | state={\"c\":true,...}\" vs react \"after reset => ... unc:1 ... ro:1 ... r1:1 | form=unc=on&ro=on&swro=on&g=a&q=a\". <scratch>/audit/work/choices/range-test.cjs (log <scratch>/audit/work/choices/rerun/range.v2.log): angular \"after reset => def#1=50 ctl#1=50 ... ro#1=50 dis#1=50 ... rng#1=50 rng#2=50\" with outputs still showing model values; formAfterReset \"def=50&ctl=50&unc=5&ro=50&...\". Rating probe <scratch>/audit/work/choices/out/p-rating.json: angular formAfterReset \"\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:97-118 and advanced-controls.ts:9-15,103-131 (no reset listener; only [checked]/[value] property bindings); ran <scratch>/audit/verify/choices/t1.cjs (sources <scratch>/audit/verify/choices/sources.cjs; output <scratch>/audit/verify/choices/t1.log and <scratch>/audit/verify/choices/t1b.log): same form (checkbox, read-only checkbox, switch, radio, slider, read-only slider, range slider, rating) in React (uncontrolled defaults), Vue (default-value) and Angular ([(value)] bindings), changed values with real clicks and ArrowRight key presses, then clicked a native type=reset button. Printed after reset. React: \"ctl:on✓ ro:on✓ sw:on✓ q:b✓ sl=30 slro=30 rng=20 rng=80 rt:3✓\"; Vue: identical. Angular: \"sl=50 slro=50 rng=40 rng=60 | form=sl=50&slro=50&rng=40&rng=60 | outputs=33/30/20 – 80 | model={\\\"ctl\\\":false,\\\"ro\\\":true,\\\"sw\\\":true,\\\"q\\\":\\\"a\\\",\\\"sl\\\":33,\\\"slro\\\":30,\\\"rng\\\":[20,80],\\\"rt\\\":5}\". So in Angular every checkbox, switch, radio and rating input is unchecked (including the read-only checkbox whose model stays true), sliders move to the native midpoint of their current min/max (read-only slider 30 -> 50; range handles 40/60 because the lower handle max is bound to the upper value), the visible outputs and the model keep the pre-reset values, and FormData no longer matches the model. Small correction to the auditor: the range handles land on 40/60 in this configuration, not 50/50. The Angular guide examples themselves rely on native reset ((reset)=\"value = 50\"). HwExpandedValueControl.writeValue only covers Angular-forms resets (advanced-controls.ts:9 comment). Vanilla was not re-run (authored native defaults)."
+ },
+ {
+  "id": "choices-3",
+  "group": "choices",
+  "subject": "checkbox",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "a11y",
+  "title": "Angular choice and slider components cannot be given an accessible name without a visible label",
+  "description": "HwCheckboxComponent, HwSwitchComponent and HwSliderComponent expose no ariaLabel/ariaLabelledby input. aria-label written on the host element stays on the non-interactive host, so the native input has an empty name. React and Vue forward aria-label to the input. Icon-only or table-row selection checkboxes therefore cannot be named in Angular.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 18,
+    "quote": "@Input() label = '';"
+   },
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 100,
+    "quote": "<label class=\"hw-choice\" [for]=\"controlId\"><input class=\"hw-checkbox\" ...><span>{{ label }}</span></label>"
+   },
+   {
+    "file": "packages/react/src/forms.tsx",
+    "line": 61,
+    "quote": "<input {...props} {...field} ref=... type=..."
+   }
+  ],
+  "expected": "WCAG 2.2 SC 4.1.2 (name, role, value); parity with React forms.tsx:61 and Vue forms.ts:123 which forward aria-* attributes to the input.",
+  "fix": "Add ariaLabel / ariaLabelledby inputs bound to the input with [attr.aria-label], or a directive that moves aria-* from host to input; test an unlabeled checkbox.",
+  "repro": "<scratch>/audit/work/choices/choices-test.cjs: \"nolabel\" checkbox with aria-label=\"No visible label\": vanilla/react/vue label \"No visible label\", angular label \"\". <scratch>/audit/work/choices/range-test.cjs: angular slider nolabel label \"\" (react \"No visible label\").",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:14-26,100,110 and advanced-controls.ts:103 (no ariaLabel/ariaLabelledby input; template binds only [attr.aria-describedby]); ran <scratch>/audit/verify/choices/t1.cjs (sources <scratch>/audit/verify/choices/sources.cjs; output <scratch>/audit/verify/choices/t1.log and <scratch>/audit/verify/choices/t1b.log) with aria-label on checkbox, switch and slider without a visible label, and read the accessibility tree with Playwright ariaSnapshot. React ariaSnapshot: \"- checkbox \\\"No visible label\\\" - switch \\\"No visible switch\\\" - slider \\\"No visible slider\\\"\"; Vue: same names. Angular: \"- checkbox - switch - slider: \\\"0\\\"\" (no names); inputs have aria-label=null and an empty <span> label. The attribute stays on the <hw-checkbox> host. React forwards props to the input (forms.tsx:61 \"<input {...props} {...field}\"), Vue merges attrs onto the input (forms.ts:123 \"mergeProps(attrs, field.controlAttrs.value\"). Kept at P1 rather than P0 because a visible label input exists; the gap is that Angular cannot provide a non-visible accessible name (WCAG 2.2 SC 4.1.2 for icon-only or row-selection checkboxes)."
+ },
+ {
+  "id": "choices-4",
+  "group": "choices",
+  "subject": "checkbox",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Angular checkbox and switch cannot set the submitted value or project label content",
+  "description": "In Angular `value` is the boolean model, so the native value attribute is always \"on\" (FormData \"ctl=on\" where React/Vue/vanilla submit \"ctl=yes\"). Label is a string input with no content projection, so a label containing a link (e.g. terms acceptance) or markup is impossible; React accepts ReactNode and Vue a default slot.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 101,
+    "quote": "export class HwCheckboxComponent extends HwValueControl<boolean> {"
+   },
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 25,
+    "quote": "@Input() value!: T;"
+   },
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 91,
+    "quote": "value: { type: String, default: 'on' }, readOnly: Boolean, indeterminate: Boolean"
+   },
+   {
+    "file": "packages/vue/src/forms.ts",
+    "line": 126,
+    "quote": "props.label ?? slots.default?.(),"
+   }
+  ],
+  "expected": "Same form participation and label composition as React (CheckboxProps extends input props, label: ReactNode) and Vue (value prop, default slot).",
+  "fix": "Add a nativeValue (or submitValue) input and <ng-content> inside the label; keep the boolean model on value/CVA.",
+  "repro": "<scratch>/audit/work/choices/choices-test.cjs: after clicking \"ctl\" (value=\"yes\" requested): vanilla/react/vue form \"ctl=yes\", angular \"ctl=on\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:25,100-104 (value is the boolean model; template has no <ng-content> and no value attribute binding) and vue/src/forms.ts:91,126; ran <scratch>/audit/verify/choices/t1.cjs (sources <scratch>/audit/verify/choices/sources.cjs; output <scratch>/audit/verify/choices/t1.log and <scratch>/audit/verify/choices/t1b.log) form f4: checked checkbox named ctl, value \"yes\" in React/Vue, label containing a link (React label node, Vue default slot, Angular projected content). Printed: React \"form=ctl=yes input.value=yes link=true labelText=\\\"Accept terms\\\"\"; Vue identical; Angular \"form=ctl=on input.value=on link=false labelText=\\\"Accept\\\"\" (the projected <a> is discarded). Angular has no input for the submitted value and no label projection, so a terms-acceptance checkbox with a link, or a checkbox submitting a specific value, cannot be built with HwCheckboxComponent/HwSwitchComponent."
+ },
+ {
+  "id": "choices-5",
+  "group": "choices",
+  "subject": "radio",
+  "adapters": [
+   "angular",
+   "react",
+   "vue",
+   "vanilla",
+   "docs"
+  ],
+  "dimension": "api",
+  "title": "Radio is a whole group in Angular but a single option elsewhere; no adapter offers the other shape",
+  "description": "Angular hw-radio renders a fieldset/legend, an options array and one string value (a radio group). React and Vue Radio render one radio each, and the consumer composes fieldset/legend; there is no RadioGroup/CheckboxGroup in React, Vue or vanilla, and no single-radio component in Angular. Group-level hint/error therefore differ: Angular describes the fieldset, React/Vue attach hint/error to one radio (aria-describedby \"D hint | D error\" on option D only). Group semantics (fieldset/legend, required, invalid) are left to consumers in three adapters.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 114,
+    "quote": "<fieldset class=\"hw-field\" [disabled]=\"disabled\" ...><legend class=\"hw-label\">{{ label }}</legend>@for (option of options; ..."
+   },
+   {
+    "file": "packages/react/src/forms.tsx",
+    "line": 73,
+    "quote": "export function Radio(props: RadioProps) { return <Choice {...props} kind=\"radio\" />; }"
+   },
+   {
+    "file": "packages/react/README.md",
+    "line": 53,
+    "quote": "Use native `fieldset` and `legend` for related checkbox/radio groups."
+   }
+  ],
+  "expected": "The same component shape in all four adapters (CONTRACT.md lists Radio as one shared component).",
+  "fix": "Add RadioGroup (and CheckboxGroup) to React/Vue/vanilla markup docs with fieldset/legend, group hint/error and required, and either add a single-option Angular radio or rename Angular hw-radio to hw-radio-group with an alias.",
+  "repro": "<scratch>/audit/work/choices/out/choices.en-ltr.light.json: react/vue r4 desc \"D hint | D error\" (only that radio); angular group hint/error on fieldset.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:112-118 (hw-radio renders fieldset/legend + options), react/src/forms.tsx:73 (single Radio), vue/src/forms.ts:121-127 (single input in div.hw-field), READMEs (angular README:76, react README:53,78, vue README:81), CONTRACT.md:52-54; grep for RadioGroup/CheckboxGroup in all adapters (none). Factually correct: Angular HwRadioComponent is a whole group (fieldset, legend, options, one string value, group hint/error on the fieldset); React and Vue Radio are one native radio each with hint/error attached to that radio; no adapter offers the other shape. The expectation needs qualifying: CONTRACT.md:52-54 lists Radio as a shared component but also says \"Framework-specific props idiomatic\", and the per-framework shape is documented in each README, so it is a deliberate but undocumented-at-contract-level divergence. It still blocks parity: Angular cannot render a single radio, rich option labels, per-option hints or a custom layout, and React/Vue cannot produce a component-level legend/hint/error. Additional docs inaccuracy: packages/vue/README.md:81 describes Vue Radio as \"group inside a fieldset with a legend\", but the Vue component renders no fieldset (vue/src/forms.ts:121-127)."
+ },
+ {
+  "id": "choices-6",
+  "group": "choices",
+  "subject": "slider",
+  "adapters": [
+   "vue",
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Slider value display, formatting and aria-valuetext exist only in React",
+  "description": "React Slider has showValue (default true), formatValue and sets aria-valuetext. Vue Slider renders no output and has no formatter or aria-valuetext. Angular Slider always renders an unformatted <output> that cannot be hidden. In the guide default example (same recipe in all four), Angular therefore shows a duplicate \"50\" above the example's own \"Current threshold 50%\" (15% pixel difference in summary.json), while React passes showValue={false}.",
+  "evidence": [
+   {
+    "file": "packages/react/src/expanded-controls.tsx",
+    "line": 31,
+    "quote": "aria-valuetext={formatValue(current)} aria-readonly={props.readOnly || props['aria-readonly']}"
+   },
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 106,
+    "quote": "<output [attr.for]=\"controlId\">{{ value }}</output>"
+   },
+   {
+    "file": "packages/vue/src/controls.ts",
+    "line": 22,
+    "quote": "const numberProps = {"
+   }
+  ],
+  "expected": "Parity with React expanded-controls.tsx:23 (showValue/formatValue); guide api lists showValue/formatValue as the component API.",
+  "fix": "Add showValue/formatValue (aria-valuetext) to Vue and Angular with the same defaults.",
+  "repro": "<scratch>/audit/work/choices/range-test.cjs: react ctl valuetext \"40 percent\", outputs \"40 percent\"; vue no valuetext, no output; angular outputs \"40\", no valuetext.",
+  "verdict": "corrected",
+  "verifierNote": "Read react/src/expanded-controls.tsx:23-32, vue/src/controls.ts:213-260, angular/src/advanced-controls.ts:103-113, guide apps/playground/src/component-expanded-guides.ts:78; ran <scratch>/audit/verify/choices/t1.cjs (sources <scratch>/audit/verify/choices/sources.cjs; output <scratch>/audit/verify/choices/t1.log and <scratch>/audit/verify/choices/t1b.log) form f5 (formatValue v + \" percent\" in React; plain slider in all). Printed: React \"fmt: valuetext=40 percent output=[\\\"40 percent\\\"] | plain: valuetext=40 output=[\\\"40\\\"]\"; Vue \"valuetext=null output=[]\"; Angular \"valuetext=null output=[\\\"40\\\"]\". Accurate statement: showValue and formatValue exist only in React; Vue renders no value output and has no formatter, but aria-valuetext CAN be supplied in Vue through attribute passthrough (controls.ts:235 mergeProps(attrs, ...) onto the input; the same path forwarded aria-label in the f3 check), so \"aria-valuetext only in React\" is wrong for Vue. Angular always renders an unformatted <output> (advanced-controls.ts:103 \"<output [attr.for]=\\\"controlId\\\">{{ value }}</output>\") that cannot be hidden or formatted and has no way to set aria-valuetext (host attributes are not forwarded). The guide API row labels showValue/formatValue as \"React boolean / formatter\", so the guide documents it as React-only."
+ },
+ {
+  "id": "choices-8",
+  "group": "choices",
+  "subject": "range-slider",
+  "adapters": [
+   "vue"
+  ],
+  "dimension": "api",
+  "title": "Vue RangeSlider ignores name: neither handle is submitted",
+  "description": "React and Angular use name for both handles when lowerName/upperName are absent, and vanilla authors name both inputs. Vue reads only lowerName/upperName; name falls through attrs onto the <fieldset>, so with name=\"pair\" the inputs have name=\"\" and FormData contains no pair values.",
+  "evidence": [
+   {
+    "file": "packages/vue/src/controls.ts",
+    "line": 312,
+    "quote": "name: side === \"lower\" ? props.lowerName : props.upperName,"
+   },
+   {
+    "file": "packages/react/src/expanded-controls.tsx",
+    "line": 41,
+    "quote": "<Slider ref={first} label={lowerLabel} name={lowerName ?? name} ..."
+   }
+  ],
+  "expected": "Guide frameworkNotes (apps/playground/src/component-expanded-guides.ts:86): \"lowerName/upperName or a repeated name submit both values\".",
+  "fix": "Declare name (and form) as props and use `props.lowerName ?? props.name`.",
+  "repro": "<scratch>/audit/work/choices/range-test.cjs: rngu (name=\"pair\"): vanilla/react/angular form \"pair=2&pair=8\"; vue inputs name \"\" and fieldset name \"pair\"; vue form has no pair.",
+  "verdict": "confirmed",
+  "verifierNote": "Read vue/src/controls.ts:263-312 (props lowerName/upperName only; attrs merged onto the fieldset; input name: side === \"lower\" ? props.lowerName : props.upperName); ran <scratch>/audit/verify/choices/t1.cjs (sources <scratch>/audit/verify/choices/sources.cjs; output <scratch>/audit/verify/choices/t1.log and <scratch>/audit/verify/choices/t1b.log) form f6: RangeSlider name=\"pair\" in all four adapters. Printed: vanilla/React/Angular \"form=pair=2&pair=8\"; Vue \"form= names=null,null fieldsetName=pair\". Expectation is the guide note at apps/playground/src/component-expanded-guides.ts:86 (\"lowerName/upperName or a repeated name submit both values\") and React expanded-controls.tsx:41 \"name={lowerName ?? name}\"."
+ },
+ {
+  "id": "choices-9",
+  "group": "choices",
+  "subject": "range-slider",
+  "adapters": [
+   "react",
+   "vue",
+   "angular",
+   "vanilla"
+  ],
+  "dimension": "visual",
+  "title": "RangeSlider value display and label styling differ per adapter",
+  "description": "React shows one <output> per handle (via Slider), Angular one combined \"20 – 80\" output, Vue none, vanilla an optional data-hw-range-output formatted with the locale. formatValue exists only in React. Angular handle labels have no hw-label class, so they render in regular weight while the other adapters render bold labels. The guide default example has the same content in all four but renders differently (summary.json pixel ratio 20-25% vs vanilla).",
+  "evidence": [
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 119,
+    "quote": "<label [for]=\"controlId + '-lower'\">{{ lowerLabel }}</label> ... <output [attr.for]=\"controlId + '-lower ' + controlId + '-upper'\">{{ pair[0] }} – {{ pair[1] }}</output>"
+   },
+   {
+    "file": "packages/vue/src/controls.ts",
+    "line": 306,
+    "quote": "h(\"label\", { class: \"hw-label\" }, ["
+   },
+   {
+    "file": "packages/vanilla/src/controls.ts",
+    "line": 42,
+    "quote": "const output = root.querySelector<HTMLOutputElement>('[data-hw-range-output]');"
+   }
+  ],
+  "expected": "Same structure and visible value text in every adapter (AGENTS.md: keep behaviour, styles, APIs and examples synchronized).",
+  "fix": "Pick one presentation (e.g. a combined, locale-formatted output plus aria-valuetext per handle), implement it in all adapters with formatValue, and give Angular labels class hw-label.",
+  "repro": "<scratch>/audit/work/choices/range-test.cjs: outputs react \"20\"/\"80\", angular \"20 – 80\" on both, vue none, vanilla \"20 – 80\" (authored output).",
+  "verdict": "confirmed",
+  "verifierNote": "Read angular/src/advanced-controls.ts:119 (handle labels without class), vue/src/controls.ts:306, vanilla/src/controls.ts:42-49, react/src/expanded-controls.tsx:41-42; ran <scratch>/audit/verify/choices/t1.cjs (sources <scratch>/audit/verify/choices/sources.cjs; output <scratch>/audit/verify/choices/t1.log and <scratch>/audit/verify/choices/t1b.log) form f6 measuring each handle label class/font-weight and output text. Printed: vanilla labels \"Lo/w600/class=hw-label\" outputs [\"2 – 8\"] (authored data-hw-range-output, locale formatted); React \"w600 hw-label\" outputs [\"2\",\"8\"] (one per handle); Vue \"w600 hw-label\" outputs []; Angular \"Lo/w400/class=\" outputs [\"2 – 8\"]. Screenshots show Angular handle labels in regular weight and one combined value line, React a value line under each handle, Vue none. formatValue exists only in React; vanilla formats with the locale."
+ },
+ {
+  "id": "rich-inputs-1",
+  "group": "rich-inputs",
+  "subject": "combobox",
+  "adapters": [
+   "angular",
+   "styles"
+  ],
+  "dimension": "visual",
+  "title": "Angular combobox listbox opens below the hint/error instead of directly under the input",
+  "description": "The listbox is absolutely positioned at 100% of .hw-combobox. React and Vue put .hw-combobox around only the input and list, so the popup sits 8px under the input. Angular puts hw-combobox on the whole field wrapper (label, input, list, status, hint, error), so the popup is pushed below the hint and any error text (30px gap with one short hint line, more with an error). The vanilla guide/test markup puts the hint inside the same root and shows the same 30px offset.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 123,
+    "quote": "template: `<div class=\"hw-field hw-combobox\"><label class=\"hw-label\" [for]=\"controlId\">{{ label }}</label><input #input class=\"hw-input\" role=\"combobox\""
+   },
+   {
+    "file": "packages/react/src/interactive.tsx",
+    "line": 262,
+    "quote": "return <div className=\"hw-combobox\" onBlur={event => {"
+   },
+   {
+    "file": "packages/styles/src/components.css",
+    "line": 214,
+    "quote": ".hw-listbox { position: absolute; z-index: var(--hw-z-popover); inset-inline: 0; inset-block-start: calc(100% + var(--hw-space-2));"
+   }
+  ],
+  "expected": "Same popup placement in every adapter (React/Vue placement, interactive.tsx:262), so the list does not detach from its input.",
+  "fix": "In Angular wrap only the input, hidden input and listbox in an inner div.hw-combobox inside div.hw-field (as React Field does); document the same structure for vanilla markup and move the hint outside the combobox root in examples.",
+  "repro": "node <scratch>/audit/work/rich-inputs/run-all.cjs vanilla,react,vue,angular en ltr light (and ar rtl dark); output <scratch>/audit/work/rich-inputs/out/run-all.en-ltr-light.vanilla_react_vue_angular.json and <scratch>/audit/work/rich-inputs/out/run-all.ar-rtl-dark.vanilla_react_vue_angular.json — cb.geom printed {\"gap\":30} for vanilla and angular, {\"gap\":8} for react and vue (gap = listbox top minus input bottom), identical in en/ltr/light and ar/rtl/dark.",
+  "verdict": "confirmed",
+  "verifierNote": "Read packages/angular/src/forms.ts:123 (template), react/src/interactive.tsx:262 and 289-292, vue/src/interactive.ts:185, styles/src/components.css:213-214, apps/playground/src/choice-input-projects.ts:49-53 and component-native-guides.ts:79. Ran verify/rich-inputs/verify.cjs (own sources src/App.jsx, App.vue, app.component.ts with label+hint+required; static/index.html for vanilla) and measured listbox top minus input bottom after clicking the input. Angular template is `<div class=\"hw-field hw-combobox\"><label ...><input ...><input type=\"hidden\"><ul class=\"hw-listbox\" ...>...${fieldEnd}</div>`, so `.hw-combobox { position: relative }` spans label, input, status, hint and error, and `.hw-listbox { inset-block-start: calc(100% + var(--hw-space-2)) }` places the popup below the hint. Measured gap: react 8, vue 8, angular 30 (hint lies between input and list: hintBetween=true). Vanilla: 30 with the guide example markup (hint inside the root, choice-input-projects.ts:49-53) but 8 with the documented usage markup (component-native-guides.ts:79, no hint inside the root), so the vanilla part is an example/markup issue, not a controller defect. An error message would add further offset in Angular. Expected: React/Vue placement (popup directly under the input)."
+ },
+ {
+  "id": "rich-inputs-2",
+  "group": "rich-inputs",
+  "subject": "combobox",
+  "adapters": [
+   "vue",
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Popup open state and query are controllable/observable only in React",
+  "description": "React exposes open/defaultOpen/onOpenChange and onInputChange. Vue emits update:open but declares no open prop, so v-model:open cannot control the popup; it has update:query. Angular has neither open control nor open/query outputs (only valueChange). Vanilla exposes open/show()/close() on the controller but no open-change event.",
+  "evidence": [
+   {
+    "file": "packages/react/src/interactive.tsx",
+    "line": 176,
+    "quote": "open?: boolean;"
+   },
+   {
+    "file": "packages/vue/src/interactive.ts",
+    "line": 128,
+    "quote": "emits: { 'update:modelValue': (_value: string) => true, 'update:open': (_open: boolean) => true, 'update:query': (_query: string) => true },"
+   },
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 131,
+    "quote": "@Input() resultsMessage: (count: number) => string = count => `${count} results available`;"
+   }
+  ],
+  "expected": "Equivalent controlled/uncontrolled popup and query API in all adapters (CONTRACT.md parity; React interactive.tsx:170-182).",
+  "fix": "Add an open prop (v-model:open) to Vue; add open input plus openChange/queryChange outputs to Angular; add an open-change event to vanilla.",
+  "repro": "Source reading; API inventory in <scratch>/audit/api/combobox.json.",
+  "verdict": "confirmed",
+  "verifierNote": "Read react/src/interactive.tsx:170-183 and 264-268, vue/src/interactive.ts:125-128 and expose at ~178, angular/src/forms.ts:15-26 and 121-131, vanilla/src/combobox.ts:14-17, 128, 197. React: `open?: boolean; defaultOpen?: boolean; onOpenChange?` and `onInputChange?`. Vue props have no `open`/`defaultOpen` (props list at interactive.ts:126-127) but emit `'update:open'` and `'update:query'`; it exposes only `{ element, focus, close }`, so v-model:open cannot control the popup. Angular HwComboboxComponent has no open input and only the inherited `@Output() readonly valueChange` (forms.ts:26); no open/query outputs. Vanilla controller returns `get open()`, `show`, `close` but emits hw:change only for value (`emit(root, { value: state.value, label: ... })`, combobox.ts:128). Note: CONTRACT.md does not literally require prop parity (it says 'Framework-specific props idiomatic'); the P1 rests on the audit rubric (one adapter cannot do what another can)."
+ },
+ {
+  "id": "rich-inputs-5",
+  "group": "rich-inputs",
+  "subject": "multi-select",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "behavior",
+  "title": "Angular MultiSelect: native form reset unchecks the boxes but the hidden inputs still submit the old selection",
+  "description": "Without an Angular FormGroup reset, a native <button type=\"reset\"> resets the checkbox checked state, but the component state and the hidden name/value inputs are not reset. The user sees no selection while the form still submits it. React and Vue reset uncontrolled state; vanilla uses the native checkboxes themselves.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 167,
+    "quote": "@for (selected of selectedValues; track selected) {<input type=\"hidden\" [name]=\"name\" [value]=\"selected\" [disabled]=\"disabled\">}"
+   },
+   {
+    "file": "docs/multiselect-validation.md",
+    "line": 53,
+    "quote": "- React/Vue uncontrolled fields and vanilla reset through the native form;"
+   }
+  ],
+  "expected": "Visible selection and submitted values must agree after reset (WCAG 3.3.4-style error prevention; React behaviour in expanded-controls.tsx:81).",
+  "fix": "Listen to the owning form reset event in Angular (as HwPasswordField and HwSearchField already do) and restore the initial value via update()/writeValue, or render named checkboxes instead of separate hidden inputs.",
+  "repro": "node <scratch>/audit/work/rich-inputs/run-reset.cjs react,angular — printed: angular afterCheck {\"checked\":\"abha\",\"hidden\":\"abha\"} | afterReset {\"checked\":\"\",\"hidden\":\"abha\"} ... submit [...,[\"svc\",\"abha\"],[\"tag\",\"kept\"],...]; react afterReset {\"checked\":\"\",\"hidden\":\"\"} and no svc in submit.",
+  "verdict": "confirmed",
+  "verifierNote": "Read angular/src/advanced-controls.ts:167-176 (multi-select template/class; no reset listener) vs :26-30 (PasswordField listens to form reset), react/src/expanded-controls.tsx:81-83 (useFormReset), docs/multiselect-validation.md:53-56. Ran verify.cjs: check 'Abha', click native <button type=reset>, read checkboxes and hidden inputs, then submit. Angular: afterCheck {checked:abha, hidden:abha} -> afterReset {checked:'', hidden:'abha'}; submit FormData contained [\"svc\",\"abha\"] while no box is checked. React and Vue: afterReset hidden '' and no svc submitted. docs/multiselect-validation.md:54 says 'Angular resets through Angular Forms/ControlValueAccessor', so native reset is a documented non-goal, but the outcome (visible state cleared, old selection still submitted) is a form-integration bug, and Angular PasswordField/SearchField in the same file do handle native reset."
+ },
+ {
+  "id": "rich-inputs-6",
+  "group": "rich-inputs",
+  "subject": "multi-select",
+  "adapters": [
+   "react",
+   "vue",
+   "angular",
+   "vanilla"
+  ],
+  "dimension": "visual",
+  "title": "MultiSelect looks different in every adapter (option rows, search label, required marker, status line)",
+  "description": "React renders options in div.hw-stack, so the .hw-multi-select-options rules (selected-row tint, max-height scroll) do not apply. Angular option labels have no hw-choice class: 22px-high rows with the checkbox touching its text. The search label is visible in vanilla, aria-label only in React/Vue, and placeholder plus sr-only label in Angular. React appends a plain \" *\" to the legend, the others show none. Only Angular renders a visible \"N selected\" status; vanilla renders \"N options\".",
+  "evidence": [
+   {
+    "file": "packages/react/src/expanded-controls.tsx",
+    "line": 83,
+    "quote": "<div className=\"hw-stack\">{results.map(option => <label className=\"hw-choice\" key={option.value}>"
+   },
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 167,
+    "quote": "<div class=\"hw-multi-select-options\">@for (option of filtered; track option.value) {<label><input class=\"hw-checkbox\" type=\"checkbox\""
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 80,
+    "quote": ".hw-multi-select-options > label:has(input:checked) { background: var(--hw-color-primary-subtle); color: var(--hw-color-primary-text); }"
+   },
+   {
+    "file": "packages/vue/src/controls.ts",
+    "line": 694,
+    "quote": "{ class: \"hw-multi-select-options\" },"
+   }
+  ],
+  "expected": "One rendered structure and appearance for all adapters (Vue structure matches the styles in extended.css:78-82).",
+  "fix": "Use div.hw-multi-select-options with label.hw-choice in React and Angular, one search-label strategy (visible label) everywhere, and a shared required-marker/status treatment.",
+  "repro": "node <scratch>/audit/work/rich-inputs/run-all.cjs vanilla,react,vue,angular en ltr light (and ar rtl dark); output <scratch>/audit/work/rich-inputs/out/run-all.en-ltr-light.vanilla_react_vue_angular.json and <scratch>/audit/work/rich-inputs/out/run-all.ar-rtl-dark.vanilla_react_vue_angular.json — ms.classes: vanilla \"optParent=hw-multi-select|label=hw-choice\", react \"optParent=hw-stack|label=hw-choice\", vue \"optParent=hw-multi-select-options|label=hw-choice\", angular \"optParent=hw-multi-select-options|label=\" ; ms.cbSize label height 40px (vanilla/react/vue) vs 22px (angular).",
+  "verdict": "confirmed",
+  "verifierNote": "Read react/src/expanded-controls.tsx:83, angular/src/advanced-controls.ts:167, vue/src/controls.ts:663-700, styles/src/extended.css:76-82, components.css:121, choice-input-projects.ts:58-61. Ran verify.cjs with identical props in React/Vue/Angular and measured structure. Measured: React optParent=hw-stack, label=hw-choice, row 40px, search has aria-label only, legend marker ' *' unstyled (rgb(22,22,22)); Vue optParent=hw-multi-select-options, hw-choice, 40px, aria-label only, no marker, no status line; Angular optParent=hw-multi-select-options, label has no class, row 22px, checkbox touching text, search uses placeholder 'Search options' + sr-only label, visible 'P.hw-hint: 0 selected' status. So React misses the .hw-multi-select-options rules (selected tint, 16rem scroll) and Angular misses .hw-choice spacing/target height. Vanilla appearance depends on author markup: the guide example puts label.hw-choice directly in the fieldset and its 'N options' status is an sr-only span (not visible)."
+ },
+ {
+  "id": "rich-inputs-8",
+  "group": "rich-inputs",
+  "subject": "tag-input",
+  "adapters": [
+   "angular",
+   "vue",
+   "react"
+  ],
+  "dimension": "visual",
+  "title": "TagInput renders three different layouts; Angular adds an extra \"Add\" button and a bordered inner input",
+  "description": "React and vanilla put the whole field (label, chips, input, hint) inside the bordered .hw-tag-input box; Vue boxes only chips and input (label and hint outside); Angular boxes the field but nests the input in .hw-input-group with an \"Add\" button, so .hw-tag-input > input rules do not apply and a second border appears (Angular default example is 438px tall vs 390-396px).",
+  "evidence": [
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 164,
+    "quote": "<div class=\"hw-input-group\"><input #input class=\"hw-input\" [id]=\"controlId\" [value]=\"draft\""
+   },
+   {
+    "file": "packages/vue/src/controls.ts",
+    "line": 562,
+    "quote": "h(\"div\", { class: \"hw-tag-input\" }, ["
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "line": 72,
+    "quote": ".hw-tag-input > input:not([type='hidden']) { flex: 1 1 8rem; inline-size: auto;"
+   }
+  ],
+  "expected": "Same structure and appearance in all adapters.",
+  "fix": "Render label/hint outside or inside consistently, drop the Angular-only Add button (or add it everywhere as an opt-in prop), and keep the input a direct child of .hw-tag-input.",
+  "repro": "Default guide examples captured by <scratch>/audit/work/rich-inputs/dump-defaults.cjs (shots/default.tag-input.*.en.light.png; montage dm-tag-input.png); evidence summary.json heights vanilla 390, react/vue 396, angular 438.",
+  "verdict": "confirmed",
+  "verifierNote": "Read angular/src/advanced-controls.ts:164, vue/src/controls.ts:~555-575, react/src/expanded-controls.tsx:74-78, styles/src/extended.css:72. Ran verify.cjs with identical props and measured structure. Also ran verify/rich-inputs/keyboard.cjs. Measured tagStruct: React root DIV.hw-field.hw-tag-input with label and hint inside, input direct child, input border 0; Vue root DIV.hw-tag-input with label and hint outside, input direct child, border 0; Angular root DIV.hw-field.hw-tag-input with label/hint inside but input parent .hw-input-group with 1px solid border and an extra 'Add' button (case height 111 vs 103 in React/Vue). Visible in angular.form.en.light.png vs react.form.en.light.png. Also measured with keyboard.cjs after adding a tag: Angular remove button is an unclassed <button> 24x24 labelled \"Remove: Alpha\"; React/Vue use .hw-button 24x32 labelled \"Remove Alpha\". Enter, comma and Backspace behave the same in React, Vue and Angular (Alpha|Beta then Alpha)."
+ },
+ {
+  "id": "rich-inputs-12",
+  "group": "rich-inputs",
+  "subject": "pin-input",
+  "adapters": [
+   "vanilla",
+   "react",
+   "vue",
+   "angular"
+  ],
+  "dimension": "behavior",
+  "title": "Pasting a formatted one-time code silently loses digits (maxlength truncates before normalisation)",
+  "description": "Every adapter sets maxlength to the code length on the native input and only strips separators after the browser has applied it. Pasting \"123 456\" yields \"12345\"; pasting Arabic-Indic \"٤٥٦-١٢٣\" yields \"45612\". The user ends up with a wrong code and no message.",
+  "evidence": [
+   {
+    "file": "packages/vanilla/src/controls.ts",
+    "line": 117,
+    "quote": "input.pattern = `[0-9]{${length}}`; input.maxLength = length;"
+   },
+   {
+    "file": "packages/vue/src/controls.ts",
+    "line": 500,
+    "quote": "maxlength: length,"
+   },
+   {
+    "file": "packages/react/src/expanded-controls.tsx",
+    "line": 69,
+    "quote": "pattern={`[0-9]{${count}}`} maxLength={count} value={current}"
+   },
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 161,
+    "quote": "[attr.maxlength]=\"normalizedLength\""
+   }
+  ],
+  "expected": "Guide pin-input lifecycle (apps/playground/src/component-expanded-guides.ts:106): \"Input and paste normalize digits to ASCII and remove non-digits\"; a 6-digit code pasted with a separator should become \"123456\".",
+  "fix": "Do not set native maxlength (keep pattern/validation), or intercept paste/beforeinput to normalise the full pasted text before truncating to length.",
+  "repro": "node <scratch>/audit/work/rich-inputs/run-all.cjs vanilla,react,vue,angular en ltr light (and ar rtl dark); output <scratch>/audit/work/rich-inputs/out/run-all.en-ltr-light.vanilla_react_vue_angular.json and <scratch>/audit/work/rich-inputs/out/run-all.ar-rtl-dark.vanilla_react_vue_angular.json — real clipboard paste: pin.pasteSpaced \"12345\", pin.pasteArDashed \"45612\" in vanilla, react, vue and angular; keyboard.insertText(\"12-34-56\") gives \"1234\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read vanilla/src/controls.ts:117-121, react/src/expanded-controls.tsx:66-69, vue/src/controls.ts:~500, angular/src/advanced-controls.ts:161-162; guide apps/playground/src/component-expanded-guides.ts:106. Ran verify.cjs: real clipboard paste (navigator.clipboard.writeText + ControlOrMeta+V) into a length-6 PIN in all four adapters. Identical in vanilla, React, Vue and Angular (maxlength=6): paste '123456' -> 123456; '123 456' -> 12345; '12-34-56' -> 1234; '١٢٣٤٥٦' -> 123456; '٤٥٦-١٢٣' -> 45612; insertText '12-34-56' -> 1234. Native maxlength truncates the pasted text before the adapters strip separators. Contradicts the guide lifecycle 'Input and paste normalize digits to ASCII and remove non-digits'. The truncated value fails the [0-9]{6} pattern, so it is caught on validation rather than submitted, hence P1 not P0."
+ },
+ {
+  "id": "rich-inputs-14",
+  "group": "rich-inputs",
+  "subject": "password-field",
+  "adapters": [
+   "vue",
+   "angular"
+  ],
+  "dimension": "api",
+  "title": "Visibility can be controlled/observed only in React (and via hw:change in vanilla)",
+  "description": "React has visible/defaultVisible/onVisibleChange; vanilla emits hw:change {visible} and exposes toggle(). Vue keeps visibility in an internal ref with no prop or emit, and Angular has a public revealed field but no input/output. Vue also leaks the search-field clearLabel prop and search emit into PasswordField because both are built by one factory.",
+  "evidence": [
+   {
+    "file": "packages/react/src/expanded-controls.tsx",
+    "line": 13,
+    "quote": "visible?: boolean; defaultVisible?: boolean; onVisibleChange?: (visible: boolean) => void;"
+   },
+   {
+    "file": "packages/vue/src/controls.ts",
+    "line": 63,
+    "quote": "clearLabel: { type: String, default: \"Clear search\" },"
+   },
+   {
+    "file": "packages/vue/src/controls.ts",
+    "line": 67,
+    "quote": "search: (_value: string) => true,"
+   },
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 25,
+    "quote": "@ViewChild('passwordInput') input?: ElementRef<HTMLInputElement>; revealed = false;"
+   }
+  ],
+  "expected": "Same visibility API in all adapters (guide lists visible/defaultVisible/onVisibleChange as \"React props\" only, component-expanded-guides.ts:42).",
+  "fix": "Add v-model:visible to Vue and [(visible)] to Angular; split the Vue factory so PasswordField has no search props/events.",
+  "repro": "Source reading; inventory in <scratch>/audit/api/password-field.json.",
+  "verdict": "confirmed",
+  "verifierNote": "Read react/src/expanded-controls.tsx:13-17, vue/src/controls.ts:54-79,132-141,164, angular/src/advanced-controls.ts:21-33, vanilla/src/controls.ts:6,19-24, guide component-expanded-guides.ts:40-42. React: `visible?; defaultVisible?; onVisibleChange?` via useControllable. Vue actionField('password') keeps `const visible = ref(false)` with no prop/emit (emits only update:modelValue and search) and declares the search-only `clearLabel` prop and `search` emit on PasswordField. Angular: `revealed = false` public field, no @Input/@Output for it. Vanilla: toggle() and `emit(root, { visible: ... })`. Confirmed as stated."
+ },
+ {
+  "id": "rich-inputs-20",
+  "group": "rich-inputs",
+  "subject": "combobox, password-field, search-field, pin-input, tag-input, multi-select",
+  "adapters": [
+   "angular",
+   "react"
+  ],
+  "dimension": "visual",
+  "title": "Angular rich inputs never show the required marker; React multi-select uses a different marker",
+  "description": "Angular basic fields use the shared fieldLabel with .hw-required-marker, but all rich inputs render their own <label> without it, so required fields show no asterisk in Angular while React and Vue show the red marker. React MultiSelect appends an unstyled \" *\" to the legend; Vue MultiSelect shows none.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 39,
+    "quote": "const fieldLabel = `<label class=\"hw-label\" [for]=\"controlId\">{{ label }}@if (required) {<span class=\"hw-required-marker\" aria-hidden=\"true\"> *</span>}</label>`;"
+   },
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 161,
+    "quote": "<div class=\"hw-field hw-pin-input\"><label class=\"hw-label\" [for]=\"controlId\">{{ label }}</label>"
+   },
+   {
+    "file": "packages/react/src/expanded-controls.tsx",
+    "line": 83,
+    "quote": "<legend className=\"hw-label\">{label}{required && <span aria-hidden=\"true\"> *</span>}</legend>"
+   }
+  ],
+  "expected": "Same required indication in all adapters (Angular forms.ts:39 shared label).",
+  "fix": "Use fieldLabel in every Angular rich-input template and the shared marker in React/Vue MultiSelect legends.",
+  "repro": "Default guide examples (required in all frameworks): red asterisk in React/Vue, none in Angular (dm-pin-input.png, dm-password-field.png). run-all pw.initial.marker false for angular.",
+  "verdict": "confirmed",
+  "verifierNote": "Read angular/src/forms.ts:39 (fieldLabel with .hw-required-marker) vs forms.ts:123 and advanced-controls.ts:21,32,161,164,167 (own <label>/<legend> without marker); react/src/shared.tsx:65, expanded-controls.tsx:83; vue/src/forms.ts:25,36, controls.ts:672. Ran verify.cjs with required on all six components. Measured marker per adapter: React all six have a marker; five use span.hw-required-marker colored rgb(180,35,24), MultiSelect uses an unclassed ' *' span colored rgb(22,22,22). Vue: five red markers, MultiSelect none. Angular: no marker on any of combobox, multi-select, tag-input, pin-input, password-field, search-field although `required` is set. Visible in angular.combobox-open vs react.combobox-open screenshots."
+ },
+ {
+  "id": "rich-inputs-21",
+  "group": "rich-inputs",
+  "subject": "combobox, tag-input, multi-select",
+  "adapters": [
+   "angular"
+  ],
+  "dimension": "ssr",
+  "title": "Angular calls setCustomValidity in ngAfterViewInit, which Angular SSR DOM (domino) does not implement",
+  "description": "HwComboboxComponent, HwTagInputComponent and HwMultiSelectComponent call nativeElement.setCustomValidity from ngAfterViewInit (which runs during server rendering). The domino DOM bundled with @angular/platform-server 22.2.3 has no setCustomValidity: calling it throws \"TypeError: input.setCustomValidity is not a function\". Not executed in an Angular prerender here; the dedicated SSR task should confirm whether this fails the build or only logs.",
+  "evidence": [
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 145,
+    "quote": "ngAfterViewInit(): void {"
+   },
+   {
+    "file": "packages/angular/src/forms.ts",
+    "line": 158,
+    "quote": "private syncValidity(): void { this.input?.nativeElement.setCustomValidity("
+   },
+   {
+    "file": "packages/angular/src/advanced-controls.ts",
+    "line": 174,
+    "quote": "private validity() { this.search?.nativeElement.setCustomValidity("
+   }
+  ],
+  "expected": "No DOM API calls during server rendering (AGENTS.md: keep browser globals out of module evaluation; prerendered Angular guide).",
+  "fix": "Guard with isPlatformBrowser / typeof el.setCustomValidity === \"function\", or move to afterNextRender.",
+  "repro": "npm pack @angular/platform-server@22.2.3 into <scratch>/audit/work/rich-inputs/dl-platform-server; node <scratch>/audit/work/rich-inputs/domino-check.mjs <bundled-domino.mjs> printed \"setCustomValidity: undefined ... call throws: TypeError input.setCustomValidity is not a function\".",
+  "verdict": "confirmed",
+  "verifierNote": "Read angular/src/forms.ts:145-158 and advanced-controls.ts:165,173-174 (unguarded setCustomValidity from ngAfterViewInit); grep found isPlatformBrowser only in overlays.ts. Ran own verify/rich-inputs/domino-check.mjs against the bundled domino in @angular/platform-server 22.2.3 (tarball previously fetched from npm by the auditor). domino-check printed: 'setCustomValidity undefined | validity undefined | form FORM' and 'call throws TypeError: el.setCustomValidity is not a function' for text and search inputs. HwComboboxComponent.ngAfterViewInit -> syncValidity(), HwTagInputComponent.ngAfterViewInit -> validity(), HwMultiSelectComponent.ngAfterViewInit -> validity() each call it unconditionally once the view child exists, so every server render containing these components throws in a lifecycle hook. Whether Angular's server ErrorHandler only logs or fails the prerender was not executed here (left to the dedicated SSR task); if it fails the prerender this is P0. Same pattern exists at advanced-controls.ts:267 (date input, other family)."
+ },
+ {
+  "id": "R09",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "MultiSelect",
+  "missingIn": [
+   "react",
+   "vue",
+   "angular"
+  ],
+  "title": "Live announcement of the filtered count (getResultsMessage); vanilla only."
+ },
+ {
+  "id": "R10",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "MultiSelect",
+  "missingIn": [
+   "react",
+   "vue",
+   "vanilla"
+  ],
+  "title": "Selected-count text (getSelectedMessage); only Angular renders it."
+ },
+ {
+  "id": "R16",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "RangeSlider",
+  "missingIn": [
+   "vue",
+   "angular"
+  ],
+  "title": "Visible value output (vanilla [data-hw-range-output] with locale; React formatValue/showValue on the thumbs)."
+ },
+ {
+  "id": "R19",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "TagInput",
+  "missingIn": [
+   "react",
+   "vue",
+   "vanilla"
+  ],
+  "title": "Add button (addLabel); only Angular renders one."
+ },
+ {
+  "id": "R27",
+  "source": "recorded during milestone 2 (open on 2026-11-11)",
+  "subject": "SearchField",
+  "missingIn": [
+   "angular"
+  ],
+  "title": "showSearchButton defaults to true in Angular (packages/angular/src/advanced-controls.ts:60) and to false in React (packages/react/src/search-field.tsx) and Vue (packages/vue/src/search-field.ts:12), so searchLabel is needed by default in Angular only and the same markup renders a search button there. Present before the milestone. Deferred to milestone 3: change the Angular default to false (breaking, CHANGELOG entry). Recorded by the final review (m3)."
+ },
+ {
+  "id": "E01",
+  "source": "recorded during milestones 2 and 2b",
+  "subject": "Combobox, MultiSelect, TagInput",
+  "title": "Owner decision: aria-invalid is set after a failed submission (not merely because a validation message is missing), in all four adapters at once."
+ },
+ {
+  "id": "E02",
+  "source": "recorded during milestones 2 and 2b",
+  "subject": "ToggleGroup",
+  "title": "React and Vue: a missing label renders an empty legend and no Hawiyah warning (review of milestone 2b, m6). Angular requires label. Older markup differences between adapters remain (React adds hw-choice classes)."
+ }
+]

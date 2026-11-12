@@ -1,0 +1,679 @@
+{
+ "bucket": "navigation-shell",
+ "items": [
+  {
+   "id": "nav-a-3",
+   "subject": "tabs",
+   "title": "Angular tabs cannot render rich tab labels; React and Vue can",
+   "status": "open",
+   "evidence": "angular/src/navigation.ts:13 (HwTabComponent @Input({required:true}) label = '' string only) and :26-27 ({{ tab.label }} interpolated in the tab button and the overflow item); no TemplateRef/ngTemplateOutlet in the file. React TabItem.label is ReactNode (react/src/interactive.tsx:9).",
+   "remaining": "Angular: add a label template (e.g. contentChild TemplateRef on hw-tab, or an hwTabLabel directive) rendered with ngTemplateOutlet in the tab button and the overflow item at angular/src/navigation.ts:26-27, keeping label as the text fallback/accessible name. React/Vue: none.",
+   "kind": "api",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "rich-content"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-a-11",
+   "subject": "breadcrumb",
+   "title": "React and Vue render the current (last) breadcrumb as an interactive link; Angular and the DGA checklist make it non-interactive text",
+   "status": "open",
+   "evidence": "react/src/display.tsx:181 and vue/src/display.ts:180 still render <a href aria-current=\"page\"> when the last/current item has href (condition is only item.href && !item.disabled). Angular angular/src/navigation.ts:121 renders the last item as <span aria-current=\"page\">.",
+   "remaining": "React display.tsx:181 and Vue display.ts:180: render the current item (current:true or last) as <span aria-current=\"page\"> regardless of href. Also note Angular only treats the last item as current (no current flag in HwBreadcrumbItem, navigation.ts:120).",
+   "kind": "a11y",
+   "breaking": true,
+   "size": "S",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-a-14",
+   "subject": "stepper",
+   "title": "Completed and upcoming step states have no text equivalent",
+   "status": "open",
+   "evidence": "No adapter renders state text: react/src/display.tsx:222, vue/src/display.ts:214, angular/src/navigation.ts:218 and vanilla/src/stepper.ts:35-40 set only data-state and aria-current=\"step\"; no completeLabel/upcomingLabel input exists.",
+   "remaining": "Add required-when-used state texts (e.g. completeLabel/upcomingLabel, no defaults per CONTRACT.md text rules) rendered as visually hidden text per step in React display.tsx:220-222, Vue display.ts:210-214, Angular navigation.ts:218-220 and the vanilla controller stepper.ts:35-40 (which must add/remove an hw-sr-only node and restore on destroy).",
+   "kind": "a11y",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "name-without-visible-label"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-a-15",
+   "subject": "stepper",
+   "title": "Angular renders step descriptions inline inside the label, run together with it",
+   "status": "open",
+   "evidence": "angular/src/navigation.ts:218 still nests <small class=\"hw-hint\"> inside the label <span>; React display.tsx:222 and Vue display.ts:214 render a sibling <p class=\"hw-hint\">.",
+   "remaining": "Angular navigation.ts:218: render the description as a sibling <p class=\"hw-hint\"> after the <span>.",
+   "kind": "visual",
+   "breaking": true,
+   "size": "S",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-1",
+   "subject": "menu",
+   "title": "Menu type-ahead exists only in vanilla",
+   "status": "open",
+   "evidence": "Only vanilla has type-ahead (vanilla/src/disclosures.ts:50-52 with normalizeSearch and a 500 ms buffer). React menu keydown handles only arrows/Home/End/Escape/Tab (react/src/expanded-interactive.tsx:42); Vue vue/src/expansion-interactive.ts:308-326; Angular angular/src/interactions.ts:52-56. No shared type-ahead helper in core (only normalizeSearch, core/src/index.ts:22).",
+   "remaining": "Add a core type-ahead helper (buffer + match next enabled item by normalized label) and call it from React expanded-interactive.tsx:42, Vue expansion-interactive.ts:308-326, Angular interactions.ts:52-56; migrate vanilla disclosures.ts:50-52 to it. React labels are ReactNode, so the helper must read textContent of the item element.",
+   "kind": "keyboard",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "type-ahead"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-2",
+   "subject": "menu",
+   "title": "Menu API differs in item shape, events, trigger, open control and markup across adapters",
+   "status": "partly",
+   "evidence": "English 'Open' default removed: Angular triggerLabel is now required and warns (angular/src/interactions.ts:32, :45 texts.need). Rest unchanged: React MenuItem {value,label:ReactNode,disabled,href,onSelect}, onAction, open/defaultOpen/onOpenChange, no disabled (react/src/expanded-interactive.tsx:35-37); Vue MenuItem {value,label:string,disabled,href}, emits select, no open model, trigger text from `label` (vue/src/expansion-interactive.ts:223-237, :300); Angular HwMenuItem {id,label,disabled}, no href, (action) emits id, [(open)] but no defaultOpen, text-only trigger (angular/src/interactions.ts:44-58).",
+   "remaining": "React (expanded-interactive.tsx:36-37): add disabled. Vue (expansion-interactive.ts:229-237): add open/defaultOpen/update:open and triggerLabel (see R24); align event name. Angular (interactions.ts:44-58): rename id->value (alias), add href items, trigger content projection, defaultOpen, align output name/payload. Decide one item shape and one event name for all four.",
+   "kind": "api",
+   "breaking": true,
+   "size": "L",
+   "themes": [
+    "item-shape",
+    "open-state"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-3",
+   "subject": "menu",
+   "title": "Vue Menu and Popover hard-code a secondary trigger; other adapters render the default (primary) button",
+   "status": "open",
+   "evidence": "Vue Popover and Menu still hard-code data-variant=\"secondary\" on the built-in trigger (vue/src/expansion-interactive.ts:200 and :287) with no prop; Angular renders plain .hw-button (angular/src/interactions.ts:27, :45); React clones the caller's trigger.",
+   "remaining": "Vue expansion-interactive.ts:200 and :287: drop the hard-coded variant (primary default like Angular) or add a triggerVariant prop; if a prop is added, add the same input to Angular interactions.ts:27/:45.",
+   "kind": "visual",
+   "breaking": true,
+   "size": "S",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-7",
+   "subject": "popover",
+   "title": "Popover closes when focus leaves only in vanilla",
+   "status": "open",
+   "evidence": "No framework popover has a focusout close: React listens to document pointerdown/keydown only (react/src/expanded-interactive.tsx:29-31); Vue only pointerdown + root Escape (vue/src/expansion-interactive.ts:163-189); Angular document:pointerdown and keydown.escape (angular/src/interactions.ts:40-41). Vanilla closes on focusout (vanilla/src/disclosures.ts:26). (Menus already close on focus leaving in React :42 onBlur and Vue :275.)",
+   "remaining": "Add focusout (relatedTarget outside root -> close without focus restore) to React Popover expanded-interactive.tsx:29-31, Vue Popover expansion-interactive.ts:184-191, Angular HwPopoverComponent interactions.ts:40-41 (HostListener('focusout')); Angular HwMenuComponent inherits it.",
+   "kind": "behaviour",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "open-state"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-8",
+   "subject": "popover",
+   "title": "React Popover closes on Escape pressed anywhere in the document and moves focus to its trigger",
+   "status": "open",
+   "evidence": "react/src/expanded-interactive.tsx:30-31: escape listener on ownerDocument, no root.contains(event.target) check; it closes and focuses the trigger. Angular checks host.contains (interactions.ts:41); Vue uses root onKeydown (vue/src/expansion-interactive.ts:184).",
+   "remaining": "React expanded-interactive.tsx:30: check root.current?.contains(event.target) (or move the handler to the root onKeyDown) before closing and restoring focus.",
+   "kind": "keyboard",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "open-state"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-9",
+   "subject": "popover",
+   "title": "Popover naming, heading and trigger API differ; the same example renders a heading only in React and vanilla",
+   "status": "partly",
+   "evidence": "English default removed: Angular triggerLabel is required (angular/src/interactions.ts:32) and Vue triggerLabel required (vue/src/expansion-interactive.ts:144). Still different: React title rendered as <h3> + aria-labelledby, no disabled, panel .hw-popover-panel (react/src/expanded-interactive.tsx:26,33); Vue label as aria-label only, no heading, panel class hw-popover-content, {close} slot prop, hard-coded secondary trigger (vue :143-217); Angular label as aria-label only, panel .hw-popover-panel, [(open)] without defaultOpen, text-only trigger (angular :27-34).",
+   "remaining": "Choose one naming model (title with visible heading vs label) for all adapters (see R26); Vue expansion-interactive.ts:212: use class hw-popover-panel; React :26: add disabled; Angular :34: add defaultOpen; decide whether frameworks expose close/focusOnOpen like vanilla.",
+   "kind": "api",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "name-without-visible-label",
+    "open-state",
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-12",
+   "subject": "tree-view",
+   "title": "Vue TreeView renders no indentation for nested levels",
+   "status": "open",
+   "evidence": "vue/src/expansion-interactive.ts:625 sets --hw-tree-depth; no rule reads it in packages/styles/src or packages/styles/dist (grep: no match). React uses inline padding-inline-start (react/src/expanded-interactive.tsx:98), Angular too (angular/src/interactions.ts:110).",
+   "remaining": "Styles extended.css:185: add padding-inline-start: calc(var(--hw-tree-depth, 0) * 1rem) to the tree item; make React expanded-interactive.tsx:98 and Angular interactions.ts:110 set --hw-tree-depth instead of inline padding (or Vue set inline padding).",
+   "kind": "visual",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-13",
+   "subject": "tree-view",
+   "title": "Tree expand/collapse control renders differently in each adapter",
+   "status": "open",
+   "evidence": "React (react/src/expanded-interactive.tsx:102) and Vue (vue/src/expansion-interactive.ts:676-692) render a class-less <button tabindex=-1> with an aria-label; Angular renders <span class=\"hw-tree-toggle\" aria-hidden=\"true\"> (angular/src/interactions.ts:110). .hw-tree-toggle styled at styles/src/extended.css:236 but unused by React/Vue.",
+   "remaining": "Pick one toggle: e.g. button.hw-tree-toggle tabindex=-1 named by getExpandLabel/getCollapseLabel in all adapters (React :102 and Vue :677 add the class; Angular :110 change span to button and add required getExpandLabel/getCollapseLabel inputs), or an aria-hidden span everywhere (then drop the label functions from React/Vue). Owner decision (R21).",
+   "kind": "a11y",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "layout-difference",
+    "name-without-visible-label"
+   ],
+   "sameAs": "nav-b-13",
+   "note": null
+  },
+  {
+   "id": "nav-b-14",
+   "subject": "tree-view",
+   "title": "React TreeView toggle names are hard-coded English with no label prop",
+   "status": "fixed",
+   "evidence": "React TreeView now takes required getExpandLabel/getCollapseLabel (react/src/expanded-interactive.tsx:90) resolved through text() (:92) and used for the toggle aria-label (:102); no English literals remain. Vue equally required (vue/src/expansion-interactive.ts:528-529).",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": "Whether Angular exposes the toggle at all is tracked in nav-b-13 / R21."
+  },
+  {
+   "id": "nav-b-15",
+   "subject": "tree-view",
+   "title": "Tree type-ahead exists only in vanilla",
+   "status": "open",
+   "evidence": "Only vanilla has tree type-ahead (vanilla/src/content.ts:161-163). React tree keydown (react/src/expanded-interactive.tsx:99-101), Vue (vue/src/expansion-interactive.ts:640-672) and Angular (angular/src/interactions.ts:121-127) ignore printable keys.",
+   "remaining": "Use the same core type-ahead helper as nav-b-1 in React expanded-interactive.tsx:99-101, Vue expansion-interactive.ts:640-672, Angular interactions.ts:121-127 (match next visible enabled node by label); migrate vanilla content.ts:161-163.",
+   "kind": "keyboard",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "type-ahead"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-17",
+   "subject": "tree-view",
+   "title": "TreeView inputs, events and form participation differ across adapters",
+   "status": "partly",
+   "evidence": "Angular label is now required (angular/src/interactions.ts:112). Still different: Angular `nodes`/[(expandedIds)] vs React/Vue `items`/expanded (interactions.ts:113; react/src/expanded-interactive.tsx:90; vue/src/expansion-interactive.ts:518-524); only Angular has name (hidden input), hint, error, describedBy, readOnly (HwExpandedValueControl, angular/src/advanced-controls.ts:15; forms.ts:20-26) and a direction override; Vue label is an optional prop (vue :519).",
+   "remaining": "Angular interactions.ts:113: rename nodes->items and expandedIds->expanded (aliases for one release). Decide form participation: add name/readOnly (and hint/error) to React expanded-interactive.tsx:90 and Vue expansion-interactive.ts:517-530, or document them as Angular-only. Vue :519: make label required unless aria-label/labelledby (see E05).",
+   "kind": "api",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "item-shape",
+    "read-only",
+    "form-reset"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "nav-b-20",
+   "subject": "content-navigation",
+   "title": "Angular ContentNavigation starts the DOM observer during server rendering",
+   "status": "fixed",
+   "evidence": "angular/src/content-navigation.ts:35 injects injectIsBrowser() and :50 returns early from ngAfterViewInit on the server before observeContentNavigation; :52 destroys the observer in ngOnDestroy.",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "portal-shell-1",
+   "subject": "portal-header",
+   "title": "Mobile menu: pressing a second group heading while another group is open does not open it (needs a second press)",
+   "status": "open",
+   "evidence": "Unchanged mechanism: every adapter closes branches outside the target on document pointerdown (react/src/expanded-content.tsx:82-87, vue/src/patterns.ts:102-107, angular/src/content.ts:136-139, vanilla/src/portal.ts:85-90), and the mobile branch panel is still position: static (styles/src/portal-branches.css:38-41), so the layout shift before click remains.",
+   "remaining": "In the pointerdown handlers (React expanded-content.tsx:82-87, Vue patterns.ts:102-105, Angular content.ts:136-139, vanilla portal.ts:85-90) ignore targets inside a branch summary of the same navigation and let the summary toggle close siblings; add a mobile-width browser test that opens two branches in turn.",
+   "kind": "behaviour",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "open-state"
+   ],
+   "sameAs": null,
+   "note": "Verified by source reading; the browser reproduction was not re-run."
+  },
+  {
+   "id": "portal-shell-2",
+   "subject": "portal-header",
+   "title": "Angular header always renders a skip link to #main-content, even when that target does not exist",
+   "status": "fixed",
+   "evidence": "angular/src/content.ts:103 now declares @Input() mainId = '' and the template renders the skip link only @if (mainId) (content.ts:70), matching React and Vue; skipLabel has no default and is required when mainId is set.",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "portal-shell-3",
+   "subject": "portal-header",
+   "title": "Vue and Angular headers have no equivalent of React's notice prop",
+   "status": "fixed",
+   "evidence": "Vue PortalHeader renders slots.notice in div.hw-portal-notice (vue/src/patterns.ts:156); Angular projects [hwPortalNotice] into div.hw-portal-notice (angular/src/content.ts:71), hidden when empty (styles/src/extended.css:253). React notice prop at react/src/expanded-content.tsx:108.",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "portal-shell-4",
+   "subject": "portal-header",
+   "title": "Framework headers expose no menu open state or open-change event; vanilla does",
+   "status": "partly",
+   "evidence": "Angular HwPortalHeaderComponent has a public close() (angular/src/content.ts:123) usable via a ViewChild, but no open input or openChange output (menuOpen is internal, :113). React keeps useState(false) with no prop (react/src/expanded-content.tsx:74); Vue has no open prop, emits or expose (vue/src/patterns.ts:81-104).",
+   "remaining": "React expanded-content.tsx:67-74: add open/defaultOpen/onOpenChange. Vue patterns.ts:81-104: add open/defaultOpen with update:open (and expose close). Angular content.ts:113-125: add [(open)] input/openChange output around menuOpen. Keep Escape/outside/link closing.",
+   "kind": "api",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "open-state"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "portal-shell-8",
+   "subject": "portal-layout",
+   "title": "Vue and Angular PortalLayout expose only part of the header and footer APIs that React passes through",
+   "status": "partly",
+   "evidence": "Vue PortalLayout now has footerProps passed through to PortalFooter and brand/notice/actions slots (vue/src/portal.ts:31, :36, :39); Angular projects [hwPortalNotice], [hwBrand], actions, [hwFooterBrand], [hwPortalFooter] and passes navigationId (angular/src/portal.ts:14-17, :27). Still missing: Vue has no headerProps (navigationId cannot be set; vue/src/portal.ts:36); Angular passes only brand/brandLabel/links/copyright/navigationLabel/externalLabel to the footer (angular/src/portal.ts:17), so groups, legalLinks, legalLinksLabel, description, support/partners cannot be set.",
+   "remaining": "Vue portal.ts:16-31: add headerProps (or navigationId). Angular portal.ts:17-33: add footer inputs (groups, legalLinks, legalLinksLabel, description, supportLabel, partners) or a footerOptions object input forwarded to hw-portal-footer.",
+   "kind": "api",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "service-patterns-1",
+   "subject": "service-card",
+   "title": "Service facts lose term/value semantics in Vue and Angular",
+   "status": "open",
+   "evidence": "Vue ServiceCard metadata is string[] rendered as a plain <ul> (vue/src/patterns.ts:19, :30-35); Angular has only duration and fee rendered as bare <span>s (angular/src/content.ts:62-63). React renders metadata through DescriptionList (react/src/expanded-content.tsx:57).",
+   "remaining": "Vue patterns.ts:19,30-35: metadata: DescriptionItem[] rendered with DescriptionList. Angular content.ts:62-63: add a metadata/details input of HwDescription[] rendered with hw-description-list; keep duration/fee as deprecated aliases or remove (0.3.0).",
+   "kind": "a11y",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "item-shape",
+    "value-display"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "service-patterns-2",
+   "subject": "service-card",
+   "title": "The same service card renders four different layouts",
+   "status": "open",
+   "evidence": "Markup still diverges: React Card header with Badge above h3 and DescriptionList, Link action (react/src/expanded-content.tsx:57); Vue h3 then Badge tone=\"info\" (prop named badge), <ul> facts, Link action (vue/src/patterns.ts:24-43); Angular p.hw-badge, h3 containing a link, div.hw-service-card-meta spans, and a.hw-button data-variant=\"secondary\" fallback action (angular/src/content.ts:62).",
+   "remaining": "Converge on one markup (badge before h3, p, dl, footer action) in Vue patterns.ts:24-43 and Angular content.ts:62; rename Vue badge -> category; one action presentation (Link vs secondary button) as an explicit option; Angular: drop the link inside h3 or add it everywhere.",
+   "kind": "visual",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "layout-difference",
+    "rich-content"
+   ],
+   "sameAs": "service-patterns-2",
+   "note": null
+  },
+  {
+   "id": "service-patterns-7",
+   "subject": "service-details",
+   "title": "ServiceDetails: Vue has no requirements; root element and action wrapper differ by adapter",
+   "status": "open",
+   "evidence": "Vue ServiceDetails has no requirements/requirementsLabel, takes items and wraps the action in div.hw-service-details-action (vue/src/patterns.ts:47-71); Angular renders <section>, has requirements but no action slot/footer (angular/src/content.ts:64-65); React renders <article> with requirements and <footer> action (react/src/expanded-content.tsx:61). No CSS rule for hw-service-details-action.",
+   "remaining": "Vue patterns.ts:47-71: add requirements/requirementsLabel (required when requirements), rename items->metadata, render action in <footer>. Angular content.ts:64-65: add [hwServiceAction] projection inside <footer>; rename details->metadata. Choose one root element (article or section) for all three.",
+   "kind": "api",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "item-shape",
+    "layout-difference"
+   ],
+   "sameAs": "service-patterns-7",
+   "note": null
+  },
+  {
+   "id": "service-patterns-12",
+   "subject": "feedback",
+   "title": "Three incompatible Feedback contracts; Angular has no comment field or submit step",
+   "status": "open",
+   "evidence": "React: form, radios, always-visible comment + submit, FeedbackValue {helpful,comment}, onFeedback (react/src/expanded-content.tsx:164-169). Vue: toggle buttons, v-model string, comment+submit after a choice, emits submit {value,comment} (vue/src/patterns.ts:215-311). Angular: toggle buttons, value boolean|null, success shown immediately, no comment/submit (angular/src/content.ts:186-187).",
+   "remaining": "Define one FeedbackValue {helpful,comment} in core; Angular content.ts:186-187: add commentLabel/submitLabel inputs, comment textarea and submit step, value shape 'yes'|'no'|''; Vue patterns.ts:215-218: rename value->helpful; align event names (valueChange/submit) across React onFeedback, Vue submit, Angular.",
+   "kind": "behaviour",
+   "breaking": true,
+   "size": "L",
+   "themes": [
+    "value-display",
+    "form-reset"
+   ],
+   "sameAs": "service-patterns-12",
+   "note": null
+  },
+  {
+   "id": "service-patterns-13",
+   "subject": "feedback",
+   "title": "Feedback looks different in each adapter",
+   "status": "open",
+   "evidence": "Question: React <legend> (react/src/expanded-content.tsx:169), Vue <h2> (vue/src/patterns.ts:256), Angular <p> (angular/src/content.ts:186). Choices: React radios; Vue and Angular secondary buttons (vue :268, angular :186).",
+   "remaining": "Pick one question element and one choice control/variant; change React expanded-content.tsx:169, Vue patterns.ts:256-268 and Angular content.ts:186 accordingly and document the vanilla markup.",
+   "kind": "visual",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "service-patterns-19",
+   "subject": "cookie-consent",
+   "title": "React reverses the button order and layout of the consent choices",
+   "status": "open",
+   "evidence": "React renders Reject (secondary) then Accept inside div.hw-inline (react/src/expanded-content.tsx:177); Vue (vue/src/patterns.ts:357-381) and Angular (angular/src/content.ts:188) render Accept then Reject inside .hw-button-group.",
+   "remaining": "React expanded-content.tsx:177: use .hw-button-group and Accept-first order (or change all to one documented order).",
+   "kind": "visual",
+   "breaking": true,
+   "size": "S",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "service-patterns-20",
+   "subject": "cookie-consent",
+   "title": "Different action sets: preferences only in Vue/Angular (always shown), policy link only in React",
+   "status": "fixed",
+   "evidence": "The preferences action is opt-in everywhere: React only with onPreferences (react/src/expanded-content.tsx:174, :177), Vue only while a preferences listener is bound (vue/src/patterns.ts:325-326, :375-380), Angular only while (preferences) is observed (angular/src/content.ts:188-189, HwObservedEmitter). policyHref/policyLabel exist in React (:175-177), Vue (:324-325, :353) and Angular (:188-189). Vanilla createCookieConsent enhances author markup, which may contain both.",
+   "remaining": null,
+   "kind": null,
+   "breaking": null,
+   "size": null,
+   "themes": [],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "service-patterns-21",
+   "subject": "cookie-consent",
+   "title": "Angular cannot use the fixed banner variant",
+   "status": "open",
+   "evidence": "HwCookieConsentComponent still has no variant input; the section has no data-variant binding (angular/src/content.ts:188-189), while styles provide .hw-cookie-consent[data-variant='banner'] (styles/src/extended.css).",
+   "remaining": "Angular content.ts:188-189: add @Input() variant mapped to [attr.data-variant] on the section (or carry host attributes as for the layout primitives).",
+   "kind": "api",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "angular-host-attributes"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "R04",
+   "subject": "CookieConsent",
+   "title": "After D12 the texts match, but the three components still differ in state API (React value/CookieChoice, Vue open + accept/reject events, Angular visible/choose), naming (aria-labelledby heading in React, aria-label in Vue and Angular), button order and container class (hw-inline versus hw-button-group).",
+   "status": "open",
+   "evidence": "State API: React value/defaultValue CookieChoice + onValueChange (react/src/expanded-content.tsx:172-176); Vue open/defaultOpen + accept/reject/preferences events (vue/src/patterns.ts:313-336); Angular [(visible)] + (consent) (angular/src/content.ts:189). Naming: React aria-labelledby heading (:177); Vue and Angular aria-label (vue :347, angular :188). Order/container: see service-patterns-19.",
+   "remaining": "Choose one state model (e.g. value + change event, plus open) and one naming method (aria-labelledby to the h2) for React expanded-content.tsx:172-177, Vue patterns.ts:313-347, Angular content.ts:188-189; button order/container per service-patterns-19.",
+   "kind": "api",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "open-state",
+    "value-display"
+   ],
+   "sameAs": null,
+   "note": "Button order and container overlap service-patterns-19."
+  },
+  {
+   "id": "R05",
+   "subject": "Feedback",
+   "title": "Comment field and submit button (commentLabel, submitLabel).",
+   "status": "open",
+   "evidence": "Angular hw-feedback has no commentLabel/submitLabel, no comment field and no submit (angular/src/content.ts:186-187); React and Vue have both.",
+   "remaining": "Angular content.ts:186-187: add commentLabel/submitLabel and the comment+submit step (part of service-patterns-12).",
+   "kind": "behaviour",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "value-display"
+   ],
+   "sameAs": "service-patterns-12",
+   "note": null
+  },
+  {
+   "id": "R15",
+   "subject": "Popover, Menu",
+   "title": "Packaged trigger button (triggerLabel). React takes the trigger element from the application; Angular hw-popover and hw-menu render it and require triggerLabel (packages/angular/src/interactions.ts:26-31,44); the Vue Popover renders it from triggerLabel or the trigger slot (packages/vue/src/expansion-interactive.ts:142,204). The Vue Menu has no triggerLabel: see the separate Menu entry. Mechanism difference to confirm, not necessarily to remove. Corrected after the final review (m10): the entry said that Vue rendered the trigger of both from triggerLabel.",
+   "status": "open",
+   "evidence": "React Menu/Popover take the trigger element from the application (react/src/expanded-interactive.tsx:26, :36); Angular hw-popover/hw-menu always render a text-only trigger from required triggerLabel (angular/src/interactions.ts:27-32, :45); Vue Popover renders it from triggerLabel or the trigger slot (vue/src/expansion-interactive.ts:144, :206); Vue Menu from the trigger slot or `label` (:300).",
+   "remaining": "Owner decision: keep the two mechanisms (application trigger in React; packaged trigger in Vue/Angular) and document them, or add trigger projection to Angular (interactions.ts:27, :45) and/or a packaged trigger to React. Vue Menu triggerLabel is R24.",
+   "kind": "api",
+   "breaking": false,
+   "size": "M",
+   "themes": [
+    "rich-content"
+   ],
+   "sameAs": null,
+   "note": "Mechanism difference to confirm, not necessarily to remove."
+  },
+  {
+   "id": "R17",
+   "subject": "ServiceDetails",
+   "title": "Requirements list and its heading (requirementsLabel).",
+   "status": "open",
+   "evidence": "Vue ServiceDetails still has no requirements/requirementsLabel props (vue/src/patterns.ts:50-57); React (react/src/expanded-content.tsx:60-61) and Angular (angular/src/content.ts:65) have them.",
+   "remaining": "Vue patterns.ts:50-71: add requirements and requirementsLabel (needText when requirements are given) rendered as h3 + ul.",
+   "kind": "api",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "rich-content"
+   ],
+   "sameAs": "service-patterns-7",
+   "note": null
+  },
+  {
+   "id": "R18",
+   "subject": "ServiceCard",
+   "title": "Packaged action link markup: Angular renders <a class=\"hw-button\" data-variant=\"secondary\">, React and Vue render the Link component; Angular renders the fallback link whenever nothing is projected, React and Vue only when href is given.",
+   "status": "open",
+   "evidence": "Angular still renders <a class=\"hw-button\" data-variant=\"secondary\"> as the fallback action whenever nothing is projected into [hwServiceAction] (angular/src/content.ts:62; href is required, :63); React (react/src/expanded-content.tsx:57) and Vue (vue/src/patterns.ts:38-43) render the Link component and only when href is given.",
+   "remaining": "Angular content.ts:62-63: render the same Link markup (a.hw-link) and only when href is given and no action is projected; make href optional as in React/Vue.",
+   "kind": "visual",
+   "breaking": true,
+   "size": "S",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": "service-patterns-2",
+   "note": null
+  },
+  {
+   "id": "R21",
+   "subject": "TreeView",
+   "title": "Expand/collapse toggle exposed as a named control (getExpandLabel, getCollapseLabel). React and Vue expose it; Angular hides the toggle from assistive technology and relies on aria-expanded and the keyboard. See ownerQuestions.",
+   "status": "open",
+   "evidence": "React (react/src/expanded-interactive.tsx:102) and Vue (vue/src/expansion-interactive.ts:676-692) expose a named toggle button; Angular renders an aria-hidden span (angular/src/interactions.ts:110) and has no getExpandLabel/getCollapseLabel inputs.",
+   "remaining": "Owner decision, then align as in nav-b-13 (Angular interactions.ts:110-112: button + required label functions, or React/Vue drop the named button).",
+   "kind": "a11y",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "name-without-visible-label"
+   ],
+   "sameAs": "nav-b-13",
+   "note": null
+  },
+  {
+   "id": "R24",
+   "subject": "Menu",
+   "title": "triggerLabel. The Vue Menu prints the trigger text from the trigger slot or else from `label`, which is also the aria-label of the menu, so one input serves two texts (packages/vue/src/expansion-interactive.ts:227,298; rule 12 forbids reusing another input). Angular hw-menu takes triggerLabel (required) and label (packages/angular/src/interactions.ts:44); React takes the trigger element. Deferred to milestone 3: add triggerLabel to the Vue Menu, required unless the trigger slot is given. Recorded by the final review (parityDifferences, major).",
+   "status": "open",
+   "evidence": "Vue Menu still prints the trigger text from slots.trigger or `label` (vue/src/expansion-interactive.ts:300), which is also the menu aria-label (:307); there is no triggerLabel prop (:232-236).",
+   "remaining": "Vue expansion-interactive.ts:232-236, :300: add triggerLabel, required (needText) unless the trigger slot is given; label then only names the menu.",
+   "kind": "api",
+   "breaking": true,
+   "size": "S",
+   "themes": [
+    "name-without-visible-label"
+   ],
+   "sameAs": "nav-b-2",
+   "note": null
+  },
+  {
+   "id": "R26",
+   "subject": "Collapsible, Popover",
+   "title": "One name per text (rule 6): the same text is `title` in React (packages/react/src/expanded-interactive.tsx:26,84) and `label` in Vue (packages/vue/src/expansion-interactive.ts:137,463) and Angular (packages/angular/src/interactions.ts:26,104). Present before the milestone; neither component is in the specification. Deferred to milestone 3 as a naming decision. Recorded by the final review.",
+   "status": "open",
+   "evidence": "Popover and Collapsible text is `title` in React (react/src/expanded-interactive.tsx:26, :84) and `label` in Vue (vue/src/expansion-interactive.ts:143, :468) and Angular (angular/src/interactions.ts:30, :106).",
+   "remaining": "Pick one name per text: rename React title->label (Popover :26, Collapsible :84) or Vue/Angular label->title, with an alias for one release.",
+   "kind": "api",
+   "breaking": true,
+   "size": "S",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": "Popover naming model also in nav-b-9."
+  },
+  {
+   "id": "E03",
+   "subject": "PortalLayout, SiteVerification (React types)",
+   "title": "footerLabel and SiteVerification externalLabel are plain optional props in React; sibling \"required when\" texts are unions on the switching prop.",
+   "status": "open",
+   "evidence": "React PortalLayout footerLabel is a plain optional prop (react/src/portal.tsx:21) checked at run time only when footer links are given (:32); SiteVerification externalLabel is plain optional (react/src/site-verification.tsx:12), while sibling required-when texts are unions on the switching prop (e.g. expanded-content.tsx:56, :70).",
+   "remaining": "React portal.tsx:20-21: make footerLabel a union keyed on footerProps.links; site-verification.tsx:12: union keyed on registrationExternal/registrationHref. Type-only change.",
+   "kind": "api",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "other"
+   ],
+   "sameAs": null,
+   "note": "Type-level only; runtime warnings already exist."
+  },
+  {
+   "id": "E04",
+   "subject": "PortalHeader brand",
+   "title": "A labelled brand that is not a link has role=\"img\" in vanilla, role=\"group\" in Vue and no role in Angular.",
+   "status": "open",
+   "evidence": "Non-link labelled brand: vanilla sets role=\"img\" (vanilla/src/portal.ts:32), React role=\"img\" (react/src/expanded-content.tsx:110), Vue role=\"group\" (vue/src/patterns.ts:164), Angular always renders <a> with href null and aria-label, no role (angular/src/content.ts:72).",
+   "remaining": "Choose one role (img, matching vanilla and React): Vue patterns.ts:164 -> 'img'; Angular content.ts:72 -> render a div (or set role) when homeHref is empty.",
+   "kind": "a11y",
+   "breaking": true,
+   "size": "S",
+   "themes": [
+    "name-without-visible-label"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "E05",
+   "subject": "TreeView, ContentNavigation, Tabs, SearchField (root and field names)",
+   "title": "Requiredness of the root name differs: React TreeView label is a plain required string; ContentNavigation label plain required in React, optional in Vue, required in Angular; Tabs missing label warns in Angular only; SearchField field name is a union in React and optional without warning in Vue and Angular.",
+   "status": "partly",
+   "evidence": "Now uniform: Tabs label warns in all (react/src/interactive.tsx:68 text(), vue/src/interactive.ts:50 needText, Angular navigation.ts:26 texts.need); SearchField name warns in React (react/src/search-field.tsx:21), Vue (vue/src/search-field.ts:51) and Angular (angular/src/advanced-controls.ts:45); ContentNavigation warns via rootLabel in React/Vue (react/src/content-navigation.tsx:32, vue/src/content-navigation.ts:30) and is required in Angular (angular/src/content-navigation.ts:25). Remaining: React TreeView uses props['aria-label'] ?? label with no warning (react/src/expanded-interactive.tsx:98) while Vue uses rootLabel (vue/src/expansion-interactive.ts:592) with an optional prop (:519); declared requiredness still differs (React plain required, Vue optional, Angular required).",
+   "remaining": "React expanded-interactive.tsx:98: use rootLabel('TreeView', props, label). Decide declared requiredness consistently (React union on aria-label/labelledby, Vue optional + warning, Angular required) and document it.",
+   "kind": "a11y",
+   "breaking": false,
+   "size": "S",
+   "themes": [
+    "name-without-visible-label"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "E06",
+   "subject": "PortalHeader, AppShell",
+   "title": "React prop names navigation and brandHref where Vue and Angular use links and homeHref; React keeps wrappers div.hw-portal-header-main and div.hw-app-shell-body that Vue and Angular do not render.",
+   "status": "open",
+   "evidence": "React PortalHeader still uses navigation/brandHref (react/src/expanded-content.tsx:66-67) where Vue (vue/src/patterns.ts:84-85) and Angular (angular/src/content.ts:101-105) use links/homeHref; React still renders div.hw-portal-header-main (expanded-content.tsx:109) and AppShell div.hw-app-shell-body (react/src/expanded-layout.tsx:27), which Vue (vue/src/layout.ts:74-87) and Angular (angular/src/layouts.ts:76) do not.",
+   "remaining": "React expanded-content.tsx:66-71: rename navigation->links and brandHref->homeHref (aliases for one release); decide whether hw-portal-header-main and hw-app-shell-body exist in all adapters (styles depend on them: dga.css:192, layout.css:123) and align Vue/Angular or React.",
+   "kind": "api",
+   "breaking": true,
+   "size": "M",
+   "themes": [
+    "layout-difference"
+   ],
+   "sameAs": null,
+   "note": null
+  },
+  {
+   "id": "E08",
+   "subject": "SideNavigation and every landmark or group component",
+   "title": "Owner decision: Angular forwards aria-label / aria-labelledby written on the host to the inner root, so a visible heading can name the component; today label is the only source in Angular.",
+   "status": "open",
+   "evidence": "Angular label remains the only name source: HwSideNavigationComponent host-binds [attr.aria-label] from texts.need('label', label) (angular/src/side-navigation.ts:11), so a host aria-labelledby cannot replace it without a missing-text warning; only the layout primitives preserve authored aria-label via HostAttributeToken (angular/src/layouts.ts:56-61).",
+   "remaining": "Owner decision. If accepted: in Angular landmark/group components (side-navigation.ts:11 and the other texts.need('label') roots) read host aria-label/aria-labelledby (HostAttributeToken or attribute check) and skip label/warning when present, as React/Vue rootLabel do (react/src/shared.tsx:15-19, vue/src/shared.ts:58-62).",
+   "kind": "a11y",
+   "breaking": false,
+   "size": "L",
+   "themes": [
+    "name-without-visible-label",
+    "angular-host-attributes"
+   ],
+   "sameAs": null,
+   "note": "Owner decision pending."
+  }
+ ]
+}

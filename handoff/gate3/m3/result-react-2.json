@@ -1,0 +1,129 @@
+{
+ "implemented": [
+  "dates-2",
+  "R02",
+  "dates-7",
+  "dates-4",
+  "dates-5",
+  "dates-6",
+  "R01",
+  "R03",
+  "R25",
+  "overlays-1",
+  "overlays-10",
+  "overlays-14",
+  "disclosure-data-3",
+  "disclosure-data-5",
+  "disclosure-data-10",
+  "disclosure-data-13",
+  "disclosure-data-15",
+  "layout-3",
+  "nav-a-11",
+  "nav-a-14",
+  "nav-a-15",
+  "E08",
+  "nav-b-1",
+  "nav-b-15",
+  "nav-b-2",
+  "R24",
+  "nav-b-3",
+  "R15",
+  "nav-b-7",
+  "nav-b-8",
+  "nav-b-9",
+  "R26",
+  "nav-b-12",
+  "nav-b-13",
+  "R21",
+  "nav-b-17",
+  "portal-shell-1",
+  "portal-shell-4",
+  "E03",
+  "E04",
+  "E05",
+  "E06",
+  "service-patterns-1",
+  "service-patterns-2",
+  "service-patterns-7",
+  "R17",
+  "R18"
+ ],
+ "deviations": [
+  {
+   "item": "dates-5",
+   "what": "react.datepicker-draft.test.tsx: after a reset with focus still in the input, the text input now shows the formatted target (setEditing(false) of the spec); the assertion was updated",
+   "why": "spec reset callback"
+  },
+  {
+   "item": "R01",
+   "what": "react.expansion.test.tsx and react.expansion.ssr.test.tsx updated: the Calendar status element now always exists (empty when supported); the SSR catalogue passes unsupportedMessage, Popover/Collapsible label",
+   "why": "spec DOM: status present and empty from the first render"
+  },
+  {
+   "item": "disclosure-data-10",
+   "what": "react.interaction.test.tsx pagination assertion changed from disabled to aria-disabled at page 1",
+   "why": "spec end state"
+  },
+  {
+   "item": "tests",
+   "what": "cross-adapter case ids are in packages/react/react.dates.test.tsx, react.disclosure-data.test.tsx, react.navigation-menus.test.tsx, react.text-contract.test.tsx (NAME-01..04, fixture root-names.tsx: NAME-06, SHAPE-03 R26/E06, TEXT-05), react.ssr.test.tsx (LAYOUT-01), react.expansion.ssr.test.tsx (SSR-01 timers), fixtures/disclosure-data-types.tsx (SHAPE-03 Table/DataTable), not in tests/*-parity.test.ts",
+   "why": "this step owns packages/react/** only"
+  },
+  {
+   "item": "nav-b-2 / E05",
+   "what": "Tabs follows the spec literally: aria-label={rootLabel(...)} together with aria-labelledby, so Tabs with both label and aria-labelledby writes both; Menu and Popover drop aria-label when aria-labelledby is given",
+   "why": "perAdapter.react text for each item"
+  }
+ ],
+ "files": [
+  "packages/react/src/calendar.tsx",
+  "packages/react/src/display.tsx",
+  "packages/react/src/expanded-interactive.tsx",
+  "packages/react/src/expanded-content.tsx",
+  "packages/react/src/expanded-layout.tsx",
+  "packages/react/src/interactive.tsx",
+  "packages/react/src/portal.tsx",
+  "packages/react/src/site-verification.tsx",
+  "packages/react/react.dates.test.tsx",
+  "packages/react/react.disclosure-data.test.tsx",
+  "packages/react/react.navigation-menus.test.tsx",
+  "packages/react/fixtures/disclosure-data-types.tsx",
+  "packages/react/fixtures/root-names.tsx",
+  "packages/react/react.text-contract.test.tsx",
+  "packages/react/react.ssr.test.tsx",
+  "packages/react/react.expansion.ssr.test.tsx",
+  "packages/react/react.expansion.test.tsx",
+  "packages/react/react.datepicker-draft.test.tsx",
+  "packages/react/react.interaction.test.tsx",
+  "packages/react/react.stepper.test.tsx",
+  "packages/react/react.portal.test.tsx",
+  "packages/react/react.side-navigation.test.tsx",
+  "packages/react/react.guide-support.test.tsx",
+  "packages/react/README.md",
+  "packages/react/PORTAL.md"
+ ],
+ "commands": [
+  {
+   "command": "node scripts/build.mjs --only react",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm exec vitest run packages/react",
+   "result": "28 files, 282 tests passed, no Hawiyah: warning in output"
+  },
+  {
+   "command": "src reverted to HEAD, new test files run",
+   "result": "every case of a changed behaviour fails before the change (end-state-only 'none' items pass before, as expected)"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "consumers outside packages/react",
+   "why": "not owned by this step; they use removed React names and must be updated by the owner of each file: tests/portal-branch-parity.test.ts:46,142 (navigation -> links); examples/react/src/portal.tsx:11 and nic-reference.tsx:22 (brandHref/navigation -> homeHref/links); examples/react/src/main.tsx:101 and input-controls.tsx:25 (Stepper needs completeLabel, upcomingLabel; main.tsx:124 Table columns header -> label if used); apps/playground/src/project-examples.ts:314-366 (TableColumn header -> label, Stepper texts), disclosure-projects.ts:44,128 (Popover/Collapsible title -> label), portal-navigation-demo.ts:61, ready-examples.ts:255, component-layout-guides.ts:131 and .ar.ts:158 (brandHref/navigation)"
+  },
+  {
+   "item": "browser cases POPOVER-04, TREE-02, TREE-06, PORTAL-04, PORTAL-07, SERVICE-03",
+   "why": "tests/browser/*.spec.ts are outside packages/react"
+  }
+ ]
+}

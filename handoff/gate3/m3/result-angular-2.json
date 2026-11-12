@@ -1,0 +1,227 @@
+{
+ "status": "complete: step 2 of 3 (spec-dates-overlays-disclosure-data.json and spec-navigation-menus-shell.json) implemented in packages/angular with tests; build and whole package test run pass",
+ "implemented": [
+  "dates-2",
+  "R02",
+  "dates-7",
+  "dates-4",
+  "dates-5",
+  "dates-6",
+  "R01",
+  "R03 (none for angular; test added)",
+  "R25",
+  "E08 (hw-calendar half)",
+  "overlays-1",
+  "overlays-10",
+  "overlays-14",
+  "disclosure-data-3",
+  "disclosure-data-5",
+  "disclosure-data-10",
+  "disclosure-data-13",
+  "disclosure-data-15",
+  "layout-3",
+  "nav-a-11",
+  "nav-a-14",
+  "nav-a-15",
+  "E08 (hw-carousel; hw-tabs, hw-breadcrumb, hw-pagination, hw-stepper, hw-secondary-nav, hw-content-navigation, hw-side-navigation through HwNamedRoot / HwHostAttribute)",
+  "nav-b-1",
+  "nav-b-15",
+  "nav-b-2",
+  "R24",
+  "nav-b-3",
+  "R15 (0.3.0 half: triggerVariant)",
+  "nav-b-7",
+  "nav-b-8 (none for angular; tests added)",
+  "nav-b-9",
+  "R26 (angular: name bindings only)",
+  "nav-b-12",
+  "nav-b-13",
+  "R21",
+  "nav-b-17",
+  "E08 / R22 (hw-popover, hw-menu, hw-tree-view)",
+  "portal-shell-1",
+  "portal-shell-4",
+  "E03 (none for angular)",
+  "E04",
+  "E05 (none for angular; E08)",
+  "E06 (none for angular; tests added)",
+  "service-patterns-1",
+  "service-patterns-2",
+  "R18",
+  "service-patterns-7",
+  "R17"
+ ],
+ "deviations": [
+  {
+   "item": "E08 (hw-calendar) / dates-7",
+   "what": "The grid binds [attr.aria-labelledby]=\"labelledBy\" and asks for label only when labelledBy is empty (HwValueControl.labelledBy: the application's aria-labelledby, else the label id of a surrounding hw-field)",
+   "why": "Convention name-without-visible-label (NAME-05): inside an hw-field the control is named by the field label. Outside a field the rendered attributes are exactly those of the specified expression."
+  },
+  {
+   "item": "dates-7 (hw-date-picker)",
+   "what": "The text input also gets [attr.form]=\"form\"; endEditing($event) emits (blurred)",
+   "why": "HwValueControl.form is written on every native control; the text input carries the required and custom validity."
+  },
+  {
+   "item": "dates-2 (hw-calendar)",
+   "what": "unavailable(value) is public, not private",
+   "why": "The template calls it; Angular templates cannot read private members."
+  },
+  {
+   "item": "overlays-10",
+   "what": "dialogTemplate() lives in the new internal file src/dialog-template.ts, not in overlays.ts",
+   "why": "public-api.ts re-exports everything from overlays.ts; a function exported there would become public API."
+  },
+  {
+   "item": "disclosure-data-13 / disclosure-data-15",
+   "what": "The shared cell fragments (tableCells, tableCell) live in the new internal file src/table-templates.ts and both tables interpolate them",
+   "why": "One fallback template for both components without a public export."
+  },
+  {
+   "item": "disclosure-data-15, case STATE-02",
+   "what": "Not asserted for Angular: a one-way [sortKey] is the initial state and the component then updates its own field",
+   "why": "Convention controlled-and-observable-state: Angular has no controlled mode (the same exception step 1 records for RESET-05 and combobox STATE-02)."
+  },
+  {
+   "item": "E08 (hw-carousel)",
+   "what": "HwCarouselComponent extends HwNamedRoot and binds [attr.aria-label]=\"rootName\"",
+   "why": "The navigation specification defines HwNamedRoot with the same expression and host bindings and says other clusters can extend it; the rendered attributes are those specified."
+  },
+  {
+   "item": "nav-b-2 (hw-menu opened by the application)",
+   "what": "A menu that starts open ([open] on the first change) also gets its first enabled item as the active one, without taking focus; a later bound change to open sets the active item and focuses it after the render. The check uses a private record of the open state the component itself produced, so a [(open)] echo of the reader's own opening (ArrowUp on the trigger) does not move focus back to the first item.",
+   "why": "endState.dom: exactly the active item has tabindex=0. Focus on the first render would steal focus at page load, and the two-way echo would otherwise override ArrowUp."
+  },
+  {
+   "item": "nav-b-17 (hw-tree-view)",
+   "what": "ul[role=tree] also binds [attr.aria-invalid]=\"invalid\"",
+   "why": "Convention angular-host-attributes: the inherited host binding removes aria-invalid from the wrapper, so the value is bound on the element that needs it (role tree supports aria-invalid)."
+  },
+  {
+   "item": "service-patterns-7",
+   "what": "The plain requirement is written @else {<ng-container>{{ requirement }}</ng-container>} and the loop declares let index = $index",
+   "why": "The specified `@else {{{ requirement }}}` is three opening braces in a row, which the template parser does not read as a block followed by an interpolation."
+  },
+  {
+   "item": "disclosure-data-13 / disclosure-data-15 (types)",
+   "what": "As specified, Row extends Record<string, unknown>: a row type declared as an interface (no index signature) is not accepted by [rows], a type alias is",
+   "why": "Recorded for the owner: `Row extends object` would accept interfaces too; the specified constraint was kept so that the four adapters agree."
+  },
+  {
+   "item": "disclosure-data-15, SHAPE-03",
+   "what": "(sortChange) cannot be a template error by itself: Angular treats an unknown event on a component element as a DOM event. The compile test reads $event.direction, which is the error an application that used the payload gets",
+   "why": "Angular has no diagnostic for an unknown output."
+  },
+  {
+   "item": "disclosure-data-13 / disclosure-data-15 (cell)",
+   "what": "A column `cell` that is not a TemplateRef is ignored and the row value is printed as text (cellTemplate() in table-templates.ts)",
+   "why": "tests/table-parity.test.ts passes one column array with React-style cell functions to all adapters; a function reached ngTemplateOutlet and threw (templateRef.createEmbeddedViewImpl is not a function). The declared type stays TemplateRef."
+  },
+  {
+   "item": "nav-b-2 (hw-menu link items)",
+   "what": "Space on a focused a.hw-menu-item activates it (preventDefault, click)",
+   "why": "Not stated in the specification: a button item is activated by Space natively, a link is not, and Space would scroll the page under the open menu. The other adapters should match or the owner may remove it."
+  },
+  {
+   "item": "tests listed under tests/*.test.ts and tests/browser/*.spec.ts",
+   "what": "The Angular side of every listed case id is in packages/angular/test with the same ids (dates.test.ts, overlays.test.ts, disclosure-data.test.ts, tables.test.ts, stepper.test.ts, menus-tree.test.ts, portal-service.test.ts, required-names.test.ts, side-navigation.test.ts, renamed-inputs.test.ts, ssr.test.ts, hydration.test.ts); the root parity files and the browser suite were not edited",
+   "why": "Only packages/angular/** is owned by this step."
+  },
+  {
+   "item": "hydration comparison (RICH-04, SSR-04)",
+   "what": "The server-equals-client comparison of the dialog and accordion scenarios ignores what only a browser does after hydration: `open` on a dialog bound open, and the accordion motion attributes (data-hw-expanded, aria-expanded on the summary, inert / aria-hidden on collapsed content, the native name of an exclusive group). 'breadcrumb, pagination and stepper' is asserted on the server and hydrated in place, not compared, because a pagination inside a disabled fieldset is synchronised in the browser",
+   "why": "These attributes are written by browser-only enhancements that already existed; none is part of this step."
+  }
+ ],
+ "files": [
+  "packages/angular/src/advanced-controls.ts",
+  "packages/angular/test/dates.test.ts (new)",
+  "packages/angular/test/fixtures/application-text.ts",
+  "packages/angular/test/fixtures/scenarios.ts",
+  "packages/angular/src/overlays.ts",
+  "packages/angular/src/dialog-template.ts (new)",
+  "packages/angular/src/table-templates.ts (new)",
+  "packages/angular/src/root-name.ts (new)",
+  "packages/angular/src/public-api.ts",
+  "packages/angular/src/presentation.ts",
+  "packages/angular/src/interactions.ts",
+  "packages/angular/src/content.ts",
+  "packages/angular/src/layouts.ts",
+  "packages/angular/src/navigation.ts",
+  "packages/angular/src/portal.ts",
+  "packages/angular/src/content-navigation.ts",
+  "packages/angular/src/side-navigation.ts",
+  "packages/angular/test/overlays.test.ts (new)",
+  "packages/angular/test/disclosure-data.test.ts (new)",
+  "packages/angular/test/tables.test.ts (new)",
+  "packages/angular/test/stepper.test.ts",
+  "packages/angular/test/accordion.test.ts",
+  "packages/angular/test/text-contract.test.ts",
+  "packages/angular/test/ssr.test.ts",
+  "packages/angular/test/menus-tree.test.ts (new)",
+  "packages/angular/test/expansion.test.ts",
+  "packages/angular/test/required-names.test.ts",
+  "packages/angular/test/fixtures/required-names.ts",
+  "packages/angular/test/portal-service.test.ts (new)",
+  "packages/angular/test/renamed-inputs.test.ts (new)",
+  "packages/angular/test/fixtures/renamed-inputs.ts (new)",
+  "packages/angular/test/hydration.test.ts",
+  "packages/angular/test/side-navigation.test.ts",
+  "packages/angular/PORTAL.md",
+  "packages/angular/README.md"
+ ],
+ "commands": [
+  {
+   "command": "node scripts/build.mjs --only angular",
+   "result": "Built Angular Package (one NG8107 warning in src/navigation.ts:27 that is already in commit a0ed9b0)"
+  },
+  {
+   "command": "pnpm exec vitest run packages/angular",
+   "result": "46 files, 740 tests passed; no Hawiyah: warning in the output (after step 1: 39 files, 575 tests)"
+  },
+  {
+   "command": "pnpm exec vitest run tests (informational, files not owned)",
+   "result": "Angular cases that fail until the root files follow the specification: tests/carousel-parity.test.ts:55 and tests/pagination-parity.test.ts:49 (expect the arrow at a bound to be `disabled`; it is aria-disabled now), tests/tooltip-dismissal-parity.test.ts:65,90 (Angular fixture without hwTooltipTrigger), tests/basic-field-select-parity.test.ts (describedBy, from step 1). tests/table-parity.test.ts passes."
+  }
+ ],
+ "notDone": [
+  {
+   "item": "Browser cases ATTR-06, TOOLTIP-04, TREE-02, TREE-06, MENU-04, POPOVER-04, PORTAL-04, RICH-03 (computed display), SERVICE-03",
+   "why": "They live in tests/browser/*.spec.ts with static fixtures and the package stylesheet, outside packages/angular. The Angular DOM they need (empty regions without child nodes, hosts without component styles, --hw-tree-depth) is asserted in the jsdom tests."
+  },
+  {
+   "item": "Root parity files tests/*-parity.test.ts (calendar, date-picker, accordion, collapsible, table, data-table, breadcrumb, stepper, menu, popover, tree-view, portal-header, portal-branch, service-patterns, page-header, dialog), tests/text-contract-docs.test.ts, components.json, llms.txt, CHANGELOG.md, CONTRACT.md, docs/, apps/playground",
+   "why": "Outside packages/angular. Angular fixtures there need: hwTooltipTrigger on the tooltip trigger; aria-disabled instead of disabled for arrows at a bound; {value} for accordion and menu items; [items] / [expanded] / getExpandLabel / getCollapseLabel on hw-tree-view; [items] with value, completeLabel and upcomingLabel on hw-stepper; (sortKeyChange) / (sortDirectionChange); [metadata] on the service components; unsupportedMessage on an Umm al-Qura calendar; .hw-menu-content; aria-labelledby on the table wrapper."
+  },
+  {
+   "item": "STATE-02 (controlled, notification ignored) for hw-data-table sort, hw-menu / hw-popover open, hw-tree-view expanded, hw-portal-header open",
+   "why": "Convention controlled-and-observable-state: Angular has no controlled mode; a written value is the initial state and the component updates its own field. STATE-01, 03, 04 and 05 are asserted."
+  },
+  {
+   "item": "hw-portal-layout does not pass `open` to its header; R15 trigger projection; native table composition; a switch on the standalone calendar",
+   "why": "Stated as not in 0.3.0 by the specifications (notDone / notIn030)."
+  }
+ ],
+ "changelog": [
+  "angular new: hw-calendar isDateDisabled, unsupportedMessage (required with calendar=\"islamic-umalqura\": add unsupportedMessage=\"...\"); hw-date-picker isDateDisabled, unavailableMessage (required with isDateDisabled), getDayLabel; Angular Forms error calendarUnavailable",
+  "angular markup: hw-date-picker p#{id}-date-error -> p#{id}-error.hw-error[role=alert] after the hint; label with id and required marker; #<id>-date-error -> #<id>-error",
+  "angular input: hw-date-picker, hw-calendar label required unless aria-label / aria-labelledby (or a surrounding hw-field) names the control; [describedBy] -> [aria-describedby]",
+  "angular default: tab stop of an empty hw-calendar is today when shown and available (was the first day of the month)",
+  "angular input: hw-dialog, hw-drawer describedBy -> aria-describedby ([describedBy]=\"id\" -> [aria-describedby]=\"id\"); new forwarded aria-label, aria-labelledby",
+  "angular markup: hw-tooltip host is the wrapper (class hw-tooltip-anchor); new directive [hwTooltipTrigger] (HwTooltipTriggerDirective) marks the trigger: <hw-tooltip text=\"T\">term</hw-tooltip> -> <hw-tooltip text=\"T\"><span hwTooltipTrigger tabindex=\"0\">term</span></hw-tooltip>",
+  "angular field: HwAccordionItem.id -> value; (toggled) emits {value, open} ($event.id -> $event.value); new titleTemplate, contentTemplate",
+  "angular new: hw-collapsible disabled; hw-page-header level; hw-table / hw-data-table column cell template, rowKey, forwarded aria attributes; HwBreadcrumbItem.current; HwNamedRoot",
+  "angular output: hw-data-table (sortChange) removed -> (sortKeyChange), (sortDirectionChange); [(sortKey)] [(sortDirection)]",
+  "angular markup: hw-table / hw-data-table wrapper aria-label -> aria-labelledby={caption id}; hw-table caption optional with aria-label / aria-labelledby; carousel and pagination arrows at a bound are aria-disabled, not disabled",
+  "angular input: hw-stepper steps -> items ([steps]=\"x\" -> [items]=\"x\"); HwStep.value required; current is the value of the current step ([current]=\"1\" -> [activeIndex]=\"1\"), no default; new required completeLabel, upcomingLabel; small.hw-hint -> p.hw-hint",
+  "angular input: label optional with aria-label / aria-labelledby on hw-carousel, hw-tabs, hw-breadcrumb, hw-pagination, hw-stepper, hw-secondary-nav, hw-content-navigation, hw-side-navigation",
+  "angular field: HwMenuItem.id -> value ({id: 'edit'} -> {value: 'edit'}), new href; markup div.hw-menu-panel -> div.hw-menu-content",
+  "angular default: packaged trigger of hw-menu and hw-popover is a secondary button; add triggerVariant=\"primary\" to keep the old look",
+  "angular input: hw-tree-view nodes -> items, expandedIds -> expanded, (expandedIdsChange) -> (expandedChange) ([nodes]=\"x\" -> [items]=\"x\"; [(expandedIds)]=\"e\" -> [(expanded)]=\"e\"); new required getExpandLabel(node), getCollapseLabel(node); span.hw-tree-toggle -> button.hw-tree-toggle; label optional with a forwarded name",
+  "angular behaviour: type-ahead in hw-menu and hw-tree-view; hw-popover and hw-menu close when focus moves outside; tree items carry --hw-tree-depth instead of inline padding",
+  "angular field: hw-portal-header menuOpen -> open input with (openChange); header.menuOpen -> header.open or [(open)]",
+  "angular markup: hw-portal-header brand without homeHref is div.hw-portal-brand (role=img with brandLabel), was a.hw-portal-brand without href",
+  "angular input: hw-service-card duration, fee removed -> [metadata]=\"[{term, description}]\"; hw-service-details details -> metadata; hw-service-card href optional, title no longer a link, packaged action a.hw-link only with href (project <a hwButton variant=\"secondary\" hwServiceAction> to keep a button)",
+  "angular markup: hw-service-details root is article; requirements in section > h3 + ul; description paragraph only when given; actions through [hwServiceAction] in a footer (<button hwButton> -> <button hwButton hwServiceAction>); new requirementTemplate; facts are a stacked dl.hw-description-list"
+ ]
+}

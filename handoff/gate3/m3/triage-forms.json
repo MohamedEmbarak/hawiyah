@@ -1,0 +1,661 @@
+{
+  "bucket": "forms",
+  "items": [
+    {
+      "id": "actions-2",
+      "subject": "toggle-group",
+      "title": "Angular ToggleGroup loses its selection on native form reset while the model keeps the old value",
+      "status": "open",
+      "evidence": "packages/angular/src/interactions.ts:11 radios still bound with [checked]=\"selected(option.value)\"; no 'reset' listener anywhere in HwToggleGroupComponent or HwValueControl (packages/angular/src/forms.ts:17-40; only password/search fields listen, advanced-controls.ts:37,101). tests/toggle-group-parity.test.ts:58 runs the external-reset test for react and vue only.",
+      "remaining": "angular: listen for the owning form's reset in HwValueControl (packages/angular/src/forms.ts:17-40) and restore/emit for hw-toggle-group (packages/angular/src/interactions.ts:11-24); add angular to tests/toggle-group-parity.test.ts:58.",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "form-reset"
+      ],
+      "sameAs": "fields-basic-8",
+      "note": ""
+    },
+    {
+      "id": "actions-3",
+      "subject": "toggle-group",
+      "title": "Segmented multiple mode: a focused button looks pressed whether or not it is",
+      "status": "fixed",
+      "evidence": "packages/styles/src/nic-segmented.css:78-85: focus-visible now draws only an outline; the selected colours apply only to button[aria-pressed=true] / checked radios. Browser check (tmp-forms/tg.cjs, light): focused unpressed segment bg rgb(243,244,246) text rgb(22,22,22), pressed bg rgb(12,17,27) text white.",
+      "remaining": "",
+      "kind": "a11y",
+      "breaking": false,
+      "size": "S",
+      "themes": [],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "actions-4",
+      "subject": "toggle-group",
+      "title": "Outline multiple mode: hover text contrast is below 4.5:1 in light and dark",
+      "status": "fixed",
+      "evidence": "packages/styles/src/nic-segmented.css:127-130 outline-variant .hw-button hover/focus/active backgrounds forced transparent (pressed: primary-subtle). tmp-forms/tg.cjs light: unpressed hover rgb(27,131,84) on transparent/white = 4.75:1, pressed 4.54:1.",
+      "remaining": "",
+      "kind": "a11y",
+      "breaking": false,
+      "size": "S",
+      "themes": [],
+      "sameAs": null,
+      "note": "Dark theme not measured (theme switch not applied in the bare test page); same rule covers it."
+    },
+    {
+      "id": "actions-5",
+      "subject": "toggle-group",
+      "title": "Angular multiple-mode buttons have no data-variant, so hover and focus turn primary green with unreadable text",
+      "status": "partly",
+      "evidence": "Visual defect gone: tmp-forms/tg.cjs renders the Angular markup (bare class=\"hw-button\") identically to React/Vue data-variant=\"secondary\" in rest/hover/focus (light), thanks to packages/styles/src/nic-segmented.css:129-130. Markup still differs: packages/angular/src/interactions.ts:11 renders <button type=\"button\" class=\"hw-button\"> without data-variant/data-size.",
+      "remaining": "angular: add data-variant=\"secondary\" data-size=\"md\" to multiple-mode buttons (packages/angular/src/interactions.ts:11); vanilla guide demo markup likewise.",
+      "kind": "visual",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "layout-difference"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "actions-6",
+      "subject": "button",
+      "title": "Angular Button is a directive with no loading input and no type default",
+      "status": "open",
+      "evidence": "packages/angular/src/presentation.ts:11-15 HwButtonDirective still has only variant and size inputs; no loading, no type default. React packages/react/src/forms.tsx:12-13 and Vue packages/vue/src/forms.ts:7-13 default type=button and support loading.",
+      "remaining": "angular: add loading input (host [disabled], [attr.aria-busy]) and default host type to 'button' when no type attribute is authored (packages/angular/src/presentation.ts:11-15).",
+      "kind": "api",
+      "breaking": true,
+      "size": "S",
+      "themes": [
+        "angular-host-attributes"
+      ],
+      "sameAs": null,
+      "note": "Defaulting type to button changes submit behaviour of existing <button hwButton> inside forms."
+    },
+    {
+      "id": "actions-7",
+      "subject": "link",
+      "title": "Angular hw-link hides its anchor: attributes are not forwarded and RouterLink causes a full page reload",
+      "status": "open",
+      "evidence": "packages/angular/src/content.ts:15-19 hw-link still renders its own <a> with fixed inputs (href, target, rel, variant, current, disabled); no external input, no attribute forwarding, no a[hwLink] directive (grep hwLink: none).",
+      "remaining": "angular: add an a[hwLink] attribute directive (class hw-link, variant, current, disabled, external) so routerLink/ARIA/native attributes land on the real anchor; keep or deprecate hw-link (packages/angular/src/content.ts:15-19).",
+      "kind": "api",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "angular-host-attributes",
+        "layout-difference"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "actions-8",
+      "subject": "toggle-group",
+      "title": "Angular host wrappers change layout: outline ToggleGroup shrink-wraps where React and Vue stretch",
+      "status": "open",
+      "evidence": "packages/angular/src/interactions.ts:11 hw-toggle-group host still wraps the fieldset with no host class or display rule; packages/styles/src/extended.css:138 .hw-toggle-group is inline-flex; no display:contents rule for hw-toggle-group/hw-link in styles (layout.css:133-134 covers other hosts only). Same for hw-link (packages/angular/src/content.ts:15).",
+      "remaining": "angular: give hw-toggle-group and hw-link hosts display:contents (or move the root class to the host) — packages/angular/src/interactions.ts:11, packages/angular/src/content.ts:15, or packages/styles/src/layout.css:133.",
+      "kind": "visual",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "angular-host-attributes",
+        "layout-difference"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "actions-9",
+      "subject": "toggle-group",
+      "title": "ToggleGroup capabilities differ between adapters (hint/error/required, form attribute, label type)",
+      "status": "partly",
+      "evidence": "Angular label is now required (packages/angular/src/interactions.ts:13). Still: hint/error/required only in Angular (packages/angular/src/interactions.ts:11); React ToggleBase has none (packages/react/src/expanded-interactive.tsx:11), Vue props none (packages/vue/src/expansion-interactive.ts:23-40). No form input in Angular. label ReactNode (React) vs string. readOnly (React/Angular) vs readonly (Vue :33). options optional in Angular (packages/angular/src/interactions.ts:15). Vue merges attrs (name/form) onto the fieldset (packages/vue/src/expansion-interactive.ts:58). React adds hw-choice/hw-radio classes (packages/react/src/expanded-interactive.tsx:24).",
+      "remaining": "react+vue: add hint/error/required (aria-describedby on fieldset) or remove from angular; angular: add form input and make options required (packages/angular/src/interactions.ts:15); vue: stop forwarding name/form to the fieldset (packages/vue/src/expansion-interactive.ts:58); document readOnly/readonly spelling side by side.",
+      "kind": "api",
+      "breaking": true,
+      "size": "M",
+      "themes": [
+        "validation-message",
+        "required-marker",
+        "item-shape"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "actions-11",
+      "subject": "toggle-group",
+      "title": "Vue emits update:modelValue for every group on form reset, with '' for a multiple group; React emits nothing",
+      "status": "open",
+      "evidence": "packages/vue/src/expansion-interactive.ts:27-30 defaultValue still defaults to \"\" in multiple mode; :54 useFormReset(element, () => model.set(props.defaultValue)) emits for every group (packages/vue/src/shared.ts:32 set() always emits). React packages/react/src/expanded-interactive.tsx:22 resets internal state without onValueChange.",
+      "remaining": "vue: default defaultValue to [] when multiple (packages/vue/src/expansion-interactive.ts:27-30) and emit on reset only when the value changes (packages/vue/src/expansion-interactive.ts:54); react: decide/notify per contract (packages/react/src/expanded-interactive.tsx:22); write the reset-notification rule in CONTRACT.md.",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "form-reset"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "actions-v1",
+      "subject": "toggle-group",
+      "title": "React controlled ToggleGroup shows and submits a different option than its state after a native form reset",
+      "status": "open",
+      "evidence": "packages/react/src/expanded-interactive.tsx:22 still resets only when value === undefined; a controlled group is not re-rendered after the browser resets the radios.",
+      "remaining": "react: after reset, re-apply the controlled value to the radios (force re-render / set checked) or notify onValueChange (packages/react/src/expanded-interactive.tsx:22).",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "form-reset"
+      ],
+      "sameAs": null,
+      "note": "not verified: code unchanged, behaviour not re-run (verifier-raised finding)."
+    },
+    {
+      "id": "fields-basic-2",
+      "subject": "text-field",
+      "title": "Angular value controls cannot be named without a visible label; an empty label is always rendered",
+      "status": "partly",
+      "evidence": "Fixed: the empty label is no longer rendered (packages/angular/src/forms.ts:43 fieldLabel wrapped in @if (label)). Still open: HwValueControl (packages/angular/src/forms.ts:17-40) has no ariaLabel/ariaLabelledby input; templates at forms.ts:59,86,99 and advanced-controls.ts:113 bind no aria-label, so a host aria-label never reaches the control.",
+      "remaining": "angular: add ariaLabel/ariaLabelledby inputs to HwValueControl (packages/angular/src/forms.ts:17-40) and bind them on every native control (forms.ts:59,86,99,112,121; advanced-controls.ts:24,46,113,126,185,188,191).",
+      "kind": "a11y",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "name-without-visible-label"
+      ],
+      "sameAs": "fields-basic-2",
+      "note": ""
+    },
+    {
+      "id": "fields-basic-3",
+      "subject": "field",
+      "title": "Angular hw-field cannot wrap Hawiyah controls; hint, error and required are not connected to the projected control",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:46-55 hw-field still only projects content; it now exposes descriptionIds/required for manual binding of a native control (tests/basic-field-select-parity.test.ts:149), but provides no injection token, so a nested hw-text-field does not inherit label, description, invalid or required.",
+      "remaining": "angular: provide the field state via an injection token from HwFieldComponent (packages/angular/src/forms.ts:46-55) and read it in HwValueControl (packages/angular/src/forms.ts:17-40): skip own label, merge description ids, inherit required/invalid.",
+      "kind": "api",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "validation-message",
+        "required-marker"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "fields-basic-5",
+      "subject": "select",
+      "title": "Angular Select has no option/optgroup projection and no multiple; projected children are dropped silently",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:99 hw-select template still has no <ng-content> and no multiple input; React packages/react/src/forms.tsx:42-44 and Vue packages/vue/src/forms.ts:64-69 (slot options) accept native children.",
+      "remaining": "angular: add <ng-content /> inside the select (or an option-group model) and decide on multiple (packages/angular/src/forms.ts:97-108).",
+      "kind": "api",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "item-shape"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "fields-basic-6",
+      "subject": "textarea",
+      "title": "Angular Textarea is 122px tall by default; the other adapters render the documented 96px",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:86 binds [rows]=\"rows\" and packages/angular/src/forms.ts:91 defaults rows = 4.",
+      "remaining": "angular: default rows to null and bind [attr.rows] (packages/angular/src/forms.ts:86,91).",
+      "kind": "visual",
+      "breaking": true,
+      "size": "S",
+      "themes": [
+        "layout-difference"
+      ],
+      "sameAs": null,
+      "note": "Changes the default rendered height (and rows attribute) of hw-textarea."
+    },
+    {
+      "id": "fields-basic-7",
+      "subject": "number-field",
+      "title": "Angular NumberField shows no required marker",
+      "status": "open",
+      "evidence": "packages/angular/src/advanced-controls.ts:113 hw-number-field renders its own @if (label) {<label>} without the required marker (fieldLabel at packages/angular/src/forms.ts:43 has it).",
+      "remaining": "angular: use the shared fieldLabel (with .hw-required-marker) in hw-number-field (packages/angular/src/advanced-controls.ts:113).",
+      "kind": "visual",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "required-marker"
+      ],
+      "sameAs": "rich-inputs-20",
+      "note": ""
+    },
+    {
+      "id": "fields-basic-8",
+      "subject": "text-field",
+      "title": "A native form reset leaves each adapter in a different state; Angular keeps a stale model behind an emptied input",
+      "status": "open",
+      "evidence": "Angular: no form reset listener in HwValueControl (packages/angular/src/forms.ts:17-40) or the text/textarea/select/number templates (forms.ts:59,86,99; advanced-controls.ts:113); textarea/select still [value]-bound, text and number fields use InputValueSync (packages/angular/src/input-value.ts) which only reapplies on writeValue. Vue resets at packages/vue/src/forms.ts:58-61. React controlled Select behaviour not re-run.",
+      "remaining": "angular: one reset mechanism in HwValueControl (packages/angular/src/forms.ts:17-40) that after the browser reset either restores the DOM from the model or writes the initial value and emits, applied to every value control; react: re-check controlled Select after reset (packages/react/src/forms.tsx:42); document the rule in CONTRACT.md.",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "L",
+      "themes": [
+        "form-reset"
+      ],
+      "sameAs": "fields-basic-8",
+      "note": "React part not verified."
+    },
+    {
+      "id": "fields-basic-9",
+      "subject": "select",
+      "title": "Vue Select without defaultValue is not reset by a form reset",
+      "status": "open",
+      "evidence": "packages/vue/src/forms.ts:59 unchanged: model.set(props.defaultValue ?? (tag === 'select' ? element.value?.value : '') ?? '') reads the live select value at reset time.",
+      "remaining": "vue: remember the initial selection at mount (or the option with defaultSelected) and use it on reset (packages/vue/src/forms.ts:51,58-61).",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "form-reset"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "fields-basic-10",
+      "subject": "text-field",
+      "title": "Angular TextField/Textarea/Select/NumberField forward no native attributes or focus events; (blur) and (focus) on the host never fire",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:17-40 inputs list unchanged apart from describedBy; only output is valueChange; (blur)=\"touch()\" stays internal (forms.ts:59,86,99). No attribute pass-through mechanism; search field documents that the host forwards no aria-label (packages/angular/src/advanced-controls.ts:54).",
+      "remaining": "angular: add blurred/focused outputs and a pass-through for native attributes (directive-on-native-control form, or explicit inputs for aria-*, form, enterkeyhint, autocapitalize, spellcheck, list) in HwValueControl (packages/angular/src/forms.ts:17-40).",
+      "kind": "api",
+      "breaking": false,
+      "size": "L",
+      "themes": [
+        "angular-host-attributes",
+        "name-without-visible-label"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "choices-2",
+      "subject": "checkbox",
+      "title": "Angular choice and range controls desynchronise from their model on native form reset; read-only values are changed",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:112,121,126 (checkbox/switch/radio) and packages/angular/src/advanced-controls.ts:126,139,155 (slider/range/rating) bind only [checked]/[value] properties and have no form reset listener.",
+      "remaining": "angular: covered by the HwValueControl reset mechanism (packages/angular/src/forms.ts:17-40) applied to choice, slider, range and rating controls; read-only values must stay unchanged.",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "form-reset",
+        "read-only"
+      ],
+      "sameAs": "fields-basic-8",
+      "note": ""
+    },
+    {
+      "id": "choices-3",
+      "subject": "checkbox",
+      "title": "Angular choice and slider components cannot be given an accessible name without a visible label",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:112,121 and packages/angular/src/advanced-controls.ts:126 still bind no aria-label/aria-labelledby; HwValueControl has no such inputs (packages/angular/src/forms.ts:17-40).",
+      "remaining": "angular: ariaLabel/ariaLabelledby inputs bound on checkbox, switch and slider inputs (packages/angular/src/forms.ts:112,121; packages/angular/src/advanced-controls.ts:126).",
+      "kind": "a11y",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "name-without-visible-label"
+      ],
+      "sameAs": "fields-basic-2",
+      "note": ""
+    },
+    {
+      "id": "choices-4",
+      "subject": "checkbox",
+      "title": "Angular checkbox and switch cannot set the submitted value or project label content",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:112,121 still render no value attribute (submits \"on\") and the label is {{ label }} without <ng-content>; Vue has value prop and slot (packages/vue/src/forms.ts:91,126).",
+      "remaining": "angular: add a submit-value input bound to [value] and <ng-content> inside the label for checkbox and switch (packages/angular/src/forms.ts:110-122).",
+      "kind": "api",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "rich-content"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "choices-5",
+      "subject": "radio",
+      "title": "Radio is a whole group in Angular but a single option elsewhere; no adapter offers the other shape",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:124-131 hw-radio is still a fieldset group with options; React packages/react/src/forms.tsx:72-73 and Vue packages/vue/src/forms.ts:135 Radio are single options; no RadioGroup/CheckboxGroup in any adapter (grep: none).",
+      "remaining": "react/vue/vanilla: add RadioGroup (and CheckboxGroup) with fieldset/legend, group hint/error/required; angular: add a single-option radio or rename hw-radio to hw-radio-group with an alias (packages/angular/src/forms.ts:124).",
+      "kind": "api",
+      "breaking": true,
+      "size": "L",
+      "themes": [
+        "item-shape",
+        "validation-message"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "choices-6",
+      "subject": "slider",
+      "title": "Slider value display, formatting and aria-valuetext exist only in React",
+      "status": "open",
+      "evidence": "React packages/react/src/expanded-controls.tsx:29-35 has showValue/formatValue/aria-valuetext. Vue packages/vue/src/controls.ts:173-221 renders no output, no formatter, no aria-valuetext. Angular packages/angular/src/advanced-controls.ts:126 always renders an unformatted <output>, no showValue/formatValue/aria-valuetext.",
+      "remaining": "vue: add showValue/formatValue and aria-valuetext (packages/vue/src/controls.ts:173-221); angular: same inputs, output conditional (packages/angular/src/advanced-controls.ts:126-137).",
+      "kind": "api",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "value-display"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "choices-8",
+      "subject": "range-slider",
+      "title": "Vue RangeSlider ignores name: neither handle is submitted",
+      "status": "open",
+      "evidence": "packages/vue/src/controls.ts:223-237 declares lowerName/upperName only; :272 name: side === \"lower\" ? props.lowerName : props.upperName; name falls through attrs onto the fieldset.",
+      "remaining": "vue: declare name (and form) props and use props.lowerName ?? props.name / props.upperName ?? props.name (packages/vue/src/controls.ts:235-236,272).",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "S",
+      "themes": [],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "choices-9",
+      "subject": "range-slider",
+      "title": "RangeSlider value display and label styling differ per adapter",
+      "status": "open",
+      "evidence": "React one output per thumb via Slider (packages/react/src/expanded-controls.tsx:38-41); Angular one combined unformatted output and handle labels without hw-label (packages/angular/src/advanced-controls.ts:139); Vue no output (packages/vue/src/controls.ts:249-305, labels have hw-label); vanilla optional [data-hw-range-output] formatted with locale (packages/vanilla/src/controls.ts:36-55). formatValue only in React.",
+      "remaining": "all: pick one presentation (combined locale-formatted output + per-thumb aria-valuetext) and formatValue; angular: add class hw-label to handle labels and formatValue (packages/angular/src/advanced-controls.ts:139-142); vue: add output/formatValue (packages/vue/src/controls.ts:223-316); react: switch to the chosen presentation (packages/react/src/expanded-controls.tsx:38-41).",
+      "kind": "visual",
+      "breaking": true,
+      "size": "M",
+      "themes": [
+        "value-display",
+        "layout-difference"
+      ],
+      "sameAs": "choices-9",
+      "note": ""
+    },
+    {
+      "id": "rich-inputs-1",
+      "subject": "combobox",
+      "title": "Angular combobox listbox opens below the hint/error instead of directly under the input",
+      "status": "open",
+      "evidence": "packages/angular/src/forms.ts:135 still puts hw-combobox on the whole field wrapper (label, input, list, status, hint, error); React packages/react/src/interactive.tsx:268 and Vue packages/vue/src/interactive.ts:186 wrap only input and list; packages/styles/src/components.css:213 positions the list against .hw-combobox.",
+      "remaining": "angular: wrap only the input, hidden input and listbox in an inner div.hw-combobox inside div.hw-field (packages/angular/src/forms.ts:135); vanilla: document the same structure in markup examples.",
+      "kind": "visual",
+      "breaking": true,
+      "size": "S",
+      "themes": [
+        "open-state",
+        "layout-difference"
+      ],
+      "sameAs": null,
+      "note": "Changes Angular rendered markup (class position)."
+    },
+    {
+      "id": "rich-inputs-2",
+      "subject": "combobox",
+      "title": "Popup open state and query are controllable/observable only in React",
+      "status": "open",
+      "evidence": "React packages/react/src/interactive.tsx:176-179 open/defaultOpen/onOpenChange/onInputChange. Vue packages/vue/src/interactive.ts:124-128 still declares no open prop (emits update:open/update:query only). Angular packages/angular/src/forms.ts:136-146 has no open input and no open/query outputs. Vanilla packages/vanilla/src/combobox.ts:133 emits value changes only.",
+      "remaining": "vue: add open prop (v-model:open) and defaultOpen (packages/vue/src/interactive.ts:126); angular: add open input plus openChange/queryChange outputs (packages/angular/src/forms.ts:136-146); vanilla: add an open-change event (packages/vanilla/src/combobox.ts).",
+      "kind": "api",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "open-state"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "rich-inputs-5",
+      "subject": "multi-select",
+      "title": "Angular MultiSelect: native form reset unchecks the boxes but the hidden inputs still submit the old selection",
+      "status": "open",
+      "evidence": "packages/angular/src/advanced-controls.ts:191 hw-multi-select still renders hidden inputs from state and has no form reset listener (only password/search do, :37,:101).",
+      "remaining": "angular: covered by the shared reset mechanism in HwValueControl/HwExpandedValueControl (packages/angular/src/forms.ts:17-40, packages/angular/src/advanced-controls.ts:13-19), restoring initial value for hw-multi-select (and hw-tag-input).",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "form-reset"
+      ],
+      "sameAs": "fields-basic-8",
+      "note": ""
+    },
+    {
+      "id": "rich-inputs-6",
+      "subject": "multi-select",
+      "title": "MultiSelect looks different in every adapter (option rows, search label, required marker, status line)",
+      "status": "open",
+      "evidence": "React packages/react/src/expanded-controls.tsx:89 options in div.hw-stack and legend appends plain \" *\"; Angular packages/angular/src/advanced-controls.ts:191 option labels without hw-choice, sr-only search label, visible \"N selected\" status (getSelectedMessage); Vue packages/vue/src/controls.ts:644-646 uses .hw-multi-select-options + hw-choice, aria-label search, no status, no marker; vanilla renders its own status.",
+      "remaining": "react: div.hw-multi-select-options and the shared .hw-required-marker (packages/react/src/expanded-controls.tsx:89); angular: class hw-choice on option labels and shared marker (packages/angular/src/advanced-controls.ts:191); all: one search-label strategy and one status treatment (see R09/R10).",
+      "kind": "visual",
+      "breaking": true,
+      "size": "M",
+      "themes": [
+        "layout-difference",
+        "required-marker",
+        "item-shape"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "rich-inputs-8",
+      "subject": "tag-input",
+      "title": "TagInput renders three different layouts; Angular adds an extra \"Add\" button and a bordered inner input",
+      "status": "open",
+      "evidence": "React wraps the whole Field in .hw-tag-input with chips in div.hw-inline (packages/react/src/expanded-controls.tsx:75-80); Vue boxes only chips and input (packages/vue/src/controls.ts:514); Angular boxes the field and nests the input in .hw-input-group with an Add button (packages/angular/src/advanced-controls.ts:188).",
+      "remaining": "all: one structure (label/hint outside or inside, input a direct child of .hw-tag-input); angular: drop the Add button or make it opt-in everywhere (packages/angular/src/advanced-controls.ts:188); react: ul/li chips like the others (packages/react/src/expanded-controls.tsx:80); vue: packages/vue/src/controls.ts:510-578.",
+      "kind": "visual",
+      "breaking": true,
+      "size": "M",
+      "themes": [
+        "layout-difference"
+      ],
+      "sameAs": "rich-inputs-8",
+      "note": ""
+    },
+    {
+      "id": "rich-inputs-12",
+      "subject": "pin-input",
+      "title": "Pasting a formatted one-time code silently loses digits (maxlength truncates before normalisation)",
+      "status": "open",
+      "evidence": "maxlength still set before normalisation: vanilla packages/vanilla/src/controls.ts:123 input.maxLength = length; React packages/react/src/expanded-controls.tsx:70 maxLength={count}; Vue packages/vue/src/controls.ts:457 maxlength: length; Angular packages/angular/src/advanced-controls.ts:185 [attr.maxlength]. No paste/beforeinput handler for pin inputs (grep: only tag input and search field).",
+      "remaining": "all four: drop native maxlength (keep pattern) or intercept paste/beforeinput to normalise the full text before truncation (packages/vanilla/src/controls.ts:123, packages/react/src/expanded-controls.tsx:70, packages/vue/src/controls.ts:457, packages/angular/src/advanced-controls.ts:185).",
+      "kind": "behaviour",
+      "breaking": false,
+      "size": "S",
+      "themes": [],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "rich-inputs-14",
+      "subject": "password-field",
+      "title": "Visibility can be controlled/observed only in React (and via hw:change in vanilla)",
+      "status": "partly",
+      "evidence": "Fixed: Vue PasswordField no longer carries search props/events (packages/vue/src/controls.ts:54-65: textProps + show/hide labels, emits update:modelValue only). Open: Vue visibility is an internal ref (packages/vue/src/controls.ts:69); Angular revealed is a public field with no input/output (packages/angular/src/advanced-controls.ts:32).",
+      "remaining": "vue: add visible prop + update:visible and defaultVisible (packages/vue/src/controls.ts:57-75); angular: add visible input and visibleChange output (packages/angular/src/advanced-controls.ts:24-42).",
+      "kind": "api",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "open-state"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "rich-inputs-20",
+      "subject": "combobox, password-field, search-field, pin-input, tag-input, multi-select",
+      "title": "Angular rich inputs never show the required marker; React multi-select uses a different marker",
+      "status": "open",
+      "evidence": "Angular rich inputs still render their own @if (label) {<label>} without the marker: packages/angular/src/forms.ts:135 (combobox), packages/angular/src/advanced-controls.ts:24 (password), 45 (search), 113 (number), 126 (slider), 185 (pin), 188 (tag), 191 (multi legend). React MultiSelect legend appends an unstyled \" *\" (packages/react/src/expanded-controls.tsx:89); Vue MultiSelect legend has none (packages/vue/src/controls.ts:622).",
+      "remaining": "angular: use fieldLabel (or a legend variant with .hw-required-marker) in every rich-input template; react: shared .hw-required-marker span in the MultiSelect legend; vue: add the marker to the MultiSelect legend.",
+      "kind": "visual",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "required-marker"
+      ],
+      "sameAs": "rich-inputs-20",
+      "note": ""
+    },
+    {
+      "id": "rich-inputs-21",
+      "subject": "combobox, tag-input, multi-select",
+      "title": "Angular calls setCustomValidity in ngAfterViewInit, which Angular SSR DOM (domino) does not implement",
+      "status": "fixed",
+      "evidence": "packages/angular/src/platform.ts:8-17 setCustomValidity/setConstraintValidity guard typeof element.setCustomValidity === 'function'; combobox (packages/angular/src/forms.ts:177), tag input and multi-select (packages/angular/src/advanced-controls.ts:189,212) and date picker (:345) all go through it; no direct setCustomValidity call remains in packages/angular/src/.",
+      "remaining": "",
+      "kind": "ssr",
+      "breaking": false,
+      "size": "S",
+      "themes": [],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "R09",
+      "subject": "MultiSelect",
+      "title": "Live announcement of the filtered count (getResultsMessage); vanilla only.",
+      "status": "open",
+      "evidence": "Vanilla createMultiSelect announces the filtered count (packages/vanilla/src/controls.ts:209,231-233). React (packages/react/src/expanded-controls.tsx:84-89), Vue (packages/vue/src/controls.ts:581-694) and Angular (packages/angular/src/advanced-controls.ts:191-215) have no getResultsMessage.",
+      "remaining": "react, vue, angular: add getResultsMessage and a polite live region for the filtered count in MultiSelect.",
+      "kind": "a11y",
+      "breaking": false,
+      "size": "M",
+      "themes": [
+        "value-display"
+      ],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "R10",
+      "subject": "MultiSelect",
+      "title": "Selected-count text (getSelectedMessage); only Angular renders it.",
+      "status": "open",
+      "evidence": "Only Angular renders getSelectedMessage as a visible status (packages/angular/src/advanced-controls.ts:191,201). React, Vue and vanilla have no selected-count text.",
+      "remaining": "decide one status treatment: add getSelectedMessage to React (packages/react/src/expanded-controls.tsx:84-89), Vue (packages/vue/src/controls.ts:581-694) and vanilla, or make it optional in Angular (packages/angular/src/advanced-controls.ts:201, currently required).",
+      "kind": "api",
+      "breaking": true,
+      "size": "M",
+      "themes": [
+        "value-display"
+      ],
+      "sameAs": "rich-inputs-6",
+      "note": "Making getSelectedMessage optional in Angular or required elsewhere changes a public input."
+    },
+    {
+      "id": "R16",
+      "subject": "RangeSlider",
+      "title": "Visible value output (vanilla [data-hw-range-output] with locale; React formatValue/showValue on the thumbs).",
+      "status": "open",
+      "evidence": "Vue RangeSlider renders no output (packages/vue/src/controls.ts:249-305); Angular renders an unformatted \"a – b\" output without locale or formatValue (packages/angular/src/advanced-controls.ts:139). Vanilla formats with locale (packages/vanilla/src/controls.ts:36-55); React formatValue/showValue per thumb.",
+      "remaining": "see choices-9: one formatted value output across adapters.",
+      "kind": "visual",
+      "breaking": true,
+      "size": "M",
+      "themes": [
+        "value-display"
+      ],
+      "sameAs": "choices-9",
+      "note": ""
+    },
+    {
+      "id": "R19",
+      "subject": "TagInput",
+      "title": "Add button (addLabel); only Angular renders one.",
+      "status": "open",
+      "evidence": "Angular hw-tag-input renders an Add button with required addLabel (packages/angular/src/advanced-controls.ts:188-189); React, Vue and vanilla have none.",
+      "remaining": "see rich-inputs-8: drop the Angular Add button (removes required addLabel input) or add it as opt-in in all adapters.",
+      "kind": "api",
+      "breaking": true,
+      "size": "S",
+      "themes": [
+        "layout-difference"
+      ],
+      "sameAs": "rich-inputs-8",
+      "note": ""
+    },
+    {
+      "id": "R27",
+      "subject": "SearchField",
+      "title": "showSearchButton defaults to true in Angular (packages/angular/src/advanced-controls.ts:60) and to false in React (packages/react/src/search-field.tsx) and Vue (packages/vue/src/search-field.ts:12), so searchLabel is needed by default in Angular only and the same markup renders a search button there. Present before the milestone. Deferred to milestone 3: change the Angular default to false (breaking, CHANGELOG entry). Recorded by the final review (m3).",
+      "status": "open",
+      "evidence": "packages/angular/src/advanced-controls.ts:60 @Input showSearchButton = true; React search-field.tsx and Vue search-field.ts default false.",
+      "remaining": "angular: default showSearchButton to false (packages/angular/src/advanced-controls.ts:60) with a CHANGELOG entry.",
+      "kind": "api",
+      "breaking": true,
+      "size": "S",
+      "themes": [],
+      "sameAs": null,
+      "note": ""
+    },
+    {
+      "id": "E01",
+      "subject": "Combobox, MultiSelect, TagInput",
+      "title": "Owner decision: aria-invalid is set after a failed submission (not merely because a validation message is missing), in all four adapters at once.",
+      "status": "open",
+      "evidence": "No adapter tracks a failed submission: Angular sets aria-invalid when error || unnamedConstraint (missing requiredMessage) (packages/angular/src/forms.ts:135,176; packages/angular/src/advanced-controls.ts:188,191,211); React from error/aria-invalid only (packages/react/src/interactive.tsx:269, packages/react/src/expanded-controls.tsx:89); Vue from error (packages/vue/src/shared.ts:24); vanilla none. No 'invalid' event listener in any adapter.",
+      "remaining": "all four: listen for the control's invalid event (failed submission) and set aria-invalid until the value changes/validity clears, for Combobox, MultiSelect and TagInput; remove the unnamedConstraint rule in Angular (packages/angular/src/forms.ts:176, packages/angular/src/advanced-controls.ts:211).",
+      "kind": "a11y",
+      "breaking": true,
+      "size": "L",
+      "themes": [
+        "validation-message"
+      ],
+      "sameAs": null,
+      "note": "Changes when aria-invalid appears in rendered markup."
+    },
+    {
+      "id": "E02",
+      "subject": "ToggleGroup",
+      "title": "React and Vue: a missing label renders an empty legend and no Hawiyah warning (review of milestone 2b, m6). Angular requires label. Older markup differences between adapters remain (React adds hw-choice classes).",
+      "status": "open",
+      "evidence": "React legend renders {label} directly (packages/react/src/expanded-interactive.tsx:24) and Vue h(\"legend\", ..., props.label) (packages/vue/src/expansion-interactive.ts:64), neither through text()/needText, so a missing label gives an empty legend without a Hawiyah warning. Angular uses texts.need('label') (packages/angular/src/interactions.ts:11). React still adds hw-choice/hw-radio classes (packages/react/src/expanded-interactive.tsx:24); Angular/Vue labels have none.",
+      "remaining": "react: route label through text('ToggleGroup','label', ...) and omit the legend when missing (packages/react/src/expanded-interactive.tsx:24); vue: needText (packages/vue/src/expansion-interactive.ts:64); align option markup classes across adapters.",
+      "kind": "a11y",
+      "breaking": false,
+      "size": "S",
+      "themes": [
+        "item-shape"
+      ],
+      "sameAs": null,
+      "note": ""
+    }
+  ]
+}

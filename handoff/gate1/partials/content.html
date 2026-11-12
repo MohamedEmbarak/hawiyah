@@ -1,0 +1,64 @@
+<h3>Where each fact lives</h3>
+<div class="table-scroll"><table>
+  <thead><tr><th scope="col">Fact</th><th scope="col">Single home</th><th scope="col">Everything else</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">A component's description, examples, API, accessibility and RTL notes</th><td><code>docs/components/&lt;id&gt;.md</code> and its Arabic sibling</td><td>The brief page, the reference page, the catalogue card and search read from it</td></tr>
+    <tr><th scope="row">Props, inputs, outputs, events and slots</th><td>The type declarations of the published packages</td><td>The Markdown tables are checked against them in CI; a mismatch fails the build</td></tr>
+    <tr><th scope="row">Catalogue metadata and verification evidence</th><td><code>components.json</code></td><td>Rendered on the page; not repeated in Markdown</td></tr>
+    <tr><th scope="row">Guides (start, theming, RTL, calendars, accessibility, extending, alignment)</th><td><code>docs/guides/&lt;topic&gt;.md</code></td><td>README keeps an introduction, the install line and links</td></tr>
+    <tr><th scope="row">Install commands and versions</th><td>Generated from the pinned version</td><td>Landing page, guides and package READMEs include the generated text</td></tr>
+    <tr><th scope="row">Index for coding assistants</th><td>Generated <code>llms.txt</code></td><td>Links to the same Markdown files</td></tr>
+  </tbody>
+</table></div>
+<h3>Two views of one file</h3>
+<ul>
+  <li><strong>Brief page</strong> at <code>/components/&lt;id&gt;</code>: the file's opening one or two sentences, its first live example, and the editor.</li>
+  <li><strong>Reference page</strong> at <code>/components/&lt;id&gt;/reference</code>: the whole file rendered, with a "try it" action on every live block that opens it in the editor.</li>
+</ul>
+<h3>Shape of a component file</h3>
+<pre><code># Button
+
+Runs an action or submits a form using a native button.
+
+## Example
+```html live example=basic
+&lt;button class="hw-button" data-variant="primary" type="button"&gt;Continue&lt;/button&gt;
+```
+```tsx live example=basic
+&lt;Button variant="primary"&gt;Continue&lt;/Button&gt;
+```
+```vue live example=basic
+&lt;Button variant="primary"&gt;Continue&lt;/Button&gt;
+```
+```ts live example=basic framework=angular
+template: `&lt;button hwButton variant="primary" type="button"&gt;Continue&lt;/button&gt;`
+```
+
+## Variants and states      (one live group per variant or state)
+## API                      (one table per framework)
+## Accessibility
+## RTL and localisation
+## Platforms Code reference (evidence and open items)</code></pre>
+<ul>
+  <li>GitHub highlights each block by its first word and ignores the rest of the line, so the file reads as ordinary Markdown there. This could not be confirmed against GitHub's renderer from this environment.</li>
+  <li>The build groups blocks by <code>example</code> name. It fails if a framework is missing from a group, if a block does not compile, or if the four variants do not render the same result.</li>
+  <li>Markdown is rendered through package components (tables, links, alerts, code blocks), not through injected HTML, so the reference page is an honest render too.</li>
+</ul>
+<h3>Two languages without duplicated facts</h3>
+<ul>
+  <li>English file plus Arabic sibling. Prose is translated; code blocks and API tables are identical and are checked to be identical.</li>
+  <li>A structure check requires the same headings and the same example names in both files, and flags an Arabic section whose English source changed after it.</li>
+</ul>
+<h3>What this replaces</h3>
+<ul>
+  <li>The guide's 83 generated component pages, where about 31% of each page is text repeated word for word on every page.</li>
+  <li>API tables kept separately in guide source and in package READMEs, which disagree with the code and with each other (component counts of 77, 81, 82 and 83 appear in different documents).</li>
+  <li>Twelve guide articles stored once in English and once in Arabic in TypeScript, with drift between them.</li>
+</ul>
+<h3>What the content audit measured</h3>
+<ul>
+  <li>26 clusters of duplicated facts. The identity sentence exists in more than 15 copies, the disclaimer in about 60 files, the package map in 8, and the calendar range in 16.</li>
+  <li>Whole paragraphs are repeated across three to five package READMEs and PORTAL files.</li>
+  <li>Arabic terminology competes for the same concepts (adapter, accessibility, tokens, variant, styles); the rebuild needs one glossary.</li>
+  <li>The audit produced a disposition (keep, merge, supersede) for each of the 69 files in <code>docs/</code>; it is in the findings under Content and tone.</li>
+</ul>

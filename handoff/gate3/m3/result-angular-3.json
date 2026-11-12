@@ -1,0 +1,102 @@
+{
+ "status": "complete",
+ "implemented": [
+  "feedback-status-1",
+  "spike-G3",
+  "feedback-status-2",
+  "R00",
+  "feedback-status-7",
+  "feedback-status-8",
+  "feedback-status-9",
+  "feedback-status-10",
+  "feedback-status-11",
+  "feedback-status-12",
+  "feedback-status-14",
+  "content-display-1",
+  "content-display-7",
+  "content-display-11",
+  "content-display-14",
+  "content-display-13",
+  "content-display-16",
+  "R14",
+  "content-display-22",
+  "content-display-21",
+  "R11",
+  "R12",
+  "content-display-23",
+  "R13",
+  "actions-6",
+  "actions-7",
+  "service-patterns-12",
+  "R05",
+  "service-patterns-13",
+  "R04",
+  "service-patterns-19",
+  "service-patterns-21",
+  "feedback-status-13",
+  "R20"
+ ],
+ "deviations": [
+  {
+   "item": "service-patterns-12 / R04 (STATE-02)",
+   "what": "STATE-02 is asserted in the Angular form: a bound value / open that the application does not write back is the initial state; the action is reported once and the component follows it (hw-feedback shows the choice, hw-cookie-consent closes).",
+   "why": "Convention controlled-and-observable-state: Angular has no controlled mode; a written value is the initial state and the component then updates its own field. Same form as the STATE-02 tests of the earlier Angular steps (rich-inputs.test.ts)."
+  },
+  {
+   "item": "feedback-status-2, content-display-21, R14, service-patterns-12, R04",
+   "what": "Package templates write the button and link markup literally (class hw-button / hw-link, type=button, data-variant, data-size) instead of applying hwButton / hwLink inside the component template.",
+   "why": "Same rendered DOM as the specification; no directive instance per packaged button. Public names and output are unchanged."
+  },
+  {
+   "item": "actions-7 (README)",
+   "what": "The Link row of the README states that the former link component is removed and points to the migration line; the old names hw-link and HwLinkComponent are written only in the section 'Changed in 0.3.0 outside form controls'.",
+   "why": "The specification asks for the removal note with the migration line and RENAME-01 asks that old names appear in no README. Old names are kept to the migration section, as for every other rename; the root RENAME-01 check has to exempt that section."
+  },
+  {
+   "item": "browser-only cases",
+   "what": "PROGRESS-03, METER-03, SKELETON-02, SPINNER-04, RICH-03, BADGE-01 (geometry), CHIP-01 (equal height), CONSENT-05 and the colour half of NOTIFICATION-05 are not asserted in packages/angular.",
+   "why": "They are computed-style cases assigned to tests/browser (file BR), outside packages/angular; the jsdom tests assert the DOM those cases rely on."
+  }
+ ],
+ "files": [
+  "packages/angular/src/presentation.ts",
+  "packages/angular/src/content.ts",
+  "packages/angular/test/presentation-hosts.test.ts (new)",
+  "packages/angular/test/feedback-status.test.ts (new)",
+  "packages/angular/test/content-display.test.ts (new)",
+  "packages/angular/test/notification-list.test.ts (new)",
+  "packages/angular/test/feedback.test.ts (new)",
+  "packages/angular/test/cookie-consent.test.ts (new)",
+  "packages/angular/test/button-link.test.ts (new)",
+  "packages/angular/test/components.test.ts",
+  "packages/angular/test/link-navigation.test.ts",
+  "packages/angular/test/renamed-inputs.test.ts",
+  "packages/angular/test/required-names.test.ts",
+  "packages/angular/test/fixtures/renamed-inputs.ts",
+  "packages/angular/test/fixtures/scenarios.ts",
+  "packages/angular/test/ssr.test.ts",
+  "packages/angular/test/hydration.test.ts",
+  "packages/angular/test/text-contract.test.ts",
+  "packages/angular/README.md"
+ ],
+ "commands": [
+  {
+   "command": "node scripts/build.mjs --only angular",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm exec vitest run packages/angular",
+   "result": "53 files, 851 tests passed; no Hawiyah: warning in the output"
+  },
+  {
+   "command": "pnpm exec vitest run tests/text-contract-docs.test.ts",
+   "result": "3 passed"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "feedback-status-13 (SKELETON-03), actions-7 (RENAME-01) documentation checks",
+   "why": "The checks live in tests/ (root), not in packages/angular; the Angular README carries the role=status + hw-sr-only pattern in the Skeleton row and in 'Loading skeletons'."
+  }
+ ]
+}

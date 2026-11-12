@@ -1,0 +1,2464 @@
+{
+  "cluster": "forms-core",
+  "about": "Specification of the forms-core cluster of milestone 3, written against commit a0ed9b0. Paths are relative to packages/ unless they start with tests/, docs/ or a root file name. ownerDecision is a zero-based index into conventions.json ownerDecisions; null means no owner decision is involved.",
+  "sharedApi": {
+    "note": "Defined by this cluster and only called by the other four. Angular template constants live in the new internal file angular/src/field-templates.ts (not exported from public-api.ts).",
+    "core": [
+      "observeFormReset(control: Element, onReset: () => void): { destroy(): void }  (core/src/form-reset.ts)",
+      "sameValue(a: unknown, b: unknown): boolean  (core/src/form-reset.ts; Object.is, arrays compared by length and Object.is per entry)"
+    ],
+    "react": [
+      "useFormReset(node: RefObject<Element | null>, reset?: () => void): void  (react/src/expanded-shared.ts; runs reset after the browser reset, then re-renders the component once so that controlled props are written to the DOM again; the old third argument `form` is removed)",
+      "useControllable compares with sameValue before notifying (react/src/shared.tsx:71)",
+      "requiredMarker: the element <span className=\"hw-required-marker\" aria-hidden=\"true\"> *</span> exported from react/src/shared.tsx",
+      "Field / FieldLayout / ControlField prop `errorRole?: 'alert'` (react/src/shared.tsx:99-111): written as `role` on p.hw-error; a component passes it only for a message it produced itself (internal, not documented as public API)"
+    ],
+    "vue": [
+      "useFormReset(element: Ref<Element | undefined>, reset: () => void, show?: () => void): void  (vue/src/shared.ts; reset() then nextTick(show); show writes the model to the native controls as DOM properties)",
+      "useValue(...).set(next) emits only when !sameValue(next, value.value); sync(next) never emits",
+      "requiredMarker(): VNode  (vue/src/shared.ts)"
+    ],
+    "angular": {
+      "field-templates.ts": [
+        "fieldLabel = `@if (label) {<label class=\"hw-label\" [id]=\"decorationId + '-label'\" [for]=\"controlId\">{{ label }}@if (required) {<span class=\"hw-required-marker\" aria-hidden=\"true\"> *</span>}</label>}`",
+        "fieldLegend = `@if (label) {<legend class=\"hw-label\">{{ label }}@if (required) {<span class=\"hw-required-marker\" aria-hidden=\"true\"> *</span>}</legend>}`",
+        "fieldEnd = `@if (hint) {<p class=\"hw-hint\" [id]=\"decorationId + '-hint'\">{{ hint }}</p>}@if (shownError) {<p class=\"hw-error\" [id]=\"decorationId + '-error'\" [attr.role]=\"error ? null : 'alert'\">{{ shownError }}</p>}`  (no whitespace between the blocks)",
+        "controlAria = `[attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"labelledBy\" [attr.aria-describedby]=\"descriptionIds\" [attr.aria-invalid]=\"invalid\"`",
+        "fieldDescriptionIds(...ids: (string | null | undefined)[]): string | null  (moved from forms.ts:10-15; splits on white space, keeps order, removes duplicates)"
+      ],
+      "host-attributes.ts": [
+        "forwardedAriaHost = {'[attr.aria-label]': 'null', '[attr.aria-labelledby]': 'null', '[attr.aria-describedby]': 'null', '[attr.aria-invalid]': 'null'} as const",
+        "class HwHostAttribute { constructor(host: Element, renderer: Renderer2, name: string, authoredStatic: string | null); set(value: string | null): void }  (the own() logic of layouts.ts:60-70, one instance per attribute; call set() from ngDoCheck)",
+        "injectHostAttribute(name: string): HwHostAttribute  (injection context: ElementRef, Renderer2, new HostAttributeToken(name) optional)",
+        "hostHasName(host: Element): boolean  (non-empty aria-label or aria-labelledby on the host)"
+      ],
+      "HwValueControl (forms.ts:17-40), members every subclass inherits": [
+        "@Directive({host: forwardedAriaHost}); host bindings are inherited by every subclass component",
+        "@Input({alias: 'aria-label'}) ariaLabel: string | null = null; @Input({alias: 'aria-labelledby'}) ariaLabelledby: string | null = null; @Input({alias: 'aria-describedby'}) ariaDescribedby: string | null = null (replaces describedBy); @Input({alias: 'aria-invalid', transform: booleanAttribute}) ariaInvalid = false",
+        "@Input() form: string | null = null; @Output('focused') readonly focusEvents = new EventEmitter<FocusEvent>(); @Output('blurred') readonly blurEvents = new EventEmitter<FocusEvent>()  (property names differ from the binding names because hw-calendar, hw-tree-view and hw-search-field already have members called focused / blurred)",
+        "controlId: getter and setter input; the getter returns the application's id, else the surrounding field's controlId, else the generated id",
+        "required: getter and setter input (booleanAttribute); the getter is own || field.required",
+        "protected readonly field = inject(HW_FIELD, {optional: true, host: true})",
+        "get decorationId(): string  (the generated id inside an hw-field, else controlId); get labelledBy(): string | null  (ariaLabelledby ?? (ariaLabel || label || !field ? null : field.labelId)); get descriptionIds(): string | null  (ariaDescribedby, field.descriptionIds, hint id, error id); get shownError(): string  (returns error; a component that produces a message overrides it); get invalid(): true | null  (error || ariaInvalid || field?.invalid || submissionInvalid); get named(): boolean  (ariaLabel || ariaLabelledby || field?.label)",
+        "protected submissionInvalid = false; failed(): void  (sets it and marks for check); cleared by update(), writeValue() and the reset once the control is valid",
+        "reset: private formsBound, private initial; ngOnInit() captures initial; protected afterReset(): void {}; protected syncDom(): void {}; private resetFromForm()"
+      ]
+    },
+    "styles": [
+      "layout.css wrapper-host rules: `:where(hw-field, hw-text-field, hw-textarea, hw-select, hw-checkbox, hw-switch, hw-radio-group, hw-number-field, hw-slider, hw-range-slider):where(:not([hidden])) { display: block; }` and `:where(hw-toggle-group):where(:not([hidden])) { display: contents; }`; other clusters append their wrapper hosts to the first selector list"
+    ],
+    "forOtherClusters": [
+      "Angular templates of value controls outside this cluster replace their hand-written label, legend, hint, error and aria bindings by the constants, add `[attr.form]=\"form\" (focus)=\"focusEvents.emit($event)\"` and `blurEvents.emit($event)` beside touch() on their primary native control, implement syncDom() and afterReset(), and delete their own reset listeners (advanced-controls.ts:37-38,101-102).",
+      "A component that produces a validation message overrides `get shownError()` to return `this.error || <its message>`; fieldEnd then adds role=alert only for the produced message.",
+      "Each cluster appends its Angular wrapper hosts to the layout.css list instead of adding component styles."
+    ]
+  },
+  "items": [
+    {
+      "ids": [
+        "fields-basic-8",
+        "actions-2",
+        "choices-2"
+      ],
+      "mergedElsewhere": "rich-inputs-5, dates-5 and files-5 are the same mechanism applied by their own clusters through afterReset() / syncDom() / useFormReset.",
+      "component": "Every form control (native form reset); in this cluster: TextField, Textarea, Select, Checkbox, Radio, Switch, NumberField, Slider, RangeSlider, Rating (Angular), ToggleGroup",
+      "summary": "A native form reset becomes a value change made by the form in every adapter: afterwards each control holds, shows and submits its reset target and has notified once if and only if its value changed. One core listener serves the four adapters; Angular gains the mechanism in HwValueControl, React writes controlled props back to the DOM and Vue writes its model back.",
+      "verifiedBeforeSpecifying": [
+        "React, jsdom, current tree: a controlled Select (value 'a', prompt) submits '' after form.reset() while the state stays 'a'; a controlled Checkbox (true) and Radio pair ('b') submit nothing / 'a' while the state stays true / 'b'. A component that re-renders once after the reset shows and submits the props again (React 19 rewrites checked, value and the selected option on every commit of the host element).",
+        "Chromium, trusted click and keyboard activation of a reset button: a microtask queued in a reset listener runs before the remaining listeners and before the browser resets the controls (it logged checked=true, value='typed'); with form.reset() or a scripted click it runs after the reset. The existing queueMicrotask pattern therefore reads stale values and cannot see a later preventDefault for real activations."
+      ],
+      "endState": {
+        "surface": {
+          "core": "New exports observeFormReset and sameValue.",
+          "react": "No prop changes. Composite controls call onValueChange(target) once when the reset changed the value; controlled native controls (Select, Checkbox, Radio, Switch) show their props again.",
+          "vue": "No prop changes. update:modelValue is emitted once, only when the reset changed the value.",
+          "angular": "No new inputs. Without an Angular Forms directive, (valueChange) emits the initial value after a native reset that changed the value. Protected hooks for subclasses: afterReset(), syncDom().",
+          "vanilla": "RangeSlider, ToggleGroup and Rating controllers dispatch hw:change with detail.value and call onValueChange after a reset that changed the value."
+        },
+        "dom": "No element or attribute changes. After a reset the native controls carry the reset target as properties (value, checked, selected) and hidden inputs carry it as value.",
+        "behaviour": "Reset target: React and Vue `defaultValue` (or the matching default prop), else the empty value ('', [], false, null, the Slider midpoint (min + max) / 2, the RangeSlider [min, max]). Angular: with Angular Forms attached (registerOnChange was called) the component changes no value itself and only writes what it holds to the DOM; otherwise the value held after the first ngOnInit. Vanilla: the authored values captured when the controller is created. Read-only and disabled controls are reset too; a default-prevented reset changes nothing. Timing: onReset runs after the browser has reset the form's controls: in the same microtask checkpoint when the reset came from script (form.reset(), a scripted click), and before the next paint (first of requestAnimationFrame and a zero timeout) when the reader activated a reset button. Server rendering: no listener is attached on the server; React attaches in an effect, Vue in onMounted, Angular in afterNextRender, vanilla when the controller is created."
+      },
+      "core": [
+        {
+          "export": "observeFormReset",
+          "signature": "observeFormReset(control: Element, onReset: () => void): { destroy(): void }",
+          "behaviour": "New file core/src/form-reset.ts, exported from core/src/index.ts after line 204. Adds one capture listener for `reset` on the control's root (control.getRootNode(), else the owner document): the document, the shadow root when the control is inside one, or, for a tree that is not connected yet, that tree's root together with the owner document (one event is handled once). Returns a no-op observer when the root cannot listen. At event time the owning form is resolved, so the `form` attribute, a later association and a moved control are honoured without re-subscribing: control.form when the control matches `input, select, textarea, button, output`, else the form of the first `input, select, textarea` inside it, else control.closest('form'); events of other forms are ignored. Then queueMicrotask: when event.eventPhase is 0 the dispatch is over and the browser has already reset the controls: call onReset unless event.defaultPrevented. Otherwise the event is still being dispatched (trusted activation): wait for the first of view.requestAnimationFrame and view.setTimeout(0) (run once), then call onReset unless defaultPrevented. Nothing runs after destroy(). No module-level browser global."
+        },
+        {
+          "export": "sameValue",
+          "signature": "sameValue(a: unknown, b: unknown): boolean",
+          "behaviour": "Object.is(a, b), or both are arrays of equal length whose entries are pairwise Object.is. Used for the 'notify only when the value changed' rule."
+        },
+        {
+          "export": "observeFieldValue (changed)",
+          "signature": "unchanged",
+          "behaviour": "core/src/field-value.ts:19-27,44,49: the private form tracking (form variable, the re-subscription in refresh, the reset listener) is replaced by one observeFormReset(element, refresh) created with the entry and destroyed in release(). data-hw-filled is then correct after a real click on a reset button."
+        },
+        {
+          "export": "observeReadonlyChoice (changed)",
+          "signature": "unchanged",
+          "behaviour": "core/src/readonly-choice.ts:27,33,40: the root `reset` listener is replaced by observeFormReset(input, refresh), destroyed in destroy()."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "expanded-shared.ts:3-11: useFormReset(node, reset?) uses observeFormReset(node.current, ...) in the effect (deps [node]), calls the latest reset and then bumps a useReducer counter; the `form` parameter is removed (callers at expanded-controls.tsx:17,31,40 and expanded-interactive.tsx:22 drop it). shared.tsx:71: `if (!sameValue(next, current)) onChange?.(next)`. expanded-controls.tsx:31 Slider: `useFormReset(input, () => setCurrent(initial))` (the `value === undefined` test goes: a controlled Slider is notified and the re-render writes the prop back); :40 RangeSlider: `useFormReset(first, () => setStored(defaultValue))`, default of defaultValue becomes [min, max]. forms.tsx:36-41 SelectControl and :48-70 Choice: keep a local ref (merged with props.ref through assignRef) and always call `useFormReset(ref)` with no reset function: only the re-render happens, which writes a controlled `value` / `checked` back and changes nothing for an uncontrolled control. TextField, Textarea and NumberField are unchanged (React keeps the value attribute of a controlled text input in step). ToggleGroup: see the actions-11 item.",
+        "vue": "shared.ts:28-34 useValue: `const set = (next) => { const changed = !sameValue(next, value.value); sync(next); if (changed) emit(next); }`. shared.ts:35-42 useFormReset(element, reset, show?): in onMounted `observeFormReset(element.value, () => { reset(); void nextTick(() => show?.()); })`, destroyed in onBeforeUnmount; the observeFieldValue presence code stays. forms.ts:58-61 text controls: reset `model.set(props.defaultValue ?? '')` (Select: see fields-basic-9), show writes `element.value.value = model.value.value ?? ''`. forms.ts:103-114 choices: the reset logic stays, show writes `input.checked = kind === 'radio' ? model.value.value === props.value : Boolean(model.value.value)`. controls.ts:148 NumberField and :186 Slider: show writes the value as a string; :247 RangeSlider: a ref for each input, show writes both with the bounds widened first. expansion-interactive.ts:54 ToggleGroup: see actions-11.",
+        "angular": "forms.ts:17-40 HwValueControl: registerOnChange sets formsBound; ngOnInit() stores `initial` (arrays copied); the constructor, when injectIsBrowser(), calls afterNextRender(() => observer = observeFormReset(host, () => this.resetFromForm())) and destroys it through DestroyRef. resetFromForm(): `if (!formsBound && !sameValue(value, initial)) { value = copy of initial; valueChange.emit(value); }` then submissionInvalid = false, afterReset(), syncDom(), changeDetector.markForCheck(); it does not go through update(), so disabled and read-only controls are reset. syncDom() in this cluster: text field (forms.ts:60-81) and number field (advanced-controls.ts:114-124) `shown.force()`; textarea (:87) and select (:100) get `@ViewChild('control')` and write `value || ''` (select also in ngAfterViewChecked when the value differs and an option with it exists); checkbox and switch (:113,:122) write `checked` (checkbox also indeterminate); radio group (:127), rating (advanced-controls.ts:156) and toggle group (interactions.ts:12) write `checked` on each radio; slider (:127) writes `String(value)`; range slider (:140) widens lower.max and upper.min to the full range, then writes both values. advanced-controls.ts:13-19 HwExpandedValueControl keeps emptyValue() for null writes.",
+        "vanilla": "controls.ts:69-79 createRangeSlider: `const reset = observeFormReset(lower, ...)` with scope.add(() => reset.destroy()); the body stays and, new, compares the value before and after with sameValue and then calls emit(root, {value: [...value]}) and options.onValueChange. content.ts:56-57 createToggleGroup: observeFormReset(root, ...), `values = [...initial]; render()`, then emit and onValueChange when the result differs. controls.ts:108 createRating: observeFormReset(inputs[0], ...), emit and onValueChange when the value changed. The other controllers are switched by their clusters."
+      },
+      "tests": [
+        {
+          "caseId": "FORM-RESET-01",
+          "what": "core: onReset runs once after form.reset() with the controls already reset; not after destroy(); not for another form",
+          "adapters": [
+            "core"
+          ],
+          "file": "packages/core/test/form-reset.test.ts"
+        },
+        {
+          "caseId": "FORM-RESET-02",
+          "what": "core: a reset prevented by a listener registered after the observer does not call onReset",
+          "adapters": [
+            "core"
+          ],
+          "file": "packages/core/test/form-reset.test.ts"
+        },
+        {
+          "caseId": "FORM-RESET-03",
+          "what": "core: a control associated through the `form` attribute, and one whose `form` attribute changes after observing, follow their current form",
+          "adapters": [
+            "core"
+          ],
+          "file": "packages/core/test/form-reset.test.ts"
+        },
+        {
+          "caseId": "FORM-RESET-04",
+          "what": "core: a wrapper element resolves the form of its first inner control; sameValue compares arrays by content",
+          "adapters": [
+            "core"
+          ],
+          "file": "packages/core/test/form-reset.test.ts"
+        },
+        {
+          "caseId": "RESET-01",
+          "what": "uncontrolled: change, reset: shown value, FormData and held value equal the reset target (TextField, Textarea, Select, Checkbox, Switch, NumberField, Slider, RangeSlider, ToggleGroup)",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-02",
+          "what": "exactly one value notification with the target after a reset that changed the value",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts (React native pass-through controls excluded: RESET-11)"
+        },
+        {
+          "caseId": "RESET-03",
+          "what": "no notification when the value already equals the target",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-04",
+          "what": "controlled, application applies the notification: shown, submitted and application value agree on the target",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-05",
+          "what": "[fields-basic-8] controlled, application ignores the notification: shown value and FormData equal the application's value (React Select, Checkbox, Radio, Slider; Vue modelValue). Angular asserts only that held, shown and submitted value agree: it has no controlled mode. Must fail on the current tree for React Select and Checkbox before the fix.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-06",
+          "what": "a default-prevented reset changes nothing and notifies nothing",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-07",
+          "what": "[choices-2] a read-only and a disabled control reset like an editable one; a never-changed read-only checkbox, slider and toggle group keep their value in the DOM and in FormData",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-08",
+          "what": "external form through the `form` attribute (React `form`, Vue `form`, Angular `form` input, vanilla authored)",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-10",
+          "what": "Angular with a FormControl and with ngModel inside a form: after a native reset the DOM shows what Angular Forms wrote (also for a nonNullable control whose reset value equals the current one) and the component emits nothing itself",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/form-reset.test.ts"
+        },
+        {
+          "caseId": "RESET-11",
+          "what": "React native pass-through controls: uncontrolled returns to defaultValue without onChange; controlled keeps the application's value",
+          "adapters": [
+            "react"
+          ],
+          "file": "packages/react/react.form-reset.test.tsx"
+        },
+        {
+          "caseId": "RESET-12",
+          "what": "real click and Enter on a reset button in Chromium: after the next frame data-hw-filled, the shown value and FormData agree with the reset target for a static vanilla fixture (text field, range slider, toggle group); a reset prevented by a later listener changes nothing",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "tests/browser/form-reset.spec.ts"
+        },
+        {
+          "caseId": "SSR-03",
+          "what": "no reset listener is registered during the server render of a form with every control of this cluster",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "packages/react/react.ssr.test.tsx, packages/vue/test/ssr.test.ts, packages/angular/test/ssr.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "A native reset without Angular Forms emptied the DOM and left value and (valueChange) untouched",
+          "new": "The value returns to the value the component had after its first inputs and (valueChange) emits it when it changed; with Angular Forms the model still wins",
+          "migration": "Remove handlers that copied the model back after a native reset; to keep a value across a reset, handle (reset) on the form and call preventDefault()"
+        },
+        {
+          "adapter": "vue",
+          "kind": "default",
+          "old": "update:modelValue emitted for every control on every reset",
+          "new": "emitted only for a control whose value the reset changed",
+          "migration": "none; listeners that counted reset events use the form's reset event"
+        },
+        {
+          "adapter": "react",
+          "kind": "default",
+          "old": "Controlled Slider and RangeSlider ignored a native reset; controlled Select, Checkbox, Radio and Switch showed the browser default while the prop held another value",
+          "new": "Composite controls call onValueChange(target); every controlled control shows its prop again after the reset",
+          "migration": "none"
+        },
+        {
+          "adapter": "react",
+          "kind": "default",
+          "old": "RangeSlider defaultValue = [0, 100]",
+          "new": "[min, max]",
+          "migration": "pass defaultValue={[0, 100]} where min or max differ and the old thumbs are wanted"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "default",
+          "old": "RangeSlider, ToggleGroup and Rating reset silently",
+          "new": "hw:change and onValueChange fire when the reset changed the value",
+          "migration": "none"
+        }
+      ],
+      "readme": "Each README gets a 'Native form reset' paragraph: the reset target of its adapter, the single notification, that read-only and disabled controls are reset, and that a default-prevented reset does nothing. React adds the documented exception: TextField, Textarea, Select, Checkbox, Radio and Switch are native pass-through controls, an uncontrolled one returns to defaultValue without onChange and a controlled one keeps and shows the application's value. Angular states: with Angular Forms the form model owns the value; without it the initial value is restored and (valueChange) emits. CONTRACT.md gains the rule under a heading 'Native form reset'; docs/input-review.md:29-32 and docs/nic-segmented.md:26-27 are rewritten in place.",
+      "ownerDecision": 0,
+      "notDone": "PasswordField, SearchField, Combobox, MultiSelect, TagInput, PinInput, DatePicker, Calendar, FileUpload and FileDropzone are switched by their clusters with the hooks defined here."
+    },
+    {
+      "ids": [
+        "actions-11",
+        "actions-v1"
+      ],
+      "component": "ToggleGroup",
+      "summary": "A reset of a ToggleGroup notifies once with the reset target when the selection changed and never otherwise, in the four adapters; a multiple group's empty value is [] and never ''. A controlled React group shows and submits its `value` again when the application ignores the notification.",
+      "verifiedBeforeSpecifying": [
+        "React, jsdom, current tree: value 'a', reader picks 'b' (state 'b'), form.reset(): FormData is 'a', state is 'b', onValueChange was not called (actions-v1 confirmed).",
+        "Vue, jsdom, current tree: a multiple group without defaultValue emits update:modelValue('') on reset, and an untouched TextField emits '' (actions-11 confirmed)."
+      ],
+      "endState": {
+        "surface": {
+          "react": "No prop changes. onValueChange(target) fires on a reset that changed the value, also for a controlled group.",
+          "vue": "`defaultValue` has no declared default (was ''): the empty value is '' in single mode and [] in multiple mode.",
+          "angular": "none beyond the reset item.",
+          "vanilla": "hw:change and onValueChange after a reset that changed the selection."
+        },
+        "dom": "No change.",
+        "behaviour": "Target: defaultValue, else '' (single) or [] (multiple). Arrays are compared by content, so an untouched multiple group does not notify. Read-only and disabled groups are reset. After the reset the radios' checked state, aria-pressed and the hidden inputs equal the held value; with a controlled value that the application did not change they equal the prop."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "expanded-interactive.tsx:20-22: replace useState by `const empty = multiple ? [] : ''; const [current, setCurrent] = useControllable<string | readonly string[]>(value, defaultValue ?? empty, next => multiple ? props.onValueChange?.([...next]) : props.onValueChange?.(next as string))`; `change` keeps its disabled / readOnly guard and calls setCurrent; `useFormReset(group, () => setCurrent(defaultValue ?? empty))` on the fieldset ref (no guard: a reset is not a reader action). The re-render that useFormReset triggers writes `checked` from `current` again, which closes actions-v1.",
+        "vue": "expansion-interactive.ts:27-30: `defaultValue: [String, Array] as PropType<string | readonly string[]>` with no default; setup: `const empty = () => props.multiple ? [] : ''`; useValue(() => props.modelValue, props.defaultValue ?? empty(), ...); :54 `useFormReset(group, () => model.set(props.defaultValue ?? empty()), show)` where show sets `radio.checked = radio.value === model.value.value` for each radio of the group. useValue.set no longer emits for an equal value.",
+        "angular": "interactions.ts:12-24: syncDom() writes `checked` on each radio from selected(option.value); nothing else (the base class resets the value).",
+        "vanilla": "content.ts:57: see the reset item (emit and onValueChange when the result differs from the value before the reset)."
+      },
+      "tests": [
+        {
+          "caseId": "RESET-02",
+          "what": "[actions-11] changed single and multiple group: exactly one notification with the target; the multiple payload is an array",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-03",
+          "what": "[actions-11] untouched single and multiple group, with and without defaultValue: no notification",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        },
+        {
+          "caseId": "RESET-05",
+          "what": "[actions-v1] controlled group whose application ignores the notification: radios and FormData equal the application's value. Fails on the current tree in React.",
+          "adapters": [
+            "react",
+            "vue"
+          ],
+          "file": "tests/toggle-group-parity.test.ts (Angular left out with a comment: no controlled mode, convention native-form-reset)"
+        },
+        {
+          "caseId": "RESET-08",
+          "what": "external form: the existing case at tests/toggle-group-parity.test.ts:58 loses its ['react','vue'] restriction and runs for the four adapters",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "kind": "default",
+          "old": "ToggleGroup defaultValue = '' in both modes; reset emitted '' for a multiple group",
+          "new": "no default; the empty value is [] in multiple mode",
+          "migration": "none; handlers that accepted '' for a multiple group can drop that branch"
+        },
+        {
+          "adapter": "react",
+          "kind": "default",
+          "old": "reset did not call onValueChange; a controlled group was left showing the browser default",
+          "new": "onValueChange(target) when the selection changed; a controlled group shows its value",
+          "migration": "none"
+        }
+      ],
+      "readme": "ToggleGroup rows in the four READMEs state the empty value per mode and the reset notification. docs/nic-segmented.md:26-27 rewritten (same edit as the reset item).",
+      "ownerDecision": 0,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "fields-basic-9"
+      ],
+      "component": "Select (Vue)",
+      "summary": "A Vue Select without defaultValue returns on reset to the option a native select shows when none is marked selected: the first option that is not disabled, which is the prompt when `placeholder` is given. It notifies once when that differs from the current value.",
+      "verifiedBeforeSpecifying": [
+        "Vue, jsdom, current tree: after choosing 'c' the option carries the `selected` attribute (Vue renders it from the live model), so the browser's own reset selects 'c' again and the handler re-emits 'c'. Reading the element after the reset therefore cannot give the target."
+      ],
+      "endState": {
+        "surface": {
+          "vue": "No prop changes.",
+          "react": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "No change (options keep rendering `selected` from the model, so server HTML and hydration are unchanged).",
+        "behaviour": "Reset target of Select: `defaultValue`, else the value of the first option of the rendered select that is not disabled, else ''. The model is set to it (one update:modelValue when changed) and the select's value is written after the next tick. A default is marked with `defaultValue`, not with `selected` on a slotted option."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "forms.ts:58-61: `useFormReset(element, () => { const select = tag === 'select' ? element.value as HTMLSelectElement | undefined : undefined; const first = select ? Array.from(select.options).find(option => !option.disabled)?.value : undefined; model.set(props.defaultValue ?? first ?? ''); }, () => { if (tag === 'select') void syncSelect(); else if (element.value) element.value.value = model.value.value ?? ''; })`. forms.ts:51 stays.",
+        "angular": "none",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "SELECT-01",
+          "what": "[fields-basic-9] Select with placeholder and no defaultValue: choose the last option, reset: value '', FormData '', one update with ''; a second reset emits nothing",
+          "adapters": [
+            "vue"
+          ],
+          "file": "packages/vue/test/input-contracts.test.ts"
+        },
+        {
+          "caseId": "SELECT-02",
+          "what": "Select without placeholder and without defaultValue resets to its first enabled option; with defaultValue to that value",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        }
+      ],
+      "migration": [],
+      "readme": "Vue README, Select: the reset target, and that a default is given with `default-value`.",
+      "ownerDecision": 0,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "fields-basic-2",
+        "choices-3"
+      ],
+      "component": "Angular value controls: accessible name without a visible label (hw-text-field, hw-textarea, hw-select, hw-checkbox, hw-switch, hw-radio-group, hw-number-field, hw-slider, hw-range-slider, hw-rating, hw-toggle-group)",
+      "summary": "Every Angular value control forwards aria-label, aria-labelledby, aria-describedby and aria-invalid, written on its host under those names, to the native control (the fieldset for a group) and removes them from the wrapper. `describedBy` is renamed to `aria-describedby`.",
+      "endState": {
+        "surface": {
+          "angular": "On HwValueControl (all value controls): `aria-label` (property ariaLabel: string | null = null), `aria-labelledby` (ariaLabelledby: string | null = null), `aria-describedby` (ariaDescribedby: string | null = null; replaces describedBy), `aria-invalid` (ariaInvalid: boolean = false, booleanAttribute). Written as attributes or bound as `[aria-label]=\"expr\"`; `[attr.aria-label]` on a wrapper host is not supported. `label` stays optional on the basic controls. hw-toggle-group: `label` loses required: true and is required only when neither aria-label nor aria-labelledby is given.",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "Host element: none of the four attributes after the first change detection (server HTML included). Native control (input, textarea, select) or fieldset: aria-label and aria-labelledby as given; aria-describedby = the application's ids, the surrounding field's ids, the hint id, the error id, without duplicates; aria-invalid=\"true\" when error, the forwarded aria-invalid or a surrounding field's error is set, absent otherwise. No label or legend element without `label`. Host `id`, `class` and `style` stay on the host; the control keeps controlId.",
+        "behaviour": "No development warning is added for the basic native controls (see conventionConflicts). hw-toggle-group asks texts.need('label', label) only when it has no forwarded name. Server rendering and hydration: the bindings are ordinary template bindings and host bindings, identical on both sides."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "New host-attributes.ts and field-templates.ts as in sharedApi. forms.ts:17: `@Directive({host: forwardedAriaHost})` on HwValueControl; :25 `describedBy` replaced by the four alias inputs; :34 descriptionIds built with fieldDescriptionIds(ariaDescribedby, field?.descriptionIds, hint && decorationId + '-hint', shownError && decorationId + '-error'). Templates replace `[attr.aria-describedby]=\"descriptionIds\" [attr.aria-invalid]=\"error ? true : null\"` by `${controlAria}`: forms.ts:59 (input), :86 (textarea), :99 (select), :112 and :121 (checkbox, switch), :126 (radio group fieldset); advanced-controls.ts:113 (number), :126 (slider), :139 (range slider fieldset), :155 (rating fieldset); interactions.ts:11 (toggle group fieldset; `@if (texts.need('label', label))` becomes `@if (label)` and the class asks `named || texts.need('label', label)` once per check through a getter used by the template). interactions.ts:13: `@Input() override label = ''`. forms.ts:51 hw-field: `describedBy` becomes the `aria-describedby` input and the component gets `host: forwardedAriaHost`. layouts.ts:53-70 HwSectionComponent uses two HwHostAttribute instances instead of its private own() (pure move, same behaviour). CONTRACT.md:83-87 rewritten: Angular wrapper hosts forward the four attributes as inputs of those names.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "ATTR-03",
+          "what": "aria-label, aria-labelledby and aria-describedby written statically and bound with [aria-label] reach the native control or fieldset and the host has none of them, for each control of this cluster",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/forwarded-aria.test.ts"
+        },
+        {
+          "caseId": "ATTR-04",
+          "what": "host id stays on the host, the inner control has controlId, the document has no duplicate id",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/forwarded-aria.test.ts"
+        },
+        {
+          "caseId": "ATTR-05",
+          "what": "server render and hydration of ATTR-03: same DOM, no NG05xx mismatch (also SSR-04)",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/hydration.test.ts"
+        },
+        {
+          "caseId": "NAME-01",
+          "what": "`label` alone names the control (label for / legend)",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "[fields-basic-2][choices-3] aria-label alone: no label or legend element, the attribute is on the named element, no warning (text field, select, checkbox, switch, slider, toggle group)",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts; Angular warnings in packages/angular/test/required-names.test.ts"
+        },
+        {
+          "caseId": "NAME-03",
+          "what": "aria-labelledby alone pointing at a visible heading: no warning",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "same files"
+        },
+        {
+          "caseId": "NAME-04",
+          "what": "hw-toggle-group with neither label nor forwarded name: one warning naming hw-toggle-group, no legend",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/required-names.test.ts"
+        },
+        {
+          "caseId": "INV-06",
+          "what": "`error` sets aria-invalid=true on the control",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts (vanilla: authored markup fixture)"
+        },
+        {
+          "caseId": "INV-07",
+          "what": "an explicit aria-invalid from the application sets it; aria-invalid=\"false\" does not",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "MSG-02",
+          "what": "aria-describedby order (application, field, hint, error) and no duplicate id",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "describedBy (all value controls, hw-field)",
+          "new": "aria-describedby (property ariaDescribedby)",
+          "migration": "[describedBy]=\"id\" -> [aria-describedby]=\"id\"; describedBy=\"id\" -> aria-describedby=\"id\""
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "aria-label, aria-labelledby, aria-describedby and aria-invalid written on a value control stayed on the host element",
+          "new": "they are on the native control or fieldset and removed from the host",
+          "migration": "selectors and tests that read these attributes from the hw-* element read them from the inner control; replace [attr.aria-label] on a host by [aria-label]"
+        },
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "hw-toggle-group label: required input",
+          "new": "optional when aria-label or aria-labelledby is given",
+          "migration": "none"
+        }
+      ],
+      "readme": "Angular README: one section 'Attributes on wrapper hosts' with the four forwarded inputs, the sentence that [attr.aria-*] on a wrapper host is not supported, that id, class and style stay on the host and the control keeps controlId. The search field's note 'the host forwards no aria-label' (advanced-controls.ts:54) is removed by its cluster.",
+      "ownerDecision": 1,
+      "notDone": "The other value controls (password, search, combobox, pin, tag, multi-select, date picker, file upload, dropzone, tree view) apply controlAria in their own clusters."
+    },
+    {
+      "ids": [
+        "fields-basic-10"
+      ],
+      "component": "Angular value controls: focus events and the `form` attribute",
+      "summary": "Angular value controls gain `(focused)` and `(blurred)` outputs and a `form` input that is written on every native control they render; together with the forwarded ARIA inputs this is the half of the finding assigned to 0.3.0. A general pass-through of native attributes is not built.",
+      "endState": {
+        "surface": {
+          "angular": "On HwValueControl: output `focused: FocusEvent` and output `blurred: FocusEvent` (class properties focusEvents / blurEvents); input `form: string | null = null`. The four ARIA inputs are in the fields-basic-2 item.",
+          "react": "none (native props are spread)",
+          "vue": "none (attrs are merged on the control)",
+          "vanilla": "none"
+        },
+        "dom": "Every native control the component renders (input, textarea, select, each radio, both range inputs, hidden value inputs) carries form=\"{form}\" when the input is set; no attribute otherwise.",
+        "behaviour": "Single controls emit focused on the native focus event and blurred on blur (after onTouched). Groups (hw-radio-group, hw-range-slider, hw-rating, hw-toggle-group) emit focused when focus enters the fieldset from outside and blurred when it leaves it (focusin / focusout with relatedTarget outside the fieldset), so moving between two options emits nothing. Events fire for read-only controls and never for disabled ones. No listener on the server."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "forms.ts:17-40: add the two outputs and the form input. Templates add `[attr.form]=\"form\" (focus)=\"focusEvents.emit($event)\"` and change `(blur)=\"touch()\"` to `(blur)=\"touch(); blurEvents.emit($event)\"` at forms.ts:59,86,99,112,121 and advanced-controls.ts:113,126. Groups: forms.ts:126, advanced-controls.ts:139,155 and interactions.ts:11 add `[attr.form]=\"form\"` on each inner input and on the fieldset `(focusin)=\"entered($event)\" (focusout)=\"left($event)\"`, two protected base methods that emit when event.relatedTarget is not inside event.currentTarget; the inner `(blur)=\"touch()\"` stays. interactions.ts:11: the hidden value inputs and the probe input get `[attr.form]=\"form\"`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "TEXT-FIELD-01",
+          "what": "[fields-basic-10] (focused) and (blurred) on hw-text-field, hw-textarea, hw-select, hw-number-field, hw-checkbox and hw-slider fire once per focus and blur with a FocusEvent; React onFocus / onBlur and Vue @focus / @blur on the same controls do the same",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "TEXT-FIELD-02",
+          "what": "group controls emit focused once on entry and blurred once on exit, nothing when moving between options",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/input-contracts.test.ts"
+        },
+        {
+          "caseId": "RESET-08",
+          "what": "the `form` input associates the control with an external form: FormData of that form carries the value and its reset resets the control",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/form-reset-parity.test.ts"
+        }
+      ],
+      "migration": [],
+      "readme": "Angular README: `(focused)`, `(blurred)` and `form` in the shared input table of value controls; a sentence that (focus) and (blur) written on a host never fire because the native events do not bubble; and that other native attributes (enterkeyhint, autocapitalize, spellcheck, list, title, tabindex) cannot be set on Hawiyah controls in 0.3.0: use a native input with the hw- classes inside hw-field.",
+      "ownerDecision": 1,
+      "notDone": "Arbitrary native attributes on Angular value controls (directives on native controls) are left for 0.4, as conventions.json notIn030 records."
+    },
+    {
+      "ids": [
+        "fields-basic-3"
+      ],
+      "component": "Field (hw-field with Hawiyah controls; hint and error elements in every adapter)",
+      "summary": "Angular hw-field provides its state through an injection token, and a Hawiyah value control placed in it takes the field's id and is named, described, required and invalid through the field, as in React and Vue. Hint and error become p elements in React and Vue, the documented markup.",
+      "endState": {
+        "surface": {
+          "angular": "New exports: `HW_FIELD: InjectionToken<HwFieldContext>` and `interface HwFieldContext { readonly controlId: string; readonly label: string; readonly labelId: string | null; readonly descriptionIds: string | null; readonly required: boolean; readonly invalid: boolean }`. hw-field: `controlId` is optional (default injectId('hw-field'); was required), `label` is optional (was required), `describedBy` is renamed `aria-describedby`; new getters labelId and invalid. A value control inside hw-field needs no label, controlId or required of its own.",
+          "react": "none (hint and error stay ReactNode and must be phrasing content)",
+          "vue": "none",
+          "vanilla": "none (authored p.hw-hint / p.hw-error is already the documented markup)"
+        },
+        "dom": "div.hw-field > label.hw-label#{id}-label[for={id}] (text, then span.hw-required-marker when required) > control > p.hw-hint#{id}-hint > p.hw-error#{id}-error, identical in the four adapters. Control inside a field: id = the field's controlId; aria-labelledby = the field's label id unless the control has its own label, aria-label or aria-labelledby; aria-describedby = application ids, field ids, own hint id, own error id; required when the control or the field is required; aria-invalid=\"true\" when either has an error. A control with its own label, hint or error inside a field gives those elements ids from its own generated id, so no id is duplicated. Checkbox, Radio and Switch (React): hint and error change from span to p.",
+        "behaviour": "The field context reaches controls declared in the same template as the hw-field (inject with host: true), not controls inside another component's view. A native control inside hw-field is bound by hand as before, through a template reference (`#f`, f.controlId, f.descriptionIds, f.required, f.invalid). Server rendering: ids come from HwIdSource on both sides."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/components.css:118-120",
+          "change": "No rule change: `.hw-hint, .hw-error { margin: 0; ... }` is element-agnostic and already removes the paragraph margins. Verified by MSG-01 in the browser suite (computed margin 0)."
+        }
+      ],
+      "perAdapter": {
+        "react": "shared.tsx:110-111: `<div className=\"hw-hint\">` and `<div className=\"hw-error\">` become p elements; :108 uses the shared requiredMarker. forms.tsx:67-68 Choice: span becomes p. No logic change. FieldLayout also takes `errorRole?: 'alert'` and writes it as `role` on p.hw-error (used by DatePicker and FileDropzone for component-produced messages; absent for the application's `error`).",
+        "vue": "forms.ts:27-28 (Field), :37-38 (decorate) and :128-129 (choice): h('span', ...) becomes h('p', ...); :25 and :36 use requiredMarker(). controls.ts:300-311 (RangeSlider) span becomes p. Other files that write span.hw-hint or span.hw-error by hand are changed by their clusters.",
+        "angular": "forms.ts:46-55 hw-field: `providers: [{provide: HW_FIELD, useExisting: forwardRef(() => HwFieldComponent)}]`, host: forwardedAriaHost, template `<div class=\"hw-field\">${fieldLabel}<ng-content />${fieldEnd}</div>`; `@Input() controlId = injectId('hw-field')`; `@Input() label = ''`; getters decorationId (= controlId), shownError (= error), labelId (label ? controlId + '-label' : null), invalid (Boolean(error)), descriptionIds (ariaDescribedby, hint id, error id). forms.ts:17-40 HwValueControl: `protected readonly field = inject(HW_FIELD, {optional: true, host: true})`; `private readonly generatedId = injectId('hw-control')`; controlId and required become getter and setter inputs as in sharedApi; decorationId, labelledBy, descriptionIds and invalid read the field. forms.ts:43-44 and advanced-controls.ts:11: the private fieldLabel / fieldEnd constants are deleted and imported from field-templates.ts.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "NAME-05",
+          "what": "[fields-basic-3] a TextField, Select and NumberField inside Field: one label, the control has the field's id, is labelled by the field label, has required and aria-describedby with the field's hint and error ids, aria-invalid=true while the field has an error; no duplicate id when both carry a hint",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "MSG-01",
+          "what": "DOM order label, control, hint, error; hint and error are p elements with ids {id}-hint / {id}-error (Field, TextField, Checkbox, RangeSlider)",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts; computed margin 0 in tests/browser/fields.spec.ts"
+        },
+        {
+          "caseId": "MSG-03",
+          "what": "application `error`: no role on p.hw-error",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "REQ-03",
+          "what": "required inherited from Field: marker on the field label, `required` on the control",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "FIELD-01",
+          "what": "Angular: a native select inside hw-field bound through a template reference still works (the existing case at tests/basic-field-select-parity.test.ts:149, with describedBy renamed)",
+          "adapters": [
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "FIELD-02",
+          "what": "Angular: a value control inside another component's view does not take an outer hw-field's id",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/input-contracts.test.ts"
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML of hw-field with a nested hw-text-field (required, with error) equals the first client render; ids stable under hydration",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "package ssr and hydration tests"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": "div.hw-hint / div.hw-error (Field and decorated controls), span.hw-hint / span.hw-error (Checkbox, Radio, Switch)",
+          "new": "p.hw-hint / p.hw-error",
+          "migration": "selectors on div.hw-hint, span.hw-error -> .hw-hint, .hw-error; pass phrasing content as hint and error"
+        },
+        {
+          "adapter": "vue",
+          "kind": "markup",
+          "old": "span.hw-hint / span.hw-error",
+          "new": "p.hw-hint / p.hw-error",
+          "migration": "selectors on span.hw-hint -> .hw-hint"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "a value control inside hw-field rendered a second label slot and its own unrelated id",
+          "new": "it takes the field's id, label, descriptions, required and invalid state",
+          "migration": "remove the controlId, required and aria wiring that was repeated on a control inside hw-field"
+        },
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "hw-field controlId and label: required inputs",
+          "new": "optional (generated id; label optional)",
+          "migration": "none"
+        }
+      ],
+      "readme": "Angular README: hw-field wraps Hawiyah value controls (example with hw-text-field) and native controls (example with the template reference); the HW_FIELD token for application-written controls. React and Vue READMEs: hint and error render as p and take phrasing content.",
+      "ownerDecision": 1,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "fields-basic-5"
+      ],
+      "component": "Select (Angular option projection)",
+      "summary": "Angular hw-select projects native option and optgroup children into its select, after the options it renders from `options`, as React children and the Vue default slot already do. `multiple` is not added in 0.3.0.",
+      "endState": {
+        "surface": {
+          "angular": "hw-select accepts projected `<option>` and `<optgroup>` elements (default content). No new input. `options` stays optional (default []).",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "select.hw-select > [option value=\"\" (placeholder)] > option per `options` entry > projected option / optgroup elements, the child order of React and Vue.",
+        "behaviour": "Choosing a projected option emits its value like any other. A bound value selects a projected option, also when the options are rendered after the value is set (the component writes select.value after each render while it differs and an option with that value exists). With projected options the application writes its own empty option and leaves `placeholder` unset: Angular cannot see projected content, so the component does not suppress its prompt for a projected empty option (React and Vue do). Server rendering: projected options are in the server HTML; the selection of a projected option is applied on hydration unless the application writes `selected` on it."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "forms.ts:99: add `#control` on the select and `<ng-content />` immediately before `</select>`. forms.ts:100-108: `@ViewChild('control') control?: ElementRef<HTMLSelectElement>`; `ngAfterViewChecked()` writes `control.value = value` when `control.value !== (value || '')` and `Array.from(control.options).some(option => option.value === value)`; syncDom() does the same write unconditionally. The JSDoc of `placeholder` gains the sentence about projected empty options.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "SELECT-03",
+          "what": "[fields-basic-5] option and optgroup children given as content are children of select.hw-select after the `options` entries; choosing one notifies its value; a bound value selects one, also when the children are rendered one tick later",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "SELECT-04",
+          "what": "server HTML of a select with projected options contains them; hydration without mismatch",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "package ssr and hydration tests"
+        }
+      ],
+      "migration": [],
+      "readme": "Angular README, Select row: options through `options`, through projected option / optgroup elements, or both; the prompt rule for projected empty options; `multiple` is not supported (use hw-multi-select or a native select with the hw-select class).",
+      "ownerDecision": null,
+      "notDone": "`multiple` on the Angular select (value type string[]) is left for 0.4, as conventions.json notIn030 records."
+    },
+    {
+      "ids": [
+        "fields-basic-6"
+      ],
+      "component": "Textarea (Angular)",
+      "summary": "Angular hw-textarea no longer sets rows=4 by default, so its height comes from the stylesheet as in the other adapters. `rows` stays an input and is written only when given.",
+      "endState": {
+        "surface": {
+          "angular": "`rows: number | null = null` (was number = 4).",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "textarea.hw-textarea has no rows attribute unless the application gives one (was rows=\"4\").",
+        "behaviour": "No behaviour change."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "forms.ts:86: `[rows]=\"rows\"` becomes `[attr.rows]=\"rows\"`. forms.ts:91: `@Input() rows: number | null = null;`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "TEXTAREA-01",
+          "what": "[fields-basic-6] default render has no rows attribute; rows=6 is passed through",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "TEXTAREA-02",
+          "what": "the default textarea has the same block size in the Angular markup as in the React, Vue and vanilla markup (static fixtures, package stylesheet only)",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/browser/fields.spec.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "default",
+          "old": "hw-textarea rows = 4",
+          "new": "rows unset (no rows attribute)",
+          "migration": "add [rows]=\"4\" to keep the old height"
+        }
+      ],
+      "readme": "Angular README, Textarea row: `rows` is optional and has no default.",
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "choices-4"
+      ],
+      "component": "Checkbox, Switch (Angular submitted value and label content); Vue read-only prop name",
+      "summary": "Angular hw-checkbox and hw-switch can set the value they submit and accept projected label content, which React (native `value`, node `label`) and Vue (`value`, default slot) already offer. The Vue choice components rename `readOnly` to `readonly`, the spelling of every other Vue control.",
+      "endState": {
+        "surface": {
+          "angular": "hw-checkbox and hw-switch: new input `submitValue: string | null = null` (the native value attribute; `value` is the boolean model in Angular and cannot carry it). Default content is the label when `label` is not given.",
+          "vue": "Checkbox, Radio, Switch: prop `readOnly` renamed `readonly: Boolean`.",
+          "react": "none",
+          "vanilla": "none"
+        },
+        "dom": "div.hw-field > label.hw-choice[for] > input.hw-checkbox | input.hw-switch[role=switch] (value=\"{submitValue}\" when given, no value attribute otherwise) followed directly by the label text or the projected content; then p.hw-hint, p.hw-error. The span that Angular wrapped around the label text is removed (React and Vue render none); the same in the options of hw-radio-group.",
+        "behaviour": "FormData carries submitValue, else 'on'. `label` wins over projected content, as in Vue. The accessible name comes from the label content, so no missing-name warning is issued for these two components. Server rendering unchanged."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "forms.ts:91: `readOnly: Boolean` becomes `readonly: Boolean`; :124-125 read props.readonly (the native attribute stays `readOnly: props.readonly`).",
+        "angular": "forms.ts:112 and :121: `<span>{{ label }}</span>` becomes `@if (label) {{{ label }}} @else {<ng-content />}`; add `[attr.value]=\"submitValue\"` on the input. forms.ts:113-117 and :122: `@Input() submitValue: string | null = null;`. forms.ts:126 (radio group options): `<span>{{ option.label }}</span>` becomes `{{ option.label }}`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "CHECKBOX-01",
+          "what": "[choices-4] a checked checkbox and switch submit 'on' by default and the given value when one is set (React value, Vue value, Angular submitValue, vanilla authored)",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "RICH-01",
+          "what": "a link given as label content is rendered inside label.hw-choice after the input and names the control",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "CHECKBOX-02",
+          "what": "label.hw-choice contains the input and the text with no wrapping span",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "RO-04",
+          "what": "Vue Checkbox, Radio and Switch take `readonly` and expose aria-disabled=true",
+          "adapters": [
+            "vue"
+          ],
+          "file": "packages/vue/test/readonly-inputs.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "kind": "input",
+          "old": "Checkbox, Radio, Switch: readOnly",
+          "new": "readonly",
+          "migration": ":read-only=\"x\" -> :readonly=\"x\"; read-only -> readonly"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "label.hw-choice > input + span (hw-checkbox, hw-switch, options of the radio group)",
+          "new": "label.hw-choice > input + text",
+          "migration": ".hw-choice > span -> .hw-choice"
+        }
+      ],
+      "readme": "Angular README: `submitValue` and projected label content for hw-checkbox and hw-switch. Vue README: `readonly` on the three choice components. Root README table of read-only spellings: React and Angular readOnly, Vue readonly, vanilla attribute.",
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "choices-5"
+      ],
+      "component": "Radio group (Angular rename)",
+      "summary": "Angular's hw-radio, which is a whole group, is renamed hw-radio-group / HwRadioGroupComponent with no alias, so that the name hw-radio stays free for a single option. Only this breaking half is done in 0.3.0.",
+      "endState": {
+        "surface": {
+          "angular": "Selector `hw-radio-group`, class `HwRadioGroupComponent` (were hw-radio, HwRadioComponent). Inputs and outputs unchanged apart from the shared changes of HwValueControl.",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "fieldset.hw-field (aria-label, aria-labelledby, aria-describedby, aria-invalid as forwarded) > legend.hw-label (text, span.hw-required-marker when required) > label.hw-choice > input.hw-radio[type=radio] + text, per option > p.hw-hint > p.hw-error. Each radio keeps `required`.",
+        "behaviour": "Unchanged: arrow keys and selection are native. Reset and names follow the shared items."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/layout.css:133",
+          "change": "hw-radio-group is in the wrapper-host display list (see the actions-8 item); no rule names hw-radio as an element."
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "forms.ts:124-127: selector 'hw-radio-group', class HwRadioGroupComponent, forwardRef target renamed; the legend becomes `${fieldLegend}`. No export under the old name. Update angular/README.md:164 and :508, llms.txt, components.json (Angular evidence and notes of `radio`), apps/playground/src/project-examples.ts:275 and every test that imports HwRadioComponent.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "RADIO-GROUP-01",
+          "what": "[choices-5] hw-radio-group renders the documented fieldset, submits the chosen value under `name`, and the package exports HwRadioGroupComponent and no HwRadioComponent",
+          "adapters": [
+            "angular"
+          ],
+          "file": "packages/angular/test/components.test.ts"
+        },
+        {
+          "caseId": "REQ-01",
+          "what": "required radio group: one marker as the last child of the legend; each radio has `required` (REQ-04)",
+          "adapters": [
+            "angular"
+          ],
+          "file": "tests/required-marker-parity.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "selector",
+          "old": "hw-radio / HwRadioComponent",
+          "new": "hw-radio-group / HwRadioGroupComponent",
+          "migration": "<hw-radio ...> -> <hw-radio-group ...>; </hw-radio> -> </hw-radio-group>; HwRadioComponent -> HwRadioGroupComponent"
+        }
+      ],
+      "readme": "Angular README: the row is titled 'Radio group — HwRadioGroupComponent, hw-radio-group' and states that a single radio option has no Angular component in 0.3.0 (use a native input with the hw-radio class). React and Vue READMEs state that Radio is a single option and a group is composed with a fieldset.",
+      "ownerDecision": 2,
+      "notDone": "RadioGroup and CheckboxGroup for React, Vue and vanilla, and a single-option Angular radio, are left for 0.4 (conventions.json notIn030)."
+    },
+    {
+      "ids": [
+        "choices-6"
+      ],
+      "component": "Slider",
+      "summary": "Slider shows its value only on request and formats it only through the application's function, with the same two inputs in React, Vue and Angular: `showValue` (default false) and `formatValue`. aria-valuetext is written only when `formatValue` is given.",
+      "endState": {
+        "surface": {
+          "react": "`showValue?: boolean` default false (was true); `formatValue?: (value: number) => string` with no default (was String).",
+          "vue": "New props `showValue: Boolean` (default false) and `formatValue: Function as PropType<(value: number) => string>`. `defaultValue` has no declared default (was 0): the empty value is (min + max) / 2, as in React and the native control.",
+          "angular": "New inputs `showValue = false` (booleanAttribute) and `formatValue?: (value: number) => string`. The output is no longer always rendered.",
+          "vanilla": "none: Slider has no controller; the application writes its own output next to the native input."
+        },
+        "dom": "div.hw-field > label.hw-label[for] (text, marker when required) > input.hw-slider[type=range] > output.hw-slider-value[for={id}] only with showValue > p.hw-hint > p.hw-error. Output text: formatValue(value), else String(value). aria-valuetext=\"{formatValue(value)}\" on the input only when formatValue is given; aria-readonly=\"true\" when read-only. `required` shows the marker and is not written on the range input (see conventionConflicts).",
+        "behaviour": "Keyboard, pointer and read-only guards unchanged. The output and aria-valuetext follow the value on input, on writes by the application and on reset. Server render equals the first client render."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css (after line 48)",
+          "change": "Add `.hw-slider-value { display: block; color: var(--hw-color-text-muted); font-size: var(--hw-text-sm); font-variant-numeric: tabular-nums; }`, the look `.hw-range-slider output` already has."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-controls.tsx:29: `showValue = false`, `formatValue` without default, `required` taken out of the props spread; :32 Field gets `required={required}`; aria-valuetext becomes `formatValue ? formatValue(current) : props['aria-valuetext']`; :35 `{showValue && <output className=\"hw-slider-value\" htmlFor={props.id ?? id}>{formatValue ? formatValue(current) : String(current)}</output>}`.",
+        "vue": "controls.ts:22-31 numberProps: add `formatValue`, and `defaultValue: { type: Number, default: undefined }`; Slider props (:176) `{...numberProps, showValue: Boolean}`; :181-185 initial value `props.defaultValue ?? (props.min + props.max) / 2`, the same expression as reset target at :186; :194-220: add `'aria-valuetext': props.formatValue ? props.formatValue(model.value.value) : attrs['aria-valuetext']` and `required: undefined` to the input, and pass `[input, props.showValue && h('output', {class: 'hw-slider-value', for: field.id.value}, props.formatValue ? props.formatValue(model.value.value) : String(model.value.value))]` to decorate. NumberField keeps its own defaultValue ''.",
+        "angular": "advanced-controls.ts:126: `${fieldLabel}` replaces the hand-written label; add `#control` and `[attr.aria-valuetext]=\"formatValue ? formatValue(value) : null\"`; `<output [attr.for]=\"controlId\">{{ value }}</output>` becomes `@if (showValue) {<output class=\"hw-slider-value\" [attr.for]=\"controlId\">{{ formatValue ? formatValue(value) : value }}</output>}`. :127-129: `@Input({transform: booleanAttribute}) showValue = false; @Input() formatValue?: (value: number) => string;`. The default `value = 0` and emptyValue() = min stay.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "FMT-01",
+          "what": "[choices-6] showValue without formatter: output.hw-slider-value shows String(value) and the input has no aria-valuetext",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/slider-parity.test.ts (vanilla left out with a comment: no Slider controller, convention value-display-and-formatting)"
+        },
+        {
+          "caseId": "FMT-02",
+          "what": "formatValue: output and aria-valuetext carry its result and follow a value change",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/slider-parity.test.ts"
+        },
+        {
+          "caseId": "FMT-03",
+          "what": "default (showValue false): no output element",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/slider-parity.test.ts"
+        },
+        {
+          "caseId": "SLIDER-01",
+          "what": "React and Vue Slider without value and defaultValue start at (min + max) / 2 and reset to it",
+          "adapters": [
+            "react",
+            "vue"
+          ],
+          "file": "tests/slider-parity.test.ts"
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML of a Slider with showValue and formatValue equals the first client render",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "package ssr tests"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "default",
+          "old": "Slider showValue = true; aria-valuetext always set",
+          "new": "showValue = false; aria-valuetext only with formatValue",
+          "migration": "add showValue to keep the output"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-slider always rendered <output> with the raw value",
+          "new": "output.hw-slider-value only with showValue",
+          "migration": "add showValue to keep the output"
+        },
+        {
+          "adapter": "vue",
+          "kind": "default",
+          "old": "Slider defaultValue = 0",
+          "new": "no default: (min + max) / 2",
+          "migration": "add :default-value=\"0\" to keep the old start"
+        }
+      ],
+      "readme": "Slider rows in the React, Vue and Angular READMEs: showValue, formatValue, the aria-valuetext rule and the empty value; the Angular row says its initial value is the `value` input (default 0). The vanilla README says the application writes its own output.",
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "choices-8"
+      ],
+      "component": "RangeSlider (Vue name and form)",
+      "summary": "Vue RangeSlider declares `name` and `form` and submits both thumbs under `name` unless `lowerName` or `upperName` is given, as React and Angular do. The two attributes no longer fall onto the fieldset.",
+      "endState": {
+        "surface": {
+          "vue": "New props `name: String` and `form: String`.",
+          "react": "none",
+          "angular": "none (the `form` input comes from HwValueControl)",
+          "vanilla": "none"
+        },
+        "dom": "Each input.hw-slider has name=\"{lowerName ?? name}\" / name=\"{upperName ?? name}\" and form=\"{form}\"; the fieldset has neither attribute.",
+        "behaviour": "FormData carries two entries; with one shared name they are in lower, upper order."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "controls.ts:226-237: add `name: String, form: String` to the props. :272 `name: side === 'lower' ? props.lowerName ?? props.name : props.upperName ?? props.name`; :273 `form: props.form`.",
+        "angular": "none",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "RANGE-SLIDER-03",
+          "what": "[choices-8] `name` alone: FormData.getAll(name) is [lower, upper]; lowerName / upperName override it; `form` associates both inputs with an external form; the fieldset carries neither name nor form",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/range-slider-parity.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "kind": "markup",
+          "old": "RangeSlider: name and form fell through onto the fieldset and no thumb was submitted under `name`",
+          "new": "both thumbs are submitted under `name`",
+          "migration": "none"
+        }
+      ],
+      "readme": "Vue README, RangeSlider row: name, lowerName, upperName, form.",
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "choices-9",
+        "R16"
+      ],
+      "component": "RangeSlider (presentation and value text)",
+      "summary": "RangeSlider renders one DOM in the four adapters, the documented vanilla structure: two labels that wrap their range input and one optional output for the whole range. No adapter writes a number format or a separator: `formatValue` gives each thumb its aria-valuetext and `getRangeLabel(lower, upper)` gives the visible text.",
+      "endState": {
+        "surface": {
+          "react": "New `getRangeLabel?: (lower: number, upper: number) => string` and `required?: boolean`; `formatValue` loses its default (String). No per-thumb output any more.",
+          "vue": "New `formatValue` and `getRangeLabel: Function as PropType<(lower: number, upper: number) => string>`; `defaultValue` has no declared default (was [0, 100]): the empty value is [min, max].",
+          "angular": "New inputs `formatValue?: (value: number) => string` and `getRangeLabel?: (lower: number, upper: number) => string`.",
+          "vanilla": "RangeSliderOptions gains `formatValue?: (value: number) => string` and `getRangeLabel?: (lower: number, upper: number) => string` (the signature of the frameworks); template attribute `data-hw-range-label=\"... {lower} ... {upper} ...\"` on the root. `locale` / data-hw-locale becomes optional. getRangeLabel (option or attribute) is required when the root contains [data-hw-range-output]."
+        },
+        "dom": "fieldset.hw-field.hw-range-slider (disabled; aria-describedby; aria-invalid) > legend.hw-label (optional; marker when required) > label.hw-label { lowerLabel text, input.hw-slider[type=range]#{id}-lower } > label.hw-label { upperLabel text, input.hw-slider[type=range]#{id}-upper } > output.hw-range-slider-value[for=\"{id}-lower {id}-upper\"] only when getRangeLabel is given > p.hw-hint#{id}-hint > p.hw-error#{id}-error. Each input: aria-valuetext only with formatValue; aria-readonly=\"true\" when read-only; no `required` attribute. Vanilla keeps the authored root and its authored [data-hw-range-output].",
+        "behaviour": "Output text in the frameworks: getRangeLabel(lower, upper) with the two numbers. Vanilla: the option called with the two numbers, else the template attribute filled by formatTextTemplate, in which {lower} and {upper} are text made by formatValue, else by core formatNumber with `locale` when one is given, else by String. Without a text the authored output stays empty and one development warning names RangeSlider getRangeLabel. The controller's en dash is removed. Clamping, read-only guards and keys are unchanged."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css:45-48",
+          "change": "No rule change: `.hw-range-slider :is(label, output)` and `.hw-range-slider output` already style the wrapping labels and the output; the labels gain `.hw-label` (semibold), which is what Vue renders today."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-controls.tsx:37-45 rewritten without the two inner Slider components: fieldset `className={cx('hw-field hw-range-slider', className)}`, aria-describedby through the exported descriptionIds(props['aria-describedby'], hint id, error id), `aria-invalid={props['aria-invalid'] ?? (error ? true : undefined)}`; legend with `{required && requiredMarker}`; two `<label className=\"hw-label\">{text('RangeSlider', 'lowerLabel', lowerLabel)}<input className=\"hw-slider\" type=\"range\" id={`${id}-lower`} ... aria-valuetext={formatValue?.(current[0])} aria-readonly={readOnly || undefined} /></label>` with the pointer, key and change guards of Slider (:33-35); `{getRangeLabel && <output className=\"hw-range-slider-value\" htmlFor={`${id}-lower ${id}-upper`}>{getRangeLabel(current[0], current[1])}</output>}`. shared.tsx:82 exports descriptionIds.",
+        "vue": "controls.ts:226-237: props as above (formatValue comes from numberProps), `defaultValue: { type: Array, default: undefined }` resolved as `props.defaultValue ?? [props.min, props.max]` at :244-247; :264 legend with requiredMarker(); :266-299 each input gets `id: `${field.id.value}-${side}``, `'aria-valuetext': props.formatValue?.(values[index])`; after the two labels `props.getRangeLabel && h('output', {class: 'hw-range-slider-value', for: `${field.id.value}-lower ${field.id.value}-upper`}, props.getRangeLabel(values[0], values[1]))`; :300-311 span becomes p.",
+        "angular": "advanced-controls.ts:139: `${fieldLegend}`; each `<label [for]=...>text</label><input ...>` pair becomes `<label class=\"hw-label\">{{ texts.need('lowerLabel', lowerLabel) }}<input #lower class=\"hw-slider\" ... [attr.aria-valuetext]=\"formatValue ? formatValue(pair[0]) : null\"></label>` (and #upper); the output becomes `@if (getRangeLabel) {<output class=\"hw-range-slider-value\" [attr.for]=\"controlId + '-lower ' + controlId + '-upper'\">{{ getRangeLabel(pair[0], pair[1]) }}</output>}`; `${fieldEnd}` from field-templates.ts. :141: the two new inputs.",
+        "vanilla": "controls.ts:36-37: options and JSDoc as above. :45 already remembers aria-valuetext: render() sets it to options.formatValue(value) per thumb when the option is given. :54-55 replaced by: `const shown = (n: number) => options.formatValue ? options.formatValue(n) : locale ? formatNumber(n, {locale}) : String(n); const label = templated(root, 'getRangeLabel', options.getRangeLabel, (lower: number, upper: number) => ({lower: shown(lower), upper: shown(upper)}))(value[0], value[1]); if (output) output.textContent = requireText('RangeSlider', 'getRangeLabel', label, 'a [data-hw-range-output] element is present') ? label! : '';`. EXPANSION-API.md:41 and :68-71 show `data-hw-range-label=\"{lower} – {upper}\"` on the root and wrap nothing else."
+      },
+      "tests": [
+        {
+          "caseId": "RANGE-SLIDER-01",
+          "what": "[choices-9] DOM: fieldset.hw-field.hw-range-slider, two label.hw-label each wrapping one input.hw-slider, in that order, then the output, hint and error",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/range-slider-parity.test.ts (vanilla: the documented markup fixture)"
+        },
+        {
+          "caseId": "FMT-02",
+          "what": "formatValue gives each thumb its aria-valuetext; without it the inputs have none",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/range-slider-parity.test.ts"
+        },
+        {
+          "caseId": "FMT-04",
+          "what": "[R16] without getRangeLabel no output is rendered (vanilla: the authored output stays empty) and no separator is written; with it the output shows its result and follows the thumbs",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/range-slider-parity.test.ts"
+        },
+        {
+          "caseId": "RANGE-SLIDER-02",
+          "what": "vanilla: data-hw-range-label=\"{lower} – {upper}\" fills the output; the numbers use formatValue, else the locale, else String; the option wins over the attribute",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "packages/vanilla/test/text.test.ts"
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "vanilla: an authored [data-hw-range-output] without getRangeLabel text: empty output, one warning naming RangeSlider and getRangeLabel; a missing locale no longer warns",
+          "adapters": [
+            "vanilla"
+          ],
+          "file": "packages/vanilla/test/text.test.ts:195"
+        },
+        {
+          "caseId": "REQ-01",
+          "what": "required RangeSlider with a label: one marker in the legend",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/required-marker-parity.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": "RangeSlider: fieldset.hw-range-slider > two div.hw-field (label, input, output per thumb)",
+          "new": "fieldset.hw-field.hw-range-slider > two label.hw-label wrapping their input, one output only with getRangeLabel",
+          "migration": "pass getRangeLabel={(lower, upper) => ...} to show the range; .hw-range-slider > .hw-field selectors -> .hw-range-slider > label"
+        },
+        {
+          "adapter": "react",
+          "kind": "default",
+          "old": "RangeSlider formatValue default String (aria-valuetext always)",
+          "new": "no default; aria-valuetext only with formatValue",
+          "migration": "none"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-range-slider: label[for] and input as siblings, an always rendered output with 'lower – upper'",
+          "new": "label.hw-label wrapping each input; output only with getRangeLabel",
+          "migration": "add [getRangeLabel]=\"fn\" to keep the range text"
+        },
+        {
+          "adapter": "vue",
+          "kind": "default",
+          "old": "RangeSlider defaultValue = [0, 100]",
+          "new": "no default: [min, max]",
+          "migration": "add :default-value=\"[0, 100]\" where min or max differ and the old thumbs are wanted"
+        },
+        {
+          "adapter": "vanilla",
+          "kind": "markup",
+          "old": "[data-hw-range-output] filled with 'lower – upper' by the controller; locale required",
+          "new": "filled from data-hw-range-label=\"{lower} ... {upper}\" or options.getRangeLabel; locale optional",
+          "migration": "add data-hw-range-label=\"{lower} – {upper}\" to the root"
+        }
+      ],
+      "readme": "RangeSlider rows in the four READMEs: lowerLabel, upperLabel (required), formatValue, getRangeLabel (optional in the frameworks; in vanilla required when an output element is authored), and the structure above. packages/vanilla/README.md:105 and EXPANSION-API.md:68-71 replace the locale requirement by the getRangeLabel one. tests/text-contract-docs.test.ts fixtures and components.json gain getRangeLabel.",
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "actions-5"
+      ],
+      "component": "ToggleGroup (multiple-mode button markup)",
+      "summary": "The pressed buttons of a multiple ToggleGroup carry the same attributes in every adapter: class hw-button, data-variant=\"secondary\" and data-size=\"md\". The visual defect of the audit is already gone; the remaining markup difference in Angular and in the documented vanilla example is closed.",
+      "endState": {
+        "surface": {
+          "angular": "none",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none (documented markup changes)"
+        },
+        "dom": "button.hw-button[type=button][data-variant=secondary][data-size=md][aria-pressed] per option, with aria-disabled=\"true\" when read-only and `disabled` when the group or the option is disabled. Vanilla adds data-hw-value.",
+        "behaviour": "Unchanged."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/nic-segmented.css:129-130",
+          "change": "No change; these rules already keep the generic button states out of the group."
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "interactions.ts:11: `<button type=\"button\" class=\"hw-button\" ...>` gains `data-variant=\"secondary\" data-size=\"md\"`.",
+        "vanilla": "No controller change. vanilla/EXPANSION-API.md:149 and the guide's vanilla example: each button is `<button type=\"button\" class=\"hw-button\" data-variant=\"secondary\" data-size=\"md\" data-hw-value=\"...\" aria-pressed=\"false\">`."
+      },
+      "tests": [
+        {
+          "caseId": "TOGGLE-GROUP-01",
+          "what": "[actions-5] multiple mode: every option is button.hw-button with data-variant=secondary, data-size=md and aria-pressed",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts (vanilla: the documented markup)"
+        },
+        {
+          "caseId": "TOGGLE-GROUP-02",
+          "what": "rest, hover and focus-visible colours of an unpressed and a pressed button are equal for the four markups, segmented and outline, light and dark, and in forced colours",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/browser/toggle-group.spec.ts"
+        }
+      ],
+      "migration": [],
+      "readme": "vanilla/EXPANSION-API.md:149 as above.",
+      "ownerDecision": null,
+      "notDone": ""
+    },
+    {
+      "ids": [
+        "actions-8"
+      ],
+      "component": "ToggleGroup (Angular host box) and the wrapper-host display list",
+      "summary": "The Angular hw-toggle-group host generates no box, so its fieldset is the flex or grid item and stretches or shrink-wraps exactly as the React and Vue fieldset does. The other form-control hosts of this cluster become block boxes through the zero-specificity list; the hw-link half of the finding is closed by a[hwLink] in another cluster.",
+      "endState": {
+        "surface": {
+          "angular": "none",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "No markup change.",
+        "behaviour": "Layout only. `hidden` on a host keeps hiding it (the rules exclude [hidden]). class and style written on hw-toggle-group do not produce a box; the other hosts take margins and sizes as block boxes."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/layout.css (after line 134)",
+          "change": "Add: `/* Angular wrapper hosts of form controls: a block box around the root they render. hw-toggle-group generates no box, so its fieldset is the flex or grid item as in React and Vue. */` `:where(hw-field, hw-text-field, hw-textarea, hw-select, hw-checkbox, hw-switch, hw-radio-group, hw-number-field, hw-slider, hw-range-slider):where(:not([hidden])) { display: block; }` `:where(hw-toggle-group, hw-content-navigation):where(:not([hidden])) { display: contents; }` (one rule for the two hosts that generate no box; the block list is one rule for the hosts of the five specifications)"
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "No source change: no component `styles` and no host class are added (interactions.ts:11 stays a wrapper).",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "TOGGLE-GROUP-03",
+          "what": "[actions-8] an outline and a segmented group inside .hw-stack, inside .hw-inline and in block flow have the same inline size and position with the Angular markup (hw-toggle-group around the fieldset) as with the bare fieldset; a host with `hidden` is not rendered",
+          "adapters": [
+            "angular",
+            "react"
+          ],
+          "file": "tests/browser/toggle-group.spec.ts (static markup of both shapes, package stylesheet only)"
+        },
+        {
+          "caseId": "ATTR-06",
+          "what": "each form-control host of the list computes display block (toggle group: contents) and display none with `hidden`",
+          "adapters": [
+            "angular"
+          ],
+          "file": "tests/browser/fields.spec.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "form-control hosts were inline boxes; hw-toggle-group wrapped its fieldset in a box",
+          "new": "block boxes; hw-toggle-group has display: contents",
+          "migration": "styles that set display on these hosts stay valid; margins or sizes written on hw-toggle-group move to a wrapper element or to the group's parent"
+        }
+      ],
+      "readme": "Angular README, 'Attributes on wrapper hosts': the hosts are block boxes, hw-toggle-group generates no box.",
+      "ownerDecision": 1,
+      "notDone": "The hw-link half is closed by a[hwLink] (actions-7, another cluster)."
+    },
+    {
+      "ids": [
+        "actions-9",
+        "E02"
+      ],
+      "component": "ToggleGroup (inputs, name and option markup)",
+      "summary": "ToggleGroup takes the same inputs in React, Vue and Angular (label, hint, error, required, name, form, read-only, options, variant, labelHidden) and renders the documented vanilla option markup in all of them. A missing label renders no legend and warns once unless the application gives aria-label or aria-labelledby.",
+      "endState": {
+        "surface": {
+          "react": "New `hint?: ReactNode`, `error?: ReactNode`, `required?: boolean`. `label` is typed with the FieldName union: required unless 'aria-label' or 'aria-labelledby' is passed.",
+          "vue": "New props `hint: String`, `error: String`, `required: Boolean`, `name: String`, `form: String`. `label: String` loses required: true and is checked at render with rootLabel.",
+          "angular": "`options` becomes a required input. `label` optional under the name rule (fields-basic-2 item). `form`, `aria-*`, (focused), (blurred) come from HwValueControl. hint, error and required already exist.",
+          "vanilla": "No option change; hint and error are authored p elements referenced by the root's aria-describedby."
+        },
+        "dom": "fieldset.hw-toggle-group[data-variant] (disabled; data-hw-readonly=\"true\"; aria-label / aria-labelledby from the application; aria-describedby = application ids, {id}-hint, {id}-error; aria-invalid) > legend.hw-label[.hw-sr-only] (only with a label; marker when required in single mode) > single: `<label><input type=\"radio\" name form value required readonly aria-disabled disabled checked>text</label>` per option, with no class, no span and no data-selected > multiple: `<input type=\"hidden\" disabled form>` then the buttons of the actions-5 item > p.hw-hint#{id}-hint > p.hw-error#{id}-error > multiple: one `<input type=\"hidden\" name form value>` per selected enabled value, inside the fieldset. The fieldset never carries name or form.",
+        "behaviour": "required, single mode: native radios carry `required`; when a submission fails on the group (the `invalid` event of a radio) the fieldset gets aria-invalid=\"true\" until an option is chosen or the form resets. aria-invalid is also set by `error` and by an explicit aria-invalid. required, multiple mode: not enforced and no marker (see notDone). Missing label without a forwarded name: no legend, one warning (ToggleGroup / hw-toggle-group requires \"label\"). Keyboard and read-only behaviour unchanged."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/extended.css:231",
+          "change": "No change: `.hw-toggle-group > :is(.hw-hint, .hw-error)` already places both below the options in every adapter."
+        },
+        {
+          "file": "styles/src/nic-segmented.css",
+          "change": "No change; the selectors use `> :is(button, label)` and do not depend on hw-choice, a span or data-selected."
+        }
+      ],
+      "perAdapter": {
+        "react": "expanded-interactive.tsx:12: ToggleBase becomes a type: `Omit<ComponentPropsWithRef<'fieldset'>, 'defaultValue' | 'onChange'> & FieldName & { options; hint?: ReactNode; error?: ReactNode; required?: boolean; name?; form?; readOnly?; variant?; labelHidden? }`. :17-24: `const legend = hasText(native['aria-label']) || hasText(native['aria-labelledby']) ? label : text('ToggleGroup', 'label', label)`; `const [failed, setFailed] = useState(false)` cleared in change() and in the reset; fieldset gets aria-describedby through descriptionIds and `aria-invalid={native['aria-invalid'] ?? (error || failed ? true : undefined)}`; the legend is rendered only when hasText(legend), with `{required && !multiple && requiredMarker}`; the option label loses className=\"hw-choice\" and the radio className=\"hw-radio\", the radio gains `required={required}` and `onInvalid={() => setFailed(true)}`; the probe input is rendered only in multiple mode, directly after the legend; hint and error p elements come before the hidden value inputs.",
+        "vue": "expansion-interactive.ts:23-41: props as above. :57-62: mergeProps(attrs, {..., 'aria-describedby': joinIds(attrs['aria-describedby'], props.hint && `${id}-hint`, props.error && `${id}-error`), 'aria-invalid': props.error || failed.value ? true : attrs['aria-invalid']}) with `const failed = ref(false)` cleared in the change handlers and in the reset. :64: `const legend = rootLabel('ToggleGroup', props.label, attrs)`; the legend is rendered only when it has text, with requiredMarker() when props.required && !props.multiple. :98-102: the option label loses data-selected. :107-108: `name: props.name ?? id`, `form: props.form`, plus `required: props.required || undefined` and `onInvalid: () => { failed.value = true; }`. :66 and :128-129 read props.form / props.name. Hint and error p elements are inserted before the hidden value inputs (:125).",
+        "angular": "interactions.ts:11: the hand-written hint and error become `${fieldEnd}`; the legend keeps its own markup (it carries [class.hw-sr-only]) and gains `@if (required && !multiple) {<span class=\"hw-required-marker\" aria-hidden=\"true\"> *</span>}`; `<span>{{ option.label }}</span>` becomes `{{ option.label }}`; each radio gains `(invalid)=\"failed()\"`; in multiple mode `<input type=\"hidden\" disabled [attr.form]=\"form\">` follows the legend; the `@for (selected of submittedValues ...)` hidden inputs move inside the fieldset after `${fieldEnd}`. :15: `@Input({required: true}) options: readonly Option[] = [];`. packages/angular/test/required-names.test.ts:16-17 drops hw-toggle-group from the compile-time required-label list.",
+        "vanilla": "content.ts:19-60: on the `invalid` event of a radio (scope.listen on each radio) the controller sets aria-invalid=\"true\" on the root, having remembered the authored value with remember(scope, root, ['aria-invalid']); it restores the authored value when a selection is made and on reset."
+      },
+      "tests": [
+        {
+          "caseId": "NAME-04",
+          "what": "[E02] no label and no aria-label / aria-labelledby: no legend element, one development warning naming the component as the adapter exposes it",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "package text-contract tests; packages/angular/test/required-names.test.ts"
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "aria-label alone: no legend, no warning, the attribute is on the fieldset",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        },
+        {
+          "caseId": "MSG-01",
+          "what": "[actions-9] hint and error are p elements after the options with ids {id}-hint / {id}-error, and the fieldset's aria-describedby lists them after the application's ids (MSG-02)",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        },
+        {
+          "caseId": "REQ-01",
+          "what": "single mode, required: one marker as last child of the legend, every radio has `required` (REQ-04); not required: none (REQ-02)",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/required-marker-parity.test.ts"
+        },
+        {
+          "caseId": "INV-03",
+          "what": "single mode, required, nothing chosen: form.requestSubmit() fails and the fieldset has aria-invalid=true; INV-01 before the submission it has none",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        },
+        {
+          "caseId": "INV-04",
+          "what": "choosing an option clears aria-invalid; INV-05 a reset clears it",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        },
+        {
+          "caseId": "TOGGLE-GROUP-04",
+          "what": "[actions-9][E02] option markup: label > input[type=radio] + text with no hw-choice or hw-radio class, no span and no data-selected; the fieldset has neither name nor form; the radios and hidden inputs carry them",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        },
+        {
+          "caseId": "TOGGLE-GROUP-05",
+          "what": "multiple mode: the hidden value inputs are inside the fieldset after hint and error, and a disabled hidden probe input with the `form` value follows the legend",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/toggle-group-parity.test.ts"
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML of a single and a multiple group with hint, error and required equals the first client render",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "package ssr tests"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": "ToggleGroup option: label.hw-choice > input.hw-radio; an empty legend when label was missing; a hidden probe input in both modes",
+          "new": "label > input[type=radio]; no legend without a label; the probe only in multiple mode",
+          "migration": ".hw-toggle-group .hw-choice -> .hw-toggle-group > label; .hw-toggle-group .hw-radio -> .hw-toggle-group input[type='radio']"
+        },
+        {
+          "adapter": "vue",
+          "kind": "markup",
+          "old": "ToggleGroup: name and form also on the fieldset; data-selected on the option label",
+          "new": "neither",
+          "migration": "[data-selected='true'] -> :has(input:checked); read the name from the radios"
+        },
+        {
+          "adapter": "vue",
+          "kind": "input",
+          "old": "ToggleGroup label: required prop",
+          "new": "optional when aria-label or aria-labelledby is passed",
+          "migration": "none"
+        },
+        {
+          "adapter": "angular",
+          "kind": "input",
+          "old": "hw-toggle-group options: optional input",
+          "new": "required input",
+          "migration": "add [options] where it was omitted"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "hw-toggle-group: span around each option text; hidden value inputs as siblings of the fieldset",
+          "new": "text directly in the label; hidden inputs inside the fieldset",
+          "migration": "hw-toggle-group > input[type=hidden] -> hw-toggle-group fieldset > input[type=hidden]"
+        }
+      ],
+      "readme": "One ToggleGroup table per README with the same rows; the read-only row gives the spelling of the adapter (React and Angular readOnly, Vue readonly, vanilla data-hw-readonly=\"true\"); `required` is described as applying to single selection. docs/nic-segmented.md gets one line per recorded decision.",
+      "ownerDecision": 1,
+      "notDone": "`required` on a multiple ToggleGroup is not enforced in 0.3.0: pressed buttons and hidden inputs are barred from constraint validation, and a carrier would need a new required text (requiredMessage) and a focus target. The READMEs say so and point to MultiSelect or to the application's `error`. Rich legend content in Vue and Angular is not added: `label` is a text input there, as for every field label."
+    },
+    {
+      "ids": [
+        "rich-inputs-20",
+        "fields-basic-7"
+      ],
+      "component": "Required marker (every labelled form control)",
+      "summary": "Every required control with a visible label shows the one marker, span.hw-required-marker, as the last child of its label.hw-label or legend.hw-label, from one shared template per adapter. Angular's hand-written labels and legends, React's unclassed MultiSelect span and the legends without a marker are replaced.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none (authored markup)"
+        },
+        "dom": "`<span class=\"hw-required-marker\" aria-hidden=\"true\"> *</span>` as the last child of label.hw-label / legend.hw-label, present exactly when the control is required (its own `required` or the one inherited from Field). Labels rendered by the Angular fieldLabel template also gain id=\"{id}-label\", which React and Vue already render.",
+        "behaviour": "The marker is never the only carrier: text-like controls keep `required` on the native control, radio groups on each radio, and MultiSelect and TagInput explain their constraint in the hint as docs/multiselect-validation.md:23 says. Exceptions recorded under conventionConflicts: range inputs take no `required` attribute, and the single choices (label.hw-choice of Checkbox, Radio, Switch) get no marker."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "styles/src/nic-select.css:53",
+          "change": "No change: `.hw-label > .hw-required-marker` covers labels and legends."
+        }
+      ],
+      "perAdapter": {
+        "react": "shared.tsx: export `requiredMarker`; :108 uses it. expanded-controls.tsx:89 (MultiSelect legend): `{required && <span aria-hidden=\"true\"> *</span>}` becomes `{required && requiredMarker}`; :50 (Rating legend) and the RangeSlider legend (:41, rewritten in choices-9) add `{required && requiredMarker}`. Slider passes `required` to its Field (choices-6).",
+        "vue": "shared.ts: export requiredMarker(); forms.ts:25 and :36 use it. controls.ts:264 (RangeSlider), :348 (Rating) and :622 (MultiSelect) legends become `h('legend', {class: 'hw-label'}, [props.label, props.required && requiredMarker()])`. ToggleGroup: actions-9 item.",
+        "angular": "field-templates.ts as in sharedApi. `${fieldLabel}` replaces `@if (label) {<label class=\"hw-label\" [for]=\"controlId\">{{ label }}</label>}` at forms.ts:135 (combobox) and :202 (file upload) and at advanced-controls.ts:24 (password), :45 (search; its texts.need('label') check moves to the class with the name rule), :113 (number), :126 (slider), :185 (pin), :188 (tag). `${fieldLegend}` replaces the legends at forms.ts:126 (radio group) and advanced-controls.ts:139 (range slider), :155 (rating), :191 (multi-select). The date picker and dropzone labels (advanced-controls.ts:288, :362) are replaced by their clusters with the same constants.",
+        "vanilla": "No controller adds or removes the marker. The documented examples of required controls in vanilla/README.md and EXPANSION-API.md show the span inside the label or legend."
+      },
+      "tests": [
+        {
+          "caseId": "REQ-01",
+          "what": "[rich-inputs-20][fields-basic-7] required with a label: exactly one .hw-required-marker, aria-hidden, last child of the label or legend, text ' *'. Run for TextField, Textarea, Select, NumberField, Slider, RangeSlider, PasswordField, SearchField, Combobox, PinInput, TagInput, MultiSelect, Rating, ToggleGroup (single), FileUpload and the Angular radio group",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/required-marker-parity.test.ts (vanilla fixtures assert the documented markup)"
+        },
+        {
+          "caseId": "REQ-02",
+          "what": "not required: no marker",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/required-marker-parity.test.ts"
+        },
+        {
+          "caseId": "REQ-03",
+          "what": "required inherited from Field (in fields-basic-3)",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/basic-field-select-parity.test.ts"
+        },
+        {
+          "caseId": "REQ-04",
+          "what": "the native control has `required` (text-like controls, select, each radio of a group); range inputs have none",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ],
+          "file": "tests/required-marker-parity.test.ts"
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "kind": "markup",
+          "old": "MultiSelect legend: bare <span aria-hidden> *</span>",
+          "new": "span.hw-required-marker",
+          "migration": "none"
+        },
+        {
+          "adapter": "angular",
+          "kind": "markup",
+          "old": "required number, slider, password, search, combobox, pin, tag, multi-select, rating, range slider, radio group and file upload showed no marker; labels had no id",
+          "new": "marker shown; label id {controlId}-label",
+          "migration": "remove asterisks written into `label` by hand"
+        },
+        {
+          "adapter": "vue",
+          "kind": "markup",
+          "old": "required RangeSlider, Rating and MultiSelect legends showed no marker",
+          "new": "marker shown",
+          "migration": "remove asterisks written into `label` by hand"
+        }
+      ],
+      "readme": "The four READMEs state the marker rule once in their forms section: one marker, never the only carrier, no input for the glyph.",
+      "ownerDecision": null,
+      "notDone": ""
+    }
+  ],
+  "conventionConflicts": [
+    {
+      "convention": "native-form-reset (index 2)",
+      "component": "core observeFormReset and every caller",
+      "conflict": "The rule says 'one microtask after a reset event'. Measured in Chromium: when the reader clicks or presses Enter on a reset button, a microtask queued in a reset listener runs before the remaining listeners and before the browser resets the controls; only form.reset() and scripted clicks run it afterwards.",
+      "closest": "observeFormReset calls onReset in that microtask when the dispatch is over (event.eventPhase === 0) and otherwise before the next paint (first of requestAnimationFrame and a zero timeout). (a)-(d) of the rule hold from that moment. Tests that reset from script still see the result after one awaited microtask; RESET-12 covers the real activation in the browser suite.",
+      "affects": "All five clusters: nobody may add a reset listener of their own or assume microtask timing."
+    },
+    {
+      "convention": "native-form-reset (index 2), Vue mechanics",
+      "component": "Vue Select",
+      "conflict": "'Select without defaultValue resets to the option the browser selects after the reset, read from the element' cannot be applied: Vue renders the `selected` attribute from the live model (verified), so the browser's reset re-selects the current option.",
+      "closest": "The target is computed from the element's option list: the first option that is not disabled, which is what a native select without a selected attribute shows."
+    },
+    {
+      "convention": "name-without-visible-label (index 4), case NAME-04",
+      "component": "TextField, Textarea, Select, NumberField, Slider, Checkbox, Radio, Switch",
+      "conflict": "A development warning for a control without label, aria-label, aria-labelledby or Field cannot be exact: a native <label for> written by the application is a fourth valid source that no adapter can see, and none of the three frameworks warns for these controls today.",
+      "closest": "No warning is added for these native controls. NAME-04 runs for the components whose `label` is already required text (in this cluster ToggleGroup); NAME-01, -02, -03 and -05 run for all."
+    },
+    {
+      "convention": "required-marker (index 5) and hint-error-validation-message (index 6: Slider and RangeSlider take `required`)",
+      "component": "Slider, RangeSlider",
+      "conflict": "'The native control keeps required' cannot hold: HTML does not allow `required` on input type=range, and a range always has a value.",
+      "closest": "`required` shows the marker on the label or legend and is not written on the range input (React and Vue stop passing it through)."
+    },
+    {
+      "convention": "required-marker (index 5)",
+      "component": "Checkbox, Radio, Switch (single choices)",
+      "conflict": "The rule says 'for every control' but places the marker in label.hw-label or legend.hw-label; a single choice has label.hw-choice and the stylesheet colours only `.hw-label > .hw-required-marker`.",
+      "closest": "No marker is added to label.hw-choice in 0.3.0; the native `required` stays and the application words the requirement in the label. REQ cases skip the three single choices with a comment."
+    },
+    {
+      "convention": "aria-invalid (index 7) and hint-error-validation-message (index 6)",
+      "component": "ToggleGroup, multiple mode",
+      "conflict": "The conventions list ToggleGroup among the controls with a custom validity when required. In multiple mode it has no element that can carry one (buttons and hidden inputs are barred from constraint validation).",
+      "closest": "`required` is applied to single selection (native radios, marker, aria-invalid after a failed submission). In multiple mode it is not enforced and shows no marker; see notDone of actions-9."
+    },
+    {
+      "convention": "angular-host-attributes (index 3): a wrapper host is a block box",
+      "component": "hw-toggle-group",
+      "conflict": "A block host keeps the difference of actions-8: inside a grid or flex parent the host stretches while its inline-flex fieldset shrink-wraps, where the React and Vue fieldset is the item and stretches.",
+      "closest": "hw-toggle-group gets display: contents in the same zero-specificity list; every other form-control host is a block box. Both rules exclude [hidden], because an author rule would otherwise override the browser's display: none for a hidden host."
+    },
+    {
+      "convention": "reference-adapter-and-recording (index 0): the documented vanilla markup is the reference DOM",
+      "component": "ToggleGroup multiple-mode buttons",
+      "conflict": "vanilla/EXPANSION-API.md:149 documents bare buttons; React and Vue render button.hw-button[data-variant=secondary][data-size=md] and triage measured that markup as visually correct.",
+      "closest": "The documented vanilla markup is updated to the three frameworks' markup and Angular adds the two data attributes; removing hw-button from three adapters would change padding and states without a measurement."
+    },
+    {
+      "convention": "required-marker (index 5), Angular mechanics: constants 'in forms.ts'",
+      "component": "Angular field templates",
+      "conflict": "public-api.ts re-exports everything from forms.ts, so constants exported there would become public API.",
+      "closest": "The constants live in the new internal file angular/src/field-templates.ts and are imported by forms.ts, advanced-controls.ts and interactions.ts."
+    },
+    {
+      "convention": "native-form-reset (index 2), case RESET-05",
+      "component": "Angular",
+      "conflict": "Angular has no controlled mode: a one-way [value] binding is not pushed again when the component changes its own value.",
+      "closest": "In Angular RESET-05 asserts that held, shown and submitted value agree after the reset; 'equal to the application's value' is asserted for React and Vue only."
+    }
+  ],
+  "closedAlready": [
+    {
+      "ids": [
+        "actions-8 (hw-link half)"
+      ],
+      "evidence": "conventions.json wronglyTriaged[7]: the hw-link wrapper is removed in favour of a[hwLink] under actions-7 in another cluster; this cluster only specifies the hw-toggle-group host box."
+    },
+    {
+      "ids": [
+        "actions-5 (visual defect)"
+      ],
+      "evidence": "styles/src/nic-segmented.css:129-130 keeps generic .hw-button hover, focus and active backgrounds out of the group; triage rendered the Angular markup identically to React and Vue. Only the markup difference remains and is specified."
+    },
+    {
+      "ids": [
+        "fields-basic-2 (empty label)"
+      ],
+      "evidence": "angular/src/forms.ts:43: fieldLabel is wrapped in @if (label), so no empty label is rendered. The missing forwarded name remains and is specified."
+    },
+    {
+      "ids": [
+        "actions-9 (Angular label was optional)"
+      ],
+      "evidence": "angular/src/interactions.ts:13: label is a required input today; the specification relaxes it to the name rule."
+    }
+  ],
+  "questions": [
+    "Vue Checkbox, Radio and Switch `readOnly` -> `readonly` is in conventions.json renames but belongs to no finding id; it is specified under choices-4 because vue/src/forms.ts is this cluster's file. Another cluster must not specify it again.",
+    "HwValueControl's output properties are named focusEvents / blurEvents (bindings `(focused)` / `(blurred)`) and a produced validation message is an override of `get shownError()`, because hw-calendar and hw-tree-view have a field `focused`, hw-search-field has methods focused() and blurred(), and hw-date-picker has a method validationMessage(). The clusters that own those files need no rename.",
+    "The Angular Slider keeps its initial value (the `value` input, default 0) while React and Vue start at the midpoint; conventions define the Angular reset target as the initial value, so nothing was changed. The owner may want one default.",
+    "vanilla/src/controls.ts:108 (Rating reset) is switched to observeFormReset in this cluster together with the Angular rating syncDom; the cluster that owns Rating should not change that line again.",
+    "ownerDecision values are zero-based indexes into conventions.json ownerDecisions (0 reset, 1 Angular wrapper hosts, 2 hw-radio-group)."
+  ],
+  "decisions": [
+    {
+      "component": "all form controls",
+      "question": "When does a control act on a native reset?",
+      "choice": "After the browser has applied it: same microtask checkpoint for scripted resets, before the next paint for a reader's activation",
+      "basis": "accessibility",
+      "source": "Chromium measurement recorded in the fields-basic-8 item; a control that reads values before the reset shows and submits stale state",
+      "changedAdapters": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "all form controls",
+      "question": "Does a native reset change the value and notify?",
+      "choice": "Yes, once, only when the value changed; Angular Forms keeps ownership when attached",
+      "basis": "repository",
+      "source": "conventions.json native-form-reset, owner decision 0; rewrites docs/input-review.md:29-32 and docs/nic-segmented.md:26-27",
+      "changedAdapters": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Field",
+      "question": "Element of hint and error",
+      "choice": "p.hw-hint / p.hw-error",
+      "basis": "repository",
+      "source": "documented vanilla markup; angular/src/forms.ts:44",
+      "changedAdapters": [
+        "react",
+        "vue"
+      ]
+    },
+    {
+      "component": "Field (Angular)",
+      "question": "How does a Hawiyah control inside hw-field get its name and descriptions?",
+      "choice": "HW_FIELD injection token read by HwValueControl with host: true; the control takes the field's id",
+      "basis": "majority",
+      "source": "react/src/shared.tsx:115-125, vue/src/shared.ts:14-26",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Angular value controls",
+      "question": "Where do aria-label, aria-labelledby, aria-describedby and aria-invalid written on the host go?",
+      "choice": "Forwarded as inputs of those names to the native control; removed from the host",
+      "basis": "accessibility",
+      "source": "conventions.json angular-host-attributes, owner decision 1",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Checkbox, Switch (Angular)",
+      "question": "Name of the submitted-value input",
+      "choice": "submitValue, because `value` is the boolean model in Angular",
+      "basis": "majority",
+      "source": "vue/src/forms.ts:91 (`value`), React native `value`; smallest public change in Angular",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Checkbox, Switch, radio group (Angular)",
+      "question": "Span around the choice text",
+      "choice": "Removed",
+      "basis": "majority",
+      "source": "react/src/forms.tsx:65, vue/src/forms.ts:126; no stylesheet rule selects it",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Radio (Angular)",
+      "question": "Name of the group component",
+      "choice": "hw-radio-group / HwRadioGroupComponent, no alias",
+      "basis": "repository",
+      "source": "conventions.json renames, owner decision 2",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Slider",
+      "question": "Value output and formatting",
+      "choice": "showValue default false, formatValue optional, aria-valuetext only with formatValue, output.hw-slider-value",
+      "basis": "repository",
+      "source": "conventions.json value-display-and-formatting; CONTRACT.md:104-107",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Slider (Vue)",
+      "question": "Empty value",
+      "choice": "(min + max) / 2",
+      "basis": "repository",
+      "source": "conventions.json native-form-reset; react/src/expanded-controls.tsx:30; the native range default",
+      "changedAdapters": [
+        "vue"
+      ]
+    },
+    {
+      "component": "RangeSlider",
+      "question": "Structure and visible value",
+      "choice": "Two label.hw-label wrapping their input, one output only with getRangeLabel(lower, upper); no built-in separator",
+      "basis": "repository",
+      "source": "vanilla/EXPANSION-API.md:41; CONTRACT.md:104-107",
+      "changedAdapters": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "ToggleGroup",
+      "question": "Option markup",
+      "choice": "label > input[type=radio] + text with no class, span or data-selected; multiple buttons are button.hw-button[data-variant=secondary][data-size=md]",
+      "basis": "repository",
+      "source": "vanilla/EXPANSION-API.md:148-149 (line 149 updated for the buttons, see conventionConflicts)",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "ToggleGroup",
+      "question": "hint, error and required in every adapter or in none?",
+      "choice": "In every adapter; required applies to single selection",
+      "basis": "repository",
+      "source": "conventions.json hint-error-validation-message",
+      "changedAdapters": [
+        "react",
+        "vue"
+      ]
+    },
+    {
+      "component": "ToggleGroup",
+      "question": "Missing label",
+      "choice": "No legend, one warning, satisfied by aria-label or aria-labelledby",
+      "basis": "accessibility",
+      "source": "CONTRACT.md:83-87 and :97-99",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "ToggleGroup (Angular host)",
+      "question": "Host box",
+      "choice": "display: contents",
+      "basis": "majority",
+      "source": "React and Vue render the fieldset as the layout item; styles/src/layout.css:130-134",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "ToggleGroup label type",
+      "question": "ReactNode in React, string in Vue and Angular",
+      "choice": "Unchanged",
+      "basis": "repository",
+      "source": "CONTRACT.md 'Text and localisation': label is a text input; every React field label is typed by FieldDecoration (react/src/shared.tsx:75-79)",
+      "changedAdapters": []
+    },
+    {
+      "component": "Textarea (Angular)",
+      "question": "Default rows",
+      "choice": "None",
+      "basis": "majority",
+      "source": "React, Vue and vanilla set no rows; styles/src/components.css:115",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Select (Angular)",
+      "question": "Native option children",
+      "choice": "Projected into the select after `options`",
+      "basis": "majority",
+      "source": "react/src/forms.tsx:40, vue/src/forms.ts:64-70",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Required marker",
+      "question": "One marker markup",
+      "choice": "span.hw-required-marker[aria-hidden] with ' *' as last child of label.hw-label or legend.hw-label",
+      "basis": "repository",
+      "source": "react/src/shared.tsx:108; styles/src/nic-select.css:53",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    }
+  ],
+  "renames": [
+    {
+      "adapter": "angular",
+      "component": "Every form control",
+      "kind": "default",
+      "from": "A native reset without Angular Forms emptied the DOM and left value and (valueChange) untouched",
+      "to": "The value returns to the value the component had after its first inputs and (valueChange) emits it when it changed; with Angular Forms the model still wins",
+      "migration": "Remove handlers that copied the model back after a native reset; to keep a value across a reset, handle (reset) on the form and call preventDefault()",
+      "ids": [
+        "fields-basic-8",
+        "actions-2",
+        "choices-2"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "Every form control",
+      "kind": "default",
+      "from": "update:modelValue emitted for every control on every reset",
+      "to": "emitted only for a control whose value the reset changed",
+      "migration": "none; listeners that counted reset events use the form's reset event",
+      "ids": [
+        "fields-basic-8",
+        "actions-2",
+        "choices-2"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "Every form control",
+      "kind": "default",
+      "from": "Controlled Slider and RangeSlider ignored a native reset; controlled Select, Checkbox, Radio and Switch showed the browser default while the prop held another value",
+      "to": "Composite controls call onValueChange(target); every controlled control shows its prop again after the reset",
+      "migration": "none",
+      "ids": [
+        "fields-basic-8",
+        "actions-2",
+        "choices-2"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "Every form control",
+      "kind": "default",
+      "from": "RangeSlider defaultValue = [0, 100]",
+      "to": "[min, max]",
+      "migration": "pass defaultValue={[0, 100]} where min or max differ and the old thumbs are wanted",
+      "ids": [
+        "fields-basic-8",
+        "actions-2",
+        "choices-2"
+      ]
+    },
+    {
+      "adapter": "vanilla",
+      "component": "Every form control",
+      "kind": "default",
+      "from": "RangeSlider, ToggleGroup and Rating reset silently",
+      "to": "hw:change and onValueChange fire when the reset changed the value",
+      "migration": "none",
+      "ids": [
+        "fields-basic-8",
+        "actions-2",
+        "choices-2"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "ToggleGroup",
+      "kind": "default",
+      "from": "ToggleGroup defaultValue = '' in both modes; reset emitted '' for a multiple group",
+      "to": "no default; the empty value is [] in multiple mode",
+      "migration": "none; handlers that accepted '' for a multiple group can drop that branch",
+      "ids": [
+        "actions-11",
+        "actions-v1"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "ToggleGroup",
+      "kind": "default",
+      "from": "reset did not call onValueChange; a controlled group was left showing the browser default",
+      "to": "onValueChange(target) when the selection changed; a controlled group shows its value",
+      "migration": "none",
+      "ids": [
+        "actions-11",
+        "actions-v1"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Angular value controls: accessible name without a visible label",
+      "kind": "input",
+      "from": "describedBy (all value controls, hw-field)",
+      "to": "aria-describedby (property ariaDescribedby)",
+      "migration": "[describedBy]=\"id\" -> [aria-describedby]=\"id\"; describedBy=\"id\" -> aria-describedby=\"id\"",
+      "ids": [
+        "fields-basic-2",
+        "choices-3"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Angular value controls: accessible name without a visible label",
+      "kind": "markup",
+      "from": "aria-label, aria-labelledby, aria-describedby and aria-invalid written on a value control stayed on the host element",
+      "to": "they are on the native control or fieldset and removed from the host",
+      "migration": "selectors and tests that read these attributes from the hw-* element read them from the inner control; replace [attr.aria-label] on a host by [aria-label]",
+      "ids": [
+        "fields-basic-2",
+        "choices-3"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Angular value controls: accessible name without a visible label",
+      "kind": "input",
+      "from": "hw-toggle-group label: required input",
+      "to": "optional when aria-label or aria-labelledby is given",
+      "migration": "none",
+      "ids": [
+        "fields-basic-2",
+        "choices-3"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "Field",
+      "kind": "markup",
+      "from": "div.hw-hint / div.hw-error (Field and decorated controls), span.hw-hint / span.hw-error (Checkbox, Radio, Switch)",
+      "to": "p.hw-hint / p.hw-error",
+      "migration": "selectors on div.hw-hint, span.hw-error -> .hw-hint, .hw-error; pass phrasing content as hint and error",
+      "ids": [
+        "fields-basic-3"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "Field",
+      "kind": "markup",
+      "from": "span.hw-hint / span.hw-error",
+      "to": "p.hw-hint / p.hw-error",
+      "migration": "selectors on span.hw-hint -> .hw-hint",
+      "ids": [
+        "fields-basic-3"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Field",
+      "kind": "markup",
+      "from": "a value control inside hw-field rendered a second label slot and its own unrelated id",
+      "to": "it takes the field's id, label, descriptions, required and invalid state",
+      "migration": "remove the controlId, required and aria wiring that was repeated on a control inside hw-field",
+      "ids": [
+        "fields-basic-3"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Field",
+      "kind": "input",
+      "from": "hw-field controlId and label: required inputs",
+      "to": "optional (generated id; label optional)",
+      "migration": "none",
+      "ids": [
+        "fields-basic-3"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Textarea",
+      "kind": "default",
+      "from": "hw-textarea rows = 4",
+      "to": "rows unset (no rows attribute)",
+      "migration": "add [rows]=\"4\" to keep the old height",
+      "ids": [
+        "fields-basic-6"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "Checkbox, Switch",
+      "kind": "input",
+      "from": "Checkbox, Radio, Switch: readOnly",
+      "to": "readonly",
+      "migration": ":read-only=\"x\" -> :readonly=\"x\"; read-only -> readonly",
+      "ids": [
+        "choices-4"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Checkbox, Switch",
+      "kind": "markup",
+      "from": "label.hw-choice > input + span (hw-checkbox, hw-switch, options of the radio group)",
+      "to": "label.hw-choice > input + text",
+      "migration": ".hw-choice > span -> .hw-choice",
+      "ids": [
+        "choices-4"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Radio group",
+      "kind": "selector",
+      "from": "hw-radio / HwRadioComponent",
+      "to": "hw-radio-group / HwRadioGroupComponent",
+      "migration": "<hw-radio ...> -> <hw-radio-group ...>; </hw-radio> -> </hw-radio-group>; HwRadioComponent -> HwRadioGroupComponent",
+      "ids": [
+        "choices-5"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "Slider",
+      "kind": "default",
+      "from": "Slider showValue = true; aria-valuetext always set",
+      "to": "showValue = false; aria-valuetext only with formatValue",
+      "migration": "add showValue to keep the output",
+      "ids": [
+        "choices-6"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Slider",
+      "kind": "markup",
+      "from": "hw-slider always rendered <output> with the raw value",
+      "to": "output.hw-slider-value only with showValue",
+      "migration": "add showValue to keep the output",
+      "ids": [
+        "choices-6"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "Slider",
+      "kind": "default",
+      "from": "Slider defaultValue = 0",
+      "to": "no default: (min + max) / 2",
+      "migration": "add :default-value=\"0\" to keep the old start",
+      "ids": [
+        "choices-6"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "RangeSlider",
+      "kind": "markup",
+      "from": "RangeSlider: name and form fell through onto the fieldset and no thumb was submitted under `name`",
+      "to": "both thumbs are submitted under `name`",
+      "migration": "none",
+      "ids": [
+        "choices-8"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "RangeSlider",
+      "kind": "markup",
+      "from": "RangeSlider: fieldset.hw-range-slider > two div.hw-field (label, input, output per thumb)",
+      "to": "fieldset.hw-field.hw-range-slider > two label.hw-label wrapping their input, one output only with getRangeLabel",
+      "migration": "pass getRangeLabel={(lower, upper) => ...} to show the range; .hw-range-slider > .hw-field selectors -> .hw-range-slider > label",
+      "ids": [
+        "choices-9",
+        "R16"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "RangeSlider",
+      "kind": "default",
+      "from": "RangeSlider formatValue default String (aria-valuetext always)",
+      "to": "no default; aria-valuetext only with formatValue",
+      "migration": "none",
+      "ids": [
+        "choices-9",
+        "R16"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "RangeSlider",
+      "kind": "markup",
+      "from": "hw-range-slider: label[for] and input as siblings, an always rendered output with 'lower – upper'",
+      "to": "label.hw-label wrapping each input; output only with getRangeLabel",
+      "migration": "add [getRangeLabel]=\"fn\" to keep the range text",
+      "ids": [
+        "choices-9",
+        "R16"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "RangeSlider",
+      "kind": "default",
+      "from": "RangeSlider defaultValue = [0, 100]",
+      "to": "no default: [min, max]",
+      "migration": "add :default-value=\"[0, 100]\" where min or max differ and the old thumbs are wanted",
+      "ids": [
+        "choices-9",
+        "R16"
+      ]
+    },
+    {
+      "adapter": "vanilla",
+      "component": "RangeSlider",
+      "kind": "markup",
+      "from": "[data-hw-range-output] filled with 'lower – upper' by the controller; locale required",
+      "to": "filled from data-hw-range-label=\"{lower} ... {upper}\" or options.getRangeLabel; locale optional",
+      "migration": "add data-hw-range-label=\"{lower} – {upper}\" to the root",
+      "ids": [
+        "choices-9",
+        "R16"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "ToggleGroup",
+      "kind": "markup",
+      "from": "form-control hosts were inline boxes; hw-toggle-group wrapped its fieldset in a box",
+      "to": "block boxes; hw-toggle-group has display: contents",
+      "migration": "styles that set display on these hosts stay valid; margins or sizes written on hw-toggle-group move to a wrapper element or to the group's parent",
+      "ids": [
+        "actions-8"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "ToggleGroup",
+      "kind": "markup",
+      "from": "ToggleGroup option: label.hw-choice > input.hw-radio; an empty legend when label was missing; a hidden probe input in both modes",
+      "to": "label > input[type=radio]; no legend without a label; the probe only in multiple mode",
+      "migration": ".hw-toggle-group .hw-choice -> .hw-toggle-group > label; .hw-toggle-group .hw-radio -> .hw-toggle-group input[type='radio']",
+      "ids": [
+        "actions-9",
+        "E02"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "ToggleGroup",
+      "kind": "markup",
+      "from": "ToggleGroup: name and form also on the fieldset; data-selected on the option label",
+      "to": "neither",
+      "migration": "[data-selected='true'] -> :has(input:checked); read the name from the radios",
+      "ids": [
+        "actions-9",
+        "E02"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "ToggleGroup",
+      "kind": "input",
+      "from": "ToggleGroup label: required prop",
+      "to": "optional when aria-label or aria-labelledby is passed",
+      "migration": "none",
+      "ids": [
+        "actions-9",
+        "E02"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "ToggleGroup",
+      "kind": "input",
+      "from": "hw-toggle-group options: optional input",
+      "to": "required input",
+      "migration": "add [options] where it was omitted",
+      "ids": [
+        "actions-9",
+        "E02"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "ToggleGroup",
+      "kind": "markup",
+      "from": "hw-toggle-group: span around each option text; hidden value inputs as siblings of the fieldset",
+      "to": "text directly in the label; hidden inputs inside the fieldset",
+      "migration": "hw-toggle-group > input[type=hidden] -> hw-toggle-group fieldset > input[type=hidden]",
+      "ids": [
+        "actions-9",
+        "E02"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "Required marker",
+      "kind": "markup",
+      "from": "MultiSelect legend: bare <span aria-hidden> *</span>",
+      "to": "span.hw-required-marker",
+      "migration": "none",
+      "ids": [
+        "rich-inputs-20",
+        "fields-basic-7"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "Required marker",
+      "kind": "markup",
+      "from": "required number, slider, password, search, combobox, pin, tag, multi-select, rating, range slider, radio group and file upload showed no marker; labels had no id",
+      "to": "marker shown; label id {controlId}-label",
+      "migration": "remove asterisks written into `label` by hand",
+      "ids": [
+        "rich-inputs-20",
+        "fields-basic-7"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "Required marker",
+      "kind": "markup",
+      "from": "required RangeSlider, Rating and MultiSelect legends showed no marker",
+      "to": "marker shown",
+      "migration": "remove asterisks written into `label` by hand",
+      "ids": [
+        "rich-inputs-20",
+        "fields-basic-7"
+      ]
+    }
+  ],
+  "docs": [
+    "CONTRACT.md: new paragraph 'Native form reset' (the rule of the first item, with the timing sentence); lines 83-87 rewritten (Angular wrapper hosts forward aria-label, aria-labelledby, aria-describedby and aria-invalid as inputs of those names; [attr.aria-*] on a wrapper host is not supported).",
+    "docs/input-review.md:29-32 and docs/nic-segmented.md:26-27 rewritten in place (reversed decision on reset).",
+    "CHANGELOG.md Unreleased: every entry of `decisions`, and the table 'Breaking: renamed and removed' from `renames`.",
+    "components.json, llms.txt, the four package READMEs, vanilla/EXPANSION-API.md:41,68-71,148-149, apps/playground/src/project-examples.ts:275 and tests/text-contract-docs.test.ts fixtures (getRangeLabel) in the same change."
+  ]
+}

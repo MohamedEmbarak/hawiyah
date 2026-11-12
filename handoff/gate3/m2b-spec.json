@@ -1,0 +1,1166 @@
+{
+ "title": "Milestone 2b: exact cross-adapter specification",
+ "writtenAt": "2026-11-11",
+ "source": "gate3/m2b-proposal.json (\"recommended\" items 3 to 9; items 1, 2 and 10 are style-only and belong to the styles agent). Deferred and rejected items are not built.",
+ "howToRead": [
+  "Everything here is decided. Where the proposal left a choice, the choice is recorded under \"choices\" and written into the item it affects. If something cannot be done as written, do the closest thing that keeps the names and the rendered result, and record it in your result file.",
+  "\"dom\" strings are the exact rendered markup: element names, class order, attribute names and values. {braces} mark a value from an input. Attribute order and the serialisation of boolean attributes (open, open=\"\", disabled) are not significant; everything else is.",
+  "An item or a test marked \"notApplicable\" for your adapter is not built there. A test without that mark is written in all four adapters with the same id in its title, for example it(\"[cb-latest-wins] ...\").",
+  "Core is built: packages/core/dist has the declarations of every helper named here. Import helpers from \"@hawiyah/core\". Adapters re-export types from core, never functions."
+ ],
+ "rules": [
+  "Text contract (CONTRACT.md \"Text and localisation\"): no built-in string, no default text, no locale. A required text that is missing renders nothing in its place and omits its attribute; the component warns once in development through core requireText and nothing else changes: no fallback name, no hidden control, no thrown error. The warning names the component as the adapter exposes it: \"CopyButton\" and \"SideNavigation\" in React, Vue and vanilla; \"hw-copy-button\" and \"hw-side-navigation\" in Angular.",
+  "React uses text(component, name, value, when?) and rootLabel from packages/react/src/shared.tsx; Vue uses needText and rootLabel from packages/vue/src/shared.ts; Angular uses HwTexts.need from packages/angular/src/text.ts; vanilla uses text, writeText, writeContent, named and nameRoot from packages/vanilla/src/dom.ts. Do not call console.warn directly.",
+  "No component sets dir or reads lang. Layout is logical CSS only. Nothing is animated by these components.",
+  "Server rendering: nothing below touches window, document, navigator, a timer, a measurement or a listener while rendering on a server. What is rendered on the server is exactly the first client render, so hydration reports no mismatch.",
+  "Frameworks own their DOM: the React, Vue and Angular adapters never call a vanilla controller. They may call the core DOM utilities named here, which render nothing.",
+  "Modules stay free of side effects (tree-shaking): no top-level registration, no top-level browser access.",
+  "Icons are span.hw-icon with data-icon and aria-hidden=\"true\", from the packaged set only: copy-01, tick-02, alert-02 here.",
+  "Tests must pass with no unexpected \"Hawiyah:\" warning: every test that does not test a missing text supplies every required text."
+ ],
+ "ownership": {
+  "rule": "Each adapter agent edits only its own package. The Angular agent is the one exception and may edit exactly the files and rules listed under \"angular.outsidePackage\"; nothing else outside packages/angular.",
+  "react": {
+   "owns": [
+    "packages/react/**"
+   ],
+   "outsidePackage": []
+  },
+  "vue": {
+   "owns": [
+    "packages/vue/**"
+   ],
+   "outsidePackage": []
+  },
+  "vanilla": {
+   "owns": [
+    "packages/vanilla/**"
+   ],
+   "outsidePackage": []
+  },
+  "angular": {
+   "owns": [
+    "packages/angular/**"
+   ],
+   "outsidePackage": [
+    {
+     "file": "packages/styles/src/layout.css",
+     "change": "Append the two Angular host rules given in styles.rules[0], at the end of the file, exactly as written. No other edit."
+    },
+    {
+     "file": "packages/styles/src/extended.css",
+     "change": "Add the one rule in styles.rules[1] on the line after the existing \".hw-portal-notice { ... }\" rule. No other edit. The actions rules beside it belong to the styles agent and are already in place."
+    },
+    {
+     "file": "packages/styles/src/copy.css",
+     "change": "New file with exactly the content of styles.rules[2]. If the file already exists when you start, make it equal to that content instead of adding a second set of rules."
+    },
+    {
+     "file": "packages/styles/src/styles.css",
+     "change": "One line, \"@import './copy.css';\", after the line \"@import './navigation-drawer.css';\". If a line importing copy.css already exists, leave it."
+    },
+    {
+     "file": "packages/styles/src/navigation-drawer.css",
+     "change": "Append the rules in styles.rules[3] at the end of the file, exactly as written. No existing rule is changed. If rules for .hw-side-navigation already exist, make them equal to that content."
+    }
+   ],
+   "why": "The workflow gives the styles agent only the style-only items (code, prose, fonts, header actions). The host rules and the small stylesheets of the two new components had no owner, and the Angular agent is the only adapter agent allowed to rebuild styles. After editing run: node scripts/build.mjs --only styles ; pnpm exec vitest run packages/styles. Do not edit any other file in packages/styles or packages/tokens."
+  },
+  "notOwnedByAdapters": "README.md, llms.txt, docs/**, components.json, examples and the guide are updated in the integration phase, not by adapter agents. Each adapter agent updates its own package README (and PORTAL.md, EXPANSION-API.md where they exist)."
+ },
+ "core": {
+  "status": "Built and tested (node scripts/build.mjs --only core; packages/core/test). Adapter agents do not edit packages/core.",
+  "exports": [
+   {
+    "name": "copyText",
+    "signature": "copyText(text: string): Promise<CopyStatus>",
+    "notes": "CopyStatus = \"copied\" | \"denied\" | \"unavailable\" | \"failed\" | \"empty\". Writes the text as given (no trimming). \"empty\" when the text is not a string or holds only white space. Reads navigator only inside the call. Never reads the clipboard, never throws, no execCommand fallback."
+   },
+   {
+    "name": "createCopyFeedback",
+    "signature": "createCopyFeedback(options: { getText: () => string; getDuration?: () => number | undefined; onStateChange: (state: CopyFeedbackState, status?: CopyStatus) => void; onResult?: (result: CopyResult) => void; write?: (text: string) => Promise<CopyStatus> }): { readonly state: CopyFeedbackState; readonly status: CopyStatus | undefined; copy(): Promise<CopyResult | undefined>; reset(): void; destroy(): void }",
+    "notes": "CopyFeedbackState = \"idle\" | \"copied\" | \"failed\"; CopyResult = { status: CopyStatus; text: string }. Creating it touches nothing. copy() is one activation: clears the timer, reports \"idle\" if the state was not idle, reads getText(), awaits the write, then reports \"copied\" or \"failed\" and calls onResult. \"copied\" returns to \"idle\" after getDuration() ms (3000 when the value is not a finite number above zero). \"failed\" has no timer. Only the latest activation counts; an overtaken one resolves to undefined and reports nothing. destroy() clears the timer and silences everything after it. Every adapter uses this controller; none re-implements the sequence."
+   },
+   {
+    "name": "copyFeedbackIcons",
+    "signature": "copyFeedbackIcons: { idle: \"copy-01\"; copied: \"tick-02\"; failed: \"alert-02\" }",
+    "notes": "The data-icon value per state. COPY_FEEDBACK_DURATION = 3000 is exported beside it."
+   },
+   {
+    "name": "bindLinkNavigation",
+    "signature": "bindLinkNavigation(root: Document | HTMLElement | null | undefined, options: { navigate(target: { url: URL; path: string; link: HTMLAnchorElement; event: MouseEvent }): boolean | void; base?: string }): { destroy(): void }",
+    "notes": "Called by the application, not by components. One delegated click listener on root, bubble phase. See components[link-navigation]."
+   },
+   {
+    "name": "isLinkNavigationHandled",
+    "signature": "isLinkNavigationHandled(event: Event | null | undefined): boolean",
+    "notes": "True for a click that bindLinkNavigation handed to the application. The navigation drawers use it: close when (!event.defaultPrevented || isLinkNavigationHandled(event)). In React pass event.nativeEvent."
+   },
+   {
+    "name": "NavigationItem",
+    "signature": "interface NavigationItem { id: string; label: string; href?: string; icon?: string; current?: boolean; disabled?: boolean; expanded?: boolean; children?: readonly NavigationItem[] }",
+    "notes": "The one item model of NavigationDrawer and SideNavigation. NavigationItemKind = \"disabled\" | \"group\" | \"link\" | \"text\"."
+   },
+   {
+    "name": "getNavigationItemKind",
+    "signature": "getNavigationItemKind(item: NavigationItem): NavigationItemKind",
+    "notes": "disabled when item.disabled; else group when it has at least one child; else link when it has an href; else text. Use it to choose the branch, in every adapter."
+   },
+   {
+    "name": "getNavigationGroupEntries",
+    "signature": "getNavigationGroupEntries(item: NavigationItem): readonly NavigationItem[]",
+    "notes": "The entries rendered inside a group: the children, preceded by the group itself as a link (id \"<id>-page\", suffixed again until no child uses it; children and expanded removed) when the group has an href. Replaces the private groupEntries function of the React, Vue and Angular drawers."
+   },
+   {
+    "name": "isNavigationGroupOpen",
+    "signature": "isNavigationGroupOpen(item: NavigationItem): boolean",
+    "notes": "expanded === true, or a link rendered inside the group is the current page (a disabled entry, an entry without href and everything under a disabled group never count)."
+   },
+   {
+    "name": "getNavigationCurrentId",
+    "signature": "getNavigationCurrentId(items: readonly NavigationItem[]): string",
+    "notes": "data-hw-value of the first link rendered with aria-current=\"page\", or \"\". SideNavigation reveals the current link when this value changes."
+   },
+   {
+    "name": "revealNavigationCurrent",
+    "signature": "revealNavigationCurrent(navigation: HTMLElement | null | undefined): boolean",
+    "notes": "Browser only. Scrolls the navigation element (never the page) so that a[aria-current=\"page\"] is centred in it, without animation and without moving focus; returns whether it scrolled. Does nothing when the navigation does not overflow, the link is fully visible or sits in a closed group, or without layout."
+   },
+   {
+    "name": "observeContentNavigation",
+    "signature": "unchanged",
+    "notes": "Fixed in core: one steady current item during a scroll that navigate() started. No adapter source change; see components[content-navigation]."
+   }
+  ]
+ },
+ "styles": {
+  "note": "Class contract for the new components and the Angular hosts. The Angular agent writes these rules (see ownership). The other adapter agents only render the classes. The header actions class was settled by the styles agent: hw-portal-header-actions (gate3/m2b-styles-result.json \"headerActionsClass\" should say the same; if it names another class, use hw-portal-header-actions and record the difference).",
+  "rules": [
+   {
+    "file": "packages/styles/src/layout.css",
+    "css": "/* Angular hosts. A custom element is an inline box unless a rule says otherwise; these rules have\n   zero specificity. Layout primitives carry their class on the host, which sets display where the\n   class does. Page header, alert and the cards keep an inner element and need a box around it. */\n:where(hw-container, hw-section, hw-aspect-ratio, hw-page-header, hw-alert) { display: block; }\n:where(hw-card, hw-service-card) { display: grid; }\n"
+   },
+   {
+    "file": "packages/styles/src/extended.css",
+    "css": ".hw-portal-notice:empty { display: none; }\n"
+   },
+   {
+    "file": "packages/styles/src/copy.css",
+    "css": "/* CopyButton. The button is an ordinary Hawiyah button. The status element is announced politely\n   and is visible only after a failure, beside the control the reader used. No new tokens. */\n.hw-copy { position: relative; display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--hw-space-2); min-inline-size: 0; max-inline-size: 100%; vertical-align: middle; }\n.hw-copy-message { margin: 0; color: var(--hw-color-danger); font-family: var(--hw-font-sans); font-size: var(--hw-text-sm); line-height: var(--hw-leading-normal); overflow-wrap: anywhere; }\n.hw-copy:not([data-state='failed']) > .hw-copy-message { position: absolute; inline-size: 1px; block-size: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }\n@media (forced-colors: active) { .hw-copy-message { color: CanvasText; } }\n"
+   },
+   {
+    "file": "packages/styles/src/navigation-drawer.css",
+    "css": "/* SideNavigation: the same list outside a drawer. The row, group, current-marker, focus, disabled\n   and forced-colours rules above apply unchanged. The application may set --hw-side-navigation-top\n   and --hw-side-navigation-bottom-reserve as placement. */\n.hw-side-navigation { display: block; box-sizing: border-box; inline-size: 100%; min-inline-size: 0; padding-block-start: 0; color: var(--hw-color-text); font-family: var(--hw-font-sans); }\n@media (min-width: 64rem) {\n  .hw-side-navigation[data-sticky='true'] {\n    position: sticky; align-self: start; inset-block-start: var(--hw-side-navigation-top, var(--hw-space-4));\n    max-block-size: calc(100dvh - var(--hw-side-navigation-top, var(--hw-space-4)) - var(--hw-side-navigation-bottom-reserve, var(--hw-space-4)));\n    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;\n  }\n}\n"
+   }
+  ],
+  "classesUsed": [
+   "hw-copy",
+   "hw-copy-message",
+   "hw-side-navigation",
+   "hw-navigation-drawer-nav",
+   "hw-navigation-drawer-group",
+   "hw-navigation-drawer-row",
+   "hw-navigation-drawer-label",
+   "hw-portal-notice",
+   "hw-portal-header-actions",
+   "hw-sr-only",
+   "hw-label",
+   "hw-button",
+   "hw-icon-button",
+   "hw-icon"
+  ],
+  "customProperties": [
+   "--hw-side-navigation-top",
+   "--hw-side-navigation-bottom-reserve"
+  ]
+ },
+ "components": [
+  {
+   "id": "copy-button",
+   "kind": "new component, catalogue entry 84",
+   "names": {
+    "react": {
+     "export": "CopyButton",
+     "propsType": "CopyButtonProps",
+     "warningName": "CopyButton"
+    },
+    "vue": {
+     "export": "CopyButton",
+     "componentName": "HwCopyButton",
+     "warningName": "CopyButton"
+    },
+    "angular": {
+     "selector": "hw-copy-button",
+     "class": "HwCopyButtonComponent",
+     "standalone": true,
+     "warningName": "hw-copy-button"
+    },
+    "vanilla": {
+     "factory": "createCopyButton(root: HTMLElement, options?: CopyButtonOptions): CopyButtonController",
+     "dataHw": "copy-button",
+     "optionsType": "CopyButtonOptions",
+     "controllerType": "CopyButtonController",
+     "warningName": "CopyButton",
+     "registeredInEnhance": true
+    },
+    "typesReExportedByEveryAdapter": [
+     "CopyStatus",
+     "CopyResult"
+    ]
+   },
+   "inputs": [
+    {
+     "name": "text",
+     "type": "string | (() => string)",
+     "default": "none",
+     "required": "always (data, not text of the interface)",
+     "notes": "The value to copy. The function form is called at activation and never before. It is not checked with requireText: a missing or empty value is the runtime outcome \"empty\" (failed state). React: required prop. Vue: { type: [String, Function] as PropType<string | (() => string)>, required: true }. Angular: @Input({ required: true }) text: string | (() => string) = ''. Vanilla: option text, else data-hw-text on the root, else data-hw-target on the root (the id of an element in the same document whose textContent is read at activation; a missing element reads as \"\"). The option wins over data-hw-text, which wins over data-hw-target."
+    },
+    {
+     "name": "label",
+     "type": "string",
+     "default": "none",
+     "required": "always",
+     "kind": "text",
+     "missing": "display \"icon\": the button has no aria-label attribute. display \"text\": the button holds the icon and no text. Warning: requires \"label\".",
+     "notes": "The constant accessible name, and the visible text when display is \"text\". It never changes with the state. React: label: string (required; \"aria-label\" is omitted from the accepted native attributes). Vue: { type: String, required: true }. Angular: @Input({ required: true }) label = ''. Vanilla: the authored button names itself (aria-label in the icon form, its text in the text form); only when the button has neither aria-label, aria-labelledby nor text does the controller write the option label, else data-hw-label on the root, as aria-label (writeText, so a missing one warns)."
+    },
+    {
+     "name": "copiedMessage",
+     "type": "string",
+     "default": "none",
+     "required": "always",
+     "kind": "text",
+     "missing": "After a successful copy the status element stays empty; data-state and the icon still change. Warning: requires \"copiedMessage\".",
+     "notes": "Text of the status element in the copied state. Vanilla: option, else data-hw-copied-message on the root."
+    },
+    {
+     "name": "failedMessage",
+     "type": "string",
+     "default": "none",
+     "required": "always (a runtime outcome)",
+     "kind": "text",
+     "missing": "After a failed copy the status element stays empty; data-state and the icon still change. Warning: requires \"failedMessage\".",
+     "notes": "Text of the status element in the failed state, the same for denied, unavailable, failed and empty. Vanilla: option, else data-hw-failed-message on the root."
+    },
+    {
+     "name": "display",
+     "type": "'icon' | 'text'",
+     "default": "'icon'",
+     "required": "no",
+     "notes": "Vanilla: authored markup decides (see dom); there is no option."
+    },
+    {
+     "name": "variant",
+     "type": "'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link'",
+     "default": "'ghost'",
+     "required": "no",
+     "notes": "The Button variants, written to data-variant. Vanilla: authored data-variant."
+    },
+    {
+     "name": "size",
+     "type": "'sm' | 'md' | 'lg'",
+     "default": "'md'",
+     "required": "no",
+     "notes": "Written to data-size. Vanilla: authored data-size."
+    },
+    {
+     "name": "feedbackDuration",
+     "type": "number",
+     "default": "3000",
+     "required": "no",
+     "notes": "Milliseconds the copied state lasts, read when a copy succeeds (pass it to the controller as getDuration). A value that is not a finite number above zero means 3000. Angular: @Input({ transform: numberAttribute }) feedbackDuration = 3000. Vanilla: option, else data-hw-feedback-duration on the root (Number(value))."
+    },
+    {
+     "name": "disabled",
+     "type": "boolean",
+     "default": "false",
+     "required": "no",
+     "notes": "The native disabled attribute of the button. Angular: @Input({ transform: booleanAttribute }) disabled = false. Vanilla: the authored disabled attribute; there is no option."
+    }
+   ],
+   "textChecks": "label, copiedMessage and failedMessage are checked on every render, the first one included (server render too), so a missing message is reported before a copy ever fails. In vanilla they are checked when the controller is created.",
+   "outputs": {
+    "payload": "{ status: CopyStatus; text: string } (core CopyResult). text is the string that was handed to the clipboard (\"\" when the value was not a string).",
+    "when": "Once per activation whose result still counts, after the state has changed. An activation overtaken by a later one, or finished after the component was destroyed, reports nothing.",
+    "react": "onCopyResult?: (result: CopyResult) => void",
+    "vue": "emits: { copyResult: (result: CopyResult) => true } (listener @copy-result or onCopyResult)",
+    "angular": "@Output() readonly copyResult = new EventEmitter<CopyResult>()",
+    "vanilla": "options.onCopyResult?.(result), then the bubbling \"hw:change\" CustomEvent from the root with detail { status, text } (dom.ts emit)."
+   },
+   "dom": {
+    "icon": "<span class=\"hw-copy\" data-state=\"idle\"><button type=\"button\" class=\"hw-button hw-icon-button\" data-variant=\"{variant}\" data-size=\"{size}\" aria-label=\"{label}\"><span class=\"hw-icon\" data-icon=\"copy-01\" aria-hidden=\"true\"></span></button><span class=\"hw-copy-message\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\"></span></span>",
+    "text": "<span class=\"hw-copy\" data-state=\"idle\"><button type=\"button\" class=\"hw-button\" data-variant=\"{variant}\" data-size=\"{size}\"><span class=\"hw-icon\" data-icon=\"copy-01\" aria-hidden=\"true\"></span>{label}</button><span class=\"hw-copy-message\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\"></span></span>",
+    "rootElement": "React, Vue and vanilla: the span.hw-copy. Angular: the host element hw-copy-button is the root and carries class=\"hw-copy\" and data-state; its template is the button and the status span, with no inner span.hw-copy. The class already makes it inline-flex. data-state starts as a static host attribute (host: { class: 'hw-copy', 'data-state': 'idle' }), so the server render carries it, and is then written with Renderer2.setAttribute in the state callback: a host binding is refreshed only on the next application tick, which is too late for the rule below.",
+    "notes": [
+     "The icon span is a direct child of the button (it is not wrapped in the extra span that IconButton adds around its children). Do not build CopyButton from the adapter's IconButton; render the button element (or the adapter's Button with the classes above).",
+     "In the text display the label is a text node directly after the icon span, with no element around it and no space added by the adapter.",
+     "The button has no aria-label in the text display, no aria-pressed, no aria-busy, no aria-describedby and no title. disabled adds the native disabled attribute and nothing else.",
+     "The status span exists from the first render, server render included, and is empty in the idle state. Its text is one text node: copiedMessage in the copied state, failedMessage in the failed state. No id is generated anywhere in this component."
+    ],
+    "states": [
+     {
+      "state": "idle",
+      "dataState": "idle",
+      "icon": "copy-01",
+      "status": ""
+     },
+     {
+      "state": "copied",
+      "dataState": "copied",
+      "icon": "tick-02",
+      "status": "{copiedMessage}"
+     },
+     {
+      "state": "failed",
+      "dataState": "failed",
+      "icon": "alert-02",
+      "status": "{failedMessage}"
+     }
+    ],
+    "attributeForwarding": {
+     "react": "CopyButtonProps = Omit<ComponentPropsWithRef<'button'>, 'children' | 'type' | 'aria-label'> & the inputs above. className and style go to the root span; ref and every other native attribute go to the button. An onClick from the application is called first and cannot cancel the copy; disabled is the way to stop it.",
+     "vue": "inheritAttrs: false. class and style go to the root span; every other attribute and listener goes to the button. Type the component with the package's WithNativeAttributes helper as IconButton is. expose({ focus }) focuses the button, as IconButton does.",
+     "angular": "The host is the root; class and style written on hw-copy-button apply to it. No attribute is forwarded to the button. A focus() method focuses the button, as HwIconButtonComponent has.",
+     "vanilla": "Authored markup, kept as written."
+    }
+   },
+   "behaviour": [
+    "Activation is the native click of the button: pointer, Enter or Space. The adapter calls controller.copy(). There is no other trigger and no keyboard handler of its own.",
+    "One controller per instance: createCopyFeedback({ getText: () => (typeof text === \"function\" ? text() : text), getDuration: () => feedbackDuration, onStateChange, onResult }). getText and getDuration read the current inputs at activation. Do not pass write.",
+    "onStateChange(state, status) is rendered to the DOM before the next one arrives: data-state on the root, data-icon on the icon, the text of the status span. This is what makes a repeated message audible: an activation first returns to idle (status emptied), then the result fills it again. React: setState in the click handler is flushed before the awaited result. Vue: reactive state, flushed before the awaited result. Angular: in the callback update the fields, write data-state on the host with Renderer2 and call ChangeDetectorRef.detectChanges() so the icon and the status text are current at once. Vanilla: write the DOM directly.",
+    "Success: state copied, icon tick-02, status copiedMessage; after feedbackDuration the state is idle, the icon copy-01 and the status empty.",
+    "Failure (denied, unavailable, failed, empty): state failed, icon alert-02, status failedMessage, shown as visible text by the stylesheet. It stays until the next activation; there is no timer.",
+    "Only the latest activation updates the state and reports a result. A result that arrives after unmount or destroy is ignored: no state change, no event, no warning. The timer is cleared on unmount or destroy (controller.destroy()).",
+    "Focus stays on the button; the component never calls focus() by itself and never moves focus to the status.",
+    "The accessible name of the button is the same in all three states, so nothing is announced twice.",
+    "Changing copiedMessage or failedMessage while that state is shown updates the status text. Changing text, variant, size, display or disabled does not change the state."
+   ],
+   "keyboardAndFocus": "A native button in the tab order: Tab reaches it, Enter and Space activate it, focus stays on it. The visible focus ring is the Button one. Disabled removes it from the tab order natively.",
+   "server": [
+    "No access to navigator, window or document and no timer during render. The controller may be created during setup or construction because creating it touches nothing; copy() is called only from the click handler.",
+    "The server render is the idle markup with the empty status span, identical to the first client render.",
+    "Nothing touches the clipboard on mount, on hydration or on any re-render, and the text function is not called before an activation."
+   ],
+   "vanilla": {
+    "markup": "Authored exactly as dom.icon or dom.text, with data-hw=\"copy-button\" on the root span and the texts as attributes, for example <span class=\"hw-copy\" data-hw=\"copy-button\" data-hw-target=\"install-command\" data-hw-copied-message=\"...\" data-hw-failed-message=\"...\"> ... </span>. data-state is written by the controller.",
+    "options": "interface CopyButtonOptions { text?: string | (() => string); label?: string; copiedMessage?: string; failedMessage?: string; feedbackDuration?: number; onCopyResult?: (result: CopyResult) => void }",
+    "controller": "interface CopyButtonController { readonly state: CopyFeedbackState; copy(): Promise<CopyResult | undefined>; destroy(): void }",
+    "rules": [
+     "Required elements: the first button inside the root, and .hw-copy-message inside the root. A missing one throws through dom.ts required(), as other controllers do.",
+     "On creation: remember and set data-state=\"idle\" on the root; if the button has no type attribute set type=\"button\"; ensure role=\"status\", aria-live=\"polite\" and aria-atomic=\"true\" on the status element when the author left them out; empty the status element. All of these are restored by destroy().",
+     "The icon is the first .hw-icon inside the button; its data-icon follows the state. A button without an icon is left alone.",
+     "A click on a disabled or aria-disabled=\"true\" button does nothing.",
+     "destroy() removes the listener, destroys the controller and restores every attribute and the status text the author wrote."
+    ]
+   },
+   "tests": [
+    {
+     "id": "cb-idle-markup",
+     "case": "Default render equals dom.icon: root class and data-state=\"idle\"; button type, both classes, data-variant=\"ghost\", data-size=\"md\", aria-label = label; the icon span is the only child of the button with data-icon=\"copy-01\" and aria-hidden=\"true\"; the status span has role=\"status\", aria-live=\"polite\", aria-atomic=\"true\" and no text."
+    },
+    {
+     "id": "cb-text-display",
+     "case": "display \"text\": the button has class hw-button without hw-icon-button, no aria-label, and holds the icon span followed by the label as text."
+    },
+    {
+     "id": "cb-variant-size",
+     "case": "variant and size reach data-variant and data-size on the button."
+    },
+    {
+     "id": "cb-nothing-on-mount",
+     "case": "With a spy clipboard (writeText, readText, read) and a spy text function: mounting and re-rendering call none of them and leave no pending timer."
+    },
+    {
+     "id": "cb-copies-on-activation",
+     "case": "A click writes exactly the text once. With the function form, a value that changed after mount is the one written. Then data-state=\"copied\", data-icon=\"tick-02\", status text = copiedMessage, and the result event fired once with { status: \"copied\", text }."
+    },
+    {
+     "id": "cb-native-button",
+     "case": "The control is a button element with type=\"button\"; after focusing it and activating it, document.activeElement is still the button once the result has arrived."
+    },
+    {
+     "id": "cb-timed-reset",
+     "case": "With fake timers: the copied state lasts feedbackDuration (3000 by default, and a custom value), then data-state=\"idle\", data-icon=\"copy-01\" and the status is empty."
+    },
+    {
+     "id": "cb-failures",
+     "case": "For each of: writeText rejecting with a NotAllowedError (denied), no navigator.clipboard (unavailable), another rejection (failed), text \"\" or white space (empty): data-state=\"failed\", data-icon=\"alert-02\", status text = failedMessage, still so after 60 seconds of fake time, and the result event carries that status. The next successful activation clears it."
+    },
+    {
+     "id": "cb-repeat-announces",
+     "case": "While the copied state is shown, activate again with the write still pending: the status is empty and data-state is \"idle\" before the result; after it the message is back and the copied state lasts a full feedbackDuration from the second result."
+    },
+    {
+     "id": "cb-latest-wins",
+     "case": "Two activations whose writes resolve in reverse order: the state shows the second result and exactly one result event is fired, for the second activation."
+    },
+    {
+     "id": "cb-destroy-pending",
+     "case": "Unmount or destroy while a write is pending, then resolve it: no state change, no result event, no error and no warning. Unmounting during the copied state leaves no pending timer."
+    },
+    {
+     "id": "cb-name-constant",
+     "case": "The accessible name (aria-label, or the text in the text display) is identical in the idle, copied and failed states."
+    },
+    {
+     "id": "cb-disabled",
+     "case": "disabled: the button has the disabled attribute; activating it writes nothing and fires nothing."
+    },
+    {
+     "id": "cb-missing-text",
+     "case": "Without label: no aria-label attribute (icon display) and no label text (text display), with one warning that requires \"label\" under the adapter's warning name. Without copiedMessage: a successful copy leaves the status empty while data-state and the icon change, with one warning. Without failedMessage: likewise for a failure. With all three supplied: no \"Hawiyah:\" warning at all."
+    },
+    {
+     "id": "cb-server",
+     "case": "Server render (React renderToString, Vue renderToString, Angular server render) gives the idle markup with the empty status span and reads no navigator; hydrating it reports no mismatch and keeps the markup. Vanilla: creating the controller where navigator is undefined does not throw, and an activation ends in the failed state with status \"unavailable\"."
+    },
+    {
+     "id": "cb-vanilla-sources",
+     "notApplicable": [
+      "react",
+      "vue",
+      "angular"
+     ],
+     "case": "Vanilla only: data-hw-text; data-hw-target read at activation (changed after creation, the new text is written); option text wins over both; data-hw-copied-message, data-hw-failed-message and data-hw-feedback-duration; an authored aria-label is kept and a missing one is written from label; the hw:change event bubbles from the root with detail { status, text } after onCopyResult; enhance() creates the controller for data-hw=\"copy-button\"; destroy() restores the authored attributes and empties nothing the author wrote."
+    }
+   ],
+   "readme": "Usage in the adapter, the inputs, the three texts the application must supply, the result event and its statuses, the guidance \"place the button beside the visible value\", and that the application may offer manual copying when the status is not \"copied\"."
+  },
+  {
+   "id": "side-navigation",
+   "kind": "new component, catalogue entry 85; NavigationDrawer is refactored in the same change to render the same list",
+   "names": {
+    "react": {
+     "export": "SideNavigation",
+     "propsType": "SideNavigationProps",
+     "itemType": "SideNavigationItem = NavigationDrawerItem",
+     "warningName": "SideNavigation"
+    },
+    "vue": {
+     "export": "SideNavigation",
+     "componentName": "HwSideNavigation",
+     "itemType": "SideNavigationItem = NavigationDrawerItem",
+     "warningName": "SideNavigation"
+    },
+    "angular": {
+     "selector": "hw-side-navigation, nav[hwSideNavigation]",
+     "class": "HwSideNavigationComponent",
+     "standalone": true,
+     "itemType": "HwSideNavigationItem = HwNavigationDrawerItem",
+     "warningName": "hw-side-navigation"
+    },
+    "vanilla": {
+     "factory": "createSideNavigation(nav: HTMLElement, options?: SideNavigationOptions): SideNavigationController",
+     "dataHw": "side-navigation",
+     "optionsType": "SideNavigationOptions",
+     "controllerType": "SideNavigationController",
+     "warningName": "SideNavigation",
+     "registeredInEnhance": true
+    }
+   },
+   "itemModel": "NavigationDrawerItem (Angular: HwNavigationDrawerItem) keeps its name and gains one optional field, expanded?: boolean. It has the fields of core NavigationItem: { id: string; label: string; href?: string; icon?: string; current?: boolean; disabled?: boolean; expanded?: boolean; children?: readonly NavigationDrawerItem[] } and may be declared as an alias of it. SideNavigationItem (Angular: HwSideNavigationItem) is exported as an alias of the drawer type, so one array feeds both components.",
+   "inputs": [
+    {
+     "name": "items",
+     "type": "readonly NavigationDrawerItem[]",
+     "default": "none",
+     "required": "always (data)",
+     "notes": "React: required prop. Vue: { type: Array as PropType<readonly NavigationDrawerItem[]>, required: true }. Angular: @Input({ required: true }) items: readonly HwNavigationDrawerItem[] = []. Vanilla: authored markup."
+    },
+    {
+     "name": "label",
+     "type": "string",
+     "default": "none",
+     "required": "always",
+     "kind": "text (root name)",
+     "missing": "The nav has no aria-label attribute. Warning: requires \"label\".",
+     "notes": "Accessible name of the navigation landmark, the root-name convention ContentNavigation and SecondaryNav already follow. React: SideNavigationProps = base & RootName, and aria-label = rootLabel(\"SideNavigation\", props, label), so an aria-label or aria-labelledby from the application satisfies it. Vue: label: String without required, checked at render with rootLabel(\"SideNavigation\", props.label, attrs). Angular: @Input({ required: true }) label = '', written with texts.need(\"label\", label) as the host aria-label; it is the only source there. Vanilla: an authored aria-label or aria-labelledby is kept; otherwise nameRoot(nav, \"SideNavigation\", text(nav, \"label\", options.label)), that is the option, else data-hw-label."
+    },
+    {
+     "name": "sticky",
+     "type": "boolean",
+     "default": "false",
+     "required": "no",
+     "notes": "true writes data-sticky=\"true\" on the root; false writes no data-sticky attribute. Angular: @Input({ transform: booleanAttribute }) sticky = false. Vanilla: the authored data-sticky attribute; there is no option."
+    }
+   ],
+   "outputs": "None in any adapter: entries are links. Vanilla dispatches no hw:change.",
+   "dom": {
+    "root": "<nav class=\"hw-side-navigation hw-navigation-drawer-nav\" aria-label=\"{label}\" data-sticky=\"true\"><ul>{entries}</ul></nav>",
+    "entry": "<li data-hw-value=\"{item.id}\">{row}</li>, one per item, in order. Framework keys are item.id.",
+    "rowByKind": {
+     "disabled": "<span class=\"hw-navigation-drawer-row\" aria-disabled=\"true\">{content}</span>  (its children are not rendered)",
+     "group": "<details class=\"hw-navigation-drawer-group\" open><summary class=\"hw-navigation-drawer-row\">{content}</summary><ul>{entries of getNavigationGroupEntries(item)}</ul></details>  (open present exactly when isNavigationGroupOpen(item))",
+     "link": "<a class=\"hw-navigation-drawer-row\" href=\"{item.href}\" aria-current=\"page\">{content}</a>  (aria-current present exactly when item.current)",
+     "text": "<span class=\"hw-navigation-drawer-row\">{content}</span>"
+    },
+    "content": "<span class=\"hw-icon\" data-icon=\"{item.icon}\" aria-hidden=\"true\"></span><span class=\"hw-navigation-drawer-label\">{item.label}</span>  (the icon span only when item.icon is set)",
+    "rootElement": "React and Vue: a nav element; application attributes and the ref are forwarded to it (React: Omit<ComponentPropsWithRef<\"nav\">, \"children\"> with className merged after the two classes; Vue: inheritAttrs false with mergeProps). Angular: the host element is the root, because position: sticky must sit on the element that is the child of the application's column. host: { class: \"hw-side-navigation hw-navigation-drawer-nav\", \"[attr.aria-label]\": label through texts.need, \"[attr.data-sticky]\": sticky ? \"true\" : null, \"[attr.role]\": \"navigation\" unless the host is a nav element }. With the element selector the root is <hw-side-navigation role=\"navigation\" ...>; with <nav hwSideNavigation ...> no role is added. The template is the ul alone. Vanilla: the authored nav.",
+    "notes": [
+     "Class order on the root: hw-side-navigation, then hw-navigation-drawer-nav, then application classes.",
+     "The ul and everything inside it is produced by one list function per adapter, used by both SideNavigation and NavigationDrawer (React and Vue: one exported-internally function in the navigation-drawer module; Angular: one exported-internally template-string constant that holds the list and label ng-templates, interpolated into the template of both components (the Angular compiler resolves constant template strings), with the helpers the template calls on one shared base class or as shared functions; it adds no element and no attribute. If that cannot be compiled, the fallback is an internal component whose host is the ul itself, selector ul[hwNavigationList], used recursively, recorded as a deviation because it leaves a marker attribute). The inner HTML of the two navs is identical for the same items.",
+     "A disabled entry is a span: it has no href and is not focusable. In vanilla the controller removes href and tab stops from authored disabled rows exactly as createNavigationDrawer does today (share that code).",
+     "No role=\"tree\", no aria-expanded written by the adapter (details and summary provide it), no ids generated."
+    ]
+   },
+   "groupOpening": [
+    "The open attribute of a group is isNavigationGroupOpen(item): expanded is true, or a link inside the group is the current page. It is rendered on the server and on the first client render.",
+    "The adapter writes open again only when that computed value changes for the group, so the reader's own toggles stand in between. React: <details open={isNavigationGroupOpen(item)}> with no toggle handler. Vue: open as a prop of the details vnode. Angular: [attr.open]=\"isOpen(item) ? '' : null\" (an attribute binding, so the server render carries it). None of them listens to the toggle event or stores open state.",
+    "Vanilla: authored open attributes are the expanded flag. On creation the controller opens every details.hw-navigation-drawer-group of this nav that contains a[aria-current=\"page\"], and remembers per group whether it contained the current link. refresh() recomputes that: a group that now contains the current link is opened; a group that no longer does returns to its authored open state; a group whose answer did not change is left as the reader has it. destroy() restores the authored open attributes."
+   ],
+   "reveal": "In the browser only: after the first render and whenever getNavigationCurrentId(items) changes, call core revealNavigationCurrent(root) once the DOM is updated (React: useEffect keyed on that id; Vue: onMounted and a post-flush watch on it; Angular: afterNextRender for the first, then afterNextRender again when the id changed, never on the server; vanilla: on creation and in refresh()). It scrolls only the nav's own box, and only when the nav overflows (the sticky case). It never scrolls the page and never moves focus. Nothing else in SideNavigation needs script.",
+   "keyboardAndFocus": "Native links and native disclosure. Tab moves through summaries and links in document order; Enter or Space on a summary toggles its group; Enter on a link follows it. No roving tabindex, no arrow-key handling, no focus management. Disabled rows are skipped by Tab. The focus ring is the existing row rule.",
+   "server": [
+    "The whole list, the open attributes and aria-current are in the server render; a prerendered page shows the right group open before hydration.",
+    "No listener, no measurement and no reveal on the server. Hydration reports no mismatch."
+   ],
+   "vanilla": {
+    "markup": "Authored as dom, with data-hw=\"side-navigation\" on the nav.",
+    "options": "interface SideNavigationOptions { label?: string }",
+    "controller": "interface SideNavigationController { refresh(): void; destroy(): void }",
+    "rules": [
+     "The nav is the root passed to the factory; the controller adds the classes hw-side-navigation and hw-navigation-drawer-nav when missing (restored on destroy), names it (see label), applies the disabled-row and group-opening rules and reveals the current link. refresh() is for applications that change aria-current without re-creating the controller."
+    ]
+   },
+   "navigationDrawerChanges": {
+    "appliesTo": "NavigationDrawer in all four adapters, same change",
+    "changes": [
+     "Item type gains expanded?: boolean (see itemModel).",
+     "The list is rendered by the shared list function, using core getNavigationItemKind and getNavigationGroupEntries; the private groupEntries copies are removed.",
+     "Groups follow groupOpening above (new: the group that holds the current page is open; before, every group started closed). Vanilla createNavigationDrawer applies the same creation-time rule to its authored groups.",
+     "Closing on a link activation: the existing check \"close unless the click was prevented\" becomes close when (!event.defaultPrevented || isLinkNavigationHandled(event)), with React passing event.nativeEvent. Everything else in routeActivation (button 0, no modifier, no download, target _self, not disabled or inert, the queueMicrotask, link.isConnected) stays as it is.",
+     "No input, output, class or other markup of NavigationDrawer changes."
+    ]
+   },
+   "tests": [
+    {
+     "id": "sn-root",
+     "case": "The root has classes hw-side-navigation and hw-navigation-drawer-nav in that order, aria-label = label, navigation semantics (a nav element, or role=\"navigation\" on the Angular host) and a single ul child."
+    },
+    {
+     "id": "sn-kinds",
+     "case": "One item of each kind renders exactly dom.rowByKind inside li[data-hw-value]: disabled (span with aria-disabled=\"true\", children absent), group (details and summary), link (a with href), text (span). The icon span appears only for an item with icon."
+    },
+    {
+     "id": "sn-current",
+     "case": "aria-current=\"page\" is on the link of the item with current: true and on no other element; a current item without href and a current disabled item have no aria-current."
+    },
+    {
+     "id": "sn-group-href",
+     "case": "A group with its own href renders the summary without a link and repeats itself as the first link inside, in li[data-hw-value=\"{id}-page\"]; when the group is current that inner link has aria-current=\"page\" and the group is open."
+    },
+    {
+     "id": "sn-group-open",
+     "case": "A group is open when a descendant link is current (also two levels deep), open when expanded is true without a current page, and closed otherwise."
+    },
+    {
+     "id": "sn-reader-toggle-stands",
+     "case": "Close an open group (or open a closed one) as the reader would, then re-render with new items of the same computed open value (for example a changed label): the group stays as the reader left it."
+    },
+    {
+     "id": "sn-current-moves",
+     "case": "Move current from a link in group A to a link in group B and re-render (vanilla: move aria-current and call refresh()): B is open and A is closed, unless A has expanded: true (vanilla: an authored open attribute)."
+    },
+    {
+     "id": "sn-sticky",
+     "case": "sticky writes data-sticky=\"true\"; without it the attribute is absent."
+    },
+    {
+     "id": "sn-reveal",
+     "case": "With a nav mocked to overflow (clientHeight, scrollHeight, getBoundingClientRect) and the current link out of view: after mount the nav's scrollTo is called with behavior \"instant\"; window.scrollTo and scrollIntoView are not called and document.activeElement does not change. Changing the current item calls it again; a re-render with the same current item does not."
+    },
+    {
+     "id": "sn-missing-label",
+     "case": "Without label (and without aria-label or aria-labelledby where the adapter accepts them): no aria-label attribute and one warning that requires \"label\" under the adapter's warning name. With it: no warning."
+    },
+    {
+     "id": "sn-no-listeners",
+     "case": "Clicking a link inside SideNavigation is not prevented and nothing is emitted: the component adds no click handler (assert event.defaultPrevented is false for a cancelable click the test cancels afterwards)."
+    },
+    {
+     "id": "sn-shared-list",
+     "case": "The same items array rendered by SideNavigation and by an open NavigationDrawer gives navs with identical innerHTML (after removing framework comment nodes)."
+    },
+    {
+     "id": "sn-server",
+     "case": "Server render contains the open attribute on the group of the current page and aria-current=\"page\"; hydration reports no mismatch; nothing is measured or scrolled on the server. Vanilla: the authored markup is complete without the controller, and creating the controller in a DOM without layout does not throw."
+    },
+    {
+     "id": "nd-group-open",
+     "case": "NavigationDrawer: the group that holds the current page is rendered open; expanded: true opens a group; other groups are closed."
+    },
+    {
+     "id": "nd-closes-after-routed-click",
+     "case": "NavigationDrawer with core bindLinkNavigation bound on document (navigate records the path): a synthetic link.click() inside the open drawer calls navigate once and the drawer closes. With a document listener that only calls preventDefault (no bindLinkNavigation) the drawer stays open. A click with ctrlKey closes nothing and is not handed to navigate."
+    }
+   ],
+   "readme": "Usage, the item model with expanded, the label text, sticky and the two custom properties (--hw-side-navigation-top, --hw-side-navigation-bottom-reserve), feeding the same array to NavigationDrawer for phones, and that the application marks the current page through items (current) on each route change."
+  },
+  {
+   "id": "toggle-group-label-hidden",
+   "kind": "one input on an existing component",
+   "names": {
+    "react": "ToggleGroup",
+    "vue": "ToggleGroup",
+    "angular": "hw-toggle-group (HwToggleGroupComponent)",
+    "vanilla": "createToggleGroup, data-hw=\"toggle-group\" (no controller change)"
+   },
+   "inputs": [
+    {
+     "name": "labelHidden",
+     "type": "boolean",
+     "default": "false",
+     "required": "no",
+     "notes": "React: labelHidden?: boolean on ToggleBase (not forwarded to the fieldset). Vue: labelHidden: Boolean. Angular: @Input({ transform: booleanAttribute }) labelHidden = false. Vanilla: no option; the author writes class=\"hw-label hw-sr-only\" on the legend, and the controller leaves the legend as written."
+    },
+    {
+     "name": "label",
+     "type": "unchanged",
+     "default": "none",
+     "required": "always, unchanged",
+     "kind": "text",
+     "missing": "Unchanged in each adapter; labelHidden does not alter what happens when label is missing and adds no warning.",
+     "notes": "labelHidden never removes the requirement: the legend text is still the accessible name of the group."
+    }
+   ],
+   "outputs": "Unchanged.",
+   "dom": {
+    "default": "<fieldset class=\"hw-toggle-group\" ...><legend class=\"hw-label\">{label}</legend>...</fieldset>",
+    "labelHidden": "<fieldset class=\"hw-toggle-group\" ...><legend class=\"hw-label hw-sr-only\">{label}</legend>...</fieldset>",
+    "notes": [
+     "The legend stays the first child of the fieldset, keeps its text and is never removed, replaced by aria-label or moved. Class order: hw-label, then hw-sr-only. No new class, no token, no attribute on the fieldset."
+    ]
+   },
+   "behaviour": [
+    "Accessible name, radio-group or pressed-button semantics, hint and error associations, form value and keyboard behaviour are unchanged; only the visible legend goes."
+   ],
+   "keyboardAndFocus": "Unchanged.",
+   "server": [
+    "A static class: server render and hydration are unaffected."
+   ],
+   "tests": [
+    {
+     "id": "tg-label-hidden",
+     "case": "labelHidden: the legend has exactly the classes hw-label and hw-sr-only, is the first child of the fieldset and holds the label text."
+    },
+    {
+     "id": "tg-label-visible",
+     "case": "Without labelHidden (and with labelHidden false): the legend has class hw-label only."
+    },
+    {
+     "id": "tg-name-unchanged",
+     "case": "With labelHidden, in single and in multiple mode: the fieldset has no aria-label and no aria-labelledby added, its legend text equals label, the options render as before and selecting one still reports the value."
+    },
+    {
+     "id": "tg-hint-error",
+     "case": "With labelHidden and a hint and an error (where the adapter has them): their ids and the fieldset aria-describedby are the same as without labelHidden."
+    },
+    {
+     "id": "tg-vanilla-authored",
+     "notApplicable": [
+      "react",
+      "vue",
+      "angular"
+     ],
+     "case": "Vanilla only: createToggleGroup on markup whose legend has class=\"hw-label hw-sr-only\" keeps both classes and the text, and destroy() leaves them as authored."
+    }
+   ],
+   "readme": "Document labelHidden with the guidance: hide the label only where the option texts make the purpose visible (a toolbar). Vanilla: document the hw-sr-only legend."
+  },
+  {
+   "id": "portal-header-notice-actions",
+   "kind": "fix to an existing component",
+   "names": {
+    "react": "PortalHeader (and PortalLayout through headerProps)",
+    "vue": "PortalHeader, PortalLayout",
+    "angular": "hw-portal-header (HwPortalHeaderComponent), hw-portal-layout (HwPortalLayoutComponent)",
+    "vanilla": "createPortalHeader, data-hw=\"portal-header\" (authored markup; no controller change)"
+   },
+   "inputs": [
+    {
+     "name": "notice",
+     "type": "application content, not a text input",
+     "default": "none",
+     "required": "no",
+     "notes": "React: notice?: ReactNode (exists; unchanged). Vue: a slot named notice on PortalHeader, forwarded by PortalLayout from its own notice slot. Angular: projected content marked hwPortalNotice (<ng-content select=\"[hwPortalNotice]\" />), forwarded by hw-portal-layout with ngProjectAs=\"[hwPortalNotice]\". Vanilla: an authored div.hw-portal-notice. It has no text contract entry: no requireText, no warning, no role, no aria attribute added."
+    },
+    {
+     "name": "actions",
+     "type": "application content",
+     "default": "none",
+     "required": "no",
+     "notes": "No API change: React actions prop, Vue actions slot, Angular default projection, vanilla authored element. Only the class of the container changes (React)."
+    }
+   ],
+   "outputs": "Unchanged.",
+   "dom": {
+    "order": "Inside header.hw-portal-header, in this order: the skip link (when mainId is set), the notice, the brand, the menu toggle, the nav, the actions. React keeps its existing div.hw-portal-header-main around brand, toggle, nav and actions; the notice is a direct child of the header before that wrapper. Vue and Angular have no wrapper; the notice is a direct child of the header between the skip link and the brand.",
+    "notice": "<div class=\"hw-portal-notice\">{notice}</div>",
+    "actions": "<div class=\"hw-portal-header-actions\">{actions}</div>",
+    "notes": [
+     "React and Vue render the notice container only when a notice is given (React: a truthy notice; Vue: the notice slot is present) and the actions container only when actions are given. Angular cannot know whether content was projected, so it renders both containers always, with nothing but the ng-content inside (no white space), and the stylesheet hides an empty one (.hw-portal-notice:empty and .hw-portal-header-actions:empty are display: none; the first rule is added by the Angular agent, see ownership).",
+     "One class for the actions container in every adapter: hw-portal-header-actions. React changes from hw-portal-actions; Vue and Angular already use the name. The stylesheet keeps the old selector for one release; no adapter renders it any more.",
+     "Vanilla: update the documented markup and any fixture in packages/vanilla to div.hw-portal-notice and div.hw-portal-header-actions. createPortalHeader does not touch either element."
+    ]
+   },
+   "behaviour": [
+    "No behaviour change. Reading and tab order: skip link, notice, brand, menu toggle, navigation, actions. The notice follows the page direction. The menu disclosure, Escape, outside pointer and focus handling are untouched."
+   ],
+   "keyboardAndFocus": "Unchanged. Focusable content inside the notice is reached before the brand.",
+   "server": [
+    "Static markup; server render and hydration are unaffected. In Angular the two always-present containers are part of both renders."
+   ],
+   "tests": [
+    {
+     "id": "ph-notice",
+     "case": "A notice renders inside div.hw-portal-notice, which is a direct child of header.hw-portal-header, comes after a.hw-skip-link (when mainId is set) and before .hw-portal-brand in document order, and holds exactly the application content."
+    },
+    {
+     "id": "ph-notice-absent",
+     "case": "Without a notice: React, Vue and vanilla have no .hw-portal-notice element; Angular has one with no child nodes other than comments (so :empty matches)."
+    },
+    {
+     "id": "ph-notice-no-text-contract",
+     "case": "With and without a notice, and with every required text supplied, there is no \"Hawiyah:\" warning; the notice container has no role and no aria attribute."
+    },
+    {
+     "id": "ph-actions-class",
+     "case": "Actions render inside div.hw-portal-header-actions, after the nav in document order; no element with class hw-portal-actions exists."
+    },
+    {
+     "id": "ph-actions-absent",
+     "case": "Without actions: React, Vue and vanilla have no actions container; Angular has an empty one (no child nodes other than comments)."
+    },
+    {
+     "id": "ph-layout-notice",
+     "case": "PortalLayout passes a notice to its header (React headerProps.notice, Vue notice slot, Angular [hwPortalNotice] projection): it renders in the header's div.hw-portal-notice. Vanilla: not applicable.",
+     "notApplicable": [
+      "vanilla"
+     ]
+    },
+    {
+     "id": "ph-menu-unchanged",
+     "case": "With a notice and actions present, the menu toggle still opens and closes the navigation and Escape returns focus to the toggle (the existing test, run with both regions filled)."
+    }
+   ],
+   "readme": "Document the notice (prop, slot, projection or authored element) and the actions container class in the package README and PORTAL.md where it exists; note that hw-portal-actions is replaced by hw-portal-header-actions."
+  },
+  {
+   "id": "angular-layout-hosts",
+   "kind": "fix to existing components; Angular only, with host rules in styles",
+   "appliesTo": {
+    "angular": "all of it",
+    "react": "No source change. Add test al-app-shell-regions.",
+    "vue": "No source change. Add test al-app-shell-regions.",
+    "vanilla": "Not applicable (authored markup)."
+   },
+   "inputs": [
+    {
+     "name": "(all existing layout inputs)",
+     "type": "unchanged",
+     "default": "unchanged",
+     "required": "unchanged",
+     "notes": "gap, padding, align, justify, columns, minItemWidth, maxWidth, sidebarWidth, ratio, side, collapseAt, label, mainId, skipLabel keep their names, types and defaults."
+    },
+    {
+     "name": "wrap",
+     "type": "boolean | undefined",
+     "default": "undefined",
+     "required": "no",
+     "notes": "Gains a transform so that <hw-inline wrap> means true: @Input({ transform: (value: unknown) => value === undefined || value === null ? undefined : booleanAttribute(value) }) wrap?: boolean. An unset input stays undefined (no --hw-layout-wrap written)."
+    }
+   ],
+   "outputs": "None.",
+   "dom": {
+    "rule": "The host element carries the hw- class and the layout custom properties, and the template is the projected content alone: host: { class: \"hw-stack\", \"[style]\": \"styles\" }, template: \"<ng-content />\", exactly as HwSpacerComponent already does. No inner element has the class. NgStyle is no longer imported by these components.",
+    "hosts": [
+     {
+      "class": "HwContainerComponent",
+      "selector": "hw-container, [hwContainer]",
+      "hostClass": "hw-container"
+     },
+     {
+      "class": "HwStackComponent",
+      "selector": "hw-stack, [hwStack]",
+      "hostClass": "hw-stack"
+     },
+     {
+      "class": "HwInlineComponent",
+      "selector": "hw-inline, [hwInline]",
+      "hostClass": "hw-inline"
+     },
+     {
+      "class": "HwGridComponent",
+      "selector": "hw-grid, [hwGrid]",
+      "hostClass": "hw-grid"
+     },
+     {
+      "class": "HwColumnsComponent",
+      "selector": "hw-columns, [hwColumns]",
+      "hostClass": "hw-columns"
+     },
+     {
+      "class": "HwSidebarComponent",
+      "selector": "hw-sidebar",
+      "hostClass": "hw-sidebar",
+      "extra": "Host also binds [attr.data-side]=\"side\" and [attr.data-collapse-at]=\"collapseAt\". Template: <ng-content select=\"[hwSidebar]\" /><ng-content />. No aside and no div: the element the application marks hwSidebar and its one content element are the two children of the host grid, sidebar first."
+     },
+     {
+      "class": "HwCenterComponent",
+      "selector": "hw-center, [hwCenter]",
+      "hostClass": "hw-center"
+     },
+     {
+      "class": "HwSpacerComponent",
+      "selector": "hw-spacer",
+      "hostClass": "hw-spacer",
+      "extra": "Unchanged (already on the host, aria-hidden=\"true\", empty template)."
+     },
+     {
+      "class": "HwAspectRatioComponent",
+      "selector": "hw-aspect-ratio, [hwAspectRatio]",
+      "hostClass": "hw-aspect-ratio"
+     },
+     {
+      "class": "HwSectionComponent",
+      "selector": "hw-section, [hwSection]",
+      "hostClass": "hw-section",
+      "extra": "Host binds [attr.aria-label]=\"label || null\" and [attr.role]: \"region\" when label is given and the host is not a section element, otherwise null. On <section hwSection label=\"...\"> only aria-label is written. label stays optional application text with no default."
+     },
+     {
+      "class": "HwAppShellComponent",
+      "selector": "hw-app-shell",
+      "hostClass": "hw-app-shell",
+      "extra": "Host also binds [attr.data-side]=\"side\". Template, with no white space inside the three projected regions: <a class=\"hw-skip-link\" [attr.href]=\"fragment(mainId)\">{skipLabel through texts.need}</a><div class=\"hw-app-shell-header\"><ng-content select=\"[hwShellHeader]\" /></div><aside class=\"hw-app-shell-sidebar\"><ng-content select=\"[hwShellSidebar]\" /></aside><main class=\"hw-app-shell-main\" [id]=\"mainId\" tabindex=\"-1\"><ng-content /></main><div class=\"hw-app-shell-footer\"><ng-content select=\"[hwShellFooter]\" /></div>. The skip-link binding selector becomes \":scope > a.hw-skip-link\"."
+     }
+    ],
+    "pageHeader": "HwPageHeaderComponent keeps its template: the host hw-page-header wraps <header class=\"hw-page-header\">, because the host cannot be a header element and React and Vue render a header. Its host becomes a block through the styles rule. It is the twelfth primitive in the server and hydration tests.",
+    "appShellRegions": "React, Vue and Angular render the same region elements: div.hw-app-shell-header, aside.hw-app-shell-sidebar, main.hw-app-shell-main, div.hw-app-shell-footer. The banner and contentinfo landmarks come from what the application places inside. React and Vue render a region only when it is supplied; Angular always renders the three projected regions and the existing stylesheet rule hides an empty one (.hw-app-shell > :is(.hw-app-shell-header, .hw-app-shell-sidebar, .hw-app-shell-footer):empty). React keeps its existing div.hw-app-shell-body (display: contents) around sidebar and main; it is not added elsewhere and not removed now.",
+    "attributeSelectors": "Each primitive whose attribute name is free also matches a native element: <ul hwStack gap=\"2\">, <section hwSection label=\"...\">. Sidebar, Spacer, AppShell and PageHeader keep the element selector only (hwSidebar already marks the projected sidebar content).",
+    "styles": "See styles.rules[0]: hosts whose class sets no display become blocks, and the card hosts become grids so that a card fills its grid row."
+   },
+   "behaviour": [
+    "No behaviour change. class, id, aria-label, data-variant, data-fit and data-tone written on the element now sit on the element that has the hw- class, so they take effect.",
+    "A markup change for consumers whose CSS selects .hw-stack inside hw-stack and for the AppShell region elements: record it in the Angular README as a 0.3.0 migration note (the changelog entry belongs to the integration phase)."
+   ],
+   "keyboardAndFocus": "Unchanged. The AppShell skip link still moves focus to main (bindAngularFragmentLinks with the new selector).",
+   "server": [
+    "Static host bindings; safe for server rendering and hydration. The server and hydration tests cover all twelve primitives."
+   ],
+   "tests": [
+    {
+     "id": "al-host-class",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "For Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer, AspectRatio, Section and AppShell: the host element has the hw- class and the layout custom properties in its style; no descendant has that class; the first element child of the host is the projected content (AppShell: the skip link)."
+    },
+    {
+     "id": "al-host-attributes",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "class, id, aria-label, data-variant (Container), data-fit (AspectRatio) and data-tone (Section) written on the component element are on the element that carries the hw- class."
+    },
+    {
+     "id": "al-attribute-selectors",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "hwContainer, hwStack, hwInline, hwGrid, hwColumns, hwCenter, hwAspectRatio and hwSection on native elements (for example ul hwStack) give that element the class and the custom properties and keep its tag."
+    },
+    {
+     "id": "al-section-label",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "hw-section with label has role=\"region\" and aria-label; without label it has neither. section[hwSection] with label has aria-label and no role attribute."
+    },
+    {
+     "id": "al-sidebar-children",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "hw-sidebar has data-side and data-collapse-at on the host and exactly two element children: the hwSidebar element first, then the content element; no aside is added."
+    },
+    {
+     "id": "al-wrap-attribute",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "<hw-inline wrap> and [wrap]=\"true\" write --hw-layout-wrap: wrap; [wrap]=\"false\" writes nowrap; without the input the property is not written."
+    },
+    {
+     "id": "al-app-shell-regions",
+     "notApplicable": [
+      "vanilla"
+     ],
+     "case": "AppShell with header, sidebar and footer content: the regions are div.hw-app-shell-header, aside.hw-app-shell-sidebar, main.hw-app-shell-main and div.hw-app-shell-footer; there is no header and no footer element that the shell itself rendered; a header element projected into the header region is the only banner. Angular also: the regions are children of the host, and an AppShell without sidebar content has an aside with no child nodes other than comments."
+    },
+    {
+     "id": "al-skip-link",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "The AppShell skip link is the first child of the host, has href \"#\" + mainId on first render, and activating it moves focus to main."
+    },
+    {
+     "id": "al-page-header",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "hw-page-header still renders header.hw-page-header with the h1 inside."
+    },
+    {
+     "id": "al-server-hydration",
+     "notApplicable": [
+      "react",
+      "vue",
+      "vanilla"
+     ],
+     "case": "Server render and hydration of all twelve primitives: the class is on the host in the server markup and hydration reports no mismatch."
+    }
+   ],
+   "readme": "Angular README: the host-element rule, the attribute selectors, the AppShell region elements and the migration note."
+  },
+  {
+   "id": "link-navigation",
+   "kind": "core helper used by applications; one check changes in the navigation drawers; no component input changes",
+   "names": {
+    "core": "bindLinkNavigation, isLinkNavigationHandled (import from \"@hawiyah/core\"; not re-exported by adapters)"
+   },
+   "inputs": [],
+   "outputs": "None.",
+   "dom": "No markup or style change. Packaged links keep their href in every adapter.",
+   "behaviour": [
+    "The application calls bindLinkNavigation(root, { navigate, base? }) once in the browser and keeps the returned { destroy() }.",
+    "Handled: a click with button 0, no modifier key and the default not prevented, on an HTML a[href] inside root that is same-origin and inside the base path, without download, without a target other than _self (its own or <base target>), without rel=\"external\", not aria-disabled, inert or editable, and not a link to the current document whose href holds a fragment.",
+    "navigate receives { url, path, link, event }; path is relative to the base path and starts with \"/\". The base path is the base option, else the directory of a same-origin <base href>, else \"/\". Returning false leaves the click to the browser; otherwise the default is prevented and the event is recorded.",
+    "Component rule that follows from it, in every adapter: no click handler on a packaged link calls preventDefault for a plain navigation, and in Angular no template listener on a packaged link returns false (Angular treats that as preventDefault).",
+    "Focus after navigation, route announcements, scroll restoration and aria-current remain the application's."
+   ],
+   "adapters": {
+    "react": "NavigationDrawer check (see side-navigation.navigationDrawerChanges). README wiring: useEffect(() => { const links = bindLinkNavigation(document, { navigate: ({ path }) => { navigate(path); } }); return () => links.destroy(); }, [navigate]); with a router basename and no <base href>, pass base.",
+    "vue": "NavigationDrawer check. README wiring: onMounted(() => { links = bindLinkNavigation(document, { navigate: ({ path }) => { void router.push(path); } }); }); onBeforeUnmount(() => links?.destroy());",
+    "angular": "NavigationDrawer check. Audit every (click) on an anchor in packages/angular/src so that none returns false. README wiring in the root component: afterNextRender(() => { const links = bindLinkNavigation(document, { navigate: ({ path }) => { void router.navigateByUrl(path); } }); destroyRef.onDestroy(() => links.destroy()); }); with <base href=\"/hawiyah/\"> the path is already relative to it.",
+    "vanilla": "createNavigationDrawer check. README wiring: const links = bindLinkNavigation(document, { navigate: ({ url }) => { history.pushState(null, \"\", url); render(); } })."
+   },
+   "server": [
+    "bindLinkNavigation returns an inert handle without a root or a browser window; applications still call it from a browser-only hook. Components never call it."
+   ],
+   "tests": [
+    {
+     "id": "ln-routed",
+     "case": "With bindLinkNavigation bound on document and a memory router written in the test (a function that records path; no router dependency is added): a click on a link rendered by a packaged component (use Breadcrumb and SideNavigation, vanilla: their authored markup after enhance()) calls navigate once with the expected path and the click has its default prevented."
+    },
+    {
+     "id": "ln-modified",
+     "case": "The same click with ctrlKey or metaKey, and with button 1, is not handed to navigate and is not prevented."
+    },
+    {
+     "id": "ln-prevented",
+     "case": "A click that an application listener on the link already prevented is not handed to navigate."
+    },
+    {
+     "id": "ln-drawer-closes",
+     "case": "Same as nd-closes-after-routed-click; may be the same test."
+    },
+    {
+     "id": "ln-no-handler-prevents",
+     "case": "Without bindLinkNavigation: a cancelable click on each packaged link kind the adapter renders with a click handler (PortalHeader navigation links, NavigationDrawer links) still has defaultPrevented false after the component handlers ran (the test cancels it afterwards to stop the test DOM from navigating)."
+    },
+    {
+     "id": "ln-server",
+     "notApplicable": [
+      "vanilla"
+     ],
+     "case": "Server rendering the components above adds no listener and does not import-time touch document (covered by the existing server render tests passing with the new code)."
+    }
+   ],
+   "readme": "Each adapter README gets a short \"Client-side routing\" section with the wiring above, the list of what is left to the browser, and the statement that focus and announcements after navigation are the application's."
+  },
+  {
+   "id": "content-navigation-steady-current",
+   "kind": "fix in core; no adapter source change",
+   "names": {
+    "core": "observeContentNavigation (unchanged signature)"
+   },
+   "inputs": [],
+   "outputs": "Unchanged names: React and vanilla onCurrentChange, Vue and Angular currentChange. One activation now reports one change.",
+   "dom": "No markup or style change.",
+   "behaviour": [
+    "While a scroll that navigate() started is in progress the target stays current and measured updates wait. The hold ends when the position reaches the target or the end of the scroll range, on scrollend from the scroll root or the window, after a pause in scroll events (150 ms without scrollend support, 1000 ms as a safety net with it), or at once when the reader scrolls by wheel, touch or a scrolling key, or drags the position away from the target.",
+    "After a scroll that arrived the target stays current until the scroll position changes, also when the page ends before the section reaches the top. A scroll that stopped short of its end is measured where it stopped.",
+    "Reduced motion (an instant scroll), focus on keyboard activation, disabled items and updateHash are unchanged."
+   ],
+   "server": [
+    "Unchanged: without layout nothing is measured and no timer starts."
+   ],
+   "tests": [
+    {
+     "id": "cn-one-change",
+     "case": "Adapter level, with the layout mocked as the existing content-navigation tests of the adapter do: one click on the link of the last section, followed by scroll events at several intermediate positions and at the target, yields exactly one current change (the target), and the current link attribute (aria-current=\"location\") never sits on an intermediate link."
+    },
+    {
+     "id": "cn-reader-takes-over",
+     "case": "After such a click, a wheel event followed by a scroll event at an intermediate position moves the current item to the section measured there."
+    }
+   ],
+   "readme": "One sentence in the ContentNavigation section of each adapter README: an activation reports one change; the marker does not step through the sections a smooth scroll passes."
+  }
+ ],
+ "choices": [
+  {
+   "topic": "CopyButton: which statuses count as empty",
+   "choice": "copyText returns \"empty\" when the text is not a string or holds only white space, and writes the text unchanged otherwise (no trimming), so code keeps its indentation."
+  },
+  {
+   "topic": "CopyButton: superseded activations",
+   "choice": "Only the latest activation changes the state or fires copyResult. An overtaken one fires nothing, although its text may have reached the clipboard."
+  },
+  {
+   "topic": "CopyButton: feedbackDuration edge values",
+   "choice": "A value that is not a finite number above zero means 3000. There is no \"never reset\" value."
+  },
+  {
+   "topic": "CopyButton: where the required texts are checked",
+   "choice": "All three texts are required always and checked on every render, so a missing failure message is reported before a failure happens."
+  },
+  {
+   "topic": "CopyButton: text display markup",
+   "choice": "The label is a text node after the icon, with no wrapping element; the icon stays in the text display and still follows the state."
+  },
+  {
+   "topic": "CopyButton: icon markup",
+   "choice": "The icon span is a direct child of the button, as in the proposal, not inside the extra span IconButton adds. The component is not built from IconButton."
+  },
+  {
+   "topic": "CopyButton: where application attributes go",
+   "choice": "class and style go to the root; every other native attribute and the ref go to the button (React and Vue). Angular forwards nothing, as its other components."
+  },
+  {
+   "topic": "CopyButton and SideNavigation: Angular root element",
+   "choice": "The Angular host is the root and carries the classes (hw-copy; hw-side-navigation hw-navigation-drawer-nav), following the layout decision of this milestone. For SideNavigation this is required: a sticky nav inside a wrapping host could not stick."
+  },
+  {
+   "topic": "CopyButton: vanilla text sources",
+   "choice": "option text, then data-hw-text, then data-hw-target (an element id; textContent read at activation). The duration also reads data-hw-feedback-duration."
+  },
+  {
+   "topic": "CopyButton: per-reason failure text",
+   "choice": "One failedMessage for every failure; the reason travels in copyResult.status (per-reason inputs are rejected in the proposal)."
+  },
+  {
+   "topic": "SideNavigation: label requiredness",
+   "choice": "The existing root-name convention: React RootName union, Vue checked at render (aria-label or aria-labelledby satisfy it), Angular a required input, vanilla authored name first."
+  },
+  {
+   "topic": "SideNavigation: what \"contains the current item\" means",
+   "choice": "A link actually rendered with aria-current=\"page\" inside the group: a current leaf with an href, or the group itself when it has an href (its repeated first link). Disabled entries, entries without href and everything under a disabled group do not count."
+  },
+  {
+   "topic": "SideNavigation: how open is kept in step",
+   "choice": "A plain attribute bound to the pure function; no toggle listener and no stored state. Angular binds [attr.open] so the server render carries it. Vanilla recomputes in refresh() and only touches a group whose answer changed."
+  },
+  {
+   "topic": "SideNavigation: sticky false",
+   "choice": "No data-sticky attribute (as ContentNavigation), not data-sticky=\"false\"."
+  },
+  {
+   "topic": "SideNavigation: shared list",
+   "choice": "One list function per adapter renders the ul for both components; the rules that must match across adapters (kind, group entries, open, current id) are core functions. NavigationDrawer adopts the open rule, so its groups no longer all start closed."
+  },
+  {
+   "topic": "SideNavigation: reveal",
+   "choice": "core revealNavigationCurrent, instant, centred, only inside the nav's own scroll box, after the first render and when getNavigationCurrentId changes."
+  },
+  {
+   "topic": "bindLinkNavigation: which links",
+   "choice": "Every HTML a[href] inside the root the application names, not only anchors with hw- classes: packaged links have no common marker and hwButton links sit on application anchors. A link opts out with rel=\"external\", target or download, or navigate returns false."
+  },
+  {
+   "topic": "bindLinkNavigation: the base path",
+   "choice": "The base option when given; else the directory of a same-origin <base href>; else \"/\". Without a <base> element the document URL is not used as a base. Links outside the base path are left to the browser."
+  },
+  {
+   "topic": "bindLinkNavigation: fragment links",
+   "choice": "Left alone when the destination is the current document (same URL without fragment) and the href holds \"#\". The same document without a fragment, and another document with one, are handed to navigate."
+  },
+  {
+   "topic": "bindLinkNavigation: target on the base element, SVG anchors, editable content",
+   "choice": "<base target> counts as the link's target; SVG a elements and links in editable content are left alone."
+  },
+  {
+   "topic": "bindLinkNavigation: navigate throws",
+   "choice": "The default is not prevented, so the browser follows the link, and the error surfaces."
+  },
+  {
+   "topic": "Drawer closing after a routed click",
+   "choice": "isLinkNavigationHandled(event) is exported from core and the four drawers check (!event.defaultPrevented || isLinkNavigationHandled(event))."
+  },
+  {
+   "topic": "ContentNavigation: what ends the hold",
+   "choice": "Reaching the target or the end of the scroll range; scrollend at the target; a scrollend short of the target confirmed by 150 ms without movement (it can belong to a replaced scroll); a pause of 150 ms without scrollend support or 1000 ms with it; wheel, touch move, a scrolling key or the position moving away from the target (reader takes over)."
+  },
+  {
+   "topic": "ContentNavigation: after the scroll",
+   "choice": "When the scroll arrived (at the target or at the end of the scroll range) the target stays current until the scroll position changes, so a short last section that cannot reach the top keeps the marker the reader asked for. A scroll that stopped short is measured where it stopped."
+  },
+  {
+   "topic": "ToggleGroup labelHidden with a missing label",
+   "choice": "Unchanged per adapter; labelHidden adds no warning and never removes the legend."
+  },
+  {
+   "topic": "PortalHeader notice in Angular",
+   "choice": "A [hwPortalNotice] projection inside an always-rendered div.hw-portal-notice that the stylesheet hides when empty, the convention the Angular package already uses for optional regions. React and Vue render the container only when a notice is given."
+  },
+  {
+   "topic": "PortalHeader structure",
+   "choice": "React keeps div.hw-portal-header-main; Vue and Angular stay without it. The stylesheet supports both, and removing or adding the wrapper is not part of this milestone."
+  },
+  {
+   "topic": "PortalHeader actions class",
+   "choice": "hw-portal-header-actions in every adapter; containers are rendered only with content in React and Vue and hidden when empty in Angular."
+  },
+  {
+   "topic": "Angular PageHeader",
+   "choice": "Keeps its inner header element (the host cannot be a header); only its host becomes a block. The other eleven primitives carry the class on the host."
+  },
+  {
+   "topic": "Angular AppShell empty regions",
+   "choice": "Always rendered and hidden by the existing :empty rule, because projection cannot be detected without new marker directives. React keeps div.hw-app-shell-body."
+  },
+  {
+   "topic": "Angular Section role",
+   "choice": "role=\"region\" with aria-label on the hw-section host only when label is given; nothing added on a native section beyond aria-label."
+  },
+  {
+   "topic": "Angular wrap",
+   "choice": "A transform that maps the bare attribute to true and keeps an unset input undefined."
+  },
+  {
+   "topic": "Styles for the new components",
+   "choice": "Written by the Angular agent from the exact rules in styles.rules, because the styles agent was given only the style-only items. .hw-copy-message is visually hidden except in the failed state; .hw-side-navigation is display: block and, from 64rem with data-sticky=\"true\", sticky."
+  }
+ ],
+ "notBuilt": [
+  "Everything under \"deferred\" and \"rejected\" in the proposal, in particular: a CodeBlock or Prose component, link-navigation providers per adapter, re-exporting core helpers from adapters, SideNavigation size, badge, static headings or controlled expandedIds, CopyButton manual-copy field or per-reason messages, AppShell sticky regions, PortalHeader controlled menu state."
+ ]
+}

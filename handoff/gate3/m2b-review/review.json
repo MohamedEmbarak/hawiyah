@@ -1,0 +1,461 @@
+{
+ "verdict": "changes required",
+ "reviewed": {
+  "range": "git diff d544169 to the working tree (58 tracked files changed, 53 untracked files)",
+  "date": "2026-11-11",
+  "browser": "Chromium at <chromium> through Playwright 1.64.1; axe-core 4.14.0",
+  "harness": "harness/ in this directory: one page per adapter (react.js, vue.js, angular.js with the JIT compiler, vanilla.js) served by Vite from the built packages; a production bundle of the same pages for the silent check"
+ },
+ "blocking": [
+  {
+   "id": "B1",
+   "title": "An existing browser spec fails: the playground Angular layout projects still assume the old Angular markup",
+   "files": [
+    "tests/browser/native-layout-projects.spec.ts:90",
+    "tests/browser/native-layout-projects.spec.ts:97",
+    "apps/playground/src/layout-projects.ts:111",
+    "packages/angular/src/layouts.ts:46",
+    "packages/angular/src/layouts.ts:57"
+   ],
+   "adapters": [
+    "angular",
+    "playground"
+   ],
+   "evidence": "playwright test tests/browser/native-layout-projects.spec.ts: \"twelve angular typescript layout projects render and reflow in ar\" fails at the section step: expected localName \"section\", received \"hw-section\" (browser-subset.log, pw-test-results-subset/). The same test passed before this diff (gate3/v-browser.log, 1.9 minutes). The test stops there; the app-shell step that follows expects one banner and one contentinfo inside the shell, and the playground project projects <strong hwShellHeader> and <small hwShellFooter>, which were given header and footer elements by the component before and sit in div regions now, so it will fail next. pnpm check (build, test, test:browser) therefore fails on this tree. The Angular README has the migration note; the playground projects, the guide samples that use the layout primitives (apps/playground/src/layout-projects.ts, component-layout-guides.ts, component-layout-guides.ar.ts, expanded-samples.ts) and the spec were not migrated. The other 84 tests of the changed areas and the 81 framework example tests pass.",
+   "suggestedFix": "Migrate the playground Angular projects and samples to the new markup (<section hwSection label>, a projected header and footer for the shell, the two panes of hw-sidebar) and update the spec, then run the complete browser suite once: this review ran the changed areas only."
+  }
+ ],
+ "major": [
+  {
+   "id": "M1",
+   "title": "SideNavigation: the current page link fails WCAG 1.4.3 in the default (DGA) theme, light mode",
+   "files": [
+    "packages/styles/src/navigation-drawer.css:67",
+    "packages/styles/src/navigation-drawer.css:103",
+    "packages/tokens/test/contrast.test.mjs:32"
+   ],
+   "adapters": [
+    "react",
+    "vue",
+    "angular",
+    "vanilla",
+    "styles"
+   ],
+   "evidence": "axe color-contrast (serious) on #side a[aria-current=\"page\"] .hw-navigation-drawer-label in all four adapters: 4.31:1, #1b8354 on #f3f4f6, 14px weight 600 (axe-results.json, key nav-en-light). Recomputed from computed styles (harness/contrast-nav.mjs): DGA light 4.32:1, DGA dark 6.43, Hawiyah light 7.03, Hawiyah dark 7.86. The rule is --hw-color-primary-text on --hw-color-surface-muted. It is the NavigationDrawer row rule, so the drawer has the same value; the new component ships with it and is always visible. The proposal premise check already lists \"primary-text 4.32\" on surface-muted. The token contrast test pairs primary-text with primary-subtle only.",
+   "suggestedFix": "Give the current row a pair that reaches 4.5:1 in every theme and mode (for example the primary-text on primary-subtle pair the token test already covers, or --hw-color-text with the coloured marker), add the pair actually used to packages/tokens/test/contrast.test.mjs, and add an axe run of SideNavigation and NavigationDrawer in DGA light to the browser specs."
+  },
+  {
+   "id": "M2",
+   "title": "Code listings: Arabic strings on one line change places when highlighted",
+   "files": [
+    "packages/styles/src/code.css:56",
+    "packages/styles/src/code.css:65",
+    "docs/code-and-prose.md"
+   ],
+   "adapters": [
+    "styles"
+   ],
+   "evidence": "styles-bidi-arabic-strings.png: const options = ['فاتح', 'داكن']; is drawn with داكن first, and \"مرحبا\"; // تعليق is drawn with the comment before the string. Measured with Range rectangles of the Arabic letters (harness/bidi.mjs): first string left of second = false; string left of comment = false. With [class*=\"hw-code-token-\"] { unicode-bidi: isolate } both become true. The pre is direction: ltr and unicode-bidi: isolate, but the token spans are not isolated, so the neutral characters between two Arabic runs join the right-to-left run. The proposal names Arabic string literals in code as the case this item exists for.",
+   "suggestedFix": "Add unicode-bidi: isolate to the syntax role rule (it stays at zero specificity), state in docs/code-and-prose.md that a line with more than one Arabic run needs the role spans or bdi, and add a browser assertion for the order of two Arabic string tokens."
+  },
+  {
+   "id": "M3",
+   "title": "Angular hw-section and [hwSection]: a bound aria-label or role on the host is removed",
+   "files": [
+    "packages/angular/src/layouts.ts:46",
+    "packages/angular/test/layout-hosts.test.ts"
+   ],
+   "adapters": [
+    "angular"
+   ],
+   "evidence": "<hw-section [attr.aria-label]=\"'Bound name'\"> renders <hw-section role=null aria-label=null>, while aria-label=\"Static name\" is kept (harness/section.mjs; scenes-results.json angular.angularExtra.secBound). The host binding [attr.aria-label]=\"label || authoredLabel\" runs after the template binding and writes null; HostAttributeToken reads static attributes only. The same holds for [attr.role] and for <section hwSection [attr.aria-label]>. A localised application binds its names (examples/angular/src/nic-reference.ts:8 does exactly this on a plain section), so moving that markup to the new attribute selector silently drops the accessible name. The tests cover static attributes only.",
+   "suggestedFix": "Do not own aria-label and role through host bindings: write them with Renderer2 when label is set and remove only what the component wrote, or keep the bindings and document that the name must come through the label input, with a development warning when the host also carries an aria-label binding. Add a test with bound attributes."
+  },
+  {
+   "id": "M4",
+   "title": "Integration is not done and the catalogue count is stated two ways",
+   "files": [
+    "components.json:30",
+    "README.md:25",
+    "llms.txt:5",
+    "llms.txt:17",
+    "docs/coverage.md:3",
+    "CONTRACT.md:9",
+    "EXPANSION.md:25",
+    "CHANGELOG.md",
+    "packages/react/README.md:233",
+    "packages/vue/README.md:169",
+    "packages/angular/README.md:7"
+   ],
+   "adapters": [
+    "repository"
+   ],
+   "evidence": "CONTRACT.md and EXPANSION.md say 85 entries; components.json holds 83 records and says \"83 entries\", README.md, llms.txt and docs/coverage.md say 83, and the three adapter READMEs still say 77. Neither CopyButton nor SideNavigation appears in components.json, llms.txt, README.md, README.ar.md, docs/coverage.md, the examples or the playground. CHANGELOG.md has no entry for the Angular layout markup change, the hw-portal-actions rename, the group that now opens in NavigationDrawer, or the removed public method HwNavigationDrawerComponent.groupEntries. The builders record all of this as left to an integration phase; AGENTS.md asks for behaviour, styles, APIs, examples and guidance to stay synchronised.",
+   "suggestedFix": "Run the integration phase before this is committed as finished: two catalogue records with evidence, the count in every document, the changelog entry with the migration notes, and usage in the examples or the guide."
+  }
+ ],
+ "minor": [
+  {
+   "id": "m1",
+   "title": "NavigationDrawer: the close decision is taken in a microtask, which a real click reaches before listeners on ancestors",
+   "files": [
+    "packages/react/src/navigation-drawer.tsx:46",
+    "packages/vue/src/navigation-drawer.ts:51",
+    "packages/angular/src/navigation-drawer.ts:45",
+    "packages/vanilla/src/navigation-drawer.ts:32"
+   ],
+   "adapters": [
+    "react",
+    "vue",
+    "angular",
+    "vanilla"
+   ],
+   "evidence": "links-results.json: with a document listener that only calls preventDefault and no bindLinkNavigation, a trusted pointer click on a drawer link closes the drawer in all four adapters (drawerPreventedTrusted: open=false); the same click made with element.click() leaves it open (drawerPreventedSynthetic: open=true). During a user click the microtask runs when the component listener returns, before the event reaches document. The test nd-closes-after-routed-click asserts \"stays open\" with a synthetic click only. The routed case itself is right in both forms (drawerRouted: navigate called once, drawer closed, focus back on the trigger). The timing is older than this milestone; the new check and its test rest on it.",
+   "suggestedFix": "Decide after the dispatch has finished (a zero-delay timer, or a one-time bubble listener on the window) instead of queueMicrotask, and drive the test with a dispatched trusted-like sequence in the browser specs."
+  },
+  {
+   "id": "m2",
+   "title": "CopyButton: a repeated immediate failure empties and refills the status inside one task",
+   "files": [
+    "packages/core/src/copy.ts:86",
+    "packages/core/src/copy.ts:92",
+    "packages/core/src/copy.ts:95"
+   ],
+   "adapters": [
+    "core",
+    "react",
+    "vue",
+    "angular",
+    "vanilla"
+   ],
+   "evidence": "copy-results.json: for \"empty\", \"unavailable\" and a rejection that settles at once, the mutation sequence is idle, failed, idle, failed, but no animation frame ever sees the empty status (emptyRepeatFrames and the frames arrays hold two entries, not four). With a write that takes time (repeat test) the empty state is rendered. Whether a screen reader repeats an identical message that was cleared and written again before the accessibility tree is updated was not tested with assistive technology.",
+   "suggestedFix": "Let the result wait for at least one task or frame after the status was emptied when the write settled immediately, or record in the READMEs that only a result that takes time is certain to be announced again. Check with a screen reader."
+  },
+  {
+   "id": "m3",
+   "title": "Prose: a class-less pre scrolls without a tab stop, role or name",
+   "files": [
+    "packages/styles/src/code.css:18",
+    "docs/code-and-prose.md",
+    "tests/browser/prose.spec.ts:163"
+   ],
+   "adapters": [
+    "styles"
+   ],
+   "evidence": "axe scrollable-region-focusable on #bare-pre in ar and en, light and dark (styles-results.json axe). The repository spec excludes this rule by name (\"apart from the documented class-less listing\"). Chromium makes scroll containers focusable by itself; other engines do not all do so.",
+   "suggestedFix": "Either wrap class-less listings in prose by default (white-space: pre-wrap), so nothing scrolls, or keep the limit and make the Markdown pipeline of the guide add tabindex, role and a name; the guide axe gate should not need the exclusion."
+  },
+  {
+   "id": "m4",
+   "title": "Vanilla: the drawer cannot follow a moved current page, and authored markup cannot show the current group open without marking it expanded",
+   "files": [
+    "packages/vanilla/src/navigation-drawer.ts:21",
+    "packages/vanilla/src/navigation-drawer.ts:50",
+    "packages/vanilla/README.md"
+   ],
+   "adapters": [
+    "vanilla"
+   ],
+   "evidence": "createSideNavigation has refresh(); createNavigationDrawer applies followCurrentGroups once and its controller has no refresh, so after aria-current moves the drawer keeps the old group state (nav-results.json vanilla.drawer: forms=false after the current page moved to it, true in the other three). An authored open attribute counts as expanded, so a server template that opens the group of the current page keeps it open after refresh(); React, Vue and Angular server renders carry open for the current group.",
+   "suggestedFix": "Recompute the groups when the drawer is shown (or expose refresh() on the drawer controller), and let authors mark an expanded group with a data attribute so that a prerendered open attribute for the current page is not read as expanded."
+  },
+  {
+   "id": "m5",
+   "title": "Vue CopyButton: the server render writes an empty style attribute on the root",
+   "files": [
+    "packages/vue/src/copy-button.ts:34"
+   ],
+   "adapters": [
+    "vue"
+   ],
+   "evidence": "renderToString gives <span class=\"hw-copy\" style=\"\" data-state=\"idle\">; the client render and the specification markup have no style attribute (harness/ssr-rv.mjs output; copy-results.json vue.domIcon).",
+   "suggestedFix": "Pass style only when the application gave one (spread it conditionally)."
+  },
+  {
+   "id": "m6",
+   "title": "ToggleGroup in React and Vue: a missing label gives an empty legend and no Hawiyah warning (older than this milestone)",
+   "files": [
+    "packages/react/src/expanded-interactive.tsx:24",
+    "packages/vue/src/expansion-interactive.ts:64"
+   ],
+   "adapters": [
+    "react",
+    "vue"
+   ],
+   "evidence": "scenes-results.json toggleMissing: React and Vue render <legend class=\"hw-label hw-sr-only\"></legend> and log no \"Hawiyah:\" warning; Angular omits the legend and warns once. With labelHidden the empty legend is invisible, so the group has no name and nothing reports it. The specification keeps this \"unchanged per adapter\"; the text contract says a missing required text renders nothing and warns.",
+   "suggestedFix": "Route the label through text() and needText() in React and Vue and omit the legend when it is missing, as Angular does (milestone 3 parity work if not here)."
+  },
+  {
+   "id": "m7",
+   "title": "check:packages does not hold the two font rules the proposal gave it",
+   "files": [
+    "scripts/check-packages.mjs",
+    "packages/styles/test/fonts-and-code.test.ts:21",
+    "packages/styles/test/fonts-and-code.test.ts:65",
+    "scripts/prepare-demo.mjs"
+   ],
+   "adapters": [
+    "styles",
+    "repository"
+   ],
+   "evidence": "scripts/check-packages.mjs is not in the diff and has no reference to fonts.css. The two rules (every url() in fonts.css resolves; styles.css declares no font but the riyal face) are checked by a unit test against src and dist, not against the packed tarball or the clean consumer. The styles builder also records that scripts/prepare-demo.mjs does not copy ibm-plex-LICENSE.txt into a deployed guide.",
+   "suggestedFix": "Add both rules to the tarball check and resolve @hawiyah/styles/fonts.css in the clean consumer; copy the IBM licence with the fonts once the guide imports fonts.css."
+  },
+  {
+   "id": "m8",
+   "title": "One physical property in the new sticky rule",
+   "files": [
+    "packages/styles/src/navigation-drawer.css:113"
+   ],
+   "adapters": [
+    "styles"
+   ],
+   "evidence": "overflow-y: auto in .hw-side-navigation[data-sticky=\"true\"]. Every other new rule (code.css, prose.css, copy.css, the header actions) is logical; the same property is used in six older files.",
+   "suggestedFix": "Use overflow-block: auto here, or record overflow-x and overflow-y as accepted in the stylesheet conventions."
+  },
+  {
+   "id": "m9",
+   "title": "Angular: public method groupEntries removed from HwNavigationDrawerComponent without a note",
+   "files": [
+    "packages/angular/src/navigation-drawer.ts:38",
+    "packages/angular/README.md:429"
+   ],
+   "adapters": [
+    "angular"
+   ],
+   "evidence": "The built declarations no longer contain groupEntries; the migration note in the Angular README covers the layout markup only and CHANGELOG.md has no entry.",
+   "suggestedFix": "Name the removal in the 0.3.0 migration note and the changelog."
+  },
+  {
+   "id": "m10",
+   "title": "Not verified in this review",
+   "files": [],
+   "adapters": [
+    "all"
+   ],
+   "evidence": "No screen reader was used (announcements, the focusable pre with role group). No engine other than Chromium. No Angular CLI ahead-of-time build of a consumer that uses hw-copy-button or hw-side-navigation (the JIT compiler linked the partial declarations in the browser and on the server, and check:packages passed its Angular package format check). React and Vue hydration of the new components rests on the passing unit suites; I rendered both on the server twice and compared the markup, but hydrated only Angular in the browser. The complete browser suite (616 tests, about 40 minutes) was not run: the three new specs, twelve specs of the changed areas and the framework example suite were (206 tests, one failure, B1).",
+   "suggestedFix": "Cover these before release."
+  }
+ ],
+ "parityDifferences": [
+  {
+   "component": "CopyButton",
+   "adapters": [
+    "angular"
+   ],
+   "difference": "The host element hw-copy-button is the root (class hw-copy, data-state); React, Vue and vanilla use span.hw-copy. String inputs written as attributes stay on the host (display=\"text\", size, variant, feedbackduration, disabled=\"\").",
+   "status": "as specified"
+  },
+  {
+   "component": "CopyButton",
+   "adapters": [
+    "vue"
+   ],
+   "difference": "Server render adds style=\"\" on the root span.",
+   "status": "new, see m5"
+  },
+  {
+   "component": "CopyButton",
+   "adapters": [
+    "vanilla"
+   ],
+   "difference": "Texts and the value come from options or data-hw-* attributes; variant, size, display and disabled are authored; a bubbling hw:change event follows onCopyResult. Messages are read at each state change.",
+   "status": "as specified"
+  },
+  {
+   "component": "CopyButton",
+   "adapters": [
+    "react",
+    "vue",
+    "angular",
+    "vanilla"
+   ],
+   "difference": "None in markup inside the root, accessibility tree, tab order, Enter and Space activation, focus, states, icons, status text, results, timed reset, latest-wins, destroy while pending, or missing-text behaviour (copy-results.json).",
+   "status": "equal"
+  },
+  {
+   "component": "SideNavigation",
+   "adapters": [
+    "angular"
+   ],
+   "difference": "Root is hw-side-navigation with role=\"navigation\" (or nav[hwSideNavigation] without a role); label is the only source of the name, where React and Vue also accept aria-label or aria-labelledby from the application.",
+   "status": "as specified"
+  },
+  {
+   "component": "SideNavigation",
+   "adapters": [
+    "vanilla"
+   ],
+   "difference": "Disabled rows receive tabindex=\"-1\" from the controller (others render a plain span); the current group is opened by the controller, not by the authored markup; refresh() instead of re-rendering.",
+   "status": "as specified; see m4"
+  },
+  {
+   "component": "SideNavigation",
+   "adapters": [
+    "vue"
+   ],
+   "difference": "Not typed with WithNativeAttributes (CopyButton is), so native attributes are untyped in strict templates although they reach the nav.",
+   "status": "new, recorded by the builder"
+  },
+  {
+   "component": "SideNavigation and NavigationDrawer",
+   "adapters": [
+    "react",
+    "vue",
+    "angular",
+    "vanilla"
+   ],
+   "difference": "The list markup is identical in the four adapters and between the two components for the same items; same groups open, same tab order, same reveal (nav-results-all.json, nav-results-angular.json).",
+   "status": "equal"
+  },
+  {
+   "component": "NavigationDrawer",
+   "adapters": [
+    "vanilla"
+   ],
+   "difference": "Groups follow the current page at creation only.",
+   "status": "new, see m4"
+  },
+  {
+   "component": "ToggleGroup",
+   "adapters": [
+    "react",
+    "vue",
+    "angular",
+    "vanilla"
+   ],
+   "difference": "labelHidden gives legend.hw-label.hw-sr-only as first child with the same name in all four (vanilla: authored). Older differences remain: React adds hw-choice and hw-radio classes and a hidden input, Angular wraps option text in a span, Vue writes data-hw-filled; a missing label is handled differently (m6).",
+   "status": "labelHidden equal; the rest older"
+  },
+  {
+   "component": "PortalHeader",
+   "adapters": [
+    "react"
+   ],
+   "difference": "Keeps div.hw-portal-header-main around brand, toggle, navigation and actions; props are navigation and brandHref where Vue and Angular use links and homeHref, and the brand is a link to \"/\" by default only in Vue, Angular and the authored vanilla markup.",
+   "status": "wrapper as specified; names and default older"
+  },
+  {
+   "component": "PortalHeader",
+   "adapters": [
+    "angular"
+   ],
+   "difference": "The notice and actions containers are always rendered and hidden by :empty when nothing is projected; React, Vue and vanilla render them only with content.",
+   "status": "as specified"
+  },
+  {
+   "component": "AppShell",
+   "adapters": [
+    "react"
+   ],
+   "difference": "Keeps div.hw-app-shell-body (display: contents) around sidebar and main; Vue and Angular place the four regions directly in the shell.",
+   "status": "as specified"
+  },
+  {
+   "component": "AppShell",
+   "adapters": [
+    "angular"
+   ],
+   "difference": "The three projected regions are always rendered and hidden when empty.",
+   "status": "as specified"
+  },
+  {
+   "component": "Layout primitives",
+   "adapters": [
+    "vue"
+   ],
+   "difference": "Class order is application class first, then hw-stack; React and Angular write hw-stack first.",
+   "status": "older"
+  },
+  {
+   "component": "Section",
+   "adapters": [
+    "angular"
+   ],
+   "difference": "A bound aria-label or role on the host is removed.",
+   "status": "new, see M3"
+  }
+ ],
+ "commands": [
+  {
+   "command": "git diff d544169 --stat",
+   "result": "58 files changed, 1749 insertions, 170 deletions; 53 untracked files (git status --short: 111 lines, unchanged after every check)"
+  },
+  {
+   "command": "pnpm build",
+   "result": "exit 0 (build.log)"
+  },
+  {
+   "command": "pnpm test",
+   "result": "exit 0: token contrast 12 of 12; vitest 156 files, 1287 tests passed; no \"Hawiyah:\" warning in the output (test.log)"
+  },
+  {
+   "command": "pnpm typecheck:playground",
+   "result": "exit 0 (typecheck-playground.log)"
+  },
+  {
+   "command": "pnpm check:packages",
+   "result": "exit 0: exports, clean consumer (ESM, SSR, Angular package format, CSS exports), declarations; tree shaking React Button 382 bytes gzip of 4096, Vanilla Tabs 4474 of 6144; @hawiyah/styles 166 files, 632 kB packed (check-packages.log)"
+  },
+  {
+   "command": "npm pack --dry-run --json in packages/styles",
+   "result": "166 files, 646804 bytes packed, 1912928 unpacked; the builder reported 645539 bytes and 165 files before copy.css was added; 266596 bytes before the fonts (366128 bytes of font files)"
+  },
+  {
+   "command": "playwright test tests/browser/code-block.spec.ts tests/browser/prose.spec.ts tests/browser/fonts.spec.ts (output outside the repository)",
+   "result": "40 passed (browser-specs.log)"
+  },
+  {
+   "command": "node harness/copy.mjs",
+   "result": "CopyButton in four adapters: nothing written, read or called on mount and re-render; Enter and Space copy; clipboard holds the exact text (trailing newline kept); copied state ends at 3000 ms and at the 600 ms given; denied, unavailable, failed and empty give the failed state with visible text and no timer; disabled does nothing; double activation writes twice and reports the second result once; unmount while pending is silent; missing texts: three warnings, once each (copy-results.json, copy-*.png)"
+  },
+  {
+   "command": "node harness/nav.mjs; ONLY=angular node harness/nav.mjs",
+   "result": "SideNavigation: root, list, accessibility tree, tab order, native summary keys, reader toggles kept, current page moves, sticky from 64rem, reveal inside the nav only, RTL, missing label (nav-results-all.json, nav-results-angular.json, nav-*.png)"
+  },
+  {
+   "command": "node harness/links.mjs",
+   "result": "bindLinkNavigation: 45 cases equal in four adapters: plain click and Enter handed over; modifier keys, middle button, target, download, rel external, other origin, fragment and same-document fragment links, mailto, SVG anchor, aria-disabled, editable, already prevented, navigate returning false or throwing, destroy, base option, base href and base target left to the browser; drawer closes after a routed click (links-results.json)"
+  },
+  {
+   "command": "node harness/scenes.mjs",
+   "result": "ToggleGroup, PortalHeader (1280 and 320, ar and en, with and without notice and actions), AppShell and Angular hosts; axe on 50 pages with wcag2a, wcag2aa, wcag21aa, wcag22aa: 44 clean; violations: color-contrast on the SideNavigation current row in four adapters (M1); target-size on the harness's own unstyled button and on my unstyled vanilla ContentNavigation markup (harness artefacts) (scenes-results.json, axe-results.json)"
+  },
+  {
+   "command": "node harness/cnav.mjs",
+   "result": "ContentNavigation under real smooth scrolling and with reduced motion: one change and one steady current link per activation in four adapters; wheel takeover, replaced activation and keyboard activation as specified (cnav-results.json)"
+  },
+  {
+   "command": "node harness/ssr.mjs; node harness/hydrate.mjs",
+   "result": "Angular server render of the new components and all twelve layout primitives twice: identical (19184 characters), no warning, text function not called; hydration in Chromium: 23 components, 733 nodes, none skipped, no mismatch, nodes reused, no clipboard access (ssr-angular-hydrated.png)"
+  },
+  {
+   "command": "node harness/ssr-rv.mjs",
+   "result": "React and Vue server render twice: identical; React and Vue navigation markup equal; Vue root has style=\"\" (m5)"
+  },
+  {
+   "command": "node harness/styles.mjs; keyscroll.mjs; focus.mjs; bidi.mjs; small.mjs; contrast-nav.mjs",
+   "result": "Code block and prose in ar and en, light and dark, both themes: every syntax token at least 4.5:1 on the code surface (lowest: Hawiyah light comment 4.61, DGA light constant and attribute 4.93, DGA dark tag and type 5.22, Hawiyah dark comment 5.36); forced colours give CanvasText, Highlight and LinkText; focus ring 3px, at least 5.23:1; arrow keys scroll the listing; no page overflow at 320px; styles.css alone requests no font file and declares only the riyal face; fonts.css loads the four Arabic weights and one mono file (styles-results.json, styles-*.png)"
+  },
+  {
+   "command": "node tools/compare-fonts.cjs upstream-fonts (npm tarballs downloaded outside the repository)",
+   "result": "tarball sha256 and gitHead match the provenance record; the nine font files and the licence are byte-identical to @ibm/plex-sans-arabic 1.1.0 and @ibm/plex-mono 2.5.0; hashes in src and dist match"
+  },
+  {
+   "command": "vite build of the harness; HW_BASE=http://127.0.0.1:5198 node harness/prod.mjs",
+   "result": "Production bundle, texts missing: no console output in any adapter; nothing rendered in place of the texts"
+  },
+  {
+   "command": "hygiene scan of full.diff (tracked diff plus untracked text files)",
+   "result": "no absolute local path, no credential, no test artefact among the 53 untracked files, no claim of endorsement or certification; the new token descriptions and documents say \"Hawiyah mapping, not a Platforms Code variable\""
+  },
+  {
+   "command": "playwright test portal-layout portal-branches portal-identity portal-shell-projects navigation-drawer nic-content-navigation toggle-group-states native-layout-projects published-stylesheet style-defects mobile-navigation nic-links (tests/browser, output outside the repository)",
+   "result": "84 passed, 1 failed: native-layout-projects.spec.ts:121 \"twelve angular typescript layout projects render and reflow in ar\" (B1); it passed before this diff (browser-subset.log)"
+  },
+  {
+   "command": "playwright test --config playwright.portals.config.ts (examples for React, Vue and Angular; output outside the repository)",
+   "result": "81 passed (browser-portals.log)"
+  }
+ ]
+}

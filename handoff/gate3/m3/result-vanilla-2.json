@@ -1,0 +1,190 @@
+{
+ "implemented": [
+  "dates-2",
+  "R02",
+  "dates-7",
+  "dates-4",
+  "dates-5",
+  "dates-6",
+  "R01",
+  "R03",
+  "R25",
+  "overlays-1",
+  "overlays-10",
+  "overlays-14",
+  "disclosure-data-3",
+  "disclosure-data-5",
+  "disclosure-data-10",
+  "disclosure-data-13",
+  "disclosure-data-15",
+  "layout-3",
+  "nav-a-11",
+  "nav-a-14",
+  "nav-a-15",
+  "E08",
+  "nav-b-1",
+  "nav-b-15",
+  "nav-b-2",
+  "R24",
+  "nav-b-3",
+  "R15",
+  "nav-b-7",
+  "nav-b-8",
+  "nav-b-9",
+  "R26",
+  "nav-b-12",
+  "nav-b-13",
+  "R21",
+  "nav-b-17",
+  "portal-shell-1",
+  "portal-shell-4",
+  "E03",
+  "E04",
+  "E05",
+  "E06",
+  "R22",
+  "feedback-status-1",
+  "spike-G3",
+  "feedback-status-2",
+  "R00",
+  "feedback-status-7",
+  "feedback-status-8",
+  "feedback-status-9",
+  "feedback-status-10",
+  "feedback-status-11",
+  "feedback-status-12",
+  "feedback-status-13",
+  "feedback-status-14",
+  "content-display-1",
+  "content-display-7",
+  "content-display-11",
+  "content-display-14",
+  "content-display-13",
+  "content-display-16",
+  "R14",
+  "content-display-22",
+  "content-display-21",
+  "R11",
+  "R12",
+  "content-display-23",
+  "R13",
+  "R20",
+  "actions-6",
+  "actions-7",
+  "service-patterns-12",
+  "R05",
+  "service-patterns-13",
+  "R04",
+  "service-patterns-19",
+  "service-patterns-21",
+  "service-patterns-1",
+  "service-patterns-2",
+  "R18",
+  "service-patterns-7",
+  "R17"
+ ],
+ "deviations": [
+  {
+   "item": "STATE-02/03/04 (Feedback, CookieConsent)",
+   "what": "vanilla has no controlled mode: options.value / options.open are initial values; the tests cover the initial value, setOpen notifications and STATE-06 details",
+   "why": "convention controlled-and-observable-state gives vanilla an option, on<State>Change, hw:change and controller methods only"
+  },
+  {
+   "item": "R01 (CALENDAR-05)",
+   "what": "the status p is created once with host.after(status), so it follows div.hw-calendar-content (which holds the grid) rather than the table itself",
+   "why": "perAdapter.vanilla prescribes host.after; the grid is re-rendered inside the host"
+  },
+  {
+   "item": "dates-7 (MSG-01)",
+   "what": "a created or authored-but-unnamed error element gets id {inputId}-error when the input has an id (else a generated hw-date-error-N)",
+   "why": "endState names p.hw-error#{controlId}-error; perAdapter suggested ensureId only"
+  },
+  {
+   "item": "dates-7 (MSG-02)",
+   "what": "the output id is inserted before authored .hw-hint/.hw-error/[data-hw-error] ids in aria-describedby and only while it shows a date; the produced error id is last",
+   "why": "order application, formatted, hint, error from the endState; vanilla has no field ids"
+  },
+  {
+   "item": "dates-5",
+   "what": "Calendar reset month is value || options.month || data-hw-month as in perAdapter.vanilla",
+   "why": "endState behaviour lists options.month first; the DOM statement (visible month of the reset target) and perAdapter agree on the value first"
+  },
+  {
+   "item": "SHAPE-03 (Menu, TreeView)",
+   "what": "checked by reading the source declarations of MenuOptions and TreeViewOptions",
+   "why": "vitest does not type-check and vanilla has no type-test fixture"
+  },
+  {
+   "item": "nav-b-13",
+   "what": "the toggle templates receive {label} and {id}",
+   "why": "node is {id, label}; templated() fills both"
+  }
+ ],
+ "files": [
+  "packages/vanilla/EXPANSION-API.md",
+  "packages/vanilla/PORTAL.md",
+  "packages/vanilla/README.md",
+  "packages/vanilla/src/calendar.ts",
+  "packages/vanilla/src/content.ts",
+  "packages/vanilla/src/disclosures.ts",
+  "packages/vanilla/src/index.ts",
+  "packages/vanilla/src/pagination.ts",
+  "packages/vanilla/src/portal.ts",
+  "packages/vanilla/src/stepper.ts",
+  "packages/vanilla/test/calendar.test.ts",
+  "packages/vanilla/test/content.test.ts",
+  "packages/vanilla/test/controls.test.ts",
+  "packages/vanilla/test/date-parity.test.ts",
+  "packages/vanilla/test/disclosure-data-parity.test.ts",
+  "packages/vanilla/test/feedback-content-parity.test.ts",
+  "packages/vanilla/test/navigation-parity.test.ts",
+  "packages/vanilla/test/portal-parity.test.ts",
+  "packages/vanilla/test/stepper.test.ts",
+  "packages/vanilla/test/text.test.ts",
+  "packages/vanilla/test/vanilla.test.ts"
+ ],
+ "commands": [
+  {
+   "command": "node scripts/build.mjs --only vanilla",
+   "result": "exit 0"
+  },
+  {
+   "command": "pnpm exec tsc -p packages/vanilla/tsconfig.json --noEmit",
+   "result": "no errors"
+  },
+  {
+   "command": "pnpm exec vitest run packages/vanilla",
+   "result": "28 files, 277 tests passed, no Hawiyah: warning in output"
+  },
+  {
+   "command": "pnpm exec vitest run tests/text-contract-docs.test.ts",
+   "result": "3 passed"
+  },
+  {
+   "command": "pnpm exec vitest run (root tests that import vanilla)",
+   "result": "vanilla-related failures outside the package: tests/calendar-localization.test.ts:126,142 assert the standalone switch removed by R01; tests/search-suggestions-vanilla.test.ts:54 (search-field, not touched in this step); the rest are react/vue/angular cases in flux"
+  }
+ ],
+ "notDone": [
+  {
+   "item": "browser cases TREE-02, TREE-06, POPOVER-04, PORTAL-04, PORTAL-07, SERVICE-03, ALERT-04, NOTIFICATION-04/05, CONSENT-03, FEEDBACK-06, PROGRESS-03, METER-03, SKELETON-02/04, SPINNER-04, BADGE-01, DESCRIPTION-LIST-02, TIMELINE-03, CHIP-01 geometry",
+   "why": "tests/browser is outside packages/vanilla"
+  },
+  {
+   "item": "tests/*-parity.test.ts files named by the specifications",
+   "why": "outside packages/vanilla; the vanilla cases with the same ids are in packages/vanilla/test/date-parity, disclosure-data-parity, navigation-parity, portal-parity and feedback-content-parity"
+  },
+  {
+   "item": "tests/calendar-localization.test.ts:126 and :142",
+   "why": "they assert the standalone vanilla Calendar switch and its texts, removed by R01; the owner of tests/ must move them to the DatePicker"
+  },
+  {
+   "item": "documented samples outside the package (apps/playground guides and projects: menu onSelect, tree toggle, calendar switch attributes, ServiceCard/ServiceDetails, Feedback and CookieConsent usage, skeleton pattern), components.json, llms.txt, docs/*.md, CHANGELOG",
+   "why": "not owned by this step"
+  },
+  {
+   "item": "REMOVAL-FOCUS-01..05",
+   "why": "core unit test (packages/core)"
+  }
+ ]
+}

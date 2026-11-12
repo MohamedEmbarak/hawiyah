@@ -1,0 +1,2333 @@
+{
+  "cluster": "rich-inputs-files",
+  "items": [
+    {
+      "ids": [
+        "rich-inputs-1"
+      ],
+      "component": "Combobox",
+      "summary": "Angular puts hw-combobox on the whole field, so the absolutely positioned listbox opens below the hint and the error instead of under the input. In every adapter the field is div.hw-field and div.hw-combobox wraps only the text input, the hidden input, the listbox and the status.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "hw-combobox: no input added by this item. `label` is no longer the only name: the forwarded `aria-label` / `aria-labelledby` inputs of HwValueControl (forms-core, convention angular-host-attributes) name the input and the listbox.",
+          "vanilla": "none (documented markup only)"
+        },
+        "dom": "div.hw-field > [label.hw-label[for=id] with the required marker as last child] , div.hw-combobox , [p.hw-hint#id-hint] , [p.hw-error#id-error]. div.hw-combobox > input.hw-input#id[type=text][role=combobox][autocomplete=off][aria-autocomplete=list][aria-expanded][aria-controls=id-listbox][aria-activedescendant while an option is active][aria-readonly=true while read-only][aria-describedby][aria-invalid per E01][required] , input[type=hidden][name][value] , ul.hw-listbox#id-listbox[role=listbox][hidden while closed] > li.hw-option#id-option-N[role=option][aria-selected][aria-disabled=true when disabled][data-active while highlighted] (or li.hw-hint[role=presentation] with emptyMessage) , span.hw-sr-only[role=status][aria-live=polite][aria-atomic=true]. Stated differences: (1) React and Vue render the bare div.hw-combobox when label, hint and error are all absent, Angular always renders div.hw-field because its host is a wrapper whose root is the field; (2) the listbox is named by aria-labelledby = label id in the three frameworks (the Angular fieldLabel of forms-core carries the id {decorationId}-label); (3) the value of data-active ('true' in React and Vue, empty in Angular and vanilla) is not part of the contract, the selector is [data-active].",
+        "behaviour": "Keyboard, focus and reset unchanged by this item. The popup is positioned against div.hw-combobox (styles/src/components.css:213-214), so it starts 8px (--hw-space-2) under the input whatever follows the control. Server rendering: same DOM as the first client render; Angular ids derive from controlId (HwIdSource)."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/components.css",
+          "change": "none: .hw-combobox { position: relative } at :213 and .hw-listbox { inset-block-start: calc(100% + var(--hw-space-2)) } at :214 already assume this structure."
+        }
+      ],
+      "perAdapter": {
+        "react": "none (packages/react/src/interactive.tsx:268-298 already renders this DOM; div -> p for hint and error comes from the FieldLayout change of forms-core).",
+        "vue": "none (packages/vue/src/interactive.ts:185-213; span -> p comes from the decorate change of forms-core).",
+        "angular": "packages/angular/src/forms.ts:135 template becomes `<div class=\"hw-field\">${fieldLabel}<div class=\"hw-combobox\"><input #input type=\"text\" class=\"hw-input\" role=\"combobox\" …><input type=\"hidden\" …><ul class=\"hw-listbox\" role=\"listbox\" [id]=\"controlId + '-listbox'\" …>…</ul><span class=\"hw-sr-only\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\">…</span></div>${fieldEnd}</div>`. Inside it: the hand-written label -> fieldLabel (marker, convention required-marker); add type=\"text\"; remove aria-haspopup=\"listbox\" (implicit for role=combobox and absent elsewhere); list id and aria-controls suffix '-list' -> '-listbox'; the status span moves inside div.hw-combobox and gains aria-atomic=\"true\"; input gains [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby\"; listbox name [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby ?? (ariaLabel || !label ? null : decorationId + '-label')\" (replaces [attr.aria-label]=\"label || null\").",
+        "vanilla": "packages/vanilla/src/combobox.ts: none (the root stays [data-hw=combobox]; the label is found through input.labels at :76). Documented markup changes in packages/core/API.md:164-173, packages/vanilla/README.md, components.json (Combobox), apps/playground/src/main.ts:196, component-native-guides.ts:79 and choice-input-projects.ts:49-53 to: `<div class=\"hw-field\"><label class=\"hw-label\" for=\"city\">City</label><div class=\"hw-combobox\" data-hw=\"combobox\" data-hw-results-message=\"{count} …\"><input id=\"city\" class=\"hw-input\" data-hw-combobox-input autocomplete=\"off\" aria-describedby=\"city-hint\"><input type=\"hidden\" name=\"city\" data-hw-combobox-value><ul class=\"hw-listbox\" data-hw-combobox-list hidden>…</ul><span class=\"hw-sr-only\" data-hw-combobox-status role=\"status\"></span></div><p class=\"hw-hint\" id=\"city-hint\">…</p></div>`."
+      },
+      "tests": [
+        {
+          "caseId": "COMBOBOX-01",
+          "what": "[rich-inputs-1] the listbox parent is div.hw-combobox whose element children are exactly input, input[type=hidden], ul.hw-listbox, span[role=status]; label is its previous sibling and p.hw-hint / p.hw-error its next siblings inside div.hw-field. File tests/combobox-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "COMBOBOX-02",
+          "what": "browser: with a hint and an error, listbox top minus input bottom is 8px in LTR and RTL. File tests/browser/combobox.spec.ts (static fixture, package stylesheet only).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "REQ-01",
+          "what": "required combobox with a label has one .hw-required-marker as last child of the label (Angular regression).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "aria-label / aria-labelledby written on hw-combobox reach the input and name the listbox; the host has none. File packages/angular/test/required-names.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-combobox",
+          "kind": "markup",
+          "old": "div.hw-field.hw-combobox around label, input, list, status, hint and error",
+          "new": "div.hw-field > div.hw-combobox around input, hidden input, listbox and status; selectors .hw-field.hw-combobox -> .hw-field > .hw-combobox"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-combobox",
+          "kind": "markup",
+          "old": "listbox id {controlId}-list; aria-haspopup=\"listbox\" on the input",
+          "new": "listbox id {controlId}-listbox; no aria-haspopup"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "Combobox",
+          "kind": "markup",
+          "old": "documented markup with label, hint and error inside [data-hw=combobox]",
+          "new": "div.hw-field > label, div.hw-combobox[data-hw=combobox], p.hw-hint; authored markup with the label inside the root keeps working, a hint inside it reproduces the defect"
+        }
+      ],
+      "readme": "Angular and vanilla READMEs show the structure div.hw-field > label, div.hw-combobox, hint, error and state that hint and error must not be placed inside .hw-combobox because the list is positioned against it.",
+      "decisions": [
+        {
+          "component": "Combobox",
+          "question": "What does .hw-combobox wrap?",
+          "choice": "input, hidden input, listbox and status only",
+          "basis": "repository",
+          "source": "packages/styles/src/components.css:213-214; packages/react/src/interactive.tsx:268; packages/vue/src/interactive.ts:185",
+          "changedAdapters": [
+            "angular",
+            "vanilla (documentation)"
+          ]
+        },
+        {
+          "component": "Combobox",
+          "question": "aria-haspopup and list id in Angular",
+          "choice": "no aria-haspopup, id suffix -listbox",
+          "basis": "majority",
+          "source": "React, Vue and vanilla render neither aria-haspopup nor the -list suffix",
+          "changedAdapters": [
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "alsoDependsOnOwnerDecisions": [
+        1
+      ],
+      "notDone": "data-active value and data-state on options stay as they are per adapter (no rendered or assistive-technology difference)."
+    },
+    {
+      "ids": [
+        "rich-inputs-2"
+      ],
+      "component": "Combobox",
+      "summary": "Only React can control and observe the popup; Vue emits update:open without an `open` prop, Angular and vanilla notify neither open nor query. `open` becomes controllable and `query` observable in the four adapters with the names of convention controlled-and-observable-state; React renames onInputChange to onQueryChange.",
+      "endState": {
+        "surface": {
+          "react": "Combobox: `onInputChange` removed; new `onQueryChange?: (query: string) => void` (optional, same behaviour). Unchanged: open?, defaultOpen? (false), onOpenChange?.",
+          "vue": "Combobox: new props `open: { type: Boolean, default: undefined }` (controlled when not undefined, so v-model:open works) and `defaultOpen: Boolean` (false). Existing events `update:open`, `update:query` unchanged. Exposed methods: element, focus, close, new `show()`.",
+          "angular": "hw-combobox: new `@Input({transform: booleanAttribute}) open = false` (written once it is the initial value; [(open)] works), `@Output() readonly openChange = new EventEmitter<boolean>()`, `@Output() readonly queryChange = new EventEmitter<string>()`. No defaultOpen input.",
+          "vanilla": "createCombobox options: new `onOpenChange?: (open: boolean) => void`, `onQueryChange?: (query: string) => void`. Root event hw:change gains two more shapes: detail {open} and detail {query}; the value event keeps detail {value, label}. Controller keeps `open`, `show()`, `close()`."
+        },
+        "dom": "No element change. aria-expanded and `hidden` on the listbox follow the effective open state: the application's `open` when controlled, else the component's; always closed while disabled or read-only (docs/combobox-readonly.md:14-19).",
+        "behaviour": "open: notified once per change caused by the reader (focus, click, ArrowDown/ArrowUp, typing, Escape, Tab, blur, outside press, option selection) and by a form reset that closed an open popup; never when the application changes the prop. Controlled and ignored: the DOM keeps the application's value. query: notified once for every input event the component accepted (not blocked, not composing in Angular and vanilla as today) with the input text; selecting an option, a reset and application writes do not notify query (value notification covers them). Angular valueChange fires only when the value changed (today it fires on every keystroke, forms.ts:184). In Angular and like React and Vue, a value written by the application no longer closes an open popup. Server rendering: `defaultOpen` / `open` render the list open on the server and identically on the client; no listener is attached on the server."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/interactive.tsx:176 `onInputChange` -> `onQueryChange`; :187 destructuring; :270 call `onQueryChange?.(event.currentTarget.value)`. No other change (open / defaultOpen / onOpenChange at :177-179 and the notification at :266 stay).",
+        "vue": "packages/vue/src/interactive.ts:126 add the two props; :134 initial state `{ ...createComboboxState(props.options, props.modelValue ?? props.defaultValue), open: props.defaultOpen }`; :153-155 effective open `!props.disabled && !ancestorDisabled.value && !props.readonly && (props.open ?? state.value.open)`; dispatch (:158-165) is unchanged because `previous` is the effective state, so update:open is emitted against the controlled value; :179 expose adds `show: () => dispatch({ type: 'open' })`.",
+        "angular": "packages/angular/src/forms.ts:137-147 add `open`, `openChange`, `queryChange`. :180 `dispatch(event, notify = true)`: remember `wasOpen = this.state.open`; after the transition, when `this.state.open !== wasOpen` set `this.open = this.state.open` and, if notify, `this.openChange.emit(this.open)`. ngOnChanges (:155-160): replace `createComboboxState(this.options, this.value)` by `{ ...createComboboxState(this.options, this.value), open: this.state.open }`; then `if (changes['open'] && this.open !== this.state.open) this.dispatch({type: this.open ? 'open' : 'close'}, false)`; when the request was refused because the control is blocked, `this.open = this.state.open` (no emission inside change detection). writeValue (:178) keeps `open` the same way. search() (:184): `this.dispatch({type: 'input', query}); this.queryChange.emit(query); if (this.state.value !== this.value) this.update(this.state.value);`. select() (:185): update only when the value differs.",
+        "vanilla": "packages/vanilla/src/combobox.ts:5-12 add the two options. send() (:125-136): `const previousOpen = state.open` before the transition; after render, `if (previousOpen !== state.open) { emit(root, { open: state.open }); options.onOpenChange?.(state.open); }`. Input listeners (:141-149): after an accepted `send({ type: 'input', … })` call `emit(root, { query: input.value }); options.onQueryChange?.(input.value);`. show(), close() and the reset path go through send(), so they notify open the same way."
+      },
+      "tests": [
+        {
+          "caseId": "STATE-01",
+          "what": "Combobox open, uncontrolled: focus opens and notifies true once; Escape closes and notifies false once. File tests/combobox-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-02",
+          "what": "Combobox open controlled (React open, Vue :open, Angular [open] without the output applied): Escape notifies false and the list stays open.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-03",
+          "what": "changing the controlled open prop does not notify (vanilla is left out with a comment: it has no controlled prop; show() and close() notify like a reader action).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-04",
+          "what": "v-model:open and [(open)] round-trip.",
+          "adapters": [
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-05",
+          "what": "server render with defaultOpen / open equals the first client render (list not hidden, aria-expanded=true). Files packages/react/react.ssr.test.tsx, packages/vue/test/ssr.test.ts, packages/angular/test/ssr.test.ts.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-06",
+          "what": "vanilla hw:change carries detail.open on open and close and detail.query on typing.",
+          "adapters": [
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "COMBOBOX-03",
+          "what": "[rich-inputs-2] typing notifies query once per input event with the text; selecting an option, a reset and an application write do not notify query.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "COMBOBOX-04",
+          "what": "the value notification fires only when the selected value changed: typing without a selection notifies no value (Angular regression).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RENAME-02",
+          "what": "React type test: onInputChange is not accepted by ComboboxProps.",
+          "adapters": [
+            "react"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "Combobox",
+          "kind": "input",
+          "old": "onInputChange={fn}",
+          "new": "onQueryChange={fn}"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-combobox",
+          "kind": "default",
+          "old": "(valueChange) emitted on every keystroke; an application value write closed the popup",
+          "new": "(valueChange) only when the value changed, use (queryChange) for the typed text; the popup keeps its open state"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "Combobox",
+          "kind": "output",
+          "old": "hw:change on the root always carried detail.value",
+          "new": "hw:change also fires with detail {open} and detail {query}; read the value with `'value' in event.detail`"
+        }
+      ],
+      "readme": "Each README lists the three members of `open` and the `query` notification under the names above; React README has the rename line; vanilla README lists the three hw:change detail shapes; all state that open is ignored while the control is disabled or read-only and that query is only notified for typed text.",
+      "decisions": [
+        {
+          "component": "Combobox",
+          "question": "When does the query notification fire?",
+          "choice": "only for typed text (accepted input events)",
+          "basis": "majority",
+          "source": "packages/react/src/interactive.tsx:270; packages/vue/src/interactive.ts:189",
+          "changedAdapters": [
+            "angular",
+            "vanilla"
+          ]
+        },
+        {
+          "component": "Combobox",
+          "question": "Does an application value write close the Angular popup?",
+          "choice": "no, as in React and Vue",
+          "basis": "majority",
+          "source": "packages/react/src/interactive.tsx:230; packages/vue/src/interactive.ts:169",
+          "changedAdapters": [
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "rich-inputs-5",
+        "files-5"
+      ],
+      "component": "Combobox, PasswordField, SearchField, PinInput, TagInput, MultiSelect, FileDropzone, FileUpload (application of fields-basic-8)",
+      "summary": "After a native reset the Angular MultiSelect still submits its old hidden inputs and the Angular FileDropzone still lists files the input no longer holds; no reset listener exists there. The one mechanism of convention native-form-reset (canonical item fields-basic-8, written by forms-core) is applied to the eight controls of this cluster in the four adapters: reset target, one notification only when the value changed, and secondary state cleared.",
+      "endState": {
+        "surface": {
+          "react": "No new prop. Behaviour of existing ones: onValueChange / onFilesChange / onVisibleChange / onOpenChange fire once after a reset that changed their state, also when the value is controlled.",
+          "vue": "No new prop. update:modelValue / update:files / update:visible / update:open are emitted once and only when the reset changed the state (FileDropzone and FileUpload no longer emit update:files([]) for an already empty control).",
+          "angular": "No new input (no defaultValue). Without Angular Forms the target is the value held after the first ngOnInit; valueChange (and visibleChange / openChange) fire once when changed.",
+          "vanilla": "No new option. hw:change and onValueChange now also fire after a reset that changed the value (today they do not)."
+        },
+        "dom": "After the reset microtask, per control: Combobox: text = label of the target option, hidden input = target, popup closed; PasswordField: type=password, toggle aria-pressed=false; SearchField: suggestions closed; PinInput: text = normalised target; TagInput: chips and hidden inputs = target, draft empty; MultiSelect: checkboxes and hidden inputs = target, filter empty, results status empty; FileDropzone: no files, status empty, rejection message removed, data-state not 'error'; FileUpload: no files. aria-invalid set by a failed submission or a rejection is removed.",
+        "behaviour": "Reset targets: React and Vue `defaultValue` else '' / [] ; FileDropzone and FileUpload []; Angular per convention (Angular Forms attached: nothing written by the component; else the initial value); vanilla the authored values captured at creation. Arrays are compared by content. `visible` of PasswordField always returns to false (also when React defaultVisible is true). Read-only and disabled controls reset too. Controlled and ignored: text, checked state and hidden inputs are rewritten from the application's value. Focus stays where it is (the reset button). No listener is attached during server rendering (observeFormReset is created after mount)."
+      },
+      "core": [
+        {
+          "export": "observeFormReset (written by forms-core, packages/core/src/form-reset.ts)",
+          "signature": "observeFormReset(control: Element, onReset: () => void): { destroy(): void }",
+          "behaviour": "Used, not defined, by this cluster: behaviour as specified by forms-core (fields-basic-8): the owning form is resolved at event time, and onReset runs in the microtask when the dispatch is over, otherwise before the next paint; never after a default-prevented reset or after destroy()."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "All callbacks run through useFormReset (expanded-shared.ts:3, rewritten by forms-core). interactive.tsx:244-254: replace the private listener by `useFormReset(input, reset)`; reset: target = defaultValue; if it differs from `selected` call onValueChange(target, option); `setState({ ...createComboboxState(latestOptions.current, value ?? target) })` (controlled: rebuilt from the prop, so text and hidden input show the application's value); if `open` call onOpenChange(false); clear `failed`. expanded-controls.tsx:17 `setShown(false)` unconditionally (the useControllable setter notifies only on change and leaves a controlled prop alone). :69 `setStored(normalize(defaultValue))` unconditionally. :77 and :87: `if (target differs by content from the current array) setTags/setSelected(target)` unconditionally of control, then setQuery(''); MultiSelect also `setResetCount(n => n + 1)` used as `key` of div.hw-multi-select-options (remounts the checkboxes so `checked` follows the prop) and clears the results announcement. :98 `if (files.length) onFilesChange?.([])` then setFiles([]), setRejected([]). search-field.tsx:39 `setText(defaultValue)` unconditionally. forms.tsx:80-86 FileUpload: a ref counts the files of the last change; useFormReset calls `onFilesChange?.([])` when it was not zero.",
+        "vue": "useFormReset and the comparison in useValue.set come from forms-core (shared.ts:28-42). controls.ts:75 `shown.set(false)` (the new visible model of rich-inputs-14) besides model.set(props.defaultValue). :441, :496-499, :603-606, search-field.ts:28 and interactive.ts:175 keep their calls (set now emits only on change). After the model step each control rewrites its DOM in nextTick: PasswordField, SearchField, PinInput `element.value.value = <shown value>`; Combobox `element.value.value = effective.value.query`; TagInput `query.value = ''` and `element.value.value = ''`; MultiSelect `query.value = ''`, the results announcement off and `resetCount.value++` used as `key` of div.hw-multi-select-options. controls.ts:717-720 FileDropzone: `if (selection.value.length) emit('update:files', [])`, selection and rejected emptied. forms.ts:144 FileUpload: emit update:files([]) only when the last change held files (count kept in setup).",
+        "angular": "HwValueControl supplies resetFromForm(), afterReset() and syncDom() (forms-core, forms.ts:17-40). forms.ts hw-combobox: afterReset(): `this.state = createComboboxState(this.options, this.value)`, composing = false, open / openChange(false) when it was open, syncValidity(); syncDom(): input.value = state.query. hw-file-upload (:203-213) and hw-file-dropzone (advanced-controls.ts:363-381): emptyValue []; afterReset(): rejectedFiles = [], dragging = false; syncDom(): shared private function writeFiles(input, files) that assigns the held files through DataTransfer, or clears the input when there are none. advanced-controls.ts:33-40 hw-password-field: delete removeReset, destroyed, ngAfterViewInit listener and ngOnDestroy; afterReset(): setVisible(false); syncDom(): input.value = value. :64, :101-102, :110 hw-search-field: delete the private listener; afterReset(): close(), composing = false; syncDom(): input.value = value. :185-186 hw-pin-input: add #input ViewChild; syncDom(): input.value = normalizedValue. :189 hw-tag-input: afterReset(): draft = '', validity(); syncDom(): input.value = ''. :192-215 hw-multi-select: afterReset(): query = '', announce = false, validity(); syncDom(): search.value = '' and every checkbox `.checked = selectedValues.includes(value)`.",
+        "vanilla": "Each controller replaces its own listener by core observeFormReset(input, …) and notifies on change. combobox.ts:185-188: `send({ type: 'reset', value: initialValue })` (send already emits value and, new, open). controls.ts:30 PasswordField: if the type was 'text' emit {visible: false} and call onVisibleChange(false). :131 PinInput: render(); notify when input.value differs from the last notified value. :191 TagInput: `value = [...initial]; render()`; notify when the content changed. :237 MultiSelect: compare values() before and after, clear the status text, notify when different. :289 FileDropzone: a counter of the last selection; status emptied, created error element removed, aria-invalid and data-state restored; emit {value: [], rejected: false, rejectedFiles: []} and onValueChange([]) when the counter was not zero. search-field.ts:173: observeFormReset, notify onValueChange when the text changed."
+      },
+      "tests": [
+        {
+          "caseId": "RESET-01",
+          "what": "uncontrolled: change, reset -> shown value, FormData and held value equal the target. Files tests/combobox-parity.test.ts, tests/multi-select-parity.test.ts, tests/tag-input-parity.test.ts, tests/pin-input-parity.test.ts, tests/password-field-parity.test.ts, tests/search-field-parity.test.ts, tests/file-dropzone-parity.test.ts, tests/file-upload-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-02",
+          "what": "[rich-inputs-5][files-5] exactly one notification with the target after a reset that changed the value (Angular MultiSelect: no hidden input left; Angular FileDropzone: valueChange([]) once).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-03",
+          "what": "no notification when the value already equals the target (Vue FileDropzone and FileUpload regression: no update:files for an empty control).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-04",
+          "what": "controlled, notification applied: all three agree on the target.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-05",
+          "what": "controlled, notification ignored: text, checkboxes, chips and FormData equal the application value (MultiSelect checkboxes are the regression).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-06",
+          "what": "default-prevented reset changes and notifies nothing.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-07",
+          "what": "read-only and disabled Combobox, TagInput, MultiSelect and PinInput reset like editable ones.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-08",
+          "what": "external form through the form attribute (Combobox, TagInput, MultiSelect hidden inputs included).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-09",
+          "what": "secondary state: Combobox popup closed and open notified once, MultiSelect filter and results status empty, TagInput draft empty, password hidden and visible notified once, FileDropzone status and rejection gone, submission aria-invalid gone.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-10",
+          "what": "Angular with a FormControl inside a formGroup: the component writes nothing itself; FileDropzone with a standalone FormControl shows and submits the files the control holds. File packages/angular/test/input-contracts.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-combobox, hw-pin-input, hw-tag-input, hw-multi-select, hw-file-dropzone, hw-file-upload",
+          "kind": "default",
+          "old": "a native reset outside Angular Forms left the component value unchanged",
+          "new": "the value returns to its initial value and (valueChange) fires once when it changed"
+        },
+        {
+          "adapter": "vue",
+          "component": "FileDropzone, FileUpload",
+          "kind": "default",
+          "old": "update:files([]) on every reset",
+          "new": "update:files([]) only when files were selected"
+        },
+        {
+          "adapter": "react",
+          "component": "PasswordField",
+          "kind": "default",
+          "old": "reset returned visible to defaultVisible (uncontrolled only)",
+          "new": "reset always hides the value and calls onVisibleChange(false) when it was visible"
+        },
+        {
+          "adapter": "react",
+          "component": "Combobox, PinInput, TagInput, MultiSelect, SearchField, FileDropzone, FileUpload",
+          "kind": "default",
+          "old": "a reset of a controlled value notified nothing",
+          "new": "onValueChange(target) / onFilesChange([]) fires once when the target differs"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "Combobox, PinInput, TagInput, MultiSelect, FileDropzone, PasswordField, SearchField",
+          "kind": "default",
+          "old": "no hw:change after a reset",
+          "new": "hw:change and the on…Change option fire once when the reset changed the state"
+        }
+      ],
+      "readme": "Each README: the reset paragraph of convention native-form-reset with the targets above; Angular README: no defaultValue input, Angular Forms owns the value when attached; docs/multiselect-validation.md:58-60, docs/tag-input-interaction.md:13-16 and docs/combobox-readonly.md:26-29 are rewritten in place.",
+      "decisions": [
+        {
+          "component": "PasswordField",
+          "question": "Reset target of visible",
+          "choice": "false in every adapter",
+          "basis": "majority",
+          "source": "packages/vue/src/controls.ts:75; packages/angular/src/advanced-controls.ts:37; packages/vanilla/src/controls.ts:30; convention native-form-reset names it",
+          "changedAdapters": [
+            "react"
+          ]
+        },
+        {
+          "component": "FileDropzone, FileUpload",
+          "question": "What does Angular syncDom do for a file input the browser has emptied while the control still holds files?",
+          "choice": "assign the held files back through DataTransfer",
+          "basis": "accessibility",
+          "source": "shown value, held value and FormData must agree (convention native-form-reset a-c)",
+          "changedAdapters": [
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": 0,
+      "notDone": "The mechanism itself (core observeFormReset, React useFormReset, Vue useValue.set comparison, Angular HwValueControl.resetFromForm) is specified and written by forms-core under fields-basic-8."
+    },
+    {
+      "ids": [
+        "rich-inputs-6",
+        "R10"
+      ],
+      "component": "MultiSelect",
+      "summary": "The option rows, the name of the filter input, the required marker and the status line differ in every adapter, and the stylesheet rules for .hw-multi-select-options reach only Vue. One DOM is rendered by the three frameworks and documented for vanilla, with a visible filter label, label.hw-choice rows, the shared marker and an optional selected-count status.",
+      "endState": {
+        "surface": {
+          "react": "MultiSelect: new `getSelectedMessage?: (count: number) => string` (optional; the status is rendered only when supplied). `label` becomes `label?: ReactNode` in a union with 'aria-label' / 'aria-labelledby' (FieldName, shared.tsx:13); a missing name warns once through text('MultiSelect', 'label'). `searchLabel` stays required and is now visible text.",
+          "vue": "MultiSelect: new prop `getSelectedMessage: Function as PropType<(count: number) => string>` (optional). `searchLabel` stays required and is now visible text. `label` checked at render with rootLabel('MultiSelect', props.label, attrs).",
+          "angular": "hw-multi-select: `getSelectedMessage` loses {required: true} and becomes `@Input() getSelectedMessage?: (count: number) => string`. `label` optional when aria-label / aria-labelledby is forwarded. `searchLabel` stays required and is now visible text.",
+          "vanilla": "createMultiSelect: new option `getSelectedMessage?: (count: number) => string`, else `data-hw-selected-message=\"{count} …\"` on the root; written into an authored `[data-hw-selected-status]` element when both exist (optional: no warning without them)."
+        },
+        "dom": "fieldset.hw-field.hw-multi-select[disabled][aria-label | aria-labelledby from the application][aria-describedby][aria-invalid per E01][data-hw-readonly=true while read-only] > [legend.hw-label: label + span.hw-required-marker[aria-hidden=true] ' *' while required] , [label.hw-label[for=id]: searchLabel] , input.hw-input#id[type=search][aria-required=true while required][aria-describedby][aria-invalid][placeholder when given] , div.hw-multi-select-options > label.hw-choice > input.hw-checkbox[type=checkbox][value][disabled only when the control or the option is disabled][aria-disabled=true while read-only] + option label as a text node ; inside the same div, p.hw-hint with emptyMessage when no option matches , span.hw-sr-only[role=status] (R09) , [p.hw-multi-select-selected[role=status] when getSelectedMessage is supplied, content getSelectedMessage(selected count) from the first render] , input[type=hidden][name][form][value] per selected value , [p.hw-hint#id-hint] , [p.hw-error#id-error]. Vanilla (authored, documented): the same elements and classes with data-hw-multiselect-search on the input, data-hw-option on each label.hw-choice, named native checkboxes instead of hidden inputs (filtering hides rows there instead of removing them), p[data-hw-selected-status].",
+        "behaviour": "The filter input is named by its visible label (label for=id), no aria-label. Read-only: checkboxes stay focusable and named, pointer and Space do not change them (click default-prevented), no notification; filtering stays available; hidden inputs keep submitting (convention read-only; reverses 'framework checkboxes are disabled' in docs/multiselect-validation.md:48-51). The selected status updates when the selection changes and is announced politely. Server rendering: both status elements exist on the server; ids from useId / controlId."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/extended.css",
+          "change": "After :82 add `.hw-multi-select-options > .hw-hint { padding-inline: var(--hw-space-2); }` and `.hw-multi-select-options > label:has(input[aria-disabled='true']) { cursor: default; }`. No other rule: .hw-multi-select > p (:82) already styles p.hw-multi-select-selected, and :79-81 now apply in React and Angular."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:81-89. Props: add getSelectedMessage, label union. :89 markup: fieldset className `cx('hw-field hw-multi-select', className)` with aria-label / aria-labelledby passed through and data-hw-readonly; legend only when label != null, marker `<span className=\"hw-required-marker\" aria-hidden=\"true\"> *</span>`; `{copy.search && <label className=\"hw-label\" htmlFor={id}>{copy.search}</label>}` then `<TextField id={id} …>` without aria-label; `div.hw-stack` -> `div.hw-multi-select-options` (keyed by the reset counter of the reset item); checkbox `disabled={disabled || option.disabled}`, `aria-disabled={readOnly || undefined}`, `onClick={event => { if (readOnly) event.preventDefault(); }}`; after the div the two status elements, the hidden inputs, hint, error (already p).",
+        "vue": "packages/vue/src/controls.ts:581-694. Add the prop. :615-620 fieldset: add aria-label / aria-labelledby from attrs (removed from the attrs merged on the input), `aria-invalid`, `data-hw-readonly`. :622 legend only when label, with the marker span when field.controlAttrs.value.required. Before :623 add `h('label', { class: 'hw-label', for: field.id.value }, searchLabel)` and delete `aria-label` at :631. :647-651 checkbox: `disabled: props.disabled || option.disabled`, `'aria-disabled': props.readonly || undefined`, `onClick` preventing default while readonly. :668 the empty message moves inside div.hw-multi-select-options as `h('p', { class: 'hw-hint' }, …)` without role. After the div: status elements; :678-689 span -> p for hint and error.",
+        "angular": "packages/angular/src/advanced-controls.ts:191 template: fieldset gains [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.data-hw-readonly]=\"readOnly ? 'true' : null\"; legend through the shared fieldLegend constant of forms-core (marker); `label.hw-sr-only` -> `@if (texts.need('searchLabel', searchLabel); as search) {<label class=\"hw-label\" [for]=\"controlId\">{{ search }}</label>}`; option `<label class=\"hw-choice\"><input class=\"hw-checkbox\" type=\"checkbox\" [value]=\"option.value\" [checked]=… [disabled]=\"disabled || option.disabled\" [attr.aria-disabled]=\"readOnly ? 'true' : null\" (click)=\"readOnly && $event.preventDefault()\" (change)=\"toggle(option)\" (blur)=\"touch()\">{{ option.label }}</label>` (no inner span); `@empty {<p class=\"hw-hint\">…</p>}`; `<p class=\"hw-hint\" role=\"status\">` -> `@if (getSelectedMessage) {<p class=\"hw-multi-select-selected\" role=\"status\">{{ getSelectedMessage(selectedValues.length) }}</p>}`. :201 remove {required: true}. The host is a kind B wrapper: add hw-multi-select to the display list at styles/src/layout.css:133 (forms-core adds every value control there).",
+        "vanilla": "packages/vanilla/src/controls.ts:204-246: add the option; `const selectedStatus = root.querySelector('[data-hw-selected-status]')`, original text restored on destroy; `const selectedMessage = templated(root, 'getSelectedMessage', options.getSelectedMessage, (count: number) => ({ count }))`; written at creation, after every change and after reset when the element exists and a source exists. No other controller change (read-only already writes aria-disabled, :227). Documented markup in packages/vanilla/EXPANSION-API.md:44, docs/multiselect-validation.md:24-32, components.json and the guide samples becomes the DOM above (label.hw-label for the filter, div.hw-multi-select-options, label.hw-choice[data-hw-option])."
+      },
+      "tests": [
+        {
+          "caseId": "MULTISELECT-01",
+          "what": "[rich-inputs-6] child order and classes of the fieldset as in dom; every row is label.hw-choice inside div.hw-multi-select-options. File tests/multi-select-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MULTISELECT-02",
+          "what": "the filter input has no aria-label and is named by a visible label[for]; a missing searchLabel renders no label and warns once.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "REQ-01",
+          "what": "required: one .hw-required-marker as last child of the legend; REQ-02 none when not required.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FMT-05",
+          "what": "[R10] p.hw-multi-select-selected is absent without getSelectedMessage and shows getSelectedMessage(count) with it, updated on change.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RO-01",
+          "what": "read-only checkboxes are focusable, not disabled, aria-disabled=true; RO-02 click and Space change nothing and notify nothing; RO-03 hidden inputs still in FormData. Files packages/*/test/multiselect-validation.test.ts (updated) and react.multiselect-validation.test.tsx.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "aria-label alone names the fieldset: no legend, no warning.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MULTISELECT-03",
+          "what": "browser: selected row tint and 16rem scroll apply in every adapter; row height 40px. File tests/browser/multi-select.spec.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "MultiSelect",
+          "kind": "markup",
+          "old": "fieldset.hw-multi-select > div.hw-stack; legend marker span without class",
+          "new": "fieldset.hw-field.hw-multi-select > div.hw-multi-select-options; span.hw-required-marker"
+        },
+        {
+          "adapter": "react, vue, angular",
+          "component": "MultiSelect",
+          "kind": "markup",
+          "old": "filter input named by aria-label (React, Vue) or a screen-reader-only label (Angular)",
+          "new": "visible label.hw-label[for] with searchLabel"
+        },
+        {
+          "adapter": "react, vue, angular",
+          "component": "MultiSelect",
+          "kind": "markup",
+          "old": "read-only checkboxes rendered disabled",
+          "new": "enabled with aria-disabled=\"true\"; style them with [aria-disabled='true']"
+        },
+        {
+          "adapter": "vue",
+          "component": "MultiSelect",
+          "kind": "markup",
+          "old": "p[role=status] with emptyMessage after the options",
+          "new": "p.hw-hint inside div.hw-multi-select-options"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-multi-select",
+          "kind": "input",
+          "old": "getSelectedMessage required; p.hw-hint[role=status] always rendered; option text in a span",
+          "new": "optional; p.hw-multi-select-selected only when supplied; label.hw-choice with a text node (migration: none, or delete the input to drop the line)"
+        }
+      ],
+      "readme": "Each README: the DOM above, searchLabel is visible text, getSelectedMessage(count) optional in the four adapters, read-only keeps the checkboxes focusable, a required MultiSelect explains the minimum in its hint. docs/multiselect-validation.md:20-32 and :48-51 are rewritten in place.",
+      "decisions": [
+        {
+          "component": "MultiSelect",
+          "question": "How is the filter input named?",
+          "choice": "a visible label",
+          "basis": "repository",
+          "source": "docs/multiselect-validation.md:20-27 and packages/vanilla/EXPANSION-API.md:44 show a visible label",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "component": "MultiSelect",
+          "question": "Row structure",
+          "choice": "div.hw-multi-select-options > label.hw-choice",
+          "basis": "repository",
+          "source": "packages/styles/src/extended.css:78-81",
+          "changedAdapters": [
+            "react",
+            "angular"
+          ]
+        },
+        {
+          "component": "MultiSelect",
+          "question": "Selected-count status",
+          "choice": "optional in all four, rendered only when supplied",
+          "basis": "repository",
+          "source": "CONTRACT.md:88-91; convention value-display-and-formatting",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        },
+        {
+          "component": "MultiSelect",
+          "question": "Read-only checkboxes",
+          "choice": "focusable with aria-disabled, not disabled",
+          "basis": "accessibility",
+          "source": "convention read-only; reverses docs/multiselect-validation.md:48-51",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "alsoDependsOnOwnerDecisions": [
+        1
+      ],
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "R09"
+      ],
+      "component": "MultiSelect",
+      "summary": "Only the vanilla controller announces how many options match the filter. Every adapter gets the required text getResultsMessage(count) and a polite status element that exists, empty, from the first render and is filled after the reader filters.",
+      "endState": {
+        "surface": {
+          "react": "MultiSelect: new required `getResultsMessage: (count: number) => string`.",
+          "vue": "MultiSelect: new prop `getResultsMessage: { type: Function as PropType<(count: number) => string>, required: true }`.",
+          "angular": "hw-multi-select: new `@Input({required: true}) getResultsMessage!: (count: number) => string`.",
+          "vanilla": "createMultiSelect: `getResultsMessage` (option, else data-hw-results-message=\"{count} …\") becomes required always (today only when [data-hw-status] is authored); the controller creates span.hw-sr-only[data-hw-status] at the end of the root when none is authored and removes it on destroy."
+        },
+        "dom": "span.hw-sr-only[role=status][aria-live=polite][aria-atomic=true] directly after div.hw-multi-select-options. Empty until the first input event on the filter; then getResultsMessage(number of rows shown) after every input event; empty again after a form reset. A missing text leaves it empty and warns once.",
+        "behaviour": "The count is announced politely while the reader types; nothing is announced on mount (the vanilla controller stops writing the status at creation, controls.ts:245). With no match the status carries getResultsMessage(0) and the visible p.hw-hint carries emptyMessage. Server rendering: the element is present and empty."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:81-89: prop in MultiSelectBaseProps; `copy.results = text('MultiSelect', 'getResultsMessage', getResultsMessage)`; `const [announce, setAnnounce] = useState(false)`; the filter onChange sets it true, the reset callback sets it false; render `<span className=\"hw-sr-only\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\">{announce ? copy.results?.(results.length) || '' : ''}</span>` after the options div.",
+        "vue": "packages/vue/src/controls.ts:584-590 prop; `const announce = ref(false)`; set in onInput (:637-639), cleared in the reset callback (:603-606); render `h('span', { class: 'hw-sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, announce.value ? textOf('MultiSelect', 'getResultsMessage', props.getResultsMessage, [options.length]) : '')` after the options div.",
+        "angular": "packages/angular/src/advanced-controls.ts:191-215: input; field `announce = false`; `(input)=\"filter($any($event.target).value)\"` with `filter(query) { this.query = query; this.announce = true; }`; template `<span class=\"hw-sr-only\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\">{{ announce ? texts.call('getResultsMessage', getResultsMessage, [filtered.length]) : '' }}</span>`; writeValue and afterReset set announce = false.",
+        "vanilla": "packages/vanilla/src/controls.ts:215 create the status element when missing (pattern of combobox.ts:37-45), remember and set role, aria-live, aria-atomic; :232 `requireText('MultiSelect', 'getResultsMessage', options.getResultsMessage ?? root.getAttribute('data-hw-results-message'))` unconditionally; :233 filter(announce = false) writes the status only when announce is true; :234 `scope.listen(search, 'input', () => filter(true))`; the reset and creation calls pass false and reset empties the status."
+      },
+      "tests": [
+        {
+          "caseId": "FMT-05",
+          "what": "[R09] the results status exists and is empty on first render, shows getResultsMessage(count) after typing in the filter, and is empty after reset. File tests/multi-select-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "missing getResultsMessage: status stays empty, one warning naming MultiSelect / hw-multi-select and getResultsMessage. Files the package text-contract tests.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML contains the empty status element and equals the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react, vue, angular",
+          "component": "MultiSelect",
+          "kind": "input",
+          "old": "no announcement of the filtered count",
+          "new": "required getResultsMessage: add getResultsMessage={count => …} / :get-results-message / [getResultsMessage]"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "MultiSelect",
+          "kind": "default",
+          "old": "status written at creation and only when [data-hw-status] is authored",
+          "new": "status created when missing, written only after the reader filters; data-hw-results-message or the option is required"
+        }
+      ],
+      "readme": "Each README lists getResultsMessage(count) as required text of MultiSelect with the same wording as for Combobox and adds it to tests/text-contract-docs.test.ts fixtures and components.json.",
+      "decisions": [
+        {
+          "component": "MultiSelect",
+          "question": "Is the filtered count announced?",
+          "choice": "yes, required text in the four adapters, screen-reader-only status",
+          "basis": "accessibility",
+          "source": "WCAG 4.1.3; packages/vanilla/src/controls.ts:209,231-233; convention value-display-and-formatting",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "rich-inputs-8",
+        "R19"
+      ],
+      "component": "TagInput",
+      "summary": "React, Vue and Angular render three layouts and Angular alone adds an Add button with a required addLabel inside a second bordered group. One DOM: the field is div.hw-field, the bordered box div.hw-tag-input holds only the chip list and the text input, and the Add button and addLabel are removed (owner decision 4).",
+      "endState": {
+        "surface": {
+          "react": "TagInput: no prop change.",
+          "vue": "TagInput: no prop change.",
+          "angular": "hw-tag-input: input `addLabel` removed, the Add button is no longer rendered; the public method add() stays (Enter and comma call it).",
+          "vanilla": "createTagInput: no option change. Documented markup changes; the chip element is li when [data-hw-tags] is a ul or ol, span[role=listitem] otherwise."
+        },
+        "dom": "div.hw-field > [label.hw-label[for=id] + required marker] , div.hw-tag-input , [p.hw-hint#id-hint] , [p.hw-error#id-error]. div.hw-tag-input > ul[role=list] (always rendered) > li.hw-chip > tag as a text node , button[type=button][aria-label=getRemoveLabel(tag)][disabled while the control is disabled or read-only] > span.hw-icon[data-icon=cancel-01][data-size=md][aria-hidden=true] , input[type=hidden][name][form][value=tag][disabled while disabled] ; then, as a direct child of the box, input.hw-input#id[type=text][aria-required=true while required][readonly][disabled][aria-describedby][aria-invalid per E01]. The remove button is the bare button styled by `.hw-chip button` (24 by 24 px), not .hw-button. Vanilla documented markup: div.hw-field > label.hw-label[for] , div.hw-tag-input[data-hw=tag-input][data-hw-name][data-hw-value][data-hw-remove-label] > ul[data-hw-tags] , input.hw-input[data-hw-tag-input] ; then p.hw-hint.",
+        "behaviour": "Enter or comma commits a non-empty draft, Backspace in an empty draft removes the last tag and keeps focus in the input (docs/tag-input-interaction.md:3-7, unchanged). Activating a remove button moves focus, in the same render, to the remove button that now has the same index, else to the last remove button, else to the text input (convention focus-when-a-control-becomes-unavailable b; replaces 'returns focus to the draft editor', docs/tag-input-interaction.md:9). Read-only and disabled: remove buttons are rendered disabled in every adapter (React hid them). Server rendering: same DOM; ul[role=list] is rendered when empty. The hand-over is core prepareRemovalFocus (defined by the feedback specification, feedback-status-12) with item '.hw-chip', control 'button' and fallback = the text input, so it happens when the activated button held focus; a pointer activation that left focus elsewhere moves nothing."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/extended.css",
+          "change": "Line 71 becomes `.hw-tag-input > :is(ul, ol, [data-hw-tags]) { display: contents; margin: 0; padding: 0; list-style: none; }`. Delete line 234 `.hw-tag-input.hw-field > :is(.hw-label, .hw-hint, .hw-error) { flex-basis: 100%; }` and line 235 `.hw-tag-input > .hw-inline { gap: var(--hw-space-2); }`. Lines 68-70 and 72-75 are unchanged and now apply in the four adapters."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:79: `<Field label hint error required controlId>` without className; inside it `<div className=\"hw-tag-input\"><ul role=\"list\" ref={list}>{tags.map((tag, index) => <li className=\"hw-chip\" key={tag}>{tag}<button type=\"button\" disabled={props.disabled || props.readOnly} aria-label={removeLabel?.(tag) || undefined} onClick={() => remove(tag, index)}><span className=\"hw-icon\" data-icon=\"cancel-01\" data-size=\"md\" aria-hidden=\"true\" /></button><input type=\"hidden\" … /></li>)}</ul><TextField … /></div>`. The `div.hw-inline`, the span chips, the Button component and the `!props.readOnly &&` condition go. remove(tag, index) keeps the isDisabled guard, stores the index in a ref and calls setTags; an effect after render focuses `list.current.querySelectorAll('button')[Math.min(index, count - 1)] ?? input.current` and clears the ref. Reconciled: instead of the index arithmetic above, the remove handler calls `const restore = prepareRemovalFocus(box, button, { item: '.hw-chip', control: 'button', fallback: input })` from @hawiyah/core before the value changes (box = div.hw-tag-input) and calls `restore()` after the render that removed the chip (a layout effect); the Backspace path does not call it.",
+        "vue": "packages/vue/src/controls.ts:511-577: `h('ul', { role: 'list', ref: list }, …)`; chip `h('li', { class: 'hw-chip', key: value }, [value, h('button', { type: 'button', disabled: props.disabled || props.readonly, 'aria-label': textOf(…), onClick: () => remove(value, index) }, h('span', { class: 'hw-icon', … })), h('input', { type: 'hidden', name, form, value, disabled: props.disabled })])`; delete the hidden inputs at :567-575 and the Button import use; the text input gains `type: 'text'`. remove(value, index) (:506-508): model.set, then `nextTick` focuses the remove button at min(index, count - 1), else the input; the Backspace path (:560-562) calls it without an index and keeps focus in the input. Reconciled: instead of the index arithmetic above, the remove handler calls `const restore = prepareRemovalFocus(box, button, { item: '.hw-chip', control: 'button', fallback: input })` from @hawiyah/core before the value changes (box = div.hw-tag-input) and calls `restore()` after the render that removed the chip (nextTick); the Backspace path does not call it.",
+        "angular": "packages/angular/src/advanced-controls.ts:188 template: `<div class=\"hw-field\">${fieldLabel}<div class=\"hw-tag-input\"><ul role=\"list\">@for (tag of value; track tag; let i = $index) {<li class=\"hw-chip\">{{ tag }}<button type=\"button\" [disabled]=\"disabled || readOnly\" [attr.aria-label]=\"texts.call('getRemoveLabel', getRemoveLabel, [tag])\" (click)=\"remove(tag, i)\"><span class=\"hw-icon\" data-icon=\"cancel-01\" data-size=\"md\" aria-hidden=\"true\"></span></button><input type=\"hidden\" [name]=\"name\" [value]=\"tag\" [disabled]=\"disabled\"></li>}</ul><input #input type=\"text\" class=\"hw-input\" …></div>${fieldEnd}</div>`: no div.hw-input-group, no Add button, no span around the tag, forwarded aria-label / aria-labelledby on the text input. :189 delete `@Input({required: true}) addLabel`; remove(tag, index?) : after update() run `this.changeDetector.detectChanges()` and focus the button at min(index, count - 1) inside the host, else the input; keydown Backspace calls remove(tag) and focuses the input. Reconciled: instead of the index arithmetic above, the remove handler calls `const restore = prepareRemovalFocus(box, button, { item: '.hw-chip', control: 'button', fallback: input })` from @hawiyah/core before the value changes (box = div.hw-tag-input) and calls `restore()` after the render that removed the chip (after changeDetector.detectChanges()); the Backspace path does not call it.",
+        "vanilla": "packages/vanilla/src/controls.ts:169: `const list = host.localName === 'ul' || host.localName === 'ol'; const chip = createElement(list ? 'li' : 'span')`, role=listitem only on the span; host role=list stays (:155). :182 remove(tag, fromButton = false): after notify(), when fromButton focus `host.querySelectorAll('[data-hw-remove-tag]')[Math.min(index, value.length - 1)] ?? input`, else input.focus(); the click listener (:183) passes true, Backspace (:188) false. Documented markup in packages/vanilla/EXPANSION-API.md:43, components.json and the guide samples (apps/playground/src/component-expanded-guides.ts:112, .ar.ts:194, expanded-samples.ts:68) becomes the DOM above. Reconciled: instead of the index arithmetic above, the remove handler calls `const restore = prepareRemovalFocus(box, button, { item: '.hw-chip', control: 'button', fallback: input })` from @hawiyah/core before the value changes (box = div.hw-tag-input) and calls `restore()` after the render that removed the chip (after render()); the Backspace path does not call it."
+      },
+      "tests": [
+        {
+          "caseId": "TAGINPUT-01",
+          "what": "[rich-inputs-8] div.hw-tag-input has exactly two element children, ul[role=list] and the text input; label, hint and error are siblings of the box inside div.hw-field; each chip is li.hw-chip with text, button, hidden input. File tests/tag-input-parity.test.ts (existing; the Angular fixture drops addLabel).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TAGINPUT-02",
+          "what": "[R19] no button other than the remove buttons exists; Enter and comma commit; Angular: addLabel is not an input (compile test).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FOCUS-04",
+          "what": "removing the focused chip of three moves focus to the next chip's remove button, removing the last chip to the previous one, removing the only chip to the text input; Backspace removal keeps focus in the input.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RO-02",
+          "what": "read-only: remove buttons are present and disabled, keys and clicks change nothing.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TAGINPUT-03",
+          "what": "browser: one border around chips and input, the input has no border of its own, the label is outside the box; same box height in the four adapters. File tests/browser/tag-input.spec.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RENAME-01",
+          "what": "addLabel does not appear in components.json, llms.txt, packages/angular/README.md or docs/.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-tag-input",
+          "kind": "removed",
+          "old": "Add button and required addLabel=\"…\"",
+          "new": "delete addLabel; Enter or comma commits"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-tag-input",
+          "kind": "markup",
+          "old": "div.hw-field.hw-tag-input > label, ul, div.hw-input-group > input + button, hint",
+          "new": "div.hw-field > label, div.hw-tag-input > ul, input; hint"
+        },
+        {
+          "adapter": "react",
+          "component": "TagInput",
+          "kind": "markup",
+          "old": "div.hw-field.hw-tag-input > label, div.hw-inline > span.hw-chip (button.hw-button), input, hint; no remove button while read-only",
+          "new": "div.hw-field > label, div.hw-tag-input > ul[role=list] > li.hw-chip (bare button), input; hint; remove buttons disabled while read-only"
+        },
+        {
+          "adapter": "vue",
+          "component": "TagInput",
+          "kind": "markup",
+          "old": "remove button .hw-button; hidden inputs after the text input",
+          "new": "bare button inside the chip; hidden input inside its li"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "TagInput",
+          "kind": "markup",
+          "old": "documented: label.hw-field around the input inside .hw-tag-input, div[data-hw-tags] after it",
+          "new": "div.hw-field > label.hw-label, div.hw-tag-input > ul[data-hw-tags], input[data-hw-tag-input]"
+        },
+        {
+          "adapter": "react, vue, angular, vanilla",
+          "component": "TagInput",
+          "kind": "default",
+          "old": "after a remove button is activated focus goes to the text input",
+          "new": "focus goes to the next remove button, else the previous, else the text input"
+        }
+      ],
+      "readme": "Each README: the DOM, 'Enter or comma commits; there is no Add button', the focus rule after removal, and that a required TagInput explains the requirement in its hint (convention required-marker). Angular README and CHANGELOG carry the addLabel removal line. docs/tag-input-interaction.md:9 is rewritten in place.",
+      "decisions": [
+        {
+          "component": "TagInput",
+          "question": "Add button",
+          "choice": "removed from Angular",
+          "basis": "repository",
+          "source": "docs/tag-input-interaction.md:3; owner decision 4",
+          "changedAdapters": [
+            "angular"
+          ]
+        },
+        {
+          "component": "TagInput",
+          "question": "What does the bordered box contain?",
+          "choice": "chips and the text input only; label, hint and error outside",
+          "basis": "repository",
+          "source": "packages/styles/src/extended.css:68-75 (.hw-tag-input > ul, .hw-tag-input > input); packages/vue/src/controls.ts:514",
+          "changedAdapters": [
+            "react",
+            "angular",
+            "vanilla (documentation)"
+          ]
+        },
+        {
+          "component": "TagInput",
+          "question": "Remove button element",
+          "choice": "bare button styled by .hw-chip button",
+          "basis": "repository",
+          "source": "packages/vanilla/src/controls.ts:171; packages/styles/src/components.css:242",
+          "changedAdapters": [
+            "react",
+            "vue"
+          ]
+        },
+        {
+          "component": "TagInput",
+          "question": "Focus after removing with the button",
+          "choice": "next, previous, then the text input",
+          "basis": "accessibility",
+          "source": "convention focus-when-a-control-becomes-unavailable (b); reverses docs/tag-input-interaction.md:9",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": 3,
+      "notDone": "Paste splitting stays vanilla only (docs/tag-input-interaction.md:16); not a finding."
+    },
+    {
+      "ids": [
+        "rich-inputs-12"
+      ],
+      "component": "PinInput",
+      "summary": "Every adapter sets maxlength on the native input, so the browser cuts a pasted or autofilled code such as '123 456' before the adapter strips separators and digits are lost without a message. The native maxlength is removed and one core function normalises first and limits afterwards; an incomplete code left on blur is exposed as invalid.",
+      "endState": {
+        "surface": {
+          "react": "PinInput: no prop change (maxLength stays excluded from the props).",
+          "vue": "PinInput: no prop change.",
+          "angular": "hw-pin-input: no input change.",
+          "vanilla": "createPinInput: no option change. An authored maxlength is still read as the length when options.length is absent and is removed from the input while the controller is alive (restored on destroy)."
+        },
+        "dom": "The text input has no maxlength attribute; pattern=\"[0-9]{N}\", inputmode=numeric, autocomplete=one-time-code stay. aria-invalid=\"true\" on the input while (a) focus left the input with 1 to N-1 digits, until the value is empty or complete or the form resets, or (b) a submission failed on it (invalid event), until its validity is valid or the form resets; an application error or aria-invalid sets it as before.",
+        "behaviour": "Input, paste, drop and autofill: Arabic-Indic and Persian digits become ASCII, every other character is dropped, then the result is cut to N. '123 456' -> 123456; '12-34-56' -> 123456; '٤٥٦-١٢٣' -> 456123. Typing one more character into a full code changes nothing (the previous value is kept), as maxlength did. Read-only and disabled inputs ignore input as today. Server rendering: no maxlength on either side; aria-invalid from blur or submission is absent initially."
+      },
+      "core": [
+        {
+          "export": "normalizePinInput (packages/core/src/controls.ts, next to normalizeDigits; exported from index.ts)",
+          "signature": "normalizePinInput(raw: string, length: number, previous?: string, inputType?: string): string",
+          "behaviour": "digits = normalizeDigits(raw) with every character outside 0-9 removed. When digits.length > length and inputType === 'insertText' and previous is given, returns previous (a typed character does not push a digit out). Otherwise returns digits.slice(0, length). Pure; no DOM."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:68 `normalize` uses normalizePinInput(text, count); :70 delete `maxLength={count}`; onChange `setStored(normalizePinInput(event.currentTarget.value, count, current, (event.nativeEvent as InputEvent).inputType))`; add `const [incomplete, setIncomplete] = useState(false)` and `failed`; `onBlur` (after props.onBlur) sets incomplete = current.length > 0 && current.length < count; onChange clears it when the new value is empty or complete; `onInvalid` sets failed, cleared when `input.validity.valid` after a change and on reset; pass `aria-invalid={props['aria-invalid'] ?? ((incomplete || failed) ? true : undefined)}` to TextField.",
+        "vue": "packages/vue/src/controls.ts:435 normalize through normalizePinInput; :457 delete `maxlength: length`; onInput (:462-469) `const value = normalizePinInput(input.value, length, model.value.value, (event as InputEvent).inputType)`; refs `incomplete` and `failed`; `onBlur` and `onInvalid` handlers merged after attrs; `'aria-invalid': incomplete.value || failed.value ? true : field.controlAttrs.value['aria-invalid']`; both cleared in the reset callback (:441).",
+        "angular": "packages/angular/src/advanced-controls.ts:185 delete `[attr.maxlength]=\"normalizedLength\"`; add `(invalid)=\"submissionInvalid = true\"`, `(blur)=\"blurred()\"` and `[attr.aria-invalid]=\"error || ariaInvalid || submissionInvalid || incomplete ? true : null\"`. :186 `inputChanged` calls `this.update(normalizePinInput(input.value, this.normalizedLength, this.normalizedValue, (event as InputEvent).inputType))`, writes input.value back, clears `incomplete` when empty or complete and `submissionInvalid` when input.validity.valid; `blurred() { this.incomplete = this.normalizedValue.length > 0 && this.normalizedValue.length < this.normalizedLength; this.touch(); }`; writeValue and afterReset clear both.",
+        "vanilla": "packages/vanilla/src/controls.ts:118 unchanged (length from options.length, else the authored maxlength, else 6); :122 keep 'maxlength' in remember(); :123 replace `input.maxLength = length` by `input.removeAttribute('maxlength')`; :127 render(announce, inputType?) uses `normalizePinInput(input.value, length, last, inputType)` with `last` the previous rendered value; the input listener (:130) passes `(event as InputEvent).inputType`. remember 'aria-invalid'; `blur` and `invalid` listeners write aria-invalid=\"true\" by the two rules and restore the authored value when they clear and on reset."
+      },
+      "tests": [
+        {
+          "caseId": "PININPUT-01",
+          "what": "[rich-inputs-12] the input has no maxlength; setting the value to '123 456', '12-34-56', '٤٥٦-١٢٣' and firing input yields 123456, 123456, 456123 and one notification each. File tests/pin-input-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PININPUT-02",
+          "what": "full code plus one typed character (input event with inputType insertText) keeps the previous value and notifies nothing; a longer pasted code (inputType insertFromPaste) is cut to N.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PININPUT-03",
+          "what": "browser: real clipboard paste and insertText of the three strings give the same results. File tests/browser/pin-input.spec.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-08",
+          "what": "blur with three of six digits sets aria-invalid=true without a submission; completing or emptying clears it; INV-03 requestSubmit on an incomplete code sets it; INV-05 reset clears it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PININPUT-04",
+          "what": "core: normalizePinInput cases (digits, separators, Arabic-Indic, Persian, overflow by typing, overflow by paste). File packages/core/test/expansion.test.ts.",
+          "adapters": [
+            "core"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react, vue, angular, vanilla",
+          "component": "PinInput",
+          "kind": "markup",
+          "old": "maxlength=\"N\" on the input",
+          "new": "no maxlength; pattern=\"[0-9]{N}\" limits validation and the component limits the text"
+        }
+      ],
+      "readme": "Each README: paste and autofill are normalised before the length is applied; the input carries no maxlength; an incomplete code is aria-invalid after blur. Vanilla README: an authored maxlength is the length source and is removed while enhanced.",
+      "decisions": [
+        {
+          "component": "PinInput",
+          "question": "Remove maxlength or intercept paste?",
+          "choice": "remove maxlength and limit in one core function",
+          "basis": "repository",
+          "source": "EXPANSION.md:42-44 (support paste and Arabic-Indic digits); one input handler covers paste, drop and autofill",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        },
+        {
+          "component": "PinInput",
+          "question": "When is an incomplete code invalid before submission?",
+          "choice": "when focus leaves the input",
+          "basis": "accessibility",
+          "source": "convention aria-invalid rule 4 (PinInput), INV-08",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "Class placement of hw-pin-input, React showSlots and the Vue complete event differ between adapters and are not part of this finding."
+    },
+    {
+      "ids": [
+        "rich-inputs-14"
+      ],
+      "component": "PasswordField",
+      "summary": "Visibility is controllable in React and observable in vanilla, but an internal ref in Vue and an unbound public field in Angular. `visible` gets the three members of convention controlled-and-observable-state in every adapter; the Vue leak of search props is already fixed.",
+      "endState": {
+        "surface": {
+          "react": "PasswordField: unchanged (visible?, defaultVisible? = false, onVisibleChange?).",
+          "vue": "PasswordField: new props `visible: { type: Boolean, default: undefined }` (v-model:visible) and `defaultVisible: Boolean` (false); new event `update:visible(visible: boolean)`.",
+          "angular": "hw-password-field: new `@Input({transform: booleanAttribute}) visible = false` and `@Output() readonly visibleChange = new EventEmitter<boolean>()` ([(visible)]). The public field `revealed` is removed. writeValue no longer changes visibility.",
+          "vanilla": "createPasswordField: new option `onVisibleChange?: (visible: boolean) => void`; the controller gains `readonly visible: boolean`; toggle() and hw:change detail {visible} unchanged."
+        },
+        "dom": "No element change: input type is 'text' while visible and 'password' otherwise; the toggle carries aria-pressed and the label for the action it offers.",
+        "behaviour": "The toggle notifies once per activation with the new state and is ignored while the input is effectively disabled. Controlled and ignored: the input type follows the application. A native form reset hides the value and notifies false when it was visible. Angular: a value written by Angular Forms does not change visibility (today writeValue hides, advanced-controls.ts:41); a native reset still hides through afterReset(). Server rendering: defaultVisible / visible render type=text on the server and the client alike."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none for the surface (packages/react/src/expanded-controls.tsx:13-19); the reset target is in the reset item.",
+        "vue": "packages/vue/src/controls.ts:57-66 add the props and the event; :69 `const shown = useValue(() => props.visible, props.defaultVisible, value => emit('update:visible', value))` replaces `const visible = ref(false)`; every `visible.value` read (:92, :109, :112, :118) becomes `shown.value.value`; the toggle (:114-116) calls `shown.set(!shown.value.value)`.",
+        "angular": "packages/angular/src/advanced-controls.ts:24 template: `revealed` -> `visible` (four bindings); :27 add the input and the output; :31 toggleLabel reads visible; :32 delete `revealed = false`; :34 `toggle() { if (this.input && !isDisabled(this.input.nativeElement)) this.setVisible(!this.visible); }` with `private setVisible(next: boolean) { if (next === this.visible) return; this.visible = next; this.visibleChange.emit(next); this.changeDetector.markForCheck(); }`; :41 writeValue: delete `this.revealed = false`.",
+        "vanilla": "packages/vanilla/src/controls.ts:7 add the option; :8 return type `{ readonly visible: boolean; toggle(): void; destroy(): void }`; :28 after emit call `options.onVisibleChange?.(input.type === 'text')`; :33 return `get visible() { return input.type === 'text'; }`."
+      },
+      "tests": [
+        {
+          "caseId": "STATE-01",
+          "what": "PasswordField visible, uncontrolled: the toggle shows and notifies true once, then hides and notifies false once. File tests/password-field-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-02",
+          "what": "controlled and ignored: the toggle notifies and the input stays type=password.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-03",
+          "what": "changing the controlled prop does not notify.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-04",
+          "what": "[rich-inputs-14] v-model:visible and [(visible)] round-trip.",
+          "adapters": [
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-05",
+          "what": "server render with defaultVisible / visible equals the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-06",
+          "what": "vanilla: hw:change detail.visible and onVisibleChange; controller.visible reads the state.",
+          "adapters": [
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "RESET-09",
+          "what": "a native reset hides a visible password and notifies false once.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-password-field",
+          "kind": "field",
+          "old": "component.revealed (public field, read through a view query)",
+          "new": "[(visible)] / component.visible"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-password-field",
+          "kind": "default",
+          "old": "every value written by Angular Forms hid the password",
+          "new": "only the toggle, the visible input and a native reset change visibility; set visible to false after a programmatic control.reset() if needed"
+        }
+      ],
+      "readme": "Each README lists visible with its three members; docs/password-field.md gains one line per adapter; components.json no longer marks the three props as React only.",
+      "decisions": [
+        {
+          "component": "PasswordField",
+          "question": "Does an Angular Forms write hide the value?",
+          "choice": "no",
+          "basis": "majority",
+          "source": "React and Vue do not hide on a value write; a silent change of a bound input would desynchronise [(visible)]",
+          "changedAdapters": [
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "Vue keeps the class hw-password-field on div.hw-password-control instead of the field (packages/vue/src/controls.ts:84, covered by password-field.css:2); not part of this finding."
+    },
+    {
+      "ids": [
+        "R27"
+      ],
+      "component": "SearchField",
+      "summary": "Angular renders the search button by default while React and Vue do not, so the same markup shows a button and needs searchLabel in Angular only. The Angular default of showSearchButton becomes false.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "hw-search-field: `@Input({transform: booleanAttribute}) showSearchButton = false` (was true). `searchLabel` stays required only while showSearchButton is on. `label` loses {required: true} (advanced-controls.ts:54) because aria-label / aria-labelledby are forwarded (convention name-without-visible-label).",
+          "vanilla": "none (the button is authored)"
+        },
+        "dom": "Without showSearchButton there is no button.hw-search-submit in any adapter. Angular template: the label is rendered through fieldLabel (marker) and only when given; `texts.need('label', label)` is asked only when neither ariaLabel nor ariaLabelledby is set; the input gets [attr.aria-label] and [attr.aria-labelledby]; the suggestion list is named `[attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby ?? (ariaLabel || !label ? null : decorationId + '-label')\"`.",
+        "behaviour": "Enter still runs the search without the button. No keyboard, focus or reset change. Server rendering unchanged."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none (packages/react/src/search-field.tsx:19 already defaults to false).",
+        "vue": "none (packages/vue/src/search-field.ts:12).",
+        "angular": "packages/angular/src/advanced-controls.ts:60 `showSearchButton = true` -> `= false`. :45 label through fieldLabel; `texts.need('label', label)` is asked only when neither ariaLabel nor ariaLabelledby is set (the check forms-core writes for HwValueControl, convention name-without-visible-label); :46 and :48 the forwarded name bindings above; :54 delete the required override of label. Guide and test fixtures that rely on the button add showSearchButton (packages/angular/test/expansion.test.ts, tests/search-field-parity.test.ts, apps/playground).",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "SEARCH-01",
+          "what": "[R27] with no showSearchButton there is no .hw-search-submit and no warning about searchLabel; with it the button is rendered. File tests/search-field-parity.test.ts.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-02",
+          "what": "searchLabel is not required while the button is off and required (one warning) while it is on.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "Angular: aria-label alone names the search input and its suggestion list, no label element, no warning. File packages/angular/test/required-names.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-search-field",
+          "kind": "default",
+          "old": "showSearchButton = true",
+          "new": "showSearchButton = false; add showSearchButton (and searchLabel) where the button is wanted"
+        }
+      ],
+      "readme": "Angular README: the default and the migration line; the three READMEs state the same sentence for showSearchButton / searchLabel.",
+      "decisions": [
+        {
+          "component": "SearchField",
+          "question": "Default of showSearchButton",
+          "choice": "false in every adapter",
+          "basis": "majority",
+          "source": "packages/react/src/search-field.tsx:19; packages/vue/src/search-field.ts:12",
+          "changedAdapters": [
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "alsoDependsOnOwnerDecisions": [
+        1
+      ],
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "E01"
+      ],
+      "component": "Combobox, MultiSelect, TagInput",
+      "summary": "No adapter tracks a failed submission, and Angular sets aria-invalid merely because requiredMessage is missing. In the four adapters aria-invalid appears after the control's invalid event and stays until its validity is valid again or the form resets; the Angular unnamedConstraint rule is removed.",
+      "endState": {
+        "surface": {
+          "react": "No new prop. onInvalid passed by the application is still called first.",
+          "vue": "No new prop. An onInvalid listener in attrs is still called.",
+          "angular": "No new input. The getter `unnamedConstraint` is removed from hw-combobox, hw-tag-input and hw-multi-select. The forwarded `aria-invalid` input (forms-core) sets the attribute explicitly.",
+          "vanilla": "No new option. An authored aria-invalid is remembered and restored."
+        },
+        "dom": "aria-invalid=\"true\" exactly when: the application passes a non-empty error; or an explicit aria-invalid; or the element that owns the custom validity fired `invalid` and has not become valid since. Elements: Combobox the text input; TagInput the text input (the box border follows through .hw-tag-input:has([aria-invalid='true'])); MultiSelect the filter input (it owns the validity and receives focus from reportValidity) and the fieldset. Absent otherwise, in particular for a required empty control before any submission and when the message text is missing.",
+        "behaviour": "The invalid event is not default-prevented, so the browser still focuses the control and shows its validation bubble. The state is cleared right after the validity is recomputed for a new value (an option selected, a tag added, a box checked) when validity.valid is true, and in the reset callback. Server rendering: the state starts false on both sides; no listener on the server."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "interactive.tsx:187-294 Combobox: `const [failed, setFailed] = useState(false)`; on the text input `onInvalid={event => { onInvalid?.(event); setFailed(true); }}`; in the validity effect (:241-243) after setCustomValidity `if (input.current?.validity.valid) setFailed(false)`; :269 `aria-invalid={field['aria-invalid'] ?? (failed || undefined)}`. expanded-controls.tsx:75-79 TagInput: same state, onInvalid on the TextField, cleared in the effect at :78, `aria-invalid={props['aria-invalid'] ?? (failed || undefined)}` (the Field error still sets it through the context). :84-89 MultiSelect: same; `const invalid = props['aria-invalid'] ?? ((error || failed) ? true : undefined)` on the fieldset and on the filter TextField (replaces `error ? true : undefined` twice). All three clear `failed` in their reset callback.",
+        "vue": "interactive.ts:125-213 Combobox, controls.ts:476-580 TagInput, :581-694 MultiSelect: `const failed = ref(false)`; `onInvalid: () => { failed.value = true; }` in the object merged after attrs on the element that owns the validity (mergeProps keeps the application's listener); inside the existing watchEffect that calls setCustomValidity (interactive.ts:174, controls.ts:500-504, :607-611) add `if (failed.value && element.value?.validity.valid) failed.value = false`; `'aria-invalid': failed.value ? true : field.controlAttrs.value['aria-invalid']` on that element, and for MultiSelect also on the fieldset; cleared in useFormReset.",
+        "angular": "forms.ts:135 and advanced-controls.ts:188, :191 templates: `[attr.aria-invalid]=\"error || ariaInvalid || submissionInvalid ? true : null\"` (replaces `error || unnamedConstraint`; MultiSelect on fieldset and filter input) and `(invalid)=\"submissionInvalid = true\"` on the text / filter input. Delete `unnamedConstraint` at forms.ts:176 and advanced-controls.ts:189, :211 and the now unused hasText imports. In syncValidity() (forms.ts:177) and validity() (advanced-controls.ts:189, :212), after setConstraintValidity: `if (this.submissionInvalid && element?.validity?.valid) this.submissionInvalid = false`. afterReset() clears it. `submissionInvalid` is the protected field of HwValueControl named by convention aria-invalid (declared by forms-core).",
+        "vanilla": "combobox.ts:53 and controls.ts:153 (TagInput), :221 (MultiSelect: filter input and root): add 'aria-invalid' to remember(); `let failed = false; scope.listen(input, 'invalid', () => { failed = true; apply(); })` where apply() sets aria-invalid=\"true\" while failed, else restores the authored value; after each setCustomValidity (combobox.ts:100-102 in render, controls.ts:178, :228) `if (failed && input.validity.valid) { failed = false; apply(); }`; the reset callbacks clear it."
+      },
+      "tests": [
+        {
+          "caseId": "INV-01",
+          "what": "required, empty, untouched: no aria-invalid. Files tests/combobox-parity.test.ts, tests/tag-input-parity.test.ts, tests/multi-select-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-02",
+          "what": "[E01] required with a missing requiredMessage: no aria-invalid before submission, the constraint still blocks (validity.customError), one warning (Angular regression).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-03",
+          "what": "form.requestSubmit() fails: aria-invalid=true on the control (MultiSelect: fieldset and filter input), the event is not default-prevented.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-04",
+          "what": "a valid value (option selected, tag added, box checked) removes it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-05",
+          "what": "reset removes it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-06",
+          "what": "error sets it; INV-07 explicit aria-invalid from the application sets it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "a required control renders without aria-invalid on the server and on the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-combobox, hw-tag-input, hw-multi-select",
+          "kind": "default",
+          "old": "aria-invalid=\"true\" while required, empty and requiredMessage is missing",
+          "new": "aria-invalid only from error, an explicit aria-invalid or a failed submission"
+        },
+        {
+          "adapter": "react, vue, vanilla",
+          "component": "Combobox, TagInput, MultiSelect",
+          "kind": "markup",
+          "old": "no aria-invalid after a failed submission",
+          "new": "aria-invalid=\"true\" from the invalid event until the value is valid or the form resets"
+        }
+      ],
+      "readme": "Each README: the four conditions of convention aria-invalid in one paragraph under validation; docs/multiselect-validation.md:44-47 and CONTRACT.md:100-103 keep their wording ('never depends on the text') and gain the failed-submission sentence.",
+      "decisions": [
+        {
+          "component": "MultiSelect",
+          "question": "Which element carries aria-invalid?",
+          "choice": "the fieldset and the filter input",
+          "basis": "repository",
+          "source": "docs/multiselect-validation.md:44-47 (custom validity and error state belong to the filter input); convention aria-invalid (fieldset for a group)",
+          "changedAdapters": [
+            "vue",
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "PinInput gets the same rule in item rich-inputs-12; DatePicker, ToggleGroup and Rating belong to other clusters."
+    },
+    {
+      "ids": [
+        "files-2"
+      ],
+      "component": "FileDropzone",
+      "summary": "A mixed batch and several files on a single-file dropzone give three different outcomes, and two adapters drop extra files silently. One core function evaluates a batch and the four adapters apply one rule: a batch replaces the selection, and a batch with any rejected file leaves the dropzone empty and reports every rejected file.",
+      "endState": {
+        "surface": {
+          "react": "FileDropzone: new `onReject?: (files: File[]) => void` (optional action, called with the rejected files). onFilesChange is called only when the list of files changed.",
+          "vue": "FileDropzone: event `reject` now carries only the rejected files (today the whole batch); `update:files` only when the list changed.",
+          "angular": "hw-file-dropzone: output `(rejected)` keeps its name and payload type; a rejected batch now leaves the value empty (today the accepted files are kept).",
+          "vanilla": "createFileDropzone: new option `onReject?: (files: File[]) => void`; hw:change detail becomes {value: File[], rejected: boolean, rejectedFiles: File[]}; several files dropped on an input without `multiple` are rejected (today the first is kept silently)."
+        },
+        "dom": "No element change by this item (rejection display is files-4, structure files-6).",
+        "behaviour": "For a batch from the chooser or a drop, when the control is available: result = evaluateFileSelection(batch, {accept, multiple, maxSize}). Rejected (result.rejected not empty): the native input is cleared (input.value = ''), the held value becomes [], the reject notification fires once with result.rejected, the value notification fires with [] only if files were held before. Accepted: on a drop the drop's own FileList is assigned (input.files = event.dataTransfer.files, no DataTransfer construction), the held value becomes the batch, the rejection state is cleared and the value notification fires; if the browser refuses the assignment the frameworks leave the selection unchanged and notify nothing (vanilla shows unsupportedDropMessage). Rejection reasons: 'count' for every file of a batch of more than one when `multiple` is off; else per file 'type' when it does not match `accept`, else 'size' when it exceeds maxSize. Keyboard and focus unchanged. Server rendering: the function is pure; nothing runs on the server."
+      },
+      "core": [
+        {
+          "export": "evaluateFileSelection (new packages/core/src/file-selection.ts, exported from index.ts with the types FileSelectionRules, FileRejectionReason, FileSelectionResult)",
+          "signature": "evaluateFileSelection<F extends { name: string; type: string; size: number }>(files: readonly F[], rules?: { accept?: string | null; multiple?: boolean; maxSize?: number | null }): { accepted: F[]; rejected: F[]; reasons: ('count' | 'type' | 'size')[] }",
+          "behaviour": "reasons[i] belongs to rejected[i]; rejected keeps the input order. More than one file without `multiple`: every file is rejected with 'count'. Otherwise a file is rejected with 'type' when matchesFileAccept is false, else with 'size' when maxSize is a finite number above 0 and file.size > maxSize. accepted is a copy of `files` when nothing is rejected and [] otherwise. An empty batch gives three empty arrays."
+        },
+        {
+          "export": "matchesFileAccept (same file)",
+          "signature": "matchesFileAccept(file: { name: string; type: string }, accept: string | null | undefined): boolean",
+          "behaviour": "true when accept is empty. Tokens are split on commas, trimmed, lower-cased, empty ones ignored; '.ext' matches the lower-cased file name ending, 'type/*' the lower-cased MIME type prefix, anything else the exact lower-cased MIME type."
+        },
+        {
+          "export": "isFileDrag (same file)",
+          "signature": "isFileDrag(transfer: { types?: ArrayLike<string> | null } | null | undefined): boolean",
+          "behaviour": "true when transfer.types contains 'Files'. Used by files-8."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:100 delete the local `accept` function; :101-107 `rejectSelection` becomes `reject(rejected: File[])`: clear input.current.value, `if (files.length) onFilesChange?.([])`, setFiles([]), setRejected(rejected), onReject?.(rejected). :108 input onChange: `const result = evaluateFileSelection(next, { accept: props.accept, multiple: props.multiple, maxSize })`; rejected -> reject(result.rejected); else setFiles(next), setRejected([]), onFilesChange?.(next) (skipped when both lists are empty). onDrop: evaluate the dropped files first; rejected -> reject(...); else `input.current.files = event.dataTransfer.files` and dispatch the bubbling change event as today (`slice(0, 1)` and `new DataTransfer()` go).",
+        "vue": "packages/vue/src/controls.ts:722-735 delete `accepted`; :737-753 select(list, drop): `const files = Array.from(list); const result = evaluateFileSelection(files, { accept: props.accept, multiple: props.multiple, maxSize: props.maxSize })`; rejected: clear element.value.value, `if (selection.value.length) emit('update:files', [])`, selection.value = [], rejected.value = result.rejected, `emit('reject', result.rejected)`; else `if (drop && element.value) element.value.files = list`, selection.value = files, rejected.value = [], emit('update:files', files) unless both lists are empty.",
+        "angular": "packages/angular/src/advanced-controls.ts:368 delete accepts(); :370-376 commit(files, list?): `const result = evaluateFileSelection(files, { accept: this.accept, multiple: this.multiple, maxSize: this.maxSize })`; rejected: `this.input.nativeElement.value = ''`, `this.rejectedFiles = result.rejected`, `this.rejected.emit(result.rejected)`, `if (this.value.length) this.update([])`; else `if (list && this.input) this.input.nativeElement.files = list`, rejectedFiles = [], `this.update(files)` unless both are empty; then touch(). selected() (:377) passes no list, drop() (:379) passes event.dataTransfer.files. The DataTransfer branch at :373-374 goes.",
+        "vanilla": "packages/vanilla/src/controls.ts:263 delete `accepted`; a shared `evaluate(files)` calls evaluateFileSelection(files, { accept: input.accept, multiple: input.multiple, maxSize }). :278 change listener: rejected -> input.value = '' and announce(result.rejected); else announce([]). :284-287 drop: evaluate all dropped files (no slice); rejected -> input.value = '' and announce(result.rejected); else `input.files = transfer.files` inside try/catch and, when `input.files.length !== files.length` afterwards, show unsupportedDropMessage as today; otherwise nativeChange(input). announce() (:270-277) emits {value, rejected, rejectedFiles}, calls options.onReject?.(rejectedFiles) when rejected, and calls onValueChange only when the list changed."
+      },
+      "tests": [
+        {
+          "caseId": "FILESEL-01",
+          "what": "core: mixed batch with accept '.pdf,.png' rejects only the mismatching file with 'type' and accepts nothing. File packages/core/test/file-selection.test.ts (new).",
+          "adapters": [
+            "core"
+          ]
+        },
+        {
+          "caseId": "FILESEL-02",
+          "what": "core: two files without multiple reject both with 'count'; with multiple both are accepted.",
+          "adapters": [
+            "core"
+          ]
+        },
+        {
+          "caseId": "FILESEL-03",
+          "what": "core: maxSize rejects with 'size'; 0, undefined and Infinity mean no limit; 'type' wins over 'size'.",
+          "adapters": [
+            "core"
+          ]
+        },
+        {
+          "caseId": "FILESEL-04",
+          "what": "core: accept matching for '.PDF', 'image/*', exact MIME, spaces and a trailing comma; an empty accept matches everything.",
+          "adapters": [
+            "core"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-01",
+          "what": "[files-2] chooser with b.pdf + c.txt on accept=\".pdf,.png\" multiple: no file held, input empty, reject notified once with [c.txt]. File tests/file-dropzone-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-02",
+          "what": "[files-2] two PDFs dropped on a single-file dropzone: nothing held, reject notified once with both files.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-03",
+          "what": "an accepted drop assigns the files to the input (FormData has them) and notifies the value once; a rejected batch after an accepted one empties the dropzone and notifies [] once.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-file-dropzone",
+          "kind": "default",
+          "old": "a mixed batch kept the accepted files; extra files on a single dropzone kept the first",
+          "new": "any rejected file empties the selection; (rejected) carries the rejected files"
+        },
+        {
+          "adapter": "vue",
+          "component": "FileDropzone",
+          "kind": "output",
+          "old": "@reject received the whole batch",
+          "new": "@reject receives only the rejected files"
+        },
+        {
+          "adapter": "react, vanilla",
+          "component": "FileDropzone",
+          "kind": "default",
+          "old": "several files dropped on a single-file dropzone kept the first without a report",
+          "new": "the batch is rejected (reason count) and reported through onReject / detail.rejectedFiles"
+        }
+      ],
+      "readme": "Each README: the rule in two sentences, the reject notification, and that server-side validation stays the application's task. Core API.md documents the three functions. docs/input-review.md:13 and docs/editor-projects.md:30 (the sentence about Angular keeping accepted files) are rewritten in place; the guide help text no longer switches for Angular (apps/playground/src/file-projects.ts:17-21).",
+      "decisions": [
+        {
+          "component": "FileDropzone",
+          "question": "Does a batch with a rejected file keep its accepted files?",
+          "choice": "no: any rejection empties the selection",
+          "basis": "repository",
+          "source": "docs/input-review.md:13; React, Vue and vanilla already do this for types; needs no DataTransfer to rewrite the chooser result",
+          "changedAdapters": [
+            "angular"
+          ]
+        },
+        {
+          "component": "FileDropzone",
+          "question": "Several files on a single-file dropzone",
+          "choice": "the batch is rejected with reason 'count' and reported",
+          "basis": "accessibility",
+          "source": "a silently dropped file is an unreported state change (audit files-2); packages/vue/src/controls.ts:740-748",
+          "changedAdapters": [
+            "react",
+            "angular",
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "files-3",
+        "R07"
+      ],
+      "component": "FileDropzone",
+      "summary": "Vue and vanilla can limit the file size, React and Angular cannot. `maxSize` in bytes exists in the four adapters and is checked by core evaluateFileSelection.",
+      "endState": {
+        "surface": {
+          "react": "FileDropzone: new `maxSize?: number` (bytes; no limit when absent, 0 or not finite). FileDropzoneProps union: `{ accept?: undefined; maxSize?: undefined; getRejectedMessage?: … } | { accept?: string; maxSize?: number; getRejectedMessage: (rejected: readonly File[]) => string }`.",
+          "vue": "FileDropzone: `maxSize: Number` unchanged.",
+          "angular": "hw-file-dropzone: new `@Input() maxSize?: number` (bytes).",
+          "vanilla": "unchanged: options.maxSize, else data-hw-max-size on the root."
+        },
+        "dom": "No element or attribute for the limit (it is not a native attribute).",
+        "behaviour": "A file larger than maxSize is rejected with reason 'size' (files-2) and reported (files-4). The limit is read at event time."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:93 the union above; :94 destructure `maxSize` (so it is not spread on the input); :97 `const restricted = Boolean(props.accept) || Boolean(maxSize)` and `text('FileDropzone', 'getRejectedMessage', getRejectedMessage, 'accept or maxSize is set')` when restricted.",
+        "vue": "none (packages/vue/src/controls.ts:704; the check moves to the core call of files-2).",
+        "angular": "packages/angular/src/advanced-controls.ts:364 add the input; it is passed to evaluateFileSelection in commit().",
+        "vanilla": "none (packages/vanilla/src/controls.ts:262; the value is passed to evaluateFileSelection)."
+      },
+      "tests": [
+        {
+          "caseId": "FILEDROPZONE-04",
+          "what": "[files-3][R07] a 10-byte file on maxSize 5 is rejected, nothing is held, reject is notified with it; without maxSize it is accepted. File tests/file-dropzone-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-02",
+          "what": "getRejectedMessage is not required without accept and maxSize, and required (type error in React, one warning elsewhere) with maxSize alone.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "FileDropzone",
+          "kind": "input",
+          "old": "maxSize passed through to the input and ignored",
+          "new": "maxSize limits the file size and requires getRejectedMessage"
+        }
+      ],
+      "readme": "React and Angular READMEs list maxSize (bytes) with the sentence used by Vue; the guide no longer says size validation belongs to the consumer in React.",
+      "decisions": [
+        {
+          "component": "FileDropzone",
+          "question": "Size limit in React and Angular",
+          "choice": "maxSize in bytes, same name as Vue and vanilla",
+          "basis": "repository",
+          "source": "docs/dga-checklist-review.md:56 (row 84); packages/vue/src/controls.ts:704; packages/vanilla/src/controls.ts:249",
+          "changedAdapters": [
+            "react",
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "files-4",
+        "R06"
+      ],
+      "component": "FileDropzone",
+      "summary": "A rejection is shown without a live role in React, written into the status element in vanilla, and not shown at all in Vue and Angular. Every adapter renders getRejectedMessage(rejected) as the component-produced error of the field with role=alert and marks the input invalid until the next accepted selection or a reset.",
+      "endState": {
+        "surface": {
+          "react": "FileDropzone: getRejectedMessage unchanged in name and signature, required when accept or maxSize is set (files-3). The application's `error` now wins over the rejection message (today the rejection wins).",
+          "vue": "FileDropzone: new prop `getRejectedMessage: Function as PropType<(rejected: readonly File[]) => string>`, required when accept or maxSize is set (needText at render).",
+          "angular": "hw-file-dropzone: new `@Input() getRejectedMessage?: (rejected: readonly File[]) => string`, required when accept or maxSize is set (texts.call with that condition).",
+          "vanilla": "createFileDropzone: getRejectedMessage (option, else data-hw-rejected-message=\"… {count}\") is required when accept or maxSize is set, no longer only when [data-hw-file-status] exists; the message leaves the status element."
+        },
+        "dom": "While a rejection applies and the application passes no error: p.hw-error#id-error[role=alert] with getRejectedMessage(rejected) as the last child of the root, its id appended to the input's aria-describedby, aria-invalid=\"true\" on the file input, data-state=\"error\" on the root. With an application error the same single p.hw-error shows the application's text without a role. No p.hw-error when neither applies or when the message text is missing (aria-invalid and data-state=error still apply). The status element never carries a rejection. Vanilla: the text is written into an authored [data-hw-error] element (role=alert set while it applies, authored text restored after); without one the controller creates p.hw-error after the hint, or at the end of the root, and removes it when the rejection ends and on destroy.",
+        "behaviour": "The rejection applies from a rejected batch until the next accepted batch or a form reset. No custom validity is set (see conventionConflicts). The alert is inserted after the reader's action, so it is announced once; it is not in the server HTML. A rejection without accept or maxSize (reason count) asks for the text at that moment: requireText('FileDropzone', 'getRejectedMessage', …, 'a selection was rejected')."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/extended.css",
+          "change": "none: line 90 already colours the border for [data-state=error] and :has([aria-invalid=true]); .hw-field > .hw-error (nic-select.css:47-51) styles the message because the root is .hw-field."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:97 `rejection` is computed whenever `rejected.length` (the text is asked with the condition 'accept or maxSize is set', else 'a selection was rejected'). :108 the Field receives `error={error || rejection}` and, when the text shown is the rejection, the flag forms-core adds to Field for a component-produced message (role=alert on p.hw-error; see questions); `data-state` on the root: dragging, else 'error' when `rejected.length || error`; aria-invalid on the input comes from the Field context when a text is shown and from `aria-invalid={props['aria-invalid'] ?? (rejected.length ? true : undefined)}` when the text is missing.",
+        "vue": "packages/vue/src/controls.ts:698-707 add the prop; `const rejected = ref<File[]>([])` set by select() (files-2) and emptied on an accepted batch and on reset; in render `const message = props.error ? undefined : rejected.value.length ? textOf('FileDropzone', 'getRejectedMessage', props.getRejectedMessage, [rejected.value], restricted ? 'accept or maxSize is set' : 'a selection was rejected') : undefined`; the root renders `h('p', { class: 'hw-error', id: id + '-error', role: message ? 'alert' : undefined }, props.error ?? message)` when either exists; the input gets `'aria-invalid': props.error || rejected.value.length ? true : field.controlAttrs.value['aria-invalid']` and the error id in aria-describedby; root `data-state`.",
+        "angular": "packages/angular/src/advanced-controls.ts:364 add the input and `rejectedFiles: readonly File[] = []`; getters `get rejection(): string | null { return this.rejectedFiles.length ? this.texts.call('getRejectedMessage', this.getRejectedMessage, [this.rejectedFiles], this.accept || this.maxSize ? 'accept or maxSize is set' : 'a selection was rejected') : null; }` and `get shownError(): string { return this.error || this.rejection || ''; }`; :362 template end: `@if (shownError) {<p class=\"hw-error\" [id]=\"controlId + '-error'\" [attr.role]=\"error ? null : 'alert'\">{{ shownError }}</p>}` (the fieldEnd form of convention hint-error-validation-message); input `[attr.aria-invalid]=\"error || ariaInvalid || rejectedFiles.length ? true : null\"`; :366 descriptionIds adds the error id when shownError; writeValue and afterReset empty rejectedFiles.",
+        "vanilla": "packages/vanilla/src/controls.ts:269 `if (restricted()) requireText('FileDropzone', 'getRejectedMessage', …, 'accept or maxSize is set')` without the status condition; :270-277 announce(): the status shows only the selected message (empty after a rejection); new showError(files): target = root.querySelector('[data-hw-error]') ?? a created p.hw-error; text from rejectedMessage(files) when requireText passes; role=alert; ensureId and add the id to the input's aria-describedby; input aria-invalid=\"true\"; root data-state=\"error\"; clearError() undoes all four (remember() on each attribute, authored text restored). clearError runs on an accepted batch, on reset (:289) and on destroy."
+      },
+      "tests": [
+        {
+          "caseId": "MSG-04",
+          "what": "[files-4][R06] after a rejected batch: one p.hw-error with role=alert and the text of getRejectedMessage(rejected), last child of the root, its id in aria-describedby; the status element is empty. File tests/file-dropzone-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-05",
+          "what": "application error and a rejection together: one element, the application's text, no role.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-06",
+          "what": "missing getRejectedMessage: no .hw-error, aria-invalid=true and data-state=error still set, one warning.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-07",
+          "what": "the message disappears after an accepted batch and after reset.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-08",
+          "what": "a rejected file sets aria-invalid=true on the file input without a submission; the file input has no custom validity (validity.customError false).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML has no .hw-error and no aria-invalid for a dropzone with accept.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue, angular",
+          "component": "FileDropzone",
+          "kind": "input",
+          "old": "no rejection text; the application rendered its own from reject / (rejected)",
+          "new": "getRejectedMessage required when accept or maxSize is set: add :get-rejected-message / [getRejectedMessage] and remove the hand-written message"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "FileDropzone",
+          "kind": "markup",
+          "old": "rejection text written into [data-hw-file-status]",
+          "new": "written into [data-hw-error], else a created p.hw-error[role=alert]; the status carries only the selected message"
+        },
+        {
+          "adapter": "react",
+          "component": "FileDropzone",
+          "kind": "default",
+          "old": "the rejection message replaced the application error; div.hw-error without a role",
+          "new": "the application error wins; p.hw-error with role=alert for the rejection"
+        }
+      ],
+      "readme": "Each README: getRejectedMessage(rejected) with its condition, where the message is rendered, that it is announced, and that it does not block submission. docs/dga-checklist-review.md:56 (row 84) gains the evidence line.",
+      "decisions": [
+        {
+          "component": "FileDropzone",
+          "question": "Where is a rejection shown?",
+          "choice": "the single p.hw-error of the field with role=alert",
+          "basis": "accessibility",
+          "source": "WCAG 4.1.3; convention hint-error-validation-message",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        },
+        {
+          "component": "FileDropzone",
+          "question": "Does a rejection block submission?",
+          "choice": "no custom validity",
+          "basis": "accessibility",
+          "source": "the rejected files are not in the value; a validity that only a new selection can clear would trap an optional field",
+          "changedAdapters": []
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "files-6",
+        "R08"
+      ],
+      "component": "FileDropzone",
+      "summary": "Vue renders label, hint and error outside the dashed zone, React nests a field that narrows the input and lists file names, Angular prints raw byte sizes in a list that is always rendered. One DOM: the root is div.hw-field.hw-file-dropzone with label, instruction, input, status, projected content, hint and error as direct children, and no built-in file list.",
+      "endState": {
+        "surface": {
+          "react": "FileDropzone: new `children?: ReactNode`, rendered after the status (FileUploadList composes there). `className` stays on the root as today.",
+          "vue": "FileDropzone: default slot unchanged, now inside the same root as label and hint.",
+          "angular": "hw-file-dropzone: content projection `<ng-content />` after the status. `label` loses {required: true}; the forwarded aria-label / aria-labelledby inputs satisfy the name. New `capture` and the forwarded `form` as in files-10.",
+          "vanilla": "createFileDropzone: the drag state is written as data-state=\"dragging\" on the root (was data-dragover). Documented markup changes from a label root to the DOM below."
+        },
+        "dom": "div.hw-field.hw-file-dropzone[data-state=dragging | error][data-hw-readonly=true while read-only] > [label.hw-label#id-label[for=id] + required marker] , [p.hw-file-dropzone-instruction#id-instruction: dropLabel] , input.hw-input#id[type=file][name][accept][multiple][disabled][required][aria-disabled=true while read-only][aria-labelledby | aria-label][aria-describedby = application ids, Field ids, id-instruction, id-hint, id-error][aria-invalid] , [p[role=status] only when getSelectedMessage is supplied; empty until files are selected] , children / default slot / projected content , [p.hw-hint#id-hint] , [p.hw-error#id-error]. No ul of file names and no file sizes in any adapter. No aria-disabled on the root. Vanilla documented markup: the same elements with data-hw=\"file-dropzone\" and the text attributes on the root div, data-hw-file-input on the input, p[data-hw-file-status][role=status], optional p.hw-error[data-hw-error]. Stated difference: Angular has no id on the label (fieldLabel).",
+        "behaviour": "The input is named by the label (or aria-label / aria-labelledby / a parent Field) and described by the instruction, never named by it (tests/file-dropzone-name-parity.test.ts:37). File names are shown by the native input; an application that lists files composes FileUploadList inside the dropzone. Drag state: data-state=dragging only while a file drag is over an available zone; dragleave clears it only when the pointer leaves the root. Server rendering: same DOM; the status exists and is empty when getSelectedMessage is supplied."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/extended.css",
+          "change": "Line 89 becomes `.hw-file-dropzone:focus-within, .hw-file-dropzone[data-state='dragging'] { border-color: var(--hw-color-primary); background: var(--hw-color-primary-subtle); }` (the selectors [data-dragging='true'] and [data-dragover] are removed). Add after line 91: `.hw-file-dropzone[data-hw-readonly='true'] { border-style: solid; }` and `.hw-file-dropzone input[type='file'][aria-disabled='true'] { cursor: default; }`."
+        },
+        {
+          "file": "packages/styles/src/layout.css",
+          "change": "The wrapper-host list that forms-core adds after line 134 (`:where(hw-field, …):where(:not([hidden])) { display: block; }`), not the layout-primitive list at line 133, gains hw-combobox, hw-password-field, hw-search-field, hw-pin-input, hw-tag-input, hw-multi-select, hw-file-dropzone and hw-file-upload (the kind B wrapper hosts of this cluster; the edit is the same one forms-core makes for value controls and is written once)."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:108: the outer div and the inner Field merge into `<Field className={cx('hw-file-dropzone', className)} data-state={…} data-hw-readonly={readOnly ? 'true' : undefined} onDragOver onDragLeave onDrop label hint error required controlId>` (FieldLayout puts these on div.hw-field, shared.tsx:107); children of the Field: the instruction p, `<TextField …type=\"file\" />`, `{getSelectedMessage && <p role=\"status\">…</p>}`, `{children}`; delete `{files.length > 0 && <ul>…</ul>}`. :91 add `children?: ReactNode` and destructure it at :94. aria-describedby on the TextField: `[props['aria-describedby'], instructionId]` as today (the Field context appends hint and error).",
+        "vue": "packages/vue/src/controls.ts:754-802: drop decorate(); render `h('div', { class: 'hw-field hw-file-dropzone', 'data-state': …, 'data-hw-readonly': props.readonly ? 'true' : undefined, onDragover, onDragleave, onDrop }, [props.label && h('label', { class: 'hw-label', id: id + '-label', for: id }, [props.label, required && h('span', { class: 'hw-required-marker', 'aria-hidden': 'true' }, ' *')]), instruction p, input (aria-describedby = joinIds(attrs['aria-describedby'], parent ids, instruction id, hint id, error id)), status p, slots.default?.(), props.hint && h('p', { class: 'hw-hint', id: id + '-hint' }, props.hint), error p (files-4)])`; `data-dragging` goes. The name check at :778 stays.",
+        "angular": "packages/angular/src/advanced-controls.ts:362 template: root `<div class=\"hw-field hw-file-dropzone\" [attr.data-state]=\"dragging ? 'dragging' : rejectedFiles.length || error ? 'error' : null\" [attr.data-hw-readonly]=\"readOnly ? 'true' : null\" (dragover)=\"dragover($event)\" (dragleave)=\"dragleave($event)\" (drop)=\"drop($event)\">`: delete [attr.data-dragging] and [attr.aria-disabled]; label through fieldLabel, with `texts.need('label', label)` asked only when neither ariaLabel nor ariaLabelledby is set; input `[attr.accept]=\"accept || null\"` (was [accept]) plus [attr.aria-label], [attr.aria-labelledby]; delete `<ul>…</ul>`; `<ng-content />` after the status; hint p and the error p of files-4. :364 label override without {required: true}. `dragleave(event) { if (!root.contains(event.relatedTarget as Node | null)) this.dragging = false; }`.",
+        "vanilla": "packages/vanilla/src/controls.ts:261 remember 'data-state' instead of 'data-dragover'; :280-283 write and remove `data-state=\"dragging\"` (restoring 'error' when a rejection applies). No other controller change. Documented markup in packages/vanilla/EXPANSION-API.md:96-100, components.json and the guide samples (apps/playground/src/component-expanded-guides.ts:140, .ar.ts:244, expanded-samples.ts:81): `<div class=\"hw-field hw-file-dropzone\" data-hw=\"file-dropzone\" …><label class=\"hw-label\" for=\"documents\">Documents</label><p class=\"hw-file-dropzone-instruction\" id=\"documents-instruction\">Choose or drop documents</p><input class=\"hw-input\" type=\"file\" id=\"documents\" data-hw-file-input name=\"documents\" accept=\".pdf,.png\" multiple aria-describedby=\"documents-instruction documents-hint\"><p data-hw-file-status role=\"status\"></p><p class=\"hw-hint\" id=\"documents-hint\">PDF or PNG, up to 5 MiB each</p></div>`."
+      },
+      "tests": [
+        {
+          "caseId": "FILEDROPZONE-05",
+          "what": "[files-6] the root is div.hw-field.hw-file-dropzone and its element children are, in order, label, instruction, input, status, projected content, hint, error; nothing of the field is outside the root. File tests/file-dropzone-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-06",
+          "what": "[R08] after a selection there is no ul and no text with a byte count inside the root; projected content (FileUploadList) is rendered after the status.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-07",
+          "what": "a file drag sets data-state=dragging on the root and no data-dragging / data-dragover; leaving to a child keeps it, leaving the root clears it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-02",
+          "what": "aria-describedby order: application ids, instruction, hint, error, without duplicates.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "REQ-01",
+          "what": "required with a label: one marker, last child of the label.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-08",
+          "what": "browser: label and hint are inside the dashed border and the input has the same width in the four adapters, LTR and RTL. File tests/browser/file-dropzone.spec.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "existing tests/file-dropzone-name-parity.test.ts keeps passing; Angular: aria-label alone names the input without a label element or a warning.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "component": "FileDropzone",
+          "kind": "markup",
+          "old": "div.hw-field > label, div.hw-file-dropzone > instruction, input, status; hint, error; data-dragging=\"true\"",
+          "new": "div.hw-field.hw-file-dropzone > label, instruction, input, status, slot, hint, error; data-state=\"dragging\""
+        },
+        {
+          "adapter": "react",
+          "component": "FileDropzone",
+          "kind": "markup",
+          "old": "div.hw-file-dropzone > div.hw-field > …; ul of file names",
+          "new": "div.hw-field.hw-file-dropzone > …; no list: pass <FileUploadList> as children"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-file-dropzone",
+          "kind": "markup",
+          "old": "ul with \"name (bytes)\" always rendered; data-dragging; aria-disabled on the root",
+          "new": "no list: project <hw-file-upload-list>; data-state=\"dragging\"; no aria-disabled on the root"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "FileDropzone",
+          "kind": "markup",
+          "old": "data-dragover on the root; documented root label.hw-file-dropzone",
+          "new": "data-state=\"dragging\"; documented root div.hw-field.hw-file-dropzone with label[for]; [data-dragover] -> [data-state='dragging']"
+        }
+      ],
+      "readme": "Each README: the DOM contract in one block, 'the dropzone renders no file list; compose FileUploadList', and the data-state values. docs/file-upload-states.md:3 names Angular beside React and Vue for the composition.",
+      "decisions": [
+        {
+          "component": "FileDropzone",
+          "question": "Are label, hint and error inside the zone?",
+          "choice": "inside, as direct children of the root",
+          "basis": "majority",
+          "source": "React, Angular and the vanilla reference keep them inside; packages/vue/src/controls.ts:755 is the outlier",
+          "changedAdapters": [
+            "vue",
+            "react (inner field removed)"
+          ]
+        },
+        {
+          "component": "FileDropzone",
+          "question": "Built-in list of selected files",
+          "choice": "none; FileUploadList is composed",
+          "basis": "repository",
+          "source": "packages/vanilla/EXPANSION-API.md:96-100; docs/file-upload-states.md:3; convention value-display-and-formatting (no raw sizes)",
+          "changedAdapters": [
+            "react",
+            "angular"
+          ]
+        },
+        {
+          "component": "FileDropzone",
+          "question": "Name of the drag state attribute",
+          "choice": "data-state=\"dragging\"",
+          "basis": "repository",
+          "source": "packages/styles/src/extended.css:89-90 and components.css:286-287 use data-state for dragging and error",
+          "changedAdapters": [
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        },
+        {
+          "component": "FileDropzone",
+          "question": "Vanilla reference markup with a label root",
+          "choice": "replaced by a div root with label[for]",
+          "basis": "accessibility",
+          "source": "inside a label root the status and hint become part of the accessible name; tests/file-dropzone-name-parity.test.ts:37",
+          "changedAdapters": [
+            "vanilla (documentation)"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "alsoDependsOnOwnerDecisions": [
+        1
+      ],
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "files-8"
+      ],
+      "component": "FileDropzone",
+      "summary": "The vanilla controller cancels dragover only while the input is available, so on a disabled or read-only zone the browser keeps its default and the drop handler never runs. Every adapter cancels dragover for file drags always, sets dropEffect to 'none' while unavailable, and leaves other drags alone.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "data-state=\"dragging\" appears only for a file drag over an available zone (not disabled, not read-only, input connected).",
+        "behaviour": "dragover on the root: if core isFileDrag(event.dataTransfer) is false nothing happens (the event is not cancelled; today Vue and Angular cancel every drag). Otherwise preventDefault(); dataTransfer.dropEffect = unavailable ? 'none' : 'copy'; the dragging state is set only when available. drop: preventDefault(); dragging cleared; when unavailable nothing else happens (no value change, no selection or rejection notification, EXPANSION.md:56-60); availability is evaluated at event time, so a fieldset disabled during the drag blocks the drop."
+      },
+      "core": [
+        {
+          "export": "isFileDrag (packages/core/src/file-selection.ts, defined in files-2)",
+          "signature": "isFileDrag(transfer: { types?: ArrayLike<string> | null } | null | undefined): boolean",
+          "behaviour": "true when the drag carries files (types contains 'Files')."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:108 onDragOver: `if (!isFileDrag(event.dataTransfer)) return; event.preventDefault(); const blocked = unavailable(); event.dataTransfer.dropEffect = blocked ? 'none' : 'copy'; setDragging(!blocked);` (replaces the types.includes test). :99 unavailable() also returns true for readOnly (files-9).",
+        "vue": "packages/vue/src/controls.ts:763-769: onDragover as above with `dragging.value = !blocked`; onDragleave `(event: DragEvent) => { if (!root.value?.contains(event.relatedTarget as Node | null)) dragging.value = false; }` with a ref on the root.",
+        "angular": "packages/angular/src/advanced-controls.ts:378 `dragover(event: DragEvent) { if (!isFileDrag(event.dataTransfer)) return; event.preventDefault(); const blocked = this.unavailable; if (event.dataTransfer) event.dataTransfer.dropEffect = blocked ? 'none' : 'copy'; this.dragging = !blocked; }`; dragleave as in files-6.",
+        "vanilla": "packages/vanilla/src/controls.ts:280 `scope.listen(root, 'dragover', event => { const transfer = (event as DragEvent).dataTransfer; if (!isFileDrag(transfer)) return; event.preventDefault(); const blocked = isDisabled(input) || readOnly(root); if (transfer) transfer.dropEffect = blocked ? 'none' : 'copy'; if (blocked) clearDragging(); else root.setAttribute('data-state', 'dragging'); });` The availability check in drop (:283) stays."
+      },
+      "tests": [
+        {
+          "caseId": "FILEDROPZONE-09",
+          "what": "[files-8] dragover with files on a disabled zone and on a read-only zone: defaultPrevented is true, dropEffect is 'none', no data-state=dragging. File tests/file-dropzone-parity.test.ts; packages/*/test/file-dropzone-disabled.test.ts and react.file-dropzone-disabled.test.tsx are updated.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-10",
+          "what": "dragover without files (text drag) is not cancelled and sets no state.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-11",
+          "what": "drop on a disabled zone, and on a zone whose fieldset was disabled during the drag: default prevented, no value change, no selection or rejection notification.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEDROPZONE-12",
+          "what": "browser: a real file drag over a disabled vanilla zone delivers dragover and drop to the zone and the page does not navigate. File tests/browser/file-dropzone.spec.ts.",
+          "adapters": [
+            "vanilla"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue, angular",
+          "component": "FileDropzone",
+          "kind": "default",
+          "old": "every dragover over the zone was cancelled",
+          "new": "only file drags are cancelled"
+        }
+      ],
+      "readme": "Vanilla README and docs/validation.md:282-283: the sentence that vanilla is unchanged is replaced by the rule above.",
+      "decisions": [
+        {
+          "component": "FileDropzone",
+          "question": "dragover while unavailable",
+          "choice": "always cancelled for file drags with dropEffect 'none'",
+          "basis": "repository",
+          "source": "EXPANSION.md:56-60; convention read-only",
+          "changedAdapters": [
+            "vanilla",
+            "vue",
+            "angular",
+            "react (dropEffect)"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "files-9"
+      ],
+      "component": "FileDropzone",
+      "summary": "React has no read-only dropzone, Angular renders it disabled (out of the tab order and of the submission), Vue and vanilla keep a focusable input. Read-only follows convention read-only in the four adapters: the file input stays enabled, focusable and submitted with aria-disabled=\"true\", and the chooser and drops are blocked.",
+      "endState": {
+        "surface": {
+          "react": "FileDropzone: new `readOnly?: boolean` ('readOnly' leaves the Omit list at expanded-controls.tsx:91).",
+          "vue": "FileDropzone: `readonly: Boolean` unchanged in name; the exposure attribute changes.",
+          "angular": "hw-file-dropzone: `readOnly` (inherited) no longer disables the input.",
+          "vanilla": "unchanged API: data-hw-readonly=\"true\" or aria-readonly=\"true\" on the root; the controller now writes aria-disabled on the input and observes the root."
+        },
+        "dom": "While read-only: input[type=file] without `disabled`, with aria-disabled=\"true\" (no aria-readonly: the file input has no role that defines it); root data-hw-readonly=\"true\". The files already chosen stay in FormData.",
+        "behaviour": "Tab reaches the input; click, Enter and Space do not open the chooser (the click is default-prevented); drops are blocked as in files-8; no value or rejection notification fires; a form reset still empties it; switching read-only off and on keeps the selection. Disabled keeps native behaviour and wins over read-only."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/extended.css",
+          "change": "The two read-only rules listed under files-6 (`.hw-file-dropzone[data-hw-readonly='true']`, `input[type='file'][aria-disabled='true']`); line 91 (:has(input:disabled)) no longer matches a read-only Angular dropzone."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-controls.tsx:91 remove 'readOnly' from the Omit; :94 destructure `readOnly` (not spread on the input); :99 `unavailable()` adds `|| readOnly`; :108 TextField gets `aria-disabled={readOnly || props['aria-disabled']}` and `onClick={event => { props.onClick?.(event); if (readOnly) event.preventDefault(); }}`; the Field root gets data-hw-readonly.",
+        "vue": "packages/vue/src/controls.ts:790 `'aria-readonly': props.readonly || undefined` -> `'aria-disabled': props.readonly ? 'true' : attrs['aria-disabled']`; the click guard at :791-793 stays; the root gets data-hw-readonly (files-6).",
+        "angular": "packages/angular/src/advanced-controls.ts:362 `[disabled]=\"disabled || readOnly\"` -> `[disabled]=\"disabled\"`, add `[attr.aria-disabled]=\"readOnly ? 'true' : null\"` and `(click)=\"readOnly && $event.preventDefault()\"`; :369 unavailable already includes readOnly; update() is already blocked by HwExpandedValueControl (:18).",
+        "vanilla": "packages/vanilla/src/controls.ts:257-291: remember(scope, input, ['aria-disabled']); `const syncReadonly = () => { if (readOnly(root)) input.setAttribute('aria-disabled', 'true'); else restore the authored value; }` run at creation and from a MutationObserver on the root for data-hw-readonly and aria-readonly (pattern of :110), disconnected on destroy. The click guard (:279) and the drop guard (:283) stay."
+      },
+      "tests": [
+        {
+          "caseId": "RO-01",
+          "what": "[files-9] read-only: the file input is not disabled, is focusable, keeps its name; RO-04 it has aria-disabled=true and no aria-readonly, the root has data-hw-readonly=true. Files packages/*/test/readonly-inputs.test.ts, react.readonly-inputs.test.tsx and tests/file-dropzone-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RO-02",
+          "what": "click and Space are default-prevented (no chooser), a drop changes nothing, no notification.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RO-03",
+          "what": "files chosen before read-only was switched on are still in FormData.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RO-05",
+          "what": "switching read-only off and on keeps the selection and removes / restores aria-disabled.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-file-dropzone",
+          "kind": "default",
+          "old": "readOnly rendered the input disabled (not focusable, not submitted)",
+          "new": "focusable, submitted, aria-disabled=\"true\"; use disabled to exclude the files"
+        },
+        {
+          "adapter": "vue",
+          "component": "FileDropzone",
+          "kind": "markup",
+          "old": "aria-readonly=\"true\" on the file input",
+          "new": "aria-disabled=\"true\" on the file input and data-hw-readonly=\"true\" on the root"
+        }
+      ],
+      "readme": "Each README: read-only for FileDropzone in one sentence with the prop name of the adapter (readOnly, readonly, data-hw-readonly); docs/readonly-inputs.md gains a FileDropzone paragraph.",
+      "decisions": [
+        {
+          "component": "FileDropzone",
+          "question": "Read-only exposure",
+          "choice": "enabled input with aria-disabled=\"true\"",
+          "basis": "repository",
+          "source": "convention read-only (docs/readonly-inputs.md:8-10 uses aria-disabled for choices); a file input has no role with aria-readonly",
+          "changedAdapters": [
+            "react",
+            "vue",
+            "angular",
+            "vanilla"
+          ]
+        }
+      ],
+      "ownerDecision": null,
+      "notDone": "FileUpload has no read-only state in any adapter (it is not in the list of convention read-only)."
+    },
+    {
+      "ids": [
+        "files-10"
+      ],
+      "component": "FileUpload",
+      "summary": "The Angular FileUpload has no content projection, no required marker and binds only five native attributes, while React and Vue render children and pass attributes through. Angular gains projection after the input, the shared label with its marker, the forwarded name attributes and the `capture` and `form` inputs.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "hw-file-upload: content projection `<ng-content />` after the input; new `@Input() capture: 'user' | 'environment' | '' = ''`; uses the `form`, `aria-label`, `aria-labelledby`, `aria-describedby`, `aria-invalid` inputs that forms-core adds to HwValueControl; `label` optional when a forwarded name is given. hw-file-dropzone gets the same `capture` input.",
+          "vanilla": "none (authored markup, no controller)"
+        },
+        "dom": "div.hw-field.hw-upload > [label.hw-label[for=id] + required marker] , input.hw-input#id[type=file][name][accept only when given][multiple][disabled][required][capture when given][form when given][aria-label | aria-labelledby][aria-describedby][aria-invalid] , children / default slot / projected content , [p.hw-hint] , [p.hw-error]. Identical in React, Vue and Angular; vanilla markup is authored the same way.",
+        "behaviour": "Keyboard and focus are native. Reset: see the reset item (the Angular value returns to [] and valueChange fires once; React and Vue notify [] once when files were held). Server rendering: projected content is rendered in place; no wrapper is added around it."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/layout.css",
+          "change": "hw-file-upload is in the host display list (see files-6)."
+        }
+      ],
+      "perAdapter": {
+        "react": "none (packages/react/src/forms.tsx:80-86).",
+        "vue": "none (packages/vue/src/forms.ts:138-148).",
+        "angular": "packages/angular/src/forms.ts:202 template: `<div class=\"hw-field hw-upload\">${fieldLabel}<input #fileInput class=\"hw-input\" type=\"file\" [id]=\"controlId\" [name]=\"name\" [attr.accept]=\"accept || null\" [multiple]=\"multiple\" [disabled]=\"disabled\" [required]=\"required\" [attr.capture]=\"capture || null\" [attr.form]=\"form || null\" [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"descriptionIds\" [attr.aria-invalid]=\"error || ariaInvalid ? true : null\" (change)=\"filesChanged($event)\" (blur)=\"touch()\"><ng-content />${fieldEnd}</div>` (the hand-written label goes; `[accept]` becomes an attribute binding so that no empty accept attribute is rendered). :203-213 add `@Input() capture`. The same `[attr.capture]` and `[attr.form]` bindings and the `capture` input are added to hw-file-dropzone (advanced-controls.ts:362-364).",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "FILEUPLOAD-01",
+          "what": "[files-10] content given as children / default slot / projected content is rendered inside div.hw-upload directly after the input and before the hint. File tests/file-upload-parity.test.ts (new; vanilla is left out with the comment that FileUpload is authored markup without a controller).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "REQ-01",
+          "what": "required with a label: one .hw-required-marker, aria-hidden, last child of the label; REQ-04 the input has required.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FILEUPLOAD-02",
+          "what": "Angular: capture=\"environment\" and form=\"f\" reach the input; no accept attribute without accept. File packages/angular/test/components.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "aria-label and aria-describedby on hw-file-upload reach the input; the host keeps none.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RICH-04",
+          "what": "server render of hw-file-upload with projected content equals the first client render. File packages/angular/test/ssr.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-file-upload",
+          "kind": "markup",
+          "old": "label without marker; accept=\"\" always rendered; projected content dropped",
+          "new": "shared label with .hw-required-marker; accept only when given; projected content after the input"
+        }
+      ],
+      "readme": "Angular README: hw-file-upload projects its content after the input (for hw-file-upload-list), and lists capture and form.",
+      "decisions": [
+        {
+          "component": "FileUpload",
+          "question": "Which native attributes does Angular bind in 0.3.0?",
+          "choice": "capture and form, plus the forwarded ARIA attributes",
+          "basis": "repository",
+          "source": "conventions.json notIn030 fields-basic-10 (general pass-through deferred); convention rich-content (ng-content after the input)",
+          "changedAdapters": [
+            "angular"
+          ]
+        }
+      ],
+      "ownerDecision": 1,
+      "notDone": "Other native attributes (autofocus, webkitdirectory and the rest) stay unavailable on the Angular host until the pass-through of fields-basic-10 in 0.4."
+    }
+  ],
+  "conventionConflicts": [
+    {
+      "convention": "hint-error-validation-message",
+      "component": "FileDropzone",
+      "ids": [
+        "files-4",
+        "R06"
+      ],
+      "conflict": "The convention makes every component-produced message also the control's custom validity. A file rejection is not a property of the value: after it the selection is empty, which is valid for an optional field, and a custom validity could only be cleared by choosing other files.",
+      "closest": "The rejection is rendered in the single p.hw-error with role=alert and sets aria-invalid (rule 4 of convention aria-invalid) until the next accepted batch or a reset; no setCustomValidity. A required dropzone is still blocked by the native required constraint."
+    },
+    {
+      "convention": "text-contract-for-new-text",
+      "component": "FileDropzone",
+      "ids": [
+        "files-2",
+        "files-4"
+      ],
+      "conflict": "The convention fixes getRejectedMessage as required when accept or maxSize is set. With the count rule of files-2 a single-file dropzone can reject a drop without either.",
+      "closest": "The declared requirement stays as the convention says (React union, Vue needText, Angular texts.call, vanilla requireText with 'accept or maxSize is set'); a rejection that happens without them asks for the text at that moment with the condition 'a selection was rejected', renders nothing when it is missing and warns once."
+    },
+    {
+      "convention": "reference-adapter-and-recording",
+      "component": "Combobox, TagInput, MultiSelect, FileDropzone",
+      "ids": [
+        "rich-inputs-1",
+        "rich-inputs-8",
+        "rich-inputs-6",
+        "files-6"
+      ],
+      "conflict": "The documented vanilla markup cannot be the reference DOM as written: the Combobox guide sample puts the hint inside the root (the defect itself), the TagInput and MultiSelect samples wrap the input in a label and differ between documents, and the FileDropzone sample uses a label root, which would make the status and the hint part of the accessible name.",
+      "closest": "The structure the stylesheet describes (and that at least one framework renders) is the one DOM; the vanilla documents are rewritten to it in the same change, and authored markup of the old shape keeps working in the controllers."
+    },
+    {
+      "convention": "native-form-reset",
+      "component": "FileDropzone, FileUpload (Angular)",
+      "ids": [
+        "files-5"
+      ],
+      "conflict": "With Angular Forms attached the component must change nothing by itself, but the browser has already emptied the file input, so shown value, held value and FormData cannot agree by doing nothing.",
+      "closest": "syncDom() assigns the files the control still holds back to the input through DataTransfer; where DataTransfer does not exist the input stays empty and the component reports [] through onChange and valueChange so that the three agree."
+    },
+    {
+      "convention": "native-form-reset",
+      "component": "PasswordField",
+      "ids": [
+        "rich-inputs-14"
+      ],
+      "conflict": "'Secondary state returns to its initial state' and 'PasswordField returns to hidden' differ when React defaultVisible (or Vue defaultVisible) is true.",
+      "closest": "Hidden wins in every adapter."
+    },
+    {
+      "convention": "aria-invalid",
+      "component": "MultiSelect",
+      "ids": [
+        "E01"
+      ],
+      "conflict": "The convention puts aria-invalid on the fieldset for a group; the element that owns the validity and receives focus is the filter input (docs/multiselect-validation.md:44-47).",
+      "closest": "Both the fieldset and the filter input carry it."
+    }
+  ],
+  "closedAlready": [
+    {
+      "ids": [
+        "rich-inputs-14"
+      ],
+      "part": "Vue PasswordField no longer declares search props or a search event",
+      "evidence": "packages/vue/src/controls.ts:54-66 (textProps, showLabel, hideLabel, toggleVariant; emits update:modelValue only)"
+    },
+    {
+      "ids": [
+        "rich-inputs-2"
+      ],
+      "part": "React open / defaultOpen / onOpenChange and the Vue update:open and update:query events exist (triage corrected to partly)",
+      "evidence": "packages/react/src/interactive.tsx:177-179,266; packages/vue/src/interactive.ts:128,164,189"
+    },
+    {
+      "ids": [
+        "files-6"
+      ],
+      "part": "the duplicated instruction paragraph of the audit",
+      "evidence": "dropLabel is the single required instruction: packages/react/src/expanded-controls.tsx:95, packages/vue/src/controls.ts:779, packages/angular/src/advanced-controls.ts:362"
+    },
+    {
+      "ids": [
+        "R27"
+      ],
+      "part": "React and Vue default",
+      "evidence": "packages/react/src/search-field.tsx:19; packages/vue/src/search-field.ts:12"
+    }
+  ],
+  "questions": [
+    "Reading note, not a question: ownerDecision and alsoDependsOnOwnerDecisions are 0-based indexes into conventions.json ownerDecisions; the conventions text counts from 1 (index 3 is 'owner decision 4').",
+    "forms-core: the React Field flag that adds role=alert to p.hw-error for a component-produced message (convention hint-error-validation-message, React mechanics) has no name in the conventions; FileDropzone (files-4) needs it. This specification assumes a Field / ControlField prop `errorRole?: 'alert'`; the name forms-core chooses replaces it.",
+    "forms-core: this specification assumes HwValueControl declares `ariaLabel`, `ariaLabelledby`, `ariaDescribedby`, `ariaInvalid`, `form`, `submissionInvalid`, `afterReset()`, `syncDom()` and exports `fieldLabel`, `fieldLegend`, `fieldEnd` for advanced-controls.ts (which today has its own fieldEnd at :11). If submissionInvalid is not declared there, hw-combobox, hw-tag-input, hw-multi-select and hw-pin-input declare it locally with the same name.",
+    "Answered by the reconciliation (fieldLabel carries `[id]=\"decorationId + '-label'\"`; both lists use aria-labelledby). Original question: forms-core: the Angular fieldLabel carries no id, so the Angular listboxes of Combobox and SearchField are named by aria-label = label where React and Vue use aria-labelledby = label id. If forms-core adds `[id]=\"controlId + '-label'\"` to fieldLabel, both switch to aria-labelledby and the stated difference disappears.",
+    "Owner: three behaviour changes go beyond the audit wording and are easy to overrule separately: (1) MultiSelect filter label becomes visible in React, Vue and Angular; (2) focus after a tag is removed with its button goes to the neighbouring remove button instead of the text input (the convention reverses docs/tag-input-interaction.md:9); (3) any rejected file empties the whole FileDropzone selection, including in Angular, which kept the accepted files."
+  ]
+}

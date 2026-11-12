@@ -1,0 +1,2534 @@
+{
+  "cluster": "dates-overlays-disclosure-data",
+  "about": "Specification of 20 items for Hawiyah 0.3.0 milestone 3, written from the source at commit a0ed9b0. Line numbers refer to that commit. Case ids follow conventions.json theme tests; every test title also carries the audit id shown in brackets.",
+  "items": [
+    {
+      "ids": [
+        "dates-2",
+        "R02"
+      ],
+      "component": "Calendar, DatePicker (Angular isDateDisabled; one violation order in the four adapters)",
+      "summary": "Angular hw-calendar and hw-date-picker gain the isDateDisabled predicate that React, Vue and vanilla have, and hw-date-picker gains unavailableMessage. The four adapters ask one core helper which constraint a typed date violates, so the message chosen for a date that breaks two constraints is the same everywhere.",
+      "endState": {
+        "surface": {
+          "angular": "hw-calendar: `@Input() isDateDisabled?: (value: string) => boolean` (optional, no default). hw-date-picker: `@Input() isDateDisabled?: (value: string) => boolean` (optional) and `@Input() unavailableMessage = ''`, required under the text contract while isDateDisabled is given: `texts.need('unavailableMessage', unavailableMessage, 'isDateDisabled is given')`. Angular Forms error added by validate(): `{calendarUnavailable: {actual: string}}`.",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none",
+          "core": "new export getDateViolation and type DateViolation"
+        },
+        "dom": "hw-calendar: a day the predicate rejects is a `button.hw-calendar-day` with the native `disabled` attribute, exactly as a day outside min/max (React calendar.tsx:68); it is never the roving tab stop. hw-date-picker: a typed date the predicate rejects gives violation 'unavailable': aria-invalid=\"true\" on the text input, custom validity = unavailableMessage (a single space when the text is missing) and the message in the single p.hw-error of item dates-7.",
+        "behaviour": "Keyboard in the grid: an arrow, Home, End or Page key that lands on an unavailable day continues day by day in the direction of travel for at most 366 days and does not move when that leaves min/max; Angular keeps clamping the first target to min or max, as Vue does (vue/src/calendar.ts:207-208). Click, Enter and Space on an unavailable day change nothing and notify nothing. A typed ISO date that is unavailable still becomes the value (docs/date-input.md:13-15) and blocks submission. Violation order in every adapter: '' for an empty draft; 'invalid' when the draft is not an ISO date; 'unsupported' when the calendar cannot show it; 'invalid' when it is outside min/max; 'unavailable' when isDateDisabled returns true. Server rendering: the predicate runs during rendering on both sides and must be pure."
+      },
+      "core": [
+        {
+          "export": "getDateViolation, DateViolation",
+          "signature": "type DateViolation = '' | 'invalid' | 'unsupported' | 'unavailable'; getDateViolation(draft: string, options: {min?: string; max?: string; calendar: CalendarSystem; isDateDisabled?: (value: string) => boolean}): DateViolation",
+          "behaviour": "packages/core/src/calendar.ts, exported from core/src/index.ts:3-4. Returns '' when draft is ''; 'invalid' when !isDateInRange(draft); 'unsupported' when !isCalendarDateSupported(draft, options.calendar); 'invalid' when !isDateInRange(draft, min, max); 'unavailable' when options.isDateDisabled?.(draft) is true; otherwise ''. No text, no Intl, no DOM."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/calendar.tsx:90-95: the four booleans become `const violation = getDateViolation(draft, {min, max, calendar, isDateDisabled}); const invalid = violation !== '';` and `message = violation === 'invalid' ? copy.invalid : violation === 'unsupported' ? copy.unsupported : violation === 'unavailable' ? copy.unavailable : undefined`. Nothing else.",
+        "vue": "packages/vue/src/calendar.ts:438-445: validationProblem maps getDateViolation(draft.value, {min: props.min, max: props.max, calendar: calendarSystem.value.value, isDateDisabled: props.isDateDisabled}) to '' | 'invalidMessage' | 'unsupportedMessage' | 'unavailableMessage'. The min / max attributes of the input keep the clamped minimum / maximum (:420-431).",
+        "angular": "packages/angular/src/advanced-controls.ts:239 add the input to hw-calendar and `private unavailable(value: string) { return !isDateInRange(value, this.min || undefined, this.max || undefined) || !isCalendarDateSupported(value, this.calendar) || !!this.isDateDisabled?.(value); }`. :218 template day button `[disabled]=\"disabled || day.disabled || unavailable(day.value)\"`. :244 tabbable: every `!day.disabled` becomes `!day.disabled && !unavailable(day.value)`. :266 select() returns when unavailable(value). :267-285 keydown: after the clamping lines :280-281 and in place of the check at :282: `const step = next < value ? -1 : 1; try { for (let n = 0; n < 366 && this.unavailable(next); n++) { const following = moveCalendarDate(next, step, 'day', this.calendar); if (!isDateInRange(following, this.min || undefined, this.max || undefined)) return; next = following; } } catch (error) { if (error instanceof RangeError) return; throw error; } if (this.unavailable(next)) return;` (the loop of vue/src/calendar.ts:210-214). hw-date-picker :290 add both inputs; :324 `get unsupportedDate() { return this.violation === 'unsupported'; }`; :326-331 `get violation(): DateViolation { return getDateViolation(this.draft, {min: this.min || undefined, max: this.max || undefined, calendar: this.calendar, isDateDisabled: this.isDateDisabled}); }`; :333-336 validationMessage adds the 'unavailable' branch with texts.need(..., 'isDateDisabled is given'); :337-342 validate() adds `if (this.violation === 'unavailable') return {calendarUnavailable: {actual: this.draft}};` before the calendarDate error; :288 nested calendar gets `[isDateDisabled]=\"isDateDisabled\"`.",
+        "vanilla": "packages/vanilla/src/calendar.ts:232-235: `const violation = getDateViolation(draft, {min: input.min || undefined, max: input.max || undefined, calendar: calendar.calendar, isDateDisabled: options.isDateDisabled}); const supported = violation === '';` and the message is chosen from violation ('unsupported' -> unsupportedMessage, 'unavailable' -> unavailableMessage with the condition 'isDateDisabled is given', 'invalid' -> invalidMessage)."
+      },
+      "tests": [
+        {
+          "caseId": "DATE-VIOLATION-01",
+          "what": "core: '' for an empty draft, 'invalid' for 2026-13-45, 'unsupported' for 1900-01-01 with islamic-umalqura, 'invalid' outside min/max, 'unavailable' from the predicate; a date outside min/max and outside the Umm al-Qura range is 'unsupported'. File packages/core/test/calendar-violation.test.ts.",
+          "adapters": [
+            "core"
+          ]
+        },
+        {
+          "caseId": "CALENDAR-01",
+          "what": "[dates-2] weekend predicate: the rejected days are disabled buttons and none has tabindex=0. File tests/calendar-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "CALENDAR-02",
+          "what": "[dates-2] ArrowRight from Thursday 2026-10-29 with Friday and Saturday rejected focuses 2026-11-01; ArrowLeft from 2026-11-01 focuses 2026-10-29.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "CALENDAR-03",
+          "what": "click and Enter on a rejected day: value unchanged, no notification.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-08",
+          "what": "[dates-2][R02] DatePicker: typing a rejected ISO date sets aria-invalid=true and validity.customError without a submission. File tests/date-picker-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-02",
+          "what": "DatePicker without isDateDisabled: no warning for a missing unavailableMessage; with the predicate and no text: one warning naming unavailableMessage, no p.hw-error, submission still blocked (MSG-06).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DATE-PICKER-10",
+          "what": "Angular Forms: control.errors equals {calendarUnavailable: {actual}} for a rejected date. File packages/angular/test/datepicker-draft.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "DatePicker",
+          "kind": "default",
+          "old": "a typed date outside min/max and outside the Umm al-Qura range showed invalidMessage",
+          "new": "it shows unsupportedMessage, as in Vue, Angular and vanilla"
+        }
+      ],
+      "readme": "packages/angular/README.md:308-309: Calendar and DatePicker rows gain `isDateDisabled(isoDate)`; DatePicker row gains `unavailableMessage` (required with isDateDisabled) and the `calendarUnavailable` error. docs/date-input.md:30-31: delete '(not available in Angular)'. The guide's Calendar API table (apps/playground/src/component-expanded-guides.ts:128) needs no adapter note. components.json and llms.txt list the input for Angular.",
+      "ownerDecision": null,
+      "notDone": "The Calendar hidden input of Angular, Vue and vanilla still submits a value that the predicate rejects (React submits ''); no finding covers it. At min or max React and vanilla do not move focus while Vue and Angular move to the bound; no finding covers it."
+    },
+    {
+      "ids": [
+        "dates-7",
+        "dates-4"
+      ],
+      "component": "DatePicker (validation message, required marker, aria-invalid)",
+      "summary": "The message for a malformed, out-of-range, unsupported or unavailable typed date is one p.hw-error after the hint in the four adapters, with role=alert because the component produces it, and the vanilla controller renders it too. The Angular label gains the required marker, and aria-invalid follows the one rule of the conventions.",
+      "endState": {
+        "surface": {
+          "react": "none public. Internal: Field / FieldLayout prop `errorRole?: 'alert'` (react/src/shared.tsx:99), the flag of convention hint-error-validation-message; the rich-inputs-files specification assumes the same name.",
+          "vue": "none public. Internal: decorate(props, id, content, extraClass?, decorationId = id, produced?: VNodeChild) (vue/src/forms.ts:33).",
+          "angular": "hw-date-picker: `label` loses `{required: true}` (required only when the control has no aria-label, aria-labelledby or surrounding hw-field label); `describedBy` is replaced by the inherited `aria-describedby` input; `aria-label`, `aria-labelledby`, `aria-invalid` inherited from HwValueControl (forms-core).",
+          "vanilla": "New optional authored slot `[data-hw-error]` inside the root; no new option."
+        },
+        "dom": "Order inside the field in every adapter: label.hw-label (with span.hw-required-marker when required), div.hw-date-picker-control, hint, error. One `p.hw-error#{controlId}-error`: with the application's `error` it holds that text and has no role; otherwise, while the draft violates a constraint and its message text exists, it holds the message with role=\"alert\"; ISO dates inside a produced message are wrapped in `<bdi dir=\"ltr\">`. No element when neither applies or the text is missing. Text input: aria-describedby = application ids, the id of output.hw-date-picker-value while it shows a date, field ids, hint id, error id (the four of the convention keep their order; the formatted value is read before hint and error); aria-invalid=\"true\" exactly when error, an explicit aria-invalid, a failed submission or a violation applies. Vue's p#{id}-validation-error and Angular's p#{id}-date-error are gone. Vanilla: the message is written into an authored [data-hw-error] element when the root has one (role=alert set while it applies, authored text restored after), else into a created p.hw-error inserted after the root's .hw-hint, or as the last child of the root.",
+        "behaviour": "The message appears when a non-empty draft violates a constraint (on input) and disappears when the draft becomes valid or empty and on a form reset. The same text is the input's custom validity; a missing text gives a single space, no element and one development warning. A failed submission (the input's `invalid` event) sets aria-invalid until the input is valid again or the form resets; the event is not default-prevented. A required, empty, untouched picker has no aria-invalid. Server rendering: no p.hw-error is produced unless the application passes `error`; the `invalid` listener is attached after mount."
+      },
+      "core": [
+        {
+          "export": "getDateViolation",
+          "signature": "see item dates-2",
+          "behaviour": "The one source of the violation in the four adapters."
+        }
+      ],
+      "styles": [
+        {
+          "file": "packages/styles/src/date-picker.css",
+          "change": "No new rule. `.hw-error` (components.css:118-120) already styles the element in its new place; delete any selector that names `-validation-error` or `-date-error` if one is found (none exists today)."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/calendar.tsx:101: `<Field ... error={error || (message ? dateMessage(message) : undefined)} errorRole={!error && message ? 'alert' : undefined}>`; shared.tsx:99-111 FieldLayout takes `errorRole` and writes it as `role` on p.hw-error. :103 `aria-invalid={props['aria-invalid'] ?? ((error || failed || invalid) ? true : undefined)}`; aria-describedby stays as written (application ids, formatted id; the Field ids follow through useFieldControl). New `const [failed, setFailed] = useState(false)`; `onInvalid={event => { props.onInvalid?.(event); setFailed(true); }}` on the TextField; cleared in an effect when `!invalid && input.current?.validity.valid` and in the reset callback (:87).",
+        "vue": "packages/vue/src/calendar.ts:522-531: delete the p#-validation-error node. :459-461 `decorate({...props, label: ...}, field.id.value, content, undefined, field.id.value, props.error ? undefined : validationText.value && dateMessage(validationText.value))`; vue/src/forms.ts:33-40 decorate renders `h('p', {class: 'hw-error', id: `${decorationId}-error`, role: props.error ? undefined : 'alert'}, props.error || produced)` when either exists and wraps when `produced` is set. :477-486 input: `'aria-invalid': props.error || failed.value || validationMessage.value ? true : field.controlAttrs.value['aria-invalid']`; `'aria-describedby': joinIds(attrs['aria-describedby'], formattedDate.value && `${field.id.value}-formatted`, field.controlAttrs.value['aria-describedby'], !props.error && validationText.value && `${field.id.value}-error`)`; `onInvalid: () => { failed.value = true; }`. New `const failed = ref(false)`; a post-flush watch on validationMessage clears it when `element.value?.validity.valid`; the reset callback (:452) clears it.",
+        "angular": "packages/angular/src/advanced-controls.ts:288 template: the hand-written label becomes `${fieldLabel}` (forms-core field-templates.ts: id, marker); the input gets `${controlAria}`-equivalent bindings written out because of the extra id: `[attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"labelledBy\" [attr.aria-describedby]=\"dateDescriptionIds\" [attr.aria-invalid]=\"invalid || violation ? true : null\" (invalid)=\"failed()\"`; delete `@if (validationMessage && !error) {<p class=\"hw-error\" [id]=\"controlId + '-date-error'\">...</p>}` and `${fieldEnd}`; write at the end, without white space between the blocks: `@if (hint) {<p class=\"hw-hint\" [id]=\"decorationId + '-hint'\">{{ hint }}</p>}@if (shownError) {<p class=\"hw-error\" [id]=\"decorationId + '-error'\" [attr.role]=\"error ? null : 'alert'\">@if (error) {<ng-container>{{ error }}</ng-container>} @else {@for (part of validationMessageParts; track $index) {@if (part.date) {<bdi dir=\"ltr\">{{ part.text }}</bdi>} @else {<ng-container>{{ part.text }}</ng-container>}}}</p>}`. Class: `override get shownError() { return this.error || this.validationMessage; }`; :320 `get dateDescriptionIds() { return fieldDescriptionIds(this.ariaDescribedby, this.formattedDate && this.controlId + '-formatted', this.descriptionIds); }`; :294 `@Input() override label = ''` and a getter used once per check that calls `this.named || this.texts.need('label', this.label)`; :344-348 syncValidity ends with `if (this.submissionInvalid && this.dateInput?.nativeElement.validity.valid) this.submissionInvalid = false`. The stray spaces of `@else { {{ part.text }} }` at :288 (status and error) are removed the same way.",
+        "vanilla": "packages/vanilla/src/calendar.ts:231-246 validate(): after setCustomValidity call `showMessage(violation === '' ? undefined : text)`, where text is the say() value that passed requireText. showMessage(text): target = root.querySelector('[data-hw-error]') (authored text and role remembered once) or, when absent, a created `p.hw-error` inserted after root.querySelector('.hw-hint') or appended to the root; with text: appendDateMessage(target, text) (:7-14), role=alert, ensureId(scope, target, 'date-error') and its id added to the input's aria-describedby; without text: authored slot gets its remembered text and role back, a created element is removed, the id leaves aria-describedby. An authored `.hw-error` that is not [data-hw-error] and has text is the application's error: showMessage does nothing. :236 aria-invalid: `!supported || failed`; `let failed = false; scope.listen(input, 'invalid', () => { failed = true; validate(); });` cleared in validate() when input.validity.valid and in the reset handler (:274). scope.add removes a created element on destroy. :241-242 the output no longer shows a message (item R03)."
+      },
+      "tests": [
+        {
+          "caseId": "MSG-01",
+          "what": "[dates-7] DOM order label, control, hint, error; hint and error are p elements with ids {id}-hint and {id}-error. File tests/date-picker-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-02",
+          "what": "aria-describedby order: application id, formatted id, hint id, error id; no duplicate.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-03",
+          "what": "application `error`: one p.hw-error without role.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-04",
+          "what": "[dates-4][dates-7] typing 2026-13-45: one p.hw-error with role=alert whose text is invalidMessage, validationMessage equals it, aria-invalid=true.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-05",
+          "what": "application error and a violating draft: one element, the application's text, no role.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-06",
+          "what": "missing invalidMessage: validity.customError true, no .hw-error, one warning.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "MSG-07",
+          "what": "the message disappears when the draft becomes valid and on form reset; vanilla removes a created element on destroy and restores an authored [data-hw-error].",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DATE-PICKER-05",
+          "what": "a produced message that contains an ISO date renders it inside bdi[dir=ltr].",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-01",
+          "what": "required, empty, untouched: no aria-invalid.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "INV-03",
+          "what": "form.requestSubmit() on a required empty picker: aria-invalid=true on the text input; INV-04 a valid date clears it; INV-05 reset clears it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "REQ-01",
+          "what": "[dates-7] required with a label: exactly one span.hw-required-marker, last child of the label, text ' *'; REQ-02 none when not required.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "Angular hw-date-picker with aria-label and no label: no warning, no label element, aria-label on the input, none on the host (ATTR-03). File packages/angular/test/required-names.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML of a picker with a valid default value has no p.hw-error and equals the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "component": "DatePicker",
+          "kind": "markup",
+          "old": "p#{id}-validation-error.hw-error[role=alert] before the hint",
+          "new": "p#{id}-error.hw-error[role=alert] after the hint",
+          "migration": "#<id>-validation-error -> #<id>-error"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-date-picker",
+          "kind": "markup",
+          "old": "p#{controlId}-date-error.hw-error before the hint, no role; label without marker",
+          "new": "p#{controlId}-error.hw-error[role=alert] after the hint; label with id and required marker",
+          "migration": "#<id>-date-error -> #<id>-error"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-date-picker",
+          "kind": "input",
+          "old": "label required always; describedBy",
+          "new": "label required unless aria-label / aria-labelledby is given; aria-describedby",
+          "migration": "[describedBy]=\"id\" -> [aria-describedby]=\"id\""
+        },
+        {
+          "adapter": "react",
+          "component": "DatePicker",
+          "kind": "markup",
+          "old": "produced message without a role",
+          "new": "p.hw-error[role=alert] for a produced message",
+          "migration": "none"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "DatePicker",
+          "kind": "markup",
+          "old": "no visible message; native bubble only",
+          "new": "[data-hw-error] slot or a created p.hw-error[role=alert]",
+          "migration": "optional: add <p class=\"hw-error\" data-hw-error></p> where the message must appear"
+        }
+      ],
+      "readme": "Each README and docs/date-input.md:10-15: where the message is rendered, that it is announced (role=alert) and that the application's error wins. packages/vanilla/EXPANSION-API.md:84-99 shows the optional [data-hw-error] slot and replaces 'DatePicker reports native invalidity' (:88). Angular README: label is optional with aria-label / aria-labelledby.",
+      "ownerDecision": 1,
+      "notDone": "Vue keeps its inner div.hw-date-picker inside div.hw-field (React and Angular use one element with both classes)."
+    },
+    {
+      "ids": [
+        "dates-5"
+      ],
+      "appliesCanonical": "fields-basic-8 (forms-core): the reset mechanism, observeFormReset, sameValue, HwValueControl.afterReset() / syncDom() and the React and Vue useFormReset are defined there; this item is their application to Calendar and DatePicker.",
+      "component": "Calendar, DatePicker (native form reset)",
+      "summary": "A native form reset returns Calendar and DatePicker to their reset target in the four adapters and notifies once when the value changed; in Angular, without Angular Forms, the picker no longer shows an empty field while it submits the edited date. Draft, visible month, dialog and submission aria-invalid return to their initial state in the same step.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none (valueChange now emits after a native reset that changed the value, without Angular Forms)",
+          "vanilla": "createCalendar and createDatePicker dispatch hw:change {value} and call onValueChange after a reset that changed the value"
+        },
+        "dom": "After the reset: the text input shows the formatted reset target (or ''), the hidden named input carries it, output.hw-date-picker-value shows its full date, no produced p.hw-error, no aria-invalid from a submission, dialog closed and trigger aria-expanded=false. Calendar: the selected day, the tab stop and the visible month are those of the reset target.",
+        "behaviour": "Reset target: React and Vue `defaultValue` (else ''); Angular the value held after the first ngOnInit unless Angular Forms is attached (then the component writes nothing itself and shows what Angular Forms wrote); vanilla the authored value (`input.defaultValue`, Calendar: options.value or data-hw-value). Calendar month target: defaultMonth (React), the `month` prop (Vue), the month input held after the first ngOnInit (Angular), options.month or data-hw-month (vanilla), else the month of the reset target. The calendar system is not reset. Read-only and disabled pickers are reset too. Timing and prevention are those of observeFormReset. The calendar inside the picker's dialog is not a form control of the surrounding form (form=\"\" on its hidden input; vanilla: no reset observer); only the picker resets it."
+      },
+      "core": [
+        {
+          "export": "observeFormReset, sameValue",
+          "signature": "see forms-core, item fields-basic-8",
+          "behaviour": "Used, not defined, here."
+        }
+      ],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/calendar.tsx:42: `useFormReset(nativeValue, () => { select(defaultValue); if (month === undefined) setMonth(defaultMonth ?? (defaultValue || undefined)); setFocused(defaultValue || undefined); })` (the `form` argument is gone; the unconditional select() notifies a controlled owner only when the target differs, through sameValue in useControllable). :87 `useFormReset(input, () => { select(defaultValue); setDraft(value ?? defaultValue); setEditing(false); setFailed(false); setOpen(false); setMonth(isDateInRange(value ?? defaultValue) ? (value ?? defaultValue) : undefined); })`. :108 the nested Calendar gets `form=\"\"`: its hidden input then has no form owner, so the calendar inside the dialog is never reset by the form and cannot clear the picker through its onValueChange.",
+        "vue": "packages/vue/src/calendar.ts:137-141 and :452-456 keep model.set(props.defaultValue) (useValue.set now emits only on a change); the DatePicker callback adds `editing.value = false; failed.value = false;` and passes the third argument of useFormReset, `() => { if (element.value) element.value.value = shown.value; }`, where `shown` is the computed that today is the inline `value:` expression at :474. :551 the nested Calendar gets `form: ''` for the same reason (its hidden input reads attrs.form).",
+        "angular": "packages/angular/src/advanced-controls.ts hw-calendar (:219): `private initialMonth = ''; override ngOnInit() { super.ngOnInit(); this.initialMonth = this.month; }`, `protected override afterReset() { this.month = this.initialMonth || this.value; this.focused = this.value; }`; no syncDom (the hidden input is bound). hw-date-picker (:289): `protected override afterReset() { this.draft = this.value; this.editing = false; this.dialog?.close(); this.syncValidity(); }` and `protected override syncDom() { const input = this.dateInput?.nativeElement; if (input) input.value = this.displayedDate; }`. Hidden inputs of both components get `[attr.form]=\"form\"` (the `form` input of HwValueControl, forms-core) and the date input gets `(focus)=\"beginEditing(); focusEvents.emit($event)\"` and `blurEvents.emit($event)` in endEditing(). The nested calendar is written `<hw-calendar form=\"\" ...>`: its hidden input has no form owner, observeFormReset ignores it, and it cannot write an initial value of its own into the picker.",
+        "vanilla": "packages/vanilla/src/calendar.ts:176, skipped when pickerCalendars.has(root) (the picker resets its calendar itself): `const resets = observeFormReset(hidden.name ? hidden : root, () => { const target = isDateInRange(initial, min, max) ? initial : ''; const changed = value !== target; value = target; month = value || options.month || root.dataset.hwMonth; focused = value; render(); if (changed) { emit(root, {value}); options.onValueChange?.(value); } }); scope.add(() => resets.destroy());`. :274: observeFormReset(input, () => { draft = input.defaultValue; value = isDateInRange(draft) ? draft : ''; failed = false; calendar.setValue(value); validate(); modal.close(); if (lastNotifiedValue !== value) { lastNotifiedValue = value; emit(root, {value}); options.onValueChange?.(value); } })."
+      },
+      "tests": [
+        {
+          "caseId": "RESET-01",
+          "what": "[dates-5] DatePicker with initial 2026-10-28: type 2026-11-05, reset: text input, FormData and held value are 2026-10-28. File tests/date-picker-parity.test.ts; the same case for Calendar in tests/calendar-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-02",
+          "what": "exactly one notification with the target; RESET-03 none when the value already equals it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-04",
+          "what": "controlled, notification applied: all three agree; RESET-05 controlled, notification ignored: shown value and FormData equal the application's value.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-06",
+          "what": "default-prevented reset changes nothing.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-07",
+          "what": "read-only and disabled pickers reset like an editable one.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-09",
+          "what": "reset with the dialog open and a malformed draft: dialog closed, draft and p.hw-error gone, aria-invalid absent, month back to the target.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RESET-10",
+          "what": "Angular with a FormControl: the component writes nothing itself and shows what Angular Forms wrote. File packages/angular/test/datepicker-draft.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DATE-PICKER-09",
+          "what": "the calendar nested in the picker does not notify or change the picker on reset: with initial '' and a typed date, reset gives exactly one notification with ''; with Angular Forms attached the nested calendar writes nothing into the control.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "No separate text: the README paragraph on reset comes from forms-core. docs/date-input.md:23 stays true.",
+      "ownerDecision": 0,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "dates-6"
+      ],
+      "component": "DatePicker (initial focus when the dialog opens), Calendar (tab stop of an empty calendar)",
+      "summary": "Opening the picker moves focus to the calendar's tab-stop day in the four adapters; React and vanilla left it on the dialog's close button. The tab stop of an empty calendar is today when today is shown and available, as in React and the APG date picker dialog.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "The roving tab stop (tabindex=0) of the grid is, in this order: the day that last had focus, the selected day, today, the first day of the shown month, the first available day; unavailable days are skipped in each step.",
+        "behaviour": "On open (trigger activation, ArrowDown in the text input, show()): after showModal() focus is on button.hw-calendar-day[tabindex=\"0\"] inside the dialog. When the grid has no tab stop (no locale, every day unavailable) focus stays where the browser put it. Closing returns focus to the opener as today."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/calendar.tsx:80 add `const dialog = useRef<HTMLDialogElement | null>(null)`; :104 `<Dialog ref={dialog} ...>`; after :86 `useEffect(() => { if (open) dialog.current?.querySelector<HTMLElement>('.hw-calendar-day[tabindex=\"0\"]')?.focus(); }, [open]);` (the effect of the parent runs after the Dialog effect that calls showModal, interactive.tsx:114-126).",
+        "vue": "packages/vue/src/calendar.ts:98-107 focusValue: insert `page.value.days.find(day => day.today && !blocked(day.value))?.value ??` after the selected step.",
+        "angular": "packages/angular/src/advanced-controls.ts:244 tabbable: insert `days.find(day => day.today && !day.disabled && !unavailable(day.value))?.value ??` after the selected step.",
+        "vanilla": "packages/vanilla/src/calendar.ts:97-100: insert the today step after the selected step. :266 show(): after `modal.show(origin)` add `host.querySelector<HTMLElement>('.hw-calendar-day[tabindex=\"0\"]')?.focus();`."
+      },
+      "tests": [
+        {
+          "caseId": "DATE-PICKER-02",
+          "what": "[dates-6] value 2026-10-28, ArrowDown in the input: document.activeElement is the day button of 2026-10-28 inside the dialog; the same after a click on the trigger. File tests/date-picker-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DATE-PICKER-03",
+          "what": "empty picker (fake clock): the focused day is today.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DATE-PICKER-04",
+          "what": "Escape returns focus to the element that opened the dialog.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "CALENDAR-04",
+          "what": "empty standalone calendar: today has tabindex=0; with today unavailable the first available day of the month has it. File tests/calendar-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue, angular, vanilla",
+          "component": "Calendar",
+          "kind": "default",
+          "old": "tab stop of an empty calendar: first day of the month",
+          "new": "today when shown and available",
+          "migration": "none"
+        }
+      ],
+      "readme": "Each README, DatePicker keyboard paragraph: 'Opening moves focus to the selected day, or today'.",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "R01"
+      ],
+      "component": "Calendar (unsupported-range status), DatePicker (owner of the calendar-system switch)",
+      "summary": "The standalone Calendar announces a value that the Umm al-Qura calendar cannot show through one status element in the four adapters, with the required text unsupportedMessage; React and Angular had neither. The Gregorian / Hijri switch is a part of DatePicker in every adapter: the vanilla standalone Calendar stops rendering it, and the vanilla DatePicker renders it in the place the three frameworks use.",
+      "endState": {
+        "surface": {
+          "react": "Calendar: `unsupportedMessage` added to the union on `calendar` (calendar.tsx:27): `{calendar?: 'gregory'; rangeLabel?: string; unsupportedMessage?: string} | {calendar?: CalendarSystem; rangeLabel: string; unsupportedMessage: string}`; required while calendar is 'islamic-umalqura'.",
+          "vue": "Calendar: prop unchanged (`unsupportedMessage: String`, needText with the condition \"calendar is 'islamic-umalqura'\").",
+          "angular": "hw-calendar: `@Input() unsupportedMessage = ''`, asked with texts.need('unsupportedMessage', unsupportedMessage, 'calendar is islamic-umalqura').",
+          "vanilla": "createCalendar: `unsupportedMessage` / data-hw-unsupported-message required only while the calendar is 'islamic-umalqura' (was: always). CalendarTexts loses `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`; they stay on DatePickerTexts with their data-hw-* attributes on the DatePicker root. Controller setCalendar(), `calendar` and onCalendarChange are unchanged."
+        },
+        "dom": "Calendar, every adapter, while the grid is rendered: `<p class=\"hw-sr-only\" role=\"status\"></p>` directly after table.hw-calendar-grid, present and empty from the first render; while the value is set and isCalendarDateSupported(value, calendar) is false it holds unsupportedMessage with ISO dates in bdi[dir=ltr]. DatePicker: that element of the nested Calendar is the only status; the separate one of React (calendar.tsx:107) and Angular is removed. Calendar-system switch: `div.hw-calendar-options > div.hw-calendar-system.hw-calendar-switch[role=radiogroup]` is rendered by DatePicker only, inside the dialog body directly before the calendar root; a standalone Calendar renders none.",
+        "behaviour": "The status text changes only when its state changes, so a month change does not repeat the announcement; the vanilla controller creates the element once instead of on every render. A missing unsupportedMessage leaves the element empty with one development warning. Standalone vanilla Calendar: the reader can no longer switch the system; the application calls controller.setCalendar(system) from its own control. Server rendering: the status element is in the server HTML, empty or filled as on the client."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/date-picker.css",
+          "change": "No rule changes: `.hw-calendar-options` (:36-39) is not scoped to .hw-calendar and applies in the dialog body in the four adapters."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/calendar.tsx:27-29 add the prop and `unsupported: calendar === 'islamic-umalqura' ? text('Calendar', 'unsupportedMessage', unsupportedMessage, \"calendar is 'islamic-umalqura'\") : undefined` to `names`; :68 after `</table>`: `<p role=\"status\" className=\"hw-sr-only\">{selected && !isCalendarDateSupported(selected, calendar) && names.unsupported ? dateMessage(names.unsupported) : null}</p>`. DatePicker: delete :107 and pass `unsupportedMessage={unsupportedMessage}` to the nested Calendar at :108.",
+        "vue": "packages/vue/src/calendar.ts:276-278: the conditional node before the table becomes an unconditional `h('p', {role: 'status', class: 'hw-sr-only'}, unsupported ? dateMessage(text) : undefined)` placed after the table; the needText call keeps its condition and runs only while calendar is 'islamic-umalqura'.",
+        "angular": "packages/angular/src/advanced-controls.ts:218 after `</table>`: `<p class=\"hw-sr-only\" role=\"status\">@if (unsupportedValue) {@for (part of unsupportedParts; track $index) {@if (part.date) {<bdi dir=\"ltr\">{{ part.text }}</bdi>} @else {<ng-container>{{ part.text }}</ng-container>}}}</p>`; class: the new input, `get unsupportedValue() { return !!this.value && isDateInRange(this.value) && !isCalendarDateSupported(this.value, this.calendar); }`, `get unsupportedParts()` built with messageParts(), which moves from HwDatePickerComponent (:321) to a module function. The text is asked only while calendar is 'islamic-umalqura'. hw-date-picker :288: delete `@if (unsupportedDate && unsupportedMessageParts.length) {<p class=\"hw-sr-only\" role=\"status\">...</p>}` and the getter :322; add `[unsupportedMessage]=\"unsupportedMessage\"` to the nested hw-calendar.",
+        "vanilla": "packages/vanilla/src/calendar.ts createCalendar: delete the switch (:77-81, `optionsRow.append(systemGroup)` and `root.insertBefore(optionsRow, host)` at :87, :110-111, the 'system' branch of :138, the listener :150) and the three texts from CalendarTexts (:22); setCalendar (:149) renders without a focus action. :133-136: create `const status = document.createElement('p'); status.className = 'hw-sr-only'; status.setAttribute('role', 'status'); host.after(status); scope.add(() => status.remove());` once, and in render() set its content through appendDateMessage only when the wanted text differs from the last one; requireText runs with the condition \"calendar is 'islamic-umalqura'\" and only then. createDatePicker (:195-254): build the same div.hw-calendar-options with two radios (name `${dialogId}-system`, form=\"\", data-hw-calendar-system) and `host.before(optionsRow)`; `change` calls calendar.setCalendar(value); a syncSystem() sets checked, disabled (blocked()) and data-calendar and runs at creation, in onCalendarChange and in validate(); removed on destroy. DatePickerTexts (:182) declares the three texts itself."
+      },
+      "tests": [
+        {
+          "caseId": "CALENDAR-05",
+          "what": "[R01] calendar islamic-umalqura, value 1900-01-01: the p[role=status] after the grid holds unsupportedMessage; with a supported value it exists and is empty; with gregory it exists and is empty. File tests/calendar-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "CALENDAR-06",
+          "what": "[R01] a standalone Calendar has no .hw-calendar-switch; a DatePicker dialog has exactly one, directly before the calendar root, and switching it changes the calendar and notifies `calendar`.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "Calendar with islamic-umalqura and no unsupportedMessage: one warning, empty status; TEXT-02 with gregory: no warning.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DATE-PICKER-06",
+          "what": "DatePicker with an unsupported value: exactly one role=status element with the message inside the dialog.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "Calendar server HTML contains the empty status element and equals the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "Calendar",
+          "kind": "input",
+          "old": "no unsupportedMessage",
+          "new": "unsupportedMessage required with calendar=\"islamic-umalqura\"",
+          "migration": "<Calendar calendar=\"islamic-umalqura\" rangeLabel=...> -> add unsupportedMessage=..."
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-calendar",
+          "kind": "input",
+          "old": "no unsupportedMessage",
+          "new": "unsupportedMessage required with calendar=\"islamic-umalqura\"",
+          "migration": "add unsupportedMessage=\"...\" to hw-calendar with calendar=\"islamic-umalqura\""
+        },
+        {
+          "adapter": "vanilla",
+          "component": "Calendar",
+          "kind": "removed",
+          "old": "standalone createCalendar rendered the Gregorian / Hijri switch and read calendarSystemLabel, gregorianLabel, hijriLabel (data-hw-calendar-system-label, data-hw-gregorian-label, data-hw-hijri-label)",
+          "new": "no switch on a standalone Calendar; the three texts belong to DatePicker",
+          "migration": "delete the three data-hw-* attributes from a standalone calendar root and call controller.setCalendar(system) from your own control"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "DatePicker",
+          "kind": "markup",
+          "old": "div.hw-calendar-options inside the .hw-calendar root",
+          "new": "div.hw-calendar-options directly before the .hw-calendar root in the dialog body",
+          "migration": ".hw-calendar > .hw-calendar-options -> .hw-dialog-body > .hw-calendar-options"
+        }
+      ],
+      "readme": "React and Angular README Calendar rows: unsupportedMessage with its condition. packages/vanilla/EXPANSION-API.md:76-80 (remove the three attributes from the Calendar example), :118 ('DatePicker includes a labelled Gregorian/Hijri selector'), :126-129; packages/vanilla/README.md:102. tests/text-contract-docs.test.ts fixtures and components.json follow.",
+      "ownerDecision": null,
+      "notDone": "A switch on the standalone Calendar of the four adapters is not added; it would need three more required texts and a controlled `calendar` state on Calendar in three adapters."
+    },
+    {
+      "ids": [
+        "R03"
+      ],
+      "component": "DatePicker (formatted value output, vanilla)",
+      "summary": "The vanilla picker announces the selected date in the long form without the weekday while React, Vue and Angular use dateStyle 'full'. Vanilla switches to 'full' and its output carries only the formatted date, never a validation message.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "output.hw-sr-only.hw-date-picker-value[aria-live=polite][aria-atomic=true]: text = formatCalendarDate(value, {locale, calendar, dateStyle: 'full'}) while the value is set, a locale is given and the calendar can show it; otherwise empty and `hidden`. Vanilla adds aria-atomic=\"true\" and `for` = the input's id when it has one.",
+        "behaviour": "The unsupported and invalid messages leave the output (they are in p.hw-error, item dates-7, and in the calendar's status, item R01)."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "none",
+        "vanilla": "packages/vanilla/src/calendar.ts:219 add `display.setAttribute('aria-atomic', 'true'); if (input.id) display.setAttribute('for', input.id);`. :238-242 become `const formatted = value && locale !== undefined && isCalendarDateSupported(value, calendar.calendar) ? formatCalendarDate(value, {locale, calendar: calendar.calendar, dateStyle: 'full'}) : ''; display.hidden = !formatted; if (display.textContent !== formatted) display.textContent = formatted;` (appendDateMessage is no longer used for the output)."
+      },
+      "tests": [
+        {
+          "caseId": "DATE-PICKER-07",
+          "what": "[R03] value 2026-10-28, locale en-GB: the output text equals formatCalendarDate with dateStyle 'full' (contains the weekday); empty and hidden without a value and for a value the Umm al-Qura calendar cannot show. File tests/date-picker-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FMT-06",
+          "what": "source check: packages/vanilla/src/calendar.ts has no formatCalendarDate call for the output without dateStyle.",
+          "adapters": [
+            "vanilla"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vanilla",
+          "component": "DatePicker",
+          "kind": "default",
+          "old": "[data-hw-date-display] showed the long date without weekday, or the unsupported / invalid message",
+          "new": "the full date with weekday; messages are in .hw-error",
+          "migration": "none"
+        }
+      ],
+      "readme": "packages/vanilla/EXPANSION-API.md:140-143: the output announces the full date.",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "R25"
+      ],
+      "component": "DatePicker (getDayLabel)",
+      "summary": "Vue and vanilla DatePicker pass getDayLabel to their calendar; React and Angular expose it on Calendar only. Both gain the optional input with the same name and signature.",
+      "endState": {
+        "surface": {
+          "react": "DatePicker: `getDayLabel?: (value: string) => string` (optional; not text under the contract: without it Intl names the day).",
+          "angular": "hw-date-picker: `@Input() getDayLabel?: (value: string) => string`.",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "Day buttons of the picker's calendar: aria-label = getDayLabel(isoDate) when given.",
+        "behaviour": "none"
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/calendar.tsx:72 add the prop to DatePickerBaseProps, :75 destructure it, :108 pass `getDayLabel={getDayLabel}`.",
+        "vue": "none",
+        "angular": "packages/angular/src/advanced-controls.ts:290 add the input; :288 nested hw-calendar gets `[getDayLabel]=\"getDayLabel\"`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "DATE-PICKER-08",
+          "what": "[R25] getDayLabel names every day button of the picker's calendar. File tests/date-picker-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "React and Angular README DatePicker rows list getDayLabel(isoDate).",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "overlays-1"
+      ],
+      "component": "Dialog, Drawer (empty footer)",
+      "summary": "Angular renders the footer region always, because projection cannot be detected, and an empty one shows a shaded band. The stylesheet hides an empty .hw-dialog-footer for every dialog, which is the rule of the rich-content convention for named regions.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "Angular keeps `<footer class=\"hw-dialog-footer\"><ng-content select=\"[hwDialogFooter]\" /></footer>` (drawer: `[hwDrawerFooter]`) with no white space or comment text inside; with nothing projected its computed display is none. React and Vue keep rendering the footer only when given.",
+        "behaviour": "An application that wants a conditional footer wraps the marked element: `@if (canSave) {<div hwDialogFooter>...</div>}`; a marked element that is present but empty keeps the footer visible."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/components.css",
+          "change": "After line 211 add: `.hw-dialog-footer:empty { display: none; }`"
+        },
+        {
+          "file": "packages/styles/src/date-picker.css",
+          "change": "Delete line 35 (`.hw-date-picker .hw-dialog-footer:empty { display: none; }`), now covered."
+        },
+        {
+          "file": "packages/styles/src/nic-notification-dialog.css",
+          "change": "Line 93 (`& > .hw-dialog-footer:empty { display: none; }`) stays: the notification variant sets `display: flex` on its footer with a selector of higher specificity than the new general rule, so without line 93 its empty footer would be shown again. navigation-drawer.css:37 stays (a different case)."
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "none in the footer markup; the shared template of item overlays-10 keeps the footer free of white space.",
+        "vanilla": "none (an authored empty footer is hidden too)"
+      },
+      "tests": [
+        {
+          "caseId": "RICH-03",
+          "what": "[overlays-1] Angular hw-dialog and hw-drawer without footer content: footer has no child nodes; in the browser its computed display is none and with a projected [hwDialogFooter] / [hwDrawerFooter] it is visible. Files packages/angular/test/components.test.ts and tests/browser/dialog-footer.spec.ts (new).",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DIALOG-01",
+          "what": "a dialog without footer content shows no footer box in the three frameworks (React and Vue: no footer element). File tests/dialog-parity.test.ts (new).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "Angular README Dialog and Drawer rows: the footer region is hidden while nothing is projected; how to make it conditional.",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "overlays-10"
+      ],
+      "component": "Dialog, Drawer (Angular description and forwarded ARIA)",
+      "summary": "hw-drawer inherits the describedBy input but its own template never binds it, so the native dialog has no description. Dialog and drawer share one template, and the input becomes the forwarded aria-describedby of the Angular host convention, with aria-label and aria-labelledby beside it.",
+      "endState": {
+        "surface": {
+          "angular": "hw-dialog and hw-drawer (kind B wrapper): `describedBy` is removed; `@Input({alias: 'aria-describedby'}) ariaDescribedby: string | null = null`, `@Input({alias: 'aria-labelledby'}) ariaLabelledby: string | null = null`, `@Input({alias: 'aria-label'}) ariaLabel: string | null = null`. `title` stays required (it is the visible heading).",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "Native dialog of both components: aria-labelledby = the application's aria-labelledby, else titleId; aria-label and aria-describedby as given; the host element carries none of them. hw-drawer: `dialog.hw-dialog.hw-drawer[data-side]` with otherwise the same children as hw-dialog.",
+        "behaviour": "Static and bound forms work (`aria-describedby=\"id\"`, `[aria-describedby]=\"expr\"`); `[attr.aria-describedby]` on the host is not supported. Server HTML: the dialog element carries the value, the host does not."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/layout.css",
+          "change": "No entry for hw-dialog or hw-drawer in the wrapper-host display list: the native dialog is in the top layer and the host needs no box."
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "vanilla": "none",
+        "angular": "packages/angular/src/overlays.ts:8: the template becomes an exported (package-internal) function `dialogTemplate(footer: 'hwDialogFooter' | 'hwDrawerFooter', drawer = false)` that returns the current hw-dialog markup with `class=\"hw-dialog${drawer ? ' hw-drawer' : ''}\"`, `${drawer ? '[attr.data-side]=\"side\"' : ''}`, `[attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby ?? titleId\" [attr.aria-describedby]=\"ariaDescribedby\"` and `<ng-content select=\"[${footer}]\" />`; host of both components `{...forwardedAriaHost, '[attr.title]': 'null'}` (host-attributes.ts, forms-core). :11 delete describedBy, add the three alias inputs. packages/angular/src/interactions.ts:61 hw-drawer uses `dialogTemplate('hwDrawerFooter', true)`; its close button keeps texts of 'hw-drawer' (:62). packages/angular/src/advanced-controls.ts:288 needs no change (it passes title and titleId)."
+      },
+      "tests": [
+        {
+          "caseId": "ATTR-03",
+          "what": "[overlays-10] hw-dialog and hw-drawer: aria-describedby written statically and bound with [aria-describedby] is on the native dialog and absent from the host; the same for aria-labelledby (which replaces titleId) and aria-label. File packages/angular/test/components.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DIALOG-02",
+          "what": "a description is associated with the native dialog through aria-describedby for Dialog and Drawer (React and Vue: `description`; Angular: aria-describedby pointing at a projected paragraph). File tests/dialog-parity.test.ts.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-04",
+          "what": "server HTML of hw-drawer with aria-describedby: on the dialog element, not on the host; hydration without mismatch. File packages/angular/test/hydration.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-dialog, hw-drawer",
+          "kind": "input",
+          "old": "describedBy",
+          "new": "aria-describedby (property ariaDescribedby)",
+          "migration": "[describedBy]=\"id\" -> [aria-describedby]=\"id\"; describedBy=\"id\" -> aria-describedby=\"id\""
+        }
+      ],
+      "readme": "Angular README Dialog row (and the Drawer row at :158): aria-describedby, aria-labelledby and aria-label are inputs forwarded to the native dialog; `[attr.aria-*]` on the host is not supported.",
+      "ownerDecision": 1,
+      "notDone": "Angular has no `description` input that renders the paragraph (React and Vue do); the application projects it and points aria-describedby at it."
+    },
+    {
+      "ids": [
+        "overlays-14"
+      ],
+      "component": "Tooltip (Angular)",
+      "summary": "hw-tooltip wraps its content in its own focusable span, so a tooltip on a button gives two tab stops and describes the wrapper. The host becomes the wrapper, and the application's own focusable element, marked hwTooltipTrigger, receives aria-describedby, which is the DOM React, Vue and vanilla produce.",
+      "endState": {
+        "surface": {
+          "angular": "hw-tooltip (HwTooltipComponent, kind A host root): inputs unchanged (`text` required, `placement`, `align`, `tooltipId`); it no longer renders a focusable element. New exported directive HwTooltipTriggerDirective, selector `[hwTooltipTrigger]`, standalone, placed on exactly one focusable element projected into hw-tooltip; input `@Input({alias: 'aria-describedby'}) describedBy: string | null = null` so that an authored or bound aria-describedby of the trigger is kept.",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "`<hw-tooltip class=\"hw-tooltip-anchor\"><button hwTooltipTrigger class=\"hw-tooltip-trigger\" aria-describedby=\"{authored ids} {tooltipId}\">...</button><span class=\"hw-tooltip\" role=\"tooltip\" id=\"{tooltipId}\" data-placement data-align hidden>{{ text }}</span></hw-tooltip>`. The inner span.hw-tooltip-anchor.hw-tooltip-trigger[tabindex=0] is gone; application class, id and style on hw-tooltip are on the positioned wrapper. Difference from React and Vue: the wrapper is the custom element with class hw-tooltip-anchor (the documented vanilla wrapper class) instead of span[data-hw=tooltip]; `data-hw` is not written on an Angular host because it is the vanilla enhancement hook.",
+        "behaviour": "One tab stop: the trigger. focusin or mouseenter on the host shows the tooltip; it hides when focus leaves the host, 120 ms after the pointer leaves while focus is elsewhere, on Escape (focus stays on the trigger, the event is consumed) and on a pointerdown outside. Text that is not a control needs an authored focusable element: `<span hwTooltipTrigger tabindex=\"0\">term</span>`. Without a marked trigger nothing is described and nothing is focusable; with the directive outside hw-tooltip Angular reports the missing provider. Server rendering and hydration: the trigger's aria-describedby and the hidden tooltip are in the server HTML; document listeners are added only while the tooltip is visible."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/date-picker.css",
+          "change": "Line 43: `.hw-calendar-heading .hw-calendar-info, .hw-calendar-info > .hw-tooltip-anchor { position: static; }` becomes `.hw-calendar-heading .hw-calendar-info { position: static; }` (the Angular host now carries both classes)."
+        },
+        {
+          "file": "packages/styles/src/components.css",
+          "change": "None: line 221 `[data-hw='tooltip'], .hw-tooltip-anchor { position: relative; display: inline-flex; }` already styles the host; extended.css:280 repeats it and is deleted."
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "vanilla": "none",
+        "angular": "packages/angular/src/overlays.ts:61: `@Component({selector: 'hw-tooltip', standalone: true, host: {class: 'hw-tooltip-anchor', '[attr.align]': 'null', '(focusin)': 'focusEntered()', '(focusout)': 'focusLeft($event)', '(mouseenter)': 'pointerEntered()', '(mouseleave)': 'pointerLeft()', '(keydown)': 'escape($event)'}, template: `<ng-content /><span class=\"hw-tooltip\" role=\"tooltip\" [id]=\"tooltipId\" [attr.data-placement]=\"placement\" [attr.data-align]=\"align\" [hidden]=\"!visible\">{{ text }}</span>`})`; the class body (:62-108) is unchanged. New in the same file: `@Directive({selector: '[hwTooltipTrigger]', standalone: true, host: {class: 'hw-tooltip-trigger', '[attr.aria-describedby]': 'ids'}}) export class HwTooltipTriggerDirective { private readonly tooltip = inject(HwTooltipComponent); @Input({alias: 'aria-describedby'}) describedBy: string | null = null; get ids() { return [...new Set(`${this.describedBy ?? ''} ${this.tooltip.tooltipId}`.trim().split(/\\s+/))].join(' '); } }`; export it from packages/angular/src/public-api.ts beside HwTooltipComponent. packages/angular/src/advanced-controls.ts:218 (range information of hw-calendar): `<hw-tooltip class=\"hw-calendar-info\" [text]=\"rangeDescription\" [tooltipId]=\"rangeTooltipId || controlId + '-range'\"><span hwTooltipTrigger tabindex=\"0\" role=\"img\" class=\"hw-calendar-info-icon\" [attr.aria-label]=\"texts.need('rangeLabel', rangeLabel, 'calendar is islamic-umalqura')\">i</span></hw-tooltip>` (the DOM of react/src/calendar.tsx:67) and `imports: [HwTooltipComponent, HwTooltipTriggerDirective]`."
+      },
+      "tests": [
+        {
+          "caseId": "TOOLTIP-01",
+          "what": "[overlays-14] a tooltip on a button: Tab from the previous control reaches the button and the next Tab leaves the tooltip (one tab stop); the button's aria-describedby contains the tooltip id; the wrapper has no tabindex. File tests/tooltip-dismissal-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TOOLTIP-02",
+          "what": "an aria-describedby already on the trigger is kept and comes before the tooltip id.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TOOLTIP-03",
+          "what": "focus shows the tooltip; Escape hides it and focus stays on the trigger; blur hides it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-01",
+          "what": "hw-tooltip: class, id and data-x written on the host are on the element with class hw-tooltip-anchor and there is no inner element with that class. File packages/angular/test/layout-hosts.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SSR-02",
+          "what": "server render and hydration of hw-tooltip with a button trigger: same DOM, no mismatch, ids unchanged. File packages/angular/test/hydration.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TOOLTIP-04",
+          "what": "browser: the tooltip is positioned against the hw-tooltip host for the six placement / alignment combinations. File tests/browser/tooltip-placement.spec.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-tooltip",
+          "kind": "markup",
+          "old": "span.hw-tooltip-anchor.hw-tooltip-trigger[tabindex=0] inside the host described the projected content",
+          "new": "the host is the wrapper (class hw-tooltip-anchor); the projected element marked hwTooltipTrigger is the trigger",
+          "migration": "<hw-tooltip text=\"T\">term</hw-tooltip> -> <hw-tooltip text=\"T\"><span hwTooltipTrigger tabindex=\"0\">term</span></hw-tooltip>; for a control: <hw-tooltip text=\"T\"><button hwButton hwTooltipTrigger>...</button></hw-tooltip>"
+        }
+      ],
+      "readme": "packages/angular/README.md:181 rewritten: hw-tooltip wraps one focusable element marked hwTooltipTrigger (a button, a link, or a span with tabindex=\"0\"); the sentence 'Do not project buttons or links' is deleted. components.json: Tooltip `verified` may list angular once TOOLTIP-01..04 pass. docs/tooltip-placement.md:7-10 unchanged.",
+      "ownerDecision": null,
+      "notDone": "hwTooltipTrigger on a Hawiyah wrapper component (for example hw-text-field) is not supported in 0.3.0: the description would stay on the wrapper host; mark a native element."
+    },
+    {
+      "ids": [
+        "disclosure-data-3"
+      ],
+      "component": "Accordion (item shape and rich title and content)",
+      "summary": "Angular accordion items are plain text keyed by `id` and Vue titles are strings, while React takes nodes keyed by `value`. Angular gains titleTemplate and contentTemplate and the key `value`; Vue gains the scoped slots #title and #content, which replace its per-value slots.",
+      "endState": {
+        "surface": {
+          "angular": "`HwAccordionItem { value: string; title: string; content?: string; open?: boolean }` (`id` -> `value`; `content` optional because a template can render it). hw-accordion: `@Input() titleTemplate?: TemplateRef<{$implicit: HwAccordionItem; index: number}>`, `@Input() contentTemplate?: TemplateRef<{$implicit: HwAccordionItem; index: number}>`; `(toggled)` emits `{value: string; open: boolean}` (was `{id, open}`). Kind B wrapper: forwarded `aria-label`, `aria-labelledby`, `aria-describedby`.",
+          "vue": "Accordion: scoped slots `#title=\"{item, index}\"` and `#content=\"{item, index}\"`; the slots named after an item's value are removed. `AccordionItem.title` stays a required string.",
+          "react": "none",
+          "vanilla": "none (authored details; data-hw-value is the key, accordion.ts:23)"
+        },
+        "dom": "Unchanged elements and classes in the four adapters: div.hw-accordion > details.hw-accordion-item > summary.hw-accordion-trigger + div.hw-accordion-content. The rich title is the content of the summary, the rich content the content of div.hw-accordion-content. Angular root: `div.hw-accordion` with the forwarded aria attributes and role=\"group\" only while aria-label or aria-labelledby is given.",
+        "behaviour": "The summary is named by its content, so a title template or slot must render text; `title` stays what keys, warnings and tests read. A click on a link, button or form control inside a rich title does not toggle the item (React display.tsx:33, Angular presentation.ts:85, vanilla accordion.ts:31); Vue gains the same guard. Keyboard, motion and the exclusive group are unchanged. Server rendering: templates and slots render on the server; the server HTML equals the first client render."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "packages/vue/src/display.ts:33: `h('summary', {class: 'hw-accordion-trigger', onClick: (event: MouseEvent) => { if ((event.target as Element).closest('a,button,input,select,textarea')) return; event.preventDefault(); change(!open.value); }}, slots.title?.() ?? props.title)`. :44: `props.items.map((item, index) => h(AccordionDetail, {key: item.value, title: item.title, name: ..., open: item.open, onChange: ...}, {default: () => slots.content?.({item, index}) ?? item.content, ...(slots.title ? {title: () => slots.title!({item, index})} : {})}))`; `slots[item.value]` is deleted.",
+        "angular": "packages/angular/src/presentation.ts:50 the interface. :91 template: `<div class=\"hw-accordion\" [attr.role]=\"ariaLabel || ariaLabelledby ? 'group' : null\" [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\">@for (item of items; track item.value; let index = $index) {<details class=\"hw-accordion-item\" [hwAccordionOpen]=\"item.open\" [hwAccordionGroup]=\"exclusive ? groupName : undefined\" (hwAccordionChange)=\"toggled.emit({value: item.value, open: $event})\"><summary class=\"hw-accordion-trigger\">@if (titleTemplate) {<ng-container [ngTemplateOutlet]=\"titleTemplate\" [ngTemplateOutletContext]=\"{$implicit: item, index: index}\" />} @else {<ng-container>{{ item.title }}</ng-container>}</summary><div class=\"hw-accordion-content\">@if (contentTemplate) {<ng-container [ngTemplateOutlet]=\"contentTemplate\" [ngTemplateOutletContext]=\"{$implicit: item, index: index}\" />} @else {<ng-container>{{ item.content }}</ng-container>}</div></details>}<ng-content /></div>`; `imports: [HwAccordionMotionDirective, NgTemplateOutlet]` (imported at :5); `host: forwardedAriaHost`; :92-97 the two template inputs, the three alias inputs and the new payload type of `toggled`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "RICH-01",
+          "what": "[disclosure-data-3] a title with an inline icon and a link and a content with a paragraph and a link are rendered inside summary.hw-accordion-trigger and div.hw-accordion-content (React nodes, Vue slots, Angular templates, vanilla authored). File tests/accordion-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RICH-02",
+          "what": "a click on the link inside the title does not toggle; a click on the title text toggles.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-01",
+          "what": "one fixture [{value, title, content, open}] from tests/helpers passed unchanged to React, Vue and Angular renders the same text and open state as the vanilla fixture with data-hw-value.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-02",
+          "what": "the open notification carries the item's `value` (Vue toggle(value, open), Angular (toggled) {value, open}, vanilla onOpenChange(value, open), React the item's onOpenChange).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "type test: HwAccordionItem does not accept `id`; (toggled) has no `id`. File packages/angular/test/accordion.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RICH-04",
+          "what": "server render with rich title and content equals the first client render; hydration without mismatch.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "hw-accordion: aria-label on the host reaches div.hw-accordion together with role=group; the host has none.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-accordion",
+          "kind": "field",
+          "old": "HwAccordionItem.id",
+          "new": "HwAccordionItem.value",
+          "migration": "{id: 'a', ...} -> {value: 'a', ...}"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-accordion",
+          "kind": "output",
+          "old": "(toggled) emits {id, open}",
+          "new": "(toggled) emits {value, open}",
+          "migration": "$event.id -> $event.value"
+        },
+        {
+          "adapter": "vue",
+          "component": "Accordion",
+          "kind": "removed",
+          "old": "a slot named after each item's value (`<template #faq-1>`)",
+          "new": "one scoped slot #content=\"{item, index}\" (and #title)",
+          "migration": "<template #a>X</template> -> <template #content=\"{item}\"><template v-if=\"item.value === 'a'\">X</template></template>"
+        }
+      ],
+      "readme": "Angular README: delete 'the accordion items API is textual' (:125); document titleTemplate / contentTemplate with one example and the `value` key. Vue README: the two scoped slots. The projected `details[hwAccordionOpen]` route stays undocumented and unchanged.",
+      "ownerDecision": 1,
+      "notDone": "Per-item open control differs (React open / defaultOpen / onOpenChange per item; Vue and Angular `open` per item and one event); no finding covers it."
+    },
+    {
+      "ids": [
+        "disclosure-data-5"
+      ],
+      "component": "Collapsible (Angular disabled state)",
+      "summary": "React and Vue expose `disabled` on Collapsible; Angular ignores the attribute and the disclosure opens. Angular gains the input with the same exposure, and the stylesheet gains the disabled look that no adapter had.",
+      "endState": {
+        "surface": {
+          "angular": "hw-collapsible: `@Input({transform: booleanAttribute}) disabled = false`.",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "While disabled: `summary[aria-disabled=\"true\"]` in the three frameworks; the summary stays in the tab order and keeps its name; `details[open]` follows only the application's value.",
+        "behaviour": "Click, Enter and Space on a disabled summary change nothing and notify nothing; the application can still set `open`. No focus is moved. Server rendering: aria-disabled is in the server HTML."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/extended.css",
+          "change": "After line 181 add: `.hw-collapsible > :is(summary, .hw-collapsible-trigger, [data-hw-trigger])[aria-disabled='true'] { color: var(--hw-color-on-disabled); cursor: not-allowed; }` and, inside the forced-colors block at line 301, `.hw-collapsible > :is(summary, .hw-collapsible-trigger, [data-hw-trigger])[aria-disabled='true'] { color: GrayText; }`."
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "angular": "packages/angular/src/interactions.ts:105 template: `<summary class=\"hw-collapsible-trigger\" [attr.aria-disabled]=\"disabled || null\" (click)=\"guard($event)\">`; :106 add the input, `guard(event: Event) { if (this.disabled) event.preventDefault(); }` and, first line of toggled(): `const details = event.target as HTMLDetailsElement; if (this.disabled) { details.open = this.open; return; }`.",
+        "vanilla": "none (native details; an author who needs the state writes aria-disabled and prevents the click)"
+      },
+      "tests": [
+        {
+          "caseId": "COLLAPSIBLE-01",
+          "what": "[disclosure-data-5] disabled: the summary has aria-disabled=true and is focusable; click, Enter and Space leave it closed and notify nothing. File tests/collapsible-parity.test.ts (new).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "COLLAPSIBLE-02",
+          "what": "disabled and opened by the application: stays open; the reader cannot close it.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "COLLAPSIBLE-03",
+          "what": "browser: a disabled summary has the disabled colour, and GrayText in forced colours. File tests/browser/collapsible.spec.ts (new).",
+          "adapters": [
+            "styles"
+          ]
+        }
+      ],
+      "migration": [],
+      "readme": "Angular README Collapsible row: `disabled`.",
+      "ownerDecision": null,
+      "notDone": "The React rename `title` -> `label` (R26, owner decision 5) is specified by navigation-menus-shell; the differing inner markup (summary class, content wrapper id) is not part of this finding."
+    },
+    {
+      "ids": [
+        "disclosure-data-10"
+      ],
+      "component": "Carousel and Pagination (previous / next at a bound)",
+      "summary": "The arrow that was just activated gets the native disabled attribute when the first or last slide or page is reached, and keyboard focus drops to the document body. At a bound the arrow now carries aria-disabled=\"true\", stays focusable and ignores activation; the native attribute remains for unavailability the reader did not cause.",
+      "endState": {
+        "surface": {
+          "react": "none",
+          "vue": "none",
+          "angular": "none",
+          "vanilla": "none"
+        },
+        "dom": "Carousel `[data-hw-previous]` / `[data-hw-next]`: `disabled` only when there are fewer than two slides (vanilla also: authored disabled or a blocked root); `aria-disabled=\"true\"` when not looping and on the first / last slide. Pagination arrows: `disabled` only when the component is disabled (or inherits it); `aria-disabled=\"true\"` on the first / last page. Otherwise neither attribute in the frameworks; the vanilla controllers keep writing aria-disabled=\"false\" on available authored arrows.",
+        "behaviour": "Activating an arrow at a bound with pointer, Enter or Space changes nothing and notifies nothing; the arrow keeps focus and its accessible name. Moving away from the bound removes the state. Indicator dots and page buttons are unchanged. Server rendering: the attributes are the same on both sides."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/nic-carousel.css",
+          "change": "Lines 40-42 become `.hw-button.hw-carousel-arrow:hover:not(:disabled, [aria-disabled='true']) { background: var(--hw-color-primary-hover); }`, `.hw-button.hw-carousel-arrow:active:not(:disabled, [aria-disabled='true']) { background: var(--hw-color-primary-active); }`, `.hw-button.hw-carousel-arrow:is(:disabled, [aria-disabled='true']) { opacity: .3; cursor: not-allowed; }`; line 77 becomes `.hw-carousel-arrow:is(:disabled, [aria-disabled='true'])::before { background: GrayText; }`. Added: `.hw-button.hw-carousel-arrow[aria-disabled='true']:focus-visible { opacity: 1; background: var(--hw-color-disabled); color: var(--hw-color-on-disabled); }`, and in nic-buttons.css the general rule `.hw-button[aria-disabled='true']:focus-visible { outline: 2px solid var(--hw-button-focus-color); outline-offset: 2px; }` with `outline: 2px solid Highlight` in forced colours, because `.hw-button:focus-visible:not(:disabled, [aria-disabled='true'])` gives an aria-disabled button no focus indicator and the arrow's 30% opacity would fade one."
+        },
+        {
+          "file": "packages/styles/src/nic-pagination.css",
+          "change": "Line 69 becomes `.hw-pagination-arrow:is(:disabled, [aria-disabled='true'])::before { background: GrayText; }`; after line 34 add `.hw-pagination :is(.hw-pagination-arrow, .hw-pagination-gap-trigger)[aria-disabled='true']:focus-visible { outline: 2px solid var(--hw-color-focus-contrast); outline-offset: 2px; opacity: 1; }` (line 34 excludes aria-disabled from the focus style, and line 32 fades an unavailable control to 50%, which would fade the ring below 3:1), and in the forced-colours block the same selector with `outline-color: Highlight`."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-interactive.tsx:132: previous `disabled={total < 2} aria-disabled={total > 1 && !loop && current === 0 ? true : undefined}`, next `disabled={total < 2} aria-disabled={total > 1 && !loop && current === total - 1 ? true : undefined}`; the handlers stay (select() is a no-op at the bound, :126). packages/react/src/display.tsx:165: `disabled={disabled} aria-disabled={!disabled && current === 1 ? true : undefined}`; :175 the same with `current === total`; select() already normalises to the current page (:146).",
+        "vue": "packages/vue/src/expansion-interactive.ts:773-774: `disabled: total < 2, 'aria-disabled': total > 1 && !props.wrap && current === 0 ? 'true' : undefined` and the same with `current === total - 1`. packages/vue/src/display.ts:159 and :173: `disabled: props.disabled, 'aria-disabled': !props.disabled && current.value === 1 ? 'true' : undefined` and `current.value === total.value`.",
+        "angular": "packages/angular/src/interactions.ts:144: `[disabled]=\"slides.length < 2\" [attr.aria-disabled]=\"slides.length > 1 && !loop && indexValue === 0 ? 'true' : null\"` and the same with `indexValue === slides.length - 1`; move() needs no guard (select() returns when next === indexValue, :175). packages/angular/src/navigation.ts:129 and :138: `[disabled]=\"disabled\" [attr.aria-disabled]=\"!disabled && current === 1 ? 'true' : null\"` and `current === total`; select() (:199-203) already ignores an unchanged page.",
+        "vanilla": "packages/vanilla/src/content.ts:207: `const disable = (button, unavailable, bound = false) => { if (!button) return; if (button.tagName === 'BUTTON') (button as HTMLButtonElement).disabled = unavailable; button.setAttribute('aria-disabled', String(unavailable || bound)); };`; :211-212 `disable(previous, previousDisabled || blocked(root) || slides.length < 2, !loop && index === 0)` and the same for next; the click handlers :217-218 already test isDisabled(). packages/vanilla/src/pagination.ts:106-108: `const unavailable = blocked() || !!initiallyDisabled.get(node); const bound = target === 'previous' ? page === 1 : target === 'next' ? page === total : false; node.setAttribute('aria-disabled', String(unavailable || bound)); if (node.localName === 'button') node.toggleAttribute('disabled', unavailable);`."
+      },
+      "tests": [
+        {
+          "caseId": "FOCUS-01",
+          "what": "[disclosure-data-10] focus Next and activate it with Space until the last slide / page: document.activeElement is still Next, it has aria-disabled=true and no disabled attribute. Files tests/carousel-parity.test.ts and tests/pagination-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FOCUS-02",
+          "what": "a further activation changes nothing and notifies nothing.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FOCUS-03",
+          "what": "moving back: the arrow is no longer aria-disabled=true (vanilla: 'false').",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "CAROUSEL-01",
+          "what": "one slide: both arrows have the disabled attribute; looping carousel: neither attribute at the ends.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "PAGINATION-01",
+          "what": "disabled pagination: the arrows have the disabled attribute and no aria-disabled=true from a bound.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "FOCUS-01",
+          "what": "browser, real key presses in Chromium: after Space on Next at the second-to-last slide the active element is the Next button and it shows a focus ring; forced colours draw the glyph in GrayText. File tests/browser/carousel-bounds.spec.ts (new).",
+          "adapters": [
+            "styles"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vanilla, react, vue, angular",
+          "component": "Carousel, Pagination",
+          "kind": "markup",
+          "old": "the previous / next arrow at a bound had the disabled attribute",
+          "new": "aria-disabled=\"true\" and focusable; disabled only when the whole control is unavailable",
+          "migration": "[data-hw-next]:disabled -> [data-hw-next]:is(:disabled, [aria-disabled='true'])"
+        }
+      ],
+      "readme": "Each README, Carousel and Pagination rows: at a bound the arrow is aria-disabled and keeps focus. docs/nic-carousel.md and docs/nic-pagination.md get one line each with the decision.",
+      "ownerDecision": null,
+      "notDone": "none"
+    },
+    {
+      "ids": [
+        "disclosure-data-13"
+      ],
+      "component": "Table (cell content, row key, column shape)",
+      "summary": "Angular hw-table prints row values as text and tracks rows by index, and the column heading field is `label` in Angular but `header` in React and Vue. Angular gains a `cell` template per column and `rowKey`, and the three frameworks share one column shape {key, label, cell?, rowHeader?}; native row composition in Angular is not part of 0.3.0.",
+      "endState": {
+        "surface": {
+          "angular": "`HwTableRow = Record<string, unknown>` (widened); `HwTableColumn<Row = HwTableRow> { key: string; label: string; rowHeader?: boolean; cell?: TemplateRef<{$implicit: Row; index: number; column: HwTableColumn<Row>}> }`; `HwTableComponent<Row extends HwTableRow = HwTableRow>`: `@Input() rowKey?: (row: Row, index: number) => string | number`; `caption` loses `{required: true}` (required unless aria-label or aria-labelledby is given); forwarded `aria-label`, `aria-labelledby`, `aria-describedby` (kind B).",
+          "react": "`TableColumn<Row> { key: string; label: ReactNode; cell?: (row: Row, index: number) => ReactNode; rowHeader?: boolean }`: `header` -> `label`; `cell` becomes optional (without it the cell shows String(row[key] ?? '')).",
+          "vue": "`TableColumn { key: string; label: string; cell?: ...; rowHeader?: boolean }`: `header` -> `label`. Cell slot `cell:<key>` -> `cell-<key>` with props `{row, index, column}`.",
+          "vanilla": "none"
+        },
+        "dom": "Same in the three frameworks: `div.hw-table-wrap[tabindex=0]` with role=\"region\" and aria-labelledby={captionId} only while a caption is given; `table.hw-table[data-variant][data-size]`; `caption#{captionId}` only with a caption; th[scope=col] per column; th[scope=row] or td per cell holding the cell content. Angular changes: wrapper aria-label={caption} -> aria-labelledby, caption gets an id (injectId) and is not rendered empty, the forwarded aria attributes are on the table.",
+        "behaviour": "Rows are keyed by rowKey(row, index), else by index. A column without `cell` prints the row value as text. Server rendering: cell templates render on the server; the caption id comes from HwIdSource."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/layout.css",
+          "change": "See item E08: hw-table joins the wrapper-host rule and the component `styles` entry is deleted."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/display.tsx:76 the interface; :93 `{column.header}` -> `{column.label}` and both cell expressions become `column.cell ? column.cell(row, index) : String((row as Record<string, unknown>)[column.key] ?? '')`.",
+        "vue": "packages/vue/src/display.ts:73 the interface; :79 `column.header` -> `column.label`; the cell becomes `slots[`cell-${column.key}`]?.({row, index, column}) ?? column.cell?.(row, index) ?? String(row[column.key] ?? '')`.",
+        "angular": "packages/angular/src/presentation.ts:99-100 the types. :101 template: `<div class=\"hw-table-wrap\" tabindex=\"0\" [attr.role]=\"caption ? 'region' : null\" [attr.aria-labelledby]=\"caption ? captionId : null\"><table class=\"hw-table\" [attr.data-variant]=\"variant\" [attr.data-size]=\"size\" [attr.aria-label]=\"ariaLabel\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\">@if (caption) {<caption [id]=\"captionId\">{{ caption }}</caption>}<thead>...</thead><tbody>@for (row of rows; track trackRow($index, row); let index = $index) {<tr>@for (column of columns; track column.key) {@if (column.rowHeader) {<th scope=\"row\"><ng-container [ngTemplateOutlet]=\"cell\" [ngTemplateOutletContext]=\"{$implicit: row, index: index, column: column}\" /></th>} @else {<td><ng-container [ngTemplateOutlet]=\"cell\" [ngTemplateOutletContext]=\"{$implicit: row, index: index, column: column}\" /></td>}}</tr>} @empty {...}</tbody></table></div><ng-template #cell let-row let-index=\"index\" let-column=\"column\">@if (column.cell) {<ng-container [ngTemplateOutlet]=\"column.cell\" [ngTemplateOutletContext]=\"{$implicit: row, index: index, column: column}\" />} @else {<ng-container>{{ row[column.key] }}</ng-container>}</ng-template>`; `imports: [NgTemplateOutlet]`, `host: forwardedAriaHost`, no `styles`. Class (:102-111): generic parameter, `protected readonly captionId = injectId('hw-table-caption')`, `@Input() caption = ''` checked once per pass with `ariaLabel || ariaLabelledby || texts.need('caption', caption)`, `@Input() rowKey`, `trackRow(index: number, row: Row) { return this.rowKey ? this.rowKey(row, index) : index; }`, the three alias inputs.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "RICH-01",
+          "what": "[disclosure-data-13] a column whose cell renders a link: the link is inside the td, and inside th[scope=row] for a rowHeader column. File tests/table-parity.test.ts.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RICH-02",
+          "what": "a column without cell prints the row value as text; null and undefined print nothing.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TABLE-01",
+          "what": "rowKey: after the rows are reordered the same tr elements are reused in the new order.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-01",
+          "what": "one fixture (columns [{key, label, rowHeader}], rows) passed unchanged to React, Vue and Angular renders the same header and cell text as the vanilla fixture.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "type tests: TableColumn does not accept `header` (React, Vue); RENAME-02.",
+          "adapters": [
+            "react",
+            "vue"
+          ]
+        },
+        {
+          "caseId": "NAME-02",
+          "what": "hw-table with aria-label and no caption: no warning, no caption element, aria-label on the table and none on the host (ATTR-03); NAME-04 neither: one warning naming caption. File packages/angular/test/required-names.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TABLE-02",
+          "what": "with a caption the wrapper has role=region and aria-labelledby = the caption's id; without one it has neither.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RICH-04",
+          "what": "server render with a cell template equals the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react, vue",
+          "component": "Table",
+          "kind": "field",
+          "old": "TableColumn.header",
+          "new": "TableColumn.label",
+          "migration": "{header: 'Name'} -> {label: 'Name'}"
+        },
+        {
+          "adapter": "vue",
+          "component": "Table",
+          "kind": "markup",
+          "old": "cell slot `cell:<key>` with {row, index}",
+          "new": "`cell-<key>` with {row, index, column}",
+          "migration": "<template #cell:name=\"{row}\"> -> <template #cell-name=\"{row}\">"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-table",
+          "kind": "markup",
+          "old": "div.hw-table-wrap[role=region][aria-label=caption]; caption always rendered, without id",
+          "new": "role=region and aria-labelledby={caption id} only with a caption; caption#{id} only with a caption",
+          "migration": ".hw-table-wrap[aria-label] -> .hw-table-wrap[aria-labelledby]"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-table",
+          "kind": "input",
+          "old": "caption required; HwTableRow values string | number | null | undefined",
+          "new": "caption required unless aria-label / aria-labelledby; HwTableRow = Record<string, unknown>",
+          "migration": "none"
+        }
+      ],
+      "readme": "Angular README: replace 'The current table API is textual' (:125) by the `cell` template field and rowKey, and state that hw-table still ignores projected thead / tbody: a table with authored rows is written as a native table with the hw- classes. React and Vue READMEs: `label`, optional `cell`, the Vue slot name. docs/nic-tables.md gets the decision line.",
+      "ownerDecision": 1,
+      "notDone": "Native composition (table[hwTable] with authored rows) is deferred to 0.4 (notIn030); wrapperProps has no Angular counterpart: class and style stay on the host."
+    },
+    {
+      "ids": [
+        "disclosure-data-15"
+      ],
+      "component": "DataTable (cell content, row key, sort state)",
+      "summary": "Angular hw-data-table has text cells, index-tracked rows and one sortChange output, React keeps the sort in one `sort` object and Vue in two models. The four adapters get the sort state under the two names sortKey and sortDirection with the pattern of the conventions, and the three frameworks share the column shape {key, label, cell?, sortable?, rowHeader?}.",
+      "endState": {
+        "surface": {
+          "angular": "`HwDataRow = Record<string, unknown>`; `HwDataColumn<Row = HwDataRow>` gains `cell?: TemplateRef<{$implicit: Row; index: number; column: HwDataColumn<Row>}>`; hw-data-table: `@Input() rowKey?: (row: Row, index: number) => string | number`; `@Output() sortKeyChange: EventEmitter<string>`, `@Output() sortDirectionChange: EventEmitter<'ascending' | 'descending'>` so `[(sortKey)]` and `[(sortDirection)]` work; `(sortChange)` is removed; forwarded aria inputs (kind B). `caption` stays required.",
+          "react": "DataTable: `sort`, `defaultSort`, `onSortChange` and the type DataTableSort are removed; `sortKey?: string`, `defaultSortKey?: string` ('' = unsorted), `onSortKeyChange?: (key: string) => void`, `sortDirection?: 'ascending' | 'descending'`, `defaultSortDirection?` ('ascending'), `onSortDirectionChange?: (direction) => void`. `DataTableColumn.render(value, row)` -> `cell?: (row: Row, index: number) => ReactNode`.",
+          "vue": "`DataColumn` gains `cell?: (row: Record<string, unknown>, index: number) => VNodeChild`; cell slot `cell:<key>` -> `cell-<key>` with `{row, index, column}`. Sort props and events unchanged.",
+          "vanilla": "DataTableOptions: `onSortChange({key, direction})` is removed; `onSortKeyChange?: (key: string) => void`, `onSortDirectionChange?: (direction: SortDirection) => void`. hw:change detail becomes `{sortKey, sortDirection}` (was `{value, key, direction}`). Controller unchanged."
+        },
+        "dom": "Same in the three frameworks: `div.hw-table-wrap.hw-data-table[tabindex=0][role=region][aria-labelledby={captionId}] > table.hw-table > caption#{captionId}`. React moves the class hw-data-table from the table to the wrapper; Angular replaces aria-label={caption} by aria-labelledby and gives the caption an id. Cells hold the cell content; headers and sort buttons are unchanged.",
+        "behaviour": "Activating a sortable header: direction = descending when that column is sorted ascending, else ascending; sortKey is notified only when it changed, then sortDirection only when it changed; a controlled value that the application does not update keeps the rows as they were. Rows are keyed by rowKey(row, index), else by index. Server rendering: default and controlled sort render the same rows on both sides."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-content.tsx:46-48 types as above. :51 `const [key, setKey] = useControllable(sortKey, defaultSortKey ?? '', onSortKeyChange); const [direction, setDirection] = useControllable(sortDirection, defaultSortDirection ?? 'ascending', onSortDirectionChange); const sorted = key && collation ? sortRows(rows, key, direction, collation) : rows;`. :52 wrapper `className={cx('hw-table-wrap hw-data-table', wrapperProps?.className)}`, table `className={cx('hw-table', className)}`; header: `active = key === column.key`, `next = active && direction === 'ascending' ? 'descending' : 'ascending'`, `onClick={() => { setKey(column.key); setDirection(next); }}` (useControllable notifies only on a change, forms-core); cell: `column.cell ? column.cell(row, index) : String(row[column.key] ?? '')`.",
+        "vue": "packages/vue/src/content.ts:287-292 add `cell` to DataColumn; the cell expression (:419) becomes `slots[`cell-${column.key}`]?.({row, index, column}) ?? column.cell?.(row, index) ?? String(row[column.key] ?? '')`.",
+        "angular": "packages/angular/src/content.ts:12-13 the types. :48 template: wrapper `role=\"region\" [attr.aria-labelledby]=\"captionId\"`, `<caption [id]=\"captionId\">`, the forwarded aria attributes on the table, `@for (row of sortedRows; track trackRow($index, row); let index = $index)` and the cell outlet with the fallback template exactly as in hw-table (item disclosure-data-13); `imports: [NgTemplateOutlet]`, `host: forwardedAriaHost`, no `styles`. :50 delete sortChange, add the two outputs, rowKey, captionId = injectId('hw-data-table-caption'). :58 `sort(key: string) { const direction = this.nextDirection(key); if (this.sortKey !== key) { this.sortKey = key; this.sortKeyChange.emit(key); } if (this.sortDirection !== direction) { this.sortDirection = direction; this.sortDirectionChange.emit(direction); } }`.",
+        "vanilla": "packages/vanilla/src/content.ts:225 the options; :242-249 remember the previous key and direction before assigning; :249 `emit(root, {sortKey, sortDirection}); if (keyChanged) options.onSortKeyChange?.(key); if (directionChanged) options.onSortDirectionChange?.(sortDirection!);`."
+      },
+      "tests": [
+        {
+          "caseId": "STATE-01",
+          "what": "[disclosure-data-15] uncontrolled: activating a sortable header sorts the rows and notifies sortKey once; a second activation notifies only sortDirection. File tests/data-table-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-02",
+          "what": "controlled, application ignores the notification: rows and aria-sort stay; STATE-03 changing the controlled values does not notify.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-04",
+          "what": "v-model:sort-key / v-model:sort-direction and [(sortKey)] / [(sortDirection)] round-trip.",
+          "adapters": [
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STATE-06",
+          "what": "vanilla: hw:change detail is {sortKey, sortDirection}.",
+          "adapters": [
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "RICH-01",
+          "what": "a column whose cell renders a badge and a link: inside td / th[scope=row]; RICH-02 without cell the value is text.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DATA-TABLE-01",
+          "what": "rowKey: after sorting, the same tr elements are reused in the new order.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "DATA-TABLE-02",
+          "what": "the wrapper has classes hw-table-wrap and hw-data-table, role=region and aria-labelledby = the caption's id.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-01",
+          "what": "one fixture (columns [{key, label, sortable, rowHeader}], rows) passed unchanged to the three frameworks renders the same text as the vanilla fixture.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-03",
+          "what": "type tests: `render`, `sort`, `defaultSort`, `onSortChange` (React) and `(sortChange)` (Angular compile test) are not accepted.",
+          "adapters": [
+            "react",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react",
+          "component": "DataTable",
+          "kind": "input",
+          "old": "sort / defaultSort / onSortChange({key, direction})",
+          "new": "sortKey + sortDirection, each with default... and on...Change",
+          "migration": "sort={{key: 'name', direction: 'ascending'}} -> sortKey=\"name\" sortDirection=\"ascending\"; onSortChange={s => ...} -> onSortKeyChange={key => ...} onSortDirectionChange={direction => ...}"
+        },
+        {
+          "adapter": "react",
+          "component": "DataTable",
+          "kind": "field",
+          "old": "DataTableColumn.render(value, row)",
+          "new": "DataTableColumn.cell(row, index)",
+          "migration": "render: (v, row) => x -> cell: row => x"
+        },
+        {
+          "adapter": "react",
+          "component": "DataTable",
+          "kind": "markup",
+          "old": "table.hw-table.hw-data-table",
+          "new": "div.hw-table-wrap.hw-data-table > table.hw-table",
+          "migration": "table.hw-data-table -> .hw-data-table > table"
+        },
+        {
+          "adapter": "vue",
+          "component": "DataTable",
+          "kind": "markup",
+          "old": "cell slot `cell:<key>` with {row, index}",
+          "new": "`cell-<key>` with {row, index, column}",
+          "migration": "#cell:name -> #cell-name"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-data-table",
+          "kind": "output",
+          "old": "(sortChange) emits {key, direction}",
+          "new": "(sortKeyChange) and (sortDirectionChange); [(sortKey)] [(sortDirection)]",
+          "migration": "(sortChange)=\"f($event)\" -> [(sortKey)]=\"key\" [(sortDirection)]=\"direction\""
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-data-table",
+          "kind": "markup",
+          "old": "wrapper aria-label={caption}; caption without id",
+          "new": "wrapper aria-labelledby={caption id}",
+          "migration": "none"
+        },
+        {
+          "adapter": "vanilla",
+          "component": "DataTable",
+          "kind": "output",
+          "old": "onSortChange({key, direction}); hw:change detail {value, key, direction}",
+          "new": "onSortKeyChange(key), onSortDirectionChange(direction); detail {sortKey, sortDirection}",
+          "migration": "event.detail.key -> event.detail.sortKey; event.detail.direction -> event.detail.sortDirection"
+        }
+      ],
+      "readme": "Each README DataTable row: the two sort states, `cell`, rowKey; Angular README :172 loses 'text cells'. packages/vanilla/EXPANSION-API.md: the two callbacks and the event detail. tests/text-contract-docs.test.ts and components.json follow.",
+      "ownerDecision": null,
+      "notDone": "wrapperProps has no Angular counterpart (class and style stay on the host)."
+    },
+    {
+      "ids": [
+        "layout-3"
+      ],
+      "component": "PageHeader (heading level, rich title)",
+      "summary": "Only Vue can choose the heading level of PageHeader; React and Angular always render h1, so an embedded page header creates a second h1. React and Angular gain `level` with the same clamp, and Vue gains the #title slot for the rich title React already accepts.",
+      "endState": {
+        "surface": {
+          "react": "PageHeader: `level?: 1 | 2 | 3 | 4 | 5 | 6`, default 1.",
+          "vue": "PageHeader: slot `#title` (rich content of the heading); the `title` prop loses `required: true` and is required, through needText, only when the slot is not used. `level` unchanged (default 1).",
+          "angular": "hw-page-header: `@Input() level = 1`.",
+          "vanilla": "none (authored heading)"
+        },
+        "dom": "`header.hw-page-header > div.hw-page-header-main > div > h{level}` in the three frameworks; level = Math.min(6, Math.max(1, Math.trunc(Number(level)) || 1)), so 0, 9, 2.5 and NaN give 1, 6, 2 and 1 (Vue today builds the tag from the unrounded number).",
+        "behaviour": "No interaction. Server rendering: the heading element is the same on both sides."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/layout.css",
+          "change": "Line 73: the selector `.hw-page-header :is(h1, h2)` becomes `.hw-page-header :is(h1, h2), .hw-page-header :where(.hw-page-header-main > div, .hw-page-header-content) > :is(h3, h4, h5, h6)` with the same declarations, so a lower heading keeps the page-title typography without restyling headings in projected content."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/expanded-layout.tsx:29-30: add `level?: 1 | 2 | 3 | 4 | 5 | 6` to PageHeaderProps, destructure `level = 1`, `const Heading = `h${Math.min(6, Math.max(1, Math.trunc(Number(level)) || 1))}` as 'h1';` and render `<Heading>{title}</Heading>` in place of `<h1>`.",
+        "vue": "packages/vue/src/layout.ts:97 `title: String`; :113 `h(`h${Math.min(6, Math.max(1, Math.trunc(Number(props.level)) || 1))}`, {}, slots.title?.() ?? needText('PageHeader', 'title', props.title))`.",
+        "angular": "packages/angular/src/layouts.ts:88 template: `<h1>{{ title }}</h1>` becomes `@switch (heading) {@case (2) {<h2>{{ title }}</h2>}@case (3) {<h3>{{ title }}</h3>}@case (4) {<h4>{{ title }}</h4>}@case (5) {<h5>{{ title }}</h5>}@case (6) {<h6>{{ title }}</h6>}@default {<h1>{{ title }}</h1>}}`; :89 `@Input() level = 1; get heading() { return Math.min(6, Math.max(1, Math.trunc(Number(this.level)) || 1)); }`.",
+        "vanilla": "none"
+      },
+      "tests": [
+        {
+          "caseId": "PAGE-HEADER-01",
+          "what": "[layout-3] level 2 renders an h2 with the title and no h1; the default is h1; 0, 9, 2.5 and NaN render h1, h6, h2 and h1. File tests/page-header-parity.test.ts (new).",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RICH-01",
+          "what": "a title with a link (React node, Vue #title slot) is rendered inside the heading; Vue with the slot and no title prop warns nothing.",
+          "adapters": [
+            "react",
+            "vue"
+          ]
+        },
+        {
+          "caseId": "PAGE-HEADER-02",
+          "what": "browser: an h3 page-header title has the same font size and weight as the h1 one. File tests/browser/page-header.spec.ts (new).",
+          "adapters": [
+            "styles"
+          ]
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML with level 3 equals the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "vue",
+          "component": "PageHeader",
+          "kind": "default",
+          "old": "a fractional level produced an invalid tag (h2.5)",
+          "new": "the level is truncated and clamped to 1..6",
+          "migration": "none"
+        }
+      ],
+      "readme": "React and Angular README PageHeader rows: `level` (1 to 6, default 1). Vue README: the #title slot. The guide note at apps/playground/src/component-layout-guides.ts:350 ('when the adapter supports it') is rewritten: every adapter supports it.",
+      "ownerDecision": null,
+      "notDone": "A rich title in Angular (title stays a string) and the different place of the default content (React inside the heading block, Vue after the main row, Angular in the actions region) are not covered by a finding."
+    },
+    {
+      "ids": [
+        "nav-a-11"
+      ],
+      "component": "Breadcrumb (current item)",
+      "summary": "React and Vue render the current breadcrumb as a link when it has an href, and mark both a flagged item and the last item as current; Angular and the recorded guidance make the current page plain text. The current item is one item in every adapter, rendered as span[aria-current=page] and never as a link, and Angular gains the `current` field.",
+      "endState": {
+        "surface": {
+          "angular": "`HwBreadcrumbItem { label: string; href?: string; current?: boolean; disabled?: boolean }` (`current` added).",
+          "react": "none (BreadcrumbItem unchanged)",
+          "vue": "none",
+          "vanilla": "none (authored)"
+        },
+        "dom": "Current item = the first item with `current: true`; when no item has it, the last item. Per item: current -> `<span aria-current=\"page\">label</span>`, whatever href and disabled say; disabled -> `<span role=\"link\" aria-disabled=\"true\">label</span>`; with href -> `<a href>label</a>`; otherwise `<span>label</span>`. Exactly one element has aria-current.",
+        "behaviour": "The current item is not a tab stop and not activatable. When an earlier item is flagged current, the last item is an ordinary item (a link when it has an href). Server rendering: unchanged."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/components.css",
+          "change": "None: `.hw-breadcrumb [aria-current='page']` (components.css:183, nic-links.css:47 and :61) does not depend on the element."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/display.tsx:181: before the map `const flagged = items.findIndex(item => item.current); const currentIndex = flagged === -1 ? items.length - 1 : flagged;`; per item `index === currentIndex ? <span aria-current=\"page\">{item.label}</span> : item.href && !item.disabled ? <a href={item.href}>{item.label}</a> : <span role={item.disabled ? 'link' : undefined} aria-disabled={item.disabled || undefined}>{item.label}</span>`.",
+        "vue": "packages/vue/src/display.ts:180: the same currentIndex; the element is 'span' with only `aria-current: 'page'` for the current item, else as today without aria-current.",
+        "angular": "packages/angular/src/navigation.ts:120 add `current?: boolean`; :121 template `@for (item of items; track $index; let i = $index) {<li>@if (i === currentIndex) {<span aria-current=\"page\">{{ item.label }}</span>} @else if (item.href && !item.disabled) {<a [href]=\"item.href\">{{ item.label }}</a>} @else {<span [attr.role]=\"item.disabled ? 'link' : null\" [attr.aria-disabled]=\"item.disabled || null\">{{ item.label }}</span>}</li>}`; class: `get currentIndex() { const flagged = this.items.findIndex(item => item.current); return flagged === -1 ? this.items.length - 1 : flagged; }`.",
+        "vanilla": "none; the documented markup already shows the current page as text (docs/nic-links.md:16)."
+      },
+      "tests": [
+        {
+          "caseId": "BREADCRUMB-01",
+          "what": "[nav-a-11] the last item has an href: it is a span with aria-current=page, not a link and not a tab stop. File tests/breadcrumb-parity.test.ts (new; the vanilla fixture is the documented markup).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "BREADCRUMB-02",
+          "what": "the second of three items has current: true: it alone has aria-current and is a span; the last item is a link.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "BREADCRUMB-03",
+          "what": "a disabled item keeps role=link and aria-disabled=true and has no href.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-01",
+          "what": "one fixture [{label, href}, {label, href, current}, {label, href, disabled}] passed unchanged to the three frameworks renders the same DOM.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react, vue",
+          "component": "Breadcrumb",
+          "kind": "markup",
+          "old": "the current item was a link when it had an href; a flagged item and the last item both carried aria-current",
+          "new": "one span[aria-current=page], never a link",
+          "migration": "none; styles that targeted a[aria-current] -> [aria-current]"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-breadcrumb",
+          "kind": "field",
+          "old": "the last item was always the current one",
+          "new": "HwBreadcrumbItem.current chooses it; the last item is the default",
+          "migration": "none"
+        }
+      ],
+      "readme": "Each README Breadcrumb row: the current item is text; `current` chooses it and the last item is the default. docs/dga-checklist-review.md:66 (row 127) gains the evidence line; docs/nic-links.md gets the decision line.",
+      "ownerDecision": null,
+      "notDone": "The accessible name of the Angular nav (label and forwarded aria) is specified by navigation-menus-shell (E08)."
+    },
+    {
+      "ids": [
+        "nav-a-14"
+      ],
+      "component": "Stepper (text equivalent of the step state)",
+      "summary": "Only the current step is exposed to assistive technology; complete and upcoming are a check mark and a colour. Every adapter renders a visually hidden state text per complete and upcoming step from two new required texts, completeLabel and upcomingLabel.",
+      "endState": {
+        "surface": {
+          "react": "Stepper: `completeLabel: string`, `upcomingLabel: string`, required.",
+          "vue": "Stepper: `completeLabel` and `upcomingLabel`, `{type: String, required: true}`.",
+          "angular": "hw-stepper: `@Input({required: true}) completeLabel = ''`, `@Input({required: true}) upcomingLabel = ''`.",
+          "vanilla": "StepperOptions: `completeLabel?: string`, `upcomingLabel?: string`, each also read from data-hw-complete-label / data-hw-upcoming-label on the list; required."
+        },
+        "dom": "`<li class=\"hw-step\" data-state=\"complete\"><span>{label}</span><span class=\"hw-sr-only\" data-hw-step-status>{completeLabel}</span><p class=\"hw-hint\">{description}</p></li>`: the status span is the element after the label span, holds completeLabel on a complete step and upcomingLabel on an upcoming step, and is absent on the current step (aria-current=\"step\" says it) and when its text is missing. Vanilla: the controller creates the span after the step's first element child (or as its first child), or fills an authored `[data-hw-step-status]` child.",
+        "behaviour": "The text follows the computed status, including an explicit `status` on an item (vanilla: data-status). A missing text renders no span and warns once in development. Vanilla setActiveIndex() and refresh() update the spans; destroy() removes created spans and restores the text of authored ones. Server rendering: the spans are in the server HTML."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/stepper.css",
+          "change": "None: .hw-sr-only is out of flow, so the flex layout and the gap of .hw-step do not change."
+        }
+      ],
+      "perAdapter": {
+        "react": "packages/react/src/display.tsx:211-217 add the two props and `const stateText = {complete: text('Stepper', 'completeLabel', completeLabel), upcoming: text('Stepper', 'upcomingLabel', upcomingLabel), current: undefined};`; :222 after `<span>{item.label}</span>`: `{stateText[status] && <span className=\"hw-sr-only\" data-hw-step-status=\"\">{stateText[status]}</span>}`.",
+        "vue": "packages/vue/src/display.ts:209 add the props; :214 children `[h('span', {}, item.label), stateText && h('span', {class: 'hw-sr-only', 'data-hw-step-status': ''}, stateText), item.description && h('p', {class: 'hw-hint'}, item.description)]` with `stateText = status === 'complete' ? needText('Stepper', 'completeLabel', props.completeLabel) : status === 'upcoming' ? needText('Stepper', 'upcomingLabel', props.upcomingLabel) : undefined`.",
+        "angular": "packages/angular/src/navigation.ts:218 template, inside each li after the label span: `@if (stateText(i); as text) {<span class=\"hw-sr-only\" data-hw-step-status>{{ text }}</span>}`; :219-231 the two inputs and `stateText(index: number): string | null { const state = this.state(index); return state === 'complete' ? this.texts.need('completeLabel', this.completeLabel) : state === 'upcoming' ? this.texts.need('upcomingLabel', this.upcomingLabel) : null; }`.",
+        "vanilla": "packages/vanilla/src/stepper.ts:3-8 the options. In refresh() (:35-41), after data-state is set: `const wanted = state === 'complete' ? text(element, 'completeLabel', options.completeLabel) : state === 'upcoming' ? text(element, 'upcomingLabel', options.upcomingLabel) : undefined;` (requireText('Stepper', name, wanted) for the two states); find `step.querySelector(':scope > [data-hw-step-status]')`; an authored one has its original text stored in a Map once and gets `textContent = wanted ?? ''`; without one and with a text, create `span.hw-sr-only[data-hw-step-status]`, remember it in a Set and insert it after step.firstElementChild (or prepend); a created span whose text is no longer wanted is removed. destroy() (:47-52) removes the created spans and restores the stored texts."
+      },
+      "tests": [
+        {
+          "caseId": "STEPPER-01",
+          "what": "[nav-a-14] three steps, the second current: the first li contains the visually hidden completeLabel after its label, the third upcomingLabel, the second none and aria-current=step. File tests/stepper-parity.test.ts (new).",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STEPPER-02",
+          "what": "an explicit status 'complete' on the last step gives it completeLabel.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "TEXT-01",
+          "what": "missing completeLabel: no status span on complete steps, one warning naming the input as the adapter exposes it.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STEPPER-03",
+          "what": "vanilla: setActiveIndex moves the texts; destroy() removes created spans and restores an authored [data-hw-step-status]. File packages/vanilla/test/stepper.test.ts.",
+          "adapters": [
+            "vanilla"
+          ]
+        },
+        {
+          "caseId": "SSR-01",
+          "what": "server HTML contains the status spans and equals the first client render.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "react, vue, angular, vanilla",
+          "component": "Stepper",
+          "kind": "input",
+          "old": "no state text",
+          "new": "required completeLabel and upcomingLabel (vanilla: options or data-hw-complete-label / data-hw-upcoming-label)",
+          "migration": "<Stepper ...> -> add completeLabel=\"...\" upcomingLabel=\"...\"; vanilla markup that wrote the state into the label (\"Details — complete\") removes it"
+        }
+      ],
+      "readme": "Each README Stepper row and packages/vanilla/README.md:85: the two required texts and where they are rendered. docs/stepper-states.md:23, :42-56 (examples) and :123-125 (the text equivalent is now rendered); the vanilla guide example drops the hand-written state suffix. tests/text-contract-docs.test.ts fixtures, components.json and llms.txt list the texts.",
+      "ownerDecision": null,
+      "notDone": "data-state='error' (styled in components.css:270) has no adapter input and no text; no finding covers it."
+    },
+    {
+      "ids": [
+        "nav-a-15"
+      ],
+      "component": "Stepper (Angular markup and item shape)",
+      "summary": "Angular nests the step description as small.hw-hint inside the label span, so label and description run together; React, Vue and vanilla render a sibling p.hw-hint. Angular renders that DOM and takes the item shape of the other adapters: `items`, each with a `value`, and `current` as the value of the current step.",
+      "endState": {
+        "surface": {
+          "angular": "hw-stepper: input `steps` -> `items: readonly HwStep[]`; `HwStep { value: string; label: string; description?: string; status?: 'complete' | 'current' | 'upcoming' }` (`value` added, required); `current?: string` is the value of the current step (was a zero-based number, default 0); `activeIndex?: number` unchanged and still overrides `current`.",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "`<li class=\"hw-step\" data-state aria-current><span>{{ label }}</span>[status span of nav-a-14]@if (description) {<p class=\"hw-hint\">{{ description }}</p>}</li>`, the DOM of react/src/display.tsx:222 and vue/src/display.ts:214; `small.hw-hint` is gone.",
+        "behaviour": "With neither `current` nor `activeIndex` no step is current and all are upcoming (index -1), as in React and Vue; Angular's default was the first step. Steps are tracked by `value`. Server rendering unchanged."
+      },
+      "core": [],
+      "styles": [],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "vanilla": "none",
+        "angular": "packages/angular/src/navigation.ts:217 the interface. :218 template: `@for (step of items; track step.value; let i = $index) {<li class=\"hw-step\" [attr.aria-current]=\"state(i) === 'current' ? 'step' : null\" [attr.data-state]=\"state(i)\"><span>{{ step.label }}</span>...@if (step.description) {<p class=\"hw-hint\">{{ step.description }}</p>}</li>}`. :222-230: `@Input() items: readonly HwStep[] = []; @Input() current?: string;` and in state(): `const requested = this.activeIndex ?? this.items.findIndex(item => item.value === this.current);` with `this.items` in place of `this.steps`."
+      },
+      "tests": [
+        {
+          "caseId": "STEPPER-04",
+          "what": "[nav-a-15] a step with a description: the label is in a span and the description in a sibling p.hw-hint; no small element. File tests/stepper-parity.test.ts.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "SHAPE-01",
+          "what": "one fixture [{value, label, description, status}] with current = a value passed unchanged to React, Vue and Angular renders the same DOM as the vanilla fixture.",
+          "adapters": [
+            "vanilla",
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "STEPPER-05",
+          "what": "neither current nor activeIndex: every step is upcoming and none has aria-current.",
+          "adapters": [
+            "react",
+            "vue",
+            "angular"
+          ]
+        },
+        {
+          "caseId": "RENAME-02",
+          "what": "Angular compile test: `[steps]` is not accepted and `[current]=\"1\"` is a type error. File packages/angular/test/stepper.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-stepper",
+          "kind": "input",
+          "old": "steps",
+          "new": "items",
+          "migration": "[steps]=\"x\" -> [items]=\"x\""
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-stepper",
+          "kind": "field",
+          "old": "HwStep without a key",
+          "new": "HwStep.value (required)",
+          "migration": "{label: 'Details'} -> {value: 'details', label: 'Details'}"
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-stepper",
+          "kind": "input",
+          "old": "current: number (zero-based, default 0)",
+          "new": "current?: string (the value of the current step); activeIndex for an index",
+          "migration": "[current]=\"1\" -> [activeIndex]=\"1\""
+        },
+        {
+          "adapter": "angular",
+          "component": "hw-stepper",
+          "kind": "markup",
+          "old": "small.hw-hint inside the label span",
+          "new": "p.hw-hint after the label span",
+          "migration": ".hw-step small.hw-hint -> .hw-step > p.hw-hint"
+        }
+      ],
+      "readme": "Angular README Stepper row and docs/stepper-states.md:48 (`<hw-stepper [items]=\"items\" [activeIndex]=\"1\" ...>`).",
+      "ownerDecision": null,
+      "notDone": "The accessible name of the Angular list (label and forwarded aria) is specified by navigation-menus-shell (E08)."
+    },
+    {
+      "ids": [
+        "E08"
+      ],
+      "appliesCanonical": "E08 / R22 (navigation-menus-shell; conventions angular-host-attributes and name-without-visible-label): this item is only the application to the Angular components of this cluster that no other item here covers. hw-dialog and hw-drawer are in overlays-10, hw-accordion in disclosure-data-3, hw-table in disclosure-data-13, hw-data-table in disclosure-data-15, hw-date-picker in dates-7, hw-tooltip in overlays-14.",
+      "component": "Angular hw-carousel and hw-calendar (accessible name), wrapper-host boxes of this cluster",
+      "summary": "An aria-label or aria-labelledby written on hw-carousel or hw-calendar stays on the role-less host while `label` is still demanded. Both take the forwarded attributes of the Angular host convention and need `label` only without them; the hosts of this cluster get their box from the stylesheet list instead of component styles.",
+      "endState": {
+        "surface": {
+          "angular": "hw-carousel (kind B): `label` loses `{required: true}`; forwarded `aria-label`, `aria-labelledby`, `aria-describedby` inputs. hw-calendar (HwValueControl, inputs inherited): `label` loses `{required: true}`. Both ask texts.need('label', label) only when neither forwarded name is given.",
+          "react": "none",
+          "vue": "none",
+          "vanilla": "none"
+        },
+        "dom": "hw-carousel: `section.hw-carousel[role=region]` with aria-label = the application's aria-label, else `label` unless aria-labelledby is given; aria-labelledby and aria-describedby as given. hw-calendar: the same on `table.hw-calendar-grid[role=grid]` (aria-describedby keeps the hint and error ids). The hosts carry none of the attributes.",
+        "behaviour": "Server HTML: attributes on the inner element only; hydration without mismatch."
+      },
+      "core": [],
+      "styles": [
+        {
+          "file": "packages/styles/src/layout.css",
+          "change": "Append `hw-calendar, hw-date-picker, hw-accordion, hw-collapsible` to the wrapper-host list that forms-core writes at line 133 (`display: block`), and add after it: `:where(hw-table, hw-data-table, hw-carousel):where(:not([hidden])) { display: block; min-inline-size: 0; max-inline-size: 100%; }`, which replaces the `styles: [':host { display: block; min-inline-size: 0; max-inline-size: 100%; }']` of presentation.ts:101, content.ts:48 and interactions.ts:131."
+        }
+      ],
+      "perAdapter": {
+        "react": "none",
+        "vue": "none",
+        "vanilla": "none",
+        "angular": "packages/angular/src/interactions.ts:131-132: delete `styles`, add `host: forwardedAriaHost`; section `[attr.aria-label]=\"ariaLabel || (ariaLabelledby ? label || null : texts.need('label', label))\" [attr.aria-labelledby]=\"ariaLabelledby\" [attr.aria-describedby]=\"ariaDescribedby\"`; :149 `@Input() label = ''` and the three alias inputs. packages/angular/src/advanced-controls.ts:218 table: `[attr.aria-label]=\"ariaLabel || (ariaLabelledby ? label || null : texts.need('label', label))\" [attr.aria-labelledby]=\"ariaLabelledby\"` (aria-describedby stays `descriptionIds`); :222 `@Input() override label = ''`; `${fieldEnd}` comes from field-templates.ts and the private copy at :11 is deleted."
+      },
+      "tests": [
+        {
+          "caseId": "NAME-01",
+          "what": "hw-carousel and hw-calendar: `label` alone names the region / grid; NAME-02 aria-label alone: no warning, on the inner element; NAME-03 aria-labelledby alone: no warning, no aria-label; NAME-04 neither: one warning. File packages/angular/test/required-names.test.ts.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-03",
+          "what": "static and bound aria-label reach section.hw-carousel / table.hw-calendar-grid and the host has none; ATTR-05 the same after server render and hydration.",
+          "adapters": [
+            "angular"
+          ]
+        },
+        {
+          "caseId": "ATTR-06",
+          "what": "browser: hw-table, hw-data-table and hw-carousel hosts are block boxes that do not overflow a narrow parent (min-inline-size 0). File tests/browser/angular-hosts.spec.ts.",
+          "adapters": [
+            "angular"
+          ]
+        }
+      ],
+      "migration": [
+        {
+          "adapter": "angular",
+          "component": "hw-carousel, hw-calendar",
+          "kind": "input",
+          "old": "label required always",
+          "new": "label required unless aria-label or aria-labelledby is given",
+          "migration": "none"
+        }
+      ],
+      "readme": "Angular README: Carousel and Calendar rows name the three forwarded attributes; the general paragraph on wrapper hosts comes from forms-core.",
+      "ownerDecision": 1,
+      "notDone": "hw-breadcrumb, hw-pagination and hw-stepper (navigation.ts) get their name rule from navigation-menus-shell; hw-collapsible and hw-page-header have no accessible name to forward."
+    }
+  ],
+  "conventionConflicts": [
+    {
+      "convention": "cluster note 'new [hwTooltip] directive' (conventions.json clusters, files.angular)",
+      "component": "Tooltip (Angular)",
+      "ids": [
+        "overlays-14"
+      ],
+      "conflict": "A directive on the trigger alone cannot produce the reference DOM: the tooltip is positioned by CSS against a wrapper around the trigger, and a directive that wraps its host at run time breaks hydration.",
+      "closest": "hw-tooltip stays the wrapper (now the host itself, kind A) and the directive `[hwTooltipTrigger]` marks the application's focusable element inside it and gives it aria-describedby."
+    },
+    {
+      "convention": "angular-host-attributes (index 3)",
+      "component": "hw-tooltip, hw-accordion",
+      "ids": [
+        "overlays-14",
+        "disclosure-data-3"
+      ],
+      "conflict": "hw-tooltip is not in the default assignment; it is specified as kind A, with the documented wrapper class hw-tooltip-anchor on the host and without `data-hw`, which is the vanilla enhancement hook. hw-accordion is kind B as assigned, but its root is a div without a role, where a forwarded aria-label is not valid.",
+      "closest": "div.hw-accordion gets role=group exactly while aria-label or aria-labelledby is forwarded."
+    },
+    {
+      "convention": "rich-content (index 11): 'the string field becomes the aria-label only when the rich content has no text'",
+      "component": "Accordion (Vue slots, Angular templates)",
+      "ids": [
+        "disclosure-data-3"
+      ],
+      "conflict": "A component cannot know at render time, on the server, whether a slot or template renders text.",
+      "closest": "No aria-label is added; the summary is named by its content and the README says that a rich title must contain text. `title` stays required."
+    },
+    {
+      "convention": "hint-error-validation-message (index 6): order of aria-describedby",
+      "component": "DatePicker",
+      "ids": [
+        "dates-7"
+      ],
+      "conflict": "The picker has a fifth id, the formatted value, which the rule does not place.",
+      "closest": "application ids, formatted id, field ids, hint id, error id: the four of the rule keep their order."
+    },
+    {
+      "convention": "hint-error-validation-message (index 6): Angular uses the `fieldEnd` template",
+      "component": "hw-date-picker",
+      "ids": [
+        "dates-7"
+      ],
+      "conflict": "A produced date message wraps ISO dates in bdi, which the plain `{{ shownError }}` of fieldEnd cannot render.",
+      "closest": "The picker writes hint and error by hand with the same elements, ids and role rule, and overrides shownError so that descriptionIds stays correct."
+    },
+    {
+      "convention": "focus-when-a-control-becomes-unavailable (index 14), FOCUS-03 'clears aria-disabled'",
+      "component": "Carousel, Pagination (vanilla)",
+      "ids": [
+        "disclosure-data-10"
+      ],
+      "conflict": "The vanilla controllers write aria-disabled on authored arrows in every state.",
+      "closest": "They write \"false\" when the arrow is available; the case asserts that the value is not \"true\"."
+    },
+    {
+      "convention": "native-form-reset (index 2): every control notifies after a reset",
+      "component": "Calendar nested in DatePicker",
+      "ids": [
+        "dates-5"
+      ],
+      "conflict": "A calendar inside the picker's dialog that reset itself would write its own target into the picker (and into Angular Forms).",
+      "closest": "The nested calendar is detached from the form (form=\"\" on its hidden input; vanilla: no observer); the picker alone is the control."
+    },
+    {
+      "convention": "item-shapes (index 12): 'Angular HwStep gains value'",
+      "component": "hw-stepper",
+      "ids": [
+        "nav-a-15"
+      ],
+      "conflict": "The rule adds the key but does not say what reads it; a key without a reader would be dead.",
+      "closest": "`current` becomes the value of the current step, as in React and Vue; `activeIndex` keeps the numeric form."
+    }
+  ],
+  "closedAlready": [
+    {
+      "id": "disclosure-data-15 (sort label part)",
+      "evidence": "packages/angular/src/content.ts:53-54 `@Input() getSortLabel?: (column, direction) => string`, bound at :48 on the sort button; the rest of the item is open and specified."
+    }
+  ],
+  "questions": [
+    "Reading note: ownerDecision is the 0-based index into conventions.json ownerDecisions (index 1 is 'owner decision 2', the Angular wrapper hosts; index 0 the reset).",
+    "forms-core: dates-7 assumes the React Field / FieldLayout prop `errorRole?: 'alert'` (the name the rich-inputs-files specification also assumes) and the Angular members fieldLabel, fieldDescriptionIds, labelledBy, decorationId, shownError, invalid, failed(), submissionInvalid, named, form, focusEvents, blurEvents, afterReset() and syncDom() of HwValueControl as its sharedApi lists them. A different name there replaces the one used here.",
+    "navigation-menus-shell: this specification leaves the accessible name (label, forwarded aria) of hw-breadcrumb, hw-pagination and hw-stepper to E08 there, and the React Collapsible rename title -> label to R26 there. Its edits to the same templates (navigation.ts:121, :128-138, :218; interactions.ts:105) must be merged with nav-a-11, disclosure-data-10, nav-a-14, nav-a-15 and disclosure-data-5.",
+    "Owner, decided here and easy to overrule one by one because they go beyond the audit wording: (1) React DataTable `sort` / `defaultSort` / `onSortChange` and vanilla `onSortChange` are replaced by the two states sortKey and sortDirection (convention controlled-and-observable-state); (2) the vanilla standalone Calendar loses its Gregorian / Hijri switch (the alternative is a switch, three more required texts and a controlled `calendar` on Calendar in React, Vue and Angular); (3) Angular hw-stepper `current` changes from an index to a step value; (4) Vue Accordion loses its per-value slots; (5) Angular hw-tooltip no longer makes plain text focusable: the application marks a focusable trigger."
+  ],
+  "decisions": [
+    {
+      "component": "DatePicker",
+      "question": "Which message does a typed date get that is outside min/max and outside the Umm al-Qura range?",
+      "choice": "unsupportedMessage: the order of core getDateViolation (malformed, unsupported, out of range, unavailable)",
+      "basis": "majority",
+      "source": "vue/src/calendar.ts:438-445, angular/src/advanced-controls.ts:326-331, vanilla/src/calendar.ts:232-235 against react/src/calendar.tsx:95",
+      "changedAdapters": [
+        "react"
+      ]
+    },
+    {
+      "component": "DatePicker",
+      "question": "Where is the validation message and is it announced?",
+      "choice": "one p.hw-error#{id}-error after the hint, role=alert while the component produces it; the application's error wins",
+      "basis": "repository",
+      "source": "conventions.json hint-error-validation-message; docs/date-input.md:10-12",
+      "changedAdapters": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "DatePicker",
+      "question": "Where does the id of the formatted value go in aria-describedby?",
+      "choice": "after the application's ids and before the field, hint and error ids",
+      "basis": "majority",
+      "source": "react/src/calendar.tsx:103 and the vanilla controller (calendar.ts:222) already do this; tie with Vue and Angular resolved by the smaller change",
+      "changedAdapters": [
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "DatePicker, Calendar",
+      "question": "Where is focus when the dialog opens, and which day is the tab stop of an empty calendar?",
+      "choice": "the tab-stop day: selected, else today, else the first available day",
+      "basis": "accessibility",
+      "source": "WAI-ARIA APG date picker dialog; packages/angular/README.md:153; react/src/calendar.tsx:41",
+      "changedAdapters": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Calendar",
+      "question": "Does the standalone Calendar announce an unsupported value?",
+      "choice": "yes: p[role=status] after the grid, present from the first render, text unsupportedMessage",
+      "basis": "repository",
+      "source": "CONTRACT.md:183-185 (status exists from the first render); conventions.json text-contract-for-new-text names Calendar unsupportedMessage",
+      "changedAdapters": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Calendar, DatePicker",
+      "question": "Which component renders the Gregorian / Hijri switch?",
+      "choice": "DatePicker only",
+      "basis": "majority",
+      "source": "docs/date-picker-ui.md:3-5 and the React, Vue and Angular READMEs describe it as a part of the picker; only vanilla/EXPANSION-API.md:118 puts it on the standalone Calendar",
+      "changedAdapters": [
+        "vanilla"
+      ]
+    },
+    {
+      "component": "DatePicker",
+      "question": "Formatted value of the selected date",
+      "choice": "dateStyle 'full', and nothing else in the output",
+      "basis": "repository",
+      "source": "conventions.json value-display-and-formatting",
+      "changedAdapters": [
+        "vanilla"
+      ]
+    },
+    {
+      "component": "Dialog, Drawer",
+      "question": "How does an Angular dialog without footer content look?",
+      "choice": "the footer wrapper stays in the template and `.hw-dialog-footer:empty` hides it",
+      "basis": "repository",
+      "source": "conventions.json rich-content (2); angular/src/layouts.ts:74",
+      "changedAdapters": [
+        "styles"
+      ]
+    },
+    {
+      "component": "Dialog, Drawer",
+      "question": "How is an Angular dialog described?",
+      "choice": "the forwarded aria-describedby input on both components, one shared template",
+      "basis": "repository",
+      "source": "conventions.json angular-host-attributes; owner decision index 1",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "question": "What does the Angular tooltip describe?",
+      "choice": "the application's focusable element marked hwTooltipTrigger inside hw-tooltip; the host is the positioned wrapper",
+      "basis": "repository",
+      "source": "the documented vanilla markup (wrapper .hw-tooltip-anchor > [data-hw-tooltip-trigger] + [role=tooltip], apps/playground/src/disclosure-projects.ts:30) and react/src/interactive.tsx:337",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "Accordion",
+      "question": "Item key and rich content",
+      "choice": "`value`; Angular titleTemplate / contentTemplate; Vue #title / #content scoped slots instead of per-value slots",
+      "basis": "repository",
+      "source": "conventions.json item-shapes and rich-content (3)",
+      "changedAdapters": [
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Collapsible",
+      "question": "Disabled state in Angular",
+      "choice": "`disabled` input, aria-disabled on the summary, activation ignored",
+      "basis": "majority",
+      "source": "react/src/expanded-interactive.tsx:87, vue/src/expansion-interactive.ts:493-498",
+      "changedAdapters": [
+        "angular",
+        "styles"
+      ]
+    },
+    {
+      "component": "Carousel, Pagination",
+      "question": "What happens to the arrow the reader just used at a bound?",
+      "choice": "aria-disabled=true, focusable, activation ignored",
+      "basis": "accessibility",
+      "source": "conventions.json focus-when-a-control-becomes-unavailable (a); WCAG 2.4.3, 2.4.7",
+      "changedAdapters": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Table, DataTable",
+      "question": "Column shape and cell content",
+      "choice": "{key, label, cell?, sortable?, rowHeader?}; Angular `cell` is a TemplateRef on the column; Vue slot cell-<key>",
+      "basis": "repository",
+      "source": "conventions.json item-shapes and rich-content (3)",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Table, DataTable",
+      "question": "Name of the scroll wrapper",
+      "choice": "role=region with aria-labelledby = the caption's id, only with a caption",
+      "basis": "majority",
+      "source": "react/src/display.tsx:93, vue/src/display.ts:77; docs/nic-tables.md:46-47",
+      "changedAdapters": [
+        "angular"
+      ]
+    },
+    {
+      "component": "DataTable",
+      "question": "Name and form of the sort state",
+      "choice": "two states, sortKey and sortDirection, each with the adapter's controlled pattern; no combined notification",
+      "basis": "repository",
+      "source": "conventions.json controlled-and-observable-state (fixed names)",
+      "changedAdapters": [
+        "react",
+        "angular",
+        "vanilla"
+      ]
+    },
+    {
+      "component": "DataTable",
+      "question": "Which element carries the class hw-data-table?",
+      "choice": "the wrapper div.hw-table-wrap",
+      "basis": "majority",
+      "source": "vue/src/content.ts:349, angular/src/content.ts:48; styles/src/extended.css:210",
+      "changedAdapters": [
+        "react"
+      ]
+    },
+    {
+      "component": "PageHeader",
+      "question": "Heading level",
+      "choice": "`level` 1 to 6, default 1, truncated and clamped, in the three frameworks",
+      "basis": "accessibility",
+      "source": "one h1 per page; vue/src/layout.ts:99; apps/playground/src/component-layout-guides.ts:350",
+      "changedAdapters": [
+        "react",
+        "angular",
+        "vue"
+      ]
+    },
+    {
+      "component": "Breadcrumb",
+      "question": "Is the current item a link?",
+      "choice": "no: one span[aria-current=page]; `current` chooses it, the last item is the default",
+      "basis": "repository",
+      "source": "docs/nic-links.md:16; docs/dga-checklist-review.md:66",
+      "changedAdapters": [
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Stepper",
+      "question": "Text equivalent of complete and upcoming",
+      "choice": "a visually hidden span per step from the required texts completeLabel and upcomingLabel",
+      "basis": "accessibility",
+      "source": "WCAG 1.3.1; docs/dga-reference.md:77; conventions.json text-contract-for-new-text",
+      "changedAdapters": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ]
+    },
+    {
+      "component": "Stepper",
+      "question": "Angular description markup and item shape",
+      "choice": "sibling p.hw-hint; `items`, HwStep.value, `current` is a value",
+      "basis": "repository",
+      "source": "conventions.json item-shapes; react/src/display.tsx:210-222, vue/src/display.ts:207-214",
+      "changedAdapters": [
+        "angular"
+      ]
+    }
+  ],
+  "renames": [
+    {
+      "adapter": "angular",
+      "component": "hw-date-picker",
+      "kind": "input",
+      "from": "label required always; describedBy",
+      "to": "label required unless aria-label / aria-labelledby is given; aria-describedby",
+      "migration": "[describedBy]=\"id\" -> [aria-describedby]=\"id\"",
+      "ids": [
+        "dates-7",
+        "dates-4"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "Calendar",
+      "kind": "input",
+      "from": "no unsupportedMessage",
+      "to": "unsupportedMessage required with calendar=\"islamic-umalqura\"",
+      "migration": "<Calendar calendar=\"islamic-umalqura\" rangeLabel=...> -> add unsupportedMessage=...",
+      "ids": [
+        "R01"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-calendar",
+      "kind": "input",
+      "from": "no unsupportedMessage",
+      "to": "unsupportedMessage required with calendar=\"islamic-umalqura\"",
+      "migration": "add unsupportedMessage=\"...\" to hw-calendar with calendar=\"islamic-umalqura\"",
+      "ids": [
+        "R01"
+      ]
+    },
+    {
+      "adapter": "vanilla",
+      "component": "Calendar",
+      "kind": "removed",
+      "from": "standalone createCalendar rendered the Gregorian / Hijri switch and read calendarSystemLabel, gregorianLabel, hijriLabel (data-hw-calendar-system-label, data-hw-gregorian-label, data-hw-hijri-label)",
+      "to": "no switch on a standalone Calendar; the three texts belong to DatePicker",
+      "migration": "delete the three data-hw-* attributes from a standalone calendar root and call controller.setCalendar(system) from your own control",
+      "ids": [
+        "R01"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-dialog, hw-drawer",
+      "kind": "input",
+      "from": "describedBy",
+      "to": "aria-describedby (property ariaDescribedby)",
+      "migration": "[describedBy]=\"id\" -> [aria-describedby]=\"id\"; describedBy=\"id\" -> aria-describedby=\"id\"",
+      "ids": [
+        "overlays-10"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-accordion",
+      "kind": "field",
+      "from": "HwAccordionItem.id",
+      "to": "HwAccordionItem.value",
+      "migration": "{id: 'a', ...} -> {value: 'a', ...}",
+      "ids": [
+        "disclosure-data-3"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-accordion",
+      "kind": "output",
+      "from": "(toggled) emits {id, open}",
+      "to": "(toggled) emits {value, open}",
+      "migration": "$event.id -> $event.value",
+      "ids": [
+        "disclosure-data-3"
+      ]
+    },
+    {
+      "adapter": "vue",
+      "component": "Accordion",
+      "kind": "removed",
+      "from": "a slot named after each item's value (`<template #faq-1>`)",
+      "to": "one scoped slot #content=\"{item, index}\" (and #title)",
+      "migration": "<template #a>X</template> -> <template #content=\"{item}\"><template v-if=\"item.value === 'a'\">X</template></template>",
+      "ids": [
+        "disclosure-data-3"
+      ]
+    },
+    {
+      "adapter": "react, vue",
+      "component": "Table",
+      "kind": "field",
+      "from": "TableColumn.header",
+      "to": "TableColumn.label",
+      "migration": "{header: 'Name'} -> {label: 'Name'}",
+      "ids": [
+        "disclosure-data-13"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-table",
+      "kind": "input",
+      "from": "caption required; HwTableRow values string | number | null | undefined",
+      "to": "caption required unless aria-label / aria-labelledby; HwTableRow = Record<string, unknown>",
+      "migration": "none",
+      "ids": [
+        "disclosure-data-13"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "DataTable",
+      "kind": "input",
+      "from": "sort / defaultSort / onSortChange({key, direction})",
+      "to": "sortKey + sortDirection, each with default... and on...Change",
+      "migration": "sort={{key: 'name', direction: 'ascending'}} -> sortKey=\"name\" sortDirection=\"ascending\"; onSortChange={s => ...} -> onSortKeyChange={key => ...} onSortDirectionChange={direction => ...}",
+      "ids": [
+        "disclosure-data-15"
+      ]
+    },
+    {
+      "adapter": "react",
+      "component": "DataTable",
+      "kind": "field",
+      "from": "DataTableColumn.render(value, row)",
+      "to": "DataTableColumn.cell(row, index)",
+      "migration": "render: (v, row) => x -> cell: row => x",
+      "ids": [
+        "disclosure-data-15"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-data-table",
+      "kind": "output",
+      "from": "(sortChange) emits {key, direction}",
+      "to": "(sortKeyChange) and (sortDirectionChange); [(sortKey)] [(sortDirection)]",
+      "migration": "(sortChange)=\"f($event)\" -> [(sortKey)]=\"key\" [(sortDirection)]=\"direction\"",
+      "ids": [
+        "disclosure-data-15"
+      ]
+    },
+    {
+      "adapter": "vanilla",
+      "component": "DataTable",
+      "kind": "output",
+      "from": "onSortChange({key, direction}); hw:change detail {value, key, direction}",
+      "to": "onSortKeyChange(key), onSortDirectionChange(direction); detail {sortKey, sortDirection}",
+      "migration": "event.detail.key -> event.detail.sortKey; event.detail.direction -> event.detail.sortDirection",
+      "ids": [
+        "disclosure-data-15"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-breadcrumb",
+      "kind": "field",
+      "from": "the last item was always the current one",
+      "to": "HwBreadcrumbItem.current chooses it; the last item is the default",
+      "migration": "none",
+      "ids": [
+        "nav-a-11"
+      ]
+    },
+    {
+      "adapter": "react, vue, angular, vanilla",
+      "component": "Stepper",
+      "kind": "input",
+      "from": "no state text",
+      "to": "required completeLabel and upcomingLabel (vanilla: options or data-hw-complete-label / data-hw-upcoming-label)",
+      "migration": "<Stepper ...> -> add completeLabel=\"...\" upcomingLabel=\"...\"; vanilla markup that wrote the state into the label (\"Details — complete\") removes it",
+      "ids": [
+        "nav-a-14"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-stepper",
+      "kind": "input",
+      "from": "steps",
+      "to": "items",
+      "migration": "[steps]=\"x\" -> [items]=\"x\"",
+      "ids": [
+        "nav-a-15"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-stepper",
+      "kind": "field",
+      "from": "HwStep without a key",
+      "to": "HwStep.value (required)",
+      "migration": "{label: 'Details'} -> {value: 'details', label: 'Details'}",
+      "ids": [
+        "nav-a-15"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-stepper",
+      "kind": "input",
+      "from": "current: number (zero-based, default 0)",
+      "to": "current?: string (the value of the current step); activeIndex for an index",
+      "migration": "[current]=\"1\" -> [activeIndex]=\"1\"",
+      "ids": [
+        "nav-a-15"
+      ]
+    },
+    {
+      "adapter": "angular",
+      "component": "hw-carousel, hw-calendar",
+      "kind": "input",
+      "from": "label required always",
+      "to": "label required unless aria-label or aria-labelledby is given",
+      "migration": "none",
+      "ids": [
+        "E08"
+      ]
+    }
+  ],
+  "docs": [
+    "CHANGELOG.md Unreleased: every entry of `decisions`, and the rows of `renames` plus the per-item migration entries of kind markup and default in the table 'Breaking: renamed and removed'.",
+    "components.json, llms.txt, the four package READMEs, packages/vanilla/EXPANSION-API.md, docs/date-input.md, docs/stepper-states.md, docs/nic-tables.md, docs/nic-links.md, docs/nic-carousel.md, docs/nic-pagination.md and tests/text-contract-docs.test.ts in the same change as the code they describe."
+  ]
+}

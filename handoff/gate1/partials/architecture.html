@@ -1,0 +1,58 @@
+<h3>Verdict from the spikes</h3>
+<p>The architecture works, but not on the unpatched 0.2.1 packages. A scratch Angular 22 application installed <code>@hawiyah/angular</code>, <code>styles</code> and <code>tokens</code> at 0.2.1 from the registry and was built with ahead-of-time compilation and static prerendering under <code>/hawiyah/</code>.</p>
+<div class="table-scroll"><table>
+  <thead><tr><th scope="col">Check</th><th scope="col">Result on unpatched 0.2.1</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Strict AOT compile</th><td class="pass">0 errors across all 87 exported components and directives</td></tr>
+    <tr><th scope="row">Stylesheet, fonts and icon assets under /hawiyah/</th><td class="pass">Resolve in development and production builds (critical-CSS inlining must be off)</td></tr>
+    <tr><th scope="row">Prerender, all routes</th><td class="fail">Build fails: Tabs and ContentNavigation throw from a timer (97 of 192 routes written)</td></tr>
+    <tr><th scope="row">Prerender, those routes excluded</th><td class="skip">Build exits 0, but ToggleGroup, Combobox, TagInput, MultiSelect, DatePicker and Accordion log errors and leave incomplete HTML</td></tr>
+    <tr><th scope="row">Server rendering per component</th><td class="skip">75 of 83 render cleanly</td></tr>
+    <tr><th scope="row">Hydration</th><td class="skip">176 routes, no hydration errors, 48 interactive components work afterwards. Tabs cannot be hydrated even once server rendering is worked around. Generated ids differ between server and client on 26 of 88 pages</td></tr>
+    <tr><th scope="row">Deep links and 404 under /hawiyah/</th><td class="pass">44 of 44 checks pass on a plain static server</td></tr>
+    <tr><th scope="row">Locale in the route, direction and mode chosen independently</th><td class="pass">23 of 23 checks pass, no flash and no hydration mismatch</td></tr>
+    <tr><th scope="row">Build cost</th><td>192 routes in 15 to 21 s; 465 routes in 25 to 28 s. First visit to a component page: 215 kB gzip</td></tr>
+  </tbody>
+</table></div>
+<h3>Proposed structure</h3>
+<pre class="mermaid">flowchart LR
+  R[(npm registry<br>@hawiyah/* pinned)] --> G[guide/ own lockfile]
+  M[docs/components/*.md<br>docs/guides/*.md] --> C[content build step]
+  C --> G
+  G --> V{registry check}
+  V -->|pass| B[Angular build<br>AOT + static prerender]
+  B --> T[unit, Playwright, axe,<br>equivalence tests]
+  T --> P[GitHub Pages /hawiyah/]
+  R --> E[editor frame<br>published files via import map]
+  B --> E
+</pre>
+<ul>
+  <li><strong>Location.</strong> <code>guide/</code> at the repository root, outside the workspace globs, with its own lockfile. It depends on exact versions of the seven packages and nothing else from this repository except the Markdown content.</li>
+  <li><strong>Rendering.</strong> Angular CLI 22 with static output, client hydration, base href from <code>HAWIYAH_BASE_PATH</code>, a generated <code>404.html</code>. Routes carry the locale (<code>/ar/…</code>, <code>/en/…</code>). Direction and colour mode are reader choices applied by a small inline script before first paint. Old hash links are redirected.</li>
+  <li><strong>Honest render, made enforceable.</strong> Guide CSS may place and space things with tokens. A lint step fails on any selector that targets <code>.hw-*</code>, on raw colours and on physical properties. No server DOM shim and no skipped hydration, because both would hide package defects. Third-party engines stay behind the documented integration boundary (the code editor surface is one).</li>
+  <li><strong>Registry check in CI.</strong> Fails if any <code>@hawiyah/*</code> package comes from a link, a tarball, an override, an alias, a path import, or a version other than the pin, and compares installed integrity with the registry. It runs before the build and again before deploy. The prerender log is also scanned, because the build can exit 0 with server errors.</li>
+  <li><strong>Editor.</strong> Published files served unmodified through an import map in a sandboxed frame, the Angular linker applied at build time, examples precompiled, compilers loaded on first edit (Sucrase for JavaScript and JSX, the Vue compiler, TypeScript with the Angular transform). The status bar shows package, version and registry integrity.</li>
+  <li><strong>Tests.</strong> The guide gets its own unit suite (Vitest ran out of the box) and a Playwright suite against the static output under <code>/hawiyah/</code>, with axe, direction and reduced-motion checks. A new workflow runs package and guide checks on every push and pull request.</li>
+</ul>
+<h3>Package gaps the guide depends on</h3>
+<ul>
+  <li><strong>Server rendering and hydration</strong>: the eight components above, plus deterministic ids. Each fix needs a render and hydration test in the Angular package so it cannot regress.</li>
+  <li><strong>Stylesheet entry</strong>: the published <code>styles.css</code> imports the tokens package by bare name and cannot be loaded by a browser without a bundler. A flat published file fixes that and the 48-file import chain.</li>
+  <li><strong>Documentation shell</strong>: the layout primitives cannot yet lay out a documentation site without extra CSS (nothing is sticky, navigation does not collapse below 64rem), and neither ContentNavigation nor TreeView can serve as a cross-page sidebar because they have no link items. Link components also need Angular Router integration.</li>
+  <li><strong>Fragment links under a base path</strong>: the packaged skip link and ContentNavigation links resolve to the site root under <code>&lt;base href="/hawiyah/"&gt;</code>, which breaks skip-to-content on GitHub Pages (WCAG 2.4.1).</li>
+  <li><strong>Missing components</strong>: a code block with copy and syntax colour tokens, prose typography for long text, and a grouped search dialog.</li>
+  <li><strong>Fonts and motion</strong>: the allowed packages give no way to load IBM Plex Sans Arabic, and the generic motion tokens have no recorded Platforms Code source. Reduced motion is honoured: all 39 motion declarations in the published styles reset under it.</li>
+  <li><strong>Icons</strong>: 22 of the 38 icons the current guide uses are not shipped in the styles package, though all 38 match the pinned Hugeicons commit. They need adding to the package from that commit.</li>
+  <li><strong>Scale of guide-only CSS today</strong>: of 1,527 rules, 549 are page composition, 87 restyle package components, 252 imitate components the packages already ship, 384 cover needs no package meets, and 255 are dead.</li>
+  <li><strong>Templates</strong>: across the 17 templates, roughly a third of the visual blocks are guide-only. Most can use a component that already exists; the true gaps include a hero, a prose style for long text, a link list, a chat log, and a reasons step for Feedback.</li>
+</ul>
+<h3>Previewing unreleased package work</h3>
+<p>A separate workflow builds the guide against tarballs produced by <code>check:packages</code>, shows a persistent notice naming the commit, sets <code>noindex</code>, and uploads the result as a workflow artifact. It has no Pages permission, so it cannot reach the deployed site. The same build runs locally with one command. Release candidates can instead be published under the <code>next</code> tag, each with your approval, and the guide pinned to them on the branch.</p>
+<h3>Trusted publishing</h3>
+<ul>
+  <li><strong>One-time setup on npm, with your account:</strong> <code>npm trust github @hawiyah/&lt;name&gt; --file publish.yml --repo MohamedEmbarak/hawiyah --env npm --allow-publish --yes</code> for each of the seven packages. The first call asks for 2FA and offers to skip it for five minutes, which covers the rest. It needs npm 11.15 or later.</li>
+  <li><strong>A new configuration expires unless a publish succeeds within two days,</strong> so set it up immediately before the next release.</li>
+  <li><strong>Per release:</strong> pushing the tag starts <code>publish.yml</code>; the job waits in a GitHub environment named <code>npm</code> that lists you as required reviewer; one approval publishes all seven with provenance. No token and no 2FA prompts.</li>
+  <li><strong>Afterwards:</strong> set each package to require 2FA and disallow tokens, delete the <code>NPM_TOKEN</code> secret, and remove the token line from the workflow.</li>
+  <li><strong>Build hygiene in the same change:</strong> clean <code>dist</code> before building and compare the packed file list with a clean build. That closes the stale-asset problem found in 0.2.1.</li>
+</ul>
