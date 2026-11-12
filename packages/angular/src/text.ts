@@ -20,6 +20,8 @@ export class HwTexts {
   constructor(private readonly component: string) {}
   /** A required string: `value` when it is usable text, otherwise null. */
   need(name: string, value: string | null | undefined, when?: string): string | null { return usable(this.component, name, value, when) ? value! : null; }
+  /** Whether a required text or text function was supplied, without rendering it. A missing one is reported like the others. */
+  has(name: string, value: unknown, when?: string): boolean { return usable(this.component, name, value, when); }
   /** A required templated text: what the application's function returns for `args`, otherwise null. */
   call<A extends unknown[]>(name: string, get: ((...args: A) => string) | null | undefined, args: A, when?: string): string | null { return usable(this.component, name, get, when) && typeof get === 'function' ? get(...args) || null : null; }
 }

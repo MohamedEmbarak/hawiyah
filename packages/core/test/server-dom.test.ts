@@ -1,6 +1,8 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { createAccordionMotion } from '../src/accordion-motion.js';
 import { observeContentNavigation } from '../src/content-navigation.js';
+import { observeFieldValue } from '../src/field-value.js';
+import { observeFormReset } from '../src/form-reset.js';
 import { observeReadonlyChoice } from '../src/readonly-choice.js';
 import { observeTabOverflow } from '../src/tab-overflow.js';
 
@@ -45,6 +47,18 @@ it('guards a read-only choice when the input has no getRootNode', async () => {
   locked!.click(); await Promise.resolve();
   expect(first!.checked).toBe(true); expect(locked!.checked).toBe(false);
   expect(() => guard.destroy()).not.toThrow();
+});
+
+it('observes a form reset and a field value when the control has no getRootNode', async () => {
+  document.body.innerHTML = '<form><input name="x" value="initial"></form>';
+  const input = document.querySelector('input')!; const form = document.querySelector('form')!;
+  without(input, 'getRootNode');
+  const onReset = vi.fn(); const resets = observeFormReset(input, onReset); const value = observeFieldValue(input);
+  input.value = ''; input.dispatchEvent(new Event('input')); await Promise.resolve();
+  expect(input.dataset.hwFilled).toBe('false');
+  form.reset(); await Promise.resolve();
+  expect(onReset).toHaveBeenCalledTimes(1); expect(input.dataset.hwFilled).toBe('true');
+  expect(() => { resets.destroy(); value.destroy(); }).not.toThrow();
 });
 
 it('creates accordion motion when child collections are not iterable and getRootNode is missing', () => {

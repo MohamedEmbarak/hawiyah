@@ -5,6 +5,7 @@ import type { ComboboxEvent, Option, Orientation } from '@hawiyah/core';
 import { assignRef, cx, Field, text, useControllable, useFieldControl, useFieldValueRef, validity } from './shared.js';
 import type { FieldDecoration } from './shared.js';
 import { Button } from './forms.js';
+import { useFormReset } from './expanded-shared.js';
 
 export interface TabItem { value: string; label: ReactNode; content: ReactNode; disabled?: boolean }
 interface TabsBaseProps extends Omit<ComponentPropsWithRef<'div'>, 'defaultValue' | 'onChange'> {
@@ -173,7 +174,8 @@ interface ComboboxBaseProps extends Omit<ComponentPropsWithRef<'input'>, 'value'
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string, option?: Option) => void;
-  onInputChange?: (query: string) => void;
+  /** Called with the text for every input event the component accepted; not for selections, resets or application writes. */
+  onQueryChange?: (query: string) => void;
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -184,7 +186,7 @@ interface ComboboxBaseProps extends Omit<ComponentPropsWithRef<'input'>, 'value'
 }
 /** `requiredMessage` is the custom validity message of a required combobox without a selected option. */
 export type ComboboxProps = ComboboxBaseProps & ({ required?: false; requiredMessage?: string } | { required?: boolean; requiredMessage: string });
-function ComboboxControl({ options, value, defaultValue = '', onValueChange, onInputChange, open: controlledOpen, defaultOpen = false, onOpenChange, emptyMessage, getResultsMessage, requiredMessage, className, ref, onKeyDown, onFocus, onBlur, onClick, name, form, disabled, ...props }: Omit<ComboboxProps, keyof FieldDecoration>) {
+function ComboboxControl({ options, value, defaultValue = '', onValueChange, onQueryChange, open: controlledOpen, defaultOpen = false, onOpenChange, emptyMessage, getResultsMessage, requiredMessage, className, ref, onKeyDown, onFocus, onBlur, onClick, onInvalid, name, form, disabled, ...props }: Omit<ComboboxProps, keyof FieldDecoration>) {
   const copy = { empty: text('Combobox', 'emptyMessage', emptyMessage), results: text('Combobox', 'getResultsMessage', getResultsMessage) };
   const field = useFieldControl(props);
   const requiredText = field.required ? text('Combobox', 'requiredMessage', requiredMessage, 'required is set') : undefined;
@@ -192,6 +194,7 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
   const input = useRef<HTMLInputElement | null>(null);
   const presenceRef = useFieldValueRef((node: HTMLInputElement | null) => { input.current = node; assignRef(ref, node); });
   const [ancestorDisabled, setAncestorDisabled] = useState(false);
+  const [failed, setFailed] = useState(false);
   const blocked = () => disabled || props.readOnly || !!(input.current && isDisabled(input.current));
   const requestedValue = value ?? state.value;
   const selected = options.some(option => option.value === requestedValue && !option.disabled) ? requestedValue : '';
@@ -239,19 +242,19 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
       ? { ...current, query: nextLabel, activeIndex: -1 } : current);
   }, [options, selected]);
   useEffect(() => {
-    input.current?.setCustomValidity(validity('Combobox', 'requiredMessage', Boolean(field.required && !selected), requiredMessage));
+    const element = input.current;
+    if (!element) return;
+    element.setCustomValidity(validity('Combobox', 'requiredMessage', Boolean(field.required && !selected), requiredMessage));
+    if (element.validity.valid) setFailed(false);
   }, [field.required, selected, requiredMessage]);
-  useEffect(() => {
-    const formElement = input.current?.form;
-    let mounted = true;
-    const reset = (event: Event) => {
-      queueMicrotask(() => {
-        if (mounted && !event.defaultPrevented && value === undefined) setState(createComboboxState(latestOptions.current, defaultValue));
-      });
-    };
-    formElement?.addEventListener('reset', reset);
-    return () => { mounted = false; formElement?.removeEventListener('reset', reset); };
-  }, [value, defaultValue, form]);
+  useFormReset(input, () => {
+    const target = defaultValue;
+    if (target !== selected) onValueChange?.(target, latestOptions.current.find(option => option.value === target));
+    // Controlled: rebuilt from the prop, so the text and the hidden input show the application's value.
+    setState({ ...createComboboxState(latestOptions.current, value ?? target) });
+    if (open) onOpenChange?.(false);
+    setFailed(false);
+  });
   useEffect(() => {
     if (open && state.activeIndex >= 0) input.current?.ownerDocument.getElementById(`${field.id}-option-${state.activeIndex}`)?.scrollIntoView?.({ block: 'nearest' });
   }, [open, state.activeIndex, field.id]);
@@ -266,8 +269,8 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onI
     if (next.open !== open) onOpenChange?.(next.open);
   }
   return <div className="hw-combobox" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); }}>
-    <input {...props} {...field} aria-invalid={field['aria-invalid']} ref={presenceRef} form={form} disabled={disabled} className={cx('hw-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-readonly={props.readOnly || undefined} aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
-      value={query} onChange={event => { if (blocked()) { event.currentTarget.value = query; return; } dispatch({ type: 'input', query: event.currentTarget.value }); onInputChange?.(event.currentTarget.value); }}
+    <input {...props} {...field} aria-invalid={field['aria-invalid'] ?? (failed || undefined)} onInvalid={event => { onInvalid?.(event); setFailed(true); }} ref={presenceRef} form={form} disabled={disabled} className={cx('hw-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-readonly={props.readOnly || undefined} aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
+      value={query} onChange={event => { if (blocked()) { event.currentTarget.value = query; return; } dispatch({ type: 'input', query: event.currentTarget.value }); onQueryChange?.(event.currentTarget.value); }}
       onFocus={event => { onFocus?.(event); if (!event.defaultPrevented) dispatch({ type: 'open' }); }} onBlur={onBlur}
       onClick={event => { onClick?.(event); if (!event.defaultPrevented && !open) dispatch({ type: 'open' }); }}
       onKeyDown={event => {

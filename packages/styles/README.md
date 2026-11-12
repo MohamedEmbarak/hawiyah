@@ -69,6 +69,11 @@ compiler, or CSS-in-JS runtime.
 | Code | `hw-code-block` (`figure`; `data-wrap="true"` wraps lines), `hw-code-block-header`, `hw-code-block-title`, `hw-code-block-actions`, `hw-code-block-content` (`pre`), `hw-code`, `hw-kbd`; syntax roles `hw-code-token-comment`, `-punctuation`, `-keyword`, `-property`, `-string`, `-constant`, `-attribute`, `-tag`, `-type`, `-function`; [contract and accessibility notes](../../docs/code-and-prose.md) |
 | Prose | `hw-prose` on a container styles class-less content inside it and leaves classed elements and their contents alone; [mapping and limits](../../docs/code-and-prose.md#prose) |
 | Text tone | `hw-type` with `data-tone="muted|subtle"` |
+| Sliders | `hw-slider`, `hw-range-slider`; optional value text in `output.hw-slider-value` and `output.hw-range-slider-value` |
+| Tree view | `hw-tree-view`, `hw-tree-item`, `hw-tree-toggle` (a `button`, 1.75rem target); a flat tree sets `--hw-tree-depth` on each item and is indented by `--hw-tree-indent` per level |
+| File dropzone | `hw-file-dropzone`; `data-state="dragging|error"`; `data-hw-readonly="true"` on the root of a read-only zone, whose file input stays enabled with `aria-disabled="true"` |
+| Notifications | `hw-notification-list`; items carry `data-state="read|unread"` |
+| Alert dismiss | `hw-alert-dismiss` on the optional dismiss button, a direct child of `hw-alert` |
 | Portal header actions | `hw-portal-header-actions` in every adapter; shrinks and wraps its controls. The earlier `hw-portal-actions` is still styled for one release |
 
 Defaults are primary/medium buttons, comfortable density, light mode, and the
@@ -88,6 +93,14 @@ the semantic `--hw-*` variables documented by `@hawiyah/tokens`.
 
 Use genuine disabled controls where possible. An `aria-disabled` attribute changes
 presentation and communicates state but does not suppress click behavior by itself.
+A button with `aria-disabled="true"` stays in the tab order and keeps a focus
+indicator; the previous and next arrows of Carousel and Pagination use it at a
+bound, so that focus is not lost, and show their focus ring at full opacity.
+Regions that an adapter always renders (`hw-dialog-footer`, `hw-stat-trend`,
+`hw-empty-icon`, the footer of `hw-service-details`) take no space while empty.
+Angular wrapper elements (`hw-text-field`, `hw-table`, `hw-popover` and the
+others) get their box from zero-specificity rules in `layout.css`, which a
+class or a rule of the application overrides and which leave `hidden` alone.
 Keep inactive panels and closed tooltips/listboxes `hidden`; component display
 rules preserve that attribute. The stylesheet does not assign roles, manage focus,
 trap dialogs, announce errors, or implement keyboard navigation. Use native HTML

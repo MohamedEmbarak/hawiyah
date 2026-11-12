@@ -1,24 +1,29 @@
-import { booleanAttribute, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, Input, Output, signal, TemplateRef, ViewChild } from '@angular/core';
+import { booleanAttribute, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, Input, Output, signal, TemplateRef, ViewChild, type DoCheck } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { getDirection, getNextEnabledIndex, observeReadonlyChoice, prepareToastDismissFocus, type Direction, type Option } from '@hawiyah/core';
 import { HwExpandedValueControl } from './advanced-controls';
+import { controlAria, fieldEnd, groupFocus } from './field-templates';
 import { HwDialogComponent } from './overlays';
 import { HwObservedEmitter, injectIsBrowser } from './platform';
 import { injectId } from './ids';
 import { HwTexts } from './text';
 
-@Component({selector: 'hw-toggle-group', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwToggleGroupComponent), multi: true}], template: `<fieldset #group class="hw-toggle-group" [disabled]="disabled" [attr.data-hw-readonly]="readOnly || null" [attr.data-variant]="variant" [attr.aria-describedby]="descriptionIds" [attr.aria-invalid]="error ? true : null">@if (texts.need('label', label)) {<legend class="hw-label" [class.hw-sr-only]="labelHidden">{{ label }}</legend>}@for (option of options; track option.value) {@if (multiple) {<button type="button" class="hw-button" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [attr.aria-pressed]="selected(option.value)" (click)="toggle(option)" (blur)="touch()">{{ option.label }}</button>} @else {<label><input type="radio" [name]="name || controlId" [value]="option.value" [checked]="selected(option.value)" [readOnly]="readOnly" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [required]="required" (change)="toggle(option)" (blur)="touch()"><span>{{ option.label }}</span></label>}}@if (hint) {<p class="hw-hint" [id]="controlId + '-hint'">{{ hint }}</p>}@if (error) {<p class="hw-error" [id]="controlId + '-error'">{{ error }}</p>}</fieldset>@if (multiple) {@for (selected of submittedValues; track selected) {<input type="hidden" [name]="name" [value]="selected" [disabled]="disabled">}}`})
-export class HwToggleGroupComponent extends HwExpandedValueControl<string | string[]> {
-  /** Name of the group, rendered as its legend. Required. */ @Input({required: true}) override label = ''; protected readonly texts = new HwTexts('hw-toggle-group');
+@Component({selector: 'hw-toggle-group', standalone: true, providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwToggleGroupComponent), multi: true}], template: `<fieldset #group class="hw-toggle-group" [disabled]="disabled" [attr.data-hw-readonly]="readOnly || null" [attr.data-variant]="variant" ${controlAria} ${groupFocus}>@if (label) {<legend class="hw-label" [class.hw-sr-only]="labelHidden">{{ label }}@if (required && !multiple) {<span class="hw-required-marker" aria-hidden="true"> *</span>}</legend>}@if (multiple) {<input type="hidden" disabled [attr.form]="form">}@for (option of options; track option.value) {@if (multiple) {<button type="button" class="hw-button" data-variant="secondary" data-size="md" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [attr.aria-pressed]="selected(option.value)" (click)="toggle(option)" (blur)="touch()">{{ option.label }}</button>} @else {<label><input type="radio" [name]="name || controlId" [attr.form]="form" [value]="option.value" [checked]="selected(option.value)" [readOnly]="readOnly" [disabled]="disabled || option.disabled" [attr.aria-disabled]="readOnly || null" [required]="required" (invalid)="failed()" (change)="toggle(option)" (blur)="touch()">{{ option.label }}</label>}}${fieldEnd}@if (multiple) {@for (selected of submittedValues; track selected) {<input type="hidden" [name]="name" [attr.form]="form" [value]="selected" [disabled]="disabled">}}</fieldset>`})
+export class HwToggleGroupComponent extends HwExpandedValueControl<string | string[]> implements DoCheck {
+  /** Name of the group, rendered as its legend. Required unless aria-label or aria-labelledby names the group. */ @Input() override label = ''; protected readonly texts = new HwTexts('hw-toggle-group');
+  ngDoCheck() { if (!this.named) this.texts.need('label', this.label); }
   /** Hides the legend visually; it stays the accessible name of the group. For a toolbar whose option texts show the purpose. */ @Input({transform: booleanAttribute}) labelHidden = false;
-  override value: string | string[] = ''; @Input() options: readonly Option[] = []; @Input({transform: booleanAttribute}) multiple = false; @Input() variant: 'segmented' | 'outline' = 'segmented'; protected emptyValue() { return this.multiple ? [] : ''; }
+  override value: string | string[] = ''; @Input({required: true}) options: readonly Option[] = []; @Input({transform: booleanAttribute}) multiple = false; @Input() variant: 'segmented' | 'outline' = 'segmented'; protected emptyValue() { return this.multiple ? [] : ''; }
   get selectedValues() { return Array.isArray(this.value) ? this.value : this.value ? [this.value] : []; }
   @ViewChild('group') group?: ElementRef<HTMLFieldSetElement>;
   private guarded: HTMLInputElement[]=[]; private guards: ReturnType<typeof observeReadonlyChoice>[]=[];
   private readonly browser = injectIsBrowser();
   ngAfterViewChecked() { if (!this.browser) return; const inputs=Array.from(this.group?.nativeElement.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? []); if(inputs.length!==this.guarded.length || inputs.some((input,index)=>input!==this.guarded[index])) {this.guards.forEach(guard=>guard.destroy());this.guarded=inputs;this.guards=inputs.map(observeReadonlyChoice);} else this.guards.forEach(guard=>guard.refresh()); }
   ngOnDestroy(){this.guards.forEach(guard=>guard.destroy());}
+  // The empty value of a multiple group is [] and never '': a reset then reports an array, and an untouched group reports nothing.
+  override ngOnInit() { if (this.multiple && !Array.isArray(this.value)) this.value = this.selectedValues; super.ngOnInit(); }
+  protected override syncDom() { this.group?.nativeElement.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach(radio => { radio.checked = this.selected(radio.value); }); }
   get submittedValues(){return this.selectedValues.filter(value=>this.options.some(option=>option.value===value && !option.disabled));}
   selected(value: string) { return this.selectedValues.includes(value); }
   toggle(option: Option) { if (option.disabled) return; this.update(this.multiple ? this.selected(option.value) ? this.selectedValues.filter(value => value !== option.value) : [...this.selectedValues, option.value] : option.value); }

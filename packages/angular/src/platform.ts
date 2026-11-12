@@ -27,3 +27,13 @@ export class HwObservedEmitter<T> extends EventEmitter<T> {
     return subscription;
   }
 }
+
+/** Shows the files a control holds in its native file input, or empties it when there are none.
+ * A file list can only be assigned from a DataTransfer; false means the input could not take the files. */
+export function writeFiles(input: HTMLInputElement | undefined, files: readonly File[]): boolean {
+  if (!input) return true;
+  if (!files.length) { input.value = ''; return true; }
+  if (typeof DataTransfer === 'undefined') return false;
+  try { const transfer = new DataTransfer(); for (const file of files) transfer.items.add(file); input.files = transfer.files; return true; }
+  catch { return false; }
+}

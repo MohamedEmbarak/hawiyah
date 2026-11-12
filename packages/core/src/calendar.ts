@@ -78,6 +78,28 @@ export function isDateInRange(value: string, min?: string, max?: string): boolea
   } catch { return false; }
 }
 
+/** The constraint a typed date violates; '' when there is none. */
+export type DateViolation = '' | 'invalid' | 'unsupported' | 'unavailable';
+export interface DateViolationOptions {
+  min?: string;
+  max?: string;
+  calendar: CalendarSystem;
+  /** The application's predicate for dates that cannot be chosen. */
+  isDateDisabled?: (value: string) => boolean;
+}
+
+/** Names the first constraint an ISO date draft violates, in one order for every adapter: not a date
+ * ('invalid'), outside the range the calendar system can show ('unsupported'), outside `min` and `max`
+ * ('invalid'), refused by `isDateDisabled` ('unavailable'). An empty draft violates nothing; whether a
+ * value is required is the form's question. No text is chosen here. */
+export function getDateViolation(draft: string, options: DateViolationOptions): DateViolation {
+  if (draft === '') return '';
+  if (!isDateInRange(draft)) return 'invalid';
+  if (!isCalendarDateSupported(draft, options.calendar)) return 'unsupported';
+  if (!isDateInRange(draft, options.min, options.max)) return 'invalid';
+  return options.isDateDisabled?.(draft) === true ? 'unavailable' : '';
+}
+
 export function moveCalendarDate(value: string, amount: number, unit: 'day' | 'month' | 'year', calendar: CalendarSystem = 'gregory'): string {
   if (!Number.isInteger(amount)) throw new RangeError('Hawiyah: calendar movement must be an integer.');
   const current = toCalendar(date(value), calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar());

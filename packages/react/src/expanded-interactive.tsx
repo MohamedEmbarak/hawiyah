@@ -1,27 +1,30 @@
 import { cloneElement, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, ComponentPropsWithRef, CSSProperties, ReactElement, ReactNode } from 'react';
-import { getDirection, getNextEnabledIndex, observeReadonlyChoice, prepareToastDismissFocus } from '@hawiyah/core';
+import { getDirection, getNextEnabledIndex, hasText, observeReadonlyChoice, prepareToastDismissFocus } from '@hawiyah/core';
 import type { Option } from '@hawiyah/core';
 import { Button } from './forms.js';
 import { Dialog } from './interactive.js';
 import type { DialogProps } from './interactive.js';
-import { assignRef, cx, rootLabel, text, useControllable } from './shared.js';
-import type { RootName } from './shared.js';
+import { assignRef, cx, descriptionIds, requiredMarker, rootLabel, text, useControllable } from './shared.js';
+import type { FieldName, RootName } from './shared.js';
 import { useFormReset } from './expanded-shared.js';
 
-interface ToggleBase extends Omit<ComponentPropsWithRef<'fieldset'>, 'defaultValue' | 'onChange'> { options: readonly Option[]; label: ReactNode; name?: string; form?: string; readOnly?: boolean; variant?: 'segmented' | 'outline'; /** Hides the legend visually; it stays the accessible name of the group. */ labelHidden?: boolean }
-export interface SingleToggleGroupProps extends ToggleBase { multiple?: false; value?: string; defaultValue?: string; onValueChange?: (value: string) => void }
-export interface MultipleToggleGroupProps extends ToggleBase { multiple: true; value?: readonly string[]; defaultValue?: readonly string[]; onValueChange?: (value: string[]) => void }
+type ToggleBase = Omit<ComponentPropsWithRef<'fieldset'>, 'defaultValue' | 'onChange'> & FieldName & { options: readonly Option[]; hint?: ReactNode; error?: ReactNode; /** Applies to single selection: every radio is required. A multiple group is not constrained. */ required?: boolean; name?: string; form?: string; readOnly?: boolean; variant?: 'segmented' | 'outline'; /** Hides the legend visually; it stays the accessible name of the group. */ labelHidden?: boolean };
+export type SingleToggleGroupProps = ToggleBase & { multiple?: false; value?: string; defaultValue?: string; onValueChange?: (value: string) => void };
+export type MultipleToggleGroupProps = ToggleBase & { multiple: true; value?: readonly string[]; defaultValue?: readonly string[]; onValueChange?: (value: string[]) => void };
 export type ToggleGroupProps = SingleToggleGroupProps | MultipleToggleGroupProps;
 export function ToggleGroup(props: ToggleGroupProps) {
-  const { options, label, labelHidden = false, name, form, readOnly, variant = 'segmented', multiple, value, defaultValue, onValueChange, className, disabled, ref, ...native } = props;
+  const { options, label, labelHidden = false, hint, error, required, name, form, readOnly, variant = 'segmented', multiple, value, defaultValue, onValueChange: _onValueChange, className, disabled, ref, ...native } = props;
+  const legend = hasText(native['aria-label']) || hasText(native['aria-labelledby']) ? label : text('ToggleGroup', 'label', label);
   const group = useRef<HTMLFieldSetElement | null>(null);
   useEffect(() => { const guards = Array.from(group.current?.querySelectorAll<HTMLInputElement>('input[type="radio"]') ?? [], observeReadonlyChoice); return () => guards.forEach(guard => guard.destroy()); });
-  const id = useId(); const input = useRef<HTMLInputElement | null>(null); const [internal, setInternal] = useState<string | readonly string[]>(defaultValue ?? (multiple ? [] : '')); const current = value ?? internal;
-  const change = (next: string | string[]) => { if (disabled || readOnly) return; if (value === undefined) setInternal(next); if (props.multiple) props.onValueChange?.(next as string[]); else props.onValueChange?.(next as string); };
-  useFormReset(input, () => { if (value === undefined) setInternal(defaultValue ?? (multiple ? [] : '')); }, form);
+  const id = useId(); const empty = multiple ? [] : ''; const [failed, setFailed] = useState(false);
+  const [current, setCurrent] = useControllable<string | readonly string[]>(value, defaultValue ?? empty, next => { if (props.multiple) props.onValueChange?.([...next]); else props.onValueChange?.(next as string); });
+  const change = (next: string | string[]) => { if (disabled || readOnly) return; setFailed(false); setCurrent(next); };
+  // A reset is not a reader action: read-only and disabled groups reset too. The extra render writes `checked` back.
+  useFormReset(group, () => { setFailed(false); setCurrent(defaultValue ?? empty); });
   const values = typeof current === 'string' ? [current] : current;
-  return <fieldset {...native} ref={node => {group.current=node;assignRef(ref,node);}} data-hw-readonly={readOnly || undefined} className={cx('hw-toggle-group', className)} data-variant={variant} disabled={disabled}><legend className={labelHidden ? 'hw-label hw-sr-only' : 'hw-label'}>{label}</legend>{options.map(option => multiple ? <Button key={option.value} variant="secondary" aria-pressed={values.includes(option.value)} aria-disabled={readOnly || undefined} disabled={disabled || option.disabled} onClick={() => change(values.includes(option.value) ? values.filter(item => item !== option.value) : [...values, option.value])}>{option.label}</Button> : <label className="hw-choice" key={option.value}><input className="hw-radio" type="radio" name={name ?? id} form={form} value={option.value} readOnly={readOnly} aria-disabled={readOnly || undefined} disabled={option.disabled} checked={current === option.value} onChange={() => change(option.value)} />{option.label}</label>)}<input ref={input} type="hidden" form={form} disabled />{multiple && values.filter(item => options.some(option => option.value === item && !option.disabled)).map(item => <input key={item} type="hidden" name={name} form={form} value={item} disabled={disabled} />)}</fieldset>;
+  return <fieldset {...native} ref={node => {group.current=node;assignRef(ref,node);}} data-hw-readonly={readOnly || undefined} className={cx('hw-toggle-group', className)} data-variant={variant} disabled={disabled} aria-describedby={descriptionIds(native['aria-describedby'], hint ? `${id}-hint` : undefined, error ? `${id}-error` : undefined)} aria-invalid={native['aria-invalid'] ?? (error || failed ? true : undefined)}>{hasText(legend) && <legend className={labelHidden ? 'hw-label hw-sr-only' : 'hw-label'}>{legend}{required && !multiple && requiredMarker}</legend>}{multiple && <input type="hidden" form={form} disabled />}{options.map(option => multiple ? <Button key={option.value} variant="secondary" aria-pressed={values.includes(option.value)} aria-disabled={readOnly || undefined} disabled={disabled || option.disabled} onClick={() => change(values.includes(option.value) ? values.filter(item => item !== option.value) : [...values, option.value])}>{option.label}</Button> : <label key={option.value}><input type="radio" name={name ?? id} form={form} value={option.value} required={required} readOnly={readOnly} aria-disabled={readOnly || undefined} disabled={option.disabled} checked={current === option.value} onInvalid={() => setFailed(true)} onChange={() => change(option.value)} />{option.label}</label>)}{hint && <p className="hw-hint" id={`${id}-hint`}>{hint}</p>}{error && <p className="hw-error" id={`${id}-error`}>{error}</p>}{multiple && values.filter(item => options.some(option => option.value === item && !option.disabled)).map(item => <input key={item} type="hidden" name={name} form={form} value={item} disabled={disabled} />)}</fieldset>;
 }
 export interface PopoverProps extends Omit<ComponentPropsWithRef<'div'>, 'title'> { title: ReactNode; trigger: ReactElement<ButtonHTMLAttributes<HTMLButtonElement>>; open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void }
 export function Popover({ title, trigger, open: controlled, defaultOpen = false, onOpenChange, children, className, ref, ...props }: PopoverProps) {

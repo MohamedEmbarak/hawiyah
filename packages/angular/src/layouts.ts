@@ -1,4 +1,5 @@
-import { booleanAttribute, Component, Directive, type DoCheck, ElementRef, HostAttributeToken, inject, Input, Renderer2 } from '@angular/core';
+import { booleanAttribute, Component, Directive, type DoCheck, ElementRef, inject, Input } from '@angular/core';
+import { injectHostAttribute } from './host-attributes';
 import { bindAngularFragmentLinks } from './fragment-links';
 import { HwTexts } from './text';
 import { NgStyle } from '@angular/common';
@@ -47,28 +48,16 @@ export class HwAspectRatioComponent extends HwLayout { override ratio = 16 / 9; 
 export class HwSectionComponent extends HwLayout implements DoCheck {
   /** Optional name of the section. On hw-section it also makes the host a region; a native section needs no role. */
   @Input() label = '';
-  private readonly host = inject(ElementRef).nativeElement as Element;
-  private readonly renderer = inject(Renderer2);
-  private readonly native = this.host.tagName.toLowerCase() === 'section';
+  private readonly native = (inject(ElementRef).nativeElement as Element).tagName.toLowerCase() === 'section';
   // aria-label and role are not host bindings: a host binding owns its attribute and would remove what the
   // application binds there. The component writes them only while label is given and puts back what the
   // application had, whether it was written as an attribute or bound.
-  private readonly authored: Record<string, string | null> = {'aria-label': inject(new HostAttributeToken('aria-label'), {optional: true}), role: inject(new HostAttributeToken('role'), {optional: true})};
-  private readonly written: Record<string, string | undefined> = {};
+  private readonly name = injectHostAttribute('aria-label');
+  private readonly role = injectHostAttribute('role');
   // Runs after the bindings of the application on this element, in every pass, so label keeps its place.
   ngDoCheck(): void {
-    this.own('aria-label', this.label || null);
-    this.own('role', this.label && !this.native ? 'region' : null);
-  }
-  private own(name: string, wanted: string | null): void {
-    const written = this.written[name];
-    if (wanted === null && written === undefined) return;
-    const current = this.host.getAttribute(name);
-    // A value that is neither what was written nor what is wanted came from the application since the last pass.
-    if (current !== written && current !== wanted) this.authored[name] = current;
-    if (wanted !== null) { if (current !== wanted) this.renderer.setAttribute(this.host, name, wanted); this.written[name] = wanted; return; }
-    if (current === written) { const authored = this.authored[name]; if (authored === null) this.renderer.removeAttribute(this.host, name); else this.renderer.setAttribute(this.host, name, authored); }
-    delete this.written[name];
+    this.name.set(this.label || null);
+    this.role.set(this.label && !this.native ? 'region' : null);
   }
 }
 /** Three regions are always rendered and the stylesheet hides an empty one: projection cannot be detected.

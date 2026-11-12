@@ -209,6 +209,8 @@
 .hw-dialog-header :where(h1, h2, h3) { margin: 0; color: var(--hw-color-text); font-size: var(--hw-text-xl); font-weight: var(--hw-weight-semibold); line-height: var(--hw-leading-heading); }
 .hw-dialog-body { padding: 0 var(--hw-space-6) var(--hw-space-6); }
 .hw-dialog-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--hw-space-3); padding: var(--hw-space-4) var(--hw-space-6); border-block-start: 1px solid var(--hw-color-border); background: var(--hw-color-surface-muted); }
+/* A footer region that is always rendered (Angular projection) takes no space while it is empty. */
+.hw-dialog-footer:empty { display: none; }
 @keyframes hw-dialog-in { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: none; } }
 .hw-combobox { position: relative; min-inline-size: 0; }
 .hw-listbox { position: absolute; z-index: var(--hw-z-popover); inset-inline: 0; inset-block-start: calc(100% + var(--hw-space-2)); max-block-size: 18rem; overflow: auto; overscroll-behavior: contain; margin: 0; padding: var(--hw-space-1); border: 1px solid var(--hw-color-border); border-radius: var(--hw-radius-md); background: var(--hw-color-surface-raised); color: var(--hw-color-text); box-shadow: var(--hw-shadow-md); list-style: none; }
@@ -238,9 +240,12 @@
 .hw-alert[data-tone='neutral'] { --hw-tone: var(--hw-color-text-muted); --hw-tone-bg: var(--hw-color-canvas); }
 .hw-alert-content { flex: 1; min-inline-size: 0; }
 .hw-alert a { color: inherit; text-underline-offset: 0.2em; }
+/* The dismiss button keeps its size and does not make a one-line alert taller. */
+.hw-alert > .hw-alert-dismiss { flex: none; margin-block: calc(-1 * var(--hw-space-2)); margin-inline-end: calc(-1 * var(--hw-space-2)); }
 .hw-chip { gap: var(--hw-space-2); min-block-size: 2rem; padding-inline: var(--hw-space-3) var(--hw-space-2); border-color: var(--hw-color-border); border-radius: var(--hw-radius-md); }
 .hw-chip button { display: inline-grid; place-items: center; inline-size: 1.5rem; block-size: 1.5rem; padding: 0; border: 0; border-radius: var(--hw-radius-sm); background: transparent; color: inherit; font: inherit; cursor: pointer; }
-.hw-chip button:hover { background: var(--hw-color-border); }
+.hw-chip button:hover:not(:disabled) { background: var(--hw-color-border); }
+.hw-chip button:disabled { color: var(--hw-color-on-disabled); cursor: not-allowed; }
 .hw-avatar { display: inline-grid; flex: none; place-items: center; inline-size: 2.75rem; block-size: 2.75rem; overflow: hidden; border: 1px solid var(--hw-color-border); border-radius: var(--hw-radius-full); background: var(--hw-color-primary-subtle); color: var(--hw-color-primary-text); font-size: var(--hw-text-sm); font-weight: var(--hw-weight-semibold); }
 .hw-avatar img, img.hw-avatar { inline-size: 2.75rem; block-size: 2.75rem; object-fit: cover; }
 .hw-divider { inline-size: 100%; block-size: 0; margin-block: var(--hw-space-5); border: 0; border-block-start: 1px solid var(--hw-color-border); }
@@ -272,13 +277,15 @@
 .hw-timeline > li { position: relative; padding-inline-start: var(--hw-space-8); padding-block-end: var(--hw-space-6); }
 .hw-timeline > li::before { content: ''; position: absolute; inset-inline-start: 0.3125rem; inset-block-start: 0.6rem; inline-size: 0.625rem; block-size: 0.625rem; border: 2px solid var(--hw-color-surface); border-radius: 50%; background: var(--hw-color-border-strong); box-shadow: 0 0 0 1px var(--hw-color-border-strong); }
 .hw-timeline > li:not(:last-child)::after { content: ''; position: absolute; inset-inline-start: 0.5625rem; inset-block: 1.5rem 0.3rem; inline-size: 1px; background: var(--hw-color-border); }
-.hw-timeline > li[data-state='complete']::before, .hw-timeline > li[data-state='active']::before { background: var(--hw-color-primary); box-shadow: 0 0 0 1px var(--hw-color-primary); }
+.hw-timeline > li[data-state='complete']::before { background: var(--hw-color-primary); box-shadow: 0 0 0 1px var(--hw-color-primary); }
 .hw-timeline time { display: block; color: var(--hw-color-text-muted); font-size: var(--hw-text-xs); }
 .hw-empty { display: grid; justify-items: center; gap: var(--hw-space-3); padding: var(--hw-space-12) var(--hw-space-6); border: 1px solid var(--hw-color-border); border-radius: var(--hw-radius-lg); background: var(--hw-color-surface); color: var(--hw-color-text); text-align: center; }
 .hw-empty > svg { inline-size: 2.5rem; block-size: 2.5rem; padding: var(--hw-space-4); border-radius: var(--hw-radius-xl); background: var(--hw-color-surface-muted); color: var(--hw-color-text-muted); box-sizing: content-box; }
 /* React and Vue wrap the icon in a decorative span; that wrapper becomes the same tile. */
 .hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child) { display: grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; padding: var(--hw-space-4); border-radius: var(--hw-radius-xl); background: var(--hw-color-surface-muted); color: var(--hw-color-text-muted); box-sizing: content-box; }
 .hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child) > :is(svg, .hw-icon) { inline-size: 100%; block-size: 100%; }
+/* Same selector as the tile, so an empty icon region (Angular renders it always) is hidden. */
+.hw-empty > :is(.hw-empty-icon, span[aria-hidden='true']:first-child):empty { display: none; }
 .hw-empty :where(h2, h3, p) { max-inline-size: 34rem; margin: 0; }
 .hw-empty :where(h2, h3) { font-size: var(--hw-text-lg); font-weight: var(--hw-weight-semibold); }
 .hw-empty p { color: var(--hw-color-text-muted); font-size: var(--hw-text-sm); }
@@ -345,6 +352,7 @@ progress.hw-progress:indeterminate::-moz-progress-bar { background: transparent;
 @media (forced-colors: active) {
   .hw-button, .hw-badge, .hw-chip, .hw-avatar { border: 1px solid ButtonText; }
   .hw-button:where(:disabled, [aria-disabled='true']) { border-color: GrayText; color: GrayText; }
+  .hw-chip button:disabled { color: GrayText; }
   .hw-tab[aria-selected='true']::after { background: Highlight; }
   .hw-option[aria-selected='true'], .hw-pagination [aria-current='page'] { outline: 2px solid Highlight; outline-offset: -2px; }
   .hw-switch { appearance: auto; }

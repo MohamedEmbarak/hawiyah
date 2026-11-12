@@ -66,6 +66,12 @@ build and consume these APIs through the workspace until an npm release is annou
   single-page gaps become direct page numbers. It never allocates every page.
 
 - `normalizeDigits(value)` converts Arabic-Indic/Eastern Arabic digits to ASCII.
+- `normalizePinInput(raw, length, previous?, inputType?)` returns the digits of a
+  one-time code: digits are normalized, every other character is removed, and
+  only then is the result limited to `length`, so a pasted `123 456` keeps six
+  digits. When a typed character (`inputType === 'insertText'`) would exceed the
+  length and `previous` is given, `previous` is returned. Adapters therefore set
+  no native `maxlength` on the input.
 - `clampRange([lower,upper], min, max, changed:'lower'|'upper')` clamps the moved
   thumb to its peer; finite ordered bounds are required.
 - `sortRows(rows, key, 'ascending'|'descending', locale)` returns a stable
@@ -81,6 +87,12 @@ build and consume these APIs through the workspace until an npm release is annou
   pinned reference for all numeric Hijri values, including dates where ICU differs.
 - `isCalendarDateSupported(iso, calendar?)` checks conversion support;
   `isDateInRange(iso,min?,max?)` validates actual Gregorian dates and bounds.
+- `getDateViolation(draft, {calendar, min?, max?, isDateDisabled?}): DateViolation`
+  names the first constraint a typed ISO date violates, in one order for every
+  adapter: `'invalid'` (not a date), `'unsupported'` (outside the range the
+  calendar system can show), `'invalid'` (outside `min` and `max`),
+  `'unavailable'` (`isDateDisabled(draft)` returns `true`), else `''`. An empty
+  draft returns `''`. It chooses no text and uses neither Intl nor the DOM.
 - `moveCalendarDate(iso, amount, 'day'|'month'|'year', calendar?)` uses calendar
   math and clamps to the destination month's actual last day. Unsupported Hijri
   movement throws RangeError instead of silently using another calendar.
@@ -233,6 +245,110 @@ updates, and destroy before removal. It prevents activation when `readOnly` or
 `aria-disabled="true"` is set and preserves radio peers without rendering DOM.
 Adapters install it automatically; it does not make a disabled field focusable.
 Where the input has no `getRootNode` (a server DOM) the owner document is used.
+After a native form reset it reads the reset state through `observeFormReset`.
+
+## Native form reset
+
+`observeFormReset(control: Element, onReset: () => void)` returns `{ destroy() }`.
+It calls `onReset` after a native reset of the form that owns `control`, once
+the browser has reset the controls, and never for a reset that a listener
+prevented or after `destroy()`.
+
+- The owning form is resolved when the event arrives: `control.form` for an
+  `input`, `select`, `textarea`, `button` or `output`; otherwise the form of the
+  first `input`, `select` or `textarea` inside `control`; otherwise the closest
+  `form` ancestor. The `form` attribute, a later association and a moved
+  control are followed without a new observer. Resets of other forms are ignored.
+- Timing: a reset started from script (`form.reset()`, a scripted click) is
+  reported in the next microtask. A reset the reader activates is still being
+  dispatched in that microtask, before the browser has reset the controls; it is
+  reported before the next paint (the first of `requestAnimationFrame` and a
+  zero timeout).
+- One capture listener is added at the control's root: the document, the shadow
+  root of a shadow tree, or the root of a tree that is not connected yet
+  together with the document. A DOM that cannot listen yields an observer that
+  does nothing.
+
+`sameValue(a, b)` is `Object.is(a, b)`, or two arrays of equal length whose
+entries are pairwise `Object.is`. Adapters use it to notify the application
+only when a reset changed the value. `observeFieldValue` and
+`observeReadonlyChoice` use `observeFormReset` themselves.
+
+## Type-ahead
+
+`createTypeahead({timeout = 500}?)` returns `{ next(key, labels, current,
+isDisabled?), reset() }` for a list with roving focus (Menu, TreeView).
+
+- `next` folds `key` with `normalizeSearch`, appends it to the typed text and
+  restarts the timer that clears the text `timeout` milliseconds after the last
+  key. A key that folds to nothing returns `-1` and changes nothing.
+- When every typed character is the same, the search uses that one character,
+  so repeating a letter cycles through the entries that start with it.
+- The search starts at the entry after `current` (`-1` starts at the first),
+  wraps, skips entries for which `isDisabled(index)` is true, and returns the
+  first index whose folded label starts with the typed text, or `-1`.
+- `labels` are the visible texts in visual order; in a tree, the visible nodes.
+  The caller moves focus and calls `preventDefault()` only for a result of 0 or
+  more, and calls `reset()` when the list closes or is destroyed.
+- `isTypeaheadKey({key, ctrlKey?, metaKey?, altKey?})` is true for one
+  character other than a space without Ctrl, Meta or Alt. Callers return first
+  while `event.isComposing`.
+
+An instance holds no DOM reference and starts its timer only inside `next`, so
+it may be created during server rendering. `normalizeSearch` is unchanged.
+
+## File selection
+
+- `evaluateFileSelection(files, {accept?, multiple?, maxSize?}?)` returns
+  `{accepted, rejected, reasons}` for one batch of chosen or dropped files, where
+  `reasons[i]` (`'count' | 'type' | 'size'`) belongs to `rejected[i]` and
+  `rejected` keeps the order given. More than one file without `multiple`
+  rejects every file with `'count'`. Otherwise a file is rejected with `'type'`
+  when it does not match `accept`, else with `'size'` when `maxSize` is a finite
+  number above 0 and the file is larger. `accepted` is a copy of the batch when
+  nothing was rejected and empty otherwise: a batch is accepted whole or not at
+  all. Files are any objects with `name`, `type` and `size`.
+- `matchesFileAccept(file, accept)` compares without regard to case: `.ext`
+  with the end of the file name, `type/*` with the start of the MIME type, any
+  other token with the whole MIME type. Tokens are separated by commas and
+  trimmed; an empty list matches every file.
+- `isFileDrag(transfer)` is true when `transfer.types` contains `'Files'`.
+  A dropzone cancels `dragover` for such drags only.
+
+## Focus after a removal
+
+`prepareRemovalFocus(container, control, {item, control, fallback?})` keeps
+keyboard focus when a control removes its own item (a chip, a tag, a
+notification). Call it at activation, before the item is removed, and call the
+returned function once after the render that removed it.
+
+- `item` is a selector evaluated on `container` for the items; the innermost
+  one that contains the control is the item being removed. `control` is a
+  selector evaluated on an item for the control that receives focus.
+- The returned function does nothing unless focus was on the control at
+  activation, the control is now gone, disabled or `aria-disabled`, and focus
+  is on the document body or inside the removed item. Focus placed elsewhere in
+  the meantime is left alone.
+- Focus then goes to the control of the next item, else of the previous ones,
+  nearest first, skipping controls that are disconnected, disabled,
+  `aria-disabled` or inside `[hidden]` or `[inert]`; else to `fallback` when it
+  is connected (it must be focusable, for example with `tabindex="-1"`).
+- It never throws and never scrolls. `prepareToastDismissFocus` remains the
+  helper of ToastRegion.
+
+## Portal branch headings
+
+`getPortalBranchSummary(target, scope)` returns the `summary` that is, or
+contains, `target` when its parent is `details[data-hw-portal-branch]` inside
+`scope`, and `null` otherwise. PortalHeader uses it so that a press on a branch
+heading does not close the open branch before the click arrives.
+
+## Shared value types
+
+- `FeedbackValue` is `{ helpful: boolean | null; comment: string }`; `helpful`
+  is `null` until the reader has chosen.
+- `ConsentChoice` is `'accepted' | 'rejected'`, the payload of the consent
+  action of CookieConsent.
 
 ## Responsive tab measurement
 

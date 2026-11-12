@@ -80,6 +80,32 @@ The navigation-list helpers (`getNavigationItemKind`, `getNavigationGroupEntries
 `isNavigationGroupOpen`, `getNavigationCurrentId`, `revealNavigationCurrent`)
 hold the rules NavigationDrawer and SideNavigation share. See [API.md](./API.md).
 
+Milestone helpers shared by the four adapters, each documented in [API.md](./API.md):
+
+| Helper | Purpose |
+| --- | --- |
+| `observeFormReset(control, onReset)`, `sameValue(a, b)` | One listener for a native form reset, reported after the browser has reset the controls; the comparison behind "notify only when the value changed". |
+| `createTypeahead(options?)`, `isTypeaheadKey(event)` | Type-ahead for lists with roving focus (Menu, TreeView). |
+| `evaluateFileSelection(files, rules?)`, `matchesFileAccept(file, accept)`, `isFileDrag(transfer)` | One rule for a batch of chosen or dropped files: accepted whole or not at all, with a reason per rejected file. |
+| `prepareRemovalFocus(container, control, options)` | Focus goes to the neighbouring item when a control removes its own item. |
+| `getDateViolation(draft, options)` | The constraint a typed date violates, in one order for every adapter. |
+| `normalizePinInput(raw, length, previous?, inputType?)` | Digits of a one-time code, normalized before the length is applied. |
+| `getPortalBranchSummary(target, scope)` | The branch heading a press landed on in PortalHeader. |
+| `FeedbackValue`, `ConsentChoice` | Value types shared by Feedback and CookieConsent. |
+
+```ts
+import { observeFormReset, sameValue } from '@hawiyah/core';
+
+// In the browser, after the control is mounted.
+const resets = observeFormReset(input, () => {
+  if (!sameValue(value, target)) setValue(target);
+});
+// resets.destroy() removes the listener.
+```
+
+None of these helpers holds text or chooses a locale, and none reads a browser
+global when the module is evaluated.
+
 Project code is licensed under Apache-2.0. Bundled third-party data retains its
 documented MIT license. The package is published on npm as a pre-1.0 release, so
 a minor version may still change its API. The framework adapters depend on it;

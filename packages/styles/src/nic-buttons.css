@@ -72,9 +72,12 @@
   border-color: var(--hw-button-disabled-border);
   outline: var(--hw-button-disabled-outline);
 }
+/* A button that is unavailable through aria-disabled stays in the tab order and keeps a focus indicator. */
+.hw-button[aria-disabled='true']:focus-visible { outline: 2px solid var(--hw-button-focus-color); outline-offset: 2px; }
 /* Retain a visible keyboard indicator even while the key is held down. */
 @media (forced-colors: active) {
   .hw-button { border: 1px solid ButtonText; }
   .hw-button:focus-visible:not(:disabled, [aria-disabled='true']) { outline: 2px solid Highlight; outline-offset: 2px; }
   .hw-button:is(:disabled, [aria-disabled='true']) { border-color: GrayText; color: GrayText; }
+  .hw-button[aria-disabled='true']:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
 }

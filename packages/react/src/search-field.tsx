@@ -36,7 +36,7 @@ export function SearchField({value, defaultValue = '', onValueChange, clearLabel
     const cleanup = typeof ref === 'function' ? ref(node) : (assignRef(ref, node), undefined);
     return () => {input.current = null;if(typeof cleanup === 'function')cleanup();else assignRef(ref,null);};
   }, [ref]);
-  useFormReset(input, () => {close();composing.current=false;if(value === undefined)setText(defaultValue);}, props.form);
+  useFormReset(input, () => {close();composing.current=false;setText(defaultValue);});
   useEffect(() => {setActive(-1);}, [text]);
   useEffect(() => {if(value !== expectedValue.current)close();expectedValue.current=undefined;}, [value]);
   useEffect(close, [suggestionSignature, maxSuggestions, props.readOnly, props.disabled]);

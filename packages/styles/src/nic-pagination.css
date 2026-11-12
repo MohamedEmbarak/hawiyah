@@ -32,6 +32,8 @@
 .hw-pagination .hw-button:is(:disabled, [aria-disabled='true']) { color: var(--hw-color-on-disabled); background: transparent; border-color: transparent; opacity: .5; cursor: not-allowed; }
 .hw-pagination .hw-pagination-gap-trigger[aria-disabled='true'] { color: var(--hw-color-on-disabled); opacity: .5; cursor: not-allowed; }
 .hw-pagination :is(.hw-pagination-item, .hw-pagination-arrow, .hw-pagination-gap-trigger, [data-hw-page]):focus-visible:not(:disabled, [aria-disabled='true']) { outline: 2px solid var(--hw-color-focus-contrast); outline-offset: 2px; background: var(--hw-color-surface-muted); }
+/* An arrow at the first or last page, and an unavailable gap trigger, stay focusable: the ring is drawn at full opacity. */
+.hw-pagination :is(.hw-pagination-arrow, .hw-pagination-gap-trigger)[aria-disabled='true']:focus-visible { outline: 2px solid var(--hw-color-focus-contrast); outline-offset: 2px; opacity: 1; }
 .hw-pagination-arrow::before { content: ''; inline-size: 18px; block-size: 18px; background: currentColor; mask: url('./assets/icons/arrow-right-01.svg') center / contain no-repeat; transform: scaleX(var(--_hw-inline-sign, 1)); }
 .hw-pagination-arrow[data-hw-previous]::before { transform: scaleX(calc(-1 * var(--_hw-inline-sign, 1))); }
 .hw-pagination-gap { position: static; }
@@ -66,7 +68,8 @@
 }
 @media (forced-colors: active) {
   .hw-pagination-arrow::before { background: ButtonText; forced-color-adjust: none; }
-  .hw-pagination-arrow:disabled::before { background: GrayText; }
+  .hw-pagination-arrow:is(:disabled, [aria-disabled='true'])::before { background: GrayText; }
+  .hw-pagination :is(.hw-pagination-arrow, .hw-pagination-gap-trigger)[aria-disabled='true']:focus-visible { outline-color: Highlight; }
   .hw-pagination [aria-current='page'] { outline: 2px solid Highlight; outline-offset: -2px; }
   .hw-pagination [aria-current='page']::after { background: Highlight; forced-color-adjust: none; }
   .hw-pagination-menu { border-color: CanvasText; }

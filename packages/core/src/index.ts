@@ -1,8 +1,12 @@
 import { requireLocale } from './locale.js';
+import { normalizeSearch } from './search.js';
 
-export { getCalendarMonth, moveCalendarDate, isDateInRange, formatCalendarDate } from './calendar.js';
-export type { CalendarSystem, CalendarDay, CalendarMonth, CalendarMonthOptions, CalendarDateFormatOptions } from './calendar.js';
-export { normalizeDigits, clampRange, sortRows } from './controls.js';
+export { normalizeSearch } from './search.js';
+export { createTypeahead, isTypeaheadKey } from './typeahead.js';
+export type { Typeahead, TypeaheadOptions } from './typeahead.js';
+export { getCalendarMonth, moveCalendarDate, isDateInRange, formatCalendarDate, getDateViolation } from './calendar.js';
+export type { CalendarSystem, CalendarDay, CalendarMonth, CalendarMonthOptions, CalendarDateFormatOptions, DateViolation, DateViolationOptions } from './calendar.js';
+export { normalizeDigits, normalizePinInput, clampRange, sortRows } from './controls.js';
 export { SaudiUmalquraCalendar, getCalendarDateParts, convertCalendarDate, isCalendarDateSupported, UMALQURA_MIN_DATE, UMALQURA_MAX_DATE } from './saudi-calendar.js';
 export type { CalendarDateParts } from './saudi-calendar.js';
 
@@ -12,21 +16,18 @@ export type { AccordionMotion } from './accordion-motion.js';
 export type Direction = 'ltr' | 'rtl';
 export type Orientation = 'horizontal' | 'vertical';
 
+/** The value of Feedback. `helpful` is null until the reader has chosen. */
+export interface FeedbackValue {
+  helpful: boolean | null;
+  comment: string;
+}
+/** The choice CookieConsent reports through its consent action. */
+export type ConsentChoice = 'accepted' | 'rejected';
+
 export interface Option {
   value: string;
   label: string;
   disabled?: boolean;
-}
-
-/** Fold search text only; never apply to user-visible labels or stored values. */
-export function normalizeSearch(value: string): string {
-  return value.normalize('NFKD')
-    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/gu, '')
-    .replace(/[\u0622\u0623\u0625\u0671]/gu, '\u0627')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/gu, ' ');
 }
 
 export function filterOptions<T extends Option>(options: readonly T[], query: string): T[] {
@@ -201,6 +202,8 @@ export function restoreFocus(element: HTMLElement | null | undefined): boolean {
 }
 export { observeFieldValue } from './field-value.js';
 export { observeReadonlyChoice } from './readonly-choice.js';
+export { observeFormReset, sameValue } from './form-reset.js';
+export type { FormResetObserver } from './form-reset.js';
 export type { FieldValueElement, FieldValueObserver } from './field-value.js';
 
 export * from './site-verification.js';
@@ -214,12 +217,17 @@ export type { ContentNavigationItem, ContentNavigationOptions, ContentNavigation
 export { getSearchSuggestions, requestSearchDialogClose } from './search-suggestions.js';
 export type { SearchSuggestionMatch, SearchSuggestionSegment } from './search-suggestions.js';
 export { prepareToastDismissFocus } from './toast-focus.js';
+export { prepareRemovalFocus } from './removal-focus.js';
+export type { RemovalFocusOptions } from './removal-focus.js';
+export { getPortalBranchSummary } from './portal-branch.js';
 export { hasText, requireText, resetTextWarnings, formatTextTemplate } from './text.js';
 export { getFragmentHref, getFragmentId, bindFragmentLink } from './fragment-link.js';
 export type { FragmentLink, FragmentLinkOptions } from './fragment-link.js';
 
 export { fileUploadProgress } from './file-upload-state.js';
 export type { FileUploadItem, FileUploadLabels } from './file-upload-state.js';
+export { evaluateFileSelection, matchesFileAccept, isFileDrag } from './file-selection.js';
+export type { FileSelectionRules, FileRejectionReason, FileSelectionResult } from './file-selection.js';
 
 export { copyText, createCopyFeedback, copyFeedbackIcons, COPY_FEEDBACK_DURATION } from './copy.js';
 export type { CopyStatus, CopyFeedbackState, CopyResult, CopyFeedbackOptions, CopyFeedback } from './copy.js';

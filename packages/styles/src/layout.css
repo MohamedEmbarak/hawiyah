@@ -70,7 +70,8 @@
 .hw-app-shell-main { padding: clamp(1rem, 3vw, 3rem); }
 .hw-page-header { --hw-layout-align: start; --hw-layout-justify: space-between; display: flex; flex-wrap: var(--hw-layout-wrap); align-items: var(--hw-layout-align); justify-content: var(--hw-layout-justify); color: var(--hw-color-text); }
 .hw-page-header-content, .hw-page-header > :first-child:not(.hw-page-header-actions) { flex: 1 1 16rem; min-inline-size: 0; }
-.hw-page-header :is(h1, h2) { margin: 0; font-size: clamp(var(--hw-text-xl), 3vw, var(--hw-text-3xl)); font-weight: var(--hw-weight-semibold); line-height: var(--hw-leading-heading); }
+/* The title keeps its typography at any heading level; headings in projected content are not restyled. */
+.hw-page-header :is(h1, h2), .hw-page-header :where(.hw-page-header-main > div, .hw-page-header-content) > :is(h3, h4, h5, h6) { margin: 0; font-size: clamp(var(--hw-text-xl), 3vw, var(--hw-text-3xl)); font-weight: var(--hw-weight-semibold); line-height: var(--hw-leading-heading); }
 .hw-page-header p { max-inline-size: 65ch; margin-block: var(--hw-space-2) 0; color: var(--hw-color-text-muted); }
 .hw-page-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--hw-space-3); }
 @media (min-width: 40rem) {
@@ -118,7 +119,7 @@
   }
 }
 
-/* Adapters may group the body for composition; display:contents preserves the
+/* Authored markup may group the body for composition; display:contents preserves the
    same outer grid while the landmarks themselves remain real elements. */
 .hw-app-shell-body { display: contents; }
 .hw-app-shell-body > .hw-app-shell-sidebar { grid-area: sidebar; }
@@ -128,7 +129,24 @@
 .hw-page-header-main > :first-child { flex: 1 1 16rem; min-inline-size: 0; }
 .hw-page-header > :is(.hw-breadcrumb, nav) { flex-basis: 100%; }
 /* Angular hosts. A custom element is an inline box unless a rule says otherwise; these rules have
-   zero specificity. Layout primitives carry their class on the host, which sets display where the
-   class does. Page header, alert and the cards keep an inner element and need a box around it. */
-:where(hw-container, hw-section, hw-aspect-ratio, hw-page-header, hw-alert) { display: block; }
+   zero specificity. Layout primitives and presentational components carry their class on the host,
+   which sets display where the class does, and need no rule here. Page header and the cards keep an
+   inner element and need a box around it. */
+:where(hw-container, hw-section, hw-aspect-ratio, hw-page-header) { display: block; }
 :where(hw-card, hw-service-card) { display: grid; }
+/* Angular wrapper hosts: a box around the native root the component renders. A hidden host is left
+   to the browser, because an author rule would otherwise override its display: none. */
+:where(
+  hw-field, hw-text-field, hw-textarea, hw-select, hw-checkbox, hw-switch, hw-radio-group, hw-number-field, hw-slider, hw-range-slider,
+  hw-combobox, hw-password-field, hw-search-field, hw-pin-input, hw-tag-input, hw-multi-select, hw-file-dropzone, hw-file-upload,
+  hw-calendar, hw-date-picker, hw-accordion, hw-collapsible,
+  hw-tree-view, hw-tabs, hw-secondary-nav, hw-pagination, hw-breadcrumb, hw-stepper, hw-service-details,
+  hw-progress, hw-meter, hw-description-list, hw-timeline, hw-notification-list, hw-feedback
+):where(:not([hidden])) { display: block; }
+/* Wide content scrolls inside these hosts instead of widening a narrow parent. */
+:where(hw-table, hw-data-table, hw-carousel):where(:not([hidden])) { display: block; min-inline-size: 0; max-inline-size: 100%; }
+/* The box of .hw-popover and .hw-menu, so the host flows inline like the root it wraps. */
+:where(hw-popover, hw-menu):where(:not([hidden])) { display: inline-block; max-inline-size: 100%; }
+/* No box: the fieldset of a toggle group is the flex or grid item, as it is without a host, and a
+   sticky content navigation keeps the application's column as its containing block. */
+:where(hw-toggle-group, hw-content-navigation):where(:not([hidden])) { display: contents; }

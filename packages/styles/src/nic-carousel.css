@@ -37,9 +37,12 @@
   background: var(--hw-color-primary); color: var(--hw-color-on-primary);
   transition: background-color var(--hw-duration-carousel-control) ease;
 }
-.hw-button.hw-carousel-arrow:hover:not(:disabled) { background: var(--hw-color-primary-hover); }
-.hw-button.hw-carousel-arrow:active:not(:disabled) { background: var(--hw-color-primary-active); }
-.hw-button.hw-carousel-arrow:disabled { opacity: .3; cursor: not-allowed; }
+.hw-button.hw-carousel-arrow:hover:not(:disabled, [aria-disabled='true']) { background: var(--hw-color-primary-hover); }
+.hw-button.hw-carousel-arrow:active:not(:disabled, [aria-disabled='true']) { background: var(--hw-color-primary-active); }
+.hw-button.hw-carousel-arrow:is(:disabled, [aria-disabled='true']) { opacity: .3; cursor: not-allowed; }
+/* An arrow at a bound stays focusable. Opacity would fade its focus ring too, so the focused state
+   shows unavailability with the disabled colours at full opacity. */
+.hw-button.hw-carousel-arrow[aria-disabled='true']:focus-visible { opacity: 1; background: var(--hw-color-disabled); color: var(--hw-color-on-disabled); }
 .hw-carousel-arrow::before { content: ''; inline-size: 20px; block-size: 20px; background: currentColor; mask: url('./assets/icons/arrow-right-02.svg') center / contain no-repeat; transform: scaleX(var(--_hw-inline-sign, 1)); }
 .hw-carousel-arrow[data-hw-previous]::before { mask-image: url('./assets/icons/arrow-left-02.svg'); }
 .hw-carousel-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: .1rem; }
@@ -74,7 +77,7 @@
   .hw-button.hw-carousel-arrow { border: 1px solid ButtonText; }
   /* The masked glyph is the arrow's only visible content; keep it in system colours. */
   .hw-carousel-arrow::before { forced-color-adjust: none; background: ButtonText; }
-  .hw-carousel-arrow:disabled::before { background: GrayText; }
+  .hw-carousel-arrow:is(:disabled, [aria-disabled='true'])::before { background: GrayText; }
   .hw-carousel-dot::before { background: Canvas; border-color: ButtonText; forced-color-adjust: none; }
   .hw-carousel-dot[aria-current='true']::before { background: Highlight; border-color: Highlight; }
 }

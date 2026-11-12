@@ -1,3 +1,5 @@
+import { observeFormReset } from './form-reset.js';
+
 /** Protect native choices without replacing their DOM or keyboard semantics.
  * HTML readonly does not itself prevent checkbox/radio activation.
  * A DOM without getRootNode (server rendering) falls back to the owner document. */
@@ -24,19 +26,18 @@ export function observeReadonlyChoice(input: HTMLInputElement): { refresh(): voi
     refresh();
     if (blocked() && (event.key === ' ' || input.type === 'radio' && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key))) event.preventDefault();
   };
-  const reset = (event: Event) => { if (event.target === input.form) queueMicrotask(() => { if (!event.defaultPrevented) refresh(); }); };
   refresh();
   input.addEventListener('click', click, true);
   input.addEventListener('keydown', keydown);
   root.addEventListener('pointerdown', refresh, true);
   root.addEventListener('change', refresh);
-  root.addEventListener('reset', reset);
+  const resets = observeFormReset(input, refresh);
   return { refresh, destroy() {
     destroyed = true; saved.clear();
     input.removeEventListener('click', click, true);
     input.removeEventListener('keydown', keydown);
     root.removeEventListener('pointerdown', refresh, true);
     root.removeEventListener('change', refresh);
-    root.removeEventListener('reset', reset);
+    resets.destroy();
   } };
 }

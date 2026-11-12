@@ -5,6 +5,15 @@ export function normalizeDigits(value: string): string {
     String(digit.charCodeAt(0) - (digit.charCodeAt(0) <= 0x669 ? 0x660 : 0x6f0)));
 }
 
+/** The digits of a one-time code: Arabic-Indic and Persian digits become Latin, every other character is
+ * removed, and only then is the code limited to `length`, so separators in a pasted code cost no digit.
+ * A typed character (`inputType` "insertText") that would exceed the length leaves `previous` as it was. */
+export function normalizePinInput(raw: string, length: number, previous?: string, inputType?: string): string {
+  const digits = normalizeDigits(raw).replace(/[^0-9]/g, '');
+  if (digits.length > length && inputType === 'insertText' && previous !== undefined) return previous;
+  return digits.slice(0, Math.max(0, length));
+}
+
 export function clampRange(values: readonly [number, number], min: number, max: number, changed: 'lower' | 'upper'): [number, number] {
   if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) throw new RangeError('Hawiyah: range bounds must be finite and ordered.');
   const clamp = (value: number, fallback: number) => Math.min(max, Math.max(min, Number.isFinite(value) ? value : fallback));

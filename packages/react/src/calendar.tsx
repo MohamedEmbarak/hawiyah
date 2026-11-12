@@ -39,7 +39,7 @@ export function Calendar({ value, defaultValue = '', onValueChange, month, defau
   const model = tag === undefined ? undefined : getCalendarMonth({ month: visibleMonth && isDateInRange(visibleMonth) ? visibleMonth : undefined, value: isDateInRange(selected) ? selected : undefined, min, max, locale: tag, calendar, weekStartsOn, fixedWeeks: true });
   const unavailable = (day: string) => Boolean(disabled || !isCalendarDateSupported(day, calendar) || !isDateInRange(day, min, max) || isDateDisabled?.(day));
   const focusValue = model?.days.find(day => day.value === focused && !unavailable(day.value))?.value ?? model?.days.find(day => day.selected && !unavailable(day.value))?.value ?? model?.days.find(day => day.today && !unavailable(day.value))?.value ?? model?.days.find(day => !day.outside && !unavailable(day.value))?.value ?? model?.days.find(day => !unavailable(day.value))?.value;
-  useFormReset(nativeValue, () => { if (value === undefined) select(defaultValue); if (month === undefined) setMonth(defaultMonth ?? (defaultValue || undefined)); setFocused(defaultValue || undefined); }, form);
+  useFormReset(nativeValue, () => { if (value === undefined) select(defaultValue); if (month === undefined) setMonth(defaultMonth ?? (defaultValue || undefined)); setFocused(defaultValue || undefined); });
   useEffect(() => { if (shouldFocus.current && focused) { const button = buttons.current.get(focused); if (button) { button.focus(); shouldFocus.current = false; } } }, [focused, model?.label]);
   const hidden = <input ref={nativeValue} type="hidden" name={name} form={form} value={isCalendarDateSupported(selected, calendar) && isDateInRange(selected, min, max) && !isDateDisabled?.(selected) ? selected : ''} disabled={disabled} />;
   if (!model || tag === undefined) return <section {...props} className={cx('hw-calendar', className)} aria-label={names.label} data-calendar={calendar}>{hidden}</section>;
@@ -84,7 +84,7 @@ export function DatePicker({ value, defaultValue = '', onValueChange, min, max, 
   const [open, setOpen] = useState(false); const [month, setMonth] = useState<string | undefined>(isDateInRange(selected) ? selected : undefined);
   useEffect(() => { if (previousValue.current !== selected) { previousValue.current = selected; setDraft(selected); } }, [selected]);
   useEffect(() => { if (props.disabled || props.readOnly) setOpen(false); }, [props.disabled, props.readOnly]);
-  useFormReset(input, () => { if (value === undefined) select(defaultValue); setDraft(value ?? defaultValue); setOpen(false); setMonth(isDateInRange(value ?? defaultValue) ? (value ?? defaultValue) : undefined); }, props.form);
+  useFormReset(input, () => { if (value === undefined) select(defaultValue); setDraft(value ?? defaultValue); setOpen(false); setMonth(isDateInRange(value ?? defaultValue) ? (value ?? defaultValue) : undefined); });
   const formatted = tag !== undefined && selected && isCalendarDateSupported(selected, calendar) ? formatCalendarDate(selected, { locale: tag, calendar, dateStyle: 'full' }) : '';
   const formattedId = `${props.id ?? id}-formatted`; const dialogId = `${props.id ?? id}-dialog`;
   const malformed = Boolean(draft && !isDateInRange(draft));

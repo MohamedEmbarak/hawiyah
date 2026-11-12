@@ -14,14 +14,14 @@ it('validates chooser and dropped files with the same accept policy and clears r
   const input = host.querySelector<HTMLInputElement>('input[type=file]')!;
   const choose = async (file: File) => { Object.defineProperty(input, 'files', { configurable: true, value: [file] }); await act(async () => input.dispatchEvent(new Event('change', { bubbles: true }))); };
   const accepted = new File(['pdf'], 'document.pdf', { type: 'application/pdf' });
-  await choose(accepted); expect(changed).toHaveBeenLastCalledWith([accepted]); expect(host.querySelector('li')?.textContent).toBe('document.pdf');
+  await choose(accepted); expect(changed).toHaveBeenLastCalledWith([accepted]); expect(host.querySelector('ul')).toBeNull();
   await choose(new File(['text'], 'document.txt', { type: 'text/plain' }));
-  expect(changed).toHaveBeenLastCalledWith([]); expect(host.querySelector('li')).toBeNull(); expect(host.textContent).toContain('PDF only');
+  expect(changed).toHaveBeenLastCalledWith([]); expect(host.querySelector('ul')).toBeNull(); expect(host.textContent).toContain('PDF only');
   await choose(accepted);
   const drop = new Event('drop', { bubbles: true, cancelable: true });
   Object.defineProperty(drop, 'dataTransfer', { value: { files: [new File(['image'], 'image.png', { type: 'image/png' })], types: ['Files'] } });
   await act(async () => host.querySelector('.hw-file-dropzone')!.dispatchEvent(drop));
-  expect(changed).toHaveBeenLastCalledWith([]); expect(host.querySelector('li')).toBeNull(); expect(host.textContent).toContain('PDF only');
+  expect(changed).toHaveBeenLastCalledWith([]); expect(host.querySelector('ul')).toBeNull(); expect(host.textContent).toContain('PDF only');
 });
 
 it('requires committed tags, announces required, and permits an empty draft with existing tags', async () => {
