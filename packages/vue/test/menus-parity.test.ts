@@ -251,6 +251,14 @@ it('[POPOVER-01][nav-b-8] Escape in the panel or on the trigger closes and focus
   expect(host.querySelector<HTMLElement>('.hw-popover-panel')!.hidden).toBe(true); expect(document.activeElement).toBe(button);
 });
 
+it('[POPOVER-05] an Escape that a control inside the panel has cancelled leaves the popover open', async () => {
+  const changes = vi.fn();
+  const host = mount(() => popover({ defaultOpen: true, 'onUpdate:open': changes }));
+  const input = host.querySelector<HTMLInputElement>('input')!; input.addEventListener('keydown', event => { if (event.key === 'Escape') event.preventDefault(); }); input.focus();
+  await key(input, 'Escape');
+  expect(host.querySelector<HTMLElement>('.hw-popover-panel')!.hidden).toBe(false); expect(document.activeElement).toBe(input); expect(changes).not.toHaveBeenCalled();
+});
+
 it('[POPOVER-02][nav-b-9] the panel is div.hw-popover-panel[role=region] holding exactly the application content', () => {
   const host = mount(() => popover());
   const panel = host.querySelector('.hw-popover > div.hw-popover-panel[role=region]')!;

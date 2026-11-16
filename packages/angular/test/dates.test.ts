@@ -241,6 +241,27 @@ describe('hw-date-picker', () => {
     expect(document.activeElement).toBe(day(view.dialog, '2026-10-14'));
   });
 
+  it('[DATE-PICKER-11] a typed date is the focused day on opening; the focus memory restarts at each opening', () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    const view = picker(); const trigger = view.host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!;
+    const open = () => { trigger.click(); view.fixture.detectChanges(); }; const close = () => { view.dialog.close(); view.fixture.detectChanges(); };
+    view.edit('2026-10-20'); open(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-20'));
+    press(document.activeElement!, 'ArrowRight'); view.fixture.detectChanges(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-21')); close();
+    view.edit('2026-10-05'); open(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-05'));
+    press(document.activeElement!, 'ArrowRight'); view.fixture.detectChanges(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-06')); close();
+    view.edit(''); open(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-14'));
+  });
+
+  it('[DATE-PICKER-12] the shown month comes only from a value inside min and max', () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    const view = picker('max="2026-12-31"'); const trigger = view.host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!;
+    const open = () => { trigger.click(); view.fixture.detectChanges(); }; const close = () => { view.dialog.close(); view.fixture.detectChanges(); };
+    const shown = () => view.dialog.querySelector<HTMLElement>('.hw-calendar-day[data-outside="false"]')!.getAttribute('data-date');
+    view.edit('2027-01-05'); open(); expect(shown()).toBe('2026-10-01'); expect(document.activeElement).toBe(day(view.dialog, '2026-10-14')); close();
+    view.edit('2026-03-20'); open(); expect(shown()).toBe('2026-03-01'); close();
+    view.edit(''); open(); expect(shown()).toBe('2026-10-01');
+  });
+
   it('[DATE-PICKER-07][R03] the output announces the full date with the weekday, and is empty and hidden without a date it can show', () => {
     const view = picker('value="2026-10-28" [calendar]="calendar"', { calendar: 'gregory' });
     const output = view.host.querySelector<HTMLOutputElement>('output.hw-date-picker-value')!;

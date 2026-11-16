@@ -220,6 +220,29 @@ it('[FMT-02][FMT-04][R16] RangeSlider: formatValue gives each thumb aria-valuete
   expect(formatted!.querySelector('output')!.textContent).toBe('30 to 80'); expect(formatted!.querySelector('input')!.getAttribute('aria-valuetext')).toBe('30 SAR');
 });
 
+it('[SELECT-03][fields-basic-5] option and optgroup children of the default slot follow the options of the prop and can hold the value', async () => {
+  const changes = vi.fn();
+  const host = mount(() => h('form', [h(Select, { label: 'Letter', name: 's', options, defaultValue: 'd', 'onUpdate:modelValue': changes }, () => [h('option', { value: 'c2' }, 'C2'), h('optgroup', { label: 'Group' }, [h('option', { value: 'd' }, 'D')])])]));
+  const select = host.querySelector('select')!;
+  expect([...select.children].map(child => child.localName)).toEqual(['option', 'option', 'option', 'option', 'optgroup']);
+  expect(select.value).toBe('d'); expect(new FormData(host.querySelector('form')!).get('s')).toBe('d');
+  select.value = 'c2'; select.dispatchEvent(new Event('change', { bubbles: true })); await nextTick();
+  expect(changes.mock.calls).toEqual([['c2']]);
+});
+
+it('[SELECT-04][SSR-01] the server HTML of a select holds its slotted options, hydrates without a mismatch and then shows a value held by a slotted option', async () => {
+  const Application = defineComponent({ render: () => h('form', [h(Select, { label: 'Letter', name: 's', options, defaultValue: 'd' }, () => [h('optgroup', { label: 'Group' }, [h('option', { value: 'd' }, 'D')])])]) });
+  const markup = await renderToString(createSSRApp(Application));
+  expect(markup).toMatch(/<option value="c">C<\/option>(?:<!--\[-->)?<optgroup label="Group"><option value="d"[^>]*>D<\/option><\/optgroup>(?:<!--\]-->)?<\/select>/u);
+  const container = document.createElement('div'); container.innerHTML = markup; document.body.append(container);
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {}); const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+  const hydrated = createSSRApp(Application);
+  try {
+    hydrated.mount(container); await nextTick();
+    expect(warn).not.toHaveBeenCalled(); expect(error).not.toHaveBeenCalled(); expect(container.querySelector('select')!.value).toBe('d');
+  } finally { hydrated.unmount(); container.remove(); warn.mockRestore(); error.mockRestore(); }
+});
+
 it('[RANGE-SLIDER-03][choices-8] `name` submits both thumbs, lowerName and upperName override it, `form` reaches both inputs, the fieldset has neither', () => {
   const host = mount(() => h('div', [
     h('form', { id: 'outside' }),
@@ -249,6 +272,15 @@ it('[TOGGLE-GROUP-04][actions-9][E02] option markup: label > radio + text with n
     const radio = label.querySelector('input')!;
     expect(radio.className).toBe(''); expect([radio.name, radio.getAttribute('form')]).toEqual(['size', 'f']);
   }
+});
+
+it('[TOGGLE-GROUP-06] a bound single value whose notification the application ignores stays the checked and submitted option', async () => {
+  const changes = vi.fn();
+  const host = mount(() => h('form', [h(ToggleGroup, { label: 'City', name: 'city', options, modelValue: 'a', 'onUpdate:modelValue': changes })]));
+  const radios = [...host.querySelectorAll<HTMLInputElement>('input[type=radio]')];
+  radios[1]!.click(); await nextTick(); await nextTick();
+  expect(changes.mock.calls).toEqual([['b']]); expect(radios.map(radio => radio.checked)).toEqual([true, false, false]);
+  expect(new FormData(host.querySelector('form')!).get('city')).toBe('a');
 });
 
 it('[TOGGLE-GROUP-05][MSG-01][MSG-02][actions-9] multiple mode: probe after the legend, then options, hint, error and the hidden value inputs inside the fieldset', () => {

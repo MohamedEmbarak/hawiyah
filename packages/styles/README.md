@@ -70,7 +70,7 @@ compiler, or CSS-in-JS runtime.
 | Prose | `hw-prose` on a container styles class-less content inside it and leaves classed elements and their contents alone; [mapping and limits](../../docs/code-and-prose.md#prose) |
 | Text tone | `hw-type` with `data-tone="muted|subtle"` |
 | Sliders | `hw-slider`, `hw-range-slider`; optional value text in `output.hw-slider-value` and `output.hw-range-slider-value` |
-| Tree view | `hw-tree-view`, `hw-tree-item`, `hw-tree-toggle` (a `button`, 1.75rem target); a flat tree sets `--hw-tree-depth` on each item and is indented by `--hw-tree-indent` per level |
+| Tree view | `hw-tree-view`, `hw-tree-item`, `hw-tree-toggle` (a `button`, 1.75rem target). The tree is one flat list in every adapter: each `li[role=treeitem]` holds its toggle and its label only, carries `aria-level` and `--hw-tree-depth` (the level minus one) and is indented by `--hw-tree-indent` per level; a tree item never contains its child items, and there is no `[role=group]` rule |
 | File dropzone | `hw-file-dropzone`; `data-state="dragging|error"`; `data-hw-readonly="true"` on the root of a read-only zone, whose file input stays enabled with `aria-disabled="true"` |
 | Notifications | `hw-notification-list`; items carry `data-state="read|unread"` |
 | Alert dismiss | `hw-alert-dismiss` on the optional dismiss button, a direct child of `hw-alert` |

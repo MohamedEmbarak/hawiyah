@@ -308,7 +308,7 @@ export class HwCalendarComponent extends HwExpandedValueControl<string> implemen
   @Input() month = ''; @Input() min = ''; @Input() max = ''; @Input() calendar: CalendarSystem = 'gregory'; @Input() weekStartsOn = 0; @Input() direction?: Direction; @Output() readonly monthChange = new EventEmitter<string>();
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef); focused = '';
   private cachedMonth?: ReturnType<typeof getCalendarMonth>; private cachedMonthKey = '';
-  get data(): ReturnType<typeof getCalendarMonth> { if (!this.hasLocale) return emptyMonth; const options = {month: isDateInRange(this.month) ? this.month : isDateInRange(this.value) ? this.value : undefined, value: isDateInRange(this.value) ? this.value : '', min: this.min || undefined, max: this.max || undefined, locale: this.locale, calendar: this.calendar, weekStartsOn: this.weekStartsOn, fixedWeeks: true}; const key = JSON.stringify(options); if (!this.cachedMonth || key !== this.cachedMonthKey) { this.cachedMonth = getCalendarMonth(options); this.cachedMonthKey = key; } return this.cachedMonth; }
+  get data(): ReturnType<typeof getCalendarMonth> { if (!this.hasLocale) return emptyMonth; const options = {month: isDateInRange(this.month) ? this.month : isDateInRange(this.value, this.min || undefined, this.max || undefined) ? this.value : undefined, value: isDateInRange(this.value) ? this.value : '', min: this.min || undefined, max: this.max || undefined, locale: this.locale, calendar: this.calendar, weekStartsOn: this.weekStartsOn, fixedWeeks: true}; const key = JSON.stringify(options); if (!this.cachedMonth || key !== this.cachedMonthKey) { this.cachedMonth = getCalendarMonth(options); this.cachedMonthKey = key; } return this.cachedMonth; }
   get weeks() { const days = this.data.days; return Array.from({length: 6}, (_, index) => days.slice(index * 7, index * 7 + 7)); }
   /** The roving tab stop: the day that last had focus, the selected day, today, the first day of the month, the first available day. */
   get tabbable() { const days = this.data.days.filter(day => !day.disabled && !this.unavailable(day.value)); return (days.find(day => day.value === this.focused) ?? days.find(day => day.selected) ?? days.find(day => day.today) ?? days.find(day => !day.outside) ?? days[0])?.value ?? ''; }
@@ -317,7 +317,8 @@ export class HwCalendarComponent extends HwExpandedValueControl<string> implemen
   protected override afterReset() { this.month = this.initialMonth || this.value; this.focused = this.value; }
   ngOnChanges(changes: SimpleChanges) { if (this.value && isDateInRange(this.value)) { this.focused = this.value; if (changes['value'] && !changes['month']) this.month = this.value; } }
   override writeValue(value: string | null) { super.writeValue(value); this.focused = this.value; this.month = this.value; }
-  focusSelected() { this.month = this.value || ''; this.focused = this.value; this.changeDetector.detectChanges(); this.host.nativeElement.querySelector<HTMLButtonElement>('.hw-calendar-day[tabindex="0"]')?.focus(); }
+  /** Each opening of a picker starts from the selected day, else from today; the month follows only a value inside min and max. */
+  focusSelected() { this.month = isDateInRange(this.value, this.min || undefined, this.max || undefined) ? this.value : ''; this.focused = this.value; this.changeDetector.detectChanges(); this.host.nativeElement.querySelector<HTMLButtonElement>('.hw-calendar-day[tabindex="0"]')?.focus(); }
   get canPrevious() {
     const first = this.data.days.find(day => !day.outside)?.value;
     return !!first && this.data.previous !== first && (!this.min || moveCalendarDate(first, -1, 'day', 'gregory') >= this.min);

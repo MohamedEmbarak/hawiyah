@@ -50,6 +50,13 @@ describe('hw-file-dropzone selection rule', () => {
     f.drop(txt()); expect(f.changed).toHaveBeenCalledTimes(2); expect(f.rejected).toHaveBeenCalledTimes(2);
   });
 
+  it('[FILEDROPZONE-13] a rejected batch that replaces held files reports the rejection before the empty value', () => {
+    const f = dropzone('label="Documents" accept=".pdf" [getRejectedMessage]="message"');
+    f.drop(pdf('a.pdf')); f.drop(txt());
+    expect(f.changed.mock.calls.map(([files]) => files.length)).toEqual([1, 0]); expect(f.rejected).toHaveBeenCalledTimes(1);
+    expect(f.rejected.mock.invocationCallOrder[0]).toBeLessThan(f.changed.mock.invocationCallOrder[1]!);
+  });
+
   it('[FILEDROPZONE-03] a drop that the browser refuses to assign leaves the selection as it was and reports nothing', () => {
     const f = dropzone('label="Documents" multiple');
     Object.defineProperty(f.input, 'files', { configurable: true, get: () => [], set: () => { throw new TypeError('refused'); } });

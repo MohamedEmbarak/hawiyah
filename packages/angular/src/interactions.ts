@@ -55,7 +55,7 @@ export class HwPopoverComponent extends HwNamedRoot {
   @HostListener('document:pointerdown', ['$event']) outside(event: Event) { if (!this.host.nativeElement.contains(event.target as Node)) this.close(); }
   /** Focus moved to an element outside trigger and panel: the popup closes and focus stays where it went. Focus that goes nowhere closes nothing. */
   @HostListener('focusout', ['$event']) left(event: FocusEvent) { const next = event.relatedTarget as Node | null; if (next && !this.host.nativeElement.contains(next)) this.close(); }
-  @HostListener('document:keydown.escape', ['$event']) escape(event: Event) { if (this.open && this.host.nativeElement.contains(event.target as Node)) { event.preventDefault(); event.stopPropagation(); this.close(true); } }
+  @HostListener('document:keydown.escape', ['$event']) escape(event: Event) { if (this.open && !event.defaultPrevented && this.host.nativeElement.contains(event.target as Node)) { event.preventDefault(); event.stopPropagation(); this.close(true); } }
 }
 
 /** `value` is what (action) reports; an item with `href` is a link that also navigates. */

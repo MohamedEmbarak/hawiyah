@@ -43,7 +43,7 @@ export const IconButton = defineComponent({
           ref: button, variant: props.variant, size: props.size, disabled: props.disabled, loading: props.loading,
           "data-shape": props.shape ?? attrs["data-shape"],
           class: "hw-icon-button",
-          "aria-label": props.label,
+          "aria-label": rootLabel("IconButton", props.label, attrs),
         }),
         () => h("span", { "aria-hidden": "true" }, slots.default?.()),
       );
@@ -154,9 +154,9 @@ export const Stat = defineComponent({
     value: [String, Number],
     description: String,
     trend: String,
-    tone: String as PropType<"neutral" | "success" | "warning" | "danger" | "info">,
+    tone: String as PropType<"neutral" | "success" | "danger">,
     variant: String as PropType<"plain">,
-    trendTone: String as PropType<"neutral" | "success" | "warning" | "danger" | "info">,
+    trendTone: String as PropType<"success" | "danger">,
   },
   setup(props, { attrs, slots }) {
     // #value and #trend replace what is displayed; numbers are printed as given.

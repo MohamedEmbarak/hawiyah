@@ -368,6 +368,9 @@ Disabled dates are skipped, min/max are enforced, and readonly calendars allow
 browsing without changing the selected value.
 Opening the DatePicker (trigger, ArrowDown in the input) moves focus to the
 selected day, or today; Escape returns focus to the opener.
+Each opening starts again from the selected day: the focus memory of the last
+opening is dropped, a typed date is the focused day, and the month shown comes
+only from a value inside `min` and `max` (else today's month).
 
 Saudi Umm al-Qura conversion and arithmetic come from the core's pinned Saudi
 reference table, using `@internationalized/date` arithmetic. The supported range
@@ -403,11 +406,11 @@ caller-owned: update the supplied message array in response to the emitted ID.
 | Component          | Contract                                                                                                                                                                                                                                                                                   |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Link` | Native anchor attrs, `href`, `variant`, `disabled` (no `href`, `role=link`, `aria-disabled`, `tabindex=-1`, activation cancelled), `external` (`target="_blank"`; `noopener noreferrer` are added to an authored `rel`) |
-| `IconButton`       | Required accessible `label`, `variant`, `size`, `disabled`, `loading`; default decorative icon slot                                                                                                                                                                                        |
+| `IconButton`       | Required accessible `label` (an `aria-label` or `aria-labelledby` attribute names it instead; without any of them the button is unnamed and a development warning reports it), `variant`, `size`, `disabled`, `loading`; default decorative icon slot                                                                                                                                                                                        |
 | `ButtonGroup` | `role=group` named by `label` (or `aria-label` / `aria-labelledby`, which win); default buttons slot; `variant="default\|attached"`, `orientation` |
 | `Chip` | `label` or default slot, `tone`, `variant="soft\|outline"`, `size="sm\|lg"`, `disabled`. `@remove` renders a plain remove button (no `hw-button` class) named by the then-required `remove-label`; the chip does not remove itself. When the application removes a chip whose button had focus, focus moves to the next chip's remove button, else the previous one; when the last chip goes, the application places focus |
 | `DescriptionList` | `items: {term,description}[]`, `variant: stacked\|horizontal\|compact` (stacked by default, no `data-variant`); `item:index` slots receive `{item}` |
-| `Stat` | `label`, string/number `value` printed as given, `description`, `trend`; `#value` and `#trend` slots take rich content and win over the props (for example the riyal pattern of [docs/saudi-riyal.md](../../docs/saudi-riyal.md)); `tone`, `variant="plain"`, `trendTone` (on the trend); no `locale`: format the number in the application (`formatNumber(value, { locale })` from `@hawiyah/core`) |
+| `Stat` | `label`, string/number `value` printed as given, `description`, `trend`; `#value` and `#trend` slots take rich content and win over the props (for example the riyal pattern of [docs/saudi-riyal.md](../../docs/saudi-riyal.md)); `tone="neutral\|success\|danger"`, `variant="plain"`, `trendTone="success\|danger"` (on the trend); no `locale`: format the number in the application (`formatNumber(value, { locale })` from `@hawiyah/core`) |
 | `Timeline` | `label` (or `aria-label` / `aria-labelledby`), `items: {id,title,description?,dateTime?,dateLabel?,status?: complete\|current\|upcoming}[]`; `li.hw-timeline-item` with `h3`, `time`, `p`; `dateLabel` is the visible date and `dateTime` the ISO value (no `time` without `dateLabel`); named item-ID slots; `aria-current="step"` on the current item |
 | `Meter` | One native `meter.hw-meter` named by `label` (or `aria-label` / `aria-labelledby`); defaults `min` 0, `max` 100, `value` 0; `low`, `high`, `optimum` only when given; no visible label and no size option |
 | `AvatarGroup` | Required `label` and `getOverflowLabel(count)`, `items: AvatarItem[]` (`{name,src?,initials?,size?,variant?}`), `max` |

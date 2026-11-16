@@ -181,17 +181,21 @@ export function createTreeView(root: HTMLElement, options: TreeViewOptions = {})
   const items = [...root.querySelectorAll<HTMLElement>('[role="treeitem"]')].filter(item => !item.parentElement?.closest('[data-hw="tree-view"]') || item.parentElement.closest('[data-hw="tree-view"]') === root);
   const values = items.map(item => item.dataset.hwValue ?? '');
   if (values.some(value => !value) || new Set(values).size !== values.length) throw new Error('Hawiyah: tree items require unique non-empty data-hw-value attributes.');
+  // The tree is one flat list, as the framework adapters render it: a labelled tree item that contained its child items would show text that is not in its name (WCAG 2.5.3).
+  if (items.some(item => item.parentElement?.closest('[role="treeitem"]'))) throw new Error('Hawiyah: tree items are a flat list ordered parent first; give each item its aria-level instead of nesting it.');
   remember(scope, root, ['role']); root.setAttribute('role', 'tree');
-  const groups = new Map<HTMLElement, HTMLElement>();
+  // Structure comes from the authored aria-level: the parent of an item is the nearest earlier item one level up.
+  const parents = new Map<HTMLElement, HTMLElement>(); const levels = new Map<HTMLElement, number>(); const branches = new Set<HTMLElement>();
+  { const path: HTMLElement[] = []; for (const item of items) { const authored = Number(item.getAttribute('aria-level')); const level = Math.min(Number.isInteger(authored) && authored > 0 ? authored : 1, path.length + 1); path.length = level - 1; const above = path[level - 2]; if (above) { parents.set(item, above); branches.add(above); } levels.set(item, level); path.push(item); } }
   const toggles = new Map<HTMLElement, { toggle: HTMLElement; icon: HTMLElement | undefined; authored: string | null }>();
   const labelOf = (item: HTMLElement) => item.querySelector(':scope > [data-hw-tree-label]')?.textContent ?? [...item.childNodes].filter(node => node.nodeType === 3).map(node => node.textContent).join('');
   const expandLabel = templated(root, 'getExpandLabel', options.getExpandLabel, (node: TreeViewNode) => ({ label: node.label, id: node.id }));
   const collapseLabel = templated(root, 'getCollapseLabel', options.getCollapseLabel, (node: TreeViewNode) => ({ label: node.label, id: node.id }));
-  const parent = (item: HTMLElement): HTMLElement | undefined => { const result = item.parentElement?.closest<HTMLElement>('[role="treeitem"]'); return result && root.contains(result) ? result : undefined; };
+  const parent = (item: HTMLElement): HTMLElement | undefined => parents.get(item);
+  const within = (item: HTMLElement | undefined, branch: HTMLElement) => { for (let ancestor = item && parent(item); ancestor; ancestor = parent(ancestor)) if (ancestor === branch) return true; return false; };
+  const authoredExpanded = items.filter(item => branches.has(item) && item.getAttribute('aria-expanded') === 'true').map(item => item.dataset.hwValue!);
   items.forEach(item => {
-    remember(scope, item, ['tabindex', 'aria-selected', 'aria-expanded', 'aria-level', 'aria-posinset', 'aria-setsize']);
-    const group = [...item.children].find(child => child.getAttribute('role') === 'group') as HTMLElement | undefined;
-    if (group) { groups.set(item, group); remember(scope, group, ['hidden']); }
+    remember(scope, item, ['tabindex', 'aria-selected', 'aria-expanded', 'aria-level', 'aria-posinset', 'aria-setsize', 'hidden', 'style']);
     const toggle = [...item.children].find(child => child.hasAttribute('data-hw-tree-toggle')) as HTMLElement | undefined;
     if (toggle) {
       remember(scope, toggle, ['tabindex', 'aria-label']); toggle.tabIndex = -1; buttonType(scope, toggle);
@@ -202,17 +206,19 @@ export function createTreeView(root: HTMLElement, options: TreeViewOptions = {})
     // The item is named by its label alone, so the toggle's name is not part of it.
     const label = [...item.children].find(child => child.hasAttribute('data-hw-tree-label')) as HTMLElement | undefined;
     if (label && !named(item)) { remember(scope, item, ['aria-labelledby']); item.setAttribute('aria-labelledby', ensureId(scope, label, 'tree-label')); }
-    let level = 1; let ancestor = parent(item); while (ancestor) { level++; ancestor = parent(ancestor); }
-    const siblings = items.filter(candidate => candidate.parentElement === item.parentElement);
-    item.setAttribute('aria-level', String(level)); item.setAttribute('aria-posinset', String(siblings.indexOf(item) + 1)); item.setAttribute('aria-setsize', String(siblings.length));
+    const level = levels.get(item)!; const siblings = items.filter(candidate => parent(candidate) === parent(item));
+    if (!branches.has(item)) item.removeAttribute('aria-expanded');
+    item.style.setProperty('--hw-tree-depth', String(level - 1)); item.setAttribute('aria-level', String(level)); item.setAttribute('aria-posinset', String(siblings.indexOf(item) + 1)); item.setAttribute('aria-setsize', String(siblings.length));
   });
-  let expanded = new Set(options.expanded ?? items.filter(item => groups.has(item) && item.getAttribute('aria-expanded') === 'true').map(item => item.dataset.hwValue!));
+  let expanded = new Set(options.expanded ?? authoredExpanded);
   let value = options.value ?? root.dataset.hwValue ?? items.find(item => item.getAttribute('aria-selected') === 'true')?.dataset.hwValue ?? '';
   if (!values.includes(value)) value = '';
   let focused = value;
-  const visible = () => items.filter(item => { if (item.hidden) return false; let ancestor = parent(item); while (ancestor) { if (ancestor.hidden || !expanded.has(ancestor.dataset.hwValue!)) return false; ancestor = parent(ancestor); } return true; });
+  const visible = () => items.filter(item => { for (let ancestor = parent(item); ancestor; ancestor = parent(ancestor)) if (!expanded.has(ancestor.dataset.hwValue!)) return false; return true; });
   const render = () => {
-    groups.forEach((group, item) => { const open = expanded.has(item.dataset.hwValue!); group.hidden = !open; item.setAttribute('aria-expanded', String(open)); });
+    // The rows of a collapsed branch are hidden; the controller owns `hidden` on the items.
+    const shown = new Set(visible()); items.forEach(item => { item.hidden = !shown.has(item); });
+    branches.forEach(item => item.setAttribute('aria-expanded', String(expanded.has(item.dataset.hwValue!))));
     toggles.forEach(({ toggle, icon, authored }, item) => {
       const open = expanded.has(item.dataset.hwValue!); const node = { id: item.dataset.hwValue!, label: labelOf(item).trim() };
       const name = open ? collapseLabel(node) : expandLabel(node);
@@ -227,7 +233,7 @@ export function createTreeView(root: HTMLElement, options: TreeViewOptions = {})
   };
   const focus = (next: string) => { if (scope.destroyed || blocked(root)) return; const item = visible().find(item => item.dataset.hwValue === next && !isDisabled(item)); if (!item) return; focused = next; render(); item.focus(); };
   const select = (next: string) => { const item = visible().find(item => item.dataset.hwValue === next); if (scope.destroyed || !item || blocked(root) || readOnly(root) || isDisabled(item) || next === value) return; value = next; focused = next; render(); emit(root, { value }); options.onValueChange?.(value); };
-  const toggle = (next: string) => { const item = items.find(item => item.dataset.hwValue === next); if (scope.destroyed || !item || !groups.has(item) || blocked(root) || isDisabled(item)) return; const group = groups.get(item)!; const closing = expanded.has(next); const restoreFocus = closing && group.contains(root.ownerDocument.activeElement); if (closing) expanded.delete(next); else expanded.add(next); const focusedItem = items.find(item => item.dataset.hwValue === focused); if (closing && focusedItem && group.contains(focusedItem)) focused = next; render(); if (restoreFocus) item.focus(); emit(root, { value, expanded: [...expanded] }); options.onExpandedChange?.([...expanded]); };
+  const toggle = (next: string) => { const item = items.find(item => item.dataset.hwValue === next); if (scope.destroyed || !item || !branches.has(item) || blocked(root) || isDisabled(item)) return; const closing = expanded.has(next); const restoreFocus = closing && within(items.find(candidate => candidate.contains(root.ownerDocument.activeElement)), item); if (closing) expanded.delete(next); else expanded.add(next); const focusedItem = items.find(item => item.dataset.hwValue === focused); if (closing && within(focusedItem, item)) focused = next; render(); if (restoreFocus) item.focus(); emit(root, { value, expanded: [...expanded] }); options.onExpandedChange?.([...expanded]); };
   const typeahead = createTypeahead(); scope.add(() => typeahead.reset());
   scope.listen(root, 'focusin', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="treeitem"]'); if (item && items.includes(item) && !isDisabled(item)) { focused = item.dataset.hwValue!; render(); } });
   scope.listen(root, 'click', event => {
@@ -240,8 +246,8 @@ export function createTreeView(root: HTMLElement, options: TreeViewOptions = {})
     if (!item || !items.includes(item) || blocked(root) || isDisabled(item) || key.altKey || key.ctrlKey || key.metaKey || key.isComposing) return;
     const current = visible(); const index = current.indexOf(item); const rtl = getDirection(root) === 'rtl'; const id = item.dataset.hwValue!;
     if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(key.key)) { key.preventDefault(); const next = getNextEnabledIndex(index, key.key, current.map(item => ({disabled: isDisabled(item)})), 'ltr', 'vertical'); if (current[next]) focus(current[next]!.dataset.hwValue!); }
-    else if (key.key === (rtl ? 'ArrowLeft' : 'ArrowRight')) { key.preventDefault(); if (groups.has(item)) { if (!expanded.has(id)) toggle(id); else { const child = current.find(candidate => parent(candidate) === item && !isDisabled(candidate)); if (child) focus(child.dataset.hwValue!); } } }
-    else if (key.key === (rtl ? 'ArrowRight' : 'ArrowLeft')) { key.preventDefault(); if (groups.has(item) && expanded.has(id)) toggle(id); else { const ancestor = parent(item); if (ancestor) focus(ancestor.dataset.hwValue!); } }
+    else if (key.key === (rtl ? 'ArrowLeft' : 'ArrowRight')) { key.preventDefault(); if (branches.has(item)) { if (!expanded.has(id)) toggle(id); else { const child = current.find(candidate => parent(candidate) === item && !isDisabled(candidate)); if (child) focus(child.dataset.hwValue!); } } }
+    else if (key.key === (rtl ? 'ArrowRight' : 'ArrowLeft')) { key.preventDefault(); if (branches.has(item) && expanded.has(id)) toggle(id); else { const ancestor = parent(item); if (ancestor) focus(ancestor.dataset.hwValue!); } }
     else if (key.key === 'Enter' || key.key === ' ') { key.preventDefault(); select(id); }
     else if (isTypeaheadKey(key)) { const next = typeahead.next(key.key, current.map(labelOf), index, position => isDisabled(current[position]!)); if (next >= 0) { key.preventDefault(); focus(current[next]!.dataset.hwValue!); } }
   });

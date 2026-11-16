@@ -28,12 +28,14 @@ export type CalendarProps = CalendarBaseProps & RootName & ({ calendar?: 'gregor
 export function Calendar({ value, defaultValue = '', onValueChange, month, defaultMonth, onMonthChange, min, max, locale, calendar = 'gregory', weekStartsOn = 0, isDateDisabled, disabled, readOnly, label, previousLabel, nextLabel, rangeLabel, unsupportedMessage, getDayLabel, name, form, className, ...props }: CalendarProps) {
   const tag = text('Calendar', 'locale', locale); const names = { label: rootLabel('Calendar', props, label), previous: text('Calendar', 'previousLabel', previousLabel), next: text('Calendar', 'nextLabel', nextLabel), range: calendar === 'islamic-umalqura' ? text('Calendar', 'rangeLabel', rangeLabel, "calendar is 'islamic-umalqura'") : undefined, unsupported: calendar === 'islamic-umalqura' ? text('Calendar', 'unsupportedMessage', unsupportedMessage, "calendar is 'islamic-umalqura'") : undefined };
   const id = useId(); const nativeValue = useRef<HTMLInputElement | null>(null); const [selected, select] = useControllable(value, defaultValue, onValueChange);
-  const [visibleMonth, setMonth] = useControllable<string | undefined>(month, defaultMonth ?? (isDateInRange(selected) ? selected : undefined), next => { if (next) onMonthChange?.(next); });
+  const [visibleMonth, setMonth] = useControllable<string | undefined>(month, defaultMonth ?? (isDateInRange(selected, min, max) ? selected : undefined), next => { if (next) onMonthChange?.(next); });
   const previousSelected = useRef(selected);
   useEffect(() => {
     if (previousSelected.current === selected) return;
     previousSelected.current = selected;
-    if (month === undefined && isDateInRange(selected)) { setMonth(selected); setFocused(selected); }
+    // A new value is the new tab stop, also under a controlled month; the month follows only a value inside min and max.
+    setFocused(isDateInRange(selected) ? selected : undefined);
+    if (month === undefined && isDateInRange(selected, min, max)) setMonth(selected);
   }, [selected, month]);
   const [focused, setFocused] = useState<string | undefined>(isDateInRange(selected) ? selected : undefined); const shouldFocus = useRef(false); const buttons = useRef(new Map<string, HTMLButtonElement>());
   const model = tag === undefined ? undefined : getCalendarMonth({ month: visibleMonth && isDateInRange(visibleMonth) ? visibleMonth : undefined, value: isDateInRange(selected) ? selected : undefined, min, max, locale: tag, calendar, weekStartsOn, fixedWeeks: true });
@@ -82,7 +84,9 @@ export function DatePicker({ value, defaultValue = '', onValueChange, min, max, 
   const [selected, select] = useControllable(value, defaultValue, onValueChange);
   const [draft, setDraft] = useState(selected); const previousValue = useRef(selected);
   const [editing, setEditing] = useState(false); const [failed, setFailed] = useState(false);
-  const [open, setOpen] = useState(false); const [month, setMonth] = useState<string | undefined>(isDateInRange(selected) ? selected : undefined);
+  const [open, setOpen] = useState(false); const [month, setMonth] = useState<string | undefined>(isDateInRange(selected, min, max) ? selected : undefined);
+  // Each opening starts from the selected day, else from today: the calendar is remounted, so the focus memory and the month of the last opening are dropped.
+  const [opening, setOpening] = useState(0);
   useEffect(() => { if (previousValue.current !== selected) { previousValue.current = selected; setDraft(selected); } }, [selected]);
   useEffect(() => { if (props.disabled || props.readOnly) setOpen(false); }, [props.disabled, props.readOnly]);
   useEffect(() => { if (open) dialog.current?.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')?.focus(); }, [open]);
@@ -95,15 +99,15 @@ export function DatePicker({ value, defaultValue = '', onValueChange, min, max, 
   useEffect(() => { input.current?.setCustomValidity(invalid ? message ?? ' ' : ''); }, [invalid, message]);
   useEffect(() => { if (failed && !invalid && input.current?.validity.valid) setFailed(false); });
   const blocked = () => props.disabled || props.readOnly || !input.current || isDisabled(input.current);
-  const show = () => { if (!blocked()) { setMonth(isDateInRange(selected) ? selected : undefined); setOpen(true); } };
+  const show = () => { if (!blocked()) { setMonth(isDateInRange(selected, min, max) ? selected : undefined); setOpening(count => count + 1); setOpen(true); } };
   const commit = (date: string) => { const canonical = !date || isDateInRange(date); setDraft(canonical && value !== undefined ? value : date); if (canonical) select(date); };
   return <Field label={label} hint={hint} error={error || (message ? dateMessage(message) : undefined)} errorRole={!error && message ? 'alert' : undefined} required={props.required} controlId={props.id ?? id} className={cx('hw-date-picker', className)}>
     <div className="hw-date-picker-control">
       <TextField {...props} ref={node => { input.current = node; assignRef(ref, node); }} type="text" min={min} max={max} inputMode="text" aria-haspopup="dialog" aria-controls={dialogId} aria-invalid={props['aria-invalid'] ?? ((error || failed || invalid) ? true : undefined)} aria-describedby={[props['aria-describedby'], formatted ? formattedId : undefined].filter(Boolean).join(' ') || undefined} value={displayed} onInvalid={event => { onInvalid?.(event); setFailed(true); }} onFocus={event => { if (!blocked()) { event.currentTarget.value = draft; event.currentTarget.select(); setEditing(true); } onFocus?.(event); }} onBlur={event => { setEditing(false); onBlur?.(event); }} onChange={event => { if (!blocked()) commit(event.currentTarget.value); }} onKeyDown={event => { onKeyDown?.(event); if (!event.defaultPrevented && !event.nativeEvent.isComposing && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key === 'ArrowDown' && !blocked()) { event.preventDefault(); show(); } }} />
     <Dialog ref={dialog} id={dialogId} open={open} onOpenChange={next => { if (!next || !blocked()) setOpen(next); }} title={copy.calendar} closeLabel={copy.close as string} trigger={<Button className="hw-date-picker-trigger" variant="ghost" disabled={props.disabled || props.readOnly} aria-label={copy.open} aria-controls={dialogId} aria-expanded={open} onClick={show}><span className="hw-date-picker-icon" aria-hidden="true" /></Button>}>
-      <div className="hw-calendar-options"><div className="hw-calendar-system hw-calendar-switch" role="radiogroup" aria-label={copy.system} data-calendar={calendar}>{(['gregory', 'islamic-umalqura'] as const).map(system => <label key={system}><input type="radio" name={`${id}-calendar-system`} form="" value={system} checked={calendar === system} disabled={props.disabled || props.readOnly} onChange={() => { setCalendar(system); if (isDateInRange(selected)) setMonth(selected); }} /><span>{system === 'gregory' ? copy.gregorian : copy.hijri}</span></label>)}</div>
+      <div className="hw-calendar-options"><div className="hw-calendar-system hw-calendar-switch" role="radiogroup" aria-label={copy.system} data-calendar={calendar}>{(['gregory', 'islamic-umalqura'] as const).map(system => <label key={system}><input type="radio" name={`${id}-calendar-system`} form="" value={system} checked={calendar === system} disabled={props.disabled || props.readOnly} onChange={() => { setCalendar(system); if (isDateInRange(selected, min, max)) setMonth(selected); }} /><span>{system === 'gregory' ? copy.gregorian : copy.hijri}</span></label>)}</div>
       </div>
-      <Calendar disabled={props.disabled} readOnly={props.readOnly} value={isDateInRange(selected) ? selected : ''} onValueChange={date => { if (!blocked()) { commit(date); setOpen(false); } }} month={month} onMonthChange={setMonth} min={min} max={max} calendar={calendar} locale={locale} weekStartsOn={weekStartsOn} isDateDisabled={isDateDisabled} label={calendarLabel} previousLabel={previousLabel} nextLabel={nextLabel} rangeLabel={rangeLabel} unsupportedMessage={unsupportedMessage} getDayLabel={getDayLabel} form="" />
+      <Calendar key={opening} disabled={props.disabled} readOnly={props.readOnly} value={isDateInRange(selected) ? selected : ''} onValueChange={date => { if (!blocked()) { commit(date); setOpen(false); } }} month={month} onMonthChange={setMonth} min={min} max={max} calendar={calendar} locale={locale} weekStartsOn={weekStartsOn} isDateDisabled={isDateDisabled} label={calendarLabel} previousLabel={previousLabel} nextLabel={nextLabel} rangeLabel={rangeLabel} unsupportedMessage={unsupportedMessage} getDayLabel={getDayLabel} form="" />
     </Dialog>
     </div>
     <input type="hidden" name={name} form={props.form} disabled={props.disabled} value={isDateInRange(selected) ? selected : ''} />

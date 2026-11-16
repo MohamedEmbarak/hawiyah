@@ -60,11 +60,13 @@ export const ToggleGroup = defineComponent({
       props.defaultValue ?? empty(),
       (v) => emit("update:modelValue", v),
     );
-    useFormReset(element, () => { failed.value = false; model.set(props.defaultValue ?? empty()); }, () => {
+    // The radios show the state: after a reset, and after a choice that a controlled value did not follow.
+    const syncRadios = () => {
       group.value?.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach(radio => {
         radio.checked = radio.value === model.value.value;
       });
-    });
+    };
+    useFormReset(element, () => { failed.value = false; model.set(props.defaultValue ?? empty()); }, syncRadios);
     return () => {
       // A forwarded aria-label or aria-labelledby names the group; otherwise `label` is required text.
       const legend = optionalText(attrs["aria-label"]) || optionalText(attrs["aria-labelledby"])
@@ -133,6 +135,7 @@ export const ToggleGroup = defineComponent({
                         if (!disabled && !props.readonly) {
                           failed.value = false;
                           model.set(option.value);
+                          void nextTick(syncRadios);
                         }
                       },
                     }),

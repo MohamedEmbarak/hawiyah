@@ -23,6 +23,14 @@ describe('combobox', () => {
     expect(root.querySelector('ul')!.getAttribute('aria-labelledby')).toBe(form.querySelector('label')!.id); controller.destroy();
   });
 
+  it('[COMBOBOX-05] focus on the input opens the popup and notifies open once, as in the framework adapters; a read-only input stays closed', () => {
+    let form = mount(combobox()); let root = form.querySelector<HTMLElement>('[data-hw=combobox]')!; const opened = vi.fn(); let controller = createCombobox(root, { onOpenChange: opened });
+    const input = root.querySelector<HTMLInputElement>('[data-hw-combobox-input]')!; const list = root.querySelector<HTMLElement>('[data-hw-combobox-list]')!;
+    expect(list.hidden).toBe(true); input.focus(); expect(list.hidden).toBe(false); expect(input.getAttribute('aria-expanded')).toBe('true'); expect(opened.mock.calls).toEqual([[true]]);
+    input.dispatchEvent(new FocusEvent('focus')); expect(opened).toHaveBeenCalledTimes(1); controller.destroy();
+    form = mount(combobox('', 'readonly')); root = form.querySelector<HTMLElement>('[data-hw=combobox]')!; controller = createCombobox(root);
+    root.querySelector<HTMLInputElement>('[data-hw-combobox-input]')!.focus(); expect(root.querySelector<HTMLElement>('[data-hw-combobox-list]')!.hidden).toBe(true); controller.destroy();
+  });
   it('[STATE-01] [STATE-06] notifies open once per change with detail {open} and query with detail {query}', () => {
     const root = mount(combobox()).querySelector<HTMLElement>('[data-hw=combobox]')!; const changed = vi.fn(); const open = vi.fn(); const query = vi.fn(); root.addEventListener('hw:change', changed);
     const controller = createCombobox(root, { onOpenChange: open, onQueryChange: query }); const input = root.querySelector<HTMLInputElement>('input')!;
@@ -277,6 +285,12 @@ describe('file dropzone', () => {
     const { root, value, reject, controller } = setup(); const accepted = [pdf('a.pdf'), pdf('b.pdf')];
     drag(root, 'drop', accepted); expect(controller.value).toEqual(accepted); expect(value.mock.calls).toEqual([[accepted]]); expect(root.querySelector('[data-hw-file-status]')!.textContent).toBe('2 selected');
     const text = new File(['x'], 'c.txt', { type: 'text/plain' }); drag(root, 'drop', [text]); expect(controller.value).toEqual([]); expect(value.mock.calls).toEqual([[accepted], [[]]]); expect(reject.mock.calls).toEqual([[[text]]]); controller.destroy();
+  });
+
+  it('[FILEDROPZONE-13] a rejected batch that replaces held files reports the rejection before the empty value', () => {
+    const { root, value, reject, controller } = setup(); drag(root, 'drop', [pdf('a.pdf')]); drag(root, 'drop', [new File(['x'], 'c.txt', { type: 'text/plain' })]);
+    expect(value.mock.calls.map(([files]) => files.length)).toEqual([1, 0]); expect(reject).toHaveBeenCalledTimes(1);
+    expect(reject.mock.invocationCallOrder[0]).toBeLessThan(value.mock.invocationCallOrder[1]!); controller.destroy();
   });
 
   it('[FILEDROPZONE-04] [TEXT-02] maxSize rejects a larger file; getRejectedMessage is required only with accept or maxSize', () => {

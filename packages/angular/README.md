@@ -162,6 +162,12 @@ Every value control takes these inputs and outputs:
 | `value`, `(valueChange)` | per control | Also `[(value)]`. |
 | `(focused)`, `(blurred)` | `FocusEvent` | A single control emits on the native focus and blur of its control, a group (`hw-radio-group`, `hw-range-slider`, `hw-rating`, `hw-toggle-group`, `hw-multi-select`) when focus enters and leaves its fieldset; moving between two options emits nothing. They fire for read-only controls and never for disabled ones. |
 
+State other than the value (`open`, `visible`, `expanded`, `sortKey`,
+`sortDirection`) has no controlled-only mode in Angular: an input written once is
+the initial state, the component applies the reader's change and reports it
+through `(<state>Change)`. Bind `[(<state>)]` to keep your field in step; to veto
+a change, write the previous value back in the `(<state>Change)` handler.
+
 `(focus)` and `(blur)` written on a host never fire, because the native events do
 not bubble: use `(focused)` and `(blurred)`. Other native attributes
 (`enterkeyhint`, `autocapitalize`, `spellcheck`, `list`, `title`, `tabindex`)
@@ -570,7 +576,9 @@ Changed defaults and markup:
 - DatePicker: the produced message is `p#<id>-error.hw-error[role=alert]` after
   the hint; the label has an id and the required marker.
 - Calendar: the tab stop of an empty calendar is today when it is shown and
-  available (was the first day of the month).
+  available (was the first day of the month). A calendar or picker shows the
+  month of its value only when the value is inside `min` and `max`, else
+  today's month; each opening of the picker starts from the selected day.
 - Carousel and Pagination: the arrow at a bound is `aria-disabled="true"` and
   focusable, no longer `disabled`: `[data-hw-next]:disabled` →
   `[data-hw-next]:is(:disabled, [aria-disabled='true'])`.

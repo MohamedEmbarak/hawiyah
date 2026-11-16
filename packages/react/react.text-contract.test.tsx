@@ -8,7 +8,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import ts from 'typescript';
 import { getCalendarMonth, resetTextWarnings, sortRows } from '@hawiyah/core';
-import { AppShell, Button, Calendar, Carousel, Combobox, ContentNavigation, CookieConsent, DataTable, DatePicker, Feedback, FileDropzone, FileUploadList, Menu, MultiSelect, NotificationList, Pagination, Popover, PortalFooter, PortalHeader, PortalLayout, RangeSlider, Rating, SearchField, Tabs, TagInput, TreeView } from './src/index.js';
+import { AppShell, Button, Calendar, IconButton, Carousel, Combobox, ContentNavigation, CookieConsent, DataTable, DatePicker, Feedback, FileDropzone, FileUploadList, Menu, MultiSelect, NotificationList, Pagination, Popover, PortalFooter, PortalHeader, PortalLayout, RangeSlider, Rating, SearchField, Tabs, TagInput, TreeView } from './src/index.js';
 import type { TabsProps } from './src/index.js';
 import type { PaginationProps } from './src/index.js';
 
@@ -20,6 +20,14 @@ const pageTexts = { label: 'الصفحات', previousLabel: 'السابقة', ne
 
 beforeEach(() => { resetTextWarnings(); warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined); container = document.createElement('div'); document.body.append(container); root = createRoot(container); });
 afterEach(async () => { await act(async () => root.unmount()); container.remove(); document.head.querySelectorAll('base').forEach(base => base.remove()); warn.mockRestore(); });
+
+it('[TEXT-01] a missing IconButton label leaves the button unnamed and warns once for two instances; aria-labelledby names it without a warning', async () => {
+  const Loose = IconButton as unknown as (props: Record<string, unknown>) => ReactNode;
+  await render(<><Loose>+</Loose><Loose>-</Loose><span id="add-name">Add</span><Loose aria-labelledby="add-name">+</Loose></>);
+  const buttons = [...container.querySelectorAll('button.hw-icon-button')];
+  expect(buttons.map(button => button.hasAttribute('aria-label'))).toEqual([false, false, false]); expect(buttons[2]!.getAttribute('aria-labelledby')).toBe('add-name');
+  expect(warnings().filter(message => message.includes('IconButton requires "label"'))).toHaveLength(1);
+});
 
 it('renders nothing for missing required text and warns once per input in development', async () => {
   const { previousLabel: _omitted, ...rest } = pageTexts;

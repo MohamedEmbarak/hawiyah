@@ -53,6 +53,14 @@ describe('hw-range-slider structure and value text', () => {
     expect([...plain!.querySelectorAll('input')].map(input => input.getAttribute('aria-valuetext'))).toEqual([null, null]); expect([...plain!.querySelectorAll('input')].map(input => input.getAttribute('aria-readonly'))).toEqual(['true', 'true']);
   });
 
+  it('[RANGE-SLIDER-03][choices-8] `name` submits both thumbs in lower, upper order, lowerName and upperName override it, `form` reaches both inputs and the fieldset has neither', () => {
+    const { root } = page(`<form id="outside"></form><form id="inside"><hw-range-slider label="Shared" lowerLabel="Minimum" upperLabel="Maximum" name="price" [value]="[10, 90]" /><hw-range-slider label="Split" lowerLabel="Minimum" upperLabel="Maximum" name="ignored" lowerName="from" upperName="to" [value]="[1, 2]" /></form><hw-range-slider label="External" lowerLabel="Minimum" upperLabel="Maximum" name="external" form="outside" [value]="[3, 4]" />`);
+    const outside = root.querySelector<HTMLFormElement>('#outside')!, inside = root.querySelector<HTMLFormElement>('#inside')!; const data = new FormData(inside);
+    expect(data.getAll('price')).toEqual(['10', '90']); expect([data.get('from'), data.get('to'), data.get('ignored')]).toEqual(['1', '2', null]);
+    expect(new FormData(outside).getAll('external')).toEqual(['3', '4']);
+    for (const fieldset of root.querySelectorAll('fieldset')) { expect(fieldset.hasAttribute('name')).toBe(false); expect(fieldset.hasAttribute('form')).toBe(false); }
+  });
+
   it('[FMT-04][R16] without getRangeLabel no output and no separator is rendered; with it the output shows its result and follows the thumbs', () => {
     const { root, fixture } = page(`<hw-range-slider lowerLabel="Minimum" upperLabel="Maximum" [value]="[20, 60]" /><hw-range-slider lowerLabel="Minimum" upperLabel="Maximum" [getRangeLabel]="range" [value]="[20, 60]" />`, { range });
     const [plain, labelled] = [...root.querySelectorAll('hw-range-slider')];

@@ -76,7 +76,10 @@ export const Calendar = defineComponent({
     );
     const valid = (value: string | undefined) =>
       value && isDateInRange(value) ? value : undefined;
-    const month = ref(valid(props.month) ?? valid(model.value.value));
+    // The month follows only a value inside min and max.
+    const shown = (value: string | undefined) =>
+      value && isDateInRange(value, props.min, props.max) ? value : undefined;
+    const month = ref(valid(props.month) ?? shown(model.value.value));
     const focused = ref<string>();
     const buttons = new Map<string, HTMLButtonElement>();
     const hidden = ref<HTMLInputElement>();
@@ -131,10 +134,9 @@ export const Calendar = defineComponent({
     watch(
       () => props.modelValue,
       (value) => {
-        if (valid(value)) {
-          month.value = value;
-          focused.value = value;
-        }
+        // A new value is the new tab stop.
+        focused.value = valid(value);
+        if (shown(value)) month.value = value;
       },
     );
     useFormReset(hidden, () => {
@@ -419,7 +421,9 @@ export const DatePicker = defineComponent({
       draft.value = canonical && props.modelValue !== undefined ? props.modelValue : value;
       if (canonical) model.set(value);
     };
-    const show = () => { if (!blocked()) { open.value = true; void nextTick(() => calendar.value?.focus()); } };
+    // Each opening starts from the selected day, else from today: the calendar is remounted, so the focus memory and the month of the last opening are dropped.
+    const opening = ref(0);
+    const show = () => { if (!blocked()) { opening.value++; open.value = true; void nextTick(() => calendar.value?.focus()); } };
     watch(() => props.disabled || props.readonly, disabled => { if (disabled) open.value = false; });
     const minimum = computed(() =>
       calendarSystem.value.value === "islamic-umalqura" &&
@@ -552,8 +556,9 @@ export const DatePicker = defineComponent({
               h(Calendar, {
                 ...(Object.fromEntries(Object.keys(calendarProps).map(key => [key, props[key as keyof typeof calendarProps]])) as { locale: string; label: string; previousLabel: string; nextLabel: string }),
                 calendar: calendarSystem.value.value,
+                key: opening.value,
                 month:
-                  open.value && isDateInRange(model.value.value)
+                  open.value && isDateInRange(model.value.value, props.min, props.max)
                     ? model.value.value
                     : props.month,
                 label: props.calendarLabel as string,

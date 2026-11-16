@@ -103,6 +103,12 @@ strings.
   component name in vanilla, React and Vue (`Hawiyah: FileDropzone requires
   "label"`) and the selector in Angular (`Hawiyah: hw-file-dropzone requires
   "label"`).
+- When a missing text is reported depends on the adapter and is not part of the
+  contract: React and vanilla report every required text of a component when it
+  renders or is created; Vue and Angular report a text when it is first needed
+  (a results message after the reader filters, the label of a collapsed branch
+  once a branch is collapsed). In each adapter a warning is issued once per
+  component and input, and never in a production build.
 - When required text is missing the component renders nothing in its place and
   omits the attribute. It does not invent a name, reuse another input or hide the
   control. A constraint with a missing validation message still blocks submission
@@ -279,6 +285,14 @@ and three members derived from it.
 - A notification fires once per change with the new value, after the state
   changed, and not when the application changes a controlled prop. Controlled
   and uncontrolled state render the same DOM on the server.
+- Only React and Vue have a controlled-only mode, in which the component shows
+  the bound value until the application changes it. Angular and vanilla have
+  none: the component applies the reader's change and reports it. An Angular
+  application that must veto a change writes the previous value back in
+  `(<state>Change)`, or binds `[(<state>)]` and corrects its own field.
+- A vanilla controller method that changes state (`show`, `close`, `setOpen`,
+  `toggle`) notifies like an interaction; the framework adapters stay silent
+  when the application changes the bound state.
 - An action is not state and is named by its verb with the same payload in
   every adapter (Menu `action`, CookieConsent `consent`, Feedback `feedback`).
 

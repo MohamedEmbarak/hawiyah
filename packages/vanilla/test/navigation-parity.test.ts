@@ -16,6 +16,11 @@ const source = (file: string) => readFileSync(join(process.cwd(), 'packages/vani
 
 describe('menu', () => {
   const menu = () => mount('<div><div class="hw-menu" data-hw="menu"><button class="hw-button" type="button" data-hw-trigger>Request actions</button><div class="hw-menu-content" data-hw-panel role="menu" aria-label="Request actions" hidden><button class="hw-menu-item" type="button" role="menuitem" data-hw-value="edit">Edit</button><button class="hw-menu-item" type="button" role="menuitem" data-hw-value="archive" disabled>Archive</button><button class="hw-menu-item" type="button" role="menuitem" data-hw-value="delete">Delete</button><button class="hw-menu-item" type="button" role="menuitem" data-hw-value="download">Download</button><a class="hw-menu-item" role="menuitem" data-hw-value="help" href="#help">Help</a></div></div><button type="button" id="after">After</button></div>').firstElementChild as HTMLElement;
+  it('[SHAPE-02] an activation reports the action before the closing, as the framework adapters do', () => {
+    const root = menu(); const log: string[] = []; const controller = createMenu(root, { onAction: value => log.push(`action=${value}`), onOpenChange: open => log.push(`open=${open}`) });
+    controller.show(); log.length = 0; root.querySelector<HTMLElement>('[data-hw-value="edit"]')!.click();
+    expect(log).toEqual(['action=edit', 'open=false']); expect(document.activeElement).toBe(root.querySelector('[data-hw-trigger]')); controller.destroy();
+  });
   it('[SHAPE-01] [SHAPE-02] the documented structure; an action reports its value once, a link keeps its href, a disabled item reports nothing', () => {
     const root = menu(); const action = vi.fn(); const details: unknown[] = []; root.addEventListener('hw:change', event => details.push((event as CustomEvent).detail));
     const controller = createMenu(root, { onAction: action }); const panel = root.querySelector('.hw-menu-content')!;
@@ -79,6 +84,11 @@ describe('popover', () => {
     controller.show(); root.querySelector('input')!.focus(); key(document.activeElement!, 'Escape'); expect(controller.open).toBe(false); expect(document.activeElement).toBe(trigger);
     trigger.click(); trigger.focus(); key(trigger, 'Escape'); expect(controller.open).toBe(false); expect(document.activeElement).toBe(trigger); controller.destroy();
   });
+  it('[POPOVER-05] an Escape that a control inside the panel has cancelled leaves the popover open', () => {
+    const root = popover(); const changed = vi.fn(); const controller = createPopover(root, { onOpenChange: changed }); controller.show(); changed.mockClear();
+    const input = root.querySelector('input')!; input.addEventListener('keydown', event => { if (event.key === 'Escape') event.preventDefault(); }); input.focus();
+    key(input, 'Escape'); expect(controller.open).toBe(true); expect(document.activeElement).toBe(input); expect(changed).not.toHaveBeenCalled(); controller.destroy();
+  });
   it('[POPOVER-02] the panel is div.hw-popover-panel[role=region] with the application content only', () => {
     const root = popover(); const controller = createPopover(root); const panel = root.querySelector('[data-hw-panel]')!;
     expect(panel.localName).toBe('div'); expect(panel.className).toBe('hw-popover-panel'); expect(panel.getAttribute('role')).toBe('region');
@@ -87,7 +97,7 @@ describe('popover', () => {
 });
 
 describe('tree view', () => {
-  const tree = (attrs = 'data-hw-expand-label="Expand {label}" data-hw-collapse-label="Collapse {label}"', toggleName = '') => mount(`<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="Documents" ${attrs}><li class="hw-tree-item" role="treeitem" data-hw-value="business"><button class="hw-tree-toggle" type="button" data-hw-tree-toggle ${toggleName}><span class="hw-icon" data-icon="add-01" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>Business</span><ul role="group"><li class="hw-tree-item" role="treeitem" data-hw-value="license"><span data-hw-tree-label>License</span></li><li class="hw-tree-item" role="treeitem" data-hw-value="lease"><span data-hw-tree-label>Lease</span></li></ul></li><li class="hw-tree-item" role="treeitem" data-hw-value="letters"><span data-hw-tree-label>Letters</span></li><li class="hw-tree-item" role="treeitem" data-hw-value="lists"><span data-hw-tree-label>Lists</span></li></ul>`);
+  const tree = (attrs = 'data-hw-expand-label="Expand {label}" data-hw-collapse-label="Collapse {label}"', toggleName = '') => mount(`<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="Documents" ${attrs}><li class="hw-tree-item" role="treeitem" data-hw-value="business"><button class="hw-tree-toggle" type="button" data-hw-tree-toggle ${toggleName}><span class="hw-icon" data-icon="add-01" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>Business</span></li><li class="hw-tree-item" role="treeitem" data-hw-value="license" aria-level="2"><span data-hw-tree-label>License</span></li><li class="hw-tree-item" role="treeitem" data-hw-value="lease" aria-level="2"><span data-hw-tree-label>Lease</span></li><li class="hw-tree-item" role="treeitem" data-hw-value="letters"><span data-hw-tree-label>Letters</span></li><li class="hw-tree-item" role="treeitem" data-hw-value="lists"><span data-hw-tree-label>Lists</span></li></ul>`);
   const toggle = (root: HTMLElement) => root.querySelector<HTMLButtonElement>('.hw-tree-toggle')!;
   it('[TREE-03] a branch toggle is out of the tab order and named and drawn after its state; a leaf has none', () => {
     const root = tree(); const controller = createTreeView(root); const button = toggle(root);
@@ -101,9 +111,15 @@ describe('tree view', () => {
     expect(document.activeElement).toBe(root.querySelector('[data-hw-value="business"]'));
     expect([...root.querySelectorAll<HTMLElement>('[tabindex="0"]')].map(node => node.localName)).toEqual(['li']); controller.destroy();
   });
-  it('[TREE-05] a tree item is named by its label alone', () => {
-    const root = tree(); const controller = createTreeView(root);
-    for (const item of root.querySelectorAll('[role=treeitem]')) expect(document.getElementById(item.getAttribute('aria-labelledby')!)!.textContent).toBe(item.querySelector('[data-hw-tree-label]')!.textContent);
+  it('[TREE-01] the flat list is indented by --hw-tree-depth and hides the rows of a collapsed branch', () => {
+    const root = tree(); const before = root.outerHTML; const controller = createTreeView(root); const rows = () => [...root.querySelectorAll<HTMLElement>('[role=treeitem]')];
+    expect(rows().map(item => [item.style.getPropertyValue('--hw-tree-depth'), item.style.paddingInlineStart, item.hidden])).toEqual([['0', '', false], ['1', '', true], ['1', '', true], ['0', '', false], ['0', '', false]]);
+    controller.toggle('business'); expect(rows().map(item => item.hidden)).toEqual([false, false, false, false, false]); expect(root.querySelector('[role=group]')).toBeNull();
+    controller.destroy(); expect(root.outerHTML).toBe(before);
+  });
+  it('[TREE-05] a tree item is named by its label alone and holds no other text (WCAG 2.5.3)', () => {
+    const root = tree(); const controller = createTreeView(root, { expanded: ['business'] });
+    for (const item of root.querySelectorAll('[role=treeitem]')) { const name = document.getElementById(item.getAttribute('aria-labelledby')!)!.textContent; expect(name).toBe(item.querySelector('[data-hw-tree-label]')!.textContent); expect(item.textContent!.trim()).toBe(name); expect(item.querySelector('[role=treeitem]')).toBeNull(); }
     controller.destroy(); expect(root.querySelector('[aria-labelledby]')).toBeNull();
   });
   it('[TEXT-01] a missing expand label leaves the toggle unnamed with one warning; an authored name stays without a warning', () => {

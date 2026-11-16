@@ -162,8 +162,17 @@ positioned `.hw-combobox`, so the list opens under the input:
 `{ value, label }` when the selection changed, `{ open }` when the popup opened or
 closed, and `{ query }` for every accepted input event (typed text only; a
 selection, a reset or a script write notifies no query). Read the value with
-`'value' in event.detail`. The popup stays closed while the input is disabled or
-read-only.
+`'value' in event.detail`. Focus on the input opens the popup, as do a click,
+typing and the arrow keys, in the four adapters. The popup stays closed while
+the input is disabled or read-only.
+
+`createMenu` reports an activation in this order: `hw:change` with `{ value }`
+and `onAction(value)`, then the closing (`{ open: false }`, `onOpenChange`),
+then focus returns to the trigger. An Escape that a control inside a popover or
+menu panel has cancelled (`preventDefault`) leaves the panel open.
+
+`createTabs` looks for each panel inside its root, so a root may be enhanced
+before it is inserted into the document; a panel outside the root is rejected.
 
 **ToggleGroup.** Single mode: `label > input[type=radio] + text` per option
 (no class, span or `data-selected`), empty value `''`, `required` on the radios.
@@ -183,7 +192,7 @@ Changed in this release:
 | Combobox | `hw:change` always carried `detail.value`; documented hint inside `[data-hw=combobox]` | also `{ open }` and `{ query }`; `div.hw-field > label, div.hw-combobox, p.hw-hint` | test `'value' in event.detail`; move hint and error after the `.hw-combobox` element |
 | MultiSelect | results status written at creation, only with an authored `[data-hw-status]` | status created when missing and written only after the reader filters; `getResultsMessage` required | supply `data-hw-results-message` |
 | TagInput | documented `label.hw-field` around the input inside `.hw-tag-input`, `div[data-hw-tags]` after it | `div.hw-field > label.hw-label, div.hw-tag-input > ul[data-hw-tags], input[data-hw-tag-input]` | move the label out and use a `ul` |
-| PinInput | `maxlength` written on the input | removed while enhanced; paste normalised before the length applies | none |
+| PinInput | `maxlength` written on the input | the authored `maxlength` (or `options.length`, else 6) is still the length; the attribute is removed while enhanced and restored on `destroy()`, and `pattern` is overwritten; paste normalised before the length applies | none: keep `maxlength="N"` in the markup |
 | Calendar | standalone calendar rendered the Gregorian / Hijri switch and read `calendarSystemLabel`, `gregorianLabel`, `hijriLabel`; `unsupportedMessage` always required | no switch; the three texts belong to DatePicker; `unsupportedMessage` required while the calendar is `islamic-umalqura`; reset notifies | delete `data-hw-calendar-system-label`, `data-hw-gregorian-label` and `data-hw-hijri-label` from a standalone calendar root and call `controller.setCalendar(system)` from your own control |
 | DatePicker | `div.hw-calendar-options` inside the `.hw-calendar` root; no visible message; output showed the long date or a message | switch directly before the calendar root in the dialog body; message in `[data-hw-error]` or a created `p.hw-error[role=alert]`; output shows the full date only | `.hw-calendar > .hw-calendar-options` -> `.hw-dialog-body > .hw-calendar-options`; optionally add `<p class="hw-error" data-hw-error></p>` where the message must appear |
 | DataTable | `onSortChange({ key, direction })`; `hw:change` detail `{ value, key, direction }` | `onSortKeyChange(key)`, `onSortDirectionChange(direction)`; detail `{ sortKey, sortDirection }` | `event.detail.key` -> `event.detail.sortKey`; `event.detail.direction` -> `event.detail.sortDirection` |
@@ -191,6 +200,7 @@ Changed in this release:
 | Stepper | complete and upcoming steps had no text equivalent | `completeLabel` and `upcomingLabel` (`data-hw-complete-label`, `data-hw-upcoming-label`) are required and rendered as hidden state text | add both attributes to the list; remove hand-written state suffixes |
 | Menu | `createMenu(root, { onSelect })`; type-ahead did not cycle on a repeated letter | `onAction(value)` and `onOpenChange(open)`; type-ahead from core `createTypeahead` | `onSelect: fn` -> `onAction: fn` |
 | TreeView | option `expandedValues`, `controller.expandedValues`, `hw:change` `detail.expandedValues`; `button[data-hw-tree-toggle]` with a fixed authored `aria-label`; an unmatched letter was cancelled | `expanded` in the three places; `button.hw-tree-toggle` named by `getExpandLabel` / `getCollapseLabel`; unmatched keys keep their default | `expandedValues` -> `expanded`; add `class="hw-tree-toggle"` and `data-hw-expand-label="… {label}" data-hw-collapse-label="… {label}"` |
+| TreeView | child items nested in `ul[role="group"]` inside their parent `li[role="treeitem"]` | one flat list, parent first: every item is a child of the root and carries `aria-level` below the first level; the controller hides the rows of a collapsed branch and throws for a nested tree item | move each child `li` out of its group to follow its parent, add `aria-level="2"` (3, …), remove the `ul[role="group"]` |
 | Feedback | `value: string`; `onValueChange(string)`; `getStatusMessage`; status on the choice | `value: FeedbackValue` (`{ helpful, comment }`); `onValueChange(FeedbackValue)`; `onFeedback`; authored comment step; status after submit | `detail.value === 'yes'` -> `detail.value.helpful === true`; `getStatusMessage` -> `successMessage`; add the `[data-hw-feedback-comment]` block, or leave it out to report on the choice |
 | CookieConsent | `onValueChange(choice)`; `controller.value`; `hw:change` `{ value }` | `onConsent(choice)`, `onOpenChange(open)`; `controller.open`, `setOpen`; `hw:change` `{ consent }` and `{ open }` | `onValueChange` -> `onConsent`; `event.detail.value` -> `event.detail.consent`; give Reject `data-variant="secondary"` |
 | NotificationList | `data-unread="true"` or `data-read="false"` styled as unread | `data-state="unread"` only | `data-unread="true"` -> `data-state="unread"` |
@@ -366,7 +376,10 @@ id joins the input's `aria-describedby` after the formatted date and the hint. A
 authored `.hw-error` with text is the application's error and wins. A failed
 submission (`invalid` event) sets `aria-invalid="true"` until the date is valid
 again or the form resets. Opening the dialog moves focus to the selected day,
-or today. A standalone Calendar has one `p.hw-sr-only[role=status]` after its
+or today. Each opening starts again from the selected day: the focus memory of
+the last opening is dropped, a typed date is the focused day, and the month
+shown comes only from a value inside `min` and `max` (else today's month).
+A standalone Calendar has one `p.hw-sr-only[role=status]` after its
 grid that holds `unsupportedMessage` while the Hijri calendar cannot show the
 value. A native reset restores the authored value (DatePicker: the input's
 `defaultValue`; Calendar: `value` or `data-hw-value`) and fires `hw:change` and
@@ -455,15 +468,154 @@ buttons that the application handles:
       <button type="button" class="hw-button" data-variant="ghost" data-size="md" data-hw-mark-read>Mark as read</button>
       <button type="button" class="hw-button" data-variant="ghost" data-size="md" data-hw-dismiss aria-label="Dismiss: Request approved"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>
     </li>
+    <li data-state="read">
+      <h3>Request received</h3>
+      <button type="button" class="hw-button" data-variant="ghost" data-size="md" data-hw-dismiss aria-label="Dismiss: Request received"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button>
+    </li>
   </ul>
 </section>
 ```
 
-An empty list is one `<p>` in place of the `ul`. Before removing or re-rendering
+An empty list is one `<p>` in place of the `ul`, without a role:
+
+#### NotificationList without items
+
+```html
+<section class="hw-notification-list" aria-labelledby="empty-notifications-title">
+  <h2 id="empty-notifications-title">Notifications</h2>
+  <p>No notifications.</p>
+</section>
+```
+
+Before removing or re-rendering
 an item after an action, call `prepareRemovalFocus(section, button, { item:
 ':scope > ul > li', control: '[data-hw-dismiss]', fallback: section })` (or
 `'[data-hw-mark-read]'`) and run the result afterwards: focus moves to the same
 control of the next item, then the previous one, then the list.
+
+### Markup of the static components
+
+The components below are markup and classes only. Each example is the documented
+structure, the one the framework adapters render; the package tests mount these
+examples and check them against the stylesheet. Text, dates and numbers are
+application content.
+
+#### Alert tones
+
+```html
+<div class="hw-alert" data-tone="danger" role="alert"><div class="hw-alert-content"><p>The file was not uploaded.</p></div></div>
+<div class="hw-alert" data-tone="info" role="status"><div class="hw-alert-content"><p>Uploads close on Thursday.</p></div></div>
+```
+
+#### Progress, Meter and Spinner
+
+A value above `max` is left as authored and the browser shows a full bar; a
+`progress` without `value` is indeterminate. `low`, `high` and `optimum` are
+written on a meter only when the application has them.
+
+```html
+<progress class="hw-progress" aria-label="Upload" value="150" max="100" data-size="sm"></progress>
+<progress class="hw-progress" aria-label="Loading"></progress>
+<meter class="hw-meter" aria-label="Storage" min="0" max="100" value="10"></meter>
+<meter class="hw-meter" aria-label="Score" min="0" max="100" value="80" low="30" high="70" optimum="90"></meter>
+<span class="hw-skeleton" data-variant="circle" aria-hidden="true"></span>
+<span class="hw-spinner" role="status" data-size="lg"><span class="hw-sr-only">Loading</span></span>
+```
+
+#### EmptyState
+
+The optional icon sits in `span.hw-empty-icon` before the heading; the action is
+the last child.
+
+```html
+<div class="hw-empty">
+  <span class="hw-empty-icon" aria-hidden="true"><span class="hw-icon" data-icon="search-01"></span></span>
+  <h3>No results</h3>
+  <p>Change the filters.</p>
+  <button type="button" class="hw-button">Clear filters</button>
+</div>
+```
+
+#### AvatarGroup
+
+```html
+<div class="hw-avatar-group" role="group" aria-label="Team">
+  <span class="hw-avatar" data-size="64" data-variant="square" role="img" aria-label="Rana Cole">RC</span>
+  <span class="hw-avatar" role="img" aria-label="Sami">S</span>
+</div>
+```
+
+#### DescriptionList
+
+`data-variant="horizontal"` is written only for that layout.
+
+```html
+<dl class="hw-description-list"><div><dt>Fee</dt><dd>100</dd></div></dl>
+<dl class="hw-description-list" data-variant="horizontal"><div><dt>Fee</dt><dd>100</dd></div></dl>
+```
+
+#### Stat
+
+Label, value, description and trend, in that order; `data-tone` on the root and
+on the trend is `success` or `danger` (the root also takes `neutral`). There is
+no `dl`.
+
+```html
+<div class="hw-stat" data-tone="danger">
+  <span class="hw-stat-label">Requests</span>
+  <strong class="hw-stat-value"><bdi><span class="hw-riyal" aria-hidden="true"></span>120 <span class="hw-sr-only">riyals</span></bdi></strong>
+  <p class="hw-stat-description">This month</p>
+  <span class="hw-stat-trend" data-tone="success"><span class="hw-icon" data-icon="arrow-up-01" aria-hidden="true"></span>12%</span>
+</div>
+```
+
+#### Timeline
+
+Every item is `li.hw-timeline-item` with `data-state="complete|current|upcoming"`;
+the current step also carries `aria-current="step"`. The date is a `time` with
+`datetime` and application text.
+
+```html
+<ol class="hw-timeline">
+  <li class="hw-timeline-item" data-state="complete"><h3>Submitted</h3><time datetime="2026-10-27">27 October 2026</time><p>Received.</p></li>
+  <li class="hw-timeline-item" data-state="current" aria-current="step"><h3>Review</h3></li>
+  <li class="hw-timeline-item" data-state="upcoming"><h3>Decision</h3></li>
+</ol>
+```
+
+#### Button and Link
+
+A button inside a form states its `type`. Attributes written on the anchor stay
+on `a.hw-link`.
+
+```html
+<form><button type="button" class="hw-button">Save draft</button><button type="submit" class="hw-button">Send</button></form>
+<a class="hw-link" data-variant="neutral" href="/guide" hreflang="ar" aria-current="page" target="_blank" rel="noopener noreferrer">Guide</a>
+```
+
+#### ServiceCard
+
+The badge precedes the `h3` in the header; the title is not a link, and the
+footer holds the one action.
+
+```html
+<article class="hw-card hw-service-card">
+  <header class="hw-card-header"><div><span class="hw-badge" data-tone="neutral">Licences</span><h3>Commercial licence</h3></div></header>
+  <div class="hw-card-body"><p>Issue a licence.</p><dl class="hw-description-list"><div><dt>Duration</dt><dd>3 days</dd></div><div><dt>Fee</dt><dd>100</dd></div></dl></div>
+  <footer class="hw-card-footer"><a class="hw-link" href="/apply">Apply</a></footer>
+</article>
+```
+
+#### ServiceDetails
+
+```html
+<article class="hw-service-details">
+  <header><h2>Commercial licence</h2><p>Issue a licence.</p></header>
+  <dl class="hw-description-list"><div><dt>Duration</dt><dd>3 days</dd></div><div><dt>Fee</dt><dd>100</dd></div></dl>
+  <section><h3>Requirements</h3><ul><li>Identity</li></ul></section>
+  <footer><button type="button" class="hw-button">Apply</button></footer>
+</article>
+```
 
 ## Native input types
 

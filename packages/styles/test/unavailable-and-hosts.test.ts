@@ -15,6 +15,7 @@ const channels=(hex:string,backdrop=[1,1,1])=>{const alpha=hex.length===9?Number
 const luminance=(rgb:number[])=>rgb.map(value=>value<=0.04045?value/12.92:((value+0.055)/1.055)**2.4).reduce((sum,value,index)=>sum+value*[0.2126,0.7152,0.0722][index]!,0);
 const ratio=(foreground:string,background:string,surface:string)=>{const back=channels(background,channels(surface));const [low,high]=[luminance(channels(foreground,back)),luminance(back)].sort((x,y)=>x-y);return (high!+0.05)/(low!+0.05);};
 const modes=Object.entries(tokens.themes as Record<string,Record<string,{color:Record<string,{$value:string}>}>>).filter(([name])=>!name.startsWith('$')).flatMap(([name,theme])=>Object.entries(theme).map(([mode,values])=>({name:`${name} ${mode}`,color:(key:string):string=>{const value=values.color[key]!.$value;const alias=/^\{color\.([a-z0-9-]+)\}$/.exec(value)?.[1];return alias?values.color[alias]!.$value:value;}})));
+const mix=(foreground:string,background:string,share:number)=>'#'+channels(foreground).map((value,index)=>Math.round((value*share+channels(background)[index]!*(1-share))*255).toString(16).padStart(2,'0')).join('');
 const physical=/(?:^|[;\s])(?:(?:margin|padding|border)-(?:left|right|top|bottom)|left|right|top|bottom|width|height|min-width|max-width|min-height|max-height|text-align:\s*(?:left|right))\b\s*:?/;
 
 describe('Angular wrapper hosts',()=>{
@@ -82,6 +83,22 @@ describe('controls that stay focusable while unavailable',()=>{
   });
 });
 
+describe('review fixes of milestone 3',()=>{
+  it('[TREE-01] the tree is one flat list: no rule styles a nested group, and a hidden row stays hidden without the item class',()=>{
+    for(const line of extended.split('\n').filter(line=>line.includes('hw-tree'))) expect(line).not.toContain(`[role='group']`);
+    expect(extended).toContain(`:is(.hw-tree-item, .hw-tree-view [role='treeitem'])[hidden] { display: none; }`);
+  });
+  it('[PORTAL-09] the current top-level link of the header is semibold through the header rule, with or without the link class',()=>{
+    expect(declarations(extended,`.hw-portal-header nav a[aria-current='page']`)).toContain('font-weight: var(--hw-weight-semibold);');
+  });
+  it('[PROGRESS-04] the filled part of a progress bar is primary in light mode and primary-text in dark mode, in every way it is drawn',()=>{
+    expect(components).toContain('.hw-progress { --_hw-progress-value: light-dark(var(--hw-color-primary), var(--hw-color-primary-text)); }');
+    expect(components).toContain(`:where([data-hw-mode='dark']) .hw-progress { --_hw-progress-value: var(--hw-color-primary-text); }`);
+    for(const selector of ['.hw-progress::-webkit-progress-value','.hw-progress::-moz-progress-bar','.hw-progress > span']) expect(declarations(components,selector)).toContain('background: var(--_hw-progress-value);');
+    expect(components.split('\n').filter(line=>/progress/.test(line)&&/background:[^;]*var\(--hw-color-primary\)/.test(line))).toEqual([]);
+    for(const mode of modes){const dark=mode.name.endsWith('dark');const track=dark?mix(mode.color('text'),mode.color('surface'),0.2):mode.color('surface-muted');expect(ratio(mode.color(dark?'primary-text':'primary'),track,mode.color('surface')),mode.name).toBeGreaterThanOrEqual(3);}
+  });
+});
 describe('tree toggle and tree indentation',()=>{
   const toggle=declarations(extended,'.hw-tree-toggle');
   it('is a borderless button with a 1.75rem target (WCAG 2.5.8) that reads the depth of a flat tree',()=>{

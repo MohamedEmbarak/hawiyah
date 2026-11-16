@@ -300,20 +300,25 @@
    palette gives surface and surface-muted the same value; light mode keeps
    surface-muted. */
 .hw-progress, .hw-skeleton, .hw-meter meter, meter.hw-meter { --_hw-track: var(--hw-color-surface-muted); }
+/* The filled part of a progress bar must stand out from its track (WCAG 1.4.11, 3:1): on the lighter dark
+   track the primary colour does not, so dark mode fills with primary-text, the lighter primary. */
+.hw-progress { --_hw-progress-value: var(--hw-color-primary); }
 @supports (color: light-dark(white, black)) {
   .hw-progress, .hw-skeleton, .hw-meter meter, meter.hw-meter { --_hw-track: light-dark(var(--hw-color-surface-muted), color-mix(in srgb, var(--hw-color-text) 20%, var(--hw-color-surface))); }
+  .hw-progress { --_hw-progress-value: light-dark(var(--hw-color-primary), var(--hw-color-primary-text)); }
 }
 @supports not (color: light-dark(white, black)) {
   :where([data-hw-mode='dark']) :is(.hw-progress, .hw-skeleton, .hw-meter meter, meter.hw-meter) { --_hw-track: color-mix(in srgb, var(--hw-color-text) 20%, var(--hw-color-surface)); }
+  :where([data-hw-mode='dark']) .hw-progress { --_hw-progress-value: var(--hw-color-primary-text); }
 }
 .hw-progress { display: block; inline-size: 100%; block-size: 0.5rem; overflow: hidden; border: 0; border-radius: var(--hw-radius-full); background: var(--_hw-track); accent-color: var(--hw-color-primary); }
 progress.hw-progress { appearance: none; }
 .hw-progress::-webkit-progress-bar { border-radius: var(--hw-radius-full); background: var(--_hw-track); }
-.hw-progress::-webkit-progress-value { border-radius: var(--hw-radius-full); background: var(--hw-color-primary); transition: width var(--hw-duration-slow); }
-.hw-progress::-moz-progress-bar { border-radius: var(--hw-radius-full); background: var(--hw-color-primary); }
-.hw-progress > span { display: block; block-size: 100%; border-radius: inherit; background: var(--hw-color-primary); }
+.hw-progress::-webkit-progress-value { border-radius: var(--hw-radius-full); background: var(--_hw-progress-value); transition: width var(--hw-duration-slow); }
+.hw-progress::-moz-progress-bar { border-radius: var(--hw-radius-full); background: var(--_hw-progress-value); }
+.hw-progress > span { display: block; block-size: 100%; border-radius: inherit; background: var(--_hw-progress-value); }
 /* Without a value the bar shows a segment moving along the inline axis. */
-progress.hw-progress:indeterminate { background: linear-gradient(var(--hw-color-primary), var(--hw-color-primary)) no-repeat, var(--_hw-track); background-size: 40% 100%, auto; animation: hw-progress-indeterminate 1.4s ease-in-out infinite; }
+progress.hw-progress:indeterminate { background: linear-gradient(var(--_hw-progress-value), var(--_hw-progress-value)) no-repeat, var(--_hw-track); background-size: 40% 100%, auto; animation: hw-progress-indeterminate 1.4s ease-in-out infinite; }
 progress.hw-progress:indeterminate:dir(rtl) { animation-direction: reverse; }
 progress.hw-progress:indeterminate::-webkit-progress-bar { background: transparent; }
 progress.hw-progress:indeterminate::-moz-progress-bar { background: transparent; }
@@ -347,7 +352,7 @@ progress.hw-progress:indeterminate::-moz-progress-bar { background: transparent;
   .hw-dialog[open], .hw-skeleton, .hw-spinner { animation: none; }
   .hw-progress::-webkit-progress-value { transition: none; }
   /* Static stripes keep indeterminate distinct from 0% without motion. */
-  progress.hw-progress:indeterminate { animation: none; background: repeating-linear-gradient(-45deg, var(--hw-color-primary) 0 0.25rem, transparent 0.25rem 0.5rem), var(--_hw-track); }
+  progress.hw-progress:indeterminate { animation: none; background: repeating-linear-gradient(-45deg, var(--_hw-progress-value) 0 0.25rem, transparent 0.25rem 0.5rem), var(--_hw-track); }
 }
 @media (forced-colors: active) {
   .hw-button, .hw-badge, .hw-chip, .hw-avatar { border: 1px solid ButtonText; }

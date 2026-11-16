@@ -21,7 +21,8 @@ export function createPopover(root: HTMLElement, options: PopoverOptions = {}): 
   };
   scope.listen(trigger, 'click', event => { if (isDisabled(trigger)) return; event.preventDefault(); if (open) close(); else show(); });
   scope.listen(root, 'click', event => { if (eventElement(event)?.closest('[data-hw-close]')) { event.preventDefault(); close(true); } });
-  scope.listen(root, 'keydown', event => { if ((event as KeyboardEvent).key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); close(true); } });
+  // An Escape that a control inside the panel has used for itself (default-prevented) is not the popover's.
+  scope.listen(root, 'keydown', event => { if ((event as KeyboardEvent).key === 'Escape' && open && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); close(true); } });
   scope.listen(root.ownerDocument, 'pointerdown', event => { if (!root.contains(event.target as Node | null)) close(); });
   scope.listen(root, 'focusout', event => { const next = (event as FocusEvent).relatedTarget as Node | null; if (next && !root.contains(next)) close(); });
   render();
@@ -48,7 +49,7 @@ export function createMenu(root: HTMLElement, options: MenuOptions = {}): Popove
     else if (key.key === 'Tab') disclosure.close();
     else if (isTypeaheadKey(key)) { const next = typeahead.next(key.key, items.map(item => item.textContent ?? ''), current, index => isDisabled(items[index]!)); if (next >= 0) { event.preventDefault(); focus(next); } }
   });
-  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; disclosure.close(true); emit(root, { value }); options.onAction?.(value); });
+  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; emit(root, { value }); options.onAction?.(value); disclosure.close(true); });
   return { get open() { return disclosure.open; }, show() { disclosure.show(); navigate(-1, 'ArrowDown'); }, close: disclosure.close, destroy() { disclosure.destroy(); scope.destroy(); } };
 }
 

@@ -130,6 +130,12 @@ describe('Popover', () => {
     act(() => container.querySelector('input')!.focus()); press(container.querySelector('input')!, 'Escape'); await act(async () => undefined);
     expect(active()).toBe(container.querySelector('[aria-controls]'));
   });
+  it('[POPOVER-05] an Escape that a control inside the panel has cancelled leaves the popover open', async () => {
+    const changed = vi.fn(); await openPopover({ onOpenChange: changed }); changed.mockClear();
+    const input = container.querySelector('input')!; input.addEventListener('keydown', event => { if (event.key === 'Escape') event.preventDefault(); }); act(() => input.focus());
+    press(input, 'Escape'); await act(async () => undefined);
+    expect(panel().hidden).toBe(false); expect(active()).toBe(input); expect(changed).not.toHaveBeenCalled();
+  });
   it('[POPOVER-02][nav-b-9] the panel is div.hw-popover-panel[role=region] holding only the application content', async () => {
     await openPopover();
     expect(panel().localName).toBe('div'); expect(panel().getAttribute('role')).toBe('region'); expect(panel().getAttribute('aria-label')).toBe('Filters');

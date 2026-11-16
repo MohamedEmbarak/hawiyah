@@ -854,10 +854,12 @@ export const FileDropzone = defineComponent({
       const result = evaluateFileSelection(files, { accept: props.accept, multiple: props.multiple, maxSize: props.maxSize });
       if (result.rejected.length) {
         if (element.value) element.value.value = "";
-        if (selection.value.length) emit("update:files", []);
+        // The rejection is reported before the emptied selection, in every adapter.
+        const held = selection.value.length > 0;
         selection.value = [];
         rejected.value = result.rejected;
         emit("reject", result.rejected);
+        if (held) emit("update:files", []);
         return;
       }
       if (drop && element.value) {

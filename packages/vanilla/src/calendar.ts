@@ -45,6 +45,8 @@ export interface CalendarController {
 
 // Calendars nested in a DatePicker dialog: the dialog's calendarLabel already reports a missing name, so the calendar does not warn again.
 const pickerCalendars = new WeakSet<Element>();
+// The picker asks its calendar to restart from the selected day at each opening; not part of the public controller.
+const pickerOpenings = new WeakMap<Element, () => void>();
 export function createCalendar(root: HTMLElement, options: CalendarOptions = {}): CalendarController {
   const scope = createCleanup(); const document = root.ownerDocument;
   // The DatePicker reports its own missing locale, so its nested calendar does not warn again.
@@ -146,7 +148,10 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
     options.onSelect?.(value);
   };
   const setMonth = (date: string) => { if (scope.destroyed || !isDateInRange(date)) return; month = date; render(); };
-  const setValue = (date: string) => { if (scope.destroyed || date && !isDateInRange(date)) return; value = date; if (date) month = date; render(); };
+  // A new value is the new tab stop; the month follows only a value inside min and max.
+  const setValue = (date: string) => { if (scope.destroyed || date && !isDateInRange(date)) return; refreshBounds(); value = date; focused = date; if (date && isDateInRange(date, min, max)) month = date; render(); };
+  // Each opening of a picker starts from the selected day, else from today: the focus memory and the month of the last opening are dropped.
+  if (pickerCalendars.has(root)) { pickerOpenings.set(root, () => { if (scope.destroyed) return; refreshBounds(); focused = value; month = value && isDateInRange(value, min, max) ? value : undefined; render(); }); scope.add(() => pickerOpenings.delete(root)); }
   const setCalendar = (system: CalendarSystem) => { if (scope.destroyed || calendar === system) return; calendar = system; month = value || month; render(); emit(root, { calendar }); options.onCalendarChange?.(calendar); };
   scope.listen(host, 'click', event => {
     const target = eventElement(event)?.closest<HTMLElement>('button'); if (!target || isDisabled(target)) return;
@@ -314,7 +319,7 @@ export function createDatePicker(root: HTMLElement, options: DatePickerOptions =
     validate();
     if (lastNotifiedValue !== value) { lastNotifiedValue = value; emit(root, { value }); options.onValueChange?.(value); }
   };
-  const show = (origin: HTMLElement = trigger) => { if (scope.destroyed || blocked()) return; calendar.setValue(value); modal.show(origin); trigger.setAttribute('aria-expanded', 'true'); host.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')?.focus(); };
+  const show = (origin: HTMLElement = trigger) => { if (scope.destroyed || blocked()) return; pickerOpenings.get(host)?.(); modal.show(origin); trigger.setAttribute('aria-expanded', 'true'); host.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')?.focus(); };
   scope.listen(trigger, 'click', event => { event.preventDefault(); show(); });
   scope.listen(input, 'keydown', event => { const key = event as KeyboardEvent; if (!key.defaultPrevented && !key.isComposing && !key.ctrlKey && !key.metaKey && !key.shiftKey && key.key === 'ArrowDown' && !blocked()) { key.preventDefault(); show(input); } });
   scope.listen(dialog, 'click', event => { if (eventElement(event)?.closest('[data-hw-date-close]')) { event.preventDefault(); modal.close(); } });

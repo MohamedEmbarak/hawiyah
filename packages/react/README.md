@@ -401,6 +401,10 @@ const [calendar, setCalendar] = useState<'gregory' | 'islamic-umalqura'>('islami
 
 The picker includes a Gregorian/Umm al-Qura selector. Switching display systems
 preserves the exact ISO day, and reopening returns to the selected date's month.
+Opening moves focus to the selected day, or today.
+Each opening starts again from the selected day: the focus memory of the last
+opening is dropped, a typed date is the focused day, and the month shown comes
+only from a value inside `min` and `max` (else today's month).
 Month, weekday and date names come from `Intl` for the required `locale`; every control name and validation message is a prop. `UMALQURA_MIN_DATE` and `UMALQURA_MAX_DATE` are exported by `@hawiyah/core`.
 
 Direction and locale remain independent of calendar. Calendar's arrows follow
@@ -453,7 +457,7 @@ applies a callback.
 | Added content/pattern | API and behavior |
 | --- | --- |
 | `Link` | Native anchor with optional `external` (new tab and noopener/noreferrer). |
-| `IconButton` | Button props plus required accessible `label`; icon children are decorative. |
+| `IconButton` | Button props plus required accessible `label` (an `aria-label` or `aria-labelledby` prop names it instead; without any of them the button is unnamed and a development warning reports it); icon children are decorative. |
 | `ButtonGroup` | Native group named by `label` (or `aria-label` / `aria-labelledby`, which win) with button children; `variant="attached"`, `orientation="vertical"`. |
 | `Chip` | Text children, optional tone, `variant="soft\|outline"`, `size="sm\|lg"`, disabled; `onRemove` renders a plain remove button named by the then-required `removeLabel`. When a chip is removed while its button has focus, focus moves to the next chip's button, else the previous one; when the last chip goes the application places focus. |
 | `DescriptionList` | `items: {term,description,key?}[]`; native dl/dt/dd; `variant="stacked\|horizontal\|compact"` (stacked when not given). |

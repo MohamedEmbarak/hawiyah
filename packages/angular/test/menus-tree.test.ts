@@ -216,6 +216,13 @@ describe('hw-popover', () => {
     inside.focus(); press(inside, 'Escape'); fixture.detectChanges(); expect(panel.hidden).toBe(true); expect(active()).toBe(trigger);
   });
 
+  it('[POPOVER-05] an Escape that a control inside the panel has cancelled leaves the popover open', () => {
+    const { fixture, trigger, panel, inside, opened } = popover();
+    trigger.click(); fixture.detectChanges(); inside.addEventListener('keydown', event => { if ((event as KeyboardEvent).key === 'Escape') event.preventDefault(); }); inside.focus();
+    press(inside, 'Escape'); fixture.detectChanges();
+    expect(panel.hidden).toBe(false); expect(active()).toBe(inside); expect(opened.mock.calls).toEqual([[true]]);
+  });
+
   it('[POPOVER-03] a disabled popover has a disabled trigger and is closed; an open one closes with one notification; content can close it', () => {
     const { fixture, trigger, panel, opened, update, host } = popover('[disabled]="disabled"', { disabled: false });
     trigger.click(); fixture.detectChanges(); host.querySelector<HTMLElement>('#done')!.click(); fixture.detectChanges();

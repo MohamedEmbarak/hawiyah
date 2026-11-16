@@ -41,6 +41,17 @@ for(const theme of [undefined,'hawiyah'])
       expect(contrast(`rgb(${sample})`,`rgb(${surface})`)).toBeGreaterThan(1.5);
     }
   });
+for(const theme of [undefined,'hawiyah'])
+  for(const mode of ['light','dark'] as const)
+    test(`[PROGRESS-04] the filled part has 3:1 against its track and the surface (${theme??'dga'} theme, ${mode})`,async({page})=>{
+      await page.emulateMedia({reducedMotion:'reduce'});
+      await openFixture(page,body,{mode,theme});
+      const png=await page.locator('#surface').screenshot();
+      const box=(await page.locator('#surface').boundingBox())!;const part=(await page.locator('#part').boundingBox())!;
+      const [surface,value,track]=await pixels(page,png,[[4,4],[part.x-box.x+part.width*0.3,part.y-box.y+part.height/2],[part.x-box.x+part.width*0.9,part.y-box.y+part.height/2]]);
+      expect(contrast(`rgb(${value})`,`rgb(${track})`)).toBeGreaterThanOrEqual(3);
+      expect(contrast(`rgb(${value})`,`rgb(${surface})`)).toBeGreaterThanOrEqual(3);
+    });
 test('light tracks keep surface-muted',async({page})=>{
   await openFixture(page,body);
   const muted=await page.evaluate(()=>{const probe=document.createElement('i');probe.style.color='var(--hw-color-surface-muted)';document.body.append(probe);return getComputedStyle(probe).color;});

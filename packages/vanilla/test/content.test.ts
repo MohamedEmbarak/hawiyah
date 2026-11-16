@@ -72,11 +72,11 @@ describe('cookie consent', () => {
   });
 });
 
-const treeMarkup = `<ul data-hw="tree-view" role="tree" aria-label="Services" dir="rtl"><li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="Toggle business">+</button><span data-hw-tree-label>Business</span><ul role="group"><li role="treeitem" data-hw-value="blocked" aria-disabled="true"><span data-hw-tree-label>Blocked</span></li><li role="treeitem" data-hw-value="license"><span data-hw-tree-label>License</span></li></ul></li><li role="treeitem" data-hw-value="personal"><span data-hw-tree-label>Personal</span></li></ul>`;
+const treeMarkup = `<ul data-hw="tree-view" role="tree" aria-label="Services" dir="rtl"><li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" data-hw-tree-toggle tabindex="-1" aria-label="Toggle business">+</button><span data-hw-tree-label>Business</span></li><li role="treeitem" data-hw-value="blocked" aria-level="2" aria-disabled="true"><span data-hw-tree-label>Blocked</span></li><li role="treeitem" data-hw-value="license" aria-level="2"><span data-hw-tree-label>License</span></li><li role="treeitem" data-hw-value="personal"><span data-hw-tree-label>Personal</span></li></ul>`;
 describe('tree navigation', () => {
   it('expands in RTL, skips disabled nodes, selects by keyboard, and restores the DOM', () => {
     const root = mount(treeMarkup); const before = root.outerHTML; const changed = vi.fn(); const controller = createTreeView(root, {onValueChange: changed});
-    const business = root.querySelector<HTMLElement>('[data-hw-value="business"]')!; business.focus(); expect(root.querySelector<HTMLElement>('[role="group"]')!.hidden).toBe(true);
+    const business = root.querySelector<HTMLElement>('[data-hw-value="business"]')!; business.focus(); expect([...root.querySelectorAll<HTMLElement>('[role="treeitem"]')].map(item => item.hidden)).toEqual([false, true, true, false]);
     key(business, 'ArrowLeft'); expect(business.getAttribute('aria-expanded')).toBe('true'); key(business, 'ArrowLeft');
     expect((document.activeElement as HTMLElement).dataset.hwValue).toBe('license'); key(document.activeElement as HTMLElement, ' '); expect(controller.value).toBe('license'); expect(changed).toHaveBeenCalledWith('license');
     key(document.activeElement as HTMLElement, 'ArrowRight'); expect(document.activeElement).toBe(business); key(business, 'ArrowRight'); expect(business.getAttribute('aria-expanded')).toBe('false');
@@ -92,6 +92,11 @@ describe('tree navigation', () => {
     controller.toggle('business'); vi.advanceTimersByTime(501); controller.focus('business'); key(business, 'l'); expect((document.activeElement as HTMLElement).dataset.hwValue).toBe('license');
     controller.toggle('business'); expect(document.activeElement).toBe(business);
     controller.destroy(); vi.runAllTimers(); expect(root.querySelectorAll('[tabindex="0"]')).toHaveLength(0);
+  });
+
+  it('rejects nested tree items without modifying markup: a labelled item must not contain its child items', () => {
+    const root = mount(`<ul><li role="treeitem" data-hw-value="one"><span data-hw-tree-label>One</span><ul role="group"><li role="treeitem" data-hw-value="two"><span data-hw-tree-label>Two</span></li></ul></li></ul>`); const before = root.outerHTML;
+    expect(() => createTreeView(root)).toThrow('flat list'); expect(root.outerHTML).toBe(before);
   });
 
   it('rejects duplicate item values without partially modifying markup', () => {

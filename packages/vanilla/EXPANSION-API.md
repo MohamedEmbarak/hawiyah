@@ -220,7 +220,8 @@ output associated through `aria-describedby` (after the application's ids, befor
 the hint and error), announcing the full date with the weekday in the chosen
 calendar while the native input retains Gregorian ISO editing. Blank values and
 values the calendar cannot show hide it; it never carries a message. Opening the
-dialog moves focus to the selected day, or today. A native reset restores the
+dialog moves focus to the selected day, or today, and starts again from it at
+each opening; the month shown comes only from a value inside `min` and `max`. A native reset restores the
 input's `defaultValue`, closes the dialog, clears the message and notifies once
 when the value changed.
 `onSelect` fires even when confirming the current date; value callbacks fire only
@@ -271,16 +272,24 @@ button hides its closest `[data-hw-toast]`. Urgent messages can have role=alert;
 the region defaults to polite status.
 
 ```html
-<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="Documents" data-hw-expand-label="Expand {label}" data-hw-collapse-label="Collapse {label}"><li class="hw-tree-item" role="treeitem" data-hw-value="business" aria-expanded="true"><button class="hw-tree-toggle" type="button" data-hw-tree-toggle tabindex="-1"><span class="hw-icon" data-icon="add-01" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>Business</span><ul role="group"><li role="treeitem" data-hw-value="license"><span data-hw-tree-label>License</span></li></ul></li></ul>
+<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="Documents" data-hw-expand-label="Expand {label}" data-hw-collapse-label="Collapse {label}"><li class="hw-tree-item" role="treeitem" data-hw-value="business" aria-expanded="true"><button class="hw-tree-toggle" type="button" data-hw-tree-toggle tabindex="-1"><span class="hw-icon" data-icon="add-01" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>Business</span></li><li class="hw-tree-item" role="treeitem" data-hw-value="license" aria-level="2"><span data-hw-tree-label>License</span></li></ul>
 <section data-hw="carousel" aria-label="Featured services" data-hw-slide-label="{position} of {total}" data-hw-empty-label="No services to show"><div><article data-hw-slide>First service</article><article data-hw-slide>Second service</article></div><button type="button" data-hw-previous>Previous slide</button><span data-hw-carousel-status role="status"></span><button type="button" data-hw-next>Next slide</button></section>
 <table data-hw="data-table" class="hw-table" data-hw-locale="en"><caption>Requests</caption><thead><tr><th data-hw-key="name"><button type="button" data-hw-sort="name">Name</button></th><th data-hw-key="count" data-hw-type="number"><button type="button" data-hw-sort="count">Count</button></th></tr></thead><tbody><tr><td>Alpha</td><td>2</td></tr><tr><td>Beta</td><td>1</td></tr></tbody></table>
 <div class="hw-feedback" data-hw="feedback" role="group" aria-labelledby="feedback-label" data-choice-variant="icon-text" data-hw-success-message="Thank you for your feedback."><p id="feedback-label">Was this page helpful?</p><div class="hw-feedback-actions"><button type="button" class="hw-button" data-variant="secondary" data-hw-value="yes" aria-pressed="false"><span class="hw-icon hw-feedback-icon" data-icon="thumbs-up" aria-hidden="true"></span><span class="hw-feedback-label">Yes</span></button><button type="button" class="hw-button" data-variant="secondary" data-hw-value="no" aria-pressed="false"><span class="hw-icon hw-feedback-icon" data-icon="thumbs-down" aria-hidden="true"></span><span class="hw-feedback-label">No</span></button></div><div class="hw-feedback-comment" data-hw-feedback-comment hidden><div class="hw-field"><label class="hw-label" for="feedback-comment">Comment</label><textarea class="hw-textarea" id="feedback-comment"></textarea></div><button type="button" class="hw-button" data-hw-feedback-submit>Send</button></div><p role="status" data-hw-feedback-status></p><input type="hidden" data-hw-feedback-value name="helpful"></div>
 <section class="hw-cookie-consent" data-hw="cookie-consent" aria-labelledby="cookies-title"><h2 id="cookies-title">Cookie preferences</h2><p>Choose optional cookie preferences.</p><div class="hw-button-group"><button type="button" class="hw-button" data-variant="primary" data-hw-consent="accepted">Accept optional cookies</button><button type="button" class="hw-button" data-variant="secondary" data-hw-consent="rejected">Reject optional cookies</button></div></section>
 ```
 
-Tree items use stable `data-hw-value`, optional `aria-disabled="true"`, nested
-role=group, and a label part (`[data-hw-tree-label]`); the controller names an
-unnamed item with `aria-labelledby` to its label. The branch toggle
+The tree is one flat list, ordered parent first, as the framework adapters
+render it. Tree items use stable `data-hw-value`, optional
+`aria-disabled="true"`, the authored `aria-level` of every item below the first
+level, and a label part (`[data-hw-tree-label]`); an item holds its toggle and
+its label only and never contains its child items, because a labelled item
+would then show text that is not in its name (WCAG 2.5.3). `createTreeView`
+throws for a tree item nested in another. The parent of an item is the nearest
+earlier item one level up; the controller writes `aria-posinset`,
+`aria-setsize`, `aria-expanded` on branches and `--hw-tree-depth`, hides the
+rows of a collapsed branch with `hidden`, and names an unnamed item with
+`aria-labelledby` to its label. The branch toggle
 `button.hw-tree-toggle[data-hw-tree-toggle]` is not a tab stop and is named by
 `getExpandLabel(node)` while collapsed and `getCollapseLabel(node)` while expanded
 (`node` is `{ id, label }`; or the templates `data-hw-expand-label` and

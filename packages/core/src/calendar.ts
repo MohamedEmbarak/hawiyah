@@ -121,7 +121,8 @@ export function getCalendarMonth(options: CalendarMonthOptions): CalendarMonth {
   if (!Number.isInteger(weekStartsOn) || weekStartsOn < 0 || weekStartsOn > 6) throw new RangeError('Hawiyah: weekStartsOn must be 0 through 6.');
   const system = calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar();
   const currentDay = today('Asia/Riyadh');
-  let anchor = iso(date(options.month || options.value || iso(currentDay)));
+  // Without a month the selected value decides it, but only a value inside min and max; otherwise today.
+  let anchor = iso(date(options.month || (options.value && isDateInRange(options.value, options.min, options.max) ? options.value : '') || iso(currentDay)));
   if (calendar === 'islamic-umalqura') anchor = anchor < UMALQURA_MIN_DATE ? UMALQURA_MIN_DATE : anchor > UMALQURA_MAX_DATE ? UMALQURA_MAX_DATE : anchor;
   const first = startOfMonth(toCalendar(date(anchor), system));
   const offset = (first.toDate('UTC').getUTCDay() - weekStartsOn + 7) % 7;

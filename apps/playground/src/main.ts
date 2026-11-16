@@ -229,7 +229,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "spinner":
       return loaderDemo(state.locale);
     case "skeleton":
-      return `<div class="hw-stack" aria-label="${t("Loading content", "جارٍ تحميل المحتوى")}" role="status"><div class="hw-skeleton" style="height:18px;width:70%"></div><div class="hw-skeleton" style="height:12px"></div><div class="hw-skeleton" style="height:12px;width:85%"></div></div>`;
+      return `<div class="hw-stack" role="status"><span class="hw-sr-only">${t("Loading content", "جارٍ تحميل المحتوى")}</span><div class="hw-skeleton" aria-hidden="true" style="height:18px;width:70%"></div><div class="hw-skeleton" aria-hidden="true" style="height:12px"></div><div class="hw-skeleton" aria-hidden="true" style="height:12px;width:85%"></div></div>`;
     case "avatar":
       return `<div class="hw-cluster"><span class="hw-avatar" role="img" aria-label="${t("Noura", "نورة")}">${t("N", "ن")}</span><span class="hw-avatar" role="img" aria-label="${t("Amal", "أمل")}">${t("A", "أ")}</span><span class="hw-avatar" role="img" aria-label="${t("Mohammed", "محمد")}">${t("M", "م")}</span></div>`;
     case "divider":

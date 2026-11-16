@@ -127,8 +127,9 @@ export function FileDropzone({ onFilesChange, onReject, dropLabel, getRejectedMe
   const unavailable = () => props.disabled || readOnly || !input.current || isDisabled(input.current);
   const reject = (batch: File[]) => {
     if (input.current) input.current.value = '';
-    if (files.length) onFilesChange?.([]);
+    // The rejection is reported before the emptied selection, in every adapter.
     setFiles([]); setRejected(batch); onReject?.(batch);
+    if (files.length) onFilesChange?.([]);
   };
   const evaluate = (batch: File[]) => evaluateFileSelection(batch, { accept: props.accept, multiple: props.multiple, maxSize });
   // The application's `error` wins; a rejection is announced once through role=alert.

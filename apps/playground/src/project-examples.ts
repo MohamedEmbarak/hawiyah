@@ -381,9 +381,9 @@ export function projectExample(
     vue = `<Progress label="${t("Upload progress", "تقدم الرفع")}" :value="65" :max="100" />`;
     angular = `<hw-progress label="${t("Upload progress", "تقدم الرفع")}" [value]="65" [max]="100" />`;
   } else if (id === "skeleton") {
-    react = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style={{inlineSize:'100%',blockSize:'4rem'}} /></div>`;
-    vue = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><Skeleton style="inline-size:100%;block-size:4rem" /></div>`;
-    angular = `<div aria-busy="true" aria-label="${t("Loading content", "تحميل المحتوى")}"><hw-skeleton style="inline-size:100%;block-size:4rem" /></div>`;
+    react = `<div role="status"><span className="hw-sr-only">${t("Loading content", "تحميل المحتوى")}</span><Skeleton style={{inlineSize:'100%',blockSize:'4rem'}} /></div>`;
+    vue = `<div role="status"><span class="hw-sr-only">${t("Loading content", "تحميل المحتوى")}</span><Skeleton style="inline-size:100%;block-size:4rem" /></div>`;
+    angular = `<div role="status"><span class="hw-sr-only">${t("Loading content", "تحميل المحتوى")}</span><hw-skeleton style="inline-size:100%;block-size:4rem" /></div>`;
   } else if (id === "rating") {
     state = true; numberState = true; initialValue = "4";
     const cases = ratingDemoCases(locale).map(item => ({...item, ...ratingNativeMarkup(locale,item.kind,item.kind==='selected')}));

@@ -250,6 +250,26 @@ describe('DatePicker', () => {
     text().focus(); await key(text(), 'ArrowDown');
     expect((document.activeElement as HTMLElement).dataset.date).toBe('2026-10-14');
   });
+  it('[DATE-PICKER-11] a typed date is the focused day on opening; the focus memory restarts at each opening', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    await render(<DatePicker {...pickerTexts} label="Date" />);
+    const trigger = container.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!; const active = () => (document.activeElement as HTMLElement).dataset.date;
+    const close = () => act(async () => { container.querySelector('dialog')!.dispatchEvent(new Event('cancel', { cancelable: true })); });
+    await edit(text(), '2026-10-20'); await act(async () => trigger.click()); expect(active()).toBe('2026-10-20');
+    await key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-21'); await close();
+    await edit(text(), '2026-10-05'); await act(async () => trigger.click()); expect(active()).toBe('2026-10-05');
+    await key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-06'); await close();
+    await edit(text(), ''); await act(async () => trigger.click()); expect(active()).toBe('2026-10-14');
+  });
+  it('[DATE-PICKER-12] the shown month comes only from a value inside min and max', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    await render(<DatePicker {...pickerTexts} label="Date" max="2026-12-31" />);
+    const trigger = container.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!; const shown = () => container.querySelector<HTMLElement>('.hw-calendar-day:not([data-outside])')!.dataset.date;
+    const close = () => act(async () => { container.querySelector('dialog')!.dispatchEvent(new Event('cancel', { cancelable: true })); });
+    await edit(text(), '2027-01-05'); await act(async () => trigger.click()); expect(shown()).toBe('2026-10-01'); expect((document.activeElement as HTMLElement).dataset.date).toBe('2026-10-14'); await close();
+    await edit(text(), '2026-03-20'); await act(async () => trigger.click()); expect(shown()).toBe('2026-03-01'); await close();
+    await edit(text(), ''); await act(async () => trigger.click()); expect(shown()).toBe('2026-10-01');
+  });
   it('[DATE-PICKER-04] Escape returns focus to the element that opened the dialog', async () => {
     await render(<DatePicker {...pickerTexts} label="Date" defaultValue="2026-10-28" />);
     const trigger = container.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!;

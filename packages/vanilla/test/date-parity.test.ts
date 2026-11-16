@@ -154,6 +154,23 @@ describe('date picker parity', () => {
     vi.useFakeTimers({ now: new Date('2026-10-14T09:00:00Z'), toFake: ['Date'] });
     const { root, trigger } = picker(); const controller = createDatePicker(root); trigger.click(); expect(active()).toBe('2026-10-14'); controller.destroy();
   });
+  it('[DATE-PICKER-11] a typed date is the focused day on opening; the focus memory restarts at each opening', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-14T09:00:00Z'), toFake: ['Date'] });
+    const { root, input, trigger } = picker(); const controller = createDatePicker(root);
+    type(input, '2026-10-20'); trigger.click(); expect(active()).toBe('2026-10-20');
+    key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-21'); controller.close();
+    type(input, '2026-10-05'); trigger.click(); expect(active()).toBe('2026-10-05');
+    key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-06'); controller.close();
+    type(input, ''); trigger.click(); expect(active()).toBe('2026-10-14'); controller.destroy();
+  });
+  it('[DATE-PICKER-12] the shown month comes only from a value inside min and max', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-14T09:00:00Z'), toFake: ['Date'] });
+    const { root, input, trigger } = picker({ input: 'max="2026-12-31"' }); const controller = createDatePicker(root);
+    const shown = () => root.querySelector<HTMLElement>('.hw-calendar-day:not([data-outside])')!.dataset.hwDate;
+    type(input, '2027-01-05'); trigger.click(); expect(shown()).toBe('2026-10-01'); expect(active()).toBe('2026-10-14'); controller.close();
+    type(input, '2026-03-20'); trigger.click(); expect(shown()).toBe('2026-03-01'); controller.close();
+    type(input, ''); trigger.click(); expect(shown()).toBe('2026-10-01'); controller.destroy();
+  });
   it('[CALENDAR-06] [DATE-PICKER-06] the picker owns one switch before its calendar and one status', () => {
     const { root, dialog } = picker({ value: '1900-01-01' }); const changed = vi.fn(); root.addEventListener('hw:change', event => changed((event as CustomEvent).detail));
     const controller = createDatePicker(root); const host = root.querySelector('[data-hw-date-calendar]')!;

@@ -3397,9 +3397,10 @@
           "tests": [
             "expands in RTL, skips disabled nodes, selects by keyboard, and restores the DOM",
             "supports visible-node typeahead and leaves modified shortcuts alone",
+            "rejects nested tree items without modifying markup: a labelled item must not contain its child items",
             "rejects duplicate item values without partially modifying markup"
           ],
-          "scope": "RTL tree expansion, disabled skipping, selection, typeahead, modified shortcuts, duplicate validation, and cleanup are checked.",
+          "scope": "RTL tree expansion of the flat list, disabled skipping, selection, typeahead, modified shortcuts, nested-item and duplicate validation, and cleanup are checked.",
           "command": "pnpm test",
           "result": "passed",
           "date": "2026-10-28"
@@ -3459,7 +3460,7 @@
       },
       "notes": [
         "No drag-and-drop or virtualization claim.",
-        "items and expanded in every adapter; the expand and collapse toggle is button.hw-tree-toggle, outside the tab order, named by getExpandLabel(node) and getCollapseLabel(node); type-ahead on visible nodes."
+        "items and expanded in every adapter; one flat list of li[role=treeitem] with aria-level in every adapter, the authored vanilla markup included (a tree item never contains its child items); the expand and collapse toggle is button.hw-tree-toggle, outside the tab order, named by getExpandLabel(node) and getCollapseLabel(node); type-ahead on visible nodes."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tree-view"
     },

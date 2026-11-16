@@ -77,8 +77,9 @@ boundary, not a simulated implementation.
   close/reopen clears the gesture state. Escape and explicit close remain available.
 - ToastRegion: stable live region, caller-owned messages, dismiss buttons,
   no automatic expiry by default. Alert tone only assertive for urgent messages.
-- TreeView: flattened visible nodes, roving focus, RTL-aware arrows, expansion,
-  selection, type-ahead; `items` {id,label,disabled?,children?} and `expanded`
+- TreeView: one flat list of tree items with `aria-level` in every adapter
+  (the authored vanilla markup too; an item never contains its child items),
+  roving focus, RTL-aware arrows, expansion, selection, type-ahead; `items` {id,label,disabled?,children?} and `expanded`
   in every adapter; the toggle is `button.hw-tree-toggle` named by
   `getExpandLabel(node)` / `getCollapseLabel(node)` and is not a tab stop. No
   drag/drop claim.

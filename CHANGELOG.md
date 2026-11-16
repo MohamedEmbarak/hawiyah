@@ -619,7 +619,8 @@ adapter.
   below the hint and error: `div.hw-combobox` wraps only the input, the
   hidden input, the listbox and the status. Angular `(valueChange)` fires only
   when the value changed, and a value written by the application no longer
-  closes the list.
+  closes the list. Focus on the input opens the popup in the four adapters
+  (the vanilla controller opened it on click, typing and arrows only).
 - **MultiSelect** has a visible filter label and announces the number of
   matching options after the reader filters, through the new required
   `getResultsMessage(count)` and a polite status present from the first
@@ -640,14 +641,20 @@ adapter.
   `getRejectedMessage(rejected)` with `role="alert"`. The zone cancels
   `dragover` for file drags only, with `dropEffect` `'none'` while it is
   unavailable. No adapter renders a file list: compose FileUploadList.
-  `data-state="dragging"` marks a drag.
+  `data-state="dragging"` marks a drag. A rejected batch that replaces held
+  files reports the rejection first and the emptied selection second in the
+  four adapters (React and Vue reported the empty selection first).
 - **Calendar and DatePicker.** Angular gains `isDateDisabled`,
   `unavailableMessage` and `getDayLabel`; React gains `getDayLabel` on
   DatePicker. A typed date that breaks several constraints gets the same
   message in every adapter (core `getDateViolation`: malformed, unsupported,
   out of range, unavailable). Opening the picker moves focus to the selected
   day, else today; an empty calendar's tab stop is today when it is shown and
-  available. A standalone Calendar announces a value outside the supported
+  available. Each opening starts again from the selected day: a typed date is
+  the focused day (vanilla focused today, React the day that last had focus),
+  the focus memory of the last opening is dropped, and the month shown comes
+  only from a value inside `min` and `max`, else it is today's month (core
+  `getCalendarMonth` no longer anchors on a value outside the bounds). A standalone Calendar announces a value outside the supported
   Umm al-Qura range through a status element and `unsupportedMessage` in
   every adapter. The Gregorian / Hijri switch belongs to DatePicker; the
   vanilla standalone Calendar no longer renders it.
@@ -673,15 +680,28 @@ adapter.
 - **Menu and TreeView** move focus by type-ahead in the four adapters (core
   `createTypeahead`: 500 ms buffer, a repeated letter cycles, visible nodes
   only). Menu and Popover close when focus moves outside them, without moving
-  focus; the React Popover handles Escape on its own root only.
+  focus; the React Popover handles Escape on its own root only. An Escape
+  that a control inside the panel has used for itself (default-prevented)
+  leaves the popover or menu open in the four adapters; vanilla and Angular
+  closed it. The vanilla Menu reports the action before the closing, as the
+  frameworks do.
 - **TreeView.** The expand and collapse control is `button.hw-tree-toggle` in
   every adapter, outside the tab order and named by `getExpandLabel(node)` and
   `getCollapseLabel(node)`; Angular hid it from assistive technology. Nested
-  levels are indented through `--hw-tree-depth` and `--hw-tree-indent`.
+  levels are indented through `--hw-tree-depth` and `--hw-tree-indent`. The
+  tree is one flat list of `li[role="treeitem"]` with `aria-level` in the four
+  adapters: the authored vanilla markup no longer nests `ul[role="group"]`
+  inside a tree item, because a labelled item that contains its child items
+  shows text that is not in its name (WCAG 2.5.3, axe
+  `label-content-name-mismatch`). `createTreeView` reads the authored
+  `aria-level`, hides the rows of a collapsed branch and throws for a nested
+  tree item; the `.hw-tree-view [role='group']` rules are gone.
 - **PortalHeader.** Below 48rem one press on another branch heading opens it
   and closes the open one; the click is no longer lost. A brand without a home
   link is `div.hw-portal-brand`, with `role="img"` exactly when `brandLabel`
-  is given.
+  is given. The current top-level link is semibold in the four adapters
+  through `.hw-portal-header nav a[aria-current='page']` (Vue and the vanilla
+  markup showed it in regular weight).
 - **ServiceCard and ServiceDetails** render the card anatomy of React in
   every adapter (header with category and `h3`, body, footer with the
   action); the packaged action is `a.hw-link` and exists only with `href`.
@@ -691,6 +711,20 @@ adapter.
   every other tone `role="status"`, also in Angular. Every adapter offers the
   same dismiss action, rendered while a dismiss handler is bound; the alert
   never removes itself, and the application moves focus after removing it.
+- **Progress in dark mode.** The filled part is `primary-text`, the lighter
+  primary, so that it has 3:1 against its track (it had 1.59:1 in the DGA
+  dark theme); light mode keeps `primary`.
+- **ToggleGroup (Vue).** A bound single value whose notification the
+  application ignores stays the checked and submitted option, as in React.
+- **Select (Vue).** A hydrated select shows a value held by a slotted
+  `option`; before, the first option stayed selected until the next change.
+- **IconButton.** A missing `label` is reported through the text contract in
+  React and Vue as in Angular; `aria-label` or `aria-labelledby` names the
+  button instead.
+- **Stat (Vue).** `tone` is `neutral | success | danger` and `trendTone` is
+  `success | danger`, the values the stylesheet and the other adapters have.
+- **Tabs (vanilla).** `createTabs` finds each panel inside its root, so a root
+  that is enhanced before it is inserted into the document works.
 - **Progress, Meter, Skeleton, Spinner.** Progress and Meter are one native
   element named through `aria-label`, with raw values; Meter defaults to min
   0, max 100, value 0 and no regions. Skeleton takes `variant` (`text`,
@@ -792,7 +826,8 @@ built type declarations of each package.
 | TagInput | React | `div.hw-field.hw-tag-input > div.hw-inline > span.hw-chip` with `button.hw-button` | `div.hw-tag-input > ul[role=list] > li.hw-chip` with a bare button: `.hw-inline > .hw-chip` -> `.hw-tag-input li.hw-chip` |
 | TagInput | Vue | remove button `.hw-button`; hidden inputs after the text input | bare button in the chip; hidden input in its `li`: `.hw-tag-input .hw-button` -> `.hw-chip button` |
 | TagInput | vanilla | `label.hw-field` inside `.hw-tag-input`, `div[data-hw-tags]` | `div.hw-field > label.hw-label, div.hw-tag-input > ul[data-hw-tags], input[data-hw-tag-input]` |
-| PinInput | all | `maxlength="N"` | no `maxlength`; `pattern="[0-9]{N}"` |
+| PinInput | React, Vue, Angular | the rendered input had `maxlength="N"` | the rendered input has no `maxlength`; `pattern="[0-9]{N}"`: select it by class or `inputmode`, not by `[maxlength]` |
+| PinInput | vanilla | the controller kept the authored `maxlength="N"` on the input | keep the authored `maxlength="N"` (or pass `options.length`): it remains the source of the length; the controller removes it while enhanced, restores it on `destroy()` and overwrites `pattern` |
 | PasswordField | Angular | public field `revealed` | `[(visible)]` / `visible`, `(visibleChange)` |
 | PasswordField | Angular | every value written by Angular Forms hid the password | only the toggle, the input and a native reset change visibility |
 | PasswordField | React | a reset returned to `defaultVisible` | a reset hides the value and calls `onVisibleChange(false)` |
@@ -843,6 +878,7 @@ built type declarations of each package.
 | TreeView | Angular | `nodes`, `expandedIds`, `(expandedIdsChange)`; `span.hw-tree-toggle[aria-hidden]` | `items`, `expanded`, `(expandedChange)`; `button.hw-tree-toggle`; required `getExpandLabel`, `getCollapseLabel` |
 | TreeView | React, Vue | toggle button without class; Vue `li[aria-label]` | `button.hw-tree-toggle`; `li[aria-labelledby]` |
 | TreeView | vanilla | `expandedValues` (option, controller, `detail`); toggle with a fixed `aria-label` | `expanded`; `button.hw-tree-toggle` with `data-hw-expand-label` / `data-hw-collapse-label` on the root |
+| TreeView | vanilla, styles | child items in `ul[role="group"]` inside the parent `li[role="treeitem"]`; `.hw-tree-view [role='group']` rules | one flat list, parent first: each child `li` follows its parent as a child of the root with `aria-level="2"` (3, …); no group element and no group rule |
 | PortalHeader | React | `navigation`, `brandHref`; no home link by default; `div.hw-portal-header-main` | `links`, `homeHref` (default `'/'`, `""` for no link); brand, toggle, nav and actions are children of the header |
 | PortalHeader | Angular | public field `menuOpen`; `a.hw-portal-brand` without `href` | `[(open)]`; `div.hw-portal-brand` |
 | PortalHeader | Vue | `span.hw-portal-brand[role=group]` | `div.hw-portal-brand[role=img]` |
@@ -869,6 +905,8 @@ built type declarations of each package.
 | DescriptionList | Vue | `variant` = `'horizontal'` | stacked; pass `variant="horizontal"` |
 | Stat | React | `dl > dt + dd`, `p`, `div.hw-stat-trend` | `span.hw-stat-label`, `strong.hw-stat-value`, `p.hw-stat-description`, `span.hw-stat-trend` |
 | Stat | Angular | `hw-stat > div.hw-stat`; trend as a projected span | the host is `.hw-stat`; `trend`, `trendTone` or `[hwStatTrend]` |
+| Stat | Vue | `tone` and `trendTone` typed `neutral \| success \| warning \| danger \| info` | `tone`: `neutral \| success \| danger`; `trendTone`: `success \| danger` (the tones that have a style) |
+| Menu | vanilla | `hw:change` `{ open: false }` and `onOpenChange` before `{ value }` and `onAction` | the action first, then the closing |
 | Timeline | React | `status: 'active'`; `li` without class | `'current'`; `li.hw-timeline-item > h3, time, p` |
 | Timeline | Vue | item `date` | `dateTime` with `dateLabel` |
 | Timeline | Angular | `state`, `'pending'`, `time`; no `id` | `status`, `'upcoming'`, `dateLabel` + `dateTime`; a unique `id` |
@@ -920,9 +958,34 @@ built type declarations of each package.
   the last chip or the cookie region is removed, a rich title for the Angular
   PageHeader, rich per-item content for Timeline and NotificationList in Vue
   and Angular, and an opt-out of the Feedback comment step.
-- The browser suite cases of this milestone (computed styles, geometry and
-  forced colours) are run in a separate step; the behaviour cases run in each
-  package's tests with the same case ids.
+- Browser cases of this milestone. Written and run in `tests/browser`:
+  TREE-02, TREE-05 and TREE-06 (`tree-view.spec.ts`); ALERT-04, PROGRESS-03,
+  SKELETON-02, SKELETON-04, SPINNER-04, DESCRIPTION-LIST-02, TIMELINE-03,
+  NOTIFICATION-04, CONSENT-03, CONSENT-05, COLLAPSIBLE-03, PAGE-HEADER-02,
+  TEXTAREA-02 and ATTR-06 for the form-control and table hosts
+  (`feedback-status.spec.ts`); TOGGLE-GROUP-03 (`toggle-group.spec.ts`);
+  PROGRESS-04 (`progress-states.spec.ts`). Not written, and run nowhere in
+  the repository: RESET-12, TOGGLE-GROUP-02, COMBOBOX-02, MULTISELECT-03,
+  TAGINPUT-03, PININPUT-03, FILEDROPZONE-08, FILEDROPZONE-12, TOOLTIP-04,
+  MENU-04, POPOVER-04, PORTAL-04, PORTAL-07, SERVICE-03, METER-03,
+  FEEDBACK-06, the browser half of FOCUS-01 and ATTR-06 for the sticky
+  content navigation and the popover host. They need the four adapters
+  running in one page; their behaviour was measured by hand in the reviews of
+  this milestone and is covered in jsdom by each package's tests under the
+  same ids where an id exists there.
+- A disabled FileDropzone shows its instruction in the disabled text colour
+  (2.03:1 in the DGA light theme). Text of an inactive control is exempt from
+  WCAG 1.4.3; whether the instruction should use the muted text colour is an
+  open decision.
+- The Vue server markup of a Select does not mark a slotted `option` as
+  selected (the value is applied when the component mounts or hydrates).
+- Differences that leave the accessibility tree equal and are not changed:
+  a closed Menu has one item with `tabindex="0"` in React and Vue and none in
+  vanilla and Angular; Angular `hw-toast-region` requires `label`, where
+  React and Vue also accept `aria-label` or `aria-labelledby`; the Calendar
+  region and heading structure differs between React, Vue and Angular; the
+  React Calendar submits an empty value for a date outside the Umm al-Qura
+  range, the other adapters the date.
 
 ## 0.2.1 — 2026-11-10
 

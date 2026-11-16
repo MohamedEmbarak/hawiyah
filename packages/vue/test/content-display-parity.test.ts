@@ -45,6 +45,14 @@ it('[RICH-01][content-display-14] a rich value and trend sit inside strong.hw-st
   expect(trend.querySelector('.hw-icon')).not.toBeNull(); expect(trend.textContent).toBe('5%');
 });
 
+it('[STAT-02][content-display-14] tone and trendTone declare the values the stylesheet and the other adapters have', async () => {
+  const { readFileSync } = await import('node:fs'); const { join } = await import('node:path');
+  const source = readFileSync(join(process.cwd(), 'packages/vue/src/content.ts'), 'utf8'); const stat = source.slice(source.indexOf('name: "HwStat"')).split('setup(')[0]!;
+  expect(stat).toContain('tone: String as PropType<"neutral" | "success" | "danger">'); expect(stat).toContain('trendTone: String as PropType<"success" | "danger">');
+  const react = readFileSync(join(process.cwd(), 'packages/react/src/expanded-content.tsx'), 'utf8');
+  expect(react).toContain("tone?: 'neutral' | 'success' | 'danger'; variant?: 'plain'; trendTone?: 'success' | 'danger'");
+});
+
 it('[STAT-02][content-display-14] trendTone writes data-tone on the trend; tone on the root; variant plain', () => {
   const host = mount(() => h(Stat, { label: 'A', value: 1, trend: 'up', trendTone: 'success', tone: 'danger', variant: 'plain' }));
   const root = host.querySelector('.hw-stat')!;

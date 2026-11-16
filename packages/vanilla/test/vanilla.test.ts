@@ -32,6 +32,15 @@ const comboMarkup = `<div data-hw="combobox"><label for="city">City</label>
   </ul></div>`;
 
 describe('tabs', () => {
+  it('[TABS-10] enhances a root that is not in the document yet, and rejects a panel outside the root', () => {
+    const holder = document.createElement('div'); holder.innerHTML = tabMarkup; const root = holder.firstElementChild as HTMLElement; root.remove();
+    expect(root.isConnected).toBe(false); const controller = createTabs(root);
+    const tabs = [...root.querySelectorAll<HTMLElement>('[role="tab"]')]; const panels = tabs.map(tab => root.querySelector<HTMLElement>(`[id="${tab.getAttribute('aria-controls')}"]`)!);
+    expect(panels.filter(panel => !panel.hidden)).toHaveLength(1); document.body.append(root); tabs.find(tab => tab.getAttribute('aria-disabled') !== 'true' && tab.getAttribute('aria-selected') !== 'true')!.click();
+    expect(panels.filter(panel => !panel.hidden)).toHaveLength(1); controller.destroy(); root.remove();
+    const outside = mount(tabMarkup); const stray = outside.querySelector<HTMLElement>(`[id="${outside.querySelector('[role="tab"]')!.getAttribute('aria-controls')}"]`)!; document.body.append(stray);
+    expect(() => createTabs(outside)).toThrow('aria-controls pointing to a panel inside its root'); stray.remove();
+  });
   it('moves visually in RTL, skips disabled tabs, and restores authored DOM', () => {
     const root = mount(tabMarkup);
     const before = root.outerHTML;

@@ -328,6 +328,16 @@ it('[FILEDROPZONE-01][FILEDROPZONE-02][FILEDROPZONE-04][files-2][files-3][R07] a
   await choose(input, [large]); expect(files.mock.calls).toEqual([[[large]]]); expect(rejected).toHaveBeenCalledTimes(1);
 });
 
+it('[FILEDROPZONE-13] a rejected batch that replaces held files reports the rejection before the empty value', async () => {
+  const log: string[] = [];
+  const { host } = await mount(<FileDropzone id="d" label="المرفقات" dropLabel="أفلت" accept=".pdf" getRejectedMessage={() => 'x'} onFilesChange={list => log.push(`files=${list.length}`)} onReject={list => log.push(`reject=${list.length}`)} />);
+  const root = q(host, '.hw-file-dropzone'); let assigned: unknown = undefined;
+  Object.defineProperty(q(host, '#d'), 'files', { configurable: true, get: () => assigned, set: (value: unknown) => { assigned = value; } });
+  await drag(root, 'drop', { files: [file('a.pdf', 'application/pdf')], types: ['Files'] });
+  await drag(root, 'drop', { files: [file('b.txt', 'text/plain')], types: ['Files'] });
+  expect(log).toEqual(['files=1', 'reject=1', 'files=0']);
+});
+
 it('[FILEDROPZONE-03][MSG-04][MSG-05][MSG-07][INV-08][files-4][R06] an accepted drop is assigned; a rejection is the alert error until the next accepted batch', async () => {
   const files = vi.fn();
   const message = (list: readonly File[]) => `${list.map(item => item.name).join('، ')} غير مقبول`;

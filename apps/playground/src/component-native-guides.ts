@@ -178,8 +178,8 @@ export const nativeGuides: Record<string, GuideInput> = {
   },
   skeleton: {
     summary: 'Reserves the approximate shape of content while it loads, reducing layout movement without exposing meaningless placeholder text.',
-    usage: `<div aria-busy="true" aria-label="Loading request details">\n  <div class="hw-skeleton" aria-hidden="true" style="block-size:1rem;inline-size:70%"></div>\n  <div class="hw-skeleton" aria-hidden="true" style="block-size:4rem;margin-block-start:1rem"></div>\n</div>`,
-    lifecycle: ['Match placeholder dimensions to the expected content structure.', 'Keep skeleton pieces decorative; the parent represents the loading state.', 'Replace placeholders with real content and clear aria-busy once data arrives. Render an error or empty state when appropriate.'],
+    usage: `<div role="status">\n  <span class="hw-sr-only">Loading request details</span>\n  <div class="hw-skeleton" aria-hidden="true" style="block-size:1rem;inline-size:70%"></div>\n  <div class="hw-skeleton" aria-hidden="true" style="block-size:4rem;margin-block-start:1rem"></div>\n</div>`,
+    lifecycle: ['Match placeholder dimensions to the expected content structure.', 'Keep skeleton pieces decorative; the status container announces the loading state once through its visually hidden text.', 'Replace the whole status container with the real content once data arrives. Render an error or empty state when appropriate.'],
     api: api(['class / style', 'Native styling attributes', 'Set the skeleton’s dimensions without hard-coding application layout into the library; in Angular write style="inline-size: …; block-size: …" on hw-skeleton.'], ['aria-hidden', 'true', 'Skeleton shapes are decorative; the React component supplies this.']),
     accessibility: ['Do not create a separate status announcement for each shape.', 'Preserve reduced-motion styling.', 'Never place focusable controls inside decorative placeholders.'], variants: ['Default block', 'data-variant=text / circle'], related: ['spinner', 'empty'], source: 'packages/react/src/display.tsx',
   },

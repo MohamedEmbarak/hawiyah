@@ -137,12 +137,11 @@ function tree(t: Translate, typed: boolean): Markup {
   const children = [{id: 'license', label: t('Commercial license', 'الرخصة التجارية')}, {id: 'address', label: t('Address proof', 'إثبات العنوان')}];
   const personal = {id: 'personal', label: t('Personal documents', 'المستندات الشخصية')};
   const data = JSON.stringify([{id: 'business', label: business, children}, personal]);
-  const leaf = (item: {id: string; label: string}) => `<li role="treeitem" data-hw-value="${item.id}"><span data-hw-tree-label>${item.label}</span></li>`;
+  const leaf = (item: {id: string; label: string}, level = 1) => `<li role="treeitem" data-hw-value="${item.id}"${level > 1 ? ` aria-level="${level}" hidden` : ''}><span data-hw-tree-label>${item.label}</span></li>`;
   return withSelection({
     vanilla: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="${label}" data-hw-expand-label="${t('Expand', 'توسيع')} {label}" data-hw-collapse-label="${t('Collapse', 'طي')} {label}">
-  <li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" class="hw-tree-toggle" data-hw-tree-toggle tabindex="-1"><span class="hw-icon" data-icon="arrow-right-01" data-directional="true" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>${business}</span>
-    <ul role="group" hidden>${children.map(leaf).join('\n      ')}</ul>
-  </li>
+  <li role="treeitem" data-hw-value="business" aria-expanded="false"><button type="button" class="hw-tree-toggle" data-hw-tree-toggle tabindex="-1"><span class="hw-icon" data-icon="arrow-right-01" data-directional="true" data-size="sm" aria-hidden="true"></span></button><span data-hw-tree-label>${business}</span></li>
+  ${children.map(item => leaf(item, 2)).join('\n  ')}
   ${leaf(personal)}
 </ul>`,
     react: `<TreeView label="${label}" items={${data}} value={value} onValueChange={setValue}

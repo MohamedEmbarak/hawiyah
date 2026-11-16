@@ -6,7 +6,7 @@ import { renderToString } from '@vue/server-renderer';
 import { formatCalendarDate, getCalendarMonth, resetTextWarnings, sortRows } from '@hawiyah/core';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Breadcrumb, Calendar, DataTable, DatePicker, FileDropzone, PortalFooter, SiteVerification, Spinner, Stat, Table } from '../src/index.js';
+import { Breadcrumb, Calendar, DataTable, IconButton, DatePicker, FileDropzone, PortalFooter, SiteVerification, Spinner, Stat, Table } from '../src/index.js';
 import { calendarText, datePickerText, dropzoneText, paginationText } from './texts.js';
 import { AppShell, Carousel, ContentNavigation, CookieConsent, Dialog, Drawer, Feedback, Field, NotificationList, Pagination, PortalHeader, PortalLayout, Rating, RatingDisplay, SearchField, Tabs, TagInput, ToastRegion, TreeView } from '../src/index.js';
 
@@ -17,6 +17,15 @@ const loose = (component: unknown) => component as Component;
 const hawiyahWarnings = (warn: { mock: { calls: unknown[][] } }): string[] => warn.mock.calls.map(call => String(call[0])).filter(message => message.startsWith('Hawiyah:'));
 beforeEach(() => { resetTextWarnings(); Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, value() { this.open = true; } }); Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value() { this.open = false; } }); });
 afterEach(() => { apps.splice(0).forEach(app => app.unmount()); document.body.replaceChildren(); vi.restoreAllMocks(); });
+
+it('[TEXT-01] a missing IconButton label leaves the button unnamed and warns once for two instances; aria-labelledby names it without a warning', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const root = mount({ render: () => h('div', [h(loose(IconButton), {}, () => '+'), h(loose(IconButton), {}, () => '-'), h('span', { id: 'add-name' }, 'Add'), h(loose(IconButton), { 'aria-labelledby': 'add-name' }, () => '+')]) });
+  await nextTick();
+  const buttons = [...root.querySelectorAll('button.hw-icon-button')];
+  expect(buttons.map(button => button.hasAttribute('aria-label'))).toEqual([false, false, false]); expect(buttons[2]!.getAttribute('aria-labelledby')).toBe('add-name');
+  expect(hawiyahWarnings(warn).filter(message => message.includes('IconButton requires "label"'))).toHaveLength(1);
+});
 
 it('renders nothing in place of missing required text and warns once in development', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});

@@ -23,8 +23,9 @@ export function createTabs(root: HTMLElement, options: TabsOptions = {}): TabsCo
   if (!tabs.length) throw new Error('Hawiyah: tabs requires at least one tab.');
   const panels = tabs.map(tab => {
     const id = tab.getAttribute('aria-controls');
-    const panel = id ? root.ownerDocument.getElementById(id) : null;
-    if (!panel || !root.contains(panel)) throw new Error('Hawiyah: each tab requires aria-controls pointing to a panel inside its root.');
+    // Looked up inside the root, so a root built before it is inserted into the document works too.
+    const panel = id ? [...root.querySelectorAll<HTMLElement>('[id]')].find(node => node.id === id) : undefined;
+    if (!panel) throw new Error('Hawiyah: each tab requires aria-controls pointing to a panel inside its root.');
     return panel;
   });
   const scope = createCleanup();

@@ -157,6 +157,8 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     composing = false;
     if (canOpen()) query(); else render();
   });
+  // Focus opens the popup, as in the framework adapters; a click covers an input that already has focus.
+  scope.listen(input, 'focus', () => { if (!state.open) show(); });
   scope.listen(input, 'click', () => { if (!state.open) show(); });
   scope.listen(input, 'keydown', event => {
     const keyboard = event as KeyboardEvent;

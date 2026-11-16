@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { prepareRemovalFocus, resetTextWarnings } from '@hawiyah/core';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createCookieConsent, createFeedback, createToastRegion, enhance } from '../src/index.js';
@@ -11,6 +11,20 @@ beforeEach(() => { resetTextWarnings(); warn = vi.spyOn(console, 'warn').mockImp
 afterEach(() => { document.body.innerHTML = ''; vi.restoreAllMocks(); });
 function mount(markup: string): HTMLElement { document.body.innerHTML = markup; return document.body.firstElementChild as HTMLElement; }
 const shape = (root: Element) => [...root.children].map(node => node.localName + (node.classList.length ? '.' + [...node.classList].join('.') : ''));
+// The static components have no controller, so their cases test the documents and the stylesheet: the markup is taken from
+// the README example of the component, and every hw- class in it must be a class the package stylesheet styles.
+const readme = readFileSync(join(process.cwd(), 'packages/vanilla/README.md'), 'utf8');
+const stylesheet = readdirSync(join(process.cwd(), 'packages/styles/src')).filter(name => name.endsWith('.css')).map(name => readFileSync(join(process.cwd(), 'packages/styles/src', name), 'utf8')).join('\n');
+function documented(heading: string): HTMLElement {
+  const at = new RegExp(`^#{3,4} ${heading}$`, 'mu').exec(readme); if (!at) throw new Error(`packages/vanilla/README.md has no "${heading}" example`);
+  const rest = readme.slice(at.index + at[0].length); const next = /^#{2,4} /mu.exec(rest);
+  const block = /```html\n([\s\S]*?)\n```/u.exec(next ? rest.slice(0, next.index) : rest);
+  if (!block) throw new Error(`"${heading}" has no html example`);
+  const root = mount(`<div>${block[1]!.replace(/>\s+</gu, '><')}</div>`);
+  const unstyled = [...new Set([root, ...root.querySelectorAll('*')].flatMap(node => [...node.classList]))].filter(name => name.startsWith('hw-') && !new RegExp(`\\.${name}(?![\\w-])`, 'u').test(stylesheet));
+  expect(unstyled, `classes of the "${heading}" example without a rule in @hawiyah/styles`).toEqual([]);
+  return root;
+}
 
 describe('feedback', () => {
   const feedback = (attrs = 'data-hw-success-message="Thank you for your feedback."') => mount(`<div class="hw-feedback" data-hw="feedback" role="group" aria-labelledby="fb-label" ${attrs}><p id="fb-label">Was this page helpful?</p><div class="hw-feedback-actions"><button type="button" class="hw-button" data-variant="secondary" data-hw-value="yes" aria-pressed="false"><span class="hw-icon hw-feedback-icon" data-icon="thumbs-up" aria-hidden="true"></span><span class="hw-feedback-label">Yes</span></button><button type="button" class="hw-button" data-variant="secondary" data-hw-value="no" aria-pressed="false"><span class="hw-icon hw-feedback-icon" data-icon="thumbs-down" aria-hidden="true"></span><span class="hw-feedback-label">No</span></button></div><div class="hw-feedback-comment" data-hw-feedback-comment hidden><div class="hw-field"><label class="hw-label" for="fb-comment">Comment</label><textarea class="hw-textarea" id="fb-comment"></textarea></div><button type="button" class="hw-button" data-hw-feedback-submit>Send</button></div><p role="status" data-hw-feedback-status></p></div>`);
@@ -60,7 +74,7 @@ describe('cookie consent', () => {
     expect([...root.querySelectorAll('a, button')].map(node => node.textContent)).toEqual(['Privacy', 'Accept', 'Reject', 'Preferences']);
     expect(document.getElementById(root.getAttribute('aria-labelledby')!)!.localName).toBe('h2'); expect(root.hasAttribute('aria-label')).toBe(false); expect(root.hasAttribute('role')).toBe(false); controller.destroy();
   });
-  it('[STATE-01] [STATE-03] [STATE-06] Reject reports the choice, then closes once; setOpen from the application notifies once per change', () => {
+  it('[STATE-01] [STATE-06] Reject reports the choice, then closes once; a controller method (setOpen) notifies once per change, like an interaction', () => {
     const root = consent(); const consented = vi.fn(); const opened = vi.fn(); const details: unknown[] = []; root.addEventListener('hw:change', event => details.push((event as CustomEvent).detail));
     const controller = createCookieConsent(root, { onConsent: consented, onOpenChange: opened });
     root.querySelector<HTMLButtonElement>('[data-hw-consent="rejected"]')!.click();
@@ -72,29 +86,31 @@ describe('cookie consent', () => {
   it('[CONSENT-04] the banner variant is authored data-variant', () => {
     let root = consent('data-variant="banner"'); let release = enhance(root); expect(root.getAttribute('data-variant')).toBe('banner'); release();
     root = consent(); release = enhance(root); expect(root.hasAttribute('data-variant')).toBe(false); release();
+    expect(stylesheet).toContain(`.hw-cookie-consent[data-variant='banner']`);
   });
 });
 
 describe('feedback and status (authored markup)', () => {
-  it('[ALERT-01] a danger alert has role=alert, every other tone role=status', () => {
-    const root = mount('<div><div class="hw-alert" data-tone="danger" role="alert"><div class="hw-alert-content"><p>Failed</p></div></div><div class="hw-alert" data-tone="info" role="status"><div class="hw-alert-content"><p>Note</p></div></div></div>'); const release = enhance(root);
-    expect([...root.children].map(node => node.getAttribute('role'))).toEqual(['alert', 'status']); release();
+  it('[ALERT-01] the documented alerts: a danger alert has role=alert, every other tone role=status', () => {
+    const root = documented('Alert tones'); const before = root.innerHTML; const release = enhance(root);
+    expect([...root.children].map(node => [node.getAttribute('data-tone'), node.getAttribute('role'), shape(node)])).toEqual([['danger', 'alert', ['div.hw-alert-content']], ['info', 'status', ['div.hw-alert-content']]]);
+    release(); expect(root.innerHTML).toBe(before);
   });
-  it('[PROGRESS-01] [PROGRESS-02] [METER-01] [METER-02] [SKELETON-01] [SPINNER-01] [SPINNER-02] the documented elements carry their attributes unchanged', () => {
-    const root = mount('<div><progress class="hw-progress" aria-label="Upload" value="150" max="100" data-size="sm"></progress><progress class="hw-progress" aria-label="Loading"></progress><meter class="hw-meter" aria-label="Storage" min="0" max="100" value="10"></meter><meter class="hw-meter" aria-label="Score" min="0" max="100" value="80" low="30" high="70" optimum="90"></meter><span class="hw-skeleton" data-variant="circle" aria-hidden="true"></span><span class="hw-spinner" role="status" data-size="lg"><span class="hw-sr-only">Loading</span></span></div>');
+  it('[PROGRESS-01] [PROGRESS-02] [METER-01] [METER-02] [SKELETON-01] [SPINNER-01] [SPINNER-02] the documented elements carry their attributes and enhance() leaves them unchanged', () => {
+    const root = documented('Progress, Meter and Spinner'); const before = root.innerHTML;
     const release = enhance(root); const [progress, bare] = root.querySelectorAll('progress'); const [meter, scored] = root.querySelectorAll('meter');
     expect([progress!.getAttribute('value'), progress!.getAttribute('max'), progress!.getAttribute('data-size'), progress!.textContent]).toEqual(['150', '100', 'sm', '']); expect(bare!.hasAttribute('value')).toBe(false); expect(root.querySelector('label')).toBeNull();
     expect(['low', 'high', 'optimum'].some(name => meter!.hasAttribute(name))).toBe(false); expect(['low', 'high', 'optimum'].map(name => scored!.getAttribute(name))).toEqual(['30', '70', '90']);
     expect(root.querySelector('.hw-skeleton')!.getAttribute('aria-hidden')).toBe('true'); const spinner = root.querySelector('.hw-spinner')!;
-    expect([spinner.getAttribute('role'), spinner.getAttribute('data-size'), shape(spinner)]).toEqual(['status', 'lg', ['span.hw-sr-only']]); release();
+    expect([spinner.getAttribute('role'), spinner.getAttribute('data-size'), shape(spinner)]).toEqual(['status', 'lg', ['span.hw-sr-only']]); release(); expect(root.innerHTML).toBe(before);
   });
   it('[SKELETON-03] the README documents skeletons inside a status container with a visually hidden text', () => {
     const readme = readFileSync(join(process.cwd(), 'packages/vanilla/README.md'), 'utf8'); const section = readme.slice(readme.indexOf('### Skeleton'));
     expect(section).toContain('role="status"'); expect(section).toContain('hw-sr-only'); expect(readme).not.toMatch(/<\w[^<>]*(aria-busy="true"[^<>]*aria-label|aria-label[^<>]*aria-busy="true")/u);
   });
-  it('[RICH-01] EmptyState: the icon is in span.hw-empty-icon before the h3 and the action is the last child', () => {
-    const root = mount('<div class="hw-empty"><span class="hw-empty-icon" aria-hidden="true"><span class="hw-icon" data-icon="search-01"></span></span><h3>No results</h3><p>Change the filters.</p><button type="button" class="hw-button">Clear filters</button></div>');
-    expect(shape(root)).toEqual(['span.hw-empty-icon', 'h3', 'p', 'button.hw-button']);
+  it('[RICH-01] the documented EmptyState: the icon is in span.hw-empty-icon before the h3 and the action is the last child', () => {
+    const root = documented('EmptyState').firstElementChild!;
+    expect(root.className).toBe('hw-empty'); expect(shape(root)).toEqual(['span.hw-empty-icon', 'h3', 'p', 'button.hw-button']); expect(root.querySelector('.hw-empty-icon')!.getAttribute('aria-hidden')).toBe('true');
   });
   it('[CHIP-01] the chip remove control is a plain button with the icon; prepareRemovalFocus hands focus to the next chip', () => {
     const root = mount('<div><span class="hw-chip" data-tone="neutral">Riyadh<button type="button" aria-label="Remove Riyadh"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></span><span class="hw-chip" data-tone="neutral">Jeddah<button type="button" aria-label="Remove Jeddah"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></span></div>');
@@ -105,37 +121,42 @@ describe('feedback and status (authored markup)', () => {
 });
 
 describe('content display (authored markup)', () => {
-  it('[SHAPE-01] AvatarGroup: initials, size and variant are authored', () => {
-    const root = mount('<div class="hw-avatar-group" role="group" aria-label="Team"><span class="hw-avatar" data-size="64" data-variant="square" role="img" aria-label="Rana Cole">RC</span><span class="hw-avatar" role="img" aria-label="Sami">S</span></div>');
-    expect([...root.children].map(node => [node.textContent, node.getAttribute('data-size'), node.getAttribute('data-variant')])).toEqual([['RC', '64', 'square'], ['S', null, null]]);
+  it('[SHAPE-01] the documented AvatarGroup: a named group of avatars with initials, size and variant', () => {
+    const root = documented('AvatarGroup').firstElementChild!;
+    expect([root.className, root.getAttribute('role'), root.getAttribute('aria-label')]).toEqual(['hw-avatar-group', 'group', 'Team']);
+    expect([...root.children].map(node => [node.className, node.getAttribute('role'), node.textContent, node.getAttribute('data-size'), node.getAttribute('data-variant')])).toEqual([['hw-avatar', 'img', 'RC', '64', 'square'], ['hw-avatar', 'img', 'S', null, null]]);
   });
-  it('[DESCRIPTION-LIST-01] the description list has no data-variant unless authored', () => {
-    const root = mount('<div><dl class="hw-description-list"><div><dt>Fee</dt><dd>100</dd></div></dl><dl class="hw-description-list" data-variant="horizontal"><div><dt>Fee</dt><dd>100</dd></div></dl></div>');
-    expect([...root.children].map(node => node.getAttribute('data-variant'))).toEqual([null, 'horizontal']);
+  it('[DESCRIPTION-LIST-01] the documented description list has no data-variant unless the layout is horizontal', () => {
+    const root = documented('DescriptionList');
+    expect([...root.children].map(node => [node.localName, node.className, node.getAttribute('data-variant'), shape(node.firstElementChild!)])).toEqual([['dl', 'hw-description-list', null, ['dt', 'dd']], ['dl', 'hw-description-list', 'horizontal', ['dt', 'dd']]]);
   });
-  it('[STAT-01] [STAT-02] [RICH-01] Stat: label, value, description and trend in order; rich value and trend; tones', () => {
-    const root = mount('<div class="hw-stat" data-tone="danger"><span class="hw-stat-label">Requests</span><strong class="hw-stat-value"><bdi><span class="hw-riyal" aria-hidden="true"></span>120 <span class="hw-sr-only">riyals</span></bdi></strong><p class="hw-stat-description">This month</p><span class="hw-stat-trend" data-tone="success"><span class="hw-icon" data-icon="arrow-up-01" aria-hidden="true"></span>12%</span></div>');
-    expect(shape(root)).toEqual(['span.hw-stat-label', 'strong.hw-stat-value', 'p.hw-stat-description', 'span.hw-stat-trend']); expect(root.querySelector('dl')).toBeNull();
+  it('[STAT-01] [STAT-02] [RICH-01] the documented Stat: label, value, description and trend in order; rich value and trend; tones', () => {
+    const root = documented('Stat').firstElementChild!;
+    expect(root.className).toBe('hw-stat'); expect(shape(root)).toEqual(['span.hw-stat-label', 'strong.hw-stat-value', 'p.hw-stat-description', 'span.hw-stat-trend']); expect(root.querySelector('dl')).toBeNull();
     expect(root.querySelector('.hw-stat-value .hw-riyal')).not.toBeNull(); expect(root.querySelector('.hw-stat-trend .hw-icon')).not.toBeNull();
     expect([root.getAttribute('data-tone'), root.querySelector('.hw-stat-trend')!.getAttribute('data-tone')]).toEqual(['danger', 'success']);
+    for (const tone of ['success', 'danger']) expect(stylesheet).toContain(`.hw-stat-trend[data-tone='${tone}']`);
   });
-  it('[TIMELINE-01] [SHAPE-01] Timeline: items of class hw-timeline-item with h3, time, p; states and the current step', () => {
-    const root = mount('<ol class="hw-timeline"><li class="hw-timeline-item" data-state="complete"><h3>Submitted</h3><time datetime="2026-10-27">27 October 2026</time><p>Received.</p></li><li class="hw-timeline-item" data-state="current" aria-current="step"><h3>Review</h3></li><li class="hw-timeline-item" data-state="upcoming"><h3>Decision</h3></li></ol>');
+  it('[TIMELINE-01] [SHAPE-01] the documented Timeline: items of class hw-timeline-item with h3, time, p; states and the current step', () => {
+    const root = documented('Timeline').firstElementChild!;
+    expect([root.localName, root.className]).toEqual(['ol', 'hw-timeline']);
     expect(shape(root.children[0]!)).toEqual(['h3', 'time', 'p']); expect([...root.children].map(node => [node.className, node.getAttribute('data-state'), node.getAttribute('aria-current')])).toEqual([['hw-timeline-item', 'complete', null], ['hw-timeline-item', 'current', 'step'], ['hw-timeline-item', 'upcoming', null]]);
     expect(root.querySelector('time')!.getAttribute('datetime')).toBe('2026-10-27');
+    for (const state of ['complete', 'current']) expect(stylesheet).toMatch(new RegExp(`hw-timeline[^{]*\\[data-state='${state}'\\]`, 'u'));
   });
-  const notifications = '<section class="hw-notification-list" aria-labelledby="nl-title" tabindex="-1"><h2 id="nl-title">Notifications</h2><ul><li data-state="unread"><h3><a class="hw-link" href="/x">Ready</a></h3><span class="hw-badge" data-tone="info">New</span><p>D</p><time datetime="2026-10-28T09:00:00+03:00">28 October</time><button type="button" class="hw-button" data-variant="ghost" data-size="md" data-hw-mark-read>Mark read</button><button type="button" class="hw-button" data-variant="ghost" data-size="md" data-hw-dismiss aria-label="Dismiss Ready"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></li><li data-state="read"><h3>Received</h3><button type="button" class="hw-button" data-variant="ghost" data-size="md" data-hw-dismiss aria-label="Dismiss Received"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></li></ul></section>';
-  it('[SHAPE-01] [NOTIFICATION-01] [NOTIFICATION-06] NotificationList: labelled by its h2, h3 titles, data-state, one link, one time, the unread badge', () => {
-    const root = mount(notifications); const release = enhance(root);
-    expect(document.getElementById(root.getAttribute('aria-labelledby')!)!.localName).toBe('h2'); expect(root.hasAttribute('aria-label')).toBe(false);
-    expect([...root.querySelectorAll('li')].map(item => [item.getAttribute('data-state'), item.className, item.querySelector('h3')!.textContent])).toEqual([['unread', '', 'Ready'], ['read', '', 'Received']]);
+  it('[SHAPE-01] [NOTIFICATION-01] [NOTIFICATION-06] the documented NotificationList: labelled by its h2, h3 titles, data-state, one link, one time, the unread badge', () => {
+    const holder = documented('NotificationList'); const root = holder.firstElementChild as HTMLElement; const before = holder.innerHTML; const release = enhance(holder);
+    expect(root.className).toBe('hw-notification-list'); expect(document.getElementById(root.getAttribute('aria-labelledby')!)!.localName).toBe('h2'); expect(root.hasAttribute('aria-label')).toBe(false);
+    expect([...root.querySelectorAll('li')].map(item => [item.getAttribute('data-state'), item.className, item.querySelector('h3')!.textContent])).toEqual([['unread', '', 'Request approved'], ['read', '', 'Request received']]);
     expect(root.querySelectorAll('a.hw-link')).toHaveLength(1); expect(root.querySelectorAll('time[datetime]')).toHaveLength(1);
-    const [unread, read] = root.querySelectorAll('li'); expect(unread!.querySelectorAll('.hw-badge[data-tone=info]')).toHaveLength(1); expect(unread!.querySelector('.hw-sr-only')).toBeNull(); expect(read!.querySelector('.hw-badge')).toBeNull(); release();
+    const [unread, read] = root.querySelectorAll('li'); expect(unread!.querySelectorAll('.hw-badge[data-tone=info]')).toHaveLength(1); expect(unread!.querySelector('.hw-sr-only')).toBeNull(); expect(read!.querySelector('.hw-badge')).toBeNull();
+    expect(stylesheet).toContain(`:is(.hw-notification-list > ul > li, .hw-notification-list > li)[data-state='unread']`); release(); expect(holder.innerHTML).toBe(before);
   });
-  it('[NOTIFICATION-02] an empty list is one paragraph without a role', () => {
-    const root = mount('<section class="hw-notification-list" aria-labelledby="nl-title"><h2 id="nl-title">Notifications</h2><p>No notifications.</p></section>');
-    expect(root.querySelector('ul')).toBeNull(); expect(root.querySelector('p')!.hasAttribute('role')).toBe(false);
+  it('[NOTIFICATION-02] the documented empty list is one paragraph without a role', () => {
+    const root = documented('NotificationList without items').firstElementChild!;
+    expect(shape(root)).toEqual(['h2', 'p']); expect(root.querySelector('ul')).toBeNull(); expect(root.querySelector('p')!.hasAttribute('role')).toBe(false);
   });
+  const notifications = '<section class="hw-notification-list" aria-labelledby="nl-title" tabindex="-1"><h2 id="nl-title">Notifications</h2><ul><li data-state="unread"><h3><a class="hw-link" href="/x">Ready</a></h3><button type="button" class="hw-button" data-variant="ghost" data-size="md" data-hw-dismiss aria-label="Dismiss Ready"></button></li><li data-state="read"><h3>Received</h3><button type="button" class="hw-button" data-variant="ghost" data-size="md" data-hw-dismiss aria-label="Dismiss Received"></button></li></ul></section>';
   it('[FOCUS-04] dismissing a notification hands focus to the next dismiss button, then to the list', () => {
     const root = mount(notifications); const first = root.querySelector<HTMLElement>('[data-hw-dismiss]')!; first.focus();
     let restore = prepareRemovalFocus(root, first, { item: ':scope > ul > li', control: '[data-hw-dismiss]', fallback: root }); first.closest('li')!.remove(); restore();
@@ -151,27 +172,27 @@ describe('content display (authored markup)', () => {
 });
 
 describe('actions (authored markup)', () => {
-  it('[BUTTON-01] an authored type=button does not submit; type=submit does', () => {
-    const form = mount('<form><button type="button" class="hw-button">Save draft</button><button type="submit" class="hw-button">Send</button></form>') as HTMLFormElement;
-    const submitted = vi.fn((event: Event) => event.preventDefault()); form.addEventListener('submit', submitted); const release = enhance(form);
-    form.querySelector<HTMLButtonElement>('[type=button]')!.click(); expect(submitted).not.toHaveBeenCalled(); form.querySelector<HTMLButtonElement>('[type=submit]')!.click(); expect(submitted).toHaveBeenCalledTimes(1); release();
-  });
-  it('[LINK-01] attributes written on the anchor stay on a.hw-link', () => {
-    const root = mount('<a class="hw-link extra" data-variant="neutral" href="/guide" hreflang="ar" download aria-label="Guide" aria-current="page" target="_blank" rel="noopener noreferrer">Guide</a>'); const release = enhance(root);
-    expect(['hreflang', 'download', 'aria-label', 'data-variant', 'aria-current', 'target', 'rel'].map(name => root.getAttribute(name))).toEqual(['ar', '', 'Guide', 'neutral', 'page', '_blank', 'noopener noreferrer']); expect(root.classList.contains('extra')).toBe(true); release();
+  it('[BUTTON-01] [LINK-01] the documented buttons state their type and the anchor keeps its attributes; enhance() changes neither', () => {
+    const root = documented('Button and Link'); const before = root.innerHTML; const form = root.querySelector('form')!; const link = root.querySelector('a')!;
+    const submitted = vi.fn((event: Event) => event.preventDefault()); form.addEventListener('submit', submitted); const release = enhance(root);
+    expect([...form.querySelectorAll('button')].map(button => [button.className, button.getAttribute('type')])).toEqual([['hw-button', 'button'], ['hw-button', 'submit']]);
+    form.querySelector<HTMLButtonElement>('[type=button]')!.click(); expect(submitted).not.toHaveBeenCalled(); form.querySelector<HTMLButtonElement>('[type=submit]')!.click(); expect(submitted).toHaveBeenCalledTimes(1);
+    expect(['class', 'hreflang', 'data-variant', 'aria-current', 'target', 'rel'].map(name => link.getAttribute(name))).toEqual(['hw-link', 'ar', 'neutral', 'page', '_blank', 'noopener noreferrer']);
+    release(); expect(root.innerHTML).toBe(before);
   });
 });
 
 describe('service patterns (authored markup)', () => {
-  const facts = '<dl class="hw-description-list"><div><dt>Duration</dt><dd>3 days</dd></div><div><dt>Fee</dt><dd>100</dd></div></dl>';
-  it('[SHAPE-01] [SERVICE-01] ServiceCard: header with badge before the h3, body with p and dl, footer with one a.hw-link', () => {
-    const root = mount(`<article class="hw-card hw-service-card"><header class="hw-card-header"><div><span class="hw-badge" data-tone="neutral">Licences</span><h3>Commercial licence</h3></div></header><div class="hw-card-body"><p>Issue a licence.</p>${facts}</div><footer class="hw-card-footer"><a class="hw-link" href="/apply">Apply</a></footer></article>`);
+  it('[SHAPE-01] [SERVICE-01] the documented ServiceCard: header with badge before the h3, body with p and dl, footer with one a.hw-link', () => {
+    const root = documented('ServiceCard').firstElementChild!;
+    expect([root.localName, root.className]).toEqual(['article', 'hw-card hw-service-card']);
     expect(shape(root)).toEqual(['header.hw-card-header', 'div.hw-card-body', 'footer.hw-card-footer']); expect(shape(root.querySelector('.hw-card-header > div')!)).toEqual(['span.hw-badge', 'h3']);
     expect(root.querySelector('h3 a')).toBeNull(); expect(shape(root.querySelector('.hw-card-body')!)).toEqual(['p', 'dl.hw-description-list']); expect(root.querySelectorAll('dt')).toHaveLength(2);
     expect(shape(root.querySelector('footer')!)).toEqual(['a.hw-link']);
   });
-  it('[SHAPE-01] [SERVICE-04] ServiceDetails: article, header, dl, requirements section and the action in a footer as the last child', () => {
-    const root = mount(`<article class="hw-service-details"><header><h2>Commercial licence</h2><p>Issue a licence.</p></header>${facts}<section><h3>Requirements</h3><ul><li>Identity</li></ul></section><footer><button type="button" class="hw-button">Apply</button></footer></article>`);
+  it('[SHAPE-01] [SERVICE-04] the documented ServiceDetails: article, header, dl, requirements section and the action in a footer as the last child', () => {
+    const root = documented('ServiceDetails').firstElementChild!;
+    expect([root.localName, root.className]).toEqual(['article', 'hw-service-details']);
     expect(shape(root)).toEqual(['header', 'dl.hw-description-list', 'section', 'footer']); expect(shape(root.querySelector('section')!)).toEqual(['h3', 'ul']); expect(root.lastElementChild!.querySelector('button')).not.toBeNull();
   });
 });

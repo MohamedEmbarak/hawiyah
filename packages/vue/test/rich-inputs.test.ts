@@ -495,6 +495,14 @@ it('[FILEDROPZONE-03] an accepted drop is assigned to the input and notified onc
   expect(f.input.files).toHaveLength(0); expect(f.changed.map(names)).toEqual([['a.pdf'], []]); expect(f.rejected.map(names)).toEqual([['b.txt']]);
 });
 
+it('[FILEDROPZONE-13] a rejected batch that replaces held files reports the rejection before the empty value', async () => {
+  const log: string[] = [];
+  const host = mount(() => h('form', [h(FileDropzone, { ...dropzoneText, label: 'Upload', name: 'upload', accept: '.pdf', 'onUpdate:files': (files: File[]) => log.push(`files=${files.length}`), onReject: (files: File[]) => log.push(`reject=${files.length}`) })]));
+  stubFiles(host.querySelector<HTMLInputElement>('input[type=file]')!); const zone = host.querySelector<HTMLElement>('.hw-file-dropzone')!;
+  zone.dispatchEvent(dropEvent('drop', [file('a.pdf')])); await nextTick(); zone.dispatchEvent(dropEvent('drop', [file('b.txt')])); await nextTick();
+  expect(log).toEqual(['files=1', 'reject=1', 'files=0']);
+});
+
 it('[FILEDROPZONE-04][TEXT-02][files-3][R07] maxSize rejects a larger file; getRejectedMessage is required with maxSize alone and not without restrictions', async () => {
   const { getRejectedMessage: _missing, ...rest } = dropzoneText;
   const host = mount(() => h('div', [h(FileDropzone as Component, { ...rest, label: 'Plain' })]));

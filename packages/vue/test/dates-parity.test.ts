@@ -326,6 +326,29 @@ it('[DATE-PICKER-03][dates-6] an empty picker focuses today', async () => {
   expect(document.activeElement).toBe(day(host, '2026-10-14'));
 });
 
+it('[DATE-PICKER-11] a typed date is the focused day on opening; the focus memory restarts at each opening', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 14, 12));
+  const host = mount(() => picker({ locale: 'en-US' }));
+  const input = host.querySelector<HTMLInputElement>('input.hw-input')!; const trigger = host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!;
+  const close = async () => { host.querySelector('dialog')!.dispatchEvent(new Event('cancel', { cancelable: true })); await settle(); };
+  await type(input, '2026-10-20'); trigger.click(); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-20'));
+  key(document.activeElement!, 'ArrowRight'); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-21')); await close();
+  await type(input, '2026-10-05'); trigger.click(); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-05'));
+  key(document.activeElement!, 'ArrowRight'); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-06')); await close();
+  await type(input, ''); trigger.click(); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-14'));
+});
+
+it('[DATE-PICKER-12] the shown month comes only from a value inside min and max', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 14, 12));
+  const host = mount(() => picker({ locale: 'en-US', max: '2026-12-31' }));
+  const input = host.querySelector<HTMLInputElement>('input.hw-input')!; const trigger = host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!;
+  const close = async () => { host.querySelector('dialog')!.dispatchEvent(new Event('cancel', { cancelable: true })); await settle(); };
+  const heading = () => host.querySelector('.hw-calendar-heading')!.textContent; const month = (date: string) => formatCalendarDate(date, { locale: 'en-US', calendar: 'gregory', month: 'long', year: 'numeric' } as never);
+  await type(input, '2027-01-05'); trigger.click(); await settle(); expect(heading()).toContain(month('2026-10-14')); expect(document.activeElement).toBe(day(host, '2026-10-14')); await close();
+  await type(input, '2026-03-20'); trigger.click(); await settle(); expect(heading()).toContain(month('2026-03-20')); await close();
+  await type(input, ''); trigger.click(); await settle(); expect(heading()).toContain(month('2026-10-14'));
+});
+
 it('[DATE-PICKER-04] Escape returns focus to the element that opened the dialog', async () => {
   const host = mount(() => picker({ locale: 'en-US', defaultValue: '2026-10-28' }));
   const trigger = host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!;

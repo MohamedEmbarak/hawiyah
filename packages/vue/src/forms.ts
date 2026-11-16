@@ -59,6 +59,8 @@ function textControl(tag: 'input' | 'textarea' | 'select', className: string, na
       const syncSelect = () => nextTick(() => {
         if (element.value && model.value.value !== undefined) element.value.value = model.value.value;
       });
+      // Hydration does not write the value of a select, and the server marks only the options of the prop as selected: a value held by a slotted option is applied here.
+      if (tag === 'select') onMounted(() => { if (element.value && model.value.value !== undefined && element.value.value !== model.value.value) element.value.value = model.value.value; });
       // Reset target: defaultValue, else what a native control shows without a default: '' for a text
       // control and the first option that is not disabled for a select.
       useFormReset(element, () => {
