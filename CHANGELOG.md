@@ -3,7 +3,7 @@
 All seven `@hawiyah/*` packages share one version. Versions below 1.0 may change
 APIs in a minor release; read the notes before upgrading.
 
-## Unreleased
+## 0.3.0 — 2026-11-16
 
 - Button groups keep their content width inside flex and grid containers.
   In plain HTML, React and Vue a group stretched to the full width of a stack;
