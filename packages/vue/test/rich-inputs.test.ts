@@ -96,6 +96,21 @@ it('[STATE-05] Combobox with defaultOpen and with open renders the list open on 
   } finally { hydrated.unmount(); error.mockRestore(); }
 });
 
+it('[COMBOBOX-05] focus on the input opens the popup and notifies open once; a read-only input stays closed', async () => {
+  const opened = vi.fn(); const host = mount(() => h('div', [h(Combobox, { ...comboboxText, label: 'City', options, 'onUpdate:open': opened }), h(Combobox, { ...comboboxText, label: 'City', options, readonly: true })]));
+  const [input, readOnly] = [...host.querySelectorAll<HTMLInputElement>('input[role=combobox]')];
+  input!.focus(); await settle(); expect(input!.getAttribute('aria-expanded')).toBe('true'); expect(host.querySelector<HTMLElement>('[role=listbox]')!.hidden).toBe(false); expect(opened.mock.calls).toEqual([[true]]);
+  readOnly!.focus(); await settle(); expect(readOnly!.getAttribute('aria-expanded')).toBe('false');
+});
+
+it('[COMBOBOX-06] an option chosen with the pointer while the input has no focus sets the value and leaves the list closed', async () => {
+  const opened = vi.fn(); const value = vi.fn();
+  const host = mount(() => h('div', [h(Combobox, { ...comboboxText, label: 'City', options, defaultOpen: true, 'onUpdate:open': opened, 'onUpdate:modelValue': value }), h('button', { type: 'button', id: 'other' }, 'Other')]));
+  const input = host.querySelector<HTMLInputElement>('input[role=combobox]')!; host.querySelector<HTMLElement>('#other')!.focus(); await settle();
+  host.querySelectorAll<HTMLElement>('[role=option]')[1]!.click(); await settle();
+  expect(input.getAttribute('aria-expanded')).toBe('false'); expect(input.value).toBe('Beta'); expect(value.mock.calls).toEqual([['b']]); expect(document.activeElement).toBe(input); expect(opened.mock.calls).toEqual([[false]]);
+});
+
 it('[COMBOBOX-03][COMBOBOX-04][rich-inputs-2] typing notifies query once per input event and no value; selecting, resetting and writing do not notify query', async () => {
   const queries: string[] = []; const values: string[] = []; const value = ref<string | undefined>(undefined);
   const host = mount(() => h('form', [h(Combobox, { ...comboboxText, label: 'City', options, modelValue: value.value, 'onUpdate:query': (next: string) => queries.push(next), 'onUpdate:modelValue': (next: string) => { values.push(next); value.value = next; } })]));

@@ -41,6 +41,8 @@ test('[SKELETON-02] a skeleton is a block of the container width and 16px; a cir
   expect(circle.width).toBeCloseTo(48,0);expect(circle.height).toBeCloseTo(48,0);
 });
 
+// SKELETON-04 checks the stylesheet and the accessibility tree of the documented pattern, written here as authored
+// markup; it reads no document (SKELETON-03 checks the documents) and renders no adapter.
 test('[SKELETON-04] the documented loading pattern is one status with the loading text and no other named node',async({page})=>{
   await openFixture(page,`<main><div role="status"><span class="hw-sr-only">Loading requests</span><span class="hw-skeleton" aria-hidden="true" data-variant="text" style="inline-size: 70%"></span><span class="hw-skeleton" aria-hidden="true" style="block-size: 4rem"></span></div></main>`);
   await expect(page.locator('main')).toMatchAriaSnapshot(`- main:\n  - status: Loading requests`);

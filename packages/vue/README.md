@@ -370,7 +370,10 @@ Opening the DatePicker (trigger, ArrowDown in the input) moves focus to the
 selected day, or today; Escape returns focus to the opener.
 Each opening starts again from the selected day: the focus memory of the last
 opening is dropped, a typed date is the focused day, and the month shown comes
-only from a value inside `min` and `max` (else today's month).
+only from a value inside `min` and `max`, else from today held inside `min` and
+`max` (the month of `max` when today is later, of `min` when it is earlier). A
+month button is disabled only when the whole neighbouring month is outside `min`
+and `max`.
 
 Saudi Umm al-Qura conversion and arithmetic come from the core's pinned Saudi
 reference table, using `@internationalized/date` arithmetic. The supported range

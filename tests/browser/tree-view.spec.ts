@@ -2,11 +2,13 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { openFixture } from './style-fixture';
 
-// The tree is one flat list of li[role=treeitem] in the four adapters (React, Vue and Angular
-// render it; the vanilla controller enhances the same authored list). These cases load the
-// package stylesheet only, with the markup an expanded three-level tree has in every adapter.
-const item=(id:string,label:string,level:number,branch=false)=>`<li class="hw-tree-item" role="treeitem" id="${id}" aria-level="${level}" aria-posinset="1" aria-setsize="1" aria-labelledby="${id}-label" ${branch?'aria-expanded="true"':''} aria-selected="false" tabindex="${id==='business'?0:-1}" style="--hw-tree-depth: ${level-1}">${branch?`<button type="button" class="hw-tree-toggle" tabindex="-1" aria-label="Collapse ${label}"><span class="hw-icon" data-icon="minus-sign" data-size="sm" aria-hidden="true"></span></button>`:''}<span id="${id}-label">${label}</span></li>`;
-const tree=`<ul class="hw-tree-view" role="tree" aria-label="Documents" style="inline-size:320px">${item('business','Business',1,true)}${item('licences','Licences',2,true)}${item('commercial','Commercial licence',3,true)}${item('personal','Personal',1)}<li class="hw-tree-item" role="treeitem" id="hidden" aria-level="2" aria-selected="false" tabindex="-1" hidden style="--hw-tree-depth: 1"><span>Hidden row</span></li></ul>`;
+// What these cases check: the package stylesheet on authored markup written in this file, an
+// expanded three-level flat tree of li[role=treeitem] as the documents describe it. No adapter
+// is rendered here and no document is read; the markup each adapter renders, and the vanilla
+// controller on the documented markup, are covered by the package tests. Some rows carry no
+// hw-tree-item class, as in the vanilla samples of the guide, so the rules for class-less rows apply.
+const item=(id:string,label:string,level:number,branch=false,classed=true)=>`<li ${classed?'class="hw-tree-item" ':''}role="treeitem" id="${id}" aria-level="${level}" aria-posinset="1" aria-setsize="1" aria-labelledby="${id}-label" ${branch?'aria-expanded="true"':''} aria-selected="false" tabindex="${id==='business'?0:-1}" style="--hw-tree-depth: ${level-1}">${branch?`<button type="button" class="hw-tree-toggle" tabindex="-1" aria-label="Collapse ${label}"><span class="hw-icon" data-icon="minus-sign" data-size="sm" aria-hidden="true"></span></button>`:''}<span id="${id}-label">${label}</span></li>`;
+const tree=`<ul class="hw-tree-view" role="tree" aria-label="Documents" style="inline-size:320px">${item('business','Business',1,true)}${item('licences','Licences',2,true)}${item('commercial','Commercial licence',3,true)}${item('personal','Personal',1,false,false)}<li role="treeitem" id="hidden" aria-level="2" aria-selected="false" tabindex="-1" hidden style="--hw-tree-depth: 1"><span>Hidden row</span></li></ul>`;
 
 for(const lang of ['en','ar'] as const)
   test(`[TREE-02] each level of the flat tree starts one indent step further from the inline start (${lang})`,async({page})=>{
@@ -22,11 +24,11 @@ for(const lang of ['en','ar'] as const)
     // No inline padding and no nested group: the stylesheet alone indents, and a hidden row takes no space.
     expect(await page.locator('.hw-tree-view [role=group]').count()).toBe(0);
     await expect(page.locator('#hidden')).toBeHidden();
-    const rows=await page.locator('.hw-tree-item:not([hidden])').evaluateAll(nodes=>nodes.map(node=>Math.round(node.getBoundingClientRect().top)));
+    const rows=await page.locator('[role=treeitem]:not([hidden])').evaluateAll(nodes=>nodes.map(node=>Math.round(node.getBoundingClientRect().top)));
     expect([...rows].sort((a,b)=>a-b)).toEqual(rows);expect(new Set(rows).size).toBe(rows.length);
   });
 
-test('[TREE-05] an expanded tree item shows only its own label, so its name contains its visible text (WCAG 2.5.3)',async({page})=>{
+test('[TREE-05] on the authored flat markup, an expanded tree item shows only its own label, so its name contains its visible text (WCAG 2.5.3)',async({page})=>{
   await openFixture(page,tree);
   const results=await new AxeBuilder({page}).include('.hw-tree-view').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();
   expect(results.violations.map(violation=>violation.id)).toEqual([]);

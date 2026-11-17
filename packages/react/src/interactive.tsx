@@ -257,6 +257,8 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onQ
   useEffect(() => {
     if (open && state.activeIndex >= 0) input.current?.ownerDocument.getElementById(`${field.id}-option-${state.activeIndex}`)?.scrollIntoView?.({ block: 'nearest' });
   }, [open, state.activeIndex, field.id]);
+  // The focus the component itself gives the input after a selection does not reopen the list.
+  const refocusing = useRef(false);
   function dispatch(event: ComboboxEvent) {
     if (blocked() && event.type !== 'close' && event.type !== 'reset') return;
     const next = transitionCombobox(effectiveState, event, options);
@@ -270,7 +272,7 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onQ
   return <div className="hw-combobox" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); }}>
     <input {...props} {...field} aria-invalid={field['aria-invalid'] ?? (failed || undefined)} onInvalid={event => { onInvalid?.(event); setFailed(true); }} ref={presenceRef} form={form} disabled={disabled} className={cx('hw-input', className)} type="text" role="combobox" autoComplete="off" aria-autocomplete="list" aria-readonly={props.readOnly || undefined} aria-expanded={open} aria-controls={listId} aria-activedescendant={open && active && !active.disabled ? `${field.id}-option-${state.activeIndex}` : undefined}
       value={query} onChange={event => { if (blocked()) { event.currentTarget.value = query; return; } dispatch({ type: 'input', query: event.currentTarget.value }); onQueryChange?.(event.currentTarget.value); }}
-      onFocus={event => { onFocus?.(event); if (!event.defaultPrevented) dispatch({ type: 'open' }); }} onBlur={onBlur}
+      onFocus={event => { onFocus?.(event); if (!event.defaultPrevented && !refocusing.current) dispatch({ type: 'open' }); }} onBlur={onBlur}
       onClick={event => { onClick?.(event); if (!event.defaultPrevented && !open) dispatch({ type: 'open' }); }}
       onKeyDown={event => {
         onKeyDown?.(event);
@@ -288,7 +290,7 @@ function ComboboxControl({ options, value, defaultValue = '', onValueChange, onQ
     <input type="hidden" name={name} form={form} value={selected} disabled={disabled} />
     <ul className="hw-listbox" id={listId} role="listbox" aria-label={props['aria-label']} aria-labelledby={field['aria-labelledby']} hidden={!open}>
       {results.map((option, index) => <li key={option.value} id={`${field.id}-option-${index}`} className="hw-option" role="option" aria-selected={selected === option.value} aria-disabled={option.disabled || undefined} data-active={state.activeIndex === index ? 'true' : undefined} data-state={state.activeIndex === index ? 'active' : undefined}
-        onPointerDown={event => event.preventDefault()} onClick={() => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); input.current?.focus(); } }}>{option.label}</li>)}
+        onPointerDown={event => event.preventDefault()} onClick={() => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); refocusing.current = true; input.current?.focus(); refocusing.current = false; } }}>{option.label}</li>)}
       {!results.length && copy.empty && <li role="presentation" className="hw-hint">{copy.empty}</li>}
     </ul>
     <span id={statusId} className="hw-sr-only" role="status" aria-live="polite" aria-atomic="true">{open ? copy.results?.(results.length) : ''}</span>

@@ -80,6 +80,19 @@ it('[STATE-01][STATE-02][STATE-03][rich-inputs-2] open is notified for reader ac
   expect(opened).toHaveBeenCalledTimes(1);
 });
 
+it('[COMBOBOX-05] focus on the input opens the popup and notifies open once; a read-only input stays closed', async () => {
+  const opened = vi.fn(); const { host } = await mount(<><Combobox label="المدينة" {...comboTexts} onOpenChange={opened} /><Combobox label="المدينة" {...comboTexts} readOnly /></>);
+  const [input, readOnly] = [...host.querySelectorAll<HTMLInputElement>('input[role=combobox]')];
+  await act(async () => input!.focus()); expect(input!.getAttribute('aria-expanded')).toBe('true'); expect(host.querySelector<HTMLElement>('[role=listbox]')!.hidden).toBe(false); expect(opened.mock.calls).toEqual([[true]]);
+  await act(async () => readOnly!.focus()); expect(readOnly!.getAttribute('aria-expanded')).toBe('false');
+});
+it('[COMBOBOX-06] an option chosen with the pointer while the input has no focus sets the value and leaves the list closed', async () => {
+  const opened = vi.fn(); const value = vi.fn();
+  const { host } = await mount(<><Combobox label="المدينة" {...comboTexts} defaultOpen onOpenChange={opened} onValueChange={value} /><button type="button" id="other">Other</button></>);
+  const input = q(host, 'input[role=combobox]'); await act(async () => q<HTMLElement>(host, '#other').focus());
+  await act(async () => { host.querySelectorAll<HTMLElement>('[role=option]')[1]!.click(); });
+  expect(input.getAttribute('aria-expanded')).toBe('false'); expect(input.value).toBe('ب'); expect(value.mock.calls).toEqual([['b', options[1]]]); expect(document.activeElement).toBe(input); expect(opened.mock.calls).toEqual([[false]]);
+});
 it('[COMBOBOX-03][COMBOBOX-04][rich-inputs-2] query is notified per accepted input event only; value only when it changed', async () => {
   const query = vi.fn(), value = vi.fn();
   const { host, form, render } = await mount(<form><Combobox name="city" label="المدينة" {...comboTexts} onQueryChange={query} onValueChange={value} /></form>);

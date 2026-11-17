@@ -49,7 +49,8 @@ export function createMenu(root: HTMLElement, options: MenuOptions = {}): Popove
     else if (key.key === 'Tab') disclosure.close();
     else if (isTypeaheadKey(key)) { const next = typeahead.next(key.key, items.map(item => item.textContent ?? ''), current, index => isDisabled(items[index]!)); if (next >= 0) { event.preventDefault(); focus(next); } }
   });
-  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; emit(root, { value }); options.onAction?.(value); disclosure.close(true); });
+  // The trigger takes focus before the action, so a dialog the action opens returns focus to it; an action that moves focus elsewhere wins.
+  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; restoreFocus(trigger); emit(root, { value }); options.onAction?.(value); disclosure.close(true); });
   return { get open() { return disclosure.open; }, show() { disclosure.show(); navigate(-1, 'ArrowDown'); }, close: disclosure.close, destroy() { disclosure.destroy(); scope.destroy(); } };
 }
 

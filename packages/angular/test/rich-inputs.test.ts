@@ -67,6 +67,21 @@ describe('hw-combobox', () => {
     update({ open: true }); expect(list.hidden).toBe(false);
   });
 
+  it('[COMBOBOX-05] focus on the input opens the popup and notifies open once; a read-only input stays closed', () => {
+    const { input, list, fixture, root } = combobox('(openChange)="opened($event)"', { opened: vi.fn() }); const opened = (fixture.componentInstance as unknown as { opened: ReturnType<typeof vi.fn> }).opened;
+    input.focus(); fixture.detectChanges(); expect(input.getAttribute('aria-expanded')).toBe('true'); expect(list.hidden).toBe(false); expect(opened.mock.calls).toEqual([[true]]);
+    TestBed.resetTestingModule(); root.remove();
+    const readOnly = combobox('readOnly'); readOnly.input.focus(); readOnly.fixture.detectChanges(); expect(readOnly.input.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('[COMBOBOX-06] an option chosen with the pointer while the input has no focus sets the value and leaves the list closed', () => {
+    const opened = vi.fn(); const value = vi.fn();
+    const { input, fixture, root } = combobox('[open]="true" (openChange)="opened($event)" (valueChange)="value($event)"', { opened, value });
+    const other = document.createElement('button'); other.type = 'button'; root.append(other); other.focus(); fixture.detectChanges();
+    root.querySelectorAll<HTMLElement>('[role=option]')[1]!.click(); fixture.detectChanges();
+    expect(input.getAttribute('aria-expanded')).toBe('false'); expect(input.value).toBe('Jeddah'); expect(value.mock.calls).toEqual([['jeddah']]); expect(document.activeElement).toBe(input); expect(opened.mock.calls).toEqual([[false]]);
+  });
+
   it('[COMBOBOX-03][COMBOBOX-04][rich-inputs-2] typing reports the query once per input event and no value; a selection, an application write and a reset report no query', async () => {
     const query = vi.fn(), value = vi.fn(), { fixture, input, list, form, update } = combobox('label="City" [value]="city" (queryChange)="query($event)" (valueChange)="value($event)"', { query, value, city: '' });
     type(input, 'J'); fixture.detectChanges(); type(input, 'Je'); fixture.detectChanges();

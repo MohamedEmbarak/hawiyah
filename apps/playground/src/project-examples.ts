@@ -381,9 +381,9 @@ export function projectExample(
     vue = `<Progress label="${t("Upload progress", "تقدم الرفع")}" :value="65" :max="100" />`;
     angular = `<hw-progress label="${t("Upload progress", "تقدم الرفع")}" [value]="65" [max]="100" />`;
   } else if (id === "skeleton") {
-    react = `<div role="status"><span className="hw-sr-only">${t("Loading content", "تحميل المحتوى")}</span><Skeleton style={{inlineSize:'100%',blockSize:'4rem'}} /></div>`;
-    vue = `<div role="status"><span class="hw-sr-only">${t("Loading content", "تحميل المحتوى")}</span><Skeleton style="inline-size:100%;block-size:4rem" /></div>`;
-    angular = `<div role="status"><span class="hw-sr-only">${t("Loading content", "تحميل المحتوى")}</span><hw-skeleton style="inline-size:100%;block-size:4rem" /></div>`;
+    react = `<div className="hw-stack" role="status"><span className="hw-sr-only">${t("Loading content", "جارٍ تحميل المحتوى")}</span><Skeleton style={{blockSize:'18px',inlineSize:'70%'}} /><Skeleton style={{blockSize:'12px'}} /><Skeleton style={{blockSize:'12px',inlineSize:'85%'}} /></div>`;
+    vue = `<div class="hw-stack" role="status"><span class="hw-sr-only">${t("Loading content", "جارٍ تحميل المحتوى")}</span><Skeleton style="block-size:18px;inline-size:70%" /><Skeleton style="block-size:12px" /><Skeleton style="block-size:12px;inline-size:85%" /></div>`;
+    angular = `<div class="hw-stack" role="status"><span class="hw-sr-only">${t("Loading content", "جارٍ تحميل المحتوى")}</span><hw-skeleton style="block-size:18px;inline-size:70%" /><hw-skeleton style="block-size:12px" /><hw-skeleton style="block-size:12px;inline-size:85%" /></div>`;
   } else if (id === "rating") {
     state = true; numberState = true; initialValue = "4";
     const cases = ratingDemoCases(locale).map(item => ({...item, ...ratingNativeMarkup(locale,item.kind,item.kind==='selected')}));

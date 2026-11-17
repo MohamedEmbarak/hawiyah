@@ -104,11 +104,12 @@ strings.
   "label"`) and the selector in Angular (`Hawiyah: hw-file-dropzone requires
   "label"`).
 - When a missing text is reported depends on the adapter and is not part of the
-  contract: React and vanilla report every required text of a component when it
-  renders or is created; Vue and Angular report a text when it is first needed
-  (a results message after the reader filters, the label of a collapsed branch
-  once a branch is collapsed). In each adapter a warning is issued once per
-  component and input, and never in a production build.
+  contract: React reports every required text of a component when it renders;
+  vanilla reports most texts when the controller is created and some when they
+  are first needed (the toggle labels of a TreeView); Vue and Angular report a
+  text when it is first needed (a results message after the reader filters, the
+  collapse label once a branch is expanded). In each adapter a warning is issued
+  once per component and input, and never in a production build.
 - When required text is missing the component renders nothing in its place and
   omits the attribute. It does not invent a name, reuse another input or hide the
   control. A constraint with a missing validation message still blocks submission

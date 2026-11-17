@@ -74,6 +74,15 @@ it('[CALENDAR-05][R01] one status element after the grid holds unsupportedMessag
   expect(host.querySelectorAll('[role=status]')).toHaveLength(1);
 });
 
+it('[CALENDAR-07] a value beyond max keeps the month; a cleared value puts the tab stop back on today', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 14, 12));
+  const value = ref('2026-10-20'); const host = mount(() => h(Calendar, { ...calendarText, max: '2026-12-31', modelValue: value.value, 'onUpdate:modelValue': (next: string) => { value.value = next; } }));
+  const tab = () => host.querySelector('button.hw-calendar-day[tabindex="0"]');
+  value.value = '2027-01-05'; await settle(); expect(host.querySelector('.hw-calendar-heading')!.textContent).toContain(formatCalendarDate('2026-10-14', { locale: 'en-US', calendar: 'gregory', month: 'long', year: 'numeric' } as never)); expect(tab()).toBe(day(host, '2026-10-14'));
+  value.value = '2026-10-20'; await settle(); day(host, '2026-10-22').focus(); key(document.activeElement!, 'ArrowRight'); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-23'));
+  value.value = ''; await settle(); expect(tab()).toBe(day(host, '2026-10-14'));
+});
+
 it('[CALENDAR-06][R01] a standalone Calendar has no system switch; the DatePicker dialog has one, directly before the calendar', async () => {
   let host = mount(() => h(Calendar, { ...calendarText }));
   expect(host.querySelector('.hw-calendar-switch')).toBeNull();
@@ -333,6 +342,7 @@ it('[DATE-PICKER-11] a typed date is the focused day on opening; the focus memor
   const close = async () => { host.querySelector('dialog')!.dispatchEvent(new Event('cancel', { cancelable: true })); await settle(); };
   await type(input, '2026-10-20'); trigger.click(); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-20'));
   key(document.activeElement!, 'ArrowRight'); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-21')); await close();
+  trigger.click(); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-20')); await close();
   await type(input, '2026-10-05'); trigger.click(); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-05'));
   key(document.activeElement!, 'ArrowRight'); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-06')); await close();
   await type(input, ''); trigger.click(); await settle(); expect(document.activeElement).toBe(day(host, '2026-10-14'));
@@ -347,6 +357,37 @@ it('[DATE-PICKER-12] the shown month comes only from a value inside min and max'
   await type(input, '2027-01-05'); trigger.click(); await settle(); expect(heading()).toContain(month('2026-10-14')); expect(document.activeElement).toBe(day(host, '2026-10-14')); await close();
   await type(input, '2026-03-20'); trigger.click(); await settle(); expect(heading()).toContain(month('2026-03-20')); await close();
   await type(input, ''); trigger.click(); await settle(); expect(heading()).toContain(month('2026-10-14'));
+});
+
+it('[DATE-PICKER-13] a window without today opens inside it: the grid has a tab stop and the month buttons lead towards the window', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 14, 12));
+  const bounds = ref({ min: '1900-01-01', max: '2008-12-31' }); const version = ref(0);
+  const host = mount(() => picker({ key: version.value, locale: 'en-US', ...bounds.value }));
+  const heading = () => host.querySelector('.hw-calendar-heading')!.textContent; const month = (date: string) => formatCalendarDate(date, { locale: 'en-US', calendar: 'gregory', month: 'long', year: 'numeric' } as never);
+  const buttons = () => [host.querySelector<HTMLButtonElement>('.hw-calendar-prev')!, host.querySelector<HTMLButtonElement>('.hw-calendar-next')!];
+  host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click(); await settle();
+  expect(heading()).toContain(month('2008-12-01')); expect(document.activeElement).toBe(day(host, '2008-12-01')); expect(buttons().map(button => button.disabled)).toEqual([false, true]);
+  buttons()[0]!.click(); await settle(); expect(heading()).toContain(month('2008-11-01'));
+  bounds.value = { min: '2027-01-01', max: '' }; version.value++; await settle();
+  host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click(); await settle();
+  expect(heading()).toContain(month('2027-01-01')); expect(document.activeElement).toBe(day(host, '2027-01-01')); expect(buttons().map(button => button.disabled)).toEqual([true, false]);
+  buttons()[1]!.click(); await settle(); expect(heading()).toContain(month('2027-02-01'));
+});
+
+it('[DATE-PICKER-14] switching the calendar system keeps the month when the value is outside min and max', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 14, 12));
+  const host = mount(() => picker({ locale: 'en-US', max: '2026-12-31' }));
+  await type(host.querySelector<HTMLInputElement>('input.hw-input')!, '2027-01-05'); host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click(); await settle();
+  host.querySelector<HTMLInputElement>('input[value="islamic-umalqura"]')!.click(); await settle();
+  expect(host.querySelector('button.hw-calendar-day[tabindex="0"]')!.getAttribute('aria-label')).toBe(formatCalendarDate('2026-10-14', { locale: 'en-US', calendar: 'islamic-umalqura', dateStyle: 'full' }));
+});
+
+it('[DATE-PICKER-15] a value changed while the dialog is open moves the month and the tab stop when it is inside min and max', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 14, 12));
+  const value = ref('2026-10-20'); const host = mount(() => picker({ locale: 'en-US', modelValue: value.value, 'onUpdate:modelValue': (next: string) => { value.value = next; } }));
+  host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click(); await settle(); value.value = '2026-12-25'; await settle();
+  expect(host.querySelector('.hw-calendar-heading')!.textContent).toContain(formatCalendarDate('2026-12-25', { locale: 'en-US', calendar: 'gregory', month: 'long', year: 'numeric' } as never));
+  expect(host.querySelector('button.hw-calendar-day[tabindex="0"]')).toBe(day(host, '2026-12-25'));
 });
 
 it('[DATE-PICKER-04] Escape returns focus to the element that opened the dialog', async () => {

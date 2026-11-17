@@ -338,13 +338,13 @@ export const arabicExpandedGuides: Record<string, GuideInput> = {
     summary: 'التنقل في مجموعة هرمية بتحديد واحد وحالة توسع، مع نقطة تركيز متحركة واحدة بين العقد المرئية.',
     usage: `<ul class="hw-tree-view" data-hw="tree-view" role="tree" aria-label="المستندات" data-hw-expand-label="توسيع {label}" data-hw-collapse-label="طي {label}">
   <li role="treeitem" data-hw-value="business" aria-expanded="true">
-    <button class="hw-tree-toggle" type="button" data-hw-tree-toggle tabindex="-1"><span class="hw-icon" data-icon="arrow-down-01" data-size="sm" aria-hidden="true"></span></button>
+    <button class="hw-tree-toggle" type="button" data-hw-tree-toggle tabindex="-1"><span class="hw-icon" data-icon="add-01" data-size="sm" aria-hidden="true"></span></button>
     <span data-hw-tree-label>المنشأة</span>
   </li>
   <li role="treeitem" data-hw-value="license" aria-level="2"><span data-hw-tree-label>الرخصة</span></li>
 </ul>`,
     lifecycle: ['هيّئ الهيكل الثابت بمعرّفات فريدة وعقد أم قابلة للتوسيع محددة صراحةً.', 'تتنقل الأسهم الرأسية بين العقد المرئية، وتوسّع الأسهم الأفقية أو تطوي وتنتقل للأب أو الابن بحسب RTL أو LTR.', 'يختار Enter أو المسافة عقدة متاحة ويبلغ بقيمتها؛ لا يؤدي الاختيار وحده إلى تنقل أو جلب مستند.', 'أنه المتحكم قبل استبدال الهيكل لاستعادة صفات التركيز وARIA وإزالة المستمعات.'],
-    api: ['هوية ثابتة للعقدة المستخدمة في التحديد.', 'حالة الأب ومستوى كل عقدة في قائمة مسطحة واحدة تبدأ بالأب في كل المحوّلات: لا تحتوي العقدة أبناءها. يستنتج متحكم Vanilla الآباء من aria-level ويخفي صفوف الفرع المطوي.', 'بيانات العقد وخصائص التحديد في React؛ تتضمن العقدة id وlabel وdisabled وchildren.', 'معرّفات العقد الموسعة، كحالة متحكم بها أو ابتدائية؛ يستخدم Vanilla الخيار expanded وcontroller.expanded وhw:change detail.expanded، ويستخدم Angular [(expanded)].', 'أسماء مطلوبة لزر التوسيع button.hw-tree-toggle في كل المحوّلات (في Vanilla: data-hw-expand-label="… {label}" وdata-hw-collapse-label="… {label}" على الجذر).'],
+    api: ['هوية ثابتة للعقدة المستخدمة في التحديد.', 'حالة الأب ومستوى كل عقدة في قائمة مسطحة واحدة تسبق فيها كل عقدةٍ أبناءَها، في كل المحوّلات: لا تحتوي العقدة أبناءها. يستنتج متحكم Vanilla الآباء من aria-level ويخفي صفوف الفرع المطوي.', 'بيانات العقد وخصائص التحديد في React؛ تتضمن العقدة id وlabel وdisabled وchildren.', 'معرّفات العقد الموسعة، كحالة متحكم بها أو ابتدائية؛ يستخدم Vanilla الخيار expanded وcontroller.expanded وhw:change detail.expanded، ويستخدم Angular [(expanded)].', 'أسماء مطلوبة لزر التوسيع button.hw-tree-toggle في كل المحوّلات (في Vanilla: data-hw-expand-label="… {label}" وdata-hw-collapse-label="… {label}" على الجذر).'],
     accessibility: ['استخدم tree عندما يفيد نموذج لوحة المفاتيح الهرمي؛ قد تكون قائمة تنقل متداخلة أبسط.', 'سمِّ الشجرة وكل عقدة بتسمية مقروءة.', 'امنع التفاعل مع العقد المعطلة وحافظ على تركيز مرئي بعد الطي.'],
     limitations: ['لا يدعم التحديد المتعدد أو العرض الافتراضي أو السحب والإفلات أو تحميل العقد عن بُعد.'],
   }),

@@ -1,4 +1,4 @@
-import { createCleanup, createTypeahead, type ConsentChoice, type FeedbackValue, getDirection, isTypeaheadKey, observeFormReset, sameValue, hasText, getNextEnabledIndex, isDisabled, observeReadonlyChoice, normalizeDigits, requireText, sortRows } from '@hawiyah/core';
+import { createCleanup, createTypeahead, type ConsentChoice, type FeedbackValue, getDirection, isTypeaheadKey, observeFormReset, sameValue, hasText, getNextEnabledIndex, isDisabled, observeReadonlyChoice, normalizeDigits, requireText, sortRows, warnInDevelopment } from '@hawiyah/core';
 import { emit, ensureId, eventElement, named, nameRoot, nativeChange, readOnly, remember, templated, text, writeOptional, writeText } from './dom.js';
 import type { ValueController } from './controls.js';
 
@@ -187,6 +187,9 @@ export function createTreeView(root: HTMLElement, options: TreeViewOptions = {})
   // Structure comes from the authored aria-level: the parent of an item is the nearest earlier item one level up.
   const parents = new Map<HTMLElement, HTMLElement>(); const levels = new Map<HTMLElement, number>(); const branches = new Set<HTMLElement>();
   { const path: HTMLElement[] = []; for (const item of items) { const authored = Number(item.getAttribute('aria-level')); const level = Math.min(Number.isInteger(authored) && authored > 0 ? authored : 1, path.length + 1); path.length = level - 1; const above = path[level - 2]; if (above) { parents.set(item, above); branches.add(above); } levels.set(item, level); path.push(item); } }
+  // A toggle or an authored aria-expanded on an item with no child item after it usually means that a child lost its aria-level.
+  const childless = items.find(item => !branches.has(item) && (item.hasAttribute('aria-expanded') || [...item.children].some(child => child.hasAttribute('data-hw-tree-toggle'))));
+  if (childless) warnInDevelopment('TreeView\u0000aria-level', `Hawiyah: TreeView item "${childless.dataset.hwValue}" has a toggle or aria-expanded but no child item after it. Give each child item its aria-level; the toggle does nothing without one.`);
   const toggles = new Map<HTMLElement, { toggle: HTMLElement; icon: HTMLElement | undefined; authored: string | null }>();
   const labelOf = (item: HTMLElement) => item.querySelector(':scope > [data-hw-tree-label]')?.textContent ?? [...item.childNodes].filter(node => node.nodeType === 3).map(node => node.textContent).join('');
   const expandLabel = templated(root, 'getExpandLabel', options.getExpandLabel, (node: TreeViewNode) => ({ label: node.label, id: node.id }));

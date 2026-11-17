@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 
 // One loading pattern in the package documents and in the guide: a status container that
@@ -20,8 +20,15 @@ it('[SKELETON-03] the guide shows the same pattern in the usage snippet, the liv
   const usage = file('apps/playground/src/component-native-guides.ts').match(/skeleton: \{[\s\S]*?usage: `([^`]*)`/u)![1]!;
   expect(usage).toContain('<div role="status">'); expect(usage).toContain('<span class="hw-sr-only">Loading request details</span>'); expect(usage.match(/class="hw-skeleton" aria-hidden="true"/gu)).toHaveLength(2);
   const projects = file('apps/playground/src/project-examples.ts').match(/id === "skeleton"\) \{([\s\S]*?)\} else if/u)![1]!;
-  expect(projects.match(/<div role="status"><span class(?:Name)?="hw-sr-only">/gu)).toHaveLength(3);
+  expect(projects.match(/<div class(?:Name)?="hw-stack" role="status"><span class(?:Name)?="hw-sr-only">/gu)).toHaveLength(3); expect(projects.match(/<(?:Skeleton|hw-skeleton) /gu)).toHaveLength(9);
   const sample = file('apps/playground/src/main.ts').match(/case "skeleton":\s*return `([^`]*)`/u)![1]!;
   expect(sample).toContain('role="status"'); expect(sample).toContain('class="hw-sr-only"'); expect(sample.match(/class="hw-skeleton" aria-hidden="true"/gu)).toHaveLength(3);
   for (const path of ['apps/playground/src/component-native-guides.ts', 'apps/playground/src/component-native-guides.ar.ts', 'apps/playground/src/project-examples.ts', 'apps/playground/src/main.ts']) expect(file(path), path).not.toMatch(busyAndLabelled);
+});
+
+it('[SKELETON-03] components.json, llms.txt and docs/ document no container that is only busy and labelled', () => {
+  const documents = ['components.json', 'llms.txt', ...readdirSync(new URL('../docs', import.meta.url), { recursive: true }).map(String).filter(name => name.endsWith('.md')).map(name => `docs/${name}`)];
+  expect(documents.length).toBeGreaterThan(2);
+  // JSON escapes the quotes of the markup it holds.
+  for (const path of documents) expect(file(path).replaceAll('\\"', '"'), path).not.toMatch(busyAndLabelled);
 });

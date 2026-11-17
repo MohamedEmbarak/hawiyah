@@ -620,7 +620,11 @@ adapter.
   hidden input, the listbox and the status. Angular `(valueChange)` fires only
   when the value changed, and a value written by the application no longer
   closes the list. Focus on the input opens the popup in the four adapters
-  (the vanilla controller opened it on click, typing and arrows only).
+  (the vanilla controller opened it on click, typing and arrows only). An
+  option chosen with the pointer while the input has no focus leaves the list
+  closed: the focus the component gives the input after a selection does not
+  reopen it (vanilla, Vue and Angular reopened it, and React also lost the
+  selected text).
 - **MultiSelect** has a visible filter label and announces the number of
   matching options after the reader filters, through the new required
   `getResultsMessage(count)` and a polite status present from the first
@@ -653,8 +657,22 @@ adapter.
   available. Each opening starts again from the selected day: a typed date is
   the focused day (vanilla focused today, React the day that last had focus),
   the focus memory of the last opening is dropped, and the month shown comes
-  only from a value inside `min` and `max`, else it is today's month (core
-  `getCalendarMonth` no longer anchors on a value outside the bounds). A standalone Calendar announces a value outside the supported
+  only from a value inside `min` and `max`, else it is today's month, held
+  inside `min` and `max` (core `getCalendarMonth` no longer anchors on a value
+  outside the bounds, and anchors on `max` when today is later and on `min`
+  when today is earlier). A picker whose window does not contain today, such
+  as a date of birth with `max` in the past, therefore opens on a month with
+  available days and a tab stop. The previous and next month buttons follow
+  one rule in the four adapters, from core (`hasPrevious`, `hasNext`): a
+  button is disabled only when the whole neighbouring month is outside `min`
+  and `max` (Vue and vanilla disabled both buttons on a month without an
+  available day). In vanilla each opening starts from the selection, else the
+  held today, so `controller.setMonth()` before `show()` does not choose the
+  month an opening shows. A value changed while the React picker is open
+  moves the month, as in the other adapters; switching the calendar system in
+  vanilla keeps the month for a value outside `min` and `max`; the Angular
+  Calendar no longer follows a bound or written value beyond `max`, and a
+  cleared value no longer keeps the tab stop on the former day. A standalone Calendar announces a value outside the supported
   Umm al-Qura range through a status element and `unsupportedMessage` in
   every adapter. The Gregorian / Hijri switch belongs to DatePicker; the
   vanilla standalone Calendar no longer renders it.
@@ -681,10 +699,16 @@ adapter.
   `createTypeahead`: 500 ms buffer, a repeated letter cycles, visible nodes
   only). Menu and Popover close when focus moves outside them, without moving
   focus; the React Popover handles Escape on its own root only. An Escape
-  that a control inside the panel has used for itself (default-prevented)
-  leaves the popover or menu open in the four adapters; vanilla and Angular
-  closed it. The vanilla Menu reports the action before the closing, as the
-  frameworks do.
+  that a control inside the panel or the application has used for itself
+  (default-prevented) leaves the popover or menu open in the four adapters;
+  vanilla and Angular closed the popover, and React, Vue and Angular closed
+  the menu. In Angular one Escape closes one level of nested popovers, as in
+  the other adapters (it closed both). The vanilla Menu reports the action
+  before the closing, as the frameworks do. In vanilla and Angular the
+  trigger takes focus before the action runs, so a dialog that the action
+  opens returns focus to the trigger when it closes; an action that moves
+  focus elsewhere keeps it there. The React Menu reports the closing once
+  after an action that moves focus (it reported it twice).
 - **TreeView.** The expand and collapse control is `button.hw-tree-toggle` in
   every adapter, outside the tab order and named by `getExpandLabel(node)` and
   `getCollapseLabel(node)`; Angular hid it from assistive technology. Nested
@@ -695,7 +719,11 @@ adapter.
   shows text that is not in its name (WCAG 2.5.3, axe
   `label-content-name-mismatch`). `createTreeView` reads the authored
   `aria-level`, hides the rows of a collapsed branch and throws for a nested
-  tree item; the `.hw-tree-view [role='group']` rules are gone.
+  tree item; the `.hw-tree-view [role='group']` rules are gone. It warns once
+  in development when an item has a toggle or `aria-expanded` and no child
+  item after it, which usually means a child lost its `aria-level`. The
+  controller sets the indentation (`--hw-tree-depth`) and owns the `hidden`
+  attribute of the rows; `destroy()` restores the authored markup.
 - **PortalHeader.** Below 48rem one press on another branch heading opens it
   and closes the open one; the click is no longer lost. A brand without a home
   link is `div.hw-portal-brand`, with `role="img"` exactly when `brandLabel`
@@ -720,7 +748,8 @@ adapter.
   `option`; before, the first option stayed selected until the next change.
 - **IconButton.** A missing `label` is reported through the text contract in
   React and Vue as in Angular; `aria-label` or `aria-labelledby` names the
-  button instead.
+  button instead. In Vue `label` is optional in the declaration, so a button
+  named by `aria-label` or `aria-labelledby` gives no Vue warning.
 - **Stat (Vue).** `tone` is `neutral | success | danger` and `trendTone` is
   `success | danger`, the values the stylesheet and the other adapters have.
 - **Tabs (vanilla).** `createTabs` finds each panel inside its root, so a root
@@ -764,8 +793,10 @@ adapter.
   `prepareRemovalFocus(container, control, options)` with
   `RemovalFocusOptions`; `getDateViolation(draft, options)` with
   `DateViolation` and `DateViolationOptions`; `normalizePinInput(raw, length,
-  previous?, inputType?)`; `getPortalBranchSummary(target, scope)`; the types
-  `FeedbackValue` and `ConsentChoice`. `observeFieldValue` and
+  previous?, inputType?)`; `getPortalBranchSummary(target, scope)`;
+  `warnInDevelopment(key, message)`, the once-per-key development warning
+  that `requireText` uses; `hasPrevious` and `hasNext` on the result of
+  `getCalendarMonth`; the types `FeedbackValue` and `ConsentChoice`. `observeFieldValue` and
   `observeReadonlyChoice` keep their signatures and read a reset through
   `observeFormReset`.
 - New in `@hawiyah/styles`: `.hw-slider-value`, `.hw-alert-dismiss`,
@@ -971,8 +1002,8 @@ built type declarations of each package.
   FEEDBACK-06, the browser half of FOCUS-01 and ATTR-06 for the sticky
   content navigation and the popover host. They need the four adapters
   running in one page; their behaviour was measured by hand in the reviews of
-  this milestone and is covered in jsdom by each package's tests under the
-  same ids where an id exists there.
+  this milestone. Only FOCUS-01 has a jsdom case under its id; the others
+  are not covered by any automated test.
 - A disabled FileDropzone shows its instruction in the disabled text colour
   (2.03:1 in the DGA light theme). Text of an inactive control is exempt from
   WCAG 1.4.3; whether the instruction should use the muted text colour is an
@@ -986,6 +1017,11 @@ built type declarations of each package.
   region and heading structure differs between React, Vue and Angular; the
   React Calendar submits an empty value for a date outside the Umm al-Qura
   range, the other adapters the date.
+- Two Menu and TreeView differences found in review: after a menu action
+  that focuses a field, React and Vue return focus to the trigger while
+  vanilla and Angular keep it in the field; ArrowUp on the first row of a
+  TreeView moves to the last row in vanilla and Angular and stays in React.
+  One rule for each is decided in a later release.
 
 ## 0.2.1 — 2026-11-10
 

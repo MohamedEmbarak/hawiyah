@@ -223,25 +223,8 @@ export const Calendar = defineComponent({
       // No built-in locale: without the application's locale nothing that Intl would produce is rendered (no toolbar, weekdays or grid).
       if (!needText("Calendar", "locale", props.locale)) return h("div", mergeProps(attrs, { class: "hw-calendar" }), [h("input", { ref: hidden, type: "hidden", name: attrs.name, form: attrs.form, value: model.value.value, disabled: props.disabled })]);
       const unsupportedText = props.calendar === "islamic-umalqura" ? needText("Calendar", "unsupportedMessage", props.unsupportedMessage, "calendar is 'islamic-umalqura'") : undefined;
-      const monthStart = page.value.days.find((day) => !day.outside)?.value;
-      const previousAllowed =
-        page.value.previous !== monthStart &&
-        getCalendarMonth({
-          month: page.value.previous,
-          min: props.min,
-          max: props.max,
-          calendar: props.calendar,
-          locale: props.locale,
-        }).days.some((day) => !day.outside && !blocked(day.value));
-      const nextAllowed =
-        page.value.next !== monthStart &&
-        getCalendarMonth({
-          month: page.value.next,
-          min: props.min,
-          max: props.max,
-          calendar: props.calendar,
-          locale: props.locale,
-        }).days.some((day) => !day.outside && !blocked(day.value));
+      const previousAllowed = page.value.hasPrevious;
+      const nextAllowed = page.value.hasNext;
       return h("div", mergeProps(attrs, { class: "hw-calendar" }), [
         h("input", {
           ref: hidden,

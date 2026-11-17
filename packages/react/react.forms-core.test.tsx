@@ -174,6 +174,15 @@ it('[REQ-01][REQ-02][REQ-04][rich-inputs-20][fields-basic-7] one required marker
   expect(Array.from(host.querySelectorAll<HTMLInputElement>('#g input[type=radio]'), input => input.required)).toEqual([true, true]);
 });
 
+it('[TOGGLE-GROUP-06] a bound single value whose notification the application ignores stays the checked and submitted option', async () => {
+  const changes = vi.fn();
+  const { host } = await mount(<form><ToggleGroup label="العرض" name="view" options={options} value="a" onValueChange={changes} /></form>);
+  const radios = Array.from(host.querySelectorAll<HTMLInputElement>('input[type=radio]'));
+  await act(async () => radios[1]!.click());
+  expect(changes.mock.calls).toEqual([['b']]); expect(radios.map(radio => radio.checked)).toEqual([true, false]);
+  expect(new FormData(host.querySelector('form')!).get('view')).toBe('a');
+});
+
 it('[TOGGLE-GROUP-01][TOGGLE-GROUP-04][TOGGLE-GROUP-05][MSG-01][actions-9][E02][actions-5] ToggleGroup markup', async () => {
   const { host } = await mount(<div>
     <ToggleGroup id="single" name="view" form="f" label="العرض" options={options} hint="تلميح" error="خطأ" aria-describedby="extra" />

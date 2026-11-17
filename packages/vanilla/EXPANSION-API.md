@@ -221,7 +221,10 @@ the hint and error), announcing the full date with the weekday in the chosen
 calendar while the native input retains Gregorian ISO editing. Blank values and
 values the calendar cannot show hide it; it never carries a message. Opening the
 dialog moves focus to the selected day, or today, and starts again from it at
-each opening; the month shown comes only from a value inside `min` and `max`. A native reset restores the
+each opening; the month shown comes only from a value inside `min` and `max`, else
+from today held inside `min` and `max`, so `setMonth` before `show` does not choose
+the month of an opening. A month button is disabled only when the whole
+neighbouring month is outside `min` and `max`. A native reset restores the
 input's `defaultValue`, closes the dialog, clears the message and notifies once
 when the value changed.
 `onSelect` fires even when confirming the current date; value callbacks fire only
@@ -266,7 +269,8 @@ key without a match keeps its default action. `createMenu(root, { onAction,
 onOpenChange })`: `onAction(value)` reports an activated item's `data-hw-value`
 once (a link item then navigates natively; a disabled item reports nothing) and
 `hw:change` carries `{ value }`; `onOpenChange(open)` and `hw:change` `{ open }`
-report the state. Drawer reuses native Dialog.
+report the state. The trigger takes focus before `onAction` runs, so a dialog the
+action opens returns focus to it. Drawer reuses native Dialog.
 Toast messages are caller-owned and have no automatic expiration; each dismiss
 button hides its closest `[data-hw-toast]`. Urgent messages can have role=alert;
 the region defaults to polite status.
@@ -289,7 +293,10 @@ throws for a tree item nested in another. The parent of an item is the nearest
 earlier item one level up; the controller writes `aria-posinset`,
 `aria-setsize`, `aria-expanded` on branches and `--hw-tree-depth`, hides the
 rows of a collapsed branch with `hidden`, and names an unnamed item with
-`aria-labelledby` to its label. The branch toggle
+`aria-labelledby` to its label. The indentation therefore exists once the
+controller has run, and the controller owns the `hidden` attribute of every row
+(`destroy()` restores the authored one). An item with a toggle or
+`aria-expanded` and no child item after it gives one development warning. The branch toggle
 `button.hw-tree-toggle[data-hw-tree-toggle]` is not a tab stop and is named by
 `getExpandLabel(node)` while collapsed and `getCollapseLabel(node)` while expanded
 (`node` is `{ id, label }`; or the templates `data-hw-expand-label` and

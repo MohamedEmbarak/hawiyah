@@ -51,6 +51,14 @@ describe('calendar parity', () => {
     controller.setValue('1900-01-01'); controller.setCalendar('gregory'); expect(status()).toHaveLength(1); expect(status()[0]!.textContent).toBe('');
     controller.destroy(); expect(status()).toHaveLength(0);
   });
+  it('[CALENDAR-07] a value beyond max keeps the month; a cleared value puts the tab stop back on today', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-14T09:00:00Z'), toFake: ['Date'] });
+    const root = mount('<div data-hw-locale="en-GB" data-hw-value="2026-10-20" data-hw-max="2026-12-31" aria-label="Date"></div>'); const controller = createCalendar(root);
+    const shown = () => root.querySelector<HTMLElement>('.hw-calendar-day:not([data-outside])')!.dataset.hwDate; const tab = () => root.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.dataset.hwDate;
+    controller.setValue('2027-01-05'); expect(shown()).toBe('2026-10-01'); expect(tab()).toBe('2026-10-14');
+    controller.setValue('2026-10-20'); root.querySelector<HTMLElement>('[data-hw-date="2026-10-22"]')!.focus(); key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-23');
+    controller.setValue(''); expect(tab()).toBe('2026-10-14'); controller.destroy();
+  });
   it('[CALENDAR-06] a standalone calendar renders no calendar-system switch', () => {
     const root = mount('<div data-hw-locale="en" aria-label="Date"></div>'); const controller = createCalendar(root);
     expect(root.querySelector('.hw-calendar-switch')).toBeNull(); controller.destroy();
@@ -159,6 +167,7 @@ describe('date picker parity', () => {
     const { root, input, trigger } = picker(); const controller = createDatePicker(root);
     type(input, '2026-10-20'); trigger.click(); expect(active()).toBe('2026-10-20');
     key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-21'); controller.close();
+    trigger.click(); expect(active()).toBe('2026-10-20'); controller.close();
     type(input, '2026-10-05'); trigger.click(); expect(active()).toBe('2026-10-05');
     key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-06'); controller.close();
     type(input, ''); trigger.click(); expect(active()).toBe('2026-10-14'); controller.destroy();
@@ -170,6 +179,30 @@ describe('date picker parity', () => {
     type(input, '2027-01-05'); trigger.click(); expect(shown()).toBe('2026-10-01'); expect(active()).toBe('2026-10-14'); controller.close();
     type(input, '2026-03-20'); trigger.click(); expect(shown()).toBe('2026-03-01'); controller.close();
     type(input, ''); trigger.click(); expect(shown()).toBe('2026-10-01'); controller.destroy();
+  });
+  it('[DATE-PICKER-13] a window without today opens inside it: the grid has a tab stop and the month buttons lead towards the window', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-14T09:00:00Z'), toFake: ['Date'] });
+    const shown = (root: HTMLElement) => root.querySelector<HTMLElement>('.hw-calendar-day:not([data-outside])')!.dataset.hwDate;
+    const buttons = (root: HTMLElement) => [root.querySelector<HTMLButtonElement>('.hw-calendar-prev')!, root.querySelector<HTMLButtonElement>('.hw-calendar-next')!];
+    let { root, trigger } = picker({ input: 'min="1900-01-01" max="2008-12-31"' }); let controller = createDatePicker(root);
+    trigger.click(); expect(shown(root)).toBe('2008-12-01'); expect(active()).toBe('2008-12-01'); expect(buttons(root).map(button => button.disabled)).toEqual([false, true]);
+    buttons(root)[0]!.click(); expect(shown(root)).toBe('2008-11-01'); controller.destroy();
+    ({ root, trigger } = picker({ input: 'min="2027-01-01"' })); controller = createDatePicker(root);
+    trigger.click(); expect(shown(root)).toBe('2027-01-01'); expect(active()).toBe('2027-01-01'); expect(buttons(root).map(button => button.disabled)).toEqual([true, false]);
+    buttons(root)[1]!.click(); expect(shown(root)).toBe('2027-02-01'); controller.destroy();
+  });
+  it('[DATE-PICKER-14] switching the calendar system keeps the month when the value is outside min and max', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-14T09:00:00Z'), toFake: ['Date'] });
+    const { root, input, trigger, dialog } = picker({ input: 'max="2026-12-31"' }); const controller = createDatePicker(root);
+    type(input, '2027-01-05'); trigger.click();
+    const hijri = dialog.querySelector<HTMLInputElement>('input[value="islamic-umalqura"]')!; hijri.checked = true; hijri.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(root.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.dataset.hwDate).toBe('2026-10-14'); controller.destroy();
+  });
+  it('[DATE-PICKER-15] a value changed while the dialog is open moves the month and the tab stop when it is inside min and max', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-14T09:00:00Z'), toFake: ['Date'] });
+    const { root, trigger } = picker({ value: '2026-10-20' }); const controller = createDatePicker(root); trigger.click();
+    controller.setValue('2026-12-25');
+    expect(root.querySelector<HTMLElement>('.hw-calendar-day:not([data-outside])')!.dataset.hwDate).toBe('2026-12-01'); expect(root.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.dataset.hwDate).toBe('2026-12-25'); controller.destroy();
   });
   it('[CALENDAR-06] [DATE-PICKER-06] the picker owns one switch before its calendar and one status', () => {
     const { root, dialog } = picker({ value: '1900-01-01' }); const changed = vi.fn(); root.addEventListener('hw:change', event => changed((event as CustomEvent).detail));

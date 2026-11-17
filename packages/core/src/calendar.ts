@@ -29,6 +29,10 @@ export interface CalendarMonth {
   days: CalendarDay[];
   previous: string;
   next: string;
+  /** False when the calendar has no previous month or the whole previous month lies before min. */
+  hasPrevious: boolean;
+  /** False when the calendar has no next month or the whole next month lies after max. */
+  hasNext: boolean;
 }
 
 export interface CalendarDateFormatOptions extends Pick<Intl.DateTimeFormatOptions, 'weekday' | 'era' | 'year' | 'month' | 'day' | 'dateStyle' | 'numberingSystem'> {
@@ -121,8 +125,9 @@ export function getCalendarMonth(options: CalendarMonthOptions): CalendarMonth {
   if (!Number.isInteger(weekStartsOn) || weekStartsOn < 0 || weekStartsOn > 6) throw new RangeError('Hawiyah: weekStartsOn must be 0 through 6.');
   const system = calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar();
   const currentDay = today('Asia/Riyadh');
-  // Without a month the selected value decides it, but only a value inside min and max; otherwise today.
-  let anchor = iso(date(options.month || (options.value && isDateInRange(options.value, options.min, options.max) ? options.value : '') || iso(currentDay)));
+  // Without a month the selected value decides it, but only a value inside min and max; otherwise today, held inside min and max.
+  const todayInWindow = options.min && iso(currentDay) < options.min ? options.min : options.max && iso(currentDay) > options.max ? options.max : iso(currentDay);
+  let anchor = iso(date(options.month || (options.value && isDateInRange(options.value, options.min, options.max) ? options.value : '') || todayInWindow));
   if (calendar === 'islamic-umalqura') anchor = anchor < UMALQURA_MIN_DATE ? UMALQURA_MIN_DATE : anchor > UMALQURA_MAX_DATE ? UMALQURA_MAX_DATE : anchor;
   const first = startOfMonth(toCalendar(date(anchor), system));
   const offset = (first.toDate('UTC').getUTCDay() - weekStartsOn + 7) % 7;
@@ -139,6 +144,7 @@ export function getCalendarMonth(options: CalendarMonthOptions): CalendarMonth {
   const era = calendar === 'islamic-umalqura' ? new Intl.DateTimeFormat(locale, { era: 'short', year: 'numeric', calendar, timeZone: 'UTC' }).formatToParts(nameAnchor).find(part => part.type === 'era')?.value : undefined;
   const label = `${monthName} ${number.format(first.year)}${era ? ` ${era}` : ''}`;
   const adjacent = (amount: number) => { try { return moveCalendarDate(iso(first), amount, 'month', calendar); } catch { return iso(first); } };
+  const previous = adjacent(-1); const next = adjacent(1);
   return {
     label,
     weekdays: Array.from({ length: 7 }, (_, index) => weekday.format(baseSunday.add({ days: (weekStartsOn + index) % 7 }).toDate('UTC'))),
@@ -153,7 +159,10 @@ export function getCalendarMonth(options: CalendarMonthOptions): CalendarMonth {
         selected: value === options.value, today: value === iso(currentDay),
       };
     }),
-    previous: adjacent(-1),
-    next: adjacent(1),
+    previous,
+    next,
+    // A month button is disabled only when the whole neighbouring month is outside min and max (one rule for the four adapters).
+    hasPrevious: previous !== iso(first) && !(options.min && date(iso(first)).subtract({ days: 1 }).toString() < options.min),
+    hasNext: next !== iso(first) && !(options.max && next > options.max),
   };
 }

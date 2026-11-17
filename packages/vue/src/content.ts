@@ -23,7 +23,8 @@ export const IconButton = defineComponent({
   name: "HwIconButton",
   inheritAttrs: false,
   props: {
-    label: { type: String, required: true },
+    /** Accessible name; not required when aria-label or aria-labelledby names the button. The text contract reports a button left without a name. */
+    label: String,
     variant: {
       type: String as PropType<'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link'>,
       default: "ghost",

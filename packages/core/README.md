@@ -39,6 +39,10 @@ with @internationalized/date calendar math. The supported range is AH 1343–150
 (Gregorian 1924-08-01 through 2077-11-16). Conversions and movement reject dates
 outside that range; month grids clamp their display anchor and disable unsupported
 spillover cells. There is no fallback to the civil Islamic calendar.
+Without `month`, `getCalendarMonth` shows the month of a `value` inside `min` and
+`max`, else today held inside `min` and `max`. Its `hasPrevious` and `hasNext` are
+false when the calendar has no such month or the whole month lies before `min` or
+after `max`; the four adapters disable their month buttons by them.
 
 The picker and canonical formatter obtain numeric year/month/day from that same
 reference. Intl supplies localized names and ordering. Formatted dates use Latin digits in both languages. A display

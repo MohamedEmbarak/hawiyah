@@ -173,11 +173,12 @@ describe('content display (authored markup)', () => {
 
 describe('actions (authored markup)', () => {
   it('[BUTTON-01] [LINK-01] the documented buttons state their type and the anchor keeps its attributes; enhance() changes neither', () => {
-    const root = documented('Button and Link'); const before = root.innerHTML; const form = root.querySelector('form')!; const link = root.querySelector('a')!;
+    const root = documented('Button and Link'); const before = root.innerHTML; const form = root.querySelector('form')!; const [link, file] = [...root.querySelectorAll('a')];
     const submitted = vi.fn((event: Event) => event.preventDefault()); form.addEventListener('submit', submitted); const release = enhance(root);
     expect([...form.querySelectorAll('button')].map(button => [button.className, button.getAttribute('type')])).toEqual([['hw-button', 'button'], ['hw-button', 'submit']]);
     form.querySelector<HTMLButtonElement>('[type=button]')!.click(); expect(submitted).not.toHaveBeenCalled(); form.querySelector<HTMLButtonElement>('[type=submit]')!.click(); expect(submitted).toHaveBeenCalledTimes(1);
-    expect(['class', 'hreflang', 'data-variant', 'aria-current', 'target', 'rel'].map(name => link.getAttribute(name))).toEqual(['hw-link', 'ar', 'neutral', 'page', '_blank', 'noopener noreferrer']);
+    expect(['class', 'hreflang', 'data-variant', 'aria-current', 'target', 'rel'].map(name => link!.getAttribute(name))).toEqual(['hw-link', 'ar', 'neutral', 'page', '_blank', 'noopener noreferrer']);
+    expect(['class', 'download', 'aria-label'].map(name => file!.getAttribute(name))).toEqual(['hw-link app-download', '', 'Download the guide (PDF)']);
     release(); expect(root.innerHTML).toBe(before);
   });
 });

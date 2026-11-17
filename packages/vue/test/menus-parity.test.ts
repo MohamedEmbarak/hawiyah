@@ -4,6 +4,7 @@ import { createApp, createSSRApp, defineComponent, h, nextTick, ref, type App } 
 import { renderToString } from '@vue/server-renderer';
 import { resetTextWarnings } from '@hawiyah/core';
 import { Menu, Popover, TreeView } from '../src/expansion-interactive.js';
+import { Dialog } from '../src/interactive.js';
 
 let app: App | undefined;
 let warn: ReturnType<typeof vi.spyOn>;
@@ -169,6 +170,32 @@ it('[MENU-02] a disabled menu has a disabled trigger; disabling an open menu clo
   expect(host.querySelector<HTMLElement>('.hw-menu-content')!.hidden).toBe(true);
 });
 
+it('[MENU-05] an action that opens a dialog: closing the dialog returns focus to the menu trigger', async () => {
+  // jsdom has no modal dialog: showModal focuses the first control, as a browser does.
+  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>; const saved = { showModal: prototype.showModal, close: prototype.close };
+  Object.assign(prototype, { showModal(this: HTMLDialogElement) { this.open = true; this.querySelector('button')!.focus(); }, close(this: HTMLDialogElement) { this.open = false; } });
+  try {
+    const dialog = ref(false);
+    const host = mount(() => h('div', [menu({ onAction: () => { dialog.value = true; } }), h(Dialog, { open: dialog.value, 'onUpdate:open': (value: boolean) => { dialog.value = value; }, title: 'Confirm', closeLabel: 'Close' }, () => 'Delete the request?')]));
+    trigger(host).click(); await settle(); host.querySelector<HTMLElement>('[role=menuitem]')!.click(); await settle();
+    expect(document.activeElement!.getAttribute('aria-label')).toBe('Close');
+    (document.activeElement as HTMLElement).click(); await settle(); expect(document.activeElement).toBe(trigger(host));
+  } finally { Object.assign(prototype, saved); }
+});
+
+it('[MENU-06] an action reports open=false once, also when the action moves focus out of the menu', async () => {
+  const log: string[] = [];
+  const host = mount(() => h('div', [menu({ onAction: (value: string) => { log.push(`action=${value}`); document.getElementById('after')!.focus(); }, 'onUpdate:open': (open: boolean) => log.push(`open=${open}`) }), h('button', { id: 'after' }, 'After')]));
+  trigger(host).click(); await settle(); log.length = 0;
+  host.querySelector<HTMLElement>('[role=menuitem]')!.click(); await settle(); expect(log).toEqual(['action=edit', 'open=false']);
+});
+
+it('[MENU-07] an Escape that the application has cancelled leaves the menu open', async () => {
+  const changes = vi.fn(); const host = mount(() => menu({ 'onUpdate:open': changes }));
+  trigger(host).click(); await settle(); changes.mockClear(); const item = document.activeElement!; item.addEventListener('keydown', event => event.preventDefault());
+  await key(item, 'Escape'); expect(trigger(host).getAttribute('aria-expanded')).toBe('true'); expect(changes).not.toHaveBeenCalled();
+});
+
 it('[MENU-03][nav-b-3][R15] the packaged triggers of Menu and Popover are secondary by default and follow triggerVariant', () => {
   const host = mount(() => h('div', [menu(), h(Popover, { label: 'Help', triggerLabel: 'Help' }), menu({ triggerVariant: 'ghost' }), h(Popover, { label: 'Help', triggerLabel: 'Help', triggerVariant: 'primary' })]));
   expect([...host.querySelectorAll('.hw-menu > button, .hw-popover > button')].map(button => button.getAttribute('data-variant'))).toEqual(['secondary', 'secondary', 'ghost', 'primary']);
@@ -249,6 +276,14 @@ it('[POPOVER-01][nav-b-8] Escape in the panel or on the trigger closes and focus
   expect(host.querySelector<HTMLElement>('.hw-popover-panel')!.hidden).toBe(true); expect(document.activeElement).toBe(button);
   button.click(); await settle(); await key(button, 'Escape');
   expect(host.querySelector<HTMLElement>('.hw-popover-panel')!.hidden).toBe(true); expect(document.activeElement).toBe(button);
+});
+
+it('[POPOVER-06] Escape in a popover inside a popover closes the inner one only; the next Escape closes the outer one', async () => {
+  const host = mount(() => h(Popover, { label: 'Outer', triggerLabel: 'Outer' }, () => h(Popover, { label: 'Inner', triggerLabel: 'Inner' }, () => h('button', { id: 'deep', type: 'button' }, 'Deep'))));
+  const [outer, inner] = [...host.querySelectorAll<HTMLElement>('.hw-popover > button')]; const panels = () => [...host.querySelectorAll<HTMLElement>('.hw-popover-panel')].map(panel => panel.hidden);
+  outer!.click(); await settle(); inner!.click(); await settle(); host.querySelector<HTMLElement>('#deep')!.focus();
+  await key(document.activeElement!, 'Escape'); expect(panels()).toEqual([false, true]); expect(document.activeElement).toBe(inner);
+  await key(document.activeElement!, 'Escape'); expect(panels()).toEqual([true, true]); expect(document.activeElement).toBe(outer);
 });
 
 it('[POPOVER-05] an Escape that a control inside the panel has cancelled leaves the popover open', async () => {

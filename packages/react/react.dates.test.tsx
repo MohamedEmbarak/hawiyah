@@ -67,6 +67,15 @@ describe('Calendar', () => {
     await render(<Calendar {...calendarTexts} value="1900-01-01" />);
     expect(status().textContent).toBe('');
   });
+  it('[CALENDAR-07] a value beyond max keeps the month; a cleared value puts the tab stop back on today', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z')); let set!: (value: string) => void;
+    function Controlled() { const [value, setValue] = useState('2026-10-20'); set = setValue; return <Calendar {...calendarTexts} value={value} onValueChange={setValue} max="2026-12-31" />; }
+    await render(<Controlled />);
+    const shown = () => container.querySelector<HTMLElement>('.hw-calendar-day:not([data-outside])')!.dataset.date; const tab = () => container.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.dataset.date;
+    await act(async () => set('2027-01-05')); expect(shown()).toBe('2026-10-01'); expect(tab()).toBe('2026-10-14');
+    await act(async () => set('2026-10-20')); await act(async () => day('2026-10-22').focus()); await key(document.activeElement!, 'ArrowRight'); expect((document.activeElement as HTMLElement).dataset.date).toBe('2026-10-23');
+    await act(async () => set('')); expect(tab()).toBe('2026-10-14');
+  });
   it('[CALENDAR-06][R01] a standalone Calendar has no calendar-system switch', async () => {
     await render(<Calendar {...calendarTexts} />);
     expect(container.querySelector('.hw-calendar-switch')).toBeNull();
@@ -257,6 +266,7 @@ describe('DatePicker', () => {
     const close = () => act(async () => { container.querySelector('dialog')!.dispatchEvent(new Event('cancel', { cancelable: true })); });
     await edit(text(), '2026-10-20'); await act(async () => trigger.click()); expect(active()).toBe('2026-10-20');
     await key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-21'); await close();
+    await act(async () => trigger.click()); expect(active()).toBe('2026-10-20'); await close();
     await edit(text(), '2026-10-05'); await act(async () => trigger.click()); expect(active()).toBe('2026-10-05');
     await key(document.activeElement!, 'ArrowRight'); expect(active()).toBe('2026-10-06'); await close();
     await edit(text(), ''); await act(async () => trigger.click()); expect(active()).toBe('2026-10-14');
@@ -269,6 +279,30 @@ describe('DatePicker', () => {
     await edit(text(), '2027-01-05'); await act(async () => trigger.click()); expect(shown()).toBe('2026-10-01'); expect((document.activeElement as HTMLElement).dataset.date).toBe('2026-10-14'); await close();
     await edit(text(), '2026-03-20'); await act(async () => trigger.click()); expect(shown()).toBe('2026-03-01'); await close();
     await edit(text(), ''); await act(async () => trigger.click()); expect(shown()).toBe('2026-10-01');
+  });
+  it('[DATE-PICKER-13] a window without today opens inside it: the grid has a tab stop and the month buttons lead towards the window', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    const shown = () => container.querySelector<HTMLElement>('.hw-calendar-day:not([data-outside])')!.dataset.date; const active = () => (document.activeElement as HTMLElement).dataset.date;
+    const buttons = () => [container.querySelector<HTMLButtonElement>('.hw-calendar-prev')!, container.querySelector<HTMLButtonElement>('.hw-calendar-next')!];
+    await render(<DatePicker key="past" {...pickerTexts} label="Date" min="1900-01-01" max="2008-12-31" />);
+    await act(async () => container.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click()); expect(shown()).toBe('2008-12-01'); expect(active()).toBe('2008-12-01'); expect(buttons().map(button => button.disabled)).toEqual([false, true]);
+    await act(async () => buttons()[0]!.click()); expect(shown()).toBe('2008-11-01');
+    await render(<DatePicker key="future" {...pickerTexts} label="Date" min="2027-01-01" />);
+    await act(async () => container.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click()); expect(shown()).toBe('2027-01-01'); expect(active()).toBe('2027-01-01'); expect(buttons().map(button => button.disabled)).toEqual([true, false]);
+    await act(async () => buttons()[1]!.click()); expect(shown()).toBe('2027-02-01');
+  });
+  it('[DATE-PICKER-14] switching the calendar system keeps the month when the value is outside min and max', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    await render(<DatePicker {...pickerTexts} label="Date" max="2026-12-31" />);
+    await edit(text(), '2027-01-05'); await act(async () => container.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click());
+    await act(async () => container.querySelector<HTMLInputElement>('input[value="islamic-umalqura"]')!.click());
+    expect(container.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.dataset.date).toBe('2026-10-14');
+  });
+  it('[DATE-PICKER-15] a value changed while the dialog is open moves the month and the tab stop when it is inside min and max', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z')); let set!: (value: string) => void;
+    function Controlled() { const [value, setValue] = useState('2026-10-20'); set = setValue; return <DatePicker {...pickerTexts} label="Date" value={value} onValueChange={setValue} />; }
+    await render(<Controlled />); await act(async () => container.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click()); await act(async () => set('2026-12-25'));
+    expect(container.querySelector<HTMLElement>('.hw-calendar-day:not([data-outside])')!.dataset.date).toBe('2026-12-01'); expect(container.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.dataset.date).toBe('2026-12-25');
   });
   it('[DATE-PICKER-04] Escape returns focus to the element that opened the dialog', async () => {
     await render(<DatePicker {...pickerTexts} label="Date" defaultValue="2026-10-28" />);

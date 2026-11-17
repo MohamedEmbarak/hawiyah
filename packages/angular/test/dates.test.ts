@@ -77,6 +77,15 @@ describe('hw-calendar', () => {
     update({ calendar: 'gregory', value: '1900-01-01' }); expect(status().textContent).toBe('');
   });
 
+  it('[CALENDAR-07] a value beyond max keeps the month; a cleared value puts the tab stop back on today', () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    const { root, fixture, update } = page(`<hw-calendar label="Day" ${calendarText} max="2026-12-31" [value]="value" />`, { value: '2026-10-20' });
+    const shown = () => root.querySelector<HTMLElement>('.hw-calendar-day[data-outside="false"]')!.getAttribute('data-date'); const tab = () => root.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.getAttribute('data-date');
+    update({ value: '2027-01-05' }); expect(shown()).toBe('2026-10-01'); expect(tab()).toBe('2026-10-14');
+    update({ value: '2026-10-20' }); day(root, '2026-10-22').focus(); press(document.activeElement!, 'ArrowRight'); fixture.detectChanges(); expect(document.activeElement).toBe(day(root, '2026-10-23'));
+    update({ value: '' }); expect(tab()).toBe('2026-10-14');
+  });
+
   it('[CALENDAR-06][R01] a standalone calendar renders no calendar-system switch', () => {
     const { root } = page(`<hw-calendar label="Day" ${calendarText} />`);
     expect(root.querySelector('.hw-calendar-switch, .hw-calendar-options, [role=radiogroup]')).toBeNull();
@@ -247,6 +256,7 @@ describe('hw-date-picker', () => {
     const open = () => { trigger.click(); view.fixture.detectChanges(); }; const close = () => { view.dialog.close(); view.fixture.detectChanges(); };
     view.edit('2026-10-20'); open(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-20'));
     press(document.activeElement!, 'ArrowRight'); view.fixture.detectChanges(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-21')); close();
+    open(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-20')); close();
     view.edit('2026-10-05'); open(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-05'));
     press(document.activeElement!, 'ArrowRight'); view.fixture.detectChanges(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-06')); close();
     view.edit(''); open(); expect(document.activeElement).toBe(day(view.dialog, '2026-10-14'));
@@ -260,6 +270,34 @@ describe('hw-date-picker', () => {
     view.edit('2027-01-05'); open(); expect(shown()).toBe('2026-10-01'); expect(document.activeElement).toBe(day(view.dialog, '2026-10-14')); close();
     view.edit('2026-03-20'); open(); expect(shown()).toBe('2026-03-01'); close();
     view.edit(''); open(); expect(shown()).toBe('2026-10-01');
+  });
+
+  it('[DATE-PICKER-13] a window without today opens inside it: the grid has a tab stop and the month buttons lead towards the window', () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    const check = (attributes: string, start: string, disabled: boolean[], towards: number, after: string) => {
+      const view = picker(attributes); view.host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click(); view.fixture.detectChanges();
+      const shown = () => view.dialog.querySelector<HTMLElement>('.hw-calendar-day[data-outside="false"]')!.getAttribute('data-date');
+      const buttons = [view.dialog.querySelector<HTMLButtonElement>('.hw-calendar-prev')!, view.dialog.querySelector<HTMLButtonElement>('.hw-calendar-next')!];
+      expect(shown()).toBe(start); expect(document.activeElement).toBe(day(view.dialog, start)); expect(buttons.map(button => button.disabled)).toEqual(disabled);
+      buttons[towards]!.click(); view.fixture.detectChanges(); expect(shown()).toBe(after);
+      TestBed.resetTestingModule(); document.body.replaceChildren();
+    };
+    check('min="1900-01-01" max="2008-12-31"', '2008-12-01', [false, true], 0, '2008-11-01');
+    check('min="2027-01-01"', '2027-01-01', [true, false], 1, '2027-02-01');
+  });
+
+  it('[DATE-PICKER-14] switching the calendar system keeps the month when the value is outside min and max', () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    const view = picker('max="2026-12-31"'); view.edit('2027-01-05'); view.host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click(); view.fixture.detectChanges();
+    view.host.querySelector<HTMLInputElement>('.hw-calendar-switch input[value="islamic-umalqura"]')!.click(); view.fixture.detectChanges();
+    expect(view.dialog.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.getAttribute('data-date')).toBe('2026-10-14');
+  });
+
+  it('[DATE-PICKER-15] a value changed while the dialog is open moves the month and the tab stop when it is inside min and max', () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-14T09:00:00Z'));
+    const view = picker('[value]="value"', { value: '2026-10-20' }); view.host.querySelector<HTMLButtonElement>('.hw-date-picker-trigger')!.click(); view.fixture.detectChanges();
+    view.update({ value: '2026-12-25' });
+    expect(view.dialog.querySelector<HTMLElement>('.hw-calendar-day[data-outside="false"]')!.getAttribute('data-date')).toBe('2026-12-01'); expect(view.dialog.querySelector<HTMLElement>('.hw-calendar-day[tabindex="0"]')!.getAttribute('data-date')).toBe('2026-12-25');
   });
 
   it('[DATE-PICKER-07][R03] the output announces the full date with the weekday, and is empty and hidden without a date it can show', () => {

@@ -163,13 +163,24 @@ positioned `.hw-combobox`, so the list opens under the input:
 closed, and `{ query }` for every accepted input event (typed text only; a
 selection, a reset or a script write notifies no query). Read the value with
 `'value' in event.detail`. Focus on the input opens the popup, as do a click,
-typing and the arrow keys, in the four adapters. The popup stays closed while
-the input is disabled or read-only.
+typing and the arrow keys, in the four adapters; the focus the controller gives
+the input after a pointer selection does not reopen it. The popup stays closed
+while the input is disabled or read-only.
 
-`createMenu` reports an activation in this order: `hw:change` with `{ value }`
-and `onAction(value)`, then the closing (`{ open: false }`, `onOpenChange`),
-then focus returns to the trigger. An Escape that a control inside a popover or
-menu panel has cancelled (`preventDefault`) leaves the panel open.
+`createMenu` gives the trigger focus before the action, then reports the
+activation in this order: `hw:change` with `{ value }` and `onAction(value)`,
+then the closing (`{ open: false }`, `onOpenChange`). A dialog that the action
+opens therefore returns focus to the trigger when it closes; an action that
+moves focus elsewhere keeps it there. An Escape that a control inside a popover
+or menu panel, or the application, has cancelled (`preventDefault`) leaves the
+panel open.
+
+`createTreeView` sets the indentation of each row (`--hw-tree-depth`, from the
+authored `aria-level`), so authored markup shows every level at one indent until
+the controller runs. The controller owns the `hidden` attribute of the rows: it
+hides the rows of a collapsed branch, and `destroy()` restores the authored
+attributes. An item with a toggle or `aria-expanded` and no child item after it
+gives one development warning, since its child has usually lost its `aria-level`.
 
 `createTabs` looks for each panel inside its root, so a root may be enhanced
 before it is inserted into the document; a panel outside the root is rejected.
@@ -378,7 +389,12 @@ submission (`invalid` event) sets `aria-invalid="true"` until the date is valid
 again or the form resets. Opening the dialog moves focus to the selected day,
 or today. Each opening starts again from the selected day: the focus memory of
 the last opening is dropped, a typed date is the focused day, and the month
-shown comes only from a value inside `min` and `max` (else today's month).
+shown comes only from a value inside `min` and `max`, else from today held
+inside `min` and `max` (the month of `max` when today is later, of `min` when
+it is earlier). A `controller.setMonth()` call before `show()` therefore does
+not choose the month an opening shows; call it while the dialog is open. The
+previous and next month buttons are disabled only when the whole neighbouring
+month is outside `min` and `max`.
 A standalone Calendar has one `p.hw-sr-only[role=status]` after its
 grid that holds `unsupportedMessage` while the Hijri calendar cannot show the
 value. A native reset restores the authored value (DatePicker: the input's
@@ -476,9 +492,15 @@ buttons that the application handles:
 </section>
 ```
 
-An empty list is one `<p>` in place of the `ul`, without a role:
+Before removing or re-rendering
+an item after an action, call `prepareRemovalFocus(section, button, { item:
+':scope > ul > li', control: '[data-hw-dismiss]', fallback: section })` (or
+`'[data-hw-mark-read]'`) and run the result afterwards: focus moves to the same
+control of the next item, then the previous one, then the list.
 
 #### NotificationList without items
+
+An empty list is one `<p>` in place of the `ul`, without a role:
 
 ```html
 <section class="hw-notification-list" aria-labelledby="empty-notifications-title">
@@ -486,12 +508,6 @@ An empty list is one `<p>` in place of the `ul`, without a role:
   <p>No notifications.</p>
 </section>
 ```
-
-Before removing or re-rendering
-an item after an action, call `prepareRemovalFocus(section, button, { item:
-':scope > ul > li', control: '[data-hw-dismiss]', fallback: section })` (or
-`'[data-hw-mark-read]'`) and run the result afterwards: focus moves to the same
-control of the next item, then the previous one, then the list.
 
 ### Markup of the static components
 
@@ -586,11 +602,12 @@ the current step also carries `aria-current="step"`. The date is a `time` with
 #### Button and Link
 
 A button inside a form states its `type`. Attributes written on the anchor stay
-on `a.hw-link`.
+on `a.hw-link`, an application class included.
 
 ```html
 <form><button type="button" class="hw-button">Save draft</button><button type="submit" class="hw-button">Send</button></form>
 <a class="hw-link" data-variant="neutral" href="/guide" hreflang="ar" aria-current="page" target="_blank" rel="noopener noreferrer">Guide</a>
+<a class="hw-link app-download" href="/files/guide.pdf" download aria-label="Download the guide (PDF)">Download the guide</a>
 ```
 
 #### ServiceCard

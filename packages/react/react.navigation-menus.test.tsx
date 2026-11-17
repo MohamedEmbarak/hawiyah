@@ -5,7 +5,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { resetTextWarnings } from '@hawiyah/core';
-import { Button, Menu, Popover, PortalHeader, ServiceCard, ServiceDetails, TreeView } from './src/index.js';
+import { Button, Dialog, Menu, Popover, PortalHeader, ServiceCard, ServiceDetails, TreeView } from './src/index.js';
 import type { PortalHeaderProps, ServiceDetailsProps, TreeViewProps } from './src/index.js';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -89,6 +89,26 @@ describe('Menu', () => {
     await render(<><Menu label="Actions" items={items} trigger={<Button>Actions</Button>} onOpenChange={changed} disabled /><button id="outside">Outside</button></>);
     expect(container.querySelector<HTMLButtonElement>('[aria-haspopup=menu]')!.disabled).toBe(true); expect(menu().hasAttribute('hidden')).toBe(true); expect(changed.mock.calls).toEqual([[false]]);
   });
+  it('[MENU-05] an action that opens a dialog: closing the dialog returns focus to the menu trigger', async () => {
+    // jsdom has no modal dialog: showModal focuses the first control, as a browser does.
+    const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>; const saved = { showModal: prototype.showModal, close: prototype.close };
+    Object.assign(prototype, { showModal(this: HTMLDialogElement) { this.open = true; this.querySelector('button')!.focus(); }, close(this: HTMLDialogElement) { this.open = false; } });
+    try {
+      function Confirm() { const [dialog, setDialog] = useState(false); return <><Menu label="Actions" items={items} trigger={<Button>Actions</Button>} onAction={() => setDialog(true)} /><Dialog open={dialog} onOpenChange={setDialog} title="Confirm" closeLabel="Close">Delete the request?</Dialog></>; }
+      await render(<Confirm />); const trigger = container.querySelector<HTMLElement>('[aria-haspopup=menu]')!;
+      await click(trigger); await click(container.querySelector('[role=menuitem]')!); expect(active().getAttribute('aria-label')).toBe('Close');
+      await click(active()); expect(active()).toBe(trigger);
+    } finally { Object.assign(prototype, saved); }
+  });
+  it('[MENU-06] an action reports open=false once, also when the action moves focus out of the menu', async () => {
+    const log: string[] = [];
+    await openMenu({ onAction: value => { log.push(`action=${value}`); container.querySelector<HTMLElement>('#outside')!.focus(); }, onOpenChange: open => log.push(`open=${open}`) }); log.length = 0;
+    await click(container.querySelector('[role=menuitem]')!); expect(log).toEqual(['action=archive', 'open=false']);
+  });
+  it('[MENU-07] an Escape that the application has cancelled leaves the menu open', async () => {
+    const changed = vi.fn(); await openMenu({ onOpenChange: changed }); changed.mockClear(); const item = active(); item.addEventListener('keydown', event => event.preventDefault());
+    press(item, 'Escape'); await act(async () => undefined); expect(menu().hasAttribute('hidden')).toBe(false); expect(changed).not.toHaveBeenCalled();
+  });
   it('[FOCUS-07][FOCUS-08][nav-b-7] focus moving outside closes without moving focus back; a focusout without relatedTarget keeps it open', async () => {
     const changed = vi.fn();
     await openMenu({ onOpenChange: changed }); changed.mockClear();
@@ -129,6 +149,13 @@ describe('Popover', () => {
     await render(<Popover label="Filters" defaultOpen trigger={<Button>Filters</Button>}><input type="checkbox" /></Popover>);
     act(() => container.querySelector('input')!.focus()); press(container.querySelector('input')!, 'Escape'); await act(async () => undefined);
     expect(active()).toBe(container.querySelector('[aria-controls]'));
+  });
+  it('[POPOVER-06] Escape in a popover inside a popover closes the inner one only; the next Escape closes the outer one', async () => {
+    await render(<Popover label="Outer" trigger={<Button>Outer</Button>}><Popover label="Inner" trigger={<Button>Inner</Button>}><button id="deep">Deep</button></Popover></Popover>);
+    const [outer, inner] = [...container.querySelectorAll<HTMLElement>('.hw-popover > button')]; const panels = () => [...container.querySelectorAll<HTMLElement>('.hw-popover-panel')].map(panel => panel.hidden);
+    await click(outer!); await click(inner!); await focusTo(container.querySelector<HTMLElement>('#deep')!);
+    press(active(), 'Escape'); await act(async () => undefined); expect(panels()).toEqual([false, true]); expect(active()).toBe(inner);
+    press(active(), 'Escape'); await act(async () => undefined); expect(panels()).toEqual([true, true]); expect(active()).toBe(outer);
   });
   it('[POPOVER-05] an Escape that a control inside the panel has cancelled leaves the popover open', async () => {
     const changed = vi.fn(); await openPopover({ onOpenChange: changed }); changed.mockClear();

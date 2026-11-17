@@ -220,7 +220,7 @@ export { prepareToastDismissFocus } from './toast-focus.js';
 export { prepareRemovalFocus } from './removal-focus.js';
 export type { RemovalFocusOptions } from './removal-focus.js';
 export { getPortalBranchSummary } from './portal-branch.js';
-export { hasText, requireText, resetTextWarnings, formatTextTemplate } from './text.js';
+export { hasText, requireText, resetTextWarnings, formatTextTemplate, warnInDevelopment } from './text.js';
 export { getFragmentHref, getFragmentId, bindFragmentLink } from './fragment-link.js';
 export type { FragmentLink, FragmentLinkOptions } from './fragment-link.js';
 

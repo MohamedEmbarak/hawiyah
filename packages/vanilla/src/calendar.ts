@@ -105,8 +105,8 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
     const previous = button('previousLabel', 'previous');
     const next = button('nextLabel', 'next');
     const heading = document.createElement('h3'); heading.id = titleId; heading.textContent = model.label; heading.setAttribute('aria-live', 'polite');
-    previous.disabled = disabled() || model.previous === month || !!min && getCalendarMonth({ month: model.previous, locale, calendar, min, max }).days.filter(day => !day.outside).every(day => day.disabled);
-    next.disabled = disabled() || model.next === month || !!max && getCalendarMonth({ month: model.next, locale, calendar, min, max }).days.filter(day => !day.outside).every(day => day.disabled);
+    previous.disabled = disabled() || !model.hasPrevious;
+    next.disabled = disabled() || !model.hasNext;
     const headingGroup = document.createElement('div'); headingGroup.className = 'hw-calendar-heading'; headingGroup.append(heading, info); header.append(previous, headingGroup, next); host.append(header);
     const grid = document.createElement('table'); grid.className = 'hw-calendar-grid'; grid.setAttribute('role', 'grid'); grid.setAttribute('aria-labelledby', titleId); grid.setAttribute('aria-readonly', String(readonly()));
     const head = document.createElement('thead'); const headings = document.createElement('tr');
@@ -152,7 +152,7 @@ export function createCalendar(root: HTMLElement, options: CalendarOptions = {})
   const setValue = (date: string) => { if (scope.destroyed || date && !isDateInRange(date)) return; refreshBounds(); value = date; focused = date; if (date && isDateInRange(date, min, max)) month = date; render(); };
   // Each opening of a picker starts from the selected day, else from today: the focus memory and the month of the last opening are dropped.
   if (pickerCalendars.has(root)) { pickerOpenings.set(root, () => { if (scope.destroyed) return; refreshBounds(); focused = value; month = value && isDateInRange(value, min, max) ? value : undefined; render(); }); scope.add(() => pickerOpenings.delete(root)); }
-  const setCalendar = (system: CalendarSystem) => { if (scope.destroyed || calendar === system) return; calendar = system; month = value || month; render(); emit(root, { calendar }); options.onCalendarChange?.(calendar); };
+  const setCalendar = (system: CalendarSystem) => { if (scope.destroyed || calendar === system) return; calendar = system; refreshBounds(); month = value && isDateInRange(value, min, max) ? value : month; render(); emit(root, { calendar }); options.onCalendarChange?.(calendar); };
   scope.listen(host, 'click', event => {
     const target = eventElement(event)?.closest<HTMLElement>('button'); if (!target || isDisabled(target)) return;
     if (target.dataset.hwDate) select(target.dataset.hwDate);

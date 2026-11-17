@@ -182,6 +182,8 @@ export const Combobox = defineComponent({
     useFormReset(element, () => { failed.value = false; dispatch({ type: 'reset', value: props.defaultValue }); }, () => {
       if (element.value) element.value.value = effective.value.query;
     });
+    // The focus the component itself gives the input after a selection does not reopen the list.
+    let refocusing = false;
     const outside = (event: Event) => { if (!root.value?.contains(event.target as Node)) dispatch({ type: 'close' }); };
     onMounted(() => element.value?.ownerDocument.addEventListener('pointerdown', outside));
     onBeforeUnmount(() => element.value?.ownerDocument.removeEventListener('pointerdown', outside));
@@ -197,7 +199,7 @@ export const Combobox = defineComponent({
           'aria-activedescendant': open && active && !active.disabled ? `${field.id.value}-option-${state.value.activeIndex}` : undefined, value: query,
           'aria-invalid': failed.value ? true : field.controlAttrs.value['aria-invalid'], onInvalid: () => { failed.value = true; },
           onInput: (event: Event) => { const input = event.target as HTMLInputElement; if (blocked()) { input.value = query; return; } const nextQuery = input.value; dispatch({ type: 'input', query: nextQuery }); emit('update:query', nextQuery); },
-          onFocus: (event: FocusEvent) => { if (!event.defaultPrevented) dispatch({ type: 'open' }); },
+          onFocus: (event: FocusEvent) => { if (!event.defaultPrevented && !refocusing) dispatch({ type: 'open' }); },
           onClick: (event: MouseEvent) => { if (!event.defaultPrevented && !open) dispatch({ type: 'open' }); },
           onKeydown: (event: KeyboardEvent) => {
             if (event.defaultPrevented || event.isComposing || blocked()) return;
@@ -213,7 +215,7 @@ export const Combobox = defineComponent({
         h('ul', { id: listId, role: 'listbox', class: 'hw-listbox', 'aria-label': attrs['aria-label'], 'aria-labelledby': field.controlAttrs.value['aria-labelledby'], hidden: !open }, [
           ...results.value.map((option, index) => h('li', { key: option.value, id: `${field.id.value}-option-${index}`, role: 'option', class: 'hw-option', 'aria-selected': effective.value.value === option.value, 'aria-disabled': option.disabled || undefined,
             'data-active': state.value.activeIndex === index ? 'true' : undefined, 'data-state': state.value.activeIndex === index ? 'active' : undefined,
-            onPointerdown: (event: PointerEvent) => event.preventDefault(), onClick: () => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); element.value?.focus(); } },
+            onPointerdown: (event: PointerEvent) => event.preventDefault(), onClick: () => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); refocusing = true; element.value?.focus(); refocusing = false; } },
           }, option.label)), !results.value.length && h('li', { role: 'presentation', class: 'hw-hint' }, needText('Combobox', 'emptyMessage', props.emptyMessage)),
         ]),
         h('span', { class: 'hw-sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, open ? resultsText(results.value.length) : ''),

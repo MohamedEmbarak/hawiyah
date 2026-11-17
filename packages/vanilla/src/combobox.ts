@@ -158,7 +158,9 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     if (canOpen()) query(); else render();
   });
   // Focus opens the popup, as in the framework adapters; a click covers an input that already has focus.
-  scope.listen(input, 'focus', () => { if (!state.open) show(); });
+  // The focus the controller itself gives the input after a selection does not reopen it.
+  let refocusing = false;
+  scope.listen(input, 'focus', () => { if (!state.open && !refocusing) show(); });
   scope.listen(input, 'click', () => { if (!state.open) show(); });
   scope.listen(input, 'keydown', event => {
     const keyboard = event as KeyboardEvent;
@@ -184,7 +186,7 @@ export function createCombobox(root: HTMLElement, options: ComboboxOptions = {})
     const option = eventElement(event)?.closest<HTMLElement>('[data-hw-value]');
     if (!option || !nodes.includes(option) || option.hidden || isDisabled(option)) return;
     select(option.dataset.hwValue ?? '');
-    input.focus();
+    refocusing = true; input.focus(); refocusing = false;
   });
   scope.listen(root, 'focusout', event => {
     const related = (event as FocusEvent).relatedTarget as Node | null;

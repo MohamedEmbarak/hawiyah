@@ -578,7 +578,10 @@ Changed defaults and markup:
 - Calendar: the tab stop of an empty calendar is today when it is shown and
   available (was the first day of the month). A calendar or picker shows the
   month of its value only when the value is inside `min` and `max`, else
-  today's month; each opening of the picker starts from the selected day.
+  today held inside `min` and `max`; each opening of the picker starts from
+  the selected day. A month button is disabled only when the whole
+  neighbouring month is outside `min` and `max`. A bound or written value
+  beyond `max` does not move the month.
 - Carousel and Pagination: the arrow at a bound is `aria-disabled="true"` and
   focusable, no longer `disabled`: `[data-hw-next]:disabled` →
   `[data-hw-next]:is(:disabled, [aria-disabled='true'])`.

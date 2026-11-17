@@ -374,7 +374,7 @@ export const Menu = defineComponent({
                     "vertical",
                   );
                   items.get(focused.value)?.focus();
-                } else if (event.key === "Escape") {
+                } else if (event.key === "Escape" && !event.defaultPrevented) {
                   event.preventDefault();
                   event.stopPropagation();
                   close();

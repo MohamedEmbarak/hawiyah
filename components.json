@@ -2713,7 +2713,8 @@
         ]
       },
       "notes": [
-        "Native date input presentation is browser-owned; the calendar display mode does not change the ISO stored day. See docs/date-calendars.md."
+        "Native date input presentation is browser-owned; the calendar display mode does not change the ISO stored day. See docs/date-calendars.md.",
+        "Each opening shows the month of a value inside min and max, else today held inside min and max; a month button is disabled only when the whole neighbouring month is outside min and max (core getCalendarMonth hasPrevious and hasNext)."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/date-picker"
     },
@@ -3114,7 +3115,7 @@
         ]
       },
       "notes": [
-        "Items {value, label, disabled?, href?}; type-ahead; closes when focus moves outside. React takes the application's trigger element; Vue and Angular render a trigger named by triggerLabel and styled by triggerVariant (default secondary)."
+        "Items {value, label, disabled?, href?}; type-ahead; closes when focus moves outside; a default-prevented Escape leaves it open; the trigger has focus when the action runs, so a dialog the action opens returns focus to it. React takes the application's trigger element; Vue and Angular render a trigger named by triggerLabel and styled by triggerVariant (default secondary)."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/menu"
     },
@@ -3460,7 +3461,7 @@
       },
       "notes": [
         "No drag-and-drop or virtualization claim.",
-        "items and expanded in every adapter; one flat list of li[role=treeitem] with aria-level in every adapter, the authored vanilla markup included (a tree item never contains its child items); the expand and collapse toggle is button.hw-tree-toggle, outside the tab order, named by getExpandLabel(node) and getCollapseLabel(node); type-ahead on visible nodes."
+        "items and expanded in every adapter; one flat list of li[role=treeitem] with aria-level in every adapter, the authored vanilla markup included (a tree item never contains its child items); the expand and collapse toggle is button.hw-tree-toggle, outside the tab order, named by getExpandLabel(node) and getCollapseLabel(node); type-ahead on visible nodes. The vanilla controller sets the indentation (--hw-tree-depth), owns the hidden attribute of the rows and warns once in development about a toggle or aria-expanded without a child item."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tree-view"
     },

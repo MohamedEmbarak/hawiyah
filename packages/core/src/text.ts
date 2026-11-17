@@ -31,13 +31,16 @@ export function hasText(value: unknown): boolean {
  * It never substitutes a string: the caller renders nothing in its place. */
 export function requireText(component: string, name: string, value: unknown, when?: string): boolean {
   if (hasText(value)) return true;
-  if (!development()) return false;
-  const key = `${component}\u0000${name}`;
-  if (reported.has(key)) return false;
-  reported.add(key);
-  const output = (globalThis as { console?: Console }).console;
-  output?.warn(`Hawiyah: ${component} requires "${name}"${when ? ` when ${when}` : ''}. Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.`);
+  warnInDevelopment(`${component}\u0000${name}`, `Hawiyah: ${component} requires "${name}"${when ? ` when ${when}` : ''}. Hawiyah ships no built-in strings, so the application supplies this text; nothing is rendered in its place.`);
   return false;
+}
+
+/** Warns once per key in development and stays silent in production builds, as requireText
+ * does. For authored markup that a controller cannot use as written. */
+export function warnInDevelopment(key: string, message: string): void {
+  if (!development() || reported.has(key)) return;
+  reported.add(key);
+  (globalThis as { console?: Console }).console?.warn(message);
 }
 
 /** Forgets which warnings were already reported. Intended for tests. */

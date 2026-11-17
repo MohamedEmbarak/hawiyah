@@ -3,7 +3,7 @@ import { resetTextWarnings } from '@hawiyah/core';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMenu, createPopover, createTreeView } from '../src/index.js';
+import { createDialog, createMenu, createPopover, createTreeView } from '../src/index.js';
 
 // Vanilla fixtures of the cross-adapter Menu, Popover and TreeView cases: the documented authored markup and its controllers.
 let warn: ReturnType<typeof vi.spyOn>;
@@ -63,6 +63,25 @@ describe('menu', () => {
     root.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null })); expect(controller.open).toBe(true); expect(opened).toHaveBeenCalledTimes(1);
     const after = document.getElementById('after')!; after.focus(); expect(controller.open).toBe(false); expect(document.activeElement).toBe(after); controller.destroy();
   });
+  it('[MENU-05] an action that opens a dialog: closing the dialog returns focus to the menu trigger', () => {
+    // jsdom has no modal dialog: showModal focuses the first control, as a browser does.
+    const root = menu(); const dialogElement = document.createElement('dialog'); dialogElement.innerHTML = '<button type="button">Confirm</button>'; document.body.append(dialogElement);
+    Object.assign(dialogElement, { showModal() { dialogElement.open = true; dialogElement.querySelector('button')!.focus(); }, close() { dialogElement.open = false; dialogElement.dispatchEvent(new Event('close')); } });
+    const dialog = createDialog(dialogElement); const controller = createMenu(root, { onAction: () => dialog.show() }); const trigger = root.querySelector<HTMLElement>('[data-hw-trigger]')!;
+    controller.show(); root.querySelector<HTMLElement>('[data-hw-value="delete"]')!.click();
+    expect(controller.open).toBe(false); expect(document.activeElement?.textContent).toBe('Confirm');
+    dialog.close(); expect(document.activeElement).toBe(trigger); dialog.destroy(); controller.destroy();
+  });
+  it('[MENU-06] an action reports open=false once, also when the action moves focus out of the menu', () => {
+    const root = menu(); const log: string[] = []; const controller = createMenu(root, { onAction: value => { log.push(`action=${value}`); document.getElementById('after')!.focus(); }, onOpenChange: open => log.push(`open=${open}`) });
+    controller.show(); log.length = 0; root.querySelector<HTMLElement>('[data-hw-value="edit"]')!.click();
+    expect(log).toEqual(['action=edit', 'open=false']); controller.destroy();
+  });
+  it('[MENU-07] an Escape that the application has cancelled leaves the menu open', () => {
+    const root = menu(); const opened = vi.fn(); const controller = createMenu(root, { onOpenChange: opened }); controller.show();
+    const item = document.activeElement!; item.addEventListener('keydown', event => event.preventDefault());
+    key(item, 'Escape'); expect(controller.open).toBe(true); expect(opened.mock.calls).toEqual([[true]]); controller.destroy();
+  });
 });
 
 describe('popover', () => {
@@ -84,6 +103,15 @@ describe('popover', () => {
     controller.show(); root.querySelector('input')!.focus(); key(document.activeElement!, 'Escape'); expect(controller.open).toBe(false); expect(document.activeElement).toBe(trigger);
     trigger.click(); trigger.focus(); key(trigger, 'Escape'); expect(controller.open).toBe(false); expect(document.activeElement).toBe(trigger); controller.destroy();
   });
+  it('[POPOVER-06] Escape in a popover inside a popover closes the inner one only; the next Escape closes the outer one', () => {
+    const root = mount('<div class="hw-popover"><button type="button" data-hw-trigger>Outer</button><div class="hw-popover-panel" data-hw-panel role="region" aria-label="Outer" hidden><div class="hw-popover"><button type="button" data-hw-trigger>Inner</button><div class="hw-popover-panel" data-hw-panel role="region" aria-label="Inner" hidden><button type="button" id="deep">Deep</button></div></div></div></div>');
+    const nested = root.querySelector<HTMLElement>('.hw-popover-panel .hw-popover')!; const inner = createPopover(nested); const outer = createPopover(root);
+    const [outerTrigger, innerTrigger] = [...root.querySelectorAll<HTMLElement>('[data-hw-trigger]')];
+    outer.show(); inner.show(); document.getElementById('deep')!.focus();
+    key(document.activeElement!, 'Escape'); expect([outer.open, inner.open]).toEqual([true, false]); expect(document.activeElement).toBe(innerTrigger);
+    key(document.activeElement!, 'Escape'); expect([outer.open, inner.open]).toEqual([false, false]); expect(document.activeElement).toBe(outerTrigger);
+    inner.destroy(); outer.destroy();
+  });
   it('[POPOVER-05] an Escape that a control inside the panel has cancelled leaves the popover open', () => {
     const root = popover(); const changed = vi.fn(); const controller = createPopover(root, { onOpenChange: changed }); controller.show(); changed.mockClear();
     const input = root.querySelector('input')!; input.addEventListener('keydown', event => { if (event.key === 'Escape') event.preventDefault(); }); input.focus();
@@ -104,6 +132,14 @@ describe('tree view', () => {
     expect(button.tabIndex).toBe(-1); expect(button.getAttribute('aria-label')).toBe('Expand Business'); expect(button.querySelector('.hw-icon')!.getAttribute('data-icon')).toBe('add-01');
     controller.toggle('business'); expect(button.getAttribute('aria-label')).toBe('Collapse Business'); expect(button.querySelector('.hw-icon')!.getAttribute('data-icon')).toBe('minus-sign');
     expect(root.querySelector('[data-hw-value="letters"] button')).toBeNull(); controller.destroy(); expect(button.hasAttribute('aria-label')).toBe(false); expect(button.querySelector('.hw-icon')!.getAttribute('data-icon')).toBe('add-01');
+  });
+  // TREE-07 is vanilla only: React, Vue and Angular render the rows from the items data, so no authored row can lose its aria-level.
+  it('[TREE-07] an item with a toggle or aria-expanded and no child item after it gives one development warning', () => {
+    const markup = '<ul data-hw="tree-view" role="tree" aria-label="Documents" data-hw-expand-label="Expand {label}" data-hw-collapse-label="Collapse {label}"><li role="treeitem" data-hw-value="one" aria-expanded="true"><button class="hw-tree-toggle" type="button" data-hw-tree-toggle tabindex="-1"></button><span data-hw-tree-label>One</span></li><li role="treeitem" data-hw-value="two"><span data-hw-tree-label>Two</span></li><li role="treeitem" data-hw-value="three" aria-expanded="false"><span data-hw-tree-label>Three</span></li></ul>';
+    const lines = () => (warn.mock.calls as unknown[][]).map(call => String(call[0])).filter(message => message.includes('aria-level'));
+    let controller = createTreeView(mount(markup)); expect(lines()).toEqual(['Hawiyah: TreeView item "one" has a toggle or aria-expanded but no child item after it. Give each child item its aria-level; the toggle does nothing without one.']); controller.destroy();
+    controller = createTreeView(mount(markup)); expect(lines()).toHaveLength(1); controller.destroy();
+    warn.mockClear(); controller = createTreeView(tree()); expect(lines()).toEqual([]); controller.destroy();
   });
   it('[TREE-04] the toggle expands without selecting, notifies once and focuses the item; Tab never lands on it', () => {
     const root = tree(); const expanded = vi.fn(); const changed = vi.fn(); const controller = createTreeView(root, { onExpandedChange: expanded, onValueChange: changed });

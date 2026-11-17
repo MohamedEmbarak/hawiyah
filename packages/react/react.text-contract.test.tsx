@@ -21,12 +21,22 @@ const pageTexts = { label: 'الصفحات', previousLabel: 'السابقة', ne
 beforeEach(() => { resetTextWarnings(); warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined); container = document.createElement('div'); document.body.append(container); root = createRoot(container); });
 afterEach(async () => { await act(async () => root.unmount()); container.remove(); document.head.querySelectorAll('base').forEach(base => base.remove()); warn.mockRestore(); });
 
-it('[TEXT-01] a missing IconButton label leaves the button unnamed and warns once for two instances; aria-labelledby names it without a warning', async () => {
+it('[TEXT-01] a missing IconButton label leaves the button unnamed and warns once for two instances', async () => {
   const Loose = IconButton as unknown as (props: Record<string, unknown>) => ReactNode;
-  await render(<><Loose>+</Loose><Loose>-</Loose><span id="add-name">Add</span><Loose aria-labelledby="add-name">+</Loose></>);
+  await render(<><Loose>+</Loose><Loose>-</Loose></>);
   const buttons = [...container.querySelectorAll('button.hw-icon-button')];
-  expect(buttons.map(button => button.hasAttribute('aria-label'))).toEqual([false, false, false]); expect(buttons[2]!.getAttribute('aria-labelledby')).toBe('add-name');
+  expect(buttons.map(button => button.hasAttribute('aria-label'))).toEqual([false, false]);
   expect(warnings().filter(message => message.includes('IconButton requires "label"'))).toHaveLength(1);
+});
+
+it('[TEXT-01] an IconButton named only by aria-labelledby or aria-label gives no Hawiyah warning', async () => {
+  resetTextWarnings(); const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  // The React declaration requires label; a JavaScript caller may name the button by ARIA alone.
+  const Loose = IconButton as unknown as (props: Record<string, unknown>) => ReactNode;
+  await render(<><span id="add-name">Add</span><Loose aria-labelledby="add-name">+</Loose><Loose aria-label="Close">×</Loose></>);
+  const buttons = [...container.querySelectorAll('button.hw-icon-button')];
+  expect(buttons[0]!.getAttribute('aria-labelledby')).toBe('add-name'); expect(buttons[0]!.hasAttribute('aria-label')).toBe(false); expect(buttons[1]!.getAttribute('aria-label')).toBe('Close');
+  expect(warn).not.toHaveBeenCalled(); expect(error).not.toHaveBeenCalled(); error.mockRestore();
 });
 
 it('renders nothing for missing required text and warns once per input in development', async () => {

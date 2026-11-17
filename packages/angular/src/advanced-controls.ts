@@ -273,7 +273,7 @@ export class HwMultiSelectComponent extends HwExpandedValueControl<string[]> imp
 
 /** A message in parts: an ISO date inside it is isolated as left-to-right text. */
 const messageParts = (message: string) => !message ? [] : message.split(/([0-9٠-٩]{4}-[0-9٠-٩]{2}-[0-9٠-٩]{2})/u).map(text => ({text, date: /^[0-9٠-٩]{4}-[0-9٠-٩]{2}-[0-9٠-٩]{2}$/u.test(text)}));
-const emptyMonth: ReturnType<typeof getCalendarMonth> = {label: '', weekdays: [], days: [], previous: '', next: ''};
+const emptyMonth: ReturnType<typeof getCalendarMonth> = {label: '', weekdays: [], days: [], previous: '', next: '', hasPrevious: false, hasNext: false};
 @Component({selector: 'hw-calendar', standalone: true, imports: [HwTooltipComponent, HwTooltipTriggerDirective], providers: [{provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => HwCalendarComponent), multi: true}], template: `<div class="hw-field hw-calendar" [attr.dir]="direction || null">@if (hasLocale) {<div class="hw-calendar-toolbar"><button class="hw-button hw-calendar-prev" data-variant="ghost" type="button" [disabled]="disabled || !canPrevious" [attr.aria-label]="texts.need('previousLabel', previousLabel)" (click)="navigate(data.previous)"><span class="hw-icon" data-icon="arrow-left-01" data-directional="true" data-size="md" aria-hidden="true"></span></button><div class="hw-calendar-heading"><h3 [id]="controlId + '-month'" aria-live="polite">{{ data.label }}</h3>@if (calendar === 'islamic-umalqura') {<hw-tooltip class="hw-calendar-info" [text]="rangeDescription" [tooltipId]="rangeTooltipId || controlId + '-range'"><span hwTooltipTrigger tabindex="0" role="img" class="hw-calendar-info-icon" [attr.aria-label]="texts.need('rangeLabel', rangeLabel, 'calendar is islamic-umalqura')">i</span></hw-tooltip>}</div><button class="hw-button hw-calendar-next" data-variant="ghost" type="button" [disabled]="disabled || !canNext" [attr.aria-label]="texts.need('nextLabel', nextLabel)" (click)="navigate(data.next)"><span class="hw-icon" data-icon="arrow-right-01" data-directional="true" data-size="md" aria-hidden="true"></span></button></div><table class="hw-calendar-grid" role="grid" [attr.aria-label]="ariaLabel || (labelledBy ? label || null : texts.need('label', label))" [attr.aria-labelledby]="labelledBy" [attr.aria-describedby]="descriptionIds"><thead><tr>@for (weekday of data.weekdays; track $index) {<th scope="col">{{ weekday }}</th>}</tr></thead><tbody>@for (week of weeks; track $index) {<tr>@for (day of week; track day.value) {<td role="gridcell" [attr.aria-selected]="day.selected"><button type="button" class="hw-calendar-day" [attr.data-date]="day.value" [attr.data-outside]="day.outside" [attr.data-selected]="day.selected" [attr.aria-current]="day.today ? 'date' : null" [attr.aria-label]="dateLabel(day.value)" [attr.aria-disabled]="readOnly || null" [tabIndex]="day.value === tabbable ? 0 : -1" [disabled]="disabled || day.disabled || unavailable(day.value)" (click)="select(day.value)" (keydown)="keydown($event, day.value)" (blur)="touch()">{{ day.label }}</button></td>}</tr>}</tbody></table><p class="hw-sr-only" role="status">@for (part of unsupportedParts; track $index) {@if (part.date) {<bdi dir="ltr">{{ part.text }}</bdi>} @else {<ng-container>{{ part.text }}</ng-container>}}</p>}<input type="hidden" [name]="name" [attr.form]="form" [value]="value" [disabled]="disabled">${fieldEnd}</div>`})
 export class HwCalendarComponent extends HwExpandedValueControl<string> implements OnChanges {
   protected readonly texts = new HwTexts('hw-calendar');
@@ -314,18 +314,15 @@ export class HwCalendarComponent extends HwExpandedValueControl<string> implemen
   get tabbable() { const days = this.data.days.filter(day => !day.disabled && !this.unavailable(day.value)); return (days.find(day => day.value === this.focused) ?? days.find(day => day.selected) ?? days.find(day => day.today) ?? days.find(day => !day.outside) ?? days[0])?.value ?? ''; }
   private initialMonth = '';
   override ngOnInit() { super.ngOnInit(); this.initialMonth = this.month; }
-  protected override afterReset() { this.month = this.initialMonth || this.value; this.focused = this.value; }
-  ngOnChanges(changes: SimpleChanges) { if (this.value && isDateInRange(this.value)) { this.focused = this.value; if (changes['value'] && !changes['month']) this.month = this.value; } }
-  override writeValue(value: string | null) { super.writeValue(value); this.focused = this.value; this.month = this.value; }
+  /** The month follows only a value inside min and max; an empty value leaves the tab stop to today or the month. */
+  private follow(value: string) { if (isDateInRange(value, this.min || undefined, this.max || undefined)) this.month = value; }
+  protected override afterReset() { this.month = this.initialMonth || (isDateInRange(this.value, this.min || undefined, this.max || undefined) ? this.value : ''); this.focused = this.value; }
+  ngOnChanges(changes: SimpleChanges) { if (this.value && isDateInRange(this.value)) { this.focused = this.value; if (changes['value'] && !changes['month']) this.follow(this.value); } else if (changes['value'] && !this.value) this.focused = ''; }
+  override writeValue(value: string | null) { super.writeValue(value); this.focused = this.value; this.follow(this.value); }
   /** Each opening of a picker starts from the selected day, else from today; the month follows only a value inside min and max. */
   focusSelected() { this.month = isDateInRange(this.value, this.min || undefined, this.max || undefined) ? this.value : ''; this.focused = this.value; this.changeDetector.detectChanges(); this.host.nativeElement.querySelector<HTMLButtonElement>('.hw-calendar-day[tabindex="0"]')?.focus(); }
-  get canPrevious() {
-    const first = this.data.days.find(day => !day.outside)?.value;
-    return !!first && this.data.previous !== first && (!this.min || moveCalendarDate(first, -1, 'day', 'gregory') >= this.min);
-  }
-  get canNext() {
-    return this.data.next !== this.data.days.find(day => !day.outside)?.value && (!this.max || this.data.next <= this.max);
-  }
+  get canPrevious() { return this.data.hasPrevious; }
+  get canNext() { return this.data.hasNext; }
   private readonly dateLabels = new Map<string, string>();
   /** The application's name for the day, otherwise Intl's full date for locale; no words are added. */
   dateLabel(value: string): string | null {

@@ -31,6 +31,13 @@ describe('combobox', () => {
     form = mount(combobox('', 'readonly')); root = form.querySelector<HTMLElement>('[data-hw=combobox]')!; controller = createCombobox(root);
     root.querySelector<HTMLInputElement>('[data-hw-combobox-input]')!.focus(); expect(root.querySelector<HTMLElement>('[data-hw-combobox-list]')!.hidden).toBe(true); controller.destroy();
   });
+  it('[COMBOBOX-06] an option chosen with the pointer while the input has no focus sets the value and leaves the list closed', () => {
+    const form = mount(combobox() + '<button type="button" id="other">Other</button>'); const root = form.querySelector<HTMLElement>('[data-hw=combobox]')!; const opened = vi.fn(); const controller = createCombobox(root, { onOpenChange: opened });
+    const input = root.querySelector<HTMLInputElement>('[data-hw-combobox-input]')!; const list = root.querySelector<HTMLElement>('[data-hw-combobox-list]')!;
+    document.getElementById('other')!.focus(); controller.show(); opened.mockClear();
+    root.querySelector<HTMLElement>('[data-hw-value="abha"]')!.click();
+    expect(list.hidden).toBe(true); expect(input.getAttribute('aria-expanded')).toBe('false'); expect(controller.value).toBe('abha'); expect(document.activeElement).toBe(input); expect(opened.mock.calls).toEqual([[false]]); controller.destroy();
+  });
   it('[STATE-01] [STATE-06] notifies open once per change with detail {open} and query with detail {query}', () => {
     const root = mount(combobox()).querySelector<HTMLElement>('[data-hw=combobox]')!; const changed = vi.fn(); const open = vi.fn(); const query = vi.fn(); root.addEventListener('hw:change', changed);
     const controller = createCombobox(root, { onOpenChange: open, onQueryChange: query }); const input = root.querySelector<HTMLInputElement>('input')!;

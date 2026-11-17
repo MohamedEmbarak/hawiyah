@@ -18,13 +18,22 @@ const hawiyahWarnings = (warn: { mock: { calls: unknown[][] } }): string[] => wa
 beforeEach(() => { resetTextWarnings(); Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, value() { this.open = true; } }); Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value() { this.open = false; } }); });
 afterEach(() => { apps.splice(0).forEach(app => app.unmount()); document.body.replaceChildren(); vi.restoreAllMocks(); });
 
-it('[TEXT-01] a missing IconButton label leaves the button unnamed and warns once for two instances; aria-labelledby names it without a warning', async () => {
+it('[TEXT-01] a missing IconButton label leaves the button unnamed and warns once for two instances', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-  const root = mount({ render: () => h('div', [h(loose(IconButton), {}, () => '+'), h(loose(IconButton), {}, () => '-'), h('span', { id: 'add-name' }, 'Add'), h(loose(IconButton), { 'aria-labelledby': 'add-name' }, () => '+')]) });
+  const root = mount({ render: () => h('div', [h(IconButton, {}, () => '+'), h(IconButton, {}, () => '-')]) });
   await nextTick();
   const buttons = [...root.querySelectorAll('button.hw-icon-button')];
-  expect(buttons.map(button => button.hasAttribute('aria-label'))).toEqual([false, false, false]); expect(buttons[2]!.getAttribute('aria-labelledby')).toBe('add-name');
+  expect(buttons.map(button => button.hasAttribute('aria-label'))).toEqual([false, false]);
   expect(hawiyahWarnings(warn).filter(message => message.includes('IconButton requires "label"'))).toHaveLength(1);
+});
+
+it('[TEXT-01] an IconButton named only by aria-labelledby or aria-label gives no Hawiyah warning and no Vue warning', async () => {
+  resetTextWarnings(); const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const root = mount({ render: () => h('div', [h('span', { id: 'add-name' }, 'Add'), h(IconButton, { 'aria-labelledby': 'add-name' }, () => '+'), h(IconButton, { 'aria-label': 'Close' }, () => '×')]) });
+  await nextTick();
+  const buttons = [...root.querySelectorAll('button.hw-icon-button')];
+  expect(buttons[0]!.getAttribute('aria-labelledby')).toBe('add-name'); expect(buttons[0]!.hasAttribute('aria-label')).toBe(false); expect(buttons[1]!.getAttribute('aria-label')).toBe('Close');
+  expect(warn).not.toHaveBeenCalled();
 });
 
 it('renders nothing in place of missing required text and warns once in development', async () => {

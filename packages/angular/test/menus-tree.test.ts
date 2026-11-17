@@ -81,6 +81,32 @@ describe('hw-menu', () => {
     expect(trigger.disabled).toBe(true); expect(panel.hidden).toBe(true); expect(opened.mock.calls).toEqual([[true], [false]]);
   });
 
+  it('[MENU-05] an action that opens a dialog: closing the dialog returns focus to the menu trigger', () => {
+    // jsdom has no modal dialog: showModal focuses the first control, as a browser does.
+    const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>; const saved = { showModal: prototype.showModal, close: prototype.close };
+    Object.assign(prototype, { showModal(this: HTMLDialogElement) { this.open = true; this.querySelector('button')!.focus(); }, close(this: HTMLDialogElement) { this.open = false; this.dispatchEvent(new Event('close')); } });
+    try {
+      const { fixture, root } = page(`<hw-menu label="Actions" triggerLabel="Actions" [items]="items" (action)="confirm.show()" /><hw-dialog #confirm title="Confirm" closeLabel="Close"><p>Delete the request?</p></hw-dialog>`, { items });
+      const trigger = root.querySelector<HTMLButtonElement>('.hw-menu > button')!;
+      trigger.click(); fixture.detectChanges(); root.querySelector<HTMLElement>('[role=menuitem]')!.click(); fixture.detectChanges();
+      expect(active().getAttribute('aria-label')).toBe('Close');
+      active().click(); fixture.detectChanges(); expect(active()).toBe(trigger);
+    } finally { Object.assign(prototype, saved); }
+  });
+
+  it('[MENU-06] an action reports open=false once, also when the action moves focus out of the menu', () => {
+    const log: string[] = [];
+    const { fixture, trigger, entries, root } = menu('[items]="items"', { action: (value: string) => { log.push(`action=${value}`); root.querySelector<HTMLElement>('#after')!.focus(); }, opened: (open: boolean) => log.push(`open=${open}`) });
+    trigger.click(); fixture.detectChanges(); log.length = 0;
+    entries()[0]!.click(); fixture.detectChanges(); expect(log).toEqual(['action=edit', 'open=false']);
+  });
+
+  it('[MENU-07] an Escape that the application has cancelled leaves the menu open', () => {
+    const { fixture, trigger, panel, opened } = menu('[items]="items"');
+    trigger.click(); fixture.detectChanges(); opened.mockClear(); const item = active(); item.addEventListener('keydown', event => event.preventDefault());
+    press(item, 'Escape'); fixture.detectChanges(); expect(panel.hidden).toBe(false); expect(opened).not.toHaveBeenCalled();
+  });
+
   it('[MENU-03][nav-b-3][R15] the packaged trigger of a menu and of a popover is a secondary button unless triggerVariant says otherwise', () => {
     const { root } = page(`<hw-menu label="Actions" triggerLabel="Actions" [items]="[]" /><hw-menu label="Actions" triggerLabel="Actions" triggerVariant="primary" [items]="[]" /><hw-popover label="Filters" triggerLabel="Filters" /><hw-popover label="Filters" triggerLabel="Filters" triggerVariant="ghost" />`);
     expect([...root.querySelectorAll(':is(.hw-menu, .hw-popover) > button.hw-button')].map(button => button.getAttribute('data-variant'))).toEqual(['secondary', 'primary', 'secondary', 'ghost']);
@@ -214,6 +240,14 @@ describe('hw-popover', () => {
     trigger.click(); fixture.detectChanges(); press(trigger, 'Escape'); fixture.detectChanges(); expect(panel.hidden).toBe(true); expect(active()).toBe(trigger);
     trigger.blur(); update({ open: true }); expect(panel.hidden).toBe(false); expect(document.activeElement).not.toBe(trigger);
     inside.focus(); press(inside, 'Escape'); fixture.detectChanges(); expect(panel.hidden).toBe(true); expect(active()).toBe(trigger);
+  });
+
+  it('[POPOVER-06] Escape in a popover inside a popover closes the inner one only; the next Escape closes the outer one', () => {
+    const { fixture, root } = page(`<hw-popover label="Outer" triggerLabel="Outer"><hw-popover label="Inner" triggerLabel="Inner"><button type="button" id="deep">Deep</button></hw-popover></hw-popover>`);
+    const [outer, inner] = [...root.querySelectorAll<HTMLButtonElement>('.hw-popover > button')]; const panels = () => [...root.querySelectorAll<HTMLElement>('.hw-popover-panel')].map(panel => panel.hidden);
+    outer!.click(); fixture.detectChanges(); inner!.click(); fixture.detectChanges(); root.querySelector<HTMLElement>('#deep')!.focus();
+    press(active(), 'Escape'); fixture.detectChanges(); expect(panels()).toEqual([false, true]); expect(active()).toBe(inner);
+    press(active(), 'Escape'); fixture.detectChanges(); expect(panels()).toEqual([true, true]); expect(active()).toBe(outer);
   });
 
   it('[POPOVER-05] an Escape that a control inside the panel has cancelled leaves the popover open', () => {

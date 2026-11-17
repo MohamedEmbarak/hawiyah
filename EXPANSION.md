@@ -69,8 +69,9 @@ boundary, not a simulated implementation.
 - Popover: a disclosure with a trigger, labelled region, outside press/Escape;
   interactive children use normal Tab; `label` names the panel and prints
   nothing. Menu: items {value,label,disabled?,href?}, menu/menuitem keyboard
-  semantics, Home/End/ArrowUp/ArrowDown, type-ahead, focus return. Both close
-  when focus moves outside them. Drawer composes native modal dialog
+  semantics, Home/End/ArrowUp/ArrowDown, type-ahead, focus return; the trigger
+  has focus when the action runs, so a dialog it opens returns focus there. Both
+  close when focus moves outside them and leave a default-prevented Escape alone. Drawer composes native modal dialog
   with data-side=start|end|bottom and proper focus behavior. Dialog/Drawer backdrop
   dismissal requires a primary pointer gesture that starts and ends outside the
   panel. Content drags, cancelled gestures and prevented events do not dismiss it;
@@ -81,7 +82,9 @@ boundary, not a simulated implementation.
   (the authored vanilla markup too; an item never contains its child items),
   roving focus, RTL-aware arrows, expansion, selection, type-ahead; `items` {id,label,disabled?,children?} and `expanded`
   in every adapter; the toggle is `button.hw-tree-toggle` named by
-  `getExpandLabel(node)` / `getCollapseLabel(node)` and is not a tab stop. No
+  `getExpandLabel(node)` / `getCollapseLabel(node)` and is not a tab stop. The
+  vanilla controller sets the indentation, owns the `hidden` attribute of the
+  rows and warns in development about a toggle without a child item. No
   drag/drop claim.
 - Carousel: previous/next buttons and current slide status, no autoplay by
   default. At a bound the arrow is `aria-disabled="true"` and keeps focus.
@@ -126,8 +129,12 @@ boundary, not a simulated implementation.
 
 `CalendarSystem = 'gregory' | 'islamic-umalqura'`.
 `getCalendarMonth({locale,month?,value?,min?,max?,calendar?,weekStartsOn?})`
-returns `{label,weekdays:string[],days:CalendarDay[],previous,next}`. `locale` is
-required; the month label, including the Hijri era, is Intl output for it.
+returns `{label,weekdays:string[],days:CalendarDay[],previous,next,hasPrevious,hasNext}`.
+`locale` is required; the month label, including the Hijri era, is Intl output for it.
+Without `month`, a `value` inside min and max decides the month, else today held
+inside min and max. `hasPrevious` / `hasNext` are false when the calendar has no
+such month or the whole month lies before min / after max; the four adapters
+disable their month buttons by them.
 CalendarDay = `{value:string,label:string,disabled:boolean,outside:boolean,
 selected:boolean,today:boolean}`. month, value, min, max and prev/next use ISO
 Gregorian date strings. Weeks contain seven days. weekStartsOn defaults Sunday 0.

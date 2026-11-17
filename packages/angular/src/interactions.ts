@@ -55,7 +55,12 @@ export class HwPopoverComponent extends HwNamedRoot {
   @HostListener('document:pointerdown', ['$event']) outside(event: Event) { if (!this.host.nativeElement.contains(event.target as Node)) this.close(); }
   /** Focus moved to an element outside trigger and panel: the popup closes and focus stays where it went. Focus that goes nowhere closes nothing. */
   @HostListener('focusout', ['$event']) left(event: FocusEvent) { const next = event.relatedTarget as Node | null; if (next && !this.host.nativeElement.contains(next)) this.close(); }
-  @HostListener('document:keydown.escape', ['$event']) escape(event: Event) { if (this.open && !event.defaultPrevented && this.host.nativeElement.contains(event.target as Node)) { event.preventDefault(); event.stopPropagation(); this.close(true); } }
+  @HostListener('document:keydown.escape', ['$event']) escape(event: Event) { if (this.open && !event.defaultPrevented && this.host.nativeElement.contains(event.target as Node) && !this.nestedOpen(event.target as Element)) { event.preventDefault(); event.stopPropagation(); this.close(true); } }
+  /** An open popover or menu between the target and this host takes the Escape first: one level closes per key. */
+  private nestedOpen(target: Element) {
+    for (let node = target.parentElement?.closest('hw-popover, hw-menu'); node && node !== this.host.nativeElement; node = node.parentElement?.closest('hw-popover, hw-menu')) if (node.querySelector(':scope > div > button[aria-expanded="true"]')) return true;
+    return false;
+  }
 }
 
 /** `value` is what (action) reports; an item with `href` is a link that also navigates. */
@@ -81,14 +86,15 @@ export class HwMenuComponent extends HwPopoverComponent {
   keydown(event: KeyboardEvent) {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) { event.preventDefault(); this.active = getNextEnabledIndex(this.active, event.key, this.items, 'ltr', 'vertical'); this.focusActive(); }
-    else if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); this.close(true); }
+    else if (event.key === 'Escape' && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); this.close(true); }
     else if (event.key === 'Tab') this.close();
     // A link item is activated by Space as a button item is; Enter activates both natively.
     else if (event.key === ' ' && (event.target as Element).matches('a[role="menuitem"]')) { event.preventDefault(); (event.target as HTMLElement).click(); }
     else if (!event.isComposing && isTypeaheadKey(event)) { const next = this.typeahead.next(event.key, this.items.map(item => item.label), this.active, index => Boolean(this.items[index]?.disabled)); if (next >= 0) { event.preventDefault(); this.active = next; this.focusActive(); } }
   }
-  /** A disabled link item does not navigate; an enabled one reports its value, closes the menu and then navigates natively. */
-  choose(item: HwMenuItem, event?: Event) { if (this.disabled || item.disabled) { event?.preventDefault(); return; } this.action.emit(item.value); this.close(true); }
+  /** A disabled link item does not navigate; an enabled one reports its value, closes the menu and then navigates natively.
+   * The trigger takes focus before the action, so a dialog the action opens returns focus to it; an action that moves focus elsewhere wins. */
+  choose(item: HwMenuItem, event?: Event) { if (this.disabled || item.disabled) { event?.preventDefault(); return; } this.trigger?.nativeElement.focus(); this.action.emit(item.value); this.close(true); }
 }
 
 @Component({selector: 'hw-drawer', standalone: true, host: {...forwardedAriaHost, '[attr.title]': 'null'}, template: dialogTemplate('hwDrawerFooter', true)})

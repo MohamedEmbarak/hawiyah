@@ -404,7 +404,12 @@ preserves the exact ISO day, and reopening returns to the selected date's month.
 Opening moves focus to the selected day, or today.
 Each opening starts again from the selected day: the focus memory of the last
 opening is dropped, a typed date is the focused day, and the month shown comes
-only from a value inside `min` and `max` (else today's month).
+only from a value inside `min` and `max`, else from today held inside `min` and
+`max` (the month of `max` when today is later, of `min` when it is earlier). A
+month button is disabled only when the whole neighbouring month is outside `min`
+and `max`.
+A value that changes while the dialog is open moves the month when it is inside
+`min` and `max`.
 Month, weekday and date names come from `Intl` for the required `locale`; every control name and validation message is a prop. `UMALQURA_MIN_DATE` and `UMALQURA_MAX_DATE` are exported by `@hawiyah/core`.
 
 Direction and locale remain independent of calendar. Calendar's arrows follow

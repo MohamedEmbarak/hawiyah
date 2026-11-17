@@ -36,6 +36,7 @@ describe('hw-toggle-group markup', () => {
     expect(new FormData(root.querySelector('form')!).get('view')).toBe('grid');
   });
 
+  // TOGGLE-GROUP-06 does not apply: Angular has no controlled-only mode (CONTRACT.md); the component applies the reader's change and reports it.
   it('[TOGGLE-GROUP-05] in multiple mode a disabled hidden probe with the form value follows the legend, and the value inputs are inside the fieldset after hint and error', () => {
     const { root } = page(`<form id="outer"></form><hw-toggle-group label="Views" name="views" form="outer" multiple hint="Hint" error="Error" [options]="options" [value]="['list', 'grid', 'map']" />`, { options });
     const fieldset = root.querySelector('fieldset.hw-toggle-group')!, children = [...fieldset.children];

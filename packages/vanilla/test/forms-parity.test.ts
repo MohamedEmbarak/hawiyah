@@ -52,6 +52,7 @@ describe('toggle group (authored markup)', () => {
     controller.destroy();
   });
 
+  // TOGGLE-GROUP-06 does not apply: vanilla has no controlled-only mode (CONTRACT.md); the controller applies the reader's change and reports it.
   it('[TOGGLE-GROUP-04] [MSG-01] option markup has no class, span or data-selected; hint and error follow the options; name and form stay on the radios and hidden inputs', () => {
     const form = mount(single()); const root = form.firstElementChild as HTMLElement; const controller = createToggleGroup(root);
     root.querySelectorAll('label').forEach(label => { expect(label.className).toBe(''); expect(label.querySelector('span, [data-selected]')).toBeNull(); expect(label.firstElementChild!.matches('input[type=radio]:not([class])')).toBe(true); });
