@@ -314,7 +314,7 @@ export class HwCalendarComponent extends HwExpandedValueControl<string> implemen
   get tabbable() { const days = this.data.days.filter(day => !day.disabled && !this.unavailable(day.value)); return (days.find(day => day.value === this.focused) ?? days.find(day => day.selected) ?? days.find(day => day.today) ?? days.find(day => !day.outside) ?? days[0])?.value ?? ''; }
   private initialMonth = '';
   override ngOnInit() { super.ngOnInit(); this.initialMonth = this.month; }
-  /** The month follows only a value inside min and max; an empty value leaves the tab stop to today or the month. */
+  /** The month follows a value only when it is inside min and max. */
   private follow(value: string) { if (isDateInRange(value, this.min || undefined, this.max || undefined)) this.month = value; }
   protected override afterReset() { this.month = this.initialMonth || (isDateInRange(this.value, this.min || undefined, this.max || undefined) ? this.value : ''); this.focused = this.value; }
   ngOnChanges(changes: SimpleChanges) { if (this.value && isDateInRange(this.value)) { this.focused = this.value; if (changes['value'] && !changes['month']) this.follow(this.value); } else if (changes['value'] && !this.value) this.focused = ''; }
