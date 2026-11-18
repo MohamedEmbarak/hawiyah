@@ -171,7 +171,22 @@ export function compareScreenshot(reference, other) {
   const limit = pixelLimit(width, height);
   const result = { equal: differing <= limit, width, height, differing, limit };
   if (!result.equal) {
-    result.message = `${differing} differing pixels in ${width}x${height} (limit ${limit})`;
+    // Where they differ, so a failure can be read from a log without the images:
+    // the box around the differing pixels (drawn in red by pixelmatch) and the
+    // colour of the first one in each screenshot.
+    let left = width, top = height, right = -1, bottom = -1, first = -1;
+    for (let i = 0; i < out.data.length; i += 4) {
+      if (out.data[i] !== 255 || out.data[i + 1] !== 0 || out.data[i + 2] !== 0) continue;
+      const x = (i / 4) % width, y = Math.floor(i / 4 / width);
+      if (first < 0) first = i;
+      if (x < left) left = x;
+      if (x > right) right = x;
+      if (y < top) top = y;
+      if (y > bottom) bottom = y;
+    }
+    const rgb = (data, i) => `rgb(${data[i]}, ${data[i + 1]}, ${data[i + 2]})`;
+    const where = first < 0 ? '' : `, inside ${right - left + 1}x${bottom - top + 1} at ${left},${top}, first ${rgb(a.data, first)} against ${rgb(b.data, first)}`;
+    result.message = `${differing} differing pixels in ${width}x${height} (limit ${limit})${where}`;
     result.diff = PNG.sync.write(out);
   }
   return result;
