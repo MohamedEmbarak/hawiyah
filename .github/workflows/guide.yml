@@ -1,0 +1,82 @@
+name: Guide
+
+# Checks and builds the new guide in guide/ from the published @hawiyah packages
+# and runs its script, unit and end-to-end tests. It deploys and publishes
+# nothing: the deployed guide is still built by pages.yml.
+on:
+  push:
+    paths:
+      - 'guide/**'
+      - 'docs/components/**'
+      - 'docs/guides/**'
+      - 'components.json'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/guide.yml'
+  pull_request:
+    paths:
+      - 'guide/**'
+      - 'docs/components/**'
+      - 'docs/guides/**'
+      - 'components.json'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/guide.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guide-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guide:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: guide
+    env:
+      HAWIYAH_BASE_PATH: /hawiyah/
+      GUIDE_TEST_OUTPUT: ${{ runner.temp }}/guide-e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: guide/package-lock.json
+      - name: Install the guide's exact lockfile
+        run: npm ci
+      # The registry check runs before lint and build; the build runs it again
+      # (step 05) and checks the output (step 90).
+      - name: Registry check
+        run: npm run check:registry
+      - name: Registry check negative controls
+        run: npm run check:registry:negative
+      - name: Lint
+        run: npm run lint
+      - name: Lint negative controls
+        run: npm run lint:negative
+      - name: Script tests
+        run: npm run test:scripts
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Production build
+        run: npm run build
+      - name: Development build check
+        run: npm run build:dev-check
+      - name: Unit tests
+        run: npm run test:unit
+      - name: End-to-end tests
+        run: npm run test:e2e
+      - name: Upload failure records
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guide-failure
+          path: |
+            guide/.cache/logs
+            guide/.cache/equivalence
+            ${{ runner.temp }}/guide-e2e
+          retention-days: 7
+          if-no-files-found: ignore
