@@ -22,7 +22,7 @@ The gallery also includes a [portal home](https://mohamedembarak.github.io/hawiy
 
 ## Development status
 
-Hawiyah is an **Apache 2.0 public source preview, version 0.3**. Seven packages support an **85-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.1 is published on npm under the `@hawiyah` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
+Hawiyah is an **Apache 2.0 public source preview, version 0.3**. Seven packages support an **85-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.3.0 is published on npm under the `@hawiyah` scope with the `next` dist-tag, and `latest` remains 0.2.1 until the guide documents 0.3; both are pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
 
 The [roadmap](docs/roadmap.md) separates planned scope, implemented work, and verified behavior. [components.json](components.json) provides the same distinctions in a form that tools and coding assistants can read. Exact framework coverage and verification must be checked there rather than inferred from the package names.
 
@@ -51,7 +51,7 @@ The guide opens in Arabic, with a persistent English switch and keyboard search 
 | `@hawiyah/vue` | Vue components using the shared foundation |
 | `@hawiyah/angular` | Angular components using the shared foundation |
 
-Install the styles and one adapter with `npm install @hawiyah/styles @hawiyah/react`, replacing `react` with `vanilla`, `vue`, or `angular`. Source manifests keep `private: true`; `pnpm release:packages` publishes only the tarballs that `pnpm check:packages` has verified. Framework dependencies belong to the relevant adapter; the core does not depend on a framework runtime.
+Install the styles and one adapter with `npm install @hawiyah/styles@next @hawiyah/react@next`, replacing `react` with `vanilla`, `vue`, or `angular`. Source manifests keep `private: true`; `pnpm release:packages` publishes only the tarballs that `pnpm check:packages` has verified. Framework dependencies belong to the relevant adapter; the core does not depend on a framework runtime.
 
 ## Run locally
 

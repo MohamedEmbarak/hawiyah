@@ -7,12 +7,13 @@ documentation, and artwork use [Apache License 2.0](../LICENSE). Bundled fonts
 and calendar reference data retain their own licenses and attribution; see
 [NOTICE](../NOTICE) and their adjacent third-party notices.
 
-**Version 0.2.1 is on npm.** 0.2.0 was the first registry release of all seven
-`@hawiyah/*` packages. These are pre-1.0 releases: a minor version may still change
+**Version 0.3.0 is on npm with the `next` dist-tag; `latest` remains 0.2.1**
+until the public guide documents 0.3. 0.2.0 was the first registry release of
+all seven `@hawiyah/*` packages. These are pre-1.0 releases: a minor version may still change
 APIs, and publication is not a production-readiness or DGA certification claim.
 
 ```sh
-npm install @hawiyah/styles @hawiyah/react   # or vanilla, vue, angular
+npm install @hawiyah/styles@next @hawiyah/react@next   # or vanilla, vue, angular
 ```
 
 The source manifests keep `private: true`, so running `npm publish` inside a

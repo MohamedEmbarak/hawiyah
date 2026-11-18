@@ -37,6 +37,40 @@ with no `@import`, the tokens included and every relative URL present in
   against the built package. The full tarball check was not run because the
   adapter packages do not build until the string-removal change is complete.
 
+## 2026-11-18 npm release 0.3.0 (dist-tag next)
+
+All seven packages moved to 0.3.0 together. At commit `aa4768e`, with Node.js
+24.22.1 and pnpm 11.25.0, these passed on the maintainer machine: `pnpm build`,
+`pnpm test` (2,650 Vitest cases in 218 files and the token-contrast cases),
+`pnpm typecheck:playground`, `pnpm check:packages` (clean consumer for all
+seven tarballs; React Button 427 and Vanilla Tabs 4,483 bytes gzip within
+budget), `HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs`, `pnpm test:browser`
+(668 of 668 in Chromium) and `pnpm test:portals` (81 of 81).
+
+The CI workflow did not pass on that commit. In two runs on GitHub the case
+"content navigation source states and contained scrolling" of
+`tests/browser/nic-content-navigation.spec.ts` reached its 120 second limit
+while waiting for the CSS transitions of the guide page to finish (both
+locales in the first run, English in the second; 666 and 667 of 668 passed).
+On the maintainer machine the same spec passed 45 of 45 over five repeats. The
+cause is not established. The owner chose to publish under `next` with this
+open; it is to be resolved before 0.3.0 moves to `latest` or the branch is
+merged to `main`.
+
+`pnpm release:packages --publish --tag next` rebuilt and verified the
+tarballs and published them in dependency order with the `next` dist-tag, by
+the `mhussein` account with two-factor approval for each package. `latest`
+remains 0.2.1. The SHA-1 of each registry tarball equals that of the verified
+local tarball. A clean project then installed `@hawiyah/tokens`,
+`@hawiyah/styles`, `@hawiyah/core`, `@hawiyah/vanilla`, `@hawiyah/react`
+and `@hawiyah/vue` 0.3.0 from the public registry: React and Vue server
+rendering produced `hw-button`, the vanilla controllers and the core helpers
+added in this release were exported, a component without its texts rendered
+no built-in string, and the stylesheet and `@hawiyah/tokens/tokens.css`
+resolved. `@hawiyah/angular` was not installed from the registry in that
+check; its tarball is the one the package check verified. Not verified in any
+browser other than Chromium, and not with a screen reader.
+
 ## 2026-11-10 npm release 0.2.1
 
 All seven packages moved to 0.2.1 together. With Node.js 24.22.1 and pnpm
