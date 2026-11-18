@@ -37,6 +37,90 @@
   min-inline-size: 0;
 }
 
+/* The selector, the pause button and the listing. */
+.rotator {
+  display: grid;
+  gap: var(--hw-space-3);
+  min-inline-size: 0;
+}
+
+/* The selector wraps inside itself; the pause button keeps its place at the end. */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hw-space-2) var(--hw-space-3);
+  min-inline-size: 0;
+}
+
+/* Outside the round the button keeps its space, so nothing moves when it goes. */
+.pause.off {
+  visibility: hidden;
+}
+
+/* Both labels share one cell, so the button keeps one width. */
+.labels {
+  display: inline-grid;
+}
+
+.labels > span {
+  grid-area: 1 / 1;
+}
+
+.labels > .off {
+  visibility: hidden;
+}
+
+/* Without JavaScript: the list of all four commands instead of the selector. */
+.all {
+  display: none;
+}
+
+.all > p,
+.all dl,
+.all dd {
+  margin: 0;
+}
+
+.all > p {
+  font-weight: var(--hw-weight-semibold);
+}
+
+.all dl {
+  display: grid;
+  gap: var(--hw-space-3);
+}
+
+.entry {
+  display: grid;
+  gap: var(--hw-space-1);
+  min-inline-size: 0;
+}
+
+.entry code {
+  overflow-wrap: anywhere;
+}
+
+@media (scripting: none) {
+  .rotator {
+    display: none;
+  }
+
+  .all {
+    display: grid;
+    gap: var(--hw-space-3);
+    min-inline-size: 0;
+  }
+}
+
+/* No rotation, so no pause button. */
+@media (prefers-reduced-motion: reduce) {
+  .pause {
+    display: none;
+  }
+}
+
 .notes {
   display: flex;
   flex-wrap: wrap;

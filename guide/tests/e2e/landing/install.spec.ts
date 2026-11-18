@@ -26,7 +26,7 @@ for (const lang of ['ar', 'en'] as const) {
           await expect(steps.nth(0).locator('.cell:not(.command-leave) pre')).toHaveText(command);
           await expect(lead.locator('.cell:not(.command-leave) pre')).toHaveText(command);
           // The outgoing listing is removed at once when motion is reduced.
-          await expect(lead.locator('pre')).toHaveCount(1);
+          await expect(lead.locator('.cell pre')).toHaveCount(1);
           for (const step of [1, 2]) {
             const active = steps.nth(step).locator('.cell:not([aria-hidden])');
             await expect(active).toHaveCount(1);
@@ -73,7 +73,7 @@ for (const lang of ['ar', 'en'] as const) {
       await choose(page.locator('#install').getByRole('group', { name: t.manager }), 'pnpm');
       const lead = page.locator('guide-landing-lead');
       await expect(lead.locator('.cell:not(.command-leave) pre')).toHaveText('pnpm add @hawiyah/styles@0.3.0 @hawiyah/react@0.3.0');
-      await expect(lead.locator('pre')).toHaveCount(1);
+      await expect(lead.locator('.cell pre')).toHaveCount(1);
       await lead.getByRole('button', { name: t.copy }).click();
       await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('pnpm add @hawiyah/styles@0.3.0 @hawiyah/react@0.3.0');
     });

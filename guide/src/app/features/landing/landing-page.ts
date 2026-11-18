@@ -14,13 +14,14 @@ import { LandingInstall } from './install-chooser';
 import type { LandingData } from './landing-data';
 import { LandingLead } from './lead';
 import { LandingPackages } from './packages';
+import { LandingRotation } from './rotation';
 import { LandingState } from './state';
 
 /** Route <lang>/: the landing (direction C with A's install chooser), five sections in order. */
 @Component({
   selector: 'guide-landing-page',
   imports: [HwContainerComponent, LandingCompliance, LandingDuo, LandingInstall, LandingLead, LandingPackages],
-  providers: [LandingState, CodeBlockIds],
+  providers: [LandingState, LandingRotation, CodeBlockIds],
   template: `<hw-container><div class="flow"><div class="first"><guide-landing-lead /><guide-landing-duo /></div><guide-landing-install [data]="data()" /><guide-landing-packages /><guide-landing-compliance /></div></hw-container>`,
   styleUrl: './landing-page.css',
 })

@@ -36,7 +36,7 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(headings).toHaveText([...t.headings]);
       const lead = page.locator('guide-landing-lead');
       await expect(lead.locator('.cell:not(.command-leave) pre')).toHaveText('npm install @hawiyah/styles@0.3.0 @hawiyah/angular@0.3.0');
-      await expect(lead.locator('.hw-code-block-title')).toHaveText(t.terminal);
+      await expect(lead.locator('.cell .hw-code-block-title')).toHaveText(t.terminal);
       await expect(lead.locator('.notes')).toContainText('0.3.0');
       await expect(lead.locator('.notes code')).toHaveText('@hawiyah/angular 0.3.0');
       const link = lead.getByRole('link', { name: t.installLink });

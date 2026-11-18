@@ -83,8 +83,30 @@ export function describePane(t: LandingTexts, id: PaneId, state: PaneState, page
 }
 
 /**
+ * The rotation of the lead commands: idle until it starts, running or paused during
+ * its one round, done after the round, stopped for good by a reader action or by
+ * reduced motion.
+ */
+export type RotationStatus = 'idle' | 'running' | 'paused' | 'done' | 'stopped';
+
+/** The framework after the given one in the order of INSTALL.frameworks, wrapping. */
+export function nextFramework(current: InstallFramework): InstallFramework {
+  const order = INSTALL.frameworks;
+  return order[(order.indexOf(current) + 1) % order.length] ?? current;
+}
+
+/** The longest command of a package manager; the lead reserves its height. */
+export function longestCommand(manager: InstallManager): string {
+  return INSTALL.frameworks.map((fw) => INSTALL.commands[manager][fw]).reduce((a, b) => (b.length > a.length ? b : a), '');
+}
+
+/**
  * LandingState: the framework and package manager shared by the lead and the
  * chooser, and the attributes of the two containers. Provided by the landing page.
+ *
+ * framework is the reader's choice, shown by the Install section. shown is the
+ * framework of the lead block: the reader's choice, or the one the rotation reached.
+ * A choice of the reader in either chooser sets both and stops the rotation.
  */
 @Injectable()
 export class LandingState {
@@ -96,20 +118,70 @@ export class LandingState {
   readonly swapped = signal<'framework' | 'manager' | null>(null);
   readonly command = computed(() => INSTALL.commands[this.manager()][this.framework()]);
 
+  /** The framework of the lead block. */
+  readonly shown = signal<InstallFramework>(DEFAULT_FRAMEWORK);
+  readonly leadCommand = computed(() => INSTALL.commands[this.manager()][this.shown()]);
+  /** Whether the lead command has changed once, so that its changes fade; false on first render. */
+  readonly leadChanged = signal(false);
+  readonly rotation = signal<RotationStatus>('idle');
+  /** Whether the pause button is offered: during the round only. */
+  readonly rotationControl = computed(() => this.rotation() === 'running' || this.rotation() === 'paused');
+  private rotationSteps = 0;
+
   readonly panes = signal<Readonly<Record<PaneId, PaneState>>>(INITIAL_PANES);
   /** Replay counters of the containers (data-rev); 0 until a container changes. */
   readonly revisions = signal<Readonly<Record<PaneId, number>>>({ a: 0, b: 0 });
 
+  /** A choice of the reader in either chooser: both show it and the rotation stops. */
   chooseFramework(value: string): void {
-    if (!isFramework(value) || value === this.framework()) return;
+    if (!isFramework(value)) return;
+    this.stopRotation();
+    if (value !== this.shown()) {
+      this.shown.set(value);
+      this.leadChanged.set(true);
+    }
+    if (value === this.framework()) return;
     this.framework.set(value);
     this.swapped.set('framework');
   }
 
   chooseManager(value: string): void {
-    if (!isManager(value) || value === this.manager()) return;
+    if (!isManager(value)) return;
+    this.stopRotation();
+    if (value === this.manager()) return;
     this.manager.set(value);
     this.swapped.set('manager');
+    this.leadChanged.set(true);
+  }
+
+  /** Starts the one round from the framework the lead shows; only once. */
+  startRotation(): void {
+    if (this.rotation() !== 'idle') return;
+    this.rotationSteps = 0;
+    this.rotation.set('running');
+  }
+
+  /** One step of the round: the lead shows the next framework; after the last step the round is done. */
+  advanceRotation(): void {
+    if (this.rotation() !== 'running') return;
+    this.shown.set(nextFramework(this.shown()));
+    this.leadChanged.set(true);
+    this.rotationSteps += 1;
+    if (this.rotationSteps >= INSTALL.frameworks.length) this.rotation.set('done');
+  }
+
+  pauseRotation(): void {
+    if (this.rotation() === 'running') this.rotation.set('paused');
+  }
+
+  resumeRotation(): void {
+    if (this.rotation() === 'paused') this.rotation.set('running');
+  }
+
+  /** Stops the rotation for good; the lead keeps the framework it shows. */
+  stopRotation(): void {
+    const status = this.rotation();
+    if (status === 'idle' || status === 'running' || status === 'paused') this.rotation.set('stopped');
   }
 
   /** The attributes each container shows: its own mode, or the page mode while it follows it. */

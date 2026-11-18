@@ -13,6 +13,16 @@ export interface LandingTexts {
     readonly version: (v: string) => string;
     readonly renderedBy: string;
     readonly installLink: string;
+    /** Group label of the framework selector of the lead. */
+    readonly frameworkLabel: string;
+    /** Visible text and accessible name of the button while the commands rotate. */
+    readonly pause: string;
+    readonly pauseLabel: string;
+    /** Visible text and accessible name of the button while the rotation is paused. */
+    readonly resume: string;
+    readonly resumeLabel: string;
+    /** Title of the list of all commands shown without JavaScript. */
+    readonly allCommands: string;
   };
   readonly code: { readonly terminal: string };
   readonly duo: {
@@ -102,6 +112,12 @@ export const landingTexts: Texts<LandingTexts> = {
       version: (v) => `Version ${v}, Apache License 2.0.`,
       renderedBy: 'This page is rendered with',
       installLink: 'Installation steps for each framework',
+      frameworkLabel: 'Framework of the install command',
+      pause: 'Pause',
+      pauseLabel: 'Pause the rotation of the install commands',
+      resume: 'Resume',
+      resumeLabel: 'Resume the rotation of the install commands',
+      allCommands: 'Install command for each framework',
     },
     code: { terminal: 'Terminal' },
     duo: {
@@ -198,6 +214,12 @@ export const landingTexts: Texts<LandingTexts> = {
       version: (v) => `الإصدار ${v}، بموجب رخصة Apache 2.0.`,
       renderedBy: 'هذه الصفحة معروضة باستخدام',
       installLink: 'خطوات التثبيت لكل إطار عمل',
+      frameworkLabel: 'إطار العمل لأمر التثبيت',
+      pause: 'إيقاف مؤقت',
+      pauseLabel: 'إيقاف مؤقت لتبديل أوامر التثبيت',
+      resume: 'استئناف',
+      resumeLabel: 'استئناف تبديل أوامر التثبيت',
+      allCommands: 'أمر التثبيت لكل إطار عمل',
     },
     code: { terminal: 'الطرفية' },
     duo: {

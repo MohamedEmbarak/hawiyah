@@ -9,9 +9,16 @@
   min-inline-size: 0;
 }
 
-.cell {
+.cell,
+.reserve {
   grid-area: 1 / 1;
   min-inline-size: 0;
+}
+
+/* Holds the height of the longest command; never seen and never reached. */
+.reserve {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .command-leave {

@@ -43,6 +43,10 @@ export const TEXT = {
     npm: 'The packages on npm',
     result: 'Result',
     resultButton: 'Continue',
+    leadFramework: 'Framework of the install command',
+    pause: 'Pause the rotation of the install commands',
+    resume: 'Resume the rotation of the install commands',
+    allCommands: 'Install command for each framework',
   },
   ar: {
     title: 'هوية',
@@ -69,6 +73,10 @@ export const TEXT = {
     npm: 'الحزم على npm',
     result: 'النتيجة',
     resultButton: 'متابعة',
+    leadFramework: 'إطار العمل لأمر التثبيت',
+    pause: 'إيقاف مؤقت لتبديل أوامر التثبيت',
+    resume: 'استئناف تبديل أوامر التثبيت',
+    allCommands: 'أمر التثبيت لكل إطار عمل',
   },
 } as const;
 
