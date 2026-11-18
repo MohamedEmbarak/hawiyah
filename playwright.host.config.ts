@@ -4,11 +4,17 @@ import { defineConfig, devices } from '@playwright/test';
 // the built workspace packages with the four adapters on one page. Run
 // `pnpm build:packages` first. Locally, pass --output outside the repository.
 const port = Number(process.env.HAWIYAH_HOST_PORT || 4190);
+// `pnpm test:host -- --output <dir>` hands the option to Playwright after a
+// literal `--`, where Playwright does not read it; honour it here.
+const outputFlag = process.argv.lastIndexOf('--output');
+// The workers load this file again without the option, so it travels in the environment.
+if (outputFlag > 0 && process.argv[outputFlag + 1]) process.env.HAWIYAH_HOST_OUTPUT = process.argv[outputFlag + 1];
+const outputDir = process.env.HAWIYAH_HOST_OUTPUT || 'test-results/host';
 
 export default defineConfig({
   testDir: './tests/host',
   testMatch: '*.spec.ts',
-  outputDir: 'test-results/host',
+  outputDir,
   fullyParallel: true,
   workers: 2,
   retries: 0,
