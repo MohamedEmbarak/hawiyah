@@ -1,0 +1,20 @@
+{
+  "$comment": "Vanilla API tables of components without a create<Name> controller (leadAmendments A6). Step 30 compares such a table with the classes and data-*/aria-* attributes that the '## Stable class and state API' table of the @hawiyah/styles README documents for the component's classes (components.json cssClasses), plus a row 'class'. Attributes defined by HTML or ARIA have no machine-readable Hawiyah declaration and are listed under nativeAttributes; documented attributes the page leaves out are listed under notListed. Requiredness is not checked for these tables, because the contract declares none. Every entry needs a reason and the lead's review.",
+  "components": {
+    "button": {
+      "vanilla": {
+        "rule": "stylesheet-contract",
+        "reason": "Button is a native button element styled by the class hw-button; @hawiyah/vanilla 0.3.0 exports no createButton.",
+        "nativeAttributes": {
+          "type": "HTML attribute of the button element; the page lists it because the browser default in a form is submit.",
+          "disabled": "HTML attribute of the button element; the loading state uses it.",
+          "aria-busy": "ARIA attribute; the loading state writes aria-busy=\"true\" with disabled."
+        },
+        "notListed": {
+          "data-icon-only": "Documented in the Actions row of the styles contract for icon-only buttons; the Button page of stage 4a does not list it. Proposed: add a row to docs/components/button.md and button.ar.md, or document it on the Icon button page."
+        },
+        "review": "pending: recorded by 4b.3 for the lead's review"
+      }
+    }
+  }
+}

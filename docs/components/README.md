@@ -88,6 +88,15 @@ Table: Header rows of the API tables
 - The names are compared with the declarations of the installed packages in a
   later build step; a table that lists a name the package does not declare, or
   omits one it does, fails the build.
+- An Angular table that documents several classes lists the members of the
+  first class by name and the members of each further class as
+  `<element> <name>`, for example `hw-tab value` and `hw-tab *` on the Tabs
+  page. The further classes of a page are named in
+  `guide/scripts/api-tables/targets.mjs`.
+- A JavaScript table of a component without a controller, such as Button, is
+  checked against the documented classes and data attributes of the stylesheet
+  contract (the `@hawiyah/styles` README); native HTML and ARIA attributes and
+  reviewed omissions are listed in `guide/scripts/api-tables/exclusions.json`.
 
 Example:
 

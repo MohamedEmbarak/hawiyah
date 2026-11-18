@@ -10,8 +10,11 @@ export interface ExampleTexts {
   readonly openInEditor: string;
   /** Tab labels; framework names stay in Latin script. */
   readonly frameworkNames: Readonly<Record<ExampleFramework, string>>;
-  /** Status of a rendered result: [before, package and version (shown left to right), after]. */
-  readonly renderedWith: (pkg: string, pin: string) => readonly [string, string, string];
+  /**
+   * Status of a rendered result: [before, package and version (shown left to right), after].
+   * A preview build renders from the local package tarballs instead of npm (previewWorkflow.notice).
+   */
+  readonly renderedWith: (pkg: string, pin: string, preview: boolean) => readonly [string, string, string];
   readonly loading: (framework: string) => string;
   readonly failed: (framework: string, firstLine: string) => string;
   /** Appended to the status when a frame runs on the bundled runtime. */
@@ -32,7 +35,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     download: 'Download',
     openInEditor: 'Open in the editor',
     frameworkNames: FRAMEWORK_NAMES,
-    renderedWith: (pkg, pin) => ['Rendered with ', `${pkg} ${pin}`, ' from npm'],
+    renderedWith: (pkg, pin, preview) => ['Rendered with ', `${pkg} ${pin}`, preview ? ' from a local tarball' : ' from npm'],
     loading: (framework) => `Loading the ${framework} result`,
     failed: (framework, firstLine) => `The ${framework} result could not be loaded: ${firstLine}`,
     bundledRuntime: ' Bundled runtime.',
@@ -43,7 +46,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     download: 'تنزيل',
     openInEditor: 'فتح في المحرر',
     frameworkNames: FRAMEWORK_NAMES,
-    renderedWith: (pkg, pin) => ['معروض باستخدام ', `${pkg} ${pin}`, ' من npm'],
+    renderedWith: (pkg, pin, preview) => ['معروض باستخدام ', `${pkg} ${pin}`, preview ? ' من أرشيف حزمة محلي' : ' من npm'],
     loading: (framework) => `جارٍ تحميل نتيجة ${framework}`,
     failed: (framework, firstLine) => `تعذّر تحميل نتيجة ${framework}: ${firstLine}`,
     bundledRuntime: ' بالحزمة المجمّعة.',

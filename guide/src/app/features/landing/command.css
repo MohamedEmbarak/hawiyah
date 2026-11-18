@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+/* The incoming and the outgoing listing share one cell, so the height never changes. */
+.swap {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.cell {
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+}
+
+.command-leave {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .live .command-enter {
+    animation: command-fade-in var(--hw-duration-normal) var(--hw-ease-standard);
+  }
+
+  .live .command-leave {
+    animation: command-fade-out var(--hw-duration-normal) var(--hw-ease-standard) forwards;
+  }
+}
+
+@keyframes command-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes command-fade-out {
+  to {
+    opacity: 0;
+  }
+}

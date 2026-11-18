@@ -1,0 +1,27 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.frame {
+  box-sizing: border-box;
+  min-inline-size: 0;
+  overflow: hidden;
+  border: 1px solid var(--hw-color-border);
+  border-radius: var(--hw-radius-md);
+  background-color: var(--hw-color-canvas);
+}
+
+iframe {
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 6rem;
+  border: 0;
+  background-color: var(--hw-color-canvas);
+}
+
+.notice {
+  margin-block: var(--hw-space-2) 0;
+  color: var(--hw-color-text-muted);
+}

@@ -83,6 +83,9 @@ export async function hydrated(page: Page): Promise<void> {
     const root = document.querySelector('app-root');
     return Boolean(root && !root.hasAttribute('ngh') && document.readyState === 'complete');
   });
+  // app-root loses ngh before event replay ends; a key pressed while nodes still carry
+  // jsaction is queued and replayed (see tests/e2e/tabs/tabs.spec.ts).
+  await page.waitForFunction(() => document.querySelector('[jsaction]') === null);
 }
 
 /** Marks the current document so that a later check can tell a client navigation from a reload. */

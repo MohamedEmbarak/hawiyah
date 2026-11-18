@@ -1,8 +1,8 @@
 ---
 source:
   summary: 421b7d9c72f6
-  example: 12114700e4ab
-  variants-and-states: 3a9775d81788
+  example: 9b7f6a99ca77
+  variants-and-states: cc1cc8030691
   api: 83e1f1f7be84
   accessibility: 3b2127b62ebd
   rtl-and-localisation: f0b6d337f83f
@@ -17,7 +17,7 @@ source:
 تحتوي الصفحة على زر رئيسي واحد لإجرائها الرئيسي. ويسمّي النص الإجراء بفعل.
 
 ```html live example=primary
-<button class="hw-button" type="button" data-variant="primary">متابعة</button>
+<button class="hw-button" type="button" data-variant="primary" data-size="md">متابعة</button>
 ```
 
 ```tsx live example=primary
@@ -40,11 +40,11 @@ template: `<button hwButton variant="primary">متابعة</button>`
 
 ```html live example=variants
 <div class="hw-inline">
-  <button class="hw-button" type="button" data-variant="primary">متابعة</button>
-  <button class="hw-button" type="button" data-variant="secondary">حفظ المسودة</button>
-  <button class="hw-button" type="button" data-variant="outline">معاينة</button>
-  <button class="hw-button" type="button" data-variant="ghost">إلغاء</button>
-  <button class="hw-button" type="button" data-variant="danger">حذف</button>
+  <button class="hw-button" type="button" data-variant="primary" data-size="md">متابعة</button>
+  <button class="hw-button" type="button" data-variant="secondary" data-size="md">حفظ المسودة</button>
+  <button class="hw-button" type="button" data-variant="outline" data-size="md">معاينة</button>
+  <button class="hw-button" type="button" data-variant="ghost" data-size="md">إلغاء</button>
+  <button class="hw-button" type="button" data-variant="danger" data-size="md">حذف</button>
 </div>
 ```
 
@@ -121,7 +121,7 @@ template: `<div class="hw-inline">
 يكون الزر في حالة التحميل معطّلًا تعطيلًا أصليًا ويحمل `aria-busy="true"`. ويحتفظ بنصه طوال تنفيذ العملية.
 
 ```html live example=loading
-<button class="hw-button" type="button" data-variant="primary" disabled aria-busy="true">إرسال الطلب</button>
+<button class="hw-button" type="button" data-variant="primary" data-size="md" disabled aria-busy="true">إرسال الطلب</button>
 ```
 
 ```tsx live example=loading
@@ -141,7 +141,7 @@ template: `<button hwButton loading>إرسال الطلب</button>`
 يخرج الزر المعطّل من ترتيب التنقل بمفتاح Tab ولا يستجيب للتفعيل. اذكر سبب عدم إتاحة الإجراء في نص الصفحة.
 
 ```html live example=disabled
-<button class="hw-button" type="button" data-variant="primary" disabled>متابعة</button>
+<button class="hw-button" type="button" data-variant="primary" data-size="md" disabled>متابعة</button>
 ```
 
 ```tsx live example=disabled

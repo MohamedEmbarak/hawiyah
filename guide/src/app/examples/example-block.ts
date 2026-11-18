@@ -77,7 +77,7 @@ export class ExampleBlock {
     const framework = this.frameShown() ? this.framework() : 'angular';
     const frameStatus = this.frameStatus();
     if (framework !== 'angular' && frameStatus.state !== 'ready') return null;
-    const [before, pkg, after] = this.t().renderedWith(FRAMEWORK_PACKAGES[framework], buildInfo.pin);
+    const [before, pkg, after] = this.t().renderedWith(FRAMEWORK_PACKAGES[framework], buildInfo.pin, buildInfo.preview !== null);
     const note = framework !== 'angular' && frameStatus.state === 'ready' && frameStatus.bundledRuntime ? this.t().bundledRuntime : '';
     return { before, pkg, after: `${after}${note}` };
   });

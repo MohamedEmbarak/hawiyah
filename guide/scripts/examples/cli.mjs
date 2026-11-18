@@ -30,7 +30,7 @@ export async function runExamples({ groups = DEFAULT_GROUPS, out = DEFAULT_OUT, 
   const outDir = resolve(guideDir, out);
   const result = await compileGroups(list, { guideDir, workDir: outDir });
   writePayloads(result.payloads, join(outDir, 'frames'));
-  const written = writeGenerated(result.natives, resolve(guideDir, generated));
+  const written = writeGenerated(result.natives, resolve(guideDir, generated), result.payloads);
   return { ...result, groups: list.length, written };
 }
 

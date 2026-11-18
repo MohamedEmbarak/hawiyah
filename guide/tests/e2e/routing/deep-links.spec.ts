@@ -1,5 +1,10 @@
 import { test, expect, hydrated } from '../support/fixtures';
-import { languagePages } from '../support/routes';
+import { available, languagePages } from '../support/routes';
+
+// The language root shows the landing page when the landing feature is built (stage 4b),
+// and leads to the component catalogue otherwise.
+const languageRoot = (lang: 'ar' | 'en'): RegExp =>
+  new RegExp(available.landing ? `/hawiyah/${lang}/?$` : `/hawiyah/${lang}/components/?$`);
 
 for (const target of languagePages) {
   test(`deep link ${target.href}`, async ({ page }) => {
@@ -28,9 +33,9 @@ for (const target of languagePages) {
 }
 
 for (const lang of ['ar', 'en'] as const) {
-  test(`language root ${lang}/ leads to the components page`, async ({ page }) => {
+  test(`language root ${lang}/ shows the landing page or leads to the components page`, async ({ page }) => {
     await page.goto(`${lang}/`);
-    await expect(page).toHaveURL(new RegExp(`/hawiyah/${lang}/components/?$`));
+    await expect(page).toHaveURL(languageRoot(lang));
     await hydrated(page);
     await expect(page.locator('html')).toHaveAttribute('lang', lang);
   });

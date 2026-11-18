@@ -1,0 +1,74 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.lead {
+  display: grid;
+  gap: var(--hw-space-8);
+  min-inline-size: 0;
+}
+
+/* The two statements face each other across a spine from 48em. */
+.spread {
+  display: grid;
+  gap: var(--hw-space-6);
+  min-inline-size: 0;
+}
+
+.say {
+  display: grid;
+  gap: var(--hw-space-3);
+  align-content: start;
+  min-inline-size: 0;
+}
+
+.say > * {
+  margin-block: 0;
+}
+
+.spine {
+  display: none;
+}
+
+.install {
+  display: grid;
+  gap: var(--hw-space-3);
+  min-inline-size: 0;
+}
+
+.notes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--hw-space-1) var(--hw-space-4);
+}
+
+.notes > p {
+  margin-block: 0;
+}
+
+.notes code {
+  white-space: nowrap;
+}
+
+@media (min-width: 48em) {
+  .spread {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: var(--hw-space-8);
+  }
+
+  .spine {
+    display: flex;
+  }
+
+  .install {
+    justify-self: center;
+    inline-size: min(100%, 40rem);
+  }
+
+  .notes {
+    justify-content: center;
+    text-align: center;
+  }
+}

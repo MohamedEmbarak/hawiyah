@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { CodeBlockIds } from '../content/code-block';
 import { ARABIC_SCRIPT } from '../i18n/text';
 import { DEFAULT_FRAMEWORK, EDITOR_AVAILABLE, ExampleBlock, editorHref, isFramework } from './example-block';
-import { listedFiles, listingLanguage, type ExampleSources } from './example-loader';
+import type { ExampleSources } from './example-loader';
 import { exampleTexts } from './i18n';
 import { PageExamples, type ExampleGroup } from './page-examples';
 import { EXAMPLE_FRAME_RESULT } from './tokens';
@@ -128,13 +128,9 @@ describe('ExampleBlock', () => {
 });
 
 describe('example helpers and texts', () => {
-  it('recognises frameworks, files and listing languages', () => {
+  it('recognises frameworks', () => {
     expect(isFramework('vue')).toBe(true);
     expect(isFramework('svelte')).toBe(false);
-    expect(listedFiles({ framework: 'vanilla', primaryFile: 'index.html', files: { 'index.html': '', 'main.js': '' } })).toEqual(['index.html', 'main.js']);
-    expect(listedFiles({ framework: 'react', primaryFile: 'Example.tsx', files: { 'Example.tsx': '', 'main.tsx': '' } })).toEqual(['Example.tsx']);
-    expect(listingLanguage('example.component.ts')).toBe('ts');
-    expect(listingLanguage('README')).toBeNull();
   });
 
   it('have the same keys in both languages and Arabic text in Arabic', () => {

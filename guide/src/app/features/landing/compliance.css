@@ -1,0 +1,8 @@
+.statement {
+  display: grid;
+  gap: var(--hw-space-3);
+}
+
+.statement > p {
+  margin-block: 0;
+}

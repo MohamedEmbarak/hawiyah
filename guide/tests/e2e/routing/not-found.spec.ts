@@ -1,4 +1,5 @@
 import { test, expect, hydrated, markDocument, sameDocument } from '../support/fixtures';
+import { available } from '../support/routes';
 
 const unknown = ['en/no-such-page/', 'ar/components/no-such-component/', 'fr/components/', 'deeply/nested/missing/path'];
 
@@ -25,7 +26,7 @@ test('the English link of the 404 page navigates within the application', async 
   await hydrated(page);
   await markDocument(page);
   await page.getByRole('link', { name: 'English' }).click();
-  await expect(page).toHaveURL(/\/hawiyah\/en\/components\/?$/);
+  await expect(page).toHaveURL(available.landing ? /\/hawiyah\/en\/?$/ : /\/hawiyah\/en\/components\/?$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('header .hw-portal-notice')).toHaveCount(1);
   expect(await sameDocument(page)).toBe(true);

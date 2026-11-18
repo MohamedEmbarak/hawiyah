@@ -7,7 +7,7 @@ Button starts an action on the current page, such as submitting a form or openin
 A page has one primary button for its main action. The label names the action as a verb.
 
 ```html live example=primary
-<button class="hw-button" type="button" data-variant="primary">Continue</button>
+<button class="hw-button" type="button" data-variant="primary" data-size="md">Continue</button>
 ```
 
 ```tsx live example=primary
@@ -30,11 +30,11 @@ The variant sets the visual family. Primary marks the main action, secondary and
 
 ```html live example=variants
 <div class="hw-inline">
-  <button class="hw-button" type="button" data-variant="primary">Continue</button>
-  <button class="hw-button" type="button" data-variant="secondary">Save draft</button>
-  <button class="hw-button" type="button" data-variant="outline">Preview</button>
-  <button class="hw-button" type="button" data-variant="ghost">Cancel</button>
-  <button class="hw-button" type="button" data-variant="danger">Delete</button>
+  <button class="hw-button" type="button" data-variant="primary" data-size="md">Continue</button>
+  <button class="hw-button" type="button" data-variant="secondary" data-size="md">Save draft</button>
+  <button class="hw-button" type="button" data-variant="outline" data-size="md">Preview</button>
+  <button class="hw-button" type="button" data-variant="ghost" data-size="md">Cancel</button>
+  <button class="hw-button" type="button" data-variant="danger" data-size="md">Delete</button>
 </div>
 ```
 
@@ -111,7 +111,7 @@ template: `<div class="hw-inline">
 A loading button is natively disabled and carries `aria-busy="true"`. It keeps its label while the operation runs.
 
 ```html live example=loading
-<button class="hw-button" type="button" data-variant="primary" disabled aria-busy="true">Submit request</button>
+<button class="hw-button" type="button" data-variant="primary" data-size="md" disabled aria-busy="true">Submit request</button>
 ```
 
 ```tsx live example=loading
@@ -131,7 +131,7 @@ template: `<button hwButton loading>Submit request</button>`
 A disabled button leaves the tab order and ignores activation. State the reason for an unavailable action in the page text.
 
 ```html live example=disabled
-<button class="hw-button" type="button" data-variant="primary" disabled>Continue</button>
+<button class="hw-button" type="button" data-variant="primary" data-size="md" disabled>Continue</button>
 ```
 
 ```tsx live example=disabled

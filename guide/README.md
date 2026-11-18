@@ -106,6 +106,15 @@ guide and its checks use `/hawiyah/`.
 | `80-equivalence` | Runs the equivalence harness on every live group (production only). |
 | `90-registry-dist` | Checks the served runtime files against the verified installed packages. |
 
+Step 80 can be run alone on an existing production output while debugging:
+`node scripts/equivalence/run.mjs [--dir dist/browser] [--base /hawiyah/] [--only <id>/<lang>/<example>,...]`.
+`HAWIYAH_EQUIVALENCE_PORT` sets the port of its internal server (default: a
+free port) and `HAWIYAH_EQUIVALENCE_WORKERS` the number of parallel groups
+(default 2). Failures are reported with the codes `HWE-FRAME`, `HWE-STRUCT`,
+`HWE-ARIA`, `HWE-SHOT`, `HWE-CHECK` and `HWE-KD`; the report and the diff
+images are written to `.cache/equivalence/`. A documented difference is an
+entry of `scripts/equivalence/known-differences.json` approved by the lead.
+
 The production output is `dist/` and the development check output is
 `dist-dev/`; `dist/server/` is written by Angular and is not deployed.
 
@@ -174,12 +183,17 @@ the registry rule of the deployed guide.
 2. In `guide/`: `npm ci`, then
    `HAWIYAH_BASE_PATH=/hawiyah/ npm run preview:local`.
 3. The script copies the guide to `../.artifacts/guide-preview/guide/` without
-   build output, points the copy's `@hawiyah` dependencies at the local
-   tarballs, installs, confirms that the strict registry check rejects the
-   copy, and builds it in preview mode. The repository's `package.json` and
-   `package-lock.json` are never modified.
+   build output, and the other files of the working tree (`git ls-files
+   --cached --others --exclude-standard`, without `guide/` and `.artifacts/`)
+   to `../.artifacts/guide-preview/`, so that the build steps that read the
+   repository find it beside the copy. It points the copy's `@hawiyah`
+   dependencies at the local tarballs, installs, confirms that the strict
+   registry check rejects the copy, and builds it in preview mode. The
+   repository's `package.json` and `package-lock.json` are never modified.
 4. Serve the result with
    `npm run serve -- --dir ../.artifacts/guide-preview/guide/dist/browser --base /hawiyah/`.
+   A preview downloaded from a workflow run is served with
+   `npm run serve -- --dir <unzipped dir> --base /hawiyah/`.
 
 Every preview page shows a notice with the first seven characters of the
 commit, carries a `noindex, nofollow` robots meta, and the output contains

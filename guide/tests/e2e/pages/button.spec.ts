@@ -43,6 +43,7 @@ const TEXT = {
 
 const FRAMEWORKS = ['JavaScript', 'React', 'Vue', 'Angular'];
 const PRIMARY_FILES = ['index.html', 'Example.tsx', 'Example.vue', 'example.component.ts'];
+const PACKAGES = ['vanilla', 'react', 'vue', 'angular'];
 
 for (const lang of ['ar', 'en'] as const) {
   const t = TEXT[lang];
@@ -100,9 +101,16 @@ for (const lang of ['ar', 'en'] as const) {
         const shown = block.getByRole('tabpanel');
         await expect(shown.locator('figcaption').first()).toContainText(PRIMARY_FILES[index] ?? '');
         if (name === 'JavaScript') await expect(shown.locator('figcaption')).toHaveText([/index\.html/, /main\.js/]);
-        // Without the frame provider of stage 4b the Angular result stays shown.
-        await expect(block.getByRole('group', { name: t.result }).getByRole('button', { name: t.label })).toBeVisible();
-        await expect(block.locator('p.status')).toHaveText(t.status);
+        const result = block.getByRole('group', { name: t.result });
+        if (name === 'Angular') {
+          await expect(result.getByRole('button', { name: t.label })).toBeVisible();
+          await expect(block.locator('p.status')).toHaveText(t.status);
+        } else {
+          // The frame provider of stage 4b shows the other frameworks in a sandboxed frame.
+          await expect(result.locator('guide-frame-result iframe')).toBeVisible();
+          await expect(block.locator('p.status')).toHaveText(t.status.replace('@hawiyah/angular', `@hawiyah/${PACKAGES[index]}`), { timeout: 30_000 });
+          await expect(result.frameLocator('guide-frame-result iframe').getByRole('button', { name: t.label })).toBeVisible();
+        }
       }
     });
 

@@ -20,7 +20,9 @@ export default {
     const licences = writeLicences({ guideDir: ctx.guideDir, browserDir, noticeFile: join(ctx.guideDir, "../NOTICE") });
     if (ctx.preview) {
       const manifest = JSON.parse(readFileSync(join(ctx.guideDir, "package.json"), "utf8"));
-      const versions = Object.fromEntries(Object.entries(manifest.dependencies).filter(([name]) => name.startsWith("@hawiyah/")));
+      const versions = Object.fromEntries(Object.entries(manifest.dependencies).filter(([name]) => name.startsWith("@hawiyah/"))
+        // A preview manifest names file:../../package-check/hawiyah-<name>-<version>.tgz.
+        .map(([name, value]) => [name, String(value).match(/-(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\.tgz$/)?.[1] ?? value]));
       writePreviewFiles(browserDir, ctx.preview, versions);
     }
     const manifestFile = join(generatedDir, "content", "manifest.json");

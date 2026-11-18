@@ -1,0 +1,82 @@
+.choosers {
+  display: grid;
+  gap: var(--hw-space-4);
+  min-inline-size: 0;
+}
+
+.steps {
+  margin: 0;
+  padding-inline-start: var(--hw-space-6);
+}
+
+.steps > li {
+  display: list-item;
+  min-inline-size: 0;
+}
+
+.steps > li > h3 {
+  margin-block: 0 var(--hw-space-3);
+}
+
+/* The four framework listings of a step share one grid cell. */
+.stack {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.cell {
+  display: grid;
+  gap: var(--hw-space-3);
+  align-content: start;
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+}
+
+.cell > p {
+  margin-block: 0;
+}
+
+.cell:not(.active) {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pair {
+  display: grid;
+  gap: var(--hw-space-4);
+  min-inline-size: 0;
+}
+
+.result-note {
+  margin-block: var(--hw-space-3) 0;
+}
+
+.result-note code {
+  white-space: nowrap;
+}
+
+.next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hw-space-2) var(--hw-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* M3: a framework change cross-fades the listings; only after the reader chose. */
+@media (prefers-reduced-motion: no-preference) {
+  .stack.live > .cell {
+    transition:
+      opacity var(--hw-duration-normal) var(--hw-ease-standard),
+      visibility var(--hw-duration-normal) var(--hw-ease-standard);
+  }
+}
+
+@media (min-width: 68em) {
+  .pair {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}

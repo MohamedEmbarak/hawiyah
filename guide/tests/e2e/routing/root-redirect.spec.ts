@@ -70,7 +70,7 @@ test.describe('root document', () => {
     await expect(page.getByRole('link', { name: 'English' })).toHaveAttribute('lang', 'en');
     await expect(page).toHaveTitle('هوية · Hawiyah');
     await page.getByRole('link', { name: 'English' }).click();
-    await expect(page).toHaveURL(/\/hawiyah\/en\/components\/?$/);
+    await expect(page).toHaveURL(target('', 'en'));
   });
 });
 
@@ -79,7 +79,8 @@ test.describe('without script', () => {
 
   test('the root leads to the Arabic guide', async ({ page }) => {
     await page.goto('./');
-    await expect(page).toHaveURL(/\/hawiyah\/ar\/components\/?$/);
+    await expect(page).toHaveURL(target('', 'ar'));
     await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
+    if (available.landing) await expect(page.locator('h1')).toHaveCount(1);
   });
 });

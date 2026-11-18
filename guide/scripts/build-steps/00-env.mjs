@@ -10,7 +10,9 @@ export const DEFAULT_SITE_ORIGIN = "https://mohamedembarak.github.io";
 export function readPackages(guideDir) {
   const manifest = JSON.parse(readFileSync(join(guideDir, "package.json"), "utf8"));
   const lock = JSON.parse(readFileSync(join(guideDir, "package-lock.json"), "utf8"));
-  const pin = manifest.dependencies?.["@hawiyah/angular"];
+  // A preview build (4b.5) names the tarball: the pin is the installed version.
+  const declared = manifest.dependencies?.["@hawiyah/angular"];
+  const pin = typeof declared === "string" && declared.startsWith("file:") ? lock.packages?.["node_modules/@hawiyah/angular"]?.version : declared;
   if (typeof pin !== "string" || !/^\d+\.\d+\.\d+$/.test(pin)) {
     throw new Error(`build: package.json pins @hawiyah/angular at ${pin}, not an exact version`);
   }
