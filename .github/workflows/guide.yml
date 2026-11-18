@@ -37,9 +37,11 @@ jobs:
         working-directory: guide
     env:
       HAWIYAH_BASE_PATH: /hawiyah/
-      GUIDE_TEST_OUTPUT: ${{ runner.temp }}/guide-e2e
     steps:
       - uses: actions/checkout@v4
+      # The runner context is not available in the job's env block.
+      - name: Set the test output directory
+        run: echo "GUIDE_TEST_OUTPUT=$RUNNER_TEMP/guide-e2e" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
