@@ -117,6 +117,64 @@ importers:
         specifier: 3.3.14
         version: 3.3.14(typescript@6.0.3)
 
+  apps/fixture-host:
+    dependencies:
+      '@angular/common':
+        specifier: 22.2.3
+        version: 22.2.3(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@angular/compiler':
+        specifier: 22.2.3
+        version: 22.2.3
+      '@angular/core':
+        specifier: 22.2.3
+        version: 22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2)
+      '@angular/forms':
+        specifier: 22.2.3
+        version: 22.2.3(@angular/common@22.2.3(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(@angular/platform-browser@22.2.3(@angular/common@22.2.3(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@angular/platform-browser':
+        specifier: 22.2.3
+        version: 22.2.3(@angular/common@22.2.3(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))
+      '@hawiyah/angular':
+        specifier: workspace:*
+        version: link:../../packages/angular
+      '@hawiyah/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@hawiyah/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@hawiyah/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
+      '@hawiyah/vanilla':
+        specifier: workspace:*
+        version: link:../../packages/vanilla
+      '@hawiyah/vue':
+        specifier: workspace:*
+        version: link:../../packages/vue
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: 19.3.1
+        version: 19.3.1(react@19.3.1)
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
+      vue:
+        specifier: 3.5.44
+        version: 3.5.44(typescript@6.0.3)
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: 6.1.2
+        version: 6.1.2(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(less@4.9.1(supports-color@8.1.1))(sass-embedded@1.106.1)(sass@1.106.1))
+      '@vitejs/plugin-vue':
+        specifier: 6.0.10
+        version: 6.0.10(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(less@4.9.1(supports-color@8.1.1))(sass-embedded@1.106.1)(sass@1.106.1))(vue@3.5.44(typescript@6.0.3))
+      vite:
+        specifier: 8.3.5
+        version: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(less@4.9.1(supports-color@8.1.1))(sass-embedded@1.106.1)(sass@1.106.1)
+
   apps/playground:
     dependencies:
       '@hawiyah/core':

@@ -12,6 +12,7 @@
     "test": "node --test packages/tokens/test/contrast.test.mjs && vitest run",
     "test:browser": "playwright test",
     "test:portals": "playwright test --config playwright.portals.config.ts",
+    "test:host": "playwright test --config playwright.host.config.ts",
     "check": "pnpm build && pnpm test && pnpm test:browser",
     "check:packages": "node scripts/check-packages.mjs",
     "release:packages": "node scripts/publish-packages.mjs",
