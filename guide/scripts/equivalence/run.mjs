@@ -225,35 +225,6 @@ async function settleFrame(frame) {
   );
 }
 
-/**
- * Brings every finite CSS transition and animation of a frame to its end state, so a
- * result is read and photographed settled, not at whatever point of a transition the
- * browser has reached. Playwright's animations: 'disabled' did not cover this on the
- * GitHub runner: the selected-tab indicator of the vertical Tabs group was captured
- * at the start of its transition in the first frame and at the end in the later
- * ones (frames outside the viewport get no animation frames and wait longer).
- * Infinite animations (a loading indicator) cannot be finished and are left alone.
- */
-async function finishMotion(frame) {
-  await frame.evaluate(async () => {
-    for (let round = 0; round < 5; round += 1) {
-      const running = document.getAnimations().filter((animation) => animation.playState !== 'finished' && animation.playState !== 'idle');
-      let finished = 0;
-      for (const animation of running) {
-        try {
-          animation.finish();
-          finished += 1;
-        } catch {
-          // infinite: no end state
-        }
-      }
-      if (finished === 0) return;
-      // A finished transition can start the next one (transitionend handlers).
-      await new Promise((done) => setTimeout(done, 0));
-    }
-  });
-}
-
 /** Waits until the iframe has the height its document reports (screenshots are not clipped). */
 async function settleHeight(page, frame, framework) {
   const wanted = await frame.evaluate(() => Math.ceil(document.documentElement.getBoundingClientRect().height));
@@ -280,8 +251,6 @@ export async function capture(page, frameworks = FRAMEWORKS, before = null) {
   for (const framework of frameworks) {
     if (before) await before(framework);
     const frame = await frameOf(page, framework);
-    await settleFrame(frame);
-    await finishMotion(frame);
     await settleFrame(frame);
     await settleHeight(page, frame, framework);
     const selector = mountSelector(framework);
@@ -379,6 +348,14 @@ async function runGroup({ page, origin, base, pin, group, check, difference, out
         const mount = page.frameLocator(`iframe[data-framework="${framework}"]`).locator(mountSelector(framework));
         try {
           await step.run({ page, mount, dir: group.lang === 'ar' ? 'rtl' : 'ltr', lang: group.lang, framework, state: states[framework] });
+          // The pointer leaves the results before they are read. A click leaves it
+          // over the clicked element, and the page scrolls before the screenshot, so
+          // which element it then rests on (and shows as hovered) depends on the
+          // heights of the page's own text, not on the framework: on the GitHub
+          // runner the tab hover line appeared on a different tab in each frame.
+          // The page's inline padding (16 px) is never covered by a frame. A step
+          // that tests a hover state sets keepPointer.
+          if (!step.keepPointer) await page.mouse.move(4, 4);
         } catch (error) {
           failed = `${check.name} step ${step.name} failed in ${framework}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`;
         }
