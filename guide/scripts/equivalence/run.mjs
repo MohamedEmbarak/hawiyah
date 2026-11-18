@@ -225,6 +225,35 @@ async function settleFrame(frame) {
   );
 }
 
+/**
+ * Brings every finite CSS transition and animation of a frame to its end state, so a
+ * result is read and photographed settled, not at whatever point of a transition the
+ * browser has reached. Playwright's animations: 'disabled' did not cover this on the
+ * GitHub runner: the selected-tab indicator of the vertical Tabs group was captured
+ * at the start of its transition in the first frame and at the end in the later
+ * ones (frames outside the viewport get no animation frames and wait longer).
+ * Infinite animations (a loading indicator) cannot be finished and are left alone.
+ */
+async function finishMotion(frame) {
+  await frame.evaluate(async () => {
+    for (let round = 0; round < 5; round += 1) {
+      const running = document.getAnimations().filter((animation) => animation.playState !== 'finished' && animation.playState !== 'idle');
+      let finished = 0;
+      for (const animation of running) {
+        try {
+          animation.finish();
+          finished += 1;
+        } catch {
+          // infinite: no end state
+        }
+      }
+      if (finished === 0) return;
+      // A finished transition can start the next one (transitionend handlers).
+      await new Promise((done) => setTimeout(done, 0));
+    }
+  });
+}
+
 /** Waits until the iframe has the height its document reports (screenshots are not clipped). */
 async function settleHeight(page, frame, framework) {
   const wanted = await frame.evaluate(() => Math.ceil(document.documentElement.getBoundingClientRect().height));
@@ -251,6 +280,8 @@ export async function capture(page, frameworks = FRAMEWORKS, before = null) {
   for (const framework of frameworks) {
     if (before) await before(framework);
     const frame = await frameOf(page, framework);
+    await settleFrame(frame);
+    await finishMotion(frame);
     await settleFrame(frame);
     await settleHeight(page, frame, framework);
     const selector = mountSelector(framework);
