@@ -36,6 +36,8 @@ export interface EditorTexts {
   readonly result: string;
   /** Shown in the result area while nothing has run. */
   readonly resultEmpty: string;
+  /** Shown in the result area after a run failed before a result existed. */
+  readonly resultFailed: string;
   readonly notRun: string;
   readonly running: string;
   /** The run finished: duration in milliseconds and whether the reader's edited code ran. */
@@ -71,6 +73,10 @@ export interface EditorTexts {
   readonly payloadFailed: string;
   /** Converting the files to JavaScript failed. */
   readonly convertFailed: (message: string) => string;
+  /** An import of a package the editor does not serve. */
+  readonly unknownModule: (specifier: string) => string;
+  /** A relative import of a file that is not part of the example. */
+  readonly unknownFile: (specifier: string) => string;
 }
 
 export const editorTexts: Texts<EditorTexts> = {
@@ -97,6 +103,7 @@ export const editorTexts: Texts<EditorTexts> = {
     leaveHint: 'Press Escape, then Tab, to leave the code.',
     result: 'Result',
     resultEmpty: 'Press Run to show the result.',
+    resultFailed: 'No result is shown because the run failed. The log lists the errors.',
     notRun: 'Not run yet.',
     running: 'Running…',
     ready: (ms, edited) => `${edited ? 'Your code ran' : 'The original example ran'} in ${ms} ms.`,
@@ -124,6 +131,8 @@ export const editorTexts: Texts<EditorTexts> = {
     compilersFailed: (message) => `The compilers could not be loaded: ${message}`,
     payloadFailed: 'The example could not be loaded.',
     convertFailed: (message) => `The files could not be converted to JavaScript: ${message}`,
+    unknownModule: (specifier) => `The editor does not provide the module ${specifier}; only the Hawiyah packages and their frameworks are available.`,
+    unknownFile: (specifier) => `The example has no file for the import ${specifier}.`,
   },
   ar: {
     editorTitle: 'المحرر',
@@ -148,6 +157,7 @@ export const editorTexts: Texts<EditorTexts> = {
     leaveHint: 'اضغط Escape ثم Tab لمغادرة الشيفرة.',
     result: 'النتيجة',
     resultEmpty: 'اضغط «تشغيل» لعرض النتيجة.',
+    resultFailed: 'لا تُعرض نتيجة لأن التشغيل تعذّر. ويبيّن السجل الأخطاء.',
     notRun: 'لم يُشغَّل بعد.',
     running: 'جارٍ التشغيل…',
     ready: (ms, edited) => `${edited ? 'شُغِّلت شيفرتك' : 'شُغِّل المثال الأصلي'} في ${ms} ملّي ثانية.`,
@@ -175,5 +185,7 @@ export const editorTexts: Texts<EditorTexts> = {
     compilersFailed: (message) => `تعذّر تحميل المصرّفات: ${message}`,
     payloadFailed: 'تعذّر تحميل المثال.',
     convertFailed: (message) => `تعذّر تحويل الملفات إلى JavaScript: ${message}`,
+    unknownModule: (specifier) => `لا يوفّر المحرر الوحدة ${specifier}، وتتاح فيه حزم هوية وأطر عملها فقط.`,
+    unknownFile: (specifier) => `لا يتضمن المثال ملفًا للاستيراد ${specifier}.`,
   },
 };

@@ -40,11 +40,15 @@ jobs:
         run: node scripts/prepare-demo.mjs
       - name: Browser tests
         run: pnpm test:browser
+      - name: Fixture host tests
+        run: pnpm test:host
       - name: Upload browser test report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results
-          path: test-results/
+          path: |
+            test-results/
+            test-results/host/
           retention-days: 7
           if-no-files-found: ignore

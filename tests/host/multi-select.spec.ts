@@ -11,8 +11,14 @@ for (const adapter of ADAPTERS) {
     const style = await computed(list, ['max-block-size', 'overflow-y']);
     expect(style['max-block-size']).toBe('256px');
     expect(['auto', 'scroll']).toContain(style['overflow-y']);
-    const sizes = await list.evaluate((node) => ({ scroll: node.scrollHeight, client: node.clientHeight }));
-    expect(sizes.client).toBeLessThanOrEqual(256);
+    // max-block-size limits the content box (the list keeps the initial
+    // box-sizing): the visible content height is the client height less padding.
+    const sizes = await list.evaluate((node) => {
+      const style = getComputedStyle(node);
+      const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      return { scroll: node.scrollHeight, client: node.clientHeight, content: node.clientHeight - padding };
+    });
+    expect(sizes.content).toBeCloseTo(256, 0);
     expect(sizes.scroll).toBeGreaterThan(sizes.client);
     const rows = list.locator('label.hw-choice');
     await expect(rows).toHaveCount(12);

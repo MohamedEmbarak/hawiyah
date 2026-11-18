@@ -1,0 +1,34 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hw-space-3);
+  min-inline-size: 0;
+}
+
+.choices,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hw-space-2);
+  min-inline-size: 0;
+}
+
+/* The two groups have hidden labels: the larger gap keeps them visibly apart. */
+.choices {
+  column-gap: var(--hw-space-6);
+}
+
+.keys {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hw-space-0-5);
+  margin-inline-start: var(--hw-space-1);
+}

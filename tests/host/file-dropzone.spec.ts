@@ -31,6 +31,10 @@ for (const adapter of ADAPTERS) {
 // FILEDROPZONE-12: a real file drag (Chromium's drag pipeline through the DevTools
 // protocol, with a file on disk) over a disabled vanilla zone delivers dragover
 // and drop to the zone, and the page does not navigate to the file.
+// The zone cancels dragover and sets dropEffect 'none' while it is disabled
+// (case files-8); by the HTML drag-and-drop processing model the browser then
+// ends the drag without a drop event, so the drop half is checked as: every drop
+// that reaches the zone is cancelled, and the page stays where it is.
 test('FILEDROPZONE-12 vanilla: a real file drag over a disabled zone reaches the zone and does not navigate', async ({ page }, testInfo) => {
   await openCase(page, 'FILEDROPZONE-12', { adapters: ['vanilla'] });
   const zone = section(page, 'vanilla').locator('.hw-file-dropzone');
@@ -38,7 +42,14 @@ test('FILEDROPZONE-12 vanilla: a real file drag over a disabled zone reaches the
   await zone.evaluate((node) => {
     const seen: string[] = [];
     (window as unknown as { __dropEvents: string[] }).__dropEvents = seen;
-    for (const type of ['dragenter', 'dragover', 'drop']) node.addEventListener(type, (event) => seen.push(`${type}:${(event as DragEvent).dataTransfer?.types.includes('Files')}`));
+    // Read the outcome after the zone's own listeners, on the way up.
+    for (const type of ['dragenter', 'dragover', 'drop', 'dragleave']) {
+      window.addEventListener(type, (event) => {
+        if (!node.contains(event.target as Node)) return;
+        const transfer = (event as DragEvent).dataTransfer;
+        seen.push(`${type}:files=${transfer?.types.includes('Files')}:prevented=${event.defaultPrevented}:effect=${transfer?.dropEffect}`);
+      });
+    }
   });
   const file = testInfo.outputPath('drop.pdf');
   writeFileSync(file, '%PDF-1.4\n%%EOF\n');
@@ -51,9 +62,10 @@ test('FILEDROPZONE-12 vanilla: a real file drag over a disabled zone reaches the
   for (const type of ['dragEnter', 'dragOver', 'drop'] as const) await client.send('Input.dispatchDragEvent', { type, x, y, data });
   await page.waitForTimeout(300);
   const events = await page.evaluate(() => (window as unknown as { __dropEvents: string[] }).__dropEvents);
-  expect(events).toContain('dragover:true');
-  expect(events).toContain('drop:true');
+  expect(events).toContain('dragover:files=true:prevented=true:effect=none');
+  for (const event of events.filter((entry) => entry.startsWith('drop:'))) expect(event).toContain('prevented=true');
   expect(page.url()).toBe(url);
   await expect(zone).not.toHaveAttribute('data-state', 'dragging');
+  await expect(zone.locator('input[type="file"]')).toHaveValue('');
   expect(await page.evaluate(() => document.body.dataset.fixtureReady)).toBe('true');
 });

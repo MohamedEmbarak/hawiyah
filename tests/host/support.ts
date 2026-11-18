@@ -85,3 +85,22 @@ export async function keyboardFocus(page: Page, locator: Locator): Promise<void>
   await locator.focus();
   expect(await locator.evaluate((node) => node.matches(':focus-visible'))).toBe(true);
 }
+
+/** Colours (rgba strings) of the middle pixel row of a PNG screenshot, decoded in the page. */
+export async function middleRow(page: Page, png: Buffer): Promise<string[]> {
+  return page.evaluate(async (source) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${source}`;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d')!;
+    context.drawImage(image, 0, 0);
+    const row = Math.floor(image.naturalHeight / 2);
+    const data = context.getImageData(0, row, image.naturalWidth, 1).data;
+    const colours: string[] = [];
+    for (let index = 0; index < data.length; index += 4) colours.push(`${data[index]},${data[index + 1]},${data[index + 2]},${data[index + 3]}`);
+    return colours;
+  }, png.toString('base64'));
+}

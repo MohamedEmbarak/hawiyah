@@ -1,0 +1,569 @@
+{
+  "about": "One entry per tests/browser/*.spec.ts. move: no old-guide route, moves unchanged to tests/host in milestone 6. port: tests package behaviour through an old-guide page, rewritten as fixture-host cases in milestone 5. retire: tests the old guide itself, retired with it in milestone 6. tests/host-inventory.test.ts keeps this list complete.",
+  "entries": [
+    {
+      "file": "tests/browser/accordion-motion.spec.ts",
+      "disposition": "port",
+      "reason": "Accordion motion and direction, exercised on the old-guide page #component/accordion.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/basic-input-projects.spec.ts",
+      "disposition": "port",
+      "reason": "Basic input behaviour in the four adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/button-group-parity.spec.ts",
+      "disposition": "port",
+      "reason": "ButtonGroup parity across adapters, exercised through the old-guide preview and live editor.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/calendar-presentation.spec.ts",
+      "disposition": "port",
+      "reason": "Calendar and DatePicker presentation, exercised on old-guide pages (#component/date-picker, #inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/calendar-projects.spec.ts",
+      "disposition": "port",
+      "reason": "Calendar and DatePicker in the four adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/calendar-ui.spec.ts",
+      "disposition": "port",
+      "reason": "DatePicker popup and Arabic date rendering, exercised on #component/date-picker.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/catalog-card-border.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the hover border of the old-guide catalog cards.",
+      "target": "none: the old guide is removed in milestone 6"
+    },
+    {
+      "file": "tests/browser/checklist-home.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the content priority of the old-guide home and template pages.",
+      "target": "guide/tests/e2e/landing (the new landing page)"
+    },
+    {
+      "file": "tests/browser/choice-halo.spec.ts",
+      "disposition": "port",
+      "reason": "Choice halo centring with plain and wrapped labels, exercised in the old-guide catalog.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/choice-indeterminate.spec.ts",
+      "disposition": "move",
+      "reason": "Routed static fixture with the package stylesheet (page.route); no old-guide route.",
+      "target": "tests/host/choice-indeterminate.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/choice-input-projects.spec.ts",
+      "disposition": "port",
+      "reason": "Choice inputs in the four adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/code-block.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture (style-fixture.ts, code-prose-fixture.ts) for the code block styles; no old-guide route.",
+      "target": "tests/host/code-block.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/component-ide.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the old-guide editor (HTML, CSS and JavaScript edits, sandbox).",
+      "target": "guide/tests/e2e (editor runtime of work package 4c.1) and guide/tests/e2e/frames"
+    },
+    {
+      "file": "tests/browser/custom-date-input.spec.ts",
+      "disposition": "port",
+      "reason": "Custom date popup and ISO submission, exercised in the old-guide input lab (#inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/dga-templates.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the old-guide page templates (service, FAQ, cookies, content, form).",
+      "target": "none: the old guide is removed in milestone 6"
+    },
+    {
+      "file": "tests/browser/dga-theme.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the old-guide theme defaults and stored preference; the field focus checks run on its pages.",
+      "target": "none: the old guide is removed in milestone 6"
+    },
+    {
+      "file": "tests/browser/dialog-backdrop.spec.ts",
+      "disposition": "port",
+      "reason": "Dialog and Drawer drag and focus return, exercised on old-guide component pages.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/direction-production.spec.ts",
+      "disposition": "move",
+      "reason": "setContent with the built stylesheet; no old-guide route.",
+      "target": "tests/host/direction-production.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/disclosure-projects.spec.ts",
+      "disposition": "port",
+      "reason": "Disclosure components (Menu, Popover and others) in the four adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/discovery-templates.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the old-guide Home and Search templates.",
+      "target": "none: the old guide is removed in milestone 6"
+    },
+    {
+      "file": "tests/browser/editor-startup.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the startup acknowledgement of the old-guide editor preview.",
+      "target": "guide/tests/e2e (editor runtime of work package 4c.1)"
+    },
+    {
+      "file": "tests/browser/expansion.spec.ts",
+      "disposition": "retire",
+      "reason": "Automated WCAG and overflow checks of old-guide routes.",
+      "target": "guide/tests/e2e (accessibility checks of the new guide pages)"
+    },
+    {
+      "file": "tests/browser/feedback-composition.spec.ts",
+      "disposition": "port",
+      "reason": "Feedback, standalone Link and portal shell previews, exercised in the old-guide catalog.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/feedback-status.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture of the feedback and status components (style-fixture.ts); no old-guide route.",
+      "target": "tests/host/feedback-status.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/fonts.spec.ts",
+      "disposition": "move",
+      "reason": "Routed static origin serving the built package fonts; no old-guide route.",
+      "target": "tests/host/fonts.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/guide-experience.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests old-guide locale choice, navigation and documentation pages.",
+      "target": "guide/tests/e2e/routing and guide/tests/e2e/shell"
+    },
+    {
+      "file": "tests/browser/guide-reflow.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the reflow of old-guide prose pages at 320px.",
+      "target": "guide/tests/e2e/shell"
+    },
+    {
+      "file": "tests/browser/guide.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests old-guide getting-started links and component reference pages.",
+      "target": "guide/tests/e2e/pages and guide/tests/e2e/routing"
+    },
+    {
+      "file": "tests/browser/home-onboarding.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests old-guide home onboarding and branding.",
+      "target": "guide/tests/e2e/landing"
+    },
+    {
+      "file": "tests/browser/icon-assets.spec.ts",
+      "disposition": "port",
+      "reason": "Packaged icon loading, colour and mirroring, injected into the old-guide home page for its stylesheet.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/icon-catalog.spec.ts",
+      "disposition": "move",
+      "reason": "Routed static fixture of every shipped icon (page.route); no old-guide route.",
+      "target": "tests/host/icon-catalog.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/identity-loader.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the identity loader in the old-guide recipe and editor.",
+      "target": "none: the old guide is removed in milestone 6"
+    },
+    {
+      "file": "tests/browser/input-heights.spec.ts",
+      "disposition": "port",
+      "reason": "Input row heights, exercised in the old-guide input lab (#inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/input-validation-color.spec.ts",
+      "disposition": "port",
+      "reason": "Validation colours of inputs, exercised in the old-guide input lab (#inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/mobile-density.spec.ts",
+      "disposition": "port",
+      "reason": "Mobile density of components, exercised on the old-guide foundations page.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/mobile-navigation.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the mobile navigation of the old guide.",
+      "target": "guide/tests/e2e/shell"
+    },
+    {
+      "file": "tests/browser/mobile-switch.spec.ts",
+      "disposition": "port",
+      "reason": "Vanilla mobile switch geometry and themes, exercised on the old-guide foundations page.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/mobile-tab-bar.spec.ts",
+      "disposition": "port",
+      "reason": "Mobile tab bar colour, motion and focus semantics, exercised on the old-guide foundations page.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/mobile-top-bar.spec.ts",
+      "disposition": "port",
+      "reason": "MobileTopBar wrapping, direction and focus, exercised on #component/mobile-top-bar.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/motion.spec.ts",
+      "disposition": "move",
+      "reason": "setContent fixture for component motion and reduced motion; no old-guide route.",
+      "target": "tests/host/motion.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/native-file-projects.spec.ts",
+      "disposition": "port",
+      "reason": "File inputs in the four adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/native-layout-projects.spec.ts",
+      "disposition": "port",
+      "reason": "Layout components and AppShell in the four adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/navigation-drawer.spec.ts",
+      "disposition": "port",
+      "reason": "NavigationDrawer disclosure and modal behaviour, exercised on #component/navigation-drawer.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-accordion.spec.ts",
+      "disposition": "port",
+      "reason": "Accordion source styles and native fallback, exercised on #component/accordion.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-avatars.spec.ts",
+      "disposition": "port",
+      "reason": "Avatar sizes and image failure in the adapters, exercised on #component/avatar and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-badges.spec.ts",
+      "disposition": "port",
+      "reason": "Badge geometry and variants in the adapters, exercised on #component/badge and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-buttons.spec.ts",
+      "disposition": "move",
+      "reason": "setContent fixture of the vanilla button states; no old-guide route.",
+      "target": "tests/host/nic-buttons.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/nic-cards.spec.ts",
+      "disposition": "port",
+      "reason": "Card composition geometry and focus, exercised on #component/card.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-carousel.spec.ts",
+      "disposition": "port",
+      "reason": "Carousel motion, keyboard and indicators in the adapters, exercised on #component/carousel and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-choices.spec.ts",
+      "disposition": "port",
+      "reason": "Vanilla choice states, exercised in the old-guide input lab (#inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-content-navigation.spec.ts",
+      "disposition": "port",
+      "reason": "ContentNavigation states and sticky scrolling in the adapters, exercised on #component/content-navigation and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-copy-action.spec.ts",
+      "disposition": "port",
+      "reason": "Copy action and clipboard fallback, exercised on #component/button.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-foundations.spec.ts",
+      "disposition": "port",
+      "reason": "Type scale, divider and line clamp of the stylesheet, exercised on the old-guide foundations page.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-icons.spec.ts",
+      "disposition": "port",
+      "reason": "Icon button geometry and featured icon compositions, exercised on #component/icon-button and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-inputs.spec.ts",
+      "disposition": "port",
+      "reason": "Grouped input styles, exercised in the old-guide input lab (#inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-links.spec.ts",
+      "disposition": "port",
+      "reason": "Link and Breadcrumb states in the adapters, exercised on old-guide pages and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-lists.spec.ts",
+      "disposition": "port",
+      "reason": "List geometry and markers in Card, exercised on #component/card and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-notification-banner.spec.ts",
+      "disposition": "port",
+      "reason": "Notification banners and their dismissal in the adapters, exercised on #component/toast-region and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-notification-dialog.spec.ts",
+      "disposition": "port",
+      "reason": "Notification dialog actions, Escape and focus in the adapters, exercised on old-guide pages and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-pagination.spec.ts",
+      "disposition": "port",
+      "reason": "Pagination geometry and page windows in the adapters, exercised on #component/pagination and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-rating.spec.ts",
+      "disposition": "port",
+      "reason": "Rating geometry and accessibility, exercised on #component/rating and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-search.spec.ts",
+      "disposition": "port",
+      "reason": "SearchField states and dialog composition in the adapters, exercised on #component/search-field and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-segmented.spec.ts",
+      "disposition": "port",
+      "reason": "Segmented ToggleGroup and ButtonGroup in the adapters, exercised on old-guide pages and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-select.spec.ts",
+      "disposition": "port",
+      "reason": "Select examples, themes and keyboard in the adapters, exercised on #component/select and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-tables.spec.ts",
+      "disposition": "port",
+      "reason": "Table and DataTable variants and scrolling in the adapters, exercised on old-guide pages and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/nic-tabs.spec.ts",
+      "disposition": "port",
+      "reason": "Tabs states and overflow in the adapters, exercised on #component/tabs and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/participation-source.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the old-guide participation template.",
+      "target": "none: the old guide is removed in milestone 6"
+    },
+    {
+      "file": "tests/browser/password-field.spec.ts",
+      "disposition": "port",
+      "reason": "PasswordField toggle placement, exercised in the old-guide input lab (#inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/playground.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the old-guide service discovery and guided application templates.",
+      "target": "none: the old guide is removed in milestone 6"
+    },
+    {
+      "file": "tests/browser/portal-branches.spec.ts",
+      "disposition": "port",
+      "reason": "Grouped PortalHeader in the four adapters, exercised through old-guide editor projects and the catalog.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/portal-identity.spec.ts",
+      "disposition": "port",
+      "reason": "SiteVerification masthead and PortalFooter in the adapters, exercised on old-guide pages and editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/portal-layout.spec.ts",
+      "disposition": "port",
+      "reason": "Portal navigation styles; the first test checks the old-guide catalog skip link, the second replaces an old-guide page body with authored markup.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/portal-shell-projects.spec.ts",
+      "disposition": "port",
+      "reason": "Portal shell components in the four adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/progress-states.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture of the progress states (style-fixture.ts); no old-guide route.",
+      "target": "tests/host/progress-states.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/project-branding.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the framework badges of the old-guide editor.",
+      "target": "none: the old guide is removed in milestone 6"
+    },
+    {
+      "file": "tests/browser/project-editor-layout.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the layout of the old-guide project editor controls.",
+      "target": "guide/tests/e2e (editor runtime of work package 4c.1)"
+    },
+    {
+      "file": "tests/browser/project-editor.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests old-guide editor projects: compilation, errors in the preview and state updates.",
+      "target": "guide/tests/e2e (editor runtime of work package 4c.1)"
+    },
+    {
+      "file": "tests/browser/prose.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture of the class-less prose scales (style-fixture.ts, code-prose-fixture.ts); no old-guide route.",
+      "target": "tests/host/prose.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/published-stylesheet.spec.ts",
+      "disposition": "move",
+      "reason": "Routed static origin serving dist/styles.css; no old-guide route.",
+      "target": "tests/host/published-stylesheet.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/rating.spec.ts",
+      "disposition": "port",
+      "reason": "Rating previews and native radio navigation, exercised in the old-guide catalog.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/ready-examples.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the old-guide ready-example galleries and their masonry layout.",
+      "target": "guide/tests/e2e/pages"
+    },
+    {
+      "file": "tests/browser/riyal.spec.ts",
+      "disposition": "port",
+      "reason": "Riyal sign in the amount input, exercised in the old-guide input lab (#inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/rtl-icons.spec.ts",
+      "disposition": "retire",
+      "reason": "Tests the old-guide home and back and forward arrows; the carousel check runs in the old-guide preview.",
+      "target": "guide/tests/e2e/shell"
+    },
+    {
+      "file": "tests/browser/search-field.spec.ts",
+      "disposition": "port",
+      "reason": "SearchField clear action and native reset, exercised in the old-guide input lab (#inputs).",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/service-pattern-projects.spec.ts",
+      "disposition": "port",
+      "reason": "Service pattern components in the four adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/side-navigation.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture of SideNavigation and NavigationDrawer current rows (style-fixture.ts); no old-guide route.",
+      "target": "tests/host/side-navigation.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/stepper-states.spec.ts",
+      "disposition": "port",
+      "reason": "Stepper progress and states, exercised on #component/stepper.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/style-defects.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture of carousel arrows and pressed icon buttons (style-fixture.ts); no old-guide route.",
+      "target": "tests/host/style-defects.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/toggle-group-states.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture of the ToggleGroup states (style-fixture.ts); no old-guide route.",
+      "target": "tests/host/toggle-group-states.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/toggle-group.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture of TOGGLE-GROUP-03 (style-fixture.ts); no old-guide route.",
+      "target": "tests/host/toggle-group.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/tooltip-placement.spec.ts",
+      "disposition": "port",
+      "reason": "Tooltip placement styles, written into the main element of #component/tooltip.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/tooltip-source.spec.ts",
+      "disposition": "port",
+      "reason": "Tooltip surface in the adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    },
+    {
+      "file": "tests/browser/tree-view.spec.ts",
+      "disposition": "move",
+      "reason": "Style fixture of the flat TreeView markup (style-fixture.ts); no old-guide route.",
+      "target": "tests/host/tree-view.spec.ts (milestone 6)"
+    },
+    {
+      "file": "tests/browser/upload-source-presentation.spec.ts",
+      "disposition": "port",
+      "reason": "Upload row presentation in the adapters, exercised through old-guide editor projects.",
+      "target": "fixture-host cases in tests/host (milestone 5)"
+    }
+  ]
+}

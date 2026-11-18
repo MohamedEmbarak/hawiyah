@@ -14,3 +14,9 @@ body {
   margin: 0 0 0.5rem;
   font-size: 1rem;
 }
+.fixture-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: start;
+}

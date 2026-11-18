@@ -35,8 +35,8 @@ const KEYWORDS_BEFORE_EXPRESSION = new Set([
   'return', 'typeof', 'instanceof', 'in', 'of', 'new', 'delete', 'void', 'throw', 'case', 'do', 'else', 'yield', 'await',
 ]);
 
-const isIdentifierStart = (c: string) => /[A-Za-z_$\u0080-￿]/.test(c);
-const isIdentifierPart = (c: string) => /[A-Za-z0-9_$\u0080-￿]/.test(c);
+const isIdentifierStart = (c: string) => /[A-Za-z_$\u0080-\uffff]/.test(c);
+const isIdentifierPart = (c: string) => /[A-Za-z0-9_$\u0080-\uffff]/.test(c);
 
 /** Whether a '/' after this token starts a regular expression literal. */
 function regexAllowed(previous: Token | undefined): boolean {
@@ -83,7 +83,7 @@ export function tokenize(source: string): Token[] {
 
   while (i < n) {
     const c = source[i] as string;
-    if (c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f' || c === '\v' || c === ' ' || c === '﻿' || c === ' ' || c === ' ') {
+    if (c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f' || c === '\v' || c === '\u00a0' || c === '\ufeff' || c === '\u2028' || c === '\u2029') {
       i += 1;
       continue;
     }
@@ -208,7 +208,7 @@ interface Insertion {
  * on globalThis.
  */
 export function guardPrelude(message: string, limitMs = LOOP_LIMIT_MS): string {
-  const text = JSON.stringify(message).replace(/</g, '\\u003c').replace(/ /g, '\\u2028').replace(/ /g, '\\u2029');
+  const text = JSON.stringify(message).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   return (
     `var ${GUARD_NAME}=(function(g){var k='__hawiyahLoopGuard';if(!g[k]){var s=Object.create(null);` +
     `g[k]=function(id){var n=Date.now(),t=s[id];if(t===undefined){s[id]=n;setTimeout(function(){delete s[id];},0);}` +
