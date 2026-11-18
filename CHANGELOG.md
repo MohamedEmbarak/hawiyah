@@ -960,6 +960,13 @@ built type declarations of each package.
 | Link | Angular | `hw-link` / `HwLinkComponent` | `<a hwLink>` / `HwLinkDirective`; `target="_blank"` -> `external` |
 | Link | Vue | `external` replaced an authored `rel` | adds to it |
 
+#### Known defects in 0.3.0
+
+- The vanilla Tabs controller (`createTabs`) creates the tab bar
+  (`.hw-tab-bar`) without the `data-orientation` attribute that the React, Vue
+  and Angular adapters write. The appearance and the accessibility tree are the
+  same; a later release corrects it.
+
 #### Left for a later release
 
 - RadioGroup and CheckboxGroup for React, Vue and vanilla, and a

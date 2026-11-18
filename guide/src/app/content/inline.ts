@@ -13,7 +13,7 @@ import type { Inline } from './model';
 @Component({
   selector: 'guide-inline',
   imports: [HwLinkDirective],
-  template: `@for (node of inlines(); track $index) {@switch (node.type) {@case ('text') {{{ node.value }}}@case ('emphasis') {<em><guide-inline [inlines]="node.children" /></em>}@case ('strong') {<strong><guide-inline [inlines]="node.children" /></strong>}@case ('inlineCode') {<code class="hw-code">{{ node.value }}</code>}@case ('link') {@if (node.external) {<a hwLink [href]="node.href" external><guide-inline [inlines]="node.children" /><span class="hw-sr-only"> {{ t().opensInNewTab }}</span></a>} @else {<a hwLink [href]="node.href"><guide-inline [inlines]="node.children" /></a>}}@case ('break') {<br />}}}`,
+  template: `@for (node of inlines(); track $index) {@switch (node.type) {@case ('text') {{{ node.value }}}@case ('emphasis') {<em><guide-inline [inlines]="node.children" /></em>}@case ('strong') {<strong><guide-inline [inlines]="node.children" /></strong>}@case ('inlineCode') {<code class="hw-code code-phrase" dir="ltr" translate="no">{{ node.value }}</code>}@case ('link') {@if (node.external) {<a hwLink [href]="node.href" external><guide-inline [inlines]="node.children" /><span class="hw-sr-only"> {{ t().opensInNewTab }}</span></a>} @else {<a hwLink [href]="node.href"><guide-inline [inlines]="node.children" /></a>}}@case ('break') {<br />}}}`,
 })
 export class InlineContent {
   readonly inlines = input.required<readonly Inline[]>();

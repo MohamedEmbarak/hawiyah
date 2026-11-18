@@ -163,6 +163,7 @@ export class PreviewFrame {
         lang: source.lang,
         dir: source.dir,
         mode,
+        title: this.title(),
         compiled: source.compiled,
         runtimeBase,
         stylesheets: config.stylesheets,

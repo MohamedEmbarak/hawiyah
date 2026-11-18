@@ -3,7 +3,7 @@ source:
   summary: 421b7d9c72f6
   example: 9b7f6a99ca77
   variants-and-states: cc1cc8030691
-  api: 83e1f1f7be84
+  api: b7d77b3d1bc4
   accessibility: 3b2127b62ebd
   rtl-and-localisation: f0b6d337f83f
   platforms-code-reference: 0b4ce0fca1ec
@@ -168,10 +168,11 @@ template: `<button hwButton disabled>متابعة</button>`
 | `type` | `'button' \| 'submit' \| 'reset'` | `true` | — |
 | `data-variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
 | `data-size` | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
+| `data-icon-only` | `boolean` | `false` | `false` |
 | `disabled` | `boolean` | `false` | `false` |
 | `aria-busy` | `'true'` | `false` | — |
 
-ليس للزر وحدة تحكم في JavaScript، فالترميز هو واجهته البرمجية: اكتب عنصر زر أصليًا بالصنف `hw-button`، واكتب دائمًا سمة `type` له، لأن النوع الافتراضي للزر داخل النموذج في المتصفح هو `submit`. ولحالة التحميل اكتب `disabled` و`aria-busy="true"` معًا، واحذفهما عند انتهاء العملية.
+ليس للزر وحدة تحكم في JavaScript، فالترميز هو واجهته البرمجية: اكتب عنصر زر أصليًا بالصنف `hw-button`، واكتب دائمًا سمة `type` له، لأن النوع الافتراضي للزر داخل النموذج في المتصفح هو `submit`. ولحالة التحميل اكتب `disabled` و`aria-busy="true"` معًا، واحذفهما عند انتهاء العملية. وتُدرج السمة `data-icon-only` مع `hw-button` و`data-variant` و`data-size` في صف الإجراءات من جدول واجهة الأصناف والحالات الثابتة في `@hawiyah/styles`، وتُكتب بلا قيمة.
 
 ### React
 

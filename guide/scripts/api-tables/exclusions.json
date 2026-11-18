@@ -10,9 +10,6 @@
           "disabled": "HTML attribute of the button element; the loading state uses it.",
           "aria-busy": "ARIA attribute; the loading state writes aria-busy=\"true\" with disabled."
         },
-        "notListed": {
-          "data-icon-only": "Documented in the Actions row of the styles contract for icon-only buttons; the Button page of stage 4a does not list it. Proposed: add a row to docs/components/button.md and button.ar.md, or document it on the Icon button page."
-        },
         "review": "pending: recorded by 4b.3 for the lead's review"
       }
     }

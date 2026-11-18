@@ -3,7 +3,7 @@
 // content model that step 20 writes (src/generated/content/pages/<id>.<lang>.json).
 
 export const BUTTON = {
-  javascript: [['class', true], ['type', true], ['data-variant', false], ['data-size', false], ['disabled', false], ['aria-busy', false]],
+  javascript: [['class', true], ['type', true], ['data-variant', false], ['data-size', false], ['data-icon-only', false], ['disabled', false], ['aria-busy', false]],
   react: [['variant', false], ['size', false], ['loading', false]],
   vue: [['variant', 'prop', false], ['size', 'prop', false], ['loading', 'prop', false], ['disabled', 'prop', false], ['type', 'prop', false]],
   angular: [['variant', 'input', false], ['size', 'input', false], ['loading', 'input', false], ['disabled', 'input', false], ['type', 'input', false]],

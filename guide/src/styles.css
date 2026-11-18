@@ -7,3 +7,15 @@ html {
   color: var(--hw-color-text);
   font-family: var(--hw-font-sans);
 }
+
+/* Inline code in prose (class code-phrase, always dir="ltr"): a bidirectional
+   isolate that keeps its source order in Arabic text, and an atomic inline box, so
+   a phrase such as data-hw-theme moves to the next line as a whole instead of
+   breaking at a hyphen. A phrase wider than the line still wraps inside its box,
+   so nothing overflows at 320 px. */
+.code-phrase {
+  unicode-bidi: isolate;
+  display: inline-block;
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+}

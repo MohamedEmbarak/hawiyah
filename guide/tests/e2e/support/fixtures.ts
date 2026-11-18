@@ -84,7 +84,9 @@ export async function hydrated(page: Page): Promise<void> {
     return Boolean(root && !root.hasAttribute('ngh') && document.readyState === 'complete');
   });
   // app-root loses ngh before event replay ends; a key pressed while nodes still carry
-  // jsaction is queued and replayed (see tests/e2e/tabs/tabs.spec.ts).
+  // jsaction is queued and replayed, and hw-tabs 0.3.0 calls preventDefault on the
+  // replayed keydown, which Angular reports as an error (package defect of
+  // @hawiyah/angular 0.3.0 HwTabsComponent, recorded by 4b.3).
   await page.waitForFunction(() => document.querySelector('[jsaction]') === null);
 }
 

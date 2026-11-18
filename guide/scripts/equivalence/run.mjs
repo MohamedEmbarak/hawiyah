@@ -61,6 +61,33 @@ export const sourceFile = (group) => `docs/components/${group.id}${group.lang ==
 export const failureLine = (code, group, message) => `${code} ${sourceFile(group)}:${group.blocks?.vanilla?.line ?? 1}: ${message}`;
 
 const KD_FIELDS = ['id', 'component', 'aspect', 'description', 'source', 'approvedBy'];
+const KD_OPTIONAL = ['ignore'];
+const IGNORE_FIELDS = ['class', 'attribute'];
+
+/** Errors of the optional ignore list of an entry (leadAmendments A8). */
+function ignoreErrors(entry, at) {
+  if (!('ignore' in entry)) return [];
+  const errors = [];
+  if (entry.aspect !== 'structure') errors.push(`${at}: ignore is allowed only on an entry of aspect structure`);
+  if (!Array.isArray(entry.ignore) || entry.ignore.length === 0) return [...errors, `${at}: ignore must be a non-empty array`];
+  entry.ignore.forEach((rule, n) => {
+    const where = `${at} ignore ${n + 1}`;
+    if (!rule || typeof rule !== 'object' || Array.isArray(rule)) {
+      errors.push(`${where} is not an object`);
+      return;
+    }
+    const extra = Object.keys(rule).filter((name) => !IGNORE_FIELDS.includes(name));
+    if (extra.length > 0) errors.push(`${where} has unknown fields ${extra.join(', ')}`);
+    for (const field of IGNORE_FIELDS) {
+      if (typeof rule[field] !== 'string' || rule[field].trim() === '') errors.push(`${where} needs a non-empty ${field}`);
+    }
+    if (typeof rule.class === 'string' && rule.class !== '' && !/^hw-[a-z0-9-]+$/.test(rule.class)) errors.push(`${where}: class must be one hw- class name (got ${rule.class})`);
+    if (typeof rule.attribute === 'string' && rule.attribute !== '' && !/^[a-z][a-z0-9-]*$/.test(rule.attribute)) {
+      errors.push(`${where}: attribute must be one lower-case attribute name (got ${rule.attribute})`);
+    }
+  });
+  return errors;
+}
 
 /** Validates known-differences.json; returns { entries: Map<id, entry>, errors: string[] }. */
 export function validateKnownDifferences(value) {
@@ -73,11 +100,12 @@ export function validateKnownDifferences(value) {
       errors.push(`${at} is not an object`);
       return;
     }
-    const extra = Object.keys(entry).filter((name) => !KD_FIELDS.includes(name));
+    const extra = Object.keys(entry).filter((name) => !KD_FIELDS.includes(name) && !KD_OPTIONAL.includes(name));
     if (extra.length > 0) errors.push(`${at} has unknown fields ${extra.join(', ')}`);
     for (const field of KD_FIELDS) {
       if (typeof entry[field] !== 'string' || entry[field].trim() === '') errors.push(`${at} needs a non-empty ${field}`);
     }
+    errors.push(...ignoreErrors(entry, at));
     if (typeof entry.aspect === 'string' && !ASPECTS.includes(entry.aspect)) errors.push(`${at}: aspect must be structure, aria or screenshot (got ${entry.aspect})`);
     if (typeof entry.approvedBy === 'string' && entry.approvedBy !== 'lead') errors.push(`${at}: approvedBy must be 'lead'`);
     if (typeof entry.source === 'string' && !/^(?:CHANGELOG\.md\b.*\d|https:\/\/\S+)/.test(entry.source)) {
@@ -237,16 +265,23 @@ export async function capture(page, frameworks = FRAMEWORKS, before = null) {
   return out;
 }
 
-/** Runs the three comparisons on a capture; returns report rows (skipped aspects included). */
-export function compareCapture(captured, skip = null) {
+/**
+ * Runs the three comparisons on a capture; returns report rows (skipped aspects
+ * included). difference is the known-differences entry of the group or null: an
+ * entry without ignore skips its aspect; a structure entry with ignore leaves only
+ * the listed attributes out of the structure comparison (leadAmendments A8).
+ */
+export function compareCapture(captured, difference = null) {
   const rows = [];
+  const skip = difference && !difference.ignore ? difference.aspect : null;
+  const ignore = difference?.aspect === 'structure' && difference.ignore ? difference.ignore : [];
   const add = (aspect, results) => {
     for (const result of results) {
       if (skip === aspect) rows.push({ aspect, pair: result.pair, result: 'skipped' });
-      else rows.push({ aspect, ...result, result: result.equal ? 'equal' : 'different' });
+      else rows.push({ aspect, ...result, result: result.equal ? 'equal' : 'different', ...(aspect === 'structure' && ignore.length > 0 ? { ignored: ignore } : {}) });
     }
   };
-  add('structure', compareStructure(captured.trees));
+  add('structure', compareStructure(captured.trees, ignore));
   add('aria', compareAria(captured.snapshots));
   add('screenshot', compareScreenshots(captured.images));
   return rows;
@@ -278,10 +313,9 @@ async function runGroup({ page, origin, base, pin, group, check, difference, out
   }
   if (failures.length > 0) return { rows, failures };
 
-  const skip = difference?.aspect ?? null;
   const evaluate = async (state, before = null, given = null) => {
     const captured = given ?? (await capture(page, FRAMEWORKS, before));
-    for (const row of compareCapture(captured, skip)) {
+    for (const row of compareCapture(captured, difference)) {
       const entry = { group: groupKey(group), state, ...row };
       delete entry.equal;
       delete entry.diff;
@@ -423,11 +457,18 @@ export async function runEquivalence(options) {
   };
   writeFileSync(join(outDir, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
   for (const entry of documented) {
-    log(`equivalence: documented difference ${entry.id} (${entry.component}, ${entry.aspect}, approved by ${entry.approvedBy}, ${entry.source}) skipped for ${entry.groups.join(', ')}: ${entry.description}`);
+    const scope = entry.ignore ? `ignores ${entry.ignore.map((rule) => `${rule.attribute} on .${rule.class}`).join(', ')}` : 'skipped';
+    log(`equivalence: documented difference ${entry.id} (${entry.component}, ${entry.aspect}, approved by ${entry.approvedBy}, ${entry.source}) ${scope} for ${entry.groups.join(', ')}: ${entry.description}`);
   }
   if (failures.length > 0) throw new Error([...failures].sort().join('\n'));
-  report.summary = `equivalence: ${pages.size} groups x ${languages.size} languages x ${FRAMEWORKS.length} frameworks equal (${interactionChecks} interaction checks, ${documented.length} documented differences)`;
+  report.summary = summaryLine({ groups: pages.size, languages: languages.size, frameworks: FRAMEWORKS.length, interactionChecks, documented: documented.length });
   return report;
+}
+
+/** The closing line of a passing run. */
+export function summaryLine({ groups, languages, frameworks, interactionChecks, documented }) {
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  return `equivalence: ${groups} groups x ${languages} languages x ${frameworks} frameworks equal (${plural(interactionChecks, 'interaction check', 'interaction checks')}, ${plural(documented, 'documented difference', 'documented differences')})`;
 }
 
 /** The pinned package version the frames load (build-info.json of step 00, else package.json). */

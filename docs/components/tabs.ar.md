@@ -1,8 +1,8 @@
 ---
 source:
   summary: 6acb07b0e20a
-  example: c3573b4a972b
-  variants-and-states: ab2ed5340299
+  example: 0be3dd79b3d6
+  variants-and-states: 9019c267bf07
   api: 13505e3b4dec
   accessibility: f72b0a9dbeb3
   rtl-and-localisation: 1d839b846bd4
@@ -16,7 +16,7 @@ source:
 
 لقائمة التبويبات اسم يصف مجموعة اللوحات. ويسمّي نص كل تبويب لوحته بكلمة أو كلمتين.
 
-```html live example=basic check=tabs-keyboard
+```html live example=basic check=tabs-keyboard differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">
   <div class="hw-tab-list" role="tablist" aria-label="تفاصيل الطلب" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="basic-tab-overview" aria-controls="basic-panel-overview" aria-selected="true" data-hw-value="overview">نظرة عامة</button>
@@ -71,7 +71,7 @@ template: `<hw-tabs label="تفاصيل الطلب" overflow="scroll">
 
 تضع قائمة التبويبات العمودية التبويبات في عمود، قبل اللوحات. ويتنقّل السهمان لأعلى ولأسفل بين التبويبات في كلا الاتجاهين، ولا تنقل القائمة العمودية تبويباتها أبدًا إلى قائمة الإفصاح عن التبويبات الزائدة.
 
-```html live example=vertical check=tabs-click
+```html live example=vertical check=tabs-click differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">
   <div class="hw-tab-list" role="tablist" aria-label="إعدادات الحساب" aria-orientation="vertical">
     <button class="hw-tab" type="button" role="tab" id="vertical-tab-profile" aria-controls="vertical-panel-profile" aria-selected="true" data-hw-value="profile">الملف الشخصي</button>
@@ -126,7 +126,7 @@ template: `<hw-tabs label="إعدادات الحساب" orientation="vertical" o
 
 في التفعيل اليدوي تنقل مفاتيح الأسهم التركيز بين التبويبات دون تغيير اللوحة، ويحدّد مفتاح Enter أو مفتاح المسافة التبويب الذي عليه التركيز. استخدمه عندما يكون عرض اللوحة بطيئًا أو يغيّر محتوى آخر في الصفحة.
 
-```html live example=manual check=tabs-keyboard
+```html live example=manual check=tabs-keyboard differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll" data-hw-activation="manual">
   <div class="hw-tab-list" role="tablist" aria-label="خطوات الخدمة" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="manual-tab-apply" aria-controls="manual-panel-apply" aria-selected="true" data-hw-value="apply">التقديم</button>
@@ -181,7 +181,7 @@ template: `<hw-tabs label="خطوات الخدمة" activationMode="manual" over
 
 يبقى التبويب المعطّل في القائمة ويبيّن أن لوحته موجودة لكنها غير متاحة. وتتجاوزه مفاتيح الأسهم، ولا يمكن تحديده. اذكر السبب في نص الصفحة.
 
-```html live example=disabled-tab
+```html live example=disabled-tab differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">
   <div class="hw-tab-list" role="tablist" aria-label="تفاصيل الطلب" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-overview" aria-controls="disabled-tab-panel-overview" aria-selected="true" data-hw-value="overview">نظرة عامة</button>

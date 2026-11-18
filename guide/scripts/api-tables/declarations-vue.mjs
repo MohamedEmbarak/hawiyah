@@ -8,6 +8,9 @@
 //   events the keys of the emits options (type argument E of DefineComponent);
 //   slots  the named properties of the instance type's $slots (a component
 //          whose declaration types no slots has none).
+// Package defect: @hawiyah/vue 0.3.0 Tabs reads the slots #<value> and #tab:<value>
+// at run time but declares no slots (DefineComponent slots argument {}), so its Vue
+// table lists none and docs/components/tabs.md names the slots in prose instead.
 import { isInPackage, resolveExport } from './program.mjs';
 
 const VUE_PACKAGES = ['vue', '@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared'];

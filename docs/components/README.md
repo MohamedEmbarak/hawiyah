@@ -135,6 +135,21 @@ Each block of a group is a fenced code block whose info string is:
   (`HWC-LIVE3`).
 - `check` names an interaction check and `differences` names an approved known
   difference. Both stand only on the `html` block, the first of the group.
+- A known difference is an entry of
+  `guide/scripts/equivalence/known-differences.json` with the fields `id`,
+  `component`, `aspect` (`structure`, `aria` or `screenshot`), `description`,
+  `source` (a `CHANGELOG.md` section with its line, or an issue URL) and
+  `approvedBy` (`lead`). An entry without `ignore` leaves its aspect out of the
+  equivalence check of the groups that name it. An entry of aspect `structure`
+  may instead carry `ignore: [{ "class": "hw-...", "attribute": "..." }]`: only
+  that attribute on elements with that class is left out of the comparison
+  with the JavaScript result, and every other structural difference still
+  fails with `HWE-STRUCT`; the other three results are compared with each
+  other in full, and the check fails once the JavaScript result writes the
+  attribute. The Tabs groups name
+  `tabs-bar-orientation`, which ignores `data-orientation` on `.hw-tab-bar`
+  (CHANGELOG.md, Known defects in 0.3.0); the entry is removed when the guide
+  pins a release that corrects it.
 - Any other key or value fails the build (`HWC-LIVE1`). GitHub highlights the
   block by its first word and ignores the rest.
 

@@ -6,7 +6,7 @@ Tabs divide related content into panels and show one panel at a time. A tab list
 
 A tab list has a name that describes the group of panels. Each tab label names its panel in one or two words.
 
-```html live example=basic check=tabs-keyboard
+```html live example=basic check=tabs-keyboard differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">
   <div class="hw-tab-list" role="tablist" aria-label="Request details" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="basic-tab-overview" aria-controls="basic-panel-overview" aria-selected="true" data-hw-value="overview">Overview</button>
@@ -61,7 +61,7 @@ template: `<hw-tabs label="Request details" overflow="scroll">
 
 A vertical tab list places the tabs in a column, before the panels. Up Arrow and Down Arrow move between the tabs in every direction, and a vertical list never moves its tabs into the overflow disclosure.
 
-```html live example=vertical check=tabs-click
+```html live example=vertical check=tabs-click differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">
   <div class="hw-tab-list" role="tablist" aria-label="Account settings" aria-orientation="vertical">
     <button class="hw-tab" type="button" role="tab" id="vertical-tab-profile" aria-controls="vertical-panel-profile" aria-selected="true" data-hw-value="profile">Profile</button>
@@ -116,7 +116,7 @@ template: `<hw-tabs label="Account settings" orientation="vertical" overflow="sc
 
 With manual activation the arrow keys move focus between the tabs without changing the panel; Enter or Space selects the focused tab. Use it when showing a panel is slow or changes other content on the page.
 
-```html live example=manual check=tabs-keyboard
+```html live example=manual check=tabs-keyboard differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll" data-hw-activation="manual">
   <div class="hw-tab-list" role="tablist" aria-label="Service steps" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="manual-tab-apply" aria-controls="manual-panel-apply" aria-selected="true" data-hw-value="apply">Apply</button>
@@ -171,7 +171,7 @@ template: `<hw-tabs label="Service steps" activationMode="manual" overflow="scro
 
 A disabled tab stays in the list and shows that its panel exists but is not available. The arrow keys skip it, and it cannot be selected. State the reason in the page text.
 
-```html live example=disabled-tab
+```html live example=disabled-tab differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">
   <div class="hw-tab-list" role="tablist" aria-label="Request details" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-overview" aria-controls="disabled-tab-panel-overview" aria-selected="true" data-hw-value="overview">Overview</button>

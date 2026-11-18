@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import tabsClick from '../checks/tabs-click.mjs';
 import tabsKeyboard, { nextTabKey } from '../checks/tabs-keyboard.mjs';
-import { bundleHarness, differenceOf, failureLine, harnessUrl, mountSelector, startHarnessServer, validateKnownDifferences } from '../run.mjs';
+import { bundleHarness, compareCapture, differenceOf, failureLine, harnessUrl, mountSelector, startHarnessServer, summaryLine, validateKnownDifferences } from '../run.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
 const group = { id: 'tabs', lang: 'ar', example: 'basic', blocks: { vanilla: { line: 19 } } };
@@ -20,9 +20,37 @@ const entry = {
 };
 
 describe('known differences', () => {
-  it('start empty in milestone 4', () => {
-    expect(known).toEqual([]);
+  it('hold only tabs-bar-orientation, valid, with its CHANGELOG.md source (leadAmendments A8)', () => {
     expect(validateKnownDifferences(known).errors).toEqual([]);
+    expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation']);
+    const [orientation] = known;
+    expect(orientation).toMatchObject({ component: 'tabs', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] });
+    expect(orientation.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0, line \d+$/);
+  });
+
+  it('accept an ignore list on a structure entry and reject a malformed one', () => {
+    const rule = { class: 'hw-tab-bar', attribute: 'data-orientation' };
+    expect(validateKnownDifferences([{ ...entry, ignore: [rule] }]).errors).toEqual([]);
+    const { errors } = validateKnownDifferences([
+      { ...entry, id: 'a', aspect: 'aria', ignore: [rule] },
+      { ...entry, id: 'b', ignore: [] },
+      { ...entry, id: 'c', ignore: [{ ...rule, extra: 'x' }] },
+      { ...entry, id: 'd', ignore: [{ class: '', attribute: 'data-orientation' }] },
+      { ...entry, id: 'e', ignore: [{ class: 'hw-tab-bar', attribute: ' ' }] },
+      { ...entry, id: 'f', ignore: [{ class: '.hw-tab-bar', attribute: 'data-orientation' }] },
+      { ...entry, id: 'g', ignore: 'hw-tab-bar' },
+      { ...entry, id: 'h', ignore: [null] },
+    ]);
+    const text = errors.join('\n');
+    expect(errors.every((line) => line.startsWith('HWE-KD '))).toBe(true);
+    expect(text).toMatch(/entry 1: ignore is allowed only on an entry of aspect structure/);
+    expect(text).toMatch(/entry 2: ignore must be a non-empty array/);
+    expect(text).toMatch(/entry 3 ignore 1 has unknown fields extra/);
+    expect(text).toMatch(/entry 4 ignore 1 needs a non-empty class/);
+    expect(text).toMatch(/entry 5 ignore 1 needs a non-empty attribute/);
+    expect(text).toMatch(/entry 6 ignore 1: class must be one hw- class name/);
+    expect(text).toMatch(/entry 7: ignore must be a non-empty array/);
+    expect(text).toMatch(/entry 8 ignore 1 is not an object/);
   });
 
   it('accept a complete entry approved by the lead', () => {
@@ -55,6 +83,90 @@ describe('known differences', () => {
       'HWE-KD docs/components/tabs.ar.md:19: differences=missing names no entry of scripts/equivalence/known-differences.json',
     );
     expect(differenceOf({ ...group, differences: 'tabs-bar' }, entries).error).toMatch(/documents component button, not tabs/);
+  });
+});
+
+describe('a structure entry with ignore (self-test, leadAmendments A8)', () => {
+  const [orientation] = known;
+  const bar = (attrs, tabs = 2) => ({
+    tag: 'div',
+    attrs: { class: 'hw-tabs' },
+    children: [
+      { tag: 'div', attrs: { class: 'hw-tab-bar', ...attrs }, children: Array.from({ length: tabs }, (_, i) => ({ tag: 'button', attrs: { class: 'hw-tab', role: 'tab' }, children: [`t${i}`] })) },
+      { tag: 'div', attrs: { class: 'hw-tab-panel', role: 'tabpanel' }, children: ['p'] },
+    ],
+  });
+  const vanilla = [bar({})];
+  const written = [bar({ 'data-orientation': 'horizontal' })];
+  const capture = (other) => ({ trees: { vanilla, react: other, vue: other, angular: other }, snapshots: { vanilla: 'a', react: 'a', vue: 'a', angular: 'a' }, images: {} });
+  const all = (rows) => rows.filter((row) => row.aspect === 'structure');
+  // Pairs with the reference; with an ignore list the adapters are also compared with each other.
+  const structure = (rows) => all(rows).filter((row) => row.pair.startsWith('vanilla-'));
+
+  it('fails without the entry and passes with it when only data-orientation on .hw-tab-bar differs', () => {
+    expect(structure(compareCapture(capture(written))).every((row) => row.result === 'different')).toBe(true);
+    const rows = structure(compareCapture(capture(written), orientation));
+    expect(rows.map((row) => row.result)).toEqual(['equal', 'equal', 'equal']);
+    expect(rows[0].ignored).toEqual(orientation.ignore);
+    expect(all(compareCapture(capture(written), orientation)).map((row) => `${row.pair} ${row.result}`)).toEqual([
+      'vanilla-react equal', 'vanilla-vue equal', 'vanilla-angular equal', 'react-vue equal', 'react-angular equal',
+    ]);
+    expect(compareCapture(capture(written), orientation).filter((row) => row.aspect === 'aria').every((row) => row.result === 'equal')).toBe(true);
+  });
+
+  it('still fails a wrong value of the ignored attribute in one adapter', () => {
+    const wrong = [bar({ 'data-orientation': 'vertical' })];
+    const captured = capture(written);
+    captured.trees.angular = wrong;
+    const rows = all(compareCapture(captured, orientation));
+    expect(rows.filter((row) => row.result === 'different').map((row) => row.pair)).toEqual(['react-angular']);
+    expect(rows.at(-1).message).toMatch(/react and angular differ at .*\["data-orientation"\]/);
+  });
+
+  it('fails as a stale entry once the reference writes the attribute', () => {
+    const captured = capture(written);
+    captured.trees.vanilla = written;
+    const rows = structure(compareCapture(captured, orientation));
+    expect(rows.every((row) => row.result === 'different')).toBe(true);
+    expect(rows[0].message).toBe('the documented difference no longer applies: vanilla writes data-orientation on .hw-tab-bar; remove the entry');
+  });
+
+  it('still fails another attribute on .hw-tab-bar', () => {
+    const rows = structure(compareCapture(capture([bar({ 'data-orientation': 'horizontal', 'aria-orientation': 'horizontal' })]), orientation));
+    expect(rows.every((row) => row.result === 'different')).toBe(true);
+    expect(rows[0].message).toMatch(/\["aria-orientation"\]/);
+  });
+
+  it('still fails the same attribute on another class', () => {
+    const other = structuredClone(written);
+    other[0].children[1].attrs['data-orientation'] = 'horizontal';
+    const rows = structure(compareCapture(capture(other), orientation));
+    expect(rows.every((row) => row.result === 'different')).toBe(true);
+    expect(rows[0].path).toBe('$[0].children[1].attrs["data-orientation"]');
+  });
+
+  it('still fails a missing element', () => {
+    const rows = structure(compareCapture(capture([bar({ 'data-orientation': 'horizontal' }, 1)]), orientation));
+    expect(rows.every((row) => row.result === 'different')).toBe(true);
+    expect(rows[0].path).toBe('$[0].children[0].children[1]');
+  });
+
+  it('reports each remaining difference as HWE-STRUCT', () => {
+    const rows = structure(compareCapture(capture([bar({ 'data-orientation': 'horizontal' }, 1)]), orientation));
+    const lines = rows.filter((row) => row.result === 'different').map((row) => failureLine('HWE-STRUCT', group, row.message));
+    expect(lines).toHaveLength(3);
+    expect(lines.every((line) => line.startsWith('HWE-STRUCT docs/components/tabs.ar.md:19: vanilla and '))).toBe(true);
+  });
+
+  it('skips the whole aspect for an entry without ignore, as before', () => {
+    const rows = structure(compareCapture(capture([bar({}, 1)]), entry));
+    expect(rows.map((row) => row.result)).toEqual(['skipped', 'skipped', 'skipped']);
+  });
+
+  it('counts one documented difference in the summary line', () => {
+    expect(summaryLine({ groups: 9, languages: 2, frameworks: 4, interactionChecks: 6, documented: 1 })).toBe(
+      'equivalence: 9 groups x 2 languages x 4 frameworks equal (6 interaction checks, 1 documented difference)',
+    );
   });
 });
 

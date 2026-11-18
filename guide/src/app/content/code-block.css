@@ -4,3 +4,10 @@
   display: block;
   min-inline-size: 0;
 }
+
+/* Each run of a listing is a bidirectional isolate: the listing stays left to right
+   and an Arabic string never takes neighbouring punctuation or another Arabic run
+   into a right-to-left reordering ('حساب', 'طلب' keeps its source order). */
+.run {
+  unicode-bidi: isolate;
+}

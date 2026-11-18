@@ -21,6 +21,8 @@ export interface FrameDocumentInput {
   readonly lang: ExampleLanguage;
   readonly dir: ExampleDirection;
   readonly mode: 'light' | 'dark';
+  /** The frame title text in the page language, also written into the document <title> (leadAmendments A10). */
+  readonly title: string;
   readonly compiled: Pick<CompiledExample, 'host' | 'entry' | 'modules' | 'classic'>;
   /** <origin><base>runtime/, ending in '/'. */
   readonly runtimeBase: string;
@@ -61,6 +63,11 @@ export function functionSource(source: string): string {
 /** Escapes an attribute value in double quotes. */
 export function escapeAttribute(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+/** Escapes text content of an element such as title. */
+export function escapeText(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 /** A data: URL of a JavaScript module. */
@@ -113,7 +120,7 @@ function head(input: FrameDocumentInput, scripts: string, bundled: boolean): str
     `<meta http-equiv="Content-Security-Policy" content="${escapeAttribute(p2)}">` +
     '<meta name="referrer" content="no-referrer">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title></title>' +
+    `<title>${escapeText(input.title)}</title>` +
     scripts +
     links +
     style +

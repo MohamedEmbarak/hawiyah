@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { test, expect, hydrated as documentHydrated } from '../support/fixtures';
+import { test, expect, hydrated } from '../support/fixtures';
 
 // Tabs brief and reference views in Arabic and English (contentPipeline.pilots.tabs):
 // content from docs/components/tabs(.ar).md, the native Angular result of each live
@@ -52,16 +52,6 @@ const TEXT = {
 
 type Lang = keyof typeof TEXT;
 
-/**
- * Hydration done and event replay finished. app-root loses ngh before the replay
- * contract is released: until then the hydrated nodes still carry jsaction and a key
- * press is queued and replayed, and hw-tabs 0.3.0 calls preventDefault on the replayed
- * keydown, which Angular reports as an error (recorded as a package defect by 4b.3).
- */
-async function hydrated(page: Page): Promise<void> {
-  await documentHydrated(page);
-  await page.waitForFunction(() => document.querySelector('[jsaction]') === null);
-}
 type Group = { readonly name: string; readonly tabs: readonly string[]; readonly panels: readonly string[] };
 
 /** The tab list of the native result in example block `index`. */

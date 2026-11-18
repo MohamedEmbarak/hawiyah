@@ -113,7 +113,22 @@ free port) and `HAWIYAH_EQUIVALENCE_WORKERS` the number of parallel groups
 (default 2). Failures are reported with the codes `HWE-FRAME`, `HWE-STRUCT`,
 `HWE-ARIA`, `HWE-SHOT`, `HWE-CHECK` and `HWE-KD`; the report and the diff
 images are written to `.cache/equivalence/`. A documented difference is an
-entry of `scripts/equivalence/known-differences.json` approved by the lead.
+entry of `scripts/equivalence/known-differences.json` approved by the lead and
+named by a group with `differences=<id>`. An entry without `ignore` leaves its
+aspect (`structure`, `aria` or `screenshot`) out of the comparison of that
+group. An entry of aspect `structure` may carry
+`ignore: [{ "class": "hw-...", "attribute": "..." }]` instead: only that
+attribute on elements with that class is left out of the structure comparison
+with the JavaScript result, which does not write it, and every other difference
+still fails with `HWE-STRUCT`. The React, Vue and Angular results are then also
+compared with each other in full, so a wrong value in one of them is reported,
+and the step fails once the JavaScript result writes the attribute, so the
+entry cannot outlive the defect. Unknown fields, empty
+values and `ignore` on another aspect fail with `HWE-KD`. The only entry is
+`tabs-bar-orientation`: `@hawiyah/vanilla` 0.3.0 creates `.hw-tab-bar` without
+the `data-orientation` attribute that the other adapters write (CHANGELOG.md,
+Known defects in 0.3.0). A passing run ends with
+`equivalence: <n> groups x 2 languages x 4 frameworks equal (<n> interaction checks, 1 documented difference)`.
 
 The production output is `dist/` and the development check output is
 `dist-dev/`; `dist/server/` is written by Angular and is not deployed.

@@ -13,3 +13,11 @@
   color: var(--hw-color-text);
   font-family: var(--hw-font-sans);
 }
+
+/* The host (an outlined card) draws the frame and the padding. */
+.borderless {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+}

@@ -9,6 +9,7 @@
 // px wide. The state of every frame is published on window.__harness for the
 // runner: loading, ready (after the frame's ready message) or failed.
 import { FRAME_REFERRER_POLICY, FRAME_SANDBOX, modulesDocument } from '../../../src/app/examples/frame/document';
+import { FRAME_FRAMEWORK_NAMES, frameTexts } from '../../../src/app/examples/frame/i18n';
 import { MessageBudget, READY_TIMEOUT_MS, acceptMessage, randomHex128 } from '../../../src/app/examples/frame/protocol';
 import { loadRuntimeConfig } from '../../../src/app/examples/frame/runtime-config';
 import { EXAMPLE_FRAMEWORKS, examplePayloadPath, type ExampleFramework, type ExampleLanguage, type ExamplePayload } from '../../../src/app/examples/payload';
@@ -110,6 +111,7 @@ async function main(): Promise<void> {
       lang: payload.lang,
       dir: payload.dir,
       mode: 'light',
+      title: frameTexts[payload.lang].frameTitle(FRAME_FRAMEWORK_NAMES[framework]),
       compiled: payload.compiled,
       runtimeBase: config.runtimeBase,
       stylesheets: config.stylesheets,

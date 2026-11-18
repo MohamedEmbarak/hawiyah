@@ -88,7 +88,7 @@ describe('components without a vanilla controller (leadAmendments A6)', () => {
   it('compares Button with the stylesheet contract and the exclusions entry', () => {
     const result = stylesheetMembers('button', base.components.get('button'), base.contractRows, base.exclusions.button.vanilla);
     expect(result.problems).toEqual([]);
-    expect(result.members.map((m) => m.name).sort()).toEqual(['aria-busy', 'class', 'data-size', 'data-variant', 'disabled', 'type']);
+    expect(result.members.map((m) => m.name).sort()).toEqual(['aria-busy', 'class', 'data-icon-only', 'data-size', 'data-variant', 'disabled', 'type']);
   });
   it('an attribute that neither the contract nor the exclusions declare', () => {
     const tables = variant(BUTTON, 'javascript', (rows) => [...rows, ['data-tone', false]]);
@@ -100,6 +100,13 @@ describe('components without a vanilla controller (leadAmendments A6)', () => {
     const tables = variant(BUTTON, 'javascript', (rows) => rows.filter((row) => row[0] !== 'data-size'));
     expect(messages(check([pageModel('button', tables)]))).toEqual([
       'HWC-APIX docs/components/button.md: JavaScript table lists no data-size; the declarations have data-size (option)',
+    ]);
+  });
+  it('data-icon-only is a documented row, no longer an exclusion', () => {
+    expect(base.exclusions.button.vanilla.notListed).toBeUndefined();
+    const tables = variant(BUTTON, 'javascript', (rows) => rows.filter((row) => row[0] !== 'data-icon-only'));
+    expect(messages(check([pageModel('button', tables)]))).toEqual([
+      'HWC-APIX docs/components/button.md: JavaScript table lists no data-icon-only; the declarations have data-icon-only (option)',
     ]);
   });
   it('a component without a controller and without an exclusions entry', () => {

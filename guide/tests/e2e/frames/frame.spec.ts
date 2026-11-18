@@ -1,4 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { expect, hydrated, test } from '../support/fixtures';
 import {
   FRAME_FRAMEWORKS,
@@ -74,6 +76,27 @@ test('the page with a frame result has no axe violations, frame content included
   expect(result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
   expect(result.passes.some((rule) => rule.nodes.some((node) => node.target.length > 1))).toBe(true);
 });
+
+// leadAmendments A10: the frame document's own <title> carries the frame title, so
+// axe run inside the frame document alone (not from the page) passes document-title.
+const require = createRequire(import.meta.url);
+const axeSource = readFileSync(require.resolve('axe-core/axe.min.js', { paths: [require.resolve('@axe-core/playwright')] }), 'utf8');
+for (const lang of ['en', 'ar'] as const) {
+  test(`${lang}: axe inside the frame document alone finds no document-title violation`, async ({ page }) => {
+    await selectFramework(page, briefPath(lang), 'react');
+    const frame = await readyFrame(page, 'react', lang);
+    expect(await frame.title()).toBe(lang === 'en' ? 'Result in React' : 'النتيجة في React');
+    // Evaluated through the DevTools protocol, which the frame's script-src does not restrict.
+    await frame.evaluate(axeSource);
+    const result = await frame.evaluate(async () => {
+      const axe = (globalThis as unknown as { axe: { run: (context: Document, options: object) => Promise<{ violations: { id: string }[]; passes: { id: string }[] }> } }).axe;
+      const run = await axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] }, preload: false });
+      return { violations: run.violations.map((rule) => rule.id), passes: run.passes.map((rule) => rule.id) };
+    });
+    expect(result.violations).not.toContain('document-title');
+    expect(result.passes).toContain('document-title');
+  });
+}
 
 // Tabs is the first component with behaviour in a frame; the frames must work for
 // a group of any component. The fixture replaces the pilot payload in the browser.

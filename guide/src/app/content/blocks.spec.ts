@@ -51,6 +51,13 @@ const BLOCKS: readonly Block[] = [
   },
   { type: 'code', lang: 'ts', title: 'setup.ts', text: 'const a = 1;\n', lines: [[{ t: 'const', r: 'keyword' }, { t: ' a ' }, { t: '=', r: 'punctuation' }, { t: ' 1;' }], []] },
   { type: 'code', lang: null, title: null, text: 'plain', lines: [[{ t: 'plain' }]] },
+  {
+    type: 'code',
+    lang: 'tsx',
+    title: 'Tabs.tsx',
+    text: "['حساب', 'طلب']\n",
+    lines: [[{ t: '[', r: 'punctuation' }, { t: "'حساب'", r: 'string' }, { t: ',', r: 'punctuation' }, { t: ' ' }, { t: "'طلب'", r: 'string' }, { t: ']', r: 'punctuation' }], [{ t: '<' }, { t: 'متابعة' }]],
+  },
   { type: 'live', example: 'primary' },
   { type: 'thematicBreak' },
 ];
@@ -86,6 +93,9 @@ describe('BlocksContent', () => {
     expect(paragraph?.querySelector('em')?.textContent).toBe('once');
     expect(paragraph?.querySelector('strong')?.textContent).toBe('button');
     expect(paragraph?.querySelector('code.hw-code')?.textContent).toBe('hwButton');
+    // Inline code is a left-to-right isolate that does not break at a hyphen (styles.css .code-phrase).
+    expect(paragraph?.querySelector('code.hw-code')?.className).toContain('code-phrase');
+    expect(paragraph?.querySelector('code.hw-code')?.getAttribute('dir')).toBe('ltr');
     expect(paragraph?.querySelector('br')).not.toBeNull();
     const [internal, external] = Array.from(paragraph?.querySelectorAll('a') ?? []);
     expect(internal?.getAttribute('href')).toBe('en/components/button/reference/#api');
@@ -137,6 +147,16 @@ describe('BlocksContent', () => {
     const first = pres[0];
     expect(first?.querySelector('.hw-code-token-keyword')?.textContent).toBe('const');
     expect(first?.textContent).toBe('const a = 1;\n');
+  });
+
+  it('wraps every run that is not white space in an isolated span of the class run', () => {
+    const pre = Array.from(root.querySelectorAll('pre')).find((item) => item.textContent?.includes('حساب'));
+    expect(pre?.getAttribute('dir')).toBe('ltr');
+    const runs = Array.from(pre?.querySelectorAll('code > span') ?? []);
+    expect(runs.map((span) => span.textContent)).toEqual(['[', "'حساب'", ',', "'طلب'", ']', '<', 'متابعة']);
+    expect(runs.every((span) => span.classList.contains('run'))).toBe(true);
+    expect(runs[1]?.classList.contains('hw-code-token-string')).toBe(true);
+    expect(pre?.textContent).toBe("['حساب', 'طلب']\n<متابعة\n");
   });
 
   it('renders a live block as the page block of its group', () => {

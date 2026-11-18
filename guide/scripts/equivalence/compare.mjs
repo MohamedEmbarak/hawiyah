@@ -60,20 +60,73 @@ function pairs(values) {
 }
 
 /**
+ * A copy of a normalised tree without the attributes an approved known difference
+ * leaves out: ignore is a list of { class, attribute }, and attribute is removed
+ * only from elements whose hw- classes include class. Everything else is kept.
+ */
+export function withoutIgnored(tree, ignore = []) {
+  if (ignore.length === 0) return tree;
+  const strip = (node) => {
+    if (Array.isArray(node)) return node.map(strip);
+    if (!node || typeof node !== 'object') return node;
+    const classes = typeof node.attrs?.class === 'string' ? node.attrs.class.split(' ') : [];
+    const attrs = { ...node.attrs };
+    for (const rule of ignore) {
+      if (classes.includes(rule.class)) delete attrs[rule.attribute];
+    }
+    return { ...node, attrs, children: strip(node.children ?? []) };
+  };
+  return strip(tree);
+}
+
+/** True when an element with the rule's class carries the rule's attribute anywhere in the tree. */
+function carries(tree, rule) {
+  const visit = (node) => {
+    if (Array.isArray(node)) return node.some(visit);
+    if (!node || typeof node !== 'object') return false;
+    const classes = typeof node.attrs?.class === 'string' ? node.attrs.class.split(' ') : [];
+    if (classes.includes(rule.class) && rule.attribute in (node.attrs ?? {})) return true;
+    return visit(node.children ?? []);
+  };
+  return visit(tree);
+}
+
+/**
  * Structure: every framework's normalised tree must deep-equal vanilla's.
+ * `ignore` documents attributes the reference does not write (leadAmendments A8):
+ * they are left out of the other frameworks' trees only, so
+ * - a reference that does write one fails as a stale entry, and
+ * - the other frameworks are also compared with each other in full, so a wrong
+ *   value of an ignored attribute in one of them is still reported.
  * Returns one result per pair: { pair, equal, path?, message? }.
  */
-export function compareStructure(trees) {
-  return pairs(trees).map(([a, b]) => {
-    const found = firstDifference(trees[a], trees[b]);
-    if (!found) return { pair: `${a}-${b}`, equal: true };
-    return {
-      pair: `${a}-${b}`,
-      equal: false,
-      path: found.path,
-      message: `${a} and ${b} differ at ${found.path}: ${a} ${brief(found.a)}, ${b} ${brief(found.b)}`,
-    };
+export function compareStructure(trees, ignore = []) {
+  const different = (a, b, found, note = '') => ({
+    pair: `${a}-${b}`,
+    equal: false,
+    path: found.path,
+    message: `${a} and ${b} differ at ${found.path}: ${a} ${brief(found.a)}, ${b} ${brief(found.b)}${note}`,
   });
+  const results = pairs(trees).map(([a, b]) => {
+    const stale = ignore.find((rule) => carries(trees[a], rule));
+    if (stale) {
+      return {
+        pair: `${a}-${b}`,
+        equal: false,
+        path: '$',
+        message: `the documented difference no longer applies: ${a} writes ${stale.attribute} on .${stale.class}; remove the entry`,
+      };
+    }
+    const found = firstDifference(trees[a], withoutIgnored(trees[b], ignore));
+    return found ? different(a, b, found) : { pair: `${a}-${b}`, equal: true };
+  });
+  if (ignore.length === 0) return results;
+  const others = FRAMEWORKS.filter((framework) => framework !== REFERENCE && framework in trees);
+  for (const framework of others.slice(1)) {
+    const found = firstDifference(trees[others[0]], trees[framework]);
+    results.push(found ? different(others[0], framework, found) : { pair: `${others[0]}-${framework}`, equal: true });
+  }
+  return results;
 }
 
 /** Accessibility: the aria snapshot strings must be equal; reports the first differing line. */

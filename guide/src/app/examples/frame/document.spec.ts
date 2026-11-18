@@ -25,6 +25,7 @@ const base: FrameDocumentInput = {
   lang: 'ar',
   dir: 'rtl',
   mode: 'dark',
+  title: frameTexts.ar.frameTitle('React'),
   compiled: {
     host: '<div id="app"></div>',
     entry: 'main.js',
@@ -87,6 +88,14 @@ describe('Content-Security-Policy', () => {
 });
 
 describe('modulesDocument', () => {
+  it('writes the frame title text in the page language into the document title (leadAmendments A10)', () => {
+    expect(parse(modulesDocument({ ...base, imports })).title).toBe('النتيجة في React');
+    expect(parse(bundledDocument({ ...base, lang: 'en', dir: 'ltr', title: frameTexts.en.frameTitle('Vue') })).title).toBe('Result in Vue');
+    const hostile = modulesDocument({ ...base, imports, title: '</title><script>x</script>' });
+    expect(parse(hostile).title).toBe('</title><script>x</script>');
+    expect(parse(hostile).querySelectorAll('head > title')).toHaveLength(1);
+  });
+
   it('sets language, direction, theme, mode and density on html', () => {
     const doc = parse(modulesDocument({ ...base, imports }));
     const root = doc.documentElement;

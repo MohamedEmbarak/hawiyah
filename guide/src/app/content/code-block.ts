@@ -44,12 +44,14 @@ export function trimTrailingLines(lines: readonly (readonly CodeRun[])[]): reado
  * A code listing in the packaged code-block markup: a figure with a visible title and a
  * copy button, and a named, focusable pre (role group, labelled by the title) holding
  * the highlighted runs as hw-code-token spans. Highlighting happens before render; the
- * component only places the runs. Used by content pages, the landing and the editor.
+ * component only places the runs. Each run that is not white space is a span of the
+ * class run, which code-block.css isolates, so Arabic text in a left-to-right listing
+ * keeps its source order. Used by content pages, the landing and the editor.
  */
 @Component({
   selector: 'guide-code-block',
   imports: [HwCopyButtonComponent],
-  template: `<figure class="hw-code-block"><figcaption class="hw-code-block-header"><span class="hw-code-block-title" [id]="titleId"><bdi dir="ltr">{{ title() }}</bdi></span><div class="hw-code-block-actions"><hw-copy-button [text]="text()" [label]="t().copyCode" [copiedMessage]="t().copied" [failedMessage]="t().copyFailed" /></div></figcaption><pre class="hw-code-block-content" dir="ltr" translate="no" tabindex="0" role="group" [attr.aria-labelledby]="titleId"><code>@for (line of shown(); track $index) {@for (run of line; track $index) {@if (run.r) {<span [class]="tokenClass(run.r)">{{ run.t }}</span>} @else {{{ run.t }}}}{{ newline }}}</code></pre></figure>`,
+  template: `<figure class="hw-code-block"><figcaption class="hw-code-block-header"><span class="hw-code-block-title" [id]="titleId"><bdi dir="ltr">{{ title() }}</bdi></span><div class="hw-code-block-actions"><hw-copy-button [text]="text()" [label]="t().copyCode" [copiedMessage]="t().copied" [failedMessage]="t().copyFailed" /></div></figcaption><pre class="hw-code-block-content" dir="ltr" translate="no" tabindex="0" role="group" [attr.aria-labelledby]="titleId"><code>@for (line of shown(); track $index) {@for (run of line; track $index) {@if (run.r) {<span [class]="tokenClass(run.r)">{{ run.t }}</span>} @else if (isBlank(run.t)) {{{ run.t }}} @else {<span class="run">{{ run.t }}</span>}}{{ newline }}}</code></pre></figure>`,
   styleUrl: './code-block.css',
 })
 export class CodeBlockComponent {
@@ -65,7 +67,12 @@ export class CodeBlockComponent {
   protected readonly shown = computed(() => trimTrailingLines(this.lines()));
   protected readonly newline = '\n';
 
+  /** Every run that is not white space is its own bidirectional isolate (class run, code-block.css). */
   protected tokenClass(role: CodeRole): string {
-    return TOKEN_CLASSES[role];
+    return `run ${TOKEN_CLASSES[role]}`;
+  }
+
+  protected isBlank(text: string): boolean {
+    return text.trim() === '';
   }
 }
