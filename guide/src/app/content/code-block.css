@@ -1,0 +1,6 @@
+/* The packaged code-block styles place the header row; the host only takes the
+   block flow of the figure it wraps. */
+:host {
+  display: block;
+  min-inline-size: 0;
+}

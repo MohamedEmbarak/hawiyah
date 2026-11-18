@@ -1,0 +1,26 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--hw-space-6);
+  padding-block: var(--hw-space-12);
+  text-align: center;
+}
+
+h1 {
+  margin-block: 0;
+}
+
+.choose {
+  margin-block: 0 var(--hw-space-4);
+}
+
+.languages {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--hw-space-4);
+  margin-block: 0;
+  padding-inline-start: 0;
+  list-style: none;
+}

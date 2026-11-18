@@ -1,0 +1,9 @@
+<article class="hw-prose guide-page" data-hw-mode="light">
+  <pre class="hw-code-block"><code class="hw-code"><span class="hw-code-token-keyword">const</span></code></pre>
+  <button hwButton type="button" (click)="go()" [class.guide-active]="active">
+    <span class="hw-sr-only">{{ label }}</span>
+  </button>
+  @if (open) {
+    <kbd class="hw-kbd">Tab</kbd>
+  }
+</article>

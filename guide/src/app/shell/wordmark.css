@@ -1,0 +1,21 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+img {
+  display: block;
+  block-size: auto;
+}
+
+.wordmark-dark {
+  display: none;
+}
+
+:host-context([data-hw-mode='dark']) .wordmark-light {
+  display: none;
+}
+
+:host-context([data-hw-mode='dark']) .wordmark-dark {
+  display: block;
+}

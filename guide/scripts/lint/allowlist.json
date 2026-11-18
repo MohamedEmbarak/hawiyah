@@ -1,0 +1,29 @@
+{
+  "templateClasses": [
+    "hw-prose",
+    "hw-code-block",
+    "hw-code-block-header",
+    "hw-code-block-title",
+    "hw-code-block-actions",
+    "hw-code-block-content",
+    "hw-code",
+    "hw-kbd",
+    "hw-code-token-comment",
+    "hw-code-token-punctuation",
+    "hw-code-token-keyword",
+    "hw-code-token-property",
+    "hw-code-token-string",
+    "hw-code-token-constant",
+    "hw-code-token-attribute",
+    "hw-code-token-tag",
+    "hw-code-token-type",
+    "hw-code-token-function",
+    "hw-icon",
+    "hw-sr-only",
+    "hw-type"
+  ],
+  "cssCustomProperties": [
+    "--hw-side-navigation-top",
+    "--hw-side-navigation-bottom-reserve"
+  ]
+}

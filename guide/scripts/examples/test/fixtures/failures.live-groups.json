@@ -1,0 +1,248 @@
+[
+  {
+    "id": "failure",
+    "lang": "en",
+    "example": "react-unknown-prop",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<div class=\"hw-inline\">\n  <button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">Continue</button>\n  <button class=\"hw-button\" type=\"button\" data-variant=\"secondary\" data-size=\"md\">Cancel</button>\n</div>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "fragment",
+        "line": 17,
+        "code": "<Button tone=\"primary\">Continue</Button>\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "fragment",
+        "line": 24,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-inline>\n    <button hwButton variant=\"primary\">Continue</button>\n    <button hwButton variant=\"secondary\">Cancel</button>\n  </hw-inline>\n`\n"
+      }
+    },
+    "expected": {
+      "framework": "react",
+      "code": "HWC-R1"
+    }
+  },
+  {
+    "id": "failure",
+    "lang": "en",
+    "example": "vue-unknown-component",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<div class=\"hw-inline\">\n  <button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">Continue</button>\n  <button class=\"hw-button\" type=\"button\" data-variant=\"secondary\" data-size=\"md\">Cancel</button>\n</div>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "fragment",
+        "line": 17,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "fragment",
+        "line": 24,
+        "code": "<Inline>\n  <Buton variant=\"primary\">Continue</Buton>\n</Inline>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-inline>\n    <button hwButton variant=\"primary\">Continue</button>\n    <button hwButton variant=\"secondary\">Cancel</button>\n  </hw-inline>\n`\n"
+      }
+    },
+    "expected": {
+      "framework": "vue",
+      "code": "HWC-LIVE4"
+    }
+  },
+  {
+    "id": "failure",
+    "lang": "en",
+    "example": "angular-required-input",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<div class=\"hw-inline\">\n  <button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">Continue</button>\n  <button class=\"hw-button\" type=\"button\" data-variant=\"secondary\" data-size=\"md\">Cancel</button>\n</div>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "fragment",
+        "line": 17,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "fragment",
+        "line": 24,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-tabs label=\"Sections\">\n    <hw-tab value=\"one\">One</hw-tab>\n  </hw-tabs>\n`\n"
+      }
+    },
+    "expected": {
+      "framework": "angular",
+      "code": "HWC-A1",
+      "text": "NG8008"
+    }
+  },
+  {
+    "id": "failure",
+    "lang": "en",
+    "example": "html-unknown-class",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<button class=\"hw-button hw-button-huge\" type=\"button\" data-variant=\"primary\" data-size=\"md\">Continue</button>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "fragment",
+        "line": 17,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "fragment",
+        "line": 24,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-inline>\n    <button hwButton variant=\"primary\">Continue</button>\n    <button hwButton variant=\"secondary\">Cancel</button>\n  </hw-inline>\n`\n"
+      }
+    },
+    "expected": {
+      "framework": "vanilla",
+      "code": "HWC-V2"
+    }
+  },
+  {
+    "id": "failure",
+    "lang": "en",
+    "example": "style-attribute",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\" style=\"margin-inline: 0\">Continue</button>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "fragment",
+        "line": 17,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "fragment",
+        "line": 24,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-inline>\n    <button hwButton variant=\"primary\">Continue</button>\n    <button hwButton variant=\"secondary\">Cancel</button>\n  </hw-inline>\n`\n"
+      }
+    },
+    "expected": {
+      "framework": "vanilla",
+      "code": "HWC-LIVE6"
+    }
+  },
+  {
+    "id": "failure",
+    "lang": "en",
+    "example": "lodash-import",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<div class=\"hw-inline\">\n  <button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">Continue</button>\n  <button class=\"hw-button\" type=\"button\" data-variant=\"secondary\" data-size=\"md\">Cancel</button>\n</div>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "module",
+        "line": 17,
+        "code": "import { Button } from '@hawiyah/react';\nimport { upperFirst } from 'lodash';\n\nexport default function Example() {\n  return <Button variant=\"primary\">{upperFirst('continue')}</Button>;\n}\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "fragment",
+        "line": 24,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-inline>\n    <button hwButton variant=\"primary\">Continue</button>\n    <button hwButton variant=\"secondary\">Cancel</button>\n  </hw-inline>\n`\n"
+      }
+    },
+    "expected": {
+      "framework": "react",
+      "code": "HWC-LIVE5"
+    }
+  },
+  {
+    "id": "failure",
+    "lang": "en",
+    "example": "vue-type-error",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<div class=\"hw-inline\">\n  <button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">Continue</button>\n  <button class=\"hw-button\" type=\"button\" data-variant=\"secondary\" data-size=\"md\">Cancel</button>\n</div>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "fragment",
+        "line": 17,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "module",
+        "line": 24,
+        "code": "<script setup lang=\"ts\">\nimport { Button } from '@hawiyah/vue';\n\nconst count: number = 'one';\n</script>\n\n<template>\n  <Button variant=\"primary\" size=\"huge\">Continue {{ count }}</Button>\n</template>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-inline>\n    <button hwButton variant=\"primary\">Continue</button>\n    <button hwButton variant=\"secondary\">Cancel</button>\n  </hw-inline>\n`\n"
+      }
+    },
+    "expected": {
+      "framework": "vue",
+      "code": "HWC-U1"
+    }
+  }
+]

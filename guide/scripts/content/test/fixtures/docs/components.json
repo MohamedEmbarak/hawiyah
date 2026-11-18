@@ -1,0 +1,5 @@
+{
+  "components": [
+    { "id": "fixture-a", "name": "Fixture A", "labelAr": "النموذج أ" }
+  ]
+}

@@ -1,0 +1,5 @@
+@media (prefers-reduced-motion: no-preference) {
+  .guide-note {
+    animation-duration: 200ms;
+  }
+}

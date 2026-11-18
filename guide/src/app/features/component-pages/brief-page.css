@@ -1,0 +1,8 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+article {
+  max-inline-size: 60rem;
+}

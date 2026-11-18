@@ -1,0 +1,14 @@
+❯ Building...
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-PMIZ6O2C.js    | main          | 608.54 kB |               143.42 kB
+styles-RYXEOYLC.css | styles        | 345.46 kB |                36.80 kB
+
+                    | Initial total | 954.01 kB |               180.22 kB
+
+ERROR RuntimeError: NG0201: No provider found for `LocaleService`. Source: Standalone[CataloguePage]. Path: CataloguePage -> LocaleService.
+    at NullInjector.get (chunk-ABCD1234.mjs:1:2345)
+Prerendered 13 static routes.
+Application bundle generation complete. [4.741 seconds] - 2026-11-18T09:49:07.999Z
+
+Output location: dist

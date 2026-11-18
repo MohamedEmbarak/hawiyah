@@ -1,0 +1,126 @@
+[
+  {
+    "id": "fixture",
+    "lang": "en",
+    "example": "basic",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<div class=\"hw-inline\">\n  <button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">Continue</button>\n  <button class=\"hw-button\" type=\"button\" data-variant=\"secondary\" data-size=\"md\">Cancel</button>\n</div>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "fragment",
+        "line": 17,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "fragment",
+        "line": 24,
+        "code": "<Inline>\n  <Button variant=\"primary\">Continue</Button>\n  <Button variant=\"secondary\">Cancel</Button>\n</Inline>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-inline>\n    <button hwButton variant=\"primary\">Continue</button>\n    <button hwButton variant=\"secondary\">Cancel</button>\n  </hw-inline>\n`\n"
+      }
+    }
+  },
+  {
+    "id": "fixture",
+    "lang": "en",
+    "example": "module-form",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 40,
+        "code": "<button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">Continue</button>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "module",
+        "line": 44,
+        "code": "import { Button } from '@hawiyah/react';\n\nconst label: string = 'Continue';\n\nexport default function Example() {\n  return <Button variant=\"primary\">{label}</Button>;\n}\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "module",
+        "line": 54,
+        "code": "<script setup lang=\"ts\">\nimport { Button } from '@hawiyah/vue';\n\nconst label: string = 'Continue';\n</script>\n\n<template>\n  <Button variant=\"primary\">{{ label }}</Button>\n</template>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "module",
+        "line": 66,
+        "code": "import { Component } from '@angular/core';\nimport { HwButtonDirective } from '@hawiyah/angular';\n\n@Component({\n  selector: 'app-continue',\n  imports: [HwButtonDirective],\n  template: `<button hwButton variant=\"primary\">{{ label }}</button>`,\n})\nexport class ContinueExample {\n  protected readonly label = 'Continue';\n}\n"
+      }
+    }
+  },
+  {
+    "id": "fixture",
+    "lang": "ar",
+    "example": "basic",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 10,
+        "code": "<div class=\"hw-inline\">\n  <button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">متابعة</button>\n  <button class=\"hw-button\" type=\"button\" data-variant=\"secondary\" data-size=\"md\">إلغاء</button>\n</div>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "fragment",
+        "line": 17,
+        "code": "<Inline>\n  <Button variant=\"primary\">متابعة</Button>\n  <Button variant=\"secondary\">إلغاء</Button>\n</Inline>\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "fragment",
+        "line": 24,
+        "code": "<Inline>\n  <Button variant=\"primary\">متابعة</Button>\n  <Button variant=\"secondary\">إلغاء</Button>\n</Inline>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "fragment",
+        "line": 31,
+        "code": "template: `\n  <hw-inline>\n    <button hwButton variant=\"primary\">متابعة</button>\n    <button hwButton variant=\"secondary\">إلغاء</button>\n  </hw-inline>\n`\n"
+      }
+    }
+  },
+  {
+    "id": "fixture",
+    "lang": "ar",
+    "example": "module-form",
+    "blocks": {
+      "vanilla": {
+        "lang": "html",
+        "form": "fragment",
+        "line": 40,
+        "code": "<button class=\"hw-button\" type=\"button\" data-variant=\"primary\" data-size=\"md\">متابعة</button>\n"
+      },
+      "react": {
+        "lang": "tsx",
+        "form": "module",
+        "line": 44,
+        "code": "import { Button } from '@hawiyah/react';\n\nconst label: string = 'متابعة';\n\nexport default function Example() {\n  return <Button variant=\"primary\">{label}</Button>;\n}\n"
+      },
+      "vue": {
+        "lang": "vue",
+        "form": "module",
+        "line": 54,
+        "code": "<script setup lang=\"ts\">\nimport { Button } from '@hawiyah/vue';\n\nconst label: string = 'متابعة';\n</script>\n\n<template>\n  <Button variant=\"primary\">{{ label }}</Button>\n</template>\n"
+      },
+      "angular": {
+        "lang": "ts",
+        "form": "module",
+        "line": 66,
+        "code": "import { Component } from '@angular/core';\nimport { HwButtonDirective } from '@hawiyah/angular';\n\n@Component({\n  selector: 'app-continue',\n  imports: [HwButtonDirective],\n  template: `<button hwButton variant=\"primary\">{{ label }}</button>`,\n})\nexport class ContinueExample {\n  protected readonly label = 'متابعة';\n}\n"
+      }
+    }
+  }
+]

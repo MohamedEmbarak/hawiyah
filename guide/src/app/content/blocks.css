@@ -1,0 +1,4 @@
+/* The renderer adds no box of its own: its blocks are children of the prose flow. */
+:host {
+  display: contents;
+}
