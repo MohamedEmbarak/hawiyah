@@ -187,3 +187,31 @@ describe('cli paths', () => {
     expect(custom.liveGroupsFile).toBe(join(guideDir, 'x', 'live-groups.json'));
   });
 });
+
+describe('runContent: links to another component page', () => {
+  it('reports a fragment that names no heading of the linked page, in both languages', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hawiyah-content-'));
+    try {
+      // Laid out as the repository: docs/components/ and docs/components.json (the fixture links ../components.json).
+      const docs = join(dir, 'docs', 'components');
+      mkdirSync(docs, { recursive: true });
+      // fixture-a links to the built page fixture-b (a copy under its own name) with a
+      // fragment that fixture-b does not have, and with one that it has.
+      for (const [suffix, from, to] of [['md', 'Fixture A', 'Fixture B'], ['ar.md', 'النموذج أ', 'النموذج ب']]) {
+        const text = readFileSync(join(componentsDir, `fixture-a.${suffix}`), 'utf8');
+        writeFileSync(join(docs, `fixture-b.${suffix}`), text.replace(`# ${from}\n`, `# ${to}\n`));
+        writeFileSync(join(docs, `fixture-a.${suffix}`), text.replace(`(fixture-a.${suffix}#javascript)`, `(fixture-b.${suffix}#no-such-heading) [x](fixture-b.${suffix}#javascript)`));
+      }
+      const components = join(dir, 'docs', 'components.json');
+      writeFileSync(components, JSON.stringify({ components: [{ id: 'fixture-a', name: 'Fixture A', labelAr: 'النموذج أ' }, { id: 'fixture-b', name: 'Fixture B', labelAr: 'النموذج ب' }] }));
+      const outcome = runContent({ guideDir, repoDir: dir, componentsDir: docs, componentsFile: components, outDir: join(dir, 'out'), liveGroupsFile: join(dir, 'out', 'live-groups.json') });
+      const links = outcome.findings.filter((item) => item.code === 'HWC-LINK').map((item) => [item.file.split('/').pop(), item.message]);
+      expect(links).toEqual([
+        ['fixture-a.md', 'the link "fixture-b.md#no-such-heading" names no heading of the page fixture-b'],
+        ['fixture-a.ar.md', 'the link "fixture-b.ar.md#no-such-heading" names no heading of the page fixture-b'],
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

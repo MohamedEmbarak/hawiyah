@@ -3,6 +3,7 @@ import {
   CHANNEL,
   MAX_HEIGHT,
   MAX_MESSAGES,
+  MAX_OUTCOME_MESSAGES,
   MAX_TEXT,
   MIN_HEIGHT,
   MessageBudget,
@@ -94,6 +95,23 @@ describe('message budget', () => {
     for (let i = 0; i < MAX_MESSAGES; i += 1) expect(budget.take('height')).toBe(true);
     expect(budget.take('height')).toBe(false);
     expect(budget.dropped).toBe(10);
+  });
+});
+
+describe('message budget of the outcome', () => {
+  it('accepts the first error, navigation and submit messages together, then drops and counts them; ready and emptied always', () => {
+    const budget = new MessageBudget();
+    const types = ['error', 'navigation', 'submit'] as const;
+    for (let i = 0; i < MAX_OUTCOME_MESSAGES; i += 1) expect(budget.take(types[i % 3]!)).toBe(true);
+    for (const type of types) expect(budget.take(type)).toBe(false);
+    expect(budget.droppedOutcome).toBe(3);
+    expect(budget.take('ready')).toBe(true);
+    expect(budget.take('emptied')).toBe(true);
+    expect(budget.dropped).toBe(0);
+  });
+
+  it('accepts the emptied message of the run', () => {
+    expect(acceptMessage(event({ type: 'emptied' }), expected)).toEqual({ type: 'emptied' });
   });
 });
 

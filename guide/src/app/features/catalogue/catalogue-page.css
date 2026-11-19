@@ -14,7 +14,11 @@
   gap: var(--hw-space-4);
   margin-block: 0;
   padding-inline-start: 0;
-  list-style: none;
+}
+
+/* No list markers: the items are not list items (an inherited list-style-type would reach the package cards). */
+.cards > li {
+  display: block;
 }
 
 p {

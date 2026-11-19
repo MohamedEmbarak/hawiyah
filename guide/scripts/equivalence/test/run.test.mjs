@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import tabsClick from '../checks/tabs-click.mjs';
 import tabsKeyboard, { nextTabKey } from '../checks/tabs-keyboard.mjs';
-import { bundleHarness, changelogSourceError, checkNames, compareCapture, controllerComponents, differenceOf, failureLine, harnessUrl, mountSelector, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { bundleHarness, changelogSourceError, checkNames, compareCapture, controllerComponents, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
 const group = { id: 'tabs', lang: 'ar', example: 'basic', blocks: { vanilla: { line: 19 } } };
@@ -280,5 +280,49 @@ describe('runner', () => {
     } finally {
       await served.close();
     }
+  });
+});
+
+// runEquivalence fails before a browser starts when the scope or the checks are
+// wrong (HWE-SCOPE, HWE-CHECK). A fixture guide directory holds only what that part reads.
+describe('runEquivalence before the browser', () => {
+  const root = mkdtempSync(join(tmpdir(), 'hw-equivalence-run-'));
+  afterAll(() => rmSync(root, { recursive: true, force: true }));
+  let count = 0;
+  const live = (id, example, extra = {}) => ['ar', 'en'].map((lang) => ({ id, lang, example, blocks: { vanilla: { line: 7 } }, ...extra }));
+  /** A guide directory with the given live groups, manifest pages and catalogue. */
+  const fixture = ({ groups, pages, components }) => {
+    const dir = join(root, `case-${(count += 1)}`);
+    mkdirSync(join(dir, 'dist', 'browser', 'runtime'), { recursive: true });
+    mkdirSync(join(dir, '.cache', 'content'), { recursive: true });
+    mkdirSync(join(dir, 'src', 'generated', 'content'), { recursive: true });
+    writeFileSync(join(dir, 'dist', 'browser', 'runtime', 'import-map.json'), '{"imports":{}}\n');
+    writeFileSync(join(dir, '.cache', 'content', 'live-groups.json'), JSON.stringify(groups));
+    writeFileSync(join(dir, 'src', 'generated', 'content', 'manifest.json'), JSON.stringify({ pages }));
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ dependencies: { '@hawiyah/styles': '0.3.0' } }));
+    writeFileSync(join(dir, 'components.json'), JSON.stringify({ components }));
+    return { guideDir: dir, componentsFile: join(dir, 'components.json'), log: () => {} };
+  };
+  const tabsPage = (examples) => ({ id: 'tabs', langs: ['ar', 'en'], liveGroups: examples.map((example) => ({ example })) });
+  const interactive = [{ id: 'tabs', sourceType: 'interactive' }];
+
+  it('HWE-SCOPE: a group of a built page that the live groups file lacks', async () => {
+    const options = fixture({ groups: live('tabs', 'basic', { check: 'tabs-keyboard' }), pages: [tabsPage(['basic', 'manual'])], components: interactive });
+    await expect(runEquivalence(options)).rejects.toThrow('HWE-SCOPE .cache/content/live-groups.json:1: the built pages have the groups tabs/ar/manual, tabs/en/manual, which the live groups file lacks');
+  });
+
+  it('HWE-SCOPE: an --only key that names no group', async () => {
+    const options = fixture({ groups: live('tabs', 'basic', { check: 'tabs-keyboard' }), pages: [tabsPage(['basic'])], components: interactive });
+    await expect(runEquivalence({ ...options, only: ['tabs/en/nothing'] })).rejects.toThrow('HWE-SCOPE --only:1: tabs/en/nothing names no live group');
+  });
+
+  it('HWE-CHECK: a group of a component with a controller that names no check and is not static', async () => {
+    const options = fixture({ groups: live('tabs', 'basic'), pages: [tabsPage(['basic'])], components: interactive });
+    await expect(runEquivalence(options)).rejects.toThrow('HWE-CHECK docs/components/tabs.ar.md:7: basic: tabs has a controller, so the group names at least one check (check=<name>[,<name>]) or declares itself static');
+  });
+
+  it('HWE-CHECK: a check without a script', async () => {
+    const options = fixture({ groups: live('tabs', 'basic', { check: 'tabs-nothing' }), pages: [tabsPage(['basic'])], components: interactive });
+    await expect(runEquivalence(options)).rejects.toThrow('HWE-CHECK docs/components/tabs.ar.md:7: check=tabs-nothing has no scripts/equivalence/checks/tabs-nothing.mjs');
   });
 });

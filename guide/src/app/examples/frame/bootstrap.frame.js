@@ -197,6 +197,14 @@ function hawiyahFrameBootstrap(config, start) {
         readySent = true;
         post('ready', { marks: marks });
         reportHeight();
+        // Code that empties the document (documentElement.innerHTML = '') fires no load
+        // event; the bootstrap sees the mount root leave the document and says so once.
+        var watch = new MutationObserver(function () {
+          if (mount.isConnected) return;
+          watch.disconnect();
+          post('emptied');
+        });
+        watch.observe(document, { childList: true, subtree: true });
         if (typeof ResizeObserver === 'function') {
           var observer = new ResizeObserver(reportHeight);
           observer.observe(document.documentElement);

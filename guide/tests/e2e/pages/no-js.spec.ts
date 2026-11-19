@@ -66,3 +66,29 @@ for (const lang of ['ar', 'en'] as const) {
     await expect(page.locator('guide-landing-lead .all')).toBeVisible();
   });
 }
+
+// Without script the editor cannot edit or run code: one sentence in the page
+// language says so, and no guide control of the editor is shown (decision E-E).
+const NO_SCRIPT = {
+  en: 'The editor needs JavaScript to edit and run code; the component pages show every example without it.',
+  ar: 'يحتاج المحرر إلى JavaScript لتحرير الشيفرة وتشغيلها، وتعرض صفحات المكوّنات كل مثال من دونه.',
+} as const;
+
+for (const lang of ['ar', 'en'] as const) {
+  for (const width of [1280, 390]) {
+    test(`editor without script at ${width} px: one sentence and no editor control (${lang})`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`${lang}/editor/`);
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(lang === 'ar' ? 'المحرر' : 'Editor');
+      await expect(page.locator('main .no-script')).toHaveText(NO_SCRIPT[lang]);
+      await expect(page.locator('main .no-script')).toBeVisible();
+      for (const selector of ['guide-editor-toolbar', 'guide-editor-status', 'main .workspace']) await expect(page.locator(selector)).toBeHidden();
+      const controls = await page.locator('main').evaluate((main) =>
+        Array.from(main.querySelectorAll('button, input, select, textarea, [role="tab"], [role="radio"], [contenteditable="true"], iframe'))
+          .filter((element) => (element as HTMLElement).offsetParent !== null || element.getClientRects().length > 0)
+          .map((element) => element.outerHTML.slice(0, 80)),
+      );
+      expect(controls).toEqual([]);
+    });
+  }
+}

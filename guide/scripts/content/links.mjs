@@ -5,21 +5,24 @@
 //   <id>.md, <id>.ar.md (built)      '<lang>/components/<id>/reference/' (+ fragment); internal;
 //                                    the fragment must be a heading id of that page
 //   a malformed percent escape       HWC-LINK
-//   any other repository file        GitHub blob URL (tree URL for a directory); external
+//   any other repository file        GitHub blob URL (tree URL for a directory); external;
+//                                    inside the build inputs (guide/build-inputs.json) it must
+//                                    exist, outside them it must be listed in guide/link-targets.json
+//                                    (the sparse checkout of the workflow does not hold it)
 //   missing file, outside the repository, other schemes, absolute paths: HWC-LINK
 //
 // Hrefs of guide pages are relative to the document base (no leading slash).
 
 import { existsSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
-import { GITHUB_BLOB, GITHUB_TREE } from './config.mjs';
+import { BUILD_INPUTS, GITHUB_BLOB, GITHUB_TREE, LINK_TARGETS } from './config.mjs';
 
 const toPosix = (path) => path.split('\\').join('/');
 
 /**
  * @param {string} url The link destination as written.
  * @param {{ lang: 'ar' | 'en', id: string, filePath: string, repoDir: string, componentsDir: string,
- *           built: Set<string>, headingIds: Set<string> }} ctx
+ *           built: Set<string>, headingIds: Set<string>, inputs?: string[], linkTargets?: string[] }} ctx
  * @returns {{ href: string, internal: boolean, external: boolean } | { error: string }}
  */
 export function resolveLink(url, ctx) {
@@ -43,6 +46,15 @@ export function resolveLink(url, ctx) {
   const target = resolve(dirname(ctx.filePath), pathPart);
   const repoPath = toPosix(relative(ctx.repoDir, target));
   if (repoPath.startsWith('..') || repoPath === '') return { error: `the link "${url}" points outside the repository` };
+  // A path is inside an entry when it is the entry or lies below a directory entry.
+  const within = (list) => list.some((entry) => (entry.endsWith('/') ? `${repoPath}/`.startsWith(entry) : repoPath === entry));
+  if (!within(ctx.inputs ?? BUILD_INPUTS)) {
+    const listed = (ctx.linkTargets ?? LINK_TARGETS).find((entry) => entry === repoPath || entry === `${repoPath}/`);
+    if (!listed) {
+      return { error: `the link "${url}" points to ${repoPath}, which is outside the files the guide build reads (guide/build-inputs.json); list it in guide/link-targets.json` };
+    }
+    return { href: `${listed.endsWith('/') ? GITHUB_TREE : GITHUB_BLOB}${repoPath}${fragment}`, internal: false, external: true };
+  }
   if (!existsSync(target)) return { error: `the link "${url}" points to ${repoPath}, which does not exist` };
   if (toPosix(dirname(target)) === toPosix(ctx.componentsDir)) {
     const match = /^([a-z0-9-]+)(?:\.ar)?\.md$/.exec(target.slice(dirname(target).length + 1));

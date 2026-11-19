@@ -10,6 +10,7 @@ import {
   rewriteImports,
   scriptDiagnostic,
   specifierPosition,
+  failingScriptBlock,
   withJitCompiler,
   type Lexer,
 } from './project';
@@ -109,5 +110,22 @@ describe('positions of errors in the file the reader wrote', () => {
     const source = '<template>\n  <p>x</p>\n</template>\n\n<script setup>\nimport lodash from \'lodash\';\n</script>\n';
     expect(specifierPosition(source, 'lodash')).toEqual({ line: 6, column: 21 });
     expect(specifierPosition(source, 'left-pad')).toBeNull();
+  });
+
+  it('takes the import, not an earlier quoted occurrence of the same text in the template', () => {
+    const source = '<template>\n  <p data-note="lodash">x</p>\n</template>\n\n<script setup>\nimport { a } from "./a";\n\n\nimport lodash from \'lodash\';\nimport(\'left-pad\');\n</script>\n';
+    expect(specifierPosition(source, 'lodash')).toEqual({ line: 9, column: 21 });
+    expect(specifierPosition(source, 'left-pad')).toEqual({ line: 10, column: 9 });
+  });
+
+  it('places a syntax error in the script block that does not parse, with a setup block first', () => {
+    const setup = { content: 'const a = 1;\n', loc: { start: { line: 1, column: 15 } } };
+    const plain = { content: '\n\nexport default {\n', loc: { start: { line: 4, column: 9 } } };
+    const parses = (block: { content: string }) => !block.content.includes('export default {\n') || block.content.trim().endsWith('}');
+    expect(failingScriptBlock([setup, plain], parses)).toBe(plain);
+    expect(failingScriptBlock([setup, null], () => true)).toBe(setup);
+    expect(failingScriptBlock([null, plain], () => true)).toBe(plain);
+    const error = Object.assign(new SyntaxError('[vue/compiler-sfc] Unexpected token (3:6)'), { loc: { line: 3, column: 6 } });
+    expect(scriptDiagnostic('Example.vue', failingScriptBlock([setup, plain], parses), error)).toMatchObject({ line: 6, column: 7 });
   });
 });

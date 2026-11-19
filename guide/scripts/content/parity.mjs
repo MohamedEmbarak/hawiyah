@@ -3,8 +3,12 @@
 // reported against the Arabic file. HWC-PAR7: the same sequence of blocks in
 // every section (paragraphs, lists and their items, code, tables, alerts,
 // headings). HWC-PAR8: Arabic script in every Arabic paragraph, list item,
-// table cell outside code and API tables, and in the reader text of the live
-// blocks, unless arabic-exceptions.json lists the text with a reason.
+// heading h2 to h6 (except the framework names of LATIN_HEADINGS), table cell
+// outside code and API tables, and in the reader text of the live blocks (a value
+// of a reader name such as label or aria-label, of a name that ends in label,
+// message, text or title, or any string that holds a phrase of Latin words outside
+// the token names of TOKEN_NAMES), unless arabic-exceptions.json lists the text
+// with a reason.
 
 import { readFileSync } from 'node:fs';
 import { FRAMEWORKS, finding } from './config.mjs';
@@ -64,6 +68,22 @@ const notArabic = (text) => LETTER.test(text) && !ARABIC.test(text) && !onlyKeyN
 
 /** Attributes and properties of a live block whose string values are reader text. */
 const READER_NAMES = new Set(['label', 'aria-label', 'title', 'placeholder', 'alt', 'description', 'heading', 'caption', 'hint', 'message', 'text']);
+/** A name that ends in one of these words (overflowLabel, data-hw-overflow-label, copiedMessage, ...) also holds reader text. */
+const READER_SUFFIX = /(?:label|message|text|title)$/;
+/**
+ * Attributes and properties whose values are tokens, not text: a phrase of Latin
+ * words there is not reader text.
+ */
+const TOKEN_NAMES = new Set(['class', 'classname', 'id', 'role', 'type', 'href', 'src', 'rel', 'style', 'autocomplete', 'for', 'htmlfor', 'form', 'key', 'ref', 'slot', 'lang', 'dir', 'name', 'value', 'aria-controls', 'aria-labelledby', 'aria-describedby', 'aria-owns', 'aria-flowto', 'aria-details', 'aria-errormessage', 'aria-activedescendant']);
+/** Two or more words of Latin letters in a row: a phrase a reader reads, wherever it stands. */
+const LATIN_PHRASE = /(?:^|\s)[A-Za-z]+(?:[.,;:!?])?\s+[A-Za-z]+(?=[.,;:!?]?(?:\s|$))/;
+/**
+ * Headings (h2 to h6) of an Arabic page that stay Latin: names of the frameworks,
+ * written as their projects write them (the h3 of the four API tables).
+ */
+const LATIN_HEADINGS = new Set(['JavaScript', 'React', 'Vue', 'Angular']);
+/** The bare name of an attribute or property token (:label, @click, [label], (change) -> label). */
+const bareName = (text) => text.replace(/^[:@[(]+|[\])]+$/g, '').replace(/^v-bind:/, '').toLowerCase();
 
 /** Block signature of a section, for HWC-PAR7. */
 function blockSignature(node) {
@@ -213,6 +233,10 @@ export function checkParity(en, ar, sources) {
   };
   for (const node of ar.summaryNodes ?? []) prose(node);
   for (const section of ar.sections) section.children.forEach(prose);
+  for (const heading of ar.headings) {
+    const text = proseText(heading.node).replace(/\s+/g, ' ').trim();
+    if (heading.level >= 2 && !LATIN_HEADINGS.has(text)) requireArabic(heading.node, text, `the h${heading.level}`);
+  }
   for (const group of ar.groups) {
     for (const framework of FRAMEWORKS) {
       const block = group.blocks[framework];
@@ -222,8 +246,11 @@ export function checkParity(en, ar, sources) {
         if (token.kind === 'text') requireArabic({ position: { start: { line: block.line } } }, text, `live block "${group.example}" (${framework}) text`);
         else if (token.kind === 'string') {
           const name = list.slice(0, index).reverse().find((item) => item.kind === 'attribute' || item.kind === 'property');
-          if (name && READER_NAMES.has(name.text.replace(/^[:@[(]+|[\])]+$/g, '').toLowerCase())) {
-            requireArabic({ position: { start: { line: block.line } } }, text, `live block "${group.example}" (${framework}) ${name.text}`);
+          const bare = name ? bareName(name.text) : '';
+          const reader = name && (READER_NAMES.has(bare) || READER_SUFFIX.test(bare.replace(/-/g, '')));
+          const phrase = !TOKEN_NAMES.has(bare) && LATIN_PHRASE.test(text);
+          if (reader || phrase) {
+            requireArabic({ position: { start: { line: block.line } } }, text, `live block "${group.example}" (${framework}) ${name?.text ?? 'string'}`);
           }
         }
       });

@@ -5,6 +5,7 @@ import startModulesSource from './start-modules.frame.js' with { loader: 'text' 
 import {
   FRAME_REFERRER_POLICY,
   FRAME_SANDBOX,
+  MOUNT_ID,
   bundledDocument,
   embedJson,
   escapeEmbedded,
@@ -196,5 +197,79 @@ describe('frame texts', () => {
       expect(ARABIC_SCRIPT.test(frameTexts.ar[key]), key).toBe(true);
     }
     expect(ARABIC_SCRIPT.test(frameTexts.ar.navigationBlocked.before + frameTexts.ar.navigationBlocked.after)).toBe(true);
+  });
+});
+
+// The style block the guide writes into a result frame is the frame's document setup,
+// never a rule for a package element (README.md, "The styling rule"). Each selector
+// and property is written out here with its reason; anything else fails.
+const FRAME_STYLE: Record<string, Record<string, string>> = {
+  html: {
+    'color-scheme': 'the colour mode of the page, so that form controls and scroll bars follow it',
+    'background-color': 'the document canvas, as on a page',
+    color: 'the document text colour, as on a page (the native result stage sets the same)',
+    'font-family': 'the document font family, as on a page (the native result stage sets the same)',
+  },
+  body: {
+    margin: 'the document body without the browser margin',
+    padding: 'the space between the frame edge and the result',
+  },
+  [`#${MOUNT_ID}`]: {
+    display: 'the mount root contains the margins of the result (a new block formatting context)',
+    'min-inline-size': 'the mount root may shrink below the width of its content',
+  },
+};
+
+/** Every selector, property and rule of the frame's style block that FRAME_STYLE does not list. */
+function frameStyleFindings(html: string): string[] {
+  const doc = parse(html);
+  const findings: string[] = [];
+  const styles = Array.from(doc.querySelectorAll('style'));
+  if (styles.length !== 1) findings.push(`${styles.length} style elements`);
+  if (doc.querySelector('[style]')) findings.push('a style attribute');
+  const seen = new Set<string>();
+  for (const style of styles) {
+    // A parsed document has no style sheets in jsdom: the text is read through an
+    // element of the test document.
+    const probe = document.createElement('style');
+    probe.textContent = style.textContent;
+    document.head.append(probe);
+    const rules = Array.from(probe.sheet?.cssRules ?? []);
+    probe.remove();
+    if (rules.length === 0) findings.push('a style element without rules');
+    for (const rule of rules) {
+      if (!(rule instanceof CSSStyleRule)) {
+        findings.push(`a rule that is not a style rule: ${rule.cssText}`);
+        continue;
+      }
+      const selector = rule.selectorText;
+      const listed = FRAME_STYLE[selector];
+      if (!listed) {
+        findings.push(`selector ${selector}`);
+        continue;
+      }
+      seen.add(selector);
+      for (let i = 0; i < rule.style.length; i += 1) {
+        // jsdom expands margin into its four sides; they count as the listed shorthand.
+        const property = rule.style[i]!.replace(/^(margin|padding)-(top|right|bottom|left)$/, '$1');
+        if (!(property in listed)) findings.push(`${selector} { ${property} }`);
+      }
+    }
+  }
+  for (const selector of Object.keys(FRAME_STYLE)) if (!seen.has(selector)) findings.push(`no rule for ${selector}`);
+  return findings;
+}
+
+describe('the style block of a result frame', () => {
+  it('styles only the document, the body and the mount root, with the listed properties', () => {
+    expect(frameStyleFindings(modulesDocument({ ...base, imports }))).toEqual([]);
+    expect(frameStyleFindings(bundledDocument({ ...base, mode: 'light', lang: 'en', dir: 'ltr', title: frameTexts.en.frameTitle('Vue') }))).toEqual([]);
+  });
+
+  it('reports a rule for another element, an unlisted property and a media block', () => {
+    const html = modulesDocument({ ...base, imports });
+    expect(frameStyleFindings(html.replace('</style>', 'button{font-style:italic}</style>'))).toEqual(['selector button']);
+    expect(frameStyleFindings(html.replace('body{margin:0;', 'body{margin:0;letter-spacing:1px;'))).toEqual(['body { letter-spacing }']);
+    expect(frameStyleFindings(html.replace('</style>', '@media print{html{color:red}}</style>'))).toHaveLength(1);
   });
 });

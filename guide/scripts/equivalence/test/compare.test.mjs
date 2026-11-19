@@ -64,7 +64,7 @@ describe('compareScreenshot', () => {
     expect(PNG.sync.read(result.diff).width).toBe(200);
   });
 
-  it('fails an adjacent colour step over a large area (threshold 0.02)', () => {
+  it('fails an adjacent colour step over a large area (threshold 0.005)', () => {
     // The fill of the reference is rgb(27, 131, 84); the other one is the
     // pressed green rgb(20, 87, 58) or a lighter neutral, which threshold 0.1 let through.
     const fill = (rgb) => {
@@ -79,7 +79,13 @@ describe('compareScreenshot', () => {
     expect(compareScreenshot(fill([249, 250, 251]), fill([224, 225, 226])).equal).toBe(false);
     expect(compareScreenshot(fill([22, 22, 22]), fill([42, 42, 42])).equal).toBe(false);
     expect(compareScreenshot(fill([27, 131, 84]), fill([27, 131, 84])).equal).toBe(true);
-    expect(PIXEL_THRESHOLD).toBe(0.02);
+    // What was measured for 0.005 (compare.mjs): canvas and surface, surface-muted and
+    // danger-subtle (equal at 0.02) differ; a grey lowered by 2 differs, by 1 passes.
+    expect(compareScreenshot(fill([249, 250, 251]), fill([255, 255, 255])).equal).toBe(false);
+    expect(compareScreenshot(fill([243, 244, 246]), fill([254, 243, 242])).equal).toBe(false);
+    expect(compareScreenshot(fill([249, 250, 251]), fill([247, 248, 249])).equal).toBe(false);
+    expect(compareScreenshot(fill([249, 250, 251]), fill([248, 249, 250])).equal).toBe(true);
+    expect(PIXEL_THRESHOLD).toBe(0.005);
   });
 
   it('fails a different size', () => {

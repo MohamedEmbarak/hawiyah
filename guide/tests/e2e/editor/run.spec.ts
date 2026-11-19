@@ -143,12 +143,14 @@ test('an error thrown after more console output than the budget still fails the 
 test('a flood of console output leaves one updated count in the log', async ({ page }) => {
   await openEditor(page, 'en', 'framework=vanilla');
   await originalRan(page, 'en');
-  await appendTo(page, 'main.js', "\nfor (let i = 0; i < 30000; i += 1) console.log('line ' + i);\n");
+  // Four times the budget is enough to show one updated count; the loop stays far
+  // below the 2 s loop guard also on a busy machine.
+  await appendTo(page, 'main.js', "\nfor (let i = 0; i < 2000; i += 1) console.log('line ' + i);\n");
   await page.getByRole('button', { name: /^Run/ }).click();
   await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan, { timeout: 20_000 });
   await expect
     .poll(async () => (await logTexts(page)).filter((text) => DROPPED.test(text)).map((text) => Number(DROPPED.exec(text)?.[1])), { timeout: 20_000 })
-    .toEqual([29500]);
+    .toEqual([1500]);
   // The reader's own output that fits the log stays in it.
   await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining('line 499'));
 });
@@ -225,6 +227,61 @@ test('a result that replaces its document with an empty one is reported and the 
   await expect(statusLine(page)).toHaveText(`The run failed: ${replaced}`, { timeout: 30_000 });
   await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining(replaced));
   await expect(resultFrame(page)).toHaveCount(0);
+});
+
+const REPLACED = 'The code replaced the document of the preview, so the result is no longer shown. The run was stopped.';
+
+for (const width of [1280, 390]) {
+  test(`a result that writes a new document with document.write is reported at ${width} px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await openEditor(page, 'en', 'framework=vanilla');
+    await originalRan(page, 'en');
+    await appendTo(page, 'main.js', "\nsetTimeout(() => { document.open(); document.write('<p>Replaced</p>'); document.close(); }, 300);\n");
+    await page.getByRole('button', { name: /^Run/ }).click();
+    await expect(statusLine(page)).toHaveText(`The run failed: ${REPLACED}`, { timeout: 30_000 });
+    await expect(resultFrame(page)).toHaveCount(0);
+  });
+}
+
+test('a result that empties its document is reported and the run is stopped', async ({ page }) => {
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(page, 'main.js', "\nsetTimeout(() => { document.documentElement.innerHTML = ''; }, 300);\n");
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(`The run failed: ${REPLACED}`, { timeout: 30_000 });
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining(REPLACED));
+  await expect(resultFrame(page)).toHaveCount(0);
+});
+
+test('a result that reloads itself without end is reported and the run is stopped', async ({ page }) => {
+  const reloads = 'The code reloads the preview again and again, so the run was stopped.';
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(page, 'main.js', "\nsetTimeout(() => { location.reload(); }, 300);\n");
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(`The run failed: ${reloads}`, { timeout: 30_000 });
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining(reloads));
+  await expect(resultFrame(page)).toHaveCount(0);
+});
+
+// Error, link and form messages have a budget of 50 per run together: the first
+// ones are shown, the rest counted in one entry; ready is always accepted.
+const OUTCOME_DROPPED = /^Warning\s*(\d+) further error, link and form messages of this run were not shown after the first 50\.$/;
+
+test('a flood of link activations shows the first 50 and counts the rest in one entry', async ({ page }) => {
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(
+    page,
+    'main.js',
+    "\nconst flood = document.createElement('a');\nflood.href = 'https://example.com/flood';\nflood.textContent = 'flood';\ndocument.body.append(flood);\nfor (let i = 0; i < 120; i += 1) flood.click();\n",
+  );
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan, { timeout: 20_000 });
+  await expect
+    .poll(async () => (await logTexts(page)).filter((text) => OUTCOME_DROPPED.test(text)).map((text) => Number(OUTCOME_DROPPED.exec(text)?.[1])), { timeout: 20_000 })
+    .toEqual([70]);
+  expect((await logTexts(page)).filter((text) => text.includes('https://example.com/flood'))).toHaveLength(50);
 });
 
 test('an Angular template error fails the run at once with the compiler message', async ({ page, guard }) => {

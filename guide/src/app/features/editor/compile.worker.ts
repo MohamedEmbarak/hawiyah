@@ -9,7 +9,7 @@
 // has no importScripts, so the file is fetched and evaluated with new Function.
 import type { CompileConvertRequest, CompileDiagnostic, CompileRequest, CompileResponse, CompileRunRequest, WorkerEnvelope } from './compile-client';
 import { guardLoops } from './loop-guard';
-import { classicProject, isModuleFile, moduleName, position, projectHost, rewriteImports, scriptDiagnostic, specifierPosition, withJitCompiler, type Lexer } from './project';
+import { classicProject, failingScriptBlock, isModuleFile, moduleName, position, projectHost, rewriteImports, scriptDiagnostic, specifierPosition, withJitCompiler, type Lexer } from './project';
 
 interface SucraseModule {
   transform(code: string, options: Record<string, unknown>): { code: string };
@@ -29,6 +29,7 @@ interface SfcModule {
     errors: { message: string; loc?: { start: { line: number; column: number } } }[];
   };
   compileScript(descriptor: unknown, options: Record<string, unknown>): { content: string };
+  babelParse(code: string, options: Record<string, unknown>): unknown;
   compileStyle(options: Record<string, unknown>): { code: string; errors: Error[] };
 }
 
@@ -147,7 +148,16 @@ async function compileVue(base: string, file: string, source: string, scopeId: s
   try {
     script = compiler.compileScript(target, { id: scopeId, inlineTemplate: true, isProd: true }).content;
   } catch (error) {
-    throw new CompileFailure([scriptDiagnostic(file, target.scriptSetup ?? target.script, error)]);
+    // With a setup block and a plain block, the error belongs to the block that does not parse.
+    const parses = (block: SfcBlock) => {
+      try {
+        compiler.babelParse(block.content, { sourceType: 'module', plugins: block.lang === 'ts' ? ['typescript'] : [] });
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    throw new CompileFailure([scriptDiagnostic(file, failingScriptBlock([target.scriptSetup, target.script], parses), error)]);
   }
   const lang = (target.scriptSetup ?? target.script)?.lang;
   const code = transformWithSucrase(await sucrase(base), file, script, lang === 'ts' ? ['typescript'] : [], 'automatic');

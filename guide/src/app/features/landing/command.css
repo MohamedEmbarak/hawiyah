@@ -18,7 +18,6 @@
 /* Holds the height of the longest command; never seen and never reached. */
 .reserve {
   visibility: hidden;
-  pointer-events: none;
 }
 
 /* A change of the command fades the listing in again; the two names alternate so

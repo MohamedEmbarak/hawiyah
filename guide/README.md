@@ -28,11 +28,17 @@ this repository. The rule is enforced as follows:
   it; pnpm would otherwise link the workspace packages into the guide.
 - No file in `guide/` imports, reads or copies anything from `packages/`,
   `apps/` or `examples/`. This is enforced structurally: `guide.yml` builds and
-  tests the guide from a sparse checkout that holds only `guide/`, `docs/`,
-  `components.json`, `NOTICE`, `CHANGELOG.md` and `pnpm-workspace.yaml` (every
-  input of the build and its tests, and the path filters of the workflow), and fails if
-  `packages/`, `apps/` or `examples/` exist; a read of them fails on the
-  runner. The registry check (HWREG-R6) adds an early, readable message for a
+  tests the guide from a sparse checkout that holds only the paths of
+  `build-inputs.json` (`guide/`, `docs/`, `components.json`, `NOTICE`,
+  `CHANGELOG.md`, `pnpm-workspace.yaml` and the workflow file: every input of
+  the build and its tests), and fails if `packages/`, `apps/` or `examples/`
+  exist; a read of them fails on the runner. `build-inputs.json` is the single
+  source of that list: `scripts/test/build-inputs.test.mjs` requires the two path
+  filters and the sparse checkout of `guide.yml` to equal it, and step 20 accepts
+  a link to a repository file outside it only when `link-targets.json` lists the
+  file (`tests/guide-link-targets.test.ts` at the repository root checks in the
+  full checkout that each listed file exists), so a page builds the same way on a
+  developer machine and on the runner. The registry check (HWREG-R6) adds an early, readable message for a
   literal path to those directories, a remote `@hawiyah` address or a script
   or stylesheet loaded from another host under `src/`, and a style file other
   than `.css` under `src/`; it does not see paths built at run time, which
@@ -55,7 +61,10 @@ this repository. The rule is enforced as follows:
   packages (steps 60 and 62 into `.cache/registry-dist/`) and requires every
   file of `dist/browser/runtime/`, `manifest.json` and `import-map.json`
   included, to equal the derived file byte for byte; the labels of the
-  manifest are not trusted. A failure stops the build.
+  manifest are not trusted. In the production build it also bundles the three
+  `@hawiyah/styles` imports again and requires the served `styles-*.css` and
+  every file of `media/` to equal that bundle byte for byte. A failure stops
+  the build.
 - The guide adds no CSS or behaviour to restyle, imitate or repair a package
   component. A package defect is recorded and fixed in the package (see
   [The styling rule](#the-styling-rule)).
@@ -78,24 +87,81 @@ how it renders. Muted text and similar needs use the package's documented
 variants (`data-tone="muted"` on `hw-type`).
 
 The package stylesheet is its own bundle: `src/styles.css` holds only the three
-`@hawiyah/styles` imports (bundle `styles-*.css`), and the guide's document
-rules are in `src/guide.css` (bundle `guide-*.css`). The proof is the outcome
-test `tests/e2e/pages/package-styles.spec.ts`: on every prerendered page, in
-both colour modes and at 1280 and 390 px (the editor after its first run), it
-reads the computed appearance properties (display, wrapping and white space,
-colours, backgrounds, borders, radii, padding, font properties, line height,
-text decoration, box shadow, opacity, outline) of every element with an `hw-`
-class or tag, once with every stylesheet on and once with every stylesheet,
-style element and adopted sheet disabled except the package bundle, and
-requires them to be equal. Placement properties are not compared (a fixed list
-in the test, each with its reason): margins, sizes, position, flex and grid
-item properties, `text-align` and `visibility`. Two consequences of placement
-are judged by rule: the blockified `display` of an item of a guide flex or grid
-container, and colours that follow `currentColor`. An inherited difference that
-starts at a guide element is accepted only when every guide declaration of that
-property there is a package token (today: `color` and `font-family` on `html`
-in `src/guide.css`). The test prints how many elements and properties it
-compared per page.
+`@hawiyah/styles` imports (bundle `styles-*.css`); the lint fails on any other
+node in it, and build step 90 requires the served `styles-*.css` and its media
+files to equal, byte for byte, the bundle derived again from the installed
+`@hawiyah/styles` with the options of the Angular build. The guide's document
+rules are in `src/guide.css` (bundle `guide-*.css`), the guide components' rules
+in their own style sheets.
+
+Package element: an element whose tag starts with `hw-` or whose class list has
+a class starting with `hw-`, and every descendant of such an element down to a
+projected guide element. A projected guide element is an element that a guide
+template wrote: its tag starts with `guide-` (or is `app-root`), or it carries an
+Angular emulation attribute (`_ngcontent-*`, `_nghost-*`). `@hawiyah/angular`
+0.3.0 declares no component styles, so Angular writes no emulation attribute on
+what a package component renders, while every guide component has styles or is
+a `guide-` host. A plain `span`, `button`, `li` or `td` that a package component
+renders without an `hw-` class therefore belongs to the package; a guide block
+projected into a package container, and everything below it, belongs to the
+guide again, down to the next package element. The boundary follows who wrote
+the element because that is what the guide controls: it may style what it
+writes, and it may only place what a package component renders.
+
+The proof has two halves, both over every prerendered page in both languages
+(`tests/e2e/support/styling-rule.ts` holds the definitions and lists).
+
+- Structural half (`tests/e2e/pages/styling-structure.spec.ts`, at 1280 and
+  390 px, with the header menu open, the side drawer open and the editor after
+  its first run): every rule of every guide stylesheet, style element and
+  adopted sheet is read in the browser, under every condition (all `@media`,
+  `@supports`, `@container`, `@layer`, `@scope` and `@starting-style` blocks,
+  so print, forced colours, both motion preferences and every width range), with
+  CSS nesting resolved. State pseudo-classes (`:hover`, `:focus`,
+  `:focus-visible`, `:focus-within`, `:active`, `:checked`, `:disabled`,
+  `:target`, `:open`, `:visited` and every other pseudo-class that is not
+  structural), the colour-mode, theme and density attributes and all
+  pseudo-elements are removed from the selector, also inside `:is()`,
+  `:where()`, `:not()` and `:has()` (a `:not()` that held a state is dropped);
+  the result is matched with `querySelectorAll`. A rule that matches a package
+  element may declare only placement properties (margins, sizes, position and
+  inset, flex and grid item properties, `visibility`, each with its reason). A
+  rule that matches an ancestor of a package element may declare an inherited
+  property, a package custom property (`--hw-*`) or a property that changes how
+  every descendant paints (opacity, filter, transforms, masks, clipping,
+  blending) only when the list `INHERITED_ALLOWED` names its stylesheet,
+  selector and property with a reason; a token value is not a reason. Today the
+  list holds the document colour and font family on `html`, the same two on the
+  stage of a native result (it reproduces the result frame's document) and of a
+  landing pane (it carries its own mode and theme), the sticky offset of the
+  side navigation, and the opacity of a hidden install cell. A selector the
+  stripper cannot handle (`:host`, `::slotted()`, `::part()`, `:nth-child(... of
+  S)`) and a rule type it does not know fail the test.
+- Computed half (`tests/e2e/pages/package-styles.spec.ts`, in both colour modes
+  at 1280 and 390 px, the editor after its first run): every computed property
+  (custom properties aside) of every package element, and of its `::before`,
+  `::after` and `::marker` when they exist, is read once with every stylesheet
+  on and once with every stylesheet, style element and adopted sheet disabled
+  except the package bundle; the values must be equal, except the placement
+  properties. Consequences of placement are judged by rule: the blockified
+  `display` of an item of a guide flex or grid container, colours that follow
+  `currentColor`, and values resolved against the element's own size
+  (`transform-origin`, `perspective-origin`, the used grid tracks) when that size
+  differs. An inherited difference is accepted only when it starts at a guide
+  element on which a rule of `INHERITED_ALLOWED` declares that property. The
+  test prints how many elements, pseudo-elements and properties it compared.
+
+The style block the guide writes into a result frame (`examples/frame/document.ts`)
+styles only the document, the body and the mount root, with a written list of
+properties; a unit test in `document.spec.ts` fails on anything else.
+
+What the two halves do not cover: browsers other than Chromium (selector support
+and computed values of Firefox and Safari are not read); DOM states the tests do
+not open (an opened dialog of an example, a validation message, a date picker's
+calendar, a menu of a package component), where a rule could match elements that
+exist only then; animations (keyframes are not judged; the property that starts
+an animation is judged where it is declared); and a script that sets styles on
+package elements at run time (the lint refuses style attributes and bindings).
 
 ## Result frames
 
@@ -126,10 +192,12 @@ prerender hint remains a residual channel. The guide therefore never runs code
 the reader did not start: the code in a frame is the guide's own example or
 what the reader typed and ran.
 
-Messages of a run: `ready`, `error`, `navigation` and `submit` are always
-accepted; console output and height reports each have a budget of 500 messages
-per run. Console messages past the budget are counted, and the editor shows
-the count in one log entry per run, updated at most four times a second.
+Messages of a run: `ready` (and `emptied`, see below) is always accepted;
+console output and height reports each have a budget of 500 messages per run;
+`error`, `navigation` and `submit` together have a budget of 50 per run (the
+first error ends a run that is loading). Console messages past their budget are
+counted, and so are error, link and form messages past theirs; the editor shows
+each count in one log entry per run, updated at most four times a second.
 
 ## Editor
 
@@ -139,19 +207,36 @@ the log. The status line (`role="status"`) is the one live region of a run's
 outcome; the log (`role="log"`, `aria-live="off"`) is read, not announced; the
 notice under the frame (`role="status"`, in the document and empty until it has
 text) announces only a link or a form of the example that did not leave the
-preview, with the address shown left to right in a `bdi` element.
+preview, with the address shown left to right in a `bdi` element. The focused
+code shows the focus ring of the code surface; while focus is in the result
+frame, its container shows the focus ring (the frame has an opaque origin, so
+`:focus-within` does not reach it; the page notes that its window lost focus to
+the frame).
 
 A run fails at once, with the message of its cause, when the code throws, when
 an Angular template does not compile (the generated `main.ts` lets the
 rejected bootstrap reach the frame as an unhandled rejection), when the code
-tries to navigate the frame, and when the code replaces the frame's document
-(a repeated load of the frame after which the bootstrap does not post again
-within 3 seconds); a run that is not ready within 20 seconds fails with the
-time limit. Compile errors carry the file, line and column of the file the
+tries to navigate the frame, when the code replaces the frame's document (a
+repeated load of the frame after which the bootstrap does not post `ready`
+again within 3 seconds; a height report or other message does not count, so
+`document.write` is reported at every width), when the code empties the
+document (the bootstrap sees the mount root leave the document after `ready`
+and posts `emptied`), and when the run document loads more than four times (a
+result that reloads itself without end); a run that is not ready within 20
+seconds fails with the time limit. Compile errors carry the file, line and column of the file the
 reader wrote, also for a script error of a Vue file and for an import the
 editor does not serve. A compile request that takes longer than 60 seconds
 stops the compile worker, fails the run with that message, and the next
 request creates a new worker.
+
+Without script (`@media (scripting: none)`) the editor page shows its heading,
+the link back to the component and one sentence in the page language: the
+editor needs JavaScript to edit and run code, and the component pages show
+every example without it. The guide's toolbar, status line, code and result are
+not shown. The example blocks of the component pages stay as they are: the
+prerendered Angular result and its Angular listing are shown; the framework tabs
+are the package Tabs component, which needs script, so the JavaScript, React and
+Vue listings are not reachable without it.
 
 ## Requirements
 
@@ -225,7 +310,7 @@ lists the steps that ran; `scripts/test/build.test.mjs` asserts the plan.
 | `72-page-guards` | Icon and text guards over the prerendered pages and the guide sources: every `data-icon` value has a rule in the installed `@hawiyah/styles`; no `svg` element, icon-font class or emoji; on Arabic pages no run of four or more Latin-script words in reader text outside `code`, `kbd`, `pre`, `samp` and elements with their own non-Arabic `lang`, unless `scripts/page-guards/latin-allowlist.json` lists it with a reason (an entry that matches nothing fails). |
 | `75-llms` | Writes `<out>/browser/llms.txt` (production only). |
 | `80-equivalence` | Runs the equivalence harness on every live group (production only). |
-| `90-registry-dist` | The registry check after the build: the inputs of the Angular metafiles, then the served runtime against a fresh derivation from the verified installed packages. It prints `registry-check: RESOLVED ...` and `registry-check: DIST <n> runtime files in dist/browser equal byte for byte the files derived again from the verified packages (...)`. |
+| `90-registry-dist` | The registry check after the build: the inputs of the Angular metafiles, then the served runtime against a fresh derivation from the verified installed packages, and (production) the package stylesheet `styles-*.css` and its media against the bundle derived again from `@hawiyah/styles`. It prints `registry-check: RESOLVED ...`, `registry-check: DIST <n> runtime files in dist/browser equal byte for byte the files derived again from the verified packages (...)` and `registry-check: STYLES styles-<hash>.css (<n> bytes) and <m> media files in dist/browser equal byte for byte the bundle derived again from the verified @hawiyah/styles`. The step fails when the check passed without these derivations (`scripts/registry-check/test/styles.test.mjs`). |
 
 Step 80 can be run alone on an existing production output while debugging:
 `node scripts/equivalence/run.mjs [--dir dist/browser] [--base /hawiyah/] [--only <id>/<lang>/<example>,...]`.
@@ -235,10 +320,14 @@ free port) and `HAWIYAH_EQUIVALENCE_WORKERS` the number of parallel groups
 `HWE-ARIA`, `HWE-SHOT`, `HWE-CHECK`, `HWE-KD` and `HWE-SCOPE`; the report and the diff
 images are written to `.cache/equivalence/`.
 
-Screenshots are compared with pixelmatch at threshold 0.02 (anti-aliasing
-excluded) and at most `max(16, 0.05 % of the pixels)` differing pixels; 0.02 was
-green in three full runs in a row, and an adjacent step of a colour scale over
-an area now fails.
+Screenshots are compared with pixelmatch at threshold 0.005 (anti-aliasing
+excluded) and at most `max(16, 0.05 % of the pixels)` differing pixels. 0.005 is
+the lowest of 0.005 and 0.01 that stayed green in three full runs of step 80 (four
+in a row). What it lets through was measured over a uniform 200 x 50 area: of the
+112 hex colours of `@hawiyah/tokens`, one pair (`#b54708` and `#b54707`); a light
+grey lowered by one level passes, by two fails. The harness moves the pointer out
+of the frames when a group and a check start, so a hover left by an earlier click
+does not show in one framework only.
 
 The structure comparison (`scripts/equivalence/normalize.js`) keeps every
 attribute except a short written list of framework noise, each with its
@@ -247,12 +336,26 @@ reason: Vue `data-v-*`, Angular `_ngcontent-*`, `_nghost-*`, `ng-version`,
 attribute-directive selectors of `@hawiyah/angular` (`hwbutton`), the static
 input values Angular leaves as attributes on those elements (attributes that
 the element does not reflect as a property and that are not `role`, `aria-*`
-or `data-*`), and the `data-hw`/`data-hw-*` enhancement hooks of
-`@hawiyah/vanilla`, whose behaviour the group's checks compare. `class` keeps
+or `data-*`), and the `data-hw` hook that names a `@hawiyah/vanilla` controller.
+The vanilla configuration hooks `data-hw-value`, `data-hw-activation`,
+`data-hw-overflow` and `data-hw-overflow-label` (named in the file, each with its
+reason; a script test requires each to occur in the installed `@hawiyah/vanilla`)
+are left out only on an element that no rule of the package stylesheet can
+select with them. Every other `data-hw-*` attribute is compared, among them every
+one that a selector of the installed `@hawiyah/styles` uses
+(`scripts/equivalence/styled-attributes.mjs` reads them, with their compound
+selectors, from `node_modules/@hawiyah/styles/dist/styles.css`). `class` keeps
 every token but Angular's `ng-*` state classes; `style` is compared as the
-browser serialises it; `name` values are compared as written unless they look
-generated (React `useId`, numbered `hw-...-<n>`); a custom element is
-unwrapped only when it has no `hw-` class and carries no `role` or `aria-*`.
+browser serialises it; `name` values are compared as written unless they have
+one of the forms the four adapters generate
+(`scripts/equivalence/generated-names.mjs` reads them from the installed
+packages: the `ensureId` prefixes of `@hawiyah/vanilla`, the `injectId` prefixes
+of `@hawiyah/angular`, React 19 `useId` and Vue `useId`, each optionally with the
+prefix the adapter writes before it and a suffix of words after it); a custom
+element is unwrapped only when it has no `hw-` class and carries no global
+attribute with a meaning (`tabindex`, `hidden`, `inert`, `lang`, `dir`, `title`,
+`contenteditable`, `draggable`, `style`, `role`, `aria-*`, `accesskey`,
+`autofocus`, `popover`, `spellcheck`, `translate`).
 A documented difference is an
 entry of `scripts/equivalence/known-differences.json` approved by the lead and
 named by a group with `differences=<id>`. Its `source` reads
@@ -301,10 +404,8 @@ the package is published with secondary entry points.
 `npm run lint` reads the guide's own CSS (`src/**/*.css`), templates (inline
 templates of `@Component`, `*.html` under `src/`) and sources (`src/`,
 `scripts/`). It gives an early, readable message; it is not the proof that
-the guide leaves package components alone. That proof is a test on the
-outcome (see [The styling rule](#the-styling-rule)): with the guide
-stylesheets disabled, the computed appearance of every `hw-` element stays the
-same.
+the guide leaves package components alone. That proof is the two halves of
+[The styling rule](#the-styling-rule).
 
 - CSS: no `hw-` class, element or `data-hw-*` attribute in a selector; no
   selector that matches part of a class or id value (`[class*=`, `[class^=`,
@@ -312,7 +413,8 @@ same.
   with no four-value side shorthand (`margin`, `padding`, `border-width`,
   `border-style`, `border-color`, `scroll-margin`, `scroll-padding`) and no
   multi-value `border-radius`; no package custom property; imports only in
-  `src/styles.css`; no `url()` or `@font-face`; no `::ng-deep`; motion only
+  `src/styles.css`, which holds nothing but the three `@hawiyah/styles` imports
+  and comments; no `url()` or `@font-face`; no `::ng-deep`; motion only
   inside a media query list whose every query has
   `(prefers-reduced-motion: no-preference)` as a plain conjunct (no `not`, no
   `or`).
@@ -339,6 +441,7 @@ findings in its `expected.json`; the fixtures under `good/` must give none.
 | Path | Contents |
 | --- | --- |
 | `package.json`, `package-lock.json`, `.npmrc`, `.nvmrc` | npm project with exact versions and the committed lockfile. |
+| `build-inputs.json`, `link-targets.json` | The repository paths the build reads, and the files outside them that a page may link to. |
 | `angular.json`, `tsconfig*.json` | Angular CLI project `guide` (builder `@angular/build:application`, static output mode). |
 | `vitest.scripts.config.ts` | Vitest configuration for `scripts/**/test/**/*.test.mjs`; its module cache is `.cache/vitest/`. |
 | `playwright.config.ts` | Browser tests, projects `prod` and `dev`. |

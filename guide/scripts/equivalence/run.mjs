@@ -27,7 +27,9 @@ import { build } from 'esbuild';
 import { chromium } from '@playwright/test';
 import { createPagesServer } from '../serve.mjs';
 import { FRAMEWORKS, compareAria, compareScreenshots, compareStructure } from './compare.mjs';
+import { generatedNamePattern } from './generated-names.mjs';
 import { normalize } from './normalize.js';
+import { styledAttributes } from './styled-attributes.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const GUIDE_DIR = resolve(here, '..', '..');
@@ -240,6 +242,9 @@ export function harnessUrl(origin, base, group, pin, frameworks = FRAMEWORKS) {
 export async function openGroup(page, url) {
   await page.goto(url);
   await page.waitForFunction(() => window.__harness && window.__harness.done, null, { timeout: 60_000 });
+  // The pointer stays where the last click of the previous group left it; over a frame
+  // of this group it would show a hover state in one framework only.
+  await page.mouse.move(0, 0);
   return page.evaluate(() => window.__harness);
 }
 
@@ -295,15 +300,23 @@ async function settleHeight(page, frame, framework) {
  * result is read while its own frame still has focus: only the focused frame of a
  * page matches :focus and :focus-visible.
  */
+let normalizeInputs = null;
+/** What the normaliser reads from the installed packages: generated names and styled data-hw-* attributes. */
+export function normalizerInputs(guideDir = GUIDE_DIR) {
+  normalizeInputs ??= { generatedName: generatedNamePattern(guideDir), styled: styledAttributes(guideDir) };
+  return normalizeInputs;
+}
+
 export async function capture(page, frameworks = FRAMEWORKS, before = null) {
   const out = { trees: {}, snapshots: {}, images: {} };
+  const inputs = normalizerInputs();
   for (const framework of frameworks) {
     if (before) await before(framework);
     const frame = await frameOf(page, framework);
     await settleFrame(frame);
     await settleHeight(page, frame, framework);
     const selector = mountSelector(framework);
-    out.trees[framework] = await frame.evaluate(normalize, selector);
+    out.trees[framework] = await frame.evaluate(normalize, { target: selector, ...inputs });
     const mount = page.frameLocator(`iframe[data-framework="${framework}"]`).locator(selector);
     out.snapshots[framework] = await mount.ariaSnapshot();
     out.images[framework] = await page
@@ -389,6 +402,8 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, ou
   await evaluate('rest');
   // The checks run one after the other in the same frames.
   for (const check of checks) {
+    // A check starts with the pointer outside the frames (a click of the check before leaves it over a tab).
+    await page.mouse.move(0, 0);
     // Per-frame state a check keeps between its steps (for example the focused tab).
     const states = Object.fromEntries(FRAMEWORKS.map((framework) => [framework, {}]));
     for (const step of check.steps) {

@@ -9,12 +9,15 @@ export const FRAMEWORKS = ['vanilla', 'react', 'vue', 'angular'];
 export const REFERENCE = 'vanilla';
 
 /**
- * pixelmatch options and the allowed number of differing pixels. Threshold 0.02
- * (three full runs in a row green; 0.1 let an adjacent step of a colour scale pass
- * on every pixel); includeAA false keeps anti-aliasing out; the pixel-count limit
- * covers geometry.
+ * pixelmatch options and the allowed number of differing pixels. Threshold 0.005,
+ * the lowest of 0.005 and 0.01 that stayed green in three full runs of step 80 (four
+ * in a row, after the pointer is moved out of the frames at the start of a group and
+ * of a check). Measured with pixelmatch 8.0.0 over a uniform 200x50 area: of the 112
+ * hex colours of @hawiyah/tokens, one pair passes as equal (#b54708 and #b54707);
+ * a neutral 249,250,251 against the same grey lowered by 1 passes, by 2 fails.
+ * includeAA false keeps anti-aliasing out; the pixel-count limit covers geometry.
  */
-export const PIXEL_THRESHOLD = 0.02;
+export const PIXEL_THRESHOLD = 0.005;
 export const pixelLimit = (width, height) => Math.max(16, Math.floor(0.0005 * width * height));
 
 const kindOf = (value) => (value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value);
@@ -153,7 +156,7 @@ export function compareAria(snapshots) {
 
 /**
  * Screenshot of one framework against the reference: equal size in device pixels
- * and at most pixelLimit(width, height) differing pixels (threshold 0.02,
+ * and at most pixelLimit(width, height) differing pixels (threshold 0.005,
  * includeAA false). Returns { equal, width, height, differing, limit, message?, diff? }
  * where diff is the PNG buffer of the pixelmatch output when the sizes match.
  */

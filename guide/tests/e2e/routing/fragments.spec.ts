@@ -80,3 +80,49 @@ test('without a reduced-motion preference the scroll is smooth', async ({ page }
   await expect(page.locator('#install')).toBeInViewport();
   expect(await scrolls(page)).toContain('smooth');
 });
+
+// "On this page" of a reference page writes the section into the address
+// (hw-content-navigation updateHash: history.replaceState with the path under the
+// base and the fragment). The router does not see a replaceState, so focus stays on
+// the section and does not move to the page heading; Back leaves the page as before
+// (no extra history entry), Forward restores the address, and a reload on the fragment
+// address shows the section.
+for (const lang of ['en', 'ar'] as const) {
+  test(`${lang}: On this page writes the section into the address under the base path`, async ({ page }) => {
+    const id = available.components[0];
+    test.skip(!id, 'no component page is built');
+    await page.goto(`${lang}/components/${id}/`);
+    await hydrated(page);
+    await markDocument(page);
+    await page.locator('main').getByRole('link', { name: lang === 'ar' ? 'المرجع الكامل' : 'Full reference' }).click();
+    await expect(page).toHaveURL(new RegExp(`/hawiyah/${lang}/components/${id}/reference/?$`));
+    await expect(page.locator('main h1')).toBeFocused();
+    const entry = page.locator('hw-content-navigation a.hw-content-nav-link[href$="#api"]');
+    await expect(entry).toHaveCount(1);
+    await entry.focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(new RegExp(`^http://[^/]+/hawiyah/${lang}/components/${id}/reference/?#api$`));
+    const section = page.locator('main h2#api');
+    await expect(section).toBeFocused();
+    await expect(section).toBeInViewport();
+    // No router navigation: the same document, the heading of the page not focused.
+    expect(await sameDocument(page)).toBe(true);
+    await page.waitForTimeout(300);
+    await expect(section).toBeFocused();
+    expect(await page.evaluate(() => history.length)).toBeGreaterThan(1);
+
+    await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`/hawiyah/${lang}/components/${id}/?$`));
+    await expect(page.locator('main h1')).toBeVisible();
+    // Forward restores the address with the section (the router's popstate scroll
+    // restoration, 'top', decides the position there).
+    await page.goForward();
+    await expect(page).toHaveURL(new RegExp(`/hawiyah/${lang}/components/${id}/reference/?#api$`));
+    await expect(page.locator('main h1')).toBeVisible();
+
+    await page.reload();
+    await hydrated(page);
+    await expect(page).toHaveURL(new RegExp(`/hawiyah/${lang}/components/${id}/reference/?#api$`));
+    await expect(page.locator('main h2#api')).toBeInViewport();
+  });
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Every repository path that the guide build and its tests read. The single source of the path filters and the sparse checkout of .github/workflows/guide.yml (scripts/test/build-inputs.test.mjs compares them) and of the link check of step 20: a link to a repository file outside these paths must be listed in link-targets.json. A directory ends with a slash.",
+  "inputs": [
+    { "path": "guide/", "reason": "the guide itself" },
+    { "path": "docs/", "reason": "the component pages and the documents they link to" },
+    { "path": "components.json", "reason": "the component catalogue: page ids, names and controllers" },
+    { "path": "NOTICE", "reason": "copied into the licences of the build" },
+    { "path": "CHANGELOG.md", "reason": "the sources of the known differences of step 80" },
+    { "path": "pnpm-workspace.yaml", "reason": "the registry check proves that no workspace glob matches guide/" },
+    { "path": ".github/workflows/guide.yml", "reason": "the workflow itself, read by the test that compares it with this list" }
+  ]
+}

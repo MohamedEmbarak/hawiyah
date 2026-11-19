@@ -49,10 +49,27 @@ async function rotating(page: Page, lang: Lang): Promise<ReturnType<typeof parts
   await p.rotator.scrollIntoViewIfNeeded();
   await page.mouse.move(0, 0);
   await expect(p.pause).toBeVisible();
-  const now = await page.evaluate(() => Date.now());
-  await page.clock.pauseAt(now + 20);
+  await pauseClock(page);
   await expect(p.shown).toHaveText(command('angular'));
   return p;
+}
+
+/**
+ * Pauses the installed clock 20 ms after the page's current time. The clock runs on
+ * between reading the time and pausing; on a busy machine that can be more than
+ * 20 ms, and pauseAt refuses a time in the past. The time is then read again: the
+ * pause never depends on how long the two calls take.
+ */
+async function pauseClock(page: Page): Promise<void> {
+  for (let attempt = 1; ; attempt += 1) {
+    const now = await page.evaluate(() => Date.now());
+    try {
+      await page.clock.pauseAt(now + 20);
+      return;
+    } catch (error) {
+      if (attempt >= 10 || !/to the past/.test(String(error))) throw error;
+    }
+  }
 }
 
 /** The text of every live region of the page that has any (a new listing brings an empty one). */
@@ -268,30 +285,17 @@ for (const lang of ['ar', 'en'] as const) {
         for (const id of ORDER) {
           await step(page);
           await expect(p.shown).toHaveText(command(id));
-          if (id === 'angular' && width < 640) {
-            // The round has ended: below 40em the pause button had a row of its own,
-            // which is not kept empty (the block is shorter by exactly that row).
-            const row = await p.rotator.evaluate((block) => {
-              const bar = block.querySelector('.bar')!.getBoundingClientRect().height;
-              const selector = block.querySelector('fieldset')!.getBoundingClientRect().height;
-              return bar - selector;
-            });
-            expect(row).toBeLessThanOrEqual(1);
-            const last = await box();
-            expect(last.height).toBeLessThan(first.height);
-            expect(first.height - last.height).toBeCloseTo(first.notes - last.notes, 0);
-          } else {
-            expect(await box()).toEqual(first);
-          }
+          // One height at every width through and after the round: the row of the pause
+          // button stays reserved when the button goes (decision E-D).
+          expect(await box()).toEqual(first);
           expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
         }
         // The command scrolls inside its listing; the selector stays inside the block.
         const fits = await p.rotator.evaluate((block) => {
           const outer = block.getBoundingClientRect();
-          // A button that is not displayed (the pause button after the round, below 40em) has no box.
           return Array.from(block.querySelectorAll('fieldset, button, figure'), (node) => {
             const r = node.getBoundingClientRect();
-            return (r.width === 0 && r.height === 0) || (r.left >= outer.left - 0.5 && r.right <= outer.right + 0.5);
+            return r.left >= outer.left - 0.5 && r.right <= outer.right + 0.5;
           }).every(Boolean);
         });
         expect(fits).toBe(true);
@@ -321,23 +325,6 @@ for (const lang of ['ar', 'en'] as const) {
         expect(await axe(page)).toEqual([]);
       });
     }
-  });
-
-  test(`at 390 px the ended round leaves no empty row for the pause button (${lang})`, async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.setViewportSize({ width: 390, height: 844 });
-    const p = await rotating(page, lang);
-    for (const id of ORDER) {
-      await step(page);
-      await expect(p.shown).toHaveText(command(id));
-    }
-    await expect(p.control).toHaveClass(/\boff\b/);
-    await expect(p.control).toBeHidden();
-    const heights = await p.rotator.evaluate((rotator) => ({
-      bar: rotator.querySelector('.bar')!.getBoundingClientRect().height,
-      selector: rotator.querySelector('fieldset')!.getBoundingClientRect().height,
-    }));
-    expect(heights.bar).toBeLessThanOrEqual(heights.selector + 1);
   });
 
   test(`the lead selector is not shown as working when the script bundle fails (${lang})`, async ({ browser }) => {

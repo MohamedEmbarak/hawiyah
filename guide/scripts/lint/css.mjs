@@ -152,6 +152,18 @@ export function lintCssSource(file, text, allowlist) {
   const isStyles = file === 'src/styles.css';
   let lastImport = -1;
 
+  // src/styles.css is the package bundle (styles-*.css): it holds the three
+  // @hawiyah/styles imports and comments, nothing else. A guide rule written there
+  // would be part of what the outcome test keeps on as the package stylesheet.
+  if (isStyles) {
+    for (const node of root.nodes) {
+      if (node.type === 'comment' || (node.type === 'atrule' && node.name.toLowerCase() === 'import')) continue;
+      const start = node.source?.start ?? { line: 1, column: 1 };
+      const what = node.type === 'atrule' ? `@${node.name}` : node.type === 'rule' ? `the rule ${node.selector}` : `the ${node.type} ${node.toString().trim()}`;
+      out.push(finding('L-CSS-6', file, start.line, start.column, `src/styles.css holds only the @hawiyah/styles imports; found ${what}`));
+    }
+  }
+
   root.walk((node) => {
     const start = node.source?.start ?? { line: 1, column: 1 };
     if (node.type === 'rule') {

@@ -36,7 +36,11 @@
   gap: var(--hw-space-2) var(--hw-space-6);
   margin: 0;
   padding: 0;
-  list-style: none;
+}
+
+/* No list markers: the items are not list items (an inherited list-style-type would reach the package links). */
+.links > li {
+  display: block;
 }
 
 @media (min-width: 48em) {

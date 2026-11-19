@@ -106,13 +106,28 @@ export function scriptDiagnostic(
 }
 
 /**
- * Position of an import specifier in the source file the reader wrote (the first
- * quoted occurrence), or null when it is not written there literally.
+ * Position of an import specifier in the source file the reader wrote: the first
+ * occurrence as the source of an import or export (`from 'x'`, `import 'x'`,
+ * `import('x')`), so the same text in a template attribute or a string does not
+ * count; null when it is not written there literally.
  */
 export function specifierPosition(source: string, specifier: string): { line: number; column: number } | null {
   const escaped = specifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = new RegExp(`(['"])${escaped}\\1`).exec(source);
-  return match ? position(source, match.index + 1) : null;
+  const match = new RegExp(`(?:\\bfrom|\\bimport)\\s*\\(?\\s*(['"])${escaped}\\1`).exec(source);
+  return match ? position(source, match.index + match[0].length - specifier.length - 1) : null;
+}
+
+/**
+ * The script block of a Vue file that holds a syntax error: the first block whose
+ * content the parser refuses, in the order of the file; the setup block, else the
+ * plain block, when each parses on its own.
+ */
+export function failingScriptBlock<T extends { readonly content: string; readonly lang?: string; readonly loc?: { readonly start: { readonly line: number } } }>(
+  blocks: readonly (T | null)[],
+  parses: (block: T) => boolean,
+): T | null {
+  const present = blocks.filter((block): block is T => block !== null).sort((a, b) => (a.loc?.start.line ?? 0) - (b.loc?.start.line ?? 0));
+  return present.find((block) => !parses(block)) ?? blocks[0] ?? blocks[1] ?? null;
 }
 
 export function position(code: string, offset: number): { line: number; column: number } {

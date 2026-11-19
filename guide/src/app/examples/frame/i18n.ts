@@ -21,6 +21,8 @@ export interface FrameTexts {
   readonly leaveBlocked: string;
   /** The code replaced the frame's document (about:blank, document.open); the run was stopped. */
   readonly documentReplaced: string;
+  /** The run document loaded itself again and again; the run was stopped. */
+  readonly reloadLoop: string;
 }
 
 /** Framework names stay in Latin script in both languages. */
@@ -43,6 +45,7 @@ export const frameTexts: Texts<FrameTexts> = {
     submitBlocked: 'The example form was submitted inside the preview; nothing was sent.',
     leaveBlocked: 'The code tried to open another address in the preview. The request was not sent, and the run was stopped.',
     documentReplaced: 'The code replaced the document of the preview, so the result is no longer shown. The run was stopped.',
+    reloadLoop: 'The code reloads the preview again and again, so the run was stopped.',
   },
   ar: {
     frameTitle: (framework) => `النتيجة في ${framework}`,
@@ -55,5 +58,6 @@ export const frameTexts: Texts<FrameTexts> = {
     submitBlocked: 'أُرسل نموذج المثال داخل المعاينة، ولم يُرسَل أي شيء خارجها.',
     leaveBlocked: 'حاولت الشيفرة فتح عنوان آخر داخل المعاينة، فلم يُرسَل الطلب وأُوقف التشغيل.',
     documentReplaced: 'استبدلت الشيفرة مستند المعاينة، فلم تعد النتيجة معروضة وأُوقف التشغيل.',
+    reloadLoop: 'تعيد الشيفرة تحميل المعاينة مرة بعد مرة، فأُوقف التشغيل.',
   },
 };

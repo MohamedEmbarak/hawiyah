@@ -70,6 +70,28 @@ describe('checkParity', () => {
     expect(codes({ ar: swap(validAr(), 'يعرض المثال إجراءً أساسيًا واحدًا.', 'Tab، Enter') })).toEqual([]);
   });
 
+  it('requires Arabic script in headings h2 to h6, except the framework names (HWC-PAR8)', () => {
+    const ar = validAr();
+    const h3 = ar.match(/^### (.+)$/m);
+    expect(h3).not.toBeNull();
+    const latin = runPair({ ar: ar.replace(h3[0], '### Vertical') }).findings.filter((item) => item.code === 'HWC-PAR8');
+    expect(latin.map((item) => item.message)).toEqual(['the h3 has no Arabic script: "Vertical"; translate it, or list it in scripts/content/arabic-exceptions.json with a reason']);
+    expect(codes({ ar: ar.replace(h3[0], '### JavaScript') }).filter((code) => code === 'HWC-PAR8')).toEqual([]);
+  });
+
+  it('treats names that end in label, message, text or title and Latin phrases in live blocks as reader text (HWC-PAR8)', () => {
+    const at = '<button class="hw-button" type="button" data-variant="primary">متابعة</button>';
+    const with_ = (attributes) => runPair({ ar: validAr().replace(at, `<button class="hw-button" type="button" data-variant="primary" ${attributes}>متابعة</button>`) }).findings
+      .filter((item) => item.code === 'HWC-PAR8')
+      .map((item) => item.message.split(' has no')[0]);
+    expect(with_('data-hw-overflow-label="More tabs of this group"')).toEqual(['live block "primary" (vanilla) data-hw-overflow-label']);
+    expect(with_('data-copied-message="Copied"')).toEqual(['live block "primary" (vanilla) data-copied-message']);
+    expect(with_('data-note="Read the terms first"')).toEqual(['live block "primary" (vanilla) data-note']);
+    // Token values are not reader text, even with spaces; a single Latin word of another name is not either.
+    expect(with_('data-size="md" aria-describedby="hint other" autocomplete="shipping street-address"')).toEqual([]);
+    expect(with_('data-overflow-label="المزيد من التبويبات"')).toEqual([]);
+  });
+
   it('reports stale translations and source keys of missing sections', () => {
     const findings = runPair({ en: swap(validEn(), 'The layout uses logical properties only.', 'The layout uses logical properties.') }).findings;
     expect(findings.map((item) => [item.code, item.message.split(' was ')[0]])).toEqual([['HWC-STALE', 'section "rtl-and-localisation"']]);

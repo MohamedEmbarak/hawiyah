@@ -7,7 +7,9 @@
 
 /* Each run of a listing is a bidirectional isolate: the listing stays left to right
    and an Arabic string never takes neighbouring punctuation or another Arabic run
-   into a right-to-left reordering ('حساب', 'طلب' keeps its source order). */
+   into a right-to-left reordering ('حساب', 'طلب' keeps its source order). The
+   package stylesheet isolates the hw-code-token spans; this rule isolates the plain
+   runs, which are guide spans. */
 .run {
   unicode-bidi: isolate;
 }

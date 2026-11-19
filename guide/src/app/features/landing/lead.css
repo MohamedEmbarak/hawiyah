@@ -60,14 +60,6 @@
   visibility: hidden;
 }
 
-/* Below 40em the selector fills the row and the button wraps onto a row of its
-   own; outside the round that row is not kept empty. */
-@media (max-width: 40em) {
-  .pause.off {
-    display: none;
-  }
-}
-
 /* Both labels share one cell, so the button keeps one width. */
 .labels {
   display: inline-grid;
@@ -150,6 +142,5 @@
 
   .notes {
     justify-content: center;
-    text-align: center;
   }
 }

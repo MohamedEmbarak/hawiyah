@@ -2,12 +2,19 @@
 // specification): languages, the h2 set, API table headers, alert kinds,
 // caption prefixes, live info-string keys and code listing titles.
 
+import { readFileSync } from 'node:fs';
+
 export const LANGS = /** @type {const} */ (['ar', 'en']);
 
 export const DIRECTION = { ar: 'rtl', en: 'ltr' };
 
 export const GITHUB_BLOB = 'https://github.com/MohamedEmbarak/hawiyah/blob/main/';
 export const GITHUB_TREE = 'https://github.com/MohamedEmbarak/hawiyah/tree/main/';
+
+/** The repository paths the build reads (guide/build-inputs.json) and the link targets outside them (guide/link-targets.json). */
+const readList = (name, key) => JSON.parse(readFileSync(new URL(`../../${name}`, import.meta.url), 'utf8'))[key].map((entry) => entry.path);
+export const BUILD_INPUTS = readList('build-inputs.json', 'inputs');
+export const LINK_TARGETS = readList('link-targets.json', 'targets');
 
 /** The six h2 sections in their fixed order. */
 export const H2 = [
@@ -41,8 +48,8 @@ export const API_HEADERS = {
   ar: {
     javascript: ['الخيار', 'النوع', 'مطلوب', 'القيمة الافتراضية'],
     react: ['الخاصية', 'النوع', 'مطلوب', 'القيمة الافتراضية'],
-    vue: ['الاسم', 'الصنف', 'النوع', 'مطلوب', 'القيمة الافتراضية'],
-    angular: ['الاسم', 'الصنف', 'النوع', 'مطلوب', 'القيمة الافتراضية'],
+    vue: ['الاسم', 'الفئة', 'النوع', 'مطلوب', 'القيمة الافتراضية'],
+    angular: ['الاسم', 'الفئة', 'النوع', 'مطلوب', 'القيمة الافتراضية'],
   },
 };
 

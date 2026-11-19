@@ -14,6 +14,7 @@ import { format, NAMES } from './messages.mjs';
 import { ruleR1, ruleR2, ruleR3, ruleR4, ruleR5, ruleR6, ruleR6Resolved, ruleR7, ruleR8, ruleR9 } from './rules.mjs';
 import { npmRegistry } from './registry.mjs';
 import { deriveRuntime, ruleR8Derived } from './derived.mjs';
+import { deriveStylesBundle, ruleStylesDerived } from './styles.mjs';
 
 const RULE_ORDER = ['HWREG-R1', 'HWREG-R2', 'HWREG-R3', 'HWREG-R4', 'HWREG-R5', 'HWREG-R6', 'HWREG-R7', 'HWREG-R8', 'HWREG-R9'];
 
@@ -40,6 +41,7 @@ export async function checkRegistry({
   requireRuntime = false,
   metafiles = [],
   derive = true,
+  deriveStyles = false,
 } = {}) {
   if (!guideDir) throw new Error('checkRegistry: guideDir is required');
   if (!['strict', 'dist', 'preview'].includes(mode)) throw new Error(`checkRegistry: unknown mode ${mode}`);
@@ -82,6 +84,9 @@ export async function checkRegistry({
   // `derive` (default true with a distDir): steps 60 and 62 again, or a
   // function ({ guideDir, runtimeDir }) => metafiles that writes the expected runtime.
   if (ctx.distDir && derive) await ruleR8Derived(ctx, derive === true ? deriveRuntime : derive);
+  // `deriveStyles` (true in step 90 of a production build): the package stylesheet
+  // derived again from @hawiyah/styles, or a function ({ guideDir }) => { css, media, metafile }.
+  if (ctx.distDir && deriveStyles) await ruleStylesDerived(ctx, deriveStyles === true ? deriveStylesBundle : deriveStyles);
 
   // Stable order: by rule, then in the order found.
   const ordered = findings
@@ -99,6 +104,7 @@ export async function checkRegistry({
     packages: NAMES.map((name) => ({ name: `@hawiyah/${name}`, version: ctx.pin, files: ctx.installedCounts.get(name) ?? 0 })),
     runtime: ctx.runtime,
     derived: ctx.derived ?? null,
+    derivedStyles: ctx.derivedStyles ?? null,
     resolved: (ctx.metafiles ?? []).map((item) => item.label),
   };
 }
@@ -113,12 +119,19 @@ export function successLines(result, { distLabel, previewLabel } = {}) {
       + `(${d.published} published, ${d.linked} linked, ${d.bundled} bundled, manifest.json and import-map.json; `
       + `${d.specifiers} import map entries checked against the closure; inputs of ${d.bundles} esbuild runs checked)`;
   };
+  const stylesLine = () => {
+    const d = result.derivedStyles;
+    return d
+      ? [`registry-check: STYLES ${d.name} (${d.bytes} bytes) and ${d.media} media files in ${distLabel} equal byte for byte the bundle derived again from the verified @hawiyah/styles`]
+      : [];
+  };
   const resolvedLine = () => (result.resolved?.length
     ? [`registry-check: RESOLVED every input of ${result.resolved.join(', ')} lies in guide/ and every @hawiyah input in guide/node_modules/@hawiyah/<name>/`]
     : []);
   if (result.mode === 'preview') {
     lines.push(...resolvedLine());
     if (result.runtime) lines.push(distLine());
+    lines.push(...stylesLine());
     lines.push(`registry-check: PREVIEW 7 packages from local tarballs at ${previewLabel}`);
     return lines;
   }
@@ -127,6 +140,7 @@ export function successLines(result, { distLabel, previewLabel } = {}) {
   }
   lines.push(...resolvedLine());
   if (result.runtime) lines.push(distLine());
+  lines.push(...stylesLine());
   lines.push(`registry-check: OK 7 packages @hawiyah/*@${result.pin} from ${result.registryUrl}`);
   return lines;
 }

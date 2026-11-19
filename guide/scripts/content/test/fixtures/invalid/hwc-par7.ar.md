@@ -77,7 +77,7 @@ template: `<p class="hw-type" lang="ar" dir="rtl">اقرأ <strong>الشروط<
 
 جدول: خصائص HwFixture وأحداثه ومنافذه
 
-| الاسم | الصنف | النوع | مطلوب | القيمة الافتراضية |
+| الاسم | الفئة | النوع | مطلوب | القيمة الافتراضية |
 | --- | --- | --- | --- | --- |
 | `label` | prop | `string` | `true` | — |
 | `change` | event | `string` | `false` | — |
@@ -86,7 +86,7 @@ template: `<p class="hw-type" lang="ar" dir="rtl">اقرأ <strong>الشروط<
 
 جدول: مدخلات hw-fixture ومخرجاته ومحتواه
 
-| الاسم | الصنف | النوع | مطلوب | القيمة الافتراضية |
+| الاسم | الفئة | النوع | مطلوب | القيمة الافتراضية |
 | --- | --- | --- | --- | --- |
 | `label` | input | `string` | `true` | — |
 | `[hwFixtureIcon]` | content | `—` | `false` | — |

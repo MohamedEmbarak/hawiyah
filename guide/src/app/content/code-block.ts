@@ -44,9 +44,10 @@ export function trimTrailingLines(lines: readonly (readonly CodeRun[])[]): reado
  * A code listing in the packaged code-block markup: a figure with a visible title and a
  * copy button, and a named, focusable pre (role group, labelled by the title) holding
  * the highlighted runs as hw-code-token spans. Highlighting happens before render; the
- * component only places the runs. Each run that is not white space is a span of the
- * class run, which code-block.css isolates, so Arabic text in a left-to-right listing
- * keeps its source order. Used by content pages, the landing and the editor.
+ * component only places the runs. Each run that is not white space is a bidirectional
+ * isolate (a token span by the package stylesheet, a plain run as a span of the class
+ * run by code-block.css), so Arabic text in a left-to-right listing keeps its source
+ * order. Used by content pages, the landing and the editor.
  */
 @Component({
   selector: 'guide-code-block',
@@ -67,9 +68,13 @@ export class CodeBlockComponent {
   protected readonly shown = computed(() => trimTrailingLines(this.lines()));
   protected readonly newline = '\n';
 
-  /** Every run that is not white space is its own bidirectional isolate (class run, code-block.css). */
+  /**
+   * A highlighted run carries only its package token class: @hawiyah/styles isolates
+   * every hw-code-token span inside a code block. A plain run is a guide span of the
+   * class run, which code-block.css isolates.
+   */
   protected tokenClass(role: CodeRole): string {
-    return `run ${TOKEN_CLASSES[role]}`;
+    return TOKEN_CLASSES[role];
   }
 
   protected isBlank(text: string): boolean {

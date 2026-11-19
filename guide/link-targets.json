@@ -1,0 +1,4 @@
+{
+  "description": "Repository files outside build-inputs.json that a component page may link to (on GitHub). The sparse checkout of the guide workflow does not hold them, so step 20 accepts a link to them only from this list; tests/guide-link-targets.test.ts at the repository root checks in the full checkout that each one exists. A directory ends with a slash.",
+  "targets": []
+}

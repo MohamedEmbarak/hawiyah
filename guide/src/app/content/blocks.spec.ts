@@ -125,7 +125,14 @@ describe('BlocksContent', () => {
     expect(table?.querySelector('caption')?.textContent?.trim()).toBe('Keyboard');
     expect(Array.from(table?.querySelectorAll('th') ?? []).map((th) => th.textContent?.trim())).toEqual(['Key', 'Action']);
     expect(table?.querySelector('td code.hw-code')?.textContent).toBe('Enter');
+    expect(table?.querySelector('td code.hw-code')?.className).toBe('hw-code');
     expect(table?.querySelector('td .align-end')?.textContent).toBe('Activates');
+  });
+
+  it('gives every inline code element exactly the class hw-code (the published chip, no guide class)', () => {
+    const inline = Array.from(root.querySelectorAll('code')).filter((code) => !code.closest('pre'));
+    expect(inline.length).toBeGreaterThanOrEqual(2);
+    expect(inline.map((code) => code.className)).toEqual(inline.map(() => 'hw-code'));
   });
 
   it('renders every code block as a named, focusable group with a class; no class-less pre', () => {
@@ -149,13 +156,22 @@ describe('BlocksContent', () => {
     expect(first?.textContent).toBe('const a = 1;\n');
   });
 
-  it('wraps every run that is not white space in an isolated span of the class run', () => {
+  it('wraps every run that is not white space in a span: a package token span or a guide span of the class run', () => {
     const pre = Array.from(root.querySelectorAll('pre')).find((item) => item.textContent?.includes('حساب'));
     expect(pre?.getAttribute('dir')).toBe('ltr');
     const runs = Array.from(pre?.querySelectorAll('code > span') ?? []);
     expect(runs.map((span) => span.textContent)).toEqual(['[', "'حساب'", ',', "'طلب'", ']', '<', 'متابعة']);
-    expect(runs.every((span) => span.classList.contains('run'))).toBe(true);
-    expect(runs[1]?.classList.contains('hw-code-token-string')).toBe(true);
+    // A token span carries exactly its package class (the package isolates it); a plain
+    // run carries exactly the guide class run (code-block.css isolates it).
+    expect(runs.map((span) => span.className)).toEqual([
+      'hw-code-token-punctuation',
+      'hw-code-token-string',
+      'hw-code-token-punctuation',
+      'hw-code-token-string',
+      'hw-code-token-punctuation',
+      'run',
+      'run',
+    ]);
     expect(pre?.textContent).toBe("['حساب', 'طلب']\n<متابعة\n");
   });
 

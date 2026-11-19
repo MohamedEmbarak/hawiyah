@@ -190,7 +190,7 @@ template: `<button hwButton disabled>متابعة</button>`
 
 جدول: خصائص Button وأحداثه ومنافذه
 
-| الاسم | الصنف | النوع | مطلوب | القيمة الافتراضية |
+| الاسم | الفئة | النوع | مطلوب | القيمة الافتراضية |
 | --- | --- | --- | --- | --- |
 | `variant` | prop | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
 | `size` | prop | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
@@ -204,7 +204,7 @@ template: `<button hwButton disabled>متابعة</button>`
 
 جدول: مُدخلات button[hwButton] ومخرجاته ومحتواه
 
-| الاسم | الصنف | النوع | مطلوب | القيمة الافتراضية |
+| الاسم | الفئة | النوع | مطلوب | القيمة الافتراضية |
 | --- | --- | --- | --- | --- |
 | `variant` | input | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
 | `size` | input | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |

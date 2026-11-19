@@ -37,10 +37,10 @@
   margin-block: 0;
 }
 
+/* A hidden element is not a pointer target, so visibility alone keeps the cell out of reach. */
 .cell:not(.active) {
   visibility: hidden;
   opacity: 0;
-  pointer-events: none;
 }
 
 .pair {
@@ -59,7 +59,11 @@
   gap: var(--hw-space-2) var(--hw-space-6);
   margin: 0;
   padding: 0;
-  list-style: none;
+}
+
+/* No list markers: the items are not list items (an inherited list-style-type would reach the package links). */
+.next > li {
+  display: block;
 }
 
 /* M3: a framework change cross-fades the listings; only after the reader chose. */

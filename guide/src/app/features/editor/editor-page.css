@@ -69,3 +69,21 @@
     align-items: start;
   }
 }
+
+/* Without script the editor cannot edit or run code: one sentence says so, and the
+   guide's toolbar, status line, code and result are not shown. */
+.no-script {
+  display: none;
+}
+
+@media (scripting: none) {
+  .no-script {
+    display: block;
+  }
+
+  guide-editor-toolbar,
+  guide-editor-status,
+  .workspace {
+    display: none;
+  }
+}

@@ -98,6 +98,10 @@ export const MESSAGES = Object.freeze({
   r8DerivedDiffers: ['HWREG-R8', 'runtime/<path> differs from the file derived again from the verified packages'],
   r8NotDerived: ['HWREG-R8', 'runtime/<path> is not a file derived from the verified packages'],
   r8DerivedMissing: ['HWREG-R8', 'runtime/<path> is derived from the verified packages but missing from the output'],
+  r8StylesServed: ['HWREG-R8', 'the output has <count> package stylesheets styles-<hash>.css (<names>); expected exactly one'],
+  r8StylesDerive: ['HWREG-R8', 'the package stylesheet could not be derived again from the verified @hawiyah/styles (<error>)'],
+  r8StylesDiffers: ['HWREG-R8', '<path> differs from the bundle derived again from the verified @hawiyah/styles; src/styles.css holds only its three imports'],
+  r8StylesMedia: ['HWREG-R8', '<path> <reason>'],
   r8ImportMap: ['HWREG-R8', 'runtime/import-map.json maps "<specifier>" to "<value>": <reason>'],
 
   // HWREG-R9: workspace globs.

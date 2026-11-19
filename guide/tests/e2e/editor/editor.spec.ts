@@ -89,6 +89,8 @@ for (const lang of ['en', 'ar'] as const) {
     const frame = await readyResult(page);
     expect(await frame.title()).toBe(lang === 'en' ? 'Result in Angular' : 'النتيجة في Angular');
     await expect(page.locator('guide-editor-status')).toContainText('@hawiyah/angular 0.3.0 · npm · sha512-');
+    // The sentence for a browser without script is not shown when script runs.
+    await expect(page.locator('main .no-script')).toBeHidden();
   });
 }
 
@@ -248,3 +250,46 @@ for (const lang of ['en', 'ar'] as const satisfies readonly Lang[]) {
     });
   }
 }
+
+// Visible focus (WCAG 2.4.7) on the two guide-owned surfaces of the editor: the code
+// (the CodeMirror editor draws the ring) and the result frame (its container draws
+// the ring while focus is in the frame's document), in both colour modes.
+for (const mode of ['light', 'dark'] as const) {
+  test(`the focused code and the focused result show a visible focus indicator (${mode})`, async ({ page }) => {
+    await presetMode(page, mode);
+    await openEditor(page, 'en', 'framework=vanilla');
+    await originalRan(page, 'en');
+    await expect(page.locator('html')).toHaveAttribute('data-hw-mode', mode);
+    const focusColour = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--hw-color-focus)';
+      document.body.append(probe);
+      const colour = getComputedStyle(probe).color;
+      probe.remove();
+      return colour;
+    });
+    const ring = (selector: string) =>
+      page.locator(selector).first().evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { style: style.outlineStyle, width: parseFloat(style.outlineWidth), colour: style.outlineColor };
+      });
+    // From Run, Tab reaches the code (after the status line's copy button and the file tab).
+    const code = page.getByRole('textbox', { name: /^Code of/ });
+    await code.focus();
+    await expect(page.locator('.cm-editor').first()).toHaveClass(/cm-focused/);
+    expect(await ring('.cm-editor')).toEqual({ style: 'solid', width: 2, colour: focusColour });
+    // Escape then Tab leaves the code; the next stop is the result frame.
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Tab');
+    await expect.poll(() => page.evaluate(() => document.activeElement?.localName)).toBe('iframe');
+    // The page learns that focus went into the frame from its window's events.
+    await expect.poll(() => ring('guide-preview-frame .frame')).toEqual({ style: 'solid', width: 2, colour: focusColour });
+    // Tab on out of the frame (past the example's own controls): the ring goes.
+    for (let presses = 0; presses < 5 && (await page.evaluate(() => document.activeElement?.localName)) === 'iframe'; presses += 1) {
+      await page.keyboard.press('Tab');
+    }
+    await expect(page.getByRole('button', { name: 'Clear the log' })).toBeFocused();
+    await expect.poll(async () => (await ring('guide-preview-frame .frame')).style).toBe('none');
+  });
+}
+

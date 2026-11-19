@@ -1,137 +1,96 @@
 import { test, expect, hydrated, keepRootDocument, presetMode } from '../support/fixtures';
 import { documents } from '../support/routes';
+import { ANCESTOR_EFFECTS, INHERITED_ALLOWED, INHERITED_PROPERTIES, PLACEMENT, SIZE_RESOLVED, stylingRule } from '../support/styling-rule';
 
-// The outcome proof of the styling rule (README.md, "The styling rule"): the guide
-// never changes how a package element renders. For every prerendered page, in both
-// colour modes and at 1280 and 390 px, the computed appearance of every element
-// whose class list has a class starting with hw- (and every hw-* element) is read
-// twice in one task: with every stylesheet on, and with every stylesheet, style
-// element and adopted sheet disabled except the package bundle (styles-*.css, built
-// from src/styles.css, which holds only the @hawiyah/styles imports). The values
-// must be equal.
+// The computed half of the styling rule (README.md, "The styling rule"); the
+// structural half is styling-structure.spec.ts. For every prerendered page, in both
+// colour modes and at 1280 and 390 px, every computed property (custom properties
+// aside) of every package element (as styling-rule.ts defines it), and of its
+// ::before, ::after and ::marker when they exist, is read twice in one task: with
+// every stylesheet on, and with every stylesheet, style element and adopted sheet
+// disabled except the package bundle (styles-*.css; step 90 proves that it equals the
+// bundle derived again from @hawiyah/styles). The values must be equal, except the
+// placement properties (PLACEMENT, each with its reason).
 //
-// A difference of an inherited property whose origin is a guide element (not an hw-
-// element) is the document or container setup of the guide; it is accepted only
-// when every guide declaration of that property on the origin is a package token
-// (var(--hw-...)), and it is counted in the annotation. Any other difference fails.
+// A difference of an inherited property whose origin is a guide element is accepted
+// only when a rule listed in INHERITED_ALLOWED declares that property on the origin
+// (the structural half fails every other such rule). Any other difference fails.
 
-/** Appearance properties compared on every hw- element. */
-const COMPARED = [
-  'display',
-  'overflow-wrap',
-  'word-break',
-  'white-space',
-  'white-space-collapse',
-  'text-wrap-mode',
-  'unicode-bidi',
-  'color',
-  'background-color',
-  'background-image',
-  ...['top', 'right', 'bottom', 'left'].flatMap((side) => [`border-${side}-width`, `border-${side}-style`, `border-${side}-color`]),
-  'border-top-left-radius',
-  'border-top-right-radius',
-  'border-bottom-right-radius',
-  'border-bottom-left-radius',
-  'padding-top',
-  'padding-right',
-  'padding-bottom',
-  'padding-left',
-  'font-family',
-  'font-size',
-  'font-weight',
-  'font-style',
-  'font-stretch',
-  'font-variant',
-  'letter-spacing',
-  'text-transform',
-  'line-height',
-  'text-decoration-line',
-  'text-decoration-style',
-  'text-decoration-color',
-  'text-decoration-thickness',
-  'text-underline-offset',
-  'box-shadow',
-  'opacity',
-  'outline-style',
-  'outline-width',
-  'outline-color',
-  'outline-offset',
-] as const;
-
-/**
- * Placement, not appearance: never compared. A guide container may place a package
- * element; it may not change how the element itself renders.
- */
-const PLACEMENT: { properties: RegExp; reason: string }[] = [
-  { properties: /^margin(-|$)/, reason: 'the space between a package element and its neighbours belongs to the page layout' },
-  { properties: /^(min-|max-)?(inline-size|block-size|width|height)$/, reason: 'the room a guide container gives the element' },
-  { properties: /^(position|inset(-.*)?|top|right|bottom|left|z-index)$/, reason: 'where the element sits in the page' },
-  { properties: /^(order|flex(-.*)?|grid(-.*)?|align-self|justify-self|place-self)$/, reason: 'the element as an item of a guide flex or grid container' },
-  { properties: /^text-align$/, reason: 'alignment of the element inside a guide container (inherited from a centred page block)' },
-  { properties: /^visibility$/, reason: 'a guide control that is out of its round keeps its place while hidden (landing pause button)' },
-];
-
-/**
- * Two consequences of placement that show in compared properties and are handled by
- * rule, not by leaving the property out:
- * - display: an item of a guide flex or grid container is blockified by the browser
- *   (inline becomes block); accepted only when the parent is that container and the
- *   value is exactly the blockified form of the value without the guide stylesheets.
- * - currentColor: border, outline and text-decoration colours that follow the
- *   element's own color in both states are judged with color itself.
- */
-const FOLLOWS_COLOR = new Set([
+/** Placement consequences handled by rule; see compareStyles. */
+const FOLLOWS_COLOR = [
   'border-top-color',
   'border-right-color',
   'border-bottom-color',
   'border-left-color',
+  'border-block-start-color',
+  'border-block-end-color',
+  'border-inline-start-color',
+  'border-inline-end-color',
   'text-decoration-color',
+  'text-emphasis-color',
   'outline-color',
-]);
-
-/** Inherited CSS properties among COMPARED. */
-const INHERITED = new Set([
-  'overflow-wrap',
-  'word-break',
-  'white-space',
-  'white-space-collapse',
-  'text-wrap-mode',
-  'color',
-  'font-family',
-  'font-size',
-  'font-weight',
-  'font-style',
-  'font-stretch',
-  'font-variant',
-  'letter-spacing',
-  'text-transform',
-  'line-height',
-]);
+  'column-rule-color',
+  'row-rule-color',
+  'caret-color',
+  '-webkit-text-fill-color',
+  '-webkit-text-stroke-color',
+];
 
 interface Outcome {
   sheets: { package: number; disabled: number };
   elements: number;
   properties: number;
+  pseudo: number;
   violations: string[];
   inheritedFromGuide: string[];
 }
 
-function compareStyles(input: { compared: readonly string[]; inherited: string[]; followsColor: string[] }): Outcome {
-  const { compared, inherited } = input;
-  const inheritedSet = new Set(inherited);
+function compareStyles(input: { placement: string[]; inherited: string[]; followsColor: string[]; sizeResolved: string[] }): Outcome {
+  const placement = input.placement.map((source) => new RegExp(source));
+  const inheritedSet = new Set(input.inherited);
   const followsColor = new Set(input.followsColor);
-  const colorAt = compared.indexOf('color');
-  const displayAt = compared.indexOf('display');
-  const blockified: Record<string, string> = { inline: 'block', 'inline-block': 'block', 'inline-flex': 'flex', 'inline-grid': 'grid', 'inline-table': 'table' };
+  const sizeResolved = new Set(input.sizeResolved);
+  const names = Array.from(getComputedStyle(document.documentElement)).filter((name) => !name.startsWith('--') && !placement.some((pattern) => pattern.test(name)));
+  // Read on every other element: the inherited properties, and display for the box parent.
+  const inheritedNames = [...names.filter((name) => inheritedSet.has(name)), 'display'];
+  const colorAt = names.indexOf('color');
+  const displayAt = names.indexOf('display');
+  const blockified: Record<string, string> = { inline: 'block', 'inline-block': 'block', 'inline-flex': 'flex', 'inline-grid': 'grid', 'inline-table': 'table', 'inline list-item': 'block list-item' };
   const blockify = (value: string) => blockified[value] ?? value;
   const all = [document.documentElement, ...Array.from(document.documentElement.querySelectorAll('*'))];
-  const isPackage = (el: Element) =>
-    el.localName.startsWith('hw-') || Array.from(el.classList).some((name) => name.startsWith('hw-'));
-  const read = () =>
-    all.map((el) => {
+  const isPackage = (el: Element) => el.hasAttribute('data-guide-styling-package');
+  const packages = all.filter(isPackage);
+  const indexOf = new Map(all.map((el, i) => [el, i] as const));
+  const PSEUDO = ['::before', '::after', '::marker'] as const;
+
+  interface State {
+    own: Map<Element, string[]>;
+    inherited: Map<Element, string[]>;
+    pseudo: Map<string, string[]>;
+    box: Map<Element, string>;
+  }
+  const read = (): State => {
+    const own = new Map<Element, string[]>();
+    const inherited = new Map<Element, string[]>();
+    const pseudo = new Map<string, string[]>();
+    const box = new Map<Element, string>();
+    for (const el of all) {
       const style = getComputedStyle(el);
-      return compared.map((name) => style.getPropertyValue(name));
-    });
+      if (isPackage(el)) {
+        own.set(el, names.map((name) => style.getPropertyValue(name)));
+        const rect = el.getBoundingClientRect();
+        box.set(el, `${rect.width}x${rect.height}`);
+        for (const which of PSEUDO) {
+          const ps = getComputedStyle(el, which);
+          const exists = which === '::marker' ? /list-item/.test(style.display) : ps.content !== 'none' && ps.content !== 'normal';
+          pseudo.set(`${indexOf.get(el)}${which}`, exists ? names.map((name) => ps.getPropertyValue(name)) : []);
+        }
+      } else {
+        inherited.set(el, inheritedNames.map((name) => style.getPropertyValue(name)));
+      }
+    }
+    return { own, inherited, pseudo, box };
+  };
   const describe = (el: Element) => {
     const classes = Array.from(el.classList).join('.');
     const path: string[] = [];
@@ -166,103 +125,111 @@ function compareStyles(input: { compared: readonly string[]; inherited: string[]
   const after = read();
   for (const sheet of disabled) sheet.disabled = false;
 
-  // Guide declarations of a property on an element, read from the sheets that were off.
-  const guideValues = (el: Element, property: string): string[] => {
-    const values: string[] = [];
-    const visit = (rules: CSSRuleList) => {
-      for (const rule of Array.from(rules)) {
-        if (rule instanceof CSSStyleRule) {
-          let matches = false;
-          try {
-            matches = el.matches(rule.selectorText);
-          } catch {
-            matches = false;
-          }
-          if (matches) {
-            const value = rule.style.getPropertyValue(property);
-            if (value) values.push(value.trim());
-          }
-        }
-        if ('cssRules' in rule && (rule as CSSGroupingRule).cssRules) visit((rule as CSSGroupingRule).cssRules);
-      }
-    };
-    for (const sheet of disabled) visit(sheet.cssRules);
-    return values;
+  /** The value of a property for any element in a state (package: own list; other: inherited list). */
+  const valueOf = (state: State, el: Element, name: string) => {
+    if (isPackage(el)) return state.own.get(el)![names.indexOf(name)];
+    const at = inheritedNames.indexOf(name);
+    return at === -1 ? undefined : state.inherited.get(el)![at];
   };
+  const allowedOn = (el: Element, property: string) => (el.getAttribute('data-guide-styling-allowed') ?? '').split(' ').includes(property);
 
-  const index = new Map(all.map((el, i) => [el, i] as const));
   const violations: string[] = [];
   const inheritedFromGuide = new Set<string>();
-  let elements = 0;
-  all.forEach((el, i) => {
-    if (!isPackage(el)) return;
-    elements += 1;
-    compared.forEach((property, p) => {
-      const a = before[i]![p];
-      const b = after[i]![p];
-      if (a === b) return;
-      if (followsColor.has(property) && before[i]![colorAt] === a && after[i]![colorAt] === b) return;
-      if (property === 'display') {
+  let pseudoCount = 0;
+  const judge = (el: Element, label: string, a: string[], b: string[], own: boolean) => {
+    names.forEach((property, p) => {
+      const x = a[p]!;
+      const y = b[p]!;
+      if (x === y) return;
+      if (followsColor.has(property) && a[colorAt] === x && b[colorAt] === y) return;
+      if (sizeResolved.has(property) && before.box.get(el) !== after.box.get(el)) return;
+      if (own && property === 'display') {
         // The box parent in each state: the nearest ancestor that generates a box
         // (display: contents skipped). Blockified as an item of a flex or grid
         // container with the guide stylesheets, and not such an item without them.
-        const boxParent = (values: string[][]) => {
+        const boxParent = (state: State) => {
           let box = el.parentElement;
-          while (box && values[index.get(box)!]![displayAt] === 'contents') box = box.parentElement;
+          while (box && valueOf(state, box, 'display') === 'contents') box = box.parentElement;
           return box;
         };
+        const flexOrGrid = (value: string | undefined) => /(^|\s)(flex|grid)$/.test(value ?? '');
         const boxBefore = boxParent(before);
         const boxAfter = boxParent(after);
-        const flexOrGrid = (value: string | undefined) => /(^|\s)(flex|grid)$/.test(value ?? '');
         if (
           boxBefore &&
-          flexOrGrid(before[index.get(boxBefore)!]![displayAt]) &&
-          !(boxAfter === boxBefore && flexOrGrid(after[index.get(boxAfter)!]![displayAt])) &&
-          blockify(b!) === a
+          flexOrGrid(valueOf(before, boxBefore, 'display')) &&
+          !(boxAfter === boxBefore && flexOrGrid(valueOf(after, boxAfter!, 'display'))) &&
+          blockify(y) === x
         ) {
           return;
         }
       }
       if (inheritedSet.has(property)) {
         // Walk up while the ancestor shows the same pair of values: the origin is the
-        // highest element of that run.
-        let origin = el;
-        for (let parent = el.parentElement; parent; parent = parent.parentElement) {
-          const j = index.get(parent)!;
-          if (before[j]![p] !== a || after[j]![p] !== b) break;
+        // highest element of that run (for a pseudo-element, starting at its element).
+        let origin: Element = el;
+        let moved = !own;
+        for (let parent = own ? el.parentElement : el; parent; parent = parent.parentElement) {
+          if (valueOf(before, parent, property) !== x || valueOf(after, parent, property) !== y) break;
           origin = parent;
+          moved = true;
         }
-        if (origin !== el) {
-          if (isPackage(origin)) return; // reported at the package element where it starts
-          const values = guideValues(origin, property);
-          if (values.length > 0 && values.every((value) => /^var\(--hw-[a-z0-9-]+\)$/.test(value))) {
-            inheritedFromGuide.add(`${property} from ${describe(origin)}: ${values.join(', ')}`);
+        if (moved && (origin !== el || !own)) {
+          if (isPackage(origin) && origin !== el) return; // reported at the package element where it starts
+          if (!isPackage(origin) && allowedOn(origin, property)) {
+            inheritedFromGuide.add(`${property} from ${describe(origin)}`);
             return;
           }
-          violations.push(`${describe(el)} ${property}: ${a} -> ${b} (inherited from guide element ${describe(origin)}, declared ${values.join(', ') || 'nothing readable'})`);
-          return;
+          if (!isPackage(origin)) {
+            violations.push(`${label} ${property}: ${x} -> ${y} (inherited from guide element ${describe(origin)}, which no listed rule explains)`);
+            return;
+          }
         }
       }
-      violations.push(`${describe(el)} ${property}: ${a} -> ${b}`);
+      violations.push(`${label} ${property}: ${x} -> ${y}`);
     });
-  });
+  };
+  for (const el of packages) {
+    judge(el, describe(el), before.own.get(el)!, after.own.get(el)!, true);
+    for (const which of PSEUDO) {
+      const key = `${indexOf.get(el)}${which}`;
+      const a = before.pseudo.get(key)!;
+      const b = after.pseudo.get(key)!;
+      if (a.length === 0 && b.length === 0) continue;
+      pseudoCount += 1;
+      if (a.length === 0 || b.length === 0) {
+        violations.push(`${describe(el)}${which} exists ${a.length === 0 ? 'only without' : 'only with'} the guide stylesheets`);
+        continue;
+      }
+      judge(el, `${describe(el)}${which}`, a, b, false);
+    }
+  }
   return {
     sheets: { package: packageSheets.length, disabled: disabled.length },
-    elements,
-    properties: elements * compared.length,
+    elements: packages.length,
+    properties: names.length,
+    pseudo: pseudoCount,
     violations,
     inheritedFromGuide: Array.from(inheritedFromGuide),
   };
 }
 
-test('the compared and the placement properties are disjoint', () => {
-  for (const name of COMPARED) {
-    expect(PLACEMENT.filter((entry) => entry.properties.test(name)).map((entry) => entry.reason), name).toEqual([]);
-  }
-  for (const name of [...INHERITED, ...FOLLOWS_COLOR]) expect(COMPARED as readonly string[]).toContain(name);
+test('the placement and the size-resolved properties are disjoint and inherited colours follow color', () => {
+  for (const name of SIZE_RESOLVED) expect(PLACEMENT.some((entry) => entry.properties.test(name)), name).toBe(false);
+  for (const name of FOLLOWS_COLOR) expect(PLACEMENT.some((entry) => entry.properties.test(name)), name).toBe(false);
 });
 
 const pages = documents.filter((doc) => doc.kind === 'page');
+const marking = {
+  mode: 'elements' as const,
+  inheritedAllowed: INHERITED_ALLOWED.map(({ sheet, selector, property }) => ({ sheet, selector, property })),
+};
+const comparing = {
+  placement: PLACEMENT.map((entry) => entry.properties.source),
+  inherited: [...INHERITED_PROPERTIES, ...ANCESTOR_EFFECTS],
+  followsColor: FOLLOWS_COLOR,
+  sizeResolved: SIZE_RESOLVED,
+};
 
 for (const doc of pages) {
   const label = doc.route === '' ? 'root document' : doc.route === '404' ? '404 document' : doc.route;
@@ -292,12 +259,14 @@ for (const doc of pages) {
           await document.fonts.ready;
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         });
-        const outcome = await page.evaluate(compareStyles, { compared: COMPARED, inherited: [...INHERITED], followsColor: [...FOLLOWS_COLOR] });
+        await page.evaluate(stylingRule, marking);
+        const outcome = await page.evaluate(compareStyles, comparing);
         expect(outcome.sheets.package, 'exactly one package bundle').toBe(1);
         expect(outcome.sheets.disabled, 'guide stylesheets disabled').toBeGreaterThan(0);
         expect(outcome.elements, 'package elements compared').toBeGreaterThan(0);
+        expect(outcome.properties, 'computed properties compared').toBeGreaterThan(300);
         expect(outcome.violations, `${label}, ${mode}, ${width} px`).toEqual([]);
-        counts.push(`${mode} ${width}: ${outcome.elements} elements x ${COMPARED.length} properties = ${outcome.properties}`);
+        counts.push(`${mode} ${width}: ${outcome.elements} elements and ${outcome.pseudo} pseudo-elements x ${outcome.properties} properties`);
         for (const entry of outcome.inheritedFromGuide) {
           if (!counts.includes(`inherited: ${entry}`)) counts.push(`inherited: ${entry}`);
         }

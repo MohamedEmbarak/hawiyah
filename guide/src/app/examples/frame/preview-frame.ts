@@ -63,6 +63,7 @@ export type FrameLogEntry =
   | { readonly run: number; readonly kind: 'submit' }
   | { readonly run: number; readonly kind: 'left'; readonly text: string }
   | { readonly run: number; readonly kind: 'dropped'; readonly count: number }
+  | { readonly run: number; readonly kind: 'dropped-outcome'; readonly count: number }
   | { readonly run: number; readonly kind: 'fallback' };
 
 interface ActiveRun {
@@ -80,6 +81,8 @@ interface ActiveRun {
   loadedAt: number;
   /** Time of the latest accepted message of the frame. */
   messageAt: number;
+  /** Time of the latest ready message: the bootstrap of a (re)loaded run document posts it. */
+  readyAt: number;
 }
 
 /**
@@ -96,10 +99,13 @@ const LEFT_WINDOW_MS = 1000;
 const REPEATED_LOAD_WINDOW_MS = 250;
 /**
  * A repeated load without a refused navigation is a reload of the run's document
- * when the bootstrap posts again within this time; otherwise the code replaced the
- * document (about:blank, document.open) and the run is stopped.
+ * when the bootstrap posts ready again within this time (another message, such as a
+ * height report, does not count); otherwise the code replaced the document
+ * (about:blank, document.open) and the run is stopped.
  */
 const REPLACED_WINDOW_MS = 3000;
+/** A run document that loads more often than this has reloaded itself without end, and the run is stopped. */
+const MAX_LOADS = 4;
 
 /** Set once a modules run failed for a runtime reason: later runs of this document use the bundles. */
 let modulesUnavailable = false;
@@ -120,7 +126,8 @@ let modulesUnavailable = false;
  */
 @Component({
   selector: 'guide-preview-frame',
-  template: `<div class="frame">@for (item of runs(); track item.run) {<iframe #frame sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" [title]="title()" (load)="loaded(item.run)"></iframe>}</div><p class="notice hw-type" data-scale="body-sm" data-tone="muted" role="status">@if (notice(); as n) {@if (n.address !== undefined) {{{ t().navigationBlocked.before }}<bdi dir="ltr">{{ n.address }}</bdi>{{ t().navigationBlocked.after }}} @else {{{ n.text }}}}</p>`,
+  host: { '(window:blur)': 'windowBlurred()', '(window:focus)': 'frameFocused.set(false)', '(document:focusin)': 'focusMoved($event)' },
+  template: `<div class="frame" [class.focused]="frameFocused()">@for (item of runs(); track item.run) {<iframe #frame sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" [title]="title()" (load)="loaded(item.run)"></iframe>}</div><p class="notice hw-type" data-scale="body-sm" data-tone="muted" role="status">@if (notice(); as n) {@if (n.address !== undefined) {{{ t().navigationBlocked.before }}<bdi dir="ltr">{{ n.address }}</bdi>{{ t().navigationBlocked.after }}} @else {{{ n.text }}}}</p>`,
   styleUrl: './preview-frame.css',
 })
 export class PreviewFrame {
@@ -144,6 +151,12 @@ export class PreviewFrame {
    * line of the page (example block or editor), not here.
    */
   protected readonly notice = signal<{ readonly text: string; readonly address?: string } | null>(null);
+  /**
+   * Focus is in the frame's document. The frame has an opaque origin, so the page's
+   * :focus-within does not reach its container; the page sees the window lose focus
+   * to the iframe instead, and preview-frame.css draws the focus indicator.
+   */
+  protected readonly frameFocused = signal(false);
   private readonly browser = signal(false);
   protected readonly t = computed(() => pick(frameTexts, this.source()?.lang ?? 'en'));
   protected readonly title = computed(() => this.t().frameTitle(FRAME_FRAMEWORK_NAMES[this.source()?.framework ?? 'vanilla']));
@@ -265,7 +278,7 @@ export class PreviewFrame {
       this.status.emit({ state: 'failed', run, strategy, message: error instanceof Error ? error.message : String(error) });
       return;
     }
-    this.active = { run, token, strategy, budget: new MessageBudget(), runtimeBase, state: 'loading', written: false, loads: 0, loadedAt: Number.NEGATIVE_INFINITY, messageAt: Number.NEGATIVE_INFINITY };
+    this.active = { run, token, strategy, budget: new MessageBudget(), runtimeBase, state: 'loading', written: false, loads: 0, loadedAt: Number.NEGATIVE_INFINITY, messageAt: Number.NEGATIVE_INFINITY, readyAt: Number.NEGATIVE_INFINITY };
     this.runs.set([{ run }]);
     afterNextRender(
       {
@@ -290,17 +303,21 @@ export class PreviewFrame {
     if (!message) return;
     active.messageAt = performance.now();
     if (!active.budget.take(message.type)) {
-      // One log entry per run: its count is reported at most every DROPPED_REPORT_MS.
-      if (message.type === 'console' && this.droppedTimer === null) {
+      // One log entry per run and kind: its count is reported at most every DROPPED_REPORT_MS.
+      if (message.type !== 'height' && this.droppedTimer === null) {
         this.droppedTimer = setTimeout(() => {
           this.droppedTimer = null;
-          if (this.active === active) this.log.emit({ run: active.run, kind: 'dropped', count: active.budget.dropped });
+          if (this.active === active) this.reportDropped(active);
         }, DROPPED_REPORT_MS);
       }
       return;
     }
     switch (message.type) {
+      case 'emptied':
+        this.stop(this.t().documentReplaced);
+        return;
       case 'ready':
+        active.readyAt = active.messageAt;
         if (active.state !== 'loading') return;
         active.state = 'ready';
         this.clearTimer();
@@ -334,6 +351,17 @@ export class PreviewFrame {
     }
   }
 
+  /** The page's window lost focus: to this frame when its iframe is the page's active element. */
+  protected windowBlurred(): void {
+    // The active element is updated after the blur event.
+    setTimeout(() => this.frameFocused.set(this.document.activeElement !== null && this.document.activeElement === this.frame()?.nativeElement), 0);
+  }
+
+  /** Focus moved within the page: to this frame's iframe (focus enters its document) or elsewhere. */
+  protected focusMoved(event: FocusEvent): void {
+    this.frameFocused.set(event.target !== null && event.target === this.frame()?.nativeElement);
+  }
+
   /** A load event of the frame of a run. */
   protected loaded(run: number): void {
     const active = this.active;
@@ -343,13 +371,17 @@ export class PreviewFrame {
     active.loads += 1;
     active.loadedAt = now;
     if (now - PreviewFrame.refusedAt > LEFT_WINDOW_MS) {
+      if (active.loads > MAX_LOADS) {
+        this.stop(this.t().reloadLoop);
+        return;
+      }
       // A repeated load without a refused navigation: a reload of the same document
-      // posts again; a document the code put in its place does not.
+      // posts ready again; a document the code put in its place does not.
       if (active.loads >= 2) {
         if (this.replacedTimer !== null) clearTimeout(this.replacedTimer);
         this.replacedTimer = setTimeout(() => {
           this.replacedTimer = null;
-          if (this.active === active && active.messageAt < now) this.stop(this.t().documentReplaced);
+          if (this.active === active && active.readyAt < now) this.stop(this.t().documentReplaced);
         }, REPLACED_WINDOW_MS);
       }
       return;
@@ -394,6 +426,12 @@ export class PreviewFrame {
     clearTimeout(this.droppedTimer);
     this.droppedTimer = null;
     const active = this.active;
-    if (active && active.budget.dropped > 0) this.log.emit({ run: active.run, kind: 'dropped', count: active.budget.dropped });
+    if (active) this.reportDropped(active);
+  }
+
+  /** The dropped counts of a run, one log entry per kind (updated in place by the editor). */
+  private reportDropped(active: ActiveRun): void {
+    if (active.budget.dropped > 0) this.log.emit({ run: active.run, kind: 'dropped', count: active.budget.dropped });
+    if (active.budget.droppedOutcome > 0) this.log.emit({ run: active.run, kind: 'dropped-outcome', count: active.budget.droppedOutcome });
   }
 }

@@ -75,8 +75,8 @@ Table: Header rows of the API tables
 | --- | --- | --- |
 | JavaScript | `\| Option \| Type \| Required \| Default \|` | `\| الخيار \| النوع \| مطلوب \| القيمة الافتراضية \|` |
 | React | `\| Prop \| Type \| Required \| Default \|` | `\| الخاصية \| النوع \| مطلوب \| القيمة الافتراضية \|` |
-| Vue | `\| Name \| Kind \| Type \| Required \| Default \|` | `\| الاسم \| الصنف \| النوع \| مطلوب \| القيمة الافتراضية \|` |
-| Angular | `\| Name \| Kind \| Type \| Required \| Default \|` | `\| الاسم \| الصنف \| النوع \| مطلوب \| القيمة الافتراضية \|` |
+| Vue | `\| Name \| Kind \| Type \| Required \| Default \|` | `\| الاسم \| الفئة \| النوع \| مطلوب \| القيمة الافتراضية \|` |
+| Angular | `\| Name \| Kind \| Type \| Required \| Default \|` | `\| الاسم \| الفئة \| النوع \| مطلوب \| القيمة الافتراضية \|` |
 
 - Name, Type and Default cells are inline code. A missing default is an em dash
   (`—`), written without code formatting.
@@ -262,7 +262,14 @@ quotation renders as a plain quotation.
 - `#section` leads to a heading of the same page; the id must exist. The
   `#section` of a link to another built component page must be a heading id of
   that page.
-- A relative link to any other repository file leads to the file on GitHub.
+- A relative link to any other repository file leads to the file on GitHub. A
+  file inside the paths the guide build reads (`guide/build-inputs.json`:
+  `guide/`, `docs/`, `components.json`, `NOTICE`, `CHANGELOG.md`,
+  `pnpm-workspace.yaml`, the guide workflow) must exist. A file outside them
+  (for example `CONTRACT.md` or a package README) is accepted only when
+  `guide/link-targets.json` lists it: the guide workflow builds from a sparse
+  checkout that does not hold it, and `tests/guide-link-targets.test.ts` checks
+  in the full checkout that every listed file exists.
 - A relative link to a missing file, an absolute path, a path outside the
   repository, another scheme or a malformed percent escape fails the build
   (`HWC-LINK`).
@@ -368,7 +375,11 @@ Table: Arabic terms of the guide
 | Concept | Arabic | Notes |
 | --- | --- | --- |
 | colour mode | وضع الألوان؛ الوضع الفاتح، الوضع الداكن | Never نمط for a mode. |
-| styles (CSS) | الأنماط | A style sheet is ورقة الأنماط. |
+| styles (CSS) | الأنماط | |
+| style sheet | ورقة الأنماط | Everywhere, also in install steps; never ملف الأنماط. |
+| CSS class | الصنف | Followed by its name in code: بالصنف `hw-button`. |
+| Kind column of the Vue and Angular API tables | الفئة | The column header and its meaning; never الصنف, which is the CSS class. |
+| pattern (WAI-ARIA Authoring Practices) | نمط | Only in the form نمط التبويبات, with the reference to the pattern in the same sentence (في ممارسات التأليف الخاصة بـWAI-ARIA). |
 | theme (`data-hw-theme`) | السمة | سمة never names an HTML attribute. |
 | HTML attribute | الخاصية | Followed by its name in code: الخاصية `type`. |
 | CSS property | خاصية CSS | On its first mention in a section; الخاصية after it. |

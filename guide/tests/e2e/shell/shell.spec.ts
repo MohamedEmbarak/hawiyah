@@ -1,4 +1,47 @@
+import type { Locator } from '@playwright/test';
 import { test, expect, hydrated, keepRootDocument, markDocument, presetMode, sameDocument } from '../support/fixtures';
+
+/**
+ * What an identity container paints: its visible images, the width of the box that
+ * holds the artwork (the container itself, or the wordmark host inside it) against
+ * the visible image, visible text outside .hw-sr-only, and generated content
+ * (::before, ::after) on the container and everything in it.
+ */
+async function painted(container: Locator, box: 'container' | 'wordmark'): Promise<{ images: number; boxWidth: number; imageWidth: number; text: string; generated: string[] }> {
+  return container.evaluate((element, which) => {
+    const visible = Array.from(element.querySelectorAll('img')).filter((img) => {
+      const rect = img.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && getComputedStyle(img).visibility !== 'hidden';
+    });
+    const holder = which === 'container' ? element : element.querySelector('guide-wordmark');
+    const text: string[] = [];
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.parentElement?.closest('.hw-sr-only')) text.push(node.textContent ?? '');
+    }
+    const generated = [element, ...Array.from(element.querySelectorAll('*'))].flatMap((node) =>
+      ['::before', '::after']
+        .map((pseudo) => [pseudo, getComputedStyle(node, pseudo).content] as const)
+        .filter(([, content]) => content !== 'none' && content !== 'normal')
+        .map(([pseudo, content]) => `${node.localName}${pseudo} ${content}`),
+    );
+    return {
+      images: visible.length,
+      boxWidth: Math.round(holder?.getBoundingClientRect().width ?? -1),
+      imageWidth: Math.round(visible[0]?.getBoundingClientRect().width ?? 0),
+      text: text.join('').trim(),
+      generated,
+    };
+  }, box);
+}
+
+function expectArtworkAlone(facts: Awaited<ReturnType<typeof painted>>): void {
+  expect(facts.images, 'one visible image').toBe(1);
+  expect(facts.imageWidth).toBeGreaterThan(0);
+  expect(facts.boxWidth, 'the box holding the artwork is as wide as its one visible image').toBe(facts.imageWidth);
+  expect(facts.text, 'no visible text').toBe('');
+  expect(facts.generated, 'no generated content').toEqual([]);
+}
 
 const ATTRIBUTION = {
   en: 'Developed by the Development Team in the National Platforms Sector — National Information Center',
@@ -34,6 +77,7 @@ for (const lang of ['ar', 'en'] as const) {
       for (const img of await images.all()) await expect(img).toHaveAttribute('alt', '');
       await expect(brand.locator('img.wordmark-light')).toBeVisible();
       await expect(brand.locator('img.wordmark-dark')).toBeHidden();
+      expectArtworkAlone(await painted(brand, 'container'));
     });
 
     test('shows one reverse wordmark in the footer in both colour modes', async ({ page }) => {
@@ -136,6 +180,18 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(marks.locator('img')).toHaveCount(1);
       await expect(marks.locator('img')).toBeVisible();
       await expect(marks.locator('img')).toHaveAttribute('alt', '');
+      // The group itself is a block of the package footer layout; the artwork is its
+      // only child, so the wordmark host is measured.
+      expect(await marks.evaluate((element) => Array.from(element.childNodes).filter((node) => node.nodeType === 1 || (node.textContent ?? '').trim() !== '').map((node) => node.nodeName.toLowerCase()))).toEqual(['guide-wordmark']);
+      expectArtworkAlone(await painted(marks, 'wordmark'));
+    });
+
+    test(`the header brand is the artwork alone in the painted page (${lang}, ${mode})`, async ({ page }) => {
+      await presetMode(page, mode);
+      await page.goto(`${lang}/components/`);
+      await hydrated(page);
+      await expect(page.locator('html')).toHaveAttribute('data-hw-mode', mode);
+      expectArtworkAlone(await painted(page.locator('a.hw-portal-brand'), 'container'));
     });
   }
 }
@@ -155,6 +211,17 @@ for (const mode of ['light', 'dark'] as const) {
     }));
     expect(texts).toEqual({ all: 'Hawiyah', hidden: 'Hawiyah', visibleImages: 1 });
     await expect(heading).toHaveAccessibleName(/هوية/);
+    expectArtworkAlone(await painted(heading, 'wordmark'));
+  });
+
+  test(`the not-found document shows the artwork alone above its heading (${mode})`, async ({ page, guard }) => {
+    await presetMode(page, mode);
+    guard.allowDocument404(/\/hawiyah\/en\/no-such-page\/$/);
+    await page.goto('en/no-such-page/');
+    await hydrated(page);
+    const wordmark = page.locator('.not-found > guide-wordmark');
+    await expect(wordmark).toHaveCount(1);
+    expectArtworkAlone(await painted(wordmark, 'container'));
   });
 }
 

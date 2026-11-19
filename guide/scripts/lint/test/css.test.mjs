@@ -98,6 +98,14 @@ describe('L-CSS-6 imports', () => {
     const repository = repoPath('..', '..', 'packages', 'styles', 'src', 'styles.css');
     expect(lint(`@import '${repository}';\n`, 'src/styles.css')).toEqual([['L-CSS-6', 1]]);
   });
+
+  it('rejects every node of src/styles.css other than the imports and comments', () => {
+    const imports = "/* package bundle */\n@import '@hawiyah/styles/reset.css';\n@import '@hawiyah/styles/styles.css';\n@import '@hawiyah/styles/fonts.css';\n";
+    expect(lint(`${imports}td code {\n  display: inline-block;\n}\n`, 'src/styles.css')).toEqual([['L-CSS-6', 5]]);
+    expect(lint(`${imports}@media print {\n  main {\n    display: block;\n  }\n}\n`, 'src/styles.css')).toEqual([['L-CSS-6', 5]]);
+    expect(lint(`${imports}@layer guide;\n`, 'src/styles.css')).toEqual([['L-CSS-6', 5]]);
+    expect(lint('td code {\n  display: inline-block;\n}\n', 'src/guide.css')).toEqual([]);
+  });
 });
 
 describe('L-CSS-7 fonts and url()', () => {
@@ -135,7 +143,7 @@ describe('lintCss over a tree', () => {
   it('lints the good CSS fixture without findings', () => {
     const root = new URL('./fixtures/good/css/', import.meta.url).pathname;
     const result = lintCss(root, allowlist);
-    expect(result.files).toBe(2);
+    expect(result.files).toBe(3);
     expect(result.findings).toEqual([]);
   });
 });

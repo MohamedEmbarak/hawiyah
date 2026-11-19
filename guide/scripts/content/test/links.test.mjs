@@ -55,4 +55,21 @@ describe('resolveLink', () => {
     const outside = join(...Array(12).fill('..'), 'x.md');
     expect(resolveLink(outside, ctx()).error).toMatch(/points outside the repository/);
   });
+
+  it('accepts a repository file outside the build inputs only from the list of link targets', () => {
+    const toRoot = join(...Array(7).fill('..'));
+    expect(resolveLink(join(toRoot, 'CONTRACT.md'), ctx({ linkTargets: [] }))).toEqual({
+      error: `the link "${join(toRoot, 'CONTRACT.md')}" points to CONTRACT.md, which is outside the files the guide build reads (guide/build-inputs.json); list it in guide/link-targets.json`,
+    });
+    expect(resolveLink(join(toRoot, 'CONTRACT.md#scope'), ctx({ linkTargets: ['CONTRACT.md'] }))).toEqual({
+      href: 'https://github.com/MohamedEmbarak/hawiyah/blob/main/CONTRACT.md#scope', internal: false, external: true,
+    });
+    expect(resolveLink(join(toRoot, 'brand'), ctx({ linkTargets: ['brand/'] }))).toEqual({
+      href: 'https://github.com/MohamedEmbarak/hawiyah/tree/main/brand', internal: false, external: true,
+    });
+    // A listed target is not read: the sparse checkout does not hold it.
+    expect(resolveLink(join(toRoot, 'brand', 'no-such-file.md'), ctx({ linkTargets: ['brand/no-such-file.md'] }))).toMatchObject({ external: true });
+    // Inside the build inputs a file must exist.
+    expect(resolveLink(join(toRoot, 'docs', 'no-such-file.md'), ctx()).error).toMatch(/docs\/no-such-file\.md, which does not exist$/);
+  });
 });

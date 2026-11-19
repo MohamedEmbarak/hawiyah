@@ -32,6 +32,8 @@ export interface EditorTexts {
   /** Accessible name of the code area of a file. */
   readonly codeLabel: (file: string) => string;
   readonly leaveHint: string;
+  /** Shown instead of the toolbar, the code and the result when the browser runs no script. */
+  readonly noScript: string;
   /** Name of the result area. */
   readonly result: string;
   /** Shown in the result area while nothing has run. */
@@ -66,6 +68,8 @@ export interface EditorTexts {
   readonly navigationBlocked: { readonly before: string; readonly after: string };
   readonly submitBlocked: string;
   readonly messagesDropped: (count: number) => string;
+  /** Error, link and form messages of a run past the first 50. */
+  readonly outcomeDropped: (count: number) => string;
   readonly fallbackUsed: string;
   readonly compileError: (location: string, message: string) => string;
   readonly loadingCompilers: string;
@@ -104,6 +108,7 @@ export const editorTexts: Texts<EditorTexts> = {
     files: 'Files',
     codeLabel: (file) => `Code of ${file}`,
     leaveHint: 'Press Escape, then Tab, to leave the code.',
+    noScript: 'The editor needs JavaScript to edit and run code; the component pages show every example without it.',
     result: 'Result',
     resultEmpty: 'Press Run to show the result.',
     resultFailed: 'No result is shown because the run failed. The log lists the errors.',
@@ -128,6 +133,7 @@ export const editorTexts: Texts<EditorTexts> = {
     navigationBlocked: { before: 'The example link to ', after: ' does not open from the preview.' },
     submitBlocked: 'The example form was submitted inside the preview; nothing was sent.',
     messagesDropped: (count) => `${count} console ${count === 1 ? 'message' : 'messages'} of this run ${count === 1 ? 'was' : 'were'} not shown after the limit of 500.`,
+    outcomeDropped: (count) => `${count} further ${count === 1 ? 'error, link or form message' : 'error, link and form messages'} of this run ${count === 1 ? 'was' : 'were'} not shown after the first 50.`,
     fallbackUsed: 'The modules of the result could not be loaded; the run was repeated with the bundled runtime.',
     compileError: (location, message) => `${location}: ${message}`,
     loadingCompilers: 'Loading the compilers for the edited code.',
@@ -159,6 +165,7 @@ export const editorTexts: Texts<EditorTexts> = {
     files: 'الملفات',
     codeLabel: (file) => `شيفرة ${file}`,
     leaveHint: 'اضغط Escape ثم Tab لمغادرة الشيفرة.',
+    noScript: 'يحتاج المحرر إلى JavaScript لتحرير الشيفرة وتشغيلها، وتعرض صفحات المكوّنات كل مثال من دونه.',
     result: 'النتيجة',
     resultEmpty: 'اضغط «تشغيل» لعرض النتيجة.',
     resultFailed: 'لا تُعرض نتيجة لأن التشغيل تعذّر. ويبيّن السجل الأخطاء.',
@@ -183,6 +190,7 @@ export const editorTexts: Texts<EditorTexts> = {
     navigationBlocked: { before: 'لا يُفتح رابط المثال إلى ', after: ' من المعاينة.' },
     submitBlocked: 'أُرسل نموذج المثال داخل المعاينة، ولم يُرسَل أي شيء خارجها.',
     messagesDropped: (count) => `لم تُعرض ${count} من رسائل الإخراج في هذا التشغيل بعد بلوغ الحد الأقصى، وهو 500 رسالة.`,
+    outcomeDropped: (count) => `لم تُعرض ${count} من رسائل الأخطاء والروابط والنماذج الأخرى في هذا التشغيل بعد أول 50 رسالة.`,
     fallbackUsed: 'تعذّر تحميل وحدات النتيجة، فأُعيد التشغيل بالحزمة المجمّعة.',
     compileError: (location, message) => `${location}: ${message}`,
     loadingCompilers: 'جارٍ تحميل المصرّفات للشيفرة المحرَّرة.',

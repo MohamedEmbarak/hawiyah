@@ -4,9 +4,11 @@ name: Guide
 # and runs its script, unit and end-to-end tests. It deploys and publishes
 # nothing: the deployed guide is still built by pages.yml.
 #
-# The paths below are every input of the guide build and its tests: guide/,
-# docs/ (component pages and the files they link to), and the root files
-# components.json, NOTICE, CHANGELOG.md and pnpm-workspace.yaml.
+# The paths below are every input of the guide build and its tests, as listed in
+# guide/build-inputs.json (the single source; guide/scripts/test/build-inputs.test.mjs
+# requires the two path filters and the sparse checkout to equal it): guide/,
+# docs/ (component pages and the files they link to), the root files
+# components.json, NOTICE, CHANGELOG.md and pnpm-workspace.yaml, and this file.
 on:
   push:
     paths:
@@ -45,9 +47,9 @@ jobs:
       HAWIYAH_BASE_PATH: /hawiyah/
     steps:
       # A sparse checkout holds only what the guide build and its tests read,
-      # the same list as the path filters above. packages/, apps/, examples/
-      # and the other root files are absent, so a read of them fails here
-      # instead of passing silently.
+      # guide/build-inputs.json, as the path filters above. packages/, apps/,
+      # examples/ and the other root files are absent, so a read of them fails
+      # here instead of passing silently.
       - uses: actions/checkout@v4
         with:
           sparse-checkout: |
@@ -57,6 +59,7 @@ jobs:
             /NOTICE
             /CHANGELOG.md
             /pnpm-workspace.yaml
+            /.github/workflows/guide.yml
           sparse-checkout-cone-mode: false
       - name: The package sources are absent
         run: |

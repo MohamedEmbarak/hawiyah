@@ -28,7 +28,7 @@ function classAllowed(name, allowed) {
 }
 
 const HOST_STYLE_KEY = /^(?:class|style|\[(?:class|style|ngclass|ngstyle|classname|attr\.class|attr\.style)(?:\.[^\]]*)?\])$/i;
-const HOST_BINDING_STYLE = /^(?:class|style|attr\.class|attr\.style)(?:\.|$)/i;
+const HOST_BINDING_STYLE = /^(?:class|classname|style|attr\.class|attr\.style)(?:\.|$)/i;
 
 // Inline templates and host metadata of @Component and @Directive decorators
 // in a .ts file. `object` is null when the metadata is not an object literal;

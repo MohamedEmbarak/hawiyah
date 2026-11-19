@@ -4,15 +4,16 @@
   align-items: center;
   gap: var(--hw-space-6);
   padding-block: var(--hw-space-12);
-  text-align: center;
 }
 
 h1 {
   margin-block: 0;
 }
 
+/* Centred lines only on guide text: an inherited text-align would reach the package buttons. */
 .choose {
   margin-block: 0 var(--hw-space-4);
+  text-align: center;
 }
 
 .languages {
@@ -22,5 +23,9 @@ h1 {
   gap: var(--hw-space-4);
   margin-block: 0;
   padding-inline-start: 0;
-  list-style: none;
+}
+
+/* No list markers: the items are not list items (an inherited list-style-type would reach the package buttons). */
+.languages > li {
+  display: block;
 }
