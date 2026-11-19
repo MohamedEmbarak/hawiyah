@@ -17,7 +17,7 @@ import type { ComponentPageData } from './page-data.resolver';
   selector: 'guide-brief-page',
   imports: [BlocksContent, HwLinkDirective, InlineContent],
   providers: [PageExamples, CodeBlockIds],
-  template: `@if (data(); as d) {<article class="hw-prose" [attr.lang]="d.page.lang" [attr.dir]="d.page.dir"><h1 tabindex="-1">{{ d.page.title }}</h1><p><guide-inline [inlines]="d.page.summary" /></p>@if (example(); as section) {<h2 [id]="section.id" tabindex="-1"><guide-inline [inlines]="section.title" /></h2><guide-blocks [blocks]="section.blocks" />}<p><a hwLink [href]="referenceHref()">{{ t().fullReference }}</a></p></article>}`,
+  template: `@if (data(); as d) {<article class="hw-prose" [attr.lang]="d.page.lang" [attr.dir]="d.page.dir"><h1 tabindex="-1">{{ d.page.title }}</h1><p><guide-inline [inlines]="d.page.summary" /></p>@if (example(); as section) {<h2 [id]="section.id" tabindex="-1"><guide-inline [inlines]="section.title" /></h2><guide-blocks class="section" [blocks]="section.blocks" />}<p><a hwLink [href]="referenceHref()">{{ t().fullReference }}</a></p></article>}`,
   styleUrl: './brief-page.css',
 })
 export class BriefPage {

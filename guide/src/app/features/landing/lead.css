@@ -54,9 +54,18 @@
   min-inline-size: 0;
 }
 
-/* Outside the round the button keeps its space, so nothing moves when it goes. */
+/* The pause button's slot (a guide wrapper): outside the round the button keeps its
+   space, so nothing moves when it goes. */
 .pause.off {
   visibility: hidden;
+}
+
+/* Below 40em the selector fills the row and the button wraps onto a row of its
+   own; outside the round that row is not kept empty. */
+@media (max-width: 40em) {
+  .pause.off {
+    display: none;
+  }
 }
 
 /* Both labels share one cell, so the button keeps one width. */
@@ -83,10 +92,6 @@
   margin: 0;
 }
 
-.all > p {
-  font-weight: var(--hw-weight-semibold);
-}
-
 .all dl {
   display: grid;
   gap: var(--hw-space-3);
@@ -96,10 +101,6 @@
   display: grid;
   gap: var(--hw-space-1);
   min-inline-size: 0;
-}
-
-.entry code {
-  overflow-wrap: anywhere;
 }
 
 @media (scripting: none) {
@@ -130,10 +131,6 @@
 
 .notes > p {
   margin-block: 0;
-}
-
-.notes code {
-  white-space: nowrap;
 }
 
 @media (min-width: 48em) {

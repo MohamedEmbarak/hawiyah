@@ -6,26 +6,40 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import tabsClick from '../checks/tabs-click.mjs';
 import tabsKeyboard, { nextTabKey } from '../checks/tabs-keyboard.mjs';
-import { bundleHarness, compareCapture, differenceOf, failureLine, harnessUrl, mountSelector, startHarnessServer, summaryLine, validateKnownDifferences } from '../run.mjs';
+import { bundleHarness, changelogSourceError, checkNames, compareCapture, controllerComponents, differenceOf, failureLine, harnessUrl, mountSelector, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
 const group = { id: 'tabs', lang: 'ar', example: 'basic', blocks: { vanilla: { line: 19 } } };
+// A fixture CHANGELOG for the synthetic entries; the real entries are checked against the repository file.
+const CHANGELOG = '# Changelog\n\n## 0.4.0 — 2026-12-01\n\n### Fixed\n\n- Other.\n\n#### Known defects in 0.4.0\n\n- The tab bar lacks an attribute in one adapter.\n\n#### Left for a later release\n\n- Something else.\n\n## 0.3.0 — 2026-11-18\n';
+const validateKnownDifferences = (value) => validateWith(value, { changelog: CHANGELOG });
 const entry = {
   id: 'tabs-bar',
   component: 'tabs',
   aspect: 'structure',
   description: 'Example.',
-  source: 'https://github.com/example/example/issues/1',
+  source: 'CHANGELOG.md, 0.4.0, Known defects in 0.4.0: The tab bar lacks an attribute',
   approvedBy: 'lead',
 };
 
 describe('known differences', () => {
   it('hold only tabs-bar-orientation, valid, with its CHANGELOG.md source (leadAmendments A8)', () => {
-    expect(validateKnownDifferences(known).errors).toEqual([]);
+    expect(validateWith(known).errors).toEqual([]);
     expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation']);
     const [orientation] = known;
     expect(orientation).toMatchObject({ component: 'tabs', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] });
-    expect(orientation.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0, line \d+$/);
+    expect(orientation.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: The vanilla Tabs controller/);
+  });
+
+  it('check each source against the CHANGELOG text: version, section and the quoted entry', () => {
+    expect(changelogSourceError(entry.source, CHANGELOG)).toBeNull();
+    expect(changelogSourceError('CHANGELOG.md, 0.4.0, Known defects in 0.4.0, line 9', CHANGELOG)).toMatch(/source must read/);
+    expect(changelogSourceError('https://github.com/example/example/issues/1', CHANGELOG)).toMatch(/source must read/);
+    expect(changelogSourceError('CHANGELOG.md, 0.5.0, Known defects in 0.5.0: The tab bar', CHANGELOG)).toBe('CHANGELOG.md has no section ## 0.5.0');
+    expect(changelogSourceError('CHANGELOG.md, 0.3.0, Known defects in 0.4.0: The tab bar', CHANGELOG)).toBe('CHANGELOG.md ## 0.3.0 has no heading "Known defects in 0.4.0"');
+    // The quoted text must be in that subsection, not in the next one.
+    expect(changelogSourceError('CHANGELOG.md, 0.4.0, Known defects in 0.4.0: Something else', CHANGELOG)).toMatch(/is not in CHANGELOG\.md ## 0\.4\.0 Known defects in 0\.4\.0/);
+    expect(changelogSourceError(entry.source, null)).toBe('CHANGELOG.md cannot be read');
   });
 
   it('accept an ignore list on a structure entry and reject a malformed one', () => {
@@ -70,7 +84,7 @@ describe('known differences', () => {
     ]);
     expect(errors.join('\n')).toMatch(/entry 1: approvedBy must be 'lead'/);
     expect(errors.join('\n')).toMatch(/entry 2: aspect must be structure, aria or screenshot/);
-    expect(errors.join('\n')).toMatch(/entry 3: source must name/);
+    expect(errors.join('\n')).toMatch(/entry 3: source must read "CHANGELOG\.md, <version>, <section>: <text of the entry>"/);
     expect(errors.join('\n')).toMatch(/entry 4 has unknown fields extra/);
     expect(errors.join('\n')).toMatch(/entry 4 needs a non-empty description/);
     expect(errors.join('\n')).toMatch(/entry 6: id tabs-bar is repeated/);
@@ -164,9 +178,54 @@ describe('a structure entry with ignore (self-test, leadAmendments A8)', () => {
   });
 
   it('counts one documented difference in the summary line', () => {
-    expect(summaryLine({ groups: 9, languages: 2, frameworks: 4, interactionChecks: 6, documented: 1 })).toBe(
-      'equivalence: 9 groups x 2 languages x 4 frameworks equal (6 interaction checks, 1 documented difference)',
+    expect(summaryLine({ groups: 9, languages: 2, frameworks: 4, interactionChecks: 14, afterInteraction: 4, restOnly: 5, documented: 1 })).toBe(
+      'equivalence: 9 groups x 2 languages x 4 frameworks equal (4 compared after interaction, 5 at rest only; 14 interaction checks, 1 documented difference)',
     );
+  });
+});
+
+describe('scope of a run and required checks (review finding R2[3], R2[11])', () => {
+  const manifest = { pages: [{ id: 'tabs', langs: ['en', 'ar'], liveGroups: [{ example: 'basic' }, { example: 'manual' }] }] };
+  const groups = ['en', 'ar'].flatMap((lang) => ['basic', 'manual'].map((example) => ({ id: 'tabs', lang, example })));
+
+  it('accepts the groups of the built pages and an --only key that names one', () => {
+    expect(scopeErrors(groups, manifest, null)).toEqual([]);
+    expect(scopeErrors(groups, manifest, ['tabs/ar/manual'])).toEqual([]);
+  });
+
+  it('fails on zero groups, an --only key that names none, and groups that differ from the manifest', () => {
+    expect(scopeErrors([], { pages: [] }, null)).toEqual(['HWE-SCOPE .cache/content/live-groups.json:1: no live group to compare']);
+    expect(scopeErrors(groups, manifest, ['button/en/nothing'])).toEqual(['HWE-SCOPE --only:1: button/en/nothing names no live group (keys are <id>/<lang>/<example>)']);
+    expect(scopeErrors(groups.filter((item) => item.example !== 'manual'), manifest, null)).toEqual([
+      'HWE-SCOPE .cache/content/live-groups.json:1: the built pages have the groups tabs/ar/manual, tabs/en/manual, which the live groups file lacks',
+    ]);
+    expect(scopeErrors([...groups, { id: 'tabs', lang: 'en', example: 'extra' }], manifest, null)).toEqual([
+      'HWE-SCOPE .cache/content/live-groups.json:1: the groups tabs/en/extra belong to no built page',
+    ]);
+    expect(scopeErrors(groups, null, null)).toEqual(['HWE-SCOPE src/generated/content/manifest.json:1: the content manifest does not exist; build step 20-content writes it']);
+  });
+
+  it('reads several checks from check= and the components with a controller from components.json', () => {
+    expect(checkNames({ check: 'tabs-keyboard,tabs-disabled' })).toEqual(['tabs-keyboard', 'tabs-disabled']);
+    expect(checkNames({})).toEqual([]);
+    const ids = controllerComponents(new URL('../../../../components.json', import.meta.url).pathname);
+    expect(ids.has('tabs')).toBe(true);
+    expect(ids.has('button')).toBe(false);
+  });
+
+  it('every Tabs group names the checks its text describes, in both languages', async () => {
+    const { parseMarkdown } = await import('../../content/parse.mjs');
+    const { groupLive } = await import('../../content/live.mjs');
+    for (const file of ['tabs.md', 'tabs.ar.md']) {
+      const text = readFileSync(new URL(`../../../../docs/components/${file}`, import.meta.url), 'utf8');
+      const { groups } = groupLive(parseMarkdown(text, file).tree.children, file);
+      expect(Object.fromEntries(groups.map((item) => [item.example, checkNames(item)])), file).toEqual({
+        basic: ['tabs-keyboard'],
+        vertical: ['tabs-click', 'tabs-keyboard'],
+        manual: ['tabs-keyboard', 'tabs-activate'],
+        'disabled-tab': ['tabs-keyboard', 'tabs-disabled'],
+      });
+    }
   });
 });
 

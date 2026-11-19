@@ -2,7 +2,7 @@
 // paths, aria snapshots and pixelmatch screenshots, with negative controls.
 import { PNG } from 'pngjs';
 import { describe, expect, it } from 'vitest';
-import { compareAria, compareScreenshot, compareScreenshots, compareStructure, firstDifference, pixelLimit } from '../compare.mjs';
+import { compareAria, compareScreenshot, compareScreenshots, compareStructure, firstDifference, PIXEL_THRESHOLD, pixelLimit } from '../compare.mjs';
 
 /** A white PNG with a dark bar of 40x12 pixels at x (a stand-in for rendered text). */
 function image(x, { width = 200, height = 50, extra = 0 } = {}) {
@@ -62,6 +62,24 @@ describe('compareScreenshot', () => {
     expect(result.equal).toBe(false);
     expect(result.differing).toBeGreaterThan(result.limit);
     expect(PNG.sync.read(result.diff).width).toBe(200);
+  });
+
+  it('fails an adjacent colour step over a large area (threshold 0.02)', () => {
+    // The fill of the reference is rgb(27, 131, 84); the other one is the
+    // pressed green rgb(20, 87, 58) or a lighter neutral, which threshold 0.1 let through.
+    const fill = (rgb) => {
+      const png = new PNG({ width: 200, height: 50 });
+      for (let at = 0; at < png.data.length; at += 4) {
+        [png.data[at], png.data[at + 1], png.data[at + 2]] = rgb;
+        png.data[at + 3] = 255;
+      }
+      return PNG.sync.write(png);
+    };
+    expect(compareScreenshot(fill([27, 131, 84]), fill([20, 87, 58])).equal).toBe(false);
+    expect(compareScreenshot(fill([249, 250, 251]), fill([224, 225, 226])).equal).toBe(false);
+    expect(compareScreenshot(fill([22, 22, 22]), fill([42, 42, 42])).equal).toBe(false);
+    expect(compareScreenshot(fill([27, 131, 84]), fill([27, 131, 84])).equal).toBe(true);
+    expect(PIXEL_THRESHOLD).toBe(0.02);
   });
 
   it('fails a different size', () => {

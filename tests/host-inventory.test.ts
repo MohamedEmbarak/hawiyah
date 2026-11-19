@@ -34,6 +34,16 @@ it('gives every entry a disposition, a reason and a target', () => {
   }
 });
 
+it('moves a spec unchanged only to a free target and only when it does not import from apps/playground', () => {
+  const moves = inventory.entries.filter((entry) => entry.disposition === 'move');
+  const target = (entry: Entry) => entry.target.split(/\s/)[0];
+  for (const entry of moves) expect(target(entry), entry.file).toMatch(/^tests\/host\/[\w.-]+\.spec\.ts$/);
+  expect(moves.filter((entry) => existsSync(`${root}${target(entry)}`)).map((entry) => `${entry.file} -> ${target(entry)}`), 'move targets that exist already').toEqual([]);
+  const targets = moves.map(target);
+  expect(targets.filter((path, index) => targets.indexOf(path) !== index), 'move targets named twice').toEqual([]);
+  expect(moves.filter((entry) => readFileSync(`${root}${entry.file}`, 'utf8').includes('apps/playground')).map((entry) => entry.file), 'specs to move that import from apps/playground').toEqual([]);
+});
+
 it('records each known package defect once, with evidence and a referencing test', () => {
   const gaps = read('tests/host/gaps.json') as { gaps: { id: string; case: string; adapter: string; observed: string; expected: string; evidence: string }[] };
   const sources = readdirSync(`${root}tests/host`).filter((name) => name.endsWith('.spec.ts')).map((name) => readFileSync(`${root}tests/host/${name}`, 'utf8')).join('\n');

@@ -9,6 +9,7 @@ import { pick } from '../i18n/text';
 @Component({
   selector: 'guide-mode-switch',
   imports: [HwIconButtonComponent],
+  styleUrl: './mode-switch.css',
   template: `<hw-icon-button [label]="t().darkMode" [pressed]="mode.dark()" (activated)="mode.toggle()"><span class="hw-icon" data-icon="moon-02" aria-hidden="true"></span></hw-icon-button>`,
 })
 export class ModeSwitch {

@@ -83,7 +83,7 @@ function vueScope(key: string): string {
     HwTabsComponent,
     PreviewFrame,
   ],
-  template: `<hw-container><div class="editor"><hw-page-header [title]="t().editorTitle" [description]="description()"><a hwLink [href]="componentHref()">{{ t().backToComponent(componentName()) }}</a></hw-page-header>@if (store.query().fallback) {<hw-alert tone="info" role="status">{{ t().queryFallback }}</hw-alert>}@if (store.draftRestored()) {<hw-alert tone="info" role="status"><span class="alert-row"><span>{{ t().draftRestored }}</span><button hwButton variant="ghost" size="sm" type="button" (click)="discardDraft()">{{ t().discardDraft }}</button></span></hw-alert>}<guide-editor-toolbar [t]="t()" [framework]="store.query().framework" [language]="store.query().language" [currentText]="store.currentText()" (frameworkChange)="chooseFramework($event)" (languageChange)="chooseLanguage($event)" (reset)="reset()" (download)="download()" (run)="run()" /><div class="workspace"><div class="code"><p class="hint hw-type" data-scale="body-sm" [id]="hintId">{{ t().leaveHint }}</p>@for (revision of revisions(); track revision.id) {<hw-tabs id="editor-files" [label]="t().files" overflow="scroll" [value]="store.currentFile()" (valueChange)="store.currentFile.set($event)">@for (file of store.files(); track file.name) {<hw-tab [value]="file.name" [label]="file.name"><guide-code-surface [name]="file.name" [text]="file.text" [lines]="listingLines(file.name)" [label]="t().codeLabel(file.name)" [describedBy]="hintId" (changed)="edit(file.name, $event)" (run)="run()" /></hw-tab>}</hw-tabs>}</div><div class="side"><div class="result" role="group" [attr.aria-label]="t().result">@if (frameSource(); as source) {<guide-preview-frame [source]="source" [bundled]="store.query().bundled" (status)="frameStatus($event)" (log)="frameLog($event)" />} @else {<p class="empty hw-type" data-scale="body-md">{{ store.run().state === 'failed' ? t().resultFailed : t().resultEmpty }}</p>}</div><guide-editor-status [t]="t()" [state]="statusText()" [pkg]="pkg()" [version]="pin" [integrity]="integrity()" [preview]="preview" /><guide-editor-log [t]="t()" [state]="store.log()" (clear)="store.clearLog()" /></div></div></div></hw-container>`,
+  template: `<hw-container><div class="editor"><hw-page-header [title]="t().editorTitle" [description]="description()"><a hwLink [href]="componentHref()">{{ t().backToComponent(componentName()) }}</a></hw-page-header>@if (store.query().fallback) {<hw-alert tone="info" role="status">{{ t().queryFallback }}</hw-alert>}@if (store.draftRestored()) {<hw-alert tone="info" role="status"><span class="alert-row"><span>{{ t().draftRestored }}</span><button hwButton variant="ghost" size="sm" type="button" (click)="discardDraft()">{{ t().discardDraft }}</button></span></hw-alert>}<guide-editor-toolbar [t]="t()" [framework]="store.query().framework" [language]="store.query().language" [currentText]="store.currentText()" (frameworkChange)="chooseFramework($event)" (languageChange)="chooseLanguage($event)" (reset)="reset()" (download)="download()" (run)="run()" /><guide-editor-status [t]="t()" [state]="statusText()" [pkg]="pkg()" [version]="pin" [integrity]="integrity()" [preview]="preview" /><div class="workspace"><div class="code"><p class="hint hw-type" data-scale="body-sm" data-tone="muted" [id]="hintId">{{ t().leaveHint }}</p>@for (revision of revisions(); track revision.id) {<hw-tabs id="editor-files" [label]="t().files" overflow="scroll" [value]="store.currentFile()" (valueChange)="store.currentFile.set($event)">@for (file of store.files(); track file.name) {<hw-tab [value]="file.name" [label]="file.name"><guide-code-surface [name]="file.name" [text]="file.text" [lines]="listingLines(file.name)" [label]="t().codeLabel(file.name)" [describedBy]="hintId" (changed)="edit(file.name, $event)" (run)="run()" /></hw-tab>}</hw-tabs>}</div><div class="side"><div class="result" role="group" [attr.aria-label]="t().result">@if (frameSource(); as source) {<guide-preview-frame [source]="source" [bundled]="store.query().bundled" (status)="frameStatus($event)" (log)="frameLog($event)" />} @else {<div class="empty"><p class="hw-type" data-scale="body-md" data-tone="muted">{{ store.run().state === 'failed' ? t().resultFailed : t().resultEmpty }}</p></div>}</div><guide-editor-log [t]="t()" [state]="store.log()" (clear)="store.clearLog()" /></div></div></div></hw-container>`,
   styleUrl: './editor-page.css',
 })
 export class EditorPage {
@@ -114,7 +114,9 @@ export class EditorPage {
     const query = this.store.query();
     const group = this.manifest()?.liveGroups.find((entry) => entry.example === query.example);
     const heading = this.manifest()?.headings[this.lang()].find((entry) => entry.id === group?.section);
-    return { id: group?.section ?? '', text: heading?.text ?? query.example };
+    // A group under its own heading (h3) is named by it; a group directly under a
+    // section such as Example is named by its own name, not by the section.
+    return { id: group?.section ?? '', text: heading && heading.level > 2 ? heading.text : query.example };
   });
   protected readonly description = computed(() => this.t().description(this.componentName(), this.section().text));
   protected readonly componentHref = computed(() => {
@@ -263,7 +265,13 @@ export class EditorPage {
       this.announceCompilers();
       const response = await this.compileClient().request({ kind: 'convert', framework: this.store.query().framework, files, compilersBase });
       if (response.ok && response.kind === 'convert') return { ...response.files };
-      const message = response.ok ? '' : 'loadError' in response ? response.loadError : (response.diagnostics[0]?.message ?? '');
+      const message = response.ok
+        ? ''
+        : 'timeout' in response
+          ? this.t().compileTimeout
+          : 'loadError' in response
+            ? response.loadError
+            : (response.diagnostics[0]?.message ?? '');
       this.log('danger', this.t().convertFailed(message), 'text');
       this.store.run.set({ state: 'failed', message: this.t().convertFailed(message), kind: 'text', bundled: false });
     } catch (error) {
@@ -320,6 +328,12 @@ export class EditorPage {
         return;
       }
       this.frameSource.set(null);
+      if (!response.ok && 'timeout' in response) {
+        const text = this.t().compileTimeout;
+        this.log('danger', text, 'text');
+        this.store.run.set({ state: 'failed', message: text, kind: 'text', bundled: false });
+        return;
+      }
       if (!response.ok && 'loadError' in response) {
         const text = this.t().compilersFailed(response.loadError);
         this.log('danger', text, 'text');
@@ -389,9 +403,11 @@ export class EditorPage {
         }
         this.log('danger', entry.text, 'code');
         return;
-      case 'navigation':
-        this.log('info', t.navigationBlocked(entry.href), 'text');
+      case 'navigation': {
+        const { before, after } = t.navigationBlocked;
+        this.store.addLog('info', `${before}${entry.href}${after}`, 'text', { before, value: entry.href, after });
         return;
+      }
       case 'submit':
         this.log('info', t.submitBlocked, 'text');
         return;
@@ -399,7 +415,8 @@ export class EditorPage {
         this.log('danger', entry.text, 'text');
         return;
       case 'dropped':
-        this.log('warning', t.messagesDropped(entry.count), 'text');
+        // One entry per run, whose count is updated.
+        this.store.setLog(`dropped-${entry.run}`, 'warning', t.messagesDropped(entry.count), 'text');
         return;
       case 'fallback':
         this.log('warning', t.fallbackUsed, 'text');

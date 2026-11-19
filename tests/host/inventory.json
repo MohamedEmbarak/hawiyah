@@ -1,5 +1,5 @@
 {
-  "about": "One entry per tests/browser/*.spec.ts. move: no old-guide route, moves unchanged to tests/host in milestone 6. port: tests package behaviour through an old-guide page, rewritten as fixture-host cases in milestone 5. retire: tests the old guide itself, retired with it in milestone 6. tests/host-inventory.test.ts keeps this list complete.",
+  "about": "One entry per tests/browser/*.spec.ts. move: no old-guide route, moves unchanged to tests/host in milestone 6. port: tests package behaviour through an old-guide page, rewritten as fixture-host cases in milestone 5. retire: tests the old guide itself, retired with it in milestone 6. tests/host-inventory.test.ts keeps this list complete and fails when a move target exists already or a spec to move imports from apps/playground.",
   "entries": [
     {
       "file": "tests/browser/accordion-motion.spec.ts",
@@ -105,9 +105,9 @@
     },
     {
       "file": "tests/browser/direction-production.spec.ts",
-      "disposition": "move",
-      "reason": "setContent with the built stylesheet; no old-guide route.",
-      "target": "tests/host/direction-production.spec.ts (milestone 6)"
+      "disposition": "port",
+      "reason": "setContent with the built stylesheet; no old-guide route; imports previewStyles from apps/playground/src/generated/preview-runtime, which goes away with the old guide, so it cannot move unchanged.",
+      "target": "fixture-host cases in tests/host with the published stylesheet (milestone 5)"
     },
     {
       "file": "tests/browser/disclosure-projects.spec.ts",
@@ -237,9 +237,9 @@
     },
     {
       "file": "tests/browser/motion.spec.ts",
-      "disposition": "move",
-      "reason": "setContent fixture for component motion and reduced motion; no old-guide route.",
-      "target": "tests/host/motion.spec.ts (milestone 6)"
+      "disposition": "port",
+      "reason": "setContent fixture for component motion and reduced motion; no old-guide route; imports previewStyles from apps/playground/src/generated/preview-runtime, which goes away with the old guide, so it cannot move unchanged.",
+      "target": "fixture-host cases in tests/host with the published stylesheet (milestone 5)"
     },
     {
       "file": "tests/browser/native-file-projects.spec.ts",
@@ -279,9 +279,9 @@
     },
     {
       "file": "tests/browser/nic-buttons.spec.ts",
-      "disposition": "move",
-      "reason": "setContent fixture of the vanilla button states; no old-guide route.",
-      "target": "tests/host/nic-buttons.spec.ts (milestone 6)"
+      "disposition": "port",
+      "reason": "setContent fixture of the vanilla button states; no old-guide route; imports previewStyles from apps/playground/src/generated/preview-runtime, which goes away with the old guide, so it cannot move unchanged.",
+      "target": "fixture-host cases in tests/host with the published stylesheet (milestone 5)"
     },
     {
       "file": "tests/browser/nic-cards.spec.ts",
@@ -539,7 +539,7 @@
       "file": "tests/browser/toggle-group.spec.ts",
       "disposition": "move",
       "reason": "Style fixture of TOGGLE-GROUP-03 (style-fixture.ts); no old-guide route.",
-      "target": "tests/host/toggle-group.spec.ts (milestone 6)"
+      "target": "tests/host/toggle-group-styles.spec.ts (milestone 6; tests/host/toggle-group.spec.ts already holds TOGGLE-GROUP-02)"
     },
     {
       "file": "tests/browser/tooltip-placement.spec.ts",

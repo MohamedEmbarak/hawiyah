@@ -12,6 +12,17 @@ p {
   margin-block: 0;
 }
 
+/* Below 48em each language of the heading is on its own line. */
+@media (max-width: 47.99em) {
+  h1 > span[lang] {
+    display: block;
+  }
+
+  h1 > span[aria-hidden='true'] {
+    display: none;
+  }
+}
+
 .languages {
   display: flex;
   flex-wrap: wrap;

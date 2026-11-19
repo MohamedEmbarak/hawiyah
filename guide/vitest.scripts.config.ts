@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 // Tests of the Node build scripts (registry check, lint, log scan, content
@@ -10,5 +11,8 @@ export default defineConfig({
     testTimeout: 120000,
     hookTimeout: 120000,
     globals: false,
+    // Vitest keeps its module cache at the workspace root by default, which is
+    // the pnpm workspace above guide/; the guide writes only below guide/.
+    fsModuleCachePath: fileURLToPath(new URL('./.cache/vitest', import.meta.url)),
   },
 });

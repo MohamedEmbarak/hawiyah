@@ -1,0 +1,12 @@
+[
+  {
+    "rule": "L-TPL-9",
+    "file": "src/app/case.html",
+    "line": 1
+  },
+  {
+    "rule": "L-TPL-9",
+    "file": "src/app/case.html",
+    "line": 2
+  }
+]

@@ -17,7 +17,7 @@ const run = (markdown) => groupLive(parseMarkdown(markdown, 'x.md').tree.childre
 describe('parseInfo', () => {
   it('reads the keys and infers the framework', () => {
     expect(parseInfo(node('html', 'live example=basic check=tabs-click differences=d1'))).toEqual({
-      lang: 'html', framework: 'vanilla', example: 'basic', check: 'tabs-click', differences: 'd1', errors: [],
+      lang: 'html', framework: 'vanilla', example: 'basic', check: 'tabs-click', checks: ['tabs-click'], differences: 'd1', errors: [],
     });
     expect(parseInfo(node('jsx', 'live example=basic')).framework).toBe('react');
     expect(parseInfo(node('vue', 'live example=basic framework=vue')).errors).toEqual([]);
@@ -32,6 +32,15 @@ describe('parseInfo', () => {
     expect(parseInfo(node('tsx', 'live example=basic check=tabs-click')).errors).toEqual(['check= is allowed only on the html block, the first of the group']);
     expect(parseInfo(node('html', 'live')).errors).toEqual(['the key example=<name> is required']);
     expect(parseInfo(node('html', 'live example=a example=b')).errors).toEqual(['the key "example" is repeated']);
+  });
+
+  it('reads several checks and the static declaration, and rejects their misuse (HWC-LIVE1)', () => {
+    expect(parseInfo(node('html', 'live example=basic check=tabs-keyboard,tabs-disabled'))).toMatchObject({ check: 'tabs-keyboard,tabs-disabled', checks: ['tabs-keyboard', 'tabs-disabled'], errors: [] });
+    expect(parseInfo(node('html', 'live static example=basic'))).toMatchObject({ static: true, errors: [] });
+    expect(parseInfo(node('html', 'live example=basic static check=tabs-click')).errors).toEqual(['a group is either static or names checks, not both']);
+    expect(parseInfo(node('tsx', 'live example=basic static')).errors).toEqual(['static is allowed only on the html block, the first of the group']);
+    expect(parseInfo(node('html', 'live example=basic check=tabs-click,tabs-click')).errors).toEqual(['check=tabs-click,tabs-click names a check more than once']);
+    expect(parseInfo(node('html', 'live example=basic check=tabs-click,')).errors).toEqual(['the check value "" must match /^[a-z][a-z0-9-]{0,39}$/']);
   });
 
   it('detects live blocks', () => {

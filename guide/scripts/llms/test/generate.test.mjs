@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { installData } from "../../install/generate.mjs";
-import { REPOSITORY, TITLE, footerDescription, llmsText, writeLlms } from "../generate.mjs";
+import { REPOSITORY, TITLE, complianceSentence, llmsText, writeLlms } from "../generate.mjs";
 
 const guideDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const temps = [];
@@ -102,16 +102,16 @@ describe("llms.txt", () => {
   });
 });
 
-describe("footer description", () => {
-  it("is read from the English shell texts", () => {
-    const source = readFileSync(join(guideDir, "src", "app", "i18n", "shell.ts"), "utf8");
-    const text = footerDescription(source);
+describe("compliance sentence", () => {
+  it("is read from the one source of the footer and the landing", () => {
+    const json = readFileSync(join(guideDir, "src", "app", "i18n", "compliance.json"), "utf8");
+    const text = complianceSentence(json);
     expect(text).toContain("built to comply with the DGA Platforms Code");
     expect(text).toContain("not an official DGA product");
   });
 
-  it("fails when the key is missing", () => {
-    expect(() => footerDescription("export const shellTexts = { en: {} };")).toThrow(/footerDescription/);
+  it("fails when the language is missing", () => {
+    expect(() => complianceSentence('{ "ar": "x" }')).toThrow(/compliance.json/);
   });
 });
 
@@ -124,7 +124,7 @@ describe("writeLlms", () => {
     writeFileSync(join(root, "gen", "content", "manifest.json"), JSON.stringify(manifest));
     writeFileSync(join(root, "gen", "build-info.json"), JSON.stringify(buildInfo));
     writeFileSync(join(root, "gen", "install.json"), JSON.stringify(install));
-    writeFileSync(join(root, "src", "app", "i18n", "shell.ts"), `export const shellTexts = { en: { footerDescription: '${summary}' }, ar: {} };`);
+    writeFileSync(join(root, "src", "app", "i18n", "compliance.json"), JSON.stringify({ en: summary, ar: "x" }));
     writeLlms({ guideDir: root, generatedDir: "gen", browserDir: "out" });
     const written = readFileSync(join(root, "out", "llms.txt"), "utf8");
     expect(written).toBe(llmsText({ manifest, buildInfo, install, summary }));

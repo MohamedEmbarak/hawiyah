@@ -22,6 +22,7 @@ import { bundledDocument, modulesDocument } from './document';
 import { FRAME_FRAMEWORK_NAMES, frameTexts } from './i18n';
 import {
   MessageBudget,
+  DROPPED_REPORT_MS,
   READY_TIMEOUT_MS,
   acceptMessage,
   needsBundledRuntime,
@@ -77,6 +78,8 @@ interface ActiveRun {
   loads: number;
   /** Time of the latest of them. */
   loadedAt: number;
+  /** Time of the latest accepted message of the frame. */
+  messageAt: number;
 }
 
 /**
@@ -91,6 +94,12 @@ const LEFT_WINDOW_MS = 1000;
  * frame's own document) and only this shortly before the refusal.
  */
 const REPEATED_LOAD_WINDOW_MS = 250;
+/**
+ * A repeated load without a refused navigation is a reload of the run's document
+ * when the bootstrap posts again within this time; otherwise the code replaced the
+ * document (about:blank, document.open) and the run is stopped.
+ */
+const REPLACED_WINDOW_MS = 3000;
 
 /** Set once a modules run failed for a runtime reason: later runs of this document use the bundles. */
 let modulesUnavailable = false;
@@ -111,7 +120,7 @@ let modulesUnavailable = false;
  */
 @Component({
   selector: 'guide-preview-frame',
-  template: `<div class="frame">@for (item of runs(); track item.run) {<iframe #frame sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" [title]="title()" (load)="loaded(item.run)"></iframe>}</div>@if (notice(); as text) {<p class="notice hw-type" data-scale="body-sm" role="status">{{ text }}</p>}`,
+  template: `<div class="frame">@for (item of runs(); track item.run) {<iframe #frame sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" [title]="title()" (load)="loaded(item.run)"></iframe>}</div><p class="notice hw-type" data-scale="body-sm" data-tone="muted" role="status">@if (notice(); as n) {@if (n.address !== undefined) {{{ t().navigationBlocked.before }}<bdi dir="ltr">{{ n.address }}</bdi>{{ t().navigationBlocked.after }}} @else {{{ n.text }}}}</p>`,
   styleUrl: './preview-frame.css',
 })
 export class PreviewFrame {
@@ -128,14 +137,24 @@ export class PreviewFrame {
   private readonly frame = viewChild<ElementRef<HTMLIFrameElement>>('frame');
 
   protected readonly runs = signal<readonly { readonly run: number }[]>([]);
-  protected readonly notice = signal<string | null>(null);
+  /**
+   * The notice under the frame: a link or a form of the example that did not leave
+   * the preview. It is the one live region of those events and stays in the
+   * document, empty, until it has text. A run that fails is announced by the status
+   * line of the page (example block or editor), not here.
+   */
+  protected readonly notice = signal<{ readonly text: string; readonly address?: string } | null>(null);
   private readonly browser = signal(false);
-  private readonly t = computed(() => pick(frameTexts, this.source()?.lang ?? 'en'));
+  protected readonly t = computed(() => pick(frameTexts, this.source()?.lang ?? 'en'));
   protected readonly title = computed(() => this.t().frameTitle(FRAME_FRAMEWORK_NAMES[this.source()?.framework ?? 'vanilla']));
 
   private counter = 0;
   private active: ActiveRun | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
+  /** Pending report of the dropped-message count of the active run. */
+  private droppedTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Pending check after a repeated load of the frame. */
+  private replacedTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** The components of the page, for the attribution of a refused navigation. */
   private static readonly live = new Set<PreviewFrame>();
@@ -175,6 +194,10 @@ export class PreviewFrame {
         view.removeEventListener('message', listener);
         PreviewFrame.live.delete(this);
         this.clearTimer();
+        if (this.droppedTimer !== null) clearTimeout(this.droppedTimer);
+        this.droppedTimer = null;
+        if (this.replacedTimer !== null) clearTimeout(this.replacedTimer);
+        this.replacedTimer = null;
         this.active = null;
       });
       this.browser.set(true);
@@ -205,6 +228,7 @@ export class PreviewFrame {
 
   private async start(source: FrameSource | null, mode: 'light' | 'dark', forced: boolean, fallback: boolean): Promise<void> {
     this.clearTimer();
+    this.flushDropped();
     this.active = null;
     this.notice.set(null);
     const run = ++this.counter;
@@ -241,7 +265,7 @@ export class PreviewFrame {
       this.status.emit({ state: 'failed', run, strategy, message: error instanceof Error ? error.message : String(error) });
       return;
     }
-    this.active = { run, token, strategy, budget: new MessageBudget(), runtimeBase, state: 'loading', written: false, loads: 0, loadedAt: Number.NEGATIVE_INFINITY };
+    this.active = { run, token, strategy, budget: new MessageBudget(), runtimeBase, state: 'loading', written: false, loads: 0, loadedAt: Number.NEGATIVE_INFINITY, messageAt: Number.NEGATIVE_INFINITY };
     this.runs.set([{ run }]);
     afterNextRender(
       {
@@ -264,9 +288,14 @@ export class PreviewFrame {
     if (!active || !element) return;
     const message = acceptMessage(event, { source: element.contentWindow, token: active.token, run: active.run });
     if (!message) return;
-    if (!active.budget.take()) {
-      if (active.budget.dropped === 1 || active.budget.dropped % 100 === 0) {
-        this.log.emit({ run: active.run, kind: 'dropped', count: active.budget.dropped });
+    active.messageAt = performance.now();
+    if (!active.budget.take(message.type)) {
+      // One log entry per run: its count is reported at most every DROPPED_REPORT_MS.
+      if (message.type === 'console' && this.droppedTimer === null) {
+        this.droppedTimer = setTimeout(() => {
+          this.droppedTimer = null;
+          if (this.active === active) this.log.emit({ run: active.run, kind: 'dropped', count: active.budget.dropped });
+        }, DROPPED_REPORT_MS);
       }
       return;
     }
@@ -295,11 +324,11 @@ export class PreviewFrame {
         element.style.blockSize = `${message.height}px`;
         return;
       case 'navigation':
-        this.notice.set(this.t().navigationBlocked(message.href));
+        this.notice.set({ text: `${this.t().navigationBlocked.before}${message.href}${this.t().navigationBlocked.after}`, address: message.href });
         this.log.emit({ run: active.run, kind: 'navigation', href: message.href });
         return;
       case 'submit':
-        this.notice.set(this.t().submitBlocked);
+        this.notice.set({ text: this.t().submitBlocked });
         this.log.emit({ run: active.run, kind: 'submit' });
         return;
     }
@@ -313,21 +342,35 @@ export class PreviewFrame {
     const now = performance.now();
     active.loads += 1;
     active.loadedAt = now;
-    // A repeated load without a refused navigation is a reload of the same document.
-    if (now - PreviewFrame.refusedAt > LEFT_WINDOW_MS) return;
+    if (now - PreviewFrame.refusedAt > LEFT_WINDOW_MS) {
+      // A repeated load without a refused navigation: a reload of the same document
+      // posts again; a document the code put in its place does not.
+      if (active.loads >= 2) {
+        if (this.replacedTimer !== null) clearTimeout(this.replacedTimer);
+        this.replacedTimer = setTimeout(() => {
+          this.replacedTimer = null;
+          if (this.active === active && active.messageAt < now) this.stop(this.t().documentReplaced);
+        }, REPLACED_WINDOW_MS);
+      }
+      return;
+    }
     PreviewFrame.refusedAt = Number.NEGATIVE_INFINITY;
     this.left();
   }
 
   /** Code in the frame tried to navigate it: the frame is removed and the run fails. */
   private left(): void {
+    this.stop(this.t().leaveBlocked);
+  }
+
+  /** The frame is removed and the run fails with a sentence of the guide. */
+  private stop(text: string): void {
     const active = this.active;
     if (!active) return;
-    const text = this.t().leaveBlocked;
     this.clearTimer();
+    this.flushDropped();
     this.active = null;
     this.runs.set([]);
-    this.notice.set(text);
     this.log.emit({ run: active.run, kind: 'left', text });
     this.status.emit({ state: 'failed', run: active.run, strategy: active.strategy, message: text, plain: true });
   }
@@ -343,5 +386,14 @@ export class PreviewFrame {
   private clearTimer(): void {
     if (this.timer !== null) clearTimeout(this.timer);
     this.timer = null;
+  }
+
+  /** Reports a pending dropped-message count now (a run ends or is replaced). */
+  private flushDropped(): void {
+    if (this.droppedTimer === null) return;
+    clearTimeout(this.droppedTimer);
+    this.droppedTimer = null;
+    const active = this.active;
+    if (active && active.budget.dropped > 0) this.log.emit({ run: active.run, kind: 'dropped', count: active.budget.dropped });
   }
 }

@@ -30,6 +30,6 @@ export const componentPageTexts: Texts<ComponentPageTexts> = {
     sideNavLabel: 'صفحات المكوّنات',
     close: 'إغلاق',
     briefTitle: (name) => `${name} · هوية`,
-    referenceTitle: (name) => `مرجع ${name} · هوية`,
+    referenceTitle: (name) => `مرجع المكوّن: ${name} · هوية`,
   },
 };

@@ -1,51 +1,26 @@
 // llms.txt of the built guide (build step 75): written from the content manifest
 // (src/generated/content/manifest.json), build-info.json and install.json, with the
-// English footer description of src/app/i18n/shell.ts as the summary
-// (contentPipeline.generated). Only pages the build produced are listed.
+// English compliance sentence of src/app/i18n/compliance.json (the footer
+// description) as the summary (contentPipeline.generated). Only pages the build
+// produced are listed.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import ts from "typescript";
 
 export const TITLE = "# Hawiyah — هوية";
 export const REPOSITORY = "https://github.com/MohamedEmbarak/hawiyah";
 
 const FRAMEWORK_NAMES = { vanilla: "JavaScript", react: "React", vue: "Vue", angular: "Angular" };
 
-/** Text of a string literal or of a template literal without substitutions. */
-function literalText(node) {
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text;
-  return null;
-}
-
-function property(object, name) {
-  for (const member of object.properties) {
-    if (ts.isPropertyAssignment(member) && (ts.isIdentifier(member.name) || ts.isStringLiteral(member.name)) && member.name.text === name) {
-      return member.initializer;
-    }
-  }
-  return null;
-}
-
 /**
- * Reads shellTexts.<lang>.footerDescription from the source of src/app/i18n/shell.ts.
- * @param {string} source
+ * The compliance sentence of a language from src/app/i18n/compliance.json, the one
+ * source the footer and the landing import (docs/components/README.md, Writing style).
+ * @param {string} json
  * @param {'en' | 'ar'} [lang]
  */
-export function footerDescription(source, lang = "en") {
-  const file = ts.createSourceFile("shell.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  for (const statement of file.statements) {
-    if (!ts.isVariableStatement(statement)) continue;
-    for (const declaration of statement.declarationList.declarations) {
-      if (!ts.isIdentifier(declaration.name) || declaration.name.text !== "shellTexts") continue;
-      const texts = declaration.initializer;
-      if (!texts || !ts.isObjectLiteralExpression(texts)) break;
-      const dictionary = property(texts, lang);
-      const value = dictionary && ts.isObjectLiteralExpression(dictionary) ? property(dictionary, "footerDescription") : null;
-      const text = value ? literalText(value) : null;
-      if (text) return text;
-    }
-  }
-  throw new Error(`llms: src/app/i18n/shell.ts has no string shellTexts.${lang}.footerDescription`);
+export function complianceSentence(json, lang = "en") {
+  const value = JSON.parse(json)?.[lang];
+  if (typeof value === "string" && value.trim() !== "") return value;
+  throw new Error(`llms: src/app/i18n/compliance.json has no string for ${lang}`);
 }
 
 /** One line of Markdown text: whitespace collapsed. */
@@ -110,7 +85,7 @@ export function writeLlms({ guideDir, generatedDir, browserDir }) {
     manifest: read(join("content", "manifest.json")),
     buildInfo: read("build-info.json"),
     install: read("install.json"),
-    summary: footerDescription(readFileSync(join(guideDir, "src", "app", "i18n", "shell.ts"), "utf8")),
+    summary: complianceSentence(readFileSync(join(guideDir, "src", "app", "i18n", "compliance.json"), "utf8")),
   });
   writeFileSync(join(guideDir, browserDir, "llms.txt"), text);
   return text;

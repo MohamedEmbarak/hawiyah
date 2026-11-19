@@ -15,7 +15,7 @@ export function shortIntegrity(integrity: string): string {
 @Component({
   selector: 'guide-editor-status',
   imports: [HwCopyButtonComponent],
-  template: `<div class="bar"><p class="state hw-type" data-scale="body-sm" role="status">{{ state().text }}@if (state().detail) {<bdi dir="ltr">{{ state().detail }}</bdi>}{{ state().note }}</p><p class="package hw-type" data-scale="body-sm"><span class="label">{{ t().packageLine }}</span> <span class="value-group"><bdi dir="ltr" class="value">{{ line() }}</bdi>@if (integrity()) {<hw-copy-button [text]="integrity()" [label]="t().copyIntegrity" [copiedMessage]="t().copied" [failedMessage]="t().copyFailed" size="sm" />}</span></p></div>`,
+  template: `<div class="bar"><p class="state hw-type" data-scale="body-sm" role="status">{{ state().text }}@if (state().detail) {<bdi dir="ltr">{{ state().detail }}</bdi>}{{ state().note }}</p><p class="hw-type" data-scale="body-sm" data-tone="muted"><span class="package"><span class="label">{{ t().packageLine }}</span> <span class="value-group"><bdi dir="ltr" class="value">{{ line() }}</bdi>@if (integrity()) {<hw-copy-button [text]="integrity()" [label]="t().copyIntegrity" [copiedMessage]="t().copied" [failedMessage]="t().copyFailed" size="sm" />}</span></span></p></div>`,
   styleUrl: './status-bar.css',
 })
 export class EditorStatusBar {

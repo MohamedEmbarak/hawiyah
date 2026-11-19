@@ -142,7 +142,7 @@ for (const lang of ['ar', 'en'] as const) {
       const names = (await terms.allTextContents()).map((text) => text.replace(/[⁦⁩]/g, '').trim());
       expect(names).toEqual(['@hawiyah/tokens', '@hawiyah/styles', '@hawiyah/core', '@hawiyah/vanilla', '@hawiyah/react', '@hawiyah/vue', '@hawiyah/angular']);
       const npm = packages.getByRole('link', { name: new RegExp(t.npm) });
-      await expect(npm).toHaveAttribute('href', 'https://www.npmjs.com/search?q=%40hawiyah');
+      await expect(npm).toHaveAttribute('href', 'https://www.npmjs.com/org/hawiyah');
       await expect(npm).toHaveAttribute('target', '_blank');
       const compliance = page.locator('guide-landing-compliance');
       await expect(compliance.locator('p').first()).toHaveText(t.statementCompliance);

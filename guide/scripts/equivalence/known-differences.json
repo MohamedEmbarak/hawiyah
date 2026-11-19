@@ -5,7 +5,7 @@
     "aspect": "structure",
     "ignore": [{ "class": "hw-tab-bar", "attribute": "data-orientation" }],
     "description": "@hawiyah/vanilla 0.3.0 creates the tab bar without the data-orientation attribute that the React, Vue and Angular adapters write; the appearance and the accessibility tree are the same. Removed when the guide pins a release that corrects createTabs.",
-    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0, line 963",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: The vanilla Tabs controller (`createTabs`) creates the tab bar (`.hw-tab-bar`) without the `data-orientation` attribute",
     "approvedBy": "lead"
   }
 ]

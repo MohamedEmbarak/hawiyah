@@ -90,7 +90,7 @@ test.describe('motion allowed', () => {
       (window as unknown as { __fades: string[] }).__fades = starts;
       document.addEventListener('animationstart', (event) => starts.push(event.animationName), true);
     });
-    // Real time: the leave animation of Angular completes on real timers, so the clock is not faked.
+    // Real time: CSS animations run on real time, so the clock is not faked.
     await page.goto('en/');
     await ready(page);
     const durations = await tokens(page);
@@ -101,7 +101,7 @@ test.describe('motion allowed', () => {
     await page.waitForFunction(() => document.getAnimations().length === 0);
     await page.evaluate(() => (window as unknown as { __fades: string[] }).__fades.splice(0));
     for (let i = 0; i < 4; i += 1) {
-      await page.waitForFunction(() => document.getAnimations().some((a) => (a as CSSAnimation).animationName?.endsWith('command-fade-in')), null, { timeout: 5000 });
+      await page.waitForFunction(() => document.getAnimations().some((a) => /command-fade-in-(odd|even)$/.test((a as CSSAnimation).animationName ?? '')), null, { timeout: 5000 });
       const list = await animations(page);
       expect(list.length).toBeGreaterThan(0);
       for (const item of list) {
@@ -111,12 +111,12 @@ test.describe('motion allowed', () => {
       const started = Date.now();
       await page.waitForFunction(() => document.getAnimations().every((a) => a.playState === 'finished' || a.playState === 'idle'), null, { timeout: 2000 });
       expect(Date.now() - started).toBeLessThan(500);
-      // Each step faded the new command in and the old one out, and nothing else.
+      // Each step faded the one listing in again (its text changed in place), and nothing
+      // else; the two keyframe names alternate so that every step restarts the fade.
       // Keyframe names carry the component's scope prefix.
       const fades = await page.evaluate(() => (window as unknown as { __fades: string[] }).__fades.splice(0));
-      expect(fades.filter((name) => !name.includes('guide-pane-settle')).map((name) => name.replace(/^.*(command-fade-(?:in|out))$/, '$1')).sort()).toEqual([
-        'command-fade-in',
-        'command-fade-out',
+      expect(fades.filter((name) => !name.includes('guide-pane-settle')).map((name) => name.replace(/^.*(command-fade-in-(?:odd|even))$/, '$1'))).toEqual([
+        i % 2 === 0 ? 'command-fade-in-odd' : 'command-fade-in-even',
       ]);
     }
   });

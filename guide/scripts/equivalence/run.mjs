@@ -14,8 +14,11 @@
 // throws with one '<code> <file>:<line>: <message>' line per failure.
 //
 // Codes: HWE-FRAME (a frame failed or reported an error), HWE-STRUCT, HWE-ARIA,
-// HWE-SHOT (a comparison failed), HWE-CHECK (unknown interaction check or a step
-// that could not run), HWE-KD (known-differences.json invalid or not found).
+// HWE-SHOT (a comparison failed), HWE-CHECK (unknown interaction check, a step
+// that could not run, or a group of a component with a controller that names no
+// check and is not static), HWE-KD (known-differences.json invalid or not found),
+// HWE-SCOPE (no group, an --only key that names none, or groups that differ from
+// the content manifest).
 import { createServer } from 'node:http';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -89,8 +92,53 @@ function ignoreErrors(entry, at) {
   return errors;
 }
 
-/** Validates known-differences.json; returns { entries: Map<id, entry>, errors: string[] }. */
-export function validateKnownDifferences(value) {
+/** The repository CHANGELOG.md, which every known difference must cite. */
+export const CHANGELOG_FILE = resolve(GUIDE_DIR, '..', 'CHANGELOG.md');
+
+const SOURCE_FORM = /^CHANGELOG\.md, (\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?), ([^,:]+?): (.+)$/;
+const squeeze = (text) => text.replace(/\s+/g, ' ').trim();
+
+/**
+ * Checks a source "CHANGELOG.md, <version>, <section>: <text of the entry>"
+ * against the CHANGELOG text: the version has a "## <version>" section, it holds
+ * a heading "<section>", and the quoted text appears in that subsection.
+ * Returns an error message or null.
+ */
+export function changelogSourceError(source, changelog) {
+  const match = String(source).match(SOURCE_FORM);
+  if (!match) return 'source must read "CHANGELOG.md, <version>, <section>: <text of the entry>"';
+  const [, version, section, quoted] = match;
+  if (typeof changelog !== 'string') return 'CHANGELOG.md cannot be read';
+  const lines = changelog.split('\n');
+  const start = lines.findIndex((line) => line.startsWith(`## ${version} `) || line === `## ${version}`);
+  if (start === -1) return `CHANGELOG.md has no section ## ${version}`;
+  let end = lines.findIndex((line, index) => index > start && /^## /.test(line));
+  if (end === -1) end = lines.length;
+  const heading = lines.findIndex((line, index) => index > start && index < end && /^#{3,6} /.test(line) && line.replace(/^#+ /, '').trim() === section.trim());
+  if (heading === -1) return `CHANGELOG.md ## ${version} has no heading "${section}"`;
+  const level = lines[heading].match(/^#+/)[0].length;
+  let sectionEnd = lines.findIndex((line, index) => index > heading && index < end && new RegExp(`^#{1,${level}} `).test(line));
+  if (sectionEnd === -1) sectionEnd = end;
+  const body = squeeze(lines.slice(heading + 1, sectionEnd).join(' '));
+  if (!body.includes(squeeze(quoted))) return `the text "${quoted}" is not in CHANGELOG.md ## ${version} ${section}`;
+  return null;
+}
+
+function readChangelog() {
+  try {
+    return readFileSync(CHANGELOG_FILE, 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Validates known-differences.json; returns { entries: Map<id, entry>, errors: string[] }.
+ * Every source is checked against CHANGELOG.md (the repository file unless
+ * options.changelog gives its text).
+ */
+export function validateKnownDifferences(value, options = {}) {
+  const changelog = 'changelog' in options ? options.changelog : readChangelog();
   const errors = [];
   const entries = new Map();
   if (!Array.isArray(value)) return { entries, errors: ['HWE-KD scripts/equivalence/known-differences.json:1: the file must hold an array'] };
@@ -108,8 +156,9 @@ export function validateKnownDifferences(value) {
     errors.push(...ignoreErrors(entry, at));
     if (typeof entry.aspect === 'string' && !ASPECTS.includes(entry.aspect)) errors.push(`${at}: aspect must be structure, aria or screenshot (got ${entry.aspect})`);
     if (typeof entry.approvedBy === 'string' && entry.approvedBy !== 'lead') errors.push(`${at}: approvedBy must be 'lead'`);
-    if (typeof entry.source === 'string' && !/^(?:CHANGELOG\.md\b.*\d|https:\/\/\S+)/.test(entry.source)) {
-      errors.push(`${at}: source must name a CHANGELOG.md section and line or an issue URL`);
+    if (typeof entry.source === 'string' && entry.source.trim() !== '') {
+      const problem = changelogSourceError(entry.source, changelog);
+      if (problem) errors.push(`${at}: ${problem}`);
     }
     if (typeof entry.id === 'string') {
       if (entries.has(entry.id)) errors.push(`${at}: id ${entry.id} is repeated`);
@@ -302,7 +351,7 @@ const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
 const stem = (group, state) => [group.id, group.lang, group.example, ...(state === 'rest' ? [] : state.split('/'))].join('-');
 
 /** Runs one group; returns { rows, failures, applied }. */
-async function runGroup({ page, origin, base, pin, group, check, difference, outDir }) {
+async function runGroup({ page, origin, base, pin, group, checks, difference, outDir }) {
   const rows = [];
   const failures = [];
   const harness = await openGroup(page, harnessUrl(origin, base, group, pin));
@@ -338,7 +387,8 @@ async function runGroup({ page, origin, base, pin, group, check, difference, out
   };
 
   await evaluate('rest');
-  if (check) {
+  // The checks run one after the other in the same frames.
+  for (const check of checks) {
     // Per-frame state a check keeps between its steps (for example the focused tab).
     const states = Object.fromEntries(FRAMEWORKS.map((framework) => [framework, {}]));
     for (const step of check.steps) {
@@ -390,19 +440,29 @@ export async function runEquivalence(options) {
   if (!existsSync(join(browserDir, 'runtime', 'import-map.json'))) throw new Error(`${relative(guideDir, browserDir)}/runtime/import-map.json does not exist; build step 60-runtime writes it`);
   const groupsFile = join(cacheDir, 'content', 'live-groups.json');
   if (!existsSync(groupsFile)) throw new Error(`${relative(guideDir, groupsFile)} does not exist; build step 20-content writes it`);
-  let groups = JSON.parse(readFileSync(groupsFile, 'utf8'));
-  if (options.only) groups = groups.filter((group) => options.only.includes(groupKey(group)));
+  const allGroups = JSON.parse(readFileSync(groupsFile, 'utf8'));
+  // The groups must be those of the pages that were built (src/generated/content/manifest.json).
+  const manifestFile = resolve(guideDir, options.manifestFile ?? 'src/generated/content/manifest.json');
+  const scope = scopeErrors(allGroups, existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : null, options.only);
+  if (scope.length > 0) throw new Error(scope.join('\n'));
+  const groups = options.only ? allGroups.filter((group) => options.only.includes(groupKey(group))) : allGroups;
 
   const pin = readPin(guideDir);
   const known = validateKnownDifferences(JSON.parse(readFileSync(join(here, 'known-differences.json'), 'utf8')));
   const failures = [...known.errors];
-  const checks = await loadChecks([...new Set(groups.map((group) => group.check).filter(Boolean))]);
+  const checks = await loadChecks([...new Set(groups.flatMap(checkNames))]);
+  const withController = controllerComponents(options.componentsFile ?? resolve(guideDir, '..', 'components.json'));
   const plan = [];
   for (const group of groups) {
     const difference = differenceOf(group, known.entries);
     if (difference.error) failures.push(difference.error);
-    if (group.check && !checks.has(group.check)) failures.push(failureLine('HWE-CHECK', group, `check=${group.check} has no scripts/equivalence/checks/${group.check}.mjs`));
-    plan.push({ group, difference: difference.entry ?? null, check: group.check ? checks.get(group.check) ?? null : null });
+    for (const name of checkNames(group)) {
+      if (!checks.has(name)) failures.push(failureLine('HWE-CHECK', group, `check=${name} has no scripts/equivalence/checks/${name}.mjs`));
+    }
+    if (withController.has(group.id) && checkNames(group).length === 0 && !group.static) {
+      failures.push(failureLine('HWE-CHECK', group, `${group.example}: ${group.id} has a controller, so the group names at least one check (check=<name>[,<name>]) or declares itself static`));
+    }
+    plan.push({ group, difference: difference.entry ?? null, checks: checkNames(group).map((name) => checks.get(name)).filter(Boolean) });
   }
   if (failures.length > 0) throw new Error(failures.join('\n'));
 
@@ -450,7 +510,8 @@ export async function runEquivalence(options) {
   rows.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
   const pages = new Set(plan.map(({ group }) => `${group.id}/${group.example}`));
   const languages = new Set(plan.map(({ group }) => group.lang));
-  const interactionChecks = plan.filter((item) => item.check).length;
+  const interactionChecks = plan.reduce((sum, item) => sum + item.checks.length, 0);
+  const interacted = new Set(plan.filter((item) => item.checks.length > 0).map(({ group }) => `${group.id}/${group.example}`));
   const documented = [...applied.keys()].map((id) => ({ ...known.entries.get(id), groups: applied.get(id).sort() }));
   const report = {
     pin,
@@ -459,6 +520,8 @@ export async function runEquivalence(options) {
     languages: [...languages].sort(),
     frameworks: FRAMEWORKS,
     interactionChecks,
+    comparedAfterInteraction: interacted.size,
+    comparedAtRestOnly: pages.size - interacted.size,
     documentedDifferences: documented,
     failures: [...failures].sort(),
     comparisons: rows,
@@ -469,14 +532,55 @@ export async function runEquivalence(options) {
     log(`equivalence: documented difference ${entry.id} (${entry.component}, ${entry.aspect}, approved by ${entry.approvedBy}, ${entry.source}) ${scope} for ${entry.groups.join(', ')}: ${entry.description}`);
   }
   if (failures.length > 0) throw new Error([...failures].sort().join('\n'));
-  report.summary = summaryLine({ groups: pages.size, languages: languages.size, frameworks: FRAMEWORKS.length, interactionChecks, documented: documented.length });
+  report.summary = summaryLine({
+    groups: pages.size, languages: languages.size, frameworks: FRAMEWORKS.length, interactionChecks,
+    afterInteraction: interacted.size, restOnly: pages.size - interacted.size, documented: documented.length,
+  });
   return report;
 }
 
+/** The checks a group names (check=<a>[,<b>...]). */
+export const checkNames = (group) => (typeof group.check === 'string' && group.check !== '' ? group.check.split(',') : []);
+
+/** Ids of components.json whose components have a controller (sourceType interactive). */
+export function controllerComponents(file) {
+  if (!existsSync(file)) return new Set();
+  const catalogue = JSON.parse(readFileSync(file, 'utf8'));
+  return new Set((catalogue.components ?? []).filter((entry) => entry.sourceType === 'interactive').map((entry) => entry.id));
+}
+
+/**
+ * The run must compare exactly the groups of the built pages: the live groups
+ * file and the content manifest list the same groups, there is at least one,
+ * and every --only key names one of them. Returns failure lines.
+ */
+export function scopeErrors(groups, manifest, only) {
+  const errors = [];
+  const keys = new Set(groups.map(groupKey));
+  if (keys.size === 0) errors.push('HWE-SCOPE .cache/content/live-groups.json:1: no live group to compare');
+  if (!manifest) errors.push('HWE-SCOPE src/generated/content/manifest.json:1: the content manifest does not exist; build step 20-content writes it');
+  else {
+    const expected = new Set();
+    for (const page of manifest.pages ?? []) {
+      for (const lang of page.langs ?? []) for (const group of page.liveGroups ?? []) expected.add(`${page.id}/${lang}/${group.example}`);
+    }
+    const missing = [...expected].filter((key) => !keys.has(key)).sort();
+    const extra = [...keys].filter((key) => !expected.has(key)).sort();
+    if (missing.length > 0) errors.push(`HWE-SCOPE .cache/content/live-groups.json:1: the built pages have the groups ${missing.join(', ')}, which the live groups file lacks`);
+    if (extra.length > 0) errors.push(`HWE-SCOPE .cache/content/live-groups.json:1: the groups ${extra.join(', ')} belong to no built page`);
+  }
+  for (const key of only ?? []) {
+    if (!keys.has(key)) errors.push(`HWE-SCOPE --only:1: ${key} names no live group (keys are <id>/<lang>/<example>)`);
+  }
+  return errors;
+}
+
 /** The closing line of a passing run. */
-export function summaryLine({ groups, languages, frameworks, interactionChecks, documented }) {
+export function summaryLine({ groups, languages, frameworks, interactionChecks, afterInteraction, restOnly, documented }) {
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-  return `equivalence: ${groups} groups x ${languages} languages x ${frameworks} frameworks equal (${plural(interactionChecks, 'interaction check', 'interaction checks')}, ${plural(documented, 'documented difference', 'documented differences')})`;
+  return `equivalence: ${groups} groups x ${languages} languages x ${frameworks} frameworks equal `
+    + `(${afterInteraction} compared after interaction, ${restOnly} at rest only; `
+    + `${plural(interactionChecks, 'interaction check', 'interaction checks')}, ${plural(documented, 'documented difference', 'documented differences')})`;
 }
 
 /** The pinned package version the frames load (build-info.json of step 00, else package.json). */

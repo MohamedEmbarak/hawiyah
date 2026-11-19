@@ -52,5 +52,5 @@ export async function bundleRxjs({ guideDir }) {
     if (missing.length) throw new Error(`runtime: ${file} lacks the rxjs exports ${missing.join(', ')}`);
     names[file] = actual;
   }
-  return { files, names };
+  return { files, names, metafile: result.metafile };
 }

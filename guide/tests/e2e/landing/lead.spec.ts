@@ -166,6 +166,34 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(p.shown).toHaveText(command('vue'));
     });
 
+    test('the listing stays one element during the round: only its text changes', async ({ page }) => {
+      const p = await rotating(page, lang);
+      const listing = await p.rotator.locator('.cell pre').elementHandle();
+      for (const id of ORDER) {
+        await step(page);
+        await expect(p.shown).toHaveText(command(id));
+        await expect(p.rotator.locator('.cell pre')).toHaveCount(1);
+        expect(await listing!.evaluate((pre) => pre.isConnected && pre === pre.ownerDocument.querySelector('guide-landing-lead .rotator .cell pre'))).toBe(true);
+      }
+    });
+
+    test('when the round ends while a pointer left focus on the pause button, focus moves to the checked framework', async ({ page }) => {
+      const p = await rotating(page, lang);
+      await p.pause.click();
+      await settle(page);
+      await p.resume.click();
+      await settle(page);
+      await page.mouse.move(0, 0);
+      await expect(p.pause).toBeFocused();
+      for (const id of ORDER) {
+        await step(page);
+        await expect(p.shown).toHaveText(command(id));
+      }
+      await expect(p.control).toHaveClass(/\boff\b/);
+      await expect(p.selector.locator('input:checked')).toBeFocused();
+      expect(await page.evaluate(() => document.activeElement === document.body)).toBe(false);
+    });
+
     test('a framework chosen in the lead stops the round and the Install section shows it', async ({ page }) => {
       const p = await rotating(page, lang);
       await step(page);
@@ -240,15 +268,30 @@ for (const lang of ['ar', 'en'] as const) {
         for (const id of ORDER) {
           await step(page);
           await expect(p.shown).toHaveText(command(id));
-          expect(await box()).toEqual(first);
+          if (id === 'angular' && width < 640) {
+            // The round has ended: below 40em the pause button had a row of its own,
+            // which is not kept empty (the block is shorter by exactly that row).
+            const row = await p.rotator.evaluate((block) => {
+              const bar = block.querySelector('.bar')!.getBoundingClientRect().height;
+              const selector = block.querySelector('fieldset')!.getBoundingClientRect().height;
+              return bar - selector;
+            });
+            expect(row).toBeLessThanOrEqual(1);
+            const last = await box();
+            expect(last.height).toBeLessThan(first.height);
+            expect(first.height - last.height).toBeCloseTo(first.notes - last.notes, 0);
+          } else {
+            expect(await box()).toEqual(first);
+          }
           expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
         }
         // The command scrolls inside its listing; the selector stays inside the block.
         const fits = await p.rotator.evaluate((block) => {
           const outer = block.getBoundingClientRect();
+          // A button that is not displayed (the pause button after the round, below 40em) has no box.
           return Array.from(block.querySelectorAll('fieldset, button, figure'), (node) => {
             const r = node.getBoundingClientRect();
-            return r.left >= outer.left - 0.5 && r.right <= outer.right + 0.5;
+            return (r.width === 0 && r.height === 0) || (r.left >= outer.left - 0.5 && r.right <= outer.right + 0.5);
           }).every(Boolean);
         });
         expect(fits).toBe(true);
@@ -278,6 +321,35 @@ for (const lang of ['ar', 'en'] as const) {
         expect(await axe(page)).toEqual([]);
       });
     }
+  });
+
+  test(`at 390 px the ended round leaves no empty row for the pause button (${lang})`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.setViewportSize({ width: 390, height: 844 });
+    const p = await rotating(page, lang);
+    for (const id of ORDER) {
+      await step(page);
+      await expect(p.shown).toHaveText(command(id));
+    }
+    await expect(p.control).toHaveClass(/\boff\b/);
+    await expect(p.control).toBeHidden();
+    const heights = await p.rotator.evaluate((rotator) => ({
+      bar: rotator.querySelector('.bar')!.getBoundingClientRect().height,
+      selector: rotator.querySelector('fieldset')!.getBoundingClientRect().height,
+    }));
+    expect(heights.bar).toBeLessThanOrEqual(heights.selector + 1);
+  });
+
+  test(`the lead selector is not shown as working when the script bundle fails (${lang})`, async ({ browser }) => {
+    // The plain page, without the console guard: the aborted bundle is logged on purpose.
+    const context = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+    const page = await context.newPage();
+    await page.route(/\/main-[^/]*\.js$/, (route) => route.abort());
+    await page.goto(`${lang}/`);
+    const radios = page.locator('guide-landing-lead .rotator input[type="radio"]');
+    await expect(radios).toHaveCount(4);
+    for (const radio of await radios.all()) await expect(radio).toBeDisabled();
+    await context.close();
   });
 
   test.describe(`lead under reduced motion ${lang}`, () => {

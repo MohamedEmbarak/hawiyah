@@ -84,6 +84,37 @@ export function rewriteImports(code: string, parse: Lexer, modules: readonly str
 }
 
 /** Line and column (1-based) of an offset. */
+/**
+ * A compileScript error at its place in the file. A syntax error of the script
+ * (Babel) carries loc.line and a 0-based loc.column relative to the script block;
+ * a compiler-sfc error carries loc.start, already in file coordinates.
+ */
+export function scriptDiagnostic(
+  file: string,
+  block: { readonly loc?: { readonly start: { readonly line: number; readonly column: number } } } | null,
+  error: unknown,
+): { file: string; line: number; column: number; message: string } {
+  const loc = (error as { loc?: { line?: number; column?: number; start?: { line: number; column: number } } }).loc;
+  const message = ((error instanceof Error ? error.message : String(error)).split('\n')[0] ?? '').replace(/\s*\(\d+:\d+\)$/, '');
+  if (loc?.start) return { file, line: loc.start.line, column: loc.start.column, message };
+  if (typeof loc?.line === 'number') {
+    const start = block?.loc?.start ?? { line: 1, column: 1 };
+    const column = (loc.column ?? 0) + 1;
+    return { file, line: start.line + loc.line - 1, column: loc.line === 1 ? start.column + column - 1 : column, message };
+  }
+  return { file, line: block?.loc?.start.line ?? 1, column: 1, message };
+}
+
+/**
+ * Position of an import specifier in the source file the reader wrote (the first
+ * quoted occurrence), or null when it is not written there literally.
+ */
+export function specifierPosition(source: string, specifier: string): { line: number; column: number } | null {
+  const escaped = specifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = new RegExp(`(['"])${escaped}\\1`).exec(source);
+  return match ? position(source, match.index + 1) : null;
+}
+
 export function position(code: string, offset: number): { line: number; column: number } {
   const before = code.slice(0, Math.max(0, offset));
   const line = before.split('\n').length;

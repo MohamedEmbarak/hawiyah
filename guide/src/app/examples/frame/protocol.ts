@@ -12,8 +12,14 @@ export const MAX_TEXT = 4000;
 /** Bounds of a reported frame height, in CSS pixels. */
 export const MIN_HEIGHT = 80;
 export const MAX_HEIGHT = 4000;
-/** Messages accepted per run; later ones are dropped and counted. */
+/**
+ * Console messages accepted per run, and height messages per run; later ones of
+ * that kind are dropped and counted. ready, error, navigation and submit are never
+ * dropped: they carry the outcome of the run.
+ */
 export const MAX_MESSAGES = 500;
+/** A dropped-message count is reported at most this often (one log entry per run, updated). */
+export const DROPPED_REPORT_MS = 250;
 /** A run that is not ready within this time fails. */
 export const READY_TIMEOUT_MS = 20000;
 
@@ -118,17 +124,23 @@ export function acceptMessage(event: MessageLike, expected: ExpectedSender): Fra
   }
 }
 
-/** Counts the messages of one run; past MAX_MESSAGES every message is dropped and counted. */
+/**
+ * Counts the messages of one run. Console output and height reports each have a
+ * budget of MAX_MESSAGES; past it a message of that kind is dropped and counted.
+ * ready, error, navigation and submit are always accepted.
+ */
 export class MessageBudget {
-  private accepted = 0;
+  private readonly accepted: Record<'console' | 'height', number> = { console: 0, height: 0 };
+  /** Console messages dropped (reported to the reader); dropped height reports are not counted. */
   dropped = 0;
 
-  take(): boolean {
-    if (this.accepted >= MAX_MESSAGES) {
-      this.dropped += 1;
+  take(type: FrameMessageType): boolean {
+    if (type !== 'console' && type !== 'height') return true;
+    if (this.accepted[type] >= MAX_MESSAGES) {
+      if (type === 'console') this.dropped += 1;
       return false;
     }
-    this.accepted += 1;
+    this.accepted[type] += 1;
     return true;
   }
 }

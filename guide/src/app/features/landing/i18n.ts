@@ -1,3 +1,4 @@
+import compliance from '../../i18n/compliance.json';
 import { Texts } from '../../i18n/text';
 
 /** The seven package names without scope, in the order of the packages section. */
@@ -76,7 +77,8 @@ export interface LandingTexts {
     readonly manager: string;
     readonly step1: string;
     readonly step2: string;
-    readonly themeNote: string;
+    /** The sentence around the attribute name data-hw-theme (shown as code, never at the end of the sentence). */
+    readonly themeNote: { readonly before: string; readonly after: string };
     readonly bundlerNote: string;
     readonly step3: string;
     readonly resultTitle: string;
@@ -171,7 +173,7 @@ export const landingTexts: Texts<LandingTexts> = {
       manager: 'Package manager',
       step1: 'Install the styles package and one adapter.',
       step2: 'Load the stylesheet once.',
-      themeNote: 'The theme applies to any element that carries',
+      themeNote: { before: 'The attribute', after: 'applies the theme to the element that carries it and to everything inside it.' },
       bundlerNote: 'The JavaScript path assumes a bundler, such as Vite, that resolves package imports.',
       step3: 'Render a first component.',
       resultTitle: 'Result',
@@ -184,7 +186,7 @@ export const landingTexts: Texts<LandingTexts> = {
       heading: 'Seven packages',
       intro: (v, n) =>
         `All seven packages share one version, currently ${v}, a pre-1.0 release. The catalogue lists ${n} components across four adapters.`,
-      npmLink: 'The packages on npm',
+      npmLink: 'Packages on npm',
       descriptions: {
         tokens: 'Design values and semantic theme variables',
         styles: 'Component styles, layout helpers and an optional reset',
@@ -197,7 +199,7 @@ export const landingTexts: Texts<LandingTexts> = {
     },
     compliance: {
       heading: 'Compliance',
-      statement: 'Hawiyah is built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification.',
+      statement: compliance.en,
       evidence: 'Compliance is documented requirement by requirement, with test evidence and open items.',
       alignment: 'Alignment with the Platforms Code',
       coverage: 'Coverage',
@@ -209,8 +211,8 @@ export const landingTexts: Texts<LandingTexts> = {
     documentTitle: 'هوية',
     lead: {
       statement: 'هوية مكتبة مكوّنات واجهات مبنية للامتثال لكود المنصات الصادر عن هيئة الحكومة الرقمية.',
-      body: 'اللغة والاتجاه ونمط الألوان والكثافة أربع سمات مستقلة، وتستخدم العربية والإنجليزية المكوّنات ورموز التصميم والأنماط نفسها.',
-      commandLabel: 'أمر التثبيت لإطار العمل ومدير الحزم المحددين',
+      body: 'اللغة والاتجاه ووضع الألوان والكثافة أربع خصائص مستقلة، وتستخدم العربية والإنجليزية المكوّنات ورموز التصميم والأنماط نفسها.',
+      commandLabel: 'أمر التثبيت لإطار العمل ومدير الحزم المحدَّدَين',
       version: (v) => `الإصدار ${v}، بموجب رخصة Apache 2.0.`,
       renderedBy: 'هذه الصفحة معروضة باستخدام',
       installLink: 'خطوات التثبيت لكل إطار عمل',
@@ -225,7 +227,7 @@ export const landingTexts: Texts<LandingTexts> = {
     duo: {
       heading: 'التكوين نفسه في حاويتين',
       controlsHeading: 'تعديل إحدى الحاويتين',
-      controlsHint: 'تحمل كل حاوية سماتها الخاصة.',
+      controlsHint: 'تحمل كل حاوية خصائصها الخاصة.',
       target: 'الحاوية',
       containerA: 'الحاوية أ',
       containerB: 'الحاوية ب',
@@ -233,14 +235,14 @@ export const landingTexts: Texts<LandingTexts> = {
       direction: 'الاتجاه',
       rtl: 'من اليمين إلى اليسار',
       ltr: 'من اليسار إلى اليمين',
-      mode: 'نمط الألوان',
+      mode: 'وضع الألوان',
       light: 'فاتح',
       dark: 'داكن',
       density: 'الكثافة',
       comfortable: 'مريحة',
       compact: 'مضغوطة',
       reset: 'إعادة ضبط الحاويتين',
-      resetDone: 'عادت الحاويتان إلى سماتهما الأولى.',
+      resetDone: 'عادت الحاويتان إلى خصائصهما الأولى.',
       announce: (c, l, d, m, n) => `${c}: ${l}، ${d}، ${m}، ${n}`,
     },
     pane: {
@@ -271,13 +273,13 @@ export const landingTexts: Texts<LandingTexts> = {
       heading: 'التثبيت',
       framework: 'إطار العمل',
       manager: 'مدير الحزم',
-      step1: 'ثبّت حزمة الأنماط وحزمة إطار عمل واحدة.',
+      step1: 'ثبّت حزمة الأنماط وحزمة محوّل واحد.',
       step2: 'حمّل ملف الأنماط مرة واحدة.',
-      themeNote: 'تُطبَّق السمة على أي عنصر يحمل الخاصية',
+      themeNote: { before: 'تُطبِّق الخاصية', after: 'السمةَ على العنصر الذي يحملها وعلى كل ما بداخله.' },
       bundlerNote: 'يفترض مسار JavaScript استخدام أداة تجميع، مثل Vite، تحلّ استيراد الحزم.',
       step3: 'اعرض أول مكوّن.',
       resultTitle: 'النتيجة',
-      renderedBy: 'معروض في هذه الصفحة بواسطة',
+      renderedBy: 'معروض في هذه الصفحة باستخدام',
       step4: 'تابع إلى صفحات المكوّنات والمحرر.',
       toComponents: 'صفحات المكوّنات',
       toEditor: 'فتح هذا المثال في المحرر',
@@ -285,10 +287,10 @@ export const landingTexts: Texts<LandingTexts> = {
     packages: {
       heading: 'سبع حزم',
       intro: (v, n) =>
-        `تشترك الحزم السبع في رقم إصدار واحد، وهو حاليًا ${v}، وهو إصدار سابق للإصدار 1.0. ويضم الفهرس ${n} مكوّنًا عبر أربع حزم للأطر.`,
+        `تشترك الحزم السبع في رقم إصدار واحد، وهو حاليًا ${v}، وهو إصدار سابق للإصدار 1.0. ويضم الفهرس ${n} مكوّنًا في أربعة محوّلات.`,
       npmLink: 'الحزم على npm',
       descriptions: {
-        tokens: 'قيم التصميم والمتغيرات الدلالية للسمات',
+        tokens: 'قيم التصميم والمتغيرات الدلالية للسمة',
         styles: 'أنماط المكوّنات وأدوات التخطيط وملف إعادة ضبط اختياري',
         core: 'سلوك مشترك مستقل عن الأطر وأدوات للتنسيق',
         vanilla: 'متحكمات تضيف السلوك إلى HTML الدلالي مع إمكانية الإزالة',
@@ -299,7 +301,7 @@ export const landingTexts: Texts<LandingTexts> = {
     },
     compliance: {
       heading: 'الامتثال',
-      statement: 'بُنيت هوية للامتثال لكود المنصات الصادر عن هيئة الحكومة الرقمية، وهي ليست منتجًا رسميًا للهيئة، ولا تحمل أي شهادة اعتماد.',
+      statement: compliance.ar,
       evidence: 'يُوثَّق الامتثال لكل متطلب على حدة، مع أدلة الاختبار والبنود المفتوحة.',
       alignment: 'المواءمة مع كود المنصات',
       coverage: 'التغطية',

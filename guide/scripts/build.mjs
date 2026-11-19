@@ -6,8 +6,10 @@
 //                          [--only <id,id>] [--preview <commit>]
 //
 // A step is `export default { id, configurations, generate, preview, async run(ctx) }`
-// and throws to fail the build. A step of the milestone plan whose file does not
-// exist yet is reported as MISSING; it is never skipped silently.
+// and throws to fail the build. The files of scripts/build-steps must be exactly
+// PLANNED_STEPS: a planned step whose file is missing, a step file that is not
+// planned, an unknown --only id, or a step whose declaration disagrees with the
+// plan for the requested configuration fails the build before any step runs.
 import { existsSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -28,6 +30,7 @@ export const PLANNED_STEPS = [
   "60-runtime",
   "62-editor-runtime",
   "70-postbuild",
+  "72-page-guards",
   "75-llms",
   "80-equivalence",
   "90-registry-dist",
@@ -73,6 +76,23 @@ export function planned(id, options) {
   return true;
 }
 
+/**
+ * Checks the step files against the plan and returns the ids planned for these
+ * options in run order. Throws with every problem found.
+ */
+export function resolvePlan(files, options) {
+  const present = files.filter((f) => /^\d\d-[a-z0-9-]+\.mjs$/.test(f)).map((f) => f.replace(/\.mjs$/, ""));
+  const problems = [];
+  const missing = PLANNED_STEPS.filter((id) => !present.includes(id));
+  if (missing.length > 0) problems.push(`planned step file(s) missing in scripts/build-steps: ${missing.join(", ")}`);
+  const unplanned = present.filter((id) => !PLANNED_STEPS.includes(id));
+  if (unplanned.length > 0) problems.push(`step file(s) not in PLANNED_STEPS: ${unplanned.join(", ")}`);
+  const unknown = (options.only ?? []).filter((id) => !PLANNED_STEPS.includes(id));
+  if (unknown.length > 0) problems.push(`--only names unknown step(s): ${unknown.join(", ")}`);
+  if (problems.length > 0) throw new Error(problems.join("; "));
+  return PLANNED_STEPS.filter((id) => planned(id, options));
+}
+
 function enabled(step, options) {
   if (options.only) return options.only.includes(step.id);
   if (options.generateOnly && !step.generate) return false;
@@ -113,23 +133,24 @@ async function main() {
     log: (message) => console.log(`  ${message}`),
   };
 
-  const files = existsSync(stepsDir) ? readdirSync(stepsDir).filter((f) => /^\d\d-[a-z0-9-]+\.mjs$/.test(f)).sort() : [];
-  const present = new Set(files.map((f) => f.replace(/\.mjs$/, "")));
-  const missing = PLANNED_STEPS.filter((id) => planned(id, options) && !present.has(id));
-  if (options.only) {
-    for (const id of options.only) if (!present.has(id) && !missing.includes(id)) missing.push(id);
-  }
-  const order = [...new Set([...PLANNED_STEPS, ...present])].sort();
-
-  for (const id of order) {
-    if (!present.has(id)) {
-      if (missing.includes(id)) console.log(`build: ${id} MISSING (scripts/build-steps/${id}.mjs does not exist yet)`);
-      continue;
-    }
+  const files = existsSync(stepsDir) ? readdirSync(stepsDir) : [];
+  const plan = resolvePlan(files, options);
+  const steps = [];
+  for (const id of PLANNED_STEPS) {
     const file = `${id}.mjs`;
     const step = (await import(pathToFileURL(join(stepsDir, file)).href)).default;
     validate(step, file);
-    if (!enabled(step, options)) continue;
+    // The declaration of a step must agree with the plan; preview builds may
+    // leave out a step that declares preview: false.
+    const declared = enabled(step, { ...options, preview: null });
+    if (declared !== plan.includes(id)) {
+      throw new Error(`${file} declares that it ${declared ? "runs" : "does not run"} for this configuration, the plan says the opposite`);
+    }
+    if (declared && enabled(step, options)) steps.push({ id, step });
+  }
+
+  const ran = [];
+  for (const { id, step } of steps) {
     const started = Date.now();
     try {
       await step.run(ctx);
@@ -138,17 +159,16 @@ async function main() {
       console.log(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
+    ran.push(id);
     console.log(`build: ${id} ok (${Date.now() - started} ms)`);
   }
 
-  if (missing.length > 0) {
-    console.log(`build: ${missing.length} planned step(s) missing: ${missing.join(", ")}`);
-  }
+  const stepsLine = `${ran.length} steps: ${ran.join(" ")}`;
   if (options.generateOnly || options.only) {
-    console.log(`build: ${options.generateOnly ? "generate-only" : "partial"} ${options.configuration} OK, base ${ctx.basePath}`);
+    console.log(`build: ${options.generateOnly ? "generate-only" : "partial"} ${options.configuration} OK, base ${ctx.basePath}, ${stepsLine}`);
   } else {
     const pages = ctx.summary.prerenderedPages ?? 0;
-    console.log(`build: ${options.configuration} OK, ${pages} prerendered pages, 404.html, base ${ctx.basePath}`);
+    console.log(`build: ${options.configuration} OK, ${pages} prerendered pages, 404.html, base ${ctx.basePath}, ${stepsLine}`);
   }
 }
 

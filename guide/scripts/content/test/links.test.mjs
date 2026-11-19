@@ -32,6 +32,14 @@ describe('resolveLink', () => {
     expect(resolveLink('fixture-a.ar.md', ctx())).toEqual({ href: 'en/components/fixture-a/reference/', internal: true, external: false });
   });
 
+  it('reports a malformed percent escape and returns the fragment of another built page for checking', () => {
+    expect(resolveLink('../%E0%A4%A.md', ctx())).toEqual({ error: 'the link "../%E0%A4%A.md" has a malformed percent escape' });
+    expect(resolveLink('fixture-a.md#nothing', ctx())).toEqual({ error: 'the link "fixture-a.md#nothing" names no heading of this page' });
+    expect(resolveLink('fixture-a.md#api', ctx({ id: 'other', built: new Set(['fixture-a', 'other']) }))).toEqual({
+      href: 'en/components/fixture-a/reference/#api', internal: true, external: false, crossPage: { id: 'fixture-a', fragment: 'api' },
+    });
+  });
+
   it('links other repository files to GitHub', () => {
     const fromRepo = (path) => `https://github.com/MohamedEmbarak/hawiyah/blob/main/${path}`;
     const relativeToRepo = join(docsDir, 'components.json').slice(repoDir.length + 1).split('\\').join('/');

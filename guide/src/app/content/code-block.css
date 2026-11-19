@@ -11,3 +11,14 @@
 .run {
   unicode-bidi: isolate;
 }
+
+/* The copy button needs script: its slot adds no box, and without script it is not shown. */
+.copy {
+  display: contents;
+}
+
+@media (scripting: none) {
+  .copy {
+    display: none;
+  }
+}

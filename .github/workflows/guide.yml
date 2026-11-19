@@ -3,21 +3,27 @@ name: Guide
 # Checks and builds the new guide in guide/ from the published @hawiyah packages
 # and runs its script, unit and end-to-end tests. It deploys and publishes
 # nothing: the deployed guide is still built by pages.yml.
+#
+# The paths below are every input of the guide build and its tests: guide/,
+# docs/ (component pages and the files they link to), and the root files
+# components.json, NOTICE, CHANGELOG.md and pnpm-workspace.yaml.
 on:
   push:
     paths:
       - 'guide/**'
-      - 'docs/components/**'
-      - 'docs/guides/**'
+      - 'docs/**'
       - 'components.json'
+      - 'NOTICE'
+      - 'CHANGELOG.md'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/guide.yml'
   pull_request:
     paths:
       - 'guide/**'
-      - 'docs/components/**'
-      - 'docs/guides/**'
+      - 'docs/**'
       - 'components.json'
+      - 'NOTICE'
+      - 'CHANGELOG.md'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/guide.yml'
 
@@ -38,7 +44,26 @@ jobs:
     env:
       HAWIYAH_BASE_PATH: /hawiyah/
     steps:
+      # A sparse checkout holds only what the guide build and its tests read,
+      # the same list as the path filters above. packages/, apps/, examples/
+      # and the other root files are absent, so a read of them fails here
+      # instead of passing silently.
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            /guide/
+            /docs/
+            /components.json
+            /NOTICE
+            /CHANGELOG.md
+            /pnpm-workspace.yaml
+          sparse-checkout-cone-mode: false
+      - name: The package sources are absent
+        run: |
+          for dir in packages apps examples; do
+            if [ -e "../$dir" ]; then echo "guide: ../$dir is present in the sparse checkout"; exit 1; fi
+          done
+          echo "guide: packages/, apps/ and examples/ are absent"
       # The runner context is not available in the job's env block.
       - name: Set the test output directory
         run: echo "GUIDE_TEST_OUTPUT=$RUNNER_TEMP/guide-e2e" >> "$GITHUB_ENV"

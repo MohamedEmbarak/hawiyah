@@ -1,0 +1,8 @@
+/* The guide's document rules (bundle name "guide"). Placement and the document's
+   colours and font family from package tokens only; nothing here may change how a
+   package element renders (see the styling rule in README.md). */
+html {
+  background-color: var(--hw-color-canvas);
+  color: var(--hw-color-text);
+  font-family: var(--hw-font-sans);
+}

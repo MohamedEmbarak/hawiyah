@@ -62,13 +62,16 @@ export interface EditorTexts {
   /** Thrown inside the frame by the loop guard; also states what the guard covers. */
   readonly loopStopped: string;
   /** Log texts of frame events. */
-  readonly navigationBlocked: (href: string) => string;
+  /** The sentence around the address of a link of the example (the address is shown left to right). */
+  readonly navigationBlocked: { readonly before: string; readonly after: string };
   readonly submitBlocked: string;
   readonly messagesDropped: (count: number) => string;
   readonly fallbackUsed: string;
   readonly compileError: (location: string, message: string) => string;
   readonly loadingCompilers: string;
   readonly compilersFailed: (message: string) => string;
+  /** The compile worker did not answer in time and was stopped. */
+  readonly compileTimeout: string;
   /** The precompiled payload of the example could not be loaded. */
   readonly payloadFailed: string;
   /** Converting the files to JavaScript failed. */
@@ -122,13 +125,14 @@ export const editorTexts: Texts<EditorTexts> = {
     discardDraft: 'Discard the edits',
     loopStopped:
       'A loop ran for more than 2 seconds and was stopped; the result was removed. The check covers for, while and do-while loops of the edited code, not recursion or library code.',
-    navigationBlocked: (href) => `The example link to ${href} does not open from the preview.`,
+    navigationBlocked: { before: 'The example link to ', after: ' does not open from the preview.' },
     submitBlocked: 'The example form was submitted inside the preview; nothing was sent.',
-    messagesDropped: (count) => `${count} messages from the result were ignored after the limit of 500.`,
+    messagesDropped: (count) => `${count} console ${count === 1 ? 'message' : 'messages'} of this run ${count === 1 ? 'was' : 'were'} not shown after the limit of 500.`,
     fallbackUsed: 'The modules of the result could not be loaded; the run was repeated with the bundled runtime.',
     compileError: (location, message) => `${location}: ${message}`,
     loadingCompilers: 'Loading the compilers for the edited code.',
     compilersFailed: (message) => `The compilers could not be loaded: ${message}`,
+    compileTimeout: 'Compiling took longer than 60 seconds and was stopped. Press Run to try again.',
     payloadFailed: 'The example could not be loaded.',
     convertFailed: (message) => `The files could not be converted to JavaScript: ${message}`,
     unknownModule: (specifier) => `The editor does not provide the module ${specifier}; only the Hawiyah packages and their frameworks are available.`,
@@ -139,7 +143,7 @@ export const editorTexts: Texts<EditorTexts> = {
     documentTitle: 'المحرر · هوية',
     summary: 'حرّر مثالًا من أمثلة هوية بلغة JavaScript أو بإطار React أو Vue أو Angular، وشغّله بالحزم المنشورة داخل إطار معزول.',
     description: (component, section) => `${component}: ${section}`,
-    backToComponent: (component) => `صفحة ${component}`,
+    backToComponent: (component) => `صفحة المكوّن: ${component}`,
     queryFallback: 'ذكر جزء من العنوان مثالًا أو إطار عمل أو لغة أو بيئة تشغيل غير متاحة في المحرر، فعُرضت القيمة الافتراضية بدلًا منها.',
     controls: 'أدوات المحرر',
     framework: 'إطار العمل',
@@ -162,7 +166,7 @@ export const editorTexts: Texts<EditorTexts> = {
     running: 'جارٍ التشغيل…',
     ready: (ms, edited) => `${edited ? 'شُغِّلت شيفرتك' : 'شُغِّل المثال الأصلي'} في ${ms} ملّي ثانية.`,
     failed: (firstLine) => `تعذّر التشغيل: ${firstLine}`,
-    bundledRuntime: ' بالحزمة المجمّعة.',
+    bundledRuntime: ' استُخدمت فيه الحزمة المجمّعة.',
     sourceNpm: 'npm',
     sourceLocal: 'أرشيف حزمة محلي',
     copyIntegrity: 'نسخ بصمة سلامة الحزمة',
@@ -170,19 +174,20 @@ export const editorTexts: Texts<EditorTexts> = {
     log: 'السجل',
     clearLog: 'مسح السجل',
     logEmpty: 'لا توجد إدخالات.',
-    level: { info: 'معلومة', warning: 'تنبيه', danger: 'خطأ' },
+    level: { info: 'معلومة', warning: 'تحذير', danger: 'خطأ' },
     dropped: (count) => `حُذف ${count} من الإدخالات الأقدم.`,
     draftRestored: 'استُعيدت تعديلاتك السابقة على هذا المثال، وتُشغَّل عند الضغط على «تشغيل».',
     discardDraft: 'تجاهل التعديلات',
     loopStopped:
       'استمرت حلقة تكرار أكثر من ثانيتين فأُوقفت، وأُزيلت النتيجة. يشمل هذا الفحص حلقات for وwhile وdo-while في الشيفرة المحرَّرة، ولا يشمل الاستدعاء الذاتي ولا شيفرة المكتبات.',
-    navigationBlocked: (href) => `لا يُفتح رابط المثال إلى ${href} من المعاينة.`,
+    navigationBlocked: { before: 'لا يُفتح رابط المثال إلى ', after: ' من المعاينة.' },
     submitBlocked: 'أُرسل نموذج المثال داخل المعاينة، ولم يُرسَل أي شيء خارجها.',
-    messagesDropped: (count) => `تُجوهلت ${count} من رسائل النتيجة بعد بلوغ الحد الأقصى وهو 500 رسالة.`,
+    messagesDropped: (count) => `لم تُعرض ${count} من رسائل الإخراج في هذا التشغيل بعد بلوغ الحد الأقصى، وهو 500 رسالة.`,
     fallbackUsed: 'تعذّر تحميل وحدات النتيجة، فأُعيد التشغيل بالحزمة المجمّعة.',
     compileError: (location, message) => `${location}: ${message}`,
     loadingCompilers: 'جارٍ تحميل المصرّفات للشيفرة المحرَّرة.',
     compilersFailed: (message) => `تعذّر تحميل المصرّفات: ${message}`,
+    compileTimeout: 'استغرق التصريف أكثر من 60 ثانية فأُوقف. اضغط «تشغيل» للمحاولة مرة أخرى.',
     payloadFailed: 'تعذّر تحميل المثال.',
     convertFailed: (message) => `تعذّر تحويل الملفات إلى JavaScript: ${message}`,
     unknownModule: (specifier) => `لا يوفّر المحرر الوحدة ${specifier}، وتتاح فيه حزم هوية وأطر عملها فقط.`,

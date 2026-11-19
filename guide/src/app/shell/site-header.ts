@@ -5,7 +5,7 @@ import { afterRenderEffect } from '@angular/core';
 import { filter } from 'rxjs';
 import { features } from '../../generated/features';
 import { injectCurrentUrl } from '../core/current-url';
-import { page, parseUrl } from '../core/links';
+import { page, pagePath, parseUrl } from '../core/links';
 import { LocaleService } from '../core/locale';
 import { shellTexts } from '../i18n/shell';
 import { pick } from '../i18n/text';
@@ -36,7 +36,9 @@ export class SiteHeader {
       .filter((feature) => feature.nav?.header)
       .map((feature) => {
         const nav = feature.nav!;
-        return { label: nav.label[lang], href: page(lang, nav.path), current: current === nav.path };
+        // The entry of the section is current on its page and on every page below it.
+        const path = pagePath(nav.path);
+        return { label: nav.label[lang], href: page(lang, nav.path), current: current === path || (path !== '' && current.startsWith(path)) };
       });
   });
 

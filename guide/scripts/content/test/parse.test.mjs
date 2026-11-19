@@ -27,6 +27,15 @@ describe('parseMarkdown', () => {
     expect(codes('- [ ] task\n')).toEqual([['HWC-MD', 1, 'task list items are not allowed']]);
   });
 
+  it('reports an unclosed fence where it opens and unknown keys of a block that is not live', () => {
+    const missing = parseMarkdown('# A\n\n```html\n<p>a</p>\n\nText.\n', 'x.md').findings;
+    expect(missing).toEqual([{ code: 'HWC-MD', file: 'x.md', line: 3, message: 'the fenced block that opens at line 3 has no closing fence' }]);
+    const swallowed = parseMarkdown('```ts live example=a framework=angular\nx\n\n## Variants\n\n```html live example=b\n<p></p>\n```\n', 'x.md').findings;
+    expect(swallowed.map((item) => [item.line, item.message])).toEqual([[1, 'the fenced block that opens at line 1 contains "## Variants" at line 4; its closing fence is probably missing']]);
+    const keys = parseMarkdown('```html titel="Wrong" highlight=2\n<p></p>\n```\n\n```ts title="setup.ts"\nx\n```\n\n~~~text\n```html live example=a\n~~~\n', 'x.md').findings;
+    expect(keys.map((item) => [item.line, item.message])).toEqual([[1, 'the info string "html titel="Wrong" highlight=2" has "titel="Wrong" highlight=2"; a code block that is not live takes only title="..."']]);
+  });
+
   it('accepts inline links, autolinks, emphasis and hard breaks', () => {
     expect(codes('[a](https://example.com) *b* **c** `d`  \ne https://example.org\n')).toEqual([]);
   });

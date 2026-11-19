@@ -19,3 +19,29 @@ img {
 :host-context([data-hw-mode='dark']) .wordmark-dark {
   display: block;
 }
+
+picture {
+  display: block;
+}
+
+/* Forced colours: the page surfaces take the system colours, so the artwork follows
+   the colour scheme of the system, not the stored mode. */
+@media (forced-colors: active) and (prefers-color-scheme: light) {
+  :host-context([data-hw-mode]) .wordmark-light {
+    display: block;
+  }
+
+  :host-context([data-hw-mode]) .wordmark-dark {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :host-context([data-hw-mode]) .wordmark-light {
+    display: none;
+  }
+
+  :host-context([data-hw-mode]) .wordmark-dark {
+    display: block;
+  }
+}

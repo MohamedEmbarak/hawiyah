@@ -109,7 +109,11 @@ test('forged messages are ignored; the frame\'s own messages are accepted', asyn
   await routePayload(page, 'en', 'vanilla', await linkAndForm('en'));
   await selectFramework(page, briefPath('en'), 'vanilla');
   const frame = await readyFrame(page, 'vanilla');
+  // The notice is in the document, empty, before it has text (one live region per event).
   const notice = page.locator('guide-preview-frame p.notice');
+  await expect(notice).toHaveCount(1);
+  await expect(notice).toHaveAttribute('role', 'status');
+  await expect(notice).toBeEmpty();
   // From the guide's own window: wrong source and origin.
   await page.evaluate(() => {
     window.postMessage({ channel: 'hawiyah-guide-frame', version: 1, token: 'x', run: 1, type: 'navigation', href: 'forged-parent' }, '*');
@@ -130,11 +134,13 @@ test('forged messages are ignored; the frame\'s own messages are accepted', asyn
     document.body.append(other);
   });
   await page.waitForTimeout(500);
-  await expect(notice).toHaveCount(0);
+  await expect(notice).toBeEmpty();
   await expect(statusOf(page)).toHaveText('Rendered with @hawiyah/vanilla 0.3.0 from npm');
   // Positive controls: a link and a form in the example are reported, never followed.
   await frame.getByRole('link', { name: 'Apply' }).click();
   await expect(notice).toHaveText('The example link to https://example.org/apply does not open from the preview.');
+  // The address is shown left to right inside the sentence.
+  await expect(notice.locator('bdi[dir="ltr"]')).toHaveText('https://example.org/apply');
   expect(frame.url()).toBe('about:srcdoc');
   await frame.getByRole('button', { name: 'Send' }).click();
   await expect(notice).toHaveText('The example form was submitted inside the preview; nothing was sent.');
@@ -191,9 +197,13 @@ test('with several frames on a page, a frame that navigates itself is the one re
     }
   }
   expect(clicked).toBe(true);
-  const notice = page.locator('guide-preview-frame p.notice');
-  await expect(notice).toHaveText('The code tried to open another address in the preview. The request was not sent, and the run was stopped.');
-  await expect(notice).toHaveCount(1);
+  // The failed run is announced once, by the status line of its block; the notices stay empty.
+  await expect(
+    page.locator('guide-example-block p.status').filter({
+      hasText: 'The JavaScript result could not be loaded: The code tried to open another address in the preview. The request was not sent, and the run was stopped.',
+    }),
+  ).toHaveCount(1);
+  await expect(page.locator('guide-preview-frame p.notice').filter({ hasText: /\S/ })).toHaveCount(0);
   await expect(frames).toHaveCount(count - 1);
   await expect(page.locator('guide-example-block p.status').filter({ hasText: 'Rendered with @hawiyah/vanilla 0.3.0 from npm' })).toHaveCount(count - 1);
   // The frame that left is the one of the routed example: no remaining frame holds its button.

@@ -161,17 +161,28 @@ export function setDependency(guideDir, section, name, value) {
 // Writes dist/browser/runtime/ with one published, one bundled file and a
 // manifest that matches them.
 export function writeRuntime(guideDir) {
+  writeRuntimeFiles(guideDir, join(guideDir, 'dist', 'browser', 'runtime'));
+  return join(guideDir, 'dist', 'browser');
+}
+
+// The fixture's derivation (the `derive` option of checkRegistry): writes the
+// same runtime files into runtimeDir, as steps 60 and 62 would.
+export async function deriveFixture({ guideDir, runtimeDir }) {
+  writeRuntimeFiles(guideDir, runtimeDir);
+  return [];
+}
+
+function writeRuntimeFiles(guideDir, runtime) {
   const lock = readJson(join(guideDir, 'package-lock.json'));
-  const runtime = join(guideDir, 'dist', 'browser', 'runtime');
-  mkdirSync(join(runtime, 'hawiyah', 'core'), { recursive: true });
+  mkdirSync(join(runtime, 'npm', '@hawiyah', `core@${PIN}`, 'dist'), { recursive: true });
   mkdirSync(join(runtime, 'bundles'), { recursive: true });
   const published = readFileSync(join(guideDir, 'node_modules', '@hawiyah', 'core', 'dist', 'index.js'));
-  writeFileSync(join(runtime, 'hawiyah', 'core', 'index.js'), published);
+  writeFileSync(join(runtime, 'npm', '@hawiyah', `core@${PIN}`, 'dist', 'index.js'), published);
   const bundled = Buffer.from('export const bundled = true;\n');
   writeFileSync(join(runtime, 'bundles', 'react.js'), bundled);
   const entries = [
     {
-      path: 'hawiyah/core/index.js', sha256: sha256(published), bytes: published.length, source: 'published',
+      path: `npm/@hawiyah/core@${PIN}/dist/index.js`, sha256: sha256(published), bytes: published.length, source: 'published',
       package: '@hawiyah/core', version: PIN, packageIntegrity: lock.packages['node_modules/@hawiyah/core'].integrity, file: 'dist/index.js',
     },
     {
@@ -180,8 +191,7 @@ export function writeRuntime(guideDir) {
     },
   ];
   writeJson(join(runtime, 'manifest.json'), { entries });
-  writeJson(join(runtime, 'import-map.json'), { imports: {} });
-  return join(guideDir, 'dist', 'browser');
+  writeJson(join(runtime, 'import-map.json'), { imports: { '@hawiyah/core': `runtime/npm/@hawiyah/core@${PIN}/dist/index.js` } });
 }
 
 export function cleanup() {

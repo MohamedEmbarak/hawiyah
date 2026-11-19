@@ -54,7 +54,12 @@ export type CompileResponse =
     }
   | { readonly ok: true; readonly kind: 'convert'; readonly files: Readonly<Record<string, string>>; readonly loaded: readonly string[] }
   | { readonly ok: false; readonly diagnostics: readonly CompileDiagnostic[]; readonly loaded: readonly string[] }
-  | { readonly ok: false; readonly loadError: string; readonly loaded: readonly string[] };
+  | { readonly ok: false; readonly loadError: string; readonly loaded: readonly string[] }
+  /** The worker did not answer within the time limit; it was stopped and is created again on the next request. */
+  | { readonly ok: false; readonly timeout: true; readonly loaded: readonly string[] };
+
+/** A compile request (compilers loaded on first use included) that takes longer ends the worker. */
+export const COMPILE_TIMEOUT_MS = 60_000;
 
 /** Envelope of the worker messages. */
 export interface WorkerEnvelope<T> {
@@ -67,19 +72,37 @@ export type WorkerFactory = () => Worker;
 /** The worker of the editor, bundled by the Angular builder. */
 export const createCompileWorker: WorkerFactory = () => new Worker(new URL('./compile.worker', import.meta.url), { type: 'module' });
 
-/** Sends requests to one worker, created on the first request; answers arrive in order of their ids. */
+/**
+ * Sends requests to one worker, created on the first request; answers arrive in
+ * order of their ids. A request without an answer within the time limit stops the
+ * worker: every pending request is answered with { timeout: true }, and the next
+ * request creates a new worker.
+ */
 export class CompileClient {
   private worker: Worker | null = null;
   private counter = 0;
   private readonly pending = new Map<number, (response: CompileResponse) => void>();
 
-  constructor(private readonly factory: WorkerFactory = createCompileWorker) {}
+  constructor(
+    private readonly factory: WorkerFactory = createCompileWorker,
+    private readonly timeoutMs = COMPILE_TIMEOUT_MS,
+  ) {}
 
   request(body: CompileRequest): Promise<CompileResponse> {
     const worker = this.ensure();
     const id = ++this.counter;
     return new Promise((resolve) => {
-      this.pending.set(id, resolve);
+      const timer = setTimeout(() => {
+        if (!this.pending.has(id) || this.worker !== worker) return;
+        worker.terminate();
+        this.worker = null;
+        for (const pending of this.pending.values()) pending({ ok: false, timeout: true, loaded: [] });
+        this.pending.clear();
+      }, this.timeoutMs);
+      this.pending.set(id, (response) => {
+        clearTimeout(timer);
+        resolve(response);
+      });
       worker.postMessage({ id, body } satisfies WorkerEnvelope<CompileRequest>);
     });
   }

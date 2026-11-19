@@ -195,6 +195,6 @@ describe('frame texts', () => {
     for (const key of ['timeout', 'payloadFailed', 'submitBlocked', 'bundledRuntime'] as const) {
       expect(ARABIC_SCRIPT.test(frameTexts.ar[key]), key).toBe(true);
     }
-    expect(ARABIC_SCRIPT.test(frameTexts.ar.navigationBlocked('x'))).toBe(true);
+    expect(ARABIC_SCRIPT.test(frameTexts.ar.navigationBlocked.before + frameTexts.ar.navigationBlocked.after)).toBe(true);
   });
 });

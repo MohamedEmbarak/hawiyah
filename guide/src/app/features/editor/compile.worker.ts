@@ -9,7 +9,7 @@
 // has no importScripts, so the file is fetched and evaluated with new Function.
 import type { CompileConvertRequest, CompileDiagnostic, CompileRequest, CompileResponse, CompileRunRequest, WorkerEnvelope } from './compile-client';
 import { guardLoops } from './loop-guard';
-import { classicProject, isModuleFile, moduleName, position, projectHost, rewriteImports, withJitCompiler, type Lexer } from './project';
+import { classicProject, isModuleFile, moduleName, position, projectHost, rewriteImports, scriptDiagnostic, specifierPosition, withJitCompiler, type Lexer } from './project';
 
 interface SucraseModule {
   transform(code: string, options: Record<string, unknown>): { code: string };
@@ -19,6 +19,8 @@ interface SfcBlock {
   readonly content: string;
   readonly lang?: string;
   readonly scoped?: boolean;
+  /** Position of the block content in the file (1-based line and column). */
+  readonly loc?: { readonly start: { readonly line: number; readonly column: number } };
 }
 
 interface SfcModule {
@@ -145,8 +147,7 @@ async function compileVue(base: string, file: string, source: string, scopeId: s
   try {
     script = compiler.compileScript(target, { id: scopeId, inlineTemplate: true, isProd: true }).content;
   } catch (error) {
-    const loc = (error as { loc?: { start?: { line: number; column: number } } }).loc?.start;
-    throw new CompileFailure([{ file, line: loc?.line ?? 1, column: loc?.column ?? 1, message: (error instanceof Error ? error.message : String(error)).split('\n')[0] ?? '' }]);
+    throw new CompileFailure([scriptDiagnostic(file, target.scriptSetup ?? target.script, error)]);
   }
   const lang = (target.scriptSetup ?? target.script)?.lang;
   const code = transformWithSucrase(await sucrase(base), file, script, lang === 'ts' ? ['typescript'] : [], 'automatic');
@@ -236,8 +237,8 @@ async function compile(request: CompileRunRequest): Promise<CompileResponse> {
       continue;
     }
     for (const problem of rewritten.problems) {
-      // Positions of the compiled code; the imports keep their lines in every compiler used here.
-      const at = position(code, problem.at);
+      // The place of the specifier in the file the reader wrote; the compiled code when it is not written there.
+      const at = specifierPosition(source, problem.specifier) ?? position(code, problem.at);
       diagnostics.push({ file, line: at.line, column: at.column, message: problem.specifier, code: problem.kind, specifier: problem.specifier });
     }
     const name = moduleName(file);

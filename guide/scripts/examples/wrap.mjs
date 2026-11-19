@@ -125,7 +125,9 @@ export function wrapVue(code, fromDir) {
 
 // ---------------------------------------------------------------- angular
 
-export const ANGULAR_MAIN = "import { bootstrapApplication } from '@angular/platform-browser';\nimport { Example } from './example.component';\n\nbootstrapApplication(Example).catch((e) => console.error(e));\n";
+// No .catch: a rejected bootstrap (a template error of edited code) reaches the
+// frame as an unhandled rejection, which fails the run at once with its message.
+export const ANGULAR_MAIN = "import { bootstrapApplication } from '@angular/platform-browser';\nimport { Example } from './example.component';\n\nbootstrapApplication(Example);\n";
 
 const FRAGMENT_TEMPLATE = /^template\s*:\s*`((?:[^`\\]|\\.)*)`\s*,?$/;
 

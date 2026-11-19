@@ -33,6 +33,46 @@ function ancestors(node) {
 const insideMedia = (node, pattern) => ancestors(node).some((parent) => parent.type === 'atrule'
   && parent.name.toLowerCase() === 'media' && pattern.test(parent.params));
 
+/** Splits at a separator outside parentheses. */
+function splitTop(text, separator) {
+  const parts = [];
+  let depth = 0;
+  let current = '';
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (char === '(') depth += 1;
+    if (char === ')') depth -= 1;
+    if (depth === 0 && text.startsWith(separator, index)) {
+      parts.push(current);
+      current = '';
+      index += separator.length - 1;
+    } else current += char;
+  }
+  parts.push(current);
+  return parts;
+}
+
+/**
+ * Whether a media query list applies only when the reader has not asked for
+ * reduced motion: every query of the list has (prefers-reduced-motion:
+ * no-preference) as a plain conjunct, and no query is negated or uses `or`.
+ */
+export function gatesMotion(params) {
+  const queries = splitTop(params.toLowerCase().replace(/\s+/g, ' ').trim(), ',').map((query) => query.trim());
+  return queries.length > 0 && queries.every((query) => {
+    if (query === '' || /^(?:not|only not)\b/.test(query)) return false;
+    const terms = splitTop(query, ' and ').map((term) => term.trim());
+    if (terms.some((term) => /\bor\b|\bnot\b/.test(term))) return false;
+    return terms.some((term) => term.replace(/\s+/g, '') === '(prefers-reduced-motion:no-preference)');
+  });
+}
+
+const insideMotionGate = (node) => ancestors(node).some((parent) => parent.type === 'atrule'
+  && parent.name.toLowerCase() === 'media' && gatesMotion(parent.params));
+
+/** Shorthands whose four-value form (or, for border-radius, any multi-value form) names physical sides. */
+const SIDE_SHORTHANDS = new Set(['margin', 'padding', 'scroll-margin', 'scroll-padding', 'border-width', 'border-style', 'border-color']);
+
 function splitValue(value) {
   // Top-level whitespace-separated parts (parentheses kept together).
   const parts = [];
@@ -81,6 +121,8 @@ function selectorFindings(rule, file, out) {
       const [line, column] = position(node);
       if ((name === 'class' || name === 'id') && /hw/.test(node.value ?? '')) {
         out.push(finding('L-CSS-2', file, line, column, `selector matches package ${name} values ${node.toString().trim()}`));
+      } else if ((name === 'class' || name === 'id') && node.operator && node.operator !== '=' && node.operator !== '~=') {
+        out.push(finding('L-CSS-2', file, line, column, `selector matches part of a ${name} value ${node.toString().trim()}; use a whole guide class`));
       } else if (name === 'data-hw' || name.startsWith('data-hw-')) {
         const inHostContext = ancestors(node).some((parent) => parent.type === 'pseudo' && parent.value === ':host-context');
         let compound = node.prev();
@@ -164,6 +206,12 @@ export function lintCssSource(file, text, allowlist) {
       if (prop === 'inset' && splitValue(value).length > 1) {
         out.push(finding('L-CSS-4', file, start.line, start.column, 'inset with more than one value is physical; use inset-block and inset-inline'));
       }
+      if (SIDE_SHORTHANDS.has(prop) && splitValue(value.replace(/!important\s*$/i, '')).length === 4) {
+        out.push(finding('L-CSS-4', file, start.line, start.column, `${node.prop} with four values names physical sides; use the -block and -inline properties`));
+      }
+      if (prop === 'border-radius' && value.split('/').some((part) => splitValue(part.replace(/!important\s*$/i, '')).length > 1)) {
+        out.push(finding('L-CSS-4', file, start.line, start.column, 'border-radius with more than one value names physical corners; use the logical corner properties'));
+      }
     }
 
     // L-CSS-5 package custom properties.
@@ -176,7 +224,7 @@ export function lintCssSource(file, text, allowlist) {
 
     // L-CSS-9 motion.
     if (/^(?:animation|transition)(?:-|$)/.test(prop)) {
-      if (!insideMedia(node, /prefers-reduced-motion\s*:\s*no-preference/i)) {
+      if (!insideMotionGate(node)) {
         out.push(finding('L-CSS-9', file, start.line, start.column, `${node.prop} outside @media (prefers-reduced-motion: no-preference)`));
       }
       const timed = /^(?:animation|transition)(?:-duration|-delay|-timing-function)?$/.test(prop);

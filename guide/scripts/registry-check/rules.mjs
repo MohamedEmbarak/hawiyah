@@ -8,6 +8,7 @@ import { basename, dirname, extname, join, matchesGlob, relative, resolve, sep }
 import ts from 'typescript';
 import { parse as parseYaml } from 'yaml';
 import { NAMES, REGISTRY_URL } from './messages.mjs';
+import { checkMetafile } from './resolved.mjs';
 import { readTarEntries, sha512Integrity } from './tar.mjs';
 
 export const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
@@ -146,12 +147,25 @@ export function ruleR3(ctx) {
       .map((name) => `${name} lock ${inLock[name] ?? 'absent'}, package.json ${inPkg[name] ?? 'absent'}`);
     if (differ.length) ctx.report('r3Root', { section, list: differ.join('; ') });
   }
+  const seven = new Set(NAMES.map((name) => `node_modules/${full(name)}`));
   for (const [key, entry] of Object.entries(packages)) {
     if (key === '') continue;
     if (!key.startsWith('node_modules/')) ctx.report('r3Outside', { key });
     const name = lockName(key);
-    if (entry && typeof entry.name === 'string' && entry.name !== name && entry.name.startsWith('@hawiyah/')) {
+    if (entry && typeof entry.name === 'string' && entry.name !== name) {
       ctx.report('r3Alias', { key, name: entry.name });
+    }
+    // Every other entry: a registry tarball whose path names the entry's own
+    // package at its version, with a sha512 integrity (the seven are checked below).
+    if (seven.has(key) || !entry || typeof entry !== 'object') continue;
+    if (entry.link) {
+      ctx.report('r3EntryLink', { key });
+      continue;
+    }
+    const expected = `${REGISTRY_URL}${name}/-/${name.split('/').pop()}-${entry.version}.tgz`;
+    if (entry.resolved !== expected) ctx.report('r3EntryResolved', { key, resolved: entry.resolved, expected });
+    if (typeof entry.integrity !== 'string' || !entry.integrity.startsWith('sha512-')) {
+      ctx.report('r3EntryIntegrity', { key, value: entry.integrity });
     }
   }
   for (const name of NAMES) {
@@ -268,7 +282,42 @@ function walkFiles(root, onEntry, prefix = '') {
   }
 }
 
+/** Installed package directories of node_modules, nested node_modules included. */
+function installedPackages(modulesDir, prefix, found) {
+  if (!existsSync(modulesDir)) return found;
+  for (const dirent of readdirSync(modulesDir, { withFileTypes: true })) {
+    if (dirent.name.startsWith('.') || !(dirent.isDirectory() || dirent.isSymbolicLink())) continue;
+    const dirs = dirent.name.startsWith('@')
+      ? readdirSync(join(modulesDir, dirent.name), { withFileTypes: true })
+        .filter((child) => child.isDirectory() || child.isSymbolicLink())
+        .map((child) => `${dirent.name}/${child.name}`)
+      : [dirent.name];
+    for (const dir of dirs) {
+      const rel = `${prefix}/${dir}`;
+      found.push(rel);
+      installedPackages(join(modulesDir, dir, 'node_modules'), `${rel}/node_modules`, found);
+    }
+  }
+  return found;
+}
+
 export function ruleR5(ctx) {
+  // No @hawiyah package is installed anywhere but at the seven directories.
+  const sevenDirs = new Set(NAMES.map((name) => `node_modules/${full(name)}`));
+  for (const rel of installedPackages(join(ctx.guideDir, 'node_modules'), 'node_modules', [])) {
+    if (sevenDirs.has(rel)) continue;
+    let value = null;
+    try {
+      value = JSON.parse(readFileSync(join(ctx.guideDir, rel, 'package.json'), 'utf8')).name;
+    } catch {
+      // Not a package: nothing to report here.
+    }
+    const named = typeof value === 'string' && value.startsWith('@hawiyah/');
+    if (named || rel.split('/node_modules/').at(-1).startsWith('@hawiyah/') || rel.startsWith('node_modules/@hawiyah/')) {
+      ctx.report('r5Foreign', { path: rel, value: value ?? 'a directory without package.json' });
+    }
+  }
+
   const hidden = ctx.hiddenLock?.packages ?? {};
   const lockPackages = ctx.lock?.packages ?? {};
   for (const name of NAMES) {
@@ -351,6 +400,61 @@ function allowedTarget(target, fileRel) {
     : target === entry));
 }
 
+const STYLE_LANGUAGES = new Set(['.scss', '.sass', '.less', '.styl', '.stylus', '.pcss', '.postcss']);
+const REMOTE = /^(?:https?:)?\/\//i;
+
+/** True when a URL on another host names a @hawiyah package path (esm.sh/@hawiyah/core, ...). */
+function remoteHawiyah(value) {
+  const urls = String(value).match(/(?:https?:)?\/\/[^\s'"`)]+/gi) ?? [];
+  return urls.some((url) => {
+    let decoded = url;
+    try {
+      decoded = decodeURIComponent(url);
+    } catch {
+      // Keep the raw text.
+    }
+    return decoded.includes('@hawiyah/');
+  });
+}
+
+/** Style files of another language under src/ (Angular would compile them). */
+export function styleLanguageFiles(guideDir) {
+  const files = [];
+  if (!existsSync(join(guideDir, 'src'))) return files;
+  walkFiles(join(guideDir, 'src'), (rel, type, base) => {
+    if (type === 'directory') return base !== 'node_modules' && `src/${rel}` !== 'src/generated';
+    if (STYLE_LANGUAGES.has(extname(rel).toLowerCase())) files.push(`src/${rel}`);
+    return undefined;
+  });
+  return files.sort();
+}
+
+/** Remote loads and @hawiyah addresses on another host in a file under src/. */
+function scanRemote(ctx, fileRel, text) {
+  if (!fileRel.startsWith('src/')) return;
+  const lines = text.split('\n');
+  lines.forEach((content, index) => {
+    const line = index + 1;
+    if (remoteHawiyah(content)) {
+      const value = content.match(/(?:https?:)?\/\/[^\s'"`)]*@hawiyah\/[^\s'"`)]*/i)?.[0] ?? content.trim();
+      ctx.report('r6RemoteHawiyah', { file: fileRel, line, value });
+    }
+    const ext = extname(fileRel);
+    const loads = [];
+    if (ext === '.html') {
+      for (const match of content.matchAll(/<script\b[^>]*\ssrc\s*=\s*["']?([^"'\s>]+)/gi)) loads.push(['a script', match[1]]);
+      for (const match of content.matchAll(/<link\b[^>]*>/gi)) {
+        const rel = match[0].match(/\srel\s*=\s*["']?([^"'>]+)/i)?.[1] ?? '';
+        const href = match[0].match(/\shref\s*=\s*["']?([^"'\s>]+)/i)?.[1] ?? '';
+        if (/\b(?:stylesheet|modulepreload|preload|import)\b/i.test(rel)) loads.push([`a ${rel.trim()}`, href]);
+      }
+    } else if (ext === '.css') {
+      for (const match of content.matchAll(/@import\s+(?:url\(\s*)?['"]?([^'")\s;]+)/gi)) loads.push(['a stylesheet', match[1]]);
+    }
+    for (const [kind, value] of loads) if (REMOTE.test(value)) ctx.report('r6RemoteLoad', { file: fileRel, line, kind, value });
+  });
+}
+
 export function scannedFiles(guideDir) {
   const files = [];
   for (const top of ['src', 'scripts']) {
@@ -418,6 +522,9 @@ function scanScript(ctx, fileRel, text) {
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)
       || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node)) {
       checkString(ctx, fileRel, lineOf(node), node.text, imports.has(node) ? 'import' : 'literal');
+      if (imports.has(node) && fileRel.startsWith('src/') && REMOTE.test(node.text)) {
+        ctx.report('r6RemoteLoad', { file: fileRel, line: lineOf(node), kind: 'a module', value: node.text });
+      }
     }
     ts.forEachChild(node, visit);
   };
@@ -442,9 +549,11 @@ function walkJson(value, visit, trail = []) {
 }
 
 export function ruleR6(ctx) {
+  for (const file of styleLanguageFiles(ctx.guideDir)) ctx.report('r6StyleLanguage', { file });
   for (const fileRel of scannedFiles(ctx.guideDir)) {
     const text = readFileSync(join(ctx.guideDir, fileRel), 'utf8');
     const ext = extname(fileRel);
+    scanRemote(ctx, fileRel, text);
     if (ext === '.css') {
       scanByPattern(ctx, fileRel, text, [/@import\s+(?:url\(\s*)?['"]?([^'")\s;]+)/g, /url\(\s*['"]?([^'")\s]+)/g]);
     } else if (ext === '.html') {
@@ -454,9 +563,22 @@ export function ruleR6(ctx) {
     }
   }
 
-  for (const file of readdirSync(ctx.guideDir).filter((entry) => /^tsconfig.*\.json$/.test(entry)).sort()) {
-    const parsed = ts.parseConfigFileTextToJson(file, readFileSync(join(ctx.guideDir, file), 'utf8'));
-    const options = parsed.config?.compilerOptions ?? {};
+  // The effective compiler options (extends followed) of every root tsconfig and
+  // of every tsconfig that angular.json names.
+  const angularFile = join(ctx.guideDir, 'angular.json');
+  const angular = existsSync(angularFile) ? JSON.parse(readFileSync(angularFile, 'utf8')) : null;
+  const tsconfigs = new Set(readdirSync(ctx.guideDir).filter((entry) => /^tsconfig.*\.json$/.test(entry)));
+  if (angular) {
+    walkJson(angular, (value, trail) => {
+      if (typeof value === 'string' && trail.at(-1) === 'tsConfig') tsconfigs.add(toPosix(relative(ctx.guideDir, resolve(ctx.guideDir, value))));
+    });
+  }
+  for (const file of [...tsconfigs].sort()) {
+    const options = effectiveCompilerOptions(join(ctx.guideDir, file));
+    if (options.error) {
+      ctx.report('r6TsconfigUnreadable', { file, error: options.error });
+      continue;
+    }
     if (options.paths !== undefined) {
       if (JSON.stringify(options.paths).includes('@hawiyah')) ctx.report('r6Alias', { file });
       else ctx.report('r6TsconfigOption', { file, key: 'paths' });
@@ -464,10 +586,23 @@ export function ruleR6(ctx) {
     if (options.baseUrl !== undefined) ctx.report('r6TsconfigOption', { file, key: 'baseUrl' });
   }
 
-  const angularFile = join(ctx.guideDir, 'angular.json');
-  if (existsSync(angularFile)) {
-    const angular = JSON.parse(readFileSync(angularFile, 'utf8'));
+  // package.json subpath imports would alias a vendored copy.
+  if (ctx.pkg && Object.hasOwn(ctx.pkg, 'imports')) ctx.report('r6PackageImports', {});
+
+  // A node_modules directory anywhere below guide/ but guide/node_modules is
+  // found by module resolution before the installed package.
+  for (const dir of nodeModulesDirs(ctx.guideDir)) ctx.report('r6NodeModules', { dir });
+
+  if (angular) {
     walkJson(angular, (value, trail) => {
+      const key = trail.at(-1);
+      if (value && typeof value === 'object' && !Array.isArray(value) && Object.hasOwn(value, 'fileReplacements')) {
+        ctx.report('r6AngularKey', { key: 'fileReplacements' });
+      }
+      const listKey = trail.at(-2) === 'styles' || trail.at(-2) === 'scripts' ? trail.at(-2)
+        : (key === 'input' && (trail.at(-3) === 'styles' || trail.at(-3) === 'scripts') ? trail.at(-3) : null);
+      if (listKey && typeof value === 'string' && typeof (key === 'input' ? trail.at(-2) : key) === 'number'
+        && !toPosix(value).replace(/^\.\//, '').startsWith('src/')) ctx.report('r6AngularStyle', { key: listKey, value });
       if (typeof value === 'string') {
         if (value.includes('../')) ctx.report('r6AngularParent', { value });
         if (trail.includes('assets') && value.includes('@hawiyah') && typeof trail.at(-1) === 'number'
@@ -478,6 +613,54 @@ export function ruleR6(ctx) {
         ctx.report('r6AngularAsset', { value: value.input });
       }
     });
+  }
+}
+
+/** Compiler options of a tsconfig with every `extends` applied, or { error }. */
+export function effectiveCompilerOptions(file) {
+  if (!existsSync(file)) return { error: 'missing' };
+  const read = ts.readConfigFile(file, ts.sys.readFile);
+  if (read.error) return { error: ts.flattenDiagnosticMessageText(read.error.messageText, ' ') };
+  const parsed = ts.parseJsonConfigFileContent(read.config, ts.sys, dirname(file), undefined, file);
+  const fatal = parsed.errors.find((error) => error.code !== 18003); // 18003: no inputs found
+  if (fatal) return { error: ts.flattenDiagnosticMessageText(fatal.messageText, ' ') };
+  return parsed.options;
+}
+
+const OUTPUT_DIRS = new Set(['node_modules', '.angular', '.cache', 'dist', 'dist-dev', '.git']);
+
+/** node_modules directories below guideDir other than guideDir/node_modules (build output skipped). */
+export function nodeModulesDirs(guideDir) {
+  const found = [];
+  for (const dirent of readdirSync(guideDir, { withFileTypes: true })) {
+    if (!dirent.isDirectory() || OUTPUT_DIRS.has(dirent.name)) continue;
+    walkFiles(join(guideDir, dirent.name), (rel, type, base) => {
+      if (type !== 'directory') return undefined;
+      if (base === 'node_modules') {
+        found.push(`${dirent.name}/${rel}`);
+        return false;
+      }
+      return true;
+    });
+  }
+  return found.sort();
+}
+
+/** HWREG-R6 on what the build resolved: the metafiles of the Angular build and of steps 60 and 62. */
+export function ruleR6Resolved(ctx) {
+  for (const item of ctx.metafiles ?? []) {
+    let metafile = item.metafile;
+    if (!metafile) {
+      try {
+        metafile = JSON.parse(readFileSync(item.file, 'utf8'));
+      } catch (error) {
+        ctx.report('r6Metafile', { file: item.label, error: existsSync(item.file) ? error.message : 'missing' });
+        continue;
+      }
+    }
+    for (const [key, params] of checkMetafile(metafile, { label: item.label, baseDir: item.baseDir ?? ctx.guideDir, guideDir: ctx.guideDir, roots: item.roots })) {
+      ctx.report(key, params);
+    }
   }
 }
 

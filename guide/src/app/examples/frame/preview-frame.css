@@ -23,5 +23,9 @@ iframe {
 
 .notice {
   margin-block: var(--hw-space-2) 0;
-  color: var(--hw-color-text-muted);
+}
+
+/* Empty until a link or a form of the example is used; it takes no room then. */
+.notice:empty {
+  margin-block: 0;
 }

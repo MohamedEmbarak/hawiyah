@@ -1,0 +1,12 @@
+[
+  {
+    "rule": "L-TPL-7",
+    "file": "src/app/case.ts",
+    "line": 5
+  },
+  {
+    "rule": "L-TPL-7",
+    "file": "src/app/case.ts",
+    "line": 9
+  }
+]

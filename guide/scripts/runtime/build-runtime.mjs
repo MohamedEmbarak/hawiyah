@@ -131,7 +131,7 @@ export async function buildRuntime({ guideDir, runtimeDir }) {
   writeFileSync(join(runtimeDir, 'import-map.json'), importMapText(importMap));
 
   // Fallback bundles, built from the files written above.
-  const bundles = await buildBundles({ runtimeDir, frameworks: closure.frameworks, importMap: runtimeRelative(importMap) });
+  const bundles = await buildBundles({ runtimeDir, frameworks: closure.frameworks, importMap: runtimeRelative(importMap), absWorkingDir: guideDir });
   for (const bundle of bundles) {
     write(bundle.file, bundle.text);
     entries.push(manifestEntry({
@@ -152,5 +152,18 @@ export async function buildRuntime({ guideDir, runtimeDir }) {
   const manifest = manifestOf(entries);
   writeFileSync(join(runtimeDir, 'manifest.json'), manifestText(manifest));
   const bytes = entries.reduce((sum, entry) => sum + entry.bytes, 0);
-  return { entries: manifest.entries, importMap, frameworks: closure.frameworks, bytes, names: { react: react.names, rxjs: rxjs.names } };
+  // The esbuild metafiles (paths relative to guideDir): what each bundle read.
+  // The fallback bundles read the runtime files written above, so the
+  // @hawiyah directories of runtimeDir are allowed roots besides node_modules.
+  const roots = [];
+  for (const name of ['tokens', 'styles', 'core', 'vanilla', 'react', 'vue', 'angular']) {
+    const { version } = lockInfo(lock, `@hawiyah/${name}`);
+    for (const kind of ['npm', 'linked']) roots.push({ dir: join(runtimeDir, kind, '@hawiyah', `${name}@${version}`), name });
+  }
+  const metafiles = [
+    { label: 'runtime bundled/react', metafile: react.metafile, baseDir: guideDir },
+    { label: 'runtime bundled/rxjs', metafile: rxjs.metafile, baseDir: guideDir },
+    ...bundles.map((bundle) => ({ label: `runtime ${bundle.file}`, metafile: bundle.metafile, baseDir: guideDir, roots })),
+  ];
+  return { entries: manifest.entries, importMap, frameworks: closure.frameworks, bytes, names: { react: react.names, rxjs: rxjs.names }, metafiles };
 }

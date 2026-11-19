@@ -51,6 +51,25 @@ describe('checkParity', () => {
     expect(codes({ ar: swap(validAr(), '> [!NOTE]', '> [!WARNING]') })).toEqual(['HWC-PAR6']);
   });
 
+  it('reports a different block sequence in a section (HWC-PAR7)', () => {
+    expect(codes({ ar: swap(validAr(), 'يعرض المثال إجراءً أساسيًا واحدًا.\n\n', '') })).toContain('HWC-PAR7');
+    const list = runPair({ ar: swap(validAr(), '- يتبع النص اتجاه الصفحة.', '- بند إضافي.\n- يتبع النص اتجاه الصفحة.') }).findings.filter((item) => item.code === 'HWC-PAR7');
+    expect(list).toHaveLength(1);
+    expect(list[0].message).toMatch(/bulleted list of \d+ items/);
+  });
+
+  it('requires Arabic script in Arabic prose and live text, with key names and listed exceptions allowed (HWC-PAR8)', () => {
+    const english = swap(validAr(), 'يعرض المثال إجراءً أساسيًا واحدًا.', 'The example shows one primary action.');
+    expect(codes({ ar: english })).toEqual(['HWC-PAR8']);
+    expect(codes({ ar: english, exceptions: [{ file: 'guide/scripts/content/test/fixtures/docs/components/fixture-a.ar.md', text: 'one primary action', reason: 'test' }] })).toEqual([]);
+    const live = runPair({ ar: validAr().replace('<button class="hw-button" type="button" data-variant="primary">متابعة</button>', '<button class="hw-button" type="button" data-variant="primary" aria-label="Continue the request">Continue</button>') }).findings;
+    expect(live.filter((item) => item.code === 'HWC-PAR8').map((item) => item.message.split(' has no')[0])).toEqual([
+      'live block "primary" (vanilla) aria-label',
+      'live block "primary" (vanilla) text',
+    ]);
+    expect(codes({ ar: swap(validAr(), 'يعرض المثال إجراءً أساسيًا واحدًا.', 'Tab، Enter') })).toEqual([]);
+  });
+
   it('reports stale translations and source keys of missing sections', () => {
     const findings = runPair({ en: swap(validEn(), 'The layout uses logical properties only.', 'The layout uses logical properties.') }).findings;
     expect(findings.map((item) => [item.code, item.message.split(' was ')[0]])).toEqual([['HWC-STALE', 'section "rtl-and-localisation"']]);

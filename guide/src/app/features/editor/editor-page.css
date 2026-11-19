@@ -13,12 +13,14 @@
   gap: var(--hw-space-2);
 }
 
+/* The visual order is the order of the document at every width: the status line
+   (directly below the toolbar with Run), the code, then the result and the log. */
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'side'
-    'code';
+    'code'
+    'side';
   gap: var(--hw-space-6);
   min-inline-size: 0;
 }
@@ -41,7 +43,6 @@
 
 .hint {
   margin-block: 0;
-  color: var(--hw-color-text-muted);
 }
 
 .result {
@@ -58,7 +59,6 @@
   padding: var(--hw-space-4);
   border: 1px dashed var(--hw-color-border-strong);
   border-radius: var(--hw-radius-md);
-  color: var(--hw-color-text-muted);
   text-align: center;
 }
 

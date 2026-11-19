@@ -171,6 +171,10 @@ export interface LogEntry {
    * code element; 'text': a sentence of the guide in the page language.
    */
   readonly kind: 'code' | 'text';
+  /** An entry with a key is updated in place by upsertLog (the dropped-message count of a run). */
+  readonly key?: string;
+  /** A sentence around an address, shown left to right in a bdi element; text holds the whole sentence. */
+  readonly address?: { readonly before: string; readonly value: string; readonly after: string };
 }
 
 export interface LogState {
@@ -187,6 +191,14 @@ export function appendLog(state: LogState, entry: Omit<LogEntry, 'id'>, limit = 
   const entries = [...state.entries, { ...entry, id: state.next }];
   const over = Math.max(0, entries.length - limit);
   return { entries: over ? entries.slice(over) : entries, dropped: state.dropped + over, next: state.next + 1 };
+}
+
+/** Replaces the text of the entry with this key where it stands, or appends it when there is none. */
+export function upsertLog(state: LogState, key: string, entry: Omit<LogEntry, 'id' | 'key'>, limit = LOG_LIMIT): LogState {
+  const at = state.entries.findIndex((item) => item.key === key);
+  if (at < 0) return appendLog(state, { ...entry, key }, limit);
+  const entries = state.entries.map((item, index) => (index === at ? { ...item, ...entry } : item));
+  return { ...state, entries };
 }
 
 // ----------------------------------------------------------------------- store
@@ -242,8 +254,13 @@ export class EditorStore {
     this.revision.update((value) => value + 1);
   }
 
-  addLog(level: LogLevel, text: string, kind: LogEntry['kind']): void {
-    this.log.update((state) => appendLog(state, { level, text, kind }));
+  addLog(level: LogLevel, text: string, kind: LogEntry['kind'], address?: LogEntry['address']): void {
+    this.log.update((state) => appendLog(state, address ? { level, text, kind, address } : { level, text, kind }));
+  }
+
+  /** One entry per key, updated in place. */
+  setLog(key: string, level: LogLevel, text: string, kind: LogEntry['kind']): void {
+    this.log.update((state) => upsertLog(state, key, { level, text, kind }));
   }
 
   clearLog(): void {

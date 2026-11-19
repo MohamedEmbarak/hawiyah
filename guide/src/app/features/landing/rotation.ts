@@ -24,6 +24,7 @@ export class LandingRotation {
   private readonly state = inject(LandingState);
   private timer: ReturnType<typeof setTimeout> | null = null;
   private attached = false;
+  private block: HTMLElement | null = null;
   private inView = false;
   private documentVisible = false;
   private readonly holds = new Set<RotationHold>();
@@ -32,7 +33,10 @@ export class LandingRotation {
   constructor() {
     effect(() => {
       this.state.rotation();
-      untracked(() => this.sync());
+      untracked(() => {
+        if (!this.state.rotationControl()) this.releaseFocus();
+        this.sync();
+      });
     });
     inject(DestroyRef).onDestroy(() => this.detach());
   }
@@ -43,6 +47,7 @@ export class LandingRotation {
     const view = doc.defaultView;
     if (this.attached || !view) return;
     this.attached = true;
+    this.block = block;
 
     const motion = typeof view.matchMedia === 'function' ? view.matchMedia('(prefers-reduced-motion: reduce)') : null;
     if (motion?.matches) {
@@ -109,6 +114,8 @@ export class LandingRotation {
       this.timer = setTimeout(() => {
         this.timer = null;
         this.state.advanceRotation();
+        // The last step ends the round: the pause button is about to become inert.
+        if (!this.state.rotationControl()) this.releaseFocus();
         this.sync();
       }, ROTATION_PERIOD);
     } else if (!run && this.timer !== null) {
@@ -117,10 +124,25 @@ export class LandingRotation {
     }
   }
 
+  /**
+   * Before the pause button becomes inert and hidden, focus that a pointer left on
+   * it moves to the selector's radio of the framework shown (checked once the view
+   * is updated), so it does not fall back to the start of the document.
+   */
+  private releaseFocus(): void {
+    const block = this.block;
+    const active = block?.ownerDocument.activeElement;
+    if (!block || !active || !block.contains(active) || !active.closest('.pause')) return;
+    const shown = this.state.shown();
+    const radios = Array.from(block.querySelectorAll<HTMLInputElement>('input[type="radio"]'));
+    (radios.find((radio) => radio.value === shown) ?? radios.find((radio) => radio.checked))?.focus();
+  }
+
   private detach(): void {
     if (this.timer !== null) clearTimeout(this.timer);
     this.timer = null;
     this.cleanups.splice(0).forEach((cleanup) => cleanup());
     this.attached = false;
+    this.block = null;
   }
 }

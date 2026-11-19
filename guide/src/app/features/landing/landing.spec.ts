@@ -1,3 +1,4 @@
+import { shellTexts } from '../../i18n/shell';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { ModeService } from '../../core/mode';
@@ -48,8 +49,11 @@ describe('landing texts', () => {
 
   it('state the compliance position without a claim of certification or official status', () => {
     expect(landingTexts.en.compliance.statement).toBe(
-      'Hawiyah is built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification.',
+      'Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification.',
     );
+    // One string in one source: the landing and the footer show the same sentence.
+    expect(landingTexts.en.compliance.statement).toBe(shellTexts.en.footerDescription);
+    expect(landingTexts.ar.compliance.statement).toBe(shellTexts.ar.footerDescription);
     const all = paths(landingTexts.en as unknown as Tree).map((path) => sample(leaf(landingTexts.en as unknown as Tree, path)));
     for (const text of all) {
       expect(/certified|accredited|endorsed/i.test(text), text).toBe(false);

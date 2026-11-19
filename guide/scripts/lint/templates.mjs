@@ -1,6 +1,10 @@
-// Template rules L-TPL-1 to L-TPL-6 (lint.templates) over the inline
+// Template rules L-TPL-1 to L-TPL-9 (lint.templates) over the inline
 // templates of every *.ts under src/app/ and every *.html under src/ except
 // src/generated/, parsed with parseTemplate from @angular/compiler.
+// L-TPL-7: decorator metadata the lint cannot read (not an object literal, a
+// spread, a template that is not a string literal); L-TPL-8: class or style
+// set through host metadata or @HostBinding; L-TPL-9: <style> or a stylesheet
+// <link> in a template.
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -23,22 +27,30 @@ function classAllowed(name, allowed) {
   return allowed.has(name);
 }
 
-// Inline templates and host metadata of @Component decorators in a .ts file.
+const HOST_STYLE_KEY = /^(?:class|style|\[(?:class|style|ngclass|ngstyle|classname|attr\.class|attr\.style)(?:\.[^\]]*)?\])$/i;
+const HOST_BINDING_STYLE = /^(?:class|style|attr\.class|attr\.style)(?:\.|$)/i;
+
+// Inline templates and host metadata of @Component and @Directive decorators
+// in a .ts file. `object` is null when the metadata is not an object literal;
+// `hostBindings` lists the @HostBinding decorators.
 export function componentMetadata(file, text) {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const found = [];
+  const hostBindings = [];
   const visit = (node) => {
     if (ts.isDecorator(node) && ts.isCallExpression(node.expression)) {
       const callee = node.expression.expression;
       const name = ts.isIdentifier(callee) ? callee.text : (ts.isPropertyAccessExpression(callee) ? callee.name.text : '');
       const [argument] = node.expression.arguments;
-      if (name === 'Component' && argument && ts.isObjectLiteralExpression(argument)) {
-        found.push({ source, object: argument });
+      if (name === 'Component' || name === 'Directive') {
+        found.push({ source, kind: name, decorator: node, object: argument && ts.isObjectLiteralExpression(argument) ? argument : null });
       }
+      if (name === 'HostBinding') hostBindings.push({ source, decorator: node, argument });
     }
     ts.forEachChild(node, visit);
   };
   visit(source);
+  found.hostBindings = hostBindings;
   return found;
 }
 
@@ -57,6 +69,12 @@ function lintTemplateText(file, template, toPosition, allowed) {
   for (const match of template.matchAll(/<script\b/gi)) {
     const [line, column] = toPosition(match.index);
     out.push(finding('L-TPL-6', file, line, column, '<script> is not allowed in a template'));
+  }
+  // Angular turns <style> and <link rel="stylesheet"> into component styles.
+  for (const match of template.matchAll(/<style\b|<link\b[^>]*>/gi)) {
+    if (match[0].toLowerCase().startsWith('<link') && !/\brel\s*=\s*["']?[^"'>]*\bstylesheet\b/i.test(match[0])) continue;
+    const [line, column] = toPosition(match.index);
+    out.push(finding('L-TPL-9', file, line, column, `${match[0].toLowerCase().startsWith('<style') ? '<style>' : 'a stylesheet <link>'} is not allowed in a template`));
   }
   const checkClassText = (span, text, origin) => {
     for (const match of text.matchAll(/(?<![\w-])hw-[a-z0-9-]+/g)) {
@@ -134,26 +152,64 @@ export function lintTemplateSource(file, text, allowlist) {
   const fileOffset = lineColumnOf(text);
   if (file.endsWith('.html')) return lintTemplateText(file, text, fileOffset, allowed);
   const out = [];
-  for (const { source, object } of componentMetadata(file, text)) {
+  const at = (source, node) => fileOffset(node.getStart(source));
+  const metadata = componentMetadata(file, text);
+  for (const { source, kind, decorator, object } of metadata) {
+    if (!object) {
+      out.push(finding('L-TPL-7', file, ...at(source, decorator), `@${kind} metadata must be an object literal`));
+      continue;
+    }
     for (const property of object.properties) {
-      if (!ts.isPropertyAssignment(property)) continue;
+      if (!ts.isPropertyAssignment(property)) {
+        if (!ts.isShorthandPropertyAssignment(property) || ['template', 'host'].includes(property.name.text)) {
+          out.push(finding('L-TPL-7', file, ...at(source, property), `@${kind} metadata must list its properties literally (found ${property.getText(source).slice(0, 40)})`));
+        }
+        continue;
+      }
       const name = propertyName(property);
+      if (!name) {
+        out.push(finding('L-TPL-7', file, ...at(source, property), `@${kind} metadata has a computed property name`));
+        continue;
+      }
       const init = property.initializer;
       if (name === 'template' && (ts.isStringLiteral(init) || ts.isNoSubstitutionTemplateLiteral(init))) {
         const start = init.getStart(source) + 1;
         out.push(...lintTemplateText(file, init.text, (offset) => fileOffset(start + offset), allowed));
       } else if (name === 'template' && ts.isTemplateExpression(init)) {
-        const [line, column] = fileOffset(init.getStart(source));
-        out.push(finding('L-TPL-PARSE', file, line, column, 'template must be a literal without interpolation'));
-      } else if (name === 'host' && ts.isObjectLiteralExpression(init)) {
+        out.push(finding('L-TPL-PARSE', file, ...at(source, init), 'template must be a literal without interpolation'));
+      } else if (name === 'template') {
+        out.push(finding('L-TPL-7', file, ...at(source, init), 'template must be a string literal written in the decorator'));
+      } else if (name === 'host' && !ts.isObjectLiteralExpression(init)) {
+        out.push(finding('L-TPL-7', file, ...at(source, init), 'host must be an object literal written in the decorator'));
+      } else if (name === 'host') {
         for (const binding of init.properties) {
           const key = propertyName(binding);
+          if (!ts.isPropertyAssignment(binding) || !key) {
+            out.push(finding('L-TPL-7', file, ...at(source, binding), 'host must list its bindings literally'));
+            continue;
+          }
           if (/ngskiphydration/i.test(key)) {
-            const [line, column] = fileOffset(binding.getStart(source));
-            out.push(finding('L-TPL-5', file, line, column, 'ngSkipHydration host binding is not allowed'));
+            out.push(finding('L-TPL-5', file, ...at(source, binding), 'ngSkipHydration host binding is not allowed'));
+          }
+          if (HOST_STYLE_KEY.test(key)) {
+            out.push(finding('L-TPL-8', file, ...at(source, binding), `host '${key}' sets class or style on the host element`));
           }
         }
       }
+    }
+  }
+  for (const { source, decorator, argument } of metadata.hostBindings) {
+    if (!argument) {
+      // @HostBinding() binds the host property of the member's own name.
+      const member = decorator.parent?.name;
+      const target = member && (ts.isIdentifier(member) || ts.isStringLiteralLike(member)) ? member.text : '';
+      if (/^(?:class|classname|style)$/i.test(target)) {
+        out.push(finding('L-TPL-8', file, ...at(source, decorator), `@HostBinding() on '${target}' sets class or style on the host element`));
+      }
+    } else if (!ts.isStringLiteralLike(argument)) {
+      out.push(finding('L-TPL-7', file, ...at(source, decorator), '@HostBinding must name its target with a string literal'));
+    } else if (HOST_BINDING_STYLE.test(argument.text)) {
+      out.push(finding('L-TPL-8', file, ...at(source, decorator), `@HostBinding('${argument.text}') sets class or style on the host element`));
     }
   }
   return out;

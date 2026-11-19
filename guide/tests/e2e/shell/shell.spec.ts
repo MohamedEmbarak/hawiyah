@@ -1,4 +1,4 @@
-import { test, expect, hydrated, markDocument, sameDocument } from '../support/fixtures';
+import { test, expect, hydrated, keepRootDocument, markDocument, presetMode, sameDocument } from '../support/fixtures';
 
 const ATTRIBUTION = {
   en: 'Developed by the Development Team in the National Platforms Sector — National Information Center',
@@ -99,7 +99,11 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(page.locator('main#main')).toHaveAttribute('tabindex', '-1');
       const footer = page.getByRole('contentinfo');
       await expect(footer.getByRole('group', { name: lang === 'ar' ? 'هوية' : 'Hawiyah' })).toHaveCount(1);
-      await expect(footer.getByRole('navigation', { name: lang === 'ar' ? 'الدليل' : 'Guide' })).toHaveCount(1);
+      const guide = footer.getByRole('navigation', { name: lang === 'ar' ? 'الدليل' : 'Guide' });
+      await expect(guide).toHaveCount(1);
+      // The Guide column links to every section of the header, the editor included.
+      await expect(guide.getByRole('link', { name: lang === 'ar' ? 'المكوّنات' : 'Components' })).toHaveAttribute('href', `${lang}/components/`);
+      await expect(guide.getByRole('link', { name: lang === 'ar' ? 'المحرر' : 'Editor' })).toHaveAttribute('href', `${lang}/editor/`);
       await expect(footer.getByRole('navigation', { name: lang === 'ar' ? 'المشروع' : 'Project' })).toHaveCount(1);
       const legal = footer.getByRole('navigation', { name: lang === 'ar' ? 'الترخيص والإشعارات' : 'Licence and notices' });
       await expect(legal.getByRole('link')).toHaveCount(2);
@@ -114,6 +118,75 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(page).toHaveURL(/\/hawiyah\/NOTICE\.txt$/);
       await expect(page.locator('body')).toContainText('Licence files distributed with this guide');
     });
+  });
+}
+
+// The identity constraint: the artwork alone, no Hawiyah text beside it.
+for (const lang of ['ar', 'en'] as const) {
+  for (const mode of ['light', 'dark'] as const) {
+    test(`the footer brand is the artwork alone: one image and no text (${lang}, ${mode})`, async ({ page }) => {
+      await presetMode(page, mode);
+      await page.goto(`${lang}/components/`);
+      await hydrated(page);
+      await expect(page.locator('html')).toHaveAttribute('data-hw-mode', mode);
+      const marks = page.locator('footer .hw-portal-footer-brand-marks');
+      await expect(marks).toHaveCount(1);
+      await expect(marks).toHaveAttribute('aria-label', lang === 'ar' ? 'هوية' : 'Hawiyah');
+      expect((await marks.evaluate((element) => element.textContent ?? '')).trim()).toBe('');
+      await expect(marks.locator('img')).toHaveCount(1);
+      await expect(marks.locator('img')).toBeVisible();
+      await expect(marks.locator('img')).toHaveAttribute('alt', '');
+    });
+  }
+}
+
+for (const mode of ['light', 'dark'] as const) {
+  test(`the root document heading is the artwork alone, with the English name visually hidden (${mode})`, async ({ page }) => {
+    await presetMode(page, mode);
+    await keepRootDocument(page);
+    await page.goto('');
+    await hydrated(page);
+    const heading = page.locator('h1');
+    await expect(heading).toHaveCount(1);
+    const texts = await heading.evaluate((h1) => ({
+      all: (h1.textContent ?? '').trim(),
+      hidden: Array.from(h1.querySelectorAll('.hw-sr-only'), (node) => node.textContent ?? '').join('').trim(),
+      visibleImages: Array.from(h1.querySelectorAll('img')).filter((img) => img.getBoundingClientRect().width > 0).length,
+    }));
+    expect(texts).toEqual({ all: 'Hawiyah', hidden: 'Hawiyah', visibleImages: 1 });
+    await expect(heading).toHaveAccessibleName(/هوية/);
+  });
+}
+
+// Forced colours: the surfaces take the system colours, so the artwork follows the
+// system colour scheme, not the stored mode; the NIC logo filter follows it too.
+for (const [scheme, stored] of [
+  ['light', 'dark'],
+  ['dark', 'light'],
+] as const) {
+  test(`forced colours with a ${scheme} system scheme and a stored ${stored} mode`, async ({ page }) => {
+    await presetMode(page, stored);
+    await page.emulateMedia({ forcedColors: 'active', colorScheme: scheme });
+    await page.goto('en/components/');
+    await hydrated(page);
+    await expect(page.locator('html')).toHaveAttribute('data-hw-mode', stored);
+    const brand = page.locator('a.hw-portal-brand');
+    await expect(brand.locator(scheme === 'light' ? 'img.wordmark-light' : 'img.wordmark-dark')).toBeVisible();
+    await expect(brand.locator(scheme === 'light' ? 'img.wordmark-dark' : 'img.wordmark-light')).toBeHidden();
+    const footer = page.locator('footer .hw-portal-footer-brand-marks img');
+    await expect(footer).toHaveCount(1);
+    await expect.poll(() => footer.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(scheme === 'light' ? /\/brand\/hawiyah-wordmark\.svg$/ : /\/brand\/hawiyah-wordmark-reverse\.svg$/);
+    expect(await page.locator('header img.nic-logo').evaluate((img) => getComputedStyle(img).filter)).toBe(scheme === 'light' ? 'none' : 'brightness(0) invert(1)');
+  });
+}
+
+for (const lang of ['ar', 'en'] as const) {
+  test(`the header marks its section current on the pages below it (${lang})`, async ({ page }) => {
+    await page.goto(`${lang}/components/button/reference/`);
+    await hydrated(page);
+    const nav = page.getByRole('navigation', { name: lang === 'ar' ? 'الأقسام الرئيسية' : 'Main sections' });
+    await expect(nav.getByRole('link', { name: lang === 'ar' ? 'المكوّنات' : 'Components' })).toHaveAttribute('aria-current', 'page');
+    await expect(nav.getByRole('link', { name: lang === 'ar' ? 'المحرر' : 'Editor' })).not.toHaveAttribute('aria-current', 'page');
   });
 }
 

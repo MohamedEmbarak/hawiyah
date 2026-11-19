@@ -16,6 +16,7 @@ const COLOUR_FILES = new Set(['src/app/features/editor/code-theme.ts', 'src/app/
 const PREVIEW_FRAME = 'src/app/examples/frame/preview-frame.ts';
 const LINK_NAVIGATION = 'src/app/core/link-navigation.ts';
 const REPOSITORY_DIRS = /^(?:packages|apps|examples)(?:\/|$)/;
+const UNSAFE_HTML = ['innerHTML', 'outerHTML', 'insertAdjacentHTML', 'setHTMLUnsafe', 'parseHTMLUnsafe', 'createContextualFragment'];
 
 export function listSourceFiles(root) {
   const accept = (path) => /\.(?:ts|mjs)$/.test(path) && !path.endsWith('.d.ts');
@@ -116,8 +117,19 @@ export function lintSourceText(file, text, { root = '.' } = {}) {
       if (ts.isIdentifier(node) && (node.text === 'DomSanitizer' || node.text.startsWith('bypassSecurityTrust'))) {
         if (!(ts.isImportSpecifier(node.parent) && node.parent.propertyName === node)) push('L-SRC-5', node, `${node.text} is not allowed`);
       }
-      if (ts.isPropertyAccessExpression(node) && ['innerHTML', 'outerHTML', 'insertAdjacentHTML'].includes(node.name.text)) {
+      if (ts.isPropertyAccessExpression(node) && UNSAFE_HTML.includes(node.name.text)) {
         push('L-SRC-5', node.name, `.${node.name.text} is not allowed`);
+      }
+      if (ts.isElementAccessExpression(node) && ts.isStringLiteralLike(node.argumentExpression)
+        && [...UNSAFE_HTML, 'srcdoc'].includes(node.argumentExpression.text) && !(node.argumentExpression.text === 'srcdoc' && file === PREVIEW_FRAME)) {
+        push('L-SRC-5', node.argumentExpression, `['${node.argumentExpression.text}'] is not allowed`);
+      }
+      if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
+        && ['setAttribute', 'setAttributeNS'].includes(node.expression.name.text)) {
+        const nameArgument = node.arguments[node.expression.name.text === 'setAttributeNS' ? 1 : 0];
+        if (nameArgument && ts.isStringLiteralLike(nameArgument) && nameArgument.text.toLowerCase() === 'srcdoc' && file !== PREVIEW_FRAME) {
+          push('L-SRC-5', nameArgument, "setAttribute('srcdoc') is not allowed");
+        }
       }
       if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
         && ts.isPropertyAccessExpression(node.left) && node.left.name.text === 'srcdoc' && file !== PREVIEW_FRAME) {
@@ -134,12 +146,17 @@ export function lintSourceText(file, text, { root = '.' } = {}) {
         for (const property of argument.properties) {
           const key = property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) ? property.name.text : '';
           if (key === 'styles') push('L-SRC-6', property, 'component metadata has styles; use a styleUrl file');
-          if (key === 'encapsulation' && ts.isPropertyAssignment(property)
-            && /ViewEncapsulation\.(?:None|ShadowDom)|^\s*[23]\s*$/.test(property.initializer.getText(source))) {
-            push('L-SRC-6', property, `encapsulation ${property.initializer.getText(source)} is not allowed`);
+          // Only the default, written out: an alias, a constant or a number could hide None or ShadowDom.
+          if (key === 'encapsulation' && (!ts.isPropertyAssignment(property) || property.initializer.getText(source) !== 'ViewEncapsulation.Emulated')) {
+            push('L-SRC-6', property, `encapsulation ${ts.isPropertyAssignment(property) ? property.initializer.getText(source) : property.getText(source)} is not allowed; omit it or write ViewEncapsulation.Emulated`);
           }
         }
       }
+    }
+
+    // L-SRC-6: ViewEncapsulation under another name.
+    if (ts.isImportSpecifier(node) && (node.propertyName?.text ?? node.name.text) === 'ViewEncapsulation' && node.name.text !== 'ViewEncapsulation') {
+      push('L-SRC-6', node, `ViewEncapsulation imported as ${node.name.text}; import it under its own name`);
     }
 
     // L-SRC-8: raw colours in the editor theme and the frame document.

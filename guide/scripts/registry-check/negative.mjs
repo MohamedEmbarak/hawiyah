@@ -94,6 +94,43 @@ const CONTROLS = [
     },
   },
   {
+    label: 'tsconfig.json extends config/base.json, which maps @hawiyah/core to a vendored copy',
+    code: 'HWREG-R6',
+    mutate(copy) {
+      mkdirSync(join(copy, 'config'), { recursive: true });
+      writeJson(join(copy, 'config', 'base.json'), { compilerOptions: { paths: { '@hawiyah/core': ['../vendor/core/dist/index'] } } });
+      const file = join(copy, 'tsconfig.json');
+      writeFileSync(file, readFileSync(file, 'utf8').replace('"compileOnSave": false,', '"extends": "./config/base.json",\n  "compileOnSave": false,'));
+    },
+  },
+  {
+    label: 'angular.json fileReplacements of an installed @hawiyah file',
+    code: 'HWREG-R6',
+    mutate(copy) {
+      const angular = readJson(join(copy, 'angular.json'));
+      angular.projects.guide.architect.build.options.fileReplacements = [
+        { replace: 'node_modules/@hawiyah/core/dist/index.js', with: 'src/vendor/core-index.js' },
+      ];
+      writeJson(join(copy, 'angular.json'), angular);
+    },
+  },
+  {
+    label: 'a copy of @hawiyah/angular in src/node_modules',
+    code: 'HWREG-R6',
+    mutate(copy) {
+      cpSync(join(copy, 'node_modules', '@hawiyah', 'angular'), join(copy, 'src', 'node_modules', '@hawiyah', 'angular'), { recursive: true });
+    },
+  },
+  {
+    label: 'package.json imports mapping #hawiyah-core to a vendored file',
+    code: 'HWREG-R6',
+    mutate(copy) {
+      const pkg = readJson(join(copy, 'package.json'));
+      pkg.imports = { '#hawiyah-core': './vendor/core/dist/index.js' };
+      writeJson(join(copy, 'package.json'), pkg);
+    },
+  },
+  {
     label: 'the registry adapter pointed at an unreachable host',
     code: 'HWREG-R4',
     registryUrl: 'http://127.0.0.1:9/',

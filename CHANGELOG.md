@@ -966,6 +966,38 @@ built type declarations of each package.
   (`.hw-tab-bar`) without the `data-orientation` attribute that the React, Vue
   and Angular adapters write. The appearance and the accessibility tree are the
   same; a later release corrects it.
+- `.hw-code` sets `overflow-wrap: anywhere`, so inside a cell of an
+  auto-layout `.hw-table` a value breaks into fragments (`data-|varian|t`,
+  `'prima|ry'` at 390 px).
+- The PortalHeader skip link and the ContentNavigation links are rendered as a
+  bare `#id`; before hydration and without script, under a `<base href>` they
+  open the base address with the fragment instead of the section of the page.
+- ContentNavigation (Angular): a pointer activation scrolls to the section but
+  leaves focus on the link, so the next Tab goes to the next entry; a native
+  fragment link moves the focus starting point to the section.
+- PortalHeader: without script its navigation stays collapsed below the
+  breakpoint, behind a Menu button that does nothing.
+- RadioGroup (Angular) renders `fieldset.hw-field`, which keeps the browser's
+  fieldset border, padding and margin.
+- The Umm al-Qura range trigger of Calendar and DatePicker is the typed letter
+  `i` in a circle drawn by CSS, not an icon of the packaged set (all four
+  adapters).
+- The `role` input of `hw-alert` (Angular) is typed without `note`, although
+  the host renders `role="note"` when it is given.
+- PageHeader (Angular) renders its `h1` without `tabindex` or an id input, so
+  the heading cannot be the focus target after a route change.
+- Alert: the title is an inline `strong` without a separator, so a title
+  followed by text reads as one run (`NoteLight and ...`).
+- Tabs (Vue) declares no slot types for its panel and tab slots.
+- Tabs (Angular) calls `preventDefault` on a keydown that hydration replays,
+  and Angular reports `preventDefault called during event replay`.
+- The `@hawiyah/angular` README says that a plain activation of a packaged
+  in-page link focuses the target; its Content navigation section says that
+  only keyboard activation does, which is the behaviour.
+- Carousel (Vue) has `wrap`, default `true`; React and Angular have `loop`,
+  default `false`.
+- `@hawiyah/vue` does not export the types `ButtonVariant` and `Orientation`
+  that its Button and Tabs props use.
 
 #### Left for a later release
 

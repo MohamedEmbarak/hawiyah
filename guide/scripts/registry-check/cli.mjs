@@ -49,6 +49,12 @@ async function main() {
     distDir: options.distDir ? resolve(cwd, options.distDir) : undefined,
     previewDir: options.previewDir ? resolve(cwd, options.previewDir) : undefined,
     requireRuntime: options.requireRuntime,
+    // With --dist: the Angular metafiles beside the browser directory and the
+    // runtime derived again, as in build step 90.
+    metafiles: options.distDir
+      ? ['browser-stats.json', 'server-stats.json'].map((name) => ({ label: name, file: resolve(cwd, options.distDir, '..', name) }))
+      : [],
+    derive: Boolean(options.distDir),
   });
   if (!result.ok) {
     for (const line of failureLines(result)) console.error(line);

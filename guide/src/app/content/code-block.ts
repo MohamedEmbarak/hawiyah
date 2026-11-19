@@ -51,7 +51,7 @@ export function trimTrailingLines(lines: readonly (readonly CodeRun[])[]): reado
 @Component({
   selector: 'guide-code-block',
   imports: [HwCopyButtonComponent],
-  template: `<figure class="hw-code-block"><figcaption class="hw-code-block-header"><span class="hw-code-block-title" [id]="titleId"><bdi dir="ltr">{{ title() }}</bdi></span><div class="hw-code-block-actions"><hw-copy-button [text]="text()" [label]="t().copyCode" [copiedMessage]="t().copied" [failedMessage]="t().copyFailed" /></div></figcaption><pre class="hw-code-block-content" dir="ltr" translate="no" tabindex="0" role="group" [attr.aria-labelledby]="titleId"><code>@for (line of shown(); track $index) {@for (run of line; track $index) {@if (run.r) {<span [class]="tokenClass(run.r)">{{ run.t }}</span>} @else if (isBlank(run.t)) {{{ run.t }}} @else {<span class="run">{{ run.t }}</span>}}{{ newline }}}</code></pre></figure>`,
+  template: `<figure class="hw-code-block"><figcaption class="hw-code-block-header"><span class="hw-code-block-title" [id]="titleId"><bdi dir="ltr">{{ title() }}</bdi></span><div class="hw-code-block-actions"><span class="copy"><hw-copy-button [text]="text()" [label]="t().copyCode" [copiedMessage]="t().copied" [failedMessage]="t().copyFailed" /></span></div></figcaption><pre class="hw-code-block-content" dir="ltr" translate="no" tabindex="0" role="group" [attr.aria-labelledby]="titleId"><code>@for (line of shown(); track $index) {@for (run of line; track $index) {@if (run.r) {<span [class]="tokenClass(run.r)">{{ run.t }}</span>} @else if (isBlank(run.t)) {{{ run.t }}} @else {<span class="run">{{ run.t }}</span>}}{{ newline }}}</code></pre></figure>`,
   styleUrl: './code-block.css',
 })
 export class CodeBlockComponent {

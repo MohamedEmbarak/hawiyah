@@ -125,7 +125,7 @@ the published packages during the build.
 Each block of a group is a fenced code block whose info string is:
 
 ~~~text
-<lang> live example=<name> [framework=<framework>] [check=<check>] [differences=<id>]
+<lang> live example=<name> [framework=<framework>] [check=<check>[,<check>...] | static] [differences=<id>]
 ~~~
 
 - `lang` is `html`, `tsx`, `jsx`, `vue` or `ts`. The framework follows from it:
@@ -133,12 +133,18 @@ Each block of a group is a fenced code block whose info string is:
   states `framework=angular`.
 - `name` matches `^[a-z][a-z0-9-]{0,39}$` and is unique in the file
   (`HWC-LIVE3`).
-- `check` names an interaction check and `differences` names an approved known
-  difference. Both stand only on the `html` block, the first of the group.
+- `check` names one interaction check or several, separated by commas; `static`
+  declares that the group is compared at rest only; `differences` names an
+  approved known difference. They stand only on the `html` block, the first of
+  the group, and a group is either `static` or names checks. Every group of a
+  component with a controller (`sourceType` `interactive` in `components.json`)
+  names the checks that exercise what its text says, or is `static`
+  (`HWE-CHECK`).
 - A known difference is an entry of
   `guide/scripts/equivalence/known-differences.json` with the fields `id`,
   `component`, `aspect` (`structure`, `aria` or `screenshot`), `description`,
-  `source` (a `CHANGELOG.md` section with its line, or an issue URL) and
+  `source` (`CHANGELOG.md, <version>, <section>: <text of the entry>`, checked
+  against `CHANGELOG.md`) and
   `approvedBy` (`lead`). An entry without `ignore` leaves its aspect out of the
   equivalence check of the groups that name it. An entry of aspect `structure`
   may instead carry `ignore: [{ "class": "hw-...", "attribute": "..." }]`: only
@@ -253,10 +259,13 @@ quotation renders as a plain quotation.
   optionally with `#section`) leads to that page's reference view in the
   language of the linking page when that page is built, and to the file on
   GitHub otherwise.
-- `#section` leads to a heading of the same page; the id must exist.
+- `#section` leads to a heading of the same page; the id must exist. The
+  `#section` of a link to another built component page must be a heading id of
+  that page.
 - A relative link to any other repository file leads to the file on GitHub.
 - A relative link to a missing file, an absolute path, a path outside the
-  repository or another scheme fails the build (`HWC-LINK`).
+  repository, another scheme or a malformed percent escape fails the build
+  (`HWC-LINK`).
 
 ## Code listings
 
@@ -309,7 +318,16 @@ Besides the rules above, the Arabic page mirrors the English page:
 - the same code listings (`HWC-PAR2`);
 - the same live groups, names and frameworks in the same order (`HWC-PAR3`);
 - the same tables in the same order and dimensions, with identical API table
-  bodies (`HWC-PAR5`).
+  bodies (`HWC-PAR5`);
+- the same blocks in every section, in the same order: paragraphs, lists and
+  the blocks of each item, code, tables, alerts and headings (`HWC-PAR7`);
+- Arabic script in every paragraph, list item and table cell outside code and
+  API tables, and in the text and the reader-text attributes (`label`,
+  `aria-label`, `title`, `placeholder`, `alt` and the like) of every live block
+  (`HWC-PAR8`). Text made only of key names (Tab, Enter, Space, Escape, Home,
+  End, ...) stays Latin. Any other exception is an entry
+  `{ "file", "text", "reason" }` of
+  `guide/scripts/content/arabic-exceptions.json`, which is empty.
 
 ## Forbidden constructs
 
@@ -320,7 +338,10 @@ These fail the build (`HWC-MD`):
 - reference-style links and link definitions;
 - footnotes;
 - strikethrough and task list items;
-- front matter in any position other than the start of the Arabic page.
+- front matter in any position other than the start of the Arabic page;
+- a fenced block without its closing fence (reported at the line where it
+  opens), and an info string of a block that is not live with anything other
+  than `title="..."`.
 
 ## Writing style
 
@@ -330,6 +351,43 @@ These fail the build (`HWC-MD`):
   items from `components.json` and `docs/` instead.
 - Write Arabic text in Arabic and keep code, package names and API names in
   Latin script.
+- The compliance sentence has one wording in each language, kept in
+  `guide/src/app/i18n/compliance.json`. The footer and the landing import it,
+  and the section Platforms Code reference of every page opens with it, word for
+  word, followed by the sentence that introduces the evidence of the page.
+  `guide/scripts/content/test/compliance.test.mjs` checks both and fails on any
+  other wording of the claim.
+
+### Arabic glossary
+
+The guide's Arabic text sources (`guide/src/app/**/i18n.ts`,
+`guide/src/app/i18n/`) and the Arabic pages use these terms.
+
+Table: Arabic terms of the guide
+
+| Concept | Arabic | Notes |
+| --- | --- | --- |
+| colour mode | وضع الألوان؛ الوضع الفاتح، الوضع الداكن | Never نمط for a mode. |
+| styles (CSS) | الأنماط | A style sheet is ورقة الأنماط. |
+| theme (`data-hw-theme`) | السمة | سمة never names an HTML attribute. |
+| HTML attribute | الخاصية | Followed by its name in code: الخاصية `type`. |
+| CSS property | خاصية CSS | On its first mention in a section; الخاصية after it. |
+| React and Vue prop | الخاصية | |
+| Angular input | المُدخل | Plural المُدخلات. |
+| controller | المتحكم، المتحكمات | Not وحدة تحكم, which a reader also knows as the console. |
+| adapter | المحوّل، المحوّلات | The npm package of an adapter is حزمة المحوّل. |
+| code | الشيفرة | Copy buttons and listing titles. |
+| `script` element or block | البرنامج النصي | |
+| key names | Latin, as printed on the key | Space, Enter, Tab, Escape, Home, End. Arrow keys, which carry no word, are named in Arabic: السهم الأيمن. |
+| selected | المحدَّد | |
+| enabled, disabled | متاح، معطَّل | |
+| activation | التفعيل | |
+| disclosure element | عنصر الإظهار والإخفاء | |
+| hover | المرور بالمؤشر | |
+| scroll | التمرير | |
+| Warning, Caution | تحذير، تنبيه | Also the log level warning: تحذير. |
+| variant names | Latin, in code | `primary`, `outline`. |
+| page titles and links with a component name | مرجع المكوّن: زر؛ صفحة المكوّن: زر | A form that needs no definite article on the name. |
 
 ## Failure codes
 
@@ -354,5 +412,5 @@ Table: Failure codes of the content step
 | `HWC-LIVE1` | Live block info strings |
 | `HWC-LIVE2` | Live groups and their placement |
 | `HWC-LIVE3` | Repeated example names |
-| `HWC-PAR1` to `HWC-PAR6` | Parity of the Arabic page with the English page |
+| `HWC-PAR1` to `HWC-PAR8` | Parity of the Arabic page with the English page |
 | `HWC-STALE` | Arabic sections translated from an earlier English text |

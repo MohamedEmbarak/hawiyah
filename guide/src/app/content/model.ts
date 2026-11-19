@@ -208,7 +208,10 @@ export interface ManifestLiveGroup {
   /** Id of the heading the group stands under: 'example', or the id of its h3 in Variants and states. */
   readonly section: string;
   readonly frameworks: 4;
+  /** One interaction check or several, comma-separated. */
   readonly check?: string;
+  /** The group is compared at rest only (it names no check). */
+  readonly static?: true;
   readonly differences?: string;
 }
 
@@ -248,7 +251,10 @@ export interface LiveGroupEntry {
   readonly id: string;
   readonly lang: ContentLang;
   readonly example: string;
+  /** One interaction check or several, comma-separated. */
   readonly check?: string;
+  /** The group is compared at rest only (it names no check). */
+  readonly static?: true;
   readonly differences?: string;
   readonly blocks: Readonly<Record<Framework, LiveSource>>;
 }

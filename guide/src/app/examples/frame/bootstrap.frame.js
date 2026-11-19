@@ -14,6 +14,18 @@ function hawiyahFrameBootstrap(config, start) {
   var readySent = false;
   var failedLinks = [];
 
+  // The frame policy cannot limit WebRTC in Chromium (no Content-Security-Policy
+  // directive covers it, and webrtc 'block' is not recognised), so its constructors
+  // are removed before the example code runs. Defence in depth, not a boundary: a
+  // nested frame created by the code gets fresh globals.
+  ['RTCPeerConnection', 'webkitRTCPeerConnection', 'RTCDataChannel'].forEach(function (name) {
+    try {
+      delete window[name];
+    } catch (error) {
+      // A property that cannot be deleted stays; nothing else depends on it.
+    }
+  });
+
   function cut(value) {
     return value.length > MAX_TEXT ? value.slice(0, MAX_TEXT) : value;
   }

@@ -35,7 +35,7 @@ const TEXT = {
   ar: {
     title: 'تبويبات',
     briefTitle: 'تبويبات · هوية',
-    referenceTitle: 'مرجع تبويبات · هوية',
+    referenceTitle: 'مرجع المكوّن: تبويبات · هوية',
     result: 'النتيجة',
     frameworks: 'إطار العمل',
     status: 'معروض باستخدام @hawiyah/angular 0.3.0 من npm',

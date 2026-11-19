@@ -12,6 +12,7 @@ import {
   javascriptName,
   languageFor,
   parseEditorQuery,
+  upsertLog,
   type EditorExample,
 } from './editor-store';
 
@@ -88,6 +89,18 @@ describe('log', () => {
     expect(state.entries.length).toBe(LOG_LIMIT);
     expect(state.dropped).toBe(5);
     expect(state.entries[0]?.text).toBe('entry 5');
+  });
+
+  it('updates an entry with a key where it stands instead of adding another', () => {
+    let state = appendLog(EMPTY_LOG, { level: 'info', text: 'first', kind: 'code' });
+    state = upsertLog(state, 'dropped-1', { level: 'warning', text: '3 ignored', kind: 'text' });
+    state = appendLog(state, { level: 'info', text: 'last', kind: 'code' });
+    const id = state.entries[1]?.id;
+    state = upsertLog(state, 'dropped-1', { level: 'warning', text: '900 ignored', kind: 'text' });
+    expect(state.entries.map((entry) => entry.text)).toEqual(['first', '900 ignored', 'last']);
+    expect(state.entries[1]?.id).toBe(id);
+    state = upsertLog(state, 'dropped-2', { level: 'warning', text: '1 ignored', kind: 'text' });
+    expect(state.entries.length).toBe(4);
   });
 });
 

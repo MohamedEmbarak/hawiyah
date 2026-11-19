@@ -42,3 +42,20 @@
     outline-color: CanvasText;
   }
 }
+
+/* Allowed forms next to the rules added for review finding R1[6]. */
+.guide-sides {
+  margin: 0 var(--hw-space-2) var(--hw-space-1);
+  padding: var(--hw-space-1) var(--hw-space-2);
+  border-radius: var(--hw-radius-md);
+}
+
+[class~='guide-sides'] {
+  color: currentColor;
+}
+
+@media only screen and (prefers-reduced-motion: no-preference) and (min-width: 48rem), (prefers-reduced-motion: no-preference) {
+  .guide-sides {
+    transition: opacity var(--hw-duration-fast) var(--hw-ease-standard);
+  }
+}

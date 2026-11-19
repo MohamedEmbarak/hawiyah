@@ -39,16 +39,19 @@ jobs:
       - name: Copy the guide's public assets
         run: node scripts/prepare-demo.mjs
       - name: Browser tests
+        id: browser
         run: pnpm test:browser
+      # Runs after the browser tests whether they passed or failed (not when an
+      # earlier step failed or the job was cancelled), so both results are seen.
       - name: Fixture host tests
+        if: ${{ !cancelled() && (steps.browser.outcome == 'success' || steps.browser.outcome == 'failure') }}
         run: pnpm test:host
       - name: Upload browser test report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results
-          path: |
-            test-results/
-            test-results/host/
+          # test-results/host/ (the fixture host) is inside test-results/.
+          path: test-results/
           retention-days: 7
           if-no-files-found: ignore

@@ -1,0 +1,17 @@
+[
+  {
+    "rule": "L-CSS-4",
+    "file": "src/app/case.css",
+    "line": 2
+  },
+  {
+    "rule": "L-CSS-4",
+    "file": "src/app/case.css",
+    "line": 3
+  },
+  {
+    "rule": "L-CSS-4",
+    "file": "src/app/case.css",
+    "line": 4
+  }
+]

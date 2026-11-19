@@ -60,6 +60,7 @@ function licenceFiles(nodeModules, name) {
 /** The ESM bundle of sucrase: { code, inputs: [package names besides sucrase] }. */
 export async function bundleSucrase(nodeModules) {
   const result = await build({
+    absWorkingDir: dirname(nodeModules),
     stdin: { contents: "export { transform, getVersion } from 'sucrase';\n", resolveDir: nodeModules, sourcefile: 'sucrase-entry.js' },
     bundle: true,
     write: false,
@@ -84,7 +85,7 @@ export async function bundleSucrase(nodeModules) {
   }
   if (!packages.has('sucrase')) throw new Error('editor compilers: the sucrase bundle has no sucrase input');
   packages.delete('sucrase');
-  return { code, inputs: [...packages].sort() };
+  return { code, inputs: [...packages].sort(), metafile: result.metafile };
 }
 
 function esbuildTool(nodeModules) {
@@ -94,7 +95,7 @@ function esbuildTool(nodeModules) {
 /**
  * Writes runtime/compilers/ and merges its entries into runtime/manifest.json
  * (entries of an earlier run under compilers/ are replaced). Returns
- * { entries, bytes }.
+ * { entries, bytes, metafiles }.
  */
 export async function buildCompilers({ guideDir, runtimeDir }) {
   const nodeModules = join(guideDir, 'node_modules');
@@ -152,7 +153,7 @@ export async function buildCompilers({ guideDir, runtimeDir }) {
   const kept = (Array.isArray(manifest.entries) ? manifest.entries : []).filter((entry) => !String(entry.path).startsWith(`${COMPILERS_DIR}/`));
   writeFileSync(manifestFile, manifestText(manifestOf([...kept, ...entries])));
   const bytes = entries.reduce((sum, entry) => sum + entry.bytes, 0);
-  return { entries, bytes };
+  return { entries, bytes, metafiles: [{ label: 'runtime compilers/sucrase.js', metafile: sucrase.metafile, baseDir: guideDir }] };
 }
 
 /** Path of a runtime file relative to runtimeDir with forward slashes. */

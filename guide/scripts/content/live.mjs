@@ -1,6 +1,6 @@
 // Live block extraction and grouping (contentPipeline.liveBlocks).
 //
-// Info string: <lang> live example=<name> [framework=<framework>] [check=<check>] [differences=<id>]
+// Info string: <lang> live example=<name> [framework=<framework>] [check=<check>[,<check>...] | static] [differences=<id>]
 // A group is four consecutive live blocks with the same example name, in the
 // order vanilla (html), react (tsx or jsx), vue (vue), angular (ts framework=angular),
 // separated only by blank lines. Wrapping, auto-imports and the rules on the
@@ -17,7 +17,7 @@ export function isLive(node) {
 
 /**
  * Parses the info string of a live block.
- * @returns {{ lang: string, framework: string | null, example: string | null, check?: string, differences?: string, errors: string[] }}
+ * @returns {{ lang: string, framework: string | null, example: string | null, check?: string, checks?: string[], static?: true, differences?: string, errors: string[] }}
  */
 export function parseInfo(node) {
   const lang = node.lang ?? '';
@@ -25,8 +25,15 @@ export function parseInfo(node) {
   const errors = [];
   const values = {};
   if (words[0] !== 'live') errors.push(`'live' must directly follow the language in "${lang} ${node.meta}"`);
+  let isStatic = false;
   for (const word of words.slice(words[0] === 'live' ? 1 : 0)) {
     if (word === 'live') continue;
+    if (word === 'static') {
+      // The group declares that it is compared at rest only.
+      if (isStatic) errors.push('the word "static" is repeated');
+      isStatic = true;
+      continue;
+    }
     const match = /^([a-z]+)=(.*)$/.exec(word);
     if (!match) {
       errors.push(`"${word}" is not a key=value pair`);
@@ -51,10 +58,22 @@ export function parseInfo(node) {
   for (const key of ['check', 'differences']) {
     if (values[key] === undefined) continue;
     if (lang !== 'html') errors.push(`${key}= is allowed only on the html block, the first of the group`);
-    else if (!LIVE_NAME.test(values[key])) errors.push(`the ${key} value "${values[key]}" must match ${LIVE_NAME}`);
+    else if (key === 'differences' && !LIVE_NAME.test(values[key])) errors.push(`the ${key} value "${values[key]}" must match ${LIVE_NAME}`);
   }
+  // check=<a>[,<b>...]: one or more interaction checks, each named once.
+  const checks = values.check === undefined ? [] : values.check.split(',');
+  if (lang === 'html') {
+    for (const name of checks) if (!LIVE_NAME.test(name)) errors.push(`the check value "${name}" must match ${LIVE_NAME}`);
+    if (new Set(checks).size !== checks.length) errors.push(`check=${values.check} names a check more than once`);
+  }
+  if (isStatic && lang !== 'html') errors.push('static is allowed only on the html block, the first of the group');
+  else if (isStatic && checks.length > 0) errors.push('a group is either static or names checks, not both');
   const info = { lang, framework, example: values.example ?? null, errors };
-  if (values.check !== undefined) info.check = values.check;
+  if (values.check !== undefined) {
+    info.check = values.check;
+    info.checks = checks;
+  }
+  if (isStatic) info.static = true;
   if (values.differences !== undefined) info.differences = values.differences;
   return info;
 }
@@ -128,7 +147,11 @@ export function groupLive(nodes, file) {
     seen.set(partition.example, { complete: true });
     const head = partition.items[0].info;
     const group = { example: partition.example, line: lineOf(first), first, nodes: partition.items.map((item) => item.node), blocks: {} };
-    if (head.check !== undefined) group.check = head.check;
+    if (head.check !== undefined) {
+      group.check = head.check;
+      group.checks = head.checks;
+    }
+    if (head.static) group.static = true;
     if (head.differences !== undefined) group.differences = head.differences;
     for (const { node, info } of partition.items) {
       group.blocks[info.framework] = { lang: info.lang, form: formOf(info.framework, node.value), code: node.value, line: lineOf(node) };

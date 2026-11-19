@@ -21,7 +21,7 @@ const NAMES = {
     result: 'Result',
     log: 'Log',
     clearLog: 'Clear the log',
-    description: 'Button: Example',
+    description: 'Button: primary',
     back: 'Button page',
     hint: 'Press Escape, then Tab, to leave the code.',
   },
@@ -39,8 +39,8 @@ const NAMES = {
     result: 'النتيجة',
     log: 'السجل',
     clearLog: 'مسح السجل',
-    description: 'زر: مثال',
-    back: 'صفحة زر',
+    description: 'زر: primary',
+    back: 'صفحة المكوّن: زر',
     hint: 'اضغط Escape ثم Tab لمغادرة الشيفرة.',
   },
 } as const;
@@ -197,7 +197,8 @@ test('unknown query values show the default example with an information alert', 
 test('another example of the pilot pages opens from the query', async ({ page }) => {
   await openEditor(page, 'ar', 'example=tabs/basic&framework=vanilla');
   await originalRan(page, 'ar');
-  await expect(page.locator('hw-page-header p')).toHaveText('تبويبات: مثال');
+  // A group directly under the Example section is named by its own name.
+  await expect(page.locator('hw-page-header p')).toHaveText('تبويبات: basic');
   await expect(page.getByRole('tab', { name: 'index.html' })).toBeVisible();
 });
 
@@ -210,16 +211,26 @@ test('download saves the file shown', async ({ page }) => {
   expect((await download).suggestedFilename()).toBe('main.tsx');
 });
 
-test('on a phone the result comes directly after the toolbar and nothing scrolls sideways', async ({ page }) => {
+test('on a phone the visual order is the order of the document and nothing scrolls sideways', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openEditor(page, 'ar');
   await originalRan(page, 'ar');
-  const toolbar = await page.getByRole('group', { name: 'أدوات المحرر' }).boundingBox();
-  const result = await page.getByRole('group', { name: 'النتيجة' }).boundingBox();
-  const tabs = await page.getByRole('tablist', { name: 'الملفات' }).boundingBox();
-  expect(toolbar && result && tabs).toBeTruthy();
-  expect(result!.y).toBeGreaterThan(toolbar!.y);
-  expect(tabs!.y).toBeGreaterThan(result!.y);
+  const box = async (locator: ReturnType<typeof page.locator>) => (await locator.boundingBox())!.y;
+  const toolbar = await box(page.getByRole('group', { name: 'أدوات المحرر' }));
+  const status = await box(page.locator('guide-editor-status'));
+  const tabs = await box(page.getByRole('tablist', { name: 'الملفات' }));
+  const result = await box(page.getByRole('group', { name: 'النتيجة' }));
+  const log = await box(page.getByRole('log'));
+  // Toolbar with Run, then the status line that tells the outcome, the code, the result and the log.
+  expect([toolbar, status, tabs, result, log]).toEqual([toolbar, status, tabs, result, log].sort((a, b) => a - b));
+  expect(status).toBeLessThan(tabs);
+  expect(tabs).toBeLessThan(result);
+  // The order of the document is the same.
+  const order = await page.evaluate(() => {
+    const items = ['guide-editor-toolbar', 'guide-editor-status', '#editor-files', 'guide-editor-page [role="group"][aria-label="النتيجة"]', 'guide-editor-log'].map((s) => document.querySelector(s)!);
+    return items.every((item, i) => i === 0 || items[i - 1]!.compareDocumentPosition(item) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(order).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 

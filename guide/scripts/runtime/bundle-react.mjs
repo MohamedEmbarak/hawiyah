@@ -72,6 +72,8 @@ export async function bundleReact({ guideDir }) {
     logLevel: 'silent',
     define: { 'process.env.NODE_ENV': '"production"' },
     nodePaths: [join(guideDir, 'node_modules')],
+    absWorkingDir: guideDir,
+    metafile: true,
   });
   const files = [{ file: REACT_RUNTIME_FILE, text: result.outputFiles[0].text }];
   const names = {};
@@ -79,5 +81,5 @@ export async function bundleReact({ guideDir }) {
     names[file] = exportNames(guideDir, entry);
     files.push({ file, text: facadeSource(key, names[file]) });
   }
-  return { files, names };
+  return { files, names, metafile: result.metafile };
 }

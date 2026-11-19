@@ -6,6 +6,7 @@ import {
   TEXT,
   allowFrameErrors,
   appendTo,
+  codeOf,
   frameResources,
   logTexts,
   openEditor,
@@ -92,6 +93,15 @@ test('a runtime error is listed in the log and fails the run', async ({ page, gu
   await page.getByRole('button', { name: /^Run/ }).click();
   await expect(statusLine(page)).toHaveText(/^The run failed: .*editor runtime failure/, { timeout: 30_000 });
   await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining('Error: editor runtime failure'));
+  // One live region tells the outcome: the status line. The log is not live; the notice stays empty.
+  const announcing = await page.evaluate(
+    (text) =>
+      [...document.querySelectorAll('[role="status"], [role="alert"], [role="log"]:not([aria-live="off"]), [aria-live]:not([aria-live="off"])')].filter((element) =>
+        element.textContent?.includes(text),
+      ).length,
+    'editor runtime failure',
+  );
+  expect(announcing).toBe(1);
   allowFrameErrors(guard, /editor runtime failure/);
 });
 
@@ -104,6 +114,43 @@ test('a loop that does not end is stopped and the result is removed', async ({ p
   await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining(TEXT.en.loopStopped));
   await expect(resultFrame(page)).toHaveCount(0);
   allowFrameErrors(guard, /A loop ran for more than 2 seconds/);
+});
+
+// Console output has its own budget of 500 messages per run; ready and error are
+// always accepted, and the dropped count is one log entry per run, updated.
+const DROPPED = /^Warning\s*(\d+) console messages of this run were not shown after the limit of 500\.$/;
+
+test('console output past its budget neither delays the outcome nor floods the log', async ({ page }) => {
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(page, 'main.js', "\nfor (let i = 0; i < 600; i += 1) console.log('line ' + i);\n");
+  await page.getByRole('button', { name: /^Run/ }).click();
+  // Far below the 20 s time limit: ready is not counted against the console budget.
+  await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan, { timeout: 10_000 });
+  await expect.poll(async () => (await logTexts(page)).filter((text) => DROPPED.test(text)).map((text) => Number(DROPPED.exec(text)?.[1]))).toEqual([100]);
+});
+
+test('an error thrown after more console output than the budget still fails the run at once', async ({ page, guard }) => {
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(page, 'main.js', "\nfor (let i = 0; i < 600; i += 1) console.log('line ' + i);\nthrow new Error('the real failure of the code');\n");
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(/^The run failed: .*the real failure of the code/, { timeout: 10_000 });
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining('Error: the real failure of the code'));
+  allowFrameErrors(guard, /the real failure of the code/);
+});
+
+test('a flood of console output leaves one updated count in the log', async ({ page }) => {
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(page, 'main.js', "\nfor (let i = 0; i < 30000; i += 1) console.log('line ' + i);\n");
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan, { timeout: 20_000 });
+  await expect
+    .poll(async () => (await logTexts(page)).filter((text) => DROPPED.test(text)).map((text) => Number(DROPPED.exec(text)?.[1])), { timeout: 20_000 })
+    .toEqual([29500]);
+  // The reader's own output that fits the log stays in it.
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining('line 499'));
 });
 
 const LEAVE_BLOCKED = 'The code tried to open another address in the preview. The request was not sent, and the run was stopped.';
@@ -134,7 +181,8 @@ for (const [name, code] of Object.entries(leaving)) {
     await expect(statusLine(page)).toHaveText(`The run failed: ${LEAVE_BLOCKED}`, { timeout: 30_000 });
     await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining(LEAVE_BLOCKED));
     await expect(resultFrame(page)).toHaveCount(0);
-    await expect(page.locator('guide-preview-frame p.notice')).toHaveText(LEAVE_BLOCKED);
+    // The status line announces the failed run; the notice under the frame stays empty.
+    await expect(page.locator('guide-preview-frame p.notice')).toBeEmpty();
     expect(outside).toEqual([]);
     await context.close();
   });
@@ -149,6 +197,69 @@ test('a result that reloads itself is not read as leaving', async ({ page }) => 
   await page.waitForTimeout(1500);
   await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan);
   await expect(resultFrame(page)).toHaveCount(1);
+});
+
+// The frame policy cannot limit WebRTC in Chromium; the bootstrap removes its
+// constructors before the example code runs (README.md, Result frames).
+for (const query of ['framework=vanilla', 'framework=vanilla&runtime=bundle']) {
+  test(`example code sees no WebRTC constructor (${query})`, async ({ page }) => {
+    await openEditor(page, 'en', query);
+    await expect(statusLine(page)).toHaveText(/^The original example ran in \d+ ms\./, { timeout: 20_000 });
+    await appendTo(
+      page,
+      'main.js',
+      "\nconsole.info('webrtc ' + [typeof RTCPeerConnection, typeof webkitRTCPeerConnection, typeof RTCDataChannel, 'RTCPeerConnection' in window].join(' '));\n",
+    );
+    await page.getByRole('button', { name: /^Run/ }).click();
+    await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan, { timeout: 30_000 });
+    await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining('webrtc undefined undefined undefined false'));
+  });
+}
+
+test('a result that replaces its document with an empty one is reported and the run is stopped', async ({ page }) => {
+  const replaced = 'The code replaced the document of the preview, so the result is no longer shown. The run was stopped.';
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(page, 'main.js', "\nsetTimeout(() => { location.href = 'about:blank'; }, 300);\n");
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(`The run failed: ${replaced}`, { timeout: 30_000 });
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining(replaced));
+  await expect(resultFrame(page)).toHaveCount(0);
+});
+
+test('an Angular template error fails the run at once with the compiler message', async ({ page, guard }) => {
+  await openEditor(page, 'en', 'framework=angular');
+  await originalRan(page, 'en');
+  const code = await codeOf(page, 'example.component.ts');
+  await code.click();
+  await page.keyboard.press('Control+A');
+  await page.keyboard.insertText(
+    "import { Component } from '@angular/core';\n\n@Component({\n  selector: 'guide-example',\n  template: `<button>Continue</buton>`,\n})\nexport class Example {}\n",
+  );
+  await page.getByRole('button', { name: /^Run/ }).click();
+  // Well below the 20 s time limit of a run that never becomes ready.
+  await expect(statusLine(page)).toHaveText(/^The run failed: .*Unexpected closing tag "buton"/, { timeout: 15_000 });
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining('Unexpected closing tag "buton"'));
+  allowFrameErrors(guard, /Unexpected closing tag|JIT compilation/);
+});
+
+test('a script error and an unknown import of a Vue file are placed at their lines in the file', async ({ page }) => {
+  await openEditor(page, 'en', 'framework=vue');
+  await originalRan(page, 'en');
+  const code = await codeOf(page, 'Example.vue');
+  await code.click();
+  await page.keyboard.press('Control+A');
+  // Line 9 opens the script block; line 11 has the syntax error.
+  await page.keyboard.insertText('<template>\n  <p>One</p>\n  <p>Two</p>\n  <p>Three</p>\n  <p>Four</p>\n  <p>Five</p>\n</template>\n\n<script setup lang="ts">\nconst first = 1;\nconst = 3;\n</script>\n');
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(TEXT.en.failed, { timeout: 30_000 });
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringMatching(/Example\.vue:11:7: /));
+
+  await code.click();
+  await page.keyboard.press('Control+A');
+  await page.keyboard.insertText("<template>\n  <p>{{ pad }}</p>\n</template>\n\n<script setup lang=\"ts\">\nimport pad from 'left-pad';\n</script>\n");
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringMatching(/Example\.vue:6:18 The editor does not provide the module left-pad/));
 });
 
 for (const framework of ['react', 'angular'] as const) {

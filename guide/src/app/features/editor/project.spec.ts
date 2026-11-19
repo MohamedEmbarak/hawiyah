@@ -1,6 +1,18 @@
 import { init, parse } from 'es-module-lexer';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { classicModule, classicProject, moduleName, moduleOrder, position, projectHost, rewriteImports, withJitCompiler, type Lexer } from './project';
+import {
+  classicModule,
+  classicProject,
+  moduleName,
+  moduleOrder,
+  position,
+  projectHost,
+  rewriteImports,
+  scriptDiagnostic,
+  specifierPosition,
+  withJitCompiler,
+  type Lexer,
+} from './project';
 
 const lex = parse as unknown as Lexer;
 
@@ -78,5 +90,24 @@ describe('classic form', () => {
   it('imports the compiler first for an Angular JIT run', () => {
     expect(withJitCompiler('import x from "y";', 'https://example.org/c.mjs')).toBe('import "https://example.org/c.mjs";import x from "y";');
     expect(classicProject({ 'main.js': 'export const a = 1;' }, lex, { jitCompilerUrl: 'https://example.org/c.mjs' })).toMatch(/^import\("https:\/\/example\.org\/c\.mjs"\)\.then\(/);
+  });
+});
+
+describe('positions of errors in the file the reader wrote', () => {
+  it('places a script syntax error of a Vue file at its line in the file, not in the script block', () => {
+    // <script setup> on line 9; Babel reports (3:6) relative to the block content.
+    const error = Object.assign(new SyntaxError('[vue/compiler-sfc] Unexpected token (3:6)'), { loc: { line: 3, column: 6 } });
+    expect(scriptDiagnostic('Example.vue', { loc: { start: { line: 9, column: 15 } } }, error)).toEqual({
+      file: 'Example.vue',
+      line: 11,
+      column: 7,
+      message: '[vue/compiler-sfc] Unexpected token',
+    });
+  });
+
+  it('finds the specifier of an import in the source, not in the compiled code', () => {
+    const source = '<template>\n  <p>x</p>\n</template>\n\n<script setup>\nimport lodash from \'lodash\';\n</script>\n';
+    expect(specifierPosition(source, 'lodash')).toEqual({ line: 6, column: 21 });
+    expect(specifierPosition(source, 'left-pad')).toBeNull();
   });
 });

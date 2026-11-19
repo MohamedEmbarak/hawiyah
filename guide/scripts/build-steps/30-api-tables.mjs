@@ -6,7 +6,7 @@
 // selectors (contentPipeline.apiTables). Fails on any HWC-APIX finding after
 // reporting all of them.
 import { join } from 'node:path';
-import { formatFinding, runApiTables } from '../api-tables/cli.mjs';
+import { COMPARED, formatFinding, runApiTables } from '../api-tables/cli.mjs';
 
 export default {
   id: '30-api-tables',
@@ -21,6 +21,6 @@ export default {
     });
     for (const item of result.findings) ctx.log(formatFinding(item));
     if (result.findings.length) throw new Error(`${result.findings.length} API table finding(s) (HWC-APIX)`);
-    ctx.log(`${result.tables} API tables of ${result.pages} page models match the declarations`);
+    ctx.log(`${result.tables} API tables of ${result.pages} page models: ${COMPARED}`);
   },
 };

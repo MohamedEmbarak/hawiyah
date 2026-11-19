@@ -34,6 +34,9 @@ export const MESSAGES = Object.freeze({
   r3Integrity: ['HWREG-R3', 'lock entry of @hawiyah/<name> has integrity "<value>"; expected a sha512- integrity'],
   r3Field: ['HWREG-R3', 'lock entry of @hawiyah/<name> has the field "<field>"'],
   r3Unreadable: ['HWREG-R3', '<file> cannot be read (<error>)'],
+  r3EntryResolved: ['HWREG-R3', 'lock entry "<key>" resolved from "<resolved>"; expected <expected>'],
+  r3EntryIntegrity: ['HWREG-R3', 'lock entry "<key>" has integrity "<value>"; expected a sha512- integrity'],
+  r3EntryLink: ['HWREG-R3', 'lock entry "<key>" is a link'],
 
   // HWREG-R4: registry metadata and tarballs.
   r4Integrity: ['HWREG-R4', '@hawiyah/<name>@<pin>: lock integrity <a> differs from registry <b>'],
@@ -54,6 +57,7 @@ export const MESSAGES = Object.freeze({
   r5NotInstalled: ['HWREG-R5', 'node_modules/@hawiyah/<name> is not installed'],
   r5Realpath: ['HWREG-R5', 'node_modules/@hawiyah/<name> resolves to <target>, not to itself'],
   r5NestedModules: ['HWREG-R5', 'node_modules/@hawiyah/<name>/<file> is a nested node_modules directory'],
+  r5Foreign: ['HWREG-R5', '<path> is installed as <value>; a @hawiyah package may be installed only at node_modules/@hawiyah/<seven>'],
   r5HiddenLock: ['HWREG-R5', 'node_modules/.package-lock.json records integrity <a> for @hawiyah/<name>; package-lock.json has <b>'],
 
   // HWREG-R6: path imports and aliases.
@@ -63,6 +67,19 @@ export const MESSAGES = Object.freeze({
   r6TsconfigOption: ['HWREG-R6', '<file> sets compilerOptions.<key>; path mapping is not allowed'],
   r6AngularParent: ['HWREG-R6', 'angular.json value "<value>" leaves guide/'],
   r6AngularAsset: ['HWREG-R6', 'angular.json asset input "<value>" names @hawiyah outside node_modules/@hawiyah/'],
+  r6RemoteHawiyah: ['HWREG-R6', '<file>:<line> names "<value>", a @hawiyah address on another host'],
+  r6RemoteLoad: ['HWREG-R6', '<file>:<line> loads <kind> from "<value>"; scripts and styles come only from the origin of the guide'],
+  r6StyleLanguage: ['HWREG-R6', '<file> is a style file other than .css; the styles of the guide are plain CSS'],
+  r6AngularKey: ['HWREG-R6', 'angular.json has "<key>"; file replacements are not allowed'],
+  r6AngularStyle: ['HWREG-R6', 'angular.json <key> entry "<value>" lies outside src/'],
+  r6PackageImports: ['HWREG-R6', 'package.json has "imports"; subpath imports are not allowed'],
+  r6NodeModules: ['HWREG-R6', '<dir> is a node_modules directory below guide/; only guide/node_modules is allowed'],
+  r6TsconfigUnreadable: ['HWREG-R6', '<file> cannot be read (<error>)'],
+  r6Metafile: ['HWREG-R6', 'build metafile <file> cannot be read (<error>)'],
+  r6ResolvedOutside: ['HWREG-R6', '<file>: the build read <input>, outside guide/'],
+  r6ResolvedModules: ['HWREG-R6', '<file>: the build read <input> from a node_modules directory other than guide/node_modules'],
+  r6ResolvedHawiyah: ['HWREG-R6', '<file>: the build read <input>, a @hawiyah file outside node_modules/@hawiyah/<seven>/'],
+  r6ResolvedImport: ['HWREG-R6', '<file>: <input> imports "<specifier>", resolved to <target> instead of the installed package'],
 
   // HWREG-R7: npm configuration.
   r7Registry: ['HWREG-R7', 'the npm registry is <value>; expected https://registry.npmjs.org/'],
@@ -77,6 +94,11 @@ export const MESSAGES = Object.freeze({
   r8Derived: ['HWREG-R8', '<path> was derived from <pkg>@<v> with integrity <a>; the lock has <b>'],
   r8Missing: ['HWREG-R8', 'runtime/manifest.json is missing'],
   r8Invalid: ['HWREG-R8', 'runtime/manifest.json entry <path> is invalid (<error>)'],
+  r8Derive: ['HWREG-R8', 'the runtime could not be derived again from the verified packages (<error>)'],
+  r8DerivedDiffers: ['HWREG-R8', 'runtime/<path> differs from the file derived again from the verified packages'],
+  r8NotDerived: ['HWREG-R8', 'runtime/<path> is not a file derived from the verified packages'],
+  r8DerivedMissing: ['HWREG-R8', 'runtime/<path> is derived from the verified packages but missing from the output'],
+  r8ImportMap: ['HWREG-R8', 'runtime/import-map.json maps "<specifier>" to "<value>": <reason>'],
 
   // HWREG-R9: workspace globs.
   r9Glob: ['HWREG-R9', 'pnpm-workspace.yaml glob "<glob>" matches guide/; the guide must stay outside the workspace'],

@@ -182,7 +182,7 @@ Table: Props, events and slots of Button
 
 | Name | Kind | Type | Required | Default |
 | --- | --- | --- | --- | --- |
-| `variant` | prop | `ButtonVariant` | `false` | `'primary'` |
+| `variant` | prop | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
 | `size` | prop | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
 | `loading` | prop | `boolean` | `false` | `false` |
 | `disabled` | prop | `boolean` | `false` | `false` |
@@ -233,7 +233,7 @@ Button has no built-in text: every label is written by the application in the la
 
 ## Platforms Code reference
 
-Hawiyah is built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification. This section lists the evidence recorded for Button and the items that remain open.
+Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification. This section lists the evidence recorded for Button and the items that remain open.
 
 ### Evidence
 

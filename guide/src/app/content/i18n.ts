@@ -30,7 +30,7 @@ export const contentTexts: Texts<ContentTexts> = {
     copyCode: 'نسخ الشيفرة',
     copied: 'تم النسخ',
     copyFailed: 'تعذّر النسخ. حدّد الشيفرة وانسخها يدويًا.',
-    codeListing: 'نص برمجي',
+    codeListing: 'الشيفرة',
     emptyTable: 'لا توجد صفوف',
     opensInNewTab: '(يُفتح في علامة تبويب جديدة)',
     alerts: { note: 'ملاحظة', tip: 'تلميح', important: 'مهم', warning: 'تحذير', caution: 'تنبيه' },

@@ -38,7 +38,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     renderedWith: (pkg, pin, preview) => ['Rendered with ', `${pkg} ${pin}`, preview ? ' from a local tarball' : ' from npm'],
     loading: (framework) => `Loading the ${framework} result`,
     failed: (framework, firstLine) => `The ${framework} result could not be loaded: ${firstLine}`,
-    bundledRuntime: ' Bundled runtime.',
+    bundledRuntime: ' (bundled runtime)',
   },
   ar: {
     result: 'النتيجة',
@@ -49,7 +49,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     renderedWith: (pkg, pin, preview) => ['معروض باستخدام ', `${pkg} ${pin}`, preview ? ' من أرشيف حزمة محلي' : ' من npm'],
     loading: (framework) => `جارٍ تحميل نتيجة ${framework}`,
     failed: (framework, firstLine) => `تعذّر تحميل نتيجة ${framework}: ${firstLine}`,
-    bundledRuntime: ' بالحزمة المجمّعة.',
+    bundledRuntime: ' (بالحزمة المجمّعة)',
   },
 };
 

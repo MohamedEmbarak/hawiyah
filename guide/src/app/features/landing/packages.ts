@@ -1,13 +1,12 @@
 import { Component, computed, inject } from '@angular/core';
 import { HwDescriptionListComponent, HwLinkDirective } from '@hawiyah/angular';
 import { contentTexts } from '../../content/i18n';
-import { external } from '../../core/links';
+import { PROJECT_LINKS } from '../../core/links';
 import { LocaleService } from '../../core/locale';
 import { pick } from '../../i18n/text';
 import { landingTexts, type PackageKey } from './i18n';
 import { INSTALL } from './state';
 
-const NPM_SEARCH = external('https://www.npmjs.com/search?q=%40hawiyah');
 const LRI = '⁦';
 const PDI = '⁩';
 
@@ -24,7 +23,8 @@ export class LandingPackages {
   protected readonly c = computed(() => pick(contentTexts, this.lang()));
   protected readonly pin = INSTALL.pin;
   protected readonly count = INSTALL.componentCount;
-  protected readonly npm = NPM_SEARCH;
+  /** The one npm address of the guide (the footer link has the same). */
+  protected readonly npm = PROJECT_LINKS.packages;
   protected readonly items = computed(() =>
     INSTALL.packages.map((entry) => ({
       term: `${LRI}${entry.name}${PDI}`,

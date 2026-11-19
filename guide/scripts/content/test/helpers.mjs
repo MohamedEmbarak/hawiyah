@@ -31,6 +31,7 @@ export function runPair(replace = {}) {
     arPath: join(componentsDir, 'fixture-a.ar.md'),
     enLabel: replace.enLabel,
     arLabel: replace.arLabel,
+    exceptions: replace.exceptions,
     repoDir,
     componentsDir,
     built: new Set(['fixture-a']),

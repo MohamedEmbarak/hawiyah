@@ -1,4 +1,34 @@
-/* The renderer adds no box of its own: its blocks are children of the prose flow. */
+/* The renderer adds no box of its own: its blocks are boxes of the prose flow. */
 :host {
   display: contents;
+}
+
+/*
+ * The blocks are boxes of the prose container but not its children in the
+ * document, so the package's flow rules (.hw-prose > * + *) do not reach them.
+ * The same spacing, from the same tokens; placement only.
+ */
+:host > * + * {
+  margin-block-start: var(--hw-space-4);
+}
+
+:host > * + h3 {
+  margin-block-start: var(--hw-space-8);
+}
+
+:host > * + h4 {
+  margin-block-start: var(--hw-space-6);
+}
+
+:host > :is(h3, h4) + * {
+  margin-block-start: var(--hw-space-3);
+}
+
+:host > * + guide-example-block {
+  margin-block-start: var(--hw-space-6);
+}
+
+/* The first block of a section follows the section heading. */
+:host(.section) > :first-child {
+  margin-block-start: var(--hw-space-3);
 }

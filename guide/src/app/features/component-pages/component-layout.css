@@ -31,3 +31,15 @@
     display: block;
   }
 }
+
+/* Without script the drawer cannot open: the side navigation is in the flow at
+   every width and the button that opens the drawer is not shown. */
+@media (scripting: none) {
+  .drawer-bar {
+    display: none;
+  }
+
+  .side {
+    display: block;
+  }
+}

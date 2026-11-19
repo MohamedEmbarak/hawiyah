@@ -59,7 +59,7 @@ describe('component page texts', () => {
       expect(ARABIC_SCRIPT.test(componentPageTexts.ar[key]), key).toBe(true);
       expect(componentPageTexts.en[key].trim()).not.toBe('');
     }
-    expect(componentPageTexts.ar.referenceTitle('زر')).toBe('مرجع زر · هوية');
+    expect(componentPageTexts.ar.referenceTitle('زر')).toBe('مرجع المكوّن: زر · هوية');
     expect(componentPageTexts.en.briefTitle('Button')).toBe('Button · Hawiyah');
   });
 });

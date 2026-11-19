@@ -28,6 +28,8 @@ const CASES = [
   ['HWC-PAR4', 'hwc-par4.ar.md', 23, /^live block "primary" \(react\) differs from the English block at token 5: ""secondary"" in Arabic, ""primary"" in English/],
   ['HWC-PAR5', 'hwc-par5.ar.md', 102, /^table 5 has 2 columns and 1 rows in section accessibility in Arabic; English has 2 columns and 2 rows in section accessibility$/],
   ['HWC-PAR6', 'hwc-par6.ar.md', 107, /^the alerts are tip@accessibility in Arabic and note@accessibility in English/],
+  ['HWC-PAR7', 'hwc-par7.ar.md', 17, /^section "example" has code as block 1 in Arabic and paragraph in English; both pages have the same paragraphs, lists, items and other blocks in the same order$/],
+  ['HWC-PAR8', 'hwc-par8.ar.md', 17, /^the paragraph has no Arabic script: "The example shows one primary action\."; translate it, or list it in scripts\/content\/arabic-exceptions\.json with a reason$/],
   ['HWC-STALE', 'hwc-stale.ar.md', 96, /^section "accessibility" was translated from an earlier English text \(000000000000, now 29c24403f585\); update the translation, then run npm run content:hash -- fixture-a$/],
 ];
 

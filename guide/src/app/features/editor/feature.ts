@@ -35,6 +35,6 @@ export const feature: GuideFeature = {
     path: 'editor/',
     label: { en: 'Editor', ar: 'المحرر' },
     header: true,
-    footer: false,
+    footer: true,
   },
 };

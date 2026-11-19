@@ -20,6 +20,18 @@ for (const path of unknown) {
   });
 }
 
+test('at 390 px each language of the 404 heading is on its own line', async ({ page, guard }) => {
+  guard.allowDocument404(/\/en\/no-such-page\/$/);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('en/no-such-page/');
+  await hydrated(page);
+  const ar = await page.locator('h1 [lang="ar"]').boundingBox();
+  const en = await page.locator('h1 [lang="en"]').boundingBox();
+  expect(en!.y).toBeGreaterThanOrEqual(ar!.y + ar!.height - 1);
+  expect(await page.locator('h1 [lang="en"]').evaluate((span) => span.getClientRects().length)).toBe(1);
+  await expect(page.locator('h1 > span[aria-hidden="true"]')).toBeHidden();
+});
+
 test('the English link of the 404 page navigates within the application', async ({ page, guard }) => {
   guard.allowDocument404(/\/en\/no-such-page\/$/);
   await page.goto('en/no-such-page/');

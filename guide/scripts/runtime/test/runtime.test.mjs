@@ -231,3 +231,29 @@ describe('fallback bundles', () => {
     expect(source).toContain('modules["b/c"] = m1;');
   });
 });
+
+describe('determinism (step 90 derives the runtime again and compares bytes)', () => {
+  it('a second build from another working directory writes the same bytes', async () => {
+    const { checkMetafile } = await import('../../registry-check/resolved.mjs');
+    const secondDir = join(guideDir, '.cache', 'runtime-test', 'second', 'runtime');
+    const cwd = process.cwd();
+    let second;
+    try {
+      process.chdir(dirname(secondDir).replace(/second$/, ''));
+      second = await buildRuntime({ guideDir, runtimeDir: secondDir });
+    } finally {
+      process.chdir(cwd);
+    }
+    const files = walk(runtimeDir).sort();
+    expect(walk(secondDir).sort()).toEqual(files);
+    const differing = files.filter((file) => sha(readFileSync(join(runtimeDir, file))) !== sha(readFileSync(join(secondDir, file))));
+    expect(differing).toEqual([]);
+    // What the esbuild runs read lies in the verified packages (HWREG-R6).
+    const findings = [...result.metafiles, ...second.metafiles].flatMap((item) => checkMetafile(item.metafile, { ...item, guideDir }));
+    expect(findings).toEqual([]);
+    expect(result.metafiles.map((item) => item.label)).toEqual([
+      'runtime bundled/react', 'runtime bundled/rxjs',
+      ...Object.keys(result.frameworks).map((framework) => `runtime bundles/${framework}.js`),
+    ]);
+  }, 300000);
+});

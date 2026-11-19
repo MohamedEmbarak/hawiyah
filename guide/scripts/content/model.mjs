@@ -51,6 +51,7 @@ export function codeBlock(node) {
  */
 export function buildModel(outline, ctx) {
   const findings = [];
+  const crossLinks = [];
   const ids = headingIds(outline, ctx.englishIds ?? null, ctx.englishLevels ?? null);
   const idOf = new Map(outline.headings.map((heading, index) => [heading.node, ids[index]]));
   const headingIdSet = new Set(ids);
@@ -74,7 +75,10 @@ export function buildModel(outline, ctx) {
           if ('error' in resolved) {
             findings.push(finding('HWC-LINK', outline.file, lineOf(node), resolved.error));
             out.push(...children);
-          } else out.push({ type: 'link', href: resolved.href, internal: resolved.internal, external: resolved.external, children });
+          } else {
+            if (resolved.crossPage) crossLinks.push({ file: outline.file, line: lineOf(node), url: node.url, ...resolved.crossPage });
+            out.push({ type: 'link', href: resolved.href, internal: resolved.internal, external: resolved.external, children });
+          }
           break;
         }
         default: break;
@@ -170,7 +174,7 @@ export function buildModel(outline, ctx) {
     sourcePath: ctx.sourcePath,
     githubUrl: `${GITHUB_BLOB}${ctx.sourcePath}`,
   };
-  return { page, findings, ids };
+  return { page, findings, ids, crossLinks };
 }
 
 /** Plain text of a list of model inlines (for the manifest). */

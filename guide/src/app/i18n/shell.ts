@@ -1,3 +1,4 @@
+import compliance from './compliance.json';
 import { Texts } from './text';
 
 export interface ShellTexts {
@@ -37,8 +38,8 @@ export const shellTexts: Texts<ShellTexts> = {
     navigationLabel: 'Main sections',
     darkMode: 'Dark mode',
     footerBrandLabel: 'Hawiyah',
-    footerDescription:
-      'Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification.',
+    // The compliance sentence: one string in one source (compliance.json), also used by the landing.
+    footerDescription: compliance.en,
     footerVersion: (version) => `Version ${version}. Licensed under the Apache License 2.0.`,
     footerGuide: 'Guide',
     footerProject: 'Project',
@@ -66,8 +67,7 @@ export const shellTexts: Texts<ShellTexts> = {
     navigationLabel: 'الأقسام الرئيسية',
     darkMode: 'الوضع الداكن',
     footerBrandLabel: 'هوية',
-    footerDescription:
-      'هوية مكتبة مكوّنات واجهات مبنية للامتثال لكود المنصات الصادر عن هيئة الحكومة الرقمية، وليست منتجًا رسميًا للهيئة، ولا تحمل أي شهادة اعتماد.',
+    footerDescription: compliance.ar,
     footerVersion: (version) => `الإصدار ${version}. مرخّصة بموجب رخصة Apache 2.0.`,
     footerGuide: 'الدليل',
     footerProject: 'المشروع',

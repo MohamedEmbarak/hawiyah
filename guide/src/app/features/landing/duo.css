@@ -26,6 +26,13 @@
   margin-block: 0;
 }
 
+/* Without script the controls cannot change the containers: they are not shown. */
+@media (scripting: none) {
+  .controls {
+    display: none;
+  }
+}
+
 @media (min-width: 40em) {
   .controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));

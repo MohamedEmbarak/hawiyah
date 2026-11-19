@@ -8,7 +8,7 @@ import { join, relative } from 'node:path';
 import { LANGS, finding, formatFinding } from './config.mjs';
 import { writeOutputs } from './manifest.mjs';
 import { buildModel, inlineText } from './model.mjs';
-import { checkParity } from './parity.mjs';
+import { checkParity, readArabicExceptions } from './parity.mjs';
 import { parseMarkdown } from './parse.mjs';
 import { analysePage } from './structure.mjs';
 
@@ -78,7 +78,7 @@ export function processPair(pair) {
     englishIds: en.ids, englishLevels: outlines.en.headings.map((heading) => heading.level),
   });
   findings.push(...en.findings, ...ar.findings);
-  findings.push(...checkParity(outlines.en, outlines.ar, { enText, arText, id }));
+  findings.push(...checkParity(outlines.en, outlines.ar, { enText, arText, id, exceptions: pair.exceptions ?? readArabicExceptions() }));
 
   const idOf = (outline, ids, node) => ids[outline.headings.findIndex((heading) => heading.node === node)];
   const groupEntries = {};
@@ -87,6 +87,7 @@ export function processPair(pair) {
     groupEntries[lang] = outline.groups.map((group) => {
       const item = { id, lang, example: group.example };
       if (group.check !== undefined) item.check = group.check;
+      if (group.static) item.static = true;
       if (group.differences !== undefined) item.differences = group.differences;
       item.blocks = Object.fromEntries(Object.entries(group.blocks).map(([framework, block]) => [framework, { lang: block.lang, form: block.form, code: block.code, line: block.line }]));
       return item;
@@ -105,11 +106,12 @@ export function processPair(pair) {
         frameworks: 4,
       };
       if (group.check !== undefined) item.check = group.check;
+      if (group.static) item.static = true;
       if (group.differences !== undefined) item.differences = group.differences;
       return item;
     }),
   };
-  return { findings, models: { en: en.page, ar: ar.page }, groupEntries, manifestPage };
+  return { findings, models: { en: en.page, ar: ar.page }, groupEntries, manifestPage, crossLinks: [...en.crossLinks, ...ar.crossLinks] };
 }
 
 /**
@@ -128,6 +130,7 @@ export function runContent(options) {
   const pages = [];
   const manifestPages = [];
   const liveGroups = [];
+  const crossLinks = [];
   for (const id of ids) {
     const enPath = join(componentsDir, `${id}.md`);
     const arPath = join(componentsDir, `${id}.ar.md`);
@@ -136,11 +139,19 @@ export function runContent(options) {
       enPath, arPath, repoDir, componentsDir, built,
     });
     findings.push(...result.findings);
+    crossLinks.push(...result.crossLinks);
     for (const lang of LANGS) {
       pages.push({ id, lang, page: result.models[lang] });
       liveGroups.push(...result.groupEntries[lang]);
     }
     manifestPages.push(result.manifestPage);
+  }
+  // Fragments of links to other component pages name a heading of that page.
+  const headingsOf = new Map(manifestPages.map((page) => [page.id, new Set(Object.values(page.headings).flat().map((heading) => heading.id))]));
+  for (const link of crossLinks) {
+    if (!headingsOf.get(link.id)?.has(link.fragment)) {
+      findings.push(finding('HWC-LINK', link.file, link.line, `the link "${link.url}" names no heading of the page ${link.id}`));
+    }
   }
   if (findings.length > 0 || options.write === false) return { findings, pages: pages.length, groups: liveGroups.length, manifest: null };
   const manifest = writeOutputs({ guideDir, outDir, liveGroupsFile, pages, manifestPages, liveGroups });

@@ -1,20 +1,21 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, linkedSignal } from '@angular/core';
 import { CodeBlockComponent } from '../../content/code-block';
 import type { CodeRun } from '../../content/model';
 
 /**
- * An install command in the packaged code block. When the command changes after the
- * reader chose another framework or package manager, or the lead rotation moved on,
- * the new listing fades in (animate.enter) over the old one, which fades out
- * (animate.leave) without taking pointer events; both sit in one grid cell, so
- * nothing moves. Until the first change, and under reduced motion, no animation
- * exists. With reserve, a hidden copy of the longest command shares the cell, so a
- * command that needs a scroll bar and one that does not keep the same height.
+ * An install command in the packaged code block. One listing element stays in place
+ * and only its text changes, so a screen reader keeps its reading position. When the
+ * command changes after the reader chose another framework or package manager, or
+ * the lead rotation moved on, the listing fades in again (two keyframes that
+ * alternate with each change, so every change restarts the fade). Until the first
+ * change, and under reduced motion, no animation exists. With reserve, a hidden copy
+ * of the longest command shares the cell, so a command that needs a scroll bar and
+ * one that does not keep the same height.
  */
 @Component({
   selector: 'guide-landing-command',
   imports: [CodeBlockComponent],
-  template: `<div class="swap" [class.live]="live()">@if (reserved(); as r) {<guide-code-block class="reserve" aria-hidden="true" inert [title]="title()" [text]="r.text" [lines]="r.lines" />}@for (item of items(); track item.text) {<guide-code-block class="cell" animate.enter="command-enter" animate.leave="command-leave" [title]="title()" [text]="item.text" [lines]="item.lines" />}</div>`,
+  template: `<div class="swap" [class.live]="live()">@if (reserved(); as r) {<guide-code-block class="reserve" aria-hidden="true" inert [title]="title()" [text]="r.text" [lines]="r.lines" />}<guide-code-block class="cell" [attr.data-step]="step() % 2 === 0 ? 'even' : 'odd'" [title]="title()" [text]="item().text" [lines]="item().lines" /></div>`,
   styleUrl: './command.css',
 })
 export class LandingCommand {
@@ -27,7 +28,9 @@ export class LandingCommand {
   /** The longest text the listing may show; its height is reserved. */
   readonly reserve = input<string | null>(null);
 
-  protected readonly items = computed(() => [listing(this.text())]);
+  protected readonly item = computed(() => listing(this.text()));
+  /** Counts the changes of the command; its parity selects the keyframes of the fade. */
+  protected readonly step = linkedSignal<string, number>({ source: this.text, computation: (_text, previous) => (previous ? previous.value + 1 : 0) });
   protected readonly reserved = computed(() => {
     const text = this.reserve();
     return text ? listing(text) : null;

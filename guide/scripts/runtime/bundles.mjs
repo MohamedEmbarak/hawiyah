@@ -43,9 +43,9 @@ export function bundleEntrySource(specifiers) {
 /**
  * Builds runtime/bundles/<framework>.js for every framework.
  * importMap: { '<specifier>': '<path relative to runtime/>' }.
- * Returns [{ framework, file, text, inputs: [paths relative to runtime/] }].
+ * Returns [{ framework, file, text, inputs: [paths relative to runtime/], metafile }].
  */
-export async function buildBundles({ runtimeDir, frameworks, importMap }) {
+export async function buildBundles({ runtimeDir, frameworks, importMap, absWorkingDir = process.cwd() }) {
   const out = [];
   for (const [framework, specifiers] of Object.entries(frameworks)) {
     const plugin = {
@@ -71,6 +71,7 @@ export async function buildBundles({ runtimeDir, frameworks, importMap }) {
       legalComments: 'eof',
       logLevel: 'silent',
       metafile: true,
+      absWorkingDir,
       plugins: [plugin],
     });
     const inputs = Object.keys(result.metafile.inputs)
@@ -82,7 +83,7 @@ export async function buildBundles({ runtimeDir, frameworks, importMap }) {
         return at >= 0 ? path.slice(at + marker.length) : path;
       })
       .sort();
-    out.push({ framework, file: `bundles/${framework}.js`, text: result.outputFiles[0].text, inputs });
+    out.push({ framework, file: `bundles/${framework}.js`, text: result.outputFiles[0].text, inputs, metafile: result.metafile });
   }
   return out;
 }

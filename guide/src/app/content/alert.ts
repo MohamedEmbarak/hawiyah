@@ -22,6 +22,7 @@ export const ALERT_TONES: Readonly<Record<AlertKind, AlertTone>> = {
  */
 @Component({
   selector: 'guide-alert',
+  styleUrl: './alert.css',
   imports: [HwAlertComponent],
   // hw-alert 0.3.0 types role as 'alert' | 'status' | 'region' | 'group' although the
   // host binding writes any value; 'note' is the role the content model specifies.

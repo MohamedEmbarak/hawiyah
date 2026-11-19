@@ -1,0 +1,11 @@
+[class*="w-button"] {
+  color: var(--hw-color-text);
+}
+
+[class$="-card"] > p {
+  color: var(--hw-color-text);
+}
+
+[class^="guide"] {
+  color: var(--hw-color-text);
+}

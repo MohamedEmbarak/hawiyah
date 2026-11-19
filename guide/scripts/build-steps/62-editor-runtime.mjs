@@ -5,6 +5,8 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildCompilers } from '../editor/build-compilers.mjs';
+import { format } from '../registry-check/messages.mjs';
+import { checkMetafile } from '../registry-check/resolved.mjs';
 
 export default {
   id: '62-editor-runtime',
@@ -15,6 +17,8 @@ export default {
     const runtimeDir = join(ctx.guideDir, ctx.browserDir, 'runtime');
     if (!existsSync(join(runtimeDir, 'manifest.json'))) throw new Error(`${ctx.browserDir}/runtime/manifest.json does not exist; build step 60-runtime writes it`);
     const result = await buildCompilers({ guideDir: ctx.guideDir, runtimeDir });
+    const findings = result.metafiles.flatMap((item) => checkMetafile(item.metafile, { ...item, guideDir: ctx.guideDir }));
+    if (findings.length > 0) throw new Error(findings.map(([key, params]) => format(key, params).message).join('\n'));
     const files = result.entries.filter((entry) => !entry.path.startsWith('compilers/licenses/')).length;
     ctx.log(`editor compilers: ${files} files and ${result.entries.length - files} licence files, ${(result.bytes / 1024 / 1024).toFixed(1)} MB in ${ctx.browserDir}/runtime/compilers/`);
   },

@@ -4,6 +4,7 @@
   min-inline-size: 0;
 }
 
+
 .steps {
   margin: 0;
   padding-inline-start: var(--hw-space-6);
@@ -52,10 +53,6 @@
   margin-block: var(--hw-space-3) 0;
 }
 
-.result-note code {
-  white-space: nowrap;
-}
-
 .next {
   display: flex;
   flex-wrap: wrap;
@@ -100,5 +97,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--hw-space-4) var(--hw-space-10);
+  }
+}
+
+/* Without script the choosers cannot change the steps: they are not shown (last,
+   so that it wins over the layout of the choosers above). */
+@media (scripting: none) {
+  .choosers {
+    display: none;
   }
 }

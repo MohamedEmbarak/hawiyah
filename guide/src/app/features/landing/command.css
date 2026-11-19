@@ -3,7 +3,7 @@
   min-inline-size: 0;
 }
 
-/* The incoming and the outgoing listing share one cell, so the height never changes. */
+/* The listing and the reserved height share one cell, so the height never changes. */
 .swap {
   display: grid;
   min-inline-size: 0;
@@ -21,28 +21,26 @@
   pointer-events: none;
 }
 
-.command-leave {
-  pointer-events: none;
-}
-
+/* A change of the command fades the listing in again; the two names alternate so
+   that each change restarts the animation. */
 @media (prefers-reduced-motion: no-preference) {
-  .live .command-enter {
-    animation: command-fade-in var(--hw-duration-normal) var(--hw-ease-standard);
+  .live .cell[data-step='odd'] {
+    animation: command-fade-in-odd var(--hw-duration-normal) var(--hw-ease-standard);
   }
 
-  .live .command-leave {
-    animation: command-fade-out var(--hw-duration-normal) var(--hw-ease-standard) forwards;
+  .live .cell[data-step='even'] {
+    animation: command-fade-in-even var(--hw-duration-normal) var(--hw-ease-standard);
   }
 }
 
-@keyframes command-fade-in {
+@keyframes command-fade-in-odd {
   from {
     opacity: 0;
   }
 }
 
-@keyframes command-fade-out {
-  to {
+@keyframes command-fade-in-even {
+  from {
     opacity: 0;
   }
 }

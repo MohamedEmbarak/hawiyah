@@ -1,0 +1,17 @@
+@media not (prefers-reduced-motion: no-preference) {
+  .guide-case {
+    transition: opacity var(--hw-duration-fast) var(--hw-ease-standard);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference), all {
+  .guide-other {
+    transition: opacity var(--hw-duration-fast) var(--hw-ease-standard);
+  }
+}
+
+@media ((prefers-reduced-motion: no-preference) or (min-width: 1px)) {
+  .guide-third {
+    transition: opacity var(--hw-duration-fast) var(--hw-ease-standard);
+  }
+}

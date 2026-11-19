@@ -78,12 +78,22 @@ describe('acceptMessage', () => {
 });
 
 describe('message budget', () => {
-  it('drops and counts messages past the limit of a run', () => {
+  it('drops and counts console messages past their own limit of a run', () => {
     const budget = new MessageBudget();
-    for (let i = 0; i < MAX_MESSAGES; i += 1) expect(budget.take()).toBe(true);
-    expect(budget.take()).toBe(false);
-    expect(budget.take()).toBe(false);
+    for (let i = 0; i < MAX_MESSAGES; i += 1) expect(budget.take('console')).toBe(true);
+    expect(budget.take('console')).toBe(false);
+    expect(budget.take('console')).toBe(false);
     expect(budget.dropped).toBe(2);
+  });
+
+  it('always accepts ready, error, navigation and submit, also after the console budget is spent', () => {
+    const budget = new MessageBudget();
+    for (let i = 0; i < MAX_MESSAGES + 10; i += 1) budget.take('console');
+    for (const type of ['ready', 'error', 'navigation', 'submit'] as const) expect(budget.take(type)).toBe(true);
+    // Height reports have a budget of their own and are not counted as dropped output.
+    for (let i = 0; i < MAX_MESSAGES; i += 1) expect(budget.take('height')).toBe(true);
+    expect(budget.take('height')).toBe(false);
+    expect(budget.dropped).toBe(10);
   });
 });
 

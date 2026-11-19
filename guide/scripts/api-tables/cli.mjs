@@ -21,6 +21,10 @@ import { createDeclarationProgram, resolveExport } from './program.mjs';
 import { contractFor, readContract } from './stylesheet-contract.mjs';
 import { targetsFor } from './targets.mjs';
 
+/** What step 30 compares, stated in its success line. */
+export const COMPARED = 'member names, kinds (Vue and Angular tables) and required flags match the declarations '
+  + '(required flags not compared for stylesheet-contract tables); Type and Default columns are not compared';
+
 export { formatFinding };
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -157,7 +161,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       console.log(`api-tables: ${result.findings.length} ${CODE} finding(s) in ${result.pages} page model(s)`);
       process.exit(1);
     }
-    console.log(`api-tables: ${result.tables} table(s) of ${result.pages} page model(s) match the declarations`);
+    console.log(`api-tables: ${result.tables} table(s) of ${result.pages} page model(s): ${COMPARED}`);
   } catch (error) {
     console.log(error instanceof Error ? error.message : String(error));
     process.exit(1);

@@ -23,10 +23,11 @@ const vanillaTabs = (extra = {}) => `<div id="app"><div class="hw-tabs" data-hw=
 </div></div>`;
 
 // The same result as an Angular component would render it: other ids, a host without
-// hw- class around each panel, _ngcontent and ng-reflect attributes, comments and styles.
+// hw- class around each panel, _ngcontent, ng-reflect and jsaction attributes, a
+// directive selector attribute with a static input value, and comments.
 const angularTabs = `<guide-example _nghost-ng-c1=""><!--container--><div class="hw-tabs" _ngcontent-ng-c1="">
 <div class="hw-tab-list" role="tablist" aria-label="Request details" ng-reflect-label="x">
-<button class="hw-tab" type="button" role="tab" id="hw-tabs-7-tab-0" aria-controls="hw-tabs-7-panel-0" aria-selected="true" tabindex="0" jsaction="click:;">Overview</button><button type="button" class="hw-tab" role="tab" id="hw-tabs-7-tab-1" aria-controls="hw-tabs-7-panel-1" aria-selected="false" tabindex="-1" style="color: red">History</button></div>
+<button class="hw-tab" type="button" role="tab" id="hw-tabs-7-tab-0" aria-controls="hw-tabs-7-panel-0" aria-selected="true" tabindex="0" jsaction="click:;">Overview</button><button type="button" class="hw-tab" role="tab" id="hw-tabs-7-tab-1" aria-controls="hw-tabs-7-panel-1" aria-selected="false" tabindex="-1" hwtab="" key="b">History</button></div>
 <hw-tab value="a" style="display: contents"><section role="tabpanel" class="hw-tab-panel" id="hw-tabs-7-panel-0" aria-labelledby="hw-tabs-7-tab-0"><p>Under   review.</p></section></hw-tab>
 <hw-tab value="b"><section class="hw-tab-panel" role="tabpanel" id="hw-tabs-7-panel-1" aria-labelledby="hw-tabs-7-tab-1" hidden=""><p>Submitted.</p></section></hw-tab>
 </div></guide-example>`;
@@ -34,10 +35,43 @@ const angularTabs = `<guide-example _nghost-ng-c1=""><!--container--><div class=
 const differs = (a, b) => compareStructure({ vanilla: a, react: b })[0];
 
 describe('normalize', () => {
-  it('produces the documented node shape', () => {
-    expect(tree('<div id="app"><button class="x hw-button hw-a" data-variant="primary" data-hw-x="1" data-v-12="" data-ngh="1" style="color:red" hwbutton="" type="button" disabled="disabled">Go</button></div>')).toEqual([
-      { tag: 'button', attrs: { class: 'hw-a hw-button', 'data-variant': 'primary', disabled: 'disabled', type: 'button' }, children: ['Go'] },
+  it('produces the documented node shape: every attribute but the framework noise', () => {
+    expect(tree('<div id="app"><button class="x hw-button hw-a ng-star-inserted" data-variant="primary" data-hw-x="1" data-v-12="" data-ngh="1" _ngcontent-ng-c1="" ng-reflect-variant="primary" jsaction="click:;" ngh="0" style="color:red" hwbutton="" variant="primary" size="sm" accesskey="k" type="button" disabled="disabled">Go</button></div>')).toEqual([
+      { tag: 'button', attrs: { accesskey: 'k', class: 'hw-a hw-button x', 'data-variant': 'primary', disabled: 'disabled', style: 'color: red;', type: 'button' }, children: ['Go'] },
     ]);
+  });
+
+  it('keeps an attribute outside the old list of native attributes, so one adapter without it fails', () => {
+    const result = differs(
+      tree('<div id="app"><button class="hw-button" type="button" popovertarget="menu" enterkeyhint="go">Go</button><div id="menu" popover="">m</div></div>'),
+      tree('<div id="app"><button class="hw-button" type="button" popovertarget="menu">Go</button><div id="menu" popover="">m</div></div>'),
+    );
+    expect(result.equal).toBe(false);
+    expect(result.path).toBe('$[0].attrs.enterkeyhint');
+  });
+
+  it('compares name values as written: two different names fail, generated names are numbered', () => {
+    const named = (name) => tree(`<div id="app"><input type="radio" name="${name}"></div>`);
+    const result = differs(named('alpha'), named('beta'));
+    expect(result.equal).toBe(false);
+    expect(result.message).toContain('"alpha"');
+    expect(differs(named(':r1:'), named('hw-radio-group-3')).equal).toBe(true);
+    expect(named('«r5»')[0].attrs.name).toBe('name#1');
+  });
+
+  it('compares a custom-element host that carries role or aria-*; a plain framework host is unwrapped', () => {
+    const plain = tree('<div id="app"><p>x</p></div>');
+    expect(tree('<div id="app"><x-wrap data-x="1"><p>x</p></x-wrap></div>')).toEqual(plain);
+    const wrapped = tree('<div id="app"><x-wrap role="region" aria-label="Wrapper"><p>x</p></x-wrap></div>');
+    expect(wrapped).toEqual([{ tag: 'div', attrs: { 'aria-label': 'Wrapper', role: 'region' }, children: [{ tag: 'p', attrs: {}, children: ['x'] }] }]);
+    expect(differs(plain, wrapped).equal).toBe(false);
+  });
+
+  it('compares inline style as serialised and fails on a different style', () => {
+    expect(differs(tree('<div id="app"><p style="color:red;margin-inline:0">x</p></div>'), tree('<div id="app"><p style="color: red; margin-inline: 0">x</p></div>')).equal).toBe(true);
+    const result = differs(tree('<div id="app"><p style="color: red">x</p></div>'), tree('<div id="app"><p style="color: blue">x</p></div>'));
+    expect(result.equal).toBe(false);
+    expect(result.path).toBe('$[0].attrs.style');
   });
 
   it('passes equal trees with different ids and Angular hosts', () => {
@@ -51,7 +85,7 @@ describe('normalize', () => {
     expect(tree('<div id="app"><hw-box class="hw-card"><p>x</p></hw-box></div>')).toEqual([{ tag: 'div', attrs: { class: 'hw-card' }, children: [{ tag: 'p', attrs: {}, children: ['x'] }] }]);
   });
 
-  it('rewrites names and dangling references, and adds live properties', () => {
+  it('rewrites dangling references, keeps written names, and adds live properties', () => {
     const dom = new JSDOM('<!doctype html><div id="app"><label for="f">L</label><input id="f" name="first-name" aria-describedby="f-hint nowhere" value="a"><input type="checkbox" name="agree"></div>', { runScripts: 'outside-only' });
     const evaluated = dom.window.eval(`(${normalize.toString()})`);
     const box = dom.window.document.querySelector('[type=checkbox]');
@@ -59,8 +93,8 @@ describe('normalize', () => {
     dom.window.document.querySelector('#f').value = 'typed';
     expect(evaluated('#app')).toEqual([
       { tag: 'label', attrs: { for: '#1' }, children: ['L'] },
-      { tag: 'input', attrs: { 'aria-describedby': '#? #?', id: '#1', name: 'name#1', value: 'a' }, props: { value: 'typed', checked: false, indeterminate: false }, children: [] },
-      { tag: 'input', attrs: { name: 'name#2', type: 'checkbox' }, props: { value: 'on', checked: false, indeterminate: true }, children: [] },
+      { tag: 'input', attrs: { 'aria-describedby': '#? #?', id: '#1', name: 'first-name', value: 'a' }, props: { value: 'typed', checked: false, indeterminate: false }, children: [] },
+      { tag: 'input', attrs: { name: 'agree', type: 'checkbox' }, props: { value: 'on', checked: false, indeterminate: true }, children: [] },
     ]);
   });
 

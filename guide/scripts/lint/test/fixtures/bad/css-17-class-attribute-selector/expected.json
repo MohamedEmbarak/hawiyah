@@ -1,0 +1,17 @@
+[
+  {
+    "rule": "L-CSS-2",
+    "file": "src/app/case.css",
+    "line": 1
+  },
+  {
+    "rule": "L-CSS-2",
+    "file": "src/app/case.css",
+    "line": 5
+  },
+  {
+    "rule": "L-CSS-2",
+    "file": "src/app/case.css",
+    "line": 9
+  }
+]

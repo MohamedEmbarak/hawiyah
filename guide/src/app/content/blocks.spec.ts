@@ -93,8 +93,8 @@ describe('BlocksContent', () => {
     expect(paragraph?.querySelector('em')?.textContent).toBe('once');
     expect(paragraph?.querySelector('strong')?.textContent).toBe('button');
     expect(paragraph?.querySelector('code.hw-code')?.textContent).toBe('hwButton');
-    // Inline code is a left-to-right isolate that does not break at a hyphen (styles.css .code-phrase).
-    expect(paragraph?.querySelector('code.hw-code')?.className).toContain('code-phrase');
+    // Inline code is the published chip alone (no guide class), a left-to-right isolate through dir.
+    expect(paragraph?.querySelector('code.hw-code')?.className).toBe('hw-code');
     expect(paragraph?.querySelector('code.hw-code')?.getAttribute('dir')).toBe('ltr');
     expect(paragraph?.querySelector('br')).not.toBeNull();
     const [internal, external] = Array.from(paragraph?.querySelectorAll('a') ?? []);

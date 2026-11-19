@@ -25,7 +25,7 @@ const TEXT = {
   ar: {
     title: 'زر',
     briefTitle: 'زر · هوية',
-    referenceTitle: 'مرجع زر · هوية',
+    referenceTitle: 'مرجع المكوّن: زر · هوية',
     label: 'متابعة',
     result: 'النتيجة',
     frameworks: 'إطار العمل',
@@ -174,26 +174,44 @@ for (const lang of ['ar', 'en'] as const) {
       for (const link of await external.all()) await expect(link).toHaveAttribute('rel', /noopener/);
     });
 
-    test('API tables at 390 and 320 px: code values break only at their own break opportunities', async ({ page }) => {
+    test('API tables at 390 and 320 px: inline code is the published chip and the page does not overflow', async ({ page }) => {
+      // The guide shows hw-code exactly as published (plan D-A): a value in a table cell
+      // may break into fragments (package defect, CHANGELOG.md, Known defects in 0.3.0).
       await page.goto(`${lang}/components/button/reference/`);
       await hydrated(page);
       for (const width of [390, 320]) {
         await page.setViewportSize({ width, height: 800 });
         const result = await page.evaluate(() => {
-          const broken: string[] = [];
-          for (const code of document.querySelectorAll<HTMLElement>('guide-table td code.code-phrase')) {
-            const text = code.textContent ?? '';
-            // A value without a space, hyphen, dot, slash or bracket stays on one line.
-            if (/[\s\-./()[\]{}<>]/.test(text)) continue;
-            const line = parseFloat(getComputedStyle(code).lineHeight) || 16;
-            if (code.getBoundingClientRect().height > line * 1.5) broken.push(text);
-          }
-          return { broken, overflow: document.scrollingElement!.scrollWidth - innerWidth, codes: document.querySelectorAll('guide-table td code.code-phrase').length };
+          const codes = Array.from(document.querySelectorAll<HTMLElement>('guide-table td code'));
+          return {
+            codes: codes.length,
+            classes: [...new Set(codes.map((code) => code.className))],
+            overflow: document.scrollingElement!.scrollWidth - innerWidth,
+          };
         });
         expect(result.codes).toBeGreaterThan(0);
-        expect(result.broken, `values split at ${width} px`).toEqual([]);
+        expect(result.classes).toEqual(['hw-code']);
         expect(result.overflow, `page overflow at ${width} px`).toBe(0);
       }
+    });
+
+    test('the list of this page and the API tables are spaced as blocks of the prose flow', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(`${lang}/components/button/reference/`);
+      await hydrated(page);
+      const gaps = await page.evaluate(() => {
+        const box = (selector: string) => document.querySelector(selector)!.getBoundingClientRect();
+        const summary = box('main article > p');
+        const toc = box('main article > .toc');
+        const api = box('main article > h2#api');
+        const javascript = box('main article h3#javascript');
+        const table = document.querySelector('main article h3#javascript ~ guide-table')!.getBoundingClientRect();
+        return { summaryToList: toc.top - summary.bottom, apiToJavascript: javascript.top - api.bottom, headingToTable: table.top - javascript.bottom };
+      });
+      // var(--hw-space-4) = 16 px between blocks, var(--hw-space-3) = 12 px after a heading.
+      expect(gaps.summaryToList).toBeGreaterThanOrEqual(15);
+      expect(gaps.apiToJavascript).toBeGreaterThanOrEqual(11);
+      expect(gaps.headingToTable).toBeGreaterThanOrEqual(11);
     });
 
     test('side navigation from 64rem and the navigation drawer below it', async ({ page }) => {

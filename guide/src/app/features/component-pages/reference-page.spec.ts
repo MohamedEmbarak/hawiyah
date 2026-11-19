@@ -31,7 +31,9 @@ describe('ReferencePage', () => {
   it('renders the content navigation after the summary, named On this page', async () => {
     const root = await render();
     const navigation = root.querySelector('hw-content-navigation');
-    expect(navigation?.previousElementSibling?.tagName).toBe('P');
+    // A block of the prose flow: its wrapper follows the summary paragraph.
+    expect(navigation?.parentElement?.classList.contains('toc')).toBe(true);
+    expect(navigation?.parentElement?.previousElementSibling?.tagName).toBe('P');
     expect(root.querySelector('nav[aria-label="On this page"], [aria-label="On this page"]')).not.toBeNull();
     const hrefs = Array.from(navigation?.querySelectorAll('a') ?? []).map((link) => link.getAttribute('href'));
     expect(hrefs).toEqual(['#example', '#variants-and-states', '#sizes', '#api']);

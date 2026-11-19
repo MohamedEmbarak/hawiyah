@@ -5,6 +5,8 @@
 // verified packages (HWREG-R8).
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { format } from '../registry-check/messages.mjs';
+import { checkMetafile } from '../registry-check/resolved.mjs';
 import { buildRuntime } from '../runtime/build-runtime.mjs';
 
 export default {
@@ -16,6 +18,9 @@ export default {
     const browserDir = join(ctx.guideDir, ctx.browserDir);
     if (!existsSync(browserDir)) throw new Error(`${ctx.browserDir} does not exist; build step 40-angular writes it`);
     const result = await buildRuntime({ guideDir: ctx.guideDir, runtimeDir: join(browserDir, 'runtime') });
+    // What each esbuild run read (HWREG-R6): @hawiyah inputs only from the verified packages.
+    const findings = result.metafiles.flatMap((item) => checkMetafile(item.metafile, { ...item, guideDir: ctx.guideDir }));
+    if (findings.length > 0) throw new Error(findings.map(([key, params]) => format(key, params).message).join('\n'));
     const counts = { published: 0, linked: 0, bundled: 0 };
     for (const entry of result.entries) counts[entry.source] += 1;
     ctx.log(

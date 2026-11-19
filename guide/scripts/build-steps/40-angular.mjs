@@ -6,7 +6,9 @@ import { join } from "node:path";
 
 /** The ng build arguments for a build context. */
 export function ngArgs(ctx) {
-  const args = ["build", "--configuration", ctx.configuration, "--base-href", ctx.basePath];
+  // --stats-json writes browser-stats.json and server-stats.json (esbuild metafiles)
+  // to the output root; step 90 checks the inputs they record.
+  const args = ["build", "--configuration", ctx.configuration, "--base-href", ctx.basePath, "--stats-json"];
   if (ctx.outDir !== "dist") args.push("--output-path", ctx.outDir);
   // No shell runs in between, so the value is the JavaScript expression itself: '<sha>'.
   if (ctx.preview) args.push("--define", `HAWIYAH_PREVIEW_COMMIT='${ctx.preview.commit}'`);
