@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { GuideViewportScroller, focusTargetOf, fragmentTarget, scrollBehaviorOf } from './viewport-scroller';
+import { GuideViewportScroller, focusTargetOf, fragmentTarget, inPackageTemplate, scrollBehaviorOf } from './viewport-scroller';
 
 /** Builds the body from [tag, attributes, text] entries; a nested list is the children. */
 type Markup = readonly [string, Readonly<Record<string, string>>, string | readonly Markup[]];
@@ -43,6 +43,26 @@ describe('fragment targets', () => {
     const plain = focusTargetOf(document.getElementById('plain') as HTMLElement);
     expect(plain.id).toBe('plain');
     expect(plain.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('never adds a tabindex inside a package component template; the guide heading or section takes focus', () => {
+    setBody([
+      ['section', { id: 'api', 'aria-labelledby': 'api-title' }, [['h2', { id: 'api-title', tabindex: '-1' }, 'API'], ['hw-tabs', {}, [['div', { id: 'panel', class: 'hw-tabs-panel' }, 'Panel']]]]],
+      ['section', { id: 'plain-section', '_ngcontent-ng-c1': '' }, [['hw-card', {}, [['div', { id: 'inner' }, 'Inner'], ['p', { id: 'projected', '_ngcontent-ng-c1': '' }, 'Projected']]]]],
+      ['hw-card', {}, [['div', { id: 'orphan' }, 'Orphan']]],
+    ]);
+    const byId = (id: string) => document.getElementById(id) as HTMLElement;
+    expect(inPackageTemplate(byId('panel'))).toBe(true);
+    expect(inPackageTemplate(byId('projected'))).toBe(false);
+    expect(inPackageTemplate(byId('api'))).toBe(false);
+    expect(focusTargetOf(byId('panel')).id).toBe('api-title');
+    expect(byId('panel').hasAttribute('tabindex')).toBe(false);
+    expect(focusTargetOf(byId('inner')).id).toBe('plain-section');
+    expect(byId('inner').hasAttribute('tabindex')).toBe(false);
+    expect(byId('plain-section').getAttribute('tabindex')).toBe('-1');
+    expect(focusTargetOf(byId('projected')).getAttribute('tabindex')).toBe('-1');
+    expect(focusTargetOf(byId('orphan')).id).toBe('orphan');
+    expect(byId('orphan').hasAttribute('tabindex')).toBe(false);
   });
 
   it('scrolls smoothly only without a reduced-motion preference', () => {

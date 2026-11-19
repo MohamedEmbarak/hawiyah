@@ -4,12 +4,11 @@ import { hydrated } from '../support/fixtures';
 export type Lang = 'ar' | 'en';
 
 /**
- * Waits for hydration and for the end of event replay: until the jsaction attributes
- * are gone, an early key press would be replayed (see the tabs suite).
+ * Waits for hydration and for the end of event replay; the shared hydrated() waits
+ * until the jsaction attributes are gone (see the tabs suite).
  */
 export async function ready(page: Page): Promise<void> {
   await hydrated(page);
-  await page.waitForFunction(() => document.querySelector('[jsaction]') === null);
 }
 
 /** The radio option of a toggle group, chosen by clicking its label. */

@@ -23,6 +23,7 @@ for (const lang of ['ar', 'en'] as const) {
       { role: 'link', name: lang === 'ar' ? 'الانتقال إلى المحتوى الرئيسي' : 'Skip to main content' },
       { role: 'link', name: lang === 'ar' ? 'هوية، الصفحة الرئيسية' : 'Hawiyah, home page' },
       { role: 'link', name: lang === 'ar' ? 'المكوّنات' : 'Components' },
+      { role: 'link', name: lang === 'ar' ? 'المحرر' : 'Editor' },
       { role: 'link', name: lang === 'ar' ? 'English' : 'العربية' },
       { role: 'button', name: lang === 'ar' ? 'الوضع الداكن' : 'Dark mode' },
     ];

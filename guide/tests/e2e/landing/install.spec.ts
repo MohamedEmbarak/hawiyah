@@ -52,6 +52,28 @@ for (const lang of ['ar', 'en'] as const) {
       }
     });
 
+    test('step 3: the listing shows its lines without clipping at 1280 px and stacks above the result at 320 px', async ({ page }) => {
+      const geometry = () =>
+        page.evaluate(() => {
+          const pair = document.querySelector('#install .pair') as HTMLElement;
+          const pre = pair.querySelector('.cell.active pre') as HTMLElement;
+          const listing = (pair.querySelector(':scope > .stack') as HTMLElement).getBoundingClientRect();
+          const card = (pair.querySelector(':scope > hw-card') as HTMLElement).getBoundingClientRect();
+          return { clipped: pre.scrollWidth > pre.clientWidth, above: listing.bottom <= card.top, page: document.scrollingElement!.scrollWidth - innerWidth };
+        });
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(`${lang}/`);
+      await ready(page);
+      for (const framework of FRAMEWORKS) {
+        await choose(page.locator('#install').getByRole('group', { name: t.framework }), framework.label);
+        expect(await geometry(), framework.id).toEqual({ clipped: false, above: true, page: 0 });
+      }
+      await page.setViewportSize({ width: 320, height: 800 });
+      const narrow = await geometry();
+      expect(narrow.above).toBe(true);
+      expect(narrow.page).toBe(0);
+    });
+
     test('step 3 shows the native Angular result and step 4 links onward', async ({ page }) => {
       await page.goto(`${lang}/`);
       await ready(page);
@@ -61,8 +83,9 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(card.locator('guide-native-result').getByRole('button', { name: t.resultButton })).toBeVisible();
       await expect(card.locator('code')).toHaveText('@hawiyah/angular 0.3.0');
       await expect(steps.nth(3).getByRole('link', { name: t.toComponents })).toHaveAttribute('href', `${lang}/components/`);
-      // The editor link exists only when the editor feature is built (stage 4c).
-      await expect(steps.nth(3).getByRole('link')).toHaveCount(1);
+      // Stage 4c builds the editor feature: step 4 also links to the editor with the chosen framework.
+      await expect(steps.nth(3).getByRole('link')).toHaveCount(2);
+      await expect(steps.nth(3).getByRole('link').nth(1)).toHaveAttribute('href', `${lang}/editor/?example=button%2Fprimary&framework=angular`);
     });
 
     test('the copy button copies the chosen command', async ({ page, context }) => {

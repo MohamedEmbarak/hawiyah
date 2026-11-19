@@ -105,8 +105,9 @@ export async function frameResources(frame: Frame): Promise<string[]> {
 export async function axeWithFrame(page: Page): Promise<string[]> {
   const axePage = page as unknown as ConstructorParameters<typeof AxeBuilder>[0]['page'];
   const result = await new AxeBuilder({ page: axePage })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    // options() replaces the whole options object, so it precedes withTags().
     .options({ preload: false })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
   return result.violations.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(' ')).join(', ')})`);
 }

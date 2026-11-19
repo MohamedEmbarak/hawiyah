@@ -69,6 +69,9 @@ export function createCodeEditor(options: CodeEditorOptions): CodeEditor {
         'aria-label': options.label,
         'aria-describedby': options.describedBy,
         dir: 'ltr',
+        // An explicit tab stop: axe counts a contenteditable element without tabindex as
+        // not focusable and then reports the scroller around it (scrollable-region-focusable).
+        tabindex: '0',
         translate: 'no',
         spellcheck: 'false',
         autocapitalize: 'off',

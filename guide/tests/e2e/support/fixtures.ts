@@ -50,7 +50,14 @@ export const test = base.extend<{ guard: ConsoleGuard }>({
 export async function axe(page: Page): Promise<string[]> {
   // @axe-core/playwright is typed against its own playwright-core copy; the objects are the same at run time.
   const axePage = page as unknown as ConstructorParameters<typeof AxeBuilder>[0]['page'];
-  const result = await new AxeBuilder({ page: axePage }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+  // axe's preload fetches the stylesheets of every frame; a sandboxed result frame
+  // (connect-src 'none') refuses that and logs console errors, so it is turned off.
+  // The rules still run in every frame. options() replaces the whole options object,
+  // so it comes before withTags(), which adds the tag filter to it.
+  const result = await new AxeBuilder({ page: axePage })
+    .options({ preload: false })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    .analyze();
   return result.violations.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(' ')).join(', ')})`);
 }
 

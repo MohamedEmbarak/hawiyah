@@ -4,13 +4,13 @@
     "button": {
       "vanilla": {
         "rule": "stylesheet-contract",
-        "reason": "Button is a native button element styled by the class hw-button; @hawiyah/vanilla 0.3.0 exports no createButton.",
+        "reason": "Button is a native button element styled by the class hw-button, and @hawiyah/vanilla 0.3.0 exports no createButton (its only export with Button in the name is createCopyButton, the controller of the copy button). The Actions row of '## Stable class and state API' in the @hawiyah/styles 0.3.0 README documents hw-button, data-variant, data-size and data-icon-only, which step 30 reads as the contract.",
         "nativeAttributes": {
-          "type": "HTML attribute of the button element; the page lists it because the browser default in a form is submit.",
-          "disabled": "HTML attribute of the button element; the loading state uses it.",
-          "aria-busy": "ARIA attribute; the loading state writes aria-busy=\"true\" with disabled."
+          "type": "HTML attribute of the button element, not a Hawiyah declaration; the page lists it because the browser default of a button in a form is submit.",
+          "disabled": "HTML attribute of the button element, not a Hawiyah declaration; the '## Semantics and behavior' section of the @hawiyah/styles README asks for genuine disabled controls, and dist/styles.css styles .hw-button:disabled; the loading state writes it.",
+          "aria-busy": "ARIA attribute (WAI-ARIA 1.2 aria-busy), not a Hawiyah declaration; dist/styles.css of @hawiyah/styles 0.3.0 has the rule .hw-button[aria-busy='true'], and the loading state writes aria-busy=\"true\" with disabled."
         },
-        "review": "pending: recorded by 4b.3 for the lead's review"
+        "review": "Checked by 4c.3 against leadAmendments A6 and the README and dist/styles.css of @hawiyah/styles 0.3.0 as installed: the component has no controller, the contract rows are read from the README, and each native attribute is defined by HTML or WAI-ARIA and used by a rule of the published stylesheet. No documented attribute is left out (no notListed entry)."
       }
     }
   }

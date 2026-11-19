@@ -11,15 +11,40 @@ export function fragmentTarget(document: Document, fragment: string | null | und
 }
 
 /**
+ * Whether an element belongs to the template of a package component (hw-*), not to
+ * a guide template. Guide components with styles stamp their elements with an
+ * _ngcontent-* attribute, also where the elements are projected into a package
+ * component; @hawiyah/angular 0.3.0 components have no component styles, so their
+ * template elements carry none. Otherwise the nearest custom element above decides.
+ */
+export function inPackageTemplate(element: Element): boolean {
+  if (Array.from(element.attributes).some((attribute) => attribute.name.startsWith('_ngcontent-'))) return false;
+  for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+    if (parent.localName.includes('-')) return parent.localName.startsWith('hw-');
+  }
+  return false;
+}
+
+const GUIDE_TARGETS = 'section, article, main, h1, h2, h3, h4, h5, h6';
+
+/**
  * The element that takes focus for a fragment target: the target when it can take
  * focus; else the heading inside it that labels it (aria-labelledby) when that heading
- * has a tabindex; else the target, given tabindex -1.
+ * has a tabindex; else the target, given tabindex -1. A target inside the template of
+ * a package component is never given a tabindex: the nearest guide section, article,
+ * main or heading around it is used instead (and nothing changes when there is none).
  */
 export function focusTargetOf(target: HTMLElement): HTMLElement {
   if (target.hasAttribute('tabindex') || target.tabIndex >= 0) return target;
   const label = target.getAttribute('aria-labelledby')?.trim().split(/\s+/)[0];
   const heading = label ? target.ownerDocument.getElementById(label) : null;
   if (heading && target.contains(heading) && heading.hasAttribute('tabindex')) return heading;
+  if (inPackageTemplate(target)) {
+    for (let parent = target.parentElement; parent; parent = parent.parentElement) {
+      if (parent instanceof HTMLElement && parent.matches(GUIDE_TARGETS) && !inPackageTemplate(parent)) return focusTargetOf(parent);
+    }
+    return target;
+  }
   target.setAttribute('tabindex', '-1');
   return target;
 }

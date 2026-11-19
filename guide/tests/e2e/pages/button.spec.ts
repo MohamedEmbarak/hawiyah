@@ -75,7 +75,7 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(link).toHaveAttribute('href', `${lang}/components/button/reference/`);
     });
 
-    test('framework tabs: order, Angular selected, listings, download and no editor link', async ({ page, request }) => {
+    test('framework tabs: order, Angular selected, listings, download and the editor link', async ({ page, request }) => {
       await page.goto(`${lang}/components/button/`);
       await hydrated(page);
       const block = page.locator('guide-example-block').first();
@@ -87,7 +87,9 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(panel.locator('figcaption')).toHaveText([/example\.component\.ts/]);
       await expect(panel.locator('pre code')).toContainText(`<button hwButton variant="primary">${t.label}</button>`);
       await expect(panel.locator('pre code .hw-code-token-keyword').first()).toBeVisible();
-      await expect(panel.getByRole('link', { name: /editor|المحرر/ })).toHaveCount(0);
+      const editor = panel.getByRole('link', { name: lang === 'ar' ? 'فتح في المحرر' : 'Open in the editor' });
+      await expect(editor).toHaveCount(1);
+      await expect(editor).toHaveAttribute('href', `${lang}/editor/?example=button%2Fprimary&framework=angular`);
 
       const download = panel.getByRole('link', { name: t.download });
       await expect(download).toHaveAttribute('href', `examples/button/${lang}/primary/angular/example.component.ts`);
@@ -100,6 +102,10 @@ for (const lang of ['ar', 'en'] as const) {
         await tablist.getByRole('tab', { name }).click();
         const shown = block.getByRole('tabpanel');
         await expect(shown.locator('figcaption').first()).toContainText(PRIMARY_FILES[index] ?? '');
+        await expect(shown.getByRole('link', { name: lang === 'ar' ? 'فتح في المحرر' : 'Open in the editor' })).toHaveAttribute(
+          'href',
+          `${lang}/editor/?example=button%2Fprimary&framework=${PACKAGES[index]}`,
+        );
         if (name === 'JavaScript') await expect(shown.locator('figcaption')).toHaveText([/index\.html/, /main\.js/]);
         const result = block.getByRole('group', { name: t.result });
         if (name === 'Angular') {
@@ -166,6 +172,28 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(article.locator('code.hw-code').first()).toBeVisible();
       const external = article.locator('a[target="_blank"]');
       for (const link of await external.all()) await expect(link).toHaveAttribute('rel', /noopener/);
+    });
+
+    test('API tables at 390 and 320 px: code values break only at their own break opportunities', async ({ page }) => {
+      await page.goto(`${lang}/components/button/reference/`);
+      await hydrated(page);
+      for (const width of [390, 320]) {
+        await page.setViewportSize({ width, height: 800 });
+        const result = await page.evaluate(() => {
+          const broken: string[] = [];
+          for (const code of document.querySelectorAll<HTMLElement>('guide-table td code.code-phrase')) {
+            const text = code.textContent ?? '';
+            // A value without a space, hyphen, dot, slash or bracket stays on one line.
+            if (/[\s\-./()[\]{}<>]/.test(text)) continue;
+            const line = parseFloat(getComputedStyle(code).lineHeight) || 16;
+            if (code.getBoundingClientRect().height > line * 1.5) broken.push(text);
+          }
+          return { broken, overflow: document.scrollingElement!.scrollWidth - innerWidth, codes: document.querySelectorAll('guide-table td code.code-phrase').length };
+        });
+        expect(result.codes).toBeGreaterThan(0);
+        expect(result.broken, `values split at ${width} px`).toEqual([]);
+        expect(result.overflow, `page overflow at ${width} px`).toBe(0);
+      }
     });
 
     test('side navigation from 64rem and the navigation drawer below it', async ({ page }) => {

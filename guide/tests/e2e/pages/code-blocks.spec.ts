@@ -3,8 +3,10 @@ import { languagePages } from '../support/routes';
 
 // Every pre of every prerendered page is a named, focusable group with a class
 // (contentPipeline.rendering.classlessPre), and the copy button copies the listing.
+// The editor page replaces its prerendered listings with the code editor after
+// hydration, so its listings are checked by the editor suite (tests/e2e/editor).
 
-for (const target of languagePages) {
+for (const target of languagePages.filter((doc) => !/^(ar|en)\/editor$/.test(doc.route))) {
   test(`code listings are named groups: ${target.route}`, async ({ page }) => {
     await page.goto(target.href);
     await hydrated(page);

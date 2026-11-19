@@ -101,10 +101,17 @@ describe('ExampleBlock', () => {
     }
   });
 
-  it('has no editor link while the editor feature is absent', async () => {
+  it('links each framework to the editor now that the editor feature is built', async () => {
     const { root } = await render('en');
-    expect(EDITOR_AVAILABLE).toBe(false);
-    expect(root.querySelector('a[href*="editor"]')).toBeNull();
+    expect(EDITOR_AVAILABLE).toBe(true);
+    const links = Array.from(root.querySelectorAll('a[href*="editor"]'));
+    expect(links.length).toBeGreaterThan(0);
+    const expected = ['vanilla', 'react', 'vue', 'angular'].map((fw) => `en/editor/?example=button%2Fprimary&framework=${fw}`);
+    for (const link of links) {
+      expect(link.textContent?.trim()).toBe('Open in the editor');
+      expect(expected).toContain(link.getAttribute('href'));
+    }
+    expect(links.map((link) => link.getAttribute('href'))).toContain(expected[3]);
     expect(editorHref('ar', 'button', 'primary', 'react')).toBe('ar/editor/?example=button%2Fprimary&framework=react');
   });
 

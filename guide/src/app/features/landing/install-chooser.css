@@ -74,9 +74,31 @@
   }
 }
 
-@media (min-width: 68em) {
-  .pair {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
+/*
+ * Step 3: the listing and the result side by side only when each column is at
+ * least 54rem wide, the width of the longest listing line (the JavaScript
+ * index.html); otherwise the listing stacks above the result.
+ */
+.pair {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 54rem), 1fr));
+  align-items: start;
+}
+
+/*
+ * The install section keeps its heading and choosers above the steps at every
+ * width (the shared band puts them in a column beside the content from 48em), so
+ * the step listings have the full width of the page: at 1280 px a column beside
+ * the heading is narrower than the JavaScript listing of step 3.
+ */
+@media (min-width: 48em) {
+  .band {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--hw-space-6);
+  }
+
+  .choosers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hw-space-4) var(--hw-space-10);
   }
 }

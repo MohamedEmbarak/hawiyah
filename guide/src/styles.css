@@ -19,3 +19,11 @@ html {
   max-inline-size: 100%;
   overflow-wrap: anywhere;
 }
+
+/* In a table cell (guide-table) a code value breaks only at its own break
+   opportunities (a space, or after a hyphen) and is never cut into fragments of a
+   few characters: the table's region (hw-table-wrap) scrolls when the columns do
+   not fit, so no value needs to break anywhere to avoid page overflow. */
+guide-table .code-phrase {
+  overflow-wrap: normal;
+}

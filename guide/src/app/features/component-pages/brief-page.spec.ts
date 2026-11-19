@@ -43,7 +43,7 @@ describe('BriefPage', () => {
 
   it('links to the reference view and sets the document title and description', async () => {
     const root = await render();
-    const link = root.querySelector('article a');
+    const link = Array.from(root.querySelectorAll('article a')).find((a) => a.textContent === 'Full reference');
     expect(link?.getAttribute('href')).toBe('en/components/fixture/reference/');
     expect(link?.textContent).toBe('Full reference');
     expect(TestBed.inject(Title).getTitle()).toBe('Fixture · Hawiyah');

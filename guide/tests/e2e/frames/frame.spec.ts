@@ -70,8 +70,9 @@ test('the page with a frame result has no axe violations, frame content included
   // axe's stylesheet preload would fetch from inside the frame, which connect-src 'none' refuses.
   const axePage = page as unknown as ConstructorParameters<typeof AxeBuilder>[0]['page'];
   const result = await new AxeBuilder({ page: axePage })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+    // options() replaces the whole options object, so it precedes withTags().
     .options({ preload: false })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
   expect(result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
   expect(result.passes.some((rule) => rule.nodes.some((node) => node.target.length > 1))).toBe(true);
