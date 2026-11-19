@@ -73,12 +73,24 @@ interface ActiveRun {
   state: 'loading' | 'ready' | 'failed';
   /** The frame document was written; load events before that belong to the empty frame. */
   written: boolean;
-  /** The written document finished loading: a later load means the frame left it. */
-  loaded: boolean;
+  /** Load events of the frame since its document was written. */
+  loads: number;
+  /** Time of the latest of them. */
+  loadedAt: number;
 }
 
-/** How long after a refused navigation a load event of a frame is read as that navigation. */
-const LEFT_WINDOW_MS = 2000;
+/**
+ * With several frames on a page, a refused navigation is matched with the next load
+ * event of a frame when that event comes within this time: the browser loads its
+ * error document into the frame that tried to navigate.
+ */
+const LEFT_WINDOW_MS = 1000;
+/**
+ * The two events reach the page by different routes. Should the load come first, it
+ * is matched only when it is a repeated load of its frame (a first load is the
+ * frame's own document) and only this shortly before the refusal.
+ */
+const REPEATED_LOAD_WINDOW_MS = 250;
 
 /** Set once a modules run failed for a runtime reason: later runs of this document use the bundles. */
 let modulesUnavailable = false;
@@ -93,8 +105,9 @@ let modulesUnavailable = false;
  * Code in the frame can try to navigate the frame itself (location, a meta
  * refresh). The page policy frame-src 'none' (src/index.template.html) refuses
  * that request before it is sent; the browser then shows its own error document
- * in the frame. The component reads the refusal and the load that follows it,
- * removes the frame and fails the run.
+ * in the frame. The refusal is an event of the page that does not name the frame.
+ * With one frame on the page (the editor) it is that frame's; with several, it is
+ * the frame whose load event comes with it. That frame is removed and its run fails.
  */
 @Component({
   selector: 'guide-preview-frame',
@@ -123,22 +136,44 @@ export class PreviewFrame {
   private counter = 0;
   private active: ActiveRun | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
-  /** Time of the last navigation of a frame that the page policy refused. */
-  private refusedAt = Number.NEGATIVE_INFINITY;
+
+  /** The components of the page, for the attribution of a refused navigation. */
+  private static readonly live = new Set<PreviewFrame>();
+  private static readonly watched = new WeakSet<Document>();
+  /** Time of a refused navigation that no frame has been matched with yet. */
+  private static refusedAt = Number.NEGATIVE_INFINITY;
+
+  /** A navigation of some frame of the page was refused by the page policy. */
+  private static refused(now: number): void {
+    const written = [...PreviewFrame.live].filter((frame) => frame.active?.written);
+    if (written.length === 1) {
+      written[0]?.left();
+      return;
+    }
+    const repeated = written
+      .filter((frame) => (frame.active?.loads ?? 0) >= 2 && now - (frame.active?.loadedAt ?? Number.NEGATIVE_INFINITY) <= REPEATED_LOAD_WINDOW_MS)
+      .sort((a, b) => (b.active?.loadedAt ?? 0) - (a.active?.loadedAt ?? 0));
+    if (repeated[0]) repeated[0].left();
+    else PreviewFrame.refusedAt = now;
+  }
 
   constructor() {
     afterNextRender(() => {
       const view = this.document.defaultView;
       if (!view) return;
       const listener = (event: MessageEvent) => this.receive(event);
-      const refused = (event: SecurityPolicyViolationEvent) => {
-        if (event.effectiveDirective === 'frame-src') this.refusedAt = performance.now();
-      };
       view.addEventListener('message', listener);
-      this.document.addEventListener('securitypolicyviolation', refused);
+      PreviewFrame.live.add(this);
+      if (!PreviewFrame.watched.has(this.document)) {
+        // One listener per document, for its lifetime.
+        PreviewFrame.watched.add(this.document);
+        this.document.addEventListener('securitypolicyviolation', (event) => {
+          if (event.effectiveDirective === 'frame-src') PreviewFrame.refused(performance.now());
+        });
+      }
       this.destroyRef.onDestroy(() => {
         view.removeEventListener('message', listener);
-        this.document.removeEventListener('securitypolicyviolation', refused);
+        PreviewFrame.live.delete(this);
         this.clearTimer();
         this.active = null;
       });
@@ -206,7 +241,7 @@ export class PreviewFrame {
       this.status.emit({ state: 'failed', run, strategy, message: error instanceof Error ? error.message : String(error) });
       return;
     }
-    this.active = { run, token, strategy, budget: new MessageBudget(), runtimeBase, state: 'loading', written: false, loaded: false };
+    this.active = { run, token, strategy, budget: new MessageBudget(), runtimeBase, state: 'loading', written: false, loads: 0, loadedAt: Number.NEGATIVE_INFINITY };
     this.runs.set([{ run }]);
     afterNextRender(
       {
@@ -273,21 +308,28 @@ export class PreviewFrame {
   /** A load event of the frame of a run. */
   protected loaded(run: number): void {
     const active = this.active;
+    // Load events before the document is written belong to the empty frame.
     if (!active || active.run !== run || !active.written) return;
-    if (!active.loaded) {
-      active.loaded = true;
-      return;
-    }
-    // A second load without a refused navigation is a reload of the same document.
-    if (performance.now() - this.refusedAt > LEFT_WINDOW_MS) return;
-    this.refusedAt = Number.NEGATIVE_INFINITY;
+    const now = performance.now();
+    active.loads += 1;
+    active.loadedAt = now;
+    // A repeated load without a refused navigation is a reload of the same document.
+    if (now - PreviewFrame.refusedAt > LEFT_WINDOW_MS) return;
+    PreviewFrame.refusedAt = Number.NEGATIVE_INFINITY;
+    this.left();
+  }
+
+  /** Code in the frame tried to navigate it: the frame is removed and the run fails. */
+  private left(): void {
+    const active = this.active;
+    if (!active) return;
     const text = this.t().leaveBlocked;
     this.clearTimer();
     this.active = null;
     this.runs.set([]);
     this.notice.set(text);
-    this.log.emit({ run, kind: 'left', text });
-    this.status.emit({ state: 'failed', run, strategy: active.strategy, message: text, plain: true });
+    this.log.emit({ run: active.run, kind: 'left', text });
+    this.status.emit({ state: 'failed', run: active.run, strategy: active.strategy, message: text, plain: true });
   }
 
   private fail(run: number, message: string): void {

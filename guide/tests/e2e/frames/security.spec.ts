@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { expect } from '../support/fixtures';
+import { expect, hydrated } from '../support/fixtures';
 import {
   briefPath,
   frameElement,
@@ -151,4 +151,52 @@ test('a run that fails with an error reports the first line in the status', asyn
   await routePayload(page, 'ar', 'vue', failing);
   await selectFramework(page, briefPath('ar'), 'vue');
   await expect(statusOf(page)).toHaveText('تعذّر تحميل نتيجة Vue: Error: example failed', { timeout: 30_000 });
+});
+
+test('with several frames on a page, a frame that navigates itself is the one removed', async ({ page }) => {
+  const outsideRequests: string[] = [];
+  await page.context().route(/example\.org/, (route) => {
+    outsideRequests.push(route.request().url());
+    return route.fulfill({ status: 200, contentType: 'text/html', body: '<p>outside</p>' });
+  });
+  const leaving = await payload('vanilla', 'en', {
+    host: '<div id="app"><button class="hw-button" type="button" id="leave">Leave</button></div>',
+    entry: 'main.js',
+    modules: {
+      'main.js':
+        "import { enhance } from '@hawiyah/vanilla';\nenhance(document.getElementById('app'));\n" +
+        "document.getElementById('leave').addEventListener('click', () => { location.href = 'https://example.org/left'; });\n",
+    },
+    imports: ['@hawiyah/vanilla'],
+  });
+  await routePayload(page, 'en', 'vanilla', leaving);
+  await page.goto('en/components/button/reference/');
+  await hydrated(page);
+  const blocks = page.locator('guide-example-block');
+  const count = await blocks.count();
+  expect(count).toBeGreaterThan(2);
+  for (let index = 0; index < count; index += 1) {
+    await blocks.nth(index).getByRole('tab', { name: 'JavaScript', exact: true }).click();
+  }
+  const frames = page.locator('guide-example-block guide-frame-result iframe');
+  await expect(frames).toHaveCount(count, { timeout: 30_000 });
+  await expect(page.locator('guide-example-block p.status').filter({ hasText: 'Rendered with @hawiyah/vanilla 0.3.0 from npm' })).toHaveCount(count, { timeout: 30_000 });
+  let clicked = false;
+  for (const frame of page.frames()) {
+    const button = frame.locator('#leave');
+    if ((await button.count()) === 1) {
+      await button.click();
+      clicked = true;
+      break;
+    }
+  }
+  expect(clicked).toBe(true);
+  const notice = page.locator('guide-preview-frame p.notice');
+  await expect(notice).toHaveText('The code tried to open another address in the preview. The request was not sent, and the run was stopped.');
+  await expect(notice).toHaveCount(1);
+  await expect(frames).toHaveCount(count - 1);
+  await expect(page.locator('guide-example-block p.status').filter({ hasText: 'Rendered with @hawiyah/vanilla 0.3.0 from npm' })).toHaveCount(count - 1);
+  // The frame that left is the one of the routed example: no remaining frame holds its button.
+  for (const frame of page.frames()) expect(await frame.locator('#leave').count()).toBe(0);
+  expect(outsideRequests).toEqual([]);
 });
