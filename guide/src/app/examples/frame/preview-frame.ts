@@ -46,13 +46,21 @@ export type FrameStrategy = 'modules' | 'bundled';
 export type FrameRunStatus =
   | { readonly state: 'loading'; readonly run: number }
   | { readonly state: 'ready'; readonly run: number; readonly strategy: FrameStrategy; readonly marks: ReadyMarks }
-  | { readonly state: 'failed'; readonly run: number; readonly strategy: FrameStrategy; readonly message: string };
+  | {
+      readonly state: 'failed';
+      readonly run: number;
+      readonly strategy: FrameStrategy;
+      readonly message: string;
+      /** The message is a sentence of the guide, not text from the example. */
+      readonly plain?: boolean;
+    };
 
 export type FrameLogEntry =
   | { readonly run: number; readonly kind: 'console'; readonly level: ConsoleLevel; readonly text: string }
   | { readonly run: number; readonly kind: 'error'; readonly text: string }
   | { readonly run: number; readonly kind: 'navigation'; readonly href: string }
   | { readonly run: number; readonly kind: 'submit' }
+  | { readonly run: number; readonly kind: 'left'; readonly text: string }
   | { readonly run: number; readonly kind: 'dropped'; readonly count: number }
   | { readonly run: number; readonly kind: 'fallback' };
 
@@ -63,7 +71,14 @@ interface ActiveRun {
   readonly budget: MessageBudget;
   readonly runtimeBase: string;
   state: 'loading' | 'ready' | 'failed';
+  /** The frame document was written; load events before that belong to the empty frame. */
+  written: boolean;
+  /** The written document finished loading: a later load means the frame left it. */
+  loaded: boolean;
 }
+
+/** How long after a refused navigation a load event of a frame is read as that navigation. */
+const LEFT_WINDOW_MS = 2000;
 
 /** Set once a modules run failed for a runtime reason: later runs of this document use the bundles. */
 let modulesUnavailable = false;
@@ -74,10 +89,16 @@ let modulesUnavailable = false;
  * hydration; every run (a new source, mode or strategy) gets a new iframe, a new
  * token and a new nonce. The guide never sends a message to the frame; it accepts
  * the frame's messages only through acceptMessage().
+ *
+ * Code in the frame can try to navigate the frame itself (location, a meta
+ * refresh). The page policy frame-src 'none' (src/index.template.html) refuses
+ * that request before it is sent; the browser then shows its own error document
+ * in the frame. The component reads the refusal and the load that follows it,
+ * removes the frame and fails the run.
  */
 @Component({
   selector: 'guide-preview-frame',
-  template: `<div class="frame">@for (item of runs(); track item.run) {<iframe #frame sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" [title]="title()"></iframe>}</div>@if (notice(); as text) {<p class="notice hw-type" data-scale="body-sm" role="status">{{ text }}</p>}`,
+  template: `<div class="frame">@for (item of runs(); track item.run) {<iframe #frame sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" [title]="title()" (load)="loaded(item.run)"></iframe>}</div>@if (notice(); as text) {<p class="notice hw-type" data-scale="body-sm" role="status">{{ text }}</p>}`,
   styleUrl: './preview-frame.css',
 })
 export class PreviewFrame {
@@ -102,15 +123,22 @@ export class PreviewFrame {
   private counter = 0;
   private active: ActiveRun | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
+  /** Time of the last navigation of a frame that the page policy refused. */
+  private refusedAt = Number.NEGATIVE_INFINITY;
 
   constructor() {
     afterNextRender(() => {
       const view = this.document.defaultView;
       if (!view) return;
       const listener = (event: MessageEvent) => this.receive(event);
+      const refused = (event: SecurityPolicyViolationEvent) => {
+        if (event.effectiveDirective === 'frame-src') this.refusedAt = performance.now();
+      };
       view.addEventListener('message', listener);
+      this.document.addEventListener('securitypolicyviolation', refused);
       this.destroyRef.onDestroy(() => {
         view.removeEventListener('message', listener);
+        this.document.removeEventListener('securitypolicyviolation', refused);
         this.clearTimer();
         this.active = null;
       });
@@ -178,7 +206,7 @@ export class PreviewFrame {
       this.status.emit({ state: 'failed', run, strategy, message: error instanceof Error ? error.message : String(error) });
       return;
     }
-    this.active = { run, token, strategy, budget: new MessageBudget(), runtimeBase, state: 'loading' };
+    this.active = { run, token, strategy, budget: new MessageBudget(), runtimeBase, state: 'loading', written: false, loaded: false };
     this.runs.set([{ run }]);
     afterNextRender(
       {
@@ -187,6 +215,7 @@ export class PreviewFrame {
           if (!element || this.active?.run !== run) return;
           // The only place the guide writes a frame document (lint L-SRC-5).
           element.srcdoc = html;
+          this.active.written = true;
         },
       },
       { injector: this.injector },
@@ -239,6 +268,26 @@ export class PreviewFrame {
         this.log.emit({ run: active.run, kind: 'submit' });
         return;
     }
+  }
+
+  /** A load event of the frame of a run. */
+  protected loaded(run: number): void {
+    const active = this.active;
+    if (!active || active.run !== run || !active.written) return;
+    if (!active.loaded) {
+      active.loaded = true;
+      return;
+    }
+    // A second load without a refused navigation is a reload of the same document.
+    if (performance.now() - this.refusedAt > LEFT_WINDOW_MS) return;
+    this.refusedAt = Number.NEGATIVE_INFINITY;
+    const text = this.t().leaveBlocked;
+    this.clearTimer();
+    this.active = null;
+    this.runs.set([]);
+    this.notice.set(text);
+    this.log.emit({ run, kind: 'left', text });
+    this.status.emit({ state: 'failed', run, strategy: active.strategy, message: text, plain: true });
   }
 
   private fail(run: number, message: string): void {

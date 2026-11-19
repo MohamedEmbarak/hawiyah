@@ -365,8 +365,9 @@ export class EditorPage {
         const loop = status.message.includes(t.loopStopped);
         const message = loop ? t.loopStopped : status.message;
         const last = this.store.log().entries.at(-1);
-        if (!loop && last?.text !== status.message) this.log('danger', status.message, 'code');
-        this.store.run.set({ state: 'failed', message, kind: loop ? 'text' : 'code', bundled: status.strategy === 'bundled' });
+        const plain = loop || status.plain === true;
+        if (!loop && last?.text !== status.message) this.log('danger', status.message, plain ? 'text' : 'code');
+        this.store.run.set({ state: 'failed', message, kind: plain ? 'text' : 'code', bundled: status.strategy === 'bundled' });
         return;
       }
     }
@@ -393,6 +394,9 @@ export class EditorPage {
         return;
       case 'submit':
         this.log('info', t.submitBlocked, 'text');
+        return;
+      case 'left':
+        this.log('danger', entry.text, 'text');
         return;
       case 'dropped':
         this.log('warning', t.messagesDropped(entry.count), 'text');

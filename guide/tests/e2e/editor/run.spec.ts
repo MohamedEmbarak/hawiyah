@@ -106,6 +106,51 @@ test('a loop that does not end is stopped and the result is removed', async ({ p
   allowFrameErrors(guard, /A loop ran for more than 2 seconds/);
 });
 
+const LEAVE_BLOCKED = 'The code tried to open another address in the preview. The request was not sent, and the run was stopped.';
+
+// Code that navigates the frame itself. The page policy refuses the request before
+// it is sent, so the routing of the context must never see the address.
+const leaving: Readonly<Record<string, string>> = {
+  'location.href': "location.href = 'https://example.org/left?d=' + encodeURIComponent(document.title);",
+  'location.replace': "location.replace('https://example.org/left');",
+  'a meta refresh': "const m = document.createElement('meta'); m.httpEquiv = 'refresh'; m.content = '0;url=https://example.org/left'; document.head.append(m);",
+  'a data: address': "location.href = 'data:text/html,<p>left</p>';",
+};
+
+for (const [name, code] of Object.entries(leaving)) {
+  // The browser logs the refusal on purpose: the plain page fixture, without the console guard.
+  test(`code that leaves the result through ${name} sends no request and fails the run`, async ({ browser }) => {
+    const context = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+    const page = await context.newPage();
+    const outside: string[] = [];
+    await context.route(/example\.org/, (route) => {
+      outside.push(route.request().url());
+      return route.fulfill({ status: 200, contentType: 'text/html', body: '<p>outside</p>' });
+    });
+    await openEditor(page, 'en', 'framework=vanilla');
+    await originalRan(page, 'en');
+    await appendTo(page, 'main.js', `\nsetTimeout(() => { ${code} }, 300);\n`);
+    await page.getByRole('button', { name: /^Run/ }).click();
+    await expect(statusLine(page)).toHaveText(`The run failed: ${LEAVE_BLOCKED}`, { timeout: 30_000 });
+    await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining(LEAVE_BLOCKED));
+    await expect(resultFrame(page)).toHaveCount(0);
+    await expect(page.locator('guide-preview-frame p.notice')).toHaveText(LEAVE_BLOCKED);
+    expect(outside).toEqual([]);
+    await context.close();
+  });
+}
+
+test('a result that reloads itself is not read as leaving', async ({ page }) => {
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(page, 'main.js', "\nsetTimeout(() => { if (!window.name) { window.name = 'again'; location.reload(); } }, 300);\n");
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan, { timeout: 30_000 });
+  await page.waitForTimeout(1500);
+  await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan);
+  await expect(resultFrame(page)).toHaveCount(1);
+});
+
 for (const framework of ['react', 'angular'] as const) {
   test(`runtime=bundle: the ${framework} original and an edit run on the bundled runtime`, async ({ page }) => {
     const requests = await recordRequests(page);

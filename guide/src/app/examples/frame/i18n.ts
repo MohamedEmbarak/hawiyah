@@ -16,6 +16,8 @@ export interface FrameTexts {
   readonly navigationBlocked: (href: string) => string;
   /** A form in the example was submitted; nothing leaves the frame. */
   readonly submitBlocked: string;
+  /** Code in the example tried to navigate the frame itself; the request was refused. */
+  readonly leaveBlocked: string;
 }
 
 /** Framework names stay in Latin script in both languages. */
@@ -36,6 +38,7 @@ export const frameTexts: Texts<FrameTexts> = {
     payloadFailed: 'The compiled example could not be loaded.',
     navigationBlocked: (href) => `The example link to ${href} does not open from the preview.`,
     submitBlocked: 'The example form was submitted inside the preview; nothing was sent.',
+    leaveBlocked: 'The code tried to open another address in the preview. The request was not sent, and the run was stopped.',
   },
   ar: {
     frameTitle: (framework) => `النتيجة في ${framework}`,
@@ -46,5 +49,6 @@ export const frameTexts: Texts<FrameTexts> = {
     payloadFailed: 'تعذّر تحميل المثال المُصرَّف.',
     navigationBlocked: (href) => `لا يُفتح رابط المثال إلى ${href} من المعاينة.`,
     submitBlocked: 'أُرسل نموذج المثال داخل المعاينة، ولم يُرسَل أي شيء خارجها.',
+    leaveBlocked: 'حاولت الشيفرة فتح عنوان آخر داخل المعاينة، فلم يُرسَل الطلب وأُوقف التشغيل.',
   },
 };
