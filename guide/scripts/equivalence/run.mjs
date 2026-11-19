@@ -242,9 +242,6 @@ export function harnessUrl(origin, base, group, pin, frameworks = FRAMEWORKS) {
 export async function openGroup(page, url) {
   await page.goto(url);
   await page.waitForFunction(() => window.__harness && window.__harness.done, null, { timeout: 60_000 });
-  // The pointer stays where the last click of the previous group left it; over a frame
-  // of this group it would show a hover state in one framework only.
-  await page.mouse.move(0, 0);
   return page.evaluate(() => window.__harness);
 }
 
@@ -279,6 +276,42 @@ async function settleFrame(frame) {
   );
 }
 
+/**
+ * Clears the hover state of a result frame before it is read, so the comparison does
+ * not depend on where the pointer was.
+ *
+ * Cause (measured with scripts outside the repository): a result frame keeps :hover on
+ * the element the pointer was last over, because Chromium sends it no mouse leave when
+ * the pointer moves out to the page. When the page then scrolls (an element screenshot
+ * scrolls its frame into view), Chromium sends the frame that last had the pointer a
+ * mouse move at the pointer's old place in the viewport; after the scroll that place
+ * lies over another element of the frame, or over none, so that frame alone changes
+ * its hover. When the move arrives depends on the load of the machine.
+ *
+ * The pointer is moved onto the frame's own left padding (2 px inside its left edge,
+ * where the frame document's body padding lies at every height, so a later scroll maps
+ * the old place onto the padding again), then parked in the harness page's inline
+ * padding (4, 4), which no frame covers at any scroll position; then every frame of the
+ * group must have no hovered element below its body. A step that tests a hover state
+ * sets keepPointer and is read as it left the pointer.
+ */
+async function clearHover(page, framework, frameworks) {
+  const element = page.locator(`iframe[data-framework="${framework}"]`);
+  await element.scrollIntoViewIfNeeded();
+  const box = await element.boundingBox();
+  if (box) await page.mouse.move(box.x + 2, Math.max(box.y, 0) + 2);
+  await page.mouse.move(4, 4);
+  for (const name of frameworks) {
+    const frame = await frameOf(page, name);
+    await frame
+      .waitForFunction(() => document.querySelector('body :hover') === null, null, { timeout: 5_000 })
+      .catch(async () => {
+        const hovered = await frame.evaluate(() => Array.from(document.querySelectorAll('body :hover')).map((node) => node.localName + (node.className ? `.${String(node.className).split(' ')[0]}` : '')).join(' > '));
+        throw new Error(`the ${name} frame still shows a hover state (${hovered}) after the pointer was parked outside every frame`);
+      });
+  }
+}
+
 /** Waits until the iframe has the height its document reports (screenshots are not clipped). */
 async function settleHeight(page, frame, framework) {
   const wanted = await frame.evaluate(() => Math.ceil(document.documentElement.getBoundingClientRect().height));
@@ -298,7 +331,8 @@ async function settleHeight(page, frame, framework) {
  * Normalised tree, aria snapshot and screenshot of each framework. before(framework),
  * when given, runs first in that framework's frame (an interaction step), so each
  * result is read while its own frame still has focus: only the focused frame of a
- * page matches :focus and :focus-visible.
+ * page matches :focus and :focus-visible. Unless keepPointer is set, the hover state
+ * is cleared before each frame is read (clearHover).
  */
 let normalizeInputs = null;
 /** What the normaliser reads from the installed packages: generated names and styled data-hw-* attributes. */
@@ -307,7 +341,7 @@ export function normalizerInputs(guideDir = GUIDE_DIR) {
   return normalizeInputs;
 }
 
-export async function capture(page, frameworks = FRAMEWORKS, before = null) {
+export async function capture(page, frameworks = FRAMEWORKS, before = null, { keepPointer = false } = {}) {
   const out = { trees: {}, snapshots: {}, images: {} };
   const inputs = normalizerInputs();
   for (const framework of frameworks) {
@@ -315,6 +349,7 @@ export async function capture(page, frameworks = FRAMEWORKS, before = null) {
     const frame = await frameOf(page, framework);
     await settleFrame(frame);
     await settleHeight(page, frame, framework);
+    if (!keepPointer) await clearHover(page, framework, frameworks);
     const selector = mountSelector(framework);
     out.trees[framework] = await frame.evaluate(normalize, { target: selector, ...inputs });
     const mount = page.frameLocator(`iframe[data-framework="${framework}"]`).locator(selector);
@@ -402,8 +437,6 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, ou
   await evaluate('rest');
   // The checks run one after the other in the same frames.
   for (const check of checks) {
-    // A check starts with the pointer outside the frames (a click of the check before leaves it over a tab).
-    await page.mouse.move(0, 0);
     // Per-frame state a check keeps between its steps (for example the focused tab).
     const states = Object.fromEntries(FRAMEWORKS.map((framework) => [framework, {}]));
     for (const step of check.steps) {
@@ -413,19 +446,11 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, ou
         const mount = page.frameLocator(`iframe[data-framework="${framework}"]`).locator(mountSelector(framework));
         try {
           await step.run({ page, mount, dir: group.lang === 'ar' ? 'rtl' : 'ltr', lang: group.lang, framework, state: states[framework] });
-          // The pointer leaves the results before they are read. A click leaves it
-          // over the clicked element, and the page scrolls before the screenshot, so
-          // which element it then rests on (and shows as hovered) depends on the
-          // heights of the page's own text, not on the framework: on the GitHub
-          // runner the tab hover line appeared on a different tab in each frame.
-          // The page's inline padding (16 px) is never covered by a frame. A step
-          // that tests a hover state sets keepPointer.
-          if (!step.keepPointer) await page.mouse.move(4, 4);
         } catch (error) {
           failed = `${check.name} step ${step.name} failed in ${framework}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`;
         }
       };
-      const captured = await capture(page, FRAMEWORKS, before);
+      const captured = await capture(page, FRAMEWORKS, before, { keepPointer: Boolean(step.keepPointer) });
       if (failed) {
         failures.push(failureLine('HWE-CHECK', group, failed));
         return { rows, failures };

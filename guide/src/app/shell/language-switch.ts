@@ -6,11 +6,16 @@ import { LocaleService } from '../core/locale';
 import { shellTexts } from '../i18n/shell';
 import { Lang, dirOf } from '../i18n/text';
 
-/** A link to the same page in the other language: the language is a route, not a setting. */
+/**
+ * A link to the same page in the other language: the language is a route, not a
+ * setting. The link shows the language name alone, written in that language: with an
+ * icon beside it, the header row at 390 px fitted the web font by one pixel and wrapped
+ * with the fallback font, so the page moved down by a row when the fonts arrived.
+ */
 @Component({
   selector: 'guide-language-switch',
   imports: [HwButtonDirective],
-  template: `<a hwButton variant="ghost" size="sm" [href]="otherHref()" [attr.hreflang]="other()" [attr.lang]="other()" [attr.dir]="otherDir()"><span class="hw-icon" data-icon="translate" aria-hidden="true"></span>{{ otherName() }}</a>`,
+  template: `<a hwButton variant="ghost" size="sm" [href]="otherHref()" [attr.hreflang]="other()" [attr.lang]="other()" [attr.dir]="otherDir()">{{ otherName() }}</a>`,
 })
 export class LanguageSwitch {
   private readonly locale = inject(LocaleService);

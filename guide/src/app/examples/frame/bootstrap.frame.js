@@ -198,9 +198,16 @@ function hawiyahFrameBootstrap(config, start) {
         post('ready', { marks: marks });
         reportHeight();
         // Code that empties the document (documentElement.innerHTML = '') fires no load
-        // event; the bootstrap sees the mount root leave the document and says so once.
+        // event; the bootstrap sees the mount root leave a document that shows nothing
+        // any more (no body, or a body without a child element and without text) and
+        // says so once. Code that rewrites the body and leaves something shown is a
+        // result like any other.
+        var shows = function () {
+          var body = document.body;
+          return Boolean(body && (body.firstElementChild || (body.textContent || '').trim()));
+        };
         var watch = new MutationObserver(function () {
-          if (mount.isConnected) return;
+          if (mount.isConnected || shows()) return;
           watch.disconnect();
           post('emptied');
         });

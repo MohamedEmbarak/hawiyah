@@ -121,11 +121,30 @@ describe('positions of errors in the file the reader wrote', () => {
   it('places a syntax error in the script block that does not parse, with a setup block first', () => {
     const setup = { content: 'const a = 1;\n', loc: { start: { line: 1, column: 15 } } };
     const plain = { content: '\n\nexport default {\n', loc: { start: { line: 4, column: 9 } } };
-    const parses = (block: { content: string }) => !block.content.includes('export default {\n') || block.content.trim().endsWith('}');
-    expect(failingScriptBlock([setup, plain], parses)).toBe(plain);
-    expect(failingScriptBlock([setup, null], () => true)).toBe(setup);
-    expect(failingScriptBlock([null, plain], () => true)).toBe(plain);
+    const parseError = (block: { content: string }) =>
+      !block.content.includes('export default {\n') || block.content.trim().endsWith('}') ? null : Object.assign(new SyntaxError('Unexpected token (3:6)'), { loc: { line: 3, column: 6 } });
+    expect(failingScriptBlock([setup, plain], parseError)).toBe(plain);
+    expect(failingScriptBlock([setup, null], () => null)).toBe(setup);
+    expect(failingScriptBlock([null, plain], () => null)).toBe(plain);
     const error = Object.assign(new SyntaxError('[vue/compiler-sfc] Unexpected token (3:6)'), { loc: { line: 3, column: 6 } });
-    expect(scriptDiagnostic('Example.vue', failingScriptBlock([setup, plain], parses), error)).toMatchObject({ line: 6, column: 7 });
+    expect(scriptDiagnostic('Example.vue', failingScriptBlock([setup, plain], parseError, error), error)).toMatchObject({ line: 6, column: 7 });
+  });
+
+  it('places a syntax error in each block at the block whose own error the compiler reported (verification W2)', () => {
+    // <script setup lang="ts"> on line 1 with "const = 3;" on its line 3, and <script lang="ts">
+    // on line 10 with "let = 4;" on its first line; the compiler reports the plain block's error.
+    const setup = { content: '\nimport { ref } from "vue";\nconst = 3;\n', lang: 'ts', loc: { start: { line: 1, column: 25 } } };
+    const plain = { content: '\nlet = 4;\n', lang: 'ts', loc: { start: { line: 10, column: 19 } } };
+    const errors = new Map<object, unknown>([
+      [setup, Object.assign(new SyntaxError('Unexpected token (3:6)'), { loc: { line: 3, column: 6 } })],
+      [plain, Object.assign(new SyntaxError("Unexpected reserved word 'let'. (2:0)"), { loc: { line: 2, column: 0 } })],
+    ]);
+    const parseError = (block: object) => errors.get(block) ?? null;
+    const reported = Object.assign(new SyntaxError("[vue/compiler-sfc] Unexpected reserved word 'let'. (2:0)"), { loc: { line: 2, column: 0 } });
+    expect(failingScriptBlock([setup, plain], parseError, reported)).toBe(plain);
+    expect(scriptDiagnostic('Example.vue', failingScriptBlock([setup, plain], parseError, reported), reported)).toMatchObject({ line: 11, column: 1 });
+    // The setup block's own error, when the compiler reports that one.
+    const reportedSetup = Object.assign(new SyntaxError('[vue/compiler-sfc] Unexpected token (3:6)'), { loc: { line: 3, column: 6 } });
+    expect(failingScriptBlock([setup, plain], parseError, reportedSetup)).toBe(setup);
   });
 });

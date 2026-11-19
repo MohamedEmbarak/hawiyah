@@ -27,8 +27,9 @@ function classAllowed(name, allowed) {
   return allowed.has(name);
 }
 
-const HOST_STYLE_KEY = /^(?:class|style|\[(?:class|style|ngclass|ngstyle|classname|attr\.class|attr\.style)(?:\.[^\]]*)?\])$/i;
-const HOST_BINDING_STYLE = /^(?:class|classname|style|attr\.class|attr\.style)(?:\.|$)/i;
+// classList: the DOM forwards an assignment to it to the class attribute.
+const HOST_STYLE_KEY = /^(?:class|style|\[(?:class|style|ngclass|ngstyle|classname|classlist|attr\.class|attr\.style)(?:\.[^\]]*)?\])$/i;
+const HOST_BINDING_STYLE = /^(?:class|classname|classlist|style|attr\.class|attr\.style)(?:\.|$)/i;
 
 // Inline templates and host metadata of @Component and @Directive decorators
 // in a .ts file. `object` is null when the metadata is not an object literal;
@@ -37,10 +38,20 @@ export function componentMetadata(file, text) {
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const found = [];
   const hostBindings = [];
+  // Decorators imported from @angular/core under another name (import { HostBinding as Bind }).
+  const imported = new Map();
+  for (const statement of source.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier) || statement.moduleSpecifier.text !== '@angular/core') continue;
+    const bindings = statement.importClause?.namedBindings;
+    if (bindings && ts.isNamedImports(bindings)) {
+      for (const element of bindings.elements) imported.set(element.name.text, (element.propertyName ?? element.name).text);
+    }
+  }
   const visit = (node) => {
     if (ts.isDecorator(node) && ts.isCallExpression(node.expression)) {
       const callee = node.expression.expression;
-      const name = ts.isIdentifier(callee) ? callee.text : (ts.isPropertyAccessExpression(callee) ? callee.name.text : '');
+      const local = ts.isIdentifier(callee) ? callee.text : (ts.isPropertyAccessExpression(callee) ? callee.name.text : '');
+      const name = imported.get(local) ?? local;
       const [argument] = node.expression.arguments;
       if (name === 'Component' || name === 'Directive') {
         found.push({ source, kind: name, decorator: node, object: argument && ts.isObjectLiteralExpression(argument) ? argument : null });
@@ -203,7 +214,7 @@ export function lintTemplateSource(file, text, allowlist) {
       // @HostBinding() binds the host property of the member's own name.
       const member = decorator.parent?.name;
       const target = member && (ts.isIdentifier(member) || ts.isStringLiteralLike(member)) ? member.text : '';
-      if (/^(?:class|classname|style)$/i.test(target)) {
+      if (/^(?:class|classname|classlist|style)$/i.test(target)) {
         out.push(finding('L-TPL-8', file, ...at(source, decorator), `@HostBinding() on '${target}' sets class or style on the host element`));
       }
     } else if (!ts.isStringLiteralLike(argument)) {

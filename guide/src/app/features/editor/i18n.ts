@@ -13,6 +13,10 @@ export interface EditorTexts {
   readonly description: (component: string, section: string) => string;
   /** Link from the page header back to the component page. */
   readonly backToComponent: (component: string) => string;
+  /** The description of the prerendered page, read also without script: one page answers every address, so it names no example. */
+  readonly descriptionAnyExample: string;
+  /** The link of the prerendered page: the catalogue of the component pages. */
+  readonly componentPages: string;
   /** Unknown query values: the defaults were used. */
   readonly queryFallback: string;
   /** Name of the toolbar group. */
@@ -93,6 +97,8 @@ export const editorTexts: Texts<EditorTexts> = {
     summary: 'Edit a Hawiyah example in JavaScript, React, Vue or Angular and run it with the published packages in a sandboxed frame.',
     description: (component, section) => `${component}: ${section}`,
     backToComponent: (component) => `${component} page`,
+    descriptionAnyExample: 'Edit an example of the component pages and run it.',
+    componentPages: 'Component pages',
     queryFallback: 'Part of the address named an example, framework, language or runtime that the editor does not have; the default is shown instead.',
     controls: 'Editor controls',
     framework: 'Framework',
@@ -150,6 +156,8 @@ export const editorTexts: Texts<EditorTexts> = {
     summary: 'حرّر مثالًا من أمثلة هوية بلغة JavaScript أو بإطار React أو Vue أو Angular، وشغّله بالحزم المنشورة داخل إطار معزول.',
     description: (component, section) => `${component}: ${section}`,
     backToComponent: (component) => `صفحة المكوّن: ${component}`,
+    descriptionAnyExample: 'حرّر مثالًا من أمثلة صفحات المكوّنات وشغّله.',
+    componentPages: 'صفحات المكوّنات',
     queryFallback: 'ذكر جزء من العنوان مثالًا أو إطار عمل أو لغة أو بيئة تشغيل غير متاحة في المحرر، فعُرضت القيمة الافتراضية بدلًا منها.',
     controls: 'أدوات المحرر',
     framework: 'إطار العمل',
@@ -173,7 +181,7 @@ export const editorTexts: Texts<EditorTexts> = {
     running: 'جارٍ التشغيل…',
     ready: (ms, edited) => `${edited ? 'شُغِّلت شيفرتك' : 'شُغِّل المثال الأصلي'} في ${ms} ملّي ثانية.`,
     failed: (firstLine) => `تعذّر التشغيل: ${firstLine}`,
-    bundledRuntime: ' استُخدمت فيه الحزمة المجمّعة.',
+    bundledRuntime: ' استُخدمت فيه بيئة التشغيل المجمّعة.',
     sourceNpm: 'npm',
     sourceLocal: 'أرشيف حزمة محلي',
     copyIntegrity: 'نسخ بصمة سلامة الحزمة',
@@ -190,8 +198,8 @@ export const editorTexts: Texts<EditorTexts> = {
     navigationBlocked: { before: 'لا يُفتح رابط المثال إلى ', after: ' من المعاينة.' },
     submitBlocked: 'أُرسل نموذج المثال داخل المعاينة، ولم يُرسَل أي شيء خارجها.',
     messagesDropped: (count) => `لم تُعرض ${count} من رسائل الإخراج في هذا التشغيل بعد بلوغ الحد الأقصى، وهو 500 رسالة.`,
-    outcomeDropped: (count) => `لم تُعرض ${count} من رسائل الأخطاء والروابط والنماذج الأخرى في هذا التشغيل بعد أول 50 رسالة.`,
-    fallbackUsed: 'تعذّر تحميل وحدات النتيجة، فأُعيد التشغيل بالحزمة المجمّعة.',
+    outcomeDropped: (count) => `لم تُعرض ${count} رسالة أخرى من رسائل الأخطاء والروابط والنماذج في هذا التشغيل بعد أول 50 رسالة.`,
+    fallbackUsed: 'تعذّر تحميل وحدات النتيجة، فأُعيد التشغيل ببيئة التشغيل المجمّعة.',
     compileError: (location, message) => `${location}: ${message}`,
     loadingCompilers: 'جارٍ تحميل المصرّفات للشيفرة المحرَّرة.',
     compilersFailed: (message) => `تعذّر تحميل المصرّفات: ${message}`,

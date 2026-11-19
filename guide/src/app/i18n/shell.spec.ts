@@ -36,7 +36,7 @@ describe('shell texts', () => {
 
   it('compose the texts that take arguments', () => {
     expect(shellTexts.en.footerVersion('0.3.0')).toBe('Version 0.3.0. Licensed under the Apache License 2.0.');
-    expect(shellTexts.ar.footerVersion('0.3.0')).toBe('الإصدار 0.3.0. مرخّصة بموجب رخصة Apache 2.0.');
+    expect(shellTexts.ar.footerVersion('0.3.0')).toBe('الإصدار 0.3.0. مرخّصة بموجب ترخيص Apache 2.0.');
     expect(shellTexts.en.previewBody('abc1234')).toContain('at commit abc1234.');
     expect(shellTexts.ar.previewBody('abc1234')).toContain('عند الإيداع abc1234.');
   });

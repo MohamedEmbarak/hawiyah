@@ -302,7 +302,7 @@ export class PreviewFrame {
     const message = acceptMessage(event, { source: element.contentWindow, token: active.token, run: active.run });
     if (!message) return;
     active.messageAt = performance.now();
-    if (!active.budget.take(message.type)) {
+    if (!active.budget.take(message.type, active.state === 'loading')) {
       // One log entry per run and kind: its count is reported at most every DROPPED_REPORT_MS.
       if (message.type !== 'height' && this.droppedTimer === null) {
         this.droppedTimer = setTimeout(() => {

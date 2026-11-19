@@ -78,10 +78,16 @@ for (const lang of ['ar', 'en'] as const) {
   for (const width of [1280, 390]) {
     test(`editor without script at ${width} px: one sentence and no editor control (${lang})`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto(`${lang}/editor/`);
+      // An address that names another example than the default one.
+      await page.goto(`${lang}/editor/?example=tabs/basic&framework=react`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(lang === 'ar' ? 'المحرر' : 'Editor');
       await expect(page.locator('main .no-script')).toHaveText(NO_SCRIPT[lang]);
       await expect(page.locator('main .no-script')).toBeVisible();
+      // One prerendered page answers every address: it names no example.
+      const header = page.locator('main hw-page-header');
+      await expect(header.locator('p')).toHaveText(lang === 'ar' ? 'حرّر مثالًا من أمثلة صفحات المكوّنات وشغّله.' : 'Edit an example of the component pages and run it.');
+      await expect(header.getByRole('link')).toHaveText(lang === 'ar' ? 'صفحات المكوّنات' : 'Component pages');
+      await expect(header.getByRole('link')).toHaveAttribute('href', `${lang}/components/`);
       for (const selector of ['guide-editor-toolbar', 'guide-editor-status', 'main .workspace']) await expect(page.locator(selector)).toBeHidden();
       const controls = await page.locator('main').evaluate((main) =>
         Array.from(main.querySelectorAll('button, input, select, textarea, [role="tab"], [role="radio"], [contenteditable="true"], iframe'))

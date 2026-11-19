@@ -89,8 +89,29 @@ export class GuideViewportScroller extends ViewportScroller {
     return view ? [view.scrollX, view.scrollY] : [0, 0];
   }
 
+  /**
+   * The router asks for the top after a history move (scrollPositionRestoration
+   * 'top'), also when the address it moved to has a fragment: Forward to an address
+   * that "On this page" wrote with replaceState, or Back to a fragment link. The
+   * section the address names is shown instead, as after a link to it.
+   */
   scrollToPosition(position: [number, number], options?: ScrollOptions): void {
-    this.view?.scrollTo({ ...options, left: position[0], top: position[1] });
+    const view = this.view;
+    if (!view) return;
+    const hash = view.location.hash.slice(1);
+    if (position[0] === 0 && position[1] === 0 && hash) {
+      let fragment = hash;
+      try {
+        fragment = decodeURIComponent(hash);
+      } catch {
+        // A malformed escape: the fragment is used as written.
+      }
+      if (fragmentTarget(this.document, fragment)) {
+        this.scrollToAnchor(fragment, options);
+        return;
+      }
+    }
+    view.scrollTo({ ...options, left: position[0], top: position[1] });
   }
 
   scrollToAnchor(anchor: string, options?: ScrollOptions): void {

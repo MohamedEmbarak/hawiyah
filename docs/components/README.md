@@ -328,11 +328,21 @@ Besides the rules above, the Arabic page mirrors the English page:
   bodies (`HWC-PAR5`);
 - the same blocks in every section, in the same order: paragraphs, lists and
   the blocks of each item, code, tables, alerts and headings (`HWC-PAR7`);
-- Arabic script in every paragraph, list item and table cell outside code and
-  API tables, and in the text and the reader-text attributes (`label`,
-  `aria-label`, `title`, `placeholder`, `alt` and the like) of every live block
-  (`HWC-PAR8`). Text made only of key names (Tab, Enter, Space, Escape, Home,
-  End, ...) stays Latin. Any other exception is an entry
+- an Arabic letter in every paragraph, list item, heading h2 to h6 and table
+  cell outside code and API tables, and in the reader text of every live block
+  (`HWC-PAR8`): its text; the values of `label`, `aria-label`, `title`,
+  `placeholder`, `alt`, `description`, `heading`, `caption`, `hint`, `message`,
+  `text` and of every name that ends in `label`, `message`, `text` or `title`;
+  `value`, `defaultValue` and `modelValue` where an element shows them (a text
+  field, a text area, a button input, an output element or a component), and
+  `name` and `defaultValue` as properties of a data object; and any phrase of
+  two Latin words under another name that is not a token name (`class`, `id`,
+  `role`, `type`, `href`, `name`, `value` and the other names of
+  `TOKEN_NAMES` in `parity.mjs`). The value of an option, a check box or a radio
+  button and the name of a form field are tokens. Headings that name a framework
+  (JavaScript, React, Vue, Angular) stay Latin. A table cell made only of key
+  names (Tab, Enter, Space, Escape, Home, End, ...) stays Latin; a heading,
+  paragraph or list item made of them does not. Any other exception is an entry
   `{ "file", "text", "reason" }` of
   `guide/scripts/content/arabic-exceptions.json`, which is empty.
 
@@ -376,21 +386,29 @@ Table: Arabic terms of the guide
 | --- | --- | --- |
 | colour mode | وضع الألوان؛ الوضع الفاتح، الوضع الداكن | Never نمط for a mode. |
 | styles (CSS) | الأنماط | |
-| style sheet | ورقة الأنماط | Everywhere, also in install steps; never ملف الأنماط. |
-| CSS class | الصنف | Followed by its name in code: بالصنف `hw-button`. |
-| Kind column of the Vue and Angular API tables | الفئة | The column header and its meaning; never الصنف, which is the CSS class. |
+| style sheet | ورقة الأنماط | Everywhere, also in install steps; never ملف الأنماط, ملفات الأنماط, ملف أنماط or ملف CSS. |
+| CSS class | الصنف | Followed by its name in code: بالصنف `hw-button`; never بالفئة. |
+| Kind column of the Vue and Angular API tables | الفئة | The column header and its meaning, also in prose; never الصنف, which is the CSS class. |
 | pattern (WAI-ARIA Authoring Practices) | نمط | Only in the form نمط التبويبات, with the reference to the pattern in the same sentence (في ممارسات التأليف الخاصة بـWAI-ARIA). |
-| theme (`data-hw-theme`) | السمة | سمة never names an HTML attribute. |
+| theme (`data-hw-theme`) | السمة | سمة never names an HTML attribute (not بالسمة `hidden`). |
 | HTML attribute | الخاصية | Followed by its name in code: الخاصية `type`. |
 | CSS property | خاصية CSS | On its first mention in a section; الخاصية after it. |
 | React and Vue prop | الخاصية | |
 | Angular input | المُدخل | Plural المُدخلات. |
-| controller | المتحكم، المتحكمات | Not وحدة تحكم, which a reader also knows as the console. |
-| adapter | المحوّل، المحوّلات | The npm package of an adapter is حزمة المحوّل. |
-| code | الشيفرة | Copy buttons and listing titles. |
+| controller | المتحكم، المتحكمات | Not وحدة تحكم (with or without shadda), which a reader also knows as the console. |
+| adapter | المحوّل، المحوّلات | The npm package of an adapter is حزمة المحوّل; never مهايئ. |
+| code | الشيفرة | Copy buttons and listing titles; never الكود. |
 | `script` element or block | البرنامج النصي | |
-| key names | Latin, as printed on the key | Space, Enter, Tab, Escape, Home, End. Arrow keys, which carry no word, are named in Arabic: السهم الأيمن. |
+| key names | Latin, as printed on the key | Space, Enter, Tab, Escape, Home, End. Arrow keys, which carry no word, are named in Arabic: السهم الأيمن، السهم الأيسر، السهم العلوي، السهم السفلي. |
+| both reading directions | في اتجاهَي القراءة كليهما | Not في كلا الاتجاهين, which reads as up and down. |
 | selected | المحدَّد | |
+| selects (a tab, an option) | يحدّد | |
+| sets (a value, a look) | يضبط | Not يحدّد, which means selects: يضبط الشكلُ الطرازَ المرئي للزر. |
+| visual family (of Button) | الطراز المرئي، الطُّرُز المرئية | Never الفئة, which is the Kind column, and never الشكل, which is the variant. Owner to confirm. |
+| accessible name | الاسم الميسّر | اسم ميسّر without the article. |
+| bundled runtime | بيئة التشغيل المجمّعة | حزمة names an npm package only. |
+| licence | الترخيص | ترخيص Apache 2.0; never رخصة. |
+| stable API | الواجهة المستقرة | Not الثابتة. |
 | enabled, disabled | متاح، معطَّل | |
 | activation | التفعيل | |
 | disclosure element | عنصر الإظهار والإخفاء | |

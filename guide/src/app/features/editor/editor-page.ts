@@ -83,7 +83,7 @@ function vueScope(key: string): string {
     HwTabsComponent,
     PreviewFrame,
   ],
-  template: `<hw-container><div class="editor"><hw-page-header [title]="t().editorTitle" [description]="description()"><a hwLink [href]="componentHref()">{{ t().backToComponent(componentName()) }}</a></hw-page-header><div class="no-script"><p class="hw-type" data-scale="body-md">{{ t().noScript }}</p></div>@if (store.query().fallback) {<hw-alert tone="info" role="status">{{ t().queryFallback }}</hw-alert>}@if (store.draftRestored()) {<hw-alert tone="info" role="status"><span class="alert-row"><span>{{ t().draftRestored }}</span><button hwButton variant="ghost" size="sm" type="button" (click)="discardDraft()">{{ t().discardDraft }}</button></span></hw-alert>}<guide-editor-toolbar [t]="t()" [framework]="store.query().framework" [language]="store.query().language" [currentText]="store.currentText()" (frameworkChange)="chooseFramework($event)" (languageChange)="chooseLanguage($event)" (reset)="reset()" (download)="download()" (run)="run()" /><guide-editor-status [t]="t()" [state]="statusText()" [pkg]="pkg()" [version]="pin" [integrity]="integrity()" [preview]="preview" /><div class="workspace"><div class="code"><p class="hint hw-type" data-scale="body-sm" data-tone="muted" [id]="hintId">{{ t().leaveHint }}</p>@for (revision of revisions(); track revision.id) {<hw-tabs id="editor-files" [label]="t().files" overflow="scroll" [value]="store.currentFile()" (valueChange)="store.currentFile.set($event)">@for (file of store.files(); track file.name) {<hw-tab [value]="file.name" [label]="file.name"><guide-code-surface [name]="file.name" [text]="file.text" [lines]="listingLines(file.name)" [label]="t().codeLabel(file.name)" [describedBy]="hintId" (changed)="edit(file.name, $event)" (run)="run()" /></hw-tab>}</hw-tabs>}</div><div class="side"><div class="result" role="group" [attr.aria-label]="t().result">@if (frameSource(); as source) {<guide-preview-frame [source]="source" [bundled]="store.query().bundled" (status)="frameStatus($event)" (log)="frameLog($event)" />} @else {<div class="empty"><p class="hw-type" data-scale="body-md" data-tone="muted">{{ store.run().state === 'failed' ? t().resultFailed : t().resultEmpty }}</p></div>}</div><guide-editor-log [t]="t()" [state]="store.log()" (clear)="store.clearLog()" /></div></div></div></hw-container>`,
+  template: `<hw-container><div class="editor"><hw-page-header [title]="t().editorTitle" [description]="description()"><a hwLink [href]="componentHref()">{{ componentLink() }}</a></hw-page-header><div class="no-script"><p class="hw-type" data-scale="body-md">{{ t().noScript }}</p></div>@if (store.query().fallback) {<hw-alert tone="info" role="status">{{ t().queryFallback }}</hw-alert>}@if (store.draftRestored()) {<hw-alert tone="info" role="status"><span class="alert-row"><span>{{ t().draftRestored }}</span><button hwButton variant="ghost" size="sm" type="button" (click)="discardDraft()">{{ t().discardDraft }}</button></span></hw-alert>}<guide-editor-toolbar [t]="t()" [framework]="store.query().framework" [language]="store.query().language" [currentText]="store.currentText()" (frameworkChange)="chooseFramework($event)" (languageChange)="chooseLanguage($event)" (reset)="reset()" (download)="download()" (run)="run()" /><guide-editor-status [t]="t()" [state]="statusText()" [pkg]="pkg()" [version]="pin" [integrity]="integrity()" [preview]="preview" /><div class="workspace"><div class="code"><p class="hint hw-type" data-scale="body-sm" data-tone="muted" [id]="hintId">{{ t().leaveHint }}</p>@for (revision of revisions(); track revision.id) {<hw-tabs id="editor-files" [label]="t().files" overflow="scroll" [value]="store.currentFile()" (valueChange)="store.currentFile.set($event)">@for (file of store.files(); track file.name) {<hw-tab [value]="file.name" [label]="file.name"><guide-code-surface [name]="file.name" [text]="file.text" [lines]="listingLines(file.name)" [label]="t().codeLabel(file.name)" [describedBy]="hintId" (changed)="edit(file.name, $event)" (run)="run()" /></hw-tab>}</hw-tabs>}</div><div class="side"><div class="result" role="group" [attr.aria-label]="t().result">@if (frameSource(); as source) {<guide-preview-frame [source]="source" [bundled]="store.query().bundled" (status)="frameStatus($event)" (log)="frameLog($event)" />} @else {<div class="empty"><p class="hw-type" data-scale="body-md" data-tone="muted">{{ store.run().state === 'failed' ? t().resultFailed : t().resultEmpty }}</p></div>}</div><guide-editor-log [t]="t()" [state]="store.log()" (clear)="store.clearLog()" /></div></div></div></hw-container>`,
   styleUrl: './editor-page.css',
 })
 export class EditorPage {
@@ -118,8 +118,17 @@ export class EditorPage {
     // section such as Example is named by its own name, not by the section.
     return { id: group?.section ?? '', text: heading && heading.level > 2 ? heading.text : query.example };
   });
-  protected readonly description = computed(() => this.t().description(this.componentName(), this.section().text));
+  /**
+   * False on the server and in the first client render: the prerendered page (also what
+   * a reader without script reads) answers every address of the editor, so its
+   * description and link name no example; after hydration they name the example of
+   * the address.
+   */
+  private readonly live = signal(false);
+  protected readonly description = computed(() => (this.live() ? this.t().description(this.componentName(), this.section().text) : this.t().descriptionAnyExample));
+  protected readonly componentLink = computed(() => (this.live() ? this.t().backToComponent(this.componentName()) : this.t().componentPages));
   protected readonly componentHref = computed(() => {
+    if (!this.live()) return page(this.lang(), 'components');
     const section = this.section().id;
     return `${page(this.lang(), `components/${this.store.query().id}/reference`)}${section ? `#${section}` : ''}`;
   });
@@ -175,6 +184,7 @@ export class EditorPage {
 
     afterNextRender(() => {
       this.browser = true;
+      this.live.set(true);
       const query = parseEditorQuery(this.document.defaultView?.location.search ?? '');
       void this.open(query);
     });

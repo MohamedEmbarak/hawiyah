@@ -3,21 +3,23 @@
   align-items: center;
 }
 
-img {
-  display: block;
-  block-size: auto;
+/* The images are flex items of the host; their wrappers add no box. CSS switches the
+   wrappers, never the images (see wordmark.ts). */
+.light,
+.dark {
+  display: contents;
 }
 
-.wordmark-dark {
+.dark {
   display: none;
 }
 
-:host-context([data-hw-mode='dark']) .wordmark-light {
+:host-context([data-hw-mode='dark']) .light {
   display: none;
 }
 
-:host-context([data-hw-mode='dark']) .wordmark-dark {
-  display: block;
+:host-context([data-hw-mode='dark']) .dark {
+  display: contents;
 }
 
 picture {
@@ -27,21 +29,21 @@ picture {
 /* Forced colours: the page surfaces take the system colours, so the artwork follows
    the colour scheme of the system, not the stored mode. */
 @media (forced-colors: active) and (prefers-color-scheme: light) {
-  :host-context([data-hw-mode]) .wordmark-light {
-    display: block;
+  :host-context([data-hw-mode]) .light {
+    display: contents;
   }
 
-  :host-context([data-hw-mode]) .wordmark-dark {
+  :host-context([data-hw-mode]) .dark {
     display: none;
   }
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
-  :host-context([data-hw-mode]) .wordmark-light {
+  :host-context([data-hw-mode]) .light {
     display: none;
   }
 
-  :host-context([data-hw-mode]) .wordmark-dark {
-    display: block;
+  :host-context([data-hw-mode]) .dark {
+    display: contents;
   }
 }

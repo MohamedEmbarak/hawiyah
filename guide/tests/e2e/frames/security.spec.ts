@@ -191,6 +191,12 @@ test('with several frames on a page, a frame that navigates itself is the one re
   for (const frame of page.frames()) {
     const button = frame.locator('#leave');
     if ((await button.count()) === 1) {
+      // The page scrolls a long way to the button; right after a scroll Chromium can
+      // route the pointer to the page's iframe element instead of into the result frame
+      // (its hit-test data lag the scroll), and the click never reaches the button.
+      // Scroll first and let two frames render, then click.
+      await button.scrollIntoViewIfNeeded();
+      await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
       await button.click();
       clicked = true;
       break;

@@ -243,6 +243,8 @@ function frameStyleFindings(html: string): string[] {
         continue;
       }
       const selector = rule.selectorText;
+      const nested = (rule as CSSStyleRule & { cssRules?: CSSRuleList }).cssRules;
+      if (nested && nested.length > 0) findings.push(`a nested rule in ${selector}`);
       const listed = FRAME_STYLE[selector];
       if (!listed) {
         findings.push(`selector ${selector}`);
@@ -260,7 +262,39 @@ function frameStyleFindings(html: string): string[] {
   return findings;
 }
 
+/**
+ * The whole text of the style block, with the colour mode as its only variable. A
+ * nested rule, another value of a listed property or any other change fails here even
+ * where the parser of the test environment does not report it as a rule.
+ */
+const frameStyleText = (mode: 'light' | 'dark') =>
+  `html{color-scheme:${mode};background-color:var(--hw-color-canvas);color:var(--hw-color-text);font-family:var(--hw-font-sans)}` +
+  `body{margin:0;padding:var(--hw-space-5)}#${MOUNT_ID}{display:flow-root;min-inline-size:0}`;
+
+function styleTexts(html: string): string[] {
+  return Array.from(parse(html).querySelectorAll('style')).map((style) => style.textContent ?? '');
+}
+
 describe('the style block of a result frame', () => {
+  it('is exactly the written text, with the colour mode as the only variable', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      expect(styleTexts(modulesDocument({ ...base, mode, imports })), `modules ${mode}`).toEqual([frameStyleText(mode)]);
+      expect(styleTexts(bundledDocument({ ...base, mode, lang: 'en', dir: 'ltr', title: frameTexts.en.frameTitle('Vue') })), `bundled ${mode}`).toEqual([frameStyleText(mode)]);
+    }
+  });
+
+  it('fails the exact text on a nested rule and on another value of a listed property', () => {
+    const html = modulesDocument({ ...base, imports });
+    const nested = html.replace(`#${MOUNT_ID}{display:flow-root;min-inline-size:0}`, `#${MOUNT_ID}{display:flow-root;min-inline-size:0;button{letter-spacing:.3em;font-style:italic}}`);
+    expect(nested).not.toBe(html);
+    expect(styleTexts(nested)).not.toEqual([frameStyleText(base.mode)]);
+    const value = html.replace('color:var(--hw-color-text)', 'color:var(--hw-color-danger)');
+    expect(value).not.toBe(html);
+    expect(styleTexts(value)).not.toEqual([frameStyleText(base.mode)]);
+    // The listed selectors and properties alone do not see another value.
+    expect(frameStyleFindings(value)).toEqual([]);
+  });
+
   it('styles only the document, the body and the mount root, with the listed properties', () => {
     expect(frameStyleFindings(modulesDocument({ ...base, imports }))).toEqual([]);
     expect(frameStyleFindings(bundledDocument({ ...base, mode: 'light', lang: 'en', dir: 'ltr', title: frameTexts.en.frameTitle('Vue') }))).toEqual([]);

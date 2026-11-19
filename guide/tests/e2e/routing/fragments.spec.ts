@@ -85,8 +85,9 @@ test('without a reduced-motion preference the scroll is smooth', async ({ page }
 // (hw-content-navigation updateHash: history.replaceState with the path under the
 // base and the fragment). The router does not see a replaceState, so focus stays on
 // the section and does not move to the page heading; Back leaves the page as before
-// (no extra history entry), Forward restores the address, and a reload on the fragment
-// address shows the section.
+// (no extra history entry: a limitation of ContentNavigation 0.3.0, recorded in
+// CHANGELOG.md), Forward restores the address and shows and focuses the section it
+// names (GuideViewportScroller), and a reload on the fragment address shows the section.
 for (const lang of ['en', 'ar'] as const) {
   test(`${lang}: On this page writes the section into the address under the base path`, async ({ page }) => {
     const id = available.components[0];
@@ -114,11 +115,12 @@ for (const lang of ['en', 'ar'] as const) {
     await page.goBack();
     await expect(page).toHaveURL(new RegExp(`/hawiyah/${lang}/components/${id}/?$`));
     await expect(page.locator('main h1')).toBeVisible();
-    // Forward restores the address with the section (the router's popstate scroll
-    // restoration, 'top', decides the position there).
+    // Forward restores the address with the section, and the section is shown.
     await page.goForward();
     await expect(page).toHaveURL(new RegExp(`/hawiyah/${lang}/components/${id}/reference/?#api$`));
-    await expect(page.locator('main h1')).toBeVisible();
+    await expect(page.locator('main h2#api')).toBeInViewport();
+    await expect(page.locator('main h2#api')).toBeFocused();
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
 
     await page.reload();
     await hydrated(page);

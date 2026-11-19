@@ -140,13 +140,23 @@ export function acceptMessage(event: MessageLike, expected: ExpectedSender): Fra
  */
 export class MessageBudget {
   private readonly accepted: Record<'console' | 'height' | 'outcome', number> = { console: 0, height: 0, outcome: 0 };
+  private errorSeen = false;
   /** Console messages dropped (reported to the reader); dropped height reports are not counted. */
   dropped = 0;
   /** Error, navigation and submit messages dropped (reported to the reader). */
   droppedOutcome = 0;
 
-  take(type: FrameMessageType): boolean {
+  /**
+   * Whether a message of this type is accepted. The first error of a run and every
+   * error while the run is loading are always accepted and not counted: they decide
+   * the outcome of the run.
+   */
+  take(type: FrameMessageType, loading = false): boolean {
     if (type === 'ready' || type === 'emptied') return true;
+    if (type === 'error' && (loading || !this.errorSeen)) {
+      this.errorSeen = true;
+      return true;
+    }
     if (type === 'error' || type === 'navigation' || type === 'submit') {
       if (this.accepted.outcome >= MAX_OUTCOME_MESSAGES) {
         this.droppedOutcome += 1;

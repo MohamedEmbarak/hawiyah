@@ -1,3 +1,6 @@
+import type { Page } from '@playwright/test';
+// @ts-expect-error: pngjs ships without type declarations.
+import { PNG } from 'pngjs';
 import { expect, presetMode, test } from '../support/fixtures';
 import { TEXT, appendTo, axeWithFrame, codeOf, editorPath, logTexts, openEditor, originalRan, readyResult, resultFrame, statusLine, type Lang } from './support';
 
@@ -254,6 +257,66 @@ for (const lang of ['en', 'ar'] as const satisfies readonly Lang[]) {
 // Visible focus (WCAG 2.4.7) on the two guide-owned surfaces of the editor: the code
 // (the CodeMirror editor draws the ring) and the result frame (its container draws
 // the ring while focus is in the frame's document), in both colour modes.
+
+/**
+ * The focus ring as painted: a screenshot of the element and its surroundings, sampled at
+ * the middle of each side in the middle of the ring, and just outside and inside it (the
+ * gap of the outline offset). Returns, per side, the lower contrast ratio of the ring
+ * against those two pixels.
+ */
+async function paintedRing(page: Page, selector: string): Promise<Record<'top' | 'right' | 'bottom' | 'left', number>> {
+  const box = await page.locator(selector).first().evaluate((element) => {
+    element.scrollIntoView({ block: 'center' });
+    const rect = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    return {
+      x: rect.x + scrollX,
+      y: rect.y + scrollY,
+      w: rect.width,
+      h: rect.height,
+      width: parseFloat(style.outlineWidth),
+      offset: parseFloat(style.outlineOffset),
+      pageWidth: document.documentElement.scrollWidth,
+      pageHeight: document.documentElement.scrollHeight,
+    };
+  });
+  const pad = Math.ceil(box.offset + box.width + 6);
+  const x = Math.max(0, Math.floor(box.x - pad));
+  const y = Math.max(0, Math.floor(box.y - pad));
+  const clip = { x, y, width: Math.min(Math.ceil(box.w + 2 * pad), box.pageWidth - x), height: Math.min(Math.ceil(box.h + 2 * pad), box.pageHeight - y) };
+  const png = PNG.sync.read(await page.screenshot({ clip, fullPage: true, animations: 'disabled' }));
+  const pixel = (px: number, py: number): [number, number, number] => {
+    const i = (Math.round(py - clip.y) * png.width + Math.round(px - clip.x)) * 4;
+    return [png.data[i], png.data[i + 1], png.data[i + 2]];
+  };
+  const luminance = ([r, g, b]: [number, number, number]) => {
+    const f = (v: number) => {
+      const c = v / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+  };
+  const ratio = (a: [number, number, number], b: [number, number, number]) => {
+    const [high, low] = [luminance(a), luminance(b)].sort((p, q) => q - p) as [number, number];
+    return (high + 0.05) / (low + 0.05);
+  };
+  const middle = box.offset + box.width / 2;
+  const outside = box.offset + box.width + 3;
+  const inside = box.offset > 0 ? box.offset / 2 : -1.5;
+  const sides = {
+    left: [box.x, box.y + box.h / 2, -1, 0],
+    right: [box.x + box.w, box.y + box.h / 2, 1, 0],
+    top: [box.x + box.w / 2, box.y, 0, -1],
+    bottom: [box.x + box.w / 2, box.y + box.h, 0, 1],
+  } as const;
+  const result = {} as Record<'top' | 'right' | 'bottom' | 'left', number>;
+  for (const [side, [sx, sy, dx, dy]] of Object.entries(sides) as [keyof typeof sides, readonly [number, number, number, number]][]) {
+    const ring = pixel(sx + dx * middle, sy + dy * middle);
+    result[side] = Math.min(ratio(ring, pixel(sx + dx * outside, sy + dy * outside)), ratio(ring, pixel(sx + dx * inside, sy + dy * inside)));
+  }
+  return result;
+}
+
 for (const mode of ['light', 'dark'] as const) {
   test(`the focused code and the focused result show a visible focus indicator (${mode})`, async ({ page }) => {
     await presetMode(page, mode);
@@ -273,17 +336,24 @@ for (const mode of ['light', 'dark'] as const) {
         const style = getComputedStyle(element);
         return { style: style.outlineStyle, width: parseFloat(style.outlineWidth), colour: style.outlineColor };
       });
+    // What is painted: a clipping ancestor removes the ring while its computed outline stays.
+    const painted = async (selector: string) => {
+      const contrast = await paintedRing(page, selector);
+      for (const [side, value] of Object.entries(contrast)) expect(value, `${selector}: ring at the middle of the ${side} side against the pixels on both sides of it`).toBeGreaterThanOrEqual(3);
+    };
     // From Run, Tab reaches the code (after the status line's copy button and the file tab).
     const code = page.getByRole('textbox', { name: /^Code of/ });
     await code.focus();
     await expect(page.locator('.cm-editor').first()).toHaveClass(/cm-focused/);
     expect(await ring('.cm-editor')).toEqual({ style: 'solid', width: 2, colour: focusColour });
+    await painted('.cm-editor');
     // Escape then Tab leaves the code; the next stop is the result frame.
     await page.keyboard.press('Escape');
     await page.keyboard.press('Tab');
     await expect.poll(() => page.evaluate(() => document.activeElement?.localName)).toBe('iframe');
     // The page learns that focus went into the frame from its window's events.
     await expect.poll(() => ring('guide-preview-frame .frame')).toEqual({ style: 'solid', width: 2, colour: focusColour });
+    await painted('guide-preview-frame .frame');
     // Tab on out of the frame (past the example's own controls): the ring goes.
     for (let presses = 0; presses < 5 && (await page.evaluate(() => document.activeElement?.localName)) === 'iframe'; presses += 1) {
       await page.keyboard.press('Tab');

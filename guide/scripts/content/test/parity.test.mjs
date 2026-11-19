@@ -67,7 +67,20 @@ describe('checkParity', () => {
       'live block "primary" (vanilla) aria-label',
       'live block "primary" (vanilla) text',
     ]);
-    expect(codes({ ar: swap(validAr(), 'يعرض المثال إجراءً أساسيًا واحدًا.', 'Tab، Enter') })).toEqual([]);
+    // Key names are exempt in table cells (the Key column) only.
+    expect(codes({ ar: swap(validAr(), '| Enter |', '| Tab، Shift+Tab |') })).toEqual([]);
+    expect(codes({ ar: swap(validAr(), 'يعرض المثال إجراءً أساسيًا واحدًا.', 'Tab، Enter') })).toEqual(['HWC-PAR8']);
+    expect(codes({ ar: swap(validAr(), 'يعرض المثال إجراءً أساسيًا واحدًا.', 'The example shows one primary action، in English.') })).toEqual(['HWC-PAR8']);
+  });
+
+  it('treats a shown value as reader text, and keeps hidden values and field names as tokens (HWC-PAR8)', () => {
+    const at = '<button class="hw-button" type="button" data-variant="primary">متابعة</button>';
+    const live = (markup) => runPair({ ar: validAr().replace(at, `${at}${markup}`) }).findings
+      .filter((item) => item.code === 'HWC-PAR8')
+      .map((item) => item.message.split(' has no')[0]);
+    expect(live('<input class="hw-input" name="person" value="Sara Ahmed">')).toEqual(['live block "primary" (vanilla) value']);
+    expect(live('<input class="hw-input" type="text" value="Riyadh">')).toEqual(['live block "primary" (vanilla) value']);
+    expect(live('<input type="checkbox" name="terms" value="accepted"><select class="hw-select"><option value="riyadh">الرياض</option></select>')).toEqual([]);
   });
 
   it('requires Arabic script in headings h2 to h6, except the framework names (HWC-PAR8)', () => {
@@ -77,6 +90,9 @@ describe('checkParity', () => {
     const latin = runPair({ ar: ar.replace(h3[0], '### Vertical') }).findings.filter((item) => item.code === 'HWC-PAR8');
     expect(latin.map((item) => item.message)).toEqual(['the h3 has no Arabic script: "Vertical"; translate it, or list it in scripts/content/arabic-exceptions.json with a reason']);
     expect(codes({ ar: ar.replace(h3[0], '### JavaScript') }).filter((code) => code === 'HWC-PAR8')).toEqual([]);
+    // A heading that is a key name is a word to translate.
+    expect(codes({ ar: ar.replace(h3[0], '### Tab') }).filter((code) => code === 'HWC-PAR8')).toEqual(['HWC-PAR8']);
+    expect(codes({ ar: ar.replace(h3[0], '### Home and End') }).filter((code) => code === 'HWC-PAR8')).toEqual(['HWC-PAR8']);
   });
 
   it('treats names that end in label, message, text or title and Latin phrases in live blocks as reader text (HWC-PAR8)', () => {

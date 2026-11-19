@@ -148,16 +148,17 @@ async function compileVue(base: string, file: string, source: string, scopeId: s
   try {
     script = compiler.compileScript(target, { id: scopeId, inlineTemplate: true, isProd: true }).content;
   } catch (error) {
-    // With a setup block and a plain block, the error belongs to the block that does not parse.
-    const parses = (block: SfcBlock) => {
+    // With a setup block and a plain block, the error belongs to the block whose own
+    // parse error is the one the compiler reported.
+    const parseError = (block: SfcBlock): unknown => {
       try {
         compiler.babelParse(block.content, { sourceType: 'module', plugins: block.lang === 'ts' ? ['typescript'] : [] });
-        return true;
-      } catch {
-        return false;
+        return null;
+      } catch (blockError) {
+        return blockError;
       }
     };
-    throw new CompileFailure([scriptDiagnostic(file, failingScriptBlock([target.scriptSetup, target.script], parses), error)]);
+    throw new CompileFailure([scriptDiagnostic(file, failingScriptBlock([target.scriptSetup, target.script], parseError, error), error)]);
   }
   const lang = (target.scriptSetup ?? target.script)?.lang;
   const code = transformWithSucrase(await sucrase(base), file, script, lang === 'ts' ? ['typescript'] : [], 'automatic');

@@ -8,7 +8,7 @@
 import { resolve } from "node:path";
 import { checkRegistry, failureLines, successLines } from "../registry-check/check.mjs";
 
-/** The options of the check for a build context (exported for scripts/test/registry-dist.test.mjs). */
+/** The options of the check for a build context (exported for scripts/registry-check/test/styles.test.mjs). */
 export function stepOptions(ctx) {
   const distDir = resolve(ctx.guideDir, ctx.browserDir);
   const outDir = resolve(ctx.guideDir, ctx.outDir);

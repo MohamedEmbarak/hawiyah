@@ -117,17 +117,33 @@ export function specifierPosition(source: string, specifier: string): { line: nu
   return match ? position(source, match.index + match[0].length - specifier.length - 1) : null;
 }
 
+/** The message of a parse error without the compiler's prefix and the trailing (line:column). */
+const plainMessage = (error: unknown) =>
+  ((error instanceof Error ? error.message : String(error)).split('\n')[0] ?? '').replace(/^\[[^\]]+\]\s*/, '').replace(/\s*\(\d+:\d+\)$/, '');
+const locOf = (error: unknown) => (error as { loc?: { line?: number; column?: number } } | null)?.loc;
+
 /**
- * The script block of a Vue file that holds a syntax error: the first block whose
- * content the parser refuses, in the order of the file; the setup block, else the
- * plain block, when each parses on its own.
+ * The script block of a Vue file that holds the reported syntax error: of the blocks
+ * whose content the parser refuses on its own (parseError returns that error, or null),
+ * the one whose own error has the message and the position the compiler reported (with
+ * a syntax error in each block the compiler reports one of them, not always the first
+ * in the file); else the first refused block in the order of the file; the setup
+ * block, else the plain block, when each parses on its own.
  */
 export function failingScriptBlock<T extends { readonly content: string; readonly lang?: string; readonly loc?: { readonly start: { readonly line: number } } }>(
   blocks: readonly (T | null)[],
-  parses: (block: T) => boolean,
+  parseError: (block: T) => unknown,
+  reported: unknown = null,
 ): T | null {
   const present = blocks.filter((block): block is T => block !== null).sort((a, b) => (a.loc?.start.line ?? 0) - (b.loc?.start.line ?? 0));
-  return present.find((block) => !parses(block)) ?? blocks[0] ?? blocks[1] ?? null;
+  const failing = present.map((block) => ({ block, error: parseError(block) })).filter((entry) => entry.error !== null && entry.error !== undefined);
+  const same = (error: unknown) => {
+    if (reported === null || plainMessage(error) !== plainMessage(reported)) return false;
+    const a = locOf(error);
+    const b = locOf(reported);
+    return !a || !b || (a.line === b.line && a.column === b.column);
+  };
+  return failing.find((entry) => same(entry.error))?.block ?? failing[0]?.block ?? blocks[0] ?? blocks[1] ?? null;
 }
 
 export function position(code: string, offset: number): { line: number; column: number } {

@@ -195,12 +195,26 @@ describe('runContent: links to another component page', () => {
       // Laid out as the repository: docs/components/ and docs/components.json (the fixture links ../components.json).
       const docs = join(dir, 'docs', 'components');
       mkdirSync(docs, { recursive: true });
-      // fixture-a links to the built page fixture-b (a copy under its own name) with a
-      // fragment that fixture-b does not have, and with one that it has.
-      for (const [suffix, from, to] of [['md', 'Fixture A', 'Fixture B'], ['ar.md', 'النموذج أ', 'النموذج ب']]) {
+      // fixture-a links to the built page fixture-b (a copy under its own name whose
+      // first h3 is another heading) with a fragment that no page has, with a heading
+      // that only fixture-a has, with one that only fixture-b has, and with one that
+      // both have. A check against the linking page, or against any built page, would
+      // decide the second and the third link the other way.
+      const pages = [
+        ['md', 'Fixture A', 'Fixture B', '### Language and direction', '### Writing direction'],
+        ['ar.md', 'النموذج أ', 'النموذج ب', '### اللغة والاتجاه', '### اتجاه الكتابة'],
+      ];
+      for (const [suffix, from, to, heading, other] of pages) {
         const text = readFileSync(join(componentsDir, `fixture-a.${suffix}`), 'utf8');
-        writeFileSync(join(docs, `fixture-b.${suffix}`), text.replace(`# ${from}\n`, `# ${to}\n`));
-        writeFileSync(join(docs, `fixture-a.${suffix}`), text.replace(`(fixture-a.${suffix}#javascript)`, `(fixture-b.${suffix}#no-such-heading) [x](fixture-b.${suffix}#javascript)`));
+        if (!text.includes(`\n${heading}\n`)) throw new Error(`fixture heading not found: ${heading}`);
+        writeFileSync(join(docs, `fixture-b.${suffix}`), text.replace(`# ${from}\n`, `# ${to}\n`).replace(`\n${heading}\n`, `\n${other}\n`));
+        writeFileSync(
+          join(docs, `fixture-a.${suffix}`),
+          text.replace(
+            `(fixture-a.${suffix}#javascript)`,
+            `(fixture-b.${suffix}#no-such-heading) [x](fixture-b.${suffix}#language-and-direction) [y](fixture-b.${suffix}#writing-direction) [z](fixture-b.${suffix}#javascript)`,
+          ),
+        );
       }
       const components = join(dir, 'docs', 'components.json');
       writeFileSync(components, JSON.stringify({ components: [{ id: 'fixture-a', name: 'Fixture A', labelAr: 'النموذج أ' }, { id: 'fixture-b', name: 'Fixture B', labelAr: 'النموذج ب' }] }));
@@ -208,7 +222,9 @@ describe('runContent: links to another component page', () => {
       const links = outcome.findings.filter((item) => item.code === 'HWC-LINK').map((item) => [item.file.split('/').pop(), item.message]);
       expect(links).toEqual([
         ['fixture-a.md', 'the link "fixture-b.md#no-such-heading" names no heading of the page fixture-b'],
+        ['fixture-a.md', 'the link "fixture-b.md#language-and-direction" names no heading of the page fixture-b'],
         ['fixture-a.ar.md', 'the link "fixture-b.ar.md#no-such-heading" names no heading of the page fixture-b'],
+        ['fixture-a.ar.md', 'the link "fixture-b.ar.md#language-and-direction" names no heading of the page fixture-b'],
       ]);
     } finally {
       rmSync(dir, { recursive: true, force: true });

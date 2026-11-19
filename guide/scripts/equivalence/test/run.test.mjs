@@ -6,7 +6,11 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import tabsClick from '../checks/tabs-click.mjs';
 import tabsKeyboard, { nextTabKey } from '../checks/tabs-keyboard.mjs';
-import { bundleHarness, changelogSourceError, checkNames, compareCapture, controllerComponents, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { fileURLToPath } from 'node:url';
+import { generatedNamePattern } from '../generated-names.mjs';
+import { normalize } from '../normalize.js';
+import { bundleHarness, capture, changelogSourceError, checkNames, compareCapture, controllerComponents, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { styledAttributes } from '../styled-attributes.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
 const group = { id: 'tabs', lang: 'ar', example: 'basic', blocks: { vanilla: { line: 19 } } };
@@ -324,5 +328,37 @@ describe('runEquivalence before the browser', () => {
   it('HWE-CHECK: a check without a script', async () => {
     const options = fixture({ groups: live('tabs', 'basic', { check: 'tabs-nothing' }), pages: [tabsPage(['basic'])], components: interactive });
     await expect(runEquivalence(options)).rejects.toThrow('HWE-CHECK docs/components/tabs.ar.md:7: check=tabs-nothing has no scripts/equivalence/checks/tabs-nothing.mjs');
+  });
+});
+
+describe('the harness hands the normaliser its inputs (verification W2: styled {} passed every test)', () => {
+  it('capture() passes the generated-name pattern and the styled data-hw-* attributes read from the installed packages to normalize()', async () => {
+    const guideDir = fileURLToPath(new URL('../../../', import.meta.url));
+    const received = [];
+    // A page with four result frames, enough of Playwright's surface for capture().
+    const frame = {
+      evaluate: async (fn, arg) => {
+        if (fn === normalize) received.push(arg);
+        return fn === normalize ? [] : undefined;
+      },
+      waitForFunction: async () => undefined,
+    };
+    const locator = {
+      elementHandle: async () => ({ contentFrame: async () => frame }),
+      locator: () => locator,
+      ariaSnapshot: async () => '',
+      screenshot: async () => Buffer.alloc(0),
+      scrollIntoViewIfNeeded: async () => undefined,
+      boundingBox: async () => ({ x: 16, y: 40, width: 720, height: 160 }),
+    };
+    const page = { locator: () => locator, frameLocator: () => locator, waitForFunction: async () => undefined, mouse: { move: async () => undefined } };
+    await capture(page);
+    expect(received).toHaveLength(4);
+    const styled = styledAttributes(guideDir);
+    expect(Object.keys(styled)).toEqual(expect.arrayContaining(['data-hw-mode', 'data-hw-theme', 'data-hw-density']));
+    for (const arg of received) {
+      expect(arg.generatedName).toBe(generatedNamePattern(guideDir));
+      expect(arg.styled).toEqual(styled);
+    }
   });
 });

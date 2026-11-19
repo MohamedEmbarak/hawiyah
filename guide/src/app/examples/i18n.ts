@@ -49,7 +49,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     renderedWith: (pkg, pin, preview) => ['معروض باستخدام ', `${pkg} ${pin}`, preview ? ' من أرشيف حزمة محلي' : ' من npm'],
     loading: (framework) => `جارٍ تحميل نتيجة ${framework}`,
     failed: (framework, firstLine) => `تعذّر تحميل نتيجة ${framework}: ${firstLine}`,
-    bundledRuntime: ' (بالحزمة المجمّعة)',
+    bundledRuntime: ' (ببيئة التشغيل المجمّعة)',
   },
 };
 

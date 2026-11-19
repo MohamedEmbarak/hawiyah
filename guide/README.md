@@ -94,19 +94,34 @@ files to equal, byte for byte, the bundle derived again from the installed
 rules are in `src/guide.css` (bundle `guide-*.css`), the guide components' rules
 in their own style sheets.
 
-Package element: an element whose tag starts with `hw-` or whose class list has
-a class starting with `hw-`, and every descendant of such an element down to a
-projected guide element. A projected guide element is an element that a guide
-template wrote: its tag starts with `guide-` (or is `app-root`), or it carries an
-Angular emulation attribute (`_ngcontent-*`, `_nghost-*`). `@hawiyah/angular`
-0.3.0 declares no component styles, so Angular writes no emulation attribute on
-what a package component renders, while every guide component has styles or is
-a `guide-` host. A plain `span`, `button`, `li` or `td` that a package component
-renders without an `hw-` class therefore belongs to the package; a guide block
-projected into a package container, and everything below it, belongs to the
-guide again, down to the next package element. The boundary follows who wrote
-the element because that is what the guide controls: it may style what it
-writes, and it may only place what a package component renders.
+Package element, first clause: an element whose tag starts with `hw-` or whose
+class list has a class starting with `hw-`, and every descendant of such an
+element down to a projected guide element. A projected guide element is an
+element that a guide template wrote: its tag starts with `guide-` (or is
+`app-root`), or it carries an Angular emulation attribute (`_ngcontent-*`,
+`_nghost-*`). `@hawiyah/angular` 0.3.0 declares no component styles, so Angular
+writes no emulation attribute on what a package component renders. A guide
+component with styles marks what its template writes with its emulation
+attribute; a guide component without styles of its own (the inline renderer, for
+example) writes no such attribute, but its host is a `guide-` element, so the
+descent stops there as well. A plain `span`, `button`, `li` or `td` that a package
+component renders without an `hw-` class therefore belongs to the package.
+
+Second clause: every element, whoever wrote it, that a rule of the package
+stylesheet the page serves (`styles-*.css`) matches when the rule's selector
+names an `hw-` class or an `hw-` tag in a compound outside `:not()` and `:has()`:
+a heading or paragraph that a guide template writes inside `.hw-prose`, the
+`code` element of a code block, a paragraph inside an alert, an image inside the
+portal brand, a column of `hw-sidebar`. The set is derived in the browser from
+the served stylesheet, with states and pseudo-elements stripped as below, except
+that `data-*` attributes other than the colour mode, theme and density stay in
+the package's selectors (the package's scripts write `data-*` states only on the
+elements they render, so a guide element is selected through one only when the
+guide writes it, and then at rest). A rule that selects only by `data-hw-mode`,
+`data-hw-theme` or `data-hw-density`, by `:root` or by an element name alone
+makes no element a package element. On today's pages the second clause adds 14
+elements on a landing page, 3 on the catalogue and the editor, 15 on a brief page,
+46 on a Button reference page and 41 on a Tabs reference page.
 
 The proof has two halves, both over every prerendered page in both languages
 (`tests/e2e/support/styling-rule.ts` holds the definitions and lists).
@@ -117,51 +132,77 @@ The proof has two halves, both over every prerendered page in both languages
   adopted sheet is read in the browser, under every condition (all `@media`,
   `@supports`, `@container`, `@layer`, `@scope` and `@starting-style` blocks,
   so print, forced colours, both motion preferences and every width range), with
-  CSS nesting resolved. State pseudo-classes (`:hover`, `:focus`,
-  `:focus-visible`, `:focus-within`, `:active`, `:checked`, `:disabled`,
-  `:target`, `:open`, `:visited` and every other pseudo-class that is not
-  structural), the colour-mode, theme and density attributes and all
-  pseudo-elements are removed from the selector, also inside `:is()`,
-  `:where()`, `:not()` and `:has()` (a `:not()` that held a state is dropped);
-  the result is matched with `querySelectorAll`. A rule that matches a package
-  element may declare only placement properties (margins, sizes, position and
-  inset, flex and grid item properties, `visibility`, each with its reason). A
-  rule that matches an ancestor of a package element may declare an inherited
-  property, a package custom property (`--hw-*`) or a property that changes how
-  every descendant paints (opacity, filter, transforms, masks, clipping,
-  blending) only when the list `INHERITED_ALLOWED` names its stylesheet,
-  selector and property with a reason; a token value is not a reason. Today the
-  list holds the document colour and font family on `html`, the same two on the
-  stage of a native result (it reproduces the result frame's document) and of a
-  landing pane (it carries its own mode and theme), the sticky offset of the
-  side navigation, and the opacity of a hidden install cell. A selector the
-  stripper cannot handle (`:host`, `::slotted()`, `::part()`, `:nth-child(... of
-  S)`) and a rule type it does not know fail the test.
+  CSS nesting resolved. States are removed from the selector: pseudo-classes
+  that are not structural (`:hover`, `:focus`, `:focus-visible`, `:focus-within`,
+  `:active`, `:checked`, `:disabled`, `:target`, `:open`, `:visited` and the
+  others), every attribute selector whose name starts with `aria-` or `data-`,
+  and `open`, `hidden`, `disabled`, `checked`, `selected`, `readonly`,
+  `required` and `inert`; so are all pseudo-elements, also inside `:is()`,
+  `:where()`, `:not()` and `:has()` (a `:not()` that held a state is dropped).
+  `lang`, `dir`, `role`, `class`, `id`, `type`, `href` and the emulation
+  attributes stay. The result is matched with `querySelectorAll`. A rule that
+  matches a package element may declare margins; any other placement property
+  (sizes, position and inset, flex and grid item properties, `visibility`,
+  scroll margins, and `display` only as `none`) only through an entry of
+  `PLACEMENT_ALLOWED`, and nothing else. A rule that matches an ancestor of a
+  package element may declare an inherited property (the list is derived from
+  the browser when the test runs, together with a written floor for properties
+  the derivation cannot change), a package custom property (`--hw-*`, `--_hw-*`)
+  or a property that changes how every descendant paints (opacity, filter,
+  transforms, masks, clipping, blending, `text-decoration-line`, the offset path
+  properties and `animation-name`) only through an entry of `INHERITED_ALLOWED`;
+  a token value is not a reason. Each entry names stylesheet, selector,
+  property, value and condition (the enclosing `@media` or `@supports`), with a
+  reason, and the test fails on an entry that no rule on any page uses. Today
+  `PLACEMENT_ALLOWED` holds the line length of the article on the brief and
+  reference pages and the side column of the component pages, which is not
+  rendered below 64 rem while the drawer offers the same navigation;
+  `INHERITED_ALLOWED` holds the document colour and font family on `html`, the
+  same two on the stage of a native result (it reproduces the result frame's
+  document) and of a landing pane (it carries its own mode and theme), the
+  sticky offset of the side navigation, the hidden install cell, the pause slot
+  and the reserved command of the landing, and the three animations of a
+  landing pane (only when the reader allows motion). A selector the stripper
+  cannot handle (`:host`, `::slotted()`, `::part()`, `:nth-child(... of S)`), a
+  rule type it does not know and a guide `@keyframes` with a package name
+  (`hw-*`) fail the test.
 - Computed half (`tests/e2e/pages/package-styles.spec.ts`, in both colour modes
   at 1280 and 390 px, the editor after its first run): every computed property
-  (custom properties aside) of every package element, and of its `::before`,
-  `::after` and `::marker` when they exist, is read once with every stylesheet
-  on and once with every stylesheet, style element and adopted sheet disabled
-  except the package bundle; the values must be equal, except the placement
-  properties. Consequences of placement are judged by rule: the blockified
-  `display` of an item of a guide flex or grid container, colours that follow
-  `currentColor`, and values resolved against the element's own size
-  (`transform-origin`, `perspective-origin`, the used grid tracks) when that size
-  differs. An inherited difference is accepted only when it starts at a guide
-  element on which a rule of `INHERITED_ALLOWED` declares that property. The
-  test prints how many elements, pseudo-elements and properties it compared.
+  (custom properties aside) of every package element (both clauses), and of its
+  `::before`, `::after` and `::marker` when they exist, is read once with every
+  stylesheet on and once with every stylesheet, style element and adopted sheet
+  disabled except the package bundle; the values must be equal, except the
+  margins and, on the elements a `PLACEMENT_ALLOWED` rule reaches, the property
+  it allows. Consequences of placement are judged by rule: the blockified
+  `display` of an item of a guide flex or grid container; `min-*` sizes whose
+  `auto` resolves to `0px` when the element is no longer such an item or is
+  rendered in one state only; colours that follow `currentColor`; values
+  resolved against the element's own box (used sizes, `transform-origin`,
+  `perspective-origin`, the used grid tracks) when that box differs; and the
+  insets of a positioned box when its box or its containing block differs. An
+  inherited difference is accepted only when it starts at a guide element on
+  which an `INHERITED_ALLOWED` rule declares that property. The test prints how
+  many elements (by clause), pseudo-elements and properties it compared.
 
 The style block the guide writes into a result frame (`examples/frame/document.ts`)
-styles only the document, the body and the mount root, with a written list of
-properties; a unit test in `document.spec.ts` fails on anything else.
+styles only the document, the body and the mount root. A unit test in
+`document.spec.ts` compares the whole text of the block, with the colour mode as
+its only variable, so a nested rule, another selector, another property or
+another value fails; it also parses the block and reports each selector,
+property, nested rule and at-rule outside its written list.
 
 What the two halves do not cover: browsers other than Chromium (selector support
 and computed values of Firefox and Safari are not read); DOM states the tests do
 not open (an opened dialog of an example, a validation message, a date picker's
 calendar, a menu of a package component), where a rule could match elements that
-exist only then; animations (keyframes are not judged; the property that starts
-an animation is judged where it is declared); and a script that sets styles on
-package elements at run time (the lint refuses style attributes and bindings).
+exist only then; the look a listed placement declaration gives (a size or a
+hidden column can change how a component looks, which is why each one is listed
+with its value and reason rather than allowed by property); animations declared
+on an ancestor, whose keyframes are not judged (the declaration of
+`animation-name` on an ancestor is, through `INHERITED_ALLOWED`); `data-*`
+attributes that guide script would set at run time on its own elements inside a
+package container; and styles set by script at run time (the lint refuses style
+attributes and class or style bindings, including `classList`).
 
 ## Result frames
 
@@ -192,10 +233,11 @@ prerender hint remains a residual channel. The guide therefore never runs code
 the reader did not start: the code in a frame is the guide's own example or
 what the reader typed and ran.
 
-Messages of a run: `ready` (and `emptied`, see below) is always accepted;
-console output and height reports each have a budget of 500 messages per run;
-`error`, `navigation` and `submit` together have a budget of 50 per run (the
-first error ends a run that is loading). Console messages past their budget are
+Messages of a run: `ready` (and `emptied`, see below) is always accepted, and so
+are the first error of a run and every error while the run is loading (the
+first error ends a run that is loading); console output and height reports each
+have a budget of 500 messages per run; later errors, `navigation` and `submit`
+together have a budget of 50 per run. Console messages past their budget are
 counted, and so are error, link and form messages past theirs; the editor shows
 each count in one log entry per run, updated at most four times a second.
 
@@ -220,23 +262,40 @@ tries to navigate the frame, when the code replaces the frame's document (a
 repeated load of the frame after which the bootstrap does not post `ready`
 again within 3 seconds; a height report or other message does not count, so
 `document.write` is reported at every width), when the code empties the
-document (the bootstrap sees the mount root leave the document after `ready`
-and posts `emptied`), and when the run document loads more than four times (a
-result that reloads itself without end); a run that is not ready within 20
-seconds fails with the time limit. Compile errors carry the file, line and column of the file the
+document (after `ready` the mount root has left the document and the document
+shows nothing any more: no body, or a body without a child element and without
+text; the bootstrap then posts `emptied`, while code that rewrites the body and
+leaves something shown ends as run, with its result), and when the run document
+loads more than four times (a result that reloads itself without end); a run
+that is not ready within 20 seconds fails with the time limit. Compile errors carry the file, line and column of the file the
 reader wrote, also for a script error of a Vue file and for an import the
 editor does not serve. A compile request that takes longer than 60 seconds
 stops the compile worker, fails the run with that message, and the next
 request creates a new worker.
 
 Without script (`@media (scripting: none)`) the editor page shows its heading,
-the link back to the component and one sentence in the page language: the
-editor needs JavaScript to edit and run code, and the component pages show
-every example without it. The guide's toolbar, status line, code and result are
+a description and a link that name no example (one prerendered page answers
+every address of the editor; the link leads to the component pages, and after
+hydration both name the example of the address) and one sentence in the page
+language: the editor needs JavaScript to edit and run code, and the component
+pages show every example without it. The guide's toolbar, status line, code and result are
 not shown. The example blocks of the component pages stay as they are: the
 prerendered Angular result and its Angular listing are shown; the framework tabs
 are the package Tabs component, which needs script, so the JavaScript, React and
 Vue listings are not reachable without it.
+
+## On this page
+
+The reference pages pass `updateHash` to `hw-content-navigation`: activating an
+entry writes the section into the address, under the base path, with
+`history.replaceState`. No history entry is added, so Back leaves the page
+instead of returning to the earlier position (`CHANGELOG.md`, Known defects in
+0.3.0). After a history move to an address with a fragment (Forward to the
+address an entry wrote, or Back to a fragment link), the guide's viewport
+scroller (`src/app/core/viewport-scroller.ts`) shows and focuses the section the
+address names, where the router alone would restore the top of the page
+(`scrollPositionRestoration: 'top'`). `tests/e2e/routing/fragments.spec.ts`
+checks the address, Back, Forward and a reload, in both languages.
 
 ## Requirements
 
@@ -325,9 +384,30 @@ excluded) and at most `max(16, 0.05 % of the pixels)` differing pixels. 0.005 is
 the lowest of 0.005 and 0.01 that stayed green in three full runs of step 80 (four
 in a row). What it lets through was measured over a uniform 200 x 50 area: of the
 112 hex colours of `@hawiyah/tokens`, one pair (`#b54708` and `#b54707`); a light
-grey lowered by one level passes, by two fails. The harness moves the pointer out
-of the frames when a group and a check start, so a hover left by an earlier click
-does not show in one framework only.
+grey lowered by one level passes, by two fails.
+
+The comparison does not depend on where the pointer is. Cause of the hover that
+once showed in one framework only (found with probe pages outside the repository):
+a result frame keeps `:hover` on the element the pointer was last over, because
+Chromium sends it no mouse leave when the pointer moves out to the harness page;
+when an element screenshot then scrolls the page, Chromium sends the frame that
+last had the pointer a mouse move at the pointer's old place in the viewport,
+which after the scroll lies over another element of that frame (or over none).
+Whether that move arrives before or after the screenshot depends on the load of
+the machine. In a probe page of four sandboxed frames the frame clicked last
+changed its hover after every scroll (32 of 32 checks, and 96 of 96 with the CPU
+slowed six times); without a scroll it never did (0 of 32). Before each frame is read, the
+harness therefore moves the pointer onto that frame's left padding (where the
+frame document's body lies at every height, so a later scroll maps the old place
+onto the padding again), parks it in the harness page's inline padding at (4, 4),
+which no frame covers at any scroll position, and waits until no element below
+the body of any frame of the group matches `:hover`; a frame that still shows one
+fails the step with its name. A check step that tests a hover state sets
+`keepPointer` and is read as it left the pointer. Measured after the change:
+12 runs of step 80 alone while production builds of a copy of the guide ran
+in a loop on the same four cores (load average 7 to 12): 12 passed; before the
+change, 1 of 10 runs failed with `HWE-SHOT` at the same load (the hover of
+`tabs/en/vertical` on another tab in the Vue frame).
 
 The structure comparison (`scripts/equivalence/normalize.js`) keeps every
 attribute except a short written list of framework noise, each with its
@@ -337,14 +417,23 @@ attribute-directive selectors of `@hawiyah/angular` (`hwbutton`), the static
 input values Angular leaves as attributes on those elements (attributes that
 the element does not reflect as a property and that are not `role`, `aria-*`
 or `data-*`), and the `data-hw` hook that names a `@hawiyah/vanilla` controller.
-The vanilla configuration hooks `data-hw-value`, `data-hw-activation`,
-`data-hw-overflow` and `data-hw-overflow-label` (named in the file, each with its
-reason; a script test requires each to occur in the installed `@hawiyah/vanilla`)
-are left out only on an element that no rule of the package stylesheet can
-select with them. Every other `data-hw-*` attribute is compared, among them every
-one that a selector of the installed `@hawiyah/styles` uses
+The vanilla configuration hooks `data-hw-activation`, `data-hw-overflow` and
+`data-hw-overflow-label` (named in the file, each with its reason; a script test
+requires each to occur in the installed `@hawiyah/vanilla`) are left out only on
+an element that no rule of the package stylesheet can select with them:
+activation is compared by the Tabs checks, the overflow mode by the state the
+controller writes on the tab list, and the overflow label is the accessible name
+of the overflow control, which is compared where that control is rendered (not
+at the one width of the harness when the tabs fit). Every other `data-hw-*`
+attribute is compared, among them `data-hw-value` (the four adapters write it on
+the items of a navigation list; it is left out only on a tab, `.hw-tab`, where
+`createTabs` reads it as the tab's value and the React, Vue and Angular adapters
+take the value as a prop and write none) and every one that a selector of the
+installed `@hawiyah/styles` uses
 (`scripts/equivalence/styled-attributes.mjs` reads them, with their compound
-selectors, from `node_modules/@hawiyah/styles/dist/styles.css`). `class` keeps
+selectors, from `node_modules/@hawiyah/styles/dist/styles.css`); a script test
+runs `capture()` against a stand-in page and requires that the normaliser
+receives the generated-name pattern and these attributes. `class` keeps
 every token but Angular's `ng-*` state classes; `style` is compared as the
 browser serialises it; `name` values are compared as written unless they have
 one of the forms the four adapters generate
@@ -352,10 +441,13 @@ one of the forms the four adapters generate
 packages: the `ensureId` prefixes of `@hawiyah/vanilla`, the `injectId` prefixes
 of `@hawiyah/angular`, React 19 `useId` and Vue `useId`, each optionally with the
 prefix the adapter writes before it and a suffix of words after it); a custom
-element is unwrapped only when it has no `hw-` class and carries no global
+element is unwrapped only when it has no `hw-` class, carries no global
 attribute with a meaning (`tabindex`, `hidden`, `inert`, `lang`, `dir`, `title`,
 `contenteditable`, `draggable`, `style`, `role`, `aria-*`, `accesskey`,
-`autofocus`, `popover`, `spellcheck`, `translate`).
+`autofocus`, `popover`, `spellcheck`, `translate`) and no `data-hw-*` attribute
+that the stylesheet selects (`data-hw-mode`, `data-hw-theme`, `data-hw-density`
+and the others of the derived set): a wrapper or an Angular host that pins the
+colour mode is compared, not unwrapped.
 A documented difference is an
 entry of `scripts/equivalence/known-differences.json` approved by the lead and
 named by a group with `differences=<id>`. Its `source` reads
@@ -423,7 +515,9 @@ the guide leaves package components alone. That proof is the two halves of
   object literal); no package class, `style` attribute or binding,
   `data-hw-*` hook, `innerHTML`, `ngSkipHydration`, `<script>`, `on*`
   attribute, `<style>` or stylesheet `<link>`; no class or style set through
-  `host` or `@HostBinding`.
+  `host` or `@HostBinding` (`class`, `className`, `classList`, `style` and their
+  `attr.` forms, also when `HostBinding`, `Component` or `Directive` is imported
+  from `@angular/core` under another name).
 - Sources: no server DOM shim, DOM global on the global object, platform check
   in `src/app/`, banned hydration option, unsafe HTML (`innerHTML`,
   `outerHTML`, `insertAdjacentHTML`, `setHTMLUnsafe`, `parseHTMLUnsafe`,

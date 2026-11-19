@@ -975,6 +975,10 @@ built type declarations of each package.
 - ContentNavigation (Angular): a pointer activation scrolls to the section but
   leaves focus on the link, so the next Tab goes to the next entry; a native
   fragment link moves the focus starting point to the section.
+- ContentNavigation: with `updateHash` the address receives the fragment through
+  `history.replaceState`, so an activation adds no history entry; Back leaves
+  the page instead of returning to the position before the activation (all four
+  adapters).
 - PortalHeader: without script its navigation stays collapsed below the
   breakpoint, behind a Menu button that does nothing.
 - RadioGroup (Angular) renders `fieldset.hw-field`, which keeps the browser's

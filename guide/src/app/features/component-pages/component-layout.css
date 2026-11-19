@@ -10,36 +10,21 @@
   padding-block: var(--hw-space-6) var(--hw-space-10);
 }
 
+/* The bar that opens the drawer is shown only where the side navigation is not in the
+   flow: below 64rem, with script. Without script the drawer cannot open, so the side
+   navigation is in the flow at every width. */
 .drawer-bar {
-  display: flex;
-}
-
-.side {
   display: none;
 }
 
-.content {
-  min-inline-size: 0;
-}
-
-@media (min-width: 64rem) {
+@media (scripting: enabled) and (width < 64rem) {
   .drawer-bar {
-    display: none;
+    display: flex;
   }
 
+  /* The column of hw-sidebar that holds the side navigation is not rendered; the
+     drawer takes its place (PLACEMENT_ALLOWED in tests/e2e/support/styling-rule.ts). */
   .side {
-    display: block;
-  }
-}
-
-/* Without script the drawer cannot open: the side navigation is in the flow at
-   every width and the button that opens the drawer is not shown. */
-@media (scripting: none) {
-  .drawer-bar {
     display: none;
-  }
-
-  .side {
-    display: block;
   }
 }

@@ -101,13 +101,30 @@ describe('message budget', () => {
 describe('message budget of the outcome', () => {
   it('accepts the first error, navigation and submit messages together, then drops and counts them; ready and emptied always', () => {
     const budget = new MessageBudget();
-    const types = ['error', 'navigation', 'submit'] as const;
+    const types = ['navigation', 'submit', 'error'] as const;
+    // The first error of the run is accepted without counting (see the next test).
+    expect(budget.take('error')).toBe(true);
     for (let i = 0; i < MAX_OUTCOME_MESSAGES; i += 1) expect(budget.take(types[i % 3]!)).toBe(true);
     for (const type of types) expect(budget.take(type)).toBe(false);
     expect(budget.droppedOutcome).toBe(3);
     expect(budget.take('ready')).toBe(true);
     expect(budget.take('emptied')).toBe(true);
     expect(budget.dropped).toBe(0);
+  });
+
+  it('accepts the first error of a run and every error while the run is loading, also past the budget (verification W2)', () => {
+    const budget = new MessageBudget();
+    for (let i = 0; i < MAX_OUTCOME_MESSAGES + 10; i += 1) budget.take('submit');
+    expect(budget.droppedOutcome).toBe(10);
+    // 60 form messages, then the code throws during start: the error decides the run.
+    expect(budget.take('error', true)).toBe(true);
+    expect(budget.take('error', true)).toBe(true);
+    // After ready, a later error counts against the budget.
+    expect(budget.take('error', false)).toBe(false);
+    const fresh = new MessageBudget();
+    for (let i = 0; i < MAX_OUTCOME_MESSAGES; i += 1) fresh.take('navigation');
+    expect(fresh.take('error')).toBe(true);
+    expect(fresh.take('error')).toBe(false);
   });
 
   it('accepts the emptied message of the run', () => {

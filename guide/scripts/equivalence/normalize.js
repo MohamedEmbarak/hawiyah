@@ -17,9 +17,9 @@
 // where no compound of the package stylesheet selects it. class keeps every
 // token except Angular's ng-* state classes, sorted; style is compared as the
 // browser serialises it (element.style.cssText). A custom element (tag with '-')
-// is compared as div when it has an hw- class or carries a global attribute that
-// the browser or assistive technology gives meaning to (GLOBAL); otherwise it is
-// an unwrapped framework host. ids become #<n> in first-appearance order and the
+// is compared as div when it has an hw- class, carries a global attribute that the
+// browser or assistive technology gives meaning to (GLOBAL) or a data-hw-* attribute
+// of the styled set; otherwise it is an unwrapped framework host. ids become #<n> in first-appearance order and the
 // id references of for, form, list, headers, popovertarget, commandfor and the
 // ARIA IDREF attributes are rewritten (a reference to an id outside the tree
 // becomes '#?'). name values are compared as written unless they match
@@ -42,14 +42,18 @@ export function normalize(input) {
     /^data-hw$/, // @hawiyah/vanilla: the enhancement hook that names the controller; the behaviour is compared by the group's checks
   ];
   // @hawiyah/vanilla configuration hooks, by name: the controller reads them as
-  // options and they mean nothing to the reader. Left out only where no compound of
-  // the package stylesheet selects them (styled); scripts/equivalence/test checks
-  // that each name occurs in the installed @hawiyah/vanilla.
+  // options. Left out only where no compound of the package stylesheet selects them
+  // (styled); scripts/equivalence/test checks that each name occurs in the installed
+  // @hawiyah/vanilla. data-hw-value is compared (the four adapters write it on the
+  // items of a navigation list) except where VANILLA_SCOPED names it.
   const VANILLA_CONFIGURATION = [
-    'data-hw-value', // the value of a tab, panel or option that the controller reads
-    'data-hw-activation', // automatic or manual activation of Tabs
+    'data-hw-activation', // automatic or manual activation of Tabs; the behaviour is compared by the Tabs checks
     'data-hw-overflow', // the overflow mode of Tabs on the root (the tab list carries the state, which the stylesheet selects)
-    'data-hw-overflow-label', // the text of the overflow control of Tabs
+    'data-hw-overflow-label', // the label the controller gives the overflow control of Tabs: that control's accessible name is compared where it is rendered
+  ];
+  // A hook left out only on the elements of one selector: [attribute, selector].
+  const VANILLA_SCOPED = [
+    ['data-hw-value', '.hw-tab'], // the value of a tab that createTabs reads (dataset.hwValue); React, Vue and Angular take it as a prop and write none on the tab
   ];
   // Global attributes that the browser or assistive technology gives meaning to: a
   // custom element that carries one is compared, not unwrapped.
@@ -101,15 +105,17 @@ export function normalize(input) {
       return true;
     }
   });
-  const configuration = (element, name) => VANILLA_CONFIGURATION.includes(name) && !selectedHere(element, name);
+  const configuration = (element, name) =>
+    (VANILLA_CONFIGURATION.includes(name) || VANILLA_SCOPED.some(([attribute, selector]) => attribute === name && element.matches(selector))) && !selectedHere(element, name);
   const keepAttribute = (name, element) => !NOISE.some((pattern) => pattern.test(name)) && !angularInput(element, name) && !configuration(element, name);
   const tokens = (element) => (element.getAttribute('class') || '').split(/\s+/).filter(Boolean);
   const hwClasses = (element) => tokens(element).filter((token) => token.startsWith('hw-')).sort();
   const keptClasses = (element) => [...new Set(tokens(element).filter((token) => !token.startsWith('ng-')))].sort();
-  // A custom element is an unwrapped framework host unless it has an hw- class
-  // or carries a global attribute with a meaning (GLOBAL).
+  // A custom element is an unwrapped framework host unless it has an hw- class, or
+  // carries a global attribute with a meaning (GLOBAL) or a data-hw-* attribute that
+  // the package stylesheet selects (styled: data-hw-mode, data-hw-theme, ...).
   const unwrap = (element) => element.localName.includes('-') && hwClasses(element).length === 0
-    && !Array.from(element.attributes).some((attribute) => GLOBAL.test(attribute.name));
+    && !Array.from(element.attributes).some((attribute) => GLOBAL.test(attribute.name) || Object.hasOwn(styled, attribute.name));
   const collapse = (text) => text.replace(/\s+/g, ' ').trim();
 
   // First pass: ids and names in first-appearance (document) order of the kept tree.

@@ -63,8 +63,15 @@ const LETTER = /\p{L}/u;
 // docs/components/README.md), so text made only of key names needs no Arabic.
 const KEY_NAME = /^(?:Tab|Enter|Space|Escape|Esc|Home|End|Page ?Up|Page ?Down|Shift|Ctrl|Control|Alt|Option|Meta|Cmd|Command|Backspace|Delete|Insert|Arrow(?:Up|Down|Left|Right)|F(?:[1-9]|1[0-2]))$/;
 const onlyKeyNames = (text) => text.split(/\s*[,،+/]\s*|\s+(?:و|or|and)\s+/).every((part) => KEY_NAME.test(part.trim()));
-/** Reader text without Arabic script: letters, none of them Arabic, and not only key names. */
-const notArabic = (text) => LETTER.test(text) && !ARABIC.test(text) && !onlyKeyNames(text);
+/**
+ * Reader text without Arabic script: letters, none of them Arabic. Text made only of
+ * key names is exempt in table cells (the Key column of a keyboard table) and nowhere
+ * else: a heading, paragraph or list item named Tab, Option or Delete is a word to
+ * translate.
+ */
+// An Arabic letter, not only an Arabic comma or digit of the block.
+const ARABIC_LETTER = /(?=\p{Script=Arabic})\p{L}/u;
+const notArabic = (text, keyCell = false) => LETTER.test(text) && !ARABIC_LETTER.test(text) && !(keyCell && onlyKeyNames(text));
 
 /** Attributes and properties of a live block whose string values are reader text. */
 const READER_NAMES = new Set(['label', 'aria-label', 'title', 'placeholder', 'alt', 'description', 'heading', 'caption', 'hint', 'message', 'text']);
@@ -75,6 +82,36 @@ const READER_SUFFIX = /(?:label|message|text|title)$/;
  * words there is not reader text.
  */
 const TOKEN_NAMES = new Set(['class', 'classname', 'id', 'role', 'type', 'href', 'src', 'rel', 'style', 'autocomplete', 'for', 'htmlfor', 'form', 'key', 'ref', 'slot', 'lang', 'dir', 'name', 'value', 'aria-controls', 'aria-labelledby', 'aria-describedby', 'aria-owns', 'aria-flowto', 'aria-details', 'aria-errormessage', 'aria-activedescendant']);
+/**
+ * value, defaultValue and name are tokens where nothing shows them (the value of an
+ * option or a check box, the name of a form field), and reader text where they are
+ * shown: the value of a text field, a text area or a button input, the defaultValue
+ * of a field component, and the name of a data object (a person, a file) that a list
+ * renders.
+ */
+const SHOWN_VALUE_NAMES = new Set(['value', 'defaultvalue', 'default-value', 'modelvalue', 'model-value']);
+const HIDDEN_VALUE_TYPES = new Set(['checkbox', 'radio', 'hidden', 'color', 'range', 'file', 'image']);
+/** Whether a value-like string token is shown to the reader, from its name and its element. */
+function shownValue(list, index, name, bare) {
+  if (name.kind === 'property') return bare === 'name' || bare === 'defaultvalue';
+  if (!SHOWN_VALUE_NAMES.has(bare)) return false;
+  // The element of the attribute: the tag after the nearest opening < before it.
+  let at = list.lastIndexOf(name, index);
+  while (at > 0 && !(list[at].kind === 'tag' && list[at - 1]?.text === '<')) at -= 1;
+  const tag = at > 0 ? list[at].text : '';
+  // A component (React or Vue name, custom element) passes the value to a field it shows.
+  if (/^[A-Z]/.test(tag) || tag.includes('-')) return true;
+  if (tag === 'textarea' || tag === 'output') return true;
+  if (tag === 'input') {
+    let type = 'text';
+    for (let j = at + 1; j < list.length && list[j].text !== '>' && list[j].text !== '/>'; j += 1) {
+      if (list[j].kind === 'attribute' && list[j].text.toLowerCase() === 'type' && list[j + 2]?.kind === 'string') type = unquote(list[j + 2].text).toLowerCase();
+    }
+    return !HIDDEN_VALUE_TYPES.has(type);
+  }
+  // option, button, data, li, param and the other elements do not show their value.
+  return false;
+}
 /** Two or more words of Latin letters in a row: a phrase a reader reads, wherever it stands. */
 const LATIN_PHRASE = /(?:^|\s)[A-Za-z]+(?:[.,;:!?])?\s+[A-Za-z]+(?=[.,;:!?]?(?:\s|$))/;
 /**
@@ -213,9 +250,9 @@ export function checkParity(en, ar, sources) {
   // HWC-PAR8 Arabic script in the reader text of the Arabic page.
   const exceptions = sources.exceptions ?? [];
   const excepted = (text) => exceptions.some((entry) => entry.file === ar.file && text.includes(entry.text));
-  const requireArabic = (node, text, where) => {
+  const requireArabic = (node, text, where, keyCell = false) => {
     const value = text.replace(/\s+/g, ' ').trim();
-    if (notArabic(value) && !excepted(value)) push('HWC-PAR8', lineOf(node), `${where} has no Arabic script: "${value.slice(0, 80)}"; translate it, or list it in scripts/content/arabic-exceptions.json with a reason`);
+    if (notArabic(value, keyCell) && !excepted(value)) push('HWC-PAR8', lineOf(node), `${where} has no Arabic script: "${value.slice(0, 80)}"; translate it, or list it in scripts/content/arabic-exceptions.json with a reason`);
   };
   const apiTables = new Set(ar.tables.filter((table) => table.api).map((table) => table.node));
   const prose = (node) => {
@@ -228,7 +265,7 @@ export function checkParity(en, ar, sources) {
       }
     } else if (node.type === 'blockquote') node.children.forEach(prose);
     else if (node.type === 'table' && !apiTables.has(node)) {
-      for (const row of node.children) for (const cell of row.children) requireArabic(cell, proseText(cell), 'the table cell');
+      for (const row of node.children) for (const cell of row.children) requireArabic(cell, proseText(cell), 'the table cell', true);
     }
   };
   for (const node of ar.summaryNodes ?? []) prose(node);
@@ -247,7 +284,7 @@ export function checkParity(en, ar, sources) {
         else if (token.kind === 'string') {
           const name = list.slice(0, index).reverse().find((item) => item.kind === 'attribute' || item.kind === 'property');
           const bare = name ? bareName(name.text) : '';
-          const reader = name && (READER_NAMES.has(bare) || READER_SUFFIX.test(bare.replace(/-/g, '')));
+          const reader = name && (READER_NAMES.has(bare) || READER_SUFFIX.test(bare.replace(/-/g, '')) || shownValue(list, index, name, bare));
           const phrase = !TOKEN_NAMES.has(bare) && LATIN_PHRASE.test(text);
           if (reader || phrase) {
             requireArabic({ position: { start: { line: block.line } } }, text, `live block "${group.example}" (${framework}) ${name?.text ?? 'string'}`);

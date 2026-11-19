@@ -253,6 +253,27 @@ test('a result that empties its document is reported and the run is stopped', as
   await expect(resultFrame(page)).toHaveCount(0);
 });
 
+// Code that rewrites the body after ready leaves a document that still shows a result:
+// the run ends as run, and the result stays (verification W2: it was reported as a
+// replaced document and removed).
+for (const [name, statement] of [
+  ['adds to the body', "document.body.innerHTML += '<p class=\"hw-type\">Added below the button</p>';"],
+  ['replaces the body', "document.body.innerHTML = '<button class=\"hw-button\" type=\"button\" data-variant=\"primary\">Written by the code</button>';"],
+] as const) {
+  test(`a result that ${name} after ready ends as run, with the result shown`, async ({ page }) => {
+    await openEditor(page, 'en', 'framework=vanilla');
+    await originalRan(page, 'en');
+    await appendTo(page, 'main.js', `\nsetTimeout(() => { ${statement} }, 300);\n`);
+    await page.getByRole('button', { name: /^Run/ }).click();
+    await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan, { timeout: 30_000 });
+    const frame = page.frameLocator('guide-editor-page iframe');
+    await expect(frame.getByText(/Added below the button|Written by the code/)).toBeVisible({ timeout: 10_000 });
+    await page.waitForTimeout(1_000);
+    await expect(statusLine(page)).toHaveText(TEXT.en.yourCodeRan);
+    await expect(resultFrame(page)).toHaveCount(1);
+  });
+}
+
 test('a result that reloads itself without end is reported and the run is stopped', async ({ page }) => {
   const reloads = 'The code reloads the preview again and again, so the run was stopped.';
   await openEditor(page, 'en', 'framework=vanilla');
@@ -284,6 +305,21 @@ test('a flood of link activations shows the first 50 and counts the rest in one 
   expect((await logTexts(page)).filter((text) => text.includes('https://example.com/flood'))).toHaveLength(50);
 });
 
+test('an error thrown during start after 60 form submissions fails the run at once with that error', async ({ page, guard }) => {
+  await openEditor(page, 'en', 'framework=vanilla');
+  await originalRan(page, 'en');
+  await appendTo(
+    page,
+    'main.js',
+    "\nconst form = document.createElement('form');\nform.action = 'https://example.com/submit';\ndocument.body.append(form);\nfor (let i = 0; i < 60; i += 1) form.requestSubmit();\nthrow new Error('the real failure after sixty submits');\n",
+  );
+  await page.getByRole('button', { name: /^Run/ }).click();
+  // Well below the 20 s time limit of a run that never becomes ready.
+  await expect(statusLine(page)).toHaveText(/^The run failed: Error: the real failure after sixty submits/, { timeout: 10_000 });
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringContaining('the real failure after sixty submits'));
+  allowFrameErrors(guard, /the real failure after sixty submits/);
+});
+
 test('an Angular template error fails the run at once with the compiler message', async ({ page, guard }) => {
   await openEditor(page, 'en', 'framework=angular');
   await originalRan(page, 'en');
@@ -311,6 +347,15 @@ test('a script error and an unknown import of a Vue file are placed at their lin
   await page.getByRole('button', { name: /^Run/ }).click();
   await expect(statusLine(page)).toHaveText(TEXT.en.failed, { timeout: 30_000 });
   await expect.poll(() => logTexts(page)).toContainEqual(expect.stringMatching(/Example\.vue:11:7: /));
+
+  // A syntax error in each script block, the setup block first: the position is the one
+  // of the block whose error the compiler reports (line 11, in the plain block).
+  await code.click();
+  await page.keyboard.press('Control+A');
+  await page.keyboard.insertText('<script setup lang="ts">\nimport { ref } from "vue";\nconst = 3;\n</script>\n\n<template>\n  <p>One</p>\n</template>\n\n<script lang="ts">\nlet = 4;\nexport default {};\n</script>\n');
+  await page.getByRole('button', { name: /^Run/ }).click();
+  await expect(statusLine(page)).toHaveText(TEXT.en.failed, { timeout: 30_000 });
+  await expect.poll(() => logTexts(page)).toContainEqual(expect.stringMatching(/Example\.vue:11:\d+: .*'let'/));
 
   await code.click();
   await page.keyboard.press('Control+A');

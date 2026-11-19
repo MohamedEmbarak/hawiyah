@@ -91,6 +91,33 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(images).toBeVisible();
     });
 
+    test('paints no generated content anywhere in the header or the footer, hosts included', async ({ page }) => {
+      // Generated text on any element of the two hosts (a guide element outside the
+      // brand link included) could stand beside the artwork as a second identity.
+      const generated = () =>
+        page.evaluate(() =>
+          ['guide-site-header', 'guide-site-footer'].flatMap((name) => {
+            const host = document.querySelector(name);
+            if (!host) return [`${name} is missing`];
+            return [host, ...Array.from(host.querySelectorAll('*'))].flatMap((node) =>
+              ['::before', '::after']
+                .map((pseudo) => [pseudo, getComputedStyle(node, pseudo).content] as const)
+                .filter(([, content]) => content !== 'none' && content !== 'normal')
+                .map(([pseudo, content]) => `${name}: ${node.localName}${pseudo} ${content}`),
+            );
+          }),
+        );
+      expect(await generated(), 'light, 1280 px').toEqual([]);
+      await page.getByRole('button', { name: lang === 'ar' ? 'الوضع الداكن' : 'Dark mode' }).click();
+      await expect(page.locator('html')).toHaveAttribute('data-hw-mode', 'dark');
+      expect(await generated(), 'dark, 1280 px').toEqual([]);
+      await page.setViewportSize({ width: 390, height: 844 });
+      const menu = page.getByRole('button', { name: lang === 'ar' ? 'القائمة' : 'Menu' });
+      await menu.click();
+      await expect(menu).toHaveAttribute('aria-expanded', 'true');
+      expect(await generated(), 'dark, 390 px, menu open').toEqual([]);
+    });
+
     test('links to the same page in the other language without reloading', async ({ page }) => {
       const link = page.getByRole('link', { name: other === 'ar' ? 'العربية' : 'English', exact: true });
       await expect(link).toHaveAttribute('href', `${other}/components/`);

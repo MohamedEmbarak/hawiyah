@@ -72,7 +72,7 @@ export function frameElement(page: Page) {
 /** The frame of the first example block once it reported ready. */
 export async function readyFrame(page: Page, framework: FrameFramework, lang: 'ar' | 'en' = 'en', bundled = false): Promise<Frame> {
   const pkg = FRAMEWORK_PACKAGES[framework];
-  const sentence = lang === 'en' ? `Rendered with ${pkg} 0.3.0 from npm${bundled ? ' (bundled runtime)' : ''}` : `معروض باستخدام ${pkg} 0.3.0 من npm${bundled ? ' (بالحزمة المجمّعة)' : ''}`;
+  const sentence = lang === 'en' ? `Rendered with ${pkg} 0.3.0 from npm${bundled ? ' (bundled runtime)' : ''}` : `معروض باستخدام ${pkg} 0.3.0 من npm${bundled ? ' (ببيئة التشغيل المجمّعة)' : ''}`;
   await expect(statusOf(page)).toHaveText(sentence, { timeout: 30_000 });
   const handle = await frameElement(page).elementHandle();
   const frame = await handle?.contentFrame();

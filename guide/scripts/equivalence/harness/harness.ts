@@ -65,7 +65,7 @@ async function main(): Promise<void> {
       if (event.source !== source) continue;
       const message = acceptMessage(event, { source, token: entry.token, run: entry.run });
       const frame = state.frames[entry.framework];
-      if (!message || !frame || !entry.budget.take()) return;
+      if (!message || !frame || !entry.budget.take(message.type, frame.state === 'loading')) return;
       switch (message.type) {
         case 'ready':
           if (frame.state === 'loading') frame.state = 'ready';

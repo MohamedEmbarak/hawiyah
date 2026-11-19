@@ -154,6 +154,29 @@ describe('normalize', () => {
     }
   });
 
+  it('compares a custom element that carries a data-hw-* attribute the package stylesheet selects (verification W2)', () => {
+    const plain = tree('<div id="app"><button class="hw-button" type="button">Go</button></div>');
+    for (const attribute of ['data-hw-mode="light"', 'data-hw-theme="custom"', 'data-hw-density="compact"']) {
+      const wrapped = tree(`<div id="app"><x-wrap ${attribute}><button class="hw-button" type="button">Go</button></x-wrap></div>`);
+      expect(differs(plain, wrapped).equal, attribute).toBe(false);
+    }
+    const vanilla = tree(vanillaTabs());
+    const host = (extra) => tree(angularTabs.replace('<guide-example _nghost-ng-c1="">', `<guide-example _nghost-ng-c1=""><hw-tabs${extra}>`).replace('</guide-example>', '</hw-tabs></guide-example>'), 'guide-example');
+    expect(differs(vanilla, host(' data-hw-mode="light"')).equal).toBe(false);
+    // A data-* attribute that no rule of the stylesheet selects still leaves a framework host unwrapped.
+    expect(differs(vanilla, host(' data-test="x"')).equal).toBe(true);
+  });
+
+  it('compares data-hw-value, which all four adapters write on list items, and leaves it out only on a tab', () => {
+    const item = (value) => tree(`<div id="app"><ul class="hw-list"><li data-hw-value="${value}">One</li></ul></div>`);
+    const result = differs(item('one'), item('two'));
+    expect(result.equal).toBe(false);
+    expect(result.path).toBe('$[0].children[0].attrs["data-hw-value"]');
+    // createTabs reads the value of a tab from data-hw-value; the adapters take it as a prop.
+    expect(differs(tree(vanillaTabs()), tree(vanillaTabs().replace('id="t-a"', 'id="t-a" data-hw-value="overview"'))).equal).toBe(true);
+    expect(differs(tree(vanillaTabs()), tree(vanillaTabs().replace('class="hw-tab-panel" id="p-a"', 'class="hw-tab-panel" id="p-a" data-hw-value="overview"'))).equal).toBe(false);
+  });
+
   it('fails on tabindex on an Angular component host without hw- class', () => {
     const vanilla = tree(vanillaTabs());
     const angular = tree(angularTabs.replace('<guide-example _nghost-ng-c1="">', '<guide-example _nghost-ng-c1=""><hw-tabs tabindex="0">').replace('</guide-example>', '</hw-tabs></guide-example>'), 'guide-example');

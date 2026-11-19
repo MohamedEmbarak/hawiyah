@@ -51,7 +51,7 @@ export const frameTexts: Texts<FrameTexts> = {
     frameTitle: (framework) => `النتيجة في ${framework}`,
     loading: (framework) => `جارٍ تحميل نتيجة ${framework}`,
     failed: (framework, firstLine) => `تعذّر تحميل نتيجة ${framework}: ${firstLine}`,
-    bundledRuntime: ' (بالحزمة المجمّعة)',
+    bundledRuntime: ' (ببيئة التشغيل المجمّعة)',
     timeout: 'لم يكتمل تحميل النتيجة خلال 20 ثانية.',
     payloadFailed: 'تعذّر تحميل المثال المُصرَّف.',
     navigationBlocked: { before: 'لا يُفتح رابط المثال إلى ', after: ' من المعاينة.' },

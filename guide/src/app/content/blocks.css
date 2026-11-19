@@ -1,7 +1,6 @@
-/* The renderer adds no box of its own: its blocks are boxes of the prose flow. */
-:host {
-  display: contents;
-}
+/* The host keeps the browser's display of a custom element (inline): inside the
+   prose it is matched by the package's flow rules (.hw-prose > *), so guide CSS does
+   not style it, and its block children lie in the prose flow. */
 
 /*
  * The blocks are boxes of the prose container but not its children in the
