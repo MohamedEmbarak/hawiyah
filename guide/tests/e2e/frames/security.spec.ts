@@ -191,12 +191,17 @@ test('with several frames on a page, a frame that navigates itself is the one re
   for (const frame of page.frames()) {
     const button = frame.locator('#leave');
     if ((await button.count()) === 1) {
-      // The page scrolls a long way to the button; right after a scroll Chromium can
-      // route the pointer to the page's iframe element instead of into the result frame
-      // (its hit-test data lag the scroll), and the click never reaches the button.
-      // Scroll first and let two frames render, then click.
-      await button.scrollIntoViewIfNeeded();
-      await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+      // The button lies about 2,500 px above the viewport, and the result frame runs
+      // out of process. Right after the long scroll that a click makes, Chromium can
+      // still route the pointer to the page's iframe element instead of into the frame
+      // (probe: 9 of 48 clicks reached the iframe element, which took focus; the button
+      // saw no event). The frame is scrolled into view first, and the click is sent
+      // once a pointer move over the button has reached the frame.
+      await (await frame.frameElement()).scrollIntoViewIfNeeded();
+      await expect(async () => {
+        await button.hover();
+        expect(await button.evaluate((element) => element.matches(':hover'))).toBe(true);
+      }).toPass({ timeout: 10_000 });
       await button.click();
       clicked = true;
       break;
