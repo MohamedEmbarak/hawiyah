@@ -10,8 +10,8 @@ name: Guide
 # guide/, docs/ (component pages and the files they link to), the root files
 # components.json, NOTICE, CHANGELOG.md and pnpm-workspace.yaml, and this file.
 #
-# The guide is built once (job build). Step 80 (equivalence of every live group) and
-# the browser tests run in four shards each on that build; the job complete fails
+# The guide is built once (job build). Step 80 (equivalence of every live group) runs
+# in four shards and the browser tests in eight shards on that build; the job complete fails
 # unless every job passed, the build is deployable, and the union of the shard
 # reports covers every live group of the content manifest and every test of the
 # build, the structural half of the styling rule on every page included. Nothing is
@@ -105,6 +105,10 @@ jobs:
       # Every step but 80, which the equivalence shards run on this output.
       - name: Production build
         run: npm run build -- --defer-equivalence
+      # The single-page check against this build (scripts/test/build/): it writes only
+      # below .cache/, so dist/ and src/generated/ are uploaded as the build left them.
+      - name: Single-page check tests
+        run: npm run test:check-page
       - name: List the browser tests of the build
         run: |
           mkdir -p .cache/e2e
@@ -201,7 +205,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     defaults:
       run:
         working-directory: guide
@@ -241,8 +245,8 @@ jobs:
         with:
           name: guide-build
           path: guide
-      - name: End-to-end tests, shard ${{ matrix.shard }} of 4
-        run: npx playwright test --project=prod --shard=${{ matrix.shard }}/4 --reporter=line,json
+      - name: End-to-end tests, shard ${{ matrix.shard }} of 8
+        run: npx playwright test --project=prod --shard=${{ matrix.shard }}/8 --reporter=line,json
       - name: Upload the shard report
         uses: actions/upload-artifact@v4
         with:

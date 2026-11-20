@@ -5,7 +5,7 @@
 // documented export: the members of every further export are written
 // '<qualifier> <name>', where the qualifier is the element of an Angular class
 // (its first selector) and the export name in the other frameworks
-// ('hw-tab value', 'RatingDisplay value', 'createFileUploadList files'). A
+// ('hw-tab value', 'RatingDisplay value', 'createFileUploadList items'). A
 // vanilla list starts with create<Name> like the default target, also when
 // @hawiyah/vanilla does not export it: the page then documents the stylesheet
 // table of the component, and the options of the further controllers follow
@@ -53,13 +53,13 @@ export const TARGET_OVERRIDES = {
     react: ['FileUpload', 'FileUploadList'],
     vue: ['FileUpload', 'FileUploadList'],
     angular: ['HwFileUploadComponent', 'HwFileUploadListComponent'],
-    approvedBy: 'lead, 5a (L3)',
+    approvedBy: 'lead, 5a (L3; confirmed in L14)',
     reason: 'The list of selected files is exported as createFileUploadList by @hawiyah/vanilla, FileUploadList by @hawiyah/react and @hawiyah/vue and HwFileUploadListComponent by @hawiyah/angular 0.3.0; components.json has no id of its own for it, so the FileUpload page documents it after the upload field (vanilla: after the stylesheet table of hw-upload, since there is no createFileUpload).',
   },
   'app-shell': {
     vanilla: ['createAppShell', 'createSkipLink'],
-    approvedBy: 'lead, 5a (L3)',
-    reason: '@hawiyah/vanilla 0.3.0 binds the skip link that an app shell renders (a.hw-skip-link with data-hw="skip-link") with createSkipLink; the React, Vue and Angular AppShell render and bind that link themselves, and the portal header binds its own. createSkipLink takes no options, so it adds no row; the page names it in its caption. The page is the builder\'s choice under L3 (PortalHeader binds its skip link without the hook), for the lead to confirm.',
+    approvedBy: 'lead, 5a (L3; confirmed in L14)',
+    reason: '@hawiyah/vanilla 0.3.0 binds the skip link that an app shell renders (a.hw-skip-link with data-hw="skip-link") with createSkipLink; the React, Vue and Angular AppShell render and bind that link themselves, and the portal header binds its own. createSkipLink takes no options, so it adds no row; the page names it in its caption. The page was the builder\'s choice under L3 (PortalHeader binds its skip link without the hook); the lead confirmed it in L14, and the page stays inside the keyboard rule (L13: Tab reaches the link, Enter moves focus to the target).',
   },
 };
 

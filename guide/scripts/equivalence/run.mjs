@@ -459,17 +459,61 @@ async function loadChecks(names) {
 export const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
 const stem = (group, state) => [group.id, group.lang, group.example, ...(state === 'rest' ? [] : state.split('/'))].join('-');
 
+/** How long the expect of a step waits for its documented outcome (ms, lead decision L16 of 5a). */
+export const OUTCOME_TIMEOUT = 5_000;
+
+const firstLine = (error) => (error instanceof Error ? error.message.split('\n')[0] : String(error));
+
+/**
+ * The verdict of a step's expect (lead decision L16 of 5a). An adapter may show the
+ * outcome of an event in a later task than the event: @hawiyah/angular renders
+ * after zoneless change detection, which Angular schedules in the first animation
+ * frame or 0 ms timer after the event, while the vanilla controller writes the state
+ * in the event's task and React and Vue in its microtasks; a read of the frame right
+ * after the key press is not ordered after that render. So expect, which only reads
+ * the frame and computes the documented outcome from the state before the step, is
+ * applied until it holds or `timeout` ms have passed (every `interval` ms); then
+ * the frame renders twice more (settle) and expect is applied once again, and that
+ * application is the verdict: a wrong outcome fails after the bound with the oracle's
+ * message, and an outcome that held and then changed fails the second application.
+ * The step itself is never run again and the expected outcome is never changed.
+ * Returns null when the outcome holds, else the message of the miss.
+ */
+export async function awaitOutcome(expect, settle, { timeout = OUTCOME_TIMEOUT, interval = 20 } = {}) {
+  const deadline = Date.now() + timeout;
+  let held = false;
+  for (;;) {
+    try {
+      await expect();
+      held = true;
+    } catch {
+      held = false;
+    }
+    if (held || Date.now() >= deadline) break;
+    await new Promise((done) => setTimeout(done, interval));
+  }
+  await settle();
+  try {
+    await expect();
+    return null;
+  } catch (error) {
+    return held ? `${firstLine(error)} (the documented outcome was shown, then changed)` : `${firstLine(error)} (not shown within ${timeout} ms)`;
+  }
+}
+
 /**
  * Runs the steps of the checks of a group in the open harness page (5a.8). In each
  * frame a step runs, the keys it pressed must be the keys it declares (a step
  * without keys presses none), and its expect asserts the documented outcome while
- * the frame still has the focus; a failed expect is reported per frame with the
- * outcome and its reference (HWE-EXPECT). Then the four results are captured and
+ * the frame still has the focus, through awaitOutcome (a bounded wait for the
+ * outcome, then a check that it holds); a failed expect is reported per frame with
+ * the outcome and its reference (HWE-EXPECT). Then the four results are captured and
  * handed to evaluate(state, captured), which compares them. A step that cannot run
  * ends the checks of the group (HWE-CHECK). Returns { failures, asserted }, where
- * asserted counts the steps with an expect that held in every frame.
+ * asserted counts the steps with an expect that held in every frame. outcomeTimeout
+ * is the bound of awaitOutcome (the script tests shorten it).
  */
-export async function runChecks({ page, group, checks, frameworks = FRAMEWORKS, evaluate = async () => {} }) {
+export async function runChecks({ page, group, checks, frameworks = FRAMEWORKS, evaluate = async () => {}, outcomeTimeout = OUTCOME_TIMEOUT }) {
   const failures = [];
   let asserted = 0;
   for (const check of checks) {
@@ -500,7 +544,7 @@ export async function runChecks({ page, group, checks, frameworks = FRAMEWORKS, 
         try {
           await step.run(context);
         } catch (error) {
-          failed = `${check.name} step ${step.name} failed in ${framework}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`;
+          failed = `${check.name} step ${step.name} failed in ${framework}: ${firstLine(error)}`;
           return;
         }
         const declared = [...new Set(step.keys ?? [])].sort();
@@ -510,11 +554,9 @@ export async function runChecks({ page, group, checks, frameworks = FRAMEWORKS, 
           return;
         }
         if (typeof step.expect !== 'function') return;
-        try {
-          await step.expect(context);
-        } catch (error) {
-          missed.push(`${framework}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`);
-        }
+        const frame = await frameOf(page, framework);
+        const miss = await awaitOutcome(() => step.expect(context), () => settleFrame(frame), { timeout: outcomeTimeout });
+        if (miss) missed.push(`${framework}: ${miss}`);
       };
       const captured = await capture(page, frameworks, before, { keepPointer: Boolean(step.keepPointer) });
       if (failed) {

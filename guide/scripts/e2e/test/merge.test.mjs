@@ -31,6 +31,16 @@ describe('test coverage of the shards', () => {
     expect(reportTests(report(LIST))[0]).toEqual({ key: 'a.spec.ts-one prod', title: 'a.spec.ts › one [prod]', status: 'not run' });
   });
 
+  it('joins the eight shards of guide.yml (lead decision L11 of 5a), and misses a test of a lost shard', () => {
+    const list = Array.from({ length: 20 }, (_, n) => [`p${n % 5}.spec.ts`, `test ${n}`]);
+    // playwright test --shard=i/8 gives each shard a contiguous part of the tests.
+    const shards = Array.from({ length: 8 }, (_, i) => ({ file: `s${i + 1}.json`, report: ran(list.filter((_, n) => Math.floor((n * 8) / list.length) === i)) }));
+    expect(shards.every((shard) => reportTests(shard.report).length > 0)).toBe(true);
+    expect(testCoverage(report(list), shards)).toEqual({ problems: [], tests: 20, ran: 20 });
+    const lost = testCoverage(report(list), shards.filter((shard) => shard.file !== 's8.json'));
+    expect(lost.problems).toEqual(reportTests(shards[7].report).map((test) => `HWT-MERGE: ${test.title} ran in no shard`));
+  });
+
   it('fails on a test that ran in no shard, in two shards, failed, was skipped or is not listed', () => {
     const shards = [
       { file: 's1.json', report: report([['a.spec.ts', 'one', 'passed'], ['a.spec.ts', 'two', 'failed']]) },

@@ -1,5 +1,6 @@
 // The shape of .github/workflows/guide.yml (5a.1): one build without scope options,
-// step 80 and the browser tests in shards on that build, and a final job that needs
+// the single-page check tests after it (lead decision L12 of 5a), step 80 in four
+// shards and the browser tests in eight (L11) on that build, and a final job that needs
 // every shard job and fails unless the build is deployable and the union of the shard
 // reports covers every live group and every test. The sparse checkout and the path
 // filters are compared with build-inputs.json in build-inputs.test.mjs.
@@ -38,13 +39,21 @@ describe('guide.yml', () => {
     }
   });
 
-  it('runs step 80 and the browser tests in shards 1..n of n over the whole build', () => {
-    for (const name of ['equivalence', 'e2e']) {
+  it('runs the single-page check tests in the build job right after the production build', () => {
+    const build = runs(workflow.jobs.build);
+    const at = build.indexOf('npm run build -- --defer-equivalence');
+    expect(at).toBeGreaterThanOrEqual(0);
+    expect(build[at + 1]).toBe('npm run test:check-page');
+    expect(allRuns.filter((command) => command.includes('test:check-page'))).toEqual(['npm run test:check-page']);
+  });
+
+  it('runs step 80 in 4 shards and the browser tests in 8 shards, 1..n of n over the whole build', () => {
+    for (const [name, count] of [['equivalence', 4], ['e2e', 8]]) {
       const job = workflow.jobs[name];
       expect(job.needs, name).toBe('build');
       const shards = job.strategy.matrix.shard;
       const total = shards.length;
-      expect(total, name).toBe(4);
+      expect(total, name).toBe(count);
       expect(shards, name).toEqual(Array.from({ length: total }, (_, n) => n + 1));
       expect(job.strategy['fail-fast'], name).toBe(false);
     }

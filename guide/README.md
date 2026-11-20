@@ -423,7 +423,7 @@ lists the steps that ran; `scripts/test/build.test.mjs` asserts the plan.
 | `10-features` | Writes `src/generated/features.ts`, `features.json` and `pages.json`. |
 | `20-content` | Parses and checks the component Markdown (an English page without its Arabic sibling only while `scripts/content/pending-translation.json` lists it: it gets no route, and the step prints `content: <n> pages pending translation`), writes `src/generated/content/`: the page models, `loaders.ts`, `manifest.json` (read by the scripts and tests at build time only), `navigation.json` (the navigation index: id, langs, category, names, summaries and live groups of each page, read by the catalogue, the side navigation, the drawer and the editor from lazy chunks) and `routes.json` (ids and languages, read by the route matcher). The manifest carries the keyboard table of each page and language (keys and actions, read by step 80); each page model carries the data of its evidence panel (`scripts/content/evidence.mjs`: `components.json`, the Known defects of the pinned version in `CHANGELOG.md` that name the component, its documented differences) and adds the two headings of the panel to its headings. |
 | `25-examples` | Wraps, type-checks and compiles the live example groups; writes `src/generated/examples/` and `.cache/examples/`. |
-| `30-api-tables` | Checks the API tables of every built page against the installed packages (`scripts/api-tables/`): the member names of each table (as a set), the kind (Vue and Angular tables), the required flag, the type and the default of every row. Types are compared in the written form of one printer, `types.mjs` (see the API tables section of `docs/components/README.md`), after normalising white space, quotes, union order and parameter names. Defaults are read from the published JavaScript: React destructuring defaults, the Vue runtime props object, Angular field initialisers in the FESM; a default that is absent, generated or computed in a body is an em dash, and so is the default of a vanilla option or stylesheet attribute unless `defaults.json` quotes a line of an installed file that sets it. A component without a vanilla controller is compared with the union of its row in the stable class and state API of the `@hawiyah/styles` README and the attribute selectors that `dist/styles.css` has on its classes; the 26 components without a contract row need the generated note after their JavaScript table. Vue slot rows are compared with the slots the published `@hawiyah/vue` build reads (a computed slot name through `VUE_SLOT_PATTERNS` of `targets.mjs`). The lead's lists (`exclusions.json`, `defaults.json`, `TARGET_OVERRIDES`, `VUE_SLOT_PATTERNS` and `UNOWNED_EXPORTS` of `targets.mjs`, `arabic-exceptions.json`, `latin-allowlist.json`, `scripts/equivalence/keyboard-exceptions.json`; `UNOWNED_EXPORTS` belongs to no page) need `approvedBy` and a reason on every entry and hold at most 5 entries per page (`scripts/api-tables/lists.mjs`). The step writes `src/generated/parity.json` with the members of all components of `components.json`, and fails when a reader cannot read a component. Its second pass is the vocabulary check (`scripts/api-tables/vocabulary.mjs`, `HWC-VOCAB`): every inline code value of a page outside the API tables (prose, lists, headings, alerts and other tables) and every class, `data-hw` hook and `data-*` attribute of its `html` live blocks must exist in the installed packages, as the section Vocabulary of `docs/components/README.md` states, or be an entry `{ file, text, reason, approvedBy }` of `vocabulary-exceptions.json` (a lead's list; an entry that matches nothing fails); names that HTML, ARIA, the DOM, CSS and the Vue and Angular template syntax define are read from `vocabulary-allow.json`, each group with its specification. The success line states what was compared, with counts: `api-tables: <n> API tables of <m> page models, <r> rows: names, kinds, required flags, types and defaults match the installed packages (...; <d> defaults.json entries; <s> rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; <e> rows of exclusions.json compared by name only; Vue slots read from the published build, <p> slot patterns; <o> target overrides); parity.json: members of <c> components; vocabulary: <v> code values outside the API tables (<t> terms) and <k> classes, hooks and data attributes of html live blocks exist in the installed packages (<x> vocabulary-exceptions.json entries)`. |
+| `30-api-tables` | Checks the API tables of every built page against the installed packages (`scripts/api-tables/`): the member names of each table (as a set), the kind (Vue and Angular tables), the required flag, the type and the default of every row. Types are compared in the written form of one printer, `types.mjs` (see the API tables section of `docs/components/README.md`), after normalising white space, quotes, union order and parameter names. Defaults are read from the published JavaScript: React destructuring defaults, the Vue runtime props object, Angular field initialisers in the FESM; a default that is absent, generated or computed in a body is an em dash, and so is the default of a vanilla option or stylesheet attribute unless `defaults.json` quotes a line of an installed file that sets it. A component without a vanilla controller is compared with the union of its row in the stable class and state API of the `@hawiyah/styles` README and the attribute selectors that `dist/styles.css` has on its classes; the 26 components without a contract row need the generated note after their JavaScript table. Vue slot rows are compared with the slots the published `@hawiyah/vue` build reads (a computed slot name through `VUE_SLOT_PATTERNS` of `targets.mjs`). The lead's lists (`exclusions.json`, `defaults.json`, `TARGET_OVERRIDES`, `VUE_SLOT_PATTERNS` and `UNOWNED_EXPORTS` of `targets.mjs`, `arabic-exceptions.json`, `latin-allowlist.json`, `scripts/equivalence/keyboard-exceptions.json`; `UNOWNED_EXPORTS` belongs to no page) need `approvedBy` and a reason on every entry and hold at most 5 entries per page (`scripts/api-tables/lists.mjs`). The step writes `src/generated/parity.json` with the members of all components of `components.json`, and fails when a reader cannot read a component. Its second pass is the vocabulary check (`scripts/api-tables/vocabulary.mjs`, `HWC-VOCAB`): every inline code value of a page outside the API tables (prose, lists, headings, alerts and other tables) and every class, `data-hw` hook and `data-*` attribute of its `html` live blocks must exist in the installed packages, as the section Vocabulary of `docs/components/README.md` states, or be an entry `{ file, text, reason, approvedBy }` of `vocabulary-exceptions.json` (a lead's list; an entry that matches nothing fails); names that HTML, ARIA, the DOM, CSS and the Vue and Angular template syntax define are read from `vocabulary-allow.json`, each group with its specification (a list of the guide, not a lead list: an entry is a group of names of one kind with the https address of its specification, and the step and `scripts/api-tables/test/vocabulary-allow.test.mjs` fail on an entry without one). The success line states what was compared, with counts: `api-tables: <n> API tables of <m> page models, <r> rows: names, kinds, required flags, types and defaults match the installed packages (...; <d> defaults.json entries; <s> rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; <e> rows of exclusions.json compared by name only; Vue slots read from the published build, <p> slot patterns; <o> target overrides); parity.json: members of <c> components; vocabulary: <v> code values outside the API tables (<t> terms) and <k> classes, hooks and data attributes of html live blocks exist in the installed packages (<x> vocabulary-exceptions.json entries)`. |
 | `32-install` | Writes `src/generated/install.json`. |
 | `35-index-html` | Writes `src/generated/index.html` from the template with the pre-paint script. |
 | `40-angular` | Runs `ng build --stats-json` with the base href, the configuration and the preview define, with `--max-old-space-size=8192` added to its `NODE_OPTIONS` unless the caller set a heap limit (one program holds every page model, listing and native example: the default heap ran out at 85 pages); saves the output to `.cache/logs/` and logs the peak memory of the ng process tree (`40-angular: peak memory <n> MB ...`, where `/proc` exists). The esbuild metafiles `browser-stats.json` and `server-stats.json` are written to `dist/` (not deployed); the step fails when a browser output has `src/generated/content/manifest.json` among its inputs (`scripts/features/bundle.mjs`). |
@@ -578,8 +578,33 @@ that presses other keys than it declares (`HWE-CHECK`). `expect` runs in each
 frame right after the step, while that frame has the focus, and computes the
 expected outcome from the state before the step, the frame's direction and what
 the check is written for (an orientation, an activation mode), never from what
-an adapter rendered; a miss is `HWE-EXPECT` with the framework, the outcome and
-its reference. Then the four results are compared as before. `HWE-KEYS` also
+an adapter rendered; it only reads the frame. The harness applies it until it
+holds or 5 seconds have passed (`awaitOutcome` in `run.mjs`), lets the frame render
+twice more, and applies it once again; that last application is the verdict, so a
+wrong outcome still fails (after the bound, `not shown within 5000 ms`) and an
+outcome that is shown and then changes fails too (`shown, then changed`). The step
+is never run again and the expected outcome is never changed. A miss is
+`HWE-EXPECT` with the framework, the outcome and its reference. Then the four
+results are compared as before.
+
+Why the bounded wait (lead decision L16 of milestone 5): `@hawiyah/angular` 0.3.0
+renders the state of an event in a later task than the event. Zoneless Angular 22
+runs change detection in the first animation frame or 0 ms timer after the event,
+while `@hawiyah/vanilla` writes `aria-selected` in the event's task and React and
+Vue in its microtasks; focus moves at once in all four. A read of the frame right
+after the key press is not ordered after that render, so on a loaded runner the
+Angular result was read one step behind (three `HWE-EXPECT` lines in the vertical
+Tabs group at 028eced, each with the selection one step behind and focus already
+right). Probes outside the repository found the Angular selection correct in both
+orientations and directions once rendered, and identical in the horizontal and the
+vertical groups (a read in the event task and in its microtasks still shows the old
+tab, a read after the first animation frame or timer the documented one); the
+vertical group differs only in that its four frames do not fit the harness
+viewport, so each Angular press there is preceded by a scroll of the harness page.
+Measured after the change: 20 runs of step 80 alone while production builds of a
+copy of the guide ran in a loop on the same four cores, 0 failures; a deliberately
+wrong expectation (Up Arrow taken as next in the vertical check) failed with 16
+`HWE-EXPECT` lines, in all four frameworks and both languages. `HWE-KEYS` also
 binds the pages: for each component whose page targets a controller factory of
 the installed `@hawiyah/vanilla` (34 ids: the 33 of the inventory and `app-shell`,
 which documents `createSkipLink`), the keys of the keyboard table of each language
@@ -653,7 +678,9 @@ The browser tests are the long part: the computed half of the styling rule
 page twice, in two colour modes at two widths, and most of a shard's time goes
 there. The first lever is more shards: eight shards of the same suite would take
 about 29 minutes each on this machine. The second is more workers on runners
-with more cores. `guide.yml` keeps four shards until the lead decides.
+with more cores. `guide.yml` therefore runs the browser tests in eight shards
+(lead decision L11 of milestone 5) and step 80, whose shard of four stays far
+below 30 minutes, in four.
 
 What the fixture exercises: steps 20, 25, 30 (API tables of all 85 components
 and the vocabulary pass), 40 (memory, prerendering of 348 documents, the
@@ -703,13 +730,15 @@ and every page of that build; nothing is cached and nothing is sampled.
 - `build`: the registry check and its negative controls, the lint and its
   negative controls, the installation of Chromium, the script tests (some drive
   Chromium), the production build with
-  `--defer-equivalence`, the list of the browser tests of that build
+  `--defer-equivalence`, the tests of the single-page check against that build
+  (`npm run test:check-page`, which writes only below `.cache/`), the list of
+  the browser tests of that build
   (`playwright test --project=prod --list --reporter=json`), then the upload of
   `dist/browser/`, `dist/build-info.json`, `src/generated/`, `.cache/content/` and
   the list; then the development build check and the unit tests.
 - `equivalence`, four jobs: step 80 on shard i of 4 of the uploaded build
   (`run.mjs --shard i/4`), each uploading its report.
-- `e2e`, four jobs: `playwright test --project=prod --shard=i/4` with the line
+- `e2e`, eight jobs: `playwright test --project=prod --shard=i/8` with the line
   and JSON reporters on the uploaded build, each uploading its JSON report and its
   `structure-used/` results.
 - `complete` needs every other job and runs even when one failed: it fails unless

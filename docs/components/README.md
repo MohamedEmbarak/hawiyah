@@ -195,7 +195,9 @@ or style check. Each name must exist in the installed packages:
   the selectors of its Angular classes), a member of a component page that the
   same sentence links to, an export, a value of the component, or a name that
   HTML, ARIA, the DOM, CSS or the Vue and Angular template syntax define
-  (`vocabulary-allow.json`, each group with its specification).
+  (`vocabulary-allow.json`, each group with its specification; a list of the
+  guide, not one of the lead's lists, and a group without its specification
+  fails step 30).
 - A quoted literal, and the value of an attribute (`aria-busy="true"`,
   `[role="tab"]`), is a value of a member type or of an enumerated attribute of
   the component. The expression of a binding (`[loading]="saving"`) is

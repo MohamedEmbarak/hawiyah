@@ -159,14 +159,58 @@ function guideDependencies(nodeModules) {
   return new Set([...Object.keys(manifest.dependencies ?? {}), ...Object.keys(manifest.devDependencies ?? {})]);
 }
 
-/** Reads vocabulary-allow.json: Map name -> { kind, specification, values? }. */
+const ALLOW_FIELDS = ['kind', 'specification', 'names', 'values'];
+
+/**
+ * Problems of the data of vocabulary-allow.json (lead decision L15 of 5a): a list of
+ * the guide, not a lead list, in which every entry (a group of names of one kind)
+ * names its specification as an https address. Each group has a kind, a
+ * specification, a non-empty list of names and optionally the values of some of
+ * them; no other field, no name twice in one kind, no values of a name it does not list.
+ */
+export function allowErrors(data) {
+  if (!data || typeof data !== 'object' || !Array.isArray(data.groups)) return ['vocabulary-allow.json must hold { groups: [...] }'];
+  const errors = [];
+  const seen = new Set();
+  data.groups.forEach((group, index) => {
+    const at = `vocabulary-allow.json group ${index + 1}${typeof group?.kind === 'string' ? ` (${group.kind})` : ''}`;
+    if (!group || typeof group !== 'object' || Array.isArray(group)) {
+      errors.push(`${at} is not an object`);
+      return;
+    }
+    const extra = Object.keys(group).filter((field) => !ALLOW_FIELDS.includes(field));
+    if (extra.length > 0) errors.push(`${at} has unknown fields ${extra.join(', ')} (the file is a list of the guide: kind, specification, names, values)`);
+    if (typeof group.kind !== 'string' || group.kind.trim() === '') errors.push(`${at} needs a kind`);
+    if (typeof group.specification !== 'string' || !/^https:\/\/[^\s/]+\/\S*$/.test(group.specification)) errors.push(`${at} needs its specification as an https address`);
+    if (!Array.isArray(group.names) || group.names.length === 0 || !group.names.every((name) => typeof name === 'string' && name.trim() !== '')) {
+      errors.push(`${at} needs a non-empty list of names`);
+      return;
+    }
+    for (const name of group.names) {
+      const key = `${group.kind}\u0000${name}`;
+      if (seen.has(key)) errors.push(`${at}: ${name} is listed twice as ${group.kind}`);
+      seen.add(key);
+    }
+    if ('values' in group) {
+      if (!group.values || typeof group.values !== 'object' || Array.isArray(group.values)) errors.push(`${at}: values must be an object`);
+      else {
+        for (const [name, list] of Object.entries(group.values)) {
+          if (!group.names.includes(name)) errors.push(`${at}: values of ${name}, which the group does not list`);
+          if (!Array.isArray(list) || list.length === 0 || !list.every((value) => typeof value === 'string' && value !== '')) errors.push(`${at}: the values of ${name} must be a non-empty list of strings`);
+        }
+      }
+    }
+  });
+  return errors;
+}
+
+/** Reads vocabulary-allow.json: Map name -> { kind, specification, values? }; throws on a problem of allowErrors. */
 export function readAllow(file = DEFAULT_ALLOW) {
   const data = JSON.parse(readFileSync(file, 'utf8'));
+  const errors = allowErrors(data);
+  if (errors.length > 0) throw new Error(errors.map((error) => `api-tables: ${error}`).join('\n'));
   const names = new Map();
-  for (const [index, group] of (data.groups ?? []).entries()) {
-    if (typeof group.kind !== 'string' || typeof group.specification !== 'string' || !/^https:\/\//.test(group.specification) || !Array.isArray(group.names)) {
-      throw new Error(`api-tables: vocabulary-allow.json group ${index + 1} needs kind, a specification (https URL) and names`);
-    }
+  for (const group of data.groups) {
     for (const name of group.names) names.set(`${group.kind}\u0000${name}`, { kind: group.kind, name, specification: group.specification, values: group.values?.[name] ?? null });
   }
   const has = (kinds, name) => kinds.find((kind) => names.has(`${kind}\u0000${name}`)) ?? null;

@@ -11,7 +11,7 @@ import tabsKeyboard from '../checks/tabs-keyboard.mjs';
 import tabsKeyboardVertical from '../checks/tabs-keyboard-vertical.mjs';
 import { nextEnabled, previousEnabled, target } from '../checks/lib/tabs.mjs';
 import { isKey, keyName, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors } from '../keys.mjs';
-import { axeFrames, chromiumPath, runChecks } from '../run.mjs';
+import { awaitOutcome, axeFrames, chromiumPath, runChecks } from '../run.mjs';
 
 const guideDir = fileURLToPath(new URL('../../../', import.meta.url));
 const componentsFile = fileURLToPath(new URL('../../../../components.json', import.meta.url));
@@ -116,17 +116,34 @@ describe('the Tabs oracle (written from the WAI-ARIA Authoring Practices and CON
 // harness. "wrong" frames hold a tab list whose arrow keys do nothing, the same in
 // all four, so the comparison of the four results passes and only the outcome
 // assertions can fail; "right" frames hold a minimal roving tab list that follows
-// the documented behaviour (the oracle must not fail a correct widget).
+// the documented behaviour (the oracle must not fail a correct widget). The
+// behaviours of lead decision L16 move focus in the key's task, as every adapter
+// does, and write the selection later, in the first animation frame or 0 ms timer
+// after the key, as zoneless change detection of @hawiyah/angular does: "late"
+// writes the documented tab, "late-wrong" the tab after it, and "flicker" writes the
+// documented tab at once and the tab after it in that later task. "slow" writes the
+// documented tab 150 ms after the key: a render that comes after the harness has read
+// the frame, as on a loaded runner (before L16 the harness failed it).
 const FRAMEWORK_NAMES = ['vanilla', 'react', 'vue', 'angular'];
 function frameDocument(framework, { dir, behaviour, unnamed = false }) {
   const mount = framework === 'angular' ? 'guide-example' : 'div id="app"';
   const close = framework === 'angular' ? 'guide-example' : 'div';
-  const tabs = ['One', 'Two', 'Three'].map((label, index) => `<button type="button" role="tab" id="t${index}" aria-controls="p${index}" aria-selected="${index === 0}" tabindex="${behaviour === 'right' && index !== 0 ? -1 : 0}">${label}</button>`).join('');
+  const tabs = ['One', 'Two', 'Three'].map((label, index) => `<button type="button" role="tab" id="t${index}" aria-controls="p${index}" aria-selected="${index === 0}" tabindex="${behaviour !== 'wrong' && index !== 0 ? -1 : 0}">${label}</button>`).join('');
   const panels = [0, 1, 2].map((index) => `<section role="tabpanel" id="p${index}" aria-labelledby="t${index}" tabindex="0"${index === 0 ? '' : ' hidden'}><p>Panel ${index + 1}</p></section>`).join('');
-  const script = behaviour === 'right'
+  const script = behaviour !== 'wrong'
     ? `<script>
         const tabs = [...document.querySelectorAll('[role=tab]')];
-        const select = (i) => tabs.forEach((tab, n) => { tab.setAttribute('aria-selected', String(n === i)); tab.tabIndex = n === i ? 0 : -1; document.getElementById('p' + n).hidden = n !== i; });
+        const render = (i) => tabs.forEach((tab, n) => { tab.setAttribute('aria-selected', String(n === i)); tab.tabIndex = n === i ? 0 : -1; document.getElementById('p' + n).hidden = n !== i; });
+        // The next task that renders: the first animation frame or 0 ms timer (Angular's zoneless scheduler).
+        const later = (callback) => { let done = false; const once = () => { if (!done) { done = true; callback(); } }; requestAnimationFrame(once); setTimeout(once, 0); };
+        const behaviour = '${behaviour}';
+        const select = (i) => {
+          if (behaviour === 'right') render(i);
+          if (behaviour === 'late') later(() => render(i));
+          if (behaviour === 'slow') setTimeout(() => render(i), 150);
+          if (behaviour === 'late-wrong') later(() => render((i + 1) % tabs.length));
+          if (behaviour === 'flicker') { render(i); later(() => render((i + 1) % tabs.length)); }
+        };
         document.querySelector('[role=tablist]').addEventListener('keydown', (event) => {
           const i = tabs.indexOf(document.activeElement);
           const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
@@ -174,14 +191,56 @@ describe('outcome assertions, pressed keys and axe on a stand-in page (Chromium)
   it('fails the expect of four equal but wrong results (HWE-EXPECT), while their comparison passes', async () => {
     await standIn(page, { dir: 'ltr', behaviour: 'wrong' });
     const compared = [];
-    const { failures, asserted } = await runChecks({ page, group: group('en'), checks: [tabsKeyboard], evaluate: async (state) => compared.push(state) });
+    const { failures, asserted } = await runChecks({ page, group: group('en'), checks: [tabsKeyboard], evaluate: async (state) => compared.push(state), outcomeTimeout: 300 });
     // tab-into-list holds (Tab enters on the selected tab); right-arrow is the first outcome that fails, in all four frames.
     expect(failures.filter((line) => line.includes('tabs-keyboard/right-arrow in')).map((line) => line.split(' in ')[1].split(':')[0])).toEqual(FRAMEWORK_NAMES);
-    expect(failures[0]).toMatch(/^HWE-EXPECT docs\/components\/tabs\.md:19: basic \(en\) tabs-keyboard\/(?:right-arrow|left-arrow|left-arrow-again|end|right-arrow-again) in vanilla: focus is expected on tab \d of 3; it is on tab \d; documented outcome: /);
+    expect(failures[0]).toMatch(/^HWE-EXPECT docs\/components\/tabs\.md:19: basic \(en\) tabs-keyboard\/(?:right-arrow|left-arrow|left-arrow-again|end|right-arrow-again) in vanilla: focus is expected on tab \d of 3; it is on tab \d \(not shown within 300 ms\); documented outcome: /);
     expect(failures.every((line) => line.startsWith('HWE-EXPECT '))).toBe(true);
     expect(compared).toHaveLength(tabsKeyboard.steps.length);
     expect(asserted).toBeLessThan(tabsKeyboard.steps.length);
   }, 120_000);
+
+  // Lead decision L16 of 5a: the expect waits, within a bound, for the documented
+  // outcome and then checks that it holds; it never accepts another outcome.
+  for (const [dir, behaviour] of [['ltr', 'late'], ['rtl', 'late'], ['ltr', 'slow'], ['rtl', 'slow']]) {
+    it(`passes a tab list that writes the documented selection ${behaviour === 'slow' ? '150 ms' : 'in the task'} after the key, in ${dir} frames`, async () => {
+      await standIn(page, { dir, behaviour });
+      const { failures, asserted } = await runChecks({ page, group: group(dir === 'rtl' ? 'ar' : 'en'), checks: [tabsKeyboard] });
+      expect(failures).toEqual([]);
+      expect(asserted).toBe(tabsKeyboard.steps.length);
+    }, 120_000);
+  }
+
+  it('fails a tab list that writes a wrong selection in the task after the key (HWE-EXPECT, after the bound)', async () => {
+    await standIn(page, { dir: 'ltr', behaviour: 'late-wrong' });
+    const started = Date.now();
+    const { failures } = await runChecks({ page, group: group('en'), checks: [tabsKeyboard], outcomeTimeout: 300 });
+    expect(Date.now() - started).toBeGreaterThan(300);
+    const right = failures.filter((line) => line.includes('tabs-keyboard/right-arrow in'));
+    expect(right.map((line) => line.split(' in ')[1].split(':')[0])).toEqual(FRAMEWORK_NAMES);
+    expect(right[0]).toContain('in vanilla: tab 2 of 3 is expected to be the one selected tab; selected: 3 (not shown within 300 ms); documented outcome: ');
+  }, 120_000);
+
+  it('fails a tab list that shows the documented selection and changes it in the task after the key (HWE-EXPECT)', async () => {
+    await standIn(page, { dir: 'ltr', behaviour: 'flicker' });
+    const { failures } = await runChecks({ page, group: group('en'), checks: [tabsKeyboard], outcomeTimeout: 300 });
+    const right = failures.filter((line) => line.includes('tabs-keyboard/right-arrow in'));
+    expect(right.map((line) => line.split(' in ')[1].split(':')[0])).toEqual(FRAMEWORK_NAMES);
+    expect(right[0]).toMatch(/in vanilla: tab 2 of 3 is expected to be the one selected tab; selected: 3 \((?:the documented outcome was shown, then changed|not shown within 300 ms)\); documented outcome: /);
+  }, 120_000);
+
+  it('applies expect until it holds or the bound passes, then once more after the frame settled', async () => {
+    let calls = 0;
+    let settled = 0;
+    const later = async () => { calls += 1; if (calls < 3) throw new Error('not yet'); };
+    expect(await awaitOutcome(later, async () => { settled += 1; }, { timeout: 1000, interval: 1 })).toBeNull();
+    expect([calls, settled]).toEqual([4, 1]);
+    const never = async () => { throw new Error('tab 2 of 3 is expected to be the one selected tab; selected: 1'); };
+    expect(await awaitOutcome(never, async () => {}, { timeout: 50, interval: 5 })).toBe('tab 2 of 3 is expected to be the one selected tab; selected: 1 (not shown within 50 ms)');
+    let held = 0;
+    const changes = async () => { held += 1; if (held > 1) throw new Error('selected: 3'); };
+    expect(await awaitOutcome(changes, async () => {}, { timeout: 50 })).toBe('selected: 3 (the documented outcome was shown, then changed)');
+  });
 
   for (const dir of ['ltr', 'rtl']) {
     it(`passes every outcome of a correct tab list in ${dir} frames`, async () => {
