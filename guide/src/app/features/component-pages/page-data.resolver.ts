@@ -1,7 +1,7 @@
 import { inject, type Type } from '@angular/core';
 import { ActivatedRouteSnapshot, RedirectCommand, Router } from '@angular/router';
-import { loadContentPage, manifestPage } from '../../content/content-loader';
-import type { ContentPage, ManifestPage } from '../../content/model';
+import { loadContentPage, navigationPage } from '../../content/content-loader';
+import type { ContentPage, NavigationPage } from '../../content/model';
 import { ExampleSourcesLoader, loadNativeExamples } from '../../examples/example-loader';
 import type { ExampleGroup } from '../../examples/page-examples';
 import { isLang, type Lang } from '../../i18n/text';
@@ -12,14 +12,15 @@ export type ComponentView = 'brief' | 'reference';
 export interface ComponentPageData {
   readonly view: ComponentView;
   readonly page: ContentPage;
-  readonly manifest: ManifestPage;
+  /** The page's entry in the navigation index: names, summary and live groups. */
+  readonly entry: NavigationPage;
   /** The live groups the view shows: the first one on a brief view, all on a reference view. */
   readonly groups: readonly ExampleGroup[];
 }
 
 /** Live groups of a view: the first group for the brief, every group for the reference. */
-export function viewGroups(manifest: ManifestPage, page: ContentPage, view: ComponentView): ManifestPage['liveGroups'] {
-  const groups = manifest.liveGroups.filter((group) => page.liveGroups.includes(group.example));
+export function viewGroups(entry: NavigationPage, page: ContentPage, view: ComponentView): NavigationPage['examples'] {
+  const groups = entry.examples.filter((group) => page.liveGroups.includes(group.example));
   return view === 'brief' ? groups.slice(0, 1) : groups;
 }
 
@@ -30,12 +31,12 @@ export async function loadComponentPage(
   view: ComponentView,
   sources: Pick<ExampleSourcesLoader, 'load'>,
 ): Promise<ComponentPageData | null> {
-  const manifest = manifestPage(id);
-  if (!manifest || !manifest.langs.includes(lang)) return null;
+  const entry = navigationPage(id);
+  if (!entry || !entry.langs.includes(lang)) return null;
   const [page, natives] = await Promise.all([loadContentPage(id, lang), loadNativeExamples(id, lang)]);
   if (!page) return null;
   const groups = await Promise.all(
-    viewGroups(manifest, page, view).map(async (group): Promise<ExampleGroup> => ({
+    viewGroups(entry, page, view).map(async (group): Promise<ExampleGroup> => ({
       id,
       lang,
       example: group.example,
@@ -44,7 +45,7 @@ export async function loadComponentPage(
       sources: await sources.load(id, lang, group.example),
     })),
   );
-  return { view, page, manifest, groups };
+  return { view, page, entry, groups };
 }
 
 /**

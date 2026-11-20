@@ -2,6 +2,16 @@
 // Equivalence harness runner (contentPipeline.equivalence).
 //
 //   node scripts/equivalence/run.mjs [--dir dist/browser] [--base /hawiyah/] [--only <id>/<lang>/<example>,...]
+//                                    [--pages <id>,...] [--shard <i>/<n>] [--report <file>] [--workers <n>]
+//
+// --pages compares only the groups of the named pages (build option --pages).
+// --shard i/n compares the i-th of n parts of the sorted group keys (key k of the
+// sorted list belongs to shard (k mod n) + 1), writes its report to --report
+// (default .cache/equivalence/shard-<i>-of-<n>.json) and its diff images to
+// .cache/equivalence/shard-<i>/; scripts/equivalence/merge.mjs joins the reports
+// and fails unless together they compared exactly the groups of the content manifest.
+// --workers (or HAWIYAH_EQUIVALENCE_WORKERS) sets the number of groups compared at
+// once (default 2).
 //
 // Serves <browserDir> under the base path like scripts/serve.mjs, adds the harness
 // page at <base>__harness/ (never written into dist), starts Chromium (1280x900,
@@ -395,11 +405,11 @@ async function loadChecks(names) {
   return checks;
 }
 
-const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
+export const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
 const stem = (group, state) => [group.id, group.lang, group.example, ...(state === 'rest' ? [] : state.split('/'))].join('-');
 
 /** Runs one group; returns { rows, failures, applied }. */
-async function runGroup({ page, origin, base, pin, group, checks, difference, outDir }) {
+async function runGroup({ page, origin, base, pin, group, checks, difference, outDir, imageDir = '.cache/equivalence' }) {
   const rows = [];
   const failures = [];
   const harness = await openGroup(page, harnessUrl(origin, base, group, pin));
@@ -426,7 +436,7 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, ou
           writeFileSync(join(outDir, `${base}-${row.framework}-actual.png`), captured.images[row.framework]);
           if (row.diff) {
             writeFileSync(join(outDir, `${base}-${row.framework}.png`), row.diff);
-            entry.diffImage = `.cache/equivalence/${base}-${row.framework}.png`;
+            entry.diffImage = `${imageDir}/${base}-${row.framework}.png`;
           }
         }
       }
@@ -483,9 +493,15 @@ export async function runEquivalence(options) {
   const allGroups = JSON.parse(readFileSync(groupsFile, 'utf8'));
   // The groups must be those of the pages that were built (src/generated/content/manifest.json).
   const manifestFile = resolve(guideDir, options.manifestFile ?? 'src/generated/content/manifest.json');
-  const scope = scopeErrors(allGroups, existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : null, options.only);
+  const scope = [
+    ...scopeErrors(allGroups, existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : null, options.only),
+    ...pagesErrors(allGroups, options.pages),
+  ];
+  const shard = options.shard ? parseShard(options.shard) : null;
   if (scope.length > 0) throw new Error(scope.join('\n'));
-  const groups = options.only ? allGroups.filter((group) => options.only.includes(groupKey(group))) : allGroups;
+  let selected = options.only ? allGroups.filter((group) => options.only.includes(groupKey(group))) : allGroups;
+  if (options.pages) selected = selected.filter((group) => options.pages.includes(group.id));
+  const groups = shard ? shardGroups(selected, shard) : selected;
 
   const pin = readPin(guideDir);
   const known = validateKnownDifferences(JSON.parse(readFileSync(join(here, 'known-differences.json'), 'utf8')));
@@ -506,9 +522,12 @@ export async function runEquivalence(options) {
   }
   if (failures.length > 0) throw new Error(failures.join('\n'));
 
-  rmSync(outDir, { recursive: true, force: true });
-  mkdirSync(join(outDir, 'harness'), { recursive: true });
-  const harnessFile = join(outDir, 'harness', 'harness.js');
+  // A shard writes into its own directory, so the reports of the other shards stay.
+  const workDir = shard ? join(outDir, `shard-${shard.index}`) : outDir;
+  const reportFile = options.report ? resolve(guideDir, options.report) : shard ? join(outDir, `shard-${shard.index}-of-${shard.total}.json`) : join(outDir, 'report.json');
+  rmSync(workDir, { recursive: true, force: true });
+  mkdirSync(join(workDir, 'harness'), { recursive: true });
+  const harnessFile = join(workDir, 'harness', 'harness.js');
   await bundleHarness(harnessFile);
   const served = await startHarnessServer({ dir: browserDir, base, harnessFile, port: options.port ?? Number(process.env.HAWIYAH_EQUIVALENCE_PORT ?? 0) });
   const browser = await chromium.launch({ executablePath: chromiumPath() });
@@ -524,7 +543,7 @@ export async function runEquivalence(options) {
       try {
         for (let item = queue.shift(); item; item = queue.shift()) {
           pageErrors.length = 0;
-          const result = await runGroup({ page, origin: served.origin, base, pin, outDir, ...item });
+          const result = await runGroup({ page, origin: served.origin, base, pin, outDir: workDir, imageDir: relative(guideDir, workDir).split('\\').join('/'), ...item });
           for (const message of pageErrors) result.failures.push(failureLine('HWE-FRAME', item.group, `harness page error: ${message}`));
           rows.push(...result.rows);
           failures.push(...result.failures);
@@ -539,7 +558,7 @@ export async function runEquivalence(options) {
         await context.close();
       }
     };
-    const workers = Math.max(1, Math.min(options.workers ?? Number(process.env.HAWIYAH_EQUIVALENCE_WORKERS ?? 2), plan.length));
+    const workers = Math.max(1, Math.min(workerCount(options.workers ?? process.env.HAWIYAH_EQUIVALENCE_WORKERS), plan.length));
     await Promise.all(Array.from({ length: workers }, worker));
   } finally {
     await browser.close();
@@ -555,6 +574,11 @@ export async function runEquivalence(options) {
   const documented = [...applied.keys()].map((id) => ({ ...known.entries.get(id), groups: applied.get(id).sort() }));
   const report = {
     pin,
+    scope: { pages: options.pages ?? null, only: options.only ?? null, shard },
+    // The keys this run was to compare (before the shard split) and the keys it compared,
+    // each with the number of its interaction checks: what merge.mjs joins.
+    selected: selected.map(groupKey).sort(),
+    compared: plan.map((item) => ({ key: groupKey(item.group), checks: item.checks.length })).sort((a, b) => a.key.localeCompare(b.key)),
     environment: { viewport: VIEWPORT, deviceScaleFactor: 1, reducedMotion: 'reduce', colorScheme: 'light', frameWidth: 720 },
     groups: pages.size,
     languages: [...languages].sort(),
@@ -566,7 +590,8 @@ export async function runEquivalence(options) {
     failures: [...failures].sort(),
     comparisons: rows,
   };
-  writeFileSync(join(outDir, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
+  mkdirSync(dirname(reportFile), { recursive: true });
+  writeFileSync(reportFile, `${JSON.stringify(report, null, 2)}\n`);
   for (const entry of documented) {
     const scope = entry.ignore ? `ignores ${entry.ignore.map((rule) => `${rule.attribute} on .${rule.class}`).join(', ')}` : 'skipped';
     log(`equivalence: documented difference ${entry.id} (${entry.component}, ${entry.aspect}, approved by ${entry.approvedBy}, ${entry.source}) ${scope} for ${entry.groups.join(', ')}: ${entry.description}`);
@@ -576,7 +601,43 @@ export async function runEquivalence(options) {
     groups: pages.size, languages: languages.size, frameworks: FRAMEWORKS.length, interactionChecks,
     afterInteraction: interacted.size, restOnly: pages.size - interacted.size, documented: documented.length,
   });
+  if (shard) report.summary = report.summary.replace(/^equivalence: /, `equivalence shard ${shard.index}/${shard.total} (${plan.length} of ${selected.length} group-languages): `);
+  if (options.pages) report.summary = `${report.summary}; only the pages ${options.pages.join(', ')} (--pages)`;
   return report;
+}
+
+/** '<i>/<n>' as { index, total }; throws on anything else. */
+export function parseShard(value) {
+  const match = /^(\d+)\/(\d+)$/.exec(String(value));
+  const index = Number(match?.[1]);
+  const total = Number(match?.[2]);
+  if (!match || total < 1 || index < 1 || index > total) throw new Error(`HWE-SCOPE --shard:1: ${value} is not <i>/<n> with 1 <= i <= n`);
+  return { index, total };
+}
+
+/**
+ * The groups of shard i of n: key k of the sorted list of group keys belongs to
+ * shard (k mod n) + 1, so the n shards are a partition of the groups and neighbouring
+ * groups of one page are spread over the shards.
+ */
+export function shardGroups(groups, { index, total }) {
+  const sorted = [...groups].sort((a, b) => groupKey(a).localeCompare(groupKey(b)));
+  return sorted.filter((_, k) => k % total === index - 1);
+}
+
+/** The number of workers: a whole number from 1 to 8, default 2. */
+export function workerCount(value) {
+  if (value === undefined || value === null || value === '') return 2;
+  const count = Number(value);
+  if (!Number.isInteger(count) || count < 1 || count > 8) throw new Error(`HWE-SCOPE --workers:1: ${value} is not a whole number from 1 to 8`);
+  return count;
+}
+
+/** Failure lines for --pages ids that name no page with live groups. */
+export function pagesErrors(groups, pages) {
+  if (!pages) return [];
+  const ids = new Set(groups.map((group) => group.id));
+  return pages.filter((id) => !ids.has(id)).map((id) => `HWE-SCOPE --pages:1: ${id} names no built page with live groups`);
 }
 
 /** The checks a group names (check=<a>[,<b>...]). */
@@ -642,6 +703,10 @@ export function parseArgs(argv) {
     if (flag === '--dir') options.browserDir = value;
     else if (flag === '--base') options.basePath = value;
     else if (flag === '--only') options.only = value.split(',').filter(Boolean);
+    else if (flag === '--pages') options.pages = value.split(',').filter(Boolean);
+    else if (flag === '--shard') options.shard = value;
+    else if (flag === '--report') options.report = value;
+    else if (flag === '--workers') options.workers = workerCount(value);
     else throw new Error(`unknown option ${flag}`);
   }
   return options;

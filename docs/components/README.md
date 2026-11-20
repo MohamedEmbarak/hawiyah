@@ -78,25 +78,69 @@ Table: Header rows of the API tables
 | Vue | `\| Name \| Kind \| Type \| Required \| Default \|` | `\| الاسم \| الفئة \| النوع \| مطلوب \| القيمة الافتراضية \|` |
 | Angular | `\| Name \| Kind \| Type \| Required \| Default \|` | `\| الاسم \| الفئة \| النوع \| مطلوب \| القيمة الافتراضية \|` |
 
-- Name, Type and Default cells are inline code. A missing default is an em dash
-  (`—`), written without code formatting.
+- Name and Type cells are inline code, and Default cells inline code or an em
+  dash (`—`, without code formatting). A Type cell is an em dash where the
+  package declares no type: a Vue slot row, an Angular content row, and a native
+  attribute that `exclusions.json` lists.
 - Required is `` `true` `` or `` `false` ``.
 - Kind is `prop`, `event` or `slot` for Vue, and `input`, `output` or `content`
   for Angular. For Angular content projection the name is the selector.
 - The body rows are byte-identical in the English and Arabic tables. Only the
   caption, the header row and the prose after the table are translated.
-- The names are compared with the declarations of the installed packages in a
-  later build step; a table that lists a name the package does not declare, or
-  omits one it does, fails the build.
+- Build step 30 compares every row with the installed packages: the names (a
+  table that lists a name the package does not declare, or omits one it
+  declares, fails the build), the kind, the required flag, the type and the
+  default (`HWC-APIX`). Do not write the tables by hand:
+  `npm run content:scaffold -- <id>` writes them for a new page and
+  `npm run content:api-tables -- <id> --write` rewrites them in both files, from
+  the same readers as step 30; the fact sheet (`npm run content:facts -- <id>`)
+  lists the same members with the published line each default is read from.
+- The Type column has the written form of the type printer
+  (`guide/scripts/api-tables/types.mjs`): single quotes; a union of literals that
+  the declaration names (`ButtonVariant`) written out, an object, interface or
+  function type by its name (`TabItem`, `Responsive<LayoutSpacing>`); no
+  `| undefined` on an optional member; `T[]` and `readonly T[]`; a function type
+  as `(value: string) => void`; an Angular output as its payload type
+  (`EventEmitter<string>` is `string`), a signal input as its value type; a Vue
+  event as the signature of its handler, `(...) => void`. Step 30 ignores white
+  space, the order of a union and the names of parameters.
+- The Default column holds the value the published build applies: the
+  destructuring default of the React component, the `default` of the Vue prop
+  (`false` for a Boolean prop without one, as Vue casts it), the field
+  initialiser of the Angular class. A default that is absent, generated (an id)
+  or computed in the component body is an em dash and is described in the prose
+  after the table; so is the default of a required member. Vanilla options and
+  stylesheet attributes publish no default in 0.3.0: their Default is an em dash
+  unless `guide/scripts/api-tables/defaults.json` quotes a line of an installed
+  file that sets it.
+- A Vue table lists the slots the published `@hawiyah/vue` build reads, as rows
+  of kind `slot`, although 0.3.0 types none of them. A slot whose name the build
+  computes is written as a pattern, for example `tab:<value>` on the Tabs page;
+  each pattern is an entry of `VUE_SLOT_PATTERNS` in
+  `guide/scripts/api-tables/targets.mjs`.
 - An Angular table that documents several classes lists the members of the
   first class by name and the members of each further class as
   `<element> <name>`, for example `hw-tab value` and `hw-tab *` on the Tabs
   page. The further classes of a page are named in
   `guide/scripts/api-tables/targets.mjs`.
-- A JavaScript table of a component without a controller, such as Button, is
-  checked against the documented classes and data attributes of the stylesheet
-  contract (the `@hawiyah/styles` README); native HTML and ARIA attributes and
-  reviewed omissions are listed in `guide/scripts/api-tables/exclusions.json`.
+- A JavaScript table of a component without a controller, such as Button, lists
+  the class and the attributes that the stylesheet contract of the
+  `@hawiyah/styles` README documents for the component's classes together with
+  the attributes that the selectors of the published `dist/styles.css` use on
+  them; enumerated selector values give the Type, a presence attribute is
+  `boolean`, and the Required column is not compared. Native HTML and ARIA
+  attributes the page adds, and documented attributes it leaves out, are entries
+  of `guide/scripts/api-tables/exclusions.json`. The 26 components whose classes
+  have no row in that contract carry, directly after their JavaScript table, the
+  note that `content:api-tables` writes:
+  `> [!NOTE]` and `> These classes and attributes are read from the published stylesheet and are outside the stable contract of 0.3.0.`
+  (in Arabic: `> تُقرأ هذه الأصناف والخصائص من ورقة الأنماط المنشورة، وهي خارج الواجهة المستقرة للإصدار 0.3.0.`).
+- `exclusions.json`, `defaults.json`, `TARGET_OVERRIDES` and `VUE_SLOT_PATTERNS`
+  of `targets.mjs`, `guide/scripts/content/arabic-exceptions.json` and
+  `guide/scripts/page-guards/latin-allowlist.json` are the lead's lists: each
+  entry carries `approvedBy` and a reason, one page has at most five entries
+  over all of them, and a writer proposes an entry in the result of the run
+  instead of adding it.
 
 Example:
 
@@ -108,7 +152,7 @@ Table: Props of Button
 | Prop | Type | Required | Default |
 | --- | --- | --- | --- |
 | `variant` | `'primary' \| 'secondary'` | `false` | `'primary'` |
-| `loading` | `boolean` | `false` | `false` |
+| `loading` | `boolean` | `false` | — |
 
 The variant sets the visual family. Loading disables the button and sets
 aria-busy.
@@ -215,7 +259,13 @@ template: `<button hwButton variant="primary">Continue</button>`
 
 ### Text in Arabic pages
 
-Live blocks in the Arabic page carry Arabic text. Apart from that, each Arabic
+Live blocks in the Arabic page carry Arabic text. `npm run content:scaffold-ar`
+writes them from the English blocks with a string map (the Arabic text of each
+English reader string, once for the four frameworks), and
+`npm run content:sync-ar` rewrites them in place after the English blocks change,
+with the map that the two existing pages give. The map replaces markup text and
+the values of reader attributes and text props only (the names listed below);
+it never replaces a `value`, `id`, `name`, slot or option value. Apart from that, each Arabic
 block has the same tokens as the English block of the same framework. Only
 these tokens may differ (`HWC-PAR4`):
 
@@ -343,7 +393,7 @@ Besides the rules above, the Arabic page mirrors the English page:
   (JavaScript, React, Vue, Angular) stay Latin. A table cell made only of key
   names (Tab, Enter, Space, Escape, Home, End, ...) stays Latin; a heading,
   paragraph or list item made of them does not. Any other exception is an entry
-  `{ "file", "text", "reason" }` of
+  `{ "file", "text", "reason", "approvedBy" }` of
   `guide/scripts/content/arabic-exceptions.json`, which is empty.
 
 ## Forbidden constructs

@@ -229,8 +229,8 @@ Table: Options of createTabs
 | Option | Type | Required | Default |
 | --- | --- | --- | --- |
 | `value` | `string` | `false` | — |
-| `activationMode` | `'automatic' \| 'manual'` | `false` | `'automatic'` |
-| `overflow` | `'menu' \| 'scroll'` | `false` | `'menu'` |
+| `activationMode` | `'automatic' \| 'manual'` | `false` | — |
+| `overflow` | `'menu' \| 'scroll'` | `false` | — |
 | `overflowLabel` | `string` | `false` | — |
 | `onValueChange` | `(value: string) => void` | `false` | — |
 
@@ -271,8 +271,10 @@ Table: Props, events and slots of Tabs
 | `overflow` | prop | `'menu' \| 'scroll'` | `false` | `'menu'` |
 | `overflowLabel` | prop | `string` | `false` | — |
 | `update:modelValue` | event | `(value: string) => void` | `false` | — |
+| `tab:<value>` | slot | — | `false` | — |
+| `<value>` | slot | — | `false` | — |
 
-A `TabItem` is `{ value, label, content?, disabled? }`, where `label` is a string. A panel shows the slot named after the item value, else `content`; an optional slot `tab:<value>` replaces the text of a tab. The declarations of 0.3.0 do not type these slots, so the table lists none. `v-model` binds the selected value. The tab list is named by `label`, or by an `aria-label` or `aria-labelledby` attribute, which reaches the tab list. `overflowLabel` is required while `overflow` is `menu`.
+A `TabItem` is `{ value, label, content?, disabled? }`, where `label` is a string. A panel shows the slot named after the item value, else `content`; an optional slot `tab:<value>` replaces the text of a tab. The declarations of 0.3.0 do not type these slots; the table lists the slots the published build reads, without a type. `v-model` binds the selected value. The tab list is named by `label`, or by an `aria-label` or `aria-labelledby` attribute, which reaches the tab list. `overflowLabel` is required while `overflow` is `menu`.
 
 ### Angular
 
@@ -292,11 +294,11 @@ Table: Inputs, outputs and content of hw-tabs and hw-tab
 | `overflow` | input | `'menu' \| 'scroll'` | `false` | `'menu'` |
 | `overflowLabel` | input | `string` | `false` | `''` |
 | `valueChange` | output | `string` | `false` | — |
-| `*` | content | `hw-tab` | `false` | — |
+| `*` | content | — | `false` | — |
 | `hw-tab value` | input | `string` | `true` | — |
 | `hw-tab label` | input | `string` | `true` | — |
 | `hw-tab disabled` | input | `boolean` | `false` | `false` |
-| `hw-tab *` | content | `panel content` | `false` | — |
+| `hw-tab *` | content | — | `false` | — |
 
 `HwTabsComponent` (`hw-tabs`) contains one `HwTabComponent` (`hw-tab`) for each panel; the rows that start with `hw-tab` are the inputs and the content of `hw-tab`. Bind `[(value)]` for a two-way selection. `label` names the tab list and is required unless `aria-label` or `aria-labelledby` is written on `hw-tabs`; `overflowLabel` is required unless `overflow` is `scroll`. Without an `id` the component generates one for its tabs and panels. Each `hw-tab` renders its projected content in its own `section.hw-tab-panel`, and the stylesheet gives the `hw-tab` element `display: contents`, so the panels keep the layout of the other adapters and the tabset can be hydrated after server rendering.
 

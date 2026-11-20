@@ -6,8 +6,9 @@
 // A property is required when it is not optional in the type; for a union of
 // prop types (TabsProps) a property is optional when any member makes it optional.
 import { isInPackage, resolveExport } from './program.mjs';
+import { printMemberType } from './types.mjs';
 
-/** Names and requiredness of the props of a function or exotic component. */
+/** Names, requiredness and written types of the props of a function or exotic component. */
 export function reactMembers(context, exportName) {
   const { ts, checker } = context;
   const symbol = resolveExport(context, 'react', exportName);
@@ -21,9 +22,13 @@ export function reactMembers(context, exportName) {
   const members = [];
   for (const property of checker.getPropertiesOfType(propsType)) {
     const declarations = property.declarations ?? [];
-    const own = declarations.some((item) => !isInPackage(item.getSourceFile().fileName, '@types/react'));
-    if (!own) continue;
-    members.push({ name: property.name, kind: 'prop', required: (property.flags & ts.SymbolFlags.Optional) === 0 });
+    const own = declarations.filter((item) => !isInPackage(item.getSourceFile().fileName, '@types/react'));
+    if (own.length === 0) continue;
+    const optional = (property.flags & ts.SymbolFlags.Optional) !== 0;
+    const type = printMemberType(context, own.map((item) => item.type), {
+      optional, fallbackType: checker.getTypeOfSymbolAtLocation(property, declaration),
+    });
+    members.push({ name: property.name, kind: 'prop', required: !optional, type });
   }
   return { members, problems: [] };
 }

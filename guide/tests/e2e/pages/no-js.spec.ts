@@ -1,4 +1,5 @@
 import { test, expect } from '../support/fixtures';
+import { pageModel } from '../support/routes';
 
 // With JavaScript disabled, the prerendered component pages carry their content, the
 // native Angular example and the listings: nothing on these pages is rendered in the
@@ -32,12 +33,13 @@ for (const lang of ['ar', 'en'] as const) {
   });
 
   test(`reference view without JavaScript (${lang})`, async ({ page }) => {
+    const model = pageModel('button', lang);
     await page.goto(`${lang}/components/button/reference/`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.title);
-    await expect(page.locator('main article > h2')).toHaveCount(6);
-    await expect(page.getByRole('group', { name: t.result })).toHaveCount(5);
-    await expect(page.getByRole('group', { name: t.result }).nth(1).getByRole('button', { name: t.variants })).toBeVisible();
-    await expect(page.locator('main table')).toHaveCount(5);
+    await expect(page.locator('main article > h2')).toHaveCount(model.headings.filter((heading) => heading.level === 2).length);
+    await expect(page.getByRole('group', { name: t.result })).toHaveCount(model.liveGroups.length);
+    await expect(page.getByRole('group', { name: t.result }).nth(model.liveGroups.indexOf('variants')).getByRole('button', { name: t.variants })).toBeVisible();
+    await expect(page.locator('main table')).toHaveCount(model.tables.length);
     await expect(page.locator('main table caption').first()).not.toBeEmpty();
     await expect(page.locator('hw-content-navigation a').first()).toHaveAttribute('href', /#example$/);
     await expect(page.locator('main pre')).not.toHaveCount(0);
@@ -52,7 +54,7 @@ for (const lang of ['ar', 'en'] as const) {
     await page.goto(`${lang}/components/button/reference/`);
     const sideNav = lang === 'ar' ? 'صفحات المكوّنات' : 'Component pages';
     await expect(page.locator('hw-side-navigation')).toBeVisible();
-    await expect(page.locator('hw-side-navigation').getByRole('link', { name: TEXT[lang].title })).toBeVisible();
+    await expect(page.locator('hw-side-navigation').getByRole('link', { name: TEXT[lang].title, exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: sideNav })).toBeHidden();
     await expect(page.getByRole('button', { name: lang === 'ar' ? 'الوضع الداكن' : 'Dark mode' })).toBeHidden();
     await expect(page.locator('guide-code-block hw-copy-button').first()).toBeHidden();

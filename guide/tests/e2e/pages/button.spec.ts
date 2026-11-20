@@ -1,8 +1,12 @@
 import { test, expect, hydrated, markDocument, sameDocument } from '../support/fixtures';
+import { pageModel } from '../support/routes';
 
 // Button brief and reference views in Arabic and English (contentPipeline.pilots.button,
 // editor.pageBlock): content from docs/components/button(.ar).md, the native Angular
 // result, the framework tabs with their listings, download and the stored framework.
+// What every component page shares (outline, content navigation, framework tabs and
+// editor links of every group, tables) is checked from the page model by
+// pages/component-page.spec.ts; counts and positions here are read from the model too.
 
 const TEXT = {
   en: {
@@ -47,6 +51,13 @@ const PACKAGES = ['vanilla', 'react', 'vue', 'angular'];
 
 for (const lang of ['ar', 'en'] as const) {
   const t = TEXT[lang];
+  const model = pageModel('button', lang);
+  /** Position of a live group on the reference view. */
+  const at = (example: string) => {
+    const index = model.liveGroups.indexOf(example);
+    if (index < 0) throw new Error(`button (${lang}) has no live group ${example}`);
+    return index;
+  };
 
   test.describe(`button (${lang})`, () => {
     test('brief view: heading, summary, example block and link to the reference', async ({ page }) => {
@@ -133,40 +144,30 @@ for (const lang of ['ar', 'en'] as const) {
       expect(await page.evaluate(() => window.localStorage.getItem('hawiyah-guide-framework'))).toBe('angular');
     });
 
-    test('reference view: sections, content navigation, every live group, tables and note', async ({ page }) => {
+    test('reference view: sections, the results of the variants and states, tables and note', async ({ page }) => {
       await page.goto(`${lang}/components/button/reference/`);
       await hydrated(page);
       await expect(page).toHaveTitle(t.referenceTitle);
       const article = page.locator('main article.hw-prose');
       await expect(article.getByRole('heading', { level: 1 })).toHaveText(t.title);
       await expect(article.locator(':scope > h2')).toHaveText([...t.sections]);
-      for (const heading of await article.locator(':scope > h2, guide-blocks h3, guide-blocks h4').all()) {
-        await expect(heading).toHaveAttribute('id', /^[a-z0-9-]+$/);
-        await expect(heading).toHaveAttribute('tabindex', '-1');
-      }
       const navigation = page.getByRole('navigation', { name: t.onThisPage });
-      await expect(navigation.getByRole('link')).toHaveCount(6 + 4 + 4 + 2);
-      await expect(navigation.getByRole('link', { name: t.sections[2] })).toHaveAttribute('href', /#api$/);
+      await expect(navigation.getByRole('link', { name: t.sections[2], exact: true })).toHaveAttribute('href', /#api$/);
 
-      const blocks = page.locator('guide-example-block');
-      await expect(blocks).toHaveCount(5);
-      for (const [index, heading] of ['example', 'variants', 'sizes', 'loading', 'disabled'].entries()) {
-        await expect(blocks.nth(index).locator('section.example')).toHaveAttribute('aria-labelledby', heading);
-      }
       const results = page.getByRole('group', { name: t.result });
-      await expect(results).toHaveCount(5);
-      await expect(results.nth(3).getByRole('button')).toBeDisabled();
-      await expect(results.nth(3).getByRole('button')).toHaveAttribute('aria-busy', 'true');
-      await expect(results.nth(4).getByRole('button')).toBeDisabled();
-      await expect(results.nth(1).getByRole('button')).toHaveCount(5);
-      await expect(results.nth(2).getByRole('button')).toHaveCount(3);
+      await expect(results).toHaveCount(model.liveGroups.length);
+      await expect(results.nth(at('loading')).getByRole('button')).toBeDisabled();
+      await expect(results.nth(at('loading')).getByRole('button')).toHaveAttribute('aria-busy', 'true');
+      await expect(results.nth(at('disabled')).getByRole('button')).toBeDisabled();
+      await expect(results.nth(at('variants')).getByRole('button')).toHaveCount(5);
+      await expect(results.nth(at('sizes')).getByRole('button')).toHaveCount(3);
 
       const tables = article.getByRole('table');
-      await expect(tables).toHaveCount(5);
+      await expect(tables).toHaveCount(model.tables.length);
       for (const name of ['React', 'Vue', 'Angular']) {
         await expect(page.locator('h3', { hasText: name }).first()).toBeVisible();
       }
-      await expect(article.getByRole('region').filter({ has: page.getByRole('table') })).toHaveCount(5);
+      await expect(article.getByRole('region').filter({ has: page.getByRole('table') })).toHaveCount(model.tables.length);
       await expect(article.locator('hw-alert[role="note"]')).toHaveCount(1);
       await expect(article.locator('hw-alert[role="note"]')).toContainText(t.note);
       await expect(article.locator('code.hw-code').first()).toBeVisible();
@@ -221,7 +222,7 @@ for (const lang of ['ar', 'en'] as const) {
       const side = page.locator('hw-side-navigation');
       await expect(side).toBeVisible();
       await expect(side).toHaveAttribute('aria-label', t.sideNav);
-      await expect(side.getByRole('link', { name: t.title })).toHaveAttribute('aria-current', 'page');
+      await expect(side.getByRole('link', { name: t.title, exact: true })).toHaveAttribute('aria-current', 'page');
       const opener = page.getByRole('button', { name: t.sideNav });
       await expect(opener).toBeHidden();
 
@@ -232,7 +233,7 @@ for (const lang of ['ar', 'en'] as const) {
       await opener.click();
       const dialog = page.getByRole('dialog', { name: t.sideNav });
       await expect(dialog).toBeVisible();
-      await expect(dialog.getByRole('link', { name: t.title })).toBeVisible();
+      await expect(dialog.getByRole('link', { name: t.title, exact: true })).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(dialog).toBeHidden();
       await expect(opener).toBeFocused();
@@ -242,7 +243,7 @@ for (const lang of ['ar', 'en'] as const) {
       await page.goto(`${lang}/components/`);
       await hydrated(page);
       await markDocument(page);
-      await page.locator('main').getByRole('link', { name: t.title }).click();
+      await page.locator('main').getByRole('link', { name: t.title, exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/${lang}/components/button/?$`));
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.title);
       await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
@@ -250,7 +251,7 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(page.locator('guide-example-block').getByRole('tabpanel').locator('pre code')).toContainText('hwButton');
       await page.getByRole('link', { name: t.fullReference }).click();
       await expect(page).toHaveURL(new RegExp(`/${lang}/components/button/reference/?$`));
-      await expect(page.locator('guide-example-block')).toHaveCount(5);
+      await expect(page.locator('guide-example-block')).toHaveCount(model.liveGroups.length);
       // Highlighted in the browser after a client navigation: the token spans are there.
       await expect(page.locator('guide-example-block .hw-code-token-tag').first()).toBeAttached();
       await expect(page.locator('guide-example-block').first().getByRole('tabpanel').locator('.hw-code-token-keyword').first()).toBeVisible();

@@ -14,7 +14,7 @@ export default {
     const result = runContent({
       guideDir: ctx.guideDir,
       repoDir: ctx.repoDir,
-      componentsDir: join(ctx.repoDir, "docs", "components"),
+      componentsDir: ctx.docsDir ?? join(ctx.repoDir, "docs", "components"),
       componentsFile: join(ctx.repoDir, "components.json"),
       outDir: join(ctx.guideDir, ctx.generatedDir, "content"),
       liveGroupsFile: join(ctx.guideDir, ctx.cacheDir, "content", "live-groups.json"),

@@ -168,11 +168,13 @@ function compareStyles(input: { placement: string[]; inherited: string[]; follow
         // and not such an item without them.
         if (itemOf(before, el) && !itemOf(after, el) && blockify(y) === x) return;
       }
-      if (own && MINIMUMS.has(property) && [x, y].includes('auto') && [x, y].includes('0px')) {
+      if (MINIMUMS.has(property) && [x, y].includes('auto') && [x, y].includes('0px')) {
         // min-* auto resolves to auto on a flex or grid item and to 0px on any other
         // rendered box: a consequence of being an item of a guide container, or of
-        // being rendered in one state only.
-        if (itemOf(before, el) !== itemOf(after, el) || before.rendered.get(el) !== after.rendered.get(el)) return;
+        // being rendered in one state only. A pseudo-element is rendered in one state
+        // only when its element is (the side column below 64rem, PLACEMENT_ALLOWED).
+        if (own && (itemOf(before, el) !== itemOf(after, el) || before.rendered.get(el) !== after.rendered.get(el))) return;
+        if (!own && before.rendered.get(el) !== after.rendered.get(el)) return;
       }
       if (INSETS.has(property) && (before.box.get(el) !== after.box.get(el) || before.frame.get(el) !== after.frame.get(el))) {
         // The insets of a positioned box are used values, resolved against its own box

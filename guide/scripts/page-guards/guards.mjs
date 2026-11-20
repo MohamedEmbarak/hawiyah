@@ -145,16 +145,20 @@ export function checkSources(guideDir) {
   return findings;
 }
 
-/** Reads latin-allowlist.json and validates it: [{ text, reason, pages? }]. */
+/**
+ * Reads latin-allowlist.json and validates it: [{ text, reason, approvedBy, pages? }]. The list is the
+ * lead's (leadAmendments A4 of milestone 5; scripts/api-tables/lists.mjs caps the entries per page).
+ */
 export function readAllowlist(file) {
   const list = JSON.parse(readFileSync(file, 'utf8'));
   if (!Array.isArray(list)) throw new Error(`${file} must be an array`);
   for (const [index, entry] of list.entries()) {
     const keys = Object.keys(entry ?? {});
-    if (typeof entry?.text !== 'string' || !entry.text.trim() || typeof entry.reason !== 'string' || !entry.reason.trim()
-      || keys.some((key) => !['text', 'reason', 'pages'].includes(key))
+    const filled = (value) => typeof value === 'string' && value.trim() !== '';
+    if (!filled(entry?.text) || !filled(entry.reason) || !filled(entry.approvedBy)
+      || keys.some((key) => !['text', 'reason', 'approvedBy', 'pages'].includes(key))
       || (entry.pages !== undefined && (!Array.isArray(entry.pages) || entry.pages.some((page) => typeof page !== 'string')))) {
-      throw new Error(`${file} entry ${index} must be { text, reason, pages? } with non-empty text and reason`);
+      throw new Error(`${file} entry ${index} must be { text, reason, approvedBy, pages? } with non-empty text, reason and approvedBy`);
     }
   }
   return list;

@@ -47,10 +47,15 @@ export function parseContract(text) {
   return rows;
 }
 
-/** Classes and attribute names that the contract documents for these component classes. */
+/**
+ * Classes and attributes that the contract documents for these component classes:
+ * { families, classes, attributes (names), values: Map<attribute, string[]> } where
+ * values are the enumerated values of `data-size="sm|md|lg"` in contract order
+ * (empty for a presence attribute such as `data-icon-only`).
+ */
 export function contractFor(rows, componentClasses) {
   const classes = new Set();
-  const attributes = new Set();
+  const values = new Map();
   const families = [];
   for (const row of rows) {
     const rowClasses = row.tokens.filter((token) => /^hw-[a-z0-9-]+$/.test(token));
@@ -58,11 +63,15 @@ export function contractFor(rows, componentClasses) {
     families.push(row.family);
     for (const name of rowClasses) if (componentClasses.includes(name)) classes.add(name);
     for (const token of row.tokens) {
-      const match = /^((?:data|aria)-[a-z0-9-]+)(?:=|$)/.exec(token);
-      if (match) attributes.add(match[1]);
+      const match = /^((?:data|aria)-[a-z0-9-]+)(?:=(?:"([^"]*)"|'([^']*)'|(\S+)))?$/.exec(token);
+      if (!match) continue;
+      if (!values.has(match[1])) values.set(match[1], []);
+      const list = values.get(match[1]);
+      const raw = match[2] ?? match[3] ?? match[4];
+      if (raw !== undefined) for (const value of raw.split('|')) if (!list.includes(value)) list.push(value);
     }
   }
-  return { families, classes: [...classes], attributes: [...attributes] };
+  return { families, classes: [...classes], attributes: [...values.keys()], values };
 }
 
 export function readContract(nodeModules) {

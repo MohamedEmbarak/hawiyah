@@ -24,6 +24,11 @@
     "serve": "node scripts/serve.mjs",
     "start": "node scripts/build.mjs --generate-only && ng serve",
     "content:hash": "node scripts/content/hash.mjs",
+    "content:facts": "node scripts/facts/cli.mjs",
+    "content:api-tables": "node scripts/content/api-tables.mjs",
+    "content:scaffold": "node scripts/content/scaffold.mjs",
+    "content:scaffold-ar": "node scripts/content/scaffold-ar.mjs",
+    "content:sync-ar": "node scripts/content/sync-ar.mjs",
     "preview:local": "node scripts/preview/build-preview.mjs"
   },
   "dependencies": {

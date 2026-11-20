@@ -9,6 +9,55 @@
 // lists the members of the first class by their names and the members of each
 // further class as '<element> <name>', for example 'hw-tab value'.
 import { resolveExport } from './program.mjs';
+import { EM_DASH, printMemberType, printType } from './types.mjs';
+
+const VALUE_WRAPPERS = new Set(['InputSignal', 'InputSignalWithTransform', 'ModelSignal']);
+const OUTPUT_WRAPPERS = new Set(['EventEmitter', 'OutputEmitterRef', 'OutputRef', 'Subject', 'Observable']);
+
+function referenceName(ts, node) {
+  if (ts.isTypeReferenceNode(node)) return ts.isQualifiedName(node.typeName) ? node.typeName.right.text : node.typeName.text;
+  if (ts.isImportTypeNode(node) && node.qualifier) return ts.isQualifiedName(node.qualifier) ? node.qualifier.right.text : node.qualifier.text;
+  return null;
+}
+
+/** The type node of a class member as an input accepts it: a setter's parameter, else the declared type. */
+function memberTypeNodes(ts, symbol) {
+  const declarations = symbol?.declarations ?? [];
+  const setter = declarations.find((item) => ts.isSetAccessorDeclaration(item));
+  if (setter) return [setter.parameters[0]?.type ?? null];
+  return declarations.map((item) => (ts.isPropertyDeclaration(item) || ts.isPropertySignature(item) || ts.isGetAccessorDeclaration(item) ? item.type : null));
+}
+
+/**
+ * Written type of an input or output of a class: an input as the value it takes
+ * (the value type of a signal input), an output as its payload type.
+ */
+export function angularMemberType(context, instanceType, property, kind) {
+  const { ts, checker } = context;
+  const symbol = checker.getPropertyOfType(instanceType, property);
+  if (!symbol) return 'any';
+  const wrappers = kind === 'output' ? OUTPUT_WRAPPERS : VALUE_WRAPPERS;
+  const unwrap = (node) => {
+    if (!node) return null;
+    const name = referenceName(ts, node);
+    if (name && wrappers.has(name)) return node.typeArguments?.[0] ?? ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
+    return kind === 'output' ? null : node;
+  };
+  const fallbackUnwrap = (type) => {
+    const name = type.aliasSymbol?.name ?? type.getSymbol()?.name;
+    if (name && wrappers.has(name)) {
+      const args = type.aliasTypeArguments ?? (type.objectFlags & ts.ObjectFlags.Reference ? checker.getTypeArguments(type) : []);
+      return args[0] ?? checker.getAnyType();
+    }
+    return type;
+  };
+  const optional = (symbol.flags & ts.SymbolFlags.Optional) !== 0;
+  const printed = printMemberType(context, memberTypeNodes(ts, symbol), {
+    optional, unwrap, fallbackType: checker.getTypeOfSymbol(symbol), fallbackUnwrap,
+  });
+  if (kind === 'output' && printed === 'any' && !memberTypeNodes(ts, symbol).some(Boolean)) return printType(fallbackUnwrap(checker.getTypeOfSymbol(symbol)), context).text;
+  return printed;
+}
 
 const DECLARATIONS = ['ɵcmp', 'ɵdir'];
 // Positions of the type arguments of ɵɵComponentDeclaration and ɵɵDirectiveDeclaration.
@@ -137,7 +186,7 @@ export function qualifier(selector, className) {
  * Members of the Angular table of a page.
  * @param {*} context createDeclarationProgram() result
  * @param {string[]} classNames exported class names, the documented class first
- * @returns {{ members: { name: string, kind: string, required: boolean }[], problems: string[] }}
+ * @returns {{ members: { name: string, kind: string, required: boolean, type: string, property?: string, className: string }[], problems: string[] }}
  */
 export function angularMembers(context, classNames) {
   const members = [];
@@ -155,9 +204,15 @@ export function angularMembers(context, classNames) {
       return;
     }
     const prefix = index === 0 ? '' : `${qualifier(read.selector, className)} `;
-    for (const input of read.inputs.values()) members.push({ name: prefix + input.name, kind: 'input', required: input.required });
-    for (const output of read.outputs.values()) members.push({ name: prefix + output.name, kind: 'output', required: false });
-    for (const selector of read.content) members.push({ name: prefix + selector, kind: 'content', required: false });
+    const instanceType = context.checker.getDeclaredTypeOfSymbol(symbol);
+    const element = qualifier(read.selector, className);
+    for (const input of read.inputs.values()) {
+      members.push({ name: prefix + input.name, kind: 'input', required: input.required, type: angularMemberType(context, instanceType, input.property, 'input'), property: input.property, className, element });
+    }
+    for (const output of read.outputs.values()) {
+      members.push({ name: prefix + output.name, kind: 'output', required: false, type: angularMemberType(context, instanceType, output.property, 'output'), property: output.property, className, element });
+    }
+    for (const selector of read.content) members.push({ name: prefix + selector, kind: 'content', required: false, type: EM_DASH, className, element });
   });
   return { members, problems };
 }

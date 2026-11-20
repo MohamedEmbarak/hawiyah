@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { test, expect, hydrated, keepRootDocument } from '../support/fixtures';
 import { documents } from '../support/routes';
+import { recordUsed } from '../support/structure-used';
 import {
   ANCESTOR_EFFECTS,
   INHERITED_ALLOWED,
@@ -23,7 +24,10 @@ import {
 // ancestor of a package element may declare an inherited property (derived from the
 // browser), a package custom property or a property that changes how descendants paint
 // (ANCESTOR_EFFECTS) only through an entry of INHERITED_ALLOWED. A selector the stripper
-// cannot handle fails, and so does an entry that no rule on any page uses.
+// cannot handle fails, and so does an entry that no rule on any page uses: each page
+// test records the entries its rules used (support/structure-used.ts), and the union
+// over every page is judged by the global teardown when every page ran, or by
+// scripts/e2e/merge.mjs over the shards of guide.yml.
 
 const lists = {
   placement: PLACEMENT.map((entry) => entry.properties.source),
@@ -127,9 +131,10 @@ for (const doc of pages) {
   const label = doc.route === '' ? 'root document' : doc.route === '404' ? '404 document' : doc.route;
   test(`guide rules reach package elements only to place them: ${label}`, async ({ page, guard }) => {
     await open(page, doc.route, guard);
-    await structure(page, `${label} at 1280 px`);
+    const used = await structure(page, `${label} at 1280 px`);
     await page.setViewportSize({ width: 390, height: 844 });
-    await structure(page, `${label} at 390 px`);
+    used.push(...(await structure(page, `${label} at 390 px`)));
+    recordUsed(test.info(), label, used);
   });
 }
 
@@ -151,21 +156,8 @@ async function openedStates(page: Page, lang: 'ar' | 'en', used: Set<string>): P
 
 for (const lang of ['ar', 'en'] as const) {
   test(`guide rules reach package elements only to place them: opened header menu and side drawer (${lang})`, async ({ page }) => {
-    await openedStates(page, lang, new Set());
+    const used = new Set<string>();
+    await openedStates(page, lang, used);
+    recordUsed(test.info(), `opened states (${lang})`, used);
   });
 }
-
-test('every listed declaration is used by a rule on some page', async ({ page, guard }) => {
-  test.setTimeout(240_000);
-  const used = new Set<string>();
-  for (const doc of pages) {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await open(page, doc.route, guard);
-    for (const key of await structure(page, `${doc.route} at 1280 px`)) used.add(key);
-    await page.setViewportSize({ width: 390, height: 844 });
-    for (const key of await structure(page, `${doc.route} at 390 px`)) used.add(key);
-  }
-  for (const lang of ['ar', 'en'] as const) await openedStates(page, lang, used);
-  const unused = [...PLACEMENT_ALLOWED, ...INHERITED_ALLOWED].map(entryKey).filter((key) => !used.has(key));
-  expect(unused, 'listed declarations that no rule on any page uses').toEqual([]);
-});

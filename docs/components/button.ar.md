@@ -3,7 +3,7 @@ source:
   summary: 421b7d9c72f6
   example: 9b7f6a99ca77
   variants-and-states: cc1cc8030691
-  api: d7e3cb6b82cd
+  api: 709df7e5db89
   accessibility: 3b2127b62ebd
   rtl-and-localisation: f0b6d337f83f
   platforms-code-reference: d3af4d88eac8
@@ -166,11 +166,14 @@ template: `<button hwButton disabled>متابعة</button>`
 | --- | --- | --- | --- |
 | `class` | `'hw-button'` | `true` | — |
 | `type` | `'button' \| 'submit' \| 'reset'` | `true` | — |
-| `data-variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
-| `data-size` | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
-| `data-icon-only` | `boolean` | `false` | `false` |
-| `disabled` | `boolean` | `false` | `false` |
+| `data-variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | — |
+| `data-size` | `'sm' \| 'md' \| 'lg'` | `false` | — |
+| `data-icon-only` | `boolean` | `false` | — |
+| `disabled` | `boolean` | `false` | — |
 | `aria-busy` | `'true'` | `false` | — |
+| `aria-disabled` | `'true'` | `false` | — |
+| `aria-pressed` | `'true'` | `false` | — |
+| `data-shape` | `'circle'` | `false` | — |
 
 ليس للزر متحكم في JavaScript، فالترميز هو واجهته البرمجية: اكتب عنصر زر أصليًا بالصنف `hw-button`، واكتب له دائمًا الخاصية `type`، لأن النوع الافتراضي للزر داخل النموذج في المتصفح هو `submit`. ولحالة التحميل اكتب الخاصيتين `disabled` و`aria-busy="true"` معًا، واحذفهما عند انتهاء العملية. وتُدرج الخاصية `data-icon-only` مع `hw-button` و`data-variant` و`data-size` في صف الإجراءات من جدول الواجهة المستقرة للأصناف والحالات في `@hawiyah/styles`، وتُكتب بلا قيمة.
 
@@ -197,6 +200,7 @@ template: `<button hwButton disabled>متابعة</button>`
 | `loading` | prop | `boolean` | `false` | `false` |
 | `disabled` | prop | `boolean` | `false` | `false` |
 | `type` | prop | `'button' \| 'submit' \| 'reset'` | `false` | `'button'` |
+| `default` | slot | — | `false` | — |
 
 يحمل المنفذ الافتراضي نص الزر. وتصل الخصائص والمستمعات الأخرى، مثل `@click`، إلى عنصر الزر الأصلي. ويتيح المكوّن `element` و`focus()` عبر مرجع القالب.
 

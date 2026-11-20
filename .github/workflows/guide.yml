@@ -6,9 +6,17 @@ name: Guide
 #
 # The paths below are every input of the guide build and its tests, as listed in
 # guide/build-inputs.json (the single source; guide/scripts/test/build-inputs.test.mjs
-# requires the two path filters and the sparse checkout to equal it): guide/,
-# docs/ (component pages and the files they link to), the root files
+# requires the two path filters and the sparse checkout of every job to equal it):
+# guide/, docs/ (component pages and the files they link to), the root files
 # components.json, NOTICE, CHANGELOG.md and pnpm-workspace.yaml, and this file.
+#
+# The guide is built once (job build). Step 80 (equivalence of every live group) and
+# the browser tests run in four shards each on that build; the job complete fails
+# unless every job passed, the build is deployable, and the union of the shard
+# reports covers every live group of the content manifest and every test of the
+# build, the structural half of the styling rule on every page included. Nothing is
+# cached and nothing is sampled; no job uses --pages, --docs or --only
+# (guide/scripts/test/workflow.test.mjs).
 on:
   push:
     paths:
@@ -36,15 +44,16 @@ concurrency:
   group: guide-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  HAWIYAH_BASE_PATH: /hawiyah/
+
 jobs:
-  guide:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     defaults:
       run:
         working-directory: guide
-    env:
-      HAWIYAH_BASE_PATH: /hawiyah/
     steps:
       # A sparse checkout holds only what the guide build and its tests read,
       # guide/build-inputs.json, as the path filters above. packages/, apps/,
@@ -91,22 +100,232 @@ jobs:
         run: npm run test:scripts
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      # Every step but 80, which the equivalence shards run on this output.
       - name: Production build
-        run: npm run build
+        run: npm run build -- --defer-equivalence
+      - name: List the browser tests of the build
+        run: |
+          mkdir -p .cache/e2e
+          npx playwright test --project=prod --list --reporter=json > .cache/e2e/list.json
+      # Uploaded before the development build and the unit tests rewrite src/generated/.
+      - name: Upload the build
+        uses: actions/upload-artifact@v4
+        with:
+          name: guide-build
+          path: |
+            guide/dist/browser
+            guide/dist/build-info.json
+            guide/src/generated
+            guide/.cache/content
+            guide/.cache/e2e/list.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 3
       - name: Development build check
         run: npm run build:dev-check
       - name: Unit tests
         run: npm run test:unit
-      - name: End-to-end tests
-        run: npm run test:e2e
       - name: Upload failure records
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: guide-failure
+          name: guide-failure-build
           path: |
             guide/.cache/logs
-            guide/.cache/equivalence
             ${{ runner.temp }}/guide-e2e
+          include-hidden-files: true
           retention-days: 7
           if-no-files-found: ignore
+
+  equivalence:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    defaults:
+      run:
+        working-directory: guide
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            /guide/
+            /docs/
+            /components.json
+            /NOTICE
+            /CHANGELOG.md
+            /pnpm-workspace.yaml
+            /.github/workflows/guide.yml
+          sparse-checkout-cone-mode: false
+      - name: The package sources are absent
+        run: |
+          for dir in packages apps examples; do
+            if [ -e "../$dir" ]; then echo "guide: ../$dir is present in the sparse checkout"; exit 1; fi
+          done
+          echo "guide: packages/, apps/ and examples/ are absent"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: guide/package-lock.json
+      - name: Install the guide's exact lockfile
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Download the build
+        uses: actions/download-artifact@v4
+        with:
+          name: guide-build
+          path: guide
+      - name: Equivalence, shard ${{ matrix.shard }} of 4
+        run: node scripts/equivalence/run.mjs --shard ${{ matrix.shard }}/4 --report .cache/equivalence/shard-${{ matrix.shard }}.json
+      - name: Upload the shard report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guide-equivalence-${{ matrix.shard }}
+          path: guide/.cache/equivalence
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    defaults:
+      run:
+        working-directory: guide
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            /guide/
+            /docs/
+            /components.json
+            /NOTICE
+            /CHANGELOG.md
+            /pnpm-workspace.yaml
+            /.github/workflows/guide.yml
+          sparse-checkout-cone-mode: false
+      - name: The package sources are absent
+        run: |
+          for dir in packages apps examples; do
+            if [ -e "../$dir" ]; then echo "guide: ../$dir is present in the sparse checkout"; exit 1; fi
+          done
+          echo "guide: packages/, apps/ and examples/ are absent"
+      - name: Set the test output and report paths
+        run: |
+          echo "GUIDE_TEST_OUTPUT=$RUNNER_TEMP/guide-e2e" >> "$GITHUB_ENV"
+          echo "PLAYWRIGHT_JSON_OUTPUT_FILE=$RUNNER_TEMP/guide-e2e-report/report.json" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: guide/package-lock.json
+      - name: Install the guide's exact lockfile
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Download the build
+        uses: actions/download-artifact@v4
+        with:
+          name: guide-build
+          path: guide
+      - name: End-to-end tests, shard ${{ matrix.shard }} of 4
+        run: npx playwright test --project=prod --shard=${{ matrix.shard }}/4 --reporter=line,json
+      - name: Upload the shard report
+        uses: actions/upload-artifact@v4
+        with:
+          name: guide-e2e-${{ matrix.shard }}
+          path: |
+            ${{ runner.temp }}/guide-e2e-report/report.json
+            ${{ runner.temp }}/guide-e2e/structure-used
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload failure records
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guide-failure-e2e-${{ matrix.shard }}
+          path: ${{ runner.temp }}/guide-e2e
+          retention-days: 7
+          if-no-files-found: ignore
+
+  complete:
+    needs: [build, equivalence, e2e]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: guide
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            /guide/
+            /docs/
+            /components.json
+            /NOTICE
+            /CHANGELOG.md
+            /pnpm-workspace.yaml
+            /.github/workflows/guide.yml
+          sparse-checkout-cone-mode: false
+      - name: The package sources are absent
+        run: |
+          for dir in packages apps examples; do
+            if [ -e "../$dir" ]; then echo "guide: ../$dir is present in the sparse checkout"; exit 1; fi
+          done
+          echo "guide: packages/, apps/ and examples/ are absent"
+      # A job that failed, was cancelled or was skipped fails this one.
+      - name: Every job and shard passed
+        env:
+          BUILD: ${{ needs.build.result }}
+          EQUIVALENCE: ${{ needs.equivalence.result }}
+          E2E: ${{ needs.e2e.result }}
+        run: |
+          echo "guide: build $BUILD, equivalence $EQUIVALENCE, e2e $E2E"
+          [ "$BUILD" = success ] && [ "$EQUIVALENCE" = success ] && [ "$E2E" = success ]
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: guide/package-lock.json
+      - name: Install the guide's exact lockfile
+        run: npm ci
+      - name: Download the build
+        uses: actions/download-artifact@v4
+        with:
+          name: guide-build
+          path: guide
+      - name: Download the equivalence reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: guide-equivalence-*
+          path: ${{ runner.temp }}/equivalence-shards
+          merge-multiple: true
+      - name: Download the browser test reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: guide-e2e-*
+          path: ${{ runner.temp }}/e2e-shards
+      # The deploy path: only the output of a complete, deployable production build.
+      - name: The build is deployable
+        run: node scripts/build-scope.mjs --require-deployable --dir dist
+      - name: Every live group was compared in one shard
+        run: node scripts/equivalence/merge.mjs --manifest src/generated/content/manifest.json "$RUNNER_TEMP"/equivalence-shards/shard-*.json
+      - name: Every browser test of the build passed in one shard
+        run: |
+          args=()
+          for dir in "$RUNNER_TEMP"/e2e-shards/*/; do
+            args+=(--used "${dir}guide-e2e/structure-used" "${dir}guide-e2e-report/report.json")
+          done
+          node scripts/e2e/merge.mjs --list .cache/e2e/list.json "${args[@]}"

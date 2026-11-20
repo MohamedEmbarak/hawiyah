@@ -10,22 +10,35 @@ import {
   type HwNavigationDrawerItem,
 } from '@hawiyah/angular';
 import { map } from 'rxjs';
-import { contentManifest } from '../../content/content-loader';
+import { navigationIndex } from '../../content/content-loader';
+import type { NavigationIndex } from '../../content/model';
 import { page } from '../../core/links';
 import { LocaleService } from '../../core/locale';
+import { categoryLabel } from '../../i18n/categories';
 import { pick, type Lang } from '../../i18n/text';
 import { componentPageTexts } from './i18n';
 
-/** One side navigation entry per component page, in manifest order; the current page is marked. */
-export function componentNavItems(lang: Lang, currentId: string | null): HwNavigationDrawerItem[] {
-  return contentManifest.pages
-    .filter((entry) => entry.langs.includes(lang))
-    .map((entry) => ({
-      id: entry.id,
-      label: entry.title[lang],
-      href: page(lang, `components/${entry.id}`),
-      current: entry.id === currentId,
-    }));
+/**
+ * The side navigation and the drawer: one group per category of components.json that
+ * has a page (label from the guide's text sources), each with its pages in
+ * components.json order. The current page is marked, and its group is open because
+ * it holds the current page (HwNavigationDrawerItem).
+ */
+export function componentNavItems(lang: Lang, currentId: string | null, index: NavigationIndex = navigationIndex): HwNavigationDrawerItem[] {
+  return index.categories
+    .map((category) => ({
+      id: `category-${category}`,
+      label: categoryLabel(category, lang),
+      children: index.pages
+        .filter((entry) => entry.category === category && entry.langs.includes(lang))
+        .map((entry) => ({
+          id: entry.id,
+          label: entry.title[lang],
+          href: page(lang, `components/${entry.id}`),
+          current: entry.id === currentId,
+        })),
+    }))
+    .filter((group) => group.children.length > 0);
 }
 
 /**

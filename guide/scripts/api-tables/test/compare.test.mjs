@@ -1,66 +1,131 @@
 // Table comparison: the pilot fixtures pass, and each kind of mismatch fails
-// with HWC-APIX in the specified wording.
+// with exactly one HWC-APIX finding in the specified wording (5a.3 negative
+// fixtures: a wrong type, a wrong default, an invented name, a missing member,
+// an invented slot and a defaults.json entry whose evidence text is absent).
 import { beforeAll, describe, expect, it } from 'vitest';
-import { checkPages, stylesheetMembers } from '../cli.mjs';
+import { checkPages } from '../cli.mjs';
 import { apiTablesOf, compareTable, formatFinding } from '../compare.mjs';
-import { BUTTON, TABS, pageModel, variant } from './fixtures/tables.mjs';
-import { components, contractRows, declarationContext, exclusions } from './helpers.mjs';
+import { stylesheetMembers } from '../members.mjs';
+import { generatedNote } from '../notes.mjs';
+import { BUTTON, TABS, pageModel, replaceRow, variant } from './fixtures/tables.mjs';
+import { testReaders } from './helpers.mjs';
 
-let base;
-beforeAll(() => {
-  base = { context: declarationContext(), components: components(), contractRows: contractRows(), exclusions: exclusions() };
-}, 120000);
+let readers;
+beforeAll(() => { readers = testReaders(); }, 120000);
 
-const check = (pages, overrides = {}) => checkPages({ ...base, ...overrides, pages: pages.map((page) => ({ id: page.id, lang: page.lang, page })) });
+const check = (pages, withReaders = readers) => checkPages({ readers: withReaders, pages: pages.map((page) => ({ id: page.id, lang: page.lang, page })) });
 const messages = (result) => result.findings.map(formatFinding);
 
 describe('pilot fixtures', () => {
-  it('Button and Tabs tables match the declarations in both languages', () => {
+  it('Button and Tabs tables match the installed packages in both languages, all five columns', () => {
     const result = check([pageModel('button', BUTTON), pageModel('button', BUTTON, { lang: 'ar' }), pageModel('tabs', TABS), pageModel('tabs', TABS, { lang: 'ar' })]);
     expect(messages(result)).toEqual([]);
     expect(result.tables).toBe(16);
+    expect(result.rows).toBe(2 * (10 + 3 + 6 + 5 + 5 + 11 + 11 + 17));
   });
-  it('apiTablesOf reads name, kind and required from the content model', () => {
+  it('apiTablesOf reads name, kind, required, type and default from the content model', () => {
     const tables = apiTablesOf(pageModel('tabs', TABS));
-    expect(tables.vue.at(-1)).toEqual({ name: 'update:modelValue', kind: 'event', required: false });
-    expect(tables.javascript[0]).toEqual({ name: 'value', kind: 'option', required: false });
+    expect(tables.vue[8]).toEqual({ name: 'update:modelValue', kind: 'event', required: false, type: '(value: string) => void', default: '—' });
+    expect(tables.javascript[0]).toEqual({ name: 'value', kind: 'option', required: false, type: 'string', default: '—' });
+  });
+  it('the order of a union and the names of parameters do not count', () => {
+    const tables = variant(TABS, 'react', (rows) => replaceRow(rows, 'onValueChange', (row) => [row[0], row[1], '(next: string) => void', row[3], row[4]]));
+    const swapped = variant(tables, 'angular', (rows) => replaceRow(rows, 'orientation', (row) => [row[0], row[1], "'vertical' | 'horizontal'", row[3], row[4]]));
+    expect(messages(check([pageModel('tabs', swapped)]))).toEqual([]);
   });
 });
 
-describe('one mismatch per kind', () => {
-  it('a name the declarations do not have (React)', () => {
-    const tables = variant(TABS, 'react', (rows) => [...rows, ['closeLabel', false]]);
+describe('one finding per mismatch (negative fixtures)', () => {
+  it('a wrong type', () => {
+    const tables = variant(TABS, 'vue', (rows) => replaceRow(rows, 'overflow', (row) => [row[0], row[1], "'menu' | 'scroll' | 'wrap'", row[3], row[4]]));
+    expect(messages(check([pageModel('tabs', tables)]))).toEqual([
+      "HWC-APIX docs/components/tabs.md: Vue table gives overflow the type 'menu' | 'scroll' | 'wrap'; the declarations have 'menu' | 'scroll'",
+    ]);
+  });
+  it('a type that is not a type', () => {
+    const tables = variant(TABS, 'angular', (rows) => replaceRow(rows, 'id', (row) => [row[0], row[1], 'a string', row[3], row[4]]));
+    expect(messages(check([pageModel('tabs', tables)]))).toEqual([
+      'HWC-APIX docs/components/tabs.md: Angular table gives id the type "a string", which is not a type; the declarations have string',
+    ]);
+  });
+  it('a content row with a type', () => {
+    const tables = variant(TABS, 'angular', (rows) => replaceRow(rows, '*', (row) => [row[0], row[1], 'hw-tab', row[3], row[4]]));
+    expect(messages(check([pageModel('tabs', tables)]))).toEqual([
+      'HWC-APIX docs/components/tabs.md: Angular table gives * the type hw-tab; the declarations have no type for a content row (an em dash)',
+    ]);
+  });
+  it('a wrong default', () => {
+    const tables = variant(BUTTON, 'react', (rows) => replaceRow(rows, 'size', (row) => [row[0], row[1], row[2], row[3], "'lg'"]));
+    expect(messages(check([pageModel('button', tables)]))).toEqual([
+      "HWC-APIX docs/components/button.md: React table gives size the default 'lg'; the installed packages give 'md'",
+    ]);
+  });
+  it('a default where the published build applies none (a vanilla option)', () => {
+    const tables = variant(TABS, 'javascript', (rows) => replaceRow(rows, 'activationMode', (row) => [row[0], row[1], row[2], row[3], "'automatic'"]));
+    expect(messages(check([pageModel('tabs', tables)]))).toEqual([
+      "HWC-APIX docs/components/tabs.md: JavaScript table gives activationMode the default 'automatic'; the installed packages give —",
+    ]);
+  });
+  it('an invented name', () => {
+    const tables = variant(TABS, 'react', (rows) => [...rows, ['closeLabel', 'prop', 'string', false, '—']]);
     expect(messages(check([pageModel('tabs', tables)]))).toEqual([
       'HWC-APIX docs/components/tabs.md: React table lists closeLabel (prop, required false); the declarations have no closeLabel',
     ]);
   });
-  it('a declared name the table does not list (vanilla controller)', () => {
+  it('a missing member', () => {
     const tables = variant(TABS, 'javascript', (rows) => rows.filter((row) => row[0] !== 'onValueChange'));
     expect(messages(check([pageModel('tabs', tables)]))).toEqual([
       'HWC-APIX docs/components/tabs.md: JavaScript table lists no onValueChange; the declarations have onValueChange (option, required false)',
     ]);
   });
+  it('an invented slot', () => {
+    const tables = variant(BUTTON, 'vue', (rows) => [...rows, ['icon', 'slot', '—', false, '—']]);
+    expect(messages(check([pageModel('button', tables)]))).toEqual([
+      'HWC-APIX docs/components/button.md: Vue table lists icon (slot, required false); the declarations have no icon',
+    ]);
+  });
+  it('a slot the published build reads, left out', () => {
+    const tables = variant(TABS, 'vue', (rows) => rows.filter((row) => row[0] !== 'tab:<value>'));
+    expect(messages(check([pageModel('tabs', tables)]))).toEqual([
+      'HWC-APIX docs/components/tabs.md: Vue table lists no tab:<value>; the declarations have tab:<value> (slot, required false)',
+    ]);
+  });
+  it('a defaults.json entry whose evidence text is absent', () => {
+    const entry = {
+      id: 'tabs', framework: 'vanilla', name: 'activationMode', default: "'automatic'",
+      evidence: { file: '@hawiyah/vanilla/dist/tabs.js', text: 'activationMode = "automatic" // not in the file' }, approvedBy: 'test', reason: 'test',
+    };
+    const result = check([pageModel('tabs', TABS), pageModel('tabs', TABS, { lang: 'ar' })], testReaders({ defaults: [entry] }));
+    expect(messages(result)).toEqual([
+      `HWC-APIX scripts/api-tables/defaults.json: defaults.json gives tabs activationMode the default 'automatic'; its evidence text "${entry.evidence.text}" does not occur in the installed @hawiyah/vanilla/dist/tabs.js`,
+    ]);
+  });
+  it('a defaults.json entry whose evidence occurs gives the default, which the table then states', () => {
+    const entry = {
+      id: 'button', framework: 'vanilla', name: 'data-size', default: "'md'",
+      evidence: { file: '@hawiyah/styles/README.md', text: 'Defaults are primary/medium buttons' }, approvedBy: 'test', reason: 'test',
+    };
+    const withDefaults = testReaders({ defaults: [entry] });
+    expect(messages(check([pageModel('button', BUTTON)], withDefaults))).toEqual([
+      "HWC-APIX docs/components/button.md: JavaScript table gives data-size the default —; the installed packages give 'md'",
+    ]);
+    const tables = variant(BUTTON, 'javascript', (rows) => replaceRow(rows, 'data-size', (row) => [row[0], row[1], row[2], row[3], "'md'"]));
+    expect(messages(check([pageModel('button', tables)], withDefaults))).toEqual([]);
+  });
   it('a wrong kind (Vue event written as prop)', () => {
-    const tables = variant(TABS, 'vue', (rows) => rows.map((row) => (row[0] === 'update:modelValue' ? [row[0], 'prop', false] : row)));
+    const tables = variant(TABS, 'vue', (rows) => replaceRow(rows, 'update:modelValue', (row) => [row[0], 'prop', row[2], row[3], row[4]]));
     expect(messages(check([pageModel('tabs', tables)]))).toEqual([
       'HWC-APIX docs/components/tabs.md: Vue table lists update:modelValue (prop, required false); the declarations have update:modelValue (event, required false)',
     ]);
   });
   it('a wrong requiredness (Angular hw-tab value)', () => {
-    const tables = variant(TABS, 'angular', (rows) => rows.map((row) => (row[0] === 'hw-tab value' ? [row[0], 'input', false] : row)));
+    const tables = variant(TABS, 'angular', (rows) => replaceRow(rows, 'hw-tab value', (row) => [row[0], row[1], row[2], false, row[4]]));
     expect(messages(check([pageModel('tabs', tables)]))).toEqual([
       'HWC-APIX docs/components/tabs.md: Angular table lists hw-tab value (input, required false); the declarations have hw-tab value (input, required true)',
     ]);
   });
-  it('an Angular content selector missing and an inherited input missing', () => {
-    const tables = variant(TABS, 'angular', (rows) => rows.filter((row) => row[0] !== '*' && row[0] !== 'aria-describedby'));
-    expect(messages(check([pageModel('tabs', tables)]))).toEqual([
-      'HWC-APIX docs/components/tabs.md: Angular table lists no aria-describedby; the declarations have aria-describedby (input, required false)',
-      'HWC-APIX docs/components/tabs.md: Angular table lists no *; the declarations have * (content, required false)',
-    ]);
-  });
   it('a name listed twice', () => {
-    const tables = variant(BUTTON, 'vue', (rows) => [...rows, ['size', 'prop', false]]);
+    const tables = variant(BUTTON, 'vue', (rows) => [...rows, ['size', 'prop', "'sm' | 'md' | 'lg'", false, "'md'"]]);
     expect(messages(check([pageModel('button', tables)]))).toEqual([
       'HWC-APIX docs/components/button.md: Vue table lists size twice; the declarations have size (prop, required false)',
     ]);
@@ -84,14 +149,26 @@ describe('one mismatch per kind', () => {
   });
 });
 
-describe('components without a vanilla controller (leadAmendments A6)', () => {
-  it('compares Button with the stylesheet contract and the exclusions entry', () => {
-    const result = stylesheetMembers('button', base.components.get('button'), base.contractRows, base.exclusions.button.vanilla);
+describe('components without a vanilla controller', () => {
+  it('compares Button with the stylesheet contract, the stylesheet selectors and the exclusions entry', () => {
+    const result = stylesheetMembers(readers, 'button');
     expect(result.problems).toEqual([]);
-    expect(result.members.map((m) => m.name).sort()).toEqual(['aria-busy', 'class', 'data-icon-only', 'data-size', 'data-variant', 'disabled', 'type']);
+    expect(result.generatedNote).toBe(false);
+    expect(result.members.map((m) => `${m.name} ${m.type} (${m.from})`)).toEqual([
+      "class 'hw-button' (contract)",
+      "data-variant 'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link' (contract and stylesheet)",
+      "data-size 'sm' | 'md' | 'lg' (contract and stylesheet)",
+      'data-icon-only boolean (contract and stylesheet)',
+      "aria-disabled 'true' (stylesheet)",
+      "aria-busy 'true' (stylesheet)",
+      "aria-pressed 'true' (stylesheet)",
+      "data-shape 'circle' (stylesheet)",
+      'disabled boolean (stylesheet)',
+      'type null (exclusions.json)',
+    ]);
   });
-  it('an attribute that neither the contract nor the exclusions declare', () => {
-    const tables = variant(BUTTON, 'javascript', (rows) => [...rows, ['data-tone', false]]);
+  it('an attribute that neither the contract, the stylesheet nor the exclusions declare', () => {
+    const tables = variant(BUTTON, 'javascript', (rows) => [...rows, ['data-tone', 'option', "'info'", false, '—']]);
     expect(messages(check([pageModel('button', tables)]))).toEqual([
       'HWC-APIX docs/components/button.md: JavaScript table lists data-tone (option); the declarations have no data-tone',
     ]);
@@ -102,25 +179,36 @@ describe('components without a vanilla controller (leadAmendments A6)', () => {
       'HWC-APIX docs/components/button.md: JavaScript table lists no data-size; the declarations have data-size (option)',
     ]);
   });
-  it('data-icon-only is a documented row, no longer an exclusion', () => {
-    expect(base.exclusions.button.vanilla.notListed).toBeUndefined();
-    const tables = variant(BUTTON, 'javascript', (rows) => rows.filter((row) => row[0] !== 'data-icon-only'));
-    expect(messages(check([pageModel('button', tables)]))).toEqual([
-      'HWC-APIX docs/components/button.md: JavaScript table lists no data-icon-only; the declarations have data-icon-only (option)',
-    ]);
-  });
-  it('a component without a controller and without an exclusions entry', () => {
-    const result = check([pageModel('button', BUTTON)], { exclusions: {} });
-    expect(messages(result)).toEqual([
-      'HWC-APIX docs/components/button.md: JavaScript table cannot be checked: @hawiyah/vanilla exports no controller for button and scripts/api-tables/exclusions.json has no entry for it',
+  it('the type of a native attribute of exclusions.json is not compared, its name is', () => {
+    const tables = variant(BUTTON, 'javascript', (rows) => replaceRow(rows, 'type', (row) => [row[0], row[1], 'string', row[3], "'button'"]));
+    expect(messages(check([pageModel('button', tables)]))).toEqual([]);
+    const without = variant(BUTTON, 'javascript', (rows) => rows.filter((row) => row[0] !== 'type'));
+    expect(messages(check([pageModel('button', without)]))).toEqual([
+      'HWC-APIX docs/components/button.md: JavaScript table lists no type; the declarations have type (option)',
     ]);
   });
   it('a stale exclusions entry', () => {
-    const entry = { ...base.exclusions.button.vanilla, notListed: { 'data-shape': 'x' }, nativeAttributes: { ...base.exclusions.button.vanilla.nativeAttributes, 'data-variant': 'x' } };
-    const result = stylesheetMembers('button', base.components.get('button'), base.contractRows, entry);
+    const entry = { ...readers.exclusions.button.vanilla, notListed: { 'data-tone': 'x' }, nativeAttributes: { ...readers.exclusions.button.vanilla.nativeAttributes, 'data-variant': 'x' } };
+    const result = stylesheetMembers(testReaders({ exclusions: { button: { vanilla: entry } } }), 'button');
     expect(result.problems).toEqual([
-      'exclusions.json button.vanilla.notListed names data-shape, which the styles contract does not document',
+      'exclusions.json button.vanilla.notListed names data-tone, which neither the styles contract nor dist/styles.css declares on hw-button',
       'exclusions.json button.vanilla.nativeAttributes names data-variant, which the styles contract documents',
+    ]);
+  });
+  it('a component without a contract row needs the generated note after its JavaScript table (A11)', () => {
+    const declared = stylesheetMembers(readers, 'stat');
+    expect(declared.generatedNote).toBe(true);
+    const rows = declared.members.map((m) => [m.name, m.kind, m.type, m.required, m.default]);
+    const tables = { ...BUTTON, javascript: rows };
+    const page = (lang, after) => pageModel('stat', tables, { lang, after });
+    const only = (result) => messages(result).filter((line) => line.includes('JavaScript table of stat'));
+    const note = (lang) => ({ type: 'alert', kind: 'note', blocks: [{ type: 'paragraph', children: [{ type: 'text', value: generatedNote(lang, '0.3.0') }] }] });
+    expect(only(check([page('en', {})]))).toEqual([
+      `HWC-APIX docs/components/stat.md: the JavaScript table of stat is read from the published stylesheet (no row of the styles contract names its classes); it is followed by the note "> [!NOTE] ${generatedNote('en', '0.3.0')}"`,
+    ]);
+    expect(only(check([page('en', { javascript: note('en') }), page('ar', { javascript: note('ar') })]))).toEqual([]);
+    expect(messages(check([pageModel('button', BUTTON, { after: { javascript: note('en') } })]))).toEqual([
+      'HWC-APIX docs/components/button.md: the JavaScript table of button is followed by the note of a table read from the stylesheet, but the styles contract documents hw-button; remove the note',
     ]);
   });
 });

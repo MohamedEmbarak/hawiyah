@@ -4,15 +4,24 @@
 //
 //   node scripts/build.mjs [--configuration production|development] [--generate-only]
 //                          [--only <id,id>] [--preview <commit>]
+//                          [--pages <id,id>] [--docs <dir>] [--defer-equivalence]
+//
+// --pages and --docs are scope options for local gates (scripts/build-scope.mjs):
+// step 80 compares only the groups of the named pages, or the component pages are
+// read from another directory. Such a build, and every --only run, is not
+// deployable; its plan leaves out step 90. --defer-equivalence leaves step 80 to
+// the shard jobs of guide.yml.
 //
 // A step is `export default { id, configurations, generate, preview, async run(ctx) }`
 // and throws to fail the build. The files of scripts/build-steps must be exactly
 // PLANNED_STEPS: a planned step whose file is missing, a step file that is not
 // planned, an unknown --only id, or a step whose declaration disagrees with the
 // plan for the requested configuration fails the build before any step runs.
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { limits, notDeployableReasons, removeRecord, scopeOf, writeRecord } from "./build-scope.mjs";
+import { componentsDirOf } from "./content/hash.mjs";
 
 export const PLANNED_STEPS = [
   "00-env",
@@ -43,7 +52,7 @@ const guideDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const stepsDir = join(guideDir, "scripts", "build-steps");
 
 export function parseArgs(argv) {
-  const options = { configuration: "production", generateOnly: false, only: null, preview: null };
+  const options = { configuration: "production", generateOnly: false, only: null, preview: null, pages: null, docs: null, deferEquivalence: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const value = () => {
@@ -57,6 +66,9 @@ export function parseArgs(argv) {
     else if (arg === "--generate-only") options.generateOnly = true;
     else if (arg === "--only") options.only = value().split(",").filter(Boolean);
     else if (arg === "--preview") options.preview = value();
+    else if (arg === "--pages") options.pages = value().split(",").filter(Boolean);
+    else if (arg === "--docs") options.docs = value();
+    else if (arg === "--defer-equivalence") options.deferEquivalence = true;
     else throw new Error(`unknown option ${arg}`);
   }
   if (!CONFIGURATIONS.includes(options.configuration)) {
@@ -65,13 +77,38 @@ export function parseArgs(argv) {
   if (options.preview !== null && !/^[0-9a-f]{7,40}$/.test(options.preview)) {
     throw new Error(`--preview needs a commit sha (got ${options.preview})`);
   }
+  if (options.pages !== null) {
+    const bad = options.pages.filter((id) => !/^[a-z0-9-]+$/.test(id));
+    if (options.pages.length === 0 || bad.length > 0) throw new Error(`--pages needs component ids separated by commas (got ${bad.join(",") || "none"})`);
+  }
+  const scoped = options.pages !== null || options.docs !== null || options.deferEquivalence;
+  if (scoped && options.only) throw new Error("--only cannot be combined with --pages, --docs or --defer-equivalence");
+  if ((options.pages !== null || options.deferEquivalence) && (options.configuration !== "production" || options.generateOnly)) {
+    throw new Error(`${options.pages !== null ? "--pages" : "--defer-equivalence"} concerns step 80, which runs in the full production build only`);
+  }
+  if (options.deferEquivalence && (options.pages !== null || options.docs !== null || options.preview !== null)) {
+    throw new Error("--defer-equivalence is for the deployable build of guide.yml: not with --pages, --docs or --preview");
+  }
   return options;
+}
+
+/**
+ * Steps a scope option leaves out: step 90 certifies a deployable output only, so a
+ * build limited by --pages or --docs does not run it; --defer-equivalence leaves
+ * step 80 to the shard jobs.
+ */
+export function scopeSkips(options) {
+  const skips = [];
+  if (options.pages || options.docs) skips.push("90-registry-dist");
+  if (options.deferEquivalence) skips.push("80-equivalence");
+  return skips;
 }
 
 /** Whether the plan runs step `id` for these options (files present or not). */
 export function planned(id, options) {
   if (options.only) return options.only.includes(id);
   if (options.generateOnly) return GENERATE_STEPS.includes(id);
+  if (scopeSkips(options).includes(id)) return false;
   if (options.configuration === "development") return !DEVELOPMENT_SKIPS.includes(id);
   return true;
 }
@@ -96,6 +133,7 @@ export function resolvePlan(files, options) {
 function enabled(step, options) {
   if (options.only) return options.only.includes(step.id);
   if (options.generateOnly && !step.generate) return false;
+  if (scopeSkips(options).includes(step.id)) return false;
   if (!step.configurations.includes(options.configuration)) return false;
   if (options.preview !== null && !step.preview) return false;
   return true;
@@ -113,10 +151,31 @@ function validate(step, file) {
   }
 }
 
+/** The components directory of --docs: <dir>/components when it exists, else <dir>. */
+export function docsComponentsDir(docs, cwd = process.cwd()) {
+  const dir = componentsDirOf(resolve(cwd, docs));
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) throw new Error(`--docs: ${docs} is not a directory`);
+  return dir;
+}
+
+/** The last line of a successful build. */
+export function finalLine(options, { basePath, pages, ran }) {
+  const stepsLine = `${ran.length} steps: ${ran.join(" ")}`;
+  const limited = limits(options);
+  const scope = limited.length > 0 ? `not deployable (${limited.join(" ")}), ` : "";
+  if (options.generateOnly || options.only) {
+    return `build: ${options.generateOnly ? "generate-only" : "partial"} ${options.configuration} OK, ${scope}base ${basePath}, ${stepsLine}`;
+  }
+  const deferred = options.deferEquivalence ? "; 80-equivalence deferred to the shard jobs: deployable only with their merged report" : "";
+  return `build: ${options.configuration} OK, ${scope}${pages} prerendered pages, 404.html, base ${basePath}, ${stepsLine}${deferred}`;
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
+  const docsDir = options.docs ? docsComponentsDir(options.docs) : join(guideDir, "..", "docs", "components");
   process.chdir(guideDir);
   const outDir = options.configuration === "development" ? "dist-dev" : "dist";
+  const notDeployable = notDeployableReasons(options);
   const ctx = {
     guideDir,
     repoDir: resolve(guideDir, ".."),
@@ -128,6 +187,11 @@ async function main() {
     cacheDir: ".cache",
     logDir: ".cache/logs",
     generatedDir: "src/generated",
+    docsDir,
+    pages: options.pages,
+    scope: scopeOf(options),
+    deployable: notDeployable.length === 0,
+    notDeployable,
     preview: options.preview === null ? null : { commit: options.preview, tarballsDir: resolve(guideDir, "..", "..", "package-check") },
     summary: {},
     log: (message) => console.log(`  ${message}`),
@@ -149,6 +213,8 @@ async function main() {
     if (declared && enabled(step, options)) steps.push({ id, step });
   }
 
+  // The output of an --only run is no longer that of one complete build: its record goes.
+  if (options.only) removeRecord(join(guideDir, outDir));
   const ran = [];
   for (const { id, step } of steps) {
     const started = Date.now();
@@ -163,13 +229,13 @@ async function main() {
     console.log(`build: ${id} ok (${Date.now() - started} ms)`);
   }
 
-  const stepsLine = `${ran.length} steps: ${ran.join(" ")}`;
-  if (options.generateOnly || options.only) {
-    console.log(`build: ${options.generateOnly ? "generate-only" : "partial"} ${options.configuration} OK, base ${ctx.basePath}, ${stepsLine}`);
-  } else {
-    const pages = ctx.summary.prerenderedPages ?? 0;
-    console.log(`build: ${options.configuration} OK, ${pages} prerendered pages, 404.html, base ${ctx.basePath}, ${stepsLine}`);
+  if (!options.generateOnly && !options.only) {
+    // The record of the build in its output directory (dist/build-info.json, outside
+    // the deployed dist/browser/): guide.yml deploys only an output whose record is deployable.
+    const info = JSON.parse(readFileSync(join(guideDir, ctx.generatedDir, "build-info.json"), "utf8"));
+    writeRecord(join(guideDir, outDir), { ...info, configuration: options.configuration, steps: ran });
   }
+  console.log(finalLine(options, { basePath: ctx.basePath, pages: ctx.summary.prerenderedPages ?? 0, ran }));
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

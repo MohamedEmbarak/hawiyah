@@ -154,7 +154,7 @@ export function runContent(options) {
     }
   }
   if (findings.length > 0 || options.write === false) return { findings, pages: pages.length, groups: liveGroups.length, manifest: null };
-  const manifest = writeOutputs({ guideDir, outDir, liveGroupsFile, pages, manifestPages, liveGroups });
+  const manifest = writeOutputs({ guideDir, outDir, liveGroupsFile, pages, manifestPages, liveGroups, components: [...known.values()] });
   return { findings, pages: pages.length, groups: liveGroups.length, manifest };
 }
 

@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { expect, hydrated, test } from '../support/fixtures';
+import { pageModel } from '../support/routes';
 import {
   FRAME_FRAMEWORKS,
   FRAMEWORK_NAMES,
@@ -168,7 +169,8 @@ test('every frame of the reference view becomes ready, also outside the viewport
   });
   await page.goto('ar/components/button/reference/');
   await hydrated(page);
+  const groups = pageModel('button', 'ar').liveGroups.length;
   const statuses = page.locator('guide-example-block p.status');
-  await expect(statuses).toHaveCount(5);
-  await expect(statuses).toHaveText(Array(5).fill('معروض باستخدام @hawiyah/vue 0.3.0 من npm'), { timeout: 30_000 });
+  await expect(statuses).toHaveCount(groups);
+  await expect(statuses).toHaveText(Array(groups).fill('معروض باستخدام @hawiyah/vue 0.3.0 من npm'), { timeout: 30_000 });
 });

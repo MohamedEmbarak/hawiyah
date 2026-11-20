@@ -1,16 +1,15 @@
 {
-  "$comment": "Vanilla API tables of components without a create<Name> controller (leadAmendments A6). Step 30 compares such a table with the classes and data-*/aria-* attributes that the '## Stable class and state API' table of the @hawiyah/styles README documents for the component's classes (components.json cssClasses), plus a row 'class'. Attributes defined by HTML or ARIA have no machine-readable Hawiyah declaration and are listed under nativeAttributes; documented attributes the page leaves out are listed under notListed. Requiredness is not checked for these tables, because the contract declares none. Every entry needs a reason and the lead's review.",
+  "$comment": "Vanilla API tables of components without a create<Name> controller (5a.3). Step 30 compares such a table with the union of the classes and data-*/aria-* attributes that the '## Stable class and state API' table of the @hawiyah/styles README documents for the component's classes (components.json cssClasses) and the attribute selectors that the installed dist/styles.css has on those classes, plus a row 'class'. A row that neither declares is allowed only through this file: nativeAttributes are attributes defined by HTML or ARIA that the page lists (their name and kind are compared; Type, Required and Default are not, because no published file declares them), notListed are documented or selected attributes the page leaves out. The list is the lead's (leadAmendments A4): every entry carries approvedBy and a reason, and every attribute a reason; writers propose entries in their result files.",
   "components": {
     "button": {
       "vanilla": {
         "rule": "stylesheet-contract",
-        "reason": "Button is a native button element styled by the class hw-button, and @hawiyah/vanilla 0.3.0 exports no createButton (its only export with Button in the name is createCopyButton, the controller of the copy button). The Actions row of '## Stable class and state API' in the @hawiyah/styles 0.3.0 README documents hw-button, data-variant, data-size and data-icon-only, which step 30 reads as the contract.",
+        "reason": "Button is a native button element styled by the class hw-button, and @hawiyah/vanilla 0.3.0 exports no createButton (its only export with Button in the name is createCopyButton, the controller of the copy button). The Actions row of '## Stable class and state API' in the @hawiyah/styles 0.3.0 README documents hw-button, data-variant, data-size and data-icon-only, and dist/styles.css selects aria-busy, aria-disabled, aria-pressed, data-shape and disabled on .hw-button; step 30 reads both.",
+        "approvedBy": "lead, 5a",
         "nativeAttributes": {
-          "type": "HTML attribute of the button element, not a Hawiyah declaration; the page lists it because the browser default of a button in a form is submit.",
-          "disabled": "HTML attribute of the button element, not a Hawiyah declaration; the '## Semantics and behavior' section of the @hawiyah/styles README asks for genuine disabled controls, and dist/styles.css styles .hw-button:disabled; the loading state writes it.",
-          "aria-busy": "ARIA attribute (WAI-ARIA 1.2 aria-busy), not a Hawiyah declaration; dist/styles.css of @hawiyah/styles 0.3.0 has the rule .hw-button[aria-busy='true'], and the loading state writes aria-busy=\"true\" with disabled."
+          "type": "HTML attribute of the button element, not a Hawiyah declaration; the page lists it because the browser default of a button in a form is submit."
         },
-        "review": "Checked by 4c.3 against leadAmendments A6 and the README and dist/styles.css of @hawiyah/styles 0.3.0 as installed: the component has no controller, the contract rows are read from the README, and each native attribute is defined by HTML or WAI-ARIA and used by a rule of the published stylesheet. No documented attribute is left out (no notListed entry)."
+        "review": "Checked by 4c.3 against leadAmendments A6 of milestone 4, and again in 5a.3: aria-busy and disabled are no longer entries, because dist/styles.css of @hawiyah/styles 0.3.0 selects them in a compound with .hw-button and step 30 now reads the stylesheet's attribute selectors. type is defined by HTML and no selector of the stylesheet names it on .hw-button."
       }
     }
   }

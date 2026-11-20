@@ -50,7 +50,7 @@ export class ReferencePage {
     const t = pick(componentPageTexts, data.page.lang);
     this.head.set({
       title: t.referenceTitle(data.page.title),
-      description: data.manifest.summaryText[data.page.lang],
+      description: data.entry.summary[data.page.lang],
       page: { lang: data.page.lang, path: `components/${data.page.id}/reference/` },
     });
   }

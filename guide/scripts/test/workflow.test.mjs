@@ -1,0 +1,80 @@
+// The shape of .github/workflows/guide.yml (5a.1): one build without scope options,
+// step 80 and the browser tests in shards on that build, and a final job that needs
+// every shard job and fails unless the build is deployable and the union of the shard
+// reports covers every live group and every test. The sparse checkout and the path
+// filters are compared with build-inputs.json in build-inputs.test.mjs.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { parse } from 'yaml';
+
+const guideDir = fileURLToPath(new URL('../../', import.meta.url));
+const text = readFileSync(join(guideDir, '..', '.github', 'workflows', 'guide.yml'), 'utf8');
+const workflow = parse(text);
+const runs = (job) => job.steps.filter((step) => typeof step.run === 'string').map((step) => step.run);
+const allRuns = Object.values(workflow.jobs).flatMap(runs);
+
+describe('guide.yml', () => {
+  it('has a build, the equivalence and browser test shards, and a final job', () => {
+    expect(Object.keys(workflow.jobs)).toEqual(['build', 'equivalence', 'e2e', 'complete']);
+  });
+
+  it('never limits a build or a test run: no --pages, --docs, --only, --grep or --pass-with-no-tests', () => {
+    for (const command of allRuns) {
+      expect(command).not.toMatch(/--(?:pages|docs|only|grep|grep-invert|pass-with-no-tests|last-failed|update-snapshots)\b/);
+      expect(command).not.toMatch(/\btest\.only\b/);
+    }
+  });
+
+  it('builds once, with every step but 80, and lists the browser tests of that build', () => {
+    const build = runs(workflow.jobs.build);
+    const builds = allRuns.filter((command) => /npm run build(?!:)\b/.test(command));
+    expect(builds).toEqual(['npm run build -- --defer-equivalence']);
+    expect(build).toContain('npm run build -- --defer-equivalence');
+    expect(build.some((command) => command.includes('npx playwright test --project=prod --list --reporter=json > .cache/e2e/list.json'))).toBe(true);
+    for (const name of ['equivalence', 'e2e', 'complete']) {
+      expect(workflow.jobs[name].steps.some((step) => step.uses?.startsWith('actions/download-artifact@') && step.with?.name === 'guide-build'), name).toBe(true);
+    }
+  });
+
+  it('runs step 80 and the browser tests in shards 1..n of n over the whole build', () => {
+    for (const name of ['equivalence', 'e2e']) {
+      const job = workflow.jobs[name];
+      expect(job.needs, name).toBe('build');
+      const shards = job.strategy.matrix.shard;
+      const total = shards.length;
+      expect(total, name).toBe(4);
+      expect(shards, name).toEqual(Array.from({ length: total }, (_, n) => n + 1));
+      expect(job.strategy['fail-fast'], name).toBe(false);
+    }
+    const total = workflow.jobs.equivalence.strategy.matrix.shard.length;
+    expect(runs(workflow.jobs.equivalence)).toContain(`node scripts/equivalence/run.mjs --shard \${{ matrix.shard }}/${total} --report .cache/equivalence/shard-\${{ matrix.shard }}.json`);
+    expect(runs(workflow.jobs.e2e)).toContain(`npx playwright test --project=prod --shard=\${{ matrix.shard }}/${workflow.jobs.e2e.strategy.matrix.shard.length} --reporter=line,json`);
+  });
+
+  it('ends with a job that needs every shard job and fails unless the build is deployable and the shards cover everything', () => {
+    const complete = workflow.jobs.complete;
+    expect([...complete.needs].sort()).toEqual(['build', 'e2e', 'equivalence']);
+    // It runs when a needed job failed, so a failure is reported as its failure, not as a skip.
+    expect(complete.if).toBe('${{ always() }}');
+    const commands = runs(complete).join('\n');
+    expect(commands).toMatch(/\[ "\$BUILD" = success \] && \[ "\$EQUIVALENCE" = success \] && \[ "\$E2E" = success \]/);
+    expect(complete.steps.find((step) => step.name === 'Every job and shard passed').env).toEqual({
+      BUILD: '${{ needs.build.result }}',
+      EQUIVALENCE: '${{ needs.equivalence.result }}',
+      E2E: '${{ needs.e2e.result }}',
+    });
+    expect(commands).toContain('node scripts/build-scope.mjs --require-deployable --dir dist');
+    expect(commands).toContain('node scripts/equivalence/merge.mjs --manifest src/generated/content/manifest.json');
+    expect(commands).toContain('node scripts/e2e/merge.mjs --list .cache/e2e/list.json');
+  });
+
+  it('uploads the hidden .cache directories it needs', () => {
+    const upload = workflow.jobs.build.steps.find((step) => step.name === 'Upload the build');
+    expect(upload.with['include-hidden-files']).toBe(true);
+    for (const path of ['guide/dist/browser', 'guide/dist/build-info.json', 'guide/src/generated', 'guide/.cache/content', 'guide/.cache/e2e/list.json']) {
+      expect(upload.with.path).toContain(path);
+    }
+  });
+});

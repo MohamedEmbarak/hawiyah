@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { test, expect, hydrated } from '../support/fixtures';
+import { pageModel } from '../support/routes';
 
 // Tabs brief and reference views in Arabic and English (contentPipeline.pilots.tabs):
 // content from docs/components/tabs(.ar).md, the native Angular result of each live
@@ -14,6 +15,9 @@ import { test, expect, hydrated } from '../support/fixtures';
 //     (vertical) checks declared on the html blocks;
 //   - tests/e2e/equivalence/native-vs-frame.spec.ts: the native Angular result and
 //     the Angular frame of each group have equal aria snapshots.
+// What every component page shares (outline, content navigation, framework tabs and
+// editor links of every group, tables) is checked from the page model by
+// pages/component-page.spec.ts; positions and counts here are read from the model too.
 
 const TEXT = {
   en: {
@@ -53,6 +57,13 @@ const TEXT = {
 type Lang = keyof typeof TEXT;
 
 type Group = { readonly name: string; readonly tabs: readonly string[]; readonly panels: readonly string[] };
+
+/** Position of a live group of the Tabs page in a language. */
+function at(lang: Lang, example: string): number {
+  const index = pageModel('tabs', lang).liveGroups.indexOf(example);
+  if (index < 0) throw new Error(`tabs (${lang}) has no live group ${example}`);
+  return index;
+}
 
 /** The tab list of the native result in example block `index`. */
 function resultTabs(page: Page, lang: Lang, index: number, name: string): Locator {
@@ -162,34 +173,29 @@ for (const lang of ['ar', 'en'] as const) {
       const article = page.locator('main article.hw-prose');
       await expect(article.getByRole('heading', { level: 1 })).toHaveText(t.title);
       await expect(article.locator(':scope > h2')).toHaveText([...t.sections]);
-      for (const heading of await article.locator(':scope > h2, guide-blocks h3, guide-blocks h4').all()) {
-        await expect(heading).toHaveAttribute('id', /^[a-z0-9-]+$/);
-        await expect(heading).toHaveAttribute('tabindex', '-1');
-      }
-      const navigation = page.getByRole('navigation', { name: t.onThisPage });
-      await expect(navigation.getByRole('link')).toHaveCount(6 + 3 + 4 + 2);
 
+      const model = pageModel('tabs', lang);
       const blocks = page.locator('guide-example-block');
-      await expect(blocks).toHaveCount(4);
-      for (const [index, heading] of ['example', 'vertical', 'manual-activation', 'disabled-tab'].entries()) {
-        await expect(blocks.nth(index).locator('section.example')).toHaveAttribute('aria-labelledby', heading);
-      }
-      const groups: [number, Group][] = [[0, t.basic], [1, t.vertical], [2, t.manual], [3, t.disabled]];
+      await expect(blocks).toHaveCount(model.liveGroups.length);
+      const groups: [number, Group][] = [[at(lang, 'basic'), t.basic], [at(lang, 'vertical'), t.vertical], [at(lang, 'manual'), t.manual], [at(lang, 'disabled-tab'), t.disabled]];
       for (const [index, group] of groups) {
         await expect(resultTabs(page, lang, index, group.name).getByRole('tab')).toHaveText([...group.tabs]);
         await expectSelected(page, lang, index, group, 0);
         await expectIdReferences(blocks.nth(index).getByRole('group', { name: t.result }), 3);
       }
-      // Generated ids are unique across the four results of the page.
+      // Generated ids are unique across the results of the page.
       const ids = await page.locator('guide-example-block [role="group"] [role="tab"]').evaluateAll((nodes) => nodes.map((node) => node.id));
-      expect(new Set(ids).size).toBe(12);
+      expect(ids.length).toBe(3 * model.liveGroups.length);
+      expect(new Set(ids).size).toBe(ids.length);
 
       const tables = article.getByRole('table');
-      await expect(tables).toHaveCount(5);
-      const angular = tables.nth(3);
-      await expect(angular.getByRole('row')).toHaveCount(1 + 17);
+      await expect(tables).toHaveCount(model.tables.length);
+      const angularTable = model.tables.findIndex((table) => table.columns.some((column) => column.label.some((node) => node.value === (lang === 'ar' ? 'الفئة' : 'Kind'))) && table.rows.some((row) => row['c0']?.some((node) => node.value === 'hw-tab value')));
+      const angular = tables.nth(angularTable);
+      await expect(angular.getByRole('row')).toHaveCount(1 + (model.tables[angularTable]?.rows.length ?? 0));
       await expect(angular.getByRole('cell', { name: 'hw-tab value' })).toBeVisible();
-      await expect(tables.nth(2).getByRole('cell', { name: 'update:modelValue' })).toBeVisible();
+      const vueTable = model.tables.findIndex((table) => table.rows.some((row) => row['c0']?.some((node) => node.value === 'update:modelValue')));
+      await expect(tables.nth(vueTable).getByRole('cell', { name: 'update:modelValue' })).toBeVisible();
       await expect(article.locator('hw-alert[role="note"]')).toHaveCount(1);
       await expect(article.locator('hw-alert[role="note"]')).toContainText(t.important);
     });
@@ -197,54 +203,54 @@ for (const lang of ['ar', 'en'] as const) {
     test('vertical example: click selects, Up and Down Arrow move in both directions', async ({ page }) => {
       await page.goto(`${lang}/components/tabs/reference/`);
       await hydrated(page);
-      const tablist = resultTabs(page, lang, 1, t.vertical.name);
+      const tablist = resultTabs(page, lang, at(lang, 'vertical'), t.vertical.name);
       await expect(tablist).toHaveAttribute('aria-orientation', 'vertical');
       const tabs = tablist.getByRole('tab');
       const [first, second] = [await tabs.nth(0).boundingBox(), await tabs.nth(1).boundingBox()];
       expect(second!.y).toBeGreaterThan(first!.y);
       await tabs.nth(1).click();
-      await expectSelected(page, lang, 1, t.vertical, 1);
+      await expectSelected(page, lang, at(lang, 'vertical'), t.vertical, 1);
       await page.keyboard.press('ArrowDown');
       await expect(tabs.nth(2)).toBeFocused();
-      await expectSelected(page, lang, 1, t.vertical, 2);
+      await expectSelected(page, lang, at(lang, 'vertical'), t.vertical, 2);
       await page.keyboard.press('ArrowUp');
       await expect(tabs.nth(1)).toBeFocused();
       // Horizontal arrows do nothing in a vertical list.
       await page.keyboard.press(next);
       await expect(tabs.nth(1)).toBeFocused();
-      await expectSelected(page, lang, 1, t.vertical, 1);
+      await expectSelected(page, lang, at(lang, 'vertical'), t.vertical, 1);
     });
 
     test('manual example: arrows move focus only, Enter and Space select', async ({ page }) => {
       await page.goto(`${lang}/components/tabs/reference/`);
       await hydrated(page);
-      const tabs = resultTabs(page, lang, 2, t.manual.name).getByRole('tab');
+      const tabs = resultTabs(page, lang, at(lang, 'manual'), t.manual.name).getByRole('tab');
       await tabs.first().focus();
       await page.keyboard.press(next);
       await expect(tabs.nth(1)).toBeFocused();
-      await expectSelected(page, lang, 2, t.manual, 0);
+      await expectSelected(page, lang, at(lang, 'manual'), t.manual, 0);
       await page.keyboard.press('Enter');
-      await expectSelected(page, lang, 2, t.manual, 1);
+      await expectSelected(page, lang, at(lang, 'manual'), t.manual, 1);
       await page.keyboard.press('End');
       await expect(tabs.nth(2)).toBeFocused();
-      await expectSelected(page, lang, 2, t.manual, 1);
+      await expectSelected(page, lang, at(lang, 'manual'), t.manual, 1);
       await page.keyboard.press(' ');
-      await expectSelected(page, lang, 2, t.manual, 2);
+      await expectSelected(page, lang, at(lang, 'manual'), t.manual, 2);
     });
 
     test('disabled tab: skipped by the arrows and not selectable', async ({ page }) => {
       await page.goto(`${lang}/components/tabs/reference/`);
       await hydrated(page);
-      const tabs = resultTabs(page, lang, 3, t.disabled.name).getByRole('tab');
+      const tabs = resultTabs(page, lang, at(lang, 'disabled-tab'), t.disabled.name).getByRole('tab');
       await expect(tabs.nth(1)).toBeDisabled();
       await tabs.first().focus();
       await page.keyboard.press(next);
       await expect(tabs.nth(2)).toBeFocused();
-      await expectSelected(page, lang, 3, t.disabled, 2);
+      await expectSelected(page, lang, at(lang, 'disabled-tab'), t.disabled, 2);
       await page.keyboard.press(previous);
       await expect(tabs.nth(0)).toBeFocused();
       await tabs.nth(1).click({ force: true });
-      await expectSelected(page, lang, 3, t.disabled, 0);
+      await expectSelected(page, lang, at(lang, 'disabled-tab'), t.disabled, 0);
     });
 
     for (const width of [1280, 390]) {

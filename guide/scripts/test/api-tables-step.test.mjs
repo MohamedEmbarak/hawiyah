@@ -1,21 +1,30 @@
-// The success line of build step 30 states exactly what the step compares (plan D-C):
-// names, kinds and required flags, and that Type and Default are not compared.
+// The success line of build step 30 states exactly what the step compares
+// (5a.3): names, kinds, required flags, types and defaults, where types and
+// defaults come from, the rows compared against the stylesheet and by name only,
+// the counts of the lead's lists, and the parity data it writes.
 import { describe, expect, it, vi } from 'vitest';
 
+const stats = { tables: 16, pages: 4, rows: 136, stylesheetRows: 20, excluded: 2, defaultsEntries: 0, slotPatterns: 2, overrides: 2, parity: 85 };
 vi.mock('../api-tables/cli.mjs', async (importOriginal) => ({
   ...(await importOriginal()),
-  runApiTables: () => ({ findings: [], tables: 16, pages: 4 }),
+  runApiTables: () => ({ findings: [], tables: 16, pages: 4, stats }),
 }));
 
 const { default: step } = await import('../build-steps/30-api-tables.mjs');
+const { comparedLine } = await import('../api-tables/cli.mjs');
 
 describe('step 30 success line', () => {
-  it('names what is compared and what is not', async () => {
+  it('names what is compared, with the counts of the run', async () => {
     const lines = [];
     await step.run({ guideDir: '/guide', generatedDir: 'src/generated', repoDir: '/', log: (line) => lines.push(line) });
     expect(lines).toEqual([
-      '16 API tables of 4 page models: member names, kinds (Vue and Angular tables) and required flags match the declarations '
-        + '(required flags not compared for stylesheet-contract tables); Type and Default columns are not compared',
-    ]);
+      '16 API tables of 4 page models, 136 rows: names, kinds, required flags, types and defaults match the installed packages '
+        + '(types in the written form of scripts/api-tables/types.mjs; defaults from the published JavaScript of React, Vue and Angular, an em dash for a default that is absent, generated or computed, '
+        + 'and for vanilla options and stylesheet attributes unless defaults.json quotes the published line: 0 defaults.json entries; '
+        + '20 rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; '
+        + '2 rows of exclusions.json compared by name only; Vue slots read from the published build, 2 slot patterns; 2 target overrides); parity.json: members of 85 components',
+    ].map((line) => `api-tables: ${line}`));
+    expect(lines[0]).toBe(`api-tables: ${comparedLine(stats)}`);
+    expect(lines[0]).not.toMatch(/not compared yet|columns are not compared/);
   });
 });

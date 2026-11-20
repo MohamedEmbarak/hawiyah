@@ -21,7 +21,7 @@ const BCP47 = /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/;
 // Hawiyah class names ('hw-button') match the BCP 47 pattern; 'hw' is no
 // language subtag, so they are never read as language tags.
 const isLanguageTag = (value) => BCP47.test(value) && !value.startsWith('hw-');
-const unquote = (text) => text.replace(/^(['"`])(.*)\1$/s, '$2');
+export const unquote = (text) => text.replace(/^(['"`])(.*)\1$/s, '$2');
 
 /** Whether an English and an Arabic live token may differ (contentPipeline.liveBlocks.forms.text). */
 export function tokensMatch(en, ar) {
@@ -35,7 +35,10 @@ export function tokensMatch(en, ar) {
   return false;
 }
 
-/** Exceptions to HWC-PAR8: [{ file, text, reason }] (an empty list is the goal). */
+/**
+ * Exceptions to HWC-PAR8: [{ file, text, reason, approvedBy }] (an empty list is the goal). The list is the
+ * lead's (leadAmendments A4 of milestone 5; scripts/api-tables/lists.mjs caps the entries per page).
+ */
 export const ARABIC_EXCEPTIONS_FILE = new URL('./arabic-exceptions.json', import.meta.url);
 
 export function readArabicExceptions(file = ARABIC_EXCEPTIONS_FILE) {
@@ -43,8 +46,8 @@ export function readArabicExceptions(file = ARABIC_EXCEPTIONS_FILE) {
   if (!Array.isArray(list)) throw new Error('arabic-exceptions.json must hold an array');
   list.forEach((entry, index) => {
     const keys = Object.keys(entry ?? {});
-    if (keys.sort().join(',') !== 'file,reason,text' || keys.some((key) => typeof entry[key] !== 'string' || entry[key].trim() === '')) {
-      throw new Error(`arabic-exceptions.json entry ${index + 1} must be { file, text, reason } with non-empty values`);
+    if (keys.sort().join(',') !== 'approvedBy,file,reason,text' || keys.some((key) => typeof entry[key] !== 'string' || entry[key].trim() === '')) {
+      throw new Error(`arabic-exceptions.json entry ${index + 1} must be { file, text, reason, approvedBy } with non-empty values`);
     }
   });
   return list;
@@ -74,14 +77,14 @@ const ARABIC_LETTER = /(?=\p{Script=Arabic})\p{L}/u;
 const notArabic = (text, keyCell = false) => LETTER.test(text) && !ARABIC_LETTER.test(text) && !(keyCell && onlyKeyNames(text));
 
 /** Attributes and properties of a live block whose string values are reader text. */
-const READER_NAMES = new Set(['label', 'aria-label', 'title', 'placeholder', 'alt', 'description', 'heading', 'caption', 'hint', 'message', 'text']);
+export const READER_NAMES = new Set(['label', 'aria-label', 'title', 'placeholder', 'alt', 'description', 'heading', 'caption', 'hint', 'message', 'text']);
 /** A name that ends in one of these words (overflowLabel, data-hw-overflow-label, copiedMessage, ...) also holds reader text. */
-const READER_SUFFIX = /(?:label|message|text|title)$/;
+export const READER_SUFFIX = /(?:label|message|text|title)$/;
 /**
  * Attributes and properties whose values are tokens, not text: a phrase of Latin
  * words there is not reader text.
  */
-const TOKEN_NAMES = new Set(['class', 'classname', 'id', 'role', 'type', 'href', 'src', 'rel', 'style', 'autocomplete', 'for', 'htmlfor', 'form', 'key', 'ref', 'slot', 'lang', 'dir', 'name', 'value', 'aria-controls', 'aria-labelledby', 'aria-describedby', 'aria-owns', 'aria-flowto', 'aria-details', 'aria-errormessage', 'aria-activedescendant']);
+export const TOKEN_NAMES = new Set(['class', 'classname', 'id', 'role', 'type', 'href', 'src', 'rel', 'style', 'autocomplete', 'for', 'htmlfor', 'form', 'key', 'ref', 'slot', 'lang', 'dir', 'name', 'value', 'aria-controls', 'aria-labelledby', 'aria-describedby', 'aria-owns', 'aria-flowto', 'aria-details', 'aria-errormessage', 'aria-activedescendant']);
 /**
  * value, defaultValue and name are tokens where nothing shows them (the value of an
  * option or a check box, the name of a form field), and reader text where they are
@@ -120,7 +123,7 @@ const LATIN_PHRASE = /(?:^|\s)[A-Za-z]+(?:[.,;:!?])?\s+[A-Za-z]+(?=[.,;:!?]?(?:\
  */
 const LATIN_HEADINGS = new Set(['JavaScript', 'React', 'Vue', 'Angular']);
 /** The bare name of an attribute or property token (:label, @click, [label], (change) -> label). */
-const bareName = (text) => text.replace(/^[:@[(]+|[\])]+$/g, '').replace(/^v-bind:/, '').toLowerCase();
+export const bareName = (text) => text.replace(/^[:@[(]+|[\])]+$/g, '').replace(/^v-bind:/, '').toLowerCase();
 
 /** Block signature of a section, for HWC-PAR7. */
 function blockSignature(node) {

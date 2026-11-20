@@ -2,7 +2,8 @@
 // language, the files, the run state and the log. The query parsing and the file
 // helpers are pure functions so that they can be tested without a browser.
 import { Injectable, computed, signal } from '@angular/core';
-import { contentManifest } from '../../content/content-loader';
+import { navigationIndex } from '../../content/content-loader';
+import type { NavigationIndex } from '../../content/model';
 import type { ExampleFramework } from '../../examples/payload';
 import { EXAMPLE_FRAMEWORKS } from '../../examples/payload';
 import type { LogLevel } from './i18n';
@@ -24,9 +25,9 @@ export interface EditorExample {
   readonly section: string;
 }
 
-/** Every live group of the content manifest, in manifest order. */
-export function editorExamples(manifest: { readonly pages: readonly { readonly id: string; readonly liveGroups: readonly { readonly example: string; readonly section: string }[] }[] } = contentManifest): EditorExample[] {
-  return manifest.pages.flatMap((page) => page.liveGroups.map((group) => ({ id: page.id, example: group.example, section: group.section })));
+/** Every live group of the navigation index, in its order. */
+export function editorExamples(index: Pick<NavigationIndex, 'pages'> = navigationIndex): EditorExample[] {
+  return index.pages.flatMap((page) => page.examples.map((group) => ({ id: page.id, example: group.example, section: group.section })));
 }
 
 export interface EditorQuery {

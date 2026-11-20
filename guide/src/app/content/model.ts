@@ -1,7 +1,8 @@
 // Types of the content model (contentPipeline.model). Build step 20
 // (scripts/content/) writes the data that these types describe:
 //   src/generated/content/pages/<id>.<lang>.json   ContentPage
-//   src/generated/content/manifest.json            ContentManifest
+//   src/generated/content/manifest.json            ContentManifest (build time only)
+//   src/generated/content/navigation.json          NavigationIndex
 //   src/generated/content/loaders.ts               ContentLoaders
 //   .cache/content/live-groups.json                LiveGroupEntry[] (read by step 25)
 // Keep these types in step with scripts/content/model.mjs and manifest.mjs.
@@ -229,6 +230,41 @@ export interface ContentManifest {
   readonly pages: readonly ManifestPage[];
   /** Guide-relative path of the live groups file, '.cache/content/live-groups.json' in the build. */
   readonly liveGroupsFile: string;
+}
+
+// ------------------------------------------------------- navigation index
+
+/** One live group in the navigation index. */
+export interface NavigationExample {
+  readonly example: string;
+  /** Id of the heading the group stands under: 'example', or the id of its h3 in Variants and states. */
+  readonly section: string;
+  /** The text of that heading when it is the group's own heading (an h3), in each language. */
+  readonly title?: Readonly<Record<ContentLang, string>>;
+}
+
+/** One built component page in the navigation index. */
+export interface NavigationPage {
+  readonly id: string;
+  readonly langs: readonly ContentLang[];
+  /** Category id of components.json. */
+  readonly category: string;
+  /** The h1: components.json name (en) and labelAr (ar). */
+  readonly title: Readonly<Record<ContentLang, string>>;
+  /** The Markdown summary as plain text. */
+  readonly summary: Readonly<Record<ContentLang, string>>;
+  readonly examples: readonly NavigationExample[];
+}
+
+/**
+ * src/generated/content/navigation.json (step 20): the built pages in category order,
+ * then in components.json order; categories lists the category ids that have a page.
+ * The catalogue, the side navigation, the drawer and the editor read it from lazy
+ * chunks; the content manifest stays a build-time file.
+ */
+export interface NavigationIndex {
+  readonly categories: readonly string[];
+  readonly pages: readonly NavigationPage[];
 }
 
 /** src/generated/content/loaders.ts: { '<id>/<lang>': () => import('./pages/<id>.<lang>.json') } */

@@ -1,126 +1,131 @@
 #!/usr/bin/env node
-// Step 30: checks the API tables of every built page against the declarations
-// of the installed adapter packages (contentPipeline.apiTables).
+// Step 30: checks the API tables of every built page against the installed
+// adapter packages (members.mjs): names, kinds, required flags, types and
+// defaults, and writes src/generated/parity.json with the members of all
+// components of components.json, whether or not a page exists.
 //
-//   node scripts/api-tables/cli.mjs [--content <dir>] [--node-modules <dir>]
-//                                   [--components <file>] [--exclusions <file>]
+//   node scripts/api-tables/cli.mjs [--content <dir>] [--node-modules <dir>] [--components <file>]
+//                                   [--exclusions <file>] [--defaults <file>] [--parity <file>]
+//   node scripts/api-tables/cli.mjs --declared-all [--node-modules <dir>] [--components <file>]
 //
 // --content is the output of step 20 (default src/generated/content: its
 // manifest.json lists the built pages and pages/<id>.<lang>.json holds each
 // model). Every finding is printed as 'HWC-APIX <file>: ...'; the exit code is
-// 1 when any remains.
-import { existsSync, readFileSync } from 'node:fs';
+// 1 when any remains. --declared-all prints one line per id and framework of
+// components.json with what the readers declare, and exits 1 on a reader error or
+// an id without a target.
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CODE, TABLES, apiTablesOf, compareTable, finding, formatFinding } from './compare.mjs';
-import { angularMembers } from './declarations-angular.mjs';
-import { reactMembers } from './declarations-react.mjs';
-import { vanillaMembers } from './declarations-vanilla.mjs';
-import { vueMembers } from './declarations-vue.mjs';
-import { createDeclarationProgram, resolveExport } from './program.mjs';
-import { contractFor, readContract } from './stylesheet-contract.mjs';
-import { targetsFor } from './targets.mjs';
-
-/** What step 30 compares, stated in its success line. */
-export const COMPARED = 'member names, kinds (Vue and Angular tables) and required flags match the declarations '
-  + '(required flags not compared for stylesheet-contract tables); Type and Default columns are not compared';
+import { CODE, TABLES, apiTablesOf, blockText, compareTable, finding, formatFinding } from './compare.mjs';
+import { checkLeadLists, readLeadLists } from './lists.mjs';
+import { DEFAULT_DEFAULTS, DEFAULT_EXCLUSIONS, FRAMEWORKS, createReaders, declaredMembers } from './members.mjs';
+import { generatedNote, stylesVersion } from './notes.mjs';
+import { TARGET_OVERRIDES } from './targets.mjs';
 
 export { formatFinding };
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const guideDir = resolve(here, '..', '..');
-export const DEFAULT_EXCLUSIONS = join(here, 'exclusions.json');
+export { DEFAULT_EXCLUSIONS, DEFAULT_DEFAULTS };
 
-export function readExclusions(file) {
-  const data = JSON.parse(readFileSync(file, 'utf8'));
-  const components = data.components ?? {};
-  for (const [id, entry] of Object.entries(components)) {
-    for (const [framework, item] of Object.entries(entry)) {
-      if (framework !== 'vanilla') throw new Error(`api-tables: exclusions.json ${id}.${framework}: only vanilla tables of components without a controller can be excluded`);
-      if (item.rule !== 'stylesheet-contract') throw new Error(`api-tables: exclusions.json ${id}.vanilla: rule must be "stylesheet-contract"`);
-      if (typeof item.reason !== 'string' || !item.reason.trim()) throw new Error(`api-tables: exclusions.json ${id}.vanilla needs a reason`);
-      for (const key of ['nativeAttributes', 'notListed']) {
-        for (const [name, reason] of Object.entries(item[key] ?? {})) {
-          if (typeof reason !== 'string' || !reason.trim()) throw new Error(`api-tables: exclusions.json ${id}.vanilla.${key}.${name} needs a reason`);
-        }
-      }
-    }
-  }
-  return components;
+/** What step 30 compares, stated in its success line (with the counts of a run). */
+export function comparedLine(stats) {
+  return `${stats.tables} API tables of ${stats.pages} page models, ${stats.rows} rows: names, kinds, required flags, types and defaults match the installed packages `
+    + `(types in the written form of scripts/api-tables/types.mjs; defaults from the published JavaScript of React, Vue and Angular, an em dash for a default that is absent, generated or computed, `
+    + `and for vanilla options and stylesheet attributes unless defaults.json quotes the published line: ${stats.defaultsEntries} defaults.json entries; `
+    + `${stats.stylesheetRows} rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; `
+    + `${stats.excluded} rows of exclusions.json compared by name only; Vue slots read from the published build, ${stats.slotPatterns} slot patterns; ${stats.overrides} target overrides); `
+    + `parity.json: members of ${stats.parity} components`;
 }
 
-function readComponentsFile(file) {
-  const data = JSON.parse(readFileSync(file, 'utf8'));
-  const list = Array.isArray(data) ? data : data.components;
-  return new Map(list.map((entry) => [entry.id, entry]));
-}
-
-/**
- * Members of the vanilla table of a component without a controller, from the
- * stylesheet contract and its exclusions entry.
- */
-export function stylesheetMembers(id, entry, contractRows, exclusion) {
-  const problems = [];
-  if (!exclusion) return { members: [], problems: [`@hawiyah/vanilla exports no controller for ${id} and scripts/api-tables/exclusions.json has no entry for it`] };
-  const contract = contractFor(contractRows, entry?.cssClasses ?? []);
-  if (contract.classes.length === 0) problems.push(`the styles contract documents none of the classes ${(entry?.cssClasses ?? []).join(', ') || '(none)'} of ${id}`);
-  const native = Object.keys(exclusion.nativeAttributes ?? {});
-  const notListed = new Set(Object.keys(exclusion.notListed ?? {}));
-  for (const name of notListed) if (!contract.attributes.includes(name)) problems.push(`exclusions.json ${id}.vanilla.notListed names ${name}, which the styles contract does not document`);
-  for (const name of native) if (contract.attributes.includes(name)) problems.push(`exclusions.json ${id}.vanilla.nativeAttributes names ${name}, which the styles contract documents`);
-  const names = ['class', ...contract.attributes.filter((name) => !notListed.has(name)), ...native];
-  return { members: [...new Set(names)].map((name) => ({ name, kind: 'option', required: false })), problems };
+/** Declared members of every id, cached for a run. */
+export function memberCache(readers) {
+  const cache = new Map();
+  return (id) => {
+    if (!cache.has(id)) cache.set(id, declaredMembers(readers, id));
+    return cache.get(id);
+  };
 }
 
 /**
  * Checks the API tables of the given page models.
- * @param {{ pages: { id: string, lang: string, page: any }[], context: any, components: Map<string, any>,
- *           contractRows: any[], exclusions: Record<string, any> }} input
+ * @param {{ pages: { id: string, lang: string, page: any }[], readers: any, members?: (id: string) => any }} input
  */
 export function checkPages(input) {
-  const { pages, context, components, contractRows, exclusions } = input;
-  const exists = (framework, name) => resolveExport(context, framework, name) !== null;
-  const cache = new Map();
-  const declared = (id) => {
-    if (cache.has(id)) return cache.get(id);
-    const targets = targetsFor(id, exists);
-    const out = {};
-    if (exists('vanilla', targets.vanilla)) out.vanilla = { ...vanillaMembers(context, targets.vanilla), checkRequired: true };
-    else out.vanilla = { ...stylesheetMembers(id, components.get(id), contractRows, exclusions[id]?.vanilla), checkRequired: false };
-    out.react = { ...reactMembers(context, targets.react), checkRequired: true };
-    out.vue = { ...vueMembers(context, targets.vue), checkRequired: true };
-    out.angular = { ...angularMembers(context, targets.angular), checkRequired: true };
-    cache.set(id, out);
-    return out;
-  };
+  const { pages, readers } = input;
+  const declared = input.members ?? memberCache(readers);
+  const version = stylesVersion(readers.nodeModules);
   const findings = [];
-  let tables = 0;
-  for (const { id, page } of pages) {
-    const file = page.sourcePath ?? `docs/components/${id}.md`;
+  const seen = new Set();
+  const once = (item) => {
+    if (seen.has(item.message)) return;
+    seen.add(item.message);
+    findings.push(item);
+  };
+  const stats = { tables: 0, rows: 0, stylesheetRows: 0, excluded: 0 };
+  for (const { id, lang, page } of pages) {
+    const file = page.sourcePath ?? `docs/components/${id}${lang === 'ar' ? '.ar' : ''}.md`;
     const pageTables = apiTablesOf(page);
     const members = declared(id);
     for (const [h3, spec] of Object.entries(TABLES)) {
       const rows = pageTables[h3];
       const decl = members[spec.framework];
-      for (const problem of decl.problems) findings.push(finding(file, `${spec.label} table cannot be checked: ${problem}`));
+      for (const problem of [...decl.problems, ...decl.gaps]) findings.push(finding(file, `${spec.label} table cannot be checked: ${problem}`));
+      for (const message of decl.findings) once(finding('scripts/api-tables/defaults.json', message));
       if (!rows) {
         findings.push(finding(file, `the API section has no ${spec.label} table`));
         continue;
       }
-      if (decl.problems.length) continue;
-      tables += 1;
-      findings.push(...compareTable(rows, decl.members, { file, label: spec.label, checkRequired: decl.checkRequired }));
+      if (decl.problems.length || decl.gaps.length) continue;
+      stats.tables += 1;
+      stats.rows += rows.length;
+      if (decl.source === 'stylesheet') {
+        stats.stylesheetRows += rows.length;
+        stats.excluded += decl.members.filter((member) => member.from === 'exclusions.json').length;
+        const note = generatedNote(lang, version);
+        const after = blockText(pageTables.after?.[h3]);
+        const isNote = pageTables.after?.[h3]?.type === 'alert' && pageTables.after[h3].kind === 'note' && after === note;
+        if (decl.generatedNote && !isNote) findings.push(finding(file, `the JavaScript table of ${id} is read from the published stylesheet (no row of the styles contract names its classes); it is followed by the note "> [!NOTE] ${note}"`));
+        if (!decl.generatedNote && isNote) findings.push(finding(file, `the JavaScript table of ${id} is followed by the note of a table read from the stylesheet, but the styles contract documents ${decl.classes.join(', ')}; remove the note`));
+      }
+      findings.push(...compareTable(rows, decl.members, { file, label: spec.label, checkRequired: decl.source !== 'stylesheet' }));
     }
   }
-  return { findings, tables };
+  return { findings, ...stats };
 }
 
-/** Reads the built pages from the content output of step 20 and checks them. */
+/** The parity data of all components: their members per adapter, whether or not a page exists. */
+export function parityData(readers, declared, version) {
+  const components = [];
+  const problems = [];
+  for (const [id, entry] of readers.components) {
+    const members = declared(id);
+    const frameworks = {};
+    for (const framework of FRAMEWORKS) {
+      const decl = members[framework];
+      for (const problem of decl.problems) problems.push(`${id} ${framework}: ${problem}`);
+      frameworks[framework] = {
+        source: decl.source,
+        exports: decl.exports,
+        members: decl.members.map((member) => ({
+          name: member.name, kind: member.kind, required: member.required, type: member.type ?? null, default: member.default ?? null,
+          ...(member.from ? { from: member.from } : {}),
+        })),
+        ...(decl.gaps.length ? { gaps: decl.gaps } : {}),
+        ...(decl.source === 'stylesheet' ? { stylesheetOnly: decl.generatedNote } : {}),
+      };
+    }
+    components.push({ id, name: entry.name, category: entry.category, frameworks });
+  }
+  return { data: { version, components }, problems };
+}
+
+/** Reads the built pages from the content output of step 20, checks them and writes parity.json. */
 export function runApiTables(options = {}) {
   const contentDir = options.contentDir ?? join(guideDir, 'src', 'generated', 'content');
   const nodeModules = options.nodeModules ?? join(guideDir, 'node_modules');
   const componentsFile = options.componentsFile ?? join(guideDir, '..', 'components.json');
-  const exclusionsFile = options.exclusionsFile ?? DEFAULT_EXCLUSIONS;
   const manifestFile = join(contentDir, 'manifest.json');
   if (!existsSync(manifestFile)) throw new Error(`api-tables: ${manifestFile} is missing; run step 20 first`);
   const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
@@ -130,21 +135,83 @@ export function runApiTables(options = {}) {
       pages.push({ id: entry.id, lang, page: JSON.parse(readFileSync(join(contentDir, 'pages', `${entry.id}.${lang}.json`), 'utf8')) });
     }
   }
-  const context = options.context ?? createDeclarationProgram(nodeModules);
-  const result = checkPages({
-    pages,
-    context,
-    components: readComponentsFile(componentsFile),
-    contractRows: readContract(nodeModules),
-    exclusions: readExclusions(exclusionsFile),
+  const readers = options.readers ?? createReaders({
+    nodeModules, componentsFile, exclusionsFile: options.exclusionsFile ?? DEFAULT_EXCLUSIONS, defaultsFile: options.defaultsFile ?? DEFAULT_DEFAULTS, context: options.context,
   });
-  return { ...result, pages: pages.length };
+  const declared = memberCache(readers);
+  const result = checkPages({ pages, readers, members: declared });
+  const lists = checkLeadLists(options.lists ?? readLeadLists(guideDir));
+  for (const problem of lists.problems) result.findings.push(finding('scripts/api-tables/lists.mjs', problem));
+  const version = stylesVersion(nodeModules);
+  const parity = parityData(readers, declared, version);
+  for (const problem of parity.problems) result.findings.push(finding('components.json', `the members of ${problem.split(':')[0]} cannot be read: ${problem.slice(problem.indexOf(':') + 2)}`));
+  const parityFile = options.parityFile === undefined ? join(guideDir, 'src', 'generated', 'parity.json') : options.parityFile;
+  if (parityFile && result.findings.length === 0) {
+    mkdirSync(dirname(parityFile), { recursive: true });
+    writeFileSync(parityFile, `${JSON.stringify(parity.data, null, 2)}\n`);
+  }
+  const stats = {
+    tables: result.tables, pages: pages.length, rows: result.rows, stylesheetRows: result.stylesheetRows, excluded: result.excluded,
+    defaultsEntries: readers.defaults.length, slotPatterns: Object.values(readers.slotPatterns).flat().length,
+    overrides: Object.keys(TARGET_OVERRIDES).length, parity: parity.data.components.length,
+  };
+  return { findings: result.findings, stats, pages: pages.length, tables: result.tables, parity: parity.data };
+}
+
+/** --declared-all: one line per id and framework. */
+export function declaredAll(options = {}) {
+  const nodeModules = options.nodeModules ?? join(guideDir, 'node_modules');
+  const componentsFile = options.componentsFile ?? join(guideDir, '..', 'components.json');
+  const readers = createReaders({ nodeModules, componentsFile });
+  const lines = [];
+  let readerErrors = 0;
+  let members = 0;
+  const withoutTarget = new Set();
+  const gaps = [];
+  for (const id of readers.components.keys()) {
+    const declared = declaredMembers(readers, id);
+    for (const framework of FRAMEWORKS) {
+      const decl = declared[framework];
+      members += decl.members.length;
+      const counts = ['prop', 'option', 'event', 'slot', 'input', 'output', 'content']
+        .map((kind) => [kind, decl.members.filter((member) => member.kind === kind).length]).filter(([, n]) => n > 0)
+        .map(([kind, n]) => `${n} ${kind}${n === 1 ? '' : 's'}`).join(', ') || 'no members';
+      const what = decl.source === 'stylesheet'
+        ? `stylesheet (${decl.generatedNote ? 'no contract row: generated note' : `contract ${decl.contractFamilies.join(', ')}`}; classes ${decl.classes.join(', ')})`
+        : decl.exports.join(', ');
+      lines.push(`${id} ${framework}: ${what}: ${counts}`);
+      for (const problem of decl.problems) {
+        lines.push(`  reader error: ${problem}`);
+        readerErrors += 1;
+      }
+      for (const message of decl.findings) {
+        lines.push(`  defaults.json: ${message}`);
+        readerErrors += 1;
+      }
+      for (const gap of decl.gaps) {
+        lines.push(`  list gap: ${gap}`);
+        gaps.push(`${id}: ${gap}`);
+      }
+      if (decl.missingTarget) withoutTarget.add(id);
+    }
+  }
+  const summary = `api-tables: declared members of ${readers.components.size} ids in ${FRAMEWORKS.length} frameworks: ${members} members; `
+    + `${readerErrors} reader errors; ${withoutTarget.size} ids without a target${withoutTarget.size ? ` (${[...withoutTarget].join(', ')})` : ''}; `
+    + `${gaps.length} list gaps (dynamic Vue slots without a VUE_SLOT_PATTERNS entry; a page of such an id fails step 30 until the lead adds one)`;
+  return { lines, summary, ok: readerErrors === 0 && withoutTarget.size === 0, gaps };
 }
 
 function parseArgs(argv) {
   const options = {};
-  const keys = { '--content': 'contentDir', '--node-modules': 'nodeModules', '--components': 'componentsFile', '--exclusions': 'exclusionsFile' };
+  const keys = {
+    '--content': 'contentDir', '--node-modules': 'nodeModules', '--components': 'componentsFile', '--exclusions': 'exclusionsFile',
+    '--defaults': 'defaultsFile', '--parity': 'parityFile',
+  };
   for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] === '--declared-all') {
+      options.declaredAll = true;
+      continue;
+    }
     const key = keys[argv[i]];
     if (!key || argv[i + 1] === undefined) throw new Error(`api-tables: unknown or incomplete option ${argv[i]}`);
     options[key] = resolve(argv[i + 1]);
@@ -155,13 +222,20 @@ function parseArgs(argv) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const result = runApiTables(parseArgs(process.argv.slice(2)));
+    const options = parseArgs(process.argv.slice(2));
+    if (options.declaredAll) {
+      const result = declaredAll(options);
+      for (const line of result.lines) console.log(line);
+      console.log(result.summary);
+      process.exit(result.ok ? 0 : 1);
+    }
+    const result = runApiTables(options);
     for (const item of result.findings) console.log(formatFinding(item));
     if (result.findings.length) {
       console.log(`api-tables: ${result.findings.length} ${CODE} finding(s) in ${result.pages} page model(s)`);
       process.exit(1);
     }
-    console.log(`api-tables: ${result.tables} table(s) of ${result.pages} page model(s): ${COMPARED}`);
+    console.log(`api-tables: ${comparedLine(result.stats)}`);
   } catch (error) {
     console.log(error instanceof Error ? error.message : String(error));
     process.exit(1);

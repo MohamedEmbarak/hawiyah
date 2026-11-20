@@ -4,7 +4,8 @@
 // the served runtime files (<browserDir>/runtime/) must equal the files derived
 // again from the verified installed packages, byte for byte (HWREG-R8); in the
 // production configuration the package stylesheet styles-<hash>.css and its media
-// must equal the bundle derived again from @hawiyah/styles (HWREG-R8).
+// must equal the bundle derived again from @hawiyah/styles (HWREG-R8). It refuses
+// a build that --pages, --docs or --only limited (not deployable).
 import { resolve } from "node:path";
 import { checkRegistry, failureLines, successLines } from "../registry-check/check.mjs";
 
@@ -39,12 +40,24 @@ export function requireDerived(result, ctx) {
   if (missing.length > 0) throw new Error(`registry-check: step 90 compared less than it must: ${missing.join("; ")}`);
 }
 
+/**
+ * Step 90 certifies the output of a complete build: it refuses a build limited by
+ * --pages, --docs or --only (scripts/build-scope.mjs), which is not deployable.
+ */
+export function refuseLimited(ctx) {
+  const limited = (ctx.notDeployable ?? []).filter((reason) => /^--(?:pages|docs|only) /.test(reason));
+  if (limited.length > 0) {
+    throw new Error(`registry-check: step 90 checks the output of a complete build only; this build is not deployable (${limited.join(", ")}). Run HAWIYAH_BASE_PATH=/hawiyah/ npm run build without scope options.`);
+  }
+}
+
 export default {
   id: "90-registry-dist",
   configurations: ["production", "development"],
   generate: false,
   preview: true,
   async run(ctx, check = checkRegistry) {
+    refuseLimited(ctx);
     const options = stepOptions(ctx);
     const result = await check(options);
     if (!result.ok) throw new Error(failureLines(result).join("\n"));

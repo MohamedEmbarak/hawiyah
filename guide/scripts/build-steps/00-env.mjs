@@ -1,5 +1,6 @@
 // Validates HAWIYAH_BASE_PATH and HAWIYAH_SITE_ORIGIN, empties the output and log
-// directories of a full build, and writes src/generated/build-info.json.
+// directories of a full build, and writes src/generated/build-info.json, which also
+// records whether the build is deployable and its scope (scripts/build-scope.mjs).
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -51,9 +52,13 @@ export default {
       basePath: ctx.basePath,
       siteOrigin,
       preview: ctx.preview ? { commit: ctx.preview.commit } : null,
+      deployable: ctx.deployable ?? false,
+      notDeployable: ctx.notDeployable ?? [],
+      scope: ctx.scope ?? null,
     };
     mkdirSync(join(ctx.guideDir, ctx.generatedDir), { recursive: true });
     writeFileSync(join(ctx.guideDir, ctx.generatedDir, "build-info.json"), `${JSON.stringify(info, null, 2)}\n`);
-    ctx.log(`base ${ctx.basePath}, pin ${pin}, ${ctx.configuration}${ctx.preview ? `, preview ${ctx.preview.commit.slice(0, 7)}` : ""}`);
+    const scope = ctx.deployable === false && ctx.notDeployable?.length ? `, not deployable (${ctx.notDeployable.join(", ")})` : "";
+    ctx.log(`base ${ctx.basePath}, pin ${pin}, ${ctx.configuration}${ctx.preview ? `, preview ${ctx.preview.commit.slice(0, 7)}` : ""}${scope}`);
   },
 };

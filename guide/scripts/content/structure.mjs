@@ -88,8 +88,11 @@ function checkApiTable(table, h3, lang, push) {
       const code = inlines.length === 1 && inlines[0].type === 'inlineCode' ? inlines[0].value : null;
       const text = plainText(cell).trim();
       const at = lineOf(row);
-      if (role === 'name' || role === 'type') {
+      if (role === 'name') {
         if (code === null) push('HWC-API', at, `the ${role} cell "${text}" of the ${h3.text} table must be inline code`);
+      } else if (role === 'type') {
+        // A slot or content row, and a row whose type no published file declares, has no type (step 30 decides which).
+        if (code === null && text !== EM_DASH) push('HWC-API', at, `the type cell "${text}" of the ${h3.text} table must be inline code or an em dash`);
       } else if (role === 'default') {
         if (code === null && text !== EM_DASH) push('HWC-API', at, `the default cell "${text}" of the ${h3.text} table must be inline code or an em dash`);
       } else if (role === 'required') {

@@ -53,13 +53,15 @@ describe('Latin-script runs on Arabic pages', () => {
     expect(codes(checkPage('ar/other.html', page('ar', body), { icons, allowlist }))).toEqual(['HWP-LATIN:1']);
   });
 
-  it('validates the allow-list: text and reason are required', () => {
+  it('validates the allow-list: text, reason and approvedBy are required', () => {
     const dir = mkdtempSync(join(tmpdir(), 'hw-page-guards-'));
     dirs.push(dir);
     const file = join(dir, 'list.json');
     writeFileSync(file, JSON.stringify([{ text: 'Four Latin words here' }]));
-    expect(() => readAllowlist(file)).toThrow('entry 0 must be { text, reason, pages? }');
+    expect(() => readAllowlist(file)).toThrow('entry 0 must be { text, reason, approvedBy, pages? }');
     writeFileSync(file, JSON.stringify([{ text: 'Four Latin words here', reason: 'a proper name' }]));
+    expect(() => readAllowlist(file)).toThrow('entry 0 must be { text, reason, approvedBy, pages? }');
+    writeFileSync(file, JSON.stringify([{ text: 'Four Latin words here', reason: 'a proper name', approvedBy: 'lead' }]));
     expect(readAllowlist(file)).toHaveLength(1);
   });
 });

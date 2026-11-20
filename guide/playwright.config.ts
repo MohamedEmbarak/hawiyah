@@ -27,6 +27,8 @@ export default defineConfig({
   testDir: 'tests/e2e',
   outputDir: process.env['GUIDE_TEST_OUTPUT'] ?? join(tmpdir(), 'hawiyah-guide-e2e'),
   globalSetup: './tests/e2e/support/global-setup.ts',
+  // The union of the per-page structure results (README.md, "The styling rule").
+  globalTeardown: './tests/e2e/support/global-teardown.ts',
   fullyParallel: true,
   forbidOnly: Boolean(process.env['CI']),
   retries: 0,

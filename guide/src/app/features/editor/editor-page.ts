@@ -1,7 +1,7 @@
 import { Component, DOCUMENT, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HwAlertComponent, HwButtonDirective, HwContainerComponent, HwLinkDirective, HwPageHeaderComponent, HwTabComponent, HwTabsComponent } from '@hawiyah/angular';
-import { manifestPage } from '../../content/content-loader';
+import { navigationPage } from '../../content/content-loader';
 import type { CodeRun } from '../../content/model';
 import { buildInfo } from '../../core/build-info';
 import { HeadService } from '../../core/head';
@@ -108,15 +108,14 @@ export class EditorPage {
   protected readonly pkg = computed(() => FRAMEWORK_PACKAGES[this.store.query().framework]);
   protected readonly integrity = computed(() => buildInfo.packages[this.pkg()]?.integrity ?? '');
 
-  private readonly manifest = computed(() => manifestPage(this.store.query().id));
-  protected readonly componentName = computed(() => this.manifest()?.title[this.lang()] ?? this.store.query().id);
+  private readonly entry = computed(() => navigationPage(this.store.query().id));
+  protected readonly componentName = computed(() => this.entry()?.title[this.lang()] ?? this.store.query().id);
   private readonly section = computed(() => {
     const query = this.store.query();
-    const group = this.manifest()?.liveGroups.find((entry) => entry.example === query.example);
-    const heading = this.manifest()?.headings[this.lang()].find((entry) => entry.id === group?.section);
+    const group = this.entry()?.examples.find((entry) => entry.example === query.example);
     // A group under its own heading (h3) is named by it; a group directly under a
     // section such as Example is named by its own name, not by the section.
-    return { id: group?.section ?? '', text: heading && heading.level > 2 ? heading.text : query.example };
+    return { id: group?.section ?? '', text: group?.title?.[this.lang()] ?? query.example };
   });
   /**
    * False on the server and in the first client render: the prerendered page (also what

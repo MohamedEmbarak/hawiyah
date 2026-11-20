@@ -3,7 +3,7 @@ source:
   summary: 6acb07b0e20a
   example: 0be3dd79b3d6
   variants-and-states: ab6d2f649521
-  api: aad729dc4e4b
+  api: 67132985594b
   accessibility: f72b0a9dbeb3
   rtl-and-localisation: 1d839b846bd4
   platforms-code-reference: 939a7cb82ec2
@@ -239,8 +239,8 @@ template: `<hw-tabs label="تفاصيل الطلب" overflow="scroll">
 | الخيار | النوع | مطلوب | القيمة الافتراضية |
 | --- | --- | --- | --- |
 | `value` | `string` | `false` | — |
-| `activationMode` | `'automatic' \| 'manual'` | `false` | `'automatic'` |
-| `overflow` | `'menu' \| 'scroll'` | `false` | `'menu'` |
+| `activationMode` | `'automatic' \| 'manual'` | `false` | — |
+| `overflow` | `'menu' \| 'scroll'` | `false` | — |
 | `overflowLabel` | `string` | `false` | — |
 | `onValueChange` | `(value: string) => void` | `false` | — |
 
@@ -281,8 +281,10 @@ template: `<hw-tabs label="تفاصيل الطلب" overflow="scroll">
 | `overflow` | prop | `'menu' \| 'scroll'` | `false` | `'menu'` |
 | `overflowLabel` | prop | `string` | `false` | — |
 | `update:modelValue` | event | `(value: string) => void` | `false` | — |
+| `tab:<value>` | slot | — | `false` | — |
+| `<value>` | slot | — | `false` | — |
 
-العنصر `TabItem` هو `{ value, label, content?, disabled? }`، و`label` نص. وتعرض اللوحة المنفذ المسمّى باسم قيمة العنصر، وإلا فالمحتوى `content`؛ ويحلّ منفذ اختياري باسم `tab:<value>` محلّ نص التبويب. ولا تعرّف تصريحات الإصدار 0.3.0 أنواع هذه المنافذ، فلا يسرد الجدول أيًّا منها. ويربط `v-model` القيمة المحدَّدة. وتُسمّى قائمة التبويبات بالخاصية `label`، أو بالخاصية `aria-label` أو `aria-labelledby` التي تصل إلى قائمة التبويبات. والخاصية `overflowLabel` مطلوبة ما دامت `overflow` مساوية `menu`.
+العنصر `TabItem` هو `{ value, label, content?, disabled? }`، و`label` نص. وتعرض اللوحة المنفذ المسمّى باسم قيمة العنصر، وإلا فالمحتوى `content`؛ ويحلّ منفذ اختياري باسم `tab:<value>` محلّ نص التبويب. ولا تعرّف تصريحات الإصدار 0.3.0 أنواع هذه المنافذ، فيسرد الجدول المنافذ التي يقرؤها الإصدار المنشور دون نوع. ويربط `v-model` القيمة المحدَّدة. وتُسمّى قائمة التبويبات بالخاصية `label`، أو بالخاصية `aria-label` أو `aria-labelledby` التي تصل إلى قائمة التبويبات. والخاصية `overflowLabel` مطلوبة ما دامت `overflow` مساوية `menu`.
 
 ### Angular
 
@@ -302,11 +304,11 @@ template: `<hw-tabs label="تفاصيل الطلب" overflow="scroll">
 | `overflow` | input | `'menu' \| 'scroll'` | `false` | `'menu'` |
 | `overflowLabel` | input | `string` | `false` | `''` |
 | `valueChange` | output | `string` | `false` | — |
-| `*` | content | `hw-tab` | `false` | — |
+| `*` | content | — | `false` | — |
 | `hw-tab value` | input | `string` | `true` | — |
 | `hw-tab label` | input | `string` | `true` | — |
 | `hw-tab disabled` | input | `boolean` | `false` | `false` |
-| `hw-tab *` | content | `panel content` | `false` | — |
+| `hw-tab *` | content | — | `false` | — |
 
 يحتوي `HwTabsComponent` (`hw-tabs`) على مكوّن `HwTabComponent` (`hw-tab`) لكل لوحة؛ والصفوف التي تبدأ بـ`hw-tab` هي مُدخلات `hw-tab` ومحتواه. اربط `[(value)]` لتحديد ثنائي الاتجاه. ويسمّي المُدخل `label` قائمة التبويبات، وهو مطلوب ما لم تُكتب الخاصية `aria-label` أو `aria-labelledby` على `hw-tabs`؛ والمُدخل `overflowLabel` مطلوب ما لم يكن `overflow` مساويًا `scroll`. ودون `id` يولّد المكوّن معرّفًا لتبويباته ولوحاته. ويعرض كل `hw-tab` محتواه المُسقَط في عنصر `section.hw-tab-panel` خاص به، وتمنح ورقة الأنماط العنصر `hw-tab` القيمة `display: contents`، فتحافظ اللوحات على تخطيط المحوّلات الأخرى، ويمكن استكمال تهيئة مجموعة التبويبات في المتصفح بعد العرض على الخادم.
 

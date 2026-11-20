@@ -156,11 +156,14 @@ Table: Attributes of the hw-button element
 | --- | --- | --- | --- |
 | `class` | `'hw-button'` | `true` | — |
 | `type` | `'button' \| 'submit' \| 'reset'` | `true` | — |
-| `data-variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
-| `data-size` | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
-| `data-icon-only` | `boolean` | `false` | `false` |
-| `disabled` | `boolean` | `false` | `false` |
+| `data-variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | — |
+| `data-size` | `'sm' \| 'md' \| 'lg'` | `false` | — |
+| `data-icon-only` | `boolean` | `false` | — |
+| `disabled` | `boolean` | `false` | — |
 | `aria-busy` | `'true'` | `false` | — |
+| `aria-disabled` | `'true'` | `false` | — |
+| `aria-pressed` | `'true'` | `false` | — |
+| `data-shape` | `'circle'` | `false` | — |
 
 Button has no JavaScript controller. The markup is the API: write a native button element with the class `hw-button`, and always write its `type`, because the browser default of a button in a form is `submit`. For the loading state, write `disabled` and `aria-busy="true"` together and remove both when the operation ends. `data-icon-only` is listed with `hw-button`, `data-variant` and `data-size` in the Actions row of the stable class and state API of `@hawiyah/styles`; it is written without a value.
 
@@ -187,6 +190,7 @@ Table: Props, events and slots of Button
 | `loading` | prop | `boolean` | `false` | `false` |
 | `disabled` | prop | `boolean` | `false` | `false` |
 | `type` | prop | `'button' \| 'submit' \| 'reset'` | `false` | `'button'` |
+| `default` | slot | — | `false` | — |
 
 The default slot holds the label. Other attributes and listeners, such as `@click`, reach the native button element. The component exposes `element` and `focus()` through a template ref.
 

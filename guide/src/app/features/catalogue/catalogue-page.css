@@ -1,11 +1,21 @@
 .catalogue {
   display: flex;
   flex-direction: column;
-  gap: var(--hw-space-6);
+  gap: var(--hw-space-8);
   margin-inline: auto;
   max-inline-size: 80rem;
   padding-block: var(--hw-space-8);
   padding-inline: var(--hw-space-4);
+}
+
+.category {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hw-space-4);
+}
+
+h2 {
+  margin-block: 0;
 }
 
 .cards {

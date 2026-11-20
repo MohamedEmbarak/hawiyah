@@ -1,6 +1,6 @@
 // Fixture data of the component page unit specs (a test page with two live groups).
 import { Component } from '@angular/core';
-import type { ContentPage, ManifestPage } from '../../content/model';
+import type { ContentPage, NavigationPage } from '../../content/model';
 import { viewGroups, type ComponentPageData } from './page-data.resolver';
 
 @Component({ selector: 'guide-test-native', template: `<button type="button">Continue</button>` })
@@ -33,15 +33,15 @@ const PAGE: ContentPage = {
   githubUrl: 'https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/components/fixture.md',
 };
 
-const MANIFEST: ManifestPage = {
+const ENTRY: NavigationPage = {
   id: 'fixture',
   langs: ['ar', 'en'],
+  category: 'actions',
   title: { en: 'Fixture', ar: 'نموذج' },
-  summaryText: { en: 'Fixture is a test page.', ar: 'نموذج صفحة اختبار.' },
-  headings: { en: PAGE.headings, ar: PAGE.headings },
-  liveGroups: [
-    { example: 'primary', section: 'example', frameworks: 4 },
-    { example: 'sizes', section: 'sizes', frameworks: 4 },
+  summary: { en: 'Fixture is a test page.', ar: 'نموذج صفحة اختبار.' },
+  examples: [
+    { example: 'primary', section: 'example' },
+    { example: 'sizes', section: 'sizes', title: { en: 'Sizes', ar: 'الأحجام' } },
   ],
 };
 
@@ -49,8 +49,8 @@ export function fixtureData(view: 'brief' | 'reference'): ComponentPageData {
   return {
     view,
     page: PAGE,
-    manifest: MANIFEST,
-    groups: viewGroups(MANIFEST, PAGE, view).map((group) => ({
+    entry: ENTRY,
+    groups: viewGroups(ENTRY, PAGE, view).map((group) => ({
       id: 'fixture',
       lang: 'en',
       example: group.example,

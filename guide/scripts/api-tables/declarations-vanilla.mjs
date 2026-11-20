@@ -3,13 +3,14 @@
 // second parameter). A component without a controller is checked against the
 // stylesheet contract instead (stylesheet-contract.mjs and exclusions.json).
 import { resolveExport } from './program.mjs';
+import { printMemberType } from './types.mjs';
 
 /** Whether @hawiyah/vanilla exports create<Name>. */
 export function hasController(context, name) {
   return resolveExport(context, 'vanilla', name) !== null;
 }
 
-/** Names and requiredness of the options of create<Name>. */
+/** Names, requiredness and written types of the options of create<Name>. */
 export function vanillaMembers(context, name) {
   const { ts, checker } = context;
   const symbol = resolveExport(context, 'vanilla', name);
@@ -22,10 +23,12 @@ export function vanillaMembers(context, name) {
   if (!options) return { members: [], problems: [`${name} of @hawiyah/vanilla has no options parameter`] };
   let optionsType = checker.getTypeOfSymbolAtLocation(options, options.valueDeclaration ?? declaration);
   optionsType = checker.getNonNullableType(optionsType);
-  const members = checker.getPropertiesOfType(optionsType).map((property) => ({
-    name: property.name,
-    kind: 'option',
-    required: (property.flags & ts.SymbolFlags.Optional) === 0,
-  }));
+  const members = checker.getPropertiesOfType(optionsType).map((property) => {
+    const optional = (property.flags & ts.SymbolFlags.Optional) !== 0;
+    const type = printMemberType(context, (property.declarations ?? []).map((item) => item.type), {
+      optional, fallbackType: checker.getTypeOfSymbolAtLocation(property, declaration),
+    });
+    return { name: property.name, kind: 'option', required: !optional, type };
+  });
   return { members, problems: [] };
 }
