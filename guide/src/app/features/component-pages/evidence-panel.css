@@ -1,0 +1,17 @@
+/* The panel's blocks follow the flow of the section they end, with the spacing of
+   content/blocks.css (the same tokens; placement only). */
+:host > * + * {
+  margin-block-start: var(--hw-space-4);
+}
+
+:host > * + h3 {
+  margin-block-start: var(--hw-space-8);
+}
+
+:host > h3 + * {
+  margin-block-start: var(--hw-space-3);
+}
+
+:host > :first-child {
+  margin-block-start: var(--hw-space-8);
+}

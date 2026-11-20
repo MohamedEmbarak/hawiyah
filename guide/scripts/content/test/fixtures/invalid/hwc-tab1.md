@@ -118,7 +118,7 @@ The layout uses logical properties only. Read the [Platforms Code](https://www.d
 The installation command is a code listing.
 
 ```shell
-npm install @hawiyah/vanilla
+npm run build
 ```
 
 ```ts title="setup.ts"

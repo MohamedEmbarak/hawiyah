@@ -14,7 +14,9 @@ the readers to give exactly these cells. Where the first run of the printer
 disagreed with the hand-written text, the declarations decided (two rows, both
 corrected here: the required flag of the Angular Pagination input getPageLabel,
 which its ɵcmp declares required, and the Calendar output focusEvents, whose
-template name is its alias focused). 0.3.0 declares no Angular signal input
+template name is its alias focused). The defaults of three vanilla rows (Tabs activationMode, Button
+data-variant and data-size) follow the `defaults.json` entries the lead approved
+in 5a (decision L2); before them these cells were em dashes. 0.3.0 declares no Angular signal input
 or output, so no row covers one; `types.test.mjs` covers them with a declaration
 written for the test.
 
@@ -77,14 +79,14 @@ Table: Golden members
 | `calendar` | angular | `controlId` | input | `string \| null \| undefined` | `false` | — |
 | `calendar` | angular | `focused` | output | `FocusEvent` | `false` | — |
 | `select` | angular | `options` | input | `readonly Option[]` | `false` | `[]` |
-| `tabs` | vanilla | `activationMode` | option | `'automatic' \| 'manual'` | `false` | — |
+| `tabs` | vanilla | `activationMode` | option | `'automatic' \| 'manual'` | `false` | `'automatic'` |
 | `tabs` | vanilla | `onValueChange` | option | `(value: string) => void` | `false` | — |
 | `calendar` | vanilla | `calendar` | option | `'gregory' \| 'islamic-umalqura'` | `false` | — |
 | `calendar` | vanilla | `label` | option | `string` | `false` | — |
 | `calendar` | vanilla | `isDateDisabled` | option | `(value: string) => boolean` | `false` | — |
 | `pagination` | vanilla | `getGapLabel` | option | `(start: number, end: number) => string` | `false` | — |
 | `button` | vanilla | `class` | option | `'hw-button'` | `true` | — |
-| `button` | vanilla | `data-variant` | option | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | — |
-| `button` | vanilla | `data-size` | option | `'sm' \| 'md' \| 'lg'` | `false` | — |
+| `button` | vanilla | `data-variant` | option | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
+| `button` | vanilla | `data-size` | option | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
 | `button` | vanilla | `data-icon-only` | option | `boolean` | `false` | — |
 | `button` | vanilla | `aria-busy` | option | `'true'` | `false` | — |

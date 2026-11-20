@@ -48,6 +48,8 @@ export interface ModelInline {
 export interface ModelTable {
   readonly type: 'table';
   readonly caption: string;
+  /** The keyboard table of the Accessibility section (5a.8). */
+  readonly keyboard?: true;
   readonly columns: { key: string; label: ModelInline[] }[];
   readonly rows: Record<string, ModelInline[]>[];
 }
@@ -60,6 +62,16 @@ export interface PageModel {
   readonly headings: { id: string; level: number; text: string }[];
   readonly liveGroups: string[];
   readonly tables: ModelTable[];
+  /** The evidence panel (5a.11). */
+  readonly evidence?: {
+    readonly name: string;
+    readonly built: string[];
+    readonly verified: string[];
+    readonly entries: { adapter: string; kind: string; tests: string[]; scope: string; command: string; result: string; date: string; source: string }[];
+    readonly notes: string[];
+    readonly version: string;
+    readonly open: { kind: 'defect' | 'difference'; id?: string; text: ModelInline[] }[];
+  };
 }
 
 /** Every table of a model, in document order. */

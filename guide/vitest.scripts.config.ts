@@ -6,7 +6,9 @@ import { defineConfig } from 'vitest/config';
 // run separately through `ng test` with their own configuration.
 export default defineConfig({
   test: {
-    include: ['scripts/**/test/**/*.test.mjs'],
+    // GUIDE_BUILD_TESTS=1 (npm run test:check-page) runs the tests that need a
+    // production build in dist/ instead (scripts/test/build/*.build-test.mjs).
+    include: process.env['GUIDE_BUILD_TESTS'] ? ['scripts/test/build/**/*.build-test.mjs'] : ['scripts/**/test/**/*.test.mjs'],
     environment: 'node',
     testTimeout: 120000,
     hookTimeout: 120000,

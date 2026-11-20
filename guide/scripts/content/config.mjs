@@ -82,7 +82,7 @@ export const ALERTS = {
 /** Live blocks: info-string language to framework, in group order. */
 export const FRAMEWORKS = ['vanilla', 'react', 'vue', 'angular'];
 export const LIVE_LANGS = { html: 'vanilla', tsx: 'react', jsx: 'react', vue: 'vue', ts: null };
-export const LIVE_KEYS = ['example', 'framework', 'check', 'differences'];
+export const LIVE_KEYS = ['example', 'framework', 'check', 'differences', 'width'];
 export const LIVE_NAME = /^[a-z][a-z0-9-]{0,39}$/;
 
 /** Visible titles of code listings by info-string language. */
@@ -103,11 +103,69 @@ export const LANGUAGE_NAMES = {
   json: 'JSON',
 };
 
+/**
+ * Key names of the key element <kbd>...</kbd> (5a.7), by the key id that the
+ * keyboard checks press (Playwright key names; a chord joins ids with '+'). A
+ * key is written as printed on it, the same in both languages; the four arrow
+ * keys carry no word and are named in each language (the Arabic glossary,
+ * docs/guides/glossary.md). Any other text in a key element fails HWC-KEYS.
+ */
+export const KEY_NAMES = {
+  Tab: { en: 'Tab', ar: 'Tab' },
+  Shift: { en: 'Shift', ar: 'Shift' },
+  Control: { en: 'Ctrl', ar: 'Ctrl' },
+  Alt: { en: 'Alt', ar: 'Alt' },
+  Enter: { en: 'Enter', ar: 'Enter' },
+  Space: { en: 'Space', ar: 'Space' },
+  Escape: { en: 'Escape', ar: 'Escape' },
+  Backspace: { en: 'Backspace', ar: 'Backspace' },
+  Delete: { en: 'Delete', ar: 'Delete' },
+  Home: { en: 'Home', ar: 'Home' },
+  End: { en: 'End', ar: 'End' },
+  PageUp: { en: 'Page Up', ar: 'Page Up' },
+  PageDown: { en: 'Page Down', ar: 'Page Down' },
+  F10: { en: 'F10', ar: 'F10' },
+  ArrowRight: { en: 'Right Arrow', ar: 'السهم الأيمن' },
+  ArrowLeft: { en: 'Left Arrow', ar: 'السهم الأيسر' },
+  ArrowUp: { en: 'Up Arrow', ar: 'السهم العلوي' },
+  ArrowDown: { en: 'Down Arrow', ar: 'السهم السفلي' },
+};
+
+/** The key id of a key element's text in a language, or null. */
+export function keyId(text, lang) {
+  return Object.keys(KEY_NAMES).find((id) => KEY_NAMES[id][lang] === text) ?? null;
+}
+
+export const ARROW_KEYS = new Set(['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown']);
+
+/**
+ * The keyboard table (5a.8): one table in the Accessibility section with this
+ * caption (the component name of components.json after a fixed prefix) and
+ * these headers; each Key cell holds only key elements, a chord joined by '+',
+ * alternatives separated by a comma (English) or an Arabic comma (Arabic).
+ */
+export const KEYBOARD_TABLE = {
+  en: { caption: (entry) => `Keyboard interaction of ${entry.name}`, marker: 'Keyboard interaction', headers: ['Key', 'Action'] },
+  ar: { caption: (entry) => `التفاعل من لوحة المفاتيح مع المكوّن: ${entry.labelAr}`, marker: 'التفاعل من لوحة المفاتيح', headers: ['المفتاح', 'الإجراء'] },
+};
+
+/**
+ * Components whose groups may carry frame (5a.9, leadAmendments A12): the
+ * page-level components, which render a main landmark, a skip link or an h1 of
+ * their own. Their Angular result is rendered in the sandboxed frame instead of
+ * in the guide page. Template groups (docs/templates, stage 5e) are allowed as
+ * well. Any other use fails HWC-LIVE1.
+ */
+export const FRAMED_COMPONENTS = ['app-shell', 'portal-layout', 'portal-header', 'portal-footer', 'page-header', 'mobile-top-bar'];
+
+/** The only value of width= on a framed group: the second width of its equivalence screenshots. */
+export const FRAME_WIDTHS = ['390'];
+
 /** Failure codes of step 20, in the order of the specification. */
 export const CODES = [
   'HWC-FILE', 'HWC-FM1', 'HWC-FM2', 'HWC-H1', 'HWC-SUM', 'HWC-H2', 'HWC-API', 'HWC-H5', 'HWC-TAB1', 'HWC-LINK', 'HWC-MD',
   'HWC-LIVE1', 'HWC-LIVE2', 'HWC-LIVE3',
-  'HWC-PAR1', 'HWC-PAR2', 'HWC-PAR3', 'HWC-PAR4', 'HWC-PAR5', 'HWC-PAR6', 'HWC-PAR7', 'HWC-PAR8', 'HWC-STALE',
+  'HWC-PAR1', 'HWC-PAR2', 'HWC-PAR3', 'HWC-PAR4', 'HWC-PAR5', 'HWC-PAR6', 'HWC-PAR7', 'HWC-PAR8', 'HWC-STALE', 'HWC-KEYS',
 ];
 
 /** A finding: printed as '<code> <file>:<line>: <message>'. */

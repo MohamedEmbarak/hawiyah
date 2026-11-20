@@ -10,8 +10,12 @@ export function hasController(context, name) {
   return resolveExport(context, 'vanilla', name) !== null;
 }
 
-/** Names, requiredness and written types of the options of create<Name>. */
-export function vanillaMembers(context, name) {
+/**
+ * Names, requiredness and written types of the options of create<Name>. A
+ * further controller of a page (targets.mjs) may take no options
+ * (createSkipLink(link)); with `optionsRequired: false` it then has no members.
+ */
+export function vanillaMembers(context, name, { optionsRequired = true } = {}) {
   const { ts, checker } = context;
   const symbol = resolveExport(context, 'vanilla', name);
   if (!symbol) return { members: [], problems: [`@hawiyah/vanilla exports no ${name}`] };
@@ -20,6 +24,7 @@ export function vanillaMembers(context, name) {
   const signature = checker.getSignaturesOfType(type, ts.SignatureKind.Call)[0];
   const parameters = signature?.getParameters() ?? [];
   const options = parameters.find((item) => item.name === 'options') ?? parameters[1];
+  if (!options && !optionsRequired && parameters.length === 1) return { members: [], problems: [] };
   if (!options) return { members: [], problems: [`${name} of @hawiyah/vanilla has no options parameter`] };
   let optionsType = checker.getTypeOfSymbolAtLocation(options, options.valueDeclaration ?? declaration);
   optionsType = checker.getNonNullableType(optionsType);

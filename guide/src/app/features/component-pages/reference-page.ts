@@ -10,6 +10,7 @@ import type { ContentHeading } from '../../content/model';
 import { HeadService } from '../../core/head';
 import { PageExamples } from '../../examples/page-examples';
 import { pick } from '../../i18n/text';
+import { EvidencePanel } from './evidence-panel';
 import { componentPageTexts } from './i18n';
 import type { ComponentPageData } from './page-data.resolver';
 
@@ -23,12 +24,12 @@ export function navigationItems(headings: readonly ContentHeading[]): ContentNav
   return items.map((item) => (item.children.length ? item : { id: item.id, label: item.label }));
 }
 
-/** Route <lang>/components/:id/reference/: the whole page with its content navigation and every live group. */
+/** Route <lang>/components/:id/reference/: the whole page with its content navigation, every live group and the evidence panel. */
 @Component({
   selector: 'guide-reference-page',
-  imports: [BlocksContent, HwContentNavigationComponent, InlineContent],
+  imports: [BlocksContent, EvidencePanel, HwContentNavigationComponent, InlineContent],
   providers: [PageExamples, CodeBlockIds],
-  template: `@if (data(); as d) {<article class="hw-prose" [attr.lang]="d.page.lang" [attr.dir]="d.page.dir"><h1 tabindex="-1">{{ d.page.title }}</h1><p><guide-inline [inlines]="d.page.summary" /></p><div class="toc"><hw-content-navigation [label]="t().onThisPage" [items]="items()" [showHeading]="true" [sticky]="false" [updateHash]="true" /></div>@for (section of d.page.sections; track section.id) {<h2 [id]="section.id" tabindex="-1"><guide-inline [inlines]="section.title" /></h2><guide-blocks class="section" [blocks]="section.blocks" />}</article>}`,
+  template: `@if (data(); as d) {<article class="hw-prose" [attr.lang]="d.page.lang" [attr.dir]="d.page.dir"><h1 tabindex="-1">{{ d.page.title }}</h1><p><guide-inline [inlines]="d.page.summary" /></p><div class="toc"><hw-content-navigation [label]="t().onThisPage" [items]="items()" [showHeading]="true" [sticky]="false" [updateHash]="true" /></div>@for (section of d.page.sections; track section.id) {<h2 [id]="section.id" tabindex="-1"><guide-inline [inlines]="section.title" /></h2><guide-blocks class="section" [blocks]="section.blocks" />@if (section.id === 'platforms-code-reference') {<guide-evidence-panel class="section" [evidence]="d.page.evidence" [lang]="d.page.lang" [name]="d.page.title" />}}</article>}`,
   styleUrl: './reference-page.css',
 })
 export class ReferencePage {

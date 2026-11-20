@@ -19,7 +19,7 @@ const CASES = [
   ['HWC-TAB1', 'hwc-tab1.md', 90, /^the table has no caption; write a paragraph that starts with "Table: " directly above it$/],
   ['HWC-LINK', 'hwc-link.md', 88, /^the link "missing-page\.md" points to .*missing-page\.md, which does not exist$/],
   ['HWC-MD', 'hwc-md.md', 111, /^raw HTML is not allowed; write Markdown$/],
-  ['HWC-LIVE1', 'hwc-live1.md', 13, /^unknown key "size"; allowed keys are example, framework, check, differences$/],
+  ['HWC-LIVE1', 'hwc-live1.md', 13, /^unknown key "size"; allowed keys are example, framework, check, differences, width$/],
   ['HWC-LIVE2', 'hwc-live2.md', 9, /^example "primary" has the frameworks vanilla, react, angular; a group is exactly vanilla \(html\), react \(tsx or jsx\), vue \(vue\), angular \(ts framework=angular\), in that order$/],
   ['HWC-LIVE3', 'hwc-live3.md', 31, /^the example name "primary" is used more than once in this file$/],
   ['HWC-PAR1', 'hwc-par1.ar.md', 119, /^heading 13 is h3 in Arabic and h2 "rtl-and-localisation" in English; both pages have the same heading tree$/],
@@ -30,6 +30,7 @@ const CASES = [
   ['HWC-PAR6', 'hwc-par6.ar.md', 107, /^the alerts are tip@accessibility in Arabic and note@accessibility in English/],
   ['HWC-PAR7', 'hwc-par7.ar.md', 17, /^section "example" has code as block 1 in Arabic and paragraph in English; both pages have the same paragraphs, lists, items and other blocks in the same order$/],
   ['HWC-PAR8', 'hwc-par8.ar.md', 17, /^the paragraph has no Arabic script: "The example shows one primary action\."; translate it, or list it in scripts\/content\/arabic-exceptions\.json with a reason$/],
+  ['HWC-KEYS', 'hwc-keys.md', 94, /^the Key cell holds "Enter"; it holds key elements only, joined by \+ in a chord and separated by a comma$/],
   ['HWC-STALE', 'hwc-stale.ar.md', 96, /^section "accessibility" was translated from an earlier English text \(000000000000, now 29c24403f585\); update the translation, then run npm run content:hash -- fixture-a$/],
 ];
 

@@ -16,6 +16,18 @@ const replace = (text, from, to) => {
 };
 
 describe('analysePage', () => {
+  it('limits a page to 8 live groups, refuses unreproducible examples and typed install commands', () => {
+    const en = validEn();
+    const start = en.indexOf('### ');
+    const group = (n) => `### Extra ${n}\n\nText.\n\n\`\`\`html live example=extra-${n}\n<p class="hw-type">x</p>\n\`\`\`\n\n\`\`\`tsx live example=extra-${n}\n<p className="hw-type">x</p>\n\`\`\`\n\n\`\`\`vue live example=extra-${n}\n<p class="hw-type">x</p>\n\`\`\`\n\n\`\`\`ts live example=extra-${n} framework=angular\ntemplate: \`<p class="hw-type">x</p>\`\n\`\`\`\n\n`;
+    const many = en.slice(0, start) + Array.from({ length: 9 }, (_, n) => group(n)).join('') + en.slice(start);
+    expect(analyse(many).findings.filter((item) => item.code === 'HWC-LIVE2').map((item) => item.message)[0]).toMatch(/^a page has at most 8 live groups \(found \d+\)/);
+    const dated = en.replace(/(```tsx live example=[a-z-]+\n)/, '$1{new Date().getFullYear()}\n');
+    expect(analyse(dated).findings.filter((item) => item.code === 'HWC-LIVE2').map((item) => item.message)).toEqual([expect.stringMatching(/uses new Date\(\); an example does not depend on today's date/)]);
+    const install = en.replace('## Accessibility\n', '## Accessibility\n\n```shell\nnpm install @hawiyah/react\n```\n');
+    expect(analyse(install).findings.filter((item) => item.code === 'HWC-MD').map((item) => item.message)).toEqual(['a component page types no install command; the guide generates install text from the pinned version (install.json)']);
+  });
+
   it('accepts both valid fixture pages and returns their outline', () => {
     const en = analyse(validEn());
     expect(en.findings).toEqual([]);

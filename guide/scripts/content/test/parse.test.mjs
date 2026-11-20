@@ -16,7 +16,7 @@ describe('parseMarkdown', () => {
 
   it('rejects raw HTML, images, reference links, definitions, footnotes, strikethrough and task items', () => {
     expect(codes('<div>x</div>\n')).toEqual([['HWC-MD', 1, 'raw HTML is not allowed; write Markdown']]);
-    expect(codes('a <kbd>b</kbd>\n').length).toBe(2);
+    expect(codes('a <span>b</span>\n').length).toBe(2);
     expect(codes('![alt](x.png)\n')).toEqual([['HWC-MD', 1, 'images are not allowed in component pages']]);
     expect(codes('[a][r]\n\n[r]: https://example.com\n').map((item) => item[2])).toEqual([
       'reference-style links are not allowed; write the address inline',
@@ -25,6 +25,29 @@ describe('parseMarkdown', () => {
     expect(codes('a[^1]\n\n[^1]: note\n').map((item) => item[2])).toEqual(['footnotes are not allowed', 'footnotes are not allowed']);
     expect(codes('~~gone~~\n')).toEqual([['HWC-MD', 1, 'strikethrough is not allowed']]);
     expect(codes('- [ ] task\n')).toEqual([['HWC-MD', 1, 'task list items are not allowed']]);
+  });
+
+  it('accepts the key element <kbd>text</kbd> in a paragraph, list item and table cell, and no other form (5a.7)', () => {
+    const one = parseMarkdown('Press <kbd>Enter</kbd> now.\n', 'x.md');
+    expect(one.findings).toEqual([]);
+    expect(one.tree.children[0].children.map((node) => node.type)).toEqual(['text', 'kbd', 'text']);
+    expect(one.tree.children[0].children[1]).toMatchObject({ type: 'kbd', value: 'Enter', inner: { start: 11, end: 16 } });
+    expect(plainText(one.tree.children[0])).toBe('Press Enter now.');
+    expect(codes('- Press <kbd>Tab</kbd>.\n\n| Key | Action |\n| - | - |\n| <kbd>Shift</kbd> + <kbd>Tab</kbd> | Back. |\n\n> [!NOTE]\n> <kbd>Escape</kbd> closes it.\n')).toEqual([]);
+    const form = /is not a key element; the one raw HTML form accepted is the key element <kbd>key<\/kbd>/;
+    const rejected = (text) => codes(text).map((item) => item[2]);
+    // An attribute, nesting, a key across blocks, a line break, spaces, markup inside, a heading.
+    expect(rejected('<kbd class="x">Enter</kbd>\n')).toEqual([expect.stringMatching(form), expect.stringMatching(form)]);
+    expect(rejected('<kbd><kbd>a</kbd></kbd>\n')).toHaveLength(2);
+    expect(rejected('<kbd>Enter\n\nTab</kbd>\n')).toEqual([expect.stringMatching(form), expect.stringMatching(form)]);
+    expect(rejected('<kbd>Page\nUp</kbd>\n')).toHaveLength(2);
+    expect(rejected('<kbd> Tab </kbd>\n')).toHaveLength(2);
+    expect(rejected('<kbd>*Tab*</kbd>\n')).toHaveLength(2);
+    expect(rejected('## Keys <kbd>Tab</kbd>\n')).toHaveLength(2);
+    expect(rejected('**<kbd>Tab</kbd>**\n')).toHaveLength(2);
+    expect(rejected('<KBD>Tab</KBD>\n')).toHaveLength(2);
+    // Other raw HTML still fails with its own message.
+    expect(rejected('Press <span>Tab</span>, then<br>Enter.\n')).toEqual(Array(3).fill('raw HTML is not allowed; write Markdown'));
   });
 
   it('reports an unclosed fence where it opens and unknown keys of a block that is not live', () => {

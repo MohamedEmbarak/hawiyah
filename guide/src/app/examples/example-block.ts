@@ -9,7 +9,7 @@ import { FRAMEWORK_PACKAGES, exampleTexts } from './i18n';
 import { NativeResult } from './native-result';
 import { PageExamples } from './page-examples';
 import { EXAMPLE_FRAMEWORKS, exampleFilePath, type ExampleFramework } from './payload';
-import { EXAMPLE_FRAME_RESULT, type ExampleFrameResultInputs, type ExampleFrameStatus, type FrameFramework } from './tokens';
+import { EXAMPLE_FRAME_RESULT, type ExampleFrameResultInputs, type ExampleFrameStatus } from './tokens';
 
 /** localStorage key of the framework the reader last selected in a page block. */
 export const FRAMEWORK_STORAGE_KEY = 'hawiyah-guide-framework';
@@ -32,18 +32,26 @@ export function editorHref(lang: string, id: string, example: string, framework:
 /**
  * Page block of a live group (editor.pageBlock): the result, a status line, and the
  * four framework sources in tabs with download and, when the editor exists, an
- * editor link. Angular renders natively in the page; the other frameworks render in
- * the frame component that EXAMPLE_FRAME_RESULT provides, and without it the Angular
- * result stays shown for every tab.
+ * editor link. Angular renders natively in the page (in a framed group, in the frame
+ * as well); the other frameworks render in the frame component that
+ * EXAMPLE_FRAME_RESULT provides, and without it the Angular result stays shown for
+ * every tab.
  */
 @Component({
   selector: 'guide-example-block',
   imports: [CodeBlockComponent, HwButtonDirective, HwTabComponent, HwTabsComponent, NativeResult, NgComponentOutlet],
-  template: `@if (group(); as g) {<section class="example" [attr.aria-labelledby]="g.headingId"><div class="result" role="group" [attr.aria-label]="t().result">@if (frameShown()) {<ng-container *ngComponentOutlet="frame; inputs: frameInputs()" />} @else if (g.native) {<guide-native-result [component]="g.native" [lang]="g.lang" />}</div><p class="status hw-type" data-scale="body-sm" data-tone="muted" role="status">@if (status(); as s) {{{ s.before }}<bdi dir="ltr">{{ s.pkg }}</bdi>{{ s.after }}} @else {{{ statusText() }}}</p><hw-tabs [id]="'ex-' + g.example" [label]="t().frameworks" overflow="scroll" [value]="framework()" (valueChange)="choose($event)">@for (fw of frameworks; track fw) {<hw-tab [value]="fw" [label]="t().frameworkNames[fw]"><div class="panel">@for (listing of g.sources?.[fw] ?? []; track listing.fileName) {<guide-code-block [title]="listing.fileName" [text]="listing.text" [lines]="listing.lines" />}<div class="actions">@if (downloadHref(fw); as href) {<a hwButton variant="ghost" size="sm" [href]="href" [attr.download]="fileName(fw)"><span class="hw-icon" data-icon="download-01" aria-hidden="true"></span>{{ t().download }}</a>}@if (editor) {<a hwButton variant="secondary" size="sm" [href]="editorLink(fw)"><span class="hw-icon" data-icon="arrow-up-right-01" data-directional="true" aria-hidden="true"></span>{{ t().openInEditor }}</a>}</div></div></hw-tab>}</hw-tabs></section>}`,
+  template: `@if (group(); as g) {<section class="example" [attr.aria-labelledby]="g.headingId"><div class="result" role="group" [attr.aria-label]="t().result">@if (frameShown()) {<ng-container *ngComponentOutlet="frame; inputs: frameInputs()" />} @else if (g.native && !framed()) {<guide-native-result [component]="g.native" [lang]="g.lang" />}@if (framed()) {<p class="framed-note">{{ t().framedNoScript }}</p>}</div><p class="status hw-type" data-scale="body-sm" data-tone="muted" role="status">@if (status(); as s) {{{ s.before }}<bdi dir="ltr">{{ s.pkg }}</bdi>{{ s.after }}} @else {{{ statusText() }}}</p><hw-tabs [id]="'ex-' + g.example" [label]="t().frameworks" overflow="scroll" [value]="framework()" (valueChange)="choose($event)">@for (fw of frameworks; track fw) {<hw-tab [value]="fw" [label]="t().frameworkNames[fw]"><div class="panel">@for (listing of g.sources?.[fw] ?? []; track listing.fileName) {<guide-code-block [title]="listing.fileName" [text]="listing.text" [lines]="listing.lines" />}<div class="actions">@if (downloadHref(fw); as href) {<a hwButton variant="ghost" size="sm" [href]="href" [attr.download]="fileName(fw)"><span class="hw-icon" data-icon="download-01" aria-hidden="true"></span>{{ t().download }}</a>}@if (editor) {<a hwButton variant="secondary" size="sm" [href]="editorLink(fw)"><span class="hw-icon" data-icon="arrow-up-right-01" data-directional="true" aria-hidden="true"></span>{{ t().openInEditor }}</a>}</div></div></hw-tab>}</hw-tabs></section>}`,
   styleUrl: './example-block.css',
 })
 export class ExampleBlock {
   readonly example = input.required<string>();
+  /**
+   * frame on the group (5a.9): the Angular result is rendered in the sandboxed frame
+   * like the other three, never in the guide page, so a page-level component's main
+   * landmark, skip link and h1 stay out of the guide's outline. Without script the
+   * block shows its Angular listing and one sentence.
+   */
+  readonly framed = input(false);
 
   private readonly page = inject(PageExamples);
   private readonly document = inject(DOCUMENT);
@@ -56,29 +64,30 @@ export class ExampleBlock {
   private readonly frameStatus = signal<ExampleFrameStatus>({ state: 'loading' });
   protected readonly t = computed(() => pick(exampleTexts, this.group()?.lang ?? 'en'));
 
-  /** A frame result is shown for vanilla, React and Vue once a provider exists. */
-  protected readonly frameShown = computed(() => this.frame !== null && this.framework() !== 'angular');
+  /** A frame result is shown for vanilla, React and Vue once a provider exists, and for Angular too in a framed group. */
+  protected readonly frameShown = computed(() => this.frame !== null && (this.framework() !== 'angular' || this.framed()));
 
   protected readonly frameInputs = computed<ExampleFrameResultInputs | undefined>(() => {
     const group = this.group();
     const framework = this.framework();
-    if (!group || framework === 'angular') return undefined;
+    if (!group || !this.frameShown()) return undefined;
     return {
       id: group.id,
       lang: group.lang,
       example: group.example,
-      framework: framework as FrameFramework,
+      framework,
       report: (status) => this.frameStatus.set(status),
     };
   });
 
   /** The 'rendered with' status, with the package name and version shown left to right. */
   protected readonly status = computed(() => {
-    const framework = this.frameShown() ? this.framework() : 'angular';
+    const framed = this.frameShown();
+    const framework = framed ? this.framework() : 'angular';
     const frameStatus = this.frameStatus();
-    if (framework !== 'angular' && frameStatus.state !== 'ready') return null;
+    if (framed && frameStatus.state !== 'ready') return null;
     const [before, pkg, after] = this.t().renderedWith(FRAMEWORK_PACKAGES[framework], buildInfo.pin, buildInfo.preview !== null);
-    const note = framework !== 'angular' && frameStatus.state === 'ready' && frameStatus.bundledRuntime ? this.t().bundledRuntime : '';
+    const note = framed && frameStatus.state === 'ready' && frameStatus.bundledRuntime ? this.t().bundledRuntime : '';
     return { before, pkg, after: `${after}${note}` };
   });
 
@@ -114,7 +123,7 @@ export class ExampleBlock {
   }
 
   private select(framework: ExampleFramework): void {
-    if (framework !== 'angular') this.frameStatus.set({ state: 'loading' });
+    if (framework !== 'angular' || this.framed()) this.frameStatus.set({ state: 'loading' });
     this.framework.set(framework);
   }
 

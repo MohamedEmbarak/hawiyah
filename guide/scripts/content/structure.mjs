@@ -7,10 +7,17 @@ import { parse as parseYaml } from 'yaml';
 import {
   ALERTS, API_COLUMNS, API_H3, API_HEADERS, API_KINDS, CAPTION_PREFIX, EM_DASH, H2, finding,
 } from './config.mjs';
+import { keyNameFindings, keyboardTable } from './keys.mjs';
 import { groupLive, isLive } from './live.mjs';
 import { plainText } from './parse.mjs';
 
 const lineOf = (node) => node?.position?.start.line ?? 1;
+/** At most this many live groups per page: step 80 time grows with the groups. */
+export const MAX_LIVE_GROUPS = 8;
+/** Calls that make an example depend on the date, the time zone, chance or the network. */
+const UNREPRODUCIBLE = /\bDate\.now\s*\(|\bnew\s+Date\s*\(\s*\)|\bMath\.random\s*\(|\bcrypto\.(?:getRandomValues|randomUUID)\s*\(|\bfetch\s*\(|\bXMLHttpRequest\b|\.resolvedOptions\s*\(\s*\)\.timeZone\b/;
+/** A typed install command: install text has one source, the generated install data. */
+const INSTALL_COMMAND = /^\s*(?:\$\s*)?(?:npm\s+(?:install|i|ci|add)|pnpm\s+(?:add|install|i)|yarn\s+add|bun\s+add)\b/m;
 const SENTENCE_END = /[.!?؟](\s|$)/g;
 
 /** Kind of a GitHub alert blockquote ('note', 'tip', ...) or null. */
@@ -243,13 +250,18 @@ export function analysePage(page) {
   };
   tableWalk({ children: body }, null);
 
+  // Key elements and the keyboard table (5a.7, 5a.8).
+  findings.push(...keyNameFindings(body, lang, file));
+  const keyboard = keyboardTable(tables, lang, entry, file);
+  findings.push(...keyboard.findings);
+
   // API section.
   const apiSection = sections.find((section) => section.id === 'api');
   const apiTables = apiSection ? checkApiSection(apiSection, lang, push) : [];
   for (const table of tables) table.api = apiTables.find((item) => item.node === table.node)?.h3 ?? null;
 
   // Live groups and their placement.
-  const live = groupLive(body, file);
+  const live = groupLive(body, file, { id: page.id, kind: page.kind ?? 'component' });
   findings.push(...live.findings);
   const placement = new Map();
   for (const group of live.groups) {
@@ -268,6 +280,14 @@ export function analysePage(page) {
     group.h3 = h3;
     const key = h3 ?? section.node;
     placement.set(key, [...(placement.get(key) ?? []), group]);
+  }
+  // Size and reproducibility of the examples (pageContractChanges of milestone 5).
+  if (live.groups.length > MAX_LIVE_GROUPS) push('HWC-LIVE2', live.groups[MAX_LIVE_GROUPS].line, `a page has at most ${MAX_LIVE_GROUPS} live groups (found ${live.groups.length}); move an example into the prose or propose another page`);
+  for (const group of live.groups) {
+    for (const block of Object.values(group.blocks)) {
+      const found = UNREPRODUCIBLE.exec(block.code);
+      if (found) push('HWC-LIVE2', block.line, `the live block "${group.example}" uses ${found[0].trim()}; an example does not depend on today's date, the time zone, random values or a request, so its screenshots can be compared`);
+    }
   }
   const exampleSection = sections.find((section) => section.id === 'example');
   if (exampleSection) {
@@ -301,7 +321,10 @@ export function analysePage(page) {
   const codeBlocks = [];
   const codeWalk = (node) => {
     for (const child of node.children ?? []) {
-      if (child.type === 'code' && !isLive(child)) codeBlocks.push(child);
+      if (child.type === 'code' && !isLive(child)) {
+        codeBlocks.push(child);
+        if (INSTALL_COMMAND.test(child.value ?? '')) push('HWC-MD', lineOf(child), 'a component page types no install command; the guide generates install text from the pinned version (install.json)');
+      }
       codeWalk(child);
     }
   };
@@ -310,7 +333,7 @@ export function analysePage(page) {
   const headings = body.filter((node) => node.type === 'heading').map((node) => ({ level: node.depth, text: plainText(node).trim(), node, section: sectionOf.get(node)?.id ?? null }));
 
   return {
-    lang, file, source, h1, summaryNodes, sections, headings, tables, alerts, codeBlocks,
+    lang, file, source, h1, summaryNodes, sections, headings, tables, alerts, codeBlocks, keyboard: keyboard.table,
     groups: live.groups.filter((group) => group.section), groupOf: live.groupOf, findings,
   };
 }

@@ -142,15 +142,24 @@ export function angularElements(declared) {
 /** The fixed caption of an API table, without the 'Table: ' prefix. */
 export function captionText(h3, lang, declared, entry) {
   const name = entry?.name ?? declared.id;
+  const join = lang === 'ar' ? joinArabic : joinEnglish;
   if (h3 === 'javascript') {
-    if (declared.vanilla.source === 'controller') return lang === 'ar' ? `خيارات ${declared.vanilla.exports[0]}` : `Options of ${declared.vanilla.exports[0]}`;
+    const controllers = declared.vanilla.exports ?? [];
+    if (declared.vanilla.source === 'controller') return lang === 'ar' ? `خيارات ${join(controllers)}` : `Options of ${join(controllers)}`;
     const classes = declared.vanilla.classes ?? [];
-    if (lang === 'ar') return classes.length > 1 ? `خصائص العناصر ${joinArabic(classes)}` : `خصائص العنصر ${classes[0]}`;
-    return `Attributes of the ${joinEnglish(classes)} element${classes.length > 1 ? 's' : ''}`;
+    const attributes = lang === 'ar'
+      ? (classes.length > 1 ? `خصائص العناصر ${joinArabic(classes)}` : `خصائص العنصر ${classes[0]}`)
+      : `Attributes of the ${joinEnglish(classes)} element${classes.length > 1 ? 's' : ''}`;
+    if (!controllers.length) return attributes;
+    return lang === 'ar' ? `${attributes} وخيارات ${join(controllers)}` : `${attributes} and options of ${join(controllers)}`;
   }
-  const exportName = declared[H3_FRAMEWORK[h3]].exports[0] ?? name;
-  if (h3 === 'react') return lang === 'ar' ? `خصائص ${exportName}` : `Props of ${exportName}`;
-  if (h3 === 'vue') return lang === 'ar' ? `خصائص ${exportName} وأحداثه ومنافذه` : `Props, events and slots of ${exportName}`;
+  const exports = declared[H3_FRAMEWORK[h3]].exports ?? [];
+  const names = exports.length ? exports : [name];
+  if (h3 === 'react') return lang === 'ar' ? `خصائص ${join(names)}` : `Props of ${join(names)}`;
+  if (h3 === 'vue') {
+    if (lang !== 'ar') return `Props, events and slots of ${join(names)}`;
+    return names.length === 1 ? `خصائص ${names[0]} وأحداثه ومنافذه` : names.length === 2 ? `خصائص ${join(names)} وأحداثهما ومنافذهما` : `خصائص ${join(names)} وأحداثها ومنافذها`;
+  }
   const elements = angularElements(declared);
   if (lang === 'ar') {
     const suffix = elements.length === 1 ? 'ومخرجاته ومحتواه' : elements.length === 2 ? 'ومخرجاتهما ومحتواهما' : 'ومخرجاتها ومحتواها';

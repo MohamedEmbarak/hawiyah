@@ -1,0 +1,4 @@
+{
+  "$comment": "Code-formatted names that the vocabulary pass of step 30 (HWC-VOCAB) cannot find in the installed packages and that a page keeps: { file, text, reason, approvedBy }, where text is the whole inline code value or the live-block term exactly as the finding prints it. The list is the lead's (leadAmendments A4): writers propose entries in their result files and never edit it; every entry needs a reason and approvedBy, no wildcard is accepted, an entry that matches nothing fails the step, and the entries count towards the cap of five per page (lists.mjs).",
+  "entries": []
+}

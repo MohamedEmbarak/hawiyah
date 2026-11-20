@@ -21,6 +21,9 @@
     "scan:log": "node scripts/log-scan/cli.mjs",
     "test:unit": "node scripts/build.mjs --generate-only && ng test --no-watch",
     "test:e2e": "playwright test --project=prod",
+    "check:page": "node scripts/check-page.mjs",
+    "test:page": "node scripts/test-page.mjs",
+    "test:check-page": "GUIDE_BUILD_TESTS=1 vitest run --config vitest.scripts.config.ts",
     "serve": "node scripts/serve.mjs",
     "start": "node scripts/build.mjs --generate-only && ng serve",
     "content:hash": "node scripts/content/hash.mjs",
@@ -29,6 +32,7 @@
     "content:scaffold": "node scripts/content/scaffold.mjs",
     "content:scaffold-ar": "node scripts/content/scaffold-ar.mjs",
     "content:sync-ar": "node scripts/content/sync-ar.mjs",
+    "content:coverage": "node scripts/api-tables/coverage.mjs",
     "preview:local": "node scripts/preview/build-preview.mjs"
   },
   "dependencies": {

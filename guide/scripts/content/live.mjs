@@ -1,12 +1,12 @@
 // Live block extraction and grouping (contentPipeline.liveBlocks).
 //
-// Info string: <lang> live example=<name> [framework=<framework>] [check=<check>[,<check>...] | static] [differences=<id>]
+// Info string: <lang> live example=<name> [framework=<framework>] [check=<check>[,<check>...] | static] [differences=<id>] [frame [width=390]]
 // A group is four consecutive live blocks with the same example name, in the
 // order vanilla (html), react (tsx or jsx), vue (vue), angular (ts framework=angular),
 // separated only by blank lines. Wrapping, auto-imports and the rules on the
 // code itself (HWC-LIVE4 to HWC-LIVE6) belong to step 25.
 
-import { FRAMEWORKS, LIVE_KEYS, LIVE_LANGS, LIVE_NAME, finding } from './config.mjs';
+import { FRAMED_COMPONENTS, FRAME_WIDTHS, FRAMEWORKS, LIVE_KEYS, LIVE_LANGS, LIVE_NAME, finding } from './config.mjs';
 
 const lineOf = (node) => node.position?.start.line ?? 1;
 
@@ -17,17 +17,26 @@ export function isLive(node) {
 
 /**
  * Parses the info string of a live block.
- * @returns {{ lang: string, framework: string | null, example: string | null, check?: string, checks?: string[], static?: true, differences?: string, errors: string[] }}
+ * @param {{ id?: string, kind?: 'component' | 'template' }} [page] The page: frame is allowed only for
+ *   the components of FRAMED_COMPONENTS and for templates (5a.9, leadAmendments A12).
+ * @returns {{ lang: string, framework: string | null, example: string | null, check?: string, checks?: string[], static?: true, differences?: string, frame?: true, width?: string, errors: string[] }}
  */
-export function parseInfo(node) {
+export function parseInfo(node, page = {}) {
   const lang = node.lang ?? '';
   const words = (node.meta ?? '').split(/\s+/).filter(Boolean);
   const errors = [];
   const values = {};
   if (words[0] !== 'live') errors.push(`'live' must directly follow the language in "${lang} ${node.meta}"`);
   let isStatic = false;
+  let framed = false;
   for (const word of words.slice(words[0] === 'live' ? 1 : 0)) {
     if (word === 'live') continue;
+    if (word === 'frame') {
+      // The Angular result of the group is rendered in the sandboxed frame (5a.9).
+      if (framed) errors.push('the word "frame" is repeated');
+      framed = true;
+      continue;
+    }
     if (word === 'static') {
       // The group declares that it is compared at rest only.
       if (isStatic) errors.push('the word "static" is repeated');
@@ -68,6 +77,15 @@ export function parseInfo(node) {
   }
   if (isStatic && lang !== 'html') errors.push('static is allowed only on the html block, the first of the group');
   else if (isStatic && checks.length > 0) errors.push('a group is either static or names checks, not both');
+  if (framed && lang !== 'html') errors.push('frame is allowed only on the html block, the first of the group');
+  else if (framed && page.kind !== 'template' && !FRAMED_COMPONENTS.includes(page.id)) {
+    errors.push(`frame is allowed only for the page-level components ${FRAMED_COMPONENTS.join(', ')} and for template groups (FRAMED_COMPONENTS of scripts/content/config.mjs); ${page.id ?? 'this page'} renders in the guide page`);
+  }
+  if (values.width !== undefined) {
+    if (lang !== 'html') errors.push('width= is allowed only on the html block, the first of the group');
+    else if (!framed) errors.push('width= is allowed only on a group with frame');
+    else if (!FRAME_WIDTHS.includes(values.width)) errors.push(`width=${values.width} is not one of ${FRAME_WIDTHS.join(', ')}`);
+  }
   const info = { lang, framework, example: values.example ?? null, errors };
   if (values.check !== undefined) {
     info.check = values.check;
@@ -75,6 +93,8 @@ export function parseInfo(node) {
   }
   if (isStatic) info.static = true;
   if (values.differences !== undefined) info.differences = values.differences;
+  if (framed) info.frame = true;
+  if (values.width !== undefined) info.width = values.width;
   return info;
 }
 
@@ -90,10 +110,11 @@ export function formOf(framework, code) {
  * Groups the live blocks among the top-level nodes of a page.
  * @param {any[]} nodes Top-level mdast nodes in order.
  * @param {string} file For messages.
+ * @param {{ id?: string, kind?: 'component' | 'template' }} [page] The page (for frame).
  * @returns {{ groups: any[], groupOf: Map<any, any>, findings: any[] }}
  *   groupOf maps each live node to its group (or to null when it is in no valid group).
  */
-export function groupLive(nodes, file) {
+export function groupLive(nodes, file, page = {}) {
   const findings = [];
   const groups = [];
   const groupOf = new Map();
@@ -102,7 +123,7 @@ export function groupLive(nodes, file) {
   const closeRun = () => {
     let current = null;
     for (const node of run) {
-      const info = parseInfo(node);
+      const info = parseInfo(node, page);
       if (current && info.example === current.example && info.example !== null) current.items.push({ node, info });
       else {
         current = { example: info.example, items: [{ node, info }] };
@@ -153,6 +174,8 @@ export function groupLive(nodes, file) {
     }
     if (head.static) group.static = true;
     if (head.differences !== undefined) group.differences = head.differences;
+    if (head.frame) group.frame = true;
+    if (head.width !== undefined) group.width = head.width;
     for (const { node, info } of partition.items) {
       group.blocks[info.framework] = { lang: info.lang, form: formOf(info.framework, node.value), code: node.value, line: lineOf(node) };
       groupOf.set(node, group);

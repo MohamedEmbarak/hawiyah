@@ -174,6 +174,25 @@ export function stylesheetMembers(readers, id) {
   };
 }
 
+/** Prefix of the members of a further export: '' for the documented export, else '<export> '. */
+const qualified = (index, exportName) => (index === 0 ? '' : `${exportName} `);
+
+/** Members of the further vanilla controllers of a page, qualified with the controller name. */
+function furtherVanilla(context, names) {
+  const members = [];
+  const problems = [];
+  for (const name of names) {
+    if (resolveExport(context, 'vanilla', name) === null) {
+      problems.push(`@hawiyah/vanilla exports no ${name}`);
+      continue;
+    }
+    const read = vanillaMembers(context, name, { optionsRequired: false });
+    problems.push(...read.problems);
+    for (const member of read.members) members.push({ ...member, name: `${name} ${member.name}`, controller: name, default: EM_DASH, compare: { type: true, default: true, required: true } });
+  }
+  return { members, problems };
+}
+
 /** Declared members of a component id in the four adapters. */
 export function declaredMembers(readers, id) {
   const { context } = readers;
@@ -181,62 +200,88 @@ export function declaredMembers(readers, id) {
   const targets = targetsFor(id, exists);
   const out = { id, targets };
 
-  // Vanilla.
-  if (exists('vanilla', targets.vanilla)) {
-    const read = vanillaMembers(context, targets.vanilla);
-    const members = read.members.map((member) => ({ ...member, default: EM_DASH, compare: { type: true, default: true, required: true } }));
-    const findings = applyDefaultsFile(readers, id, members);
-    out.vanilla = { members, problems: read.problems, findings, source: 'controller', exports: [targets.vanilla] };
-  } else {
-    const read = stylesheetMembers(readers, id);
-    read.findings.push(...applyDefaultsFile(readers, id, read.members));
-    out.vanilla = { ...read, exports: [] };
+  // Vanilla: the documented controller, or the stylesheet table when it is not exported; then the further controllers.
+  {
+    const [own, ...further] = targets.vanilla;
+    const more = furtherVanilla(context, further);
+    const furtherExports = further.filter((name) => exists('vanilla', name));
+    if (exists('vanilla', own)) {
+      const read = vanillaMembers(context, own);
+      const members = read.members.map((member) => ({ ...member, default: EM_DASH, compare: { type: true, default: true, required: true } }));
+      members.push(...more.members);
+      const findings = applyDefaultsFile(readers, id, members);
+      out.vanilla = { members, problems: [...read.problems, ...more.problems], findings, source: 'controller', exports: [own, ...furtherExports] };
+    } else {
+      const read = stylesheetMembers(readers, id);
+      read.members.push(...more.members);
+      read.problems.push(...more.problems);
+      read.findings.push(...applyDefaultsFile(readers, id, read.members));
+      out.vanilla = { ...read, exports: furtherExports };
+    }
   }
 
   // React.
   {
-    const read = reactMembers(context, targets.react);
-    const defaults = read.problems.length ? { defaults: new Map(), problems: [] } : reactDefaults(readers.published.react, targets.react);
-    const members = read.members.map((member) => {
-      const found = defaults.defaults.get(member.name);
-      return { ...member, default: member.required ? EM_DASH : found?.text ?? EM_DASH, defaultSource: member.required ? null : found?.source ?? null, compare: { type: true, default: true, required: true } };
+    const members = [];
+    const problems = [];
+    targets.react.forEach((exportName, index) => {
+      const read = reactMembers(context, exportName);
+      const defaults = read.problems.length ? { defaults: new Map(), problems: [] } : reactDefaults(readers.published.react, exportName);
+      problems.push(...read.problems, ...defaults.problems);
+      for (const member of read.members) {
+        const found = defaults.defaults.get(member.name);
+        members.push({
+          ...member, name: qualified(index, exportName) + member.name, ...(index ? { component: exportName } : {}),
+          default: member.required ? EM_DASH : found?.text ?? EM_DASH, defaultSource: member.required ? null : found?.source ?? null, compare: { type: true, default: true, required: true },
+        });
+      }
     });
-    out.react = { members, problems: [...read.problems, ...defaults.problems], findings: [], source: 'declarations', exports: [targets.react] };
+    out.react = { members, problems, findings: [], source: 'declarations', exports: [...targets.react] };
   }
 
   // Vue.
   {
-    const read = vueMembers(context, targets.vue);
-    const problems = [...read.problems];
+    const members = [];
+    const problems = [];
     const gaps = [];
-    let members = [];
-    if (!read.problems.length) {
-      const defaults = vueDefaults(readers.published.vue, targets.vue);
+    const patterns = readers.slotPatterns[id] ?? [];
+    const usedPatterns = new Set();
+    targets.vue.forEach((exportName, index) => {
+      const prefix = qualified(index, exportName);
+      const read = vueMembers(context, exportName);
+      problems.push(...read.problems);
+      if (read.problems.length) return;
+      const defaults = vueDefaults(readers.published.vue, exportName);
       problems.push(...defaults.problems);
-      members = read.members.map((member) => {
-        if (member.kind !== 'prop') return { ...member, default: EM_DASH, compare: { type: true, default: true, required: true } };
+      const own = read.members.map((member) => {
+        const extra = { name: prefix + member.name, ...(index ? { component: exportName } : {}) };
+        if (member.kind !== 'prop') return { ...member, ...extra, default: EM_DASH, compare: { type: true, default: true, required: true } };
         const found = defaults.defaults.get(member.name);
-        return { ...member, default: member.required ? EM_DASH : found?.text ?? EM_DASH, defaultSource: member.required ? null : found?.source ?? null, compare: { type: true, default: true, required: true } };
+        return { ...member, ...extra, default: member.required ? EM_DASH : found?.text ?? EM_DASH, defaultSource: member.required ? null : found?.source ?? null, compare: { type: true, default: true, required: true } };
       });
-      const slots = vueSlots(readers.published.vue, targets.vue);
+      const slots = vueSlots(readers.published.vue, exportName);
       problems.push(...slots.problems);
-      const listed = new Set(members.filter((member) => member.kind === 'slot').map((member) => member.name));
+      const listed = new Set(own.filter((member) => member.kind === 'slot').map((member) => member.name));
+      const slot = (name, from) => ({ name: prefix + name, kind: 'slot', required: false, type: EM_DASH, default: EM_DASH, compare: { type: true, default: true, required: true }, from, ...(index ? { component: exportName } : {}) });
       for (const name of slots.named) {
-        if (!listed.has(name)) members.push({ name, kind: 'slot', required: false, type: EM_DASH, default: EM_DASH, compare: { type: true, default: true, required: true }, from: 'run time' });
-        listed.add(name);
+        if (!listed.has(prefix + name)) own.push(slot(name, 'run time'));
+        listed.add(prefix + name);
       }
-      const patterns = readers.slotPatterns[id] ?? [];
       for (const expression of slots.dynamic) {
         const pattern = patterns.find((item) => item.expression === expression);
-        if (!pattern) gaps.push(`${targets.vue} of @hawiyah/vue reads a slot named by the expression ${expression}, and targets.mjs VUE_SLOT_PATTERNS.${id} has no entry for it`);
-        else if (!listed.has(pattern.name)) {
-          members.push({ name: pattern.name, kind: 'slot', required: false, type: EM_DASH, default: EM_DASH, compare: { type: true, default: true, required: true }, from: 'run time (pattern)' });
-          listed.add(pattern.name);
+        if (!pattern) gaps.push(`${exportName} of @hawiyah/vue reads a slot named by the expression ${expression}, and targets.mjs VUE_SLOT_PATTERNS.${id} has no entry for it`);
+        else {
+          usedPatterns.add(pattern);
+          if (!listed.has(prefix + pattern.name)) own.push(slot(pattern.name, 'run time (pattern)'));
+          listed.add(prefix + pattern.name);
         }
       }
-      for (const pattern of patterns) if (!slots.dynamic.includes(pattern.expression)) problems.push(`targets.mjs VUE_SLOT_PATTERNS.${id} names the expression ${pattern.expression}, which ${targets.vue} of @hawiyah/vue does not read`);
+      members.push(...own);
+    });
+    if (!problems.length) {
+      for (const pattern of patterns) if (!usedPatterns.has(pattern)) problems.push(`targets.mjs VUE_SLOT_PATTERNS.${id} names the expression ${pattern.expression}, which ${targets.vue.join(', ')} of @hawiyah/vue does not read`);
     }
-    out.vue = { members, problems, gaps, findings: [], source: 'declarations', exports: [targets.vue] };
+    out.vue = { members, problems, gaps, findings: [], source: 'declarations', exports: [...targets.vue] };
   }
 
   // Angular.

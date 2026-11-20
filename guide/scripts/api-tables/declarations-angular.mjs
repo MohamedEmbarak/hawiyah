@@ -136,7 +136,7 @@ function readContent(ts, node) {
   return node.elements.map((element) => literalText(ts, element)).filter((value) => typeof value === 'string');
 }
 
-function classDeclaration(context, symbol) {
+export function classDeclaration(context, symbol) {
   const { ts } = context;
   return symbol?.declarations?.find((declaration) => ts.isClassDeclaration(declaration)) ?? null;
 }

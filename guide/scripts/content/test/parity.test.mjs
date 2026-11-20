@@ -108,6 +108,51 @@ describe('checkParity', () => {
     expect(with_('data-overflow-label="المزيد من التبويبات"')).toEqual([]);
   });
 
+  describe('key elements and the keyboard table (5a.7, 5a.8, HWC-KEYS)', () => {
+    const EN_TABLE = 'Table: Keyboard\n\n| Key | Action |\n| :-- | --: |\n| Enter | Activates the control. |\n| Space | Activates the control. |';
+    const AR_TABLE = 'جدول: لوحة المفاتيح\n\n| المفتاح | الإجراء |\n| :-- | --: |\n| Enter | يفعّل عنصر التحكم. |\n| Space | يفعّل عنصر التحكم. |';
+    const table = (caption, header, rows) => `${caption}\n\n${header}\n| :-- | --: |\n${rows.map(([key, action]) => `| ${key} | ${action} |`).join('\n')}`;
+    const en = (rows, caption = 'Table: Keyboard interaction of Fixture A') => swap(validEn(), EN_TABLE, table(caption, '| Key | Action |', rows));
+    const ar = (rows, caption = 'جدول: التفاعل من لوحة المفاتيح مع المكوّن: النموذج أ') => swap(validAr(), AR_TABLE, table(caption, '| المفتاح | الإجراء |', rows));
+    const keyFindings = (replace) => runPair(replace).findings.filter((item) => item.code !== 'HWC-STALE');
+    const EN_ROWS = [['<kbd>Right Arrow</kbd>, <kbd>Left Arrow</kbd>', 'Moves to the next or the previous item in reading order.'], ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'Leaves the control.']];
+
+    it('accepts a keyboard table with key elements and Arabic arrow names in another order in an arrow row (A3)', () => {
+      const result = runPair({ en: en(EN_ROWS), ar: ar([['<kbd>السهم الأيسر</kbd>، <kbd>السهم الأيمن</kbd>', 'ينقل إلى العنصر التالي أو السابق في ترتيب القراءة.'], ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'يغادر عنصر التحكم.']]) });
+      expect(result.findings.filter((item) => item.code !== 'HWC-STALE')).toEqual([]);
+      expect(result.manifestPage.keyboard).toEqual({
+        en: { caption: 'Keyboard interaction of Fixture A', line: 92, rows: [{ keys: ['ArrowRight', 'ArrowLeft'], action: 'Moves to the next or the previous item in reading order.' }, { keys: ['Shift+Tab'], action: 'Leaves the control.' }] },
+        ar: { caption: 'التفاعل من لوحة المفاتيح مع المكوّن: النموذج أ', line: 102, rows: [{ keys: ['ArrowLeft', 'ArrowRight'], action: 'ينقل إلى العنصر التالي أو السابق في ترتيب القراءة.' }, { keys: ['Shift+Tab'], action: 'يغادر عنصر التحكم.' }] },
+      });
+      const table = result.models.en.sections.find((section) => section.id === 'accessibility').blocks.find((block) => block.type === 'table');
+      expect(table.keyboard).toBe(true);
+      expect(table.rows[1].c0).toEqual([{ type: 'kbd', value: 'Shift', latin: true }, { type: 'text', value: ' + ' }, { type: 'kbd', value: 'Tab', latin: true }]);
+      const arTable = result.models.ar.sections.find((section) => section.id === 'accessibility').blocks.find((block) => block.type === 'table');
+      expect(arTable.rows[0].c0[0]).toEqual({ type: 'kbd', value: 'السهم الأيسر', latin: false });
+    });
+
+    it('reports other keys, another order outside an arrow row, and an English arrow name on the Arabic page', () => {
+      const messages = (rows) => keyFindings({ en: en(EN_ROWS), ar: ar(rows) }).map((item) => `${item.code} ${item.message}`);
+      expect(messages([['<kbd>السهم الأيسر</kbd>، <kbd>السهم الأيمن</kbd>', 'ينقل.'], ['<kbd>Tab</kbd> + <kbd>Shift</kbd>', 'يغادر.']])).toEqual([
+        'HWC-KEYS the keys Tab, Shift in Arabic differ from Shift, Tab in English; both pages name the same keys in the same order (only a cell of arrow keys may order them per language)',
+      ]);
+      expect(messages([['<kbd>Right Arrow</kbd>، <kbd>السهم الأيسر</kbd>', 'ينقل.'], ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'يغادر.']])[0]).toBe('HWC-KEYS the key element "Right Arrow" names no key; in Arabic this key is written السهم الأيمن');
+      expect(messages([['<kbd>السهم الأيسر</kbd>', 'ينقل.'], ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'يغادر.']])).toEqual([
+        'HWC-KEYS the keys ArrowLeft in Arabic differ from ArrowRight, ArrowLeft in English; both pages name the same keys in the same order (only a cell of arrow keys may order them per language)',
+      ]);
+    });
+
+    it('reports a keyboard table with another caption, headers or a Key cell that is not key elements', () => {
+      const messages = (text) => runPair({ en: text }).findings.filter((item) => item.code === 'HWC-KEYS' && !item.file.endsWith('.ar.md')).map((item) => item.message);
+      expect(messages(en(EN_ROWS, 'Table: Keyboard interaction of Tabs'))).toEqual(['the keyboard table caption is "Keyboard interaction of Tabs"; write "Keyboard interaction of Fixture A"']);
+      expect(messages(en([['Enter', 'Activates.']]))).toEqual(['the Key cell holds "Enter"; it holds key elements only, joined by + in a chord and separated by a comma']);
+      expect(messages(en([['<kbd>Enter</kbd> <kbd>Space</kbd>', 'Activates.']]))).toEqual(['two key elements stand next to each other; join a chord with + and separate alternatives with a comma']);
+      expect(messages(en([['<kbd>Enter</kbd>,', 'Activates.']]))).toEqual(['the Key cell ends with a separator']);
+      expect(messages(en([['<kbd>Return</kbd>', 'Activates.']]))[0]).toMatch(/^the key element "Return" names no key; the key names are Tab, Shift, Ctrl/);
+      expect(messages(swap(en(EN_ROWS), '| Key | Action |', '| Keys | Action |'))).toEqual(['the keyboard table header is "| Keys | Action |"; write "| Key | Action |"']);
+    });
+  });
+
   it('reports stale translations and source keys of missing sections', () => {
     const findings = runPair({ en: swap(validEn(), 'The layout uses logical properties only.', 'The layout uses logical properties.') }).findings;
     expect(findings.map((item) => [item.code, item.message.split(' was ')[0]])).toEqual([['HWC-STALE', 'section "rtl-and-localisation"']]);

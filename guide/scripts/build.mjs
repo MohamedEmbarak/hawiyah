@@ -86,8 +86,10 @@ export function parseArgs(argv) {
   if ((options.pages !== null || options.deferEquivalence) && (options.configuration !== "production" || options.generateOnly)) {
     throw new Error(`${options.pages !== null ? "--pages" : "--defer-equivalence"} concerns step 80, which runs in the full production build only`);
   }
-  if (options.deferEquivalence && (options.pages !== null || options.docs !== null || options.preview !== null)) {
-    throw new Error("--defer-equivalence is for the deployable build of guide.yml: not with --pages, --docs or --preview");
+  // --docs with --defer-equivalence builds the scale fixture (scripts/test/scale) as guide.yml builds the
+  // deployable output, for the measurement of lead decision L10 of 5a; --docs keeps it not deployable.
+  if (options.deferEquivalence && (options.pages !== null || options.preview !== null)) {
+    throw new Error("--defer-equivalence is for the build of guide.yml and of the scale fixture: not with --pages or --preview");
   }
   return options;
 }

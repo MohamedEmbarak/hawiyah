@@ -39,7 +39,7 @@ function apiParts(text) {
 }
 
 describe('content:scaffold round trip over every component of components.json', () => {
-  it('the tables of each scaffold pass step 20 and step 30 in both languages, or the id has a list gap the lead decides', () => {
+  it('the tables of each of the 85 scaffolds pass step 20 and step 30 in both languages', () => {
     const gaps = [];
     let pages = 0;
     for (const [id, entry] of readers.components) {
@@ -62,8 +62,9 @@ describe('content:scaffold round trip over every component of components.json', 
       expect(result.tables).toBe(8);
       pages += 1;
     }
-    expect(pages + gaps.length).toBe(85);
-    expect(gaps.length).toBeLessThanOrEqual(6); // the dynamic Vue slots without a VUE_SLOT_PATTERNS entry on 0.3.0
+    // Every id scaffolds since the lead added the six VUE_SLOT_PATTERNS entries (decision L1 of 5a).
+    expect(gaps).toEqual([]);
+    expect(pages).toBe(85);
   });
   it('writes no prose and no example', () => {
     const declared = declaredMembers(readers, 'tabs');
@@ -87,6 +88,20 @@ describe('content:scaffold-ar', () => {
     expect(liveBlocks(result.text).map((block) => block.code)).toEqual(liveBlocks(arabic).map((block) => block.code));
     expect(apiParts(result.text)).toEqual(apiParts(arabic));
     expect(result.text.split('\n---\n')[0]).toBe(arabic.split('\n---\n')[0]);
+  });
+});
+
+describe('content:scaffold-ar and the keyboard table (5a.7, 5a.8)', () => {
+  it('writes the fixed Arabic caption and headers and the Arabic names of the arrow keys; other keys stay as printed', () => {
+    const english = page('tabs.md');
+    const result = scaffoldArabic(english, { entry: readers.components.get('tabs'), declared: declaredMembers(readers, 'tabs'), map: {}, version, placeholder: true });
+    const lines = result.text.split('\n');
+    const caption = lines.findIndex((line) => line.startsWith('جدول: التفاعل من لوحة المفاتيح'));
+    expect(lines[caption]).toBe('جدول: التفاعل من لوحة المفاتيح مع المكوّن: تبويبات');
+    expect(lines[caption + 2]).toBe('| المفتاح | الإجراء |');
+    expect(lines[caption + 5].startsWith('| <kbd>السهم الأيمن</kbd>, <kbd>السهم الأيسر</kbd> | ')).toBe(true);
+    expect(lines[caption + 4].startsWith('| <kbd>Tab</kbd> | ')).toBe(true);
+    expect(result.text).not.toContain('<kbd>Right Arrow</kbd>');
   });
 });
 

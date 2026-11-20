@@ -5,6 +5,7 @@ import { HwLinkDirective } from '@hawiyah/angular';
 import { BlocksContent } from '../../content/blocks';
 import { CodeBlockIds } from '../../content/code-block';
 import { InlineContent } from '../../content/inline';
+import type { Block } from '../../content/model';
 import { HeadService } from '../../core/head';
 import { page as pageHref } from '../../core/links';
 import { PageExamples } from '../../examples/page-examples';
@@ -12,12 +13,12 @@ import { pick } from '../../i18n/text';
 import { componentPageTexts } from './i18n';
 import type { ComponentPageData } from './page-data.resolver';
 
-/** Route <lang>/components/:id/: the h1, the summary, the Example section and a link to the reference view. */
+/** Route <lang>/components/:id/: the h1, the summary, the Example section, the keyboard table and a link to the reference view. */
 @Component({
   selector: 'guide-brief-page',
   imports: [BlocksContent, HwLinkDirective, InlineContent],
   providers: [PageExamples, CodeBlockIds],
-  template: `@if (data(); as d) {<article class="hw-prose" [attr.lang]="d.page.lang" [attr.dir]="d.page.dir"><h1 tabindex="-1">{{ d.page.title }}</h1><p><guide-inline [inlines]="d.page.summary" /></p>@if (example(); as section) {<h2 [id]="section.id" tabindex="-1"><guide-inline [inlines]="section.title" /></h2><guide-blocks class="section" [blocks]="section.blocks" />}<p><a hwLink [href]="referenceHref()">{{ t().fullReference }}</a></p></article>}`,
+  template: `@if (data(); as d) {<article class="hw-prose" [attr.lang]="d.page.lang" [attr.dir]="d.page.dir"><h1 tabindex="-1">{{ d.page.title }}</h1><p><guide-inline [inlines]="d.page.summary" /></p>@if (example(); as section) {<h2 [id]="section.id" tabindex="-1"><guide-inline [inlines]="section.title" /></h2><guide-blocks class="section" [blocks]="section.blocks" />}@if (keyboard().length) {<guide-blocks class="section" [blocks]="keyboard()" />}<p><a hwLink [href]="referenceHref()">{{ t().fullReference }}</a></p></article>}`,
   styleUrl: './brief-page.css',
 })
 export class BriefPage {
@@ -26,6 +27,12 @@ export class BriefPage {
   protected readonly data = signal<ComponentPageData | null>(null);
   protected readonly t = computed(() => pick(componentPageTexts, this.data()?.page.lang ?? 'en'));
   protected readonly example = computed(() => this.data()?.page.sections.find((section) => section.id === 'example') ?? null);
+  /** The keyboard table of the Accessibility section (5a.8), shown under the example from the same model. */
+  protected readonly keyboard = computed<readonly Block[]>(() => {
+    const accessibility = this.data()?.page.sections.find((section) => section.id === 'accessibility');
+    const table = accessibility?.blocks.find((block) => block.type === 'table' && block.keyboard);
+    return table ? [table] : [];
+  });
   protected readonly referenceHref = computed(() => {
     const data = this.data();
     return data ? pageHref(data.page.lang, `components/${data.page.id}/reference`) : '';

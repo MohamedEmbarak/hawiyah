@@ -43,6 +43,23 @@ describe('parseInfo', () => {
     expect(parseInfo(node('html', 'live example=basic check=tabs-click,')).errors).toEqual(['the check value "" must match /^[a-z][a-z0-9-]{0,39}$/']);
   });
 
+  it('reads frame and width=390 on the html block of a page-level component or a template, and rejects every other use (5a.9, HWC-LIVE1)', () => {
+    const header = { id: 'portal-header', kind: 'component' };
+    expect(parseInfo(node('html', 'live example=page frame width=390 static'), header)).toMatchObject({ frame: true, width: '390', static: true, errors: [] });
+    expect(parseInfo(node('html', 'live example=page frame'), { id: 'request', kind: 'template' })).toMatchObject({ frame: true, errors: [] });
+    expect(parseInfo(node('tsx', 'live example=page frame'), header).errors).toEqual(['frame is allowed only on the html block, the first of the group']);
+    expect(parseInfo(node('tsx', 'live example=page width=390'), header).errors).toEqual(['width= is allowed only on the html block, the first of the group']);
+    expect(parseInfo(node('html', 'live example=page width=390'), header).errors).toEqual(['width= is allowed only on a group with frame']);
+    expect(parseInfo(node('html', 'live example=page frame width=320'), header).errors).toEqual(['width=320 is not one of 390']);
+    expect(parseInfo(node('html', 'live example=page frame frame'), header).errors).toEqual(['the word "frame" is repeated']);
+    expect(parseInfo(node('html', 'live example=basic frame'), { id: 'tabs', kind: 'component' }).errors).toEqual([
+      'frame is allowed only for the page-level components app-shell, portal-layout, portal-header, portal-footer, page-header, mobile-top-bar and for template groups (FRAMED_COMPONENTS of scripts/content/config.mjs); tabs renders in the guide page',
+    ]);
+    const group = groupLive(parseMarkdown('```html live example=page frame width=390 static\n<p></p>\n```\n\n```tsx live example=page\n<p />\n```\n\n```vue live example=page\n<p></p>\n```\n\n```ts live example=page framework=angular\ntemplate: `<p></p>`\n```\n', 'x.md').tree.children, 'x.md', header);
+    expect(group.findings).toEqual([]);
+    expect(group.groups[0]).toMatchObject({ example: 'page', frame: true, width: '390', static: true });
+  });
+
   it('detects live blocks', () => {
     expect(isLive(node('html', 'live example=a'))).toBe(true);
     expect(isLive(node('html', 'title="x"'))).toBe(false);

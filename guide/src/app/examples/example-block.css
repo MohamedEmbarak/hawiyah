@@ -28,3 +28,15 @@
   flex-wrap: wrap;
   gap: var(--hw-space-2);
 }
+
+/* The sentence of a framed group (5a.9): its result needs script, so it is shown only without it. */
+.framed-note {
+  display: none;
+  margin-block: 0;
+}
+
+@media (scripting: none) {
+  .framed-note {
+    display: block;
+  }
+}

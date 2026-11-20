@@ -55,7 +55,10 @@ describe('runContent on the fixtures', () => {
   it('writes page models with ids, direction, sections, blocks and inlines', () => {
     const en = read('pages/fixture-a.en.json');
     const ar = read('pages/fixture-a.ar.json');
-    expect(Object.keys(en)).toEqual(['id', 'lang', 'dir', 'title', 'summary', 'headings', 'sections', 'liveGroups', 'sourcePath', 'githubUrl']);
+    expect(Object.keys(en)).toEqual(['id', 'lang', 'dir', 'title', 'summary', 'headings', 'sections', 'liveGroups', 'sourcePath', 'githubUrl', 'evidence']);
+    // The evidence panel (5a.11) adds its two headings after the last heading of the page, the same ids in both languages.
+    expect(en.headings.slice(-2)).toEqual([{ id: 'evidence-recorded', level: 3, text: 'Verification evidence' }, { id: 'evidence-open', level: 3, text: 'Open items' }]);
+    expect(ar.headings.slice(-2).map((heading) => heading.id)).toEqual(['evidence-recorded', 'evidence-open']);
     expect([en.dir, ar.dir]).toEqual(['ltr', 'rtl']);
     expect(en.githubUrl).toBe(`https://github.com/MohamedEmbarak/hawiyah/blob/main/${en.sourcePath}`);
     expect(en.sourcePath).toMatch(/fixtures\/docs\/components\/fixture-a\.md$/);

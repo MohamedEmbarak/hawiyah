@@ -4,7 +4,8 @@
 // live groups. Every finding of every file is collected before the step fails.
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { LANGS, finding, formatFinding } from './config.mjs';
 import { writeOutputs } from './manifest.mjs';
 import { buildModel, inlineText } from './model.mjs';
@@ -22,14 +23,30 @@ export function readComponents(componentsFile) {
   return new Map(list.map((entry) => [entry.id, entry]));
 }
 
+/** The default list of English pages whose Arabic sibling is still being written (5a.6). */
+export const PENDING_FILE = join(dirname(fileURLToPath(import.meta.url)), 'pending-translation.json');
+
+/** Reads pending-translation.json: the ids it lists. */
+export function readPending(file = PENDING_FILE) {
+  if (!existsSync(file)) return new Set();
+  const data = JSON.parse(readFileSync(file, 'utf8'));
+  const pages = data.pages ?? [];
+  if (!Array.isArray(pages) || pages.some((id) => typeof id !== 'string' || !/^[a-z0-9-]+$/.test(id))) {
+    throw new Error('content: scripts/content/pending-translation.json must be { "pages": ["<id>", ...] }');
+  }
+  return new Set(pages);
+}
+
 /**
  * Checks the file names of a components directory (HWC-FILE).
  * @param {string[]} names File names in the directory.
  * @param {Map<string, any> | Set<string>} known Ids of components.json.
  * @param {string} dirLabel Repository-relative directory for messages.
- * @returns {{ ids: string[], findings: any[] }}
+ * @param {Set<string>} [pending] Ids of pending-translation.json: an English page
+ *   without its Arabic sibling is accepted for these and gets no route.
+ * @returns {{ ids: string[], pending: string[], findings: any[] }}
  */
-export function listSources(names, known, dirLabel) {
+export function listSources(names, known, dirLabel, pending = new Set()) {
   const findings = [];
   const english = new Set();
   const arabic = new Set();
@@ -47,9 +64,30 @@ export function listSources(names, known, dirLabel) {
     }
     (ar ? arabic : english).add(id);
   }
-  for (const id of english) if (!arabic.has(id)) findings.push(finding('HWC-FILE', `${dirLabel}/${id}.md`, 1, `the English page has no Arabic sibling ${id}.ar.md`));
+  const waiting = [];
+  for (const id of english) {
+    if (arabic.has(id)) continue;
+    if (pending.has(id)) waiting.push(id);
+    else findings.push(finding('HWC-FILE', `${dirLabel}/${id}.md`, 1, `the English page has no Arabic sibling ${id}.ar.md`));
+  }
   for (const id of arabic) if (!english.has(id)) findings.push(finding('HWC-FILE', `${dirLabel}/${id}.ar.md`, 1, `the Arabic page has no English sibling ${id}.md`));
-  return { ids: [...english].filter((id) => arabic.has(id)).sort(), findings };
+  for (const id of [...pending].sort()) {
+    if (arabic.has(id)) findings.push(finding('HWC-FILE', 'guide/scripts/content/pending-translation.json', 1, `${id} is listed as pending translation, but ${dirLabel}/${id}.ar.md exists; remove the entry`));
+    else if (!english.has(id)) findings.push(finding('HWC-FILE', 'guide/scripts/content/pending-translation.json', 1, `${id} is listed as pending translation, but ${dirLabel}/${id}.md does not exist`));
+  }
+  return { ids: [...english].filter((id) => arabic.has(id)).sort(), pending: waiting.sort(), findings };
+}
+
+/**
+ * The keyboard table of each language for the manifest (5a.8): { <lang>: { caption,
+ * rows: [{ keys, action }] } | null }. Step 80 binds its keys to the keyboard checks
+ * (HWE-KEYS).
+ * @param {Record<string, any>} outlines analysePage() results by language
+ */
+export function keyboardOf(outlines) {
+  return Object.fromEntries(Object.entries(outlines).map(([lang, outline]) => [lang, outline.keyboard
+    ? { caption: outline.keyboard.caption, line: outline.keyboard.node.position?.start.line ?? 1, rows: outline.keyboard.rows }
+    : null]));
 }
 
 /**
@@ -71,7 +109,7 @@ export function processPair(pair) {
     findings.push(...outline.findings);
     outlines[lang] = outline;
   }
-  const common = { id, repoDir, componentsDir, built };
+  const common = { id, repoDir, componentsDir, built, entry };
   const en = buildModel(outlines.en, { ...common, filePath: enPath, sourcePath: toPosix(relative(repoDir, enPath)) });
   const ar = buildModel(outlines.ar, {
     ...common, filePath: arPath, sourcePath: toPosix(relative(repoDir, arPath)),
@@ -89,6 +127,8 @@ export function processPair(pair) {
       if (group.check !== undefined) item.check = group.check;
       if (group.static) item.static = true;
       if (group.differences !== undefined) item.differences = group.differences;
+      if (group.frame) item.frame = true;
+      if (group.width !== undefined) item.width = group.width;
       item.blocks = Object.fromEntries(Object.entries(group.blocks).map(([framework, block]) => [framework, { lang: block.lang, form: block.form, code: block.code, line: block.line }]));
       return item;
     });
@@ -108,8 +148,11 @@ export function processPair(pair) {
       if (group.check !== undefined) item.check = group.check;
       if (group.static) item.static = true;
       if (group.differences !== undefined) item.differences = group.differences;
+      if (group.frame) item.frame = true;
+      if (group.width !== undefined) item.width = group.width;
       return item;
     }),
+    keyboard: keyboardOf(outlines),
   };
   return { findings, models: { en: en.page, ar: ar.page }, groupEntries, manifestPage, crossLinks: [...en.crossLinks, ...ar.crossLinks] };
 }
@@ -125,7 +168,8 @@ export function runContent(options) {
   const known = readComponents(componentsFile);
   const names = existsSync(componentsDir) ? readdirSync(componentsDir) : [];
   const dirLabel = toPosix(relative(repoDir, componentsDir));
-  const { ids, findings } = listSources(names, known, dirLabel);
+  const pendingIds = options.pending ?? readPending(options.pendingFile);
+  const { ids, pending, findings } = listSources(names, known, dirLabel, pendingIds);
   const built = new Set(ids);
   const pages = [];
   const manifestPages = [];
@@ -153,9 +197,9 @@ export function runContent(options) {
       findings.push(finding('HWC-LINK', link.file, link.line, `the link "${link.url}" names no heading of the page ${link.id}`));
     }
   }
-  if (findings.length > 0 || options.write === false) return { findings, pages: pages.length, groups: liveGroups.length, manifest: null };
+  if (findings.length > 0 || options.write === false) return { findings, pages: pages.length, groups: liveGroups.length, pending, manifest: null };
   const manifest = writeOutputs({ guideDir, outDir, liveGroupsFile, pages, manifestPages, liveGroups, components: [...known.values()] });
-  return { findings, pages: pages.length, groups: liveGroups.length, manifest };
+  return { findings, pages: pages.length, groups: liveGroups.length, pending, manifest };
 }
 
 export { formatFinding };

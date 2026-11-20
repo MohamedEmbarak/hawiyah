@@ -1,56 +1,19 @@
-// Interaction check tabs-activate (contentPipeline.equivalence.interactions): the
-// group's text says that with manual activation the arrow keys move focus without
-// changing the panel and Enter or Space selects the focused tab. From the
-// selected tab the step presses the key to the next tab (the results are compared:
-// the panel must not change), then Enter, then the key to the next tab and Space.
-import { nextTabKey } from './tabs-keyboard.mjs';
+// Interaction check tabs-activate (5a.8): a horizontal tab list with manual
+// activation. The arrow keys move focus without changing the selected tab or its
+// panel; Enter and Space select the focused tab. Every step asserts its documented
+// outcome in every frame (lib/tabs.mjs).
+import { APG, CONTRACT, activateStep, focusSelectedStep, moveStep } from './lib/tabs.mjs';
 
-/** Index of the focused tab, read while the frame has the system focus. */
-async function focusedTab(mount) {
-  const index = await mount.getByRole('tab').evaluateAll((elements) => elements.indexOf(document.activeElement));
-  if (index < 0) throw new Error('no tab has focus');
-  return index;
-}
-
-async function press(mount, state, key) {
-  await mount.getByRole('tab').nth(state.focused).press(key);
-  state.focused = await focusedTab(mount);
-}
-
-const next = async ({ mount, dir, state }) => {
-  const orientation = (await mount.getByRole('tablist').getAttribute('aria-orientation')) ?? 'horizontal';
-  await press(mount, state, nextTabKey(dir, orientation));
-};
+const MANUAL = `${APG}: the arrow keys move focus, and with manual activation "Space or Enter: Activates the tab if it was not activated automatically on focus."; ${CONTRACT}: horizontal arrows follow visual direction`;
+const move = (name, key, outcome) => moveStep({ name, key, orientation: 'horizontal', activation: 'manual', outcome, reference: MANUAL });
 
 export default {
   name: 'tabs-activate',
   steps: [
-    {
-      name: 'focus-next-tab',
-      /** @param {{ mount: import('@playwright/test').Locator, dir: string, state: { focused?: number } }} context */
-      async run(context) {
-        await context.mount.getByRole('tab', { selected: true }).focus();
-        context.state.focused = await focusedTab(context.mount);
-        await next(context);
-      },
-    },
-    {
-      name: 'enter',
-      async run({ mount, state }) {
-        await press(mount, state, 'Enter');
-      },
-    },
-    {
-      name: 'focus-next-tab-again',
-      async run(context) {
-        await next(context);
-      },
-    },
-    {
-      name: 'space',
-      async run({ mount, state }) {
-        await press(mount, state, ' ');
-      },
-    },
+    focusSelectedStep(),
+    move('right-arrow', 'ArrowRight', 'With manual activation, Right Arrow moves focus to the next enabled tab in a left-to-right page and to the previous one in a right-to-left page; the selected tab and its panel do not change.'),
+    activateStep({ name: 'enter', key: 'Enter' }),
+    move('left-arrow', 'ArrowLeft', 'With manual activation, Left Arrow moves focus to the previous enabled tab in a left-to-right page and to the next one in a right-to-left page; the selected tab and its panel do not change.'),
+    activateStep({ name: 'space', key: 'Space' }),
   ],
 };

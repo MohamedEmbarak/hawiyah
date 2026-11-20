@@ -1,7 +1,10 @@
 // Markdown to mdast (mdast-util-from-markdown with the GFM and front matter
 // extensions) and the rejection of constructs the content model does not
 // carry: raw HTML, images, reference-style links and definitions, footnotes,
-// strikethrough and task list items (HWC-MD).
+// strikethrough and task list items (HWC-MD). The one raw HTML form accepted is
+// the key element <kbd>text</kbd> (5a.7): text only, no attribute, no nesting,
+// directly in a paragraph (also of a list item or an alert) or a table cell. It
+// becomes an mdast node { type: 'kbd', value } and the content model's kbd inline.
 
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { frontmatterFromMarkdown } from 'mdast-util-frontmatter';
@@ -38,6 +41,7 @@ export function parseMarkdown(text, file) {
     mdastExtensions: [gfmFromMarkdown(), frontmatterFromMarkdown(['yaml'])],
   });
   const findings = [];
+  foldKeys(tree, file, findings);
   let frontMatter = null;
   const visit = (node, parent) => {
     const line = node.position?.start.line ?? 1;
@@ -46,6 +50,7 @@ export function parseMarkdown(text, file) {
       else findings.push(finding('HWC-MD', file, line, 'a front matter block is allowed only at the start of the file'));
       return;
     }
+    if (node.type === 'html' && node.reported) return;
     if (REJECTED[node.type]) {
       findings.push(finding('HWC-MD', file, line, REJECTED[node.type]));
       return;
@@ -58,6 +63,45 @@ export function parseMarkdown(text, file) {
   };
   visit(tree, null);
   return { tree, frontMatter, findings };
+}
+
+const KBD_FORM = 'the one raw HTML form accepted is the key element <kbd>key</kbd>: text only, without attributes, nesting or line breaks, in a paragraph, list item or table cell';
+/** Parents in which a key element may stand: a paragraph (also inside a list item or an alert) or a table cell. */
+const KBD_PARENTS = new Set(['paragraph', 'tableCell']);
+
+/**
+ * Replaces each <kbd>text</kbd> (three nodes: html '<kbd>', text, html '</kbd>')
+ * by a node { type: 'kbd', value, position, inner } where inner holds the offsets
+ * of the text. Every other raw HTML node stays and is rejected by the visit of
+ * parseMarkdown; a malformed key element gets its own message.
+ */
+function foldKeys(tree, file, findings) {
+  const visit = (node) => {
+    const children = node.children;
+    if (!children) return;
+    for (let i = 0; i < children.length; i += 1) {
+      const child = children[i];
+      if (child.type === 'html' && child.value === '<kbd>' && KBD_PARENTS.has(node.type)) {
+        const text = children[i + 1];
+        const close = children[i + 2];
+        if (text?.type === 'text' && close?.type === 'html' && close.value === '</kbd>' && /^\S(?:[^\n]*\S)?$/.test(text.value)) {
+          children.splice(i, 3, {
+            type: 'kbd',
+            value: text.value,
+            position: { start: child.position.start, end: close.position.end },
+            inner: { start: text.position.start.offset, end: text.position.end.offset },
+          });
+          continue;
+        }
+      }
+      if (child.type === 'html' && /^<\/?kbd\b/i.test(child.value)) {
+        findings.push(finding('HWC-MD', file, child.position?.start.line ?? 1, `"${child.value.slice(0, 40)}" is not a key element; ${KBD_FORM}`));
+        child.reported = true;
+      }
+      visit(child);
+    }
+  };
+  visit(tree);
 }
 
 /**
@@ -92,10 +136,10 @@ export function codeFindings(node, source, file) {
   return findings;
 }
 
-/** Plain text of an mdast node (text, inline code and break content). */
+/** Plain text of an mdast node (text, inline code, key and break content). */
 export function plainText(node) {
   if (!node) return '';
-  if (node.type === 'text' || node.type === 'inlineCode') return node.value;
+  if (node.type === 'text' || node.type === 'inlineCode' || node.type === 'kbd') return node.value;
   if (node.type === 'break') return '\n';
   return (node.children ?? []).map(plainText).join('');
 }

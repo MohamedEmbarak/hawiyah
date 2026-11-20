@@ -11,7 +11,7 @@ const D = '—';
 export const BUTTON = {
   javascript: [
     ['class', 'option', "'hw-button'", true, D], ['type', 'option', "'button' | 'submit' | 'reset'", true, D],
-    ['data-variant', 'option', VARIANT, false, D], ['data-size', 'option', SIZE, false, D], ['data-icon-only', 'option', 'boolean', false, D],
+    ['data-variant', 'option', VARIANT, false, "'primary'"], ['data-size', 'option', SIZE, false, "'md'"], ['data-icon-only', 'option', 'boolean', false, D],
     ['disabled', 'option', 'boolean', false, D], ['aria-busy', 'option', "'true'", false, D], ['aria-disabled', 'option', "'true'", false, D],
     ['aria-pressed', 'option', "'true'", false, D], ['data-shape', 'option', "'circle'", false, D],
   ],
@@ -28,7 +28,7 @@ export const BUTTON = {
 
 export const TABS = {
   javascript: [
-    ['value', 'option', 'string', false, D], ['activationMode', 'option', "'automatic' | 'manual'", false, D], ['overflow', 'option', "'menu' | 'scroll'", false, D],
+    ['value', 'option', 'string', false, D], ['activationMode', 'option', "'automatic' | 'manual'", false, "'automatic'"], ['overflow', 'option', "'menu' | 'scroll'", false, "'menu'"],
     ['overflowLabel', 'option', 'string', false, D], ['onValueChange', 'option', '(value: string) => void', false, D],
   ],
   react: [

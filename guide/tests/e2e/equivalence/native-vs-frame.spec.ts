@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -79,3 +79,24 @@ test('the harness page is not part of the deployed guide', async ({ page }) => {
   const script = await page.request.get(`${HARNESS_PATH}harness.js`);
   expect(script.status()).toBe(404);
 });
+
+// 5a.9: on every reference page of the build, a group without frame renders its Angular
+// result natively in the page (prerendered and hydrated), and a group with frame never
+// does (pages/framed.spec.ts covers its frame).
+const builtManifest = JSON.parse(readFileSync(fileURLToPath(new URL('../../../src/generated/content/manifest.json', import.meta.url)), 'utf8')) as {
+  pages: { id: string; langs: ('ar' | 'en')[]; liveGroups: { example: string; frame?: true }[] }[];
+};
+for (const entry of builtManifest.pages) {
+  for (const lang of entry.langs) {
+    test(`${entry.id} ${lang}: every unframed group renders Angular natively, a framed group does not`, async ({ page }) => {
+      await page.goto(`${lang}/components/${entry.id}/reference/`);
+      await hydrated(page);
+      const blocks = page.locator('guide-example-block');
+      await expect(blocks).toHaveCount(entry.liveGroups.length);
+      for (const [index, group] of entry.liveGroups.entries()) {
+        const native = blocks.nth(index).locator(`guide-native-result guide-example-${entry.id}-${group.example}`);
+        await expect(native, `${entry.id}/${group.example}`).toHaveCount(group.frame ? 0 : 1);
+      }
+    });
+  }
+}

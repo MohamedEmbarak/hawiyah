@@ -23,9 +23,12 @@ describe('an entry without approvedBy or reason fails, in every list', () => {
     ['exclusions.json attribute', { ...empty, exclusions: { components: { x: { vanilla: { approvedBy: 'lead', reason: 'r', nativeAttributes: { type: '' } } } } } }, 'scripts/api-tables/exclusions.json x.vanilla.nativeAttributes.type has no reason'],
     ['defaults.json', { ...empty, defaults: { entries: [{ id: 'x', framework: 'vanilla', name: 'n', approvedBy: 'lead' }] } }, 'scripts/api-tables/defaults.json entry 1 (x.n) has no reason'],
     ['TARGET_OVERRIDES', { ...empty, targetOverrides: { x: { angular: ['HwX'], reason: 'r' } } }, 'scripts/api-tables/targets.mjs TARGET_OVERRIDES.x has no approvedBy'],
+    ['UNOWNED_EXPORTS', { ...empty, unowned: [{ framework: 'vue', name: 'X', reason: 'r' }] }, 'scripts/api-tables/targets.mjs UNOWNED_EXPORTS[0] (vue X) has no approvedBy'],
+    ['vocabulary-exceptions.json', { ...empty, vocabulary: [{ file: 'docs/components/x.md', text: 't', reason: 'r' }] }, 'scripts/api-tables/vocabulary-exceptions.json entry 1 has no approvedBy'],
     ['VUE_SLOT_PATTERNS', { ...empty, slotPatterns: { x: [{ name: '<v>', expression: 'item.v', approvedBy: 'lead' }] } }, 'scripts/api-tables/targets.mjs VUE_SLOT_PATTERNS.x[0] has no reason'],
     ['arabic-exceptions.json', { ...empty, arabic: [{ file: 'docs/components/x.ar.md', text: 't', reason: 'r' }] }, 'scripts/content/arabic-exceptions.json entry 1 has no approvedBy'],
     ['latin-allowlist.json', { ...empty, latin: [{ text: 't', approvedBy: 'lead' }] }, 'scripts/page-guards/latin-allowlist.json entry 1 has no reason'],
+    ['keyboard-exceptions.json', { ...empty, keyboard: [{ component: 'x', key: 'F10', approvedBy: 'lead' }] }, 'scripts/equivalence/keyboard-exceptions.json entry 1 has no reason'],
   ];
   it.each(cases)('%s', (_label, lists, problem) => {
     expect(checkLeadLists(lists).problems).toEqual([problem]);

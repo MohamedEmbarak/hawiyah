@@ -6,7 +6,7 @@ source:
   api: 76babfc30d7b
   accessibility: 29c24403f585
   rtl-and-localisation: 22b2b0a4fd7c
-  platforms-code-reference: e2b4dfa527ec
+  platforms-code-reference: fa5efd2c53e1
 ---
 # النموذج أ
 
@@ -129,7 +129,7 @@ template: `<p class="hw-type" lang="ar" dir="rtl">اقرأ <strong>الشروط<
 أمر التثبيت نص برمجي.
 
 ```shell
-npm install @hawiyah/vanilla
+npm run build
 ```
 
 ```ts title="setup.ts"

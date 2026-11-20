@@ -23,8 +23,12 @@ const fromFixture = (rows) => rows.filter((row) => row[1] !== 'slot').map((row) 
 describe('targets', () => {
   it('maps a page id to the documented exports', () => {
     const exists = (framework, name) => resolveExport(context, framework, name) !== null;
-    expect(targetsFor('button', exists)).toEqual({ vanilla: 'createButton', react: 'Button', vue: 'Button', angular: ['HwButtonDirective'] });
-    expect(targetsFor('tabs', exists)).toEqual({ vanilla: 'createTabs', react: 'Tabs', vue: 'Tabs', angular: ['HwTabsComponent', 'HwTabComponent'] });
+    expect(targetsFor('button', exists)).toEqual({ vanilla: ['createButton'], react: ['Button'], vue: ['Button'], angular: ['HwButtonDirective'] });
+    expect(targetsFor('tabs', exists)).toEqual({ vanilla: ['createTabs'], react: ['Tabs'], vue: ['Tabs'], angular: ['HwTabsComponent', 'HwTabComponent'] });
+    expect(targetsFor('file-upload', exists)).toEqual({
+      vanilla: ['createFileUpload', 'createFileUploadList'], react: ['FileUpload', 'FileUploadList'], vue: ['FileUpload', 'FileUploadList'],
+      angular: ['HwFileUploadComponent', 'HwFileUploadListComponent'],
+    });
   });
   it('qualifies further Angular classes by their element', () => {
     expect(qualifier('hw-tab', 'HwTabComponent')).toBe('hw-tab');

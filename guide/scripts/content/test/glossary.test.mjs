@@ -1,19 +1,49 @@
-// Forms the Arabic glossary (docs/components/README.md) excludes, searched in the
-// guide's Arabic text sources and the Arabic component pages: a style sheet is ورقة
-// الأنماط, the Kind column is الفئة (الصنف is the CSS class), a controller is
-// المتحكم, نمط is used only as نمط التبويبات with the reference to the pattern, an
-// HTML attribute is الخاصية (السمة is the theme), code is الشيفرة, an adapter is
-// المحوّل, a visual family of Button is الطراز المرئي, a licence is الترخيص, and
-// both reading directions are اتجاهَا القراءة.
+// Forms the Arabic glossary (docs/guides/glossary.md) excludes, searched in the
+// guide's Arabic text sources and the Arabic component pages. The forms are read
+// from the table "Forms the glossary excludes" of that file (leadAmendments A14),
+// each a JavaScript regular expression in code; the file also holds the frozen API
+// terms, the category labels of categories.json and the proper-noun exception.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fromMarkdown } from 'mdast-util-from-markdown';
+import { gfmFromMarkdown } from 'mdast-util-gfm';
+import { gfm } from 'micromark-extension-gfm';
 import { describe, expect, it } from 'vitest';
 
 const guideDir = fileURLToPath(new URL('../../../', import.meta.url));
 const docsDir = join(guideDir, '..', 'docs', 'components');
 const appDir = join(guideDir, 'src', 'app');
+export const GLOSSARY_FILE = join(guideDir, '..', 'docs', 'guides', 'glossary.md');
+
+const cellText = (cell) => (cell.children ?? []).map((node) => (node.type === 'text' || node.type === 'inlineCode' ? node.value : cellText(node))).join('').trim();
+
+/** The tables of the glossary by caption: { caption: rows of cell texts (the header row first) }. */
+export function glossaryTables(text) {
+  const tree = fromMarkdown(text, { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] });
+  const tables = {};
+  tree.children.forEach((node, index) => {
+    const caption = tree.children[index - 1];
+    if (node.type !== 'table' || caption?.type !== 'paragraph') return;
+    const name = cellText(caption).replace(/^Table: /, '');
+    tables[name] = node.children.map((row) => row.children.map(cellText));
+  });
+  return tables;
+}
+
+/** The excluded forms: [{ form: RegExp, use }] from the table of the glossary. */
+export function readExcluded(text) {
+  const rows = glossaryTables(text)['Forms the glossary excludes'] ?? [];
+  return rows.slice(1).map(([literal, use]) => {
+    const match = /^\/(.+)\/([a-z]*)$/s.exec(literal);
+    if (!match) throw new Error(`glossary: the excluded form ${literal} is not a regular expression literal`);
+    return { form: new RegExp(match[1], match[2]), use };
+  });
+}
+
+const glossaryText = readFileSync(GLOSSARY_FILE, 'utf8');
+const EXCLUDED = readExcluded(glossaryText);
 
 function files(dir, test) {
   const out = [];
@@ -31,22 +61,6 @@ const sources = [
   ...files(join(appDir, 'i18n'), (name) => /\.(ts|json)$/.test(name) && !name.endsWith('.spec.ts')),
 ];
 
-// Arabic letters, for word boundaries (\b does not see them).
-const AR = '\u0600-\u06FF';
-const EXCLUDED = [
-  { form: /ملف(?:ات)? (?:ال)?أنماط|ملف(?:ات)? CSS/, use: 'ورقة الأنماط' },
-  { form: /وحد(?:ة|ات) (?:ال)?تحك\u0651?م/, use: 'المتحكم' },
-  { form: /^\|[^\n]*\|\s*الصنف\s*\|[^\n]*\|\s*$/m, use: 'الفئة as the Kind column header' },
-  { form: /نمط(?! التبويبات في ممارسات التأليف)/, use: 'نمط only as نمط التبويبات with the reference to the pattern' },
-  { form: /(?:[وفبلك]?ال|[وفبلك])فئة\s+`?hw-/, use: 'الصنف for a CSS class (الفئة is the Kind column)' },
-  { form: new RegExp(`(?:^|[^${AR}])(?:[وفبلك]?ال|[وفبلك])?صنف(?![${AR}])(?!\\s+\`)`), use: 'الصنف only for a CSS class, followed by its name in code (the Kind column is الفئة)' },
-  { form: /سمة[\u064B-\u0652]?\s+`?(?!dga\b|custom\b|data-hw-theme\b)[A-Za-z]/, use: 'الخاصية for an HTML attribute (السمة is the theme)' },
-  { form: new RegExp(`(?:^|[^${AR}])(?:[وفبلك]?ال)كود`), use: 'الشيفرة for code (كود المنصات is the Platforms Code)' },
-  { form: /مهاي[ئي]/, use: 'المحوّل for an adapter' },
-  { form: /في كلا الاتجاهين/, use: 'في اتجاهَي القراءة كليهما' },
-  { form: /(?:[وفبلك]?ال|[وفبلك])فئات? المرئية/, use: 'الطراز المرئي, الطُّرُز المرئية for a visual family of Button' },
-  { form: /رخصة/, use: 'الترخيص' },
-];
 
 /** Lines of `text` that contain an excluded form. */
 export function excludedForms(text) {
@@ -58,6 +72,26 @@ export function excludedForms(text) {
 }
 
 describe('Arabic glossary', () => {
+  it('reads its twelve excluded forms from docs/guides/glossary.md', () => {
+    expect(EXCLUDED).toHaveLength(12);
+    expect(EXCLUDED.every((item) => item.form instanceof RegExp && item.use)).toBe(true);
+  });
+
+  it('holds the frozen API terms, one term each for an HTML attribute, a prop and a CSS property, the category labels and the proper-noun exception', () => {
+    const tables = glossaryTables(glossaryText);
+    const terms = new Map((tables['Arabic terms of the guide'] ?? []).slice(1).map(([concept, arabic]) => [concept, arabic]));
+    for (const concept of ['slot (Vue)', 'event (Vue)', 'emit (an event)', 'output (Angular)', 'content projection (Angular)', 'default value', 'required', 'type', 'density', 'locale', 'direction']) {
+      expect(terms.get(concept), concept).toMatch(/[\u0600-\u06FF]/);
+    }
+    const three = ['HTML attribute', 'React or Vue prop', 'CSS property'].map((concept) => terms.get(concept));
+    expect(new Set(three).size).toBe(3);
+    const categories = JSON.parse(readFileSync(join(appDir, 'i18n', 'categories.json'), 'utf8'));
+    const labels = (tables['Category labels'] ?? []).slice(1).map(([category, arabic]) => [category, arabic]);
+    expect(labels).toEqual(Object.keys(categories.en).map((id) => [`${categories.en[id]} (${id})`, categories.ar[id]]));
+    expect(glossaryText).toContain('## Proper nouns');
+    expect(glossaryText).toContain('«كود المنصات»');
+  });
+
   it('reads the Arabic pages and the text sources', () => {
     expect(sources.filter((file) => file.endsWith('.ar.md')).length).toBeGreaterThan(1);
     expect(sources.some((file) => file.endsWith(join('landing', 'i18n.ts')))).toBe(true);

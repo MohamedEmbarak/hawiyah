@@ -3,6 +3,7 @@
 
 import GithubSlugger from 'github-slugger';
 import { DIRECTION, GITHUB_BLOB, H2, LANGUAGE_NAMES, finding } from './config.mjs';
+import { EVIDENCE_IDS, evidenceHeadings, evidenceOf } from './evidence.mjs';
 import { resolveLink } from './links.mjs';
 import { isLive } from './live.mjs';
 import { plainText } from './parse.mjs';
@@ -46,7 +47,8 @@ export function codeBlock(node) {
  * Builds the page model.
  * @param {any} outline Result of analysePage().
  * @param {{ id: string, fileName: string, filePath: string, repoDir: string, componentsDir: string,
- *           sourcePath: string, built: Set<string>, englishIds?: string[], englishLevels?: number[] }} ctx
+ *           sourcePath: string, built: Set<string>, englishIds?: string[], englishLevels?: number[], entry?: any }} ctx
+ *   entry: the components.json entry; with it the page gets its evidence panel (5a.11).
  * @returns {{ page: any, findings: any[], ids: string[] }}
  */
 export function buildModel(outline, ctx) {
@@ -68,6 +70,8 @@ export function buildModel(outline, ctx) {
         case 'emphasis': out.push({ type: 'emphasis', children: inlines(node.children) }); break;
         case 'strong': out.push({ type: 'strong', children: inlines(node.children) }); break;
         case 'inlineCode': out.push({ type: 'inlineCode', value: node.value }); break;
+        // A key element (5a.7): a Latin key name is written left to right and not translated.
+        case 'kbd': out.push({ type: 'kbd', value: node.value, latin: !/\p{Script=Arabic}/u.test(node.value) }); break;
         case 'break': out.push({ type: 'break' }); break;
         case 'link': {
           const resolved = resolveLink(node.url, linkCtx);
@@ -132,6 +136,7 @@ export function buildModel(outline, ctx) {
           out.push({
             type: 'table',
             caption,
+            ...(outline.keyboard?.node === node ? { keyboard: true } : {}),
             columns,
             rows: rows.map((row) => Object.fromEntries(columns.map((column, column_) => [column.key, inlines(row.children[column_]?.children ?? [])]))),
           });
@@ -140,7 +145,7 @@ export function buildModel(outline, ctx) {
         case 'code':
           if (isLive(node)) {
             const group = outline.groupOf.get(node);
-            if (group && group.first === node && group.section) out.push({ type: 'live', example: group.example });
+            if (group && group.first === node && group.section) out.push({ type: 'live', example: group.example, ...(group.frame ? { frame: true } : {}) });
           } else out.push(codeBlock(node));
           break;
         case 'thematicBreak':
@@ -174,13 +179,21 @@ export function buildModel(outline, ctx) {
     sourcePath: ctx.sourcePath,
     githubUrl: `${GITHUB_BLOB}${ctx.sourcePath}`,
   };
+  // The evidence panel (5a.11): generated after the section Platforms Code reference, with its two headings.
+  if (ctx.entry) {
+    for (const [index, id] of ids.entries()) {
+      if (Object.values(EVIDENCE_IDS).includes(id)) findings.push(finding('HWC-H2', outline.file, lineOf(outline.headings[index].node), `the heading id ${id} is the evidence panel's; give the heading another text`));
+    }
+    page.evidence = evidenceOf({ id: ctx.id, entry: ctx.entry, repoDir: ctx.repoDir });
+    page.headings.push(...evidenceHeadings(outline.lang));
+  }
   return { page, findings, ids, crossLinks };
 }
 
 /** Plain text of a list of model inlines (for the manifest). */
 export function inlineText(nodes) {
   return nodes.map((node) => {
-    if (node.type === 'text' || node.type === 'inlineCode') return node.value;
+    if (node.type === 'text' || node.type === 'inlineCode' || node.type === 'kbd') return node.value;
     if (node.type === 'break') return ' ';
     return inlineText(node.children ?? []);
   }).join('').replace(/\s+/g, ' ').trim();

@@ -98,14 +98,21 @@ describe('scope options for local gates (5a.1)', () => {
     expect(finalLine(options, { basePath: '/hawiyah/', pages: 16, ran: ran(options) })).toMatch(/18 steps: .* 90-registry-dist; 80-equivalence deferred to the shard jobs: deployable only with their merged report$/);
   });
 
+  it('--docs with --defer-equivalence (the scale fixture) leaves out steps 80 and 90 and is not deployable', () => {
+    const options = parseArgs(['--docs', 'x', '--defer-equivalence']);
+    expect(ran(options)).toEqual(PLANNED_STEPS.filter((id) => id !== '80-equivalence' && id !== '90-registry-dist'));
+    expect(notDeployableReasons(options)).toEqual(['--docs x']);
+    expect(finalLine(options, { basePath: '/hawiyah/', pages: 340, ran: ran(options) })).toMatch(/^build: production OK, not deployable \(--docs x\), 340 prerendered pages, .*17 steps: .*; 80-equivalence deferred to the shard jobs: deployable only with their merged report$/);
+  });
+
   it('refuses combinations that would hide what a build covers', () => {
     expect(() => parseArgs(['--pages', 'button', '--only', '80-equivalence'])).toThrow('--only cannot be combined');
     expect(() => parseArgs(['--pages', 'button', '--configuration', 'development'])).toThrow('--pages concerns step 80');
     expect(() => parseArgs(['--pages', 'button', '--generate-only'])).toThrow('--pages concerns step 80');
     expect(() => parseArgs(['--pages', 'Button'])).toThrow('--pages needs component ids');
     expect(() => parseArgs(['--pages', ','])).toThrow('--pages needs component ids');
-    expect(() => parseArgs(['--defer-equivalence', '--pages', 'button'])).toThrow('--defer-equivalence is for the deployable build');
-    expect(() => parseArgs(['--defer-equivalence', '--docs', 'x'])).toThrow('--defer-equivalence is for the deployable build');
+    expect(() => parseArgs(['--defer-equivalence', '--pages', 'button'])).toThrow('--defer-equivalence is for the build of guide.yml and of the scale fixture');
+    expect(() => parseArgs(['--defer-equivalence', '--preview', 'abcdef1'])).toThrow('--defer-equivalence is for the build of guide.yml and of the scale fixture');
     expect(() => parseArgs(['--docs'])).toThrow('--docs needs a value');
   });
 

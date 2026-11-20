@@ -1,5 +1,5 @@
 // The compliance sentence is one string in one source (src/app/i18n/compliance.json,
-// glossary of docs/components/README.md): the footer and the landing import it, and
+// authoring contract docs/components/README.md): the footer and the landing import it, and
 // the Platforms Code reference section of every component page opens with it. No
 // other wording of the claim exists in the text sources or the component pages.
 

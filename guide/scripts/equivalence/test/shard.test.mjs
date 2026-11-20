@@ -3,7 +3,7 @@
 // group, on a missing or repeated shard and on a failed shard.
 import { describe, expect, it } from 'vitest';
 import { manifestKeys, mergeReports } from '../merge.mjs';
-import { groupKey, pagesErrors, parseShard, shardGroups, summaryLine, workerCount } from '../run.mjs';
+import { groupKey, pagesErrors, parseArgs, parseShard, shardGroups, summaryLine, workerCount } from '../run.mjs';
 
 const manifest = {
   pages: [
@@ -109,5 +109,12 @@ describe('merge of the shard reports', () => {
     const mixed = [...reports(4).slice(0, 3), { file: 'other.json', report: shardReport(3, 3) }];
     expect(mergeReports(mixed, manifest).problems).toContain('HWE-MERGE other.json: shard 3/3 belongs to a split into 3, the first report to one into 4');
     expect(mergeReports([], manifest).problems).toEqual(['HWE-MERGE: no shard report given']);
+  });
+
+  it('fails on a shard that ran with --draft (the keyboard rule left out, 5a.8)', () => {
+    const list = reports(4);
+    list[0] = { file: 'shard-1.json', report: { ...list[0].report, scope: { ...list[0].report.scope, draft: true } } };
+    expect(mergeReports(list, manifest).problems).toEqual(['HWE-MERGE shard-1.json: the shard ran with --draft (HWE-KEYS left out); a merge needs the keyboard rule']);
+    expect(parseArgs(['--shard', '1/4', '--draft'])).toMatchObject({ shard: '1/4', keys: false });
   });
 });

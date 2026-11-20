@@ -22,8 +22,13 @@ const toPosix = (value) => value.split(sep).join('/');
 /** Characters that render as emoji (default emoji presentation, or followed by VS16). */
 export const EMOJI = /\p{Emoji_Presentation}|\p{Extended_Pictographic}️/u;
 const ICON_FONT_CLASS = /^(?:fa|fas|far|fab|fal|fad|fa-[\w-]+|material-icons(?:-[\w-]+)?|material-symbols(?:-[\w-]+)?|bi|bi-[\w-]+|glyphicon(?:-[\w-]+)?|icon-[\w-]+|ion-[\w-]+|ionicons|mdi|mdi-[\w-]+|codicon(?:-[\w-]+)?|ti|ti-[\w-]+|feather(?:-[\w-]+)?)$/;
-/** Four or more Latin-script words in a row, separated by spaces or light punctuation. */
-const LATIN_RUN = /\p{Script=Latin}[\p{Script=Latin}\p{M}'’-]*(?:[\s,;:()/"“”-]+\p{Script=Latin}[\p{Script=Latin}\p{M}'’-]*){3,}/gu;
+/**
+ * Four or more Latin-script words in a row, separated by spaces or light
+ * punctuation. A hyphen joins the parts of one word (hw-mobile-top-bar, the
+ * element of a generated API table caption, is one word); it separates words
+ * only next to a space or another separator.
+ */
+const LATIN_RUN = /\p{Script=Latin}[\p{Script=Latin}\p{M}'’-]*(?:-*[\s,;:()/"“”][\s,;:()/"“”-]*\p{Script=Latin}[\p{Script=Latin}\p{M}'’-]*){3,}/gu;
 const SKIP_TEXT = new Set(['code', 'kbd', 'pre', 'samp', 'script', 'style', 'template', 'svg', 'math']);
 const TEXT_ATTRIBUTES = ['aria-label', 'aria-description', 'aria-roledescription', 'title', 'alt', 'placeholder'];
 

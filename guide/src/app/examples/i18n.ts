@@ -19,6 +19,8 @@ export interface ExampleTexts {
   readonly failed: (framework: string, firstLine: string) => string;
   /** Appended to the status when a frame runs on the bundled runtime. */
   readonly bundledRuntime: string;
+  /** Shown without script in place of the result of a framed group (5a.9). */
+  readonly framedNoScript: string;
 }
 
 const FRAMEWORK_NAMES: Readonly<Record<ExampleFramework, string>> = {
@@ -39,6 +41,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     loading: (framework) => `Loading the ${framework} result`,
     failed: (framework, firstLine) => `The ${framework} result could not be loaded: ${firstLine}`,
     bundledRuntime: ' (bundled runtime)',
+    framedNoScript: 'This example renders a whole page layout, so its result is shown in a frame, which needs JavaScript. The Angular listing below shows its code.',
   },
   ar: {
     result: 'النتيجة',
@@ -50,6 +53,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     loading: (framework) => `جارٍ تحميل نتيجة ${framework}`,
     failed: (framework, firstLine) => `تعذّر تحميل نتيجة ${framework}: ${firstLine}`,
     bundledRuntime: ' (ببيئة التشغيل المجمّعة)',
+    framedNoScript: 'يعرض هذا المثال تخطيط صفحة كاملة، فتظهر نتيجته في إطار يحتاج إلى JavaScript. وتعرض شيفرة Angular أدناه مصدره.',
   },
 };
 

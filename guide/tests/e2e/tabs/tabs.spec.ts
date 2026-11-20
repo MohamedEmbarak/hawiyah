@@ -11,8 +11,10 @@ import { pageModel } from '../support/routes';
 // equivalence with the Angular result are covered by 4b.2:
 //   - each group renders in the vanilla, React and Vue frames in ar and en;
 //   - the normalised DOM, the aria snapshot and the screenshot of the four results
-//     are equal at rest and after the tabs-keyboard (basic, manual) and tabs-click
-//     (vertical) checks declared on the html blocks;
+//     are equal at rest and after each step of the checks declared on the html
+//     blocks (tabs-keyboard, tabs-keyboard-vertical, tabs-activate, tabs-click,
+//     tabs-disabled), and each step asserts its documented outcome in every frame
+//     (5a.8: the keys of the keyboard table equal the keys the steps press);
 //   - tests/e2e/equivalence/native-vs-frame.spec.ts: the native Angular result and
 //     the Angular frame of each group have equal aria snapshots.
 // What every component page shares (outline, content navigation, framework tabs and

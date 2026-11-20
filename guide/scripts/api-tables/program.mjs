@@ -1,5 +1,6 @@
 // One TypeScript program over the declaration entry points of the four
-// installed adapter packages (@hawiyah/vanilla, react, vue, angular). Every
+// installed adapter packages (@hawiyah/vanilla, react, vue, angular) and of
+// @hawiyah/core. Every
 // declaration reader of step 30 works on this program, so the files of each
 // package and of its peer types (@types/react, vue, @angular/core) are parsed
 // once per run.
@@ -33,13 +34,18 @@ export const ADAPTER_PACKAGES = {
   angular: '@hawiyah/angular',
 };
 
+/** Further packages whose exports the vocabulary check of step 30 reads (modules.core). */
+export const OTHER_PACKAGES = {
+  core: '@hawiyah/core',
+};
+
 /**
  * Creates the program and returns the checker and the module symbol of each adapter.
  * @param {string} nodeModules Absolute path of guide/node_modules (or a fixture copy).
  */
 export function createDeclarationProgram(nodeModules) {
   const ts = loadTypeScript(nodeModules);
-  const entries = Object.fromEntries(Object.entries(ADAPTER_PACKAGES).map(([framework, name]) => [framework, declarationEntry(nodeModules, name)]));
+  const entries = Object.fromEntries(Object.entries({ ...ADAPTER_PACKAGES, ...OTHER_PACKAGES }).map(([framework, name]) => [framework, declarationEntry(nodeModules, name)]));
   const program = ts.createProgram({
     rootNames: Object.values(entries),
     options: {

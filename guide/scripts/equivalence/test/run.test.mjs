@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import tabsClick from '../checks/tabs-click.mjs';
-import tabsKeyboard, { nextTabKey } from '../checks/tabs-keyboard.mjs';
+import tabsKeyboard from '../checks/tabs-keyboard.mjs';
 import { fileURLToPath } from 'node:url';
 import { generatedNamePattern } from '../generated-names.mjs';
 import { normalize } from '../normalize.js';
@@ -183,7 +183,7 @@ describe('a structure entry with ignore (self-test, leadAmendments A8)', () => {
 
   it('counts one documented difference in the summary line', () => {
     expect(summaryLine({ groups: 9, languages: 2, frameworks: 4, interactionChecks: 14, afterInteraction: 4, restOnly: 5, documented: 1 })).toBe(
-      'equivalence: 9 groups x 2 languages x 4 frameworks equal (4 compared after interaction, 5 at rest only; 14 interaction checks, 1 documented difference)',
+      'equivalence: 9 groups x 2 languages x 4 frameworks equal (4 compared after interaction, 5 at rest only; 14 interaction checks, 0 asserted steps, 1 documented difference; axe clean in 0 frame documents)',
     );
   });
 });
@@ -225,8 +225,8 @@ describe('scope of a run and required checks (review finding R2[3], R2[11])', ()
       const { groups } = groupLive(parseMarkdown(text, file).tree.children, file);
       expect(Object.fromEntries(groups.map((item) => [item.example, checkNames(item)])), file).toEqual({
         basic: ['tabs-keyboard'],
-        vertical: ['tabs-click', 'tabs-keyboard'],
-        manual: ['tabs-keyboard', 'tabs-activate'],
+        vertical: ['tabs-click', 'tabs-keyboard-vertical'],
+        manual: ['tabs-activate'],
         'disabled-tab': ['tabs-keyboard', 'tabs-disabled'],
       });
     }
@@ -244,11 +244,8 @@ describe('runner', () => {
     expect(mountSelector('vue')).toBe('#hawiyah-preview-root > #app');
   });
 
-  it('chooses the next-tab key by direction and orientation', () => {
-    expect(nextTabKey('ltr', 'horizontal')).toBe('ArrowRight');
-    expect(nextTabKey('rtl', 'horizontal')).toBe('ArrowLeft');
-    expect(nextTabKey('rtl', 'vertical')).toBe('ArrowDown');
-    expect(tabsKeyboard.steps.map((step) => step.name)).toEqual(['focus-selected-tab', 'next-tab-key', 'end', 'home']);
+  it('names the steps of the Tabs checks', () => {
+    expect(tabsKeyboard.steps.map((step) => step.name)).toEqual(['tab-into-list', 'right-arrow', 'left-arrow', 'left-arrow-again', 'end', 'right-arrow-again', 'home', 'tab-to-panel']);
     expect(tabsClick.steps.map((step) => step.name)).toEqual(['click-second-tab']);
   });
 
@@ -279,8 +276,11 @@ describe('runner', () => {
       expect(await (await fetch(`${served.origin}/hawiyah/__harness/harness.js`)).text()).toBe('export {};');
       expect(await (await fetch(`${served.origin}/hawiyah/`)).text()).toBe('<p>dist</p>');
       expect(harnessUrl(served.origin, '/hawiyah/', group, '0.3.0')).toBe(
-        `${served.origin}/hawiyah/__harness/?id=tabs&lang=ar&example=basic&pin=0.3.0&frameworks=vanilla%2Creact%2Cvue%2Cangular`,
+        `${served.origin}/hawiyah/__harness/?id=tabs&lang=ar&example=basic&pin=0.3.0&frameworks=vanilla%2Creact%2Cvue%2Cangular&width=720`,
       );
+      // A framed group (5a.9) is compared in frames 1280 px wide, and its second pass at 390 px.
+      expect(harnessUrl(served.origin, '/hawiyah/', { ...group, frame: true }, '0.3.0')).toMatch(/&width=1280$/);
+      expect(harnessUrl(served.origin, '/hawiyah/', { ...group, frame: true }, '0.3.0', undefined, 390)).toMatch(/&width=390$/);
     } finally {
       await served.close();
     }

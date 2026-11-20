@@ -1,0 +1,217 @@
+// The keyboard rule of step 80 (5a.8): the binding of the keyboard table to the
+// steps of the checks (HWE-KEYS), the Tabs oracle, and on a stand-in page in
+// Chromium the outcome assertions (HWE-EXPECT), the keys a step presses
+// (HWE-CHECK) and axe in each frame document (HWE-AXE).
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { chromium } from '@playwright/test';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import tabsActivate from '../checks/tabs-activate.mjs';
+import tabsKeyboard from '../checks/tabs-keyboard.mjs';
+import tabsKeyboardVertical from '../checks/tabs-keyboard-vertical.mjs';
+import { nextEnabled, previousEnabled, target } from '../checks/lib/tabs.mjs';
+import { isKey, keyName, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors } from '../keys.mjs';
+import { axeFrames, chromiumPath, runChecks } from '../run.mjs';
+
+const guideDir = fileURLToPath(new URL('../../../', import.meta.url));
+const componentsFile = fileURLToPath(new URL('../../../../components.json', import.meta.url));
+
+const table = (rows) => ({ caption: 'Keyboard interaction of Tabs', line: 7, rows });
+const ROWS = [
+  { keys: ['Tab'], action: 'Moves focus into the list.' },
+  { keys: ['ArrowRight', 'ArrowLeft'], action: 'Moves focus.' },
+  { keys: ['Home', 'End'], action: 'First or last.' },
+];
+const page = (keyboard, checks = 'tabs-keyboard') => ({ id: 'tabs', langs: ['en'], liveGroups: [{ example: 'basic', check: checks }], keyboard: { en: keyboard } });
+const checks = new Map([[tabsKeyboard.name, tabsKeyboard], [tabsActivate.name, tabsActivate], [tabsKeyboardVertical.name, tabsKeyboardVertical]]);
+const scope = new Map([['tabs', ['createTabs']]]);
+
+describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
+  it('passes when the keys of the table are the keys the steps press, and reports each row with its steps', () => {
+    const { errors, report } = keyboardRule({ pages: [page(table(ROWS))], checks, scope, exceptions: [] });
+    expect(errors).toEqual([]);
+    expect(report[0].rows[1].steps.map((step) => `${step.check}/${step.step} ${step.key}`)).toEqual([
+      'tabs-keyboard/right-arrow ArrowRight', 'tabs-keyboard/right-arrow-again ArrowRight', 'tabs-keyboard/left-arrow ArrowLeft', 'tabs-keyboard/left-arrow-again ArrowLeft',
+    ]);
+    const lines = keyboardReportLines(report);
+    expect(lines[0]).toBe('keyboard: tabs/en "Keyboard interaction of Tabs"');
+    expect(lines[1]).toBe('  Tab | Moves focus into the list.');
+    expect(lines[2]).toMatch(/^ {4}tabs-keyboard\/tab-into-list presses Tab: Tab from before the tab list moves focus to the selected tab\. \[WAI-ARIA Authoring Practices, Tabs pattern/);
+  });
+
+  it('fails on a documented key that no step presses and on a pressed key the table lacks', () => {
+    const withoutHome = ROWS.map((row) => (row.keys.includes('Home') ? { ...row, keys: ['End'] } : row));
+    expect(keyboardRule({ pages: [page(table(withoutHome))], checks, scope, exceptions: [] }).errors).toEqual([
+      'HWE-KEYS docs/components/tabs.md:7: the step tabs-keyboard/home presses Home, which the keyboard table does not document',
+    ]);
+    const extra = [...ROWS, { keys: ['Escape'], action: 'Closes.' }];
+    expect(keyboardRule({ pages: [page(table(extra))], checks, scope, exceptions: [] }).errors).toEqual([
+      'HWE-KEYS docs/components/tabs.md:7: the keyboard table documents Escape ("Closes."), which no step of the checks tabs-keyboard presses; write a step that presses it and asserts the outcome, or propose a keyboard-exceptions.json entry',
+    ]);
+    // A key the lead's list excuses (a key a sandboxed frame cannot press).
+    expect(keyboardRule({ pages: [page(table(extra))], checks, scope, exceptions: [{ component: 'tabs', key: 'Escape', reason: 'r', approvedBy: 'lead' }] }).errors).toEqual([]);
+  });
+
+  it('fails on a component with a controller whose page has no keyboard table, unless the lead leaves it out', () => {
+    expect(keyboardRule({ pages: [page(null)], checks, scope, exceptions: [] }).errors[0]).toMatch(/^HWE-KEYS docs\/components\/tabs\.md:1: tabs has a controller \(createTabs\), so the Accessibility section has the keyboard table/);
+    expect(keyboardRule({ pages: [page(null)], checks, scope, exceptions: [{ component: 'tabs', reason: 'r', approvedBy: 'lead' }] }).errors).toEqual([]);
+    // A page without a controller is not bound: its table is reported, never failed.
+    const button = { ...page(table([{ keys: ['Enter'], action: 'Activates.' }]), ''), id: 'button' };
+    const result = keyboardRule({ pages: [button], checks, scope, exceptions: [] });
+    expect(result.errors).toEqual([]);
+    expect(result.report[0]).toMatchObject({ page: 'button', bound: false, reason: 'no controller of @hawiyah/vanilla' });
+  });
+
+  it('fails on a step that declares keys without expect, outcome or reference', () => {
+    const check = { name: 'x-keys', steps: [{ name: 'a', keys: ['Enter'], async run() {} }, { name: 'b', keys: ['Return'], outcome: 'o', reference: 'r', async run() {}, async expect() {} }, { name: 'c', async run() {} }] };
+    expect(stepErrors(check)).toEqual([
+      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step a declares keys without expect: a step that presses a key asserts the documented outcome',
+      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step a declares keys without a one-line outcome',
+      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step a declares keys without the reference of its outcome (the WAI-ARIA Authoring Practices pattern, CONTRACT.md or CHANGELOG.md)',
+      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step b declares the key Return, which is not a key id of KEY_NAMES in scripts/content/config.mjs',
+    ]);
+    for (const check of checks.values()) expect(stepErrors(check), check.name).toEqual([]);
+  });
+
+  it('reads the scope from the controller factories of the installed @hawiyah/vanilla (leadAmendments A2)', async () => {
+    const found = await keyboardScope({ guideDir, componentsFile });
+    expect(found.get('tabs')).toEqual(['createTabs']);
+    expect(found.has('button')).toBe(false);
+    // The 33 components of the inventory, and app-shell, whose page documents createSkipLink (lead decision L3).
+    expect(found.size).toBe(34);
+    expect(found.get('app-shell')).toEqual(['createSkipLink']);
+    expect(found.get('file-upload')).toEqual(['createFileUploadList']);
+  });
+
+  it('keeps the lead\'s list of keyboard exceptions valid and names keys by language', () => {
+    expect(readKeyboardExceptions()).toEqual([]);
+    expect(isKey('Shift+Tab')).toBe(true);
+    expect(isKey('Return')).toBe(false);
+    expect(keyName('ArrowLeft', 'ar')).toBe('السهم الأيسر');
+    expect(keyName('Shift+Tab')).toBe('Shift + Tab');
+  });
+});
+
+describe('the Tabs oracle (written from the WAI-ARIA Authoring Practices and CONTRACT.md before the checks ran)', () => {
+  const snapshot = { count: 4, disabled: [false, true, false, false], focused: 0 };
+  it('moves to the next and the previous enabled tab, wrapping and skipping disabled tabs', () => {
+    expect(nextEnabled(snapshot, 0)).toBe(2);
+    expect(nextEnabled(snapshot, 3)).toBe(0);
+    expect(previousEnabled(snapshot, 0)).toBe(3);
+    expect(previousEnabled(snapshot, 2)).toBe(0);
+  });
+  it('follows the visual direction for horizontal arrows and not for vertical ones', () => {
+    expect(target(snapshot, 'ArrowRight', { dir: 'ltr', orientation: 'horizontal' })).toBe(2);
+    expect(target(snapshot, 'ArrowRight', { dir: 'rtl', orientation: 'horizontal' })).toBe(3);
+    expect(target(snapshot, 'ArrowLeft', { dir: 'rtl', orientation: 'horizontal' })).toBe(2);
+    expect(target(snapshot, 'ArrowDown', { dir: 'rtl', orientation: 'vertical' })).toBe(2);
+    expect(target(snapshot, 'ArrowUp', { dir: 'ltr', orientation: 'vertical' })).toBe(3);
+    expect(target({ ...snapshot, focused: 3 }, 'Home', { dir: 'ltr', orientation: 'horizontal' })).toBe(0);
+    expect(target({ ...snapshot, disabled: [false, false, false, true] }, 'End', { dir: 'rtl', orientation: 'horizontal' })).toBe(2);
+    expect(() => target(snapshot, 'ArrowDown', { dir: 'ltr', orientation: 'horizontal' })).toThrow('the oracle has no outcome for ArrowDown in a horizontal tab list');
+  });
+});
+
+// A stand-in harness page: four sandboxed frames with the mounts of the real
+// harness. "wrong" frames hold a tab list whose arrow keys do nothing, the same in
+// all four, so the comparison of the four results passes and only the outcome
+// assertions can fail; "right" frames hold a minimal roving tab list that follows
+// the documented behaviour (the oracle must not fail a correct widget).
+const FRAMEWORK_NAMES = ['vanilla', 'react', 'vue', 'angular'];
+function frameDocument(framework, { dir, behaviour, unnamed = false }) {
+  const mount = framework === 'angular' ? 'guide-example' : 'div id="app"';
+  const close = framework === 'angular' ? 'guide-example' : 'div';
+  const tabs = ['One', 'Two', 'Three'].map((label, index) => `<button type="button" role="tab" id="t${index}" aria-controls="p${index}" aria-selected="${index === 0}" tabindex="${behaviour === 'right' && index !== 0 ? -1 : 0}">${label}</button>`).join('');
+  const panels = [0, 1, 2].map((index) => `<section role="tabpanel" id="p${index}" aria-labelledby="t${index}" tabindex="0"${index === 0 ? '' : ' hidden'}><p>Panel ${index + 1}</p></section>`).join('');
+  const script = behaviour === 'right'
+    ? `<script>
+        const tabs = [...document.querySelectorAll('[role=tab]')];
+        const select = (i) => tabs.forEach((tab, n) => { tab.setAttribute('aria-selected', String(n === i)); tab.tabIndex = n === i ? 0 : -1; document.getElementById('p' + n).hidden = n !== i; });
+        document.querySelector('[role=tablist]').addEventListener('keydown', (event) => {
+          const i = tabs.indexOf(document.activeElement);
+          const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
+          const step = { ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1 }[event.key];
+          let next = null;
+          if (step) next = (i + step + tabs.length) % tabs.length;
+          if (event.key === 'Home') next = 0;
+          if (event.key === 'End') next = tabs.length - 1;
+          if (next === null) return;
+          event.preventDefault();
+          tabs[next].focus();
+          select(next);
+        });
+      </script>`
+    : '';
+  return `<!doctype html><html lang="${dir === 'rtl' ? 'ar' : 'en'}" dir="${dir}"><head><title>${framework} result</title></head><body style="margin:0;padding:8px">`
+    + `<div id="hawiyah-preview-root"><${mount}><div role="tablist" aria-label="${dir === 'rtl' ? 'تفاصيل' : 'Details'}">${tabs}</div>${panels}${unnamed ? '<button type="button"></button>' : ''}</${close}></div>${script}</body></html>`;
+}
+
+const standIn = async (page, options) => {
+  const frames = FRAMEWORK_NAMES.map((framework) => `<iframe data-framework="${framework}" sandbox="allow-scripts" title="${framework}" style="display:block;inline-size:720px;block-size:200px;border:0"></iframe>`).join('');
+  await page.setContent(`<!doctype html><html lang="en"><head><title>Stand-in harness</title></head><body style="margin:0;padding:16px"><main>${frames}</main></body></html>`);
+  for (const framework of FRAMEWORK_NAMES) {
+    await page.locator(`iframe[data-framework="${framework}"]`).evaluate((frame, html) => {
+      frame.srcdoc = html;
+      return new Promise((done) => frame.addEventListener('load', () => done(undefined), { once: true }));
+    }, frameDocument(framework, options));
+    // The harness sizes each frame to the height its document reports; the stand-in does the same once.
+    const element = page.locator(`iframe[data-framework="${framework}"]`);
+    const height = await (await (await element.elementHandle()).contentFrame()).evaluate(() => Math.ceil(document.documentElement.getBoundingClientRect().height));
+    await element.evaluate((frame, value) => { frame.style.blockSize = `${Math.max(80, value)}px`; }, height);
+  }
+};
+
+describe('outcome assertions, pressed keys and axe on a stand-in page (Chromium)', () => {
+  let browser;
+  let page;
+  beforeAll(async () => {
+    browser = await chromium.launch({ executablePath: chromiumPath() });
+    page = await (await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' })).newPage();
+  }, 60_000);
+  afterAll(async () => browser?.close());
+  const group = (lang) => ({ id: 'tabs', lang, example: 'basic', blocks: { vanilla: { line: 19 } } });
+
+  it('fails the expect of four equal but wrong results (HWE-EXPECT), while their comparison passes', async () => {
+    await standIn(page, { dir: 'ltr', behaviour: 'wrong' });
+    const compared = [];
+    const { failures, asserted } = await runChecks({ page, group: group('en'), checks: [tabsKeyboard], evaluate: async (state) => compared.push(state) });
+    // tab-into-list holds (Tab enters on the selected tab); right-arrow is the first outcome that fails, in all four frames.
+    expect(failures.filter((line) => line.includes('tabs-keyboard/right-arrow in')).map((line) => line.split(' in ')[1].split(':')[0])).toEqual(FRAMEWORK_NAMES);
+    expect(failures[0]).toMatch(/^HWE-EXPECT docs\/components\/tabs\.md:19: basic \(en\) tabs-keyboard\/(?:right-arrow|left-arrow|left-arrow-again|end|right-arrow-again) in vanilla: focus is expected on tab \d of 3; it is on tab \d; documented outcome: /);
+    expect(failures.every((line) => line.startsWith('HWE-EXPECT '))).toBe(true);
+    expect(compared).toHaveLength(tabsKeyboard.steps.length);
+    expect(asserted).toBeLessThan(tabsKeyboard.steps.length);
+  }, 120_000);
+
+  for (const dir of ['ltr', 'rtl']) {
+    it(`passes every outcome of a correct tab list in ${dir} frames`, async () => {
+      await standIn(page, { dir, behaviour: 'right' });
+      const { failures, asserted } = await runChecks({ page, group: group(dir === 'rtl' ? 'ar' : 'en'), checks: [tabsKeyboard] });
+      expect(failures).toEqual([]);
+      expect(asserted).toBe(tabsKeyboard.steps.length);
+    }, 120_000);
+  }
+
+  it('fails a step that presses another key than it declares (HWE-CHECK)', async () => {
+    await standIn(page, { dir: 'ltr', behaviour: 'right' });
+    const sloppy = { name: 'x-sloppy', steps: [{ name: 'press-end', keys: ['Home'], outcome: 'o', reference: 'r', async run({ mount, press }) { await press(mount.getByRole('tab').first(), 'End'); }, async expect() {} }] };
+    const { failures } = await runChecks({ page, group: group('en'), checks: [sloppy] });
+    expect(failures).toEqual(['HWE-CHECK docs/components/tabs.md:19: x-sloppy step press-end pressed End in vanilla, and declares Home; a step presses exactly the keys it declares']);
+  }, 120_000);
+
+  it('reports a frame with an unnamed button (HWE-AXE) and none without it', async () => {
+    await standIn(page, { dir: 'ltr', behaviour: 'right', unnamed: true });
+    const found = await axeFrames(page);
+    expect(found.frames).toBe(4);
+    expect(found.violations.map((item) => item.framework)).toEqual(FRAMEWORK_NAMES);
+    expect(found.violations[0].lines[0]).toMatch(/^button-name: Buttons must have discernible text/);
+    await standIn(page, { dir: 'ltr', behaviour: 'right' });
+    expect((await axeFrames(page)).violations).toEqual([]);
+  }, 120_000);
+});
+
+it('the stand-in page is the real mount shape of the harness', () => {
+  const source = readFileSync(new URL('../run.mjs', import.meta.url), 'utf8');
+  expect(source).toContain("'#hawiyah-preview-root > guide-example'");
+  expect(source).toContain("'#hawiyah-preview-root > #app'");
+});

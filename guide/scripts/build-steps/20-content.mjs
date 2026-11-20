@@ -24,5 +24,6 @@ export default {
       throw new Error(`content: ${result.findings.length} finding(s) in docs/components`);
     }
     ctx.log(`${result.pages} page model(s), ${result.groups} live group(s)`);
+    ctx.log(`content: ${result.pending.length} pages pending translation${result.pending.length ? ` (${result.pending.join(', ')}: English only, no route until the Arabic page exists)` : ''}`);
   },
 };

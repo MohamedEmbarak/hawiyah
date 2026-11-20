@@ -1,7 +1,10 @@
 // The exception and override lists that are the lead's (leadAmendments A4 of
-// milestone 5): exclusions.json and defaults.json of step 30, TARGET_OVERRIDES
-// and VUE_SLOT_PATTERNS of targets.mjs, scripts/content/arabic-exceptions.json
-// (HWC-PAR8) and scripts/page-guards/latin-allowlist.json (HWP-LATIN). Every
+// milestone 5): exclusions.json and defaults.json of step 30, TARGET_OVERRIDES,
+// VUE_SLOT_PATTERNS and UNOWNED_EXPORTS of targets.mjs (an unowned export has
+// no page and counts for none), vocabulary-exceptions.json of step 30 (HWC-VOCAB),
+// scripts/content/arabic-exceptions.json
+// (HWC-PAR8), scripts/page-guards/latin-allowlist.json (HWP-LATIN) and
+// scripts/equivalence/keyboard-exceptions.json (HWE-KEYS, 5a.8). Every
 // entry carries approvedBy and a reason; one page has at most
 // MAX_ENTRIES_PER_PAGE entries over all lists together (an exclusions entry
 // counts each attribute it names, an override counts once, and an allow-list
@@ -9,7 +12,7 @@
 // result files; scripts/api-tables/test/lists.test.mjs runs this check.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { TARGET_OVERRIDES, VUE_SLOT_PATTERNS } from './targets.mjs';
+import { TARGET_OVERRIDES, UNOWNED_EXPORTS, VUE_SLOT_PATTERNS } from './targets.mjs';
 
 export const MAX_ENTRIES_PER_PAGE = 5;
 
@@ -25,7 +28,7 @@ function pageOf(path) {
 
 /**
  * Checks the lists and counts their entries per page.
- * @param {{ exclusions: any, defaults: any, targetOverrides: any, slotPatterns: any, arabic: any[], latin: any[] }} lists
+ * @param {{ exclusions: any, defaults: any, targetOverrides: any, slotPatterns: any, arabic: any[], latin: any[], keyboard?: any[] }} lists
  * @returns {{ problems: string[], perPage: Map<string, { count: number, entries: string[] }> }}
  */
 export function checkLeadLists(lists) {
@@ -70,9 +73,20 @@ export function checkLeadLists(lists) {
       count(id, `VUE_SLOT_PATTERNS ${entry?.name}`);
     });
   }
+  (lists.unowned ?? []).forEach((entry, index) => {
+    needs(`scripts/api-tables/targets.mjs UNOWNED_EXPORTS[${index}] (${entry?.framework} ${entry?.name})`, entry);
+  });
+  (lists.vocabulary ?? []).forEach((entry, index) => {
+    needs(`scripts/api-tables/vocabulary-exceptions.json entry ${index + 1}`, entry);
+    count(pageOf(entry?.file) ?? '(no page)', `vocabulary-exceptions.json "${entry?.text}"`);
+  });
   (lists.arabic ?? []).forEach((entry, index) => {
     needs(`scripts/content/arabic-exceptions.json entry ${index + 1}`, entry);
     count(pageOf(entry?.file) ?? '(no page)', `arabic-exceptions.json "${entry?.text}"`);
+  });
+  (lists.keyboard ?? []).forEach((entry, index) => {
+    needs(`scripts/equivalence/keyboard-exceptions.json entry ${index + 1}`, entry);
+    count(entry?.component ?? '(no page)', `keyboard-exceptions.json ${entry?.key ?? '(the whole component)'}`);
   });
   (lists.latin ?? []).forEach((entry, index) => {
     needs(`scripts/page-guards/latin-allowlist.json entry ${index + 1}`, entry);
@@ -89,7 +103,7 @@ export function checkLeadLists(lists) {
   return { problems, perPage };
 }
 
-/** Reads the six lists of the guide. */
+/** Reads the lists of the guide. */
 export function readLeadLists(guideDir) {
   const json = (...path) => JSON.parse(readFileSync(join(guideDir, ...path), 'utf8'));
   return {
@@ -97,7 +111,10 @@ export function readLeadLists(guideDir) {
     defaults: json('scripts', 'api-tables', 'defaults.json'),
     targetOverrides: TARGET_OVERRIDES,
     slotPatterns: VUE_SLOT_PATTERNS,
+    unowned: UNOWNED_EXPORTS,
+    vocabulary: json('scripts', 'api-tables', 'vocabulary-exceptions.json').entries ?? [],
     arabic: json('scripts', 'content', 'arabic-exceptions.json'),
     latin: json('scripts', 'page-guards', 'latin-allowlist.json'),
+    keyboard: json('scripts', 'equivalence', 'keyboard-exceptions.json'),
   };
 }

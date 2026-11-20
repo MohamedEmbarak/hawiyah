@@ -20,9 +20,9 @@ describe('guide.yml', () => {
     expect(Object.keys(workflow.jobs)).toEqual(['build', 'equivalence', 'e2e', 'complete']);
   });
 
-  it('never limits a build or a test run: no --pages, --docs, --only, --grep or --pass-with-no-tests', () => {
+  it('never limits a build or a test run: no --pages, --docs, --only, --draft, --grep or --pass-with-no-tests', () => {
     for (const command of allRuns) {
-      expect(command).not.toMatch(/--(?:pages|docs|only|grep|grep-invert|pass-with-no-tests|last-failed|update-snapshots)\b/);
+      expect(command).not.toMatch(/--(?:pages|docs|only|draft|grep|grep-invert|pass-with-no-tests|last-failed|update-snapshots)\b/);
       expect(command).not.toMatch(/\btest\.only\b/);
     }
   });

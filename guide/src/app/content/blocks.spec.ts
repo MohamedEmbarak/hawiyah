@@ -49,6 +49,22 @@ const BLOCKS: readonly Block[] = [
     ],
     rows: [{ c0: [{ type: 'inlineCode', value: 'Enter' }], c1: [{ type: 'text', value: 'Activates' }] }],
   },
+  {
+    type: 'table',
+    caption: 'Keyboard interaction of Tabs',
+    keyboard: true,
+    columns: [
+      { key: 'c0', label: [{ type: 'text', value: 'Key' }], align: null },
+      { key: 'c1', label: [{ type: 'text', value: 'Action' }], align: null },
+    ],
+    rows: [
+      {
+        c0: [{ type: 'kbd', value: 'Shift', latin: true }, { type: 'text', value: ' + ' }, { type: 'kbd', value: 'Tab', latin: true }],
+        c1: [{ type: 'text', value: 'Moves focus back.' }],
+      },
+      { c0: [{ type: 'kbd', value: 'السهم الأيسر', latin: false }], c1: [{ type: 'text', value: 'ينقل التركيز.' }] },
+    ],
+  },
   { type: 'code', lang: 'ts', title: 'setup.ts', text: 'const a = 1;\n', lines: [[{ t: 'const', r: 'keyword' }, { t: ' a ' }, { t: '=', r: 'punctuation' }, { t: ' 1;' }], []] },
   { type: 'code', lang: null, title: null, text: 'plain', lines: [[{ t: 'plain' }]] },
   {
@@ -129,6 +145,17 @@ describe('BlocksContent', () => {
     expect(table?.querySelector('td .align-end')?.textContent).toBe('Activates');
   });
 
+  it('renders a key element as kbd with exactly the package class hw-kbd, a Latin key name left to right and untranslated (5a.7)', () => {
+    const keys = Array.from(root.querySelectorAll('kbd'));
+    expect(keys.map((kbd) => kbd.textContent)).toEqual(['Shift', 'Tab', 'السهم الأيسر']);
+    expect(keys.map((kbd) => kbd.className)).toEqual(['hw-kbd', 'hw-kbd', 'hw-kbd']);
+    expect(keys.map((kbd) => [kbd.getAttribute('dir'), kbd.getAttribute('translate')])).toEqual([['ltr', 'no'], ['ltr', 'no'], [null, null]]);
+    // Nothing of the guide's own styling: no other attribute, no wrapper.
+    expect(keys.map((kbd) => kbd.getAttributeNames().filter((name) => !name.startsWith('_ng')).sort())).toEqual([['class', 'dir', 'translate'], ['class', 'dir', 'translate'], ['class']]);
+    expect(keys[0]?.parentElement?.localName).toBe('guide-inline');
+    expect(keys[0]?.closest('td')?.textContent).toBe('Shift + Tab');
+  });
+
   it('gives every inline code element exactly the class hw-code (the published chip, no guide class)', () => {
     const inline = Array.from(root.querySelectorAll('code')).filter((code) => !code.closest('pre'));
     expect(inline.length).toBeGreaterThanOrEqual(2);
@@ -185,6 +212,7 @@ describe('BlocksContent', () => {
 describe('content helpers', () => {
   it('inlineText flattens inline content', () => {
     expect(inlineText([{ type: 'text', value: 'A ' }, { type: 'strong', children: [{ type: 'inlineCode', value: 'b' }] }, { type: 'break' }])).toBe('A b ');
+    expect(inlineText([{ type: 'kbd', value: 'Shift', latin: true }, { type: 'text', value: ' + ' }, { type: 'kbd', value: 'Tab', latin: true }])).toBe('Shift + Tab');
   });
 
   it('trimTrailingLines drops empty lines at the end only', () => {

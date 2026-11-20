@@ -38,6 +38,12 @@ describe('Latin-script runs on Arabic pages', () => {
     expect(checkPage('en/index.html', page('en', body), { icons })).toEqual([]);
   });
 
+  it('counts a hyphenated name as one word, and still a run of hyphen-separated words with spaces', () => {
+    const body = '<table><caption>مُدخلات hw-mobile-top-bar ومخرجاته ومحتواه</caption></table><p>خصائص العناصر hw-portal-layout وhw-portal-layout-main</p>';
+    expect(checkPage('ar/index.html', page('ar', body), { icons })).toEqual([]);
+    expect(codes(checkPage('ar/index.html', page('ar', '<p>نص well-known - open source - library code</p>'), { icons }))).toEqual(['HWP-LATIN:1']);
+  });
+
   it('skips code, kbd, pre and elements with a non-Arabic lang', () => {
     const body = '<p>اضغط <kbd>Shift Tab then Enter</kbd> ثم <code>npm install the package now</code></p>'
       + '<pre>one two three four</pre><p lang="en">Packages on npm are listed here</p><p dir="ltr"><span lang="en">Four English words here</span></p>';

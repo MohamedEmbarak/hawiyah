@@ -4,7 +4,8 @@ import { inlineText, navigation, pageModel, type Lang } from '../support/routes'
 
 // Every component page of the build, in both languages, checked from the navigation
 // index and the page model (src/generated/content/): the outline, the framework tabs and
-// editor links of every live group, and every table, the keyboard table included. What is
+// editor links of every live group, and every table, the keyboard table included (also
+// under the example of the brief view, 5a.8). What is
 // specific to one page stays in its own spec (pages/button.spec.ts, tabs/tabs.spec.ts).
 
 const TEXT = {
@@ -53,6 +54,19 @@ for (const entry of navigation.pages) {
         await expect(blocks.locator('section.example')).toHaveAttribute('aria-labelledby', first?.section ?? '');
         await expect(blocks.getByRole('group', { name: t.result })).toHaveCount(1);
         await expectFrameworkTabs(blocks, lang, entry.id, first?.example ?? '');
+        // The keyboard table of the Accessibility section, under the example, from the same model (5a.8).
+        const keyboard = model.tables.find((table) => table.keyboard);
+        const marker = lang === 'en' ? /^Keyboard interaction of / : /^التفاعل من لوحة المفاتيح مع المكوّن: /;
+        await expect(article.locator(':scope > guide-blocks table caption').filter({ hasText: marker })).toHaveCount(keyboard ? 1 : 0);
+        if (keyboard) {
+          const tables = article.getByRole('table', { name: keyboard.caption, exact: true });
+          await expect(tables).toHaveCount(1);
+          await expect(tables.locator('caption')).toHaveText(keyboard.caption);
+          const keys = await tables.locator('kbd').evaluateAll((nodes) => nodes.map((node) => [node.textContent, node.className]));
+          const expected = keyboard.rows.flatMap((row) => (row['c0'] ?? []).filter((node) => node.type === 'kbd').map((node) => [node.value, 'hw-kbd']));
+          expect(keys, 'the keys of the keyboard table, each kbd.hw-kbd').toEqual(expected);
+          expect(keys.length).toBeGreaterThan(0);
+        }
         await expect(article.getByRole('link', { name: t.fullReference, exact: true })).toHaveAttribute('href', `${lang}/components/${entry.id}/reference/`);
       });
 
@@ -62,7 +76,7 @@ for (const entry of navigation.pages) {
         const article = page.locator('main article.hw-prose');
         await expect(article.getByRole('heading', { level: 1 })).toHaveText(entry.title[lang]);
         await expect(article.locator(':scope > h2')).toHaveText(h2.map((heading) => heading.text));
-        const outline = await article.locator(':scope > h2, guide-blocks h3, guide-blocks h4').evaluateAll((nodes) => nodes.map((node) => [node.localName, node.id, node.getAttribute('tabindex'), node.textContent?.replace(/\s+/g, ' ').trim()]));
+        const outline = await article.locator(':scope > h2, guide-blocks h3, guide-blocks h4, guide-evidence-panel h3').evaluateAll((nodes) => nodes.map((node) => [node.localName, node.id, node.getAttribute('tabindex'), node.textContent?.replace(/\s+/g, ' ').trim()]));
         expect(outline).toEqual(model.headings.map((heading) => [`h${heading.level}`, heading.id, '-1', heading.text]));
 
         // Each h2 with the h3 headings under it.

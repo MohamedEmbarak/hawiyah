@@ -61,7 +61,7 @@ template: `<hw-tabs label="Request details" overflow="scroll">
 
 A vertical tab list places the tabs in a column, before the panels. Up Arrow and Down Arrow move between the tabs in every direction, and a vertical list never moves its tabs into the overflow disclosure.
 
-```html live example=vertical check=tabs-click,tabs-keyboard differences=tabs-bar-orientation
+```html live example=vertical check=tabs-click,tabs-keyboard-vertical differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">
   <div class="hw-tab-list" role="tablist" aria-label="Account settings" aria-orientation="vertical">
     <button class="hw-tab" type="button" role="tab" id="vertical-tab-profile" aria-controls="vertical-panel-profile" aria-selected="true" data-hw-value="profile">Profile</button>
@@ -116,7 +116,7 @@ template: `<hw-tabs label="Account settings" orientation="vertical" overflow="sc
 
 With manual activation the arrow keys move focus between the tabs without changing the panel; Enter or Space selects the focused tab. Use it when showing a panel is slow or changes other content on the page.
 
-```html live example=manual check=tabs-keyboard,tabs-activate differences=tabs-bar-orientation
+```html live example=manual check=tabs-activate differences=tabs-bar-orientation
 <div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll" data-hw-activation="manual">
   <div class="hw-tab-list" role="tablist" aria-label="Service steps" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="manual-tab-apply" aria-controls="manual-panel-apply" aria-selected="true" data-hw-value="apply">Apply</button>
@@ -229,8 +229,8 @@ Table: Options of createTabs
 | Option | Type | Required | Default |
 | --- | --- | --- | --- |
 | `value` | `string` | `false` | — |
-| `activationMode` | `'automatic' \| 'manual'` | `false` | — |
-| `overflow` | `'menu' \| 'scroll'` | `false` | — |
+| `activationMode` | `'automatic' \| 'manual'` | `false` | `'automatic'` |
+| `overflow` | `'menu' \| 'scroll'` | `false` | `'menu'` |
 | `overflowLabel` | `string` | `false` | — |
 | `onValueChange` | `(value: string) => void` | `false` | — |
 
@@ -310,11 +310,11 @@ Table: Keyboard interaction of Tabs
 
 | Key | Action |
 | --- | --- |
-| Tab | Moves focus to the selected tab, then into the visible panel. |
-| Right Arrow, Left Arrow | In a horizontal list, moves focus to the next or the previous enabled tab in the reading direction, and wraps. |
-| Down Arrow, Up Arrow | In a vertical list, moves focus to the next or the previous enabled tab, and wraps. |
-| Home, End | Moves focus to the first or the last enabled tab. |
-| Enter, Space | With manual activation, selects the focused tab. |
+| <kbd>Tab</kbd> | Moves focus into the tab list on the selected tab; from a tab, moves focus to the visible panel. |
+| <kbd>Right Arrow</kbd>, <kbd>Left Arrow</kbd> | In a horizontal list, moves focus to the next or the previous enabled tab in reading order, and wraps: Right Arrow moves to the next tab in a left-to-right page and Left Arrow in a right-to-left page. |
+| <kbd>Down Arrow</kbd>, <kbd>Up Arrow</kbd> | In a vertical list, moves focus to the next or the previous enabled tab in both reading directions, and wraps. |
+| <kbd>Home</kbd>, <kbd>End</kbd> | Moves focus to the first or the last enabled tab. |
+| <kbd>Enter</kbd>, <kbd>Space</kbd> | With manual activation, selects the focused tab. |
 
 - Only one tab is in the tab order at a time; the arrow keys move focus within the list.
 - With automatic activation, which is the default, moving focus also selects the tab and shows its panel.
@@ -336,18 +336,10 @@ Tabs have no built-in text: the name of the tab list, the labels of the tabs, th
 
 ## Platforms Code reference
 
-Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification. This section lists the evidence recorded for Tabs and the items that remain open.
+Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification. This section names the sources of the mapping of Tabs; the evidence panel after it lists the verification evidence that components.json records and the items that remain open.
 
-### Evidence
+### Sources
 
 - The tab rail, the label sizes and padding, the hover, pressed and focus states, the selected underline and the responsive overflow of the supplied Platforms Code style sheet and script are mapped in the [tab notes](../nic-tabs.md), with the confidence of each mapping.
-- Tabs are built and recorded as verified in the vanilla, React, Vue and Angular adapters in [components.json](../../components.json).
-- Behaviour tests of the four adapters cover right-to-left navigation, skipping disabled tabs and manual activation; they passed on 2026-10-28.
-- Hydration tests of the React and Vue adapters cover stable linked identifiers and working tabs after hydration; they passed on 2026-10-28.
-
-### Open items
-
 - The tab notes record a rendered fixture of the source style sheet without its official font files and dependencies; they do not establish full visual parity with live government sites.
 - The overflow measurement uses the component container instead of the viewport width of the source script; this adaptation is documented in the tab notes.
-- No hydration test of the Angular adapter is recorded in `components.json`. The Angular structure was changed after 0.2.1 so that the tabset can be hydrated after server rendering.
-- The Vue declarations of 0.3.0 do not type the panel and label slots of Tabs.

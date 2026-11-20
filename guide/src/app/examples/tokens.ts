@@ -1,8 +1,11 @@
 import { InjectionToken, type Type } from '@angular/core';
 import type { ExampleFramework, ExampleLanguage } from './payload';
 
-/** Frameworks whose result is rendered in a sandboxed frame instead of in the page. */
-export type FrameFramework = Exclude<ExampleFramework, 'angular'>;
+/**
+ * Frameworks whose result is rendered in a sandboxed frame instead of in the page;
+ * Angular as well in a group with frame (5a.9).
+ */
+export type FrameFramework = ExampleFramework;
 
 /** What a frame result reports to the page block, which composes the status text. */
 export type ExampleFrameStatus =

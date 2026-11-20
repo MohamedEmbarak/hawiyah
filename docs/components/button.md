@@ -156,8 +156,8 @@ Table: Attributes of the hw-button element
 | --- | --- | --- | --- |
 | `class` | `'hw-button'` | `true` | — |
 | `type` | `'button' \| 'submit' \| 'reset'` | `true` | — |
-| `data-variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | — |
-| `data-size` | `'sm' \| 'md' \| 'lg'` | `false` | — |
+| `data-variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
+| `data-size` | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
 | `data-icon-only` | `boolean` | `false` | — |
 | `disabled` | `boolean` | `false` | — |
 | `aria-busy` | `'true'` | `false` | — |
@@ -165,7 +165,7 @@ Table: Attributes of the hw-button element
 | `aria-pressed` | `'true'` | `false` | — |
 | `data-shape` | `'circle'` | `false` | — |
 
-Button has no JavaScript controller. The markup is the API: write a native button element with the class `hw-button`, and always write its `type`, because the browser default of a button in a form is `submit`. For the loading state, write `disabled` and `aria-busy="true"` together and remove both when the operation ends. `data-icon-only` is listed with `hw-button`, `data-variant` and `data-size` in the Actions row of the stable class and state API of `@hawiyah/styles`; it is written without a value.
+Button has no JavaScript controller. The markup is the API: write a native button element with the class `hw-button`, and always write its `type`, because the browser default of a button in a form is `submit`. For the loading state, write `disabled` and `aria-busy="true"` together and remove both when the operation ends. `data-icon-only` is listed with `hw-button`, `data-variant` and `data-size` in the Actions row of the stable class and state API of `@hawiyah/styles`; it is written without a value. Without `data-variant` and `data-size` a button is `primary` and `md`, as the `@hawiyah/styles` README states. `disabled` is the native attribute. `aria-disabled="true"` gives the disabled look while the button stays in the tab order with a visible focus indicator; it does not stop a click by itself, so the application ignores the activation. On a button with `data-icon-only`, `aria-pressed="true"` marks the pressed state of a toggle and `data-shape="circle"` makes the button round; use Icon button for that case.
 
 ### React
 
@@ -216,9 +216,9 @@ Table: Keyboard interaction of Button
 
 | Key | Action |
 | --- | --- |
-| Tab | Moves focus to the button, unless it is disabled or loading. |
-| Enter | Activates the button. |
-| Space | Activates the button. |
+| <kbd>Tab</kbd> | Moves focus to the button, unless it is disabled or loading. |
+| <kbd>Enter</kbd> | Activates the button. |
+| <kbd>Space</kbd> | Activates the button. |
 
 - The focus indicator is visible on keyboard focus and remains visible while Space is held.
 - A disabled or loading button leaves the tab order. After a loading state ends, return focus to the button or to the result of the operation.
@@ -237,16 +237,10 @@ Button has no built-in text: every label is written by the application in the la
 
 ## Platforms Code reference
 
-Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification. This section lists the evidence recorded for Button and the items that remain open.
+Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification. This section names the sources of the mapping of Button; the evidence panel after it lists the verification evidence that components.json records and the items that remain open.
 
-### Evidence
+### Sources
 
 - The seven visual families of the supplied Platforms Code style sheet are mapped to the `primary`, `default`, `secondary`, `outline`, `outline-white`, `light` and `danger` variants, as recorded in the [button notes](../nic-buttons.md).
-- Button is built in the vanilla, React, Vue and Angular adapters, as listed in [components.json](../../components.json).
-- A behaviour test of the React adapter covers the activation of a button and the return of focus to it; it passed on 2026-10-28.
-
-### Open items
-
-- Only the React adapter is recorded as verified in `components.json`; the vanilla, Vue and Angular adapters have no recorded verification entry.
 - The rendered heights of the small and large sizes are not claimed to match the source sizes exactly.
 - Danger uses white text instead of the red text of the source, for readable contrast; this adaptation is documented in the button notes.

@@ -2,11 +2,11 @@
 // esbuild at run time into .cache/equivalence/harness/ and served at
 // <base>__harness/ by scripts/equivalence/run.mjs only; never part of dist.
 //
-// Query: ?id=<page>&lang=<ar|en>&example=<name>&pin=<version>[&frameworks=a,b]
+// Query: ?id=<page>&lang=<ar|en>&example=<name>&pin=<version>[&frameworks=a,b][&width=<px>]
 // It loads the compiled payloads that step 45 wrote, builds each frame document
 // with the guide's own modulesDocument() (light mode, the page language and
 // direction) and runs the four results side by side in sandboxed frames 720 CSS
-// px wide. The state of every frame is published on window.__harness for the
+// px wide (width= sets another width: 1280 and 390 for a framed group, 5a.9). The state of every frame is published on window.__harness for the
 // runner: loading, ready (after the frame's ready message) or failed.
 import { FRAME_REFERRER_POLICY, FRAME_SANDBOX, modulesDocument } from '../../../src/app/examples/frame/document';
 import { FRAME_FRAMEWORK_NAMES, frameTexts } from '../../../src/app/examples/frame/i18n';
@@ -49,10 +49,11 @@ async function main(): Promise<void> {
   const lang = params.get('lang') as ExampleLanguage;
   const example = params.get('example') ?? '';
   const pin = params.get('pin') ?? '';
+  const width = Number(params.get('width') ?? FRAME_WIDTH);
   const requested = (params.get('frameworks') ?? EXAMPLE_FRAMEWORKS.join(',')).split(',') as ExampleFramework[];
   const frameworks = EXAMPLE_FRAMEWORKS.filter((framework) => requested.includes(framework));
-  if (!id || (lang !== 'ar' && lang !== 'en') || !example || !pin || frameworks.length === 0) {
-    fail('harness: id, lang, example, pin and at least one framework are required');
+  if (!id || (lang !== 'ar' && lang !== 'en') || !example || !pin || frameworks.length === 0 || !Number.isInteger(width) || width < 320 || width > 1600) {
+    fail('harness: id, lang, example, pin, at least one framework and a width from 320 to 1600 are required');
     return;
   }
   const config = await loadRuntimeConfig(document.baseURI, pin, (url) => fetch(url));
@@ -129,7 +130,7 @@ async function main(): Promise<void> {
     frame.setAttribute('referrerpolicy', FRAME_REFERRER_POLICY);
     frame.setAttribute('title', `${framework} result`);
     frame.dataset['framework'] = framework;
-    frame.style.inlineSize = `${FRAME_WIDTH}px`;
+    frame.style.inlineSize = `${width}px`;
     section.append(heading, frame);
     main.append(section);
     state.frames[framework] = { state: 'loading', log: [], height: 0 };

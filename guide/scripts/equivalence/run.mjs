@@ -2,7 +2,10 @@
 // Equivalence harness runner (contentPipeline.equivalence).
 //
 //   node scripts/equivalence/run.mjs [--dir dist/browser] [--base /hawiyah/] [--only <id>/<lang>/<example>,...]
-//                                    [--pages <id>,...] [--shard <i>/<n>] [--report <file>] [--workers <n>]
+//                                    [--pages <id>,...] [--shard <i>/<n>] [--report <file>] [--workers <n>] [--draft]
+//
+// --draft leaves HWE-KEYS out (a local run, such as the shards of the scale fixture,
+// whose generated pages have no keyboard checks); merge.mjs refuses such a report.
 //
 // --pages compares only the groups of the named pages (build option --pages).
 // --shard i/n compares the i-th of n parts of the sorted group keys (key k of the
@@ -25,12 +28,19 @@
 //
 // Codes: HWE-FRAME (a frame failed or reported an error), HWE-STRUCT, HWE-ARIA,
 // HWE-SHOT (a comparison failed), HWE-CHECK (unknown interaction check, a step
-// that could not run, or a group of a component with a controller that names no
-// check and is not static), HWE-KD (known-differences.json invalid or not found),
-// HWE-SCOPE (no group, an --only key that names none, or groups that differ from
-// the content manifest).
+// that could not run or pressed other keys than it declares, or a group of a
+// component with a controller that names no check and is not static), HWE-EXPECT
+// (a step's documented outcome failed in a frame, 5a.8), HWE-KEYS (the keys of a
+// page's keyboard table differ from the keys its checks press, keys.mjs), HWE-AXE
+// (axe found a WCAG 2.2 AA violation in a frame document at rest), HWE-KD
+// (known-differences.json invalid or not found), HWE-SCOPE (no group, an --only key
+// that names none, or groups that differ from the content manifest).
+//
+// A framed group (frame on its html block, 5a.9) is compared in frames 1280 px
+// wide, and at rest a second time at 390 px when its html block names width=390.
 import { createServer } from 'node:http';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
@@ -38,6 +48,7 @@ import { chromium } from '@playwright/test';
 import { createPagesServer } from '../serve.mjs';
 import { FRAMEWORKS, compareAria, compareScreenshots, compareStructure } from './compare.mjs';
 import { generatedNamePattern } from './generated-names.mjs';
+import { keyName, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors } from './keys.mjs';
 import { normalize } from './normalize.js';
 import { styledAttributes } from './styled-attributes.mjs';
 
@@ -47,6 +58,40 @@ export const HARNESS_PATH = '__harness/';
 export const VIEWPORT = { width: 1280, height: 900 };
 export const ASPECTS = ['structure', 'aria', 'screenshot'];
 const ASPECT_CODES = { structure: 'HWE-STRUCT', aria: 'HWE-ARIA', screenshot: 'HWE-SHOT' };
+
+/** Width of the result frames: 720 px, 1280 px for a framed group (5a.9), and 390 px for its second pass. */
+export const FRAME_WIDTH = 720;
+export const FRAMED_WIDTH = 1280;
+
+/** The WCAG 2.2 AA tags of axe, as the browser tests of the guide use them. */
+export const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+let axeSource = null;
+/** The source of axe-core (the copy @axe-core/playwright installs), evaluated in each frame through the DevTools protocol. */
+export function readAxeSource() {
+  const require = createRequire(import.meta.url);
+  axeSource ??= readFileSync(require.resolve('axe-core/axe.min.js', { paths: [dirname(require.resolve('@axe-core/playwright'))] }), 'utf8');
+  return axeSource;
+}
+
+/**
+ * Runs axe in the frame document of each framework (HWE-AXE): WCAG 2.2 AA, the
+ * whole document of the result. Returns { violations: { framework, lines }[], frames }.
+ */
+export async function axeFrames(page, frameworks = FRAMEWORKS) {
+  const source = readAxeSource();
+  const out = [];
+  for (const framework of frameworks) {
+    const frame = await frameOf(page, framework);
+    await frame.evaluate(source);
+    const lines = await frame.evaluate(async (tags) => {
+      const axe = /** @type {any} */ (globalThis).axe;
+      const result = await axe.run(document, { runOnly: { type: 'tag', values: tags }, preload: false });
+      return result.violations.map((rule) => `${rule.id}: ${rule.help} (${rule.nodes.map((node) => node.target.join(' ')).join(', ')})`);
+    }, AXE_TAGS);
+    if (lines.length > 0) out.push({ framework, lines });
+  }
+  return { violations: out, frames: frameworks.length };
+}
 
 /** Selector of the mount inside a frame (the host markup of the compiled example). */
 export const mountSelector = (framework) => (framework === 'angular' ? '#hawiyah-preview-root > guide-example' : '#hawiyah-preview-root > #app');
@@ -216,8 +261,10 @@ export async function bundleHarness(outFile) {
  * The pages server of scripts/serve.mjs with the harness added at <base>__harness/:
  * index.html (base inserted) and harness.js from the cache. Listens on 127.0.0.1.
  */
-export async function startHarnessServer({ dir, base, harnessFile, port = 0 }) {
+export async function startHarnessServer({ dir, base, harnessFile, port = 0, examplesDir = null }) {
   const pages = createPagesServer({ dir, base }).listeners('request')[0];
+  // check:page serves the payloads it compiled (examplesDir) in place of <dir>/examples/.
+  const examples = examplesDir ? createPagesServer({ dir: examplesDir, base: `${base}examples/` }).listeners('request')[0] : null;
   const page = readFileSync(join(here, 'harness', 'index.html'), 'utf8').replace('%BASE%', base);
   const script = readFileSync(harnessFile);
   const server = createServer((request, response) => {
@@ -232,6 +279,10 @@ export async function startHarnessServer({ dir, base, harnessFile, port = 0 }) {
       response.end(script);
       return;
     }
+    if (examples && pathname.startsWith(`${base}examples/`)) {
+      examples(request, response);
+      return;
+    }
     pages(request, response);
   });
   await new Promise((ready, reject) => {
@@ -243,8 +294,8 @@ export async function startHarnessServer({ dir, base, harnessFile, port = 0 }) {
 }
 
 /** Address of the harness page of a group. */
-export function harnessUrl(origin, base, group, pin, frameworks = FRAMEWORKS) {
-  const query = new URLSearchParams({ id: group.id, lang: group.lang, example: group.example, pin, frameworks: frameworks.join(',') });
+export function harnessUrl(origin, base, group, pin, frameworks = FRAMEWORKS, width = group.frame ? FRAMED_WIDTH : FRAME_WIDTH) {
+  const query = new URLSearchParams({ id: group.id, lang: group.lang, example: group.example, pin, frameworks: frameworks.join(','), width: String(width) });
   return `${origin}${base}${HARNESS_PATH}?${query}`;
 }
 
@@ -408,20 +459,95 @@ async function loadChecks(names) {
 export const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
 const stem = (group, state) => [group.id, group.lang, group.example, ...(state === 'rest' ? [] : state.split('/'))].join('-');
 
-/** Runs one group; returns { rows, failures, applied }. */
+/**
+ * Runs the steps of the checks of a group in the open harness page (5a.8). In each
+ * frame a step runs, the keys it pressed must be the keys it declares (a step
+ * without keys presses none), and its expect asserts the documented outcome while
+ * the frame still has the focus; a failed expect is reported per frame with the
+ * outcome and its reference (HWE-EXPECT). Then the four results are captured and
+ * handed to evaluate(state, captured), which compares them. A step that cannot run
+ * ends the checks of the group (HWE-CHECK). Returns { failures, asserted }, where
+ * asserted counts the steps with an expect that held in every frame.
+ */
+export async function runChecks({ page, group, checks, frameworks = FRAMEWORKS, evaluate = async () => {} }) {
+  const failures = [];
+  let asserted = 0;
+  for (const check of checks) {
+    // Per-frame state a check keeps between its steps (for example the focused tab).
+    const states = Object.fromEntries(frameworks.map((framework) => [framework, {}]));
+    for (const step of check.steps) {
+      let failed = null;
+      const missed = [];
+      const before = async (framework) => {
+        if (failed) return;
+        const frameLocator = page.frameLocator(`iframe[data-framework="${framework}"]`);
+        const mount = frameLocator.locator(mountSelector(framework));
+        const pressed = [];
+        const context = {
+          page, mount, dir: group.lang === 'ar' ? 'rtl' : 'ltr', lang: group.lang, framework, state: states[framework],
+          /** Presses a key or chord (a key id of KEY_NAMES) on a locator, or on the focused element of the frame (null). */
+          press: async (locator, key) => {
+            pressed.push(key);
+            if (locator) await locator.press(key);
+            else await page.keyboard.press(key);
+          },
+          /** Clicks the start of the frame document (its body padding), so the next Tab enters the example from before it. */
+          focusFrameStart: async () => {
+            // Playwright scrolls the frame into view and checks that the point hits the body (its padding).
+            await frameLocator.locator('body').click({ position: { x: 2, y: 2 } });
+          },
+        };
+        try {
+          await step.run(context);
+        } catch (error) {
+          failed = `${check.name} step ${step.name} failed in ${framework}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`;
+          return;
+        }
+        const declared = [...new Set(step.keys ?? [])].sort();
+        const used = [...new Set(pressed)].sort();
+        if (declared.join(' ') !== used.join(' ')) {
+          failed = `${check.name} step ${step.name} pressed ${used.map((key) => keyName(key)).join(', ') || 'no key'} in ${framework}, and declares ${declared.map((key) => keyName(key)).join(', ') || 'no key'}; a step presses exactly the keys it declares`;
+          return;
+        }
+        if (typeof step.expect !== 'function') return;
+        try {
+          await step.expect(context);
+        } catch (error) {
+          missed.push(`${framework}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`);
+        }
+      };
+      const captured = await capture(page, frameworks, before, { keepPointer: Boolean(step.keepPointer) });
+      if (failed) {
+        failures.push(failureLine('HWE-CHECK', group, failed));
+        return { failures, asserted };
+      }
+      for (const line of missed) {
+        failures.push(failureLine('HWE-EXPECT', group, `${group.example} (${group.lang}) ${check.name}/${step.name} in ${line}; documented outcome: ${step.outcome} [${step.reference}]`));
+      }
+      if (typeof step.expect === 'function' && missed.length === 0) asserted += 1;
+      await evaluate(`${check.name}/${step.name}`, captured);
+    }
+  }
+  return { failures, asserted };
+}
+
+/** Runs one group; returns { rows, failures, asserted, axeFrames }. */
 async function runGroup({ page, origin, base, pin, group, checks, difference, outDir, imageDir = '.cache/equivalence' }) {
   const rows = [];
   const failures = [];
-  const harness = await openGroup(page, harnessUrl(origin, base, group, pin));
-  if (harness.error) return { rows, failures: [failureLine('HWE-FRAME', group, harness.error)] };
-  for (const framework of FRAMEWORKS) {
-    const frame = harness.frames[framework];
-    if (!frame || frame.state !== 'ready') failures.push(failureLine('HWE-FRAME', group, `${framework} frame ${frame?.state ?? 'missing'}: ${frame?.message ?? ''}`));
-  }
-  if (failures.length > 0) return { rows, failures };
+  let axeCount = 0;
+  const open = async (width) => {
+    const harness = await openGroup(page, harnessUrl(origin, base, group, pin, FRAMEWORKS, width));
+    if (harness.error) return [failureLine('HWE-FRAME', group, harness.error)];
+    return FRAMEWORKS.flatMap((framework) => {
+      const frame = harness.frames[framework];
+      return !frame || frame.state !== 'ready' ? [failureLine('HWE-FRAME', group, `${framework} frame ${frame?.state ?? 'missing'}: ${frame?.message ?? ''}`)] : [];
+    });
+  };
+  const opened = await open(group.frame ? FRAMED_WIDTH : FRAME_WIDTH);
+  if (opened.length > 0) return { rows, failures: opened, asserted: 0, axeFrames: 0 };
 
-  const evaluate = async (state, before = null, given = null) => {
-    const captured = given ?? (await capture(page, FRAMEWORKS, before));
+  const evaluate = async (state, captured) => {
     for (const row of compareCapture(captured, difference)) {
       const entry = { group: groupKey(group), state, ...row };
       delete entry.equal;
@@ -443,42 +569,43 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, ou
       rows.push(entry);
     }
   };
-
-  await evaluate('rest');
-  // The checks run one after the other in the same frames.
-  for (const check of checks) {
-    // Per-frame state a check keeps between its steps (for example the focused tab).
-    const states = Object.fromEntries(FRAMEWORKS.map((framework) => [framework, {}]));
-    for (const step of check.steps) {
-      let failed = null;
-      const before = async (framework) => {
-        if (failed) return;
-        const mount = page.frameLocator(`iframe[data-framework="${framework}"]`).locator(mountSelector(framework));
-        try {
-          await step.run({ page, mount, dir: group.lang === 'ar' ? 'rtl' : 'ltr', lang: group.lang, framework, state: states[framework] });
-        } catch (error) {
-          failed = `${check.name} step ${step.name} failed in ${framework}: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`;
-        }
-      };
-      const captured = await capture(page, FRAMEWORKS, before, { keepPointer: Boolean(step.keepPointer) });
-      if (failed) {
-        failures.push(failureLine('HWE-CHECK', group, failed));
-        return { rows, failures };
-      }
-      await evaluate(`${check.name}/${step.name}`, null, captured);
+  /** HWE-AXE: axe in each frame document at rest. */
+  const axe = async (state) => {
+    const result = await axeFrames(page);
+    axeCount += result.frames;
+    for (const { framework, lines } of result.violations) {
+      for (const line of lines) failures.push(failureLine('HWE-AXE', group, `${group.example} (${group.lang}, ${state}) ${framework} frame: ${line}`));
     }
-  }
+  };
+
+  await evaluate('rest', await capture(page, FRAMEWORKS));
+  await axe('rest');
+  // The checks run one after the other in the same frames.
+  const checked = await runChecks({ page, group, checks, evaluate });
+  failures.push(...checked.failures);
   const after = await page.evaluate(() => window.__harness.frames);
   for (const framework of FRAMEWORKS) {
     for (const line of after[framework]?.log ?? []) failures.push(failureLine('HWE-FRAME', group, `${framework} frame reported ${line}`));
   }
-  return { rows, failures };
+  // A framed group with width=390: the results at rest again in frames 390 px wide.
+  if (group.frame && group.width) {
+    const narrow = await open(Number(group.width));
+    if (narrow.length > 0) failures.push(...narrow);
+    else {
+      await evaluate(`rest@${group.width}`, await capture(page, FRAMEWORKS));
+      await axe(`rest@${group.width}`);
+    }
+  }
+  return { rows, failures, asserted: checked.asserted, axeFrames: axeCount };
 }
 
 /**
  * Runs the harness over every group. Options: guideDir, browserDir (relative to
  * guideDir), basePath, cacheDir, only (array of '<id>/<lang>/<example>'), port,
- * workers, log. Returns the report; throws with the failure lines.
+ * workers, log; check:page adds groupsFile, manifestFile, outDir and examplesDir
+ * (the payloads it compiled, served in place of <browserDir>/examples/), so it
+ * reads and writes nothing of the build output. Returns the report; throws with
+ * the failure lines.
  */
 export async function runEquivalence(options) {
   const guideDir = options.guideDir ?? GUIDE_DIR;
@@ -486,9 +613,9 @@ export async function runEquivalence(options) {
   const base = options.basePath ?? '/';
   const browserDir = resolve(guideDir, options.browserDir ?? 'dist/browser');
   const cacheDir = resolve(guideDir, options.cacheDir ?? '.cache');
-  const outDir = join(cacheDir, 'equivalence');
+  const outDir = options.outDir ? resolve(guideDir, options.outDir) : join(cacheDir, 'equivalence');
   if (!existsSync(join(browserDir, 'runtime', 'import-map.json'))) throw new Error(`${relative(guideDir, browserDir)}/runtime/import-map.json does not exist; build step 60-runtime writes it`);
-  const groupsFile = join(cacheDir, 'content', 'live-groups.json');
+  const groupsFile = options.groupsFile ? resolve(guideDir, options.groupsFile) : join(cacheDir, 'content', 'live-groups.json');
   if (!existsSync(groupsFile)) throw new Error(`${relative(guideDir, groupsFile)} does not exist; build step 20-content writes it`);
   const allGroups = JSON.parse(readFileSync(groupsFile, 'utf8'));
   // The groups must be those of the pages that were built (src/generated/content/manifest.json).
@@ -506,8 +633,23 @@ export async function runEquivalence(options) {
   const pin = readPin(guideDir);
   const known = validateKnownDifferences(JSON.parse(readFileSync(join(here, 'known-differences.json'), 'utf8')));
   const failures = [...known.errors];
-  const checks = await loadChecks([...new Set(groups.flatMap(checkNames))]);
-  const withController = controllerComponents(options.componentsFile ?? resolve(guideDir, '..', 'components.json'));
+  const componentsFile = options.componentsFile ?? resolve(guideDir, '..', 'components.json');
+  // The keyboard rule (HWE-KEYS) reads every check the groups of a page name, also
+  // those of groups outside this run's selection or shard.
+  const manifest = existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : { pages: [] };
+  const selectedIds = new Set(selected.map((group) => group.id));
+  const keyPages = (manifest.pages ?? []).filter((page) => selectedIds.has(page.id));
+  const checks = await loadChecks([...new Set([...groups.flatMap(checkNames), ...keyPages.flatMap((page) => (page.liveGroups ?? []).flatMap(checkNames))])]);
+  const keys = keyboardRule({
+    pages: keyPages, checks,
+    scope: options.keyboardScope ?? await keyboardScope({ guideDir, componentsFile }),
+    exceptions: options.keyboardExceptions ?? readKeyboardExceptions(),
+  });
+  if (options.keys !== false) {
+    for (const check of checks.values()) failures.push(...stepErrors(check));
+    failures.push(...keys.errors);
+  }
+  const withController = controllerComponents(componentsFile);
   const plan = [];
   for (const group of groups) {
     const difference = differenceOf(group, known.entries);
@@ -529,10 +671,16 @@ export async function runEquivalence(options) {
   mkdirSync(join(workDir, 'harness'), { recursive: true });
   const harnessFile = join(workDir, 'harness', 'harness.js');
   await bundleHarness(harnessFile);
-  const served = await startHarnessServer({ dir: browserDir, base, harnessFile, port: options.port ?? Number(process.env.HAWIYAH_EQUIVALENCE_PORT ?? 0) });
+  const served = await startHarnessServer({
+    dir: browserDir, base, harnessFile, port: options.port ?? Number(process.env.HAWIYAH_EQUIVALENCE_PORT ?? 0),
+    examplesDir: options.examplesDir ? resolve(guideDir, options.examplesDir) : null,
+  });
   const browser = await chromium.launch({ executablePath: chromiumPath() });
   const rows = [];
   const applied = new Map();
+  let asserted = 0;
+  let axeChecked = 0;
+  const assertedOf = new Map();
   try {
     const queue = [...plan];
     const worker = async () => {
@@ -547,6 +695,9 @@ export async function runEquivalence(options) {
           for (const message of pageErrors) result.failures.push(failureLine('HWE-FRAME', item.group, `harness page error: ${message}`));
           rows.push(...result.rows);
           failures.push(...result.failures);
+          asserted += result.asserted;
+          axeChecked += result.axeFrames;
+          assertedOf.set(groupKey(item.group), result.asserted);
           if (item.difference) {
             const list = applied.get(item.difference.id) ?? [];
             list.push(groupKey(item.group));
@@ -574,16 +725,19 @@ export async function runEquivalence(options) {
   const documented = [...applied.keys()].map((id) => ({ ...known.entries.get(id), groups: applied.get(id).sort() }));
   const report = {
     pin,
-    scope: { pages: options.pages ?? null, only: options.only ?? null, shard },
+    scope: { pages: options.pages ?? null, only: options.only ?? null, shard, ...(options.keys === false ? { draft: true } : {}) },
     // The keys this run was to compare (before the shard split) and the keys it compared,
     // each with the number of its interaction checks: what merge.mjs joins.
     selected: selected.map(groupKey).sort(),
-    compared: plan.map((item) => ({ key: groupKey(item.group), checks: item.checks.length })).sort((a, b) => a.key.localeCompare(b.key)),
-    environment: { viewport: VIEWPORT, deviceScaleFactor: 1, reducedMotion: 'reduce', colorScheme: 'light', frameWidth: 720 },
+    compared: plan.map((item) => ({ key: groupKey(item.group), checks: item.checks.length, asserted: assertedOf.get(groupKey(item.group)) ?? 0 })).sort((a, b) => a.key.localeCompare(b.key)),
+    environment: { viewport: VIEWPORT, deviceScaleFactor: 1, reducedMotion: 'reduce', colorScheme: 'light', frameWidth: FRAME_WIDTH, framedWidth: FRAMED_WIDTH, axeTags: AXE_TAGS },
     groups: pages.size,
     languages: [...languages].sort(),
     frameworks: FRAMEWORKS,
     interactionChecks,
+    assertedSteps: asserted,
+    axeFrames: axeChecked,
+    keyboard: keys.report,
     comparedAfterInteraction: interacted.size,
     comparedAtRestOnly: pages.size - interacted.size,
     documentedDifferences: documented,
@@ -592,6 +746,7 @@ export async function runEquivalence(options) {
   };
   mkdirSync(dirname(reportFile), { recursive: true });
   writeFileSync(reportFile, `${JSON.stringify(report, null, 2)}\n`);
+  if (options.keyReport) for (const line of keyboardReportLines(keys.report)) log(line);
   for (const entry of documented) {
     const scope = entry.ignore ? `ignores ${entry.ignore.map((rule) => `${rule.attribute} on .${rule.class}`).join(', ')}` : 'skipped';
     log(`equivalence: documented difference ${entry.id} (${entry.component}, ${entry.aspect}, approved by ${entry.approvedBy}, ${entry.source}) ${scope} for ${entry.groups.join(', ')}: ${entry.description}`);
@@ -600,7 +755,9 @@ export async function runEquivalence(options) {
   report.summary = summaryLine({
     groups: pages.size, languages: languages.size, frameworks: FRAMEWORKS.length, interactionChecks,
     afterInteraction: interacted.size, restOnly: pages.size - interacted.size, documented: documented.length,
+    asserted, axeFrames: axeChecked,
   });
+  if (options.keys === false) report.summary = `${report.summary}; HWE-KEYS left out (--draft)`;
   if (shard) report.summary = report.summary.replace(/^equivalence: /, `equivalence shard ${shard.index}/${shard.total} (${plan.length} of ${selected.length} group-languages): `);
   if (options.pages) report.summary = `${report.summary}; only the pages ${options.pages.join(', ')} (--pages)`;
   return report;
@@ -677,11 +834,12 @@ export function scopeErrors(groups, manifest, only) {
 }
 
 /** The closing line of a passing run. */
-export function summaryLine({ groups, languages, frameworks, interactionChecks, afterInteraction, restOnly, documented }) {
+export function summaryLine({ groups, languages, frameworks, interactionChecks, afterInteraction, restOnly, documented, asserted = 0, axeFrames = 0 }) {
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   return `equivalence: ${groups} groups x ${languages} languages x ${frameworks} frameworks equal `
     + `(${afterInteraction} compared after interaction, ${restOnly} at rest only; `
-    + `${plural(interactionChecks, 'interaction check', 'interaction checks')}, ${plural(documented, 'documented difference', 'documented differences')})`;
+    + `${plural(interactionChecks, 'interaction check', 'interaction checks')}, ${plural(asserted, 'asserted step', 'asserted steps')}, ${plural(documented, 'documented difference', 'documented differences')}; `
+    + `axe clean in ${plural(axeFrames, 'frame document', 'frame documents')})`;
 }
 
 /** The pinned package version the frames load (build-info.json of step 00, else package.json). */
@@ -697,6 +855,11 @@ export function readPin(guideDir) {
 export function parseArgs(argv) {
   const options = { browserDir: 'dist/browser', basePath: process.env.HAWIYAH_BASE_PATH ?? '/hawiyah/', only: null };
   for (let i = 0; i < argv.length; i += 1) {
+    // --draft leaves HWE-KEYS out: a local run on pages whose keyboard checks are not written (the scale fixture); never in guide.yml.
+    if (argv[i] === '--draft') {
+      options.keys = false;
+      continue;
+    }
     const [flag, inline] = argv[i].split('=', 2);
     const value = inline ?? argv[++i];
     if (value === undefined) throw new Error(`${flag} needs a value`);

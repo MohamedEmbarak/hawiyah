@@ -96,10 +96,12 @@ jobs:
         run: npm run lint
       - name: Lint negative controls
         run: npm run lint:negative
-      - name: Script tests
-        run: npm run test:scripts
+      # The script tests drive Chromium (the keyboard checks and axe of step 80 on a
+      # stand-in page), so the browser is installed first.
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Script tests
+        run: npm run test:scripts
       # Every step but 80, which the equivalence shards run on this output.
       - name: Production build
         run: npm run build -- --defer-equivalence

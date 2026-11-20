@@ -45,6 +45,7 @@ export function mergeReports(reports, manifest) {
     if (seen.has(shard.index)) problems.push(`HWE-MERGE ${file}: shard ${shard.index} is repeated (also ${seen.get(shard.index)})`);
     seen.set(shard.index, file);
     if (report.scope.pages || report.scope.only) problems.push(`HWE-MERGE ${file}: the shard ran with ${report.scope.pages ? '--pages' : '--only'}; a merge covers every group`);
+    if (report.scope.draft) problems.push(`HWE-MERGE ${file}: the shard ran with --draft (HWE-KEYS left out); a merge needs the keyboard rule`);
     if (report.pin !== first.pin) problems.push(`HWE-MERGE ${file}: pin ${report.pin}, the first report has ${first.pin}`);
     if (JSON.stringify(report.selected) !== JSON.stringify(first.selected)) problems.push(`HWE-MERGE ${file}: the shard split another list of groups than the first report`);
     for (const line of report.failures ?? []) problems.push(`HWE-MERGE ${file}: the shard failed: ${line}`);
@@ -80,6 +81,8 @@ export function mergeReports(reports, manifest) {
     languages: languages.size,
     frameworks: FRAMEWORKS.length,
     interactionChecks: items.reduce((sum, item) => sum + item.checks, 0),
+    asserted: items.reduce((sum, item) => sum + (item.asserted ?? 0), 0),
+    axeFrames: reports.reduce((sum, { report }) => sum + (report?.axeFrames ?? 0), 0),
     afterInteraction: interacted.size,
     restOnly: groups.size - interacted.size,
     documented: documented.size,

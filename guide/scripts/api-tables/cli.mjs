@@ -6,12 +6,15 @@
 //
 //   node scripts/api-tables/cli.mjs [--content <dir>] [--node-modules <dir>] [--components <file>]
 //                                   [--exclusions <file>] [--defaults <file>] [--parity <file>]
+//                                   [--live-groups <file>] [--vocabulary-exceptions <file>]
 //   node scripts/api-tables/cli.mjs --declared-all [--node-modules <dir>] [--components <file>]
 //
 // --content is the output of step 20 (default src/generated/content: its
 // manifest.json lists the built pages and pages/<id>.<lang>.json holds each
-// model). Every finding is printed as 'HWC-APIX <file>: ...'; the exit code is
-// 1 when any remains. --declared-all prints one line per id and framework of
+// model). Every finding is printed as 'HWC-APIX <file>: ...', and each finding of
+// the vocabulary pass (vocabulary.mjs; the html live blocks come from
+// --live-groups, default .cache/content/live-groups.json) as 'HWC-VOCAB <file>: ...';
+// the exit code is 1 when any remains. --declared-all prints one line per id and framework of
 // components.json with what the readers declare, and exits 1 on a reader error or
 // an id without a target.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -22,6 +25,7 @@ import { checkLeadLists, readLeadLists } from './lists.mjs';
 import { DEFAULT_DEFAULTS, DEFAULT_EXCLUSIONS, FRAMEWORKS, createReaders, declaredMembers } from './members.mjs';
 import { generatedNote, stylesVersion } from './notes.mjs';
 import { TARGET_OVERRIDES } from './targets.mjs';
+import { DEFAULT_VOCABULARY_EXCEPTIONS, VOCAB_CODE, checkVocabulary, createVocabularyContext, readVocabularyExceptions } from './vocabulary.mjs';
 
 export { formatFinding };
 
@@ -36,7 +40,8 @@ export function comparedLine(stats) {
     + `and for vanilla options and stylesheet attributes unless defaults.json quotes the published line: ${stats.defaultsEntries} defaults.json entries; `
     + `${stats.stylesheetRows} rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; `
     + `${stats.excluded} rows of exclusions.json compared by name only; Vue slots read from the published build, ${stats.slotPatterns} slot patterns; ${stats.overrides} target overrides); `
-    + `parity.json: members of ${stats.parity} components`;
+    + `parity.json: members of ${stats.parity} components; `
+    + `vocabulary: ${stats.vocabulary.codes} code values outside the API tables (${stats.vocabulary.terms} terms) and ${stats.vocabulary.markup} classes, hooks and data attributes of html live blocks exist in the installed packages (${stats.vocabulary.excepted} vocabulary-exceptions.json entries)`;
 }
 
 /** Declared members of every id, cached for a run. */
@@ -89,7 +94,9 @@ export function checkPages(input) {
         if (decl.generatedNote && !isNote) findings.push(finding(file, `the JavaScript table of ${id} is read from the published stylesheet (no row of the styles contract names its classes); it is followed by the note "> [!NOTE] ${note}"`));
         if (!decl.generatedNote && isNote) findings.push(finding(file, `the JavaScript table of ${id} is followed by the note of a table read from the stylesheet, but the styles contract documents ${decl.classes.join(', ')}; remove the note`));
       }
-      findings.push(...compareTable(rows, decl.members, { file, label: spec.label, checkRequired: decl.source !== 'stylesheet' }));
+      // A stylesheet table compares no required flag, except on the rows of a further controller (file-upload).
+      const checkRequired = decl.source !== 'stylesheet' || decl.members.some((member) => member.controller);
+      findings.push(...compareTable(rows, decl.members, { file, label: spec.label, checkRequired }));
     }
   }
   return { findings, ...stats };
@@ -140,6 +147,14 @@ export function runApiTables(options = {}) {
   });
   const declared = memberCache(readers);
   const result = checkPages({ pages, readers, members: declared });
+  // The vocabulary pass (HWC-VOCAB, vocabulary.mjs) over the same pages.
+  const liveGroupsFile = options.liveGroupsFile ?? join(guideDir, '.cache', 'content', 'live-groups.json');
+  const liveGroups = existsSync(liveGroupsFile) ? JSON.parse(readFileSync(liveGroupsFile, 'utf8')) : [];
+  const vocabulary = checkVocabulary({
+    pages, vocab: createVocabularyContext(readers, { repoDir: resolve(componentsFile, '..') }), declared, liveGroups,
+    exceptions: options.vocabularyExceptions ?? readVocabularyExceptions(options.vocabularyExceptionsFile ?? DEFAULT_VOCABULARY_EXCEPTIONS),
+  });
+  result.findings.push(...vocabulary.findings);
   const lists = checkLeadLists(options.lists ?? readLeadLists(guideDir));
   for (const problem of lists.problems) result.findings.push(finding('scripts/api-tables/lists.mjs', problem));
   const version = stylesVersion(nodeModules);
@@ -153,7 +168,7 @@ export function runApiTables(options = {}) {
   const stats = {
     tables: result.tables, pages: pages.length, rows: result.rows, stylesheetRows: result.stylesheetRows, excluded: result.excluded,
     defaultsEntries: readers.defaults.length, slotPatterns: Object.values(readers.slotPatterns).flat().length,
-    overrides: Object.keys(TARGET_OVERRIDES).length, parity: parity.data.components.length,
+    overrides: Object.keys(TARGET_OVERRIDES).length, parity: parity.data.components.length, vocabulary: vocabulary.stats,
   };
   return { findings: result.findings, stats, pages: pages.length, tables: result.tables, parity: parity.data };
 }
@@ -205,7 +220,7 @@ function parseArgs(argv) {
   const options = {};
   const keys = {
     '--content': 'contentDir', '--node-modules': 'nodeModules', '--components': 'componentsFile', '--exclusions': 'exclusionsFile',
-    '--defaults': 'defaultsFile', '--parity': 'parityFile',
+    '--defaults': 'defaultsFile', '--parity': 'parityFile', '--live-groups': 'liveGroupsFile', '--vocabulary-exceptions': 'vocabularyExceptionsFile',
   };
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === '--declared-all') {
@@ -232,7 +247,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const result = runApiTables(options);
     for (const item of result.findings) console.log(formatFinding(item));
     if (result.findings.length) {
-      console.log(`api-tables: ${result.findings.length} ${CODE} finding(s) in ${result.pages} page model(s)`);
+      console.log(`api-tables: ${result.findings.length} ${CODE} or ${VOCAB_CODE} finding(s) in ${result.pages} page model(s)`);
       process.exit(1);
     }
     console.log(`api-tables: ${comparedLine(result.stats)}`);

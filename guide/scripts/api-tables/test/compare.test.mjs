@@ -61,9 +61,15 @@ describe('one finding per mismatch (negative fixtures)', () => {
     ]);
   });
   it('a default where the published build applies none (a vanilla option)', () => {
-    const tables = variant(TABS, 'javascript', (rows) => replaceRow(rows, 'activationMode', (row) => [row[0], row[1], row[2], row[3], "'automatic'"]));
+    const tables = variant(TABS, 'javascript', (rows) => replaceRow(rows, 'overflowLabel', (row) => [row[0], row[1], row[2], row[3], "'More'"]));
     expect(messages(check([pageModel('tabs', tables)]))).toEqual([
+      "HWC-APIX docs/components/tabs.md: JavaScript table gives overflowLabel the default 'More'; the installed packages give —",
+    ]);
+    // Without its defaults.json entry (L2), the default of activationMode is an em dash again.
+    const stated = variant(TABS, 'javascript', (rows) => rows);
+    expect(messages(check([pageModel('tabs', stated)], testReaders({ defaults: [] })))).toEqual([
       "HWC-APIX docs/components/tabs.md: JavaScript table gives activationMode the default 'automatic'; the installed packages give —",
+      "HWC-APIX docs/components/tabs.md: JavaScript table gives overflow the default 'menu'; the installed packages give —",
     ]);
   });
   it('an invented name', () => {
@@ -95,7 +101,8 @@ describe('one finding per mismatch (negative fixtures)', () => {
       id: 'tabs', framework: 'vanilla', name: 'activationMode', default: "'automatic'",
       evidence: { file: '@hawiyah/vanilla/dist/tabs.js', text: 'activationMode = "automatic" // not in the file' }, approvedBy: 'test', reason: 'test',
     };
-    const result = check([pageModel('tabs', TABS), pageModel('tabs', TABS, { lang: 'ar' })], testReaders({ defaults: [entry] }));
+    const dashes = variant(TABS, 'javascript', (rows) => replaceRow(replaceRow(rows, 'activationMode', (row) => [row[0], row[1], row[2], row[3], '—']), 'overflow', (row) => [row[0], row[1], row[2], row[3], '—']));
+    const result = check([pageModel('tabs', dashes), pageModel('tabs', dashes, { lang: 'ar' })], testReaders({ defaults: [entry] }));
     expect(messages(result)).toEqual([
       `HWC-APIX scripts/api-tables/defaults.json: defaults.json gives tabs activationMode the default 'automatic'; its evidence text "${entry.evidence.text}" does not occur in the installed @hawiyah/vanilla/dist/tabs.js`,
     ]);
@@ -106,10 +113,11 @@ describe('one finding per mismatch (negative fixtures)', () => {
       evidence: { file: '@hawiyah/styles/README.md', text: 'Defaults are primary/medium buttons' }, approvedBy: 'test', reason: 'test',
     };
     const withDefaults = testReaders({ defaults: [entry] });
-    expect(messages(check([pageModel('button', BUTTON)], withDefaults))).toEqual([
+    const dashes = variant(BUTTON, 'javascript', (rows) => replaceRow(replaceRow(rows, 'data-size', (row) => [row[0], row[1], row[2], row[3], '—']), 'data-variant', (row) => [row[0], row[1], row[2], row[3], '—']));
+    expect(messages(check([pageModel('button', dashes)], withDefaults))).toEqual([
       "HWC-APIX docs/components/button.md: JavaScript table gives data-size the default —; the installed packages give 'md'",
     ]);
-    const tables = variant(BUTTON, 'javascript', (rows) => replaceRow(rows, 'data-size', (row) => [row[0], row[1], row[2], row[3], "'md'"]));
+    const tables = variant(dashes, 'javascript', (rows) => replaceRow(rows, 'data-size', (row) => [row[0], row[1], row[2], row[3], "'md'"]));
     expect(messages(check([pageModel('button', tables)], withDefaults))).toEqual([]);
   });
   it('a wrong kind (Vue event written as prop)', () => {

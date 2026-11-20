@@ -108,7 +108,7 @@ The state is announced *once*.
 
 ## RTL and localisation
 
-<kbd>Tab</kbd> moves the focus. The layout uses logical properties only. Read the [Platforms Code](https://www.dga.gov.sa/) and the [component list](../components.json).
+<span>Tab</span> moves the focus. The layout uses logical properties only. Read the [Platforms Code](https://www.dga.gov.sa/) and the [component list](../components.json).
 
 ---
 
@@ -120,7 +120,7 @@ The state is announced *once*.
 The installation command is a code listing.
 
 ```shell
-npm install @hawiyah/vanilla
+npm run build
 ```
 
 ```ts title="setup.ts"

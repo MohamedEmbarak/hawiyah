@@ -14,6 +14,7 @@ import { readFileSync } from 'node:fs';
 import { FRAMEWORKS, finding } from './config.mjs';
 import { sectionHashes, splitSections } from './hash.mjs';
 import { tokens } from './highlight.mjs';
+import { keyParityFindings } from './keys.mjs';
 
 const lineOf = (node) => node?.position?.start.line ?? 1;
 const ARABIC = /[؀-ۿ]/;
@@ -57,13 +58,13 @@ export function readArabicExceptions(file = ARABIC_EXCEPTIONS_FILE) {
 function proseText(node) {
   if (!node) return '';
   if (node.type === 'text') return node.value;
-  if (node.type === 'inlineCode' || node.type === 'code' || node.type === 'html') return ' ';
+  if (node.type === 'inlineCode' || node.type === 'code' || node.type === 'html' || node.type === 'kbd') return ' ';
   return (node.children ?? []).map(proseText).join(' ');
 }
 
 const LETTER = /\p{L}/u;
-// Key names stay Latin, as printed on the key (the Arabic glossary of
-// docs/components/README.md), so text made only of key names needs no Arabic.
+// Key names stay Latin, as printed on the key (the Arabic glossary,
+// docs/guides/glossary.md), so text made only of key names needs no Arabic.
 const KEY_NAME = /^(?:Tab|Enter|Space|Escape|Esc|Home|End|Page ?Up|Page ?Down|Shift|Ctrl|Control|Alt|Option|Meta|Cmd|Command|Backspace|Delete|Insert|Arrow(?:Up|Down|Left|Right)|F(?:[1-9]|1[0-2]))$/;
 const onlyKeyNames = (text) => text.split(/\s*[,،+/]\s*|\s+(?:و|or|and)\s+/).every((part) => KEY_NAME.test(part.trim()));
 /**
@@ -296,6 +297,9 @@ export function checkParity(en, ar, sources) {
       });
     }
   }
+
+  // HWC-KEYS the same keys in the same order (5a.7).
+  findings.push(...keyParityFindings(en, ar));
 
   // HWC-PAR6 alerts.
   const enAlerts = en.alerts.map((alert) => `${alert.kind}@${alert.section}`);
