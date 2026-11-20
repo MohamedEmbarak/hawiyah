@@ -201,7 +201,13 @@ with its value and reason rather than allowed by property); animations declared
 on an ancestor, whose keyframes are not judged (the declaration of
 `animation-name` on an ancestor is, through `INHERITED_ALLOWED`); `data-*`
 attributes that guide script would set at run time on its own elements inside a
-package container; and styles set by script at run time (the lint refuses style
+package container; an element the guide writes inside a package container that
+no rule of the package stylesheet matches (the plain runs of a code listing, a
+`span.run` inside the code block), where a guide rule is not judged although it
+changes how the listing reads; a state carried by an attribute outside the
+stripped set (`tabindex`, which the package moves with the selected tab), where
+a rule is tested only against the elements in that state at rest; and styles set
+by script at run time (the lint refuses style
 attributes and class or style bindings, including `classList`).
 
 ## Result frames
@@ -261,7 +267,9 @@ rejected bootstrap reach the frame as an unhandled rejection), when the code
 tries to navigate the frame, when the code replaces the frame's document (a
 repeated load of the frame after which the bootstrap does not post `ready`
 again within 3 seconds; a height report or other message does not count, so
-`document.write` is reported at every width), when the code empties the
+`document.open()`, `write()` and `close()` after the load are reported at every
+width; a bare `document.write()` without `close()` leaves the written text shown
+and ends as run), when the code empties the
 document (after `ready` the mount root has left the document and the document
 shows nothing any more: no body, or a body without a child element and without
 text; the bootstrap then posts `emptied`, while code that rewrites the body and
@@ -403,7 +411,10 @@ onto the padding again), parks it in the harness page's inline padding at (4, 4)
 which no frame covers at any scroll position, and waits until no element below
 the body of any frame of the group matches `:hover`; a frame that still shows one
 fails the step with its name. A check step that tests a hover state sets
-`keepPointer` and is read as it left the pointer. Measured after the change:
+`keepPointer` and is read as it left the pointer; the capture after such a step
+fails with the same message unless the check moves the pointer away first, and
+no check uses `keepPointer` today. No script test pins the clearing of the
+hover: the measurement that follows is its proof. Measured after the change:
 12 runs of step 80 alone while production builds of a copy of the guide ran
 in a loop on the same four cores (load average 7 to 12): 12 passed; before the
 change, 1 of 10 runs failed with `HWE-SHOT` at the same load (the hover of
