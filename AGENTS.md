@@ -19,6 +19,9 @@ CONTRACT.md, EXPANSION.md, llms.txt, and the actual exports in packages/.
 - Current logo is the Arabic word هوية in outlined Aref Ruqaa, colored with
   Platforms Code variables. No runtime logo-font download. Regenerate artwork
   with brand/build-assets.py and the loader with brand/build-loader.mjs.
+- The README banner (docs/previews/readme-banner.png) and the social preview
+  (brand/previews/social-preview.png) are repository artwork only. They do not
+  replace the logo: the guide and the brand kit keep the outlined wordmark.
 - The NIC header logo keeps its original colors in light mode; in dark mode use
   `filter: brightness(0) invert(1)` to make all artwork white, preserving transparency.
 - Describe Hawiyah as built to comply with the DGA Platforms Code, in a formal
