@@ -65,6 +65,8 @@ Table: Props of Fixture
 | --- | --- | --- | --- |
 | `label` | `string` | `true` | — |
 
+The label prop names the control.
+
 ### Vue
 
 Table: Props, events and slots of HwFixture
@@ -74,6 +76,8 @@ Table: Props, events and slots of HwFixture
 | `label` | prop | `string` | `true` | — |
 | `change` | event | `string` | `false` | — |
 
+The label prop names the control, and change reports a new value.
+
 ### Angular
 
 Table: Inputs, outputs and content of hw-fixture
@@ -82,6 +86,8 @@ Table: Inputs, outputs and content of hw-fixture
 | --- | --- | --- | --- | --- |
 | `label` | input | `string` | `true` | — |
 | `[hwFixtureIcon]` | content | `—` | `false` | — |
+
+The label input names the control; the content selector places an icon.
 
 ## Accessibility
 

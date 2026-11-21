@@ -8,8 +8,10 @@
 //   HWP-EMOJI  no emoji in a prerendered page or a template or text source;
 //   HWP-LATIN  on an Arabic page, no run of four or more Latin-script words in
 //              reader text outside code, kbd, pre, samp and elements that carry
-//              their own non-Arabic lang, unless latin-allowlist.json lists it
-//              with a reason.
+//              their own non-Arabic lang (a hyphenated word counts as its parts
+//              unless it is an hw- name or a name of vocabulary-allow.json), unless
+//              latin-allowlist.json lists the
+//              whole run (12 characters at least) with a reason.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -24,11 +26,41 @@ export const EMOJI = /\p{Emoji_Presentation}|\p{Extended_Pictographic}️/u;
 const ICON_FONT_CLASS = /^(?:fa|fas|far|fab|fal|fad|fa-[\w-]+|material-icons(?:-[\w-]+)?|material-symbols(?:-[\w-]+)?|bi|bi-[\w-]+|glyphicon(?:-[\w-]+)?|icon-[\w-]+|ion-[\w-]+|ionicons|mdi|mdi-[\w-]+|codicon(?:-[\w-]+)?|ti|ti-[\w-]+|feather(?:-[\w-]+)?)$/;
 /**
  * Four or more Latin-script words in a row, separated by spaces or light
- * punctuation. A hyphen joins the parts of one word (hw-mobile-top-bar, the
- * element of a generated API table caption, is one word); it separates words
- * only next to a space or another separator.
+ * punctuation (G15 of the 5a fix round). A hyphen joins the parts of one word only
+ * when the hyphenated word is a name: an hw- name (hw-mobile-top-bar, the element of
+ * a generated API table caption) or a hyphenated name of vocabulary-allow.json
+ * (aria-label, v-model). Any other hyphenated word counts as its parts
+ * (the-request-is-approved is four words), and a hyphen next to a space separates.
  */
-const LATIN_RUN = /\p{Script=Latin}[\p{Script=Latin}\p{M}'’-]*(?:-*[\s,;:()/"“”][\s,;:()/"“”-]*\p{Script=Latin}[\p{Script=Latin}\p{M}'’-]*){3,}/gu;
+const LATIN_WORD = /\p{Script=Latin}[\p{Script=Latin}\p{M}'’]*(?:-+\p{Script=Latin}[\p{Script=Latin}\p{M}'’]*)*/gu;
+const SEPARATOR = /^[-–—]*[\s,;:()/"“”–—][\s,;:()/"“”–—-]*$/;
+const MIN_WORDS = 4;
+let allowNames = null;
+/** Hyphenated names that count as one word: hw- names and the names of vocabulary-allow.json. */
+function isHyphenatedName(word) {
+  if (/^hw-[a-z0-9-]+$/.test(word)) return true;
+  allowNames ??= new Set(JSON.parse(readFileSync(new URL('../api-tables/vocabulary-allow.json', import.meta.url), 'utf8')).groups.flatMap((group) => group.names));
+  return allowNames.has(word);
+}
+const wordCount = (word) => (word.includes('-') && !isHyphenatedName(word) ? word.split(/-+/).filter(Boolean).length : 1);
+
+/** The runs of four or more Latin-script words in a text (HWP-LATIN). */
+export function latinRuns(text) {
+  const runs = [];
+  let run = null;
+  for (const match of text.matchAll(LATIN_WORD)) {
+    const word = { from: match.index, to: match.index + match[0].length, count: wordCount(match[0]) };
+    if (run && SEPARATOR.test(text.slice(run.to, word.from))) {
+      run.to = word.to;
+      run.count += word.count;
+    } else {
+      if (run && run.count >= MIN_WORDS) runs.push(text.slice(run.from, run.to).trim());
+      run = { ...word };
+    }
+  }
+  if (run && run.count >= MIN_WORDS) runs.push(text.slice(run.from, run.to).trim());
+  return runs;
+}
 const SKIP_TEXT = new Set(['code', 'kbd', 'pre', 'samp', 'script', 'style', 'template', 'svg', 'math']);
 const TEXT_ATTRIBUTES = ['aria-label', 'aria-description', 'aria-roledescription', 'title', 'alt', 'placeholder'];
 
@@ -67,10 +99,13 @@ function lineOf(node) {
   return node.sourceCodeLocation?.startLine ?? 1;
 }
 
-/** Whether `run` on `page` is covered by an allow-list entry. */
+/** Whether `run` on `page` is covered by an allow-list entry: the entry names the whole run (G13 of the 5a fix round). */
 function allowed(allowlist, page, run) {
-  return allowlist.some((entry) => run.includes(entry.text) && (!entry.pages || entry.pages.includes(page)));
+  return allowlist.some((entry) => run === entry.text && (!entry.pages || entry.pages.includes(page)));
 }
+
+/** The shortest text an allow-list entry may name. */
+export const MIN_ALLOWLIST_TEXT = 12;
 
 /** Checks one prerendered document. Returns findings { code, file, line, message }. */
 export function checkPage(file, html, { icons, allowlist = [], used = new Set() }) {
@@ -81,8 +116,7 @@ export function checkPage(file, html, { icons, allowlist = [], used = new Set() 
   const push = (code, node, message) => findings.push({ code, file, line: lineOf(node), message });
 
   const latin = (node, text, where) => {
-    for (const match of text.matchAll(LATIN_RUN)) {
-      const run = match[0].trim();
+    for (const run of latinRuns(text)) {
       if (allowed(allowlist, file, run)) {
         used.add(run);
         continue;
@@ -165,6 +199,7 @@ export function readAllowlist(file) {
       || (entry.pages !== undefined && (!Array.isArray(entry.pages) || entry.pages.some((page) => typeof page !== 'string')))) {
       throw new Error(`${file} entry ${index} must be { text, reason, approvedBy, pages? } with non-empty text, reason and approvedBy`);
     }
+    if (entry.text.trim().length < MIN_ALLOWLIST_TEXT) throw new Error(`${file} entry ${index}: the text "${entry.text}" is shorter than ${MIN_ALLOWLIST_TEXT} characters; an entry names the whole run it allows`);
   }
   return list;
 }
@@ -180,7 +215,7 @@ export function runGuards({ guideDir, browserDir, allowlistFile }) {
   findings.push(...checkSources(guideDir));
   // An entry that no run matches has outlived its reason.
   for (const entry of allowlist) {
-    if (![...used].some((run) => run.includes(entry.text))) {
+    if (![...used].some((run) => run === entry.text)) {
       findings.push({ code: 'HWP-LATIN', file: toPosix(relative(guideDir, allowlistFile)), line: 1, message: `allow-list entry "${entry.text}" matches no run; remove it` });
     }
   }

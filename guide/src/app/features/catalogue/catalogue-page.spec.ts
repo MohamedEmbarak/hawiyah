@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { navigationIndex } from '../../content/content-loader';
 import type { NavigationIndex } from '../../content/model';
 import { catalogueSections } from './catalogue-page';
 
@@ -22,10 +23,14 @@ describe('catalogueSections', () => {
     ]);
   });
 
-  it('reads the index of the build: Button under Actions before Tabs under Navigation', () => {
-    expect(catalogueSections('en').map((section) => [section.id, section.cards.map((card) => card.id)])).toEqual([
-      ['actions', ['button']],
-      ['navigation', ['tabs']],
-    ]);
+  // Independent of the real page set: whatever pages the build holds, the default index
+  // is the navigation index of the build, read in its order.
+  it('reads the index of the build: one section per category of the index, its pages in index order', () => {
+    const sections = catalogueSections('en');
+    expect(sections.length).toBeGreaterThan(0);
+    const expected = navigationIndex.categories
+      .map((category) => [category, navigationIndex.pages.filter((entry) => entry.category === category && entry.langs.includes('en')).map((entry) => entry.id)] as const)
+      .filter(([, ids]) => ids.length > 0);
+    expect(sections.map((section) => [section.id, section.cards.map((card) => card.id)])).toEqual(expected);
   });
 });

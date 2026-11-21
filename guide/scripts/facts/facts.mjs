@@ -10,13 +10,15 @@
 // returned methods, the data-hw-* hooks its published module reads and the
 // enhance() hook that creates it, or for a component without a controller the
 // classes and attributes of the styles contract and of the stylesheet's selectors;
-// the Angular classes with their selectors; the Vue slots the build reads; the
+// the vanilla markup (the classes of the component and of its parts, the README
+// section of @hawiyah/vanilla that documents it); the fields of the named item and
+// option types of each adapter; the Angular classes with their selectors; the Vue slots the build reads; the
 // reader names the Arabic string map replaces; the fixed captions of the API
 // tables; the entries under Known defects in the pinned version of CHANGELOG.md
 // and the entries of known-differences.json that name the component.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { FRAMEWORKS, declaredMembers } from '../api-tables/members.mjs';
+import { FRAMEWORKS, componentClasses, declaredMembers } from '../api-tables/members.mjs';
 import { generatedNote } from '../api-tables/notes.mjs';
 import { resolveExport } from '../api-tables/program.mjs';
 import { loadPublished, resolvePackageExport } from '../api-tables/published-js.mjs';
@@ -105,6 +107,68 @@ function controllerApi(context, name) {
   }));
 }
 
+/** Names that a written type uses but no adapter defines (built-in and framework types). */
+const NOT_DOCUMENTED = new Set(['Array', 'ReadonlyArray', 'Record', 'Partial', 'Readonly', 'Promise', 'Set', 'Map', 'Date', 'HTMLElement', 'Element', 'Event', 'KeyboardEvent', 'MouseEvent', 'ReactNode', 'ReactElement', 'TemplateRef', 'EventEmitter', 'VNode', 'VNodeChild', 'CSSProperties', 'Responsive']);
+
+/**
+ * The fields of the named object types that the members of a framework use (G12 of
+ * the 5a fix round): { <type>: [{ name, type, optional }] }, read from the installed
+ * adapter (or @hawiyah/core when the adapter does not export it), so a writer sees
+ * the fields of AccordionItem in React and of HwAccordionItem in Angular.
+ */
+export function typeFields(context, framework, members) {
+  const { checker, ts } = context;
+  const out = {};
+  const names = new Set(members.flatMap((item) => [...String(item.type ?? '').matchAll(/\b[A-Z][A-Za-z0-9]*\b/g)].map((match) => match[0])).filter((name) => !NOT_DOCUMENTED.has(name)));
+  for (const name of [...names].sort()) {
+    const symbol = resolveExport(context, framework, name) ?? resolveExport(context, 'core', name);
+    if (!symbol || !(symbol.flags & (ts.SymbolFlags.Interface | ts.SymbolFlags.TypeAlias))) continue;
+    const type = checker.getDeclaredTypeOfSymbol(symbol);
+    const properties = checker.getPropertiesOfType(type);
+    if (properties.length === 0) continue;
+    out[name] = properties.map((property) => {
+      const optional = Boolean(property.flags & ts.SymbolFlags.Optional);
+      const type = checker.getTypeOfSymbol(property);
+      const shown = optional ? checker.getNonNullableType(type) : type;
+      let text;
+      try {
+        text = printType(shown, context).text;
+      } catch {
+        // A recursive type (a tree item of its own items) is written by the TypeScript printer, truncated.
+        text = checker.typeToString(shown);
+      }
+      return { name: property.name, type: text, optional };
+    });
+  }
+  return out;
+}
+
+/**
+ * The classes of a component's parts: the classes of the installed stylesheet that
+ * start with one of its classes and a hyphen (hw-stat-label of hw-stat), without
+ * those of another component (hw-button-group is not a part of hw-button).
+ */
+export function partClasses(readers, classes) {
+  const others = [...componentClasses(readers)].filter((name) => !classes.includes(name));
+  return [...readers.selectors.selected].filter((name) => classes.some((own) => name.startsWith(`${own}-`))
+    && !others.some((other) => name === other || (other.length > Math.max(...classes.filter((own) => name.startsWith(`${own}-`)).map((own) => own.length)) && name.startsWith(`${other}-`))))
+    .sort();
+}
+
+/**
+ * The section of the installed @hawiyah/vanilla README that documents the markup of a
+ * component: the heading whose text is the component name, up to the next heading
+ * of the same or a higher level; null when there is none.
+ */
+export function readmeSection(readme, name) {
+  const lines = readme.replace(/\r\n?/g, '\n').split('\n');
+  const start = lines.findIndex((line) => /^#{2,6} /.test(line) && line.replace(/^#+ /, '').trim() === name);
+  if (start < 0) return null;
+  const level = lines[start].match(/^#+/)[0].length;
+  const end = lines.findIndex((line, index) => index > start && new RegExp(`^#{1,${level}} `).test(line));
+  return lines.slice(start, end < 0 ? undefined : end).join('\n').trim();
+}
+
 /**
  * The fact sheet of one id.
  * @param {*} readers createReaders() result
@@ -141,7 +205,7 @@ export function factSheet(readers, id, sources) {
     };
   } else {
     const classes = entry.cssClasses ?? [];
-    const contract = contractFor(readers.contractRows, classes);
+    const contract = contractFor(readers.contractRows, classes, readers.selectors, componentClasses(readers));
     const selected = attributesFor(readers.selectors, classes);
     frameworks.vanilla.stylesheet = {
       classes: declared.vanilla.classes,
@@ -153,6 +217,16 @@ export function factSheet(readers, id, sources) {
       note: declared.vanilla.generatedNote ? generatedNote('en', sources.version) : null,
     };
   }
+  // The vanilla markup (G12 of the 5a fix round): the classes of its parts, and the
+  // README section of @hawiyah/vanilla that documents it.
+  const vanillaReadme = sources.vanillaReadme ?? readFileSync(join(readers.nodeModules, '@hawiyah', 'vanilla', 'README.md'), 'utf8');
+  frameworks.vanilla.markup = {
+    classes: entry.cssClasses ?? [],
+    parts: partClasses(readers, entry.cssClasses ?? []),
+    readme: readmeSection(vanillaReadme, entry.name),
+    readmeFile: 'node_modules/@hawiyah/vanilla/README.md',
+  };
+  for (const framework of FRAMEWORKS) frameworks[framework].typeFields = typeFields(readers.context, framework, declared[framework].members);
   frameworks.vue.slots = vueSlots(readers.published.vue, declared.vue.exports[0]);
   frameworks.angular.classes = [...new Map(declared.angular.members.filter((item) => item.className).map((item) => [item.className, { className: item.className, element: item.element }])).values()];
   const names = namesOf(entry, declared);
@@ -198,7 +272,15 @@ export function factSheetMarkdown(sheet) {
       lines.push(`Stylesheet table: classes ${s.classes.join(', ')}; contract families ${s.contractFamilies.join(', ') || 'none (outside the stable contract)'}`, '');
       if (s.note) lines.push(`Generated note: ${s.note}`, '');
     }
+    if (data.markup) {
+      lines.push(`Markup: the classes ${data.markup.classes.join(', ') || '—'}; the classes of its parts in the installed stylesheet: ${data.markup.parts.join(', ') || '—'}`, '');
+      if (data.markup.readme) lines.push(`From ${data.markup.readmeFile}:`, '', ...data.markup.readme.split('\n').map((line) => `> ${line}`.trimEnd()), '');
+      else lines.push(`${data.markup.readmeFile} has no section named after the component; read its other sections and the tables of the @hawiyah/styles README.`, '');
+    }
     if (data.classes) lines.push(`Classes: ${data.classes.map((item) => `${item.className} (${item.element})`).join(', ')}`, '');
+    for (const [type, fields] of Object.entries(data.typeFields ?? {})) {
+      lines.push(`Fields of ${type}: ${fields.map((field) => `${field.name}${field.optional ? '?' : ''}: ${field.type}`).join('; ')}`, '');
+    }
     if (data.slots) lines.push(`Slots read by the build: ${[...data.slots.named, ...data.slots.dynamic.map((item) => `[${item}]`)].join(', ') || 'none'}`, '');
     lines.push('| Name | Kind | Type | Required | Default | Default read from |', '| --- | --- | --- | --- | --- | --- |');
     for (const item of data.members) {

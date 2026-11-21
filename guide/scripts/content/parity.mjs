@@ -41,6 +41,8 @@ export function tokensMatch(en, ar) {
  * lead's (leadAmendments A4 of milestone 5; scripts/api-tables/lists.mjs caps the entries per page).
  */
 export const ARABIC_EXCEPTIONS_FILE = new URL('./arabic-exceptions.json', import.meta.url);
+/** The shortest text an entry of arabic-exceptions.json or latin-allowlist.json may name (G13 of the 5a fix round). */
+export const MIN_EXCEPTION_TEXT = 12;
 
 export function readArabicExceptions(file = ARABIC_EXCEPTIONS_FILE) {
   const list = JSON.parse(readFileSync(file, 'utf8'));
@@ -50,6 +52,7 @@ export function readArabicExceptions(file = ARABIC_EXCEPTIONS_FILE) {
     if (keys.sort().join(',') !== 'approvedBy,file,reason,text' || keys.some((key) => typeof entry[key] !== 'string' || entry[key].trim() === '')) {
       throw new Error(`arabic-exceptions.json entry ${index + 1} must be { file, text, reason, approvedBy } with non-empty values`);
     }
+    if (entry.text.trim().length < MIN_EXCEPTION_TEXT) throw new Error(`arabic-exceptions.json entry ${index + 1}: the text "${entry.text}" is shorter than ${MIN_EXCEPTION_TEXT} characters; an entry names the whole text it excepts`);
   });
   return list;
 }
@@ -117,7 +120,7 @@ function shownValue(list, index, name, bare) {
   return false;
 }
 /** Two or more words of Latin letters in a row: a phrase a reader reads, wherever it stands. */
-const LATIN_PHRASE = /(?:^|\s)[A-Za-z]+(?:[.,;:!?])?\s+[A-Za-z]+(?=[.,;:!?]?(?:\s|$))/;
+export const LATIN_PHRASE = /(?:^|\s)[A-Za-z]+(?:[.,;:!?])?\s+[A-Za-z]+(?=[.,;:!?]?(?:\s|$))/;
 /**
  * Headings (h2 to h6) of an Arabic page that stay Latin: names of the frameworks,
  * written as their projects write them (the h3 of the four API tables).
@@ -253,7 +256,8 @@ export function checkParity(en, ar, sources) {
 
   // HWC-PAR8 Arabic script in the reader text of the Arabic page.
   const exceptions = sources.exceptions ?? [];
-  const excepted = (text) => exceptions.some((entry) => entry.file === ar.file && text.includes(entry.text));
+  // An entry names the whole text of a paragraph, item, cell or string (G13 of the 5a fix round), never a part of it.
+  const excepted = (text) => exceptions.some((entry) => entry.file === ar.file && text === entry.text.replace(/\s+/g, ' ').trim());
   const requireArabic = (node, text, where, keyCell = false) => {
     const value = text.replace(/\s+/g, ' ').trim();
     if (notArabic(value, keyCell) && !excepted(value)) push('HWC-PAR8', lineOf(node), `${where} has no Arabic script: "${value.slice(0, 80)}"; translate it, or list it in scripts/content/arabic-exceptions.json with a reason`);

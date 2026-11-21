@@ -1,5 +1,7 @@
 // Link resolution to guide routes and GitHub URLs.
 
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { resolveLink } from '../links.mjs';
@@ -25,6 +27,18 @@ describe('resolveLink', () => {
   it('resolves fragments of the page and checks them against heading ids', () => {
     expect(resolveLink('#api', ctx())).toEqual({ href: 'en/components/fixture-a/reference/#api', internal: true, external: false });
     expect(resolveLink('#missing', ctx())).toEqual({ error: 'the link "#missing" names no heading of this page' });
+  });
+
+  // G17 of the 5a fix round: a copy of the pages outside the repository (--docs) builds as the repository does.
+  it('resolves the links of a page read from a copy outside the repository as in docs/components', () => {
+    const copy = join(mkdtempSync(join(tmpdir(), 'hawiyah-copy-')), 'components');
+    mkdirSync(copy);
+    writeFileSync(join(copy, 'tabs.md'), '# Tabs\n');
+    const outside = ctx({ id: 'button', filePath: join(copy, 'button.md'), componentsDir: copy, built: new Set(['button', 'tabs']) });
+    expect(resolveLink('../nic-buttons.md', outside)).toEqual({ href: 'https://github.com/MohamedEmbarak/hawiyah/blob/main/docs/nic-buttons.md', internal: false, external: true });
+    expect(resolveLink('../../components.json', outside)).toMatchObject({ href: 'https://github.com/MohamedEmbarak/hawiyah/blob/main/components.json' });
+    expect(resolveLink('tabs.md', outside)).toEqual({ href: 'en/components/tabs/reference/', internal: true, external: false });
+    expect(resolveLink('../missing-note.md', outside)).toEqual({ error: 'the link "../missing-note.md" points to docs/missing-note.md, which does not exist' });
   });
 
   it('links a built page in the language of the linking page', () => {

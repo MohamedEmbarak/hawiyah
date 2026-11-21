@@ -31,6 +31,11 @@ const CASES = [
   ['HWC-PAR7', 'hwc-par7.ar.md', 17, /^section "example" has code as block 1 in Arabic and paragraph in English; both pages have the same paragraphs, lists, items and other blocks in the same order$/],
   ['HWC-PAR8', 'hwc-par8.ar.md', 17, /^the paragraph has no Arabic script: "The example shows one primary action\."; translate it, or list it in scripts\/content\/arabic-exceptions\.json with a reason$/],
   ['HWC-KEYS', 'hwc-keys.md', 94, /^the Key cell holds "Enter"; it holds key elements only, joined by \+ in a chord and separated by a comma$/],
+  ['HWC-CLAIM', 'hwc-claim.md', 126, /^"certified" claims a status Hawiyah does not have: outside the compliance sentence/],
+  ['HWC-EMPTY', 'hwc-empty.md', 60, /^the React table has no prose after it; describe its members after the table$/],
+  ['HWC-TODO', 'hwc-todo.md', 110, /^"TODO" is placeholder text; write the section$/],
+  ['HWC-TONE', 'hwc-tone.md', 117, /^"seamless" is marketing language \(scripts\/content\/marketing-terms\.json: seamless\)/],
+  ['HWC-LIVE7', 'hwc-live7.md', 9, /^the live group "primary" does not show the page's component in react: /],
   ['HWC-STALE', 'hwc-stale.ar.md', 96, /^section "accessibility" was translated from an earlier English text \(000000000000, now 29c24403f585\); update the translation, then run npm run content:hash -- fixture-a$/],
 ];
 

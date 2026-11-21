@@ -71,6 +71,15 @@ export function readDefaults(file) {
   return entries;
 }
 
+/**
+ * The entries of defaults.json whose quoted text does not contain the default literal
+ * (G16 of the 5a fix round): the value without its quotes ('primary' -> primary) must
+ * stand in the quoted line, so that the line states the value and not only the name.
+ */
+export function defaultsWithoutLiteral(entries) {
+  return entries.filter((entry) => !entry.evidence.text.includes(entry.default.replace(/^(['"`])(.*)\1$/, '$2')));
+}
+
 export function readComponentsFile(file) {
   const data = JSON.parse(readFileSync(file, 'utf8'));
   const list = Array.isArray(data) ? data : data.components;
@@ -137,13 +146,19 @@ function literalUnion(values) {
   return values.map(quote).join(' | ');
 }
 
+/** The classes of every component of components.json (a contract row that names one of another component is shared). */
+export function componentClasses(readers) {
+  if (!readers.allClasses) readers.allClasses = new Set([...readers.components.values()].flatMap((entry) => entry.cssClasses ?? []));
+  return readers.allClasses;
+}
+
 /** The stylesheet table of a component without a controller. */
 export function stylesheetMembers(readers, id) {
   const entry = readers.components.get(id);
   const classes = entry?.cssClasses ?? [];
   const exclusion = readers.exclusions[id]?.vanilla ?? null;
   const problems = [];
-  const contract = contractFor(readers.contractRows, classes);
+  const contract = contractFor(readers.contractRows, classes, readers.selectors, componentClasses(readers));
   const selected = attributesFor(readers.selectors, classes);
   const tableClasses = contract.classes.length ? contract.classes : classes.filter((name) => readers.selectors.selected.has(name));
   if (tableClasses.length === 0) problems.push(`neither the styles contract nor dist/styles.css has a rule for the classes ${classes.join(', ') || '(none)'} of ${id}`);

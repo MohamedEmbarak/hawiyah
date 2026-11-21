@@ -79,6 +79,23 @@ describe('guide.yml', () => {
     expect(commands).toContain('node scripts/e2e/merge.mjs --list .cache/e2e/list.json');
   });
 
+  // Verification 1 of 07763ce (G7 of the 5a fix round): a continue-on-error passed the shape test.
+  it('lets no job or step continue on an error, and runs every step of the final job', () => {
+    const found = [];
+    for (const [name, job] of Object.entries(workflow.jobs)) {
+      if ('continue-on-error' in job) found.push(`job ${name}: continue-on-error ${job['continue-on-error']}`);
+      for (const [index, step] of (job.steps ?? []).entries()) {
+        if ('continue-on-error' in step) found.push(`job ${name} step ${step.name ?? index + 1}: continue-on-error ${step['continue-on-error']}`);
+      }
+    }
+    expect(found).toEqual([]);
+    expect(text).not.toMatch(/continue-on-error/);
+    const always = (value) => /^(?:\$\{\{\s*)?always\(\)(?:\s*\}\})?$/.test(String(value).trim());
+    const complete = workflow.jobs.complete;
+    expect(always(complete.if), `complete if: ${complete.if}`).toBe(true);
+    expect(complete.steps.filter((step) => 'if' in step && !always(step.if)).map((step) => `${step.name ?? step.uses}: if ${step.if}`)).toEqual([]);
+  });
+
   it('uploads the hidden .cache directories it needs', () => {
     const upload = workflow.jobs.build.steps.find((step) => step.name === 'Upload the build');
     expect(upload.with['include-hidden-files']).toBe(true);

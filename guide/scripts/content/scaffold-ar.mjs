@@ -91,13 +91,15 @@ const noteText = (node) => plainText(node).replace(/\s+/g, ' ').trim().replace(/
 
 /**
  * Builds the Arabic page from the English page.
- * @returns {{ text: string, missing: string[], unused: string[] }}
+ * @returns {{ text: string, missing: string[], left: string[], unused: string[] }} left: strings
+ *   that render as reader text under a name the map does not replace ('<name>: <text>')
  */
 export function scaffoldArabic(englishText, { entry, declared, map, version, placeholder = false }) {
   const source = normalise(englishText);
   const edits = [];
   const used = new Set();
   const missing = new Set();
+  const left = new Set();
   const names = readerNames();
   const englishNote = generatedNote('en', version);
   const compliance = { en: complianceSentence('en'), ar: complianceSentence('ar') };
@@ -124,10 +126,13 @@ export function scaffoldArabic(englishText, { entry, declared, map, version, pla
     } else if (node.type === 'code' && (node.meta ?? '').split(/\s+/).includes('live')) {
       const result = applyStringMap(node.lang, node.value ?? '', map, names);
       result.missing.forEach((text) => missing.add(text));
+      result.left.forEach((text) => left.add(text));
       result.used.forEach((key) => used.add(key));
-      // A placeholder sibling gives every reader string the map does not translate the placeholder text.
-      const code = placeholder && result.missing.length
-        ? applyStringMap(node.lang, result.code, Object.fromEntries(result.missing.map((text) => [text, PLACEHOLDER])), names).code
+      // A placeholder sibling gives every reader string the map does not translate the placeholder text,
+      // and so every other string that renders as reader text.
+      const untranslated = [...result.missing, ...result.left.map((item) => item.slice(item.indexOf(': ') + 2))];
+      const code = placeholder && untranslated.length
+        ? applyStringMap(node.lang, result.code, Object.fromEntries(untranslated.map((text) => [text, PLACEHOLDER])), names, { text: true }).code
         : result.code;
       const edit = codeBodyEdit(source, node, code);
       if (edit) edits.push(edit);
@@ -141,11 +146,11 @@ export function scaffoldArabic(englishText, { entry, declared, map, version, pla
   let body = source;
   for (const edit of edits.sort((a, b) => b.from - a.from)) body = body.slice(0, edit.from) + edit.text + body.slice(edit.to);
   const text = `${frontMatterBlock(source)}\n${body}`;
-  return { text, missing: [...missing], unused: Object.keys(map).filter((key) => !used.has(key)) };
+  return { text, missing: [...missing], left: [...left], unused: Object.keys(map).filter((key) => !used.has(key)) };
 }
 
 /** The text of a placeholder sibling (content:scaffold-ar --placeholder): Arabic, and never a translation. */
-export const PLACEHOLDER = 'نص مؤقت بدل الترجمة.';
+export const PLACEHOLDER = 'نص مؤقت إلى حين الترجمة.';
 
 /**
  * Edits that replace every text left in English by PLACEHOLDER: the text nodes of
@@ -243,6 +248,7 @@ function main(argv) {
   }
   process.stdout.write(`content:scaffold-ar: wrote ${arabic}; translate the headings, paragraphs, lists, alerts and other tables in place\n`);
   for (const text of result.missing) process.stdout.write(`content:scaffold-ar: the map does not translate the reader string "${text}"\n`);
+  for (const item of result.left) process.stdout.write(`content:scaffold-ar: left in English: "${item.slice(item.indexOf(': ') + 2)}" under ${item.slice(0, item.indexOf(': '))}, which renders as reader text; the map replaces only reader names, so translate it in the Arabic blocks\n`);
   for (const text of result.unused) process.stdout.write(`content:scaffold-ar: the map entry "${text}" is not used\n`);
 }
 

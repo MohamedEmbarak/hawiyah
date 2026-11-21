@@ -16,6 +16,7 @@
 //   node scripts/build-scope.mjs --require-deployable [--dir dist]
 //
 // exits 1 unless <dir>/build-info.json records a deployable production build.
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -60,6 +61,17 @@ export function notDeployableReasons(options) {
 export function readRecord(outDir) {
   const file = join(outDir, RECORD_FILE);
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+}
+
+/**
+ * The hash of the content manifest of a build (G16 of the 5a fix round): the first 16
+ * hex characters of the sha256 of src/generated/content/manifest.json, or null when the
+ * file does not exist. The build record and every report of step 80 carry it, and the
+ * merge of the shard reports compares them, so the shards are tied to one build.
+ */
+export function contentManifestHash(file) {
+  if (!existsSync(file)) return null;
+  return createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 16);
 }
 
 export function writeRecord(outDir, record) {

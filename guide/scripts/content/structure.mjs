@@ -8,8 +8,15 @@ import {
   ALERTS, API_COLUMNS, API_H3, API_HEADERS, API_KINDS, CAPTION_PREFIX, EM_DASH, H2, finding,
 } from './config.mjs';
 import { keyNameFindings, keyboardTable } from './keys.mjs';
+import { EVIDENCE_HEADINGS } from './evidence.mjs';
 import { groupLive, isLive } from './live.mjs';
 import { plainText } from './parse.mjs';
+
+/** Headings of the Platforms Code reference that restate the evidence panel (G20): its two headings in both languages, and Evidence, Open items, Known defects and their Arabic forms. */
+const EVIDENCE_HEADING_TEXT = new RegExp(`^(?:${[
+  ...Object.values(EVIDENCE_HEADINGS).flatMap((texts) => [texts.evidence, texts.open]),
+  'Evidence', 'Verification', 'Open items', 'Known defects', 'Known issues', 'الأدلة', 'التحقق', 'البنود المفتوحة', 'العيوب المعروفة',
+].map((text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`, 'i');
 
 const lineOf = (node) => node?.position?.start.line ?? 1;
 /** At most this many live groups per page: step 80 time grows with the groups. */
@@ -18,6 +25,8 @@ export const MAX_LIVE_GROUPS = 8;
 const UNREPRODUCIBLE = /\bDate\.now\s*\(|\bnew\s+Date\s*\(\s*\)|\bMath\.random\s*\(|\bcrypto\.(?:getRandomValues|randomUUID)\s*\(|\bfetch\s*\(|\bXMLHttpRequest\b|\.resolvedOptions\s*\(\s*\)\.timeZone\b/;
 /** A typed install command: install text has one source, the generated install data. */
 const INSTALL_COMMAND = /^\s*(?:\$\s*)?(?:npm\s+(?:install|i|ci|add)|pnpm\s+(?:add|install|i)|yarn\s+add|bun\s+add)\b/m;
+/** A pinned package address (@hawiyah/react@0.3.0): install text too (prose.mjs reads it in running text). */
+const PINNED_ADDRESS = /@hawiyah\/[a-z-]+@\S/;
 const SENTENCE_END = /[.!?؟](\s|$)/g;
 
 /** Kind of a GitHub alert blockquote ('note', 'tip', ...) or null. */
@@ -323,7 +332,7 @@ export function analysePage(page) {
     for (const child of node.children ?? []) {
       if (child.type === 'code' && !isLive(child)) {
         codeBlocks.push(child);
-        if (INSTALL_COMMAND.test(child.value ?? '')) push('HWC-MD', lineOf(child), 'a component page types no install command; the guide generates install text from the pinned version (install.json)');
+        if (INSTALL_COMMAND.test(child.value ?? '') || PINNED_ADDRESS.test(child.value ?? '')) push('HWC-MD', lineOf(child), 'a component page types no install command and no pinned package address; the guide generates install text from the pinned version (install.json)');
       }
       codeWalk(child);
     }
@@ -331,6 +340,14 @@ export function analysePage(page) {
   codeWalk({ children: body });
 
   const headings = body.filter((node) => node.type === 'heading').map((node) => ({ level: node.depth, text: plainText(node).trim(), node, section: sectionOf.get(node)?.id ?? null }));
+
+  // The guide generates the evidence and the open items after the section Platforms Code
+  // reference; the section keeps no heading of its own for them (G20 of the 5a fix round).
+  for (const heading of headings) {
+    if (heading.section === 'platforms-code-reference' && EVIDENCE_HEADING_TEXT.test(heading.text)) {
+      push('HWC-H2', lineOf(heading.node), `the heading "${heading.text}" restates the evidence panel, which the guide generates after the section; keep the sources of the mapping in this section and leave out the evidence and the open items`);
+    }
+  }
 
   return {
     lang, file, source, h1, summaryNodes, sections, headings, tables, alerts, codeBlocks, keyboard: keyboard.table,

@@ -2,7 +2,8 @@
 // paths, aria snapshots and pixelmatch screenshots, with negative controls.
 import { PNG } from 'pngjs';
 import { describe, expect, it } from 'vitest';
-import { compareAria, compareScreenshot, compareScreenshots, compareStructure, firstDifference, PIXEL_THRESHOLD, pixelLimit } from '../compare.mjs';
+import { compareAria, compareScreenshot, compareScreenshots, compareStructure, firstDifference, PIXEL_THRESHOLD, pixelLimit, withoutDesigned } from '../compare.mjs';
+import { compareCapture, validateDesignedDifferences } from '../run.mjs';
 
 /** A white PNG with a dark bar of 40x12 pixels at x (a stand-in for rendered text). */
 function image(x, { width = 200, height = 50, extra = 0 } = {}) {
@@ -36,6 +37,61 @@ describe('compareStructure', () => {
       ['vanilla-angular', true],
     ]);
     expect(results[1].message).toBe('vanilla and vue differ at $[0]: vanilla "a", vue "b"');
+  });
+});
+
+// G11 of the 5a fix round: the two narrow forms of a designed difference between the
+// adapters (the lists empty-elements.json and vanilla-hooks.json). Neither switches off
+// the structure comparison: a difference outside the listed element or attribute fails.
+describe('designed differences', () => {
+  const stat = (trend) => [{ tag: 'div', attrs: { class: 'hw-stat' }, children: [
+    { tag: 'span', attrs: { class: 'hw-stat-label' }, children: ['Requests'] },
+    { tag: 'span', attrs: { class: 'hw-stat-value' }, children: ['128'] },
+    ...(trend === undefined ? [] : [{ tag: 'span', attrs: { class: 'hw-stat-trend' }, children: trend }]),
+  ] }];
+  const structure = (trees, designed) => compareCapture({ trees, snapshots: {}, images: {} }, null, designed).filter((row) => row.aspect === 'structure' && row.result === 'different').map((row) => row.message);
+  const none = { emptyClasses: [], vanillaAttributes: [] };
+  const empty = { emptyClasses: ['hw-stat-trend'], vanillaAttributes: [] };
+  it('leaves out an element of a listed class while it is empty, in every result', () => {
+    const trees = { vanilla: stat(), react: stat(), vue: stat(), angular: stat([]) };
+    expect(structure(trees, none)).toEqual(['vanilla and angular differ at $[0].children[2]: vanilla (absent), angular {"tag":"span","attrs":{"class":"hw-stat-trend"},"children":[]}']);
+    expect(structure(trees, empty)).toEqual([]);
+  });
+  it('still fails the same element with content, another element, and another class', () => {
+    expect(structure({ vanilla: stat(), react: stat(), vue: stat(), angular: stat(['12 more']) }, empty)).toHaveLength(1);
+    const other = stat();
+    other[0].children.push({ tag: 'span', attrs: { class: 'hw-stat-description' }, children: [] });
+    expect(structure({ vanilla: stat(), react: stat(), vue: stat(), angular: other }, empty)).toEqual([expect.stringMatching(/^vanilla and angular differ at \$\[0\]\.children\[2\]: vanilla \(absent\), angular .*hw-stat-description/)]);
+  });
+  const item = (attrs) => [{ tag: 'details', attrs: { class: 'hw-accordion-item', ...attrs }, children: [{ tag: 'summary', attrs: {}, children: ['Fees'] }] }];
+  const hook = { emptyClasses: [], vanillaAttributes: ['data-hw-value'] };
+  it('leaves out a listed vanilla configuration attribute of the vanilla result only', () => {
+    const trees = { vanilla: item({ 'data-hw-value': 'fees' }), react: item({}), vue: item({}), angular: item({}) };
+    expect(structure(trees, none)).toHaveLength(3);
+    expect(structure(trees, hook)).toEqual([]);
+    expect(withoutDesigned(trees.vanilla, hook, 'vanilla')[0].attrs).toEqual({ class: 'hw-accordion-item' });
+  });
+  it('still fails the attribute in another result, and another attribute', () => {
+    expect(structure({ vanilla: item({ 'data-hw-value': 'fees' }), react: item({ 'data-hw-value': 'fees' }), vue: item({}), angular: item({}) }, hook)).toEqual([
+      'vanilla and react differ at $[0].attrs["data-hw-value"]: vanilla (absent), react "fees"',
+    ]);
+    expect(structure({ vanilla: item({ 'data-hw-value': 'fees', 'data-hw-open': '' }), react: item({}), vue: item({}), angular: item({}) }, hook)).toHaveLength(3);
+  });
+  it('validates both lists: fields, forms, references and the attribute read by @hawiyah/vanilla and not by the stylesheet', () => {
+    const entry = { component: 'stat', class: 'hw-stat-trend', reason: 'r', reference: '@hawiyah/styles README.md: "Regions that an adapter always renders"', approvedBy: 'lead' };
+    const options = { changelog: '# Changelog\n', readme: () => 'Regions that an adapter always renders take no space.', vanillaText: "item.dataset.hwValue", styled: new Map([['data-hw-mode', []]]) };
+    expect(validateDesignedDifferences({ empty: [entry], hooks: [] }, options).errors).toEqual([]);
+    const errors = validateDesignedDifferences({
+      empty: [{ ...entry, class: 'stat-trend' }, { ...entry, reference: 'the styles README' }, { component: 'stat', class: 'hw-x' }],
+      hooks: [{ component: 'accordion', attribute: 'data-hw-value', reason: 'r', reference: entry.reference, approvedBy: 'lead' }, { component: 'x', attribute: 'data-hw-mode', reason: 'r', reference: entry.reference, approvedBy: 'lead' }],
+    }, options).errors;
+    expect(errors).toEqual([
+      'HWE-KD scripts/equivalence/empty-elements.json:1: entry 1: class stat-trend is not one hw- class name',
+      'HWE-KD scripts/equivalence/empty-elements.json:1: entry 2: reference must be a CHANGELOG.md entry (source must read "CHANGELOG.md, <version>, <section>: <text of the entry>") or \'@hawiyah/<name> README.md: "<sentence>"\'',
+      'HWE-KD scripts/equivalence/empty-elements.json:1: entry 3 must be { component, class, reason, reference, approvedBy } with non-empty values',
+      'HWE-KD scripts/equivalence/vanilla-hooks.json:1: entry 2: the installed @hawiyah/vanilla does not read data-hw-mode',
+      'HWE-KD scripts/equivalence/vanilla-hooks.json:1: entry 2: the stylesheet selects data-hw-mode, so the structure comparison keeps it',
+    ]);
   });
 });
 

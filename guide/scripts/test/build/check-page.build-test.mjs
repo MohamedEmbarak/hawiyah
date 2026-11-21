@@ -92,8 +92,9 @@ describe('the keyboard table drives the checks (5a.8)', () => {
     expect(result.ok).toBe(false);
     // The copy has no Arabic sibling (HWC-FILE), as in the other cases; nothing else fails.
     const other = (findings) => findings.filter((line) => !line.startsWith('HWC-FILE'));
+    // tabs-activate presses Home too since G24 of the 5a fix round (manual activation).
     expect(other(result.findings)).toEqual([
-      expect.stringMatching(/^HWE-KEYS docs\/components\/tabs\.md:\d+: the step tabs-keyboard\/home, tabs-keyboard-vertical\/home presses Home, which the keyboard table does not document$/),
+      expect.stringMatching(/^HWE-KEYS docs\/components\/tabs\.md:\d+: the step tabs-keyboard\/home, tabs-keyboard-vertical\/home, tabs-activate\/home presses Home, which the keyboard table does not document$/),
     ]);
     const draft = await run(docs, { draft: true });
     expect(other(draft.findings)).toEqual([]);

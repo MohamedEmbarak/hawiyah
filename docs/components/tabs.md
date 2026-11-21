@@ -176,10 +176,12 @@ A disabled tab stays in the list and shows that its panel exists but is not avai
   <div class="hw-tab-list" role="tablist" aria-label="Request details" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-overview" aria-controls="disabled-tab-panel-overview" aria-selected="true" data-hw-value="overview">Overview</button>
     <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-decision" aria-controls="disabled-tab-panel-decision" aria-selected="false" data-hw-value="decision" disabled>Decision</button>
+    <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-documents" aria-controls="disabled-tab-panel-documents" aria-selected="false" data-hw-value="documents">Documents</button>
     <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-history" aria-controls="disabled-tab-panel-history" aria-selected="false" data-hw-value="history">History</button>
   </div>
   <section class="hw-tab-panel" id="disabled-tab-panel-overview" role="tabpanel" aria-labelledby="disabled-tab-tab-overview"><p>The decision is available after the review.</p></section>
   <section class="hw-tab-panel" id="disabled-tab-panel-decision" role="tabpanel" aria-labelledby="disabled-tab-tab-decision" hidden><p>No decision has been issued.</p></section>
+  <section class="hw-tab-panel" id="disabled-tab-panel-documents" role="tabpanel" aria-labelledby="disabled-tab-tab-documents" hidden><p>Two documents are attached to the request.</p></section>
   <section class="hw-tab-panel" id="disabled-tab-panel-history" role="tabpanel" aria-labelledby="disabled-tab-tab-history" hidden><p>The request was submitted and assigned to a reviewer.</p></section>
 </div>
 ```
@@ -191,6 +193,7 @@ A disabled tab stays in the list and shows that its panel exists but is not avai
   items={[
     { value: 'overview', label: 'Overview', content: <p>The decision is available after the review.</p> },
     { value: 'decision', label: 'Decision', content: <p>No decision has been issued.</p>, disabled: true },
+    { value: 'documents', label: 'Documents', content: <p>Two documents are attached to the request.</p> },
     { value: 'history', label: 'History', content: <p>The request was submitted and assigned to a reviewer.</p> },
   ]}
 />
@@ -203,11 +206,13 @@ A disabled tab stays in the list and shows that its panel exists but is not avai
   :items="[
     { value: 'overview', label: 'Overview' },
     { value: 'decision', label: 'Decision', disabled: true },
+    { value: 'documents', label: 'Documents' },
     { value: 'history', label: 'History' },
   ]"
 >
   <template #overview><p>The decision is available after the review.</p></template>
   <template #decision><p>No decision has been issued.</p></template>
+  <template #documents><p>Two documents are attached to the request.</p></template>
   <template #history><p>The request was submitted and assigned to a reviewer.</p></template>
 </Tabs>
 ```
@@ -216,6 +221,7 @@ A disabled tab stays in the list and shows that its panel exists but is not avai
 template: `<hw-tabs label="Request details" overflow="scroll">
   <hw-tab value="overview" label="Overview"><p>The decision is available after the review.</p></hw-tab>
   <hw-tab value="decision" label="Decision" disabled><p>No decision has been issued.</p></hw-tab>
+  <hw-tab value="documents" label="Documents"><p>Two documents are attached to the request.</p></hw-tab>
   <hw-tab value="history" label="History"><p>The request was submitted and assigned to a reviewer.</p></hw-tab>
 </hw-tabs>`
 ```

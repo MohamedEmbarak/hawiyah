@@ -146,6 +146,56 @@ describe('framework scope (leadAmendments A9)', () => {
   });
 });
 
+// G4 of the fix round of 5a: the ways through that the verification of 07763ce found
+// (v1: caption, framework heading outside API, literal of another attribute, data-*
+// value and aria-* name of an html block, a name split across formatting, plain prose)
+// and the true statements the review found rejected (a row name of the page's own
+// Angular table, the type words).
+describe('G4: what the vocabulary pass reads and accepts', () => {
+  const ACCESSIBILITY = '## Accessibility\n\n';
+  const insert = (block) => fixture('tabs', (text) => once(text, ACCESSIBILITY, `${ACCESSIBILITY}${block}\n\n`));
+  it('reads the caption of a table outside the API section', () => {
+    expect(messages(run(insert('Table: Tabs and `bogusCaption`\n\n| Item | Note |\n| --- | --- |\n| One | Two |')))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: accessibility: `bogusCaption`: bogusCaption is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json',
+    ]);
+  });
+  it('scopes a paragraph under a framework heading in any section', () => {
+    expect(messages(run(insert('### Angular\n\nListen to `onValueChange` to follow the selection.')))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: accessibility/angular-1: `onValueChange`: onValueChange is a member of vanilla, react only, and the paragraph is scoped to angular (leadAmendments A9: the check cannot decide)',
+    ]);
+  });
+  it('takes the value of name="value" from that attribute or member only', () => {
+    expect(messages(run(insert('Write `orientation="manual"` on the list.')))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: accessibility: `orientation="manual"`: "manual" is not a value of a member type or of an enumerated attribute of this component (attribute orientation)',
+    ]);
+    expect(messages(run(insert('Write `orientation="vertical"` on the list.')))).toEqual([]);
+  });
+  it('reads the value of a data-* attribute and the name of an aria-* attribute of an html block', () => {
+    const value = fixture('tabs', (text) => once(text, '<div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">', '<div class="hw-tabs" data-hw="tabs" data-hw-overflow="sideways">'));
+    expect(messages(run(value))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: live example basic (html): `data-hw-overflow="sideways"`: "sideways" is not a value of data-hw-overflow ("menu", "scroll")',
+    ]);
+    const aria = fixture('tabs', (text) => once(text, 'aria-label="Request details" aria-orientation="horizontal">', 'aria-label="Request details" aria-orientation="horizontal" aria-bogus="x">'));
+    expect(messages(run(aria))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: live example basic (html): `aria-bogus`: aria-bogus is neither selected by the installed stylesheet, read by a published module, nor an attribute of vocabulary-allow.json',
+    ]);
+  });
+  it('fails on a name split across formatting; a name in plain prose is not read', () => {
+    expect(messages(run(insert('Set `orientation`*Mode* to change it.')))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: accessibility: `orientation`: the name continues outside the code formatting ("orientationMode"); write the whole name as code',
+    ]);
+    expect(messages(run(insert('Set the orientationMode option to change it.')))).toEqual([]);
+  });
+  it('accepts the row names of the page\'s own API tables in their scope, and the type words', () => {
+    const row = (prose) => fixture('tabs', (text) => once(once(text, '| `hw-tab *` | content | — | `false` | — |', '| `hw-tab *` | content | — | `false` | — |\n| `[hwTabsIcon]` | content | — | `false` | — |'), ACCESSIBILITY, `${ACCESSIBILITY}${prose}\n\n`));
+    expect(messages(run(row('### Angular\n\nThe content row `[hwTabsIcon]` places an icon; `hwTabsIcon` names it.')))).toEqual([]);
+    expect(messages(run(row('### React\n\nThe content row `[hwTabsIcon]` places an icon.')))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: accessibility/react-1: `[hwTabsIcon]`: hwTabsIcon is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json',
+    ]);
+    expect(messages(run(insert('The value is a `string` or `undefined`, never a `number`; `disabled` is `true` or `false`, and `null` clears it; a `boolean`.')))).toEqual([]);
+  });
+});
+
 describe('vocabulary-exceptions.json', () => {
   const entry = { file: 'docs/components/tabs.md', text: 'closeLabel', reason: 'test', approvedBy: 'test' };
   it('an entry covers its finding', () => {
@@ -177,12 +227,14 @@ describe('reading code values', () => {
     expect(terms('tab:<value>')).toEqual([{ kind: 'name', name: 'tab:<value>', call: false, member: false }]);
     expect(terms("'primary'")).toEqual([{ kind: 'literal', value: 'primary' }]);
   });
-  it('reads classes, hooks and data attributes of html', () => {
+  it('reads classes, hooks, data attributes with their values and aria names of html', () => {
     expect(markupTerms('<div class="hw-tabs x" data-hw="tabs" data-hw-overflow="scroll" aria-label="A"><p>t</p></div>')).toEqual([
       { kind: 'class', name: 'hw-tabs', text: 'class="hw-tabs x"' },
       { kind: 'class', name: 'x', text: 'class="hw-tabs x"' },
       { kind: 'hook', name: 'tabs', text: 'data-hw="tabs"' },
       { kind: 'attribute', name: 'data-hw-overflow', text: 'data-hw-overflow' },
+      { kind: 'data-value', name: 'data-hw-overflow', value: 'scroll', text: 'data-hw-overflow="scroll"' },
+      { kind: 'attribute', name: 'aria-label', text: 'aria-label' },
     ]);
   });
 });

@@ -1,6 +1,7 @@
 // Vue examples: @vue/compiler-sfc parse and compileScript (inlineTemplate, scope id
 // from the group key), an esbuild transform of the TypeScript output, and vue-tsc
-// --noEmit (strict) over every generated Example.vue; any error fails (HWC-U1).
+// --noEmit (strict TypeScript, vue-tsc's default template settings) over every
+// generated Example.vue; any error fails (HWC-U1).
 import { compileScript, parse } from '@vue/compiler-sfc';
 import { transform } from 'esbuild';
 import { spawn } from 'node:child_process';
@@ -25,7 +26,12 @@ export const VUE_TSCONFIG = {
     isolatedModules: true,
     forceConsistentCasingInFileNames: true,
   },
-  vueCompilerOptions: { strictTemplates: true },
+  // vue-tsc at its default settings (G10 of the 5a fix round): what it accepts in a
+  // consumer of @hawiyah/vue 0.3.0, step 25 accepts, such as a data-* attribute on a
+  // native element and an attribute that falls through to a component. strictTemplates
+  // rejected both, so the packaged icon could not be written the way a reader writes it;
+  // an invented component is HWC-LIVE4, and an invented prop falls through as an
+  // attribute that step 80 compares with the other three results.
   include: ['**/*.vue', '**/*.ts'],
 };
 

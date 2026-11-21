@@ -3,6 +3,7 @@
 // over all lists together.
 import { describe, expect, it } from 'vitest';
 import { MAX_ENTRIES_PER_PAGE, checkLeadLists, readLeadLists } from '../lists.mjs';
+import { DEFAULT_DEFAULTS, defaultsWithoutLiteral, readDefaults } from '../members.mjs';
 import { guideDir } from './helpers.mjs';
 
 const empty = { exclusions: { components: {} }, defaults: { entries: [] }, targetOverrides: {}, slotPatterns: {}, arabic: [], latin: [] };
@@ -14,6 +15,19 @@ describe('the lists of the guide', () => {
     expect(MAX_ENTRIES_PER_PAGE).toBe(5);
     expect(result.perPage.get('button')?.count ?? 0).toBeLessThanOrEqual(MAX_ENTRIES_PER_PAGE);
     expect(result.perPage.get('tabs')?.count ?? 0).toBeLessThanOrEqual(MAX_ENTRIES_PER_PAGE);
+  });
+});
+
+// G16 of the 5a fix round (verification of 07763ce): the quoted line of a defaults.json entry
+// states the default literal. Two entries the lead approved in L2 quote a line in other words
+// ('medium' for 'md'; "=== 'manual'" for 'automatic'): no installed 0.3.0 file states them as
+// literals. They stay named here for the lead's decision; any other entry without its literal fails.
+describe('defaults.json entries quote the default literal', () => {
+  it('every entry but the two of L2 that the lead decides on', () => {
+    const entries = readDefaults(DEFAULT_DEFAULTS);
+    expect(defaultsWithoutLiteral(entries).map((entry) => `${entry.id}.${entry.name} ${entry.default}`)).toEqual(['button.data-size \'md\'', 'tabs.activationMode \'automatic\'']);
+    expect(defaultsWithoutLiteral([{ id: 'x', name: 'n', default: "'scroll'", evidence: { file: 'f', text: 'export' } }])).toHaveLength(1);
+    expect(defaultsWithoutLiteral([{ id: 'x', name: 'n', default: "'menu'", evidence: { file: 'f', text: "=== 'scroll' ? 'scroll' : 'menu'" } }])).toEqual([]);
   });
 });
 
@@ -29,6 +43,11 @@ describe('an entry without approvedBy or reason fails, in every list', () => {
     ['arabic-exceptions.json', { ...empty, arabic: [{ file: 'docs/components/x.ar.md', text: 't', reason: 'r' }] }, 'scripts/content/arabic-exceptions.json entry 1 has no approvedBy'],
     ['latin-allowlist.json', { ...empty, latin: [{ text: 't', approvedBy: 'lead' }] }, 'scripts/page-guards/latin-allowlist.json entry 1 has no reason'],
     ['keyboard-exceptions.json', { ...empty, keyboard: [{ component: 'x', key: 'F10', approvedBy: 'lead' }] }, 'scripts/equivalence/keyboard-exceptions.json entry 1 has no reason'],
+    ['claim-exceptions.json', { ...empty, claims: [{ file: 'docs/components/x.md', text: 'Fixture X is not certified by any body.', reason: 'r' }] }, 'scripts/content/claim-exceptions.json entry 1 has no approvedBy'],
+    ['live-component-exceptions.json', { ...empty, liveComponents: [{ file: 'docs/components/x.md', example: 'e', approvedBy: 'lead' }] }, 'scripts/content/live-component-exceptions.json entry 1 has no reason'],
+    ['marketing-terms.json', { ...empty, marketing: [{ lang: 'en', term: 'stunning', reason: 'r' }] }, 'scripts/content/marketing-terms.json entry 1 (stunning) has no approvedBy'],
+    ['empty-elements.json', { ...empty, emptyElements: [{ component: 'stat', class: 'hw-stat-trend', reference: 'x', approvedBy: 'lead' }] }, 'scripts/equivalence/empty-elements.json entry 1 has no reason'],
+    ['vanilla-hooks.json', { ...empty, vanillaHooks: [{ component: 'accordion', attribute: 'data-hw-value', reference: 'x', reason: 'r' }] }, 'scripts/equivalence/vanilla-hooks.json entry 1 has no approvedBy'],
   ];
   it.each(cases)('%s', (_label, lists, problem) => {
     expect(checkLeadLists(lists).problems).toEqual([problem]);

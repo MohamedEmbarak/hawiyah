@@ -39,14 +39,15 @@
 // A framed group (frame on its html block, 5a.9) is compared in frames 1280 px
 // wide, and at rest a second time at 390 px when its html block names width=390.
 import { createServer } from 'node:http';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { chromium } from '@playwright/test';
+import { contentManifestHash } from '../build-scope.mjs';
 import { createPagesServer } from '../serve.mjs';
-import { FRAMEWORKS, compareAria, compareScreenshots, compareStructure } from './compare.mjs';
+import { FRAMEWORKS, compareAria, compareScreenshots, compareStructure, withoutDesigned } from './compare.mjs';
 import { generatedNamePattern } from './generated-names.mjs';
 import { keyName, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors } from './keys.mjs';
 import { normalize } from './normalize.js';
@@ -223,6 +224,82 @@ export function validateKnownDifferences(value, options = {}) {
     }
   });
   return { entries, errors };
+}
+
+/** The repository's package READMEs a designed difference may cite, read from the installed packages. */
+const README_SOURCE = /^@hawiyah\/(vanilla|react|vue|angular|styles|core|tokens) README\.md: "(.+)"$/s;
+
+/**
+ * Validates the two lists of designed differences (G11 of the 5a fix round), both the
+ * lead's: empty-elements.json, [{ component, class, reason, reference, approvedBy }]
+ * (an element with that hw- class is left out of the structure comparison of the
+ * component's groups while it is empty), and vanilla-hooks.json, [{ component,
+ * attribute, reason, reference, approvedBy }] (a data-hw-* configuration attribute
+ * that the installed @hawiyah/vanilla reads and the stylesheet does not select is
+ * left out of the vanilla tree of the component's groups). reference is a CHANGELOG
+ * entry ('CHANGELOG.md, <version>, <section>: <text>', for a defect) or the sentence
+ * of a package README ('@hawiyah/<name> README.md: "<sentence>"', for a documented
+ * behaviour); both are checked against the files. Returns { empty, hooks, errors }.
+ */
+export function validateDesignedDifferences({ empty, hooks }, { changelog = readChangelog(), readme = () => null, vanillaText = '', styled = new Map() } = {}) {
+  const errors = [];
+  const check = (list, name, field, form) => {
+    if (!Array.isArray(list)) {
+      errors.push(`HWE-KD scripts/equivalence/${name}:1: the file must hold an array`);
+      return [];
+    }
+    list.forEach((entry, index) => {
+      const at = `HWE-KD scripts/equivalence/${name}:1: entry ${index + 1}`;
+      const keys = ['component', field, 'reason', 'reference', 'approvedBy'];
+      if (!entry || typeof entry !== 'object' || Object.keys(entry).sort().join() !== [...keys].sort().join() || keys.some((key) => typeof entry[key] !== 'string' || entry[key].trim() === '')) {
+        errors.push(`${at} must be { ${keys.join(', ')} } with non-empty values`);
+        return;
+      }
+      if (!form.test(entry[field])) errors.push(`${at}: ${field} ${entry[field]} is not one ${field === 'class' ? 'hw- class name' : 'data-hw-* attribute name'}`);
+      const fromChangelog = changelogSourceError(entry.reference, changelog);
+      const readmeMatch = README_SOURCE.exec(entry.reference);
+      if (fromChangelog && !readmeMatch) errors.push(`${at}: reference must be a CHANGELOG.md entry (${fromChangelog}) or '@hawiyah/<name> README.md: "<sentence>"'`);
+      if (readmeMatch && !squeeze(readme(readmeMatch[1]) ?? '').includes(squeeze(readmeMatch[2]))) errors.push(`${at}: the sentence is not in the README of the installed @hawiyah/${readmeMatch[1]}`);
+      if (field === 'attribute' && form.test(entry.attribute)) {
+        if (!new RegExp(`${entry.attribute}(?![\\w-])|dataset\\.${entry.attribute.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase())}(?![\\w$])`).test(vanillaText)) errors.push(`${at}: the installed @hawiyah/vanilla does not read ${entry.attribute}`);
+        if (styled.has(entry.attribute)) errors.push(`${at}: the stylesheet selects ${entry.attribute}, so the structure comparison keeps it`);
+      }
+    });
+    return list.filter((entry) => entry && typeof entry.component === 'string');
+  };
+  return {
+    empty: check(empty, 'empty-elements.json', 'class', /^hw-[a-z0-9-]+$/),
+    hooks: check(hooks, 'vanilla-hooks.json', 'attribute', /^data-hw-[a-z0-9-]+$/),
+    errors,
+  };
+}
+
+/** Reads and validates the lists of designed differences against the installed packages. */
+export function readDesignedDifferences(guideDir = GUIDE_DIR) {
+  const json = (name) => JSON.parse(readFileSync(join(here, name), 'utf8'));
+  const lists = { empty: json('empty-elements.json'), hooks: json('vanilla-hooks.json') };
+  // Empty lists need nothing of the installed packages.
+  if (Array.isArray(lists.empty) && Array.isArray(lists.hooks) && lists.empty.length === 0 && lists.hooks.length === 0) return { empty: [], hooks: [], errors: [] };
+  const packages = join(guideDir, 'node_modules', '@hawiyah');
+  const readme = (name) => {
+    try {
+      return readFileSync(join(packages, name, 'README.md'), 'utf8');
+    } catch {
+      return null;
+    }
+  };
+  const dist = join(packages, 'vanilla', 'dist');
+  const vanillaText = existsSync(dist) ? readdirSync(dist).filter((file) => file.endsWith('.js')).map((file) => readFileSync(join(dist, file), 'utf8')).join('\n') : '';
+  const styled = new Map(Object.entries(normalizerInputs(guideDir).styled ?? {}));
+  return validateDesignedDifferences(lists, { readme, vanillaText, styled });
+}
+
+/** The designed differences of one component: { emptyClasses, vanillaAttributes }. */
+export function designedOf(id, lists) {
+  return {
+    emptyClasses: lists.empty.filter((entry) => entry.component === id).map((entry) => entry.class),
+    vanillaAttributes: lists.hooks.filter((entry) => entry.component === id).map((entry) => entry.attribute),
+  };
 }
 
 /** The documented difference a group names, or a failure line. */
@@ -429,8 +506,12 @@ export async function capture(page, frameworks = FRAMEWORKS, before = null, { ke
  * entry without ignore skips its aspect; a structure entry with ignore leaves only
  * the listed attributes out of the structure comparison (leadAmendments A8).
  */
-export function compareCapture(captured, difference = null) {
+export function compareCapture(captured, difference = null, designed = null) {
   const rows = [];
+  // The designed differences of the component (G11 of the 5a fix round) change the structure trees only.
+  if (designed && (designed.emptyClasses.length || designed.vanillaAttributes.length)) {
+    captured = { ...captured, trees: Object.fromEntries(Object.entries(captured.trees).map(([framework, tree]) => [framework, withoutDesigned(tree, designed, framework)])) };
+  }
   const skip = difference && !difference.ignore ? difference.aspect : null;
   const ignore = difference?.aspect === 'structure' && difference.ignore ? difference.ignore : [];
   const add = (aspect, results) => {
@@ -459,25 +540,27 @@ async function loadChecks(names) {
 export const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
 const stem = (group, state) => [group.id, group.lang, group.example, ...(state === 'rest' ? [] : state.split('/'))].join('-');
 
-/** How long the expect of a step waits for its documented outcome (ms, lead decision L16 of 5a). */
+/** How long the harness waits for the documented outcome of a step (ms, lead decision L16 of 5a). */
 export const OUTCOME_TIMEOUT = 5_000;
+/** How long the harness waits after the last step of a check before it reads every frame once more (ms, G6 of the 5a fix round). */
+export const FINAL_SETTLE = 500;
 
 const firstLine = (error) => (error instanceof Error ? error.message.split('\n')[0] : String(error));
 
 /**
- * The verdict of a step's expect (lead decision L16 of 5a). An adapter may show the
+ * The verdict on a step's outcome (lead decision L16 of 5a). An adapter may show the
  * outcome of an event in a later task than the event: @hawiyah/angular renders
  * after zoneless change detection, which Angular schedules in the first animation
  * frame or 0 ms timer after the event, while the vanilla controller writes the state
  * in the event's task and React and Vue in its microtasks; a read of the frame right
- * after the key press is not ordered after that render. So expect, which only reads
- * the frame and computes the documented outcome from the state before the step, is
- * applied until it holds or `timeout` ms have passed (every `interval` ms); then
- * the frame renders twice more (settle) and expect is applied once again, and that
- * application is the verdict: a wrong outcome fails after the bound with the oracle's
- * message, and an outcome that held and then changed fails the second application.
- * The step itself is never run again and the expected outcome is never changed.
- * Returns null when the outcome holds, else the message of the miss.
+ * after the key press is not ordered after that render. So the assertion (which reads
+ * the frame and compares it with the state the oracle computed) is applied until it
+ * holds or `timeout` ms have passed (every `interval` ms); then the frame renders
+ * twice more (settle) and the assertion is applied once again, and that application
+ * is the verdict: a wrong outcome fails after the bound with the check's message,
+ * and an outcome that held and then changed fails the second application. The step
+ * itself is never run again and the expected outcome is never changed. Returns null
+ * when the outcome holds, else the message of the miss.
  */
 export async function awaitOutcome(expect, settle, { timeout = OUTCOME_TIMEOUT, interval = 20 } = {}) {
   const deadline = Date.now() + timeout;
@@ -502,36 +585,87 @@ export async function awaitOutcome(expect, settle, { timeout = OUTCOME_TIMEOUT, 
 }
 
 /**
- * Runs the steps of the checks of a group in the open harness page (5a.8). In each
- * frame a step runs, the keys it pressed must be the keys it declares (a step
- * without keys presses none), and its expect asserts the documented outcome while
- * the frame still has the focus, through awaitOutcome (a bounded wait for the
- * outcome, then a check that it holds); a failed expect is reported per frame with
- * the outcome and its reference (HWE-EXPECT). Then the four results are captured and
- * handed to evaluate(state, captured), which compares them. A step that cannot run
- * ends the checks of the group (HWE-CHECK). Returns { failures, asserted }, where
- * asserted counts the steps with an expect that held in every frame. outcomeTimeout
- * is the bound of awaitOutcome (the script tests shorten it).
+ * Key recorder of a frame (G6 of the 5a fix round): a capture listener on the frame's
+ * window that records every trusted keydown as a key id of KEY_NAMES (a chord as
+ * 'Shift+Tab'; ' ' is Space; a lone modifier is not recorded). The harness reads and
+ * clears it around each step, so a key counts whatever API pressed it.
  */
-export async function runChecks({ page, group, checks, frameworks = FRAMEWORKS, evaluate = async () => {}, outcomeTimeout = OUTCOME_TIMEOUT }) {
+async function recordKeys(frame) {
+  await frame.evaluate(() => {
+    const target = /** @type {any} */ (window);
+    if (!target.__hawiyahKeys) {
+      target.__hawiyahKeys = [];
+      window.addEventListener('keydown', (event) => {
+        if (!event.isTrusted || ['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) return;
+        const key = event.key === ' ' ? 'Space' : event.key;
+        target.__hawiyahKeys.push([event.ctrlKey && 'Control', event.altKey && 'Alt', event.shiftKey && 'Shift', event.metaKey && 'Meta', key].filter(Boolean).join('+'));
+      }, true);
+    }
+    target.__hawiyahKeys.length = 0;
+  });
+}
+const recordedKeys = (frame) => frame.evaluate(() => [.../** @type {any} */ (window).__hawiyahKeys]);
+
+/**
+ * Runs the checks of a group in the open harness page (5a.8; the oracle of G6 of the
+ * 5a fix round). A check is { name, read, assert, start?, negative, steps }; a step is
+ * { name, run, expect, keys?, outcome, reference, keepPointer? } (README.md, Build
+ * steps). In each frame:
+ *   - before the first step, read(mount) reads the frame at rest once, and start (or
+ *     the read itself) is the state the oracle starts from;
+ *   - before each step, assert(read(), expected, { phase: 'before' }) requires the
+ *     frame to still show the state the oracle computed for the previous step;
+ *   - the step runs; the trusted keydown events the frame recorded must be exactly
+ *     the keys the step declares (HWE-CHECK), whatever API pressed them;
+ *   - expect(previous, context) returns the state the oracle expects after the step,
+ *     from the state it expected before (never from the frame), and the frame must
+ *     show it, through awaitOutcome; a miss is HWE-EXPECT with the outcome and its
+ *     reference. The chain goes on from the expected state, whatever the frame shows;
+ *   - after the last step of a check, the harness waits FINAL_SETTLE ms and asserts
+ *     the last expected state once more in every frame.
+ * Then the four results are captured and handed to evaluate(state, captured). A step
+ * that cannot run ends the checks of the group (HWE-CHECK). Returns { failures,
+ * asserted }, where asserted counts the steps whose outcome held in every frame.
+ * oracle 'negative' asserts check.negative.wrong(expected) instead of the expected
+ * state (the negative control of a check: every keyed step must then fail), while the
+ * chain and the before-step assertion keep the documented states.
+ */
+export async function runChecks({
+  page, group, checks, frameworks = FRAMEWORKS, evaluate = async () => {}, outcomeTimeout = OUTCOME_TIMEOUT, finalSettle = FINAL_SETTLE, oracle = 'documented',
+}) {
   const failures = [];
   let asserted = 0;
+  const dir = group.lang === 'ar' ? 'rtl' : 'ltr';
+  const located = (framework) => {
+    const frameLocator = page.frameLocator(`iframe[data-framework="${framework}"]`);
+    return { frameLocator, mount: frameLocator.locator(mountSelector(framework)) };
+  };
   for (const check of checks) {
-    // Per-frame state a check keeps between its steps (for example the focused tab).
-    const states = Object.fromEntries(frameworks.map((framework) => [framework, {}]));
+    // Per frame: the scratch state a check keeps between its steps, and the state the oracle expects.
+    const states = Object.fromEntries(frameworks.map((framework) => [framework, { scratch: {}, expected: null }]));
+    const contextOf = (framework, extra = {}) => ({
+      page, mount: located(framework).mount, dir, lang: group.lang, framework, state: states[framework].scratch, expected: states[framework].expected, ...extra,
+    });
+    try {
+      for (const framework of frameworks) {
+        const context = contextOf(framework);
+        const observed = await check.read(context.mount, context);
+        states[framework].expected = typeof check.start === 'function' ? check.start(observed, context) : observed;
+      }
+    } catch (error) {
+      failures.push(failureLine('HWE-CHECK', group, `${check.name} cannot read the frames at rest: ${firstLine(error)}`));
+      return { failures, asserted };
+    }
     for (const step of check.steps) {
       let failed = null;
       const missed = [];
       const before = async (framework) => {
         if (failed) return;
-        const frameLocator = page.frameLocator(`iframe[data-framework="${framework}"]`);
-        const mount = frameLocator.locator(mountSelector(framework));
-        const pressed = [];
-        const context = {
-          page, mount, dir: group.lang === 'ar' ? 'rtl' : 'ltr', lang: group.lang, framework, state: states[framework],
+        const { frameLocator } = located(framework);
+        const frame = await frameOf(page, framework);
+        const context = contextOf(framework, {
           /** Presses a key or chord (a key id of KEY_NAMES) on a locator, or on the focused element of the frame (null). */
           press: async (locator, key) => {
-            pressed.push(key);
             if (locator) await locator.press(key);
             else await page.keyboard.press(key);
           },
@@ -540,23 +674,37 @@ export async function runChecks({ page, group, checks, frameworks = FRAMEWORKS, 
             // Playwright scrolls the frame into view and checks that the point hits the body (its padding).
             await frameLocator.locator('body').click({ position: { x: 2, y: 2 } });
           },
-        };
+        });
+        const previous = states[framework].expected;
         try {
+          check.assert(await check.read(context.mount, context), previous, { phase: 'before', context });
+        } catch (error) {
+          missed.push(`${framework}: before the step, the frame no longer shows the outcome the oracle computed for the previous step: ${firstLine(error)}`);
+        }
+        try {
+          await recordKeys(frame);
           await step.run(context);
         } catch (error) {
           failed = `${check.name} step ${step.name} failed in ${framework}: ${firstLine(error)}`;
           return;
         }
         const declared = [...new Set(step.keys ?? [])].sort();
-        const used = [...new Set(pressed)].sort();
+        const used = [...new Set(await recordedKeys(frame))].sort();
         if (declared.join(' ') !== used.join(' ')) {
-          failed = `${check.name} step ${step.name} pressed ${used.map((key) => keyName(key)).join(', ') || 'no key'} in ${framework}, and declares ${declared.map((key) => keyName(key)).join(', ') || 'no key'}; a step presses exactly the keys it declares`;
+          failed = `${check.name} step ${step.name} pressed ${used.map((key) => keyName(key)).join(', ') || 'no key'} in ${framework} (trusted keydown events of the frame), and declares ${declared.map((key) => keyName(key)).join(', ') || 'no key'}; a step presses exactly the keys it declares`;
           return;
         }
-        if (typeof step.expect !== 'function') return;
-        const frame = await frameOf(page, framework);
-        const miss = await awaitOutcome(() => step.expect(context), () => settleFrame(frame), { timeout: outcomeTimeout });
+        let next;
+        try {
+          next = await step.expect(previous, context);
+        } catch (error) {
+          failed = `${check.name} step ${step.name}: the oracle has no outcome in ${framework}: ${firstLine(error)}`;
+          return;
+        }
+        const verdict = oracle === 'negative' ? check.negative.wrong(next, context) : next;
+        const miss = await awaitOutcome(async () => check.assert(await check.read(context.mount, context), verdict, { phase: 'after', context }), () => settleFrame(frame), { timeout: outcomeTimeout });
         if (miss) missed.push(`${framework}: ${miss}`);
+        states[framework].expected = next;
       };
       const captured = await capture(page, frameworks, before, { keepPointer: Boolean(step.keepPointer) });
       if (failed) {
@@ -566,15 +714,27 @@ export async function runChecks({ page, group, checks, frameworks = FRAMEWORKS, 
       for (const line of missed) {
         failures.push(failureLine('HWE-EXPECT', group, `${group.example} (${group.lang}) ${check.name}/${step.name} in ${line}; documented outcome: ${step.outcome} [${step.reference}]`));
       }
-      if (typeof step.expect === 'function' && missed.length === 0) asserted += 1;
+      if (missed.length === 0) asserted += 1;
       await evaluate(`${check.name}/${step.name}`, captured);
+    }
+    // The outcome of the last step, once more after a fixed settle: a change that comes later than this is not seen.
+    await new Promise((done) => setTimeout(done, finalSettle));
+    const last = check.steps.at(-1);
+    for (const framework of frameworks) {
+      const context = contextOf(framework);
+      const expected = oracle === 'negative' ? check.negative.wrong(states[framework].expected, context) : states[framework].expected;
+      try {
+        check.assert(await check.read(context.mount, context), expected, { phase: 'final', context });
+      } catch (error) {
+        failures.push(failureLine('HWE-EXPECT', group, `${group.example} (${group.lang}) ${check.name}/${last?.name} in ${framework}: ${firstLine(error)} (the outcome of the last step changed within ${finalSettle} ms); documented outcome: ${last?.outcome} [${last?.reference}]`));
+      }
     }
   }
   return { failures, asserted };
 }
 
 /** Runs one group; returns { rows, failures, asserted, axeFrames }. */
-async function runGroup({ page, origin, base, pin, group, checks, difference, outDir, imageDir = '.cache/equivalence' }) {
+async function runGroup({ page, origin, base, pin, group, checks, difference, designed = null, outDir, imageDir = '.cache/equivalence' }) {
   const rows = [];
   const failures = [];
   let axeCount = 0;
@@ -590,7 +750,7 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, ou
   if (opened.length > 0) return { rows, failures: opened, asserted: 0, axeFrames: 0 };
 
   const evaluate = async (state, captured) => {
-    for (const row of compareCapture(captured, difference)) {
+    for (const row of compareCapture(captured, difference, designed)) {
       const entry = { group: groupKey(group), state, ...row };
       delete entry.equal;
       delete entry.diff;
@@ -674,7 +834,8 @@ export async function runEquivalence(options) {
 
   const pin = readPin(guideDir);
   const known = validateKnownDifferences(JSON.parse(readFileSync(join(here, 'known-differences.json'), 'utf8')));
-  const failures = [...known.errors];
+  const designedLists = readDesignedDifferences(guideDir);
+  const failures = [...known.errors, ...designedLists.errors];
   const componentsFile = options.componentsFile ?? resolve(guideDir, '..', 'components.json');
   // The keyboard rule (HWE-KEYS) reads every check the groups of a page name, also
   // those of groups outside this run's selection or shard.
@@ -682,16 +843,15 @@ export async function runEquivalence(options) {
   const selectedIds = new Set(selected.map((group) => group.id));
   const keyPages = (manifest.pages ?? []).filter((page) => selectedIds.has(page.id));
   const checks = await loadChecks([...new Set([...groups.flatMap(checkNames), ...keyPages.flatMap((page) => (page.liveGroups ?? []).flatMap(checkNames))])]);
-  const keys = keyboardRule({
-    pages: keyPages, checks,
-    scope: options.keyboardScope ?? await keyboardScope({ guideDir, componentsFile }),
-    exceptions: options.keyboardExceptions ?? readKeyboardExceptions(),
-  });
+  // A component with a controller: its page targets a controller factory of the installed
+  // @hawiyah/vanilla (keys.mjs). One definition for HWE-CHECK and HWE-KEYS (G19 of the 5a fix round).
+  const controllerScope = options.keyboardScope ?? await keyboardScope({ guideDir, componentsFile });
+  const keys = keyboardRule({ pages: keyPages, checks, scope: controllerScope, exceptions: options.keyboardExceptions ?? readKeyboardExceptions() });
   if (options.keys !== false) {
     for (const check of checks.values()) failures.push(...stepErrors(check));
     failures.push(...keys.errors);
   }
-  const withController = controllerComponents(componentsFile);
+  const withController = new Set(controllerScope.keys());
   const plan = [];
   for (const group of groups) {
     const difference = differenceOf(group, known.entries);
@@ -702,7 +862,7 @@ export async function runEquivalence(options) {
     if (withController.has(group.id) && checkNames(group).length === 0 && !group.static) {
       failures.push(failureLine('HWE-CHECK', group, `${group.example}: ${group.id} has a controller, so the group names at least one check (check=<name>[,<name>]) or declares itself static`));
     }
-    plan.push({ group, difference: difference.entry ?? null, checks: checkNames(group).map((name) => checks.get(name)).filter(Boolean) });
+    plan.push({ group, difference: difference.entry ?? null, designed: designedOf(group.id, designedLists), checks: checkNames(group).map((name) => checks.get(name)).filter(Boolean) });
   }
   if (failures.length > 0) throw new Error(failures.join('\n'));
 
@@ -767,6 +927,8 @@ export async function runEquivalence(options) {
   const documented = [...applied.keys()].map((id) => ({ ...known.entries.get(id), groups: applied.get(id).sort() }));
   const report = {
     pin,
+    // The content manifest this run compared (G16 of the 5a fix round); merge.mjs compares it with the build record.
+    contentManifest: contentManifestHash(manifestFile),
     scope: { pages: options.pages ?? null, only: options.only ?? null, shard, ...(options.keys === false ? { draft: true } : {}) },
     // The keys this run was to compare (before the shard split) and the keys it compared,
     // each with the number of its interaction checks: what merge.mjs joins.
@@ -842,12 +1004,6 @@ export function pagesErrors(groups, pages) {
 /** The checks a group names (check=<a>[,<b>...]). */
 export const checkNames = (group) => (typeof group.check === 'string' && group.check !== '' ? group.check.split(',') : []);
 
-/** Ids of components.json whose components have a controller (sourceType interactive). */
-export function controllerComponents(file) {
-  if (!existsSync(file)) return new Set();
-  const catalogue = JSON.parse(readFileSync(file, 'utf8'));
-  return new Set((catalogue.components ?? []).filter((entry) => entry.sourceType === 'interactive').map((entry) => entry.id));
-}
 
 /**
  * The run must compare exactly the groups of the built pages: the live groups

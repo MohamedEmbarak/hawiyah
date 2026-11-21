@@ -10,7 +10,7 @@ import { test, expect, axe, hydrated } from '../support/fixtures';
 // both languages: the prerendered document and the hydrated page have exactly one
 // main and one h1 (the guide's), axe is clean, the result is a frame once the
 // script runs, and without script the block shows its Angular listing and one
-// sentence. The real guide has no framed group yet; the frame fixture
+// sentence, and no status. The real guide has no framed group yet; the frame fixture
 // (scripts/test/frame/generate.mjs, built with --docs) has one.
 
 const generated = fileURLToPath(new URL('../../../src/generated/content/', import.meta.url));
@@ -20,8 +20,8 @@ const manifest = JSON.parse(readFileSync(join(generated, 'manifest.json'), 'utf8
 const FRAMED_COMPONENTS = ['app-shell', 'portal-layout', 'portal-header', 'portal-footer', 'page-header', 'mobile-top-bar'];
 const framedPages = manifest.pages.filter((page) => page.liveGroups.some((group) => group.frame));
 const NOTE = {
-  en: 'This example renders a whole page layout, so its result is shown in a frame, which needs JavaScript. The Angular listing below shows its code.',
-  ar: 'يعرض هذا المثال تخطيط صفحة كاملة، فتظهر نتيجته في إطار يحتاج إلى JavaScript. وتعرض شيفرة Angular أدناه مصدره.',
+  en: 'This example renders a landmark or a main heading of its own, so its result is shown in a frame, which needs JavaScript. The Angular listing below shows its code.',
+  ar: 'يعرض هذا المثال معلَمًا أو عنوانًا رئيسيًا خاصًا به، فتظهر نتيجته في إطار يحتاج إلى JavaScript، وتظهر أدناه شيفرته في Angular.',
 } as const;
 
 test('only the page-level components carry framed groups', () => {
@@ -50,12 +50,14 @@ for (const entry of framedPages) {
     }
     test.describe(`${lang}/components/${entry.id}/ without script`, () => {
       test.use({ javaScriptEnabled: false });
-      test('the Angular listing and the sentence, no result', async ({ page }) => {
+      test('the Angular listing and the sentence, no result and no status', async ({ page }) => {
         await page.goto(`${lang}/components/${entry.id}/`);
         const block = page.locator('guide-example-block').first();
         await expect(block.locator('.framed-note')).toHaveText(NOTE[lang]);
         await expect(block.locator('.framed-note')).toBeVisible();
         await expect(block.locator('guide-native-result, iframe')).toHaveCount(0);
+        // No status that never resolves: the frame does not load without script (G23 of the 5a fix round).
+        await expect(block.locator('.status')).toBeHidden();
         // The Angular tab is selected on the server: its listing is the one shown.
         const shown = block.locator('pre').filter({ visible: true });
         await expect(shown).toHaveCount(1);

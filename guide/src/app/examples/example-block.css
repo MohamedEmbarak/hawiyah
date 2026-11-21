@@ -35,8 +35,14 @@
   margin-block: 0;
 }
 
+/* Without script a framed group shows no status: its frame never loads, so a
+   loading status would never resolve (G23 of the 5a fix round). */
 @media (scripting: none) {
   .framed-note {
     display: block;
+  }
+
+  .framed-status {
+    display: none;
   }
 }

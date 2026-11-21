@@ -7,40 +7,12 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fromMarkdown } from 'mdast-util-from-markdown';
-import { gfmFromMarkdown } from 'mdast-util-gfm';
-import { gfm } from 'micromark-extension-gfm';
 import { describe, expect, it } from 'vitest';
+import { GLOSSARY_FILE, excludedLines, glossaryTables, readExcluded } from '../glossary.mjs';
 
 const guideDir = fileURLToPath(new URL('../../../', import.meta.url));
 const docsDir = join(guideDir, '..', 'docs', 'components');
 const appDir = join(guideDir, 'src', 'app');
-export const GLOSSARY_FILE = join(guideDir, '..', 'docs', 'guides', 'glossary.md');
-
-const cellText = (cell) => (cell.children ?? []).map((node) => (node.type === 'text' || node.type === 'inlineCode' ? node.value : cellText(node))).join('').trim();
-
-/** The tables of the glossary by caption: { caption: rows of cell texts (the header row first) }. */
-export function glossaryTables(text) {
-  const tree = fromMarkdown(text, { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] });
-  const tables = {};
-  tree.children.forEach((node, index) => {
-    const caption = tree.children[index - 1];
-    if (node.type !== 'table' || caption?.type !== 'paragraph') return;
-    const name = cellText(caption).replace(/^Table: /, '');
-    tables[name] = node.children.map((row) => row.children.map(cellText));
-  });
-  return tables;
-}
-
-/** The excluded forms: [{ form: RegExp, use }] from the table of the glossary. */
-export function readExcluded(text) {
-  const rows = glossaryTables(text)['Forms the glossary excludes'] ?? [];
-  return rows.slice(1).map(([literal, use]) => {
-    const match = /^\/(.+)\/([a-z]*)$/s.exec(literal);
-    if (!match) throw new Error(`glossary: the excluded form ${literal} is not a regular expression literal`);
-    return { form: new RegExp(match[1], match[2]), use };
-  });
-}
 
 const glossaryText = readFileSync(GLOSSARY_FILE, 'utf8');
 const EXCLUDED = readExcluded(glossaryText);
@@ -64,11 +36,7 @@ const sources = [
 
 /** Lines of `text` that contain an excluded form. */
 export function excludedForms(text) {
-  const found = [];
-  text.split('\n').forEach((line, index) => {
-    for (const { form, use } of EXCLUDED) if (form.test(line)) found.push(`${index + 1}: ${line.trim().slice(0, 60)} (use ${use})`);
-  });
-  return found;
+  return excludedLines(text, EXCLUDED).map((item) => `${item.line}: ${item.text} (use ${item.use})`);
 }
 
 describe('Arabic glossary', () => {
@@ -123,6 +91,12 @@ describe('Arabic glossary', () => {
     expect(excludedForms('يعرض الزر بالفئات المرئية لهوية.')).toHaveLength(1);
     expect(excludedForms('بموجب رخصة Apache 2.0.')).toHaveLength(1);
     expect(excludedForms('تتبع التبويبات نمط التبويبات في ممارسات التأليف الخاصة بـWAI-ARIA، وتمنح ورقة الأنماط العنصر شكله بالصنف `hw-tab`.')).toEqual([]);
+    // G21: نمط names any WAI-ARIA pattern when the reference follows in the same sentence; never a colour mode.
+    expect(excludedForms('يتبع المكوّن نمط الأكورديون في ممارسات التأليف الخاصة بـWAI-ARIA.')).toEqual([]);
+    expect(excludedForms('يتبع المكوّن نمط الأقسام القابلة للطي في ممارسات التأليف الخاصة بـWAI-ARIA.')).toEqual([]);
+    expect(excludedForms('يتبع المكوّن نمط الأكورديون.')).toHaveLength(1);
+    expect(excludedForms('نمط الوضع الداكن في ممارسات التأليف الخاصة بـWAI-ARIA.')).toHaveLength(1);
+    expect(excludedForms('نمط الألوان في ممارسات التأليف.')).toHaveLength(1);
     expect(excludedForms('مبنية لتتوافق مع كود المنصات، ولكود المنصات أصنافه، والسمة `dga` بالطُّرُز المرئية، بموجب ترخيص Apache 2.0، في اتجاهَي القراءة كليهما.')).toEqual([]);
   });
 });

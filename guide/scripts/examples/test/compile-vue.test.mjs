@@ -43,6 +43,19 @@ describe('compileVue', () => {
     expect(failed.diagnostics[0].line - bad.lineOffset).toBe(1);
   });
 
+  // G10 of the 5a fix round: what vue-tsc accepts at its default settings in a consumer of
+  // @hawiyah/vue 0.3.0, step 25 accepts (strictTemplates rejected the packaged icon span).
+  it('accepts a data-* attribute on a native element and an attribute that falls through to a component, as vue-tsc does by default', async () => {
+    const sources = {
+      icon: '<Button variant="primary"><span class="hw-icon" data-icon="add-01" aria-hidden="true"></span>Continue</Button>',
+      wrapper: '<div class="hw-inline" data-align="center"><Button variant="primary">Continue</Button></div>',
+      id: '<Stat id="requests" label="Requests" value="128" />',
+    };
+    const items = Object.entries(sources).map(([name, code]) => ({ key: `v/en/${name}`, dir: `v/en/${name}`, source: wrapVue(code, guideDir).source }));
+    const results = await compileVue(items, { workDir: join(workRoot, 'vue-default'), fromDir: guideDir });
+    for (const item of items) expect(results.get(item.key).diagnostics, item.key).toEqual([]);
+  });
+
   it('derives a stable scope id from the group key', () => {
     expect(scopeId('button/en/primary')).toMatch(/^[0-9a-f]{8}$/);
     expect(scopeId('button/en/primary')).toBe(scopeId('button/en/primary'));

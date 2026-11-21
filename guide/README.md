@@ -81,7 +81,7 @@ from the same compiled payload as the equivalence step, and not in the guide pag
 What such a framed Angular result does not prove: that the example renders on the
 server and hydrates natively in an Angular application. The guide prerenders and
 hydrates the native result of every other group; for a framed group it shows the
-frame after hydration and, without script, its Angular listing and one sentence.
+frame after hydration and, without script, its Angular listing and one sentence (no status, since the frame cannot load).
 Server rendering and hydration of a page-level component remain covered only by
 the package's own tests (`components.json` lists them in the evidence panel where
 they exist).
@@ -352,14 +352,14 @@ Run in `guide/` unless stated otherwise.
 | `HAWIYAH_BASE_PATH=/hawiyah/ npm run build` | `node scripts/build.mjs`: every step of the production configuration, output `dist/`. | One line per step `build: <id> ok (<ms> ms)`, then `build: production OK, <n> prerendered pages, 404.html, base /hawiyah/, 19 steps: <ids of the steps that ran>`; `dist/browser/index.html` contains `<base href="/hawiyah/">`; `dist/build-info.json` records a deployable build; exit 0. |
 | `HAWIYAH_BASE_PATH=/hawiyah/ npm run build -- --pages <id,...>` | A local gate: every step but 90, step 80 only on the groups of the named pages. `--docs <dir>` reads the component pages from another directory instead (also without step 90). | `build: production OK, not deployable (--pages <ids>), <n> prerendered pages, ..., 18 steps: ...`; `dist/build-info.json` records `"deployable": false`; exit 0. |
 | `node scripts/equivalence/run.mjs --shard <i>/<n> --report <file>` | Step 80 on shard i of n of an existing production output (see [Build steps](#build-steps)). | `equivalence shard <i>/<n> (<k> of <m> group-languages): ...`; exit 0. |
-| `node scripts/equivalence/merge.mjs [--manifest <file>] <report> ...` | Joins the shard reports of step 80. | The summary line of a run without `--shard`, followed by `; merged from <n> shards`; exit 0. Otherwise one `HWE-MERGE ...` line per problem and exit 1. |
+| `node scripts/equivalence/merge.mjs [--manifest <file>] [--record <file>] <report> ...` | Joins the shard reports of step 80. Each report carries the hash of the content manifest it compared (`contentManifest`), and so does the build record (`dist/build-info.json`, the default of `--record`); the merge requires them equal to the hash of the manifest given. | The summary line of a run without `--shard`, followed by `; merged from <n> shards`; exit 0. Otherwise one `HWE-MERGE ...` line per problem and exit 1. |
 | `node scripts/e2e/merge.mjs --list <list.json> --used <dir> ... <report.json> ...` | Joins the JSON reports of browser test shards (`guide.yml`). | `e2e: <n> tests of the build passed in <k> shards; the structural half of the styling rule ran on <p> pages and 2 opened states, every listed declaration used`; exit 0. Otherwise one `HWT-MERGE ...` or `HWT-UNION ...` line per problem and exit 1. |
 | `node scripts/build-scope.mjs --require-deployable [--dir dist]` | The deploy check of `guide.yml`: the record `<dir>/build-info.json` of a complete, deployable production build. | `build-scope: dist/ is the output of a deployable production build (<n> steps...)`; exit 0, else exit 1. |
 | `npm run build:dev-check` | Development build into `dist-dev/` under `/hawiyah/`, then `playwright test --project=dev`. | `build: development OK ...`, `log-scan: 0 findings (development)`, Playwright `N passed`; exit 0. |
 | `npm run scan:log -- .cache/logs/build-production.log` | Scans a saved build log. | `log-scan: 0 findings (production)`; exit 0. A finding prints `log-scan: <rule id> line <n>: <text>` and exits 1. |
 | `npm run test:unit` | Generation steps, then `ng test --no-watch` (Vitest with jsdom). | Vitest summary with 0 failed; exit 0. |
 | `npm run test:e2e` | `playwright test --project=prod` against `dist/browser` served under `/hawiyah/`. Requires a prior production build with `HAWIYAH_BASE_PATH=/hawiyah/`. | `N passed` with 0 failed and 0 flaky; exit 0. Output goes to `GUIDE_TEST_OUTPUT` or `<os tmpdir>/hawiyah-guide-e2e`, never into the repository. |
-| `npm run check:page -- <id> [--lang en] [--draft] [--docs <dir>] [--workers <n>]` | `node scripts/check-page.mjs`: the proof of one page for its writer, after one production build: the content step for that page only (a finding in another page does not fail it), the compile of its live groups, the API tables and the vocabulary pass of step 30, the coverage report, and step 80 on its groups in the languages that exist. It writes only below `.cache/page-<id>/` and never into `dist/` or `src/generated/` (step 80 serves `dist/browser` with the page's own payloads in place of `dist/browser/examples/`). Step 80 takes a lock: while another `check:page` compares its groups, a run waits (leadAmendments A8); a second run of the same page waits for the first. `--lang en` checks the English page alone; an English page without its Arabic sibling is checked in English only while `scripts/content/pending-translation.json` lists it. It prints each row of the page's keyboard table with the steps of the checks that press its keys, their outcomes and references. `--draft` leaves out `HWE-KEYS` (the keys of the keyboard table bound to the steps of the checks), for a page whose check is not written yet; the steps that exist still assert their outcomes. A writer's tool, never the gate of a stage. | One line per stage (`check:page: content ok (<ms> ms) ...`, `compile`, `api-tables and vocabulary`, the coverage section, the keyboard report, the summary line of step 80, `equivalence`), then `check:page: <id> OK in <s> s (...)`; exit 0. Otherwise every finding with its code and `check:page: <id> FAILED with <n> finding(s) ...`; exit 1. |
+| `npm run check:page -- <id> [--lang en] [--draft] [--docs <dir>] [--workers <n>]` | `node scripts/check-page.mjs`: the proof of one page for its writer, after one production build: the content step for that page only (a finding in another page does not fail it), the glossary and compliance assertions of the script tests and the Latin-script guard of step 72 on the page's own Markdown (`scripts/content/page-rules.mjs`: `HWT-GLOSSARY`, `HWT-COMPLIANCE`, `HWP-LATIN`), the compile of its live groups, the API tables and the vocabulary pass of step 30, the coverage report, and step 80 on its groups in the languages that exist. It does not run the browser tests nor the parts of step 72 that need a prerendered document (icons, `svg`, emoji, the Latin-script guard over the examples and generated text): `npm run build -- --pages <id>` and `npm run test:page -- <id>` do. It writes only below `.cache/page-<id>/` and never into `dist/` or `src/generated/` (step 80 serves `dist/browser` with the page's own payloads in place of `dist/browser/examples/`). Step 80 takes a lock: while another `check:page` compares its groups, a run waits (leadAmendments A8); a second run of the same page waits for the first. `--lang en` checks the English page alone; an English page without its Arabic sibling is checked in English only while `scripts/content/pending-translation.json` lists it. It prints each row of the page's keyboard table with the steps of the checks that press its keys, their outcomes and references. `--draft` leaves out `HWE-KEYS` (the keys of the keyboard table bound to the steps of the checks), for a page whose check is not written yet; the steps that exist still assert their outcomes. A writer's tool, never the gate of a stage. | One line per stage (`check:page: content ok (<ms> ms) ...`, `glossary, compliance and Latin-script rules`, `compile`, `api-tables and vocabulary`, the coverage section, the keyboard report, the summary line of step 80, `equivalence`), then `check:page: <id> OK in <s> s (...)`; exit 0. Otherwise every finding with its code and `check:page: <id> FAILED with <n> finding(s) ...`; exit 1. |
 | `npm run test:page -- <id> [<playwright option> ...]` | `node scripts/test-page.mjs`: the browser tests of one page against a production build that contains it: every test whose title names a document of the page (`components/<id>/`, `component page <id> (`), then the page's own specs (`tests/e2e/pages/<id>.spec.ts`, `tests/e2e/<id>/`) when they exist. It does not judge the union of the structural half of the styling rule. | Playwright `N passed` for each run, then `test:page: <id> OK (...)`; exit 0. |
 | `npm run test:check-page` | `GUIDE_BUILD_TESTS=1 vitest run --config vitest.scripts.config.ts`: the script tests that need a production build in `dist/` (`scripts/test/build/*.build-test.mjs`): three wrong copies of `tabs.md` read with `--docs` fail `check:page` with `HWC-APIX`, `HWC-R1` and `HWE-STRUCT`, a copy without the Home row of its keyboard table fails with `HWE-KEYS` and passes with `--draft`, and two concurrent runs pass with `dist/browser/examples` and `src/generated` unchanged. Run it after the production build. | Vitest summary with 0 failed; exit 0. |
 | `node scripts/test/scale/generate.mjs [--out <dir>] [--groups <n>]` | Writes the scale fixture (see [Scale](#scale)) to `.cache/scale/docs/components/` (ignored by Git). | `scale: 85 pages in 2 languages in ... (83 generated with 6 generic static groups each, 2 copied: button, tabs); build with --docs, never deployable`; exit 0. |
@@ -367,12 +367,12 @@ Run in `guide/` unless stated otherwise.
 | `npm run serve` | `node scripts/serve.mjs [--dir dist/browser] [--base /hawiyah/] [--port 4300]`. | `serve: http://127.0.0.1:4300/hawiyah/ -> dist/browser`; the process stays up. |
 | `npm start` | Generation steps, then `ng serve` (development server, base `/`). | The Angular development server prints its URL; pages render with server rendering in development. |
 | `npm run content:hash -- <id> [--docs <dir>]` | Prints the YAML front matter block of section hashes for `docs/components/<id>.ar.md`; edits nothing. | A `---` delimited YAML block with the key `source` and one entry per section id. |
-| `npm run content:facts -- <id> \| --all [--out <dir>]` | `node scripts/facts/cli.mjs`: the fact sheet of a component for writers, from the installed packages with the readers of step 30 (`scripts/facts/`), written as `<id>.json` and `<id>.md` to `.cache/facts/` (ignored by Git, read by nothing in the build). | `content:facts: <n> fact sheet(s) in .../.cache/facts (0 reader problem(s))`; exit 0. |
+| `npm run content:facts -- <id> \| --all [--out <dir>]` | `node scripts/facts/cli.mjs`: the fact sheet of a component for writers, from the installed packages with the readers of step 30 (`scripts/facts/`): members, vanilla markup and part classes, the README section of `@hawiyah/vanilla`, the fields of the item types per adapter, written as `<id>.json` and `<id>.md` to `.cache/facts/` (ignored by Git, read by nothing in the build). | `content:facts: <n> fact sheet(s) in .../.cache/facts (0 reader problem(s))`; exit 0. |
 | `npm run content:scaffold -- <id> [--docs <dir>] [--force]` | `node scripts/content/scaffold.mjs`: writes the English skeleton `docs/components/<id>.md`: h1, fixed sections, the four API tables with their captions, and the compliance sentence; no summary, prose or example. An existing file is kept without `--force`. | `content:scaffold: wrote <file>: ...`; exit 0. Exit 1 with the reason when a table cannot be written (a reader problem or a list gap). |
 | `npm run content:api-tables -- <id> [--write \| --check] [--docs <dir>]` | `node scripts/content/api-tables.mjs`: writes (`--write`) or checks (`--check`) the four API table bodies of `<id>.md` and `<id>.ar.md` from the installed packages, with the generated note of a table read from the stylesheet; captions, header rows and prose stay. Without a flag it prints the English tables. Run it when the pin moves. | `content:api-tables: docs/components/<id>.md: the four API tables match the installed packages` per file; `--check` exits 1 when a file would change. |
-| `npm run content:scaffold-ar -- <id> --strings <map.json> [--docs <dir>] [--force]` | `node scripts/content/scaffold-ar.mjs`: writes `<id>.ar.md` from the English page: front matter hashes, h1, h2, API captions, headers and note from fixed lists; API bodies and code listings copied; live blocks copied with the reader strings replaced from the map `{ "<English>": "<Arabic>" }`; other text left for the writer to translate in place. | `content:scaffold-ar: wrote <file>; ...`, then one line per reader string the map does not translate and per unused entry; exit 0. |
-| `npm run content:scaffold-ar -- <id> --placeholder --docs <dir> [--strings <map.json>]` | The same with every text left in English and every reader string the map does not translate replaced by the placeholder `نص مؤقت بدل الترجمة.`: a stand-in sibling for the browser tests of an English page before its translation. It writes only into a directory outside the repository; the build reads it with `--docs` (not deployable). | `content:scaffold-ar: wrote the placeholder sibling <file> (not a translation; ...)`; exit 0. Exit 1 when `--docs` lies inside the repository. |
-| `npm run content:sync-ar -- <id> [--docs <dir>] [--check]` | `node scripts/content/sync-ar.mjs`: rewrites the live blocks, code listings and API tables of an existing `<id>.ar.md` from the English page, with the string map that the existing pair gives; translated prose and the front matter stay. | `content:sync-ar: rewrote ...` or `... is in step with its English page`, then the strings without a translation and the stale sections; `--check` exits 1 when the page would change. |
+| `npm run content:scaffold-ar -- <id> --strings <map.json> [--docs <dir>] [--force]` | `node scripts/content/scaffold-ar.mjs`: writes `<id>.ar.md` from the English page: front matter hashes, h1, h2, API captions, headers and note from fixed lists; API bodies and code listings copied; live blocks copied with the reader strings replaced from the map `{ "<English>": "<Arabic>" }`; other text left for the writer to translate in place. | `content:scaffold-ar: wrote <file>; ...`, then one line per reader string the map does not translate, per other string left in English that renders as reader text (`left in English: ...`) and per unused entry; exit 0. |
+| `npm run content:scaffold-ar -- <id> --placeholder --docs <dir> [--strings <map.json>]` | The same with every text left in English and every reader string the map does not translate replaced by the placeholder `نص مؤقت إلى حين الترجمة.`: a stand-in sibling for the browser tests of an English page before its translation. It writes only into a directory outside the repository; the build reads it with `--docs` (not deployable). Step 20 refuses the placeholder in a page of `docs/components/` (`HWC-TODO`). | `content:scaffold-ar: wrote the placeholder sibling <file> (not a translation; ...)`; exit 0. Exit 1 when `--docs` lies inside the repository. |
+| `npm run content:sync-ar -- <id> [--docs <dir>] [--check]` | `node scripts/content/sync-ar.mjs`: rewrites the live blocks, code listings and API tables of an existing `<id>.ar.md` from the English page, with the string map that the existing pair gives; translated prose and the front matter stay. | `content:sync-ar: rewrote ...` or `... is in step with its English page`, then the strings without a translation, the strings left in English that render as reader text, the Arabic strings it kept in place of an English one (`kept the Arabic string ...; check it`) or could not carry, and the stale sections; it never replaces an Arabic string by an English one; `--check` exits 1 when the page would change. |
 | `npm run content:coverage -- [<id> ...] [--docs <dir>]` | `node scripts/api-tables/coverage.mjs`: the coverage report of leadAmendments A5, per page: the enumerated values and boolean members of the API that no live group of the same framework shows (the default value counts as shown) and that the section Variants and states does not name. A report, never a gate; `check:page` prints the same section. | `coverage: <id>: <n> of <m> enumerated values and boolean members of the API are shown by no live group and not listed in Variants and states (a report, not a gate)`, then one line per framework with what is missing; exit 0. |
 | `node scripts/api-tables/cli.mjs --declared-all` | One line per component and framework of `components.json` with what the readers of step 30 declare. | `api-tables: declared members of 85 ids in 4 frameworks: <n> members; 0 reader errors; 0 ids without a target; <g> list gaps (...)`; exit 0, else exit 1. |
 | `npm run preview:local` | `node scripts/preview/build-preview.mjs`: preview build from local tarballs. Requires `pnpm build:packages && pnpm check:packages` at the repository root first. | `preview: built from local tarballs at commit <sha7> in ../.artifacts/guide-preview/guide/dist/browser`; exit 0. |
@@ -393,7 +393,10 @@ milestone 5 (`scripts/build-scope.mjs`):
   the named pages. A local gate.
 - `--docs <dir>`: the component pages are read from `<dir>/components/`, or from
   `<dir>` when it has no such directory, instead of `docs/components/`. A local
-  gate, for example for a scale fixture.
+  gate, for example for a scale fixture. In a directory outside the repository a
+  relative link that is not a page of the copy resolves as it would in
+  `docs/components/`, where the page is written, so a copy of the pages builds as
+  the repository does.
 - `--defer-equivalence` (production only, not with `--pages` or `--preview`):
   every step but 80, which the equivalence shards of `guide.yml` run on this
   output. With `--docs` it builds the scale fixture the same way (see
@@ -421,9 +424,9 @@ lists the steps that ran; `scripts/test/build.test.mjs` asserts the plan.
 | `03-lint` | Runs the CSS, template and source lint. |
 | `05-registry` | Runs the registry check (strict, or preview mode in preview builds). |
 | `10-features` | Writes `src/generated/features.ts`, `features.json` and `pages.json`. |
-| `20-content` | Parses and checks the component Markdown (an English page without its Arabic sibling only while `scripts/content/pending-translation.json` lists it: it gets no route, and the step prints `content: <n> pages pending translation`), writes `src/generated/content/`: the page models, `loaders.ts`, `manifest.json` (read by the scripts and tests at build time only), `navigation.json` (the navigation index: id, langs, category, names, summaries and live groups of each page, read by the catalogue, the side navigation, the drawer and the editor from lazy chunks) and `routes.json` (ids and languages, read by the route matcher). The manifest carries the keyboard table of each page and language (keys and actions, read by step 80); each page model carries the data of its evidence panel (`scripts/content/evidence.mjs`: `components.json`, the Known defects of the pinned version in `CHANGELOG.md` that name the component, its documented differences) and adds the two headings of the panel to its headings. |
+| `20-content` | Parses and checks the component Markdown, with the text gates of `scripts/content/prose.mjs` (`HWC-CLAIM`, `HWC-EMPTY`, `HWC-TODO`, `HWC-TONE`, `HWC-LIVE7` and install text in running text; they prove structure and words, not that a sentence is true) (an English page without its Arabic sibling only while `scripts/content/pending-translation.json` lists it: it gets no route, and the step prints `content: <n> pages pending translation`), writes `src/generated/content/`: the page models, `loaders.ts`, `manifest.json` (read by the scripts and tests at build time only), `navigation.json` (the navigation index: id, langs, category, names, summaries and live groups of each page, read by the catalogue, the side navigation, the drawer and the editor from lazy chunks) and `routes.json` (ids and languages, read by the route matcher). The manifest carries the keyboard table of each page and language (keys and actions, read by step 80); each page model carries the data of its evidence panel (`scripts/content/evidence.mjs`: `components.json`, the Known defects of the pinned version in `CHANGELOG.md` that name the component, its documented differences, each shown under the Known defects entry its source cites, and the kinds of evidence that some built adapters have and others do not) and adds the two headings of the panel to its headings. A heading of the section Platforms Code reference that restates the panel (Evidence, Open items and the like, in both languages) fails with `HWC-H2`; a Key cell separated by anything but the comma of the page's language, an arrow cell whose forward key is not first, and an Action cell that is not one sentence fail with `HWC-KEYS` (G20 of the 5a fix round). |
 | `25-examples` | Wraps, type-checks and compiles the live example groups; writes `src/generated/examples/` and `.cache/examples/`. |
-| `30-api-tables` | Checks the API tables of every built page against the installed packages (`scripts/api-tables/`): the member names of each table (as a set), the kind (Vue and Angular tables), the required flag, the type and the default of every row. Types are compared in the written form of one printer, `types.mjs` (see the API tables section of `docs/components/README.md`), after normalising white space, quotes, union order and parameter names. Defaults are read from the published JavaScript: React destructuring defaults, the Vue runtime props object, Angular field initialisers in the FESM; a default that is absent, generated or computed in a body is an em dash, and so is the default of a vanilla option or stylesheet attribute unless `defaults.json` quotes a line of an installed file that sets it. A component without a vanilla controller is compared with the union of its row in the stable class and state API of the `@hawiyah/styles` README and the attribute selectors that `dist/styles.css` has on its classes; the 26 components without a contract row need the generated note after their JavaScript table. Vue slot rows are compared with the slots the published `@hawiyah/vue` build reads (a computed slot name through `VUE_SLOT_PATTERNS` of `targets.mjs`). The lead's lists (`exclusions.json`, `defaults.json`, `TARGET_OVERRIDES`, `VUE_SLOT_PATTERNS` and `UNOWNED_EXPORTS` of `targets.mjs`, `arabic-exceptions.json`, `latin-allowlist.json`, `scripts/equivalence/keyboard-exceptions.json`; `UNOWNED_EXPORTS` belongs to no page) need `approvedBy` and a reason on every entry and hold at most 5 entries per page (`scripts/api-tables/lists.mjs`). The step writes `src/generated/parity.json` with the members of all components of `components.json`, and fails when a reader cannot read a component. Its second pass is the vocabulary check (`scripts/api-tables/vocabulary.mjs`, `HWC-VOCAB`): every inline code value of a page outside the API tables (prose, lists, headings, alerts and other tables) and every class, `data-hw` hook and `data-*` attribute of its `html` live blocks must exist in the installed packages, as the section Vocabulary of `docs/components/README.md` states, or be an entry `{ file, text, reason, approvedBy }` of `vocabulary-exceptions.json` (a lead's list; an entry that matches nothing fails); names that HTML, ARIA, the DOM, CSS and the Vue and Angular template syntax define are read from `vocabulary-allow.json`, each group with its specification (a list of the guide, not a lead list: an entry is a group of names of one kind with the https address of its specification, and the step and `scripts/api-tables/test/vocabulary-allow.test.mjs` fail on an entry without one). The success line states what was compared, with counts: `api-tables: <n> API tables of <m> page models, <r> rows: names, kinds, required flags, types and defaults match the installed packages (...; <d> defaults.json entries; <s> rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; <e> rows of exclusions.json compared by name only; Vue slots read from the published build, <p> slot patterns; <o> target overrides); parity.json: members of <c> components; vocabulary: <v> code values outside the API tables (<t> terms) and <k> classes, hooks and data attributes of html live blocks exist in the installed packages (<x> vocabulary-exceptions.json entries)`. |
+| `30-api-tables` | Checks the API tables of every built page against the installed packages (`scripts/api-tables/`): the member names of each table (as a set), the kind (Vue and Angular tables), the required flag, the type and the default of every row. Types are compared in the written form of one printer, `types.mjs` (see the API tables section of `docs/components/README.md`), after normalising white space, quotes, union order and parameter names. Defaults are read from the published JavaScript: React destructuring defaults, the Vue runtime props object, Angular field initialisers in the FESM; a default that is absent, generated or computed in a body is an em dash, and so is the default of a vanilla option or stylesheet attribute unless `defaults.json` quotes a line of an installed file that sets it. A component without a vanilla controller is compared with the union of its row in the stable class and state API of the `@hawiyah/styles` README and the attribute selectors that `dist/styles.css` has on its classes (a row that names several classes of `components.json` gives an attribute or value only where `dist/styles.css` selects it on the component's class or inside it); the 26 components without a contract row need the generated note after their JavaScript table. Vue slot rows are compared with the slots the published `@hawiyah/vue` build reads (a computed slot name through `VUE_SLOT_PATTERNS` of `targets.mjs`). The lead's lists (`exclusions.json`, `defaults.json`, `TARGET_OVERRIDES`, `VUE_SLOT_PATTERNS` and `UNOWNED_EXPORTS` of `targets.mjs`, `arabic-exceptions.json`, `claim-exceptions.json`, `live-component-exceptions.json`, `marketing-terms.json`, `latin-allowlist.json`, `scripts/equivalence/keyboard-exceptions.json`; `UNOWNED_EXPORTS` and the marketing terms belong to no page) need `approvedBy` and a reason on every entry and hold at most 5 entries per page (`scripts/api-tables/lists.mjs`); `scripts/test/lead-lists.test.mjs` pins each list by the hash of its content, so the lead renews a pin with every entry. The step writes `src/generated/parity.json` with the members of all components of `components.json`, and fails when a reader cannot read a component. Its second pass is the vocabulary check (`scripts/api-tables/vocabulary.mjs`, `HWC-VOCAB`): every inline code value of a page outside the API tables (prose, lists, headings, link text, alerts, other tables and their captions) and every class, `data-hw` hook, `data-*` attribute with its value and `aria-*` attribute name of its `html` live blocks must exist in the installed packages, as the section Vocabulary of `docs/components/README.md` states, or be an entry `{ file, text, reason, approvedBy }` of `vocabulary-exceptions.json` (a lead's list; an entry that matches nothing fails); names that HTML, ARIA, the DOM, CSS and the Vue and Angular template syntax define are read from `vocabulary-allow.json`, each group with its specification (a list of the guide, not a lead list: an entry is a group of names of one kind with the https address of its specification, and the step and `scripts/api-tables/test/vocabulary-allow.test.mjs` fail on an entry without one). The success line states what was compared, with counts: `api-tables: <n> API tables of <m> page models, <r> rows: names, kinds, required flags, types and defaults match the installed packages (...; <d> defaults.json entries; <s> rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; <e> rows of exclusions.json compared by name only; Vue slots read from the published build, <p> slot patterns; <o> target overrides); parity.json: members of <c> components; vocabulary: <v> code values outside the API tables (<t> terms) and <k> classes, hooks and data attributes of html live blocks exist in the installed packages (<x> vocabulary-exceptions.json entries)`. |
 | `32-install` | Writes `src/generated/install.json`. |
 | `35-index-html` | Writes `src/generated/index.html` from the template with the pre-paint script. |
 | `40-angular` | Runs `ng build --stats-json` with the base href, the configuration and the preview define, with `--max-old-space-size=8192` added to its `NODE_OPTIONS` unless the caller set a heap limit (one program holds every page model, listing and native example: the default heap ran out at 85 pages); saves the output to `.cache/logs/` and logs the peak memory of the ng process tree (`40-angular: peak memory <n> MB ...`, where `/proc` exists). The esbuild metafiles `browser-stats.json` and `server-stats.json` are written to `dist/` (not deployed); the step fails when a browser output has `src/generated/content/manifest.json` among its inputs (`scripts/features/bundle.mjs`). |
@@ -432,7 +435,7 @@ lists the steps that ran; `scripts/test/build.test.mjs` asserts the plan.
 | `60-runtime` | Writes `<out>/browser/runtime/`: published, linked and bundled files, import map, manifest, fallback bundles. Checks the inputs of its esbuild runs. |
 | `62-editor-runtime` | Writes `<out>/browser/runtime/compilers/`. Checks the inputs of its esbuild run. |
 | `70-postbuild` | Writes `404.html`, removes `index.csr.html`, adds licences and preview files, verifies the prerendered routes. |
-| `72-page-guards` | Icon and text guards over the prerendered pages and the guide sources: every `data-icon` value has a rule in the installed `@hawiyah/styles`; no `svg` element, icon-font class or emoji; on Arabic pages no run of four or more Latin-script words in reader text outside `code`, `kbd`, `pre`, `samp` and elements with their own non-Arabic `lang` (a hyphen joins the parts of one word, such as the element `hw-mobile-top-bar` in a generated table caption, and separates words only next to a space or punctuation), unless `scripts/page-guards/latin-allowlist.json` lists it with a reason and `approvedBy` (an entry that matches nothing fails). |
+| `72-page-guards` | Icon and text guards over the prerendered pages and the guide sources: every `data-icon` value has a rule in the installed `@hawiyah/styles`; no `svg` element, icon-font class or emoji; on Arabic pages no run of four or more Latin-script words in reader text outside `code`, `kbd`, `pre`, `samp` and elements with their own non-Arabic `lang` (a hyphen joins the parts of one word only in an `hw-` name, such as the element `hw-mobile-top-bar` in a generated table caption, or a hyphenated name of `vocabulary-allow.json` such as `aria-label`; any other hyphenated word counts as its parts, and a hyphen or dash next to a space separates words), unless `scripts/page-guards/latin-allowlist.json` lists the whole run (12 characters at least) with a reason and `approvedBy` (an entry that matches nothing fails). |
 | `75-llms` | Writes `<out>/browser/llms.txt` (production only). |
 | `80-equivalence` | Runs the equivalence harness on every live group (production only); with `--pages`, on the groups of the named pages; with `--defer-equivalence` it does not run. It compares the four results at rest and after each step of the group's checks, asserts the documented outcome of each step, binds the keys of each keyboard table to the steps of the page's checks, and runs axe in every frame document at rest. |
 | `90-registry-dist` | Refuses a build limited by `--pages`, `--docs` or `--only`. The registry check after the build: the inputs of the Angular metafiles, then the served runtime against a fresh derivation from the verified installed packages, and (production) the package stylesheet `styles-*.css` and its media against the bundle derived again from `@hawiyah/styles`. It prints `registry-check: RESOLVED ...`, `registry-check: DIST <n> runtime files in dist/browser equal byte for byte the files derived again from the verified packages (...)` and `registry-check: STYLES styles-<hash>.css (<n> bytes) and <m> media files in dist/browser equal byte for byte the bundle derived again from the verified @hawiyah/styles`. The step fails when the check passed without these derivations (`scripts/registry-check/test/styles.test.mjs`). |
@@ -454,7 +457,7 @@ partition of the groups. A shard writes its report to `--report` (default
 other's reports. `node scripts/equivalence/merge.mjs [--manifest
 src/generated/content/manifest.json] <report> ...` joins them: it fails with
 `HWE-MERGE` unless the reports are the shards 1 to n of one split of the same
-selection and pin, none ran with `--pages` or `--only` or failed, every group was
+selection and pin, of the same content manifest as the build record (`contentManifest`), none ran with `--pages` or `--only` or failed, every group was
 compared in exactly one shard, and together they compared exactly the groups of
 the content manifest; it then prints the summary line of a run without `--shard`.
 Failures are reported with the codes `HWE-FRAME`, `HWE-STRUCT`,
@@ -551,7 +554,19 @@ still fails with `HWE-STRUCT`. The React, Vue and Angular results are then also
 compared with each other in full, so a wrong value in one of them is reported,
 and the step fails once the JavaScript result writes the attribute, so the
 entry cannot outlive the defect. Unknown fields, empty
-values and `ignore` on another aspect fail with `HWE-KD`. The only entry is
+values and `ignore` on another aspect fail with `HWE-KD`. Two narrower forms
+document a designed difference of a component without a group naming it (G11 of
+the 5a fix round), both lists of the lead with `component`, `reason`,
+`approvedBy` and a `reference` checked against `CHANGELOG.md` or the README of the
+installed package it quotes (`validateDesignedDifferences` in `run.mjs`):
+`scripts/equivalence/empty-elements.json` leaves an element with the listed `hw-`
+class out of every result's structure tree while it has no child and no text, and
+`scripts/equivalence/vanilla-hooks.json` leaves the listed `data-hw-*` attribute
+out of the vanilla tree only, when the installed `@hawiyah/vanilla` reads it and the
+stylesheet does not select it (`withoutDesigned` in `compare.mjs`); neither switches
+off the structure comparison, and `scripts/equivalence/test/compare.test.mjs`
+shows a difference outside the listed element or attribute still failing. Both
+lists are empty. The only entry of `known-differences.json` is
 `tabs-bar-orientation`: `@hawiyah/vanilla` 0.3.0 creates `.hw-tab-bar` without
 the `data-orientation` attribute that the other adapters write (CHANGELOG.md,
 Known defects in 0.3.0).
@@ -559,33 +574,78 @@ Known defects in 0.3.0).
 A group names its interaction checks on its `html` block with
 `check=<name>[,<name>...]` (files in `scripts/equivalence/checks/`, run one
 after the other in the same frames), or declares itself `static`. Every group of
-a component with a controller (`sourceType: "interactive"` in
-`components.json`) names at least one check or is `static`, otherwise
+a component with a controller (a component whose page targets a controller
+factory of the installed `@hawiyah/vanilla`, the scope of `HWE-KEYS` below; one
+definition for both rules since G19 of the 5a fix round) names at least one check
+or is `static`, otherwise
 `HWE-CHECK`.
 
-A check is `{ name, steps }`; a step is `{ name, run, keys?, outcome?, reference?,
-expect? }` (5a.8). `run(context)` acts in one frame; `context` holds `mount` (the
-mount of the result), `dir` and `lang` of the frame, `framework`, a per-frame
-`state`, `press(locator, key)` (a key id of `KEY_NAMES` in
+A check is `{ name, read, assert, start?, negative, steps }`; a step is `{ name,
+run, expect, keys?, outcome?, reference?, keepPointer? }` (5a.8, with the chained
+oracle of the 5a fix round). `read(mount)` reads what the frame shows (for Tabs:
+the tabs, the selection, the shown panel, the focused tab or panel);
+`assert(observed, expected, { phase })` throws with a readable message unless the
+frame shows the expected state; `start(observed)` turns the read at rest into the
+state the oracle starts from. `run(context)` acts in one frame; `context` holds
+`mount` (the mount of the result), `dir` and `lang` of the frame, `framework`, a
+per-frame scratch `state`, `expected` (the state the oracle expects before the
+step), `press(locator, key)` (a key id of `KEY_NAMES` in
 `scripts/content/config.mjs`, a chord joined by `+`; `null` presses on the focused
 element) and `focusFrameStart()` (clicks the padding at the start of the frame
-document, so that the next Tab enters the example from before it). A step that
-presses keys declares them in `keys`, with `expect(context)`, a one-line
-`outcome` and the `reference` it is taken from (the WAI-ARIA Authoring Practices
-pattern, `CONTRACT.md` or `CHANGELOG.md`); `scripts/equivalence/keys.mjs` fails a
-step that declares keys without them (`HWE-KEYS`), and the harness fails a step
-that presses other keys than it declares (`HWE-CHECK`). `expect` runs in each
-frame right after the step, while that frame has the focus, and computes the
-expected outcome from the state before the step, the frame's direction and what
-the check is written for (an orientation, an activation mode), never from what
-an adapter rendered; it only reads the frame. The harness applies it until it
-holds or 5 seconds have passed (`awaitOutcome` in `run.mjs`), lets the frame render
-twice more, and applies it once again; that last application is the verdict, so a
-wrong outcome still fails (after the bound, `not shown within 5000 ms`) and an
-outcome that is shown and then changes fails too (`shown, then changed`). The step
-is never run again and the expected outcome is never changed. A miss is
-`HWE-EXPECT` with the framework, the outcome and its reference. Then the four
-results are compared as before.
+document, so that the next Tab enters the example from before it).
+`expect(previous, context)` returns the state the oracle expects after the step,
+computed from the state it expected before it, the frame's direction and what the
+check is written for (an orientation, an activation mode); it reads nothing of the
+frame. Every step has an expect; a step that presses keys declares them in `keys`,
+with a one-line `outcome` and the `reference` it is taken from (the WAI-ARIA
+Authoring Practices pattern, `CONTRACT.md` or `CHANGELOG.md`).
+`scripts/equivalence/keys.mjs` fails a check or step without these (`HWE-KEYS`).
+`negative` is `{ fixture, wrong }`: the vanilla markup of the component and a
+deliberately wrong oracle (`wrong(expected)` returns another state);
+`scripts/equivalence/test/negative.test.mjs` renders the fixture of every check
+module with the installed `@hawiyah/vanilla` and `@hawiyah/styles` in a frame
+shaped as the harness mounts a vanilla result, and requires every step to hold with
+the documented oracle and every step that declares keys to fail with the wrong one
+(in both directions); a check without a negative control fails there and in step
+80. The Tabs checks share `read`, `start`, `assert`, `wrong` and their fixture
+markup in `scripts/equivalence/checks/lib/tabs.mjs`.
+
+In each frame the harness reads the frame once at rest, before the first step of a
+check, and the oracle starts from that state; from there each step's expected state
+is chained to the one before, whatever the frame shows. Before a step runs, the
+frame must still show the state the oracle computed for the previous step (`assert`
+with phase `before`); the step runs, and the trusted `keydown` events that a capture
+listener on the frame's window recorded during it must be exactly the keys it
+declares, whatever API pressed them (`HWE-CHECK`); then the expected state is
+asserted through `awaitOutcome` in `run.mjs`: applied until it holds or 5 seconds
+have passed, then once more after the frame rendered twice; that last application is
+the verdict, so a wrong outcome fails (after the bound, `not shown within 5000 ms`)
+and an outcome that is shown and then changes before the frame rendered twice
+fails too (`shown, then changed`). After the last step of a check, the harness waits
+500 ms (`FINAL_SETTLE`) and asserts the last expected state once more in every frame
+(phase `final`). A miss is `HWE-EXPECT` with the framework, the outcome and its
+reference. The step is never run again and the expected outcome is never changed.
+Then the four results are compared as before.
+
+Measured with the chained oracle (fix round of 5a): 12 runs of step 80 alone while
+production builds of a copy of the guide ran in a loop on the same four cores (load
+average 6.5 to 10), 12 passed, each with 62 asserted steps; the probes of the
+verification of 07763ce (an outcome shown and changed 300 or 1000 ms later, an
+`aria-selected` changed 300 ms later) now fail with `HWE-EXPECT`, where they passed
+before.
+
+What the wait catches: an outcome that is late but documented (shown within 5
+seconds); a wrong outcome; an outcome that changes before the frame rendered twice
+after it held; an outcome that changes later, before the next step of the check
+starts in that frame (the before-step assertion) or, after the last step, within
+500 ms. What it does not catch: a change after the last step that comes later than
+500 ms; a change of focus between steps or after the last step (a frame's document
+loses its focused element once another frame of the page takes the focus, so the
+Tabs assertion checks focus only right after a step, and the expected tab is focused
+again before the next key); a key that a capture listener on the window does not see
+(an example that stops the event in a capture listener of its own registered
+earlier, or a key pressed inside a nested frame of the example); and whatever the
+check's `read` does not read.
 
 Why the bounded wait (lead decision L16 of milestone 5): `@hawiyah/angular` 0.3.0
 renders the state of an event in a later task than the event. Zoneless Angular 22
@@ -612,11 +672,20 @@ which documents `createSkipLink`), the keys of the keyboard table of each langua
 check that the page's groups name; `scripts/equivalence/keyboard-exceptions.json`
 (the lead's list, `{ component, key?, reason, approvedBy }`) leaves out a key or a
 whole component. The Tabs groups name `tabs-keyboard` (horizontal, automatic
-activation: Tab into the list, Right Arrow and Left Arrow with wrapping, End,
-Home, Tab to the panel), `tabs-keyboard-vertical` (Down Arrow and Up Arrow),
-`tabs-activate` (manual activation: arrow keys move focus only, Enter and Space
-select), `tabs-click` and `tabs-disabled` (a disabled tab cannot be selected); the
-oracle of these steps and its references are in `scripts/equivalence/checks/lib/tabs.mjs`.
+activation: Tab into the list, Right Arrow and Left Arrow with wrapping, Down Arrow
+and Up Arrow, which a horizontal list does not handle and which keep focus and the
+selection, End, Home, Tab to the panel), `tabs-keyboard-vertical` (Down Arrow and Up
+Arrow; Right Arrow and Left Arrow keep focus and the selection), `tabs-activate`
+(manual activation: arrow keys, End and Home move focus only, Enter and Space
+select, and Tab from a tab that is not selected moves focus to the panel of the
+selected tab), `tabs-click` and `tabs-disabled` (a disabled tab cannot be selected;
+the group has four tabs with the second disabled, so the two reading directions
+reach different tabs); the oracle of these steps and its references (the WAI-ARIA
+Authoring Practices, `CONTRACT.md` with `packages/core/API.md`, and the HTML
+disabled attribute; never the page) are in `scripts/equivalence/checks/lib/tabs.mjs`.
+The steps added in G24 of the 5a fix round were written from these references
+before they ran, and passed in all four adapters and both directions; the Tabs page
+now has 82 asserted steps.
 
 After the comparison at rest, the harness runs axe (the copy that
 `@axe-core/playwright` installs, with the WCAG 2.2 AA tags of the browser tests)
@@ -647,10 +716,12 @@ The guide is built and tested at its final size, 85 component pages in two
 languages, on a fixture: `scripts/test/scale/generate.mjs` writes it in one
 process from the functions of `content:scaffold` and `content:scaffold-ar`
 (83 pages: the scaffold with its four API tables from the installed packages,
-a summary, one sentence per prose section and 6 generic static live groups,
-one in Example and five under Variants and states, each a paragraph and a
-package Button in the four frameworks; the Arabic page is the placeholder
-sibling of `content:scaffold-ar --placeholder`), and copies the Button and
+a summary, one sentence per prose section and after each API table, and 6
+generic static live groups, one in Example and five under Variants and states,
+each a paragraph and a package Button in the four frameworks, which
+`fixture.json` beside the pages declares for `HWC-LIVE7` (step 20 reads that file
+only in a directory outside `docs/components/`); the Arabic page is the
+placeholder sibling of `content:scaffold-ar --placeholder`), and copies the Button and
 Tabs pages from `docs/components/`, so that their own browser tests and
 interaction checks run. The output goes to `.cache/scale/docs/` and is not
 committed; the fixture is built only through `--docs`, so its output is not
@@ -676,8 +747,13 @@ milestone 5, each one run alone):
 The browser tests are the long part: the computed half of the styling rule
 (`package-styles.spec.ts`) reads every property of every package element of a
 page twice, in two colour modes at two widths, and most of a shard's time goes
-there. The first lever is more shards: eight shards of the same suite would take
-about 29 minutes each on this machine. The second is more workers on runners
+there. The first lever is more shards. Playwright splits a suite into shards by test
+count, not by time, so the shards differ widely: of eight shards at 85 pages, the
+heaviest measured on this machine (shard 3 of 8: 235 tests of
+`package-styles.spec.ts`, 352 of `styling-structure.spec.ts` and 167 deep-link
+tests) took 26 minutes, and shard 1 of 8 took 12.6 minutes, each with 754 tests.
+The heaviest shard is the one to hold under the 30 minutes of L10. The second
+lever is more workers on runners
 with more cores. `guide.yml` therefore runs the browser tests in eight shards
 (lead decision L11 of milestone 5) and step 80, whose shard of four stays far
 below 30 minutes, in four.
@@ -716,7 +792,7 @@ npx playwright test --project=prod pages/framed.spec.ts pages/evidence.spec.ts e
 On that build `pages/framed.spec.ts` finds exactly one `main` and one `h1` (the
 guide's) in the prerendered and the hydrated brief and reference pages, the
 result in a frame, axe clean, and without script the Angular listing and the
-sentence; `pages/evidence.spec.ts` finds the sentence that no verification
+sentence and no status; `pages/evidence.spec.ts` finds the sentence that no verification
 evidence is recorded; `equivalence/native-vs-frame.spec.ts` finds no native result
 for the framed group and one for every other group. On the guide build the same
 specs run over its pages, which have no framed group yet. Rebuild the guide
@@ -750,8 +826,9 @@ and every page of that build; nothing is cached and nothing is sampled.
 
 Every job checks out `build-inputs.json` sparsely and fails when the package
 sources are present (`scripts/test/build-inputs.test.mjs`);
-`scripts/test/workflow.test.mjs` holds the shape above, and that no job uses
-`--pages`, `--docs` or `--only`.
+`scripts/test/workflow.test.mjs` holds the shape above, that no job uses
+`--pages`, `--docs` or `--only`, that no job or step has `continue-on-error`, and
+that `complete` and each of its steps carry no `if:` other than `always()`.
 
 ## Lint
 
@@ -822,10 +899,14 @@ Angular code is written per component.
 
 1. Confirm that the component id is in `components.json` at the repository
    root. A page is built for every `docs/components/<id>.md` whose id is listed
-   there (`src/generated/pages.json`).
+   there and whose Arabic sibling `<id>.ar.md` exists (`src/generated/pages.json`;
+   a page pending translation is in no generated file of the build).
 2. Read the fact sheet (`npm run content:facts -- <id>`, `.cache/facts/<id>.md`):
-   what the installed packages declare for the component, and the only source
-   of the API it states. Start the English page with
+   what the installed packages declare for the component (members, the vanilla
+   markup with the classes of its parts and the section of the `@hawiyah/vanilla`
+   README that documents it, the fields of the item types of each adapter), and
+   the READMEs of the installed packages (`node_modules/@hawiyah/*/README.md`):
+   the only sources of the API it states. Start the English page with
    `npm run content:scaffold -- <id>`, which fills the four API tables.
    Write `docs/components/<id>.md` (English, no front matter) and
    `docs/components/<id>.ar.md` (Arabic) following the authoring contract in
@@ -834,7 +915,9 @@ Angular code is written per component.
    Example, Variants and states (optional), API (with JavaScript, React, Vue
    and Angular tables), Accessibility, RTL and localisation, and Platforms Code
    reference, in that order. A component with a controller has a keyboard
-   table in Accessibility, written with the key element `<kbd>`; the evidence and
+   table in Accessibility, written with the key element `<kbd>` from the check
+   report of the checks that a check author wrote before the page (keys and
+   outcome lines, printed by `check:page`); the evidence and
    the open items of the component are generated after the section Platforms Code
    reference and are not written in the page.
 3. Write each live example as a group of four consecutive fenced blocks with
@@ -866,6 +949,10 @@ Angular code is written per component.
    file and section. `npm run build -- --pages <id>` compares only the groups of
    that page in step 80; such a build is not deployable. The pages appear at `/<lang>/components/<id>/` (brief) and
    `/<lang>/components/<id>/reference/` (reference) in both languages.
+7. A reviewer who wrote neither the page nor its checks reads both languages
+   against the fact sheet, the check report, the installed packages and the
+   other language, and returns findings (section Review of
+   `docs/components/README.md`). The page is not merged before that reading.
 
 ## Preview build
 

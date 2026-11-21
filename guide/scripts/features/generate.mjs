@@ -4,6 +4,7 @@
 //   src/generated/features.json [{ id, order, paths, nav }] read from the source text
 //   src/generated/pages.json    { components: [{ id, name, labelAr }] } for every
 //                               docs/components/<id>.md whose id is in components.json
+//                               and whose <id>.ar.md exists
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -167,14 +168,19 @@ export function featuresModule(features) {
   return lines.join("\n");
 }
 
-/** Lists docs/components/<id>.md (not <id>.<lang>.md) whose id is in components.json. */
+/**
+ * Lists docs/components/<id>.md (not <id>.<lang>.md) whose id is in components.json
+ * and whose Arabic sibling <id>.ar.md exists: the pages the build gives a route. A
+ * page pending translation (English only) is in no generated file (G14 of the 5a fix
+ * round).
+ */
 export function listPages({ docsDir, components }) {
   const known = new Map(components.map((c) => [c.id, c]));
   const files = existsSync(docsDir) ? readdirSync(docsDir) : [];
   const ids = files
     .filter((name) => /^[a-z0-9-]+\.md$/.test(name) && name !== "README.md")
     .map((name) => name.slice(0, -3))
-    .filter((id) => known.has(id))
+    .filter((id) => known.has(id) && files.includes(`${id}.ar.md`))
     .sort();
   return {
     components: ids.map((id) => {

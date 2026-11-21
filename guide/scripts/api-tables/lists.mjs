@@ -3,8 +3,13 @@
 // VUE_SLOT_PATTERNS and UNOWNED_EXPORTS of targets.mjs (an unowned export has
 // no page and counts for none), vocabulary-exceptions.json of step 30 (HWC-VOCAB),
 // scripts/content/arabic-exceptions.json
-// (HWC-PAR8), scripts/page-guards/latin-allowlist.json (HWP-LATIN) and
-// scripts/equivalence/keyboard-exceptions.json (HWE-KEYS, 5a.8). Every
+// (HWC-PAR8), scripts/page-guards/latin-allowlist.json (HWP-LATIN),
+// scripts/equivalence/keyboard-exceptions.json (HWE-KEYS, 5a.8),
+// scripts/content/claim-exceptions.json (HWC-CLAIM),
+// scripts/content/live-component-exceptions.json (HWC-LIVE7) and
+// scripts/content/marketing-terms.json (HWC-TONE, a list of terms that belongs to
+// no page), and the designed differences of step 80, scripts/equivalence/empty-elements.json
+// and vanilla-hooks.json. Every
 // entry carries approvedBy and a reason; one page has at most
 // MAX_ENTRIES_PER_PAGE entries over all lists together (an exclusions entry
 // counts each attribute it names, an override counts once, and an allow-list
@@ -84,6 +89,24 @@ export function checkLeadLists(lists) {
     needs(`scripts/content/arabic-exceptions.json entry ${index + 1}`, entry);
     count(pageOf(entry?.file) ?? '(no page)', `arabic-exceptions.json "${entry?.text}"`);
   });
+  (lists.claims ?? []).forEach((entry, index) => {
+    needs(`scripts/content/claim-exceptions.json entry ${index + 1}`, entry);
+    count(pageOf(entry?.file) ?? '(no page)', `claim-exceptions.json "${entry?.text}"`);
+  });
+  (lists.liveComponents ?? []).forEach((entry, index) => {
+    needs(`scripts/content/live-component-exceptions.json entry ${index + 1}`, entry);
+    count(pageOf(entry?.file) ?? '(no page)', `live-component-exceptions.json ${entry?.example}`);
+  });
+  // The marketing terms belong to no page: each needs approvedBy and a reason only.
+  (lists.marketing ?? []).forEach((entry, index) => {
+    needs(`scripts/content/marketing-terms.json entry ${index + 1} (${entry?.term})`, entry);
+  });
+  for (const [name, list, field] of [['empty-elements.json', lists.emptyElements, 'class'], ['vanilla-hooks.json', lists.vanillaHooks, 'attribute']]) {
+    (list ?? []).forEach((entry, index) => {
+      needs(`scripts/equivalence/${name} entry ${index + 1}`, entry);
+      count(entry?.component ?? '(no page)', `${name} ${entry?.[field]}`);
+    });
+  }
   (lists.keyboard ?? []).forEach((entry, index) => {
     needs(`scripts/equivalence/keyboard-exceptions.json entry ${index + 1}`, entry);
     count(entry?.component ?? '(no page)', `keyboard-exceptions.json ${entry?.key ?? '(the whole component)'}`);
@@ -116,5 +139,10 @@ export function readLeadLists(guideDir) {
     arabic: json('scripts', 'content', 'arabic-exceptions.json'),
     latin: json('scripts', 'page-guards', 'latin-allowlist.json'),
     keyboard: json('scripts', 'equivalence', 'keyboard-exceptions.json'),
+    claims: json('scripts', 'content', 'claim-exceptions.json'),
+    liveComponents: json('scripts', 'content', 'live-component-exceptions.json'),
+    marketing: json('scripts', 'content', 'marketing-terms.json'),
+    emptyElements: json('scripts', 'equivalence', 'empty-elements.json'),
+    vanillaHooks: json('scripts', 'equivalence', 'vanilla-hooks.json'),
   };
 }

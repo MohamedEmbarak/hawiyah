@@ -23,7 +23,7 @@ Table: Arabic terms of the guide
 | style sheet | ورقة الأنماط | Everywhere, also in install steps; never ملف الأنماط, ملفات الأنماط, ملف أنماط or ملف CSS. |
 | CSS class | الصنف | Followed by its name in code: بالصنف `hw-button`; never بالفئة. |
 | Kind column of the Vue and Angular API tables | الفئة | The column header and its meaning, also in prose; never الصنف, which is the CSS class. |
-| pattern (WAI-ARIA Authoring Practices) | نمط | Only in the form نمط التبويبات, with the reference to the pattern in the same sentence (في ممارسات التأليف الخاصة بـWAI-ARIA). |
+| pattern (WAI-ARIA Authoring Practices) | نمط | Only before the name of a pattern (نمط التبويبات، نمط الأكورديون), with the reference to the practices later in the same sentence (في ممارسات التأليف الخاصة بـWAI-ARIA); never for a colour mode. |
 | theme (`data-hw-theme`) | السمة | سمة never names an HTML attribute (not بالسمة `hidden`). |
 | HTML attribute | الخاصية | Followed by its name in code: الخاصية `type`. Where the same sentence also names a prop or a CSS property: خاصية HTML. Never السمة, which is the theme. |
 | CSS property | خاصية CSS | On its first mention in a section; الخاصية after it. |
@@ -40,7 +40,7 @@ Table: Arabic terms of the guide
 | density | الكثافة | `data-hw-density`. |
 | locale | الإعدادات المحلية | The BCP 47 tag of a `locale` option or input; not اللغة, which is the language of the page. |
 | direction | الاتجاه | Reading direction: اتجاه القراءة; from right to left: من اليمين إلى اليسار. |
-| keyboard table caption | جدول: التفاعل من لوحة المفاتيح مع المكوّن: <labelAr> | Fixed in `KEYBOARD_TABLE` of `guide/scripts/content/config.mjs`; the headers are المفتاح and الإجراء. |
+| keyboard table caption | جدول: التفاعل من لوحة المفاتيح مع المكوّن: <labelAr> | Fixed in `KEYBOARD_TABLE` of `guide/scripts/content/config.mjs`; the headers are المفتاح and الإجراء. Owner to confirm (proposed: جدول: استخدام لوحة المفاتيح في المكوّن: <labelAr>). |
 | equivalence check (step 80) | فحص التكافؤ | |
 | evidence panel | لوحة الأدلة؛ أدلة التحقق، البنود المفتوحة | The two headings of the panel (`guide/src/app/i18n/evidence-headings.json`). |
 | known defect | العيب المعروف، العيوب المعروفة | العيوب المعروفة في الإصدار 0.3.0 for the CHANGELOG section Known defects in 0.3.0. |
@@ -48,7 +48,7 @@ Table: Arabic terms of the guide
 | adapter | المحوّل، المحوّلات | The npm package of an adapter is حزمة المحوّل; never مهايئ. |
 | code | الشيفرة | Copy buttons and listing titles; never الكود. |
 | `script` element or block | البرنامج النصي | |
-| key names, in the key element `<kbd>` | Latin, as printed on the key | Tab, Shift, Ctrl, Alt, Enter, Space, Escape, Backspace, Delete, Home, End, Page Up, Page Down, F10. The four arrow keys carry no word and are named in Arabic: السهم الأيمن، السهم الأيسر، السهم العلوي، السهم السفلي (English: Right Arrow, Left Arrow, Up Arrow, Down Arrow). `KEY_NAMES` of `guide/scripts/content/config.mjs` holds the list. |
+| key names, in the key element `<kbd>` | Latin, as printed on the key | Tab, Shift, Ctrl, Alt, Enter, Space, Escape, Backspace, Delete, Home, End, Page Up, Page Down, F10. The four arrow keys carry no word and are named in Arabic: السهم الأيمن، السهم الأيسر، السهم العلوي، السهم السفلي (English: Right Arrow, Left Arrow, Up Arrow, Down Arrow). `KEY_NAMES` of `guide/scripts/content/config.mjs` holds the list. Owner to confirm the names of the up and down arrows (proposed: سهم الأعلى، سهم الأسفل). |
 | both reading directions | في اتجاهَي القراءة كليهما | Not في كلا الاتجاهين, which reads as up and down. |
 | selected | المحدَّد | |
 | selects (a tab, an option) | يحدّد | |
@@ -83,10 +83,10 @@ Table: Category labels
 | Actions (`actions`) | الإجراءات | |
 | Forms (`forms`) | النماذج | |
 | Navigation (`navigation`) | التنقل | |
-| Overlays (`overlays`) | الطبقات المتراكبة | |
+| Overlays (`overlays`) | الطبقات المتراكبة | Open; proposed alternative: النوافذ المتراكبة. |
 | Disclosure (`disclosure`) | الإظهار والإخفاء | |
 | Layout (`layout`) | التخطيط | |
-| Feedback (`feedback`) | التغذية الراجعة | |
+| Feedback (`feedback`) | التغذية الراجعة | Open; proposed alternative: التنبيهات والحالة (the category holds Alert, Progress and the toasts). |
 | Data display (`data-display`) | عرض البيانات | |
 | Content (`content`) | المحتوى | |
 | Platform components (`platforms`) | مكوّنات المنصات | |
@@ -112,7 +112,7 @@ Table: Forms the glossary excludes
 | `` /ملف(?:ات)? (?:ال)?أنماط\|ملف(?:ات)? CSS/ `` | ورقة الأنماط |
 | `` /وحد(?:ة\|ات) (?:ال)?تحك\u0651?م/ `` | المتحكم |
 | `` /^[\|][^\n]*[\|]\s*الصنف\s*[\|][^\n]*[\|]\s*$/m `` | الفئة as the Kind column header |
-| `` /نمط(?! التبويبات في ممارسات التأليف)/ `` | نمط only as نمط التبويبات with the reference to the pattern |
+| `` /نمط(?!\s+(?!(?:ال)?(?:وضع\|ألوان))\S[^\n]*في ممارسات التأليف)/ `` | نمط only before the name of a pattern, with في ممارسات التأليف later in the same sentence |
 | `` /(?:[وفبلك]?ال\|[وفبلك])فئة\s+`?hw-/ `` | الصنف for a CSS class (الفئة is the Kind column) |
 | `` /(?:^\|[^\u0600-\u06FF])(?:[وفبلك]?ال\|[وفبلك])?صنف(?![\u0600-\u06FF])(?!\s+`)/ `` | الصنف only for a CSS class, followed by its name in code (the Kind column is الفئة) |
 | `` /سمة[\u064B-\u0652]?\s+`?(?!dga\b\|custom\b\|data-hw-theme\b)[A-Za-z]/ `` | الخاصية for an HTML attribute (السمة is the theme) |

@@ -3,7 +3,9 @@
 // (built and verified adapters, each evidence entry, the notes) and from what is
 // open: every entry of "Known defects in <pin>" in CHANGELOG.md that names the
 // component, and every entry of scripts/equivalence/known-differences.json for
-// it. Pages do not restate evidence or keep a list of open items by hand. The two
+// it (shown under the Known defects entry it cites, G23 of the 5a fix round), and
+// the kinds of evidence that some built adapters have and others do not. Pages do
+// not restate evidence or keep a list of open items by hand. The two
 // headings of the panel come from src/app/i18n/evidence-headings.json, so step 20
 // can add them to the headings of the page (the content navigation lists them).
 
@@ -67,28 +69,57 @@ export function pinnedVersion() {
   return JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).dependencies['@hawiyah/styles'];
 }
 
+/** The quoted text of a known difference's source ('CHANGELOG.md, <version>, <section>: <text>'), or null. */
+export function citedText(source) {
+  const match = /^CHANGELOG\.md, [^,]+, [^:]+: (.+)$/s.exec(String(source ?? ''));
+  return match ? match[1].trim() : null;
+}
+
 /**
- * The evidence data of a page: { name, built, verified, entries, notes, open,
- * version }. `repoDir` holds CHANGELOG.md; tests pass `changelog` and
- * `differences` instead.
+ * The kinds of evidence that some built adapters of a component have and others do
+ * not (G23 of the 5a fix round): [{ kind, adapters }] with the built adapters, in
+ * the order of `built`, that hold no entry of that kind, in the order the kinds
+ * first occur. Only adapters that components.json records as built are counted.
+ */
+export function evidenceGaps(built, entries) {
+  const kinds = [...new Set(entries.map((item) => item.kind))];
+  return kinds.flatMap((kind) => {
+    const have = new Set(entries.filter((item) => item.kind === kind).map((item) => item.adapter));
+    const missing = built.filter((adapter) => !have.has(adapter));
+    return missing.length > 0 ? [{ kind, adapters: missing }] : [];
+  });
+}
+
+/**
+ * The evidence data of a page: { name, built, verified, entries, gaps, notes, open,
+ * version }. A documented difference whose source cites a Known defects entry of
+ * the page is shown under that entry (its `differences`), not as an item of its
+ * own (G23 of the 5a fix round). `repoDir` holds CHANGELOG.md; tests pass
+ * `changelog` and `differences` instead.
  */
 export function evidenceOf({ id, entry, repoDir, version = pinnedVersion(), changelog, differences }) {
   const read = changelog === undefined || differences === undefined ? sources(repoDir) : null;
   const defects = knownDefects(changelog ?? read.changelog, version).filter((text) => namesComponent(text, entry.name));
   const listed = (differences ?? read.differences).filter((item) => item.component === id);
+  const difference = (item) => ({ kind: 'difference', id: item.id, aspect: item.aspect, text: entryInlines(item.description) });
+  const citing = (text) => listed.filter((item) => citedText(item.source) !== null && text.includes(citedText(item.source)));
+  const nested = new Set(defects.flatMap((text) => citing(text).map((item) => item.id)));
+  const built = [...(entry.built ?? [])];
+  const entries = (entry.evidence ?? []).map((item) => ({
+    adapter: item.adapter, kind: item.kind, tests: [...(item.tests ?? [])], scope: item.scope,
+    command: item.command, result: item.result, date: item.date, source: item.source,
+  }));
   return {
     name: entry.name,
-    built: [...(entry.built ?? [])],
+    built,
     verified: [...(entry.verified ?? [])],
-    entries: (entry.evidence ?? []).map((item) => ({
-      adapter: item.adapter, kind: item.kind, tests: [...(item.tests ?? [])], scope: item.scope,
-      command: item.command, result: item.result, date: item.date, source: item.source,
-    })),
+    entries,
+    gaps: evidenceGaps(built, entries),
     notes: [...(entry.notes ?? [])],
     version,
     open: [
-      ...defects.map((text) => ({ kind: 'defect', text: entryInlines(text) })),
-      ...listed.map((item) => ({ kind: 'difference', id: item.id, aspect: item.aspect, text: entryInlines(item.description) })),
+      ...defects.map((text) => ({ kind: 'defect', text: entryInlines(text), differences: citing(text).map(difference) })),
+      ...listed.filter((item) => !nested.has(item.id)).map(difference),
     ],
   };
 }

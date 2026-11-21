@@ -1,5 +1,6 @@
 // Outputs of the content step: page models, manifest, loaders and live groups.
-// Runs the pipeline on the fixtures into a temporary directory.
+// Runs the pipeline on the fixtures into a temporary directory, with an empty pending
+// list of its own (the real pending-translation.json is not read).
 
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -9,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { resolvePaths } from '../cli.mjs';
 import { loadersModule } from '../manifest.mjs';
 import { runContent } from '../pipeline.mjs';
-import { componentsDir, docsDir, guideDir, repoDir } from './helpers.mjs';
+import { componentsDir, docsDir, fixtureNames, guideDir, repoDir } from './helpers.mjs';
 
 let out;
 let result;
@@ -19,7 +20,7 @@ beforeAll(() => {
   out = mkdtempSync(join(tmpdir(), 'hawiyah-content-'));
   result = runContent({
     guideDir, repoDir, componentsDir, componentsFile: join(docsDir, 'components.json'),
-    outDir: out, liveGroupsFile: join(out, 'live-groups.json'),
+    outDir: out, liveGroupsFile: join(out, 'live-groups.json'), pending: new Set(), names: () => fixtureNames,
   });
 });
 
@@ -114,7 +115,7 @@ describe('runContent on the fixtures', () => {
       copyFileSync(join(componentsDir, 'fixture-a.md'), join(docs, 'fixture-a.md'));
       const failing = runContent({
         guideDir, repoDir, componentsDir: docs, componentsFile: join(docsDir, 'components.json'),
-        outDir: join(dir, 'out'), liveGroupsFile: join(dir, 'out', 'live-groups.json'),
+        outDir: join(dir, 'out'), liveGroupsFile: join(dir, 'out', 'live-groups.json'), pending: new Set(), names: () => fixtureNames,
       });
       expect(failing.findings.map((item) => [item.code, item.message])).toEqual([
         ['HWC-FILE', 'the English page has no Arabic sibling fixture-a.ar.md'],
@@ -130,7 +131,7 @@ describe('runContent on the fixtures', () => {
     try {
       const empty = runContent({
         guideDir, repoDir, componentsDir: join(dir, 'none'), componentsFile: join(docsDir, 'components.json'),
-        outDir: join(dir, 'out'), liveGroupsFile: join(dir, 'cache', 'live-groups.json'),
+        outDir: join(dir, 'out'), liveGroupsFile: join(dir, 'cache', 'live-groups.json'), pending: new Set(), names: () => fixtureNames,
       });
       expect(empty.findings).toEqual([]);
       expect(JSON.parse(readFileSync(join(dir, 'out', 'manifest.json'), 'utf8')).pages).toEqual([]);

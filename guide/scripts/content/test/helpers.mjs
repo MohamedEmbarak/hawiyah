@@ -13,6 +13,18 @@ export const guideDir = resolve(fileURLToPath(new URL('../../..', import.meta.ur
 export const repoDir = resolve(guideDir, '..');
 export const components = readComponents(join(docsDir, 'components.json'));
 
+/**
+ * Fixture A stands for a component that no package exports (HWC-LIVE7): it is
+ * shown by the package Button and by a paragraph, as a fake component would name
+ * its own class, export and selector.
+ */
+export const fixtureNames = {
+  vanilla: { classes: ['hw-button', 'hw-type'], hook: 'fixture-a' },
+  react: ['Button', 'p'],
+  vue: ['Button', 'p'],
+  angular: { selectors: ['button[hwButton]', 'p'], classes: ['HwButtonDirective'] },
+};
+
 export const read = (path) => readFileSync(path, 'utf8');
 export const validEn = () => read(join(componentsDir, 'fixture-a.md'));
 export const validAr = () => read(join(componentsDir, 'fixture-a.ar.md'));
@@ -35,6 +47,10 @@ export function runPair(replace = {}) {
     repoDir,
     componentsDir,
     built: new Set(['fixture-a']),
+    names: replace.names ?? fixtureNames,
+    fixture: null,
+    liveExceptions: replace.liveExceptions ?? [],
+    claimExceptions: replace.claimExceptions ?? [],
   });
 }
 

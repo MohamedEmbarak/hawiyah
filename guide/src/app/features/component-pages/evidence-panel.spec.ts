@@ -22,14 +22,19 @@ const TABS: PageEvidence = {
   built: ['vanilla', 'react', 'vue', 'angular'],
   verified: ['vanilla', 'react'],
   entries: [{ adapter: 'react', kind: 'behavior', tests: ['follows RTL arrow direction'], scope: 'RTL navigation.', command: 'pnpm test', result: 'passed', date: '2026-10-28', source: 'tests/example.interaction.test.tsx' }],
+  gaps: [{ kind: 'behavior', adapters: ['vanilla', 'vue', 'angular'] }],
   notes: ['Horizontal key behavior follows direction.'],
   version: '0.3.0',
   open: [
-    { kind: 'defect', text: [{ type: 'text', value: 'Tabs (Vue) declares no slot types.' }] },
-    { kind: 'difference', id: 'tabs-bar-orientation', aspect: 'structure', text: [{ type: 'text', value: 'The bar lacks ' }, { type: 'inlineCode', value: 'data-orientation' }, { type: 'text', value: '.' }] },
+    {
+      kind: 'defect', text: [{ type: 'text', value: 'The bar lacks the attribute.' }],
+      differences: [{ kind: 'difference', id: 'tabs-bar-orientation', aspect: 'structure', text: [{ type: 'text', value: 'The bar lacks ' }, { type: 'inlineCode', value: 'data-orientation' }, { type: 'text', value: '.' }] }],
+    },
+    { kind: 'defect', text: [{ type: 'text', value: 'Tabs (Vue) declares no slot types.' }], differences: [] },
+    { kind: 'difference', id: 'tabs-other', aspect: 'aria', text: [{ type: 'text', value: 'A difference that cites no entry.' }] },
   ],
 };
-const NONE: PageEvidence = { name: 'PageHeader', built: ['vanilla', 'react', 'vue', 'angular'], verified: [], entries: [], notes: [], version: '0.3.0', open: [] };
+const NONE: PageEvidence = { name: 'PageHeader', built: ['vanilla', 'react', 'vue', 'angular'], verified: [], entries: [], gaps: [], notes: [], version: '0.3.0', open: [] };
 
 async function render(evidence: PageEvidence, lang: ContentLang, name: string): Promise<HTMLElement> {
   TestBed.configureTestingModule({});
@@ -43,7 +48,7 @@ async function render(evidence: PageEvidence, lang: ContentLang, name: string): 
 }
 
 describe('EvidencePanel (5a.11)', () => {
-  it('lists each evidence entry with its source as code, never as a link, and what is open', async () => {
+  it('lists each evidence entry as a description list with its source as code, never as a link, the kinds of evidence missing in some adapters, and what is open', async () => {
     const panel = await render(TABS, 'en', 'Tabs');
     expect(Array.from(panel.querySelectorAll('h3')).map((h3) => [h3.id, h3.textContent, h3.getAttribute('tabindex')])).toEqual([
       [EVIDENCE_IDS.evidence, headings.en.evidence, '-1'],
@@ -51,24 +56,37 @@ describe('EvidencePanel (5a.11)', () => {
     ]);
     expect(panel.querySelector('p')?.textContent).toBe('Built in JavaScript, React, Vue and Angular. Recorded as verified in components.json: JavaScript and React.');
     const [entries, notes, open] = Array.from(panel.querySelectorAll(':scope > ul'));
-    expect(entries?.querySelectorAll('li')).toHaveLength(1);
-    expect(entries?.textContent).toContain('React, behavior: RTL navigation. Tests: follows RTL arrow direction. Result: passed, 2026-10-28; command pnpm test, source tests/example.interaction.test.tsx.');
+    expect(entries?.querySelectorAll(':scope > li')).toHaveLength(1);
+    // One field per line (G22 of the 5a fix round).
+    const fields = Array.from(entries?.querySelectorAll('li > dl > dt') ?? []).map((dt) => [dt.textContent, dt.nextElementSibling?.localName === 'dd' ? dt.nextElementSibling.textContent : null]);
+    expect(fields).toEqual([
+      ['Adapter', 'React'], ['Kind', 'behavior'], ['Scope', 'RTL navigation.'], ['Tests', 'follows RTL arrow direction'],
+      ['Result', 'passed'], ['Date', '2026-10-28'], ['Command', 'pnpm test'], ['Source', 'tests/example.interaction.test.tsx'],
+    ]);
     expect(Array.from(entries?.querySelectorAll('code') ?? []).map((code) => code.className)).toEqual(['hw-code', 'hw-code', 'hw-code', 'hw-code']);
     expect(panel.querySelectorAll('a')).toHaveLength(0);
+    // The kinds of evidence that some built adapters have and others do not (G23).
+    expect(Array.from(panel.querySelectorAll(':scope > p')).map((p) => p.textContent)).toContain('Kinds of evidence that components.json records for some adapters and not for others, with the adapters that have none: behavior: JavaScript, Vue and Angular.');
     expect(notes?.textContent).toBe('Horizontal key behavior follows direction.');
-    expect(Array.from(open?.querySelectorAll('li') ?? []).map((li) => li.textContent)).toEqual([
+    // A documented difference stands under the Known defects entry it cites, not as a second item (G23).
+    expect(Array.from(open?.querySelectorAll(':scope > li') ?? []).map((li) => li.textContent)).toEqual([
+      'The bar lacks the attribute. (CHANGELOG.md, Known defects in 0.3.0)Documented difference of the equivalence check tabs-bar-orientation: The bar lacks data-orientation.',
       'Tabs (Vue) declares no slot types. (CHANGELOG.md, Known defects in 0.3.0)',
-      'The bar lacks data-orientation. (documented difference tabs-bar-orientation)',
+      'A difference that cites no entry. (documented difference tabs-other)',
     ]);
+    expect(open?.querySelectorAll(':scope > li > ul > li')).toHaveLength(1);
     // On an English page the evidence carries no language of its own.
     expect(panel.querySelectorAll('[lang]')).toHaveLength(0);
   });
 
-  it('marks the English evidence on an Arabic page with lang="en" and dir="ltr"; every label is Arabic', async () => {
+  it('marks the English evidence on an Arabic page with lang="en" and dir="ltr"; every label is Arabic, with Arabic punctuation and و before each further name', async () => {
     const panel = await render(TABS, 'ar', 'تبويبات');
     const foreign = Array.from(panel.querySelectorAll('span[lang]'));
-    expect(foreign.map((span) => [span.getAttribute('lang'), span.getAttribute('dir')])).toEqual(Array(5).fill(['en', 'ltr']));
-    expect(Array.from(panel.querySelectorAll('h3, :scope > p')).every((node) => ARABIC_SCRIPT.test(node.textContent ?? ''))).toBe(true);
+    expect(foreign.map((span) => [span.getAttribute('lang'), span.getAttribute('dir')])).toEqual(Array(7).fill(['en', 'ltr']));
+    expect(Array.from(panel.querySelectorAll('h3, :scope > p, dt')).every((node) => ARABIC_SCRIPT.test(node.textContent ?? ''))).toBe(true);
+    expect(panel.querySelector('p')?.textContent).toBe('المكوّن مبني في المحوّلات: JavaScript وReact وVue وAngular. المحوّلات المسجّلة بوصفها متحقَّقًا منها في components.json: JavaScript وReact.');
+    expect(Array.from(panel.querySelectorAll(':scope > p')).map((p) => p.textContent)).toContain('فئات الأدلة التي يسجّلها components.json لبعض المحوّلات دون غيرها، مع المحوّلات التي لا دليل لها منها: behavior: JavaScript وVue وAngular.');
+    expect(panel.textContent).not.toMatch(/[\u0600-\u06FF][,;]|[,;] [\u0600-\u06FF]/);
   });
 
   for (const lang of ['en', 'ar'] as const) {
@@ -77,7 +95,7 @@ describe('EvidencePanel (5a.11)', () => {
       const texts = Array.from(panel.querySelectorAll(':scope > p')).map((p) => p.textContent);
       expect(texts).toEqual(lang === 'en'
         ? ['Built in JavaScript, React, Vue and Angular. No adapter is recorded as verified in components.json.', 'No verification evidence is recorded for PageHeader in components.json.', 'No entry of Known defects in 0.3.0 in CHANGELOG.md and no documented difference of the equivalence check names PageHeader.']
-        : ['المكوّن مبني في المحوّلات: JavaScript، React، Vue وAngular. لا يسجّل components.json أي محوّل بوصفه متحقَّقًا منه.', 'لا يسجّل components.json أي دليل تحقق للمكوّن: عنوان الصفحة.', 'لا بند مفتوحًا للمكوّن: عنوان الصفحة، فلا يذكره أي بند من العيوب المعروفة في الإصدار 0.3.0 في CHANGELOG.md، ولا أي اختلاف موثّق في فحص التكافؤ.']);
+        : ['المكوّن مبني في المحوّلات: JavaScript وReact وVue وAngular. لا يسجّل components.json أي محوّل بوصفه متحقَّقًا منه.', 'لا يسجّل components.json أي دليل تحقق للمكوّن: عنوان الصفحة.', 'لا بند مفتوحًا للمكوّن: عنوان الصفحة، فلا يذكره أي بند من العيوب المعروفة في الإصدار 0.3.0 في CHANGELOG.md، ولا أي اختلاف موثّق في فحص التكافؤ.']);
       expect(panel.querySelectorAll('ul')).toHaveLength(0);
     });
   }

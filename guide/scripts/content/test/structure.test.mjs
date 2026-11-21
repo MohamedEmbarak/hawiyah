@@ -25,7 +25,10 @@ describe('analysePage', () => {
     const dated = en.replace(/(```tsx live example=[a-z-]+\n)/, '$1{new Date().getFullYear()}\n');
     expect(analyse(dated).findings.filter((item) => item.code === 'HWC-LIVE2').map((item) => item.message)).toEqual([expect.stringMatching(/uses new Date\(\); an example does not depend on today's date/)]);
     const install = en.replace('## Accessibility\n', '## Accessibility\n\n```shell\nnpm install @hawiyah/react\n```\n');
-    expect(analyse(install).findings.filter((item) => item.code === 'HWC-MD').map((item) => item.message)).toEqual(['a component page types no install command; the guide generates install text from the pinned version (install.json)']);
+    const message = 'a component page types no install command and no pinned package address; the guide generates install text from the pinned version (install.json)';
+    expect(analyse(install).findings.filter((item) => item.code === 'HWC-MD').map((item) => item.message)).toEqual([message]);
+    const pinned = en.replace('## Accessibility\n', '## Accessibility\n\n```json\n{ "add": "@hawiyah/react@0.2.0" }\n```\n');
+    expect(analyse(pinned).findings.filter((item) => item.code === 'HWC-MD').map((item) => item.message)).toEqual([message]);
   });
 
   it('accepts both valid fixture pages and returns their outline', () => {
@@ -69,6 +72,21 @@ describe('analysePage', () => {
     expect(codes(replace(validEn(), 'The state is announced *once*.', 'Table: Orphan caption'))).toContain('HWC-TAB1');
   });
 
+  // G20 of the 5a fix round: the section keeps no heading for what the evidence panel generates.
+  it('refuses a heading in Platforms Code reference that restates the evidence panel, in both languages', () => {
+    const at = '## Platforms Code reference\n';
+    const message = (text) => `the heading "${text}" restates the evidence panel, which the guide generates after the section; keep the sources of the mapping in this section and leave out the evidence and the open items`;
+    for (const text of ['Open items', 'Evidence', 'Verification evidence', 'Known defects']) {
+      expect(analyse(replace(validEn(), at, `${at}\n### ${text}\n\nA line.\n`)).findings.filter((item) => item.code === 'HWC-H2').map((item) => item.message)).toEqual([message(text)]);
+    }
+    expect(analyse(replace(validEn(), at, `${at}\n### Sources\n\nA line.\n`)).findings).toEqual([]);
+    const ar = validAr();
+    const arAt = ar.match(/^## مرجع كود المنصات\n/m)[0];
+    for (const text of ['البنود المفتوحة', 'أدلة التحقق']) {
+      expect(analyse(replace(ar, arAt, `${arAt}\n### ${text}\n\nسطر.\n`), 'ar').findings.filter((item) => item.code === 'HWC-H2').map((item) => item.message)).toEqual([message(text)]);
+    }
+  });
+
   it('places live groups in Example and under h3 of Variants and states only', () => {
     const moved = replace(validEn(), '## Platforms Code reference\n', `## Platforms Code reference\n\n${'```html live example=late\n<p class="hw-type">A</p>\n```\n\n```tsx live example=late\n<p className="hw-type">A</p>\n```\n\n```vue live example=late\n<p class="hw-type">A</p>\n```\n\n```ts live example=late framework=angular\ntemplate: `<p class="hw-type">A</p>`\n```\n'}`);
     expect(codes(moved)).toEqual(['HWC-LIVE2']);
@@ -85,6 +103,6 @@ describe('analysePage', () => {
 
   it('requires valid Arabic front matter and rejects English front matter', () => {
     expect(codes(validAr().replace(/^---[\s\S]*?---\n/, ''), 'ar')).toEqual(['HWC-FM2']);
-    expect(codes(replace(validAr(), '  api: 76babfc30d7b', '  api: [1, 2]'), 'ar')).toContain('HWC-FM2');
+    expect(codes(replace(validAr(), '  api: ad1a4290f84c', '  api: [1, 2]'), 'ar')).toContain('HWC-FM2');
   });
 });

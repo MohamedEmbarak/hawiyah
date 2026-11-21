@@ -6,9 +6,14 @@
 //
 // It runs, for that page only, the content step (structure, links, live groups
 // and, when the Arabic page exists, parity), the compile of its live groups, the
-// API tables and the vocabulary pass of step 30, the coverage report
+// API tables and the vocabulary pass of step 30, the glossary and compliance
+// assertions of the script tests and the Latin-script guard of step 72 on the
+// page's own Markdown (content/page-rules.mjs), the coverage report
 // (leadAmendments A5, a report only) and step 80 for its groups in the languages
-// that exist. A finding in another page does not fail it. It writes only below
+// that exist. It does not run the browser tests (npm run test:page) nor the parts
+// of step 72 that need a prerendered document (icons, svg, emoji, and the Latin
+// guard over the examples and the generated text: a --pages build). A finding in
+// another page does not fail it. It writes only below
 // .cache/page-<id>/ (live groups, compiled payloads, generated native examples,
 // the equivalence report and diff images) and never into dist/ or src/generated/:
 // step 80 serves the built dist/browser with the payloads of .cache/page-<id>/
@@ -36,7 +41,9 @@ import { formatFinding, LANGS } from './content/config.mjs';
 import { componentsDirOf } from './content/hash.mjs';
 import { buildModel, inlineText } from './content/model.mjs';
 import { parseMarkdown } from './content/parse.mjs';
-import { keyboardOf, processPair, readComponents, readPending } from './content/pipeline.mjs';
+import { isPlaceholderAllowed, keyboardOf, pageTextFindings, processPair, readComponents, readFixture, readPending } from './content/pipeline.mjs';
+import { pageRuleFindings } from './content/page-rules.mjs';
+import { componentNames } from './content/prose.mjs';
 import { analysePage } from './content/structure.mjs';
 import { runEquivalence } from './equivalence/run.mjs';
 import { runExamples } from './examples/cli.mjs';
@@ -173,6 +180,10 @@ export function processEnglish({ id, entry, enText, enPath, componentsDir, built
   const parsed = parseMarkdown(enText, file);
   const outline = analysePage({ tree: parsed.tree, frontMatter: parsed.frontMatter, lang: 'en', file, id, entry });
   const model = buildModel(outline, { id, repoDir, componentsDir, built, entry, filePath: enPath, sourcePath: file });
+  const names = componentNames(id, entry, join(guideDir, 'node_modules'));
+  const fixture = readFixture(componentsDir, repoDir);
+  const fixtureNames = fixture ? componentNames(fixture.showsComponent, readComponents(join(repoDir, 'components.json')).get(fixture.showsComponent), join(guideDir, 'node_modules')) : null;
+  const text = pageTextFindings({ tree: parsed.tree, outline, lang: 'en', file, used: new Set(), placeholderAllowed: isPlaceholderAllowed(componentsDir, repoDir), names, fixtureNames });
   const groups = outline.groups.map((group) => {
     const item = { id, lang: 'en', example: group.example };
     if (group.check !== undefined) item.check = group.check;
@@ -188,7 +199,7 @@ export function processEnglish({ id, entry, enText, enPath, componentsDir, built
     liveGroups: outline.groups.map((group) => ({ example: group.example, frameworks: 4, ...(group.check !== undefined ? { check: group.check } : {}), ...(group.static ? { static: true } : {}), ...(group.frame ? { frame: true } : {}), ...(group.width !== undefined ? { width: group.width } : {}) })),
     keyboard: keyboardOf({ en: outline }),
   };
-  return { findings: [...parsed.findings, ...outline.findings, ...model.findings], models: { en: model.page }, groupEntries: { en: groups }, manifestPage, crossLinks: model.crossLinks };
+  return { findings: [...parsed.findings, ...outline.findings, ...text, ...model.findings], models: { en: model.page }, groupEntries: { en: groups }, manifestPage, crossLinks: model.crossLinks };
 }
 
 /**
@@ -273,6 +284,19 @@ export async function checkPage(options) {
     timings.content = Date.now() - started;
     stage(log, 'content', started, contentLines, ` ${content.langs.join(' and ')}${content.pending ? ', Arabic page pending translation' : ''}`);
     if (contentLines.length && !content.groups.length && !content.models.en) return finish();
+
+    // 1b. The rules of the page that the build checks outside step 20 (G8 of the 5a fix round):
+    // the glossary and compliance assertions of the script tests and the Latin-script guard of step 72.
+    started = Date.now();
+    const source = (lang) => {
+      const path = join(componentsDir, `${id}${lang === 'ar' ? '.ar' : ''}.md`);
+      return content.langs.includes(lang) && existsSync(path) ? { text: readFileSync(path, 'utf8'), file: toPosix(relative(repoDir, path)) } : null;
+    };
+    const ruleLines = pageRuleFindings({ id, en: source('en'), ar: source('ar') }).map(formatFinding);
+    failures.push(...ruleLines);
+    ruleLines.forEach((line) => log(line));
+    timings.rules = Date.now() - started;
+    stage(log, 'glossary, compliance and Latin-script rules', started, ruleLines);
     const groupsFile = join(pageDir, 'live-groups.json');
     const manifestFile = join(pageDir, 'manifest.json');
     writeFileSync(groupsFile, `${JSON.stringify(content.groups, null, 2)}\n`);

@@ -18,8 +18,11 @@
 //   npm run content:sync-ar -- <id> [--docs <dir>] [--check]
 //
 // --check changes nothing and exits 1 when the page would change. The command
-// lists the reader strings it could not translate (new English strings), and the
-// groups the two pages do not share, which the writer adds by hand.
+// lists the reader strings it could not translate (new English strings), every
+// other string left in English that renders as reader text, and the groups the two
+// pages do not share, which the writer adds by hand. It never replaces an Arabic
+// string by an English one: where a rewritten block aligns with the Arabic block,
+// a string the map leaves in English keeps the Arabic string of the page.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,7 +34,9 @@ import { componentsDirOf, sectionHashes } from './hash.mjs';
 import { normalise, parseMarkdown } from './parse.mjs';
 import { codeBodyEdit, outline } from './scaffold-ar.mjs';
 import { tableProblems } from './scaffold.mjs';
-import { applyStringMap, deriveStringMap, liveBlocks, readerNames } from './string-map.mjs';
+import { applyStringMap, candidates, deriveStringMap, isReader, liveBlocks, readerNames, rendersText } from './string-map.mjs';
+
+const ARABIC = /[؀-ۿ]/;
 
 export const guideDir = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 export const repoDir = resolve(guideDir, '..');
@@ -49,7 +54,7 @@ function listings(source) {
 
 /**
  * Rewrites the code blocks and API tables of an Arabic page from its English page.
- * @returns {{ text: string, missing: string[], review: string[], unmatched: string[], conflicts: string[], unaligned: string[], stale: string[] }}
+ * @returns {{ text: string, missing: string[], left: string[], kept: string[], dropped: string[], review: string[], unmatched: string[], conflicts: string[], unaligned: string[], stale: string[] }}
  */
 export function syncArabic(englishText, arabicText, { entry, declared, version }) {
   const english = normalise(englishText);
@@ -63,6 +68,9 @@ export function syncArabic(englishText, arabicText, { entry, declared, version }
   const review = Object.entries(derived.origins).filter(([, sections]) => sections.every((id) => stale.includes(id))).map(([key]) => `"${key}" as "${derived.map[key]}"`);
   const names = readerNames();
   const missing = new Set();
+  const left = new Set();
+  const kept = [];
+  const dropped = [];
   const unmatched = [];
   const edits = [];
   const englishBlocks = liveBlocks(english);
@@ -73,8 +81,32 @@ export function syncArabic(englishText, arabicText, { entry, declared, version }
       continue;
     }
     const result = applyStringMap(source.lang, source.code, derived.map, names);
-    result.missing.forEach((text) => missing.add(text));
-    const edit = codeBodyEdit(arabic, block.node, result.code);
+    // Never an Arabic string replaced by an English one (G9 of the 5a fix round): where the
+    // rewritten block and the current Arabic block align string for string, a position that
+    // the map leaves in English keeps the Arabic string the page has (a hand translation of
+    // a string the map does not replace, such as Stat trend).
+    let code = result.code;
+    const fresh = candidates(source.lang, code);
+    const current = candidates(block.lang, block.code);
+    if (fresh.length === current.length && fresh.every((item, index) => item.kind === current[index].kind && item.name === current[index].name)) {
+      const keeps = [];
+      fresh.forEach((item, index) => {
+        if (!ARABIC.test(item.key) && ARABIC.test(current[index].key)) {
+          keeps.push({ from: item.from, to: item.to, text: block.code.slice(current[index].from, current[index].to) });
+          kept.push(`"${current[index].key}" (${block.example}, ${block.framework}) for the English "${item.key}", which the map does not translate`);
+        }
+      });
+      for (const keep of keeps.sort((a, b) => b.from - a.from)) code = code.slice(0, keep.from) + keep.text + code.slice(keep.to);
+    } else {
+      const lost = current.filter((item) => ARABIC.test(item.key) && !candidates(source.lang, code).some((other) => other.key === item.key));
+      for (const item of lost) dropped.push(`"${item.key}" (${block.example}, ${block.framework}): the block changed its shape, so the Arabic string has no place in it; translate the block's new strings by hand`);
+    }
+    for (const item of candidates(source.lang, code)) {
+      if (ARABIC.test(item.key) || !/[A-Za-z]/.test(item.key)) continue;
+      if (isReader(item, names)) missing.add(item.key);
+      else if (rendersText(item, names)) left.add(`${item.name}: ${item.key}`);
+    }
+    const edit = codeBodyEdit(arabic, block.node, code);
     if (edit) edits.push(edit);
   }
   for (const block of englishBlocks) {
@@ -102,7 +134,7 @@ export function syncArabic(englishText, arabicText, { entry, declared, version }
   }
   for (const edit of captions.sort((a, b) => b.from - a.from)) arabic = arabic.slice(0, edit.from) + edit.text + arabic.slice(edit.to);
 
-  return { text: arabic, missing: [...missing], review, unmatched, conflicts: derived.conflicts, unaligned: derived.unaligned, stale };
+  return { text: arabic, missing: [...missing], left: [...left], kept, dropped, review, unmatched, conflicts: derived.conflicts, unaligned: derived.unaligned, stale };
 }
 
 function parseArgs(argv) {
@@ -140,6 +172,9 @@ function main(argv) {
   const say = (line) => process.stdout.write(`content:sync-ar: ${line}\n`);
   for (const line of [...result.unaligned, ...result.conflicts.map((item) => `the string ${item}`), ...result.unmatched]) say(line);
   for (const text of result.missing) say(`no translation for the reader string "${text}"; translate it in the Arabic block`);
+  for (const item of result.left) say(`left in English: "${item.slice(item.indexOf(': ') + 2)}" under ${item.slice(0, item.indexOf(': '))}, which renders as reader text; translate it in the Arabic block`);
+  for (const text of result.kept) say(`kept the Arabic string ${text}; check it`);
+  for (const text of result.dropped) say(`not carried: ${text}`);
   for (const text of result.review) say(`the translation ${text} was read only from blocks whose English section changed; check it`);
   if (options.check) {
     say(changed ? `${options.id}.ar.md differs from what its English page gives` : `${options.id}.ar.md is in step with its English page`);

@@ -46,6 +46,9 @@ describe('parseMarkdown', () => {
     expect(rejected('## Keys <kbd>Tab</kbd>\n')).toHaveLength(2);
     expect(rejected('**<kbd>Tab</kbd>**\n')).toHaveLength(2);
     expect(rejected('<KBD>Tab</KBD>\n')).toHaveLength(2);
+    // A character reference in the key name (G16 of the 5a fix round): &#84;ab is not the plain text Tab.
+    expect(rejected('Press <kbd>&#84;ab</kbd>.\n')).toEqual([expect.stringMatching(/^the key element holds "&#84;ab", which is not plain text; /)]);
+    expect(rejected('Press <kbd>Page&nbsp;Up</kbd>.\n')).toHaveLength(1);
     // Other raw HTML still fails with its own message.
     expect(rejected('Press <span>Tab</span>, then<br>Enter.\n')).toEqual(Array(3).fill('raw HTML is not allowed; write Markdown'));
   });

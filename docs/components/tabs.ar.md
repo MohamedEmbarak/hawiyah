@@ -2,7 +2,7 @@
 source:
   summary: 6acb07b0e20a
   example: 0be3dd79b3d6
-  variants-and-states: d39655d89b7d
+  variants-and-states: 1acca979fa1b
   api: fab220362469
   accessibility: 4deffcc85991
   rtl-and-localisation: 1d839b846bd4
@@ -186,10 +186,12 @@ template: `<hw-tabs label="خطوات الخدمة" activationMode="manual" over
   <div class="hw-tab-list" role="tablist" aria-label="تفاصيل الطلب" aria-orientation="horizontal">
     <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-overview" aria-controls="disabled-tab-panel-overview" aria-selected="true" data-hw-value="overview">نظرة عامة</button>
     <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-decision" aria-controls="disabled-tab-panel-decision" aria-selected="false" data-hw-value="decision" disabled>القرار</button>
+    <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-documents" aria-controls="disabled-tab-panel-documents" aria-selected="false" data-hw-value="documents">المستندات</button>
     <button class="hw-tab" type="button" role="tab" id="disabled-tab-tab-history" aria-controls="disabled-tab-panel-history" aria-selected="false" data-hw-value="history">السجل</button>
   </div>
   <section class="hw-tab-panel" id="disabled-tab-panel-overview" role="tabpanel" aria-labelledby="disabled-tab-tab-overview"><p>يتاح القرار بعد انتهاء المراجعة.</p></section>
   <section class="hw-tab-panel" id="disabled-tab-panel-decision" role="tabpanel" aria-labelledby="disabled-tab-tab-decision" hidden><p>لم يصدر قرار بعد.</p></section>
+  <section class="hw-tab-panel" id="disabled-tab-panel-documents" role="tabpanel" aria-labelledby="disabled-tab-tab-documents" hidden><p>أُرفق بالطلب مستندان.</p></section>
   <section class="hw-tab-panel" id="disabled-tab-panel-history" role="tabpanel" aria-labelledby="disabled-tab-tab-history" hidden><p>قُدّم الطلب وأُسند إلى مراجع.</p></section>
 </div>
 ```
@@ -201,6 +203,7 @@ template: `<hw-tabs label="خطوات الخدمة" activationMode="manual" over
   items={[
     { value: 'overview', label: 'نظرة عامة', content: <p>يتاح القرار بعد انتهاء المراجعة.</p> },
     { value: 'decision', label: 'القرار', content: <p>لم يصدر قرار بعد.</p>, disabled: true },
+    { value: 'documents', label: 'المستندات', content: <p>أُرفق بالطلب مستندان.</p> },
     { value: 'history', label: 'السجل', content: <p>قُدّم الطلب وأُسند إلى مراجع.</p> },
   ]}
 />
@@ -213,11 +216,13 @@ template: `<hw-tabs label="خطوات الخدمة" activationMode="manual" over
   :items="[
     { value: 'overview', label: 'نظرة عامة' },
     { value: 'decision', label: 'القرار', disabled: true },
+    { value: 'documents', label: 'المستندات' },
     { value: 'history', label: 'السجل' },
   ]"
 >
   <template #overview><p>يتاح القرار بعد انتهاء المراجعة.</p></template>
   <template #decision><p>لم يصدر قرار بعد.</p></template>
+  <template #documents><p>أُرفق بالطلب مستندان.</p></template>
   <template #history><p>قُدّم الطلب وأُسند إلى مراجع.</p></template>
 </Tabs>
 ```
@@ -226,6 +231,7 @@ template: `<hw-tabs label="خطوات الخدمة" activationMode="manual" over
 template: `<hw-tabs label="تفاصيل الطلب" overflow="scroll">
   <hw-tab value="overview" label="نظرة عامة"><p>يتاح القرار بعد انتهاء المراجعة.</p></hw-tab>
   <hw-tab value="decision" label="القرار" disabled><p>لم يصدر قرار بعد.</p></hw-tab>
+  <hw-tab value="documents" label="المستندات"><p>أُرفق بالطلب مستندان.</p></hw-tab>
   <hw-tab value="history" label="السجل"><p>قُدّم الطلب وأُسند إلى مراجع.</p></hw-tab>
 </hw-tabs>`
 ```
@@ -321,8 +327,8 @@ template: `<hw-tabs label="تفاصيل الطلب" overflow="scroll">
 | المفتاح | الإجراء |
 | --- | --- |
 | <kbd>Tab</kbd> | ينقل التركيز إلى قائمة التبويبات على التبويب المحدَّد؛ ومن التبويب ينقل التركيز إلى اللوحة الظاهرة. |
-| <kbd>السهم الأيسر</kbd>، <kbd>السهم الأيمن</kbd> | في القائمة الأفقية، ينقل التركيز إلى التبويب المتاح التالي أو السابق في ترتيب القراءة، ويعود إلى البداية بعد النهاية: ينقل السهم الأيسر إلى التبويب التالي في صفحة من اليمين إلى اليسار، والسهم الأيمن في صفحة من اليسار إلى اليمين. |
-| <kbd>السهم السفلي</kbd>، <kbd>السهم العلوي</kbd> | في القائمة العمودية، ينقل التركيز إلى التبويب المتاح التالي أو السابق في اتجاهَي القراءة كليهما، ويعود إلى البداية بعد النهاية. |
+| <kbd>السهم الأيسر</kbd>، <kbd>السهم الأيمن</kbd> | في القائمة الأفقية، ينقل التركيز إلى التبويب المتاح التالي أو السابق في ترتيب القراءة، ويلتفّ عند الطرفين: من آخر تبويب إلى أوله، ومن أوله إلى آخره؛ وينقل السهم الأيسر إلى التبويب التالي في صفحة من اليمين إلى اليسار، والسهم الأيمن في صفحة من اليسار إلى اليمين. |
+| <kbd>السهم السفلي</kbd>، <kbd>السهم العلوي</kbd> | في القائمة العمودية، ينقل التركيز إلى التبويب المتاح التالي أو السابق في اتجاهَي القراءة كليهما، ويلتفّ عند الطرفين: من آخر تبويب إلى أوله، ومن أوله إلى آخره. |
 | <kbd>Home</kbd>، <kbd>End</kbd> | ينقل التركيز إلى أول تبويب متاح أو آخر تبويب متاح. |
 | <kbd>Enter</kbd>، <kbd>Space</kbd> | في التفعيل اليدوي، يحدّد التبويب الذي عليه التركيز. |
 

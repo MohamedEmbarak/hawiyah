@@ -2,9 +2,11 @@
 // Arabic text of each English reader string of the live blocks, once per string,
 // applied to the four frameworks of every group.
 //
-// Only reader text is replaced: markup text, and the string value of a reader
+// Only reader text is replaced: markup text, the string value of a reader
 // attribute or text prop (READER_NAMES and READER_SUFFIX of parity.mjs, which
-// HWC-PAR8 uses, and the text props of the component that the fact sheet lists).
+// HWC-PAR8 uses, and the text props of the component that the fact sheet lists),
+// and any other string of two or more Latin words that HWC-PAR8 reads as reader
+// text (rendersText: Stat trend, an item's content) when the map translates it.
 // A string under value, defaultValue, modelValue, id, name, slot, key or any
 // other token name is never replaced, whatever its text, so an option value or a
 // slot name that equals a translated label stays as written.
@@ -17,7 +19,7 @@ import { parser as htmlBase } from '@lezer/html';
 import { parser as jsBase } from '@lezer/javascript';
 import { sectionId } from './hash.mjs';
 import { parseMarkdown, plainText } from './parse.mjs';
-import { READER_NAMES, READER_SUFFIX, TOKEN_NAMES, bareName, unquote } from './parity.mjs';
+import { LATIN_PHRASE, READER_NAMES, READER_SUFFIX, TOKEN_NAMES, bareName, unquote } from './parity.mjs';
 
 const ARABIC = /[؀-ۿ]/;
 const VALUE_NAMES = new Set(['value', 'defaultvalue', 'default-value', 'modelvalue', 'model-value', 'v-model', 'checked', 'selected']);
@@ -43,6 +45,8 @@ export function textProps(declared) {
 }
 
 const scriptParser = jsBase.configure({ dialect: 'ts jsx' });
+/** Vue and Angular templates close any tag with "/>": the selfClosing dialect keeps </div> after <Stat ... /> a closing tag (G9 of the 5a fix round). */
+const vueMarkup = htmlBase.configure({ dialect: 'selfClosing' });
 const BOUND = /^(?::|v-bind:|@|v-on:|v-|\[|\(|\*|#)/;
 
 /**
@@ -56,7 +60,7 @@ const BOUND = /^(?::|v-bind:|@|v-on:|v-|\[|\(|\*|#)/;
  */
 export function candidates(lang, code) {
   const out = [];
-  if (lang === 'html' || lang === 'vue') scanMarkup(code, 0, out);
+  if (lang === 'html' || lang === 'vue') scanMarkup(code, 0, out, lang === 'vue' ? vueMarkup : htmlBase);
   else scanScript(code, 0, out, null);
   return out;
 }
@@ -69,8 +73,8 @@ function pushText(out, code, from, to, offset) {
   out.push({ kind: 'text', key: raw.trim().replace(/\s+/g, ' '), from: offset + from + start, to: offset + from + end, name: null });
 }
 
-function scanMarkup(code, offset, out) {
-  const tree = htmlBase.parse(code);
+function scanMarkup(code, offset, out, markup = htmlBase) {
+  const tree = markup.parse(code);
   tree.iterate({
     enter(node) {
       if (node.name === 'Text') {
@@ -115,7 +119,7 @@ function scanScript(code, offset, out, fallbackName) {
       if (node.name === 'TemplateString') {
         const raw = code.slice(node.from, node.to);
         const inner = raw.slice(1, -1);
-        if (inner.includes('<') && !inner.includes('${')) scanMarkup(inner, offset + node.from + 1, out);
+        if (inner.includes('<') && !inner.includes('${')) scanMarkup(inner, offset + node.from + 1, out, vueMarkup);
         else out.push({ kind: 'string', key: inner, from: offset + node.from, to: offset + node.to, name: nameOf(code, node.node) ?? fallbackName });
         return false;
       }
@@ -151,6 +155,19 @@ export function isReader(candidate, names) {
   const bare = bareName(candidate.name);
   if (VALUE_NAMES.has(bare) || TOKEN_NAMES.has(bare) || bare.startsWith('#') || bare.startsWith('v-slot')) return false;
   return names.has(bare) || READER_SUFFIX.test(bare.replace(/-/g, ''));
+}
+
+/**
+ * Whether a candidate renders as reader text although the map does not replace it
+ * (G9 of the 5a fix round): a string of two or more Latin words under a name that
+ * is neither a reader name nor a token or value name (Stat trend, an accordion
+ * item's content), as HWC-PAR8 reads it.
+ */
+export function rendersText(candidate, names) {
+  if (candidate.kind !== 'string' || !candidate.name || isReader(candidate, names)) return false;
+  const bare = bareName(candidate.name);
+  if (VALUE_NAMES.has(bare) || TOKEN_NAMES.has(bare) || bare.startsWith('#') || bare.startsWith('v-slot')) return false;
+  return LATIN_PHRASE.test(candidate.key) && !ARABIC.test(candidate.key);
 }
 
 /** Live blocks of a Markdown page: [{ example, framework, lang, code, node }]. */
@@ -195,7 +212,7 @@ export function deriveStringMap(englishText, arabicText) {
     }
     en.forEach((item, index) => {
       const peer = ar[index];
-      if (item.key === peer.key || !ARABIC.test(peer.key) || !isReader(item, names)) return;
+      if (item.key === peer.key || !ARABIC.test(peer.key) || !(isReader(item, names) || rendersText(item, names))) return;
       (origins[item.key] ??= new Set()).add(block.section);
       if (map[item.key] === undefined) map[item.key] = peer.key;
       else if (map[item.key] !== peer.key) conflicts.push(`"${item.key}" is "${map[item.key]}" and "${peer.key}" (${block.example}, ${block.framework})`);
@@ -212,15 +229,30 @@ function requote(raw, value) {
 
 /**
  * Applies a string map to one live block.
- * @returns {{ code: string, missing: string[], used: string[], replaced: number }} missing: reader strings
- *   with Latin letters that the map does not translate; used: the map keys it applied
+ * @param {{ text?: boolean }} [options] text: replace every string that renders as reader
+ *   text under another name (rendersText) from the map (the placeholder sibling does);
+ *   without it such a string is replaced only when the map has its translation
+ * @returns {{ code: string, missing: string[], left: string[], used: string[], replaced: number }} missing:
+ *   reader strings with Latin letters that the map does not translate; left: strings that
+ *   render as reader text under another name, which the map does not replace
+ *   ('<name>: <text>'); used: the map keys it applied
  */
-export function applyStringMap(lang, code, map, names = readerNames()) {
+export function applyStringMap(lang, code, map, names = readerNames(), options = {}) {
   const edits = [];
   const missing = [];
+  const left = [];
   const used = new Set();
   for (const item of candidates(lang, code)) {
-    if (!isReader(item, names)) continue;
+    // A string that renders as reader text under another name takes a translation the map
+    // has (the writer's own, read from the pair or given to scaffold-ar), never the placeholder
+    // unless options.text; without one it is reported as left in English.
+    if (!isReader(item, names)) {
+      if (!rendersText(item, names)) continue;
+      if (!options.text && !Object.hasOwn(map, item.key)) {
+        left.push(`${item.name}: ${item.key}`);
+        continue;
+      }
+    }
     const value = Object.hasOwn(map, item.key) ? map[item.key] : undefined;
     if (value === undefined) {
       if (/[A-Za-z]/.test(item.key) && !ARABIC.test(item.key)) missing.push(item.key);
@@ -232,5 +264,5 @@ export function applyStringMap(lang, code, map, names = readerNames()) {
   }
   let out = code;
   for (const edit of edits.sort((a, b) => b.from - a.from)) out = out.slice(0, edit.from) + edit.text + out.slice(edit.to);
-  return { code: out, missing: [...new Set(missing)], used: [...used], replaced: edits.length };
+  return { code: out, missing: [...new Set(missing)], left: [...new Set(left)], used: [...used], replaced: edits.length };
 }

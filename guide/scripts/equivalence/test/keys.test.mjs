@@ -9,7 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import tabsActivate from '../checks/tabs-activate.mjs';
 import tabsKeyboard from '../checks/tabs-keyboard.mjs';
 import tabsKeyboardVertical from '../checks/tabs-keyboard-vertical.mjs';
-import { nextEnabled, previousEnabled, target } from '../checks/lib/tabs.mjs';
+import { nextEnabled, previousEnabled, tabsCheck, target } from '../checks/lib/tabs.mjs';
 import { isKey, keyName, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors } from '../keys.mjs';
 import { awaitOutcome, axeFrames, chromiumPath, runChecks } from '../run.mjs';
 
@@ -20,6 +20,7 @@ const table = (rows) => ({ caption: 'Keyboard interaction of Tabs', line: 7, row
 const ROWS = [
   { keys: ['Tab'], action: 'Moves focus into the list.' },
   { keys: ['ArrowRight', 'ArrowLeft'], action: 'Moves focus.' },
+  { keys: ['ArrowDown', 'ArrowUp'], action: 'In a vertical list, moves focus.' },
   { keys: ['Home', 'End'], action: 'First or last.' },
 ];
 const page = (keyboard, checks = 'tabs-keyboard') => ({ id: 'tabs', langs: ['en'], liveGroups: [{ example: 'basic', check: checks }], keyboard: { en: keyboard } });
@@ -37,6 +38,11 @@ describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
     expect(lines[0]).toBe('keyboard: tabs/en "Keyboard interaction of Tabs"');
     expect(lines[1]).toBe('  Tab | Moves focus into the list.');
     expect(lines[2]).toMatch(/^ {4}tabs-keyboard\/tab-into-list presses Tab: Tab from before the tab list moves focus to the selected tab\. \[WAI-ARIA Authoring Practices, Tabs pattern/);
+    // G24: an arrow key the orientation does not handle is pressed and keeps focus and selection.
+    expect(report[0].rows[2].steps.map((step) => `${step.check}/${step.step} ${step.key}`)).toEqual(['tabs-keyboard/down-arrow-unhandled ArrowDown', 'tabs-keyboard/up-arrow-unhandled ArrowUp']);
+    // G22: the keys of a row of an Arabic table are joined by the Arabic comma.
+    const ar = { id: 'tabs', langs: ['ar'], liveGroups: [{ example: 'basic', check: 'tabs-keyboard' }], keyboard: { ar: { caption: 'x', line: 7, rows: ROWS } } };
+    expect(keyboardReportLines(keyboardRule({ pages: [ar], checks, scope, exceptions: [] }).report)).toContain('  السهم الأيمن، السهم الأيسر | Moves focus.');
   });
 
   it('fails on a documented key that no step presses and on a pressed key the table lacks', () => {
@@ -62,13 +68,35 @@ describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
     expect(result.report[0]).toMatchObject({ page: 'button', bound: false, reason: 'no controller of @hawiyah/vanilla' });
   });
 
-  it('fails on a step that declares keys without expect, outcome or reference', () => {
-    const check = { name: 'x-keys', steps: [{ name: 'a', keys: ['Enter'], async run() {} }, { name: 'b', keys: ['Return'], outcome: 'o', reference: 'r', async run() {}, async expect() {} }, { name: 'c', async run() {} }] };
+  // G16 of the 5a fix round (verification of 07763ce): an entry that matched nothing was not reported.
+  it('fails on an entry of keyboard-exceptions.json that matches nothing, and accepts one that excuses a documented key', () => {
+    const rows = [...ROWS, { keys: ['F10'], action: 'Opens the menu.' }];
+    const entry = { component: 'tabs', key: 'F10', reason: 'r', approvedBy: 'lead' };
+    expect(keyboardRule({ pages: [page(table(rows))], checks, scope, exceptions: [entry] }).errors).toEqual([]);
+    expect(keyboardRule({ pages: [page(table(ROWS))], checks, scope, exceptions: [entry] }).errors).toEqual([
+      'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (tabs F10) matches nothing: no keyboard table of the page documents F10 without a step that presses it; remove it',
+    ]);
+    expect(keyboardRule({ pages: [page(table(ROWS))], checks, scope, exceptions: [{ ...entry, key: 'Home' }] }).errors).toEqual([
+      'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (tabs Home) matches nothing: no keyboard table of the page documents Home without a step that presses it; remove it',
+    ]);
+    const button = { ...page(table([{ keys: ['Enter'], action: 'Activates.' }]), ''), id: 'button' };
+    expect(keyboardRule({ pages: [button], checks, scope, exceptions: [{ component: 'button', reason: 'r', approvedBy: 'lead' }] }).errors).toEqual([
+      'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (button) matches nothing: button has no controller of @hawiyah/vanilla, so the rule does not bind its page; remove it',
+    ]);
+    // An entry of a page outside the run is not judged.
+    expect(keyboardRule({ pages: [page(table(ROWS))], checks, scope, exceptions: [{ component: 'accordion', key: 'F10', reason: 'r', approvedBy: 'lead' }] }).errors).toEqual([]);
+  });
+
+  it('fails on a check without read, assert or negative control, a step without expect, and a keyed step without outcome or reference', () => {
+    const check = { name: 'x-keys', steps: [{ name: 'a', keys: ['Enter'], async run() {} }, { name: 'b', keys: ['Return'], outcome: 'o', reference: 'r', async run() {}, expect: (state) => state }, { name: 'c', async run() {} }] };
     expect(stepErrors(check)).toEqual([
-      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step a declares keys without expect: a step that presses a key asserts the documented outcome',
+      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: the check has no read(mount) and assert(observed, expected) of its frames',
+      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: the check has no negative control { fixture, wrong }: the markup that scripts/equivalence/test/negative.test.mjs renders with @hawiyah/vanilla, and a deliberately wrong oracle under which every keyed step must fail',
+      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step a has no expect: every step returns the state the oracle expects after it, from the state it expected before',
       'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step a declares keys without a one-line outcome',
       'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step a declares keys without the reference of its outcome (the WAI-ARIA Authoring Practices pattern, CONTRACT.md or CHANGELOG.md)',
       'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step b declares the key Return, which is not a key id of KEY_NAMES in scripts/content/config.mjs',
+      'HWE-KEYS scripts/equivalence/checks/x-keys.mjs:1: step c has no expect: every step returns the state the oracle expects after it, from the state it expected before',
     ]);
     for (const check of checks.values()) expect(stepErrors(check), check.name).toEqual([]);
   });
@@ -143,6 +171,9 @@ function frameDocument(framework, { dir, behaviour, unnamed = false }) {
           if (behaviour === 'slow') setTimeout(() => render(i), 150);
           if (behaviour === 'late-wrong') later(() => render((i + 1) % tabs.length));
           if (behaviour === 'flicker') { render(i); later(() => render((i + 1) % tabs.length)); }
+          if (behaviour === 'right-then-wrong-300') { render(i); setTimeout(() => render((i + 1) % tabs.length), 300); }
+          if (behaviour === 'right-then-wrong-1000') { render(i); setTimeout(() => render((i + 1) % tabs.length), 1000); }
+          if (behaviour === 'aria-wrong-300') { render(i); setTimeout(() => { tabs.forEach((tab, n) => tab.setAttribute('aria-selected', String(n === (i + 1) % tabs.length))); }, 300); }
         };
         document.querySelector('[role=tablist]').addEventListener('keydown', (event) => {
           const i = tabs.indexOf(document.activeElement);
@@ -194,7 +225,7 @@ describe('outcome assertions, pressed keys and axe on a stand-in page (Chromium)
     const { failures, asserted } = await runChecks({ page, group: group('en'), checks: [tabsKeyboard], evaluate: async (state) => compared.push(state), outcomeTimeout: 300 });
     // tab-into-list holds (Tab enters on the selected tab); right-arrow is the first outcome that fails, in all four frames.
     expect(failures.filter((line) => line.includes('tabs-keyboard/right-arrow in')).map((line) => line.split(' in ')[1].split(':')[0])).toEqual(FRAMEWORK_NAMES);
-    expect(failures[0]).toMatch(/^HWE-EXPECT docs\/components\/tabs\.md:19: basic \(en\) tabs-keyboard\/(?:right-arrow|left-arrow|left-arrow-again|end|right-arrow-again) in vanilla: focus is expected on tab \d of 3; it is on tab \d \(not shown within 300 ms\); documented outcome: /);
+    expect(failures[0]).toMatch(/^HWE-EXPECT docs\/components\/tabs\.md:19: basic \(en\) tabs-keyboard\/(?:right-arrow|left-arrow|left-arrow-again|end|right-arrow-again) in vanilla: tab \d of 3 is expected to be the one selected tab; selected: \d \(not shown within 300 ms\); documented outcome: /);
     expect(failures.every((line) => line.startsWith('HWE-EXPECT '))).toBe(true);
     expect(compared).toHaveLength(tabsKeyboard.steps.length);
     expect(asserted).toBeLessThan(tabsKeyboard.steps.length);
@@ -251,11 +282,34 @@ describe('outcome assertions, pressed keys and axe on a stand-in page (Chromium)
     }, 120_000);
   }
 
-  it('fails a step that presses another key than it declares (HWE-CHECK)', async () => {
+  it('fails a step that presses another key than it declares, with the helper or without it (HWE-CHECK)', async () => {
     await standIn(page, { dir: 'ltr', behaviour: 'right' });
-    const sloppy = { name: 'x-sloppy', steps: [{ name: 'press-end', keys: ['Home'], outcome: 'o', reference: 'r', async run({ mount, press }) { await press(mount.getByRole('tab').first(), 'End'); }, async expect() {} }] };
+    const sloppy = { name: 'x-sloppy', ...tabsCheck, steps: [{ name: 'press-end', keys: ['Home'], outcome: 'o', reference: 'r', async run({ mount, press }) { await press(mount.getByRole('tab').first(), 'End'); }, expect: (state) => state }] };
     const { failures } = await runChecks({ page, group: group('en'), checks: [sloppy] });
-    expect(failures).toEqual(['HWE-CHECK docs/components/tabs.md:19: x-sloppy step press-end pressed End in vanilla, and declares Home; a step presses exactly the keys it declares']);
+    expect(failures).toEqual(['HWE-CHECK docs/components/tabs.md:19: x-sloppy step press-end pressed End in vanilla (trusted keydown events of the frame), and declares Home; a step presses exactly the keys it declares']);
+    // Verification 2 of 07763ce: a raw Playwright press escaped the rule, which counted only context.press.
+    await standIn(page, { dir: 'ltr', behaviour: 'right' });
+    const raw = { name: 'x-raw', ...tabsCheck, steps: [{ name: 'raw-escape', outcome: 'o', reference: 'r', async run({ mount }) { await mount.getByRole('tab').first().press('Escape'); }, expect: (state) => state }] };
+    expect((await runChecks({ page, group: group('en'), checks: [raw] })).failures).toEqual(['HWE-CHECK docs/components/tabs.md:19: x-raw step raw-escape pressed Escape in vanilla (trusted keydown events of the frame), and declares no key; a step presses exactly the keys it declares']);
+  }, 120_000);
+
+  // Verification 1 of 07763ce (G6 of the 5a fix round): an outcome that is shown and
+  // changes after the read, and an oracle that took the state before a step from the frame.
+  for (const behaviour of ['right-then-wrong-300', 'right-then-wrong-1000', 'aria-wrong-300']) {
+    it(`fails a tab list that shows the documented outcome and changes it later (${behaviour}) (HWE-EXPECT)`, async () => {
+      await standIn(page, { dir: 'ltr', behaviour });
+      const { failures } = await runChecks({ page, group: group('en'), checks: [tabsKeyboard], outcomeTimeout: 300 });
+      expect(failures.length).toBeGreaterThan(0);
+      expect(failures.every((line) => line.startsWith('HWE-EXPECT '))).toBe(true);
+      expect(failures.some((line) => /tabs-keyboard\/(?:left-arrow|right-arrow|left-arrow-again|end|right-arrow-again|home|tab-to-panel) in vanilla: (?:before the step, the frame no longer shows the outcome the oracle computed for the previous step|tab \d of 3 is expected)/.test(line))).toBe(true);
+    }, 120_000);
+  }
+
+  it('an assertion that reads nothing passes its documented oracle and fails nothing under the wrong one: the negative control catches it', async () => {
+    await standIn(page, { dir: 'ltr', behaviour: 'wrong' });
+    const vacuous = { ...tabsKeyboard, name: 'x-vacuous', assert: () => {} };
+    expect((await runChecks({ page, group: group('en'), checks: [vacuous], outcomeTimeout: 300 })).failures).toEqual([]);
+    expect((await runChecks({ page, group: group('en'), checks: [vacuous], outcomeTimeout: 300, oracle: 'negative' })).failures).toEqual([]);
   }, 120_000);
 
   it('reports a frame with an unnamed button (HWE-AXE) and none without it', async () => {

@@ -8,12 +8,12 @@ import { checkPages } from '../../api-tables/cli.mjs';
 import { declaredMembers } from '../../api-tables/members.mjs';
 import { stylesVersion } from '../../api-tables/notes.mjs';
 import { testReaders } from '../../api-tables/test/helpers.mjs';
-import { factSheet, readSources } from '../../facts/facts.mjs';
+import { factSheet, factSheetMarkdown, readSources } from '../../facts/facts.mjs';
 import { locateApiTables, rewriteApiTables } from '../api-tables.mjs';
 import { processPair } from '../pipeline.mjs';
 import { scaffoldArabic } from '../scaffold-ar.mjs';
 import { scaffoldPage, tableProblems } from '../scaffold.mjs';
-import { applyStringMap, deriveStringMap, liveBlocks } from '../string-map.mjs';
+import { applyStringMap, candidates, deriveStringMap, liveBlocks } from '../string-map.mjs';
 import { syncArabic } from '../sync-ar.mjs';
 import { guideDir, repoDir } from './helpers.mjs';
 
@@ -120,6 +120,24 @@ describe('the string map (A10)', () => {
   it('lists the reader strings it cannot translate', () => {
     expect(applyStringMap('html', '<button class="hw-button" type="button">Save draft</button>', map).missing).toEqual(['Save draft']);
   });
+  // G9 of the 5a fix round (review of 07763ce): a string that renders as text under a name
+  // the map does not replace was left in English without a word, and a Vue or Angular
+  // wrapper of self-closing components gave the text "/div>".
+  it('lists every other string left in English that renders as reader text', () => {
+    const result = applyStringMap('tsx', '<Stat label="Requests" value="128" trend="12 more than last month" />', { Requests: 'الطلبات' });
+    expect(result.code).toBe('<Stat label="الطلبات" value="128" trend="12 more than last month" />');
+    expect(result.missing).toEqual([]);
+    expect(result.left).toEqual(['trend: 12 more than last month']);
+    const items = applyStringMap('vue', '<Accordion :items="[{ value: \'a\', title: \'Fees\', content: \'The fee is paid online.\' }]" />', { Fees: 'الرسوم' });
+    expect(items.left).toEqual(['content: The fee is paid online.']);
+  });
+  it('reads self-closing components inside a wrapper in Vue and Angular templates', () => {
+    const vue = '<div class="hw-inline"><Stat label="Requests" value="1" /><Stat label="Visits" value="2" /></div>';
+    expect(candidates('vue', vue).map((item) => item.key)).toEqual(['hw-inline', 'Requests', '1', 'Visits', '2']);
+    expect(applyStringMap('vue', vue, {}).missing).toEqual(['Requests', 'Visits']);
+    const angular = 'template: `<div class="hw-inline"><hw-stat label="Requests" value="1" /><hw-stat label="Visits" value="2" /></div>`';
+    expect(candidates('ts', angular).filter((item) => item.kind === 'text')).toEqual([]);
+  });
 });
 
 describe('content:sync-ar', () => {
@@ -144,6 +162,23 @@ describe('content:sync-ar', () => {
     expect(result.missing).toEqual(['Send request']);
     expect(result.text).toContain('data-size="md">متابعة</button><button class="hw-button" type="button">Send request</button></div>');
   });
+  it('never replaces an Arabic string by an English one: a hand translation stays, from the map or in its place', () => {
+    const add = (text, from, to) => text.replace(from, to);
+    const enBlock = '<Button variant="primary">Continue</Button>';
+    const arBlock = '<Button variant="primary">متابعة</Button>';
+    // A phrase under a name the map does not list: the pair gives its translation.
+    const english = add(page('button.md'), enBlock, '<Button variant="secondary" data-trend="Sends the form now">Continue</Button>');
+    const arabic = add(page('button.ar.md'), arBlock, '<Button variant="primary" data-trend="يرسل النموذج الآن">متابعة</Button>');
+    expect(sync('button', english, arabic).text).toContain('<Button variant="secondary" data-trend="يرسل النموذج الآن">متابعة</Button>');
+    // One word, which HWC-PAR8 does not read as reader text: the Arabic string keeps its place.
+    const word = sync('button', add(page('button.md'), enBlock, '<Button variant="secondary" data-trend="Rising">Continue</Button>'), add(page('button.ar.md'), arBlock, '<Button variant="primary" data-trend="صاعد">متابعة</Button>'));
+    expect(word.text).toContain('<Button variant="secondary" data-trend="صاعد">متابعة</Button>');
+    expect(word.kept).toEqual(['"صاعد" (primary, react) for the English "Rising", which the map does not translate']);
+    // Without an Arabic string at that place, a phrase is reported as left in English.
+    const fresh = sync('button', english, page('button.ar.md'));
+    expect(fresh.left).toEqual(['data-trend: Sends the form now']);
+  });
+
   it('asks for a review of a translation read only from a section whose English changed', () => {
     const english = page('button.md').replace('<Button variant="primary">Continue</Button>', '<Button variant="primary">Send request</Button>');
     const result = sync('button', english, page('button.ar.md'));
@@ -172,6 +207,20 @@ describe('content:facts', () => {
       }
       expect(Boolean(sheet.frameworks.vanilla.controller) !== Boolean(sheet.frameworks.vanilla.stylesheet), id).toBe(true);
     }
+  });
+  // G12 of the 5a fix round: the vanilla markup of a component and the fields of its item types.
+  it('names the vanilla markup and the fields of the item types of each adapter', () => {
+    const sources = readSources(guideDir, repoDir, version);
+    const stat = factSheet(readers, 'stat', sources);
+    expect(stat.frameworks.vanilla.markup.parts).toEqual(['hw-stat-description', 'hw-stat-label', 'hw-stat-trend', 'hw-stat-value']);
+    expect(stat.frameworks.vanilla.markup.readme).toMatch(/^#### Stat\n[\s\S]*<span class="hw-stat-label">/);
+    const button = factSheet(readers, 'button', sources);
+    expect(button.frameworks.vanilla.markup.parts).not.toContain('hw-button-group');
+    const accordion = factSheet(readers, 'accordion', sources);
+    expect(accordion.frameworks.react.typeFields.AccordionItem.map((field) => field.name)).toEqual(expect.arrayContaining(['value', 'title', 'content']));
+    expect(Object.keys(accordion.frameworks.angular.typeFields)).toContain('HwAccordionItem');
+    expect(factSheetMarkdown(stat)).toContain('Markup: the classes hw-stat; the classes of its parts in the installed stylesheet: hw-stat-description, hw-stat-label, hw-stat-trend, hw-stat-value');
+    expect(factSheetMarkdown(accordion)).toMatch(/Fields of AccordionItem: value: string; /);
   });
   it('names the hooks, slots, defects and differences of Tabs', () => {
     const sheet = factSheet(readers, 'tabs', readSources(guideDir, repoDir, version));

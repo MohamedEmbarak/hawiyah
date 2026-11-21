@@ -29,8 +29,8 @@
 //                       the component ('primary', aria-busy="true"); the value of
 //                       data-hw is a hook that enhance() registers, the value of
 //                       role an ARIA role.
-// Framework scope (leadAmendments A9): a paragraph under a framework heading
-// (JavaScript, React, Vue, Angular) or whose text names a framework is scoped to
+// Framework scope (leadAmendments A9): a paragraph under a heading (h3 or h4, in any
+// section) whose text is a framework name (JavaScript, React, Vue, Angular), or whose text names a framework, is scoped to
 // those frameworks: a member or export must belong to one of them. A name that
 // belongs only to another framework is a case the check cannot decide, so it is a
 // finding unless vocabulary-exceptions.json lists it. The expression of a
@@ -40,7 +40,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { classDeclaration, angularClassMembers } from './declarations-angular.mjs';
 import { vueOptions } from './defaults-vue.mjs';
-import { FRAMEWORKS } from './members.mjs';
+import { FRAMEWORKS, componentClasses } from './members.mjs';
 import { isInPackage, resolveExport } from './program.mjs';
 import { attributesFor } from './stylesheet-selectors.mjs';
 import { contractFor } from './stylesheet-contract.mjs';
@@ -443,7 +443,7 @@ export function componentVocabulary(vocab, id, declared) {
     names.vanilla.add(attribute);
     for (const value of data.values) addValue(attribute, value);
   }
-  const contract = contractFor(readers.contractRows, classes);
+  const contract = contractFor(readers.contractRows, classes, readers.selectors, componentClasses(readers));
   for (const [attribute, list] of contract.values) for (const value of list) addValue(attribute, value);
   const result = { names, values, attributeValues };
   vocab.vocabularies.set(id, result);
@@ -470,13 +470,19 @@ function linkedId(href) {
  */
 export function codeValues(page) {
   const out = [];
+  out.rows = [];
   const visitInlines = (nodes, where) => {
     // Sentences: a text node with a sentence end closes the sentence of the codes before it.
     const sentences = [[]];
     const links = [[]];
     const walk = (list) => {
-      for (const node of list ?? []) {
-        if (node.type === 'inlineCode') sentences[sentences.length - 1].push(node.value);
+      (list ?? []).forEach((node, index) => {
+        if (node.type === 'inlineCode') {
+          // A name split across formatting (`orientation`*Mode*): the code is directly followed by a letter.
+          const next = list[index + 1];
+          const after = next?.type === 'text' ? next.value : next && next.type !== 'inlineCode' ? inlineText([next]) : '';
+          sentences[sentences.length - 1].push(/^[\p{L}\p{N}_]/u.test(after) && /^[\w$-]+$/.test(node.value) ? { split: `${node.value}${after.split(/[^\p{L}\p{N}_]/u)[0]}`, value: node.value } : node.value);
+        }
         else if (node.type === 'link') {
           const id = linkedId(node.href);
           if (id) links[links.length - 1].push(id);
@@ -488,28 +494,43 @@ export function codeValues(page) {
             links.push([]);
           }
         } else walk(node.children);
-      }
+      });
     };
     walk(nodes);
     const named = new Set();
     for (const match of inlineText(nodes).matchAll(/(?<![\w-])(JavaScript|vanilla|React|Vue|Angular)(?![\w-])/g)) named.add(FRAMEWORK_WORDS[match[1]]);
     const scope = [...new Set([...(where.framework ? [where.framework] : []), ...named])];
     sentences.forEach((codes, index) => {
-      for (const text of codes) out.push({ text, section: where.label, scope, linked: links[index] });
+      for (const code of codes) {
+        if (typeof code === 'string') out.push({ text: code, section: where.label, scope, linked: links[index] });
+        else out.push({ text: code.value, split: code.split, section: where.label, scope, linked: links[index] });
+      }
     });
   };
+  // A heading whose text is a framework name scopes the paragraphs under it, in every
+  // section (an h4 under an h3 of another framework scopes to its own).
   const visitBlocks = (blocks, where) => {
     for (const block of blocks ?? []) {
       if (block.type === 'heading') {
-        if (block.level === 3) where.h3 = block.id;
+        const named = FRAMEWORK_WORDS[inlineText(block.children).trim()] ?? null;
+        if (block.level === 3) {
+          where.h3 = block.id;
+          where.h3Framework = named;
+          where.h4Framework = null;
+        } else if (block.level === 4) where.h4Framework = named;
         where.label = `${where.section}${where.h3 ? `/${where.h3}` : ''}`;
-        where.framework = where.section === 'api' ? H3_SCOPE[where.h3] ?? null : null;
+        where.framework = where.h4Framework ?? where.h3Framework ?? null;
         visitInlines(block.children, where);
       } else if (block.type === 'paragraph') visitInlines(block.children, where);
       else if (block.type === 'list') for (const item of block.items) visitBlocks(item, where);
       else if (block.type === 'alert' || block.type === 'blockquote') visitBlocks(block.blocks, where);
       else if (block.type === 'table') {
-        if (where.section === 'api' && API_H3.has(where.h3)) continue;
+        if (where.section === 'api' && API_H3.has(where.h3)) {
+          // The row names of the page's own API tables (content selectors among them) are accepted in its prose.
+          for (const row of block.rows) for (const node of row.c0 ?? []) if (node.type === 'inlineCode') out.rows.push({ name: node.value, framework: H3_SCOPE[where.h3] });
+          continue;
+        }
+        for (const code of block.captionCodes ?? []) out.push({ text: code, section: where.label, scope: where.framework ? [where.framework] : [], linked: [] });
         for (const column of block.columns) visitInlines(column.label, where);
         for (const row of block.rows) for (const column of block.columns) visitInlines(row[column.key], where);
       }
@@ -532,7 +553,10 @@ export function markupTerms(code) {
       const value = attribute[2] ?? attribute[3] ?? attribute[4] ?? '';
       if (name === 'class') for (const token of value.split(/\s+/).filter(Boolean)) out.push({ kind: 'class', name: token, text: `class="${value}"` });
       else if (name === 'data-hw') out.push({ kind: 'hook', name: value, text: `data-hw="${value}"` });
-      else if (name.startsWith('data-')) out.push({ kind: 'attribute', name, text: name });
+      else if (name.startsWith('data-')) {
+        out.push({ kind: 'attribute', name, text: name });
+        if (value !== '') out.push({ kind: 'data-value', name, value, text: `${name}="${value}"` });
+      } else if (name.startsWith('aria-')) out.push({ kind: 'attribute', name, text: name });
     }
   }
   return out;
@@ -563,8 +587,9 @@ export function judge(vocab, term, where) {
     if (attribute === 'data-hw') return vocab.hooks.has(value) ? null : `"${value}" is not a hook that enhance() of @hawiyah/vanilla registers`;
     const listed = allow.values(['aria-attribute', 'aria-role', 'html-attribute'], attribute);
     if (listed?.includes(value)) return null;
-    if (attribute && (where.vocabulary.attributeValues.get(attribute)?.has(value) || vocab.stylesheetAttributes.get(attribute)?.has(value))) return null;
-    if (where.vocabulary.values.has(value)) return null;
+    // name="value": only the values of that attribute or member count (G4 of the 5a fix round).
+    if (attribute && enumeratedSets(vocab, where.vocabulary, attribute).some((set) => set.has(value))) return null;
+    if (!attribute && where.vocabulary.values.has(value)) return null;
     return `"${value}" is not a value of a member type or of an enumerated attribute of this component${attribute ? ` (attribute ${attribute})` : ''}`;
   };
   const scoped = (name, owners, what) => {
@@ -616,10 +641,14 @@ export function judge(vocab, term, where) {
   }
 }
 
+/** Type words a page names in code formatting: the TypeScript primitives and literals. */
+export const TYPE_WORDS = new Set(['boolean', 'string', 'number', 'true', 'false', 'null', 'undefined']);
+
 function judgeName(vocab, term, where, helpers) {
   const { allow } = vocab;
   const { memberOf, exportOf, scoped } = helpers;
   const name = term.name;
+  if (term.kind === 'name' && TYPE_WORDS.has(name)) return null;
   if (/^hw-/.test(name)) {
     if (vocab.classes.has(name) || vocab.angularElements.has(name)) return null;
     return `${name} is not a class of the installed stylesheet or an element of @hawiyah/angular`;
@@ -654,6 +683,37 @@ function judgeName(vocab, term, where, helpers) {
 }
 
 /**
+ * The enumerated values of an attribute or member: the values the stylesheet selects
+ * it with, the values of the contract row or of the member of that name, and for a
+ * vanilla hook data-hw-<name> the values of the member <name> or of a member that
+ * starts with it (data-hw-activation and activationMode). Empty values do not count.
+ */
+function enumeratedSets(vocab, vocabulary, attribute) {
+  const nonEmpty = (set) => new Set([...(set ?? [])].filter((value) => value !== ''));
+  const sets = [nonEmpty(vocab.stylesheetAttributes.get(attribute)), nonEmpty(vocabulary.attributeValues.get(attribute))];
+  const hook = /^data-hw-([a-z-]+)$/.exec(attribute)?.[1];
+  if (hook) {
+    const member = camel(hook);
+    for (const [name, values] of vocabulary.attributeValues) if (name === member || name.startsWith(member)) sets.push(nonEmpty(values));
+  }
+  return sets.filter((set) => set.size > 0);
+}
+
+/**
+ * The value of a data-* attribute of an html block: when the attribute has an
+ * enumerated set (the values the stylesheet selects it with, the values of the
+ * contract row, or for a vanilla hook data-hw-<name> the literal values of the member
+ * <name>, or a member that starts with it, as data-hw-activation and activationMode),
+ * the value is one of them; an attribute without such a set takes any value (a tab's
+ * data-hw-value, an overflow label).
+ */
+function dataValueProblem(vocab, vocabulary, term) {
+  const sets = enumeratedSets(vocab, vocabulary, term.name);
+  if (sets.length === 0 || sets.some((set) => set.has(term.value))) return null;
+  return `"${term.value}" is not a value of ${term.name} (${[...new Set(sets.flatMap((set) => [...set]))].map((value) => `"${value}"`).join(', ')})`;
+}
+
+/**
  * The vocabulary pass over page models.
  * @param {{ pages: { id: string, lang: string, page: any }[], vocab: any, declared: (id: string) => any,
  *           liveGroups?: any[], exceptions?: any[] }} input
@@ -679,8 +739,18 @@ export function checkVocabulary(input) {
     const file = page.sourcePath ?? `docs/components/${id}${lang === 'ar' ? '.ar' : ''}.md`;
     files.add(file);
     const vocabulary = componentVocabulary(vocab, id, declared(id));
-    for (const item of codeValues(page)) {
+    const values = codeValues(page);
+    const rowNames = values.rows;
+    for (const item of values) {
       stats.codes += 1;
+      if (item.split) {
+        report(file, item.text, item.section, `the name continues outside the code formatting ("${item.split}"); write the whole name as code`);
+        continue;
+      }
+      // A row name of the page's own API tables (a content selector such as [hwStatValue]), and its bare name, in the scope of its table.
+      const ownRow = rowNames.some((row) => (!item.scope.length || item.scope.includes(row.framework))
+        && (row.name === item.text || terms(row.name).some((term) => term.name === item.text.trim())));
+      if (ownRow) continue;
       const linked = item.linked.filter((other) => other !== id && vocab.readers.components.has(other)).map((other) => componentVocabulary(vocab, other, declared(other)));
       const reasons = [];
       for (const term of terms(item.text)) {
@@ -697,7 +767,8 @@ export function checkVocabulary(input) {
         stats.markup += 1;
         const reason = term.kind === 'attribute'
           ? judgeName(vocab, term, { scope: ['vanilla'], vocabulary, linked: [] }, { memberOf: () => [], exportOf: () => [], scoped: () => undefined })
-          : judge(vocab, term, { scope: ['vanilla'], vocabulary, linked: [] });
+          : term.kind === 'data-value' ? dataValueProblem(vocab, vocabulary, term)
+            : judge(vocab, term, { scope: ['vanilla'], vocabulary, linked: [] });
         if (reason) report(file, term.text, `live example ${group.example} (html)`, reason);
       }
     }

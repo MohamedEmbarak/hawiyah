@@ -84,6 +84,15 @@ describe('one finding per mismatch (negative fixtures)', () => {
       'HWC-APIX docs/components/tabs.md: JavaScript table lists no onValueChange; the declarations have onValueChange (option, required false)',
     ]);
   });
+  // Restored (G16 of the 5a fix round; removed at e5a740d): a missing Angular content selector row
+  // and a missing input that HwTabsComponent declares, in the five-column form of the comparison.
+  it('an Angular content selector missing and an inherited input missing', () => {
+    const tables = variant(TABS, 'angular', (rows) => rows.filter((row) => row[0] !== '*' && row[0] !== 'aria-describedby'));
+    expect(messages(check([pageModel('tabs', tables)]))).toEqual([
+      'HWC-APIX docs/components/tabs.md: Angular table lists no aria-describedby; the declarations have aria-describedby (input, required false)',
+      'HWC-APIX docs/components/tabs.md: Angular table lists no *; the declarations have * (content, required false)',
+    ]);
+  });
   it('an invented slot', () => {
     const tables = variant(BUTTON, 'vue', (rows) => [...rows, ['icon', 'slot', '—', false, '—']]);
     expect(messages(check([pageModel('button', tables)]))).toEqual([
@@ -217,6 +226,20 @@ describe('components without a vanilla controller', () => {
     expect(only(check([page('en', { javascript: note('en') }), page('ar', { javascript: note('ar') })]))).toEqual([]);
     expect(messages(check([pageModel('button', BUTTON, { after: { javascript: note('en') } })]))).toEqual([
       'HWC-APIX docs/components/button.md: the JavaScript table of button is followed by the note of a table read from the stylesheet, but the styles contract documents hw-button; remove the note',
+    ]);
+    // G16 of the 5a fix round (verification of 07763ce): the note after the prose of the table, or anywhere else in the API section.
+    const elsewhere = (id, tables) => {
+      const model = pageModel(id, tables);
+      model.sections[0].blocks.splice(3, 0, note('en'));
+      return model;
+    };
+    expect(messages(check([elsewhere('button', BUTTON)]))).toEqual([
+      'HWC-APIX docs/components/button.md: the note of a table read from the stylesheet stands in the API section of button, whose JavaScript table the styles contract documents (hw-button); remove the note',
+    ]);
+    const twice = pageModel('stat', tables, { after: { javascript: note('en') } });
+    twice.sections[0].blocks.push(note('en'));
+    expect(only(check([twice])).concat(messages(check([twice])).filter((line) => line.includes('API section of stat')))).toEqual([
+      'HWC-APIX docs/components/stat.md: the note of a table read from the stylesheet stands in the API section of stat away from its place; it stands once, directly after the JavaScript table',
     ]);
   });
 });

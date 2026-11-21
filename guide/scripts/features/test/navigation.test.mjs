@@ -88,7 +88,9 @@ describe('navigation index', () => {
     const written = JSON.parse(readFileSync(join(dir, 'navigation.json'), 'utf8'));
     expect(written).toEqual(navigationIndex(manifest.pages, components));
     expect(JSON.parse(readFileSync(join(dir, 'routes.json'), 'utf8'))).toEqual(written.pages.map(({ id, langs }) => ({ id, langs })));
-    expect(written.pages.map((entry) => entry.id)).toEqual(['button', 'tabs']);
+    // Independent of the real page set: the index holds exactly the pages of the manifest.
+    expect(written.pages.length).toBeGreaterThan(0);
+    expect(written.pages.map((entry) => entry.id).sort()).toEqual(manifest.pages.map((entry) => entry.id).sort());
     rmSync(dir, { recursive: true, force: true });
   });
 });

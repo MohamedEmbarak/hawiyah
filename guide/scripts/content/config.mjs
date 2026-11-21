@@ -166,6 +166,7 @@ export const CODES = [
   'HWC-FILE', 'HWC-FM1', 'HWC-FM2', 'HWC-H1', 'HWC-SUM', 'HWC-H2', 'HWC-API', 'HWC-H5', 'HWC-TAB1', 'HWC-LINK', 'HWC-MD',
   'HWC-LIVE1', 'HWC-LIVE2', 'HWC-LIVE3',
   'HWC-PAR1', 'HWC-PAR2', 'HWC-PAR3', 'HWC-PAR4', 'HWC-PAR5', 'HWC-PAR6', 'HWC-PAR7', 'HWC-PAR8', 'HWC-STALE', 'HWC-KEYS',
+  'HWC-CLAIM', 'HWC-EMPTY', 'HWC-TODO', 'HWC-TONE', 'HWC-LIVE7',
 ];
 
 /** A finding: printed as '<code> <file>:<line>: <message>'. */

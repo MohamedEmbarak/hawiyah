@@ -4,14 +4,39 @@
 // live groups. Every finding of every file is collected before the step fails.
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LANGS, finding, formatFinding } from './config.mjs';
+import { H2, LANGS, finding, formatFinding } from './config.mjs';
 import { writeOutputs } from './manifest.mjs';
 import { buildModel, inlineText } from './model.mjs';
 import { checkParity, readArabicExceptions } from './parity.mjs';
 import { parseMarkdown } from './parse.mjs';
-import { analysePage } from './structure.mjs';
+import {
+  componentNames, emptyFindings, liveComponentFindings, readClaimExceptions, readLiveComponentExceptions, readMarketingTerms, textFindings,
+} from './prose.mjs';
+import { analysePage, captionPrefix } from './structure.mjs';
+
+const COMPLIANCE = JSON.parse(readFileSync(new URL('../../src/app/i18n/compliance.json', import.meta.url), 'utf8'));
+const REQUIRED_SECTIONS = new Set(H2.filter((entry) => entry.required).map((entry) => entry.id));
+
+/**
+ * The fixture a docs directory outside docs/components declares (fixture.json beside
+ * its components directory, or in it): { fixture, showsComponent, reason }. A
+ * fixture's generic live groups show the component showsComponent instead of the
+ * page's own (HWC-LIVE7); the scale fixture writes one. The file is never read for
+ * docs/components of the repository, whose builds alone are deployable.
+ */
+export function readFixture(componentsDir, repoDir) {
+  if (resolve(componentsDir) === resolve(repoDir, 'docs', 'components')) return null;
+  const file = [join(componentsDir, '..', 'fixture.json'), join(componentsDir, 'fixture.json')].find((path) => existsSync(path));
+  if (!file) return null;
+  const data = JSON.parse(readFileSync(file, 'utf8'));
+  const keys = Object.keys(data ?? {}).sort().join(',');
+  if (keys !== 'fixture,reason,showsComponent' || ![data.fixture, data.reason, data.showsComponent].every((value) => typeof value === 'string' && value.trim())) {
+    throw new Error(`content: ${file} must be { "fixture", "showsComponent", "reason" } with non-empty values`);
+  }
+  return data;
+}
 
 const toPosix = (path) => path.split('\\').join('/');
 
@@ -90,6 +115,26 @@ export function keyboardOf(outlines) {
     : null]));
 }
 
+/** The placeholder of content:scaffold-ar --placeholder is accepted only in a page read from outside docs/components. */
+export const isPlaceholderAllowed = (componentsDir, repoDir) => resolve(componentsDir) !== resolve(repoDir, 'docs', 'components');
+
+/**
+ * The text gates of prose.mjs on one page in one language (G2 and G3 of the 5a fix
+ * round): claims, hollow sections, placeholders, marketing terms, install text and
+ * the page's component in each live group. `pair` carries the lists a test passes
+ * instead of the lead's files (claimExceptions, marketing, liveExceptions).
+ */
+export function pageTextFindings({ tree, outline, lang, file, used, placeholderAllowed, names, fixtureNames = null, pair = {} }) {
+  return [
+    ...textFindings({
+      tree, groups: outline.groups, lang, file, compliance: COMPLIANCE[lang], used, placeholderAllowed,
+      claimExceptions: pair.claimExceptions ?? readClaimExceptions(), marketing: pair.marketing ?? readMarketingTerms(),
+    }),
+    ...emptyFindings({ outline, file, compliance: COMPLIANCE[lang], isCaption: (node) => captionPrefix(node) !== null, required: REQUIRED_SECTIONS }),
+    ...liveComponentFindings({ groups: outline.groups, file, names, exceptions: pair.liveExceptions ?? readLiveComponentExceptions(), used, fixtureNames }),
+  ];
+}
+
 /**
  * Checks one page pair and builds its models.
  * @param {{ id: string, entry: any, enText: string, arText: string, enPath: string, arPath: string,
@@ -101,6 +146,14 @@ export function processPair(pair) {
   const label = (path) => (path === enPath && pair.enLabel) || (path === arPath && pair.arLabel) || toPosix(relative(repoDir, path));
   const findings = [];
   const outlines = {};
+  // The text gates of the fix round of 5a (prose.mjs): claims, hollow sections,
+  // placeholders, marketing terms, install text and the page's component in each group.
+  const used = pair.used ?? new Set();
+  const nodeModules = join(repoDir, 'guide', 'node_modules');
+  const names = pair.names ?? componentNames(id, entry, nodeModules);
+  const fixture = pair.fixture === undefined ? readFixture(componentsDir, repoDir) : pair.fixture;
+  const fixtureNames = fixture ? componentNames(fixture.showsComponent, pair.fixtureEntry ?? null, nodeModules) : null;
+  const placeholderAllowed = isPlaceholderAllowed(componentsDir, repoDir);
   for (const [lang, text, path] of [['en', enText, enPath], ['ar', arText, arPath]]) {
     const file = label(path);
     const parsed = parseMarkdown(text, file);
@@ -108,6 +161,7 @@ export function processPair(pair) {
     const outline = analysePage({ tree: parsed.tree, frontMatter: parsed.frontMatter, lang, file, id, entry });
     findings.push(...outline.findings);
     outlines[lang] = outline;
+    findings.push(...pageTextFindings({ tree: parsed.tree, outline, lang, file, used, placeholderAllowed, names, fixtureNames, pair }));
   }
   const common = { id, repoDir, componentsDir, built, entry };
   const en = buildModel(outlines.en, { ...common, filePath: enPath, sourcePath: toPosix(relative(repoDir, enPath)) });
@@ -171,6 +225,11 @@ export function runContent(options) {
   const pendingIds = options.pending ?? readPending(options.pendingFile);
   const { ids, pending, findings } = listSources(names, known, dirLabel, pendingIds);
   const built = new Set(ids);
+  const used = new Set();
+  const files = new Set();
+  const fixture = readFixture(componentsDir, repoDir);
+  const claimExceptions = options.claimExceptions ?? readClaimExceptions();
+  const liveExceptions = options.liveExceptions ?? readLiveComponentExceptions();
   const pages = [];
   const manifestPages = [];
   const liveGroups = [];
@@ -180,8 +239,12 @@ export function runContent(options) {
     const arPath = join(componentsDir, `${id}.ar.md`);
     const result = processPair({
       id, entry: known.get(id), enText: readFileSync(enPath, 'utf8'), arText: readFileSync(arPath, 'utf8'),
-      enPath, arPath, repoDir, componentsDir, built,
+      enPath, arPath, repoDir, componentsDir, built, used, fixture,
+      fixtureEntry: fixture ? (known.get(fixture.showsComponent) ?? readComponents(join(repoDir, 'components.json')).get(fixture.showsComponent)) : null,
+      claimExceptions, liveExceptions, names: options.names?.(id),
     });
+    files.add(toPosix(relative(repoDir, enPath)));
+    files.add(toPosix(relative(repoDir, arPath)));
     findings.push(...result.findings);
     crossLinks.push(...result.crossLinks);
     for (const lang of LANGS) {
@@ -189,6 +252,12 @@ export function runContent(options) {
       liveGroups.push(...result.groupEntries[lang]);
     }
     manifestPages.push(result.manifestPage);
+  }
+  // An entry of the lead's lists of prose.mjs that names a built page and matches nothing fails.
+  for (const [list, code, name] of [[claimExceptions, 'HWC-CLAIM', 'claim-exceptions.json'], [liveExceptions, 'HWC-LIVE7', 'live-component-exceptions.json']]) {
+    list.forEach((entry, index) => {
+      if (files.has(entry.file) && !used.has(entry)) findings.push(finding(code, `guide/scripts/content/${name}`, 1, `entry ${index + 1} (${entry.file}: ${entry.text ?? entry.example}) matches nothing; remove it`));
+    });
   }
   // Fragments of links to other component pages name a heading of that page.
   const headingsOf = new Map(manifestPages.map((page) => [page.id, new Set(Object.values(page.headings).flat().map((heading) => heading.id))]));

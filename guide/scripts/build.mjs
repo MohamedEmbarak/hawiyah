@@ -20,7 +20,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { limits, notDeployableReasons, removeRecord, scopeOf, writeRecord } from "./build-scope.mjs";
+import { contentManifestHash, limits, notDeployableReasons, removeRecord, scopeOf, writeRecord } from "./build-scope.mjs";
 import { componentsDirOf } from "./content/hash.mjs";
 
 export const PLANNED_STEPS = [
@@ -235,7 +235,7 @@ async function main() {
     // The record of the build in its output directory (dist/build-info.json, outside
     // the deployed dist/browser/): guide.yml deploys only an output whose record is deployable.
     const info = JSON.parse(readFileSync(join(guideDir, ctx.generatedDir, "build-info.json"), "utf8"));
-    writeRecord(join(guideDir, outDir), { ...info, configuration: options.configuration, steps: ran });
+    writeRecord(join(guideDir, outDir), { ...info, configuration: options.configuration, steps: ran, contentManifest: contentManifestHash(join(guideDir, ctx.generatedDir, "content", "manifest.json")) });
   }
   console.log(finalLine(options, { basePath: ctx.basePath, pages: ctx.summary.prerenderedPages ?? 0, ran }));
 }

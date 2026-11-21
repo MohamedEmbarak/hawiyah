@@ -5,9 +5,11 @@
 // it out. For each page and language in scope, the keys of its keyboard table
 // (the manifest of step 20) equal the union of the keys that the steps of the
 // checks its groups name declare; a key that cannot be pressed in a sandboxed
-// frame is an entry of keyboard-exceptions.json. A step that declares keys has
-// an expect function, a one-line outcome and the reference it is taken from; the
-// harness requires each step to press exactly the keys it declares.
+// frame is an entry of keyboard-exceptions.json. Every step has an expect function
+// (the chained oracle of G6 of the 5a fix round); a step that declares keys has a
+// one-line outcome and the reference it is taken from; the harness requires each
+// step to press exactly the keys it declares, counted from the trusted keydown
+// events of the frame.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -70,18 +72,29 @@ export async function keyboardScope({ guideDir, componentsFile }) {
   return scope;
 }
 
-/** HWE-KEYS lines for steps that declare keys without an expect, an outcome or a reference, or with a key outside KEY_NAMES. */
+/**
+ * HWE-KEYS lines for a check that is not of the form of README.md (G6 of the 5a fix
+ * round): a check without read and assert, or without its negative control
+ * ({ fixture, wrong }); a step without expect (every step returns the state the
+ * oracle expects after it, so that the next step is chained to it); a step that
+ * declares keys without an outcome or a reference, or with a key outside KEY_NAMES.
+ */
 export function stepErrors(check) {
   const errors = [];
+  const file = `HWE-KEYS scripts/equivalence/checks/${check.name}.mjs:1`;
+  if (typeof check.read !== 'function' || typeof check.assert !== 'function') errors.push(`${file}: the check has no read(mount) and assert(observed, expected) of its frames`);
+  if (typeof check.negative?.fixture !== 'string' || check.negative.fixture.trim() === '' || typeof check.negative?.wrong !== 'function') {
+    errors.push(`${file}: the check has no negative control { fixture, wrong }: the markup that scripts/equivalence/test/negative.test.mjs renders with @hawiyah/vanilla, and a deliberately wrong oracle under which every keyed step must fail`);
+  }
   for (const step of check.steps) {
-    const at = `HWE-KEYS scripts/equivalence/checks/${check.name}.mjs:1: step ${step.name}`;
+    const at = `${file}: step ${step.name}`;
+    if (typeof step.expect !== 'function') errors.push(`${at} has no expect: every step returns the state the oracle expects after it, from the state it expected before`);
     if (step.keys === undefined) continue;
     if (!Array.isArray(step.keys) || step.keys.length === 0) {
       errors.push(`${at} declares keys that are not a non-empty list`);
       continue;
     }
     for (const key of step.keys) if (!isKey(key)) errors.push(`${at} declares the key ${key}, which is not a key id of KEY_NAMES in scripts/content/config.mjs`);
-    if (typeof step.expect !== 'function') errors.push(`${at} declares keys without expect: a step that presses a key asserts the documented outcome`);
     if (typeof step.outcome !== 'string' || step.outcome.trim() === '') errors.push(`${at} declares keys without a one-line outcome`);
     if (typeof step.reference !== 'string' || step.reference.trim() === '') errors.push(`${at} declares keys without the reference of its outcome (the WAI-ARIA Authoring Practices pattern, CONTRACT.md or CHANGELOG.md)`);
   }
@@ -98,6 +111,7 @@ export function stepErrors(check) {
 export function keyboardRule({ pages, checks, scope, exceptions }) {
   const errors = [];
   const report = [];
+  const usedExceptions = new Set();
   for (const page of pages) {
     const left = exceptions.find((entry) => entry.component === page.id && entry.key === undefined);
     const bound = scope.has(page.id) && !left;
@@ -121,6 +135,7 @@ export function keyboardRule({ pages, checks, scope, exceptions }) {
       const excused = new Set(exceptions.filter((entry) => entry.component === page.id && entry.key !== undefined).map((entry) => entry.key));
       for (const row of table.rows) {
         for (const key of row.keys) {
+          if (!pressed.has(key) && excused.has(key)) usedExceptions.add(`${page.id} ${key}`);
           if (!pressed.has(key) && !excused.has(key)) {
             errors.push(`HWE-KEYS ${file}:${line}: the keyboard table documents ${keyName(key, lang)} ("${row.action}"), which no step of the checks ${names.join(', ') || '(none)'} presses; write a step that presses it and asserts the outcome, or propose a keyboard-exceptions.json entry`);
           }
@@ -140,16 +155,25 @@ export function keyboardRule({ pages, checks, scope, exceptions }) {
       });
     }
   }
+  // An entry that matches nothing fails (G16 of the 5a fix round): an entry for a key that a
+  // table of the page documents and no step presses, or for a component in the rule's scope.
+  exceptions.forEach((entry, index) => {
+    const page = pages.find((item) => item.id === entry.component);
+    if (!page) return;
+    const at = `HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry ${index + 1} (${entry.component}${entry.key ? ` ${entry.key}` : ''})`;
+    if (entry.key === undefined && !scope.has(entry.component)) errors.push(`${at} matches nothing: ${entry.component} has no controller of @hawiyah/vanilla, so the rule does not bind its page; remove it`);
+    if (entry.key !== undefined && !usedExceptions.has(`${entry.component} ${entry.key}`)) errors.push(`${at} matches nothing: no keyboard table of the page documents ${keyName(entry.key)} without a step that presses it; remove it`);
+  });
   return { errors, report };
 }
 
-/** The lines of the check report: each table row, then the steps that press its keys with their outcome. */
+/** The lines of the check report: each table row (its keys joined by the comma of the page's language), then the steps that press its keys with their outcome. */
 export function keyboardReportLines(report) {
   const lines = [];
   for (const table of report) {
     lines.push(`keyboard: ${table.page}/${table.lang} "${table.caption}"${table.bound ? '' : ` (not bound: ${table.reason})`}`);
     for (const row of table.rows) {
-      lines.push(`  ${row.keys.map((key) => keyName(key, table.lang)).join(', ')} | ${row.action}`);
+      lines.push(`  ${row.keys.map((key) => keyName(key, table.lang)).join(table.lang === 'ar' ? '، ' : ', ')} | ${row.action}`);
       for (const step of row.steps) lines.push(`    ${step.check}/${step.step} presses ${keyName(step.key)}: ${step.outcome} [${step.reference}]`);
     }
   }

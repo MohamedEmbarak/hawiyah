@@ -9,7 +9,7 @@ import tabsKeyboard from '../checks/tabs-keyboard.mjs';
 import { fileURLToPath } from 'node:url';
 import { generatedNamePattern } from '../generated-names.mjs';
 import { normalize } from '../normalize.js';
-import { bundleHarness, capture, changelogSourceError, checkNames, compareCapture, controllerComponents, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { bundleHarness, capture, changelogSourceError, checkNames, compareCapture, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
 import { styledAttributes } from '../styled-attributes.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
@@ -209,12 +209,9 @@ describe('scope of a run and required checks (review finding R2[3], R2[11])', ()
     expect(scopeErrors(groups, null, null)).toEqual(['HWE-SCOPE src/generated/content/manifest.json:1: the content manifest does not exist; build step 20-content writes it']);
   });
 
-  it('reads several checks from check= and the components with a controller from components.json', () => {
+  it('reads several checks from check=', () => {
     expect(checkNames({ check: 'tabs-keyboard,tabs-disabled' })).toEqual(['tabs-keyboard', 'tabs-disabled']);
     expect(checkNames({})).toEqual([]);
-    const ids = controllerComponents(new URL('../../../../components.json', import.meta.url).pathname);
-    expect(ids.has('tabs')).toBe(true);
-    expect(ids.has('button')).toBe(false);
   });
 
   it('every Tabs group names the checks its text describes, in both languages', async () => {
@@ -245,7 +242,8 @@ describe('runner', () => {
   });
 
   it('names the steps of the Tabs checks', () => {
-    expect(tabsKeyboard.steps.map((step) => step.name)).toEqual(['tab-into-list', 'right-arrow', 'left-arrow', 'left-arrow-again', 'end', 'right-arrow-again', 'home', 'tab-to-panel']);
+    // G24 of the 5a fix round added the unhandled Down Arrow and Up Arrow of a horizontal list.
+    expect(tabsKeyboard.steps.map((step) => step.name)).toEqual(['tab-into-list', 'right-arrow', 'down-arrow-unhandled', 'up-arrow-unhandled', 'left-arrow', 'left-arrow-again', 'end', 'right-arrow-again', 'home', 'tab-to-panel']);
     expect(tabsClick.steps.map((step) => step.name)).toEqual(['click-second-tab']);
   });
 
@@ -323,6 +321,14 @@ describe('runEquivalence before the browser', () => {
   it('HWE-CHECK: a group of a component with a controller that names no check and is not static', async () => {
     const options = fixture({ groups: live('tabs', 'basic'), pages: [tabsPage(['basic'])], components: interactive });
     await expect(runEquivalence(options)).rejects.toThrow('HWE-CHECK docs/components/tabs.ar.md:7: basic: tabs has a controller, so the group names at least one check (check=<name>[,<name>]) or declares itself static');
+  });
+
+  // G19 of the 5a fix round: one definition of a component with a controller, a controller
+  // factory of the installed @hawiyah/vanilla, also where components.json does not mark it interactive.
+  it('HWE-CHECK: a group of a component whose page targets a controller factory, whatever its sourceType', async () => {
+    const accordion = { id: 'accordion', langs: ['ar', 'en'], liveGroups: [{ example: 'basic' }] };
+    const options = fixture({ groups: live('accordion', 'basic'), pages: [accordion], components: [{ id: 'accordion', sourceType: 'native' }] });
+    await expect(runEquivalence(options)).rejects.toThrow('HWE-CHECK docs/components/accordion.ar.md:7: basic: accordion has a controller, so the group names at least one check (check=<name>[,<name>]) or declares itself static');
   });
 
   it('HWE-CHECK: a check without a script', async () => {

@@ -87,6 +87,32 @@ export function withoutIgnored(tree, ignore = []) {
   return strip(tree);
 }
 
+/**
+ * A copy of a normalised tree without the designed differences of its component (G11
+ * of the 5a fix round; the lists empty-elements.json and vanilla-hooks.json):
+ * every element whose class list has a class of `emptyClasses` and that has no child
+ * and no text is left out, in every framework's tree, so an adapter that always
+ * renders the empty region compares equal with one that renders it only with
+ * content (a non-empty element is compared as before); and on the vanilla tree only,
+ * each attribute of `vanillaAttributes` (a configuration hook that the vanilla
+ * controller reads) is left out of every element. Nothing else is changed.
+ */
+export function withoutDesigned(tree, { emptyClasses = [], vanillaAttributes = [] } = {}, framework = REFERENCE) {
+  if (emptyClasses.length === 0 && (vanillaAttributes.length === 0 || framework !== REFERENCE)) return tree;
+  const empty = (node) => (node.children ?? []).length === 0;
+  const strip = (node) => {
+    if (Array.isArray(node)) {
+      return node.filter((child) => !(child && typeof child === 'object' && !Array.isArray(child) && empty(child)
+        && typeof child.attrs?.class === 'string' && child.attrs.class.split(' ').some((name) => emptyClasses.includes(name)))).map(strip);
+    }
+    if (!node || typeof node !== 'object') return node;
+    const attrs = { ...node.attrs };
+    if (framework === REFERENCE) for (const attribute of vanillaAttributes) delete attrs[attribute];
+    return { ...node, ...(node.attrs ? { attrs } : {}), ...(node.children ? { children: strip(node.children) } : {}) };
+  };
+  return strip(tree);
+}
+
 /** True when an element with the rule's class carries the rule's attribute anywhere in the tree. */
 function carries(tree, rule) {
   const visit = (node) => {

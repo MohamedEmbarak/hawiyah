@@ -3,7 +3,7 @@ source:
   summary: 6863414dc351
   example: f8be251bb758
   variants-and-states: fd49d91bfb70
-  api: 76babfc30d7b
+  api: ad1a4290f84c
   accessibility: 29c24403f585
   rtl-and-localisation: 22b2b0a4fd7c
   platforms-code-reference: fa5efd2c53e1
@@ -75,6 +75,8 @@ template: `<p class="hw-type" lang="ar" dir="rtl">اقرأ <strong>الشروط<
 | --- | --- | --- | --- |
 | `label` | `string` | `true` | — |
 
+تسمّي الخاصية label عنصر التحكم.
+
 ### Vue
 
 جدول: خصائص HwFixture وأحداثه ومنافذه
@@ -84,6 +86,8 @@ template: `<p class="hw-type" lang="ar" dir="rtl">اقرأ <strong>الشروط<
 | `label` | prop | `string` | `true` | — |
 | `change` | event | `string` | `false` | — |
 
+تسمّي الخاصية label عنصر التحكم، ويُبلغ الحدث change عن قيمة جديدة.
+
 ### Angular
 
 جدول: مدخلات hw-fixture ومخرجاته ومحتواه
@@ -92,6 +96,8 @@ template: `<p class="hw-type" lang="ar" dir="rtl">اقرأ <strong>الشروط<
 | --- | --- | --- | --- | --- |
 | `label` | input | `string` | `true` | — |
 | `[hwFixtureIcon]` | content | `—` | `false` | — |
+
+يسمّي المدخل label عنصر التحكم، ويضع محدد المحتوى أيقونة.
 
 ## إمكانية الوصول
 

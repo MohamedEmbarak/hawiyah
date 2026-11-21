@@ -36,7 +36,7 @@ const TEXT = {
     basic: { name: 'Request details', tabs: ['Overview', 'Documents', 'History'], panels: ['The request is under review.', 'Two documents are attached to the request.', 'The request was submitted and assigned to a reviewer.'] },
     vertical: { name: 'Account settings', tabs: ['Profile', 'Security', 'Notifications'], panels: ['Name, email address and mobile number.', 'Password and verification methods.', 'Messages about requests and appointments.'] },
     manual: { name: 'Service steps', tabs: ['Apply', 'Pay', 'Receive'], panels: ['Fill in the application form.', 'Pay the service fee.', 'Receive the document by email.'] },
-    disabled: { name: 'Request details', tabs: ['Overview', 'Decision', 'History'], panels: ['The decision is available after the review.', 'No decision has been issued.', 'The request was submitted and assigned to a reviewer.'] },
+    disabled: { name: 'Request details', tabs: ['Overview', 'Decision', 'Documents', 'History'], panels: ['The decision is available after the review.', 'No decision has been issued.', 'Two documents are attached to the request.', 'The request was submitted and assigned to a reviewer.'] },
   },
   ar: {
     title: 'تبويبات',
@@ -52,7 +52,7 @@ const TEXT = {
     basic: { name: 'تفاصيل الطلب', tabs: ['نظرة عامة', 'المستندات', 'السجل'], panels: ['الطلب قيد المراجعة.', 'أُرفق بالطلب مستندان.', 'قُدّم الطلب وأُسند إلى مراجع.'] },
     vertical: { name: 'إعدادات الحساب', tabs: ['الملف الشخصي', 'الأمان', 'الإشعارات'], panels: ['الاسم والبريد الإلكتروني ورقم الجوال.', 'كلمة المرور وطرق التحقق.', 'الرسائل المتعلقة بالطلبات والمواعيد.'] },
     manual: { name: 'خطوات الخدمة', tabs: ['التقديم', 'الدفع', 'الاستلام'], panels: ['عبّئ نموذج الطلب.', 'ادفع رسوم الخدمة.', 'استلم المستند عبر البريد الإلكتروني.'] },
-    disabled: { name: 'تفاصيل الطلب', tabs: ['نظرة عامة', 'القرار', 'السجل'], panels: ['يتاح القرار بعد انتهاء المراجعة.', 'لم يصدر قرار بعد.', 'قُدّم الطلب وأُسند إلى مراجع.'] },
+    disabled: { name: 'تفاصيل الطلب', tabs: ['نظرة عامة', 'القرار', 'المستندات', 'السجل'], panels: ['يتاح القرار بعد انتهاء المراجعة.', 'لم يصدر قرار بعد.', 'أُرفق بالطلب مستندان.', 'قُدّم الطلب وأُسند إلى مراجع.'] },
   },
 } as const;
 
@@ -183,11 +183,12 @@ for (const lang of ['ar', 'en'] as const) {
       for (const [index, group] of groups) {
         await expect(resultTabs(page, lang, index, group.name).getByRole('tab')).toHaveText([...group.tabs]);
         await expectSelected(page, lang, index, group, 0);
-        await expectIdReferences(blocks.nth(index).getByRole('group', { name: t.result }), 3);
+        await expectIdReferences(blocks.nth(index).getByRole('group', { name: t.result }), group.tabs.length);
       }
       // Generated ids are unique across the results of the page.
       const ids = await page.locator('guide-example-block [role="group"] [role="tab"]').evaluateAll((nodes) => nodes.map((node) => node.id));
-      expect(ids.length).toBe(3 * model.liveGroups.length);
+      // The disabled group has four tabs (G24 of the 5a fix round), the others three.
+      expect(ids.length).toBe(groups.reduce((sum, [, group]) => sum + group.tabs.length, 0));
       expect(new Set(ids).size).toBe(ids.length);
 
       const tables = article.getByRole('table');

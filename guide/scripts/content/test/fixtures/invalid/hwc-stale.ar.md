@@ -3,7 +3,7 @@ source:
   summary: 6863414dc351
   example: f8be251bb758
   variants-and-states: fd49d91bfb70
-  api: 76babfc30d7b
+  api: ad1a4290f84c
   accessibility: 000000000000
   rtl-and-localisation: 22b2b0a4fd7c
   platforms-code-reference: fa5efd2c53e1

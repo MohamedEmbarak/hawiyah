@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { checkPage, checkSources, iconRules, readAllowlist } from '../guards.mjs';
+import { checkPage, latinRuns, checkSources, iconRules, readAllowlist } from '../guards.mjs';
 
 const icons = iconRules(`
 .hw-icon[data-icon="copy-01"] { --hw-icon-image: url(a.svg); }
@@ -44,6 +44,16 @@ describe('Latin-script runs on Arabic pages', () => {
     expect(codes(checkPage('ar/index.html', page('ar', '<p>نص well-known - open source - library code</p>'), { icons }))).toEqual(['HWP-LATIN:1']);
   });
 
+  // G15 of the 5a fix round (verification of 07763ce): hyphen-joined prose passed as one word.
+  it('counts the parts of a hyphenated word that is not an hw- name or a name of vocabulary-allow.json', () => {
+    for (const text of ['نص the-request-is-approved-by-the-reviewer today', 'نص select-the-tab-you-need and continue', 'نص well-known open-source tab-list', 'نص the–request–is–approved']) {
+      expect(codes(checkPage('ar/index.html', page('ar', `<p>${text}</p>`), { icons })), text).toEqual(['HWP-LATIN:1']);
+    }
+    expect(latinRuns('اكتب aria-label وaria-labelledby و hw-mobile-top-bar')).toEqual([]);
+    expect(latinRuns('نص hw-tab-list hw-tab-panel aria-label')).toEqual([]);
+    expect(latinRuns('نص one-two three')).toEqual([]);
+  });
+
   it('skips code, kbd, pre and elements with a non-Arabic lang', () => {
     const body = '<p>اضغط <kbd>Shift Tab then Enter</kbd> ثم <code>npm install the package now</code></p>'
       + '<pre>one two three four</pre><p lang="en">Packages on npm are listed here</p><p dir="ltr"><span lang="en">Four English words here</span></p>';
@@ -57,6 +67,8 @@ describe('Latin-script runs on Arabic pages', () => {
     expect(checkPage('ar/index.html', page('ar', body), { icons, allowlist, used })).toEqual([]);
     expect([...used]).toEqual(['Digital Government Authority Platforms Code']);
     expect(codes(checkPage('ar/other.html', page('ar', body), { icons, allowlist }))).toEqual(['HWP-LATIN:1']);
+    // An entry names the whole run, never a part of it (G13 of the 5a fix round).
+    expect(codes(checkPage('ar/index.html', page('ar', body), { icons, allowlist: [{ text: 'Government Authority', reason: 'part', pages: ['ar/index.html'] }] }))).toEqual(['HWP-LATIN:1']);
   });
 
   it('validates the allow-list: text, reason and approvedBy are required', () => {
@@ -69,6 +81,8 @@ describe('Latin-script runs on Arabic pages', () => {
     expect(() => readAllowlist(file)).toThrow('entry 0 must be { text, reason, approvedBy, pages? }');
     writeFileSync(file, JSON.stringify([{ text: 'Four Latin words here', reason: 'a proper name', approvedBy: 'lead' }]));
     expect(readAllowlist(file)).toHaveLength(1);
+    writeFileSync(file, JSON.stringify([{ text: 'e', reason: 'a proper name', approvedBy: 'lead' }]));
+    expect(() => readAllowlist(file)).toThrow('entry 0: the text "e" is shorter than 12 characters');
   });
 });
 

@@ -68,9 +68,10 @@ export interface PageModel {
     readonly built: string[];
     readonly verified: string[];
     readonly entries: { adapter: string; kind: string; tests: string[]; scope: string; command: string; result: string; date: string; source: string }[];
+    readonly gaps: { kind: string; adapters: string[] }[];
     readonly notes: string[];
     readonly version: string;
-    readonly open: { kind: 'defect' | 'difference'; id?: string; text: ModelInline[] }[];
+    readonly open: { kind: 'defect' | 'difference'; id?: string; text: ModelInline[]; differences?: { id: string; text: ModelInline[] }[] }[];
   };
 }
 

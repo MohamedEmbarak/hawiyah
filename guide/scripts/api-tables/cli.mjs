@@ -94,6 +94,21 @@ export function checkPages(input) {
         if (decl.generatedNote && !isNote) findings.push(finding(file, `the JavaScript table of ${id} is read from the published stylesheet (no row of the styles contract names its classes); it is followed by the note "> [!NOTE] ${note}"`));
         if (!decl.generatedNote && isNote) findings.push(finding(file, `the JavaScript table of ${id} is followed by the note of a table read from the stylesheet, but the styles contract documents ${decl.classes.join(', ')}; remove the note`));
       }
+      if (h3 === 'javascript') {
+        // The note stands only directly after the JavaScript table of a component whose classes have no
+        // row in the styles contract; anywhere else in the API section it is refused (G16 of the 5a fix round).
+        const note = generatedNote(lang, version);
+        const needed = decl.source === 'stylesheet' && decl.generatedNote;
+        // The block directly after the table is judged above (the note it needs, or the note it must not have).
+        const allowed = pageTables.after?.[h3] ?? null;
+        const section = page.sections?.find((item) => item.id === 'api');
+        const stray = (section?.blocks ?? []).filter((block) => block.type === 'alert' && block !== allowed && blockText(block) === note);
+        if (stray.length) {
+          findings.push(finding(file, needed
+            ? `the note of a table read from the stylesheet stands in the API section of ${id} away from its place; it stands once, directly after the JavaScript table`
+            : `the note of a table read from the stylesheet stands in the API section of ${id}, whose JavaScript table ${decl.source === 'stylesheet' ? `the styles contract documents (${decl.classes.join(', ')})` : 'documents a controller'}; remove the note`));
+        }
+      }
       // A stylesheet table compares no required flag, except on the rows of a further controller (file-upload).
       const checkRequired = decl.source !== 'stylesheet' || decl.members.some((member) => member.controller);
       findings.push(...compareTable(rows, decl.members, { file, label: spec.label, checkRequired }));

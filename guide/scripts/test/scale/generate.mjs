@@ -16,7 +16,9 @@
 // (default 6): one in Example and n - 1 under h3 headings of Variants and states.
 // A generic group is the same small piece of package markup in the four
 // frameworks (a paragraph and a package Button) and is compared at rest only
-// (static). The Arabic page is content:scaffold-ar --placeholder of the
+// (static); fixture.json beside the pages says so for HWC-LIVE7 of step 20. Each
+// API table and the compliance sentence are followed by one generated sentence (HWC-EMPTY). The Arabic page is
+// content:scaffold-ar --placeholder of the
 // English page. Button and Tabs are copied from docs/components/ instead (their
 // relative links rewritten to lead to the same files, the Arabic hashes renewed
 // for that change), so the page-specific browser tests and interaction checks of
@@ -29,7 +31,7 @@ import { stylesVersion } from '../../api-tables/notes.mjs';
 import { H2 } from '../../content/config.mjs';
 import { frontMatterBlock } from '../../content/hash.mjs';
 import { scaffoldArabic } from '../../content/scaffold-ar.mjs';
-import { scaffoldPage, tableProblems } from '../../content/scaffold.mjs';
+import { complianceSentence, scaffoldPage, tableProblems } from '../../content/scaffold.mjs';
 
 const guideDir = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 const repoDir = resolve(guideDir, '..');
@@ -76,6 +78,25 @@ export function genericGroup(name, index, componentName) {
 
 const heading = (id) => `## ${H2.find((item) => item.id === id).en}`;
 
+/** The fixture declaration of the scale fixture (scripts/content/pipeline.mjs, readFixture). */
+export const FIXTURE = {
+  fixture: 'scale',
+  showsComponent: 'button',
+  reason: 'The generic static groups of the generated pages show a paragraph and a package Button in the four frameworks, not the component of their page.',
+};
+
+/**
+ * One generated sentence after each API table and after the compliance sentence of a
+ * scaffold, so that a generated page is not hollow (HWC-EMPTY of step 20).
+ */
+export function generatedProse(scaffold) {
+  const prose = 'The members of this table are read from the installed packages.';
+  let page = scaffold;
+  for (const h3 of ['React', 'Vue', 'Angular']) page = page.replace(`\n\n### ${h3}\n`, `\n\n${prose}\n\n### ${h3}\n`);
+  page = page.replace(`\n\n${heading('accessibility')}\n`, `\n\n${prose}\n\n${heading('accessibility')}\n`);
+  return page.replace(`${complianceSentence('en')}\n`, `${complianceSentence('en')}\n\nA generated page of a fixture names no source of the mapping.\n`);
+}
+
 /** The English page of a generated id: the scaffold with a summary, prose and `groups` generic groups. */
 export function generatedPage(declared, entry, version, groups = DEFAULT_GROUPS) {
   let page = scaffoldPage(declared, entry, version);
@@ -87,6 +108,7 @@ export function generatedPage(declared, entry, version, groups = DEFAULT_GROUPS)
     variants.push('', `### Generic group ${index}`, '', `Generic group ${index} of the scale fixture.`, '', genericGroup(`example-${index}`, index, entry.name));
   }
   page = page.replace(`${heading('example')}\n`, `${example}\n\n${groups > 1 ? `${variants.join('\n')}\n\n` : ''}`);
+  page = generatedProse(page);
   page = page.replace(`${heading('accessibility')}\n`, `${heading('accessibility')}\n\nThe accessibility section of a generated page.\n`);
   page = page.replace(`${heading('rtl-and-localisation')}\n`, `${heading('rtl-and-localisation')}\n\nThe localisation section of a generated page.\n`);
   return page;
@@ -124,6 +146,9 @@ export function generateScale({ out = DEFAULT_OUT, groups = DEFAULT_GROUPS } = {
     writeFileSync(join(dir, `${id}.ar.md`), arabic);
     generated += 1;
   }
+  // The generic groups show the package Button, not the page's component (HWC-LIVE7):
+  // the fixture says so in fixture.json, which step 20 reads only outside docs/components.
+  writeFileSync(join(out, 'fixture.json'), `${JSON.stringify(FIXTURE, null, 2)}\n`);
   return { dir, pages: generated + copied, generated, copied, groups };
 }
 

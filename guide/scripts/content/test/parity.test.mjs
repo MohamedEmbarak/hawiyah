@@ -1,7 +1,10 @@
 // Arabic and English parity, including live token parity (HWC-PAR4).
 
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { liveTokenDifference, tokensMatch } from '../parity.mjs';
+import { liveTokenDifference, readArabicExceptions, tokensMatch } from '../parity.mjs';
 import { runPair, validAr, validEn } from './helpers.mjs';
 
 const codes = (replace) => runPair(replace).findings.map((item) => item.code);
@@ -44,7 +47,7 @@ describe('checkParity', () => {
   });
 
   it('reports different tables and API rows (HWC-PAR5)', () => {
-    expect(codes({ ar: swap(validAr(), '| `label` | `string` | `true` | — |\n\n### Vue', '| `label` | `string` | `false` | — |\n\n### Vue') })).toEqual(['HWC-PAR5']);
+    expect(codes({ ar: swap(validAr(), '| `label` | `string` | `true` | — |\n\nتسمّي', '| `label` | `string` | `false` | — |\n\nتسمّي') })).toEqual(['HWC-PAR5']);
   });
 
   it('reports different alerts (HWC-PAR6)', () => {
@@ -58,10 +61,26 @@ describe('checkParity', () => {
     expect(list[0].message).toMatch(/bulleted list of \d+ items/);
   });
 
+  it('refuses an entry of arabic-exceptions.json shorter than 12 characters', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hawiyah-arabic-exceptions-'));
+    try {
+      const file = join(dir, 'arabic-exceptions.json');
+      writeFileSync(file, JSON.stringify([{ file: 'docs/components/x.ar.md', text: 'e', reason: 'r', approvedBy: 'lead' }]));
+      expect(() => readArabicExceptions(file)).toThrow('arabic-exceptions.json entry 1: the text "e" is shorter than 12 characters');
+      writeFileSync(file, JSON.stringify([{ file: 'docs/components/x.ar.md', text: 'The example shows one primary action.', reason: 'r', approvedBy: 'lead' }]));
+      expect(readArabicExceptions(file)).toHaveLength(1);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('requires Arabic script in Arabic prose and live text, with key names and listed exceptions allowed (HWC-PAR8)', () => {
     const english = swap(validAr(), 'يعرض المثال إجراءً أساسيًا واحدًا.', 'The example shows one primary action.');
     expect(codes({ ar: english })).toEqual(['HWC-PAR8']);
-    expect(codes({ ar: english, exceptions: [{ file: 'guide/scripts/content/test/fixtures/docs/components/fixture-a.ar.md', text: 'one primary action', reason: 'test' }] })).toEqual([]);
+    const file = 'guide/scripts/content/test/fixtures/docs/components/fixture-a.ar.md';
+    expect(codes({ ar: english, exceptions: [{ file, text: 'The example shows one primary action.', reason: 'test' }] })).toEqual([]);
+    // An entry names the whole text, never a part of it (G13 of the 5a fix round).
+    expect(codes({ ar: english, exceptions: [{ file, text: 'one primary action', reason: 'test' }] })).toEqual(['HWC-PAR8']);
     const live = runPair({ ar: validAr().replace('<button class="hw-button" type="button" data-variant="primary">متابعة</button>', '<button class="hw-button" type="button" data-variant="primary" aria-label="Continue the request">Continue</button>') }).findings;
     expect(live.filter((item) => item.code === 'HWC-PAR8').map((item) => item.message.split(' has no')[0])).toEqual([
       'live block "primary" (vanilla) aria-label',
@@ -121,8 +140,8 @@ describe('checkParity', () => {
       const result = runPair({ en: en(EN_ROWS), ar: ar([['<kbd>السهم الأيسر</kbd>، <kbd>السهم الأيمن</kbd>', 'ينقل إلى العنصر التالي أو السابق في ترتيب القراءة.'], ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'يغادر عنصر التحكم.']]) });
       expect(result.findings.filter((item) => item.code !== 'HWC-STALE')).toEqual([]);
       expect(result.manifestPage.keyboard).toEqual({
-        en: { caption: 'Keyboard interaction of Fixture A', line: 92, rows: [{ keys: ['ArrowRight', 'ArrowLeft'], action: 'Moves to the next or the previous item in reading order.' }, { keys: ['Shift+Tab'], action: 'Leaves the control.' }] },
-        ar: { caption: 'التفاعل من لوحة المفاتيح مع المكوّن: النموذج أ', line: 102, rows: [{ keys: ['ArrowLeft', 'ArrowRight'], action: 'ينقل إلى العنصر التالي أو السابق في ترتيب القراءة.' }, { keys: ['Shift+Tab'], action: 'يغادر عنصر التحكم.' }] },
+        en: { caption: 'Keyboard interaction of Fixture A', line: 98, rows: [{ keys: ['ArrowRight', 'ArrowLeft'], action: 'Moves to the next or the previous item in reading order.' }, { keys: ['Shift+Tab'], action: 'Leaves the control.' }] },
+        ar: { caption: 'التفاعل من لوحة المفاتيح مع المكوّن: النموذج أ', line: 108, rows: [{ keys: ['ArrowLeft', 'ArrowRight'], action: 'ينقل إلى العنصر التالي أو السابق في ترتيب القراءة.' }, { keys: ['Shift+Tab'], action: 'يغادر عنصر التحكم.' }] },
       });
       const table = result.models.en.sections.find((section) => section.id === 'accessibility').blocks.find((block) => block.type === 'table');
       expect(table.keyboard).toBe(true);
@@ -150,6 +169,26 @@ describe('checkParity', () => {
       expect(messages(en([['<kbd>Enter</kbd>,', 'Activates.']]))).toEqual(['the Key cell ends with a separator']);
       expect(messages(en([['<kbd>Return</kbd>', 'Activates.']]))[0]).toMatch(/^the key element "Return" names no key; the key names are Tab, Shift, Ctrl/);
       expect(messages(swap(en(EN_ROWS), '| Key | Action |', '| Keys | Action |'))).toEqual(['the keyboard table header is "| Keys | Action |"; write "| Key | Action |"']);
+    });
+
+    // G20 of the 5a fix round: the mechanical rules of a row, which the contract stated before a check held them.
+    it('reports the comma of the other language or "or" between keys, an arrow cell whose forward key is not first, and an Action cell that is not one sentence', () => {
+      const enMessages = (rows) => runPair({ en: en(rows) }).findings.filter((item) => item.code === 'HWC-KEYS' && !item.file.endsWith('.ar.md')).map((item) => item.message);
+      const arMessages = (rows) => keyFindings({ en: en(EN_ROWS), ar: ar(rows) }).filter((item) => item.code === 'HWC-KEYS').map((item) => item.message);
+      const SHIFT_TAB = ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'Leaves the control.'];
+      const AR_SHIFT_TAB = ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'يغادر عنصر التحكم.'];
+      expect(enMessages([['<kbd>Right Arrow</kbd>، <kbd>Left Arrow</kbd>', 'Moves.'], SHIFT_TAB])).toEqual(['the Key cell holds "،"; it holds key elements only, joined by + in a chord and separated by a comma']);
+      expect(enMessages([['<kbd>Right Arrow</kbd> or <kbd>Left Arrow</kbd>', 'Moves.'], SHIFT_TAB])).toEqual(['the Key cell holds "or"; it holds key elements only, joined by + in a chord and separated by a comma']);
+      expect(arMessages([['<kbd>السهم الأيسر</kbd>, <kbd>السهم الأيمن</kbd>', 'ينقل.'], AR_SHIFT_TAB])).toEqual(['the Key cell holds ","; it holds key elements only, joined by + in a chord and separated by an Arabic comma (،)']);
+      expect(arMessages([['<kbd>السهم الأيسر</kbd> أو <kbd>السهم الأيمن</kbd>', 'ينقل.'], AR_SHIFT_TAB])).toEqual(['the Key cell holds "أو"; it holds key elements only, joined by + in a chord and separated by an Arabic comma (،)']);
+      // The forward key first: Right Arrow in English, Left Arrow in Arabic, Down Arrow in both.
+      expect(enMessages([['<kbd>Left Arrow</kbd>, <kbd>Right Arrow</kbd>', 'Moves.'], SHIFT_TAB])).toEqual(['the Key cell names Left Arrow before Right Arrow; in an arrow cell the key that moves forward in reading order comes first']);
+      expect(enMessages([['<kbd>Up Arrow</kbd>, <kbd>Down Arrow</kbd>', 'Moves.'], SHIFT_TAB])).toEqual(['the Key cell names Up Arrow before Down Arrow; in an arrow cell the key that moves forward in reading order comes first']);
+      expect(arMessages([['<kbd>السهم الأيمن</kbd>، <kbd>السهم الأيسر</kbd>', 'ينقل.'], AR_SHIFT_TAB])).toEqual(['the Key cell names السهم الأيمن before السهم الأيسر; in an arrow cell the key that moves forward in reading order comes first']);
+      // One sentence per Action cell, ended by a full stop.
+      expect(enMessages([['<kbd>Right Arrow</kbd>, <kbd>Left Arrow</kbd>', 'Moves to the next item. It wraps.'], SHIFT_TAB])).toEqual(['the Action cell "Moves to the next item. It wraps." is 2 sentences; it states the outcome in one sentence']);
+      expect(enMessages([['<kbd>Right Arrow</kbd>, <kbd>Left Arrow</kbd>', 'Moves to the next item'], SHIFT_TAB])).toEqual(['the Action cell "Moves to the next item" is not a sentence that ends with a full stop; it states the outcome in one sentence']);
+      expect(arMessages([['<kbd>السهم الأيسر</kbd>، <kbd>السهم الأيمن</kbd>', 'ينقل إلى العنصر التالي. ويلتفّ.'], AR_SHIFT_TAB])).toEqual(['the Action cell "ينقل إلى العنصر التالي. ويلتفّ." is 2 sentences; it states the outcome in one sentence']);
     });
   });
 

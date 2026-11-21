@@ -14,15 +14,19 @@ export interface EvidenceTexts {
   readonly noneVerified: string;
   readonly entriesIntro: string;
   readonly noEvidence: (name: string) => string;
-  readonly tests: string;
-  readonly result: string;
-  readonly command: string;
-  readonly source: string;
+  /** The labels of the fields of an evidence entry, one field per line (G22 of the 5a fix round). */
+  readonly fields: Readonly<Record<'adapter' | 'kind' | 'scope' | 'tests' | 'result' | 'date' | 'command' | 'source', string>>;
+  /** The line of the kinds of evidence that some built adapters have and others do not (G23). */
+  readonly gapsIntro: string;
+  /** Between two items of a line: a semicolon in the page's language. */
+  readonly separator: string;
   readonly notesIntro: string;
   readonly openIntro: (version: string) => string;
   readonly noOpen: (name: string, version: string) => string;
   readonly defect: (version: string) => string;
   readonly difference: string;
+  /** Before the id of a documented difference shown under the Known defects entry it cites. */
+  readonly differenceOf: string;
 }
 
 const ADAPTERS = { vanilla: 'JavaScript', react: 'React', vue: 'Vue', angular: 'Angular' };
@@ -37,34 +41,35 @@ export const evidenceTexts: Texts<EvidenceTexts> = {
     noneVerified: 'No adapter is recorded as verified in components.json.',
     entriesIntro: 'The tests that components.json records, with their scope, result and date:',
     noEvidence: (name) => `No verification evidence is recorded for ${name} in components.json.`,
-    tests: 'Tests',
-    result: 'Result',
-    command: 'command',
-    source: 'source',
+    fields: { adapter: 'Adapter', kind: 'Kind', scope: 'Scope', tests: 'Tests', result: 'Result', date: 'Date', command: 'Command', source: 'Source' },
+    gapsIntro: 'Kinds of evidence that components.json records for some adapters and not for others, with the adapters that have none:',
+    separator: '; ',
     notesIntro: 'Notes recorded in components.json:',
     openIntro: (version) => `Each entry of Known defects in ${version} in CHANGELOG.md that names this component, and each documented difference of the equivalence check:`,
     noOpen: (name, version) => `No entry of Known defects in ${version} in CHANGELOG.md and no documented difference of the equivalence check names ${name}.`,
     defect: (version) => `CHANGELOG.md, Known defects in ${version}`,
     difference: 'documented difference',
+    differenceOf: 'Documented difference of the equivalence check',
   },
   ar: {
     ...headings.ar,
     adapters: ADAPTERS,
-    list: (items) => (items.length < 2 ? items.join('') : `${items.slice(0, -1).join('، ')} و${items.at(-1)}`),
+    // Arabic repeats و before each further name (G22 of the 5a fix round).
+    list: (items) => [items[0] ?? '', ...items.slice(1).map((item) => ` و${item}`)].join(''),
     built: (adapters) => `المكوّن مبني في المحوّلات: ${adapters}.`,
     verified: (adapters) => `المحوّلات المسجّلة بوصفها متحقَّقًا منها في components.json: ${adapters}.`,
     noneVerified: 'لا يسجّل components.json أي محوّل بوصفه متحقَّقًا منه.',
     entriesIntro: 'الاختبارات التي يسجّلها components.json، مع نطاقها ونتيجتها وتاريخها:',
     noEvidence: (name) => `لا يسجّل components.json أي دليل تحقق للمكوّن: ${name}.`,
-    tests: 'الاختبارات',
-    result: 'النتيجة',
-    command: 'الأمر',
-    source: 'المصدر',
+    fields: { adapter: 'المحوّل', kind: 'الفئة', scope: 'النطاق', tests: 'الاختبارات', result: 'النتيجة', date: 'التاريخ', command: 'الأمر', source: 'المصدر' },
+    gapsIntro: 'فئات الأدلة التي يسجّلها components.json لبعض المحوّلات دون غيرها، مع المحوّلات التي لا دليل لها منها:',
+    separator: '؛ ',
     notesIntro: 'الملاحظات المسجّلة في components.json:',
     openIntro: (version) => `كل بند من العيوب المعروفة في الإصدار ${version} في CHANGELOG.md يذكر هذا المكوّن، وكل اختلاف موثّق في فحص التكافؤ:`,
     noOpen: (name, version) => `لا بند مفتوحًا للمكوّن: ${name}، فلا يذكره أي بند من العيوب المعروفة في الإصدار ${version} في CHANGELOG.md، ولا أي اختلاف موثّق في فحص التكافؤ.`,
     defect: (version) => `CHANGELOG.md، العيوب المعروفة في الإصدار ${version}`,
     difference: 'اختلاف موثّق',
+    differenceOf: 'اختلاف موثّق في فحص التكافؤ',
   },
 };
 

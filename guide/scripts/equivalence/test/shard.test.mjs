@@ -111,6 +111,21 @@ describe('merge of the shard reports', () => {
     expect(mergeReports([], manifest).problems).toEqual(['HWE-MERGE: no shard report given']);
   });
 
+  // G16 of the 5a fix round (verification of 07763ce): the shards are tied to one build.
+  it('fails on a shard of another content manifest and on a build record of another one', () => {
+    const tagged = (hash) => reports(4).map((item) => ({ ...item, report: { ...item.report, contentManifest: hash } }));
+    expect(mergeReports(tagged('aaaa'), manifest, { manifest: 'aaaa', record: 'aaaa', recordFile: 'dist/build-info.json' }).problems).toEqual([]);
+    const list = tagged('aaaa');
+    list[2] = { ...list[2], report: { ...list[2].report, contentManifest: 'bbbb' } };
+    expect(mergeReports(list, manifest, { manifest: 'aaaa', record: 'aaaa', recordFile: 'dist/build-info.json' }).problems).toEqual([
+      'HWE-MERGE shard-3.json: the shard compared the content manifest bbbb, the build has aaaa',
+    ]);
+    expect(mergeReports(tagged('aaaa'), manifest, { manifest: 'aaaa', record: 'cccc', recordFile: 'dist/build-info.json' }).problems).toEqual([
+      'HWE-MERGE dist/build-info.json: the build record has the content manifest cccc, the manifest given aaaa',
+    ]);
+    expect(mergeReports(reports(4), manifest, { manifest: 'aaaa', record: 'aaaa', recordFile: 'dist/build-info.json' }).problems).toHaveLength(4);
+  });
+
   it('fails on a shard that ran with --draft (the keyboard rule left out, 5a.8)', () => {
     const list = reports(4);
     list[0] = { file: 'shard-1.json', report: { ...list[0].report, scope: { ...list[0].report.scope, draft: true } } };

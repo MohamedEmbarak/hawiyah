@@ -11,6 +11,9 @@
 //                                    (the sparse checkout of the workflow does not hold it)
 //   missing file, outside the repository, other schemes, absolute paths: HWC-LINK
 //
+// A page read from a copy outside the repository (--docs) resolves a link to another
+// file than a page of the copy against docs/components, where the page is written.
+//
 // Hrefs of guide pages are relative to the document base (no leading slash).
 
 import { existsSync, statSync } from 'node:fs';
@@ -43,7 +46,19 @@ export function resolveLink(url, ctx) {
     if (!ctx.headingIds.has(id)) return { error: `the link "${url}" names no heading of this page` };
     return { href: `${pageHref(ctx.id)}${fragment}`, internal: true, external: false };
   }
-  const target = resolve(dirname(ctx.filePath), pathPart);
+  // A page read from a copy outside the repository (--docs <dir>, G17 of the 5a fix round) is
+  // written for docs/components: a link to another file than a page of the copy resolves as it
+  // would there, so the copy builds as the repository does.
+  const outside = toPosix(relative(ctx.repoDir, resolve(ctx.componentsDir))).startsWith('..');
+  const samePage = /^[a-z0-9-]+(?:\.ar)?\.md$/.test(pathPart);
+  const pageId = samePage ? pathPart.replace(/(?:\.ar)?\.md$/, '') : null;
+  if (outside && samePage && ctx.built.has(pageId) && existsSync(resolve(ctx.componentsDir, pathPart))) {
+    const result = { href: `${pageHref(pageId)}${fragment}`, internal: true, external: false };
+    if (fragment.length > 1 && pageId !== ctx.id) result.crossPage = { id: pageId, fragment: fragment.slice(1) };
+    else if (fragment.length > 1 && !ctx.headingIds.has(fragment.slice(1))) return { error: `the link "${url}" names no heading of this page` };
+    return result;
+  }
+  const target = resolve(outside ? resolve(ctx.repoDir, 'docs', 'components') : dirname(ctx.filePath), pathPart);
   const repoPath = toPosix(relative(ctx.repoDir, target));
   if (repoPath.startsWith('..') || repoPath === '') return { error: `the link "${url}" points outside the repository` };
   // A path is inside an entry when it is the entry or lies below a directory entry.

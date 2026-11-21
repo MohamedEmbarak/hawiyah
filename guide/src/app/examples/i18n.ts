@@ -41,7 +41,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     loading: (framework) => `Loading the ${framework} result`,
     failed: (framework, firstLine) => `The ${framework} result could not be loaded: ${firstLine}`,
     bundledRuntime: ' (bundled runtime)',
-    framedNoScript: 'This example renders a whole page layout, so its result is shown in a frame, which needs JavaScript. The Angular listing below shows its code.',
+    framedNoScript: 'This example renders a landmark or a main heading of its own, so its result is shown in a frame, which needs JavaScript. The Angular listing below shows its code.',
   },
   ar: {
     result: 'النتيجة',
@@ -53,7 +53,7 @@ export const exampleTexts: Texts<ExampleTexts> = {
     loading: (framework) => `جارٍ تحميل نتيجة ${framework}`,
     failed: (framework, firstLine) => `تعذّر تحميل نتيجة ${framework}: ${firstLine}`,
     bundledRuntime: ' (ببيئة التشغيل المجمّعة)',
-    framedNoScript: 'يعرض هذا المثال تخطيط صفحة كاملة، فتظهر نتيجته في إطار يحتاج إلى JavaScript. وتعرض شيفرة Angular أدناه مصدره.',
+    framedNoScript: 'يعرض هذا المثال معلَمًا أو عنوانًا رئيسيًا خاصًا به، فتظهر نتيجته في إطار يحتاج إلى JavaScript، وتظهر أدناه شيفرته في Angular.',
   },
 };
 

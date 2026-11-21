@@ -3,7 +3,8 @@
 // (HWC-PAR4) compares.
 //
 //   ts, tsx, jsx, js   @lezer/javascript with dialect 'ts jsx'
-//   html, vue          @lezer/html with nested @lezer/javascript (script) and @lezer/css (style)
+//   html, vue          @lezer/html with nested @lezer/javascript (script) and @lezer/css (style);
+//                      vue with the selfClosing dialect
 //   css                @lezer/css
 //   anything else      plain text, no roles
 
@@ -19,6 +20,8 @@ const htmlParser = htmlBase.configure({
     { tag: 'style', parser: cssParser },
   ]),
 });
+/** Vue templates close any tag with '/>' (<Stat label="a" />): the selfClosing dialect reads them so (G9 of the 5a fix round). */
+const vueParser = htmlParser.configure({ dialect: 'selfClosing' });
 
 const common = [
   { tag: tags.comment, class: 'comment' },
@@ -43,6 +46,7 @@ const MARKUP = new Set(['html', 'vue']);
 function setup(lang) {
   const key = (lang ?? '').toLowerCase();
   if (SCRIPT.has(key)) return { parser: tsParser, highlighter: codeHighlighter };
+  if (key === 'vue') return { parser: vueParser, highlighter: codeHighlighter };
   if (MARKUP.has(key)) return { parser: htmlParser, highlighter: codeHighlighter };
   if (key === 'css') return { parser: cssParser, highlighter: cssHighlighter };
   return null;

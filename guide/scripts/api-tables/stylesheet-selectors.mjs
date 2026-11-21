@@ -54,10 +54,13 @@ function compoundParts(nodes) {
  */
 export function selectorAttributesOf(css) {
   const byClass = new Map();
+  // Attributes a selector puts on an element inside one with the class (`.hw-table [data-numeric]`):
+  // read only to decide which component a shared contract row gives an attribute (stylesheet-contract.mjs).
+  const within = new Map();
   const selected = new Set();
-  const add = (name, attribute) => {
-    if (!byClass.has(name)) byClass.set(name, new Map());
-    const map = byClass.get(name);
+  const add = (name, attribute, target = byClass) => {
+    if (!target.has(name)) target.set(name, new Map());
+    const map = target.get(name);
     const key = attribute.attribute.toLowerCase();
     if (!map.has(key)) map.set(key, new Set());
     const values = map.get(key);
@@ -74,14 +77,17 @@ export function selectorAttributesOf(css) {
       return;
     }
     for (const selector of root.nodes) {
+      const outer = new Set();
       for (const compound of compounds(selector)) {
         const { classes, attributes } = compoundParts(compound);
         classes.forEach((name) => selected.add(name));
         for (const name of classes) for (const attribute of attributes) add(name, attribute);
+        for (const name of outer) for (const attribute of attributes) add(name, attribute, within);
+        classes.forEach((name) => outer.add(name));
       }
     }
   });
-  return { byClass, selected };
+  return { byClass, selected, within };
 }
 
 export function readSelectorAttributes(nodeModules) {

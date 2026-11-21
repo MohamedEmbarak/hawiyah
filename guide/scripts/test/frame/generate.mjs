@@ -25,7 +25,7 @@ import { H2 } from '../../content/config.mjs';
 import { frontMatterBlock } from '../../content/hash.mjs';
 import { scaffoldArabic } from '../../content/scaffold-ar.mjs';
 import { scaffoldPage } from '../../content/scaffold.mjs';
-import { relink } from '../scale/generate.mjs';
+import { generatedProse, relink } from '../scale/generate.mjs';
 
 const guideDir = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 const repoDir = resolve(guideDir, '..');
@@ -67,7 +67,7 @@ export function framedGroup() {
 
 /** The English page of the framed fixture id. */
 export function framedPage(declared, entry, version) {
-  let page = scaffoldPage(declared, entry, version);
+  let page = generatedProse(scaffoldPage(declared, entry, version));
   page = page.replace(`# ${entry.name}\n`, `# ${entry.name}\n\n${entry.name} is shown here by a generated page of the frame fixture of the guide build. The page is never deployed.\n`);
   page = page.replace(`${heading('example')}\n`, `${heading('example')}\n\nThe page header renders its own h1, so its Angular result is shown in a frame.\n\n${framedGroup()}\n`);
   page = page.replace(`${heading('accessibility')}\n`, `${heading('accessibility')}\n\nThe accessibility section of a generated page.\n`);

@@ -127,6 +127,8 @@ export function buildModel(outline, ctx) {
         case 'table': {
           const prefix = captionPrefix(nodes[index - 1]);
           const caption = prefix ? plainText(nodes[index - 1]).slice(prefix.prefix.length).trim() : '';
+          // The caption is rendered as plain text; its code values are kept for the vocabulary pass of step 30.
+          const captionCodes = prefix ? nodes[index - 1].children.filter((child) => child.type === 'inlineCode').map((child) => child.value) : [];
           const [head, ...rows] = node.children;
           const columns = head.children.map((cell, column) => ({
             key: `c${column}`,
@@ -136,6 +138,7 @@ export function buildModel(outline, ctx) {
           out.push({
             type: 'table',
             caption,
+            ...(captionCodes.length ? { captionCodes } : {}),
             ...(outline.keyboard?.node === node ? { keyboard: true } : {}),
             columns,
             rows: rows.map((row) => Object.fromEntries(columns.map((column, column_) => [column.key, inlines(row.children[column_]?.children ?? [])]))),

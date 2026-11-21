@@ -41,7 +41,7 @@ export function parseMarkdown(text, file) {
     mdastExtensions: [gfmFromMarkdown(), frontmatterFromMarkdown(['yaml'])],
   });
   const findings = [];
-  foldKeys(tree, file, findings);
+  foldKeys(tree, file, findings, source);
   let frontMatter = null;
   const visit = (node, parent) => {
     const line = node.position?.start.line ?? 1;
@@ -75,7 +75,7 @@ const KBD_PARENTS = new Set(['paragraph', 'tableCell']);
  * of the text. Every other raw HTML node stays and is rejected by the visit of
  * parseMarkdown; a malformed key element gets its own message.
  */
-function foldKeys(tree, file, findings) {
+function foldKeys(tree, file, findings, source = null) {
   const visit = (node) => {
     const children = node.children;
     if (!children) return;
@@ -84,6 +84,14 @@ function foldKeys(tree, file, findings) {
       if (child.type === 'html' && child.value === '<kbd>' && KBD_PARENTS.has(node.type)) {
         const text = children[i + 1];
         const close = children[i + 2];
+        // The key name stands in the source as plain text: a character reference (&#84;ab) is not a key name (G16 of the 5a fix round).
+        const raw = source && text?.position ? source.slice(text.position.start.offset, text.position.end.offset) : text?.value;
+        if (text?.type === 'text' && close?.type === 'html' && close.value === '</kbd>' && raw !== text.value) {
+          findings.push(finding('HWC-MD', file, child.position?.start.line ?? 1, `the key element holds "${raw}", which is not plain text; ${KBD_FORM}`));
+          children.splice(i, 3);
+          i -= 1;
+          continue;
+        }
         if (text?.type === 'text' && close?.type === 'html' && close.value === '</kbd>' && /^\S(?:[^\n]*\S)?$/.test(text.value)) {
           children.splice(i, 3, {
             type: 'kbd',

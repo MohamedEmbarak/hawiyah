@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Joins the reports of the shards of step 80 (run.mjs --shard i/n --report <file>).
 //
-//   node scripts/equivalence/merge.mjs [--manifest src/generated/content/manifest.json] <report> ...
+//   node scripts/equivalence/merge.mjs [--manifest src/generated/content/manifest.json] [--record dist/build-info.json] <report> ...
 //
 // Fails (exit 1, one 'HWE-MERGE ...' line per problem) unless the reports are the n
 // shards 1..n of one run of the same pin over the same selection, without --pages or
@@ -11,6 +11,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { contentManifestHash } from '../build-scope.mjs';
 import { FRAMEWORKS } from './compare.mjs';
 import { summaryLine } from './run.mjs';
 
@@ -29,10 +30,18 @@ export function manifestKeys(manifest) {
  * @param {{ file: string, report: any }[]} reports
  * @param {any} manifest The content manifest, or null when it cannot be read.
  */
-export function mergeReports(reports, manifest) {
+export function mergeReports(reports, manifest, identity = null) {
   const problems = [];
   if (reports.length === 0) return { problems: ['HWE-MERGE: no shard report given'], summary: null, keys: [] };
   const first = reports[0].report;
+  // The shards belong to one build (G16 of the 5a fix round): each report carries the hash of the
+  // content manifest it compared, equal to that of the manifest given and of the build record.
+  if (identity) {
+    for (const { file, report } of reports) {
+      if (report?.contentManifest !== identity.manifest) problems.push(`HWE-MERGE ${file}: the shard compared the content manifest ${report?.contentManifest ?? '(none recorded)'}, the build has ${identity.manifest ?? '(none)'}`);
+    }
+    if (identity.record !== undefined && identity.record !== identity.manifest) problems.push(`HWE-MERGE ${identity.recordFile}: the build record has the content manifest ${identity.record ?? '(none recorded)'}, the manifest given ${identity.manifest ?? '(none)'}`);
+  }
   const total = first?.scope?.shard?.total;
   const seen = new Map();
   for (const { file, report } of reports) {
@@ -92,16 +101,21 @@ export function mergeReports(reports, manifest) {
 
 function main(argv) {
   let manifestFile = 'src/generated/content/manifest.json';
+  let recordFile = 'dist/build-info.json';
   const files = [];
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === '--manifest' && argv[i + 1] !== undefined) manifestFile = argv[++i];
+    else if (argv[i] === '--record' && argv[i + 1] !== undefined) recordFile = argv[++i];
     else if (argv[i].startsWith('--')) throw new Error(`unknown option ${argv[i]}`);
     else files.push(argv[i]);
   }
   const reports = files.map((file) => ({ file, report: existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null }));
   for (const { file, report } of reports) if (!report) throw new Error(`HWE-MERGE ${file}: the report does not exist`);
   const manifest = existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : null;
-  const { problems, summary } = mergeReports(reports, manifest);
+  const record = existsSync(recordFile) ? JSON.parse(readFileSync(recordFile, 'utf8')) : null;
+  const identity = { manifest: contentManifestHash(manifestFile), record: record ? (record.contentManifest ?? null) : undefined, recordFile };
+  const { problems, summary } = mergeReports(reports, manifest, identity);
+  if (!record) problems.push(`HWE-MERGE ${recordFile}: the build record does not exist; the shards are merged against the record of the build they compared`);
   if (problems.length > 0) {
     console.log(problems.join('\n'));
     process.exit(1);
