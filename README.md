@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/previews/readme-banner.png" alt="Hawiyah (هوية) wordmark beside a green card symbol, above the React, Angular, Vue and TypeScript logos" width="560"></p>
+
 # Hawiyah — هوية
 
 **A UI component library built to comply with the Digital Government Authority (DGA) Platforms Code.** Hawiyah provides design tokens, styles, and accessible components for JavaScript, React, Vue, and Angular, with full Arabic and English support and page templates for complete service journeys.
