@@ -3,7 +3,7 @@
 import { PNG } from 'pngjs';
 import { describe, expect, it } from 'vitest';
 import { compareAria, compareScreenshot, compareScreenshots, compareStructure, differences, firstDifference, PIXEL_THRESHOLD, PRINTED_DIFFERENCES, pixelLimit, structureMessages, withoutDesigned } from '../compare.mjs';
-import { compareCapture, validateDesignedDifferences } from '../run.mjs';
+import { compareCapture, designedOf, unmatchedHosts, validateDesignedDifferences } from '../run.mjs';
 
 /** A white PNG with a dark bar of 40x12 pixels at x (a stand-in for rendered text). */
 function image(x, { width = 200, height = 50, extra = 0 } = {}) {
@@ -126,6 +126,56 @@ describe('designed differences', () => {
       'HWE-KD scripts/equivalence/empty-elements.json:1: entry 3 must be { component, class, reason, reference, approvedBy } with non-empty values',
       'HWE-KD scripts/equivalence/vanilla-hooks.json:1: entry 2: the installed @hawiyah/vanilla does not read data-hw-mode',
       'HWE-KD scripts/equivalence/vanilla-hooks.json:1: entry 2: the stylesheet selects data-hw-mode, so the structure comparison keeps it',
+    ]);
+  });
+});
+
+describe('angular-hosts.json', () => {
+  const entry = { component: 'avatar', element: 'hw-avatar', tag: 'span', reason: 'r', reference: '@hawiyah/angular README.md: "The host is the avatar (`hw-avatar.hw-avatar`)."', approvedBy: 'lead' };
+  const options = { changelog: '# Changelog\n\n## 0.3.0 — 2026-11-18\n\n#### Parity fixes\n\n- Badge (Angular): the host carries the class.\n', readme: (name) => (name === 'angular' ? 'The host is the avatar (`hw-avatar.hw-avatar`).' : null) };
+  it('is validated like the other two lists: fields, forms and a reference found in the cited README or CHANGELOG.md (HWE-KD)', () => {
+    const changelogEntry = { ...entry, component: 'badge', element: 'hw-badge', reference: 'CHANGELOG.md, 0.3.0, Parity fixes: the host carries the class' };
+    const valid = validateDesignedDifferences({ empty: [], hooks: [], hosts: [entry, changelogEntry] }, options);
+    expect(valid.errors).toEqual([]);
+    expect(valid.hosts).toEqual([entry, changelogEntry]);
+    const errors = validateDesignedDifferences({ empty: [], hooks: [], hosts: [
+      { ...entry, element: 'avatar' },
+      { ...entry, tag: 'my-span' },
+      { ...entry, reference: '@hawiyah/angular README.md: "The host is the badge."' },
+      { ...entry, reference: 'CHANGELOG.md, 0.3.0, Parity fixes: the host is a div' },
+      { component: 'avatar', element: 'hw-avatar', reason: 'r', reference: entry.reference, approvedBy: 'lead' },
+    ] }, options).errors;
+    expect(errors).toEqual([
+      'HWE-KD scripts/equivalence/angular-hosts.json:1: entry 1: element avatar is not one hw- element name',
+      'HWE-KD scripts/equivalence/angular-hosts.json:1: entry 2: tag my-span is not one HTML element name without a hyphen',
+      'HWE-KD scripts/equivalence/angular-hosts.json:1: entry 3: the sentence is not in the README of the installed @hawiyah/angular',
+      'HWE-KD scripts/equivalence/angular-hosts.json:1: entry 4: reference must be a CHANGELOG.md entry (the text "the host is a div" is not in CHANGELOG.md ## 0.3.0 Parity fixes) or \'@hawiyah/<name> README.md: "<sentence>"\'',
+      'HWE-KD scripts/equivalence/angular-hosts.json:1: entry 5 must be { component, element, tag, reason, reference, approvedBy } with non-empty values',
+    ]);
+    expect(validateDesignedDifferences({ empty: [], hooks: [], hosts: {} }, options).errors).toEqual(['HWE-KD scripts/equivalence/angular-hosts.json:1: the file must hold an array']);
+  });
+  it('gives each component its own elements and tags', () => {
+    const lists = { empty: [], hooks: [], hosts: [entry, { ...entry, component: 'avatar-group' }, { ...entry, component: 'badge', element: 'hw-badge' }] };
+    expect(designedOf('avatar-group', lists).angularHosts).toEqual({ 'hw-avatar': 'span' });
+    expect(designedOf('badge', lists).angularHosts).toEqual({ 'hw-badge': 'span' });
+    expect(designedOf('card', lists).angularHosts).toEqual({});
+  });
+  it('fails an entry that matches nothing in the groups of its component, once every group of the component was compared', () => {
+    const groups = [{ id: 'avatar', lang: 'en', example: 'basic' }, { id: 'avatar', lang: 'en', example: 'sizes' }, { id: 'badge', lang: 'en', example: 'basic' }];
+    const all = new Set(groups.map((group) => `${group.id}/${group.lang}/${group.example}`));
+    const hosts = [entry, { ...entry, component: 'badge', element: 'hw-badge' }, { ...entry, component: 'chip', element: 'hw-chip' }];
+    const matched = new Map([['avatar', new Set(['hw-avatar'])], ['badge', new Set()]]);
+    expect(unmatchedHosts(hosts, { groups, compared: all, matched, whole: true })).toEqual([
+      'HWE-KD scripts/equivalence/angular-hosts.json:1: entry 2 (badge, hw-badge) matches nothing: the Angular result of the groups of badge has no element hw-badge with an hw- class; remove it',
+      'HWE-KD scripts/equivalence/angular-hosts.json:1: entry 3 (chip, hw-chip) matches nothing: docs/components/ has no page chip; remove it',
+    ]);
+    // A component whose page exists without a group in the build (a page pending translation) is not judged.
+    expect(unmatchedHosts(hosts, { groups, compared: all, matched, whole: true, pageExists: (id) => id === 'chip' })).toHaveLength(1);
+    // Nor is a component without a group in a run of part of the groups.
+    expect(unmatchedHosts([hosts[2]], { groups, compared: all, matched, whole: false })).toEqual([]);
+    // A run of part of the groups judges only the components whose groups it compared in full.
+    expect(unmatchedHosts(hosts, { groups, compared: new Set(['avatar/en/basic', 'badge/en/basic']), matched: new Map(), whole: false })).toEqual([
+      'HWE-KD scripts/equivalence/angular-hosts.json:1: entry 2 (badge, hw-badge) matches nothing: the Angular result of the groups of badge has no element hw-badge with an hw- class; remove it',
     ]);
   });
 });

@@ -36,5 +36,27 @@
     "description": "@hawiyah/vue 0.3.0 always writes data-collapse-at and data-side on Stack, which React writes only when the props are given and Angular and the vanilla markup never write on Stack. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects the layout primitives of @hawiyah/vue.",
     "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Stack (Vue), with the other layout primitives built by the same function,",
     "approvedBy": "lead"
+  },
+  {
+    "id": "progress-adapter-max",
+    "component": "progress",
+    "aspect": "structure",
+    "ignore": [
+      {
+        "class": "hw-progress",
+        "attribute": "max"
+      }
+    ],
+    "description": "In 0.3.0 React, Vue and Angular write max=\"100\" on the progress element when max is not given, also on an indeterminate bar, where the vanilla markup writes no max; the appearance and the accessibility tree are the same. Only max on .hw-progress is left out of the comparison with the vanilla result, and the three framework results are compared with each other in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Progress (React, Vue, Angular) writes `max=\"100\"` when `max` is not given, also on an indeterminate bar",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "icon-button-adapter-markup",
+    "component": "icon-button",
+    "aspect": "structure",
+    "description": "In 0.3.0 React, Vue and Angular render the icon of IconButton inside a wrapper span[aria-hidden=true], where the vanilla markup of the @hawiyah/vanilla README puts aria-hidden on the span.hw-icon itself, and Angular also writes data-shape=\"square\" and an empty value on the button (a second entry of the same Known defects list). A difference of the three framework results against the vanilla markup in an element cannot be ignored attribute by attribute, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: IconButton (React, Vue, Angular) renders the icon inside a wrapper `span[aria-hidden=\"true\"]`",
+    "approvedBy": "lead"
   }
 ]

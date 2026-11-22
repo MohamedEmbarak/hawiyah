@@ -137,9 +137,7 @@ Skeleton has no built-in text. The loading text is written by the application in
 
 ## Platforms Code reference
 
-Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification. 
-
-This section names the sources of the mapping of Skeleton; the evidence panel after it lists the verification evidence that components.json records and the items that remain open.
+Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification. This section names the sources of the mapping of Skeleton; the evidence panel after it lists the verification evidence that components.json records and the items that remain open.
 
 ### Sources
 

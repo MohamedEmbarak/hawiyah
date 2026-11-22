@@ -352,7 +352,7 @@ Run in `guide/` unless stated otherwise.
 | `HAWIYAH_BASE_PATH=/hawiyah/ npm run build` | `node scripts/build.mjs`: every step of the production configuration, output `dist/`. | One line per step `build: <id> ok (<ms> ms)`, then `build: production OK, <n> prerendered pages, 404.html, base /hawiyah/, 19 steps: <ids of the steps that ran>`; `dist/browser/index.html` contains `<base href="/hawiyah/">`; `dist/build-info.json` records a deployable build; exit 0. |
 | `HAWIYAH_BASE_PATH=/hawiyah/ npm run build -- --pages <id,...>` | A local gate: every step but 90, step 80 only on the groups of the named pages. `--docs <dir>` reads the component pages from another directory instead (also without step 90). | `build: production OK, not deployable (--pages <ids>), <n> prerendered pages, ..., 18 steps: ...`; `dist/build-info.json` records `"deployable": false`; exit 0. |
 | `node scripts/equivalence/run.mjs --shard <i>/<n> --report <file>` | Step 80 on shard i of n of an existing production output (see [Build steps](#build-steps)). | `equivalence shard <i>/<n> (<k> of <m> group-languages): ...`; exit 0. |
-| `node scripts/equivalence/merge.mjs [--manifest <file>] [--record <file>] <report> ...` | Joins the shard reports of step 80. Each report carries the hash of the content manifest it compared (`contentManifest`), and so does the build record (`dist/build-info.json`, the default of `--record`); the merge requires them equal to the hash of the manifest given. | The summary line of a run without `--shard`, followed by `; merged from <n> shards`; exit 0. Otherwise one `HWE-MERGE ...` line per problem and exit 1. |
+| `node scripts/equivalence/merge.mjs [--manifest <file>] [--record <file>] <report> ...` | Joins the shard reports of step 80. Each report carries the hash of the content manifest it compared (`contentManifest`), and so does the build record (`dist/build-info.json`, the default of `--record`); the merge requires them equal to the hash of the manifest given. It also fails on an entry of `scripts/equivalence/angular-hosts.json` whose element no shard found in the Angular result of a group of its component (not judged for a component without a group whose page exists). | The summary line of a run without `--shard`, followed by `; merged from <n> shards`; exit 0. Otherwise one `HWE-MERGE ...` line per problem and exit 1. |
 | `node scripts/e2e/merge.mjs --list <list.json> --used <dir> ... <report.json> ...` | Joins the JSON reports of browser test shards (`guide.yml`). | `e2e: <n> tests of the build passed in <k> shards; the structural half of the styling rule ran on <p> pages and 2 opened states, every listed declaration used`; exit 0. Otherwise one `HWT-MERGE ...` or `HWT-UNION ...` line per problem and exit 1. |
 | `node scripts/build-scope.mjs --require-deployable [--dir dist]` | The deploy check of `guide.yml`: the record `<dir>/build-info.json` of a complete, deployable production build. | `build-scope: dist/ is the output of a deployable production build (<n> steps...)`; exit 0, else exit 1. |
 | `npm run build:dev-check` | Development build into `dist-dev/` under `/hawiyah/`, then `playwright test --project=dev`. | `build: development OK ...`, `log-scan: 0 findings (development)`, Playwright `N passed`; exit 0. |
@@ -469,8 +469,11 @@ other's reports. `node scripts/equivalence/merge.mjs [--manifest
 src/generated/content/manifest.json] <report> ...` joins them: it fails with
 `HWE-MERGE` unless the reports are the shards 1 to n of one split of the same
 selection and pin, of the same content manifest as the build record (`contentManifest`), none ran with `--pages` or `--only` or failed, every group was
-compared in exactly one shard, and together they compared exactly the groups of
-the content manifest; it then prints the summary line of a run without `--shard`.
+compared in exactly one shard, together they compared exactly the groups of
+the content manifest, and every entry of `angular-hosts.json` matched an element in
+the Angular result of a group of its component in one of the shards (an entry of a
+component without a group whose page exists is not judged); it then
+prints the summary line of a run without `--shard`.
 Failures are reported with the codes `HWE-FRAME`, `HWE-STRUCT`,
 `HWE-ARIA`, `HWE-SHOT`, `HWE-CHECK`, `HWE-EXPECT`, `HWE-KEYS`, `HWE-AXE`, `HWE-KD` and
 `HWE-SCOPE`; the report and the diff images are written to `.cache/equivalence/`.
@@ -559,7 +562,15 @@ attribute with a meaning (`tabindex`, `hidden`, `inert`, `lang`, `dir`, `title`,
 `autofocus`, `popover`, `spellcheck`, `translate`) and no `data-hw-*` attribute
 that the stylesheet selects (`data-hw-mode`, `data-hw-theme`, `data-hw-density`
 and the others of the derived set): a wrapper or an Angular host that pins the
-colour mode is compared, not unwrapped.
+colour mode is compared, not unwrapped. A compared custom element has the tag
+`div`, except in the Angular result, where an element that an entry of
+`scripts/equivalence/angular-hosts.json` names for the group's component and that
+carries an `hw-` class has the tag of the entry. Text is compared as rendered:
+the text of adjacent text nodes, also of those that an unwrapped host or a
+comment between them leaves side by side, is joined as written, and only then is
+its white space collapsed and trimmed, so React's two text nodes `+` and `2` read
+`+2`, as Vue and Angular write it, and `a ` and `b` read `a b`; text that is white
+space only is dropped.
 A documented difference is an
 entry of `scripts/equivalence/known-differences.json` approved by the lead and
 named by a group with `differences=<id>`. Its `source` reads
@@ -575,22 +586,50 @@ still fails with `HWE-STRUCT`. The React, Vue and Angular results are then also
 compared with each other in full, so a wrong value in one of them is reported,
 and the step fails once the JavaScript result writes the attribute, so the
 entry cannot outlive the defect. Unknown fields, empty
-values and `ignore` on another aspect fail with `HWE-KD`. Two narrower forms
-document a designed difference of a component without a group naming it (G11 of
-the 5a fix round), both lists of the lead with `component`, `reason`,
-`approvedBy` and a `reference` checked against `CHANGELOG.md` or the README of the
-installed package it quotes (`validateDesignedDifferences` in `run.mjs`):
+values and `ignore` on another aspect fail with `HWE-KD`. Three narrower forms
+document a designed difference of a component without a group naming it, all
+lists of the lead with `component`, `reason`, `approvedBy` and a `reference`
+checked against `CHANGELOG.md` or the README of the installed package it quotes
+(`validateDesignedDifferences` in `run.mjs`; a malformed entry or a reference that
+the file does not hold fails with `HWE-KD`):
 `scripts/equivalence/empty-elements.json` leaves an element with the listed `hw-`
-class out of every result's structure tree while it has no child and no text, and
+class out of every result's structure tree while it has no child and no text,
 `scripts/equivalence/vanilla-hooks.json` leaves the listed `data-hw-*` attribute
 out of the vanilla tree only, when the installed `@hawiyah/vanilla` reads it and the
-stylesheet does not select it (`withoutDesigned` in `compare.mjs`); neither switches
-off the structure comparison, and `scripts/equivalence/test/compare.test.mjs`
-shows a difference outside the listed element or attribute still failing. Both
-lists are empty. The only entry of `known-differences.json` is
-`tabs-bar-orientation`: `@hawiyah/vanilla` 0.3.0 creates `.hw-tab-bar` without
-the `data-orientation` attribute that the other adapters write (CHANGELOG.md,
-Known defects in 0.3.0).
+stylesheet does not select it (`withoutDesigned` in `compare.mjs`), and
+`scripts/equivalence/angular-hosts.json`, entries `{ component, element, tag,
+reason, reference, approvedBy }`, gives the normaliser of the Angular frame of the
+component's groups the tag (`span`) with which an element of the listed tag name
+(`hw-avatar`) that carries an `hw-` class is compared in place of `div`: a
+`@hawiyah/angular` host element that is the component, where the other adapters
+render the listed tag. The attributes and children of that element, and every
+other element, are compared as before. The harness records which listed elements
+the Angular results hold (`hostsIn` in `run.mjs`): an entry whose element is in the
+Angular result of none of the groups of its component fails with `HWE-KD`, judged
+once a run has compared every group of that component. An entry of a component
+without a group in the build is judged only in a run of step 80 over every live
+group of the build (without `--only`, `--pages` or `--shard`, and not in
+`check:page`), and fails there when `docs/components/` has no page of the
+component; a page pending translation has no route and no group in the build, so
+its entries are judged by `check:page`. A shard records each entry with the groups
+it compared and whether the page exists, and `merge.mjs` fails with `HWE-MERGE`
+when no shard found the element, unless the component has no group and its page
+exists. None of the three switches off the structure comparison, and
+`scripts/equivalence/test/compare.test.mjs` and `normalize.test.mjs` show a
+difference outside the listed element, attribute or tag still failing.
+`empty-elements.json` lists `hw-empty-icon` (EmptyState), `hw-stat-trend` (Stat),
+`hw-card-header` and `hw-card-footer` (Card); `angular-hosts.json` lists
+`hw-skeleton`, `hw-spinner`, `hw-badge` and `hw-avatar` (Skeleton, Spinner,
+Badge, Avatar and AvatarGroup), each compared as `span`; `vanilla-hooks.json` is
+empty. `known-differences.json` holds six entries, each citing the Known defects
+in 0.3.0 of `CHANGELOG.md`: `tabs-bar-orientation` (`@hawiyah/vanilla` 0.3.0
+creates `.hw-tab-bar` without the `data-orientation` attribute that the other
+adapters write) and `progress-adapter-max` (React, Vue and Angular write `max` on
+`.hw-progress` where the vanilla markup does not) ignore one attribute;
+`text-field-adapter-attributes`, `service-card-angular-variant-icon`,
+`stack-vue-layout-attributes` and `icon-button-adapter-markup` (React, Vue and
+Angular wrap the icon of IconButton in a `span`, and Angular writes `data-shape`
+and an empty `value`) leave the structure aspect out of the groups that name them.
 
 A group names its interaction checks on its `html` block with
 `check=<name>[,<name>...]` (files in `scripts/equivalence/checks/`, run one

@@ -33,7 +33,9 @@
 // (a step's documented outcome failed in a frame, 5a.8), HWE-KEYS (the keys of a
 // page's keyboard table differ from the keys its checks press, keys.mjs), HWE-AXE
 // (axe found a WCAG 2.2 AA violation in a frame document at rest), HWE-KD
-// (known-differences.json invalid or not found), HWE-SCOPE (no group, an --only key
+// (known-differences.json, empty-elements.json, vanilla-hooks.json or angular-hosts.json
+// invalid, a difference a group names not found, or an angular-hosts.json entry that
+// matches nothing in the groups of its component), HWE-SCOPE (no group, an --only key
 // that names none, or groups that differ from the content manifest).
 //
 // A framed group (frame on its html block, 5a.9) is compared in frames 1280 px
@@ -230,37 +232,44 @@ export function validateKnownDifferences(value, options = {}) {
 const README_SOURCE = /^@hawiyah\/(vanilla|react|vue|angular|styles|core|tokens) README\.md: "(.+)"$/s;
 
 /**
- * Validates the two lists of designed differences (G11 of the 5a fix round), both the
- * lead's: empty-elements.json, [{ component, class, reason, reference, approvedBy }]
- * (an element with that hw- class is left out of the structure comparison of the
- * component's groups while it is empty), and vanilla-hooks.json, [{ component,
+ * Validates the three lists of designed differences, all the lead's:
+ * empty-elements.json, [{ component, class, reason, reference, approvedBy }] (an
+ * element with that hw- class is left out of the structure comparison of the
+ * component's groups while it is empty), vanilla-hooks.json, [{ component,
  * attribute, reason, reference, approvedBy }] (a data-hw-* configuration attribute
  * that the installed @hawiyah/vanilla reads and the stylesheet does not select is
- * left out of the vanilla tree of the component's groups). reference is a CHANGELOG
- * entry ('CHANGELOG.md, <version>, <section>: <text>', for a defect) or the sentence
- * of a package README ('@hawiyah/<name> README.md: "<sentence>"', for a documented
- * behaviour); both are checked against the files. Returns { empty, hooks, errors }.
+ * left out of the vanilla tree of the component's groups), and angular-hosts.json,
+ * [{ component, element, tag, reason, reference, approvedBy }] (in the Angular result
+ * of the component's groups, an element of that hw- tag name with an hw- class is
+ * compared with the listed tag in place of div). reference is a CHANGELOG entry
+ * ('CHANGELOG.md, <version>, <section>: <text>', for a defect or a recorded change)
+ * or the sentence of a package README ('@hawiyah/<name> README.md: "<sentence>"', for
+ * a documented behaviour); both are checked against the files. Returns { empty,
+ * hooks, hosts, errors }.
  */
-export function validateDesignedDifferences({ empty, hooks }, { changelog = readChangelog(), readme = () => null, vanillaText = '', styled = new Map() } = {}) {
+export function validateDesignedDifferences({ empty, hooks, hosts = [] }, { changelog = readChangelog(), readme = () => null, vanillaText = '', styled = new Map() } = {}) {
   const errors = [];
-  const check = (list, name, field, form) => {
+  // fields: [name, form, what the form is] of the fields beside reason, reference and approvedBy.
+  const check = (list, name, fields) => {
     if (!Array.isArray(list)) {
       errors.push(`HWE-KD scripts/equivalence/${name}:1: the file must hold an array`);
       return [];
     }
     list.forEach((entry, index) => {
       const at = `HWE-KD scripts/equivalence/${name}:1: entry ${index + 1}`;
-      const keys = ['component', field, 'reason', 'reference', 'approvedBy'];
+      const keys = ['component', ...fields.map(([field]) => field), 'reason', 'reference', 'approvedBy'];
       if (!entry || typeof entry !== 'object' || Object.keys(entry).sort().join() !== [...keys].sort().join() || keys.some((key) => typeof entry[key] !== 'string' || entry[key].trim() === '')) {
         errors.push(`${at} must be { ${keys.join(', ')} } with non-empty values`);
         return;
       }
-      if (!form.test(entry[field])) errors.push(`${at}: ${field} ${entry[field]} is not one ${field === 'class' ? 'hw- class name' : 'data-hw-* attribute name'}`);
+      for (const [field, form, what] of fields) {
+        if (!form.test(entry[field])) errors.push(`${at}: ${field} ${entry[field]} is not one ${what}`);
+      }
       const fromChangelog = changelogSourceError(entry.reference, changelog);
       const readmeMatch = README_SOURCE.exec(entry.reference);
       if (fromChangelog && !readmeMatch) errors.push(`${at}: reference must be a CHANGELOG.md entry (${fromChangelog}) or '@hawiyah/<name> README.md: "<sentence>"'`);
       if (readmeMatch && !squeeze(readme(readmeMatch[1]) ?? '').includes(squeeze(readmeMatch[2]))) errors.push(`${at}: the sentence is not in the README of the installed @hawiyah/${readmeMatch[1]}`);
-      if (field === 'attribute' && form.test(entry.attribute)) {
+      if (name === 'vanilla-hooks.json' && fields[0][1].test(entry.attribute)) {
         if (!new RegExp(`${entry.attribute}(?![\\w-])|dataset\\.${entry.attribute.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase())}(?![\\w$])`).test(vanillaText)) errors.push(`${at}: the installed @hawiyah/vanilla does not read ${entry.attribute}`);
         if (styled.has(entry.attribute)) errors.push(`${at}: the stylesheet selects ${entry.attribute}, so the structure comparison keeps it`);
       }
@@ -268,8 +277,9 @@ export function validateDesignedDifferences({ empty, hooks }, { changelog = read
     return list.filter((entry) => entry && typeof entry.component === 'string');
   };
   return {
-    empty: check(empty, 'empty-elements.json', 'class', /^hw-[a-z0-9-]+$/),
-    hooks: check(hooks, 'vanilla-hooks.json', 'attribute', /^data-hw-[a-z0-9-]+$/),
+    empty: check(empty, 'empty-elements.json', [['class', /^hw-[a-z0-9-]+$/, 'hw- class name']]),
+    hooks: check(hooks, 'vanilla-hooks.json', [['attribute', /^data-hw-[a-z0-9-]+$/, 'data-hw-* attribute name']]),
+    hosts: check(hosts, 'angular-hosts.json', [['element', /^hw-[a-z0-9-]+$/, 'hw- element name'], ['tag', /^[a-z][a-z0-9]*$/, 'HTML element name without a hyphen']]),
     errors,
   };
 }
@@ -277,9 +287,9 @@ export function validateDesignedDifferences({ empty, hooks }, { changelog = read
 /** Reads and validates the lists of designed differences against the installed packages. */
 export function readDesignedDifferences(guideDir = GUIDE_DIR) {
   const json = (name) => JSON.parse(readFileSync(join(here, name), 'utf8'));
-  const lists = { empty: json('empty-elements.json'), hooks: json('vanilla-hooks.json') };
+  const lists = { empty: json('empty-elements.json'), hooks: json('vanilla-hooks.json'), hosts: json('angular-hosts.json') };
   // Empty lists need nothing of the installed packages.
-  if (Array.isArray(lists.empty) && Array.isArray(lists.hooks) && lists.empty.length === 0 && lists.hooks.length === 0) return { empty: [], hooks: [], errors: [] };
+  if (Object.values(lists).every((list) => Array.isArray(list) && list.length === 0)) return { empty: [], hooks: [], hosts: [], errors: [] };
   const packages = join(guideDir, 'node_modules', '@hawiyah');
   const readme = (name) => {
     try {
@@ -319,12 +329,40 @@ export function documentReferenceError(reference, { changelog = readChangelog(),
   return fromChangelog ? `must be '@hawiyah/<name> README.md: "<sentence>"' or a CHANGELOG.md entry (${fromChangelog})` : null;
 }
 
-/** The designed differences of one component: { emptyClasses, vanillaAttributes }. */
+/**
+ * The designed differences of one component: { emptyClasses, vanillaAttributes,
+ * angularHosts }, where angularHosts maps each listed Angular host element to the tag
+ * it is compared with ({ 'hw-avatar': 'span' }).
+ */
 export function designedOf(id, lists) {
   return {
     emptyClasses: lists.empty.filter((entry) => entry.component === id).map((entry) => entry.class),
     vanillaAttributes: lists.hooks.filter((entry) => entry.component === id).map((entry) => entry.attribute),
+    angularHosts: Object.fromEntries((lists.hosts ?? []).filter((entry) => entry.component === id).map((entry) => [entry.element, entry.tag])),
   };
+}
+
+/**
+ * The entries of angular-hosts.json that match nothing: an entry whose element (with
+ * an hw- class) is in the Angular result of none of the groups of its component. An
+ * entry is judged when this run compared every group of its component (groups: all
+ * groups of the build, compared: the keys this run compared, matched: component ->
+ * the set of listed elements found in its Angular results). An entry of a component
+ * without a group in the build is judged only in a run of every group (whole), and
+ * fails there when the component has no page (pageExists: an English page in
+ * docs/components/; a page pending translation has no route and no group in the
+ * build). Returns failure lines.
+ */
+export function unmatchedHosts(hosts, { groups, compared, matched, whole, pageExists = () => false }) {
+  const out = [];
+  hosts.forEach((entry, index) => {
+    const own = groups.filter((group) => group.id === entry.component).map(groupKey);
+    const judged = own.length > 0 ? own.every((key) => compared.has(key)) : whole && !pageExists(entry.component);
+    if (!judged || matched.get(entry.component)?.has(entry.element)) return;
+    const where = own.length > 0 ? `the Angular result of the groups of ${entry.component} has no element ${entry.element} with an hw- class` : `docs/components/ has no page ${entry.component}`;
+    out.push(`HWE-KD scripts/equivalence/angular-hosts.json:1: entry ${index + 1} (${entry.component}, ${entry.element}) matches nothing: ${where}; remove it`);
+  });
+  return out;
 }
 
 /** The documented difference a group names, or a failure line. */
@@ -490,22 +528,31 @@ async function settleHeight(page, frame, framework) {
     .catch(() => undefined);
 }
 
+/** The elements of `elements` (tag names) that occur below the mount `target` with an hw- class; evaluated in a frame. */
+export function hostsIn({ target, elements }) {
+  const root = document.querySelector(target);
+  return elements.filter((name) => Array.from(root?.querySelectorAll(name) ?? []).some((element) => (element.getAttribute('class') || '').split(/\s+/).some((token) => token.startsWith('hw-'))));
+}
+
 /**
  * Normalised tree, aria snapshot and screenshot of each framework. before(framework),
  * when given, runs first in that framework's frame (an interaction step), so each
  * result is read while its own frame still has focus: only the focused frame of a
  * page matches :focus and :focus-visible. Unless keepPointer is set, the hover state
- * is cleared before each frame is read (clearHover).
+ * is cleared before each frame is read (clearHover). angularHosts ({ element: tag }, the
+ * component's entries of angular-hosts.json) reaches the normaliser of the Angular
+ * frame only, and out.hosts lists the listed elements that the Angular result holds.
  */
 let normalizeInputs = null;
+
 /** What the normaliser reads from the installed packages: generated names and styled data-hw-* attributes. */
 export function normalizerInputs(guideDir = GUIDE_DIR) {
   normalizeInputs ??= { generatedName: generatedNamePattern(guideDir), styled: styledAttributes(guideDir) };
   return normalizeInputs;
 }
 
-export async function capture(page, frameworks = FRAMEWORKS, before = null, { keepPointer = false } = {}) {
-  const out = { trees: {}, snapshots: {}, images: {} };
+export async function capture(page, frameworks = FRAMEWORKS, before = null, { keepPointer = false, angularHosts = {} } = {}) {
+  const out = { trees: {}, snapshots: {}, images: {}, hosts: [] };
   const inputs = normalizerInputs();
   for (const framework of frameworks) {
     if (before) await before(framework);
@@ -514,7 +561,11 @@ export async function capture(page, frameworks = FRAMEWORKS, before = null, { ke
     await settleHeight(page, frame, framework);
     if (!keepPointer) await clearHover(page, framework, frameworks);
     const selector = mountSelector(framework);
-    out.trees[framework] = await frame.evaluate(normalize, { target: selector, ...inputs });
+    // The Angular result compares a listed host element with the tag of the other adapters (angular-hosts.json).
+    const hosts = framework === 'angular' ? angularHosts : {};
+    out.trees[framework] = await frame.evaluate(normalize, { target: selector, ...inputs, hosts });
+    // The listed host elements with an hw- class that the result holds: an entry that matches none fails (unmatchedHosts).
+    if (Object.keys(hosts).length > 0) out.hosts = (await frame.evaluate(hostsIn, { target: selector, elements: Object.keys(hosts) })) ?? [];
     const mount = page.frameLocator(`iframe[data-framework="${framework}"]`).locator(selector);
     out.snapshots[framework] = await mount.ariaSnapshot();
     out.images[framework] = await page
@@ -668,7 +719,7 @@ const recordedKeys = (frame) => frame.evaluate(() => [.../** @type {any} */ (win
  * chain and the before-step assertion keep the documented states.
  */
 export async function runChecks({
-  page, group, checks, frameworks = FRAMEWORKS, evaluate = async () => {}, outcomeTimeout = OUTCOME_TIMEOUT, finalSettle = FINAL_SETTLE, oracle = 'documented',
+  page, group, checks, frameworks = FRAMEWORKS, evaluate = async () => {}, outcomeTimeout = OUTCOME_TIMEOUT, finalSettle = FINAL_SETTLE, oracle = 'documented', angularHosts = {},
 }) {
   const failures = [];
   let asserted = 0;
@@ -743,7 +794,7 @@ export async function runChecks({
         if (miss) missed.push(`${framework}: ${miss}`);
         states[framework].expected = next;
       };
-      const captured = await capture(page, frameworks, before, { keepPointer: Boolean(step.keepPointer) });
+      const captured = await capture(page, frameworks, before, { keepPointer: Boolean(step.keepPointer), angularHosts });
       if (failed) {
         failures.push(failureLine('HWE-CHECK', group, failed));
         return { failures, asserted };
@@ -770,10 +821,12 @@ export async function runChecks({
   return { failures, asserted };
 }
 
-/** Runs one group; returns { rows, failures, asserted, axeFrames }. */
+/** Runs one group; returns { rows, failures, asserted, axeFrames, hosts } (hosts: the listed Angular host elements its Angular results hold). */
 async function runGroup({ page, origin, base, pin, group, checks, difference, designed = null, outDir, imageDir = '.cache/equivalence' }) {
   const rows = [];
   const failures = [];
+  const angularHosts = designed?.angularHosts ?? {};
+  const hosts = new Set();
   let axeCount = 0;
   const open = async (width) => {
     const harness = await openGroup(page, harnessUrl(origin, base, group, pin, FRAMEWORKS, width));
@@ -784,9 +837,10 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, de
     });
   };
   const opened = await open(group.frame ? FRAMED_WIDTH : FRAME_WIDTH);
-  if (opened.length > 0) return { rows, failures: opened, asserted: 0, axeFrames: 0 };
+  if (opened.length > 0) return { rows, failures: opened, asserted: 0, axeFrames: 0, hosts: [] };
 
   const evaluate = async (state, captured) => {
+    for (const element of captured.hosts ?? []) hosts.add(element);
     for (const row of compareCapture(captured, difference, designed)) {
       const entry = { group: groupKey(group), state, ...row };
       delete entry.equal;
@@ -815,10 +869,10 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, de
     }
   };
 
-  await evaluate('rest', await capture(page, FRAMEWORKS));
+  await evaluate('rest', await capture(page, FRAMEWORKS, null, { angularHosts }));
   await axe('rest');
   // The checks run one after the other in the same frames.
-  const checked = await runChecks({ page, group, checks, evaluate });
+  const checked = await runChecks({ page, group, checks, evaluate, angularHosts });
   failures.push(...checked.failures);
   const after = await page.evaluate(() => window.__harness.frames);
   for (const framework of FRAMEWORKS) {
@@ -829,11 +883,11 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, de
     const narrow = await open(Number(group.width));
     if (narrow.length > 0) failures.push(...narrow);
     else {
-      await evaluate(`rest@${group.width}`, await capture(page, FRAMEWORKS));
+      await evaluate(`rest@${group.width}`, await capture(page, FRAMEWORKS, null, { angularHosts }));
       await axe(`rest@${group.width}`);
     }
   }
-  return { rows, failures, asserted: checked.asserted, axeFrames: axeCount };
+  return { rows, failures, asserted: checked.asserted, axeFrames: axeCount, hosts: [...hosts] };
 }
 
 /**
@@ -841,7 +895,9 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, de
  * guideDir), basePath, cacheDir, only (array of '<id>/<lang>/<example>'), port,
  * workers, log; check:page adds groupsFile, manifestFile, outDir and examplesDir
  * (the payloads it compiled, served in place of <browserDir>/examples/), so it
- * reads and writes nothing of the build output. Returns the report; throws with
+ * reads and writes nothing of the build output; designedDifferences replaces the
+ * validated lists of designed differences (readDesignedDifferences), for a fixture
+ * guide directory without installed packages. Returns the report; throws with
  * the failure lines.
  */
 export async function runEquivalence(options) {
@@ -869,7 +925,7 @@ export async function runEquivalence(options) {
 
   const pin = readPin(guideDir);
   const known = validateKnownDifferences(JSON.parse(readFileSync(join(here, 'known-differences.json'), 'utf8')));
-  const designedLists = readDesignedDifferences(guideDir);
+  const designedLists = options.designedDifferences ?? readDesignedDifferences(guideDir);
   const failures = [...known.errors, ...designedLists.errors];
   const componentsFile = options.componentsFile ?? resolve(guideDir, '..', 'components.json');
   // The keyboard rule (HWE-KEYS) reads every check the groups of a page name, also
@@ -925,6 +981,8 @@ export async function runEquivalence(options) {
   let asserted = 0;
   let axeChecked = 0;
   const assertedOf = new Map();
+  // Per component: the listed Angular host elements found in the Angular results of its groups.
+  const hostsFound = new Map();
   try {
     const queue = [...plan];
     const worker = async () => {
@@ -942,6 +1000,9 @@ export async function runEquivalence(options) {
           asserted += result.asserted;
           axeChecked += result.axeFrames;
           assertedOf.set(groupKey(item.group), result.asserted);
+          const found = hostsFound.get(item.group.id) ?? new Set();
+          for (const element of result.hosts ?? []) found.add(element);
+          hostsFound.set(item.group.id, found);
           if (item.difference) {
             const list = applied.get(item.difference.id) ?? [];
             list.push(groupKey(item.group));
@@ -967,6 +1028,18 @@ export async function runEquivalence(options) {
   const interactionChecks = plan.reduce((sum, item) => sum + item.checks.length, 0);
   const interacted = new Set(plan.filter((item) => item.checks.length > 0).map(({ group }) => `${group.id}/${group.example}`));
   const documented = [...applied.keys()].map((id) => ({ ...known.entries.get(id), groups: applied.get(id).sort() }));
+  // An entry of angular-hosts.json that matches nothing in the groups of its component fails;
+  // an entry of a component without a group only in a run of every live group of the build
+  // (not with --only, --pages, --shard or the groups file of check:page). A shard records
+  // each entry with the groups it compared, and merge.mjs judges the union.
+  const comparedKeys = new Set(plan.map((item) => groupKey(item.group)));
+  const pageExists = options.pageExists ?? ((id) => existsSync(resolve(guideDir, '..', 'docs', 'components', `${id}.md`)));
+  failures.push(...unmatchedHosts(designedLists.hosts, { groups: allGroups, compared: comparedKeys, matched: hostsFound, whole: !options.only && !options.pages && !shard && !options.groupsFile, pageExists }));
+  const angularHosts = designedLists.hosts.map((entry, index) => ({
+    entry: index + 1, component: entry.component, element: entry.element, page: pageExists(entry.component),
+    compared: plan.filter((item) => item.group.id === entry.component).map((item) => groupKey(item.group)).sort(),
+    matched: hostsFound.get(entry.component)?.has(entry.element) ?? false,
+  }));
   const report = {
     pin,
     // The content manifest this run compared (G16 of the 5a fix round); merge.mjs compares it with the build record.
@@ -989,6 +1062,7 @@ export async function runEquivalence(options) {
     comparedAfterInteraction: interacted.size,
     comparedAtRestOnly: pages.size - interacted.size,
     documentedDifferences: documented,
+    angularHosts,
     failures: [...failures].sort(),
     comparisons: rows,
   };

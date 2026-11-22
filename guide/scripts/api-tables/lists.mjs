@@ -8,8 +8,8 @@
 // scripts/content/claim-exceptions.json (HWC-CLAIM),
 // scripts/content/live-component-exceptions.json (HWC-LIVE7) and
 // scripts/content/marketing-terms.json (HWC-TONE, a list of terms that belongs to
-// no page), and the designed differences of step 80, scripts/equivalence/empty-elements.json
-// and vanilla-hooks.json. Every
+// no page), and the designed differences of step 80, scripts/equivalence/empty-elements.json,
+// vanilla-hooks.json and angular-hosts.json. Every
 // entry carries approvedBy and a reason; one page has at most
 // MAX_ENTRIES_PER_PAGE entries over all lists together (an exclusions entry
 // counts each attribute it names, an override counts once, and an allow-list
@@ -101,7 +101,7 @@ export function checkLeadLists(lists) {
   (lists.marketing ?? []).forEach((entry, index) => {
     needs(`scripts/content/marketing-terms.json entry ${index + 1} (${entry?.term})`, entry);
   });
-  for (const [name, list, field] of [['empty-elements.json', lists.emptyElements, 'class'], ['vanilla-hooks.json', lists.vanillaHooks, 'attribute']]) {
+  for (const [name, list, field] of [['empty-elements.json', lists.emptyElements, 'class'], ['vanilla-hooks.json', lists.vanillaHooks, 'attribute'], ['angular-hosts.json', lists.angularHosts, 'element']]) {
     (list ?? []).forEach((entry, index) => {
       needs(`scripts/equivalence/${name} entry ${index + 1}`, entry);
       count(entry?.component ?? '(no page)', `${name} ${entry?.[field]}`);
@@ -144,5 +144,6 @@ export function readLeadLists(guideDir) {
     marketing: json('scripts', 'content', 'marketing-terms.json'),
     emptyElements: json('scripts', 'equivalence', 'empty-elements.json'),
     vanillaHooks: json('scripts', 'equivalence', 'vanilla-hooks.json'),
+    angularHosts: json('scripts', 'equivalence', 'angular-hosts.json'),
   };
 }

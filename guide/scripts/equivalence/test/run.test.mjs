@@ -7,9 +7,11 @@ import { afterAll, describe, expect, it } from 'vitest';
 import tabsClick from '../checks/tabs-click.mjs';
 import tabsKeyboard from '../checks/tabs-keyboard.mjs';
 import { fileURLToPath } from 'node:url';
+import { JSDOM } from 'jsdom';
+import { FRAMEWORKS } from '../compare.mjs';
 import { generatedNamePattern } from '../generated-names.mjs';
 import { normalize } from '../normalize.js';
-import { bundleHarness, capture, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { bundleHarness, capture, hostsIn, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
 import { styledAttributes } from '../styled-attributes.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
@@ -27,10 +29,10 @@ const entry = {
 };
 
 describe('known differences', () => {
-  it('hold the three entries the lead approved, valid, each with its CHANGELOG.md source', () => {
+  it('hold the entries the lead approved, valid, each with its CHANGELOG.md source', () => {
     expect(validateWith(known).errors).toEqual([]);
-    expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon', 'stack-vue-layout-attributes']);
-    const [orientation, textField, serviceCard] = known;
+    expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon', 'stack-vue-layout-attributes', 'progress-adapter-max', 'icon-button-adapter-markup']);
+    const [orientation, textField, serviceCard, , progress, iconButton] = known;
     expect(orientation).toMatchObject({ component: 'tabs', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] });
     expect(orientation.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: The vanilla Tabs controller/);
     // A difference of one framework adapter cannot use `ignore` (it compares the three
@@ -42,6 +44,13 @@ describe('known differences', () => {
     expect(serviceCard).toMatchObject({ component: 'service-card', aspect: 'structure', approvedBy: 'lead' });
     expect(serviceCard.ignore).toBeUndefined();
     expect(serviceCard.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: ServiceCard \(Angular\) always writes/);
+    // The three framework adapters write the same max, which the vanilla markup lacks: ignore applies.
+    expect(progress).toMatchObject({ component: 'progress', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-progress', attribute: 'max' }] });
+    expect(progress.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: Progress \(React, Vue, Angular\) writes/);
+    // The three framework adapters add an element against the vanilla markup: no ignore can express it.
+    expect(iconButton).toMatchObject({ component: 'icon-button', aspect: 'structure', approvedBy: 'lead' });
+    expect(iconButton.ignore).toBeUndefined();
+    expect(iconButton.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: IconButton \(React, Vue, Angular\) renders the icon inside a wrapper/);
   });
 
   it('check each source against the CHANGELOG text: version, section and the quoted entry', () => {
@@ -327,7 +336,8 @@ describe('runEquivalence before the browser', () => {
     writeFileSync(join(dir, 'src', 'generated', 'content', 'manifest.json'), JSON.stringify({ pages }));
     writeFileSync(join(dir, 'package.json'), JSON.stringify({ dependencies: { '@hawiyah/styles': '0.3.0' } }));
     writeFileSync(join(dir, 'components.json'), JSON.stringify({ components }));
-    return { guideDir: dir, componentsFile: join(dir, 'components.json'), log: () => {} };
+    // The fixture has no installed packages to check the references of the designed differences against.
+    return { guideDir: dir, componentsFile: join(dir, 'components.json'), log: () => {}, designedDifferences: { empty: [], hooks: [], hosts: [], errors: [] } };
   };
   const tabsPage = (examples) => ({ id: 'tabs', langs: ['ar', 'en'], liveGroups: examples.map((example) => ({ example })) });
   const interactive = [{ id: 'tabs', sourceType: 'interactive' }];
@@ -387,6 +397,53 @@ describe('runEquivalence before the browser', () => {
     expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (tabs) leaves the keyboard outcomes of tabs unchecked, but its groups name the checks tabs-nothing; a component with checks is bound to them, so remove the entry');
     expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 2 (combobox) matches no page: docs/components/ has no page combobox; remove it');
     expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 3 (accordion): the reference quotes a sentence that the README of the installed @hawiyah/vanilla does not hold');
+  });
+});
+
+describe('the harness hands the Angular host elements of angular-hosts.json to the Angular normaliser only', () => {
+  it('capture() passes angularHosts to normalize() in the Angular frame, an empty map elsewhere, and records the listed elements the Angular result holds', async () => {
+    const received = {};
+    let current = null;
+    const frames = Object.fromEntries(FRAMEWORKS.map((framework) => [framework, {
+      evaluate: async (fn, arg) => {
+        if (fn === normalize) {
+          received[framework] = arg;
+          return [];
+        }
+        if (fn === hostsIn) return framework === 'angular' ? ['hw-avatar'] : ['wrong'];
+        return undefined;
+      },
+      waitForFunction: async () => undefined,
+    }]));
+    const locator = {
+      elementHandle: async () => ({ contentFrame: async () => frames[current] }),
+      locator: () => locator,
+      ariaSnapshot: async () => '',
+      screenshot: async () => Buffer.alloc(0),
+      scrollIntoViewIfNeeded: async () => undefined,
+      boundingBox: async () => ({ x: 16, y: 40, width: 720, height: 160 }),
+    };
+    const page = {
+      locator: (selector) => {
+        current = /data-framework="([a-z]+)"/.exec(selector)?.[1] ?? current;
+        return locator;
+      },
+      frameLocator: () => locator,
+      waitForFunction: async () => undefined,
+      mouse: { move: async () => undefined },
+    };
+    const captured = await capture(page, FRAMEWORKS, null, { angularHosts: { 'hw-avatar': 'span' } });
+    expect(received.angular.hosts).toEqual({ 'hw-avatar': 'span' });
+    for (const framework of ['vanilla', 'react', 'vue']) expect(received[framework].hosts).toEqual({});
+    expect(captured.hosts).toEqual(['hw-avatar']);
+    expect((await capture(page)).hosts).toEqual([]);
+    expect(received.angular.hosts).toEqual({});
+  });
+
+  it('hostsIn() finds a listed element below the mount only with an hw- class', () => {
+    const dom = new JSDOM('<!doctype html><div id="app"><hw-avatar class="hw-avatar"></hw-avatar><hw-badge></hw-badge></div><hw-skeleton class="hw-skeleton"></hw-skeleton>', { runScripts: 'outside-only' });
+    const evaluated = dom.window.eval(`(${hostsIn.toString()})`);
+    expect(evaluated({ target: '#app', elements: ['hw-avatar', 'hw-badge', 'hw-skeleton'] })).toEqual(['hw-avatar']);
   });
 });
 

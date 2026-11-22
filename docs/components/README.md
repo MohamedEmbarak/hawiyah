@@ -65,8 +65,8 @@ The lead's lists are `exclusions.json`, `defaults.json`,
 `arabic-exceptions.json`, `claim-exceptions.json`,
 `live-component-exceptions.json` and `marketing-terms.json` (in
 `guide/scripts/content/`); `guide/scripts/page-guards/latin-allowlist.json`; and
-`keyboard-exceptions.json`, `known-differences.json`, `empty-elements.json` and
-`vanilla-hooks.json` (in `guide/scripts/equivalence/`). Each entry carries
+`keyboard-exceptions.json`, `known-differences.json`, `empty-elements.json`,
+`vanilla-hooks.json` and `angular-hosts.json` (in `guide/scripts/equivalence/`). Each entry carries
 `approvedBy` and a reason; one page has at most five entries over all of them (the
 marketing terms belong to no page). An entry of `arabic-exceptions.json` or
 `latin-allowlist.json` names the whole text it excepts (a whole paragraph, item,
@@ -374,20 +374,29 @@ Each block of a group is a fenced code block whose info string is:
   between adapters proposes its entry, with the text of the Known defects entry
   and the file and line of the published code that shows it, and leaves the
   example as it is (see [Who does what](#who-does-what)).
-- A designed difference between the adapters is one of two narrow forms, each an
-  entry of a lead's list with `component`, `reason`, `approvedBy` and a
-  `reference` (a `CHANGELOG.md, <version>, <section>: <text>` entry for a defect,
-  or `@hawiyah/<name> README.md: "<sentence>"` for a documented behaviour, both
-  checked against the files): `guide/scripts/equivalence/empty-elements.json`
-  (`class`: an element with that `hw-` class is left out of the structure
-  comparison of the component's groups while it is empty, such as the trend
-  region that one adapter always renders) and
+- A designed difference between the adapters is one of three narrow forms, each
+  an entry of a lead's list with `component`, `reason`, `approvedBy` and a
+  `reference` (a `CHANGELOG.md, <version>, <section>: <text>` entry for a defect
+  or a recorded change, or `@hawiyah/<name> README.md: "<sentence>"` for a
+  documented behaviour, both checked against the files):
+  `guide/scripts/equivalence/empty-elements.json` (`class`: an element with that
+  `hw-` class is left out of the structure comparison of the component's groups
+  while it is empty, such as the trend region that one adapter always renders),
   `guide/scripts/equivalence/vanilla-hooks.json` (`attribute`: a `data-hw-*`
   configuration attribute that `@hawiyah/vanilla` reads and the stylesheet does
-  not select is left out of the vanilla result of the component's groups). Every
-  other structural difference still fails with `HWE-STRUCT`; a malformed entry
-  fails with `HWE-KD`. No entry exists yet; a writer proposes one in the result of
-  the run instead of bending the example.
+  not select is left out of the vanilla result of the component's groups) and
+  `guide/scripts/equivalence/angular-hosts.json` (`element`, `hw-<name>`, and
+  `tag`: in the Angular result of the component's groups, an element of that tag
+  name that carries an `hw-` class, a `@hawiyah/angular` host element that is the
+  component, is compared with the listed tag, the tag the other adapters render,
+  instead of `div`; its attributes and children are compared as before). Every
+  other structural difference still fails with `HWE-STRUCT`. A malformed entry,
+  or a reference that the cited README or `CHANGELOG.md` does not hold, fails with
+  `HWE-KD`; so does an entry of `angular-hosts.json` whose element is in the
+  Angular result of none of the groups of its component (judged by `check:page`
+  for the page, and by the full build for every page that has groups there), or
+  whose component has no page. A writer proposes an
+  entry in the result of the run instead of bending the example.
 - `frame` renders the Angular result of the group in the sandboxed frame, like
   the other three, instead of in the guide page. Use it only on a page-level
   component that renders a `main` landmark, a skip link or an `h1` of its own
@@ -1067,7 +1076,7 @@ Table: Failure codes of the equivalence step that a page can cause
 | `HWE-AXE` | axe finds a WCAG 2.2 AA violation in a frame document at rest |
 | `HWE-FRAME` | A result frame failed to load or reported an error |
 | `HWE-STRUCT`, `HWE-ARIA`, `HWE-SHOT` | The four results differ in structure, accessibility tree or rendering; the only lines a finished page may leave are those of a difference between adapters that the writer's result proposes (see [Who does what](#who-does-what)) |
-| `HWE-KD` | A malformed entry of `known-differences.json`, `empty-elements.json` or `vanilla-hooks.json`, or a group that names a difference that does not exist |
+| `HWE-KD` | A malformed entry of `known-differences.json`, `empty-elements.json`, `vanilla-hooks.json` or `angular-hosts.json`, or one whose reference the cited README or `CHANGELOG.md` does not hold; an entry of `angular-hosts.json` whose element is in the Angular result of none of the groups of its component, or whose component has no page; a group that names a difference that does not exist |
 
 `HWE-SCOPE` and `HWE-MERGE` concern a run, its selection and the merge of its
 shards, not a page; `guide/README.md` describes them.

@@ -40,7 +40,7 @@ template: `<div class="hw-stack">
 
 A progress element without a value is indeterminate: it shows a segment that moves along the inline axis while the length of the task is unknown. Give it a name that says what is running.
 
-```html live example=indeterminate static
+```html live example=indeterminate static differences=progress-adapter-max
 <progress class="hw-progress" aria-label="Checking your application"></progress>
 ```
 

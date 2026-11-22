@@ -8,7 +8,7 @@
 // data-hw-* attributes the package stylesheet selects (styled-attributes.mjs), both
 // read from the installed packages. The result is the list of normalised children of
 // the mount:
-//   text node    -> string (white space collapsed and trimmed)
+//   text         -> string (the text of adjacent text nodes joined, then white space collapsed and trimmed)
 //   element node -> { tag, attrs: { name: value } (sorted), props?: {...}, children: [...] }
 //
 // Rules: comments and white-space-only text are dropped. Every attribute is
@@ -19,7 +19,10 @@
 // of declarations the browser parsed (element.style, see declarations). A custom element (tag with '-')
 // is compared as div when it has an hw- class, carries a global attribute that the
 // browser or assistive technology gives meaning to (GLOBAL) or a data-hw-* attribute
-// of the styled set; otherwise it is an unwrapped framework host. ids become #<n> in first-appearance order and the
+// of the styled set; otherwise it is an unwrapped framework host. In the Angular result,
+// hosts maps the tag of an @hawiyah/angular host element that is the component to the
+// tag the other adapters render ({ 'hw-avatar': 'span' }, angular-hosts.json): such an
+// element with an hw- class is compared with that tag. ids become #<n> in first-appearance order and the
 // id references of for, form, list, headers, popovertarget, commandfor and the
 // ARIA IDREF attributes are rewritten (a reference to an id outside the tree
 // becomes '#?'). name values are compared as written unless they match
@@ -61,6 +64,9 @@ export function normalize(input) {
   // Names the adapters generate (generated-names.mjs); none without the pattern.
   const GENERATED_NAME = typeof options.generatedName === 'string' ? new RegExp(options.generatedName) : null;
   const styled = options.styled ?? {};
+  // The lead's list of Angular host elements (angular-hosts.json), passed for the
+  // Angular result only: { '<hw- tag>': '<tag of the other adapters>' }.
+  const hosts = options.hosts ?? {};
   const ID_REFERENCES = ['for', 'form', 'list', 'headers', 'popovertarget', 'commandfor', 'interestfor'];
   // ARIA attributes whose value is an id or a list of ids (WAI-ARIA 1.2 IDREF and IDREFS).
   const ARIA_REFERENCES = [
@@ -184,7 +190,8 @@ export function normalize(input) {
     if (id !== null && id !== '') attrs.id = ids.get(id);
     const sorted = {};
     for (const key of Object.keys(attrs).sort()) sorted[key] = attrs[key];
-    const tag = node.localName.includes('-') ? 'div' : node.localName;
+    const tag = !node.localName.includes('-') ? node.localName
+      : Object.hasOwn(hosts, node.localName) && hwClasses(node).length > 0 ? hosts[node.localName] : 'div';
     const out = { tag, attrs: sorted };
     const props = liveProperties(node);
     if (props) out.props = props;
@@ -192,30 +199,24 @@ export function normalize(input) {
     return out;
   };
 
-  // Children with custom-element hosts without hw- class unwrapped and adjacent
-  // text joined (an unwrapped host can leave two text nodes side by side).
-  function children(parent) {
-    const out = [];
-    const push = (item) => {
-      if (typeof item === 'string' && typeof out[out.length - 1] === 'string') {
-        out[out.length - 1] = collapse(`${out[out.length - 1]} ${item}`);
-      } else {
-        out.push(item);
-      }
-    };
+  // Children with custom-element hosts without hw- class unwrapped. The text of
+  // adjacent text nodes, also of those an unwrapped host leaves side by side, is
+  // joined as written before its white space is collapsed, so the normalised text is
+  // the rendered text: React's '+' and '2' read '+2', 'a ' and 'b' read 'a b'.
+  function raw(parent, out) {
     for (const node of Array.from(parent.childNodes)) {
       if (node.nodeType === TEXT) {
-        const text = collapse(node.data);
-        if (text) push(text);
+        if (typeof out[out.length - 1] === 'string') out[out.length - 1] += node.data;
+        else out.push(node.data);
       } else if (node.nodeType === ELEMENT) {
-        if (unwrap(node)) {
-          for (const item of children(node)) push(item);
-        } else {
-          push(element(node));
-        }
+        if (unwrap(node)) raw(node, out);
+        else out.push(element(node));
       }
     }
     return out;
+  }
+  function children(parent) {
+    return raw(parent, []).map((item) => (typeof item === 'string' ? collapse(item) : item)).filter((item) => item !== '');
   }
 
   return children(root);

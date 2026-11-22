@@ -48,6 +48,7 @@ describe('an entry without approvedBy or reason fails, in every list', () => {
     ['marketing-terms.json', { ...empty, marketing: [{ lang: 'en', term: 'stunning', reason: 'r' }] }, 'scripts/content/marketing-terms.json entry 1 (stunning) has no approvedBy'],
     ['empty-elements.json', { ...empty, emptyElements: [{ component: 'stat', class: 'hw-stat-trend', reference: 'x', approvedBy: 'lead' }] }, 'scripts/equivalence/empty-elements.json entry 1 has no reason'],
     ['vanilla-hooks.json', { ...empty, vanillaHooks: [{ component: 'accordion', attribute: 'data-hw-value', reference: 'x', reason: 'r' }] }, 'scripts/equivalence/vanilla-hooks.json entry 1 has no approvedBy'],
+    ['angular-hosts.json', { ...empty, angularHosts: [{ component: 'avatar', element: 'hw-avatar', tag: 'span', reference: 'x', approvedBy: 'lead' }] }, 'scripts/equivalence/angular-hosts.json entry 1 has no reason'],
   ];
   it.each(cases)('%s', (_label, lists, problem) => {
     expect(checkLeadLists(lists).problems).toEqual([problem]);

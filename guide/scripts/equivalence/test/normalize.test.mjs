@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM } from 'jsdom';
 import { describe, expect, it } from 'vitest';
-import { compareStructure } from '../compare.mjs';
+import { compareStructure, differences } from '../compare.mjs';
 import { generatedIdForms, generatedNamePattern } from '../generated-names.mjs';
 import { normalize } from '../normalize.js';
 import { styledAttributes, styledAttributesOf } from '../styled-attributes.mjs';
@@ -17,10 +17,24 @@ const generatedName = generatedNamePattern(guideDir);
 const styled = styledAttributes(guideDir);
 
 /** Normalises '<div id="app">…</div>' (or another mount) in a fresh jsdom document. */
-function tree(body, selector = '#app') {
+function tree(body, selector = '#app', hosts = undefined) {
   const dom = new JSDOM(`<!doctype html><html><body>${body}</body></html>`, { runScripts: 'outside-only' });
   const evaluated = dom.window.eval(`(${normalize.toString()})`);
-  return evaluated({ target: selector, generatedName, styled });
+  return evaluated({ target: selector, generatedName, styled, ...(hosts ? { hosts } : {}) });
+}
+
+/** Normalises a mount whose children are given as nodes: strings are text nodes, '<!---->' a comment, other values elements built by build(document). */
+function treeOf(nodes) {
+  const dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>', { runScripts: 'outside-only' });
+  const { document } = dom.window;
+  const app = document.querySelector('#app');
+  for (const node of nodes) {
+    if (node === '<!---->') app.append(document.createComment(''));
+    else if (typeof node === 'string') app.append(document.createTextNode(node));
+    else app.append(node(document));
+  }
+  const evaluated = dom.window.eval(`(${normalize.toString()})`);
+  return evaluated({ target: '#app', generatedName, styled });
 }
 
 const vanillaTabs = (extra = {}) => `<div id="app"><div class="hw-tabs" data-hw="tabs">
@@ -138,6 +152,51 @@ describe('normalize', () => {
 
   it('keeps attribute values as written and drops white-space-only text', () => {
     expect(tree('<div id="app">\n  <div hidden="until-found"> a  \n b </div>\n</div>')).toEqual([{ tag: 'div', attrs: { hidden: 'until-found' }, children: ['a b'] }]);
+  });
+
+  it('joins the text of adjacent text nodes as written before collapsing white space, so the text is the rendered text', () => {
+    const marker = (nodes) => treeOf([(document) => {
+      const span = document.createElement('span');
+      span.className = 'hw-avatar-overflow';
+      for (const node of nodes) span.append(node === '<!---->' ? document.createComment('') : document.createTextNode(node));
+      return span;
+    }])[0].children;
+    // React writes the overflow marker of AvatarGroup as two text nodes; Vue and Angular as one.
+    expect(marker(['+', '2'])).toEqual(['+2']);
+    expect(marker(['+2'])).toEqual(['+2']);
+    expect(differs([{ tag: 'span', attrs: {}, children: marker(['+', '2']) }], [{ tag: 'span', attrs: {}, children: marker(['+2']) }]).equal).toBe(true);
+    expect(marker(['a ', 'b'])).toEqual(['a b']);
+    expect(marker(['a', ' b '])).toEqual(['a b']);
+    // A comment between two text nodes renders nothing: '+' and '2' still read '+2'.
+    expect(marker(['+', '<!---->', '2'])).toEqual(['+2']);
+    // Text that differs in a space still differs.
+    expect(differs([{ tag: 'span', attrs: {}, children: marker(['+', '2']) }], [{ tag: 'span', attrs: {}, children: marker(['+ 2']) }]).equal).toBe(false);
+  });
+
+  it('joins text across an unwrapped host as the rendered text', () => {
+    const host = (text) => (document) => {
+      const element = document.createElement('x-count');
+      element.append(document.createTextNode(text));
+      return element;
+    };
+    expect(treeOf(['+', host('2')])).toEqual(['+2']);
+    expect(treeOf(['Total ', host('2'), ' items'])).toEqual(['Total 2 items']);
+    expect(tree('<div id="app"><p>a<x-wrap>b</x-wrap> c</p></div>')).toEqual([{ tag: 'p', attrs: {}, children: ['ab c'] }]);
+  });
+
+  it('compares a listed Angular host element with an hw- class with the listed tag; nothing else changes', () => {
+    const hosts = { 'hw-avatar': 'span' };
+    const angular = '<guide-example><hw-avatar class="hw-avatar" role="img" aria-label="Sara Ali"><span aria-hidden="true">SA</span></hw-avatar></guide-example>';
+    const vanilla = tree('<div id="app"><span class="hw-avatar" role="img" aria-label="Sara Ali"><span aria-hidden="true">SA</span></span></div>');
+    expect(differs(vanilla, tree(angular, 'guide-example')).path).toBe('$[0].tag');
+    expect(tree(angular, 'guide-example', hosts)).toEqual(vanilla);
+    expect(differs(vanilla, tree(angular, 'guide-example', hosts))).toEqual({ pair: 'vanilla-react', equal: true });
+    // Every attribute and child is compared as before.
+    const other = tree(angular.replace('Sara Ali', 'Sara').replace('SA</span>', 'S</span>'), 'guide-example', hosts);
+    expect(differences(vanilla, other).map((item) => item.path)).toEqual(['$[0].attrs["aria-label"]', '$[0].children[0].children[0]']);
+    // Without an hw- class the element stays an unwrapped host; another custom element stays div.
+    expect(tree('<guide-example><hw-avatar data-x="1"><span>SA</span></hw-avatar></guide-example>', 'guide-example', hosts)).toEqual([{ tag: 'span', attrs: {}, children: ['SA'] }]);
+    expect(tree('<guide-example><hw-badge class="hw-badge">New</hw-badge></guide-example>', 'guide-example', hosts)).toEqual([{ tag: 'div', attrs: { class: 'hw-badge' }, children: ['New'] }]);
   });
 
   // Negative controls: each one must fail.

@@ -1042,6 +1042,25 @@ built type declarations of each package.
   is given) and always renders `div.hw-service-card-icon`, empty when no
   `[hwServiceIcon]` content is projected; React, Vue and the vanilla markup write
   the attribute and the region only when they are given.
+- Progress (React, Vue, Angular) writes `max="100"` when `max` is not given,
+  also on an indeterminate bar, where the vanilla markup
+  (`<progress class="hw-progress" aria-label="Loading"></progress>`) writes no
+  `max`. The appearance and the accessibility tree are the same.
+- Card (Angular): `hw-card` always renders `header.hw-card-header` and
+  `footer.hw-card-footer`, empty when no `[hwCardHeader]` or `[hwCardFooter]`
+  content is projected, while React and Vue render them only with header or
+  footer content. The stylesheet hides an empty header and footer
+  (`.hw-card > :is(.hw-card-header, .hw-card-footer):empty`), so the rendering
+  is the same, but the markup differs.
+- IconButton (Angular) writes `data-shape="square"` and an empty `value`
+  attribute on its button when no shape or value is given; React, Vue and the
+  vanilla markup write neither, so the structure of the four results differs in
+  these two attributes.
+- IconButton (React, Vue, Angular) renders the icon inside a wrapper
+  `span[aria-hidden="true"]`, where the icon button of the `@hawiyah/vanilla`
+  README puts `aria-hidden="true"` on the `span.hw-icon` itself, so the
+  structure differs by one wrapper element. The appearance and the
+  accessibility tree are the same.
 
 #### Left for a later release
 

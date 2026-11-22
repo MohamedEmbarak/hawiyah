@@ -6,8 +6,11 @@
 // Fails (exit 1, one 'HWE-MERGE ...' line per problem) unless the reports are the n
 // shards 1..n of one run of the same pin over the same selection, without --pages or
 // --only, each without a failure, every group key compared in exactly one shard, and
-// the union of the compared keys is exactly the groups of the content manifest. A
-// passing merge prints the summary line a run without --shard prints.
+// the union of the compared keys is exactly the groups of the content manifest, and
+// unless every entry of angular-hosts.json matched an element in the Angular result
+// of a group of its component in one of the shards (an entry of a component without
+// a group whose page exists, a page pending translation, is not judged). A passing merge prints the
+// summary line a run without --shard prints.
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -77,6 +80,25 @@ export function mergeReports(reports, manifest, identity = null) {
     const extra = [...compared.keys()].filter((key) => !expected.includes(key)).sort();
     if (missing.length > 0) problems.push(`HWE-MERGE: ${missing.length} group(s) of the content manifest were compared in no shard: ${missing.join(', ')}`);
     if (extra.length > 0) problems.push(`HWE-MERGE: ${extra.length} compared group(s) belong to no built page: ${extra.join(', ')}`);
+  }
+
+  // Each entry of angular-hosts.json must match an element in the Angular result of a
+  // group of its component in some shard (the shards record every entry).
+  const hosts = new Map();
+  for (const { report } of reports) {
+    for (const item of report?.angularHosts ?? []) {
+      const key = `${item.entry} ${item.component} ${item.element}`;
+      const seenHost = hosts.get(key) ?? { ...item, compared: 0, matched: false };
+      seenHost.compared += (item.compared ?? []).length;
+      seenHost.matched ||= item.matched === true;
+      hosts.set(key, seenHost);
+    }
+  }
+  for (const item of hosts.values()) {
+    // A component without a group in the build whose page exists (pending translation) is not judged.
+    if (item.matched || (item.compared === 0 && item.page === true)) continue;
+    const where = item.compared > 0 ? `the Angular result of the groups of ${item.component} has no element ${item.element} with an hw- class` : `docs/components/ has no page ${item.component}`;
+    problems.push(`HWE-MERGE scripts/equivalence/angular-hosts.json:1: entry ${item.entry} (${item.component}, ${item.element}) matches nothing: ${where}; remove it`);
   }
 
   const items = [...compared.values()];

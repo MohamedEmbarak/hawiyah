@@ -6,7 +6,7 @@ IconButton is a native button that shows an icon and no visible text. It needs a
 
 An icon button stands where the action is familiar and the space is small, such as a download action in a row of a list. The name states the action and, where several rows repeat it, the subject.
 
-```html live example=basic
+```html live example=basic differences=icon-button-adapter-markup
 <button class="hw-button hw-icon-button" type="button" data-variant="ghost" data-size="md" aria-label="Download the receipt"><span class="hw-icon" data-icon="download-01" aria-hidden="true"></span></button>
 ```
 
@@ -28,7 +28,7 @@ template: `<hw-icon-button label="Download the receipt"><span class="hw-icon" da
 
 The `variant` sets the visual family of the button, as it does on Button: `primary`, `default`, `secondary`, `outline`, `outline-white`, `light`, `danger`, `ghost`, `soft` and `link`. Without a variant the button is `ghost`, a low-emphasis action. The `shape` is `square` or `circle`. The `size` is `sm`, `md` or `lg`.
 
-```html live example=variants
+```html live example=variants differences=icon-button-adapter-markup
 <div class="hw-inline">
   <button class="hw-button hw-icon-button" type="button" data-variant="secondary" data-size="md" aria-label="Copy the reference number"><span class="hw-icon" data-icon="copy-01" aria-hidden="true"></span></button>
   <button class="hw-button hw-icon-button" type="button" data-variant="outline" data-size="lg" data-shape="circle" aria-label="Open the document"><span class="hw-icon" data-icon="file-01" aria-hidden="true"></span></button>
@@ -64,7 +64,7 @@ template: `<div class="hw-inline">
 
 A loading button is disabled while its action runs and sets `aria-busy`, so it cannot start the action twice. A disabled button uses the native `disabled` attribute and leaves the tab order. The name of the button does not change in either state; state the progress or the reason in text near the button.
 
-```html live example=states
+```html live example=states differences=icon-button-adapter-markup
 <div class="hw-inline">
   <button class="hw-button hw-icon-button" type="button" data-variant="secondary" data-size="md" aria-label="Refresh the status" aria-busy="true" disabled><span class="hw-icon" data-icon="reload" aria-hidden="true"></span></button>
   <button class="hw-button hw-icon-button" type="button" data-variant="secondary" data-size="md" aria-label="Download the receipt" disabled><span class="hw-icon" data-icon="download-01" aria-hidden="true"></span></button>

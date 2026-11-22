@@ -126,6 +126,17 @@ describe('merge of the shard reports', () => {
     expect(mergeReports(reports(4), manifest, { manifest: 'aaaa', record: 'aaaa', recordFile: 'dist/build-info.json' }).problems).toHaveLength(4);
   });
 
+  it('fails on an entry of angular-hosts.json that matched nothing in any shard', () => {
+    const host = (index, total, matched) => ({ entry: 1, component: 'button', element: 'hw-button', compared: shardGroups(groups, { index, total }).filter((group) => group.id === 'button').map(groupKey), matched });
+    const list = (matchedIn) => reports(4).map(({ file, report }, n) => ({ file, report: { ...report, angularHosts: [host(n + 1, 4, n + 1 === matchedIn)] } }));
+    expect(mergeReports(list(3), manifest).problems).toEqual([]);
+    expect(mergeReports(list(0), manifest).problems).toEqual(['HWE-MERGE scripts/equivalence/angular-hosts.json:1: entry 1 (button, hw-button) matches nothing: the Angular result of the groups of button has no element hw-button with an hw- class; remove it']);
+    const none = (page) => reports(4).map(({ file, report }) => ({ file, report: { ...report, angularHosts: [{ entry: 1, component: 'chip', element: 'hw-chip', page, compared: [], matched: false }] } }));
+    expect(mergeReports(none(false), manifest).problems).toEqual(['HWE-MERGE scripts/equivalence/angular-hosts.json:1: entry 1 (chip, hw-chip) matches nothing: docs/components/ has no page chip; remove it']);
+    // A component whose page exists without a group in the build (pending translation) is not judged.
+    expect(mergeReports(none(true), manifest).problems).toEqual([]);
+  });
+
   it('fails on a shard that ran with --draft (the keyboard rule left out, 5a.8)', () => {
     const list = reports(4);
     list[0] = { file: 'shard-1.json', report: { ...list[0].report, scope: { ...list[0].report.scope, draft: true } } };
