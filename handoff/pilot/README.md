@@ -50,27 +50,47 @@ in 0.3.0 of `CHANGELOG.md`, with the wording fix of item 9.
    corrected with a dated note when the checks are taken in, and the vanilla sentence
    gains the words "out of the header" in 0.3.1.
 
-## Differences that the English pages found
+## The pages of the pilot
 
-Three pages of components without a controller were written in English, reviewed by
-a reader who did not write them, and corrected (`pages/`). They are not in
-`docs/components/`: a page needs its Arabic sibling, and each fails the structure
-comparison on a difference between the adapters.
+- Text field and Service card are in `docs/components/` in both languages. Each was
+  written in English, read by a reviewer who did not write it and corrected, then
+  translated, read for parity and register by another reviewer and corrected. Each
+  names one known difference of aspect structure; the accessibility tree and the
+  rendering of its examples are compared in full and agree.
+- Stack exists in English only (`pages/stack.md`) and is not in the build: the
+  contract forbids the `style` attribute that the vanilla form of a layout primitive
+  needs, so the page has one example and no Variants and states section.
+- Dialog, Combobox and Portal header have checks and draft examples, no pages.
+
+Differences between the adapters that the pages found, each confirmed in the
+published code and recorded under Known defects in 0.3.0:
 
 - Stack (Vue) always writes `data-collapse-at="md"` and `data-side="start"`.
-  Confirmed in the published code and recorded in `CHANGELOG.md`.
 - ServiceCard (Angular) always writes `data-variant` and always renders the icon
-  region. Confirmed and recorded.
+  region.
 - TextField: React and Vue write `aria-labelledby` on the input, vanilla and Angular
   rely on `label[for]`; Angular always writes `data-size="md"`,
   `data-variant="outline"` and `autocomplete="off"`; Vue writes `value=""` on an input
-  without a value. Angular's part is confirmed in the published code; the entry
-  waits for the review of the page.
+  without a value.
 
 A known difference with `ignore` compares the three framework results with each
-other in full, so it cannot carry a difference of one framework adapter (Angular
-ServiceCard, Vue Stack). Such a page passes today only by leaving the whole structure
-comparison out of its groups.
+other in full, so it cannot carry a difference of one framework adapter. The two
+pages therefore leave the whole structure comparison out of their examples.
+
+## What the Arabic pages ask of the tooling
+
+- `HWC-PAR8` wants an Arabic letter in every shown value; an email address, a URL, a
+  telephone number or a number is Latin by nature. Two exception entries cover the
+  Text field page; the rule should exempt the values of such inputs.
+- The string map of `content:scaffold-ar` does not replace a shown `value`, nor
+  one-word `category` and `term` values in the framework blocks, and prints no
+  warning for them.
+- The glossary lacks terms that every form or card page needs; the reviewer
+  proposed fifteen rows (assistive technology, label, hint, placeholder, header,
+  body, footer, title against heading, string, read-only, host element and others).
+- A heading that a rendered example holds (the `h3` of a service card) enters the
+  heading outline of the guide page, because the Angular result is rendered in the
+  page itself.
 
 ## What the review of the English pages asks of the gates
 
