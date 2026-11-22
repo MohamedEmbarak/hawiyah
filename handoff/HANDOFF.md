@@ -214,6 +214,8 @@ Milestone 4, foundation:
 
 Milestone 5, content: 85 component files in English and Arabic (brief page at `/components/<id>`, reference at `/components/<id>/reference`), guides under `docs/guides/`, 13 templates, brand pages, one Arabic glossary, generated install commands and `llms.txt`, structure parity check between the two languages.
 
+The native Arabic reader of the pages is the owner (stated on 22 November 2026). An Arabic page counts as read only after the owner has read it; a review by a model does not replace that reading.
+
 Milestone 6: independent verification (axe, RTL and LTR, reduced motion, keyboard), production build under `/hawiyah/`, then switch GitHub Pages only on the owner's approval.
 
 Approved ideas to include: per-example controls for language, direction, mode and density; install path chooser; evidence panel per component from `components.json`; adapter parity table; recipes by task; shareable editor links; keyboard notes that also drive a test; fixed and tested starter downloads.
