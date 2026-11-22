@@ -41,11 +41,13 @@ recorded in `CHANGELOG.md` yet.
    notice.
 8. Vanilla Portal header keeps the `menu-01` icon on the menu toggle while the
    navigation is expanded; the others switch to `cancel-01`.
-9. Portal header below 48rem, all four adapters: the navigation stays expanded when
-   focus moves from it to the header actions and closes only when focus leaves the
-   header. `PORTAL.md` says "moving focus out" closes it without saying out of what.
-   Either the reference misreads the sentence or the documentation needs the words
-   "out of the header".
+9. Not a difference, a misreading in the reference: Portal header below 48rem keeps
+   the navigation expanded when focus moves from it to the header actions and closes
+   it when focus leaves the header, in all four adapters. The reference (T5) expected
+   it to close. The installed `@hawiyah/vue` `PORTAL.md` says "focus leaving the
+   header"; the vanilla `PORTAL.md` says only "moving focus out". The step is
+   corrected with a dated note when the checks are taken in, and the vanilla sentence
+   gains the words "out of the header" in 0.3.1.
 
 ## What the harness cannot do yet
 
@@ -78,10 +80,29 @@ recorded in `CHANGELOG.md` yet.
 - `known-differences.json` and `keyboard-exceptions.json`: one entry per recorded
   defect above, each citing its `CHANGELOG.md` entry.
 
+## Quotations compared with the published pattern pages
+
+Compared on 22 November 2026 with the Dialog (Modal), Button, Combobox, Disclosure
+and Tabs patterns, the Disclosure Navigation Menu example and the three editable
+combobox examples on www.w3.org.
+
+- Check modules (the text a reader sees in the check report): Dialog 8 of 8
+  quotations are verbatim, Portal header 6 of 6, Tabs 3 of 3. Combobox 24 of 26: the
+  Enter quotation, used twice, leaves out three words ("Accepts the focused option
+  in the listbox by closing the popup"). The wrapping of the arrow keys is quoted
+  from the example pages, where it is verbatim; the pattern page itself says the
+  last option "either returns focus to the combobox or does nothing".
+- `combobox/reference.md`: one sentence is quoted that the pattern does not
+  contain ("has aria-activedescendant set to empty string or does not have the
+  attribute"); the expectation it supports also cites the core contract. Three
+  further quotations are paraphrases in quotation marks; their meaning agrees.
+- `dialog/reference.md`: two quotations change the end of the sentence (focus after
+  closing, in the Dialog and Button patterns); the part the checks use is verbatim.
+- To correct when the checks are taken in: the Enter quotation, the sentence the
+  pattern does not contain, and the five paraphrases.
+
 ## Not checked
 
-- The quotations of the WAI-ARIA Authoring Practices in the three references were
-  written without access to the published pages and need one comparison with them.
 - Shift+Tab and the optional arrow keys of the Portal header; the optional keys of
   the Combobox pattern (Alt with the arrows, Left and Right Arrow, Escape on a closed
   list, Enter with no active option); an Escape that the application cancels in
