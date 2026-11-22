@@ -58,21 +58,21 @@ An error is shown in a paragraph after the control, and the input is marked with
 ```html live example=error differences=text-field-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="error-email" id="error-email-label">Email address</label>
-  <input class="hw-input" id="error-email" name="email" type="email" autocomplete="email" value="applicant" aria-invalid="true" aria-describedby="error-email-error">
+  <input class="hw-input" id="error-email" name="email" type="email" autocomplete="email" value="applicant.example.com" aria-invalid="true" aria-describedby="error-email-error">
   <p class="hw-error" id="error-email-error">Enter an email address in the form name@example.com.</p>
 </div>
 ```
 
 ```tsx live example=error
-<TextField label="Email address" name="email" type="email" autoComplete="email" defaultValue="applicant" error="Enter an email address in the form name@example.com." />
+<TextField label="Email address" name="email" type="email" autoComplete="email" defaultValue="applicant.example.com" error="Enter an email address in the form name@example.com." />
 ```
 
 ```vue live example=error
-<TextField label="Email address" name="email" type="email" autocomplete="email" default-value="applicant" error="Enter an email address in the form name@example.com." />
+<TextField label="Email address" name="email" type="email" autocomplete="email" default-value="applicant.example.com" error="Enter an email address in the form name@example.com." />
 ```
 
 ```ts live example=error framework=angular
-template: `<hw-text-field label="Email address" name="email" type="email" autocomplete="email" value="applicant" error="Enter an email address in the form name@example.com." />`
+template: `<hw-text-field label="Email address" name="email" type="email" autocomplete="email" value="applicant.example.com" error="Enter an email address in the form name@example.com." />`
 ```
 
 ### Disabled
@@ -105,20 +105,20 @@ A read-only field keeps its value in the form and stays in the tab order, so a r
 ```html live example=readonly differences=text-field-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="readonly-organisation" id="readonly-organisation-label">Organisation</label>
-  <input class="hw-input" id="readonly-organisation" name="organisation" autocomplete="organization" value="Ministry of Example" readonly>
+  <input class="hw-input" id="readonly-organisation" name="organisation" autocomplete="organization" value="Example Trading Company" readonly>
 </div>
 ```
 
 ```tsx live example=readonly
-<TextField label="Organisation" name="organisation" autoComplete="organization" defaultValue="Ministry of Example" readOnly />
+<TextField label="Organisation" name="organisation" autoComplete="organization" defaultValue="Example Trading Company" readOnly />
 ```
 
 ```vue live example=readonly
-<TextField label="Organisation" name="organisation" autocomplete="organization" default-value="Ministry of Example" readonly />
+<TextField label="Organisation" name="organisation" autocomplete="organization" default-value="Example Trading Company" readonly />
 ```
 
 ```ts live example=readonly framework=angular
-template: `<hw-text-field label="Organisation" name="organisation" autocomplete="organization" value="Ministry of Example" [readOnly]="true" />`
+template: `<hw-text-field label="Organisation" name="organisation" autocomplete="organization" value="Example Trading Company" [readOnly]="true" />`
 ```
 
 ## API

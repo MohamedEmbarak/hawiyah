@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "file": "docs/components/text-field.ar.md",
+    "text": "applicant@example.com",
+    "reason": "The value of an email field: an email address is written in Latin script, and an address in Arabic script is not a valid value of the HTML email type.",
+    "approvedBy": "lead"
+  },
+  {
+    "file": "docs/components/text-field.ar.md",
+    "text": "applicant.example.com",
+    "reason": "The invalid value of the error example: what a person types into an email field when the at sign is left out; it is Latin script for the same reason as the valid address.",
+    "approvedBy": "lead"
+  }
+]
