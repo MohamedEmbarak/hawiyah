@@ -21,8 +21,11 @@ export interface EvidenceTexts {
   /** Between two items of a line: a semicolon in the page's language. */
   readonly separator: string;
   readonly notesIntro: string;
-  readonly openIntro: (version: string) => string;
+  /** keyboard: the list ends with the item of keyboardUnchecked. */
+  readonly openIntro: (version: string, keyboard: boolean) => string;
   readonly noOpen: (name: string, version: string) => string;
+  /** The open item of a component whose keyboard outcomes keyboard-exceptions.json leaves unchecked. */
+  readonly keyboardUnchecked: string;
   readonly defect: (version: string) => string;
   readonly difference: string;
   /** Before the id of a documented difference shown under the Known defects entry it cites. */
@@ -45,8 +48,11 @@ export const evidenceTexts: Texts<EvidenceTexts> = {
     gapsIntro: 'Kinds of evidence that components.json records for some adapters and not for others, with the adapters that have none:',
     separator: '; ',
     notesIntro: 'Notes recorded in components.json:',
-    openIntro: (version) => `Each entry of Known defects in ${version} in CHANGELOG.md that names this component, and each documented difference of the equivalence check:`,
+    openIntro: (version, keyboard) => (keyboard
+      ? `Each entry of Known defects in ${version} in CHANGELOG.md that names this component, each documented difference of the equivalence check, and the keyboard behaviour that the checks of the guide do not verify yet:`
+      : `Each entry of Known defects in ${version} in CHANGELOG.md that names this component, and each documented difference of the equivalence check:`),
     noOpen: (name, version) => `No entry of Known defects in ${version} in CHANGELOG.md and no documented difference of the equivalence check names ${name}.`,
+    keyboardUnchecked: 'The keyboard behaviour in the keyboard table of this page is documented from the READMEs of the installed packages and is not yet verified by the keyboard checks of the guide.',
     defect: (version) => `CHANGELOG.md, Known defects in ${version}`,
     difference: 'documented difference',
     differenceOf: 'Documented difference of the equivalence check',
@@ -65,8 +71,11 @@ export const evidenceTexts: Texts<EvidenceTexts> = {
     gapsIntro: 'فئات الأدلة التي يسجّلها components.json لبعض المحوّلات دون غيرها، مع المحوّلات التي لا دليل لها منها:',
     separator: '؛ ',
     notesIntro: 'الملاحظات المسجّلة في components.json:',
-    openIntro: (version) => `كل بند من العيوب المعروفة في الإصدار ${version} في CHANGELOG.md يذكر هذا المكوّن، وكل اختلاف موثّق في فحص التكافؤ:`,
+    openIntro: (version, keyboard) => (keyboard
+      ? `كل بند من العيوب المعروفة في الإصدار ${version} في CHANGELOG.md يذكر هذا المكوّن، وكل اختلاف موثّق في فحص التكافؤ، وسلوك لوحة المفاتيح الذي لم تتحقق منه فحوص الدليل بعد:`
+      : `كل بند من العيوب المعروفة في الإصدار ${version} في CHANGELOG.md يذكر هذا المكوّن، وكل اختلاف موثّق في فحص التكافؤ:`),
     noOpen: (name, version) => `لا بند مفتوحًا للمكوّن: ${name}، فلا يذكره أي بند من العيوب المعروفة في الإصدار ${version} في CHANGELOG.md، ولا أي اختلاف موثّق في فحص التكافؤ.`,
+    keyboardUnchecked: 'سلوك لوحة المفاتيح في جدول التفاعل من لوحة المفاتيح في هذه الصفحة موثّق من ملفات README للحزم المثبّتة، ولم تتحقق منه فحوص لوحة المفاتيح في الدليل بعد.',
     defect: (version) => `CHANGELOG.md، العيوب المعروفة في الإصدار ${version}`,
     difference: 'اختلاف موثّق',
     differenceOf: 'اختلاف موثّق في فحص التكافؤ',

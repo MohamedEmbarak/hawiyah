@@ -228,7 +228,18 @@ export interface DifferenceItem {
  */
 export type OpenItem =
   | { readonly kind: 'defect'; readonly text: readonly Inline[]; readonly differences: readonly DifferenceItem[] }
-  | DifferenceItem;
+  | DifferenceItem
+  | KeyboardItem;
+
+/**
+ * The keyboard outcomes of the component are not checked: an entry of
+ * scripts/equivalence/keyboard-exceptions.json leaves them out of step 80, and the
+ * keyboard table is written from the package READMEs. The panel states it in the
+ * page's language (evidenceTexts.keyboardUnchecked).
+ */
+export interface KeyboardItem {
+  readonly kind: 'keyboard';
+}
 
 /** A kind of evidence that some built adapters have and these built adapters do not. */
 export interface EvidenceGap {

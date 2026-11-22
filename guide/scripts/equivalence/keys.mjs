@@ -1,11 +1,14 @@
 // The keyboard rule of step 80 (5a.8, leadAmendments A1 and A2; HWE-KEYS).
 //
 // Scope: every component whose page targets a controller factory of the
-// installed @hawiyah/vanilla (targets.mjs), unless keyboard-exceptions.json leaves
-// it out. For each page and language in scope, the keys of its keyboard table
-// (the manifest of step 20) equal the union of the keys that the steps of the
-// checks its groups name declare; a key that cannot be pressed in a sandboxed
-// frame is an entry of keyboard-exceptions.json. Every step has an expect function
+// installed @hawiyah/vanilla (targets.mjs). For each page and language in scope, the
+// keys of its keyboard table (the manifest of step 20) equal the union of the keys
+// that the steps of the checks its groups name declare; a key that cannot be pressed
+// in a sandboxed frame is an entry { component, key, reason, approvedBy } of
+// keyboard-exceptions.json. An entry { component, reason, reference, approvedBy }
+// leaves a component out of that binding (its outcomes are not checked): its page
+// keeps its keyboard table, its groups name no check, and step 80 prints one line for
+// it (uncheckedLine). Every step has an expect function
 // (the chained oracle of G6 of the 5a fix round); a step that declares keys has a
 // one-line outcome and the reference it is taken from; the harness requires each
 // step to press exactly the keys it declares, counted from the trusted keydown
@@ -29,26 +32,49 @@ export const isKey = (key) => typeof key === 'string' && key.split('+').every((p
 /** The written name of a key or chord in a language ('Right Arrow', 'Shift + Tab'). */
 export const keyName = (key, lang = 'en') => key.split('+').map((part) => KEY_NAMES[part]?.[lang] ?? part).join(' + ');
 
+/** The two forms of an entry of keyboard-exceptions.json, by their sorted fields. */
+const KEY_ENTRY = ['approvedBy', 'component', 'key', 'reason'];
+const COMPONENT_ENTRY = ['approvedBy', 'component', 'reason', 'reference'];
+
 /**
- * Reads keyboard-exceptions.json: [{ component, key?, reason, approvedBy }]. An
- * entry without key leaves the whole component out of the rule (A2); an entry
- * with key accepts that documented key without a step (a key a sandboxed frame
- * cannot press). The list is the lead's (A4).
+ * The errors of the form of keyboard-exceptions.json (the lead's list, A4). An entry
+ * is one of two forms, with non-empty string values:
+ *   { component, key, reason, approvedBy }        accepts one documented key without
+ *                                                 a step (a key a sandboxed frame cannot press);
+ *   { component, reason, reference, approvedBy }  leaves the component out of the rule
+ *                                                 that binds its keyboard table to checks:
+ *                                                 its table is written from the package
+ *                                                 READMEs (reference: '@hawiyah/<name>
+ *                                                 README.md: "<sentence>"' or a CHANGELOG.md
+ *                                                 entry), read by the reviewer, and its
+ *                                                 outcomes are not checked.
  */
+export function keyboardExceptionErrors(list) {
+  const at = 'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1:';
+  if (!Array.isArray(list)) return [`${at} the file must hold an array`];
+  const errors = [];
+  list.forEach((entry, index) => {
+    const fields = Object.keys(entry && typeof entry === 'object' && !Array.isArray(entry) ? entry : {}).sort();
+    const form = [KEY_ENTRY, COMPONENT_ENTRY].find((item) => item.join() === fields.join());
+    if (!form || fields.some((field) => typeof entry[field] !== 'string' || entry[field].trim() === '')) {
+      errors.push(`${at} entry ${index + 1} must be { component, key, reason, approvedBy } (a key without a step) or { component, reason, reference, approvedBy } (a component whose keyboard outcomes are not checked), with non-empty values`);
+      return;
+    }
+    if (form === KEY_ENTRY && !isKey(entry.key)) errors.push(`${at} entry ${index + 1}: ${entry.key} is not a key of KEY_NAMES`);
+  });
+  return errors;
+}
+
+/** Reads keyboard-exceptions.json and throws with the errors of its form (keyboardExceptionErrors). */
 export function readKeyboardExceptions(file = KEYBOARD_EXCEPTIONS_FILE) {
   const list = JSON.parse(readFileSync(file, 'utf8'));
-  if (!Array.isArray(list)) throw new Error('keyboard-exceptions.json must hold an array');
-  list.forEach((entry, index) => {
-    const keys = Object.keys(entry ?? {}).sort();
-    const allowed = ['approvedBy', 'component', 'key', 'reason'];
-    const strings = keys.every((key) => typeof entry[key] === 'string' && entry[key].trim() !== '');
-    if (!keys.includes('component') || !keys.includes('reason') || !keys.includes('approvedBy') || keys.some((key) => !allowed.includes(key)) || !strings) {
-      throw new Error(`keyboard-exceptions.json entry ${index + 1} must be { component, key?, reason, approvedBy } with non-empty values`);
-    }
-    if (entry.key !== undefined && !isKey(entry.key)) throw new Error(`keyboard-exceptions.json entry ${index + 1}: ${entry.key} is not a key of KEY_NAMES`);
-  });
+  const errors = keyboardExceptionErrors(list);
+  if (errors.length > 0) throw new Error(errors.join('\n'));
   return list;
 }
+
+/** The line step 80 prints for each page whose keyboard outcomes a keyboard-exceptions.json entry leaves unchecked. */
+export const uncheckedLine = (id) => `keyboard outcomes not checked: ${id}`;
 
 /**
  * Ids of components.json whose page targets a controller factory that the
@@ -102,33 +128,43 @@ export function stepErrors(check) {
 }
 
 /**
- * The keyboard rule over the pages of a run. Returns { errors, report }, where
- * report lists per page and language each table row with the steps that press
- * its keys (the check report prints them beside the row).
- * @param {{ pages: any[], checks: Map<string, any>, scope: Map<string, string[]>, exceptions: any[] }} input
+ * The keyboard rule over the pages of a run. Returns { errors, report, unchecked },
+ * where report lists per page and language each table row with the steps that press
+ * its keys (the check report prints them beside the row) and unchecked the ids of the
+ * pages whose keyboard outcomes an entry { component, reason, reference, approvedBy }
+ * leaves unchecked. Such a page keeps its keyboard table (the form of HWC-KEYS; a
+ * missing table fails here), and its groups name no check: an entry for a page whose
+ * groups name checks fails, and so does an entry that matches no page (knownPages:
+ * the ids of every page that exists, the pages of the run by default; an entry of a
+ * page outside the run is not judged otherwise). referenceError(reference) returns
+ * the problem of the entry's reference, or null.
+ * @param {{ pages: any[], checks: Map<string, any>, scope: Map<string, string[]>, exceptions: any[], knownPages?: Iterable<string>, referenceError?: (reference: string) => string | null }} input
  *   pages: manifest pages; checks: every check their groups name, loaded.
  */
-export function keyboardRule({ pages, checks, scope, exceptions }) {
+export function keyboardRule({ pages, checks, scope, exceptions, knownPages = null, referenceError = () => null }) {
   const errors = [];
   const report = [];
+  const unchecked = [];
   const usedExceptions = new Set();
   for (const page of pages) {
     const left = exceptions.find((entry) => entry.component === page.id && entry.key === undefined);
-    const bound = scope.has(page.id) && !left;
+    const controller = scope.has(page.id);
+    const bound = controller && !left;
     const names = [...new Set((page.liveGroups ?? []).flatMap((group) => (group.check ? group.check.split(',') : [])))];
     const steps = names.flatMap((name) => (checks.get(name)?.steps ?? []).filter((step) => Array.isArray(step.keys)).map((step) => ({ check: name, step })));
     const pressed = new Map();
     for (const item of steps) for (const key of item.step.keys) pressed.set(key, [...(pressed.get(key) ?? []), item]);
+    if (controller && left) unchecked.push(page.id);
     for (const lang of page.langs ?? []) {
       const table = page.keyboard?.[lang] ?? null;
       const file = pageFile(page.id, lang);
       const line = table?.line ?? 1;
-      if (!bound) {
-        if (table) report.push({ page: page.id, lang, bound: false, reason: left ? `left out by keyboard-exceptions.json: ${left.reason}` : 'no controller of @hawiyah/vanilla', caption: table.caption, rows: table.rows.map((row) => ({ ...row, steps: [] })) });
+      if (controller && !table) {
+        errors.push(`HWE-KEYS ${file}:1: ${page.id} has a controller (${scope.get(page.id).join(', ')}), so the Accessibility section has the keyboard table "${lang === 'ar' ? 'جدول: ' : 'Table: '}..." ${left ? 'written from the READMEs of the installed packages (scripts/equivalence/keyboard-exceptions.json leaves its outcomes unchecked, not the table)' : 'whose keys the checks of its groups press'}`);
         continue;
       }
-      if (!table) {
-        errors.push(`HWE-KEYS ${file}:1: ${page.id} has a controller (${scope.get(page.id).join(', ')}), so the Accessibility section has the keyboard table "${lang === 'ar' ? 'جدول: ' : 'Table: '}..." whose keys the checks of its groups press (or the lead lists the component in scripts/equivalence/keyboard-exceptions.json)`);
+      if (!bound) {
+        if (table) report.push({ page: page.id, lang, bound: false, reason: left && controller ? `keyboard outcomes not checked, keyboard-exceptions.json: ${left.reason}` : 'no controller of @hawiyah/vanilla', caption: table.caption, rows: table.rows.map((row) => ({ ...row, steps: [] })) });
         continue;
       }
       const documented = new Set(table.rows.flatMap((row) => row.keys));
@@ -157,14 +193,27 @@ export function keyboardRule({ pages, checks, scope, exceptions }) {
   }
   // An entry that matches nothing fails (G16 of the 5a fix round): an entry for a key that a
   // table of the page documents and no step presses, or for a component in the rule's scope.
+  const existing = new Set(knownPages ?? pages.map((page) => page.id));
   exceptions.forEach((entry, index) => {
+    const at = `HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry ${index + 1} (${entry.component}${entry.key ? ` ${entry.key}` : ''})`;
+    if (entry.key === undefined) {
+      if (!existing.has(entry.component)) {
+        errors.push(`${at} matches no page: docs/components/ has no page ${entry.component}; remove it`);
+        return;
+      }
+      const problem = typeof entry.reference === 'string' ? referenceError(entry.reference) : null;
+      if (problem) errors.push(`${at}: the reference ${problem}`);
+    }
     const page = pages.find((item) => item.id === entry.component);
     if (!page) return;
-    const at = `HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry ${index + 1} (${entry.component}${entry.key ? ` ${entry.key}` : ''})`;
     if (entry.key === undefined && !scope.has(entry.component)) errors.push(`${at} matches nothing: ${entry.component} has no controller of @hawiyah/vanilla, so the rule does not bind its page; remove it`);
+    if (entry.key === undefined && scope.has(entry.component)) {
+      const named = [...new Set((page.liveGroups ?? []).flatMap((group) => (group.check ? group.check.split(',') : [])))];
+      if (named.length > 0) errors.push(`${at} leaves the keyboard outcomes of ${entry.component} unchecked, but its groups name the checks ${named.join(', ')}; a component with checks is bound to them, so remove the entry`);
+    }
     if (entry.key !== undefined && !usedExceptions.has(`${entry.component} ${entry.key}`)) errors.push(`${at} matches nothing: no keyboard table of the page documents ${keyName(entry.key)} without a step that presses it; remove it`);
   });
-  return { errors, report };
+  return { errors, report, unchecked };
 }
 
 /** The lines of the check report: each table row (its keys joined by the comma of the page's language), then the steps that press its keys with their outcome. */

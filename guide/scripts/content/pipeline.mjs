@@ -51,6 +51,11 @@ export function readComponents(componentsFile) {
 /** The default list of English pages whose Arabic sibling is still being written (5a.6). */
 export const PENDING_FILE = join(dirname(fileURLToPath(import.meta.url)), 'pending-translation.json');
 
+/** The line of step 20 that counts the English pages pending translation (printed by every build, deployable or not). */
+export function pendingLine(pending) {
+  return `content: ${pending.length} pages pending translation${pending.length ? ` (${pending.join(', ')}: English only, no route until the Arabic page exists)` : ''}`;
+}
+
 /** Reads pending-translation.json: the ids it lists. */
 export function readPending(file = PENDING_FILE) {
   if (!existsSync(file)) return new Set();

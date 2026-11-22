@@ -2,7 +2,9 @@
 // steps of the checks (HWE-KEYS), the Tabs oracle, and on a stand-in page in
 // Chromium the outcome assertions (HWE-EXPECT), the keys a step presses
 // (HWE-CHECK) and axe in each frame document (HWE-AXE).
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -10,8 +12,8 @@ import tabsActivate from '../checks/tabs-activate.mjs';
 import tabsKeyboard from '../checks/tabs-keyboard.mjs';
 import tabsKeyboardVertical from '../checks/tabs-keyboard-vertical.mjs';
 import { nextEnabled, previousEnabled, tabsCheck, target } from '../checks/lib/tabs.mjs';
-import { isKey, keyName, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors } from '../keys.mjs';
-import { awaitOutcome, axeFrames, chromiumPath, runChecks } from '../run.mjs';
+import { isKey, keyName, keyboardExceptionErrors, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors, uncheckedLine } from '../keys.mjs';
+import { awaitOutcome, axeFrames, chromiumPath, documentReferenceError, runChecks } from '../run.mjs';
 
 const guideDir = fileURLToPath(new URL('../../../', import.meta.url));
 const componentsFile = fileURLToPath(new URL('../../../../components.json', import.meta.url));
@@ -60,7 +62,12 @@ describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
 
   it('fails on a component with a controller whose page has no keyboard table, unless the lead leaves it out', () => {
     expect(keyboardRule({ pages: [page(null)], checks, scope, exceptions: [] }).errors[0]).toMatch(/^HWE-KEYS docs\/components\/tabs\.md:1: tabs has a controller \(createTabs\), so the Accessibility section has the keyboard table/);
-    expect(keyboardRule({ pages: [page(null)], checks, scope, exceptions: [{ component: 'tabs', reason: 'r', approvedBy: 'lead' }] }).errors).toEqual([]);
+    // The owner's decision for the launch (renewed assertion; it read errors []): an entry that
+    // leaves the component out keeps the table required and refuses groups that name checks.
+    expect(keyboardRule({ pages: [page(null)], checks, scope, exceptions: [{ component: 'tabs', reason: 'r', reference: 'x', approvedBy: 'lead' }] }).errors).toEqual([
+      'HWE-KEYS docs/components/tabs.md:1: tabs has a controller (createTabs), so the Accessibility section has the keyboard table "Table: ..." written from the READMEs of the installed packages (scripts/equivalence/keyboard-exceptions.json leaves its outcomes unchecked, not the table)',
+      'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (tabs) leaves the keyboard outcomes of tabs unchecked, but its groups name the checks tabs-keyboard; a component with checks is bound to them, so remove the entry',
+    ]);
     // A page without a controller is not bound: its table is reported, never failed.
     const button = { ...page(table([{ keys: ['Enter'], action: 'Activates.' }]), ''), id: 'button' };
     const result = keyboardRule({ pages: [button], checks, scope, exceptions: [] });
@@ -85,6 +92,84 @@ describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
     ]);
     // An entry of a page outside the run is not judged.
     expect(keyboardRule({ pages: [page(table(ROWS))], checks, scope, exceptions: [{ component: 'accordion', key: 'F10', reason: 'r', approvedBy: 'lead' }] }).errors).toEqual([]);
+  });
+
+  // The owner's decision for the launch: Tabs has keyboard outcome checks; the other components with
+  // a controller have a keyboard table written from the package READMEs, read by the reviewer.
+  describe('an entry { component, reason, reference, approvedBy }: keyboard outcomes not checked', () => {
+    const dialogScope = new Map([...scope, ['dialog', ['createDialog']]]);
+    const DIALOG_ROWS = [{ keys: ['Escape'], action: 'Closes the dialog.' }, { keys: ['Tab', 'Shift+Tab'], action: 'Moves focus inside the dialog.' }];
+    const dialog = (keyboard = { en: table(DIALOG_ROWS), ar: table(DIALOG_ROWS) }, liveGroups = [{ example: 'basic', static: true }]) => ({ id: 'dialog', langs: ['en', 'ar'], liveGroups, keyboard });
+    const unchecked = { component: 'dialog', reason: 'Keyboard outcome checks of Dialog follow the launch.', reference: '@hawiyah/vanilla README.md: "Escape closes the dialog."', approvedBy: 'lead' };
+
+    it('leaves the table unbound, names the page as unchecked and prints its line', () => {
+      const result = keyboardRule({ pages: [dialog(), page(table(ROWS))], checks, scope: dialogScope, exceptions: [unchecked] });
+      expect(result.errors).toEqual([]);
+      expect(result.unchecked).toEqual(['dialog']);
+      expect(result.unchecked.map(uncheckedLine)).toEqual(['keyboard outcomes not checked: dialog']);
+      expect(result.report.filter((item) => item.page === 'dialog').map((item) => [item.lang, item.bound, item.reason])).toEqual([
+        ['en', false, 'keyboard outcomes not checked, keyboard-exceptions.json: Keyboard outcome checks of Dialog follow the launch.'],
+        ['ar', false, 'keyboard outcomes not checked, keyboard-exceptions.json: Keyboard outcome checks of Dialog follow the launch.'],
+      ]);
+      expect(keyboardReportLines(result.report)[0]).toBe('keyboard: dialog/en "Keyboard interaction of Tabs" (not bound: keyboard outcomes not checked, keyboard-exceptions.json: Keyboard outcome checks of Dialog follow the launch.)');
+      // Tabs stays bound to its checks.
+      expect(result.report.find((item) => item.page === 'tabs').bound).toBe(true);
+      expect(keyboardRule({ pages: [page(table(ROWS))], checks, scope, exceptions: [] }).unchecked).toEqual([]);
+    });
+
+    it('still requires the keyboard table in every language', () => {
+      expect(keyboardRule({ pages: [dialog({ en: table(DIALOG_ROWS) })], checks, scope: dialogScope, exceptions: [unchecked] }).errors).toEqual([
+        'HWE-KEYS docs/components/dialog.ar.md:1: dialog has a controller (createDialog), so the Accessibility section has the keyboard table "جدول: ..." written from the READMEs of the installed packages (scripts/equivalence/keyboard-exceptions.json leaves its outcomes unchecked, not the table)',
+      ]);
+    });
+
+    it('fails on an entry for a component whose groups name checks, and on an entry that matches no page', () => {
+      expect(keyboardRule({ pages: [dialog(undefined, [{ example: 'basic', check: 'tabs-click' }])], checks, scope: dialogScope, exceptions: [unchecked] }).errors).toEqual([
+        'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (dialog) leaves the keyboard outcomes of dialog unchecked, but its groups name the checks tabs-click; a component with checks is bound to them, so remove the entry',
+      ]);
+      expect(keyboardRule({ pages: [page(table(ROWS))], checks, scope, exceptions: [{ ...unchecked, component: 'combobox' }], knownPages: ['tabs', 'dialog'] }).errors).toEqual([
+        'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (combobox) matches no page: docs/components/ has no page combobox; remove it',
+      ]);
+      // A page that exists outside the run (check:page of another page) is not judged further.
+      expect(keyboardRule({ pages: [page(table(ROWS))], checks, scope, exceptions: [unchecked], knownPages: ['tabs', 'dialog'] }).errors).toEqual([]);
+      // A component without a controller is not bound, so the entry matches nothing.
+      const button = { ...page(table([{ keys: ['Enter'], action: 'Activates.' }]), ''), id: 'button' };
+      expect(keyboardRule({ pages: [button], checks, scope, exceptions: [{ ...unchecked, component: 'button' }] }).errors).toEqual([
+        'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (button) matches nothing: button has no controller of @hawiyah/vanilla, so the rule does not bind its page; remove it',
+      ]);
+    });
+
+    it('checks the reference against the installed README or CHANGELOG.md', () => {
+      const readme = (name) => (name === 'vanilla' ? 'Escape closes the dialog. Focus returns to the opener.' : null);
+      const referenceError = (reference) => documentReferenceError(reference, { readme, changelog: '# Changelog\n\n## 0.3.0\n\n#### Known defects in 0.3.0\n\n- Dialog (React) ignores autoFocus.\n' });
+      expect(keyboardRule({ pages: [dialog()], checks, scope: dialogScope, exceptions: [unchecked], referenceError }).errors).toEqual([]);
+      expect(keyboardRule({ pages: [dialog()], checks, scope: dialogScope, exceptions: [{ ...unchecked, reference: 'CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Dialog (React) ignores autoFocus.' }], referenceError }).errors).toEqual([]);
+      expect(keyboardRule({ pages: [dialog()], checks, scope: dialogScope, exceptions: [{ ...unchecked, reference: '@hawiyah/vanilla README.md: "Enter closes the dialog."' }], referenceError }).errors).toEqual([
+        'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (dialog): the reference quotes a sentence that the README of the installed @hawiyah/vanilla does not hold',
+      ]);
+      expect(keyboardRule({ pages: [dialog()], checks, scope: dialogScope, exceptions: [{ ...unchecked, reference: 'the dialog pattern' }], referenceError }).errors[0]).toMatch(/^HWE-KEYS scripts\/equivalence\/keyboard-exceptions\.json:1: entry 1 \(dialog\): the reference must be '@hawiyah\/<name> README\.md: "<sentence>"' or a CHANGELOG\.md entry \(source must read/);
+    });
+
+    it('has exactly two forms with non-empty values', () => {
+      const key = { component: 'tabs', key: 'F10', reason: 'r', approvedBy: 'lead' };
+      expect(keyboardExceptionErrors([key, unchecked])).toEqual([]);
+      const form = (n) => `HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry ${n} must be { component, key, reason, approvedBy } (a key without a step) or { component, reason, reference, approvedBy } (a component whose keyboard outcomes are not checked), with non-empty values`;
+      const { reference: _reference, ...withoutReference } = unchecked;
+      expect(keyboardExceptionErrors([
+        withoutReference, { ...key, reference: 'x' }, { ...unchecked, reference: ' ' }, { ...unchecked, extra: 'x' }, null, { ...key, key: 'Return' },
+      ])).toEqual([form(1), form(2), form(3), form(4), form(5), 'HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 6: Return is not a key of KEY_NAMES']);
+      expect(keyboardExceptionErrors({})).toEqual(['HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: the file must hold an array']);
+      // The list is read through the same form.
+      const scratch = mkdtempSync(join(tmpdir(), 'hawiyah-keyboard-'));
+      try {
+        writeFileSync(join(scratch, 'list.json'), JSON.stringify([withoutReference]));
+        expect(() => readKeyboardExceptions(join(scratch, 'list.json'))).toThrow(form(1));
+        writeFileSync(join(scratch, 'list.json'), JSON.stringify([unchecked, key]));
+        expect(readKeyboardExceptions(join(scratch, 'list.json'))).toEqual([unchecked, key]);
+      } finally {
+        rmSync(scratch, { recursive: true, force: true });
+      }
+    });
   });
 
   it('fails on a check without read, assert or negative control, a step without expect, and a keyed step without outcome or reference', () => {

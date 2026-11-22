@@ -1,4 +1,6 @@
 {
-  "$comment": "English component pages whose Arabic sibling is still being written (5a.6 of milestone 5): an id listed here may have docs/components/<id>.md without <id>.ar.md. Such a page is checked in English by check:page and gets no route in the build, which prints 'content: <n> pages pending translation'. An entry whose Arabic page exists, or whose English page does not, fails step 20 (HWC-FILE). The milestone ends with an empty list.",
-  "pages": []
+  "$comment": "English component pages whose Arabic sibling is still being written (5a.6 of milestone 5): an id listed here may have docs/components/<id>.md without <id>.ar.md. The writer of the English page adds its id, and the writer of the Arabic page removes it; the list is not one of the lead's lists. Such a page is checked in English by check:page and gets no route in the build, which prints 'content: <n> pages pending translation'. An entry whose Arabic page exists, or whose English page does not, fails step 20 (HWC-FILE). The milestone ends with an empty list.",
+  "pages": [
+    "stack"
+  ]
 }

@@ -24,7 +24,9 @@
 //
 // --lang en checks the English page alone (while its Arabic page is behind). An
 // English page without its Arabic sibling is checked in English only, and only
-// while scripts/content/pending-translation.json lists it. --draft leaves out
+// while scripts/content/pending-translation.json lists it: the writer of the
+// English page adds its id there, and the writer of the Arabic page removes it;
+// without the entry the run names the file to add it to. --draft leaves out
 // HWE-KEYS (5a.8: the keys of the keyboard table equal the keys the steps of the
 // page's checks press), since a check is written after the page; the steps that
 // exist still assert their outcomes. check:page is a
@@ -219,7 +221,9 @@ export function pageContent(options) {
   const findings = [];
   const hasArabic = existsSync(arPath);
   if (!hasArabic && !pending.has(id)) {
-    findings.push({ code: 'HWC-FILE', file: `${dirLabel}/${id}.md`, line: 1, message: `the English page has no Arabic sibling ${id}.ar.md` });
+    // --lang en is the run of the writer of the English page, who lists the id while the Arabic page is written.
+    const next = options.lang === 'en' ? `; while it is written, add ${id} to guide/scripts/content/pending-translation.json (the writer of the Arabic page removes it)` : '';
+    findings.push({ code: 'HWC-FILE', file: `${dirLabel}/${id}.md`, line: 1, message: `the English page has no Arabic sibling ${id}.ar.md${next}` });
   }
   if (hasArabic && pending.has(id)) {
     findings.push({ code: 'HWC-FILE', file: 'guide/scripts/content/pending-translation.json', line: 1, message: `${id} is listed as pending translation, but ${dirLabel}/${id}.ar.md exists; remove the entry` });
@@ -348,6 +352,9 @@ export async function checkPage(options) {
           groupsFile, manifestFile, outDir: join(pageDir, 'equivalence'), examplesDir: join(pageDir, 'examples', 'frames'),
           workers: options.workers ?? undefined, log: (line) => log(`  ${line}`),
           keys: !options.draft, keyReport: true,
+          // The pages that exist (English files of the page directory and of docs/components/): an entry of
+          // keyboard-exceptions.json that leaves a component unchecked must match one of them.
+          knownPages: [...new Set([componentsDir, join(repoDir, 'docs', 'components')].flatMap((dir) => (existsSync(dir) ? readdirSync(dir) : []).flatMap((name) => /^([a-z0-9-]+)\.md$/.exec(name)?.[1] ?? [])))],
         });
         log(report.summary);
       } catch (error) {

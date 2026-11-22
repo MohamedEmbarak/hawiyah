@@ -5,8 +5,9 @@
 // generated note of a table read from the stylesheet, the compliance sentence.
 // Copied: the API table bodies and every code listing. Copied with the reader
 // strings replaced from the writer's string map (scripts/content/string-map.mjs,
-// once per string, applied to all four frameworks of every group): the live
-// blocks. Left in English for the writer to translate in place: every other
+// once per string, applied to all four frameworks of every group; every reader
+// string that HWC-PAR8 reads, a shown value and a one-word string that the group
+// shows as text among them): the live blocks. Left in English for the writer to translate in place: every other
 // heading, paragraph, list, alert, the captions and cells of other tables. The
 // front matter carries the section hashes of the English page.
 //
@@ -20,8 +21,9 @@
 // deployable).
 //
 // <map.json> is { "<English string>": "<Arabic string>", ... }. The command
-// lists the reader strings the map does not translate and the entries it did not
-// use. An existing <id>.ar.md is kept unless --force is given; to bring an
+// prints one line for each reader string of the English blocks that the map does
+// not translate, one for each other string left in English that renders as reader
+// text, and one for each entry it did not use. An existing <id>.ar.md is kept unless --force is given; to bring an
 // existing Arabic page up to date with its English page use content:sync-ar.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
@@ -33,7 +35,7 @@ import { API_HEADERS, CAPTION_PREFIX, H2, KEYBOARD_TABLE, KEY_NAMES, keyId } fro
 import { componentsDirOf, frontMatterBlock } from './hash.mjs';
 import { normalise, parseMarkdown, plainText } from './parse.mjs';
 import { complianceSentence, tableProblems } from './scaffold.mjs';
-import { applyStringMap, readerNames } from './string-map.mjs';
+import { applyStringMap, groupContexts, liveBlocks, readerNames } from './string-map.mjs';
 
 export const guideDir = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 export const repoDir = resolve(guideDir, '..');
@@ -101,6 +103,8 @@ export function scaffoldArabic(englishText, { entry, declared, map, version, pla
   const missing = new Set();
   const left = new Set();
   const names = readerNames();
+  // What each English group reads as reader text, so that a string the html block shows is replaced in the four forms.
+  const contexts = groupContexts(liveBlocks(source), names);
   const englishNote = generatedNote('en', version);
   const compliance = { en: complianceSentence('en'), ar: complianceSentence('ar') };
   for (const item of outline(source)) {
@@ -124,7 +128,8 @@ export function scaffoldArabic(englishText, { entry, declared, map, version, pla
     } else if (node.type === 'blockquote' && item.section === 'api' && noteText(node) === englishNote) {
       edits.push({ from, to, text: generatedNoteMarkdown('ar', version) });
     } else if (node.type === 'code' && (node.meta ?? '').split(/\s+/).includes('live')) {
-      const result = applyStringMap(node.lang, node.value ?? '', map, names);
+      const group = contexts.get(/(?:^|\s)example=([^\s]+)/.exec(node.meta ?? '')?.[1] ?? null);
+      const result = applyStringMap(node.lang, node.value ?? '', map, names, { group });
       result.missing.forEach((text) => missing.add(text));
       result.left.forEach((text) => left.add(text));
       result.used.forEach((key) => used.add(key));
@@ -132,7 +137,7 @@ export function scaffoldArabic(englishText, { entry, declared, map, version, pla
       // and so every other string that renders as reader text.
       const untranslated = [...result.missing, ...result.left.map((item) => item.slice(item.indexOf(': ') + 2))];
       const code = placeholder && untranslated.length
-        ? applyStringMap(node.lang, result.code, Object.fromEntries(untranslated.map((text) => [text, PLACEHOLDER])), names, { text: true }).code
+        ? applyStringMap(node.lang, result.code, Object.fromEntries(untranslated.map((text) => [text, PLACEHOLDER])), names, { text: true, group }).code
         : result.code;
       const edit = codeBodyEdit(source, node, code);
       if (edit) edits.push(edit);

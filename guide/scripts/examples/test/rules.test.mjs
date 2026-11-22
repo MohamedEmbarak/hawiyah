@@ -27,6 +27,38 @@ describe('HTML rules', () => {
   it('does not read text or references as colours', () => {
     expect(htmlRules('<a class="hw-link" href="#add" aria-label="Red team">Gold</a>')).toEqual([]);
   });
+
+  // The props of a layout primitive are custom properties on the element, which the
+  // React, Vue and Angular adapters write into a style attribute.
+  it('accepts a style attribute whose declarations all set custom properties named --hw-*', () => {
+    expect(htmlRules('<div class="hw-stack" style="--hw-layout-gap: var(--hw-space-2, 0.5rem)"><p>x</p></div>')).toEqual([]);
+    expect(htmlRules('<div class="hw-stack" style="--hw-layout-align:center ; --hw-layout-justify: space-between;"><p>x</p></div>')).toEqual([]);
+  });
+
+  it('refuses any other declaration, a comment, a declaration list it cannot read, an empty attribute and a raw colour in a custom property', () => {
+    const cases = [
+      ['--hw-layout-gap: 1rem; margin: 0', 'style attribute declares margin; in the html block a style attribute only sets custom properties named --hw-* (the props of a layout primitive), otherwise use hw- classes and documented variants'],
+      ['--gap: 1rem', 'style attribute declares --gap; in the html block a style attribute only sets custom properties named --hw-* (the props of a layout primitive), otherwise use hw- classes and documented variants'],
+      ['--HW-gap: 1rem', 'style attribute declares --HW-gap; in the html block a style attribute only sets custom properties named --hw-* (the props of a layout primitive), otherwise use hw- classes and documented variants'],
+      ['/* note */ --hw-layout-gap: 1rem', 'style attribute holds a comment, not a declaration; in the html block a style attribute only sets custom properties named --hw-* (the props of a layout primitive), otherwise use hw- classes and documented variants'],
+      ['--hw-layout-gap: 1rem} p {color: red', 'style attribute is not a list of declarations; in the html block a style attribute only sets custom properties named --hw-* (the props of a layout primitive), otherwise use hw- classes and documented variants'],
+      ['', 'style attribute declares nothing; in the html block a style attribute only sets custom properties named --hw-* (the props of a layout primitive), otherwise use hw- classes and documented variants'],
+      ['--hw-layout-gap: 1rem; --hw-tint: #b54708', 'raw colour #b54708 in --hw-tint; use the documented variants'],
+      ['--hw-tint: red', 'raw colour red in --hw-tint; use the documented variants'],
+    ];
+    for (const [value, message] of cases) {
+      expect(htmlRules(`<div class="hw-stack"\n  style="${value}"><p>x</p></div>`), value).toEqual([{ code: 'HWC-LIVE6', line: 2, message }]);
+    }
+  });
+
+  it('keeps refusing a style attribute with custom properties in the React, Vue and Angular blocks', () => {
+    const react = wrapReact('<div className="hw-stack" style={{ "--hw-layout-gap": "1rem" }}>x</div>', guideDir).source;
+    expect(codes(reactRules(react, 'fragment'))).toEqual(['HWC-LIVE6']);
+    const vue = wrapVue('<div class="hw-stack" style="--hw-layout-gap: 1rem">x</div>', guideDir).source;
+    expect(codes(vueRules(vue, 'fragment'))).toEqual(['HWC-LIVE6']);
+    const angular = wrapAngular('template: `<div class="hw-stack" style="--hw-layout-gap: 1rem">x</div>`', guideDir).source;
+    expect(codes(angularRules(angular, 'fragment'))).toEqual(['HWC-LIVE6']);
+  });
 });
 
 describe('React rules', () => {

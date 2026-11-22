@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { citedText, entryInlines, evidenceGaps, evidenceOf, knownDefects, namesComponent, pinnedVersion } from '../evidence.mjs';
+import { citedText, entryInlines, evidenceGaps, evidenceOf, keyboardUnchecked, knownDefects, namesComponent, pinnedVersion } from '../evidence.mjs';
 
 const CHANGELOG = [
   '# Changelog', '', '## 0.4.0 — 2026-12-01', '', '#### Known defects in 0.4.0', '',
@@ -56,6 +56,23 @@ describe('the evidence of a page', () => {
     ];
     const result = evidenceOf({ id: 'tabs', entry: { name: 'Tabs' }, version: '0.4.0', changelog: CHANGELOG, differences });
     expect(result.open.map((item) => `${item.kind}${item.kind === 'defect' ? `:${item.differences.map((d) => d.id).join(',')}` : `:${item.id}`}`)).toEqual(['defect:tabs-bar', 'defect:', 'defect:', 'difference:tabs-other']);
+  });
+
+  // The owner's decision for the launch: a component whose keyboard outcomes keyboard-exceptions.json
+  // leaves unchecked has one generated open item, after the defects and the documented differences.
+  it('adds one keyboard item for an entry that leaves the keyboard outcomes unchecked, none for an entry of one key', () => {
+    const unchecked = { component: 'dialog', reason: 'r', reference: '@hawiyah/vanilla README.md: "x"', approvedBy: 'lead' };
+    const differences = [{ id: 'dialog-x', component: 'dialog', aspect: 'aria', description: 'A difference.', source: 'elsewhere' }];
+    const result = evidenceOf({ id: 'dialog', entry: { name: 'Dialog' }, version: '0.4.0', changelog: CHANGELOG, differences, keyboard: [unchecked] });
+    expect(result.open.map((item) => item.kind)).toEqual(['difference', 'keyboard']);
+    expect(result.open.at(-1)).toEqual({ kind: 'keyboard' });
+    expect(evidenceOf({ id: 'dialog', entry: { name: 'Dialog' }, version: '0.4.0', changelog: CHANGELOG, differences: [], keyboard: [unchecked] }).open).toEqual([{ kind: 'keyboard' }]);
+    expect(evidenceOf({ id: 'dialog', entry: { name: 'Dialog' }, version: '0.4.0', changelog: CHANGELOG, differences: [], keyboard: [{ component: 'dialog', key: 'F10', reason: 'r', approvedBy: 'lead' }] }).open).toEqual([]);
+    expect(evidenceOf({ id: 'tabs', entry: { name: 'Tabs' }, version: '0.4.0', changelog: '', differences: [], keyboard: [unchecked] }).open).toEqual([]);
+    expect(keyboardUnchecked('dialog', [unchecked])).toBe(true);
+    expect(keyboardUnchecked('dialog', [])).toBe(false);
+    // The lead's list is empty, so no page of the build has the item.
+    expect(evidenceOf({ id: 'dialog', entry: { name: 'Dialog' }, version: '0.4.0', changelog: CHANGELOG, differences: [] }).open).toEqual([]);
   });
 
   // G23 of the 5a fix round: the kinds of evidence some built adapters have and others do not.

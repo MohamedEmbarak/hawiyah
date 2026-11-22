@@ -20,16 +20,40 @@ reviewer of one page are three different people.
 
 - The check author writes the keyboard checks of a component with a controller
   before its page is written (see [Keyboard table](#keyboard-table)), and hands
-  the page writer the check report.
+  the page writer the check report. A component whose keyboard outcomes are not
+  checked (an entry of `keyboard-exceptions.json`, see the same section) has no
+  checks and no check author.
 - The page writer writes `<id>.md` and `<id>.ar.md` from the fact sheet, the
   READMEs of the installed packages and the check report, and runs
   `npm run check:page -- <id>` until it passes. The page writer changes no other
   file: not a check, not a list of the lead, not `CHANGELOG.md`; an entry or a
-  defect is proposed in the result of the run.
-- The reviewer reads both pages against the same sources and returns findings
-  (see [Review](#review)). A page is not merged before that reading.
-- The lead takes only page files and check modules from the others, decides
-  every entry of the lead's lists and records package defects in `CHANGELOG.md`.
+  defect is proposed in the result of the run. The one exception is
+  `guide/scripts/content/pending-translation.json`, which is not a list of the
+  lead: the writer of an English page adds its id while the Arabic page is not
+  written, and the writer of the Arabic page removes it (see [Files](#files)).
+- When the four results of an example differ because an adapter renders
+  differently, the page writer does not bend the example. The page is done when
+  `check:page` reports nothing but the `HWE-STRUCT`, `HWE-ARIA` or `HWE-SHOT`
+  lines of that difference, and each of these lines is matched in the writer's
+  result by a proposed entry: the text of a Known defects entry for
+  `CHANGELOG.md`, the file and line of the published code that shows the
+  difference, and the known difference for
+  `guide/scripts/equivalence/known-differences.json` (see
+  [Live examples](#live-examples)). The lead records them; the page then passes.
+- The reviewer reads the English page against the sources and returns findings
+  (see [Review](#review)). The lead hands the reviewer the page together with
+  the list of the files the change touches. A page is not merged before that
+  reading.
+- The Arabic page is translated from the English page after its findings are
+  corrected. It has no reviewer of its own: what is wrong in the English page is
+  corrected there and carried over by the translator, and the Arabic page is held
+  by the checks of parity, glossary, Latin script and staleness. The owner reads
+  the Arabic pages after publication; a correction from that reading is a change
+  like any other.
+- The lead takes only page files, check modules and the entries of
+  `pending-translation.json` from the others, decides every entry of the lead's
+  lists, records package defects in `CHANGELOG.md` and the known differences that
+  writers propose, and hands each reviewer the list of changed files.
 
 The checks prove structure, names, types, defaults, the keys of the keyboard
 table, the outcome of each keyboard step and the equivalence of the four results.
@@ -59,10 +83,14 @@ content, so a changed list fails until the lead renews its pin with the entry.
   reverse, fails the build (`HWC-FILE`). While its translation is written, an
   English page may stand alone only when
   `guide/scripts/content/pending-translation.json` lists its id: the build gives
-  it no route and counts it (`content: <n> pages pending translation`), its id is
-  in no generated file of the build (`pages.json` lists only pages with both
-  languages), and an entry whose Arabic page exists fails. The list is empty when
-  the milestone ends.
+  it no route and counts it (every build, deployable or not, prints
+  `content: <n> pages pending translation`), its id is in no generated file of the
+  build (`pages.json` lists only pages with both languages), and an entry whose
+  Arabic page exists fails. The writer of the English page adds the id, and
+  `npm run check:page -- <id> --lang en` then passes for the English page alone;
+  without the entry it reports `HWC-FILE` and names the file to add the id to. The
+  writer of the Arabic page removes the id in the same change as the Arabic page.
+  The list is empty when the milestone ends.
 - `npm run check:page -- <id>` (in `guide/`, after one production build) proves
   one page while it is written: its content (with the claim, text and component
   codes of step 20), the compile of its live groups, its API tables and
@@ -248,20 +276,32 @@ exist in the installed packages:
   `@hawiyah/angular`; `data-hw="<hook>"` names a hook that `enhance()` of
   `@hawiyah/vanilla` registers; `hw:change` and other `hw:` names are events a
   published module dispatches.
+- `--hw-*` is a custom property that the installed stylesheet defines
+  (`--hw-space-4`) or that the `@hawiyah/styles` README documents by its whole
+  name (`--hw-gap`), alone, in `var(--hw-gap)` or in a declaration
+  (`--hw-gap: 2rem`, whose value is not judged); a prefix such as `--hw-*` names
+  no property.
 - `data-*` and `aria-*` occur in the stylesheet or in a published module, or are
   attributes of `guide/scripts/api-tables/vocabulary-allow.json`.
 - A name that starts with `Hw`, `create` or an upper-case letter is an export of
-  an installed `@hawiyah` package; `@hawiyah/...` is a package or an export path;
+  an installed `@hawiyah` package, of this component or of another one (`Button`
+  on the Service card page); `@hawiyah/...` is a package or an export path;
   `components.json` and other file names exist at the repository root.
 - Any other name is a member of the component in some adapter (props, options,
   inputs, outputs, events, slots, the fields of their types, the parameters and
   returned members of its controllers, the members its Vue component exposes,
   the selectors of its Angular classes), a member of a component page that the
-  same sentence links to, an export, a value of the component, or a name that
-  HTML, ARIA, the DOM, CSS or the Vue and Angular template syntax define
+  same sentence links to, an export, the attribute selector of an Angular class
+  of any component (`hwButton` and `[hwButton]` on the Service card page, in the
+  scope of Angular), a value of the component, or a name that HTML, ARIA, the
+  DOM, CSS or the Vue and Angular template syntax define
   (`vocabulary-allow.json`, each group with its specification; a list of the
   guide, not one of the lead's lists, and a group without its specification
-  fails step 30).
+  fails step 30). Its group of HTML elements holds the elements of the HTML
+  Standard (`h2`, `h3`, `dl`, `figure` and the others of its element index). The
+  props, inputs, outputs, events and slots of another component are accepted
+  only through a link in the same sentence, as above; a name that no installed
+  package and no specification of `vocabulary-allow.json` defines fails.
 - A quoted literal is a value of a member type or of an enumerated attribute of
   the component. The value of an attribute or member (`aria-busy="true"`,
   `[role="tab"]`, `orientation="vertical"`) is a value of that attribute or
@@ -330,7 +370,10 @@ Each block of a group is a fenced code block whose info string is:
   attribute. The Tabs groups name
   `tabs-bar-orientation`, which ignores `data-orientation` on `.hw-tab-bar`
   (CHANGELOG.md, Known defects in 0.3.0); the entry is removed when the guide
-  pins a release that corrects it.
+  pins a release that corrects it. A writer whose example shows a difference
+  between adapters proposes its entry, with the text of the Known defects entry
+  and the file and line of the published code that shows it, and leaves the
+  example as it is (see [Who does what](#who-does-what)).
 - A designed difference between the adapters is one of two narrow forms, each an
   entry of a lead's list with `component`, `reason`, `approvedBy` and a
   `reference` (a `CHANGELOG.md, <version>, <section>: <text>` entry for a defect,
@@ -426,7 +469,22 @@ template: `<button hwButton variant="primary">Continue</button>`
 ### Rules for the code
 
 - No `style` attributes and no `:style` or `[style]` bindings, no `<style>`
-  elements, and no `styles` or `styleUrl` in Angular metadata.
+  elements, and no `styles` or `styleUrl` in Angular metadata. One exception: the
+  `html` block of a live group may carry a `style` attribute whose declarations all
+  set custom properties named `--hw-*`. A layout primitive (Stack, Inline, Grid and
+  the others) takes its props as such custom properties, which the React, Vue and
+  Angular adapters write into a `style` attribute of its element, so the `html`
+  block writes the same declarations, for example
+  `<div class="hw-stack" style="--hw-layout-gap: var(--hw-space-2, 0.5rem)">` for
+  `gap={2}`. A declaration of any other property, a comment, an attribute without a
+  declaration and a raw colour in a value fail (`HWC-LIVE6`); the React, Vue and
+  Angular blocks keep the rule without exception.
+- The structure comparison of step 80 compares the declarations of a `style`
+  attribute as a set: their order, the white space and a trailing semicolon do not
+  count, while another property, another value or another priority fails with
+  `HWE-STRUCT`. `HWE-STRUCT` prints one line for every difference of a pair of
+  results (its path and the two values), at most 20 per pair, and then one line
+  that counts the rest.
 - No raw colours. Every class name starts with `hw-`.
 - No `<script>` and no inline event handler attributes in HTML.
 - The four blocks of a group produce the same result: the build compares their
@@ -441,13 +499,25 @@ Live blocks in the Arabic page carry Arabic text. `npm run content:scaffold-ar`
 writes them from the English blocks with a string map (the Arabic text of each
 English reader string, once for the four frameworks), and
 `npm run content:sync-ar` rewrites them in place after the English blocks change,
-with the map that the two existing pages give. The map replaces markup text, the
-values of reader attributes and text props (the names listed below), and any other
-string of two or more Latin words that `HWC-PAR8` reads as reader text (a Stat
-`trend`, the `content` of an accordion item) when the map translates it; it never
-replaces a `value`, `id`, `name`, slot or option value. Both commands print one
-line for every string they leave in English that renders as reader text, and
-`content:sync-ar` never replaces an Arabic string by an English one: where a
+with the map that the two existing pages give. The map replaces every reader
+string that `HWC-PAR8` reads, in the four blocks of a group: markup text; the
+values of reader attributes and text props (the names listed below); a shown
+value (the `value` of a text input, a text area or an output, and the `name` or
+`defaultValue` of a data object); the `value`, `defaultValue` or `default-value`
+of a component, and the Angular `value`, when the native markup of the same group
+shows that string as a value (the `defaultValue` of a TextField); a string under
+any other name that is not a token name when the same group reads it as reader
+text (a one-word `category` or `term` that the `html` block shows as text); and
+any other string of two or more Latin words that `HWC-PAR8` reads as reader text
+(a Stat `trend`, the `content` of an accordion item) when the map translates it.
+It never replaces an `id`, a field `name`, a slot, the value of an option, a check
+box or a radio button, the `value` of an object property, a component value that
+no native element of its group shows, or the value of an input or component of
+type `email`, `url`, `tel` or `number`, which stays in Latin script. Both commands
+print one line for each reader string of the English blocks that the map does not
+translate and one for every other string they leave in English that renders as
+reader text, and `content:sync-ar` never replaces an Arabic string by an English
+one: where a
 rewritten block aligns with the Arabic block, a string the map leaves in English
 keeps the Arabic string of the page (the command prints it to be checked), and a
 block that changed its shape is reported. Vue and Angular templates may close any
@@ -517,6 +587,26 @@ follows the same form but is not bound to a check.
 A table that breaks one of these fails with `HWC-KEYS`. The brief page shows the
 keyboard table under the example.
 
+The guide launches with keyboard outcome checks for Tabs only. When the page of
+another component with a controller is written, the component is an entry
+`{ component, reason, reference, approvedBy }` of
+`guide/scripts/equivalence/keyboard-exceptions.json`, one of the lead's lists, whose
+`reference` is the sentence of a package README that the table follows
+(`@hawiyah/<name> README.md: "<sentence>"`) or a `CHANGELOG.md, <version>, <section>:
+<text>` entry, both checked against the files. Such an entry leaves the component
+out of the rule that binds its keyboard table to checks, and nothing else:
+
+- the page keeps its keyboard table in both languages, in the form of this section
+  (`HWC-KEYS`); a missing table fails with `HWE-KEYS`;
+- the page writer writes the table from the READMEs of the installed packages, and
+  the reviewer reads every row against them (question 5 of [Review](#review));
+- its groups name no check and are `static`; an entry for a component whose groups
+  name checks fails with `HWE-KEYS`, and so does an entry that matches no page of
+  `docs/components/` or quotes a sentence that the file does not hold;
+- step 80 prints one line for each such page, `keyboard outcomes not checked: <id>`,
+  and the evidence panel of the page has one open item that says so (see
+  [Evidence panel](#evidence-panel)).
+
 ### Checks come before the page
 
 The check author writes the checks of a component in
@@ -549,10 +639,12 @@ with anything: the reviewer compares them with the outcome lines (see
 A failing outcome is a package defect for the lead: an entry under Known defects of
 the pinned version in `CHANGELOG.md` and, where frameworks differ, a documented
 difference. The check and the table row keep the documented behaviour; neither is
-changed to match a package. A key that a sandboxed frame cannot press, or a component
-that is left out of the rule, is an entry of
-`guide/scripts/equivalence/keyboard-exceptions.json`, one of the lead's lists; an
-entry that matches nothing fails with `HWE-KEYS`.
+changed to match a package. A key that a sandboxed frame cannot press is an entry
+`{ component, key, reason, approvedBy }` of
+`guide/scripts/equivalence/keyboard-exceptions.json`, one of the lead's lists; a
+component whose keyboard outcomes are not checked is an entry
+`{ component, reason, reference, approvedBy }` of the same list (see above). Any
+other form of an entry, and an entry that matches nothing, fails with `HWE-KEYS`.
 
 Example:
 
@@ -570,7 +662,10 @@ Table: Keyboard interaction of Tabs
 The section Platforms Code reference opens with the compliance sentence, followed
 by a sentence that introduces the sources of the page, and states the sources of
 the mapping of the component (the notes on the supplied Platforms Code files, the
-adaptations and their limits). The guide generates the rest in the evidence panel
+adaptations and their limits). Each item of these sources links the repository
+note it relies on (`docs/nic-<id>.md`, `docs/coverage.md`, as
+`[coverage notes](../coverage.md)`), in both languages; the reviewer reads that
+note for what the item says of it. The guide generates the rest in the evidence panel
 at the end of the section, in both languages; the page does not restate it. A
 heading of the section that names it (Evidence, Verification evidence, Open items,
 Known defects, «أدلة التحقق», «البنود المفتوحة» and the like) fails (`HWC-H2`).
@@ -586,8 +681,12 @@ Known defects, «أدلة التحقق», «البنود المفتوحة» and 
   `CHANGELOG.md` that names the component (its `components.json` name as a whole
   word), with the documented differences of
   `guide/scripts/equivalence/known-differences.json` that cite it shown under it,
-  then each documented difference that cites no such entry. Without any, the panel
-  says so.
+  then each documented difference that cites no such entry, then, when an entry
+  `{ component, reason, reference, approvedBy }` of `keyboard-exceptions.json` names
+  the component, one item in the language of the page: the keyboard behaviour in the
+  keyboard table is documented from the READMEs of the installed packages and is not
+  yet verified by the keyboard checks of the guide (the text is fixed in
+  `guide/src/app/features/component-pages/i18n.ts`). Without any, the panel says so.
 
 The evidence is English text of `components.json` and `CHANGELOG.md`; on an
 Arabic page it is marked with `lang="en"` and `dir="ltr"`. A package defect is
@@ -697,7 +796,11 @@ Besides the rules above, the Arabic page mirrors the English page:
   `text` and of every name that ends in `label`, `message`, `text` or `title`;
   `value`, `defaultValue` and `modelValue` where an element shows them (a text
   field, a text area, a button input, an output element or a component), and
-  `name` and `defaultValue` as properties of a data object; and any phrase of
+  `name` and `defaultValue` as properties of a data object, except a value that is
+  Latin by nature: the value of an input or a component whose `type` is `email`,
+  `url`, `tel` or `number`, in every form (`value`, `defaultValue`,
+  `default-value`, the Angular `value` and `[value]`), and a value without any
+  letter (`3`, `1,250.00`); and any phrase of
   two Latin words under another name that is not a token name (`class`, `id`,
   `role`, `type`, `href`, `name`, `value` and the other names of
   `TOKEN_NAMES` in `parity.mjs`). The value of an option, a check box or a radio
@@ -769,19 +872,31 @@ The Arabic terms of the guide are in [docs/guides/glossary.md](../guides/glossar
 the terms of the text sources and the pages, the frozen API terms (slot, event,
 output, emit, default value, required, type, content projection, density, locale,
 direction), one term each for an HTML attribute, a React or Vue prop and a CSS
-property, the category labels and the proper-noun exception for «كود المنصات».
+property, the terms that form and card pages need (assistive technology, the
+label, hint, error message and placeholder of a field, the input against the
+field, the filled and outline appearances, read-only, header, body and footer,
+the title of a card against the heading element, string, controlled, host
+element, factory function, item, two-way binding and the others), the category
+labels and the proper-noun exception for «كود المنصات».
 Its table of excluded forms is the source of
 `guide/scripts/content/test/glossary.test.mjs`, which fails on any of them in an
-Arabic page or a guide text source (`check:page` prints them as `HWT-GLOSSARY`).
+Arabic page or a guide text source (`check:page` prints them as `HWT-GLOSSARY`):
+among them «التقنيات المساندة» for assistive technology, «المظهر المعبّأ» and
+«مظهر الإطار» for the appearances, «الذي للقراءة فقط», «حقل الإدخال», «حيث» for a
+condition and «ثنائي الاتجاه» on anything but a binding.
 «نمط» names a WAI-ARIA pattern only («نمط التبويبات»، «نمط الأكورديون»), with
-«في ممارسات التأليف الخاصة بـWAI-ARIA» later in the same sentence. A writer
-proposes a new term in the result of the run; the lead adds it.
+«في ممارسات التأليف الخاصة بـWAI-ARIA» later in the same sentence; a pattern
+outside WAI-ARIA keeps its name in Latin script (الصف Platform patterns of
+`docs/coverage.md`). A writer proposes a new term in the result of the run; the
+lead adds it.
 
 ## Review
 
-No check reads the prose of a page for truth. Every page is read in both languages,
-before it is merged, by a reviewer who did not write it and did not write its
-checks. The page is not merged without that reading.
+No check reads the prose of a page for truth. Every English page is read before it
+is merged by a reviewer who did not write it and did not write its checks. The page
+is not merged without that reading. The Arabic page is not reviewed (see
+[Who does what](#who-does-what)); questions 7 and 13 are the translator's own
+checks before handing the page over.
 
 The reviewer answers every question below from four sources, and from nothing
 else:
@@ -791,14 +906,17 @@ else:
   lines of its steps, and the coverage report);
 - the installed packages, `guide/node_modules/@hawiyah/*/` (their `README.md`, the
   `.d.ts` declarations and the published JavaScript);
-- the page in the other language.
+- the Arabic page, where it exists, for questions 5 and 7.
 
 A statement that none of the four supports is a finding. Four questions need one
 more text each, and the reviewer reads it for that question only: the repository
-note a Sources item links (`docs/nic-<id>.md`, `docs/coverage.md`) for what that
-item says of it; the [Arabic glossary](#arabic-glossary) for question 13; the list
-of changed files for the last sentence of question 7 and for question 14; and the
-check modules of the component (`guide/scripts/equivalence/checks/`) for question 15.
+note a Sources item links (`docs/nic-<id>.md`, `docs/coverage.md`; see
+[Evidence panel](#evidence-panel)) for what that item says of it, and a Sources
+item that relies on a note without linking it is a finding; the
+[Arabic glossary](#arabic-glossary) for question 13; the list of changed files,
+which the lead hands over with the pages, for the last sentence of question 7 and
+for question 14; and the check modules of the component
+(`guide/scripts/equivalence/checks/`) for question 15.
 
 ### Rules the reviewer checks
 
@@ -812,7 +930,9 @@ These rules have no check. They bind the page as the checked rules do.
   renders itself (an `hw-<component>-*` element in a React, Vue or Angular block), no
   empty element, no `v-bind` of an object for one attribute and no prop that exists
   only to make the four results equal. A difference between adapters is proposed as a
-  `CHANGELOG.md` entry and a known difference, not worked around in the example.
+  `CHANGELOG.md` entry and a known difference, with the file and line of the published
+  code that shows it, not worked around in the example (see
+  [Who does what](#who-does-what)).
 - The section Platforms Code reference restates no evidence and no open item under
   any heading.
 - The text is formal and in the present tense, and praises nothing.
@@ -835,9 +955,17 @@ These rules have no check. They bind the page as the checked rules do.
 5. Every Action cell, in both languages: does it agree with the outcome lines of its
    keys in the check report, for the orientation or mode the cell names? A cell is
    one sentence; it need not repeat an outcome line that says a key changes nothing.
+   For a component whose keyboard outcomes are not checked (the check report prints
+   `keyboard outcomes not checked: <id>`), does every row, its keys and its action,
+   agree with what the READMEs of the installed packages say of that key?
 6. Every accessibility statement (roles, names, focus movement, announcements,
    reduced motion): does an outcome line of the check report, a package README, a
    declaration or the published JavaScript state it? If none does, it is removed.
+   A statement of general HTML or WAI-ARIA behaviour may stand without these
+   sources when it names the native element or attribute that carries it (a
+   native `button` is activated with Enter and Space; `aria-describedby` adds the
+   hint to the description of the input). A statement about what the component
+   does needs one of the sources above.
 7. The Arabic page against the English page, paragraph by paragraph, item by item and
    cell by cell, with the strings of the live blocks: the same meaning, numbers,
    members and order? Meaning is compared, not wording. A source hash renewed without
@@ -882,7 +1010,7 @@ Table: Failure codes of the content step (step 20) and the API step (step 30)
 
 | Code | Rule |
 | --- | --- |
-| `HWC-FILE` | File names, ids and language siblings |
+| `HWC-FILE` | File names, ids and language siblings, and the entries of `pending-translation.json` |
 | `HWC-FM1` | Front matter in an English page |
 | `HWC-FM2` | Missing or malformed Arabic front matter |
 | `HWC-H1` | The h1 |
@@ -897,7 +1025,7 @@ Table: Failure codes of the content step (step 20) and the API step (step 30)
 | `HWC-LIVE2` | Live groups: placement, at most 8 per page, no date, time zone, random value or request |
 | `HWC-LIVE3` | Repeated example names |
 | `HWC-LIVE7` | A live group that does not show the page's component |
-| `HWC-PAR1` to `HWC-PAR8` | Parity of the Arabic page with the English page |
+| `HWC-PAR1` to `HWC-PAR8` | Parity of the Arabic page with the English page; `HWC-PAR8` an Arabic letter in reader text, a value that is Latin by nature excepted |
 | `HWC-STALE` | Arabic sections translated from an earlier English text |
 | `HWC-KEYS` | Key elements, their parity, the keyboard table and its rows (separator, order of an arrow cell, one sentence per Action cell) |
 | `HWC-CLAIM` | A claim of certification, official status, conformance or use for government platforms outside the compliance sentence |
@@ -905,7 +1033,7 @@ Table: Failure codes of the content step (step 20) and the API step (step 30)
 | `HWC-TODO` | Placeholder text: TODO, TBD, FIXME, lorem ipsum, «قيد الكتابة», the scaffold placeholder in `docs/components/` |
 | `HWC-TONE` | A term of the marketing list |
 | `HWC-APIX` | API tables that differ from the installed packages (step 30) |
-| `HWC-VOCAB` | Code-formatted names that the installed packages do not have (step 30) |
+| `HWC-VOCAB` | Code-formatted names that neither the installed packages nor a specification of `vocabulary-allow.json` define (step 30) |
 
 Table: Failure codes of the example step (step 25)
 
@@ -913,7 +1041,7 @@ Table: Failure codes of the example step (step 25)
 | --- | --- |
 | `HWC-LIVE4` | A React or Vue tag that the adapter does not export, an `hw-` element that no Angular component has |
 | `HWC-LIVE5` | A module form that imports from another package than its adapter, `@hawiyah/core` and its framework |
-| `HWC-LIVE6` | Style attributes and bindings, `<style>`, raw colours, a class without `hw-`, `<script>`, inline event handlers |
+| `HWC-LIVE6` | Style attributes and bindings (except a `style` attribute of the `html` block whose declarations all set custom properties named `--hw-*`), `<style>`, raw colours, a class without `hw-`, `<script>`, inline event handlers |
 | `HWC-V1`, `HWC-V2`, `HWC-V3` | The `html` block: an HTML parse error, a class the stylesheet does not define, a `data-hw` value that `enhance()` does not know |
 | `HWC-R1` | The React block does not type-check or compile |
 | `HWC-U1` | The Vue block does not type-check or compile |
@@ -934,11 +1062,11 @@ Table: Failure codes of the equivalence step that a page can cause
 | Code | Rule |
 | --- | --- |
 | `HWE-CHECK` | A group of a component with a controller names no check and is not `static`; a check that does not exist; a step that cannot run or presses other keys than it declares |
-| `HWE-KEYS` | The keys of the keyboard table differ from the keys the steps of the page's checks press, or the table is missing; a check without its form or negative control |
+| `HWE-KEYS` | The keys of the keyboard table differ from the keys the steps of the page's checks press, or the table is missing (also for a component whose keyboard outcomes are not checked); a check without its form or negative control; an entry of `keyboard-exceptions.json` of another form, that matches nothing or no page, with a reference the files do not hold, or that leaves out a component whose groups name checks |
 | `HWE-EXPECT` | A step does not reach its documented outcome in a framework |
 | `HWE-AXE` | axe finds a WCAG 2.2 AA violation in a frame document at rest |
 | `HWE-FRAME` | A result frame failed to load or reported an error |
-| `HWE-STRUCT`, `HWE-ARIA`, `HWE-SHOT` | The four results differ in structure, accessibility tree or rendering |
+| `HWE-STRUCT`, `HWE-ARIA`, `HWE-SHOT` | The four results differ in structure, accessibility tree or rendering; the only lines a finished page may leave are those of a difference between adapters that the writer's result proposes (see [Who does what](#who-does-what)) |
 | `HWE-KD` | A malformed entry of `known-differences.json`, `empty-elements.json` or `vanilla-hooks.json`, or a group that names a difference that does not exist |
 
 `HWE-SCOPE` and `HWE-MERGE` concern a run, its selection and the merge of its

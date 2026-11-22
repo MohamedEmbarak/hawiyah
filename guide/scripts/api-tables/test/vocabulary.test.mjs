@@ -196,6 +196,48 @@ describe('G4: what the vocabulary pass reads and accepts', () => {
   });
 });
 
+// The three kinds of real names that the review of the pilot pages found refused: the
+// custom properties of @hawiyah/styles, the elements of the HTML Standard and the
+// exports and selectors of an installed package that belong to another component.
+describe('names that the installed packages or the HTML Standard define', () => {
+  const ACCESSIBILITY = '## Accessibility\n\n';
+  const insert = (block, id = 'tabs') => fixture(id, (text) => once(text, ACCESSIBILITY, `${ACCESSIBILITY}${block}\n\n`));
+  it('accepts a custom property that the stylesheet defines or the styles README documents, and refuses an invented one', () => {
+    expect(messages(run(insert('The panel keeps `--hw-gap`; `--hw-space-4` and `var(--hw-gap)` set it, as `--hw-gap: 2rem` does.')))).toEqual([]);
+    expect(messages(run(insert('The panel keeps `--hw-tab-gutter`.')))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: accessibility: `--hw-tab-gutter`: --hw-tab-gutter is neither a custom property that the installed stylesheet defines nor one that the @hawiyah/styles README documents',
+    ]);
+    // A prefix that the README writes (--hw-*) names no property.
+    expect(messages(run(insert('The panel keeps `--hw-color`.')))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: accessibility: `--hw-color`: --hw-color is neither a custom property that the installed stylesheet defines nor one that the @hawiyah/styles README documents',
+    ]);
+  });
+  it('accepts the elements of the HTML Standard, and refuses an invented element', () => {
+    expect(messages(run(insert('Place the tabs below an `h2` or an `h3`; a `dl`, a `figure`, a `time` and a `blockquote` stand in a panel.')))).toEqual([]);
+    expect(messages(run(insert('Place the tabs below an `h7` or a `tabset`.')))).toEqual([
+      'HWC-VOCAB docs/components/tabs.md: accessibility: `h7`: h7 is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json',
+      'HWC-VOCAB docs/components/tabs.md: accessibility: `tabset`: tabset is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json',
+    ]);
+  });
+  it('accepts an export or a selector of another component, in its framework scope, and refuses an invented export or selector', () => {
+    expect(messages(run(insert('### Angular\n\nThe action may be a `button` with `hwButton` or `[hwButton]`; `HwButtonDirective` applies to it, and `Button` is the React export.', 'service-card')))).toEqual([]);
+    expect(messages(run(insert('### Angular\n\nThe action may be a `button` with `hwCardButton`.', 'service-card')))).toEqual([
+      'HWC-VOCAB docs/components/service-card.md: accessibility/angular-1: `hwCardButton`: hwCardButton is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json',
+    ]);
+    expect(messages(run(insert('### React\n\nThe action may be a `hwButton` element.', 'service-card')))).toEqual([
+      'HWC-VOCAB docs/components/service-card.md: accessibility/react-1: `hwButton`: hwButton is a selector of angular only, and the paragraph is scoped to react (leadAmendments A9: the check cannot decide)',
+    ]);
+    expect(messages(run(insert('The action may be a `HwServiceButton`.', 'service-card')))).toEqual([
+      'HWC-VOCAB docs/components/service-card.md: accessibility: `HwServiceButton`: HwServiceButton is not an export of an installed @hawiyah package',
+    ]);
+  });
+  it('keeps the per-component rule for the members of another component', () => {
+    expect(messages(run(insert('The card takes no `loading`.', 'service-card')))).toEqual([
+      'HWC-VOCAB docs/components/service-card.md: accessibility: `loading`: loading is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json',
+    ]);
+  });
+});
+
 describe('vocabulary-exceptions.json', () => {
   const entry = { file: 'docs/components/tabs.md', text: 'closeLabel', reason: 'test', approvedBy: 'test' };
   it('an entry covers its finding', () => {
@@ -224,6 +266,9 @@ describe('reading code values', () => {
     expect(terms('display: contents')).toEqual([{ kind: 'css', name: 'display', value: 'contents' }]);
     expect(terms('@hawiyah/styles')).toEqual([{ kind: 'package', name: '@hawiyah/styles' }]);
     expect(terms('@click')).toEqual([{ kind: 'event', name: 'click' }]);
+    expect(terms('--hw-gap')).toEqual([{ kind: 'custom-property', name: '--hw-gap' }]);
+    expect(terms('--hw-gap: 2rem;')).toEqual([{ kind: 'custom-property', name: '--hw-gap' }]);
+    expect(terms('var(--hw-gap)')).toEqual([{ kind: 'custom-property', name: '--hw-gap' }, { kind: 'name', name: 'var', call: true, member: false }]);
     expect(terms('tab:<value>')).toEqual([{ kind: 'name', name: 'tab:<value>', call: false, member: false }]);
     expect(terms("'primary'")).toEqual([{ kind: 'literal', value: 'primary' }]);
   });

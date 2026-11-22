@@ -47,9 +47,9 @@ import { build } from 'esbuild';
 import { chromium } from '@playwright/test';
 import { contentManifestHash } from '../build-scope.mjs';
 import { createPagesServer } from '../serve.mjs';
-import { FRAMEWORKS, compareAria, compareScreenshots, compareStructure, withoutDesigned } from './compare.mjs';
+import { FRAMEWORKS, compareAria, compareScreenshots, compareStructure, structureMessages, withoutDesigned } from './compare.mjs';
 import { generatedNamePattern } from './generated-names.mjs';
-import { keyName, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors } from './keys.mjs';
+import { keyName, keyboardReportLines, keyboardRule, keyboardScope, readKeyboardExceptions, stepErrors, uncheckedLine } from './keys.mjs';
 import { normalize } from './normalize.js';
 import { styledAttributes } from './styled-attributes.mjs';
 
@@ -294,6 +294,31 @@ export function readDesignedDifferences(guideDir = GUIDE_DIR) {
   return validateDesignedDifferences(lists, { readme, vanillaText, styled });
 }
 
+/** A reader of the README of an installed @hawiyah package by its short name, or null. */
+export function installedReadme(guideDir = GUIDE_DIR) {
+  return (name) => {
+    try {
+      return readFileSync(join(guideDir, 'node_modules', '@hawiyah', name, 'README.md'), 'utf8');
+    } catch {
+      return null;
+    }
+  };
+}
+
+/**
+ * The problem of a reference of a lead's list entry, or null: a CHANGELOG.md entry
+ * ('CHANGELOG.md, <version>, <section>: <text>') that changelogSourceError accepts, or
+ * the sentence of a package README ('@hawiyah/<name> README.md: "<sentence>"') that the
+ * README of the installed package holds (the keyboard-exceptions.json entries that leave
+ * a component's keyboard outcomes unchecked).
+ */
+export function documentReferenceError(reference, { changelog = readChangelog(), readme = () => null } = {}) {
+  const fromReadme = README_SOURCE.exec(String(reference));
+  if (fromReadme) return squeeze(readme(fromReadme[1]) ?? '').includes(squeeze(fromReadme[2])) ? null : `quotes a sentence that the README of the installed @hawiyah/${fromReadme[1]} does not hold`;
+  const fromChangelog = changelogSourceError(reference, changelog);
+  return fromChangelog ? `must be '@hawiyah/<name> README.md: "<sentence>"' or a CHANGELOG.md entry (${fromChangelog})` : null;
+}
+
 /** The designed differences of one component: { emptyClasses, vanillaAttributes }. */
 export function designedOf(id, lists) {
   return {
@@ -526,6 +551,18 @@ export function compareCapture(captured, difference = null, designed = null) {
   return rows;
 }
 
+/**
+ * The failure lines of a comparison row that differs, each '<code> <file>:<line>:
+ * <example> (<lang>, <state>) <message>'. Screenshot messages do not name the pair, so
+ * the framework is added; a structure row gives one line per printed difference of
+ * the pair (at most 20) and one line that counts the rest (structureMessages).
+ */
+export function comparisonFailures(group, state, row) {
+  const messages = row.aspect === 'screenshot' ? [`vanilla and ${row.framework} screenshots differ: ${row.message}`]
+    : row.aspect === 'structure' ? structureMessages(row) : [row.message];
+  return messages.map((message) => failureLine(ASPECT_CODES[row.aspect], group, `${group.example} (${group.lang}, ${state}) ${message}`));
+}
+
 async function loadChecks(names) {
   const checks = new Map();
   for (const name of names) {
@@ -755,9 +792,7 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, de
       delete entry.equal;
       delete entry.diff;
       if (row.result === 'different') {
-        // Screenshot messages do not name the pair; the framework is added so every failure line names it.
-        const message = row.aspect === 'screenshot' ? `vanilla and ${row.framework} screenshots differ: ${row.message}` : row.message;
-        failures.push(failureLine(ASPECT_CODES[row.aspect], group, `${group.example} (${group.lang}, ${state}) ${message}`));
+        failures.push(...comparisonFailures(group, state, row));
         if (row.aspect === 'screenshot') {
           const base = stem(group, state);
           writeFileSync(join(outDir, `${base}-vanilla.png`), captured.images.vanilla);
@@ -846,11 +881,18 @@ export async function runEquivalence(options) {
   // A component with a controller: its page targets a controller factory of the installed
   // @hawiyah/vanilla (keys.mjs). One definition for HWE-CHECK and HWE-KEYS (G19 of the 5a fix round).
   const controllerScope = options.keyboardScope ?? await keyboardScope({ guideDir, componentsFile });
-  const keys = keyboardRule({ pages: keyPages, checks, scope: controllerScope, exceptions: options.keyboardExceptions ?? readKeyboardExceptions() });
+  // An entry of keyboard-exceptions.json that leaves a component unchecked must match a
+  // page: one of the content manifest, or one that check:page names (knownPages).
+  const keys = keyboardRule({
+    pages: keyPages, checks, scope: controllerScope, exceptions: options.keyboardExceptions ?? readKeyboardExceptions(),
+    knownPages: options.knownPages ?? (manifest.pages ?? []).map((page) => page.id),
+    referenceError: (reference) => documentReferenceError(reference, { readme: installedReadme(guideDir) }),
+  });
   if (options.keys !== false) {
     for (const check of checks.values()) failures.push(...stepErrors(check));
     failures.push(...keys.errors);
   }
+  for (const id of keys.unchecked) log(uncheckedLine(id));
   const withController = new Set(controllerScope.keys());
   const plan = [];
   for (const group of groups) {
@@ -942,6 +984,8 @@ export async function runEquivalence(options) {
     assertedSteps: asserted,
     axeFrames: axeChecked,
     keyboard: keys.report,
+    // The pages whose keyboard outcomes keyboard-exceptions.json leaves unchecked.
+    keyboardUnchecked: keys.unchecked,
     comparedAfterInteraction: interacted.size,
     comparedAtRestOnly: pages.size - interacted.size,
     documentedDifferences: documented,

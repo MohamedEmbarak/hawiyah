@@ -15,8 +15,8 @@
 // kept except the framework noise of NOISE below (written list, one reason
 // each) and a vanilla configuration hook (VANILLA_CONFIGURATION) on an element
 // where no compound of the package stylesheet selects it. class keeps every
-// token except Angular's ng-* state classes, sorted; style is compared as the
-// browser serialises it (element.style.cssText). A custom element (tag with '-')
+// token except Angular's ng-* state classes, sorted; style is compared as the set
+// of declarations the browser parsed (element.style, see declarations). A custom element (tag with '-')
 // is compared as div when it has an hw- class, carries a global attribute that the
 // browser or assistive technology gives meaning to (GLOBAL) or a data-hw-* attribute
 // of the styled set; otherwise it is an unwrapped framework host. ids become #<n> in first-appearance order and the
@@ -117,6 +117,22 @@ export function normalize(input) {
   const unwrap = (element) => element.localName.includes('-') && hwClasses(element).length === 0
     && !Array.from(element.attributes).some((attribute) => GLOBAL.test(attribute.name) || Object.hasOwn(styled, attribute.name));
   const collapse = (text) => text.replace(/\s+/g, ' ').trim();
+  // The declarations of a style attribute as a set: each one 'property: value;' (with
+  // ' !important' where set) as the browser parsed it, its value with white space
+  // collapsed and none next to a comma or a parenthesis, sorted and joined by a space.
+  // The order, the white space and a trailing semicolon of the written attribute do not
+  // count; another property, value or priority does (the pilot of the Stack page: the
+  // vanilla block writes the custom properties that the adapters set one by one).
+  const declarations = (style) => {
+    const out = new Set();
+    for (let index = 0; index < style.length; index += 1) {
+      const property = style.item(index);
+      const value = collapse(style.getPropertyValue(property)).replace(/\s*([,()])\s*/g, '$1').replace(/,/g, ', ');
+      const priority = style.getPropertyPriority(property);
+      out.add(`${property}: ${value}${priority ? ` !${priority}` : ''};`);
+    }
+    return [...out].sort().join(' ');
+  };
 
   // First pass: ids and names in first-appearance (document) order of the kept tree.
   const ids = new Map();
@@ -157,7 +173,7 @@ export function normalize(input) {
       if (!keepAttribute(name, node)) continue;
       let value = attribute.value;
       if (name === 'style') {
-        value = node.style ? node.style.cssText : value;
+        value = node.style ? declarations(node.style) : value;
         if (value === '') continue;
       }
       if (name === 'name') value = names.get(value) || value;

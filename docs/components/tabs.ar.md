@@ -316,7 +316,7 @@ template: `<hw-tabs label="تفاصيل الطلب" overflow="scroll">
 | `hw-tab disabled` | input | `boolean` | `false` | `false` |
 | `hw-tab *` | content | — | `false` | — |
 
-يحتوي `HwTabsComponent` (`hw-tabs`) على مكوّن `HwTabComponent` (`hw-tab`) لكل لوحة؛ والصفوف التي تبدأ بـ`hw-tab` هي مُدخلات `hw-tab` ومحتواه. اربط `[(value)]` لتحديد ثنائي الاتجاه. ويسمّي المُدخل `label` قائمة التبويبات، وهو مطلوب ما لم تُكتب الخاصية `aria-label` أو `aria-labelledby` على `hw-tabs`؛ والمُدخل `overflowLabel` مطلوب ما لم يكن `overflow` مساويًا `scroll`. ودون `id` يولّد المكوّن معرّفًا لتبويباته ولوحاته. ويعرض كل `hw-tab` محتواه المُسقَط في عنصر `section.hw-tab-panel` خاص به، وتمنح ورقة الأنماط العنصر `hw-tab` القيمة `display: contents`، فتحافظ اللوحات على تخطيط المحوّلات الأخرى، ويمكن استكمال تهيئة مجموعة التبويبات في المتصفح بعد العرض على الخادم.
+يحتوي `HwTabsComponent` (`hw-tabs`) على مكوّن `HwTabComponent` (`hw-tab`) لكل لوحة؛ والصفوف التي تبدأ بـ`hw-tab` هي مُدخلات `hw-tab` ومحتواه. اربط `[(value)]` ربطًا ثنائي الاتجاه بالتحديد. ويسمّي المُدخل `label` قائمة التبويبات، وهو مطلوب ما لم تُكتب الخاصية `aria-label` أو `aria-labelledby` على `hw-tabs`؛ والمُدخل `overflowLabel` مطلوب ما لم يكن `overflow` مساويًا `scroll`. ودون `id` يولّد المكوّن معرّفًا لتبويباته ولوحاته. ويعرض كل `hw-tab` محتواه المُسقَط في عنصر `section.hw-tab-panel` خاص به، وتمنح ورقة الأنماط العنصر `hw-tab` القيمة `display: contents`، فتحافظ اللوحات على تخطيط المحوّلات الأخرى، ويمكن استكمال تهيئة مجموعة التبويبات في المتصفح بعد العرض على الخادم.
 
 ## إمكانية الوصول
 

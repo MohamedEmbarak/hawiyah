@@ -28,5 +28,13 @@
     "description": "@hawiyah/angular 0.3.0 always writes data-variant on the service card and always renders its icon region, which React, Vue and the vanilla markup write only when given. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects hw-service-card.",
     "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: ServiceCard (Angular) always writes `data-variant` (`default` when no variant is given)",
     "approvedBy": "lead"
+  },
+  {
+    "id": "stack-vue-layout-attributes",
+    "component": "stack",
+    "aspect": "structure",
+    "description": "@hawiyah/vue 0.3.0 always writes data-collapse-at and data-side on Stack, which React writes only when the props are given and Angular and the vanilla markup never write on Stack. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects the layout primitives of @hawiyah/vue.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Stack (Vue), with the other layout primitives built by the same function,",
+    "approvedBy": "lead"
   }
 ]

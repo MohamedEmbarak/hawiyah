@@ -2,7 +2,7 @@
 // paths, aria snapshots and pixelmatch screenshots, with negative controls.
 import { PNG } from 'pngjs';
 import { describe, expect, it } from 'vitest';
-import { compareAria, compareScreenshot, compareScreenshots, compareStructure, firstDifference, PIXEL_THRESHOLD, pixelLimit, withoutDesigned } from '../compare.mjs';
+import { compareAria, compareScreenshot, compareScreenshots, compareStructure, differences, firstDifference, PIXEL_THRESHOLD, PRINTED_DIFFERENCES, pixelLimit, structureMessages, withoutDesigned } from '../compare.mjs';
 import { compareCapture, validateDesignedDifferences } from '../run.mjs';
 
 /** A white PNG with a dark bar of 40x12 pixels at x (a stand-in for rendered text). */
@@ -37,6 +37,41 @@ describe('compareStructure', () => {
       ['vanilla-angular', true],
     ]);
     expect(results[1].message).toBe('vanilla and vue differ at $[0]: vanilla "a", vue "b"');
+  });
+
+  // The pilot of the Stack page: the second difference of a pair appeared only once the first was excused.
+  it('lists every difference of a pair, the first with the message of the pair, and prints one line for each', () => {
+    const stack = (attrs) => [{ tag: 'div', attrs: { class: 'hw-stack', ...attrs }, children: [{ tag: 'p', attrs: {}, children: ['x'] }] }];
+    const vue = stack({ 'data-collapse-at': 'md', 'data-side': 'start' });
+    vue[0].children[0].children = ['y'];
+    const [react, pair] = compareStructure({ vanilla: stack({}), react: stack({}), vue });
+    expect(react).toEqual({ pair: 'vanilla-react', equal: true });
+    expect(pair).toMatchObject({ pair: 'vanilla-vue', equal: false, path: '$[0].attrs["data-collapse-at"]', message: 'vanilla and vue differ at $[0].attrs["data-collapse-at"]: vanilla (absent), vue "md"', more: 0 });
+    expect(structureMessages(pair)).toEqual([
+      'vanilla and vue differ at $[0].attrs["data-collapse-at"]: vanilla (absent), vue "md"',
+      'vanilla and vue differ at $[0].attrs["data-side"]: vanilla (absent), vue "start"',
+      'vanilla and vue differ at $[0].children[0].children[0]: vanilla "x", vue "y"',
+    ]);
+    expect(differences(stack({}), vue)[0]).toEqual(firstDifference(stack({}), vue));
+    // A longer array: each index beyond the shorter one is a difference of its own.
+    expect(differences(['a', 'b'], ['a', 'c', 'd', 'e']).map((item) => item.path)).toEqual(['$[1]', '$[2]', '$[3]']);
+    expect(differences({ a: 1 }, { a: 1 })).toEqual([]);
+  });
+
+  it('prints at most 20 differences of a pair and counts the rest', () => {
+    const tree = (value) => [{ tag: 'ul', attrs: {}, children: Array.from({ length: 23 }, (_, i) => ({ tag: 'li', attrs: {}, children: [`${value} ${i}`] })) }];
+    const [pair] = compareStructure({ vanilla: tree('a'), react: tree('b') });
+    expect(pair.differences).toHaveLength(PRINTED_DIFFERENCES);
+    expect(pair.more).toBe(3);
+    const lines = structureMessages(pair);
+    expect(lines).toHaveLength(21);
+    expect(lines[0]).toBe('vanilla and react differ at $[0].children[0].children[0]: vanilla "a 0", react "b 0"');
+    expect(lines[19]).toBe('vanilla and react differ at $[0].children[19].children[0]: vanilla "a 19", react "b 19"');
+    expect(lines[20]).toBe('vanilla and react: 3 further differences not printed (at most 20 per pair)');
+    const [one] = compareStructure({ vanilla: tree('a').map((ul) => ({ ...ul, children: ul.children.slice(0, 21) })), react: tree('b').map((ul) => ({ ...ul, children: ul.children.slice(0, 21) })) });
+    expect(structureMessages(one).at(-1)).toBe('vanilla and react: 1 further difference not printed (at most 20 per pair)');
+    // A stale entry has no list of differences: its message alone.
+    expect(structureMessages({ pair: 'vanilla-react', equal: false, path: '$', message: 'm' })).toEqual(['m']);
   });
 });
 

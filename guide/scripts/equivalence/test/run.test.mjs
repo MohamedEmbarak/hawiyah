@@ -9,7 +9,7 @@ import tabsKeyboard from '../checks/tabs-keyboard.mjs';
 import { fileURLToPath } from 'node:url';
 import { generatedNamePattern } from '../generated-names.mjs';
 import { normalize } from '../normalize.js';
-import { bundleHarness, capture, changelogSourceError, checkNames, compareCapture, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { bundleHarness, capture, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
 import { styledAttributes } from '../styled-attributes.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
@@ -29,7 +29,7 @@ const entry = {
 describe('known differences', () => {
   it('hold the three entries the lead approved, valid, each with its CHANGELOG.md source', () => {
     expect(validateWith(known).errors).toEqual([]);
-    expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon']);
+    expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon', 'stack-vue-layout-attributes']);
     const [orientation, textField, serviceCard] = known;
     expect(orientation).toMatchObject({ component: 'tabs', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] });
     expect(orientation.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: The vanilla Tabs controller/);
@@ -183,6 +183,21 @@ describe('a structure entry with ignore (self-test, leadAmendments A8)', () => {
     const lines = rows.filter((row) => row.result === 'different').map((row) => failureLine('HWE-STRUCT', group, row.message));
     expect(lines).toHaveLength(3);
     expect(lines.every((line) => line.startsWith('HWE-STRUCT docs/components/tabs.ar.md:19: vanilla and '))).toBe(true);
+  });
+
+  // The pilot of the Stack page: only the first difference of a pair was printed.
+  it('prints one HWE-STRUCT line for each difference of a pair, with the wording of the first', () => {
+    const other = [bar({ 'data-orientation': 'horizontal', 'data-side': 'start' }, 1)];
+    const rows = compareCapture({ trees: { vanilla, vue: other }, snapshots: { vanilla: 'a', vue: 'a' }, images: {} }).filter((row) => row.result === 'different');
+    expect(rows.map((row) => row.pair)).toEqual(['vanilla-vue']);
+    expect(comparisonFailures(group, 'rest', rows[0])).toEqual([
+      'HWE-STRUCT docs/components/tabs.ar.md:19: basic (ar, rest) vanilla and vue differ at $[0].children[0].attrs["data-orientation"]: vanilla (absent), vue "horizontal"',
+      'HWE-STRUCT docs/components/tabs.ar.md:19: basic (ar, rest) vanilla and vue differ at $[0].children[0].attrs["data-side"]: vanilla (absent), vue "start"',
+      'HWE-STRUCT docs/components/tabs.ar.md:19: basic (ar, rest) vanilla and vue differ at $[0].children[0].children[1]: vanilla {"tag":"button","attrs":{"class":"hw-tab","role":"tab"},"children":["t1"]}, vue (absent)',
+    ]);
+    // An aria row keeps its one line.
+    const aria = compareCapture({ trees: { vanilla, vue: vanilla }, snapshots: { vanilla: 'a\nb', vue: 'a\nc' }, images: {} }).filter((row) => row.result === 'different');
+    expect(aria.flatMap((row) => comparisonFailures(group, 'rest', row))).toEqual(['HWE-ARIA docs/components/tabs.ar.md:19: basic (ar, rest) vanilla and vue aria snapshots differ at line 2: vanilla "b", vue "c"']);
   });
 
   it('skips the whole aspect for an entry without ignore, as before', () => {
@@ -343,6 +358,35 @@ describe('runEquivalence before the browser', () => {
   it('HWE-CHECK: a check without a script', async () => {
     const options = fixture({ groups: live('tabs', 'basic', { check: 'tabs-nothing' }), pages: [tabsPage(['basic'])], components: interactive });
     await expect(runEquivalence(options)).rejects.toThrow('HWE-CHECK docs/components/tabs.ar.md:7: check=tabs-nothing has no scripts/equivalence/checks/tabs-nothing.mjs');
+  });
+
+  // The owner's decision for the launch: a component with a controller other than Tabs may have a
+  // keyboard table written from the package READMEs, its outcomes not checked.
+  it('prints one line per page whose keyboard outcomes keyboard-exceptions.json leaves unchecked, and fails a wrong entry', async () => {
+    const table = { caption: 'Keyboard interaction of Accordion', line: 30, rows: [{ keys: ['Enter', 'Space'], action: 'Opens or closes the section.' }] };
+    const accordion = { id: 'accordion', langs: ['ar', 'en'], liveGroups: [{ example: 'basic', static: true }], keyboard: { en: table, ar: table } };
+    // The check that does not exist stops the run before the browser starts.
+    const groups = [...live('accordion', 'basic', { static: true }), ...live('tabs', 'basic', { check: 'tabs-nothing' })];
+    const options = fixture({ groups, pages: [accordion, { ...tabsPage(['basic']), liveGroups: [{ example: 'basic', check: 'tabs-nothing' }] }], components: [{ id: 'accordion', sourceType: 'native' }, ...interactive] });
+    mkdirSync(join(options.guideDir, 'node_modules', '@hawiyah', 'vanilla'), { recursive: true });
+    writeFileSync(join(options.guideDir, 'node_modules', '@hawiyah', 'vanilla', 'README.md'), 'Enter and Space open or close the section.\n');
+    const entry = { component: 'accordion', reason: 'Keyboard outcome checks of Accordion follow the launch.', reference: '@hawiyah/vanilla README.md: "Enter and Space open or close the section."', approvedBy: 'lead' };
+    const lines = [];
+    const run = (exceptions) => runEquivalence({ ...options, keyboardExceptions: exceptions, log: (line) => lines.push(line) }).then(() => '', (error) => error.message);
+    let message = await run([entry]);
+    expect(lines).toEqual(['keyboard outcomes not checked: accordion']);
+    // The failures of the run are those of the Tabs fixture alone (no keyboard table, a check without a script).
+    expect(message).toContain('HWE-CHECK docs/components/tabs.md:7: check=tabs-nothing has no scripts/equivalence/checks/tabs-nothing.mjs');
+    expect(message.split('\n').filter((line) => line.includes('accordion'))).toEqual([]);
+    lines.length = 0;
+    message = await run([]);
+    expect(lines).toEqual([]);
+    expect(message).toMatch(/HWE-KEYS docs\/components\/accordion\.md:30: the keyboard table documents Enter/);
+    // An entry for a page whose groups name checks, for a page that does not exist, and with a sentence the README lacks.
+    message = await run([{ ...entry, component: 'tabs' }, { ...entry, component: 'combobox' }, { ...entry, reference: '@hawiyah/vanilla README.md: "Escape closes the section."' }]);
+    expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (tabs) leaves the keyboard outcomes of tabs unchecked, but its groups name the checks tabs-nothing; a component with checks is bound to them, so remove the entry');
+    expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 2 (combobox) matches no page: docs/components/ has no page combobox; remove it');
+    expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 3 (accordion): the reference quotes a sentence that the README of the installed @hawiyah/vanilla does not hold');
   });
 });
 

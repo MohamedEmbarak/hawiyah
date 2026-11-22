@@ -13,7 +13,7 @@ import { locateApiTables, rewriteApiTables } from '../api-tables.mjs';
 import { processPair } from '../pipeline.mjs';
 import { scaffoldArabic } from '../scaffold-ar.mjs';
 import { scaffoldPage, tableProblems } from '../scaffold.mjs';
-import { applyStringMap, candidates, deriveStringMap, liveBlocks } from '../string-map.mjs';
+import { applyStringMap, candidates, deriveStringMap, groupContext, liveBlocks } from '../string-map.mjs';
 import { syncArabic } from '../sync-ar.mjs';
 import { guideDir, repoDir } from './helpers.mjs';
 
@@ -88,6 +88,74 @@ describe('content:scaffold-ar', () => {
     expect(liveBlocks(result.text).map((block) => block.code)).toEqual(liveBlocks(arabic).map((block) => block.code));
     expect(apiParts(result.text)).toEqual(apiParts(arabic));
     expect(result.text.split('\n---\n')[0]).toBe(arabic.split('\n---\n')[0]);
+  });
+});
+
+// The review of the Arabic pilot pages: the map replaced neither a shown value nor a
+// one-word reader string of the framework blocks (a category, a term), and said nothing.
+describe('content:scaffold-ar and content:sync-ar replace every reader string that HWC-PAR8 reads', () => {
+  const scaffold = (id, english, map) => scaffoldArabic(english, { entry: readers.components.get(id), declared: declaredMembers(readers, id), map, version });
+  it.each(['text-field', 'service-card'])('reproduces the live blocks of %s.ar.md byte for byte from its string map', (id) => {
+    const english = page(`${id}.md`);
+    const arabic = page(`${id}.ar.md`);
+    const derived = deriveStringMap(english, arabic);
+    expect(derived.conflicts).toEqual([]);
+    expect(derived.unaligned).toEqual([]);
+    const result = scaffold(id, english, derived.map);
+    expect(result.missing).toEqual([]);
+    expect(result.left).toEqual([]);
+    expect(result.unused).toEqual([]);
+    expect(liveBlocks(result.text).map((block) => block.code)).toEqual(liveBlocks(arabic).map((block) => block.code));
+  });
+  it.each(['text-field', 'service-card'])('content:sync-ar leaves %s.ar.md as it is and keeps no string by hand', (id) => {
+    const result = syncArabic(page(`${id}.md`), page(`${id}.ar.md`), { entry: readers.components.get(id), declared: declaredMembers(readers, id), version });
+    expect(result.text).toBe(page(`${id}.ar.md`));
+    expect([...result.missing, ...result.left, ...result.kept, ...result.dropped, ...result.review, ...result.unmatched, ...result.stale]).toEqual([]);
+  });
+  it('replaces a shown value and a one-word category and term in the four forms, and keeps an email value in Latin', () => {
+    const derived = deriveStringMap(page('service-card.md'), page('service-card.ar.md')).map;
+    expect(derived).toMatchObject({ Documents: 'المستندات', Duration: 'المدة', Fee: 'الرسوم' });
+    const field = deriveStringMap(page('text-field.md'), page('text-field.ar.md')).map;
+    expect(Object.keys(field)).not.toContain('applicant@example.com');
+    const result = scaffold('text-field', page('text-field.md'), field);
+    const disabled = liveBlocks(result.text).filter((block) => block.example === 'disabled').map((block) => block.code);
+    expect(disabled.every((code) => code.includes('applicant@example.com'))).toBe(true);
+    expect(field['Example Trading Company']).toBe('شركة المثال التجارية');
+    const readonly = liveBlocks(result.text).filter((block) => block.example === 'readonly').map((block) => block.code);
+    expect(readonly).toHaveLength(4);
+    expect(readonly.every((code) => code.includes('شركة المثال التجارية') && !code.includes('Example Trading Company'))).toBe(true);
+  });
+  it('prints one line for each reader string of the English blocks that the map does not translate, a one-word category and a shown value among them', () => {
+    const map = deriveStringMap(page('service-card.md'), page('service-card.ar.md')).map;
+    const { Documents, Fee, ...rest } = map;
+    expect([Documents, Fee].every(Boolean)).toBe(true);
+    const result = scaffold('service-card', page('service-card.md'), rest);
+    expect(result.missing).toEqual(['Documents', 'Fee']);
+    // The category stays English in every form, and is listed once.
+    expect(liveBlocks(result.text).filter((block) => block.example === 'basic' && block.framework !== 'vanilla').every((block) => /category="Documents"/.test(block.code))).toBe(true);
+    const field = deriveStringMap(page('text-field.md'), page('text-field.ar.md')).map;
+    const shown = Object.keys(field).find((key) => /\bCompany\b/.test(key));
+    expect(shown).toBeTruthy();
+    const { [shown]: dropped, ...withoutValue } = field;
+    expect(dropped).toBeTruthy();
+    expect(scaffold('text-field', page('text-field.md'), withoutValue).missing).toEqual([shown]);
+  });
+  it('reads the element of a value and the group of a string (applyStringMap with a group)', () => {
+    const blocks = [
+      { lang: 'html', code: '<span class="hw-badge">Documents</span><input class="hw-input" value="Example Company"><input class="hw-input" type="email" value="a@example.com"><select><option value="Riyadh">Riyadh</option></select>' },
+      { lang: 'tsx', code: '<ServiceCard category="Documents" metadata={[{ term: \'Documents\', value: \'Riyadh\' }]} />' },
+    ];
+    const group = groupContext(blocks);
+    const map = { Documents: 'المستندات', 'Example Company': 'شركة المثال', 'a@example.com': 'x', Riyadh: 'الرياض' };
+    expect(applyStringMap('html', blocks[0].code, map, undefined, { group }).code).toBe('<span class="hw-badge">المستندات</span><input class="hw-input" value="شركة المثال"><input class="hw-input" type="email" value="a@example.com"><select><option value="Riyadh">الرياض</option></select>');
+    expect(applyStringMap('tsx', blocks[1].code, map, undefined, { group }).code).toBe('<ServiceCard category="المستندات" metadata={[{ term: \'المستندات\', value: \'Riyadh\' }]} />');
+    expect(applyStringMap('tsx', '<TextField defaultValue="Example Company" /><TextField type="email" defaultValue="a@example.com" /><Tabs defaultValue="Riyadh" />', map, undefined, { group }).code)
+      .toBe('<TextField defaultValue="شركة المثال" /><TextField type="email" defaultValue="a@example.com" /><Tabs defaultValue="Riyadh" />');
+    expect(applyStringMap('vue', '<TextField default-value="Example Company" :items="[{ name: \'Riyadh\' }]" />', map, undefined, { group }).code).toBe('<TextField default-value="شركة المثال" :items="[{ name: \'الرياض\' }]" />');
+    expect(applyStringMap('ts', 'template: `<hw-text-field value="Example Company" /><hw-text-field type="email" value="a@example.com" [value]="\'Example Company\'" />`', map, undefined, { group }).code)
+      .toBe('template: `<hw-text-field value="شركة المثال" /><hw-text-field type="email" value="a@example.com" [value]="\'Example Company\'" />`');
+    // Without its group a block keeps the category, and the component value, as before.
+    expect(applyStringMap('tsx', blocks[1].code, map).code).toBe(blocks[1].code);
   });
 });
 

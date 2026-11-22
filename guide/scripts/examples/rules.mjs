@@ -6,11 +6,16 @@
 //              and its framework packages;
 //   HWC-LIVE6  style attributes and style bindings, <style> elements, styles or
 //              styleUrl in Angular metadata, raw colours, class names that do not
-//              start with hw-, <script> and inline event handlers in HTML.
+//              start with hw-, <script> and inline event handlers in HTML. The one
+//              exception is a style attribute of the html (vanilla) block whose
+//              declarations are all custom properties named --hw-* (the props of a
+//              layout primitive, which the React, Vue and Angular adapters write as
+//              custom properties on the element); see layoutStyleFindings.
 // Every finding is { code, line, message } with line relative to the block (1-based).
 import { BindingType, TmplAstBoundAttribute, TmplAstElement, TmplAstTextAttribute } from '@angular/compiler';
 import { parse as parseVueSfc } from '@vue/compiler-sfc';
 import { parseFragment } from 'parse5';
+import postcss from 'postcss';
 import ts from 'typescript';
 import { findColours, stripVarNames } from '../lint/colours.mjs';
 import { parseAngularTemplate, templateElements } from './angular-imports.mjs';
@@ -79,6 +84,41 @@ function importFindings(framework, file, lineOf) {
 
 // ---------------------------------------------------------------- HTML (vanilla)
 
+/** The name a custom property of a style attribute of the html block must have. */
+export const LAYOUT_PROPERTY = /^--hw-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * The declarations of a style attribute of the html block (docs/components/README.md,
+ * Rules for the code): the attribute is accepted only when it holds at least one
+ * declaration and every declaration sets a custom property named --hw-*. Anything
+ * else (another property, a comment, a rule, text that is not a declaration list)
+ * is HWC-LIVE6, and so is a raw colour in a value.
+ */
+export function layoutStyleFindings(value, line) {
+  const refuse = (detail) => [finding('HWC-LIVE6', line, `style attribute ${detail}; in the html block a style attribute only sets custom properties named --hw-* (the props of a layout primitive), otherwise use hw- classes and documented variants`)];
+  let rule;
+  try {
+    const root = postcss.parse(`x{${value}}`);
+    rule = root.nodes.length === 1 && root.nodes[0].type === 'rule' ? root.nodes[0] : null;
+  } catch {
+    rule = null;
+  }
+  if (!rule) return refuse('is not a list of declarations');
+  if (rule.nodes.length === 0) return refuse('declares nothing');
+  const out = [];
+  for (const node of rule.nodes) {
+    if (node.type !== 'decl') out.push(...refuse(`holds a ${node.type}, not a declaration`));
+    else if (!LAYOUT_PROPERTY.test(node.prop)) out.push(...refuse(`declares ${node.prop}`));
+    else {
+      // A value is a paint where a custom property can carry one: named colours are refused too.
+      for (const colour of findColours(stripVarNames(node.value), { identifiers: true })) {
+        out.push(finding('HWC-LIVE6', line, `raw colour ${colour.value} in ${node.prop}; use the documented variants`));
+      }
+    }
+  }
+  return out;
+}
+
 /** Rules over an HTML fragment; lines are 1-based in `html`. */
 export function htmlRules(html) {
   const out = [];
@@ -90,7 +130,7 @@ export function htmlRules(html) {
       if (node.tagName === 'style') out.push(finding('HWC-LIVE6', line, '<style> is not allowed in a live example'));
       for (const attribute of node.attrs ?? []) {
         const attrLine = node.sourceCodeLocation?.attrs?.[attribute.name]?.startLine ?? line;
-        if (attribute.name === 'style') out.push(finding('HWC-LIVE6', attrLine, 'style attribute is not allowed; use hw- classes and documented variants'));
+        if (attribute.name === 'style') out.push(...layoutStyleFindings(attribute.value, attrLine));
         else if (/^on[a-z]/.test(attribute.name)) out.push(finding('HWC-LIVE6', attrLine, `inline event handler ${attribute.name} is not allowed`));
         else if (attribute.name === 'class') out.push(...classFindings('class', attribute.value, attrLine));
         else out.push(...colourFindings(attribute.name, attribute.value, attrLine));

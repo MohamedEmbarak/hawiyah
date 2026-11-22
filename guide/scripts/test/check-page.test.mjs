@@ -5,11 +5,11 @@
 // scripts/test/build/check-page.build.test.mjs (npm run test:check-page).
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { otherRuns, pageContent, parseArgs, takeEquivalenceLock, takeLock } from '../check-page.mjs';
-import { listSources, runContent } from '../content/pipeline.mjs';
+import { listSources, pendingLine, runContent } from '../content/pipeline.mjs';
 import { ownSpecs, titleFilter } from '../test-page.mjs';
 import { frontMatterBlock } from '../content/hash.mjs';
 import { relink } from './scale/generate.mjs';
@@ -19,6 +19,7 @@ const guideDir = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const repoDir = resolve(guideDir, '..');
 const docs = join(repoDir, 'docs', 'components');
 const componentsFile = join(repoDir, 'components.json');
+const toPosix = (path) => path.split('\\').join('/');
 // Inside guide/.cache (ignored by Git): the relative links of the pilots are rewritten to lead to the same files.
 const scratch = join(guideDir, '.cache', 'test-check-page', String(process.pid));
 const locks = mkdtempSync(join(tmpdir(), 'hawiyah-check-page-locks-'));
@@ -91,6 +92,35 @@ describe('pages pending translation', () => {
     expect(listed.findings).toEqual([]);
     expect(listed.langs).toEqual(['en']);
     expect(listed.pending).toBe(true);
+  });
+  // The contract (Who does what): the writer of the English page lists its id, the writer of the Arabic page removes it.
+  it('check:page --lang en passes for a listed id, and names the list to add the id to otherwise', () => {
+    const dir = docsWith('english-alone', ['tabs.md']);
+    const listed = pageContent({ id: 'tabs', lang: 'en', componentsDir: dir, componentsFile, pendingFile: pendingFile('english-alone', ['tabs']) });
+    expect(listed.findings).toEqual([]);
+    expect(listed.langs).toEqual(['en']);
+    expect(listed.pending).toBe(true);
+    const unlisted = pageContent({ id: 'tabs', lang: 'en', componentsDir: dir, componentsFile, pendingFile: pendingFile('none', []) });
+    expect(unlisted.findings.map((item) => `${item.code} ${item.file}: ${item.message}`)).toEqual([
+      `HWC-FILE ${toPosix(relative(repoDir, dir))}/tabs.md: the English page has no Arabic sibling tabs.ar.md; while it is written, add tabs to guide/scripts/content/pending-translation.json (the writer of the Arabic page removes it)`,
+    ]);
+    // Once the Arabic page exists, the entry fails until its writer removes it, with --lang en as well.
+    const translated = docsWith('translated', ['tabs.md', 'tabs.ar.md']);
+    for (const lang of [null, 'en']) {
+      expect(pageContent({ id: 'tabs', lang, componentsDir: translated, componentsFile, pendingFile: pendingFile('english-alone', ['tabs']) }).findings.map((item) => item.message)).toEqual([
+        `tabs is listed as pending translation, but ${toPosix(relative(repoDir, translated))}/tabs.ar.md exists; remove the entry`,
+      ]);
+    }
+  });
+  it('a build with a non-empty list prints the count of the pending pages', () => {
+    expect(pendingLine([])).toBe('content: 0 pages pending translation');
+    expect(pendingLine(['service-card', 'tabs'])).toBe('content: 2 pages pending translation (service-card, tabs: English only, no route until the Arabic page exists)');
+    const dir = docsWith('count', ['tabs.md', 'button.md', 'button.ar.md']);
+    const out = join(scratch, 'count', 'out');
+    const result = runContent({ guideDir, repoDir, componentsDir: dir, componentsFile, outDir: out, liveGroupsFile: join(out, 'live-groups.json'), pending: new Set(['tabs']) });
+    expect(result.findings).toEqual([]);
+    expect(pendingLine(result.pending)).toBe('content: 1 pages pending translation (tabs: English only, no route until the Arabic page exists)');
+    expect(readFileSync(join(guideDir, 'scripts', 'build-steps', '20-content.mjs'), 'utf8')).toContain('ctx.log(pendingLine(result.pending));');
   });
   it('in the build: the pending page has no route, the build counts it, and a stale entry fails', () => {
     const dir = docsWith('build', ['tabs.md', 'button.md', 'button.ar.md']);

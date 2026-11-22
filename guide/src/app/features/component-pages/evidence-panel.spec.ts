@@ -89,6 +89,45 @@ describe('EvidencePanel (5a.11)', () => {
     expect(panel.textContent).not.toMatch(/[\u0600-\u06FF][,;]|[,;] [\u0600-\u06FF]/);
   });
 
+  // The owner's decision for the launch: an entry of keyboard-exceptions.json leaves the keyboard
+  // outcomes of a component unchecked; the panel says so in the page's language, as guide text.
+  const UNCHECKED: PageEvidence = { ...NONE, name: 'Dialog', open: [{ kind: 'keyboard' }] };
+  const KEYBOARD_TEXT = {
+    en: {
+      intro: 'Each entry of Known defects in 0.3.0 in CHANGELOG.md that names this component, each documented difference of the equivalence check, and the keyboard behaviour that the checks of the guide do not verify yet:',
+      item: 'The keyboard behaviour in the keyboard table of this page is documented from the READMEs of the installed packages and is not yet verified by the keyboard checks of the guide.',
+    },
+    ar: {
+      intro: 'كل بند من العيوب المعروفة في الإصدار 0.3.0 في CHANGELOG.md يذكر هذا المكوّن، وكل اختلاف موثّق في فحص التكافؤ، وسلوك لوحة المفاتيح الذي لم تتحقق منه فحوص الدليل بعد:',
+      item: 'سلوك لوحة المفاتيح في جدول التفاعل من لوحة المفاتيح في هذه الصفحة موثّق من ملفات README للحزم المثبّتة، ولم تتحقق منه فحوص لوحة المفاتيح في الدليل بعد.',
+    },
+  } as const;
+  for (const lang of ['en', 'ar'] as const) {
+    it(`shows one open item when the keyboard outcomes are not checked, in the page's language (${lang})`, async () => {
+      const panel = await render(UNCHECKED, lang, lang === 'en' ? 'Dialog' : 'مربع الحوار');
+      const lists = Array.from(panel.querySelectorAll(':scope > ul'));
+      expect(lists).toHaveLength(1);
+      expect(Array.from(lists[0]?.querySelectorAll(':scope > li') ?? []).map((li) => li.textContent)).toEqual([KEYBOARD_TEXT[lang].item]);
+      expect(Array.from(panel.querySelectorAll(':scope > p')).map((p) => p.textContent).at(-1)).toBe(KEYBOARD_TEXT[lang].intro);
+      // Guide text: no language of its own, no code, no link.
+      expect(lists[0]?.querySelectorAll('[lang], code, a')).toHaveLength(0);
+      if (lang === 'ar') expect(ARABIC_SCRIPT.test(lists[0]?.textContent ?? '')).toBe(true);
+    });
+  }
+
+  it('keeps the keyboard item after the defects and the documented differences', async () => {
+    const panel = await render({ ...TABS, open: [...TABS.open, { kind: 'keyboard' }] }, 'en', 'Tabs');
+    const open = Array.from(panel.querySelectorAll(':scope > ul')).at(-1);
+    const items = Array.from(open?.querySelectorAll(':scope > li') ?? []).map((li) => li.textContent);
+    expect(items).toHaveLength(4);
+    expect(items.at(-1)).toBe(KEYBOARD_TEXT.en.item);
+  });
+
+  it('keeps the wording of the introduction of the open items without the keyboard item', async () => {
+    const plain = await render(TABS, 'en', 'Tabs');
+    expect(Array.from(plain.querySelectorAll(':scope > p')).map((p) => p.textContent)).toContain('Each entry of Known defects in 0.3.0 in CHANGELOG.md that names this component, and each documented difference of the equivalence check:');
+  });
+
   for (const lang of ['en', 'ar'] as const) {
     it(`states that no verification evidence and nothing open is recorded (${lang})`, async () => {
       const panel = await render(NONE, lang, lang === 'en' ? 'PageHeader' : 'عنوان الصفحة');

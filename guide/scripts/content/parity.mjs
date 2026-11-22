@@ -8,7 +8,9 @@
 // of a reader name such as label or aria-label, of a name that ends in label,
 // message, text or title, or any string that holds a phrase of Latin words outside
 // the token names of TOKEN_NAMES), unless arabic-exceptions.json lists the text
-// with a reason.
+// with a reason. A value that is Latin by nature is not reader text: the value of an
+// input or component of type email, url, tel or number (LATIN_VALUE_TYPES), and a
+// value without any letter.
 
 import { readFileSync } from 'node:fs';
 import { FRAMEWORKS, finding } from './config.mjs';
@@ -96,8 +98,30 @@ export const TOKEN_NAMES = new Set(['class', 'classname', 'id', 'role', 'type', 
  * of a field component, and the name of a data object (a person, a file) that a list
  * renders.
  */
-const SHOWN_VALUE_NAMES = new Set(['value', 'defaultvalue', 'default-value', 'modelvalue', 'model-value']);
+export const SHOWN_VALUE_NAMES = new Set(['value', 'defaultvalue', 'default-value', 'modelvalue', 'model-value']);
 const HIDDEN_VALUE_TYPES = new Set(['checkbox', 'radio', 'hidden', 'color', 'range', 'file', 'image']);
+/**
+ * Input types whose value is Latin by nature (an email address, a URL, a telephone
+ * number, a number): the value of an input, or of a component, with one of these
+ * types is not reader text, in every framework form (value, defaultValue,
+ * default-value, the Angular value).
+ */
+export const LATIN_VALUE_TYPES = new Set(['email', 'url', 'tel', 'number']);
+/**
+ * Whether the value of an element is shown to the reader as text, from its tag and
+ * its type attribute: a component (React or Vue name, custom element) passes the value
+ * to a field it shows, as do textarea, output and an input of a text type; a value of
+ * an email, url, tel or number type is Latin by nature, and option, button, data, li,
+ * param and the other elements do not show their value.
+ */
+export function valueShownBy(tag, type) {
+  const kind = String(type ?? 'text').toLowerCase();
+  if (LATIN_VALUE_TYPES.has(kind)) return false;
+  if (/^[A-Z]/.test(tag) || tag.includes('-')) return true;
+  if (tag === 'textarea' || tag === 'output') return true;
+  if (tag === 'input') return !HIDDEN_VALUE_TYPES.has(kind);
+  return false;
+}
 /** Whether a value-like string token is shown to the reader, from its name and its element. */
 function shownValue(list, index, name, bare) {
   if (name.kind === 'property') return bare === 'name' || bare === 'defaultvalue';
@@ -106,18 +130,12 @@ function shownValue(list, index, name, bare) {
   let at = list.lastIndexOf(name, index);
   while (at > 0 && !(list[at].kind === 'tag' && list[at - 1]?.text === '<')) at -= 1;
   const tag = at > 0 ? list[at].text : '';
-  // A component (React or Vue name, custom element) passes the value to a field it shows.
-  if (/^[A-Z]/.test(tag) || tag.includes('-')) return true;
-  if (tag === 'textarea' || tag === 'output') return true;
-  if (tag === 'input') {
-    let type = 'text';
-    for (let j = at + 1; j < list.length && list[j].text !== '>' && list[j].text !== '/>'; j += 1) {
-      if (list[j].kind === 'attribute' && list[j].text.toLowerCase() === 'type' && list[j + 2]?.kind === 'string') type = unquote(list[j + 2].text).toLowerCase();
-    }
-    return !HIDDEN_VALUE_TYPES.has(type);
+  // The type of the element (type="email", [type]="'email'"), wherever it stands among its attributes.
+  let type = null;
+  for (let j = at + 1; at > 0 && j < list.length && list[j].text !== '>' && list[j].text !== '/>'; j += 1) {
+    if (list[j].kind === 'attribute' && bareName(list[j].text) === 'type' && list[j + 2]?.kind === 'string') type = unquote(unquote(list[j + 2].text));
   }
-  // option, button, data, li, param and the other elements do not show their value.
-  return false;
+  return valueShownBy(tag, type);
 }
 /** Two or more words of Latin letters in a row: a phrase a reader reads, wherever it stands. */
 export const LATIN_PHRASE = /(?:^|\s)[A-Za-z]+(?:[.,;:!?])?\s+[A-Za-z]+(?=[.,;:!?]?(?:\s|$))/;

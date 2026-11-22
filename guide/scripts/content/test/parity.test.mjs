@@ -102,6 +102,32 @@ describe('checkParity', () => {
     expect(live('<input type="checkbox" name="terms" value="accepted"><select class="hw-select"><option value="riyadh">الرياض</option></select>')).toEqual([]);
   });
 
+  // The review of the Arabic pilot pages: a value that is Latin by nature is not reader text.
+  it('exempts the value of an email, url, tel or number field and a value without any letter, in every framework form (HWC-PAR8)', () => {
+    const blocks = {
+      vanilla: '<button class="hw-button" type="button" data-variant="primary">متابعة</button>',
+      react: '<Button variant="primary">متابعة</Button>',
+      vue: '<HwButton variant="primary">متابعة</HwButton>',
+      angular: 'template: `<button hwButton variant="primary">متابعة</button>`',
+    };
+    const live = (framework, markup) => runPair({ ar: validAr().replace(blocks[framework], framework === 'angular' ? `template: \`${markup}\`` : markup) }).findings
+      .filter((item) => item.code === 'HWC-PAR8')
+      .map((item) => item.message.split(' has no')[0]);
+    // An email value in Latin passes on the Arabic page, in each form.
+    expect(live('vanilla', '<input class="hw-input" name="email" type="email" value="applicant@example.com">')).toEqual([]);
+    expect(live('vanilla', '<input class="hw-input" value="https://example.com/a" type="url"><input class="hw-input" type="tel" value="+966 11 000 0000"><input class="hw-input" type="number" value="12e3">')).toEqual([]);
+    expect(live('react', '<TextField label="البريد الإلكتروني" type="email" defaultValue="applicant" />')).toEqual([]);
+    expect(live('vue', '<TextField label="البريد الإلكتروني" type="email" default-value="applicant" />')).toEqual([]);
+    expect(live('angular', '<hw-text-field label="البريد الإلكتروني" type="email" value="applicant" /><hw-text-field label="الموقع" [type]="\'url\'" [value]="\'example.com\'" />')).toEqual([]);
+    // A value without any letter needs no Arabic letter.
+    expect(live('react', '<TextField label="المبلغ" defaultValue="1,250.00" />')).toEqual([]);
+    // A text value in English still fails, in each form.
+    expect(live('vanilla', '<input class="hw-input" name="org" type="text" value="Example Company">')).toEqual(['live block "primary" (vanilla) value']);
+    expect(live('react', '<TextField label="الجهة" defaultValue="Example" />')).toEqual(['live block "primary" (react) defaultValue']);
+    expect(live('vue', '<TextField label="الجهة" type="text" default-value="Example" />')).toEqual(['live block "primary" (vue) default-value']);
+    expect(live('angular', '<hw-text-field label="الجهة" value="Example" />')).toEqual(['live block "primary" (angular) value']);
+  });
+
   it('requires Arabic script in headings h2 to h6, except the framework names (HWC-PAR8)', () => {
     const ar = validAr();
     const h3 = ar.match(/^### (.+)$/m);

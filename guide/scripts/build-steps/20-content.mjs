@@ -3,7 +3,7 @@
 // .cache/content/live-groups.json for step 25 (contentPipeline).
 import { join } from "node:path";
 import { formatFinding } from "../content/config.mjs";
-import { runContent } from "../content/pipeline.mjs";
+import { pendingLine, runContent } from "../content/pipeline.mjs";
 
 export default {
   id: "20-content",
@@ -24,6 +24,6 @@ export default {
       throw new Error(`content: ${result.findings.length} finding(s) in docs/components`);
     }
     ctx.log(`${result.pages} page model(s), ${result.groups} live group(s)`);
-    ctx.log(`content: ${result.pending.length} pages pending translation${result.pending.length ? ` (${result.pending.join(', ')}: English only, no route until the Arabic page exists)` : ''}`);
+    ctx.log(pendingLine(result.pending));
   },
 };

@@ -84,6 +84,34 @@ describe('normalize', () => {
     expect(result.path).toBe('$[0].attrs.style');
   });
 
+  // The vanilla block of a layout primitive writes the custom properties that the
+  // React, Vue and Angular adapters set one by one, in another order.
+  it('compares the declarations of a style attribute as a set: order, white space and a trailing semicolon do not count', () => {
+    const vanilla = tree('<div id="app"><div class="hw-stack" style="--hw-layout-align: center; --hw-layout-gap: var(--hw-space-2, 0.5rem);"><p>x</p></div></div>');
+    expect(vanilla[0].attrs.style).toBe('--hw-layout-align: center; --hw-layout-gap: var(--hw-space-2, 0.5rem);');
+    for (const written of [
+      '--hw-layout-gap: var(--hw-space-2, 0.5rem); --hw-layout-align: center',
+      '--hw-layout-gap:var( --hw-space-2 ,0.5rem );--hw-layout-align:center;',
+      '  --hw-layout-gap:   var(--hw-space-2,   0.5rem) ;  --hw-layout-align :center ; ',
+    ]) {
+      expect(differs(vanilla, tree(`<div id="app"><div class="hw-stack" style="${written}"><p>x</p></div></div>`)), written).toEqual({ pair: 'vanilla-react', equal: true });
+    }
+  });
+
+  it('fails a style attribute with another property, another value or a declaration more (HWE-STRUCT)', () => {
+    const vanilla = tree('<div id="app"><div class="hw-stack" style="--hw-layout-gap: var(--hw-space-2, 0.5rem)"><p>x</p></div></div>');
+    for (const written of [
+      '--hw-layout-padding: var(--hw-space-2, 0.5rem)',
+      '--hw-layout-gap: var(--hw-space-3, 0.75rem)',
+      '--hw-layout-gap: var(--hw-space-2, 0.5rem); --hw-layout-align: center',
+      '--hw-layout-gap: var(--hw-space-2, 0.5rem) !important',
+    ]) {
+      const result = differs(vanilla, tree(`<div id="app"><div class="hw-stack" style="${written}"><p>x</p></div></div>`));
+      expect(result.equal, written).toBe(false);
+      expect(result.path).toBe('$[0].attrs.style');
+    }
+  });
+
   it('passes equal trees with different ids and Angular hosts', () => {
     const a = tree(vanillaTabs());
     const b = tree(angularTabs, 'guide-example');

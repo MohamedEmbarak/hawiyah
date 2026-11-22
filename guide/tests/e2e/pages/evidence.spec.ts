@@ -7,7 +7,8 @@ import { navigation, pageModel } from '../support/routes';
 // from the sources themselves, not from the page model that the same build wrote
 // (G23 of the 5a fix round): components.json (built and verified adapters, each
 // evidence entry with its fields, the notes), the Known defects of the pinned version
-// in CHANGELOG.md that name the component, and its entries of known-differences.json.
+// in CHANGELOG.md that name the component, its entries of known-differences.json, and
+// the entry of keyboard-exceptions.json that leaves its keyboard outcomes unchecked.
 // Each evidence entry is a description list, one field per line; the kinds of
 // evidence that some built adapters have and others do not are said in one line; a
 // documented difference stands under the Known defects entry its source cites. A
@@ -25,6 +26,9 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf
 const catalogue = JSON.parse(read('../../../../components.json')) as { components: Component[] };
 const changelog = read('../../../../CHANGELOG.md');
 const differences = JSON.parse(read('../../../scripts/equivalence/known-differences.json')) as Difference[];
+const keyboardExceptions = JSON.parse(read('../../../scripts/equivalence/keyboard-exceptions.json')) as { component: string; key?: string }[];
+/** An entry { component, reason, reference, approvedBy } leaves the keyboard outcomes of the component unchecked. */
+const unchecked = (id: string) => keyboardExceptions.some((item) => item.component === id && item.key === undefined);
 const version = (JSON.parse(read('../../../package.json')) as { dependencies: Record<string, string> }).dependencies['@hawiyah/styles'] ?? '';
 
 /** The list items of "Known defects in <version>" under "## <version>", each joined from its lines. */
@@ -62,6 +66,7 @@ const TEXT = {
     defect: `(CHANGELOG.md, Known defects in ${version})`,
     difference: 'documented difference',
     differenceOf: 'Documented difference of the equivalence check',
+    keyboardUnchecked: 'The keyboard behaviour in the keyboard table of this page is documented from the READMEs of the installed packages and is not yet verified by the keyboard checks of the guide.',
   },
   ar: {
     evidence: 'أدلة التحقق', open: 'البنود المفتوحة',
@@ -76,6 +81,7 @@ const TEXT = {
     defect: `(CHANGELOG.md، العيوب المعروفة في الإصدار ${version})`,
     difference: 'اختلاف موثّق',
     differenceOf: 'اختلاف موثّق في فحص التكافؤ',
+    keyboardUnchecked: 'سلوك لوحة المفاتيح في جدول التفاعل من لوحة المفاتيح في هذه الصفحة موثّق من ملفات README للحزم المثبّتة، ولم تتحقق منه فحوص لوحة المفاتيح في الدليل بعد.',
   },
 } as const;
 
@@ -142,6 +148,8 @@ for (const entry of navigation.pages) {
       const expected = [
         ...named.map((text) => `${plain(text)} ${t.defect}${under(text).map((item) => `${t.differenceOf} ${item.id}: ${plain(item.description)}`).join('')}`),
         ...own.filter((item) => !named.some((text) => under(text).includes(item))).map((item) => `${plain(item.description)} (${t.difference} ${item.id})`),
+        // An entry of keyboard-exceptions.json that leaves the keyboard outcomes unchecked: one item of guide text.
+        ...(unchecked(entry.id) ? [t.keyboardUnchecked] : []),
       ];
       if (expected.length > 0) await expect(lists.nth(next).locator(':scope > li')).toHaveText(expected);
       else await expect(lists).toHaveCount(next);
@@ -150,7 +158,7 @@ for (const entry of navigation.pages) {
         // English evidence text carries its own language and direction (and the Latin-script guard of step 72 passes).
         const foreign = panel.locator('span[lang="en"]');
         const nested = named.reduce((sum, text) => sum + under(text).length, 0);
-        expect(await foreign.count()).toBe(evidence.length * 2 + notes.length + expected.length + nested);
+        expect(await foreign.count()).toBe(evidence.length * 2 + notes.length + expected.length - (unchecked(entry.id) ? 1 : 0) + nested);
         expect(await foreign.evaluateAll((nodes) => nodes.every((node) => node.getAttribute('dir') === 'ltr'))).toBe(true);
       } else {
         await expect(panel.locator('[lang]')).toHaveCount(0);

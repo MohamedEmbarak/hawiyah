@@ -66,6 +66,36 @@ Table: Arabic terms of the guide
 | Warning, Caution | تحذير، تنبيه | Also the log level warning: تحذير. |
 | variant names | Latin, in code | `primary`, `outline`. |
 | page titles and links with a component name | مرجع المكوّن: زر؛ صفحة المكوّن: زر | A form that needs no definite article on the name. |
+| assistive technology | التقنيات المساعدة | Never التقنيات المساندة; المساندة remains the word for supporting actions (الإجراءات المساندة). |
+| label (of a form field) | التسمية؛ تسمية ظاهرة | |
+| hint (of a form field) | النص الإرشادي | Not تلميح, which is the title of the TIP alert. |
+| error message (of a form field) | رسالة الخطأ؛ الخطأ | |
+| placeholder (of a form field) | النص النائب | Any text that starts «نص مؤقت» is the scaffold placeholder and fails `HWC-TODO`. |
+| the input (the native input element) and the field | عنصر الإدخال؛ عنصر الإدخال الأصلي، and الحقل | الحقل is the field with its label, hint and error; عنصر الإدخال is the native element; never حقل الإدخال or حقل إدخال. المُدخل remains the Angular input. |
+| filled appearance, outline appearance (of a field) | المظهر المملوء، المظهر ذو الإطار | بالمظهر ذي الإطار after a preposition; never المظهر المعبّأ or مظهر الإطار. |
+| read-only | للقراءة فقط؛ الحقل المخصّص للقراءة فقط | للقراءة فقط alone in a heading; after a noun المخصّص للقراءة فقط, never الذي للقراءة فقط. |
+| constraint validation | التحقق من قيود الإدخال | |
+| form control (Angular) | عنصر تحكم في النموذج | Not وحدة تحكم, which the table of excluded forms refuses. |
+| value accessor (Angular) | موصّل القيمة | A sentence may say what it does without the term (ويعمل المكوّن أيضًا مع نماذج Angular). |
+| header, body, footer (of a card or a region) | الترويسة، المتن، التذييل | As ترويسة المنصة and تذييل المنصة of `components.json`. |
+| title (of a card) and heading (the element, with its level) | عنوان البطاقة؛ عنصر عنوان من المستوى الثالث | The title is shown في عنصر عنوان من المستوى الثالث; never العنوان عنوانًا من المستوى. |
+| pattern outside WAI-ARIA (the row Platform patterns of `docs/coverage.md`) | The name in Latin script: الصف Platform patterns | نمط names a WAI-ARIA pattern only, and الأنماط are styles; مكوّنات المنصات is the category label, another list. |
+| selects (a stylesheet selector matches) | تستهدف | تستهدف ورقة الأنماط `type="number"`; يحدّد and يضبط have their own meanings. |
+| controlled, uncontrolled (a field, a selection) | متحكَّم فيه، غير متحكَّم فيه | |
+| string (the value type) | سلسلة نصية، سلاسل نصية | |
+| focus indicator | مؤشر التركيز | |
+| reduced motion | تقليل الحركة | The name of the system setting. |
+| host element (Angular) | العنصر المضيف | |
+| factory function | الدالة المُنشئة | |
+| item, entry (of an array option) | البند، البنود | عنصر is a DOM element on every page. |
+| stacked (a description list) | متراصّة | With the gloss يقع فيها كل وصف تحت مصطلحه; never مكدّسة, which reads as piled up. |
+| where (a condition), with (a prop that is given) | عندما، إذا؛ عند كتابة `href` | Never حيث, which names a place, and never ومع `href` at the start of a sentence. |
+| two-way binding | ربط ثنائي الاتجاه | اربط `[(value)]` ربطًا ثنائي الاتجاه بالقيمة; ثنائي الاتجاه qualifies the binding, never the value or the selection. |
+| supplied (the Platforms Code files) | المزوَّدة | ورقة أنماط كود المنصات المزوَّدة. |
+
+The rows from assistive technology to supplied are the reviewer's preferred forms
+from the review of the first two Arabic pages, adopted by the owner; one reading
+by a native reader corrects them in one pass where it finds otherwise.
 
 The API terms from slot to type, the three terms for an HTML attribute, a prop
 and a CSS property, and the keyboard table caption are frozen for milestone 5.
@@ -121,3 +151,13 @@ Table: Forms the glossary excludes
 | `` /في كلا الاتجاهين/ `` | في اتجاهَي القراءة كليهما |
 | `` /(?:[وفبلك]?ال\|[وفبلك])فئات? المرئية/ `` | الطراز المرئي, الطُّرُز المرئية for a visual family of Button |
 | `` /رخصة/ `` | الترخيص |
+| `` /تقني(?:ة\|ات) (?:ال)?مساندة/ `` | التقنيات المساعدة for assistive technology |
+| `` /مظهر\s+(?:ال)?معبّ?أ/ `` | المظهر المملوء for the filled appearance |
+| `` /مظهر (?:ال)?إطار/ `` | المظهر ذو الإطار for the outline appearance |
+| `` /(?:الذي\|التي) للقراءة فقط/ `` | المخصّص للقراءة فقط after a noun |
+| `` /حقل (?:ال)?إدخال/ `` | عنصر الإدخال for the native input, الحقل for the field |
+| `` /عنوان(?:ًا\|اً?) من المستوى/ `` | في عنصر عنوان من المستوى for the heading that shows a title |
+| `` /مكدّ?س/ `` | متراصّة for a stacked list |
+| `` /(?<![؀-ۿ])حيث(?![؀-ۿ])/ `` | عندما or إذا for a condition |
+| `` /(?:^\|[.!?؟؛:]\s+)ومع `/ `` | عند كتابة at the start of a sentence (وعند كتابة `href`) |
+| `` /(?<!ربط(?:ًا\|اً?)?\s)ثنائي[ةه]? الاتجاه/ `` | ربط ثنائي الاتجاه: the binding is two-way, not the value or the selection |

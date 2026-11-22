@@ -1,5 +1,5 @@
 // Comparisons of the equivalence harness (contentPipeline.equivalence): the
-// normalised DOM trees (first differing JSON path), the aria snapshots (first
+// normalised DOM trees (every differing JSON path, at most 20 printed per pair), the aria snapshots (first
 // differing line) and the element screenshots (pixelmatch against vanilla).
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
@@ -55,6 +55,34 @@ export function firstDifference(a, b, path = '$') {
   }
   return Object.is(a, b) ? null : { path, a, b };
 }
+
+/**
+ * Every JSON path at which a and b differ, with both values, in the order in which
+ * firstDifference walks the trees (its result is the first item): a path whose kinds
+ * differ, a key that one side lacks, an index beyond the shorter array, and every
+ * differing leaf below paths where both sides have the same kind. Each path is listed
+ * once.
+ */
+export function differences(a, b, path = '$', out = []) {
+  const ka = kindOf(a);
+  const kb = kindOf(b);
+  if (ka !== kb) out.push({ path, a, b });
+  else if (ka === 'array') {
+    const n = Math.min(a.length, b.length);
+    for (let i = 0; i < n; i += 1) differences(a[i], b[i], `${path}[${i}]`, out);
+    for (let i = n; i < Math.max(a.length, b.length); i += 1) out.push({ path: `${path}[${i}]`, a: a[i], b: b[i] });
+  } else if (ka === 'object') {
+    const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])].sort();
+    for (const name of keys) {
+      if (!(name in a) || !(name in b)) out.push({ path: key(path, name), a: a[name], b: b[name] });
+      else differences(a[name], b[name], key(path, name), out);
+    }
+  } else if (!Object.is(a, b)) out.push({ path, a, b });
+  return out;
+}
+
+/** At most this many differences of one pair are printed (HWE-STRUCT); the rest are counted. */
+export const PRINTED_DIFFERENCES = 20;
 
 const brief = (value) => {
   if (value === undefined) return '(absent)';
@@ -132,15 +160,26 @@ function carries(tree, rule) {
  * - a reference that does write one fails as a stale entry, and
  * - the other frameworks are also compared with each other in full, so a wrong
  *   value of an ignored attribute in one of them is still reported.
- * Returns one result per pair: { pair, equal, path?, message? }.
+ * Returns one result per pair: { pair, equal, path?, message?, differences?, more? },
+ * where path and message are those of the first difference, differences lists the
+ * first PRINTED_DIFFERENCES differences as { path, message } and more counts the rest.
  */
 export function compareStructure(trees, ignore = []) {
-  const different = (a, b, found, note = '') => ({
-    pair: `${a}-${b}`,
-    equal: false,
-    path: found.path,
-    message: `${a} and ${b} differ at ${found.path}: ${a} ${brief(found.a)}, ${b} ${brief(found.b)}${note}`,
-  });
+  const line = (a, b, found) => `${a} and ${b} differ at ${found.path}: ${a} ${brief(found.a)}, ${b} ${brief(found.b)}`;
+  // Every difference of the pair: the first PRINTED_DIFFERENCES of them with their
+  // message (the first is the message of the pair), and the number of the rest.
+  const compared = (a, b, x, y) => {
+    const found = differences(x, y);
+    if (found.length === 0) return { pair: `${a}-${b}`, equal: true };
+    return {
+      pair: `${a}-${b}`,
+      equal: false,
+      path: found[0].path,
+      message: line(a, b, found[0]),
+      differences: found.slice(0, PRINTED_DIFFERENCES).map((item) => ({ path: item.path, message: line(a, b, item) })),
+      more: Math.max(0, found.length - PRINTED_DIFFERENCES),
+    };
+  };
   const results = pairs(trees).map(([a, b]) => {
     const stale = ignore.find((rule) => carries(trees[a], rule));
     if (stale) {
@@ -151,16 +190,26 @@ export function compareStructure(trees, ignore = []) {
         message: `the documented difference no longer applies: ${a} writes ${stale.attribute} on .${stale.class}; remove the entry`,
       };
     }
-    const found = firstDifference(trees[a], withoutIgnored(trees[b], ignore));
-    return found ? different(a, b, found) : { pair: `${a}-${b}`, equal: true };
+    return compared(a, b, trees[a], withoutIgnored(trees[b], ignore));
   });
   if (ignore.length === 0) return results;
   const others = FRAMEWORKS.filter((framework) => framework !== REFERENCE && framework in trees);
-  for (const framework of others.slice(1)) {
-    const found = firstDifference(trees[others[0]], trees[framework]);
-    results.push(found ? different(others[0], framework, found) : { pair: `${others[0]}-${framework}`, equal: true });
-  }
+  for (const framework of others.slice(1)) results.push(compared(others[0], framework, trees[others[0]], trees[framework]));
   return results;
+}
+
+/**
+ * The messages of a structure result that differs: one per printed difference, the
+ * first being the result's message, and, when more differences exist, one line that
+ * counts them. A result without a list of differences (a stale entry) has its message.
+ */
+export function structureMessages(result) {
+  if (!Array.isArray(result.differences)) return [result.message];
+  const [a, b] = result.pair.split('-');
+  const rest = result.more > 0
+    ? [`${a} and ${b}: ${result.more} further ${result.more === 1 ? 'difference' : 'differences'} not printed (at most ${PRINTED_DIFFERENCES} per pair)`]
+    : [];
+  return [...result.differences.map((item) => item.message), ...rest];
 }
 
 /** Accessibility: the aria snapshot strings must be equal; reports the first differing line. */

@@ -40,8 +40,9 @@ export function excludedForms(text) {
 }
 
 describe('Arabic glossary', () => {
-  it('reads its twelve excluded forms from docs/guides/glossary.md', () => {
-    expect(EXCLUDED).toHaveLength(12);
+  // The pin of the list, renewed with the ten forms of the review of the first two Arabic pages.
+  it('reads its twenty-two excluded forms from docs/guides/glossary.md', () => {
+    expect(EXCLUDED).toHaveLength(22);
     expect(EXCLUDED.every((item) => item.form instanceof RegExp && item.use)).toBe(true);
   });
 
@@ -98,5 +99,36 @@ describe('Arabic glossary', () => {
     expect(excludedForms('نمط الوضع الداكن في ممارسات التأليف الخاصة بـWAI-ARIA.')).toHaveLength(1);
     expect(excludedForms('نمط الألوان في ممارسات التأليف.')).toHaveLength(1);
     expect(excludedForms('مبنية لتتوافق مع كود المنصات، ولكود المنصات أصنافه، والسمة `dga` بالطُّرُز المرئية، بموجب ترخيص Apache 2.0، في اتجاهَي القراءة كليهما.')).toEqual([]);
+  });
+
+  // The rows that the review of the first two Arabic pages proposed, with the forms it names.
+  it('finds each form that the review of the first two Arabic pages excludes, and lets the preferred form through', () => {
+    expect(excludedForms('تُخفى العلامة عن التقنيات المساندة.')).toHaveLength(1);
+    expect(excludedForms('تُخفى عن تقنية مساندة.')).toHaveLength(1);
+    expect(excludedForms('تضبط الخاصية المظهر المعبّأ.')).toHaveLength(1);
+    expect(excludedForms('يكون الحقل بمظهر الإطار.')).toHaveLength(1);
+    expect(excludedForms('يحتفظ الحقل الذي للقراءة فقط بقيمته.')).toHaveLength(1);
+    expect(excludedForms('ولا يستخدم حقل الإدخال النصي أيًّا منهما.')).toHaveLength(1);
+    expect(excludedForms('ويُعرض العنوان عنوانًا من المستوى الثالث.')).toHaveLength(1);
+    expect(excludedForms('قائمة وصفية مكدّسة.')).toHaveLength(1);
+    expect(excludedForms('حيث يدعمها نوع الإدخال.')).toHaveLength(1);
+    expect(excludedForms('يظهر الرابط. ومع `href` تعرض البطاقة رابطًا.')).toHaveLength(1);
+    expect(excludedForms('اربط `[(value)]` لتحديد ثنائي الاتجاه.')).toHaveLength(1);
+    expect(excludedForms('اربط `[(value)]` لقيمة نصية ثنائية الاتجاه.')).toHaveLength(1);
+    expect(excludedForms([
+      'تُخفى العلامة عن التقنيات المساعدة، ويميّز الشكل `outline` الإجراءات المساندة.',
+      'تضبط الخاصية المظهر المملوء؛ ودونهما يكون الحقل بالمظهر ذي الإطار، والمظهر ذو الإطار هو الافتراضي.',
+      'يحتفظ الحقل المخصّص للقراءة فقط بقيمته، ويرتبط النص الإرشادي بعنصر الإدخال، بحيث يقرؤه القارئ.',
+      'ويُعرض عنوان البطاقة في عنصر عنوان من المستوى الثالث، والبطاقة تضمّ عنوانًا مع تصنيف.',
+      'قائمة وصفية متراصّة، وعند كتابة `href` تعرض البطاقة رابطًا، ومرّر `value` مع `onValueChange`.',
+      'اربط `[(value)]` ربطًا ثنائي الاتجاه بالقيمة، أو ربطاً ثنائي الاتجاه بالتحديد.',
+    ].join('\n'))).toEqual([]);
+  });
+
+  it('keeps the name of a pattern outside WAI-ARIA in Latin script', () => {
+    const terms = new Map((glossaryTables(glossaryText)['Arabic terms of the guide'] ?? []).slice(1).map(([concept, arabic]) => [concept, arabic]));
+    expect(terms.get('pattern outside WAI-ARIA (the row Platform patterns of docs/coverage.md)')).toBe('The name in Latin script: الصف Platform patterns');
+    expect(excludedForms('تُدرج البطاقة في الصف Platform patterns من نطاق المكوّنات.')).toEqual([]);
+    expect(excludedForms('تُدرج البطاقة في نمط المنصات.')).toHaveLength(1);
   });
 });

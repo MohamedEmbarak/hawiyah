@@ -34,7 +34,7 @@ import { componentsDirOf, sectionHashes } from './hash.mjs';
 import { normalise, parseMarkdown } from './parse.mjs';
 import { codeBodyEdit, outline } from './scaffold-ar.mjs';
 import { tableProblems } from './scaffold.mjs';
-import { applyStringMap, candidates, deriveStringMap, isReader, liveBlocks, readerNames, rendersText } from './string-map.mjs';
+import { applyStringMap, candidates, deriveStringMap, groupContexts, isReader, liveBlocks, readerNames, rendersText } from './string-map.mjs';
 
 const ARABIC = /[؀-ۿ]/;
 
@@ -74,13 +74,15 @@ export function syncArabic(englishText, arabicText, { entry, declared, version }
   const unmatched = [];
   const edits = [];
   const englishBlocks = liveBlocks(english);
+  const contexts = groupContexts(englishBlocks, names);
   for (const block of liveBlocks(arabic)) {
     const source = englishBlocks.find((item) => item.example === block.example && item.framework === block.framework);
     if (!source) {
       unmatched.push(`the Arabic page has the live block ${block.example} (${block.framework}), which the English page does not have`);
       continue;
     }
-    const result = applyStringMap(source.lang, source.code, derived.map, names);
+    const group = contexts.get(block.example);
+    const result = applyStringMap(source.lang, source.code, derived.map, names, { group });
     // Never an Arabic string replaced by an English one (G9 of the 5a fix round): where the
     // rewritten block and the current Arabic block align string for string, a position that
     // the map leaves in English keeps the Arabic string the page has (a hand translation of
@@ -103,8 +105,8 @@ export function syncArabic(englishText, arabicText, { entry, declared, version }
     }
     for (const item of candidates(source.lang, code)) {
       if (ARABIC.test(item.key) || !/[A-Za-z]/.test(item.key)) continue;
-      if (isReader(item, names)) missing.add(item.key);
-      else if (rendersText(item, names)) left.add(`${item.name}: ${item.key}`);
+      if (isReader(item, names, group)) missing.add(item.key);
+      else if (rendersText(item, names, group)) left.add(`${item.name}: ${item.key}`);
     }
     const edit = codeBodyEdit(arabic, block.node, code);
     if (edit) edits.push(edit);

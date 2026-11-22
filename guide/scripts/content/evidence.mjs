@@ -3,8 +3,10 @@
 // (built and verified adapters, each evidence entry, the notes) and from what is
 // open: every entry of "Known defects in <pin>" in CHANGELOG.md that names the
 // component, and every entry of scripts/equivalence/known-differences.json for
-// it (shown under the Known defects entry it cites, G23 of the 5a fix round), and
-// the kinds of evidence that some built adapters have and others do not. Pages do
+// it (shown under the Known defects entry it cites, G23 of the 5a fix round), the
+// entry of scripts/equivalence/keyboard-exceptions.json that leaves its keyboard
+// outcomes unchecked, and the kinds of evidence that some built adapters have and
+// others do not. Pages do
 // not restate evidence or keep a list of open items by hand. The two
 // headings of the panel come from src/app/i18n/evidence-headings.json, so step 20
 // can add them to the headings of the page (the content navigation lists them).
@@ -15,6 +17,16 @@ export const EVIDENCE_HEADINGS = JSON.parse(readFileSync(new URL('../../src/app/
 /** Ids of the two headings of the panel, the same in both languages. */
 export const EVIDENCE_IDS = { evidence: 'evidence-recorded', open: 'evidence-open' };
 const KNOWN_DIFFERENCES_FILE = new URL('../equivalence/known-differences.json', import.meta.url);
+const KEYBOARD_EXCEPTIONS_FILE = new URL('../equivalence/keyboard-exceptions.json', import.meta.url);
+
+/**
+ * Whether an entry { component, reason, reference, approvedBy } of
+ * keyboard-exceptions.json leaves the keyboard outcomes of the component unchecked
+ * (an entry with a key excuses one key only and adds no open item).
+ */
+export function keyboardUnchecked(id, exceptions) {
+  return Array.isArray(exceptions) && exceptions.some((item) => item && item.component === id && item.key === undefined);
+}
 
 /** The text of a CHANGELOG entry as inlines: text and inline code (the entries use no other markup). */
 export function entryInlines(text) {
@@ -59,6 +71,7 @@ function sources(repoDir) {
       repoDir,
       changelog: existsSync(file) ? readFileSync(file, 'utf8') : '',
       differences: JSON.parse(readFileSync(KNOWN_DIFFERENCES_FILE, 'utf8')),
+      keyboard: JSON.parse(readFileSync(KEYBOARD_EXCEPTIONS_FILE, 'utf8')),
     };
   }
   return changelogCache;
@@ -94,11 +107,16 @@ export function evidenceGaps(built, entries) {
  * The evidence data of a page: { name, built, verified, entries, gaps, notes, open,
  * version }. A documented difference whose source cites a Known defects entry of
  * the page is shown under that entry (its `differences`), not as an item of its
- * own (G23 of the 5a fix round). `repoDir` holds CHANGELOG.md; tests pass
- * `changelog` and `differences` instead.
+ * own (G23 of the 5a fix round). When an entry of keyboard-exceptions.json leaves
+ * the keyboard outcomes of the component unchecked, the last open item is
+ * { kind: 'keyboard' }: the panel states, in the page's language, that the keyboard
+ * behaviour of the table is documented from the packages and not yet verified by the
+ * checks of the guide. `repoDir` holds CHANGELOG.md; tests pass `changelog`,
+ * `differences` and `keyboard` (the list of keyboard-exceptions.json) instead.
  */
-export function evidenceOf({ id, entry, repoDir, version = pinnedVersion(), changelog, differences }) {
+export function evidenceOf({ id, entry, repoDir, version = pinnedVersion(), changelog, differences, keyboard }) {
   const read = changelog === undefined || differences === undefined ? sources(repoDir) : null;
+  const exceptions = keyboard ?? (read ? read.keyboard : JSON.parse(readFileSync(KEYBOARD_EXCEPTIONS_FILE, 'utf8')));
   const defects = knownDefects(changelog ?? read.changelog, version).filter((text) => namesComponent(text, entry.name));
   const listed = (differences ?? read.differences).filter((item) => item.component === id);
   const difference = (item) => ({ kind: 'difference', id: item.id, aspect: item.aspect, text: entryInlines(item.description) });
@@ -120,6 +138,7 @@ export function evidenceOf({ id, entry, repoDir, version = pinnedVersion(), chan
     open: [
       ...defects.map((text) => ({ kind: 'defect', text: entryInlines(text), differences: citing(text).map(difference) })),
       ...listed.filter((item) => !nested.has(item.id)).map(difference),
+      ...(keyboardUnchecked(id, exceptions) ? [{ kind: 'keyboard' }] : []),
     ],
   };
 }

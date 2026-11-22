@@ -10,6 +10,8 @@
 // literals it holds. Each term is judged by its form:
 //   hw-*                a class of the installed stylesheet, or the element
 //                       selector of a component of @hawiyah/angular;
+//   --hw-*              a custom property that the installed stylesheet defines or
+//                       that the @hawiyah/styles README documents by its whole name;
 //   hw:*                an event name that a published module dispatches;
 //   data-*, aria-*      an attribute the stylesheet selects or a published module
 //                       reads or writes (data-hw-value as dataset.hwValue too),
@@ -21,7 +23,8 @@
 //                       parameters and the returned members of its controllers,
 //                       the members its Vue component exposes, the selectors of
 //                       its Angular classes), a member of a component page that the
-//                       same sentence links to, an export, a value of a member
+//                       same sentence links to, an export, an attribute selector of
+//                       any Angular class (hwButton; Angular scope), a value of a member
 //                       type or of an enumerated attribute of the component, or a
 //                       name of vocabulary-allow.json (HTML, ARIA, DOM, CSS, Vue
 //                       and Angular template syntax, each with its specification);
@@ -67,13 +70,19 @@ export function terms(value) {
   const text = value.trim();
   if (/^@[a-z0-9-]+\/[\w./-]+$/.test(text)) return [{ kind: 'package', name: text }];
   if (FILE_RE.test(text)) return [{ kind: 'file', name: text }];
+  // A custom property, alone or declared (--hw-gap: 1rem); the value of a declaration is application code.
+  const custom = /^(--[\w-]+)(?::\s*[^;]+;?)?$/.exec(text);
+  if (custom) return [{ kind: 'custom-property', name: custom[1] }];
   const css = /^([a-z][a-z-]*): ([^;:]+);?$/.exec(text);
   if (css) return [{ kind: 'css', name: css[1], value: css[2].trim() }];
   const out = [];
-  // Package names inside a longer value (npm install @hawiyah/react react).
+  // Package names and custom properties inside a longer value (npm install @hawiyah/react react, var(--hw-gap)).
   const packages = [];
   const rest = text.replace(/(?<![\w/-])(@[a-z0-9-]+\/[a-z0-9-]+(?:\/[\w.-]+)*)/g, (whole) => {
     packages.push({ kind: 'package', name: whole });
+    return ' ';
+  }).replace(/(?<![\w-])--[A-Za-z][\w-]*/g, (whole) => {
+    packages.push({ kind: 'custom-property', name: whole });
     return ' ';
   });
   out.push(...packages);
@@ -252,14 +261,21 @@ export function createVocabularyContext(readers, options = {}) {
   const exportsOf = {};
   for (const name of [...FRAMEWORKS, 'core']) exportsOf[name] = new Set(context.modules[name]?.exports.keys() ?? []);
   const angularElements = new Map();
+  const angularSelectors = new Map();
   for (const name of exportsOf.angular) {
     const cls = classDeclaration(context, resolveExport(context, 'angular', name));
     const read = cls ? angularClassMembers(context, cls) : null;
-    for (const part of selectorParts(read?.selector)) if (part.element) angularElements.set(part.element, name);
+    for (const part of selectorParts(read?.selector)) {
+      if (part.element) angularElements.set(part.element, name);
+      // The attribute selectors of every Angular class (hwButton, hwServiceAction), whichever component owns it.
+      for (const attribute of part.attributes) if (!angularSelectors.has(attribute)) angularSelectors.set(attribute, name);
+    }
   }
   return {
     readers,
     classes: readers.selectors.selected,
+    customProperties: customProperties(css, readFileSync(join(nodeModules, '@hawiyah', 'styles', 'README.md'), 'utf8')),
+    angularSelectors,
     stylesheetAttributes,
     moduleText,
     exportsOf,
@@ -271,6 +287,18 @@ export function createVocabularyContext(readers, options = {}) {
     repoDir: options.repoDir ?? resolve(nodeModules, '..', '..'),
     vocabularies: new Map(),
   };
+}
+
+/**
+ * The --hw- custom properties a page may name: those the installed stylesheet defines
+ * (--hw-space-4: ...) and those the @hawiyah/styles README documents by their whole
+ * name (--hw-gap); a prefix such as --hw-* or --hw-color-* names none.
+ */
+export function customProperties(css, readme) {
+  const names = new Set();
+  for (const match of css.matchAll(/(--hw-[\w-]+)\s*:/g)) names.add(match[1]);
+  for (const match of readme.matchAll(/--hw-[a-z0-9]+(?:-[a-z0-9]+)*(?![\w*-])/g)) names.add(match[0]);
+  return names;
 }
 
 /** Element and attribute names of an Angular selector ('button[hwButton],a[hwButton]', 'hw-tabs'). */
@@ -612,6 +640,9 @@ export function judge(vocab, term, where) {
       const listed = allow.values(['css-property'], term.name);
       return !listed || listed.includes(term.value) ? null : `${term.value} is not a value of ${term.name} in vocabulary-allow.json`;
     }
+    case 'custom-property':
+      if (vocab.customProperties.has(term.name)) return null;
+      return `${term.name} is neither a custom property that the installed stylesheet defines nor one that the @hawiyah/styles README documents`;
     case 'class':
       if (vocab.classes.has(term.name)) return null;
       return `${term.name} is not a class of the installed stylesheet`;
@@ -673,12 +704,16 @@ function judgeName(vocab, term, where, helpers) {
   if (memberResult === null) return null;
   const owners = exportOf(name);
   if (owners.length && scoped(name, owners, 'an export') === null) return null;
+  // The attribute selector of an Angular class of any component (hwButton on the Service card page), in the scope of Angular.
+  const selectorResult = vocab.angularSelectors?.has(name) ? scoped(name, ['angular'], 'a selector') : undefined;
+  if (selectorResult === null) return null;
   const kinds = term.kind === 'attribute' || term.bracket || term.kind === 'binding'
     ? ['html-attribute', 'aria-attribute', 'dom-member']
-    : ['html-element', 'html-attribute', 'aria-attribute', 'aria-role', 'dom-member', 'dom-event', 'vue-template', 'angular-template'];
+    : ['html-element', 'html-attribute', 'aria-attribute', 'aria-role', 'dom-member', 'dom-event', 'vue-template', 'angular-template', 'css-function'];
   if (allow.has(kinds, name)) return null;
   if (!/[A-Z]/.test(name) && where.vocabulary.values.has(name)) return null;
   if (memberResult) return memberResult;
+  if (selectorResult) return selectorResult;
   return `${name} is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json`;
 }
 
