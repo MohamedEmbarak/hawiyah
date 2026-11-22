@@ -6,7 +6,7 @@ Radio is a native radio input wrapped in a clickable label, for one option of a 
 
 The legend states the question, and each label states one answer. The radios share one name, so selecting one clears the others, and arrow keys move between them.
 
-```html live example=basic
+```html live example=basic differences=radio-adapter-markup
 <fieldset class="hw-field">
   <legend class="hw-label">How would you like to receive the decision?</legend>
   <label class="hw-choice" for="basic-delivery-post"><input class="hw-radio" id="basic-delivery-post" name="delivery" type="radio" value="post" checked>By post</label>
@@ -47,7 +47,7 @@ template: `<hw-radio-group label="How would you like to receive the decision?" n
 
 A disabled radio uses the native `disabled` attribute: it leaves the tab order and cannot be selected, while the other options of the group stay available.
 
-```html live example=disabled
+```html live example=disabled differences=radio-adapter-markup
 <fieldset class="hw-field">
   <legend class="hw-label">Which office will handle the request?</legend>
   <label class="hw-choice" for="disabled-office-north"><input class="hw-radio" id="disabled-office-north" name="office" type="radio" value="north">North office</label>
@@ -82,7 +82,7 @@ template: `<hw-radio-group label="Which office will handle the request?" name="o
 
 A read-only group stays in the tab order and submits its value, while a click or an arrow key leaves the value and its peers unchanged.
 
-```html live example=readonly
+```html live example=readonly differences=radio-adapter-markup
 <fieldset class="hw-field">
   <legend class="hw-label">Preferred language of correspondence</legend>
   <label class="hw-choice" for="readonly-language-ar"><input class="hw-radio" id="readonly-language-ar" name="language" type="radio" value="ar" checked readonly aria-disabled="true">Arabic</label>

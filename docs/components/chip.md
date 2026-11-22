@@ -6,7 +6,7 @@ Chip shows a short piece of labelled content, such as a status or an applied fil
 
 A chip with a remove button shows an applied filter, for example on a list of service requests. The remove button has its own accessible name that says which filter it removes. The chip does not remove itself: the application handles the request and updates its own list. The remove handler in the examples is a placeholder that does nothing; the application writes the handler that removes the chip.
 
-```html live example=basic
+```html live example=basic differences=chip-adapter-tone
 <span class="hw-chip">Status: Open<button type="button" aria-label="Remove filter Status: Open"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></span>
 ```
 
@@ -68,7 +68,7 @@ template: `<hw-chip tone="info" variant="outline" size="lg">Submitted</hw-chip>`
 
 `disabled` disables the remove button of a chip that has one. The text of the chip stays readable.
 
-```html live example=disabled
+```html live example=disabled differences=chip-adapter-tone
 <span class="hw-chip">Category: Documents<button type="button" disabled aria-label="Remove filter Category: Documents"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></span>
 ```
 

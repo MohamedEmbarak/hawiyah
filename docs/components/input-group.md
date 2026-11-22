@@ -6,7 +6,7 @@ InputGroup joins a native control to a prefix, a suffix or both in one row; the 
 
 The label and the hint are written by the field around the group, and the label names the native input inside it. The prefix and the suffix are addons that give the unit of the value. In React the field gives the native input nothing but the `for` of its label, so the input repeats the identifier of the field as its `id` and writes its own `aria-describedby`.
 
-```html live example=basic
+```html live example=basic differences=input-group-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="basic-amount" id="basic-amount-label">Amount</label>
   <div class="hw-input-group">
@@ -46,7 +46,7 @@ template: `<hw-field #f controlId="basic-amount" label="Amount" hint="Enter the 
 
 The size of the row is the size of its control: `data-size` with the value `sm` or `lg` on the native `hw-input` sets it, and without it the control is medium. The group element itself has no size, so `data-size` on the group changes nothing.
 
-```html live example=small
+```html live example=small differences=input-group-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="small-fee" id="small-fee-label">Fee per copy</label>
   <div class="hw-input-group">

@@ -17,6 +17,22 @@
     "empty-state",
     "description-list",
     "stat",
-    "card"
+    "card",
+    "field",
+    "textarea",
+    "number-field",
+    "input-group",
+    "switch",
+    "checkbox",
+    "radio",
+    "select",
+    "chip",
+    "slider",
+    "file-upload",
+    "table",
+    "breadcrumb",
+    "secondary-nav",
+    "spacer",
+    "center"
   ]
 }

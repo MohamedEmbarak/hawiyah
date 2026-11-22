@@ -197,7 +197,11 @@ describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
   });
 
   it('keeps the lead\'s list of keyboard exceptions valid and names keys by language', () => {
-    expect(readKeyboardExceptions()).toEqual([]);
+    // Each entry leaves the keyboard outcomes of one component unchecked (the launch
+    // decision: checks for Tabs only); the list itself is pinned by lead-lists.test.mjs.
+    const exceptions = readKeyboardExceptions();
+    expect(exceptions.every((entry) => entry.approvedBy === 'lead' && typeof entry.reference === 'string' && !('key' in entry))).toBe(true);
+    expect(exceptions.map((entry) => entry.component)).not.toContain('tabs');
     expect(isKey('Shift+Tab')).toBe(true);
     expect(isKey('Return')).toBe(false);
     expect(keyName('ArrowLeft', 'ar')).toBe('السهم الأيسر');

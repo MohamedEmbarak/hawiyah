@@ -6,7 +6,7 @@ FileUpload presents a native file input within a field, with a visible label and
 
 A field has a visible label that names the document requested. The hint states the accepted types and the size limit, and it is associated with the input. Choosing a file does not send it.
 
-```html live example=basic static
+```html live example=basic static differences=file-upload-adapter-labelledby
 <div class="hw-field hw-upload">
   <label class="hw-label" for="basic-document" id="basic-document-label">Supporting document</label>
   <input class="hw-input" id="basic-document" name="document" type="file" accept=".pdf,.jpg,.png" aria-describedby="basic-document-hint">
@@ -32,7 +32,7 @@ template: `<hw-file-upload label="Supporting document" name="document" accept=".
 
 A required field shows one marker after its label and keeps the native `required` attribute, so the browser applies its own constraint validation on submission.
 
-```html live example=required static
+```html live example=required static differences=file-upload-adapter-labelledby
 <div class="hw-field hw-upload">
   <label class="hw-label" for="required-document" id="required-document-label">Identity document<span class="hw-required-marker" aria-hidden="true"> *</span></label>
   <input class="hw-input" id="required-document" name="identity" type="file" required>
@@ -55,7 +55,7 @@ template: `<hw-file-upload label="Identity document" name="identity" [required]=
 
 An error is shown in a paragraph after the control, and the input is marked with `aria-invalid="true"` and described by the message. The message states what is wrong and how to correct it.
 
-```html live example=error static
+```html live example=error static differences=file-upload-adapter-labelledby
 <div class="hw-field hw-upload">
   <label class="hw-label" for="error-document" id="error-document-label">Supporting document</label>
   <input class="hw-input" id="error-document" name="document" type="file" aria-invalid="true" aria-describedby="error-document-error">
@@ -79,7 +79,7 @@ template: `<hw-file-upload label="Supporting document" name="document" error="At
 
 A disabled field uses the native `disabled` attribute.
 
-```html live example=disabled static
+```html live example=disabled static differences=file-upload-adapter-labelledby
 <div class="hw-field hw-upload">
   <label class="hw-label" for="disabled-document" id="disabled-document-label">Supporting document</label>
   <input class="hw-input" id="disabled-document" name="document" type="file" disabled>
@@ -106,7 +106,7 @@ The remove buttons follow one of two rules. In React and in the vanilla controll
 
 An item has `id`, `name` and `status`, which is `selected`, `uploading`, `complete` or `error`, and optionally `message`, which replaces the status text, `progress`, a number from 0 to 100 for an uploading file, and `removable`, which is false to leave out the remove button of one row. The text of every status, the text `remove` and the functions `getProgressLabel` and `getRemoveLabel`, which return the accessible names of the progress bar and of the remove button of one file, come from the required `labels`. The stylesheet draws the remove button as a cancel icon and hides the `remove` text, so the button is named by `getRemoveLabel`. The component has no built-in text.
 
-```html live example=list static
+```html live example=list static differences=file-upload-adapter-labelledby
 <div class="hw-field hw-upload">
   <label class="hw-label" for="list-documents" id="list-documents-label">Supporting documents</label>
   <input class="hw-input" id="list-documents" name="documents" type="file" multiple>

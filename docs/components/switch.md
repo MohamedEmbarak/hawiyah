@@ -6,7 +6,7 @@ Switch is a native checkbox input with the switch role, wrapped in a clickable l
 
 The label names the setting and keeps the same wording whether the switch is on or off, so the state is carried by the control and not by the text.
 
-```html live example=basic
+```html live example=basic differences=switch-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="basic-notify">
     <input class="hw-switch" id="basic-notify" name="notify" type="checkbox" role="switch">Send an email when the status of my request changes
@@ -32,7 +32,7 @@ template: `<hw-switch label="Send an email when the status of my request changes
 
 A hint renders as a paragraph after the control and is associated with it as its description. Use it for a consequence the label does not state.
 
-```html live example=hint
+```html live example=hint differences=switch-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="hint-reminders">
     <input class="hw-switch" id="hint-reminders" name="reminders" type="checkbox" role="switch" aria-describedby="hint-reminders-hint">Remind me before a document expires
@@ -57,7 +57,7 @@ template: `<hw-switch label="Remind me before a document expires" name="reminder
 
 A disabled switch uses the native `disabled` attribute: it leaves the tab order and cannot be changed.
 
-```html live example=disabled
+```html live example=disabled differences=switch-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="disabled-paperless">
     <input class="hw-switch" id="disabled-paperless" name="paperless" type="checkbox" role="switch" checked disabled>Receive correspondence by email only
@@ -81,7 +81,7 @@ template: `<hw-switch label="Receive correspondence by email only" name="paperle
 
 A read-only switch stays in the tab order and submits its value, while a click or <kbd>Space</kbd> leaves the value unchanged.
 
-```html live example=readonly
+```html live example=readonly differences=switch-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="readonly-copy">
     <input class="hw-switch" id="readonly-copy" name="copy" type="checkbox" role="switch" checked readonly aria-disabled="true">Keep a copy of submitted requests
@@ -105,7 +105,7 @@ template: `<hw-switch label="Keep a copy of submitted requests" name="copy" [val
 
 A non-empty `error` renders as a paragraph after the control and the input is marked with `aria-invalid="true"`.
 
-```html live example=error
+```html live example=error differences=switch-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="error-terms">
     <input class="hw-switch" id="error-terms" name="terms" type="checkbox" role="switch" aria-invalid="true" aria-describedby="error-terms-error">Allow the use of my contact details for this request

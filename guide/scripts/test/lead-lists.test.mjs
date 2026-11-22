@@ -49,11 +49,11 @@ const PINS = {
   'scripts/content/live-component-exceptions.json': '37517e5f3dc66819',
   'scripts/content/marketing-terms.json': '9376a99a82e48201',
   'scripts/page-guards/latin-allowlist.json': '37517e5f3dc66819',
-  'scripts/equivalence/keyboard-exceptions.json': '37517e5f3dc66819',
-  'scripts/equivalence/known-differences.json': 'bbde8128919277f2',
-  'scripts/equivalence/empty-elements.json': 'baaf361b56232a83',
+  'scripts/equivalence/keyboard-exceptions.json': 'ff8cf17588e84a4b',
+  'scripts/equivalence/known-differences.json': '41245c2d8965ef11',
+  'scripts/equivalence/empty-elements.json': 'b40e85a78d1ff60c',
   'scripts/equivalence/vanilla-hooks.json': '37517e5f3dc66819',
-  'scripts/equivalence/angular-hosts.json': '16ea51bc99fd9e0d',
+  'scripts/equivalence/angular-hosts.json': '58c4db13bddae073',
 };
 
 describe('the lead\'s lists are pinned', () => {

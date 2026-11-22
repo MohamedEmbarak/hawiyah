@@ -6,7 +6,7 @@ Center places its children in one column and centres them on both axes, with cen
 
 A page that has nothing to list yet shows one centred message with its action. Each child stands in the middle of the available width, and the text is centred.
 
-```html live example=basic
+```html live example=basic differences=center-vue-layout-attributes
 <div class="hw-center">
   <p>You have no open requests.</p>
   <button class="hw-button" type="button" data-variant="primary" data-size="md">Start a new request</button>
@@ -40,7 +40,7 @@ template: `<hw-center>
 
 `padding` adds space inside the box, around the centred content. The number 6 is the spacing token 6. The React, Vue and Angular adapters write the value as a custom property on the element of the box, and the markup of the JavaScript block writes the same custom property in a style attribute.
 
-```html live example=padding
+```html live example=padding differences=center-vue-layout-attributes
 <div class="hw-center" style="--hw-layout-padding: var(--hw-space-6, 1.5rem)">
   <p>No documents have been added to this request.</p>
   <button class="hw-button" type="button" data-variant="secondary" data-size="md">Add a document</button>
@@ -72,7 +72,7 @@ template: `<hw-center [padding]="6">
 
 `align` sets the alignment of the children on the cross axis, and `justify` sets their distribution on the main axis. With `align="start"` the children line up with the reading start instead of the middle; the text stays centred.
 
-```html live example=align
+```html live example=align differences=center-vue-layout-attributes
 <div class="hw-center" style="--hw-layout-align: start">
   <p>No documents have been added to this request.</p>
   <button class="hw-button" type="button" data-variant="secondary" data-size="md">Add a document</button>

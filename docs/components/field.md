@@ -6,7 +6,7 @@ Field composes a visible label, an optional hint and an optional error message a
 
 A field names the information requested with a visible label and states its purpose in a hint. A Hawiyah value control declared inside the field takes its identifier, its accessible name from the label and its description from the hint, so it needs no `label` of its own. In the vanilla markup the application writes the same `for`, `id` and `aria-describedby` itself.
 
-```html live example=basic
+```html live example=basic differences=field-adapter-markup
 <div class="hw-field">
   <label class="hw-label" for="basic-title" id="basic-title-label">Request title</label>
   <input class="hw-input" id="basic-title" name="title" aria-describedby="basic-title-hint">
@@ -36,7 +36,7 @@ template: `<hw-field controlId="basic-title" label="Request title" hint="Use a s
 
 A required field shows one marker after its label. The marker is hidden from assistive technology, so the native control carries the requirement with its own `required` attribute, which the application writes.
 
-```html live example=required
+```html live example=required differences=field-adapter-markup
 <div class="hw-field">
   <label class="hw-label" for="required-title" id="required-title-label">Request title<span class="hw-required-marker" aria-hidden="true"> *</span></label>
   <input class="hw-input" id="required-title" name="title" required>
@@ -63,7 +63,7 @@ template: `<hw-field #f controlId="required-title" label="Request title" [requir
 
 An error is shown in a paragraph after the control. The native control is marked with `aria-invalid="true"` by the application and described by the message, which states what is wrong and how to correct it.
 
-```html live example=error
+```html live example=error differences=field-adapter-markup
 <div class="hw-field">
   <label class="hw-label" for="error-title" id="error-title-label">Request title</label>
   <input class="hw-input" id="error-title" name="title" aria-invalid="true" aria-describedby="error-title-error">

@@ -6,7 +6,7 @@ Select is a native select element with the Hawiyah styles and, when the applicat
 
 A select has a visible label that names the information requested. The `placeholder` renders as an empty first option, so the reader chooses a value instead of submitting the first one by accident.
 
-```html live example=basic
+```html live example=basic differences=select-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="basic-type" id="basic-type-label">Type of request</label>
   <select class="hw-select" id="basic-type" name="type">
@@ -63,7 +63,7 @@ template: `<hw-select
 
 An uncontrolled select starts on the option whose value is the initial value of the adapter: `defaultValue` in React and Vue, `value` in Angular.
 
-```html live example=selected
+```html live example=selected differences=select-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="selected-channel" id="selected-channel-label">Preferred contact channel</label>
   <select class="hw-select" id="selected-channel" name="channel">
@@ -117,7 +117,7 @@ template: `<hw-select
 
 A hint renders as a paragraph after the control and is associated with it as its description.
 
-```html live example=hint
+```html live example=hint differences=select-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="hint-language" id="hint-language-label">Language of the response</label>
   <select class="hw-select" id="hint-language" name="language" aria-describedby="hint-language-hint">
@@ -168,7 +168,7 @@ template: `<hw-select
 
 A required select shows one marker after its label and keeps the native `required` attribute. With a `placeholder`, the empty first option is the value that the browser rejects on submission.
 
-```html live example=required
+```html live example=required differences=select-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="required-category" id="required-category-label">Category of document<span class="hw-required-marker" aria-hidden="true"> *</span></label>
   <select class="hw-select" id="required-category" name="category" required>
@@ -222,7 +222,7 @@ template: `<hw-select
 
 An error is shown in a paragraph after the control, and the select is marked with `aria-invalid="true"` and described by the message. The message states what is wrong and how to correct it.
 
-```html live example=error
+```html live example=error differences=select-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="error-type" id="error-type-label">Type of request</label>
   <select class="hw-select" id="error-type" name="type" aria-invalid="true" aria-describedby="error-type-error">
@@ -277,7 +277,7 @@ template: `<hw-select
 
 A disabled select uses the native `disabled` attribute.
 
-```html live example=disabled
+```html live example=disabled differences=select-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="disabled-type" id="disabled-type-label">Type of request</label>
   <select class="hw-select" id="disabled-type" name="type" disabled>

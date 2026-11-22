@@ -6,7 +6,7 @@ Spacer is a layout primitive that takes the free space of a flex container and c
 
 A request header holds a title and an action. The spacer takes the free space of the row between them, so the action stands at the end of the row.
 
-```html live example=basic
+```html live example=basic differences=spacer-vue-layout-attributes
 <div class="hw-inline">
   <strong>Request 2041</strong>
   <div class="hw-spacer" aria-hidden="true"></div>
@@ -44,7 +44,7 @@ template: `<hw-inline>
 
 `gap` sets the smallest space that the spacer keeps in both directions. Without it the minimum is zero. In a column the spacer has no free space to take, so the minimum becomes a vertical space between two blocks. The gap of the column stands on both sides of the spacer, so the space between the two blocks is the minimum plus two gaps. The number 8 is the spacing token 8. The React, Vue and Angular adapters write the value as a custom property on the element of the spacer, and the markup of the JavaScript block writes the same custom property in a style attribute.
 
-```html live example=minimum
+```html live example=minimum differences=spacer-vue-layout-attributes
 <div class="hw-stack">
   <p>Your request has been received.</p>
   <div class="hw-spacer" aria-hidden="true" style="--hw-layout-gap: var(--hw-space-8, 2rem)"></div>

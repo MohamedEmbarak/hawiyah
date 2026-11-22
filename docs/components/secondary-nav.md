@@ -6,7 +6,7 @@ SecondaryNav is a navigation landmark of ordinary page links, one of which can b
 
 The links lead to pages of one service area, and the item for the open page is marked as current. The landmark has a name that tells it apart from the main navigation.
 
-```html live example=basic
+```html live example=basic differences=secondary-nav-adapter-variant
 <nav class="hw-secondary-nav" aria-label="Service area">
   <ul>
     <li><a href="/requests" aria-current="page"><span>Requests</span></a></li>

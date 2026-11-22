@@ -38,5 +38,13 @@
     "reason": "Each member of an AvatarGroup of @hawiyah/angular is an hw-avatar host element with the class hw-avatar; the vanilla markup, React and Vue render each member as span.hw-avatar.",
     "reference": "@hawiyah/angular README.md: \"the host is the group (`hw-avatar-group.hw-avatar-group[role=group]`) and each member an `hw-avatar`.\"",
     "approvedBy": "lead"
+  },
+  {
+    "component": "chip",
+    "element": "hw-chip",
+    "tag": "span",
+    "reason": "@hawiyah/angular renders the chip on its host element hw-chip, which carries the class hw-chip; the vanilla markup, React and Vue render span.hw-chip.",
+    "reference": "@hawiyah/angular README.md: \"`hw-chip`; the host is the chip (`hw-chip.hw-chip`)\"",
+    "approvedBy": "lead"
   }
 ]

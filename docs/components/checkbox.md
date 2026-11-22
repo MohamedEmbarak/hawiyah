@@ -6,7 +6,7 @@ Checkbox is a native checkbox input wrapped in a clickable label, for one indepe
 
 The label states the choice in words that make sense when the box is checked. The control and its text are one click target.
 
-```html live example=basic
+```html live example=basic differences=checkbox-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="basic-confirm">
     <input class="hw-checkbox" id="basic-confirm" name="confirm" type="checkbox">I confirm that the details in this request are correct
@@ -32,7 +32,7 @@ template: `<hw-checkbox label="I confirm that the details in this request are co
 
 An uncontrolled checkbox starts checked through the initial value of the adapter: the `checked` attribute in vanilla, `defaultChecked` in React, `defaultValue` in Vue and `value` in Angular.
 
-```html live example=checked
+```html live example=checked differences=checkbox-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="checked-copy">
     <input class="hw-checkbox" id="checked-copy" name="copy" type="checkbox" checked>Send me a copy of this request by email
@@ -56,7 +56,7 @@ template: `<hw-checkbox label="Send me a copy of this request by email" name="co
 
 A hint renders as a paragraph after the control and is associated with it as its description. Use it for information the label does not carry.
 
-```html live example=hint
+```html live example=hint differences=checkbox-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="hint-updates">
     <input class="hw-checkbox" id="hint-updates" name="updates" type="checkbox" aria-describedby="hint-updates-hint">Notify me when my request changes status
@@ -81,7 +81,7 @@ template: `<hw-checkbox label="Notify me when my request changes status" name="u
 
 A non-empty `error` renders as a paragraph after the control, and the input is marked with `aria-invalid="true"` and described by the message. The message states what to do.
 
-```html live example=error
+```html live example=error differences=checkbox-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="error-declaration">
     <input class="hw-checkbox" id="error-declaration" name="declaration" type="checkbox" aria-invalid="true" aria-describedby="error-declaration-error">I have read the conditions of this service
@@ -106,7 +106,7 @@ template: `<hw-checkbox label="I have read the conditions of this service" name=
 
 A disabled checkbox uses the native `disabled` attribute: it leaves the tab order and cannot be changed.
 
-```html live example=disabled
+```html live example=disabled differences=checkbox-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="disabled-terms">
     <input class="hw-checkbox" id="disabled-terms" name="terms" type="checkbox" disabled>Attach the previous decision to this request
@@ -130,7 +130,7 @@ template: `<hw-checkbox label="Attach the previous decision to this request" nam
 
 A read-only checkbox stays in the tab order and submits its value, while a click or <kbd>Space</kbd> leaves the value unchanged.
 
-```html live example=readonly
+```html live example=readonly differences=checkbox-adapter-attributes
 <div class="hw-field">
   <label class="hw-choice" for="readonly-record">
     <input class="hw-checkbox" id="readonly-record" name="record" type="checkbox" checked readonly aria-disabled="true">Keep this request in my record

@@ -6,7 +6,7 @@ Slider selects one number from a bounded range with a native range input, a visi
 
 A slider has a visible label that names the quantity requested. The hint states the range, and `showValue` renders the current value as text after the input.
 
-```html live example=basic
+```html live example=basic differences=slider-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="basic-copies" id="basic-copies-label">Number of copies</label>
   <input class="hw-slider" id="basic-copies" name="copies" type="range" min="1" max="10" step="1" value="5" aria-describedby="basic-copies-hint">
@@ -33,7 +33,7 @@ template: `<hw-slider label="Number of copies" name="copies" [min]="1" [max]="10
 
 `formatValue` returns the text of the value. It is shown in the output and is written to `aria-valuetext`, so assistive technology announces the same text as the screen shows.
 
-```html live example=format
+```html live example=format differences=slider-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="format-days" id="format-days-label">Processing time</label>
   <input class="hw-slider" id="format-days" name="days" type="range" min="1" max="30" step="1" value="7" aria-valuetext="7 days">
@@ -67,7 +67,7 @@ export class FormatExample {
 
 A required slider shows one marker after its label. A range input always holds a value, so the attribute `required` is not written on the input. The marker is hidden from assistive technology, so the hint states the requirement in words as well.
 
-```html live example=required
+```html live example=required differences=slider-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="required-pages" id="required-pages-label">Number of pages<span class="hw-required-marker" aria-hidden="true"> *</span></label>
   <input class="hw-slider" id="required-pages" name="pages" type="range" min="1" max="50" step="1" value="25" aria-describedby="required-pages-hint">
@@ -91,7 +91,7 @@ template: `<hw-slider label="Number of pages" name="pages" [min]="1" [max]="50" 
 
 An error is shown in a paragraph after the control, and the input is marked with `aria-invalid="true"` and described by the message. The message states what is wrong and how to correct it.
 
-```html live example=error
+```html live example=error differences=slider-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="error-copies" id="error-copies-label">Number of copies</label>
   <input class="hw-slider" id="error-copies" name="copies" type="range" min="1" max="10" step="1" value="1" aria-invalid="true" aria-describedby="error-copies-error">
@@ -115,7 +115,7 @@ template: `<hw-slider label="Number of copies" name="copies" [min]="1" [max]="10
 
 A disabled slider uses the native `disabled` attribute. It is not focusable, and its value is not submitted.
 
-```html live example=disabled
+```html live example=disabled differences=slider-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="disabled-copies" id="disabled-copies-label">Number of copies</label>
   <input class="hw-slider" id="disabled-copies" name="copies" type="range" min="1" max="10" step="1" value="5" disabled>
@@ -138,7 +138,7 @@ template: `<hw-slider label="Number of copies" name="copies" [min]="1" [max]="10
 
 A read-only slider keeps its value in the form and stays in the tab order, so a reader can focus it. It sets `aria-readonly="true"`. In React, Vue and Angular the component also ignores pointer gestures and the keys that change the value. A native range input has no read-only behaviour, so the vanilla markup only states the state: the application cancels the value change itself, and the vanilla example here can still be changed.
 
-```html live example=readonly
+```html live example=readonly differences=slider-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="readonly-copies" id="readonly-copies-label">Number of copies</label>
   <input class="hw-slider" id="readonly-copies" name="copies" type="range" min="1" max="10" step="1" value="5" aria-readonly="true">

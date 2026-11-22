@@ -618,18 +618,26 @@ exists. None of the three switches off the structure comparison, and
 `scripts/equivalence/test/compare.test.mjs` and `normalize.test.mjs` show a
 difference outside the listed element, attribute or tag still failing.
 `empty-elements.json` lists `hw-empty-icon` (EmptyState), `hw-stat-trend` (Stat),
-`hw-card-header` and `hw-card-footer` (Card); `angular-hosts.json` lists
-`hw-skeleton`, `hw-spinner`, `hw-badge` and `hw-avatar` (Skeleton, Spinner,
-Badge, Avatar and AvatarGroup), each compared as `span`; `vanilla-hooks.json` is
-empty. `known-differences.json` holds six entries, each citing the Known defects
-in 0.3.0 of `CHANGELOG.md`: `tabs-bar-orientation` (`@hawiyah/vanilla` 0.3.0
-creates `.hw-tab-bar` without the `data-orientation` attribute that the other
-adapters write) and `progress-adapter-max` (React, Vue and Angular write `max` on
-`.hw-progress` where the vanilla markup does not) ignore one attribute;
-`text-field-adapter-attributes`, `service-card-angular-variant-icon`,
-`stack-vue-layout-attributes` and `icon-button-adapter-markup` (React, Vue and
-Angular wrap the icon of IconButton in a `span`, and Angular writes `data-shape`
-and an empty `value`) leave the structure aspect out of the groups that name them.
+`hw-card-header` and `hw-card-footer` (Card) and `hw-input-addon` (InputGroup);
+`angular-hosts.json` lists `hw-skeleton`, `hw-spinner`, `hw-badge`, `hw-avatar`
+and `hw-chip` (Skeleton, Spinner, Badge, Avatar and AvatarGroup, Chip), each
+compared as `span`; `vanilla-hooks.json` is empty. `known-differences.json` holds
+twenty entries, each citing the Known defects in 0.3.0 of `CHANGELOG.md`:
+`tabs-bar-orientation` (`@hawiyah/vanilla` 0.3.0 creates `.hw-tab-bar` without
+the `data-orientation` attribute that the other adapters write),
+`progress-adapter-max` (React, Vue and Angular write `max` on `.hw-progress`
+where the vanilla markup does not), `chip-adapter-tone` (`data-tone="neutral"`
+on `.hw-chip`) and `secondary-nav-adapter-variant` (`data-variant="default"` on
+`.hw-secondary-nav`) ignore one attribute; `text-field-adapter-attributes`,
+`service-card-angular-variant-icon`, `stack-vue-layout-attributes`,
+`icon-button-adapter-markup` (React, Vue and Angular wrap the icon of IconButton
+in a `span`, and Angular writes `data-shape` and an empty `value`), the entries
+of the form controls Field, Textarea, NumberField, InputGroup, Switch, Checkbox,
+Radio, Select, Slider and FileUpload (`<id>-adapter-attributes`, or
+`field-adapter-markup`, `radio-adapter-markup` and
+`file-upload-adapter-labelledby`), and `spacer-vue-layout-attributes` and
+`center-vue-layout-attributes` leave the structure aspect out of the groups that
+name them.
 
 A group names its interaction checks on its `html` block with
 `check=<name>[,<name>...]` (files in `scripts/equivalence/checks/`, run one

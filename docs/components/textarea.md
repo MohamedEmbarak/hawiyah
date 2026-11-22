@@ -6,7 +6,7 @@ Textarea is a multiline text entry that renders a native textarea element with t
 
 A field has a visible label that names the information requested. The hint states what to write, and it is associated with the textarea.
 
-```html live example=basic
+```html live example=basic differences=textarea-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="basic-details" id="basic-details-label">Request details</label>
   <textarea class="hw-textarea" id="basic-details" name="details" aria-describedby="basic-details-hint"></textarea>
@@ -32,7 +32,7 @@ template: `<hw-textarea label="Request details" name="details" hint="Describe th
 
 A required field shows one marker after its label and keeps the native `required` attribute, so the browser applies its own constraint validation on submission.
 
-```html live example=required
+```html live example=required differences=textarea-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="required-reason" id="required-reason-label">Reason for the request<span class="hw-required-marker" aria-hidden="true"> *</span></label>
   <textarea class="hw-textarea" id="required-reason" name="reason" required></textarea>
@@ -55,7 +55,7 @@ template: `<hw-textarea label="Reason for the request" name="reason" [required]=
 
 An error is shown in a paragraph after the control, and the textarea is marked with `aria-invalid="true"` and described by the message. The message states what is wrong and how to correct it.
 
-```html live example=error
+```html live example=error differences=textarea-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="error-details" id="error-details-label">Request details</label>
   <textarea class="hw-textarea" id="error-details" name="details" aria-invalid="true" aria-describedby="error-details-error"></textarea>
@@ -79,7 +79,7 @@ template: `<hw-textarea label="Request details" name="details" error="Enter the 
 
 A read-only field carries the native `readonly` attribute: it keeps its value in the form and stays in the tab order, so a reader can focus and select the text but cannot change it.
 
-```html live example=readonly
+```html live example=readonly differences=textarea-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="readonly-note" id="readonly-note-label">Processing note</label>
   <textarea class="hw-textarea" id="readonly-note" name="note" readonly>The request was received and is waiting for review.</textarea>

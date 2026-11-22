@@ -6,7 +6,7 @@ NumberField is a numeric entry that renders a native number input with the Hawiy
 
 A field has a visible label that names the quantity requested. The hint states the permitted range, and the native `min` and `max` constraints bound the stepping and block a submission outside the range.
 
-```html live example=basic
+```html live example=basic differences=number-field-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="basic-copies" id="basic-copies-label">Number of copies</label>
   <input class="hw-input hw-number-field" id="basic-copies" name="copies" type="number" min="1" max="10" aria-describedby="basic-copies-hint">
@@ -32,7 +32,7 @@ template: `<hw-number-field label="Number of copies" name="copies" [min]="1" [ma
 
 A required field shows one marker after its label and keeps the native `required` attribute, so the browser applies its own constraint validation on submission.
 
-```html live example=required
+```html live example=required differences=number-field-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="required-copies" id="required-copies-label">Number of copies<span class="hw-required-marker" aria-hidden="true"> *</span></label>
   <input class="hw-input hw-number-field" id="required-copies" name="copies" type="number" required>
@@ -55,7 +55,7 @@ template: `<hw-number-field label="Number of copies" name="copies" [required]="t
 
 An error is shown in a paragraph after the control, and the input is marked with `aria-invalid="true"` and described by the message. The message states what is wrong and how to correct it.
 
-```html live example=error
+```html live example=error differences=number-field-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="error-copies" id="error-copies-label">Number of copies</label>
   <input class="hw-input hw-number-field" id="error-copies" name="copies" type="number" min="1" max="10" value="12" aria-invalid="true" aria-describedby="error-copies-error">
@@ -79,7 +79,7 @@ template: `<hw-number-field label="Number of copies" name="copies" [min]="1" [ma
 
 A read-only field carries the native `readonly` attribute: it keeps its value in the form and stays in the tab order, so a reader can focus and select the value but cannot change it.
 
-```html live example=readonly
+```html live example=readonly differences=number-field-adapter-attributes
 <div class="hw-field">
   <label class="hw-label" for="readonly-copies" id="readonly-copies-label">Number of copies issued</label>
   <input class="hw-input hw-number-field" id="readonly-copies" name="copies" type="number" value="2" readonly>

@@ -1061,6 +1061,102 @@ built type declarations of each package.
   README puts `aria-hidden="true"` on the `span.hw-icon` itself, so the
   structure differs by one wrapper element. The appearance and the
   accessibility tree are the same.
+- Field: in Angular a value control such as `hw-text-field` inside `hw-field`
+  renders its own `div.hw-field` around its input, so the field holds two nested
+  `.hw-field` elements, and the input carries `aria-labelledby`, `data-size`,
+  `data-variant` and `autocomplete`; React and Vue render the input alone inside
+  `Field`, with `aria-labelledby` next to the `for` of the label, and Vue writes
+  `value=""` on an empty input. Field does not track the value presence
+  (`data-hw-filled`) of a native control it holds (React, Vue, Angular), which the
+  vanilla `enhance()` sets on every `.hw-input`, so the valid state of the
+  stylesheet does not apply to that control. The appearance and the accessibility
+  tree are the same.
+- Textarea: React and Vue write `aria-labelledby` on the textarea next to the
+  `for` of its label; Angular and the vanilla markup rely on the label alone.
+  Angular always writes `data-size="md"` and `data-variant="outline"`, which
+  React, Vue and the vanilla markup write only when given. Vue writes the value
+  as a `value` attribute of the textarea (`value=""` when empty) and no text
+  content, and Angular sets it as a property only; the vanilla markup and React
+  write an initial value as the text content of the textarea. The shown value,
+  the appearance and the accessibility tree are the same.
+- NumberField: React and Vue write `aria-labelledby` on the input next to the
+  `for` of its label; Angular and the vanilla markup rely on the label alone. Vue
+  writes `value=""` on a NumberField without a value. Angular writes
+  `hw-number-field` on the `div.hw-field` wrapper instead of the input and always
+  writes `step` (`1` when none is given); React, Vue and the vanilla markup put
+  the class on the input and write `step` only when given. The appearance and the
+  accessibility tree are the same.
+- InputGroup (Angular) always writes `data-size` (`md` when no size is given) on
+  `.hw-input-group` and always renders both `span.hw-input-addon` elements, empty
+  when no `[hwPrefix]` or `[hwSuffix]` content is projected; React, Vue and the
+  vanilla markup write the attribute and an addon only when given. The
+  stylesheet hides an empty addon (`.hw-input-addon:empty`) and does not select
+  `data-size` on `.hw-input-group`, so the `size` input changes nothing; the
+  control is sized by its own `data-size`. InputGroup (React, Vue) does not track
+  the value presence (`data-hw-filled`) of a native control it holds, so the
+  valid state of the joined row never applies; the vanilla `enhance()` and
+  Angular set it.
+- Switch (Vue) writes an `id` on `label.hw-choice`, `aria-labelledby` on the
+  input pointing to that label, `value="on"` when no `value` is given and
+  `data-hw-filled="true"` on the input; the vanilla markup, React and Angular
+  write none of these. Switch (Angular) sets the checked state as the `checked`
+  property only, so a checked switch has no `checked` attribute, unlike the
+  vanilla markup and React. The appearance and the accessibility tree are the
+  same.
+- Checkbox (Vue) writes an `id` on `label.hw-choice`, `aria-labelledby` on the
+  input pointing to that label, `value="on"` when no `value` is given and
+  `data-hw-filled="true"` on the input; the vanilla markup, React and Angular
+  write none of these. Checkbox (Angular) sets the checked state as the
+  `checked` property only, so a checked checkbox has no `checked` attribute,
+  unlike the vanilla markup and React. The appearance and the accessibility tree
+  are the same.
+- Radio (Vue) writes an `id` on `label.hw-choice`, `aria-labelledby` on the
+  input pointing to that label and `data-hw-filled="true"` on the input; the
+  vanilla markup, React and Angular write none of these. Radio (Angular
+  `hw-radio-group`) sets the checked state as the `checked` property only, so the
+  selected radio has no `checked` attribute, unlike the vanilla markup, React and
+  Vue. The appearance and the accessibility tree are the same.
+- Select: React and Vue write `aria-labelledby` on the select next to the `for`
+  of its label; Angular and the vanilla markup rely on the label alone. Angular
+  always writes `data-size` and `data-variant` (`md` and `outline` by default)
+  and selects the chosen option as a property, without a `selected` attribute;
+  Vue writes a `value` attribute on the select when it holds a value. The
+  appearance and the accessibility tree are the same.
+- Slider: React and Vue write `aria-labelledby` on the range input next to the
+  `for` of its label; the vanilla markup and Angular name the input by the label
+  alone. Vue writes `data-hw-filled` on the range input through the
+  value-presence observer of its form-reset hook; the vanilla `enhance()`, React
+  and Angular do not write it on `.hw-slider`. Angular sets the value of the
+  range input as a DOM property, so the input carries no `value` attribute, which
+  the vanilla markup, React and Vue write; the shown and submitted value is the
+  same. React passes `readOnly` on to the range input, which renders a
+  `readonly` attribute that HTML does not apply to a range input; Vue and Angular
+  write only `aria-readonly`. The appearance and the accessibility tree are the
+  same.
+- FileUpload: React and Vue write `aria-labelledby` on the file input next to
+  the `for` of its label; the vanilla markup and Angular name the input by the
+  label alone. The appearance and the accessibility tree are the same.
+- The `@hawiyah/angular` README calls the `remove` label of FileUploadList the
+  visible text of the remove button; the stylesheet draws the button as an icon
+  and hides that text (`font-size: 0`), and `getRemoveLabel` names it.
+- Chip (React, Vue, Angular) writes `data-tone="neutral"` when no tone is given;
+  the stylesheet selects `data-tone` on `.hw-chip` only for `success`, `warning`,
+  `danger` and `info`, and the vanilla markup of a neutral chip writes no
+  `data-tone`. The appearance and the accessibility tree are the same.
+- SecondaryNav: React, Vue and Angular write `data-variant="default"` on the nav
+  when no variant is given; the stylesheet selects only `data-variant="mobile"`,
+  and the vanilla markup of the default appearance has no `data-variant`. The
+  appearance and the accessibility tree are the same.
+- SecondaryNav (React, Vue): the item type `SecondaryNavItem` declares `groups`,
+  which the component does not render.
+- Spacer (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  which the stylesheet does not select on `.hw-spacer`; React writes the two
+  attributes only when the props are given, and Angular and the vanilla markup
+  never write them on Spacer.
+- Center (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  which the stylesheet does not select on `.hw-center`; React writes the two
+  attributes only when the props are given, and Angular and the vanilla markup
+  never write them on Center.
 
 #### Left for a later release
 

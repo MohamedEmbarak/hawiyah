@@ -31,8 +31,14 @@ const entry = {
 describe('known differences', () => {
   it('hold the entries the lead approved, valid, each with its CHANGELOG.md source', () => {
     expect(validateWith(known).errors).toEqual([]);
-    expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon', 'stack-vue-layout-attributes', 'progress-adapter-max', 'icon-button-adapter-markup']);
+    expect(known.map((item) => item.id)).toEqual([
+      'tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon', 'stack-vue-layout-attributes', 'progress-adapter-max', 'icon-button-adapter-markup',
+      'field-adapter-markup', 'textarea-adapter-attributes', 'number-field-adapter-attributes', 'input-group-adapter-attributes', 'switch-adapter-attributes',
+      'checkbox-adapter-attributes', 'radio-adapter-markup', 'select-adapter-attributes', 'slider-adapter-attributes', 'file-upload-adapter-labelledby',
+      'chip-adapter-tone', 'secondary-nav-adapter-variant', 'spacer-vue-layout-attributes', 'center-vue-layout-attributes',
+    ]);
     const [orientation, textField, serviceCard, , progress, iconButton] = known;
+    const byId = (id) => known.find((item) => item.id === id);
     expect(orientation).toMatchObject({ component: 'tabs', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] });
     expect(orientation.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: The vanilla Tabs controller/);
     // A difference of one framework adapter cannot use `ignore` (it compares the three
@@ -51,6 +57,32 @@ describe('known differences', () => {
     expect(iconButton).toMatchObject({ component: 'icon-button', aspect: 'structure', approvedBy: 'lead' });
     expect(iconButton.ignore).toBeUndefined();
     expect(iconButton.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: IconButton \(React, Vue, Angular\) renders the icon inside a wrapper/);
+    // The three framework adapters write the same default, which the vanilla markup lacks: ignore applies.
+    expect(byId('chip-adapter-tone')).toMatchObject({ component: 'chip', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-chip', attribute: 'data-tone' }] });
+    expect(byId('chip-adapter-tone').source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: Chip \(React, Vue, Angular\) writes/);
+    expect(byId('secondary-nav-adapter-variant')).toMatchObject({ component: 'secondary-nav', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-secondary-nav', attribute: 'data-variant' }] });
+    expect(byId('secondary-nav-adapter-variant').source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: SecondaryNav: React, Vue and Angular write/);
+    // One or two adapters differ, or the vanilla result writes the attribute (data-hw-filled):
+    // no ignore can express it, so these leave the structure aspect out of the groups that name them.
+    const whole = {
+      'field-adapter-markup': ['field', /Field: in Angular a value control/],
+      'textarea-adapter-attributes': ['textarea', /Textarea: React and Vue write/],
+      'number-field-adapter-attributes': ['number-field', /NumberField: React and Vue write/],
+      'input-group-adapter-attributes': ['input-group', /InputGroup \(Angular\) always writes/],
+      'switch-adapter-attributes': ['switch', /Switch \(Vue\) writes/],
+      'checkbox-adapter-attributes': ['checkbox', /Checkbox \(Vue\) writes/],
+      'radio-adapter-markup': ['radio', /Radio \(Vue\) writes/],
+      'select-adapter-attributes': ['select', /Select: React and Vue write/],
+      'slider-adapter-attributes': ['slider', /Slider: React and Vue write/],
+      'file-upload-adapter-labelledby': ['file-upload', /FileUpload: React and Vue write/],
+      'spacer-vue-layout-attributes': ['spacer', /Spacer \(Vue\) always writes/],
+      'center-vue-layout-attributes': ['center', /Center \(Vue\) always writes/],
+    };
+    for (const [id, [component, text]] of Object.entries(whole)) {
+      expect(byId(id)).toMatchObject({ component, aspect: 'structure', approvedBy: 'lead' });
+      expect(byId(id).ignore).toBeUndefined();
+      expect(byId(id).source.replace(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: /, '')).toMatch(new RegExp(`^${text.source}`));
+    }
   });
 
   it('check each source against the CHANGELOG text: version, section and the quoted entry', () => {
