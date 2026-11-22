@@ -76,7 +76,9 @@ for (const entry of navigation.pages) {
         const article = page.locator('main article.hw-prose');
         await expect(article.getByRole('heading', { level: 1 })).toHaveText(entry.title[lang]);
         await expect(article.locator(':scope > h2')).toHaveText(h2.map((heading) => heading.text));
-        const outline = await article.locator(':scope > h2, guide-blocks h3, guide-blocks h4, guide-evidence-panel h3').evaluateAll((nodes) => nodes.map((node) => [node.localName, node.id, node.getAttribute('tabindex'), node.textContent?.replace(/\s+/g, ' ').trim()]));
+        // The headings of the page itself: a heading that a rendered example holds (the title of a
+        // card) belongs to the example, has no id and is not in the outline.
+        const outline = await article.locator(':scope > h2, guide-blocks h3:not(guide-example-block h3), guide-blocks h4:not(guide-example-block h4), guide-evidence-panel h3').evaluateAll((nodes) => nodes.map((node) => [node.localName, node.id, node.getAttribute('tabindex'), node.textContent?.replace(/\s+/g, ' ').trim()]));
         expect(outline).toEqual(model.headings.map((heading) => [`h${heading.level}`, heading.id, '-1', heading.text]));
 
         // Each h2 with the h3 headings under it.
