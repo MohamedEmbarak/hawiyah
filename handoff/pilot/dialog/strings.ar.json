@@ -1,0 +1,13 @@
+{
+  "Review request": "مراجعة الطلب",
+  "Review service request": "مراجعة طلب الخدمة",
+  "Check the details of the request before you submit it.": "تحقّق من تفاصيل الطلب قبل تقديمه.",
+  "Close": "إغلاق",
+  "Cancel": "إلغاء",
+  "Submit request": "تقديم الطلب",
+  "Withdraw request": "سحب الطلب",
+  "Withdraw the service request": "سحب طلب الخدمة",
+  "A withdrawn request cannot be submitted again.": "لا يمكن تقديم الطلب المسحوب مرة أخرى.",
+  "Keep request": "الإبقاء على الطلب",
+  "Withdraw": "سحب"
+}

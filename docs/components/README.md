@@ -793,7 +793,12 @@ else:
   `.d.ts` declarations and the published JavaScript);
 - the page in the other language.
 
-A statement that none of the four supports is a finding.
+A statement that none of the four supports is a finding. Four questions need one
+more text each, and the reviewer reads it for that question only: the repository
+note a Sources item links (`docs/nic-<id>.md`, `docs/coverage.md`) for what that
+item says of it; the [Arabic glossary](#arabic-glossary) for question 13; the list
+of changed files for the last sentence of question 7 and for question 14; and the
+check modules of the component (`guide/scripts/equivalence/checks/`) for question 15.
 
 ### Rules the reviewer checks
 
@@ -827,11 +832,12 @@ These rules have no check. They bind the page as the checked rules do.
 4. Every paragraph above a live group and every table caption: does each of the four
    blocks show what it says, with the same kind of state (controlled or not), the
    same handlers and the same accessible names?
-5. Every Action cell, in both languages: does it say what the outcome lines of its
-   keys in the check report say?
+5. Every Action cell, in both languages: does it agree with the outcome lines of its
+   keys in the check report, for the orientation or mode the cell names? A cell is
+   one sentence; it need not repeat an outcome line that says a key changes nothing.
 6. Every accessibility statement (roles, names, focus movement, announcements,
-   reduced motion): does an outcome line of the check report or a package README
-   state it? If neither does, it is removed.
+   reduced motion): does an outcome line of the check report, a package README, a
+   declaration or the published JavaScript state it? If none does, it is removed.
 7. The Arabic page against the English page, paragraph by paragraph, item by item and
    cell by cell, with the strings of the live blocks: the same meaning, numbers,
    members and order? Meaning is compared, not wording. A source hash renewed without
