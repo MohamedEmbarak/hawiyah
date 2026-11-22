@@ -1002,6 +1002,40 @@ built type declarations of each package.
   default `false`.
 - `@hawiyah/vue` does not export the types `ButtonVariant` and `Orientation`
   that its Button and Tabs props use.
+- Dialog (React): `autoFocus` on a child renders no `autofocus` attribute, so
+  the dialog opens with focus on its close button instead of the marked element.
+  The vanilla, Vue and Angular dialogs focus the marked element.
+- Dialog (Angular) renders its close button without `data-size="md"`, which the
+  React and Vue dialogs write on theirs. The appearance is the same.
+- The vanilla Combobox controller (`createCombobox`) leaves its status empty when
+  Down Arrow or Up Arrow opens a closed list; the React, Vue and Angular adapters
+  announce `getResultsMessage(count)`.
+- PortalHeader (React) renders the brand link with the classes
+  `hw-link hw-portal-brand`; Vue, Angular and the vanilla markup write
+  `hw-portal-brand` only, so the brand has the link focus and hover styles in
+  React alone.
+- PortalHeader (Vue) renders the top-level navigation links without the class
+  `hw-link` that React, Angular and the vanilla markup write, so their focus
+  indicator differs.
+- PortalHeader (React, Vue) writes `data-branch-href` on each
+  `details.hw-portal-branch`; Angular and the vanilla markup do not.
+- PortalHeader (Angular) always renders `div.hw-portal-notice`, empty when no
+  `[hwPortalNotice]` content is projected; React and Vue render the container
+  only when a notice is given.
+- The vanilla PortalHeader controller (`createPortalHeader`) keeps the `menu-01`
+  icon on the menu toggle while the navigation is expanded; React, Vue and
+  Angular switch it to `cancel-01`.
+- The `@hawiyah/vanilla` `PORTAL.md` says that "moving focus out" closes the
+  navigation below 48rem without saying out of what; the four adapters close it
+  when focus leaves the header, as the `@hawiyah/vue` `PORTAL.md` says.
+- Stack (Vue), with the other layout primitives built by the same function,
+  always writes `data-collapse-at="md"` and `data-side="start"`; React writes the two
+  attributes only when the props are given, and Angular and the vanilla markup
+  never write them on Stack.
+- ServiceCard (Angular) always writes `data-variant` (`default` when no variant
+  is given) and always renders `div.hw-service-card-icon`, empty when no
+  `[hwServiceIcon]` content is projected; React, Vue and the vanilla markup write
+  the attribute and the region only when they are given.
 
 #### Left for a later release
 

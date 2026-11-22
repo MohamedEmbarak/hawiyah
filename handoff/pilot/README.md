@@ -21,8 +21,9 @@ modules need the harness changes listed below, and the drafts have empty section
 
 ## Differences between the adapters that the checks found
 
-Each is reported by a check author and not yet reproduced by a second reader. None is
-recorded in `CHANGELOG.md` yet.
+Each was reported by a check author. Items 1 to 8 were then confirmed by the lead in
+the published code of the installed packages and are recorded under Known defects
+in 0.3.0 of `CHANGELOG.md`, with the wording fix of item 9.
 
 1. React Dialog: `autoFocus` on a child renders no `autofocus` attribute, so the
    dialog opens with focus on the close button. The React README says the prop
@@ -48,6 +49,46 @@ recorded in `CHANGELOG.md` yet.
    header"; the vanilla `PORTAL.md` says only "moving focus out". The step is
    corrected with a dated note when the checks are taken in, and the vanilla sentence
    gains the words "out of the header" in 0.3.1.
+
+## Differences that the English pages found
+
+Three pages of components without a controller were written in English, reviewed by
+a reader who did not write them, and corrected (`pages/`). They are not in
+`docs/components/`: a page needs its Arabic sibling, and each fails the structure
+comparison on a difference between the adapters.
+
+- Stack (Vue) always writes `data-collapse-at="md"` and `data-side="start"`.
+  Confirmed in the published code and recorded in `CHANGELOG.md`.
+- ServiceCard (Angular) always writes `data-variant` and always renders the icon
+  region. Confirmed and recorded.
+- TextField: React and Vue write `aria-labelledby` on the input, vanilla and Angular
+  rely on `label[for]`; Angular always writes `data-size="md"`,
+  `data-variant="outline"` and `autocomplete="off"`; Vue writes `value=""` on an input
+  without a value. Angular's part is confirmed in the published code; the entry
+  waits for the review of the page.
+
+A known difference with `ignore` compares the three framework results with each
+other in full, so it cannot carry a difference of one framework adapter (Angular
+ServiceCard, Vue Stack). Such a page passes today only by leaving the whole structure
+comparison out of its groups.
+
+## What the review of the English pages asks of the gates
+
+- `HWC-VOCAB` refuses `--hw-*` custom properties that the styles README documents,
+  the HTML elements `h2`, `h3` and `dl`, and a directive of another component
+  (`hwButton` on the ServiceCard page), so a writer spells them out and breaks the
+  rule that API names are in code formatting.
+- Layout primitives take their props as custom properties; the vanilla block could
+  set them only with a `style` attribute, which the contract forbids. The Stack page
+  therefore has one example and no Variants and states section.
+- `HWE-STRUCT` prints only the first difference of a pair, so the next one appears
+  only after the first is excused.
+- The contract tells the writer to run `check:page` until it passes and not to bend
+  an example; with a difference between adapters both cannot hold. It needs the
+  writer's exit state: passing except the named differences, each with a proposed
+  entry.
+- `check:page --lang en` still reports the missing Arabic page.
+- A Sources item should link the note it relies on.
 
 ## What the harness cannot do yet
 
