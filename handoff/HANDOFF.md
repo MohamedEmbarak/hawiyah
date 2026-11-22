@@ -216,6 +216,17 @@ Milestone 5, content: 85 component files in English and Arabic (brief page at `/
 
 The native Arabic reader of the pages is the owner (stated on 22 November 2026). An Arabic page counts as read only after the owner has read it; a review by a model does not replace that reading.
 
+Launch plan approved by the owner on 22 November 2026, with the aim of going live as soon as possible:
+
+- Launch on 0.3.0. No parity sweep, no 0.3.1 and no new keyboard outcome checks before the switch; each difference between adapters is a Known defects entry with a known difference.
+- Before the pages: five gate fixes only (vocabulary accepts `--hw-*` properties and HTML element names; a vanilla example may set `--hw-*` properties in a `style` attribute; the Arabic rule exempts email, URL, telephone and number values; the structure check prints every difference; the contract states the writer's exit state).
+- Components with a controller other than Tabs get a keyboard table written from the package READMEs and reviewed, with an entry of `keyboard-exceptions.json`.
+- Every English page is read by a reviewer who did not write it. Arabic: the second tier writes and reviews every page, the most capable model reads a sample of about ten, the owner reads after launch. The reviewer's preferred forms are adopted for the open glossary questions; a later correction is one mechanical pass.
+- Launch scope: the 85 component pages in both languages, the landing page, catalogue and editor as built, one getting-started guide, the brand page, a foundations page and four templates. After launch: nine templates, starters, recipes, the parity page, the parity release 0.3.1, the per-framework form of a known difference, the stronger claim check, overlay and narrow-width support in the harness, the keyboard outcome checks.
+- Order: gate fixes, English pages, Arabic pages, guides and templates, verification. The lead reports after every run without waiting and stops only if a run exceeds its estimate by more than a third, or at the switch.
+- Separate approvals at the switch: the merge into `main` with the Pages workflow change, and moving npm `latest` from 0.2.1 to 0.3.0. Before the switch the lead lists what the current guide has that the new one lacks.
+- Estimate: 9.5 to 11 million output tokens in about ten runs (gate fixes 0.25, English pages 3.6, Arabic pages 5.3, guides and templates 0.8, verification 0.8). The harness reports another figure per run, the sum of the agents' final context sizes, about three times the output tokens; estimates and reports use output tokens.
+
 Milestone 6: independent verification (axe, RTL and LTR, reduced motion, keyboard), production build under `/hawiyah/`, then switch GitHub Pages only on the owner's approval.
 
 Approved ideas to include: per-example controls for language, direction, mode and density; install path chooser; evidence panel per component from `components.json`; adapter parity table; recipes by task; shareable editor links; keyboard notes that also drive a test; fixed and tested starter downloads.
