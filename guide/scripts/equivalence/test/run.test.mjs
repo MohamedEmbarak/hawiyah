@@ -27,12 +27,21 @@ const entry = {
 };
 
 describe('known differences', () => {
-  it('hold only tabs-bar-orientation, valid, with its CHANGELOG.md source (leadAmendments A8)', () => {
+  it('hold the three entries the lead approved, valid, each with its CHANGELOG.md source', () => {
     expect(validateWith(known).errors).toEqual([]);
-    expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation']);
-    const [orientation] = known;
+    expect(known.map((item) => item.id)).toEqual(['tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon']);
+    const [orientation, textField, serviceCard] = known;
     expect(orientation).toMatchObject({ component: 'tabs', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] });
     expect(orientation.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: The vanilla Tabs controller/);
+    // A difference of one framework adapter cannot use `ignore` (it compares the three
+    // framework results with each other in full), so these two leave the structure
+    // aspect out of their groups; the accessibility tree and the rendering stay compared.
+    expect(textField).toMatchObject({ component: 'text-field', aspect: 'structure', approvedBy: 'lead' });
+    expect(textField.ignore).toBeUndefined();
+    expect(textField.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: TextField: React and Vue write/);
+    expect(serviceCard).toMatchObject({ component: 'service-card', aspect: 'structure', approvedBy: 'lead' });
+    expect(serviceCard.ignore).toBeUndefined();
+    expect(serviceCard.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: ServiceCard \(Angular\) always writes/);
   });
 
   it('check each source against the CHANGELOG text: version, section and the quoted entry', () => {

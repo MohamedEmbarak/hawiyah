@@ -49,7 +49,7 @@ const PINS = {
   'scripts/content/marketing-terms.json': '9376a99a82e48201',
   'scripts/page-guards/latin-allowlist.json': '37517e5f3dc66819',
   'scripts/equivalence/keyboard-exceptions.json': '37517e5f3dc66819',
-  'scripts/equivalence/known-differences.json': '84297d1089ee8431',
+  'scripts/equivalence/known-differences.json': '3c2252c7c5a83973',
   'scripts/equivalence/empty-elements.json': '37517e5f3dc66819',
   'scripts/equivalence/vanilla-hooks.json': '37517e5f3dc66819',
 };

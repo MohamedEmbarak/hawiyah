@@ -6,7 +6,7 @@ ServiceCard summarises one service in an article: a title with an optional categ
 
 The title names the service. The category, description and facts help a reader compare services in a list, and the action link carries a name that includes the service.
 
-```html live example=basic
+```html live example=basic differences=service-card-angular-variant-icon
 <article class="hw-card hw-service-card">
   <header class="hw-card-header"><div><span class="hw-badge" data-tone="neutral">Documents</span><h3>Copy of a document</h3></div></header>
   <div class="hw-card-body">
@@ -65,7 +65,7 @@ template: `<hw-service-card
 
 An icon in the header marks the kind of service. The card hides it from assistive technology, so it carries no meaning of its own: the title and the category name the service.
 
-```html live example=icon
+```html live example=icon differences=service-card-angular-variant-icon
 <article class="hw-card hw-service-card">
   <header class="hw-card-header"><div class="hw-service-card-icon" aria-hidden="true"><span class="hw-icon" data-icon="file-01"></span></div><div><span class="hw-badge" data-tone="neutral">Documents</span><h3>Document status</h3></div></header>
   <div class="hw-card-body">
@@ -114,7 +114,7 @@ template: `<hw-service-card
 
 The card holds one action. When the action is a command rather than a destination, the application supplies it instead of `href`: a `footer` with the class `hw-card-footer` that holds the element in the vanilla markup, the `action` prop in React, the `action` slot in Vue and content marked `hwServiceAction` in Angular. Use a link for a destination and a button for a command.
 
-```html live example=action
+```html live example=action differences=service-card-angular-variant-icon
 <article class="hw-card hw-service-card">
   <header class="hw-card-header"><div><h3>Profile update</h3></div></header>
   <div class="hw-card-body">
@@ -148,7 +148,7 @@ template: `<hw-service-card title="Profile update" description="Update the conta
 
 A card without `href` and without an action has no footer content. The vanilla, React and Vue forms render no footer, and the Angular form renders an empty footer that the stylesheet hides. Use this form when the card only informs.
 
-```html live example=informational
+```html live example=informational differences=service-card-angular-variant-icon
 <article class="hw-card hw-service-card">
   <header class="hw-card-header"><div><span class="hw-badge" data-tone="neutral">Requests</span><h3>Request tracking</h3></div></header>
   <div class="hw-card-body">

@@ -3,9 +3,30 @@
     "id": "tabs-bar-orientation",
     "component": "tabs",
     "aspect": "structure",
-    "ignore": [{ "class": "hw-tab-bar", "attribute": "data-orientation" }],
+    "ignore": [
+      {
+        "class": "hw-tab-bar",
+        "attribute": "data-orientation"
+      }
+    ],
     "description": "@hawiyah/vanilla 0.3.0 creates the tab bar without the data-orientation attribute that the React, Vue and Angular adapters write; the appearance and the accessibility tree are the same. Removed when the guide pins a release that corrects createTabs.",
     "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: The vanilla Tabs controller (`createTabs`) creates the tab bar (`.hw-tab-bar`) without the `data-orientation` attribute",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "text-field-adapter-attributes",
+    "component": "text-field",
+    "aspect": "structure",
+    "description": "In 0.3.0 React and Vue write aria-labelledby on the input, Angular always writes data-size, data-variant and autocomplete, and Vue writes an empty value; no single vanilla markup equals the three. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: TextField: React and Vue write `aria-labelledby` on the input next to the `for` of its label",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "service-card-angular-variant-icon",
+    "component": "service-card",
+    "aspect": "structure",
+    "description": "@hawiyah/angular 0.3.0 always writes data-variant on the service card and always renders its icon region, which React, Vue and the vanilla markup write only when given. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects hw-service-card.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: ServiceCard (Angular) always writes `data-variant` (`default` when no variant is given)",
     "approvedBy": "lead"
   }
 ]

@@ -1032,6 +1032,12 @@ built type declarations of each package.
   always writes `data-collapse-at="md"` and `data-side="start"`; React writes the two
   attributes only when the props are given, and Angular and the vanilla markup
   never write them on Stack.
+- TextField: React and Vue write `aria-labelledby` on the input next to the
+  `for` of its label; Angular and the vanilla markup rely on the label alone.
+  Angular always writes `data-size="md"`, `data-variant="outline"` and, unless
+  another value is given, `autocomplete="off"`; React and Vue write none of the
+  three. Vue writes `value=""` on an input without a value. The accessible name
+  and the appearance are the same.
 - ServiceCard (Angular) always writes `data-variant` (`default` when no variant
   is given) and always renders `div.hw-service-card-icon`, empty when no
   `[hwServiceIcon]` content is projected; React, Vue and the vanilla markup write
