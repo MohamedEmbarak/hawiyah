@@ -43,6 +43,10 @@ describe('known differences', () => {
       'cookie-consent-adapter-markup', 'password-field-adapter-markup', 'search-field-adapter-markup', 'pin-input-adapter-markup', 'rating-adapter-markup',
       'rating-angular-radio-names', 'rating-react-error-height', 'combobox-adapter-markup', 'multi-select-adapter-markup', 'tag-input-adapter-markup',
       'range-slider-adapter-markup', 'portal-layout-footer-brand-tree', 'portal-layout-footer-brand-weight',
+      'calendar-adapter-markup', 'calendar-adapter-tree', 'calendar-vanilla-height', 'date-picker-adapter-markup', 'date-picker-value-order',
+      'date-picker-adapter-height', 'file-dropzone-adapter-markup', 'toggle-group-adapter-markup', 'pagination-adapter-markup', 'pagination-vue-gap-text',
+      'stepper-adapter-markup', 'copy-button-adapter-markup', 'tree-view-adapter-markup', 'side-navigation-adapter-markup', 'navigation-drawer-adapter-markup',
+      'portal-header-adapter-markup', 'carousel-adapter-markup', 'data-table-adapter-markup', 'data-table-sort-indicator', 'feedback-adapter-markup',
     ]);
     const [orientation, textField, serviceCard, , progress, iconButton] = known;
     const byId = (id) => known.find((item) => item.id === id);

@@ -436,5 +436,165 @@
     "description": "In 0.3.0 the strong element in which Vue and Angular write the text brand of the footer that PortalLayout renders makes the brand bold, and the footer 3 px taller, in Vue and Angular only. The rendering is left out of the groups that name this entry, with portal-layout-footer-brand-tree for the accessibility tree. Removed when the guide pins a release in which the four results agree.",
     "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: PortalFooter: a text `brand` renders as plain text in React and in a `strong` element in Vue and Angular, on which the stylesheet sets no weight, so the brand is bold in Vue and Angular only",
     "approvedBy": "lead"
+  },
+  {
+    "id": "calendar-adapter-markup",
+    "component": "calendar",
+    "aspect": "structure",
+    "description": "In 0.3.0 the vanilla Calendar wraps its toolbar and grid in div.hw-calendar-content and div.hw-calendar-header and writes the month button names as text, React renders a section region with icon month buttons, Vue renders the hidden input first, div.hw-calendar-toolbar, the month in a span and text month buttons and writes data-hw-filled on the hidden input, and Angular renders div.hw-field.hw-calendar with div.hw-calendar-toolbar and icon month buttons; only the vanilla result carries the data-hw-locale, data-hw-value, data-hw-min, data-hw-max, data-hw-week-starts-on, data-hw-calendar, data-hw-readonly and text attributes that createCalendar reads from its root (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are left out by calendar-adapter-tree and calendar-vanilla-height. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Calendar renders a different structure and accessibility tree in each adapter",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "calendar-adapter-tree",
+    "component": "calendar",
+    "aspect": "aria",
+    "description": "In 0.3.0 the vanilla Calendar and React name the grid by the month heading and React adds a region named by label, Vue writes the month as text instead of a heading of level 3, and Vue and Angular name the grid by label, so no two accessibility trees of a calendar agree. The accessibility tree is left out of the groups that name this entry; the structure is left out by calendar-adapter-markup. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Calendar renders a different structure and accessibility tree in each adapter",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "calendar-vanilla-height",
+    "component": "calendar",
+    "aspect": "screenshot",
+    "description": "In 0.3.0 the vanilla Calendar, with its toolbar and grid wrapped in div.hw-calendar-content and its month button names written as text, is 8 px taller than the Angular calendar. The rendering is left out of the groups that name this entry, with calendar-adapter-tree for the accessibility tree. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: The vanilla calendar is 8 px taller than the Angular calendar.",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "date-picker-adapter-markup",
+    "component": "date-picker",
+    "aspect": "structure",
+    "description": "In 0.3.0 React and Angular put hw-field on the .hw-date-picker root and Vue wraps div.hw-date-picker in div.hw-field, React, Vue and Angular render output.hw-date-picker-value after the control where the vanilla controller appends it at the end of the root, and only the vanilla result carries the data-hw-date-input, data-hw-date-trigger, data-hw-date-dialog, data-hw-date-close and data-hw-date-calendar hooks and the locale, calendar and text attributes that createDatePicker reads, which shift the generated ids of the field (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are left out by date-picker-value-order and date-picker-adapter-height. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: DatePicker renders a different structure in each adapter",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "date-picker-value-order",
+    "component": "date-picker",
+    "aspect": "aria",
+    "description": "In 0.3.0 the vanilla DatePicker appends output.hw-date-picker-value at the end of its root, after the hint and the dialog, so the hint precedes the announced date in its accessibility tree, where React, Vue and Angular announce the date before the hint. The accessibility tree is left out of the groups that name this entry; the structure is left out by date-picker-adapter-markup. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: React, Vue and Angular render `output.hw-date-picker-value` after the control, before the hint, while the vanilla controller appends it at the end of the root after the dialog",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "date-picker-adapter-height",
+    "component": "date-picker",
+    "aspect": "screenshot",
+    "description": "In 0.3.0 a DatePicker at rest is 99 px high in vanilla, 96 px in React and Vue and 104 px in Angular. The rendering is left out of the groups that name this entry, with date-picker-value-order for the accessibility tree. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: At rest the picker is 99 px high in vanilla, 96 px in React and Vue and 104 px in Angular.",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "file-dropzone-adapter-markup",
+    "component": "file-dropzone",
+    "aspect": "structure",
+    "description": "In 0.3.0 React and Vue write aria-labelledby on the file input, Vue writes no data-state=\"error\" for the application's error, the adapters write an id on the label and the class hw-file-dropzone-instruction, which the stylesheet does not define and a vanilla block therefore does not write, on the instruction, and only the vanilla result carries the data-hw-file-input hook that createFileDropzone reads, which shifts the generated ids of the field (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: FileDropzone: React and Vue write `aria-labelledby` with the id of the label",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "toggle-group-adapter-markup",
+    "component": "toggle-group",
+    "aspect": "structure",
+    "description": "In 0.3.0 React, Vue and Angular render a disabled hidden input before the buttons of a multiple group and their hidden inputs directly in the fieldset, Vue writes data-hw-filled on the first radio or on that hidden input, Angular checks the selected radio as a property, without a checked attribute, and only the vanilla result carries the data-hw-multiple, data-hw-name and data-hw-value hooks that createToggleGroup reads (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: ToggleGroup in multiple mode: React, Vue and Angular render a disabled hidden input before the option buttons",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "pagination-adapter-markup",
+    "component": "pagination",
+    "aspect": "structure",
+    "description": "In 0.3.0 the vanilla controller writes aria-disabled on every control that carries data-hw-page and renders the generated page buttons inside span.hw-pagination-items[data-hw-pagination-items], where React, Vue and Angular write aria-disabled only on the arrow at a bound and data-disabled on the navigation of a disabled pagination, and only the vanilla result carries the data-hw-total, data-hw-current, data-hw-page and text attributes that createPagination reads (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree is left out by pagination-vue-gap-text and the rendering is compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Pagination (vanilla): every control that carries `data-hw-page` receives `aria-disabled`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "pagination-vue-gap-text",
+    "component": "pagination",
+    "aspect": "aria",
+    "description": "In 0.3.0 the Vue Pagination wraps the ellipsis of each gap summary in an aria-hidden span, so its accessibility tree shows the summary group without the text that the vanilla, React and Angular trees show; the accessible name from getGapLabel is the same. The accessibility tree is left out of the groups that name this entry; the structure is left out by pagination-adapter-markup. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Pagination (Vue) wraps the ellipsis of a gap disclosure in an `aria-hidden` `span` inside the summary",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "stepper-adapter-markup",
+    "component": "stepper",
+    "aspect": "structure",
+    "description": "In 0.3.0 createStepper writes data-active-index on the list, and only the vanilla result carries the data-hw-complete-label and data-hw-upcoming-label attributes from which createStepper reads its state texts, a name it builds from its options, so vanilla-hooks.json cannot list them (an entry of the same Known defects list; the attributes follow the rule of the vanilla README for text inputs). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Stepper (vanilla): `createStepper` writes the index it uses as `data-active-index` on the list",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "copy-button-adapter-markup",
+    "component": "copy-button",
+    "aspect": "structure",
+    "description": "In 0.3.0 the Angular CopyButton is its host element hw-copy-button, compared as div, where the vanilla markup, React and Vue render span.hw-copy, and only the vanilla result carries the data-hw-text, data-hw-copied-message and data-hw-failed-message attributes that createCopyButton reads, the two messages by a name it builds from its options, so vanilla-hooks.json cannot list them (an entry of the same Known defects list; the attributes are documented in the vanilla README). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: CopyButton (Angular): the host element `hw-copy-button` is the root",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "tree-view-adapter-markup",
+    "component": "tree-view",
+    "aspect": "structure",
+    "description": "In 0.3.0 Angular writes data-node on every tree item and aria-disabled=\"false\" on the tree, and only the vanilla result carries the data-hw-value, data-hw-tree-label and data-hw-tree-toggle hooks and the data-hw-expand-label and data-hw-collapse-label templates that createTreeView reads (an entry of the same Known defects list; the templates are documented in the vanilla README). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: TreeView (Angular) writes `data-node` on every tree item",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "side-navigation-adapter-markup",
+    "component": "side-navigation",
+    "aspect": "structure",
+    "description": "In 0.3.0 the vanilla controller writes tabindex=\"-1\" on a disabled row, which React, Vue and Angular do not write. No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: SideNavigation and NavigationDrawer (vanilla): the controller writes `tabindex=\"-1\"` on a disabled row",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "navigation-drawer-adapter-markup",
+    "component": "navigation-drawer",
+    "aspect": "structure",
+    "description": "In 0.3.0 the Angular NavigationDrawer renders its dialog inside a host element and an hw-drawer element, with empty user and footer containers and without the class hw-navigation-drawer, Vue writes a side attribute on the dialog, the vanilla controller writes tabindex=\"-1\" on a disabled row, and only the vanilla result carries the data-hw-dialog-open and data-hw-dialog-close hooks, which shift the generated ids of the dialog (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: NavigationDrawer (Angular) renders the dialog inside a host element with the class `hw-navigation-drawer-host`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "portal-header-adapter-markup",
+    "component": "portal-header",
+    "aspect": "structure",
+    "description": "In 0.3.0 Angular always renders div.hw-portal-notice and div.hw-portal-header-actions, React writes hw-link on the brand link, Vue writes no hw-link on the navigation links, React and Vue write data-branch-href on each branch, Vue and Angular write a text brand inside a span, and only the vanilla result carries the data-hw-portal-toggle and data-hw-portal-navigation hooks that createPortalHeader reads (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: PortalHeader (Angular) always renders `div.hw-portal-notice`, empty when no",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "carousel-adapter-markup",
+    "component": "carousel",
+    "aspect": "structure",
+    "description": "In 0.3.0 the vanilla controller writes aria-disabled=\"false\" on the available arrows and indicators and aria-hidden=\"false\" on the current slide, Vue and Angular render the controls without hw-inline, Angular renders the arrows without data-variant and data-size, and only the vanilla result carries the data-hw-slide, data-hw-carousel-dot, data-hw-carousel-status and data-hw-loop hooks and the data-hw-slide-label and data-hw-empty-label texts that createCarousel reads (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Carousel (vanilla): `createCarousel` writes `aria-disabled=\"false\"` on the available arrows and indicators",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "data-table-adapter-markup",
+    "component": "data-table",
+    "aspect": "structure",
+    "description": "In 0.3.0 Vue and Angular render the sort button without hw-button, data-variant and data-size, React, Vue and Angular show the sort state with span.hw-icon where the vanilla markup places span.hw-table-sort-icon, and only the vanilla result carries the data-hw-locale, data-hw-key and data-hw-sort hooks that createDataTable reads (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the rendering is left out by data-table-sort-indicator and the accessibility tree is compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: DataTable (Vue, Angular): the sort button is a plain button without the class",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "data-table-sort-indicator",
+    "component": "data-table",
+    "aspect": "screenshot",
+    "description": "In 0.3.0 the span.hw-table-sort-icon of the vanilla sort buttons and the packaged icon of the React, Vue and Angular sort buttons differ in width, so the columns of a sortable table are placed a few pixels apart. The rendering is left out of the groups that name this entry; the structure is left out by data-table-adapter-markup. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: DataTable: React, Vue and Angular show the sort state of a header with a packaged icon",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "feedback-adapter-markup",
+    "component": "feedback",
+    "aspect": "structure",
+    "description": "In 0.3.0 React, Vue and Angular write data-choice-variant=\"text\" on the group and render the comment step with the class hw-feedback-comment, which the stylesheet does not define, only once an answer exists, where the vanilla markup holds the hidden [data-hw-feedback-comment] step before the status, and only the vanilla result carries the data-hw-value and data-hw-success-message attributes that createFeedback reads (entries of the same Known defects list). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Feedback (React, Vue, Angular): the group carries `data-choice-variant=\"text\"`",
+    "approvedBy": "lead"
   }
 ]

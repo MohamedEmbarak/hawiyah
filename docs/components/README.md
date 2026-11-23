@@ -288,7 +288,14 @@ exist in the installed packages:
   table row, a list item or a paragraph of the README that also names the
   component by its name, its factory `create<Name>`, one of its classes, its hook
   `data-hw="<id>"` or an export of its API (`data-hw-range-label` in the row of
-  `createRangeSlider`, which builds the name from its option `getRangeLabel`). An
+  `createRangeSlider`, which builds the name from its option `getRangeLabel`). A
+  row of the table `| Controller | Text inputs ... |` of the `@hawiyah/vanilla`
+  README also documents, by the rule of that README, the attribute on the root of
+  each text input it writes in code outside parentheses: `data-hw-<kebab-name>`
+  for a string input (`previousLabel` in the row of `createCalendar` gives
+  `data-hw-previous-label`) and the name without `get` for a function input
+  (`getSlideLabel(position, total)` gives `data-hw-slide-label`); a text input is
+  `label` or a name that ends in `Label`, `Message` or `Description`. An
   attribute that no README documents for the component still fails.
 - A name that starts with `Hw`, `create` or an upper-case letter is an export of
   an installed `@hawiyah` package, of this component or of another one (`Button`

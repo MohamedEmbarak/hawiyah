@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { memberCache } from '../cli.mjs';
 import { coverageLines, coverageOf } from '../coverage.mjs';
-import { checkVocabulary, componentVocabulary, createVocabularyContext, documentedAttributes, judge, markupTerms, readVocabularyExceptions, readmeBlocks, terms } from '../vocabulary.mjs';
+import { checkVocabulary, componentVocabulary, createVocabularyContext, documentedAttributes, judge, markupTerms, readVocabularyExceptions, readmeBlocks, terms, textInputBlocks } from '../vocabulary.mjs';
 import { processPair } from '../../content/pipeline.mjs';
 import { repoDir, testReaders } from './helpers.mjs';
 
@@ -272,6 +272,36 @@ describe('data-hw-* attributes that an installed README documents for the compon
     expect([...documentedAttributes(blocks, ['RangeSlider', 'createRangeSlider', 'hw-range-slider'])].sort()).toEqual(['data-hw-lower', 'data-hw-range-label', 'data-hw-upper-name']);
     // A longer name that starts with an identifier is not that identifier.
     expect([...documentedAttributes(['`hw-range-slider-value` with `data-hw-x`', '`createRangeSliders` with `data-hw-y`'], ['hw-range-slider', 'createRangeSlider'])]).toEqual([]);
+  });
+
+  // The vanilla README states the rule once ("Text is supplied by the application", item 3:
+  // data-hw-<kebab-name> for a string input, the name without get for a function input) and
+  // lists the text inputs of each controller in one table, so the attributes are not written out.
+  it('derives the root attributes of the text inputs of the vanilla README table by its rule', () => {
+    const readme = [
+      '| Controller | Text inputs (required unless noted) |', '| --- | --- |',
+      '| `createCalendar` | `label`, `previousLabel`, `nextLabel`, `rangeLabel`; `unsupportedMessage` while the calendar is `islamic-umalqura`; optional `getDayLabel(value)`; `locale` is required |',
+      '| `createCarousel` | `label`, `getSlideLabel(position, total)` (one-based), `emptyLabel`; optional `carouselDescription` |',
+      '| `createDatePicker` | `openLabel`; `unavailableMessage` when `isDateDisabled` is given |',
+      '| `createFileUploadList` | `labels` (core `FileUploadLabels`, including `getProgressLabel(name)` and `getRemoveLabel(name)`) |',
+      '', '| Controller | Other |', '| --- | --- |', '| `createTabs` | `overflowLabel` |',
+    ].join('\n');
+    expect(textInputBlocks(readme)).toEqual([
+      '`createCalendar` data-hw-label data-hw-previous-label data-hw-next-label data-hw-range-label data-hw-unsupported-message data-hw-day-label',
+      '`createCarousel` data-hw-label data-hw-slide-label data-hw-empty-label data-hw-carousel-description',
+      '`createDatePicker` data-hw-open-label data-hw-unavailable-message',
+    ]);
+    expect([...documentedAttributes(textInputBlocks(readme), ['Calendar', 'createCalendar'])]).toContain('data-hw-previous-label');
+    expect([...documentedAttributes(textInputBlocks(readme), ['Tabs', 'createTabs'])]).toEqual([]);
+  });
+
+  it('accepts the text attributes of the installed vanilla table on their own page only', () => {
+    expect(judge(vocab, { kind: 'attribute', name: 'data-hw-previous-label', text: 'data-hw-previous-label' }, where('calendar', ['vanilla']))).toBeNull();
+    expect(judge(vocab, { kind: 'attribute', name: 'data-hw-empty-label', text: 'data-hw-empty-label' }, where('carousel', ['vanilla']))).toBeNull();
+    expect(judge(vocab, { kind: 'attribute', name: 'data-hw-success-message', text: 'data-hw-success-message' }, where('feedback', ['vanilla']))).toBeNull();
+    expect(judge(vocab, name('data-hw-previous-label'), where('tabs'))).toMatch(/^data-hw-previous-label is neither selected/);
+    // createDatePicker has no closeLabel, so the table gives no data-hw-close-label.
+    expect(judge(vocab, name('data-hw-close-label'), where('date-picker'))).toMatch(/^data-hw-close-label is neither selected/);
   });
 });
 

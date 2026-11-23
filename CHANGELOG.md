@@ -1371,6 +1371,100 @@ built type declarations of each package.
   React, Vue and Angular write and which the `@hawiyah/styles` README and the
   vanilla markup contract document, has no rule in `dist/styles.css`; the output
   is styled through `.hw-range-slider output`.
+- Calendar renders a different structure and accessibility tree in each
+  adapter: the vanilla controller wraps the toolbar and the grid in
+  `div.hw-calendar-content > div.hw-calendar-header`, shows the names of the
+  month buttons as text and names the grid by the month heading; React renders
+  a `section` region named by `label` with icon month buttons and names the grid
+  by the month heading; Vue renders the hidden input first, then
+  `div.hw-calendar-toolbar`, the month in a `span` instead of an `h3` and text
+  month buttons, and names the grid by `label`; Angular renders
+  `div.hw-field.hw-calendar` with `div.hw-calendar-toolbar` and icon month
+  buttons, and names the grid by `label`. The vanilla calendar is 8 px taller
+  than the Angular calendar.
+- Calendar (Vue) writes `data-hw-filled` on its hidden value input, which its
+  form-reset hook observes with core `observeFieldValue`; the other adapters
+  write none.
+- DatePicker renders a different structure in each adapter: React and Angular
+  put `hw-field` on the `.hw-date-picker` root and Vue wraps
+  `div.hw-date-picker` in `div.hw-field`; React, Vue and Angular render
+  `output.hw-date-picker-value` after the control, before the hint, while the
+  vanilla controller appends it at the end of the root after the dialog, so in
+  the vanilla accessibility tree the hint precedes the announced date. At rest
+  the picker is 99 px high in vanilla, 96 px in React and Vue and 104 px in
+  Angular.
+- FileDropzone (Vue) sets `data-state="error"` on its root only for a rejected
+  batch, not for the application's `error`; React and Angular set it for both.
+  The error styling still applies through `aria-invalid` on the input.
+- FileDropzone: React and Vue write `aria-labelledby` with the id of the label
+  on the file input next to the `for` of the label; the vanilla controller and
+  Angular name the input by the label alone. The accessible name is the same.
+- ToggleGroup in multiple mode: React, Vue and Angular render a disabled hidden
+  input before the option buttons and one hidden input per selected value
+  directly in the fieldset; the vanilla controller renders no such first input
+  and writes its hidden inputs inside a hidden `span` that it appends to the
+  root.
+- ToggleGroup (Vue) writes `data-hw-filled` on its first radio (single mode) or
+  on its disabled hidden input (multiple mode) through its form-reset hook; the
+  other adapters write none.
+- ToggleGroup (Angular) sets `checked` on the selected radio as a property
+  only, so the radio carries no `checked` attribute; the other adapters write
+  the attribute. The selection is the same.
+- Pagination (Vue) wraps the ellipsis of a gap disclosure in an `aria-hidden`
+  `span` inside the summary, so the summary exposes no text of its own; the
+  vanilla controller, React and Angular write the ellipsis as the text of the
+  summary. The accessible name from `getGapLabel` is the same in the four.
+- Pagination (vanilla): every control that carries `data-hw-page` receives
+  `aria-disabled`, `"false"` while it is available and `"true"` together with
+  `disabled` while the pagination is disabled; React, Vue and Angular write
+  `aria-disabled="true"` only on the arrow at the first or the last page, and
+  `disabled` only while the pagination is disabled.
+- Stepper (vanilla): `createStepper` writes the index it uses as
+  `data-active-index` on the list; React, Vue and Angular write no such
+  attribute.
+- CopyButton (Angular): the host element `hw-copy-button` is the root and
+  carries the class `hw-copy`, as the `@hawiyah/angular` README documents; the
+  vanilla markup, React and Vue render a `span.hw-copy`.
+- TreeView (Angular) writes `data-node` on every tree item and
+  `aria-disabled="false"` on the tree when it is not disabled; React, Vue and
+  the vanilla markup write neither.
+- TreeView: the vanilla controller keeps the rows of a collapsed branch in the
+  document with the `hidden` attribute, as the `@hawiyah/vanilla` README
+  documents; React, Vue and Angular render only the visible rows.
+- SideNavigation and NavigationDrawer (vanilla): the controller writes
+  `tabindex="-1"` on a disabled row, which React, Vue and Angular do not write.
+  The row is not focusable in any adapter.
+- NavigationDrawer (Vue) writes its prop `side` as an attribute `side` on the
+  dialog element next to `data-side`, as Drawer (Vue) does; React, Angular and
+  the vanilla markup write `data-side` only.
+- NavigationDrawer (Vue): the element in the `trigger` slot does not receive
+  `aria-haspopup="dialog"`, which React writes on its `trigger` element.
+- NavigationDrawer (Angular) renders the dialog inside a host element with the
+  class `hw-navigation-drawer-host` and an `hw-drawer` element, always renders
+  the user and footer containers, and gives the dialog the classes
+  `hw-dialog hw-drawer` without `hw-navigation-drawer`; React, Vue and the
+  vanilla markup render the `dialog` with the classes
+  `hw-dialog hw-drawer hw-navigation-drawer` as the outer element.
+- Carousel (vanilla): `createCarousel` writes `aria-disabled="false"` on the
+  available arrows and indicators and `aria-hidden="false"` on the current
+  slide, where React, Vue and Angular write neither attribute.
+- Carousel (Vue, Angular): the controls group lacks the class `hw-inline` that
+  React renders.
+- Carousel (Angular): the previous and next arrows carry neither
+  `data-variant="secondary"` nor `data-size="md"`, which React and Vue render.
+- DataTable (Vue, Angular): the sort button is a plain button without the class
+  `hw-button`, `data-variant="ghost"` and `data-size="md"` that React renders.
+- DataTable: React, Vue and Angular show the sort state of a header with a
+  packaged icon, `span.hw-icon` with `data-icon`, while the vanilla markup that
+  the `@hawiyah/styles` README documents places `span.hw-table-sort-icon`,
+  whose indicator follows `aria-sort`; the two indicators differ in width, so
+  the columns of a sortable table are placed a few pixels apart.
+- Feedback (React, Vue, Angular): the comment step is rendered as
+  `div.hw-feedback-comment`, a class for which `@hawiyah/styles` defines no
+  rule; the vanilla README documents the step only as
+  `[data-hw-feedback-comment]`.
+- Feedback (React, Vue, Angular): the group carries `data-choice-variant="text"`
+  by default, a value that the stylesheet does not select.
 
 #### Left for a later release
 

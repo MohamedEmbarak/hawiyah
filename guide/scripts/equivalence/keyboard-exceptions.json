@@ -106,5 +106,95 @@
     "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of RangeSlider documents the two native range inputs, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
     "reference": "@hawiyah/angular README.md: \"Crossing thumbs stop at the other value; absent distinct names, `name` submits two ordered values.\"",
     "approvedBy": "lead"
+  },
+  {
+    "component": "calendar",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Calendar documents the roving day buttons of the grid and their arrow, Home, End and Page keys, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Grid supports RTL-aware arrows, Home/End, PageUp/Down and Shift+PageUp/Down (year).\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "date-picker",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of DatePicker documents the text input, the keys of the calendar in its native modal dialog and Escape, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Opening moves focus to the selected day, or today; closing returns it to the opener.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "file-dropzone",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of FileDropzone documents the native file input and its file chooser, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Native picker and local drop handling; no upload/network side effect.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "toggle-group",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of ToggleGroup documents the native radio inputs of single mode and the native pressed buttons of multiple mode, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/vanilla README.md: \"Rating and single ToggleGroup compose radios.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "pagination",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Pagination documents the native arrows, page buttons and ellipsis disclosures, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"On the first and the last page the previous / next arrow has `aria-disabled=\"true\"`, keeps focus and its name and ignores activation; the native `disabled` attribute is used only while the whole control is disabled.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "stepper",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Stepper documents the steps, which take no focus, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Noninteractive progress list.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "content-navigation",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of ContentNavigation documents the native links of the navigation and the focus of their sections, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/react README.md: \"Ordinary activation scrolls without changing the URL (with `updateHash` the resolved URL is written with `history.replaceState`); keyboard activation also focuses the target.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "copy-button",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of CopyButton documents the native button, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/vanilla README.md: \"Focus stays on the button.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "tree-view",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of TreeView documents the roving focus of the tree items and their arrow, Home, End, Enter and Space keys, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Roving focus, RTL arrows, Home/End, Enter/Space selection, and type-ahead over the visible nodes (as in Menu).\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "side-navigation",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of SideNavigation documents the native links and the summaries of its groups, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/vanilla README.md: \"Rows: a link is `a.hw-navigation-drawer-row` (with `aria-current=\"page\"` on the current page), a group is `details.hw-navigation-drawer-group` with a summary row, a disabled entry is a span with `aria-disabled=\"true\"` and no children, and other text is a plain span.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "navigation-drawer",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of NavigationDrawer documents the native modal dialog, its links and the summaries of its groups, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/vanilla README.md: \"A native `<dialog>` supplies modality, its top layer, Escape handling, and focus containment through `showModal()`/`close()`.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "portal-header",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of PortalHeader documents the native links and buttons of the header, its group headings and Escape, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Optional top-level `groups` contain a label and child links; one press on another group heading opens it and closes the open one.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "carousel",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Carousel documents the native indicator and arrow buttons, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"On the first and the last slide of a carousel that does not loop the previous / next arrow has `aria-disabled=\"true\"`, keeps focus and ignores activation; both arrows are natively disabled only with fewer than two slides.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "data-table",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of DataTable documents the focusable wrapper of the table and the native sort buttons, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Activating a sortable header reports `(sortKeyChange)` when the key changed, then `(sortDirectionChange)` when the direction changed.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "feedback",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Feedback documents the native choice, comment and send controls, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"No focus is moved: the new controls follow the answers in the tab order.\"",
+    "approvedBy": "lead"
   }
 ]

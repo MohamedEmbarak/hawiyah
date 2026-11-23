@@ -17,7 +17,9 @@
 //                       reads or writes (data-hw-value as dataset.hwValue too),
 //                       or a name of vocabulary-allow.json; on a component's page
 //                       also a data-hw-* attribute that an installed README
-//                       documents for that component (documentedAttributes);
+//                       documents for that component (documentedAttributes),
+//                       written out or given by the rule of the text-inputs table
+//                       of the vanilla README (textInputBlocks);
 //   Hw*, create*, A*    an export of an installed @hawiyah package;
 //   other names         a member of this component in some adapter (the names its
 //                       published declarations give: props, options, inputs,
@@ -283,7 +285,7 @@ export function createVocabularyContext(readers, options = {}) {
     exportsOf,
     angularElements,
     hooks: vanillaHooks(nodeModules),
-    readmeBlocks: installedReadmes(nodeModules).flatMap(readmeBlocks),
+    readmeBlocks: installedReadmes(nodeModules).flatMap((text) => [...readmeBlocks(text), ...textInputBlocks(text)]),
     packages: packagePaths(nodeModules),
     dependencies: guideDependencies(nodeModules),
     allow: options.allow ?? readAllow(options.allowFile),
@@ -325,6 +327,54 @@ export function readmeBlocks(text) {
     current.push(line);
   }
   flush();
+  return blocks;
+}
+
+const kebab = (name) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+
+/**
+ * The attributes on the controller root that the rule of the @hawiyah/vanilla README
+ * ("Text is supplied by the application", item 3) gives each row of its table
+ * `| Controller | Text inputs ... |`: `data-hw-<kebab-name>` for a string input
+ * (previousLabel -> data-hw-previous-label) and, for a function input, the template
+ * attribute named after the input without `get` (getSlideLabel(position, total) ->
+ * data-hw-slide-label). Only the inputs written in code at the top level of the row's
+ * second cell count, and only names of texts: `label` and names that end in Label,
+ * Message or Description; a field inside parentheses (the labels of
+ * createFileUploadList) and an option that is not text (isDateDisabled, maxSize) give
+ * none. Each row gives one block, its controller cell followed by those attributes, for
+ * documentedAttributes.
+ */
+export function textInputBlocks(text) {
+  const blocks = [];
+  let inTable = false;
+  for (const line of String(text).split('\n')) {
+    if (!/^\s*\|/.test(line)) {
+      inTable = false;
+      continue;
+    }
+    const cells = line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+    if (cells[0] === 'Controller' && /^Text inputs\b/.test(cells[1] ?? '')) {
+      inTable = true;
+      continue;
+    }
+    if (!inTable || cells.length < 2 || /^:?-+:?$/.test(cells[0])) continue;
+    const attributes = [];
+    let depth = 0;
+    for (const part of cells[1].split(/(`[^`]*`)/)) {
+      if (!part.startsWith('`')) {
+        for (const char of part) depth = Math.max(0, depth + (char === '(' ? 1 : char === ')' ? -1 : 0));
+        continue;
+      }
+      if (depth > 0) continue;
+      const code = part.slice(1, -1);
+      const fn = /^get([A-Z][A-Za-z0-9]*(?:Label|Message))\(/.exec(code);
+      const string = /^(label|[a-z][A-Za-z0-9]*(?:Label|Message|Description))$/.exec(code);
+      if (fn) attributes.push(`data-hw-${kebab(fn[1]).slice(1)}`);
+      else if (string) attributes.push(`data-hw-${kebab(string[1])}`);
+    }
+    if (attributes.length) blocks.push(`${cells[0]} ${attributes.join(' ')}`);
+  }
   return blocks;
 }
 
